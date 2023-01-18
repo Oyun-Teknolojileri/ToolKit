@@ -280,7 +280,7 @@ namespace ToolKit
   {
     GLenum er = glGetError();
     if (er != 0) {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
 
     GLint lastFBO;
@@ -289,7 +289,7 @@ namespace ToolKit
     GLenum check = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (check != GL_FRAMEBUFFER_COMPLETE)
     {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
     assert(check == GL_FRAMEBUFFER_COMPLETE && "Framebuffer incomplete");
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);

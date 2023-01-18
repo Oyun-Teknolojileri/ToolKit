@@ -67,7 +67,7 @@ namespace ToolKit
       GLenum er = glGetError();
       if (er != 0)
       {
-        int y = 5;
+        GetLogger()->Log("ERROR");
       }
 
       AssignManagerReporters();
@@ -117,7 +117,7 @@ namespace ToolKit
       er = glGetError();
       if (er != 0)
       {
-        int y = 5;
+        GetLogger()->Log("ERROR");
       }
     }
 
@@ -170,14 +170,26 @@ namespace ToolKit
       GLenum er = glGetError();
       if (er != 0)
       {
-        int y = 5;
+        GetLogger()->Log("ERROR");
       }
 
       m_deltaTime = deltaTime;
       UI::BeginUI();
       UI::ShowUI();
 
+      er = glGetError();
+      if (er != 0)
+      {
+        GetLogger()->Log("ERROR");
+      }
+
       GetRenderSystem()->ExecuteRenderTasks();
+
+      er = glGetError();
+      if (er != 0)
+      {
+        GetLogger()->Log("ERROR");
+      }
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
@@ -187,13 +199,37 @@ namespace ToolKit
         if (wnd->IsViewport())
         {
           viewports.push_back((EditorViewport*) wnd);
+
+          er = glGetError();
+          if (er != 0)
+          {
+            GetLogger()->Log("ERROR");
+          }
         }
         wnd->DispatchSignals();
+
+        er = glGetError();
+        if (er != 0)
+        {
+          GetLogger()->Log("ERROR");
+        }
+      }
+
+      er = glGetError();
+      if (er != 0)
+      {
+        GetLogger()->Log("ERROR");
       }
 
       EditorScenePtr scene = GetCurrentScene();
       scene->Update(deltaTime);
       UpdateSimulation(deltaTime);
+
+      er = glGetError();
+      if (er != 0)
+      {
+        GetLogger()->Log("ERROR");
+      }
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
@@ -209,6 +245,12 @@ namespace ToolKit
           }
         }*/
 
+        er = glGetError();
+        if (er != 0)
+        {
+          GetLogger()->Log("ERROR");
+        }
+
         if (viewport->IsVisible())
         {
           GetRenderSystem()->AddRenderTask(
@@ -220,6 +262,18 @@ namespace ToolKit
                  myEditorRenderer->Render(renderer);
                }});
         }
+
+        er = glGetError();
+        if (er != 0)
+        {
+          GetLogger()->Log("ERROR");
+        }
+      }
+
+      er = glGetError();
+      if (er != 0)
+      {
+        GetLogger()->Log("ERROR");
       }
 
       // Render UI.
@@ -230,7 +284,7 @@ namespace ToolKit
       er = glGetError();
       if (er != 0)
       {
-        int y = 5;
+        GetLogger()->Log("ERROR");
       }
     }
 

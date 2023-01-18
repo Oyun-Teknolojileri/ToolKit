@@ -553,7 +553,7 @@ namespace ToolKit
         break;
       }
     }
-
+#include "GL/glew.h"
     void UI::BeginUI()
     {
       ImGui_ImplOpenGL3_NewFrame();
@@ -564,8 +564,28 @@ namespace ToolKit
     void UI::EndUI()
     {
       ImGui::Render();
+      
+      GLenum er = glGetError();
+      if (er != 0)
+      {
+        GetLogger()->Log("ERROR");
+      }
+
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+      er = glGetError();
+      if (er != 0)
+      {
+        GetLogger()->Log("ERROR");
+      }
+
       ImGui::EndFrame();
+
+      er = glGetError();
+      if (er != 0)
+      {
+        GetLogger()->Log("ERROR");
+      }
 
       // UI deferred functions.
       for (auto& action : m_postponedActions)
@@ -573,6 +593,12 @@ namespace ToolKit
         action();
       }
       m_postponedActions.clear();
+
+      er = glGetError();
+      if (er != 0)
+      {
+        GetLogger()->Log("ERROR");
+      }
     }
 
     void UI::ShowAppMainMenuBar()
@@ -1479,9 +1505,21 @@ namespace ToolKit
         ModManager::GetInstance()->SetMod(true, ModId::Rotate);
       }
 
+      GLenum er = glGetError();
+      if (er != 0)
+      {
+        GetLogger()->Log("ERROR");
+      }
+
       if (ImGui::IsKeyPressed(ImGuiKey_G, false) && !Exist(mask, ImGuiKey_G))
       {
         ModManager::GetInstance()->SetMod(true, ModId::Move);
+      }
+
+      er = glGetError();
+      if (er != 0)
+      {
+        GetLogger()->Log("ERROR");
       }
 
       EditorScenePtr currSecne = g_app->GetCurrentScene();
@@ -1505,6 +1543,12 @@ namespace ToolKit
           // Focus the object in the scene
           g_app->FocusEntity(ntt);
         }
+      }
+
+      er = glGetError();
+      if (er != 0)
+      {
+        GetLogger()->Log("ERROR");
       }
 
       // Undo - Redo.
@@ -1535,6 +1579,12 @@ namespace ToolKit
         g_app->OnSaveScene();
       }
 
+      er = glGetError();
+      if (er != 0)
+      {
+        GetLogger()->Log("ERROR");
+      }
+
       if (ImGui::IsKeyPressed(ImGuiKey_F5, false))
       {
         if (g_app->m_gameMod == GameMod::Playing ||
@@ -1546,6 +1596,12 @@ namespace ToolKit
         {
           g_app->SetGameMod(GameMod::Playing);
         }
+      }
+
+      er = glGetError();
+      if (er != 0)
+      {
+        GetLogger()->Log("ERROR");
       }
     }
   } // namespace Editor

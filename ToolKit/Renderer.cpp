@@ -209,7 +209,7 @@ namespace ToolKit
       GLenum er = glGetError();
       if (er != 0)
       {
-          int y = 5;
+          GetLogger()->Log("ERROR");
       }
 
     if (!cam->IsOrtographic())
@@ -263,7 +263,7 @@ namespace ToolKit
     er = glGetError();
     if (er != 0)
     {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
 
     uint entityMeshIndex = 0, meshIndicesIterator = 0;
@@ -304,7 +304,7 @@ namespace ToolKit
         er = glGetError();
         if (er != 0)
         {
-          int y = 5;
+          GetLogger()->Log("ERROR");
         }
 
         if (mmComp && mmComp->GetMaterialList().size() > entityMeshIndex)
@@ -325,7 +325,7 @@ namespace ToolKit
         er = glGetError();
         if (er != 0)
         {
-          int y = 5;
+          GetLogger()->Log("ERROR");
         }
 
         ProgramPtr prg =
@@ -336,7 +336,7 @@ namespace ToolKit
         er = glGetError();
         if (er != 0)
         {
-          int y = 5;
+          GetLogger()->Log("ERROR");
         }
 
         auto activateSkinning = [prg, ntt](uint isSkinned)
@@ -358,7 +358,7 @@ namespace ToolKit
         er = glGetError();
         if (er != 0)
         {
-          int y = 5;
+          GetLogger()->Log("ERROR");
         }
 
         RenderState* rs = m_mat->GetRenderState();
@@ -368,7 +368,7 @@ namespace ToolKit
         er = glGetError();
         if (er != 0)
         {
-          int y = 5;
+          GetLogger()->Log("ERROR");
         }
 
         FeedUniforms(prg);
@@ -376,7 +376,7 @@ namespace ToolKit
         er = glGetError();
         if (er != 0)
         {
-          int y = 5;
+          GetLogger()->Log("ERROR");
         }
 
         glBindVertexArray(mesh->m_vaoId);
@@ -479,7 +479,7 @@ namespace ToolKit
     GLenum er = glGetError();
     if (er != 0)
     {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
 
     if (m_renderState.depthTestEnabled != state->depthTestEnabled)
@@ -498,7 +498,7 @@ namespace ToolKit
     er = glGetError();
     if (er != 0)
     {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
 
     if (m_renderState.depthFunction != state->depthFunction)
@@ -510,19 +510,19 @@ namespace ToolKit
     er = glGetError();
     if (er != 0)
     {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
 
     if (m_renderState.depthWriteEnabled != state->depthWriteEnabled)
     {
-      glDepthMask(state->depthWriteEnabled);
-      m_renderState.depthWriteEnabled = state->depthWriteEnabled;
+      //glDepthMask(state->depthWriteEnabled);
+      //m_renderState.depthWriteEnabled = state->depthWriteEnabled;
     }
 
     er = glGetError();
     if (er != 0)
     {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
 
     if (m_renderState.blendFunction != state->blendFunction)
@@ -555,7 +555,7 @@ namespace ToolKit
     er = glGetError();
     if (er != 0)
     {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
 
     m_renderState.alphaMaskTreshold = state->alphaMaskTreshold;
@@ -569,7 +569,7 @@ namespace ToolKit
     er = glGetError();
     if (er != 0)
     {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
 
     if (state->cubeMapInUse)
@@ -582,7 +582,7 @@ namespace ToolKit
     er = glGetError();
     if (er != 0)
     {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
 
     if (m_renderState.lineWidth != state->lineWidth)
@@ -594,7 +594,7 @@ namespace ToolKit
     er = glGetError();
     if (er != 0)
     {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
 
     if (m_mat->m_emissiveTexture)
@@ -605,7 +605,7 @@ namespace ToolKit
     er = glGetError();
     if (er != 0)
     {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
 
     if (m_mat->m_metallicRoughnessTexture)
@@ -616,7 +616,7 @@ namespace ToolKit
     er = glGetError();
     if (er != 0)
     {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
 
     if (m_mat->m_normalMap)
@@ -627,7 +627,7 @@ namespace ToolKit
     er = glGetError();
     if (er != 0)
     {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
 
     if (m_mat->GetRenderState()->IBLInUse) {}
@@ -1869,7 +1869,7 @@ namespace ToolKit
       GLenum er = glGetError();
       if (er != 0)
       {
-        int y = 5;
+        GetLogger()->Log("ERROR");
       }
 
       m_utilFramebuffer->SetAttachment(

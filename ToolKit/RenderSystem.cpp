@@ -39,6 +39,8 @@ namespace ToolKit
 
   void RenderSystem::AddRenderTask(RenderTask task)
   {
+    ExecuteTaskImp(task);
+    return;
     switch (task.Priority)
     {
     case RenderTaskPriority::High:

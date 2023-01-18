@@ -90,6 +90,12 @@ namespace ToolKit
     glGenTextures(1, &m_textureId);
     glBindTexture(GL_TEXTURE_2D, m_textureId);
 
+    GLenum er = glGetError();
+    if (er != 0)
+    {
+      GetLogger()->Log("ERROR");
+    }
+
     if (m_textureSettings.Type != GraphicTypes::TypeFloat)
     {
       glTexImage2D(GL_TEXTURE_2D,
@@ -113,6 +119,12 @@ namespace ToolKit
                    GL_RGB,
                    GL_FLOAT,
                    m_imagef);
+    }
+
+    er = glGetError();
+    if (er != 0)
+    {
+      GetLogger()->Log("ERROR");
     }
 
     if (m_textureSettings.GenerateMipMap)
@@ -331,7 +343,7 @@ namespace ToolKit
 
   Hdri::Hdri()
   {
-    m_textureSettings.InternalFormat  = GraphicTypes::FormatRGB32F;
+    m_textureSettings.InternalFormat  = GraphicTypes::FormatRGB16F;
     m_textureSettings.Type            = GraphicTypes::TypeFloat;
     m_textureSettings.MinFilter       = GraphicTypes::SampleLinear;
     m_textureSettings.MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
@@ -374,6 +386,12 @@ namespace ToolKit
       return;
     }
 
+    GLenum er = glGetError();
+    if (er != 0)
+    {
+      GetLogger()->Log("ERROR");
+    }
+
     // Init 2D hdri texture
     Texture::Init(flushClientSideArray);
 
@@ -383,6 +401,12 @@ namespace ToolKit
     RenderTask task = {
         [this, flushClientSideArray](Renderer* renderer) -> void
         {
+          GLenum er = glGetError();
+          if (er != 0)
+          {
+            GetLogger()->Log("ERROR");
+          }
+
           // Convert hdri image to cubemap images.
           m_cubemap = renderer->GenerateCubemapFrom2DTexture(
               GetTextureManager()->Create<Texture>(GetFile()),
@@ -447,6 +471,12 @@ namespace ToolKit
                                                  m_width / 64,
                                                  m_width / 64);
 
+          er = glGetError();
+          if (er != 0)
+          {
+            GetLogger()->Log("ERROR");
+          }
+
           m_initiated = true;
         }};
 
@@ -494,7 +524,11 @@ namespace ToolKit
     {
       return;
     }
-
+    GLenum er = glGetError();
+    if (er != 0)
+    {
+      GetLogger()->Log("ERROR");
+    }
     if (m_width <= 0 || m_height <= 0)
     {
       return;
@@ -555,6 +589,12 @@ namespace ToolKit
                      m_settings.Layers);
     }
 
+    er = glGetError();
+    if (er != 0)
+    {
+      GetLogger()->Log("ERROR");
+    }
+
     glTexParameteri((int) m_settings.Target,
                     GL_TEXTURE_WRAP_S,
                     (int) m_settings.WarpS);
@@ -578,7 +618,11 @@ namespace ToolKit
                     (int) m_settings.MagFilter);
 
     m_initiated = true;
-
+    er          = glGetError();
+    if (er != 0)
+    {
+      GetLogger()->Log("ERROR");
+    }
     // Restore previous render target.
     glBindTexture((int) m_settings.Target, currId);
   }

@@ -112,9 +112,9 @@ namespace ToolKit
     GraphicTypes WarpR          = GraphicTypes::UVRepeat;
     GraphicTypes MinFilter      = GraphicTypes::SampleNearest;
     GraphicTypes MagFilter      = GraphicTypes::SampleNearest;
-    GraphicTypes InternalFormat = GraphicTypes::FormatRGBA8;
+    GraphicTypes InternalFormat = GraphicTypes::FormatRGBA16F;
     GraphicTypes Format         = GraphicTypes::FormatRGBA;
-    GraphicTypes Type           = GraphicTypes::TypeUnsignedByte;
+    GraphicTypes Type           = GraphicTypes::TypeFloat;
     int Layers                  = 1;
   };
 

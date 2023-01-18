@@ -387,6 +387,8 @@ namespace ToolKit
     }
   }
 
+#include "GL/glew.h"
+
   void ForwardRenderPass::Render()
   {
     EntityRawPtrArray opaqueDrawList;
@@ -396,7 +398,20 @@ namespace ToolKit
                                 translucentDrawList);
 
     RenderOpaque(opaqueDrawList, m_camera, m_params.Lights);
+
+    GLenum er = glGetError();
+    if (er != 0)
+    {
+      GetLogger()->Log("ERROR");
+    }
+
     RenderTranslucent(translucentDrawList, m_camera, m_params.Lights);
+
+    er = glGetError();
+    if (er != 0)
+    {
+      GetLogger()->Log("ERROR");
+    }
   }
 
   ForwardRenderPass::~ForwardRenderPass() {}
@@ -415,7 +430,35 @@ namespace ToolKit
     renderer->SetCameraLens(m_camera);
   }
 
-  void ForwardRenderPass::PostRender() { Pass::PostRender(); }
+  void ForwardRenderPass::PostRender()
+  {
+    Pass::PostRender();
+    GetRenderer()->m_overrideMat = nullptr;
+
+    GetRenderer()->SetTexture(0, 0);
+
+    GetRenderer()->SetTexture(1, 0);
+    GetRenderer()->SetTexture(2, 0);
+    GetRenderer()->SetTexture(3, 0);
+    GetRenderer()->SetTexture(4, 0);
+
+    GetRenderer()->SetTexture(5, 0);
+    GetRenderer()->SetTexture(6, 0);
+    GetRenderer()->SetTexture(7, 0);
+    GetRenderer()->SetTexture(8, 0);
+
+    GetRenderer()->SetTexture(9, 0);
+    GetRenderer()->SetTexture(10, 0);
+    GetRenderer()->SetTexture(11, 0);
+    GetRenderer()->SetTexture(12, 0);
+    GetRenderer()->SetTexture(13, 0);
+
+    GetRenderer()->SetTexture(14, 0);
+    GetRenderer()->SetTexture(15, 0);
+    GetRenderer()->SetTexture(16, 0);
+
+    GetRenderer()->SetTexture(17, 0);
+  }
 
   void ForwardRenderPass::RenderOpaque(EntityRawPtrArray entities,
                                        Camera* cam,
@@ -1141,9 +1184,9 @@ namespace ToolKit
         GraphicTypes::UVClampToEdge,
         GraphicTypes::SampleNearest,
         GraphicTypes::SampleNearest,
-        GraphicTypes::FormatRGB8,
-        GraphicTypes::FormatRGB,
-        GraphicTypes::TypeUnsignedByte,
+        GraphicTypes::FormatRGBA16F,
+        GraphicTypes::FormatRGBA,
+        GraphicTypes::TypeFloat,
         1};
 
     m_gPosRt =
@@ -1161,14 +1204,14 @@ namespace ToolKit
     m_gIblRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
-    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR8;
-    gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
+    // gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR16F;
+    // gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
 
     m_gLinearDepthRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
-    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRG8;
-    gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRG;
+    // gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRG16F;
+    // gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRG;
 
     m_gMetallicRoughnessRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
@@ -1196,63 +1239,60 @@ namespace ToolKit
 
   void GBufferPass::InitGBuffers(int width, int height)
   {
+    bool reInitGBuffers = false;
     if (m_initialized)
     {
       if (width != m_width || height != m_height)
       {
+        reInitGBuffers = true;
         UnInitGBuffers();
       }
-      else
-      {
-        return;
-      }
     }
 
-    m_width  = width;
-    m_height = height;
-
-    // Gbuffers render targets
-    m_framebuffer->Init({(uint) width, (uint) height, false, true});
-    m_gPosRt->m_width                = width;
-    m_gPosRt->m_height               = height;
-    m_gNormalRt->m_width             = width;
-    m_gNormalRt->m_height            = height;
-    m_gColorRt->m_width              = width;
-    m_gColorRt->m_height             = height;
-    m_gEmissiveRt->m_width           = width;
-    m_gIblRt->m_width                = width;
-    m_gIblRt->m_height               = height;
-    m_gEmissiveRt->m_height          = height;
-    m_gLinearDepthRt->m_width        = width;
-    m_gLinearDepthRt->m_height       = height;
-    m_gMetallicRoughnessRt->m_width  = width;
-    m_gMetallicRoughnessRt->m_height = height;
-    m_gPosRt->Init();
-    m_gNormalRt->Init();
-    m_gColorRt->Init();
-    m_gEmissiveRt->Init();
-    m_gIblRt->Init();
-    m_gLinearDepthRt->Init();
-    m_gMetallicRoughnessRt->Init();
-
-    if (!m_attachmentsSet)
+    if (!m_initialized || reInitGBuffers)
     {
-      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                   m_gPosRt);
-      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment1,
-                                   m_gNormalRt);
-      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment2,
-                                   m_gColorRt);
-      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment3,
-                                   m_gEmissiveRt);
-      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment4,
-                                   m_gLinearDepthRt);
-      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment5,
-                                   m_gMetallicRoughnessRt);
-      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment6,
-                                   m_gIblRt);
-      m_attachmentsSet = true;
+      m_width  = width;
+      m_height = height;
+
+      // Gbuffers render targets
+      m_framebuffer->Init({(uint) width, (uint) height, false, true});
+      m_gPosRt->m_width                = width;
+      m_gPosRt->m_height               = height;
+      m_gNormalRt->m_width             = width;
+      m_gNormalRt->m_height            = height;
+      m_gColorRt->m_width              = width;
+      m_gColorRt->m_height             = height;
+      m_gEmissiveRt->m_width           = width;
+      m_gIblRt->m_width                = width;
+      m_gIblRt->m_height               = height;
+      m_gEmissiveRt->m_height          = height;
+      m_gLinearDepthRt->m_width        = width;
+      m_gLinearDepthRt->m_height       = height;
+      m_gMetallicRoughnessRt->m_width  = width;
+      m_gMetallicRoughnessRt->m_height = height;
+      m_gPosRt->Init();
+      m_gNormalRt->Init();
+      m_gColorRt->Init();
+      m_gEmissiveRt->Init();
+      m_gIblRt->Init();
+      m_gLinearDepthRt->Init();
+      m_gMetallicRoughnessRt->Init();
     }
+
+    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                 m_gPosRt);
+    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment1,
+                                 m_gNormalRt);
+    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment2,
+                                 m_gColorRt);
+    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment3,
+                                 m_gEmissiveRt);
+    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment4,
+                                 m_gLinearDepthRt);
+    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment5,
+                                 m_gMetallicRoughnessRt);
+    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment6,
+                                 m_gIblRt);
 
     // Gbuffer material
     ShaderPtr vertexShader = GetShaderManager()->Create<Shader>(
@@ -1273,7 +1313,6 @@ namespace ToolKit
     }
 
     m_framebuffer->UnInit();
-    m_attachmentsSet = false;
 
     m_gPosRt->UnInit();
     m_gNormalRt->UnInit();
@@ -1313,7 +1352,7 @@ namespace ToolKit
     GLenum er          = glGetError();
     if (er != 0)
     {
-      int y = 5;
+      GetLogger()->Log("ERROR");
     }
 
     for (Entity* ntt : m_params.entities)
@@ -1330,7 +1369,7 @@ namespace ToolKit
       er = glGetError();
       if (er != 0)
       {
-        int y = 5;
+        GetLogger()->Log("ERROR");
       }
 
       MeshComponentPtrArray meshComps;
@@ -1358,7 +1397,7 @@ namespace ToolKit
           er = glGetError();
           if (er != 0)
           {
-            int y = 5;
+            GetLogger()->Log("ERROR");
           }
 
           m_gBufferMaterial->SetRenderState(activeMaterial->GetRenderState());
@@ -1383,7 +1422,7 @@ namespace ToolKit
           er                      = glGetError();
           if (er != 0)
           {
-            int y = 5;
+            GetLogger()->Log("ERROR");
           }
 
           renderer->Render(ntt, m_params.camera, {}, {activeMeshIndex});
@@ -1391,7 +1430,7 @@ namespace ToolKit
           er = glGetError();
           if (er != 0)
           {
-            int y = 5;
+            GetLogger()->Log("ERROR");
           }
         }
       }
@@ -1549,9 +1588,45 @@ namespace ToolKit
 
   void DeferredRenderPass::Render()
   {
+    GLenum er = glGetError();
+    if (er != 0)
+    {
+      GetLogger()->Log("ERROR");
+    }
+
     // Deferred render always uses PBR material
     m_fullQuadPass->m_material->m_materialType = MaterialType::PBR;
     RenderSubPass(m_fullQuadPass);
+
+    er = glGetError();
+    if (er != 0)
+    {
+      GetLogger()->Log("ERROR");
+    }
+
+    GetRenderer()->SetTexture(0, 0);
+
+    GetRenderer()->SetTexture(1, 0);
+    GetRenderer()->SetTexture(2, 0);
+    GetRenderer()->SetTexture(3, 0);
+    GetRenderer()->SetTexture(4, 0);
+
+    GetRenderer()->SetTexture(5, 0);
+    GetRenderer()->SetTexture(6, 0);
+    GetRenderer()->SetTexture(7, 0);
+    GetRenderer()->SetTexture(8, 0);
+
+    GetRenderer()->SetTexture(9, 0);
+    GetRenderer()->SetTexture(10, 0);
+    GetRenderer()->SetTexture(11, 0);
+    GetRenderer()->SetTexture(12, 0);
+    GetRenderer()->SetTexture(13, 0);
+
+    GetRenderer()->SetTexture(14, 0);
+    GetRenderer()->SetTexture(15, 0);
+    GetRenderer()->SetTexture(16, 0);
+
+    GetRenderer()->SetTexture(17, 0);
   }
 
   void DeferredRenderPass::InitLightDataTexture()

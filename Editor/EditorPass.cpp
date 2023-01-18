@@ -42,7 +42,7 @@ namespace ToolKit
       GLenum er = glGetError();
       if (er != 0)
       {
-        int y = 5;
+        GetLogger()->Log("ERROR");
       }
 
       PreRender();
@@ -50,7 +50,7 @@ namespace ToolKit
       er = glGetError();
       if (er != 0)
       {
-        int y = 5;
+        GetLogger()->Log("ERROR");
       }
 
       SetLitMode(renderer, m_params.LitMode);
@@ -79,9 +79,9 @@ namespace ToolKit
       er = glGetError();
       if (er != 0)
       {
-        int y = 5;
+        GetLogger()->Log("ERROR");
       }
-
+      
       if (m_params.LitMode != EditorLitMode::Game)
       {
         // Draw scene and apply bloom effect.
@@ -91,17 +91,17 @@ namespace ToolKit
         SetLitMode(renderer, EditorLitMode::EditorLit);
 
         // Draw outlines.
-        OutlineSelecteds(renderer);
+        //OutlineSelecteds(renderer);
         m_passArray.clear();
 
         // Draw editor objects.
-        m_passArray.push_back(m_editorPass);
-        m_passArray.push_back(m_gizmoPass);
+        //m_passArray.push_back(m_editorPass);
+        //m_passArray.push_back(m_gizmoPass);
 
         // Post process.
         // m_passArray.push_back(m_fxaaPass);
-        m_passArray.push_back(m_tonemapPass);
-        m_passArray.push_back(m_gammaPass);
+        //m_passArray.push_back(m_tonemapPass);
+        //m_passArray.push_back(m_gammaPass);
 
         Technique::Render(renderer);
       }
@@ -109,6 +109,7 @@ namespace ToolKit
       {
         m_params.App->ShowGizmos();
       }
+      
 
       PostRender();
     }

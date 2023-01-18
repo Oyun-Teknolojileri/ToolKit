@@ -75,7 +75,7 @@
 
 			irradiance += ibl;
 
-			fragColor = vec4(irradiance * ambientOcclusion, 1.0) + vec4(emissive, 0.0f);
+			fragColor = vec4(irradiance/* * ambientOcclusion*/, 1.0) + vec4(emissive, 0.0f);
 		}
 	-->
 	</source>

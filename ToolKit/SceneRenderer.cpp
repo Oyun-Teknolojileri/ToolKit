@@ -44,43 +44,55 @@ namespace ToolKit
     m_dofPass            = nullptr;
   }
 
+#include "GL/glew.h"
+
   void SceneRenderer::Render(Renderer* renderer)
   {
-    //renderer->m_windowSize = UVec2(640, 480); // TODO
-
     PreRender(renderer);
 
     CullDrawList(m_gBufferPass->m_params.entities, m_params.Cam);
     CullDrawList(m_forwardRenderPass->m_params.Entities, m_params.Cam);
 
+    GLenum er = glGetError();
+    if (er != 0)
+    {
+      GetLogger()->Log("ERROR");
+    }
+
     // First stage of the render.
     m_passArray.clear();
 
     // Set current sky.
-    renderer->m_sky = m_sky;
+    // renderer->m_sky = m_sky;
 
     // Gbuffer for deferred render
-    // m_passArray.push_back(m_gBufferPass);
+    m_passArray.push_back(m_gBufferPass);
 
     // Shadow pass
-    m_passArray.push_back(m_shadowPass);
+    // m_passArray.push_back(m_shadowPass);
 
     // SSAO pass
     if (m_params.Gfx.SSAOEnabled)
     {
-      // m_passArray.push_back(m_ssaoPass);
+      //m_passArray.push_back(m_ssaoPass);
     }
 
     Technique::Render(renderer);
 
+    er = glGetError();
+    if (er != 0)
+    {
+      GetLogger()->Log("ERROR");
+    }
+
     // Second stage of the render.
     m_passArray.clear();
 
-    renderer->SetShadowAtlas(
-        std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
+    // renderer->SetShadowAtlas(
+    //     std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
     // Render non-blended entities with deferred renderer
-    // m_passArray.push_back(m_deferredRenderPass);
+    m_passArray.push_back(m_deferredRenderPass);
 
     if (m_drawSky)
     {
@@ -107,14 +119,51 @@ namespace ToolKit
 
     if (m_params.Gfx.GammaCorrectionEnabled)
     {
-      m_passArray.push_back(m_gammaPass);
+      // m_passArray.push_back(m_gammaPass);
     }
 
     Technique::Render(renderer);
 
+    er = glGetError();
+    if (er != 0)
+    {
+      GetLogger()->Log("ERROR");
+    }
+
     renderer->SetShadowAtlas(nullptr);
 
+
     PostRender();
+
+    /*
+    // renderer->SetTexture(0, 0);
+
+    renderer->SetTexture(1, 0);
+    renderer->SetTexture(2, 0);
+    renderer->SetTexture(3, 0);
+    renderer->SetTexture(4, 0);
+
+    // renderer->SetTexture(5, 0);
+    // renderer->SetTexture(6, 0);
+    // renderer->SetTexture(7, 0);
+    // renderer->SetTexture(8, 0);
+
+    renderer->SetTexture(9, 0);
+    renderer->SetTexture(10, 0);
+    renderer->SetTexture(11, 0);
+    renderer->SetTexture(12, 0);
+    // renderer->SetTexture(13, 0);
+
+    // renderer->SetTexture(14, 0);
+    // renderer->SetTexture(15, 0);
+    // renderer->SetTexture(16, 0);
+    // renderer->SetTexture(17, 0);*/
+
+    er = glGetError();
+    if (er != 0)
+    {
+      GetLogger()->Log("ERROR");
+    }
   }
 
   void SceneRenderer::PreRender(Renderer* renderer)
@@ -175,7 +224,7 @@ namespace ToolKit
     m_forwardRenderPass->m_params.Lights           = m_updatedLights;
     m_forwardRenderPass->m_params.Cam              = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
-    m_forwardRenderPass->m_params.ClearFrameBuffer = true;
+    m_forwardRenderPass->m_params.ClearFrameBuffer = false;
 
     m_forwardRenderPass->m_params.Entities  = translucentAndUnlitDrawList;
 
