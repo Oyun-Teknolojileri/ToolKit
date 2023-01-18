@@ -44,20 +44,12 @@ namespace ToolKit
     m_dofPass            = nullptr;
   }
 
-#include "GL/glew.h"
-
   void SceneRenderer::Render(Renderer* renderer)
   {
     PreRender(renderer);
 
     CullDrawList(m_gBufferPass->m_params.entities, m_params.Cam);
     CullDrawList(m_forwardRenderPass->m_params.Entities, m_params.Cam);
-
-    GLenum er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
-    }
 
     // First stage of the render.
     m_passArray.clear();
@@ -78,12 +70,6 @@ namespace ToolKit
     }
 
     Technique::Render(renderer);
-
-    er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
-    }
 
     // Second stage of the render.
     m_passArray.clear();
@@ -124,45 +110,9 @@ namespace ToolKit
 
     Technique::Render(renderer);
 
-    er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
-    }
-
     renderer->SetShadowAtlas(nullptr);
 
     PostRender();
-
-    /*
-    // renderer->SetTexture(0, 0);
-
-    renderer->SetTexture(1, 0);
-    renderer->SetTexture(2, 0);
-    renderer->SetTexture(3, 0);
-    renderer->SetTexture(4, 0);
-
-    // renderer->SetTexture(5, 0);
-    // renderer->SetTexture(6, 0);
-    // renderer->SetTexture(7, 0);
-    // renderer->SetTexture(8, 0);
-
-    renderer->SetTexture(9, 0);
-    renderer->SetTexture(10, 0);
-    renderer->SetTexture(11, 0);
-    renderer->SetTexture(12, 0);
-    // renderer->SetTexture(13, 0);
-
-    // renderer->SetTexture(14, 0);
-    // renderer->SetTexture(15, 0);
-    // renderer->SetTexture(16, 0);
-    // renderer->SetTexture(17, 0);*/
-
-    er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
-    }
   }
 
   void SceneRenderer::PreRender(Renderer* renderer)

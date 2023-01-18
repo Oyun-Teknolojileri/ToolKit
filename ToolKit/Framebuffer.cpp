@@ -278,19 +278,10 @@ namespace ToolKit
 
   void Framebuffer::CheckFramebufferComplete()
   {
-    GLenum er = glGetError();
-    if (er != 0) {
-      GetLogger()->Log("ERROR");
-    }
-
     GLint lastFBO;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
     GLenum check = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (check != GL_FRAMEBUFFER_COMPLETE)
-    {
-      GetLogger()->Log("ERROR");
-    }
     assert(check == GL_FRAMEBUFFER_COMPLETE && "Framebuffer incomplete");
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }

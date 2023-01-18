@@ -125,8 +125,6 @@ namespace ToolKit
 
     Window::Type EditorViewport::GetType() const { return Type::Viewport; }
 
-#include "GL/glew.h"
-
     bool EditorViewport::IsViewportQueriable() const
     {
       return m_mouseOverContentArea && m_mouseHover && m_active && m_visible &&
@@ -138,12 +136,6 @@ namespace ToolKit
       if (!CanDispatchSignals() || m_mouseOverOverlay)
       {
         return;
-      }
-
-      GLenum er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
       }
 
       if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -170,12 +162,6 @@ namespace ToolKit
       }
 
       ModShortCutSignals();
-
-      er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
-      }
     }
 
     void EditorViewport::Serialize(XmlDocument* doc, XmlNode* parent) const

@@ -35,23 +35,9 @@ namespace ToolKit
       m_singleMatRenderer = nullptr;
     }
 
-#include "GL/glew.h"
-
     void EditorRenderer::Render(Renderer* renderer)
     {
-      GLenum er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
-      }
-
       PreRender();
-
-      er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
-      }
 
       SetLitMode(renderer, m_params.LitMode);
 
@@ -75,12 +61,6 @@ namespace ToolKit
         m_scenePass->Render(renderer);
         break;
       }
-
-      er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
-      }
       
       if (m_params.LitMode != EditorLitMode::Game)
       {
@@ -91,17 +71,17 @@ namespace ToolKit
         SetLitMode(renderer, EditorLitMode::EditorLit);
 
         // Draw outlines.
-        //OutlineSelecteds(renderer);
+        OutlineSelecteds(renderer);
         m_passArray.clear();
 
         // Draw editor objects.
-        //m_passArray.push_back(m_editorPass);
-        //m_passArray.push_back(m_gizmoPass);
+        m_passArray.push_back(m_editorPass);
+        m_passArray.push_back(m_gizmoPass);
 
         // Post process.
-        // m_passArray.push_back(m_fxaaPass);
-        //m_passArray.push_back(m_tonemapPass);
-        //m_passArray.push_back(m_gammaPass);
+         m_passArray.push_back(m_fxaaPass);
+        m_passArray.push_back(m_tonemapPass);
+        m_passArray.push_back(m_gammaPass);
 
         Technique::Render(renderer);
       }

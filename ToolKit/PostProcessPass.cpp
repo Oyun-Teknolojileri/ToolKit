@@ -189,9 +189,9 @@ namespace ToolKit
 
       RenderTargetPtr& rt           = m_tempTextures[i];
       rt                            = std::make_shared<RenderTarget>();
-      rt->m_settings.InternalFormat = GraphicTypes::FormatRGB8;
-      rt->m_settings.Format         = GraphicTypes::FormatRGB;
-      rt->m_settings.Type           = GraphicTypes::TypeUnsignedByte;
+      rt->m_settings.InternalFormat = GraphicTypes::FormatRGBA16F;
+      rt->m_settings.Format         = GraphicTypes::FormatRGBA;
+      rt->m_settings.Type           = GraphicTypes::TypeFloat;
       rt->m_settings.MagFilter      = GraphicTypes::SampleLinear;
       rt->m_settings.MinFilter      = GraphicTypes::SampleLinear;
       rt->m_settings.WarpR          = GraphicTypes::UVClampToEdge;

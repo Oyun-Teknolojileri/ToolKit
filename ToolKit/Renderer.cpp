@@ -206,12 +206,6 @@ namespace ToolKit
                         const LightRawPtrArray& lights,
                         const UIntArray& meshIndices)
   {
-      GLenum er = glGetError();
-      if (er != 0)
-      {
-          GetLogger()->Log("ERROR");
-      }
-
     if (!cam->IsOrtographic())
     {
       // TODO: Orthographic mode must support environment lighting.
@@ -260,12 +254,6 @@ namespace ToolKit
 
     updateAndBindSkinningTextures();
 
-    er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
-    }
-
     uint entityMeshIndex = 0, meshIndicesIterator = 0;
     for (MeshComponentPtr meshCom : meshComponents)
     {
@@ -300,12 +288,6 @@ namespace ToolKit
         {
           continue;
         }
-        
-        er = glGetError();
-        if (er != 0)
-        {
-          GetLogger()->Log("ERROR");
-        }
 
         if (mmComp && mmComp->GetMaterialList().size() > entityMeshIndex)
         {
@@ -322,22 +304,10 @@ namespace ToolKit
         }
         m_mat->Init();
 
-        er = glGetError();
-        if (er != 0)
-        {
-          GetLogger()->Log("ERROR");
-        }
-
         ProgramPtr prg =
             CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
 
         BindProgram(prg);
-
-        er = glGetError();
-        if (er != 0)
-        {
-          GetLogger()->Log("ERROR");
-        }
 
         auto activateSkinning = [prg, ntt](uint isSkinned)
         {
@@ -355,29 +325,10 @@ namespace ToolKit
         };
         activateSkinning(mesh->IsSkinned());
 
-        er = glGetError();
-        if (er != 0)
-        {
-          GetLogger()->Log("ERROR");
-        }
-
         RenderState* rs = m_mat->GetRenderState();
 
         SetRenderState(rs, prg);
-
-        er = glGetError();
-        if (er != 0)
-        {
-          GetLogger()->Log("ERROR");
-        }
-
         FeedUniforms(prg);
-
-        er = glGetError();
-        if (er != 0)
-        {
-          GetLogger()->Log("ERROR");
-        }
 
         glBindVertexArray(mesh->m_vaoId);
         glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
@@ -476,12 +427,6 @@ namespace ToolKit
       m_renderState.cullMode = state->cullMode;
     }
 
-    GLenum er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
-    }
-
     if (m_renderState.depthTestEnabled != state->depthTestEnabled)
     {
       if (state->depthTestEnabled)
@@ -495,34 +440,16 @@ namespace ToolKit
       m_renderState.depthTestEnabled = state->depthTestEnabled;
     }
 
-    er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
-    }
-
     if (m_renderState.depthFunction != state->depthFunction)
     {
       m_renderState.depthFunction = state->depthFunction;
       glDepthFunc((int) state->depthFunction);
     }
 
-    er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
-    }
-
     if (m_renderState.depthWriteEnabled != state->depthWriteEnabled)
     {
-      //glDepthMask(state->depthWriteEnabled);
-      //m_renderState.depthWriteEnabled = state->depthWriteEnabled;
-    }
-
-    er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
+      // glDepthMask(state->depthWriteEnabled);
+      // m_renderState.depthWriteEnabled = state->depthWriteEnabled;
     }
 
     if (m_renderState.blendFunction != state->blendFunction)
@@ -552,24 +479,12 @@ namespace ToolKit
       m_renderState.blendFunction = state->blendFunction;
     }
 
-    er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
-    }
-
     m_renderState.alphaMaskTreshold = state->alphaMaskTreshold;
 
     if (m_mat->m_diffuseTexture)
     {
 
       SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
-    }
-
-    er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
     }
 
     if (state->cubeMapInUse)
@@ -579,22 +494,10 @@ namespace ToolKit
       SetTexture(6, state->cubeMap);
     }
 
-    er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
-    }
-
     if (m_renderState.lineWidth != state->lineWidth)
     {
       m_renderState.lineWidth = state->lineWidth;
       glLineWidth(m_renderState.lineWidth);
-    }
-
-    er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
     }
 
     if (m_mat->m_emissiveTexture)
@@ -602,32 +505,14 @@ namespace ToolKit
       SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
     }
 
-    er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
-    }
-
     if (m_mat->m_metallicRoughnessTexture)
     {
       SetTexture(4, m_mat->m_metallicRoughnessTexture->m_textureId);
     }
 
-    er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
-    }
-
     if (m_mat->m_normalMap)
     {
       SetTexture(9, m_mat->m_normalMap->m_textureId);
-    }
-
-    er = glGetError();
-    if (er != 0)
-    {
-      GetLogger()->Log("ERROR");
     }
 
     if (m_mat->GetRenderState()->IBLInUse) {}
@@ -1819,9 +1704,9 @@ namespace ToolKit
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::SampleLinear,
-                                     GraphicTypes::FormatRGB8,
-                                     GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte};
+                                     GraphicTypes::FormatRGBA16F,
+                                     GraphicTypes::FormatRGBA,
+                                     GraphicTypes::TypeFloat};
 
     RenderTargetPtr cubeMapRt =
         std::make_shared<RenderTarget>(width, height, set);
@@ -1866,12 +1751,6 @@ namespace ToolKit
       cam.m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam.m_node->SetScale(sca);
 
-      GLenum er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
-      }
-
       m_utilFramebuffer->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
           cubeMapRt,
@@ -1903,9 +1782,9 @@ namespace ToolKit
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::SampleLinear,
-                                     GraphicTypes::FormatRGB8,
-                                     GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte};
+                                     GraphicTypes::FormatRGBA16F,
+                                     GraphicTypes::FormatRGBA,
+                                     GraphicTypes::TypeFloat};
     RenderTargetPtr cubeMapRt =
         std::make_shared<RenderTarget>(width, height, set);
     cubeMapRt->Init();
@@ -1980,9 +1859,9 @@ namespace ToolKit
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::SampleLinear,
-                                     GraphicTypes::FormatRGB8,
-                                     GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte};
+                                     GraphicTypes::FormatRGBA16F,
+                                     GraphicTypes::FormatRGBA,
+                                     GraphicTypes::TypeFloat};
     RenderTargetPtr cubemapRt =
         std::make_shared<RenderTarget>(width, height, set);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);

@@ -11,7 +11,6 @@
 #include "EditorViewport2d.h"
 #include "FolderWindow.h"
 #include "Framebuffer.h"
-#include "GL/glew.h"
 #include "Gizmo.h"
 #include "Global.h"
 #include "Grid.h"
@@ -64,12 +63,6 @@ namespace ToolKit
 
     void App::Init()
     {
-      GLenum er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
-      }
-
       AssignManagerReporters();
       CreateEditorEntities();
 
@@ -113,12 +106,6 @@ namespace ToolKit
       m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager               = new PublishManager();
       GetRenderSystem()->SetClearColor(g_wndBgColor);
-
-      er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
-      }
     }
 
     void App::DestroyEditorEntities()
@@ -167,29 +154,11 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
-      GLenum er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
-      }
-
       m_deltaTime = deltaTime;
       UI::BeginUI();
       UI::ShowUI();
 
-      er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
-      }
-
       GetRenderSystem()->ExecuteRenderTasks();
-
-      er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
-      }
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
@@ -199,37 +168,13 @@ namespace ToolKit
         if (wnd->IsViewport())
         {
           viewports.push_back((EditorViewport*) wnd);
-
-          er = glGetError();
-          if (er != 0)
-          {
-            GetLogger()->Log("ERROR");
-          }
         }
         wnd->DispatchSignals();
-
-        er = glGetError();
-        if (er != 0)
-        {
-          GetLogger()->Log("ERROR");
-        }
-      }
-
-      er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
       }
 
       EditorScenePtr scene = GetCurrentScene();
       scene->Update(deltaTime);
       UpdateSimulation(deltaTime);
-
-      er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
-      }
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
@@ -245,12 +190,6 @@ namespace ToolKit
           }
         }*/
 
-        er = glGetError();
-        if (er != 0)
-        {
-          GetLogger()->Log("ERROR");
-        }
-
         if (viewport->IsVisible())
         {
           GetRenderSystem()->AddRenderTask(
@@ -262,30 +201,12 @@ namespace ToolKit
                  myEditorRenderer->Render(renderer);
                }});
         }
-
-        er = glGetError();
-        if (er != 0)
-        {
-          GetLogger()->Log("ERROR");
-        }
-      }
-
-      er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
       }
 
       // Render UI.
       UI::EndUI();
 
       GetRenderSystem()->SetFrameCount(m_totalFrameCount++);
-
-      er = glGetError();
-      if (er != 0)
-      {
-        GetLogger()->Log("ERROR");
-      }
     }
 
     void App::OnResize(uint width, uint height)
