@@ -90,6 +90,8 @@ namespace ToolKit
       bool GammaCorrectionEnabled  = true;
       float Gamma                  = 2.2f;
       bool SSAOEnabled             = true;
+      float ssaoRadius             = 0.5f;
+      float ssaoBias               = 0.025f;
       bool DepthofFieldEnabled     = false;
       float focusPoint             = 10.0f;
       float focusScale             = 5.0f;

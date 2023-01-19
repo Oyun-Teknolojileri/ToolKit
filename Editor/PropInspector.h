@@ -17,17 +17,20 @@ namespace ToolKit
     class View
     {
      public:
+      // If isEditable = false;
+      //  You should call EndDisabled() before using DropZone & DropSubZone
       static void DropZone(
           uint fallbackIcon,
           const String& file,
           std::function<void(const DirectoryEntry& entry)> dropAction,
-          const String& dropName = "");
+          const String& dropName = "",
+          bool isEditable        = true);
       static void DropSubZone(
           const String& title,
           uint fallbackIcon,
           const String& file,
           std::function<void(const DirectoryEntry& entry)> dropAction,
-          bool isEditable);
+          bool isEditable = true);
       static bool IsTextInputFinalized();
 
       View(const StringView viewName);
