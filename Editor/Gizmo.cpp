@@ -183,7 +183,7 @@ namespace ToolKit
       m_mesh                 = std::make_shared<Mesh>();
 
       LineBatch line(pnts, params.color, DrawType::Line, 2.0f);
-       MeshPtr lnMesh = line.GetComponent<MeshComponent>()->GetMeshVal();
+      MeshPtr lnMesh = line.GetComponent<MeshComponent>()->GetMeshVal();
       m_mesh->m_subMeshes.push_back(lnMesh);
 
       MaterialPtr material =

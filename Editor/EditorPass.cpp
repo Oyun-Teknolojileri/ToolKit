@@ -61,7 +61,7 @@ namespace ToolKit
         m_scenePass->Render(renderer);
         break;
       }
-      
+
       if (m_params.LitMode != EditorLitMode::Game)
       {
         // Draw scene and apply bloom effect.
@@ -89,7 +89,6 @@ namespace ToolKit
       {
         m_params.App->ShowGizmos();
       }
-      
 
       PostRender();
     }
