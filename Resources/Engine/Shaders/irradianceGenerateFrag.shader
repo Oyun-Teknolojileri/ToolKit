@@ -12,6 +12,8 @@
 
 		const float PI = 3.14159265359;
 
+		const float FLT_MAX = 3.402823466e+38;
+
 		// reference: https://learnopengl.com/PBR/IBL/Diffuse-irradiance
 		void main()
 		{
@@ -35,7 +37,9 @@
 	            // tangent space to world
 	            vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N; 
 
-	            irradiance += texture(s_texture6, sampleVec).rgb * cos(theta) * sin(theta);
+	            vec3 _irradiance = texture(s_texture6, sampleVec).rgb;
+							_irradiance = clamp(_irradiance, vec3(0.0), vec3(FLT_MAX));
+							irradiance += _irradiance * cos(theta) * sin(theta);
 	            nrSamples += 1.0;
 	        }
 	    }
