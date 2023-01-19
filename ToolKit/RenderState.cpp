@@ -29,11 +29,6 @@ namespace ToolKit
               "depthTest",
               std::to_string(int(depthTestEnabled)));
 
-    WriteAttr(container,
-              doc,
-              "depthWrite",
-              std::to_string(int(depthWriteEnabled)));
-
     WriteAttr(container, doc, "depthFunc", std::to_string(int(depthFunction)));
 
     WriteAttr(container,
@@ -75,7 +70,7 @@ namespace ToolKit
                "depthTest",
                *reinterpret_cast<int*>(&depthTestEnabled));
 
-      ReadAttr(container, "depthTest", *reinterpret_cast<int*>(&depthFunction));
+      ReadAttr(container, "depthFunc", *reinterpret_cast<int*>(&depthFunction));
 
       ReadAttr(container,
                "blendFunction",
@@ -96,8 +91,6 @@ namespace ToolKit
       ReadAttr(container, "AOInUse", AOInUse);
 
       ReadAttr(container, "useForwardPath", useForwardPath);
-
-      ReadAttr(container, "depthWrite", depthWriteEnabled);
     }
   }
 

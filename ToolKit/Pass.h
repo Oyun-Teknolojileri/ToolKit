@@ -361,7 +361,6 @@ namespace ToolKit
 
    private:
     bool m_initialized            = false;
-    bool m_attachmentsSet         = false;
     MaterialPtr m_gBufferMaterial = nullptr;
   };
 

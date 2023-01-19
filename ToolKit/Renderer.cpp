@@ -446,12 +446,6 @@ namespace ToolKit
       glDepthFunc((int) state->depthFunction);
     }
 
-    if (m_renderState.depthWriteEnabled != state->depthWriteEnabled)
-    {
-      glDepthMask(state->depthWriteEnabled);
-      m_renderState.depthWriteEnabled = state->depthWriteEnabled;
-    }
-
     if (m_renderState.blendFunction != state->blendFunction)
     {
       switch (state->blendFunction)
@@ -782,6 +776,8 @@ namespace ToolKit
       glDisable(GL_BLEND);
     }
   }
+
+  void Renderer::EnableDepthWrite(bool enable) { glDepthMask(enable); }
 
   void Renderer::CollectEnvironmentVolumes(const EntityRawPtrArray& entities)
   {
@@ -1704,8 +1700,8 @@ namespace ToolKit
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::SampleLinear,
-                                     GraphicTypes::FormatRGB16F,
-                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::FormatRGBA16F,
+                                     GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
 
     RenderTargetPtr cubeMapRt =
@@ -1782,8 +1778,8 @@ namespace ToolKit
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::SampleLinear,
-                                     GraphicTypes::FormatRGB16F,
-                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::FormatRGBA16F,
+                                     GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
     RenderTargetPtr cubeMapRt =
         std::make_shared<RenderTarget>(width, height, set);
@@ -1859,8 +1855,8 @@ namespace ToolKit
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::SampleLinear,
-                                     GraphicTypes::FormatRGB16F,
-                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::FormatRGBA16F,
+                                     GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
     RenderTargetPtr cubemapRt =
         std::make_shared<RenderTarget>(width, height, set);
@@ -1947,6 +1943,33 @@ namespace ToolKit
     cubemapRt              = nullptr;
 
     return cubeMap;
+  }
+
+  void Renderer::ResetTextureSlots()
+  {
+    SetTexture(0, 0);
+
+    SetTexture(1, 0);
+    SetTexture(2, 0);
+    SetTexture(3, 0);
+    SetTexture(4, 0);
+
+    SetTexture(5, 0);
+    SetTexture(6, 0);
+    SetTexture(7, 0);
+    SetTexture(8, 0);
+
+    SetTexture(9, 0);
+    SetTexture(10, 0);
+    SetTexture(11, 0);
+    SetTexture(12, 0);
+    SetTexture(13, 0);
+
+    SetTexture(14, 0);
+    SetTexture(15, 0);
+    SetTexture(16, 0);
+
+    SetTexture(17, 0);
   }
 
 } // namespace ToolKit

@@ -14,6 +14,8 @@
 		in vec3 v_pos;
 		out vec4 fragColor;
 
+		const float FLT_MAX = 3.402823466e+38;
+
 		// https://learnopengl.com/PBR/IBL/Specular-IBL
 		void main()
 		{		
@@ -49,7 +51,10 @@
 
 					float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel); 
 					
-					prefilteredColor += textureLod(s_texture6, L, mipLevel).rgb * NdotL;
+					vec3 texel = textureLod(s_texture6, L, mipLevel).rgb;
+					texel  = clamp(texel, vec3(0.0), vec3(FLT_MAX));
+					prefilteredColor +=  texel * NdotL;
+					
 					totalWeight      += NdotL;
 				}
 			}

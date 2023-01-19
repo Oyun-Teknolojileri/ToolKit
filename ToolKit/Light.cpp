@@ -3,7 +3,6 @@
 
 #include "Component.h"
 #include "DirectionComponent.h"
-#include "GL/glew.h"
 #include "ToolKit.h"
 
 #include <memory>

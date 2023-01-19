@@ -564,7 +564,9 @@ namespace ToolKit
     void UI::EndUI()
     {
       ImGui::Render();
+
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
       ImGui::EndFrame();
 
       // UI deferred functions.
