@@ -232,8 +232,6 @@ namespace ToolKit
           else
           {
 
-            bool t = SDL_GL_ExtensionSupported("GL_OES_texture_float");
-
 #ifdef TK_DEBUG
             GlDebugReportInit();
 #endif

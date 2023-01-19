@@ -420,30 +420,6 @@ namespace ToolKit
   {
     Pass::PostRender();
     GetRenderer()->m_overrideMat = nullptr;
-
-    GetRenderer()->SetTexture(0, 0);
-
-    GetRenderer()->SetTexture(1, 0);
-    GetRenderer()->SetTexture(2, 0);
-    GetRenderer()->SetTexture(3, 0);
-    GetRenderer()->SetTexture(4, 0);
-
-    GetRenderer()->SetTexture(5, 0);
-    GetRenderer()->SetTexture(6, 0);
-    GetRenderer()->SetTexture(7, 0);
-    GetRenderer()->SetTexture(8, 0);
-
-    GetRenderer()->SetTexture(9, 0);
-    GetRenderer()->SetTexture(10, 0);
-    GetRenderer()->SetTexture(11, 0);
-    GetRenderer()->SetTexture(12, 0);
-    GetRenderer()->SetTexture(13, 0);
-
-    GetRenderer()->SetTexture(14, 0);
-    GetRenderer()->SetTexture(15, 0);
-    GetRenderer()->SetTexture(16, 0);
-
-    GetRenderer()->SetTexture(17, 0);
   }
 
   void ForwardRenderPass::RenderOpaque(EntityRawPtrArray entities,
@@ -1314,6 +1290,30 @@ namespace ToolKit
   void GBufferPass::PreRender()
   {
     Pass::PreRender();
+
+    //GetRenderer()->SetTexture(0, 0);
+
+    //GetRenderer()->SetTexture(1, 0);
+    GetRenderer()->SetTexture(2, 0);
+    GetRenderer()->SetTexture(3, 0);
+    GetRenderer()->SetTexture(4, 0);
+
+    GetRenderer()->SetTexture(5, 0);
+    GetRenderer()->SetTexture(6, 0);
+    GetRenderer()->SetTexture(7, 0);
+    GetRenderer()->SetTexture(8, 0);
+
+    GetRenderer()->SetTexture(9, 0);
+    GetRenderer()->SetTexture(10, 0);
+    GetRenderer()->SetTexture(11, 0);
+    GetRenderer()->SetTexture(12, 0);
+    GetRenderer()->SetTexture(13, 0);
+
+    GetRenderer()->SetTexture(14, 0);
+    GetRenderer()->SetTexture(15, 0);
+    GetRenderer()->SetTexture(16, 0);
+
+    GetRenderer()->SetTexture(17, 0);
 
     GetRenderer()->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
     GetRenderer()->SetCameraLens(m_params.camera);
