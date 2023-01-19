@@ -485,8 +485,7 @@ namespace ToolKit
           [ntt, cam, lights, renderer](MaterialPtr renderMaterial,
                                        const UIntArray& meshIndices)
       {
-        bool prevState = renderMaterial->GetRenderState()->depthWriteEnabled;
-        renderMaterial->GetRenderState()->depthWriteEnabled = false;
+        renderer->EnableDepthWrite(false);
         LightRawPtrArray culledLights = GetBestLights(ntt, lights);
         if (renderMaterial->GetRenderState()->cullMode == CullingType::TwoSided)
         {
@@ -502,7 +501,7 @@ namespace ToolKit
         {
           renderer->Render(ntt, cam, culledLights, meshIndices);
         }
-        renderMaterial->GetRenderState()->depthWriteEnabled = prevState;
+        renderer->EnableDepthWrite(true);
       };
 
       if (mmComp == nullptr)
@@ -1291,29 +1290,8 @@ namespace ToolKit
   {
     Pass::PreRender();
 
-    GetRenderer()->SetTexture(0, 0);
-
-    GetRenderer()->SetTexture(1, 0);
-    GetRenderer()->SetTexture(2, 0);
-    GetRenderer()->SetTexture(3, 0);
-    GetRenderer()->SetTexture(4, 0);
-
-    GetRenderer()->SetTexture(5, 0);
-    GetRenderer()->SetTexture(6, 0);
-    GetRenderer()->SetTexture(7, 0);
-    GetRenderer()->SetTexture(8, 0);
-
-    GetRenderer()->SetTexture(9, 0);
-    GetRenderer()->SetTexture(10, 0);
-    GetRenderer()->SetTexture(11, 0);
-    GetRenderer()->SetTexture(12, 0);
-    GetRenderer()->SetTexture(13, 0);
-
-    GetRenderer()->SetTexture(14, 0);
-    GetRenderer()->SetTexture(15, 0);
-    GetRenderer()->SetTexture(16, 0);
-
-    GetRenderer()->SetTexture(17, 0);
+    GetRenderer()->ResetTextureSlots();
+    //GetRenderer()->EnableDepthWrite(true);
 
     GetRenderer()->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
     GetRenderer()->SetCameraLens(m_params.camera);

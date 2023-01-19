@@ -45,7 +45,6 @@ namespace ToolKit
    public:
     CullingType cullMode        = CullingType::Back;
     bool depthTestEnabled       = true;
-    bool depthWriteEnabled      = true;
     GraphicTypes depthFunction  = GraphicTypes::FuncLess;
     BlendFunction blendFunction = BlendFunction::NONE;
     float alphaMaskTreshold     = 0.001f;
