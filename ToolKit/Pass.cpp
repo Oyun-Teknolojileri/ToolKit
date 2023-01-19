@@ -1291,9 +1291,9 @@ namespace ToolKit
   {
     Pass::PreRender();
 
-    //GetRenderer()->SetTexture(0, 0);
+    GetRenderer()->SetTexture(0, 0);
 
-    //GetRenderer()->SetTexture(1, 0);
+    GetRenderer()->SetTexture(1, 0);
     GetRenderer()->SetTexture(2, 0);
     GetRenderer()->SetTexture(3, 0);
     GetRenderer()->SetTexture(4, 0);
