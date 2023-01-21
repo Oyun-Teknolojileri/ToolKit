@@ -62,8 +62,7 @@ namespace ToolKit
     bool ZipPack(const String& zipName);
     bool AddFileToZip(zipFile zfile, const char* filename);
 
-    void GetAnimationPaths(const String& path);
-    void GetScenePaths(const String& path);
+    void GetAllPaths(const String& path);
     void GetExtraFilePaths(const String& path);
 
     void GetRelativeResourcesPath(String& path);

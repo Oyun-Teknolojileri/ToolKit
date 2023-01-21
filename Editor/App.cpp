@@ -1091,12 +1091,12 @@ namespace ToolKit
         return;
       }
 
-      String path = ConcatPaths({m_workspace.GetActiveWorkspace(),
+      String sceneResourcesPath = ConcatPaths({m_workspace.GetActiveWorkspace(),
                                  projectName,
                                  "Resources",
                                  "Scenes"});
 
-      GetFileManager()->PackResources(path);
+      GetFileManager()->PackResources(sceneResourcesPath);
     }
 
     void App::SaveAllResources()

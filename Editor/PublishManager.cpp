@@ -29,7 +29,7 @@ namespace ToolKit
     void WebPublisher::Publish() const
     {
       // Pak project
-      // TODO open here g_app->PackResources();
+      g_app->PackResources();
 
       // Run scripts
       // Warning: Running batch files are Windows specific
