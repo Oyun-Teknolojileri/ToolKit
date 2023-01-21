@@ -31,17 +31,22 @@ namespace ToolKit
       // Pak project
       g_app->PackResources();
 
-      // Run scripts
+      // Create build script
       // Warning: Running batch files are Windows specific
+      const String pluginWebBuildScriptsFolder =
+          ConcatPaths({ResourcePath(), "..", "Codes", "Web", "Release.bat"});
+      std::ofstream releaseBuildScript(pluginWebBuildScriptsFolder.c_str());
+      releaseBuildScript << "emcmake cmake -DEMSCRIPTEN=TRUE -DTK_CXX_EXTRA:STRING=\" -O3\" -S .. -G Ninja && ninja & pause";
+      releaseBuildScript.close();
+
+      // Run scripts
       Path workDir = std::filesystem::current_path();
       Path newWorkDir(ConcatPaths({"..", "Web"}));
       std::filesystem::current_path(newWorkDir);
       std::system(ConcatPaths({"..", "Web", "Release.bat"}).c_str());
       newWorkDir = Path(ConcatPaths({ResourcePath(), "..", "Codes", "Web"}));
       std::filesystem::current_path(newWorkDir);
-      std::system(
-          ConcatPaths({ResourcePath(), "..", "Codes", "Web", "Release.bat"})
-              .c_str());
+      std::system(pluginWebBuildScriptsFolder.c_str());
       std::filesystem::current_path(workDir);
 
       // Move files to a directory
@@ -76,7 +81,7 @@ namespace ToolKit
           Path(configDirectory.c_str()),
           std::filesystem::copy_options::overwrite_existing);
 
-      // Add Run.bat
+      // Create run script
       std::ofstream runBatchFile(
           ConcatPaths({publishDirectory, "Run.bat"}).c_str());
       runBatchFile << "emrun ./" + projectName + ".html";
