@@ -12,6 +12,9 @@ namespace ToolKit
     virtual void Init(class Main* master);
     virtual void Destroy();
     virtual void Frame(float deltaTime, class Viewport* viewport);
+
+    private:
+    SceneRenderer m_sceneRenderer;
   };
 
 }
