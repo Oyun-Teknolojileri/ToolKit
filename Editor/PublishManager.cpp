@@ -29,7 +29,7 @@ namespace ToolKit
     void WebPublisher::Publish() const
     {
       // Pak project
-      g_app->PackResources();
+      // TODO open here g_app->PackResources();
 
       // Run scripts
       // Warning: Running batch files are Windows specific
@@ -64,6 +64,17 @@ namespace ToolKit
       {
         std::filesystem::copy(files[i].c_str(), publishDirectory);
       }
+
+      // Copy engine settings to config folder
+      String configDirectory = ConcatPaths({ResourcePath(), "..", "Config"});
+      if (!std::filesystem::exists(configDirectory))
+      {
+        std::filesystem::create_directories(configDirectory);
+      }
+      std::filesystem::copy(
+          Path(ConcatPaths({ConfigPath(), "Engine.settings"}).c_str()),
+          Path(configDirectory.c_str()),
+          std::filesystem::copy_options::overwrite_existing);
 
       // Add Run.bat
       std::ofstream runBatchFile(
