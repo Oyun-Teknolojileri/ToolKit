@@ -2,24 +2,25 @@ cmake_minimum_required(VERSION 3.0.0)
 
 set(PROJECT_NAME "__projectname__" CACHE STRING "What is the project name ?")
 set(TOOLKIT_DIR "__tkdir__" CACHE FILEPATH "Where is the ToolKit source directory ?")
-set(CMAKE_GENERATOR_PLATFORM x64)
+
+if (EMSCRIPTEN)
+	set(WEB_BUILD TRUE)
+else()
+	set(WEB_BUILD FALSE)
+endif()
 
 #if not a path is provided, try fetching it from the path file.
 if("${TOOLKIT_DIR}" STREQUAL "__tkdir__")
 	if(DEFINED ENV{APPDATA})
 		cmake_path(SET CFG_FILE_PATH "$ENV{APPDATA}/ToolKit/Config/Path.txt")
-		if(NOT EXISTS ${CFG_FILE_PATH})
-		  message(SEND_ERROR "Set TOOLKIT_DIR or provide ${CFG_FILE_PATH} containing path to ToolKit.")
-		else()
-			  file(STRINGS ${CFG_FILE_PATH} TOOLKIT_DIR)
-		endif()
+    if(NOT EXISTS ${CFG_FILE_PATH})
+      message(SEND_ERROR "Set TOOLKIT_DIR or provide ${CFG_FILE_PATH} containing path to ToolKit.")
+    else()
+		  file(STRINGS ${CFG_FILE_PATH} TOOLKIT_DIR)
+    endif()
 	endif()
 endif()
 
-#Store original output name
-set(DLL_NAME ${PROJECT_NAME})
-
-string(REPLACE " " "-" PROJECT_NAME ${PROJECT_NAME})
 project (${PROJECT_NAME})
 
 if(NOT EXISTS ${TOOLKIT_DIR}/ToolKit/ToolKit.h)
@@ -29,13 +30,6 @@ endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${TOOLKIT_DIR}/Bin")
 set(CMAKE_DEBUG_POSTFIX _d)
 set(CMAKE_CXX_STANDARD 17)
-
-add_compile_definitions(TK_DLL_IMPORT)
-
-link_directories("${TOOLKIT_DIR}/Bin")
-link_directories("${TOOLKIT_DIR}/Dependency/OpenAL/libs/Win64")
-link_directories("${TOOLKIT_DIR}/Dependency/Glew/lib/Release/x64")
-link_directories("${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/lib")
 
 include_directories(
 	"${TOOLKIT_DIR}/ToolKit"
@@ -49,14 +43,19 @@ include_directories(
 	"${CMAKE_SOURCE_DIR}"
 )
 
-set(SOURCE Game.cpp)
-set(HEADERS Game.h)
+set(
+	SOURCE 
+	Game.cpp
+)
 
-set(OUTDIR "${CMAKE_SOURCE_DIR}/Bin")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${OUTDIR})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${OUTDIR})
+if (${WEB_BUILD})
+  set(SOURCE ${SOURCE} main.cpp)
+endif()
 
-add_library(${PROJECT_NAME} SHARED  ${SOURCE} ${HEADERS})
+set(
+	HEADERS 
+	Game.h
+)
 
 set(
   PCH
@@ -74,17 +73,57 @@ set(
  "${TOOLKIT_DIR}/Dependency/glm/gtx/euler_angles.hpp"
 )
 
+set(OUTDIR "${CMAKE_SOURCE_DIR}/Bin")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${OUTDIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${OUTDIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${OUTDIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${OUTDIR})
+
+if (${WEB_BUILD})
+  set(CMAKE_EXECUTABLE_SUFFIX ".html")
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Bin")
+
+  add_executable(${PROJECT_NAME} ${SOURCE} ${HEADERS})
+  target_link_libraries(${PROJECT_NAME} "${TOOLKIT_DIR}/Bin/ToolKit.a")
+  target_link_libraries(${PROJECT_NAME} "${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/libminizip.a")
+
+	SET(TK_CXX_FLAGS " -std=c++17 -s USE_SDL=2")
+	if (NOT TK_CXX_EXTRA STREQUAL "")
+		SET(TK_CXX_FLAGS "${TK_CXX_FLAGS} ${TK_CXX_EXTRA}")
+	endif()
+
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TK_CXX_FLAGS}")
+
+	if (EXISTS "../../MinResources.pak")
+	  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -o ${PROJECT_NAME}.html --shell-file ../Bin/shell_minimal.html --preload-file ../../MinResources.pak@/../MinResources.pak --preload-file ../../Config@/../Config -sALLOW_MEMORY_GROWTH=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -s USE_ZLIB=1 -sUSE_SDL=2")
+	else()
+	  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -o ${PROJECT_NAME}.html --shell-file ../Bin/shell_minimal.html --preload-file ../../Resources@/../Resources --preload-file ../../Config@/../Config -sALLOW_MEMORY_GROWTH=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -s USE_ZLIB=1 -s USE_SDL=2")
+	endif()  
+
+else()
+  link_directories("${TOOLKIT_DIR}/Bin")
+  link_directories("${TOOLKIT_DIR}/Dependency/OpenAL/libs/Win64")
+  link_directories("${TOOLKIT_DIR}/Dependency/Glew/lib/Release/x64")
+  link_directories("${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/lib")
+  
+	add_library(${PROJECT_NAME} SHARED ${SOURCE} ${HEADERS})
+	
+	if (MSVC)
+		target_link_options(${PROJECT_NAME} PRIVATE $<$<NOT:$<CONFIG:DEBUG>>:/INCREMENTAL:NO> $<$<NOT:$<CONFIG:DEBUG>>:/LTCG>)
+	endif()
+
+  target_link_libraries(${PROJECT_NAME} debug ToolKit_d)
+  target_link_libraries(${PROJECT_NAME} optimized ToolKit)
+  target_link_libraries(${PROJECT_NAME} glew32 OpenGL32 OpenAL32)
+  target_link_libraries(${PROJECT_NAME} zlibstatic minizip)
+endif()
+
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH})
-add_compile_definitions(GLM_FORCE_SWIZZLE)
-
-target_link_libraries(${PROJECT_NAME} debug ToolKit_d)
-target_link_libraries(${PROJECT_NAME} optimized ToolKit)
-target_link_libraries(${PROJECT_NAME} glew32 OpenGL32 OpenAL32 zlibstatic minizip)
-
-#Set original output name
-set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${DLL_NAME})
 
 #For hotreload rename the previous output
-set(DLL $<SHELL_PATH:$<TARGET_FILE:${PROJECT_NAME}>>)
-set(PDB $<SHELL_PATH:$<TARGET_PDB_FILE:${PROJECT_NAME}>>)
-add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -Ddll=${DLL} -Dpdb=${PDB} -Dtmp="${OUTDIR}/tmp" -P "${CMAKE_SOURCE_DIR}/CMakeHotReload.cmake")
+if (NOT ${WEB_BUILD})
+  set(DLL $<SHELL_PATH:$<TARGET_FILE:${PROJECT_NAME}>>)
+  set(PDB $<SHELL_PATH:$<TARGET_PDB_FILE:${PROJECT_NAME}>>)
+
+	add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -Ddll=${DLL} -Dpdb=${PDB} -Dtmp="${OUTDIR}/tmp" -P "${CMAKE_SOURCE_DIR}/CMakeHotReload.cmake")
+endif()
