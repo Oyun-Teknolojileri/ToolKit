@@ -1167,6 +1167,13 @@ namespace ToolKit
         static_cast<T*>(light)->m_gizmoMC->GetMeshVal()->m_subMeshes.push_back(
             lbMesh);
       }
+      MultiMaterialPtr mmComp = light->GetComponent<MultiMaterialComponent>();
+      if (mmComp == nullptr)
+      {
+        mmComp = std::make_shared<MultiMaterialComponent>();
+        light->AddComponent(mmComp);
+      }
+      mmComp->UpdateMaterialList();
     }
 
   } // namespace Editor
