@@ -603,7 +603,6 @@ namespace ToolKit
 
   void Renderer::ClearBuffer(GraphicBitFields fields)
   {
-    EnableDepthWrite(true);
     glClearColor(m_clearColor.r,
                  m_clearColor.g,
                  m_clearColor.b,
