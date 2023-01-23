@@ -46,7 +46,7 @@ namespace ToolKit
     {
       if ((m_imagef =
                GetFileManager()
-                   ->GetHdriFile(GetFile(), &m_width, &m_height, &m_bytePP, 3)))
+                   ->GetHdriFile(GetFile(), &m_width, &m_height, &m_bytePP, 4)))
       {
         m_loaded = true;
       }
@@ -110,7 +110,7 @@ namespace ToolKit
                    m_width,
                    m_height,
                    0,
-                   GL_RGB,
+                   GL_RGBA,
                    GL_FLOAT,
                    m_imagef);
     }
@@ -331,7 +331,7 @@ namespace ToolKit
 
   Hdri::Hdri()
   {
-    m_textureSettings.InternalFormat  = GraphicTypes::FormatRGB32F;
+    m_textureSettings.InternalFormat  = GraphicTypes::FormatRGBA16F;
     m_textureSettings.Type            = GraphicTypes::TypeFloat;
     m_textureSettings.MinFilter       = GraphicTypes::SampleLinear;
     m_textureSettings.MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
@@ -386,8 +386,8 @@ namespace ToolKit
           // Convert hdri image to cubemap images.
           m_cubemap = renderer->GenerateCubemapFrom2DTexture(
               GetTextureManager()->Create<Texture>(GetFile()),
-              m_width,
-              m_width,
+              m_width / 4,
+              m_width / 4,
               1.0f);
 
           // Generate mip maps of cubemap
@@ -410,6 +410,7 @@ namespace ToolKit
             RenderTargetSettigs set;
             set.InternalFormat = GraphicTypes::FormatRG16F;
             set.Format         = GraphicTypes::FormatRG;
+            set.Type           = GraphicTypes::TypeFloat;
 
             RenderTargetPtr brdfLut =
                 std::make_shared<RenderTarget>(m_brdfLutTextureSize,
@@ -443,8 +444,8 @@ namespace ToolKit
           // Generate irradience cubemap images
           m_irradianceCubemap =
               renderer->GenerateEnvIrradianceMap(m_cubemap,
-                                                 m_width / 64,
-                                                 m_width / 64);
+                                                 m_width / 32,
+                                                 m_width / 32);
 
           m_initiated = true;
         }};

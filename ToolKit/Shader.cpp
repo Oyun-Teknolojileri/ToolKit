@@ -317,18 +317,28 @@ namespace ToolKit
       }
     }
 
-    size_t precisionLoc = includeSource.find("precision");
-    if (precisionLoc != String::npos)
+    size_t precisionLoc = 0;
+    while (true)
     {
-      for (size_t fileLoc = precisionLoc; fileLoc < includeSource.length();
-           ++fileLoc)
+      precisionLoc = includeSource.find("precision");
+
+      if (precisionLoc == String::npos)
       {
-        if (includeSource[fileLoc] == ';')
+        break;
+      }
+
+      if (precisionLoc != String::npos)
+      {
+        for (size_t fileLoc = precisionLoc; fileLoc < includeSource.length();
+             ++fileLoc)
         {
-          includeSource = includeSource.replace(precisionLoc,
-                                                fileLoc - precisionLoc + 1,
-                                                "");
-          break;
+          if (includeSource[fileLoc] == ';')
+          {
+            includeSource = includeSource.replace(precisionLoc,
+                                                  fileLoc - precisionLoc + 1,
+                                                  "");
+            break;
+          }
         }
       }
     }
@@ -344,14 +354,22 @@ namespace ToolKit
         break;
       }
     }
-    precisionLoc = m_source.find("precision");
-    for (size_t fileLoc = precisionLoc; fileLoc < m_source.length(); ++fileLoc)
+
+    precisionLoc = 0;
+    while ((precisionLoc =
+               m_source.find("precision", precisionLoc)) != String::npos)
     {
-      if (m_source[fileLoc] == ';')
+      for (size_t fileLoc = precisionLoc; fileLoc < m_source.length();
+           ++fileLoc)
       {
-        includeLoc = std::max(includeLoc, fileLoc + 3);
-        break;
+        if (m_source[fileLoc] == ';')
+        {
+          includeLoc = std::max(includeLoc, fileLoc + 3);
+          break;
+        }
       }
+
+      precisionLoc += 9;
     }
 
     m_source.replace(includeLoc, 0, includeSource);

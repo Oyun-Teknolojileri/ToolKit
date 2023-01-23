@@ -39,7 +39,7 @@ namespace ToolKit
    public:
     SceneRenderPassParams m_params;
 
-   private:
+   public:
     ShadowPassPtr m_shadowPass                 = nullptr;
     ForwardRenderPassPtr m_forwardRenderPass   = nullptr;
     CubeMapPassPtr m_skyPass                   = nullptr;

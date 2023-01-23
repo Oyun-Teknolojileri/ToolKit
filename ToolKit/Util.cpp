@@ -58,11 +58,9 @@ namespace ToolKit
   template TK_API void WriteVec(XmlNode* node,
                                 XmlDocument* doc,
                                 const UVec2& val);
-
   template TK_API void WriteVec(XmlNode* node,
                                 XmlDocument* doc,
                                 const IVec2& val);
-
   template TK_API void WriteVec(XmlNode* node,
                                 XmlDocument* doc,
                                 const Vec2& val);
@@ -251,7 +249,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  TK_API bool CheckSystemFile(StringView path)
+  bool CheckSystemFile(StringView path)
   {
     return std::filesystem::exists(path);
   }
@@ -394,15 +392,15 @@ namespace ToolKit
     return path;
   }
 
-  TK_API bool IsDefaultResource(const String& path)
+  bool IsDefaultResource(const String& path)
   {
-    if (path._Starts_with("ToolKit"))
+    if (StartsWith(path, "ToolKit"))
     {
       return true;
     }
 
     static const String defPath = DefaultPath();
-    if (path._Starts_with(defPath))
+    if (StartsWith(path, defPath))
     {
       return true;
     }
@@ -641,7 +639,7 @@ namespace ToolKit
     return supportedFormats.find(ToLower(ext)) != String::npos;
   }
 
-  TK_API bool IsLayer(const String& file)
+  bool IsLayer(const String& file)
   {
     return file.find(ToLower(LAYER)) != String::npos;
   }
@@ -725,7 +723,7 @@ namespace ToolKit
     }
   }
 
-  TK_API int CountChar(const String& str, const char chr)
+  int CountChar(const String& str, const char chr)
   {
     int cnt = 0;
     for (char c : str)
@@ -792,7 +790,12 @@ namespace ToolKit
     return str.substr(strBegin, strRange);
   }
 
-  TK_API bool EndsWith(const String& str, const String& suffix)
+  bool StartsWith(const String& str, const String& prefix)
+  {
+    return str.find(prefix) == 0;
+  }
+
+  bool EndsWith(const String& str, const String& suffix)
   {
     return str.rfind(suffix) == glm::abs(str.size() - suffix.size());
   }

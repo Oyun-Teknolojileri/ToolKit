@@ -533,6 +533,7 @@ namespace ToolKit
     rayInObjectSpace.position  = its * Vec4(rayInWorldSpace.position, 1.0f);
     rayInObjectSpace.direction = its * Vec4(rayInWorldSpace.direction, 0.0f);
 
+#ifndef __EMSCRIPTEN__
     std::for_each(std::execution::par_unseq,
                   meshTraces.begin(),
                   meshTraces.end(),
@@ -548,6 +549,17 @@ namespace ToolKit
                       trace.dist = t;
                     }
                   });
+#else
+    for (meshTrace& trace : meshTraces)
+    {
+      float t = FLT_MAX;
+
+      if (RayMeshIntersection(meshes[trace.indx], rayInObjectSpace, t, skel))
+      {
+        trace.dist = t;
+      }
+    }
+#endif
 
     t                = TK_FLT_MAX;
     uint closestIndx = TK_UINT_MAX;

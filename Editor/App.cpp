@@ -11,7 +11,6 @@
 #include "EditorViewport2d.h"
 #include "FolderWindow.h"
 #include "Framebuffer.h"
-#include "GL/glew.h"
 #include "Gizmo.h"
 #include "Global.h"
 #include "Grid.h"

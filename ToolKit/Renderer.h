@@ -111,6 +111,8 @@ namespace ToolKit
      */
     void EnableBlending(bool enable);
 
+    void EnableDepthWrite(bool enable);
+
     // If there is a material component, returns its material else
     // returns mesh's material. If there is not a MaterialComponent, it will
     // return the mesh's first material. In case of multisubmesh, there may be
@@ -152,6 +154,8 @@ namespace ToolKit
     /////////////////////
 
     int GetMaxArrayTextureLayers();
+
+    void ResetTextureSlots();
 
    private:
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
