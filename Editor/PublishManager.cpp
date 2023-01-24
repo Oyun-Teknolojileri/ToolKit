@@ -31,20 +31,28 @@ namespace ToolKit
       // Pak project
       g_app->PackResources();
 
-      // Create build script
       // Warning: Running batch files are Windows specific
-      const String pluginWebBuildScriptsFolder =
-          ConcatPaths({ResourcePath(), "..", "Codes", "Web", "Release.bat"});
-      std::ofstream releaseBuildScript(pluginWebBuildScriptsFolder.c_str());
-      releaseBuildScript << "emcmake cmake -DEMSCRIPTEN=TRUE -DTK_CXX_EXTRA:STRING=\" -O3\" -S .. -G Ninja && ninja & pause";
-      releaseBuildScript.close();
 
-      // Run scripts
       Path workDir = std::filesystem::current_path();
       Path newWorkDir(ConcatPaths({"..", "Web"}));
       std::filesystem::current_path(newWorkDir);
       std::system(ConcatPaths({"..", "Web", "Release.bat"}).c_str());
       newWorkDir = Path(ConcatPaths({ResourcePath(), "..", "Codes", "Web"}));
+      if (!std::filesystem::exists(newWorkDir))
+      {
+        std::filesystem::create_directories(newWorkDir);
+      }
+
+      // Create build script
+      const String pluginWebBuildScriptsFolder =
+          ConcatPaths({ResourcePath(), "..", "Codes", "Web", "Release.bat"});
+      std::ofstream releaseBuildScript(pluginWebBuildScriptsFolder.c_str());
+      releaseBuildScript
+          << "emcmake cmake -DEMSCRIPTEN=TRUE -DTK_CXX_EXTRA:STRING=\" -O3\" "
+             "-S .. -G Ninja && ninja & pause";
+      releaseBuildScript.close();
+
+      // Run scripts
       std::filesystem::current_path(newWorkDir);
       std::system(pluginWebBuildScriptsFolder.c_str());
       std::filesystem::current_path(workDir);
@@ -76,10 +84,19 @@ namespace ToolKit
       {
         std::filesystem::create_directories(configDirectory);
       }
-      std::filesystem::copy(
-          Path(ConcatPaths({ConfigPath(), "Engine.settings"}).c_str()),
-          Path(configDirectory.c_str()),
-          std::filesystem::copy_options::overwrite_existing);
+
+      const String engineSettingsPath =
+          ConcatPaths({ConfigPath(), "Engine.settings"});
+      const String destEngineSettingsPath =
+          ConcatPaths({configDirectory, "Engine.settings"});
+
+      if (!std::filesystem::exists(destEngineSettingsPath))
+      {
+        std::filesystem::copy(
+            Path(engineSettingsPath.c_str()),
+            Path(destEngineSettingsPath.c_str()),
+            std::filesystem::copy_options::overwrite_existing);
+      }
 
       // Create run script
       std::ofstream runBatchFile(

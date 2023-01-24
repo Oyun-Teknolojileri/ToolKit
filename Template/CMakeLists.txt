@@ -49,7 +49,7 @@ set(
 )
 
 if (${WEB_BUILD})
-  set(SOURCE ${SOURCE} main.cpp)
+  set(SOURCE ${SOURCE} web_main.cpp)
 endif()
 
 set(

@@ -20,6 +20,20 @@ namespace ToolKit
 
   void Game::Frame(float deltaTime, class Viewport* viewport)
   {
+#ifdef __EMSCRIPTEN__
+    GetRenderSystem()->ExecuteRenderTasks();
+
+    m_sceneRenderer.m_params.Cam = camera;
+    m_sceneRenderer.m_params.ClearFramebuffer = true;
+    m_sceneRenderer.m_params.Gfx.BloomIntensity = 0.0;
+    m_sceneRenderer.m_params.Lights = GetSceneManager()->GetCurrentScene()->GetLights();
+    m_sceneRenderer.m_params.MainFramebuffer = viewport->m_framebuffer;
+    m_sceneRenderer.m_params.Scene = GetSceneManager()->GetCurrentScene();
+    GetRenderSystem()->AddRenderTask(&m_sceneRenderer);
+
+    static uint totalFrameCount = 0;
+    GetRenderSystem()->SetFrameCount(totalFrameCount++);
+#endif
   }
 
 }
