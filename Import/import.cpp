@@ -1229,6 +1229,14 @@ namespace ToolKit
       // Initialize ToolKit to serialize resources
       Main* g_proxy = new Main();
       Main::SetProxy(g_proxy);
+      g_proxy->SetConfigPath(ConcatPaths({"..", "..", "Config"}));
+      g_proxy->PreInit();
+
+      // Create a dummy default material.
+      g_proxy->m_materialManager
+          ->m_storage[MaterialPath("default.material", true)] =
+          std::make_shared<Material>();
+
       g_proxy->m_entityFactory = new EntityFactory();
 
       for (int i = 0; i < static_cast<int>(files.size()); i++)
