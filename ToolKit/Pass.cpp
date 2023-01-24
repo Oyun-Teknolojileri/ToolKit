@@ -1291,7 +1291,6 @@ namespace ToolKit
     Pass::PreRender();
 
     GetRenderer()->ResetTextureSlots();
-    //GetRenderer()->EnableDepthWrite(true);
 
     GetRenderer()->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
     GetRenderer()->SetCameraLens(m_params.camera);
@@ -1319,7 +1318,11 @@ namespace ToolKit
 
       if (mmComp == nullptr)
       {
-        activeMaterial = ntt->GetRenderMaterial();
+        MaterialComponentPtr matComp = ntt->GetMaterialComponent();
+        if (matComp)
+        {
+          activeMaterial = ntt->GetRenderMaterial();
+        }
       }
 
       MeshComponentPtrArray meshComps;
@@ -1331,9 +1334,18 @@ namespace ToolKit
         for (uint meshIndx = 0; meshIndx < meshes.size();
              meshIndx++, activeMeshIndex++)
         {
+          const Mesh* mesh = meshes[meshIndx];
           if (mmComp && mmComp->GetMaterialList().size() > activeMeshIndex)
           {
             activeMaterial = mmComp->GetMaterialList()[activeMeshIndex];
+          }
+          if (activeMaterial == nullptr)
+          {
+            activeMaterial = mesh->m_material;
+          }
+          if (activeMaterial == nullptr)
+          {
+            continue;
           }
           if (activeMaterial->GetRenderState()->useForwardPath ||
               (activeMaterial->GetRenderState()->blendFunction !=

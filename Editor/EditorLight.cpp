@@ -56,7 +56,9 @@ namespace ToolKit
       m_gizmoMC->ParamMesh().m_exposed = false;
       m_gizmoMC->SetCastShadowVal(false);
 
+      EnableGizmo(true);
       m_gizmo->InitGizmo(m_light);
+      EnableGizmo(false);
       m_gizmoMC->ParamMesh().m_exposed = false;
 
       m_gizmoActive                    = false;
