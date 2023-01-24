@@ -2,6 +2,7 @@
 
 #include "ToolKit.h"
 #include "Plugin.h"
+#include "SceneRenderer.h"
 
 namespace ToolKit
 {
@@ -12,6 +13,11 @@ namespace ToolKit
     virtual void Init(class Main* master);
     virtual void Destroy();
     virtual void Frame(float deltaTime, class Viewport* viewport);
+
+    private:
+#ifdef __EMSCRIPTEN__
+    SceneRenderer m_sceneRenderer;
+#endif
   };
 
 }

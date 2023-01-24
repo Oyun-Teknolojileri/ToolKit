@@ -122,7 +122,7 @@ namespace ToolKit
     return temp;
   }
 
-  void FileManager::PackResources(const String& path)
+  void FileManager::PackResources(const String& sceneResourcesPath)
   {
     String zipName = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
     if (std::filesystem::exists(zipName.c_str()))
@@ -136,10 +136,10 @@ namespace ToolKit
     }
 
     // Load all scenes once in order to fill resource managers
-    LoadAllScenes(path);
+    LoadAllScenes(sceneResourcesPath);
 
     // Get all paths of resources
-    GetAllUsedResourcePaths(path);
+    GetAllUsedResourcePaths(sceneResourcesPath);
 
     // Zip used resources
     if (!ZipPack(zipName))
@@ -185,11 +185,16 @@ namespace ToolKit
     }
   }
 
-  void FileManager::GetAllUsedResourcePaths(const String& path)
+  void FileManager::GetAllUsedResourcePaths(const String& sceneResourcesPath)
   {
     std::unordered_map<String, ResourcePtr> mp;
 
+    // Get all engine resources
+    GetAllPaths(DefaultPath());
+
     // No manager for fonts
+
+    // TODO audio
 
     // Material
     mp = GetMaterialManager()->m_storage;
@@ -230,6 +235,54 @@ namespace ToolKit
       m_allPaths.insert(absolutePath);
     }
 
+    // Animations
+    mp = GetAnimationManager()->m_storage;
+    for (auto it = mp.begin(); it != mp.end(); it++)
+    {
+      String absolutePath = it->first;
+      // If the path is relative, make it absolute
+      if (absolutePath[0] == '.')
+      {
+        size_t index = absolutePath.find("Meshes");
+        absolutePath = absolutePath.substr(index);
+        absolutePath = ConcatPaths({DefaultAbsolutePath(), absolutePath});
+      }
+
+      m_allPaths.insert(absolutePath);
+    }
+
+    // Skeletons
+    mp = GetSkeletonManager()->m_storage;
+    for (auto it = mp.begin(); it != mp.end(); it++)
+    {
+      String absolutePath = it->first;
+      // If the path is relative, make it absolute
+      if (absolutePath[0] == '.')
+      {
+        size_t index = absolutePath.find("Meshes");
+        absolutePath = absolutePath.substr(index);
+        absolutePath = ConcatPaths({DefaultAbsolutePath(), absolutePath});
+      }
+
+      m_allPaths.insert(absolutePath);
+    }
+
+    // Prefabs
+    mp = GetSceneManager()->m_storage;
+    for (auto it = mp.begin(); it != mp.end(); it++)
+    {
+      String absolutePath = it->first;
+      // If the path is relative, make it absolute
+      if (absolutePath[0] == '.')
+      {
+        size_t index = absolutePath.find("Prefabs");
+        absolutePath = absolutePath.substr(index);
+        absolutePath = ConcatPaths({DefaultAbsolutePath(), absolutePath});
+      }
+
+      m_allPaths.insert(absolutePath);
+    }
+
     // Shaders
     mp = GetShaderManager()->m_storage;
     for (auto it = mp.begin(); it != mp.end(); it++)
@@ -262,15 +315,16 @@ namespace ToolKit
       m_allPaths.insert(absolutePath);
     }
 
-    // Animations
-    static String animPath = ConcatPaths({ResourcePath(), "Meshes", "anim"});
-    GetAnimationPaths(animPath);
-
     // Scenes
-    GetScenePaths(path);
+    GetAllPaths(sceneResourcesPath);
+
+    // Layers
+    const String layerResourcesPath =
+        ConcatPaths({sceneResourcesPath, "..", "Layers"});
+    GetAllPaths(layerResourcesPath);
 
     // Extra files that the use provided
-    GetExtraFilePaths(path);
+    GetExtraFilePaths(sceneResourcesPath);
   }
 
   bool FileManager::ZipPack(const String& zipName)
@@ -289,8 +343,8 @@ namespace ToolKit
     {
       if (!AddFileToZip(zFile, path.c_str()))
       {
-        GetLogger()->WriteConsole(LogType::Error,
-                                  "Error adding file to zip. %s",
+        GetLogger()->WriteConsole(LogType::Warning,
+                                  "Failed to add this file to zip: %s",
                                   path.c_str());
       }
     }
@@ -379,33 +433,18 @@ namespace ToolKit
     return true;
   }
 
-  void FileManager::GetAnimationPaths(const String& path)
+  void FileManager::GetAllPaths(const String& path)
   {
     for (const auto& entry : std::filesystem::directory_iterator(path))
     {
       if (entry.is_directory())
       {
         // Go animations in directories
-        GetAnimationPaths(entry.path().string());
+        GetAllPaths(entry.path().string());
         continue;
       }
 
-      m_allPaths.insert(entry.path().string());
-    }
-  }
-
-  void FileManager::GetScenePaths(const String& path)
-  {
-    for (const auto& entry : std::filesystem::directory_iterator(path))
-    {
-      if (entry.is_directory())
-      {
-        // Go scenes in directories
-        GetScenePaths(entry.path().string());
-        continue;
-      }
-
-      m_allPaths.insert(entry.path().string());
+      m_allPaths.insert(std::filesystem::absolute(entry.path()).string());
     }
   }
 

@@ -358,17 +358,35 @@ namespace ToolKit
       String codePath = ConcatPaths({fullPath, "Codes"});
       std::filesystem::create_directories(codePath);
 
-      constexpr int count  = 4;
-      String source[count] = {"../Template/Game.h",
-                              "../Template/Game.cpp",
-                              "../Template/CMakeLists.txt",
-                              "../Template/CMakeHotReload.cmake"};
+      constexpr int count         = 5;
+      String source[count]        = {"../Template/Game.h",
+                                     "../Template/Game.cpp",
+                                     "../Template/CMakeLists.txt",
+                                     "../Template/CMakeHotReload.cmake",
+                                     "../Template/web_main.cpp"};
+
+      constexpr int folderCount   = 2;
+      String folders[folderCount] = {
+          "../Template/Bin",
+          "../Template/Config",
+      };
+      String destFolders[folderCount] = {
+          ConcatPaths({codePath, "Bin"}),
+          ConcatPaths({codePath, "..", "Config"})};
 
       for (int i = 0; i < count; i++)
       {
         std::filesystem::copy(
             source[i],
             codePath,
+            std::filesystem::copy_options::overwrite_existing);
+      }
+
+      for (int i = 0; i < folderCount; ++i)
+      {
+        std::filesystem::copy(
+            folders[i],
+            destFolders[i],
             std::filesystem::copy_options::overwrite_existing);
       }
 
@@ -397,6 +415,12 @@ namespace ToolKit
           cmakelist.close();
         }
       }
+
+      // Create config/engine.settings
+
+      // Create main file for web build
+
+      // Create bin/shell_minimal.html for web build
 
       OpenProject({name, ""});
     }
@@ -1091,12 +1115,12 @@ namespace ToolKit
         return;
       }
 
-      String path = ConcatPaths({m_workspace.GetActiveWorkspace(),
-                                 projectName,
-                                 "Resources",
-                                 "Scenes"});
+      String sceneResourcesPath = ConcatPaths({m_workspace.GetActiveWorkspace(),
+                                               projectName,
+                                               "Resources",
+                                               "Scenes"});
 
-      GetFileManager()->PackResources(path);
+      GetFileManager()->PackResources(sceneResourcesPath);
     }
 
     void App::SaveAllResources()
