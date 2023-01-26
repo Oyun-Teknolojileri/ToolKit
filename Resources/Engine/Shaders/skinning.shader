@@ -22,10 +22,10 @@
       }
       vec4 skin(vec4 vertexPos){
          vec4 skinned = vec4(0);
-				 float totalWeight = 0.0;
+		 float totalWeight = 0.0;
          for(int i = 0; i < 4; i++){
-					 totalWeight += vWeights[i];
-					 skinned += getMatrixFromTexture(s_texture3, vBones[i]) * getMatrixFromTexture(s_texture2, vBones[i]) * vertexPos * vWeights[i];
+		     totalWeight += vWeights[i];
+			 skinned += getMatrixFromTexture(s_texture3, vBones[i]) * getMatrixFromTexture(s_texture2, vBones[i]) * vertexPos * vWeights[i];
          }
          return skinned / totalWeight;
       }
