@@ -109,14 +109,7 @@
 			}
 
 			vec3 fragToEye = normalize(CamData.pos - v_pos);
-			if (lightingType == 0) // phong
-			{
-				fragIbl = IBLPhong(fragNormal);
-			}
-			else // pbr
-			{
-				fragIbl = IBLPBR(fragNormal, fragToEye, fragColor.xyz, fragMetallicRoughess.x, fragMetallicRoughess.y);
-			}
+			fragIbl = IBLPBR(fragNormal, fragToEye, fragColor.xyz, fragMetallicRoughess.x, fragMetallicRoughess.y);
 		}
 	-->
 	</source>

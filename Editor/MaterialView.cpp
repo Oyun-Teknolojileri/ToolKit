@@ -125,13 +125,14 @@ namespace ToolKit
       DecomposePath(m_mat->GetFile(), nullptr, &name, &ext);
 
       ImGui::Text("\nMaterial: %s%s", name.c_str(), ext.c_str());
-      int matType     = (int) m_mat->m_materialType;
+      // 0th slot was pbr and removed, this is why we are doing -1 adjustments.
+      int matType     = glm::clamp((int) m_mat->m_materialType, 1, 2) - 1;
       int currentType = matType;
-      if (ImGui::Combo("Material Type", &matType, "Phong\0PBR\0Custom"))
+      if (ImGui::Combo("Material Type", &matType, "PBR\0Custom"))
       {
         if (matType != currentType)
         {
-          m_mat->m_materialType = (MaterialType) matType;
+          m_mat->m_materialType = (MaterialType) (matType + 1);
           m_mat->SetDefaultMaterialTypeShaders();
           m_mat->m_dirty = true;
         }

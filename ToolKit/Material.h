@@ -10,7 +10,7 @@ namespace ToolKit
 
   enum class MaterialType
   {
-    Phong  = 0,
+    UNUSEDSLOT_1 = 0,
     PBR    = 1,
     Custom = 2
   };
