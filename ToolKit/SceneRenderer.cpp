@@ -19,6 +19,7 @@ namespace ToolKit
     m_deferredRenderPass = std::make_shared<DeferredRenderPass>();
     m_ssaoPass           = std::make_shared<SSAOPass>();
     m_tonemapPass        = std::make_shared<TonemapPass>();
+    m_fxaaPass           = std::make_shared<FXAAPass>();
     m_gammaPass          = std::make_shared<GammaPass>();
     m_bloomPass          = std::make_shared<BloomPass>();
     m_dofPass            = std::make_shared<DoFPass>();
@@ -39,6 +40,7 @@ namespace ToolKit
     m_deferredRenderPass = nullptr;
     m_ssaoPass           = nullptr;
     m_tonemapPass        = nullptr;
+    m_fxaaPass           = nullptr;
     m_gammaPass          = nullptr;
     m_bloomPass          = nullptr;
     m_dofPass            = nullptr;
@@ -101,6 +103,11 @@ namespace ToolKit
     if (m_params.Gfx.TonemappingEnabled)
     {
       m_passArray.push_back(m_tonemapPass);
+    }
+
+    if (m_params.Gfx.FXAAEnabled)
+    {
+      m_passArray.push_back(m_fxaaPass);
     }
 
     if (m_params.Gfx.GammaCorrectionEnabled)
@@ -222,9 +229,14 @@ namespace ToolKit
     m_tonemapPass->m_params.FrameBuffer = m_params.MainFramebuffer;
     m_tonemapPass->m_params.Method      = m_params.Gfx.TonemapperMode;
 
+    // FXAA Pass
+    m_fxaaPass->m_params.FrameBuffer    = m_params.MainFramebuffer;
+    FramebufferSettings fbs           = m_params.MainFramebuffer->GetSettings();
+    m_fxaaPass->m_params.screen_size  = Vec2(fbs.width, fbs.height);
+
     // Gamma pass.
-    m_gammaPass->m_params.FrameBuffer   = m_params.MainFramebuffer;
-    m_gammaPass->m_params.Gamma         = m_params.Gfx.Gamma;
+    m_gammaPass->m_params.FrameBuffer = m_params.MainFramebuffer;
+    m_gammaPass->m_params.Gamma       = m_params.Gfx.Gamma;
   }
 
   void SceneRenderer::CullDrawList(EntityRawPtrArray& entities, Camera* camera)

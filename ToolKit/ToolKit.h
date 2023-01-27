@@ -96,6 +96,7 @@ namespace ToolKit
       float focusPoint             = 10.0f;
       float focusScale             = 5.0f;
       DoFQuality dofQuality        = DoFQuality::Normal;
+      bool FXAAEnabled             = false;
     } Graphics;
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;

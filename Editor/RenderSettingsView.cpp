@@ -94,6 +94,11 @@ namespace ToolKit
         ImGui::InputFloat("Bias", &gfx.ssaoBias, 0.001f);
         ImGui::EndDisabled();
       }
+
+      if (ImGui::CollapsingHeader("Anti Aliasing"))
+      {
+        ImGui::Checkbox("FXAA##1", &gfx.FXAAEnabled);
+      }
     }
   } // namespace Editor
 } // namespace ToolKit

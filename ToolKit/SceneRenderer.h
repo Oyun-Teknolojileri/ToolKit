@@ -46,6 +46,7 @@ namespace ToolKit
     GBufferPassPtr m_gBufferPass               = nullptr;
     DeferredRenderPassPtr m_deferredRenderPass = nullptr;
     SSAOPassPtr m_ssaoPass                     = nullptr;
+    FXAAPassPtr m_fxaaPass                     = nullptr;
     GammaPassPtr m_gammaPass                   = nullptr;
     BloomPassPtr m_bloomPass                   = nullptr;
     TonemapPassPtr m_tonemapPass               = nullptr;

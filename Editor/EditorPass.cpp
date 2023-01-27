@@ -42,7 +42,7 @@ namespace ToolKit
       SetLitMode(renderer, m_params.LitMode);
 
       m_passArray.clear();
-
+      EngineSettings::GraphicSettings gfx = GetEngineSettings().Graphics;
       switch (m_params.LitMode)
       {
       case EditorLitMode::LightComplexity:
@@ -51,13 +51,14 @@ namespace ToolKit
         break;
       case EditorLitMode::Game:
         m_params.App->HideGizmos();
-        m_scenePass->m_params.Gfx = GetEngineSettings().Graphics;
+        m_scenePass->m_params.Gfx = gfx;
         m_scenePass->Render(renderer);
         break;
       default:
-        m_scenePass->m_params.Gfx = GetEngineSettings().Graphics;
+        m_scenePass->m_params.Gfx                        = gfx;
         m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
         m_scenePass->m_params.Gfx.TonemappingEnabled     = false;
+        m_scenePass->m_params.Gfx.FXAAEnabled            = false;
         m_scenePass->Render(renderer);
         break;
       }
@@ -79,8 +80,11 @@ namespace ToolKit
         m_passArray.push_back(m_gizmoPass);
 
         // Post process.
-        // m_passArray.push_back(m_fxaaPass);
         m_passArray.push_back(m_tonemapPass);
+        if (gfx.FXAAEnabled) 
+        {
+          m_passArray.push_back(m_fxaaPass);
+        }
         m_passArray.push_back(m_gammaPass);
 
         Technique::Render(renderer);
