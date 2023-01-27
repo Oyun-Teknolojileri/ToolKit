@@ -53,15 +53,7 @@
 			vec3 e = normalize(camPos - position);
 
 			vec3 irradiance = vec3(0.0);
-			if (lightingType == 0) // phong
-			{
-				irradiance = BlinnPhongLightingDeferred(position, n, e);
-				irradiance *= color;
-			}
-			else // pbr
-			{
-				irradiance = PBRLightingDeferred(position, n, e, color, metallicRoughness.r, metallicRoughness.g);
-			}
+			irradiance = PBRLightingDeferred(position, n, e, color, metallicRoughness.r, metallicRoughness.g);
 
 			float ambientOcclusion;
 			if (aoEnabled == 1)

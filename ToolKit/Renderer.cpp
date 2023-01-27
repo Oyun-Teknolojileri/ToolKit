@@ -1323,27 +1323,8 @@ namespace ToolKit
                                    GetUniformName(Uniform::USE_FORWARD_PATH));
           glUniform1i(loc, (GLint) m_renderState.useForwardPath);
         }
-        break;
-        case Uniform::LIGHTING_TYPE:
-        {
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::LIGHTING_TYPE));
-          int lightingType;
-          if (m_mat->m_materialType == MaterialType::Phong)
-          {
-            lightingType = 0;
-          }
-          else if (m_mat->m_materialType == MaterialType::PBR)
-          {
-            lightingType = 1;
-          }
-          else // Custom
-          {
-            lightingType = 2;
-          }
-          glUniform1i(loc, (GLint) lightingType);
-        }
+        case Uniform::UNUSEDSLOT_3:
+          assert(false);
         break;
         case Uniform::METALLIC:
         {

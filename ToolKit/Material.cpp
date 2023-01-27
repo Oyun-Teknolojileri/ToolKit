@@ -181,7 +181,6 @@ namespace ToolKit
   {
     switch (m_materialType)
     {
-    case MaterialType::Phong:
     case MaterialType::PBR:
       UnInit();
       m_vertexShader = GetShaderManager()->Create<Shader>(
@@ -372,6 +371,7 @@ namespace ToolKit
       {
         int matType;
         ReadAttr(node, XmlNodeName.data(), matType);
+        matType        = glm::clamp(matType, 1, 2);
         m_materialType = (MaterialType) matType;
       }
       else

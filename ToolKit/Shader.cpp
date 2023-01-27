@@ -164,8 +164,9 @@ namespace ToolKit
       return "emissiveColor";
     case Uniform::EMISSIVE_TEXTURE_IN_USE:
       return "emissiveTextureInUse";
-    case Uniform::LIGHTING_TYPE:
-      return "lightingType";
+    case Uniform::UNUSEDSLOT_3:
+      assert(false);
+      return "UNUSEDSLOT_3";
     case Uniform::METALLIC:
       return "metallic";
     case Uniform::ROUGHNESS:
@@ -263,6 +264,16 @@ namespace ToolKit
         bool isUniformFound = false;
         for (uint i = 0; i < (uint) Uniform::UNIFORM_MAX_INVALID; i++)
         {
+          // Skipping unused variables.
+          switch ((Uniform) i)
+          {
+          case Uniform::UNUSEDSLOT_1:
+          case Uniform::UNUSEDSLOT_2:
+          case Uniform::UNUSEDSLOT_3:
+            isUniformFound = true;
+            continue;
+          }
+
           if (strcmp(GetUniformName((Uniform) i), attr->value()) == 0)
           {
             m_uniforms.push_back((Uniform) i);

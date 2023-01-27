@@ -9,7 +9,8 @@
 	<uniform name = "DiffuseTextureInUse" />
 	<uniform name = "useAlphaMask" />
 	<uniform name = "alphaMaskTreshold" />
-
+	<uniform name = "metallic" />
+	<uniform name = "roughness" />
 	<source>
 	<!--
 		#version 300 es
@@ -25,6 +26,8 @@
 		uniform vec4 Color;
 		uniform int DiffuseTextureInUse;
 		uniform sampler2D s_texture0;
+		uniform float metallic;
+    uniform float roughness; 
 
 		in vec3 v_pos;
 		in vec3 v_normal;
@@ -55,7 +58,7 @@
 			vec3 n = normalize(v_normal);
 			vec3 e = normalize(CamData.pos - v_pos);
 
-			vec3 irradiance = BlinnPhongLighting(v_pos, n, e);
+			vec3 irradiance = PBRLighting(v_pos, n, e, color.rgb, metallic, roughness);
 
 			irradiance += IBLPhong(n);
 

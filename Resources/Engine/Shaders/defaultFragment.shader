@@ -41,13 +41,6 @@
 		uniform float metallic;
 		uniform float roughness;
 
-		/*
-			lightingType:
-			0 -> Phong
-			1 -> PBR 
-		*/
-		uniform int lightingType;
-
 		uniform int normalMapInUse;
 
 		in vec3 v_pos;
@@ -111,25 +104,9 @@
 				metallicRoughness = vec2(metallic, roughness);
 			}
 
-			vec3 irradiance = vec3(0.0);
-			if (lightingType == 0)
-			{
-				irradiance = BlinnPhongLighting(v_pos, n, e);
-				irradiance *= color.xyz;
-			}
-			else
-			{
-				irradiance = PBRLighting(v_pos, n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
-			}
+			vec3 irradiance = PBRLighting(v_pos, n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
 
-			if (lightingType == 0)
-			{
-				irradiance += IBLPhong(n);
-			}
-			else
-			{
-				irradiance += IBLPBR(n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
-			}
+			irradiance += IBLPBR(n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
 
 			// float ambientOcclusion = AmbientOcclusion();
 
