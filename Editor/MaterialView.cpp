@@ -510,29 +510,6 @@ namespace ToolKit
           updateThumbFn();
         }
 
-        bool depthTest = m_mat->GetRenderState()->depthTestEnabled;
-        if (ImGui::Checkbox("Enable depth test", &depthTest))
-        {
-          m_mat->GetRenderState()->depthTestEnabled = depthTest;
-          updateThumbFn();
-        }
-
-        bool useForwardPath = m_mat->GetRenderState()->useForwardPath;
-        if (ImGui::Checkbox("Use Forward Path", &useForwardPath))
-        {
-          m_mat->GetRenderState()->useForwardPath = useForwardPath;
-          m_mat->m_dirty                          = true;
-        }
-        if (useForwardPath)
-        {
-          bool AOInUse = m_mat->GetRenderState()->AOInUse;
-          if (ImGui::Checkbox("Ambient Occlusion", &AOInUse))
-          {
-            m_mat->GetRenderState()->AOInUse = AOInUse;
-            m_mat->m_dirty                   = true;
-          }
-        }
-
         if (m_mat->GetRenderState()->blendFunction == BlendFunction::ALPHA_MASK)
         {
           float alphaMaskTreshold = m_mat->GetRenderState()->alphaMaskTreshold;
@@ -547,6 +524,9 @@ namespace ToolKit
             updateThumbFn();
           }
         }
+		ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
       }
     }
 

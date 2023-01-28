@@ -3,7 +3,6 @@
 	<include name = "lighting.shader" />
 	<include name = "ibl.shader" />
 	<include name = "camera.shader" />
-	<include name = "AO.shader" />
 	<uniform name = "CamData" />
 	<uniform name = "useAlphaMask" />
 	<uniform name = "alphaMaskTreshold" />
@@ -107,8 +106,6 @@
 			vec3 irradiance = PBRLighting(v_pos, n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
 
 			irradiance += IBLPBR(n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
-
-			// float ambientOcclusion = AmbientOcclusion();
 
 			fragColor = vec4(irradiance, color.a) + vec4(emissive, 0.0f);
 		}

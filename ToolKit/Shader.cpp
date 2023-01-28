@@ -27,7 +27,7 @@ namespace ToolKit
     {
       return;
     }
-
+    
     XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
     XmlDocument doc;
     doc.parse<rapidxml::parse_full>(file->data());
@@ -146,8 +146,9 @@ namespace ToolKit
       return "IblIntensity";
     case Uniform::IBL_IRRADIANCE:
       return "IBLIrradianceMap";
-    case Uniform::USE_AO:
-      return "UseAO";
+    case Uniform::UNUSEDSLOT_4:
+      assert(false);
+      break;
     case Uniform::DIFFUSE_TEXTURE_IN_USE:
       return "DiffuseTextureInUse";
     case Uniform::IBL_ROTATION:
@@ -270,6 +271,7 @@ namespace ToolKit
           case Uniform::UNUSEDSLOT_1:
           case Uniform::UNUSEDSLOT_2:
           case Uniform::UNUSEDSLOT_3:
+		  case Uniform::UNUSEDSLOT_4:
             isUniformFound = true;
             continue;
           }
