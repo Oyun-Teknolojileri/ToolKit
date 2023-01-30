@@ -394,12 +394,12 @@ namespace ToolKit
                                0.0f,
                                1.0f))
           {
-						bool isAlphaBlended = m_mat->m_alpha < 0.99;
-						m_mat->GetRenderState()->blendFunction =
-							isAlphaBlended ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA
-							: BlendFunction::NONE;
+			bool isAlphaBlended = m_mat->m_alpha < 0.99;
+			m_mat->GetRenderState()->blendFunction =
+				isAlphaBlended ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA
+				: BlendFunction::NONE;
 
-						m_mat->GetRenderState()->useForwardPath = isAlphaBlended;
+			m_mat->GetRenderState()->useForwardPath = isAlphaBlended;
             updateThumbFn();
           }
         }

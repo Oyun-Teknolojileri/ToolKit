@@ -447,13 +447,13 @@ namespace ToolKit
         LightRawPtrArray lightList =
             GetBestLights(ntt, m_params.ForwardParams.Lights);
 
-				auto mmComp = ntt->GetComponent<MultiMaterialComponent>();
-				if (mmComp)
-				{
-					renderer->m_overrideMat = nullptr;
-					renderer->Render(ntt, m_params.ForwardParams.Cam, lightList);
-					continue;
-				}
+		auto mmComp = ntt->GetComponent<MultiMaterialComponent>();
+		if (mmComp)
+		{
+			renderer->m_overrideMat = nullptr;
+			renderer->Render(ntt, m_params.ForwardParams.Cam, lightList);
+			continue;
+		}
 
         MaterialPtr mat         = ntt->GetRenderMaterial();
         renderer->m_overrideMat = std::make_shared<Material>();

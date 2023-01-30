@@ -397,14 +397,14 @@ namespace ToolKit
         break;
       }
 		
-			if (removeComp && isSkeletonComponent)
-			{
-				g_app->m_statusMsg = "Cannot Remove SkeletonComponent";
-				
-				GetLogger()->WriteConsole(
-					LogType::Warning,
-					"Cannot Remove SkeletonComponent");
-			}
+      if (removeComp && isSkeletonComponent)
+      {
+      	g_app->m_statusMsg = "Cannot Remove SkeletonComponent";
+      	
+      	GetLogger()->WriteConsole(
+      		LogType::Warning,
+      		"Cannot Remove SkeletonComponent");
+      }
 
       return removeComp && !isSkeletonComponent;
     }
