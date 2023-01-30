@@ -332,7 +332,8 @@ namespace ToolKit
                                            const bool modifiableComp)
     {
       VariantCategoryArray categories;
-      comp->m_localData.GetCategories(categories, true, true);
+			comp->m_localData.GetCategories(categories, true, true);
+			bool isSkeletonComponent = comp->GetType() == ComponentType::SkeletonComponent;
 
       bool removeComp = false;
       auto showCompFunc =
@@ -397,7 +398,14 @@ namespace ToolKit
         break;
       }
 
-      return removeComp;
+			if (removeComp && isSkeletonComponent)
+			{
+				GetLogger()->WriteConsole(
+					LogType::Warning,
+					"Cannot Remove SkeletonComponent");
+			}
+
+			return removeComp && !isSkeletonComponent;
     }
 
     // ComponentView
