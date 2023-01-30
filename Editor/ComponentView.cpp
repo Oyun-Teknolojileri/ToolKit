@@ -401,8 +401,9 @@ namespace ToolKit
 
       if (removeComp && isSkeletonComponent)
       {
+				g_app->m_statusMsg = "Failed";
         GetLogger()->WriteConsole(LogType::Warning,
-                                  "Cannot Remove SkeletonComponent");
+                  "Skeleton component is in use, it can't be removed");
       }
 
       return removeComp && !isSkeletonComponent;
