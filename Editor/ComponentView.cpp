@@ -331,6 +331,7 @@ namespace ToolKit
     bool ComponentView::ShowComponentBlock(ComponentPtr& comp,
                                            const bool modifiableComp)
     {
+			bool isSkeletonComponent = comp->GetType() == ComponentType::SkeletonComponent;
       VariantCategoryArray categories;
       comp->m_localData.GetCategories(categories, true, true);
 
@@ -358,7 +359,6 @@ namespace ToolKit
           }
         }
         ImGui::PopID();
-
         return isOpen;
       };
       for (VariantCategory& category : categories)
@@ -396,8 +396,17 @@ namespace ToolKit
         ShowAABBOverrideComponent(comp, showCompFunc, modifiableComp);
         break;
       }
+		
+			if (removeComp && isSkeletonComponent)
+			{
+				g_app->m_statusMsg = "Cannot Remove SkeletonComponent";
+				
+				GetLogger()->WriteConsole(
+					LogType::Warning,
+					"Cannot Remove SkeletonComponent");
+			}
 
-      return removeComp;
+      return removeComp && !isSkeletonComponent;
     }
 
     // ComponentView

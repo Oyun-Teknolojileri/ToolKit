@@ -125,7 +125,7 @@ namespace ToolKit
       DecomposePath(m_mat->GetFile(), nullptr, &name, &ext);
 
       ImGui::Text("\nMaterial: %s%s", name.c_str(), ext.c_str());
-      // 0th slot was pbr and removed, this is why we are doing -1 adjustments.
+      // 0th slot was phong and removed, this is why we are doing -1 adjustments.
       int matType     = glm::clamp((int) m_mat->m_materialType, 1, 2) - 1;
       int currentType = matType;
       if (ImGui::Combo("Material Type", &matType, "PBR\0Custom"))
@@ -135,6 +135,8 @@ namespace ToolKit
           m_mat->m_materialType = (MaterialType) (matType + 1);
           m_mat->SetDefaultMaterialTypeShaders();
           m_mat->m_dirty = true;
+          m_mat->GetRenderState()->useForwardPath =
+              m_mat->m_materialType == MaterialType::Custom;
         }
       }
       ImGui::Separator();
@@ -392,12 +394,12 @@ namespace ToolKit
                                0.0f,
                                1.0f))
           {
-            if (m_mat->GetRenderState()->blendFunction == BlendFunction::NONE)
-            {
-              m_mat->GetRenderState()->blendFunction =
-                  BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-              m_mat->GetRenderState()->useForwardPath = true;
-            }
+						bool isAlphaBlended = m_mat->m_alpha < 0.99;
+						m_mat->GetRenderState()->blendFunction =
+							isAlphaBlended ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA
+							: BlendFunction::NONE;
+
+						m_mat->GetRenderState()->useForwardPath = isAlphaBlended;
             updateThumbFn();
           }
         }

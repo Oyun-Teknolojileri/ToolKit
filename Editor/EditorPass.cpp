@@ -79,7 +79,7 @@ namespace ToolKit
         m_passArray.push_back(m_gizmoPass);
 
         // Post process.
-        // m_passArray.push_back(m_fxaaPass);
+        m_passArray.push_back(m_fxaaPass);
         m_passArray.push_back(m_tonemapPass);
         m_passArray.push_back(m_gammaPass);
 
@@ -446,6 +446,14 @@ namespace ToolKit
       {
         LightRawPtrArray lightList =
             GetBestLights(ntt, m_params.ForwardParams.Lights);
+
+				auto mmComp = ntt->GetComponent<MultiMaterialComponent>();
+				if (mmComp)
+				{
+					renderer->m_overrideMat = nullptr;
+					renderer->Render(ntt, m_params.ForwardParams.Cam, lightList);
+					continue;
+				}
 
         MaterialPtr mat         = ntt->GetRenderMaterial();
         renderer->m_overrideMat = std::make_shared<Material>();

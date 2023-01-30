@@ -224,8 +224,6 @@ namespace ToolKit
       }
     }
 
-    MultiMaterialPtr mmComp = ntt->GetComponent<MultiMaterialComponent>();
-
     // Skeleton Component is used by all meshes of an entity.
     const auto& updateAndBindSkinningTextures = [ntt, this]()
     {
@@ -289,6 +287,7 @@ namespace ToolKit
           continue;
         }
 
+        MultiMaterialPtr mmComp = ntt->GetComponent<MultiMaterialComponent>();
         if (mmComp && mmComp->GetMaterialList().size() > entityMeshIndex)
         {
           nttMat = mmComp->GetMaterialList()[entityMeshIndex];
@@ -885,6 +884,8 @@ namespace ToolKit
           m_sky->GetIlluminateVal())
       {
         mat->GetRenderState()->IBLInUse = true;
+        auto mmComp = entity->GetComponent<MultiMaterialComponent>();
+
         if (m_sky->GetType() == EntityType::Entity_Sky)
         {
           CubeMapPtr irradianceCubemap =
@@ -910,11 +911,33 @@ namespace ToolKit
         }
         else if (m_sky->GetType() == EntityType::Entity_GradientSky)
         {
-          mat->GetRenderState()->irradianceMap =
+          uint imap =
               static_cast<GradientSky*>(m_sky)->GetIrradianceMap()->m_textureId;
+          
+          if (mmComp) 
+          {
+            for (auto& i : mmComp->GetMaterialList()) 
+            {
+              i->GetRenderState()->irradianceMap = imap;
+            }
+          }
+          else 
+          {
+            mat->GetRenderState()->irradianceMap = imap;
+          }
         }
-
-        mat->GetRenderState()->iblIntensity = m_sky->GetIntensityVal();
+        
+        if (mmComp)
+        {
+          for (auto& i : mmComp->GetMaterialList())
+          {
+            i->GetRenderState()->iblIntensity = m_sky->GetIntensityVal();
+          }
+        }
+        else 
+        {
+          mat->GetRenderState()->iblIntensity = m_sky->GetIntensityVal();
+        }
         m_iblRotation =
             Mat4(m_sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
       }
@@ -1120,6 +1143,7 @@ namespace ToolKit
                                            GetUniformName(Uniform::VIEW));
           glUniformMatrix4fv(loc, 1, false, &m_view[0][0]);
         }
+        break;
         case Uniform::MODEL:
         {
           GLint loc = glGetUniformLocation(program->m_handle,
@@ -1224,6 +1248,7 @@ namespace ToolKit
         case Uniform::IBL_INTENSITY:
         {
           m_renderState.iblIntensity = m_mat->GetRenderState()->iblIntensity;
+
           GLint loc =
               glGetUniformLocation(program->m_handle,
                                    GetUniformName(Uniform::IBL_INTENSITY));
@@ -1369,7 +1394,7 @@ namespace ToolKit
       }
 
       // Custom variables.
-      for (auto var : shader->m_shaderParams)
+      for (auto& var : shader->m_shaderParams)
       {
         GLint loc = glGetUniformLocation(program->m_handle, var.first.c_str());
         if (loc == -1)
