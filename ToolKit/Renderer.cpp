@@ -941,7 +941,7 @@ namespace ToolKit
 
           for (RenderState* state : matRenderStates) 
           {
-            mat->GetRenderState()->irradianceMap = irradianceMap;
+            state->irradianceMap = irradianceMap;
           }
         }
 
@@ -1407,7 +1407,7 @@ namespace ToolKit
       }
 
       // Custom variables.
-      for (auto var : shader->m_shaderParams)
+      for (auto& var : shader->m_shaderParams)
       {
         GLint loc = glGetUniformLocation(program->m_handle, var.first.c_str());
         if (loc == -1)
