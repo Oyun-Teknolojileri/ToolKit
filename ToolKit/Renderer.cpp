@@ -856,24 +856,51 @@ namespace ToolKit
       }
     }
 
+    std::vector<RenderState*> matRenderStates {};
+
+    MultiMaterialPtr multiMaterial =
+        entity->GetComponent<MultiMaterialComponent>();
+
+    if (multiMaterial)
+    {
+      for (MaterialPtr i : multiMaterial->GetMaterialList())
+      {
+        matRenderStates.push_back(i->GetRenderState());
+      }
+    }
+    else
+    {
+      matRenderStates.push_back(mat->GetRenderState());
+    }
+
     if (env != nullptr)
     {
-      mat->GetRenderState()->IBLInUse = true;
       EnvironmentComponentPtr envCom =
           env->GetComponent<EnvironmentComponent>();
-      mat->GetRenderState()->iblIntensity = envCom->GetIntensityVal();
-      CubeMapPtr irradianceCubemap = envCom->GetHdriVal()->m_irradianceCubemap;
-      CubeMapPtr preFilteredSpecularIBLMap =
-          envCom->GetHdriVal()->m_prefilteredEnvMap;
+
+      std::for_each(matRenderStates.begin(),
+                    matRenderStates.end(),
+                    [&](RenderState* state)
+                    {
+                      state->IBLInUse     = true;
+                      state->iblIntensity = envCom->GetIntensityVal();
+                    });
+      HdriPtr hdriPtr                      = envCom->GetHdriVal();
+      CubeMapPtr irradianceCubemap         = hdriPtr->m_irradianceCubemap;
+      CubeMapPtr preFilteredSpecularIBLMap = hdriPtr->m_prefilteredEnvMap;
+
       if (irradianceCubemap && preFilteredSpecularIBLMap &&
           GetTextureManager()->Exist("GLOBAL_BRDF_LUT_TEXTURE"))
       {
         RenderTargetPtr brdfLut = GetTextureManager()->Create<RenderTarget>(
             "GLOBAL_BRDF_LUT_TEXTURE");
-        mat->GetRenderState()->irradianceMap = irradianceCubemap->m_textureId;
-        mat->GetRenderState()->preFilteredSpecularMap =
-            preFilteredSpecularIBLMap->m_textureId;
-        mat->GetRenderState()->brdfLut = brdfLut->m_textureId;
+        for (RenderState* state : matRenderStates)
+        {
+          state->irradianceMap = irradianceCubemap->m_textureId;
+          state->preFilteredSpecularMap =
+              preFilteredSpecularIBLMap->m_textureId;
+          state->brdfLut = brdfLut->m_textureId;
+        }
       }
       m_iblRotation =
           Mat4(env->m_node->GetOrientation(TransformationSpace::TS_WORLD));
@@ -887,34 +914,42 @@ namespace ToolKit
         mat->GetRenderState()->IBLInUse = true;
         if (m_sky->GetType() == EntityType::Entity_Sky)
         {
-          CubeMapPtr irradianceCubemap =
-              static_cast<Sky*>(m_sky)
-                  ->GetComponent<EnvironmentComponent>()
-                  ->GetHdriVal()
-                  ->m_irradianceCubemap;
-          CubeMapPtr preFilteredSpecularIBLMap =
-              static_cast<Sky*>(m_sky)
-                  ->GetComponent<EnvironmentComponent>()
-                  ->GetHdriVal()
-                  ->m_prefilteredEnvMap;
+          HdriPtr hdriPtr = static_cast<Sky*>(m_sky)
+                                ->GetComponent<EnvironmentComponent>()
+                                ->GetHdriVal();
+
+          CubeMapPtr irradianceCubemap         = hdriPtr->m_irradianceCubemap;
+          CubeMapPtr preFilteredSpecularIBLMap = hdriPtr->m_prefilteredEnvMap;
+
           RenderTargetPtr brdfLut = GetTextureManager()->Create<RenderTarget>(
               "GLOBAL_BRDF_LUT_TEXTURE");
           if (irradianceCubemap && preFilteredSpecularIBLMap && brdfLut)
           {
-            mat->GetRenderState()->irradianceMap =
-                irradianceCubemap->m_textureId;
-            mat->GetRenderState()->preFilteredSpecularMap =
-                preFilteredSpecularIBLMap->m_textureId;
-            mat->GetRenderState()->brdfLut = brdfLut->m_textureId;
+            for (RenderState* state : matRenderStates)
+            {
+              state->irradianceMap = irradianceCubemap->m_textureId;
+              state->preFilteredSpecularMap =
+                  preFilteredSpecularIBLMap->m_textureId;
+              state->brdfLut = brdfLut->m_textureId;
+            }
           }
         }
         else if (m_sky->GetType() == EntityType::Entity_GradientSky)
         {
-          mat->GetRenderState()->irradianceMap =
+          uint irradianceMap =
               static_cast<GradientSky*>(m_sky)->GetIrradianceMap()->m_textureId;
+
+          for (RenderState* state : matRenderStates) 
+          {
+            mat->GetRenderState()->irradianceMap = irradianceMap;
+          }
         }
 
-        mat->GetRenderState()->iblIntensity = m_sky->GetIntensityVal();
+        std::for_each(matRenderStates.begin(),
+                      matRenderStates.end(),
+                      [&](RenderState* state)
+                      { state->iblIntensity = m_sky->GetIntensityVal(); });
+
         m_iblRotation =
             Mat4(m_sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
       }
@@ -1325,7 +1360,7 @@ namespace ToolKit
         }
         case Uniform::UNUSEDSLOT_3:
           assert(false);
-        break;
+          break;
         case Uniform::METALLIC:
         {
           GLint loc = glGetUniformLocation(program->m_handle,
