@@ -28,13 +28,6 @@
 
 		uniform vec3 camPos;
 
-		/*
-			lightingType:
-			0 -> Phong
-			1 -> PBR 
-		*/
-		uniform int lightingType;
-
 		in vec2 v_texture;
 
 		out vec4 fragColor;

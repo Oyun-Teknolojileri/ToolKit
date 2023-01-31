@@ -377,6 +377,9 @@ namespace ToolKit
           }
         }
       }
+
+      RenderState* renderState = m_mat->GetRenderState();
+
       if (ImGui::CollapsingHeader("Render States",
                                   ImGuiTreeNodeFlags_DefaultOpen))
       {
@@ -392,11 +395,11 @@ namespace ToolKit
                                0.0f,
                                1.0f))
           {
-            if (m_mat->GetRenderState()->blendFunction == BlendFunction::NONE)
+            if (renderState->blendFunction == BlendFunction::NONE)
             {
-              m_mat->GetRenderState()->blendFunction =
+              renderState->blendFunction =
                   BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-              m_mat->GetRenderState()->useForwardPath = true;
+              renderState->useForwardPath = true;
             }
             updateThumbFn();
           }
@@ -444,23 +447,31 @@ namespace ToolKit
           }
         }
 
-        int cullMode = (int) m_mat->GetRenderState()->cullMode;
+        int cullMode = (int) renderState->cullMode;
         if (ImGui::Combo("Cull mode", &cullMode, "Two Sided\0Front\0Back"))
         {
-          m_mat->GetRenderState()->cullMode = (CullingType) cullMode;
+          renderState->cullMode = (CullingType) cullMode;
           updateThumbFn();
         }
 
-        int blendMode = (int) m_mat->GetRenderState()->blendFunction;
+        int blendMode = (int) renderState->blendFunction;
         if (ImGui::Combo("Blend mode",
                          &blendMode,
                          "None\0Alpha Blending\0Alpha Mask"))
         {
-          m_mat->GetRenderState()->blendFunction = (BlendFunction) blendMode;
-          if (m_mat->GetRenderState()->blendFunction == BlendFunction::NONE)
+          renderState->blendFunction = (BlendFunction) blendMode;
+          if (renderState->blendFunction == BlendFunction::NONE)
           {
             m_mat->m_alpha = 1.0f;
           }
+
+          renderState->useForwardPath =
+              renderState->blendFunction ==
+                  BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA ||
+              renderState->blendFunction == BlendFunction::ALPHA_MASK;
+
+          m_mat->m_dirty = true;
+
           updateThumbFn();
         }
 
@@ -491,51 +502,28 @@ namespace ToolKit
           switch (drawType)
           {
           case 0:
-            m_mat->GetRenderState()->drawType = DrawType::Triangle;
+            renderState->drawType = DrawType::Triangle;
             break;
           case 1:
-            m_mat->GetRenderState()->drawType = DrawType::Line;
+            renderState->drawType = DrawType::Line;
             break;
           case 2:
-            m_mat->GetRenderState()->drawType = DrawType::LineStrip;
+            renderState->drawType = DrawType::LineStrip;
             break;
           case 3:
-            m_mat->GetRenderState()->drawType = DrawType::LineLoop;
+            renderState->drawType = DrawType::LineLoop;
             break;
           case 4:
-            m_mat->GetRenderState()->drawType = DrawType::Point;
+            renderState->drawType = DrawType::Point;
             break;
           }
 
           updateThumbFn();
         }
 
-        bool depthTest = m_mat->GetRenderState()->depthTestEnabled;
-        if (ImGui::Checkbox("Enable depth test", &depthTest))
+        if (renderState->blendFunction == BlendFunction::ALPHA_MASK)
         {
-          m_mat->GetRenderState()->depthTestEnabled = depthTest;
-          updateThumbFn();
-        }
-
-        bool useForwardPath = m_mat->GetRenderState()->useForwardPath;
-        if (ImGui::Checkbox("Use Forward Path", &useForwardPath))
-        {
-          m_mat->GetRenderState()->useForwardPath = useForwardPath;
-          m_mat->m_dirty                          = true;
-        }
-        if (useForwardPath)
-        {
-          bool AOInUse = m_mat->GetRenderState()->AOInUse;
-          if (ImGui::Checkbox("Ambient Occlusion", &AOInUse))
-          {
-            m_mat->GetRenderState()->AOInUse = AOInUse;
-            m_mat->m_dirty                   = true;
-          }
-        }
-
-        if (m_mat->GetRenderState()->blendFunction == BlendFunction::ALPHA_MASK)
-        {
-          float alphaMaskTreshold = m_mat->GetRenderState()->alphaMaskTreshold;
+          float alphaMaskTreshold = renderState->alphaMaskTreshold;
           if (ImGui::DragFloat("Alpha Mask Threshold",
                                &alphaMaskTreshold,
                                0.001f,
@@ -543,9 +531,14 @@ namespace ToolKit
                                1.0f,
                                "%.3f"))
           {
-            m_mat->GetRenderState()->alphaMaskTreshold = alphaMaskTreshold;
+            renderState->alphaMaskTreshold = alphaMaskTreshold;
             updateThumbFn();
           }
+        }
+
+        for (int i = 0; i < 3; i++)
+        {
+          ImGui::Spacing();
         }
       }
     }
