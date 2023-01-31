@@ -467,8 +467,7 @@ namespace ToolKit
 
           renderState->useForwardPath =
               renderState->blendFunction ==
-                  BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA ||
-              renderState->blendFunction == BlendFunction::ALPHA_MASK;
+                  BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
 
           m_mat->m_dirty = true;
 
