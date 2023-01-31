@@ -395,12 +395,12 @@ namespace ToolKit
                                0.0f,
                                1.0f))
           {
-            if (renderState->blendFunction == BlendFunction::NONE)
-            {
-              renderState->blendFunction =
-                  BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-              renderState->useForwardPath = true;
-            }
+            bool isForward = m_mat->m_alpha < 0.99f;
+            renderState->blendFunction =
+                isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA
+                          : BlendFunction::NONE;
+
+            renderState->useForwardPath = isForward;
             updateThumbFn();
           }
         }
@@ -467,7 +467,7 @@ namespace ToolKit
 
           renderState->useForwardPath =
               renderState->blendFunction ==
-                  BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+              BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
 
           m_mat->m_dirty = true;
 
