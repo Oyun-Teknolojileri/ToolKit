@@ -333,8 +333,6 @@ namespace ToolKit
     {
       VariantCategoryArray categories;
       comp->m_localData.GetCategories(categories, true, true);
-      bool isSkeletonComponent =
-          comp->GetType() == ComponentType::SkeletonComponent;
 
       bool removeComp = false;
       auto showCompFunc =
@@ -399,15 +397,24 @@ namespace ToolKit
         break;
       }
 
+      bool isSkeletonComponent =
+          comp->GetType() == ComponentType::SkeletonComponent;
+
       if (removeComp && isSkeletonComponent)
       {
-        g_app->m_statusMsg = "Failed";
-        GetLogger()->WriteConsole(
-            LogType::Warning,
-            "Skeleton component is in use, it can't be removed");
+        SkeletonComponentPtr skeletonComponent =
+            std::static_pointer_cast<SkeletonComponent>(comp);
+        if (skeletonComponent->m_map)
+        {
+          g_app->m_statusMsg = "Failed";
+          GetLogger()->WriteConsole(
+              LogType::Warning,
+              "Skeleton component is in use, it can't be removed");
+          return false;
+        }
       }
 
-      return removeComp && !isSkeletonComponent;
+      return removeComp;
     }
 
     // ComponentView
