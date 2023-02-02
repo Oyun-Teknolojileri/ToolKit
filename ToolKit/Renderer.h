@@ -113,6 +113,8 @@ namespace ToolKit
 
     void EnableDepthWrite(bool enable);
 
+    void EnableDepthTest(bool enable);
+
     // If there is a material component, returns its material else
     // returns mesh's material. If there is not a MaterialComponent, it will
     // return the mesh's first material. In case of multisubmesh, there may be

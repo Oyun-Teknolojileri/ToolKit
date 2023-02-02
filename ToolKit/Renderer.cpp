@@ -436,19 +436,6 @@ namespace ToolKit
       m_renderState.cullMode = state->cullMode;
     }
 
-    if (m_renderState.depthTestEnabled != state->depthTestEnabled)
-    {
-      if (state->depthTestEnabled)
-      {
-        glEnable(GL_DEPTH_TEST);
-      }
-      else
-      {
-        glDisable(GL_DEPTH_TEST);
-      }
-      m_renderState.depthTestEnabled = state->depthTestEnabled;
-    }
-
     if (m_renderState.depthFunction != state->depthFunction)
     {
       m_renderState.depthFunction = state->depthFunction;
@@ -790,6 +777,22 @@ namespace ToolKit
   }
 
   void Renderer::EnableDepthWrite(bool enable) { glDepthMask(enable); }
+
+  void Renderer::EnableDepthTest(bool enable) 
+  {
+    if (m_renderState.depthTestEnabled != enable)
+    {
+      if (enable)
+      {
+        glEnable(GL_DEPTH_TEST);
+      }
+      else
+      {
+        glDisable(GL_DEPTH_TEST);
+      }
+      m_renderState.depthTestEnabled = enable;
+    }
+  }
 
   void Renderer::CollectEnvironmentVolumes(const EntityRawPtrArray& entities)
   {

@@ -320,7 +320,7 @@ namespace ToolKit
               "exponent",
               ParameterVariant(GetGradientExponentVal()));
 
-          m_skyboxMaterial->GetRenderState()->depthTestEnabled = false;
+          renderer->EnableDepthTest(false);
 
           // Views for 6 different angles
           CameraPtr cam = std::make_shared<Camera>();
@@ -365,7 +365,7 @@ namespace ToolKit
             renderer->DrawCube(cam.get(), m_skyboxMaterial);
           }
 
-          m_skyboxMaterial->GetRenderState()->depthTestEnabled = true;
+          renderer->EnableDepthTest(true);
 
           // Take the ownership of render target.
           m_skyboxMap = std::make_shared<CubeMap>(cubemap->m_textureId);

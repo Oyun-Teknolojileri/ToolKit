@@ -959,20 +959,26 @@ namespace ToolKit
   void FullQuadPass::PreRender()
   {
     Pass::PreRender();
-    GetRenderer()->m_overrideMat = nullptr;
+    Renderer* renderer      = GetRenderer();
+    renderer->m_overrideMat = nullptr;
+    renderer->EnableDepthTest(false);
+
     m_material->m_fragmentShader = m_params.FragmentShader;
     m_material->UnInit(); // Reinit in case, shader change.
     m_material->Init();
-    m_material->GetRenderState()->depthTestEnabled = false;
-    m_material->GetRenderState()->blendFunction    = m_params.BlendFunc;
+    m_material->GetRenderState()->blendFunction = m_params.BlendFunc;
 
-    MeshComponentPtr mc                            = m_quad->GetMeshComponent();
-    MeshPtr mesh                                   = mc->GetMeshVal();
-    mesh->m_material                               = m_material;
+    MeshComponentPtr mc                         = m_quad->GetMeshComponent();
+    MeshPtr mesh                                = mc->GetMeshVal();
+    mesh->m_material                            = m_material;
     mesh->Init();
   }
 
-  void FullQuadPass::PostRender() { Pass::PostRender(); }
+  void FullQuadPass::PostRender()
+  {
+    Pass::PostRender();
+    GetRenderer()->EnableDepthTest(true);
+  }
 
   CubeMapPass::CubeMapPass()
   {

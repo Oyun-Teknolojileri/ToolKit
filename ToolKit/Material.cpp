@@ -401,12 +401,17 @@ namespace ToolKit
     m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
 
     material                                          = new Material();
+    material->m_materialType                          = MaterialType::Custom;
+
     material->m_vertexShader = GetShaderManager()->Create<Shader>(
         ShaderPath("defaultVertex.shader", true));
+
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(
         ShaderPath("unlitFrag.shader", true));
+
     material->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
+    
     material->GetRenderState()->useForwardPath = true;
     material->Init();
 
@@ -436,10 +441,7 @@ namespace ToolKit
   MaterialPtr MaterialManager::GetCopyOfUIMaterial()
   {
     MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-    material->UnInit();
-    material->GetRenderState()->blendFunction =
-        BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-    material->GetRenderState()->depthTestEnabled = true;
+    material->GetRenderState()->blendFunction = BlendFunction::ALPHA_MASK;
 
     return material;
   }
