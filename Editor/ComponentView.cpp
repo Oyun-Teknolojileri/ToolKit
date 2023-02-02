@@ -402,9 +402,10 @@ namespace ToolKit
 
       if (removeComp && isSkeletonComponent)
       {
-        SkeletonComponentPtr skeletonComponent =
-            std::static_pointer_cast<SkeletonComponent>(comp);
-        if (skeletonComponent->m_map)
+        MeshComponentPtr skinmeshMesh =
+            comp->m_entity->GetComponent<MeshComponent>();
+
+        if (skinmeshMesh != nullptr && skinmeshMesh->GetMeshVal()->IsSkinned())
         {
           g_app->m_statusMsg = "Failed";
           GetLogger()->WriteConsole(
