@@ -294,6 +294,10 @@ namespace ToolKit
           nttMat = mmComp->GetMaterialList()[entityMeshIndex];
         }
         mesh->Init();
+        
+        // Set render material.
+        m_mat = nullptr;
+
         if (m_overrideMat != nullptr)
         {
           m_mat = m_overrideMat;
@@ -302,6 +306,13 @@ namespace ToolKit
         {
           m_mat = nttMat ? nttMat : mesh->m_material;
         }
+
+        if (m_mat == nullptr) 
+        {
+          assert(false);
+          m_mat = GetMaterialManager()->GetCopyOfDefaultMaterial();
+        }
+
         m_mat->Init();
 
         ProgramPtr prg =
@@ -326,7 +337,6 @@ namespace ToolKit
         activateSkinning(mesh->IsSkinned());
 
         RenderState* rs = m_mat->GetRenderState();
-
         SetRenderState(rs, prg);
         FeedUniforms(prg);
 
@@ -475,12 +485,6 @@ namespace ToolKit
 
     m_renderState.alphaMaskTreshold = state->alphaMaskTreshold;
 
-    if (m_mat->m_diffuseTexture)
-    {
-
-      SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
-    }
-
     if (state->cubeMapInUse)
     {
       m_renderState.cubeMap      = state->cubeMap;
@@ -494,22 +498,31 @@ namespace ToolKit
       glLineWidth(m_renderState.lineWidth);
     }
 
-    if (m_mat->m_emissiveTexture)
+    // TODO: Cihan move SetTexture to render path.
+    if (m_mat) 
     {
-      SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
-    }
+      if (m_mat->m_diffuseTexture)
+      {
+        SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
+      }
 
-    if (m_mat->m_metallicRoughnessTexture)
-    {
-      SetTexture(4, m_mat->m_metallicRoughnessTexture->m_textureId);
-    }
+      if (m_mat->m_emissiveTexture)
+      {
+        SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
+      }
 
-    if (m_mat->m_normalMap)
-    {
-      SetTexture(9, m_mat->m_normalMap->m_textureId);
-    }
+      if (m_mat->m_metallicRoughnessTexture)
+      {
+        SetTexture(4, m_mat->m_metallicRoughnessTexture->m_textureId);
+      }
 
-    if (m_mat->GetRenderState()->IBLInUse) {}
+      if (m_mat->m_normalMap)
+      {
+        SetTexture(9, m_mat->m_normalMap->m_textureId);
+      }
+
+      if (m_mat->GetRenderState()->IBLInUse) {}
+    }
 
     m_renderState.useForwardPath = state->useForwardPath;
   }
