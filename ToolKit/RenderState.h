@@ -53,7 +53,6 @@ namespace ToolKit
     GraphicCompareFunctions depthFunction = GraphicCompareFunctions::FuncLess;
     uint cubeMap                          = 0;
     bool cubeMapInUse                     = false;
-    VertexLayout vertexLayout             = VertexLayout::None;
     // The higher the priority, the earlier to draw.
     int priority                          = 0;
 

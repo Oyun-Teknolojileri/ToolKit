@@ -23,35 +23,22 @@ namespace ToolKit
     }
 
     WriteAttr(container, doc, "cullMode", std::to_string(int(cullMode)));
-
     WriteAttr(container,
               doc,
               "depthTest",
               std::to_string(int(depthTestEnabled)));
-
     WriteAttr(container, doc, "depthFunc", std::to_string(int(depthFunction)));
-
     WriteAttr(container,
               doc,
               "blendFunction",
               std::to_string(int(blendFunction)));
-
     WriteAttr(container,
               doc,
               "alphaMaskTreshold",
               std::to_string((float) alphaMaskTreshold));
-
     WriteAttr(container, doc, "drawType", std::to_string(int(drawType)));
-
-    WriteAttr(container,
-              doc,
-              "vertexLayout",
-              std::to_string(int(vertexLayout)));
-
     WriteAttr(container, doc, "AOInUse", std::to_string(AOInUse));
-
     WriteAttr(container, doc, "priority", std::to_string(priority));
-
     WriteAttr(container, doc, "useForwardPath", std::to_string(useForwardPath));
   }
 
@@ -142,25 +129,6 @@ namespace ToolKit
         }
       };
       validateDrawFn(drawType);
-
-      ReadAttr(container,
-               "vertexLayout",
-               *reinterpret_cast<int*>(&vertexLayout));
-
-      auto validateLayoutFn = [](VertexLayout& vl) -> void
-      {
-        switch (vl)
-        {
-        case VertexLayout::None:
-        case VertexLayout::Mesh:
-        case VertexLayout::SkinMesh:
-          break;
-        default:
-          vl = VertexLayout::Mesh;
-          break;
-        }
-      };
-      validateLayoutFn(vertexLayout);
 
       ReadAttr(container, "priority", priority);
       ReadAttr(container, "AOInUse", AOInUse);
