@@ -337,7 +337,7 @@ namespace ToolKit
         activateSkinning(mesh->IsSkinned());
 
         RenderState* rs = m_mat->GetRenderState();
-        SetRenderState(rs, prg);
+        SetRenderState(rs);
         FeedUniforms(prg);
 
         glBindVertexArray(mesh->m_vaoId);
@@ -373,7 +373,7 @@ namespace ToolKit
     mesh->Init();
 
     RenderState* rs = mesh->m_material->GetRenderState();
-    SetRenderState(rs, prog);
+    SetRenderState(rs);
 
     GLint pvloc = glGetUniformLocation(prog->m_handle, "ProjectViewModel");
     Mat4 pm     = glm::ortho(0.0f,
@@ -406,8 +406,7 @@ namespace ToolKit
     surface->m_node = backup;
   }
 
-  void Renderer::SetRenderState(const RenderState* const state,
-                                ProgramPtr program)
+  void Renderer::SetRenderState(const RenderState* const state)
   {
     if (m_renderState.cullMode != state->cullMode)
     {

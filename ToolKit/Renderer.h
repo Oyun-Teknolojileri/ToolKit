@@ -59,7 +59,7 @@ namespace ToolKit
      */
     void RenderUI(Viewport* viewport, UILayer* layer);
 
-    void SetRenderState(const RenderState* const state, ProgramPtr program);
+    void SetRenderState(const RenderState* const state);
 
     void SetStencilOperation(StencilOperation op);
     void SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color);
