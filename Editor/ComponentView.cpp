@@ -402,10 +402,10 @@ namespace ToolKit
 
       if (removeComp && isSkeletonComponent)
       {
-        MeshComponentPtr skinmeshMesh =
+        MeshComponentPtr mesh =
             comp->m_entity->GetComponent<MeshComponent>();
 
-        if (skinmeshMesh != nullptr && skinmeshMesh->GetMeshVal()->IsSkinned())
+        if (mesh != nullptr && mesh->GetMeshVal()->IsSkinned())
         {
           g_app->m_statusMsg = "Failed";
           GetLogger()->WriteConsole(
