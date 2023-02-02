@@ -115,6 +115,8 @@ namespace ToolKit
 
     void EnableDepthTest(bool enable);
 
+    void SetDepthTestFunc(GraphicCompareFunctions func);
+
     // If there is a material component, returns its material else
     // returns mesh's material. If there is not a MaterialComponent, it will
     // return the mesh's first material. In case of multisubmesh, there may be

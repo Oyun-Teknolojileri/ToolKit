@@ -231,9 +231,10 @@ namespace ToolKit
 
   struct CubeMapPassParams
   {
-    FramebufferPtr FrameBuffer = nullptr;
-    Camera* Cam                = nullptr;
-    MaterialPtr Material       = nullptr;
+    FramebufferPtr FrameBuffer      = nullptr;
+    Camera* Cam                     = nullptr;
+    MaterialPtr Material            = nullptr;
+    GraphicCompareFunctions DepthFn = GraphicCompareFunctions::FuncLequal;
     Mat4 Transform;
   };
 

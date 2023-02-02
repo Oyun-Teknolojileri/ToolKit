@@ -294,7 +294,7 @@ namespace ToolKit
           nttMat = mmComp->GetMaterialList()[entityMeshIndex];
         }
         mesh->Init();
-        
+
         // Set render material.
         m_mat = nullptr;
 
@@ -307,7 +307,7 @@ namespace ToolKit
           m_mat = nttMat ? nttMat : mesh->m_material;
         }
 
-        if (m_mat == nullptr) 
+        if (m_mat == nullptr)
         {
           assert(false);
           m_mat = GetMaterialManager()->GetCopyOfDefaultMaterial();
@@ -436,12 +436,6 @@ namespace ToolKit
       m_renderState.cullMode = state->cullMode;
     }
 
-    if (m_renderState.depthFunction != state->depthFunction)
-    {
-      m_renderState.depthFunction = state->depthFunction;
-      glDepthFunc((int) state->depthFunction);
-    }
-
     if (m_renderState.blendFunction != state->blendFunction)
     {
       switch (state->blendFunction)
@@ -485,7 +479,7 @@ namespace ToolKit
     }
 
     // TODO: Cihan move SetTexture to render path.
-    if (m_mat) 
+    if (m_mat)
     {
       if (m_mat->m_diffuseTexture)
       {
@@ -778,7 +772,7 @@ namespace ToolKit
 
   void Renderer::EnableDepthWrite(bool enable) { glDepthMask(enable); }
 
-  void Renderer::EnableDepthTest(bool enable) 
+  void Renderer::EnableDepthTest(bool enable)
   {
     if (m_renderState.depthTestEnabled != enable)
     {
@@ -791,6 +785,15 @@ namespace ToolKit
         glDisable(GL_DEPTH_TEST);
       }
       m_renderState.depthTestEnabled = enable;
+    }
+  }
+
+  void Renderer::SetDepthTestFunc(GraphicCompareFunctions func)
+  {
+    if (m_renderState.depthFunction != func)
+    {
+      m_renderState.depthFunction = func;
+      glDepthFunc((int) func);
     }
   }
 
@@ -954,7 +957,7 @@ namespace ToolKit
           uint irradianceMap =
               static_cast<GradientSky*>(m_sky)->GetIrradianceMap()->m_textureId;
 
-          for (RenderState* state : matRenderStates) 
+          for (RenderState* state : matRenderStates)
           {
             state->irradianceMap = irradianceMap;
           }

@@ -993,10 +993,10 @@ namespace ToolKit
 
   void CubeMapPass::Render()
   {
+    m_cube->m_node->SetTransform(m_params.Transform);
+
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, false);
-
-    m_cube->m_node->SetTransform(m_params.Transform);
     renderer->Render(m_cube.get(), m_params.Cam);
   }
 
@@ -1005,9 +1005,14 @@ namespace ToolKit
     Pass::PreRender();
     MaterialComponentPtr matCom = m_cube->GetMaterialComponent();
     matCom->SetMaterialVal(m_params.Material);
+    GetRenderer()->SetDepthTestFunc(m_params.DepthFn);
   }
 
-  void CubeMapPass::PostRender() { Pass::PostRender(); }
+  void CubeMapPass::PostRender()
+  {
+    Pass::PostRender();
+    GetRenderer()->SetDepthTestFunc(GraphicCompareFunctions::FuncLess);
+  }
 
   StencilRenderPass::StencilRenderPass()
   {
