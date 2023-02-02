@@ -52,10 +52,6 @@ namespace ToolKit
     void StableSortByDistanceToCamera(EntityRawPtrArray& entities,
                                       const Camera* cam);
 
-    // Sort entities by their material's render state's priority in
-    // descending order.
-    void StableSortByMaterialPriority(EntityRawPtrArray& entities);
-
     /**
      * Extracts translucent entities from given entity array.
      * @param entities Entity array that the translucent will extracted from.

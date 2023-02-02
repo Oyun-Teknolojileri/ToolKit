@@ -1318,14 +1318,6 @@ namespace ToolKit
           glUniform1f(loc, m_mat->m_alpha);
         }
         break;
-        case Uniform::USE_AO:
-        {
-          m_renderState.AOInUse = m_mat->GetRenderState()->AOInUse;
-          GLint loc             = glGetUniformLocation(program->m_handle,
-                                           GetUniformName(Uniform::USE_AO));
-          glUniform1i(loc, (int) m_renderState.AOInUse);
-        }
-        break;
         case Uniform::IBL_ROTATION:
         {
           GLint loc =

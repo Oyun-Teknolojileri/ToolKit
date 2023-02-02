@@ -37,8 +37,6 @@ namespace ToolKit
               "alphaMaskTreshold",
               std::to_string((float) alphaMaskTreshold));
     WriteAttr(container, doc, "drawType", std::to_string(int(drawType)));
-    WriteAttr(container, doc, "AOInUse", std::to_string(AOInUse));
-    WriteAttr(container, doc, "priority", std::to_string(priority));
     WriteAttr(container, doc, "useForwardPath", std::to_string(useForwardPath));
   }
 
@@ -129,9 +127,6 @@ namespace ToolKit
         }
       };
       validateDrawFn(drawType);
-
-      ReadAttr(container, "priority", priority);
-      ReadAttr(container, "AOInUse", AOInUse);
       ReadAttr(container, "useForwardPath", useForwardPath);
     }
   }

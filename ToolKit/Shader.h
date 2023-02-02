@@ -35,7 +35,7 @@ namespace ToolKit
     IBL_IRRADIANCE,
     DIFFUSE_TEXTURE_IN_USE,
     COLOR_ALPHA,
-    USE_AO,
+    UNUSEDSLOT_4, // USE_AO
     IBL_ROTATION,
     UNUSEDSLOT_2, // Lighting Only
     USE_ALPHA_MASK,

@@ -49,27 +49,6 @@ namespace ToolKit
     std::stable_sort(entities.begin(), entities.end(), sortFn);
   }
 
-  void RenderPass::StableSortByMaterialPriority(EntityRawPtrArray& entities)
-  {
-    std::stable_sort(entities.begin(),
-                     entities.end(),
-                     [](Entity* a, Entity* b) -> bool
-                     {
-                       MaterialComponentPtr matA = a->GetMaterialComponent();
-                       MaterialComponentPtr matB = b->GetMaterialComponent();
-                       if (matA && matB)
-                       {
-                         int pA =
-                             matA->GetMaterialVal()->GetRenderState()->priority;
-                         int pB =
-                             matB->GetMaterialVal()->GetRenderState()->priority;
-                         return pA > pB;
-                       }
-
-                       return false;
-                     });
-  }
-
   void RenderPass::SeperateTranslucentEntities(
       const EntityRawPtrArray& allEntities,
       EntityRawPtrArray& opaqueEntities,
@@ -472,7 +451,6 @@ namespace ToolKit
                                             const LightRawPtrArray& lights)
   {
     StableSortByDistanceToCamera(entities, cam);
-    StableSortByMaterialPriority(entities);
 
     Renderer* renderer = GetRenderer();
     for (Entity* ntt : entities)

@@ -89,8 +89,6 @@ namespace ToolKit
         MaterialPtr mat = GetMaterialManager()->Create<Material>(fullpath);
 
         // Disable ao
-        bool aoActive   = mat->GetRenderState()->AOInUse;
-        mat->GetRenderState()->AOInUse  = false;
         mat->GetRenderState()->IBLInUse = false;
 
         if (MaterialComponentPtr mc = m_sphere->GetMaterialComponent())

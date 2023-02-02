@@ -195,11 +195,7 @@ namespace ToolKit
         gfs->Load();
         GetShaderManager()->Manage(gfs);
 
-        material->m_fragmentShader           = gfs;
-
-        material->GetRenderState()->priority = 100;
-        material->Init();
-
+        material->m_fragmentShader                          = gfs;
         GetMaterialManager()->m_storage[g_gridMaterialName] = material;
       }
 
