@@ -485,7 +485,6 @@ namespace ToolKit
           [ntt, cam, lights, renderer](MaterialPtr renderMaterial,
                                        const UIntArray& meshIndices)
       {
-        renderer->EnableDepthWrite(false);
         LightRawPtrArray culledLights = GetBestLights(ntt, lights);
         if (renderMaterial->GetRenderState()->cullMode == CullingType::TwoSided)
         {
@@ -501,7 +500,6 @@ namespace ToolKit
         {
           renderer->Render(ntt, cam, culledLights, meshIndices);
         }
-        renderer->EnableDepthWrite(true);
       };
 
       if (mmComp == nullptr)
