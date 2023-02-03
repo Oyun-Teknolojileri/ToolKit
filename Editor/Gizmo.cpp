@@ -41,16 +41,14 @@ namespace ToolKit
 
       // Billboard
       Quad quad;
-      MeshPtr meshPtr     = quad.GetMeshComponent()->GetMeshVal();
-
-      meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-      meshPtr->m_material->UnInit();
-      meshPtr->m_material->m_diffuseTexture = m_iconImage;
-      meshPtr->m_material->GetRenderState()->blendFunction =
+      MeshPtr meshPtr    = quad.GetMeshComponent()->GetMeshVal();
+      MaterialPtr matPtr = GetMaterialManager()->GetCopyOfUnlitMaterial();
+      matPtr->UnInit();
+      matPtr->m_diffuseTexture = m_iconImage;
+      matPtr->GetRenderState()->blendFunction =
           BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-      meshPtr->m_material->Init();
-
-      meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
+      matPtr->Init();
+      meshPtr->m_material = matPtr;
       parentMesh->m_subMeshes.push_back(meshPtr);
 
       parentMesh->CalculateAABB();
@@ -73,18 +71,15 @@ namespace ToolKit
 
       // Billboard
       Quad quad;
-      MeshPtr meshPtr     = quad.GetMeshComponent()->GetMeshVal();
-
-      meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-      meshPtr->m_material->UnInit();
-      meshPtr->m_material->m_diffuseTexture =
-          GetTextureManager()->Create<Texture>(
-              TexturePath(ConcatPaths({"Icons", "cursor4k.png"}), true));
-      meshPtr->m_material->GetRenderState()->blendFunction =
+      MeshPtr meshPtr    = quad.GetMeshComponent()->GetMeshVal();
+      MaterialPtr matPtr = GetMaterialManager()->GetCopyOfUnlitMaterial();
+      matPtr->UnInit();
+      matPtr->m_diffuseTexture = GetTextureManager()->Create<Texture>(
+          TexturePath(ConcatPaths({"Icons", "cursor4k.png"}), true));
+      matPtr->GetRenderState()->blendFunction =
           BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-      meshPtr->m_material->Init();
-
-      meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
+      matPtr->Init();
+      meshPtr->m_material = matPtr;
       parentMesh->m_subMeshes.push_back(meshPtr);
 
       // Lines
@@ -154,7 +149,6 @@ namespace ToolKit
         Arrow2d arrow(t);
         MeshComponentPtr arrowMeshComp = arrow.GetComponent<MeshComponent>();
         MeshPtr arrowMesh              = arrowMeshComp->GetMeshVal();
-        arrowMesh->m_material->GetRenderState()->depthTestEnabled = false;
         if (i == 0)
         {
           GetMeshComponent()->SetMeshVal(arrowMesh);
