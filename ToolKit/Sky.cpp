@@ -117,7 +117,6 @@ namespace ToolKit
 
     RenderState* rs                    = m_skyboxMaterial->GetRenderState();
     rs->cullMode                       = CullingType::TwoSided;
-    rs->depthFunction                  = GraphicCompareFunctions::FuncLequal;
     m_skyboxMaterial->Init();
 
     m_initialized = true;
@@ -213,7 +212,6 @@ namespace ToolKit
 
     RenderState* rs                    = m_skyboxMaterial->GetRenderState();
     rs->cullMode                       = CullingType::TwoSided;
-    rs->depthFunction                  = GraphicCompareFunctions::FuncLequal;
     m_skyboxMaterial->Init();
 
     RenderTask task {[this](Renderer* renderer) -> void

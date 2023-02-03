@@ -230,7 +230,7 @@ namespace ToolKit
     FramebufferPtr FrameBuffer      = nullptr;
     Camera* Cam                     = nullptr;
     MaterialPtr Material            = nullptr;
-    GraphicCompareFunctions DepthFn = GraphicCompareFunctions::FuncLequal;
+    CompareFunctions DepthFn        = CompareFunctions::FuncLequal;
     Mat4 Transform;
   };
 

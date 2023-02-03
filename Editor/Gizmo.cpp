@@ -108,7 +108,6 @@ namespace ToolKit
           GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       newMaterial->m_color                            = Vec3(0.1f, 0.1f, 0.1f);
       newMaterial->GetRenderState()->drawType         = DrawType::Line;
-      newMaterial->GetRenderState()->depthTestEnabled = false;
 
       parentMesh->m_clientSideVertices                = vertices;
       parentMesh->m_material                          = newMaterial;

@@ -786,7 +786,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetDepthTestFunc(GraphicCompareFunctions func)
+  void Renderer::SetDepthTestFunc(CompareFunctions func)
   {
     if (m_renderState.depthFunction != func)
     {

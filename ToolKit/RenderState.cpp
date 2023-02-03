@@ -70,21 +70,21 @@ namespace ToolKit
                *reinterpret_cast<int*>(&depthTestEnabled));
 
       ReadAttr(container, "depthFunc", *reinterpret_cast<int*>(&depthFunction));
-      auto validateCmpFn = [](GraphicCompareFunctions& val) -> void
+      auto validateCmpFn = [](CompareFunctions& val) -> void
       {
         switch (val)
         {
-        case GraphicCompareFunctions::FuncNever:
-        case GraphicCompareFunctions::FuncLess:
-        case GraphicCompareFunctions::FuncEqual:
-        case GraphicCompareFunctions::FuncLequal:
-        case GraphicCompareFunctions::FuncGreater:
-        case GraphicCompareFunctions::FuncNEqual:
-        case GraphicCompareFunctions::FuncGEqual:
-        case GraphicCompareFunctions::FuncAlways:
+        case CompareFunctions::FuncNever:
+        case CompareFunctions::FuncLess:
+        case CompareFunctions::FuncEqual:
+        case CompareFunctions::FuncLequal:
+        case CompareFunctions::FuncGreater:
+        case CompareFunctions::FuncNEqual:
+        case CompareFunctions::FuncGEqual:
+        case CompareFunctions::FuncAlways:
           break;
         default:
-          val = GraphicCompareFunctions::FuncLess;
+          val = CompareFunctions::FuncLess;
         }
       };
       validateCmpFn(depthFunction);

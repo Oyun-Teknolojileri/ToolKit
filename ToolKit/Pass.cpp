@@ -989,7 +989,7 @@ namespace ToolKit
   void CubeMapPass::PostRender()
   {
     Pass::PostRender();
-    GetRenderer()->SetDepthTestFunc(GraphicCompareFunctions::FuncLess);
+    GetRenderer()->SetDepthTestFunc(CompareFunctions::FuncLess);
   }
 
   StencilRenderPass::StencilRenderPass()

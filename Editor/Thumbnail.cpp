@@ -87,10 +87,6 @@ namespace ToolKit
       else if (dirEnt.m_ext == MATERIAL)
       {
         MaterialPtr mat = GetMaterialManager()->Create<Material>(fullpath);
-
-        // Disable ao
-        mat->GetRenderState()->IBLInUse = false;
-
         if (MaterialComponentPtr mc = m_sphere->GetMaterialComponent())
         {
           mc->SetMaterialVal(mat);
