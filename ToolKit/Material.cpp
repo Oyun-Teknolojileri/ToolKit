@@ -105,8 +105,6 @@ namespace ToolKit
     if (m_cubeMap)
     {
       m_cubeMap->Init(flushClientSideArray);
-      m_renderState.cubeMap      = m_cubeMap->m_textureId;
-      m_renderState.cubeMapInUse = true;
     }
 
     if (m_vertexShader)
@@ -159,16 +157,6 @@ namespace ToolKit
 
   RenderState* Material::GetRenderState()
   {
-    if (m_cubeMap)
-    {
-      m_renderState.cubeMap      = m_cubeMap->m_textureId;
-      m_renderState.cubeMapInUse = true;
-    }
-    else
-    {
-      m_renderState.cubeMap = false;
-    }
-
     return &m_renderState;
   }
 

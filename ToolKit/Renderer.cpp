@@ -465,13 +465,6 @@ namespace ToolKit
 
     m_renderState.alphaMaskTreshold = state->alphaMaskTreshold;
 
-    if (state->cubeMapInUse)
-    {
-      m_renderState.cubeMap      = state->cubeMap;
-      m_renderState.cubeMapInUse = state->cubeMapInUse;
-      SetTexture(6, state->cubeMap);
-    }
-
     if (m_renderState.lineWidth != state->lineWidth)
     {
       m_renderState.lineWidth = state->lineWidth;
@@ -481,6 +474,11 @@ namespace ToolKit
     // TODO: Cihan move SetTexture to render path.
     if (m_mat)
     {
+      if (m_mat->m_cubeMap) 
+      {
+        SetTexture(6, m_mat->m_cubeMap->m_textureId);
+      }
+
       if (m_mat->m_diffuseTexture)
       {
         SetTexture(0, m_mat->m_diffuseTexture->m_textureId);

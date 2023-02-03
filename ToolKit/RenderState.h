@@ -55,8 +55,6 @@ namespace ToolKit
     // Renderer changes or updates these values.
     bool depthTestEnabled                 = true;
     GraphicCompareFunctions depthFunction = GraphicCompareFunctions::FuncLess;
-    uint cubeMap                          = 0;
-    bool cubeMapInUse                     = false;
 
     /* ONLY Renderer class edits and uses this variable. This variable does not
      * give any functionality to disable or enable ibl for material.*/
