@@ -60,14 +60,14 @@ namespace ToolKit
 
       if (ImGui::CollapsingHeader("Depth of Field"))
       {
-        ImGui::Checkbox("Depth of Field##1", &gfx.DepthofFieldEnabled);
-        ImGui::BeginDisabled(!gfx.DepthofFieldEnabled);
-        ImGui::DragFloat("Focus Point", &gfx.focusPoint, 0.1f, 0.0f, 100.0f);
-        ImGui::DragFloat("Focus Scale", &gfx.focusScale, 0.01f, 1.0f, 200.0f);
+        ImGui::Checkbox("Depth of Field##1", &gfx.DepthOfFieldEnabled);
+        ImGui::BeginDisabled(!gfx.DepthOfFieldEnabled);
+        ImGui::DragFloat("Focus Point", &gfx.FocusPoint, 0.1f, 0.0f, 100.0f);
+        ImGui::DragFloat("Focus Scale", &gfx.FocusScale, 0.01f, 1.0f, 200.0f);
 
         const char* items[] = {"Low", "Normal", "High"};
         uint itemCount      = sizeof(items) / sizeof(items[0]);
-        uint blurQuality    = (uint) gfx.dofQuality;
+        uint blurQuality    = (uint) gfx.DofQuality;
         if (ImGui::BeginCombo("Blur Quality", items[blurQuality]))
         {
           for (uint itemIndx = 0; itemIndx < itemCount; itemIndx++)
@@ -77,7 +77,7 @@ namespace ToolKit
             ImGui::Selectable(itemName, &isSelected);
             if (isSelected)
             {
-              gfx.dofQuality = (DoFQuality) itemIndx;
+              gfx.DofQuality = (DoFQuality) itemIndx;
             }
           }
 
@@ -90,8 +90,8 @@ namespace ToolKit
       {
         ImGui::Checkbox("SSAO##1", &gfx.SSAOEnabled);
         ImGui::BeginDisabled(!gfx.SSAOEnabled);
-        ImGui::InputFloat("Radius", &gfx.ssaoRadius, 0.01f);
-        ImGui::InputFloat("Bias", &gfx.ssaoBias, 0.001f);
+        ImGui::InputFloat("Radius", &gfx.SSAORadius, 0.01f);
+        ImGui::InputFloat("Bias", &gfx.SSAOBias, 0.001f);
         ImGui::EndDisabled();
       }
 
