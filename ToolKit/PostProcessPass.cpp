@@ -523,9 +523,9 @@ namespace ToolKit
       return;
     }
 
-    m_dofShader->SetShaderParameter("focusPoint",
+    m_dofShader->SetShaderParameter("FocusPoint",
                                     ParameterVariant(m_params.focusPoint));
-    m_dofShader->SetShaderParameter("focusScale",
+    m_dofShader->SetShaderParameter("FocusScale",
                                     ParameterVariant(m_params.focusScale));
     m_dofShader->SetShaderParameter("blurSize", ParameterVariant(5.0f));
 

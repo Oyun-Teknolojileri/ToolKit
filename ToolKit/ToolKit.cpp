@@ -49,8 +49,6 @@ namespace ToolKit
       return;
     }
 
-    m_engineSettings.DeSerialize(nullptr, nullptr);
-
     m_logger->Log("Main PreInit");
     m_renderSys       = new RenderSystem();
     m_pluginManager   = new PluginManager();
@@ -100,7 +98,6 @@ namespace ToolKit
   void Main::Uninit()
   {
     m_logger->Log("Main Uninit");
-
     m_animationPlayer->m_records.clear();
     m_animationMan->Uninit();
     m_textureMan->Uninit();
@@ -392,72 +389,126 @@ namespace ToolKit
     return ProcessPath(file, "Layers", def);
   }
 
-  void EngineSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void EngineSettings::Serialize(XmlDocument* doc, XmlNode* node) const
   {
-    assert(false && "Not implemented");
+    XmlNode* settings = doc->allocate_node(rapidxml::node_element, "Settings");
+    doc->append_node(settings);
+
+    XmlNode* window = doc->allocate_node(rapidxml::node_element, "Window");
+    settings->append_node(window);
+
+    XmlNode* graphics = doc->allocate_node(rapidxml::node_element, "Graphics");
+
+    using namespace std;
+    const EngineSettings::GraphicSettings& gfx = Graphics;
+
+    const auto writeAttr1 = [&](StringView name, StringView val)
+    { WriteAttr(window, doc, name.data(), val.data()); };
+    // serialize window
+    writeAttr1("width", to_string(Window.Width));
+    writeAttr1("height", to_string(Window.Height));
+    writeAttr1(XmlNodeName, Window.Name);
+    writeAttr1("fullscreen", to_string(Window.FullScreen));
+
+    settings->append_node(graphics);
+
+    const auto writeAttr = [&](StringView name, StringView val)
+    { WriteAttr(graphics, doc, name.data(), val.data()); };
+
+    // serialize Graphics struct
+    writeAttr("MSAA", to_string(gfx.MSAA));
+    writeAttr("FPS", to_string(gfx.FPS));
+    writeAttr("TonemappingEnabled", to_string(gfx.TonemappingEnabled));
+    writeAttr("TonemapperMode", to_string((int) gfx.TonemapperMode));
+    writeAttr("EnableBloom", to_string((int) gfx.BloomEnabled));
+    writeAttr("BloomIntensity", to_string(gfx.BloomIntensity));
+    writeAttr("BloomThreshold", to_string(gfx.BloomThreshold));
+    writeAttr("BloomIterationCount", to_string(gfx.BloomIterationCount));
+    writeAttr("GammaCorrectionEnabled", to_string(gfx.GammaCorrectionEnabled));
+    writeAttr("Gamma", to_string(gfx.Gamma));
+    writeAttr("SSAOEnabled", to_string(gfx.SSAOEnabled));
+    writeAttr("SSAORadius", to_string(gfx.SSAORadius));
+    writeAttr("SSAOBias", to_string(gfx.SSAOBias));
+    writeAttr("DepthOfFieldEnabled", to_string(gfx.DepthOfFieldEnabled));
+    writeAttr("FocusPoint", to_string(gfx.FocusPoint));
+    writeAttr("FocusScale", to_string(gfx.FocusScale));
+    writeAttr("DofQuality", to_string((int) gfx.DofQuality));
+    writeAttr("FXAAEnabled", to_string(gfx.FXAAEnabled));
   }
 
-  void EngineSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void EngineSettings::DeSerialize(XmlDocument* doc, XmlNode* node)
   {
-    XmlDocBundle lclData;
-    if (doc == nullptr)
-    {
-      String path           = ConcatPaths({ConfigPath(), "Engine.settings"});
-      XmlFilePtr file       = std::make_shared<XmlFile>(path.c_str());
-      XmlDocumentPtr docPtr = std::make_shared<XmlDocument>();
-      docPtr->parse<0>(file->data());
-      lclData.file = file;
-      lclData.doc  = docPtr;
+    assert(doc && "doc must not be null");
 
-      doc          = docPtr.get();
+    XmlNode* settings = doc->first_node("Settings");
+    XmlNode* node2    = settings->first_node("Window");
+
+    const auto getInt = [&](int& val, StringView name) -> void
+    {
+      if (XmlAttribute* attr = node2->first_attribute(name.data()))
+      {
+        val = atoi(attr->value());
+      }
+    };
+
+    const auto getFloat = [&](float& value, StringView name) -> void
+    {
+      if (XmlAttribute* attr = node2->first_attribute(name.data()))
+      {
+        value = (float) atof(attr->value());
+      }
+    };
+
+    const auto getBool = [&](bool& value, StringView name) -> void
+    {
+      if (XmlAttribute* attr = node2->first_attribute(name.data()))
+      {
+        value = atoi(attr->value()) != 0;
+      }
+    };
+
+    if (node2 != nullptr)
+    {
+      if (XmlAttribute* attr = node2->first_attribute("width"))
+      {
+        Window.Width = atoi(attr->value());
+      }
+      if (XmlAttribute* attr = node2->first_attribute("height"))
+      {
+        Window.Height = atoi(attr->value());
+      }
+      if (XmlAttribute* attr = node2->first_attribute(XmlNodeName.data()))
+      {
+        Window.Name = attr->value();
+      }
+      getBool(Window.FullScreen, "fullscreen");
     }
 
-    if (parent == nullptr)
+    if (node2 = settings->first_node("Graphics"))
     {
-      parent = doc->first_node(XmlNodeSettings.data());
-    }
+      getInt(Graphics.MSAA, "MSAA");
+      getInt(Graphics.FPS, "FPS");
+      getInt(Graphics.TonemappingEnabled, "TonemappingEnabled");
+      getBool(Graphics.BloomEnabled, "BloomEnabled");
+      getFloat(Graphics.BloomIntensity, "BloomIntensity");
+      getFloat(Graphics.BloomThreshold, "BloomThreshold");
+      getInt(Graphics.BloomIterationCount, "BloomIterationCount");
+      getInt(Graphics.GammaCorrectionEnabled, "GammaCorrectionEnabled");
+      getFloat(Graphics.Gamma, "Gamma");
+      getBool(Graphics.SSAOEnabled, "SSAOEnabled");
+      getFloat(Graphics.SSAORadius, "SSAORadius");
+      getFloat(Graphics.SSAOBias, "SSAOBias");
+      getBool(Graphics.DepthOfFieldEnabled, "DepthOfFieldEnabled");
+      getFloat(Graphics.FocusPoint, "FocusPoint");
+      getFloat(Graphics.FocusScale, "FocusScale");
+      getBool(Graphics.FXAAEnabled, "FXAAEnabled");
 
-    if (parent)
-    {
-      if (XmlNode* node2 = parent->first_node("Window"))
-      {
-        if (XmlAttribute* attr = node2->first_attribute("width"))
-        {
-          Window.Width = atoi(attr->value());
-        }
-        if (XmlAttribute* attr = node2->first_attribute("height"))
-        {
-          Window.Height = atoi(attr->value());
-        }
-        if (XmlAttribute* attr = node2->first_attribute(XmlNodeName.data()))
-        {
-          Window.Name = attr->value();
-        }
-        if (XmlAttribute* attr = node2->first_attribute("fullscreen"))
-        {
-          Window.FullScreen = atoi(attr->value()) != 0;
-        }
-      }
-
-      if (XmlNode* node2 = parent->first_node("Graphics"))
-      {
-        if (XmlAttribute* attr = node2->first_attribute("fps"))
-        {
-          Graphics.FPS = atoi(attr->value());
-        }
-        if (XmlAttribute* attr = node2->first_attribute("msaa"))
-        {
-          Graphics.MSAA = atoi(attr->value());
-        }
-        if (XmlAttribute* attr = node2->first_attribute("tonemapper"))
-        {
-          Graphics.TonemapperMode = (TonemapMethod) atoi(attr->value());
-        }
-        if (XmlAttribute* attr = node2->first_attribute("gamma"))
-        {
-          Graphics.TonemapperMode = (TonemapMethod) atof(attr->value());
-        }
-      }
+      int toneMapperMode = (int) Graphics.TonemapperMode;
+      int dofQuality     = (int) Graphics.DofQuality;
+      getInt(toneMapperMode, "TonemapperMode");
+      getInt(dofQuality, "DofQuality");
+      Graphics.TonemapperMode = (TonemapMethod) toneMapperMode;
+      Graphics.DofQuality     = (DoFQuality) dofQuality;
     }
   }
 

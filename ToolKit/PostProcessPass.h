@@ -179,7 +179,7 @@ namespace ToolKit
 
   typedef std::shared_ptr<SSAOPass> SSAOPassPtr;
 
-  enum class DoFQuality
+  enum class DoFQuality : uint
   {
     Low,    // Radius Scale = 2.0f
     Normal, // Radius Scale = 0.8f

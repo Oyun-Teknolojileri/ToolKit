@@ -79,25 +79,25 @@ namespace ToolKit
 
     struct GraphicSettings
     {
-      uint MSAA                    = 2;
-      uint FPS                     = 60;
-      bool TonemappingEnabled      = true;
+      int MSAA                     = 2;
+      int FPS                      = 60;
+      bool TonemappingEnabled       = true;
       TonemapMethod TonemapperMode = TonemapMethod::Aces;
       bool BloomEnabled            = true;
       float BloomIntensity         = 1.0f;
       float BloomThreshold         = 1.0f;
       int BloomIterationCount      = 5;
-      bool GammaCorrectionEnabled  = true;
+      bool GammaCorrectionEnabled   = true;
       float Gamma                  = 2.2f;
       bool SSAOEnabled             = true;
-      float ssaoRadius             = 0.5f;
-      float ssaoBias               = 0.025f;
-      bool DepthofFieldEnabled     = false;
-      float focusPoint             = 10.0f;
-      float focusScale             = 5.0f;
-      DoFQuality dofQuality        = DoFQuality::Normal;
+      float SSAORadius             = 0.5f;
+      float SSAOBias               = 0.025f;
+      bool DepthOfFieldEnabled     = false;
+      float FocusPoint             = 10.0f;
+      float FocusScale             = 5.0f;
+      DoFQuality DofQuality        = DoFQuality::Normal;
       bool FXAAEnabled             = false;
-    } Graphics;
+    } Graphics {};
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;

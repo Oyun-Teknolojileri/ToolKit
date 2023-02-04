@@ -224,7 +224,7 @@ namespace ToolKit
 
   void UIManager::DestroyLayers()
   {
-    for (auto vpLayerArray : m_viewportIdLayerArrayMap)
+    for (auto& vpLayerArray : m_viewportIdLayerArrayMap)
     {
       for (UILayer* layer : vpLayerArray.second)
       {
