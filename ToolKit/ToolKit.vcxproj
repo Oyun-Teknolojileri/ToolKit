@@ -23,6 +23,7 @@
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
+    <ClCompile Include="GBufferPass.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Material.cpp" />
@@ -74,6 +75,7 @@
     <ClInclude Include="Events.h" />
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="Framebuffer.h" />
+    <ClInclude Include="GBufferPass.h" />
     <ClInclude Include="Pass.h" />
     <ClInclude Include="PostProcessPass.h" />
     <ClInclude Include="RenderSystem.h" />

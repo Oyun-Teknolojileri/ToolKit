@@ -81,7 +81,7 @@ namespace ToolKit
         EntityRawPtrArray& opaqueEntities,
         EntityRawPtrArray& translucentAndUnlitEntities);
 
-    void CreateRenderJobs(const EntityRawPtrArray& entities);
+    void CreateRenderJobs(EntityRawPtrArray entities);
 
    protected:
     RenderJobArray m_renderJobs;
@@ -335,47 +335,6 @@ namespace ToolKit
   };
 
   typedef std::shared_ptr<OutlinePass> OutlinePassPtr;
-
-  struct GBufferPassParams
-  {
-    EntityRawPtrArray entities;
-    Camera* camera;
-  };
-
-  class TK_API GBufferPass : public Pass
-  {
-   public:
-    GBufferPass();
-    explicit GBufferPass(const GBufferPassParams& params);
-    ~GBufferPass();
-
-    void PreRender() override;
-    void PostRender() override;
-    void Render() override;
-    void InitGBuffers(int width, int height);
-    void UnInitGBuffers();
-
-   public:
-    FramebufferPtr m_framebuffer           = nullptr;
-    RenderTargetPtr m_gPosRt               = nullptr;
-    RenderTargetPtr m_gNormalRt            = nullptr;
-    RenderTargetPtr m_gColorRt             = nullptr;
-    RenderTargetPtr m_gEmissiveRt          = nullptr;
-    RenderTargetPtr m_gLinearDepthRt       = nullptr;
-    RenderTargetPtr m_gMetallicRoughnessRt = nullptr;
-    RenderTargetPtr m_gIblRt               = nullptr;
-
-    int m_width                            = 1024;
-    int m_height                           = 1024;
-
-    GBufferPassParams m_params;
-
-   private:
-    bool m_initialized            = false;
-    MaterialPtr m_gBufferMaterial = nullptr;
-  };
-
-  typedef std::shared_ptr<GBufferPass> GBufferPassPtr;
 
   struct DeferredRenderPassParams
   {
