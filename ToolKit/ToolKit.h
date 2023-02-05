@@ -17,6 +17,8 @@
 #include "Mesh.h"
 #include "Node.h"
 #include "Pass.h"
+#include "ToneMapPass.h"
+#include "DofPass.h"
 #include "PluginManager.h"
 #include "PostProcessPass.h"
 #include "Primative.h"

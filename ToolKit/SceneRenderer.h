@@ -1,8 +1,15 @@
 #pragma once
 
 #include "Pass.h"
+#include "ShadowPass.h"
 #include "GBufferPass.h"
-#include "PostProcessPass.h"
+#include "ForwardPass.h"
+#include "DeferredPass.h"
+#include "CubemapPass.h"
+#include "SsaoPass.h"
+#include "FxaaPass.h"
+#include "GammaPass.h"
+#include "BloomPass.h"
 #include "RenderSystem.h"
 #include "ToolKit.h"
 

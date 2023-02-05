@@ -19,8 +19,11 @@
     <Filter Include="Source\Render">
       <UniqueIdentifier>{6736831a-564c-47ad-bcfb-a3a3aa194285}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Render\Pass">
+    <Filter Include="Source\Render\RenderPass">
       <UniqueIdentifier>{3bf51b1e-9da9-41ef-bac7-0d39d55fd50c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Render\PostProcessPass">
+      <UniqueIdentifier>{d2993129-0199-49c6-91fd-e82cc756b97f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -139,10 +142,7 @@
       <Filter>Source\Resource</Filter>
     </ClCompile>
     <ClCompile Include="Pass.cpp">
-      <Filter>Source\Render\Pass</Filter>
-    </ClCompile>
-    <ClCompile Include="PostProcessPass.cpp">
-      <Filter>Source\Render\Pass</Filter>
+      <Filter>Source\Render\RenderPass</Filter>
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>Source\Render</Filter>
@@ -157,7 +157,49 @@
       <Filter>Source\Render</Filter>
     </ClCompile>
     <ClCompile Include="GBufferPass.cpp">
-      <Filter>Source\Render\Pass</Filter>
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="ForwardPass.cpp">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="DeferredPass.cpp">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowPass.cpp">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="OutlinePass.cpp">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="StencilPass.cpp">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="CubemapPass.cpp">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="FullQuadPass.cpp">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcessPass.cpp">
+      <Filter>Source\Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="DofPass.cpp">
+      <Filter>Source\Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="SsaoPass.cpp">
+      <Filter>Source\Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="BloomPass.cpp">
+      <Filter>Source\Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="ToneMapPass.cpp">
+      <Filter>Source\Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="GammaPass.cpp">
+      <Filter>Source\Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="FxaaPass.cpp">
+      <Filter>Source\Render\PostProcessPass</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -294,10 +336,7 @@
       <Filter>Source\Resource</Filter>
     </ClInclude>
     <ClInclude Include="Pass.h">
-      <Filter>Source\Render\Pass</Filter>
-    </ClInclude>
-    <ClInclude Include="PostProcessPass.h">
-      <Filter>Source\Render\Pass</Filter>
+      <Filter>Source\Render\RenderPass</Filter>
     </ClInclude>
     <ClInclude Include="Renderer.h">
       <Filter>Source\Render</Filter>
@@ -312,7 +351,49 @@
       <Filter>Source\Render</Filter>
     </ClInclude>
     <ClInclude Include="GBufferPass.h">
-      <Filter>Source\Render\Pass</Filter>
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="ForwardPass.h">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="DeferredPass.h">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowPass.h">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="OutlinePass.h">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="StencilPass.h">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="CubemapPass.h">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="FullQuadPass.h">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="PostProcessPass.h">
+      <Filter>Source\Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="DofPass.h">
+      <Filter>Source\Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="SsaoPass.h">
+      <Filter>Source\Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="BloomPass.h">
+      <Filter>Source\Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="ToneMapPass.h">
+      <Filter>Source\Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="GammaPass.h">
+      <Filter>Source\Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="FxaaPass.h">
+      <Filter>Source\Render\PostProcessPass</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -5,6 +5,7 @@
 #include "Global.h"
 #include "Pass.h"
 #include "PostProcessPass.h"
+#include "OutlinePass.h"
 #include "Primative.h"
 #include "RenderSystem.h"
 #include "SceneRenderer.h"
