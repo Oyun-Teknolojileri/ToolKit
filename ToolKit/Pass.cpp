@@ -354,7 +354,41 @@ namespace ToolKit
     }
   }
 
-  void RenderPass::CreateRenderJobs(EntityRawPtrArray entities)
+  void RenderPass::CreateRenderJobs(EntityRawPtrArray entities) {}
+
+  Pass::Pass() {}
+
+  Pass::~Pass() {}
+
+  void Pass::PreRender()
+  {
+    Renderer* renderer     = GetRenderer();
+    m_prevOverrideMaterial = renderer->m_overrideMat;
+    m_prevFrameBuffer      = renderer->GetFrameBuffer();
+  }
+
+  void Pass::PostRender()
+  {
+    Renderer* renderer      = GetRenderer();
+    renderer->m_overrideMat = m_prevOverrideMaterial;
+    renderer->SetFramebuffer(m_prevFrameBuffer, false);
+  }
+
+  void Pass::RenderSubPass(const PassPtr& pass)
+  {
+    Renderer* renderer = GetRenderer();
+    pass->SetRenderer(renderer);
+    pass->PreRender();
+    pass->Render();
+    pass->PostRender();
+  }
+
+  Renderer* Pass::GetRenderer() { return m_renderer; }
+
+  void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
+
+  void RenderJobProcessor::CreateRenderJobs(EntityRawPtrArray entities,
+                                            RenderJobArray& jobArray)
   {
     entities.erase(std::remove_if(entities.begin(),
                                   entities.end(),
@@ -411,40 +445,37 @@ namespace ToolKit
       Mat4 transform = ntt->m_node->GetTransform();
       for (size_t i = 0; i < allMeshes.size(); i++)
       {
-        m_renderJobs.push_back({allMeshes[i], allMaterials[i], transform});
+        jobArray.push_back({allMeshes[i], allMaterials[i], transform});
       }
     }
   }
 
-  Pass::Pass() {}
-
-  Pass::~Pass() {}
-
-  void Pass::PreRender()
+  void RenderJobProcessor::SeperateDeferredForward(
+      const RenderJobArray& jobArray,
+      RenderJobArray& deferred,
+      RenderJobArray& forward,
+      RenderJobArray& translucent)
   {
-    Renderer* renderer     = GetRenderer();
-    m_prevOverrideMaterial = renderer->m_overrideMat;
-    m_prevFrameBuffer      = renderer->GetFrameBuffer();
+    for (const RenderJob& job : jobArray) 
+    {
+      // Forward pipeline.
+      if (!job.Material->IsDeferred())
+      {
+        if (job.Material->IsTranslucent()) 
+        {
+          translucent.push_back(job);
+        }
+        else 
+        {
+          forward.push_back(job);
+        }
+      }
+      else 
+      {
+        // Deferred pipeline.
+        deferred.push_back(job);
+      }
+    }
   }
-
-  void Pass::PostRender()
-  {
-    Renderer* renderer      = GetRenderer();
-    renderer->m_overrideMat = m_prevOverrideMaterial;
-    renderer->SetFramebuffer(m_prevFrameBuffer, false);
-  }
-
-  void Pass::RenderSubPass(const PassPtr& pass)
-  {
-    Renderer* renderer = GetRenderer();
-    pass->SetRenderer(renderer);
-    pass->PreRender();
-    pass->Render();
-    pass->PostRender();
-  }
-
-  Renderer* Pass::GetRenderer() { return m_renderer; }
-
-  void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
 
 } // namespace ToolKit

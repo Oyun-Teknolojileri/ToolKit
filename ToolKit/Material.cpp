@@ -155,10 +155,7 @@ namespace ToolKit
     cpy->m_normalMap                = m_normalMap;
   }
 
-  RenderState* Material::GetRenderState()
-  {
-    return &m_renderState;
-  }
+  RenderState* Material::GetRenderState() { return &m_renderState; }
 
   void Material::SetRenderState(RenderState* state)
   {
@@ -180,6 +177,20 @@ namespace ToolKit
     default: // Custom
       break;
     }
+  }
+
+  bool Material::IsDeferred()
+  {
+    static String defferedShaderPath =
+        ShaderPath("deferredRenderFrag.shader", true);
+
+    return m_fragmentShader->GetFile() == defferedShaderPath;
+  }
+
+  bool Material::IsTranslucent()
+  {
+    return m_renderState.blendFunction ==
+           BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
   }
 
   void Material::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -399,7 +410,7 @@ namespace ToolKit
 
     material->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
-    
+
     material->GetRenderState()->useForwardPath = true;
     material->Init();
 

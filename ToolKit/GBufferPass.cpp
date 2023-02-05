@@ -4,6 +4,8 @@
 #include "Mesh.h"
 #include "ToolKit.h"
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
 
@@ -166,8 +168,6 @@ namespace ToolKit
 
     GetRenderer()->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
     GetRenderer()->SetCameraLens(m_params.camera);
-
-    CreateRenderJobs(m_params.entities);
   }
 
   void GBufferPass::PostRender() { Pass::PostRender(); }

@@ -47,6 +47,18 @@ namespace ToolKit
 
   typedef std::vector<RenderJob> RenderJobArray;
 
+  class RenderJobProcessor
+  {
+   public:
+    static void CreateRenderJobs(EntityRawPtrArray entities,
+                                 RenderJobArray& jobArray);
+
+    static void SeperateDeferredForward(const RenderJobArray& jobArray,
+                                        RenderJobArray& deferred,
+                                        RenderJobArray& forward,
+                                        RenderJobArray& translucent);
+  };
+
   /*
    * Base class for main rendering classes.
    */
