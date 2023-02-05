@@ -38,6 +38,15 @@ namespace ToolKit
     Renderer* m_renderer = nullptr;
   };
 
+  struct RenderJob
+  {
+    Mesh* Mesh           = nullptr;
+    MaterialPtr Material = nullptr;
+    Mat4 WorldTransform;
+  };
+
+  typedef std::vector<RenderJob> RenderJobArray;
+
   /*
    * Base class for main rendering classes.
    */
@@ -71,6 +80,11 @@ namespace ToolKit
         const EntityRawPtrArray& allEntities,
         EntityRawPtrArray& opaqueEntities,
         EntityRawPtrArray& translucentAndUnlitEntities);
+
+    void CreateRenderJobs(const EntityRawPtrArray& entities);
+
+   protected:
+    RenderJobArray m_renderJobs;
   };
 
   struct ForwardRenderPassParams
@@ -227,10 +241,10 @@ namespace ToolKit
 
   struct CubeMapPassParams
   {
-    FramebufferPtr FrameBuffer      = nullptr;
-    Camera* Cam                     = nullptr;
-    MaterialPtr Material            = nullptr;
-    CompareFunctions DepthFn        = CompareFunctions::FuncLequal;
+    FramebufferPtr FrameBuffer = nullptr;
+    Camera* Cam                = nullptr;
+    MaterialPtr Material       = nullptr;
+    CompareFunctions DepthFn   = CompareFunctions::FuncLequal;
     Mat4 Transform;
   };
 

@@ -3,6 +3,7 @@
 #include "DataTexture.h"
 #include "DirectionComponent.h"
 #include "Renderer.h"
+#include "ResourceComponent.h"
 #include "ShaderReflectionCache.h"
 #include "Toolkit.h"
 #include "Viewport.h"
@@ -350,6 +351,60 @@ namespace ToolKit
         return true;
       };
       checkSubmeshes();
+    }
+  }
+
+  void RenderPass::CreateRenderJobs(const EntityRawPtrArray& entities)
+  {
+    MeshRawPtrArray allMeshes;
+    MaterialPtrArray allMaterials;
+    for (Entity* ntt : entities)
+    {
+      MeshComponentPtr mc = ntt->GetMeshComponent();
+      mc->GetMeshVal()->GetAllMeshes(allMeshes);
+
+      allMaterials.reserve(allMeshes.size());
+      if (MaterialComponentPtr mc = ntt->GetMaterialComponent())
+      {
+        // Single material overrides all mesh materials.
+        MaterialPtr mat = mc->GetMaterialVal();
+        for (size_t i = 0; i < allMeshes.size(); i++)
+        {
+          allMaterials.push_back(mat);
+        }
+      }
+      else if (MultiMaterialPtr mmc =
+                   ntt->GetComponent<MultiMaterialComponent>())
+      {
+        // There are material assignments per sub mesh.
+        MaterialPtrArray& mlist = mmc->GetMaterialList();
+        for (size_t i = 0; i > mlist.size(); i++)
+        {
+          allMaterials.push_back(mlist[i]);
+        }
+      }
+
+      // Fill remaining if any with default or mesh materials.
+      size_t startIndx = allMaterials.empty() ? 0 : allMaterials.size() - 1;
+      for (size_t i = startIndx; i < allMeshes.size(); i++)
+      {
+        if (MaterialPtr mp = allMeshes[i]->m_material)
+        {
+          allMaterials.push_back(mp);
+        }
+        else
+        {
+          allMaterials.push_back(
+              GetMaterialManager()->GetCopyOfDefaultMaterial());
+        }
+      }
+
+      // Here we have all mesh and corresponding materials.
+      Mat4 transform = ntt->m_node->GetTransform();
+      for (size_t i = 0; i < allMeshes.size(); i++)
+      {
+        m_renderJobs.push_back({allMeshes[i], allMaterials[i], transform});
+      }
     }
   }
 
