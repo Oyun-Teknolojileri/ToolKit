@@ -243,6 +243,46 @@ namespace ToolKit
         file.close();
         lclDoc->clear();
       }
+      SerializeEngineSettings();
+    }
+
+    void Workspace::SerializeEngineSettings() const
+    {
+      std::ofstream file;
+
+      String path = ConcatPaths({GetProjectConfigPath(), "Engine.settings"});
+
+      file.open(path.c_str(), std::ios::failbit | std::ios::out);
+      assert(file.is_open());
+
+      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+
+      GetEngineSettings().Serialize(lclDoc.get(), nullptr);
+
+      std::string xml {};
+      rapidxml::print(std::back_inserter(xml), *lclDoc);
+      file << xml;
+      file.close();
+      lclDoc->clear();
+    }
+
+    void Workspace::DeSerializeEngineSettings()
+    {
+      String settingsFile =
+          ConcatPaths({GetProjectConfigPath(), "Engine.settings"});
+
+      // search for project/Engine.settings file,
+      // if its not exist pull default Engine.settings file from appdata
+      if (!CheckSystemFile(settingsFile))
+      {
+        settingsFile = ConcatPaths({ConfigPath(), "Engine.settings"});
+      }
+
+      XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
+      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+      lclDoc->parse<0>(lclFile->data());
+
+      GetEngineSettings().DeSerialize(lclDoc.get(), nullptr);
     }
 
     void Workspace::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -287,6 +327,7 @@ namespace ToolKit
           }
         }
       }
+      DeSerializeEngineSettings();
     }
 
   } // namespace Editor

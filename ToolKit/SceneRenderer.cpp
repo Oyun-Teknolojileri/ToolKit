@@ -95,7 +95,7 @@ namespace ToolKit
     {
       m_passArray.push_back(m_bloomPass);
     }
-    if (m_params.Gfx.DepthofFieldEnabled)
+    if (m_params.Gfx.DepthOfFieldEnabled)
     {
       m_passArray.push_back(m_dofPass);
     }
@@ -195,8 +195,8 @@ namespace ToolKit
     m_ssaoPass->m_params.GNormalBuffer      = m_gBufferPass->m_gNormalRt;
     m_ssaoPass->m_params.GLinearDepthBuffer = m_gBufferPass->m_gLinearDepthRt;
     m_ssaoPass->m_params.Cam                = m_params.Cam;
-    m_ssaoPass->m_params.ssaoRadius         = m_params.Gfx.ssaoRadius;
-    m_ssaoPass->m_params.ssaoBias           = m_params.Gfx.ssaoBias;
+    m_ssaoPass->m_params.ssaoRadius         = m_params.Gfx.SSAORadius;
+    m_ssaoPass->m_params.ssaoBias           = m_params.Gfx.SSAOBias;
 
     // Set CubeMapPass for sky.
     m_drawSky                               = false;
@@ -221,9 +221,9 @@ namespace ToolKit
     m_dofPass->m_params.ColorRt = m_params.MainFramebuffer->GetAttachment(
         Framebuffer::Attachment::ColorAttachment0);
     m_dofPass->m_params.DepthRt         = m_gBufferPass->m_gLinearDepthRt;
-    m_dofPass->m_params.focusPoint      = m_params.Gfx.focusPoint;
-    m_dofPass->m_params.focusScale      = m_params.Gfx.focusScale;
-    m_dofPass->m_params.blurQuality     = m_params.Gfx.dofQuality;
+    m_dofPass->m_params.focusPoint      = m_params.Gfx.FocusPoint;
+    m_dofPass->m_params.focusScale      = m_params.Gfx.FocusScale;
+    m_dofPass->m_params.blurQuality     = m_params.Gfx.DofQuality;
 
     // Tonemap pass.
     m_tonemapPass->m_params.FrameBuffer = m_params.MainFramebuffer;
