@@ -40,14 +40,15 @@ namespace ToolKit
 
   struct RenderJob
   {
-    Mesh* Mesh           = nullptr;
-    MaterialPtr Material = nullptr;
+    Mesh* Mesh                       = nullptr;
+    SkeletonComponentPtr SkeletonCmp = nullptr;
+    MaterialPtr Material             = nullptr;
     Mat4 WorldTransform;
   };
 
   typedef std::vector<RenderJob> RenderJobArray;
 
-  class RenderJobProcessor
+  class TK_API RenderJobProcessor
   {
    public:
     static void CreateRenderJobs(EntityRawPtrArray entities,
@@ -57,6 +58,19 @@ namespace ToolKit
                                         RenderJobArray& deferred,
                                         RenderJobArray& forward,
                                         RenderJobArray& translucent);
+
+    /**
+     * Utility function that sorts lights according to lit conditions from
+     * best to worst. Make sure lights array has updated shadow camera. Shadow
+     * camera is used in culling calculations.
+     */
+    static LightRawPtrArray SortLights(const RenderJob& job,
+                                       const LightRawPtrArray& lights);
+
+    // Sort entities  by distance (from boundary center)
+    // in ascending order to camera. Accounts for isometric camera.
+    void StableSortByDistanceToCamera(RenderJobArray& entities,
+                                      const Camera* cam);
   };
 
   /*
@@ -70,33 +84,8 @@ namespace ToolKit
 
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
-    void StableSortByDistanceToCamera(EntityRawPtrArray& entities,
+    void StableSortByDistanceToCamera(RenderJobArray& entities,
                                       const Camera* cam);
-
-    /**
-     * Extracts translucent entities from given entity array.
-     * @param entities Entity array that the translucent will extracted from.
-     * @param translucent Entity array that contains translucent entities.
-     */
-    void SeperateTranslucentEntities(const EntityRawPtrArray& allEntities,
-                                     EntityRawPtrArray& opaqueEntities,
-                                     EntityRawPtrArray& translucentEntities);
-
-    /**
-     * Extracts translucent and unlit entities from given entity array.
-     * @param entities Entity array that the translucent will extracted from.
-     * @param translucentAndUnlit Entity array that contains translucent and
-     * unlit entities.
-     */
-    void SeperateTranslucentAndUnlitEntities(
-        const EntityRawPtrArray& allEntities,
-        EntityRawPtrArray& opaqueEntities,
-        EntityRawPtrArray& translucentAndUnlitEntities);
-
-    void CreateRenderJobs(EntityRawPtrArray entities);
-
-   protected:
-    RenderJobArray m_renderJobs;
   };
 
 } // namespace ToolKit

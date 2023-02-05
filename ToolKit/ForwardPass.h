@@ -7,11 +7,12 @@ namespace ToolKit
 
   struct ForwardRenderPassParams
   {
-    EntityRawPtrArray Entities;
-    LightRawPtrArray Lights;
     Camera* Cam                = nullptr;
     FramebufferPtr FrameBuffer = nullptr;
     bool ClearFrameBuffer      = true;
+    RenderJobArray OpaqueJobs;
+    RenderJobArray TranslucentJobs;
+    LightRawPtrArray Lights;
   };
 
   /**
@@ -36,7 +37,7 @@ namespace ToolKit
      * @param zoom Zoom amount of camera.
      * @param lights All lights.
      */
-    void RenderOpaque(EntityRawPtrArray entities,
+    void RenderOpaque(RenderJobArray jobs,
                       Camera* cam,
                       const LightRawPtrArray& lights);
 
@@ -47,16 +48,12 @@ namespace ToolKit
      * @param cam Camera for rendering.
      * @param lights ights All lights.
      */
-    void RenderTranslucent(EntityRawPtrArray entities,
+    void RenderTranslucent(RenderJobArray jobs,
                            Camera* cam,
                            const LightRawPtrArray& lights);
 
    public:
     ForwardRenderPassParams m_params;
-
-   protected:
-    Camera* m_camera = nullptr;
-    EntityRawPtrArray m_drawList;
   };
 
   typedef std::shared_ptr<ForwardRenderPass> ForwardRenderPassPtr;

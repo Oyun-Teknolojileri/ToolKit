@@ -7,6 +7,7 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
+#include "Pass.h"
 #include "ResourceComponent.h"
 #include "Scene.h"
 #include "Shader.h"
@@ -26,111 +27,7 @@
 namespace ToolKit
 {
 
-  // An interval has start time and end time
-  struct LightSortStruct
-  {
-    Light* light        = nullptr;
-    uint intersectCount = 0;
-  };
-
-  // Compares two intervals according to starting times.
-  bool CompareLightIntersects(const LightSortStruct& i1,
-                              const LightSortStruct& i2)
-  {
-    return (i1.intersectCount > i2.intersectCount);
-  }
-
-  LightRawPtrArray GetBestLights(Entity* entity, const LightRawPtrArray& lights)
-  {
-    LightRawPtrArray bestLights;
-    bestLights.reserve(lights.size());
-
-    // Find the end of directional lights
-    for (int i = 0; i < lights.size(); i++)
-    {
-      if (lights[i]->GetType() == EntityType::Entity_DirectionalLight)
-      {
-        bestLights.push_back(lights[i]);
-      }
-    }
-
-    // Add the lights inside of the radius first
-    std::vector<LightSortStruct> intersectCounts(lights.size());
-    BoundingBox aabb = entity->GetAABB(true);
-    for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
-    {
-      float radius;
-      Light* light = lights[lightIndx];
-      if (light->GetType() == EntityType::Entity_PointLight)
-      {
-        radius = static_cast<PointLight*>(light)->GetRadiusVal();
-      }
-      else if (light->GetType() == EntityType::Entity_SpotLight)
-      {
-        radius = static_cast<SpotLight*>(light)->GetRadiusVal();
-      }
-      else
-      {
-        continue;
-      }
-
-      intersectCounts[lightIndx].light = light;
-      uint& curIntersectCount = intersectCounts[lightIndx].intersectCount;
-
-      /* This algorithms can be used for better sorting
-      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
-      {
-        for (uint isMin = 0; isMin < 2; isMin++)
-        {
-          Vec3 p     = aabb.min;
-          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
-          float dist = glm::length(
-              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
-          if (dist <= radius)
-          {
-            curIntersectCount++;
-          }
-        }
-      }*/
-
-      if (light->GetType() == EntityType::Entity_SpotLight)
-      {
-        light->UpdateShadowCamera();
-
-        Frustum spotFrustum =
-            ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
-
-        if (FrustumBoxIntersection(spotFrustum, aabb) !=
-            IntersectResult::Outside)
-        {
-          curIntersectCount++;
-        }
-      }
-      if (light->GetType() == EntityType::Entity_PointLight)
-      {
-        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
-        if (SphereBoxIntersection(lightSphere, aabb))
-        {
-          curIntersectCount++;
-        }
-      }
-    }
-
-    std::sort(intersectCounts.begin(),
-              intersectCounts.end(),
-              CompareLightIntersects);
-
-    for (uint i = 0; i < intersectCounts.size(); i++)
-    {
-      if (intersectCounts[i].intersectCount == 0)
-      {
-        break;
-      }
-      bestLights.push_back(intersectCounts[i].light);
-    }
-
-    return bestLights;
-  }
+#define TK_LUT_TEXTURE "GLOBAL_BRDF_LUT_TEXTURE"
 
   Renderer::Renderer()
   {
@@ -201,162 +98,115 @@ namespace ToolKit
     // RenderEntities(entities, m_uiCamera, viewport);
   }
 
-  void Renderer::Render(Entity* ntt,
-                        Camera* cam,
-                        const LightRawPtrArray& lights,
-                        const UIntArray& meshIndices)
+  void Renderer::Render(RenderJob& job, Camera* cam, LightRawPtrArray lights)
   {
     if (!cam->IsOrtographic())
     {
       // TODO: Orthographic mode must support environment lighting.
-      FindEnvironmentLight(ntt);
+      FindEnvironmentLight(job);
     }
-
-    MeshComponentPtrArray meshComponents;
-    ntt->GetComponent<MeshComponent>(meshComponents);
-
-    MaterialPtr nttMat;
-    if (MaterialComponentPtr matCom = ntt->GetComponent<MaterialComponent>())
-    {
-      if (nttMat = matCom->GetMaterialVal())
-      {
-        nttMat->Init();
-      }
-    }
-
-    MultiMaterialPtr mmComp = ntt->GetComponent<MultiMaterialComponent>();
 
     // Skeleton Component is used by all meshes of an entity.
-    const auto& updateAndBindSkinningTextures = [ntt, this]()
+    const auto& updateAndBindSkinningTextures = [&job, this]()
     {
-      SkeletonComponentPtr skelComp = ntt->GetComponent<SkeletonComponent>();
-      if (skelComp == nullptr)
+      if (!job.Mesh->IsSkinned())
       {
         return;
       }
 
-      SkeletonPtr skel = skelComp->GetSkeletonResourceVal();
+      SkeletonPtr skel = static_cast<SkinMesh*>(job.Mesh)->m_skeleton;
       if (skel == nullptr)
+      {
+        return;
+      }
+
+      SkeletonComponentPtr skCom = job.SkeletonCmp;
+      if (skCom == nullptr)
       {
         return;
       }
 
       // Bind bone textures
       // This is valid because these slots will be used by every shader program
-      //   below (Renderer::TextureSlot system).
-      // But bone count can't be bound here because its location changes every
-      //   shader program
-      SetTexture(2, skel->m_bindPoseTexture->m_textureId);
-      SetTexture(3, skelComp->m_map->boneTransformNodeTexture->m_textureId);
+      // below (Renderer::TextureSlot system). But bone count can't be bound
+      // here because its location changes every shader program.
 
-      skelComp->m_map->UpdateGPUTexture();
+      SetTexture(2, skel->m_bindPoseTexture->m_textureId);
+      SetTexture(3, skCom->m_map->boneTransformNodeTexture->m_textureId);
+      skCom->m_map->UpdateGPUTexture();
     };
 
     updateAndBindSkinningTextures();
 
-    uint entityMeshIndex = 0, meshIndicesIterator = 0;
-    for (MeshComponentPtr meshCom : meshComponents)
+    SetProjectViewModel(job.WorldTransform, cam);
+    m_lights = lights;
+    m_cam    = cam;
+    job.Mesh->Init();
+    job.Material->Init();
+
+    // Set render material.
+    m_mat = nullptr;
+    if (m_overrideMat != nullptr)
     {
-      MeshPtr mainMesh = meshCom->GetMeshVal();
-      m_lights         = lights; // GetBestLights(ntt, lights);
-      m_cam            = cam;
-      SetProjectViewModel(ntt, cam);
+      m_mat = m_overrideMat;
+    }
+    else
+    {
+      m_mat = job.Material;
+    }
 
-      mainMesh->Init();
+    if (m_mat == nullptr)
+    {
+      assert(false);
+      m_mat = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    }
 
-      MeshRawPtrArray meshCollector;
-      mainMesh->GetAllMeshes(meshCollector);
+    m_mat->Init();
+    ProgramPtr prg =
+        CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
+    BindProgram(prg);
 
-      for (uint meshIndx = 0; meshIndx < meshCollector.size();
-           meshIndx++, entityMeshIndex++)
+    auto activateSkinning = [prg, &job](uint isSkinned)
+    {
+      if (job.SkeletonCmp == nullptr)
       {
-        if (meshIndices.size())
-        {
-          if (meshIndicesIterator >= meshIndices.size() ||
-              entityMeshIndex != meshIndices[meshIndicesIterator])
-          {
-            continue;
-          }
-          else
-          {
-            meshIndicesIterator++;
-          }
-        }
-        Mesh* mesh = meshCollector[meshIndx];
-
-        if (mesh->m_vertexCount == 0)
-        {
-          continue;
-        }
-
-        if (mmComp && mmComp->GetMaterialList().size() > entityMeshIndex)
-        {
-          nttMat = mmComp->GetMaterialList()[entityMeshIndex];
-        }
-        mesh->Init();
-
-        // Set render material.
-        m_mat = nullptr;
-
-        if (m_overrideMat != nullptr)
-        {
-          m_mat = m_overrideMat;
-        }
-        else
-        {
-          m_mat = nttMat ? nttMat : mesh->m_material;
-        }
-
-        if (m_mat == nullptr)
-        {
-          assert(false);
-          m_mat = GetMaterialManager()->GetCopyOfDefaultMaterial();
-        }
-
-        m_mat->Init();
-
-        ProgramPtr prg =
-            CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
-
-        BindProgram(prg);
-
-        auto activateSkinning = [prg, ntt](uint isSkinned)
-        {
-          GLint isSkinnedLoc = glGetUniformLocation(prg->m_handle, "isSkinned");
-          glUniform1ui(isSkinnedLoc, isSkinned);
-          if (isSkinned)
-          {
-            GLint numBonesLoc = glGetUniformLocation(prg->m_handle, "numBones");
-            float boneCount =
-                static_cast<float>(ntt->GetComponent<SkeletonComponent>()
-                                       ->GetSkeletonResourceVal()
-                                       ->m_bones.size());
-            glUniform1fv(numBonesLoc, 1, &boneCount);
-          }
-        };
-        activateSkinning(mesh->IsSkinned());
-
-        RenderState* rs = m_mat->GetRenderState();
-        SetRenderState(rs);
-        FeedUniforms(prg);
-
-        glBindVertexArray(mesh->m_vaoId);
-        glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
-        SetVertexLayout(mesh->m_vertexLayout);
-
-        if (mesh->m_indexCount != 0)
-        {
-          glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-          glDrawElements((GLenum) rs->drawType,
-                         mesh->m_indexCount,
-                         GL_UNSIGNED_INT,
-                         nullptr);
-        }
-        else
-        {
-          glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
-        }
+        return;
       }
+
+      GLint isSkinnedLoc = glGetUniformLocation(prg->m_handle, "isSkinned");
+      glUniform1ui(isSkinnedLoc, isSkinned);
+      if (isSkinned)
+      {
+        GLint numBonesLoc = glGetUniformLocation(prg->m_handle, "numBones");
+        float boneCount =
+            (float) job.SkeletonCmp->GetSkeletonResourceVal()->m_bones.size();
+
+        glUniform1fv(numBonesLoc, 1, &boneCount);
+      }
+    };
+
+    Mesh* mesh = job.Mesh;
+    activateSkinning(mesh->IsSkinned());
+
+    RenderState* rs = m_mat->GetRenderState();
+    SetRenderState(rs);
+    FeedUniforms(prg);
+
+    glBindVertexArray(mesh->m_vaoId);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
+    SetVertexLayout(mesh->m_vertexLayout);
+
+    if (mesh->m_indexCount != 0)
+    {
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
+      glDrawElements((GLenum) rs->drawType,
+                     mesh->m_indexCount,
+                     GL_UNSIGNED_INT,
+                     nullptr);
+    }
+    else
+    {
+      glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
     }
   }
 
@@ -474,7 +324,7 @@ namespace ToolKit
     // TODO: Cihan move SetTexture to render path.
     if (m_mat)
     {
-      if (m_mat->m_cubeMap) 
+      if (m_mat->m_cubeMap)
       {
         SetTexture(6, m_mat->m_cubeMap->m_textureId);
       }
@@ -818,7 +668,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::FindEnvironmentLight(Entity* entity)
+  void Renderer::FindEnvironmentLight(RenderJob& job)
   {
     // Note: If multiple bounding boxes are intersecting and the intersection
     // volume includes the entity, the smaller bounding box is taken
@@ -827,15 +677,15 @@ namespace ToolKit
     // be lit with environment light
 
     Entity* env     = nullptr;
-    MaterialPtr mat = GetRenderMaterial(entity);
+    MaterialPtr mat = job.Material;
+    Vec3 pos        = glm::column(job.WorldTransform, 3).xyz;
 
-    Vec3 pos = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
     BoundingBox bestBox {ZERO, ZERO};
     BoundingBox currentBox;
+
     for (Entity* envNtt : m_environmentLightEntities)
     {
       currentBox = envNtt->GetComponent<EnvironmentComponent>()->GetBBox();
-
       if (PointInsideBBox(pos, currentBox.max, currentBox.min))
       {
         auto setCurrentBBox = [&bestBox, &env](const BoundingBox& box,
@@ -872,52 +722,30 @@ namespace ToolKit
       }
     }
 
-    std::vector<RenderState*> matRenderStates {};
-
-    MultiMaterialPtr multiMaterial =
-        entity->GetComponent<MultiMaterialComponent>();
-
-    if (multiMaterial)
-    {
-      for (MaterialPtr i : multiMaterial->GetMaterialList())
-      {
-        matRenderStates.push_back(i->GetRenderState());
-      }
-    }
-    else
-    {
-      matRenderStates.push_back(mat->GetRenderState());
-    }
-
     if (env != nullptr)
     {
       EnvironmentComponentPtr envCom =
           env->GetComponent<EnvironmentComponent>();
 
-      std::for_each(matRenderStates.begin(),
-                    matRenderStates.end(),
-                    [&](RenderState* state)
-                    {
-                      state->IBLInUse     = true;
-                      state->iblIntensity = envCom->GetIntensityVal();
-                    });
+      RenderState* state                   = mat->GetRenderState();
+      state->IBLInUse                      = true;
+      state->iblIntensity                  = envCom->GetIntensityVal();
+
       HdriPtr hdriPtr                      = envCom->GetHdriVal();
       CubeMapPtr irradianceCubemap         = hdriPtr->m_irradianceCubemap;
       CubeMapPtr preFilteredSpecularIBLMap = hdriPtr->m_prefilteredEnvMap;
 
       if (irradianceCubemap && preFilteredSpecularIBLMap &&
-          GetTextureManager()->Exist("GLOBAL_BRDF_LUT_TEXTURE"))
+          GetTextureManager()->Exist(TK_LUT_TEXTURE))
       {
-        RenderTargetPtr brdfLut = GetTextureManager()->Create<RenderTarget>(
-            "GLOBAL_BRDF_LUT_TEXTURE");
-        for (RenderState* state : matRenderStates)
-        {
-          state->irradianceMap = irradianceCubemap->m_textureId;
-          state->preFilteredSpecularMap =
-              preFilteredSpecularIBLMap->m_textureId;
-          state->brdfLut = brdfLut->m_textureId;
-        }
+        RenderTargetPtr brdfLut =
+            GetTextureManager()->Create<RenderTarget>(TK_LUT_TEXTURE);
+
+        state->irradianceMap          = irradianceCubemap->m_textureId;
+        state->preFilteredSpecularMap = preFilteredSpecularIBLMap->m_textureId;
+        state->brdfLut                = brdfLut->m_textureId;
       }
+
       m_iblRotation =
           Mat4(env->m_node->GetOrientation(TransformationSpace::TS_WORLD));
     }
@@ -928,6 +756,7 @@ namespace ToolKit
           m_sky->GetIlluminateVal())
       {
         mat->GetRenderState()->IBLInUse = true;
+        RenderState* state              = mat->GetRenderState();
         if (m_sky->GetType() == EntityType::Entity_Sky)
         {
           HdriPtr hdriPtr = static_cast<Sky*>(m_sky)
@@ -937,35 +766,25 @@ namespace ToolKit
           CubeMapPtr irradianceCubemap         = hdriPtr->m_irradianceCubemap;
           CubeMapPtr preFilteredSpecularIBLMap = hdriPtr->m_prefilteredEnvMap;
 
-          RenderTargetPtr brdfLut = GetTextureManager()->Create<RenderTarget>(
-              "GLOBAL_BRDF_LUT_TEXTURE");
+          RenderTargetPtr brdfLut =
+              GetTextureManager()->Create<RenderTarget>(TK_LUT_TEXTURE);
+
           if (irradianceCubemap && preFilteredSpecularIBLMap && brdfLut)
           {
-            for (RenderState* state : matRenderStates)
-            {
-              state->irradianceMap = irradianceCubemap->m_textureId;
-              state->preFilteredSpecularMap =
-                  preFilteredSpecularIBLMap->m_textureId;
-              state->brdfLut = brdfLut->m_textureId;
-            }
+            state->irradianceMap = irradianceCubemap->m_textureId;
+            state->preFilteredSpecularMap =
+                preFilteredSpecularIBLMap->m_textureId;
+            state->brdfLut = brdfLut->m_textureId;
           }
         }
         else if (m_sky->GetType() == EntityType::Entity_GradientSky)
         {
           uint irradianceMap =
               static_cast<GradientSky*>(m_sky)->GetIrradianceMap()->m_textureId;
-
-          for (RenderState* state : matRenderStates)
-          {
-            state->irradianceMap = irradianceMap;
-          }
+          state->irradianceMap = irradianceMap;
         }
 
-        std::for_each(matRenderStates.begin(),
-                      matRenderStates.end(),
-                      [&](RenderState* state)
-                      { state->iblIntensity = m_sky->GetIntensityVal(); });
-
+        state->iblIntensity = m_sky->GetIntensityVal();
         m_iblRotation =
             Mat4(m_sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
       }
@@ -1046,30 +865,11 @@ namespace ToolKit
     DrawFullQuad(m_averageBlurMaterial);
   }
 
-  void Renderer::SetProjectViewModel(Entity* ntt, Camera* cam)
+  void Renderer::SetProjectViewModel(Mat4& model, Camera* cam)
   {
     m_view    = cam->GetViewMatrix();
-
-    // Recalculate the projection matrix due to aspect ratio changes of the
-    // current frame buffer.
-    /*if (cam->IsOrtographic())
-    {
-      // ASPECT ??
-      cam->SetLens(cam->Left(),
-                   cam->Right(),
-                   cam->Top(),
-                   cam->Bottom(),
-                   cam->Near(),
-                   cam->Far());
-    }
-    else
-    {
-      float aspect = (float) m_viewportSize.x / (float) m_viewportSize.y;
-      cam->SetLens(cam->Fov(), aspect);
-    }*/
-
     m_project = cam->GetProjectionMatrix();
-    m_model   = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
+    m_model   = model;
   }
 
   void Renderer::BindProgram(ProgramPtr program)

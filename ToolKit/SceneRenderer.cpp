@@ -50,8 +50,8 @@ namespace ToolKit
   {
     PreRender(renderer);
 
-    CullDrawList(m_gBufferPass->m_params.entities, m_params.Cam);
-    CullDrawList(m_forwardRenderPass->m_params.Entities, m_params.Cam);
+    //CullDrawList(m_gBufferPass->m_params.entities, m_params.Cam);
+    //CullDrawList(m_forwardRenderPass->m_params.Entities, m_params.Cam);
 
     // First stage of the render.
     m_passArray.clear();
@@ -154,10 +154,18 @@ namespace ToolKit
     m_shadowPass->m_params.Entities = m_params.Scene->GetEntities();
     m_shadowPass->m_params.Lights   = m_updatedLights;
 
-    // Give blended entities to forward render, non-blendeds to deferred
-    // render
-
     EntityRawPtrArray allDrawList   = m_params.Scene->GetEntities();
+    CullDrawList(allDrawList, m_params.Cam);
+
+    RenderJobArray jobs;
+    RenderJobProcessor::CreateRenderJobs(allDrawList, jobs);
+
+    RenderJobArray deferred, forward, translucent;
+    RenderJobProcessor::SeperateDeferredForward(jobs,
+                                                deferred,
+                                                forward,
+                                                translucent);
+
     EntityRawPtrArray opaqueDrawList;
     EntityRawPtrArray translucentAndUnlitDrawList;
     m_forwardRenderPass->SeperateTranslucentAndUnlitEntities(

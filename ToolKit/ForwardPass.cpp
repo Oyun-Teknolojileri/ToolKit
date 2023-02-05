@@ -22,15 +22,8 @@ namespace ToolKit
 
   void ForwardRenderPass::Render()
   {
-    EntityRawPtrArray opaqueDrawList;
-    EntityRawPtrArray translucentDrawList;
-    SeperateTranslucentEntities(m_drawList,
-                                opaqueDrawList,
-                                translucentDrawList);
-
-    RenderOpaque(opaqueDrawList, m_camera, m_params.Lights);
-
-    RenderTranslucent(translucentDrawList, m_camera, m_params.Lights);
+    RenderOpaque(m_params.OpaqueJobs, m_params.Cam, m_params.Lights);
+    RenderTranslucent(m_params.TranslucentJobs, m_params.Cam, m_params.Lights);
   }
 
   ForwardRenderPass::~ForwardRenderPass() {}
@@ -39,14 +32,10 @@ namespace ToolKit
   {
     Pass::PreRender();
 
-    Renderer* renderer = GetRenderer();
-
     // Set self data.
-    m_drawList         = m_params.Entities;
-    m_camera           = m_params.Cam;
-
+    Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer);
-    renderer->SetCameraLens(m_camera);
+    renderer->SetCameraLens(m_params.Cam);
   }
 
   void ForwardRenderPass::PostRender()
@@ -55,116 +44,51 @@ namespace ToolKit
     GetRenderer()->m_overrideMat = nullptr;
   }
 
-  void ForwardRenderPass::RenderOpaque(EntityRawPtrArray entities,
+  void ForwardRenderPass::RenderOpaque(RenderJobArray jobs,
                                        Camera* cam,
                                        const LightRawPtrArray& lights)
   {
     Renderer* renderer = GetRenderer();
-    for (Entity* ntt : entities)
+    for (RenderJob& job : jobs)
     {
-      LightRawPtrArray lightList = GetBestLights(ntt, lights);
+      LightRawPtrArray lightList = RenderJobProcessor::SortLights(job, lights);
       uint activeMeshIndx        = 0;
-
-      MultiMaterialPtr mmComp    = ntt->GetComponent<MultiMaterialComponent>();
-
-      if (mmComp == nullptr)
-      {
-        renderer->Render(ntt, cam, lightList);
-      }
-      else
-      {
-        MeshComponentPtrArray meshComps;
-        ntt->GetComponent<MeshComponent>(meshComps);
-        for (MeshComponentPtr meshComp : meshComps)
-        {
-          MeshRawCPtrArray meshes;
-          meshComp->GetMeshVal()->GetAllMeshes(meshes);
-          for (uint meshIndx = 0; meshIndx < meshes.size();
-               meshIndx++, activeMeshIndx++)
-          {
-            if (mmComp && mmComp->GetMaterialList().size() > activeMeshIndx)
-            {
-              MaterialPtr mat = mmComp->GetMaterialList()[activeMeshIndx];
-              if (mat->GetRenderState()->useForwardPath &&
-                  (mat->GetRenderState()->blendFunction ==
-                       BlendFunction::NONE ||
-                   mat->GetRenderState()->blendFunction ==
-                       BlendFunction::ALPHA_MASK))
-              {
-                renderer->Render(ntt, cam, lightList, {activeMeshIndx});
-              }
-            }
-          }
-        }
-      }
+      renderer->Render(job, m_params.Cam, lightList);
     }
   }
 
-  void ForwardRenderPass::RenderTranslucent(EntityRawPtrArray entities,
+  void ForwardRenderPass::RenderTranslucent(RenderJobArray jobs,
                                             Camera* cam,
                                             const LightRawPtrArray& lights)
   {
-    StableSortByDistanceToCamera(entities, cam);
+    StableSortByDistanceToCamera(jobs, cam);
 
     Renderer* renderer = GetRenderer();
-    for (Entity* ntt : entities)
+    auto renderFnc     = [cam, lights, renderer](RenderJob& job)
     {
+      LightRawPtrArray culledLights =
+          RenderJobProcessor::SortLights(job, lights);
 
-      uint activeMeshIndx        = 0;
-      MultiMaterialPtr mmComp    = ntt->GetComponent<MultiMaterialComponent>();
-      MaterialPtr renderMaterial = ntt->GetRenderMaterial();
-      auto renderFnc =
-          [ntt, cam, lights, renderer](MaterialPtr renderMaterial,
-                                       const UIntArray& meshIndices)
+      MaterialPtr mat = job.Material;
+      if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
       {
-        LightRawPtrArray culledLights = GetBestLights(ntt, lights);
-        if (renderMaterial->GetRenderState()->cullMode == CullingType::TwoSided)
-        {
-          renderMaterial->GetRenderState()->cullMode = CullingType::Front;
-          renderer->Render(ntt, cam, culledLights, meshIndices);
+        mat->GetRenderState()->cullMode = CullingType::Front;
+        renderer->Render(job, cam, culledLights);
 
-          renderMaterial->GetRenderState()->cullMode = CullingType::Back;
-          renderer->Render(ntt, cam, culledLights, meshIndices);
+        mat->GetRenderState()->cullMode = CullingType::Back;
+        renderer->Render(job, cam, culledLights);
 
-          renderMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
-        }
-        else
-        {
-          renderer->Render(ntt, cam, culledLights, meshIndices);
-        }
-      };
-
-      if (mmComp == nullptr)
-      {
-        renderFnc(renderMaterial, {});
+        mat->GetRenderState()->cullMode = CullingType::TwoSided;
       }
       else
       {
-        MeshComponentPtrArray meshComps;
-        ntt->GetComponent<MeshComponent>(meshComps);
-        for (MeshComponentPtr meshComp : meshComps)
-        {
-          MeshRawCPtrArray meshes;
-          meshComp->GetMeshVal()->GetAllMeshes(meshes);
-          for (uint meshIndx = 0; meshIndx < meshes.size();
-               meshIndx++, activeMeshIndx++)
-          {
-            if (mmComp && mmComp->GetMaterialList().size() > activeMeshIndx)
-            {
-              renderMaterial = mmComp->GetMaterialList()[activeMeshIndx];
-              if (!renderMaterial->GetRenderState()->useForwardPath ||
-                  (renderMaterial->GetRenderState()->blendFunction ==
-                       BlendFunction::NONE ||
-                   renderMaterial->GetRenderState()->blendFunction ==
-                       BlendFunction::ALPHA_MASK))
-              {
-                continue;
-              }
-            }
-            renderFnc(renderMaterial, {activeMeshIndx});
-          }
-        }
+        renderer->Render(job, cam, culledLights);
       }
+    };
+
+    for (RenderJob& job : jobs)
+    {
+      renderFnc(job);
     }
   }
 

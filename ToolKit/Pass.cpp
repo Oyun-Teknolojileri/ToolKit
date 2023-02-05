@@ -2,6 +2,7 @@
 
 #include "DataTexture.h"
 #include "DirectionComponent.h"
+#include "Pass.h"
 #include "Renderer.h"
 #include "ResourceComponent.h"
 #include "ShaderReflectionCache.h"
@@ -15,346 +16,6 @@ namespace ToolKit
   RenderPass::RenderPass() {}
 
   RenderPass::~RenderPass() {}
-
-  void RenderPass::StableSortByDistanceToCamera(EntityRawPtrArray& entities,
-                                                const Camera* cam)
-  {
-    std::function<bool(Entity*, Entity*)> sortFn = [cam](Entity* ntt1,
-                                                         Entity* ntt2) -> bool
-    {
-      Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-
-      BoundingBox bb1 = ntt1->GetAABB(true);
-      float first     = glm::length2(bb1.GetCenter() - camLoc);
-
-      BoundingBox bb2 = ntt2->GetAABB(true);
-      float second    = glm::length2(bb2.GetCenter() - camLoc);
-
-      return second < first;
-    };
-
-    if (cam->IsOrtographic())
-    {
-      sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool
-      {
-        float first =
-            ntt1->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
-
-        float second =
-            ntt2->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
-
-        return first < second;
-      };
-    }
-
-    std::stable_sort(entities.begin(), entities.end(), sortFn);
-  }
-
-  void RenderPass::SeperateTranslucentEntities(
-      const EntityRawPtrArray& allEntities,
-      EntityRawPtrArray& opaqueEntities,
-      EntityRawPtrArray& translucentEntities)
-  {
-    for (Entity* ntt : allEntities)
-    {
-      auto checkMatTranslucency = [](MaterialPtr mat) -> bool
-      {
-        if (mat &&
-            mat->GetRenderState()->blendFunction != BlendFunction::NONE &&
-            mat->GetRenderState()->blendFunction != BlendFunction::ALPHA_MASK)
-        {
-          return true;
-        }
-        return false;
-      };
-
-      // Return true if multi material component is found
-      auto checkMultiMaterialComp = [ntt,
-                                     &checkMatTranslucency,
-                                     &opaqueEntities,
-                                     &translucentEntities]() -> bool
-      {
-        MultiMaterialPtr mmComp;
-        mmComp = ntt->GetComponent<MultiMaterialComponent>();
-        if (mmComp)
-        {
-          bool isThereOpaque = false, isThereTranslucent = false;
-          for (MaterialPtr mat : mmComp->GetMaterialList())
-          {
-            if (checkMatTranslucency(mat))
-            {
-              isThereTranslucent = true;
-            }
-            else
-            {
-              isThereOpaque = true;
-            }
-          }
-          if (isThereTranslucent)
-          {
-            translucentEntities.push_back(ntt);
-          }
-          if (isThereOpaque)
-          {
-            opaqueEntities.push_back(ntt);
-          }
-          return true;
-        }
-        return false;
-      };
-      if (checkMultiMaterialComp())
-      {
-        continue;
-      }
-
-      auto checkMaterialComps = [ntt,
-                                 &checkMatTranslucency,
-                                 &opaqueEntities,
-                                 &translucentEntities]() -> bool
-      {
-        // Check too see if there are any material with blend state.
-        MaterialComponentPtrArray materials;
-        ntt->GetComponent<MaterialComponent>(materials);
-
-        if (!materials.empty())
-        {
-          bool isThereOpaque = false, isThereTranslucent = false;
-          for (MaterialComponentPtr& mt : materials)
-          {
-            if (checkMatTranslucency(mt->GetMaterialVal()))
-            {
-              isThereTranslucent = true;
-            }
-            else
-            {
-              isThereOpaque = true;
-            }
-          }
-          if (isThereTranslucent)
-          {
-            translucentEntities.push_back(ntt);
-          }
-          if (isThereOpaque)
-          {
-            opaqueEntities.push_back(ntt);
-          }
-          return true;
-        }
-        return false;
-      };
-      if (checkMaterialComps())
-      {
-        continue;
-      }
-
-      auto checkSubmeshes = [ntt,
-                             &checkMatTranslucency,
-                             &opaqueEntities,
-                             &translucentEntities]() -> bool
-      {
-        MeshComponentPtrArray meshes;
-        ntt->GetComponent<MeshComponent>(meshes);
-
-        if (meshes.empty())
-        {
-          return false;
-        }
-
-        bool isThereOpaque = false, isThereTranslucent = false;
-        for (MeshComponentPtr& ms : meshes)
-        {
-          MeshRawCPtrArray all;
-          ms->GetMeshVal()->GetAllMeshes(all);
-          for (const Mesh* m : all)
-          {
-            if (checkMatTranslucency(m->m_material))
-            {
-              isThereTranslucent = true;
-            }
-            else
-            {
-              isThereOpaque = true;
-            }
-          }
-          if (isThereTranslucent)
-          {
-            translucentEntities.push_back(ntt);
-          }
-          if (isThereOpaque)
-          {
-            opaqueEntities.push_back(ntt);
-          }
-        }
-        return true;
-      };
-      checkSubmeshes();
-    }
-  }
-
-  void RenderPass::SeperateTranslucentAndUnlitEntities(
-      const EntityRawPtrArray& allEntities,
-      EntityRawPtrArray& opaqueEntities,
-      EntityRawPtrArray& translucentAndUnlitEntities)
-  {
-    for (Entity* ntt : allEntities)
-    {
-      auto checkMatTranslucentUnlit = [](MaterialPtr mat)
-      {
-        if (mat)
-        {
-          RenderState* rs = mat->GetRenderState();
-          if ((rs->blendFunction != BlendFunction::NONE &&
-               rs->blendFunction != BlendFunction::ALPHA_MASK) ||
-              rs->useForwardPath)
-          {
-            return true;
-          }
-        }
-        return false;
-      };
-
-      auto checkMatOpaque = [](MaterialPtr mat)
-      {
-        if (mat)
-        {
-          RenderState* rs = mat->GetRenderState();
-          if ((rs->blendFunction == BlendFunction::NONE ||
-               rs->blendFunction == BlendFunction::ALPHA_MASK) &&
-              !rs->useForwardPath)
-          {
-            return true;
-          }
-        }
-        return false;
-      };
-
-      auto checkMultiMaterialComp = [ntt,
-                                     &checkMatTranslucentUnlit,
-                                     &checkMatOpaque,
-                                     &opaqueEntities,
-                                     &translucentAndUnlitEntities]() -> bool
-      {
-        MultiMaterialPtr mmComp;
-        mmComp = ntt->GetComponent<MultiMaterialComponent>();
-        if (mmComp)
-        {
-          bool isThereOpaque = false, isThereTranslucentUnlit = false;
-          for (MaterialPtr mat : mmComp->GetMaterialList())
-          {
-            if (!isThereTranslucentUnlit && checkMatTranslucentUnlit(mat))
-            {
-              isThereTranslucentUnlit = true;
-            }
-            if (!isThereOpaque && checkMatOpaque(mat))
-            {
-              isThereOpaque = true;
-            }
-          }
-          if (isThereTranslucentUnlit)
-          {
-            translucentAndUnlitEntities.push_back(ntt);
-          }
-          if (isThereOpaque)
-          {
-            opaqueEntities.push_back(ntt);
-          }
-          return true;
-        }
-        return false;
-      };
-      if (checkMultiMaterialComp())
-      {
-        continue;
-      }
-
-      auto checkMatComps = [ntt,
-                            &checkMatTranslucentUnlit,
-                            &checkMatOpaque,
-                            &opaqueEntities,
-                            &translucentAndUnlitEntities]() -> bool
-      {
-        // Check too see if there are any material with blend state.
-        MaterialComponentPtrArray materials;
-        ntt->GetComponent<MaterialComponent>(materials);
-        if (!materials.empty())
-        {
-          bool isThereOpaque = false, isThereTranslucentUnlit = false;
-          for (MaterialComponentPtr& mtc : materials)
-          {
-            if (!isThereTranslucentUnlit &&
-                checkMatTranslucentUnlit(mtc->GetMaterialVal()))
-            {
-              isThereTranslucentUnlit = true;
-            }
-            if (!isThereOpaque && checkMatOpaque(mtc->GetMaterialVal()))
-            {
-              isThereOpaque = true;
-            }
-          }
-          if (isThereTranslucentUnlit)
-          {
-            translucentAndUnlitEntities.push_back(ntt);
-          }
-          if (isThereOpaque)
-          {
-            opaqueEntities.push_back(ntt);
-          }
-          return true;
-        }
-        return false;
-      };
-      if (checkMatComps())
-      {
-        continue;
-      }
-
-      auto checkSubmeshes = [ntt,
-                             &checkMatTranslucentUnlit,
-                             &checkMatOpaque,
-                             &opaqueEntities,
-                             &translucentAndUnlitEntities]() -> bool
-      {
-        MeshComponentPtrArray meshes;
-        ntt->GetComponent<MeshComponent>(meshes);
-
-        if (meshes.empty())
-        {
-          return false;
-        }
-
-        for (MeshComponentPtr& ms : meshes)
-        {
-          MeshRawCPtrArray all;
-          ms->GetMeshVal()->GetAllMeshes(all);
-          bool isThereOpaque = false, isThereTranslucentUnlit = false;
-          for (const Mesh* m : all)
-          {
-            if (!isThereTranslucentUnlit &&
-                checkMatTranslucentUnlit(m->m_material))
-            {
-              isThereTranslucentUnlit = true;
-            }
-            if (!isThereOpaque && checkMatOpaque(m->m_material))
-            {
-              isThereOpaque = true;
-            }
-          }
-          if (isThereTranslucentUnlit)
-          {
-            translucentAndUnlitEntities.push_back(ntt);
-          }
-          if (isThereOpaque)
-          {
-            opaqueEntities.push_back(ntt);
-          }
-        }
-        return true;
-      };
-      checkSubmeshes();
-    }
-  }
-
-  void RenderPass::CreateRenderJobs(EntityRawPtrArray entities) {}
 
   Pass::Pass() {}
 
@@ -445,7 +106,13 @@ namespace ToolKit
       Mat4 transform = ntt->m_node->GetTransform();
       for (size_t i = 0; i < allMeshes.size(); i++)
       {
-        jobArray.push_back({allMeshes[i], allMaterials[i], transform});
+        RenderJob rj;
+        rj.Mesh        = allMeshes[i];
+        rj.Material    = allMaterials[i];
+        rj.SkeletonCmp = rj.Mesh->IsSkinned()
+                             ? ntt->GetComponent<SkeletonComponent>()
+                             : nullptr;
+        jobArray.push_back(rj);
       }
     }
   }
@@ -456,26 +123,170 @@ namespace ToolKit
       RenderJobArray& forward,
       RenderJobArray& translucent)
   {
-    for (const RenderJob& job : jobArray) 
+    for (const RenderJob& job : jobArray)
     {
       // Forward pipeline.
       if (!job.Material->IsDeferred())
       {
-        if (job.Material->IsTranslucent()) 
+        if (job.Material->IsTranslucent())
         {
           translucent.push_back(job);
         }
-        else 
+        else
         {
           forward.push_back(job);
         }
       }
-      else 
+      else
       {
         // Deferred pipeline.
         deferred.push_back(job);
       }
     }
+  }
+
+  // An interval has start time and end time
+  struct LightSortStruct
+  {
+    Light* light        = nullptr;
+    uint intersectCount = 0;
+  };
+
+  // Compares two intervals according to starting times.
+  bool CompareLightIntersects(const LightSortStruct& i1,
+                              const LightSortStruct& i2)
+  {
+    return (i1.intersectCount > i2.intersectCount);
+  }
+
+  LightRawPtrArray RenderJobProcessor::SortLights(
+      const RenderJob& job,
+      const LightRawPtrArray& lights)
+  {
+    LightRawPtrArray bestLights;
+    bestLights.reserve(lights.size());
+
+    // Find the end of directional lights
+    for (int i = 0; i < lights.size(); i++)
+    {
+      if (lights[i]->GetType() == EntityType::Entity_DirectionalLight)
+      {
+        bestLights.push_back(lights[i]);
+      }
+    }
+
+    // Add the lights inside of the radius first
+    std::vector<LightSortStruct> intersectCounts(lights.size());
+    BoundingBox aabb = job.Mesh->m_aabb;
+    TransformAABB(aabb, job.WorldTransform);
+
+    for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
+    {
+      float radius;
+      Light* light = lights[lightIndx];
+      if (light->GetType() == EntityType::Entity_PointLight)
+      {
+        radius = static_cast<PointLight*>(light)->GetRadiusVal();
+      }
+      else if (light->GetType() == EntityType::Entity_SpotLight)
+      {
+        radius = static_cast<SpotLight*>(light)->GetRadiusVal();
+      }
+      else
+      {
+        continue;
+      }
+
+      intersectCounts[lightIndx].light = light;
+      uint& curIntersectCount = intersectCounts[lightIndx].intersectCount;
+
+      /* This algorithms can be used for better sorting
+      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
+      {
+        for (uint isMin = 0; isMin < 2; isMin++)
+        {
+          Vec3 p     = aabb.min;
+          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
+          float dist = glm::length(
+              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+          if (dist <= radius)
+          {
+            curIntersectCount++;
+          }
+        }
+      }*/
+
+      if (light->GetType() == EntityType::Entity_SpotLight)
+      {
+        light->UpdateShadowCamera();
+
+        Frustum spotFrustum =
+            ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
+
+        if (FrustumBoxIntersection(spotFrustum, aabb) !=
+            IntersectResult::Outside)
+        {
+          curIntersectCount++;
+        }
+      }
+      if (light->GetType() == EntityType::Entity_PointLight)
+      {
+        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
+        if (SphereBoxIntersection(lightSphere, aabb))
+        {
+          curIntersectCount++;
+        }
+      }
+    }
+
+    std::sort(intersectCounts.begin(),
+              intersectCounts.end(),
+              CompareLightIntersects);
+
+    for (uint i = 0; i < intersectCounts.size(); i++)
+    {
+      if (intersectCounts[i].intersectCount == 0)
+      {
+        break;
+      }
+      bestLights.push_back(intersectCounts[i].light);
+    }
+
+    return bestLights;
+  }
+
+  void RenderJobProcessor::StableSortByDistanceToCamera(RenderJobArray& jobs,
+                                                        const Camera* cam)
+  {
+    std::function<bool(RenderJob&, RenderJob&)> sortFn =
+        [cam](RenderJob& j1, RenderJob& j2) -> bool
+    {
+      Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+
+      // TODO: Cihan cache calculated world boxes.
+      BoundingBox bb1 = j1.Mesh->m_aabb;
+      TransformAABB(bb1, j1.WorldTransform);
+
+      BoundingBox bb2 = j2.Mesh->m_aabb;
+      TransformAABB(bb2, j2.WorldTransform);
+
+      float first  = glm::length2(bb1.GetCenter() - camLoc);
+      float second = glm::length2(bb2.GetCenter() - camLoc);
+
+      return second < first;
+    };
+
+    if (cam->IsOrtographic())
+    {
+      sortFn = [cam](RenderJob& j1, RenderJob& j2) -> bool
+      {
+        float first  = glm::column(j1.WorldTransform, 3).z;
+        float second = glm::column(j2.WorldTransform, 3).z;
+        return first < second;
+      };
+    }
+
+    std::stable_sort(jobs.begin(), jobs.end(), sortFn);
   }
 
 } // namespace ToolKit

@@ -132,8 +132,10 @@ namespace ToolKit
     // Gbuffer material
     ShaderPtr vertexShader = GetShaderManager()->Create<Shader>(
         ShaderPath("defaultVertex.shader", true));
+
     ShaderPtr fragmentShader = GetShaderManager()->Create<Shader>(
         ShaderPath("gBufferFrag.shader", true));
+
     m_gBufferMaterial->m_vertexShader   = vertexShader;
     m_gBufferMaterial->m_fragmentShader = fragmentShader;
 
@@ -164,10 +166,10 @@ namespace ToolKit
   {
     Pass::PreRender();
 
-    GetRenderer()->ResetTextureSlots();
-
-    GetRenderer()->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
-    GetRenderer()->SetCameraLens(m_params.camera);
+    Renderer* renderer = GetRenderer();
+    renderer->ResetTextureSlots();
+    renderer->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
+    renderer->SetCameraLens(m_params.Camera);
   }
 
   void GBufferPass::PostRender() { Pass::PostRender(); }
@@ -175,75 +177,27 @@ namespace ToolKit
   void GBufferPass::Render()
   {
     Renderer* renderer = GetRenderer();
-
-    for (Entity* ntt : m_params.entities)
+    for (RenderJob& job : m_params.RendeJobs)
     {
-      MultiMaterialPtr mmComp    = ntt->GetComponent<MultiMaterialComponent>();
-      uint activeMeshIndex       = 0;
-      MaterialPtr activeMaterial = nullptr;
-
-      if (mmComp == nullptr)
-      {
-        MaterialComponentPtr matComp = ntt->GetMaterialComponent();
-        if (matComp)
-        {
-          activeMaterial = ntt->GetRenderMaterial();
-        }
-      }
-
-      MeshComponentPtrArray meshComps;
-      ntt->GetComponent<MeshComponent>(meshComps);
-      for (MeshComponentPtr meshComp : meshComps)
-      {
-        MeshRawCPtrArray meshes;
-        meshComp->GetMeshVal()->GetAllMeshes(meshes);
-        for (uint meshIndx = 0; meshIndx < meshes.size();
-             meshIndx++, activeMeshIndex++)
-        {
-          const Mesh* mesh = meshes[meshIndx];
-          if (mmComp && mmComp->GetMaterialList().size() > activeMeshIndex)
-          {
-            activeMaterial = mmComp->GetMaterialList()[activeMeshIndex];
-          }
-          if (activeMaterial == nullptr)
-          {
-            activeMaterial = mesh->m_material;
-          }
-          if (activeMaterial == nullptr)
-          {
-            continue;
-          }
-          if (activeMaterial->GetRenderState()->useForwardPath ||
-              (activeMaterial->GetRenderState()->blendFunction !=
-                   BlendFunction::NONE &&
-               activeMaterial->GetRenderState()->blendFunction !=
-                   BlendFunction::ALPHA_MASK))
-          {
-            continue;
-          }
-
-          m_gBufferMaterial->SetRenderState(activeMaterial->GetRenderState());
-          m_gBufferMaterial->UnInit();
-          m_gBufferMaterial->m_diffuseTexture =
-              activeMaterial->m_diffuseTexture;
-          m_gBufferMaterial->m_emissiveTexture =
-              activeMaterial->m_emissiveTexture;
-          m_gBufferMaterial->m_emissiveColor = activeMaterial->m_emissiveColor;
-          m_gBufferMaterial->m_metallicRoughnessTexture =
-              activeMaterial->m_metallicRoughnessTexture;
-          m_gBufferMaterial->m_normalMap    = activeMaterial->m_normalMap;
-          m_gBufferMaterial->m_cubeMap      = activeMaterial->m_cubeMap;
-          m_gBufferMaterial->m_color        = activeMaterial->m_color;
-          m_gBufferMaterial->m_alpha        = activeMaterial->m_alpha;
-          m_gBufferMaterial->m_metallic     = activeMaterial->m_metallic;
-          m_gBufferMaterial->m_roughness    = activeMaterial->m_roughness;
-          m_gBufferMaterial->m_materialType = activeMaterial->m_materialType;
-          m_gBufferMaterial->Init();
-          renderer->m_overrideMat = m_gBufferMaterial;
-
-          renderer->Render(ntt, m_params.camera, {}, {activeMeshIndex});
-        }
-      }
+      MaterialPtr activeMaterial = job.Material;
+      m_gBufferMaterial->SetRenderState(activeMaterial->GetRenderState());
+      m_gBufferMaterial->UnInit();
+      m_gBufferMaterial->m_diffuseTexture  = activeMaterial->m_diffuseTexture;
+      m_gBufferMaterial->m_emissiveTexture = activeMaterial->m_emissiveTexture;
+      m_gBufferMaterial->m_emissiveColor   = activeMaterial->m_emissiveColor;
+      m_gBufferMaterial->m_metallicRoughnessTexture =
+          activeMaterial->m_metallicRoughnessTexture;
+      m_gBufferMaterial->m_normalMap    = activeMaterial->m_normalMap;
+      m_gBufferMaterial->m_cubeMap      = activeMaterial->m_cubeMap;
+      m_gBufferMaterial->m_color        = activeMaterial->m_color;
+      m_gBufferMaterial->m_alpha        = activeMaterial->m_alpha;
+      m_gBufferMaterial->m_metallic     = activeMaterial->m_metallic;
+      m_gBufferMaterial->m_roughness    = activeMaterial->m_roughness;
+      m_gBufferMaterial->m_materialType = activeMaterial->m_materialType;
+      m_gBufferMaterial->Init();
+      
+      renderer->m_overrideMat = m_gBufferMaterial;
+      renderer->Render(job, m_params.Camera, {});
     }
   }
 

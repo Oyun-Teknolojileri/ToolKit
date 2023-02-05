@@ -15,14 +15,6 @@ namespace ToolKit
 {
 
   /**
-   * Utility function that sorts lights according to lit conditions from
-   * best to worst. Make sure lights array has updated shadow camera. Shadow
-   * camera is used in culling calculations.
-   */
-  TK_API LightRawPtrArray GetBestLights(Entity* entity,
-                                        const LightRawPtrArray& lights);
-
-  /**
    * Simple binary stencil test operations.
    */
   enum class StencilOperation
@@ -130,10 +122,7 @@ namespace ToolKit
     /////////////////////
     // Left public for thumbnail rendering. TODO: there must be techniques
     // handling thumbnail render.
-    void Render(Entity* ntt,
-                Camera* cam,
-                const LightRawPtrArray& editorLights = LightRawPtrArray(),
-                const UIntArray& meshIndices         = {});
+    void Render(struct RenderJob& job, Camera* cam, LightRawPtrArray lights = {});
 
     void Apply7x1GaussianBlur(const TexturePtr source,
                               RenderTargetPtr dest,
@@ -171,9 +160,9 @@ namespace ToolKit
      * volume to reflect environment rotation.
      * @param entity to find the environment volume.
      */
-    void FindEnvironmentLight(Entity* entity);
+    void FindEnvironmentLight(RenderJob& job);
 
-    void SetProjectViewModel(Entity* ntt, Camera* cam);
+    void SetProjectViewModel(Mat4& model, Camera* cam);
     void BindProgram(ProgramPtr program);
     void LinkProgram(uint program, uint vertexP, uint fragmentP);
     ProgramPtr CreateProgram(ShaderPtr vertex, ShaderPtr fragment);
