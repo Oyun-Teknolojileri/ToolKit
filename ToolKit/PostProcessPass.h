@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Pass.h"
 #include "FullQuadPass.h"
+#include "Pass.h"
 
 namespace ToolKit
 {

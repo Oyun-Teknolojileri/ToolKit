@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Pass.h"
 #include "FullQuadPass.h"
+#include "Pass.h"
 
 namespace ToolKit
 {
 
   struct StencilRenderPassParams
   {
-    RenderTargetPtr OutputTarget;
-    EntityRawPtrArray DrawList;
-    Camera* Camera = nullptr;
+    Camera* Camera               = nullptr;
+    RenderTargetPtr OutputTarget = nullptr;
+    EntityRawPtrArray DrawList   = {};
   };
 
   /**

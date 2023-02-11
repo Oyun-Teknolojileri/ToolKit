@@ -530,11 +530,14 @@ namespace ToolKit
 
   void Renderer::DrawFullQuad(MaterialPtr mat)
   {
+    static Camera quadCam;
     static Quad quad;
     quad.GetMeshComponent()->GetMeshVal()->m_material = mat;
 
-    static Camera quadCam;
-    Render(&quad, &quadCam);
+    RenderJob job;
+    RenderJobProcessor::CreateRenderJob(&quad, job);
+
+    Render(job, &quadCam);
   }
 
   void Renderer::DrawCube(Camera* cam, MaterialPtr mat, const Mat4& transform)

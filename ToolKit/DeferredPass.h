@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Pass.h"
 #include "FullQuadPass.h"
+#include "Pass.h"
 
 namespace ToolKit
 {
 
   struct DeferredRenderPassParams
   {
-    LightRawPtrArray lights;
+    LightRawPtrArray lights           = {};
     FramebufferPtr MainFramebuffer    = nullptr;
     FramebufferPtr GBufferFramebuffer = nullptr;
     bool ClearFramebuffer             = true;

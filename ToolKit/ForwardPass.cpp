@@ -61,7 +61,7 @@ namespace ToolKit
                                             Camera* cam,
                                             const LightRawPtrArray& lights)
   {
-    StableSortByDistanceToCamera(jobs, cam);
+    RenderJobProcessor::StableSortByDistanceToCamera(jobs, cam);
 
     Renderer* renderer = GetRenderer();
     auto renderFnc     = [cam, lights, renderer](RenderJob& job)

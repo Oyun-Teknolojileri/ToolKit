@@ -7,7 +7,7 @@ namespace ToolKit
 
   struct OutlinePassParams
   {
-    EntityRawPtrArray DrawList;
+    EntityRawPtrArray DrawList = {};
     FramebufferPtr FrameBuffer = nullptr;
     Camera* Camera             = nullptr;
     Vec4 OutlineColor          = Vec4(1.0f);

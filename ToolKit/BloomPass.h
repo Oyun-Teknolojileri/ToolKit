@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Pass.h"
 #include "FullQuadPass.h"
+#include "Pass.h"
 
 namespace ToolKit
 {
@@ -10,7 +10,8 @@ namespace ToolKit
   {
     FramebufferPtr FrameBuffer = nullptr;
     int iterationCount         = 6;
-    float minThreshold = 1.0f, intensity = 1.0f;
+    float minThreshold         = 1.0f;
+    float intensity            = 1.0f;
   };
 
   class TK_API BloomPass : public Pass

@@ -26,7 +26,11 @@ namespace ToolKit
 
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, false);
-    renderer->Render(m_cube.get(), m_params.Cam);
+
+    RenderJob job;
+    RenderJobProcessor::CreateRenderJob(m_cube.get(), job);
+
+    renderer->Render(job, m_params.Cam);
   }
 
   void CubeMapPass::PreRender()

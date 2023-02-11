@@ -5,7 +5,7 @@
 namespace ToolKit
 {
 
-	  struct GammaPassParams
+  struct GammaPassParams
   {
     FramebufferPtr FrameBuffer = nullptr;
     float Gamma                = 2.2f;
@@ -29,4 +29,4 @@ namespace ToolKit
 
   typedef std::shared_ptr<GammaPass> GammaPassPtr;
 
-}
+} // namespace ToolKit

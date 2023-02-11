@@ -7,12 +7,12 @@ namespace ToolKit
 
   struct ForwardRenderPassParams
   {
-    Camera* Cam                = nullptr;
-    FramebufferPtr FrameBuffer = nullptr;
-    bool ClearFrameBuffer      = true;
-    RenderJobArray OpaqueJobs;
-    RenderJobArray TranslucentJobs;
-    LightRawPtrArray Lights;
+    Camera* Cam                    = nullptr;
+    FramebufferPtr FrameBuffer     = nullptr;
+    bool ClearFrameBuffer          = true;
+    RenderJobArray OpaqueJobs      = {};
+    RenderJobArray TranslucentJobs = {};
+    LightRawPtrArray Lights        = {};
   };
 
   /**

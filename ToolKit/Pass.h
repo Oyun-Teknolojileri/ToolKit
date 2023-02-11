@@ -54,6 +54,8 @@ namespace ToolKit
     static void CreateRenderJobs(EntityRawPtrArray entities,
                                  RenderJobArray& jobArray);
 
+    static void CreateRenderJob(Entity* entity, RenderJob& job);
+
     static void SeperateDeferredForward(const RenderJobArray& jobArray,
                                         RenderJobArray& deferred,
                                         RenderJobArray& forward,
@@ -69,7 +71,7 @@ namespace ToolKit
 
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
-    void StableSortByDistanceToCamera(RenderJobArray& entities,
+    static void StableSortByDistanceToCamera(RenderJobArray& entities,
                                       const Camera* cam);
   };
 
@@ -81,11 +83,6 @@ namespace ToolKit
    public:
     RenderPass();
     virtual ~RenderPass();
-
-    // Sort entities  by distance (from boundary center)
-    // in ascending order to camera. Accounts for isometric camera.
-    void StableSortByDistanceToCamera(RenderJobArray& entities,
-                                      const Camera* cam);
   };
 
 } // namespace ToolKit

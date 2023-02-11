@@ -7,8 +7,8 @@ namespace ToolKit
 
   struct ShadowPassParams
   {
-    LightRawPtrArray Lights;
-    EntityRawPtrArray Entities;
+    LightRawPtrArray Lights    = {};
+    EntityRawPtrArray Entities = {};
   };
 
   /**

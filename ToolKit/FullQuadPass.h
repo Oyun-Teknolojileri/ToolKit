@@ -7,7 +7,7 @@ namespace ToolKit
 
   struct FullQuadPassParams
   {
-    LightRawPtrArray lights;
+    LightRawPtrArray lights    = {};
     FramebufferPtr FrameBuffer = nullptr;
     BlendFunction BlendFunc    = BlendFunction::NONE;
     ShaderPtr FragmentShader   = nullptr;

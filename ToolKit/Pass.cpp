@@ -117,6 +117,16 @@ namespace ToolKit
     }
   }
 
+  void RenderJobProcessor::CreateRenderJob(Entity* entity, RenderJob& job) 
+  {
+    static EntityRawPtrArray tmpEntityArray;
+    static RenderJobArray tmpJobArray;
+    tmpEntityArray.clear();
+    tmpEntityArray.push_back(entity);
+    tmpJobArray.clear();
+    CreateRenderJobs(tmpEntityArray, tmpJobArray);
+  }
+
   void RenderJobProcessor::SeperateDeferredForward(
       const RenderJobArray& jobArray,
       RenderJobArray& deferred,
@@ -278,7 +288,7 @@ namespace ToolKit
 
     if (cam->IsOrtographic())
     {
-      sortFn = [cam](RenderJob& j1, RenderJob& j2) -> bool
+      sortFn = [cam](const RenderJob& j1, const RenderJob& j2) -> bool
       {
         float first  = glm::column(j1.WorldTransform, 3).z;
         float second = glm::column(j2.WorldTransform, 3).z;
