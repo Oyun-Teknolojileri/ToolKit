@@ -387,14 +387,21 @@ namespace ToolKit
                                                   false);
 
           renderer->ColorMask(false, false, false, false);
-          renderer->Render(m_depthMaskSphere.get(), m_camera);
+          
+          RenderJob rj;
+          RenderJobProcessor::CreateRenderJob(m_depthMaskSphere.get(), rj);
+          renderer->Render(rj, m_camera);
 
           renderer->ColorMask(true, true, true, true);
-          renderer->Render(bb, m_camera);
+
+          RenderJobProcessor::CreateRenderJob(bb, rj);
+          renderer->Render(rj, m_camera);
         }
         else
         {
-          renderer->Render(bb, m_camera);
+          RenderJob rj;
+          RenderJobProcessor::CreateRenderJob(bb, rj);
+          renderer->Render(rj, m_camera);
         }
       }
     }

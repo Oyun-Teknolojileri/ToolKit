@@ -50,8 +50,8 @@ namespace ToolKit
   {
     PreRender(renderer);
 
-    //CullDrawList(m_gBufferPass->m_params.entities, m_params.Cam);
-    //CullDrawList(m_forwardRenderPass->m_params.Entities, m_params.Cam);
+    // CullDrawList(m_gBufferPass->m_params.entities, m_params.Cam);
+    // CullDrawList(m_forwardRenderPass->m_params.Entities, m_params.Cam);
 
     // First stage of the render.
     m_passArray.clear();
@@ -151,14 +151,15 @@ namespace ToolKit
       light->UpdateShadowCamera();
     }
 
-    m_shadowPass->m_params.Entities = m_params.Scene->GetEntities();
-    m_shadowPass->m_params.Lights   = m_updatedLights;
-
-    EntityRawPtrArray allDrawList   = m_params.Scene->GetEntities();
-    CullDrawList(allDrawList, m_params.Cam);
+    EntityRawPtrArray allDrawList = m_params.Scene->GetEntities();
 
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs(allDrawList, jobs);
+
+    m_shadowPass->m_params.RendeJobs = jobs;
+    m_shadowPass->m_params.Lights    = m_updatedLights;
+
+    RenderJobProcessor::CullRenderJobs(jobs, m_params.Cam);
 
     RenderJobArray deferred, forward, translucent;
     RenderJobProcessor::SeperateDeferredForward(jobs,
@@ -166,15 +167,8 @@ namespace ToolKit
                                                 forward,
                                                 translucent);
 
-    EntityRawPtrArray opaqueDrawList;
-    EntityRawPtrArray translucentAndUnlitDrawList;
-    m_forwardRenderPass->SeperateTranslucentAndUnlitEntities(
-        allDrawList,
-        opaqueDrawList,
-        translucentAndUnlitDrawList);
-
-    m_gBufferPass->m_params.entities                = opaqueDrawList;
-    m_gBufferPass->m_params.camera                  = m_params.Cam;
+    m_gBufferPass->m_params.RendeJobs               = deferred;
+    m_gBufferPass->m_params.Camera                  = m_params.Cam;
 
     m_deferredRenderPass->m_params.ClearFramebuffer = true;
     m_deferredRenderPass->m_params.GBufferFramebuffer =
@@ -183,6 +177,7 @@ namespace ToolKit
     m_deferredRenderPass->m_params.lights          = m_updatedLights;
     m_deferredRenderPass->m_params.MainFramebuffer = m_params.MainFramebuffer;
     m_deferredRenderPass->m_params.Cam             = m_params.Cam;
+
     if (m_params.Gfx.SSAOEnabled)
     {
       m_deferredRenderPass->m_params.AOTexture = m_ssaoPass->m_ssaoTexture;
@@ -196,11 +191,11 @@ namespace ToolKit
     m_forwardRenderPass->m_params.Cam              = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.ClearFrameBuffer = false;
+    m_forwardRenderPass->m_params.OpaqueJobs       = forward;
+    m_forwardRenderPass->m_params.TranslucentJobs  = translucent;
 
-    m_forwardRenderPass->m_params.Entities  = translucentAndUnlitDrawList;
-
-    m_ssaoPass->m_params.GPositionBuffer    = m_gBufferPass->m_gPosRt;
-    m_ssaoPass->m_params.GNormalBuffer      = m_gBufferPass->m_gNormalRt;
+    m_ssaoPass->m_params.GPositionBuffer           = m_gBufferPass->m_gPosRt;
+    m_ssaoPass->m_params.GNormalBuffer             = m_gBufferPass->m_gNormalRt;
     m_ssaoPass->m_params.GLinearDepthBuffer = m_gBufferPass->m_gLinearDepthRt;
     m_ssaoPass->m_params.Cam                = m_params.Cam;
     m_ssaoPass->m_params.ssaoRadius         = m_params.Gfx.ssaoRadius;
@@ -245,20 +240,6 @@ namespace ToolKit
     // Gamma pass.
     m_gammaPass->m_params.FrameBuffer = m_params.MainFramebuffer;
     m_gammaPass->m_params.Gamma       = m_params.Gfx.Gamma;
-  }
-
-  void SceneRenderer::CullDrawList(EntityRawPtrArray& entities, Camera* camera)
-  {
-    // Dropout non visible & drawable entities.
-    entities.erase(std::remove_if(entities.begin(),
-                                  entities.end(),
-                                  [](Entity* ntt) -> bool {
-                                    return !ntt->GetVisibleVal() ||
-                                           !ntt->IsDrawable();
-                                  }),
-                   entities.end());
-
-    FrustumCull(entities, camera);
   }
 
 } // namespace ToolKit

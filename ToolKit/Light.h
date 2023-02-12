@@ -60,14 +60,14 @@ namespace ToolKit
 
     EntityType GetType() const override;
 
-    void UpdateShadowFrustum(const EntityRawPtrArray& entities);
+    void UpdateShadowFrustum(const RenderJobArray& jobs);
     Vec3Array GetShadowFrustumCorners();
 
    private:
     // Fits the entities into the shadow map camera frustum. As the scene gets
     // bigger, the resolution gets lower.
     void FitEntitiesBBoxIntoShadowFrustum(Camera* lightCamera,
-                                          const EntityRawPtrArray& entities);
+                                          const RenderJobArray& jobs);
 
     // Fits view frustum of the camera into shadow map camera frustum. As the
     // view frustum gets bigger, the resolution gets lower.

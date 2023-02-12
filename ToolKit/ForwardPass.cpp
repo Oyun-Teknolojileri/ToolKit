@@ -3,6 +3,7 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "ToolKit.h"
+#include "Pass.h"
 
 namespace ToolKit
 {

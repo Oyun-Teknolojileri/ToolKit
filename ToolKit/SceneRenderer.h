@@ -42,7 +42,6 @@ namespace ToolKit
 
    private:
     void SetPassParams();
-    void CullDrawList(EntityRawPtrArray& entities, Camera* camera);
 
    public:
     SceneRenderPassParams m_params;

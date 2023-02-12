@@ -44,18 +44,17 @@ namespace ToolKit
     for (Light* light : m_params.Lights)
     {
       light->InitShadowMapDepthMaterial();
-
-      EntityRawPtrArray entities = m_drawList;
       if (light->GetType() == EntityType::Entity_DirectionalLight)
       {
-        static_cast<DirectionalLight*>(light)->UpdateShadowFrustum(entities);
+        static_cast<DirectionalLight*>(light)->UpdateShadowFrustum(
+            m_params.RendeJobs);
       }
       else
       {
         light->UpdateShadowCamera();
       }
 
-      RenderShadowMaps(light, entities);
+      RenderShadowMaps(light, m_params.RendeJobs);
     }
 
     GetRenderer()->m_clearColor = lastClearColor;
@@ -68,15 +67,12 @@ namespace ToolKit
     m_lastOverrideMat = GetRenderer()->m_overrideMat;
 
     // Dropout non shadow casters.
-    m_drawList        = m_params.Entities;
-    m_drawList.erase(
-        std::remove_if(m_drawList.begin(),
-                       m_drawList.end(),
-                       [](Entity* ntt) -> bool {
-                         return !ntt->IsDrawable() ||
-                                !ntt->GetMeshComponent()->GetCastShadowVal();
-                       }),
-        m_drawList.end());
+    m_renderJobs      = m_params.RendeJobs;
+    m_renderJobs.erase(std::remove_if(m_renderJobs.begin(),
+                                      m_renderJobs.end(),
+                                      [](RenderJob& job) -> bool
+                                      { return !job.ShadowCaster; }),
+                       m_renderJobs.end());
 
     // Dropout non shadow casting lights.
     m_params.Lights.erase(std::remove_if(m_params.Lights.begin(),
@@ -93,8 +89,11 @@ namespace ToolKit
     {
       m_clearedLayers.resize(m_layerCount);
     }
-    for (int i = 0; i < m_layerCount; ++i)
+
+    for (int i = 0; i < m_layerCount; i++)
+    {
       m_clearedLayers[i] = false;
+    }
   }
 
   void ShadowPass::PostRender()
@@ -105,28 +104,27 @@ namespace ToolKit
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
-  void ShadowPass::RenderShadowMaps(Light* light,
-                                    const EntityRawPtrArray& entities)
+  void ShadowPass::RenderShadowMaps(Light* light, const RenderJobArray& jobs)
   {
-    Renderer* renderer = GetRenderer();
+    Renderer* renderer        = GetRenderer();
 
-    auto renderForShadowMapFn =
-        [this, &renderer](Light* light, EntityRawPtrArray entities) -> void
+    auto renderForShadowMapFn = [this, &renderer](Light* light,
+                                                  RenderJobArray jobs) -> void
     {
-      FrustumCull(entities, light->m_shadowCamera);
+      FrustumCull(jobs, light->m_shadowCamera);
 
       renderer->m_overrideMat = light->GetShadowMaterial();
-      for (Entity* ntt : entities)
+      for (RenderJob& job : jobs)
       {
-        MaterialPtr entityMat = ntt->GetRenderMaterial();
-        renderer->m_overrideMat->SetRenderState(entityMat->GetRenderState());
+        MaterialPtr material = job.Material;
+        renderer->m_overrideMat->SetRenderState(material->GetRenderState());
         renderer->m_overrideMat->UnInit();
-        renderer->m_overrideMat->m_alpha          = entityMat->m_alpha;
-        renderer->m_overrideMat->m_diffuseTexture = entityMat->m_diffuseTexture;
+        renderer->m_overrideMat->m_alpha          = material->m_alpha;
+        renderer->m_overrideMat->m_diffuseTexture = material->m_diffuseTexture;
         renderer->m_overrideMat->GetRenderState()->blendFunction =
             BlendFunction::NONE;
         renderer->m_overrideMat->Init();
-        renderer->Render(ntt, light->m_shadowCamera);
+        renderer->Render(job, light->m_shadowCamera);
       }
     };
 
@@ -168,7 +166,7 @@ namespace ToolKit
                                   (uint) light->GetShadowResVal(),
                                   (uint) light->GetShadowResVal());
 
-        renderForShadowMapFn(light, entities);
+        renderForShadowMapFn(light, jobs);
       }
     }
     break;
@@ -200,7 +198,7 @@ namespace ToolKit
                                 (uint) light->GetShadowResVal(),
                                 (uint) light->GetShadowResVal());
 
-      renderForShadowMapFn(light, entities);
+      renderForShadowMapFn(light, jobs);
     }
     break;
     default:

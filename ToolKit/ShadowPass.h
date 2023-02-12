@@ -7,8 +7,8 @@ namespace ToolKit
 
   struct ShadowPassParams
   {
-    LightRawPtrArray Lights    = {};
-    EntityRawPtrArray Entities = {};
+    LightRawPtrArray Lights  = {};
+    RenderJobArray RendeJobs = {};
   };
 
   /**
@@ -28,7 +28,7 @@ namespace ToolKit
     RenderTargetPtr GetShadowAtlas();
 
    private:
-    void RenderShadowMaps(Light* light, const EntityRawPtrArray& entities);
+    void RenderShadowMaps(Light* light, const RenderJobArray& jobs);
 
     /**
      * Sets layer and coordinates of the shadow maps in shadow atlas.
@@ -57,7 +57,7 @@ namespace ToolKit
     EntityIdArray m_previousShadowCasters;
     std::vector<bool> m_clearedLayers;
 
-    EntityRawPtrArray m_drawList;
+    RenderJobArray m_renderJobs;
     Quaternion m_cubeMapRotations[6];
     Vec3 m_cubeMapScales[6];
 

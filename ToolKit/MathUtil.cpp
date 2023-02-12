@@ -5,6 +5,7 @@
 #include "Node.h"
 #include "ResourceComponent.h"
 #include "Skeleton.h"
+#include "Pass.h"
 
 #include <algorithm>
 #include <execution>
@@ -750,6 +751,29 @@ namespace ToolKit
 
     entities.erase(std::remove_if(entities.begin(), entities.end(), delFn),
                    entities.end());
+  }
+
+  void FrustumCull(RenderJobArray& jobs, Camera* camera)
+  {
+    // Frustum cull
+    Mat4 pr         = camera->GetProjectionMatrix();
+    Mat4 v          = camera->GetViewMatrix();
+    Frustum frustum = ExtractFrustum(pr * v, false);
+
+    auto delFn      = [frustum](RenderJob& job) -> bool
+    {
+      IntersectResult res = FrustumBoxIntersection(frustum, job.BoundingBox);
+      if (res == IntersectResult::Outside)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    };
+
+    jobs.erase(std::remove_if(jobs.begin(), jobs.end(), delFn), jobs.end());
   }
 
   void TransformAABB(BoundingBox& box, const Mat4& transform)

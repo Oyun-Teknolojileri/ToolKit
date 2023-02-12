@@ -104,20 +104,24 @@ namespace ToolKit
 
       // Here we have all mesh and corresponding materials.
       Mat4 transform = ntt->m_node->GetTransform();
+      jobArray.resize(allMeshes.size());
       for (size_t i = 0; i < allMeshes.size(); i++)
       {
-        RenderJob rj;
-        rj.Mesh        = allMeshes[i];
-        rj.Material    = allMaterials[i];
-        rj.SkeletonCmp = rj.Mesh->IsSkinned()
-                             ? ntt->GetComponent<SkeletonComponent>()
-                             : nullptr;
-        jobArray.push_back(rj);
+        RenderJob& rj  = jobArray[i];
+        rj.BoundingBox = rj.Mesh->m_aabb;
+        TransformAABB(rj.BoundingBox, transform);
+
+        rj.ShadowCaster = mc->GetCastShadowVal();
+        rj.Mesh         = allMeshes[i];
+        rj.Material     = allMaterials[i];
+        rj.SkeletonCmp  = rj.Mesh->IsSkinned()
+                              ? ntt->GetComponent<SkeletonComponent>()
+                              : nullptr;
       }
     }
   }
 
-  void RenderJobProcessor::CreateRenderJob(Entity* entity, RenderJob& job) 
+  void RenderJobProcessor::CreateRenderJob(Entity* entity, RenderJob& job)
   {
     static EntityRawPtrArray tmpEntityArray;
     static RenderJobArray tmpJobArray;
@@ -125,6 +129,7 @@ namespace ToolKit
     tmpEntityArray.push_back(entity);
     tmpJobArray.clear();
     CreateRenderJobs(tmpEntityArray, tmpJobArray);
+    job = tmpJobArray.front();
   }
 
   void RenderJobProcessor::SeperateDeferredForward(
@@ -297,6 +302,17 @@ namespace ToolKit
     }
 
     std::stable_sort(jobs.begin(), jobs.end(), sortFn);
+  }
+
+  void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray,
+                                          Camera* camera)
+  {
+    jobArray.erase(std::remove_if(jobArray.begin(),
+                                  jobArray.end(),
+                                  [](Entity* ntt) -> bool
+                                  { return !ntt->IsDrawable(); }),
+                   jobArray.end());
+    FrustumCull(jobArray, camera);
   }
 
 } // namespace ToolKit

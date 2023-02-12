@@ -43,10 +43,10 @@ namespace ToolKit
     Mesh* Mesh                       = nullptr;
     SkeletonComponentPtr SkeletonCmp = nullptr;
     MaterialPtr Material             = nullptr;
+    bool ShadowCaster                = true;
+    BoundingBox BoundingBox;
     Mat4 WorldTransform;
   };
-
-  typedef std::vector<RenderJob> RenderJobArray;
 
   class TK_API RenderJobProcessor
   {
@@ -72,7 +72,9 @@ namespace ToolKit
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
     static void StableSortByDistanceToCamera(RenderJobArray& entities,
-                                      const Camera* cam);
+                                             const Camera* cam);
+
+    static void CullRenderJobs(RenderJobArray& jobArray, Camera* camera);
   };
 
   /*

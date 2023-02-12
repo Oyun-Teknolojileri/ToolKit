@@ -125,6 +125,7 @@ namespace ToolKit
    * @param camera Camera that is being used for generating frustum.
    */
   TK_API void FrustumCull(EntityRawPtrArray& entities, Camera* camera);
+  TK_API void FrustumCull(RenderJobArray& jobs, Camera* camera);
 
   // Conversions and Interpolation
   //////////////////////////////////////////

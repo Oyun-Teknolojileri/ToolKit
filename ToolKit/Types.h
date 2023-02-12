@@ -94,6 +94,7 @@ namespace ToolKit
   typedef std::vector<int> IntArray;
   typedef std::vector<uint> UIntArray;
   typedef std::vector<struct VariantCategory> VariantCategoryArray;
+  typedef std::vector<struct RenderJob> RenderJobArray;
 
   // Resource types.
   typedef std::shared_ptr<class Animation> AnimationPtr;
