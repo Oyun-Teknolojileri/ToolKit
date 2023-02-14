@@ -32,6 +32,8 @@ namespace ToolKit
 
   EntityType Prefab::GetType() const { return EntityType::Entity_Prefab; }
 
+  void Prefab::Remove() {}
+
   Prefab* Prefab::GetPrefabRoot(Entity* ntt)
   {
     if (ntt->GetType() == EntityType::Entity_Prefab)

@@ -27,8 +27,15 @@ namespace ToolKit
 
     EntityType GetType() const override;
 
-    void Init(Scene* currentScene);
-    void UnInit();
+    void Init(Scene* currentScene); // Link
+    void UnInit(); // Destory.
+    
+    /**
+     * Remove the prefab entity and everything inside the prefab scene from
+     * the current scene.
+     */
+    void Remove(); // Unlink
+
     static Prefab* GetPrefabRoot(Entity* ntt);
     Entity* CopyTo(Entity* other) const override;
 

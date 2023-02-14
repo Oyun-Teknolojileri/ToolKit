@@ -435,23 +435,24 @@ namespace ToolKit
 
   void Scene::Destroy(bool removeResources)
   {
-    std::vector<Entity*> prefabRoots;
-    for (Entity* ntt : m_entities)
+    int end = static_cast<int>(m_entities.size());
+
+    for (int i = end-1; i >= 0; --i)
     {
-      if (Prefab::GetPrefabRoot(ntt))
+      Entity*& ntt = m_entities[i];
+
+      if (ntt != nullptr && Prefab::GetPrefabRoot(ntt))
       {
-        if (ntt->GetType() == EntityType::Entity_Prefab)
+        if (end != 0 && ntt->GetType() == EntityType::Entity_Prefab)
         {
-          prefabRoots.push_back(ntt);
+            std::swap(ntt, m_entities[--end]);
+            ++i;
+            SafeDel(ntt);
         }
       }
     }
-    for (Entity*& prefab : prefabRoots)
-    {
-      RemoveEntity({prefab});
-      SafeDel(prefab);
-    }
-    for (uint nttIndx = 0; nttIndx < m_entities.size(); nttIndx++)
+
+    for (uint nttIndx = 0; nttIndx < end; nttIndx++)
     {
       Entity* ntt = m_entities[nttIndx];
       if (removeResources)
