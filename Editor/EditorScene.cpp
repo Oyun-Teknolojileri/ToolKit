@@ -297,16 +297,28 @@ namespace ToolKit
       AddBillboardToEntity(entity);
     }
 
+    void EditorScene::RemoveEntity(const EntityRawPtrArray& entities) 
+    {
+      Scene::RemoveEntity(entities);
+      
+      // TODO: Anil
+      // Cache billboards with ntt id
+      // Can we do remove if rather than erasing one by one.
+      for (Entity* ntt : entities) 
+      {
+        RemoveFromSelection(ntt->GetIdVal());
+        RemoveBillboardFromEntity(ntt);
+      }
+    }
+
     Entity* EditorScene::RemoveEntity(ULongID id)
     {
       Entity* removed = nullptr;
       if ((removed = Scene::RemoveEntity(id)))
       {
         RemoveFromSelection(removed->GetIdVal());
+        RemoveBillboardFromEntity(removed);
       }
-
-      // Remove gizmo too
-      RemoveBillboardFromEntity(removed);
 
       return removed;
     }

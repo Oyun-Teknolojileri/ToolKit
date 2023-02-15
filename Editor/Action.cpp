@@ -63,7 +63,7 @@ namespace ToolKit
       EditorScenePtr currScene = g_app->GetCurrentScene();
       if (m_ntt->GetType() == EntityType::Entity_Prefab)
       {
-        ((Prefab*) m_ntt)->Init(currScene.get());
+        static_cast<Prefab*>(m_ntt)->Link();
       }
       currScene->AddEntity(m_ntt);
       if (m_parentId != NULL_HANDLE)
@@ -93,7 +93,7 @@ namespace ToolKit
       g_app->GetCurrentScene()->RemoveEntity(m_ntt->GetIdVal());
       if (m_ntt->GetType() == EntityType::Entity_Prefab)
       {
-        ((Prefab*) m_ntt)->UnInit();
+        static_cast<Prefab*>(m_ntt)->Unlink();
       }
       m_actionComitted = true;
       HandleCompSpecificOps(m_ntt, m_actionComitted);

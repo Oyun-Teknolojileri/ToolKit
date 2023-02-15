@@ -1,7 +1,8 @@
+#include "Scene.h"
+
 #include "Component.h"
 #include "Prefab.h"
 #include "ResourceComponent.h"
-#include "Scene.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -286,10 +287,21 @@ namespace ToolKit
 
   void Scene::RemoveEntity(const EntityRawPtrArray& entities)
   {
-    for (Entity* ntt : entities)
-    {
-      RemoveEntity(ntt->GetIdVal());
-    }
+    m_entities.erase(std::remove_if(m_entities.begin(),
+                                    m_entities.end(),
+                                    [&entities](const Entity* ntt) -> bool
+                                    {
+                                      for (const Entity* removeNtt : entities)
+                                      {
+                                        if (removeNtt->GetIdVal() ==
+                                            ntt->GetIdVal())
+                                        {
+                                          return true;
+                                        }
+                                      }
+
+                                      return false;
+                                    }));
   }
 
   void Scene::RemoveAllEntities() { m_entities.clear(); }
@@ -435,9 +447,23 @@ namespace ToolKit
 
   void Scene::Destroy(bool removeResources)
   {
-    int end = static_cast<int>(m_entities.size());
+    EntityRawPtrArray prefabs;
+    for (Entity* ntt : m_entities) 
+    {
+      if (ntt->GetType() == EntityType::Entity_Prefab) 
+      {
+        prefabs.push_back(ntt);
+      }
+    }
 
-    for (int i = end-1; i >= 0; --i)
+    for (Entity* ntt : prefabs) 
+    {
+      static_cast<Prefab*>(ntt)->UnInit();
+    }
+
+    /*
+    int end = static_cast<int>(m_entities.size());
+    for (int i = end - 1; i >= 0; --i)
     {
       Entity*& ntt = m_entities[i];
 
@@ -445,16 +471,18 @@ namespace ToolKit
       {
         if (end != 0 && ntt->GetType() == EntityType::Entity_Prefab)
         {
-            std::swap(ntt, m_entities[--end]);
-            ++i;
-            SafeDel(ntt);
+          std::swap(ntt, m_entities[--end]);
+          ++i;
+          SafeDel(ntt);
         }
       }
-    }
+    }*/
 
-    for (uint nttIndx = 0; nttIndx < end; nttIndx++)
+    int maxCnt = (int)m_entities.size() - 1;
+
+    for (int i = maxCnt; i >= 0; i--)
     {
-      Entity* ntt = m_entities[nttIndx];
+      Entity* ntt = m_entities[i];
       if (removeResources)
       {
         ntt->RemoveResources();
