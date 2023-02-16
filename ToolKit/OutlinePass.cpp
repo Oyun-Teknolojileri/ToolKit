@@ -54,7 +54,7 @@ namespace ToolKit
 
     // Create stencil image.
     m_stencilPass->m_params.Camera   = m_params.Camera;
-    m_stencilPass->m_params.DrawList = m_params.DrawList;
+    m_stencilPass->m_params.RenderJobs = m_params.RenderJobs;
 
     // Construct output target.
     FramebufferSettings fbs          = m_params.FrameBuffer->GetSettings();

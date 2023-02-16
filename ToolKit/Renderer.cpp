@@ -553,7 +553,9 @@ namespace ToolKit
     }
     cube.GetMaterialComponent()->SetMaterialVal(mat);
 
-    Render(&cube, cam);
+    static RenderJob rj;
+    RenderJobProcessor::CreateRenderJob(&cube, rj);
+    Render(rj, cam);
   }
 
   MaterialPtr Renderer::GetRenderMaterial(Entity* entity)

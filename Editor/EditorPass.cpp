@@ -81,7 +81,7 @@ namespace ToolKit
 
         // Post process.
         m_passArray.push_back(m_tonemapPass);
-        if (gfx.FXAAEnabled) 
+        if (gfx.FXAAEnabled)
         {
           m_passArray.push_back(m_fxaaPass);
         }
@@ -179,6 +179,9 @@ namespace ToolKit
 
       EditorViewport* viewport =
           static_cast<EditorViewport*>(m_params.Viewport);
+
+      RenderJobArray renderJobs;
+      RenderJobProcessor::
 
       // Editor pass.
       m_editorPass->m_params.Cam              = m_camera;
@@ -308,11 +311,14 @@ namespace ToolKit
           return;
         }
 
+        RenderJobArray renderJobs;
+        RenderJobProcessor::CreateRenderJobs(selection, renderJobs);
+
         // Set parameters of pass
         m_outlinePass->m_params.Camera       = viewport->GetCamera();
         m_outlinePass->m_params.FrameBuffer  = viewport->m_framebuffer;
         m_outlinePass->m_params.OutlineColor = color;
-        m_outlinePass->m_params.DrawList     = selection;
+        m_outlinePass->m_params.RenderJobs   = renderJobs;
 
         for (Entity* entity : selection)
         {
@@ -330,7 +336,10 @@ namespace ToolKit
             static_cast<Billboard*>(billboard)->LookAt(
                 viewport->GetCamera(),
                 viewport->GetBillboardScale());
-            m_outlinePass->m_params.DrawList.push_back(billboard);
+
+            RenderJob rj;
+            RenderJobProcessor::CreateRenderJob(billboard, rj);
+            m_outlinePass->m_params.RenderJobs.push_back(rj);
           }
         }
 
@@ -387,7 +396,7 @@ namespace ToolKit
                                                   false);
 
           renderer->ColorMask(false, false, false, false);
-          
+
           RenderJob rj;
           RenderJobProcessor::CreateRenderJob(m_depthMaskSphere.get(), rj);
           renderer->Render(rj, m_camera);
@@ -446,20 +455,15 @@ namespace ToolKit
 
     void SingleMatForwardRenderPass::Render()
     {
-      EntityRawPtrArray opaqueDrawList;
-      EntityRawPtrArray translucentDrawList;
-      SeperateTranslucentEntities(m_params.ForwardParams.Entities,
-                                  opaqueDrawList,
-                                  translucentDrawList);
 
-      Renderer* renderer = GetRenderer();
-      for (Entity* ntt : opaqueDrawList)
+      Renderer* renderer      = GetRenderer();
+      renderer->m_overrideMat = std::make_shared<Material>();
+      for (RenderJob& job : m_params.ForwardParams.OpaqueJobs)
       {
         LightRawPtrArray lightList =
-            GetBestLights(ntt, m_params.ForwardParams.Lights);
+            RenderJobProcessor::SortLights(job, m_params.ForwardParams.Lights);
 
-        MaterialPtr mat         = ntt->GetRenderMaterial();
-        renderer->m_overrideMat = std::make_shared<Material>();
+        MaterialPtr mat = job.Material;
         renderer->m_overrideMat->SetRenderState(mat->GetRenderState());
         renderer->m_overrideMat->m_vertexShader = mat->m_vertexShader;
         renderer->m_overrideMat->m_fragmentShader =
@@ -472,11 +476,11 @@ namespace ToolKit
         renderer->m_overrideMat->m_alpha           = mat->m_alpha;
         renderer->m_overrideMat->Init();
 
-        renderer->Render(ntt, m_params.ForwardParams.Cam, lightList);
+        renderer->Render(job, m_params.ForwardParams.Cam, lightList);
       }
 
-      RenderTranslucent(translucentDrawList,
-                        m_camera,
+      RenderTranslucent(m_params.ForwardParams.TranslucentJobs,
+                        m_params.ForwardParams.Cam,
                         m_params.ForwardParams.Lights);
     }
 
@@ -484,7 +488,6 @@ namespace ToolKit
     {
       ForwardRenderPass::m_params = m_params.ForwardParams;
       ForwardRenderPass::PreRender();
-      Renderer* renderer = GetRenderer();
 
       m_overrideMat->UnInit();
       m_overrideMat->m_fragmentShader = m_params.OverrideFragmentShader;

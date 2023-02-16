@@ -41,9 +41,9 @@ namespace ToolKit
     renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
     renderer->ColorMask(false, false, false, false);
 
-    for (Entity* ntt : m_params.DrawList)
+    for (RenderJob& job : m_params.RenderJobs)
     {
-      renderer->Render(ntt, m_params.Camera);
+      renderer->Render(job, m_params.Camera);
     }
 
     // Copy pass.

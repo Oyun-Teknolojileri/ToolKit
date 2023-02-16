@@ -147,8 +147,9 @@ namespace ToolKit
 
       if (g_app->m_selectEffectingLights && !ntt->IsLightInstance())
       {
-        LightRawPtrArray lights          = GetLights();
-        LightRawPtrArray effectingLights = GetBestLights(ntt, lights);
+        LightRawPtrArray lights = GetLights();
+        LightRawPtrArray effectingLights =
+            RenderJobProcessor::SortLights(ntt, lights);
 
         for (Light* light : effectingLights)
         {

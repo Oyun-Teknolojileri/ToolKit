@@ -69,6 +69,9 @@ namespace ToolKit
     static LightRawPtrArray SortLights(const RenderJob& job,
                                        const LightRawPtrArray& lights);
 
+    static LightRawPtrArray SortLights(Entity* entity,
+                                       const LightRawPtrArray& lights);
+
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
     static void StableSortByDistanceToCamera(RenderJobArray& entities,

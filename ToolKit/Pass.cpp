@@ -270,6 +270,15 @@ namespace ToolKit
     return bestLights;
   }
 
+  LightRawPtrArray RenderJobProcessor::SortLights(
+      Entity* entity,
+      const LightRawPtrArray& lights)
+  {
+    static RenderJob rj;
+    CreateRenderJob(entity, rj);
+    return SortLights(rj, lights);
+  }
+
   void RenderJobProcessor::StableSortByDistanceToCamera(RenderJobArray& jobs,
                                                         const Camera* cam)
   {

@@ -10,7 +10,7 @@ namespace ToolKit
   {
     Camera* Camera               = nullptr;
     RenderTargetPtr OutputTarget = nullptr;
-    EntityRawPtrArray DrawList   = {};
+    RenderJobArray RenderJobs    = {};
   };
 
   /**
