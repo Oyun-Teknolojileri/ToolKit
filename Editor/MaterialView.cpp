@@ -60,7 +60,7 @@ namespace ToolKit
 
     void MaterialView::UpdatePreviewScene()
     {
-      EntityRawPtrArray& entities = m_viewport->GetScene()->AccessEntityArray();
+      const EntityRawPtrArray& entities = m_viewport->GetScene()->GetEntities();
       Entity* primNtt             = nullptr;
       if (entities.size() > 1u)
       {
