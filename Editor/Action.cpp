@@ -330,12 +330,12 @@ namespace ToolKit
       }
     }
 
-		void ActionManager::ClearAllActions()
-		{
-			m_actionStack.clear();
-			m_stackPointer = 0;
-			m_initiated = false;
-		}
+    void ActionManager::ClearAllActions()
+    {
+      m_actionStack.clear();
+      m_stackPointer = 0;
+      m_initiated    = false;
+    }
 
     ActionManager* ActionManager::GetInstance() { return &m_instance; }
 

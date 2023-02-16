@@ -88,7 +88,7 @@ namespace ToolKit
       void RemoveLastAction();
       void Undo();
       void Redo();
-			void ClearAllActions();
+      void ClearAllActions();
       static ActionManager* GetInstance();
 
      private:

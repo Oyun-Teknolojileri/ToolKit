@@ -73,7 +73,7 @@ namespace ToolKit
       BoundingBox box = surface->GetAABB(true);
       Ray ray         = vp->RayFromMousePosition();
 
-      float t = 0.0f;
+      float t         = 0.0f;
       if (RayBoxIntersection(ray, box, t))
       {
         return true;

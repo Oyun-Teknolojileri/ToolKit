@@ -266,7 +266,7 @@ namespace ToolKit
     {
       bool isUnique = GetEntity(entity->GetIdVal()) == nullptr;
       assert(isUnique);
-      if (isUnique) 
+      if (isUnique)
       {
         m_entities.push_back(entity);
       }
@@ -305,9 +305,10 @@ namespace ToolKit
                                           return true;
                                         }
                                       }
-    
+
                                       return false;
-                                    }), m_entities.end());
+                                    }),
+                     m_entities.end());
   }
 
   void Scene::RemoveAllEntities() { m_entities.clear(); }
@@ -465,15 +466,15 @@ namespace ToolKit
     for (Entity* ntt : prefabs)
     {
       Prefab* prefab = static_cast<Prefab*>(ntt);
-      prefab->UnInit();   
+      prefab->UnInit();
     }
 
     int maxCnt = (int) m_entities.size() - 1;
 
     for (int i = maxCnt; i >= 0; i--)
     {
-      Entity* ntt = m_entities[i];      
-      if (removeResources)  
+      Entity* ntt = m_entities[i];
+      if (removeResources)
       {
         ntt->RemoveResources();
       }
@@ -638,7 +639,7 @@ namespace ToolKit
     }
     GetHandleManager()->SetMaxHandle(biggestID);
 
-    for (Entity* prefab : prefabList) 
+    for (Entity* prefab : prefabList)
     {
       static_cast<Prefab*>(prefab)->Init(this);
     }

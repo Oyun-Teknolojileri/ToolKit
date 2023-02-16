@@ -1,5 +1,6 @@
 #include "EditorScene.h"
 
+#include "Action.h"
 #include "App.h"
 #include "EditorCamera.h"
 #include "EditorViewport.h"
@@ -8,7 +9,6 @@
 #include "Util.h"
 
 #include "DebugNew.h"
-#include "Action.h"
 
 namespace ToolKit
 {
@@ -298,14 +298,11 @@ namespace ToolKit
       AddBillboardToEntity(entity);
     }
 
-    void EditorScene::RemoveEntity(const EntityRawPtrArray& entities) 
+    void EditorScene::RemoveEntity(const EntityRawPtrArray& entities)
     {
       Scene::RemoveEntity(entities);
-      
-      // TODO: Anil
-      // Cache billboards with ntt id
-      // Can we do remove if rather than erasing one by one.
-      for (Entity* ntt : entities) 
+
+      for (Entity* ntt : entities)
       {
         RemoveFromSelection(ntt->GetIdVal());
         RemoveBillboardFromEntity(ntt);

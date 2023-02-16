@@ -15,10 +15,7 @@ namespace ToolKit
     ParameterEventConstructor();
   }
 
-  Prefab::~Prefab() 
-  { 
-      UnInit();
-  }
+  Prefab::~Prefab() { UnInit(); }
 
   void Prefab::UnInit()
   {
@@ -35,7 +32,7 @@ namespace ToolKit
 
   EntityType Prefab::GetType() const { return EntityType::Entity_Prefab; }
 
-  void Prefab::Unlink() 
+  void Prefab::Unlink()
   {
     if (m_initiated)
     {
@@ -43,7 +40,7 @@ namespace ToolKit
     }
   }
 
-  void Prefab::Link() 
+  void Prefab::Link()
   {
     for (Entity* child : m_instanceEntities)
     {
@@ -177,14 +174,17 @@ namespace ToolKit
       {
         MaterialComponentPtrArray matComps;
         child->GetComponent<MaterialComponent>(matComps);
-        for (MaterialComponentPtr matComp : matComps) {
+        for (MaterialComponentPtr matComp : matComps)
+        {
           matComp->GetMaterialVal()->Save(true);
         }
 
         MultiMaterialPtrArray mmComps;
         child->GetComponent<MultiMaterialComponent>(mmComps);
-        for (MultiMaterialPtr mmComp : mmComps) {
-          for (MaterialPtr mat : mmComp->GetMaterialList()) {
+        for (MultiMaterialPtr mmComp : mmComps)
+        {
+          for (MaterialPtr mat : mmComp->GetMaterialList())
+          {
             mat->Save(true);
           }
         }
