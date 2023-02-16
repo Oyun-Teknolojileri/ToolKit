@@ -36,15 +36,24 @@ namespace ToolKit
   {
     if (m_initiated)
     {
-      m_currentScene->RemoveEntity(m_instanceEntities);
+      if (m_linked) 
+      {
+        m_linked = false;
+        m_currentScene->RemoveEntity(m_instanceEntities);
+      }
     }
   }
 
   void Prefab::Link()
   {
-    for (Entity* child : m_instanceEntities)
+    assert(!m_linked);
+    if (!m_linked) 
     {
-      m_currentScene->AddEntity(child);
+      m_linked = true;
+      for (Entity* child : m_instanceEntities)
+      {
+        m_currentScene->AddEntity(child);
+      }
     }
   }
 

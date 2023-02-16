@@ -66,6 +66,7 @@ namespace ToolKit
     bool m_initiated = false;
 
    private:
+    bool m_linked = false;
     // Used only in deserialization
     std::unordered_map<String, ParameterVariantArray> m_childCustomDatas;
     EntityRawPtrArray m_instanceEntities;

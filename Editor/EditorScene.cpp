@@ -323,8 +323,9 @@ namespace ToolKit
 
     void EditorScene::Destroy(bool removeResources)
     {
-      Scene::Destroy(removeResources);
       ActionManager::GetInstance()->ClearAllActions();
+      Scene::Destroy(removeResources);
+
       m_selectedEntities.clear();
 
       // Destroy gizmos too

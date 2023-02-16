@@ -305,7 +305,7 @@ namespace ToolKit
                                           return true;
                                         }
                                       }
-
+    
                                       return false;
                                     }),
                      m_entities.end());
@@ -480,6 +480,7 @@ namespace ToolKit
       }
       SafeDel(m_entities[i]);
     }
+
     m_entities.clear();
 
     m_loaded    = false;

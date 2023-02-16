@@ -195,12 +195,7 @@ namespace ToolKit
 
     void ActionManager::UnInit()
     {
-      for (Action* action : m_actionStack)
-      {
-        SafeDel(action);
-      }
-      m_actionStack.clear();
-
+      ClearAllActions();
       m_initiated = false;
     }
 
@@ -332,9 +327,11 @@ namespace ToolKit
 
     void ActionManager::ClearAllActions()
     {
+      for (Action* action : m_actionStack)
+      {
+        SafeDel(action);
+      }
       m_actionStack.clear();
-      m_stackPointer = 0;
-      m_initiated    = false;
     }
 
     ActionManager* ActionManager::GetInstance() { return &m_instance; }
