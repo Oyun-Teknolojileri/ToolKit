@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "DebugNew.h"
-#include <unordered_set>
 
 namespace ToolKit
 {
@@ -306,9 +305,9 @@ namespace ToolKit
                                           return true;
                                         }
                                       }
-
+    
                                       return false;
-                                    }));
+                                    }), m_entities.end());
   }
 
   void Scene::RemoveAllEntities() { m_entities.clear(); }
@@ -465,32 +464,16 @@ namespace ToolKit
 
     for (Entity* ntt : prefabs)
     {
-      static_cast<Prefab*>(ntt)->UnInit();
+      Prefab* prefab = static_cast<Prefab*>(ntt);
+      prefab->UnInit();   
     }
-
-    /*
-    int end = static_cast<int>(m_entities.size());
-    for (int i = end - 1; i >= 0; --i)
-    {
-      Entity*& ntt = m_entities[i];
-
-      if (ntt != nullptr && Prefab::GetPrefabRoot(ntt))
-      {
-        if (end != 0 && ntt->GetType() == EntityType::Entity_Prefab)
-        {
-          std::swap(ntt, m_entities[--end]);
-          ++i;
-          SafeDel(ntt);
-        }
-      }
-    }*/
 
     int maxCnt = (int) m_entities.size() - 1;
 
     for (int i = maxCnt; i >= 0; i--)
     {
       Entity* ntt = m_entities[i];      
-      if (removeResources)
+      if (removeResources)  
       {
         ntt->RemoveResources();
       }

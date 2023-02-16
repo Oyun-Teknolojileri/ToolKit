@@ -8,6 +8,7 @@
 #include "Util.h"
 
 #include "DebugNew.h"
+#include "Action.h"
 
 namespace ToolKit
 {
@@ -326,6 +327,7 @@ namespace ToolKit
     void EditorScene::Destroy(bool removeResources)
     {
       Scene::Destroy(removeResources);
+      ActionManager::GetInstance()->ClearAllActions();
       m_selectedEntities.clear();
 
       // Destroy gizmos too

@@ -23,7 +23,6 @@ namespace ToolKit
   void Prefab::UnInit()
   {
     Unlink();
-
     if (m_initiated)
     {
       for (Entity* ntt : m_instanceEntities)
