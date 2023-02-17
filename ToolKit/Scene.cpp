@@ -1,7 +1,8 @@
+#include "Scene.h"
+
 #include "Component.h"
 #include "Prefab.h"
 #include "ResourceComponent.h"
-#include "Scene.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -261,9 +262,15 @@ namespace ToolKit
 
   void Scene::AddEntity(Entity* entity)
   {
-    ULongID nttyID = entity->GetIdVal();
-    assert(GetEntity(nttyID) == nullptr && "Entity is already in the scene.");
-    m_entities.push_back(entity);
+    if (entity)
+    {
+      bool isUnique = GetEntity(entity->GetIdVal()) == nullptr;
+      assert(isUnique);
+      if (isUnique)
+      {
+        m_entities.push_back(entity);
+      }
+    }
   }
 
   EntityRawPtrArray& Scene::AccessEntityArray() { return m_entities; }
@@ -286,10 +293,22 @@ namespace ToolKit
 
   void Scene::RemoveEntity(const EntityRawPtrArray& entities)
   {
-    for (Entity* ntt : entities)
-    {
-      RemoveEntity(ntt->GetIdVal());
-    }
+    m_entities.erase(std::remove_if(m_entities.begin(),
+                                    m_entities.end(),
+                                    [&entities](const Entity* ntt) -> bool
+                                    {
+                                      for (const Entity* removeNtt : entities)
+                                      {
+                                        if (removeNtt->GetIdVal() ==
+                                            ntt->GetIdVal())
+                                        {
+                                          return true;
+                                        }
+                                      }
+    
+                                      return false;
+                                    }),
+                     m_entities.end());
   }
 
   void Scene::RemoveAllEntities() { m_entities.clear(); }
@@ -435,32 +454,33 @@ namespace ToolKit
 
   void Scene::Destroy(bool removeResources)
   {
-    int end = static_cast<int>(m_entities.size());
-
-    for (int i = end-1; i >= 0; --i)
+    EntityRawPtrArray prefabs;
+    for (Entity* ntt : m_entities)
     {
-      Entity*& ntt = m_entities[i];
-
-      if (ntt != nullptr && Prefab::GetPrefabRoot(ntt))
+      if (ntt->GetType() == EntityType::Entity_Prefab)
       {
-        if (end != 0 && ntt->GetType() == EntityType::Entity_Prefab)
-        {
-            std::swap(ntt, m_entities[--end]);
-            ++i;
-            SafeDel(ntt);
-        }
+        prefabs.push_back(ntt);
       }
     }
 
-    for (uint nttIndx = 0; nttIndx < end; nttIndx++)
+    for (Entity* ntt : prefabs)
     {
-      Entity* ntt = m_entities[nttIndx];
+      Prefab* prefab = static_cast<Prefab*>(ntt);
+      prefab->UnInit();
+    }
+
+    int maxCnt = (int) m_entities.size() - 1;
+
+    for (int i = maxCnt; i >= 0; i--)
+    {
+      Entity* ntt = m_entities[i];
       if (removeResources)
       {
         ntt->RemoveResources();
       }
-      SafeDel(ntt);
+      SafeDel(m_entities[i]);
     }
+
     m_entities.clear();
 
     m_loaded    = false;
@@ -589,6 +609,9 @@ namespace ToolKit
     ULongID lastID    = GetHandleManager()->GetNextHandle();
     ULongID biggestID = 0;
     XmlNode* node     = nullptr;
+
+    EntityRawPtrArray prefabList;
+
     for (node = root->first_node(XmlEntityElement.c_str()); node;
          node = node->next_sibling(XmlEntityElement.c_str()))
     {
@@ -601,7 +624,7 @@ namespace ToolKit
 
       if (ntt->GetType() == EntityType::Entity_Prefab)
       {
-        static_cast<Prefab*>(ntt)->Init(this);
+        prefabList.push_back(ntt);
       }
 
       // Incrementing the incoming ntt ids with current max id value...
@@ -613,9 +636,14 @@ namespace ToolKit
       ntt->SetIdVal(currentID);
       ntt->_parentId += lastID;
 
-      m_entities.push_back(ntt);
+      AddEntity(ntt);
     }
     GetHandleManager()->SetMaxHandle(biggestID);
+
+    for (Entity* prefab : prefabList)
+    {
+      static_cast<Prefab*>(prefab)->Init(this);
+    }
   }
 
   ULongID Scene::GetBiggestEntityId()

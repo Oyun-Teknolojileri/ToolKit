@@ -238,8 +238,8 @@ namespace ToolKit
       DrawCommands();
 
       m_renderPass->m_params.MainFramebuffer = m_framebuffer;
-      EntityRawPtrArray& entities            = GetScene()->AccessEntityArray();
-      for (Entity* ntt : entities)
+			const EntityRawPtrArray& entities            = GetScene()->GetEntities();
+			for (const Entity* ntt : entities)
       {
         MeshComponentPtr mc = ntt->GetMeshComponent();
         if (!mc)

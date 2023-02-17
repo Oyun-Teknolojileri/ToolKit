@@ -19,9 +19,9 @@ namespace ToolKit
 
   void Prefab::UnInit()
   {
+    Unlink();
     if (m_initiated)
     {
-      m_currentScene->RemoveEntity(m_instanceEntities);
       for (Entity* ntt : m_instanceEntities)
       {
         SafeDel(ntt);
@@ -32,7 +32,30 @@ namespace ToolKit
 
   EntityType Prefab::GetType() const { return EntityType::Entity_Prefab; }
 
-  void Prefab::Remove() {}
+  void Prefab::Unlink()
+  {
+    if (m_initiated)
+    {
+      if (m_linked) 
+      {
+        m_linked = false;
+        m_currentScene->RemoveEntity(m_instanceEntities);
+      }
+    }
+  }
+
+  void Prefab::Link()
+  {
+    assert(!m_linked);
+    if (!m_linked) 
+    {
+      m_linked = true;
+      for (Entity* child : m_instanceEntities)
+      {
+        m_currentScene->AddEntity(child);
+      }
+    }
+  }
 
   Prefab* Prefab::GetPrefabRoot(Entity* ntt)
   {
@@ -69,6 +92,7 @@ namespace ToolKit
       GetLogger()->WriteConsole(LogType::Warning, "Prefab scene isn't found!");
       return;
     }
+
     m_prefabScene->Init();
     m_instanceEntities.clear();
 
@@ -83,7 +107,6 @@ namespace ToolKit
       m_node->AddChild(instantiatedEntityList[0]->m_node);
       for (Entity* child : instantiatedEntityList)
       {
-        m_currentScene->AddEntity(child);
         child->SetTransformLockVal(true);
         child->ParamTransformLock().m_editable = false;
       }
@@ -109,6 +132,8 @@ namespace ToolKit
         }
       }
     }
+
+    Link();
 
     // We need this data only at deserialization, no later
     m_childCustomDatas.clear();
@@ -158,14 +183,17 @@ namespace ToolKit
       {
         MaterialComponentPtrArray matComps;
         child->GetComponent<MaterialComponent>(matComps);
-        for (MaterialComponentPtr matComp : matComps) {
+        for (MaterialComponentPtr matComp : matComps)
+        {
           matComp->GetMaterialVal()->Save(true);
         }
 
         MultiMaterialPtrArray mmComps;
         child->GetComponent<MultiMaterialComponent>(mmComps);
-        for (MultiMaterialPtr mmComp : mmComps) {
-          for (MaterialPtr mat : mmComp->GetMaterialList()) {
+        for (MultiMaterialPtr mmComp : mmComps)
+        {
+          for (MaterialPtr mat : mmComp->GetMaterialList())
+          {
             mat->Save(true);
           }
         }

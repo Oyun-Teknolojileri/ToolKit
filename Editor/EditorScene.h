@@ -46,6 +46,7 @@ namespace ToolKit
 
       // Entity operations.
       void AddEntity(Entity* entity) override;
+      void RemoveEntity(const EntityRawPtrArray& entities) override;
       Entity* RemoveEntity(ULongID id) override;
       void Destroy(bool removeResources) override;
       void GetSelectedEntities(EntityRawPtrArray& entities) const;
