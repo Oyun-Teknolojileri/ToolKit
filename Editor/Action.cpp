@@ -332,6 +332,7 @@ namespace ToolKit
         SafeDel(action);
       }
       m_actionStack.clear();
+      m_stackPointer = 0;
     }
 
     ActionManager* ActionManager::GetInstance() { return &m_instance; }
