@@ -81,6 +81,12 @@ namespace ToolKit
       static uint m_baseId;
     };
 
+		class TempWindow
+		{
+		public:
+			virtual void Show() = 0;
+		};
+
     class UI
     {
      public:
@@ -91,7 +97,9 @@ namespace ToolKit
       static void InitTheme();
       static void InitSettings();
       static void ShowUI();
-      static void BeginUI();
+			static void AddTempWindow(TempWindow* window);
+			static void RemoveTempWindow(TempWindow* window);
+			static void BeginUI();
       static void EndUI();
       static void ShowAppMainMenuBar();
       static void ShowMenuFile();
@@ -134,6 +142,7 @@ namespace ToolKit
 
       // Volatile windows. (Pop-ups etc.)
       static std::vector<Window*> m_volatileWindows;
+			static std::vector<TempWindow*> m_tempWindows;
 
       static struct Blocker
       {

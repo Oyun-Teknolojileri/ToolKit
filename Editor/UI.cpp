@@ -39,6 +39,7 @@ namespace ToolKit
     UI::Import UI::ImportData;
     UI::SearchFile UI::SearchFileData;
     std::vector<Window*> UI::m_volatileWindows;
+		std::vector<TempWindow*> UI::m_tempWindows;
     uint Window::m_baseId = 0; // unused id.
     std::vector<std::function<void()>> UI::m_postponedActions;
 
@@ -501,6 +502,17 @@ namespace ToolKit
       }
     }
 
+    void UI::AddTempWindow(TempWindow* window)
+    {
+      m_tempWindows.push_back(window);
+    }
+
+    void UI::RemoveTempWindow(TempWindow* window)
+    {
+      m_tempWindows.erase(
+          std::find(m_tempWindows.begin(), m_tempWindows.end(), window));
+    }
+
     void UI::ShowUI()
     {
       ShowDock();
@@ -512,6 +524,11 @@ namespace ToolKit
         {
           wnd->Show();
         }
+      }
+
+      for (auto wnd : m_tempWindows)
+      {
+        wnd->Show();
       }
 
       if (g_app->m_simulationWindow->IsVisible())
