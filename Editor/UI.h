@@ -81,6 +81,12 @@ namespace ToolKit
       static uint m_baseId;
     };
 
+    class TempWindow
+    {
+     public:
+      virtual void Show() = 0;
+    };
+
     class UI
     {
      public:
@@ -99,6 +105,8 @@ namespace ToolKit
       static void ShowMenuProjects();
       static void ShowImportWindow();
       static void ShowSearchForFilesWindow();
+      static void AddTempWindow(TempWindow* window);
+      static void RemoveTempWindow(TempWindow* window);
       static void HelpMarker(const String& key,
                              const char* desc,
                              float wait = m_hoverTimeForHelp);
@@ -162,6 +170,7 @@ namespace ToolKit
 
       // Some actions needed to be run after ui rendered.
       static std::vector<std::function<void()>> m_postponedActions;
+      static std::vector<TempWindow*> m_tempWindows;
 
       // Toolbar Icons.
       static TexturePtr m_selectIcn;

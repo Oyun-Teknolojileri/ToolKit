@@ -739,7 +739,7 @@ namespace ToolKit
           ReadAttr(currIndexNode, "valType", valType);
           ReadAttr(currIndexNode, "valName", valName);
           ParameterVariant p;
-          p.m_type = VariantType::Int;
+          p.m_type = (VariantType) valType;
           deserializeDataFn(currIndexNode, &p);
 
           pVar->GetVar<MultiChoiceVariant>().Choices.push_back(

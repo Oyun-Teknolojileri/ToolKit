@@ -3,6 +3,7 @@
 #include "App.h"
 #include "ComponentView.h"
 #include "ImGui/imgui_stdlib.h"
+#include "MultiChoiceParameterWindow.hpp"
 
 #include <Prefab.h>
 
@@ -223,6 +224,26 @@ namespace ToolKit
             }
           }
           break;
+          case ParameterVariant::VariantType::MultiChoice:
+          {
+            MultiChoiceVariant* mcv = var->GetVarPtr<MultiChoiceVariant>();
+            if (ImGui::BeginCombo(
+                    "##MultiChoiceVariant",
+                    mcv->Choices[mcv->CurrentVal.Index].first.c_str()))
+            {
+              for (uint i = 0; i < mcv->Choices.size(); ++i)
+              {
+                bool isSelected = i == mcv->CurrentVal.Index;
+                if (ImGui::Selectable(mcv->Choices[i].first.c_str(),
+                                      isSelected))
+                {
+                  mcv->CurrentVal = {i};
+                }
+              }
+              ImGui::EndCombo();
+            }
+          }
+          break;
           }
 
           ImGui::TableSetColumnIndex(2);
@@ -250,11 +271,11 @@ namespace ToolKit
         {
           ImGui::PushItemWidth(150);
           int dataType = 0;
-          if (ImGui::Combo(
-                  "##NewCustData",
-                  &dataType,
-                  "..."
-                  "\0String\0Boolean\0Int\0Float\0Vec3\0Vec4\0Mat3\0Mat4"))
+          if (ImGui::Combo("##NewCustData",
+                           &dataType,
+                           "Sellect"
+                           "Type\0String\0Boolean\0Int\0Float\0Vec2\0Vec3\0Vec4"
+                           "\0Mat3\0Mat4\0MultiChoice"))
           {
             ParameterVariant customVar;
             // This makes them only visible in Custom Data dropdown.
@@ -265,6 +286,9 @@ namespace ToolKit
             bool added           = true;
             switch (dataType)
             {
+            case 0:
+              added = false;
+              break;
             case 1:
               customVar = "";
               break;
@@ -278,19 +302,27 @@ namespace ToolKit
               customVar = 0.0f;
               break;
             case 5:
+              customVar = Vec2(0.0f, 0.0f);
+            case 6:
               customVar = ZERO;
               break;
-            case 6:
+            case 7:
               customVar = Vec4();
               break;
-            case 7:
+            case 8:
               customVar = Mat3();
               break;
-            case 8:
+            case 9:
               customVar = Mat4();
               break;
+            case 10:
+              MultiChoiceParameterWindow::Instance()->OpenCreateWindow(
+                  &m_entity->m_localData);
+              added       = false;
+              addInAction = false;
+              break;
             default:
-              added = false;
+              assert(false && "invalid data type");
               break;
             }
 
