@@ -368,7 +368,8 @@ namespace ToolKit
       AnimRecord::State state = record->m_state;
       if (state == AnimRecord::State::Play)
       {
-        float thisTime = record->m_currentTime + deltaTimeSec;
+        float thisTime = record->m_currentTime +
+          (deltaTimeSec * record->m_timeMultiplier);
         float duration = record->m_animation->m_duration;
 
         if (record->m_loop)
@@ -394,7 +395,7 @@ namespace ToolKit
       }
       else
       {
-        record->m_currentTime += deltaTimeSec;
+        record->m_currentTime += deltaTimeSec * record->m_timeMultiplier;
       }
 
       record->m_entity->SetPose(record->m_animation, record->m_currentTime);
