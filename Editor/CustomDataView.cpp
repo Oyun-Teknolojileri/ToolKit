@@ -4,8 +4,9 @@
 #include "ComponentView.h"
 #include "ImGui/imgui_stdlib.h"
 #include "MultiChoiceParameterWindow.h"
+#include "Prefab.h"
 
-#include <Prefab.h>
+#include "DebugNew.h"
 
 namespace ToolKit
 {
