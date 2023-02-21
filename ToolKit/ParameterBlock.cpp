@@ -470,13 +470,13 @@ namespace ToolKit
           WriteAttr(nextNode,
                     doc,
                     "valType",
-                    std::to_string((int) mcv.Choices[i].second.GetType()));
-          WriteAttr(nextNode, doc, "valName", mcv.Choices[i].first.c_str());
+                    std::to_string((int) mcv.Choices[i].GetType()));
+          WriteAttr(nextNode, doc, "valName", mcv.Choices[i].m_name.c_str());
           WriteAttr(nextNode,
                     doc,
                     XmlParamterValAttr.c_str(),
-                    mcv.Choices[i].first);
-          const ParameterVariant* variant = &mcv.Choices[i].second;
+                    mcv.Choices[i].m_name);
+          const ParameterVariant* variant = &mcv.Choices[i];
           serializeDataFn(variant);
         }
       }
@@ -740,10 +740,10 @@ namespace ToolKit
           ReadAttr(currIndexNode, "valName", valName);
           ParameterVariant p;
           p.m_type = (VariantType) valType;
+          p.m_name = valName;
           deserializeDataFn(currIndexNode, &p);
 
-          pVar->GetVar<MultiChoiceVariant>().Choices.push_back(
-              std::pair<String, ParameterVariant>(valName, std::move(p)));
+          pVar->GetVar<MultiChoiceVariant>().Choices.push_back(std::move(p));
         }
       }
       break;

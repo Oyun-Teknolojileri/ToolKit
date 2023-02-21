@@ -1,8 +1,9 @@
 #include "MultiChoiceParameterWindow.hpp"
 
+#include "stdafx.h"
 #include "App.h"
 #include "ImGui/imgui_stdlib.h"
-#include "stdafx.h"
+#include "CustomDataView.h"
 
 namespace ToolKit::Editor
 {
@@ -20,95 +21,26 @@ namespace ToolKit::Editor
 
 	void MultiChoiceParameterWindow::ShowVariant()
 	{
-		ImGui::Text("New Variant");
+		CustomDataView::BeginShowVariants("New Variant");
+		ParameterVariant* remove = nullptr;
 		// draw&edit each parameter
 		for (size_t i = 0; i < m_variant.Choices.size(); ++i)
 		{
-			ParameterVariant* var = &m_variant.Choices[i].second;
-			String& name          = m_variant.Choices[i].first;
-
-			ImGui::PushID(i * 2000 + 1);
-			ImGui::InputText("", &name);
-			ImGui::PopID();
-
-			ImGui::PushID(i * 2000 + 2);
-
-			switch (var->GetType())
-			{
-				case ParameterVariant::VariantType::String:
-				{
-					ImGui::InputText("", var->GetVarPtr<String>());
-				}
-				break;
-				case ParameterVariant::VariantType::Bool:
-				{
-					bool val = var->GetVar<bool>();
-					if (ImGui::Checkbox("", &val))
-					{
-						*var = val;
-					}
-				}
-				break;
-				case ParameterVariant::VariantType::Int:
-				{
-					ImGui::InputInt("", var->GetVarPtr<int>());
-				}
-				break;
-				case ParameterVariant::VariantType::Float:
-				{
-					ImGui::DragFloat("", var->GetVarPtr<float>(), 0.1f);
-				}
-				break;
-				case ParameterVariant::VariantType::Vec3:
-				{
-					ImGui::DragFloat3("", &var->GetVar<Vec3>()[0], 0.1f);
-				}
-				break;
-				case ParameterVariant::VariantType::Vec4:
-				{
-					ImGui::DragFloat4("", &var->GetVar<Vec4>()[0], 0.1f);
-				}
-				break;
-				case ParameterVariant::VariantType::Mat3:
-				{
-					Vec3 vec;
-					Mat3 val = var->GetVar<Mat3>();
-					for (int j = 0; j < 3; j++)
-					{
-						vec = glm::row(val, j);
-						ImGui::InputFloat3("", &vec[0]);
-						val  = glm::row(val, j, vec);
-						*var = val;
-					}
-				}
-				break;
-				case ParameterVariant::VariantType::Mat4:
-				{
-					Vec4 vec;
-					Mat4 val = var->GetVar<Mat4>();
-					for (int j = 0; j < 4; j++)
-					{
-						vec = glm::row(val, j);
-						ImGui::InputFloat4("", &vec[0]);
-						val  = glm::row(val, j, vec);
-						*var = val;
-					}
-				}
-				break;
-			}
-			// align X button to the most right of the window
-			ImGui::SameLine(ImGui::GetWindowWidth() - 30);
-
-			if (ImGui::Button("X"))
-			{
-				auto& choices = m_variant.Choices;
-				m_variant.Choices.erase(choices.begin() + i);
-				i--;
-			}
-			ImGui::PopID();
-			ImGui::Spacing();
+			ParameterVariant* var = &m_variant.Choices[i];
+			CustomDataView::ShowVariant(var, remove, i, true);
 		}
 
+		if (remove != nullptr)
+		{
+			auto find = std::find_if(m_variant.Choices.begin(),
+                            m_variant.Choices.end(),
+                            [remove](const ParameterVariant& param)
+                            { return param.m_id == remove->m_id; });
+			m_variant.Choices.erase(find);
+		}
+
+		CustomDataView::EndShowVariants();
+		
 		int dataType = 0;
 		if (ImGui::Combo(
 			"AddChoice",
@@ -120,40 +52,31 @@ namespace ToolKit::Editor
 			{
 				case 0:
 				case 1:
-					m_variant.Choices.push_back(
-					std::make_pair(String("name"), ParameterVariant(String(""))));
+					m_variant.Choices.push_back(ParameterVariant(String("")));
 					break;
 				case 2:
-					m_variant.Choices.push_back(
-					std::make_pair(String("name"), ParameterVariant(false)));
+					m_variant.Choices.push_back(ParameterVariant(false));
 					break;
 				case 3:
-					m_variant.Choices.push_back(
-					std::make_pair(String("name"), ParameterVariant(0)));
+					m_variant.Choices.push_back(ParameterVariant(0));
 					break;
 				case 4:
-					m_variant.Choices.push_back(
-					std::make_pair(String("name"), ParameterVariant(0.0f)));
+					m_variant.Choices.push_back(ParameterVariant(0.0f));
 					break;
 				case 5:
-					m_variant.Choices.push_back(
-					std::make_pair(String("name"), ParameterVariant(Vec2())));
+					m_variant.Choices.push_back(ParameterVariant(Vec2()));
 					break;
 				case 6:
-					m_variant.Choices.push_back(
-					std::make_pair(String("name"), ParameterVariant(Vec3())));
+					m_variant.Choices.push_back(ParameterVariant(Vec3()));
 					break;
 				case 7:
-					m_variant.Choices.push_back(
-					std::make_pair(String("name"), ParameterVariant(Vec4())));
+					m_variant.Choices.push_back(ParameterVariant(Vec4()));
 					break;
 				case 8:
-					m_variant.Choices.push_back(
-					std::make_pair(String("name"), ParameterVariant(Mat3())));
+					m_variant.Choices.push_back(ParameterVariant(Mat3()));
 					break;
 				case 9:
-					m_variant.Choices.push_back(
-					std::make_pair(String("name"), ParameterVariant(Mat4())));
+					m_variant.Choices.push_back(ParameterVariant(Mat4()));
 					break;
 				default:
 					assert(false && "parameter type invalid");
@@ -214,12 +137,5 @@ namespace ToolKit::Editor
 		m_variant = MultiChoiceVariant();
 		m_menuOpen = true;
 		m_parameter = parameter;
-	}
-
-	MultiChoiceParameterWindow* MultiChoiceParameterWindow::Instance()
-	{
-		static std::unique_ptr<MultiChoiceParameterWindow> instance =
-			std::make_unique<MultiChoiceParameterWindow>();
-		return instance.get();
 	}
 } // namespace ToolKit::Editor

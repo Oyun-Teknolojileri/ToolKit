@@ -11,7 +11,6 @@ namespace ToolKit
 		public:
 			void OpenCreateWindow(ParameterBlock* parameter);
 			void Show() override;
-			static MultiChoiceParameterWindow* Instance();
 		private:
 			bool IsVariantValid();
 			void ShowVariant();
