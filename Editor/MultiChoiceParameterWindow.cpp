@@ -1,4 +1,4 @@
-#include "MultiChoiceParameterWindow.hpp"
+#include "MultiChoiceParameterWindow.h"
 
 #include "App.h"
 #include "CustomDataView.h"
@@ -16,6 +16,18 @@ namespace ToolKit::Editor
                                 "You must define at least two parameter!");
       return false;
     }
+
+    for (const ParameterVariant& var : m_variant.Choices) 
+    {
+      if (var.m_name.size() < 1) 
+      {
+        g_app->m_statusMsg = "Failed!";
+        GetLogger()->WriteConsole(LogType::Warning,
+                                  "name can't be empty!");
+        return false;
+      }
+    }
+
     return true;
   }
 

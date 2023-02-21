@@ -279,7 +279,7 @@
     <ClInclude Include="Thumbnail.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="MultiChoiceParameterWindow.hpp" />
+    <ClInclude Include="MultiChoiceParameterWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />

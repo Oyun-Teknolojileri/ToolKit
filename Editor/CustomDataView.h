@@ -1,5 +1,5 @@
 #pragma once
-#include "MultiChoiceParameterWindow.hpp"
+#include "MultiChoiceParameterWindow.h"
 #include "PropInspector.h"
 
 namespace ToolKit

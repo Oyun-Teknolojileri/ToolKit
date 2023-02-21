@@ -185,7 +185,7 @@
     <ClInclude Include="ImGui\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="MaterialView.h" />
     <ClInclude Include="MeshView.h" />
-    <ClInclude Include="MultiChoiceParameterWindow.hpp" />
+    <ClInclude Include="MultiChoiceParameterWindow.h" />
     <ClInclude Include="PluginWindow.h" />
     <ClInclude Include="PopupWindows.h" />
     <ClInclude Include="PrefabView.h" />
