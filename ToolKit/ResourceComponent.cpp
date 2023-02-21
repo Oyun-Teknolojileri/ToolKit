@@ -101,7 +101,7 @@ namespace ToolKit
            "that does not exist in environment component.");
 
     GetHdriVal()->m_specularIBLTextureSize =
-        GetMultiChoiceVal(GetIBLTextureSizeVal(), int);
+        GetIBLTextureSizeVal().GetValue<int>();
     GetHdriVal()->m_exposure = GetExposureVal();
     GetHdriVal()->Init(flushClientSideArray);
   }
@@ -147,21 +147,31 @@ namespace ToolKit
                     true,
                     {false, true, 0.0f, 50.0f, 0.05f});
 
+    auto createParameterVariant = [](const String& name, int val)
+    {
+      ParameterVariant param {val};
+      param.m_name = name;
+      return param;
+    };
+
     MultiChoiceVariant mcv = {
-        {std::pair<String, ParameterVariant>("32", ParameterVariant(32)),
-         std::pair<String, ParameterVariant>("64", ParameterVariant(64)),
-         std::pair<String, ParameterVariant>("128", ParameterVariant(128)),
-         std::pair<String, ParameterVariant>("256", ParameterVariant(256)),
-         std::pair<String, ParameterVariant>("512", ParameterVariant(512)),
-         std::pair<String, ParameterVariant>("1024", ParameterVariant(1024))},
+        {createParameterVariant("32", 32),
+         createParameterVariant("64", 64),
+         createParameterVariant("128", 128),
+         createParameterVariant("256", 256),
+         createParameterVariant("512", 512),
+         createParameterVariant("1024", 1024)},
         1,
         [&](Value& oldVal, Value& newVal)
         {
           HdriPtr hdri           = GetHdriVal();
           MultiChoiceVariant mcv = GetIBLTextureSizeVal();
-          
-          hdri->m_specularIBLTextureSize = GetMultiChoiceVal(mcv, int);
-          ReInitHdri(hdri, GetExposureVal());
+
+          if (hdri != nullptr)
+          {
+            hdri->m_specularIBLTextureSize = mcv.GetValue<int>();
+            ReInitHdri(hdri, GetExposureVal());
+          }
          }
     };
 
@@ -438,7 +448,8 @@ namespace ToolKit
               std::to_string(materials.size()));
     for (uint i = 0; i < materials.size(); i++)
     {
-      if (materials[i]->m_dirty) {
+      if (materials[i]->m_dirty)
+      {
         materials[i]->Save(true);
       }
       XmlNode* resourceRefNode =

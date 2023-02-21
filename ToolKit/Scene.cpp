@@ -305,7 +305,7 @@ namespace ToolKit
                                           return true;
                                         }
                                       }
-    
+
                                       return false;
                                     }),
                      m_entities.end());

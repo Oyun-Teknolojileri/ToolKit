@@ -3,8 +3,10 @@
 #include "App.h"
 #include "ComponentView.h"
 #include "ImGui/imgui_stdlib.h"
+#include "MultiChoiceParameterWindow.h"
+#include "Prefab.h"
 
-#include <Prefab.h>
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -12,6 +14,7 @@ namespace ToolKit
   {
     // CustomDataView
     //////////////////////////////////////////////////////////////////////////
+    MultiChoiceParameterWindow CustomDataView::m_multiChoiceParamWindow;
 
     void CustomDataView::ShowMaterialPtr(const String& uniqueName,
                                          const String& file,
@@ -94,6 +97,166 @@ namespace ToolKit
       return multiUpdate;
     }
 
+    bool CustomDataView::BeginShowVariants(StringView header)
+    {
+      if (!ImGui::BeginTable(header.data(),
+                             3,
+                             ImGuiTableFlags_Resizable |
+                                 ImGuiTableFlags_SizingFixedSame))
+      {
+        return false;
+      }
+      Vec2 xSize = ImGui::CalcTextSize("Name");
+      xSize      *= 3.0f;
+      ImGui::TableSetupColumn("Name",
+                              ImGuiTableColumnFlags_WidthFixed,
+                              xSize.x);
+      ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+
+      xSize = ImGui::CalcTextSize("X");
+      xSize *= 2.5f;
+      ImGui::TableSetupColumn("##Remove",
+                              ImGuiTableColumnFlags_WidthFixed,
+                              xSize.x);
+
+      ImGui::TableHeadersRow();
+
+      ImGui::TableSetColumnIndex(0);
+      ImGui::PushItemWidth(-FLT_MIN);
+
+      ImGui::TableSetColumnIndex(1);
+      ImGui::PushItemWidth(-FLT_MIN);
+      return true;
+    }
+
+    void CustomDataView::ShowVariant(ParameterVariant* var,
+                                     ParameterVariant*& remove,
+                                     int i,
+                                     bool isListEditable)
+    {
+      ImGui::TableNextRow();
+      ImGui::TableSetColumnIndex(0);
+
+      ImGui::PushID(static_cast<int>(i));
+      static char buff[1024];
+      strcpy_s(buff, sizeof(buff), var->m_name.c_str());
+
+      String pNameId = "##Name" + std::to_string(i);
+      if (isListEditable)
+      {
+        ImGui::InputText(pNameId.c_str(), buff, sizeof(buff));
+      }
+      else
+      {
+        ImGui::Text(var->m_name.c_str());
+      }
+      var->m_name = buff;
+
+      ImGui::TableSetColumnIndex(1);
+
+      String pId = "##" + std::to_string(i);
+      switch (var->GetType())
+      {
+      case ParameterVariant::VariantType::String:
+      {
+        ImGui::InputText(pId.c_str(), var->GetVarPtr<String>());
+      }
+      break;
+      case ParameterVariant::VariantType::Bool:
+      {
+        bool val = var->GetVar<bool>();
+        if (ImGui::Checkbox(pId.c_str(), &val))
+        {
+          *var = val;
+        }
+      }
+      break;
+      case ParameterVariant::VariantType::Int:
+      {
+        ImGui::InputInt(pId.c_str(), var->GetVarPtr<int>());
+      }
+      break;
+      case ParameterVariant::VariantType::Float:
+      {
+        ImGui::DragFloat(pId.c_str(), var->GetVarPtr<float>(), 0.1f);
+      }
+      break;
+      case ParameterVariant::VariantType::Vec3:
+      {
+        ImGui::DragFloat3(pId.c_str(), &var->GetVar<Vec3>()[0], 0.1f);
+      }
+      break;
+      case ParameterVariant::VariantType::Vec4:
+      {
+        ImGui::DragFloat4(pId.c_str(), &var->GetVar<Vec4>()[0], 0.1f);
+      }
+      break;
+      case ParameterVariant::VariantType::Mat3:
+      {
+        Vec3 vec;
+        Mat3 val = var->GetVar<Mat3>();
+        for (int j = 0; j < 3; j++)
+        {
+          pId += std::to_string(j);
+          vec = glm::row(val, j);
+          ImGui::InputFloat3(pId.c_str(), &vec[0]);
+          val  = glm::row(val, j, vec);
+          *var = val;
+        }
+      }
+      break;
+      case ParameterVariant::VariantType::Mat4:
+      {
+        Vec4 vec;
+        Mat4 val = var->GetVar<Mat4>();
+        for (int j = 0; j < 4; j++)
+        {
+          pId += std::to_string(j);
+          vec = glm::row(val, j);
+          ImGui::InputFloat4(pId.c_str(), &vec[0]);
+          val  = glm::row(val, j, vec);
+          *var = val;
+        }
+      }
+      break;
+      case ParameterVariant::VariantType::MultiChoice:
+      {
+        MultiChoiceVariant* mcv = var->GetVarPtr<MultiChoiceVariant>();
+        if (ImGui::BeginCombo(
+                "##MultiChoiceVariant",
+                mcv->Choices[mcv->CurrentVal.Index].m_name.c_str()))
+        {
+          for (uint i = 0; i < mcv->Choices.size(); ++i)
+          {
+            bool isSelected = i == mcv->CurrentVal.Index;
+            if (ImGui::Selectable(mcv->Choices[i].m_name.c_str(), isSelected))
+            {
+              mcv->CurrentVal = {i};
+            }
+          }
+          ImGui::EndCombo();
+        }
+      }
+      break;
+      }
+
+      ImGui::TableSetColumnIndex(2);
+      if (isListEditable && ImGui::Button("X"))
+      {
+        remove = var;
+        g_app->m_statusMsg =
+            Format("Parameter %d: %s removed.", i + 1, var->m_name.c_str());
+      }
+
+      ImGui::PopID();
+    }
+
+    void CustomDataView::EndShowVariants()
+    {
+      ImGui::EndTable();
+      ImGui::Separator();
+    }
+
     void CustomDataView::ShowCustomData(Entity* m_entity,
                                         String headerName,
                                         ParameterVariantRawPtrArray& vars,
@@ -105,214 +268,103 @@ namespace ToolKit
       {
         return;
       }
-      if (ImGui::BeginTable(headerName.c_str(),
-                            3,
-                            ImGuiTableFlags_Resizable |
-                                ImGuiTableFlags_SizingFixedSame))
+
+      if (BeginShowVariants(headerName))
       {
-        Vec2 xSize = ImGui::CalcTextSize("Name");
-        xSize      *= 3.0f;
-        ImGui::TableSetupColumn("Name",
-                                ImGuiTableColumnFlags_WidthFixed,
-                                xSize.x);
-        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-
-        xSize = ImGui::CalcTextSize("X");
-        xSize *= 2.5f;
-        ImGui::TableSetupColumn("##Remove",
-                                ImGuiTableColumnFlags_WidthFixed,
-                                xSize.x);
-
-        ImGui::TableHeadersRow();
-
-        ImGui::TableSetColumnIndex(0);
-        ImGui::PushItemWidth(-FLT_MIN);
-
-        ImGui::TableSetColumnIndex(1);
-        ImGui::PushItemWidth(-FLT_MIN);
-
         ParameterVariant* remove = nullptr;
         for (size_t i = 0; i < vars.size(); i++)
         {
-          ValueUpdateFn multiUpdateFn = MultiUpdate(vars[i]);
-          vars[i]->m_onValueChangedFn.push_back(multiUpdateFn);
-
-          ImGui::TableNextRow();
-          ImGui::TableSetColumnIndex(0);
-
-          ImGui::PushID(static_cast<int>(i));
-          ParameterVariant* var = vars[i];
-          static char buff[1024];
-          strcpy_s(buff, sizeof(buff), var->m_name.c_str());
-
-          String pNameId = "##Name" + std::to_string(i);
-          if (isListEditable)
-          {
-            ImGui::InputText(pNameId.c_str(), buff, sizeof(buff));
-          }
-          else
-          {
-            ImGui::Text(var->m_name.c_str());
-          }
-          var->m_name = buff;
-
-          ImGui::TableSetColumnIndex(1);
-
-          String pId = "##" + std::to_string(i);
-          switch (var->GetType())
-          {
-          case ParameterVariant::VariantType::String:
-          {
-            ImGui::InputText(pId.c_str(), var->GetVarPtr<String>());
-          }
-          break;
-          case ParameterVariant::VariantType::Bool:
-          {
-            bool val = var->GetVar<bool>();
-            if (ImGui::Checkbox(pId.c_str(), &val))
-            {
-              *var = val;
-            }
-          }
-          break;
-          case ParameterVariant::VariantType::Int:
-          {
-            ImGui::InputInt(pId.c_str(), var->GetVarPtr<int>());
-          }
-          break;
-          case ParameterVariant::VariantType::Float:
-          {
-            ImGui::DragFloat(pId.c_str(), var->GetVarPtr<float>(), 0.1f);
-          }
-          break;
-          case ParameterVariant::VariantType::Vec3:
-          {
-            ImGui::DragFloat3(pId.c_str(), &var->GetVar<Vec3>()[0], 0.1f);
-          }
-          break;
-          case ParameterVariant::VariantType::Vec4:
-          {
-            ImGui::DragFloat4(pId.c_str(), &var->GetVar<Vec4>()[0], 0.1f);
-          }
-          break;
-          case ParameterVariant::VariantType::Mat3:
-          {
-            Vec3 vec;
-            Mat3 val = var->GetVar<Mat3>();
-            for (int j = 0; j < 3; j++)
-            {
-              pId += std::to_string(j);
-              vec = glm::row(val, j);
-              ImGui::InputFloat3(pId.c_str(), &vec[0]);
-              val  = glm::row(val, j, vec);
-              *var = val;
-            }
-          }
-          break;
-          case ParameterVariant::VariantType::Mat4:
-          {
-            Vec4 vec;
-            Mat4 val = var->GetVar<Mat4>();
-            for (int j = 0; j < 4; j++)
-            {
-              pId += std::to_string(j);
-              vec = glm::row(val, j);
-              ImGui::InputFloat4(pId.c_str(), &vec[0]);
-              val  = glm::row(val, j, vec);
-              *var = val;
-            }
-          }
-          break;
-          }
-
-          ImGui::TableSetColumnIndex(2);
-          if (isListEditable && ImGui::Button("X"))
-          {
-            remove = vars[i];
-            g_app->m_statusMsg =
-                Format("Parameter %d: %s removed.", i + 1, var->m_name.c_str());
-          }
-
-          vars[i]->m_onValueChangedFn.pop_back();
-          ImGui::PopID();
+          ParameterVariant* var       = vars[i];
+          ValueUpdateFn multiUpdateFn = MultiUpdate(var);
+          var->m_onValueChangedFn.push_back(multiUpdateFn);
+          ShowVariant(var, remove, i, isListEditable);
+          var->m_onValueChangedFn.pop_back();
         }
 
         if (remove != nullptr)
         {
           m_entity->m_localData.Remove(remove->m_id);
         }
-
-        ImGui::EndTable();
-        ImGui::Separator();
-
-        static bool addInAction = false;
-        if (isListEditable && addInAction)
-        {
-          ImGui::PushItemWidth(150);
-          int dataType = 0;
-          if (ImGui::Combo(
-                  "##NewCustData",
-                  &dataType,
-                  "..."
-                  "\0String\0Boolean\0Int\0Float\0Vec3\0Vec4\0Mat3\0Mat4"))
-          {
-            ParameterVariant customVar;
-            // This makes them only visible in Custom Data dropdown.
-            customVar.m_exposed  = true;
-            customVar.m_editable = true;
-            customVar.m_category = CustomDataCategory;
-
-            bool added           = true;
-            switch (dataType)
-            {
-            case 1:
-              customVar = "";
-              break;
-            case 2:
-              customVar = false;
-              break;
-            case 3:
-              customVar = 0;
-              break;
-            case 4:
-              customVar = 0.0f;
-              break;
-            case 5:
-              customVar = ZERO;
-              break;
-            case 6:
-              customVar = Vec4();
-              break;
-            case 7:
-              customVar = Mat3();
-              break;
-            case 8:
-              customVar = Mat4();
-              break;
-            default:
-              added = false;
-              break;
-            }
-
-            if (added)
-            {
-              m_entity->m_localData.Add(customVar);
-              addInAction = false;
-            }
-          }
-          ImGui::PopItemWidth();
-        }
-
-        if (isListEditable)
-        {
-          if (UI::BeginCenteredTextButton("Add Custom Data"))
-          {
-            addInAction = true;
-          }
-          UI::EndCenteredTextButton();
-        }
       }
-    };
+      EndShowVariants();
+
+      static bool addInAction = false;
+      if (isListEditable && addInAction)
+      {
+        ImGui::PushItemWidth(150);
+        int dataType = 0;
+        if (ImGui::Combo("##NewCustData",
+                         &dataType,
+                         "Sellect"
+                         "Type\0String\0Boolean\0Int\0Float\0Vec2\0Vec3\0Vec4"
+                         "\0Mat3\0Mat4\0MultiChoice"))
+        {
+          ParameterVariant customVar;
+          // This makes them only visible in Custom Data dropdown.
+          customVar.m_exposed  = true;
+          customVar.m_editable = true;
+          customVar.m_category = CustomDataCategory;
+
+          bool added           = true;
+          switch (dataType)
+          {
+          case 0:
+            added = false;
+            break;
+          case 1:
+            customVar = "";
+            break;
+          case 2:
+            customVar = false;
+            break;
+          case 3:
+            customVar = 0;
+            break;
+          case 4:
+            customVar = 0.0f;
+            break;
+          case 5:
+            customVar = Vec2(0.0f, 0.0f);
+          case 6:
+            customVar = ZERO;
+            break;
+          case 7:
+            customVar = Vec4();
+            break;
+          case 8:
+            customVar = Mat3();
+            break;
+          case 9:
+            customVar = Mat4();
+            break;
+          case 10:
+            m_multiChoiceParamWindow.OpenCreateWindow(&m_entity->m_localData);
+            added       = false;
+            addInAction = false;
+            break;
+          default:
+            assert(false && "invalid data type");
+            break;
+          }
+
+          if (added)
+          {
+            m_entity->m_localData.Add(customVar);
+            addInAction = false;
+          }
+        }
+        ImGui::PopItemWidth();
+      }
+
+      if (isListEditable)
+      {
+        if (UI::BeginCenteredTextButton("Add Custom Data"))
+        {
+          addInAction = true;
+        }
+        UI::EndCenteredTextButton();
+      }
+    }
 
     void CustomDataView::ShowVariant(ParameterVariant* var, ComponentPtr comp)
     {
@@ -722,12 +774,12 @@ namespace ToolKit
         MultiChoiceVariant* mcv = var->GetVarPtr<MultiChoiceVariant>();
         if (ImGui::BeginCombo(
                 "##MultiChoiceVariant",
-                mcv->Choices[mcv->CurrentVal.Index].first.c_str()))
+                mcv->Choices[mcv->CurrentVal.Index].m_name.c_str()))
         {
           for (uint i = 0; i < mcv->Choices.size(); ++i)
           {
             bool isSelected = i == mcv->CurrentVal.Index;
-            if (ImGui::Selectable(mcv->Choices[i].first.c_str(), isSelected))
+            if (ImGui::Selectable(mcv->Choices[i].m_name.c_str(), isSelected))
             {
               mcv->CurrentVal = {i};
             }
