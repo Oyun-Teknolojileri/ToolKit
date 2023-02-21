@@ -100,7 +100,8 @@ namespace ToolKit
            "Attempt to initialize hdri resource "
            "that does not exist in environment component.");
 
-    GetHdriVal()->m_specularIBLTextureSize = GetIBLTextureSizeVal().GetValue<int>();
+    GetHdriVal()->m_specularIBLTextureSize =
+        GetIBLTextureSizeVal().GetValue<int>();
     GetHdriVal()->m_exposure = GetExposureVal();
     GetHdriVal()->Init(flushClientSideArray);
   }
@@ -146,29 +147,27 @@ namespace ToolKit
                     true,
                     {false, true, 0.0f, 50.0f, 0.05f});
 
-		auto createParameterVariant = [](const String& name, int val)
-		{
-			ParameterVariant param{val};
-			param.m_name = name;
-			return param;
-		};
+    auto createParameterVariant = [](const String& name, int val)
+    {
+      ParameterVariant param {val};
+      param.m_name = name;
+      return param;
+    };
 
     MultiChoiceVariant mcv = {
-        {
-					createParameterVariant("32", 32),
-					createParameterVariant("64", 64),
-					createParameterVariant("128", 128),
-					createParameterVariant("256", 256),
-					createParameterVariant("512", 512),
-					createParameterVariant("1024", 1024)			
-				},
+        {createParameterVariant("32", 32),
+         createParameterVariant("64", 64),
+         createParameterVariant("128", 128),
+         createParameterVariant("256", 256),
+         createParameterVariant("512", 512),
+         createParameterVariant("1024", 1024)},
         1,
         [&](Value& oldVal, Value& newVal)
         {
           HdriPtr hdri           = GetHdriVal();
           MultiChoiceVariant mcv = GetIBLTextureSizeVal();
-          
-          if (hdri != nullptr) 
+
+          if (hdri != nullptr)
           {
             hdri->m_specularIBLTextureSize = mcv.GetValue<int>();
             ReInitHdri(hdri, GetExposureVal());
@@ -449,7 +448,8 @@ namespace ToolKit
               std::to_string(materials.size()));
     for (uint i = 0; i < materials.size(); i++)
     {
-      if (materials[i]->m_dirty) {
+      if (materials[i]->m_dirty)
+      {
         materials[i]->Save(true);
       }
       XmlNode* resourceRefNode =

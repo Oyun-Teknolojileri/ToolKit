@@ -250,7 +250,7 @@ namespace ToolKit
       ImGui::PopID();
     }
 
-    void CustomDataView::EndShowVariants() 
+    void CustomDataView::EndShowVariants()
     {
       ImGui::EndTable();
       ImGui::Separator();
@@ -273,7 +273,7 @@ namespace ToolKit
         ParameterVariant* remove = nullptr;
         for (size_t i = 0; i < vars.size(); i++)
         {
-          ParameterVariant* var = vars[i];
+          ParameterVariant* var       = vars[i];
           ValueUpdateFn multiUpdateFn = MultiUpdate(var);
           var->m_onValueChangedFn.push_back(multiUpdateFn);
           ShowVariant(var, remove, i, isListEditable);

@@ -402,8 +402,7 @@ namespace ToolKit
 
       if (removeComp && isSkeletonComponent)
       {
-        MeshComponentPtr mesh =
-            comp->m_entity->GetComponent<MeshComponent>();
+        MeshComponentPtr mesh = comp->m_entity->GetComponent<MeshComponent>();
 
         if (mesh != nullptr && mesh->GetMeshVal()->IsSkinned())
         {

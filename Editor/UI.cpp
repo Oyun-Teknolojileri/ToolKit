@@ -531,7 +531,6 @@ namespace ToolKit
         wnd->Show();
       }
 
-
       if (g_app->m_simulationWindow->IsVisible())
       {
         g_app->m_simulationWindow->Show();

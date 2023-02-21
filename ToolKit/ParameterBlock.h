@@ -117,8 +117,8 @@ namespace ToolKit
   struct MultiChoiceVariant
   {
     std::vector<class ParameterVariant> Choices;
-    
-    template<typename T>
+
+    template <typename T>
     const T& GetValue() const;
 
     struct CurrentValue

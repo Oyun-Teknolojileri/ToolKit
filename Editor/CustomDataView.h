@@ -1,6 +1,6 @@
 #pragma once
-#include "PropInspector.h"
 #include "MultiChoiceParameterWindow.hpp"
+#include "PropInspector.h"
 
 namespace ToolKit
 {
@@ -21,12 +21,15 @@ namespace ToolKit
                                  String headerName,
                                  ParameterVariantRawPtrArray& vars,
                                  bool isListEditable);
-			
-			static bool BeginShowVariants(StringView header);
-			static void ShowVariant(ParameterVariant* var, ParameterVariant*& remove, int i, bool isEditable);
-			static void EndShowVariants();
 
-			static void ShowVariant(ParameterVariant* var, ComponentPtr comp);
+      static bool BeginShowVariants(StringView header);
+      static void ShowVariant(ParameterVariant* var,
+                              ParameterVariant*& remove,
+                              int i,
+                              bool isEditable);
+      static void EndShowVariants();
+
+      static void ShowVariant(ParameterVariant* var, ComponentPtr comp);
       static ValueUpdateFn MultiUpdate(ParameterVariant* var);
       CustomDataView();
       virtual ~CustomDataView();
