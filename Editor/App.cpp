@@ -1428,7 +1428,7 @@ namespace ToolKit
         }
       };
       GetLogger()->SetWriteConsoleFn(genericReporterFn);
-		}
+    }
 
     void App::CreateAndSetNewScene(const String& name)
     {

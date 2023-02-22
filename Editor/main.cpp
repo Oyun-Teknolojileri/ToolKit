@@ -260,13 +260,13 @@ namespace ToolKit
             // Init app
             g_app = new App(g_settings.Window.Width, g_settings.Window.Height);
             g_app->m_sysComExecFn = ToolKit::Win32Helpers::g_SysComExecFn;
-						GetLogger()->SetPlatformConsoleFn([](LogType type, const String& msg)->void
-						                                  {
-						                                  	ToolKit::Win32Helpers::OutputLog((int)type, msg.c_str());
-																							});
+            GetLogger()->SetPlatformConsoleFn(
+                [](LogType type, const String& msg) -> void
+                { ToolKit::Win32Helpers::OutputLog((int) type, msg.c_str()); });
 
-            GetLogger()->WritePlatformConsole(LogType::Warning, "Hello windows");
-            
+            GetLogger()->WritePlatformConsole(LogType::Warning,
+                                              "Hello windows");
+
             UI::Init();
             g_app->Init();
           }
