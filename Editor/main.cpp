@@ -264,9 +264,6 @@ namespace ToolKit
                 [](LogType type, const String& msg) -> void
                 { ToolKit::Win32Helpers::OutputLog((int) type, msg.c_str()); });
 
-            GetLogger()->WritePlatformConsole(LogType::Warning,
-                                              "Hello windows");
-
             UI::Init();
             g_app->Init();
           }
