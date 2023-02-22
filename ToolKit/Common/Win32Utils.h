@@ -72,7 +72,7 @@ namespace ToolKit
       // FUNCTION: ConvertUTF8ToUTF16
       // DESC: Converts Unicode UTF-8 text to Unicode UTF-16 (Windows default).
       //----------------------------------------------------------------------------
-      CStringW ConvertUTF8ToUTF16(__in const CHAR* pszTextUTF8)
+      CStringW ConvertUTF8ToUTF16(const __in CHAR* pszTextUTF8)
       {
         //
         // Special case of NULL or empty input string
@@ -99,7 +99,7 @@ namespace ToolKit
         ++cchUTF8;
 
         // Convert to 'int' for use with MultiByteToWideChar API
-        int cbUTF8 = static_cast<int>(cchUTF8);
+        int cbUTF8   = static_cast<int>(cchUTF8);
 
         //
         // Get size of destination UTF-16 buffer, in WCHAR's
@@ -128,7 +128,7 @@ namespace ToolKit
         //
         // Do the conversion from UTF-8 to UTF-16
         //
-        int result = ::MultiByteToWideChar(
+        int result      = ::MultiByteToWideChar(
             CP_UTF8,              // convert from UTF-8
             MB_ERR_INVALID_CHARS, // error on invalid chars
             pszTextUTF8,          // source UTF-8 string
@@ -154,7 +154,7 @@ namespace ToolKit
       // FUNCTION: ConvertUTF16ToUTF8
       // DESC: Converts Unicode UTF-16 (Windows default) text to Unicode UTF-8.
       //----------------------------------------------------------------------------
-      CStringA ConvertUTF16ToUTF8(__in const WCHAR* pszTextUTF16)
+      CStringA ConvertUTF16ToUTF8(const __in WCHAR* pszTextUTF16)
       {
         //
         // Special case of NULL or empty input string
@@ -222,14 +222,14 @@ namespace ToolKit
         //
         // Do the conversion from UTF-16 to UTF-8
         //
-        int result = ::WideCharToMultiByte(
+        int result    = ::WideCharToMultiByte(
             CP_UTF8,                    // convert to UTF-8
             dwConversionFlags,          // specify conversion behavior
             pszTextUTF16,               // source UTF-16 string
             static_cast<int>(cchUTF16), // total source string length, in
                                         // WCHAR's, including end-of-string \0
-            pszUTF8,                    // destination buffer
-            cbUTF8,                     // destination buffer size, in bytes
+            pszUTF8, // destination buffer
+            cbUTF8,  // destination buffer size, in bytes
             NULL,
             NULL // unused
         );
@@ -252,7 +252,8 @@ namespace ToolKit
     static auto g_SysComExecFn = [](StringView cmd,
                                     bool async,
                                     bool showConsole,
-                                    std::function<void(int)> callback) -> int {
+                                    std::function<void(int)> callback) -> int
+    {
       // https://learn.microsoft.com/en-us/windows/win32/procthread/creating-processes
       STARTUPINFOW si;
       PROCESS_INFORMATION pi;
@@ -282,12 +283,14 @@ namespace ToolKit
       )
       {
         DWORD errCode = GetLastError();
-        GetLogger()->WriteConsole(
-            LogType::Error, "CreateProcess failed (%d).\n", errCode);
+        GetLogger()->WriteConsole(LogType::Error,
+                                  "CreateProcess failed (%d).\n",
+                                  errCode);
         return (int) errCode;
       }
 
-      auto finalizeFn = [pi, callback](DWORD stat) -> void {
+      auto finalizeFn = [pi, callback](DWORD stat) -> void
+      {
         // Close process and thread handles.
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
@@ -312,22 +315,24 @@ namespace ToolKit
         // We suppose to wait to call callback.
         if (callback != nullptr)
         {
-          std::thread t([pi, callback, finalizeFn]() -> void {
-            DWORD stat = 0;
-            bool exit  = false;
-            while (!exit)
-            {
-              GetExitCodeProcess(pi.hProcess, &stat);
-              if (stat != STILL_ACTIVE)
+          std::thread t(
+              [pi, callback, finalizeFn]() -> void
               {
-                exit = true;
-              }
+                DWORD stat = 0;
+                bool exit  = false;
+                while (!exit)
+                {
+                  GetExitCodeProcess(pi.hProcess, &stat);
+                  if (stat != STILL_ACTIVE)
+                  {
+                    exit = true;
+                  }
 
-              std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            }
+                  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                }
 
-            finalizeFn(stat);
-          });
+                finalizeFn(stat);
+              });
 
           t.detach();
         }
@@ -340,6 +345,26 @@ namespace ToolKit
       return 0;
     };
 
+    void OutputLog(int logType, const char* szFormat, ...)
+    {
+      static const char* logNames[] = {"[Memo]", "[Error]", "[Warning]", "[Command]"};
+
+      static char szBuff[1024]      = {0};
+      va_list arg;
+      va_start(arg, szFormat);
+      _vsnprintf(szBuff, sizeof(szBuff), szFormat, arg);
+      va_end(arg);
+
+      static char szOutputBuff[1024] = {0};
+      // concat log type name and log string
+      _snprintf(szOutputBuff,
+                sizeof(szOutputBuff),
+                "%s %s\n",
+                logNames[logType],
+                szBuff);
+
+      OutputDebugString(szOutputBuff);
+    }
   } // namespace Win32Helpers
 } // namespace ToolKit
 
