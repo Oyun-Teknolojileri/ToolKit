@@ -347,15 +347,15 @@ namespace ToolKit
 
     void OutputLog(int logType, const char* szFormat, ...)
     {
-      const char* logNames[] = {"[Memo]", "[Error]", "[Warning]", "[Command]"};
+      static const char* logNames[] = {"[Memo]", "[Error]", "[Warning]", "[Command]"};
 
-      char szBuff[1024]      = {0};
+      static char szBuff[1024]      = {0};
       va_list arg;
       va_start(arg, szFormat);
       _vsnprintf(szBuff, sizeof(szBuff), szFormat, arg);
       va_end(arg);
 
-      char szOutputBuff[1024] = {0};
+      static char szOutputBuff[1024] = {0};
       // concat log type name and log string
       _snprintf(szOutputBuff,
                 sizeof(szOutputBuff),
