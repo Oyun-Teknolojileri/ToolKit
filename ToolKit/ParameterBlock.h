@@ -123,7 +123,7 @@ namespace ToolKit
 
     struct CurrentValue
     {
-      uint Index;
+      uint Index = 0;
 
       void operator=(CurrentValue val)
       {
