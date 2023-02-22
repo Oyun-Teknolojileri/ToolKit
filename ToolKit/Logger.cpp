@@ -20,24 +20,42 @@ namespace ToolKit
     m_logFile << message << std::endl;
   }
 
-  void Logger::SetWriteConsoleFn(std::function<void(LogType, String)> fn)
+	void Logger::SetWriteConsoleFn(ConsoleOutputFn fn)
   {
     m_writeConsoleFn = fn;
   }
+	
+	void Logger::SetPlatformConsoleFn(ConsoleOutputFn fn)
+	{
+		m_platfromConsoleFn = fn;
+	}
+
+	void OutputUtil(ConsoleOutputFn logFn, LogType logType, const char* msg, ...)
+	{
+		if (logFn == nullptr)
+		{
+			return;
+		}
+
+		va_list args;
+		va_start(args, msg);
+
+		static char buff[2048];
+		vsprintf(buff, msg, args);
+
+		logFn(logType, String(buff));
+
+		va_end(args);
+	}
 
   void Logger::WriteConsole(LogType logType, const char* msg, ...)
   {
-    va_list args;
-    va_start(args, msg);
-
-    static char buff[2048];
-    vsprintf(buff, msg, args);
-
-    if (m_writeConsoleFn != nullptr)
-    {
-      m_writeConsoleFn(logType, String(buff));
-    }
-
-    va_end(args);
+		OutputUtil(m_writeConsoleFn, logType, msg);
   }
+
+	void Logger::WritePlatformConsole(LogType logType, const char* msg, ...)
+	{
+		OutputUtil(m_platfromConsoleFn, logType, msg);
+	}
+
 } // namespace ToolKit
