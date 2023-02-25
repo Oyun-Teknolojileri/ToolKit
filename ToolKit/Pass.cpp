@@ -104,11 +104,12 @@ namespace ToolKit
       }
 
       // Here we have all mesh and corresponding materials.
+      RenderJobArray newJobs;
+      newJobs.resize(allMeshes.size());
       Mat4 transform = ntt->m_node->GetTransform();
-      jobArray.resize(allMeshes.size());
       for (size_t i = 0; i < allMeshes.size(); i++)
       {
-        RenderJob& rj     = jobArray[i];
+        RenderJob& rj     = newJobs[i];
         rj.WorldTransform = transform;
         rj.BoundingBox    = allMeshes[i]->m_aabb;
         TransformAABB(rj.BoundingBox, transform);
@@ -120,6 +121,8 @@ namespace ToolKit
                               ? ntt->GetComponent<SkeletonComponent>()
                               : nullptr;
       }
+
+      jobArray.insert(jobArray.end(), newJobs.begin(), newJobs.end());
     }
   }
 
