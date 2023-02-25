@@ -53,11 +53,25 @@ namespace ToolKit
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+    /**
+     * Traverse all submeshes recursively.
+     * @param callback is the function to call on each mesh.
+     * @param mesh is this or submesh. Pass null to start iteration from this
+     * mesh.
+     */
+    void TraverseAllMesh(std::function<void(Mesh*)> callback,
+                         Mesh* mesh = nullptr);
+
+    /**
+     * Const traverse all submeshes recursively. Refer TraverseAllMesh for
+     * details.
+     */
+    void TraverseAllMesh(std::function<void(const Mesh*)> callback,
+                         const Mesh* mesh = nullptr) const;
+
    protected:
     virtual void InitVertices(bool flush);
     virtual void InitIndices(bool flush);
-
-   protected:
     void CopyTo(Resource* other) override;
 
    public:
