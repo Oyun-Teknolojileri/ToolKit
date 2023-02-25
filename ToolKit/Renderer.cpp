@@ -542,7 +542,7 @@ namespace ToolKit
 
   void Renderer::DrawCube(Camera* cam, MaterialPtr mat, const Mat4& transform)
   {
-    static Cube cube;
+    Cube cube;
     cube.Generate(cube.GetMeshComponent(), cube.GetCubeScaleVal());
     cube.m_node->SetTransform(transform);
 
@@ -553,7 +553,7 @@ namespace ToolKit
     }
     cube.GetMaterialComponent()->SetMaterialVal(mat);
 
-    static RenderJob rj;
+    RenderJob rj;
     RenderJobProcessor::CreateRenderJob(&cube, rj);
     Render(rj, cam);
   }

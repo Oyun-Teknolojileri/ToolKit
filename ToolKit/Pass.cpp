@@ -88,7 +88,7 @@ namespace ToolKit
       }
 
       // Fill remaining if any with default or mesh materials.
-      size_t startIndx = allMaterials.empty() ? 0 : allMaterials.size() - 1;
+      size_t startIndx = allMaterials.empty() ? 0 : allMaterials.size();
       for (size_t i = startIndx; i < allMeshes.size(); i++)
       {
         if (MaterialPtr mp = allMeshes[i]->m_material)
@@ -108,7 +108,7 @@ namespace ToolKit
       for (size_t i = 0; i < allMeshes.size(); i++)
       {
         RenderJob& rj  = jobArray[i];
-        rj.BoundingBox = rj.Mesh->m_aabb;
+        rj.BoundingBox = allMeshes[i]->m_aabb;
         TransformAABB(rj.BoundingBox, transform);
 
         rj.ShadowCaster = mc->GetCastShadowVal();
@@ -123,11 +123,9 @@ namespace ToolKit
 
   void RenderJobProcessor::CreateRenderJob(Entity* entity, RenderJob& job)
   {
-    static EntityRawPtrArray tmpEntityArray;
-    static RenderJobArray tmpJobArray;
-    tmpEntityArray.clear();
+    EntityRawPtrArray tmpEntityArray;
+    RenderJobArray tmpJobArray;
     tmpEntityArray.push_back(entity);
-    tmpJobArray.clear();
     CreateRenderJobs(tmpEntityArray, tmpJobArray);
     job = tmpJobArray.front();
   }
