@@ -59,10 +59,11 @@ namespace ToolKit
                                   }),
                    entities.end());
 
-    MeshRawPtrArray allMeshes;
-    MaterialPtrArray allMaterials;
     for (Entity* ntt : entities)
     {
+      MeshRawPtrArray allMeshes;
+      MaterialPtrArray allMaterials;
+
       MeshComponentPtr mc = ntt->GetMeshComponent();
       mc->GetMeshVal()->GetAllMeshes(allMeshes);
 
