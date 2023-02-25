@@ -107,8 +107,9 @@ namespace ToolKit
       jobArray.resize(allMeshes.size());
       for (size_t i = 0; i < allMeshes.size(); i++)
       {
-        RenderJob& rj  = jobArray[i];
-        rj.BoundingBox = allMeshes[i]->m_aabb;
+        RenderJob& rj     = jobArray[i];
+        rj.WorldTransform = transform;
+        rj.BoundingBox    = allMeshes[i]->m_aabb;
         TransformAABB(rj.BoundingBox, transform);
 
         rj.ShadowCaster = mc->GetCastShadowVal();
