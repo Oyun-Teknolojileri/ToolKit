@@ -61,6 +61,10 @@ namespace ToolKit
                                         RenderJobArray& forward,
                                         RenderJobArray& translucent);
 
+    static void SeperateOpaqueTranslucent(const RenderJobArray& jobArray,
+                                          RenderJobArray& opaque,
+                                          RenderJobArray& translucent);
+
     /**
      * Utility function that sorts lights according to lit conditions from
      * best to worst. Make sure lights array has updated shadow camera. Shadow

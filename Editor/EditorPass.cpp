@@ -181,12 +181,19 @@ namespace ToolKit
           static_cast<EditorViewport*>(m_params.Viewport);
 
       RenderJobArray renderJobs;
-      RenderJobProcessor::
+      RenderJobArray opaque;
+      RenderJobArray translucent;
+
+      RenderJobProcessor::CreateRenderJobs(editorEntities, renderJobs);
+      RenderJobProcessor::SeperateOpaqueTranslucent(renderJobs,
+                                                    opaque,
+                                                    translucent);
 
       // Editor pass.
       m_editorPass->m_params.Cam              = m_camera;
       m_editorPass->m_params.FrameBuffer      = viewport->m_framebuffer;
-      m_editorPass->m_params.Entities         = editorEntities;
+      m_editorPass->m_params.OpaqueJobs       = opaque;
+      m_editorPass->m_params.TranslucentJobs  = translucent;
       m_editorPass->m_params.ClearFrameBuffer = false;
 
       // Scene pass.
@@ -208,8 +215,7 @@ namespace ToolKit
       m_singleMatRenderer->m_params.ForwardParams.Lights           = lights;
       m_singleMatRenderer->m_params.ForwardParams.ClearFrameBuffer = true;
 
-      m_singleMatRenderer->m_params.ForwardParams.Entities =
-          scene->GetEntities();
+      m_singleMatRenderer->m_params.ForwardParams.OpaqueJobs       = renderJobs;
 
       m_singleMatRenderer->m_params.ForwardParams.FrameBuffer =
           viewport->m_framebuffer;

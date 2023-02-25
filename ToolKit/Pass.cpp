@@ -160,6 +160,24 @@ namespace ToolKit
     }
   }
 
+  void RenderJobProcessor::SeperateOpaqueTranslucent(
+      const RenderJobArray& jobArray,
+      RenderJobArray& opaque,
+      RenderJobArray& translucent)
+  {
+    for (const RenderJob& job : jobArray)
+    {
+      if (job.Material->IsTranslucent())
+      {
+        translucent.push_back(job);
+      }
+      else
+      {
+        opaque.push_back(job);
+      }
+    }
+  }
+
   // An interval has start time and end time
   struct LightSortStruct
   {
@@ -282,8 +300,8 @@ namespace ToolKit
   void RenderJobProcessor::StableSortByDistanceToCamera(RenderJobArray& jobs,
                                                         const Camera* cam)
   {
-    std::function<bool(RenderJob&, RenderJob&)> sortFn =
-        [cam](RenderJob& j1, RenderJob& j2) -> bool
+    std::function<bool(const RenderJob&, const RenderJob&)> sortFn =
+        [cam](const RenderJob& j1, const RenderJob& j2) -> bool
     {
       Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
@@ -316,11 +334,6 @@ namespace ToolKit
   void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray,
                                           Camera* camera)
   {
-    jobArray.erase(std::remove_if(jobArray.begin(),
-                                  jobArray.end(),
-                                  [](Entity* ntt) -> bool
-                                  { return !ntt->IsDrawable(); }),
-                   jobArray.end());
     FrustumCull(jobArray, camera);
   }
 
