@@ -87,10 +87,10 @@ namespace ToolKit
       }
 
       // Update billboards attached to entities.
-      for (Billboard* billboard : m_billboards)
+      for (Entity* billboard : m_billboards)
       {
-        billboard->m_worldLocation =
-            billboard->m_entity->m_node->GetTranslation();
+        Billboard* bb       = static_cast<Billboard*>(billboard);
+        bb->m_worldLocation = bb->m_entity->m_node->GetTranslation();
       }
     }
 
@@ -384,9 +384,7 @@ namespace ToolKit
                         temp,
                         pickPartiallyInside);
 
-      // If the billboards are picked, pick the entity
-
-      // Dropout non visible & drawable entities.
+      // If the billboards are picked, pick the entity.
       pickedObjects.erase(
           std::remove_if(
               pickedObjects.begin(),
@@ -474,10 +472,7 @@ namespace ToolKit
       }
     }
 
-    std::vector<EditorBillboardBase*> EditorScene::GetBillboards()
-    {
-      return m_billboards;
-    }
+    EntityRawPtrArray EditorScene::GetBillboards() { return m_billboards; }
 
     Entity* EditorScene::GetBillboardOfEntity(Entity* entity)
     {

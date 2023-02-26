@@ -28,8 +28,7 @@ namespace ToolKit
     {
       if (data.ortographic)
       {
-        m_node->SetTranslation(m_worldLocation, TransformationSpace::TS_WORLD);
-
+        m_node->SetTranslation(m_worldLocation);
         if (m_settings.heightInScreenSpace > 0.0f)
         {
           // Compensate shrinkage due to height changes.
@@ -38,9 +37,9 @@ namespace ToolKit
       }
       else
       {
-        Vec3 cdir = data.dir;
+        Vec3 cdir        = data.dir;
         Vec3 camWorldPos = data.pos;
-        Vec3 dir = glm::normalize(m_worldLocation - camWorldPos);
+        Vec3 dir         = glm::normalize(m_worldLocation - camWorldPos);
 
         // Always place at the same distance from the near plane.
         float radialToPlanarDistance = 1.0f / glm::dot(cdir, dir);
@@ -52,8 +51,7 @@ namespace ToolKit
         Vec3 billWorldPos = camWorldPos + dir * m_settings.distanceToCamera *
                                               radialToPlanarDistance;
 
-        m_node->SetTranslation(billWorldPos, TransformationSpace::TS_WORLD);
-
+        m_node->SetTranslation(billWorldPos);
         if (m_settings.heightInScreenSpace > 0.0f)
         {
           // Compensate shrinkage due to height changes.
@@ -65,15 +63,13 @@ namespace ToolKit
     }
     else
     {
-      m_node->SetTranslation(m_worldLocation, TransformationSpace::TS_WORLD);
+      m_node->SetTranslation(m_worldLocation);
     }
 
     if (m_settings.lookAtCamera)
     {
-      Quaternion camOrientation =
-          cam->m_node->GetOrientation(TransformationSpace::TS_WORLD);
-
-      m_node->SetOrientation(camOrientation, TransformationSpace::TS_WORLD);
+      Quaternion camOrientation = cam->m_node->GetOrientation();
+      m_node->SetOrientation(camOrientation);
     }
   }
 

@@ -26,6 +26,12 @@ namespace ToolKit
        * Fov changes due to window height changes doesn't shrink the object.
        */
       float heightInScreenSpace = 0.0f;
+
+      /**
+       * If true, staying behind of actual objects discards the pixels of the
+       * billboard.
+       */
+      bool byPassDepthTest      = false;
     };
 
    public:

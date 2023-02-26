@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="BillboardPass.cpp" />
     <ClCompile Include="BinPack2D.cpp" />
     <ClCompile Include="BloomPass.cpp" />
     <ClCompile Include="Canvas.cpp" />
@@ -76,6 +77,7 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Audio.h" />
+    <ClInclude Include="BillboardPass.h" />
     <ClInclude Include="BinPack2D.h" />
     <ClInclude Include="BloomPass.h" />
     <ClInclude Include="Canvas.h" />

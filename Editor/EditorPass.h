@@ -1,11 +1,12 @@
 #pragma once
 
+#include "BillboardPass.h"
 #include "EditorLight.h"
 #include "Gizmo.h"
 #include "Global.h"
+#include "OutlinePass.h"
 #include "Pass.h"
 #include "PostProcessPass.h"
-#include "OutlinePass.h"
 #include "Primative.h"
 #include "RenderSystem.h"
 #include "SceneRenderer.h"
@@ -95,8 +96,8 @@ namespace ToolKit
        */
       LightingOnly,
       /**
-      * Renders scene exactly as in game.
-      */
+       * Renders scene exactly as in game.
+       */
       Game
     };
 
@@ -141,6 +142,7 @@ namespace ToolKit
        */
       MaterialPtr m_unlitOverride                       = nullptr;
 
+      BillboardPassPtr m_billboardPass                  = nullptr;
       SceneRendererPtr m_scenePass                      = nullptr;
       ForwardRenderPassPtr m_editorPass                 = nullptr;
       GizmoPassPtr m_gizmoPass                          = nullptr;

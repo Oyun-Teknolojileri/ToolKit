@@ -22,6 +22,7 @@ namespace ToolKit
 
     EditorRenderer::~EditorRenderer()
     {
+      m_billboardPass     = nullptr;
       m_lightSystem       = nullptr;
       m_scenePass         = nullptr;
       m_editorPass        = nullptr;
@@ -78,6 +79,7 @@ namespace ToolKit
         // Draw editor objects.
         m_passArray.push_back(m_editorPass);
         m_passArray.push_back(m_gizmoPass);
+        m_passArray.push_back(m_billboardPass);
 
         // Post process.
         m_passArray.push_back(m_tonemapPass);
@@ -152,18 +154,11 @@ namespace ToolKit
                             app->m_perFrameDebugObjects.begin(),
                             app->m_perFrameDebugObjects.end());
 
-      // Billboards.
-      std::vector<EditorBillboardBase*> bbs = scene->GetBillboards();
-      bbs.push_back(app->m_origin);
-      bbs.push_back(app->m_cursor);
-
-      float vpScale = m_params.Viewport->GetBillboardScale();
-      for (EditorBillboardBase* bb : bbs)
-      {
-        bb->LookAt(m_camera, vpScale);
-      }
-
-      editorEntities.insert(editorEntities.end(), bbs.begin(), bbs.end());
+      // Billboard pass.
+      m_billboardPass->m_params.Billboards = scene->GetBillboards();
+      m_billboardPass->m_params.Billboards.push_back(app->m_origin);
+      m_billboardPass->m_params.Billboards.push_back(app->m_cursor);
+      m_billboardPass->m_params.Viewport = m_params.Viewport;
 
       // Grid.
       Grid* grid = m_params.Viewport->GetType() == Window::Type::Viewport2d
@@ -287,6 +282,7 @@ namespace ToolKit
       m_unlitOverride = GetMaterialManager()->GetCopyOfUnlitMaterial();
       m_unlitOverride->Init();
 
+      m_billboardPass     = std::make_shared<BillboardPass>();
       m_scenePass         = std::make_shared<SceneRenderer>();
       m_editorPass        = std::make_shared<ForwardRenderPass>();
       m_gizmoPass         = std::make_shared<GizmoPass>();

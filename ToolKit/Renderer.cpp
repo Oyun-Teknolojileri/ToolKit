@@ -386,17 +386,20 @@ namespace ToolKit
                                 bool clear,
                                 const Vec4& color)
   {
-    if (fb != nullptr)
+    if (fb != m_framebuffer) 
     {
-      glBindFramebuffer(GL_FRAMEBUFFER, fb->GetFboId());
-      FramebufferSettings fbSet = fb->GetSettings();
-      SetViewportSize(fbSet.width, fbSet.height);
-    }
-    else
-    {
-      // Set backbuffer as draw area.
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
-      SetViewportSize(m_windowSize.x, m_windowSize.y);
+      if (fb != nullptr)
+      {
+        glBindFramebuffer(GL_FRAMEBUFFER, fb->GetFboId());
+        FramebufferSettings fbSet = fb->GetSettings();
+        SetViewportSize(fbSet.width, fbSet.height);
+      }
+      else
+      {
+        // Set backbuffer as draw area.
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        SetViewportSize(m_windowSize.x, m_windowSize.y);
+      }
     }
 
     if (clear)

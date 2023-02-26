@@ -50,7 +50,7 @@ namespace ToolKit
       mCom->SetMeshVal(meshPtr);
     }
 
-    Cursor::Cursor() : EditorBillboardBase({true, 10.0f, 60.0f}) { Generate(); }
+    Cursor::Cursor() : EditorBillboardBase({true, 10.0f, 60.0f, true}) { Generate(); }
 
     Cursor::~Cursor() {}
 

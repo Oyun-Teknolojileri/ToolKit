@@ -201,6 +201,9 @@
     <ClCompile Include="FxaaPass.cpp">
       <Filter>Source\Render\PostProcessPass</Filter>
     </ClCompile>
+    <ClCompile Include="BillboardPass.cpp">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -394,6 +397,9 @@
     </ClInclude>
     <ClInclude Include="FxaaPass.h">
       <Filter>Source\Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="BillboardPass.h">
+      <Filter>Source\Render\RenderPass</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
