@@ -127,13 +127,12 @@ namespace ToolKit
     }
   }
 
-  void RenderJobProcessor::CreateRenderJob(Entity* entity, RenderJob& job)
+  void RenderJobProcessor::CreateRenderJob(Entity* entity,
+                                           RenderJobArray& jobArray)
   {
     EntityRawPtrArray tmpEntityArray;
-    RenderJobArray tmpJobArray;
     tmpEntityArray.push_back(entity);
-    CreateRenderJobs(tmpEntityArray, tmpJobArray);
-    job = tmpJobArray.front();
+    CreateRenderJobs(tmpEntityArray, jobArray);
   }
 
   void RenderJobProcessor::SeperateDeferredForward(
@@ -296,9 +295,17 @@ namespace ToolKit
       Entity* entity,
       const LightRawPtrArray& lights)
   {
-    static RenderJob rj;
-    CreateRenderJob(entity, rj);
-    return SortLights(rj, lights);
+    RenderJobArray jobs;
+    CreateRenderJob(entity, jobs);
+
+    LightRawPtrArray allLights;
+    for (RenderJob& rj : jobs) 
+    {
+      LightRawPtrArray la = SortLights(rj, lights);
+      allLights.insert(allLights.end(), la.begin(), la.end());
+    }
+
+    return allLights;
   }
 
   void RenderJobProcessor::StableSortByDistanceToCamera(RenderJobArray& jobs,

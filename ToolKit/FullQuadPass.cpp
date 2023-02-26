@@ -36,9 +36,9 @@ namespace ToolKit
                              m_params.ClearFrameBuffer,
                              {0.0f, 0.0f, 0.0f, 1.0f});
 
-    RenderJob job;
-    RenderJobProcessor::CreateRenderJob(m_quad.get(), job);
-    renderer->Render(job, m_camera.get(), m_params.lights);
+    RenderJobArray jobs;
+    RenderJobProcessor::CreateRenderJob(m_quad.get(), jobs);
+    renderer->Render(jobs, m_camera.get(), m_params.lights);
   }
 
   void FullQuadPass::PreRender()

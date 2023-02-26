@@ -122,7 +122,13 @@ namespace ToolKit
     /////////////////////
     // Left public for thumbnail rendering. TODO: there must be techniques
     // handling thumbnail render.
-    void Render(struct RenderJob& job, Camera* cam, LightRawPtrArray lights = {});
+    void Render(const struct RenderJob& job,
+                Camera* cam,
+                const LightRawPtrArray& lights = {});
+
+    void Render(const RenderJobArray& jobArray,
+                Camera* cam,
+                const LightRawPtrArray& lights = {});
 
     void Apply7x1GaussianBlur(const TexturePtr source,
                               RenderTargetPtr dest,
@@ -160,9 +166,9 @@ namespace ToolKit
      * volume to reflect environment rotation.
      * @param entity to find the environment volume.
      */
-    void FindEnvironmentLight(RenderJob& job);
+    void FindEnvironmentLight(const RenderJob& job);
 
-    void SetProjectViewModel(Mat4& model, Camera* cam);
+    void SetProjectViewModel(const Mat4& model, Camera* cam);
     void BindProgram(ProgramPtr program);
     void LinkProgram(uint program, uint vertexP, uint fragmentP);
     ProgramPtr CreateProgram(ShaderPtr vertex, ShaderPtr fragment);

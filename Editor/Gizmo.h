@@ -39,6 +39,8 @@ namespace ToolKit
       TexturePtr m_iconImage = nullptr;
     };
 
+    typedef std::vector<EditorBillboardBase*> BillboardRawPtrArray;
+
     class Cursor : public EditorBillboardBase
     {
      public:

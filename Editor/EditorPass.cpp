@@ -341,9 +341,10 @@ namespace ToolKit
                 viewport->GetCamera(),
                 viewport->GetBillboardScale());
 
-            RenderJob rj;
-            RenderJobProcessor::CreateRenderJob(billboard, rj);
-            m_outlinePass->m_params.RenderJobs.push_back(rj);
+            RenderJobArray jobs;
+            RenderJobProcessor::CreateRenderJob(billboard, jobs);
+            RenderJobArray& outlineJobs = m_outlinePass->m_params.RenderJobs;
+            outlineJobs.insert(outlineJobs.end(), jobs.begin(), jobs.end());
           }
         }
 
@@ -401,20 +402,21 @@ namespace ToolKit
 
           renderer->ColorMask(false, false, false, false);
 
-          RenderJob rj;
-          RenderJobProcessor::CreateRenderJob(m_depthMaskSphere.get(), rj);
-          renderer->Render(rj, m_camera);
+          RenderJobArray jobs;
+          RenderJobProcessor::CreateRenderJob(m_depthMaskSphere.get(), jobs);
+          renderer->Render(jobs, m_camera);
 
           renderer->ColorMask(true, true, true, true);
 
-          RenderJobProcessor::CreateRenderJob(bb, rj);
-          renderer->Render(rj, m_camera);
+          jobs.clear();
+          RenderJobProcessor::CreateRenderJob(bb, jobs);
+          renderer->Render(jobs, m_camera);
         }
         else
         {
-          RenderJob rj;
-          RenderJobProcessor::CreateRenderJob(bb, rj);
-          renderer->Render(rj, m_camera);
+          RenderJobArray jobs;
+          RenderJobProcessor::CreateRenderJob(bb, jobs);
+          renderer->Render(jobs, m_camera);
         }
       }
     }
@@ -429,17 +431,23 @@ namespace ToolKit
       renderer->SetCameraLens(m_camera);
       renderer->ClearBuffer(GraphicBitFields::DepthBits);
 
-      for (int i = (int) m_params.GizmoArray.size() - 1; i >= 0; i--)
-      {
-        if (EditorBillboardBase* bb = m_params.GizmoArray[i])
-        {
-          bb->LookAt(m_camera, m_params.Viewport->GetBillboardScale());
-        }
-        else
-        {
-          m_params.GizmoArray.erase(m_params.GizmoArray.begin() + i);
-        }
-      }
+      // Update.
+      BillboardRawPtrArray& gizmoArray = m_params.GizmoArray;
+      gizmoArray.erase(
+          std::remove_if(gizmoArray.begin(),
+                         gizmoArray.end(),
+                         [this](EditorBillboardBase* bb) -> bool
+                         {
+                           if (bb == nullptr)
+                           {
+                             return true;
+                           }
+
+                           bb->LookAt(m_camera,
+                                      m_params.Viewport->GetBillboardScale());
+                           return false;
+                         }),
+          gizmoArray.end());
     }
 
     void GizmoPass::PostRender() { Pass::PostRender(); }

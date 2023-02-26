@@ -98,7 +98,9 @@ namespace ToolKit
     // RenderEntities(entities, m_uiCamera, viewport);
   }
 
-  void Renderer::Render(RenderJob& job, Camera* cam, LightRawPtrArray lights)
+  void Renderer::Render(const RenderJob& job,
+                        Camera* cam,
+                        const LightRawPtrArray& lights)
   {
     if (!cam->IsOrtographic())
     {
@@ -207,6 +209,16 @@ namespace ToolKit
     else
     {
       glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
+    }
+  }
+
+  void Renderer::Render(const RenderJobArray& jobArray,
+                        Camera* cam,
+                        const LightRawPtrArray& lights)
+  {
+    for (const RenderJob& rj : jobArray)
+    {
+      Render(rj, cam, lights);
     }
   }
 
@@ -386,7 +398,7 @@ namespace ToolKit
                                 bool clear,
                                 const Vec4& color)
   {
-    if (fb != m_framebuffer) 
+    if (fb != m_framebuffer)
     {
       if (fb != nullptr)
       {
@@ -537,10 +549,9 @@ namespace ToolKit
     static Quad quad;
     quad.GetMeshComponent()->GetMeshVal()->m_material = mat;
 
-    RenderJob job;
-    RenderJobProcessor::CreateRenderJob(&quad, job);
-
-    Render(job, &quadCam);
+    RenderJobArray jobs;
+    RenderJobProcessor::CreateRenderJob(&quad, jobs);
+    Render(jobs, &quadCam);
   }
 
   void Renderer::DrawCube(Camera* cam, MaterialPtr mat, const Mat4& transform)
@@ -556,9 +567,9 @@ namespace ToolKit
     }
     cube.GetMaterialComponent()->SetMaterialVal(mat);
 
-    RenderJob rj;
-    RenderJobProcessor::CreateRenderJob(&cube, rj);
-    Render(rj, cam);
+    RenderJobArray jobs;
+    RenderJobProcessor::CreateRenderJob(&cube, jobs);
+    Render(jobs, cam);
   }
 
   MaterialPtr Renderer::GetRenderMaterial(Entity* entity)
@@ -676,7 +687,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::FindEnvironmentLight(RenderJob& job)
+  void Renderer::FindEnvironmentLight(const RenderJob& job)
   {
     // Note: If multiple bounding boxes are intersecting and the intersection
     // volume includes the entity, the smaller bounding box is taken
@@ -873,7 +884,7 @@ namespace ToolKit
     DrawFullQuad(m_averageBlurMaterial);
   }
 
-  void Renderer::SetProjectViewModel(Mat4& model, Camera* cam)
+  void Renderer::SetProjectViewModel(const Mat4& model, Camera* cam)
   {
     m_view    = cam->GetViewMatrix();
     m_project = cam->GetProjectionMatrix();

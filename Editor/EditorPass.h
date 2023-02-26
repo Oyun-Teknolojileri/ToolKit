@@ -19,7 +19,7 @@ namespace ToolKit
     struct GizmoPassParams
     {
       Viewport* Viewport = nullptr;
-      std::vector<EditorBillboardBase*> GizmoArray;
+      BillboardRawPtrArray GizmoArray;
     };
 
     class GizmoPass : public Pass
