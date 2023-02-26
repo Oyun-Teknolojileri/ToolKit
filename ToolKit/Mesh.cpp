@@ -273,7 +273,10 @@ namespace ToolKit
           }
 
           // Update this aabb to contain submesh aabb.
-          m_aabb.UpdateBoundary(mesh->m_aabb);
+          if (!mesh->m_clientSideVertices.empty()) 
+          {
+            m_aabb.UpdateBoundary(mesh->m_aabb);
+          }
         });
   }
 

@@ -106,11 +106,11 @@ namespace ToolKit
 
       MaterialPtr newMaterial =
           GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-      newMaterial->m_color                            = Vec3(0.1f, 0.1f, 0.1f);
-      newMaterial->GetRenderState()->drawType         = DrawType::Line;
+      newMaterial->m_color                    = Vec3(0.1f, 0.1f, 0.1f);
+      newMaterial->GetRenderState()->drawType = DrawType::Line;
 
-      parentMesh->m_clientSideVertices                = vertices;
-      parentMesh->m_material                          = newMaterial;
+      parentMesh->m_clientSideVertices        = vertices;
+      parentMesh->m_material                  = newMaterial;
 
       parentMesh->CalculateAABB();
     }
@@ -168,12 +168,12 @@ namespace ToolKit
 
     void GizmoHandle::Generate(const Params& params)
     {
-      m_params               = params;
+      m_params       = params;
 
-      Vec3 dir               = AXIS[static_cast<int>(params.axis) % 3];
-      std::vector<Vec3> pnts = {dir * params.toeTip.x, dir * params.toeTip.y};
+      Vec3 dir       = AXIS[(int) params.axis % 3];
+      Vec3Array pnts = {dir * params.toeTip.x, dir * params.toeTip.y};
 
-      m_mesh                 = std::make_shared<Mesh>();
+      m_mesh         = std::make_shared<Mesh>();
 
       LineBatch line(pnts, params.color, DrawType::Line, 2.0f);
       MeshPtr lnMesh = line.GetComponent<MeshComponent>()->GetMeshVal();
@@ -224,7 +224,7 @@ namespace ToolKit
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
-        int axisInd    = static_cast<int>(m_params.axis);
+        int axisInd    = (int) m_params.axis;
         Vec3 axis      = AXIS[axisInd];
         Vec3Array pnts = {axis * 999.0f, axis * -999.0f};
 
@@ -602,7 +602,7 @@ namespace ToolKit
     {
       GizmoHandle::Params p = GetParam();
 
-      for (int i = 0; i < static_cast<int>(m_handles.size()); i++)
+      for (size_t i = 0; i < m_handles.size(); i++)
       {
         GizmoHandle* handle = m_handles[i];
         AxisLabel axis      = handle->m_params.axis;
@@ -613,7 +613,7 @@ namespace ToolKit
         }
         else if (axis != AxisLabel::XYZ)
         {
-          p.color = g_gizmoColor[static_cast<int>(axis) % 3];
+          p.color = g_gizmoColor[(int) axis % 3];
         }
         else
         {
@@ -651,6 +651,7 @@ namespace ToolKit
         mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
       mesh->Init(false);
+      mesh->CalculateAABB();
       GetComponent<MeshComponent>()->SetMeshVal(mesh);
     }
 
@@ -677,7 +678,7 @@ namespace ToolKit
       for (int i = 3; i < 6; i++)
       {
         m_handles.push_back(new QuadHandle());
-        m_handles[i]->m_params.axis = static_cast<AxisLabel>(i);
+        m_handles[i]->m_params.axis = (AxisLabel) i;
       }
 
       Update(0.0);
