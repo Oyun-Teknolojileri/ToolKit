@@ -82,7 +82,7 @@ namespace ToolKit
       {
         // There are material assignments per sub mesh.
         MaterialPtrArray& mlist = mmc->GetMaterialList();
-        for (size_t i = 0; i > mlist.size(); i++)
+        for (size_t i = 0; i < mlist.size(); i++)
         {
           allMaterials.push_back(mlist[i]);
         }
@@ -110,6 +110,7 @@ namespace ToolKit
       for (size_t i = 0; i < allMeshes.size(); i++)
       {
         RenderJob& rj     = newJobs[i];
+        rj.Entity         = ntt;
         rj.WorldTransform = transform;
         rj.BoundingBox    = allMeshes[i]->m_aabb;
         TransformAABB(rj.BoundingBox, transform);

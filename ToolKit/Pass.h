@@ -40,6 +40,7 @@ namespace ToolKit
 
   struct RenderJob
   {
+    Entity* Entity                   = nullptr;
     Mesh* Mesh                       = nullptr;
     SkeletonComponentPtr SkeletonCmp = nullptr;
     MaterialPtr Material             = nullptr;

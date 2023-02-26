@@ -35,23 +35,19 @@ namespace ToolKit
 
     void EditorBillboardBase::Generate()
     {
-      MeshComponentPtr parentMeshComp = GetComponent<MeshComponent>();
-      MeshPtr parentMesh              = parentMeshComp->GetMeshVal();
-      parentMesh->UnInit();
+      MeshComponentPtr mCom = GetComponent<MeshComponent>();
 
       // Billboard
       Quad quad;
       MeshPtr meshPtr    = quad.GetMeshComponent()->GetMeshVal();
       MaterialPtr matPtr = GetMaterialManager()->GetCopyOfUnlitMaterial();
       matPtr->UnInit();
-      matPtr->m_diffuseTexture = m_iconImage;
-      matPtr->GetRenderState()->blendFunction =
-          BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+      matPtr->m_diffuseTexture                    = m_iconImage;
+      matPtr->GetRenderState()->blendFunction     = BlendFunction::ALPHA_MASK;
+      matPtr->GetRenderState()->alphaMaskTreshold = 0.1f;
       matPtr->Init();
       meshPtr->m_material = matPtr;
-      parentMesh->m_subMeshes.push_back(meshPtr);
-
-      parentMesh->CalculateAABB();
+      mCom->SetMeshVal(meshPtr);
     }
 
     Cursor::Cursor() : EditorBillboardBase({true, 10.0f, 60.0f}) { Generate(); }
@@ -76,8 +72,8 @@ namespace ToolKit
       matPtr->UnInit();
       matPtr->m_diffuseTexture = GetTextureManager()->Create<Texture>(
           TexturePath(ConcatPaths({"Icons", "cursor4k.png"}), true));
-      matPtr->GetRenderState()->blendFunction =
-          BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+      matPtr->GetRenderState()->blendFunction     = BlendFunction::ALPHA_MASK;
+      matPtr->GetRenderState()->alphaMaskTreshold = 0.1f;
       matPtr->Init();
       meshPtr->m_material = matPtr;
       parentMesh->m_subMeshes.push_back(meshPtr);
