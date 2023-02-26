@@ -26,7 +26,7 @@ namespace ToolKit
     // Billboard placement.
     if (m_settings.distanceToCamera > 0.0f)
     {
-      if (cam->IsOrtographic())
+      if (data.ortographic)
       {
         m_node->SetTranslation(m_worldLocation, TransformationSpace::TS_WORLD);
 
@@ -38,10 +38,8 @@ namespace ToolKit
       }
       else
       {
-        Vec3 cdir = cam->GetComponent<DirectionComponent>()->GetDirection();
-        Vec3 camWorldPos =
-            cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-
+        Vec3 cdir = data.dir;
+        Vec3 camWorldPos = data.pos;
         Vec3 dir = glm::normalize(m_worldLocation - camWorldPos);
 
         // Always place at the same distance from the near plane.
