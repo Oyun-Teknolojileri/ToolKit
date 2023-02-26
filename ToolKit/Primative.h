@@ -31,7 +31,7 @@ namespace ToolKit
        * If true, staying behind of actual objects discards the pixels of the
        * billboard.
        */
-      bool byPassDepthTest      = false;
+      bool bypassDepthTest      = false;
     };
 
    public:

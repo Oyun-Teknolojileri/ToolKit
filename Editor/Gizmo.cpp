@@ -111,7 +111,7 @@ namespace ToolKit
       parentMesh->CalculateAABB();
     }
 
-    Axis3d::Axis3d() : EditorBillboardBase({false, 10.0f, 60.0f})
+    Axis3d::Axis3d() : EditorBillboardBase({false, 10.0f, 60.0f, true})
     {
       Generate();
     }

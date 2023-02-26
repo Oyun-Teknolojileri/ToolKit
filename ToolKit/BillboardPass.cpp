@@ -69,7 +69,7 @@ namespace ToolKit
                          cbb->LookAt(cam, vpScale);
 
                          // Return separation condition.
-                         return cbb->m_settings.byPassDepthTest;
+                         return cbb->m_settings.bypassDepthTest;
                        });
     m_noDepthBillboards.insert(m_noDepthBillboards.begin(),
                                iter,
