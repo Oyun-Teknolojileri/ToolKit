@@ -167,8 +167,9 @@ namespace ToolKit
     /**
      * Current time of the animation expressed in seconds.
      */
-    float m_currentTime = 0.0f;
-    bool m_loop         = false; //!< States if the animation mean to be looped.
+    float m_currentTime    = 0.0f;
+    bool m_loop            = false; //!< States if the animation mean to be looped.
+    float m_timeMultiplier = 1.0f;  //!< Speed multiplier for animation.
     AnimationPtr m_animation;    //!< Animimation to play.
     Entity* m_entity;
 

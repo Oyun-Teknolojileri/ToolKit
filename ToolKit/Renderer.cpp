@@ -705,7 +705,16 @@ namespace ToolKit
 
     for (Entity* envNtt : m_environmentLightEntities)
     {
-      currentBox = envNtt->GetComponent<EnvironmentComponent>()->GetBBox();
+      EnvironmentComponentPtr envComp =
+          envNtt->GetComponent<EnvironmentComponent>();
+
+      if (envComp == nullptr) 
+      {
+        continue;
+      }
+      
+      currentBox = envComp->GetBBox(); 
+
       if (PointInsideBBox(pos, currentBox.max, currentBox.min))
       {
         auto setCurrentBBox = [&bestBox, &env](const BoundingBox& box,

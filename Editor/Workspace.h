@@ -44,6 +44,10 @@ namespace ToolKit
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+     private:
+      void SerializeEngineSettings() const;
+      void DeSerializeEngineSettings();
+
      public:
       std::vector<Project> m_projects;
 

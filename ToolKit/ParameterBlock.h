@@ -116,11 +116,14 @@ namespace ToolKit
 
   struct MultiChoiceVariant
   {
-    std::vector<std::pair<String, class ParameterVariant>> Choices;
+    std::vector<class ParameterVariant> Choices;
+
+    template <typename T>
+    const T& GetValue() const;
 
     struct CurrentValue
     {
-      uint Index;
+      uint Index = 0;
 
       void operator=(CurrentValue val)
       {
@@ -138,9 +141,6 @@ namespace ToolKit
 
     } CurrentVal;
   };
-
-#define GetMultiChoiceVal(MCVariant, T)                                        \
-  MCVariant.Choices[MCVariant.CurrentVal.Index].second.GetCVar<T>();
 
   struct UIHint
   {
@@ -250,7 +250,7 @@ namespace ToolKit
     /**
      * Default copy constructor makes a call to default assignment operator.
      */
-    explicit ParameterVariant(const ParameterVariant& other);
+    ParameterVariant(const ParameterVariant& other);
 
     /**
      * Constructs bool type variant.
@@ -541,7 +541,7 @@ namespace ToolKit
      * shares the same category under the same drop-down area.
      */
     VariantCategory m_category;
-    String m_name; //<! Name of the variant.
+    String m_name = "NoName"; //<! Name of the variant.
 
     UIHint m_hint;
 
@@ -652,5 +652,11 @@ namespace ToolKit
      */
     ParameterVariantArray m_variants;
   };
+
+  template <typename T>
+  const T& MultiChoiceVariant::GetValue() const
+  {
+    return Choices[CurrentVal.Index].GetCVar<T>();
+  }
 
 } // namespace ToolKit

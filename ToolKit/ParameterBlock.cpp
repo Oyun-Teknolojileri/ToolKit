@@ -287,9 +287,9 @@ namespace ToolKit
     WriteAttr(node, doc, "hint.rangeMax", std::to_string(m_hint.rangeMax));
     WriteAttr(node, doc, "hint.increment", std::to_string(m_hint.increment));
 
-    std::function<void(const ParameterVariant*)> serializeDataFn;
+    std::function<void(XmlNode*, XmlDocument*, const ParameterVariant*)> serializeDataFn;
     serializeDataFn =
-        [&node, &doc, &serializeDataFn](const ParameterVariant* var)
+        [&serializeDataFn](XmlNode* node, XmlDocument* doc,const ParameterVariant* var)
     {
       // Serialize data.
       switch (var->GetType())
@@ -470,14 +470,10 @@ namespace ToolKit
           WriteAttr(nextNode,
                     doc,
                     "valType",
-                    std::to_string((int) mcv.Choices[i].second.GetType()));
-          WriteAttr(nextNode, doc, "valName", mcv.Choices[i].first.c_str());
-          WriteAttr(nextNode,
-                    doc,
-                    XmlParamterValAttr.c_str(),
-                    mcv.Choices[i].first);
-          const ParameterVariant* variant = &mcv.Choices[i].second;
-          serializeDataFn(variant);
+                    std::to_string((int) mcv.Choices[i].GetType()));
+          WriteAttr(nextNode, doc, "valName", mcv.Choices[i].m_name.c_str());
+          const ParameterVariant* variant = &mcv.Choices[i];
+          serializeDataFn(nextNode, doc, variant);
         }
       }
       break;
@@ -486,7 +482,7 @@ namespace ToolKit
         break;
       }
     };
-    serializeDataFn(this);
+    serializeDataFn(node, doc, this);
 
     parent->append_node(node);
   }
@@ -739,11 +735,11 @@ namespace ToolKit
           ReadAttr(currIndexNode, "valType", valType);
           ReadAttr(currIndexNode, "valName", valName);
           ParameterVariant p;
-          p.m_type = VariantType::Int;
+          p.m_type = (VariantType) valType;
+          p.m_name = valName;
           deserializeDataFn(currIndexNode, &p);
 
-          pVar->GetVar<MultiChoiceVariant>().Choices.push_back(
-              std::pair<String, ParameterVariant>(valName, std::move(p)));
+          pVar->GetVar<MultiChoiceVariant>().Choices.push_back(std::move(p));
         }
       }
       break;

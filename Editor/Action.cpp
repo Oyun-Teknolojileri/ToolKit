@@ -63,7 +63,7 @@ namespace ToolKit
       EditorScenePtr currScene = g_app->GetCurrentScene();
       if (m_ntt->GetType() == EntityType::Entity_Prefab)
       {
-        ((Prefab*) m_ntt)->Init(currScene.get());
+        static_cast<Prefab*>(m_ntt)->Link();
       }
       currScene->AddEntity(m_ntt);
       if (m_parentId != NULL_HANDLE)
@@ -93,7 +93,7 @@ namespace ToolKit
       g_app->GetCurrentScene()->RemoveEntity(m_ntt->GetIdVal());
       if (m_ntt->GetType() == EntityType::Entity_Prefab)
       {
-        ((Prefab*) m_ntt)->UnInit();
+        static_cast<Prefab*>(m_ntt)->Unlink();
       }
       m_actionComitted = true;
       HandleCompSpecificOps(m_ntt, m_actionComitted);
@@ -195,12 +195,7 @@ namespace ToolKit
 
     void ActionManager::UnInit()
     {
-      for (Action* action : m_actionStack)
-      {
-        SafeDel(action);
-      }
-      m_actionStack.clear();
-
+      ClearAllActions();
       m_initiated = false;
     }
 
@@ -328,6 +323,16 @@ namespace ToolKit
 
         m_stackPointer++;
       }
+    }
+
+    void ActionManager::ClearAllActions()
+    {
+      for (Action* action : m_actionStack)
+      {
+        SafeDel(action);
+      }
+      m_actionStack.clear();
+      m_stackPointer = 0;
     }
 
     ActionManager* ActionManager::GetInstance() { return &m_instance; }

@@ -218,7 +218,7 @@ namespace ToolKit
       m_renderPass->m_params.Lights           = {m_light};
       m_renderPass->m_params.MainFramebuffer  = m_framebuffer;
       m_renderPass->m_params.Scene            = std::make_shared<Scene>();
-      m_renderPass->m_params.Gfx.DepthofFieldEnabled = false;
+      m_renderPass->m_params.Gfx.DepthOfFieldEnabled = false;
     }
 
     PreviewViewport::~PreviewViewport()
@@ -238,8 +238,8 @@ namespace ToolKit
       DrawCommands();
 
       m_renderPass->m_params.MainFramebuffer = m_framebuffer;
-      EntityRawPtrArray& entities            = GetScene()->AccessEntityArray();
-      for (Entity* ntt : entities)
+			const EntityRawPtrArray& entities            = GetScene()->GetEntities();
+			for (const Entity* ntt : entities)
       {
         MeshComponentPtr mc = ntt->GetMeshComponent();
         if (!mc)

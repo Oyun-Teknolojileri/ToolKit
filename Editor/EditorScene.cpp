@@ -1,5 +1,6 @@
 #include "EditorScene.h"
 
+#include "Action.h"
 #include "App.h"
 #include "EditorCamera.h"
 #include "EditorViewport.h"
@@ -298,23 +299,34 @@ namespace ToolKit
       AddBillboardToEntity(entity);
     }
 
+    void EditorScene::RemoveEntity(const EntityRawPtrArray& entities)
+    {
+      Scene::RemoveEntity(entities);
+
+      for (Entity* ntt : entities)
+      {
+        RemoveFromSelection(ntt->GetIdVal());
+        RemoveBillboardFromEntity(ntt);
+      }
+    }
+
     Entity* EditorScene::RemoveEntity(ULongID id)
     {
       Entity* removed = nullptr;
       if ((removed = Scene::RemoveEntity(id)))
       {
         RemoveFromSelection(removed->GetIdVal());
+        RemoveBillboardFromEntity(removed);
       }
-
-      // Remove gizmo too
-      RemoveBillboardFromEntity(removed);
 
       return removed;
     }
 
     void EditorScene::Destroy(bool removeResources)
     {
+      ActionManager::GetInstance()->ClearAllActions();
       Scene::Destroy(removeResources);
+
       m_selectedEntities.clear();
 
       // Destroy gizmos too
