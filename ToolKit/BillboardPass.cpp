@@ -58,23 +58,18 @@ namespace ToolKit
     m_noDepthBillboards.clear();
 
     // Separate functions that does not require depth test.
-    auto iter =
-        std::remove_if(m_params.Billboards.begin(),
-                       m_params.Billboards.end(),
-                       [this, vpScale, cam](Entity* bb) -> bool
-                       {
-                         // Update billboards.
-                         assert(bb->GetType() == EntityType::Entity_Billboard);
-                         Billboard* cbb = static_cast<Billboard*>(bb);
-                         cbb->LookAt(cam, vpScale);
+    move_values(m_params.Billboards,
+                m_noDepthBillboards,
+                [this, vpScale, cam](Entity* bb) -> bool
+                {
+                  // Update billboards.
+                  assert(bb->GetType() == EntityType::Entity_Billboard);
+                  Billboard* cbb = static_cast<Billboard*>(bb);
+                  cbb->LookAt(cam, vpScale);
 
-                         // Return separation condition.
-                         return cbb->m_settings.bypassDepthTest;
-                       });
-    m_noDepthBillboards.insert(m_noDepthBillboards.begin(),
-                               iter,
-                               m_params.Billboards.end());
-    m_params.Billboards.erase(iter, m_params.Billboards.end());
+                  // Return separation condition.
+                  return cbb->m_settings.bypassDepthTest;
+                });
   }
 
 } // namespace ToolKit

@@ -147,7 +147,9 @@
     <ClCompile Include="Thumbnail.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="MultiChoiceParameterWindow.cpp" />
+    <ClCompile Include="MultiChoiceParameterWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -279,7 +281,9 @@
     <ClInclude Include="Thumbnail.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="MultiChoiceParameterWindow.h" />
+    <ClInclude Include="MultiChoiceParameterWindow.h">
+      <Filter>UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />
