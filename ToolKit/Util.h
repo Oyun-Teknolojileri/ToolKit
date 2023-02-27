@@ -160,11 +160,22 @@ namespace ToolKit
   TK_API int IndexOf(Entity* ntt, const EntityRawPtrArray& entities);
   TK_API bool Exist(const IntArray& vec, int val);
 
-  //  Time.
-  ///////////////////////////////////////////////////////
-  TK_API float MillisecToSec(float ms);
-  //  Returns elapsed time from the ToolKit Init.
-  TK_API float GetElapsedMilliSeconds();
+  template <typename T, typename Predicate>
+  void move_values(std::vector<T>& from, std::vector<T>& to, Predicate p)
+  {
+    auto it = std::remove_if(from.begin(),
+                             from.end(),
+                             [&](const T& val)
+                             {
+                               if (p(val))
+                               {
+                                 to.push_back(std::move(val));
+                                 return true;
+                               }
+                               return false;
+                             });
+    from.erase(it, from.end());
+  }
 
   template <typename T>
   void pop_front(std::vector<T>& vec)
@@ -172,5 +183,11 @@ namespace ToolKit
     assert(!vec.empty());
     vec.erase(vec.begin());
   }
+
+  //  Time.
+  ///////////////////////////////////////////////////////
+  TK_API float MillisecToSec(float ms);
+  //  Returns elapsed time from the ToolKit Init.
+  TK_API float GetElapsedMilliSeconds();
 
 } // namespace ToolKit
