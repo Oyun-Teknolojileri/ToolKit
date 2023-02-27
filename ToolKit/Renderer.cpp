@@ -170,13 +170,14 @@ namespace ToolKit
 
     auto activateSkinning = [prg, &job](uint isSkinned)
     {
+      GLint isSkinnedLoc = glGetUniformLocation(prg->m_handle, "isSkinned");
+      glUniform1ui(isSkinnedLoc, isSkinned);
+
       if (job.SkeletonCmp == nullptr)
       {
         return;
       }
 
-      GLint isSkinnedLoc = glGetUniformLocation(prg->m_handle, "isSkinned");
-      glUniform1ui(isSkinnedLoc, isSkinned);
       if (isSkinned)
       {
         GLint numBonesLoc = glGetUniformLocation(prg->m_handle, "numBones");
