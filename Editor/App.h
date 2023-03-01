@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ConsoleWindow.h"
-#include "EditorPass.h"
+#include "EditorRenderer.h"
 #include "EditorScene.h"
 #include "FolderWindow.h"
 #include "Global.h"

@@ -6,7 +6,7 @@
 #include "ConsoleWindow.h"
 #include "DirectionComponent.h"
 #include "EditorCamera.h"
-#include "EditorPass.h"
+#include "EditorRenderer.h"
 #include "EditorViewport.h"
 #include "EditorViewport2d.h"
 #include "FolderWindow.h"

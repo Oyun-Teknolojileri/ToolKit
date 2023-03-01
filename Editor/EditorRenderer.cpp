@@ -1,4 +1,4 @@
-#include "EditorPass.h"
+#include "EditorRenderer.h"
 
 #include "App.h"
 #include "DirectionComponent.h"
@@ -14,7 +14,7 @@ namespace ToolKit
 
     EditorRenderer::EditorRenderer() { InitRenderer(); }
 
-    EditorRenderer::EditorRenderer(const EditorRenderPassParams& params)
+    EditorRenderer::EditorRenderer(const EditorRenderParams& params)
         : EditorRenderer()
     {
       m_params = params;
@@ -372,138 +372,5 @@ namespace ToolKit
       RenderFn(selecteds, g_selectHighLightPrimaryColor);
     }
 
-    GizmoPass::GizmoPass()
-    {
-      m_depthMaskSphere   = std::make_shared<Sphere>(0.95f);
-      MeshComponentPtr mc = m_depthMaskSphere->GetMeshComponent();
-      MeshPtr mesh        = mc->GetMeshVal();
-      RenderState* rs     = mesh->m_material->GetRenderState();
-      rs->cullMode        = CullingType::Front;
-    }
-
-    GizmoPass::GizmoPass(const GizmoPassParams& params) : GizmoPass()
-    {
-      m_params = params;
-    }
-
-    void GizmoPass::Render()
-    {
-      Renderer* renderer = GetRenderer();
-
-      for (EditorBillboardBase* bb : m_params.GizmoArray)
-      {
-        if (bb->GetBillboardType() ==
-            EditorBillboardBase::BillboardType::Rotate)
-        {
-          Mat4 ts = bb->m_node->GetTransform();
-          m_depthMaskSphere->m_node->SetTransform(ts,
-                                                  TransformationSpace::TS_WORLD,
-                                                  false);
-
-          renderer->ColorMask(false, false, false, false);
-
-          RenderJobArray jobs;
-          RenderJobProcessor::CreateRenderJob(m_depthMaskSphere.get(), jobs);
-          renderer->Render(jobs, m_camera);
-
-          renderer->ColorMask(true, true, true, true);
-
-          jobs.clear();
-          RenderJobProcessor::CreateRenderJob(bb, jobs);
-          renderer->Render(jobs, m_camera);
-        }
-        else
-        {
-          RenderJobArray jobs;
-          RenderJobProcessor::CreateRenderJob(bb, jobs);
-          renderer->Render(jobs, m_camera);
-        }
-      }
-    }
-
-    void GizmoPass::PreRender()
-    {
-      Pass::PreRender();
-
-      Renderer* renderer = GetRenderer();
-      m_camera           = m_params.Viewport->GetCamera();
-      renderer->SetFramebuffer(m_params.Viewport->m_framebuffer, false);
-      renderer->SetCameraLens(m_camera);
-      renderer->ClearBuffer(GraphicBitFields::DepthBits);
-
-      // Update.
-      BillboardRawPtrArray& gizmoArray = m_params.GizmoArray;
-      gizmoArray.erase(
-          std::remove_if(gizmoArray.begin(),
-                         gizmoArray.end(),
-                         [this](EditorBillboardBase* bb) -> bool
-                         {
-                           if (bb == nullptr)
-                           {
-                             return true;
-                           }
-
-                           bb->LookAt(m_camera,
-                                      m_params.Viewport->GetBillboardScale());
-                           return false;
-                         }),
-          gizmoArray.end());
-    }
-
-    void GizmoPass::PostRender() { Pass::PostRender(); }
-
-    SingleMatForwardRenderPass::SingleMatForwardRenderPass()
-        : ForwardRenderPass()
-    {
-      m_overrideMat = std::make_shared<Material>();
-    }
-
-    SingleMatForwardRenderPass::SingleMatForwardRenderPass(
-        const SingleMatForwardRenderPassParams& params)
-        : SingleMatForwardRenderPass()
-    {
-      m_params = params;
-    }
-
-    void SingleMatForwardRenderPass::Render()
-    {
-
-      Renderer* renderer      = GetRenderer();
-      renderer->m_overrideMat = std::make_shared<Material>();
-      for (RenderJob& job : m_params.ForwardParams.OpaqueJobs)
-      {
-        LightRawPtrArray lightList =
-            RenderJobProcessor::SortLights(job, m_params.ForwardParams.Lights);
-
-        MaterialPtr mat = job.Material;
-        renderer->m_overrideMat->SetRenderState(mat->GetRenderState());
-        renderer->m_overrideMat->m_vertexShader = mat->m_vertexShader;
-        renderer->m_overrideMat->m_fragmentShader =
-            m_params.OverrideFragmentShader;
-        renderer->m_overrideMat->m_diffuseTexture  = mat->m_diffuseTexture;
-        renderer->m_overrideMat->m_emissiveTexture = mat->m_emissiveTexture;
-        renderer->m_overrideMat->m_emissiveColor   = mat->m_emissiveColor;
-        renderer->m_overrideMat->m_cubeMap         = mat->m_cubeMap;
-        renderer->m_overrideMat->m_color           = mat->m_color;
-        renderer->m_overrideMat->m_alpha           = mat->m_alpha;
-        renderer->m_overrideMat->Init();
-
-        renderer->Render(job, m_params.ForwardParams.Cam, lightList);
-      }
-
-      RenderTranslucent(m_params.ForwardParams.TranslucentJobs,
-                        m_params.ForwardParams.Cam,
-                        m_params.ForwardParams.Lights);
-    }
-
-    void SingleMatForwardRenderPass::PreRender()
-    {
-      ForwardRenderPass::m_params = m_params.ForwardParams;
-      ForwardRenderPass::PreRender();
-
-      m_overrideMat->UnInit();
-      m_overrideMat->m_fragmentShader = m_params.OverrideFragmentShader;
-      m_overrideMat->Init();
-    };
   } // namespace Editor
 } // namespace ToolKit

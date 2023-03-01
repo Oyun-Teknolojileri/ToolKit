@@ -3,6 +3,7 @@
 #include "BillboardPass.h"
 #include "EditorLight.h"
 #include "Gizmo.h"
+#include "GizmoPass.h"
 #include "Global.h"
 #include "OutlinePass.h"
 #include "Pass.h"
@@ -10,64 +11,12 @@
 #include "Primative.h"
 #include "RenderSystem.h"
 #include "SceneRenderer.h"
+#include "SingleMaterialPass.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
-
-    struct GizmoPassParams
-    {
-      Viewport* Viewport = nullptr;
-      BillboardRawPtrArray GizmoArray;
-    };
-
-    class GizmoPass : public Pass
-    {
-     public:
-      GizmoPass();
-      explicit GizmoPass(const GizmoPassParams& params);
-
-      void Render() override;
-      void PreRender() override;
-      void PostRender() override;
-
-     public:
-      GizmoPassParams m_params;
-
-     private:
-      SpherePtr m_depthMaskSphere = nullptr;
-      Camera* m_camera            = nullptr;
-    };
-
-    typedef std::shared_ptr<GizmoPass> GizmoPassPtr;
-
-    struct SingleMatForwardRenderPassParams
-    {
-      ForwardRenderPassParams ForwardParams;
-      ShaderPtr OverrideFragmentShader;
-    };
-
-    // Render whole scene in forward renderer with a single override material
-    struct SingleMatForwardRenderPass : public ForwardRenderPass
-    {
-     public:
-      SingleMatForwardRenderPass();
-      explicit SingleMatForwardRenderPass(
-          const SingleMatForwardRenderPassParams& params);
-
-      void Render() override;
-      void PreRender() override;
-
-     public:
-      SingleMatForwardRenderPassParams m_params;
-
-     private:
-      MaterialPtr m_overrideMat = nullptr;
-    };
-
-    typedef std::shared_ptr<SingleMatForwardRenderPass>
-        SingleMatForwardRenderPassPtr;
 
     /**
      * Enumeration for available render modes for the editor.
@@ -101,7 +50,7 @@ namespace ToolKit
       Game
     };
 
-    struct EditorRenderPassParams
+    struct EditorRenderParams
     {
       class App* App                 = nullptr;
       class EditorViewport* Viewport = nullptr;
@@ -112,7 +61,7 @@ namespace ToolKit
     {
      public:
       EditorRenderer();
-      explicit EditorRenderer(const EditorRenderPassParams& params);
+      explicit EditorRenderer(const EditorRenderParams& params);
       virtual ~EditorRenderer();
 
       void Render(Renderer* renderer) override;
@@ -128,7 +77,7 @@ namespace ToolKit
       /**
        * Pass parameters.
        */
-      EditorRenderPassParams m_params;
+      EditorRenderParams m_params;
 
      private:
       /**

@@ -103,11 +103,12 @@
     <ClCompile Include="CustomDataView.cpp" />
     <ClCompile Include="EditorCamera.cpp" />
     <ClCompile Include="EditorLight.cpp" />
-    <ClCompile Include="EditorPass.cpp" />
+    <ClCompile Include="EditorRenderer.cpp" />
     <ClCompile Include="EditorViewport2d.cpp" />
     <ClCompile Include="EntityView.cpp" />
     <ClCompile Include="FolderWindow.cpp" />
     <ClCompile Include="Gizmo.cpp" />
+    <ClCompile Include="GizmoPass.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="ImGui\imgui_stdlib.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
@@ -127,6 +128,7 @@
     <ClCompile Include="PropInspector.cpp" />
     <ClCompile Include="PublishManager.cpp" />
     <ClCompile Include="RenderSettingsView.cpp" />
+    <ClCompile Include="SingleMaterialPass.cpp" />
     <ClCompile Include="Thumbnail.cpp" />
     <ClCompile Include="TransformMod.cpp" />
     <ClCompile Include="EditorScene.cpp" />
@@ -175,11 +177,12 @@
     <ClInclude Include="CustomDataView.h" />
     <ClInclude Include="EditorCamera.h" />
     <ClInclude Include="EditorLight.h" />
-    <ClInclude Include="EditorPass.h" />
+    <ClInclude Include="EditorRenderer.h" />
     <ClInclude Include="EditorViewport2d.h" />
     <ClInclude Include="EntityView.h" />
     <ClInclude Include="FolderWindow.h" />
     <ClInclude Include="Gizmo.h" />
+    <ClInclude Include="GizmoPass.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="ImGui\imgui_impl_opengl3_loader.h" />
@@ -191,6 +194,7 @@
     <ClInclude Include="PrefabView.h" />
     <ClInclude Include="PublishManager.h" />
     <ClInclude Include="RenderSettingsView.h" />
+    <ClInclude Include="SingleMaterialPass.h" />
     <ClInclude Include="Thumbnail.h" />
     <ClInclude Include="Workspace.h" />
     <ClInclude Include="ImGui\imconfig.h" />
