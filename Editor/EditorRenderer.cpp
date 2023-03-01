@@ -4,6 +4,7 @@
 #include "DirectionComponent.h"
 #include "EditorScene.h"
 #include "EditorViewport.h"
+#include "EnvironmentComponent.h"
 
 #include "DebugNew.h"
 

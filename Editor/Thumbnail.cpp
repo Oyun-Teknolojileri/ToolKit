@@ -1,6 +1,8 @@
 #include "Thumbnail.h"
 
 #include "Entity.h"
+#include "MeshComponent.h"
+#include "MaterialComponent.h"
 
 #include "DebugNew.h"
 

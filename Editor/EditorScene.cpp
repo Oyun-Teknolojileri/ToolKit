@@ -4,6 +4,7 @@
 #include "App.h"
 #include "EditorCamera.h"
 #include "EditorViewport.h"
+#include "EnvironmentComponent.h"
 #include "Global.h"
 #include "Prefab.h"
 #include "Util.h"

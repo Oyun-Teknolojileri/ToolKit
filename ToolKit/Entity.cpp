@@ -4,11 +4,11 @@
 #include "MathUtil.h"
 #include "Node.h"
 #include "Prefab.h"
-#include "ResourceComponent.h"
 #include "Skeleton.h"
 #include "Sky.h"
 #include "ToolKit.h"
 #include "Util.h"
+#include "ResourceComponent.h"
 
 #include "DebugNew.h"
 

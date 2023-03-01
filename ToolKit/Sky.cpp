@@ -1,6 +1,7 @@
 #include "Sky.h"
 
 #include "DirectionComponent.h"
+#include "EnvironmentComponent.h"
 #include "ToolKit.h"
 
 #include <memory>

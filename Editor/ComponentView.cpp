@@ -1,8 +1,10 @@
 #include "ComponentView.h"
 
 #include "Action.h"
+#include "AnimationControllerComponent.h"
 #include "App.h"
 #include "CustomDataView.h"
+#include "EnvironmentComponent.h"
 #include "ImGui/imgui_stdlib.h"
 
 #include <utility>

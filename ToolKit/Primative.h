@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Drawable.h"
+#include "MaterialComponent.h"
+#include "MeshComponent.h"
 #include "ParameterBlock.h"
 #include "RenderState.h"
 #include "Types.h"

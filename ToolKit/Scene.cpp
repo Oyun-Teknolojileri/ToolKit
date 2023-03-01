@@ -1,6 +1,7 @@
 #include "Scene.h"
 
 #include "Component.h"
+#include "EnvironmentComponent.h"
 #include "Prefab.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"

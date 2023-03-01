@@ -204,6 +204,21 @@
     <ClCompile Include="BillboardPass.cpp">
       <Filter>Source\Render\RenderPass</Filter>
     </ClCompile>
+    <ClCompile Include="MeshComponent.cpp">
+      <Filter>Source\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialComponent.cpp">
+      <Filter>Source\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="EnvironmentComponent.cpp">
+      <Filter>Source\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationControllerComponent.cpp">
+      <Filter>Source\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletonComponent.cpp">
+      <Filter>Source\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -403,6 +418,21 @@
     </ClInclude>
     <ClInclude Include="TKAssert.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshComponent.h">
+      <Filter>Source\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialComponent.h">
+      <Filter>Source\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="EnvironmentComponent.h">
+      <Filter>Source\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationControllerComponent.h">
+      <Filter>Source\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonComponent.h">
+      <Filter>Source\Component</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

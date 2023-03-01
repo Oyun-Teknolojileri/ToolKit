@@ -8,7 +8,8 @@
 #include "Component.h"
 #include "Node.h"
 #include "ParameterBlock.h"
-#include "ResourceComponent.h"
+#include "MeshComponent.h"
+#include "MaterialComponent.h"
 #include "Serialize.h"
 #include "Types.h"
 

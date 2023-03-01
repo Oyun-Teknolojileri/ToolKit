@@ -9,6 +9,7 @@
 #include "Node.h"
 #include "Pass.h"
 #include "ResourceComponent.h"
+#include "EnvironmentComponent.h"
 #include "Scene.h"
 #include "Shader.h"
 #include "ShaderReflectionCache.h"

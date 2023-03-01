@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="AnimationControllerComponent.cpp" />
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="BillboardPass.cpp" />
     <ClCompile Include="BinPack2D.cpp" />
@@ -26,6 +27,7 @@
     <ClCompile Include="DofPass.cpp" />
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="EnvironmentComponent.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="ForwardPass.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
@@ -36,8 +38,10 @@
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Material.cpp" />
+    <ClCompile Include="MaterialComponent.cpp" />
     <ClCompile Include="MathUtil.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="OutlinePass.cpp" />
     <ClCompile Include="ParameterBlock.cpp" />
@@ -57,6 +61,7 @@
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShadowPass.cpp" />
     <ClCompile Include="Skeleton.cpp" />
+    <ClCompile Include="SkeletonComponent.cpp" />
     <ClCompile Include="Sky.cpp" />
     <ClCompile Include="SpriteSheet.cpp" />
     <ClCompile Include="SsaoPass.cpp" />
@@ -76,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
+    <ClInclude Include="AnimationControllerComponent.h" />
     <ClInclude Include="Audio.h" />
     <ClInclude Include="BillboardPass.h" />
     <ClInclude Include="BinPack2D.h" />
@@ -91,6 +97,7 @@
     <ClInclude Include="DofPass.h" />
     <ClInclude Include="Drawable.h" />
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="EnvironmentComponent.h" />
     <ClInclude Include="Events.h" />
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="ForwardPass.h" />
@@ -99,6 +106,8 @@
     <ClInclude Include="FxaaPass.h" />
     <ClInclude Include="GammaPass.h" />
     <ClInclude Include="GBufferPass.h" />
+    <ClInclude Include="MaterialComponent.h" />
+    <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="OutlinePass.h" />
     <ClInclude Include="Pass.h" />
     <ClInclude Include="PostProcessPass.h" />
@@ -126,6 +135,7 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShadowPass.h" />
     <ClInclude Include="Skeleton.h" />
+    <ClInclude Include="SkeletonComponent.h" />
     <ClInclude Include="Sky.h" />
     <ClInclude Include="SpriteSheet.h" />
     <ClInclude Include="SsaoPass.h" />

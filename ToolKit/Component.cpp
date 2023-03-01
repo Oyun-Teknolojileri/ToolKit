@@ -3,6 +3,8 @@
 #include "DirectionComponent.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
+#include "EnvironmentComponent.h"
+#include "AnimationControllerComponent.h"
 
 #include "DebugNew.h"
 
