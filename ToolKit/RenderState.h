@@ -74,9 +74,6 @@ namespace ToolKit
     float alphaMaskTreshold     = 0.001f;
     float lineWidth             = 1.0f;
 
-    // Force material to be drawn with forward pass.
-    bool useForwardPath         = false;
-
    private:
     friend class Renderer;
 

@@ -134,6 +134,7 @@
     <ClInclude Include="StencilPass.h" />
     <ClInclude Include="Surface.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TKAssert.h" />
     <ClInclude Include="ToneMapPass.h" />
     <ClInclude Include="ToolKit.h" />
     <ClInclude Include="Types.h" />
@@ -211,7 +212,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_GL_CORE_3_2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_GL_CORE_3_2;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/FI "stdafx.h" %(AdditionalOptions)</AdditionalOptions>

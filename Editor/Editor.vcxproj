@@ -81,7 +81,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_EDITOR;TK_GL_CORE_3_2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_EDITOR;TK_GL_CORE_3_2;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/FI "stdafx.h" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>

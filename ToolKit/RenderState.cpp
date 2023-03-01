@@ -37,7 +37,6 @@ namespace ToolKit
               "alphaMaskTreshold",
               std::to_string((float) alphaMaskTreshold));
     WriteAttr(container, doc, "drawType", std::to_string(int(drawType)));
-    WriteAttr(container, doc, "useForwardPath", std::to_string(useForwardPath));
   }
 
   void RenderState::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -127,7 +126,6 @@ namespace ToolKit
         }
       };
       validateDrawFn(drawType);
-      ReadAttr(container, "useForwardPath", useForwardPath);
     }
   }
 

@@ -401,5 +401,8 @@
     <ClInclude Include="BillboardPass.h">
       <Filter>Source\Render\RenderPass</Filter>
     </ClInclude>
+    <ClInclude Include="TKAssert.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

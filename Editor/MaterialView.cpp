@@ -400,7 +400,6 @@ namespace ToolKit
                 isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA
                           : BlendFunction::NONE;
 
-            renderState->useForwardPath = isForward;
             updateThumbFn();
           }
         }
@@ -464,10 +463,6 @@ namespace ToolKit
           {
             m_mat->m_alpha = 1.0f;
           }
-
-          renderState->useForwardPath =
-              renderState->blendFunction ==
-              BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
 
           m_mat->m_dirty = true;
 

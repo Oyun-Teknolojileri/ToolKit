@@ -364,8 +364,6 @@ namespace ToolKit
 
       if (m_mat->GetRenderState()->IBLInUse) {}
     }
-
-    m_renderState.useForwardPath = state->useForwardPath;
   }
 
   void Renderer::SetStencilOperation(StencilOperation op)
@@ -1188,13 +1186,6 @@ namespace ToolKit
           glUniform1i(loc, v);
         }
         break;
-        case Uniform::USE_FORWARD_PATH:
-        {
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::USE_FORWARD_PATH));
-          glUniform1i(loc, (GLint) m_renderState.useForwardPath);
-        }
         case Uniform::UNUSEDSLOT_3:
           assert(false);
           break;
