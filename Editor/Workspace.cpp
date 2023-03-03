@@ -249,21 +249,22 @@ namespace ToolKit
     void Workspace::SerializeEngineSettings() const
     {
       std::ofstream file;
-
       String path = ConcatPaths({GetProjectConfigPath(), "Engine.settings"});
 
-      file.open(path.c_str(), std::ios::failbit | std::ios::out);
+      file.open(path.c_str(), std::ios::out | std::ios::trunc);
       assert(file.is_open());
 
-      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+      if (file.is_open()) 
+      {
+        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+        GetEngineSettings().Serialize(lclDoc.get(), nullptr);
 
-      GetEngineSettings().Serialize(lclDoc.get(), nullptr);
-
-      std::string xml {};
-      rapidxml::print(std::back_inserter(xml), *lclDoc);
-      file << xml;
-      file.close();
-      lclDoc->clear();
+        std::string xml;
+        rapidxml::print(std::back_inserter(xml), *lclDoc);
+        file << xml;
+        file.close();
+        lclDoc->clear();
+      }
     }
 
     void Workspace::DeSerializeEngineSettings()

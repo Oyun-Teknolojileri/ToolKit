@@ -1054,7 +1054,13 @@ namespace ToolKit
 
         if (ImGui::Button("Search", ImVec2(120, 0)))
         {
-          g_app->Import("", ImportData.SubDir, ImportData.Overwrite);
+          String target = ImportData.SubDir;
+          if (!ImportData.ActiveView->m_root) 
+          {
+            target = ConcatPaths({ImportData.ActiveView->m_folder, ImportData.SubDir});
+          }
+
+          g_app->Import("", target, ImportData.Overwrite);
           ImportData.Files.clear();
           ImGui::CloseCurrentPopup();
         }
