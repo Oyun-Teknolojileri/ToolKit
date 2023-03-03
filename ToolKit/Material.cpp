@@ -378,6 +378,42 @@ namespace ToolKit
         assert(false);
       }
     }
+
+    // Update old materials than v0.4.0
+    static String deferredShader =
+        ShaderPath("deferredRenderFrag.shader", true);
+    static String forwardShader = ShaderPath("defaultFragment.shader", true);
+
+    // If no shader provided, assign a proper default.
+    if (m_fragmentShader == nullptr)
+    {
+      if (IsTranslucent())
+      {
+        m_fragmentShader = GetShaderManager()->Create<Shader>(forwardShader);
+      }
+      else
+      {
+        m_fragmentShader = GetShaderManager()->Create<Shader>(deferredShader);
+      }
+    }
+    else
+    {
+      // Can this be draw in deferred path ?
+      if (!IsDeferred())
+      {
+        // If not using a custom shader.
+        if (m_fragmentShader->GetFile() == forwardShader)
+        {
+          // And not translucent.
+          if (!IsTranslucent())
+          {
+            // Draw in deferred.
+            m_fragmentShader =
+                GetShaderManager()->Create<Shader>(deferredShader);
+          }
+        }
+      }
+    }
   }
 
   MaterialManager::MaterialManager() { m_type = ResourceType::Material; }
@@ -392,7 +428,7 @@ namespace ToolKit
     material->m_vertexShader = GetShaderManager()->Create<Shader>(
         ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("defaultFragment.shader", true));
+        ShaderPath("deferredRenderFrag.shader", true));
     material->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
