@@ -7,6 +7,9 @@
 
 #include "DebugNew.h"
 
+#define TK_DEFAULT_DEFERRED_FRAG "deferredRenderFrag.shader"
+#define TK_DEFAULT_FORWARD_FRAG  "defaultFragment.shader"
+
 namespace ToolKit
 {
 
@@ -125,7 +128,7 @@ namespace ToolKit
     else
     {
       m_fragmentShader = GetShaderManager()->Create<Shader>(
-          ShaderPath("defaultFragment.shader", true));
+          ShaderPath(TK_DEFAULT_FORWARD_FRAG, true));
       m_fragmentShader->Init();
     }
 
@@ -170,8 +173,18 @@ namespace ToolKit
       UnInit();
       m_vertexShader = GetShaderManager()->Create<Shader>(
           ShaderPath("defaultVertex.shader", true));
-      m_fragmentShader = GetShaderManager()->Create<Shader>(
-          ShaderPath("defaultFragment.shader", true));
+
+      if (IsTranslucent())
+      {
+        m_fragmentShader = GetShaderManager()->Create<Shader>(
+            ShaderPath(TK_DEFAULT_FORWARD_FRAG, true));
+      }
+      else
+      {
+        m_fragmentShader = GetShaderManager()->Create<Shader>(
+            ShaderPath(TK_DEFAULT_DEFERRED_FRAG, true));
+      }
+
       Init();
       break;
     default: // Custom
@@ -182,7 +195,7 @@ namespace ToolKit
   bool Material::IsDeferred()
   {
     static String defferedShaderPath =
-        ShaderPath("deferredRenderFrag.shader", true);
+        ShaderPath(TK_DEFAULT_DEFERRED_FRAG, true);
 
     return m_fragmentShader->GetFile() == defferedShaderPath;
   }
@@ -380,9 +393,8 @@ namespace ToolKit
     }
 
     // Update old materials than v0.4.0
-    static String deferredShader =
-        ShaderPath("deferredRenderFrag.shader", true);
-    static String forwardShader = ShaderPath("defaultFragment.shader", true);
+    static String deferredShader = ShaderPath(TK_DEFAULT_DEFERRED_FRAG, true);
+    static String forwardShader  = ShaderPath(TK_DEFAULT_FORWARD_FRAG, true);
 
     // If no shader provided, assign a proper default.
     if (m_fragmentShader == nullptr)
@@ -428,7 +440,7 @@ namespace ToolKit
     material->m_vertexShader = GetShaderManager()->Create<Shader>(
         ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("deferredRenderFrag.shader", true));
+        ShaderPath(TK_DEFAULT_DEFERRED_FRAG, true));
     material->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
