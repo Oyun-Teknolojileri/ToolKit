@@ -339,7 +339,7 @@ namespace ToolKit
     return path + entries.back();
   }
 
-  String GetRelativeResourcePath(const String& path)
+  String GetRelativeResourcePath(const String& path, String* rootFolder)
   {
     // Check workspace relativity.
     String root  = Main::GetInstance()->m_resourceRoot;
@@ -375,6 +375,10 @@ namespace ToolKit
         exist      = rel.find(GetPathSeparator());
         if (exist != String::npos)
         {
+          if (rootFolder != nullptr) 
+          {
+            *rootFolder = rel.substr(0, exist);
+          }
           rel = rel.substr(exist + 1);
         }
 

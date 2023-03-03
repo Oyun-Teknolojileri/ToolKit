@@ -61,7 +61,18 @@ namespace ToolKit
   TK_API void UnixifyPath(String& path);
   TK_API void DosifyPath(String& path);
   TK_API String ConcatPaths(const StringArray& entries);
-  TK_API String GetRelativeResourcePath(const String& path);
+
+  /**
+   * When a full path of a resource provided, converts it to shorter path
+   * relative to its Root folder. If rootFolder pointer is given, set the value
+   * to the extracted root folder name.
+   * @params path Absolute resource path.
+   * @params rootFolder optional output parameter to provide resource root
+   * folder.
+   * @returns Relative resource path to its root folder.
+   */
+  TK_API String GetRelativeResourcePath(const String& path,
+                                        String* rootFolder = nullptr);
 
   /**
    * Checks if a resource has default path.

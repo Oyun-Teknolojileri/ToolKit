@@ -237,8 +237,17 @@ namespace ToolKit
 
       auto saveFn = []() -> void
       {
-        g_app->GetCurrentScene()->Save(false);
-        g_app->m_statusMsg                    = "Scene saved";
+        EditorScenePtr cScene = g_app->GetCurrentScene();
+        cScene->Save(false);
+
+        String rootFolder;
+        String relPath =
+            GetRelativeResourcePath(cScene->GetFile(), &rootFolder);
+        String msg = "Saved to: " + ConcatPaths({rootFolder, relPath});
+
+        GetLogger()->WriteConsole(LogType::Memo, msg.c_str());
+        g_app->m_statusMsg                    = "Scene saved.";
+
         FolderWindowRawPtrArray folderWindows = g_app->GetAssetBrowsers();
         for (FolderWindow* folderWnd : folderWindows)
         {
@@ -283,7 +292,10 @@ namespace ToolKit
         String path;
         EditorScenePtr currScene = g_app->GetCurrentScene();
         DecomposePath(currScene->GetFile(), &path, nullptr, nullptr);
+
         String fullPath = ConcatPaths({path, val + SCENE});
+        NormalizePath(fullPath);
+
         currScene->SetFile(fullPath);
         currScene->m_name = val;
         g_app->OnSaveScene();
