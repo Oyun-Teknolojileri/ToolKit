@@ -5,8 +5,6 @@
 #include "ShaderReflectionCache.h"
 #include "ToolKit.h"
 
-#include <random>
-
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -47,8 +45,7 @@ namespace ToolKit
 
     m_ssaoShader->SetShaderParameter("radius",
                                      ParameterVariant(m_params.ssaoRadius));
-    m_ssaoShader->SetShaderParameter("bias",
-                                     ParameterVariant(m_params.ssaoBias));
+
     RenderSubPass(m_quadPass);
 
     // Horizontal blur
@@ -106,17 +103,27 @@ namespace ToolKit
     {
       m_ssaoShader = GetShaderManager()->Create<Shader>(
           ShaderPath("ssaoCalcFrag.shader", true));
+    }
+
+    if (m_ssaoPrevBias != m_params.ssaoBias)
+    {
+      // Update kernel
       for (uint i = 0; i < 64; ++i)
       {
         m_ssaoShader->SetShaderParameter(g_ssaoSamplesStrCache[i],
                                          ParameterVariant(m_ssaoKernel[i]));
       }
+
+      m_ssaoPrevBias = m_params.ssaoBias;
     }
+
     m_ssaoShader->SetShaderParameter("screen_size",
                                      ParameterVariant(Vec2(width, height)));
+
     m_ssaoShader->SetShaderParameter(
         "projection",
         ParameterVariant(m_params.Cam->GetProjectionMatrix()));
+
     m_ssaoShader->SetShaderParameter(
         "viewMatrix",
         ParameterVariant(m_params.Cam->GetViewMatrix()));
@@ -128,42 +135,17 @@ namespace ToolKit
 
   void SSAOPass::GenerateSSAONoise()
   {
-    // generate sample kernel
-    // ----------------------
-    auto lerp = [](float a, float b, float f) { return a + f * (b - a); };
-
-    // generates random floats between 0.0 and 1.0
-    std::uniform_real_distribution<float> randomFloats(0.0f, 1.0f);
-    std::default_random_engine generator;
-    if (m_ssaoKernel.size() == 0)
+    if (m_ssaoKernel.size() == 0 || m_ssaoPrevBias != m_params.ssaoBias)
     {
-      for (uint i = 0; i < 64; ++i)
-      {
-        float u1    = randomFloats(generator);
-        float u2    = randomFloats(generator);
-        float r     = glm::sqrt(u1);
-        float theta = 2.0f * glm::pi<float>() * u2;
-        float x     = r * cos(theta);
-        float y     = r * sin(theta);
-        float z     = glm::sqrt(glm::max(0.0f, 1.0f - x * x - y * y));
-
-        Vec3 sample(x, y, z);
-
-        /* sample = glm::normalize(sample);
-        sample      *= randomFloats(generator);
-        float scale = float(i) / 64.0f;
-
-        // scale samples s.t. they're more aligned to center of kernel
-        scale       = lerp(0.1f, 1.0f, scale * scale);
-        sample      *= scale;*/
-        m_ssaoKernel.push_back(sample);
-      }
+      m_ssaoKernel = GenerateHemispherePoints(64, m_params.ssaoBias);
     }
 
-    // generate noise texture
-    // ----------------------
     if (m_ssaoNoise.size() == 0)
     {
+      // generates random floats between 0.0 and 1.0
+      std::uniform_real_distribution<float> randomFloats(0.0f, 1.0f);
+      std::default_random_engine generator;
+
       for (unsigned int i = 0; i < 16; i++)
       {
         glm::vec2 noise(randomFloats(generator) * 2.0f - 1.0f,

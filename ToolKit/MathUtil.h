@@ -68,11 +68,9 @@ namespace ToolKit
                                       const Vec3& v2,
                                       float& t);
 
-  class DynamicBoneMap;
-  class SkinVertex;
-  TK_API Vec3 CPUSkinning(const SkinVertex* vertex,
+  TK_API Vec3 CPUSkinning(const class SkinVertex* vertex,
                           const Skeleton* skel,
-                          const DynamicBoneMap* dynamicBoneMap);
+                          const class DynamicBoneMap* dynamicBoneMap);
 
   class SkeletonComponent;
   TK_API bool RayMeshIntersection(const class Mesh* const mesh,
@@ -150,5 +148,18 @@ namespace ToolKit
   TK_API bool PointInsideBBox(const Vec3& point,
                               const Vec3& max,
                               const Vec3& min);
+
+  // Random Generators
+  //////////////////////////////////////////
+  
+  /**
+   * Generate random points on a hemisphere with proximity to normal.
+   * @params numSamples number of samples to generate.
+   * @params k distribution bias of the samples. 0 all samples on normal of the
+   * hemisphere. 1 totally uniformly distributed random samples.
+   * @returns Generated samples.
+   */
+  Vec3Array GenerateHemispherePoints(int numSamples, float k);
+
 
 } // namespace ToolKit

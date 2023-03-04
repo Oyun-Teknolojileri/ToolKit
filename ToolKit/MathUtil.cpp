@@ -3,14 +3,12 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "Node.h"
+#include "Pass.h"
 #include "ResourceComponent.h"
 #include "Skeleton.h"
-#include "Pass.h"
 
-#include <algorithm>
 #include <execution>
 #include <mutex>
-#include <vector>
 
 #include "DebugNew.h"
 
@@ -926,6 +924,37 @@ namespace ToolKit
   {
     return (point.x <= max.x && point.x >= min.x && point.y <= max.y &&
             point.y >= min.y && point.z <= max.z && point.z >= min.z);
+  }
+
+  /**
+   * Generate random points on a hemisphere with proximity to normal.
+   * @params numSamples number of samples to generate.
+   * @params k distribution bias of the samples. 0 all samples on normal of the
+   * hemisphere. 1 totally uniformly distributed random samples.
+   * @returns Generated samples.
+   */
+  Vec3Array GenerateHemispherePoints(int numSamples, float k)
+  {
+    Vec3Array points;
+    points.reserve(numSamples);
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(0.0, 1.0);
+
+    for (int i = 0; i < numSamples; i++)
+    {
+      float theta = 2 * glm::pi<float>() * dis(gen);
+      float phi   = std::acos(1 - k * dis(gen));
+
+      float x     = std::sin(phi) * std::cos(theta);
+      float y     = std::sin(phi) * std::sin(theta);
+      float z     = std::cos(phi);
+
+      points.emplace_back(x, y, z);
+    }
+
+    return points;
   }
 
 } // namespace ToolKit

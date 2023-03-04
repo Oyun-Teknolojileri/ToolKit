@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <random>
 #include <unordered_map>
 #include <vector>
 

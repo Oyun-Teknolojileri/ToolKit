@@ -43,6 +43,9 @@ namespace ToolKit
 
     FullQuadPassPtr m_quadPass         = nullptr;
     ShaderPtr m_ssaoShader             = nullptr;
+
+    // Used to detect if the bias has changed. If so, kernel updated.
+    float m_ssaoPrevBias               = 0.0f;
   };
 
   typedef std::shared_ptr<SSAOPass> SSAOPassPtr;

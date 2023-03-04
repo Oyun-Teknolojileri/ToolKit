@@ -20,27 +20,11 @@
 
 		uniform vec2 screen_size;
 		uniform mat4 viewMatrix;
-
 		uniform vec3 samples[64];
-
 		uniform mat4 projection;
-
-		// parameters (you'd probably want to use them as uniforms to more easily tweak the effect)
-		int kernelSize = 64;
 		uniform float radius;
-		uniform float bias;
-
-		#define PI 3.1415926535897932384626433832795
-		vec3 sampleHemisphere(vec3 normal, float u1, float u2) {
-			vec3 tangent = normalize(cross(normal, vec3(0.0, 0.0, 1.0)));
-			vec3 bitangent = normalize(cross(normal, tangent));
-			float r = sqrt(u1);
-			float theta = 2.0 * PI * u2;
-			float x = r * cos(theta);
-			float y = r * sin(theta);
-			float z = sqrt(max(0.0, 1.0 - x*x - y*y));
-			return x * tangent + y * bitangent + z * normal;
-		}
+		
+		const int kernelSize = 64;
 
 		void main()
 		{
@@ -64,12 +48,7 @@
 			for(int i = 0; i < kernelSize; ++i)
 			{
 				// get sample position
-				vec3 sam = samples[i];
-				float exponent = -0.9;
-                sam.z = pow(sam.z, exponent) * sam.z;
-				vec3 samplePos = normalize(TBN * sam); // from tangent to view-space
-				//samplePos = samples[i].x * tangent + samples[i].y * bitangent + samples[i].z * normal;
-				//samplePos = sampleHemisphere(normal, samples[i].x, samples[i].y);
+				vec3 samplePos = TBN * samples[i]; // from tangent to view-space
 				samplePos = fragPos + samplePos * radius; 
 				
 				// project sample position (to sample texture) (to get position on screen/texture)
@@ -83,10 +62,9 @@
 				
 				// range check & accumulate
 				float rangeCheck = smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));
-				occlusion += (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;           
+				occlusion += (sampleDepth >= samplePos.z + 0.00001 ? 1.0 : 0.0) * rangeCheck;           
 			}
 			occlusion = max(1.0 - (occlusion / float(kernelSize)), 0.0);
-			
 			fragColor = vec4(occlusion, 0.0, 0.0, 1.0);
 		}
 
