@@ -197,6 +197,8 @@ namespace ToolKit
         ReadAttr(node, "lock", m_orbitLock);
         Camera* viewCam = new Camera();
         viewCam->DeSerialize(nullptr, node->first_node("E"));
+        viewCam->SetLens(glm::quarter_pi<float>(), viewCam->Aspect());
+
         SetCamera(viewCam);
       }
     }
