@@ -49,13 +49,13 @@ namespace ToolKit
     RenderSubPass(m_quadPass);
 
     // Horizontal blur
-    renderer->ApplyAverageBlur(m_ssaoTexture,
+    renderer->Apply7x1GaussianBlur(m_ssaoTexture,
                                m_tempBlurRt,
                                X_AXIS,
                                1.0f / m_ssaoTexture->m_width);
 
     // Vertical blur
-    renderer->ApplyAverageBlur(m_tempBlurRt,
+    renderer->Apply7x1GaussianBlur(m_tempBlurRt,
                                m_ssaoTexture,
                                Y_AXIS,
                                1.0f / m_ssaoTexture->m_height);

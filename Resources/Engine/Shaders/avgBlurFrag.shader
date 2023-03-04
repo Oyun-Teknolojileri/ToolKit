@@ -15,11 +15,14 @@
 		void main()
 		{
 			vec4 color = vec4(0.0);
-			for (int i = -2; i < 2; ++i)
+			for (int i = -2; i <= 2; ++i)
 			{
-				color += texture(s_texture0, v_texture + vec2(i) * BlurScale.xy);
+				for (int j = -2; j <= 2; ++j)
+				{
+					color += texture(s_texture0, v_texture + vec2(i, j) * BlurScale.xy);
+				}
 			}
-			color /= 4.0;
+			color /= 25.0;
 			fragColor = color;
 		}
 	-->

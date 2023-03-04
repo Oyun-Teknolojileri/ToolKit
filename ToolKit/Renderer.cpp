@@ -839,8 +839,10 @@ namespace ToolKit
     {
       ShaderPtr vert = GetShaderManager()->Create<Shader>(
           ShaderPath("gausBlur7x1Vert.shader", true));
+
       ShaderPtr frag = GetShaderManager()->Create<Shader>(
           ShaderPath("gausBlur7x1Frag.shader", true));
+
       m_gaussianBlurMaterial                   = std::make_shared<Material>();
       m_gaussianBlurMaterial->m_vertexShader   = vert;
       m_gaussianBlurMaterial->m_fragmentShader = frag;
