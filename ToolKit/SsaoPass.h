@@ -45,7 +45,7 @@ namespace ToolKit
     ShaderPtr m_ssaoShader             = nullptr;
 
     // Used to detect if the bias has changed. If so, kernel updated.
-    float m_ssaoPrevBias               = 0.0f;
+    float m_ssaoPrevBias               = -1.0f;
   };
 
   typedef std::shared_ptr<SSAOPass> SSAOPassPtr;

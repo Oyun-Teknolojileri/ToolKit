@@ -47,11 +47,13 @@ namespace ToolKit
                          0.01f,
                          0.0f,
                          100.0f);
+
         ImGui::DragFloat("Bloom Threshold",
                          &gfx.BloomThreshold,
                          0.01f,
                          0.0f,
                          FLT_MAX);
+
         ImGui::InputInt("Bloom Iteration Count",
                         &gfx.BloomIterationCount,
                         1,
@@ -90,8 +92,10 @@ namespace ToolKit
       {
         ImGui::Checkbox("SSAO##1", &gfx.SSAOEnabled);
         ImGui::BeginDisabled(!gfx.SSAOEnabled);
-        ImGui::InputFloat("Radius", &gfx.SSAORadius, 0.01f);
-        ImGui::InputFloat("Bias", &gfx.SSAOBias, 0.001f);
+
+        ImGui::DragFloat("Radius", &gfx.SSAORadius, 0.001f, 0.0f, 1.0f);
+        ImGui::DragFloat("Bias", &gfx.SSAOBias, 0.001f, 0.0f, 1.0f);
+
         ImGui::EndDisabled();
       }
 

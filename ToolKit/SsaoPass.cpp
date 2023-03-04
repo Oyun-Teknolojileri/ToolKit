@@ -137,7 +137,7 @@ namespace ToolKit
   {
     if (m_ssaoKernel.size() == 0 || m_ssaoPrevBias != m_params.ssaoBias)
     {
-      m_ssaoKernel = GenerateHemispherePoints(64, m_params.ssaoBias);
+      m_ssaoKernel = GenerateHemispherePoints(64, 1.0f - m_params.ssaoBias);
     }
 
     if (m_ssaoNoise.size() == 0)
