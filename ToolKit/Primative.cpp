@@ -59,6 +59,18 @@ namespace ToolKit
           m_node->SetScale(
               Vec3(magicScale * m_settings.heightInScreenSpace / scale));
         }
+
+        // Compensate shrinkage due to fov changes.
+        float initialFovRadians =
+            glm::quarter_pi<float>(); // Initial field of view in radians
+        float newFovRadians        = cam->Fov(); // New field of view in radians
+
+        // Calculate scaling factor
+        float initialFrustumHeight = tan(initialFovRadians / 2.0f);
+        float newFrustumHeight     = tan(newFovRadians / 2.0f);
+        float scaleFactor          = newFrustumHeight / initialFrustumHeight;
+
+        m_node->Scale(Vec3(scaleFactor));
       }
     }
     else
