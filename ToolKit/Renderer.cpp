@@ -830,6 +830,8 @@ namespace ToolKit
                                       const Vec3& axis,
                                       const float amount)
   {
+    FramebufferPtr frmBackup = m_framebuffer;
+
     m_utilFramebuffer->UnInit();
     m_utilFramebuffer->Init({0, 0, false, false});
 
@@ -857,6 +859,8 @@ namespace ToolKit
 
     SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
     DrawFullQuad(m_gaussianBlurMaterial);
+
+    SetFramebuffer(frmBackup, false);
   }
 
   void Renderer::ApplyAverageBlur(const TexturePtr source,
@@ -864,6 +868,8 @@ namespace ToolKit
                                   const Vec3& axis,
                                   const float amount)
   {
+    FramebufferPtr frmBackup = m_framebuffer;
+
     m_utilFramebuffer->UnInit();
     m_utilFramebuffer->Init({0, 0, false, false});
 
@@ -871,8 +877,10 @@ namespace ToolKit
     {
       ShaderPtr vert = GetShaderManager()->Create<Shader>(
           ShaderPath("avgBlurVert.shader", true));
+
       ShaderPtr frag = GetShaderManager()->Create<Shader>(
           ShaderPath("avgBlurFrag.shader", true));
+
       m_averageBlurMaterial                   = std::make_shared<Material>();
       m_averageBlurMaterial->m_vertexShader   = vert;
       m_averageBlurMaterial->m_fragmentShader = frag;
@@ -884,6 +892,7 @@ namespace ToolKit
     m_averageBlurMaterial->m_fragmentShader->SetShaderParameter(
         "BlurScale",
         ParameterVariant(axis * amount));
+
     m_averageBlurMaterial->Init();
 
     m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
@@ -891,6 +900,8 @@ namespace ToolKit
 
     SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
     DrawFullQuad(m_averageBlurMaterial);
+
+    SetFramebuffer(frmBackup, false);
   }
 
   void Renderer::SetProjectViewModel(const Mat4& model, Camera* cam)

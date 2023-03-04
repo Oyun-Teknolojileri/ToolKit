@@ -39,11 +39,17 @@ namespace ToolKit
     m_gIblRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
-    // gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR16F;
-    // gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
+    //gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR16F;
+    //gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
+
+    gBufferRenderTargetSettings.MagFilter = GraphicTypes::SampleLinear;
+    gBufferRenderTargetSettings.MinFilter = GraphicTypes::SampleLinear;
 
     m_gLinearDepthRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+
+    gBufferRenderTargetSettings.MagFilter      = GraphicTypes::SampleNearest;
+    gBufferRenderTargetSettings.MinFilter      = GraphicTypes::SampleNearest;
 
     gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRG16F;
     gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRG;
