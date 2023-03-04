@@ -14,7 +14,7 @@
 		in vec2 v_texture;
 
 		uniform sampler2D s_texture0; // position (in world space)
-		uniform sampler2D s_texture1; // normal
+		uniform sampler2D s_texture1; // normal (in world space)
 		uniform sampler2D s_texture2; // noise
 		uniform sampler2D s_texture3; // linear depth
 
@@ -30,28 +30,46 @@
 		uniform float radius;
 		uniform float bias;
 
-		// tile noise texture over screen based on screen dimensions divided by noise size
+		#define PI 3.1415926535897932384626433832795
+		vec3 sampleHemisphere(vec3 normal, float u1, float u2) {
+			vec3 tangent = normalize(cross(normal, vec3(0.0, 0.0, 1.0)));
+			vec3 bitangent = normalize(cross(normal, tangent));
+			float r = sqrt(u1);
+			float theta = 2.0 * PI * u2;
+			float x = r * cos(theta);
+			float y = r * sin(theta);
+			float z = sqrt(max(0.0, 1.0 - x*x - y*y));
+			return x * tangent + y * bitangent + z * normal;
+		}
 
 		void main()
 		{
 			vec2 texCoord = vec2(v_texture.x, 1.0 - v_texture.y);
-			vec3 fragPos = vec3(viewMatrix * vec4(texture(s_texture0, texCoord).xyz, 1.0));
+			vec3 fragPos = vec3(viewMatrix * vec4(texture(s_texture0, texCoord).xyz, 1.0)); // World to View
 
-		  vec2 noiseScale = vec2(screen_size.x / 4.0, screen_size.y / 4.0); 
+			// tile noise texture over screen based on screen dimensions divided by noise size
+			vec2 noiseScale = vec2(screen_size.x / 4.0, screen_size.y / 4.0); 
 			vec3 normal = texture(s_texture1, texCoord).rgb;
-			mat3 normalMatrix = (inverse(transpose(mat3(viewMatrix))));
-			normal = normalize(normalMatrix * normal);
+			mat3 invTrsView = (transpose(inverse(mat3(viewMatrix))));
+			normal = normalize(invTrsView * normal); // World to View
 			vec3 randomVec = vec3(texture(s_texture2, texCoord * noiseScale).xy, 0.0);
+			
 			// create TBN change-of-basis matrix: from tangent-space to view-space
 			vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
-			vec3 bitangent = cross(normal, tangent);
+			vec3 bitangent = normalize(cross(normal, tangent));
 			mat3 TBN = mat3(tangent, bitangent, normal);
+			
 			// iterate over the sample kernel and calculate occlusion factor
 			float occlusion = 0.0;
 			for(int i = 0; i < kernelSize; ++i)
 			{
 				// get sample position
-				vec3 samplePos = TBN * samples[i]; // from tangent to view-space
+				vec3 sam = samples[i];
+				float exponent = -0.9;
+                sam.z = pow(sam.z, exponent) * sam.z;
+				vec3 samplePos = normalize(TBN * sam); // from tangent to view-space
+				//samplePos = samples[i].x * tangent + samples[i].y * bitangent + samples[i].z * normal;
+				//samplePos = sampleHemisphere(normal, samples[i].x, samples[i].y);
 				samplePos = fragPos + samplePos * radius; 
 				
 				// project sample position (to sample texture) (to get position on screen/texture)
@@ -67,7 +85,7 @@
 				float rangeCheck = smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));
 				occlusion += (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;           
 			}
-			occlusion = 1.0 - (occlusion / float(kernelSize));
+			occlusion = max(1.0 - (occlusion / float(kernelSize)), 0.0);
 			
 			fragColor = vec4(occlusion, 0.0, 0.0, 1.0);
 		}

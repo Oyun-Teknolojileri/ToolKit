@@ -139,16 +139,23 @@ namespace ToolKit
     {
       for (uint i = 0; i < 64; ++i)
       {
-        Vec3 sample(randomFloats(generator) * 2.0f - 1.0f,
-                    randomFloats(generator) * 2.0f - 1.0f,
-                    randomFloats(generator));
-        sample      = glm::normalize(sample);
+        float u1    = randomFloats(generator);
+        float u2    = randomFloats(generator);
+        float r     = glm::sqrt(u1);
+        float theta = 2.0f * glm::pi<float>() * u2;
+        float x     = r * cos(theta);
+        float y     = r * sin(theta);
+        float z     = glm::sqrt(glm::max(0.0f, 1.0f - x * x - y * y));
+
+        Vec3 sample(x, y, z);
+
+        /* sample = glm::normalize(sample);
         sample      *= randomFloats(generator);
         float scale = float(i) / 64.0f;
 
         // scale samples s.t. they're more aligned to center of kernel
         scale       = lerp(0.1f, 1.0f, scale * scale);
-        sample      *= scale;
+        sample      *= scale;*/
         m_ssaoKernel.push_back(sample);
       }
     }
