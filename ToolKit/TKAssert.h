@@ -18,8 +18,14 @@ namespace ToolKit
 
 } // namespace ToolKit
 
-#define TK_ASSERT_ONCE(expr)                                                   \
-  {                                                                            \
-    static std::atomic<bool> flag {false};                                     \
-    ToolKit::assert_once<flag>(expr);                                          \
-  }
+#ifdef TK_DEBUG
+
+  #define TK_ASSERT_ONCE(expr)                                                 \
+    {                                                                          \
+      static std::atomic<bool> flag {false};                                   \
+      ToolKit::assert_once<flag>(expr);                                        \
+    }
+
+#else
+TK_ASSERT_ONCE(expr)((void) 0);
+#endif

@@ -29,57 +29,6 @@ namespace ToolKit
     Main* g_proxy           = nullptr;
     EngineSettings g_settings;
 
-    void GlDebugReportInit()
-    {
-      /* TODO
-      if (glDebugMessageCallback != NULL)
-      {
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
-      }
-      */
-
-      GlErrorReporter::Report = [](const std::string& msg) -> void
-      {
-        static byte state = g_app->m_showGraphicsApiErrors;
-
-        if (g_app == nullptr)
-        {
-          return;
-        }
-
-        if (state != g_app->m_showGraphicsApiErrors)
-        {
-          state = g_app->m_showGraphicsApiErrors;
-          /* TODO
-          if (state == 1)
-          {
-            glDebugMessageControl(
-                GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
-
-            glDebugMessageControl(GL_DEBUG_SOURCE_API,
-                                  GL_DEBUG_TYPE_ERROR,
-                                  GL_DEBUG_SEVERITY_HIGH,
-                                  0,
-                                  NULL,
-                                  GL_TRUE);
-          }
-          else if (state >= 2)
-          {
-            glDebugMessageControl(
-                GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
-          }
-          */
-        }
-
-        if (g_app->m_showGraphicsApiErrors)
-        {
-          g_app->GetConsole()->AddLog(msg, LogType::Error);
-        }
-      };
-    }
-
     /*
      * Refactor as below.
      *
@@ -231,11 +180,6 @@ namespace ToolKit
           }
           else
           {
-
-#ifdef TK_DEBUG
-            GlDebugReportInit();
-#endif
-
             // Init glew
             glewExperimental = true;
             GLenum err       = glewInit();
@@ -244,6 +188,24 @@ namespace ToolKit
               g_running = false;
               return;
             }
+
+#ifdef TK_DEBUG
+            InitGLErrorReport(
+                GlErrorReporter::Report = [](const std::string& msg) -> void
+                {
+                  if (g_app == nullptr)
+                  {
+                    return;
+                  }
+
+                  if (g_app->m_showGraphicsApiErrors)
+                  {
+                    GetLogger()->WriteConsole(LogType::Error, msg.c_str());
+                    GetLogger()->WritePlatformConsole(LogType::Error,
+                                                      msg.c_str());
+                  }
+                });
+#endif
 
             // Init Main
             // Override SceneManager.
