@@ -957,4 +957,27 @@ namespace ToolKit
     return points;
   }
 
+  Vec3Array GenerateRandomSamplesInHemisphere(int numSamples, float bias)
+  {
+    Vec3Array samples;
+
+    // Generate random samples on the hemisphere with random length between 0
+    // and 1
+    for (int i = 0; i < numSamples; ++i)
+    {
+      float theta  = glm::linearRand(0.f, 2.f * glm::pi<float>());
+
+      // Calculate phi based on the parameter
+      float phi    = glm::acos(1.f - bias * glm::linearRand(0.f, 1.f));
+
+      float length = glm::linearRand(0.f, 1.f);
+      float x      = glm::sin(phi) * glm::cos(theta) * length;
+      float y      = glm::sin(phi) * glm::sin(theta) * length;
+      float z      = glm::cos(phi) * length;
+      samples.push_back(glm::vec3(x, y, z));
+    }
+
+    return samples;
+  }
+
 } // namespace ToolKit

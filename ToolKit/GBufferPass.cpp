@@ -39,8 +39,8 @@ namespace ToolKit
     m_gIblRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
-    //gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR16F;
-    //gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
+    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR32F;
+    gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
 
     gBufferRenderTargetSettings.MagFilter = GraphicTypes::SampleLinear;
     gBufferRenderTargetSettings.MinFilter = GraphicTypes::SampleLinear;
