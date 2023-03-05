@@ -295,6 +295,7 @@ namespace ToolKit
     FormatRGB16F               = 0x881B,
     FormatRGBA16F              = 0x881A,
     FormatRGB32F               = 0x8815,
+    FormatR16SNorm             = 0x8F98,
     FormatSRGB8_A8             = 0x8C43,
     FormatDepthComponent       = 0x1902,
     ColorAttachment0           = 0x8CE0,

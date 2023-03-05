@@ -30,7 +30,7 @@
 		void main()
 		{
 			vec2 texCoord = vec2(v_texture.x, 1.0 - v_texture.y);
-			vec3 fragPos = vec3(viewMatrix * vec4(texture(s_texture0, texCoord).xyz, 1.0)); // World to View
+			vec3 fragPos = texture(s_texture3, texCoord).xyz; // View pos.
 
 			// tile noise texture over screen based on screen dimensions divided by noise size
 			vec2 noiseScale = vec2(screenSize.x / 4.0, screenSize.y / 4.0); 
@@ -59,7 +59,7 @@
 				offset.xyz = offset.xyz * 0.5 + 0.5; // transform to range 0.0 - 1.0
 				
 				// get sample depth
-				float sampleDepth = texture(s_texture3, offset.xy).r; // get depth value of kernel sample
+				float sampleDepth = texture(s_texture3, offset.xy).z; // get depth value of kernel sample
 				
 				// range check & accumulate
 				float rangeCheck = smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));

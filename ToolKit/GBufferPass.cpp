@@ -39,17 +39,11 @@ namespace ToolKit
     m_gIblRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
-    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR32F;
-    gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
-
-    gBufferRenderTargetSettings.MagFilter = GraphicTypes::SampleLinear;
-    gBufferRenderTargetSettings.MinFilter = GraphicTypes::SampleLinear;
+    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRGB32F;
+    gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRGB;
 
     m_gLinearDepthRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-
-    gBufferRenderTargetSettings.MagFilter      = GraphicTypes::SampleNearest;
-    gBufferRenderTargetSettings.MinFilter      = GraphicTypes::SampleNearest;
 
     gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRG16F;
     gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRG;
@@ -201,7 +195,7 @@ namespace ToolKit
       m_gBufferMaterial->m_roughness    = activeMaterial->m_roughness;
       m_gBufferMaterial->m_materialType = activeMaterial->m_materialType;
       m_gBufferMaterial->Init();
-      
+
       renderer->m_overrideMat = m_gBufferMaterial;
       renderer->Render(job, m_params.Camera, {});
     }

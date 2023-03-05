@@ -3,13 +3,13 @@
 #include "Camera.h"
 #include "DirectionComponent.h"
 #include "Drawable.h"
+#include "EnvironmentComponent.h"
 #include "GL/glew.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
 #include "Pass.h"
 #include "ResourceComponent.h"
-#include "EnvironmentComponent.h"
 #include "Scene.h"
 #include "Shader.h"
 #include "ShaderReflectionCache.h"
@@ -707,12 +707,12 @@ namespace ToolKit
       EnvironmentComponentPtr envComp =
           envNtt->GetComponent<EnvironmentComponent>();
 
-      if (envComp == nullptr) 
+      if (envComp == nullptr)
       {
         continue;
       }
-      
-      currentBox = envComp->GetBBox(); 
+
+      currentBox = envComp->GetBBox();
 
       if (PointInsideBBox(pos, currentBox.max, currentBox.min))
       {
@@ -1087,21 +1087,12 @@ namespace ToolKit
           glUniform1f(loc, shader->m_shaderParams["Exposure"].GetVar<float>());
         }
         break;
-        case Uniform::PROJECTION_VIEW_NO_TR:
+        case Uniform::PROJECT_VIEW:
         {
-          GLint loc = glGetUniformLocation(
-              program->m_handle,
-              GetUniformName(Uniform::PROJECTION_VIEW_NO_TR));
-          // Zero transalate variables in model matrix
-          Mat4 view  = m_view;
-          view[0][3] = 0.0f;
-          view[1][3] = 0.0f;
-          view[2][3] = 0.0f;
-          view[3][3] = 1.0f;
-          view[3][0] = 0.0f;
-          view[3][1] = 0.0f;
-          view[3][2] = 0.0f;
-          Mat4 mul   = m_project * view;
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::PROJECT_VIEW));
+          Mat4 mul = m_project * m_view;
           glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
         }
         break;

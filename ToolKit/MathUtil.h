@@ -151,17 +151,20 @@ namespace ToolKit
 
   // Random Generators
   //////////////////////////////////////////
-  
+
   /**
    * Generate random points on a hemisphere with proximity to normal.
    * @params numSamples number of samples to generate.
-   * @params k distribution bias of the samples. 0 all samples on normal of the
-   * hemisphere. 1 totally uniformly distributed random samples.
+   * @params bias divergence from the hemisphere normal.0 all samples on normal
+   * of the hemisphere. 1 totally uniformly distributed random samples.
    * @returns Generated samples.
    */
-  Vec3Array GenerateHemispherePoints(int numSamples, float k);
+  Vec3Array GenerateRandomSamplesOnHemisphere(int numSamples, float bias);
 
+  /**
+   * Same as GenerateRandomSamplesOnHemisphere() however this version allows
+   * samples to be inside the hemisphere.
+   */
   Vec3Array GenerateRandomSamplesInHemisphere(int numSamples, float bias);
-
 
 } // namespace ToolKit

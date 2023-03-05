@@ -926,14 +926,7 @@ namespace ToolKit
             point.y >= min.y && point.z <= max.z && point.z >= min.z);
   }
 
-  /**
-   * Generate random points on a hemisphere with proximity to normal.
-   * @params numSamples number of samples to generate.
-   * @params k distribution bias of the samples. 0 all samples on normal of the
-   * hemisphere. 1 totally uniformly distributed random samples.
-   * @returns Generated samples.
-   */
-  Vec3Array GenerateHemispherePoints(int numSamples, float k)
+  Vec3Array GenerateRandomSamplesOnHemisphere(int numSamples, float bias)
   {
     Vec3Array points;
     points.reserve(numSamples);
@@ -945,7 +938,7 @@ namespace ToolKit
     for (int i = 0; i < numSamples; i++)
     {
       float theta = 2 * glm::pi<float>() * dis(gen);
-      float phi   = std::acos(1 - k * dis(gen));
+      float phi   = std::acos(1 - bias * dis(gen));
 
       float x     = std::sin(phi) * std::cos(theta);
       float y     = std::sin(phi) * std::sin(theta);
