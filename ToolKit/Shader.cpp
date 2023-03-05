@@ -143,8 +143,8 @@ namespace ToolKit
       return "UNUSEDSLOT_1";
     case Uniform::EXPOSURE:
       return "Exposure";
-    case Uniform::PROJECT_VIEW:
-      return "ProjectView";
+    case Uniform::PROJECT_VIEW_NO_TR:
+      return "ProjectViewNoTr";
     case Uniform::USE_IBL:
       return "UseIbl";
     case Uniform::IBL_INTENSITY:
