@@ -429,6 +429,7 @@ namespace ToolKit
     writeAttr("Gamma", to_string(gfx.Gamma));
     writeAttr("SSAOEnabled", to_string(gfx.SSAOEnabled));
     writeAttr("SSAORadius", to_string(gfx.SSAORadius));
+    writeAttr("SSAOSpread", to_string(gfx.SSAOSpread));
     writeAttr("SSAOBias", to_string(gfx.SSAOBias));
     writeAttr("DepthOfFieldEnabled", to_string(gfx.DepthOfFieldEnabled));
     writeAttr("FocusPoint", to_string(gfx.FocusPoint));
@@ -444,72 +445,37 @@ namespace ToolKit
     XmlNode* settings = doc->first_node("Settings");
     XmlNode* node2    = settings->first_node("Window");
 
-    const auto getInt = [&](int& val, StringView name) -> void
-    {
-      if (XmlAttribute* attr = node2->first_attribute(name.data()))
-      {
-        val = atoi(attr->value());
-      }
-    };
-
-    const auto getFloat = [&](float& value, StringView name) -> void
-    {
-      if (XmlAttribute* attr = node2->first_attribute(name.data()))
-      {
-        value = (float) atof(attr->value());
-      }
-    };
-
-    const auto getBool = [&](bool& value, StringView name) -> void
-    {
-      if (XmlAttribute* attr = node2->first_attribute(name.data()))
-      {
-        value = atoi(attr->value()) != 0;
-      }
-    };
-
     if (node2 != nullptr)
     {
-      if (XmlAttribute* attr = node2->first_attribute("width"))
-      {
-        Window.Width = atoi(attr->value());
-      }
-      if (XmlAttribute* attr = node2->first_attribute("height"))
-      {
-        Window.Height = atoi(attr->value());
-      }
-      if (XmlAttribute* attr = node2->first_attribute(XmlNodeName.data()))
-      {
-        Window.Name = attr->value();
-      }
-      getBool(Window.FullScreen, "fullscreen");
+      ReadAttr(node2, "width", Window.Width);
+      ReadAttr(node2, "height", Window.Height);
+      ReadAttr(node2, "name", Window.Name);
+      ReadAttr(node2, "fullscreen", Window.FullScreen);
     }
 
     if (node2 = settings->first_node("Graphics"))
     {
-      getInt(Graphics.MSAA, "MSAA");
-      getInt(Graphics.FPS, "FPS");
-      getBool(Graphics.TonemappingEnabled, "TonemappingEnabled");
-      getBool(Graphics.BloomEnabled, "BloomEnabled");
-      getFloat(Graphics.BloomIntensity, "BloomIntensity");
-      getFloat(Graphics.BloomThreshold, "BloomThreshold");
-      getInt(Graphics.BloomIterationCount, "BloomIterationCount");
-      getBool(Graphics.GammaCorrectionEnabled, "GammaCorrectionEnabled");
-      getFloat(Graphics.Gamma, "Gamma");
-      getBool(Graphics.SSAOEnabled, "SSAOEnabled");
-      getFloat(Graphics.SSAORadius, "SSAORadius");
-      getFloat(Graphics.SSAOBias, "SSAOBias");
-      getBool(Graphics.DepthOfFieldEnabled, "DepthOfFieldEnabled");
-      getFloat(Graphics.FocusPoint, "FocusPoint");
-      getFloat(Graphics.FocusScale, "FocusScale");
-      getBool(Graphics.FXAAEnabled, "FXAAEnabled");
-
-      int toneMapperMode = (int) Graphics.TonemapperMode;
-      int dofQuality     = (int) Graphics.DofQuality;
-      getInt(toneMapperMode, "TonemapperMode");
-      getInt(dofQuality, "DofQuality");
-      Graphics.TonemapperMode = (TonemapMethod) toneMapperMode;
-      Graphics.DofQuality     = (DoFQuality) dofQuality;
+      ReadAttr(node2, "MSAA", Graphics.MSAA);
+      ReadAttr(node2, "FPS", Graphics.FPS);
+      ReadAttr(node2, "TonemappingEnabled", Graphics.TonemappingEnabled);
+      ReadAttr(node2, "BloomEnabled", Graphics.BloomEnabled);
+      ReadAttr(node2, "BloomIntensity", Graphics.BloomIntensity);
+      ReadAttr(node2, "BloomThreshold", Graphics.BloomThreshold);
+      ReadAttr(node2, "BloomIterationCount", Graphics.BloomIterationCount);
+      ReadAttr(node2,
+               "GammaCorrectionEnabled",
+               Graphics.GammaCorrectionEnabled);
+      ReadAttr(node2, "Gamma", Graphics.Gamma);
+      ReadAttr(node2, "SSAOEnabled", Graphics.SSAOEnabled);
+      ReadAttr(node2, "SSAORadius", Graphics.SSAORadius);
+      ReadAttr(node2, "SSAOSpread", Graphics.SSAOSpread);
+      ReadAttr(node2, "SSAOBias", Graphics.SSAOBias);
+      ReadAttr(node2, "DepthOfFieldEnabled", Graphics.DepthOfFieldEnabled);
+      ReadAttr(node2, "FocusPoint", Graphics.FocusPoint);
+      ReadAttr(node2, "FocusScale", Graphics.FocusScale);
+      ReadAttr(node2, "FXAAEnabled", Graphics.FXAAEnabled);
+      ReadAttr(node2, "TonemapperMode", *(int*) &Graphics.TonemapperMode);
+      ReadAttr(node2, "DofQuality", *(int*) &Graphics.DofQuality);
     }
   }
 } //  namespace ToolKit

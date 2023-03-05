@@ -11,8 +11,21 @@ namespace ToolKit
     TexturePtr GNormalBuffer      = nullptr;
     TexturePtr GLinearDepthBuffer = nullptr;
     Camera* Cam                   = nullptr;
-    float ssaoRadius              = 0.5f;
-    float ssaoBias                = 0.025f;
+
+    /**
+     * How far the samples will be taken from.
+     */
+    float Radius                  = 0.5f;
+
+    /**
+     * Base offset from the sample location.
+     */
+    float Bias                    = 0.025f;
+
+    /**
+     * 0-1 value defining how diverse the samples from the normal.
+     */
+    float spread                  = 1.0;
   };
 
   class TK_API SSAOPass : public Pass
@@ -44,8 +57,8 @@ namespace ToolKit
     FullQuadPassPtr m_quadPass         = nullptr;
     ShaderPtr m_ssaoShader             = nullptr;
 
-    // Used to detect if the bias has changed. If so, kernel updated.
-    float m_ssaoPrevBias               = -1.0f;
+    // Used to detect if the spread has changed. If so, kernel updated.
+    float m_prevSpread                 = -1.0f;
   };
 
   typedef std::shared_ptr<SSAOPass> SSAOPassPtr;

@@ -94,6 +94,7 @@ namespace ToolKit
       bool SSAOEnabled             = true;
       float SSAORadius             = 0.5f;
       float SSAOBias               = 0.025f;
+      float SSAOSpread             = 1.0f;
       bool DepthOfFieldEnabled     = false;
       float FocusPoint             = 10.0f;
       float FocusScale             = 5.0f;

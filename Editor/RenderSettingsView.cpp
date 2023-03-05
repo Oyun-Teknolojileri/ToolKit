@@ -94,6 +94,7 @@ namespace ToolKit
         ImGui::BeginDisabled(!gfx.SSAOEnabled);
 
         ImGui::DragFloat("Radius", &gfx.SSAORadius, 0.001f, 0.0f, 1.0f);
+        ImGui::DragFloat("Spread", &gfx.SSAOSpread, 0.001f, 0.0f, 1.0f);
         ImGui::DragFloat("Bias", &gfx.SSAOBias, 0.001f, 0.0f, 1.0f);
 
         ImGui::EndDisabled();

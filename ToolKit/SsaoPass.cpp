@@ -44,12 +44,15 @@ namespace ToolKit
     renderer->SetTexture(3, m_params.GLinearDepthBuffer->m_textureId);
 
     m_ssaoShader->SetShaderParameter("radius",
-                                     ParameterVariant(m_params.ssaoRadius));
+                                     ParameterVariant(m_params.Radius));
+
+    m_ssaoShader->SetShaderParameter("bias",
+                                     ParameterVariant(m_params.Bias));
 
     RenderSubPass(m_quadPass);
 
     // Horizontal blur
-    /*renderer->Apply7x1GaussianBlur(m_ssaoTexture,
+    renderer->Apply7x1GaussianBlur(m_ssaoTexture,
                                    m_tempBlurRt,
                                    X_AXIS,
                                    1.0f / m_ssaoTexture->m_width);
@@ -58,7 +61,7 @@ namespace ToolKit
     renderer->Apply7x1GaussianBlur(m_tempBlurRt,
                                    m_ssaoTexture,
                                    Y_AXIS,
-                                   1.0f / m_ssaoTexture->m_height);*/
+                                   1.0f / m_ssaoTexture->m_height);
   }
 
   void SSAOPass::PreRender()
@@ -105,7 +108,7 @@ namespace ToolKit
           ShaderPath("ssaoCalcFrag.shader", true));
     }
 
-    if (m_ssaoPrevBias != m_params.ssaoBias)
+    if (m_prevSpread != m_params.spread)
     {
       // Update kernel
       for (uint i = 0; i < 64; ++i)
@@ -114,11 +117,14 @@ namespace ToolKit
                                          ParameterVariant(m_ssaoKernel[i]));
       }
 
-      m_ssaoPrevBias = m_params.ssaoBias;
+      m_prevSpread = m_params.spread;
     }
 
-    m_ssaoShader->SetShaderParameter("screen_size",
+    m_ssaoShader->SetShaderParameter("screenSize",
                                      ParameterVariant(Vec2(width, height)));
+
+    m_ssaoShader->SetShaderParameter("bias",
+                                     ParameterVariant(m_params.Bias));
 
     m_ssaoShader->SetShaderParameter(
         "projection",
@@ -135,10 +141,10 @@ namespace ToolKit
 
   void SSAOPass::GenerateSSAONoise()
   {
-    if (m_ssaoKernel.size() == 0 || m_ssaoPrevBias != m_params.ssaoBias)
+    if (m_ssaoKernel.size() == 0 || m_prevSpread != m_params.spread)
     {
       m_ssaoKernel =
-          GenerateRandomSamplesInHemisphere(64, 1.0f - m_params.ssaoBias);
+          GenerateRandomSamplesInHemisphere(64, m_params.spread);
     }
 
     if (m_ssaoNoise.size() == 0)

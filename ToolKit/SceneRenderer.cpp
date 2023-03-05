@@ -198,8 +198,9 @@ namespace ToolKit
     m_ssaoPass->m_params.GNormalBuffer             = m_gBufferPass->m_gNormalRt;
     m_ssaoPass->m_params.GLinearDepthBuffer = m_gBufferPass->m_gLinearDepthRt;
     m_ssaoPass->m_params.Cam                = m_params.Cam;
-    m_ssaoPass->m_params.ssaoRadius         = m_params.Gfx.SSAORadius;
-    m_ssaoPass->m_params.ssaoBias           = m_params.Gfx.SSAOBias;
+    m_ssaoPass->m_params.Radius         = m_params.Gfx.SSAORadius;
+    m_ssaoPass->m_params.spread             = m_params.Gfx.SSAOSpread;
+    m_ssaoPass->m_params.Bias           = m_params.Gfx.SSAOBias;
 
     // Set CubeMapPass for sky.
     m_drawSky                               = false;
