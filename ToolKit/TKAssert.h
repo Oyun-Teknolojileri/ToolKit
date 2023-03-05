@@ -27,5 +27,5 @@ namespace ToolKit
     }
 
 #else
-TK_ASSERT_ONCE(expr)((void) 0);
+  #define TK_ASSERT_ONCE(expr)((void) 0);
 #endif
