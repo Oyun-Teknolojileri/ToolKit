@@ -84,6 +84,7 @@ namespace ToolKit
    protected:
     EntityRawPtrArray m_entities;
     String m_version;
+    bool isPrefab;
   };
 
   class TK_API SceneManager : public ResourceManager
