@@ -34,7 +34,6 @@ namespace ToolKit
     XmlFilePtr sceneFile = GetFileManager()->GetXmlFile(path);
     XmlDocument sceneDoc;
     sceneDoc.parse<0>(sceneFile->data());
-    m_isPrefab = path.find("Prefabs") != String::npos;
 
     DeSerialize(&sceneDoc, nullptr);
     PostDeSerialize();
@@ -555,11 +554,6 @@ namespace ToolKit
                         scene->last_node(XmlEntityElement.c_str()),
                         listIndx);
     }
-
-    if (!m_isPrefab)
-    {
-      GetEngineSettings().SerializePostProcessing(doc, nullptr);
-    }
   }
 
   void Scene::NormalizeEntityID(XmlDocument* doc,
@@ -645,18 +639,13 @@ namespace ToolKit
       AddEntity(ntt);
     }
     GetHandleManager()->SetMaxHandle(biggestID);
-    // do not serialize post processing settings if this is prefab
-    if (!m_isPrefab)
-    {
-      GetEngineSettings().DeSerializePostProcessing(doc, parent);
-    }
 
     for (Entity* prefab : prefabList)
     {
       static_cast<Prefab*>(prefab)->Init(this);
     }
   }
-  
+
   ULongID Scene::GetBiggestEntityId()
   {
     ULongID lastId = 0;

@@ -16,8 +16,8 @@ namespace ToolKit
 
     void RenderSettingsView::Show()
     {
-      EngineSettings::PostProcessingSettings& gfx =
-          Main::GetInstance()->m_engineSettings.PostProcessing;
+      EngineSettings::GraphicSettings& gfx =
+          Main::GetInstance()->m_engineSettings.Graphics;
       if (gfx.TonemappingEnabled && ImGui::CollapsingHeader("Tonemapping"))
       {
         const char* items[] = {"Reinhard", "ACES"};

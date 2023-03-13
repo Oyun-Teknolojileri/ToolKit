@@ -81,10 +81,6 @@ namespace ToolKit
     {
       int MSAA                     = 2;
       int FPS                      = 60;
-    } Graphics;
-
-    struct PostProcessingSettings
-    {
       bool TonemappingEnabled      = true;
       TonemapMethod TonemapperMode = TonemapMethod::Aces;
       bool BloomEnabled            = true;
@@ -101,17 +97,10 @@ namespace ToolKit
       float FocusScale             = 5.0f;
       DoFQuality DofQuality        = DoFQuality::Normal;
       bool FXAAEnabled             = false;
-    } PostProcessing;
+    } Graphics {};
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-
-    void SerializeWindow(XmlDocument* doc, XmlNode* parent) const;
-    void DeSerializeWindow(XmlDocument* doc, XmlNode* parent);
-    void SerializePostProcessing(XmlDocument* doc, XmlNode* parent) const;
-    void DeSerializePostProcessing(XmlDocument* doc, XmlNode* parent);
-    void SerializeGraphics(XmlDocument* doc, XmlNode* parent) const;
-    void DeSerializeGraphics(XmlDocument* doc, XmlNode* parent);
   };
 
   class TK_API Main
