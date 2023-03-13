@@ -400,7 +400,7 @@ namespace ToolKit
 
     const auto writeAttr1 = [&](StringView name, StringView val)
     { WriteAttr(window, doc, name.data(), val.data()); };
-    // serialize window
+    // serialize window.
     writeAttr1("width", to_string(Window.Width));
     writeAttr1("height", to_string(Window.Height));
     writeAttr1(XmlNodeName, Window.Name);
