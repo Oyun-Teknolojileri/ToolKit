@@ -407,6 +407,7 @@ namespace ToolKit
 
       if (state == AnimRecord::State::Stop)
       {
+        record->m_entity->SetPose(record->m_animation, record->m_animation->m_duration);
         removeList.push_back(index);
       }
       index++;
