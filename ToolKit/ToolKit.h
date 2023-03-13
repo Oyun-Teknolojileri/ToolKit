@@ -81,7 +81,7 @@ namespace ToolKit
     {
       int MSAA                     = 2;
       int FPS                      = 60;
-    } Graphics {};
+    } Graphics;
 
     struct PostProcessingSettings
     {
