@@ -1484,63 +1484,30 @@ namespace ToolKit
 
   void Renderer::SetTexture(ubyte slotIndx, uint textureId)
   {
-    // Texture Slots:
-    // 0 - 5  : 2D textures
-    // 6 - 7  : Cube map textures
-    // 8      : Shadow atlas
-    // 9-14   : 2D textures
-    // 15     : Cube map
-    //
-    // 0 -> Color Texture
-    // 1 -> Emissive Texture
-    // 2 & 3 -> Skinning information
-    // 4 -> Metallic Roughness Texture
-    // 5 -> AO Texture
-    // 6 -> Cubemap
-    // 7 -> Irradiance Map
-    // 8 -> Shadow Atlas
-    // 9 -> Normal map
-    // 15 -> IBL Specular Pre-Filtered Map
-    // 16 -> IBL BRDF Lut
-    //
-    // Deferred Render Pass:
-    // 9 -> gBuffer position texture
-    // 10 -> gBuffer normal texture
-    // 11 -> gBuffer color texture
-    // 12 -> gBuffer emissive texture
-    // 13 -> Light Data Texture
-    // 14 -> gBuffer metallic roughness texture
-    // 17 -> IBL Contribution
-
-    assert(slotIndx < m_rhiSettings::textureSlotCount &&
-           "You exceed texture slot count");
+    assert(slotIndx < 17 && "You exceed texture slot count");
     m_textureSlots[slotIndx] = textureId;
     glActiveTexture(GL_TEXTURE0 + slotIndx);
 
-    if (slotIndx == m_rhiSettings::shadowAtlasSlot)
-    {
-      glBindTexture(GL_TEXTURE_2D_ARRAY, m_textureSlots[slotIndx]);
-    }
-    else if (slotIndx < 6)
-    {
-      glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
-    }
-    else if (slotIndx < 8)
-    {
-      glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureSlots[slotIndx]);
-    }
-    else if (slotIndx < 15)
-    {
-      glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
-    }
-    else if (slotIndx < 16)
-    {
-      glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureSlots[slotIndx]);
-    }
-    else if (slotIndx < 17)
-    {
-      glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
-    }
+    static const GLenum textureTypeLut[17] = {
+        GL_TEXTURE_2D,       // 0 -> Color Texture
+        GL_TEXTURE_2D,       // 1 -> Emissive Texture
+        GL_TEXTURE_2D,       // 2 -> Skinning information
+        GL_TEXTURE_2D,       // 3 -> Skinning information
+        GL_TEXTURE_2D,       // 4 -> Metallic Roughness Texture
+        GL_TEXTURE_2D,       // 5 -> AO Texture
+        GL_TEXTURE_CUBE_MAP, // 6 -> Cubemap
+        GL_TEXTURE_CUBE_MAP, // 7 -> Irradiance Map
+        GL_TEXTURE_2D_ARRAY, // 8 -> Shadow Atlas
+        GL_TEXTURE_2D,       // 9 -> Normal map, gbuffer position
+        GL_TEXTURE_2D,       // 10 -> gBuffer normal texture
+        GL_TEXTURE_2D,       // 11 -> gBuffer color texture
+        GL_TEXTURE_2D,       // 12 -> gBuffer emissive texture
+        GL_TEXTURE_2D,       // 13 -> Light Data Texture
+        GL_TEXTURE_CUBE_MAP, // 14 -> gBuffer metallic roughness texture
+        GL_TEXTURE_2D,       // 15 -> IBL Specular Pre-Filtered Map
+        GL_TEXTURE_2D        // 16 -> IBL BRDF Lut
+    };
+    glBindTexture(textureTypeLut[slotIndx], m_textureSlots[slotIndx]);
   }
 
   void Renderer::SetShadowAtlas(TexturePtr shadowAtlas)
@@ -1807,29 +1774,10 @@ namespace ToolKit
 
   void Renderer::ResetTextureSlots()
   {
-    SetTexture(0, 0);
-
-    SetTexture(1, 0);
-    SetTexture(2, 0);
-    SetTexture(3, 0);
-    SetTexture(4, 0);
-
-    SetTexture(5, 0);
-    SetTexture(6, 0);
-    SetTexture(7, 0);
-    SetTexture(8, 0);
-
-    SetTexture(9, 0);
-    SetTexture(10, 0);
-    SetTexture(11, 0);
-    SetTexture(12, 0);
-    SetTexture(13, 0);
-
-    SetTexture(14, 0);
-    SetTexture(15, 0);
-    SetTexture(16, 0);
-
-    SetTexture(17, 0);
+    for (int i = 0; i < 17; i++) 
+    {
+      SetTexture(i, 0);
+    }
   }
 
 } // namespace ToolKit
