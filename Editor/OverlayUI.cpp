@@ -4,7 +4,7 @@
 #include "ConsoleWindow.h"
 #include "EditorCamera.h"
 #include "EditorLight.h"
-#include "EditorPass.h"
+#include "EditorRenderer.h"
 #include "EditorViewport.h"
 #include "EditorViewport2d.h"
 #include "Global.h"

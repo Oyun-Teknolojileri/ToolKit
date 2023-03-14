@@ -10,12 +10,12 @@
 		layout (location = 1) in vec3 vNormal;
 		layout (location = 2) in vec2 vTexture;
 
-		out vec3 v_pos;
+		vec3 v_pos;
 		out vec2 v_texture;
 		
 		void main()
 		{
-			v_pos.xy = vPosition.xy * 2.0;
+		  v_pos.xy = vPosition.xy * 2.0;
 		  v_pos.z = -1.0;
 		  v_texture = vTexture;
 		  v_texture.y = 1.0 - v_texture.y;

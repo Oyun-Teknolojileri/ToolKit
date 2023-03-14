@@ -5,7 +5,7 @@
 #include "ComponentView.h"
 #include "ConsoleWindow.h"
 #include "CustomDataView.h"
-#include "EditorPass.h"
+#include "EditorRenderer.h"
 #include "EntityView.h"
 #include "ImGui/imconfig.h"
 #include "ImGui/imgui_internal.h"
@@ -238,8 +238,8 @@ namespace ToolKit
       DrawCommands();
 
       m_renderPass->m_params.MainFramebuffer = m_framebuffer;
-			const EntityRawPtrArray& entities            = GetScene()->GetEntities();
-			for (const Entity* ntt : entities)
+      const EntityRawPtrArray& entities      = GetScene()->GetEntities();
+      for (const Entity* ntt : entities)
       {
         MeshComponentPtr mc = ntt->GetMeshComponent();
         if (!mc)

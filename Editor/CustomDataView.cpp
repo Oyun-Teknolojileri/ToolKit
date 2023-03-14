@@ -131,13 +131,13 @@ namespace ToolKit
 
     void CustomDataView::ShowVariant(ParameterVariant* var,
                                      ParameterVariant*& remove,
-                                     int i,
+                                     size_t i,
                                      bool isListEditable)
     {
       ImGui::TableNextRow();
       ImGui::TableSetColumnIndex(0);
 
-      ImGui::PushID(static_cast<int>(i));
+      ImGui::PushID((int) i);
       static char buff[1024];
       strcpy_s(buff, sizeof(buff), var->m_name.c_str());
 

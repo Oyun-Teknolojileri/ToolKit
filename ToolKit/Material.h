@@ -31,6 +31,8 @@ namespace ToolKit
     RenderState* GetRenderState();
     void SetRenderState(RenderState* state);
     void SetDefaultMaterialTypeShaders();
+    bool IsDeferred();
+    bool IsTranslucent();
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;

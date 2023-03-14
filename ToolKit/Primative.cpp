@@ -26,10 +26,9 @@ namespace ToolKit
     // Billboard placement.
     if (m_settings.distanceToCamera > 0.0f)
     {
-      if (cam->IsOrtographic())
+      if (data.ortographic)
       {
-        m_node->SetTranslation(m_worldLocation, TransformationSpace::TS_WORLD);
-
+        m_node->SetTranslation(m_worldLocation);
         if (m_settings.heightInScreenSpace > 0.0f)
         {
           // Compensate shrinkage due to height changes.
@@ -38,11 +37,9 @@ namespace ToolKit
       }
       else
       {
-        Vec3 cdir = cam->GetComponent<DirectionComponent>()->GetDirection();
-        Vec3 camWorldPos =
-            cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-
-        Vec3 dir = glm::normalize(m_worldLocation - camWorldPos);
+        Vec3 cdir        = data.dir;
+        Vec3 camWorldPos = data.pos;
+        Vec3 dir         = glm::normalize(m_worldLocation - camWorldPos);
 
         // Always place at the same distance from the near plane.
         float radialToPlanarDistance = 1.0f / glm::dot(cdir, dir);
@@ -54,8 +51,7 @@ namespace ToolKit
         Vec3 billWorldPos = camWorldPos + dir * m_settings.distanceToCamera *
                                               radialToPlanarDistance;
 
-        m_node->SetTranslation(billWorldPos, TransformationSpace::TS_WORLD);
-
+        m_node->SetTranslation(billWorldPos);
         if (m_settings.heightInScreenSpace > 0.0f)
         {
           // Compensate shrinkage due to height changes.
@@ -63,19 +59,29 @@ namespace ToolKit
           m_node->SetScale(
               Vec3(magicScale * m_settings.heightInScreenSpace / scale));
         }
+
+        // Compensate shrinkage due to fov changes.
+        float initialFovRadians =
+            glm::quarter_pi<float>(); // Initial field of view in radians
+        float newFovRadians        = cam->Fov(); // New field of view in radians
+
+        // Calculate scaling factor
+        float initialFrustumHeight = tan(initialFovRadians / 2.0f);
+        float newFrustumHeight     = tan(newFovRadians / 2.0f);
+        float scaleFactor          = newFrustumHeight / initialFrustumHeight;
+
+        m_node->Scale(Vec3(scaleFactor));
       }
     }
     else
     {
-      m_node->SetTranslation(m_worldLocation, TransformationSpace::TS_WORLD);
+      m_node->SetTranslation(m_worldLocation);
     }
 
     if (m_settings.lookAtCamera)
     {
-      Quaternion camOrientation =
-          cam->m_node->GetOrientation(TransformationSpace::TS_WORLD);
-
-      m_node->SetOrientation(camOrientation, TransformationSpace::TS_WORLD);
+      Quaternion camOrientation = cam->m_node->GetOrientation();
+      m_node->SetOrientation(camOrientation);
     }
   }
 

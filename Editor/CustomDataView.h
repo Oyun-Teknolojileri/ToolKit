@@ -25,7 +25,7 @@ namespace ToolKit
       static bool BeginShowVariants(StringView header);
       static void ShowVariant(ParameterVariant* var,
                               ParameterVariant*& remove,
-                              int i,
+                              size_t i,
                               bool isEditable);
       static void EndShowVariants();
 

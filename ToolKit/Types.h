@@ -94,6 +94,7 @@ namespace ToolKit
   typedef std::vector<int> IntArray;
   typedef std::vector<uint> UIntArray;
   typedef std::vector<struct VariantCategory> VariantCategoryArray;
+  typedef std::vector<struct RenderJob> RenderJobArray;
 
   // Resource types.
   typedef std::shared_ptr<class Animation> AnimationPtr;
@@ -279,11 +280,6 @@ namespace ToolKit
     SampleNearestMipmapNearest = 0x2700,
     SampleLinearMipmapLinear   = 0x2703,
     SampleLinearMipmapNearest  = 0x2701,
-    DrawTypeTriangle           = 0x0004,
-    DrawTypeLines              = 0x0001,
-    DrawTypeLineStrip          = 0x0003,
-    DrawTypeLineLoop           = 0x0002,
-    DrawTypePoints             = 0x0000,
     FormatRed                  = 0x1903,
     FormatR8                   = 0x8229,
     FormatRG                   = 0x8227,
@@ -299,6 +295,7 @@ namespace ToolKit
     FormatRGB16F               = 0x881B,
     FormatRGBA16F              = 0x881A,
     FormatRGB32F               = 0x8815,
+    FormatR16SNorm             = 0x8F98,
     FormatSRGB8_A8             = 0x8C43,
     FormatDepthComponent       = 0x1902,
     ColorAttachment0           = 0x8CE0,
@@ -307,26 +304,7 @@ namespace ToolKit
     TypeUnsignedByte           = 0x1401,
     Target2D                   = 0x0DE1,
     TargetCubeMap              = 0x8513,
-    Target2DArray              = 0x8C1A,
-    FuncNever                  = 0x0200,
-    FuncLess                   = 0x0201,
-    FuncEqual                  = 0x0202,
-    FuncLequal                 = 0x0203,
-    FuncGreater                = 0x0204,
-    FuncNEqual                 = 0x0205,
-    FuncGEqual                 = 0x0206,
-    FuncAlways                 = 0x0207
-  };
-
-  enum class GraphicBitFields
-  {
-    ColorBits        = 0x00004000,
-    DepthBits        = 0x00000100,
-    StencilBits      = 0x00000400,
-    ColorDepthBits   = ColorBits | DepthBits,
-    ColorStencilBits = ColorBits | StencilBits,
-    DepthStencilBits = DepthBits | StencilBits,
-    AllBits          = ColorBits | DepthBits | StencilBits
+    Target2DArray              = 0x8C1A
   };
 
   static const char* TKVersionStr = "v0.4.0";

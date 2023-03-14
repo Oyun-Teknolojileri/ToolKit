@@ -1,6 +1,8 @@
 #include "Thumbnail.h"
 
 #include "Entity.h"
+#include "MeshComponent.h"
+#include "MaterialComponent.h"
 
 #include "DebugNew.h"
 
@@ -87,12 +89,6 @@ namespace ToolKit
       else if (dirEnt.m_ext == MATERIAL)
       {
         MaterialPtr mat = GetMaterialManager()->Create<Material>(fullpath);
-
-        // Disable ao
-        bool aoActive   = mat->GetRenderState()->AOInUse;
-        mat->GetRenderState()->AOInUse  = false;
-        mat->GetRenderState()->IBLInUse = false;
-
         if (MaterialComponentPtr mc = m_sphere->GetMaterialComponent())
         {
           mc->SetMaterialVal(mat);

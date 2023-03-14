@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Drawable.h"
+#include "MaterialComponent.h"
+#include "MeshComponent.h"
 #include "ParameterBlock.h"
 #include "RenderState.h"
 #include "Types.h"
@@ -26,6 +28,12 @@ namespace ToolKit
        * Fov changes due to window height changes doesn't shrink the object.
        */
       float heightInScreenSpace = 0.0f;
+
+      /**
+       * If true, staying behind of actual objects discards the pixels of the
+       * billboard.
+       */
+      bool bypassDepthTest      = false;
     };
 
    public:

@@ -8,7 +8,7 @@
 #include "Entity.h"
 #include "Node.h"
 #include "Resource.h"
-#include "ResourceComponent.h"
+#include "SkeletonComponent.h"
 #include "ResourceManager.h"
 #include "Skeleton.h"
 #include "Types.h"

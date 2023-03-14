@@ -22,10 +22,7 @@ namespace ToolKit
     Vec3 min = Vec3(TK_FLT_MAX);
     Vec3 max = Vec3(-TK_FLT_MAX);
 
-    Vec3 GetCenter()
-    {
-      return min + (max - min) * 0.5f;
-    }
+    Vec3 GetCenter() { return min + (max - min) * 0.5f; }
 
     void UpdateBoundary(const Vec3& v)
     {
@@ -33,20 +30,20 @@ namespace ToolKit
       min = glm::min(min, v);
     }
 
+    void UpdateBoundary(const BoundingBox& bb)
+    {
+      UpdateBoundary(bb.max);
+      UpdateBoundary(bb.min);
+    }
+
     float Volume()
     {
       return glm::abs((max.x - min.x) * (max.y - min.y) * (max.z - min.z));
     }
 
-    float GetWidth() const
-    {
-      return max.x - min.x;
-    }
+    float GetWidth() const { return max.x - min.x; }
 
-    float GetHeight() const
-    {
-      return max.y - min.y;
-    }
+    float GetHeight() const { return max.y - min.y; }
   };
 
   struct Ray
@@ -72,4 +69,4 @@ namespace ToolKit
     float radius;
   };
 
-}
+} // namespace ToolKit

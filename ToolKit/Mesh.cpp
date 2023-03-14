@@ -261,42 +261,34 @@ namespace ToolKit
 
   void Mesh::CalculateAABB()
   {
-    m_aabb = BoundingBox();
+    // Construct aabb of all submeshes.
+    TraverseAllMesh(
+        [this](Mesh* mesh) -> void
+        {
+          mesh->m_aabb = BoundingBox();
+          for (size_t j = 0; j < mesh->m_clientSideVertices.size(); j++)
+          {
+            Vertex& v = mesh->m_clientSideVertices[j];
+            mesh->m_aabb.UpdateBoundary(v.pos);
+          }
 
-    MeshRawPtrArray meshes;
-    GetAllMeshes(meshes);
-    for (size_t i = 0; i < meshes.size(); i++)
-    {
-      Mesh* m = meshes[i];
-      if (m->m_clientSideVertices.empty())
-      {
-        continue;
-      }
-
-      for (size_t j = 0; j < m->m_clientSideVertices.size(); j++)
-      {
-        Vertex& v = m->m_clientSideVertices[j];
-        m_aabb.UpdateBoundary(v.pos);
-      }
-    }
+          // Update this aabb to contain submesh aabb.
+          if (!mesh->m_clientSideVertices.empty()) 
+          {
+            m_aabb.UpdateBoundary(mesh->m_aabb);
+          }
+        });
   }
 
   void Mesh::GetAllMeshes(MeshRawPtrArray& meshes)
   {
-    meshes.push_back(this);
-    for (size_t i = 0; i < m_subMeshes.size(); i++)
-    {
-      m_subMeshes[i]->GetAllMeshes(meshes);
-    }
+    TraverseAllMesh([&meshes](Mesh* mesh) -> void { meshes.push_back(mesh); });
   }
 
   void Mesh::GetAllMeshes(MeshRawCPtrArray& meshes) const
   {
-    meshes.push_back(this);
-    for (size_t i = 0; i < m_subMeshes.size(); i++)
-    {
-      m_subMeshes[i]->GetAllMeshes(meshes);
-    }
+    TraverseAllMesh([&meshes](const Mesh* mesh) -> void
+                    { meshes.push_back(mesh); });
   }
 
   template <typename T>
@@ -602,6 +594,35 @@ namespace ToolKit
   void Mesh::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     LoadMesh(doc, parent, this);
+  }
+
+  void TraverseMeshHelper(const Mesh* mesh,
+                          std::function<void(const Mesh*)> callback)
+  {
+    if (callback == nullptr)
+    {
+      return;
+    }
+
+    callback(mesh);
+
+    for (MeshPtr subMesh : mesh->m_subMeshes)
+    {
+      TraverseMeshHelper(subMesh.get(), callback);
+    }
+  }
+
+  void Mesh::TraverseAllMesh(std::function<void(Mesh*)> callback, Mesh* mesh)
+  {
+    TraverseMeshHelper(mesh == nullptr ? this : mesh,
+                       [callback](const Mesh* mesh)
+                       { callback(const_cast<Mesh*>(mesh)); });
+  }
+
+  void Mesh::TraverseAllMesh(std::function<void(const Mesh*)> callback,
+                             const Mesh* mesh) const
+  {
+    TraverseMeshHelper(mesh == nullptr ? this : mesh, callback);
   }
 
   void Mesh::InitVertices(bool flush)

@@ -61,7 +61,7 @@ namespace ToolKit
     void MaterialView::UpdatePreviewScene()
     {
       const EntityRawPtrArray& entities = m_viewport->GetScene()->GetEntities();
-      Entity* primNtt             = nullptr;
+      Entity* primNtt                   = nullptr;
       if (entities.size() > 1u)
       {
         primNtt = entities[1];
@@ -226,156 +226,52 @@ namespace ToolKit
       if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
       {
         uint textureIndx = 0;
-        for (Uniform u : m_mat->m_fragmentShader->m_uniforms)
+        auto exposeTextureFn =
+            [this, &textureIndx, &updateThumbFn](TexturePtr& texture,
+                                                 StringView sId,
+                                                 StringView label) -> void
         {
-          switch (u)
+          ImGui::LabelText(sId.data(), label.data());
+          String target = GetPathSeparatorAsStr();
+          if (texture)
           {
-          case Uniform::DIFFUSE_TEXTURE_IN_USE:
-          {
-            ImGui::LabelText("##diffTexture", "Diffuse");
-            String target = GetPathSeparatorAsStr();
-            if (m_mat->m_diffuseTexture)
-            {
-              target = m_mat->m_diffuseTexture->GetFile();
-            }
+            target = texture->GetFile();
+          }
 
-            DropZone(
-                UI::m_imageIcon->m_textureId,
-                target,
-                [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-                {
-                  m_mat->m_diffuseTexture =
-                      GetTextureManager()->Create<Texture>(
-                          dirEnt.GetFullPath());
-                  m_mat->m_diffuseTexture->Init();
-                  updateThumbFn();
-                });
-
-            if (m_mat->m_diffuseTexture)
-            {
-              ImGui::SameLine();
-              ImGui::PushID(textureIndx++);
-              if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
-                                           Vec2(16.0f, 16.0f),
-                                           false))
+          DropZone(
+              UI::m_imageIcon->m_textureId,
+              target,
+              [&texture, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
               {
-                m_mat->m_diffuseTexture = nullptr;
+                texture =
+                    GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
+                texture->Init();
                 updateThumbFn();
-              }
-              ImGui::PopID();
-            }
-          }
-          break;
-          case Uniform::EMISSIVE_TEXTURE_IN_USE:
+              });
+
+          if (texture)
           {
-            ImGui::LabelText("##emissiveTexture", "Emissive");
-            String target = GetPathSeparatorAsStr();
-            if (m_mat->m_emissiveTexture)
+            ImGui::SameLine();
+            ImGui::PushID(textureIndx++);
+            if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
+                                         Vec2(16.0f, 16.0f),
+                                         false))
             {
-              target = m_mat->m_emissiveTexture->GetFile();
+              texture = nullptr;
+              updateThumbFn();
             }
-
-            DropZone(
-                UI::m_imageIcon->m_textureId,
-                target,
-                [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-                {
-                  m_mat->m_emissiveTexture =
-                      GetTextureManager()->Create<Texture>(
-                          dirEnt.GetFullPath());
-                  m_mat->m_emissiveTexture->Init();
-                  updateThumbFn();
-                });
-
-            if (m_mat->m_emissiveTexture)
-            {
-              ImGui::SameLine();
-              ImGui::PushID(textureIndx++);
-              if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
-                                           Vec2(16.0f, 16.0f),
-                                           false))
-              {
-                m_mat->m_emissiveTexture = nullptr;
-                updateThumbFn();
-              }
-              ImGui::PopID();
-            }
+            ImGui::PopID();
           }
-          break;
-          case Uniform::NORMAL_MAP_IN_USE:
-          {
-            ImGui::LabelText("##normalMap", "Normal Map");
-            String target = GetPathSeparatorAsStr();
-            if (m_mat->m_normalMap)
-            {
-              target = m_mat->m_normalMap->GetFile();
-            }
+        };
 
-            DropZone(
-                UI::m_imageIcon->m_textureId,
-                target,
-                [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-                {
-                  m_mat->m_normalMap = GetTextureManager()->Create<Texture>(
-                      dirEnt.GetFullPath());
-                  m_mat->m_normalMap->Init();
-                  updateThumbFn();
-                });
-
-            if (m_mat->m_normalMap)
-            {
-              ImGui::SameLine();
-              ImGui::PushID(textureIndx++);
-              if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
-                                           Vec2(16.0f, 16.0f),
-                                           false))
-              {
-                m_mat->m_normalMap = nullptr;
-                updateThumbFn();
-              }
-              ImGui::PopID();
-            }
-          }
-          break;
-          case Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE:
-          {
-            ImGui::LabelText("##metallicRoughnessTexture",
-                             "Metallic Roughness");
-            String target = GetPathSeparatorAsStr();
-            if (m_mat->m_metallicRoughnessTexture)
-            {
-              target = m_mat->m_metallicRoughnessTexture->GetFile();
-            }
-
-            DropZone(
-                UI::m_imageIcon->m_textureId,
-                target,
-                [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-                {
-                  m_mat->m_metallicRoughnessTexture =
-                      GetTextureManager()->Create<Texture>(
-                          dirEnt.GetFullPath());
-                  m_mat->m_metallicRoughnessTexture->Init();
-                  updateThumbFn();
-                });
-
-            if (m_mat->m_metallicRoughnessTexture)
-            {
-              ImGui::SameLine();
-              ImGui::PushID(textureIndx++);
-              if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
-                                           Vec2(16.0f, 16.0f),
-                                           false))
-              {
-                m_mat->m_metallicRoughnessTexture = nullptr;
-                updateThumbFn();
-              }
-              ImGui::PopID();
-            }
-          }
-          break;
-          }
-        }
+        exposeTextureFn(m_mat->m_diffuseTexture, "##diffTexture", "Diffuse");
+        exposeTextureFn(m_mat->m_emissiveTexture,
+                        "##emissiveTexture",
+                        "Emissive");
+        exposeTextureFn(m_mat->m_normalMap, "##normalMap", "Normal Map");
+        exposeTextureFn(m_mat->m_metallicRoughnessTexture,
+                        "##metallicRoughnessTexture",
+                        "Metallic Roughness");
       }
 
       RenderState* renderState = m_mat->GetRenderState();
@@ -400,7 +296,6 @@ namespace ToolKit
                 isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA
                           : BlendFunction::NONE;
 
-            renderState->useForwardPath = isForward;
             updateThumbFn();
           }
         }
@@ -464,10 +359,6 @@ namespace ToolKit
           {
             m_mat->m_alpha = 1.0f;
           }
-
-          renderState->useForwardPath =
-              renderState->blendFunction ==
-              BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
 
           m_mat->m_dirty = true;
 

@@ -67,7 +67,7 @@ namespace ToolKit
       // Gizmo operations
       void AddBillboardToEntity(Entity* entity);
       void RemoveBillboardFromEntity(Entity* entity);
-      std::vector<EditorBillboardBase*> GetBillboards();
+      EntityRawPtrArray GetBillboards();
       Entity* GetBillboardOfEntity(Entity* entity);
       void InitEntityBillboard(Entity* entity);
 
@@ -86,7 +86,7 @@ namespace ToolKit
       EntityIdArray m_selectedEntities;
       // Billboard gizmos
       std::unordered_map<Entity*, EditorBillboardBase*> m_entityBillboardMap;
-      std::vector<EditorBillboardBase*> m_billboards;
+      EntityRawPtrArray m_billboards;
     };
 
     class EditorSceneManager : public SceneManager

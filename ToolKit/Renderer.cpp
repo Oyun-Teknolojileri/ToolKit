@@ -3,10 +3,12 @@
 #include "Camera.h"
 #include "DirectionComponent.h"
 #include "Drawable.h"
+#include "EnvironmentComponent.h"
 #include "GL/glew.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
+#include "Pass.h"
 #include "ResourceComponent.h"
 #include "Scene.h"
 #include "Shader.h"
@@ -26,111 +28,7 @@
 namespace ToolKit
 {
 
-  // An interval has start time and end time
-  struct LightSortStruct
-  {
-    Light* light        = nullptr;
-    uint intersectCount = 0;
-  };
-
-  // Compares two intervals according to starting times.
-  bool CompareLightIntersects(const LightSortStruct& i1,
-                              const LightSortStruct& i2)
-  {
-    return (i1.intersectCount > i2.intersectCount);
-  }
-
-  LightRawPtrArray GetBestLights(Entity* entity, const LightRawPtrArray& lights)
-  {
-    LightRawPtrArray bestLights;
-    bestLights.reserve(lights.size());
-
-    // Find the end of directional lights
-    for (int i = 0; i < lights.size(); i++)
-    {
-      if (lights[i]->GetType() == EntityType::Entity_DirectionalLight)
-      {
-        bestLights.push_back(lights[i]);
-      }
-    }
-
-    // Add the lights inside of the radius first
-    std::vector<LightSortStruct> intersectCounts(lights.size());
-    BoundingBox aabb = entity->GetAABB(true);
-    for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
-    {
-      float radius;
-      Light* light = lights[lightIndx];
-      if (light->GetType() == EntityType::Entity_PointLight)
-      {
-        radius = static_cast<PointLight*>(light)->GetRadiusVal();
-      }
-      else if (light->GetType() == EntityType::Entity_SpotLight)
-      {
-        radius = static_cast<SpotLight*>(light)->GetRadiusVal();
-      }
-      else
-      {
-        continue;
-      }
-
-      intersectCounts[lightIndx].light = light;
-      uint& curIntersectCount = intersectCounts[lightIndx].intersectCount;
-
-      /* This algorithms can be used for better sorting
-      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
-      {
-        for (uint isMin = 0; isMin < 2; isMin++)
-        {
-          Vec3 p     = aabb.min;
-          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
-          float dist = glm::length(
-              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
-          if (dist <= radius)
-          {
-            curIntersectCount++;
-          }
-        }
-      }*/
-
-      if (light->GetType() == EntityType::Entity_SpotLight)
-      {
-        light->UpdateShadowCamera();
-
-        Frustum spotFrustum =
-            ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
-
-        if (FrustumBoxIntersection(spotFrustum, aabb) !=
-            IntersectResult::Outside)
-        {
-          curIntersectCount++;
-        }
-      }
-      if (light->GetType() == EntityType::Entity_PointLight)
-      {
-        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
-        if (SphereBoxIntersection(lightSphere, aabb))
-        {
-          curIntersectCount++;
-        }
-      }
-    }
-
-    std::sort(intersectCounts.begin(),
-              intersectCounts.end(),
-              CompareLightIntersects);
-
-    for (uint i = 0; i < intersectCounts.size(); i++)
-    {
-      if (intersectCounts[i].intersectCount == 0)
-      {
-        break;
-      }
-      bestLights.push_back(intersectCounts[i].light);
-    }
-
-    return bestLights;
-  }
+#define TK_LUT_TEXTURE "GLOBAL_BRDF_LUT_TEXTURE"
 
   Renderer::Renderer()
   {
@@ -201,152 +99,128 @@ namespace ToolKit
     // RenderEntities(entities, m_uiCamera, viewport);
   }
 
-  void Renderer::Render(Entity* ntt,
+  void Renderer::Render(const RenderJob& job,
                         Camera* cam,
-                        const LightRawPtrArray& lights,
-                        const UIntArray& meshIndices)
+                        const LightRawPtrArray& lights)
   {
     if (!cam->IsOrtographic())
     {
       // TODO: Orthographic mode must support environment lighting.
-      FindEnvironmentLight(ntt);
+      FindEnvironmentLight(job);
     }
-
-    MeshComponentPtrArray meshComponents;
-    ntt->GetComponent<MeshComponent>(meshComponents);
-
-    MaterialPtr nttMat;
-    if (MaterialComponentPtr matCom = ntt->GetComponent<MaterialComponent>())
-    {
-      if (nttMat = matCom->GetMaterialVal())
-      {
-        nttMat->Init();
-      }
-    }
-
-    MultiMaterialPtr mmComp = ntt->GetComponent<MultiMaterialComponent>();
 
     // Skeleton Component is used by all meshes of an entity.
-    const auto& updateAndBindSkinningTextures = [ntt, this]()
+    const auto& updateAndBindSkinningTextures = [&job, this]()
     {
-      SkeletonComponentPtr skelComp = ntt->GetComponent<SkeletonComponent>();
-      if (skelComp == nullptr)
+      if (!job.Mesh->IsSkinned())
       {
         return;
       }
 
-      SkeletonPtr skel = skelComp->GetSkeletonResourceVal();
+      SkeletonPtr skel = static_cast<SkinMesh*>(job.Mesh)->m_skeleton;
       if (skel == nullptr)
+      {
+        return;
+      }
+
+      SkeletonComponentPtr skCom = job.SkeletonCmp;
+      if (skCom == nullptr)
       {
         return;
       }
 
       // Bind bone textures
       // This is valid because these slots will be used by every shader program
-      //   below (Renderer::TextureSlot system).
-      // But bone count can't be bound here because its location changes every
-      //   shader program
-      SetTexture(2, skel->m_bindPoseTexture->m_textureId);
-      SetTexture(3, skelComp->m_map->boneTransformNodeTexture->m_textureId);
+      // below (Renderer::TextureSlot system). But bone count can't be bound
+      // here because its location changes every shader program.
 
-      skelComp->m_map->UpdateGPUTexture();
+      SetTexture(2, skel->m_bindPoseTexture->m_textureId);
+      SetTexture(3, skCom->m_map->boneTransformNodeTexture->m_textureId);
+      skCom->m_map->UpdateGPUTexture();
     };
 
     updateAndBindSkinningTextures();
 
-    uint entityMeshIndex = 0, meshIndicesIterator = 0;
-    for (MeshComponentPtr meshCom : meshComponents)
+    SetProjectViewModel(job.WorldTransform, cam);
+    m_lights = lights;
+    m_cam    = cam;
+    job.Mesh->Init();
+    job.Material->Init();
+
+    // Set render material.
+    m_mat = nullptr;
+    if (m_overrideMat != nullptr)
     {
-      MeshPtr mainMesh = meshCom->GetMeshVal();
-      m_lights         = lights; // GetBestLights(ntt, lights);
-      m_cam            = cam;
-      SetProjectViewModel(ntt, cam);
+      m_mat = m_overrideMat;
+    }
+    else
+    {
+      m_mat = job.Material;
+    }
 
-      mainMesh->Init();
+    if (m_mat == nullptr)
+    {
+      assert(false);
+      m_mat = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    }
 
-      MeshRawPtrArray meshCollector;
-      mainMesh->GetAllMeshes(meshCollector);
+    m_mat->Init();
+    ProgramPtr prg =
+        CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
+    BindProgram(prg);
 
-      for (uint meshIndx = 0; meshIndx < meshCollector.size();
-           meshIndx++, entityMeshIndex++)
+    auto activateSkinning = [prg, &job](uint isSkinned)
+    {
+      GLint isSkinnedLoc = glGetUniformLocation(prg->m_handle, "isSkinned");
+      glUniform1ui(isSkinnedLoc, isSkinned);
+
+      if (job.SkeletonCmp == nullptr)
       {
-        if (meshIndices.size())
-        {
-          if (meshIndicesIterator >= meshIndices.size() ||
-              entityMeshIndex != meshIndices[meshIndicesIterator])
-          {
-            continue;
-          }
-          else
-          {
-            meshIndicesIterator++;
-          }
-        }
-        Mesh* mesh = meshCollector[meshIndx];
-
-        if (mesh->m_vertexCount == 0)
-        {
-          continue;
-        }
-
-        if (mmComp && mmComp->GetMaterialList().size() > entityMeshIndex)
-        {
-          nttMat = mmComp->GetMaterialList()[entityMeshIndex];
-        }
-        mesh->Init();
-        if (m_overrideMat != nullptr)
-        {
-          m_mat = m_overrideMat;
-        }
-        else
-        {
-          m_mat = nttMat ? nttMat : mesh->m_material;
-        }
-        m_mat->Init();
-
-        ProgramPtr prg =
-            CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
-
-        BindProgram(prg);
-
-        auto activateSkinning = [prg, ntt](uint isSkinned)
-        {
-          GLint isSkinnedLoc = glGetUniformLocation(prg->m_handle, "isSkinned");
-          glUniform1ui(isSkinnedLoc, isSkinned);
-          if (isSkinned)
-          {
-            GLint numBonesLoc = glGetUniformLocation(prg->m_handle, "numBones");
-            float boneCount =
-                static_cast<float>(ntt->GetComponent<SkeletonComponent>()
-                                       ->GetSkeletonResourceVal()
-                                       ->m_bones.size());
-            glUniform1fv(numBonesLoc, 1, &boneCount);
-          }
-        };
-        activateSkinning(mesh->IsSkinned());
-
-        RenderState* rs = m_mat->GetRenderState();
-
-        SetRenderState(rs, prg);
-        FeedUniforms(prg);
-
-        glBindVertexArray(mesh->m_vaoId);
-        glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
-        SetVertexLayout(mesh->m_vertexLayout);
-
-        if (mesh->m_indexCount != 0)
-        {
-          glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-          glDrawElements((GLenum) rs->drawType,
-                         mesh->m_indexCount,
-                         GL_UNSIGNED_INT,
-                         nullptr);
-        }
-        else
-        {
-          glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
-        }
+        return;
       }
+
+      if (isSkinned)
+      {
+        GLint numBonesLoc = glGetUniformLocation(prg->m_handle, "numBones");
+        float boneCount =
+            (float) job.SkeletonCmp->GetSkeletonResourceVal()->m_bones.size();
+
+        glUniform1fv(numBonesLoc, 1, &boneCount);
+      }
+    };
+
+    Mesh* mesh = job.Mesh;
+    activateSkinning(mesh->IsSkinned());
+
+    RenderState* rs = m_mat->GetRenderState();
+    SetRenderState(rs);
+    FeedUniforms(prg);
+
+    glBindVertexArray(mesh->m_vaoId);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
+    SetVertexLayout(mesh->m_vertexLayout);
+
+    if (mesh->m_indexCount != 0)
+    {
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
+      glDrawElements((GLenum) rs->drawType,
+                     mesh->m_indexCount,
+                     GL_UNSIGNED_INT,
+                     nullptr);
+    }
+    else
+    {
+      glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
+    }
+  }
+
+  void Renderer::Render(const RenderJobArray& jobArray,
+                        Camera* cam,
+                        const LightRawPtrArray& lights)
+  {
+    for (const RenderJob& rj : jobArray)
+    {
+      Render(rj, cam, lights);
     }
   }
 
@@ -363,7 +237,7 @@ namespace ToolKit
     mesh->Init();
 
     RenderState* rs = mesh->m_material->GetRenderState();
-    SetRenderState(rs, prog);
+    SetRenderState(rs);
 
     GLint pvloc = glGetUniformLocation(prog->m_handle, "ProjectViewModel");
     Mat4 pm     = glm::ortho(0.0f,
@@ -396,8 +270,7 @@ namespace ToolKit
     surface->m_node = backup;
   }
 
-  void Renderer::SetRenderState(const RenderState* const state,
-                                ProgramPtr program)
+  void Renderer::SetRenderState(const RenderState* const state)
   {
     if (m_renderState.cullMode != state->cullMode)
     {
@@ -425,25 +298,6 @@ namespace ToolKit
       }
 
       m_renderState.cullMode = state->cullMode;
-    }
-
-    if (m_renderState.depthTestEnabled != state->depthTestEnabled)
-    {
-      if (state->depthTestEnabled)
-      {
-        glEnable(GL_DEPTH_TEST);
-      }
-      else
-      {
-        glDisable(GL_DEPTH_TEST);
-      }
-      m_renderState.depthTestEnabled = state->depthTestEnabled;
-    }
-
-    if (m_renderState.depthFunction != state->depthFunction)
-    {
-      m_renderState.depthFunction = state->depthFunction;
-      glDepthFunc((int) state->depthFunction);
     }
 
     if (m_renderState.blendFunction != state->blendFunction)
@@ -475,43 +329,42 @@ namespace ToolKit
 
     m_renderState.alphaMaskTreshold = state->alphaMaskTreshold;
 
-    if (m_mat->m_diffuseTexture)
-    {
-
-      SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
-    }
-
-    if (state->cubeMapInUse)
-    {
-      m_renderState.cubeMap      = state->cubeMap;
-      m_renderState.cubeMapInUse = state->cubeMapInUse;
-      SetTexture(6, state->cubeMap);
-    }
-
     if (m_renderState.lineWidth != state->lineWidth)
     {
       m_renderState.lineWidth = state->lineWidth;
       glLineWidth(m_renderState.lineWidth);
     }
 
-    if (m_mat->m_emissiveTexture)
+    // TODO: Cihan move SetTexture to render path.
+    if (m_mat)
     {
-      SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
+      if (m_mat->m_cubeMap)
+      {
+        SetTexture(6, m_mat->m_cubeMap->m_textureId);
+      }
+
+      if (m_mat->m_diffuseTexture)
+      {
+        SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
+      }
+
+      if (m_mat->m_emissiveTexture)
+      {
+        SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
+      }
+
+      if (m_mat->m_metallicRoughnessTexture)
+      {
+        SetTexture(4, m_mat->m_metallicRoughnessTexture->m_textureId);
+      }
+
+      if (m_mat->m_normalMap)
+      {
+        SetTexture(9, m_mat->m_normalMap->m_textureId);
+      }
+
+      if (m_mat->GetRenderState()->IBLInUse) {}
     }
-
-    if (m_mat->m_metallicRoughnessTexture)
-    {
-      SetTexture(4, m_mat->m_metallicRoughnessTexture->m_textureId);
-    }
-
-    if (m_mat->m_normalMap)
-    {
-      SetTexture(9, m_mat->m_normalMap->m_textureId);
-    }
-
-    if (m_mat->GetRenderState()->IBLInUse) {}
-
-    m_renderState.useForwardPath = state->useForwardPath;
   }
 
   void Renderer::SetStencilOperation(StencilOperation op)
@@ -545,17 +398,20 @@ namespace ToolKit
                                 bool clear,
                                 const Vec4& color)
   {
-    if (fb != nullptr)
+    if (fb != m_framebuffer)
     {
-      glBindFramebuffer(GL_FRAMEBUFFER, fb->GetFboId());
-      FramebufferSettings fbSet = fb->GetSettings();
-      SetViewportSize(fbSet.width, fbSet.height);
-    }
-    else
-    {
-      // Set backbuffer as draw area.
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
-      SetViewportSize(m_windowSize.x, m_windowSize.y);
+      if (fb != nullptr)
+      {
+        glBindFramebuffer(GL_FRAMEBUFFER, fb->GetFboId());
+        FramebufferSettings fbSet = fb->GetSettings();
+        SetViewportSize(fbSet.width, fbSet.height);
+      }
+      else
+      {
+        // Set backbuffer as draw area.
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        SetViewportSize(m_windowSize.x, m_windowSize.y);
+      }
     }
 
     if (clear)
@@ -689,16 +545,18 @@ namespace ToolKit
 
   void Renderer::DrawFullQuad(MaterialPtr mat)
   {
+    static Camera quadCam;
     static Quad quad;
     quad.GetMeshComponent()->GetMeshVal()->m_material = mat;
 
-    static Camera quadCam;
-    Render(&quad, &quadCam);
+    RenderJobArray jobs;
+    RenderJobProcessor::CreateRenderJob(&quad, jobs);
+    Render(jobs, &quadCam);
   }
 
   void Renderer::DrawCube(Camera* cam, MaterialPtr mat, const Mat4& transform)
   {
-    static Cube cube;
+    Cube cube;
     cube.Generate(cube.GetMeshComponent(), cube.GetCubeScaleVal());
     cube.m_node->SetTransform(transform);
 
@@ -709,7 +567,9 @@ namespace ToolKit
     }
     cube.GetMaterialComponent()->SetMaterialVal(mat);
 
-    Render(&cube, cam);
+    RenderJobArray jobs;
+    RenderJobProcessor::CreateRenderJob(&cube, jobs);
+    Render(jobs, cam);
   }
 
   MaterialPtr Renderer::GetRenderMaterial(Entity* entity)
@@ -779,6 +639,31 @@ namespace ToolKit
 
   void Renderer::EnableDepthWrite(bool enable) { glDepthMask(enable); }
 
+  void Renderer::EnableDepthTest(bool enable)
+  {
+    if (m_renderState.depthTestEnabled != enable)
+    {
+      if (enable)
+      {
+        glEnable(GL_DEPTH_TEST);
+      }
+      else
+      {
+        glDisable(GL_DEPTH_TEST);
+      }
+      m_renderState.depthTestEnabled = enable;
+    }
+  }
+
+  void Renderer::SetDepthTestFunc(CompareFunctions func)
+  {
+    if (m_renderState.depthFunction != func)
+    {
+      m_renderState.depthFunction = func;
+      glDepthFunc((int) func);
+    }
+  }
+
   void Renderer::CollectEnvironmentVolumes(const EntityRawPtrArray& entities)
   {
     // Find entities which have environment component
@@ -802,7 +687,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::FindEnvironmentLight(Entity* entity)
+  void Renderer::FindEnvironmentLight(const RenderJob& job)
   {
     // Note: If multiple bounding boxes are intersecting and the intersection
     // volume includes the entity, the smaller bounding box is taken
@@ -811,22 +696,23 @@ namespace ToolKit
     // be lit with environment light
 
     Entity* env     = nullptr;
-    MaterialPtr mat = GetRenderMaterial(entity);
+    MaterialPtr mat = job.Material;
+    Vec3 pos        = glm::column(job.WorldTransform, 3).xyz;
 
-    Vec3 pos = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
     BoundingBox bestBox {ZERO, ZERO};
     BoundingBox currentBox;
+
     for (Entity* envNtt : m_environmentLightEntities)
     {
       EnvironmentComponentPtr envComp =
           envNtt->GetComponent<EnvironmentComponent>();
 
-      if (envComp == nullptr) 
+      if (envComp == nullptr)
       {
         continue;
       }
-      
-      currentBox = envComp->GetBBox(); 
+
+      currentBox = envComp->GetBBox();
 
       if (PointInsideBBox(pos, currentBox.max, currentBox.min))
       {
@@ -864,52 +750,30 @@ namespace ToolKit
       }
     }
 
-    std::vector<RenderState*> matRenderStates {};
-
-    MultiMaterialPtr multiMaterial =
-        entity->GetComponent<MultiMaterialComponent>();
-
-    if (multiMaterial)
-    {
-      for (MaterialPtr i : multiMaterial->GetMaterialList())
-      {
-        matRenderStates.push_back(i->GetRenderState());
-      }
-    }
-    else
-    {
-      matRenderStates.push_back(mat->GetRenderState());
-    }
-
     if (env != nullptr)
     {
       EnvironmentComponentPtr envCom =
           env->GetComponent<EnvironmentComponent>();
 
-      std::for_each(matRenderStates.begin(),
-                    matRenderStates.end(),
-                    [&](RenderState* state)
-                    {
-                      state->IBLInUse     = true;
-                      state->iblIntensity = envCom->GetIntensityVal();
-                    });
+      RenderState* state                   = mat->GetRenderState();
+      state->IBLInUse                      = true;
+      state->iblIntensity                  = envCom->GetIntensityVal();
+
       HdriPtr hdriPtr                      = envCom->GetHdriVal();
       CubeMapPtr irradianceCubemap         = hdriPtr->m_irradianceCubemap;
       CubeMapPtr preFilteredSpecularIBLMap = hdriPtr->m_prefilteredEnvMap;
 
       if (irradianceCubemap && preFilteredSpecularIBLMap &&
-          GetTextureManager()->Exist("GLOBAL_BRDF_LUT_TEXTURE"))
+          GetTextureManager()->Exist(TK_LUT_TEXTURE))
       {
-        RenderTargetPtr brdfLut = GetTextureManager()->Create<RenderTarget>(
-            "GLOBAL_BRDF_LUT_TEXTURE");
-        for (RenderState* state : matRenderStates)
-        {
-          state->irradianceMap = irradianceCubemap->m_textureId;
-          state->preFilteredSpecularMap =
-              preFilteredSpecularIBLMap->m_textureId;
-          state->brdfLut = brdfLut->m_textureId;
-        }
+        RenderTargetPtr brdfLut =
+            GetTextureManager()->Create<RenderTarget>(TK_LUT_TEXTURE);
+
+        state->irradianceMap          = irradianceCubemap->m_textureId;
+        state->preFilteredSpecularMap = preFilteredSpecularIBLMap->m_textureId;
+        state->brdfLut                = brdfLut->m_textureId;
       }
+
       m_iblRotation =
           Mat4(env->m_node->GetOrientation(TransformationSpace::TS_WORLD));
     }
@@ -920,6 +784,7 @@ namespace ToolKit
           m_sky->GetIlluminateVal())
       {
         mat->GetRenderState()->IBLInUse = true;
+        RenderState* state              = mat->GetRenderState();
         if (m_sky->GetType() == EntityType::Entity_Sky)
         {
           HdriPtr hdriPtr = static_cast<Sky*>(m_sky)
@@ -929,35 +794,25 @@ namespace ToolKit
           CubeMapPtr irradianceCubemap         = hdriPtr->m_irradianceCubemap;
           CubeMapPtr preFilteredSpecularIBLMap = hdriPtr->m_prefilteredEnvMap;
 
-          RenderTargetPtr brdfLut = GetTextureManager()->Create<RenderTarget>(
-              "GLOBAL_BRDF_LUT_TEXTURE");
+          RenderTargetPtr brdfLut =
+              GetTextureManager()->Create<RenderTarget>(TK_LUT_TEXTURE);
+
           if (irradianceCubemap && preFilteredSpecularIBLMap && brdfLut)
           {
-            for (RenderState* state : matRenderStates)
-            {
-              state->irradianceMap = irradianceCubemap->m_textureId;
-              state->preFilteredSpecularMap =
-                  preFilteredSpecularIBLMap->m_textureId;
-              state->brdfLut = brdfLut->m_textureId;
-            }
+            state->irradianceMap = irradianceCubemap->m_textureId;
+            state->preFilteredSpecularMap =
+                preFilteredSpecularIBLMap->m_textureId;
+            state->brdfLut = brdfLut->m_textureId;
           }
         }
         else if (m_sky->GetType() == EntityType::Entity_GradientSky)
         {
           uint irradianceMap =
               static_cast<GradientSky*>(m_sky)->GetIrradianceMap()->m_textureId;
-
-          for (RenderState* state : matRenderStates) 
-          {
-            state->irradianceMap = irradianceMap;
-          }
+          state->irradianceMap = irradianceMap;
         }
 
-        std::for_each(matRenderStates.begin(),
-                      matRenderStates.end(),
-                      [&](RenderState* state)
-                      { state->iblIntensity = m_sky->GetIntensityVal(); });
-
+        state->iblIntensity = m_sky->GetIntensityVal();
         m_iblRotation =
             Mat4(m_sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
       }
@@ -975,6 +830,8 @@ namespace ToolKit
                                       const Vec3& axis,
                                       const float amount)
   {
+    FramebufferPtr frmBackup = m_framebuffer;
+
     m_utilFramebuffer->UnInit();
     m_utilFramebuffer->Init({0, 0, false, false});
 
@@ -982,8 +839,10 @@ namespace ToolKit
     {
       ShaderPtr vert = GetShaderManager()->Create<Shader>(
           ShaderPath("gausBlur7x1Vert.shader", true));
+
       ShaderPtr frag = GetShaderManager()->Create<Shader>(
           ShaderPath("gausBlur7x1Frag.shader", true));
+
       m_gaussianBlurMaterial                   = std::make_shared<Material>();
       m_gaussianBlurMaterial->m_vertexShader   = vert;
       m_gaussianBlurMaterial->m_fragmentShader = frag;
@@ -1002,6 +861,8 @@ namespace ToolKit
 
     SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
     DrawFullQuad(m_gaussianBlurMaterial);
+
+    SetFramebuffer(frmBackup, false);
   }
 
   void Renderer::ApplyAverageBlur(const TexturePtr source,
@@ -1009,6 +870,8 @@ namespace ToolKit
                                   const Vec3& axis,
                                   const float amount)
   {
+    FramebufferPtr frmBackup = m_framebuffer;
+
     m_utilFramebuffer->UnInit();
     m_utilFramebuffer->Init({0, 0, false, false});
 
@@ -1016,8 +879,10 @@ namespace ToolKit
     {
       ShaderPtr vert = GetShaderManager()->Create<Shader>(
           ShaderPath("avgBlurVert.shader", true));
+
       ShaderPtr frag = GetShaderManager()->Create<Shader>(
           ShaderPath("avgBlurFrag.shader", true));
+
       m_averageBlurMaterial                   = std::make_shared<Material>();
       m_averageBlurMaterial->m_vertexShader   = vert;
       m_averageBlurMaterial->m_fragmentShader = frag;
@@ -1029,6 +894,7 @@ namespace ToolKit
     m_averageBlurMaterial->m_fragmentShader->SetShaderParameter(
         "BlurScale",
         ParameterVariant(axis * amount));
+
     m_averageBlurMaterial->Init();
 
     m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
@@ -1036,32 +902,15 @@ namespace ToolKit
 
     SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
     DrawFullQuad(m_averageBlurMaterial);
+
+    SetFramebuffer(frmBackup, false);
   }
 
-  void Renderer::SetProjectViewModel(Entity* ntt, Camera* cam)
+  void Renderer::SetProjectViewModel(const Mat4& model, Camera* cam)
   {
     m_view    = cam->GetViewMatrix();
-
-    // Recalculate the projection matrix due to aspect ratio changes of the
-    // current frame buffer.
-    /*if (cam->IsOrtographic())
-    {
-      // ASPECT ??
-      cam->SetLens(cam->Left(),
-                   cam->Right(),
-                   cam->Top(),
-                   cam->Bottom(),
-                   cam->Near(),
-                   cam->Far());
-    }
-    else
-    {
-      float aspect = (float) m_viewportSize.x / (float) m_viewportSize.y;
-      cam->SetLens(cam->Fov(), aspect);
-    }*/
-
     m_project = cam->GetProjectionMatrix();
-    m_model   = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
+    m_model   = model;
   }
 
   void Renderer::BindProgram(ProgramPtr program)
@@ -1238,12 +1087,13 @@ namespace ToolKit
           glUniform1f(loc, shader->m_shaderParams["Exposure"].GetVar<float>());
         }
         break;
-        case Uniform::PROJECTION_VIEW_NO_TR:
+        case Uniform::PROJECT_VIEW_NO_TR:
         {
-          GLint loc = glGetUniformLocation(
-              program->m_handle,
-              GetUniformName(Uniform::PROJECTION_VIEW_NO_TR));
-          // Zero transalate variables in model matrix
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::PROJECT_VIEW_NO_TR));
+
+          // Zero translate variables in model matrix
           Mat4 view  = m_view;
           view[0][3] = 0.0f;
           view[1][3] = 0.0f;
@@ -1252,6 +1102,7 @@ namespace ToolKit
           view[3][0] = 0.0f;
           view[3][1] = 0.0f;
           view[3][2] = 0.0f;
+
           Mat4 mul   = m_project * view;
           glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
         }
@@ -1308,14 +1159,6 @@ namespace ToolKit
           glUniform1f(loc, m_mat->m_alpha);
         }
         break;
-        case Uniform::USE_AO:
-        {
-          m_renderState.AOInUse = m_mat->GetRenderState()->AOInUse;
-          GLint loc             = glGetUniformLocation(program->m_handle,
-                                           GetUniformName(Uniform::USE_AO));
-          glUniform1i(loc, (int) m_renderState.AOInUse);
-        }
-        break;
         case Uniform::IBL_ROTATION:
         {
           GLint loc =
@@ -1359,13 +1202,6 @@ namespace ToolKit
           glUniform1i(loc, v);
         }
         break;
-        case Uniform::USE_FORWARD_PATH:
-        {
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::USE_FORWARD_PATH));
-          glUniform1i(loc, (GLint) m_renderState.useForwardPath);
-        }
         case Uniform::UNUSEDSLOT_3:
           assert(false);
           break;

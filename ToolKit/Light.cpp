@@ -137,9 +137,9 @@ namespace ToolKit
     return EntityType::Entity_DirectionalLight;
   }
 
-  void DirectionalLight::UpdateShadowFrustum(const EntityRawPtrArray& entities)
+  void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs)
   {
-    FitEntitiesBBoxIntoShadowFrustum(m_shadowCamera, entities);
+    FitEntitiesBBoxIntoShadowFrustum(m_shadowCamera, jobs);
     UpdateShadowCamera();
   }
 
@@ -167,25 +167,19 @@ namespace ToolKit
 
   void DirectionalLight::FitEntitiesBBoxIntoShadowFrustum(
       Camera* lightCamera,
-      const EntityRawPtrArray& entities)
+      const RenderJobArray& jobs)
   {
     // Calculate all scene's bounding box
     BoundingBox totalBBox;
-    for (Entity* ntt : entities)
+    for (const RenderJob& job : jobs)
     {
-      if (!(ntt->IsDrawable() && ntt->GetVisibleVal()))
+      if (!job.ShadowCaster)
       {
         continue;
       }
 
-      if (!ntt->GetMeshComponent()->GetCastShadowVal())
-      {
-        continue;
-      }
-
-      BoundingBox bb = ntt->GetAABB(true);
-      totalBBox.UpdateBoundary(bb.max);
-      totalBBox.UpdateBoundary(bb.min);
+      totalBBox.UpdateBoundary(job.BoundingBox.max);
+      totalBBox.UpdateBoundary(job.BoundingBox.min);
     }
     Vec3 center = totalBBox.GetCenter();
 

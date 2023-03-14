@@ -1,6 +1,7 @@
 #include "Shader.h"
 
 #include "GL/glew.h"
+#include "TKAssert.h"
 #include "ToolKit.h"
 #include "Util.h"
 #include "rapidxml.hpp"
@@ -138,34 +139,43 @@ namespace ToolKit
       return "Color";
     case Uniform::FRAME_COUNT:
       return "FrameCount";
-    case Uniform::PROJECTION_VIEW_NO_TR:
-      return "ProjectionViewNoTr";
+    case Uniform::UNUSEDSLOT_1:
+      return "UNUSEDSLOT_1";
+    case Uniform::EXPOSURE:
+      return "Exposure";
+    case Uniform::PROJECT_VIEW_NO_TR:
+      return "ProjectViewNoTr";
     case Uniform::USE_IBL:
       return "UseIbl";
     case Uniform::IBL_INTENSITY:
       return "IblIntensity";
     case Uniform::IBL_IRRADIANCE:
       return "IBLIrradianceMap";
-    case Uniform::USE_AO:
-      return "UseAO";
     case Uniform::DIFFUSE_TEXTURE_IN_USE:
       return "DiffuseTextureInUse";
+    case Uniform::COLOR_ALPHA:
+      return "ColorAlpha";
+    case Uniform::UNUSEDSLOT_4:
+      TK_ASSERT_ONCE(false && "Old asset in use.");
+      return "UNUSEDSLOT_4";
     case Uniform::IBL_ROTATION:
       return "IblRotation";
+    case Uniform::UNUSEDSLOT_2:
+      TK_ASSERT_ONCE(false);
+      return "UNUSEDSLOT_2";
     case Uniform::USE_ALPHA_MASK:
       return "useAlphaMask";
     case Uniform::ALPHA_MASK_TRESHOLD:
       return "alphaMaskTreshold";
-    case Uniform::EXPOSURE:
-      return "Exposure";
-    case Uniform::COLOR_ALPHA:
-      return "ColorAlpha";
-    case Uniform::EMISSIVE_COLOR:
-      return "emissiveColor";
+    case Uniform::UNUSEDSLOT_5:
+      TK_ASSERT_ONCE(false && "Old asset in use.");
+      return "UNUSEDSLOT_5";
     case Uniform::EMISSIVE_TEXTURE_IN_USE:
       return "emissiveTextureInUse";
+    case Uniform::EMISSIVE_COLOR:
+      return "emissiveColor";
     case Uniform::UNUSEDSLOT_3:
-      assert(false);
+      TK_ASSERT_ONCE(false && "Old asset in use.");
       return "UNUSEDSLOT_3";
     case Uniform::METALLIC:
       return "metallic";
@@ -177,6 +187,7 @@ namespace ToolKit
       return "normalMapInUse";
     case Uniform::IBL_MAX_REFLECTION_LOD:
       return "iblMaxReflectionLod";
+    case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";
     }
@@ -367,8 +378,8 @@ namespace ToolKit
     }
 
     precisionLoc = 0;
-    while ((precisionLoc =
-               m_source.find("precision", precisionLoc)) != String::npos)
+    while ((precisionLoc = m_source.find("precision", precisionLoc)) !=
+           String::npos)
     {
       for (size_t fileLoc = precisionLoc; fileLoc < m_source.length();
            ++fileLoc)

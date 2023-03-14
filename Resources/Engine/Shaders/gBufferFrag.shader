@@ -29,7 +29,7 @@
 		layout (location = 1) out vec3 fragNormal;
 		layout (location = 2) out vec3 fragColor;
 		layout (location = 3) out vec3 fragEmissive;
-		layout (location = 4) out float fragLinearDepth;
+		layout (location = 4) out vec3 fragLinearDepth;
 		layout (location = 5) out vec2 fragMetallicRoughess;
 		layout (location = 6) out vec3 fragIbl;
 
@@ -97,7 +97,8 @@
 			}
 
 			fragColor = color.xyz;
-			fragLinearDepth = (View * vec4(v_pos, 1.0)).z;
+			vec4 viewPnt = View * vec4(v_pos, 1.0);
+			fragLinearDepth = viewPnt.xyz;
 
 			if (metallicRoughnessTextureInUse == 1)
 			{

@@ -1,9 +1,10 @@
-#include "EditorPass.h"
+#include "EditorRenderer.h"
 
 #include "App.h"
 #include "DirectionComponent.h"
 #include "EditorScene.h"
 #include "EditorViewport.h"
+#include "EnvironmentComponent.h"
 
 #include "DebugNew.h"
 
@@ -14,7 +15,7 @@ namespace ToolKit
 
     EditorRenderer::EditorRenderer() { InitRenderer(); }
 
-    EditorRenderer::EditorRenderer(const EditorRenderPassParams& params)
+    EditorRenderer::EditorRenderer(const EditorRenderParams& params)
         : EditorRenderer()
     {
       m_params = params;
@@ -22,6 +23,7 @@ namespace ToolKit
 
     EditorRenderer::~EditorRenderer()
     {
+      m_billboardPass     = nullptr;
       m_lightSystem       = nullptr;
       m_scenePass         = nullptr;
       m_editorPass        = nullptr;
@@ -78,11 +80,14 @@ namespace ToolKit
 
         // Draw editor objects.
         m_passArray.push_back(m_editorPass);
+        // Clears depth buffer to draw remaining entities always on top.
         m_passArray.push_back(m_gizmoPass);
+        // Scene meshs can't block editor billboards. Desired for this case.
+        m_passArray.push_back(m_billboardPass);
 
         // Post process.
         m_passArray.push_back(m_tonemapPass);
-        if (gfx.FXAAEnabled) 
+        if (gfx.FXAAEnabled)
         {
           m_passArray.push_back(m_fxaaPass);
         }
@@ -153,18 +158,11 @@ namespace ToolKit
                             app->m_perFrameDebugObjects.begin(),
                             app->m_perFrameDebugObjects.end());
 
-      // Billboards.
-      std::vector<EditorBillboardBase*> bbs = scene->GetBillboards();
-      bbs.push_back(app->m_origin);
-      bbs.push_back(app->m_cursor);
-
-      float vpScale = m_params.Viewport->GetBillboardScale();
-      for (EditorBillboardBase* bb : bbs)
-      {
-        bb->LookAt(m_camera, vpScale);
-      }
-
-      editorEntities.insert(editorEntities.end(), bbs.begin(), bbs.end());
+      // Billboard pass.
+      m_billboardPass->m_params.Billboards = scene->GetBillboards();
+      m_billboardPass->m_params.Billboards.push_back(app->m_origin);
+      m_billboardPass->m_params.Billboards.push_back(app->m_cursor);
+      m_billboardPass->m_params.Viewport = m_params.Viewport;
 
       // Grid.
       Grid* grid = m_params.Viewport->GetType() == Window::Type::Viewport2d
@@ -181,10 +179,20 @@ namespace ToolKit
       EditorViewport* viewport =
           static_cast<EditorViewport*>(m_params.Viewport);
 
+      RenderJobArray renderJobs;
+      RenderJobArray opaque;
+      RenderJobArray translucent;
+
+      RenderJobProcessor::CreateRenderJobs(editorEntities, renderJobs);
+      RenderJobProcessor::SeperateOpaqueTranslucent(renderJobs,
+                                                    opaque,
+                                                    translucent);
+
       // Editor pass.
       m_editorPass->m_params.Cam              = m_camera;
       m_editorPass->m_params.FrameBuffer      = viewport->m_framebuffer;
-      m_editorPass->m_params.Entities         = editorEntities;
+      m_editorPass->m_params.OpaqueJobs       = opaque;
+      m_editorPass->m_params.TranslucentJobs  = translucent;
       m_editorPass->m_params.ClearFrameBuffer = false;
 
       // Scene pass.
@@ -207,8 +215,7 @@ namespace ToolKit
       m_singleMatRenderer->m_params.ForwardParams.Lights           = lights;
       m_singleMatRenderer->m_params.ForwardParams.ClearFrameBuffer = true;
 
-      m_singleMatRenderer->m_params.ForwardParams.Entities =
-          scene->GetEntities();
+      m_singleMatRenderer->m_params.ForwardParams.OpaqueJobs       = renderJobs;
 
       m_singleMatRenderer->m_params.ForwardParams.FrameBuffer =
           viewport->m_framebuffer;
@@ -280,6 +287,7 @@ namespace ToolKit
       m_unlitOverride = GetMaterialManager()->GetCopyOfUnlitMaterial();
       m_unlitOverride->Init();
 
+      m_billboardPass     = std::make_shared<BillboardPass>();
       m_scenePass         = std::make_shared<SceneRenderer>();
       m_editorPass        = std::make_shared<ForwardRenderPass>();
       m_gizmoPass         = std::make_shared<GizmoPass>();
@@ -310,11 +318,14 @@ namespace ToolKit
           return;
         }
 
+        RenderJobArray renderJobs;
+        RenderJobProcessor::CreateRenderJobs(selection, renderJobs);
+
         // Set parameters of pass
         m_outlinePass->m_params.Camera       = viewport->GetCamera();
         m_outlinePass->m_params.FrameBuffer  = viewport->m_framebuffer;
         m_outlinePass->m_params.OutlineColor = color;
-        m_outlinePass->m_params.DrawList     = selection;
+        m_outlinePass->m_params.RenderJobs   = renderJobs;
 
         for (Entity* entity : selection)
         {
@@ -332,7 +343,11 @@ namespace ToolKit
             static_cast<Billboard*>(billboard)->LookAt(
                 viewport->GetCamera(),
                 viewport->GetBillboardScale());
-            m_outlinePass->m_params.DrawList.push_back(billboard);
+
+            RenderJobArray jobs;
+            RenderJobProcessor::CreateRenderJob(billboard, jobs);
+            RenderJobArray& outlineJobs = m_outlinePass->m_params.RenderJobs;
+            outlineJobs.insert(outlineJobs.end(), jobs.begin(), jobs.end());
           }
         }
 
@@ -360,130 +375,5 @@ namespace ToolKit
       RenderFn(selecteds, g_selectHighLightPrimaryColor);
     }
 
-    GizmoPass::GizmoPass()
-    {
-      m_depthMaskSphere   = std::make_shared<Sphere>(0.95f);
-      MeshComponentPtr mc = m_depthMaskSphere->GetMeshComponent();
-      MeshPtr mesh        = mc->GetMeshVal();
-      RenderState* rs     = mesh->m_material->GetRenderState();
-      rs->cullMode        = CullingType::Front;
-    }
-
-    GizmoPass::GizmoPass(const GizmoPassParams& params) : GizmoPass()
-    {
-      m_params = params;
-    }
-
-    void GizmoPass::Render()
-    {
-      Renderer* renderer = GetRenderer();
-
-      for (EditorBillboardBase* bb : m_params.GizmoArray)
-      {
-        if (bb->GetBillboardType() ==
-            EditorBillboardBase::BillboardType::Rotate)
-        {
-          Mat4 ts = bb->m_node->GetTransform();
-          m_depthMaskSphere->m_node->SetTransform(ts,
-                                                  TransformationSpace::TS_WORLD,
-                                                  false);
-
-          renderer->ColorMask(false, false, false, false);
-          renderer->Render(m_depthMaskSphere.get(), m_camera);
-
-          renderer->ColorMask(true, true, true, true);
-          renderer->Render(bb, m_camera);
-        }
-        else
-        {
-          renderer->Render(bb, m_camera);
-        }
-      }
-    }
-
-    void GizmoPass::PreRender()
-    {
-      Pass::PreRender();
-
-      Renderer* renderer = GetRenderer();
-      m_camera           = m_params.Viewport->GetCamera();
-      renderer->SetFramebuffer(m_params.Viewport->m_framebuffer, false);
-      renderer->SetCameraLens(m_camera);
-      renderer->ClearBuffer(GraphicBitFields::DepthBits);
-
-      for (int i = (int) m_params.GizmoArray.size() - 1; i >= 0; i--)
-      {
-        if (EditorBillboardBase* bb = m_params.GizmoArray[i])
-        {
-          bb->LookAt(m_camera, m_params.Viewport->GetBillboardScale());
-        }
-        else
-        {
-          m_params.GizmoArray.erase(m_params.GizmoArray.begin() + i);
-        }
-      }
-    }
-
-    void GizmoPass::PostRender() { Pass::PostRender(); }
-
-    SingleMatForwardRenderPass::SingleMatForwardRenderPass()
-        : ForwardRenderPass()
-    {
-      m_overrideMat = std::make_shared<Material>();
-    }
-
-    SingleMatForwardRenderPass::SingleMatForwardRenderPass(
-        const SingleMatForwardRenderPassParams& params)
-        : SingleMatForwardRenderPass()
-    {
-      m_params = params;
-    }
-
-    void SingleMatForwardRenderPass::Render()
-    {
-      EntityRawPtrArray opaqueDrawList;
-      EntityRawPtrArray translucentDrawList;
-      SeperateTranslucentEntities(m_params.ForwardParams.Entities,
-                                  opaqueDrawList,
-                                  translucentDrawList);
-
-      Renderer* renderer = GetRenderer();
-      for (Entity* ntt : opaqueDrawList)
-      {
-        LightRawPtrArray lightList =
-            GetBestLights(ntt, m_params.ForwardParams.Lights);
-
-        MaterialPtr mat         = ntt->GetRenderMaterial();
-        renderer->m_overrideMat = std::make_shared<Material>();
-        renderer->m_overrideMat->SetRenderState(mat->GetRenderState());
-        renderer->m_overrideMat->m_vertexShader = mat->m_vertexShader;
-        renderer->m_overrideMat->m_fragmentShader =
-            m_params.OverrideFragmentShader;
-        renderer->m_overrideMat->m_diffuseTexture  = mat->m_diffuseTexture;
-        renderer->m_overrideMat->m_emissiveTexture = mat->m_emissiveTexture;
-        renderer->m_overrideMat->m_emissiveColor   = mat->m_emissiveColor;
-        renderer->m_overrideMat->m_cubeMap         = mat->m_cubeMap;
-        renderer->m_overrideMat->m_color           = mat->m_color;
-        renderer->m_overrideMat->m_alpha           = mat->m_alpha;
-        renderer->m_overrideMat->Init();
-
-        renderer->Render(ntt, m_params.ForwardParams.Cam, lightList);
-      }
-
-      RenderTranslucent(translucentDrawList,
-                        m_camera,
-                        m_params.ForwardParams.Lights);
-    }
-
-    void SingleMatForwardRenderPass::PreRender()
-    {
-      ForwardRenderPass::m_params = m_params.ForwardParams;
-      ForwardRenderPass::PreRender();
-      Renderer* renderer = GetRenderer();
-
-      m_overrideMat->UnInit();
-      m_overrideMat->m_fragmentShader = m_params.OverrideFragmentShader;
-      m_overrideMat->Init();
-    };
   } // namespace Editor
 } // namespace ToolKit

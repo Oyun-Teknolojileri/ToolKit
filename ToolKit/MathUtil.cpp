@@ -3,13 +3,12 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "Node.h"
+#include "Pass.h"
 #include "ResourceComponent.h"
 #include "Skeleton.h"
 
-#include <algorithm>
 #include <execution>
 #include <mutex>
-#include <vector>
 
 #include "DebugNew.h"
 
@@ -752,6 +751,29 @@ namespace ToolKit
                    entities.end());
   }
 
+  void FrustumCull(RenderJobArray& jobs, Camera* camera)
+  {
+    // Frustum cull
+    Mat4 pr         = camera->GetProjectionMatrix();
+    Mat4 v          = camera->GetViewMatrix();
+    Frustum frustum = ExtractFrustum(pr * v, false);
+
+    auto delFn      = [frustum](RenderJob& job) -> bool
+    {
+      IntersectResult res = FrustumBoxIntersection(frustum, job.BoundingBox);
+      if (res == IntersectResult::Outside)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    };
+
+    jobs.erase(std::remove_if(jobs.begin(), jobs.end(), delFn), jobs.end());
+  }
+
   void TransformAABB(BoundingBox& box, const Mat4& transform)
   {
     Vec3Array corners;
@@ -902,6 +924,53 @@ namespace ToolKit
   {
     return (point.x <= max.x && point.x >= min.x && point.y <= max.y &&
             point.y >= min.y && point.z <= max.z && point.z >= min.z);
+  }
+
+  Vec3Array GenerateRandomSamplesOnHemisphere(int numSamples, float bias)
+  {
+    Vec3Array points;
+    points.reserve(numSamples);
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(0.0, 1.0);
+
+    for (int i = 0; i < numSamples; i++)
+    {
+      float theta = 2 * glm::pi<float>() * dis(gen);
+      float phi   = std::acos(1 - bias * dis(gen));
+
+      float x     = std::sin(phi) * std::cos(theta);
+      float y     = std::sin(phi) * std::sin(theta);
+      float z     = std::cos(phi);
+
+      points.emplace_back(x, y, z);
+    }
+
+    return points;
+  }
+
+  Vec3Array GenerateRandomSamplesInHemisphere(int numSamples, float bias)
+  {
+    Vec3Array samples;
+
+    // Generate random samples on the hemisphere with random length between 0
+    // and 1
+    for (int i = 0; i < numSamples; ++i)
+    {
+      float theta  = glm::linearRand(0.f, 2.f * glm::pi<float>());
+
+      // Calculate phi based on the parameter
+      float phi    = glm::acos(1.f - bias * glm::linearRand(0.f, 1.f));
+
+      float length = glm::linearRand(0.f, 1.f);
+      float x      = glm::sin(phi) * glm::cos(theta) * length;
+      float y      = glm::sin(phi) * glm::sin(theta) * length;
+      float z      = glm::cos(phi) * length;
+      samples.push_back(glm::vec3(x, y, z));
+    }
+
+    return samples;
   }
 
 } // namespace ToolKit

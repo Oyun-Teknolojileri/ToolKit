@@ -1,6 +1,6 @@
 <shader>
 	<type name = "vertexShader" />
-	<uniform name = "ProjectionViewNoTr" />
+	<uniform name = "ProjectViewNoTr" />
 	<uniform name = "Model" />
 	<source>
 	<!--
@@ -12,7 +12,7 @@
 		layout (location = 1) in vec3 vNormal;
 		layout (location = 2) in vec2 vTexture;
 
-		uniform mat4 ProjectionViewNoTr;
+		uniform mat4 ProjectViewNoTr;
 		uniform mat4 Model;
 
 		out vec3 v_pos;
@@ -21,7 +21,7 @@
 		{
 			v_pos = (Model * vec4(vPosition, 1.0)).xyz;
 
-			vec4 clipPos = ProjectionViewNoTr * vec4(vPosition, 1.0);
+			vec4 clipPos = ProjectViewNoTr * vec4(vPosition, 1.0);
 
 			// Make z equals w. So after perspective division the depth
 			// value will always 1(maximum depth value).

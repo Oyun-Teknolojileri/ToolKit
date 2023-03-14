@@ -1,8 +1,16 @@
 #pragma once
 
+#include "BloomPass.h"
+#include "CubemapPass.h"
+#include "DeferredPass.h"
+#include "ForwardPass.h"
+#include "FxaaPass.h"
+#include "GBufferPass.h"
+#include "GammaPass.h"
 #include "Pass.h"
-#include "PostProcessPass.h"
 #include "RenderSystem.h"
+#include "ShadowPass.h"
+#include "SsaoPass.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -34,7 +42,6 @@ namespace ToolKit
 
    private:
     void SetPassParams();
-    void CullDrawList(EntityRawPtrArray& entities, Camera* camera);
 
    public:
     SceneRenderPassParams m_params;

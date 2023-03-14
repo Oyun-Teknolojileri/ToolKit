@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <random>
 #include <unordered_map>
 #include <vector>
 
@@ -35,6 +36,7 @@
 #include "glm/gtx/scalar_relational.hpp"
 #include "glm/gtx/string_cast.hpp"
 #include "glm/gtx/vector_query.hpp"
+#include "glm/gtc/random.hpp"
 
 // Stb
 #include "stb/stb_image.h"

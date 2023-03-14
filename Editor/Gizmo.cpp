@@ -35,28 +35,22 @@ namespace ToolKit
 
     void EditorBillboardBase::Generate()
     {
-      MeshComponentPtr parentMeshComp = GetComponent<MeshComponent>();
-      MeshPtr parentMesh              = parentMeshComp->GetMeshVal();
-      parentMesh->UnInit();
+      MeshComponentPtr mCom = GetComponent<MeshComponent>();
 
       // Billboard
       Quad quad;
-      MeshPtr meshPtr     = quad.GetMeshComponent()->GetMeshVal();
-
-      meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-      meshPtr->m_material->UnInit();
-      meshPtr->m_material->m_diffuseTexture = m_iconImage;
-      meshPtr->m_material->GetRenderState()->blendFunction =
-          BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-      meshPtr->m_material->Init();
-
-      meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
-      parentMesh->m_subMeshes.push_back(meshPtr);
-
-      parentMesh->CalculateAABB();
+      MeshPtr meshPtr    = quad.GetMeshComponent()->GetMeshVal();
+      MaterialPtr matPtr = GetMaterialManager()->GetCopyOfUnlitMaterial();
+      matPtr->UnInit();
+      matPtr->m_diffuseTexture                    = m_iconImage;
+      matPtr->GetRenderState()->blendFunction     = BlendFunction::ALPHA_MASK;
+      matPtr->GetRenderState()->alphaMaskTreshold = 0.1f;
+      matPtr->Init();
+      meshPtr->m_material = matPtr;
+      mCom->SetMeshVal(meshPtr);
     }
 
-    Cursor::Cursor() : EditorBillboardBase({true, 10.0f, 60.0f}) { Generate(); }
+    Cursor::Cursor() : EditorBillboardBase({true, 10.0f, 60.0f, true}) { Generate(); }
 
     Cursor::~Cursor() {}
 
@@ -73,18 +67,15 @@ namespace ToolKit
 
       // Billboard
       Quad quad;
-      MeshPtr meshPtr     = quad.GetMeshComponent()->GetMeshVal();
-
-      meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-      meshPtr->m_material->UnInit();
-      meshPtr->m_material->m_diffuseTexture =
-          GetTextureManager()->Create<Texture>(
-              TexturePath(ConcatPaths({"Icons", "cursor4k.png"}), true));
-      meshPtr->m_material->GetRenderState()->blendFunction =
-          BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-      meshPtr->m_material->Init();
-
-      meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
+      MeshPtr meshPtr    = quad.GetMeshComponent()->GetMeshVal();
+      MaterialPtr matPtr = GetMaterialManager()->GetCopyOfUnlitMaterial();
+      matPtr->UnInit();
+      matPtr->m_diffuseTexture = GetTextureManager()->Create<Texture>(
+          TexturePath(ConcatPaths({"Icons", "cursor4k.png"}), true));
+      matPtr->GetRenderState()->blendFunction     = BlendFunction::ALPHA_MASK;
+      matPtr->GetRenderState()->alphaMaskTreshold = 0.1f;
+      matPtr->Init();
+      meshPtr->m_material = matPtr;
       parentMesh->m_subMeshes.push_back(meshPtr);
 
       // Lines
@@ -111,17 +102,16 @@ namespace ToolKit
 
       MaterialPtr newMaterial =
           GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-      newMaterial->m_color                            = Vec3(0.1f, 0.1f, 0.1f);
-      newMaterial->GetRenderState()->drawType         = DrawType::Line;
-      newMaterial->GetRenderState()->depthTestEnabled = false;
+      newMaterial->m_color                    = Vec3(0.1f, 0.1f, 0.1f);
+      newMaterial->GetRenderState()->drawType = DrawType::Line;
 
-      parentMesh->m_clientSideVertices                = vertices;
-      parentMesh->m_material                          = newMaterial;
+      parentMesh->m_clientSideVertices        = vertices;
+      parentMesh->m_material                  = newMaterial;
 
       parentMesh->CalculateAABB();
     }
 
-    Axis3d::Axis3d() : EditorBillboardBase({false, 10.0f, 60.0f})
+    Axis3d::Axis3d() : EditorBillboardBase({false, 10.0f, 60.0f, true})
     {
       Generate();
     }
@@ -154,7 +144,6 @@ namespace ToolKit
         Arrow2d arrow(t);
         MeshComponentPtr arrowMeshComp = arrow.GetComponent<MeshComponent>();
         MeshPtr arrowMesh              = arrowMeshComp->GetMeshVal();
-        arrowMesh->m_material->GetRenderState()->depthTestEnabled = false;
         if (i == 0)
         {
           GetMeshComponent()->SetMeshVal(arrowMesh);
@@ -175,12 +164,12 @@ namespace ToolKit
 
     void GizmoHandle::Generate(const Params& params)
     {
-      m_params               = params;
+      m_params       = params;
 
-      Vec3 dir               = AXIS[static_cast<int>(params.axis) % 3];
-      std::vector<Vec3> pnts = {dir * params.toeTip.x, dir * params.toeTip.y};
+      Vec3 dir       = AXIS[(int) params.axis % 3];
+      Vec3Array pnts = {dir * params.toeTip.x, dir * params.toeTip.y};
 
-      m_mesh                 = std::make_shared<Mesh>();
+      m_mesh         = std::make_shared<Mesh>();
 
       LineBatch line(pnts, params.color, DrawType::Line, 2.0f);
       MeshPtr lnMesh = line.GetComponent<MeshComponent>()->GetMeshVal();
@@ -231,7 +220,7 @@ namespace ToolKit
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
-        int axisInd    = static_cast<int>(m_params.axis);
+        int axisInd    = (int) m_params.axis;
         Vec3 axis      = AXIS[axisInd];
         Vec3Array pnts = {axis * 999.0f, axis * -999.0f};
 
@@ -609,7 +598,7 @@ namespace ToolKit
     {
       GizmoHandle::Params p = GetParam();
 
-      for (int i = 0; i < static_cast<int>(m_handles.size()); i++)
+      for (size_t i = 0; i < m_handles.size(); i++)
       {
         GizmoHandle* handle = m_handles[i];
         AxisLabel axis      = handle->m_params.axis;
@@ -620,7 +609,7 @@ namespace ToolKit
         }
         else if (axis != AxisLabel::XYZ)
         {
-          p.color = g_gizmoColor[static_cast<int>(axis) % 3];
+          p.color = g_gizmoColor[(int) axis % 3];
         }
         else
         {
@@ -658,6 +647,7 @@ namespace ToolKit
         mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
       mesh->Init(false);
+      mesh->CalculateAABB();
       GetComponent<MeshComponent>()->SetMeshVal(mesh);
     }
 
@@ -684,7 +674,7 @@ namespace ToolKit
       for (int i = 3; i < 6; i++)
       {
         m_handles.push_back(new QuadHandle());
-        m_handles[i]->m_params.axis = static_cast<AxisLabel>(i);
+        m_handles[i]->m_params.axis = (AxisLabel) i;
       }
 
       Update(0.0);

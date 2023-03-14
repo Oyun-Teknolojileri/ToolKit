@@ -15,14 +15,6 @@ namespace ToolKit
 {
 
   /**
-   * Utility function that sorts lights according to lit conditions from
-   * best to worst. Make sure lights array has updated shadow camera. Shadow
-   * camera is used in culling calculations.
-   */
-  TK_API LightRawPtrArray GetBestLights(Entity* entity,
-                                        const LightRawPtrArray& lights);
-
-  /**
    * Simple binary stencil test operations.
    */
   enum class StencilOperation
@@ -59,7 +51,7 @@ namespace ToolKit
      */
     void RenderUI(Viewport* viewport, UILayer* layer);
 
-    void SetRenderState(const RenderState* const state, ProgramPtr program);
+    void SetRenderState(const RenderState* const state);
 
     void SetStencilOperation(StencilOperation op);
     void SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color);
@@ -113,6 +105,10 @@ namespace ToolKit
 
     void EnableDepthWrite(bool enable);
 
+    void EnableDepthTest(bool enable);
+
+    void SetDepthTestFunc(CompareFunctions func);
+
     // If there is a material component, returns its material else
     // returns mesh's material. If there is not a MaterialComponent, it will
     // return the mesh's first material. In case of multisubmesh, there may be
@@ -126,10 +122,13 @@ namespace ToolKit
     /////////////////////
     // Left public for thumbnail rendering. TODO: there must be techniques
     // handling thumbnail render.
-    void Render(Entity* ntt,
+    void Render(const struct RenderJob& job,
                 Camera* cam,
-                const LightRawPtrArray& editorLights = LightRawPtrArray(),
-                const UIntArray& meshIndices         = {});
+                const LightRawPtrArray& lights = {});
+
+    void Render(const RenderJobArray& jobArray,
+                Camera* cam,
+                const LightRawPtrArray& lights = {});
 
     void Apply7x1GaussianBlur(const TexturePtr source,
                               RenderTargetPtr dest,
@@ -167,9 +166,9 @@ namespace ToolKit
      * volume to reflect environment rotation.
      * @param entity to find the environment volume.
      */
-    void FindEnvironmentLight(Entity* entity);
+    void FindEnvironmentLight(const RenderJob& job);
 
-    void SetProjectViewModel(Entity* ntt, Camera* cam);
+    void SetProjectViewModel(const Mat4& model, Camera* cam);
     void BindProgram(ProgramPtr program);
     void LinkProgram(uint program, uint vertexP, uint fragmentP);
     ProgramPtr CreateProgram(ShaderPtr vertex, ShaderPtr fragment);

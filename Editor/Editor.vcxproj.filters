@@ -19,6 +19,12 @@
     <Filter Include="UI\InspectorViews">
       <UniqueIdentifier>{0dc80406-1a58-4f44-abab-b7242951b6f2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{56fd2dee-1e1f-4e27-83aa-87bc7f0eeb13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\Pass">
+      <UniqueIdentifier>{82d56f23-d5eb-42d1-b37f-d85466a6574b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -120,9 +126,6 @@
     <ClCompile Include="PopupWindows.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="EditorPass.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="EntityView.cpp">
       <Filter>UI\InspectorViews</Filter>
     </ClCompile>
@@ -147,7 +150,18 @@
     <ClCompile Include="Thumbnail.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="MultiChoiceParameterWindow.cpp" />
+    <ClCompile Include="MultiChoiceParameterWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorRenderer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GizmoPass.cpp">
+      <Filter>Render\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="SingleMaterialPass.cpp">
+      <Filter>Render\Pass</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -252,9 +266,6 @@
     <ClInclude Include="PopupWindows.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="EditorPass.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="EntityView.h">
       <Filter>UI\InspectorViews</Filter>
     </ClInclude>
@@ -279,7 +290,18 @@
     <ClInclude Include="Thumbnail.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="MultiChoiceParameterWindow.h" />
+    <ClInclude Include="MultiChoiceParameterWindow.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorRenderer.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GizmoPass.h">
+      <Filter>Render\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="SingleMaterialPass.h">
+      <Filter>Render\Pass</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />

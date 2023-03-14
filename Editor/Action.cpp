@@ -1,7 +1,9 @@
 #include "Action.h"
 
+#include "AnimationControllerComponent.h"
 #include "App.h"
 #include "EditorScene.h"
+#include "EnvironmentComponent.h"
 #include "Global.h"
 #include "Prefab.h"
 
