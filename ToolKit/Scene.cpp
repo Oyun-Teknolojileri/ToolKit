@@ -655,6 +655,8 @@ namespace ToolKit
     for (Entity* prefab : prefabList)
     {
       static_cast<Prefab*>(prefab)->Init(this);
+      // we need to deep set visibility for prefabs
+      prefab->SetVisibility(prefab->GetVisibleVal(), true);
     }
   }
   
