@@ -253,11 +253,12 @@ namespace ToolKit
 
       file.open(path.c_str(), std::ios::out | std::ios::trunc);
       assert(file.is_open());
-
-      if (file.is_open()) 
+      if (file.is_open())
       {
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
-        GetEngineSettings().Serialize(lclDoc.get(), nullptr);
+
+        GetEngineSettings().SerializeWindow(lclDoc.get(), nullptr);
+        GetEngineSettings().SerializeGraphics(lclDoc.get(), nullptr);
 
         std::string xml;
         rapidxml::print(std::back_inserter(xml), *lclDoc);
@@ -283,7 +284,8 @@ namespace ToolKit
       XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
       lclDoc->parse<0>(lclFile->data());
 
-      GetEngineSettings().DeSerialize(lclDoc.get(), nullptr);
+      GetEngineSettings().DeSerializeWindow(lclDoc.get(), nullptr);
+      GetEngineSettings().DeSerializeGraphics(lclDoc.get(), nullptr);
     }
 
     void Workspace::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -314,7 +316,6 @@ namespace ToolKit
           if (XmlNode* setNode = settings->first_node(XmlNodeProject.data()))
           {
             ReadAttr(setNode, XmlNodeName.data(), projectName);
-            String scene;
             ReadAttr(setNode, XmlNodeScene.data(), sceneName);
           }
 

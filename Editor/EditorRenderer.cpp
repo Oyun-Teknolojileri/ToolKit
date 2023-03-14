@@ -44,7 +44,8 @@ namespace ToolKit
       SetLitMode(renderer, m_params.LitMode);
 
       m_passArray.clear();
-      EngineSettings::GraphicSettings gfx = GetEngineSettings().Graphics;
+      const EngineSettings::PostProcessingSettings& 
+          gfx = GetEngineSettings().PostProcessing;
       switch (m_params.LitMode)
       {
       case EditorLitMode::LightComplexity:
@@ -200,7 +201,8 @@ namespace ToolKit
       m_scenePass->m_params.MainFramebuffer   = viewport->m_framebuffer;
       m_scenePass->m_params.Scene             = scene;
 
-      EngineSettings::GraphicSettings gfx     = GetEngineSettings().Graphics;
+      const EngineSettings::PostProcessingSettings& gfx     
+                                   = GetEngineSettings().PostProcessing;
 
       // Bloom pass
       m_bloomPass->m_params.FrameBuffer       = viewport->m_framebuffer;

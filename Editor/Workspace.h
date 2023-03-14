@@ -47,7 +47,6 @@ namespace ToolKit
      private:
       void SerializeEngineSettings() const;
       void DeSerializeEngineSettings();
-
      public:
       std::vector<Project> m_projects;
 

@@ -390,92 +390,136 @@ namespace ToolKit
     return ProcessPath(file, "Layers", def);
   }
 
-  void EngineSettings::Serialize(XmlDocument* doc, XmlNode* node) const
+  void EngineSettings::SerializeWindow(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* settings = doc->allocate_node(rapidxml::node_element, "Settings");
-    doc->append_node(settings);
-
     XmlNode* window = doc->allocate_node(rapidxml::node_element, "Window");
-    settings->append_node(window);
-
-    XmlNode* graphics = doc->allocate_node(rapidxml::node_element, "Graphics");
+    doc->append_node(window);
 
     using namespace std;
     const EngineSettings::GraphicSettings& gfx = Graphics;
 
     const auto writeAttr1 = [&](StringView name, StringView val)
     { WriteAttr(window, doc, name.data(), val.data()); };
-    // serialize window
+    // serialize window.
     writeAttr1("width", to_string(Window.Width));
     writeAttr1("height", to_string(Window.Height));
     writeAttr1(XmlNodeName, Window.Name);
     writeAttr1("fullscreen", to_string(Window.FullScreen));
-
-    settings->append_node(graphics);
-
-    const auto writeAttr = [&](StringView name, StringView val)
-    { WriteAttr(graphics, doc, name.data(), val.data()); };
-
-    // serialize Graphics struct
-    writeAttr("MSAA", to_string(gfx.MSAA));
-    writeAttr("FPS", to_string(gfx.FPS));
-    writeAttr("TonemappingEnabled", to_string(gfx.TonemappingEnabled));
-    writeAttr("TonemapperMode", to_string((int) gfx.TonemapperMode));
-    writeAttr("EnableBloom", to_string((int) gfx.BloomEnabled));
-    writeAttr("BloomIntensity", to_string(gfx.BloomIntensity));
-    writeAttr("BloomThreshold", to_string(gfx.BloomThreshold));
-    writeAttr("BloomIterationCount", to_string(gfx.BloomIterationCount));
-    writeAttr("GammaCorrectionEnabled", to_string(gfx.GammaCorrectionEnabled));
-    writeAttr("Gamma", to_string(gfx.Gamma));
-    writeAttr("SSAOEnabled", to_string(gfx.SSAOEnabled));
-    writeAttr("SSAORadius", to_string(gfx.SSAORadius));
-    writeAttr("SSAOSpread", to_string(gfx.SSAOSpread));
-    writeAttr("SSAOBias", to_string(gfx.SSAOBias));
-    writeAttr("DepthOfFieldEnabled", to_string(gfx.DepthOfFieldEnabled));
-    writeAttr("FocusPoint", to_string(gfx.FocusPoint));
-    writeAttr("FocusScale", to_string(gfx.FocusScale));
-    writeAttr("DofQuality", to_string((int) gfx.DofQuality));
-    writeAttr("FXAAEnabled", to_string(gfx.FXAAEnabled));
   }
 
-  void EngineSettings::DeSerialize(XmlDocument* doc, XmlNode* node)
+  void EngineSettings::DeSerializeWindow(XmlDocument* doc, XmlNode* parent)
+  {
+    XmlNode* node = doc->first_node("Window");
+    if (node == nullptr)
+    {
+      return;
+    }
+    ReadAttr(node, "width", Window.Width);
+    ReadAttr(node, "height", Window.Height);
+    ReadAttr(node, "name", Window.Name);
+    ReadAttr(node, "fullscreen", Window.FullScreen);
+  }
+
+  void EngineSettings::SerializePostProcessing(XmlDocument* doc,
+                                               XmlNode* parent) const
+  {
+    XmlNode* settings =
+        doc->allocate_node(rapidxml::node_element, "PostProcessing");
+    doc->append_node(settings);
+
+    const EngineSettings::PostProcessingSettings& gfx = PostProcessing;
+
+    const auto writeAttrFn = [&](StringView name, StringView val) -> void
+    { WriteAttr(settings, doc, name.data(), val.data()); };
+
+    // Serialize Graphics struct.
+    using namespace std;
+    writeAttrFn("TonemappingEnabled", to_string(gfx.TonemappingEnabled));
+    writeAttrFn("TonemapperMode", to_string((int) gfx.TonemapperMode));
+    writeAttrFn("EnableBloom", to_string((int) gfx.BloomEnabled));
+    writeAttrFn("BloomIntensity", to_string(gfx.BloomIntensity));
+    writeAttrFn("BloomThreshold", to_string(gfx.BloomThreshold));
+    writeAttrFn("BloomIterationCount", to_string(gfx.BloomIterationCount));
+    writeAttrFn("GammaCorrectionEnabled", to_string(gfx.GammaCorrectionEnabled));
+    writeAttrFn("Gamma", to_string(gfx.Gamma));
+    writeAttrFn("SSAOEnabled", to_string(gfx.SSAOEnabled));
+    writeAttrFn("SSAORadius", to_string(gfx.SSAORadius));
+    writeAttrFn("SSAOBias", to_string(gfx.SSAOBias));
+    writeAttrFn("DepthOfFieldEnabled", to_string(gfx.DepthOfFieldEnabled));
+    writeAttrFn("FocusPoint", to_string(gfx.FocusPoint));
+    writeAttrFn("FocusScale", to_string(gfx.FocusScale));
+    writeAttrFn("DofQuality", to_string((int) gfx.DofQuality));
+    writeAttrFn("FXAAEnabled", to_string(gfx.FXAAEnabled));
+  }
+
+  void EngineSettings::DeSerializePostProcessing(XmlDocument* doc,
+                                                 XmlNode* parent)
+  {
+    XmlNode* node  = doc->first_node("PostProcessing");
+    // if post processing settings is not exist use default settings
+    PostProcessing = PostProcessingSettings {};
+    if (node == nullptr)
+    {
+      return;
+    }
+
+    ReadAttr(node, "TonemappingEnabled", PostProcessing.TonemappingEnabled);
+    ReadAttr(node, "BloomEnabled", PostProcessing.BloomEnabled);
+    ReadAttr(node, "BloomIntensity", PostProcessing.BloomIntensity);
+    ReadAttr(node, "BloomThreshold", PostProcessing.BloomThreshold);
+    ReadAttr(node, "BloomIterationCount", PostProcessing.BloomIterationCount);
+    ReadAttr(node,
+             "GammaCorrectionEnabled",
+             PostProcessing.GammaCorrectionEnabled);
+    ReadAttr(node, "Gamma", PostProcessing.Gamma);
+    ReadAttr(node, "SSAOEnabled", PostProcessing.SSAOEnabled);
+    ReadAttr(node, "SSAORadius", PostProcessing.SSAORadius);
+    ReadAttr(node, "SSAOBias", PostProcessing.SSAOBias);
+    ReadAttr(node, "DepthOfFieldEnabled", PostProcessing.DepthOfFieldEnabled);
+    ReadAttr(node, "FocusPoint", PostProcessing.FocusPoint);
+    ReadAttr(node, "FocusScale", PostProcessing.FocusScale);
+    ReadAttr(node, "FXAAEnabled", PostProcessing.FXAAEnabled);
+    ReadAttr(node, "TonemapperMode", *(int*) &PostProcessing.TonemapperMode);
+    ReadAttr(node, "DofQuality", *(int*) &PostProcessing.DofQuality);
+  }
+
+  void EngineSettings::SerializeGraphics(XmlDocument* doc,
+                                         XmlNode* parent) const
+  {
+    XmlNode* settings = doc->allocate_node(rapidxml::node_element, "Graphics");
+    doc->append_node(settings);
+    const EngineSettings::GraphicSettings& gfx = Graphics;
+
+    const auto writeAttr = [&](StringView name, StringView val)
+    { WriteAttr(settings, doc, name.data(), val.data()); };
+
+    WriteAttr(settings, doc, "MSAA", std::to_string(gfx.MSAA));
+    WriteAttr(settings, doc, "FPS", std::to_string(gfx.FPS));
+  }
+
+  void EngineSettings::DeSerializeGraphics(XmlDocument* doc, XmlNode* parent)
+  {
+    XmlNode* node = doc->first_node("Graphics");
+    if (node == nullptr)
+    {
+      return;
+    }
+    ReadAttr(node, "MSAA", Graphics.MSAA);
+    ReadAttr(node, "FPS", Graphics.FPS);
+  }
+
+  void EngineSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+    SerializeGraphics(doc, parent);
+    SerializePostProcessing(doc, parent);
+    SerializeWindow(doc, parent);
+  }
+
+  void EngineSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     assert(doc && "doc must not be null");
-
-    XmlNode* settings = doc->first_node("Settings");
-    XmlNode* node2    = settings->first_node("Window");
-
-    if (node2 != nullptr)
-    {
-      ReadAttr(node2, "width", Window.Width);
-      ReadAttr(node2, "height", Window.Height);
-      ReadAttr(node2, "name", Window.Name);
-      ReadAttr(node2, "fullscreen", Window.FullScreen);
-    }
-
-    if (node2 = settings->first_node("Graphics"))
-    {
-      ReadAttr(node2, "MSAA", Graphics.MSAA);
-      ReadAttr(node2, "FPS", Graphics.FPS);
-      ReadAttr(node2, "TonemappingEnabled", Graphics.TonemappingEnabled);
-      ReadAttr(node2, "BloomEnabled", Graphics.BloomEnabled);
-      ReadAttr(node2, "BloomIntensity", Graphics.BloomIntensity);
-      ReadAttr(node2, "BloomThreshold", Graphics.BloomThreshold);
-      ReadAttr(node2, "BloomIterationCount", Graphics.BloomIterationCount);
-      ReadAttr(node2,
-               "GammaCorrectionEnabled",
-               Graphics.GammaCorrectionEnabled);
-      ReadAttr(node2, "Gamma", Graphics.Gamma);
-      ReadAttr(node2, "SSAOEnabled", Graphics.SSAOEnabled);
-      ReadAttr(node2, "SSAORadius", Graphics.SSAORadius);
-      ReadAttr(node2, "SSAOSpread", Graphics.SSAOSpread);
-      ReadAttr(node2, "SSAOBias", Graphics.SSAOBias);
-      ReadAttr(node2, "DepthOfFieldEnabled", Graphics.DepthOfFieldEnabled);
-      ReadAttr(node2, "FocusPoint", Graphics.FocusPoint);
-      ReadAttr(node2, "FocusScale", Graphics.FocusScale);
-      ReadAttr(node2, "FXAAEnabled", Graphics.FXAAEnabled);
-      ReadAttr(node2, "TonemapperMode", *(int*) &Graphics.TonemapperMode);
-      ReadAttr(node2, "DofQuality", *(int*) &Graphics.DofQuality);
-    }
+    DeSerializeWindow(doc, parent);
+    DeSerializeGraphics(doc, parent);
+    DeSerializePostProcessing(doc, parent);
   }
 } //  namespace ToolKit
