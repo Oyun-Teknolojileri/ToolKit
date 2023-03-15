@@ -30,9 +30,22 @@ namespace ToolKit
     ClearComponents();
   }
 
+  bool Entity::IsNotDrawable(Entity* ntt)
+  {
+    return !ntt->IsDrawable();
+  }
+
   bool Entity::IsDrawable() const
   {
-    return GetComponent<MeshComponent>() != nullptr;
+    Node* currNode = m_node;
+    bool isVisible = true;
+    // find if any of the parents is invisible if so we will not draw
+    while (currNode != nullptr && currNode->m_entity != nullptr)
+    {
+      isVisible &= currNode->m_entity->GetVisibleVal();
+      currNode  = currNode->m_parent;
+    }
+    return isVisible && GetComponent<MeshComponent>() != nullptr;
   }
 
   EntityType Entity::GetType() const { return EntityType::Entity_Base; }

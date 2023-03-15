@@ -51,13 +51,7 @@ namespace ToolKit
   void RenderJobProcessor::CreateRenderJobs(EntityRawPtrArray entities,
                                             RenderJobArray& jobArray)
   {
-    entities.erase(std::remove_if(entities.begin(),
-                                  entities.end(),
-                                  [](Entity* ntt) -> bool {
-                                    return !ntt->GetVisibleVal() ||
-                                           !ntt->IsDrawable();
-                                  }),
-                   entities.end());
+    EraseIf(entities, Entity::IsNotDrawable);
 
     for (Entity* ntt : entities)
     {

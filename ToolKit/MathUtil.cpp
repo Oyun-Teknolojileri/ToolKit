@@ -746,9 +746,7 @@ namespace ToolKit
         return false;
       }
     };
-
-    entities.erase(std::remove_if(entities.begin(), entities.end(), delFn),
-                   entities.end());
+    EraseIf(entities, delFn);
   }
 
   void FrustumCull(RenderJobArray& jobs, Camera* camera)
@@ -771,7 +769,7 @@ namespace ToolKit
       }
     };
 
-    jobs.erase(std::remove_if(jobs.begin(), jobs.end(), delFn), jobs.end());
+    EraseIf(jobs, delFn);
   }
 
   void TransformAABB(BoundingBox& box, const Mat4& transform)
