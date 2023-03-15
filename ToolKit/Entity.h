@@ -68,6 +68,7 @@ namespace ToolKit
     virtual ~Entity();
 
     static bool IsNotDrawable(Entity* ntt);
+    bool ParentsVisible() const;
     virtual bool IsDrawable() const;
     virtual EntityType GetType() const;
     virtual void SetPose(const AnimationPtr& anim, float time);
