@@ -117,6 +117,8 @@ namespace ToolKit
 
     for (Entity* ntt : m_instanceEntities)
     {
+      ntt->_prefabRootEntity = this;
+
       auto foundParamArray = m_childCustomDatas.find(ntt->GetNameVal());
       if (foundParamArray != m_childCustomDatas.end())
       {

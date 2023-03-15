@@ -6,10 +6,10 @@
 
 #include "Animation.h"
 #include "Component.h"
+#include "MaterialComponent.h"
+#include "MeshComponent.h"
 #include "Node.h"
 #include "ParameterBlock.h"
-#include "MeshComponent.h"
-#include "MaterialComponent.h"
 #include "Serialize.h"
 #include "Types.h"
 
@@ -67,8 +67,6 @@ namespace ToolKit
     Entity();
     virtual ~Entity();
 
-    static bool IsNotDrawable(Entity* ntt);
-    bool ParentsVisible() const;
     virtual bool IsDrawable() const;
     virtual EntityType GetType() const;
     virtual void SetPose(const AnimationPtr& anim, float time);
@@ -77,6 +75,13 @@ namespace ToolKit
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
     virtual void RemoveResources();
+
+    /**
+     * Returns the visibility status of the current Entity. If it belongs to a
+     * prefab, it returns the visibility of Prefab.
+     */
+    virtual bool IsVisible();
+
     void SetVisibility(bool vis, bool deep);
     void SetTransformLock(bool vis, bool deep);
     bool IsSurfaceInstance() const;
@@ -176,6 +181,14 @@ namespace ToolKit
      */
     MaterialPtr GetRenderMaterial() const;
 
+    /**
+     * Used to identify if this Entity is a prefab, and if so, returns the
+     * pointer to the parent prefab.
+     * @return If the entity belongs to a Prefab it returns the pointer of the
+     * prefab, otherwise it returns nullptr.
+     */
+    Entity* GetPrefabRoot() const;
+
    protected:
     virtual Entity* CopyTo(Entity* other) const;
     void ParameterConstructor();
@@ -196,6 +209,13 @@ namespace ToolKit
      * Helper ID for entity De serialization. Points to parent of the entity.
      */
     ULongID _parentId;
+
+    /**
+     * Internally used variable.
+     * Used to indicate this entity belongs to a prefab entity. Set by the
+     * Prefab Entity during Prefab::Init.
+     */
+    Entity* _prefabRootEntity = nullptr;
 
    private:
     // This should be private, because instantiated entities don't use this list

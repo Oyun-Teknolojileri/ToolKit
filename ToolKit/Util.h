@@ -196,7 +196,7 @@ namespace ToolKit
   }
   
   template<typename T, typename Pred>
-  void EraseIf(T& vec, Pred pred)
+  void erase_if(T& vec, Pred pred)
   {
     vec.erase(std::remove_if(vec.begin(), vec.end(), pred), vec.end());
   }

@@ -4,11 +4,11 @@
 #include "MathUtil.h"
 #include "Node.h"
 #include "Prefab.h"
+#include "ResourceComponent.h"
 #include "Skeleton.h"
 #include "Sky.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "ResourceComponent.h"
 
 #include "DebugNew.h"
 
@@ -28,25 +28,6 @@ namespace ToolKit
   {
     SafeDel(m_node);
     ClearComponents();
-  }
-
-  bool Entity::IsNotDrawable(Entity* ntt)
-  {
-    return !ntt->IsDrawable() || !ntt->ParentsVisible()
-      || !ntt->GetVisibleVal();
-  }
-
-  bool Entity::ParentsVisible() const
-  {
-    Node* currParent = m_node->m_parent;
-    bool isVisible = true;
-    // find if any of the parents is invisible if so we will not draw
-    while (currParent != nullptr && currParent->m_entity != nullptr)
-    {
-      isVisible &= currParent->m_entity->GetVisibleVal();
-      currParent = currParent->m_parent;
-    }
-    return isVisible;
   }
 
   bool Entity::IsDrawable() const
@@ -146,6 +127,8 @@ namespace ToolKit
 
     return renderMat;
   }
+
+  Entity* Entity::GetPrefabRoot() const { return _prefabRootEntity; }
 
   Entity* Entity::CopyTo(Entity* other) const
   {
@@ -334,6 +317,21 @@ namespace ToolKit
   }
 
   void Entity::RemoveResources() { assert(false && "Not implemented"); }
+
+  bool Entity::IsVisible()
+  {
+    if (Entity* root = GetPrefabRoot())
+    {
+      // If parent is not visible, all objects must be hidden.
+      // Otherwise, prefer to use its value.
+      if (root->GetVisibleVal() == false) 
+      {
+        return false;
+      }
+    }
+
+    return GetVisibleVal();
+  }
 
   void Entity::SetVisibility(bool vis, bool deep)
   {

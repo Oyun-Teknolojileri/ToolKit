@@ -727,6 +727,19 @@ namespace ToolKit
     plane.d        = plane.d / mag;
   }
 
+  bool FrustumTest(const Frustum& frustum, const BoundingBox& box)
+  {
+    IntersectResult res = FrustumBoxIntersection(frustum, box);
+    if (res == IntersectResult::Outside)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+
   void FrustumCull(EntityRawPtrArray& entities, Camera* camera)
   {
     // Frustum cull
@@ -735,18 +748,8 @@ namespace ToolKit
     Frustum frustum = ExtractFrustum(pr * v, false);
 
     auto delFn      = [frustum](Entity* ntt) -> bool
-    {
-      IntersectResult res = FrustumBoxIntersection(frustum, ntt->GetAABB(true));
-      if (res == IntersectResult::Outside)
-      {
-        return true;
-      }
-      else
-      {
-        return false;
-      }
-    };
-    EraseIf(entities, delFn);
+    { return FrustumTest(frustum, ntt->GetAABB(true)); };
+    erase_if(entities, delFn);
   }
 
   void FrustumCull(RenderJobArray& jobs, Camera* camera)
@@ -757,19 +760,8 @@ namespace ToolKit
     Frustum frustum = ExtractFrustum(pr * v, false);
 
     auto delFn      = [frustum](RenderJob& job) -> bool
-    {
-      IntersectResult res = FrustumBoxIntersection(frustum, job.BoundingBox);
-      if (res == IntersectResult::Outside)
-      {
-        return true;
-      }
-      else
-      {
-        return false;
-      }
-    };
-
-    EraseIf(jobs, delFn);
+    { return FrustumTest(frustum, job.BoundingBox); };
+    erase_if(jobs, delFn);
   }
 
   void TransformAABB(BoundingBox& box, const Mat4& transform)

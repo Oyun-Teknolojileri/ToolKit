@@ -51,7 +51,9 @@ namespace ToolKit
   void RenderJobProcessor::CreateRenderJobs(EntityRawPtrArray entities,
                                             RenderJobArray& jobArray)
   {
-    EraseIf(entities, Entity::IsNotDrawable);
+    erase_if(entities,
+             [](Entity* ntt) -> bool
+             { return !ntt->IsDrawable() || !ntt->IsVisible(); });
 
     for (Entity* ntt : entities)
     {
@@ -293,7 +295,7 @@ namespace ToolKit
     CreateRenderJob(entity, jobs);
 
     LightRawPtrArray allLights;
-    for (RenderJob& rj : jobs) 
+    for (RenderJob& rj : jobs)
     {
       LightRawPtrArray la = SortLights(rj, lights);
       allLights.insert(allLights.end(), la.begin(), la.end());

@@ -295,7 +295,7 @@ namespace ToolKit
 
   void Scene::RemoveEntity(const EntityRawPtrArray& entities)
   {
-    EraseIf(m_entities, [&entities](const Entity* ntt) -> bool
+    erase_if(m_entities, [&entities](const Entity* ntt) -> bool
                                     {
                                       for (const Entity* removeNtt : entities)
                                       {

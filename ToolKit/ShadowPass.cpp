@@ -68,11 +68,11 @@ namespace ToolKit
 
     // Dropout non shadow casters.
     m_renderJobs      = m_params.RendeJobs;
-    EraseIf(m_renderJobs,
+    erase_if(m_renderJobs,
             [](RenderJob& job) -> bool { return !job.ShadowCaster; });
 
     // Dropout non shadow casting lights.
-    EraseIf(m_params.Lights,
+    erase_if(m_params.Lights,
             [](Light* light) -> bool { return !light->GetCastShadowVal(); });
 
     InitShadowAtlas();
