@@ -843,11 +843,7 @@ namespace ToolKit
 
       for (String& val : v)
       {
-        val.erase(std::remove_if(val.begin(),
-                                 val.end(),
-                                 [](char c) { return c == '"'; }),
-                  val.end());
-
+        erase_if(val, [](char c) { return c == '"'; });
         std::replace(val.begin(), val.end(), spaceSub, ' ');
       }
     }

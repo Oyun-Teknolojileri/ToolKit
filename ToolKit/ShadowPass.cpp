@@ -68,19 +68,12 @@ namespace ToolKit
 
     // Dropout non shadow casters.
     m_renderJobs      = m_params.RendeJobs;
-    m_renderJobs.erase(std::remove_if(m_renderJobs.begin(),
-                                      m_renderJobs.end(),
-                                      [](RenderJob& job) -> bool
-                                      { return !job.ShadowCaster; }),
-                       m_renderJobs.end());
+    erase_if(m_renderJobs,
+            [](RenderJob& job) -> bool { return !job.ShadowCaster; });
 
     // Dropout non shadow casting lights.
-    m_params.Lights.erase(std::remove_if(m_params.Lights.begin(),
-                                         m_params.Lights.end(),
-                                         [](Light* light) -> bool {
-                                           return !light->GetCastShadowVal();
-                                         }),
-                          m_params.Lights.end());
+    erase_if(m_params.Lights,
+            [](Light* light) -> bool { return !light->GetCastShadowVal(); });
 
     InitShadowAtlas();
 
