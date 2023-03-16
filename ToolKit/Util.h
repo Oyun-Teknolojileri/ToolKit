@@ -194,6 +194,12 @@ namespace ToolKit
     assert(!vec.empty());
     vec.erase(vec.begin());
   }
+  
+  template<typename T, typename Pred>
+  void erase_if(T& vec, Pred pred)
+  {
+    vec.erase(std::remove_if(vec.begin(), vec.end(), pred), vec.end());
+  }
 
   //  Time.
   ///////////////////////////////////////////////////////

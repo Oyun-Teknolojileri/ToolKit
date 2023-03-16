@@ -4,11 +4,11 @@
 #include "MathUtil.h"
 #include "Node.h"
 #include "Prefab.h"
+#include "ResourceComponent.h"
 #include "Skeleton.h"
 #include "Sky.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "ResourceComponent.h"
 
 #include "DebugNew.h"
 
@@ -127,6 +127,8 @@ namespace ToolKit
 
     return renderMat;
   }
+
+  Entity* Entity::GetPrefabRoot() const { return _prefabRootEntity; }
 
   Entity* Entity::CopyTo(Entity* other) const
   {
@@ -315,6 +317,21 @@ namespace ToolKit
   }
 
   void Entity::RemoveResources() { assert(false && "Not implemented"); }
+
+  bool Entity::IsVisible()
+  {
+    if (Entity* root = GetPrefabRoot())
+    {
+      // If parent is not visible, all objects must be hidden.
+      // Otherwise, prefer to use its value.
+      if (root->GetVisibleVal() == false) 
+      {
+        return false;
+      }
+    }
+
+    return GetVisibleVal();
+  }
 
   void Entity::SetVisibility(bool vis, bool deep)
   {
