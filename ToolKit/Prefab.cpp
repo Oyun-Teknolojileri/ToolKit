@@ -39,6 +39,7 @@ namespace ToolKit
       if (m_linked) 
       {
         m_linked = false;
+        m_currentScene->RemoveEntity(GetIdVal());
         m_currentScene->RemoveEntity(m_instanceEntities);
       }
     }
@@ -50,6 +51,7 @@ namespace ToolKit
     if (!m_linked) 
     {
       m_linked = true;
+      m_currentScene->AddEntity(this);
       for (Entity* child : m_instanceEntities)
       {
         m_currentScene->AddEntity(child);
@@ -64,7 +66,7 @@ namespace ToolKit
       return static_cast<Prefab*>(ntt);
     }
     else if (ntt->m_node->m_parent == nullptr ||
-             ntt->m_node->m_parent->m_entity == nullptr)
+                                      ntt->m_node->m_parent->m_entity == nullptr)
     {
       return nullptr;
     }
@@ -74,7 +76,9 @@ namespace ToolKit
   Entity* Prefab::CopyTo(Entity* other) const
   {
     Entity::CopyTo(other);
-    ((Prefab*) other)->Init(m_currentScene);
+    Prefab* prefab = (Prefab*)other;
+    prefab->Init(m_currentScene);
+    prefab->Link();
     return other;
   }
 
@@ -135,8 +139,6 @@ namespace ToolKit
       }
     }
 
-    Link();
-
     // We need this data only at deserialization, no later
     m_childCustomDatas.clear();
     m_initiated = true;
@@ -148,7 +150,7 @@ namespace ToolKit
     parent = parent->last_node();
 
     for (XmlNode* rNode = parent->first_node(); rNode;
-         rNode          = rNode->next_sibling())
+    rNode          = rNode->next_sibling())
     {
       String rootName = rNode->name();
       ParameterVariantArray vars;
