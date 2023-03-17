@@ -7,9 +7,6 @@
 #include "CustomDataView.h"
 #include "EditorRenderer.h"
 #include "EntityView.h"
-#include "ImGui/imconfig.h"
-#include "ImGui/imgui_internal.h"
-#include "ImGui/imgui_stdlib.h"
 #include "MaterialView.h"
 #include "MeshView.h"
 #include "Prefab.h"
@@ -265,18 +262,17 @@ namespace ToolKit
       Vec2 currentCursorPos = Vec2(ImGui::GetWindowContentRegionMin()) +
                               Vec2(ImGui::GetCursorPos()) +
                               Vec2(ImGui::GetWindowPos());
+      
+      ImGui::Dummy(imageSize);
 
-      ImRect bb(currentCursorPos, currentCursorPos + imageSize);
-      ImGui::ItemSize(bb);
-      ImGui::ItemAdd(bb, 0);
       ImGui::GetWindowDrawList()->AddImageRounded(
           Convert2ImGuiTexture(m_framebuffer->GetAttachment(
               Framebuffer::Attachment::ColorAttachment0)),
-          bb.Min,
-          bb.Max,
-          ImVec2(0.0f, 0.0f),
-          ImVec2(1.0f, -1.0f),
-          ImGui::GetColorU32(ImVec4(1, 1, 1, 1)),
+          currentCursorPos,
+          currentCursorPos + imageSize,
+          Vec2(0.0f, 0.0f),
+          Vec2(1.0f, -1.0f),
+          ImGui::GetColorU32(Vec4(1, 1, 1, 1)),
           5.0f);
     }
 

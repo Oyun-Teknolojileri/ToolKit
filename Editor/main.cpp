@@ -4,7 +4,6 @@
 #include "Common/Win32Utils.h"
 #include "ConsoleWindow.h"
 #include "GL/glew.h"
-#include "ImGui/imgui_impl_sdl.h"
 #include "Mod.h"
 #include "SDL.h"
 #include "SDL_opengl.h"
