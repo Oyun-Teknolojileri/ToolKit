@@ -4,7 +4,7 @@
 #include "DirectionComponent.h"
 #include "Drawable.h"
 #include "EnvironmentComponent.h"
-#include "GL/glew.h"
+#include "GradientSky.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
@@ -19,6 +19,7 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
+#include "gles2.h"
 
 #include <algorithm>
 #include <random>
@@ -1774,7 +1775,7 @@ namespace ToolKit
 
   void Renderer::ResetTextureSlots()
   {
-    for (int i = 0; i < 17; i++) 
+    for (int i = 0; i < 17; i++)
     {
       SetTexture(i, 0);
     }

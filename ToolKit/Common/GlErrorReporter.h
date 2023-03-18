@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GL/glew.h"
+#include "gles2.h"
 #include "ToolKit.h"
 
 #include <functional>

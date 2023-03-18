@@ -1,5 +1,10 @@
 #include "ToolKit.h"
 
+#ifdef TK_DLL_EXPORT
+  #define GLAD_GLES2_IMPLEMENTATION
+  #include "gles2.h"
+#endif
+
 #include <algorithm>
 #include <filesystem>
 #include <memory>
@@ -440,7 +445,8 @@ namespace ToolKit
     writeAttrFn("BloomIntensity", to_string(gfx.BloomIntensity));
     writeAttrFn("BloomThreshold", to_string(gfx.BloomThreshold));
     writeAttrFn("BloomIterationCount", to_string(gfx.BloomIterationCount));
-    writeAttrFn("GammaCorrectionEnabled", to_string(gfx.GammaCorrectionEnabled));
+    writeAttrFn("GammaCorrectionEnabled",
+                to_string(gfx.GammaCorrectionEnabled));
     writeAttrFn("Gamma", to_string(gfx.Gamma));
     writeAttrFn("SSAOEnabled", to_string(gfx.SSAOEnabled));
     writeAttrFn("SSAORadius", to_string(gfx.SSAORadius));

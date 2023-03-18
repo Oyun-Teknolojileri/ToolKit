@@ -3,12 +3,13 @@
 #include "Common/SDLEventPool.h"
 #include "Common/Win32Utils.h"
 #include "ConsoleWindow.h"
-#include "GL/glew.h"
 #include "Mod.h"
 #include "SDL.h"
-#include "SDL_opengl.h"
 #include "Types.h"
 #include "UI.h"
+
+#define GLAD_GLES2_IMPLEMENTATION
+#include "gles2.h"
 
 #include <stdio.h>
 
@@ -179,14 +180,8 @@ namespace ToolKit
           }
           else
           {
-            // Init glew
-            glewExperimental = true;
-            GLenum err       = glewInit();
-            if (GLEW_OK != err)
-            {
-              g_running = false;
-              return;
-            }
+            // Init glad
+            gladLoadGLES2((GLADloadfunc)SDL_GL_GetProcAddress);
 
 #ifdef TK_DEBUG
             InitGLErrorReport(

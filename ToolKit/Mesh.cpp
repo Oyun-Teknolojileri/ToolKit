@@ -1,7 +1,7 @@
 #include "Mesh.h"
 
 #include "Common/base64.h"
-#include "GL/glew.h"
+#include "gles2.h"
 #include "Material.h"
 #include "Skeleton.h"
 #include "Texture.h"
