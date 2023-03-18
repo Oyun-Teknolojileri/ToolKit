@@ -10,6 +10,7 @@
 #include "Global.h"
 #include "Mod.h"
 #include "Sky.h"
+#include "GradientSky.h"
 
 #include "DebugNew.h"
 

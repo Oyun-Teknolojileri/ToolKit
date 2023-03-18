@@ -219,6 +219,9 @@
     <ClCompile Include="SkeletonComponent.cpp">
       <Filter>Source\Component</Filter>
     </ClCompile>
+    <ClCompile Include="GradientSky.cpp">
+      <Filter>Source\Entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -433,6 +436,9 @@
     </ClInclude>
     <ClInclude Include="SkeletonComponent.h">
       <Filter>Source\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="GradientSky.h">
+      <Filter>Source\Entity</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

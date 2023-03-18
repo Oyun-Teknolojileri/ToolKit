@@ -4,6 +4,7 @@
 
 namespace ToolKit
 {
+
   class TK_API SkyBase : public Entity
   {
    public:
@@ -23,6 +24,7 @@ namespace ToolKit
    protected:
     virtual void ParameterConstructor();
     virtual void ParameterEventConstructor();
+    void ConstructSkyMaterial(ShaderPtr vertexPrg, ShaderPtr fragPrg);
 
    public:
     TKDeclareParam(bool, DrawSky);
@@ -54,39 +56,6 @@ namespace ToolKit
    public:
     TKDeclareParam(float, Exposure);
     TKDeclareParam(HdriPtr, Hdri);
-  };
-
-  class TK_API GradientSky : public SkyBase
-  {
-   public:
-    GradientSky();
-    virtual ~GradientSky();
-
-    EntityType GetType() const override;
-
-    void Init() override;
-
-    MaterialPtr GetSkyboxMaterial() override;
-    CubeMapPtr GetIrradianceMap() override;
-
-   protected:
-    void ParameterConstructor() override;
-    void ParameterEventConstructor() override;
-    void GenerateGradientCubemap();
-    void GenerateIrradianceCubemap();
-
-   public:
-    TKDeclareParam(Vec3, TopColor);
-    TKDeclareParam(Vec3, MiddleColor);
-    TKDeclareParam(Vec3, BottomColor);
-    TKDeclareParam(float, GradientExponent);
-    TKDeclareParam(float, IrradianceResolution);
-    uint m_size = 1024;
-
-   private:
-    CubeMapPtr m_skyboxMap     = nullptr;
-    CubeMapPtr m_irradianceMap = nullptr;
-    bool m_onInit              = false;
   };
 
 } // namespace ToolKit

@@ -35,6 +35,7 @@
     <ClCompile Include="FxaaPass.cpp" />
     <ClCompile Include="GammaPass.cpp" />
     <ClCompile Include="GBufferPass.cpp" />
+    <ClCompile Include="GradientSky.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Material.cpp" />
@@ -106,6 +107,7 @@
     <ClInclude Include="FxaaPass.h" />
     <ClInclude Include="GammaPass.h" />
     <ClInclude Include="GBufferPass.h" />
+    <ClInclude Include="GradientSky.h" />
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="OutlinePass.h" />
