@@ -460,7 +460,7 @@ namespace ToolKit
         // If entity belongs to a prefab,
         // don't show transform lock and transformation.
         bool isFromPrefab = false;
-        if (Prefab::GetPrefabRoot(m_entity))
+        if (m_entity->GetPrefabRoot())
         {
           isFromPrefab = true;
         }

@@ -10,9 +10,6 @@
     <Filter Include="UI">
       <UniqueIdentifier>{3f04a579-03cf-4d54-8a19-71d5241aac83}</UniqueIdentifier>
     </Filter>
-    <Filter Include="UI\ImGui">
-      <UniqueIdentifier>{bd5e2daf-8f9d-415f-a384-97eb0c4eaa08}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Entities">
       <UniqueIdentifier>{23ef0147-ea57-41a4-9b24-719e3e46ff22}</UniqueIdentifier>
     </Filter>
@@ -29,24 +26,6 @@
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui.cpp">
-      <Filter>UI\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_impl_opengl3.cpp">
-      <Filter>UI\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_impl_sdl.cpp">
-      <Filter>UI\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_demo.cpp">
-      <Filter>UI\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_draw.cpp">
-      <Filter>UI\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_widgets.cpp">
-      <Filter>UI\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="App.cpp">
       <Filter>Source</Filter>
@@ -75,17 +54,11 @@
     <ClCompile Include="OverlayUI.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_stdlib.cpp">
-      <Filter>UI\ImGui</Filter>
-    </ClCompile>
     <ClCompile Include="FolderWindow.cpp">
       <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="OutlinerWindow.cpp">
       <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_tables.cpp">
-      <Filter>UI\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="PropInspector.cpp">
       <Filter>UI</Filter>
@@ -164,30 +137,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ImGui\imconfig.h">
-      <Filter>UI\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui.h">
-      <Filter>UI\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_opengl3.h">
-      <Filter>UI\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_sdl.h">
-      <Filter>UI\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_internal.h">
-      <Filter>UI\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imstb_rectpack.h">
-      <Filter>UI\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imstb_textedit.h">
-      <Filter>UI\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imstb_truetype.h">
-      <Filter>UI\ImGui</Filter>
-    </ClInclude>
     <ClInclude Include="Mod.h">
       <Filter>Mods</Filter>
     </ClInclude>
@@ -215,9 +164,6 @@
     <ClInclude Include="OverlayUI.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imgui_stdlib.h">
-      <Filter>UI\ImGui</Filter>
-    </ClInclude>
     <ClInclude Include="FolderWindow.h">
       <Filter>UI</Filter>
     </ClInclude>
@@ -244,9 +190,6 @@
     </ClInclude>
     <ClInclude Include="EditorCamera.h">
       <Filter>Entities</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_opengl3_loader.h">
-      <Filter>UI\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="EditorLight.h">
       <Filter>Entities</Filter>
