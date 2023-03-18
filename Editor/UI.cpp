@@ -7,10 +7,6 @@
 #include "EditorViewport.h"
 #include "FolderWindow.h"
 #include "Global.h"
-#include "ImGui/imgui_stdlib.h"
-#include "Imgui/imgui_impl_opengl3.h"
-#include "Imgui/imgui_impl_sdl.h"
-#
 #include "Mod.h"
 #include "OutlinerWindow.h"
 #include "OverlayUI.h"
