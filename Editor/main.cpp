@@ -1,5 +1,5 @@
 #include "App.h"
-#include "Common/GlErrorReporter.h"
+#include "GlErrorReporter.h"
 #include "Common/SDLEventPool.h"
 #include "Common/Win32Utils.h"
 #include "ConsoleWindow.h"
@@ -7,9 +7,6 @@
 #include "SDL.h"
 #include "Types.h"
 #include "UI.h"
-
-#define GLAD_GLES2_IMPLEMENTATION
-#include "gles2.h"
 
 #include <stdio.h>
 
@@ -180,12 +177,10 @@ namespace ToolKit
           }
           else
           {
-            // Init glad
-            gladLoadGLES2((GLADloadfunc)SDL_GL_GetProcAddress);
-
-#ifdef TK_DEBUG
-            InitGLErrorReport(
-                GlErrorReporter::Report = [](const std::string& msg) -> void
+            // Init OpenGl.
+            g_proxy->m_renderSys->InitGl(
+                SDL_GL_GetProcAddress,
+                [](const std::string& msg) -> void
                 {
                   if (g_app == nullptr)
                   {
@@ -199,9 +194,8 @@ namespace ToolKit
                                                       msg.c_str());
                   }
                 });
-#endif
 
-            // Init Main
+            // Init Main.
             // Override SceneManager.
             SafeDel(g_proxy->m_sceneManager);
             g_proxy->m_sceneManager = new EditorSceneManager();
@@ -209,9 +203,6 @@ namespace ToolKit
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);
-
-            glEnable(GL_CULL_FACE);
-            glEnable(GL_DEPTH_TEST);
 
             // Init app
             g_app = new App(g_settings.Window.Width, g_settings.Window.Height);

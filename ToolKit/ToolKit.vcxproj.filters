@@ -222,6 +222,9 @@
     <ClCompile Include="GradientSky.cpp">
       <Filter>Source\Entity</Filter>
     </ClCompile>
+    <ClCompile Include="GlErrorReporter.cpp">
+      <Filter>Source\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -439,6 +442,9 @@
     </ClInclude>
     <ClInclude Include="GradientSky.h">
       <Filter>Source\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="GlErrorReporter.h">
+      <Filter>Source\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

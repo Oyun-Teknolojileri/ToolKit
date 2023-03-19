@@ -1,9 +1,7 @@
 #include "ToolKit.h"
 
-#ifdef TK_DLL_EXPORT
-  #define GLAD_GLES2_IMPLEMENTATION
-  #include "gles2.h"
-#endif
+#define GLAD_GLES2_IMPLEMENTATION
+#include "gles2.h"
 
 #include <algorithm>
 #include <filesystem>

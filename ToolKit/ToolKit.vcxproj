@@ -35,6 +35,7 @@
     <ClCompile Include="FxaaPass.cpp" />
     <ClCompile Include="GammaPass.cpp" />
     <ClCompile Include="GBufferPass.cpp" />
+    <ClCompile Include="GlErrorReporter.cpp" />
     <ClCompile Include="GradientSky.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Logger.cpp" />
@@ -107,6 +108,7 @@
     <ClInclude Include="FxaaPass.h" />
     <ClInclude Include="GammaPass.h" />
     <ClInclude Include="GBufferPass.h" />
+    <ClInclude Include="GlErrorReporter.h" />
     <ClInclude Include="GradientSky.h" />
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
@@ -213,7 +215,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>OpenGL32.lib;OpenAL32.lib;glew32.lib;SDL2main.lib;SDL2.lib;zlibstatic.lib;minizip.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;OpenAL32.lib;SDL2main.lib;SDL2.lib;zlibstatic.lib;minizip.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
