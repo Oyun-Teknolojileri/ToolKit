@@ -62,8 +62,15 @@ namespace ToolKit
     SkyBase* GetSky();
     void LinkPrefab(const String& fullPath);
     EntityRawPtrArray GetEnvironmentLightEntities();
-
-    virtual Entity* RemoveEntity(ULongID id);
+    
+    /**
+      * remove entity from the scene
+      * @param  the id of the entity you want to remove
+      * @param  do you want to remove with childs ? 
+      *         be aware that removed childs transforms preserved
+      * @returns the entity that you removed, nullptr if entity is not in scene
+      */
+    virtual Entity* RemoveEntity(ULongID id, bool deep = true);
     virtual void RemoveEntity(const EntityRawPtrArray& entities);
     virtual void RemoveAllEntities();
     virtual void Destroy(bool removeResources);

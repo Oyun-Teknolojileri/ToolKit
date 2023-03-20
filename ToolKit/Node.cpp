@@ -160,6 +160,37 @@ namespace ToolKit
       child->SetTransform(ts, TransformationSpace::TS_WORLD);
     }
   }
+  
+  void Node::OrphanChild(int index, bool preserveTransform)
+  {
+    assert((index > 0 && index < m_children.size()) 
+      && "the child that you want to remove is not exist");
+    Node* child = m_children[index];
+    Mat4 ts;
+    if (preserveTransform)
+    {
+      ts = child->GetTransform(TransformationSpace::TS_WORLD);
+    }
+
+    child->m_parent = nullptr;
+    child->m_dirty  = true;
+    child->SetChildrenDirty();
+    m_children.erase(m_children.begin() + index);
+
+    if (preserveTransform)
+    {
+      child->SetTransform(ts, TransformationSpace::TS_WORLD);
+    }
+  }
+
+  void Node::OrphanAllChilds(bool preserveTransform)
+  {
+    while (!m_children.empty())
+    {
+      // remove last children
+      OrphanChild(m_children.size() - 1, preserveTransform);
+    }
+  }
 
   void Node::Orphan(Node* child, bool preserveTransform)
   {
@@ -167,24 +198,11 @@ namespace ToolKit
     {
       if (m_children[i] == child)
       {
-        Mat4 ts;
-        if (preserveTransform)
-        {
-          ts = child->GetTransform(TransformationSpace::TS_WORLD);
-        }
-
-        child->m_parent = nullptr;
-        child->m_dirty  = true;
-        child->SetChildrenDirty();
-        m_children.erase(m_children.begin() + i);
-
-        if (preserveTransform)
-        {
-          child->SetTransform(ts, TransformationSpace::TS_WORLD);
-        }
+        OrphanChild(i, preserveTransform);
         return;
       }
     }
+    assert(false && "the child that you want to remove is not exist");
   }
 
   void Node::OrphanSelf(bool preserveTransform)

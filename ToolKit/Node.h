@@ -54,6 +54,9 @@ namespace ToolKit
 
     void AddChild(Node* child, bool preserveTransform = false);
     void Orphan(Node* child, bool preserveTransform = false);
+
+    void OrphanAllChilds(bool preserveTransform);
+    void OrphanChild(int index, bool preserveTransform);
     void OrphanSelf(bool preserveWorldTransform = false);
     Node* GetRoot() const;
     Node* Copy() const;

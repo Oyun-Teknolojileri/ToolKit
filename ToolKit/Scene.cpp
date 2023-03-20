@@ -293,7 +293,7 @@ namespace ToolKit
     }
   }
 
-  Entity* Scene::RemoveEntity(ULongID id)
+  Entity* Scene::RemoveEntity(ULongID id, bool deep)
   {
     Entity* removed = nullptr;
     for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; i--)
@@ -302,7 +302,15 @@ namespace ToolKit
       {
         removed = m_entities[i];
         m_entities.erase(m_entities.begin() + i);
-        RemoveChilds(removed);
+        removed->m_node->OrphanSelf();
+        if (deep)
+        {
+          RemoveChilds(removed);
+        }
+        else
+        {
+          removed->m_node->OrphanAllChilds(true);
+        }
         break;
       }
     }
