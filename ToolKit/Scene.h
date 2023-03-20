@@ -76,6 +76,8 @@ namespace ToolKit
     // Used to avoid Id collision during scene merges.
     ULongID GetBiggestEntityId();
 
+   private:
+    void RemoveChilds(Entity* removed);
    protected:
     void CopyTo(Resource* other) override;
     // Normalize entity IDs while serializing

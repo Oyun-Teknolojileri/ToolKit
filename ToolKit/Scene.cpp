@@ -276,6 +276,22 @@ namespace ToolKit
   }
 
   EntityRawPtrArray& Scene::AccessEntityArray() { return m_entities; }
+  
+  void Scene::RemoveChilds(Entity* removed)
+  {
+    NodePtrArray childs = removed->m_node->m_children;
+    // iterative remove childs
+    while (!childs.empty())
+    {
+      Node* child = childs.back();
+      childs.pop_back();
+      RemoveEntity(child->m_entity->GetIdVal());
+      if (child->m_children.size() == 0) continue;
+      // add child's childrens to the list that we remove from scene
+      childs.insert(childs.end(),
+                    child->m_children.begin(), child->m_children.end());
+    }
+  }
 
   Entity* Scene::RemoveEntity(ULongID id)
   {
@@ -286,10 +302,10 @@ namespace ToolKit
       {
         removed = m_entities[i];
         m_entities.erase(m_entities.begin() + i);
+        RemoveChilds(removed);
         break;
       }
     }
-
     return removed;
   }
 
