@@ -671,9 +671,16 @@ namespace ToolKit
     m_environmentLightEntities.clear();
     for (Entity* ntt : entities)
     {
-      if (ntt->GetType() == EntityType::Entity_Sky)
+      EntityType etype = ntt->GetType();
+      switch (etype)
       {
-        continue;
+      case EntityType::Entity_Sky:
+      case EntityType::Entity_GradientSky:
+        if (static_cast<SkyBase*>(ntt)->GetIlluminateVal() == false)
+        {
+          continue;
+        }
+        break;
       }
 
       EnvironmentComponentPtr envCom =
@@ -778,6 +785,7 @@ namespace ToolKit
       m_iblRotation =
           Mat4(env->m_node->GetOrientation(TransformationSpace::TS_WORLD));
     }
+    /*
     else
     {
       // Sky light
@@ -824,6 +832,7 @@ namespace ToolKit
         m_iblRotation                        = Mat4(1.0f);
       }
     }
+    */
   }
 
   void Renderer::Apply7x1GaussianBlur(const TexturePtr source,

@@ -30,8 +30,8 @@ namespace ToolKit
     if (envComp == nullptr)
     {
       // Create a default environment component.
-      envComp = std::make_shared<EnvironmentComponent>();
-      
+      envComp              = std::make_shared<EnvironmentComponent>();
+
       TextureManager* tman = GetTextureManager();
       HdriPtr defHdr =
           tman->Create<Hdri>(tman->GetDefaultResource(ResourceType::Hdri));
@@ -41,6 +41,8 @@ namespace ToolKit
       AddComponent(envComp);
     }
 
+    Vec3 mp = Vec3(TK_FLT_MAX);
+    envComp->SetSizeVal(mp);
     envComp->m_entity = this;
     envComp->Init(false);
 
@@ -66,8 +68,14 @@ namespace ToolKit
 
   CubeMapPtr SkyBase::GetIrradianceMap()
   {
-    assert(false);
-    return CubeMapPtr();
+    HdriPtr hdri = GetHdri();
+    return hdri->m_irradianceCubemap;
+  }
+
+  HdriPtr SkyBase::GetHdri() 
+  {
+    HdriPtr hdri = GetComponent<EnvironmentComponent>()->GetHdriVal();
+    return hdri; 
   }
 
   BoundingBox SkyBase::GetAABB(bool inWorld) const
@@ -98,9 +106,7 @@ namespace ToolKit
   void SkyBase::ConstructSkyMaterial(ShaderPtr vertexPrg, ShaderPtr fragPrg)
   {
     m_skyboxMaterial                   = std::make_shared<Material>();
-
-    EnvironmentComponentPtr envComp    = GetComponent<EnvironmentComponent>();
-    m_skyboxMaterial->m_cubeMap        = envComp->GetHdriVal()->m_cubemap;
+    m_skyboxMaterial->m_cubeMap        = GetHdri()->m_cubemap;
     m_skyboxMaterial->m_vertexShader   = vertexPrg;
     m_skyboxMaterial->m_fragmentShader = fragPrg;
     m_skyboxMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
@@ -142,12 +148,10 @@ namespace ToolKit
   {
     Init();
 
-    HdriPtr hdri = GetComponent<EnvironmentComponent>()->GetHdriVal();
+    HdriPtr hdri                = GetHdri();
     m_skyboxMaterial->m_cubeMap = hdri->m_cubemap;
     return m_skyboxMaterial;
   }
-
-  CubeMapPtr Sky::GetIrradianceMap() { return CubeMapPtr(); }
 
   void Sky::ParameterConstructor()
   {

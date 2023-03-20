@@ -73,8 +73,6 @@ namespace ToolKit
     return m_skyboxMaterial;
   }
 
-  CubeMapPtr GradientSky::GetIrradianceMap() { return m_irradianceMap; }
-
   void GradientSky::ParameterConstructor()
   {
     TopColor_Define(Vec3(0.3f, 0.3f, 1.0f), "Sky", 90, true, true, {true});
@@ -97,7 +95,16 @@ namespace ToolKit
     SetNameVal("Gradient Sky");
   }
 
-  void GradientSky::ParameterEventConstructor() {}
+  void GradientSky::ParameterEventConstructor()
+  {
+    ParamIntensity().m_onValueChangedFn.clear();
+    ParamIntensity().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void
+        {
+          GetComponent<EnvironmentComponent>()->SetIntensityVal(
+              std::get<float>(newVal));
+        });
+  }
 
   void GradientSky::GenerateGradientCubemap()
   {
@@ -188,7 +195,9 @@ namespace ToolKit
           renderer->EnableDepthTest(true);
 
           // Take the ownership of render target.
-          m_skyboxMap = std::make_shared<CubeMap>(cubemap->m_textureId);
+          GetHdri()->m_cubemap =
+              std::make_shared<CubeMap>(cubemap->m_textureId);
+
           cubemap->m_textureId = 0;
           cubemap              = nullptr;
         }};
@@ -200,17 +209,12 @@ namespace ToolKit
   {
     RenderTask task = {[this](Renderer* renderer) -> void
                        {
-                         TexturePtr irradianceMap =
+                         HdriPtr hdr = GetHdri();
+                         hdr->m_irradianceCubemap =
                              renderer->GenerateEnvIrradianceMap(
-                                 m_skyboxMap,
+                                 hdr->m_cubemap,
                                  (uint) GetIrradianceResolutionVal(),
                                  (uint) GetIrradianceResolutionVal());
-
-                         // Take the ownership of render target.
-                         m_irradianceMap = std::make_shared<CubeMap>(
-                             irradianceMap->m_textureId);
-                         irradianceMap->m_textureId = 0;
-                         irradianceMap              = nullptr;
 
                          if (m_onInit)
                          {

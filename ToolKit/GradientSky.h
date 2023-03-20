@@ -12,11 +12,8 @@ namespace ToolKit
     virtual ~GradientSky();
 
     EntityType GetType() const override;
-
     void Init() override;
-
     MaterialPtr GetSkyboxMaterial() override;
-    CubeMapPtr GetIrradianceMap() override;
 
    protected:
     void ParameterConstructor() override;
@@ -33,8 +30,6 @@ namespace ToolKit
     uint m_size = 1024;
 
    private:
-    CubeMapPtr m_skyboxMap     = nullptr;
-    CubeMapPtr m_irradianceMap = nullptr;
     bool m_onInit              = false;
   };
 

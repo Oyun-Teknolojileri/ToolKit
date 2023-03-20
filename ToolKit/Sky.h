@@ -19,6 +19,7 @@ namespace ToolKit
 
     virtual MaterialPtr GetSkyboxMaterial();
     virtual CubeMapPtr GetIrradianceMap();
+    HdriPtr GetHdri();
     BoundingBox GetAABB(bool inWorld = false) const override;
 
    protected:
@@ -43,11 +44,8 @@ namespace ToolKit
     virtual ~Sky();
 
     EntityType GetType() const override;
-
     void Init() override;
-
     MaterialPtr GetSkyboxMaterial() override;
-    CubeMapPtr GetIrradianceMap() override; // TODO(Osman)
 
    protected:
     void ParameterConstructor() override;

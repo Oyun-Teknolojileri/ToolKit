@@ -138,7 +138,7 @@ namespace ToolKit
       Entity* ntt = GetEntity(id);
 
       // If selected entity belongs to a prefab
-      //  select all childs of the prefab entity too
+      //  select all children of the prefab entity too
       if (Prefab* mainPrefab = Prefab::GetPrefabRoot(ntt))
       {
         auto addToSelectionFn = [this](Node* node)
