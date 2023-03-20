@@ -30,6 +30,8 @@ namespace ToolKit
     void PluginWindow::Show()
     {
       ImGui::SetNextWindowSize(ImVec2(350, 150), ImGuiCond_Once);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {5, 5});
+      
       if (ImGui::Begin("Simulation##Plgn",
                        &m_visible,
                        ImGuiWindowFlags_NoScrollbar |
@@ -37,15 +39,12 @@ namespace ToolKit
       {
         HandleStates();
 
-        ShowHeader();
-        ImGui::Separator();
-
         ShowActionButtons();
-        ImGui::Separator();
-
+        ShowHeader();
         ShowSettings();
       }
       ImGui::End();
+      ImGui::PopStyleVar();
     }
 
     Window::Type PluginWindow::GetType() const { return Type::PluginWindow; }
@@ -78,14 +77,6 @@ namespace ToolKit
 
     void PluginWindow::ShowHeader()
     {
-      String preset = EmuResToString(m_settings->Resolution) + " / " +
-                      std::to_string(static_cast<int>(m_settings->Width)) +
-                      "x" +
-                      std::to_string(static_cast<int>(m_settings->Height));
-
-      String section = "Device: " + preset;
-      ImGui::Text(section.c_str());
-
       if (m_simulationModeDisabled)
       {
         ImGui::BeginDisabled(m_simulationModeDisabled);
@@ -95,34 +86,35 @@ namespace ToolKit
       {
         ImGui::EndDisabled();
       }
+      ImGui::SameLine();
+    }
+
+    static void GreenTint()
+    {
+      ImGui::PushStyleColor(ImGuiCol_Button, g_blueTintButtonColor);
+      ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
+                            g_blueTintButtonHoverColor);
+      ImGui::PushStyleColor(ImGuiCol_ButtonActive,
+                            g_blueTintButtonActiveColor);
+    }
+
+    static void RedTint()
+    {
+      ImGui::PushStyleColor(ImGuiCol_Button, g_redTintButtonColor);
+      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, g_redTintButtonHoverColor);
+      ImGui::PushStyleColor(ImGuiCol_ButtonActive, g_redTintButtonActiveColor);      
     }
 
     void PluginWindow::ShowActionButtons()
     {
-      Vec2 min       = ImGui::GetWindowContentRegionMin();
-      Vec2 max       = ImGui::GetWindowContentRegionMax();
-      Vec2 size      = max - min;
-
       // Draw play - pause - stop buttons.
-      float btnWidth = 24.0f;
-      float offset   = (size.x - btnWidth * 5.0f) * 0.5f;
-
-      float curYoff  = ImGui::GetCursorPosY() + 10.0f;
-      ImGui::SameLine(offset);
-      ImGui::SetCursorPosY(curYoff);
+      ImVec2 btnSize = ImVec2(20.0f, 20.0f);
 
       if (g_app->m_gameMod == GameMod::Playing)
       {
-        // Blue tint.
-        ImGui::PushStyleColor(ImGuiCol_Button, g_blueTintButtonColor);
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                              g_blueTintButtonHoverColor);
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                              g_blueTintButtonActiveColor);
-
+        GreenTint();
         // Pause.
-        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_pauseIcon),
-                               ImVec2(btnWidth, btnWidth)))
+        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_pauseIcon), btnSize))
         {
           g_app->SetGameMod(GameMod::Paused);
         }
@@ -131,16 +123,9 @@ namespace ToolKit
       }
       else
       {
-        // Green tint.
-        ImGui::PushStyleColor(ImGuiCol_Button, g_greenTintButtonColor);
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                              g_greenTintButtonHoverColor);
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                              g_greenTintButtonActiveColor);
-
+        GreenTint();
         // Play.
-        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_playIcon),
-                               ImVec2(btnWidth, btnWidth)))
+        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_playIcon), btnSize))
         {
           m_simulationModeDisabled = true;
           g_app->SetGameMod(GameMod::Playing);
@@ -149,17 +134,11 @@ namespace ToolKit
         ImGui::PopStyleColor(3);
       }
 
-      // Red tint.
-      ImGui::PushStyleColor(ImGuiCol_Button, g_redTintButtonColor);
-      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, g_redTintButtonHoverColor);
-      ImGui::PushStyleColor(ImGuiCol_ButtonActive, g_redTintButtonActiveColor);
-
       // Stop.
       ImGui::SameLine();
-      ImGui::SetCursorPosY(curYoff);
+      RedTint();
 
-      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_stopIcon),
-                             ImVec2(btnWidth, btnWidth)))
+      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_stopIcon), btnSize))
       {
         if (g_app->m_gameMod != GameMod::Stop)
         {
@@ -170,11 +149,9 @@ namespace ToolKit
 
       ImGui::PopStyleColor(3);
       ImGui::SameLine();
-      ImGui::SetCursorPosY(curYoff);
 
       // VS Code.
-      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_vsCodeIcon),
-                             ImVec2(btnWidth, btnWidth)))
+      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_vsCodeIcon), btnSize))
       {
         String codePath = g_app->m_workspace.GetCodePath();
         if (CheckFile(codePath))
@@ -197,240 +174,130 @@ namespace ToolKit
 
       // Build.
       ImGui::SameLine();
-      ImGui::SetCursorPosY(curYoff);
 
-      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_buildIcn),
-                             ImVec2(btnWidth, btnWidth)))
+      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_buildIcn), btnSize))
       {
         g_app->CompilePlugin();
       }
 
       UI::HelpMarker(TKLoc, "Build\nBuilds the projects code files.");
+      ImGui::SameLine();
+    }
+
+    static const char* EmulatorResolutionNames[] =
+    {
+      "Custom\0"               ,
+      "iPhone SE (375x667)\0",
+      "iPhone XR (414x896)\0",
+      "iPhone 12 Pro (390x844)\0",
+      "Pixel 5 (393x851)\0",
+      "Galaxy S20 Ultra (412x915)\0",
+      "Galaxy Note 20 (412x915)\0",
+      "Galaxy Note 20 Ultra (390x844)\0",
+      "Ipad Air  (820x118)\0",
+      "Ipad Mini (768x102)\0",
+      "Surface Pro 7 (912x139)\0",
+      "Surface Duo (540x720)\0",
+      "Galaxy A51 / A71 (412x914)\0",
+    };
+
+    String PluginWindow::EmuResToString(EmulatorResolution emuRes)
+    {
+      return EmulatorResolutionNames[(uint) emuRes];
     }
 
     void PluginWindow::ShowSettings()
     {
-      // Emulator Settings
-      ImVec2 settingsRegion =
-          ImVec2(ImGui::GetWindowWidth(),
-                 ImGui::GetWindowHeight() - ImGui::GetCursorPosY());
-
-      ImGui::BeginChild("##emuSettings",
-                        settingsRegion,
-                        false,
-                        ImGuiWindowFlags_AlwaysVerticalScrollbar);
-
-      if (ImGui::BeginTable("EmuSet1", 2, ImGuiTableFlags_SizingFixedFit))
+      if (!m_settings->Windowed) return;
+      // Resolution Bar
+      EmulatorResolution resolution = m_settings->Resolution;
+      int resolutionType            = static_cast<int>(resolution);
+    
+      static const ImVec2 screenResolutionsLUT[] =
       {
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
+        ImVec2(480, 667), // default
+        ImVec2(375, 667), // Iphone_SE,
+        ImVec2(414, 896), // Iphone_XR,
+        ImVec2(390, 844), // Iphone_12_Pro,
+        ImVec2(393, 851), // Pixel_5,
+        ImVec2(412, 915), // Galaxy_S20_Ultra,
+        ImVec2(412, 915), // Galaxy_Note20,
+        ImVec2(390, 844), // Galaxy_Note20_Ultra,
+        ImVec2(820, 118), // Ipad_Air,
+        ImVec2(768, 102), // Ipad_Mini,
+        ImVec2(912, 139), // Surface_Pro_7,
+        ImVec2(540, 720), // Surface_Duo,
+        ImVec2(412, 914)  // Galaxy_A51_A71
+      };
 
-        // Resolution Bar
-        EmulatorResolution resolution = m_settings->Resolution;
+      ImGui::Text("| Resolution");
+      ImGui::SetNextItemWidth(200.0f);
+      ImGui::SameLine();
+      if (ImGui::Combo("##dropdown", &resolutionType, EmulatorResolutionNames, 
+        IM_ARRAYSIZE(EmulatorResolutionNames)))
+      {
+        EmulatorResolution resolution =
+            static_cast<EmulatorResolution>(resolutionType);
+        
+        ImVec2 resolutionSize = screenResolutionsLUT[resolutionType];
 
-        int resolutionType            = static_cast<int>(resolution);
-
-        ImGui::Text("Resolution");
-        ImGui::TableSetColumnIndex(1);
-        ImGui::SetNextItemWidth(150.0f);
-        if (ImGui::Combo("##dropdown",
-                         &resolutionType,
-                         "Custom\0"
-                         "iPhone SE\0"
-                         "iPhone XR\0"
-                         "iPhone 12 Pro\0"
-                         "Pixel 5\0"
-                         "Galaxy S20 Ultra\0"
-                         "Galaxy Note 20\0"
-                         "Galaxy Note 20 Ultra\0"
-                         "Ipad Air\0"
-                         "Ipad Mini\0"
-                         "Surface Pro 7\0"
-                         "Surface Duo\0"
-                         "Galaxy A51 / A71"))
-        {
-          EmulatorResolution resolution =
-              static_cast<EmulatorResolution>(resolutionType);
-
-          switch (resolution)
-          {
-          case EmulatorResolution::Iphone_SE:
-            m_settings->Width  = 375;
-            m_settings->Height = 667;
-            break;
-          case EmulatorResolution::Iphone_XR:
-            m_settings->Width  = 414;
-            m_settings->Height = 896;
-            break;
-          case EmulatorResolution::Iphone_12_Pro:
-            m_settings->Width  = 390;
-            m_settings->Height = 844;
-            break;
-          case EmulatorResolution::Pixel_5:
-            m_settings->Width  = 393;
-            m_settings->Height = 851;
-            break;
-          case EmulatorResolution::Galaxy_S20_Ultra:
-            m_settings->Width  = 412;
-            m_settings->Height = 915;
-            break;
-          case EmulatorResolution::Galaxy_Note20:
-            m_settings->Width  = 412;
-            m_settings->Height = 915;
-            break;
-          case EmulatorResolution::Galaxy_Note20_Ultra:
-            m_settings->Width  = 390;
-            m_settings->Height = 844;
-            break;
-          case EmulatorResolution::Ipad_Air:
-            m_settings->Width  = 820;
-            m_settings->Height = 1180;
-            break;
-          case EmulatorResolution::Ipad_Mini:
-            m_settings->Width  = 768;
-            m_settings->Height = 1024;
-            break;
-          case EmulatorResolution::Surface_Pro_7:
-            m_settings->Width  = 912;
-            m_settings->Height = 1398;
-            break;
-          case EmulatorResolution::Surface_Duo:
-            m_settings->Width  = 540;
-            m_settings->Height = 720;
-            break;
-          case EmulatorResolution::Galaxy_A51_A71:
-            m_settings->Width  = 412;
-            m_settings->Height = 914;
-            break;
-          }
-
-          m_settings->Resolution = resolution;
-          g_app->m_windowCamLoad = true;
-          UpdateSimulationWndSize();
-        }
-
-        // Width - Height
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        bool isCustomSized =
-            m_settings->Resolution == EmulatorResolution::Custom;
-
-        if (!isCustomSized)
-        {
-          ImGui::BeginDisabled();
-        }
-
-        ImGui::Text("Width");
-        ImGui::TableSetColumnIndex(1);
-        ImGui::SetNextItemWidth(150.0f);
-
-        if (ImGui::DragFloat("##w",
-                             &m_settings->Width,
-                             1.0f,
-                             1.0f,
-                             4096.0f,
-                             "%.0f"))
-        {
-          UpdateSimulationWndSize();
-        }
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        ImGui::Text("Height");
-        ImGui::TableSetColumnIndex(1);
-        ImGui::SetNextItemWidth(150.0f);
-
-        if (ImGui::DragFloat("##h",
-                             &m_settings->Height,
-                             1.0f,
-                             1.0f,
-                             4096.0f,
-                             "%.0f"))
-        {
-          UpdateSimulationWndSize();
-        }
-
-        if (!isCustomSized)
-        {
-          ImGui::EndDisabled();
-        }
-
-        // Zoom
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        ImGui::Text("Zoom");
-        ImGui::TableSetColumnIndex(1);
-        ImGui::SetNextItemWidth(150.0f);
-
-        if (ImGui::SliderFloat("##z", &m_settings->Scale, 0.25f, 1.0f, "x%.2f"))
-        {
-          UpdateSimulationWndSize();
-        }
-
-        // Landscape - Portrait Toggle
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        ImGui::Text("Rotate");
-        ImGui::TableSetColumnIndex(1);
-
-        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_phoneRotateIcon),
-                               ImVec2(30, 30)))
-        {
-          m_settings->Landscape = !m_settings->Landscape;
-          UpdateSimulationWndSize();
-        }
-        ImGui::EndTable();
+        m_settings->Width  = resolutionSize.x;
+        m_settings->Height = resolutionSize.y;
+      
+        m_settings->Resolution = resolution;
+        g_app->m_windowCamLoad = true;
+        UpdateSimulationWndSize();
       }
-
-      ImGui::EndChild();
-    }
-
-    String PluginWindow::EmuResToString(EmulatorResolution emuRes)
-    {
-      switch (emuRes)
+      
+      // Width - Height
+      bool isCustomSized =
+          m_settings->Resolution == EmulatorResolution::Custom;
+      
+      if (isCustomSized)
       {
-      case EmulatorResolution::Custom:
-        return "Custom";
-        break;
-      case EmulatorResolution::Galaxy_A51_A71:
-        return "Galaxy A51 / 71";
-        break;
-      case EmulatorResolution::Galaxy_Note20:
-        return "Galaxy Note 20";
-        break;
-      case EmulatorResolution::Galaxy_Note20_Ultra:
-        return "Galaxy Note 20 Ultra";
-        break;
-      case EmulatorResolution::Galaxy_S20_Ultra:
-        return "Galaxy S20 Ultra";
-        break;
-      case EmulatorResolution::Ipad_Air:
-        return "Ipad Air";
-        break;
-      case EmulatorResolution::Ipad_Mini:
-        return "Ipad Mini";
-        break;
-      case EmulatorResolution::Iphone_12_Pro:
-        return "Iphone 12 Pro";
-        break;
-      case EmulatorResolution::Iphone_SE:
-        return "Iphone SE";
-        break;
-      case EmulatorResolution::Iphone_XR:
-        return "Iphone XR";
-        break;
-      case EmulatorResolution::Pixel_5:
-        return "Pixel 5";
-        break;
-      case EmulatorResolution::Surface_Duo:
-        return "Surface Duo";
-        break;
-      case EmulatorResolution::Surface_Pro_7:
-        return "Surface Pro 7";
-        break;
-      default:
-        assert(false && "Resolution not found.");
-        return "Err";
+        ImGui::SameLine();
+        ImGui::Text("Width");
+        ImGui::SetNextItemWidth(150.0f);
+        ImGui::SameLine();
+      
+        if (ImGui::DragFloat("##w", &m_settings->Width, 1.0f, 1.0f, 4096.0f, 
+                            "%.0f"))
+        {
+          UpdateSimulationWndSize();
+        }
+      
+        ImGui::SameLine();
+        ImGui::Text("Height");
+        ImGui::SetNextItemWidth(150.0f);
+        ImGui::SameLine();
+      
+        if (ImGui::DragFloat("##h", &m_settings->Height, 1.0f, 1.0f, 4096.0f,
+                             "%.0f"))
+        {
+          UpdateSimulationWndSize();
+        }
+      }
+      // Zoom
+      ImGui::SameLine();
+      ImGui::Text("Zoom");
+      ImGui::SetNextItemWidth(150.0f);
+      ImGui::SameLine();
+      
+      if (ImGui::SliderFloat("##z", &m_settings->Scale, 0.25f, 1.0f, "x%.2f"))
+      {
+        UpdateSimulationWndSize();
+      }
+      
+      // Landscape - Portrait Toggle
+      ImGui::SameLine();
+      ImGui::Text("Rotate");
+      ImGui::SameLine();
+      
+      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_phoneRotateIcon),
+                             ImVec2(30, 30)))
+      {
+        m_settings->Landscape = !m_settings->Landscape;
+        UpdateSimulationWndSize();
       }
     }
 

@@ -60,6 +60,7 @@ namespace ToolKit
 
       ImGui::SetNextWindowSize(Vec2(m_size), ImGuiCond_None);
       ImGui::PushStyleColor(ImGuiCol_WindowBg, g_wndBgColor);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
 
       if (ImGui::Begin(m_name.c_str(),
                        &m_visible,
@@ -78,6 +79,7 @@ namespace ToolKit
 
       ImGui::End();
       ImGui::PopStyleColor();
+      ImGui::PopStyleVar();
     }
 
     Window::Type EditorViewport2d::GetType() const { return Type::Viewport2d; }
