@@ -18,6 +18,7 @@ namespace ToolKit
 
   #undef near
   #undef far
+  #undef WriteConsole
 
   String GetWriteTime(const String& file)
   {

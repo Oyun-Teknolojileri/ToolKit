@@ -6,7 +6,6 @@
 #include "EditorViewport.h"
 #include "Entity.h"
 #include "Global.h"
-#include "ImGui/imgui_stdlib.h"
 #include "Logger.h"
 #include "Mod.h"
 #include "Node.h"

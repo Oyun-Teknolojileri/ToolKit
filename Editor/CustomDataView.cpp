@@ -2,7 +2,6 @@
 
 #include "App.h"
 #include "ComponentView.h"
-#include "ImGui/imgui_stdlib.h"
 #include "MultiChoiceParameterWindow.h"
 #include "Prefab.h"
 

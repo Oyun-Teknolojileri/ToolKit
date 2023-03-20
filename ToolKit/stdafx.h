@@ -42,8 +42,20 @@
 #include "stb/stb_image.h"
 
 // RapidXml
+#include "rapidxml_ext.h"
+#include "rapidxml_utils.hpp"
+
+// ToolKit
+#include "ToolKit.h"
 #include "Events.h"
 #include "Logger.h"
 #include "Serialize.h"
-#include "rapidxml_ext.h"
-#include "rapidxml_utils.hpp"
+
+#ifdef TK_EDITOR
+
+#include "ImGui/imgui.h"
+#include "ImGui/misc/cpp/imgui_stdlib.h"
+#include "Imgui/backends/imgui_impl_opengl3.h"
+#include "Imgui/backends/imgui_impl_sdl2.h"
+
+#endif
