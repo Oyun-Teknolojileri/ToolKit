@@ -319,18 +319,18 @@ namespace ToolKit
 
   void Scene::RemoveEntity(const EntityRawPtrArray& entities)
   {
-    erase_if(m_entities, [&entities](const Entity* ntt) -> bool
-                                    {
-                                      for (const Entity* removeNtt : entities)
-                                      {
-                                        if (removeNtt->GetIdVal() ==
-                                            ntt->GetIdVal())
-                                        {
-                                          return true;
-                                        }
-                                      }
-                                      return false;
-                                    });
+    erase_if(m_entities,
+             [&entities](const Entity* ntt) -> bool
+             {
+               for (const Entity* removeNtt : entities)
+               {
+                 if (removeNtt->GetIdVal() == ntt->GetIdVal())
+                 {
+                   return true;
+                 }
+               }
+               return false;
+             });
   }
 
   void Scene::RemoveAllEntities() { m_entities.clear(); }
@@ -438,9 +438,9 @@ namespace ToolKit
       // if (folderName != GetResourcePath())
     }
     Prefab* prefab = new Prefab();
-    AddEntity(prefab);
     prefab->SetPrefabPathVal(path);
     prefab->Init(this);
+    prefab->Link();
   }
 
   EntityRawPtrArray Scene::GetEnvironmentLightEntities()
@@ -672,12 +672,14 @@ namespace ToolKit
       GetEngineSettings().DeSerializePostProcessing(doc, parent);
     }
 
-    for (Entity* prefab : prefabList)
+    for (Entity* ntt : prefabList)
     {
-      static_cast<Prefab*>(prefab)->Init(this);
+      Prefab* prefab = static_cast<Prefab*>(ntt);
+      prefab->Init(this);
+      prefab->Link();
     }
   }
-  
+
   ULongID Scene::GetBiggestEntityId()
   {
     ULongID lastId = 0;
