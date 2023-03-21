@@ -28,7 +28,7 @@ namespace ToolKit
     ComponentPtr Copy(Entity* ntt) override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-    void Play(const String& recordName);
+    void Play(const String& recordName, const float blendFactor = 0.0f);
     void Stop();
     void Pause();
     AnimRecordPtr GetActiveRecord();
@@ -38,6 +38,7 @@ namespace ToolKit
 
    public:
     TKDeclareParam(AnimRecordPtrMap, Records);
+    AnimRecord* previousRecord;
 
    private:
     AnimRecordPtr activeRecord;

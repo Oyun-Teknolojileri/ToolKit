@@ -74,7 +74,7 @@ namespace ToolKit
     ParamRecords().GetVar<AnimRecordPtrMap>().erase(signalName);
   }
 
-  void AnimControllerComponent::Play(const String& signalName)
+  void AnimControllerComponent::Play(const String& signalName, const float blendFactor)
   {
     AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
     AnimRecordPtr& rec     = list[signalName];
@@ -85,6 +85,7 @@ namespace ToolKit
 
     if (activeRecord)
     {
+      previousRecord = activeRecord.get();
       activeRecord->m_state = AnimRecord::State::Stop;
     }
     rec->m_state  = AnimRecord::State::Play;
@@ -98,6 +99,7 @@ namespace ToolKit
   {
     if (activeRecord)
     {
+      previousRecord = activeRecord.get();
       activeRecord->m_state = AnimRecord::State::Stop;
       activeRecord          = nullptr;
     }

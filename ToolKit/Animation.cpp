@@ -6,6 +6,7 @@
 #include "Skeleton.h"
 #include "ToolKit.h"
 #include "Util.h"
+#include "AnimationControllerComponent.h"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
 
@@ -407,6 +408,8 @@ namespace ToolKit
 
       if (state == AnimRecord::State::Stop)
       {
+          record->m_entity->GetComponent<AnimControllerComponent>()->previousRecord =
+              record;
         removeList.push_back(index);
       }
       index++;
