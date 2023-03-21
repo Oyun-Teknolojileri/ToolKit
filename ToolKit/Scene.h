@@ -62,14 +62,13 @@ namespace ToolKit
     SkyBase* GetSky();
     void LinkPrefab(const String& fullPath);
     EntityRawPtrArray GetEnvironmentLightEntities();
-    
+
     /**
-      * remove entity from the scene
-      * @param  the id of the entity you want to remove
-      * @param  do you want to remove with childs ? 
-      *         be aware that removed childs transforms preserved
-      * @returns the entity that you removed, nullptr if entity is not in scene
-      */
+     * Removes the entity with the given id from the scene.
+     * @param  The id of the entity that will be removed.
+     * @param  States if the remove will be recursive to the all leafs.
+     * @returns The removed entity.
+     */
     virtual Entity* RemoveEntity(ULongID id, bool deep = true);
     virtual void RemoveEntity(const EntityRawPtrArray& entities);
     virtual void RemoveAllEntities();
@@ -84,7 +83,8 @@ namespace ToolKit
     ULongID GetBiggestEntityId();
 
    private:
-    void RemoveChilds(Entity* removed);
+    void RemoveChildren(Entity* removed);
+
    protected:
     void CopyTo(Resource* other) override;
     // Normalize entity IDs while serializing

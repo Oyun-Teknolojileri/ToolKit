@@ -276,27 +276,33 @@ namespace ToolKit
   }
 
   EntityRawPtrArray& Scene::AccessEntityArray() { return m_entities; }
-  
-  void Scene::RemoveChilds(Entity* removed)
+
+  void Scene::RemoveChildren(Entity* removed)
   {
-    NodePtrArray childs = removed->m_node->m_children;
-    // iterative remove childs
-    while (!childs.empty())
+    NodePtrArray children = removed->m_node->m_children;
+    
+    // Iterative remove children.
+    while (!children.empty())
     {
-      Node* child = childs.back();
-      childs.pop_back();
+      Node* child = children.back();
+      children.pop_back();
       RemoveEntity(child->m_entity->GetIdVal());
-      if (child->m_children.size() == 0) continue;
-      // add child's childrens to the list that we remove from scene
-      childs.insert(childs.end(),
-                    child->m_children.begin(), child->m_children.end());
+      if (child->m_children.empty())
+      {
+        continue;
+      }
+
+      // Add child's children to the list that we remove from scene.
+      children.insert(children.end(),
+                    child->m_children.begin(),
+                    child->m_children.end());
     }
   }
 
   Entity* Scene::RemoveEntity(ULongID id, bool deep)
   {
     Entity* removed = nullptr;
-    for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; i--)
+    for (size_t i = 0; i < m_entities.size(); i++)
     {
       if (m_entities[i]->GetIdVal() == id)
       {
@@ -305,15 +311,16 @@ namespace ToolKit
         removed->m_node->OrphanSelf();
         if (deep)
         {
-          RemoveChilds(removed);
+          RemoveChildren(removed);
         }
         else
         {
-          removed->m_node->OrphanAllChilds(true);
+          removed->m_node->OrphanAllChildren(true);
         }
         break;
       }
     }
+
     return removed;
   }
 
