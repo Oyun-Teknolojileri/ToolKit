@@ -163,11 +163,12 @@ namespace ToolKit
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
       std::vector<EditorViewport*> viewports;
+      viewports.push_back(m_simulationWindow);
       for (Window* wnd : m_windows)
       {
         if (wnd->IsViewport())
         {
-          viewports.push_back((EditorViewport*) wnd);
+          viewports.push_back(dynamic_cast<EditorViewport*>(wnd));
         }
         wnd->DispatchSignals();
       }
@@ -704,7 +705,6 @@ namespace ToolKit
         SafeDel(EditorViewport::m_overlays[i]);
       }
 
-      SafeDel(m_simulationWindow);
     }
 
     void App::CreateWindows(XmlNode* parent)
@@ -1176,8 +1176,10 @@ namespace ToolKit
     {
       for (Window* wnd : m_windows)
       {
-        if (wnd->GetType() != Window::Type::Viewport &&
-            wnd->GetType() != Window::Type::Viewport2d)
+        Window::Type type = wnd->GetType();
+
+        if (type != Window::Type::Viewport &&
+            type != Window::Type::Viewport2d)
         {
           continue;
         }
@@ -1418,6 +1420,11 @@ namespace ToolKit
 
     void App::CreateSimulationWindow(float width, float height)
     {
+      if (m_simulationWindow != nullptr)
+      {
+        delete m_simulationWindow;
+      }
+
       m_simulationWindow         = new EditorViewport(m_simulatorSettings.Width,
                                               m_simulatorSettings.Height);
 

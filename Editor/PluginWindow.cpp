@@ -38,7 +38,6 @@ namespace ToolKit
                            ImGuiWindowFlags_NoScrollWithMouse))
       {
         HandleStates();
-
         ShowActionButtons();
         ShowHeader();
         ShowSettings();
@@ -109,7 +108,13 @@ namespace ToolKit
     {
       // Draw play - pause - stop buttons.
       ImVec2 btnSize = ImVec2(20.0f, 20.0f);
-
+      if (m_settings->Windowed == false) 
+      {
+        // pick middle point of the window and move left half of the width of action buttons(250.0f)
+        float offset = glm::max(ImGui::GetWindowWidth() * 0.5f - 125.0f, 0.0f);
+        ImGui::SetCursorPosX(offset);
+      }
+      
       if (g_app->m_gameMod == GameMod::Playing)
       {
         GreenTint();
@@ -133,7 +138,7 @@ namespace ToolKit
 
         ImGui::PopStyleColor(3);
       }
-
+      ImGui::BeginGroup();
       // Stop.
       ImGui::SameLine();
       RedTint();
@@ -257,9 +262,8 @@ namespace ToolKit
       {
         ImGui::SameLine();
         ImGui::Text("Width");
-        ImGui::SetNextItemWidth(150.0f);
+        ImGui::SetNextItemWidth(70.0f);
         ImGui::SameLine();
-      
         if (ImGui::DragFloat("##w", &m_settings->Width, 1.0f, 1.0f, 4096.0f, 
                             "%.0f"))
         {
@@ -268,7 +272,7 @@ namespace ToolKit
       
         ImGui::SameLine();
         ImGui::Text("Height");
-        ImGui::SetNextItemWidth(150.0f);
+        ImGui::SetNextItemWidth(70.0f);
         ImGui::SameLine();
       
         if (ImGui::DragFloat("##h", &m_settings->Height, 1.0f, 1.0f, 4096.0f,
@@ -280,7 +284,7 @@ namespace ToolKit
       // Zoom
       ImGui::SameLine();
       ImGui::Text("Zoom");
-      ImGui::SetNextItemWidth(150.0f);
+      ImGui::SetNextItemWidth(70.0f);
       ImGui::SameLine();
       
       if (ImGui::SliderFloat("##z", &m_settings->Scale, 0.25f, 1.0f, "x%.2f"))
@@ -294,7 +298,7 @@ namespace ToolKit
       ImGui::SameLine();
       
       if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_phoneRotateIcon),
-                             ImVec2(30, 30)))
+                             ImVec2(20, 20)))
       {
         m_settings->Landscape = !m_settings->Landscape;
         UpdateSimulationWndSize();
