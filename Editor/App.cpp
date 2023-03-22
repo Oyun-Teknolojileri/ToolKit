@@ -163,7 +163,7 @@ namespace ToolKit
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
       std::vector<EditorViewport*> viewports;
-      viewports.push_back(m_simulationWindow);
+        
       for (Window* wnd : m_windows)
       {
         if (wnd->IsViewport())
@@ -171,6 +171,17 @@ namespace ToolKit
           viewports.push_back(dynamic_cast<EditorViewport*>(wnd));
         }
         wnd->DispatchSignals();
+      }
+
+      if (m_gameMod == GameMod::Playing && m_simulationWindow->IsVisible())
+      {
+        // render other windows only if mouse clicked for optimization
+        if (!(ImGui::IsMouseDown(ImGuiMouseButton_Right)
+          || ImGui::IsMouseDown(ImGuiMouseButton_Left)))
+        {
+          viewports.clear();
+        }
+        viewports.push_back(m_simulationWindow);
       }
 
       EditorScenePtr scene = GetCurrentScene();
@@ -190,7 +201,7 @@ namespace ToolKit
             continue;
           }
         }*/
-
+        
         if (viewport->IsVisible())
         {
           GetRenderSystem()->AddRenderTask(
