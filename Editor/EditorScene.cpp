@@ -311,10 +311,10 @@ namespace ToolKit
       }
     }
 
-    Entity* EditorScene::RemoveEntity(ULongID id)
+    Entity* EditorScene::RemoveEntity(ULongID id, bool deep)
     {
       Entity* removed = nullptr;
-      if ((removed = Scene::RemoveEntity(id)))
+      if ((removed = Scene::RemoveEntity(id, deep)))
       {
         RemoveFromSelection(removed->GetIdVal());
         RemoveBillboardFromEntity(removed);
