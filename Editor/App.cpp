@@ -704,7 +704,7 @@ namespace ToolKit
       {
         SafeDel(EditorViewport::m_overlays[i]);
       }
-
+      SafeDel(m_simulationWindow);
     }
 
     void App::CreateWindows(XmlNode* parent)
@@ -1420,11 +1420,7 @@ namespace ToolKit
 
     void App::CreateSimulationWindow(float width, float height)
     {
-      if (m_simulationWindow != nullptr)
-      {
-        delete m_simulationWindow;
-      }
-
+      SafeDel(m_simulationWindow);
       m_simulationWindow         = new EditorViewport(m_simulatorSettings.Width,
                                               m_simulatorSettings.Height);
 
