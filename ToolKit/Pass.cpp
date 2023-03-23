@@ -345,29 +345,15 @@ namespace ToolKit
     FrustumCull(jobArray, camera);
   }
 
-  void RenderJobProcessor::CollectEnvironmentVolumes(
-      const EntityRawPtrArray& entities,
-      EnvironmentComponentPtrArray& environments)
-  {
-    // Find entities which have environment component
-    environments.clear();
-    for (Entity* ntt : entities)
-    {
-      EnvironmentComponentPtr envCom =
-          ntt->GetComponent<EnvironmentComponent>();
-      if (envCom != nullptr && envCom->GetHdriVal() != nullptr &&
-          envCom->GetIlluminateVal())
-      {
-        envCom->Init(true);
-        environments.push_back(envCom);
-      }
-    }
-  }
-
   void RenderJobProcessor::AssignEnvironment(
       RenderJobArray& jobArray,
       const EnvironmentComponentPtrArray& environments)
   {
+    if (environments.empty()) 
+    {
+      return;
+    }
+
     for (RenderJob& job : jobArray)
     {
       BoundingBox bestBox {ZERO, ZERO};
@@ -375,11 +361,11 @@ namespace ToolKit
       {
         // Pick the smallest volume intersect with job.
         BoundingBox vbb = std::move(volume->GetBBox());
-        if (BoxBoxIntersection(vbb, job.BoundingBox)) 
+        if (BoxBoxIntersection(vbb, job.BoundingBox))
         {
-          if (bestBox.Volume() < vbb.Volume()) 
+          if (bestBox.Volume() < vbb.Volume())
           {
-            bestBox = vbb;
+            bestBox               = vbb;
             job.EnvironmentVolume = volume;
           }
         }

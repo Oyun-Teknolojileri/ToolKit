@@ -86,10 +86,6 @@ namespace ToolKit
 
     static void CullRenderJobs(RenderJobArray& jobArray, Camera* camera);
 
-    static void CollectEnvironmentVolumes(
-        const EntityRawPtrArray& entities,
-        EnvironmentComponentPtrArray& environments);
-
     static void AssignEnvironment(
         RenderJobArray& jobArray,
         const EnvironmentComponentPtrArray& environments);
