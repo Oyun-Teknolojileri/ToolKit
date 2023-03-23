@@ -504,6 +504,8 @@ namespace ToolKit
       }
     }
 
+    bool App::IsCompiling() { return m_isCompiling; }
+
     void App::CompilePlugin()
     {
       String codePath = m_workspace.GetCodePath();
@@ -520,6 +522,8 @@ namespace ToolKit
 #endif
       String cmd  = "cmake -S " + codePath + " -B " + buildDir;
       m_statusMsg = "Compiling ..." + g_statusNoTerminate;
+      m_isCompiling = true;
+
       ExecSysCommand(
           cmd,
           true,
@@ -560,6 +564,7 @@ namespace ToolKit
                                                          "%s",
                                                          m_statusMsg.c_str());
                              }
+                             m_isCompiling = false;
                            });
           });
     }

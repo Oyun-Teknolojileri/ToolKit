@@ -114,7 +114,7 @@ namespace ToolKit
         float offset = glm::max(ImGui::GetWindowWidth() * 0.5f - 125.0f, 0.0f);
         ImGui::SetCursorPosX(offset);
       }
-      
+
       if (g_app->m_gameMod == GameMod::Playing)
       {
         GreenTint();
@@ -130,7 +130,8 @@ namespace ToolKit
       {
         GreenTint();
         // Play.
-        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_playIcon), btnSize))
+        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_playIcon), btnSize) &&
+            !g_app->IsCompiling())
         {
           m_simulationModeDisabled = true;
           g_app->SetGameMod(GameMod::Playing);
@@ -249,7 +250,6 @@ namespace ToolKit
         m_settings->Height = resolutionSize.y;
       
         m_settings->Resolution = resolution;
-        g_app->m_windowCamLoad = true;
         UpdateSimulationWndSize();
       }
       
