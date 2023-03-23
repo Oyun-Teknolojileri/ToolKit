@@ -175,12 +175,6 @@ namespace ToolKit
 
       if (m_gameMod == GameMod::Playing && m_simulationWindow->IsVisible())
       {
-        // render other windows only if mouse clicked for optimization
-        if (!(ImGui::IsMouseDown(ImGuiMouseButton_Right)
-          || ImGui::IsMouseDown(ImGuiMouseButton_Left)))
-        {
-          viewports.clear();
-        }
         viewports.push_back(m_simulationWindow);
       }
 
