@@ -138,7 +138,6 @@ namespace ToolKit
 
         ImGui::PopStyleColor(3);
       }
-      ImGui::BeginGroup();
       // Stop.
       ImGui::SameLine();
       RedTint();
