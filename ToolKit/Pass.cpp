@@ -304,8 +304,9 @@ namespace ToolKit
     return allLights;
   }
 
-  void RenderJobProcessor::StableSortByDistanceToCamera(RenderJobArray& jobs,
-                                                        const Camera* cam)
+  void RenderJobProcessor::StableSortByDistanceToCamera(
+      RenderJobArray& jobArray,
+      const Camera* cam)
   {
     std::function<bool(const RenderJob&, const RenderJob&)> sortFn =
         [cam](const RenderJob& j1, const RenderJob& j2) -> bool
@@ -335,13 +336,55 @@ namespace ToolKit
       };
     }
 
-    std::stable_sort(jobs.begin(), jobs.end(), sortFn);
+    std::stable_sort(jobArray.begin(), jobArray.end(), sortFn);
   }
 
   void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray,
                                           Camera* camera)
   {
     FrustumCull(jobArray, camera);
+  }
+
+  void RenderJobProcessor::CollectEnvironmentVolumes(
+      const EntityRawPtrArray& entities,
+      EnvironmentComponentPtrArray& environments)
+  {
+    // Find entities which have environment component
+    environments.clear();
+    for (Entity* ntt : entities)
+    {
+      EnvironmentComponentPtr envCom =
+          ntt->GetComponent<EnvironmentComponent>();
+      if (envCom != nullptr && envCom->GetHdriVal() != nullptr &&
+          envCom->GetIlluminateVal())
+      {
+        envCom->Init(true);
+        environments.push_back(envCom);
+      }
+    }
+  }
+
+  void RenderJobProcessor::AssignEnvironment(
+      RenderJobArray& jobArray,
+      const EnvironmentComponentPtrArray& environments)
+  {
+    for (RenderJob& job : jobArray)
+    {
+      BoundingBox bestBox {ZERO, ZERO};
+      for (const EnvironmentComponentPtr& volume : environments)
+      {
+        // Pick the smallest volume intersect with job.
+        BoundingBox vbb = std::move(volume->GetBBox());
+        if (BoxBoxIntersection(vbb, job.BoundingBox)) 
+        {
+          if (bestBox.Volume() < vbb.Volume()) 
+          {
+            bestBox = vbb;
+            job.EnvironmentVolume = volume;
+          }
+        }
+      }
+    }
   }
 
 } // namespace ToolKit
