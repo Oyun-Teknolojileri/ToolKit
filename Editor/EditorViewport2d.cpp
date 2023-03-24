@@ -17,6 +17,7 @@
 #include "Renderer.h"
 #include "SDL.h"
 #include "Util.h"
+#include "TopBar2d.h"
 
 #include <algorithm>
 
@@ -27,7 +28,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    Overlay2DViewportOptions* m_2dViewOptions = nullptr;
+    Overlay2DTopBar* m_2dViewOptions = nullptr;
 
     EditorViewport2d::EditorViewport2d(XmlNode* node) : EditorViewport(node)
     {
@@ -60,6 +61,7 @@ namespace ToolKit
 
       ImGui::SetNextWindowSize(Vec2(m_size), ImGuiCond_None);
       ImGui::PushStyleColor(ImGuiCol_WindowBg, g_wndBgColor);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
 
       if (ImGui::Begin(m_name.c_str(),
                        &m_visible,
@@ -78,6 +80,7 @@ namespace ToolKit
 
       ImGui::End();
       ImGui::PopStyleColor();
+      ImGui::PopStyleVar();
     }
 
     Window::Type EditorViewport2d::GetType() const { return Type::Viewport2d; }
@@ -475,7 +478,7 @@ namespace ToolKit
 
       if (!m_2dViewOptions)
       {
-        m_2dViewOptions = new Overlay2DViewportOptions(this);
+        m_2dViewOptions = new Overlay2DTopBar(this);
       }
       m_snapDeltas = Vec3(10.0f, 45.0f, 0.25f);
     }

@@ -163,13 +163,19 @@ namespace ToolKit
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
       std::vector<EditorViewport*> viewports;
+        
       for (Window* wnd : m_windows)
       {
         if (wnd->IsViewport())
         {
-          viewports.push_back((EditorViewport*) wnd);
+          viewports.push_back(dynamic_cast<EditorViewport*>(wnd));
         }
         wnd->DispatchSignals();
+      }
+
+      if (m_gameMod == GameMod::Playing && m_simulationWindow->IsVisible())
+      {
+        viewports.push_back(m_simulationWindow);
       }
 
       EditorScenePtr scene = GetCurrentScene();
@@ -189,7 +195,7 @@ namespace ToolKit
             continue;
           }
         }*/
-
+        
         if (viewport->IsVisible())
         {
           GetRenderSystem()->AddRenderTask(
@@ -492,6 +498,8 @@ namespace ToolKit
       }
     }
 
+    bool App::IsCompiling() { return m_isCompiling; }
+
     void App::CompilePlugin()
     {
       String codePath = m_workspace.GetCodePath();
@@ -508,6 +516,8 @@ namespace ToolKit
 #endif
       String cmd  = "cmake -S " + codePath + " -B " + buildDir;
       m_statusMsg = "Compiling ..." + g_statusNoTerminate;
+      m_isCompiling = true;
+
       ExecSysCommand(
           cmd,
           true,
@@ -548,6 +558,7 @@ namespace ToolKit
                                                          "%s",
                                                          m_statusMsg.c_str());
                              }
+                             m_isCompiling = false;
                            });
           });
     }
@@ -703,7 +714,6 @@ namespace ToolKit
       {
         SafeDel(EditorViewport::m_overlays[i]);
       }
-
       SafeDel(m_simulationWindow);
     }
 
@@ -1176,8 +1186,10 @@ namespace ToolKit
     {
       for (Window* wnd : m_windows)
       {
-        if (wnd->GetType() != Window::Type::Viewport &&
-            wnd->GetType() != Window::Type::Viewport2d)
+        Window::Type type = wnd->GetType();
+
+        if (type != Window::Type::Viewport &&
+            type != Window::Type::Viewport2d)
         {
           continue;
         }
@@ -1418,6 +1430,7 @@ namespace ToolKit
 
     void App::CreateSimulationWindow(float width, float height)
     {
+      SafeDel(m_simulationWindow);
       m_simulationWindow         = new EditorViewport(m_simulatorSettings.Width,
                                               m_simulatorSettings.Height);
 
