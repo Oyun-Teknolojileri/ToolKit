@@ -1,7 +1,7 @@
 #include "Texture.h"
 
 #include "DirectionComponent.h"
-#include "GL/glew.h"
+#include "gles2.h"
 #include "ToolKit.h"
 
 #include <memory>

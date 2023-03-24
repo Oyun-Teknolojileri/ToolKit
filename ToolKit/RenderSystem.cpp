@@ -1,6 +1,8 @@
 #include "RenderSystem.h"
 
+#include "GlErrorReporter.h"
 #include "ToolKit.h"
+#include "gles2.h"
 
 #include "DebugNew.h"
 
@@ -127,6 +129,18 @@ namespace ToolKit
   void RenderSystem::EnableBlending(bool enable)
   {
     m_renderer->EnableBlending(enable);
+  }
+
+  void RenderSystem::InitGl(void* glGetProcAddres, GlReportCallback callback)
+  {
+    // Initialize opengl functions.
+    gladLoadGLES2((GLADloadfunc) glGetProcAddres);
+
+    InitGLErrorReport(callback);
+
+    // Default states.
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
   }
 
   void RenderSystem::ExecuteTaskImp(RenderTask& task)

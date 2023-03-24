@@ -16,14 +16,15 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+#include "ToolKit.h"
+#include "Util.h"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/quaternion.hpp"
+#include "rapidxml.hpp"
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-
-#include <ToolKit.h>
-#include <Util.h>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <rapidxml.hpp>
 
 using std::cout;
 using std::endl;

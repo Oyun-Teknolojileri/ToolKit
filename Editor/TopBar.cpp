@@ -2,6 +2,7 @@
 
 #include "App.h"
 #include "EditorCamera.h"
+#include "GradientSky.h"
 
 #include "DebugNew.h"
 

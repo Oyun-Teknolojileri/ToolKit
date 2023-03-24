@@ -4,7 +4,7 @@
 #include "DirectionComponent.h"
 #include "Drawable.h"
 #include "EnvironmentComponent.h"
-#include "GL/glew.h"
+#include "GradientSky.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
@@ -19,6 +19,7 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
+#include "gles2.h"
 
 #include <algorithm>
 #include <random>
@@ -103,10 +104,32 @@ namespace ToolKit
                         Camera* cam,
                         const LightRawPtrArray& lights)
   {
-    if (!cam->IsOrtographic())
+    // Make ibl assignments.
+    m_renderState.IBLInUse = false;
+    if (EnvironmentComponentPtr envCom = job.EnvironmentVolume)
     {
-      // TODO: Orthographic mode must support environment lighting.
-      FindEnvironmentLight(job);
+      m_renderState.iblIntensity           = envCom->GetIntensityVal();
+
+      HdriPtr hdriPtr                      = envCom->GetHdriVal();
+      CubeMapPtr irradianceCubemap         = hdriPtr->m_irradianceCubemap;
+      CubeMapPtr preFilteredSpecularIBLMap = hdriPtr->m_prefilteredEnvMap;
+      RenderTargetPtr brdfLut =
+          GetTextureManager()->Create<RenderTarget>(TK_LUT_TEXTURE);
+
+      if (irradianceCubemap && preFilteredSpecularIBLMap && brdfLut)
+      {
+        m_renderState.irradianceMap = irradianceCubemap->m_textureId;
+        m_renderState.preFilteredSpecularMap =
+            preFilteredSpecularIBLMap->m_textureId;
+        m_renderState.brdfLut  = brdfLut->m_textureId;
+
+        m_renderState.IBLInUse = true;
+        if (Entity* env = envCom->m_entity)
+        {
+          m_iblRotation =
+              Mat4(env->m_node->GetOrientation(TransformationSpace::TS_WORLD));
+        }
+      }
     }
 
     // Skeleton Component is used by all meshes of an entity.
@@ -664,167 +687,6 @@ namespace ToolKit
     }
   }
 
-  void Renderer::CollectEnvironmentVolumes(const EntityRawPtrArray& entities)
-  {
-    // Find entities which have environment component
-    m_environmentLightEntities.clear();
-    for (Entity* ntt : entities)
-    {
-      if (ntt->GetType() == EntityType::Entity_Sky)
-      {
-        continue;
-      }
-
-      EnvironmentComponentPtr envCom =
-          ntt->GetComponent<EnvironmentComponent>();
-      if (envCom != nullptr && envCom->GetHdriVal() != nullptr &&
-          envCom->GetHdriVal()->IsTextureAssigned() &&
-          envCom->GetIlluminateVal())
-      {
-        envCom->Init(true);
-        m_environmentLightEntities.push_back(ntt);
-      }
-    }
-  }
-
-  void Renderer::FindEnvironmentLight(const RenderJob& job)
-  {
-    // Note: If multiple bounding boxes are intersecting and the intersection
-    // volume includes the entity, the smaller bounding box is taken
-
-    // Iterate all entities and mark the ones which should
-    // be lit with environment light
-
-    Entity* env     = nullptr;
-    MaterialPtr mat = job.Material;
-    Vec3 pos        = glm::column(job.WorldTransform, 3).xyz;
-
-    BoundingBox bestBox {ZERO, ZERO};
-    BoundingBox currentBox;
-
-    for (Entity* envNtt : m_environmentLightEntities)
-    {
-      EnvironmentComponentPtr envComp =
-          envNtt->GetComponent<EnvironmentComponent>();
-
-      if (envComp == nullptr)
-      {
-        continue;
-      }
-
-      currentBox = envComp->GetBBox();
-
-      if (PointInsideBBox(pos, currentBox.max, currentBox.min))
-      {
-        auto setCurrentBBox = [&bestBox, &env](const BoundingBox& box,
-                                               Entity* ntt) -> void
-        {
-          bestBox = box;
-          env     = ntt;
-        };
-
-        if (bestBox.max == bestBox.min && bestBox.max == ZERO)
-        {
-          setCurrentBBox(currentBox, envNtt);
-          continue;
-        }
-
-        bool change = false;
-        if (BoxBoxIntersection(bestBox, currentBox))
-        {
-          // Take the smaller box
-          if (bestBox.Volume() > currentBox.Volume())
-          {
-            change = true;
-          }
-        }
-        else
-        {
-          change = true;
-        }
-
-        if (change)
-        {
-          setCurrentBBox(currentBox, envNtt);
-        }
-      }
-    }
-
-    if (env != nullptr)
-    {
-      EnvironmentComponentPtr envCom =
-          env->GetComponent<EnvironmentComponent>();
-
-      RenderState* state                   = mat->GetRenderState();
-      state->IBLInUse                      = true;
-      state->iblIntensity                  = envCom->GetIntensityVal();
-
-      HdriPtr hdriPtr                      = envCom->GetHdriVal();
-      CubeMapPtr irradianceCubemap         = hdriPtr->m_irradianceCubemap;
-      CubeMapPtr preFilteredSpecularIBLMap = hdriPtr->m_prefilteredEnvMap;
-
-      if (irradianceCubemap && preFilteredSpecularIBLMap &&
-          GetTextureManager()->Exist(TK_LUT_TEXTURE))
-      {
-        RenderTargetPtr brdfLut =
-            GetTextureManager()->Create<RenderTarget>(TK_LUT_TEXTURE);
-
-        state->irradianceMap          = irradianceCubemap->m_textureId;
-        state->preFilteredSpecularMap = preFilteredSpecularIBLMap->m_textureId;
-        state->brdfLut                = brdfLut->m_textureId;
-      }
-
-      m_iblRotation =
-          Mat4(env->m_node->GetOrientation(TransformationSpace::TS_WORLD));
-    }
-    else
-    {
-      // Sky light
-      if (m_sky != nullptr && m_sky->IsInitialized() &&
-          m_sky->GetIlluminateVal())
-      {
-        mat->GetRenderState()->IBLInUse = true;
-        RenderState* state              = mat->GetRenderState();
-        if (m_sky->GetType() == EntityType::Entity_Sky)
-        {
-          HdriPtr hdriPtr = static_cast<Sky*>(m_sky)
-                                ->GetComponent<EnvironmentComponent>()
-                                ->GetHdriVal();
-
-          CubeMapPtr irradianceCubemap         = hdriPtr->m_irradianceCubemap;
-          CubeMapPtr preFilteredSpecularIBLMap = hdriPtr->m_prefilteredEnvMap;
-
-          RenderTargetPtr brdfLut =
-              GetTextureManager()->Create<RenderTarget>(TK_LUT_TEXTURE);
-
-          if (irradianceCubemap && preFilteredSpecularIBLMap && brdfLut)
-          {
-            state->irradianceMap = irradianceCubemap->m_textureId;
-            state->preFilteredSpecularMap =
-                preFilteredSpecularIBLMap->m_textureId;
-            state->brdfLut = brdfLut->m_textureId;
-          }
-        }
-        else if (m_sky->GetType() == EntityType::Entity_GradientSky)
-        {
-          uint irradianceMap =
-              static_cast<GradientSky*>(m_sky)->GetIrradianceMap()->m_textureId;
-          state->irradianceMap = irradianceMap;
-        }
-
-        state->iblIntensity = m_sky->GetIntensityVal();
-        m_iblRotation =
-            Mat4(m_sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
-      }
-      else
-      {
-        mat->GetRenderState()->IBLInUse      = false;
-        mat->GetRenderState()->irradianceMap = 0;
-        m_iblRotation                        = Mat4(1.0f);
-      }
-    }
-  }
-
   void Renderer::Apply7x1GaussianBlur(const TexturePtr source,
                                       RenderTargetPtr dest,
                                       const Vec3& axis,
@@ -1109,15 +971,13 @@ namespace ToolKit
         break;
         case Uniform::USE_IBL:
         {
-          m_renderState.IBLInUse = m_mat->GetRenderState()->IBLInUse;
-          GLint loc              = glGetUniformLocation(program->m_handle,
+          GLint loc = glGetUniformLocation(program->m_handle,
                                            GetUniformName(Uniform::USE_IBL));
           glUniform1i(loc, (GLint) m_renderState.IBLInUse);
         }
         break;
         case Uniform::IBL_INTENSITY:
         {
-          m_renderState.iblIntensity = m_mat->GetRenderState()->iblIntensity;
           GLint loc =
               glGetUniformLocation(program->m_handle,
                                    GetUniformName(Uniform::IBL_INTENSITY));
@@ -1126,12 +986,8 @@ namespace ToolKit
         break;
         case Uniform::IBL_IRRADIANCE:
         {
-          m_renderState.irradianceMap = m_mat->GetRenderState()->irradianceMap;
           SetTexture(7, m_renderState.irradianceMap);
-          m_renderState.preFilteredSpecularMap =
-              m_mat->GetRenderState()->preFilteredSpecularMap;
           SetTexture(15, m_renderState.preFilteredSpecularMap);
-          m_renderState.brdfLut = m_mat->GetRenderState()->brdfLut;
           SetTexture(16, m_renderState.brdfLut);
         }
         break;
@@ -1774,7 +1630,7 @@ namespace ToolKit
 
   void Renderer::ResetTextureSlots()
   {
-    for (int i = 0; i < 17; i++) 
+    for (int i = 0; i < 17; i++)
     {
       SetTexture(i, 0);
     }

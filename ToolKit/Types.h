@@ -167,6 +167,7 @@ namespace ToolKit
 
   // Callbacks.
   typedef std::function<void(class Event*, class Entity*)> SurfaceEventCallback;
+  typedef std::function<void(const String&)> GlReportCallback;
 
   // Math Vector declerations.
   static const Vec3 ZERO    = Vec3(0.0f);
