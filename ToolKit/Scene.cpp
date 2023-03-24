@@ -277,15 +277,46 @@ namespace ToolKit
 
   EntityRawPtrArray& Scene::AccessEntityArray() { return m_entities; }
 
-  Entity* Scene::RemoveEntity(ULongID id)
+  void Scene::RemoveChildren(Entity* removed)
+  {
+    NodePtrArray children = removed->m_node->m_children;
+    
+    // Iterative remove children.
+    while (!children.empty())
+    {
+      Node* child = children.back();
+      children.pop_back();
+      RemoveEntity(child->m_entity->GetIdVal());
+      if (child->m_children.empty())
+      {
+        continue;
+      }
+
+      // Add child's children to the list that we remove from scene.
+      children.insert(children.end(),
+                    child->m_children.begin(),
+                    child->m_children.end());
+    }
+  }
+
+  Entity* Scene::RemoveEntity(ULongID id, bool deep)
   {
     Entity* removed = nullptr;
-    for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; i--)
+    for (size_t i = 0; i < m_entities.size(); i++)
     {
       if (m_entities[i]->GetIdVal() == id)
       {
         removed = m_entities[i];
         m_entities.erase(m_entities.begin() + i);
+        removed->m_node->OrphanSelf();
+        if (deep)
+        {
+          RemoveChildren(removed);
+        }
+        else
+        {
+          removed->m_node->OrphanAllChildren(true);
+        }
         break;
       }
     }
@@ -295,18 +326,18 @@ namespace ToolKit
 
   void Scene::RemoveEntity(const EntityRawPtrArray& entities)
   {
-    erase_if(m_entities, [&entities](const Entity* ntt) -> bool
-                                    {
-                                      for (const Entity* removeNtt : entities)
-                                      {
-                                        if (removeNtt->GetIdVal() ==
-                                            ntt->GetIdVal())
-                                        {
-                                          return true;
-                                        }
-                                      }
-                                      return false;
-                                    });
+    erase_if(m_entities,
+             [&entities](const Entity* ntt) -> bool
+             {
+               for (const Entity* removeNtt : entities)
+               {
+                 if (removeNtt->GetIdVal() == ntt->GetIdVal())
+                 {
+                   return true;
+                 }
+               }
+               return false;
+             });
   }
 
   void Scene::RemoveAllEntities() { m_entities.clear(); }
@@ -414,9 +445,9 @@ namespace ToolKit
       // if (folderName != GetResourcePath())
     }
     Prefab* prefab = new Prefab();
-    AddEntity(prefab);
     prefab->SetPrefabPathVal(path);
     prefab->Init(this);
+    prefab->Link();
   }
 
   EnvironmentComponentPtrArray Scene::GetEnvironmentVolumes()
@@ -636,12 +667,14 @@ namespace ToolKit
       GetEngineSettings().DeSerializePostProcessing(doc, parent);
     }
 
-    for (Entity* prefab : prefabList)
+    for (Entity* ntt : prefabList)
     {
-      static_cast<Prefab*>(prefab)->Init(this);
+      Prefab* prefab = static_cast<Prefab*>(ntt);
+      prefab->Init(this);
+      prefab->Link();
     }
   }
-  
+
   ULongID Scene::GetBiggestEntityId()
   {
     ULongID lastId = 0;

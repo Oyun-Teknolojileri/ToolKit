@@ -47,7 +47,14 @@ namespace ToolKit
       // Entity operations.
       void AddEntity(Entity* entity) override;
       void RemoveEntity(const EntityRawPtrArray& entities) override;
-      Entity* RemoveEntity(ULongID id) override;
+      /**
+       * remove entity from the scene
+       * @param  the id of the entity you want to remove
+       * @param  do you want to remove with childs ?
+       *         be aware that removed childs transforms preserved
+       * @returns the entity that you removed, nullptr if entity is not in scene
+       */
+      Entity* RemoveEntity(ULongID id, bool deep = true) override;
       void Destroy(bool removeResources) override;
       void GetSelectedEntities(EntityRawPtrArray& entities) const;
       void GetSelectedEntities(EntityIdArray& entities) const;
