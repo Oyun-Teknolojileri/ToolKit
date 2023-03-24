@@ -144,12 +144,6 @@ namespace ToolKit
      * Just before the render, set the lens to fit aspect ratio to frame buffer.
      */
     void SetCameraLens(Camera* cam);
-
-    /**
-     * Collects all the environment volumes.
-     */
-    void CollectEnvironmentVolumes(const EntityRawPtrArray& entities);
-
     /////////////////////
 
     int GetMaxArrayTextureLayers();
@@ -159,15 +153,6 @@ namespace ToolKit
    private:
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
-
-    /**
-     * Sets current entities material iblInUse parameter, if it falls within an
-     * environment volume or sky. Set m_iblRotation from the found environment
-     * volume to reflect environment rotation.
-     * @param entity to find the environment volume.
-     */
-    void FindEnvironmentLight(const RenderJob& job);
-
     void SetProjectViewModel(const Mat4& model, Camera* cam);
     void BindProgram(ProgramPtr program);
     void LinkProgram(uint program, uint vertexP, uint fragmentP);
@@ -213,8 +198,6 @@ namespace ToolKit
 
     std::unordered_map<String, ProgramPtr> m_programs;
     RenderState m_renderState;
-
-    EntityRawPtrArray m_environmentLightEntities;
 
     UVec2 m_viewportSize; //!< Current viewport size.
 
