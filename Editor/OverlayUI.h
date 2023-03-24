@@ -2,13 +2,12 @@
 
 #include "ToolKit.h"
 #include "UI.h"
+#include "EditorViewport.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
-
-    class EditorViewport;
 
     class OverlayUI
     {
@@ -21,44 +20,6 @@ namespace ToolKit
 
      public:
       EditorViewport* m_owner;
-    };
-
-    class OverlayMods : public OverlayUI
-    {
-     public:
-      explicit OverlayMods(EditorViewport* owner);
-      void Show() override;
-    };
-
-    class OverlayLighting : public OverlayUI
-    {
-     public:
-      explicit OverlayLighting(EditorViewport* owner);
-      void Show() override;
-
-     private:
-      bool m_editorLitModeOn = true;
-    };
-
-    class OverlayViewportOptions : public OverlayUI
-    {
-     public:
-      explicit OverlayViewportOptions(EditorViewport* owner);
-      void Show() override;
-    };
-
-    class Overlay2DViewportOptions : public OverlayUI
-    {
-     public:
-      explicit Overlay2DViewportOptions(EditorViewport* owner);
-      void Show() override;
-    };
-
-    class StatusBar : public OverlayUI
-    {
-     public:
-      explicit StatusBar(EditorViewport* owner);
-      void Show() override;
     };
 
   } //  namespace Editor

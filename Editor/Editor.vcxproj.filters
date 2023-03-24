@@ -13,14 +13,23 @@
     <Filter Include="Entities">
       <UniqueIdentifier>{23ef0147-ea57-41a4-9b24-719e3e46ff22}</UniqueIdentifier>
     </Filter>
-    <Filter Include="UI\InspectorViews">
-      <UniqueIdentifier>{0dc80406-1a58-4f44-abab-b7242951b6f2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Render">
       <UniqueIdentifier>{56fd2dee-1e1f-4e27-83aa-87bc7f0eeb13}</UniqueIdentifier>
     </Filter>
     <Filter Include="Render\Pass">
       <UniqueIdentifier>{82d56f23-d5eb-42d1-b37f-d85466a6574b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Overlay">
+      <UniqueIdentifier>{2096fff2-8acd-4c35-a843-c3178b038c13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Viewport">
+      <UniqueIdentifier>{4732c142-91d9-41bb-a9f6-164d43aee9f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Window">
+      <UniqueIdentifier>{c0edd973-4adb-474a-9ccd-5f9fa83c78a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\View">
+      <UniqueIdentifier>{0dc80406-1a58-4f44-abab-b7242951b6f2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -39,9 +48,6 @@
     <ClCompile Include="UI.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="ConsoleWindow.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="Grid.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
@@ -51,32 +57,11 @@
     <ClCompile Include="TransformMod.cpp">
       <Filter>Mods</Filter>
     </ClCompile>
-    <ClCompile Include="OverlayUI.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="FolderWindow.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="OutlinerWindow.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="PropInspector.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="EditorScene.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Workspace.cpp">
       <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="EditorViewport.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="PluginWindow.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="EditorViewport2d.cpp">
-      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="EditorCamera.cpp">
       <Filter>Entities</Filter>
@@ -96,35 +81,29 @@
     <ClCompile Include="Anchor.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
-    <ClCompile Include="PopupWindows.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="EntityView.cpp">
-      <Filter>UI\InspectorViews</Filter>
+      <Filter>UI\View</Filter>
     </ClCompile>
     <ClCompile Include="PrefabView.cpp">
-      <Filter>UI\InspectorViews</Filter>
+      <Filter>UI\View</Filter>
     </ClCompile>
     <ClCompile Include="ComponentView.cpp">
-      <Filter>UI\InspectorViews</Filter>
+      <Filter>UI\View</Filter>
     </ClCompile>
     <ClCompile Include="CustomDataView.cpp">
-      <Filter>UI\InspectorViews</Filter>
+      <Filter>UI\View</Filter>
     </ClCompile>
     <ClCompile Include="MaterialView.cpp">
-      <Filter>UI\InspectorViews</Filter>
+      <Filter>UI\View</Filter>
     </ClCompile>
     <ClCompile Include="MeshView.cpp">
-      <Filter>UI\InspectorViews</Filter>
+      <Filter>UI\View</Filter>
     </ClCompile>
     <ClCompile Include="RenderSettingsView.cpp">
-      <Filter>UI\InspectorViews</Filter>
+      <Filter>UI\View</Filter>
     </ClCompile>
     <ClCompile Include="Thumbnail.cpp">
       <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="MultiChoiceParameterWindow.cpp">
-      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="EditorRenderer.cpp">
       <Filter>Render</Filter>
@@ -135,15 +114,57 @@
     <ClCompile Include="SingleMaterialPass.cpp">
       <Filter>Render\Pass</Filter>
     </ClCompile>
+    <ClCompile Include="OverlayUI.cpp">
+      <Filter>UI\Overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="TopBar.cpp">
+      <Filter>UI\Overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="TopBar2d.cpp">
+      <Filter>UI\Overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="StatusBar.cpp">
+      <Filter>UI\Overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="LeftBar.cpp">
+      <Filter>UI\Overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlayLighting.cpp">
+      <Filter>UI\Overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorViewport.cpp">
+      <Filter>UI\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorViewport2d.cpp">
+      <Filter>UI\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="ConsoleWindow.cpp">
+      <Filter>UI\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="FolderWindow.cpp">
+      <Filter>UI\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="MultiChoiceParameterWindow.cpp">
+      <Filter>UI\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="OutlinerWindow.cpp">
+      <Filter>UI\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginWindow.cpp">
+      <Filter>UI\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="PopupWindows.cpp">
+      <Filter>UI\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="PropInspector.cpp">
+      <Filter>UI\Window</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mod.h">
       <Filter>Mods</Filter>
     </ClInclude>
     <ClInclude Include="UI.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="ConsoleWindow.h">
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="Grid.h">
@@ -161,32 +182,11 @@
     <ClInclude Include="TransformMod.h">
       <Filter>Mods</Filter>
     </ClInclude>
-    <ClInclude Include="OverlayUI.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="FolderWindow.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="OutlinerWindow.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="PropInspector.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="EditorScene.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Workspace.h">
       <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="EditorViewport.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="PluginWindow.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="EditorViewport2d.h">
-      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="EditorCamera.h">
       <Filter>Entities</Filter>
@@ -206,35 +206,29 @@
     <ClInclude Include="Anchor.h">
       <Filter>Entities</Filter>
     </ClInclude>
-    <ClInclude Include="PopupWindows.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="EntityView.h">
-      <Filter>UI\InspectorViews</Filter>
+      <Filter>UI\View</Filter>
     </ClInclude>
     <ClInclude Include="PrefabView.h">
-      <Filter>UI\InspectorViews</Filter>
+      <Filter>UI\View</Filter>
     </ClInclude>
     <ClInclude Include="ComponentView.h">
-      <Filter>UI\InspectorViews</Filter>
+      <Filter>UI\View</Filter>
     </ClInclude>
     <ClInclude Include="CustomDataView.h">
-      <Filter>UI\InspectorViews</Filter>
+      <Filter>UI\View</Filter>
     </ClInclude>
     <ClInclude Include="MaterialView.h">
-      <Filter>UI\InspectorViews</Filter>
+      <Filter>UI\View</Filter>
     </ClInclude>
     <ClInclude Include="MeshView.h">
-      <Filter>UI\InspectorViews</Filter>
+      <Filter>UI\View</Filter>
     </ClInclude>
     <ClInclude Include="RenderSettingsView.h">
-      <Filter>UI\InspectorViews</Filter>
+      <Filter>UI\View</Filter>
     </ClInclude>
     <ClInclude Include="Thumbnail.h">
       <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="MultiChoiceParameterWindow.h">
-      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="EditorRenderer.h">
       <Filter>Render</Filter>
@@ -244,6 +238,51 @@
     </ClInclude>
     <ClInclude Include="SingleMaterialPass.h">
       <Filter>Render\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlayUI.h">
+      <Filter>UI\Overlay</Filter>
+    </ClInclude>
+    <ClInclude Include="TopBar.h">
+      <Filter>UI\Overlay</Filter>
+    </ClInclude>
+    <ClInclude Include="TopBar2d.h">
+      <Filter>UI\Overlay</Filter>
+    </ClInclude>
+    <ClInclude Include="StatusBar.h">
+      <Filter>UI\Overlay</Filter>
+    </ClInclude>
+    <ClInclude Include="LeftBar.h">
+      <Filter>UI\Overlay</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlayLighting.h">
+      <Filter>UI\Overlay</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorViewport.h">
+      <Filter>UI\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorViewport2d.h">
+      <Filter>UI\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="ConsoleWindow.h">
+      <Filter>UI\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="FolderWindow.h">
+      <Filter>UI\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiChoiceParameterWindow.h">
+      <Filter>UI\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="OutlinerWindow.h">
+      <Filter>UI\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="PluginWindow.h">
+      <Filter>UI\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="PopupWindows.h">
+      <Filter>UI\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="PropInspector.h">
+      <Filter>UI\Window</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -17,6 +17,7 @@
 #include "Renderer.h"
 #include "SDL.h"
 #include "Util.h"
+#include "TopBar2d.h"
 
 #include <algorithm>
 
@@ -27,7 +28,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    Overlay2DViewportOptions* m_2dViewOptions = nullptr;
+    Overlay2DTopBar* m_2dViewOptions = nullptr;
 
     EditorViewport2d::EditorViewport2d(XmlNode* node) : EditorViewport(node)
     {
@@ -477,7 +478,7 @@ namespace ToolKit
 
       if (!m_2dViewOptions)
       {
-        m_2dViewOptions = new Overlay2DViewportOptions(this);
+        m_2dViewOptions = new Overlay2DTopBar(this);
       }
       m_snapDeltas = Vec3(10.0f, 45.0f, 0.25f);
     }
