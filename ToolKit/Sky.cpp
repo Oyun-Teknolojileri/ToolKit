@@ -72,10 +72,10 @@ namespace ToolKit
     return hdri->m_irradianceCubemap;
   }
 
-  HdriPtr SkyBase::GetHdri() 
+  HdriPtr SkyBase::GetHdri()
   {
     HdriPtr hdri = GetComponent<EnvironmentComponent>()->GetHdriVal();
-    return hdri; 
+    return hdri;
   }
 
   BoundingBox SkyBase::GetAABB(bool inWorld) const
@@ -101,14 +101,37 @@ namespace ToolKit
     SetNameVal("SkyBase");
   }
 
-  void SkyBase::ParameterEventConstructor() {}
+  void SkyBase::ParameterEventConstructor()
+  {
+    ParamIlluminate().m_onValueChangedFn.clear();
+    ParamIlluminate().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void
+        {
+          if (IsInitialized()) 
+          {
+            GetComponent<EnvironmentComponent>()->SetIlluminateVal(
+                std::get<bool>(newVal));
+          }
+        });
+
+    ParamIntensity().m_onValueChangedFn.clear();
+    ParamIntensity().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void
+        {
+          if (IsInitialized()) 
+          {
+            GetComponent<EnvironmentComponent>()->SetIntensityVal(
+                std::get<float>(newVal));
+          }
+        });
+  }
 
   void SkyBase::ConstructSkyMaterial(ShaderPtr vertexPrg, ShaderPtr fragPrg)
   {
-    m_skyboxMaterial                   = std::make_shared<Material>();
-    m_skyboxMaterial->m_cubeMap        = GetHdri()->m_cubemap;
-    m_skyboxMaterial->m_vertexShader   = vertexPrg;
-    m_skyboxMaterial->m_fragmentShader = fragPrg;
+    m_skyboxMaterial                             = std::make_shared<Material>();
+    m_skyboxMaterial->m_cubeMap                  = GetHdri()->m_cubemap;
+    m_skyboxMaterial->m_vertexShader             = vertexPrg;
+    m_skyboxMaterial->m_fragmentShader           = fragPrg;
     m_skyboxMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
     m_skyboxMaterial->Init();
   }
@@ -171,12 +194,14 @@ namespace ToolKit
 
   void Sky::ParameterEventConstructor()
   {
-    ParamIntensity().m_onValueChangedFn.clear();
-    ParamIntensity().m_onValueChangedFn.push_back(
+    SkyBase::ParameterEventConstructor();
+
+    ParamHdri().m_onValueChangedFn.clear();
+    ParamHdri().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         {
-          GetComponent<EnvironmentComponent>()->SetIntensityVal(
-              std::get<float>(newVal));
+          GetComponent<EnvironmentComponent>()->SetHdriVal(
+              std::get<HdriPtr>(newVal));
         });
 
     ParamExposure().m_onValueChangedFn.clear();
@@ -185,14 +210,6 @@ namespace ToolKit
         {
           GetComponent<EnvironmentComponent>()->SetExposureVal(
               std::get<float>(newVal));
-        });
-
-    ParamHdri().m_onValueChangedFn.clear();
-    ParamHdri().m_onValueChangedFn.push_back(
-        [this](Value& oldVal, Value& newVal) -> void
-        {
-          GetComponent<EnvironmentComponent>()->SetHdriVal(
-              std::get<HdriPtr>(newVal));
         });
   }
 

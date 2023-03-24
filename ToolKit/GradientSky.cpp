@@ -97,13 +97,7 @@ namespace ToolKit
 
   void GradientSky::ParameterEventConstructor()
   {
-    ParamIntensity().m_onValueChangedFn.clear();
-    ParamIntensity().m_onValueChangedFn.push_back(
-        [this](Value& oldVal, Value& newVal) -> void
-        {
-          GetComponent<EnvironmentComponent>()->SetIntensityVal(
-              std::get<float>(newVal));
-        });
+    SkyBase::ParameterEventConstructor();
   }
 
   void GradientSky::GenerateGradientCubemap()

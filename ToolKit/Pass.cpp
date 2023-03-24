@@ -349,21 +349,27 @@ namespace ToolKit
       RenderJobArray& jobArray,
       const EnvironmentComponentPtrArray& environments)
   {
-    if (environments.empty()) 
+    if (environments.empty())
     {
       return;
     }
 
     for (RenderJob& job : jobArray)
     {
-      BoundingBox bestBox {ZERO, ZERO};
+      BoundingBox bestBox;
       for (const EnvironmentComponentPtr& volume : environments)
       {
-        // Pick the smallest volume intersect with job.
+        if (volume->GetIlluminateVal() == false) 
+        {
+          continue;
+        }
+
+        // Pick the smallest volume intersecting with job.
         BoundingBox vbb = std::move(volume->GetBBox());
         if (BoxBoxIntersection(vbb, job.BoundingBox))
         {
-          if (bestBox.Volume() < vbb.Volume())
+          if (bestBox.Volume() > vbb.Volume() ||
+              job.EnvironmentVolume == nullptr)
           {
             bestBox               = vbb;
             job.EnvironmentVolume = volume;
