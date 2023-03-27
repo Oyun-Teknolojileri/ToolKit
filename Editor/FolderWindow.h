@@ -11,7 +11,6 @@ namespace ToolKit
 {
   namespace Editor
   {
-
     class DirectoryEntry
     {
      public:
@@ -26,6 +25,7 @@ namespace ToolKit
       String m_fileName;
       String m_rootPath;
       bool m_isDirectory = false;
+      bool m_cutting     = false;
 
      private:
       MaterialPtr m_tempThumbnailMaterial = nullptr;
@@ -41,6 +41,7 @@ namespace ToolKit
       explicit FolderView(FolderWindow* parent);
 
       void Show();
+      void SetDirty() { m_dirty = true; }
       void SetPath(const String& path);
       const String& GetPath() const;
       void Iterate();
@@ -70,6 +71,8 @@ namespace ToolKit
       Vec2 m_iconSize        = Vec2(50.0f);
       std::vector<DirectoryEntry> m_entries;
       String m_folder;
+      // for cut, copy and paste
+      static DirectoryEntry* m_currentEntry;
 
      private:
       FolderWindow* m_parent = nullptr;
@@ -102,6 +105,7 @@ namespace ToolKit
       int Exist(const String& folder);
       bool GetFileEntry(const String& fullPath, DirectoryEntry& entry);
       void AddEntry(const FolderView& view);
+      void SetViewsDirty();
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
@@ -116,6 +120,7 @@ namespace ToolKit
 
       std::unordered_map<String, ViewSettings> m_viewSettings;
       std::vector<FolderView> m_entries;
+
       int m_activeFolder   = -1;
       bool m_showStructure = true;
       void Iterate(const String& path, bool clear, bool addEngine = true);

@@ -24,6 +24,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+    DirectoryEntry* FolderView::m_currentEntry = nullptr;
 
     DirectoryEntry::DirectoryEntry() {}
 
@@ -489,7 +490,9 @@ namespace ToolKit
 
       if (ImGui::BeginPopupContextItem())
       {
+        m_itemActions["FileSystem/Cut"](entry, this);
         m_itemActions["FileSystem/Copy"](entry, this);
+        m_itemActions["FileSystem/Duplicate"](entry, this);
         m_itemActions["FileSystem/Delete"](entry, this);
         m_itemActions["FileSystem/Rename"](entry, this);
 
@@ -505,6 +508,7 @@ namespace ToolKit
           m_itemActions[cmd](entry, this);
         }
 
+        m_itemActions["FileSystem/Paste"](nullptr, this);
         m_itemActions["FileSystem/MakeDir"](nullptr, this);
         m_itemActions["Refresh"](nullptr, this);
         m_itemActions["FileSystem/CopyPath"](nullptr, this);
@@ -719,7 +723,7 @@ namespace ToolKit
       };
 
       // FileSystem/Copy.
-      m_itemActions["FileSystem/Copy"] =
+      m_itemActions["FileSystem/Duplicate"] =
           [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
       {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
@@ -728,7 +732,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::MenuItem("Copy"))
+        if (ImGui::MenuItem("Duplicate"))
         {
           String fullPath = entry->GetFullPath();
           String cpyPath  = CreateCopyFileFullPath(fullPath);
@@ -737,6 +741,66 @@ namespace ToolKit
           for (FolderView* view : views)
           {
             view->m_dirty = true;
+          }
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
+      m_itemActions["FileSystem/Cut"] = [](DirectoryEntry* entry,
+                                           FolderView* thisView) -> void
+      {
+        if (ImGui::MenuItem("Cut"))
+        {
+          m_currentEntry   = entry;
+          entry->m_cutting = true;
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
+      m_itemActions["FileSystem/Copy"] = [](DirectoryEntry* entry,
+                                            FolderView* thisView) -> void
+      {
+        if (ImGui::MenuItem("Copy"))
+        {
+          m_currentEntry = entry;
+          m_currentEntry->m_cutting = false;
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
+      m_itemActions["FileSystem/Paste"] =
+          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      {
+        if (ImGui::MenuItem("Paste"))
+        {
+          if (m_currentEntry != nullptr)
+          {
+            String src = m_currentEntry->GetFullPath();
+            String dst = ConcatPaths(
+                {thisView->m_path,
+                 m_currentEntry->m_fileName + m_currentEntry->m_ext});
+
+            if (m_currentEntry->m_cutting)
+            {
+              // move file to its new position
+              if (std::rename(src.c_str(), dst.c_str()))
+              {
+                GetLogger()->WriteConsole(LogType::Error,
+                                          "file cut paste failed!");
+              }
+              m_currentEntry->m_cutting = false;
+            }
+            else
+            {
+              std::filesystem::copy(src, dst);
+            }
+
+            m_currentEntry = nullptr;
+            // refresh all folder views
+            for (FolderWindow* window : g_app->GetAssetBrowsers())
+            {
+              window->SetViewsDirty();
+            }
           }
           ImGui::CloseCurrentPopup();
         }
@@ -1096,6 +1160,14 @@ namespace ToolKit
       if (Exist(view.GetPath()) == -1)
       {
         m_entries.push_back(view);
+      }
+    }
+
+    void FolderWindow::SetViewsDirty()
+    {
+      for (FolderView& view : m_entries)
+      {
+        view.SetDirty();
       }
     }
 
