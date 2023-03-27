@@ -450,35 +450,23 @@ namespace ToolKit
     prefab->Link();
   }
 
-  EntityRawPtrArray Scene::GetEnvironmentLightEntities()
+  EnvironmentComponentPtrArray Scene::GetEnvironmentVolumes()
   {
-    EntityRawPtrArray envLightNtties;
-    envLightNtties.clear();
-    for (Entity* ntt : envLightNtties)
+    // Find entities which have environment component
+    EnvironmentComponentPtrArray environments;
+    for (Entity* ntt : m_entities)
     {
-      if (ntt->GetType() == EntityType::Entity_Sky)
+      EnvironmentComponentPtr envCom =
+          ntt->GetComponent<EnvironmentComponent>();
+      if (envCom != nullptr && envCom->GetHdriVal() != nullptr &&
+          envCom->GetIlluminateVal())
       {
-        continue;
-      }
-
-      if (EnvironmentComponentPtr envCom =
-              ntt->GetComponent<EnvironmentComponent>())
-      {
-        if (envCom->GetIlluminateVal())
-        {
-          if (HdriPtr hdr = envCom->GetHdriVal())
-          {
-            if (hdr->IsTextureAssigned())
-            {
-              envCom->Init(true);
-              envLightNtties.push_back(ntt);
-            }
-          }
-        }
+        envCom->Init(true);
+        environments.push_back(envCom);
       }
     }
 
-    return envLightNtties;
+    return environments;
   }
 
   void Scene::Destroy(bool removeResources)

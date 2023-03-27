@@ -646,6 +646,13 @@ namespace ToolKit
      */
     bool LookUp(StringView category, StringView name, ParameterVariant** var);
 
+    /**
+    * Can be used to expose or hide variants in the block by category.
+    * @param exposed States if the parameter will be exposed or hidden.
+    * @param category The category to set exposed status.
+    */
+    void ExposeByCategory(bool exposed, const VariantCategory& category);
+
    public:
     /**
      * Container vector for ParameterVariants.

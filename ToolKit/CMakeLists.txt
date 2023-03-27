@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.0.0)
 include_directories(
 	"${CMAKE_SOURCE_DIR}/ToolKit"
 	"${CMAKE_SOURCE_DIR}/Dependency"
+	"${CMAKE_SOURCE_DIR}/Dependency/glad"
 	"${CMAKE_SOURCE_DIR}/Dependency/OpenAL/include"
 	"${CMAKE_SOURCE_DIR}/Dependency/RapidXml"
 	"${CMAKE_SOURCE_DIR}/Dependency/stb"

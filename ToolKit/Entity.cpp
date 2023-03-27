@@ -7,6 +7,7 @@
 #include "ResourceComponent.h"
 #include "Skeleton.h"
 #include "Sky.h"
+#include "GradientSky.h"
 #include "ToolKit.h"
 #include "Util.h"
 

@@ -1,7 +1,8 @@
 #include "EnvironmentComponent.h"
+
+#include "Entity.h"
 #include "MathUtil.h"
 #include "Texture.h"
-#include "Entity.h"
 
 #include "DebugNew.h"
 
@@ -18,14 +19,18 @@ namespace ToolKit
 
   void EnvironmentComponent::Init(bool flushClientSideArray)
   {
-    assert(GetHdriVal() != nullptr &&
-           "Attempt to initialize hdri resource "
-           "that does not exist in environment component.");
+    HdriPtr hdri = GetHdriVal();
+    assert(hdri != nullptr && "Attempt to initialize hdri resource "
+                              "that does not exist in environment component.");
 
-    GetHdriVal()->m_specularIBLTextureSize =
-        GetIBLTextureSizeVal().GetValue<int>();
-    GetHdriVal()->m_exposure = GetExposureVal();
-    GetHdriVal()->Init(flushClientSideArray);
+    if (!hdri->IsDynamic())
+    {
+      hdri->Load();
+    }
+
+    hdri->m_specularIBLTextureSize = GetIBLTextureSizeVal().GetValue<int>();
+    hdri->m_exposure               = GetExposureVal();
+    hdri->Init(flushClientSideArray);
   }
 
   void EnvironmentComponent::ParameterConstructor()
@@ -62,6 +67,7 @@ namespace ToolKit
                      true,
                      true,
                      {false, true, 0.0f, 100000.0f, 0.1f});
+
     Exposure_Define(1.0f,
                     EnvironmentComponentCategory.Name,
                     EnvironmentComponentCategory.Priority,

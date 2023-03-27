@@ -2,6 +2,7 @@
 
 #include "BinPack2D.h"
 #include "DataTexture.h"
+#include "EnvironmentComponent.h"
 #include "Framebuffer.h"
 #include "GeometryTypes.h"
 #include "Primative.h"
@@ -40,11 +41,12 @@ namespace ToolKit
 
   struct RenderJob
   {
-    Entity* Entity                   = nullptr;
-    Mesh* Mesh                       = nullptr;
-    SkeletonComponentPtr SkeletonCmp = nullptr;
-    MaterialPtr Material             = nullptr;
-    bool ShadowCaster                = true;
+    Entity* Entity                            = nullptr;
+    Mesh* Mesh                                = nullptr;
+    SkeletonComponentPtr SkeletonCmp          = nullptr;
+    MaterialPtr Material                      = nullptr;
+    EnvironmentComponentPtr EnvironmentVolume = nullptr;
+    bool ShadowCaster                         = true;
     BoundingBox BoundingBox;
     Mat4 WorldTransform;
   };
@@ -79,10 +81,14 @@ namespace ToolKit
 
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
-    static void StableSortByDistanceToCamera(RenderJobArray& entities,
+    static void StableSortByDistanceToCamera(RenderJobArray& jobArray,
                                              const Camera* cam);
 
     static void CullRenderJobs(RenderJobArray& jobArray, Camera* camera);
+
+    static void AssignEnvironment(
+        RenderJobArray& jobArray,
+        const EnvironmentComponentPtrArray& environments);
   };
 
   /*

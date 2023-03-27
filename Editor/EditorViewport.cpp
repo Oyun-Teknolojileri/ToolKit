@@ -18,6 +18,10 @@
 #include "Renderer.h"
 #include "SDL.h"
 #include "Util.h"
+#include "TopBar.h"
+#include "StatusBar.h"
+#include "LeftBar.h"
+#include "OverlayLighting.h"
 
 #include <algorithm>
 #include <execution>
@@ -44,10 +48,10 @@ namespace ToolKit
           switch (i)
           {
           case 0:
-            *overlay = new OverlayMods(viewport);
+            *overlay = new OverlayLeftBar(viewport);
             break;
           case 1:
-            *overlay = new OverlayViewportOptions(viewport);
+            *overlay = new OverlayTopBar(viewport);
             break;
           case 2:
             *overlay = new StatusBar(viewport);

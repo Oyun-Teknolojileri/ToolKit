@@ -8,18 +8,11 @@
 #include <unordered_map>
 #include <vector>
 
-#ifndef __EMSCRIPTEN__
-  #pragma message("Compiling precompiled headers.\n")
-  #define GLM_FORCE_MESSAGES
-#endif
-
 // GLM
+#define GLM_FORCE_XYZW_ONLY
 #define GLM_FORCE_CTOR_INIT
 #define GLM_ENABLE_EXPERIMENTAL
-
-#ifndef GLM_FORCE_SWIZZLE
-  #define GLM_FORCE_SWIZZLE
-#endif
+#define GLM_FORCE_SWIZZLE
 
 #include "glm/glm.hpp"
 #include "glm/gtc/epsilon.hpp"

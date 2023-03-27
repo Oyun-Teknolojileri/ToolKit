@@ -1,6 +1,6 @@
 #include "Shader.h"
 
-#include "GL/glew.h"
+#include "gles2.h"
 #include "TKAssert.h"
 #include "ToolKit.h"
 #include "Util.h"

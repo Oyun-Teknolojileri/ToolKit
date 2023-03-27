@@ -61,7 +61,7 @@ namespace ToolKit
     EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
     SkyBase* GetSky();
     void LinkPrefab(const String& fullPath);
-    EntityRawPtrArray GetEnvironmentLightEntities();
+    EnvironmentComponentPtrArray GetEnvironmentVolumes();
 
     /**
      * Removes the entity with the given id from the scene.

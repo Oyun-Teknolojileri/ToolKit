@@ -1,7 +1,7 @@
 #include "DataTexture.h"
 
 #include "DirectionComponent.h"
-#include "GL/glew.h"
+#include "gles2.h"
 #include "Light.h"
 #include "Renderer.h"
 

@@ -46,6 +46,7 @@ namespace ToolKit
       void OnNewProject(const String& name);
       void SetGameMod(GameMod mod);
       void CompilePlugin();
+      bool IsCompiling();
       EditorScenePtr GetCurrentScene();
       void SetCurrentScene(const EditorScenePtr& scene);
       void FocusEntity(Entity* entity);
@@ -209,6 +210,7 @@ namespace ToolKit
       bool m_onQuit = false;
       String m_newSceneName;
       float m_deltaTime        = 0.0f;
+      bool m_isCompiling = false;
     };
 
     extern void DebugMessage(const String& msg);
