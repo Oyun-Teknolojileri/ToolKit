@@ -32,9 +32,6 @@ namespace ToolKit
 
       for (Entity* ntt : m_entities)
       {
-        // Add billboards
-        AddBillboardToEntity(ntt);
-
         // Create gizmos
         if (ntt->GetType() == EntityType::Entity_DirectionalLight)
         {

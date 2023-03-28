@@ -319,14 +319,6 @@ namespace ToolKit
         }
 
         RenderJobArray renderJobs;
-        RenderJobProcessor::CreateRenderJobs(selection, renderJobs);
-
-        // Set parameters of pass
-        m_outlinePass->m_params.Camera       = viewport->GetCamera();
-        m_outlinePass->m_params.FrameBuffer  = viewport->m_framebuffer;
-        m_outlinePass->m_params.OutlineColor = color;
-        m_outlinePass->m_params.RenderJobs   = renderJobs;
-
         for (Entity* entity : selection)
         {
           // Disable light gizmos
@@ -338,6 +330,7 @@ namespace ToolKit
           // Add billboards to draw list
           Entity* billboard =
               m_params.App->GetCurrentScene()->GetBillboardOfEntity(entity);
+
           if (billboard)
           {
             static_cast<Billboard*>(billboard)->LookAt(
@@ -346,10 +339,17 @@ namespace ToolKit
 
             RenderJobArray jobs;
             RenderJobProcessor::CreateRenderJob(billboard, jobs);
-            RenderJobArray& outlineJobs = m_outlinePass->m_params.RenderJobs;
-            outlineJobs.insert(outlineJobs.end(), jobs.begin(), jobs.end());
+            renderJobs.insert(renderJobs.end(), jobs.begin(), jobs.end());
           }
         }
+
+        RenderJobProcessor::CreateRenderJobs(selection, renderJobs);
+
+        // Set parameters of pass
+        m_outlinePass->m_params.Camera       = viewport->GetCamera();
+        m_outlinePass->m_params.FrameBuffer  = viewport->m_framebuffer;
+        m_outlinePass->m_params.OutlineColor = color;
+        m_outlinePass->m_params.RenderJobs   = renderJobs;
 
         m_passArray.clear();
         m_passArray.push_back(m_outlinePass);
