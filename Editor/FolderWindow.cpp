@@ -88,6 +88,87 @@ namespace ToolKit
       m_parent = parent;
     }
 
+    void FolderView::DrawSearchBar()
+    {
+      // Handle Item Icon size.
+      ImGuiIO io                 = ImGui::GetIO();
+      float delta                = io.MouseWheel;
+
+      // Initial zoom value
+      static float thumbnailZoom = m_thumbnailMaxZoom / 6.f;
+
+      // Zoom in and out
+      if (io.KeyCtrl &&
+          ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
+      {
+        thumbnailZoom += delta * 10.0f;
+      }
+
+      // Clamp icon size
+      if (thumbnailZoom < m_thumbnailMaxZoom / 6.f)
+      {
+        thumbnailZoom = m_thumbnailMaxZoom / 6.f;
+      }
+      if (thumbnailZoom > m_thumbnailMaxZoom)
+      {
+        thumbnailZoom = m_thumbnailMaxZoom;
+      }
+      m_iconSize.xy              = Vec2(thumbnailZoom);
+
+      ImGui::BeginTable("##FilterZoom", 5, ImGuiTableFlags_SizingFixedFit);
+
+      ImGui::TableSetupColumn("##flt", ImGuiTableColumnFlags_WidthStretch);
+      ImGui::TableSetupColumn("##zoom");
+      ImGui::TableSetupColumn("##tglzoom");
+
+      ImGui::TableNextRow();
+      ImGui::TableNextColumn();
+
+      // Handle searchbar
+      ImGui::PushItemWidth(-1);
+      ImGui::InputTextWithHint(" Search", "Search", &m_filter);
+      ImGui::PopItemWidth();
+
+      // Zoom.
+      ImGui::TableNextColumn();
+      ImGui::Text("%.0f%%", GetThumbnailZoomPercent(thumbnailZoom));
+
+      // Zoom toggle button
+      ImGui::TableNextColumn();
+      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_viewZoomIcon),
+                             ImVec2(20.0f, 20.0f)))
+      {
+        // Toggle zoom
+        if (thumbnailZoom == m_thumbnailMaxZoom)
+        {
+          // Small
+          thumbnailZoom = m_thumbnailMaxZoom / 6.f;
+        }
+        // (7/12 ~ 0.5833)
+        else if (thumbnailZoom >= m_thumbnailMaxZoom * 0.5833f)
+        {
+          // Big
+          thumbnailZoom = m_thumbnailMaxZoom;
+        }
+        else if (thumbnailZoom >= m_thumbnailMaxZoom / 6.f)
+        {
+          // Medium
+          thumbnailZoom = m_thumbnailMaxZoom * 0.5833f; // (7/12 ~ 0.5833)
+        }
+      }
+      UI::HelpMarker(TKLoc, "Ctrl + mouse scroll to adjust thumbnail size.");
+
+      ImGui::TableNextColumn();
+      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_diskDriveIcon),
+                             ImVec2(20.0f, 20.0f)))
+      {
+        g_app->SaveAllResources();
+      }
+      UI::HelpMarker(TKLoc, "Saves all resources.");
+
+      ImGui::EndTable();
+    }
+
     void FolderView::Show()
     {
       bool* visCheck = nullptr;
@@ -102,6 +183,7 @@ namespace ToolKit
       if (ImGui::BeginTabItem(m_folder.c_str(), visCheck, flags))
       {
         m_parent->SetActiveView(this);
+        DrawSearchBar();
 
         if (m_dirty)
         {
@@ -109,39 +191,13 @@ namespace ToolKit
           m_dirty = false;
         }
 
-        // Handle Item Icon size.
-        ImGuiIO io                 = ImGui::GetIO();
-        float delta                = io.MouseWheel;
-
-        // Initial zoom value
-        static float thumbnailZoom = m_thumbnailMaxZoom / 6.f;
-
-        // Zoom in and out
-        if (io.KeyCtrl &&
-            ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
-        {
-          thumbnailZoom += delta * 10.0f;
-        }
-
-        // Clamp icon size
-        if (thumbnailZoom < m_thumbnailMaxZoom / 6.f)
-        {
-          thumbnailZoom = m_thumbnailMaxZoom / 6.f;
-        }
-        if (thumbnailZoom > m_thumbnailMaxZoom)
-        {
-          thumbnailZoom = m_thumbnailMaxZoom;
-        }
-
-        m_iconSize.xy = Vec2(thumbnailZoom);
-
         // Item dropped to tab.
         MoveTo(m_path);
 
         // Start drawing folder items.
         const float footerHeightReserve = ImGui::GetStyle().ItemSpacing.y +
                                           ImGui::GetFrameHeightWithSpacing();
-        ImGui::BeginChild("##Content", ImVec2(0, -footerHeightReserve), true);
+        ImGui::BeginChild("##Content"); //, ImVec2(0, -footerHeightReserve), true);
 
         if (m_entries.empty())
         {
@@ -343,59 +399,6 @@ namespace ToolKit
           }
         } // Tab item handling ends.
         ImGui::EndChild();
-
-        ImGui::BeginTable("##FilterZoom", 5, ImGuiTableFlags_SizingFixedFit);
-
-        ImGui::TableSetupColumn("##flt", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("##zoom");
-        ImGui::TableSetupColumn("##tglzoom");
-
-        ImGui::TableNextRow();
-        ImGui::TableNextColumn();
-
-        // Handle searchbar
-        ImGui::PushItemWidth(-1);
-        ImGui::InputTextWithHint(" Search", "Search", &m_filter);
-        ImGui::PopItemWidth();
-
-        // Zoom.
-        ImGui::TableNextColumn();
-        ImGui::Text("%.0f%%", GetThumbnailZoomPercent(thumbnailZoom));
-
-        // Zoom toggle button
-        ImGui::TableNextColumn();
-        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_viewZoomIcon),
-                               ImVec2(20.0f, 20.0f)))
-        {
-          // Toggle zoom
-          if (thumbnailZoom == m_thumbnailMaxZoom)
-          {
-            // Small
-            thumbnailZoom = m_thumbnailMaxZoom / 6.f;
-          }
-          // (7/12 ~ 0.5833)
-          else if (thumbnailZoom >= m_thumbnailMaxZoom * 0.5833f)
-          {
-            // Big
-            thumbnailZoom = m_thumbnailMaxZoom;
-          }
-          else if (thumbnailZoom >= m_thumbnailMaxZoom / 6.f)
-          {
-            // Medium
-            thumbnailZoom = m_thumbnailMaxZoom * 0.5833f; // (7/12 ~ 0.5833)
-          }
-        }
-        UI::HelpMarker(TKLoc, "Ctrl + mouse scroll to adjust thumbnail size.");
-
-        ImGui::TableNextColumn();
-        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_diskDriveIcon),
-                               ImVec2(20.0f, 20.0f)))
-        {
-          g_app->SaveAllResources();
-        }
-        UI::HelpMarker(TKLoc, "Saves all resources.");
-
-        ImGui::EndTable();
 
         ImGui::EndTabItem();
       }
@@ -1051,7 +1054,9 @@ namespace ToolKit
         ImGui::BeginGroup();
         if (ImGui::BeginTabBar("Folders",
                                ImGuiTabBarFlags_NoTooltip |
-                                   ImGuiTabBarFlags_AutoSelectNewTabs))
+                               ImGuiTabBarFlags_AutoSelectNewTabs|
+                               ImGuiWindowFlags_NoScrollWithMouse |
+                               ImGuiWindowFlags_NoScrollbar))
         {
           String currRootPath;
           auto IsDescendentFn = [&currRootPath](String candidate) -> bool

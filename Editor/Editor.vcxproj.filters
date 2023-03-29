@@ -284,6 +284,9 @@
     <ClInclude Include="PropInspector.h">
       <Filter>UI\Window</Filter>
     </ClInclude>
+    <ClInclude Include="IconsFontAwesome.h">
+      <Filter>UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />

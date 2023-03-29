@@ -13,6 +13,7 @@
 #include "PluginWindow.h"
 #include "PopupWindows.h"
 #include "PropInspector.h"
+#include "IconsFontAwesome.h"
 #include "SDL.h"
 #include "Util.h"
 
@@ -92,6 +93,8 @@ namespace ToolKit
 
     UI::AnchorPresetImages UI::m_anchorPresetIcons;
 
+    ImFont *LiberationSans, *IconFont;
+
     void UI::Init()
     {
       IMGUI_CHECKVERSION();
@@ -108,10 +111,25 @@ namespace ToolKit
           0x011e, 0x011f, 0x011f, 0x0130, 0x0130, 0x0131, 0x0131,
           0x00d6, 0x00d6, 0x00f6, 0x00f6, 0x015e, 0x015e, 0x015f,
           0x015f, 0x00dc, 0x00dc, 0x00fc, 0x00fc, 0};
-      io.Fonts->AddFontFromFileTTF(FontPath("bmonofont-i18n.ttf").c_str(),
-                                   16,
-                                   nullptr,
-                                   utf8TR);
+      
+      io.Fonts->Clear();
+      LiberationSans = io.Fonts->AddFontFromFileTTF(
+          FontPath("LiberationSans-Regular.ttf").c_str(),
+          14.0f,
+          nullptr,
+          utf8TR);
+
+      static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+      ImFontConfig icons_config; 
+      icons_config.MergeMode = true; 
+      // icons_config.PixelSnapH = true;
+      IconFont               = io.Fonts->AddFontFromFileTTF(
+          FontPath(FONT_ICON_FILE_NAME_FA).c_str(),
+          14.0f,
+          &icons_config,
+          icons_ranges);
+
+      io.Fonts->Build();
 
       ImGui_ImplSDL2_InitForOpenGL(g_window, g_context);
       ImGui_ImplOpenGL3_Init("#version 300 es");
@@ -133,6 +151,10 @@ namespace ToolKit
       ImGui_ImplSDL2_Shutdown();
       ImGui::DestroyContext();
     }
+
+    void LightTheme();
+    void DarkTheme();
+    void GreyTheme();
 
     void UI::ShowDock()
     {
@@ -180,152 +202,62 @@ namespace ToolKit
       ImGui::End();
     }
 
+    void LoadIcon(TexturePtr& icon, const char* path) 
+    {
+      icon = GetTextureManager()->Create<Texture>(TexturePath(path, true));
+      icon->Init();
+    }
+
     void UI::InitIcons()
     {
-      m_selectIcn = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/select.png", true));
-      m_selectIcn->Init();
-      m_cursorIcn = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/cursor.png", true));
-      m_cursorIcn->Init();
-      m_moveIcn = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/move.png", true));
-      m_moveIcn->Init();
-      m_rotateIcn = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/rotate.png", true));
-      m_rotateIcn->Init();
-      m_scaleIcn = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/scale.png", true));
-      m_scaleIcn->Init();
-      m_snapIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/snap.png", true));
-      m_snapIcon->Init();
-      m_audioIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/audio.png", true));
-      m_audioIcon->Init();
-      m_cameraIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/camera.png", true));
-      m_cameraIcon->Init();
-      m_clipIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/clip.png", true));
-      m_clipIcon->Init();
-      m_fileIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/file.png", true));
-      m_fileIcon->Init();
-      m_folderIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/folder.png", true));
-      m_folderIcon->Init();
-      m_imageIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/image.png", true));
-      m_imageIcon->Init();
-      m_lightIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/light.png", true));
-      m_lightIcon->Init();
-      m_materialIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/material.png", true));
-      m_materialIcon->Init();
-      m_meshIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/mesh.png", true));
-      m_meshIcon->Init();
-      m_armatureIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/armature.png", true));
-      m_armatureIcon->Init();
-      m_codeIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/code.png", true));
-      m_codeIcon->Init();
-      m_boneIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/bone.png", true));
-      m_boneIcon->Init();
-      m_worldIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/world.png", true));
-      m_worldIcon->Init();
-      m_axisIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/axis.png", true));
-      m_axisIcon->Init();
-      m_playIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/play.png", true));
-      m_playIcon->Init();
-      m_pauseIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/pause.png", true));
-      m_pauseIcon->Init();
-      m_stopIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/stop.png", true));
-      m_stopIcon->Init();
-      m_vsCodeIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/vscode.png", true));
-      m_vsCodeIcon->Init();
-      m_collectionIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/collection.png", true));
-      m_collectionIcon->Init();
-      m_arrowsIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/empty_arrows.png", true));
-      m_arrowsIcon->Init();
-      m_lockIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/locked.png", true));
-      m_lockIcon->Init();
-      m_visibleIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/visible.png", true));
-      m_visibleIcon->Init();
-      m_invisibleIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/invisible.png", true));
-      m_invisibleIcon->Init();
-      m_lockedIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/small_locked.png", true));
-      m_lockedIcon->Init();
-      m_unlockedIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/small_unlocked.png", true));
-      m_unlockedIcon->Init();
-      m_viewZoomIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/view_zoom.png", true));
-      m_viewZoomIcon->Init();
-      m_gridIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/grid.png", true));
-      m_gridIcon->Init();
-      m_skyIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/outliner_data_volume.png", true));
-      m_skyIcon->Init();
-      m_closeIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/close.png", true));
-      m_closeIcon->Init();
-      m_phoneRotateIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/rotate-icon.png", true));
-      m_phoneRotateIcon->Init();
-      m_studioLightsToggleIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/studio_lights_toggle.png", true));
-      m_studioLightsToggleIcon->Init();
-      m_anchorIcn = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/anchor_move.png", true));
-      m_anchorIcn->Init();
-      m_prefabIcn = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/scene_data.png", true));
-      m_prefabIcn->Init();
-      m_buildIcn = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/build.png", true));
-      m_buildIcn->Init();
-      m_addIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/add.png", true));
-      m_addIcon->Init();
-      m_sphereIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/sphere.png", true));
-      m_sphereIcon->Init();
-      m_cubeIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/cube.png", true));
-      m_cubeIcon->Init();
-      m_shaderBallIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/shader-ball.png", true));
-      m_shaderBallIcon->Init();
-      m_diskDriveIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/disk_drive.png", true));
-      m_diskDriveIcon->Init();
-      m_packageIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/package.png", true));
-      m_packageIcon->Init();
-      m_objectDataIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/object_data.png", true));
-      m_objectDataIcon->Init();
-      m_sceneIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/scene.png", true));
-      m_sceneIcon->Init();
+      LoadIcon(m_selectIcn, "Icons/select.png");
+      LoadIcon(m_cursorIcn, "Icons/cursor.png");
+      LoadIcon(m_moveIcn, "Icons/move.png");
+      LoadIcon(m_rotateIcn, "Icons/rotate.png");
+      LoadIcon(m_scaleIcn, "Icons/scale.png");
+      LoadIcon(m_snapIcon, "Icons/snap.png");
+      LoadIcon(m_audioIcon, "Icons/audio.png");
+      LoadIcon(m_cameraIcon, "Icons/camera.png");
+      LoadIcon(m_clipIcon, "Icons/clip.png");
+      LoadIcon(m_fileIcon, "Icons/file.png");
+      LoadIcon(m_folderIcon, "Icons/folder.png");
+      LoadIcon(m_imageIcon, "Icons/image.png");
+      LoadIcon(m_lightIcon, "Icons/light.png");
+      LoadIcon(m_materialIcon, "Icons/material.png");
+      LoadIcon(m_meshIcon, "Icons/mesh.png");
+      LoadIcon(m_armatureIcon, "Icons/armature.png");
+      LoadIcon(m_codeIcon, "Icons/code.png");
+      LoadIcon(m_boneIcon, "Icons/bone.png");
+      LoadIcon(m_worldIcon, "Icons/world.png");
+      LoadIcon(m_axisIcon, "Icons/axis.png");
+      LoadIcon(m_playIcon, "Icons/play.png");
+      LoadIcon(m_pauseIcon, "Icons/pause.png");
+      LoadIcon(m_stopIcon, "Icons/stop.png");
+      LoadIcon(m_vsCodeIcon, "Icons/vscode.png");
+      LoadIcon(m_collectionIcon, "Icons/collection.png");
+      LoadIcon(m_arrowsIcon, "Icons/empty_arrows.png");
+      LoadIcon(m_lockIcon, "Icons/locked.png");
+      LoadIcon(m_visibleIcon, "Icons/visible.png");
+      LoadIcon(m_invisibleIcon, "Icons/invisible.png");
+      LoadIcon(m_lockedIcon, "Icons/small_locked.png");
+      LoadIcon(m_unlockedIcon, "Icons/small_unlocked.png");
+      LoadIcon(m_viewZoomIcon, "Icons/view_zoom.png");
+      LoadIcon(m_gridIcon, "Icons/grid.png");
+      LoadIcon(m_skyIcon, "Icons/outliner_data_volume.png");
+      LoadIcon(m_closeIcon, "Icons/close.png");
+      LoadIcon(m_phoneRotateIcon, "Icons/rotate-icon.true");
+      LoadIcon(m_studioLightsToggleIcon, "Icons/studio_lights_toggle.png");
+      LoadIcon(m_anchorIcn, "Icons/anchor_move.png");
+      LoadIcon(m_prefabIcn, "Icons/scene_data.png");
+      LoadIcon(m_buildIcn, "Icons/build.png");
+      LoadIcon(m_addIcon, "Icons/add.png");
+      LoadIcon(m_sphereIcon, "Icons/sphere.png");
+      LoadIcon(m_cubeIcon, "Icons/cube.png");
+      LoadIcon(m_shaderBallIcon, "Icons/shader-ball.true");
+      LoadIcon(m_diskDriveIcon, "Icons/disk_drive.png");
+      LoadIcon(m_packageIcon, "Icons/package.png");
+      LoadIcon(m_objectDataIcon, "Icons/object_data.png");
+      LoadIcon(m_sceneIcon, "Icons/scene.png");
 
       for (uint anchorPresentIndx = 0;
            anchorPresentIndx < AnchorPresetImages::presetCount;
@@ -342,142 +274,161 @@ namespace ToolKit
       }
     }
 
+    void DarkTheme()
+    {
+      ImGuiStyle& style = ImGui::GetStyle();
+      ImVec4* stylCols = style.Colors;
+      stylCols[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+      stylCols[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+      stylCols[ImGuiCol_WindowBg] = ImVec4(0.13f, 0.14f, 0.15f, 1.00f);
+      stylCols[ImGuiCol_ChildBg] = ImVec4(0.13f, 0.14f, 0.15f, 1.00f);
+      stylCols[ImGuiCol_PopupBg] = ImVec4(0.13f, 0.14f, 0.15f, 1.00f);
+      stylCols[ImGuiCol_Border] = ImVec4(0.23f, 0.23f, 0.20f, 1.00f);
+      stylCols[ImGuiCol_BorderShadow] = ImVec4(0.05f, 0.05f, 0.05f, 0.50f);
+      stylCols[ImGuiCol_FrameBg] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+      stylCols[ImGuiCol_FrameBgHovered] = ImVec4(0.38f, 0.38f, 0.38f, 1.00f);
+      stylCols[ImGuiCol_FrameBgActive] = ImVec4(0.67f, 0.67f, 0.67f, 0.39f);
+      stylCols[ImGuiCol_TitleBg] = ImVec4(0.08f, 0.08f, 0.09f, 1.00f);
+      stylCols[ImGuiCol_TitleBgActive] = ImVec4(0.08f, 0.08f, 0.09f, 1.00f);
+      stylCols[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
+      stylCols[ImGuiCol_MenuBarBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+      stylCols[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
+      stylCols[ImGuiCol_ScrollbarGrab] = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
+      stylCols[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
+      stylCols[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
+      stylCols[ImGuiCol_CheckMark] = ImVec4(0.11f, 0.64f, 0.92f, 1.00f);
+      stylCols[ImGuiCol_SliderGrab] = ImVec4(0.11f, 0.64f, 0.92f, 1.00f);
+      stylCols[ImGuiCol_SliderGrabActive] = ImVec4(0.08f, 0.50f, 0.72f, 1.00f);
+      stylCols[ImGuiCol_Button] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+      stylCols[ImGuiCol_ButtonHovered] = ImVec4(0.38f, 0.38f, 0.38f, 1.00f);
+      stylCols[ImGuiCol_ButtonActive] = ImVec4(0.67f, 0.67f, 0.67f, 0.39f);
+      stylCols[ImGuiCol_Header] = ImVec4(0.22f, 0.22f, 0.22f, 1.00f);
+      stylCols[ImGuiCol_HeaderHovered] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+      stylCols[ImGuiCol_HeaderActive] = ImVec4(0.67f, 0.67f, 0.67f, 0.39f);
+      stylCols[ImGuiCol_Separator] = style.Colors[ImGuiCol_Border];
+      stylCols[ImGuiCol_SeparatorHovered] = ImVec4(0.41f, 0.42f, 0.44f, 1.00f);
+      stylCols[ImGuiCol_SeparatorActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+      stylCols[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+      stylCols[ImGuiCol_ResizeGripHovered] = ImVec4(0.29f, 0.30f, 0.31f, 0.67f);
+      stylCols[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+      stylCols[ImGuiCol_Tab] = ImVec4(0.08f, 0.08f, 0.09f, 0.83f);
+      stylCols[ImGuiCol_TabHovered] = ImVec4(0.33f, 0.34f, 0.36f, 0.83f);
+      stylCols[ImGuiCol_TabActive] = ImVec4(0.23f, 0.23f, 0.24f, 1.00f);
+      stylCols[ImGuiCol_TabUnfocused] = ImVec4(0.08f, 0.08f, 0.09f, 1.00f);
+      stylCols[ImGuiCol_TabUnfocusedActive] = ImVec4(0.13f, 0.14f, 0.15f, 1.00f);
+      stylCols[ImGuiCol_DockingPreview] = ImVec4(0.26f, 0.59f, 0.98f, 0.70f);
+      stylCols[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+      stylCols[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+      stylCols[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+      stylCols[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+      stylCols[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+      stylCols[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+      stylCols[ImGuiCol_DragDropTarget] = ImVec4(0.11f, 0.64f, 0.92f, 1.00f);
+      stylCols[ImGuiCol_NavHighlight] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+      stylCols[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+      stylCols[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+      stylCols[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+      style.GrabRounding = style.FrameRounding = 2.3f;
+    }
+
+    static __forceinline ImVec4 Inverse(const ImVec4& input)
+    {
+      return ImVec4(1.0f - input.x, 1.0f - input.y, 1.0f - input.z, 1.0f);
+    }
+
+    void LightTheme()
+    {
+      DarkTheme();
+      ImGuiStyle& style = ImGui::GetStyle();
+      for (int i = 0; i < ImGuiCol_COUNT; ++i)
+      {
+        style.Colors[i] = Inverse(style.Colors[i]);
+      }
+    }
+
+    void GreyTheme()
+    {
+      ImGuiStyle& style = ImGui::GetStyle();
+      ImVec4* colors = style.Colors;
+	
+      colors[ImGuiCol_Text]                   = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+      colors[ImGuiCol_TextDisabled]           = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
+      colors[ImGuiCol_ChildBg]                = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+      colors[ImGuiCol_WindowBg]               = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+      colors[ImGuiCol_PopupBg]                = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+      colors[ImGuiCol_Border]                 = ImVec4(0.12f, 0.12f, 0.12f, 0.71f);
+      colors[ImGuiCol_BorderShadow]           = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
+      colors[ImGuiCol_FrameBg]                = ImVec4(0.42f, 0.42f, 0.42f, 0.54f);
+      colors[ImGuiCol_FrameBgHovered]         = ImVec4(0.42f, 0.42f, 0.42f, 0.40f);
+      colors[ImGuiCol_FrameBgActive]          = ImVec4(0.56f, 0.56f, 0.56f, 0.67f);
+      colors[ImGuiCol_TitleBg]                = ImVec4(0.19f, 0.19f, 0.19f, 1.00f);
+      colors[ImGuiCol_TitleBgActive]          = ImVec4(0.22f, 0.22f, 0.22f, 1.00f);
+      colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.17f, 0.17f, 0.17f, 0.90f);
+      colors[ImGuiCol_MenuBarBg]              = ImVec4(0.335f, 0.335f, 0.335f, 1.000f);
+      colors[ImGuiCol_ScrollbarBg]            = ImVec4(0.24f, 0.24f, 0.24f, 0.53f);
+      colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
+      colors[ImGuiCol_ScrollbarGrabHovered]   = ImVec4(0.52f, 0.52f, 0.52f, 1.00f);
+      colors[ImGuiCol_ScrollbarGrabActive]    = ImVec4(0.76f, 0.76f, 0.76f, 1.00f);
+      colors[ImGuiCol_CheckMark]              = ImVec4(0.65f, 0.65f, 0.65f, 1.00f);
+      colors[ImGuiCol_SliderGrab]             = ImVec4(0.52f, 0.52f, 0.52f, 1.00f);
+      colors[ImGuiCol_SliderGrabActive]       = ImVec4(0.64f, 0.64f, 0.64f, 1.00f);
+      colors[ImGuiCol_Button]                 = ImVec4(0.54f, 0.54f, 0.54f, 0.35f);
+      colors[ImGuiCol_ButtonHovered]          = ImVec4(0.52f, 0.52f, 0.52f, 0.59f);
+      colors[ImGuiCol_ButtonActive]           = ImVec4(0.76f, 0.76f, 0.76f, 1.00f);
+      colors[ImGuiCol_Header]                 = ImVec4(0.38f, 0.38f, 0.38f, 1.00f);
+      colors[ImGuiCol_HeaderHovered]          = ImVec4(0.47f, 0.47f, 0.47f, 1.00f);
+      colors[ImGuiCol_HeaderActive]           = ImVec4(0.76f, 0.76f, 0.76f, 0.77f);
+      colors[ImGuiCol_Separator]              = ImVec4(0.000f, 0.000f, 0.000f, 0.137f);
+      colors[ImGuiCol_SeparatorHovered]       = ImVec4(0.700f, 0.671f, 0.600f, 0.290f);
+      colors[ImGuiCol_SeparatorActive]        = ImVec4(0.702f, 0.671f, 0.600f, 0.674f);
+      colors[ImGuiCol_ResizeGrip]             = ImVec4(0.26f, 0.59f, 0.98f, 0.25f);
+      colors[ImGuiCol_ResizeGripHovered]      = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+      colors[ImGuiCol_ResizeGripActive]       = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+      colors[ImGuiCol_PlotLines]              = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+      colors[ImGuiCol_PlotLinesHovered]       = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+      colors[ImGuiCol_PlotHistogram]          = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+      colors[ImGuiCol_PlotHistogramHovered]   = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+      colors[ImGuiCol_TextSelectedBg]         = ImVec4(0.73f, 0.73f, 0.73f, 0.35f);
+      colors[ImGuiCol_ModalWindowDimBg]       = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+      colors[ImGuiCol_DragDropTarget]         = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+      colors[ImGuiCol_NavHighlight]           = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+      colors[ImGuiCol_NavWindowingHighlight]  = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+      colors[ImGuiCol_NavWindowingDimBg]      = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+
+      style.PopupRounding = 3;
+      // style.ScrollbarSize = 18;
+      
+      // style.WindowBorderSize = style.ChildBorderSize  = 1;
+      // style.PopupBorderSize  = style.FrameBorderSize  = 1; 
+      // style.WindowRounding   = style.ChildRounding    = 3;
+      // style.FrameRounding    = style.GrabRounding     = 3;
+      // style.ScrollbarRounding = 2;
+
+#ifdef IMGUI_HAS_DOCK 
+      style.TabBorderSize = 1; 
+      style.TabRounding   = 3;
+
+      colors[ImGuiCol_DockingEmptyBg]     = ImVec4(0.38f, 0.38f, 0.38f, 1.00f);
+      colors[ImGuiCol_Tab]                = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+      colors[ImGuiCol_TabHovered]         = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
+      colors[ImGuiCol_TabActive]          = ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
+      colors[ImGuiCol_TabUnfocused]       = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+      colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
+      colors[ImGuiCol_DockingPreview]     = ImVec4(0.85f, 0.85f, 0.85f, 0.28f);
+
+      if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+      {
+        style.WindowRounding = 0.0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+      }
+#endif
+    }
+
     void UI::InitTheme()
     {
       ImGui::SetColorEditOptions(ImGuiColorEditFlags_PickerHueWheel |
                                  ImGuiColorEditFlags_NoOptions);
-
-      ImGuiStyle* style     = &ImGui::GetStyle();
-      style->WindowRounding = 5.3f;
-      style->GrabRounding = style->FrameRounding = 2.3f;
-      style->ScrollbarRounding                   = 5.0f;
-      style->ItemSpacing.y                       = 6.5f;
-      style->ColorButtonPosition                 = ImGuiDir_Left;
-
-      // style->WindowPadding = ImVec2(2.0f, 2.0f);
-      style->WindowBorderSize                    = 0.0f;
-      style->ChildBorderSize                     = 0.0f;
-      style->PopupBorderSize                     = 0.0f;
-      style->FrameBorderSize                     = 0.0f;
-      style->TabBorderSize                       = 0.0f;
-      style->PopupRounding                       = 0.0f;
-      style->WindowTitleAlign                    = ImVec2(0.5f, 0.5f);
-      style->WindowMenuButtonPosition            = ImGuiDir_Right;
-
-      style->Colors[ImGuiCol_Text]               = {0.73333335f,
-                                                    0.73333335f,
-                                                    0.73333335f,
-                                                    1.00f};
-      style->Colors[ImGuiCol_TextDisabled]       = {0.34509805f,
-                                                    0.34509805f,
-                                                    0.34509805f,
-                                                    1.00f};
-      style->Colors[ImGuiCol_WindowBg]           = {0.23529413f,
-                                                    0.24705884f,
-                                                    0.25490198f,
-                                                    0.94f};
-      style->Colors[ImGuiCol_ChildBg]            = {0.23529413f,
-                                                    0.24705884f,
-                                                    0.25490198f,
-                                                    0.00f};
-      style->Colors[ImGuiCol_PopupBg]            = {0.13f, 0.13f, 0.13f, 0.94f};
-      style->Colors[ImGuiCol_Border]             = {0.33333334f,
-                                                    0.33333334f,
-                                                    0.33333334f,
-                                                    0.50f};
-      style->Colors[ImGuiCol_BorderShadow]       = {0.15686275f,
-                                                    0.15686275f,
-                                                    0.15686275f,
-                                                    0.00f};
-      style->Colors[ImGuiCol_FrameBg]            = {0.16862746f,
-                                                    0.16862746f,
-                                                    0.16862746f,
-                                                    0.54f};
-      style->Colors[ImGuiCol_FrameBgHovered]     = {0.453125f,
-                                                    0.67578125f,
-                                                    0.99609375f,
-                                                    0.67f};
-      style->Colors[ImGuiCol_FrameBgActive]      = {0.47058827f,
-                                                    0.47058827f,
-                                                    0.47058827f,
-                                                    0.67f};
-      style->Colors[ImGuiCol_TitleBg]            = {0.04f, 0.04f, 0.04f, 1.00f};
-      style->Colors[ImGuiCol_TitleBgCollapsed]   = {0.16f, 0.29f, 0.48f, 1.00f};
-      style->Colors[ImGuiCol_TitleBgActive]      = {0.00f, 0.00f, 0.00f, 0.51f};
-      style->Colors[ImGuiCol_MenuBarBg]          = {0.27058825f,
-                                                    0.28627452f,
-                                                    0.2901961f,
-                                                    0.80f};
-      style->Colors[ImGuiCol_ScrollbarBg]        = {0.27058825f,
-                                                    0.28627452f,
-                                                    0.2901961f,
-                                                    0.60f};
-      style->Colors[ImGuiCol_ScrollbarGrab]      = {0.21960786f,
-                                                    0.30980393f,
-                                                    0.41960788f,
-                                                    0.51f};
-      style->Colors[ImGuiCol_ScrollbarGrabHovered] = {0.21960786f,
-                                                      0.30980393f,
-                                                      0.41960788f,
-                                                      1.00f};
-      style->Colors[ImGuiCol_ScrollbarGrabActive]  = {0.13725491f,
-                                                      0.19215688f,
-                                                      0.2627451f,
-                                                      0.91f};
-      // style->Colors[ImGuiCol_ComboBg] = {0.1f, 0.1f, 0.1f, 0.99f};
-      style->Colors[ImGuiCol_CheckMark]         = {0.90f, 0.90f, 0.90f, 0.83f};
-      style->Colors[ImGuiCol_SliderGrab]        = {0.70f, 0.70f, 0.70f, 0.62f};
-      style->Colors[ImGuiCol_SliderGrabActive]  = {0.30f, 0.30f, 0.30f, 0.84f};
-      style->Colors[ImGuiCol_Button]            = {0.33333334f,
-                                                   0.3529412f,
-                                                   0.36078432f,
-                                                   0.49f};
-      style->Colors[ImGuiCol_ButtonHovered]     = {0.21960786f,
-                                                   0.30980393f,
-                                                   0.41960788f,
-                                                   1.00f};
-      style->Colors[ImGuiCol_ButtonActive]      = {0.13725491f,
-                                                   0.19215688f,
-                                                   0.2627451f,
-                                                   1.00f};
-      style->Colors[ImGuiCol_Header]            = {0.33333334f,
-                                                   0.3529412f,
-                                                   0.36078432f,
-                                                   0.53f};
-      style->Colors[ImGuiCol_HeaderHovered]     = {0.453125f,
-                                                   0.67578125f,
-                                                   0.99609375f,
-                                                   0.67f};
-      style->Colors[ImGuiCol_HeaderActive]      = {0.47058827f,
-                                                   0.47058827f,
-                                                   0.47058827f,
-                                                   0.67f};
-      style->Colors[ImGuiCol_Separator]         = {0.31640625f,
-                                                   0.31640625f,
-                                                   0.31640625f,
-                                                   1.00f};
-      style->Colors[ImGuiCol_SeparatorHovered]  = {0.31640625f,
-                                                   0.31640625f,
-                                                   0.31640625f,
-                                                   1.00f};
-      style->Colors[ImGuiCol_SeparatorActive]   = {0.31640625f,
-                                                   0.31640625f,
-                                                   0.31640625f,
-                                                   1.00f};
-      style->Colors[ImGuiCol_ResizeGrip]        = {1.00f, 1.00f, 1.00f, 0.85f};
-      style->Colors[ImGuiCol_ResizeGripHovered] = {1.00f, 1.00f, 1.00f, 0.60f};
-      style->Colors[ImGuiCol_ResizeGripActive]  = {1.00f, 1.00f, 1.00f, 0.90f};
-      style->Colors[ImGuiCol_PlotLines]         = {0.61f, 0.61f, 0.61f, 1.00f};
-      style->Colors[ImGuiCol_PlotLinesHovered]  = {1.00f, 0.43f, 0.35f, 1.00f};
-      style->Colors[ImGuiCol_PlotHistogram]     = {0.90f, 0.70f, 0.00f, 1.00f};
-      style->Colors[ImGuiCol_PlotHistogramHovered] = {1.00f,
-                                                      0.60f,
-                                                      0.00f,
-                                                      1.00f};
-      style->Colors[ImGuiCol_TextSelectedBg]       = {0.18431373f,
-                                                      0.39607847f,
-                                                      0.79215693f,
-                                                      0.90f};
+      DarkTheme();
     }
 
     void UI::InitSettings()
@@ -609,6 +560,17 @@ namespace ToolKit
         if (ImGui::BeginMenu("Projects"))
         {
           ShowMenuProjects();
+          ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Themes"))
+        {
+          ImGui::Separator();
+          
+          if (ImGui::MenuItem("Dark Theme")) { DarkTheme(); }
+          if (ImGui::MenuItem("Grey Theme")) { GreyTheme(); }
+          if (ImGui::MenuItem("Light Theme")) { LightTheme(); }
+          
           ImGui::EndMenu();
         }
 
@@ -1191,6 +1153,20 @@ namespace ToolKit
         ImGui::EndPopup();
       }
     }
+
+    bool UI::ButtonDecorless(StringView text,
+                                  const Vec2& size,
+                                  bool flipImage)
+    {
+      ImGui::PushStyleColor(ImGuiCol_Button, Vec4());
+      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Vec4());
+      ImGui::PushStyleColor(ImGuiCol_ButtonActive, Vec4());
+      ImVec2 texCoords = flipImage ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
+      bool res = ImGui::Button(text.data(), size);
+      ImGui::PopStyleColor(3);
+      return res;
+    }
+
 
     bool UI::ImageButtonDecorless(uint textureID,
                                   const Vec2& size,

@@ -28,8 +28,8 @@ namespace ToolKit
                           TexturePtr icon);
 
       void ShowSearchBar(String& searchString);
-      bool DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags);
-      void ShowNode(Entity* e);
+      bool DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags, float depth);
+      void ShowNode(Entity* e, float depth);
       void SetItemState(Entity* e);
       void HandleSearch(const EntityRawPtrArray& ntties,
                         const EntityRawPtrArray& roots);

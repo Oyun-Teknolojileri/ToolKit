@@ -51,6 +51,7 @@ namespace ToolKit
       float GetThumbnailZoomPercent(float thumbnailZoom);
 
      private:
+      void DrawSearchBar();
       void CreateItemActions();
       void MoveTo(const String& dst); // Imgui Drop target.
 

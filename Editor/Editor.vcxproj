@@ -160,6 +160,7 @@
     <ClInclude Include="GizmoPass.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="Grid.h" />
+    <ClInclude Include="IconsFontAwesome.h" />
     <ClInclude Include="LeftBar.h" />
     <ClInclude Include="MaterialView.h" />
     <ClInclude Include="MeshView.h" />
