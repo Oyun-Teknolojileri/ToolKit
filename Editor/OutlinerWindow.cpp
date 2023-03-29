@@ -43,7 +43,7 @@ namespace ToolKit
       float item_spacing_y  = ImGui::GetStyle().ItemSpacing.y;
       float item_offset_y   = -item_spacing_y * 0.5f;
       float line_height     = ImGui::GetTextLineHeight() + item_spacing_y;
-
+      
       ImDrawList* draw_list = ImGui::GetWindowDrawList();
       float y0          = ImGui::GetCursorScreenPos().y + (float) item_offset_y;
       ImGuiStyle& style = ImGui::GetStyle();
@@ -53,7 +53,7 @@ namespace ToolKit
       v4Color.z *= 0.8f;
       // if odd black otherwise given color
       ImU32 col  = ImGui::ColorConvertFloat4ToU32(v4Color) * (odd++ & 1);
-
+      
       if ((col & IM_COL32_A_MASK) == 0)
       {
         return;
@@ -376,7 +376,7 @@ namespace ToolKit
       {
         ImGui::SetNextItemOpen(true);
       }
-
+      // bright and dark color pattern for nodes, (even, odd)
       DrawRowBackground(depth);
 
       const String sId = "##" + std::to_string(ntt->GetIdVal());
@@ -412,58 +412,9 @@ namespace ToolKit
       }
 
       SetItemState(ntt);
-      String icon      = ICON_FA_CUBE ICON_SPACE;
-      EntityType eType = ntt->GetType();
 
-      static std::unordered_map<EntityType, const char*> EntityTypeToIconMap = {
-          {EntityType::Entity_Camera,           ICON_FA_VIDEO_CAMERA ICON_SPACE},
-          {EntityType::Entity_AudioSource,      ICON_FA_FILE_AUDIO ICON_SPACE  },
-          {EntityType::Entity_Node,             ICON_FA_ARROWS ICON_SPACE      },
-          {EntityType::Entity_Prefab,           ICON_FA_CUBES ICON_SPACE       },
-
-          {EntityType::Entity_Light,            ICON_FA_LIGHTBULB ICON_SPACE   },
-          {EntityType::Entity_PointLight,       ICON_FA_LIGHTBULB ICON_SPACE   },
-          {EntityType::Entity_SpotLight,        ICON_FA_LIGHTBULB ICON_SPACE   },
-          {EntityType::Entity_DirectionalLight, ICON_FA_SUN ICON_SPACE         },
-
-          {EntityType::Entity_Sky,              ICON_FA_SKYATLAS ICON_SPACE    },
-          {EntityType::Entity_GradientSky,      ICON_FA_SKYATLAS ICON_SPACE    },
-      };
-
-      auto entityIcon = EntityTypeToIconMap.find(eType);
-      if (entityIcon != EntityTypeToIconMap.end())
-      {
-        icon = entityIcon->second;
-      }
-
-      ImGui::SameLine();
-      ImGui::Text((icon + ntt->GetNameVal()).c_str());
-
-      // Hiearchy visibility
-      float offset = ImGui::GetContentRegionAvail().x - 45.0f;
-      ImGui::SameLine(offset);
-      icon = ntt->GetVisibleVal() ? ICON_FA_EYE : ICON_FA_EYE_SLASH;
-
-      // Texture only toggle button.
-      ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
-      if (UI::ButtonDecorless(icon, ImVec2(18.0f, 15.0f), false))
-      {
-        ntt->SetVisibility(!ntt->GetVisibleVal(), true);
-      }
-      ImGui::PopID();
-
-      offset = ImGui::GetContentRegionAvail().x - 20.0f;
-      ImGui::SameLine(offset);
-      icon = ntt->GetTransformLockVal() ? ICON_FA_LOCK : ICON_FA_UNLOCK;
-
-      // Texture only toggle button.
-      ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
-      if (UI::ButtonDecorless(icon, ImVec2(18.0f, 15.0f), false))
-      {
-        ntt->SetTransformLock(!ntt->GetTransformLockVal(), true);
-      }
-
-      ImGui::PopID();
+      // show name, open and slash eye, lock and unlock.
+      UI::ShowEntityTreeNodeContent(ntt);
 
       return isOpen;
     }

@@ -35,44 +35,9 @@ namespace ToolKit
       {
         m_activeChildEntity = ntt;
       }
-
-      TexturePtr icon  = nullptr;
-      EntityType eType = ntt->GetType();
-      switch (eType)
-      {
-      case EntityType::Entity_Node:
-        icon = UI::m_arrowsIcon;
-        break;
-      case EntityType::Entity_Prefab:
-        icon = UI::m_prefabIcn;
-        break;
-      }
-
-      if (icon)
-      {
-        ImGui::SameLine();
-        ImGui::Image(Convert2ImGuiTexture(icon), ImVec2(20.0f, 20.0f));
-      }
-
-      ImGui::SameLine();
-      ImGui::Text(ntt->GetNameVal().c_str());
-
-      // Hiearchy visibility
-      float offset = ImGui::GetContentRegionAvail().x - 40.0f;
-      ImGui::SameLine(offset);
-      icon = ntt->GetVisibleVal() ? UI::m_visibleIcon : UI::m_invisibleIcon;
-
-      // Texture only toggle button.
-      ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
-      if (UI::ImageButtonDecorless(icon->m_textureId,
-                                   ImVec2(15.0f, 15.0f),
-                                   false))
-      {
-        ntt->SetVisibility(!ntt->GetVisibleVal(), true);
-      }
-
-      ImGui::PopID();
-
+      
+      // show name, open and slash eye, lock and unlock.
+      UI::ShowEntityTreeNodeContent(ntt);
       return isOpen;
     }
 

@@ -1282,6 +1282,66 @@ namespace ToolKit
       ImGui::Text(text.c_str());
     }
 
+    String UI::EntityTypeToIcon(EntityType type)
+    {
+      String icon      = ICON_FA_CUBE ICON_SPACE;
+      static std::unordered_map<EntityType, String> EntityTypeToIconMap = {
+          {EntityType::Entity_Camera,           ICON_FA_VIDEO_CAMERA ICON_SPACE},
+          {EntityType::Entity_AudioSource,      ICON_FA_FILE_AUDIO ICON_SPACE  },
+          {EntityType::Entity_Node,             ICON_FA_ARROWS ICON_SPACE      },
+          {EntityType::Entity_Prefab,           ICON_FA_CUBES ICON_SPACE       },
+      
+          {EntityType::Entity_Light,            ICON_FA_LIGHTBULB ICON_SPACE   },
+          {EntityType::Entity_PointLight,       ICON_FA_LIGHTBULB ICON_SPACE   },
+          {EntityType::Entity_SpotLight,        ICON_FA_LIGHTBULB ICON_SPACE   },
+          {EntityType::Entity_DirectionalLight, ICON_FA_SUN ICON_SPACE         },
+      
+          {EntityType::Entity_Sky,              ICON_FA_SKYATLAS ICON_SPACE    },
+          {EntityType::Entity_GradientSky,      ICON_FA_SKYATLAS ICON_SPACE    },
+      };
+      
+      auto entityIcon = EntityTypeToIconMap.find(type);
+      if (entityIcon != EntityTypeToIconMap.end())
+      {
+        icon = entityIcon->second;
+      }
+      return icon;
+    }
+
+    void UI::ShowEntityTreeNodeContent(Entity* ntt)
+    {
+      String icon = UI::EntityTypeToIcon(ntt->GetType());
+
+      ImGui::SameLine();
+      ImGui::Text((icon + ntt->GetNameVal()).c_str());
+
+      // Hiearchy visibility
+      float offset = ImGui::GetContentRegionAvail().x - 45.0f;
+      ImGui::SameLine(offset);
+      icon = ntt->GetVisibleVal() ? ICON_FA_EYE : ICON_FA_EYE_SLASH;
+
+      // Texture only toggle button.
+      ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
+      if (UI::ButtonDecorless(icon, ImVec2(18.0f, 15.0f), false))
+      {
+        ntt->SetVisibility(!ntt->GetVisibleVal(), true);
+      }
+      ImGui::PopID();
+
+      offset = ImGui::GetContentRegionAvail().x - 20.0f;
+      ImGui::SameLine(offset);
+      icon = ntt->GetTransformLockVal() ? ICON_FA_LOCK : ICON_FA_UNLOCK;
+
+      // Texture only toggle button.
+      ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
+      if (UI::ButtonDecorless(icon, ImVec2(18.0f, 15.0f), false))
+      {
+        ntt->SetTransformLock(!ntt->GetTransformLockVal(), true);
+      }
+
+      ImGui::PopID(); 
+    }
+
     bool UI::IsKeyboardCaptured() { return ImGui::GetIO().WantCaptureKeyboard; }
 
     Window::Window()

@@ -425,7 +425,7 @@
 #define ICON_FA_FILE_POWERPOINT_O                   "\xef\x87\x84" // U+f1c4
 #define ICON_FA_FILE_IMAGE_O                        "\xef\x87\x85" // U+f1c5
 #define ICON_FA_FILE_ARCHIVE_O                      "\xef\x87\x86" // U+f1c6
-#define ICON_FA_FILE_AUDIO                        "\xef\x87\x87" // U+f1c7
+#define ICON_FA_FILE_AUDIO                          "\xef\x87\x87" // U+f1c7
 #define ICON_FA_FILE_VIDEO_O                        "\xef\x87\x88" // U+f1c8
 #define ICON_FA_FILE_CODE_O                         "\xef\x87\x89" // U+f1c9
 #define ICON_FA_VINE                                "\xef\x87\x8a" // U+f1ca
