@@ -74,7 +74,7 @@ namespace ToolKit
      * @param skeleton SkeletonPtr to be transformed.
      *
      */
-    void GetPose(const SkeletonComponentPtr& skeleton, float time);
+    void GetPose(const SkeletonComponentPtr& skeleton, float time, BlendTarget* blendTarget);
 
     /**
      * Sets the Node's transform from the animation based on frame.
@@ -103,23 +103,22 @@ namespace ToolKit
      */
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
 
+    /**
+    * Finds nearest keys and interpolation ratio for current time.
+    * @param keys animation key array.
+    * @param key1 output key 1.
+    * @param key2 output key 2.
+    * @param ratio output ratio.
+    * @param t time to search keys for.
+    */
+    void GetNearestKeys(const KeyArray& keys,
+        int& key1,
+        int& key2,
+        float& ratio,
+        float t);
+
    protected:
     void CopyTo(Resource* other) override;
-
-   private:
-    /**
-     * Finds nearest keys and interpolation ratio for current time.
-     * @param keys animation key array.
-     * @param key1 output key 1.
-     * @param key2 output key 2.
-     * @param ratio output ratio.
-     * @param t time to search keys for.
-     */
-    void GetNearestKeys(const KeyArray& keys,
-                        int& key1,
-                        int& key2,
-                        float& ratio,
-                        float t);
 
    public:
     /**
@@ -142,6 +141,14 @@ namespace ToolKit
     virtual ~AnimationManager();
     bool CanStore(ResourceType t) override;
     ResourcePtr CreateLocal(ResourceType type) override;
+  };
+   
+  class TK_API BlendTarget
+  {
+   public:
+    Animation* targetAnim;   //!< Animation to Blend.
+    float offset;              //!< How early animation will start blending.
+    float blendCoeff = 0.5f; //!< Blend coefficent for target anim.
   };
 
   /**
@@ -172,6 +179,7 @@ namespace ToolKit
     float m_timeMultiplier = 1.0f;  //!< Speed multiplier for animation.
     AnimationPtr m_animation;    //!< Animimation to play.
     Entity* m_entity;
+    BlendTarget* m_blendTarget = nullptr;
 
     /**
      * Enums that represent's the current state of the Animation in the

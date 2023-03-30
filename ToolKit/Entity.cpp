@@ -38,7 +38,7 @@ namespace ToolKit
 
   EntityType Entity::GetType() const { return EntityType::Entity_Base; }
 
-  void Entity::SetPose(const AnimationPtr& anim, float time)
+  void Entity::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
   {
     MeshComponentPtr meshComp = GetMeshComponent();
     if (meshComp)
@@ -47,7 +47,7 @@ namespace ToolKit
       SkeletonComponentPtr skelComp = GetComponent<SkeletonComponent>();
       if (mesh->IsSkinned() && skelComp)
       {
-        anim->GetPose(skelComp, time);
+        anim->GetPose(skelComp, time, blendTarget);
         return;
       }
     }

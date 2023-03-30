@@ -57,7 +57,7 @@ namespace ToolKit
     node->SetChildrenDirty();
   }
 
-  void Animation::GetPose(const SkeletonComponentPtr& skeleton, float time)
+  void Animation::GetPose(const SkeletonComponentPtr& skeleton, float time, BlendTarget* blendTarget)
   {
     if (m_keys.empty())
     {
@@ -66,6 +66,10 @@ namespace ToolKit
 
     float ratio;
     int key1, key2;
+    Vec3 translation;
+    Quaternion orientation;
+    Vec3 scale;
+
     for (auto& dBoneIter : skeleton->m_map->boneList)
     {
       auto entry = m_keys.find(dBoneIter.first);
@@ -91,13 +95,38 @@ namespace ToolKit
       Key k1                             = entry->second[key1];
       Key k2                             = entry->second[key2];
       DynamicBoneMap::DynamicBone& dBone = dBoneIter.second;
-      dBone.node->m_translation =
-          Interpolate(k1.m_position, k2.m_position, ratio);
+      
+      translation = Interpolate(k1.m_position, k2.m_position, ratio);
+      orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
+      scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
 
-      dBone.node->m_orientation =
-          glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
+      if (blendTarget != nullptr)
+      {
+        float targetAnimTime = time - m_duration + blendTarget->offset;
+        if (targetAnimTime >= 0.0f)
+        {
+          auto targetEntry = blendTarget->targetAnim->m_keys.find(dBoneIter.first);
+          int targetKey1, targetKey2;
+          float targetRatio;
+          blendTarget->targetAnim->GetNearestKeys(targetEntry->second, targetKey1, targetKey2, targetRatio, targetAnimTime);
 
-      dBone.node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
+          Key targetK1 = targetEntry->second[targetKey1];
+          Key targetK2 = targetEntry->second[targetKey2];
+          
+          Vec3 translationT = Interpolate(k1.m_position, k2.m_position, targetRatio);
+          Quaternion orientationT = glm::slerp(k1.m_rotation, k2.m_rotation, targetRatio);
+          Vec3 scaleT = Interpolate(k1.m_scale, k2.m_scale, targetRatio);
+          
+          translation = Interpolate(translation, translationT, blendTarget->blendCoeff);
+          orientation = glm::slerp(orientation, orientationT, blendTarget->blendCoeff);
+          scale = Interpolate(scale, scaleT, blendTarget->blendCoeff);
+        }
+      }
+
+      dBone.node->m_translation = translation;
+      dBone.node->m_orientation = orientation;
+      dBone.node->m_scale = scale;
+      
       dBone.node->SetChildrenDirty();
     }
     skeleton->isDirty = true;
@@ -399,7 +428,7 @@ namespace ToolKit
         record->m_currentTime += deltaTimeSec * record->m_timeMultiplier;
       }
 
-      record->m_entity->SetPose(record->m_animation, record->m_currentTime);
+      record->m_entity->SetPose(record->m_animation, record->m_currentTime, record->m_blendTarget);
 
       if (state == AnimRecord::State::Rewind)
       {
