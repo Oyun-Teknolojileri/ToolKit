@@ -167,6 +167,7 @@ namespace ToolKit
 
   // Callbacks.
   typedef std::function<void(class Event*, class Entity*)> SurfaceEventCallback;
+  typedef std::function<void(const String&)> GlReportCallback;
 
   // Math Vector declerations.
   static const Vec3 ZERO    = Vec3(0.0f);
@@ -307,6 +308,6 @@ namespace ToolKit
     Target2DArray              = 0x8C1A
   };
 
-  static const char* TKVersionStr = "v0.4.0";
+  static const char* TKVersionStr = "v0.4.1";
 
 } // namespace ToolKit

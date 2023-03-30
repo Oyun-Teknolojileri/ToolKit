@@ -161,30 +161,52 @@ namespace ToolKit
     }
   }
 
+  void Node::OrphanChild(size_t index, bool preserveTransform)
+  {
+    if (index >= m_children.size())
+    {
+      return;
+    }
+
+    Mat4 ts;
+    Node* child = m_children[index];
+    if (preserveTransform)
+    {
+      ts = child->GetTransform(TransformationSpace::TS_WORLD);
+    }
+
+    child->m_parent = nullptr;
+    child->m_dirty  = true;
+    child->SetChildrenDirty();
+    m_children.erase(m_children.begin() + index);
+
+    if (preserveTransform)
+    {
+      child->SetTransform(ts, TransformationSpace::TS_WORLD);
+    }
+  }
+
+  void Node::OrphanAllChildren(bool preserveTransform)
+  {
+    while (!m_children.empty())
+    {
+      // remove last children
+      OrphanChild(m_children.size() - 1, preserveTransform);
+    }
+  }
+
   void Node::Orphan(Node* child, bool preserveTransform)
   {
     for (size_t i = 0; i < m_children.size(); i++)
     {
       if (m_children[i] == child)
       {
-        Mat4 ts;
-        if (preserveTransform)
-        {
-          ts = child->GetTransform(TransformationSpace::TS_WORLD);
-        }
-
-        child->m_parent = nullptr;
-        child->m_dirty  = true;
-        child->SetChildrenDirty();
-        m_children.erase(m_children.begin() + i);
-
-        if (preserveTransform)
-        {
-          child->SetTransform(ts, TransformationSpace::TS_WORLD);
-        }
+        OrphanChild(i, preserveTransform);
         return;
       }
     }
+
+    assert(false && "The child that you want to remove doesn't exist");
   }
 
   void Node::OrphanSelf(bool preserveTransform)

@@ -1,6 +1,6 @@
 #include "Framebuffer.h"
 
-#include "GL/glew.h"
+#include "gles2.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"

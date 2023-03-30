@@ -287,9 +287,11 @@ namespace ToolKit
     WriteAttr(node, doc, "hint.rangeMax", std::to_string(m_hint.rangeMax));
     WriteAttr(node, doc, "hint.increment", std::to_string(m_hint.increment));
 
-    std::function<void(XmlNode*, XmlDocument*, const ParameterVariant*)> serializeDataFn;
-    serializeDataFn =
-        [&serializeDataFn](XmlNode* node, XmlDocument* doc,const ParameterVariant* var)
+    std::function<void(XmlNode*, XmlDocument*, const ParameterVariant*)>
+        serializeDataFn;
+    serializeDataFn = [&serializeDataFn](XmlNode* node,
+                                         XmlDocument* doc,
+                                         const ParameterVariant* var)
     {
       // Serialize data.
       switch (var->GetType())
@@ -891,6 +893,18 @@ namespace ToolKit
     }
 
     return false;
+  }
+
+  void ParameterBlock::ExposeByCategory(bool exposed,
+                                        const VariantCategory& category)
+  {
+    for (ParameterVariant& var : m_variants)
+    {
+      if (var.m_category.Name == category.Name)
+      {
+        var.m_exposed = exposed;
+      }
+    }
   }
 
 } // namespace ToolKit

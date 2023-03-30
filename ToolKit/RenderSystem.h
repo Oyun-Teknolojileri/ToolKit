@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GlErrorReporter.h"
 #include "Pass.h"
 #include "Renderer.h"
 
@@ -50,6 +51,7 @@ namespace ToolKit
    public:
     RenderSystem();
     ~RenderSystem();
+
     void AddRenderTask(Technique* technique);
     void AddRenderTask(TechniquePtr technique);
     void AddRenderTask(RenderTask task);
@@ -83,6 +85,14 @@ namespace ToolKit
     void SetFrameCount(uint count);
 
     void EnableBlending(bool enable);
+
+    /**
+     * Host application must provide opengl function addresses. This function
+     * initialize opengl functions.
+     * @param glGetProcAddress is the adress of opengl function getter.
+     * @param callback is error callback function for opengl.
+     */
+    void InitGl(void* glGetProcAddres, GlReportCallback callback = nullptr);
 
    private:
     void ExecuteTaskImp(RenderTask& task);

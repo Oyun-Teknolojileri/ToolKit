@@ -1,12 +1,10 @@
 #include "App.h"
-#include "Common/GlErrorReporter.h"
+#include "GlErrorReporter.h"
 #include "Common/SDLEventPool.h"
 #include "Common/Win32Utils.h"
 #include "ConsoleWindow.h"
-#include "GL/glew.h"
 #include "Mod.h"
 #include "SDL.h"
-#include "SDL_opengl.h"
 #include "Types.h"
 #include "UI.h"
 
@@ -179,18 +177,10 @@ namespace ToolKit
           }
           else
           {
-            // Init glew
-            glewExperimental = true;
-            GLenum err       = glewInit();
-            if (GLEW_OK != err)
-            {
-              g_running = false;
-              return;
-            }
-
-#ifdef TK_DEBUG
-            InitGLErrorReport(
-                GlErrorReporter::Report = [](const std::string& msg) -> void
+            // Init OpenGl.
+            g_proxy->m_renderSys->InitGl(
+                SDL_GL_GetProcAddress,
+                [](const std::string& msg) -> void
                 {
                   if (g_app == nullptr)
                   {
@@ -204,9 +194,8 @@ namespace ToolKit
                                                       msg.c_str());
                   }
                 });
-#endif
 
-            // Init Main
+            // Init Main.
             // Override SceneManager.
             SafeDel(g_proxy->m_sceneManager);
             g_proxy->m_sceneManager = new EditorSceneManager();
@@ -214,9 +203,6 @@ namespace ToolKit
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);
-
-            glEnable(GL_CULL_FACE);
-            glEnable(GL_DEPTH_TEST);
 
             // Init app
             g_app = new App(g_settings.Window.Width, g_settings.Window.Height);

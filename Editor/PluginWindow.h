@@ -29,7 +29,8 @@ namespace ToolKit
       Ipad_Mini,
       Surface_Pro_7,
       Surface_Duo,
-      Galaxy_A51_A71
+      Galaxy_A51_A71,
+      Count
     };
 
     struct SimulationSettings

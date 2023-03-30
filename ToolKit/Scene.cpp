@@ -277,15 +277,46 @@ namespace ToolKit
 
   EntityRawPtrArray& Scene::AccessEntityArray() { return m_entities; }
 
-  Entity* Scene::RemoveEntity(ULongID id)
+  void Scene::RemoveChildren(Entity* removed)
+  {
+    NodePtrArray children = removed->m_node->m_children;
+    
+    // Iterative remove children.
+    while (!children.empty())
+    {
+      Node* child = children.back();
+      children.pop_back();
+      RemoveEntity(child->m_entity->GetIdVal());
+      if (child->m_children.empty())
+      {
+        continue;
+      }
+
+      // Add child's children to the list that we remove from scene.
+      children.insert(children.end(),
+                    child->m_children.begin(),
+                    child->m_children.end());
+    }
+  }
+
+  Entity* Scene::RemoveEntity(ULongID id, bool deep)
   {
     Entity* removed = nullptr;
-    for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; i--)
+    for (size_t i = 0; i < m_entities.size(); i++)
     {
       if (m_entities[i]->GetIdVal() == id)
       {
         removed = m_entities[i];
         m_entities.erase(m_entities.begin() + i);
+        removed->m_node->OrphanSelf();
+        if (deep)
+        {
+          RemoveChildren(removed);
+        }
+        else
+        {
+          removed->m_node->OrphanAllChildren(true);
+        }
         break;
       }
     }
@@ -419,35 +450,23 @@ namespace ToolKit
     prefab->Link();
   }
 
-  EntityRawPtrArray Scene::GetEnvironmentLightEntities()
+  EnvironmentComponentPtrArray Scene::GetEnvironmentVolumes()
   {
-    EntityRawPtrArray envLightNtties;
-    envLightNtties.clear();
-    for (Entity* ntt : envLightNtties)
+    // Find entities which have environment component
+    EnvironmentComponentPtrArray environments;
+    for (Entity* ntt : m_entities)
     {
-      if (ntt->GetType() == EntityType::Entity_Sky)
+      EnvironmentComponentPtr envCom =
+          ntt->GetComponent<EnvironmentComponent>();
+      if (envCom != nullptr && envCom->GetHdriVal() != nullptr &&
+          envCom->GetIlluminateVal())
       {
-        continue;
-      }
-
-      if (EnvironmentComponentPtr envCom =
-              ntt->GetComponent<EnvironmentComponent>())
-      {
-        if (envCom->GetIlluminateVal())
-        {
-          if (HdriPtr hdr = envCom->GetHdriVal())
-          {
-            if (hdr->IsTextureAssigned())
-            {
-              envCom->Init(true);
-              envLightNtties.push_back(ntt);
-            }
-          }
-        }
+        envCom->Init(true);
+        environments.push_back(envCom);
       }
     }
 
-    return envLightNtties;
+    return environments;
   }
 
   void Scene::Destroy(bool removeResources)

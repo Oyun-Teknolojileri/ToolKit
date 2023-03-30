@@ -128,8 +128,6 @@ namespace ToolKit
 
     m_gBufferPass->InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
                                 m_params.MainFramebuffer->GetSettings().height);
-
-    renderer->CollectEnvironmentVolumes(m_params.Scene->GetEntities());
   }
 
   void SceneRenderer::PostRender() { m_updatedLights.clear(); }
@@ -160,6 +158,10 @@ namespace ToolKit
     m_shadowPass->m_params.Lights    = m_updatedLights;
 
     RenderJobProcessor::CullRenderJobs(jobs, m_params.Cam);
+
+    RenderJobProcessor::AssignEnvironment(
+        jobs,
+        m_params.Scene->GetEnvironmentVolumes());
 
     RenderJobArray deferred, forward, translucent;
     RenderJobProcessor::SeperateDeferredForward(jobs,
@@ -198,9 +200,9 @@ namespace ToolKit
     m_ssaoPass->m_params.GNormalBuffer             = m_gBufferPass->m_gNormalRt;
     m_ssaoPass->m_params.GLinearDepthBuffer = m_gBufferPass->m_gLinearDepthRt;
     m_ssaoPass->m_params.Cam                = m_params.Cam;
-    m_ssaoPass->m_params.Radius         = m_params.Gfx.SSAORadius;
+    m_ssaoPass->m_params.Radius             = m_params.Gfx.SSAORadius;
     m_ssaoPass->m_params.spread             = m_params.Gfx.SSAOSpread;
-    m_ssaoPass->m_params.Bias           = m_params.Gfx.SSAOBias;
+    m_ssaoPass->m_params.Bias               = m_params.Gfx.SSAOBias;
 
     // Set CubeMapPass for sky.
     m_drawSky                               = false;

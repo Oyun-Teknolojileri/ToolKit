@@ -6,6 +6,7 @@ namespace ToolKit
 {
 
   typedef std::shared_ptr<class EnvironmentComponent> EnvironmentComponentPtr;
+  typedef std::vector<EnvironmentComponentPtr> EnvironmentComponentPtrArray;
   static VariantCategory EnvironmentComponentCategory {"Environment Component",
                                                        90};
 

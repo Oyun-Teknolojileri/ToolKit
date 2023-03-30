@@ -61,9 +61,15 @@ namespace ToolKit
     EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
     SkyBase* GetSky();
     void LinkPrefab(const String& fullPath);
-    EntityRawPtrArray GetEnvironmentLightEntities();
+    EnvironmentComponentPtrArray GetEnvironmentVolumes();
 
-    virtual Entity* RemoveEntity(ULongID id);
+    /**
+     * Removes the entity with the given id from the scene.
+     * @param  The id of the entity that will be removed.
+     * @param  States if the remove will be recursive to the all leafs.
+     * @returns The removed entity.
+     */
+    virtual Entity* RemoveEntity(ULongID id, bool deep = true);
     virtual void RemoveEntity(const EntityRawPtrArray& entities);
     virtual void RemoveAllEntities();
     virtual void Destroy(bool removeResources);
@@ -75,6 +81,9 @@ namespace ToolKit
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     // Used to avoid Id collision during scene merges.
     ULongID GetBiggestEntityId();
+
+   private:
+    void RemoveChildren(Entity* removed);
 
    protected:
     void CopyTo(Resource* other) override;
