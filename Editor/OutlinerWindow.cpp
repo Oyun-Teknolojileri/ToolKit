@@ -50,7 +50,7 @@ namespace ToolKit
       bottom -= (halfHeight + 1.0f); // move up a little
 
       drawList->AddLine(rectMin, ImVec2(rectMin.x, bottom), color);
-      // alittle bulge at the end of the line
+      // a little bulge at the end of the line
       drawList->AddLine(ImVec2(rectMin.x, bottom),
                         ImVec2(rectMin.x + 5.0f, bottom),
                         color);
