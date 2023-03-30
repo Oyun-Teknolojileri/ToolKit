@@ -396,13 +396,6 @@ namespace ToolKit
       colors[ImGuiCol_NavWindowingDimBg]      = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 
       style.PopupRounding = 3;
-      // style.ScrollbarSize = 18;
-      
-      // style.WindowBorderSize = style.ChildBorderSize  = 1;
-      // style.PopupBorderSize  = style.FrameBorderSize  = 1; 
-      // style.WindowRounding   = style.ChildRounding    = 3;
-      // style.FrameRounding    = style.GrabRounding     = 3;
-      // style.ScrollbarRounding = 2;
 
 #ifdef IMGUI_HAS_DOCK 
       style.TabBorderSize = 1; 
@@ -1316,8 +1309,7 @@ namespace ToolKit
       ImGui::Text((icon + ntt->GetNameVal()).c_str());
 
       // Hiearchy visibility
-      float offset = ImGui::GetContentRegionAvail().x - 45.0f;
-      ImGui::SameLine(offset);
+      ImGui::SameLine(ImGui::GetWindowWidth() - 65.0f);
       icon = ntt->GetVisibleVal() ? ICON_FA_EYE : ICON_FA_EYE_SLASH;
 
       // Texture only toggle button.
@@ -1328,8 +1320,7 @@ namespace ToolKit
       }
       ImGui::PopID();
 
-      offset = ImGui::GetContentRegionAvail().x - 20.0f;
-      ImGui::SameLine(offset);
+      ImGui::SameLine(ImGui::GetWindowWidth() - 40.0f);
       icon = ntt->GetTransformLockVal() ? ICON_FA_LOCK : ICON_FA_UNLOCK;
 
       // Texture only toggle button.

@@ -33,40 +33,35 @@ namespace ToolKit
     ULongID g_parent = NULL_HANDLE;
     std::vector<ULongID> g_child;
 
-    static int odd = 0;
-
-    // customized version of this: https://github.com/ocornut/imgui/issues/2668
-    void DrawRowBackground(float depth)
+    void DrawTreeNodeLine(int numNodes, ImVec2 rectMin)
     {
-      float x1 = ImGui::GetCurrentWindow()->WorkRect.Min.x + (depth * 14.0f);
-      float x2 = ImGui::GetCurrentWindow()->WorkRect.Max.x;
-      float item_spacing_y  = ImGui::GetStyle().ItemSpacing.y;
-      float item_offset_y   = -item_spacing_y * 0.5f;
-      float line_height     = ImGui::GetTextLineHeight() + item_spacing_y;
-      
-      ImDrawList* draw_list = ImGui::GetWindowDrawList();
-      float y0          = ImGui::GetCursorScreenPos().y + (float) item_offset_y;
-      ImGuiStyle& style = ImGui::GetStyle();
-      ImVec4 v4Color    = style.Colors[ImGuiCol_TabHovered];
-      v4Color.x *= 0.8f;
-      v4Color.y *= 0.8f;
-      v4Color.z *= 0.8f;
-      // if odd black otherwise given color
-      ImU32 col  = ImGui::ColorConvertFloat4ToU32(v4Color) * (odd++ & 1);
-      
-      if ((col & IM_COL32_A_MASK) == 0)
-      {
-        return;
-      }
-      float y1 = y0 + line_height;
-      draw_list->AddRectFilled(ImVec2(x1, y0), ImVec2(x2, y1), col);
+      const ImColor color  = ImGui::GetColorU32(ImGuiCol_Text);
+      ImDrawList* drawList = ImGui::GetWindowDrawList();
+      ImVec2 cursorPos     = ImGui::GetCursorScreenPos();
+      float item_spacing_y = ImGui::GetStyle().ItemSpacing.y;
+      float line_height    = ImGui::GetTextLineHeight() + item_spacing_y;
+      float halfHeight     = line_height * 0.5f;
+
+      // -11 align line with arrow
+      rectMin.x        = cursorPos.x - 11.0f;
+      rectMin.y       += halfHeight;
+
+      float bottom = rectMin.y + (numNodes * line_height);
+      bottom -= (halfHeight + 1.0f); // move up a little
+
+      drawList->AddLine(rectMin, ImVec2(rectMin.x, bottom), color);
+      // alittle bulge at the end of the line
+      drawList->AddLine(ImVec2(rectMin.x, bottom),
+                        ImVec2(rectMin.x + 5.0f, bottom),
+                        color);
     }
 
-    void OutlinerWindow::ShowNode(Entity* e, float depth)
+    // returns total drawed nodes
+    int OutlinerWindow::ShowNode(Entity* e, int depth)
     {
       if (!m_shownEntities[e])
       {
-        return;
+        return 0;
       }
 
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
@@ -75,6 +70,8 @@ namespace ToolKit
       {
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
       }
+
+      int numNodes = 1; // 1 itself and we will sum childs
 
       if (e->m_node->m_children.empty() ||
           e->GetType() == EntityType::Entity_Prefab)
@@ -87,17 +84,18 @@ namespace ToolKit
       {
         if (DrawHeader(e, nodeFlags, depth))
         {
+          ImVec2 rectMin = ImGui::GetItemRectMin();
+
           for (Node* n : e->m_node->m_children)
           {
-            Entity* childNtt = n->m_entity;
-            if (childNtt != nullptr)
-            {
-              ShowNode(childNtt, depth + 1.0f);
-            }
+            numNodes += ShowNode(n->m_entity, depth + 1);
           }
+
+          DrawTreeNodeLine(numNodes, rectMin);
           ImGui::TreePop();
         }
       }
+      return numNodes;
     }
 
     void OutlinerWindow::SetItemState(Entity* e)
@@ -175,14 +173,7 @@ namespace ToolKit
       // Clear shown entity map
       for (Entity* ntt : ntties)
       {
-        if (m_searchString.empty())
-        {
-          m_shownEntities[ntt] = true;
-        }
-        else
-        {
-          m_shownEntities[ntt] = false;
-        }
+        m_shownEntities[ntt] = m_searchString.empty();
       }
       if (m_searchString.size() > 0)
       {
@@ -220,7 +211,6 @@ namespace ToolKit
     void OutlinerWindow::Show()
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
-      ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
 
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
@@ -266,7 +256,6 @@ namespace ToolKit
 
       g_parent = NULL_HANDLE;
 
-      ImGui::PopStyleVar();
       ImGui::End();
     }
 
@@ -350,9 +339,43 @@ namespace ToolKit
       ImGui::EndTable();
     }
 
+    // customized version of this: https://github.com/ocornut/imgui/issues/2668
+    // draws a rectangle on tree node, for even odd pattern
+    void OutlinerWindow::DrawRowBackground(int depth)
+    {
+      depth = glm::min(depth, 7); // 7 array max size 
+      // offsets on starting point of the rectangle
+      float depths[] = // last two of the offsets are not adjusted well enough 
+          {18.0f, 30.0f, 51.0f, 71.0f, 96.0f, 115.0f, 140.0f, 155.0f};
+      
+      ImRect workRect      = ImGui::GetCurrentWindow()->WorkRect;
+      float x1             = workRect.Min.x + depths[depth];
+      float x2             = workRect.Max.x;
+      float item_spacing_y = ImGui::GetStyle().ItemSpacing.y;
+      float item_offset_y  = -item_spacing_y * 0.5f;
+      float line_height    = ImGui::GetTextLineHeight() + item_spacing_y;
+      float y0 = ImGui::GetCursorScreenPos().y + (float) item_offset_y;
+
+      ImDrawList* draw_list  = ImGui::GetWindowDrawList();
+      ImGuiStyle& style      = ImGui::GetStyle();
+      ImVec4 v4Color         = style.Colors[ImGuiCol_TabHovered];
+      v4Color.x             *= 0.62f;
+      v4Color.y             *= 0.62f;
+      v4Color.z             *= 0.62f;
+      // if odd black otherwise given color
+      ImU32 col = ImGui::ColorConvertFloat4ToU32(v4Color) * (odd++ & 1);
+
+      if (col == 0)
+      {
+        return;
+      }
+      float y1 = y0 + line_height;
+      draw_list->AddRectFilled(ImVec2(x1, y0), ImVec2(x2, y1), col);
+    }
+
     bool OutlinerWindow::DrawHeader(Entity* ntt,
                                     ImGuiTreeNodeFlags flags,
-                                    float depth)
+                                    int depth)
     {
       if (ntt->GetNameVal().find(m_searchString) != String::npos)
       {
@@ -376,10 +399,11 @@ namespace ToolKit
       {
         ImGui::SetNextItemOpen(true);
       }
-      // bright and dark color pattern for nodes, (even, odd)
+      // bright and dark color pattern for nodes. (even odd)
       DrawRowBackground(depth);
 
       const String sId = "##" + std::to_string(ntt->GetIdVal());
+
       bool isOpen      = ImGui::TreeNodeEx(sId.c_str(), flags);
 
       if (ImGui::BeginPopupContextItem())
@@ -421,3 +445,4 @@ namespace ToolKit
 
   } // namespace Editor
 } // namespace ToolKit
+  
