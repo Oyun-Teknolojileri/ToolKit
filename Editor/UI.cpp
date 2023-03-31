@@ -245,7 +245,7 @@ namespace ToolKit
       LoadIcon(m_gridIcon, "Icons/grid.png");
       LoadIcon(m_skyIcon, "Icons/outliner_data_volume.png");
       LoadIcon(m_closeIcon, "Icons/close.png");
-      LoadIcon(m_phoneRotateIcon, "Icons/rotate-icon.true");
+      LoadIcon(m_phoneRotateIcon, "Icons/rotate-icon.png");
       LoadIcon(m_studioLightsToggleIcon, "Icons/studio_lights_toggle.png");
       LoadIcon(m_anchorIcn, "Icons/anchor_move.png");
       LoadIcon(m_prefabIcn, "Icons/scene_data.png");
@@ -253,7 +253,7 @@ namespace ToolKit
       LoadIcon(m_addIcon, "Icons/add.png");
       LoadIcon(m_sphereIcon, "Icons/sphere.png");
       LoadIcon(m_cubeIcon, "Icons/cube.png");
-      LoadIcon(m_shaderBallIcon, "Icons/shader-ball.true");
+      LoadIcon(m_shaderBallIcon, "Icons/shader-ball.png");
       LoadIcon(m_diskDriveIcon, "Icons/disk_drive.png");
       LoadIcon(m_packageIcon, "Icons/package.png");
       LoadIcon(m_objectDataIcon, "Icons/object_data.png");
