@@ -7,7 +7,9 @@
 #include "Gizmo.h"
 #include "Global.h"
 #include "Light.h"
-#
+#include "IconsFontAwesome.h"
+#include "imgui_internal.h"
+
 #include "PopupWindows.h"
 #include "PropInspector.h"
 #include "Util.h"
@@ -16,6 +18,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "DebugNew.h"
@@ -40,39 +43,29 @@ namespace ToolKit
 
     ResourceManager* DirectoryEntry::GetManager() const
     {
-      if (m_ext == ANIM)
+      using GetterFunction = std::function<ResourceManager*()>;
+
+      static std::unordered_map<String, GetterFunction> extToResource {
+          {ANIM,     GetAnimationManager},
+          {AUDIO,    GetAudioManager    },
+          {MATERIAL, GetMaterialManager },
+          {MESH,     GetMeshManager     },
+          {SKINMESH, GetMeshManager     },
+          {SHADER,   GetShaderManager   },
+          {HDR,      GetTextureManager  },
+          {SCENE,    GetSceneManager    }
+      };
+
+      auto resourceManager = extToResource.find(m_ext);
+      if (resourceManager != extToResource.end())
       {
-        return GetAnimationManager();
-      }
-      else if (m_ext == AUDIO)
-      {
-        return GetAudioManager();
-      }
-      else if (m_ext == MATERIAL)
-      {
-        return GetMaterialManager();
-      }
-      else if (m_ext == MESH || m_ext == SKINMESH)
-      {
-        return GetMeshManager();
-      }
-      else if (m_ext == SHADER)
-      {
-        return GetShaderManager();
-      }
-      else if (SupportedImageFormat(m_ext))
-      {
-        return GetTextureManager();
-      }
-      else if (m_ext == HDR)
-      {
-        return GetTextureManager();
-      }
-      else if (m_ext == SCENE)
-      {
-        return GetSceneManager();
+        return resourceManager->second(); // call get function
       }
 
+      if (SupportedImageFormat(m_ext))
+      {
+        return GetTextureManager();
+      }
       return nullptr;
     }
 
@@ -113,7 +106,7 @@ namespace ToolKit
       {
         thumbnailZoom = m_thumbnailMaxZoom;
       }
-      m_iconSize.xy              = Vec2(thumbnailZoom);
+      m_iconSize.xy = Vec2(thumbnailZoom);
 
       ImGui::BeginTable("##FilterZoom", 5, ImGuiTableFlags_SizingFixedFit);
 
@@ -197,7 +190,8 @@ namespace ToolKit
         // Start drawing folder items.
         const float footerHeightReserve = ImGui::GetStyle().ItemSpacing.y +
                                           ImGui::GetFrameHeightWithSpacing();
-        ImGui::BeginChild("##Content"); //, ImVec2(0, -footerHeightReserve), true);
+        ImGui::BeginChild(
+            "##Content"); //, ImVec2(0, -footerHeightReserve), true);
 
         if (m_entries.empty())
         {
@@ -224,58 +218,36 @@ namespace ToolKit
             bool flipRenderTarget = false;
             uint iconId           = UI::m_fileIcon->m_textureId;
 
-            auto genThumbFn = [&flipRenderTarget, &iconId, &dirEnt]() -> void
-            {
-              iconId           = dirEnt.GetThumbnail()->m_textureId;
-              flipRenderTarget = true;
+            std::unordered_map<String, uint> extensionIconMap {
+                {SCENE,    UI::m_worldIcon->m_textureId},
+                {LAYER,    UI::m_worldIcon->m_textureId},
+                {ANIM,     UI::m_clipIcon->m_textureId },
+                {AUDIO,    UI::m_audioIcon->m_textureId},
+                {SHADER,   UI::m_codeIcon->m_textureId },
+                {LAYER,    UI::m_worldIcon->m_textureId},
+                {SKELETON, UI::m_boneIcon->m_textureId }
             };
+
+            static std::unordered_set<String> thumbExtensions 
+            {PNG, JPG, JPEG, TGA, BMP, PSD, HDR, MESH, SKINMESH, MATERIAL};
 
             if (dirEnt.m_isDirectory)
             {
               iconId = UI::m_folderIcon->m_textureId;
             }
-            else if (dirEnt.m_ext == SCENE || dirEnt.m_ext == LAYER)
+            else if (extensionIconMap.find(dirEnt.m_ext) !=
+                     extensionIconMap.end())
             {
-              iconId = UI::m_worldIcon->m_textureId;
+              iconId = extensionIconMap[dirEnt.m_ext];
             }
-            else if (dirEnt.m_ext == MESH || dirEnt.m_ext == SKINMESH)
+            else if (thumbExtensions.count(dirEnt.m_ext) > 0)
             {
-              genThumbFn();
+              iconId           = dirEnt.GetThumbnail()->m_textureId;
+              flipRenderTarget = true;
             }
-            else if (dirEnt.m_ext == ANIM)
+            else if (m_onlyNativeTypes)
             {
-              iconId = UI::m_clipIcon->m_textureId;
-            }
-            else if (dirEnt.m_ext == AUDIO)
-            {
-              iconId = UI::m_audioIcon->m_textureId;
-            }
-            else if (dirEnt.m_ext == SHADER)
-            {
-              iconId = UI::m_codeIcon->m_textureId;
-            }
-            else if (dirEnt.m_ext == SKELETON)
-            {
-              iconId = UI::m_boneIcon->m_textureId;
-            }
-            else if (dirEnt.m_ext == MATERIAL)
-            {
-              genThumbFn();
-            }
-            else if (SupportedImageFormat(dirEnt.m_ext))
-            {
-              genThumbFn();
-            }
-            else if (dirEnt.m_ext == HDR)
-            {
-              genThumbFn();
-            }
-            else
-            {
-              if (m_onlyNativeTypes)
-              {
-                continue;
-              }
+              continue;
             }
 
             ImGui::PushID(i);
@@ -375,16 +347,8 @@ namespace ToolKit
 
             // Handle Item sub text.
             ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + m_iconSize.x);
-            size_t charLim = size_t(m_iconSize.x * 0.1f);
-            if (dirEnt.m_fileName.size() > charLim)
-            {
-              String shorten = dirEnt.m_fileName.substr(0, charLim) + "...";
-              ImGui::TextWrapped("%s", shorten.c_str());
-            }
-            else
-            {
-              ImGui::TextWrapped("%s", dirEnt.m_fileName.c_str());
-            }
+            ImGui::TextWrapped("%s", dirEnt.m_fileName.c_str());
+            
             ImGui::PopTextWrapPos();
             ImGui::EndGroup();
             ImGui::PopID();
@@ -765,7 +729,7 @@ namespace ToolKit
       {
         if (ImGui::MenuItem("Copy"))
         {
-          m_currentEntry = entry;
+          m_currentEntry            = entry;
           m_currentEntry->m_cutting = false;
           ImGui::CloseCurrentPopup();
         }
@@ -941,7 +905,7 @@ namespace ToolKit
         }
         ImGui::EndDragDropTarget();
       }
-    }
+    } 
 
     FolderWindow::FolderWindow(XmlNode* node)
     {
@@ -955,6 +919,135 @@ namespace ToolKit
     }
 
     FolderWindow::~FolderWindow() {}
+    
+    // parent will start with -1
+    int FolderWindow::CreateTreeRec(int parent, const std::filesystem::path& path)
+    {
+      String folderName = path.filename().u8string();
+      int index = m_folderNodes.size();
+      m_folderNodes.emplace_back(parent, index, path.u8string(), folderName);
+
+      for (auto& directory : std::filesystem::directory_iterator(path))
+      {
+        if (!directory.is_directory()) continue;
+        
+        int childIdx = CreateTreeRec(parent + 1, directory.path());
+        m_folderNodes[index].childs.push_back(childIdx);
+      }
+      
+      return index;
+    }
+
+    int FolderWindow::FindEntry(const String& name) 
+    {
+      for (int i = 0; i < m_entries.size(); ++i)
+      {
+        if (m_entries[i].m_folder == name)
+        {
+          return i;
+        }
+      }
+      return -1;
+    }
+
+    void FolderWindow::DeactivateNode(const String& name)
+    {
+      for (int i = 0; i < m_folderNodes.size(); ++i)
+      {
+        if (m_folderNodes[i].name == name)
+        {
+          m_folderNodes[i].active = false;
+        }
+      }
+    }
+
+    void FolderWindow::DrawTreeRec(int index, float depth)
+    {
+      if (index == -1) return; // shouldn't happen
+      FolderNode& node    = m_folderNodes[index];
+      String icon         = node.active ? ICON_FA_FOLDER_OPEN : ICON_FA_FOLDER;
+      String nodeHeader   = icon + ICON_SPACE + node.name;
+      float headerLen     = ImGui::CalcTextSize(nodeHeader.c_str()).x; 
+      headerLen          += (depth * 20.0f) + 100.0f; // depth padding + UI start padding
+      m_maxTreeNodeWidth  = glm::max(headerLen, m_maxTreeNodeWidth);
+      
+      const auto onClickedFn = [&]() -> void
+      {
+        // find clicked entry
+        int selected = FindEntry(node.name);
+
+        if (selected != -1 && selected != m_activeFolder)
+        {
+          // set old node active false
+          DeactivateNode(m_entries[m_activeFolder].m_folder);
+          m_activeFolder = selected;
+          node.active    = true;
+
+          for (FolderView& view : m_entries)
+          {
+            view.m_visible = false;
+          }
+        }
+      };
+
+      ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
+      if (node.childs.size() == 0)
+      {
+        nodeFlags |=
+            ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        if (ImGui::TreeNodeEx(nodeHeader.c_str(), nodeFlags))
+        {
+          if (ImGui::IsItemClicked())
+          {  
+            onClickedFn();
+          }   
+        }
+      }
+      else
+      {
+        if (ImGui::TreeNodeEx(nodeHeader.c_str(), nodeFlags)) 
+        {
+          if (ImGui::IsItemClicked())
+          {
+            onClickedFn();
+          }
+        
+          for (int i = 0; i < node.childs.size(); ++i)
+          {
+            DrawTreeRec(node.childs[i], depth + 1.0f);
+          }
+          ImGui::TreePop();
+        }
+      }
+    }
+    
+    void FolderWindow::ShowFolderTree()
+    {
+      // Show Resource folder structure.
+      ImGui::PushID("##FolderStructure");
+      ImGui::BeginGroup();
+
+      ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign,
+                          ImVec2(0.0f, 0.5f));
+      ImGui::TextUnformatted("Resources");
+
+      ImGui::SameLine();
+      if (ImGui::Button(ICON_FA_ARROW_LEFT))
+      {
+        m_showStructure = !m_showStructure;
+      }
+      
+      ImGui::BeginChild("##Folders", ImVec2(m_maxTreeNodeWidth, 0.0f), true);
+      
+      m_maxTreeNodeWidth = 160.0f; // reset tree node default size
+      DrawTreeRec(0, 0.0f);
+
+      ImGui::EndChild();
+
+      ImGui::PopStyleVar();
+      ImGui::EndGroup();
+      ImGui::PopID();
+    }
 
     void FolderWindow::Show()
     {
@@ -962,21 +1055,6 @@ namespace ToolKit
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         HandleStates();
-
-        auto IsRootFn = [](const String& path)
-        {
-          size_t lastSep = path.find_last_of(GetPathSeparator());
-          if (lastSep != String::npos)
-          {
-            String root = path.substr(0, lastSep);
-            String end  = path.substr(lastSep, path.size());
-            static String test =
-                String(1, GetPathSeparator()) + String("Engine");
-            return root == ResourcePath() || !end.compare(test);
-          }
-
-          return false;
-        };
 
         if (!g_app->m_workspace.GetActiveWorkspace().empty() &&
             g_app->m_workspace.GetActiveProject().name.empty())
@@ -988,61 +1066,11 @@ namespace ToolKit
 
         if (m_showStructure)
         {
-          // Show Resource folder structure.
-          ImGui::PushID("##FolderStructure");
-          ImGui::BeginGroup();
-
-          ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign,
-                              ImVec2(0.0f, 0.5f));
-          ImGui::TextUnformatted("Resources");
-
-          ImGui::SameLine();
-          if (ImGui::Button("<<"))
-          {
-            m_showStructure = !m_showStructure;
-          }
-
-          ImGui::BeginChild("##Folders", ImVec2(130, 0), true);
-          for (int i = 0; i < static_cast<int>(m_entries.size()); i++)
-          {
-            if (!IsRootFn(m_entries[i].GetPath()))
-            {
-              continue;
-            }
-
-            bool currSel = false;
-            if (m_activeFolder == i)
-            {
-              currSel = true;
-            }
-
-            currSel = UI::ToggleButton(m_entries[i].m_folder,
-                                       ImVec2(100, 25),
-                                       currSel);
-
-            // Selection switch.
-            if (currSel)
-            {
-              if (i != m_activeFolder)
-              {
-                for (FolderView& view : m_entries)
-                {
-                  view.m_visible = false;
-                }
-              }
-
-              m_activeFolder = i;
-            }
-          }
-          ImGui::EndChild();
-
-          ImGui::PopStyleVar();
-          ImGui::EndGroup();
-          ImGui::PopID();
+          ShowFolderTree();
         }
         else
         {
-          if (ImGui::Button(">>"))
+          if (ImGui::Button(ICON_FA_ARROW_RIGHT))
           {
             m_showStructure = !m_showStructure;
           }
@@ -1054,9 +1082,9 @@ namespace ToolKit
         ImGui::BeginGroup();
         if (ImGui::BeginTabBar("Folders",
                                ImGuiTabBarFlags_NoTooltip |
-                               ImGuiTabBarFlags_AutoSelectNewTabs|
-                               ImGuiWindowFlags_NoScrollWithMouse |
-                               ImGuiWindowFlags_NoScrollbar))
+                                   ImGuiTabBarFlags_AutoSelectNewTabs |
+                                   ImGuiWindowFlags_NoScrollWithMouse |
+                                   ImGuiWindowFlags_NoScrollbar))
         {
           String currRootPath;
           auto IsDescendentFn = [&currRootPath](String candidate) -> bool
@@ -1098,6 +1126,9 @@ namespace ToolKit
       {
         m_entries.clear();
       }
+      
+      m_folderNodes.clear(); // clear because we will reconstruct
+      CreateTreeRec(-1, DefaultPath());
 
       String resourceRoot = ResourcePath();
       char pathSep        = GetPathSeparator();

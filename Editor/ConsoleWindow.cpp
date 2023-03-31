@@ -618,7 +618,9 @@ namespace ToolKit
 
     void ConsoleWindow::Show()
     {
-      if (ImGui::Begin(g_consoleStr.c_str(), &m_visible))
+      if (ImGui::Begin(g_consoleStr.c_str(), &m_visible, 
+                       ImGuiWindowFlags_NoScrollWithMouse |
+                       ImGuiWindowFlags_NoScrollbar))
       {
         HandleStates();
 

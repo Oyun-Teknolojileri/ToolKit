@@ -359,9 +359,9 @@ namespace ToolKit
       ImDrawList* draw_list  = ImGui::GetWindowDrawList();
       ImGuiStyle& style      = ImGui::GetStyle();
       ImVec4 v4Color         = style.Colors[ImGuiCol_TabHovered];
-      v4Color.x             *= 0.68f;
-      v4Color.y             *= 0.68f;
-      v4Color.z             *= 0.68f;
+      v4Color.x             *= 0.62f;
+      v4Color.y             *= 0.62f;
+      v4Color.z             *= 0.62f;
       // if odd black otherwise given color
       ImU32 col = ImGui::ColorConvertFloat4ToU32(v4Color) * (odd++ & 1);
 

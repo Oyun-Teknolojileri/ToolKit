@@ -41,7 +41,9 @@ namespace ToolKit
       explicit FolderView(FolderWindow* parent);
 
       void Show();
+
       void SetDirty() { m_dirty = true; }
+
       void SetPath(const String& path);
       const String& GetPath() const;
       void Iterate();
@@ -112,6 +114,13 @@ namespace ToolKit
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
      private:
+      void ShowFolderTree();
+      int FindEntry(const String& name);
+      void DeactivateNode(const String& name);
+      int CreateTreeRec(int parent, const std::filesystem::path& path);
+      void DrawTreeRec(int index, float depth);
+
+     private:
       struct ViewSettings
       {
         Vec2 size;
@@ -119,8 +128,27 @@ namespace ToolKit
         bool active;
       };
 
+      struct FolderNode
+      {
+        String path = "undefined";
+        String name = "undefined";
+        std::vector<int> childs;
+        int parentIndex = -1;
+        int index       = -1;
+        bool active = false;
+
+        FolderNode() {}
+        FolderNode(int prntIdx, int idx, String p, String n)
+            : path(std::move(p)), name(std::move(n)), parentIndex(prntIdx),
+              index(idx)
+        {
+        }
+      };
+
       std::unordered_map<String, ViewSettings> m_viewSettings;
       std::vector<FolderView> m_entries;
+      std::vector<FolderNode> m_folderNodes;
+      float m_maxTreeNodeWidth = 160.0f;
 
       int m_activeFolder   = -1;
       bool m_showStructure = true;

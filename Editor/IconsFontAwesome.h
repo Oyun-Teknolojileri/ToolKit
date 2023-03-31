@@ -222,6 +222,7 @@
 #define ICON_FA_UMBRELLA                            "\xef\x83\xa9" // U+f0e9
 #define ICON_FA_CLIPBOARD                           "\xef\x83\xaa" // U+f0ea
 #define ICON_FA_LIGHTBULB                           "\xef\x83\xab" // U+f0eb
+#define ICON_FA_BONE                                "\xef\x97\x97" // U+f5d7
 #define ICON_FA_EXCHANGE                            "\xef\x83\xac" // U+f0ec
 #define ICON_FA_CLOUD_DOWNLOAD                      "\xef\x83\xad" // U+f0ed
 #define ICON_FA_CLOUD_UPLOAD                        "\xef\x83\xae" // U+f0ee
@@ -259,8 +260,8 @@
 #define ICON_FA_CIRCLE                              "\xef\x84\x91" // U+f111
 #define ICON_FA_REPLY                               "\xef\x84\x92" // U+f112
 #define ICON_FA_GITHUB_ALT                          "\xef\x84\x93" // U+f113
-#define ICON_FA_FOLDER_O                            "\xef\x84\x94" // U+f114
-#define ICON_FA_FOLDER_OPEN_O                       "\xef\x84\x95" // U+f115
+#define ICON_FA_FOLDER                              "\xef\x84\x94" // U+f114
+#define ICON_FA_FOLDER_OPEN                         "\xef\x84\x95" // U+f115
 #define ICON_FA_SMILE_O                             "\xef\x84\x98" // U+f118
 #define ICON_FA_FROWN_O                             "\xef\x84\x99" // U+f119
 #define ICON_FA_MEH_O                               "\xef\x84\x9a" // U+f11a
