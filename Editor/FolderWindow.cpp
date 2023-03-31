@@ -1039,7 +1039,9 @@ namespace ToolKit
       
       ImGui::BeginChild("##Folders", ImVec2(m_maxTreeNodeWidth, 0.0f), true);
       
-      m_maxTreeNodeWidth = 160.0f; // reset tree node default size
+      // reset tree node default size
+      m_maxTreeNodeWidth = 160.0f; 
+      // draw tree of folders
       DrawTreeRec(0, 0.0f);
 
       ImGui::EndChild();
