@@ -560,10 +560,19 @@ namespace ToolKit
         {
           ImGui::Separator();
           
-          if (ImGui::MenuItem("Dark Theme")) { DarkTheme(); }
-          if (ImGui::MenuItem("Grey Theme")) { GreyTheme(); }
-          if (ImGui::MenuItem("Light Theme")) { LightTheme(); }
-          
+          if (ImGui::MenuItem("Dark Theme"))  
+          {
+            DarkTheme();
+          }
+          if (ImGui::MenuItem("Grey Theme"))  
+          {
+            GreyTheme();
+          }
+          if (ImGui::MenuItem("Light Theme")) 
+          {
+            LightTheme();
+          }
+
           ImGui::EndMenu();
         }
 
