@@ -108,7 +108,17 @@ namespace ToolKit
         RenderJob& rj     = newJobs[i];
         rj.Entity         = ntt;
         rj.WorldTransform = transform;
-        rj.BoundingBox    = allMeshes[i]->m_aabb;
+
+        if (AABBOverrideComponentPtr bbOverride =
+                ntt->GetComponent<AABBOverrideComponent>())
+        {
+          rj.BoundingBox = std::move(bbOverride->GetAABB());
+        }
+        else 
+        {
+          rj.BoundingBox = allMeshes[i]->m_aabb;
+        }
+
         TransformAABB(rj.BoundingBox, transform);
 
         rj.ShadowCaster = mc->GetCastShadowVal();
