@@ -935,15 +935,15 @@ namespace ToolKit
     {
       m_folderNodes.clear();
       CreateTreeRec(-1, DefaultPath());
-      m_resourcesTreeIndex = m_folderNodes.size();
-      CreateTreeRec(m_folderNodes.size() - 1, ResourcePath());
+      m_resourcesTreeIndex = (int)m_folderNodes.size();
+      CreateTreeRec(int(m_folderNodes.size() - 1), ResourcePath());
     }
 
     // parent will start with -1
     int FolderWindow::CreateTreeRec(int parent, const std::filesystem::path& path)
     {
       String folderName = path.filename().u8string();
-      int index = m_folderNodes.size();
+      int index = (int)m_folderNodes.size();
       m_folderNodes.emplace_back(index, path.u8string(), folderName);
 
       for (const std::filesystem::directory_entry& directory 

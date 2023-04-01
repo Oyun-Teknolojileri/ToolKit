@@ -230,7 +230,7 @@ namespace ToolKit
 
           for (Entity* e : roots)
           {
-            ShowNode(e, 0.0f);
+            ShowNode(e, 0);
           }
 
           ImGui::TreePop();
