@@ -128,8 +128,8 @@
 #define ICON_FA_CHEVRON_DOWN                        "\xef\x81\xb8" // U+f078
 #define ICON_FA_RETWEET                             "\xef\x81\xb9" // U+f079
 #define ICON_FA_SHOPPING_CART                       "\xef\x81\xba" // U+f07a
-#define ICON_FA_FOLDER                              "\xef\x81\xbb" // U+f07b
-#define ICON_FA_FOLDER_OPEN                         "\xef\x81\xbc" // U+f07c
+#define ICON_FA_FOLDER_A                            "\xef\x81\xbb" // U+f07b
+#define ICON_FA_FOLDER_OPEN_A                       "\xef\x81\xbc" // U+f07c
 #define ICON_FA_ARROWS_V                            "\xef\x81\xbd" // U+f07d
 #define ICON_FA_ARROWS_H                            "\xef\x81\xbe" // U+f07e
 #define ICON_FA_BAR_CHART                           "\xef\x82\x80" // U+f080
@@ -260,8 +260,8 @@
 #define ICON_FA_CIRCLE                              "\xef\x84\x91" // U+f111
 #define ICON_FA_REPLY                               "\xef\x84\x92" // U+f112
 #define ICON_FA_GITHUB_ALT                          "\xef\x84\x93" // U+f113
-#define ICON_FA_FOLDER                              "\xef\x84\x94" // U+f114
-#define ICON_FA_FOLDER_OPEN                         "\xef\x84\x95" // U+f115
+#define ICON_FA_FOLDER_B                            "\xef\x84\x94" // U+f114
+#define ICON_FA_FOLDER_OPEN_B                       "\xef\x84\x95" // U+f115
 #define ICON_FA_SMILE_O                             "\xef\x84\x98" // U+f118
 #define ICON_FA_FROWN_O                             "\xef\x84\x99" // U+f119
 #define ICON_FA_MEH_O                               "\xef\x84\x9a" // U+f11a

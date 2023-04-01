@@ -965,7 +965,7 @@ namespace ToolKit
     {
       if (index == -1) return; // shouldn't happen
       FolderNode& node    = m_folderNodes[index];
-      String icon         = node.active ? ICON_FA_FOLDER_OPEN : ICON_FA_FOLDER;
+      String icon         = node.active ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
       String nodeHeader   = icon + ICON_SPACE + node.name;
       float headerLen     = ImGui::CalcTextSize(nodeHeader.c_str()).x; 
       headerLen          += (depth * 20.0f) + 90.0f; // depth padding + UI start padding
