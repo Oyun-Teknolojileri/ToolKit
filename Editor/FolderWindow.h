@@ -120,6 +120,7 @@ namespace ToolKit
       void DeactivateNode(const String& name);
       int CreateTreeRec(int parent, const std::filesystem::path& path);
       void DrawTreeRec(int index, float depth);
+      void Iterate(const String& path, bool clear, bool addEngine = true);
 
      private:
       struct ViewSettings
@@ -152,7 +153,6 @@ namespace ToolKit
       int m_activeFolder   = -1;
       bool m_showStructure = true;
       int m_resourcesTreeIndex = 0;
-      void Iterate(const String& path, bool clear, bool addEngine = true);
     };
 
   } // namespace Editor

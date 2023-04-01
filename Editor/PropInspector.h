@@ -43,6 +43,7 @@ namespace ToolKit
       Entity* m_entity     = nullptr;
       int m_viewID         = 0;
       TexturePtr m_viewIcn = nullptr;
+      StringView m_fontIcon;
       const StringView m_viewName;
     };
 

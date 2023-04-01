@@ -5,6 +5,7 @@
 #include "CustomDataView.h"
 #include "Global.h"
 #include "PrefabView.h"
+#include "IconsFontAwesome.h"
 
 #include <Prefab.h>
 
@@ -19,6 +20,7 @@ namespace ToolKit
     {
       m_viewID  = 2;
       m_viewIcn = UI::m_prefabIcn;
+      m_fontIcon = ICON_FA_CUBES;
     }
 
     PrefabView::~PrefabView() {}
