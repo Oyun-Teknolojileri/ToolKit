@@ -109,6 +109,7 @@ namespace ToolKit
       bool GetFileEntry(const String& fullPath, DirectoryEntry& entry);
       void AddEntry(const FolderView& view);
       void SetViewsDirty();
+      void ReconstructFolderTree();
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
@@ -133,14 +134,12 @@ namespace ToolKit
         String path = "undefined";
         String name = "undefined";
         std::vector<int> childs;
-        int parentIndex = -1;
         int index       = -1;
         bool active = false;
 
         FolderNode() {}
-        FolderNode(int prntIdx, int idx, String p, String n)
-            : path(std::move(p)), name(std::move(n)), parentIndex(prntIdx),
-              index(idx)
+        FolderNode(int idx, String p, String n)
+        : index(idx), path(std::move(p)), name(std::move(n))
         {
         }
       };
@@ -152,6 +151,7 @@ namespace ToolKit
 
       int m_activeFolder   = -1;
       bool m_showStructure = true;
+      int m_resourcesTreeIndex = 0;
       void Iterate(const String& path, bool clear, bool addEngine = true);
     };
 

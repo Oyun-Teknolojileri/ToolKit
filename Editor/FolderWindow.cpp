@@ -511,7 +511,7 @@ namespace ToolKit
         return list;
       };
 
-      auto deleteDirFn = [this, getSameViewsFn](const String& path,
+      auto deleteDirFn = [getSameViewsFn](const String& path,
                                                 FolderView* thisView) -> void
       {
         std::error_code ec;
@@ -553,7 +553,7 @@ namespace ToolKit
 
       // Refresh.
       m_itemActions["Refresh"] = [getSameViewsFn](DirectoryEntry* entry,
-                                                  FolderView* thisView) -> void
+                                        FolderView* thisView) -> void
       {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
@@ -569,11 +569,13 @@ namespace ToolKit
           }
           ImGui::CloseCurrentPopup();
         }
+        thisView->m_parent->ReconstructFolderTree();
       };
 
       // FileSystem/MakeDir.
-      m_itemActions["FileSystem/MakeDir"] =
-          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      m_itemActions["FileSystem/MakeDir"] = [getSameViewsFn]
+                                            (DirectoryEntry* entry,
+                                                 FolderView* thisView) -> void
       {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
@@ -599,6 +601,7 @@ namespace ToolKit
               view->m_dirty = true;
             }
           };
+          thisView->m_parent->ReconstructFolderTree();
           ImGui::CloseCurrentPopup();
         }
       };
@@ -670,6 +673,7 @@ namespace ToolKit
           if (entry->m_isDirectory)
           {
             deleteDirFn(entry->GetFullPath(), thisView);
+            thisView->m_parent->ReconstructFolderTree();
           }
           else
           {
@@ -684,6 +688,7 @@ namespace ToolKit
               view->m_dirty = true;
             }
           }
+          thisView->m_parent->ReconstructFolderTree();
 
           ImGui::CloseCurrentPopup();
         }
@@ -691,7 +696,8 @@ namespace ToolKit
 
       // FileSystem/Copy.
       m_itemActions["FileSystem/Duplicate"] =
-          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+          [getSameViewsFn](DirectoryEntry* entry,
+                                 FolderView* thisView) -> void
       {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
@@ -704,6 +710,7 @@ namespace ToolKit
           String fullPath = entry->GetFullPath();
           String cpyPath  = CreateCopyFileFullPath(fullPath);
           std::filesystem::copy(fullPath, cpyPath);
+          thisView->m_parent->ReconstructFolderTree();
 
           for (FolderView* view : views)
           {
@@ -736,7 +743,7 @@ namespace ToolKit
       };
 
       m_itemActions["FileSystem/Paste"] =
-          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+           [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
       {
         if (ImGui::MenuItem("Paste"))
         {
@@ -746,7 +753,7 @@ namespace ToolKit
             String dst = ConcatPaths(
                 {thisView->m_path,
                  m_currentEntry->m_fileName + m_currentEntry->m_ext});
-
+          
             if (m_currentEntry->m_cutting)
             {
               // move file to its new position
@@ -768,6 +775,7 @@ namespace ToolKit
             {
               window->SetViewsDirty();
             }
+            thisView->m_parent->ReconstructFolderTree();
           }
           ImGui::CloseCurrentPopup();
         }
@@ -809,6 +817,7 @@ namespace ToolKit
               }
             }
           };
+          thisView->m_parent->ReconstructFolderTree();
           ImGui::CloseCurrentPopup();
         }
       };
@@ -863,6 +872,7 @@ namespace ToolKit
               man->Manage(mat);
             }
           };
+          thisView->m_parent->ReconstructFolderTree();
           ImGui::CloseCurrentPopup();
         }
       };
@@ -919,17 +929,30 @@ namespace ToolKit
     }
 
     FolderWindow::~FolderWindow() {}
-    
+
+    // destroy old one and create new tree    
+    void FolderWindow::ReconstructFolderTree()
+    {
+      m_folderNodes.clear();
+      CreateTreeRec(-1, DefaultPath());
+      m_resourcesTreeIndex = m_folderNodes.size();
+      CreateTreeRec(m_folderNodes.size() - 1, ResourcePath());
+    }
+
     // parent will start with -1
     int FolderWindow::CreateTreeRec(int parent, const std::filesystem::path& path)
     {
       String folderName = path.filename().u8string();
       int index = m_folderNodes.size();
-      m_folderNodes.emplace_back(parent, index, path.u8string(), folderName);
+      m_folderNodes.emplace_back(index, path.u8string(), folderName);
 
-      for (auto& directory : std::filesystem::directory_iterator(path))
+      for (const std::filesystem::directory_entry& directory 
+          : std::filesystem::directory_iterator(path))
       {
-        if (!directory.is_directory()) continue;
+        if (!directory.is_directory()) 
+        {
+          continue;
+        }
         
         int childIdx = CreateTreeRec(parent + 1, directory.path());
         m_folderNodes[index].childs.push_back(childIdx);
@@ -968,7 +991,7 @@ namespace ToolKit
       String icon         = node.active ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
       String nodeHeader   = icon + ICON_SPACE + node.name;
       float headerLen     = ImGui::CalcTextSize(nodeHeader.c_str()).x; 
-      headerLen          += (depth * 20.0f) + 90.0f; // depth padding + UI start padding
+      headerLen          += (depth * 20.0f) + 70.0f; // depth padding + UI start padding
       m_maxTreeNodeWidth  = glm::max(headerLen, m_maxTreeNodeWidth);
       
       const auto onClickedFn = [&]() -> void
@@ -1043,6 +1066,7 @@ namespace ToolKit
       m_maxTreeNodeWidth = 160.0f; 
       // draw tree of folders
       DrawTreeRec(0, 0.0f);
+      DrawTreeRec(m_resourcesTreeIndex, 0.0f);
 
       ImGui::EndChild();
 
@@ -1089,7 +1113,7 @@ namespace ToolKit
                                    ImGuiWindowFlags_NoScrollbar))
         {
           String currRootPath;
-          auto IsDescendentFn = [&currRootPath](String candidate) -> bool
+          auto IsDescendentFn = [&currRootPath](StringView candidate) -> bool
           {
             return !currRootPath.empty() &&
                    candidate.find(currRootPath) != std::string::npos;
@@ -1127,10 +1151,8 @@ namespace ToolKit
       if (clear)
       {
         m_entries.clear();
+        ReconstructFolderTree();
       }
-      
-      m_folderNodes.clear(); // clear because we will reconstruct
-      CreateTreeRec(-1, DefaultPath());
 
       String resourceRoot = ResourcePath();
       char pathSep        = GetPathSeparator();
