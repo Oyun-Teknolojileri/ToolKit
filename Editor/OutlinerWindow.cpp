@@ -403,8 +403,10 @@ namespace ToolKit
       DrawRowBackground(depth);
 
       const String sId = "##" + std::to_string(ntt->GetIdVal());
-
+      // blue highlight for tree node on mouse hover
+      ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.4f, 0.5f, 0.8f, 1.0f)); 
       bool isOpen      = ImGui::TreeNodeEx(sId.c_str(), flags);
+      ImGui::PopStyleColor(); 
 
       if (ImGui::BeginPopupContextItem())
       {
