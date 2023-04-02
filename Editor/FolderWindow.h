@@ -74,7 +74,7 @@ namespace ToolKit
       Vec2 m_iconSize        = Vec2(50.0f);
       std::vector<DirectoryEntry> m_entries;
       String m_folder;
-      // for cut, copy and paste
+      //!< for cut,copy and paste. static because its same in between all views
       static DirectoryEntry* m_currentEntry;
 
      private:

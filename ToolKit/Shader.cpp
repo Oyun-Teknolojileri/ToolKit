@@ -1,9 +1,9 @@
 #include "Shader.h"
 
-#include "gles2.h"
 #include "TKAssert.h"
 #include "ToolKit.h"
 #include "Util.h"
+#include "gles2.h"
 #include "rapidxml.hpp"
 #include "rapidxml_print.hpp"
 #include "rapidxml_utils.hpp"
@@ -281,6 +281,8 @@ namespace ToolKit
           case Uniform::UNUSEDSLOT_1:
           case Uniform::UNUSEDSLOT_2:
           case Uniform::UNUSEDSLOT_3:
+          case Uniform::UNUSEDSLOT_4:
+          case Uniform::UNUSEDSLOT_5:
             isUniformFound = true;
             continue;
           }

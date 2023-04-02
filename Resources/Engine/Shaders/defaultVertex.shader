@@ -1,10 +1,10 @@
 <shader>
 	<type name = "vertexShader" />
-   <include name = "skinning.shader" />
+    <include name = "skinning.shader" />
 	<uniform name = "ProjectViewModel" />
 	<uniform name = "InverseTransModel" />
 	<uniform name = "Model" />
-   <uniform name = "normalMapInUse" />
+    <uniform name = "normalMapInUse" />
 	<source>
 	<!--
       #version 300 es

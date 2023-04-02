@@ -108,7 +108,17 @@ namespace ToolKit
         RenderJob& rj     = newJobs[i];
         rj.Entity         = ntt;
         rj.WorldTransform = transform;
-        rj.BoundingBox    = allMeshes[i]->m_aabb;
+
+        if (AABBOverrideComponentPtr bbOverride =
+                ntt->GetComponent<AABBOverrideComponent>())
+        {
+          rj.BoundingBox = std::move(bbOverride->GetAABB());
+        }
+        else
+        {
+          rj.BoundingBox = allMeshes[i]->m_aabb;
+        }
+
         TransformAABB(rj.BoundingBox, transform);
 
         rj.ShadowCaster = mc->GetCastShadowVal();
@@ -359,7 +369,7 @@ namespace ToolKit
       BoundingBox bestBox;
       for (const EnvironmentComponentPtr& volume : environments)
       {
-        if (volume->GetIlluminateVal() == false) 
+        if (volume->GetIlluminateVal() == false)
         {
           continue;
         }
@@ -377,6 +387,44 @@ namespace ToolKit
         }
       }
     }
+  }
+
+  void RenderJobProcessor::CalculateStdev(const RenderJobArray& rjVec,
+                                          float& stdev,
+                                          Vec3& mean)
+  {
+    int n = (int) rjVec.size();
+
+    // Calculate mean position
+    Vec3 sum(0.0f);
+    for (int i = 0; i < n; i++)
+    {
+      Vec3 pos = rjVec[i].WorldTransform[3].xyz;
+      sum      += pos;
+    }
+    mean      = sum / (float) n;
+
+    // Calculate standard deviation of position
+    float ssd = 0.0f;
+    for (int i = 0; i < n; i++)
+    {
+      Vec3 pos  = rjVec[i].WorldTransform[3].xyz;
+      Vec3 diff = pos - mean;
+      ssd       += glm::dot(diff, diff);
+    }
+    stdev = std::sqrt(ssd / (float) n);
+  }
+
+  bool RenderJobProcessor::IsOutlier(const RenderJob& rj,
+                                     float sigma,
+                                     const float stdev,
+                                     const Vec3& mean)
+  {
+    Vec3 pos   = rj.WorldTransform[3].xyz;
+    Vec3 diff  = pos - mean;
+    float dist = glm::length(diff) / stdev;
+
+    return (dist > sigma);
   }
 
 } // namespace ToolKit
