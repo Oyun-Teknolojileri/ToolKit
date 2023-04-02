@@ -19,6 +19,14 @@
 namespace ToolKit
 {
 
+  struct BlendTarget
+  {
+    Animation* targetAnim = nullptr; //!< Animation to Blend.
+    float offset = 1.0f;             //!< How early animation will start blending.
+    float blendCoeff = 0.5f;         //!< Blend coefficent for target anim.
+    bool m_blend = false;
+  };
+
   /**
    * A transformation key that is part of an Animation resource.
    */
@@ -74,7 +82,7 @@ namespace ToolKit
      * @param skeleton SkeletonPtr to be transformed.
      *
      */
-    void GetPose(const SkeletonComponentPtr& skeleton, float time, BlendTarget* blendTarget);
+    void GetPose(const SkeletonComponentPtr& skeleton, float time, const BlendTarget& blendTarget);
 
     /**
      * Sets the Node's transform from the animation based on frame.
@@ -142,14 +150,6 @@ namespace ToolKit
     bool CanStore(ResourceType t) override;
     ResourcePtr CreateLocal(ResourceType type) override;
   };
-   
-  class TK_API BlendTarget
-  {
-   public:
-    Animation* targetAnim;   //!< Animation to Blend.
-    float offset;              //!< How early animation will start blending.
-    float blendCoeff = 0.5f; //!< Blend coefficent for target anim.
-  };
 
   /**
    * The class that represents the current state of the animation such as its
@@ -179,7 +179,7 @@ namespace ToolKit
     float m_timeMultiplier = 1.0f;  //!< Speed multiplier for animation.
     AnimationPtr m_animation;    //!< Animimation to play.
     Entity* m_entity;
-    BlendTarget* m_blendTarget = nullptr;
+    BlendTarget m_blendTarget;
 
     /**
      * Enums that represent's the current state of the Animation in the
@@ -241,5 +241,4 @@ namespace ToolKit
     // Storage for the AnimRecord objects.
     AnimRecordRawPtrArray m_records;
   };
-
 } // namespace ToolKit

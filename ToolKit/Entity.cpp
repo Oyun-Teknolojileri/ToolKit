@@ -38,7 +38,7 @@ namespace ToolKit
 
   EntityType Entity::GetType() const { return EntityType::Entity_Base; }
 
-  void Entity::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
+  void Entity::SetPose(const AnimationPtr& anim, float time, const BlendTarget& blendTarget)
   {
     MeshComponentPtr meshComp = GetMeshComponent();
     if (meshComp)

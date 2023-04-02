@@ -22,7 +22,7 @@ namespace ToolKit
 
   EntityType Drawable::GetType() const { return EntityType::Entity_Drawable; }
 
-  void Drawable::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
+  void Drawable::SetPose(const AnimationPtr& anim, float time, const BlendTarget& blendTarget)
   {
     Entity::SetPose(anim, time, blendTarget);
   }

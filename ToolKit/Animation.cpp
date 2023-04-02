@@ -57,7 +57,7 @@ namespace ToolKit
     node->SetChildrenDirty();
   }
 
-  void Animation::GetPose(const SkeletonComponentPtr& skeleton, float time, BlendTarget* blendTarget)
+  void Animation::GetPose(const SkeletonComponentPtr& skeleton, float time, const BlendTarget& blendTarget)
   {
     if (m_keys.empty())
     {
@@ -100,26 +100,24 @@ namespace ToolKit
       orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
       scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
 
-      if (blendTarget != nullptr)
+      if (blendTarget.m_blend)
       {
-        float targetAnimTime = time - m_duration + blendTarget->offset;
+        float targetAnimTime = time - m_duration + blendTarget.offset;
         if (targetAnimTime >= 0.0f)
         {
-          auto targetEntry = blendTarget->targetAnim->m_keys.find(dBoneIter.first);
+          auto targetEntry = blendTarget.targetAnim->m_keys.find(dBoneIter.first);
           int targetKey1, targetKey2;
           float targetRatio;
-          blendTarget->targetAnim->GetNearestKeys(targetEntry->second, targetKey1, targetKey2, targetRatio, targetAnimTime);
-
+          blendTarget.targetAnim->GetNearestKeys(targetEntry->second, targetKey1, targetKey2, targetRatio, targetAnimTime);
           Key targetK1 = targetEntry->second[targetKey1];
           Key targetK2 = targetEntry->second[targetKey2];
           
-          Vec3 translationT = Interpolate(k1.m_position, k2.m_position, targetRatio);
-          Quaternion orientationT = glm::slerp(k1.m_rotation, k2.m_rotation, targetRatio);
-          Vec3 scaleT = Interpolate(k1.m_scale, k2.m_scale, targetRatio);
-          
-          translation = Interpolate(translation, translationT, blendTarget->blendCoeff);
-          orientation = glm::slerp(orientation, orientationT, blendTarget->blendCoeff);
-          scale = Interpolate(scale, scaleT, blendTarget->blendCoeff);
+          Vec3 translationT = Interpolate(targetK1.m_position, targetK2.m_position, targetRatio);
+          Quaternion orientationT = glm::slerp(targetK1.m_rotation, targetK2.m_rotation, targetRatio);
+          Vec3 scaleT = Interpolate(targetK1.m_scale, targetK2.m_scale, targetRatio);
+          translation = Interpolate(translation, translationT, blendTarget.blendCoeff);
+          orientation = glm::slerp(orientation, orientationT, blendTarget.blendCoeff);
+          scale = Interpolate(scale, scaleT, blendTarget.blendCoeff);
         }
       }
 
