@@ -89,6 +89,27 @@ namespace ToolKit
     static void AssignEnvironment(
         RenderJobArray& jobArray,
         const EnvironmentComponentPtrArray& environments);
+
+    /**
+     * Calculates the standard deviation and mean of the given RenderJobArray
+     * based on world position of the RenderJobs.
+     * @param rjVec is array containing jobs.
+     * @param stdev is the output of calculated standard deviation.
+     * @param mean is the calculated mean position.
+     */
+    static void CalculateStdev(const RenderJobArray& rjVec,
+                               float& stdev,
+                               Vec3& mean);
+
+    /**
+     * Decides if the given RenderJob is an outlier based on its world position.
+     * @param rj is the RenderJob to decide if its outlier.
+     * @param sigma is the threshold sigma to accept as outlier or not.
+     */
+    static bool IsOutlier(const RenderJob& rj,
+                          float sigma,
+                          const float stdev,
+                          const Vec3& mean);
   };
 
   /*

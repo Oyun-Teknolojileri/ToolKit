@@ -9,19 +9,19 @@
 #include "Gizmo.h"
 #include "Global.h"
 #include "Grid.h"
+#include "LeftBar.h"
 #include "Mod.h"
 #include "Node.h"
+#include "OverlayLighting.h"
 #include "OverlayUI.h"
 #include "PopupWindows.h"
 #include "Prefab.h"
 #include "Primative.h"
 #include "Renderer.h"
 #include "SDL.h"
-#include "Util.h"
-#include "TopBar.h"
 #include "StatusBar.h"
-#include "LeftBar.h"
-#include "OverlayLighting.h"
+#include "TopBar.h"
+#include "Util.h"
 
 #include <algorithm>
 #include <execution>
@@ -176,12 +176,9 @@ namespace ToolKit
       WriteAttr(node,
                 doc,
                 "alignment",
-                std::to_string(static_cast<int>(m_cameraAlignment)));
+                std::to_string((int) m_cameraAlignment));
 
-      WriteAttr(node,
-                doc,
-                "lock",
-                std::to_string(static_cast<int>(m_orbitLock)));
+      WriteAttr(node, doc, "lock", std::to_string((int) m_orbitLock));
       GetCamera()->Serialize(doc, node);
 
       XmlNode* wnd = parent->last_node();
@@ -195,13 +192,16 @@ namespace ToolKit
 
       if (XmlNode* node = parent->first_node("Viewport"))
       {
-        ReadAttr(node,
-                 "alignment",
-                 *(reinterpret_cast<int*>(&m_cameraAlignment)));
+        ReadAttr(node, "alignment", *((int*) (&m_cameraAlignment)));
         ReadAttr(node, "lock", m_orbitLock);
         Camera* viewCam = new Camera();
         viewCam->DeSerialize(nullptr, node->first_node("E"));
-        viewCam->SetLens(glm::quarter_pi<float>(), viewCam->Aspect());
+
+        // Reset aspect.
+        if (!viewCam->IsOrtographic())
+        {
+          viewCam->SetLens(glm::quarter_pi<float>(), viewCam->Aspect());
+        }
 
         SetCamera(viewCam);
       }
@@ -280,9 +280,9 @@ namespace ToolKit
       }
 
       m_lastMousePosRelContentArea.x =
-          static_cast<int>(absMousePos.x - m_contentAreaMin.x);
+          (int) (absMousePos.x - m_contentAreaMin.x);
       m_lastMousePosRelContentArea.y =
-          static_cast<int>(absMousePos.y - m_contentAreaMin.y);
+          (int) (absMousePos.y - m_contentAreaMin.y);
     }
 
     void EditorViewport::UpdateWindow()
