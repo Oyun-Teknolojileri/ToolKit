@@ -551,6 +551,79 @@ namespace ToolKit
       BoolCheck(tagArgs, &g_app->m_selectEffectingLights);
     }
 
+    void CheckSceneHealth(TagArgArray tagArgs)
+    {
+      bool fix = false;
+      BoolCheck(tagArgs, &fix);
+
+      // Find all outliers and inf bounding boxes.
+      int problemsFound = 0;
+      if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
+      {
+        auto fixProblemFn = [&problemsFound, scene, fix](Entity* ntt,
+                                                         StringView msg) -> void
+        {
+          problemsFound++;
+
+          String en = ntt->GetNameVal();
+          ULongID id = ntt->GetIdVal();
+          GetLogger()->WriteConsole(LogType::Warning,
+                                    msg.data(),
+                                    en.c_str(),
+                                    id);
+
+          if (fix)
+          {
+            ActionManager::GetInstance()->AddAction(new DeleteAction(ntt));
+          }
+        };
+
+        // Checks for invalid bb & outlier.
+        RenderJobArray jobs;
+        RenderJobProcessor::CreateRenderJobs(scene->AccessEntityArray(), jobs);
+
+        float stdev;
+        Vec3 mean;
+        RenderJobProcessor::CalculateStdev(jobs, stdev, mean);
+
+        // We may want to redo deleted entities.
+        if (fix)
+        {
+          ActionManager::GetInstance()->BeginActionGroup();
+        }
+
+        for (RenderJob& job : jobs)
+        {
+          if (RenderJobProcessor::IsOutlier(job, 3.0f, stdev, mean))
+          {
+            fixProblemFn(job.Entity, "Entity: %s ID: %llu is an outlier.");
+          }
+
+          if (!job.BoundingBox.IsValid())
+          {
+            fixProblemFn(job.Entity,
+                         "Entity: %s ID: %llu has invalid bounding box.");
+          }
+        }
+
+        if (fix)
+        {
+          ActionManager::GetInstance()->GroupLastActions(problemsFound);
+        }
+
+        if (problemsFound == 0)
+        {
+          GetLogger()->WriteConsole(LogType::Memo, "No problems found.");
+        }
+        else
+        {
+          GetLogger()->WriteConsole(LogType::Memo,
+                                    "%d problems found.",
+                                    problemsFound);
+        }
+      }
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2)
     {
@@ -612,6 +685,7 @@ namespace ToolKit
       CreateCommand(g_loadPlugin, LoadPlugin);
       CreateCommand(g_showShadowFrustum, ShowShadowFrustum);
       CreateCommand(g_selectEffectingLights, SelectAllEffectingLights);
+      CreateCommand(g_checkSceneHealth, CheckSceneHealth);
     }
 
     ConsoleWindow::~ConsoleWindow() {}

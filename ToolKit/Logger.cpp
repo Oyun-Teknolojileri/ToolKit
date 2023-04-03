@@ -27,32 +27,40 @@ namespace ToolKit
     m_platfromConsoleFn = fn;
   }
 
-  void OutputUtil(ConsoleOutputFn logFn, LogType logType, const char* msg, ...)
+  void OutputUtil(ConsoleOutputFn logFn,
+                  LogType logType,
+                  const char* msg,
+                  va_list args)
   {
     if (logFn == nullptr)
     {
       return;
     }
 
-    va_list args;
-    va_start(args, msg);
-
     static char buff[2048];
     vsprintf(buff, msg, args);
 
     logFn(logType, String(buff));
-
-    va_end(args);
   }
 
   void Logger::WriteConsole(LogType logType, const char* msg, ...)
   {
-    OutputUtil(m_writeConsoleFn, logType, msg);
+    va_list args;
+    va_start(args, msg);
+
+    OutputUtil(m_writeConsoleFn, logType, msg, args);
+
+    va_end(args);
   }
 
   void Logger::WritePlatformConsole(LogType logType, const char* msg, ...)
   {
-    OutputUtil(m_platfromConsoleFn, logType, msg);
+    va_list args;
+    va_start(args, msg);
+
+    OutputUtil(m_platfromConsoleFn, logType, msg, args);
+
+    va_end(args);
   }
 
 } // namespace ToolKit

@@ -118,6 +118,8 @@ namespace ToolKit
 
     void EditorCamera::ParameterConstructor()
     {
+      Camera::ParameterEventConstructor();
+
       Poses_Define(
           [this]() -> void
           {
