@@ -267,7 +267,13 @@ namespace ToolKit
     if (entity)
     {
       bool isUnique = GetEntity(entity->GetIdVal()) == nullptr;
-      assert(isUnique);
+      bool isPrefab = entity->GetType() == EntityType::Entity_Prefab;
+      // if prefab do not assert, because its automatically added
+      // (will not be unique sometimes)
+      if (!isPrefab) 
+      {
+        assert(isUnique);
+      }
       if (isUnique)
       {
         m_entities.push_back(entity);

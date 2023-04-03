@@ -39,6 +39,7 @@ namespace ToolKit
       if (m_linked) 
       {
         m_linked = false;
+        m_currentScene->RemoveEntity(this->GetIdVal());
         m_currentScene->RemoveEntity(m_instanceEntities);
       }
     }
@@ -50,6 +51,7 @@ namespace ToolKit
     if (!m_linked) 
     {
       m_linked = true;
+      m_currentScene->AddEntity(this);
       for (Entity* child : m_instanceEntities)
       {
         m_currentScene->AddEntity(child);
