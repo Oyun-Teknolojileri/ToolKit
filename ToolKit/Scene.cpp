@@ -267,13 +267,7 @@ namespace ToolKit
     if (entity)
     {
       bool isUnique = GetEntity(entity->GetIdVal()) == nullptr;
-      bool isPrefab = entity->GetType() == EntityType::Entity_Prefab;
-      // if prefab do not assert, because its automatically added
-      // (will not be unique sometimes)
-      if (!isPrefab) 
-      {
-        assert(isUnique);
-      }
+      assert(isUnique);
       if (isUnique)
       {
         m_entities.push_back(entity);
@@ -314,7 +308,7 @@ namespace ToolKit
       {
         removed = m_entities[i];
         m_entities.erase(m_entities.begin() + i);
-        removed->m_node->OrphanSelf();
+        // removed->m_node->OrphanSelf();
         if (deep)
         {
           RemoveChildren(removed);
@@ -454,6 +448,7 @@ namespace ToolKit
     prefab->SetPrefabPathVal(path);
     prefab->Init(this);
     prefab->Link();
+    AddEntity(prefab);
   }
 
   EnvironmentComponentPtrArray Scene::GetEnvironmentVolumes()
