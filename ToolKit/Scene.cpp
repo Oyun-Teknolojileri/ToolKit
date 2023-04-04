@@ -308,7 +308,13 @@ namespace ToolKit
       {
         removed = m_entities[i];
         m_entities.erase(m_entities.begin() + i);
-        // removed->m_node->OrphanSelf();
+        
+        // Keep hierarchy if its prefab.
+        if (removed->GetPrefabRoot() == nullptr)
+        {
+          removed->m_node->OrphanSelf();
+        }
+
         if (deep)
         {
           RemoveChildren(removed);

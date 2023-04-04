@@ -72,6 +72,7 @@ namespace ToolKit
       {
         if (Entity* pEntt = currScene->GetEntity(m_parentId))
         {
+          m_ntt->m_node->OrphanSelf();
           pEntt->m_node->AddChild(m_ntt->m_node);
         }
       }
