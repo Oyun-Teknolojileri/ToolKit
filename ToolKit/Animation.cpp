@@ -100,11 +100,13 @@ namespace ToolKit
       orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
       scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
 
-      if (blendTarget.m_blend)
+      if (blendTarget.blend)
       {
-        float targetAnimTime = time - m_duration + blendTarget.offset;
+        float targetAnimTime = time - m_duration + blendTarget.overlapTime;
         if (targetAnimTime >= 0.0f)
         {
+          float blendRatio = targetAnimTime / blendTarget.overlapTime;
+          GetLogger()->WriteConsole(LogType::Memo, "Ratio: %f", blendRatio);
           auto targetEntry = blendTarget.targetAnim->m_keys.find(dBoneIter.first);
           int targetKey1, targetKey2;
           float targetRatio;
@@ -115,9 +117,9 @@ namespace ToolKit
           Vec3 translationT = Interpolate(targetK1.m_position, targetK2.m_position, targetRatio);
           Quaternion orientationT = glm::slerp(targetK1.m_rotation, targetK2.m_rotation, targetRatio);
           Vec3 scaleT = Interpolate(targetK1.m_scale, targetK2.m_scale, targetRatio);
-          translation = Interpolate(translation, translationT, blendTarget.blendCoeff);
-          orientation = glm::slerp(orientation, orientationT, blendTarget.blendCoeff);
-          scale = Interpolate(scale, scaleT, blendTarget.blendCoeff);
+          translation = Interpolate(translation, translationT, blendRatio);
+          orientation = glm::slerp(orientation, orientationT, blendRatio);
+          scale = Interpolate(scale, scaleT, blendRatio);
         }
       }
 

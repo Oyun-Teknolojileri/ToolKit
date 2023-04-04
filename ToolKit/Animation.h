@@ -22,9 +22,9 @@ namespace ToolKit
   struct BlendTarget
   {
     Animation* targetAnim = nullptr; //!< Animation to Blend.
-    float offset = 1.0f;             //!< How early animation will start blending.
+    float overlapTime = 1.0f;        //!< How early animation will start blending.
     float blendCoeff = 0.5f;         //!< Blend coefficent for target anim.
-    bool m_blend = false;
+    bool blend = false;
   };
 
   /**
