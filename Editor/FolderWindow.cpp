@@ -1018,7 +1018,7 @@ namespace ToolKit
       {
         nodeFlags |=
             ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-        if (ImGui::TreeNodeEx(nodeHeader.c_str(), nodeFlags))
+        if (ImGui::TreeNodeEx((void*)index, nodeFlags, nodeHeader.c_str()))
         {
           if (ImGui::IsItemClicked())
           {  
@@ -1028,7 +1028,7 @@ namespace ToolKit
       }
       else
       {
-        if (ImGui::TreeNodeEx(nodeHeader.c_str(), nodeFlags)) 
+        if (ImGui::TreeNodeEx((void*)index, nodeFlags, nodeHeader.c_str())) 
         {
           if (ImGui::IsItemClicked())
           {
