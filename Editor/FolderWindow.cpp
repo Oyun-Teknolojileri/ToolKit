@@ -999,7 +999,8 @@ namespace ToolKit
         // find clicked entry
         int selected = FindEntry(node.name);
 
-        if (selected != -1 && selected != m_activeFolder)
+        if (selected != -1 && selected != m_activeFolder 
+                           && m_activeFolder != -1)
         {
           // set old node active false
           DeactivateNode(m_entries[m_activeFolder].m_folder);
