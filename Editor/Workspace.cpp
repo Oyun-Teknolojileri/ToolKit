@@ -182,7 +182,7 @@ namespace ToolKit
           }
           if (!foundAllRequiredFolders)
           {
-            break;
+            continue;
           }
           std::string dirName = dir.path().filename().u8string();
 

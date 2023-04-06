@@ -106,7 +106,6 @@ namespace ToolKit
         if (targetAnimTime >= 0.0f)
         {
           float blendRatio = targetAnimTime / blendTarget.overlapTime;
-          GetLogger()->WriteConsole(LogType::Memo, "Ratio: %f", blendRatio);
           auto targetEntry = blendTarget.targetAnim->m_keys.find(dBoneIter.first);
           int targetKey1, targetKey2;
           float targetRatio;
