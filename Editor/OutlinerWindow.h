@@ -35,11 +35,6 @@ namespace ToolKit
       void HandleSearch(const EntityRawPtrArray& ntties,
                         const EntityRawPtrArray& roots);
 
-      void SelectNodesRec(class EditorScene* scene,
-                          Entity* ntt,
-                          Entity* target,
-                          int childIdx);
-
       void SelectEntitiesBetweenNodes(class EditorScene* scene,
                                       Entity* a,
                                       Entity* b);

@@ -98,57 +98,6 @@ namespace ToolKit
       return numNodes;
     }
 
-    // this algorithm will walk from down to up and add to selection 
-    void OutlinerWindow::SelectNodesRec(EditorScene* scene,
-                                        Entity* ntt,
-                                        Entity* target,
-                                        int childIdx)
-    {
-      if (m_multiSelectComplated || ntt == nullptr)
-      {
-        return;
-      }
-      
-      bool hasParent = ntt->m_node->m_parent == nullptr;
-
-      if (hasParent == false)
-      {
-        scene->AddToSelection(ntt->GetIdVal(), true);
-        return;
-      }
-
-      Node* parent = ntt->m_node->m_parent;
-      
-      if (childIdx == -1) // unknown?
-      {
-        // find index of the node
-        for (childIdx = 0ull; 
-             childIdx < parent->m_children.size(); 
-           ++childIdx)
-        { 
-          if (parent->m_children[childIdx]->m_entity == ntt)
-          {
-            break;
-          }
-        }
-        // can't we found ourselfs in parent? shouldn't happen.
-        if (childIdx == parent->m_children.size())
-        {
-          assert(false && "child is not exist in parent's array");
-          return;
-        }
-      }
-
-      for (size_t i = 0ull; i <= childIdx; ++i)
-      {
-        scene->AddToSelection(parent->m_children[i]->m_entity->GetIdVal(),
-                              true);
-      }
-
-      // we may want to add childrens of childrens as well but for now just parents
-      SelectNodesRec(scene, parent->m_entity, target, childIdx--);
-    }
-
     void OutlinerWindow::SelectEntitiesBetweenNodes(EditorScene* scene,
                                                     Entity* a, Entity* b)
     {
@@ -157,12 +106,6 @@ namespace ToolKit
         return;
       }
 
-      // todo: selected entities should be siblings or both a and b should be root nodes
-      //       otherwise we may want to detect and early exit from this process(with warning)
-
-      bool bHasParent = b->m_node->m_parent != nullptr;
-      bool aHasParent = a->m_node->m_parent != nullptr;
-
       if (a->m_node->m_parent != b->m_node->m_parent)
       {
         GetLogger()->WriteConsole(LogType::Warning, 
@@ -170,61 +113,50 @@ namespace ToolKit
         return;
       }
 
-      // find locations of a and b on m_roots
-      size_t aIndex = 0ull, bIndex = 0ull;
-      size_t rootIdx = 0ull, foundCnt = 0;
-
-      for (; rootIdx < m_roots.size(); ++rootIdx)
+      size_t i = 0ull;
+      int numFound = 0;
+      // one of the parents null means both of them null,
+      // so we will search in roots
+      if (a->m_node->m_parent == nullptr) 
       {
-        size_t aFound = m_roots[rootIdx] == a;
-        size_t bFound = m_roots[rootIdx] == b;
+        // find locations of a and b on m_roots
+        for (;i < m_roots.size() && numFound != 2; ++i)
+        {
+          numFound += (m_roots[i] == a) + (m_roots[i] == b);
 
-        aIndex = aFound ? rootIdx : aIndex;
-        bIndex = bFound ? rootIdx : bIndex;
-
-        foundCnt += aFound + bFound;
-
-        if (foundCnt == 2) // found both of them?
-        { 
-          Entity* lastOccur = m_roots[rootIdx];
-          if (lastOccur == b)
+          // if we found a or b we will select all of the nodes in bettween them
+          if (numFound >= 1ull)
           {
-            // we want to go from a to b
-            std::swap(a, b);
-            std::swap(aIndex, bIndex);
+            scene->AddToSelection(m_roots[i]->GetIdVal(), true);
           }
-          break;
         }
-      }
-
-      // can't find any of the nodes ? (shouldn't happen)
-      if (rootIdx == m_roots.size() || foundCnt < 2)
-      {
         return;
       }
-      // going upwards and selecting entities
-      // entityA <
-      //         ^
-      // entityB ^
-      while (rootIdx >= bIndex)
-      {
-        scene->AddToSelection(m_roots[rootIdx]->GetIdVal(), true);
-        rootIdx--;
-      }
 
-      // start recursive selecting algorithm
-      // m_multiSelectComplated = false;
-      // SelectNodesRec(scene, a, b, -1);
+      // otherwise this means both of the entities has same parent
+      // so we will select in between childs
+
+      NodePtrArray& children = a->m_node->m_parent->m_children;
+      // find locations of a and b on parents childs
+      for (; i < children.size() && numFound != 2; ++i)
+      {
+        numFound += (children[i] == a->m_node) + (children[i] == b->m_node);
+
+        // if we found a or b we will select all of the nodes in bettween them
+        if (numFound >= 1ull)
+        {
+          scene->AddToSelection(children[i]->m_entity->GetIdVal(), true);
+        }
+      }
     }
 
     void OutlinerWindow::SetItemState(Entity* e)
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
-      bool pressingShift = ImGui::IsKeyDown(ImGuiKey_LeftShift);
 
       if (ImGui::IsItemClicked())
       {
-        if (pressingShift)
+        if (ImGui::IsKeyDown(ImGuiKey_LeftShift))
         {
           if (m_lastClickedEntity != nullptr)
           {
