@@ -124,7 +124,8 @@ namespace ToolKit
     {
       if (IsSelected(id))
       {
-        GetLogger()->WriteConsole(LogType::Error, "%d already selected !", id);
+        GetLogger()->WriteConsole(LogType::Warning, "%d already selected !", id);
+        return;
       }
 
       if (!additive)

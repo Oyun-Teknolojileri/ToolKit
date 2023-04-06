@@ -34,20 +34,39 @@ namespace ToolKit
       void SetItemState(Entity* e);
       void HandleSearch(const EntityRawPtrArray& ntties,
                         const EntityRawPtrArray& roots);
-      bool FindShownEntities(Entity* e, const String& str);
 
-     private:
+      void SelectNodesRec(class EditorScene* scene,
+                          Entity* ntt,
+                          Entity* target,
+                          int childIdx);
+
+      void SelectEntitiesBetweenNodes(class EditorScene* scene,
+                                      Entity* a,
+                                      Entity* b);
+
+      bool FindShownEntities(Entity* e, const String& str);
+     
+    private:
       /**
        * Focus uses this internal array, Show() opens all nodes and sets focus
        * to last ntt in the array.
        */
       EntityRawPtrArray m_nttFocusPath;
       std::unordered_map<Entity*, bool> m_shownEntities;
+      EntityRawPtrArray m_roots;
+      Entity* m_lastClickedEntity = nullptr;
+      Entity* m_rootsParent       = nullptr;
+      /**
+       * Visible from UI
+       */
+      std::unordered_map<Entity*, bool> m_visibleEntites;
+      
       String m_searchString   = "";
       bool m_stringSearchMode = false;
       bool m_searchCaseSens   = true;
       // for even odd pattern
       int odd = 0;
+      bool m_multiSelectComplated = false;
     };
 
   } // namespace Editor

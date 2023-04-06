@@ -98,15 +98,139 @@ namespace ToolKit
       return numNodes;
     }
 
+    // this algorithm will walk from down to up and add to selection 
+    void OutlinerWindow::SelectNodesRec(EditorScene* scene,
+                                        Entity* ntt,
+                                        Entity* target,
+                                        int childIdx)
+    {
+      if (m_multiSelectComplated || ntt == nullptr)
+      {
+        return;
+      }
+      
+      bool hasParent = ntt->m_node->m_parent == nullptr;
+
+      if (hasParent == false)
+      {
+        scene->AddToSelection(ntt->GetIdVal(), true);
+        return;
+      }
+
+      Node* parent = ntt->m_node->m_parent;
+      
+      if (childIdx == -1) // unknown?
+      {
+        // find index of the node
+        for (childIdx = 0ull; 
+             childIdx < parent->m_children.size(); 
+           ++childIdx)
+        { 
+          if (parent->m_children[childIdx]->m_entity == ntt)
+          {
+            break;
+          }
+        }
+        // can't we found ourselfs in parent? shouldn't happen.
+        if (childIdx == parent->m_children.size())
+        {
+          assert(false && "child is not exist in parent's array");
+          return;
+        }
+      }
+
+      for (size_t i = 0ull; i <= childIdx; ++i)
+      {
+        scene->AddToSelection(parent->m_children[i]->m_entity->GetIdVal(),
+                              true);
+      }
+
+      // we may want to add childrens of childrens as well but for now just parents
+      SelectNodesRec(scene, parent->m_entity, target, childIdx--);
+    }
+
+    void OutlinerWindow::SelectEntitiesBetweenNodes(EditorScene* scene,
+                                                    Entity* a, Entity* b)
+    {
+      if (a == b)
+      {
+        return;
+      }
+
+      // todo: selected entities should be siblings or both a and b should be root nodes
+      //       otherwise we may want to detect and early exit from this process(with warning)
+
+      bool bHasParent = b->m_node->m_parent != nullptr;
+      bool aHasParent = a->m_node->m_parent != nullptr;
+
+      if (a->m_node->m_parent != b->m_node->m_parent)
+      {
+        GetLogger()->WriteConsole(LogType::Warning, 
+                                  "selected entities should have same parent!");
+        return;
+      }
+
+      // find locations of a and b on m_roots
+      size_t aIndex = 0ull, bIndex = 0ull;
+      size_t rootIdx = 0ull, foundCnt = 0;
+
+      for (; rootIdx < m_roots.size(); ++rootIdx)
+      {
+        size_t aFound = m_roots[rootIdx] == a;
+        size_t bFound = m_roots[rootIdx] == b;
+
+        aIndex = aFound ? rootIdx : aIndex;
+        bIndex = bFound ? rootIdx : bIndex;
+
+        foundCnt += aFound + bFound;
+
+        if (foundCnt == 2) // found both of them?
+        { 
+          Entity* lastOccur = m_roots[rootIdx];
+          if (lastOccur == b)
+          {
+            // we want to go from a to b
+            std::swap(a, b);
+            std::swap(aIndex, bIndex);
+          }
+          break;
+        }
+      }
+
+      // can't find any of the nodes ? (shouldn't happen)
+      if (rootIdx == m_roots.size() || foundCnt < 2)
+      {
+        return;
+      }
+      // going upwards and selecting entities
+      // entityA <
+      //         ^
+      // entityB ^
+      while (rootIdx >= bIndex)
+      {
+        scene->AddToSelection(m_roots[rootIdx]->GetIdVal(), true);
+        rootIdx--;
+      }
+
+      // start recursive selecting algorithm
+      // m_multiSelectComplated = false;
+      // SelectNodesRec(scene, a, b, -1);
+    }
+
     void OutlinerWindow::SetItemState(Entity* e)
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
+      bool pressingShift = ImGui::IsKeyDown(ImGuiKey_LeftShift);
 
       if (ImGui::IsItemClicked())
       {
-        if (ImGui::GetIO().KeyShift)
+        if (pressingShift)
         {
-          if (currScene->IsSelected(e->GetIdVal()))
+          if (m_lastClickedEntity != nullptr)
+          {
+            SelectEntitiesBetweenNodes(currScene.get(), m_lastClickedEntity, e);
+          }
+          else if (currScene->IsSelected(e->GetIdVal()))
           {
             currScene->RemoveFromSelection(e->GetIdVal());
           }
@@ -124,8 +248,9 @@ namespace ToolKit
                 PropInspector::ViewType::Entity;
           }
         }
+        m_lastClickedEntity = e;
       }
-
+      
       if (ImGui::BeginDragDropSource())
       {
         ImGui::SetDragDropPayload("HierarcyChange", nullptr, 0);
@@ -198,12 +323,12 @@ namespace ToolKit
           if (childNtt != nullptr)
           {
             bool child = FindShownEntities(childNtt, str);
-            children   = child | children;
+            children   = child || children;
           }
         }
       }
 
-      bool result        = self | children;
+      bool result        = self || children;
       m_shownEntities[e] = result;
       return result;
     }
@@ -224,13 +349,14 @@ namespace ToolKit
         if (DrawRootHeader("Scene", 0, flag, UI::m_collectionIcon))
         {
           const EntityRawPtrArray& ntties = currScene->GetEntities();
-          EntityRawPtrArray roots;
-          GetRootEntities(ntties, roots);
-          HandleSearch(ntties, roots);
+          m_roots.clear();
 
-          for (Entity* e : roots)
+          GetRootEntities(ntties, m_roots);
+          HandleSearch(ntties, m_roots);
+
+          for (size_t i = 0; i < m_roots.size(); ++i)
           {
-            ShowNode(e, 0);
+            ShowNode(m_roots[i], 0);
           }
 
           ImGui::TreePop();
@@ -409,6 +535,8 @@ namespace ToolKit
       ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.4f, 0.5f, 0.8f, 1.0f)); 
       bool isOpen      = ImGui::TreeNodeEx(sId.c_str(), flags);
       ImGui::PopStyleColor(2); 
+
+      m_visibleEntites[ntt] = isOpen;
 
       if (ImGui::BeginPopupContextItem())
       {
