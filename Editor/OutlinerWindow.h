@@ -9,7 +9,6 @@ namespace ToolKit
 {
   namespace Editor
   {
-
     class OutlinerWindow : public Window
     {
      public:
@@ -28,8 +27,10 @@ namespace ToolKit
                           TexturePtr icon);
 
       void ShowSearchBar(String& searchString);
-      bool DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags);
-      void ShowNode(Entity* e);
+      bool DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags, int depth);
+      
+      int ShowNode(Entity* e, int depth);
+      void DrawRowBackground(int depth);
       void SetItemState(Entity* e);
       void HandleSearch(const EntityRawPtrArray& ntties,
                         const EntityRawPtrArray& roots);
@@ -45,6 +46,8 @@ namespace ToolKit
       String m_searchString   = "";
       bool m_stringSearchMode = false;
       bool m_searchCaseSens   = true;
+      // for even odd pattern
+      int odd = 0;
     };
 
   } // namespace Editor

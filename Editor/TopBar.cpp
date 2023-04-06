@@ -3,6 +3,7 @@
 #include "App.h"
 #include "EditorCamera.h"
 #include "GradientSky.h"
+#include "IconsFontAwesome.h"
 
 #include "DebugNew.h"
 
@@ -26,31 +27,32 @@ namespace ToolKit
         EditorScenePtr currScene = g_app->GetCurrentScene();
         if (ImGui::BeginMenu("Mesh"))
         {
-          if (ImGui::MenuItem("Plane"))
-          {
-            Quad* plane = new Quad();
-            plane->GetMeshComponent()->Init(false);
-            currScene->AddEntity(plane);
-          }
-          if (ImGui::MenuItem("Cube"))
+          
+          if (ImGui::MenuItem(ICON_FA_CUBE " Cube"))
           {
             Cube* cube = new Cube();
             cube->GetMeshComponent()->Init(false);
             currScene->AddEntity(cube);
           }
-          if (ImGui::MenuItem("Sphere"))
+          if (ImGui::MenuItem(ICON_FA_CIRCLE " Sphere"))
           {
             Sphere* sphere = new Sphere();
             sphere->GetMeshComponent()->Init(false);
             currScene->AddEntity(sphere);
           }
-          if (ImGui::MenuItem("Cone"))
+          if (ImGui::MenuItem("    Cone"))
           {
             Cone* cone = new Cone({1.0f, 1.0f, 30, 30});
             cone->GetMeshComponent()->Init(false);
             currScene->AddEntity(cone);
           }
-          if (ImGui::MenuItem("Monkey"))
+          if (ImGui::MenuItem("    Plane"))
+          {
+            Quad* plane = new Quad();
+            plane->GetMeshComponent()->Init(false);
+            currScene->AddEntity(plane);
+          }
+          if (ImGui::MenuItem("    Monkey"))
           {
             Drawable* suzanne = new Drawable();
             suzanne->SetMesh(
@@ -90,15 +92,15 @@ namespace ToolKit
           currScene->AddEntity(node);
         }
 
-        if (ImGui::MenuItem("Camera"))
+        if (ImGui::MenuItem(ICON_FA_VIDEO_CAMERA " Camera"))
         {
           Entity* node = new EditorCamera();
           currScene->AddEntity(node);
         }
 
-        if (ImGui::BeginMenu("Light"))
+        if (ImGui::BeginMenu(ICON_FA_LIGHTBULB " Light"))
         {
-          if (ImGui::MenuItem("Directional"))
+          if (ImGui::MenuItem(ICON_FA_SUN " Directional"))
           {
             EditorDirectionalLight* light = new EditorDirectionalLight();
             light->Init();
@@ -106,7 +108,7 @@ namespace ToolKit
             currScene->AddEntity(static_cast<Entity*>(light));
           }
 
-          if (ImGui::MenuItem("Point"))
+          if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Point"))
           {
             EditorPointLight* light = new EditorPointLight();
             light->Init();
@@ -114,7 +116,7 @@ namespace ToolKit
             currScene->AddEntity(static_cast<Entity*>(light));
           }
 
-          if (ImGui::MenuItem("Spot"))
+          if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Spot"))
           {
             EditorSpotLight* light = new EditorSpotLight();
             light->Init();
@@ -122,12 +124,12 @@ namespace ToolKit
             currScene->AddEntity(static_cast<Entity*>(light));
           }
 
-          if (ImGui::MenuItem("Sky"))
+          if (ImGui::MenuItem(ICON_FA_CLOUD " Sky"))
           {
             currScene->AddEntity(new Sky());
           }
 
-          if (ImGui::MenuItem("Gradient Sky"))
+          if (ImGui::MenuItem(ICON_FA_SKYATLAS " Gradient Sky"))
           {
             currScene->AddEntity(new GradientSky());
           }
@@ -176,7 +178,13 @@ namespace ToolKit
                                     uint32_t& nextItemIndex)
     {
       ImGui::TableSetColumnIndex(nextItemIndex++);
-      ImGui::Image(Convert2ImGuiTexture(UI::m_worldIcon), ImVec2(20.0f, 20.0f));
+      // Get the current cursor position
+      ImVec2 cursor_pos = ImGui::GetCursorPos();
+      // Set the new cursor position with an offset
+      ImGui::SetCursorPos(ImVec2(cursor_pos.x + 3.0f, cursor_pos.y + 3.0f));
+      ImGui::Text(ICON_FA_GLOBE);
+      // Reset the cursor position to the default value
+      ImGui::SetCursorPos(cursor_pos);
 
       ImGui::TableSetColumnIndex(nextItemIndex++);
       if (ImGui::Button("Add"))
@@ -303,13 +311,15 @@ namespace ToolKit
     {
       bool change = false;
       ImGui::TableSetColumnIndex(nextItemIndex++);
-      ImGui::Image(Convert2ImGuiTexture(UI::m_cameraIcon),
-                   ImVec2(20.0f, 20.0f));
+
+      ImGui::Text(ICON_FA_VIDEO_CAMERA);
 
       ImGui::TableSetColumnIndex(nextItemIndex++);
-      m_owner->m_orbitLock = UI::ToggleButton(UI::m_lockIcon->m_textureId,
-                                              ImVec2(16.0f, 16.0f),
-                                              m_owner->m_orbitLock);
+      m_owner->m_orbitLock =
+          UI::ToggleButton(m_owner->m_orbitLock ? ICON_FA_LOCK : ICON_FA_UNLOCK,
+                           ImVec2(20.0f, 20.0f),
+                           m_owner->m_orbitLock);
+
       UI::HelpMarker(TKLoc + m_owner->m_name,
                      "Lock Camera Alignment\nMiddle button drag doesn't orbit."
                      "\nOnly panning allowed.");

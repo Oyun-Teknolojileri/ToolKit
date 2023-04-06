@@ -41,7 +41,9 @@ namespace ToolKit
       explicit FolderView(FolderWindow* parent);
 
       void Show();
+
       void SetDirty() { m_dirty = true; }
+
       void SetPath(const String& path);
       const String& GetPath() const;
       void Iterate();
@@ -51,6 +53,7 @@ namespace ToolKit
       float GetThumbnailZoomPercent(float thumbnailZoom);
 
      private:
+      void DrawSearchBar();
       void CreateItemActions();
       void MoveTo(const String& dst); // Imgui Drop target.
 
@@ -71,12 +74,12 @@ namespace ToolKit
       Vec2 m_iconSize        = Vec2(50.0f);
       std::vector<DirectoryEntry> m_entries;
       String m_folder;
+      String m_path;
       //!< for cut,copy and paste. static because its same in between all views
       static DirectoryEntry* m_currentEntry;
 
      private:
       FolderWindow* m_parent = nullptr;
-      String m_path;
       bool m_dirty            = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
       String m_filter         = "";
@@ -106,9 +109,18 @@ namespace ToolKit
       bool GetFileEntry(const String& fullPath, DirectoryEntry& entry);
       void AddEntry(const FolderView& view);
       void SetViewsDirty();
+      void ReconstructFolderTree();
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+     private:
+      void ShowFolderTree();
+      int FindEntry(const String& name);
+      void DeactivateNode(const String& name);
+      int CreateTreeRec(int parent, const std::filesystem::path& path);
+      void DrawTreeRec(int index, float depth);
+      void Iterate(const String& path, bool clear, bool addEngine = true);
 
      private:
       struct ViewSettings
@@ -118,12 +130,29 @@ namespace ToolKit
         bool active;
       };
 
+      struct FolderNode
+      {
+        String path = "undefined";
+        String name = "undefined";
+        std::vector<int> childs;
+        int index       = -1;
+        bool active = false;
+
+        FolderNode() {}
+        FolderNode(int idx, String p, String n)
+        : index(idx), path(std::move(p)), name(std::move(n))
+        {
+        }
+      };
+
       std::unordered_map<String, ViewSettings> m_viewSettings;
       std::vector<FolderView> m_entries;
+      std::vector<FolderNode> m_folderNodes;
+      float m_maxTreeNodeWidth = 160.0f;
 
       int m_activeFolder   = -1;
       bool m_showStructure = true;
-      void Iterate(const String& path, bool clear, bool addEngine = true);
+      int m_resourcesTreeIndex = 0;
     };
 
   } // namespace Editor

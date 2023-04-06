@@ -3,9 +3,11 @@
 #include "App.h"
 #include "FolderWindow.h"
 #include "Global.h"
+#include "IconsFontAwesome.h"
 #include "Mod.h"
 #include "UI.h"
 #include "Util.h"
+#include "imgui_internal.h"
 
 #include <Prefab.h>
 
@@ -31,11 +33,35 @@ namespace ToolKit
     ULongID g_parent = NULL_HANDLE;
     std::vector<ULongID> g_child;
 
-    void OutlinerWindow::ShowNode(Entity* e)
+    void DrawTreeNodeLine(int numNodes, ImVec2 rectMin)
+    {
+      const ImColor color  = ImGui::GetColorU32(ImGuiCol_Text);
+      ImDrawList* drawList = ImGui::GetWindowDrawList();
+      ImVec2 cursorPos     = ImGui::GetCursorScreenPos();
+      float item_spacing_y = ImGui::GetStyle().ItemSpacing.y;
+      float line_height    = ImGui::GetTextLineHeight() + item_spacing_y;
+      float halfHeight     = line_height * 0.5f;
+
+      // -11 align line with arrow
+      rectMin.x        = cursorPos.x - 11.0f;
+      rectMin.y       += halfHeight;
+
+      float bottom = rectMin.y + (numNodes * line_height);
+      bottom -= (halfHeight + 1.0f); // move up a little
+
+      drawList->AddLine(rectMin, ImVec2(rectMin.x, bottom), color);
+      // a little bulge at the end of the line
+      drawList->AddLine(ImVec2(rectMin.x, bottom),
+                        ImVec2(rectMin.x + 5.0f, bottom),
+                        color);
+    }
+
+    // returns total drawed nodes
+    int OutlinerWindow::ShowNode(Entity* e, int depth)
     {
       if (!m_shownEntities[e])
       {
-        return;
+        return 0;
       }
 
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
@@ -45,29 +71,31 @@ namespace ToolKit
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
       }
 
+      int numNodes = 1; // 1 itself and we will sum childs
+
       if (e->m_node->m_children.empty() ||
           e->GetType() == EntityType::Entity_Prefab)
       {
         nodeFlags |=
             ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-        DrawHeader(e, nodeFlags);
+        DrawHeader(e, nodeFlags, depth);
       }
       else
       {
-        if (DrawHeader(e, nodeFlags))
+        if (DrawHeader(e, nodeFlags, depth))
         {
+          ImVec2 rectMin = ImGui::GetItemRectMin();
+
           for (Node* n : e->m_node->m_children)
           {
-            Entity* childNtt = n->m_entity;
-            if (childNtt != nullptr)
-            {
-              ShowNode(childNtt);
-            }
+            numNodes += ShowNode(n->m_entity, depth + 1);
           }
 
+          DrawTreeNodeLine(numNodes, rectMin);
           ImGui::TreePop();
         }
       }
+      return numNodes;
     }
 
     void OutlinerWindow::SetItemState(Entity* e)
@@ -145,14 +173,7 @@ namespace ToolKit
       // Clear shown entity map
       for (Entity* ntt : ntties)
       {
-        if (m_searchString.empty())
-        {
-          m_shownEntities[ntt] = true;
-        }
-        else
-        {
-          m_shownEntities[ntt] = false;
-        }
+        m_shownEntities[ntt] = m_searchString.empty();
       }
       if (m_searchString.size() > 0)
       {
@@ -190,30 +211,26 @@ namespace ToolKit
     void OutlinerWindow::Show()
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
-      ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
 
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
+        odd = 0;
         HandleStates();
-
         ShowSearchBar(m_searchString);
-
         ImGui::BeginChild("##Outliner Nodes");
+        ImGuiTreeNodeFlags flag =
+            g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen;
 
-        if (DrawRootHeader("Scene",
-                           0,
-                           g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen,
-                           UI::m_collectionIcon))
+        if (DrawRootHeader("Scene", 0, flag, UI::m_collectionIcon))
         {
           const EntityRawPtrArray& ntties = currScene->GetEntities();
           EntityRawPtrArray roots;
           GetRootEntities(ntties, roots);
-
           HandleSearch(ntties, roots);
 
           for (Entity* e : roots)
           {
-            ShowNode(e);
+            ShowNode(e, 0);
           }
 
           ImGui::TreePop();
@@ -239,7 +256,6 @@ namespace ToolKit
 
       g_parent = NULL_HANDLE;
 
-      ImGui::PopStyleVar();
       ImGui::End();
     }
 
@@ -323,7 +339,43 @@ namespace ToolKit
       ImGui::EndTable();
     }
 
-    bool OutlinerWindow::DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags)
+    // customized version of this: https://github.com/ocornut/imgui/issues/2668
+    // draws a rectangle on tree node, for even odd pattern
+    void OutlinerWindow::DrawRowBackground(int depth)
+    {
+      depth = glm::min(depth, 7); // 7 array max size 
+      // offsets on starting point of the rectangle
+      float depths[] = // last two of the offsets are not adjusted well enough 
+          {18.0f, 30.0f, 51.0f, 71.0f, 96.0f, 115.0f, 140.0f, 155.0f};
+      
+      ImRect workRect      = ImGui::GetCurrentWindow()->WorkRect;
+      float x1             = workRect.Min.x + depths[depth];
+      float x2             = workRect.Max.x;
+      float item_spacing_y = ImGui::GetStyle().ItemSpacing.y;
+      float item_offset_y  = -item_spacing_y * 0.5f;
+      float line_height    = ImGui::GetTextLineHeight() + item_spacing_y;
+      float y0 = ImGui::GetCursorScreenPos().y + (float) item_offset_y;
+
+      ImDrawList* draw_list  = ImGui::GetWindowDrawList();
+      ImGuiStyle& style      = ImGui::GetStyle();
+      ImVec4 v4Color         = style.Colors[ImGuiCol_TabHovered];
+      v4Color.x             *= 0.62f;
+      v4Color.y             *= 0.62f;
+      v4Color.z             *= 0.62f;
+      // if odd black otherwise given color
+      ImU32 col = ImGui::ColorConvertFloat4ToU32(v4Color) * (odd++ & 1);
+
+      if (col == 0)
+      {
+        return;
+      }
+      float y1 = y0 + line_height;
+      draw_list->AddRectFilled(ImVec2(x1, y0), ImVec2(x2, y1), col);
+    }
+
+    bool OutlinerWindow::DrawHeader(Entity* ntt,
+                                    ImGuiTreeNodeFlags flags,
+                                    int depth)
     {
       if (ntt->GetNameVal().find(m_searchString) != String::npos)
       {
@@ -347,9 +399,16 @@ namespace ToolKit
       {
         ImGui::SetNextItemOpen(true);
       }
+      // bright and dark color pattern for nodes. (even odd)
+      DrawRowBackground(depth);
 
       const String sId = "##" + std::to_string(ntt->GetIdVal());
+      // blue highlight for tree node on mouse hover
+      ImGui::PushStyleColor(ImGuiCol_HeaderHovered,
+                            ImVec4(0.3f, 0.4f, 0.7f, 0.5f)); 
+      ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.4f, 0.5f, 0.8f, 1.0f)); 
       bool isOpen      = ImGui::TreeNodeEx(sId.c_str(), flags);
+      ImGui::PopStyleColor(2); 
 
       if (ImGui::BeginPopupContextItem())
       {
@@ -382,59 +441,12 @@ namespace ToolKit
 
       SetItemState(ntt);
 
-      TexturePtr icon  = nullptr;
-      EntityType eType = ntt->GetType();
-      switch (eType)
-      {
-      case EntityType::Entity_Node:
-        icon = UI::m_arrowsIcon;
-        break;
-      case EntityType::Entity_Prefab:
-        icon = UI::m_prefabIcn;
-        break;
-      }
-
-      if (icon)
-      {
-        ImGui::SameLine();
-        ImGui::Image(Convert2ImGuiTexture(icon), ImVec2(20.0f, 20.0f));
-      }
-
-      ImGui::SameLine();
-      ImGui::Text(ntt->GetNameVal().c_str());
-
-      // Hiearchy visibility
-      float offset = ImGui::GetContentRegionAvail().x - 40.0f;
-      ImGui::SameLine(offset);
-      icon = ntt->GetVisibleVal() ? UI::m_visibleIcon : UI::m_invisibleIcon;
-
-      // Texture only toggle button.
-      ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
-      if (UI::ImageButtonDecorless(icon->m_textureId,
-                                   ImVec2(15.0f, 15.0f),
-                                   false))
-      {
-        ntt->SetVisibility(!ntt->GetVisibleVal(), true);
-      }
-      ImGui::PopID();
-
-      offset = ImGui::GetContentRegionAvail().x - 20.0f;
-      ImGui::SameLine(offset);
-      icon = ntt->GetTransformLockVal() ? UI::m_lockedIcon : UI::m_unlockedIcon;
-
-      // Texture only toggle button.
-      ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
-      if (UI::ImageButtonDecorless(icon->m_textureId,
-                                   ImVec2(15.0f, 15.0f),
-                                   false))
-      {
-        ntt->SetTransformLock(!ntt->GetTransformLockVal(), true);
-      }
-
-      ImGui::PopID();
+      // show name, open and slash eye, lock and unlock.
+      UI::ShowEntityTreeNodeContent(ntt);
 
       return isOpen;
     }
 
   } // namespace Editor
 } // namespace ToolKit
+  
