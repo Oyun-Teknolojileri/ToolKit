@@ -228,15 +228,22 @@ namespace ToolKit
                 {SKELETON, UI::m_boneIcon->m_textureId }
             };
 
-            static std::unordered_set<String> thumbExtensions 
-            {PNG, JPG, JPEG, TGA, BMP, PSD, HDR, MESH, SKINMESH, MATERIAL};
+            static std::unordered_set<String> thumbExtensions {PNG,
+                                                               JPG,
+                                                               JPEG,
+                                                               TGA,
+                                                               BMP,
+                                                               PSD,
+                                                               HDR,
+                                                               MESH,
+                                                               SKINMESH,
+                                                               MATERIAL};
 
             if (dirEnt.m_isDirectory)
             {
               iconId = UI::m_folderIcon->m_textureId;
             }
-            else if (extensionIconMap.find(dirEnt.m_ext) !=
-                     extensionIconMap.end())
+            else if (extensionIconMap.count(dirEnt.m_ext) > 0)
             {
               iconId = extensionIconMap[dirEnt.m_ext];
             }
@@ -961,11 +968,11 @@ namespace ToolKit
       return index;
     }
 
-    int FolderWindow::FindEntry(const String& name) 
+    int FolderWindow::FindEntry(const String& path) 
     {
       for (int i = 0; i < m_entries.size(); ++i)
       {
-        if (m_entries[i].m_folder == name)
+        if (m_entries[i].m_path == path)
         {
           return i;
         }
@@ -997,13 +1004,16 @@ namespace ToolKit
       const auto onClickedFn = [&]() -> void
       {
         // find clicked entry
-        int selected = FindEntry(node.name);
+        int selected = FindEntry(node.path);
 
-        if (selected != -1 && selected != m_activeFolder 
-                           && m_activeFolder != -1)
+        if (selected != -1 && selected != m_activeFolder)
         {
+          FolderView& selectedEntry = m_entries[selected];
           // set old node active false
-          DeactivateNode(m_entries[m_activeFolder].m_folder);
+          if (m_activeFolder != -1) 
+          {
+            DeactivateNode(m_entries[m_activeFolder].m_folder);
+          }
           m_activeFolder = selected;
           node.active    = true;
 
@@ -1013,13 +1023,14 @@ namespace ToolKit
           }
         }
       };
-
+      
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
+      String stdId                 = "##" + std::to_string(index);
       if (node.childs.size() == 0)
       {
         nodeFlags |=
             ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-        if (ImGui::TreeNodeEx((void*)index, nodeFlags, nodeHeader.c_str()))
+        if (ImGui::TreeNodeEx(stdId.c_str(), nodeFlags, nodeHeader.c_str()))
         {
           if (ImGui::IsItemClicked())
           {  
@@ -1029,7 +1040,7 @@ namespace ToolKit
       }
       else
       {
-        if (ImGui::TreeNodeEx((void*)index, nodeFlags, nodeHeader.c_str())) 
+        if (ImGui::TreeNodeEx(stdId.c_str(), nodeFlags, nodeHeader.c_str())) 
         {
           if (ImGui::IsItemClicked())
           {
@@ -1066,8 +1077,8 @@ namespace ToolKit
       // reset tree node default size
       m_maxTreeNodeWidth = 160.0f; 
       // draw tree of folders
-      DrawTreeRec(0, 0.0f);
       DrawTreeRec(m_resourcesTreeIndex, 0.0f);
+      DrawTreeRec(0, 0.0f);
 
       ImGui::EndChild();
 
