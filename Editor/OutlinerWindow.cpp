@@ -468,8 +468,6 @@ namespace ToolKit
       bool isOpen      = ImGui::TreeNodeEx(sId.c_str(), flags);
       ImGui::PopStyleColor(2); 
 
-      m_visibleEntites[ntt] = isOpen;
-
       if (ImGui::BeginPopupContextItem())
       {
         if (ImGui::MenuItem("SaveAsPrefab"))

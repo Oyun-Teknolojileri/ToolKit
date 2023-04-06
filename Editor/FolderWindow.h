@@ -74,12 +74,12 @@ namespace ToolKit
       Vec2 m_iconSize        = Vec2(50.0f);
       std::vector<DirectoryEntry> m_entries;
       String m_folder;
+      String m_path;
       //!< for cut,copy and paste. static because its same in between all views
       static DirectoryEntry* m_currentEntry;
 
      private:
       FolderWindow* m_parent = nullptr;
-      String m_path;
       bool m_dirty            = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
       String m_filter         = "";

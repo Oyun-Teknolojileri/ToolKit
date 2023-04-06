@@ -51,17 +51,12 @@ namespace ToolKit
       EntityRawPtrArray m_roots;
       Entity* m_lastClickedEntity = nullptr;
       Entity* m_rootsParent       = nullptr;
-      /**
-       * Visible from UI
-       */
-      std::unordered_map<Entity*, bool> m_visibleEntites;
       
       String m_searchString   = "";
       bool m_stringSearchMode = false;
       bool m_searchCaseSens   = true;
       // for even odd pattern
       int odd = 0;
-      bool m_multiSelectComplated = false;
     };
 
   } // namespace Editor
