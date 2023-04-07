@@ -38,7 +38,6 @@ namespace ToolKit
 
    public:
     TKDeclareParam(AnimRecordPtrMap, Records);
-    AnimRecord* previousRecord;
 
    private:
     AnimRecordPtr activeRecord;

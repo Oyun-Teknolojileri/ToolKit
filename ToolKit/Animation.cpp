@@ -436,8 +436,6 @@ namespace ToolKit
 
       if (state == AnimRecord::State::Stop)
       {
-          record->m_entity->GetComponent<AnimControllerComponent>()->previousRecord =
-              record;
         removeList.push_back(index);
       }
       index++;

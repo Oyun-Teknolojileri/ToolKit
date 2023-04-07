@@ -85,7 +85,6 @@ namespace ToolKit
 
     if (activeRecord)
     {
-      previousRecord = activeRecord.get();
       activeRecord->m_state = AnimRecord::State::Stop;
     }
     rec->m_state  = AnimRecord::State::Play;
@@ -99,7 +98,6 @@ namespace ToolKit
   {
     if (activeRecord)
     {
-      previousRecord = activeRecord.get();
       activeRecord->m_state = AnimRecord::State::Stop;
       activeRecord          = nullptr;
     }
