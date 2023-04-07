@@ -122,15 +122,18 @@ namespace ToolKit
 
     void EditorScene::AddToSelection(ULongID id, bool additive)
     {
-      if (IsSelected(id))
-      {
-        GetLogger()->WriteConsole(LogType::Warning, "%d already selected !", id);
-        return;
-      }
+      bool selected = IsSelected(id);
 
       if (!additive)
       {
         m_selectedEntities.clear();
+      }
+      
+      if (selected)
+      {
+        GetLogger()->WriteConsole(LogType::Warning, "%d already selected !", id);
+        m_selectedEntities.push_back(id);
+        return;
       }
 
       Entity* ntt = GetEntity(id);

@@ -154,7 +154,8 @@ namespace ToolKit
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
 
-      if (ImGui::IsItemClicked())
+      if (ImGui::IsItemHovered() &&
+          ImGui::IsMouseReleased(ImGuiMouseButton_Left))
       {
         if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl)) 
         {
@@ -181,6 +182,10 @@ namespace ToolKit
             currScene->AddToSelection(e->GetIdVal(), false);
             g_app->GetPropInspector()->m_activeView =
                 PropInspector::ViewType::Entity;
+          }
+          else
+          {
+            currScene->AddToSelection(e->GetIdVal(), false);
           }
         }
         m_lastClickedEntity = e;
