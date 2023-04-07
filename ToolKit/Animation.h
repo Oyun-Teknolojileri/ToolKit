@@ -23,7 +23,6 @@ namespace ToolKit
   {
     Animation* targetAnim = nullptr; //!< Animation to Blend.
     float overlapTime = 1.0f;        //!< How early animation will start blending.
-    float blendCoeff = 0.5f;         //!< Blend coefficent for target anim.
     bool blend = false;
   };
 
