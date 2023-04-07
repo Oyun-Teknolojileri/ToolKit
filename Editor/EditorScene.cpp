@@ -132,7 +132,10 @@ namespace ToolKit
       if (selected)
       {
         GetLogger()->WriteConsole(LogType::Warning, "%d already selected !", id);
-        m_selectedEntities.push_back(id);
+        if(additive) // we've cleared, the array must add again
+        {
+          m_selectedEntities.push_back(id);
+        }
         return;
       }
 
