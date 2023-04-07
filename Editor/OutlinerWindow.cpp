@@ -156,19 +156,22 @@ namespace ToolKit
 
       if (ImGui::IsItemClicked())
       {
-        if (ImGui::IsKeyDown(ImGuiKey_LeftShift))
+        if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl)) 
         {
-          if (m_lastClickedEntity != nullptr)
-          {
-            SelectEntitiesBetweenNodes(currScene.get(), m_lastClickedEntity, e);
-          }
-          else if (currScene->IsSelected(e->GetIdVal()))
+          if (currScene->IsSelected(e->GetIdVal()))
           {
             currScene->RemoveFromSelection(e->GetIdVal());
           }
           else
           {
             currScene->AddToSelection(e->GetIdVal(), true);
+          }
+        }
+        else if (ImGui::IsKeyDown(ImGuiKey_LeftShift))
+        {
+          if (m_lastClickedEntity != nullptr)
+          {
+            SelectEntitiesBetweenNodes(currScene.get(), m_lastClickedEntity, e);
           }
         }
         else
