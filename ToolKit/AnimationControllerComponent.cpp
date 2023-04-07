@@ -74,7 +74,7 @@ namespace ToolKit
     ParamRecords().GetVar<AnimRecordPtrMap>().erase(signalName);
   }
 
-  void AnimControllerComponent::Play(const String& signalName, const float blendFactor)
+  void AnimControllerComponent::Play(const String& signalName)
   {
     AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
     AnimRecordPtr& rec     = list[signalName];
