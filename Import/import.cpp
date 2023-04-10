@@ -1139,7 +1139,6 @@ namespace ToolKit
     {
       for (unsigned int i = 0; i < g_scene->mNumTextures; i++)
       {
-        TexturePtr tTexture = std::make_shared<Texture>();
         aiTexture* texture  = g_scene->mTextures[i];
         string embId        = GetEmbeddedTextureName(texture, i);
 
@@ -1149,8 +1148,7 @@ namespace ToolKit
           ofstream file(filePath + embId, fstream::out | std::fstream::binary);
           assert(file.good());
 
-          file.write((const char*) g_scene->mTextures[i]->pcData,
-                     g_scene->mTextures[i]->mWidth);
+          file.write((const char*)texture->pcData, texture->mWidth);
         }
         else
         {
