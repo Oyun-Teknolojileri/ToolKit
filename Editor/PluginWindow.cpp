@@ -19,6 +19,8 @@ namespace ToolKit
     static char EmulatorResolutionNames[24][32]
     {
       "Custom Resolutions\0",
+      "Full HD (1080p)\0",
+      "QHD (1440p)\0",
       "iPhone SE (375x667)\0",
       "iPhone XR (414x896)\0",
       "iPhone 12 Pro (390x844)\0",
@@ -320,7 +322,6 @@ namespace ToolKit
         {
           m_resolutionSettingsWindowEnabled = true;
           ImGui::SetNextWindowPos(ImGui::GetMousePos());
-          GetLogger()->WriteConsole(LogType::Warning, "Edit Clicked");
         }
         else
         {
