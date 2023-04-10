@@ -13,10 +13,11 @@ namespace ToolKit
 {
   namespace Editor
   {
-    constexpr int MaxResolutionNameCnt = 24;
-    constexpr int MaxResolutionNameWidth = 32;
+    const int MaxResolutionNameCnt = 24;
+    const int MaxResolutionNameWidth = 32;
 
-    static char EmulatorResolutionNames[24][32]
+    static char EmulatorResolutionNames[MaxResolutionNameCnt]
+                                       [MaxResolutionNameWidth]
     {
       "Custom Resolutions\0",
       "Full HD (1080p)\0",
@@ -59,12 +60,14 @@ namespace ToolKit
       m_numEmulatorResNames = 0;
       // calculate number of default resolution names,
       // greater than 31 means ascii alpha numeric
-      while (EmulatorResolutionNames[m_numEmulatorResNames][0] >= 31)
+      while (EmulatorResolutionNames[m_numEmulatorResNames][0] >= 31) 
+      {
         m_numEmulatorResNames++;
+      }
       
       m_numDefaultResNames = m_numEmulatorResNames;
       
-      // fill array with valid resolutions
+      // fill remaining array with valid resolutions
       for (int i = m_numDefaultResNames; i < MaxResolutionNameCnt; ++i)
       {
         ScreenResolutions[i].x = ScreenResolutions[i].y = 500.0f;
@@ -211,7 +214,8 @@ namespace ToolKit
     {
       // Draw play - pause - stop buttons.
       ImVec2 btnSize = ImVec2(20.0f, 20.0f);
-      // pick middle point of the window and move left half of the width of action buttons(250.0f)
+      // pick middle point of the window and 
+      // move left half of the width of action buttons(250.0f)
       float offset = glm::max(ImGui::GetWindowWidth() * 0.5f - 100.0f, 0.0f);
       ImGui::SetCursorPosX(offset);
 
@@ -300,13 +304,15 @@ namespace ToolKit
       // Resolution Bar
       EmulatorResolution resolution = m_settings->Resolution;
       int resolutionType            = static_cast<int>(resolution);
-    
+
       ImGui::SetNextItemWidth(
-          ImGui::CalcTextSize(EmulatorResolutionNames[resolutionType]).x*1.2f);
+          ImGui::CalcTextSize(EmulatorResolutionNames[resolutionType]).x *
+          1.3f);
 
       AddResolutionName("Edit Resolutions");
 
       int lastEnumIndex = m_numEmulatorResNames - 1;
+      // in order to send to imgui we should conert to ptr array
       const char* enumNames[24];
       for (int i = 0; i <= lastEnumIndex; i++) 
       {
