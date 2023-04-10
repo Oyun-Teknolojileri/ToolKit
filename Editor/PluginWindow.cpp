@@ -312,6 +312,7 @@ namespace ToolKit
       AddResolutionName("Edit Resolutions");
 
       int lastEnumIndex = m_numEmulatorResNames - 1;
+
       // in order to send to imgui we should convert to ptr array
       const char* enumNames[MaxResolutionNameCnt];
       for (int i = 0; i <= lastEnumIndex; i++) 
