@@ -36,7 +36,7 @@ namespace ToolKit
       "Galaxy A51 / A71 (412x914)\0",
     };
 
-    static IVec2 ScreenResolutions[24] =
+    static IVec2 ScreenResolutions[MaxResolutionNameCnt] =
     {
       IVec2(480, 667), // default
       IVec2(375, 667), // Iphone_SE,
@@ -313,7 +313,7 @@ namespace ToolKit
 
       int lastEnumIndex = m_numEmulatorResNames - 1;
       // in order to send to imgui we should conert to ptr array
-      const char* enumNames[24];
+      const char* enumNames[MaxResolutionNameCnt];
       for (int i = 0; i <= lastEnumIndex; i++) 
       {
         enumNames[i] = EmulatorResolutionNames[i];
@@ -356,7 +356,9 @@ namespace ToolKit
         for (int i = m_numDefaultResNames; i < m_numEmulatorResNames; ++i)
         {
           ImGui::PushID(i*333);
-          ImGui::InputText("name", EmulatorResolutionNames[i], 32);
+          ImGui::InputText("name",
+                           EmulatorResolutionNames[i],
+                           MaxResolutionNameWidth);
           ImGui::SameLine();  
           ImGui::InputInt2("size", &ScreenResolutions[i].x);
           ImGui::SameLine();
