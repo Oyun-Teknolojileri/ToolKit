@@ -385,7 +385,7 @@ namespace ToolKit
       ImGui::SetNextItemWidth(60.0f);
       ImGui::SameLine();
       
-      if (ImGui::DragFloat("##z", &m_settings->Scale, 0.15f, 1.0f))
+      if (ImGui::DragFloat("##z", &m_settings->Scale, 0.05f, 0.0f, 1.0f))
       {
         UpdateSimulationWndSize();
       }
