@@ -3,6 +3,7 @@
 #include "ImGui/imgui.h"
 #include "Serialize.h"
 #include "Types.h"
+#include "IconsFontAwesome.h"
 
 #include <functional>
 #include <vector>

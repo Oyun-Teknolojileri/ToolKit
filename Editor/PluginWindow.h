@@ -64,9 +64,17 @@ namespace ToolKit
       String EmuResToString(EmulatorResolution emuRes);
       void UpdateCanvas(uint width, uint heigth);
 
+      void AddResolutionName(const char* name);
+      void RemoveResolutionName(const char* name);
+      void RemoveResolutionName(int index);
+
+      int m_numEmulatorResNames = 0;
+      int m_numDefaultResNames  = 0;
+
      private:
       SimulationSettings* m_settings = nullptr;
       bool m_simulationModeDisabled  = false;
+      bool m_resolutionSettingsWindowEnabled = false;;
     };
 
   } // namespace Editor
