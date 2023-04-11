@@ -941,11 +941,7 @@ namespace ToolKit
 
     for (Entity* ntt : deletedEntities)
     {
-<<<<<<< Updated upstream
-      SafeDel(ntt);
-=======
       delete ntt;
->>>>>>> Stashed changes
     }
     deletedEntities.clear();
 
