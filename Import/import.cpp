@@ -864,7 +864,6 @@ namespace ToolKit
     }
     if (shouldDelete)
     {
-      tScene->RemoveEntity(ntt->GetIdVal());
       deletedEntities.push_back(ntt);
     }
     return shouldDelete;
@@ -937,9 +936,16 @@ namespace ToolKit
     {
       deleteEmptyEntitiesRecursively(tScene, r);
     }
+   
+    tScene->RemoveEntity(deletedEntities);
+
     for (Entity* ntt : deletedEntities)
     {
+<<<<<<< Updated upstream
       SafeDel(ntt);
+=======
+      delete ntt;
+>>>>>>> Stashed changes
     }
     deletedEntities.clear();
 
