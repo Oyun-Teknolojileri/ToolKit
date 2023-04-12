@@ -13,65 +13,11 @@ namespace ToolKit
 {
   namespace Editor
   {
-    const int MaxResolutionNameCnt = 24;
-    const int MaxResolutionNameWidth = 32;
-
-    static char EmulatorResolutionNames[MaxResolutionNameCnt]
-                                       [MaxResolutionNameWidth]
-    {
-      "Custom Resolutions\0",
-      "Full HD (1080p)\0",
-      "QHD (1440p)\0",
-      "iPhone SE (375x667)\0",
-      "iPhone XR (414x896)\0",
-      "iPhone 12 Pro (390x844)\0",
-      "Pixel 5 (393x851)\0",
-      "Galaxy S20 Ultra (412x915)\0",
-      "Galaxy Note 20 (412x915)\0",
-      "Galaxy Note 20 Ultra (390x844)\0",
-      "Ipad Air  (820x118)\0",
-      "Ipad Mini (768x102)\0",
-      "Surface Pro 7 (912x139)\0",
-      "Surface Duo (540x720)\0",
-      "Galaxy A51 / A71 (412x914)\0",
-    };
-
-    static IVec2 ScreenResolutions[MaxResolutionNameCnt] =
-    {
-      IVec2(480, 667), // default
-      IVec2(375, 667), // Iphone_SE,
-      IVec2(414, 896), // Iphone_XR,
-      IVec2(390, 844), // Iphone_12_Pro,
-      IVec2(393, 851), // Pixel_5,
-      IVec2(412, 915), // Galaxy_S20_Ultra,
-      IVec2(412, 915), // Galaxy_Note20,
-      IVec2(390, 844), // Galaxy_Note20_Ultra,
-      IVec2(820, 118), // Ipad_Air,
-      IVec2(768, 102), // Ipad_Mini,
-      IVec2(912, 139), // Surface_Pro_7,
-      IVec2(540, 720), // Surface_Duo,
-      IVec2(412, 914)  // Galaxy_A51_A71
-    };
-
     PluginWindow::PluginWindow()
     {
       m_name     = "Plugin";
       m_settings = &g_app->m_simulatorSettings;
-      m_numEmulatorResNames = 0;
-      // calculate number of default resolution names,
-      // greater than 31 means ascii alpha numeric
-      while (EmulatorResolutionNames[m_numEmulatorResNames][0] >= 31) 
-      {
-        m_numEmulatorResNames++;
-      }
-      
-      m_numDefaultResNames = m_numEmulatorResNames;
-      
-      // fill remaining array with valid resolutions
-      for (int i = m_numDefaultResNames; i < MaxResolutionNameCnt; ++i)
-      {
-        ScreenResolutions[i].x = ScreenResolutions[i].y = 500.0f;
-      }
+      m_numDefaultResNames = m_emulatorResolutionNames.size();
     }
 
     PluginWindow::PluginWindow(XmlNode* node) : PluginWindow()
@@ -81,50 +27,33 @@ namespace ToolKit
 
     PluginWindow::~PluginWindow() {}
 
-    void PluginWindow::AddResolutionName(const char* name)
+    void PluginWindow::AddResolutionName(const String& name)
     {
-      assert(m_numEmulatorResNames < MaxResolutionNameCnt);
-      int len = 0;
-      while (*name)
-      {
-        EmulatorResolutionNames[m_numEmulatorResNames][len++] = *name++;
-      }
-      // null terminate
-      EmulatorResolutionNames[m_numEmulatorResNames++][len] = '\0'; 
+      m_emulatorResolutionNames.push_back(name);
+      m_screenResolutions.push_back(Vec2(500.0f, 500.0f));
     }
 
     void PluginWindow::RemoveResolutionName(int index)
     {
-      assert(index < 0 || index < m_numEmulatorResNames 
-             && "resolution index invalid");
-      // remove this index
-      int len = 0;
-      while (EmulatorResolutionNames[index][len] != '\0')
-      {
-        EmulatorResolutionNames[index][len++] = '\0';
-      }
-      len = 0;
-      int lastIdx = --m_numEmulatorResNames;
-      // add last name to removed index
-      while (EmulatorResolutionNames[lastIdx][len] != '\0')
-      {
-        char c = EmulatorResolutionNames[lastIdx][len];
-        EmulatorResolutionNames[lastIdx][len] = '\0';
-        EmulatorResolutionNames[index][len++] = c;
-      }
+      assert(index < 0 ||
+             index < m_screenResolutions.size() && "resolution index invalid");
+
+      m_screenResolutions.erase(m_screenResolutions.begin() + index);
+      m_emulatorResolutionNames.erase(m_emulatorResolutionNames.begin() +
+                                      index);
     }
 
-    void PluginWindow::RemoveResolutionName(const char* name)
+    void PluginWindow::RemoveResolutionName(const String& name)
     {
-      for (int i = 0; i < m_numEmulatorResNames; ++i)
+      for (int i = 0; i < m_emulatorResolutionNames.size(); ++i)
       {
-        if (strcmp(name, EmulatorResolutionNames[i]) == 0)
+        if (name == m_emulatorResolutionNames[i])
         {
           RemoveResolutionName(i);
           return;
         }
       }
-      GetLogger()->WriteConsole(LogType::Warning, 
+      GetLogger()->WriteConsole(LogType::Warning,
                                 "resolution name is not exist!");
     }
 
@@ -295,7 +224,7 @@ namespace ToolKit
 
     String PluginWindow::EmuResToString(EmulatorResolution emuRes)
     {
-      return EmulatorResolutionNames[(uint) emuRes];
+      return m_emulatorResolutionNames[(uint) emuRes];
     }
 
     void PluginWindow::ShowSettings()
@@ -306,24 +235,25 @@ namespace ToolKit
       int resolutionType            = static_cast<int>(resolution);
 
       ImGui::SetNextItemWidth(
-          ImGui::CalcTextSize(EmulatorResolutionNames[resolutionType]).x *
+          ImGui::CalcTextSize(m_emulatorResolutionNames[resolutionType].data())
+              .x *
           1.3f);
 
       AddResolutionName("Edit Resolutions");
 
-      int lastEnumIndex = m_numEmulatorResNames - 1;
+      int lastEnumIndex = m_emulatorResolutionNames.size() - 1ull;
 
       // in order to send to imgui we should convert to ptr array
-      const char* enumNames[MaxResolutionNameCnt];
+      std::vector<char*> enumNames;
       for (int i = 0; i <= lastEnumIndex; i++) 
       {
-        enumNames[i] = EmulatorResolutionNames[i];
+        enumNames.push_back(&m_emulatorResolutionNames[i][0]);
       }
 
       if (ImGui::Combo("##Resolution",
                        &resolutionType,
-                       enumNames, 
-                       m_numEmulatorResNames))
+                       enumNames.data(), 
+                       enumNames.size()))
       {
         if (resolutionType == lastEnumIndex)
         {
@@ -335,7 +265,7 @@ namespace ToolKit
           EmulatorResolution resolution =
             static_cast<EmulatorResolution>(resolutionType);
         
-          IVec2 resolutionSize   = ScreenResolutions[resolutionType];
+          IVec2 resolutionSize = m_screenResolutions[resolutionType];
 
           m_settings->Width  = (float)resolutionSize.x;
           m_settings->Height = (float)resolutionSize.y;
@@ -354,14 +284,15 @@ namespace ToolKit
                      ImGuiWindowFlags_NoScrollbar |
                      ImGuiWindowFlags_AlwaysAutoResize);  
         
-        for (int i = m_numDefaultResNames; i < m_numEmulatorResNames; ++i)
+        for (int i = m_numDefaultResNames; 
+          i < m_emulatorResolutionNames.size(); ++i)
         {
           ImGui::PushID(i*333);
           ImGui::InputText("name",
-                           EmulatorResolutionNames[i],
-                           MaxResolutionNameWidth);
+                           m_emulatorResolutionNames[i].data(),
+                           32);
           ImGui::SameLine();  
-          ImGui::InputInt2("size", &ScreenResolutions[i].x);
+          ImGui::InputInt2("size", &m_screenResolutions[i].x);
           ImGui::SameLine();
           if (ImGui::Button(ICON_FA_MINUS)) 
           {
@@ -374,7 +305,7 @@ namespace ToolKit
         ImGui::SameLine();
         if (ImGui::Button(ICON_FA_PLUS))
         {
-          AddResolutionName("new resolution");
+          AddResolutionName("new resolution\0");
         }
 
         ImGui::End();
