@@ -191,7 +191,7 @@ namespace ToolKit
     while (!m_children.empty())
     {
       // remove last children
-      OrphanChild(m_children.size() - 1, preserveTransform);
+      OrphanChild(m_children.size() - 1ull, preserveTransform);
     }
   }
 
@@ -205,8 +205,7 @@ namespace ToolKit
         return;
       }
     }
-
-    assert(false && "The child that you want to remove doesn't exist");
+    
   }
 
   void Node::OrphanSelf(bool preserveTransform)

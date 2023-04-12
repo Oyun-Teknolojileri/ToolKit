@@ -279,23 +279,15 @@ namespace ToolKit
 
   void Scene::RemoveChildren(Entity* removed)
   {
-    NodePtrArray children = removed->m_node->m_children;
+    NodePtrArray& children = removed->m_node->m_children;
     
-    // Iterative remove children.
+    // recursive remove children
+    // (RemoveEntity function will call all children recursively).
     while (!children.empty())
     {
       Node* child = children.back();
       children.pop_back();
       RemoveEntity(child->m_entity->GetIdVal());
-      if (child->m_children.empty())
-      {
-        continue;
-      }
-
-      // Add child's children to the list that we remove from scene.
-      children.insert(children.end(),
-                    child->m_children.begin(),
-                    child->m_children.end());
     }
   }
 
