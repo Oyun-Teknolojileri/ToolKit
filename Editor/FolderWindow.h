@@ -116,7 +116,6 @@ namespace ToolKit
 
      private:
       void ShowFolderTree();
-      int FindEntry(const String& name);
       void DeactivateNode(const String& name);
       int CreateTreeRec(int parent, const std::filesystem::path& path);
       void DrawTreeRec(int index, float depth);

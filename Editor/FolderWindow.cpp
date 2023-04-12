@@ -294,30 +294,25 @@ namespace ToolKit
             // Handle if item is directory.
             if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
             {
-              if (ImGui::IsItemHovered())
+              if (ImGui::IsItemHovered() && 
+                dirEnt.m_isDirectory && m_parent != nullptr)
               {
-                if (dirEnt.m_isDirectory)
+                String path =
+                    ConcatPaths({dirEnt.m_rootPath, dirEnt.m_fileName});
+                int indx = m_parent->Exist(path);
+                if (indx == -1)
                 {
-                  if (m_parent != nullptr)
-                  {
-                    String path =
-                        ConcatPaths({dirEnt.m_rootPath, dirEnt.m_fileName});
-                    int indx = m_parent->Exist(path);
-                    if (indx == -1)
-                    {
-                      FolderView view(m_parent);
-                      view.SetPath(path);
-                      view.Iterate();
-                      view.Refresh();
-                      m_parent->AddEntry(view);
-                    }
-                    else
-                    {
-                      FolderView& view    = m_parent->GetView(indx);
-                      view.m_visible      = true;
-                      view.m_activateNext = true;
-                    }
-                  }
+                  FolderView view(m_parent);
+                  view.SetPath(path);
+                  view.Iterate();
+                  view.Refresh();
+                  m_parent->AddEntry(view);
+                }
+                else
+                {
+                  FolderView& view    = m_parent->GetView(indx);
+                  view.m_visible      = true;
+                  view.m_activateNext = true;
                 }
               }
             }
@@ -968,18 +963,6 @@ namespace ToolKit
       return index;
     }
 
-    int FolderWindow::FindEntry(const String& path) 
-    {
-      for (int i = 0; i < m_entries.size(); ++i)
-      {
-        if (m_entries[i].m_path == path)
-        {
-          return i;
-        }
-      }
-      return -1;
-    }
-
     void FolderWindow::DeactivateNode(const String& name)
     {
       for (int i = 0; i < m_folderNodes.size(); ++i)
@@ -1004,7 +987,7 @@ namespace ToolKit
       const auto onClickedFn = [&]() -> void
       {
         // find clicked entry
-        int selected = FindEntry(node.path);
+        int selected = Exist(node.path);
 
         if (selected != -1 && selected != m_activeFolder)
         {
@@ -1013,14 +996,14 @@ namespace ToolKit
           if (m_activeFolder != -1) 
           {
             DeactivateNode(m_entries[m_activeFolder].m_folder);
+            m_entries[m_activeFolder].m_active = false;
           }
-          m_activeFolder = selected;
+          AddEntry(selectedEntry);
           node.active    = true;
-          
-          for (FolderView& view : m_entries)
-          {
-              view.m_visible = false;
-          }
+          m_activeFolder = selected;
+          selectedEntry.m_active = true;
+          selectedEntry.m_activateNext = true;
+          selectedEntry.m_visible = true;
         }
       };
       
