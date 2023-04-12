@@ -228,16 +228,8 @@ namespace ToolKit
                 {SKELETON, UI::m_boneIcon->m_textureId }
             };
 
-            static std::unordered_set<String> thumbExtensions {PNG,
-                                                               JPG,
-                                                               JPEG,
-                                                               TGA,
-                                                               BMP,
-                                                               PSD,
-                                                               HDR,
-                                                               MESH,
-                                                               SKINMESH,
-                                                               MATERIAL};
+            static std::unordered_set<String> thumbExtensions 
+            {PNG, JPG, JPEG, TGA, BMP, PSD, HDR, MESH, SKINMESH, MATERIAL};
 
             if (dirEnt.m_isDirectory)
             {
@@ -994,11 +986,12 @@ namespace ToolKit
     void FolderWindow::DrawTreeRec(int index, float depth)
     {
       if (index == -1) return; // shouldn't happen
-      FolderNode& node    = m_folderNodes[index];
-      String icon         = node.active ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
-      String nodeHeader   = icon + ICON_SPACE + node.name;
-      float headerLen     = ImGui::CalcTextSize(nodeHeader.c_str()).x; 
-      headerLen          += (depth * 20.0f) + 70.0f; // depth padding + UI start padding
+      FolderNode& node = m_folderNodes[index];
+      String icon = node.active ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
+      String nodeHeader = icon + ICON_SPACE + node.name;
+      float headerLen = ImGui::CalcTextSize(nodeHeader.c_str()).x; 
+      headerLen += (depth * 20.0f) + 70.0f; // depth padding + UI start padding
+
       m_maxTreeNodeWidth  = glm::max(headerLen, m_maxTreeNodeWidth);
       
       const auto onClickedFn = [&]() -> void
@@ -1023,13 +1016,14 @@ namespace ToolKit
           }
         }
       };
-      
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
       String stdId                 = "##" + std::to_string(index);
+
       if (node.childs.size() == 0)
       {
         nodeFlags |=
             ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+
         if (ImGui::TreeNodeEx(stdId.c_str(), nodeFlags, nodeHeader.c_str()))
         {
           if (ImGui::IsItemClicked())

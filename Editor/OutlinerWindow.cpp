@@ -98,13 +98,66 @@ namespace ToolKit
       return numNodes;
     }
 
+    void OutlinerWindow::SelectEntitiesBetweenNodes(EditorScene* scene,
+                                                    Entity* a, Entity* b)
+    {
+      if (a == b)
+      {
+        return;
+      }
+
+      if (a->m_node->m_parent != b->m_node->m_parent)
+      {
+        GetLogger()->WriteConsole(LogType::Warning, 
+                                  "selected entities should have same parent!");
+        return;
+      }
+
+      size_t i = 0ull;
+      int numFound = 0;
+      // one of the parents null means both of them null,
+      // so we will search in roots
+      if (a->m_node->m_parent == nullptr) 
+      {
+        // find locations of a and b on m_roots
+        for (;i < m_roots.size() && numFound != 2; ++i)
+        {
+          numFound += (m_roots[i] == a) + (m_roots[i] == b);
+
+          // if we found a or b we will select all of the nodes in bettween them
+          if (numFound >= 1ull)
+          {
+            scene->AddToSelection(m_roots[i]->GetIdVal(), true);
+          }
+        }
+        return;
+      }
+
+      // otherwise this means both of the entities has same parent
+      // so we will select in between childs
+
+      NodePtrArray& children = a->m_node->m_parent->m_children;
+      // find locations of a and b on parents childs
+      for (; i < children.size() && numFound != 2; ++i)
+      {
+        numFound += (children[i] == a->m_node) + (children[i] == b->m_node);
+
+        // if we found a or b we will select all of the nodes in bettween them
+        if (numFound >= 1ull)
+        {
+          scene->AddToSelection(children[i]->m_entity->GetIdVal(), true);
+        }
+      }
+    }
+
     void OutlinerWindow::SetItemState(Entity* e)
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
 
-      if (ImGui::IsItemClicked())
+      if (ImGui::IsItemHovered() &&
+          ImGui::IsMouseReleased(ImGuiMouseButton_Left))
       {
-        if (ImGui::GetIO().KeyShift)
+        if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl)) 
         {
           if (currScene->IsSelected(e->GetIdVal()))
           {
@@ -115,6 +168,13 @@ namespace ToolKit
             currScene->AddToSelection(e->GetIdVal(), true);
           }
         }
+        else if (ImGui::IsKeyDown(ImGuiKey_LeftShift))
+        {
+          if (m_lastClickedEntity != nullptr)
+          {
+            SelectEntitiesBetweenNodes(currScene.get(), m_lastClickedEntity, e);
+          }
+        }
         else
         {
           if (!currScene->IsSelected(e->GetIdVal()))
@@ -123,9 +183,14 @@ namespace ToolKit
             g_app->GetPropInspector()->m_activeView =
                 PropInspector::ViewType::Entity;
           }
+          else
+          {
+            currScene->AddToSelection(e->GetIdVal(), false);
+          }
         }
+        m_lastClickedEntity = e;
       }
-
+      
       if (ImGui::BeginDragDropSource())
       {
         ImGui::SetDragDropPayload("HierarcyChange", nullptr, 0);
@@ -198,12 +263,12 @@ namespace ToolKit
           if (childNtt != nullptr)
           {
             bool child = FindShownEntities(childNtt, str);
-            children   = child | children;
+            children   = child || children;
           }
         }
       }
 
-      bool result        = self | children;
+      bool result        = self || children;
       m_shownEntities[e] = result;
       return result;
     }
@@ -224,13 +289,14 @@ namespace ToolKit
         if (DrawRootHeader("Scene", 0, flag, UI::m_collectionIcon))
         {
           const EntityRawPtrArray& ntties = currScene->GetEntities();
-          EntityRawPtrArray roots;
-          GetRootEntities(ntties, roots);
-          HandleSearch(ntties, roots);
+          m_roots.clear();
 
-          for (Entity* e : roots)
+          GetRootEntities(ntties, m_roots);
+          HandleSearch(ntties, m_roots);
+
+          for (size_t i = 0; i < m_roots.size(); ++i)
           {
-            ShowNode(e, 0);
+            ShowNode(m_roots[i], 0);
           }
 
           ImGui::TreePop();
