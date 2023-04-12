@@ -1016,10 +1016,10 @@ namespace ToolKit
           }
           m_activeFolder = selected;
           node.active    = true;
-
+          
           for (FolderView& view : m_entries)
           {
-            view.m_visible = false;
+              view.m_visible = false;
           }
         }
       };

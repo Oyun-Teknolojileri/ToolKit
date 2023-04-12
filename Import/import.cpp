@@ -89,13 +89,13 @@ namespace ToolKit
 
   vector<string> g_usedFiles;
 
-  bool IsUsed(string file)
+  bool IsUsed(const string& file)
   {
     return find(g_usedFiles.begin(), g_usedFiles.end(), file) ==
            g_usedFiles.end();
   }
 
-  void AddToUsedFiles(string file)
+  void AddToUsedFiles(const string& file)
   {
     // Add unique.
     if (IsUsed(file))
@@ -120,7 +120,7 @@ namespace ToolKit
   bool isSkeletonEntityCreated = false;
   const aiScene* g_scene       = nullptr;
 
-  void Decompose(string fullPath, string& path, string& name)
+  void Decompose(string& fullPath, string& path, string& name)
   {
     NormalizePath(fullPath);
     path     = "";
@@ -407,7 +407,7 @@ namespace ToolKit
 
   // Interpolator functions END
 
-  void ImportAnimation(string file)
+  void ImportAnimation(const string& file)
   {
     if (!g_scene->HasAnimations())
     {
@@ -508,7 +508,7 @@ namespace ToolKit
     }
   }
 
-  void ImportMaterial(string filePath, string origin)
+  void ImportMaterial(const string& filePath, const string& origin)
   {
     fs::path pathOrg = fs::path(origin).parent_path();
 
@@ -822,6 +822,8 @@ namespace ToolKit
         ClearForbidden(fileName);
         String meshPath = path + fileName + MESH;
 
+        Assimp::DefaultLogger::get()->info("file name: ", meshPath);
+
         mesh->SetFile(meshPath);
         AddToUsedFiles(meshPath);
         g_meshes[aMesh] = mesh;
@@ -841,13 +843,14 @@ namespace ToolKit
 
   EntityRawPtrArray deletedEntities;
 
-  bool deleteEmptyEntitiesRecursively(Scene* tScene, Entity* ntt)
+  bool DeleteEmptyEntitiesRecursively(Scene* tScene, Entity* ntt)
   {
     bool shouldDelete = true;
     if (ntt->GetComponentPtrArray().size())
     {
       shouldDelete = false;
     }
+
     VariantCategoryArray varCategories;
     ntt->m_localData.GetCategories(varCategories, true, false);
     if (varCategories.size() > 1)
@@ -857,7 +860,7 @@ namespace ToolKit
 
     for (Node* child : ntt->m_node->m_children)
     {
-      if (!deleteEmptyEntitiesRecursively(tScene, child->m_entity))
+      if (!DeleteEmptyEntitiesRecursively(tScene, child->m_entity))
       {
         shouldDelete = false;
       }
@@ -934,16 +937,16 @@ namespace ToolKit
     GetRootEntities(tScene->GetEntities(), roots);
     for (Entity* r : roots)
     {
-      deleteEmptyEntitiesRecursively(tScene, r);
+      DeleteEmptyEntitiesRecursively(tScene, r);
     }
    
-    tScene->RemoveEntity(deletedEntities);
-
     for (Entity* ntt : deletedEntities)
     {
-      delete ntt;
+      tScene->RemoveEntity(ntt->GetIdVal(), false);
+      SafeDel(ntt);
     }
     deletedEntities.clear();
+    Assimp::DefaultLogger::get()->info("scene path: ", fullPath);
 
     CreateFileAndSerializeObject(tScene, fullPath);
   }
@@ -1134,7 +1137,7 @@ namespace ToolKit
     AddToUsedFiles(fullPath);
   }
 
-  void ImportTextures(string filePath)
+  void ImportTextures(const string& filePath)
   {
     // Embedded textures.
     if (g_scene->HasTextures())
@@ -1149,7 +1152,7 @@ namespace ToolKit
         {
           ofstream file(filePath + embId, fstream::out | std::fstream::binary);
           assert(file.good());
-
+            
           file.write((const char*)texture->pcData, texture->mWidth);
         }
         else
@@ -1269,7 +1272,6 @@ namespace ToolKit
         String fileName;
         DecomposePath(file, nullptr, &fileName, &g_currentExt);
         string destFile = dest + fileName;
-
         // DON'T BREAK THE CALLING ORDER!
 
         ImportAnimation(dest);
