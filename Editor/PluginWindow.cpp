@@ -13,11 +13,11 @@ namespace ToolKit
 {
   namespace Editor
   {
-
     PluginWindow::PluginWindow()
     {
       m_name     = "Plugin";
       m_settings = &g_app->m_simulatorSettings;
+      m_numDefaultResNames = m_emulatorResolutionNames.size();
     }
 
     PluginWindow::PluginWindow(XmlNode* node) : PluginWindow()
@@ -26,6 +26,41 @@ namespace ToolKit
     }
 
     PluginWindow::~PluginWindow() {}
+
+    void PluginWindow::AddResolutionName(const String& name)
+    {
+      m_emulatorResolutionNames.push_back(name);
+      m_screenResolutions.push_back(Vec2(500.0f, 500.0f));
+    }
+
+    void PluginWindow::RemoveResolutionName(int index)
+    {
+      bool canRemove = index > 0 ||
+                       index < m_screenResolutions.size();
+
+      assert(canRemove && "resolution index invalid");
+      
+      if (canRemove)
+      {
+        m_screenResolutions.erase(m_screenResolutions.begin() + index);
+        m_emulatorResolutionNames.erase(m_emulatorResolutionNames.begin() +
+                                        index);
+      }
+    }
+
+    void PluginWindow::RemoveResolutionName(const String& name)
+    {
+      for (int i = 0; i < m_emulatorResolutionNames.size(); ++i)
+      {
+        if (name == m_emulatorResolutionNames[i])
+        {
+          RemoveResolutionName(i);
+          return;
+        }
+      }
+      GetLogger()->WriteConsole(LogType::Warning,
+                                "resolution name is not exist!");
+    }
 
     void PluginWindow::Show()
     {
@@ -80,7 +115,12 @@ namespace ToolKit
       {
         ImGui::BeginDisabled(m_simulationModeDisabled);
       }
-      ImGui::Checkbox("Run In Window", &m_settings->Windowed);
+
+      if (ImGui::Button(ICON_FA_SLIDERS, ImVec2(26.0f, 26.0f)))
+      {
+        m_settings->Windowed = !m_settings->Windowed;
+      }
+      
       if (m_simulationModeDisabled)
       {
         ImGui::EndDisabled();
@@ -108,12 +148,10 @@ namespace ToolKit
     {
       // Draw play - pause - stop buttons.
       ImVec2 btnSize = ImVec2(20.0f, 20.0f);
-      if (m_settings->Windowed == false) 
-      {
-        // pick middle point of the window and move left half of the width of action buttons(250.0f)
-        float offset = glm::max(ImGui::GetWindowWidth() * 0.5f - 125.0f, 0.0f);
-        ImGui::SetCursorPosX(offset);
-      }
+      // pick middle point of the window and 
+      // move left half of the width of action buttons(250.0f)
+      float offset = glm::max(ImGui::GetWindowWidth() * 0.5f - 100.0f, 0.0f);
+      ImGui::SetCursorPosX(offset);
 
       if (g_app->m_gameMod == GameMod::Playing)
       {
@@ -189,26 +227,9 @@ namespace ToolKit
       ImGui::SameLine();
     }
 
-    static const char* EmulatorResolutionNames[] =
-    {
-      "Custom\0"               ,
-      "iPhone SE (375x667)\0",
-      "iPhone XR (414x896)\0",
-      "iPhone 12 Pro (390x844)\0",
-      "Pixel 5 (393x851)\0",
-      "Galaxy S20 Ultra (412x915)\0",
-      "Galaxy Note 20 (412x915)\0",
-      "Galaxy Note 20 Ultra (390x844)\0",
-      "Ipad Air  (820x118)\0",
-      "Ipad Mini (768x102)\0",
-      "Surface Pro 7 (912x139)\0",
-      "Surface Duo (540x720)\0",
-      "Galaxy A51 / A71 (412x914)\0",
-    };
-
     String PluginWindow::EmuResToString(EmulatorResolution emuRes)
     {
-      return EmulatorResolutionNames[(uint) emuRes];
+      return m_emulatorResolutionNames[(uint) emuRes];
     }
 
     void PluginWindow::ShowSettings()
@@ -217,80 +238,94 @@ namespace ToolKit
       // Resolution Bar
       EmulatorResolution resolution = m_settings->Resolution;
       int resolutionType            = static_cast<int>(resolution);
-    
-      static const ImVec2 screenResolutionsLUT[] =
-      {
-        ImVec2(480, 667), // default
-        ImVec2(375, 667), // Iphone_SE,
-        ImVec2(414, 896), // Iphone_XR,
-        ImVec2(390, 844), // Iphone_12_Pro,
-        ImVec2(393, 851), // Pixel_5,
-        ImVec2(412, 915), // Galaxy_S20_Ultra,
-        ImVec2(412, 915), // Galaxy_Note20,
-        ImVec2(390, 844), // Galaxy_Note20_Ultra,
-        ImVec2(820, 118), // Ipad_Air,
-        ImVec2(768, 102), // Ipad_Mini,
-        ImVec2(912, 139), // Surface_Pro_7,
-        ImVec2(540, 720), // Surface_Duo,
-        ImVec2(412, 914)  // Galaxy_A51_A71
-      };
 
-      ImGui::Text("| Resolution");
-      ImGui::SetNextItemWidth(200.0f);
-      ImGui::SameLine();
-      if (ImGui::Combo("##dropdown", &resolutionType, EmulatorResolutionNames, 
-        IM_ARRAYSIZE(EmulatorResolutionNames)))
+      ImGui::SetNextItemWidth(
+          ImGui::CalcTextSize(m_emulatorResolutionNames[resolutionType].data())
+              .x *
+          1.3f);
+
+      AddResolutionName("Edit Resolutions");
+
+      int lastEnumIndex = m_emulatorResolutionNames.size() - 1ull;
+
+      // in order to send to imgui we should convert to ptr array
+      std::vector<char*> enumNames;
+      for (int i = 0; i <= lastEnumIndex; i++) 
       {
-        EmulatorResolution resolution =
+        enumNames.push_back(&m_emulatorResolutionNames[i][0]);
+      }
+
+      if (ImGui::Combo("##Resolution",
+                       &resolutionType,
+                       enumNames.data(), 
+                       enumNames.size()))
+      {
+        if (resolutionType == lastEnumIndex)
+        {
+          m_resolutionSettingsWindowEnabled = true;
+          ImGui::SetNextWindowPos(ImGui::GetMousePos());
+        }
+        else
+        {
+          EmulatorResolution resolution =
             static_cast<EmulatorResolution>(resolutionType);
         
-        ImVec2 resolutionSize = screenResolutionsLUT[resolutionType];
+          IVec2 resolutionSize = m_screenResolutions[resolutionType];
 
-        m_settings->Width  = resolutionSize.x;
-        m_settings->Height = resolutionSize.y;
+          m_settings->Width  = (float)resolutionSize.x;
+          m_settings->Height = (float)resolutionSize.y;
       
-        m_settings->Resolution = resolution;
-        UpdateSimulationWndSize();
+          m_settings->Resolution = resolution;
+          UpdateSimulationWndSize();
+        }
       }
-      
-      // Width - Height
-      bool isCustomSized =
-          m_settings->Resolution == EmulatorResolution::Custom;
-      
-      if (isCustomSized)
+      RemoveResolutionName(lastEnumIndex);
+
+      if (m_resolutionSettingsWindowEnabled)
       {
-        ImGui::SameLine();
-        ImGui::Text("Width");
-        ImGui::SetNextItemWidth(70.0f);
-        ImGui::SameLine();
-        if (ImGui::DragFloat("##w", &m_settings->Width, 1.0f, 1.0f, 4096.0f, 
-                            "%.0f"))
+        ImGui::Begin("Edit Resolutions", 
+                     &m_resolutionSettingsWindowEnabled, 
+                     ImGuiWindowFlags_NoScrollWithMouse | 
+                     ImGuiWindowFlags_NoScrollbar |
+                     ImGuiWindowFlags_AlwaysAutoResize);  
+        
+        for (int i = m_numDefaultResNames; 
+          i < m_emulatorResolutionNames.size(); ++i)
         {
-          UpdateSimulationWndSize();
+          ImGui::PushID(i*333);
+          ImGui::InputText("name",
+                           m_emulatorResolutionNames[i].data(),
+                           32);
+          ImGui::SameLine();  
+          ImGui::InputInt2("size", &m_screenResolutions[i].x);
+          ImGui::SameLine();
+          if (ImGui::Button(ICON_FA_MINUS)) 
+          {
+            RemoveResolutionName(i);
+          }
+          ImGui::PopID();
         }
-      
+        
+        ImGui::Text("Add New");
         ImGui::SameLine();
-        ImGui::Text("Height");
-        ImGui::SetNextItemWidth(70.0f);
-        ImGui::SameLine();
-      
-        if (ImGui::DragFloat("##h", &m_settings->Height, 1.0f, 1.0f, 4096.0f,
-                             "%.0f"))
+        if (ImGui::Button(ICON_FA_PLUS))
         {
-          UpdateSimulationWndSize();
+          AddResolutionName("new resolution\0");
         }
+
+        ImGui::End();
       }
+
       // Zoom
       ImGui::SameLine();
       ImGui::Text("Zoom");
-      ImGui::SetNextItemWidth(70.0f);
+      ImGui::SetNextItemWidth(60.0f);
       ImGui::SameLine();
       
-      if (ImGui::SliderFloat("##z", &m_settings->Scale, 0.25f, 1.0f, "x%.2f"))
+      if (ImGui::DragFloat("##z", &m_settings->Scale, 0.05f, 0.0f, 1.0f))
       {
         UpdateSimulationWndSize();
       }
-      
       // Landscape - Portrait Toggle
       ImGui::SameLine();
       ImGui::Text("Rotate");
