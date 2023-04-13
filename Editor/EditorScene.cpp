@@ -126,10 +126,10 @@ namespace ToolKit
       {
         m_selectedEntities.clear();
       }
-     
+
       if (IsSelected(id))
       {
-        if(!additive) // we've cleared the array, must add again
+        if (!additive) // we've cleared the array, must add again
         {
           m_selectedEntities.push_back(id);
         }
@@ -368,6 +368,7 @@ namespace ToolKit
       // Add billboards to scene
       EntityRawPtrArray temp = extraList;
       temp.insert(temp.end(), m_billboards.begin(), m_billboards.end());
+      UpdateBillboardsForPicking();
 
       Scene::PickData pdata = Scene::PickObject(ray, ignoreList, temp);
 
@@ -391,6 +392,7 @@ namespace ToolKit
       // Add billboards to scene
       EntityRawPtrArray temp = extraList;
       temp.insert(temp.end(), m_billboards.begin(), m_billboards.end());
+      UpdateBillboardsForPicking();
 
       Scene::PickObject(frustum,
                         pickedObjects,
@@ -571,6 +573,21 @@ namespace ToolKit
         // Add billboard
         AddBillboardToEntity(entity);
         return true;
+      }
+    }
+
+    void EditorScene::UpdateBillboardsForPicking()
+    {
+      if (Viewport* vp = g_app->GetActiveViewport())
+      {
+        if (Camera* cam = vp->GetCamera())
+        {
+          for (Entity* billboard : m_billboards)
+          {
+            static_cast<Billboard*>(billboard)->LookAt(cam,
+                                                       vp->GetBillboardScale());
+          }
+        }
       }
     }
 

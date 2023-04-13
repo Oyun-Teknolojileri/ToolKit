@@ -84,6 +84,12 @@ namespace ToolKit
       bool InitBillboard(Entity* entity,
                          EditorBillboardBase::BillboardType type);
 
+      /**
+       * Updates the billboards to align with current viewports camera for
+       * proper picking.
+      */
+      void UpdateBillboardsForPicking();
+
      public:
       // Indicates if this is created via new scene.
       // That is not saved on the disk.
