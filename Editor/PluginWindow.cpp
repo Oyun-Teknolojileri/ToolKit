@@ -35,12 +35,17 @@ namespace ToolKit
 
     void PluginWindow::RemoveResolutionName(int index)
     {
-      assert(index < 0 ||
-             index < m_screenResolutions.size() && "resolution index invalid");
+      bool canRemove = index > 0 ||
+                       index < m_screenResolutions.size();
 
-      m_screenResolutions.erase(m_screenResolutions.begin() + index);
-      m_emulatorResolutionNames.erase(m_emulatorResolutionNames.begin() +
-                                      index);
+      assert(canRemove && "resolution index invalid");
+      
+      if (canRemove)
+      {
+        m_screenResolutions.erase(m_screenResolutions.begin() + index);
+        m_emulatorResolutionNames.erase(m_emulatorResolutionNames.begin() +
+                                        index);
+      }
     }
 
     void PluginWindow::RemoveResolutionName(const String& name)
