@@ -162,38 +162,19 @@ namespace ToolKit
 
   void Material::SetDefaultMaterialTypeShaders()
   {
-    auto pbrSanizerFn = [this]() -> void
+    if (IsPBR()) 
     {
-      m_vertexShader = GetShaderManager()->GetDefaultVertexShader();
-
-      if (IsTranslucent())
+      if (IsTranslucent()) 
       {
         m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
       }
-      else
+      else 
       {
         m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
       }
-    };
 
-    switch (m_materialType)
-    {
-    case MaterialType::PBR:
-      pbrSanizerFn();
-      break;
-    case MaterialType::Custom:
-      if (IsDeferred())
-      {
-        pbrSanizerFn();
-      }
-      break;
-    default:
-      assert(false && "Unknown material type.");
-      break;
+      m_fragmentShader->Init();
     }
-
-    m_fragmentShader->Init();
-    m_vertexShader->Init();
   }
 
   bool Material::IsDeferred()
