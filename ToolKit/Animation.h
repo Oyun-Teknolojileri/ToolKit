@@ -18,12 +18,17 @@
 
 namespace ToolKit
 {
-
+  /*
+  * Blending to next Animation configration for AnimRecord class.
+  */
   struct BlendTarget
   {
-    Animation* targetAnim = nullptr; //!< Animation to Blend.
-    float overlapTime = 1.0f;        //!< How early animation will start blending.
-    bool blend = false;
+    Animation* TargetAnim = nullptr;            //!< Animation to Blend.
+    float OverlapTime = 1.0f;                   //!< How early animation will start blending.
+    String RootBone = "";                       //!< Root bone of animation nodes for offsetting.
+    Vec3 TranslationOffset = ZERO;              //!< Transform offset of target animation.
+    Quaternion OrientationOffset = glm::quat(); //!< Orientation offset of target animation.
+    bool Blend = false;
   };
 
   /**

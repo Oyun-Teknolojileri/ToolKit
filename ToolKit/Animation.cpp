@@ -69,7 +69,6 @@ namespace ToolKit
     Vec3 translation;
     Quaternion orientation;
     Vec3 scale;
-
     for (auto& dBoneIter : skeleton->m_map->boneList)
     {
       auto entry = m_keys.find(dBoneIter.first);
@@ -79,7 +78,7 @@ namespace ToolKit
       }
 
       GetNearestKeys(entry->second, key1, key2, ratio, time);
-
+  
       // Sanity checks
       int keySize = static_cast<int>(entry->second.size());
       if (keySize <= key1 || keySize <= key2)
@@ -100,22 +99,31 @@ namespace ToolKit
       orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
       scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
 
-      if (blendTarget.blend)
+      if (blendTarget.Blend)
       {
-        float targetAnimTime = time - m_duration + blendTarget.overlapTime;
+        float targetAnimTime = time - m_duration + blendTarget.OverlapTime;
         if (targetAnimTime >= 0.0f)
         {
-          float blendRatio = targetAnimTime / blendTarget.overlapTime;
-          auto targetEntry = blendTarget.targetAnim->m_keys.find(dBoneIter.first);
+          float blendRatio = targetAnimTime / blendTarget.OverlapTime;
+          auto targetEntry = blendTarget.TargetAnim->m_keys.find(dBoneIter.first);
           int targetKey1, targetKey2;
           float targetRatio;
-          blendTarget.targetAnim->GetNearestKeys(targetEntry->second, targetKey1, targetKey2, targetRatio, targetAnimTime);
+          blendTarget.TargetAnim->GetNearestKeys(targetEntry->second, targetKey1, targetKey2, targetRatio, targetAnimTime);
           Key targetK1 = targetEntry->second[targetKey1];
           Key targetK2 = targetEntry->second[targetKey2];
           
           Vec3 translationT = Interpolate(targetK1.m_position, targetK2.m_position, targetRatio);
           Quaternion orientationT = glm::slerp(targetK1.m_rotation, targetK2.m_rotation, targetRatio);
           Vec3 scaleT = Interpolate(targetK1.m_scale, targetK2.m_scale, targetRatio);
+
+          if (dBoneIter.first == blendTarget.RootBone)
+          {
+            Vec3 entityScale = skeleton->m_entity->m_node->GetScale();
+            float translationCoeff = (1 / entityScale.x);
+            translationT = translationT + (blendTarget.TranslationOffset * translationCoeff);
+            orientationT = orientationT * blendTarget.OrientationOffset;
+          }
+ 
           translation = Interpolate(translation, translationT, blendRatio);
           orientation = glm::slerp(orientation, orientationT, blendRatio);
           scale = Interpolate(scale, scaleT, blendRatio);
