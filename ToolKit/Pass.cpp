@@ -149,23 +149,21 @@ namespace ToolKit
   {
     for (const RenderJob& job : jobArray)
     {
-      // Forward pipeline.
-      if (!job.Material->IsDeferred())
+      if (job.Material->IsTranslucent())
       {
-        if (job.Material->IsTranslucent())
-        {
-          translucent.push_back(job);
-        }
-        else
-        {
-          forward.push_back(job);
-        }
+        translucent.push_back(job);
+      }
+      else if (job.Material->IsDeferred())
+      {
+        deferred.push_back(job);
       }
       else
       {
-        // Deferred pipeline.
-        deferred.push_back(job);
+        forward.push_back(job);
       }
+
+      // Sanitize shaders.
+      job.Material->SetDefaultMaterialTypeShaders();
     }
   }
 

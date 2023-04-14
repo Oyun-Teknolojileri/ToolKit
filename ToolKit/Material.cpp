@@ -167,10 +167,8 @@ namespace ToolKit
 
   void Material::SetDefaultMaterialTypeShaders()
   {
-    switch (m_materialType)
+    auto pbrSanizerFn = [this]() -> void
     {
-    case MaterialType::PBR:
-      UnInit();
       m_vertexShader = GetShaderManager()->Create<Shader>(
           ShaderPath("defaultVertex.shader", true));
 
@@ -184,12 +182,26 @@ namespace ToolKit
         m_fragmentShader = GetShaderManager()->Create<Shader>(
             ShaderPath(TK_DEFAULT_DEFERRED_FRAG, true));
       }
+    };
 
-      Init();
+    switch (m_materialType)
+    {
+    case MaterialType::PBR:
+      pbrSanizerFn();
       break;
-    default: // Custom
+    case MaterialType::Custom:
+      if (IsDeferred())
+      {
+        pbrSanizerFn();
+      }
+      break;
+    default:
+      assert(false && "Unknown material type.");
       break;
     }
+
+    m_fragmentShader->Init();
+    m_vertexShader->Init();
   }
 
   bool Material::IsDeferred()
