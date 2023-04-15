@@ -171,15 +171,7 @@ namespace ToolKit
     job.Material->Init();
 
     // Set render material.
-    m_mat = nullptr;
-    if (m_overrideMat != nullptr)
-    {
-      m_mat = m_overrideMat;
-    }
-    else
-    {
-      m_mat = job.Material;
-    }
+    m_mat = m_overrideMat != nullptr ? m_overrideMat : job.Material;
 
     if (m_mat == nullptr)
     {
@@ -218,7 +210,7 @@ namespace ToolKit
     RenderState* rs = m_mat->GetRenderState();
     SetRenderState(rs);
     FeedUniforms(prg);
-
+    
     glBindVertexArray(mesh->m_vaoId);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
     SetVertexLayout(mesh->m_vertexLayout);
@@ -1098,6 +1090,14 @@ namespace ToolKit
               program->m_handle,
               GetUniformName(Uniform::IBL_MAX_REFLECTION_LOD));
           glUniform1i(loc, RHIConstants::specularIBLLods - 1);
+        }
+        break;
+        case Uniform::Time:
+        {
+          GLint loc = glGetUniformLocation(program->m_handle, 
+                                           GetUniformName(Uniform::Time));
+          glUniform1f(loc,
+                      Main::GetInstance()->TimeSinceStartup() / 1000.0f);  
         }
         break;
         default:

@@ -266,27 +266,9 @@ namespace ToolKit
       ImGui_ImplSDL2_ProcessEvent(&e);
     }
 
-    struct Timing
-    {
-      explicit Timing(uint fps)
-      {
-        lastTime    = GetElapsedMilliSeconds();
-        currentTime = 0.0f;
-        deltaTime   = 1000.0f / static_cast<float>(fps);
-        frameCount  = 0;
-        timeAccum   = 0.0f;
-      }
-
-      float lastTime    = 0.0f;
-      float currentTime = 0.0f;
-      float deltaTime   = 0.0f;
-      float timeAccum   = 0.0f;
-      int frameCount    = 0;
-    };
-
     void TK_Loop(void* args)
     {
-      Timing* timer = static_cast<Timing*>(args);
+      Timing* timer = &Main::GetInstance()->m_timing;
 
       while (g_running)
       {
@@ -329,8 +311,8 @@ namespace ToolKit
       PreInit();
       Init();
 
-      static Timing timer(g_settings.Graphics.FPS);
-      TK_Loop(reinterpret_cast<void*>(&timer));
+      Main::GetInstance()->m_timing.Initialize(g_settings.Graphics.FPS);
+      TK_Loop(nullptr);
 
       Exit();
       return 0;
