@@ -1359,8 +1359,8 @@ namespace ToolKit
         GL_TEXTURE_2D,       // 11 -> gBuffer color texture
         GL_TEXTURE_2D,       // 12 -> gBuffer emissive texture
         GL_TEXTURE_2D,       // 13 -> Light Data Texture
-        GL_TEXTURE_CUBE_MAP, // 14 -> gBuffer metallic roughness texture
-        GL_TEXTURE_2D,       // 15 -> IBL Specular Pre-Filtered Map
+        GL_TEXTURE_2D,       // 14 -> gBuffer metallic roughness texture
+        GL_TEXTURE_CUBE_MAP, // 15 -> IBL Specular Pre-Filtered Map
         GL_TEXTURE_2D        // 16 -> IBL BRDF Lut
     };
     glBindTexture(textureTypeLut[slotIndx], m_textureSlots[slotIndx]);

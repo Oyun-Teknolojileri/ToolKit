@@ -32,7 +32,7 @@
 			if(focusScale == 0.0f){
 				return color;
 			}
-			float centerDepth = -texture(s_texture1, texCoord).r;
+			float centerDepth = -texture(s_texture1, texCoord).z;
 			float centerSize = getBlurSize(centerDepth);
 			float tot = 1.0;
 			float radius = radiusScale;
@@ -40,7 +40,7 @@
 			{
 				vec2 tc = texCoord + vec2(cos(ang), sin(ang)) * uPixelSize * radius;
 				vec3 sampleColor = texture(s_texture0, tc).rgb;
-				float sampleDepth = -texture(s_texture1, tc).r;
+				float sampleDepth = -texture(s_texture1, tc).z;
 				float sampleSize = getBlurSize(sampleDepth);
 				if (sampleDepth > centerDepth)
 					sampleSize = clamp(sampleSize, 0.0, centerSize*2.0);
