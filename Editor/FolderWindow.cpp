@@ -1093,7 +1093,7 @@ namespace ToolKit
           if (const ImGuiPayload* payload =
                 ImGui::AcceptDragDropPayload("BrowserDragZone"))
           {
-            if (g_dragBeginView != nullptr && g_dragBeginView != nullptr)
+            if (g_dragBeginView != nullptr)
             {
               g_dragBeginView->DropFiles(node.path);
             }
