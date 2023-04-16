@@ -1085,6 +1085,23 @@ namespace ToolKit
           selectedEntry.m_visible = true;
         }
       };
+
+      const auto acceptDrop = [&]() -> void
+      {
+        if (ImGui::BeginDragDropTarget())
+        {
+          if (const ImGuiPayload* payload =
+                ImGui::AcceptDragDropPayload("BrowserDragZone"))
+          {
+            if (g_dragBeginView != nullptr && g_dragBeginView != nullptr)
+            {
+              g_dragBeginView->DropFiles(node.path);
+            }
+          }
+          ImGui::EndDragDropTarget();
+        }        
+      };
+
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
       String stdId                 = "##" + std::to_string(index);
 
@@ -1100,6 +1117,7 @@ namespace ToolKit
             onClickedFn();
           }   
         }
+        acceptDrop();
       }
       else
       {
@@ -1116,6 +1134,7 @@ namespace ToolKit
           }
           ImGui::TreePop();
         }
+        acceptDrop();
       }
     }
     
