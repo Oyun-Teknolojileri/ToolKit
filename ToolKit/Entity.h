@@ -174,14 +174,6 @@ namespace ToolKit
     void ClearComponents();
 
     /**
-     * If there is a material component, returns its material else returns
-     * mesh's material. If there is not a MaterialComponent, it will return the
-     * mesh's first material. In case of multisubmesh, there may be multiple
-     * materials. But they are ignored.
-     */
-    MaterialPtr GetRenderMaterial() const;
-
-    /**
      * Used to identify if this Entity is a prefab, and if so, returns the
      * pointer to the parent prefab.
      * @return If the entity belongs to a Prefab it returns the pointer of the

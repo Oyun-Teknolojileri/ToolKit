@@ -109,12 +109,6 @@ namespace ToolKit
 
     void SetDepthTestFunc(CompareFunctions func);
 
-    // If there is a material component, returns its material else
-    // returns mesh's material. If there is not a MaterialComponent, it will
-    // return the mesh's first material. In case of multisubmesh, there may be
-    // multiple materials. But they are ignored.
-    MaterialPtr GetRenderMaterial(Entity* entity);
-
     // Giving nullptr as argument means no shadows
     void SetShadowAtlas(TexturePtr shadowAtlas);
 

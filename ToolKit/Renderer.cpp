@@ -595,16 +595,6 @@ namespace ToolKit
     Render(jobs, cam);
   }
 
-  MaterialPtr Renderer::GetRenderMaterial(Entity* entity)
-  {
-    if (m_overrideMat)
-    {
-      return m_overrideMat;
-    }
-
-    return entity->GetRenderMaterial();
-  }
-
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
   {
     assert(source->m_width == dest->m_width &&
