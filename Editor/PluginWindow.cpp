@@ -17,7 +17,7 @@ namespace ToolKit
     {
       m_name     = "Plugin";
       m_settings = &g_app->m_simulatorSettings;
-      m_numDefaultResNames = m_emulatorResolutionNames.size();
+      m_numDefaultResNames = (int)m_emulatorResolutionNames.size();
     }
 
     PluginWindow::PluginWindow(XmlNode* node) : PluginWindow()
@@ -246,11 +246,11 @@ namespace ToolKit
 
       AddResolutionName("Edit Resolutions");
 
-      int lastEnumIndex = m_emulatorResolutionNames.size() - 1ull;
+      size_t lastEnumIndex = m_emulatorResolutionNames.size() - 1ull;
 
       // in order to send to imgui we should convert to ptr array
       std::vector<char*> enumNames;
-      for (int i = 0; i <= lastEnumIndex; i++) 
+      for (size_t i = 0; i <= lastEnumIndex; i++) 
       {
         enumNames.push_back(&m_emulatorResolutionNames[i][0]);
       }
@@ -258,7 +258,7 @@ namespace ToolKit
       if (ImGui::Combo("##Resolution",
                        &resolutionType,
                        enumNames.data(), 
-                       enumNames.size()))
+                       (int)enumNames.size()))
       {
         if (resolutionType == lastEnumIndex)
         {

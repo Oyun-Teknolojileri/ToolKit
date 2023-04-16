@@ -930,7 +930,7 @@ namespace ToolKit
       m_folderNodes.clear();
       CreateTreeRec(-1, DefaultPath());
       m_resourcesTreeIndex = (int)m_folderNodes.size();
-      CreateTreeRec(int(m_folderNodes.size() - 1), ResourcePath());
+      CreateTreeRec(int(m_folderNodes.size()) - 1, ResourcePath());
     }
 
     // parent will start with -1
@@ -938,7 +938,9 @@ namespace ToolKit
     {
       String folderName = path.filename().u8string();
       int index = (int)m_folderNodes.size();
-      m_folderNodes.emplace_back(index, path.u8string(), folderName);
+      m_folderNodes.emplace_back(index,
+                                 std::filesystem::absolute(path).u8string(),
+                                 folderName);
 
       for (const std::filesystem::directory_entry& directory 
           : std::filesystem::directory_iterator(path))
@@ -981,7 +983,7 @@ namespace ToolKit
       {
         // find clicked entry
         int selected = Exist(node.path);
-
+        
         if (selected != -1 && selected != m_activeFolder)
         {
           FolderView& selectedEntry = m_entries[selected];
