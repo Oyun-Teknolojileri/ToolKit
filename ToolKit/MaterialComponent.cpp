@@ -1,6 +1,7 @@
 #include "MaterialComponent.h"
-#include "MeshComponent.h"
+
 #include "Material.h"
+#include "MeshComponent.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -8,113 +9,87 @@
 namespace ToolKit
 {
 
-  MaterialComponent::MaterialComponent()
-  {
-    Material_Define(GetMaterialManager()->GetCopyOfDefaultMaterial(),
-                    MaterialComponentCategory.Name,
-                    MaterialComponentCategory.Priority,
-                    true,
-                    true);
-  }
+  MaterialComponent::MaterialComponent() {}
 
   MaterialComponent::~MaterialComponent() {}
-
-  void MaterialComponent::Init(bool flushClientSideArray)
-  {
-    GetMaterialVal()->Init(flushClientSideArray);
-  }
 
   ComponentPtr MaterialComponent::Copy(Entity* ntt)
   {
     MaterialComponentPtr mc = std::make_shared<MaterialComponent>();
     mc->m_localData         = m_localData;
     mc->m_entity            = ntt;
+    mc->m_materialList      = m_materialList;
 
     return mc;
   }
 
-  MultiMaterialComponent::MultiMaterialComponent() {}
-
-  MultiMaterialComponent::~MultiMaterialComponent() {}
-
-  ComponentPtr MultiMaterialComponent::Copy(Entity* ntt)
-  {
-    MultiMaterialPtr mc = std::make_shared<MultiMaterialComponent>();
-    mc->m_localData     = m_localData;
-    mc->m_entity        = ntt;
-    mc->materials       = materials;
-
-    return mc;
-  }
-
-  void MultiMaterialComponent::Init(bool flushClientSideArray) {}
+  void MaterialComponent::Init(bool flushClientSideArray) {}
 
   const char *XmlMatCountAttrib = "MaterialCount", *XmlMatIdAttrib = "ID";
 
-  void MultiMaterialComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void MaterialComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     Component::DeSerialize(doc, parent);
     uint matCount = 0;
     ReadAttr(parent, XmlMatCountAttrib, matCount);
-    materials.resize(matCount);
-    for (uint i = 0; i < materials.size(); i++)
+    m_materialList.resize(matCount);
+    for (size_t i = 0; i < m_materialList.size(); i++)
     {
       XmlNode* resourceNode = parent->first_node(std::to_string(i).c_str());
       if (!resourceNode)
       {
-        materials[i] = GetMaterialManager()->GetCopyOfDefaultMaterial();
+        m_materialList[i] = GetMaterialManager()->GetCopyOfDefaultMaterial();
         continue;
       }
-      materials[i] = GetMaterialManager()->Create<Material>(
+      m_materialList[i] = GetMaterialManager()->Create<Material>(
           MaterialPath(Resource::DeserializeRef(resourceNode)));
     }
   }
 
-  void MultiMaterialComponent::Serialize(XmlDocument* doc,
-                                         XmlNode* parent) const
+  void MaterialComponent::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     Component::Serialize(doc, parent);
     XmlNode* compNode = parent->last_node(XmlComponent.c_str());
     WriteAttr(compNode,
               doc,
               XmlMatCountAttrib,
-              std::to_string(materials.size()));
-    for (uint i = 0; i < materials.size(); i++)
+              std::to_string(m_materialList.size()));
+    for (size_t i = 0; i < m_materialList.size(); i++)
     {
-      if (materials[i]->m_dirty)
+      if (m_materialList[i]->m_dirty)
       {
-        materials[i]->Save(true);
+        m_materialList[i]->Save(true);
       }
       XmlNode* resourceRefNode =
           CreateXmlNode(doc, std::to_string(i), compNode);
-      materials[i]->SerializeRef(doc, resourceRefNode);
+      m_materialList[i]->SerializeRef(doc, resourceRefNode);
     }
   }
 
-  void MultiMaterialComponent::AddMaterial(MaterialPtr mat)
+  void MaterialComponent::AddMaterial(MaterialPtr mat)
   {
-    materials.push_back(mat);
+    m_materialList.push_back(mat);
   }
 
-  void MultiMaterialComponent::RemoveMaterial(uint index)
+  void MaterialComponent::RemoveMaterial(uint index)
   {
-    assert(materials.size() >= index && "Material List overflow");
-    materials.erase(materials.begin() + index);
+    assert(m_materialList.size() >= index && "Material List overflow");
+    m_materialList.erase(m_materialList.begin() + index);
   }
 
-  const MaterialPtrArray& MultiMaterialComponent::GetMaterialList() const
+  const MaterialPtrArray& MaterialComponent::GetMaterialList() const
   {
-    return materials;
+    return m_materialList;
   }
 
-  MaterialPtrArray& MultiMaterialComponent::GetMaterialList()
+  MaterialPtrArray& MaterialComponent::GetMaterialList()
   {
-    return materials;
+    return m_materialList;
   }
 
-  void MultiMaterialComponent::UpdateMaterialList()
+  void MaterialComponent::UpdateMaterialList()
   {
-    materials.clear();
+    m_materialList.clear();
     MeshComponentPtrArray meshComps;
     m_entity->GetComponent<MeshComponent>(meshComps);
 
@@ -129,8 +104,46 @@ namespace ToolKit
 
       for (uint i = 0; i < meshCollector.size(); i++)
       {
-        materials.push_back(meshCollector[i]->m_material);
+        m_materialList.push_back(meshCollector[i]->m_material);
       }
+    }
+  }
+
+  MaterialPtr MaterialComponent::GetFirstMaterial() 
+  {
+    if (m_materialList.empty()) 
+    {
+      if (const MeshComponentPtr& mc = m_entity->GetMeshComponent()) 
+      {
+        if (MeshPtr m = mc->GetMeshVal()) 
+        {
+          if (m->m_material) 
+          {
+            // Either return the material on the mesh.
+            return m->m_material;
+          }
+        }
+      }
+    }
+    else 
+    {
+      // First found material.
+      return m_materialList.front();
+    }
+
+    // Worst case, a default material.
+    return GetMaterialManager()->GetCopyOfDefaultMaterial(); 
+  }
+
+  void MaterialComponent::SetFirstMaterial(const MaterialPtr& material) 
+  {
+    if (m_materialList.empty())
+    {
+      m_materialList.push_back(material);
+    }
+    else 
+    {
+      m_materialList[0] = material;
     }
   }
 

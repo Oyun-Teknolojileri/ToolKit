@@ -588,21 +588,11 @@ namespace ToolKit
     {
       cube.AddComponent(new MaterialComponent);
     }
-    cube.GetMaterialComponent()->SetMaterialVal(mat);
+    cube.GetMaterialComponent()->SetFirstMaterial(mat);
 
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJob(&cube, jobs);
     Render(jobs, cam);
-  }
-
-  MaterialPtr Renderer::GetRenderMaterial(Entity* entity)
-  {
-    if (m_overrideMat)
-    {
-      return m_overrideMat;
-    }
-
-    return entity->GetRenderMaterial();
   }
 
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)

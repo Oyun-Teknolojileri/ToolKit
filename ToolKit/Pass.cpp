@@ -64,17 +64,7 @@ namespace ToolKit
       mc->GetMeshVal()->GetAllMeshes(allMeshes);
 
       allMaterials.reserve(allMeshes.size());
-      if (MaterialComponentPtr mc = ntt->GetMaterialComponent())
-      {
-        // Single material overrides all mesh materials.
-        MaterialPtr mat = mc->GetMaterialVal();
-        for (size_t i = 0; i < allMeshes.size(); i++)
-        {
-          allMaterials.push_back(mat);
-        }
-      }
-      else if (MultiMaterialPtr mmc =
-                   ntt->GetComponent<MultiMaterialComponent>())
+      if (MaterialComponentPtr mmc = ntt->GetMaterialComponent())
       {
         // There are material assignments per sub mesh.
         MaterialPtrArray& mlist = mmc->GetMaterialList();

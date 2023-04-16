@@ -109,26 +109,6 @@ namespace ToolKit
     m_components.clear();
   }
 
-  MaterialPtr Entity::GetRenderMaterial() const
-  {
-    MaterialPtr renderMat = nullptr;
-    if (MaterialComponentPtr matCom = GetMaterialComponent())
-    {
-      renderMat = matCom->GetMaterialVal();
-    }
-    else if (MeshComponentPtr meshCom = GetMeshComponent())
-    {
-      renderMat = meshCom->GetMeshVal()->m_material;
-    }
-
-    if (renderMat == nullptr)
-    {
-      renderMat = GetMaterialManager()->GetCopyOfDefaultMaterial();
-    }
-
-    return renderMat;
-  }
-
   Entity* Entity::GetPrefabRoot() const { return _prefabRootEntity; }
 
   Entity* Entity::CopyTo(Entity* other) const
