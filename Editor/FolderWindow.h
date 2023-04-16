@@ -51,6 +51,8 @@ namespace ToolKit
       void ShowContextMenu(DirectoryEntry* entry = nullptr);
       void Refresh();
       float GetThumbnailZoomPercent(float thumbnailZoom);
+     
+      void DropFiles(const String& dst); //!< drop selectedFiles
 
      private:
       void DrawSearchBar();
@@ -73,9 +75,10 @@ namespace ToolKit
       bool m_onlyNativeTypes = true;
       Vec2 m_iconSize        = Vec2(50.0f);
       std::vector<DirectoryEntry> m_entries;
+      std::vector<DirectoryEntry*> m_selectedFiles;
       String m_folder;
       String m_path;
-      //!< for cut,copy and paste. static because its same in between all views
+      // for cut,copy and paste. static because its same in between all views
       static DirectoryEntry* m_currentEntry;
 
      private:

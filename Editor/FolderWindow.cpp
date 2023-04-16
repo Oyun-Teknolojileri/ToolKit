@@ -81,6 +81,16 @@ namespace ToolKit
       m_parent = parent;
     }
 
+    struct FileDragData
+    {
+      int NumFiles = 0;
+      DirectoryEntry** Entries = nullptr;
+    };
+
+    static FileDragData g_fileDragData{};
+    static FolderView* g_dragBeginView = nullptr;
+    static bool g_carryingFiles = false;
+
     void FolderView::DrawSearchBar()
     {
       // Handle Item Icon size.
@@ -200,6 +210,7 @@ namespace ToolKit
         }
         else
         {
+          bool anyButtonClicked = false;
           // Draw folder items.
           for (int i = 0; i < static_cast<int>(m_entries.size()); i++)
           {
@@ -254,12 +265,44 @@ namespace ToolKit
             ImVec2 texCoords =
                 flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
 
+            bool isSelected = std::count(m_selectedFiles.begin(),
+                                         m_selectedFiles.end(),
+                                         m_entries.data() + i);
+            if (isSelected == true)
+            {
+              ImGui::PushStyleColor(ImGuiCol_Button,
+                                    ImVec4(0.7f, 0.6f, 0.0f, 1.0f));
+              ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
+                                    ImVec4(0.7f, 0.6f, 0.0f, 1.0f));
+            }
+
             // Draw Item Icon.
             if (ImGui::ImageButton(ConvertUIntImGuiTexture(iconId),
                                    m_iconSize,
                                    ImVec2(0.0f, 0.0f),
                                    texCoords))
             {
+              anyButtonClicked |= true;
+              bool ctrlDown = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+              if (isSelected == false)
+              {
+                m_selectedFiles.push_back(&dirEnt);
+              }
+              else if (ctrlDown && isSelected == true) // already selected, removing
+              {
+                DirectoryEntry* dirEntPtr = m_entries.data() + i;
+
+                erase_if(m_selectedFiles,
+                         [dirEntPtr](DirectoryEntry* other) -> bool
+                         {
+                          return other == dirEntPtr;
+                         });
+              }
+              else
+              {
+                m_selectedFiles.clear();
+              }
+
               if (ResourceManager* rm = dirEnt.GetManager())
               {
                 switch (rm->m_type)
@@ -279,7 +322,11 @@ namespace ToolKit
                 }
               }
             }
-
+            
+            if (isSelected == true)
+            {
+              ImGui::PopStyleColor(2);
+            }
             // Handle context menu.
             ShowContextMenu(&dirEnt);
 
@@ -321,9 +368,20 @@ namespace ToolKit
               if (ImGui::BeginDragDropSource(
                       ImGuiDragDropFlags_SourceAllowNullID))
               {
+                // if the file that we are holding is not selected
+                if (!isSelected) 
+                {
+                  // add to selection
+                  m_selectedFiles.push_back(&dirEnt);
+                }
+                g_fileDragData.Entries = m_selectedFiles.data();
+                g_fileDragData.NumFiles = (int)m_selectedFiles.size();
+                g_dragBeginView = this;
+                g_carryingFiles = true;
+
                 ImGui::SetDragDropPayload("BrowserDragZone",
-                                          &dirEnt,
-                                          sizeof(DirectoryEntry));
+                                          &g_fileDragData,
+                                          sizeof(FileDragData));
                 ImGui::ImageButton(ConvertUIntImGuiTexture(iconId),
                                    m_iconSize,
                                    ImVec2(0.0f, 0.0f),
@@ -338,7 +396,7 @@ namespace ToolKit
             {
               MoveTo(ConcatPaths({dirEnt.m_rootPath, dirEnt.m_fileName}));
             }
-
+            
             // Handle Item sub text.
             ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + m_iconSize.x);
             ImGui::TextWrapped("%s", dirEnt.m_fileName.c_str());
@@ -355,6 +413,19 @@ namespace ToolKit
               ImGui::SameLine();
             }
           }
+          bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+
+          // mouse released on empty position in this window
+          if (!anyButtonClicked && mouseReleased) 
+          {
+            if (g_carryingFiles == true && g_dragBeginView != nullptr)
+            {
+              g_dragBeginView->DropFiles(m_path);
+            }
+            m_selectedFiles.clear();
+          }
+
+          g_carryingFiles = mouseReleased ? false : g_carryingFiles;
         } // Tab item handling ends.
         ImGui::EndChild();
 
@@ -872,6 +943,45 @@ namespace ToolKit
       };
     }
 
+    void FolderView::DropFiles(const String& dst)
+    {
+      for (int i = 0; i < g_fileDragData.NumFiles; ++i)
+      {
+        DirectoryEntry& entry = *g_fileDragData.Entries[i];
+        if (!CheckFile(entry.GetFullPath()))
+        {
+          continue;
+        }
+        String newPath = ConcatPaths({ dst, entry.m_fileName + entry.m_ext });
+        std::error_code ec;
+        std::filesystem::rename(entry.GetFullPath(), newPath, ec);
+        if (ec)
+        {
+          g_app->m_statusMsg = ec.message();
+        }
+        else
+        {
+          // Update src & dst views.
+          String src = entry.m_rootPath;
+          if (src == m_path)
+          {
+            // Item moved across tabs.
+            src = dst;
+          }
+
+          int indx = m_parent->Exist(src);
+          if (indx != -1)
+          {
+            m_parent->GetView(indx).m_dirty = true;
+          }
+          m_dirty = true;
+        }
+      }
+      g_dragBeginView = nullptr;
+      g_carryingFiles = false;
+      m_selectedFiles.clear();
+    }
+
     void FolderView::MoveTo(const String& dst)
     {
       if (ImGui::BeginDragDropTarget())
@@ -879,33 +989,7 @@ namespace ToolKit
         if (const ImGuiPayload* payload =
                 ImGui::AcceptDragDropPayload("BrowserDragZone"))
         {
-          IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
-          DirectoryEntry entry = *(const DirectoryEntry*) payload->Data;
-          String newPath = ConcatPaths({dst, entry.m_fileName + entry.m_ext});
-
-          std::error_code ec;
-          std::filesystem::rename(entry.GetFullPath(), newPath, ec);
-          if (ec)
-          {
-            g_app->m_statusMsg = ec.message();
-          }
-          else
-          {
-            // Update src & dst views.
-            String src = entry.m_rootPath;
-            if (src == m_path)
-            {
-              // Item moved across tabs.
-              src = dst;
-            }
-
-            int indx = m_parent->Exist(src);
-            if (indx != -1)
-            {
-              m_parent->GetView(indx).m_dirty = true;
-            }
-            m_dirty = true;
-          }
+          DropFiles(dst);
         }
         ImGui::EndDragDropTarget();
       }
