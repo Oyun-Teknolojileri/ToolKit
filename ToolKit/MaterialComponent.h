@@ -69,6 +69,9 @@ namespace ToolKit
      * corresponds to index of the mesh / submesh.
      */
     MaterialPtrArray m_materialList;
+
+    // Deprecated. Keeping it for Backward compatibility with 0.4.1
+    TKDeclareParam(MaterialPtr, Material);
   };
 
 } // namespace ToolKit

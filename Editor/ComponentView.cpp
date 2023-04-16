@@ -362,6 +362,7 @@ namespace ToolKit
 
         return isOpen;
       };
+
       for (VariantCategory& category : categories)
       {
         bool isOpen = showCompFunc(category.Name);
@@ -388,6 +389,7 @@ namespace ToolKit
           ImGui::TreePop();
         }
       }
+
       switch (comp->GetType())
       {
       case ComponentType::MaterialComponent:

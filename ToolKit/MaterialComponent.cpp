@@ -9,7 +9,14 @@
 namespace ToolKit
 {
 
-  MaterialComponent::MaterialComponent() {}
+  MaterialComponent::MaterialComponent()
+  {
+    Material_Define(GetMaterialManager()->GetCopyOfDefaultMaterial(),
+                    MaterialComponentCategory.Name,
+                    MaterialComponentCategory.Priority,
+                    true,
+                    true);
+  }
 
   MaterialComponent::~MaterialComponent() {}
 
@@ -44,6 +51,18 @@ namespace ToolKit
       m_materialList[i] = GetMaterialManager()->Create<Material>(
           MaterialPath(Resource::DeserializeRef(resourceNode)));
     }
+
+    // Deprecated Here for compatibility with 0.4.1
+    if (m_materialList.empty()) 
+    {
+      if (MaterialPtr mat = GetMaterialVal()) 
+      {
+        // Transfer the old material in to the list.
+        m_materialList.push_back(mat);
+        m_localData.Remove(ParamMaterial().m_id);
+      }
+    }
+
   }
 
   void MaterialComponent::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -109,15 +128,15 @@ namespace ToolKit
     }
   }
 
-  MaterialPtr MaterialComponent::GetFirstMaterial() 
+  MaterialPtr MaterialComponent::GetFirstMaterial()
   {
-    if (m_materialList.empty()) 
+    if (m_materialList.empty())
     {
-      if (const MeshComponentPtr& mc = m_entity->GetMeshComponent()) 
+      if (const MeshComponentPtr& mc = m_entity->GetMeshComponent())
       {
-        if (MeshPtr m = mc->GetMeshVal()) 
+        if (MeshPtr m = mc->GetMeshVal())
         {
-          if (m->m_material) 
+          if (m->m_material)
           {
             // Either return the material on the mesh.
             return m->m_material;
@@ -125,23 +144,23 @@ namespace ToolKit
         }
       }
     }
-    else 
+    else
     {
       // First found material.
       return m_materialList.front();
     }
 
     // Worst case, a default material.
-    return GetMaterialManager()->GetCopyOfDefaultMaterial(); 
+    return GetMaterialManager()->GetCopyOfDefaultMaterial();
   }
 
-  void MaterialComponent::SetFirstMaterial(const MaterialPtr& material) 
+  void MaterialComponent::SetFirstMaterial(const MaterialPtr& material)
   {
     if (m_materialList.empty())
     {
       m_materialList.push_back(material);
     }
-    else 
+    else
     {
       m_materialList[0] = material;
     }
