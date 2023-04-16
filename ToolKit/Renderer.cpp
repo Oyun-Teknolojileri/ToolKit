@@ -588,7 +588,7 @@ namespace ToolKit
     {
       cube.AddComponent(new MaterialComponent);
     }
-    cube.GetMaterialComponent()->SetMaterialVal(mat);
+    cube.GetMaterialComponent()->SetFirstMaterial(mat);
 
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJob(&cube, jobs);

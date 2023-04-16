@@ -200,7 +200,7 @@ namespace ToolKit
       }
 
       m_material = GetMaterialManager()->Create<Material>(g_gridMaterialName);
-      GetMaterialComponent()->SetMaterialVal(m_material);
+      GetMaterialComponent()->SetFirstMaterial(m_material);
     }
 
     void Grid::UpdateShaderParams()

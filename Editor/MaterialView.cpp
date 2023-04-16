@@ -102,7 +102,7 @@ namespace ToolKit
           ntt->SetVisibleVal(!primEntityVis);
           if (ntt->GetMaterialComponent())
           {
-            ntt->GetMaterialComponent()->SetMaterialVal(m_mat);
+            ntt->GetMaterialComponent()->SetFirstMaterial(m_mat);
           }
         }
       }

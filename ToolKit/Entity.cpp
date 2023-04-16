@@ -114,7 +114,7 @@ namespace ToolKit
     MaterialPtr renderMat = nullptr;
     if (MaterialComponentPtr matCom = GetMaterialComponent())
     {
-      renderMat = matCom->GetMaterialVal();
+      renderMat = matCom->GetFirstMaterial();
     }
     else if (MeshComponentPtr meshCom = GetMeshComponent())
     {

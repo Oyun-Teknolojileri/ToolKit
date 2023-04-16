@@ -91,7 +91,7 @@ namespace ToolKit
         MaterialPtr mat = GetMaterialManager()->Create<Material>(fullpath);
         if (MaterialComponentPtr mc = m_sphere->GetMaterialComponent())
         {
-          mc->SetMaterialVal(mat);
+          mc->SetFirstMaterial(mat);
         }
 
         m_thumbnailScene->AddEntity(m_sphere.get());
@@ -124,7 +124,7 @@ namespace ToolKit
         m_surface    = std::make_shared<Surface>(Vec2(w, h));
         m_surface->UpdateGeometry(false);
         MaterialComponentPtr matCom = m_surface->GetMaterialComponent();
-        matCom->GetMaterialVal()->m_diffuseTexture = texture;
+        matCom->GetFirstMaterial()->m_diffuseTexture = texture;
         matCom->Init(false);
 
         m_thumbnailScene->AddEntity(m_surface.get());

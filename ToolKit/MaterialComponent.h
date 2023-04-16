@@ -19,43 +19,9 @@ namespace ToolKit
     virtual ~MaterialComponent();
 
     /**
-     * Creates a copy of the MaterialComponent. Contained Material is copied
-     * and will be serialized to the scene if the containing Entity gets
-     * serialized.
+     * Creates a copy of the MaterialComponent.
      * @param ntt Parent Entity of the component.
      * @return Copy of the MaterialComponent.
-     */
-    ComponentPtr Copy(Entity* ntt) override;
-
-    void Init(bool flushClientSideArray);
-
-   public:
-    /**
-     * Component's material resource. In case this object is not null, Renderer
-     * picks this material to render the mesh otherwise falls back to Material
-     * within the Mesh.
-     */
-    TKDeclareParam(MaterialPtr, Material);
-  };
-
-  typedef std::shared_ptr<class MultiMaterialComponent> MultiMaterialPtr;
-  typedef std::vector<MultiMaterialPtr> MultiMaterialPtrArray;
-
-  static VariantCategory MultiMaterialCompCategory {"Multi-Material Component",
-                                                    90};
-
-  class TK_API MultiMaterialComponent : public Component
-  {
-   public:
-    TKComponentType(MultiMaterialComponent);
-
-    MultiMaterialComponent();
-    virtual ~MultiMaterialComponent();
-
-    /**
-     * Creates a copy of the MultiMaterialComponent.
-     * @param ntt Parent Entity of the component.
-     * @return Copy of the MultiMaterialComponent.
      */
     ComponentPtr Copy(Entity* ntt) override;
 
@@ -64,12 +30,45 @@ namespace ToolKit
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void AddMaterial(MaterialPtr mat);
     void RemoveMaterial(uint index);
+
+    /**
+     * Access to material list.
+     * @returns Immutable material list.
+     */
     const MaterialPtrArray& GetMaterialList() const;
+
+    /**
+     * Access to material list.
+     * @returns Mutable material list.
+     */
     MaterialPtrArray& GetMaterialList();
+
+    /**
+     * Re fetches all the materials from the parent entity.
+     */
     void UpdateMaterialList();
 
+    /**
+     * This function is aimed to provide easy access to the first material in
+     * the list, the assumption is that, the owner entity is a simple mesh with
+     * a single material.
+     * @returns The first material in the list. If the list is empty, the
+     * material on the first mesh, if its null to the default material.
+     */
+    MaterialPtr GetFirstMaterial();
+
+    /**
+     * Sets the first element of the material list as the given material.
+     * @params material is the material to set as the first.
+     */
+    void SetFirstMaterial(const MaterialPtr& material);
+
    private:
-    MaterialPtrArray materials;
+    /**
+     * Array of materials in the entity's meshes. The index of the material
+     * corresponds to index of the mesh / submesh.
+     */
+    MaterialPtrArray m_materialList;
   };
 
 } // namespace ToolKit

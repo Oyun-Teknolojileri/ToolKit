@@ -905,7 +905,7 @@ namespace ToolKit
       {
         meshComp->SetMeshVal(g_meshes[aMesh]);
       }
-      MultiMaterialPtr matComp = std::make_shared<MultiMaterialComponent>();
+      MaterialComponentPtr matComp = std::make_shared<MaterialComponent>();
       ntt->AddComponent(matComp);
       matComp->UpdateMaterialList();
     }
