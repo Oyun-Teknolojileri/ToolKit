@@ -1092,10 +1092,10 @@ namespace ToolKit
           glUniform1i(loc, RHIConstants::specularIBLLods - 1);
         }
         break;
-        case Uniform::Time:
+        case Uniform::ELAPSED_TIME:
         {
           GLint loc = glGetUniformLocation(program->m_handle, 
-                                           GetUniformName(Uniform::Time));
+                                         GetUniformName(Uniform::ELAPSED_TIME));
           glUniform1f(loc,
                       Main::GetInstance()->TimeSinceStartup() / 1000.0f);  
         }

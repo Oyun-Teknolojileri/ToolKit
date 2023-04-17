@@ -121,18 +121,18 @@ namespace ToolKit
   {
     void Initialize(uint fps)
     {
-      lastTime    = GetElapsedMilliSeconds();
-      currentTime = 0.0f;
-      deltaTime   = 1000.0f / static_cast<float>(fps);
-      frameCount  = 0;
-      timeAccum   = 0.0f;
+      LastTime    = GetElapsedMilliSeconds();
+      CurrentTime = 0.0f;
+      DeltaTime   = 1000.0f / static_cast<float>(fps);
+      FrameCount  = 0;
+      TimeAccum   = 0.0f;
     }
 
-    float lastTime    = 0.0f;
-    float currentTime = 0.0f;
-    float deltaTime   = 0.0f;
-    float timeAccum   = 0.0f;
-    int frameCount    = 0;
+    float LastTime    = 0.0f;
+    float CurrentTime = 0.0f;
+    float DeltaTime   = 0.0f;
+    float TimeAccum   = 0.0f;
+    int   FrameCount    = 0;
   };
 
   class TK_API Main
@@ -149,7 +149,7 @@ namespace ToolKit
     virtual void Uninit();
     virtual void PostUninit();
 
-    float TimeSinceStartup() { return m_timing.currentTime; }
+    float TimeSinceStartup() { return m_timing.CurrentTime; }
     /**
      * Overrides the default configPath, if not changed relative to editor.exe.
      * ../Config

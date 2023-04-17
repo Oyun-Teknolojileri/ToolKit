@@ -94,6 +94,7 @@ namespace ToolKit
     m_materialManager->Init();
     m_sceneManager->Init();
     m_skeletonManager->Init();
+    m_timing.Initialize(m_engineSettings.Graphics.FPS);
 
     m_initiated = true;
   }

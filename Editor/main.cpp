@@ -24,7 +24,6 @@ namespace ToolKit
     SDL_GLContext g_context = nullptr;
     App* g_app              = nullptr;
     Main* g_proxy           = nullptr;
-    EngineSettings g_settings;
 
     /*
      * Refactor as below.
@@ -109,7 +108,7 @@ namespace ToolKit
 
     void Init()
     {
-      g_settings = g_proxy->m_engineSettings;
+      EngineSettings& settings = g_proxy->m_engineSettings;
 
       // Init SDL
       if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0)
@@ -143,11 +142,11 @@ namespace ToolKit
         // SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 16);
         // SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 16);
 
-        if (g_settings.Graphics.MSAA > 0)
+        if (settings.Graphics.MSAA > 0)
         {
           SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
           SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,
-                              g_settings.Graphics.MSAA);
+                              settings.Graphics.MSAA);
         }
 
 #ifdef TK_DEBUG
@@ -155,11 +154,11 @@ namespace ToolKit
 #endif
 
         g_window =
-            SDL_CreateWindow(g_settings.Window.Name.c_str(),
+            SDL_CreateWindow(settings.Window.Name.c_str(),
                              SDL_WINDOWPOS_UNDEFINED,
                              SDL_WINDOWPOS_UNDEFINED,
-                             g_settings.Window.Width,
-                             g_settings.Window.Height,
+                             settings.Window.Width,
+                             settings.Window.Height,
                              SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE |
                                  SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 
@@ -205,7 +204,7 @@ namespace ToolKit
             SDL_GL_SetSwapInterval(0);
 
             // Init app
-            g_app = new App(g_settings.Window.Width, g_settings.Window.Height);
+            g_app = new App(settings .Window.Width, settings .Window.Height);
             g_app->m_sysComExecFn = ToolKit::Win32Helpers::g_SysComExecFn;
             GetLogger()->SetPlatformConsoleFn(
                 [](LogType type, const String& msg) -> void
@@ -279,10 +278,10 @@ namespace ToolKit
           ProcessEvent(sdlEvent);
         }
 
-        timer->currentTime = GetElapsedMilliSeconds();
-        if (timer->currentTime > timer->lastTime + timer->deltaTime)
+        timer->CurrentTime = GetElapsedMilliSeconds();
+        if (timer->CurrentTime > timer->LastTime + timer->DeltaTime)
         {
-          g_app->Frame(timer->currentTime - timer->lastTime);
+          g_app->Frame(timer->CurrentTime - timer->LastTime);
 
           // Update Present imgui windows.
           ImGui::UpdatePlatformWindows();
@@ -292,16 +291,16 @@ namespace ToolKit
 
           ClearPool(); // Clear after consumption.
 
-          timer->frameCount++;
-          timer->timeAccum += timer->currentTime - timer->lastTime;
-          if (timer->timeAccum >= 1000.0f)
+          timer->FrameCount++;
+          timer->TimeAccum += timer->CurrentTime - timer->LastTime;
+          if (timer->TimeAccum >= 1000.0f)
           {
-            g_app->m_fps      = timer->frameCount;
-            timer->timeAccum  = 0;
-            timer->frameCount = 0;
+            g_app->m_fps      = timer->FrameCount;
+            timer->TimeAccum  = 0;
+            timer->FrameCount = 0;
           }
 
-          timer->lastTime = timer->currentTime;
+          timer->LastTime = timer->CurrentTime;
         }
       }
     }
@@ -311,7 +310,6 @@ namespace ToolKit
       PreInit();
       Init();
 
-      Main::GetInstance()->m_timing.Initialize(g_settings.Graphics.FPS);
       TK_Loop(nullptr);
 
       Exit();

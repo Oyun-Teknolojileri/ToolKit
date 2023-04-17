@@ -139,7 +139,7 @@ namespace ToolKit
       return "Color";
     case Uniform::FRAME_COUNT:
       return "FrameCount";
-    case Uniform::Time:
+    case Uniform::ELAPSED_TIME:
       return "Time";
     case Uniform::EXPOSURE:
       return "Exposure";
