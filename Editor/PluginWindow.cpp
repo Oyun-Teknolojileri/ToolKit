@@ -238,6 +238,8 @@ namespace ToolKit
       // Resolution Bar
       EmulatorResolution resolution = m_settings->Resolution;
       int resolutionType            = static_cast<int>(resolution);
+      resolutionType                = glm::min(resolutionType,
+                                      int(m_screenResolutions.size() - 1ull));            
 
       ImGui::SetNextItemWidth(
           ImGui::CalcTextSize(m_emulatorResolutionNames[resolutionType].data())
@@ -312,6 +314,22 @@ namespace ToolKit
         {
           AddResolutionName("new resolution\0");
         }
+        ImGui::SameLine();
+        // show apply button to save resolution settings
+        float cursorX = ImGui::GetCursorPosX();
+        ImGui::SetCursorPosX(
+          glm::max(cursorX + ImGui::GetWindowWidth() - 150.0f, 150.0f));
+
+        bool hasCustomRes = m_screenResolutions.size() >= m_numDefaultResNames;
+        if (hasCustomRes && ImGui::Button("Apply")) // show apply button if has custom res
+        {
+           Vec2 resSize = m_screenResolutions[(int)m_settings->Resolution];
+           m_settings->Width  = (float)resSize.x;
+           m_settings->Height = (float)resSize.y;
+           UpdateSimulationWndSize();
+        }
+        
+        ImGui::SetCursorPosX(cursorX);
 
         ImGui::End();
       }
