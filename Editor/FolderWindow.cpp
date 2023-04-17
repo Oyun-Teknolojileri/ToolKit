@@ -27,8 +27,6 @@ namespace ToolKit
 {
   namespace Editor
   {
-    DirectoryEntry* FolderView::m_currentEntry = nullptr;
-
     DirectoryEntry::DirectoryEntry() {}
 
     DirectoryEntry::DirectoryEntry(const String& fullPath)
@@ -88,8 +86,11 @@ namespace ToolKit
     };
 
     static FileDragData g_fileDragData{};
+    static std::vector<DirectoryEntry*> g_selectedFiles{};
     static FolderView* g_dragBeginView = nullptr;
+    static DirectoryEntry* g_currentEntry = nullptr;
     static bool g_carryingFiles = false;
+    static bool g_copyingFiles = false, g_cuttingFiles = false;
 
     void FolderView::DrawSearchBar()
     {
@@ -170,6 +171,61 @@ namespace ToolKit
       UI::HelpMarker(TKLoc, "Saves all resources.");
 
       ImGui::EndTable();
+    }
+
+    void FolderView::HandleCopyPasteDelete()
+    {
+      bool ctrlDown = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+      if (ctrlDown && ImGui::IsKeyDown(ImGuiKey_C))
+      {
+        g_copyingFiles = true;
+      }
+
+      if (ctrlDown && ImGui::IsKeyDown(ImGuiKey_X))
+      {
+        g_cuttingFiles = true;
+      }
+
+      if (ImGui::IsKeyPressed(ImGuiKey_Delete))
+      {
+        for (size_t i = 0ull; i < g_selectedFiles.size(); ++i)
+        {
+          String path = g_selectedFiles[i]->GetFullPath();
+          if (!CheckFile(path))
+          {
+            continue;
+          }
+          std::filesystem::remove(path);
+        }
+        g_selectedFiles.clear();
+        Refresh();
+      }
+
+      if (ctrlDown && ImGui::IsKeyDown(ImGuiKey_V))
+      {
+        g_copyingFiles = g_cuttingFiles = false;
+            
+        for (size_t i = 0ull; i < g_selectedFiles.size(); ++i)
+        {
+          DirectoryEntry* entry = g_selectedFiles[i];
+          String src = entry->GetFullPath();
+          String dst = ConcatPaths({m_path, entry->m_fileName + entry->m_ext});
+
+          if (g_copyingFiles)
+          {
+            std::filesystem::copy(src, dst);
+          }
+          else if (g_cuttingFiles)
+          {
+            // move file to its new position
+            if (std::rename(src.c_str(), dst.c_str()))
+            {
+              GetLogger()->WriteConsole(LogType::Error,
+                                        "file cut paste failed!");
+            }
+          }
+        }
+      }
     }
 
     void FolderView::Show()
@@ -265,8 +321,8 @@ namespace ToolKit
             ImVec2 texCoords =
                 flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
 
-            bool isSelected = std::count(m_selectedFiles.begin(),
-                                         m_selectedFiles.end(),
+            bool isSelected = std::count(g_selectedFiles.begin(),
+                                         g_selectedFiles.end(),
                                          m_entries.data() + i);
             if (isSelected == true)
             {
@@ -286,13 +342,13 @@ namespace ToolKit
               bool ctrlDown = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
               if (isSelected == false)
               {
-                m_selectedFiles.push_back(&dirEnt);
+                g_selectedFiles.push_back(&dirEnt);
               }
               else if (ctrlDown && isSelected == true) // already selected, removing
               {
                 DirectoryEntry* dirEntPtr = m_entries.data() + i;
 
-                erase_if(m_selectedFiles,
+                erase_if(g_selectedFiles,
                          [dirEntPtr](DirectoryEntry* other) -> bool
                          {
                           return other == dirEntPtr;
@@ -300,7 +356,7 @@ namespace ToolKit
               }
               else
               {
-                m_selectedFiles.clear();
+                g_selectedFiles.clear();
               }
 
               if (ResourceManager* rm = dirEnt.GetManager())
@@ -372,10 +428,10 @@ namespace ToolKit
                 if (!isSelected) 
                 {
                   // add to selection
-                  m_selectedFiles.push_back(&dirEnt);
+                  g_selectedFiles.push_back(&dirEnt);
                 }
-                g_fileDragData.Entries = m_selectedFiles.data();
-                g_fileDragData.NumFiles = (int)m_selectedFiles.size();
+                g_fileDragData.Entries  = g_selectedFiles.data();
+                g_fileDragData.NumFiles = (int) g_selectedFiles.size();
                 g_dragBeginView = this;
                 g_carryingFiles = true;
 
@@ -422,9 +478,10 @@ namespace ToolKit
             {
               g_dragBeginView->DropFiles(m_path);
             }
-            m_selectedFiles.clear();
+            g_selectedFiles.clear();
           }
 
+          HandleCopyPasteDelete();
           g_carryingFiles = mouseReleased ? false : g_carryingFiles;
         } // Tab item handling ends.
         ImGui::EndChild();
@@ -790,7 +847,7 @@ namespace ToolKit
       {
         if (ImGui::MenuItem("Cut"))
         {
-          m_currentEntry   = entry;
+          g_currentEntry   = entry;
           entry->m_cutting = true;
           ImGui::CloseCurrentPopup();
         }
@@ -801,8 +858,8 @@ namespace ToolKit
       {
         if (ImGui::MenuItem("Copy"))
         {
-          m_currentEntry            = entry;
-          m_currentEntry->m_cutting = false;
+          g_currentEntry            = entry;
+          g_currentEntry->m_cutting = false;
           ImGui::CloseCurrentPopup();
         }
       };
@@ -812,14 +869,14 @@ namespace ToolKit
       {
         if (ImGui::MenuItem("Paste"))
         {
-          if (m_currentEntry != nullptr)
+          if (g_currentEntry != nullptr)
           {
-            String src = m_currentEntry->GetFullPath();
+            String src = g_currentEntry->GetFullPath();
             String dst = ConcatPaths(
                 {thisView->m_path,
-                 m_currentEntry->m_fileName + m_currentEntry->m_ext});
+                 g_currentEntry->m_fileName + g_currentEntry->m_ext});
           
-            if (m_currentEntry->m_cutting)
+            if (g_currentEntry->m_cutting)
             {
               // move file to its new position
               if (std::rename(src.c_str(), dst.c_str()))
@@ -827,14 +884,14 @@ namespace ToolKit
                 GetLogger()->WriteConsole(LogType::Error,
                                           "file cut paste failed!");
               }
-              m_currentEntry->m_cutting = false;
+              g_currentEntry->m_cutting = false;
             }
             else
             {
               std::filesystem::copy(src, dst);
             }
 
-            m_currentEntry = nullptr;
+            g_currentEntry = nullptr;
             // refresh all folder views
             for (FolderWindow* window : g_app->GetAssetBrowsers())
             {
@@ -979,7 +1036,7 @@ namespace ToolKit
       }
       g_dragBeginView = nullptr;
       g_carryingFiles = false;
-      m_selectedFiles.clear();
+      g_selectedFiles.clear();
     }
 
     void FolderView::MoveTo(const String& dst)

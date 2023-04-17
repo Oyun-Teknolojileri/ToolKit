@@ -55,6 +55,7 @@ namespace ToolKit
       void DropFiles(const String& dst); //!< drop selectedFiles
 
      private:
+      void HandleCopyPasteDelete();
       void DrawSearchBar();
       void CreateItemActions();
       void MoveTo(const String& dst); // Imgui Drop target.
@@ -75,11 +76,8 @@ namespace ToolKit
       bool m_onlyNativeTypes = true;
       Vec2 m_iconSize        = Vec2(50.0f);
       std::vector<DirectoryEntry> m_entries;
-      std::vector<DirectoryEntry*> m_selectedFiles;
       String m_folder;
       String m_path;
-      // for cut,copy and paste. static because its same in between all views
-      static DirectoryEntry* m_currentEntry;
 
      private:
       FolderWindow* m_parent = nullptr;
