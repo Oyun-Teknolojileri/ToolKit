@@ -33,9 +33,9 @@ namespace ToolKit
       m_screenResolutions.push_back(Vec2(500.0f, 500.0f));
     }
 
-    void PluginWindow::RemoveResolutionName(int index)
+    void PluginWindow::RemoveResolutionName(size_t index)
     {
-      bool canRemove = index > 0 ||
+      bool canRemove = index > 0ull ||
                        index < m_screenResolutions.size();
 
       assert(canRemove && "resolution index invalid");

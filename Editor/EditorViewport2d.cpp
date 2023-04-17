@@ -23,11 +23,11 @@
 
 #include "DebugNew.h"
 
+
 namespace ToolKit
 {
   namespace Editor
   {
-
     Overlay2DTopBar* m_2dViewOptions = nullptr;
 
     EditorViewport2d::EditorViewport2d(XmlNode* node) : EditorViewport(node)
@@ -72,8 +72,8 @@ namespace ToolKit
         ComitResize();
         UpdateWindow();
         HandleStates();
-        DrawCommands();
         HandleDrop();
+        DrawCommands();
         DrawOverlays();
         UpdateSnaps();
       }
@@ -324,38 +324,39 @@ namespace ToolKit
       m_drawCommands.clear();
     }
 
+
     void EditorViewport2d::HandleDrop()
     {
       // AssetBrowser drop handling.
       if (ImGui::BeginDragDropTarget())
       {
-        if (const ImGuiPayload* payload =
-                ImGui::AcceptDragDropPayload("BrowserDragZone"))
+        if (const ImGuiPayload* payload = 
+               ImGui::AcceptDragDropPayload("BrowserDragZone"))
         {
-          IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
-          DirectoryEntry entry = *(const DirectoryEntry*) payload->Data;
+          const FileDragData& dragData = FolderView::GetFileDragData();
+          const DirectoryEntry* entry = dragData.Entries[0]; // get first entry
 
-          if (entry.m_ext == LAYER)
+          if (entry->m_ext == LAYER)
           {
             MultiChoiceWindow::ButtonInfo openButton;
             openButton.m_name     = "Open";
             openButton.m_callback = [entry]() -> void
             {
-              String fullPath = entry.GetFullPath();
+              String fullPath = entry->GetFullPath();
               g_app->OpenScene(fullPath);
             };
             MultiChoiceWindow::ButtonInfo linkButton;
             linkButton.m_name     = "Link";
             linkButton.m_callback = [entry]() -> void
             {
-              String fullPath = entry.GetFullPath();
+              String fullPath = entry->GetFullPath();
               GetSceneManager()->GetCurrentScene()->LinkPrefab(fullPath);
             };
             MultiChoiceWindow::ButtonInfo mergeButton;
             mergeButton.m_name     = "Merge";
             mergeButton.m_callback = [entry]() -> void
             {
-              String fullPath = entry.GetFullPath();
+              String fullPath = entry->GetFullPath();
               g_app->MergeScene(fullPath);
             };
             MultiChoiceWindow* importOptionWnd =

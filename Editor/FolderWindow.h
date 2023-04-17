@@ -34,6 +34,12 @@ namespace ToolKit
     class FolderWindow;
     typedef std::vector<FolderWindow*> FolderWindowRawPtrArray;
 
+    struct FileDragData
+    {
+      int NumFiles = 0;
+      DirectoryEntry** Entries = nullptr;
+    };
+
     class FolderView
     {
      public:
@@ -54,8 +60,11 @@ namespace ToolKit
      
       void DropFiles(const String& dst); //!< drop selectedFiles
 
+      static const FileDragData& GetFileDragData();
+
      private:
       void HandleCopyPasteDelete();
+      static void PasteFiles(const String& path);
       void DrawSearchBar();
       void CreateItemActions();
       void MoveTo(const String& dst); // Imgui Drop target.

@@ -79,18 +79,15 @@ namespace ToolKit
       m_parent = parent;
     }
 
-    struct FileDragData
-    {
-      int NumFiles = 0;
-      DirectoryEntry** Entries = nullptr;
-    };
-
     static FileDragData g_fileDragData{};
     static std::vector<DirectoryEntry*> g_selectedFiles{};
+    static std::vector<DirectoryEntry*> g_coppiedFiles{}; 
     static FolderView* g_dragBeginView = nullptr;
     static DirectoryEntry* g_currentEntry = nullptr;
     static bool g_carryingFiles = false;
     static bool g_copyingFiles = false, g_cuttingFiles = false;
+
+    const FileDragData& FolderView::GetFileDragData() { return g_fileDragData; }
 
     void FolderView::DrawSearchBar()
     {
@@ -173,19 +170,55 @@ namespace ToolKit
       ImGui::EndTable();
     }
 
+    void FolderView::PasteFiles(const String& path)
+    {
+      for (size_t i = 0ull; i < g_coppiedFiles.size(); ++i)
+      {
+        DirectoryEntry* entry = g_coppiedFiles[i];
+        String src = entry->GetFullPath();
+        String dst = ConcatPaths({path, entry->m_fileName + entry->m_ext});
+
+        if (g_copyingFiles)
+        {
+          std::filesystem::copy(src, dst);
+        }
+        else if (g_cuttingFiles)
+        {
+          // move file to its new position
+          if (std::rename(src.c_str(), dst.c_str()))
+          {
+            GetLogger()->WriteConsole(LogType::Error,
+                                      "file cut paste failed!");
+          }
+        }
+      }
+      g_copyingFiles = g_cuttingFiles = false;
+      g_coppiedFiles.clear();
+
+      // refresh all folder views
+      for (FolderWindow* window : g_app->GetAssetBrowsers())
+      {
+        window->SetViewsDirty();
+      }
+    }
+
     void FolderView::HandleCopyPasteDelete()
     {
       bool ctrlDown = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
-      if (ctrlDown && ImGui::IsKeyDown(ImGuiKey_C))
+      if (ctrlDown && ImGui::IsKeyPressed(ImGuiKey_C))
       {
+        g_dragBeginView = this;
         g_copyingFiles = true;
+        g_coppiedFiles  = g_selectedFiles;
       }
 
-      if (ctrlDown && ImGui::IsKeyDown(ImGuiKey_X))
+      if (ctrlDown && ImGui::IsKeyPressed(ImGuiKey_X))
       {
+        g_dragBeginView = this;
         g_cuttingFiles = true;
+        g_coppiedFiles  = g_selectedFiles;
       }
-
+        
       if (ImGui::IsKeyPressed(ImGuiKey_Delete))
       {
         for (size_t i = 0ull; i < g_selectedFiles.size(); ++i)
@@ -198,32 +231,18 @@ namespace ToolKit
           std::filesystem::remove(path);
         }
         g_selectedFiles.clear();
-        Refresh();
+        // refresh all folder views
+        for (FolderWindow* window : g_app->GetAssetBrowsers())
+        {
+          window->SetViewsDirty();
+        }
       }
 
-      if (ctrlDown && ImGui::IsKeyDown(ImGuiKey_V))
+      if (ImGui::IsKeyPressed(ImGuiKey_V) &&
+          g_dragBeginView != nullptr &&
+          g_dragBeginView != this) // be sure we are not dropping to same file
       {
-        for (size_t i = 0ull; i < g_selectedFiles.size(); ++i)
-        {
-          DirectoryEntry* entry = g_selectedFiles[i];
-          String src = entry->GetFullPath();
-          String dst = ConcatPaths({m_path, entry->m_fileName + entry->m_ext});
-
-          if (g_copyingFiles)
-          {
-            std::filesystem::copy(src, dst);
-          }
-          else if (g_cuttingFiles)
-          {
-            // move file to its new position
-            if (std::rename(src.c_str(), dst.c_str()))
-            {
-              GetLogger()->WriteConsole(LogType::Error,
-                                        "file cut paste failed!");
-            }
-          }
-        }
-        g_copyingFiles = g_cuttingFiles = false;
+        PasteFiles(m_path);
       }
     }
 
@@ -258,231 +277,241 @@ namespace ToolKit
         ImGui::BeginChild(
             "##Content"); //, ImVec2(0, -footerHeightReserve), true);
 
+        HandleCopyPasteDelete();
+
         if (m_entries.empty())
         {
           // Handle context menu based on path / content type of the folder.
           ShowContextMenu();
+          ImGui::EndChild();
+          ImGui::EndTabItem();
+          return;
         }
-        else
+        
+        bool anyButtonClicked = false;
+        // Draw folder items.
+        for (int i = 0; i < static_cast<int>(m_entries.size()); i++)
         {
-          bool anyButtonClicked = false;
-          // Draw folder items.
-          for (int i = 0; i < static_cast<int>(m_entries.size()); i++)
+          // Prepare Item Icon.
+          ImGuiStyle& style = ImGui::GetStyle();
+          float visX2 =
+              ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+        
+          DirectoryEntry& dirEnt = m_entries[i];
+        
+          if (!Utf8CaseInsensitiveSearch(dirEnt.m_fileName, m_filter))
           {
-            // Prepare Item Icon.
-            ImGuiStyle& style = ImGui::GetStyle();
-            float visX2 =
-                ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-
-            DirectoryEntry& dirEnt = m_entries[i];
-
-            if (!Utf8CaseInsensitiveSearch(dirEnt.m_fileName, m_filter))
+            continue;
+          }
+        
+          bool flipRenderTarget = false;
+          uint iconId           = UI::m_fileIcon->m_textureId;
+        
+          std::unordered_map<String, uint> extensionIconMap {
+              {SCENE,    UI::m_worldIcon->m_textureId},
+              {LAYER,    UI::m_worldIcon->m_textureId},
+              {ANIM,     UI::m_clipIcon->m_textureId },
+              {AUDIO,    UI::m_audioIcon->m_textureId},
+              {SHADER,   UI::m_codeIcon->m_textureId },
+              {LAYER,    UI::m_worldIcon->m_textureId},
+              {SKELETON, UI::m_boneIcon->m_textureId }
+          };
+        
+          static std::unordered_set<String> thumbExtensions 
+          {PNG, JPG, JPEG, TGA, BMP, PSD, HDR, MESH, SKINMESH, MATERIAL};
+        
+          if (dirEnt.m_isDirectory)
+          {
+            iconId = UI::m_folderIcon->m_textureId;
+          }
+          else if (extensionIconMap.count(dirEnt.m_ext) > 0)
+          {
+            iconId = extensionIconMap[dirEnt.m_ext];
+          }
+          else if (thumbExtensions.count(dirEnt.m_ext) > 0)
+          {
+            iconId           = dirEnt.GetThumbnail()->m_textureId;
+            flipRenderTarget = true;
+          }
+          else if (m_onlyNativeTypes)
+          {
+            continue;
+          }
+        
+          ImGui::PushID(i);
+          ImGui::BeginGroup();
+          ImVec2 texCoords =
+              flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
+        
+          bool isSelected = std::count(g_selectedFiles.begin(),
+                                       g_selectedFiles.end(),
+                                       m_entries.data() + i);
+          if (isSelected == true)
+          {
+            ImGui::PushStyleColor(ImGuiCol_Button,
+                                  ImVec4(0.7f, 0.6f, 0.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
+                                  ImVec4(0.7f, 0.6f, 0.0f, 1.0f));
+          }
+        
+          // Draw Item Icon.
+          if (ImGui::ImageButton(ConvertUIntImGuiTexture(iconId),
+                                 m_iconSize,
+                                 ImVec2(0.0f, 0.0f),
+                                 texCoords))
+          {
+            anyButtonClicked |= true;
+            bool ctrlDown = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+            bool firstSelected  = g_selectedFiles.size() == 0;
+            if (firstSelected)
             {
-              continue;
+              g_selectedFiles.push_back(&dirEnt);
             }
-
-            bool flipRenderTarget = false;
-            uint iconId           = UI::m_fileIcon->m_textureId;
-
-            std::unordered_map<String, uint> extensionIconMap {
-                {SCENE,    UI::m_worldIcon->m_textureId},
-                {LAYER,    UI::m_worldIcon->m_textureId},
-                {ANIM,     UI::m_clipIcon->m_textureId },
-                {AUDIO,    UI::m_audioIcon->m_textureId},
-                {SHADER,   UI::m_codeIcon->m_textureId },
-                {LAYER,    UI::m_worldIcon->m_textureId},
-                {SKELETON, UI::m_boneIcon->m_textureId }
-            };
-
-            static std::unordered_set<String> thumbExtensions 
-            {PNG, JPG, JPEG, TGA, BMP, PSD, HDR, MESH, SKINMESH, MATERIAL};
-
-            if (dirEnt.m_isDirectory)
+            else if (isSelected == false && ctrlDown) 
             {
-              iconId = UI::m_folderIcon->m_textureId;
+              g_selectedFiles.push_back(&dirEnt);
             }
-            else if (extensionIconMap.count(dirEnt.m_ext) > 0)
+            else if (ctrlDown && isSelected == true) // already selected, removing
             {
-              iconId = extensionIconMap[dirEnt.m_ext];
+              DirectoryEntry* dirEntPtr = m_entries.data() + i;
+        
+              erase_if(g_selectedFiles,
+                       [dirEntPtr](DirectoryEntry* other) -> bool
+                       {
+                        return other == dirEntPtr;
+                       });
             }
-            else if (thumbExtensions.count(dirEnt.m_ext) > 0)
+            else
             {
-              iconId           = dirEnt.GetThumbnail()->m_textureId;
-              flipRenderTarget = true;
+              g_selectedFiles.clear();
             }
-            else if (m_onlyNativeTypes)
+        
+            if (ResourceManager* rm = dirEnt.GetManager())
             {
-              continue;
-            }
-
-            ImGui::PushID(i);
-            ImGui::BeginGroup();
-            ImVec2 texCoords =
-                flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
-
-            bool isSelected = std::count(g_selectedFiles.begin(),
-                                         g_selectedFiles.end(),
-                                         m_entries.data() + i);
-            if (isSelected == true)
-            {
-              ImGui::PushStyleColor(ImGuiCol_Button,
-                                    ImVec4(0.7f, 0.6f, 0.0f, 1.0f));
-              ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                                    ImVec4(0.7f, 0.6f, 0.0f, 1.0f));
-            }
-
-            // Draw Item Icon.
-            if (ImGui::ImageButton(ConvertUIntImGuiTexture(iconId),
-                                   m_iconSize,
-                                   ImVec2(0.0f, 0.0f),
-                                   texCoords))
-            {
-              anyButtonClicked |= true;
-              bool ctrlDown = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
-              if (isSelected == false)
+              switch (rm->m_type)
               {
-                g_selectedFiles.push_back(&dirEnt);
+              case ResourceType::Material:
+                g_app->GetPropInspector()->SetMaterialView(
+                    rm->Create<Material>(dirEnt.GetFullPath()));
+                break;
+              case ResourceType::Mesh:
+                g_app->GetPropInspector()->SetMeshView(
+                    rm->Create<Mesh>(dirEnt.GetFullPath()));
+                break;
+              case ResourceType::SkinMesh:
+                g_app->GetPropInspector()->SetMeshView(
+                    rm->Create<SkinMesh>(dirEnt.GetFullPath()));
+                break;
               }
-              else if (ctrlDown && isSelected == true) // already selected, removing
+            }
+          }
+          
+          if (isSelected == true)
+          {
+            ImGui::PopStyleColor(2);
+          }
+          // Handle context menu.
+          ShowContextMenu(&dirEnt);
+        
+          // Handle if item is directory.
+          if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+          {
+            if (ImGui::IsItemHovered() && 
+              dirEnt.m_isDirectory && m_parent != nullptr)
+            {
+              String path =
+                  ConcatPaths({dirEnt.m_rootPath, dirEnt.m_fileName});
+              int indx = m_parent->Exist(path);
+              if (indx == -1)
               {
-                DirectoryEntry* dirEntPtr = m_entries.data() + i;
-
-                erase_if(g_selectedFiles,
-                         [dirEntPtr](DirectoryEntry* other) -> bool
-                         {
-                          return other == dirEntPtr;
-                         });
+                FolderView view(m_parent);
+                view.SetPath(path);
+                view.Iterate();
+                view.Refresh();
+                m_parent->AddEntry(view);
               }
               else
               {
-                g_selectedFiles.clear();
+                FolderView& view    = m_parent->GetView(indx);
+                view.m_visible      = true;
+                view.m_activateNext = true;
               }
-
-              if (ResourceManager* rm = dirEnt.GetManager())
-              {
-                switch (rm->m_type)
-                {
-                case ResourceType::Material:
-                  g_app->GetPropInspector()->SetMaterialView(
-                      rm->Create<Material>(dirEnt.GetFullPath()));
-                  break;
-                case ResourceType::Mesh:
-                  g_app->GetPropInspector()->SetMeshView(
-                      rm->Create<Mesh>(dirEnt.GetFullPath()));
-                  break;
-                case ResourceType::SkinMesh:
-                  g_app->GetPropInspector()->SetMeshView(
-                      rm->Create<SkinMesh>(dirEnt.GetFullPath()));
-                  break;
-                }
-              }
-            }
-            
-            if (isSelected == true)
-            {
-              ImGui::PopStyleColor(2);
-            }
-            // Handle context menu.
-            ShowContextMenu(&dirEnt);
-
-            // Handle if item is directory.
-            if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-            {
-              if (ImGui::IsItemHovered() && 
-                dirEnt.m_isDirectory && m_parent != nullptr)
-              {
-                String path =
-                    ConcatPaths({dirEnt.m_rootPath, dirEnt.m_fileName});
-                int indx = m_parent->Exist(path);
-                if (indx == -1)
-                {
-                  FolderView view(m_parent);
-                  view.SetPath(path);
-                  view.Iterate();
-                  view.Refresh();
-                  m_parent->AddEntry(view);
-                }
-                else
-                {
-                  FolderView& view    = m_parent->GetView(indx);
-                  view.m_visible      = true;
-                  view.m_activateNext = true;
-                }
-              }
-            }
-
-            // Handle mouse hover tips.
-            String fullName = dirEnt.m_fileName + dirEnt.m_ext;
-            UI::HelpMarker(TKLoc + fullName, fullName.c_str());
-
-            // Handle drag - drop to scene / inspector.
-            if (!dirEnt.m_isDirectory)
-            {
-              ImGui::PushStyleColor(ImGuiCol_PopupBg,
-                                    ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-              if (ImGui::BeginDragDropSource(
-                      ImGuiDragDropFlags_SourceAllowNullID))
-              {
-                // if the file that we are holding is not selected
-                if (!isSelected) 
-                {
-                  // add to selection
-                  g_selectedFiles.push_back(&dirEnt);
-                }
-                g_fileDragData.Entries  = g_selectedFiles.data();
-                g_fileDragData.NumFiles = (int) g_selectedFiles.size();
-                g_dragBeginView = this;
-                g_carryingFiles = true;
-
-                ImGui::SetDragDropPayload("BrowserDragZone",
-                                          &g_fileDragData,
-                                          sizeof(FileDragData));
-                ImGui::ImageButton(ConvertUIntImGuiTexture(iconId),
-                                   m_iconSize,
-                                   ImVec2(0.0f, 0.0f),
-                                   texCoords);
-                ImGui::EndDragDropSource();
-              }
-              ImGui::PopStyleColor();
-            }
-
-            // Make directories drop target for resources.
-            if (dirEnt.m_isDirectory)
-            {
-              MoveTo(ConcatPaths({dirEnt.m_rootPath, dirEnt.m_fileName}));
-            }
-            
-            // Handle Item sub text.
-            ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + m_iconSize.x);
-            ImGui::TextWrapped("%s", dirEnt.m_fileName.c_str());
-            
-            ImGui::PopTextWrapPos();
-            ImGui::EndGroup();
-            ImGui::PopID();
-
-            // Handle next column / row.
-            float lastBtnX2 = ImGui::GetItemRectMax().x;
-            float nextBtnX2 = lastBtnX2 + style.ItemSpacing.x + m_iconSize.x;
-            if (nextBtnX2 < visX2)
-            {
-              ImGui::SameLine();
             }
           }
-          bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
-
-          // mouse released on empty position in this window
-          if (!anyButtonClicked && mouseReleased) 
+        
+          // Handle mouse hover tips.
+          String fullName = dirEnt.m_fileName + dirEnt.m_ext;
+          UI::HelpMarker(TKLoc + fullName, fullName.c_str());
+        
+          // Handle drag - drop to scene / inspector.
+          if (!dirEnt.m_isDirectory)
           {
-            if (g_carryingFiles == true && g_dragBeginView != nullptr)
-            {
-              g_dragBeginView->DropFiles(m_path);
-            }
-            g_selectedFiles.clear();
-          }
+            ImGui::PushStyleColor(ImGuiCol_PopupBg,
+                                    ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
-          HandleCopyPasteDelete();
-          g_carryingFiles = mouseReleased ? false : g_carryingFiles;
-        } // Tab item handling ends.
+            if (ImGui::BeginDragDropSource(
+              ImGuiDragDropFlags_SourceAllowNullID))
+            {
+              // if the file that we are holding is not selected
+              if (!isSelected) 
+              {
+                // add to selection
+                g_selectedFiles.push_back(&dirEnt);
+              }
+              g_fileDragData.Entries  = g_selectedFiles.data();
+              g_fileDragData.NumFiles = (int) g_selectedFiles.size();
+              g_dragBeginView = this;
+              g_carryingFiles = true;
+            
+              ImGui::SetDragDropPayload("BrowserDragZone",
+                                        &g_fileDragData,
+                                        sizeof(FileDragData));
+              ImGui::ImageButton(ConvertUIntImGuiTexture(iconId),
+                                m_iconSize,
+                                ImVec2(0.0f, 0.0f), 
+                                texCoords);
+              ImGui::EndDragDropSource();
+            }
+            ImGui::PopStyleColor();
+          }
+          
+          // Make directories drop target for resources.
+          if (dirEnt.m_isDirectory)
+          {
+            MoveTo(ConcatPaths({dirEnt.m_rootPath, dirEnt.m_fileName}));
+          }
+          
+          // Handle Item sub text.
+          ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + m_iconSize.x);
+          ImGui::TextWrapped("%s", dirEnt.m_fileName.c_str());
+          
+          ImGui::PopTextWrapPos();
+          ImGui::EndGroup();
+          ImGui::PopID();
+          
+          // Handle next column / row.
+          float lastBtnX2 = ImGui::GetItemRectMax().x;
+          float nextBtnX2 = lastBtnX2 + style.ItemSpacing.x + m_iconSize.x;
+          if (nextBtnX2 < visX2)
+          {
+            ImGui::SameLine();
+          }
+        } // Tab item handling ends(for loop).
+       
+        bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+
+        // mouse released on empty position in this window
+        if (!anyButtonClicked && mouseReleased) 
+        {
+          if (g_carryingFiles == true && g_dragBeginView != nullptr)
+          {
+            g_dragBeginView->DropFiles(m_path);
+          }
+          g_selectedFiles.clear();
+        }
+
+        g_carryingFiles = mouseReleased ? false : g_carryingFiles;
+
         ImGui::EndChild();
 
         ImGui::EndTabItem();
@@ -589,14 +618,17 @@ namespace ToolKit
 
       if (ImGui::BeginPopupContextWindow(nullptr,
                                          ImGuiPopupFlags_MouseButtonRight |
-                                             ImGuiPopupFlags_NoOpenOverItems))
+                                         ImGuiPopupFlags_NoOpenOverItems))
       {
         for (const String& cmd : commands)
         {
           m_itemActions[cmd](entry, this);
         }
 
-        m_itemActions["FileSystem/Paste"](nullptr, this);
+        if (g_copyingFiles || g_cuttingFiles)
+        {
+          m_itemActions["FileSystem/Paste"](nullptr, this);
+        }
         m_itemActions["FileSystem/MakeDir"](nullptr, this);
         m_itemActions["Refresh"](nullptr, this);
         m_itemActions["FileSystem/CopyPath"](nullptr, this);
@@ -798,18 +830,22 @@ namespace ToolKit
           }
           else
           {
-            if (ResourceManager* rm = entry->GetManager())
+            for (size_t i = 0ull; i < g_selectedFiles.size(); ++i)
             {
-              rm->Remove(entry->GetFullPath());
+              DirectoryEntry* selected = g_selectedFiles[i];
+              if (ResourceManager* rm = selected->GetManager())
+              {
+                rm->Remove(selected->GetFullPath());
+              }
+
+              std::filesystem::remove(selected->GetFullPath());
             }
 
-            std::filesystem::remove(entry->GetFullPath());
             for (FolderView* view : views)
             {
-              view->m_dirty = true;
+              view->SetDirty();
             }
           }
-          thisView->m_parent->ReconstructFolderTree();
 
           ImGui::CloseCurrentPopup();
         }
@@ -848,6 +884,8 @@ namespace ToolKit
         {
           g_currentEntry   = entry;
           entry->m_cutting = true;
+          g_coppiedFiles = g_selectedFiles;
+          g_cuttingFiles = true;
           ImGui::CloseCurrentPopup();
         }
       };
@@ -859,6 +897,8 @@ namespace ToolKit
         {
           g_currentEntry            = entry;
           g_currentEntry->m_cutting = false;
+          g_coppiedFiles  = g_selectedFiles;
+          g_copyingFiles = true;
           ImGui::CloseCurrentPopup();
         }
       };
@@ -868,36 +908,8 @@ namespace ToolKit
       {
         if (ImGui::MenuItem("Paste"))
         {
-          if (g_currentEntry != nullptr)
-          {
-            String src = g_currentEntry->GetFullPath();
-            String dst = ConcatPaths(
-                {thisView->m_path,
-                 g_currentEntry->m_fileName + g_currentEntry->m_ext});
-          
-            if (g_currentEntry->m_cutting)
-            {
-              // move file to its new position
-              if (std::rename(src.c_str(), dst.c_str()))
-              {
-                GetLogger()->WriteConsole(LogType::Error,
-                                          "file cut paste failed!");
-              }
-              g_currentEntry->m_cutting = false;
-            }
-            else
-            {
-              std::filesystem::copy(src, dst);
-            }
-
-            g_currentEntry = nullptr;
-            // refresh all folder views
-            for (FolderWindow* window : g_app->GetAssetBrowsers())
-            {
-              window->SetViewsDirty();
-            }
-            thisView->m_parent->ReconstructFolderTree();
-          }
+          PasteFiles(thisView->m_path);
+          thisView->m_parent->ReconstructFolderTree();
           ImGui::CloseCurrentPopup();
         }
       };
