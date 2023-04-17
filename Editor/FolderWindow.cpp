@@ -203,8 +203,6 @@ namespace ToolKit
 
       if (ctrlDown && ImGui::IsKeyDown(ImGuiKey_V))
       {
-        g_copyingFiles = g_cuttingFiles = false;
-            
         for (size_t i = 0ull; i < g_selectedFiles.size(); ++i)
         {
           DirectoryEntry* entry = g_selectedFiles[i];
@@ -225,6 +223,7 @@ namespace ToolKit
             }
           }
         }
+        g_copyingFiles = g_cuttingFiles = false;
       }
     }
 
