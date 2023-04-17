@@ -83,7 +83,6 @@ namespace ToolKit
     static std::vector<DirectoryEntry*> g_selectedFiles{};
     static std::vector<DirectoryEntry*> g_coppiedFiles{}; 
     static FolderView* g_dragBeginView = nullptr;
-    static DirectoryEntry* g_currentEntry = nullptr;
     static bool g_carryingFiles = false;
     static bool g_copyingFiles = false, g_cuttingFiles = false;
 
@@ -882,7 +881,6 @@ namespace ToolKit
       {
         if (ImGui::MenuItem("Cut"))
         {
-          g_currentEntry   = entry;
           entry->m_cutting = true;
           g_coppiedFiles = g_selectedFiles;
           g_cuttingFiles = true;
@@ -895,8 +893,6 @@ namespace ToolKit
       {
         if (ImGui::MenuItem("Copy"))
         {
-          g_currentEntry            = entry;
-          g_currentEntry->m_cutting = false;
           g_coppiedFiles  = g_selectedFiles;
           g_copyingFiles = true;
           ImGui::CloseCurrentPopup();
