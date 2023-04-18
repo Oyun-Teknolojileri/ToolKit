@@ -123,7 +123,7 @@ namespace ToolKit
     {
       LastTime    = GetElapsedMilliSeconds();
       CurrentTime = 0.0f;
-      DeltaTime   = 1000.0f / static_cast<float>(fps);
+      DeltaTime   = 1000.0f / float(fps);
       FrameCount  = 0;
       TimeAccum   = 0.0f;
     }

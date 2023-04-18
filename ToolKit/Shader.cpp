@@ -140,7 +140,7 @@ namespace ToolKit
     case Uniform::FRAME_COUNT:
       return "FrameCount";
     case Uniform::ELAPSED_TIME:
-      return "Time";
+      return "ElapsedTime";
     case Uniform::EXPOSURE:
       return "Exposure";
     case Uniform::PROJECT_VIEW_NO_TR:

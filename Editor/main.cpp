@@ -265,7 +265,7 @@ namespace ToolKit
       ImGui_ImplSDL2_ProcessEvent(&e);
     }
 
-    void TK_Loop(void* args)
+    void TK_Loop()
     {
       Timing* timer = &Main::GetInstance()->m_timing;
 
@@ -310,7 +310,7 @@ namespace ToolKit
       PreInit();
       Init();
 
-      TK_Loop(nullptr);
+      TK_Loop();
 
       Exit();
       return 0;
