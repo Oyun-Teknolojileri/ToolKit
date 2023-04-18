@@ -36,7 +36,7 @@ namespace ToolKit
   {
     if (m_initiated)
     {
-      if (m_linked) 
+      if (m_linked)
       {
         m_linked = false;
         m_currentScene->RemoveEntity(m_instanceEntities);
@@ -47,7 +47,7 @@ namespace ToolKit
   void Prefab::Link()
   {
     assert(!m_linked);
-    if (!m_linked) 
+    if (!m_linked)
     {
       m_linked = true;
       for (Entity* child : m_instanceEntities)
@@ -55,7 +55,7 @@ namespace ToolKit
         m_currentScene->AddEntity(child);
       }
     }
-  } 
+  }
 
   Prefab* Prefab::GetPrefabRoot(Entity* ntt)
   {
@@ -64,7 +64,7 @@ namespace ToolKit
       return static_cast<Prefab*>(ntt);
     }
     else if (ntt->m_node->m_parent == nullptr ||
-                                      ntt->m_node->m_parent->m_entity == nullptr)
+             ntt->m_node->m_parent->m_entity == nullptr)
     {
       return nullptr;
     }
@@ -74,7 +74,7 @@ namespace ToolKit
   Entity* Prefab::CopyTo(Entity* other) const
   {
     Entity::CopyTo(other);
-    Prefab* prefab = (Prefab*)other;
+    Prefab* prefab = (Prefab*) other;
     prefab->Init(m_currentScene);
     prefab->Link();
     return other;
@@ -121,7 +121,7 @@ namespace ToolKit
     {
       ntt->_prefabRootEntity = this;
 
-      auto foundParamArray = m_childCustomDatas.find(ntt->GetNameVal());
+      auto foundParamArray   = m_childCustomDatas.find(ntt->GetNameVal());
       if (foundParamArray != m_childCustomDatas.end())
       {
         for (ParameterVariant& var : ntt->m_localData.m_variants)
@@ -148,7 +148,7 @@ namespace ToolKit
     parent = parent->last_node();
 
     for (XmlNode* rNode = parent->first_node(); rNode;
-    rNode          = rNode->next_sibling())
+         rNode          = rNode->next_sibling())
     {
       String rootName = rNode->name();
       ParameterVariantArray vars;
@@ -182,22 +182,13 @@ namespace ToolKit
       }
 
       // Save material changes
+      MaterialComponentPtrArray mmComps;
+      child->GetComponent<MaterialComponent>(mmComps);
+      for (MaterialComponentPtr mmComp : mmComps)
       {
-        MaterialComponentPtrArray matComps;
-        child->GetComponent<MaterialComponent>(matComps);
-        for (MaterialComponentPtr matComp : matComps)
+        for (MaterialPtr mat : mmComp->GetMaterialList())
         {
-          matComp->GetMaterialVal()->Save(true);
-        }
-
-        MultiMaterialPtrArray mmComps;
-        child->GetComponent<MultiMaterialComponent>(mmComps);
-        for (MultiMaterialPtr mmComp : mmComps)
-        {
-          for (MaterialPtr mat : mmComp->GetMaterialList())
-          {
-            mat->Save(true);
-          }
+          mat->Save(true);
         }
       }
     }

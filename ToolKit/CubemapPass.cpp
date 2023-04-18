@@ -36,7 +36,7 @@ namespace ToolKit
   {
     Pass::PreRender();
     MaterialComponentPtr matCom = m_cube->GetMaterialComponent();
-    matCom->SetMaterialVal(m_params.Material);
+    matCom->SetFirstMaterial(m_params.Material);
     GetRenderer()->SetDepthTestFunc(m_params.DepthFn);
   }
 

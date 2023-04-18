@@ -464,6 +464,7 @@ namespace ToolKit
     {
       m_cubemap->UnInit();
       m_irradianceCubemap->UnInit();
+      m_prefilteredEnvMap->UnInit();
     }
 
     Texture::UnInit();

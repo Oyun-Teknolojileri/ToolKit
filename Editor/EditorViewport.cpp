@@ -696,9 +696,7 @@ namespace ToolKit
             if (pd.entity != nullptr && pd.entity->IsDrawable())
             {
               // If there is a mesh component, update material component.
-              bool notPrefab = Prefab::GetPrefabRoot(pd.entity) == nullptr;
-
-              if (!notPrefab)
+              if (Prefab::GetPrefabRoot(pd.entity) != nullptr)
               {
                 g_app->m_statusMsg = "Failed. Target is Prefab.";
               }
@@ -713,6 +711,11 @@ namespace ToolKit
                   meshComp->GetMeshVal()->GetAllMeshes(meshes);
                 }
 
+                if (meshes.empty())
+                {
+                  return;
+                }
+
                 // Load material once
                 String path =
                     ConcatPaths({dragEntry.m_rootPath,
@@ -721,40 +724,19 @@ namespace ToolKit
                 MaterialPtr material =
                     GetMaterialManager()->Create<Material>(path);
 
-                // Set material to material component
-                MultiMaterialPtr mmPtr =
-                    pd.entity->GetComponent<MultiMaterialComponent>();
-
-                MaterialComponentPtr matPtr = pd.entity->GetMaterialComponent();
-
-                if (meshes.size() && mmPtr == nullptr)
+                // Create a material component if missing one.
+                MaterialComponentPtr mmPtr = pd.entity->GetMaterialComponent();
+                if (mmPtr == nullptr)
                 {
-                  if (matPtr)
-                  {
-                    pd.entity->RemoveComponent(matPtr->m_id);
-                  }
-
-                  g_app->m_statusMsg = "Added MultiMaterial component";
-                  GetLogger()->WriteConsole(
-                      LogType::Warning,
-                      "Automatically added the MultiMaterial component");
-                  pd.entity->AddComponent(new MultiMaterialComponent);
-                  mmPtr = pd.entity->GetComponent<MultiMaterialComponent>();
+                  g_app->m_statusMsg = "MaterialComponent added.";
+                  pd.entity->AddComponent(new MaterialComponent());
+                  mmPtr = pd.entity->GetComponent<MaterialComponent>();
                   mmPtr->UpdateMaterialList();
                 }
 
+                // In case of submeshes exist, find sub mesh index.
                 if (meshes.size() > 1)
                 {
-                  if (meshes.size() != mmPtr->GetMaterialList().size())
-                  {
-                    g_app->m_statusMsg = "Updated MultiMaterial list";
-                    GetLogger()->WriteConsole(
-                        LogType::Warning,
-                        "MultiMaterial component didn't match with entity's "
-                        "submeshes. Updated material list.");
-                    mmPtr->UpdateMaterialList();
-                  }
-
                   float t          = TK_FLT_MAX;
                   uint submeshIndx = FindMeshIntersection(pd.entity, ray, t);
                   if (submeshIndx != TK_UINT_MAX && t != TK_FLT_MAX)
@@ -762,24 +744,9 @@ namespace ToolKit
                     mmPtr->GetMaterialList()[submeshIndx] = material;
                   }
                 }
-                else if (meshes.size() == 1)
+                else
                 {
-                  if (mmPtr)
-                  {
-                    if (mmPtr->GetMaterialList().size() != 1)
-                    {
-                      mmPtr->UpdateMaterialList();
-                    }
-                    else if (matPtr)
-                    {
-                      pd.entity->RemoveComponent(matPtr->m_id);
-                    }
-                    mmPtr->GetMaterialList()[0] = material;
-                  }
-                  else if (matPtr)
-                  {
-                    matPtr->SetMaterialVal(material);
-                  }
+                  mmPtr->SetFirstMaterial(material);
                 }
               }
             }
@@ -890,7 +857,7 @@ namespace ToolKit
           skelComp->Init();
         }
 
-        MultiMaterialPtr matComp = std::make_shared<MultiMaterialComponent>();
+        MaterialComponentPtr matComp = std::make_shared<MaterialComponent>();
         (*dwMesh)->AddComponent(matComp);
         matComp->UpdateMaterialList();
 

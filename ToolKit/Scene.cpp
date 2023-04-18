@@ -280,7 +280,7 @@ namespace ToolKit
   void Scene::RemoveChildren(Entity* removed)
   {
     NodePtrArray& children = removed->m_node->m_children;
-    
+
     // recursive remove children
     // (RemoveEntity function will call all children recursively).
     while (!children.empty())
@@ -300,7 +300,7 @@ namespace ToolKit
       {
         removed = m_entities[i];
         m_entities.erase(m_entities.begin() + i);
-        
+
         // Keep hierarchy if its prefab.
         if (removed->GetPrefabRoot() == nullptr)
         {
@@ -649,7 +649,7 @@ namespace ToolKit
       }
 
       // Incrementing the incoming ntt ids with current max id value...
-      //   to prevent id collisions.
+      // to prevent id collisions.
       ULongID listIndx = 0;
       ReadAttr(node, XmlEntityIdAttr, listIndx);
       ULongID currentID = listIndx + lastID;
@@ -660,7 +660,8 @@ namespace ToolKit
       AddEntity(ntt);
     }
     GetHandleManager()->SetMaxHandle(biggestID);
-    // do not serialize post processing settings if this is prefab
+    
+    // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)
     {
       GetEngineSettings().DeSerializePostProcessing(doc, parent);

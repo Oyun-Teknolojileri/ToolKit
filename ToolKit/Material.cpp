@@ -7,9 +7,6 @@
 
 #include "DebugNew.h"
 
-#define TK_DEFAULT_DEFERRED_FRAG "deferredRenderFrag.shader"
-#define TK_DEFAULT_FORWARD_FRAG  "defaultFragment.shader"
-
 namespace ToolKit
 {
 
@@ -116,8 +113,7 @@ namespace ToolKit
     }
     else
     {
-      m_vertexShader = GetShaderManager()->Create<Shader>(
-          ShaderPath("defaultVertex.shader", true));
+      m_vertexShader = GetShaderManager()->GetDefaultVertexShader();
       m_vertexShader->Init();
     }
 
@@ -127,8 +123,7 @@ namespace ToolKit
     }
     else
     {
-      m_fragmentShader = GetShaderManager()->Create<Shader>(
-          ShaderPath(TK_DEFAULT_FORWARD_FRAG, true));
+      m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
       m_fragmentShader->Init();
     }
 
@@ -167,43 +162,43 @@ namespace ToolKit
 
   void Material::SetDefaultMaterialTypeShaders()
   {
-    switch (m_materialType)
+    if (IsPBR()) 
     {
-    case MaterialType::PBR:
-      UnInit();
-      m_vertexShader = GetShaderManager()->Create<Shader>(
-          ShaderPath("defaultVertex.shader", true));
-
-      if (IsTranslucent())
+      if (IsTranslucent()) 
       {
-        m_fragmentShader = GetShaderManager()->Create<Shader>(
-            ShaderPath(TK_DEFAULT_FORWARD_FRAG, true));
+        m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
       }
-      else
+      else 
       {
-        m_fragmentShader = GetShaderManager()->Create<Shader>(
-            ShaderPath(TK_DEFAULT_DEFERRED_FRAG, true));
+        m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
       }
 
-      Init();
-      break;
-    default: // Custom
-      break;
+      m_fragmentShader->Init();
     }
   }
 
   bool Material::IsDeferred()
   {
-    static String defferedShaderPath =
-        ShaderPath(TK_DEFAULT_DEFERRED_FRAG, true);
+    if (IsTranslucent())
+    {
+      return false;
+    }
 
-    return m_fragmentShader->GetFile() == defferedShaderPath;
+    return m_fragmentShader->GetFile() ==
+           GetShaderManager()->PbrDefferedShaderFile();
   }
 
   bool Material::IsTranslucent()
   {
     return m_renderState.blendFunction ==
            BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+  }
+
+  bool Material::IsPBR()
+  {
+    const String& file = m_fragmentShader->GetFile();
+    return file == GetShaderManager()->PbrDefferedShaderFile() ||
+           file == GetShaderManager()->PbrForwardShaderFile();
   }
 
   void Material::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -393,19 +388,17 @@ namespace ToolKit
     }
 
     // Update old materials than v0.4.0
-    static String deferredShader = ShaderPath(TK_DEFAULT_DEFERRED_FRAG, true);
-    static String forwardShader  = ShaderPath(TK_DEFAULT_FORWARD_FRAG, true);
 
     // If no shader provided, assign a proper default.
     if (m_fragmentShader == nullptr)
     {
       if (IsTranslucent())
       {
-        m_fragmentShader = GetShaderManager()->Create<Shader>(forwardShader);
+        m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
       }
       else
       {
-        m_fragmentShader = GetShaderManager()->Create<Shader>(deferredShader);
+        m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
       }
     }
     else
@@ -414,14 +407,14 @@ namespace ToolKit
       if (!IsDeferred())
       {
         // If not using a custom shader.
-        if (m_fragmentShader->GetFile() == forwardShader)
+        if (m_fragmentShader->GetFile() ==
+            GetShaderManager()->PbrForwardShaderFile())
         {
           // And not translucent.
           if (!IsTranslucent())
           {
             // Draw in deferred.
-            m_fragmentShader =
-                GetShaderManager()->Create<Shader>(deferredShader);
+            m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
           }
         }
       }
@@ -439,8 +432,8 @@ namespace ToolKit
     Material* material       = new Material();
     material->m_vertexShader = GetShaderManager()->Create<Shader>(
         ShaderPath("defaultVertex.shader", true));
-    material->m_fragmentShader = GetShaderManager()->Create<Shader>(
-        ShaderPath(TK_DEFAULT_DEFERRED_FRAG, true));
+    material->m_fragmentShader =
+        GetShaderManager()->GetPbrDefferedShader();
     material->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();

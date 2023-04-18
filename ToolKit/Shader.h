@@ -149,6 +149,18 @@ namespace ToolKit
     void Init() override;
     bool CanStore(ResourceType t) override;
     ResourcePtr CreateLocal(ResourceType type) override;
+
+    ShaderPtr GetDefaultVertexShader();
+    ShaderPtr GetPbrDefferedShader();
+    ShaderPtr GetPbrForwardShader();
+
+    const String& PbrDefferedShaderFile();
+    const String& PbrForwardShaderFile();
+
+   private:
+    String m_pbrDefferedShaderFile;
+    String m_pbrForwardShaderFile;
+    String m_defaultVertexShaderFile;
   };
 
 } // namespace ToolKit

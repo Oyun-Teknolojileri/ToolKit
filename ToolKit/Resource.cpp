@@ -109,7 +109,7 @@ namespace ToolKit
     return val;
   }
 
-  String Resource::GetFile() const { return m_file; }
+  const String& Resource::GetFile() const { return m_file; }
 
   const String& Resource::GetSerializeFile() const
   {
