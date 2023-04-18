@@ -143,8 +143,8 @@ namespace ToolKit
       return "Color";
     case Uniform::FRAME_COUNT:
       return "FrameCount";
-    case Uniform::UNUSEDSLOT_1:
-      return "UNUSEDSLOT_1";
+    case Uniform::ELAPSED_TIME:
+      return "ElapsedTime";
     case Uniform::EXPOSURE:
       return "Exposure";
     case Uniform::PROJECT_VIEW_NO_TR:
@@ -282,7 +282,6 @@ namespace ToolKit
           // Skipping unused variables.
           switch ((Uniform) i)
           {
-          case Uniform::UNUSEDSLOT_1:
           case Uniform::UNUSEDSLOT_2:
           case Uniform::UNUSEDSLOT_3:
           case Uniform::UNUSEDSLOT_4:

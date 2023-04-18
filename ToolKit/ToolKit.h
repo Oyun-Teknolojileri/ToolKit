@@ -117,6 +117,24 @@ namespace ToolKit
     void DeSerializeGraphics(XmlDocument* doc, XmlNode* parent);
   };
 
+  struct Timing
+  {
+    void Initialize(uint fps)
+    {
+      LastTime    = GetElapsedMilliSeconds();
+      CurrentTime = 0.0f;
+      DeltaTime   = 1000.0f / float(fps);
+      FrameCount  = 0;
+      TimeAccum   = 0.0f;
+    }
+
+    float LastTime    = 0.0f;
+    float CurrentTime = 0.0f;
+    float DeltaTime   = 0.0f;
+    float TimeAccum   = 0.0f;
+    int   FrameCount    = 0;
+  };
+
   class TK_API Main
   {
    public:
@@ -131,6 +149,7 @@ namespace ToolKit
     virtual void Uninit();
     virtual void PostUninit();
 
+    float TimeSinceStartup() { return m_timing.CurrentTime; }
     /**
      * Overrides the default configPath, if not changed relative to editor.exe.
      * ../Config
@@ -149,6 +168,7 @@ namespace ToolKit
     static void SetProxy(Main* proxy);
 
    public:
+    Timing m_timing;
     AnimationManager* m_animationMan     = nullptr;
     AnimationPlayer* m_animationPlayer   = nullptr;
     AudioManager* m_audioMan             = nullptr;
