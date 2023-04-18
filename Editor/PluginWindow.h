@@ -72,7 +72,7 @@ namespace ToolKit
       void RemoveResolutionName(int index);
 
     public:
-      int m_numDefaultResNames = 0;
+      size_t m_numDefaultResNames = 0ull;
 
       std::vector<IVec2> m_screenResolutions =
       {

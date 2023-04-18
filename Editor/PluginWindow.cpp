@@ -248,11 +248,11 @@ namespace ToolKit
 
       AddResolutionName("Edit Resolutions");
 
-      int lastEnumIndex = m_emulatorResolutionNames.size() - 1ull;
+      size_t lastEnumIndex = m_emulatorResolutionNames.size() - 1ull;
 
       // in order to send to imgui we should convert to ptr array
       std::vector<char*> enumNames;
-      for (int i = 0; i <= lastEnumIndex; i++) 
+      for (size_t i = 0ull; i <= lastEnumIndex; i++) 
       {
         enumNames.push_back(&m_emulatorResolutionNames[i][0]);
       }
@@ -291,10 +291,10 @@ namespace ToolKit
                      ImGuiWindowFlags_NoScrollbar |
                      ImGuiWindowFlags_AlwaysAutoResize);  
         
-        for (int i = m_numDefaultResNames; 
+        for (size_t i = m_numDefaultResNames; 
           i < m_emulatorResolutionNames.size(); ++i)
         {
-          ImGui::PushID(i*333);
+          ImGui::PushID(int(i * 333ull));
           ImGui::InputText("name",
                            m_emulatorResolutionNames[i].data(),
                            32);

@@ -246,19 +246,19 @@ namespace ToolKit
       SerializeEngineSettings();
     }
 
-    void Workspace::SerializeSimulationWindow(XmlDocumentPtr lclDoc) const
+    void Workspace::SerializeSimulationWindow(
+        const XmlDocumentPtr& lclDoc) const
     {
-      XmlDocument* doc = lclDoc.get();
+      XmlDocument* doc           = lclDoc.get();
       PluginWindow* pluginWindow = m_app->GetWindow<PluginWindow>("Plugin");
-      XmlNode* settings = doc->allocate_node(rapidxml::node_element, "Simulation");
-      doc->append_node(settings);
-    
-      size_t numCustomRes = pluginWindow->m_screenResolutions.size() - 
+      XmlNode* settings          = CreateXmlNode(doc, "Simulation", nullptr);
+
+      size_t numCustomRes        = pluginWindow->m_screenResolutions.size() - 
                             pluginWindow->m_numDefaultResNames;
 
       WriteAttr(settings, doc, "NumCustom", std::to_string(numCustomRes));
     
-      for (size_t i = 0; i < numCustomRes; ++i)
+      for (size_t i = 0ull; i < numCustomRes; ++i)
       {
         String istr = std::to_string(i);
         size_t index = i + pluginWindow->m_numDefaultResNames;
@@ -276,9 +276,8 @@ namespace ToolKit
       }
     }
 
-    void Workspace::DeSerializeSimulationWindow(XmlDocumentPtr lclDoc)
+    void Workspace::DeSerializeSimulationWindow(const XmlDocumentPtr& doc)
     {
-      XmlDocument* doc = lclDoc.get();
       XmlNode* node    = doc->first_node("Simulation");
       PluginWindow* pluginWindow = m_app->GetWindow<PluginWindow>("Plugin");
       if (node == nullptr || pluginWindow == nullptr) 
