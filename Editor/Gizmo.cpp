@@ -50,7 +50,10 @@ namespace ToolKit
       mCom->SetMeshVal(meshPtr);
     }
 
-    Cursor::Cursor() : EditorBillboardBase({true, 10.0f, 60.0f, true}) { Generate(); }
+    Cursor::Cursor() : EditorBillboardBase({true, 10.0f, 60.0f, true})
+    {
+      Generate();
+    }
 
     Cursor::~Cursor() {}
 
@@ -1157,10 +1160,10 @@ namespace ToolKit
         static_cast<T*>(light)->m_gizmoMC->GetMeshVal()->m_subMeshes.push_back(
             lbMesh);
       }
-      MultiMaterialPtr mmComp = light->GetComponent<MultiMaterialComponent>();
+      MaterialComponentPtr mmComp = light->GetComponent<MaterialComponent>();
       if (mmComp == nullptr)
       {
-        mmComp = std::make_shared<MultiMaterialComponent>();
+        mmComp = std::make_shared<MaterialComponent>();
         light->AddComponent(mmComp);
       }
       mmComp->UpdateMaterialList();

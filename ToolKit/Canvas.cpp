@@ -188,7 +188,7 @@ namespace ToolKit
     mesh->Init();
     GetMeshComponent()->SetMeshVal(mesh);
 
-    MaterialPtr material = GetMaterialComponent()->GetMaterialVal();
+    MaterialPtr material = GetMaterialComponent()->GetFirstMaterial();
     material->UnInit();
     material->GetRenderState()->drawType  = DrawType::Line;
     material->GetRenderState()->lineWidth = 3.f;

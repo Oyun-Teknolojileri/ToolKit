@@ -17,9 +17,9 @@ namespace ToolKit
         std::function<bool(const String&)> showCompFunc,
         bool modifiableComp)
     {
-      MultiMaterialComponent* mmComp = (MultiMaterialComponent*) comp.get();
-      MaterialPtrArray& matList      = mmComp->GetMaterialList();
-      bool isOpen = showCompFunc(MultiMaterialCompCategory.Name);
+      MaterialComponent* mmComp = (MaterialComponent*) comp.get();
+      MaterialPtrArray& matList = mmComp->GetMaterialList();
+      bool isOpen               = showCompFunc(MaterialComponentCategory.Name);
 
       if (isOpen)
       {
@@ -362,6 +362,7 @@ namespace ToolKit
 
         return isOpen;
       };
+
       for (VariantCategory& category : categories)
       {
         bool isOpen = showCompFunc(category.Name);
@@ -388,9 +389,10 @@ namespace ToolKit
           ImGui::TreePop();
         }
       }
+
       switch (comp->GetType())
       {
-      case ComponentType::MultiMaterialComponent:
+      case ComponentType::MaterialComponent:
         ShowMultiMaterialComponent(comp, showCompFunc, modifiableComp);
         break;
       case ComponentType::AABBOverrideComponent:
@@ -475,7 +477,6 @@ namespace ToolKit
                            "\0Environment Component"
                            "\0Animation Controller Component"
                            "\0Skeleton Component"
-                           "\0Multi-Material Component"
                            "\0AABB Override Component"))
           {
             Component* newComponent = nullptr;
@@ -485,8 +486,13 @@ namespace ToolKit
               newComponent = new MeshComponent();
               break;
             case 2:
-              newComponent = new MaterialComponent;
-              break;
+            {
+              MaterialComponent* mmComp = new MaterialComponent();
+              mmComp->m_entity          = m_entity;
+              mmComp->UpdateMaterialList();
+              newComponent = mmComp;
+            }
+            break;
             case 3:
               newComponent = new EnvironmentComponent;
               break;
@@ -497,14 +503,6 @@ namespace ToolKit
               newComponent = new SkeletonComponent;
               break;
             case 6:
-            {
-              MultiMaterialComponent* mmComp = new MultiMaterialComponent;
-              mmComp->m_entity               = m_entity;
-              mmComp->UpdateMaterialList();
-              newComponent = mmComp;
-            }
-            break;
-            case 7:
               newComponent = new AABBOverrideComponent;
               break;
             default:
@@ -516,10 +514,12 @@ namespace ToolKit
               m_entity->AddComponent(newComponent);
               addInAction = false;
 
-              // Add gizmo if needed
-              std::static_pointer_cast<EditorScene>(
-                  GetSceneManager()->GetCurrentScene())
-                  ->AddBillboardToEntity(m_entity);
+              ScenePtr s  = GetSceneManager()->GetCurrentScene();
+              if (EditorScenePtr es = std::static_pointer_cast<EditorScene>(s))
+              {
+                // Add billboard.
+                es->AddBillboardToEntity(m_entity);
+              }
             }
           }
         }

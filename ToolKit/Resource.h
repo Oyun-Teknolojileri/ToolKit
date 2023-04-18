@@ -65,7 +65,7 @@ namespace ToolKit
      */
     static String DeserializeRef(XmlNode* parent);
 
-    String GetFile() const;
+    const String& GetFile() const;
     /**
      * Returns _missingFile if not empty to prevent override actual resource
      * file.

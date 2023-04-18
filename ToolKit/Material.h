@@ -11,8 +11,8 @@ namespace ToolKit
   enum class MaterialType
   {
     UNUSEDSLOT_1 = 0,
-    PBR    = 1,
-    Custom = 2
+    PBR          = 1,
+    Custom       = 2
   };
 
   class TK_API Material : public Resource
@@ -31,8 +31,24 @@ namespace ToolKit
     RenderState* GetRenderState();
     void SetRenderState(RenderState* state);
     void SetDefaultMaterialTypeShaders();
+
+    /**
+     * States if the material will use deferred render path.
+     * @returns True if the material will be rendered in deferred path.
+     */
     bool IsDeferred();
+
+    /**
+     * States if the material has transparency.
+     * @returns True if the blend state is SRC_ALPHA_ONE_MINUS_SRC_ALPHA.
+     */
     bool IsTranslucent();
+
+    /**
+     * States if the material is using PBR shaders.
+     * @returns True if the fragmet shader is default PBR shader.
+     */
+    bool IsPBR();
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;

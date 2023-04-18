@@ -201,21 +201,27 @@ namespace ToolKit
 
   void GradientSky::GenerateIrradianceCubemap()
   {
-    RenderTask task = {[this](Renderer* renderer) -> void
-                       {
-                         HdriPtr hdr = GetHdri();
-                         hdr->m_irradianceCubemap =
-                             renderer->GenerateEnvIrradianceMap(
-                                 hdr->m_cubemap,
-                                 (uint) GetIrradianceResolutionVal(),
-                                 (uint) GetIrradianceResolutionVal());
+    RenderTask task = {
+        [this](Renderer* renderer) -> void
+        {
+          HdriPtr hdr = GetHdri();
+          uint irRes  = (uint) GetIrradianceResolutionVal();
 
-                         if (m_onInit)
-                         {
-                           m_initialized = true;
-                           m_onInit      = false;
-                         }
-                       }};
+          hdr->m_irradianceCubemap =
+              renderer->GenerateEnvIrradianceMap(hdr->m_cubemap, irRes, irRes);
+
+          hdr->m_prefilteredEnvMap = renderer->GenerateEnvPrefilteredMap(
+              hdr->m_cubemap,
+              irRes,
+              irRes,
+              Renderer::RHIConstants::specularIBLLods);
+
+          if (m_onInit)
+          {
+            m_initialized = true;
+            m_onInit      = false;
+          }
+        }};
 
     GetRenderSystem()->AddRenderTask(task);
   }

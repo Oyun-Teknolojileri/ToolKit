@@ -1,10 +1,10 @@
 #include "Component.h"
 
+#include "AnimationControllerComponent.h"
 #include "DirectionComponent.h"
+#include "EnvironmentComponent.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
-#include "EnvironmentComponent.h"
-#include "AnimationControllerComponent.h"
 
 #include "DebugNew.h"
 
@@ -43,6 +43,7 @@ namespace ToolKit
     case ComponentType::DirectionComponent:
       return new DirectionComponent();
       break;
+    case ComponentType::MultiMaterialComponent:
     case ComponentType::MaterialComponent:
       return new MaterialComponent();
       break;
@@ -55,15 +56,12 @@ namespace ToolKit
     case ComponentType::SkeletonComponent:
       return new SkeletonComponent();
       break;
-    case ComponentType::MultiMaterialComponent:
-      return new MultiMaterialComponent;
-      break;
     case ComponentType::AABBOverrideComponent:
       return new AABBOverrideComponent;
       break;
     case ComponentType::Base:
     default:
-      assert(false && "Unsupported component type");
+      assert(false && "Unsupported component type.");
       break;
     }
     return nullptr;
