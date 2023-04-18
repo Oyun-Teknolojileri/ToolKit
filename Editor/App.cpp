@@ -106,6 +106,10 @@ namespace ToolKit
       m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager               = new PublishManager();
       GetRenderSystem()->SetClearColor(g_wndBgColor);
+
+      // we should call this after DeSerialize function because
+      // plugin window created after Deserialize function
+      m_workspace.DeSerializeSimulationWindow();
     }
 
     void App::DestroyEditorEntities()
@@ -324,6 +328,7 @@ namespace ToolKit
         reallyQuit->m_yesCallback = [this]()
         {
           m_workspace.Serialize(nullptr, nullptr);
+          m_workspace.SerializeSimulationWindow();
           Serialize(nullptr, nullptr);
           g_running = false;
         };
@@ -1095,6 +1100,7 @@ namespace ToolKit
           !setDefaults)
       {
         DeSerialize(nullptr, nullptr);
+        m_workspace.DeSerializeSimulationWindow();
         UI::InitSettings();
       }
       else
@@ -1124,6 +1130,7 @@ namespace ToolKit
           {
             m_workspace.SetActiveProject(project);
             m_workspace.Serialize(nullptr, nullptr);
+            m_workspace.SerializeSimulationWindow();
             OnNewScene("New Scene");
           });
     }

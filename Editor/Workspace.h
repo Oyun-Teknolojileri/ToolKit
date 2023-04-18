@@ -43,17 +43,22 @@ namespace ToolKit
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+      
+      void SerializeSimulationWindow() const;     
+      void DeSerializeSimulationWindow();
 
      private:
       void SerializeEngineSettings() const;
       void DeSerializeEngineSettings();
-     public:
+
+    public:
       std::vector<Project> m_projects;
 
      private:
       App* m_app = nullptr;
       String m_activeWorkspace;
       Project m_activeProject;
+      mutable XmlDocumentPtr m_lclDoc;
     };
 
   } // namespace Editor

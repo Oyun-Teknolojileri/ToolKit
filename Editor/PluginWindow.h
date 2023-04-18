@@ -71,10 +71,8 @@ namespace ToolKit
       void RemoveResolutionName(const String& name);
       void RemoveResolutionName(int index);
 
-      int m_numDefaultResNames  = 0;
-
-      const int g_MaxResolutionNameCnt = 24;
-      const int g_MaxResolutionNameWidth = 32;
+    public:
+      int m_numDefaultResNames = 0;
 
       std::vector<IVec2> m_screenResolutions =
       {

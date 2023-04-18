@@ -205,20 +205,20 @@ namespace ToolKit
       file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
       {
-        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
-        XmlNode* settings     = lclDoc->allocate_node(rapidxml::node_element,
-                                                  XmlNodeSettings.data());
-        lclDoc->append_node(settings);
+        m_lclDoc          = std::make_shared<XmlDocument>();
+        XmlNode* settings = m_lclDoc->allocate_node(rapidxml::node_element,
+                                                    XmlNodeSettings.data());
+        m_lclDoc->append_node(settings);
 
-        XmlNode* setNode = lclDoc->allocate_node(rapidxml::node_element,
+        XmlNode* setNode = m_lclDoc->allocate_node(rapidxml::node_element,
                                                  XmlNodeWorkspace.data());
-        WriteAttr(setNode, lclDoc.get(), XmlNodePath.data(), m_activeWorkspace);
+        WriteAttr(setNode, m_lclDoc.get(), XmlNodePath.data(), m_activeWorkspace);
         settings->append_node(setNode);
 
-        setNode = lclDoc->allocate_node(rapidxml::node_element,
+        setNode = m_lclDoc->allocate_node(rapidxml::node_element,
                                         XmlNodeProject.data());
         WriteAttr(setNode,
-                  lclDoc.get(),
+                  m_lclDoc.get(),
                   XmlNodeName.data(),
                   m_activeProject.name);
         settings->append_node(setNode);
@@ -232,18 +232,78 @@ namespace ToolKit
           if (sceneFile.find(sceneRoot) != String::npos)
           {
             String scenePath = GetRelativeResourcePath(sceneFile);
-            WriteAttr(setNode, lclDoc.get(), XmlNodeScene.data(), scenePath);
+            WriteAttr(setNode, m_lclDoc.get(), XmlNodeScene.data(), scenePath);
           }
         }
 
         std::string xml;
-        rapidxml::print(std::back_inserter(xml), *lclDoc);
+        rapidxml::print(std::back_inserter(xml), *m_lclDoc);
 
         file << xml;
         file.close();
-        lclDoc->clear();
+        m_lclDoc->clear();
       }
       SerializeEngineSettings();
+    }
+
+    void Workspace::SerializeSimulationWindow() const
+    {
+      XmlDocument* doc = m_lclDoc.get();
+      PluginWindow* pluginWindow = m_app->GetWindow<PluginWindow>("Plugin");
+      XmlNode* settings = doc->allocate_node(rapidxml::node_element, "Simulation");
+      doc->append_node(settings);
+    
+      size_t numCustomRes = pluginWindow->m_screenResolutions.size() - 
+                            pluginWindow->m_numDefaultResNames;
+
+      WriteAttr(settings, doc, "NumCustom", std::to_string(numCustomRes));
+    
+      for (size_t i = 0; i < numCustomRes; ++i)
+      {
+        String istr = std::to_string(i);
+        size_t index = i + pluginWindow->m_numDefaultResNames;
+
+        WriteAttr(settings,
+                  doc,
+                  "name" + istr,
+                  pluginWindow->m_emulatorResolutionNames[index]);
+
+        WriteAttr(settings, doc, "sizeX" + istr,
+                  std::to_string(pluginWindow->m_screenResolutions[index].x));
+
+        WriteAttr(settings, doc, "sizeY" + istr ,
+                  std::to_string(pluginWindow->m_screenResolutions[index].y));
+      }
+    }
+
+    void Workspace::DeSerializeSimulationWindow()
+    {
+      XmlDocument* doc = m_lclDoc.get();
+      XmlNode* node    = doc->first_node("Simulation");
+      PluginWindow* pluginWindow = m_app->GetWindow<PluginWindow>("Plugin");
+      if (node == nullptr || pluginWindow == nullptr) 
+      {
+        return;
+      }
+      const size_t defaultCnt = pluginWindow->m_numDefaultResNames;
+      pluginWindow->m_screenResolutions.resize(defaultCnt);
+      pluginWindow->m_emulatorResolutionNames.resize(defaultCnt);
+
+      size_t numCustomRes = 0;
+      ReadAttr(node, "NumCustom", numCustomRes);
+      pluginWindow->m_screenResolutions.resize(numCustomRes + defaultCnt);
+      pluginWindow->m_emulatorResolutionNames.resize(numCustomRes + defaultCnt);
+
+      for (size_t i = 0ull; i < numCustomRes; ++i)
+      {
+        String istr = std::to_string(i);
+        const size_t idx = i + defaultCnt;
+        ReadAttr(node,
+                 "name" + istr,
+                 pluginWindow->m_emulatorResolutionNames[idx]);
+        ReadAttr(node, "sizeX" + istr, pluginWindow->m_screenResolutions[idx].x);
+        ReadAttr(node, "sizeY" + istr, pluginWindow->m_screenResolutions[idx].y);      
+      }
     }
 
     void Workspace::SerializeEngineSettings() const
@@ -259,6 +319,7 @@ namespace ToolKit
 
         GetEngineSettings().SerializeWindow(lclDoc.get(), nullptr);
         GetEngineSettings().SerializeGraphics(lclDoc.get(), nullptr);
+        SerializeSimulationWindow();
 
         std::string xml;
         rapidxml::print(std::back_inserter(xml), *lclDoc);
@@ -266,6 +327,7 @@ namespace ToolKit
         file.close();
         lclDoc->clear();
       }
+      SerializeSimulationWindow();
     }
 
     void Workspace::DeSerializeEngineSettings()
@@ -286,17 +348,19 @@ namespace ToolKit
 
       GetEngineSettings().DeSerializeWindow(lclDoc.get(), nullptr);
       GetEngineSettings().DeSerializeGraphics(lclDoc.get(), nullptr);
+      
+      DeSerializeSimulationWindow();
     }
 
     void Workspace::DeSerialize(XmlDocument* doc, XmlNode* parent)
     {
       String settingsFile   = ConcatPaths({ConfigPath(), g_workspaceFile});
 
-      XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
-      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
-      lclDoc->parse<0>(lclFile->data());
+      XmlFilePtr lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
+      m_lclDoc             = std::make_shared<XmlDocument>();
+      m_lclDoc->parse<0>(lclFile->data());
 
-      if (XmlNode* settings = lclDoc->first_node(XmlNodeSettings.data()))
+      if (XmlNode* settings = m_lclDoc->first_node(XmlNodeSettings.data()))
       {
         if (XmlNode* setNode = settings->first_node(XmlNodeWorkspace.data()))
         {

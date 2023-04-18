@@ -494,9 +494,6 @@ namespace ToolKit
     doc->append_node(settings);
     const EngineSettings::GraphicSettings& gfx = Graphics;
 
-    const auto writeAttr = [&](StringView name, StringView val)
-    { WriteAttr(settings, doc, name.data(), val.data()); };
-
     WriteAttr(settings, doc, "MSAA", std::to_string(gfx.MSAA));
     WriteAttr(settings, doc, "FPS", std::to_string(gfx.FPS));
   }
