@@ -205,20 +205,20 @@ namespace ToolKit
       file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
       {
-        m_lclDoc          = std::make_shared<XmlDocument>();
-        XmlNode* settings = m_lclDoc->allocate_node(rapidxml::node_element,
-                                                    XmlNodeSettings.data());
-        m_lclDoc->append_node(settings);
+        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+        XmlNode* settings     = lclDoc->allocate_node(rapidxml::node_element,
+                                                      XmlNodeSettings.data());
+        lclDoc->append_node(settings);
 
-        XmlNode* setNode = m_lclDoc->allocate_node(rapidxml::node_element,
+        XmlNode* setNode = lclDoc->allocate_node(rapidxml::node_element,
                                                  XmlNodeWorkspace.data());
-        WriteAttr(setNode, m_lclDoc.get(), XmlNodePath.data(), m_activeWorkspace);
+        WriteAttr(setNode, lclDoc.get(), XmlNodePath.data(), m_activeWorkspace);
         settings->append_node(setNode);
 
-        setNode = m_lclDoc->allocate_node(rapidxml::node_element,
+        setNode = lclDoc->allocate_node(rapidxml::node_element,
                                         XmlNodeProject.data());
         WriteAttr(setNode,
-                  m_lclDoc.get(),
+                  lclDoc.get(),
                   XmlNodeName.data(),
                   m_activeProject.name);
         settings->append_node(setNode);
@@ -232,23 +232,23 @@ namespace ToolKit
           if (sceneFile.find(sceneRoot) != String::npos)
           {
             String scenePath = GetRelativeResourcePath(sceneFile);
-            WriteAttr(setNode, m_lclDoc.get(), XmlNodeScene.data(), scenePath);
+            WriteAttr(setNode, lclDoc.get(), XmlNodeScene.data(), scenePath);
           }
         }
 
         std::string xml;
-        rapidxml::print(std::back_inserter(xml), *m_lclDoc);
+        rapidxml::print(std::back_inserter(xml), *lclDoc);
 
         file << xml;
         file.close();
-        m_lclDoc->clear();
+        lclDoc->clear();
       }
       SerializeEngineSettings();
     }
 
-    void Workspace::SerializeSimulationWindow() const
+    void Workspace::SerializeSimulationWindow(XmlDocumentPtr lclDoc) const
     {
-      XmlDocument* doc = m_lclDoc.get();
+      XmlDocument* doc = lclDoc.get();
       PluginWindow* pluginWindow = m_app->GetWindow<PluginWindow>("Plugin");
       XmlNode* settings = doc->allocate_node(rapidxml::node_element, "Simulation");
       doc->append_node(settings);
@@ -276,9 +276,9 @@ namespace ToolKit
       }
     }
 
-    void Workspace::DeSerializeSimulationWindow()
+    void Workspace::DeSerializeSimulationWindow(XmlDocumentPtr lclDoc)
     {
-      XmlDocument* doc = m_lclDoc.get();
+      XmlDocument* doc = lclDoc.get();
       XmlNode* node    = doc->first_node("Simulation");
       PluginWindow* pluginWindow = m_app->GetWindow<PluginWindow>("Plugin");
       if (node == nullptr || pluginWindow == nullptr) 
@@ -319,7 +319,7 @@ namespace ToolKit
 
         GetEngineSettings().SerializeWindow(lclDoc.get(), nullptr);
         GetEngineSettings().SerializeGraphics(lclDoc.get(), nullptr);
-        SerializeSimulationWindow();
+        SerializeSimulationWindow(lclDoc);
 
         std::string xml;
         rapidxml::print(std::back_inserter(xml), *lclDoc);
@@ -327,7 +327,6 @@ namespace ToolKit
         file.close();
         lclDoc->clear();
       }
-      SerializeSimulationWindow();
     }
 
     void Workspace::DeSerializeEngineSettings()
@@ -349,18 +348,18 @@ namespace ToolKit
       GetEngineSettings().DeSerializeWindow(lclDoc.get(), nullptr);
       GetEngineSettings().DeSerializeGraphics(lclDoc.get(), nullptr);
       
-      DeSerializeSimulationWindow();
+      DeSerializeSimulationWindow(lclDoc);
     }
 
     void Workspace::DeSerialize(XmlDocument* doc, XmlNode* parent)
     {
       String settingsFile   = ConcatPaths({ConfigPath(), g_workspaceFile});
 
-      XmlFilePtr lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
-      m_lclDoc             = std::make_shared<XmlDocument>();
-      m_lclDoc->parse<0>(lclFile->data());
+      XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
+      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+      lclDoc->parse<0>(lclFile->data());
 
-      if (XmlNode* settings = m_lclDoc->first_node(XmlNodeSettings.data()))
+      if (XmlNode* settings = lclDoc->first_node(XmlNodeSettings.data()))
       {
         if (XmlNode* setNode = settings->first_node(XmlNodeWorkspace.data()))
         {

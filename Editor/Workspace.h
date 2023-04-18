@@ -44,10 +44,8 @@ namespace ToolKit
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
       
-      void SerializeSimulationWindow() const;     
-      void DeSerializeSimulationWindow();
-
-     private:
+      void SerializeSimulationWindow(XmlDocumentPtr lclDoc) const;     
+      void DeSerializeSimulationWindow(XmlDocumentPtr lclDoc);
       void SerializeEngineSettings() const;
       void DeSerializeEngineSettings();
 
@@ -58,7 +56,6 @@ namespace ToolKit
       App* m_app = nullptr;
       String m_activeWorkspace;
       Project m_activeProject;
-      mutable XmlDocumentPtr m_lclDoc;
     };
 
   } // namespace Editor
