@@ -206,22 +206,18 @@ namespace ToolKit
       if (file.is_open())
       {
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
-        XmlNode* settings     = lclDoc->allocate_node(rapidxml::node_element,
-                                                      XmlNodeSettings.data());
-        lclDoc->append_node(settings);
+        XmlNode* settings = CreateXmlNode(lclDoc.get(), XmlNodeSettings.data());
+        XmlNode* setNode =
+            CreateXmlNode(lclDoc.get(), XmlNodeWorkspace.data(), settings);
 
-        XmlNode* setNode = lclDoc->allocate_node(rapidxml::node_element,
-                                                 XmlNodeWorkspace.data());
         WriteAttr(setNode, lclDoc.get(), XmlNodePath.data(), m_activeWorkspace);
-        settings->append_node(setNode);
 
-        setNode = lclDoc->allocate_node(rapidxml::node_element,
-                                        XmlNodeProject.data());
+        setNode = CreateXmlNode(lclDoc.get(), XmlNodeProject.data(), settings);
+
         WriteAttr(setNode,
                   lclDoc.get(),
                   XmlNodeName.data(),
                   m_activeProject.name);
-        settings->append_node(setNode);
 
         String sceneFile = m_app->GetCurrentScene()->GetFile();
         if (GetSceneManager()->Exist(sceneFile))
