@@ -203,15 +203,15 @@ namespace ToolKit
 
     void FolderView::HandleCopyPasteDelete()
     {
-      bool ctrlDown = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
-      if (ctrlDown && ImGui::IsKeyPressed(ImGuiKey_C))
+      bool shiftDown = ImGui::IsKeyDown(ImGuiKey_LeftShift);
+      if (shiftDown && ImGui::IsKeyPressed(ImGuiKey_C))
       {
         g_dragBeginView = this;
         g_copyingFiles = true;
         g_coppiedFiles  = g_selectedFiles;
       }
 
-      if (ctrlDown && ImGui::IsKeyPressed(ImGuiKey_X))
+      if (shiftDown && ImGui::IsKeyPressed(ImGuiKey_X))
       {
         g_dragBeginView = this;
         g_cuttingFiles = true;
@@ -360,17 +360,17 @@ namespace ToolKit
                                  texCoords))
           {
             anyButtonClicked |= true;
-            bool ctrlDown = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+            bool shiftDown = ImGui::IsKeyDown(ImGuiKey_LeftShift);
             bool firstSelected  = g_selectedFiles.size() == 0;
             if (firstSelected)
             {
               g_selectedFiles.push_back(&dirEnt);
             }
-            else if (isSelected == false && ctrlDown) 
+            else if (isSelected == false && shiftDown) 
             {
               g_selectedFiles.push_back(&dirEnt);
             }
-            else if (ctrlDown && isSelected == true) // already selected, removing
+            else if (shiftDown && isSelected == true) // already selected, removing
             {
               DirectoryEntry* dirEntPtr = m_entries.data() + i;
         
@@ -587,6 +587,15 @@ namespace ToolKit
     {
       StringArray commands;
       String path = m_path + GetPathSeparatorAsStr();
+
+      if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+      {
+        g_selectedFiles.clear();
+        g_coppiedFiles.clear();
+        g_dragBeginView = nullptr;
+        g_carryingFiles = g_copyingFiles = g_cuttingFiles = false;
+      }
+
       if (path.find(MaterialPath("")) != String::npos)
       {
         commands.push_back("Material/Create");
