@@ -43,14 +43,15 @@ namespace ToolKit
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-      
+
       void SerializeEngineSettings() const;
       void DeSerializeEngineSettings();
-    private:
-      void SerializeSimulationWindow(const XmlDocumentPtr& settingsDoc) const;     
-      void DeSerializeSimulationWindow(const XmlDocumentPtr& settingsDoc);
 
-    public:
+     private:
+      void SerializeSimulationWindow(XmlDocument* doc) const;
+      void DeSerializeSimulationWindow(XmlDocument* doc);
+
+     public:
       std::vector<Project> m_projects;
 
      private:

@@ -205,19 +205,15 @@ namespace ToolKit
       file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
       {
-        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
-        XmlNode* settings = CreateXmlNode(lclDoc.get(), XmlNodeSettings.data());
+        XmlDocument* lclDoc = new XmlDocument();
+        XmlNode* settings   = CreateXmlNode(lclDoc, XmlNodeSettings.data());
+
         XmlNode* setNode =
-            CreateXmlNode(lclDoc.get(), XmlNodeWorkspace.data(), settings);
+            CreateXmlNode(lclDoc, XmlNodeWorkspace.data(), settings);
+        WriteAttr(setNode, lclDoc, XmlNodePath.data(), m_activeWorkspace);
 
-        WriteAttr(setNode, lclDoc.get(), XmlNodePath.data(), m_activeWorkspace);
-
-        setNode = CreateXmlNode(lclDoc.get(), XmlNodeProject.data(), settings);
-
-        WriteAttr(setNode,
-                  lclDoc.get(),
-                  XmlNodeName.data(),
-                  m_activeProject.name);
+        setNode = CreateXmlNode(lclDoc, XmlNodeProject.data(), settings);
+        WriteAttr(setNode, lclDoc, XmlNodeName.data(), m_activeProject.name);
 
         String sceneFile = m_app->GetCurrentScene()->GetFile();
         if (GetSceneManager()->Exist(sceneFile))
@@ -228,7 +224,7 @@ namespace ToolKit
           if (sceneFile.find(sceneRoot) != String::npos)
           {
             String scenePath = GetRelativeResourcePath(sceneFile);
-            WriteAttr(setNode, lclDoc.get(), XmlNodeScene.data(), scenePath);
+            WriteAttr(setNode, lclDoc, XmlNodeScene.data(), scenePath);
           }
         }
 
@@ -238,45 +234,48 @@ namespace ToolKit
         file << xml;
         file.close();
         lclDoc->clear();
+        SafeDel(lclDoc);
       }
       SerializeEngineSettings();
     }
 
-    void Workspace::SerializeSimulationWindow(
-        const XmlDocumentPtr& lclDoc) const
+    void Workspace::SerializeSimulationWindow(XmlDocument* doc) const
     {
-      XmlDocument* doc           = lclDoc.get();
       PluginWindow* pluginWindow = m_app->GetWindow<PluginWindow>("Plugin");
       XmlNode* settings          = CreateXmlNode(doc, "Simulation", nullptr);
 
-      size_t numCustomRes        = pluginWindow->m_screenResolutions.size() - 
-                            pluginWindow->m_numDefaultResNames;
+      int numCustomRes = (int) pluginWindow->m_screenResolutions.size() -
+                         pluginWindow->m_numDefaultResNames;
 
       WriteAttr(settings, doc, "NumCustom", std::to_string(numCustomRes));
-    
-      for (size_t i = 0ull; i < numCustomRes; ++i)
+
+      for (int i = 0; i < numCustomRes; i++)
       {
         String istr = std::to_string(i);
-        size_t index = i + pluginWindow->m_numDefaultResNames;
+        int index   = i + pluginWindow->m_numDefaultResNames;
 
         WriteAttr(settings,
                   doc,
                   "name" + istr,
                   pluginWindow->m_emulatorResolutionNames[index]);
 
-        WriteAttr(settings, doc, "sizeX" + istr,
+        WriteAttr(settings,
+                  doc,
+                  "sizeX" + istr,
                   std::to_string(pluginWindow->m_screenResolutions[index].x));
 
-        WriteAttr(settings, doc, "sizeY" + istr ,
+        WriteAttr(settings,
+                  doc,
+                  "sizeY" + istr,
                   std::to_string(pluginWindow->m_screenResolutions[index].y));
       }
     }
 
-    void Workspace::DeSerializeSimulationWindow(const XmlDocumentPtr& doc)
+    void Workspace::DeSerializeSimulationWindow(XmlDocument* doc)
     {
-      XmlNode* node    = doc->first_node("Simulation");
+      XmlNode* node              = doc->first_node("Simulation");
       PluginWindow* pluginWindow = m_app->GetWindow<PluginWindow>("Plugin");
-      if (node == nullptr || pluginWindow == nullptr) 
+      if (node == nullptr || pluginWindow == nullptr)
       {
         return;
       }
@@ -291,13 +290,17 @@ namespace ToolKit
 
       for (size_t i = 0ull; i < numCustomRes; ++i)
       {
-        String istr = std::to_string(i);
+        String istr      = std::to_string(i);
         const size_t idx = i + defaultCnt;
         ReadAttr(node,
                  "name" + istr,
                  pluginWindow->m_emulatorResolutionNames[idx]);
-        ReadAttr(node, "sizeX" + istr, pluginWindow->m_screenResolutions[idx].x);
-        ReadAttr(node, "sizeY" + istr, pluginWindow->m_screenResolutions[idx].y);      
+        ReadAttr(node,
+                 "sizeX" + istr,
+                 pluginWindow->m_screenResolutions[idx].x);
+        ReadAttr(node,
+                 "sizeY" + istr,
+                 pluginWindow->m_screenResolutions[idx].y);
       }
     }
 
@@ -310,10 +313,10 @@ namespace ToolKit
       assert(file.is_open());
       if (file.is_open())
       {
-        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+        XmlDocument* lclDoc = new XmlDocument();
 
-        GetEngineSettings().SerializeWindow(lclDoc.get(), nullptr);
-        GetEngineSettings().SerializeGraphics(lclDoc.get(), nullptr);
+        GetEngineSettings().SerializeWindow(lclDoc, nullptr);
+        GetEngineSettings().SerializeGraphics(lclDoc, nullptr);
         SerializeSimulationWindow(lclDoc);
 
         std::string xml;
@@ -321,6 +324,8 @@ namespace ToolKit
         file << xml;
         file.close();
         lclDoc->clear();
+
+        SafeDel(lclDoc);
       }
     }
 
@@ -336,14 +341,17 @@ namespace ToolKit
         settingsFile = ConcatPaths({ConfigPath(), "Engine.settings"});
       }
 
-      XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
-      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+      XmlFile* lclFile    = new XmlFile(settingsFile.c_str());
+      XmlDocument* lclDoc = new XmlDocument();
       lclDoc->parse<0>(lclFile->data());
 
-      GetEngineSettings().DeSerializeWindow(lclDoc.get(), nullptr);
-      GetEngineSettings().DeSerializeGraphics(lclDoc.get(), nullptr);
-      
+      GetEngineSettings().DeSerializeWindow(lclDoc, nullptr);
+      GetEngineSettings().DeSerializeGraphics(lclDoc, nullptr);
+
       DeSerializeSimulationWindow(lclDoc);
+
+      SafeDel(lclFile);
+      SafeDel(lclDoc);
     }
 
     void Workspace::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -387,6 +395,7 @@ namespace ToolKit
           }
         }
       }
+
       DeSerializeEngineSettings();
     }
 

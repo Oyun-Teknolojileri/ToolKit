@@ -15,9 +15,9 @@ namespace ToolKit
   {
     PluginWindow::PluginWindow()
     {
-      m_name     = "Plugin";
-      m_settings = &g_app->m_simulatorSettings;
-      m_numDefaultResNames = m_emulatorResolutionNames.size();
+      m_name               = "Plugin";
+      m_settings           = &g_app->m_simulatorSettings;
+      m_numDefaultResNames = (int) m_emulatorResolutionNames.size();
     }
 
     PluginWindow::PluginWindow(XmlNode* node) : PluginWindow()
@@ -35,11 +35,10 @@ namespace ToolKit
 
     void PluginWindow::RemoveResolutionName(int index)
     {
-      bool canRemove = index > 0 ||
-                       index < m_screenResolutions.size();
+      bool canRemove = index > 0 || index < m_screenResolutions.size();
 
       assert(canRemove && "resolution index invalid");
-      
+
       if (canRemove)
       {
         m_screenResolutions.erase(m_screenResolutions.begin() + index);
@@ -66,7 +65,7 @@ namespace ToolKit
     {
       ImGui::SetNextWindowSize(ImVec2(350, 150), ImGuiCond_Once);
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {5, 5});
-      
+
       if (ImGui::Begin("Simulation##Plgn",
                        &m_visible,
                        ImGuiWindowFlags_NoScrollbar |
@@ -120,7 +119,7 @@ namespace ToolKit
       {
         m_settings->Windowed = !m_settings->Windowed;
       }
-      
+
       if (m_simulationModeDisabled)
       {
         ImGui::EndDisabled();
@@ -131,26 +130,24 @@ namespace ToolKit
     static void GreenTint()
     {
       ImGui::PushStyleColor(ImGuiCol_Button, g_blueTintButtonColor);
-      ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                            g_blueTintButtonHoverColor);
-      ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                            g_blueTintButtonActiveColor);
+      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, g_blueTintButtonHoverColor);
+      ImGui::PushStyleColor(ImGuiCol_ButtonActive, g_blueTintButtonActiveColor);
     }
 
     static void RedTint()
     {
       ImGui::PushStyleColor(ImGuiCol_Button, g_redTintButtonColor);
       ImGui::PushStyleColor(ImGuiCol_ButtonHovered, g_redTintButtonHoverColor);
-      ImGui::PushStyleColor(ImGuiCol_ButtonActive, g_redTintButtonActiveColor);      
+      ImGui::PushStyleColor(ImGuiCol_ButtonActive, g_redTintButtonActiveColor);
     }
 
     void PluginWindow::ShowActionButtons()
     {
       // Draw play - pause - stop buttons.
       ImVec2 btnSize = ImVec2(20.0f, 20.0f);
-      // pick middle point of the window and 
+      // pick middle point of the window and
       // move left half of the width of action buttons(250.0f)
-      float offset = glm::max(ImGui::GetWindowWidth() * 0.5f - 100.0f, 0.0f);
+      float offset   = glm::max(ImGui::GetWindowWidth() * 0.5f - 100.0f, 0.0f);
       ImGui::SetCursorPosX(offset);
 
       if (g_app->m_gameMod == GameMod::Playing)
@@ -234,33 +231,36 @@ namespace ToolKit
 
     void PluginWindow::ShowSettings()
     {
-      if (!m_settings->Windowed) return;
+      if (!m_settings->Windowed)
+      {
+        return;
+      }
+
       // Resolution Bar
       EmulatorResolution resolution = m_settings->Resolution;
-      int resolutionType            = static_cast<int>(resolution);
-      resolutionType                = glm::min(resolutionType,
-                                      int(m_screenResolutions.size() - 1ull));            
+      int resolutionType            = (int) resolution;
+      resolutionType =
+          glm::min(resolutionType, (int) m_screenResolutions.size() - 1);
 
-      ImGui::SetNextItemWidth(
-          ImGui::CalcTextSize(m_emulatorResolutionNames[resolutionType].data())
-              .x *
-          1.3f);
+      Vec2 textSize =
+          ImGui::CalcTextSize(m_emulatorResolutionNames[resolutionType].data());
+      ImGui::SetNextItemWidth(textSize.x * 1.3f);
 
       AddResolutionName("Edit Resolutions");
 
-      size_t lastEnumIndex = m_emulatorResolutionNames.size() - 1ull;
+      int lastEnumIndex = (int) m_emulatorResolutionNames.size() - 1;
 
       // in order to send to imgui we should convert to ptr array
       std::vector<char*> enumNames;
-      for (size_t i = 0ull; i <= lastEnumIndex; i++) 
+      for (size_t i = 0ull; i <= lastEnumIndex; i++)
       {
         enumNames.push_back(&m_emulatorResolutionNames[i][0]);
       }
 
       if (ImGui::Combo("##Resolution",
                        &resolutionType,
-                       enumNames.data(), 
-                       enumNames.size()))
+                       enumNames.data(),
+                       (int) enumNames.size()))
       {
         if (resolutionType == lastEnumIndex)
         {
@@ -270,13 +270,13 @@ namespace ToolKit
         else
         {
           EmulatorResolution resolution =
-            static_cast<EmulatorResolution>(resolutionType);
-        
-          IVec2 resolutionSize = m_screenResolutions[resolutionType];
+              static_cast<EmulatorResolution>(resolutionType);
 
-          m_settings->Width  = (float)resolutionSize.x;
-          m_settings->Height = (float)resolutionSize.y;
-      
+          IVec2 resolutionSize   = m_screenResolutions[resolutionType];
+
+          m_settings->Width      = (float) resolutionSize.x;
+          m_settings->Height     = (float) resolutionSize.y;
+
           m_settings->Resolution = resolution;
           UpdateSimulationWndSize();
         }
@@ -285,29 +285,28 @@ namespace ToolKit
 
       if (m_resolutionSettingsWindowEnabled)
       {
-        ImGui::Begin("Edit Resolutions", 
-                     &m_resolutionSettingsWindowEnabled, 
-                     ImGuiWindowFlags_NoScrollWithMouse | 
-                     ImGuiWindowFlags_NoScrollbar |
-                     ImGuiWindowFlags_AlwaysAutoResize);  
-        
-        for (size_t i = m_numDefaultResNames; 
-          i < m_emulatorResolutionNames.size(); ++i)
+        ImGui::Begin("Edit Resolutions",
+                     &m_resolutionSettingsWindowEnabled,
+                     ImGuiWindowFlags_NoScrollWithMouse |
+                         ImGuiWindowFlags_NoScrollbar |
+                         ImGuiWindowFlags_AlwaysAutoResize);
+
+        for (int i = m_numDefaultResNames;
+             i < (int) m_emulatorResolutionNames.size();
+             i++)
         {
           ImGui::PushID(int(i * 333ull));
-          ImGui::InputText("name",
-                           m_emulatorResolutionNames[i].data(),
-                           32);
-          ImGui::SameLine();  
+          ImGui::InputText("name", m_emulatorResolutionNames[i].data(), 32);
+          ImGui::SameLine();
           ImGui::InputInt2("size", &m_screenResolutions[i].x);
           ImGui::SameLine();
-          if (ImGui::Button(ICON_FA_MINUS)) 
+          if (ImGui::Button(ICON_FA_MINUS))
           {
             RemoveResolutionName(i);
           }
           ImGui::PopID();
         }
-        
+
         ImGui::Text("Add New");
         ImGui::SameLine();
         if (ImGui::Button(ICON_FA_PLUS))
@@ -318,17 +317,18 @@ namespace ToolKit
         // show apply button to save resolution settings
         float cursorX = ImGui::GetCursorPosX();
         ImGui::SetCursorPosX(
-          glm::max(cursorX + ImGui::GetWindowWidth() - 150.0f, 150.0f));
+            glm::max(cursorX + ImGui::GetWindowWidth() - 150.0f, 150.0f));
 
         bool hasCustomRes = m_screenResolutions.size() >= m_numDefaultResNames;
-        if (hasCustomRes && ImGui::Button("Apply")) // show apply button if has custom res
+        if (hasCustomRes &&
+            ImGui::Button("Apply")) // show apply button if has custom res
         {
-           Vec2 resSize = m_screenResolutions[(int)m_settings->Resolution];
-           m_settings->Width  = (float)resSize.x;
-           m_settings->Height = (float)resSize.y;
-           UpdateSimulationWndSize();
+          Vec2 resSize      = m_screenResolutions[(int) m_settings->Resolution];
+          m_settings->Width = (float) resSize.x;
+          m_settings->Height = (float) resSize.y;
+          UpdateSimulationWndSize();
         }
-        
+
         ImGui::SetCursorPosX(cursorX);
 
         ImGui::End();
@@ -339,7 +339,7 @@ namespace ToolKit
       ImGui::Text("Zoom");
       ImGui::SetNextItemWidth(60.0f);
       ImGui::SameLine();
-      
+
       if (ImGui::DragFloat("##z", &m_settings->Scale, 0.05f, 0.0f, 1.0f))
       {
         UpdateSimulationWndSize();
@@ -348,7 +348,7 @@ namespace ToolKit
       ImGui::SameLine();
       ImGui::Text("Rotate");
       ImGui::SameLine();
-      
+
       if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_phoneRotateIcon),
                              ImVec2(20, 20)))
       {
