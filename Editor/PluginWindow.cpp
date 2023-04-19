@@ -242,9 +242,9 @@ namespace ToolKit
       resolutionType =
           glm::min(resolutionType, (int) m_screenResolutions.size() - 1);
 
-      Vec2 textSize =
-          ImGui::CalcTextSize(m_emulatorResolutionNames[resolutionType].data());
-      ImGui::SetNextItemWidth(textSize.x * 1.3f);
+      float textWidth = ImGui::CalcTextSize(m_emulatorResolutionNames[resolutionType].data()).x;
+      textWidth       = glm::max(80.0f, textWidth);
+      ImGui::SetNextItemWidth(textWidth * 1.3f);
 
       AddResolutionName("Edit Resolutions");
 
