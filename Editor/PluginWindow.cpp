@@ -298,7 +298,18 @@ namespace ToolKit
           ImGui::PushID(i * 333);
           ImGui::InputText("name", m_emulatorResolutionNames[i].data(), 32);
           ImGui::SameLine();
-          ImGui::InputInt2("size", &m_screenResolutions[i].x);
+          
+          if (ImGui::InputInt2("size", &m_screenResolutions[i].x)) 
+          {
+            IVec2 res          = m_screenResolutions[i];
+            res.x              = glm::clamp(res.x, 100, 1920 * 8);
+            res.y              = glm::clamp(res.y, 100, 1080 * 8);
+
+            m_settings->Width  = (float) res.x;
+            m_settings->Height = (float) res.y;
+            UpdateSimulationWndSize();    
+          }
+          
           ImGui::SameLine();
           if (ImGui::Button(ICON_FA_MINUS))
           {
@@ -313,24 +324,7 @@ namespace ToolKit
         {
           AddResolutionName("new resolution\0");
         }
-        ImGui::SameLine();
-        // show apply button to save resolution settings
-        float cursorX = ImGui::GetCursorPosX();
-        ImGui::SetCursorPosX(
-            glm::max(cursorX + ImGui::GetWindowWidth() - 150.0f, 150.0f));
-
-        bool hasCustomRes = m_screenResolutions.size() >= m_numDefaultResNames;
-        if (hasCustomRes &&
-            ImGui::Button("Apply")) // show apply button if has custom res
-        {
-          Vec2 resSize      = m_screenResolutions[(int) m_settings->Resolution];
-          m_settings->Width = (float) resSize.x;
-          m_settings->Height = (float) resSize.y;
-          UpdateSimulationWndSize();
-        }
-
-        ImGui::SetCursorPosX(cursorX);
-
+        
         ImGui::End();
       }
 
