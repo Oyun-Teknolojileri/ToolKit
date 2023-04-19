@@ -279,19 +279,19 @@ namespace ToolKit
       {
         return;
       }
-      const size_t defaultCnt = pluginWindow->m_numDefaultResNames;
+      const int defaultCnt = pluginWindow->m_numDefaultResNames;
       pluginWindow->m_screenResolutions.resize(defaultCnt);
       pluginWindow->m_emulatorResolutionNames.resize(defaultCnt);
 
-      size_t numCustomRes = 0;
+      int numCustomRes = 0;
       ReadAttr(node, "NumCustom", numCustomRes);
       pluginWindow->m_screenResolutions.resize(numCustomRes + defaultCnt);
       pluginWindow->m_emulatorResolutionNames.resize(numCustomRes + defaultCnt);
 
-      for (size_t i = 0ull; i < numCustomRes; ++i)
+      for (int i = 0; i < numCustomRes; i++)
       {
-        String istr      = std::to_string(i);
-        const size_t idx = i + defaultCnt;
+        String istr   = std::to_string(i);
+        const int idx = i + defaultCnt;
         ReadAttr(node,
                  "name" + istr,
                  pluginWindow->m_emulatorResolutionNames[idx]);

@@ -295,7 +295,7 @@ namespace ToolKit
              i < (int) m_emulatorResolutionNames.size();
              i++)
         {
-          ImGui::PushID(int(i * 333ull));
+          ImGui::PushID(i * 333);
           ImGui::InputText("name", m_emulatorResolutionNames[i].data(), 32);
           ImGui::SameLine();
           ImGui::InputInt2("size", &m_screenResolutions[i].x);
