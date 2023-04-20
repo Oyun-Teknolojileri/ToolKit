@@ -24,19 +24,7 @@ namespace ToolKit
       void OnResizeContentArea(float width, float height) override;
       void DispatchSignals() const override;
 
-      // Viewport Overrides.
-      Vec2 GetLastMousePosViewportSpace() override;
-      Vec2 GetLastMousePosScreenSpace() override;
-      Vec3 TransformViewportToWorldSpace(const Vec2& pnt) override;
-      Vec2 TransformScreenToViewportSpace(const Vec2& pnt) override;
-
-      // Editor overrides.
-      // Consider Canvas as the content area.
-      virtual void GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const;
-
      protected:
-      void UpdateContentArea() override;
-      void UpdateWindow() override;
       void HandleDrop() override;
       void DrawOverlays() override;
       void AdjustZoom(float delta) override;
@@ -47,8 +35,6 @@ namespace ToolKit
 
      private:
       AnchorMod* m_anchorMode = nullptr;
-      Vec2 m_canvasSize       = Vec2(640.0f, 480.0f);
-      Vec2 m_canvasPos;
 
      public:
       float m_zoomPercentage     = 100.0f;
