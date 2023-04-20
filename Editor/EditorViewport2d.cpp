@@ -16,8 +16,8 @@
 #include "Primative.h"
 #include "Renderer.h"
 #include "SDL.h"
-#include "Util.h"
 #include "TopBar2d.h"
+#include "Util.h"
 
 #include <algorithm>
 
@@ -55,41 +55,10 @@ namespace ToolKit
       }
     }
 
-    void EditorViewport2d::Show()
-    {
-      m_mouseOverOverlay = false;
-
-      ImGui::SetNextWindowSize(Vec2(m_size), ImGuiCond_None);
-      ImGui::PushStyleColor(ImGuiCol_WindowBg, g_wndBgColor);
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-
-      if (ImGui::Begin(m_name.c_str(),
-                       &m_visible,
-                       ImGuiWindowFlags_NoScrollWithMouse |
-                           ImGuiWindowFlags_NoScrollbar))
-      {
-        UpdateContentArea();
-        ComitResize();
-        UpdateWindow();
-        HandleStates();
-        DrawCommands();
-        HandleDrop();
-        DrawOverlays();
-        UpdateSnaps();
-      }
-
-      ImGui::End();
-      ImGui::PopStyleColor();
-      ImGui::PopStyleVar();
-    }
-
     Window::Type EditorViewport2d::GetType() const { return Type::Viewport2d; }
 
     void EditorViewport2d::Update(float deltaTime)
     {
-      // Always update anchor.
-      m_anchorMode->Update(deltaTime);
-
       if (!IsActive())
       {
         SDL_GetGlobalMouseState(&m_mousePosBegin.x, &m_mousePosBegin.y);
@@ -99,11 +68,10 @@ namespace ToolKit
       // Resize Grid
       g_app->m_2dGrid->Resize(g_max2dGridSize,
                               AxisLabel::XY,
-                              static_cast<float>(m_gridCellSizeByPixel),
+                              (float) (m_gridCellSizeByPixel),
                               2.0f);
 
       PanZoom(deltaTime);
-
       m_anchorMode->Update(deltaTime);
     }
 
@@ -113,7 +81,7 @@ namespace ToolKit
       m_wndContentAreaSize.y = height;
 
       ResetViewportImage(GetRenderTargetSettings());
-      AdjustZoom(FLT_MIN);
+      AdjustZoom(TK_FLT_MIN);
     }
 
     void EditorViewport2d::DispatchSignals() const
@@ -200,45 +168,15 @@ namespace ToolKit
 
     void EditorViewport2d::UpdateContentArea()
     {
-      // Content area size
-      m_contentAreaMin        = ImGui::GetWindowContentRegionMin();
-      m_contentAreaMax        = ImGui::GetWindowContentRegionMax();
-
-      m_contentAreaMin.x      += ImGui::GetWindowPos().x;
-      m_contentAreaMin.y      += ImGui::GetWindowPos().y;
-      m_contentAreaMax.x      += ImGui::GetWindowPos().x;
-      m_contentAreaMax.y      += ImGui::GetWindowPos().y;
-
-      m_contentAreaLocation.x = m_contentAreaMin.x;
-      m_contentAreaLocation.y = m_contentAreaMin.y;
-
-      m_wndContentAreaSize =
-          Vec2(glm::abs(m_contentAreaMax.x - m_contentAreaMin.x),
-               glm::abs(m_contentAreaMax.y - m_contentAreaMin.y));
-
-      m_canvasSize           = m_wndContentAreaSize;
-
-      ImGuiIO& io            = ImGui::GetIO();
-      ImVec2 absMousePos     = io.MousePos;
-      m_mouseOverContentArea = false;
-      if (m_contentAreaMin.x < absMousePos.x &&
-          m_contentAreaMax.x > absMousePos.x)
-      {
-        if (m_contentAreaMin.y < absMousePos.y &&
-            m_contentAreaMax.y > absMousePos.y)
-        {
-          m_mouseOverContentArea = true;
-        }
-      }
-
-      m_lastMousePosRelContentArea.x =
-          static_cast<int>(absMousePos.x - m_contentAreaMin.x);
-      m_lastMousePosRelContentArea.y =
-          static_cast<int>(absMousePos.y - m_contentAreaMin.y);
+      EditorViewport::UpdateContentArea();
+      m_canvasSize = m_wndContentAreaSize;
     }
 
     void EditorViewport2d::UpdateWindow()
     {
+      EditorViewport::UpdateWindow();
+      return;
+
       if (!ImGui::IsWindowCollapsed())
       {
         // Resize window.
@@ -311,17 +249,6 @@ namespace ToolKit
       }
 
       m_mouseHover = ImGui::IsWindowHovered();
-    }
-
-    void EditorViewport2d::DrawCommands()
-    {
-      // Process draw commands.
-      ImDrawList* drawList = ImGui::GetForegroundDrawList();
-      for (auto command : m_drawCommands)
-      {
-        command(drawList);
-      }
-      m_drawCommands.clear();
     }
 
     void EditorViewport2d::HandleDrop()
@@ -407,9 +334,9 @@ namespace ToolKit
         return;
       }
 
-      // 0.0f and FLT_MIN can be used to update lens,
-      // so don't change percentage because of 0.0f or FLT_MIN
-      if (delta != 0.0f && delta != FLT_MIN)
+      // 0.0f and TK_FLT_MIN can be used to update lens,
+      // so don't change percentage because of 0.0f or TK_FLT_MIN
+      if (delta != 0.0f && delta != TK_FLT_MIN)
       {
         int8_t change = (delta < 0) ? (-1) : (1);
         if (change > 0)
@@ -474,7 +401,7 @@ namespace ToolKit
       cam->m_orthographicScale = 1.0f;
       cam->m_node->SetTranslation(Z_AXIS * 10.0f);
 
-      AdjustZoom(FLT_MIN);
+      AdjustZoom(TK_FLT_MIN);
 
       if (!m_2dViewOptions)
       {

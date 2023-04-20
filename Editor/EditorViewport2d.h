@@ -19,7 +19,6 @@ namespace ToolKit
       virtual ~EditorViewport2d();
 
       // Window Overrides.
-      void Show() override;
       Type GetType() const override;
       void Update(float deltaTime) override;
       void OnResizeContentArea(float width, float height) override;
@@ -36,11 +35,10 @@ namespace ToolKit
       virtual void GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const;
 
      protected:
-      void UpdateContentArea();
-      void UpdateWindow();
-      void DrawCommands();
-      void HandleDrop();
-      void DrawOverlays();
+      void UpdateContentArea() override;
+      void UpdateWindow() override;
+      void HandleDrop() override;
+      void DrawOverlays() override;
       void AdjustZoom(float delta) override;
 
      private:
