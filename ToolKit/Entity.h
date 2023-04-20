@@ -70,7 +70,9 @@ namespace ToolKit
 
     virtual bool IsDrawable() const;
     virtual EntityType GetType() const;
-    virtual void SetPose(const AnimationPtr& anim, float time, const BlendTarget& blendTarget);
+    virtual void SetPose(const AnimationPtr& anim,
+                         float time,
+                         BlendTarget* blendTarget = nullptr);
     virtual BoundingBox GetAABB(bool inWorld = false) const;
     virtual Entity* Copy() const;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
