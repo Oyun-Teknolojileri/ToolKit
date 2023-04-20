@@ -1,5 +1,5 @@
 #include "OverlayLighting.h"
-
+#include "IconsFontAwesome.h"
 #include "App.h"
 
 #include "DebugNew.h"
@@ -93,8 +93,8 @@ namespace ToolKit
 
         ImGui::TableSetColumnIndex(nextItemIndex++);
         m_editorLitModeOn =
-            UI::ToggleButton(UI::m_studioLightsToggleIcon->m_textureId,
-                             ImVec2(12.0f, 14.0f),
+            UI::ToggleButton(ICON_FA_LIGHTBULB,
+                             ImVec2(20.0f, 20.0f),
                              m_editorLitModeOn);
 
         UI::HelpMarker(TKLoc + m_owner->m_name, "Scene Lighting Mode");

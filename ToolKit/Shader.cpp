@@ -16,6 +16,10 @@
 namespace ToolKit
 {
 
+#define TK_DEFAULT_DEFERRED_FRAG "deferredRenderFrag.shader"
+#define TK_DEFAULT_FORWARD_FRAG  "defaultFragment.shader"
+#define TK_DEFAULT_VERTEX_SHADER "defaultVertex.shader"
+
   Shader::Shader() {}
 
   Shader::Shader(String file) : Shader() { SetFile(file); }
@@ -139,8 +143,8 @@ namespace ToolKit
       return "Color";
     case Uniform::FRAME_COUNT:
       return "FrameCount";
-    case Uniform::UNUSEDSLOT_1:
-      return "UNUSEDSLOT_1";
+    case Uniform::ELAPSED_TIME:
+      return "ElapsedTime";
     case Uniform::EXPOSURE:
       return "Exposure";
     case Uniform::PROJECT_VIEW_NO_TR:
@@ -278,7 +282,6 @@ namespace ToolKit
           // Skipping unused variables.
           switch ((Uniform) i)
           {
-          case Uniform::UNUSEDSLOT_1:
           case Uniform::UNUSEDSLOT_2:
           case Uniform::UNUSEDSLOT_3:
           case Uniform::UNUSEDSLOT_4:
@@ -439,7 +442,18 @@ namespace ToolKit
 
   ShaderManager::~ShaderManager() {}
 
-  void ShaderManager::Init() { ResourceManager::Init(); }
+  void ShaderManager::Init()
+  {
+    ResourceManager::Init();
+
+    m_pbrDefferedShaderFile   = ShaderPath(TK_DEFAULT_DEFERRED_FRAG, true);
+    m_pbrForwardShaderFile    = ShaderPath(TK_DEFAULT_FORWARD_FRAG, true);
+    m_defaultVertexShaderFile = ShaderPath(TK_DEFAULT_VERTEX_SHADER, true);
+
+    Create<Shader>(m_pbrDefferedShaderFile);
+    Create<Shader>(m_pbrForwardShaderFile);
+    Create<Shader>(m_defaultVertexShaderFile);
+  }
 
   bool ShaderManager::CanStore(ResourceType t)
   {
@@ -449,6 +463,32 @@ namespace ToolKit
   ResourcePtr ShaderManager::CreateLocal(ResourceType type)
   {
     return ResourcePtr(new Shader());
+  }
+
+  ShaderPtr ShaderManager::GetDefaultVertexShader()
+  {
+    return std::static_pointer_cast<Shader>(
+        m_storage[m_defaultVertexShaderFile]);
+  }
+
+  ShaderPtr ShaderManager::GetPbrDefferedShader()
+  {
+    return std::static_pointer_cast<Shader>(m_storage[m_pbrDefferedShaderFile]);
+  }
+
+  ShaderPtr ShaderManager::GetPbrForwardShader()
+  {
+    return std::static_pointer_cast<Shader>(m_storage[m_pbrForwardShaderFile]);
+  }
+
+  const String& ShaderManager::PbrDefferedShaderFile()
+  {
+    return m_pbrDefferedShaderFile;
+  }
+
+  const String& ShaderManager::PbrForwardShaderFile()
+  {
+    return m_pbrForwardShaderFile;
   }
 
 } // namespace ToolKit

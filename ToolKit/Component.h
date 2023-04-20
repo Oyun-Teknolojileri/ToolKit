@@ -37,6 +37,7 @@ namespace ToolKit
    */
   enum class ComponentType
   {
+    // Order is important. Don't change for backward comparable scene files.
     Base,
     MeshComponent,
     DirectionComponent,
@@ -44,7 +45,7 @@ namespace ToolKit
     EnvironmentComponent,
     AnimControllerComponent,
     SkeletonComponent,
-    MultiMaterialComponent,
+    MultiMaterialComponent, // Deprecated.
     AABBOverrideComponent
   };
 

@@ -171,15 +171,7 @@ namespace ToolKit
     job.Material->Init();
 
     // Set render material.
-    m_mat = nullptr;
-    if (m_overrideMat != nullptr)
-    {
-      m_mat = m_overrideMat;
-    }
-    else
-    {
-      m_mat = job.Material;
-    }
+    m_mat = m_overrideMat != nullptr ? m_overrideMat : job.Material;
 
     if (m_mat == nullptr)
     {
@@ -218,7 +210,7 @@ namespace ToolKit
     RenderState* rs = m_mat->GetRenderState();
     SetRenderState(rs);
     FeedUniforms(prg);
-
+    
     glBindVertexArray(mesh->m_vaoId);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
     SetVertexLayout(mesh->m_vertexLayout);
@@ -588,21 +580,11 @@ namespace ToolKit
     {
       cube.AddComponent(new MaterialComponent);
     }
-    cube.GetMaterialComponent()->SetMaterialVal(mat);
+    cube.GetMaterialComponent()->SetFirstMaterial(mat);
 
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJob(&cube, jobs);
     Render(jobs, cam);
-  }
-
-  MaterialPtr Renderer::GetRenderMaterial(Entity* entity)
-  {
-    if (m_overrideMat)
-    {
-      return m_overrideMat;
-    }
-
-    return entity->GetRenderMaterial();
   }
 
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
@@ -1100,6 +1082,14 @@ namespace ToolKit
           glUniform1i(loc, RHIConstants::specularIBLLods - 1);
         }
         break;
+        case Uniform::ELAPSED_TIME:
+        {
+          GLint loc = glGetUniformLocation(program->m_handle, 
+                                         GetUniformName(Uniform::ELAPSED_TIME));
+          glUniform1f(loc,
+                      Main::GetInstance()->TimeSinceStartup() / 1000.0f);  
+        }
+        break;
         default:
           assert(false);
           break;
@@ -1359,8 +1349,8 @@ namespace ToolKit
         GL_TEXTURE_2D,       // 11 -> gBuffer color texture
         GL_TEXTURE_2D,       // 12 -> gBuffer emissive texture
         GL_TEXTURE_2D,       // 13 -> Light Data Texture
-        GL_TEXTURE_CUBE_MAP, // 14 -> gBuffer metallic roughness texture
-        GL_TEXTURE_2D,       // 15 -> IBL Specular Pre-Filtered Map
+        GL_TEXTURE_2D,       // 14 -> gBuffer metallic roughness texture
+        GL_TEXTURE_CUBE_MAP, // 15 -> IBL Specular Pre-Filtered Map
         GL_TEXTURE_2D        // 16 -> IBL BRDF Lut
     };
     glBindTexture(textureTypeLut[slotIndx], m_textureSlots[slotIndx]);

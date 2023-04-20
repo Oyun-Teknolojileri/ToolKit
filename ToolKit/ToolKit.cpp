@@ -94,6 +94,7 @@ namespace ToolKit
     m_materialManager->Init();
     m_sceneManager->Init();
     m_skeletonManager->Init();
+    m_timing.Initialize(m_engineSettings.Graphics.FPS);
 
     m_initiated = true;
   }
@@ -493,9 +494,6 @@ namespace ToolKit
     XmlNode* settings = doc->allocate_node(rapidxml::node_element, "Graphics");
     doc->append_node(settings);
     const EngineSettings::GraphicSettings& gfx = Graphics;
-
-    const auto writeAttr = [&](StringView name, StringView val)
-    { WriteAttr(settings, doc, name.data(), val.data()); };
 
     WriteAttr(settings, doc, "MSAA", std::to_string(gfx.MSAA));
     WriteAttr(settings, doc, "FPS", std::to_string(gfx.FPS));

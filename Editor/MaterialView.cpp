@@ -102,7 +102,7 @@ namespace ToolKit
           ntt->SetVisibleVal(!primEntityVis);
           if (ntt->GetMaterialComponent())
           {
-            ntt->GetMaterialComponent()->SetMaterialVal(m_mat);
+            ntt->GetMaterialComponent()->SetFirstMaterial(m_mat);
           }
         }
       }
@@ -299,27 +299,22 @@ namespace ToolKit
             updateThumbFn();
           }
         }
-        // Display emissive color multiplier if fragment is emissive
-        for (Uniform u : m_mat->m_fragmentShader->m_uniforms)
+
+        if (m_mat->m_emissiveTexture == nullptr)
         {
-          if (u == Uniform::EMISSIVE_COLOR &&
-              m_mat->m_emissiveTexture == nullptr)
+          if (ImGui::ColorEdit3("Emissive Color Multiplier##1",
+                                &m_mat->m_emissiveColor.x,
+                                ImGuiColorEditFlags_HDR |
+                                    ImGuiColorEditFlags_NoLabel |
+                                    ImGuiColorEditFlags_Float))
           {
-            if (ImGui::ColorEdit3("Emissive Color Multiplier##1",
-                                  &m_mat->m_emissiveColor.x,
-                                  ImGuiColorEditFlags_HDR |
-                                      ImGuiColorEditFlags_NoLabel |
-                                      ImGuiColorEditFlags_Float))
-            {
-              updateThumbFn();
-            }
-            ImGui::SameLine();
-            ImGui::Text("Emissive Color");
+            updateThumbFn();
           }
+          ImGui::SameLine();
+          ImGui::Text("Emissive Color");
         }
 
-        if (m_mat->m_materialType == MaterialType::PBR &&
-            m_mat->m_metallicRoughnessTexture == nullptr)
+        if (m_mat->IsPBR() && m_mat->m_metallicRoughnessTexture == nullptr)
         {
           if (ImGui::DragFloat("Metallic",
                                &(m_mat->m_metallic),

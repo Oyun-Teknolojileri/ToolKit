@@ -205,23 +205,15 @@ namespace ToolKit
       file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
       {
-        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
-        XmlNode* settings     = lclDoc->allocate_node(rapidxml::node_element,
-                                                  XmlNodeSettings.data());
-        lclDoc->append_node(settings);
+        XmlDocument* lclDoc = new XmlDocument();
+        XmlNode* settings   = CreateXmlNode(lclDoc, XmlNodeSettings.data());
 
-        XmlNode* setNode = lclDoc->allocate_node(rapidxml::node_element,
-                                                 XmlNodeWorkspace.data());
-        WriteAttr(setNode, lclDoc.get(), XmlNodePath.data(), m_activeWorkspace);
-        settings->append_node(setNode);
+        XmlNode* setNode =
+            CreateXmlNode(lclDoc, XmlNodeWorkspace.data(), settings);
+        WriteAttr(setNode, lclDoc, XmlNodePath.data(), m_activeWorkspace);
 
-        setNode = lclDoc->allocate_node(rapidxml::node_element,
-                                        XmlNodeProject.data());
-        WriteAttr(setNode,
-                  lclDoc.get(),
-                  XmlNodeName.data(),
-                  m_activeProject.name);
-        settings->append_node(setNode);
+        setNode = CreateXmlNode(lclDoc, XmlNodeProject.data(), settings);
+        WriteAttr(setNode, lclDoc, XmlNodeName.data(), m_activeProject.name);
 
         String sceneFile = m_app->GetCurrentScene()->GetFile();
         if (GetSceneManager()->Exist(sceneFile))
@@ -232,7 +224,7 @@ namespace ToolKit
           if (sceneFile.find(sceneRoot) != String::npos)
           {
             String scenePath = GetRelativeResourcePath(sceneFile);
-            WriteAttr(setNode, lclDoc.get(), XmlNodeScene.data(), scenePath);
+            WriteAttr(setNode, lclDoc, XmlNodeScene.data(), scenePath);
           }
         }
 
@@ -242,8 +234,74 @@ namespace ToolKit
         file << xml;
         file.close();
         lclDoc->clear();
+        SafeDel(lclDoc);
       }
       SerializeEngineSettings();
+    }
+
+    void Workspace::SerializeSimulationWindow(XmlDocument* doc) const
+    {
+      PluginWindow* pluginWindow = m_app->GetWindow<PluginWindow>("Plugin");
+      XmlNode* settings          = CreateXmlNode(doc, "Simulation", nullptr);
+
+      int numCustomRes = (int) pluginWindow->m_screenResolutions.size() -
+                         pluginWindow->m_numDefaultResNames;
+
+      WriteAttr(settings, doc, "NumCustom", std::to_string(numCustomRes));
+
+      for (int i = 0; i < numCustomRes; i++)
+      {
+        String istr = std::to_string(i);
+        int index   = i + pluginWindow->m_numDefaultResNames;
+
+        WriteAttr(settings,
+                  doc,
+                  "name" + istr,
+                  pluginWindow->m_emulatorResolutionNames[index]);
+
+        WriteAttr(settings,
+                  doc,
+                  "sizeX" + istr,
+                  std::to_string(pluginWindow->m_screenResolutions[index].x));
+
+        WriteAttr(settings,
+                  doc,
+                  "sizeY" + istr,
+                  std::to_string(pluginWindow->m_screenResolutions[index].y));
+      }
+    }
+
+    void Workspace::DeSerializeSimulationWindow(XmlDocument* doc)
+    {
+      XmlNode* node              = doc->first_node("Simulation");
+      PluginWindow* pluginWindow = m_app->GetWindow<PluginWindow>("Plugin");
+      if (node == nullptr || pluginWindow == nullptr)
+      {
+        return;
+      }
+      const int defaultCnt = pluginWindow->m_numDefaultResNames;
+      pluginWindow->m_screenResolutions.resize(defaultCnt);
+      pluginWindow->m_emulatorResolutionNames.resize(defaultCnt);
+
+      int numCustomRes = 0;
+      ReadAttr(node, "NumCustom", numCustomRes);
+      pluginWindow->m_screenResolutions.resize(numCustomRes + defaultCnt);
+      pluginWindow->m_emulatorResolutionNames.resize(numCustomRes + defaultCnt);
+
+      for (int i = 0; i < numCustomRes; i++)
+      {
+        String istr   = std::to_string(i);
+        const int idx = i + defaultCnt;
+        ReadAttr(node,
+                 "name" + istr,
+                 pluginWindow->m_emulatorResolutionNames[idx]);
+        ReadAttr(node,
+                 "sizeX" + istr,
+                 pluginWindow->m_screenResolutions[idx].x);
+        ReadAttr(node,
+                 "sizeY" + istr,
+                 pluginWindow->m_screenResolutions[idx].y);
+      }
     }
 
     void Workspace::SerializeEngineSettings() const
@@ -255,16 +313,19 @@ namespace ToolKit
       assert(file.is_open());
       if (file.is_open())
       {
-        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+        XmlDocument* lclDoc = new XmlDocument();
 
-        GetEngineSettings().SerializeWindow(lclDoc.get(), nullptr);
-        GetEngineSettings().SerializeGraphics(lclDoc.get(), nullptr);
+        GetEngineSettings().SerializeWindow(lclDoc, nullptr);
+        GetEngineSettings().SerializeGraphics(lclDoc, nullptr);
+        SerializeSimulationWindow(lclDoc);
 
         std::string xml;
         rapidxml::print(std::back_inserter(xml), *lclDoc);
         file << xml;
         file.close();
         lclDoc->clear();
+
+        SafeDel(lclDoc);
       }
     }
 
@@ -280,12 +341,17 @@ namespace ToolKit
         settingsFile = ConcatPaths({ConfigPath(), "Engine.settings"});
       }
 
-      XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
-      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+      XmlFile* lclFile    = new XmlFile(settingsFile.c_str());
+      XmlDocument* lclDoc = new XmlDocument();
       lclDoc->parse<0>(lclFile->data());
 
-      GetEngineSettings().DeSerializeWindow(lclDoc.get(), nullptr);
-      GetEngineSettings().DeSerializeGraphics(lclDoc.get(), nullptr);
+      GetEngineSettings().DeSerializeWindow(lclDoc, nullptr);
+      GetEngineSettings().DeSerializeGraphics(lclDoc, nullptr);
+
+      DeSerializeSimulationWindow(lclDoc);
+
+      SafeDel(lclFile);
+      SafeDel(lclDoc);
     }
 
     void Workspace::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -329,6 +395,7 @@ namespace ToolKit
           }
         }
       }
+
       DeSerializeEngineSettings();
     }
 

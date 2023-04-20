@@ -47,19 +47,23 @@
 
 		vec3 IBLSpecularPBR(vec3 normal, vec3 fragToEye, float roughness, vec3 fresnel)
 		{
-			vec3 R = reflect(-fragToEye, normal);
-			float normalDotFragToEye = max(dot(normal, fragToEye), 0.0);
+			vec3 specular = vec3(0.0);
+			if (UseIbl == 1)
+			{
+				vec3 R = reflect(-fragToEye, normal);
+				float normalDotFragToEye = max(dot(normal, fragToEye), 0.0);
 
-			vec3 preFilteredColor = textureLod(s_texture15, R, roughness * float(iblMaxReflectionLod)).rgb;
-			vec2 brdfFactor = texture(s_texture16, vec2(normalDotFragToEye, roughness)).rg;
-			vec3 specular = preFilteredColor * (fresnel * brdfFactor.x + brdfFactor.y);
+				vec3 preFilteredColor = textureLod(s_texture15, R, roughness * float(iblMaxReflectionLod)).rgb;
+				vec2 brdfFactor = texture(s_texture16, vec2(normalDotFragToEye, roughness)).rg;
+				specular = preFilteredColor * (fresnel * brdfFactor.x + brdfFactor.y);
+			}
 
 			return specular;
 		}
 
 		vec3 IBLPBR(vec3 normal, vec3 fragToEye, vec3 albedo, float metallic, float roughness)
 		{
-				// Base reflectivity
+			// Base reflectivity
 			vec3 fresnel = BaseReflectivityPBR(vec3(0.04), albedo, metallic);
 			fresnel = FresnelSchlickRoughness(max(dot(normal, fragToEye), 0.0), fresnel, roughness); 
 
@@ -67,13 +71,12 @@
 			vec3 specular = IBLSpecularPBR(normal, fragToEye, roughness, fresnel);
 			return (diffuse + specular) * IblIntensity;
 		}
-
+		
 		// No specular, only diffuse
 		vec3 IBLPhong(vec3 normal)
 		{
 			return IblDiffuse(normal) * IblIntensity;
 		}
-
 	-->
 	</source>
 </shader>

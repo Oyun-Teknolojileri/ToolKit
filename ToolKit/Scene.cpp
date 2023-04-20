@@ -279,23 +279,15 @@ namespace ToolKit
 
   void Scene::RemoveChildren(Entity* removed)
   {
-    NodePtrArray children = removed->m_node->m_children;
-    
-    // Iterative remove children.
+    NodePtrArray& children = removed->m_node->m_children;
+
+    // recursive remove children
+    // (RemoveEntity function will call all children recursively).
     while (!children.empty())
     {
       Node* child = children.back();
       children.pop_back();
       RemoveEntity(child->m_entity->GetIdVal());
-      if (child->m_children.empty())
-      {
-        continue;
-      }
-
-      // Add child's children to the list that we remove from scene.
-      children.insert(children.end(),
-                    child->m_children.begin(),
-                    child->m_children.end());
     }
   }
 
@@ -308,7 +300,13 @@ namespace ToolKit
       {
         removed = m_entities[i];
         m_entities.erase(m_entities.begin() + i);
-        removed->m_node->OrphanSelf();
+
+        // Keep hierarchy if its prefab.
+        if (removed->GetPrefabRoot() == nullptr)
+        {
+          removed->m_node->OrphanSelf();
+        }
+
         if (deep)
         {
           RemoveChildren(removed);
@@ -448,6 +446,7 @@ namespace ToolKit
     prefab->SetPrefabPathVal(path);
     prefab->Init(this);
     prefab->Link();
+    AddEntity(prefab);
   }
 
   EnvironmentComponentPtrArray Scene::GetEnvironmentVolumes()
@@ -650,7 +649,7 @@ namespace ToolKit
       }
 
       // Incrementing the incoming ntt ids with current max id value...
-      //   to prevent id collisions.
+      // to prevent id collisions.
       ULongID listIndx = 0;
       ReadAttr(node, XmlEntityIdAttr, listIndx);
       ULongID currentID = listIndx + lastID;
@@ -661,7 +660,8 @@ namespace ToolKit
       AddEntity(ntt);
     }
     GetHandleManager()->SetMaxHandle(biggestID);
-    // do not serialize post processing settings if this is prefab
+    
+    // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)
     {
       GetEngineSettings().DeSerializePostProcessing(doc, parent);

@@ -22,21 +22,21 @@ namespace ToolKit
 
   Surface::Surface(TexturePtr texture, const Vec2& pivotOffset) : Surface()
   {
-    GetMaterialComponent()->GetMaterialVal()->m_diffuseTexture = texture;
+    GetMaterialComponent()->GetFirstMaterial()->m_diffuseTexture = texture;
     SetPivotOffsetVal(pivotOffset);
     SetSizeFromTexture();
   }
 
   Surface::Surface(TexturePtr texture, const SpriteEntry& entry) : Surface()
   {
-    GetMaterialComponent()->GetMaterialVal()->m_diffuseTexture = texture;
+    GetMaterialComponent()->GetFirstMaterial()->m_diffuseTexture = texture;
     SetSizeFromTexture();
   }
 
   Surface::Surface(const String& textureFile, const Vec2& pivotOffset)
       : Surface()
   {
-    GetMaterialComponent()->GetMaterialVal()->m_diffuseTexture =
+    GetMaterialComponent()->GetFirstMaterial()->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(textureFile);
 
     SetPivotOffsetVal(pivotOffset);
@@ -91,9 +91,9 @@ namespace ToolKit
 
     // Re assign default material.
     MaterialComponentPtr matCom = GetMaterialComponent();
-    if (matCom->GetMaterialVal()->IsDynamic())
+    if (matCom->GetFirstMaterial()->IsDynamic())
     {
-      matCom->SetMaterialVal(GetMaterialManager()->GetCopyOfUIMaterial());
+      matCom->SetFirstMaterial(GetMaterialManager()->GetCopyOfUIMaterial());
     }
 
     CreateQuat();
@@ -119,12 +119,12 @@ namespace ToolKit
     meshComponent->SetCastShadowVal(false);
     AddComponent(meshComponent);
 
-    MaterialComponent* materialComponent         = new MaterialComponent();
-    materialComponent->ParamMaterial().m_exposed = false;
+    MaterialComponent* materialComponent = new MaterialComponent();
+    // materialComponent->ParamMaterial().m_exposed = false;
     AddComponent(materialComponent);
 
     MaterialPtr material = GetMaterialManager()->GetCopyOfUIMaterial();
-    materialComponent->SetMaterialVal(material);
+    materialComponent->SetFirstMaterial(material);
   }
 
   void Surface::ParameterConstructor()
@@ -141,7 +141,7 @@ namespace ToolKit
                        true,
                        true);
 
-    Material_Define(GetMaterialComponent()->GetMaterialVal(),
+    Material_Define(GetMaterialComponent()->GetFirstMaterial(),
                     SurfaceCategory.Name,
                     SurfaceCategory.Priority,
                     true,
@@ -160,7 +160,8 @@ namespace ToolKit
 
     ParamMaterial().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void {
-          GetMaterialComponent()->SetMaterialVal(std::get<MaterialPtr>(newVal));
+          GetMaterialComponent()->SetFirstMaterial(
+              std::get<MaterialPtr>(newVal));
         });
 
     GetMeshComponent()->ParamMesh().m_exposed       = false;

@@ -3,6 +3,7 @@
 #include "ImGui/imgui.h"
 #include "Serialize.h"
 #include "Types.h"
+#include "IconsFontAwesome.h"
 
 #include <functional>
 #include <vector>
@@ -13,8 +14,7 @@ namespace ToolKit
   // Global Style Decelerations
   static const ImGuiTreeNodeFlags g_treeNodeFlags =
       ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
-      ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap |
-      ImGuiTreeNodeFlags_FramePadding;
+      ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap;
 
   const float g_indentSpacing = 6.0f;
 
@@ -114,6 +114,10 @@ namespace ToolKit
       static void ShowBlocker();
 
       // Custom widgets.
+      static bool ButtonDecorless(StringView text,
+                                       const Vec2& size,
+                                       bool flipImage);
+
       static bool ImageButtonDecorless(uint textureID,
                                        const Vec2& size,
                                        bool flipImage);
@@ -127,7 +131,9 @@ namespace ToolKit
                                           const String& id = "");
       static void EndCenteredTextButton();
       static void CenteredText(const String& text);
-
+      //!< returns FontAwesome string (icon) from any given entity type
+      static String EntityTypeToIcon(EntityType type);
+      static void ShowEntityTreeNodeContent(Entity* ntt);
       /**
        * Can be used to see if ui is using the keyboard for input. Most likely
        * usage is to check if user typing text to an input field.

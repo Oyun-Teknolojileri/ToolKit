@@ -523,7 +523,7 @@ namespace ToolKit
     if (meshTraces.size() == 0)
     {
       t = 0.0f;
-      return UINT32_MAX;
+      return TK_UINT_MAX;
     }
 
     Ray rayInObjectSpace = rayInWorldSpace;
@@ -538,7 +538,7 @@ namespace ToolKit
                   meshTraces.end(),
                   [rayInObjectSpace, skel, &meshes](meshTrace& trace)
                   {
-                    float t = FLT_MAX;
+                    float t = TK_FLT_MAX;
 
                     if (RayMeshIntersection(meshes[trace.indx],
                                             rayInObjectSpace,
