@@ -51,6 +51,7 @@ namespace ToolKit
     TKDeclareParam(Vec2, Size);
     TKDeclareParam(Vec2, PivotOffset);
     TKDeclareParam(MaterialPtr, Material);
+    TKDeclareParam(VariantCallback, UpdateSizeFromTexture);
 
     // UI states.
     bool m_mouseOver    = false;

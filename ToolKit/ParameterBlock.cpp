@@ -772,22 +772,33 @@ namespace ToolKit
       XmlNode* param = block->first_node(XmlParamterElement.c_str());
       while (param != nullptr)
       {
+        // Read variant from xml.
         ParameterVariant var;
         var.DeSerialize(doc, param);
-        bool isFound = false;
-        for (ParameterVariant& m_var : m_variants)
+
+        // Keep the function constructed in ParameterConstructor.
+        // Because functions can't be serialized.
+        if (var.GetType() != ParameterVariant::VariantType::VariantCallback)
         {
-          if (var.m_name == m_var.m_name)
+          // Override the existing variant constructed by the
+          // ParameterConstrcutor with deserialized one.
+          bool isFound = false;
+          for (ParameterVariant& memberVar : m_variants)
           {
-            m_var   = var;
-            isFound = true;
-            break;
+            if (var.m_name == memberVar.m_name)
+            {
+              memberVar = var;
+              isFound   = true;
+              break;
+            }
+          }
+
+          if (!isFound && var.m_category.Name == CustomDataCategory.Name)
+          {
+            Add(var);
           }
         }
-        if (!isFound && var.m_category.Name == CustomDataCategory.Name)
-        {
-          Add(var);
-        }
+
         param = param->next_sibling();
       }
     }

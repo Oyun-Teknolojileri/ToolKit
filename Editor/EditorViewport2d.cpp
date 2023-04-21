@@ -61,6 +61,8 @@ namespace ToolKit
     {
       if (!IsActive())
       {
+        // Always update the anchor.
+        m_anchorMode->Update(deltaTime);
         SDL_GetGlobalMouseState(&m_mousePosBegin.x, &m_mousePosBegin.y);
         return;
       }
