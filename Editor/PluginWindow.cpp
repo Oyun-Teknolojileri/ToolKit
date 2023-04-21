@@ -330,14 +330,15 @@ namespace ToolKit
 
       // Zoom
       ImGui::SameLine();
-      ImGui::Text("Zoom");
-      ImGui::SetNextItemWidth(60.0f);
+      ImGui::Text("Scale");
+      ImGui::SetNextItemWidth(120.0f);
       ImGui::SameLine();
 
-      if (ImGui::DragFloat("##z", &m_settings->Scale, 0.05f, 0.0f, 1.0f))
+      if (ImGui::SliderFloat("##z", &m_settings->Scale, 0.5f, 2.0f, "%.1f"))
       {
         UpdateSimulationWndSize();
       }
+
       // Landscape - Portrait Toggle
       ImGui::SameLine();
       ImGui::Text("Rotate");
