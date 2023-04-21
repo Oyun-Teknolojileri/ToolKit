@@ -19,13 +19,12 @@ namespace ToolKit
       ImGui::SetNextWindowPos(wndPos);
       ImGui::SetNextWindowBgAlpha(0.65f);
 
-      ImVec2 overlaySize(48, 260);
+      static ImVec2 overlaySize(48, 0); // Set initial height to 0
       if (ImGui::BeginChildFrame(
               ImGui::GetID("Navigation"),
               overlaySize,
               ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking |
                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                  ImGuiWindowFlags_AlwaysAutoResize |
                   ImGuiWindowFlags_NoSavedSettings |
                   ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav |
                   ImGuiWindowFlags_NoScrollbar |
@@ -95,30 +94,32 @@ namespace ToolKit
         ImGui::Separator();
 
         const char* items[]     = {"1", "2", "4", "8", "16"};
-        static int current_item = 3; // Also the default.
+        static int currentItem = 3; // Also the default.
         ImGui::PushItemWidth(40);
         if (ImGui::BeginCombo("##CS",
-                              items[current_item],
+                              items[currentItem],
                               ImGuiComboFlags_None))
         {
           for (int n = 0; n < IM_ARRAYSIZE(items); n++)
           {
-            bool is_selected = (current_item == n);
-            if (ImGui::Selectable(items[n], is_selected))
+            bool isSelected = (currentItem == n);
+            if (ImGui::Selectable(items[n], isSelected))
             {
-              current_item = n;
+              currentItem = n;
             }
 
-            if (is_selected)
+            if (isSelected)
             {
               ImGui::SetItemDefaultFocus();
             }
           }
           ImGui::EndCombo();
         }
+        Vec2 comboHeight = ImGui::GetItemRectSize();
+
         ImGui::PopItemWidth();
 
-        switch (current_item)
+        switch (currentItem)
         {
         case 0:
           g_app->m_camSpeed = 0.5f;
@@ -145,6 +146,10 @@ namespace ToolKit
 
         ImGui::SameLine(0, spacing);
         UI::HelpMarker(TKLoc + m_owner->m_name, "Camera speed m/s\n");
+
+        // Calculate the height of the child frame based on its content
+        overlaySize.y =
+            ImGui::GetCursorPosY() + style.ItemSpacing.y + comboHeight.y;
       }
       ImGui::EndChildFrame();
     }
