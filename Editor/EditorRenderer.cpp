@@ -89,7 +89,10 @@ namespace ToolKit
         m_passArray.push_back(m_tonemapPass);
         if (gfx.FXAAEnabled)
         {
-          m_passArray.push_back(m_fxaaPass);
+          if (m_params.Viewport->m_name != g_2dViewport) 
+          {
+            m_passArray.push_back(m_fxaaPass);
+          }
         }
         m_passArray.push_back(m_gammaPass);
 
