@@ -21,6 +21,7 @@ namespace ToolKit
   }
 
   void Logger::SetWriteConsoleFn(ConsoleOutputFn fn) { m_writeConsoleFn = fn; }
+  void Logger::SetClearConsoleFn(ClearConsoleFn fn)  { m_clearConsoleFn = fn; }
 
   void Logger::SetPlatformConsoleFn(ConsoleOutputFn fn)
   {
@@ -41,6 +42,11 @@ namespace ToolKit
     vsprintf(buff, msg, args);
 
     logFn(logType, String(buff));
+  }
+
+  void Logger::ClearConsole()
+  {
+    m_clearConsoleFn();
   }
 
   void Logger::WriteConsole(LogType logType, const char* msg, ...)

@@ -1455,7 +1455,11 @@ namespace ToolKit
           console->AddLog(msg, logType);
         }
       };
+
+      auto genericClearFn = []() -> void { g_app->GetConsole()->ClearLog(); };
+
       GetLogger()->SetWriteConsoleFn(genericReporterFn);
+      GetLogger()->SetClearConsoleFn(genericClearFn);
     }
 
     void App::CreateAndSetNewScene(const String& name)
