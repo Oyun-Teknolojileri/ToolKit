@@ -1,4 +1,5 @@
 
+
 #include "UIManager.h"
 
 #include "ToolKit.h"
@@ -11,10 +12,18 @@
 namespace ToolKit
 {
 
-  UILayer::UILayer(ScenePtr scene)
+  UILayer::UILayer() { m_id = GetHandleManager()->GetNextHandle(); }
+
+  UILayer::UILayer(const String& file) : UILayer()
+  {
+    m_scene = GetSceneManager()->Create<Scene>(file);
+    m_scene->Load();
+  }
+
+  UILayer::UILayer(ScenePtr scene) : UILayer()
   {
     m_scene = scene;
-    m_id    = GetHandleManager()->GetNextHandle();
+    m_scene->Load();
   }
 
   UILayer::~UILayer() {}
@@ -80,6 +89,14 @@ namespace ToolKit
       }
     }
     return false;
+  }
+
+  Camera* UIManager::GetUICamera() { return m_uiCamera; }
+
+  void UIManager::SetUICamera(Camera* cam)
+  {
+    SafeDel(m_uiCamera);
+    m_uiCamera = cam;
   }
 
   void UIManager::UpdateSurfaces(Viewport* vp, UILayer* layer)
@@ -155,8 +172,28 @@ namespace ToolKit
     }
   }
 
+  UIManager::UIManager()
+  {
+    m_uiCamera = new Camera();
+    m_uiCamera->SetLens(-100.0f, 100.0f, -100.0f, 100.0f, 0.5f, 1000.0f);
+  }
+
+  UIManager::~UIManager() { SafeDel(m_uiCamera); }
+
   void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)
   {
+    ULongID attachmentSwap = NULL_HANDLE;
+    viewport->SwapCamera(&m_uiCamera, attachmentSwap);
+
+    // Make sure camera covers the whole viewport.
+    Vec2 vpSize = viewport->m_wndContentAreaSize;
+    m_uiCamera->SetLens(vpSize.x * -0.5f,
+                        vpSize.x * 0.5f,
+                        vpSize.y * 0.5f,
+                        vpSize.y * -0.5f,
+                        0.5f,
+                        1000.0f);
+
     for (auto& viewLayerArray : m_viewportIdLayerArrayMap)
     {
       if (viewLayerArray.first == viewport->m_viewportId)
@@ -169,6 +206,8 @@ namespace ToolKit
         }
       }
     }
+
+    viewport->SwapCamera(&m_uiCamera, attachmentSwap);
   }
 
   void UIManager::GetLayers(ULongID viewportId, UILayerRawPtrArray& layers)

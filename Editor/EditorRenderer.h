@@ -93,6 +93,7 @@ namespace ToolKit
 
       BillboardPassPtr m_billboardPass                  = nullptr;
       SceneRendererPtr m_scenePass                      = nullptr;
+      ForwardRenderPassPtr m_uiPass                     = nullptr;
       ForwardRenderPassPtr m_editorPass                 = nullptr;
       GizmoPassPtr m_gizmoPass                          = nullptr;
       TonemapPassPtr m_tonemapPass                      = nullptr;

@@ -13,7 +13,17 @@ namespace ToolKit
   {
    public:
     /**
-     * Constructor sets the layer id and Scene.
+     * Default constructor.
+     */
+    UILayer();
+
+    /**
+     * Construct the layer from a file.
+     */
+    UILayer(const String& file);
+
+    /**
+     * Construct the layer from a scene.
      */
     UILayer(ScenePtr scene);
 
@@ -56,6 +66,16 @@ namespace ToolKit
   {
    public:
     /**
+     * Default constructor. Initiates a UI Camera.
+     */
+    UIManager();
+
+    /**
+     * Default destructor.
+     */
+    virtual ~UIManager();
+
+    /**
      * Updates all of the layers and activates Surface callbacks based on
      * events.
      * @param deltaTime is the time past since the previous frame.
@@ -91,7 +111,7 @@ namespace ToolKit
      * Checks if there is a map record with Viewport that contains Layer.
      * @param viewportId The id of the Viewport to be looked for.
      * @param layer Layer object to be search in Layers array in the map.
-     * @return If it exist, returns array index of the layer whitin
+     * @return If it exist, returns array index of the layer within
      * corresponding Layer array of viewportId. If its not exist returns -1;
      */
     int Exist(ULongID viewportId, ULongID layerId);
@@ -101,6 +121,20 @@ namespace ToolKit
      * cleared.
      */
     void DestroyLayers();
+
+    /**
+     * Returns the UI camera that is used to render and update the layers.
+     * @return The camera to update and render the Layers with.
+     */
+    Camera* GetUICamera();
+
+    /**
+     * Sets the UI camera which will be used for updating & rendering layers
+     * with. Deletes the existing ui camera and take the ownership of the new
+     * camera.
+     * @param cam is the camera to be set as the ui camera for the manager.
+     */
+    void SetUICamera(Camera* cam);
 
    private:
     /**
@@ -132,10 +166,16 @@ namespace ToolKit
    public:
     /**
      * Hash map that holds ViewportId, UILayerRawPtrArray map. There can be
-     * multiple layer on a single viewport, for this reason an array of layers
-     * are stored for each viewport.
+     * multiple layer on a single Viewport, for this reason an array of
+     * layers are stored for each Viewport.
      */
     std::unordered_map<ULongID, UILayerRawPtrArray> m_viewportIdLayerArrayMap;
+
+   private:
+    /**
+     * Camera to render the UI and update the layers with.
+     */
+    Camera* m_uiCamera = nullptr;
   };
 
 } // namespace ToolKit

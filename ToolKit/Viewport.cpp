@@ -7,6 +7,7 @@
 #include "Renderer.h"
 #include "ToolKit.h"
 #include "Util.h"
+#include "Viewport.h"
 
 #include <algorithm>
 
@@ -37,6 +38,26 @@ namespace ToolKit
   {
     SafeDel(m_camera);
     m_camera         = cam;
+    m_attachedCamera = NULL_HANDLE;
+  }
+
+  void ViewportBase::SwapCamera(Camera** cam, ULongID& attachment)
+  {
+    if (cam == nullptr) 
+    {
+      return;
+    }
+
+    if (*cam == nullptr) 
+    {
+      return;
+    }
+
+    Camera** tmp     = &m_camera;
+    m_camera         = *cam;
+    cam              = tmp;
+
+    attachment       = m_attachedCamera;
     m_attachedCamera = NULL_HANDLE;
   }
 
