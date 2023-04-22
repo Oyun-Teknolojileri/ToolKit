@@ -176,6 +176,7 @@ namespace ToolKit
   {
     m_uiCamera = new Camera();
     m_uiCamera->SetLens(-100.0f, 100.0f, -100.0f, 100.0f, 0.5f, 1000.0f);
+    m_uiCamera->m_orthographicScale = 1.0f;
   }
 
   UIManager::~UIManager() { SafeDel(m_uiCamera); }

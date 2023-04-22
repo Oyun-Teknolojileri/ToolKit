@@ -58,7 +58,6 @@ namespace ToolKit
     for (RenderJob& job : jobs)
     {
       LightRawPtrArray lightList = RenderJobProcessor::SortLights(job, lights);
-      uint activeMeshIndx        = 0;
       renderer->Render(job, m_params.Cam, lightList);
     }
   }
