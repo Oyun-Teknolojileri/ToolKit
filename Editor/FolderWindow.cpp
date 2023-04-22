@@ -67,6 +67,47 @@ namespace ToolKit
       return nullptr;
     }
 
+    String GetRootPath(const String& folder)
+    {
+      static std::unordered_set<String> rootMap = 
+      {
+        "Fonts",
+        "Materials",
+        "Meshes",
+        "Scenes",
+        "Shaders",
+        "Textures"
+      };
+
+      String path = folder;
+      String subFolder{};
+      // traverse parent paths and search a root folder
+      while (path.size() > 0ull)
+      {
+        subFolder.clear();
+
+        while (path.size() > 0ull)
+        {
+          char c = path.back(); 
+          path.erase(path.end() - 1ull);
+          
+          if (c == '\\' || c == '/')
+          {
+            break;
+          }
+          subFolder.push_back(c);
+        }
+        // reverse because we pushed reversely
+        std::reverse(subFolder.begin(), subFolder.end());
+        // if we found a root folder return this path
+        if (rootMap.count(subFolder) > 0)
+        {
+          return ConcatPaths({path, subFolder });
+        }
+      }
+      return DefaultPath();
+    }
+
     RenderTargetPtr DirectoryEntry::GetThumbnail() const
     {
       return g_app->m_thumbnailManager.GetThumbnail(*this);
@@ -245,6 +286,27 @@ namespace ToolKit
       }
     }
 
+    int FolderView::SelectFolder(FolderWindow* parent, const String& path)
+    {
+      int selected = parent->Exist(path);
+      if (selected == -1)
+      {
+        FolderView view(parent);
+        view.SetPath(path);
+        view.Iterate();
+        view.Refresh();
+        parent->AddEntry(view);
+        return parent->Exist(path);
+      }
+      else
+      {
+        FolderView& view    = parent->GetView(selected);
+        view.m_visible      = true;
+        view.m_activateNext = true;
+      }
+      return selected;
+    }
+
     void FolderView::Show()
     {
       bool* visCheck = nullptr;
@@ -420,21 +482,7 @@ namespace ToolKit
             {
               String path =
                   ConcatPaths({dirEnt.m_rootPath, dirEnt.m_fileName});
-              int indx = m_parent->Exist(path);
-              if (indx == -1)
-              {
-                FolderView view(m_parent);
-                view.SetPath(path);
-                view.Iterate();
-                view.Refresh();
-                m_parent->AddEntry(view);
-              }
-              else
-              {
-                FolderView& view    = m_parent->GetView(indx);
-                view.m_visible      = true;
-                view.m_activateNext = true;
-              }
+              SelectFolder(m_parent, path);
             }
           }
         
@@ -632,7 +680,6 @@ namespace ToolKit
         {
           m_itemActions[cmd](entry, this);
         }
-
         if (g_copyingFiles || g_cuttingFiles)
         {
           m_itemActions["FileSystem/Paste"](nullptr, this);
@@ -728,9 +775,9 @@ namespace ToolKit
           {
             view->m_dirty = true;
           }
+          thisView->m_parent->ReconstructFolderTree();
           ImGui::CloseCurrentPopup();
         }
-        thisView->m_parent->ReconstructFolderTree();
       };
 
       // FileSystem/MakeDir.
@@ -1138,24 +1185,35 @@ namespace ToolKit
       
       const auto onClickedFn = [&]() -> void
       {
-        // find clicked entry
+        // find clicked entity
         int selected = Exist(node.path);
-        
-        if (selected != -1 && selected != m_activeFolder)
+        if (selected != -1)
         {
           FolderView& selectedEntry = m_entries[selected];
-          // set old node active false
-          if (m_activeFolder != -1) 
+          bool rootChanged          = false;
+
+          if (m_lastSelectedTreeNode != -1 &&
+              m_lastSelectedTreeNode < m_entries.size())
           {
-            DeactivateNode(m_entries[m_activeFolder].m_folder);
-            m_entries[m_activeFolder].m_active = false;
+            FolderView& lastSelectedEntry = m_entries[m_lastSelectedTreeNode];
+
+            // set old node active false(icon will change to closed)
+            DeactivateNode(lastSelectedEntry.m_folder);
+            lastSelectedEntry.m_active = false;
+
+            if (GetRootPath(selectedEntry.GetPath()) !=
+                GetRootPath(lastSelectedEntry.GetPath()))
+            {
+              // root folders different we should switch active folder
+              m_activeFolder = selected;
+            }
           }
           AddEntry(selectedEntry);
-          node.active    = true;
-          m_activeFolder = selected;
-          selectedEntry.m_active = true;
+          node.active                  = true;
+          m_lastSelectedTreeNode       = selected;
+          selectedEntry.m_active       = true;
           selectedEntry.m_activateNext = true;
-          selectedEntry.m_visible = true;
+          selectedEntry.m_visible      = true;
         }
       };
 

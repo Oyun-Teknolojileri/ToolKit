@@ -57,6 +57,7 @@ namespace ToolKit
       void ShowContextMenu(DirectoryEntry* entry = nullptr);
       void Refresh();
       float GetThumbnailZoomPercent(float thumbnailZoom);
+      int SelectFolder(FolderWindow* window, const String& path);
      
       void DropFiles(const String& dst); //!< drop selectedFiles
 
@@ -159,9 +160,10 @@ namespace ToolKit
       std::vector<FolderNode> m_folderNodes;
       float m_maxTreeNodeWidth = 160.0f;
 
-      int m_activeFolder   = -1;
+      int m_activeFolder   = 0;
       bool m_showStructure = true;
       int m_resourcesTreeIndex = 0;
+      int m_lastSelectedTreeNode = 0;
     };
 
   } // namespace Editor
