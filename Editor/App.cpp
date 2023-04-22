@@ -186,6 +186,7 @@ namespace ToolKit
       for (EditorViewport* viewport : viewports)
       {
         viewport->Update(deltaTime);
+        GetUIManager()->UpdateLayers(deltaTime, viewport);
 
         /*// PlayWindow is drawn on perspective. Thus, skip perspective.
         if (m_gameMod != GameMod::Stop && !m_simulatorSettings.Windowed)

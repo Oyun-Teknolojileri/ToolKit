@@ -194,8 +194,11 @@ namespace ToolKit
       {
         ReadAttr(node, "alignment", *((int*) (&m_cameraAlignment)));
         ReadAttr(node, "lock", m_orbitLock);
+        
         Camera* viewCam = new Camera();
+        ULongID id      = viewCam->GetIdVal();
         viewCam->DeSerialize(nullptr, node->first_node("E"));
+        viewCam->SetIdVal(id);
 
         // Reset aspect.
         if (!viewCam->IsOrtographic())

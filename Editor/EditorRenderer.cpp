@@ -58,8 +58,8 @@ namespace ToolKit
         m_scenePass->m_params.Gfx                        = gfx;
         m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
         m_scenePass->Render(renderer);
-        m_passArray.push_back(m_gammaPass);
         m_passArray.push_back(m_uiPass);
+        m_passArray.push_back(m_gammaPass);
         Technique::Render(renderer);
         break;
       default:

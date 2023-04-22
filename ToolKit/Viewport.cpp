@@ -43,19 +43,19 @@ namespace ToolKit
 
   void ViewportBase::SwapCamera(Camera** cam, ULongID& attachment)
   {
-    if (cam == nullptr) 
+    if (cam == nullptr)
     {
       return;
     }
 
-    if (*cam == nullptr) 
+    if (*cam == nullptr)
     {
       return;
     }
 
-    Camera** tmp     = &m_camera;
-    m_camera         = *cam;
-    cam              = tmp;
+    Camera* tmp      = *cam;
+    *cam             = m_camera;
+    m_camera         = tmp;
 
     attachment       = m_attachedCamera;
     m_attachedCamera = NULL_HANDLE;

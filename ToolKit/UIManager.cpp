@@ -183,18 +183,21 @@ namespace ToolKit
 
   void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)
   {
-    ULongID attachmentSwap = NULL_HANDLE;
-    viewport->SwapCamera(&m_uiCamera, attachmentSwap);
-
     // Make sure camera covers the whole viewport.
-    Vec2 vpSize = viewport->m_wndContentAreaSize;
+    Vec2 vpSize                     = viewport->m_wndContentAreaSize;
+    m_uiCamera->m_orthographicScale = 1.0f;
     m_uiCamera->SetLens(vpSize.x * -0.5f,
                         vpSize.x * 0.5f,
                         vpSize.y * 0.5f,
                         vpSize.y * -0.5f,
-                        0.5f,
-                        1000.0f);
+                        -100.0f,
+                        100.0f);
 
+    // Swap viewport camera with ui camera.
+    ULongID attachmentSwap = NULL_HANDLE;
+    viewport->SwapCamera(&m_uiCamera, attachmentSwap);
+
+    // Update viewports with ui camera.
     for (auto& viewLayerArray : m_viewportIdLayerArrayMap)
     {
       if (viewLayerArray.first == viewport->m_viewportId)
