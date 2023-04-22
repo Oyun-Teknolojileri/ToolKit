@@ -163,7 +163,7 @@ namespace ToolKit
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
       std::vector<EditorViewport*> viewports;
-        
+
       for (Window* wnd : m_windows)
       {
         if (wnd->IsViewport())
@@ -195,7 +195,7 @@ namespace ToolKit
             continue;
           }
         }*/
-        
+
         if (viewport->IsVisible())
         {
           GetRenderSystem()->AddRenderTask(
@@ -422,7 +422,6 @@ namespace ToolKit
         buffer << cmakelist.rdbuf();
         String content = buffer.str();
         ReplaceFirstStringInPlace(content, "__projectname__", name);
-        ReplaceFirstStringInPlace(content, "__tkdir__", currentPath);
         cmakelist.close();
 
         // Override the content.
@@ -515,8 +514,8 @@ namespace ToolKit
 #else
       static const StringView buildConfig = "Release";
 #endif
-      String cmd  = "cmake -S " + codePath + " -B " + buildDir;
-      m_statusMsg = "Compiling ..." + g_statusNoTerminate;
+      String cmd    = "cmake -S " + codePath + " -B " + buildDir;
+      m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
       m_isCompiling = true;
 
       ExecSysCommand(
@@ -1191,8 +1190,7 @@ namespace ToolKit
       {
         Window::Type type = wnd->GetType();
 
-        if (type != Window::Type::Viewport &&
-            type != Window::Type::Viewport2d)
+        if (type != Window::Type::Viewport && type != Window::Type::Viewport2d)
         {
           continue;
         }

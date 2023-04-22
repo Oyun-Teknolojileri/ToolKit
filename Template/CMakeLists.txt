@@ -34,7 +34,7 @@ set(CMAKE_CXX_STANDARD 17)
 include_directories(
 	"${TOOLKIT_DIR}/ToolKit"
 	"${TOOLKIT_DIR}/Dependency"
-	"${TOOLKIT_DIR}/Dependency/Glew/include"
+	"${TOOLKIT_DIR}/Dependency/glad"
 	"${TOOLKIT_DIR}/Dependency/SDL2/include"
 	"${TOOLKIT_DIR}/Dependency/OpenAL/include"
 	"${TOOLKIT_DIR}/Dependency/RapidXml"
@@ -103,7 +103,6 @@ if (${WEB_BUILD})
 else()
   link_directories("${TOOLKIT_DIR}/Bin")
   link_directories("${TOOLKIT_DIR}/Dependency/OpenAL/libs/Win64")
-  link_directories("${TOOLKIT_DIR}/Dependency/Glew/lib/Release/x64")
   link_directories("${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/lib")
   
 	add_library(${PROJECT_NAME} SHARED ${SOURCE} ${HEADERS})
@@ -114,7 +113,7 @@ else()
 
   target_link_libraries(${PROJECT_NAME} debug ToolKit_d)
   target_link_libraries(${PROJECT_NAME} optimized ToolKit)
-  target_link_libraries(${PROJECT_NAME} glew32 OpenGL32 OpenAL32)
+  target_link_libraries(${PROJECT_NAME} OpenGL32 OpenAL32)
   target_link_libraries(${PROJECT_NAME} zlibstatic minizip)
 endif()
 
