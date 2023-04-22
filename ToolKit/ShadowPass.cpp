@@ -69,11 +69,11 @@ namespace ToolKit
     // Dropout non shadow casters.
     m_renderJobs      = m_params.RendeJobs;
     erase_if(m_renderJobs,
-            [](RenderJob& job) -> bool { return !job.ShadowCaster; });
+             [](RenderJob& job) -> bool { return !job.ShadowCaster; });
 
     // Dropout non shadow casting lights.
     erase_if(m_params.Lights,
-            [](Light* light) -> bool { return !light->GetCastShadowVal(); });
+             [](Light* light) -> bool { return !light->GetCastShadowVal(); });
 
     InitShadowAtlas();
 
@@ -138,13 +138,13 @@ namespace ToolKit
         // Clear the layer if needed
         if (!m_clearedLayers[light->m_shadowAtlasLayer + i])
         {
-          renderer->m_clearColor = m_shadowClearColor;
-          renderer->ClearBuffer(GraphicBitFields::AllBits);
+          renderer->ClearBuffer(GraphicBitFields::AllBits, m_shadowClearColor);
           m_clearedLayers[light->m_shadowAtlasLayer + i] = true;
         }
         else
         {
-          renderer->ClearBuffer(GraphicBitFields::DepthBits);
+          renderer->ClearBuffer(GraphicBitFields::DepthBits,
+                                m_shadowClearColor);
         }
 
         light->m_shadowCamera->m_node->SetTranslation(
@@ -177,13 +177,12 @@ namespace ToolKit
       // Clear the layer if needed
       if (!m_clearedLayers[light->m_shadowAtlasLayer])
       {
-        renderer->m_clearColor = m_shadowClearColor;
-        renderer->ClearBuffer(GraphicBitFields::AllBits);
+        renderer->ClearBuffer(GraphicBitFields::AllBits, m_shadowClearColor);
         m_clearedLayers[light->m_shadowAtlasLayer] = true;
       }
       else
       {
-        renderer->ClearBuffer(GraphicBitFields::DepthBits);
+        renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
       }
 
       renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,

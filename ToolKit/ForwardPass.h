@@ -9,7 +9,8 @@ namespace ToolKit
   {
     Camera* Cam                    = nullptr;
     FramebufferPtr FrameBuffer     = nullptr;
-    bool ClearFrameBuffer          = true;
+    bool ClearFrameBuffer          = true;  //!< Clears whole buffer
+    bool ClearDepthBuffer          = false; //!< Clears only depth buffer.
     RenderJobArray OpaqueJobs      = {};
     RenderJobArray TranslucentJobs = {};
     LightRawPtrArray Lights        = {};

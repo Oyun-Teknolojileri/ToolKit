@@ -60,9 +60,9 @@ namespace ToolKit
     void SwapFramebuffer(FramebufferPtr& fb, bool clear = true);
 
     FramebufferPtr GetFrameBuffer();
-    void ClearFrameBuffer(FramebufferPtr fb, const Vec4& color);
-    void ClearColorBuffer(const Vec4& value);
-    void ClearBuffer(GraphicBitFields fields);
+    void ClearFrameBuffer(FramebufferPtr fb, const Vec4& value);
+    void ClearColorBuffer(const Vec4& color);
+    void ClearBuffer(GraphicBitFields fields, const Vec4& value);
     void ColorMask(bool r, bool g, bool b, bool a);
     void CopyFrameBuffer(FramebufferPtr src,
                          FramebufferPtr dest,

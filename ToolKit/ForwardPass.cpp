@@ -2,8 +2,8 @@
 
 #include "Material.h"
 #include "Mesh.h"
-#include "ToolKit.h"
 #include "Pass.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {
@@ -36,6 +36,11 @@ namespace ToolKit
     // Set self data.
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer);
+    if (!m_params.ClearFrameBuffer && m_params.ClearDepthBuffer)
+    {
+      renderer->ClearBuffer(GraphicBitFields::DepthStencilBits, Vec4(1.0f));
+    }
+
     renderer->SetCameraLens(m_params.Cam);
   }
 

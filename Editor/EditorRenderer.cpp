@@ -55,7 +55,7 @@ namespace ToolKit
         break;
       case EditorLitMode::Game:
         m_params.App->HideGizmos();
-        m_scenePass->m_params.Gfx = gfx;
+        m_scenePass->m_params.Gfx                        = gfx;
         m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
         m_scenePass->Render(renderer);
         m_passArray.push_back(m_gammaPass);
@@ -231,6 +231,7 @@ namespace ToolKit
       m_uiPass->m_params.Cam              = GetUIManager()->GetUICamera();
       m_uiPass->m_params.FrameBuffer      = viewport->m_framebuffer;
       m_uiPass->m_params.ClearFrameBuffer = false;
+      m_uiPass->m_params.ClearDepthBuffer = true;
 
       const EngineSettings::PostProcessingSettings& gfx =
           GetEngineSettings().PostProcessing;

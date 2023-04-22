@@ -210,7 +210,7 @@ namespace ToolKit
     RenderState* rs = m_mat->GetRenderState();
     SetRenderState(rs);
     FeedUniforms(prg);
-    
+
     glBindVertexArray(mesh->m_vaoId);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
     SetVertexLayout(mesh->m_vertexLayout);
@@ -431,7 +431,7 @@ namespace ToolKit
 
     if (clear)
     {
-      ClearBuffer(GraphicBitFields::DepthStencilBits);
+      ClearBuffer(GraphicBitFields::DepthStencilBits, Vec4(1.0f));
       ClearColorBuffer(color);
     }
 
@@ -466,18 +466,15 @@ namespace ToolKit
     SwapFramebuffer(fb, false);
   }
 
-  void Renderer::ClearColorBuffer(const Vec4& value)
+  void Renderer::ClearColorBuffer(const Vec4& color)
   {
-    glClearColor(value.r, value.g, value.b, value.a);
+    glClearColor(color.r, color.g, color.b, color.a);
     glClear((GLbitfield) GraphicBitFields::ColorBits);
   }
 
-  void Renderer::ClearBuffer(GraphicBitFields fields)
+  void Renderer::ClearBuffer(GraphicBitFields fields, const Vec4& value)
   {
-    glClearColor(m_clearColor.r,
-                 m_clearColor.g,
-                 m_clearColor.b,
-                 m_clearColor.a);
+    glClearColor(value.r, value.g, value.b, value.a);
     glClear((GLbitfield) fields);
   }
 
@@ -1084,10 +1081,10 @@ namespace ToolKit
         break;
         case Uniform::ELAPSED_TIME:
         {
-          GLint loc = glGetUniformLocation(program->m_handle, 
-                                         GetUniformName(Uniform::ELAPSED_TIME));
-          glUniform1f(loc,
-                      Main::GetInstance()->TimeSinceStartup() / 1000.0f);  
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::ELAPSED_TIME));
+          glUniform1f(loc, Main::GetInstance()->TimeSinceStartup() / 1000.0f);
         }
         break;
         default:
