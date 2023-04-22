@@ -54,7 +54,7 @@ namespace ToolKit
      * Sets the root Canvases size to the approximately to given sizes. Provided
      * sizes may changes due to adaptive sizing nature of the canvas.
      */
-    void ResizeUI(float width, float height);
+    void ResizeUI(const Vec2& size);
 
    public:
     ScenePtr m_scene = nullptr; //!< Scene that contains ui objects.
@@ -82,6 +82,13 @@ namespace ToolKit
      * @param viewport is the Viewport to update layers of.
      */
     void UpdateLayers(float deltaTime, Viewport* viewport);
+
+    /**
+     * Resizes all the layers of the Viewport, based on the Viewport's size.
+     * Only applies if layer needs resizing.
+     * @param Viewport is the Viewport whose layers will be resized.
+     */
+    void ResizeLayers(Viewport* viewport);
 
     /**
      * Returns associated layers of the given viewport.

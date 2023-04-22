@@ -242,8 +242,10 @@ namespace ToolKit
       resolutionType =
           glm::min(resolutionType, (int) m_screenResolutions.size() - 1);
 
-      float textWidth = ImGui::CalcTextSize(m_emulatorResolutionNames[resolutionType].data()).x;
-      textWidth       = glm::max(80.0f, textWidth);
+      float textWidth =
+          ImGui::CalcTextSize(m_emulatorResolutionNames[resolutionType].data())
+              .x;
+      textWidth = glm::max(80.0f, textWidth);
       ImGui::SetNextItemWidth(textWidth * 1.3f);
 
       AddResolutionName("Edit Resolutions");
@@ -298,8 +300,8 @@ namespace ToolKit
           ImGui::PushID(i * 333);
           ImGui::InputText("name", m_emulatorResolutionNames[i].data(), 32);
           ImGui::SameLine();
-          
-          if (ImGui::InputInt2("size", &m_screenResolutions[i].x)) 
+
+          if (ImGui::InputInt2("size", &m_screenResolutions[i].x))
           {
             IVec2 res          = m_screenResolutions[i];
             res.x              = glm::clamp(res.x, 100, 1920 * 8);
@@ -307,9 +309,9 @@ namespace ToolKit
 
             m_settings->Width  = (float) res.x;
             m_settings->Height = (float) res.y;
-            UpdateSimulationWndSize();    
+            UpdateSimulationWndSize();
           }
-          
+
           ImGui::SameLine();
           if (ImGui::Button(ICON_FA_MINUS))
           {
@@ -324,7 +326,7 @@ namespace ToolKit
         {
           AddResolutionName("new resolution\0");
         }
-        
+
         ImGui::End();
       }
 
@@ -365,7 +367,7 @@ namespace ToolKit
         g_app->GetCurrentScene()->ClearSelection();
         for (UILayer* layer : layers)
         {
-          layer->ResizeUI((float) width, (float) height);
+          layer->ResizeUI(Vec2((float) width, (float) height));
         }
       }
     }

@@ -34,12 +34,21 @@ namespace ToolKit
 
   void UILayer::Update(float deltaTime) {}
 
-  void UILayer::ResizeUI(float width, float height)
+  void UILayer::ResizeUI(const Vec2& size)
   {
+    // Sanity checks.
     if (m_scene == nullptr)
     {
       return;
     }
+
+    // Apply sizing only when the resolution has changed.
+    if (VecAllEqual<Vec2>(m_size, size))
+    {
+      return;
+    }
+
+    m_size                       = size;
 
     const EntityRawPtrArray& arr = m_scene->GetEntities();
     for (Entity* ntt : arr)
@@ -47,18 +56,10 @@ namespace ToolKit
       if (ntt->GetType() == EntityType::Entity_Canvas)
       {
         Canvas* canvasPanel = static_cast<Canvas*>(ntt);
-
-        // Apply sizing only when the resolution has changed.
-        Vec2 size(width, height);
-        if (!VecAllEqual<Vec2>(m_size, size))
+        // Resize only root canvases.
+        if (canvasPanel->m_node->m_parent == nullptr)
         {
-          m_size = size;
-
-          // Resize only root canvases.
-          if (canvasPanel->m_node->m_parent == nullptr)
-          {
-            canvasPanel->ApplyRecursiveResizePolicy(width, height);
-          }
+          canvasPanel->ApplyRecursiveResizePolicy(m_size.x, m_size.y);
         }
       }
     }
@@ -183,16 +184,6 @@ namespace ToolKit
 
   void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)
   {
-    // Make sure camera covers the whole viewport.
-    Vec2 vpSize                     = viewport->m_wndContentAreaSize;
-    m_uiCamera->m_orthographicScale = 1.0f;
-    m_uiCamera->SetLens(vpSize.x * -0.5f,
-                        vpSize.x * 0.5f,
-                        vpSize.y * 0.5f,
-                        vpSize.y * -0.5f,
-                        -100.0f,
-                        100.0f);
-
     // Swap viewport camera with ui camera.
     ULongID attachmentSwap = NULL_HANDLE;
     viewport->SwapCamera(&m_uiCamera, attachmentSwap);
@@ -212,6 +203,36 @@ namespace ToolKit
     }
 
     viewport->SwapCamera(&m_uiCamera, attachmentSwap);
+  }
+
+  void UIManager::ResizeLayers(Viewport* viewport)
+  {
+    // Make sure camera covers the whole viewport.
+    Vec2 vpSize                     = viewport->m_wndContentAreaSize;
+    m_uiCamera->m_orthographicScale = 1.0f;
+    m_uiCamera->SetLens(vpSize.x * -0.5f,
+                        vpSize.x * 0.5f,
+                        vpSize.y * 0.5f,
+                        vpSize.y * -0.5f,
+                        -100.0f,
+                        100.0f);
+
+    // Adjust camera location to match lower left corners.
+    m_uiCamera->m_node->SetTranslation(
+        Vec3(vpSize.x * 0.5f, vpSize.y * 0.5f, 1.0f));
+
+    // Update viewports with ui camera.
+    for (auto& viewLayerArray : m_viewportIdLayerArrayMap)
+    {
+      if (viewLayerArray.first == viewport->m_viewportId)
+      {
+        for (UILayer* layer : viewLayerArray.second)
+        {
+          // Check potential events than updates.
+          layer->ResizeUI(vpSize);
+        }
+      }
+    }
   }
 
   void UIManager::GetLayers(ULongID viewportId, UILayerRawPtrArray& layers)

@@ -202,6 +202,7 @@ namespace ToolKit
           GetRenderSystem()->AddRenderTask(
               {[this, viewport](Renderer* renderer) -> void
                {
+                 GetUIManager()->ResizeLayers(viewport);
                  myEditorRenderer->m_params.App      = g_app;
                  myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
                  myEditorRenderer->m_params.Viewport = viewport;
