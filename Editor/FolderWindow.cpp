@@ -88,6 +88,7 @@ namespace ToolKit
 
         while (path.size() > 0ull)
         {
+          // pop last character
           char c = path.back(); 
           path.erase(path.end() - 1ull);
           
@@ -95,6 +96,7 @@ namespace ToolKit
           {
             break;
           }
+          // push character to subFolder
           subFolder.push_back(c);
         }
         // reverse because we pushed reversely
