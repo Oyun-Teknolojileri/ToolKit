@@ -48,6 +48,8 @@ namespace ToolKit
        */
       EntityRawPtrArray m_nttFocusPath;
       std::unordered_map<Entity*, bool> m_shownEntities;
+      
+      EntityRawPtrArray m_draggingEntities;
       EntityRawPtrArray m_roots;
       Entity* m_lastClickedEntity = nullptr;
       Entity* m_rootsParent       = nullptr;
@@ -55,6 +57,7 @@ namespace ToolKit
       String m_searchString   = "";
       bool m_stringSearchMode = false;
       bool m_searchCaseSens   = true;
+      bool m_anyEntityHovered = false;
       // for even odd pattern
       int odd = 0;
     };

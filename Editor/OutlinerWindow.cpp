@@ -153,9 +153,10 @@ namespace ToolKit
     void OutlinerWindow::SetItemState(Entity* e)
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
+      bool itemHovered = ImGui::IsItemHovered();
+      m_anyEntityHovered |= itemHovered;
 
-      if (ImGui::IsItemHovered() &&
-          ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+      if (itemHovered && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
       {
         if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl)) 
         {
@@ -191,10 +192,22 @@ namespace ToolKit
         m_lastClickedEntity = e;
       }
       
-      if (ImGui::BeginDragDropSource())
+      if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
       {
         ImGui::SetDragDropPayload("HierarcyChange", nullptr, 0);
         ImGui::Text("Drop on the new parent.");
+      
+        m_draggingEntities.clear();
+
+        if (!currScene->IsSelected(e->GetIdVal()))
+        {
+          m_draggingEntities.push_back(e);
+        }
+        else
+        {
+          currScene->GetSelectedEntities(m_draggingEntities);
+        }
+
         ImGui::EndDragDropSource();
       }
 
@@ -204,8 +217,7 @@ namespace ToolKit
                 ImGui::AcceptDragDropPayload("HierarcyChange"))
         {
           // Change the selected files hierarchy
-          EntityRawPtrArray selected;
-          currScene->GetSelectedEntities(selected);
+          EntityRawPtrArray& selected = m_draggingEntities;
 
           if (e->GetType() != EntityType::Entity_Prefab)
           {
@@ -219,6 +231,7 @@ namespace ToolKit
               }
             }
           }
+          m_draggingEntities.clear();
           g_parent = e->GetIdVal();
         }
         ImGui::EndDragDropTarget();
@@ -280,6 +293,7 @@ namespace ToolKit
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         odd = 0;
+        m_anyEntityHovered = false;
         HandleStates();
         ShowSearchBar(m_searchString);
         ImGui::BeginChild("##Outliner Nodes");
@@ -300,6 +314,29 @@ namespace ToolKit
           }
 
           ImGui::TreePop();
+        }
+
+        // if we click an empty space in this window selection list will cleared
+        if (!m_anyEntityHovered && 
+             ImGui::IsWindowHovered() &&  
+             ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+        {
+          currScene->ClearSelection();
+        }
+
+        // if mouse button is up dragging, we will clear dragging entities
+        if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+        {
+          // if dropped to empty area and we are dragging, orphan dragged entities
+          if (!m_anyEntityHovered && m_draggingEntities.size() > 0)
+          {
+            for (int i = 0; i < m_draggingEntities.size(); ++i)
+            {
+              Entity* entity = m_draggingEntities[i];
+              entity->m_node->OrphanSelf(true);
+            }
+          }
+          m_draggingEntities.clear();
         }
 
         ImGui::EndChild();
@@ -493,6 +530,13 @@ namespace ToolKit
               view.Refresh();
             }
           }
+
+          ImGui::CloseCurrentPopup();
+        }
+
+        if (ImGui::MenuItem("Delete"))
+        {
+          ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
           ImGui::CloseCurrentPopup();
         }
 
