@@ -209,7 +209,7 @@ namespace ToolKit
       // Internal states.
       bool m_onQuit = false;
       String m_newSceneName;
-      float m_deltaTime        = 0.0f;
+      float m_deltaTime  = 0.0f;
       bool m_isCompiling = false;
     };
 

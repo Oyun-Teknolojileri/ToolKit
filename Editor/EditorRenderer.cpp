@@ -61,6 +61,7 @@ namespace ToolKit
         m_passArray.push_back(m_uiPass);
         m_passArray.push_back(m_gammaPass);
         Technique::Render(renderer);
+        m_params.App->ShowGizmos();
         break;
       default:
         m_scenePass->m_params.Gfx                        = gfx;
@@ -102,10 +103,6 @@ namespace ToolKit
         m_passArray.push_back(m_gammaPass);
 
         Technique::Render(renderer);
-      }
-      else
-      {
-        m_params.App->ShowGizmos();
       }
 
       PostRender();
@@ -210,11 +207,11 @@ namespace ToolKit
       m_scenePass->m_params.Scene             = scene;
 
       // UI pass.
-      UILayerRawPtrArray layers;
+      UILayerPtrArray layers;
       RenderJobArray uiRenderJobs;
       GetUIManager()->GetLayers(viewport->m_viewportId, layers);
 
-      for (UILayer* layer : layers)
+      for (const UILayerPtr& layer : layers)
       {
         EntityRawPtrArray& uiNtties = layer->m_scene->AccessEntityArray();
         RenderJobProcessor::CreateRenderJobs(uiNtties, uiRenderJobs);

@@ -1060,7 +1060,7 @@ namespace ToolKit
         if (EditorViewport2d* viewport =
                 GetWindow<EditorViewport2d>(g_2dViewport))
         {
-          UILayer* layer = new UILayer(scene);
+          UILayerPtr layer = std::make_shared<UILayer>(scene);
           GetUIManager()->AddLayer(viewport->m_viewportId, layer);
         }
         else

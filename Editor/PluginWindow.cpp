@@ -361,11 +361,11 @@ namespace ToolKit
 
       if (viewport != nullptr)
       {
-        UILayerRawPtrArray layers;
+        UILayerPtrArray layers;
         GetUIManager()->GetLayers(viewport->m_viewportId, layers);
 
         g_app->GetCurrentScene()->ClearSelection();
-        for (UILayer* layer : layers)
+        for (const UILayerPtr& layer : layers)
         {
           layer->ResizeUI(Vec2((float) width, (float) height));
         }

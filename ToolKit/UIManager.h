@@ -9,6 +9,10 @@
 namespace ToolKit
 {
 
+  typedef std::shared_ptr<class UILayer> UILayerPtr;
+  typedef std::vector<UILayerPtr> UILayerPtrArray;
+  typedef std::vector<class UILayer*> UILayerRawPtrArray;
+
   class TK_API UILayer
   {
    public:
@@ -96,14 +100,14 @@ namespace ToolKit
      * will be quired for.
      * @param layers is the return array.
      */
-    void GetLayers(ULongID viewportId, UILayerRawPtrArray& layers);
+    void GetLayers(ULongID viewportId, UILayerPtrArray& layers);
 
     /**
      * Add a new layer to m_viewportLayerMap array.
      * @param viewport to add the layer to.
      * @param layer to be inserted.
      */
-    void AddLayer(ULongID viewportId, UILayer* layer);
+    void AddLayer(ULongID viewportId, const UILayerPtr& layer);
 
     /**
      * Removes the given layer from the m_viewportLayerMap. This function does
@@ -112,7 +116,7 @@ namespace ToolKit
      * @param layerId to be removed.
      * @return UILayer that removed from the map.
      */
-    UILayer* RemoveLayer(ULongID viewportId, ULongID layerId);
+    UILayerPtr RemoveLayer(ULongID viewportId, ULongID layerId);
 
     /**
      * Checks if there is a map record with Viewport that contains Layer.
@@ -149,7 +153,7 @@ namespace ToolKit
      * @param vp is the Viewport to check updates with.
      * @param layer is the Layer to check.
      */
-    void UpdateSurfaces(Viewport* vp, UILayer* layer);
+    void UpdateSurfaces(Viewport* vp, const UILayerPtr& layer);
 
     /**
      * Checks if there is a mouse click event on the given surface in given
@@ -176,7 +180,7 @@ namespace ToolKit
      * multiple layer on a single Viewport, for this reason an array of
      * layers are stored for each Viewport.
      */
-    std::unordered_map<ULongID, UILayerRawPtrArray> m_viewportIdLayerArrayMap;
+    std::unordered_map<ULongID, UILayerPtrArray> m_viewportIdLayerArrayMap;
 
    private:
     /**

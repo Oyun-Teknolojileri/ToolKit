@@ -100,7 +100,7 @@ namespace ToolKit
     m_uiCamera = cam;
   }
 
-  void UIManager::UpdateSurfaces(Viewport* vp, UILayer* layer)
+  void UIManager::UpdateSurfaces(Viewport* vp, const UILayerPtr& layer)
   {
     EventPool& events = Main::GetInstance()->m_eventPool;
     if (events.empty())
@@ -193,7 +193,7 @@ namespace ToolKit
     {
       if (viewLayerArray.first == viewport->m_viewportId)
       {
-        for (UILayer* layer : viewLayerArray.second)
+        for (const UILayerPtr& layer : viewLayerArray.second)
         {
           // Check potential events than updates.
           UpdateSurfaces(viewport, layer);
@@ -226,7 +226,7 @@ namespace ToolKit
     {
       if (viewLayerArray.first == viewport->m_viewportId)
       {
-        for (UILayer* layer : viewLayerArray.second)
+        for (UILayerPtr layer : viewLayerArray.second)
         {
           // Check potential events than updates.
           layer->ResizeUI(vpSize);
@@ -235,7 +235,7 @@ namespace ToolKit
     }
   }
 
-  void UIManager::GetLayers(ULongID viewportId, UILayerRawPtrArray& layers)
+  void UIManager::GetLayers(ULongID viewportId, UILayerPtrArray& layers)
   {
     auto res = m_viewportIdLayerArrayMap.find(viewportId);
     if (res != m_viewportIdLayerArrayMap.end())
@@ -244,7 +244,7 @@ namespace ToolKit
     }
   }
 
-  void UIManager::AddLayer(ULongID viewportId, UILayer* layer)
+  void UIManager::AddLayer(ULongID viewportId, const UILayerPtr& layer)
   {
     if (Exist(viewportId, layer->m_id) == -1)
     {
@@ -252,14 +252,14 @@ namespace ToolKit
     }
   }
 
-  UILayer* UIManager::RemoveLayer(ULongID viewportId, ULongID layerId)
+  UILayerPtr UIManager::RemoveLayer(ULongID viewportId, ULongID layerId)
   {
-    UILayer* layer = nullptr;
-    int indx       = Exist(viewportId, layerId);
+    UILayerPtr layer = nullptr;
+    int indx         = Exist(viewportId, layerId);
     if (indx != -1)
     {
-      UILayerRawPtrArray& layers = m_viewportIdLayerArrayMap[viewportId];
-      layer                      = layers[indx];
+      UILayerPtrArray& layers = m_viewportIdLayerArrayMap[viewportId];
+      layer                   = layers[indx];
       layers.erase(layers.begin() + indx);
     }
 
@@ -274,7 +274,7 @@ namespace ToolKit
       return -1;
     }
 
-    UILayerRawPtrArray& layers = vlArray->second;
+    UILayerPtrArray& layers = vlArray->second;
     for (size_t i = 0; i < layers.size(); i++)
     {
       if (layers[i]->m_id == layerId)
@@ -290,12 +290,13 @@ namespace ToolKit
   {
     for (auto vpLayerArray : m_viewportIdLayerArrayMap)
     {
-      for (UILayer* layer : vpLayerArray.second)
+      for (UILayerPtr layer : vpLayerArray.second)
       {
         layer->Uninit();
-        SafeDel(layer);
       }
     }
+
+    m_viewportIdLayerArrayMap.clear();
   }
 
 } // namespace ToolKit

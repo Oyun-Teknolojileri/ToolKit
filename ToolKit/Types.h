@@ -138,7 +138,6 @@ namespace ToolKit
   typedef std::vector<class ParameterVariant> ParameterVariantArray;
   typedef std::vector<class ParameterVariant*> ParameterVariantRawPtrArray;
   typedef std::vector<class LineBatch*> LineBatchRawPtrArray;
-  typedef std::vector<class UILayer*> UILayerRawPtrArray;
 
   // Xml types.
   typedef rapidxml::xml_node<char> XmlNode;
