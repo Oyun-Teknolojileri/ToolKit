@@ -1,5 +1,6 @@
 #include "Animation.h"
 
+#include "AnimationControllerComponent.h"
 #include "Common/base64.h"
 #include "Entity.h"
 #include "Node.h"
@@ -56,7 +57,9 @@ namespace ToolKit
     node->SetChildrenDirty();
   }
 
-  void Animation::GetPose(const SkeletonComponentPtr& skeleton, float time)
+  void Animation::GetPose(const SkeletonComponentPtr& skeleton,
+                          float time,
+                          BlendTarget* blendTarget)
   {
     if (m_keys.empty())
     {
@@ -65,6 +68,9 @@ namespace ToolKit
 
     float ratio;
     int key1, key2;
+    Vec3 translation;
+    Quaternion orientation;
+    Vec3 scale;
     for (auto& dBoneIter : skeleton->m_map->boneList)
     {
       auto entry = m_keys.find(dBoneIter.first);
@@ -90,13 +96,62 @@ namespace ToolKit
       Key k1                             = entry->second[key1];
       Key k2                             = entry->second[key2];
       DynamicBoneMap::DynamicBone& dBone = dBoneIter.second;
-      dBone.node->m_translation =
-          Interpolate(k1.m_position, k2.m_position, ratio);
 
-      dBone.node->m_orientation =
-          glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
+      translation = Interpolate(k1.m_position, k2.m_position, ratio);
+      orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
+      scale       = Interpolate(k1.m_scale, k2.m_scale, ratio);
 
-      dBone.node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
+      // Blending with next animation
+      if (blendTarget != nullptr)
+      {
+        // Calculate the current time of the target animation.
+        float targetAnimTime = time - m_duration + blendTarget->OverlapTime;
+        if (targetAnimTime >= 0.0f)  // Start blending. 
+        {
+          // Calculate blend ratio between source - target. 
+          float blendRatio = targetAnimTime / blendTarget->OverlapTime;
+          // Find the corresponding bone's transforms on target anim.
+          auto targetEntry =
+              blendTarget->TargetAnim->m_keys.find(dBoneIter.first);
+          int targetKey1, targetKey2;
+          float targetRatio;
+          blendTarget->TargetAnim->GetNearestKeys(targetEntry->second,
+                                                  targetKey1,
+                                                  targetKey2,
+                                                  targetRatio,
+                                                  targetAnimTime);
+          Key targetK1      = targetEntry->second[targetKey1];
+          Key targetK2      = targetEntry->second[targetKey2];
+
+          Vec3 translationT = Interpolate(targetK1.m_position,
+                                          targetK2.m_position,
+                                          targetRatio);
+          Quaternion orientationT =
+              glm::slerp(targetK1.m_rotation, targetK2.m_rotation, targetRatio);
+          Vec3 scaleT =
+              Interpolate(targetK1.m_scale, targetK2.m_scale, targetRatio);
+
+          // For the source anims with root motion or rotation,
+          // Target anim is offseted from it's root bone.
+          if (dBoneIter.first == blendTarget->RootBone)
+          {
+            Vec3 entityScale       = skeleton->m_entity->m_node->GetScale();
+            float translationCoeff = (1 / entityScale.x);
+            translationT           = translationT +
+                           (blendTarget->TranslationOffset * translationCoeff);
+            orientationT = orientationT * blendTarget->OrientationOffset;
+          }
+          // Blend animations.
+          translation = Interpolate(translation, translationT, blendRatio);
+          orientation = glm::slerp(orientation, orientationT, blendRatio);
+          scale       = Interpolate(scale, scaleT, blendRatio);
+        }
+      }
+
+      dBone.node->m_translation = translation;
+      dBone.node->m_orientation = orientation;
+      dBone.node->m_scale       = scale;
+
       dBone.node->SetChildrenDirty();
     }
     skeleton->isDirty = true;
@@ -368,8 +423,8 @@ namespace ToolKit
       AnimRecord::State state = record->m_state;
       if (state == AnimRecord::State::Play)
       {
-        float thisTime = record->m_currentTime +
-          (deltaTimeSec * record->m_timeMultiplier);
+        float thisTime =
+            record->m_currentTime + (deltaTimeSec * record->m_timeMultiplier);
         float duration = record->m_animation->m_duration;
 
         if (record->m_loop)
@@ -398,7 +453,10 @@ namespace ToolKit
         record->m_currentTime += deltaTimeSec * record->m_timeMultiplier;
       }
 
-      record->m_entity->SetPose(record->m_animation, record->m_currentTime);
+      record->m_entity->SetPose(
+          record->m_animation,
+          record->m_currentTime,
+          record->m_blendTarget.Blend ? &record->m_blendTarget : nullptr);
 
       if (state == AnimRecord::State::Rewind)
       {
