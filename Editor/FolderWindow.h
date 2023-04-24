@@ -59,10 +59,6 @@ namespace ToolKit
       float GetThumbnailZoomPercent(float thumbnailZoom);
       int SelectFolder(FolderWindow* window, const String& path);
       
-      /**
-      * Selects the files between two entry index(including a and b).
-      */
-      void SelectFileRange(int a, int b);
       
       void DropFiles(const String& dst); //!< drop selectedFiles
 
@@ -96,6 +92,13 @@ namespace ToolKit
       String m_path;
 
      private:
+      void DeterminateAndSetBackgroundColor(bool isSelected, int index);
+      bool IsMultiSelecting();
+      /**
+       * Selects the files between two entry index(including a and b).
+       */
+      void SelectFilesInRange(int a, int b);
+
       FolderWindow* m_parent = nullptr;
       bool m_dirty            = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);

@@ -149,17 +149,23 @@ namespace ToolKit
       }
     }
 
+    template<typename T>
+    static bool contains(const std::vector<T>& arr, const T& val)
+    {
+      return std::count(arr.begin(), arr.end(), val) > 0;
+    }
+
     void FolderView::HandleCopyPasteDelete()
     {
-      bool shiftDown = ImGui::IsKeyDown(ImGuiKey_LeftShift);
-      if (shiftDown && ImGui::IsKeyPressed(ImGuiKey_C))
+      bool ctrlDown = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+      if (ctrlDown  && ImGui::IsKeyPressed(ImGuiKey_C))
       {
         g_dragBeginView = this;
         g_copyingFiles  = true;
         g_coppiedFiles  = g_selectedFiles;
       }
 
-      if (shiftDown && ImGui::IsKeyPressed(ImGuiKey_X))
+      if (ctrlDown && ImGui::IsKeyPressed(ImGuiKey_X))
       {
         g_dragBeginView = this;
         g_cuttingFiles  = true;
@@ -213,7 +219,7 @@ namespace ToolKit
       return selected;
     }
 
-    void FolderView::SelectFileRange(int a, int b)
+    void FolderView::SelectFilesInRange(int a, int b)
     {
       // return if folders same or indices invalid
       if (a >= m_entries.size() || b >= m_entries.size() || a < 0 || b < 0 ||
@@ -231,15 +237,45 @@ namespace ToolKit
 
       for (int i = a; i <= b; i++)
       {
-        bool isSelected =
-            std::find(g_selectedFiles.begin(),
-                      g_selectedFiles.end(),
-                      m_entries.data() + i) != g_selectedFiles.end();
-        if (!isSelected)
+        if (!contains(g_selectedFiles, m_entries.data() + i))
         {
           g_selectedFiles.push_back(m_entries.data() + i);
         }
       }
+    }
+
+    void FolderView::DeterminateAndSetBackgroundColor(bool isSelected, int i)
+    {
+      ImVec4 hoverColor  = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
+      ImVec4 buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
+          
+      bool copyingOrCutting = contains(g_coppiedFiles, m_entries.data() + i);
+          
+      // determinate background color of the file
+      // cutting files will shown red, 
+      // coppying files will shown orange,
+      // selected files will shown as blue
+      if (copyingOrCutting)
+      {
+        if (g_cuttingFiles)
+        {
+          buttonColor = ImVec4(0.72f, 0.2f, 0.2f, 0.82f);
+          hoverColor  = ImVec4(0.51f, 0.1f, 0.1f, 0.81f);
+        }
+        else if (g_copyingFiles)
+        {
+          buttonColor = ImVec4(0.72f, 0.72f, 0.2f, 0.82f);
+          hoverColor  = ImVec4(0.51f, 0.51f, 0.1f, 0.81f);
+        }
+      }
+      else if (isSelected == true)
+      {
+        buttonColor = ImVec4(0.3f, 0.4f, 0.7f, 0.5f);
+        hoverColor  = ImVec4(0.4f, 0.5f, 0.8f, 1.0f);
+      }
+
+      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hoverColor);
+      ImGui::PushStyleColor(ImGuiCol_Button, buttonColor); 
     }
 
     void FolderView::Show()
@@ -346,16 +382,11 @@ namespace ToolKit
           ImVec2 texCoords =
               flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
 
-          bool isSelected = std::count(g_selectedFiles.begin(),
-                                       g_selectedFiles.end(),
-                                       m_entries.data() + i);
-          if (isSelected == true)
-          {
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                                  ImVec4(0.3f, 0.4f, 0.7f, 0.5f));
-            ImGui::PushStyleColor(ImGuiCol_Button,
-                                  ImVec4(0.4f, 0.5f, 0.8f, 1.0f));
-          }
+          DirectoryEntry* entryPtr = m_entries.data() + i;
+
+          bool isSelected = contains(g_selectedFiles, entryPtr);
+          // this function will push color. we are popping it down below this if block
+          DeterminateAndSetBackgroundColor(isSelected, i);
 
           // Draw Item Icon.
           if (ImGui::ImageButton(ConvertUIntImGuiTexture(iconId),
@@ -371,24 +402,21 @@ namespace ToolKit
             {
               // this means not multiselecting so select only this
               g_selectedFiles.clear();
-              g_selectedFiles.push_back(&dirEnt);
+              g_selectedFiles.push_back(entryPtr);
             }
-            else if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && isSelected)
+            else if (ctrlDown && isSelected)
             {
-              DirectoryEntry* dirEntPtr = m_entries.data() + i;
               erase_if(g_selectedFiles,
-                       [dirEntPtr](DirectoryEntry* other) -> bool
-                       {
-                       return other == dirEntPtr;
-                       });
+                       [entryPtr](DirectoryEntry* other) -> bool
+                       { return other == entryPtr; });
             }
             else if (shiftDown && m_lastClickedEntryIdx != -1)
             {
-              SelectFileRange(m_lastClickedEntryIdx, i);
+              SelectFilesInRange(m_lastClickedEntryIdx, i);
             }
             else
             {
-              g_selectedFiles.push_back(&dirEnt);
+              g_selectedFiles.push_back(entryPtr);
             }
 
             m_lastClickedEntryIdx = i;
@@ -413,10 +441,9 @@ namespace ToolKit
             }
           }
 
-          if (isSelected == true)
-          {
-            ImGui::PopStyleColor(2);
-          }
+          // pop colors that comming from DeterminateAndSetBackgroundColor function
+          ImGui::PopStyleColor(2);
+          
           // Handle context menu.
           ShowContextMenu(&dirEnt);
 
@@ -580,6 +607,13 @@ namespace ToolKit
       return -1;
     }
 
+    bool FolderView::IsMultiSelecting()
+    {
+      bool shiftDown = ImGui::IsKeyDown(ImGuiKey_LeftShift);
+      bool ctrlDown  = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+      return shiftDown || ctrlDown;
+    }
+
     void FolderView::ShowContextMenu(DirectoryEntry* entry)
     {
       StringArray commands;
@@ -612,6 +646,19 @@ namespace ToolKit
 
       if (ImGui::BeginPopupContextItem())
       {
+        bool isSelected = contains(g_selectedFiles, entry);
+
+        if (IsMultiSelecting())
+        {
+          g_selectedFiles.push_back(entry);
+        }
+        else if (!isSelected)
+        {
+          // if not multiselecting clear all selected files and push this
+          g_selectedFiles.clear();
+          g_selectedFiles.push_back(entry);
+        }
+
         m_itemActions["FileSystem/Cut"](entry, this);
         m_itemActions["FileSystem/Copy"](entry, this);
         m_itemActions["FileSystem/Duplicate"](entry, this);
