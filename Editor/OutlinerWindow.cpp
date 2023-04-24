@@ -158,36 +158,28 @@ namespace ToolKit
 
       if (itemHovered && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
       {
-        if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl)) 
+        bool ctrlDown   = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+        bool shiftDown  = ImGui::IsKeyDown(ImGuiKey_LeftShift);
+        bool isSelected = currScene->IsSelected(e->GetIdVal());
+
+        if (!shiftDown && !ctrlDown)
         {
-          if (currScene->IsSelected(e->GetIdVal()))
-          {
-            currScene->RemoveFromSelection(e->GetIdVal());
-          }
-          else
-          {
-            currScene->AddToSelection(e->GetIdVal(), true);
-          }
+          // this means not multiselecting so select only this
+          currScene->ClearSelection();
+          currScene->AddToSelection(e->GetIdVal(), true);
         }
-        else if (ImGui::IsKeyDown(ImGuiKey_LeftShift))
+        else if (ctrlDown && isSelected)
         {
-          if (m_lastClickedEntity != nullptr)
-          {
-            SelectEntitiesBetweenNodes(currScene.get(), m_lastClickedEntity, e);
-          }
+          currScene->RemoveFromSelection(e->GetIdVal());
+        }
+        else if (shiftDown && m_lastClickedEntity != nullptr)
+        {
+          SelectEntitiesBetweenNodes(currScene.get(), m_lastClickedEntity, e);
         }
         else
         {
-          if (!currScene->IsSelected(e->GetIdVal()))
-          {
-            currScene->AddToSelection(e->GetIdVal(), false);
-            g_app->GetPropInspector()->m_activeView =
-                PropInspector::ViewType::Entity;
-          }
-          else
-          {
-            currScene->AddToSelection(e->GetIdVal(), false);
-          }
+          currScene->AddToSelection(e->GetIdVal(), true);
+          g_app->GetPropInspector()->m_activeView = PropInspector::ViewType::Entity;
         }
         m_lastClickedEntity = e;
       }
@@ -317,10 +309,13 @@ namespace ToolKit
         }
 
         // if we click an empty space in this window. selection list will cleared
-        if (!m_anyEntityHovered && 
-             ImGui::IsWindowHovered() &&  
-            !ImGui::IsKeyDown(ImGuiKey_LeftShift) &&
-             ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+        bool multiSelecting = ImGui::IsKeyDown(ImGuiKey_LeftShift) || 
+                              ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+
+        bool windowSpaceHovered = !m_anyEntityHovered && ImGui::IsWindowHovered();
+        bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+
+        if (windowSpaceHovered && !multiSelecting && mouseReleased)
         {
           for (int i = 0; i < m_draggingEntities.size(); ++i)
           {
