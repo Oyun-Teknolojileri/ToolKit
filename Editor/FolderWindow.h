@@ -58,7 +58,12 @@ namespace ToolKit
       void Refresh();
       float GetThumbnailZoomPercent(float thumbnailZoom);
       int SelectFolder(FolderWindow* window, const String& path);
-     
+      
+      /**
+      * Selects the files between two entry index(including a and b).
+      */
+      void SelectFileRange(int a, int b);
+      
       void DropFiles(const String& dst); //!< drop selectedFiles
 
       static const FileDragData& GetFileDragData();
@@ -86,6 +91,7 @@ namespace ToolKit
       bool m_onlyNativeTypes = true;
       Vec2 m_iconSize        = Vec2(50.0f);
       std::vector<DirectoryEntry> m_entries;
+      int m_lastClickedEntryIdx = -1;
       String m_folder;
       String m_path;
 
