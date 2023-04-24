@@ -188,21 +188,18 @@ namespace ToolKit
         viewport->Update(deltaTime);
         GetUIManager()->UpdateLayers(deltaTime, viewport);
 
-        /*// PlayWindow is drawn on perspective. Thus, skip perspective.
-        if (m_gameMod != GameMod::Stop && !m_simulatorSettings.Windowed)
-        {
-          if (viewport->m_name == g_3dViewport)
-          {
-            continue;
-          }
-        }*/
-
         if (viewport->IsVisible())
         {
           GetRenderSystem()->AddRenderTask(
               {[this, viewport](Renderer* renderer) -> void
                {
-                 GetUIManager()->ResizeLayers(viewport);
+                 // 2d Viewport should not be updated as it may break the
+                 // designers work.
+                 if (viewport->m_name != g_2dViewport)
+                 {
+                   GetUIManager()->ResizeLayers(viewport);
+                 }
+
                  myEditorRenderer->m_params.App      = g_app;
                  myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
                  myEditorRenderer->m_params.Viewport = viewport;
