@@ -96,6 +96,7 @@ namespace ToolKit
       {
         char* log = new char[infoLen];
         glGetShaderInfoLog(m_shaderHandle, infoLen, nullptr, log);
+        GetLogger()->WritePlatformConsole(LogType::Error, log);
         GetLogger()->Log(log);
         GetLogger()->Log(GetFile());
         GetLogger()->Log(str);
