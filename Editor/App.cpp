@@ -185,11 +185,11 @@ namespace ToolKit
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
       {
-        viewport->Update(deltaTime);
-        GetUIManager()->UpdateLayers(deltaTime, viewport);
-
         if (viewport->IsVisible())
         {
+          viewport->Update(deltaTime);
+          GetUIManager()->UpdateLayers(deltaTime, viewport);
+
           GetRenderSystem()->AddRenderTask(
               {[this, viewport](Renderer* renderer) -> void
                {
