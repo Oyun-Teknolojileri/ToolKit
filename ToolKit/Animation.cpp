@@ -101,12 +101,16 @@ namespace ToolKit
       orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
       scale       = Interpolate(k1.m_scale, k2.m_scale, ratio);
 
+      // Blending with next animation
       if (blendTarget != nullptr)
       {
+        // Calculate the current time of the target animation.
         float targetAnimTime = time - m_duration + blendTarget->OverlapTime;
-        if (targetAnimTime >= 0.0f)
+        if (targetAnimTime >= 0.0f)  // Start blending. 
         {
+          // Calculate blend ratio between source - target. 
           float blendRatio = targetAnimTime / blendTarget->OverlapTime;
+          // Find the corresponding bone's transforms on target anim.
           auto targetEntry =
               blendTarget->TargetAnim->m_keys.find(dBoneIter.first);
           int targetKey1, targetKey2;
@@ -127,6 +131,8 @@ namespace ToolKit
           Vec3 scaleT =
               Interpolate(targetK1.m_scale, targetK2.m_scale, targetRatio);
 
+          // For the source anims with root motion or rotation,
+          // Target anim is offseted from it's root bone.
           if (dBoneIter.first == blendTarget->RootBone)
           {
             Vec3 entityScale       = skeleton->m_entity->m_node->GetScale();
@@ -135,7 +141,7 @@ namespace ToolKit
                            (blendTarget->TranslationOffset * translationCoeff);
             orientationT = orientationT * blendTarget->OrientationOffset;
           }
-
+          // Blend animations.
           translation = Interpolate(translation, translationT, blendRatio);
           orientation = glm::slerp(orientation, orientationT, blendRatio);
           scale       = Interpolate(scale, scaleT, blendRatio);
