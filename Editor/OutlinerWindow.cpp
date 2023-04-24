@@ -316,27 +316,19 @@ namespace ToolKit
           ImGui::TreePop();
         }
 
-        // if we click an empty space in this window selection list will cleared
+        // if we click an empty space in this window. selection list will cleared
         if (!m_anyEntityHovered && 
              ImGui::IsWindowHovered() &&  
-             ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            !ImGui::IsKeyDown(ImGuiKey_LeftShift) &&
+             ImGui::IsMouseReleased(ImGuiMouseButton_Left))
         {
-          currScene->ClearSelection();
-        }
-
-        // if mouse button is up dragging, we will clear dragging entities
-        if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-        {
-          // if dropped to empty area and we are dragging, orphan dragged entities
-          if (!m_anyEntityHovered && m_draggingEntities.size() > 0)
+          for (int i = 0; i < m_draggingEntities.size(); ++i)
           {
-            for (int i = 0; i < m_draggingEntities.size(); ++i)
-            {
-              Entity* entity = m_draggingEntities[i];
-              entity->m_node->OrphanSelf(true);
-            }
+            Entity* entity = m_draggingEntities[i];
+            entity->m_node->OrphanSelf(true);
           }
           m_draggingEntities.clear();
+          currScene->ClearSelection();
         }
 
         ImGui::EndChild();
