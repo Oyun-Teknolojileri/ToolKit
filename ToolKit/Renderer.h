@@ -44,13 +44,6 @@ namespace ToolKit
     Renderer();
     ~Renderer();
 
-    /**
-     * Renders given UILayer to given Viewport.
-     * @param layer UILayer that will be rendered.
-     * @param viewport that UILayer will be rendered with.
-     */
-    void RenderUI(Viewport* viewport, UILayer* layer);
-
     void SetRenderState(const RenderState* const state);
 
     void SetStencilOperation(StencilOperation op);
@@ -145,8 +138,6 @@ namespace ToolKit
     void ResetTextureSlots();
 
    private:
-    void Render2d(Surface* object, glm::ivec2 screenDimensions);
-    void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
     void SetProjectViewModel(const Mat4& model, Camera* cam);
     void BindProgram(ProgramPtr program);
     void LinkProgram(uint program, uint vertexP, uint fragmentP);

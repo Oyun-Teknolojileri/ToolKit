@@ -78,28 +78,6 @@ namespace ToolKit
     }
   }
 
-  /**
-   * DEPRECATED
-   * Renders given UILayer to given Viewport.
-   * @param layer UILayer that will be rendered.
-   * @param viewport that UILayer will be rendered with.
-   */
-  void Renderer::RenderUI(Viewport* viewport, UILayer* layer)
-  {
-    float halfWidth  = viewport->m_wndContentAreaSize.x * 0.5f;
-    float halfHeight = viewport->m_wndContentAreaSize.y * 0.5f;
-
-    m_uiCamera->SetLens(-halfWidth,
-                        halfWidth,
-                        -halfHeight,
-                        halfHeight,
-                        0.5f,
-                        1000.0f);
-
-    EntityRawPtrArray entities = layer->m_scene->GetEntities();
-    // RenderEntities(entities, m_uiCamera, viewport);
-  }
-
   void Renderer::Render(const RenderJob& job,
                         Camera* cam,
                         const LightRawPtrArray& lights)
@@ -237,52 +215,6 @@ namespace ToolKit
     {
       Render(rj, cam, lights);
     }
-  }
-
-  void Renderer::Render2d(Surface* object, glm::ivec2 screenDimensions)
-  {
-    static ShaderPtr vertexShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("defaultVertex.shader", true));
-    static ShaderPtr fragShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("unlitFrag.shader", true));
-    static ProgramPtr prog = CreateProgram(vertexShader, fragShader);
-    BindProgram(prog);
-
-    MeshPtr mesh = object->GetMeshComponent()->GetMeshVal();
-    mesh->Init();
-
-    RenderState* rs = mesh->m_material->GetRenderState();
-    SetRenderState(rs);
-
-    GLint pvloc = glGetUniformLocation(prog->m_handle, "ProjectViewModel");
-    Mat4 pm     = glm::ortho(0.0f,
-                         static_cast<float>(screenDimensions.x),
-                         0.0f,
-                         static_cast<float>(screenDimensions.y),
-                         0.0f,
-                         100.0f);
-
-    Mat4 mul = pm * object->m_node->GetTransform(TransformationSpace::TS_WORLD);
-
-    glUniformMatrix4fv(pvloc, 1, false, reinterpret_cast<float*>(&mul));
-
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
-
-    glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-  }
-
-  void Renderer::Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions)
-  {
-    Surface* surface = object->GetCurrentSurface();
-
-    Node* backup     = surface->m_node;
-    surface->m_node  = object->m_node;
-
-    Render2d(surface, screenDimensions);
-
-    surface->m_node = backup;
   }
 
   void Renderer::SetRenderState(const RenderState* const state)
