@@ -2,8 +2,8 @@
 
 #include "Material.h"
 #include "Mesh.h"
-#include "ToolKit.h"
 #include "Pass.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {
@@ -36,6 +36,11 @@ namespace ToolKit
     // Set self data.
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer);
+    if (!m_params.ClearFrameBuffer && m_params.ClearDepthBuffer)
+    {
+      renderer->ClearBuffer(GraphicBitFields::DepthStencilBits, Vec4(1.0f));
+    }
+
     renderer->SetCameraLens(m_params.Cam);
   }
 
@@ -53,7 +58,6 @@ namespace ToolKit
     for (RenderJob& job : jobs)
     {
       LightRawPtrArray lightList = RenderJobProcessor::SortLights(job, lights);
-      uint activeMeshIndx        = 0;
       renderer->Render(job, m_params.Cam, lightList);
     }
   }

@@ -194,6 +194,11 @@ namespace ToolKit
       const LightRawPtrArray& lights)
   {
     LightRawPtrArray bestLights;
+    if (lights.empty())
+    {
+      return bestLights;
+    }
+
     bestLights.reserve(lights.size());
 
     // Find the end of directional lights

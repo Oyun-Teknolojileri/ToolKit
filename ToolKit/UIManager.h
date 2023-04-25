@@ -9,11 +9,25 @@
 namespace ToolKit
 {
 
+  typedef std::shared_ptr<class UILayer> UILayerPtr;
+  typedef std::vector<UILayerPtr> UILayerPtrArray;
+  typedef std::vector<class UILayer*> UILayerRawPtrArray;
+
   class TK_API UILayer
   {
    public:
     /**
-     * Constructor sets the layer id and Scene.
+     * Default constructor.
+     */
+    UILayer();
+
+    /**
+     * Construct the layer from a file.
+     */
+    UILayer(const String& file);
+
+    /**
+     * Construct the layer from a scene.
      */
     UILayer(ScenePtr scene);
 
@@ -44,7 +58,7 @@ namespace ToolKit
      * Sets the root Canvases size to the approximately to given sizes. Provided
      * sizes may changes due to adaptive sizing nature of the canvas.
      */
-    void ResizeUI(float width, float height);
+    void ResizeUI(const Vec2& size);
 
    public:
     ScenePtr m_scene = nullptr; //!< Scene that contains ui objects.
@@ -56,6 +70,16 @@ namespace ToolKit
   {
    public:
     /**
+     * Default constructor. Initiates a UI Camera.
+     */
+    UIManager();
+
+    /**
+     * Default destructor.
+     */
+    virtual ~UIManager();
+
+    /**
      * Updates all of the layers and activates Surface callbacks based on
      * events.
      * @param deltaTime is the time past since the previous frame.
@@ -64,19 +88,26 @@ namespace ToolKit
     void UpdateLayers(float deltaTime, Viewport* viewport);
 
     /**
+     * Resizes all the layers of the Viewport, based on the Viewport's size.
+     * Only applies if layer needs resizing.
+     * @param Viewport is the Viewport whose layers will be resized.
+     */
+    void ResizeLayers(Viewport* viewport);
+
+    /**
      * Returns associated layers of the given viewport.
      * @param viewportId is the id of the viewport that the associated UILayers
      * will be quired for.
      * @param layers is the return array.
      */
-    void GetLayers(ULongID viewportId, UILayerRawPtrArray& layers);
+    void GetLayers(ULongID viewportId, UILayerPtrArray& layers);
 
     /**
      * Add a new layer to m_viewportLayerMap array.
      * @param viewport to add the layer to.
      * @param layer to be inserted.
      */
-    void AddLayer(ULongID viewportId, UILayer* layer);
+    void AddLayer(ULongID viewportId, const UILayerPtr& layer);
 
     /**
      * Removes the given layer from the m_viewportLayerMap. This function does
@@ -85,13 +116,13 @@ namespace ToolKit
      * @param layerId to be removed.
      * @return UILayer that removed from the map.
      */
-    UILayer* RemoveLayer(ULongID viewportId, ULongID layerId);
+    UILayerPtr RemoveLayer(ULongID viewportId, ULongID layerId);
 
     /**
      * Checks if there is a map record with Viewport that contains Layer.
      * @param viewportId The id of the Viewport to be looked for.
      * @param layer Layer object to be search in Layers array in the map.
-     * @return If it exist, returns array index of the layer whitin
+     * @return If it exist, returns array index of the layer within
      * corresponding Layer array of viewportId. If its not exist returns -1;
      */
     int Exist(ULongID viewportId, ULongID layerId);
@@ -102,13 +133,27 @@ namespace ToolKit
      */
     void DestroyLayers();
 
+    /**
+     * Returns the UI camera that is used to render and update the layers.
+     * @return The camera to update and render the Layers with.
+     */
+    Camera* GetUICamera();
+
+    /**
+     * Sets the UI camera which will be used for updating & rendering layers
+     * with. Deletes the existing ui camera and take the ownership of the new
+     * camera.
+     * @param cam is the camera to be set as the ui camera for the manager.
+     */
+    void SetUICamera(Camera* cam);
+
    private:
     /**
      * Update each layer with corresponding viewport.
      * @param vp is the Viewport to check updates with.
      * @param layer is the Layer to check.
      */
-    void UpdateSurfaces(Viewport* vp, UILayer* layer);
+    void UpdateSurfaces(Viewport* vp, const UILayerPtr& layer);
 
     /**
      * Checks if there is a mouse click event on the given surface in given
@@ -132,10 +177,16 @@ namespace ToolKit
    public:
     /**
      * Hash map that holds ViewportId, UILayerRawPtrArray map. There can be
-     * multiple layer on a single viewport, for this reason an array of layers
-     * are stored for each viewport.
+     * multiple layer on a single Viewport, for this reason an array of
+     * layers are stored for each Viewport.
      */
-    std::unordered_map<ULongID, UILayerRawPtrArray> m_viewportIdLayerArrayMap;
+    std::unordered_map<ULongID, UILayerPtrArray> m_viewportIdLayerArrayMap;
+
+   private:
+    /**
+     * Camera to render the UI and update the layers with.
+     */
+    Camera* m_uiCamera = nullptr;
   };
 
 } // namespace ToolKit

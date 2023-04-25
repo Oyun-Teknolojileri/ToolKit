@@ -138,7 +138,6 @@ namespace ToolKit
   typedef std::vector<class ParameterVariant> ParameterVariantArray;
   typedef std::vector<class ParameterVariant*> ParameterVariantRawPtrArray;
   typedef std::vector<class LineBatch*> LineBatchRawPtrArray;
-  typedef std::vector<class UILayer*> UILayerRawPtrArray;
 
   // Xml types.
   typedef rapidxml::xml_node<char> XmlNode;
@@ -264,9 +263,10 @@ namespace ToolKit
     CENTER
   };
 
-  static const float TK_FLT_MAX = std::numeric_limits<float>::max();
-  static const int TK_INT_MAX   = std::numeric_limits<int>::max();
-  static const int TK_UINT_MAX  = std::numeric_limits<unsigned int>::max();
+  constexpr float TK_FLT_MAX = std::numeric_limits<float>::max();
+  constexpr float TK_FLT_MIN = std::numeric_limits<float>::min();
+  constexpr int TK_INT_MAX   = std::numeric_limits<int>::max();
+  constexpr int TK_UINT_MAX  = std::numeric_limits<unsigned int>::max();
 
   // Graphics Api Type Overrides.
   enum class GraphicTypes

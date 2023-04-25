@@ -194,8 +194,11 @@ namespace ToolKit
       {
         ReadAttr(node, "alignment", *((int*) (&m_cameraAlignment)));
         ReadAttr(node, "lock", m_orbitLock);
+        
         Camera* viewCam = new Camera();
+        ULongID id      = viewCam->GetIdVal();
         viewCam->DeSerialize(nullptr, node->first_node("E"));
+        viewCam->SetIdVal(id);
 
         // Reset aspect.
         if (!viewCam->IsOrtographic())
@@ -244,24 +247,25 @@ namespace ToolKit
     {
       // Content area size
 
-      m_contentAreaMin               = ImGui::GetWindowContentRegionMin();
-      m_contentAreaMax               = ImGui::GetWindowContentRegionMax();
+      m_contentAreaMin        = ImGui::GetWindowContentRegionMin();
+      m_contentAreaMax        = ImGui::GetWindowContentRegionMax();
 
-      m_contentAreaMin.x             += ImGui::GetWindowPos().x;
-      m_contentAreaMin.y             += ImGui::GetWindowPos().y;
-      m_contentAreaMax.x             += ImGui::GetWindowPos().x;
-      m_contentAreaMax.y             += ImGui::GetWindowPos().y;
+      m_contentAreaMin.x      += ImGui::GetWindowPos().x;
+      m_contentAreaMin.y      += ImGui::GetWindowPos().y;
+      m_contentAreaMax.x      += ImGui::GetWindowPos().x;
+      m_contentAreaMax.y      += ImGui::GetWindowPos().y;
 
-      m_contentAreaLocation.x        = m_contentAreaMin.x;
-      m_contentAreaLocation.y        = m_contentAreaMin.y;
+      m_contentAreaLocation.x = m_contentAreaMin.x;
+      m_contentAreaLocation.y = m_contentAreaMin.y;
 
-      const Vec2 lastContentAreaSize = m_wndContentAreaSize;
+      const Vec2 prevSize     = m_wndContentAreaSize;
+
       m_wndContentAreaSize =
           Vec2(glm::abs(m_contentAreaMax.x - m_contentAreaMin.x),
                glm::abs(m_contentAreaMax.y - m_contentAreaMin.y));
-      if (glm::all(glm::epsilonNotEqual(lastContentAreaSize,
-                                        m_wndContentAreaSize,
-                                        0.001f)))
+
+      if (glm::all(
+              glm::epsilonNotEqual(prevSize, m_wndContentAreaSize, 0.001f)))
       {
         m_needsResize = true;
       }

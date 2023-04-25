@@ -54,13 +54,13 @@ namespace ToolKit
      protected:
       RenderTargetSettigs GetRenderTargetSettings() override;
 
-      void UpdateContentArea();
-      void UpdateWindow();
-      void DrawCommands();
-      void HandleDrop();
-      void DrawOverlays();
-      void ComitResize();
-      void UpdateSnaps();
+      virtual void UpdateContentArea();
+      virtual void UpdateWindow();
+      virtual void DrawCommands();
+      virtual void HandleDrop();
+      virtual void DrawOverlays();
+      virtual void ComitResize();
+      virtual void UpdateSnaps();
 
       // Mods.
       void FpsNavigationMod(float deltaTime);

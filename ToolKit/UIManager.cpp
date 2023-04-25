@@ -1,4 +1,5 @@
 
+
 #include "UIManager.h"
 
 #include "ToolKit.h"
@@ -11,10 +12,18 @@
 namespace ToolKit
 {
 
-  UILayer::UILayer(ScenePtr scene)
+  UILayer::UILayer() { m_id = GetHandleManager()->GetNextHandle(); }
+
+  UILayer::UILayer(const String& file) : UILayer()
+  {
+    m_scene = GetSceneManager()->Create<Scene>(file);
+    m_scene->Load();
+  }
+
+  UILayer::UILayer(ScenePtr scene) : UILayer()
   {
     m_scene = scene;
-    m_id    = GetHandleManager()->GetNextHandle();
+    m_scene->Load();
   }
 
   UILayer::~UILayer() {}
@@ -25,12 +34,21 @@ namespace ToolKit
 
   void UILayer::Update(float deltaTime) {}
 
-  void UILayer::ResizeUI(float width, float height)
+  void UILayer::ResizeUI(const Vec2& size)
   {
+    // Sanity checks.
     if (m_scene == nullptr)
     {
       return;
     }
+
+    // Apply sizing only when the resolution has changed.
+    if (VecAllEqual<Vec2>(m_size, size))
+    {
+      return;
+    }
+
+    m_size                       = size;
 
     const EntityRawPtrArray& arr = m_scene->GetEntities();
     for (Entity* ntt : arr)
@@ -38,18 +56,10 @@ namespace ToolKit
       if (ntt->GetType() == EntityType::Entity_Canvas)
       {
         Canvas* canvasPanel = static_cast<Canvas*>(ntt);
-
-        // Apply sizing only when the resolution has changed.
-        Vec2 size(width, height);
-        if (!VecAllEqual<Vec2>(m_size, size))
+        // Resize only root canvases.
+        if (canvasPanel->m_node->m_parent == nullptr)
         {
-          m_size = size;
-
-          // Resize only root canvases.
-          if (canvasPanel->m_node->m_parent == nullptr)
-          {
-            canvasPanel->ApplyRecursiveResizePolicy(width, height);
-          }
+          canvasPanel->ApplyRecursiveResizePolicy(m_size.x, m_size.y);
         }
       }
     }
@@ -82,7 +92,15 @@ namespace ToolKit
     return false;
   }
 
-  void UIManager::UpdateSurfaces(Viewport* vp, UILayer* layer)
+  Camera* UIManager::GetUICamera() { return m_uiCamera; }
+
+  void UIManager::SetUICamera(Camera* cam)
+  {
+    SafeDel(m_uiCamera);
+    m_uiCamera = cam;
+  }
+
+  void UIManager::UpdateSurfaces(Viewport* vp, const UILayerPtr& layer)
   {
     EventPool& events = Main::GetInstance()->m_eventPool;
     if (events.empty())
@@ -155,13 +173,27 @@ namespace ToolKit
     }
   }
 
+  UIManager::UIManager()
+  {
+    m_uiCamera = new Camera();
+    m_uiCamera->SetLens(-100.0f, 100.0f, -100.0f, 100.0f, 0.5f, 1000.0f);
+    m_uiCamera->m_orthographicScale = 1.0f;
+  }
+
+  UIManager::~UIManager() { SafeDel(m_uiCamera); }
+
   void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)
   {
+    // Swap viewport camera with ui camera.
+    ULongID attachmentSwap = NULL_HANDLE;
+    viewport->SwapCamera(&m_uiCamera, attachmentSwap);
+
+    // Update viewports with ui camera.
     for (auto& viewLayerArray : m_viewportIdLayerArrayMap)
     {
       if (viewLayerArray.first == viewport->m_viewportId)
       {
-        for (UILayer* layer : viewLayerArray.second)
+        for (const UILayerPtr& layer : viewLayerArray.second)
         {
           // Check potential events than updates.
           UpdateSurfaces(viewport, layer);
@@ -169,9 +201,41 @@ namespace ToolKit
         }
       }
     }
+
+    viewport->SwapCamera(&m_uiCamera, attachmentSwap);
   }
 
-  void UIManager::GetLayers(ULongID viewportId, UILayerRawPtrArray& layers)
+  void UIManager::ResizeLayers(Viewport* viewport)
+  {
+    // Make sure camera covers the whole viewport.
+    Vec2 vpSize                     = viewport->m_wndContentAreaSize;
+    m_uiCamera->m_orthographicScale = 1.0f;
+    m_uiCamera->SetLens(vpSize.x * -0.5f,
+                        vpSize.x * 0.5f,
+                        vpSize.y * 0.5f,
+                        vpSize.y * -0.5f,
+                        -100.0f,
+                        100.0f);
+
+    // Adjust camera location to match lower left corners.
+    m_uiCamera->m_node->SetTranslation(
+        Vec3(vpSize.x * 0.5f, vpSize.y * 0.5f, 1.0f));
+
+    // Update viewports with ui camera.
+    for (auto& viewLayerArray : m_viewportIdLayerArrayMap)
+    {
+      if (viewLayerArray.first == viewport->m_viewportId)
+      {
+        for (UILayerPtr layer : viewLayerArray.second)
+        {
+          // Check potential events than updates.
+          layer->ResizeUI(vpSize);
+        }
+      }
+    }
+  }
+
+  void UIManager::GetLayers(ULongID viewportId, UILayerPtrArray& layers)
   {
     auto res = m_viewportIdLayerArrayMap.find(viewportId);
     if (res != m_viewportIdLayerArrayMap.end())
@@ -180,7 +244,7 @@ namespace ToolKit
     }
   }
 
-  void UIManager::AddLayer(ULongID viewportId, UILayer* layer)
+  void UIManager::AddLayer(ULongID viewportId, const UILayerPtr& layer)
   {
     if (Exist(viewportId, layer->m_id) == -1)
     {
@@ -188,14 +252,14 @@ namespace ToolKit
     }
   }
 
-  UILayer* UIManager::RemoveLayer(ULongID viewportId, ULongID layerId)
+  UILayerPtr UIManager::RemoveLayer(ULongID viewportId, ULongID layerId)
   {
-    UILayer* layer = nullptr;
-    int indx       = Exist(viewportId, layerId);
+    UILayerPtr layer = nullptr;
+    int indx         = Exist(viewportId, layerId);
     if (indx != -1)
     {
-      UILayerRawPtrArray& layers = m_viewportIdLayerArrayMap[viewportId];
-      layer                      = layers[indx];
+      UILayerPtrArray& layers = m_viewportIdLayerArrayMap[viewportId];
+      layer                   = layers[indx];
       layers.erase(layers.begin() + indx);
     }
 
@@ -210,7 +274,7 @@ namespace ToolKit
       return -1;
     }
 
-    UILayerRawPtrArray& layers = vlArray->second;
+    UILayerPtrArray& layers = vlArray->second;
     for (size_t i = 0; i < layers.size(); i++)
     {
       if (layers[i]->m_id == layerId)
@@ -226,12 +290,13 @@ namespace ToolKit
   {
     for (auto vpLayerArray : m_viewportIdLayerArrayMap)
     {
-      for (UILayer* layer : vpLayerArray.second)
+      for (UILayerPtr layer : vpLayerArray.second)
       {
         layer->Uninit();
-        SafeDel(layer);
       }
     }
+
+    m_viewportIdLayerArrayMap.clear();
   }
 
 } // namespace ToolKit

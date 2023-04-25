@@ -59,14 +59,14 @@ namespace ToolKit
         }
       };
 
-      ImVec2 overlaySize(300, 34);
+      ImVec2 overlaySize(300, 30);
 
       // Center the toolbar.
       float width  = ImGui::GetWindowContentRegionWidth();
       float offset = (width - overlaySize.x) * 0.5f;
       ImGui::SameLine(offset);
 
-      ImGui::SetNextWindowBgAlpha(0.65f);
+      ImGui::SetNextWindowBgAlpha(0.85f);
       if (ImGui::BeginChildFrame(ImGui::GetID("ViewportOptions"),
                                  overlaySize,
                                  ImGuiWindowFlags_NoMove |
@@ -81,7 +81,7 @@ namespace ToolKit
                           ImGuiTableFlags_SizingStretchProp);
         ImGui::TableNextRow();
 
-        unsigned int nextItemIndex = 0;
+        uint nextItemIndex = 0;
 
         ShowAddMenu(ShowAddMenuFn, nextItemIndex);
 

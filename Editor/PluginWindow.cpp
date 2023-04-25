@@ -242,8 +242,10 @@ namespace ToolKit
       resolutionType =
           glm::min(resolutionType, (int) m_screenResolutions.size() - 1);
 
-      float textWidth = ImGui::CalcTextSize(m_emulatorResolutionNames[resolutionType].data()).x;
-      textWidth       = glm::max(80.0f, textWidth);
+      float textWidth =
+          ImGui::CalcTextSize(m_emulatorResolutionNames[resolutionType].data())
+              .x;
+      textWidth = glm::max(80.0f, textWidth);
       ImGui::SetNextItemWidth(textWidth * 1.3f);
 
       AddResolutionName("Edit Resolutions");
@@ -298,8 +300,8 @@ namespace ToolKit
           ImGui::PushID(i * 333);
           ImGui::InputText("name", m_emulatorResolutionNames[i].data(), 32);
           ImGui::SameLine();
-          
-          if (ImGui::InputInt2("size", &m_screenResolutions[i].x)) 
+
+          if (ImGui::InputInt2("size", &m_screenResolutions[i].x))
           {
             IVec2 res          = m_screenResolutions[i];
             res.x              = glm::clamp(res.x, 100, 1920 * 8);
@@ -307,9 +309,9 @@ namespace ToolKit
 
             m_settings->Width  = (float) res.x;
             m_settings->Height = (float) res.y;
-            UpdateSimulationWndSize();    
+            UpdateSimulationWndSize();
           }
-          
+
           ImGui::SameLine();
           if (ImGui::Button(ICON_FA_MINUS))
           {
@@ -324,20 +326,21 @@ namespace ToolKit
         {
           AddResolutionName("new resolution\0");
         }
-        
+
         ImGui::End();
       }
 
       // Zoom
       ImGui::SameLine();
-      ImGui::Text("Zoom");
-      ImGui::SetNextItemWidth(60.0f);
+      ImGui::Text("Scale");
+      ImGui::SetNextItemWidth(120.0f);
       ImGui::SameLine();
 
-      if (ImGui::DragFloat("##z", &m_settings->Scale, 0.05f, 0.0f, 1.0f))
+      if (ImGui::SliderFloat("##z", &m_settings->Scale, 0.5f, 2.0f, "%.1f"))
       {
         UpdateSimulationWndSize();
       }
+
       // Landscape - Portrait Toggle
       ImGui::SameLine();
       ImGui::Text("Rotate");
@@ -358,13 +361,13 @@ namespace ToolKit
 
       if (viewport != nullptr)
       {
-        UILayerRawPtrArray layers;
+        UILayerPtrArray layers;
         GetUIManager()->GetLayers(viewport->m_viewportId, layers);
 
         g_app->GetCurrentScene()->ClearSelection();
-        for (UILayer* layer : layers)
+        for (const UILayerPtr& layer : layers)
         {
-          layer->ResizeUI((float) width, (float) height);
+          layer->ResizeUI(Vec2((float) width, (float) height));
         }
       }
     }

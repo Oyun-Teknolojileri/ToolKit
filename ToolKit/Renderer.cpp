@@ -78,28 +78,6 @@ namespace ToolKit
     }
   }
 
-  /**
-   * DEPRECATED
-   * Renders given UILayer to given Viewport.
-   * @param layer UILayer that will be rendered.
-   * @param viewport that UILayer will be rendered with.
-   */
-  void Renderer::RenderUI(Viewport* viewport, UILayer* layer)
-  {
-    float halfWidth  = viewport->m_wndContentAreaSize.x * 0.5f;
-    float halfHeight = viewport->m_wndContentAreaSize.y * 0.5f;
-
-    m_uiCamera->SetLens(-halfWidth,
-                        halfWidth,
-                        -halfHeight,
-                        halfHeight,
-                        0.5f,
-                        1000.0f);
-
-    EntityRawPtrArray entities = layer->m_scene->GetEntities();
-    // RenderEntities(entities, m_uiCamera, viewport);
-  }
-
   void Renderer::Render(const RenderJob& job,
                         Camera* cam,
                         const LightRawPtrArray& lights)
@@ -210,7 +188,7 @@ namespace ToolKit
     RenderState* rs = m_mat->GetRenderState();
     SetRenderState(rs);
     FeedUniforms(prg);
-    
+
     glBindVertexArray(mesh->m_vaoId);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
     SetVertexLayout(mesh->m_vertexLayout);
@@ -237,52 +215,6 @@ namespace ToolKit
     {
       Render(rj, cam, lights);
     }
-  }
-
-  void Renderer::Render2d(Surface* object, glm::ivec2 screenDimensions)
-  {
-    static ShaderPtr vertexShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("defaultVertex.shader", true));
-    static ShaderPtr fragShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("unlitFrag.shader", true));
-    static ProgramPtr prog = CreateProgram(vertexShader, fragShader);
-    BindProgram(prog);
-
-    MeshPtr mesh = object->GetMeshComponent()->GetMeshVal();
-    mesh->Init();
-
-    RenderState* rs = mesh->m_material->GetRenderState();
-    SetRenderState(rs);
-
-    GLint pvloc = glGetUniformLocation(prog->m_handle, "ProjectViewModel");
-    Mat4 pm     = glm::ortho(0.0f,
-                         static_cast<float>(screenDimensions.x),
-                         0.0f,
-                         static_cast<float>(screenDimensions.y),
-                         0.0f,
-                         100.0f);
-
-    Mat4 mul = pm * object->m_node->GetTransform(TransformationSpace::TS_WORLD);
-
-    glUniformMatrix4fv(pvloc, 1, false, reinterpret_cast<float*>(&mul));
-
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
-
-    glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-  }
-
-  void Renderer::Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions)
-  {
-    Surface* surface = object->GetCurrentSurface();
-
-    Node* backup     = surface->m_node;
-    surface->m_node  = object->m_node;
-
-    Render2d(surface, screenDimensions);
-
-    surface->m_node = backup;
   }
 
   void Renderer::SetRenderState(const RenderState* const state)
@@ -431,7 +363,7 @@ namespace ToolKit
 
     if (clear)
     {
-      ClearBuffer(GraphicBitFields::DepthStencilBits);
+      ClearBuffer(GraphicBitFields::DepthStencilBits, Vec4(1.0f));
       ClearColorBuffer(color);
     }
 
@@ -466,18 +398,15 @@ namespace ToolKit
     SwapFramebuffer(fb, false);
   }
 
-  void Renderer::ClearColorBuffer(const Vec4& value)
+  void Renderer::ClearColorBuffer(const Vec4& color)
   {
-    glClearColor(value.r, value.g, value.b, value.a);
+    glClearColor(color.r, color.g, color.b, color.a);
     glClear((GLbitfield) GraphicBitFields::ColorBits);
   }
 
-  void Renderer::ClearBuffer(GraphicBitFields fields)
+  void Renderer::ClearBuffer(GraphicBitFields fields, const Vec4& value)
   {
-    glClearColor(m_clearColor.r,
-                 m_clearColor.g,
-                 m_clearColor.b,
-                 m_clearColor.a);
+    glClearColor(value.r, value.g, value.b, value.a);
     glClear((GLbitfield) fields);
   }
 
@@ -1084,10 +1013,10 @@ namespace ToolKit
         break;
         case Uniform::ELAPSED_TIME:
         {
-          GLint loc = glGetUniformLocation(program->m_handle, 
-                                         GetUniformName(Uniform::ELAPSED_TIME));
-          glUniform1f(loc,
-                      Main::GetInstance()->TimeSinceStartup() / 1000.0f);  
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::ELAPSED_TIME));
+          glUniform1f(loc, Main::GetInstance()->TimeSinceStartup() / 1000.0f);
         }
         break;
         default:

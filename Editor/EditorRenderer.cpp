@@ -26,6 +26,7 @@ namespace ToolKit
       m_billboardPass     = nullptr;
       m_lightSystem       = nullptr;
       m_scenePass         = nullptr;
+      m_uiPass            = nullptr;
       m_editorPass        = nullptr;
       m_gizmoPass         = nullptr;
       m_tonemapPass       = nullptr;
@@ -44,8 +45,8 @@ namespace ToolKit
       SetLitMode(renderer, m_params.LitMode);
 
       m_passArray.clear();
-      const EngineSettings::PostProcessingSettings& 
-          gfx = GetEngineSettings().PostProcessing;
+      const EngineSettings::PostProcessingSettings& gfx =
+          GetEngineSettings().PostProcessing;
       switch (m_params.LitMode)
       {
       case EditorLitMode::LightComplexity:
@@ -54,8 +55,13 @@ namespace ToolKit
         break;
       case EditorLitMode::Game:
         m_params.App->HideGizmos();
-        m_scenePass->m_params.Gfx = gfx;
+        m_scenePass->m_params.Gfx                        = gfx;
+        m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
         m_scenePass->Render(renderer);
+        m_passArray.push_back(m_uiPass);
+        m_passArray.push_back(m_gammaPass);
+        Technique::Render(renderer);
+        m_params.App->ShowGizmos();
         break;
       default:
         m_scenePass->m_params.Gfx                        = gfx;
@@ -89,15 +95,14 @@ namespace ToolKit
         m_passArray.push_back(m_tonemapPass);
         if (gfx.FXAAEnabled)
         {
-          m_passArray.push_back(m_fxaaPass);
+          if (m_params.Viewport->m_name != g_2dViewport)
+          {
+            m_passArray.push_back(m_fxaaPass);
+          }
         }
         m_passArray.push_back(m_gammaPass);
 
         Technique::Render(renderer);
-      }
-      else
-      {
-        m_params.App->ShowGizmos();
       }
 
       PostRender();
@@ -201,17 +206,41 @@ namespace ToolKit
       m_scenePass->m_params.MainFramebuffer   = viewport->m_framebuffer;
       m_scenePass->m_params.Scene             = scene;
 
-      const EngineSettings::PostProcessingSettings& gfx     
-                                   = GetEngineSettings().PostProcessing;
+      // UI pass.
+      UILayerPtrArray layers;
+      RenderJobArray uiRenderJobs;
+      GetUIManager()->GetLayers(viewport->m_viewportId, layers);
+
+      for (const UILayerPtr& layer : layers)
+      {
+        EntityRawPtrArray& uiNtties = layer->m_scene->AccessEntityArray();
+        RenderJobProcessor::CreateRenderJobs(uiNtties, uiRenderJobs);
+      }
+
+      m_uiPass->m_params.OpaqueJobs.clear();
+      m_uiPass->m_params.TranslucentJobs.clear();
+
+      RenderJobProcessor::SeperateOpaqueTranslucent(
+          uiRenderJobs,
+          m_uiPass->m_params.OpaqueJobs,
+          m_uiPass->m_params.TranslucentJobs);
+
+      m_uiPass->m_params.Cam              = GetUIManager()->GetUICamera();
+      m_uiPass->m_params.FrameBuffer      = viewport->m_framebuffer;
+      m_uiPass->m_params.ClearFrameBuffer = false;
+      m_uiPass->m_params.ClearDepthBuffer = true;
+
+      const EngineSettings::PostProcessingSettings& gfx =
+          GetEngineSettings().PostProcessing;
 
       // Bloom pass
-      m_bloomPass->m_params.FrameBuffer       = viewport->m_framebuffer;
-      m_bloomPass->m_params.intensity         = gfx.BloomIntensity;
-      m_bloomPass->m_params.minThreshold      = gfx.BloomThreshold;
-      m_bloomPass->m_params.iterationCount    = gfx.BloomIterationCount;
+      m_bloomPass->m_params.FrameBuffer               = viewport->m_framebuffer;
+      m_bloomPass->m_params.intensity                 = gfx.BloomIntensity;
+      m_bloomPass->m_params.minThreshold              = gfx.BloomThreshold;
+      m_bloomPass->m_params.iterationCount            = gfx.BloomIterationCount;
 
       // Light Complexity pass
-      m_singleMatRenderer->m_params.ForwardParams.Cam              = m_camera;
+      m_singleMatRenderer->m_params.ForwardParams.Cam = m_camera;
       m_singleMatRenderer->m_params.ForwardParams.Lights           = lights;
       m_singleMatRenderer->m_params.ForwardParams.ClearFrameBuffer = true;
 
@@ -289,6 +318,7 @@ namespace ToolKit
 
       m_billboardPass     = std::make_shared<BillboardPass>();
       m_scenePass         = std::make_shared<SceneRenderer>();
+      m_uiPass            = std::make_shared<ForwardRenderPass>();
       m_editorPass        = std::make_shared<ForwardRenderPass>();
       m_gizmoPass         = std::make_shared<GizmoPass>();
       m_tonemapPass       = std::make_shared<TonemapPass>();

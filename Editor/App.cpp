@@ -163,7 +163,7 @@ namespace ToolKit
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
       std::vector<EditorViewport*> viewports;
-        
+
       for (Window* wnd : m_windows)
       {
         if (wnd->IsViewport())
@@ -185,22 +185,21 @@ namespace ToolKit
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
       {
-        viewport->Update(deltaTime);
-
-        /*// PlayWindow is drawn on perspective. Thus, skip perspective.
-        if (m_gameMod != GameMod::Stop && !m_simulatorSettings.Windowed)
-        {
-          if (viewport->m_name == g_3dViewport)
-          {
-            continue;
-          }
-        }*/
-        
         if (viewport->IsVisible())
         {
+          viewport->Update(deltaTime);
+          GetUIManager()->UpdateLayers(deltaTime, viewport);
+
           GetRenderSystem()->AddRenderTask(
               {[this, viewport](Renderer* renderer) -> void
                {
+                 // 2d Viewport should not be updated as it may break the
+                 // designers work.
+                 if (viewport->m_name != g_2dViewport)
+                 {
+                   GetUIManager()->ResizeLayers(viewport);
+                 }
+
                  myEditorRenderer->m_params.App      = g_app;
                  myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
                  myEditorRenderer->m_params.Viewport = viewport;
@@ -422,7 +421,6 @@ namespace ToolKit
         buffer << cmakelist.rdbuf();
         String content = buffer.str();
         ReplaceFirstStringInPlace(content, "__projectname__", name);
-        ReplaceFirstStringInPlace(content, "__tkdir__", currentPath);
         cmakelist.close();
 
         // Override the content.
@@ -515,8 +513,8 @@ namespace ToolKit
 #else
       static const StringView buildConfig = "Release";
 #endif
-      String cmd  = "cmake -S " + codePath + " -B " + buildDir;
-      m_statusMsg = "Compiling ..." + g_statusNoTerminate;
+      String cmd    = "cmake -S " + codePath + " -B " + buildDir;
+      m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
       m_isCompiling = true;
 
       ExecSysCommand(
@@ -1062,7 +1060,7 @@ namespace ToolKit
         if (EditorViewport2d* viewport =
                 GetWindow<EditorViewport2d>(g_2dViewport))
         {
-          UILayer* layer = new UILayer(scene);
+          UILayerPtr layer = std::make_shared<UILayer>(scene);
           GetUIManager()->AddLayer(viewport->m_viewportId, layer);
         }
         else
@@ -1191,8 +1189,7 @@ namespace ToolKit
       {
         Window::Type type = wnd->GetType();
 
-        if (type != Window::Type::Viewport &&
-            type != Window::Type::Viewport2d)
+        if (type != Window::Type::Viewport && type != Window::Type::Viewport2d)
         {
           continue;
         }

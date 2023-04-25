@@ -146,6 +146,19 @@ namespace ToolKit
                     SurfaceCategory.Priority,
                     true,
                     true);
+
+    UpdateSizeFromTexture_Define(
+        [this]() -> void
+        {
+          if (GetMaterialVal() != nullptr)
+          {
+            SetSizeFromTexture();
+          }
+        },
+        SurfaceCategory.Name,
+        SurfaceCategory.Priority,
+        true,
+        true);
   }
 
   void Surface::ParameterEventConstructor()

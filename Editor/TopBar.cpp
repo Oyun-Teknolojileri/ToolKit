@@ -159,7 +159,8 @@ namespace ToolKit
                           8,
                           ImGuiTableFlags_SizingStretchProp);
         ImGui::TableNextRow();
-        unsigned int nextItemIndex = 0;
+
+        uint nextItemIndex = 0;
 
         ShowAddMenu(ShowAddMenuFn, nextItemIndex);
 
