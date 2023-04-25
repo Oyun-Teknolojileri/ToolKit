@@ -22,7 +22,7 @@ namespace ToolKit
       static void DropZone(
           uint fallbackIcon,
           const String& file,
-          std::function<void(const DirectoryEntry& entry)> dropAction,
+          std::function<void(DirectoryEntry& entry)> dropAction,
           const String& dropName = "",
           bool isEditable        = true);
       static void DropSubZone(

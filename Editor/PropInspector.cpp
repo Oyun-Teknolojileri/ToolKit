@@ -40,7 +40,7 @@ namespace ToolKit
     void View::DropZone(
         uint fallbackIcon,
         const String& file,
-        std::function<void(const DirectoryEntry& entry)> dropAction,
+        std::function<void(DirectoryEntry& entry)> dropAction,
         const String& dropName,
         bool isEditable)
     {
@@ -95,8 +95,8 @@ namespace ToolKit
         if (const ImGuiPayload* payload =
                 ImGui::AcceptDragDropPayload("BrowserDragZone"))
         {
-          IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
-          DirectoryEntry entry = *(const DirectoryEntry*) payload->Data;
+          const FileDragData& dragData = FolderView::GetFileDragData();
+          DirectoryEntry& entry = *dragData.Entries[0]; // get first entry
           dropAction(entry);
         }
 

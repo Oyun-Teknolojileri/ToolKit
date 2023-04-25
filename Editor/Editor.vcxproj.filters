@@ -159,6 +159,9 @@
     <ClCompile Include="PropInspector.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
+    <ClCompile Include="FolderView.cpp">
+      <Filter>UI\Window</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mod.h">

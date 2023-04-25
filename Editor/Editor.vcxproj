@@ -106,6 +106,7 @@
     <ClCompile Include="EditorRenderer.cpp" />
     <ClCompile Include="EditorViewport2d.cpp" />
     <ClCompile Include="EntityView.cpp" />
+    <ClCompile Include="FolderView.cpp" />
     <ClCompile Include="FolderWindow.cpp" />
     <ClCompile Include="Gizmo.cpp" />
     <ClCompile Include="GizmoPass.cpp" />
