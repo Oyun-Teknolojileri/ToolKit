@@ -1317,29 +1317,33 @@ namespace ToolKit
       ImGui::SameLine();
       ImGui::Text((icon + ntt->GetNameVal()).c_str());
 
-      // Hiearchy visibility
+      // draw eye button for visibility
       ImGui::SameLine(ImGui::GetWindowWidth() - 65.0f);
-      icon = ntt->GetVisibleVal() ? ICON_FA_EYE : ICON_FA_EYE_SLASH;
-
-      // Texture only toggle button.
-      ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
-      if (UI::ButtonDecorless(icon, ImVec2(18.0f, 15.0f), false))
       {
-        ntt->SetVisibility(!ntt->GetVisibleVal(), true);
+        icon = ntt->GetVisibleVal() ? ICON_FA_EYE : ICON_FA_EYE_SLASH;
+        float cursorY = ImGui::GetCursorPosY();
+        ImGui::SetCursorPosY(cursorY - 2.5f);
+        ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
+        if (UI::ButtonDecorless(icon, ImVec2(18.0f, 15.0f), false))
+        {
+          ntt->SetVisibility(!ntt->GetVisibleVal(), true);
+        }
+        ImGui::PopID();
       }
-      ImGui::PopID();
 
+      // draw lock button for locking and unlocking the entity
       ImGui::SameLine(ImGui::GetWindowWidth() - 40.0f);
-      icon = ntt->GetTransformLockVal() ? ICON_FA_LOCK : ICON_FA_UNLOCK;
-
-      // Texture only toggle button.
-      ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
-      if (UI::ButtonDecorless(icon, ImVec2(18.0f, 15.0f), false))
       {
-        ntt->SetTransformLock(!ntt->GetTransformLockVal(), true);
+        icon = ntt->GetTransformLockVal() ? ICON_FA_LOCK : ICON_FA_UNLOCK;
+        float cursorY = ImGui::GetCursorPosY();
+        ImGui::SetCursorPosY(cursorY - 2.5f);
+        ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
+        if (UI::ButtonDecorless(icon, ImVec2(18.0f, 15.0f), false))
+        {
+          ntt->SetTransformLock(!ntt->GetTransformLockVal(), true);
+        }
+        ImGui::PopID(); 
       }
-
-      ImGui::PopID(); 
     }
 
     bool UI::IsKeyboardCaptured() { return ImGui::GetIO().WantCaptureKeyboard; }
