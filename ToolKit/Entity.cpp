@@ -1,5 +1,6 @@
 #include "Entity.h"
 
+#include "GradientSky.h"
 #include "Light.h"
 #include "MathUtil.h"
 #include "Node.h"
@@ -7,7 +8,6 @@
 #include "ResourceComponent.h"
 #include "Skeleton.h"
 #include "Sky.h"
-#include "GradientSky.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -38,7 +38,9 @@ namespace ToolKit
 
   EntityType Entity::GetType() const { return EntityType::Entity_Base; }
 
-  void Entity::SetPose(const AnimationPtr& anim, float time)
+  void Entity::SetPose(const AnimationPtr& anim,
+                       float time,
+                       BlendTarget* blendTarget)
   {
     MeshComponentPtr meshComp = GetMeshComponent();
     if (meshComp)
@@ -47,7 +49,7 @@ namespace ToolKit
       SkeletonComponentPtr skelComp = GetComponent<SkeletonComponent>();
       if (mesh->IsSkinned() && skelComp)
       {
-        anim->GetPose(skelComp, time);
+        anim->GetPose(skelComp, time, blendTarget);
         return;
       }
     }
@@ -305,7 +307,7 @@ namespace ToolKit
     {
       // If parent is not visible, all objects must be hidden.
       // Otherwise, prefer to use its value.
-      if (root->GetVisibleVal() == false) 
+      if (root->GetVisibleVal() == false)
       {
         return false;
       }

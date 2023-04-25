@@ -8,9 +8,9 @@
 #include "Entity.h"
 #include "Node.h"
 #include "Resource.h"
-#include "SkeletonComponent.h"
 #include "ResourceManager.h"
 #include "Skeleton.h"
+#include "SkeletonComponent.h"
 #include "Types.h"
 
 #include <unordered_map>
@@ -18,6 +18,18 @@
 
 namespace ToolKit
 {
+  /*
+   * Blending to next Animation configration for AnimRecord class.
+   */
+  struct BlendTarget
+  {
+    Animation* TargetAnim = nullptr; //!< Animation to Blend.
+    float OverlapTime     = 1.0f; //!< How early animation will start blending.
+    String RootBone;        //!< Root bone of animation nodes for offsetting.
+    Vec3 TranslationOffset; //!< Transform offset of target animation.
+    Quaternion OrientationOffset; //!< Orientation offset of target animation.
+    bool Blend = false; //!< States if the blending is active for the track.
+  };
 
   /**
    * A transformation key that is part of an Animation resource.
@@ -72,9 +84,10 @@ namespace ToolKit
     /**
      * Sets the Skeleton's transform from the animation based on time.
      * @param skeleton SkeletonPtr to be transformed.
-     *
      */
-    void GetPose(const SkeletonComponentPtr& skeleton, float time);
+    void GetPose(const SkeletonComponentPtr& skeleton,
+                 float time,
+                 BlendTarget* blendTarget = nullptr);
 
     /**
      * Sets the Node's transform from the animation based on frame.
@@ -103,10 +116,6 @@ namespace ToolKit
      */
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
 
-   protected:
-    void CopyTo(Resource* other) override;
-
-   private:
     /**
      * Finds nearest keys and interpolation ratio for current time.
      * @param keys animation key array.
@@ -120,6 +129,9 @@ namespace ToolKit
                         int& key2,
                         float& ratio,
                         float t);
+
+   protected:
+    void CopyTo(Resource* other) override;
 
    public:
     /**
@@ -167,11 +179,12 @@ namespace ToolKit
     /**
      * Current time of the animation expressed in seconds.
      */
-    float m_currentTime    = 0.0f;
-    bool m_loop            = false; //!< States if the animation mean to be looped.
-    float m_timeMultiplier = 1.0f;  //!< Speed multiplier for animation.
-    AnimationPtr m_animation;    //!< Animimation to play.
+    float m_currentTime = 0.0f;
+    bool m_loop         = false; //!< States if the animation mean to be looped.
+    float m_timeMultiplier = 1.0f; //!< Speed multiplier for animation.
+    AnimationPtr m_animation;      //!< Animation to play.
     Entity* m_entity;
+    BlendTarget m_blendTarget;
 
     /**
      * Enums that represent's the current state of the Animation in the
@@ -233,5 +246,4 @@ namespace ToolKit
     // Storage for the AnimRecord objects.
     AnimRecordRawPtrArray m_records;
   };
-
 } // namespace ToolKit

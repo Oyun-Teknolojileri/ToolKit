@@ -55,6 +55,7 @@ namespace ToolKit
   };
 
   static VariantCategory EntityCategory {"Meta", 100};
+  struct BlendTarget;
 
   /**
    * Fundamental object that all the ToolKit utilities can interacted with.
@@ -69,7 +70,9 @@ namespace ToolKit
 
     virtual bool IsDrawable() const;
     virtual EntityType GetType() const;
-    virtual void SetPose(const AnimationPtr& anim, float time);
+    virtual void SetPose(const AnimationPtr& anim,
+                         float time,
+                         BlendTarget* blendTarget = nullptr);
     virtual BoundingBox GetAABB(bool inWorld = false) const;
     virtual Entity* Copy() const;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;

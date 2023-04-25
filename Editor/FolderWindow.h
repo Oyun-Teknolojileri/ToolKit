@@ -34,6 +34,12 @@ namespace ToolKit
     class FolderWindow;
     typedef std::vector<FolderWindow*> FolderWindowRawPtrArray;
 
+    struct FileDragData
+    {
+      int NumFiles = 0;
+      DirectoryEntry** Entries = nullptr;
+    };
+
     class FolderView
     {
      public:
@@ -51,8 +57,16 @@ namespace ToolKit
       void ShowContextMenu(DirectoryEntry* entry = nullptr);
       void Refresh();
       float GetThumbnailZoomPercent(float thumbnailZoom);
+      int SelectFolder(FolderWindow* window, const String& path);
+      
+      
+      void DropFiles(const String& dst); //!< drop selectedFiles
+
+      static const FileDragData& GetFileDragData();
 
      private:
+      void HandleCopyPasteDelete();
+      static void PasteFiles(const String& path);
       void DrawSearchBar();
       void CreateItemActions();
       void MoveTo(const String& dst); // Imgui Drop target.
@@ -73,12 +87,18 @@ namespace ToolKit
       bool m_onlyNativeTypes = true;
       Vec2 m_iconSize        = Vec2(50.0f);
       std::vector<DirectoryEntry> m_entries;
+      int m_lastClickedEntryIdx = -1;
       String m_folder;
       String m_path;
-      //!< for cut,copy and paste. static because its same in between all views
-      static DirectoryEntry* m_currentEntry;
 
      private:
+      void DeterminateAndSetBackgroundColor(bool isSelected, int index);
+      bool IsMultiSelecting();
+      /**
+       * Selects the files between two entry index(including a and b).
+       */
+      void SelectFilesInRange(int a, int b);
+
       FolderWindow* m_parent = nullptr;
       bool m_dirty            = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
@@ -149,9 +169,10 @@ namespace ToolKit
       std::vector<FolderNode> m_folderNodes;
       float m_maxTreeNodeWidth = 160.0f;
 
-      int m_activeFolder   = -1;
+      int m_activeFolder   = 0;
       bool m_showStructure = true;
       int m_resourcesTreeIndex = 0;
+      int m_lastSelectedTreeNode = 0;
     };
 
   } // namespace Editor

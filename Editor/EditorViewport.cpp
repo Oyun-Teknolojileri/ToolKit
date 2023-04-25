@@ -104,9 +104,9 @@ namespace ToolKit
         ComitResize();
         UpdateWindow();
         HandleStates();
-        DrawCommands();
         HandleDrop();
         DrawOverlays();
+        DrawCommands();
         UpdateSnaps();
       }
 
@@ -623,18 +623,19 @@ namespace ToolKit
       if (ImGui::BeginDragDropTarget())
       {
         const ImGuiPayload* dragPayload = ImGui::GetDragDropPayload();
-        if (dragPayload->DataSize != sizeof(DirectoryEntry))
+        if (dragPayload->DataSize != sizeof(FileDragData))
         {
           return;
         }
-        DirectoryEntry dragEntry = *(const DirectoryEntry*) dragPayload->Data;
+        const FileDragData& dragData = FolderView::GetFileDragData();
+        DirectoryEntry& entry        = *dragData.Entries[0]; // get first entry
 
         // Check if the drag object is a mesh
         Vec3 lastDragMeshPos     = Vec3(0.0f);
-        if (dragEntry.m_ext == MESH || dragEntry.m_ext == SKINMESH)
+        if (entry.m_ext == MESH || entry.m_ext == SKINMESH)
         {
           // Load mesh
-          LoadDragMesh(meshLoaded, dragEntry, &dwMesh, &boundingBox, currScene);
+          LoadDragMesh(meshLoaded, entry, &dwMesh, &boundingBox, currScene);
 
           // Show bounding box
           lastDragMeshPos = CalculateDragMeshPosition(meshLoaded,
@@ -645,9 +646,7 @@ namespace ToolKit
         if (const ImGuiPayload* payload =
                 ImGui::AcceptDragDropPayload("BrowserDragZone"))
         {
-          IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
-          DirectoryEntry entry = *(const DirectoryEntry*) payload->Data;
-
+         
           if (entry.m_ext == MESH || entry.m_ext == SKINMESH)
           {
             // Translate mesh to correct position
@@ -721,9 +720,8 @@ namespace ToolKit
                 }
 
                 // Load material once
-                String path =
-                    ConcatPaths({dragEntry.m_rootPath,
-                                 dragEntry.m_fileName + dragEntry.m_ext});
+                String path = ConcatPaths(
+                    {entry.m_rootPath, entry.m_fileName + entry.m_ext});
 
                 MaterialPtr material =
                     GetMaterialManager()->Create<Material>(path);

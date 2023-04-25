@@ -68,7 +68,7 @@ namespace ToolKit
 
       void AddResolutionName(const String& name);
       void RemoveResolutionName(const String& name);
-      void RemoveResolutionName(int index);
+      void RemoveResolutionName(size_t index);
 
      public:
       int m_numDefaultResNames               = 0;

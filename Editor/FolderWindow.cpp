@@ -27,8 +27,6 @@ namespace ToolKit
 {
   namespace Editor
   {
-    DirectoryEntry* FolderView::m_currentEntry = nullptr;
-
     DirectoryEntry::DirectoryEntry() {}
 
     DirectoryEntry::DirectoryEntry(const String& fullPath)
@@ -69,847 +67,53 @@ namespace ToolKit
       return nullptr;
     }
 
+    String GetRootPath(const String& folder)
+    {
+      static std::unordered_set<String> rootMap = 
+      {
+        "Fonts",
+        "Materials",
+        "Meshes",
+        "Scenes",
+        "Shaders",
+        "Textures"
+      };
+
+      String path = folder;
+      String subFolder{};
+      // traverse parent paths and search a root folder
+      while (path.size() > 0ull)
+      {
+        subFolder.clear();
+
+        while (path.size() > 0ull)
+        {
+          // pop last character
+          char c = path.back(); 
+          path.erase(path.end() - 1ull);
+          
+          if (c == '\\' || c == '/')
+          {
+            break;
+          }
+          // push character to subFolder
+          subFolder.push_back(c);
+        }
+        // reverse because we pushed reversely
+        std::reverse(subFolder.begin(), subFolder.end());
+        // if we found a root folder return this path
+        if (rootMap.count(subFolder) > 0)
+        {
+          return ConcatPaths({path, subFolder });
+        }
+      }
+      return DefaultPath();
+    }
+
     RenderTargetPtr DirectoryEntry::GetThumbnail() const
     {
       return g_app->m_thumbnailManager.GetThumbnail(*this);
     }
-
-    FolderView::FolderView() { CreateItemActions(); }
-
-    FolderView::FolderView(class FolderWindow* parent) : FolderView()
-    {
-      m_parent = parent;
-    }
-
-    void FolderView::DrawSearchBar()
-    {
-      // Handle Item Icon size.
-      ImGuiIO io                 = ImGui::GetIO();
-      float delta                = io.MouseWheel;
-
-      // Initial zoom value
-      static float thumbnailZoom = m_thumbnailMaxZoom / 6.f;
-
-      // Zoom in and out
-      if (io.KeyCtrl &&
-          ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
-      {
-        thumbnailZoom += delta * 10.0f;
-      }
-
-      // Clamp icon size
-      if (thumbnailZoom < m_thumbnailMaxZoom / 6.f)
-      {
-        thumbnailZoom = m_thumbnailMaxZoom / 6.f;
-      }
-      if (thumbnailZoom > m_thumbnailMaxZoom)
-      {
-        thumbnailZoom = m_thumbnailMaxZoom;
-      }
-      m_iconSize.xy = Vec2(thumbnailZoom);
-
-      ImGui::BeginTable("##FilterZoom", 5, ImGuiTableFlags_SizingFixedFit);
-
-      ImGui::TableSetupColumn("##flt", ImGuiTableColumnFlags_WidthStretch);
-      ImGui::TableSetupColumn("##zoom");
-      ImGui::TableSetupColumn("##tglzoom");
-
-      ImGui::TableNextRow();
-      ImGui::TableNextColumn();
-
-      // Handle searchbar
-      ImGui::PushItemWidth(-1);
-      ImGui::InputTextWithHint(" Search", "Search", &m_filter);
-      ImGui::PopItemWidth();
-
-      // Zoom.
-      ImGui::TableNextColumn();
-      ImGui::Text("%.0f%%", GetThumbnailZoomPercent(thumbnailZoom));
-
-      // Zoom toggle button
-      ImGui::TableNextColumn();
-      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_viewZoomIcon),
-                             ImVec2(20.0f, 20.0f)))
-      {
-        // Toggle zoom
-        if (thumbnailZoom == m_thumbnailMaxZoom)
-        {
-          // Small
-          thumbnailZoom = m_thumbnailMaxZoom / 6.f;
-        }
-        // (7/12 ~ 0.5833)
-        else if (thumbnailZoom >= m_thumbnailMaxZoom * 0.5833f)
-        {
-          // Big
-          thumbnailZoom = m_thumbnailMaxZoom;
-        }
-        else if (thumbnailZoom >= m_thumbnailMaxZoom / 6.f)
-        {
-          // Medium
-          thumbnailZoom = m_thumbnailMaxZoom * 0.5833f; // (7/12 ~ 0.5833)
-        }
-      }
-      UI::HelpMarker(TKLoc, "Ctrl + mouse scroll to adjust thumbnail size.");
-
-      ImGui::TableNextColumn();
-      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_diskDriveIcon),
-                             ImVec2(20.0f, 20.0f)))
-      {
-        g_app->SaveAllResources();
-      }
-      UI::HelpMarker(TKLoc, "Saves all resources.");
-
-      ImGui::EndTable();
-    }
-
-    void FolderView::Show()
-    {
-      bool* visCheck = nullptr;
-      if (!m_currRoot)
-      {
-        visCheck = &m_visible;
-      }
-
-      ImGuiTabItemFlags flags =
-          m_activateNext ? ImGuiTabItemFlags_SetSelected : 0;
-      m_activateNext = false;
-      if (ImGui::BeginTabItem(m_folder.c_str(), visCheck, flags))
-      {
-        m_parent->SetActiveView(this);
-        DrawSearchBar();
-
-        if (m_dirty)
-        {
-          Iterate();
-          m_dirty = false;
-        }
-
-        // Item dropped to tab.
-        MoveTo(m_path);
-
-        // Start drawing folder items.
-        const float footerHeightReserve = ImGui::GetStyle().ItemSpacing.y +
-                                          ImGui::GetFrameHeightWithSpacing();
-        ImGui::BeginChild(
-            "##Content"); //, ImVec2(0, -footerHeightReserve), true);
-
-        if (m_entries.empty())
-        {
-          // Handle context menu based on path / content type of the folder.
-          ShowContextMenu();
-        }
-        else
-        {
-          // Draw folder items.
-          for (int i = 0; i < static_cast<int>(m_entries.size()); i++)
-          {
-            // Prepare Item Icon.
-            ImGuiStyle& style = ImGui::GetStyle();
-            float visX2 =
-                ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-
-            DirectoryEntry& dirEnt = m_entries[i];
-
-            if (!Utf8CaseInsensitiveSearch(dirEnt.m_fileName, m_filter))
-            {
-              continue;
-            }
-
-            bool flipRenderTarget = false;
-            uint iconId           = UI::m_fileIcon->m_textureId;
-
-            std::unordered_map<String, uint> extensionIconMap {
-                {SCENE,    UI::m_worldIcon->m_textureId},
-                {LAYER,    UI::m_worldIcon->m_textureId},
-                {ANIM,     UI::m_clipIcon->m_textureId },
-                {AUDIO,    UI::m_audioIcon->m_textureId},
-                {SHADER,   UI::m_codeIcon->m_textureId },
-                {LAYER,    UI::m_worldIcon->m_textureId},
-                {SKELETON, UI::m_boneIcon->m_textureId }
-            };
-
-            static std::unordered_set<String> thumbExtensions 
-            {PNG, JPG, JPEG, TGA, BMP, PSD, HDR, MESH, SKINMESH, MATERIAL};
-
-            if (dirEnt.m_isDirectory)
-            {
-              iconId = UI::m_folderIcon->m_textureId;
-            }
-            else if (extensionIconMap.count(dirEnt.m_ext) > 0)
-            {
-              iconId = extensionIconMap[dirEnt.m_ext];
-            }
-            else if (thumbExtensions.count(dirEnt.m_ext) > 0)
-            {
-              iconId           = dirEnt.GetThumbnail()->m_textureId;
-              flipRenderTarget = true;
-            }
-            else if (m_onlyNativeTypes)
-            {
-              continue;
-            }
-
-            ImGui::PushID(i);
-            ImGui::BeginGroup();
-            ImVec2 texCoords =
-                flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
-
-            // Draw Item Icon.
-            if (ImGui::ImageButton(ConvertUIntImGuiTexture(iconId),
-                                   m_iconSize,
-                                   ImVec2(0.0f, 0.0f),
-                                   texCoords))
-            {
-              if (ResourceManager* rm = dirEnt.GetManager())
-              {
-                switch (rm->m_type)
-                {
-                case ResourceType::Material:
-                  g_app->GetPropInspector()->SetMaterialView(
-                      rm->Create<Material>(dirEnt.GetFullPath()));
-                  break;
-                case ResourceType::Mesh:
-                  g_app->GetPropInspector()->SetMeshView(
-                      rm->Create<Mesh>(dirEnt.GetFullPath()));
-                  break;
-                case ResourceType::SkinMesh:
-                  g_app->GetPropInspector()->SetMeshView(
-                      rm->Create<SkinMesh>(dirEnt.GetFullPath()));
-                  break;
-                }
-              }
-            }
-
-            // Handle context menu.
-            ShowContextMenu(&dirEnt);
-
-            // Handle if item is directory.
-            if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-            {
-              if (ImGui::IsItemHovered() && 
-                dirEnt.m_isDirectory && m_parent != nullptr)
-              {
-                String path =
-                    ConcatPaths({dirEnt.m_rootPath, dirEnt.m_fileName});
-                int indx = m_parent->Exist(path);
-                if (indx == -1)
-                {
-                  FolderView view(m_parent);
-                  view.SetPath(path);
-                  view.Iterate();
-                  view.Refresh();
-                  m_parent->AddEntry(view);
-                }
-                else
-                {
-                  FolderView& view    = m_parent->GetView(indx);
-                  view.m_visible      = true;
-                  view.m_activateNext = true;
-                }
-              }
-            }
-
-            // Handle mouse hover tips.
-            String fullName = dirEnt.m_fileName + dirEnt.m_ext;
-            UI::HelpMarker(TKLoc + fullName, fullName.c_str());
-
-            // Handle drag - drop to scene / inspector.
-            if (!dirEnt.m_isDirectory)
-            {
-              ImGui::PushStyleColor(ImGuiCol_PopupBg,
-                                    ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-              if (ImGui::BeginDragDropSource(
-                      ImGuiDragDropFlags_SourceAllowNullID))
-              {
-                ImGui::SetDragDropPayload("BrowserDragZone",
-                                          &dirEnt,
-                                          sizeof(DirectoryEntry));
-                ImGui::ImageButton(ConvertUIntImGuiTexture(iconId),
-                                   m_iconSize,
-                                   ImVec2(0.0f, 0.0f),
-                                   texCoords);
-                ImGui::EndDragDropSource();
-              }
-              ImGui::PopStyleColor();
-            }
-
-            // Make directories drop target for resources.
-            if (dirEnt.m_isDirectory)
-            {
-              MoveTo(ConcatPaths({dirEnt.m_rootPath, dirEnt.m_fileName}));
-            }
-
-            // Handle Item sub text.
-            ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + m_iconSize.x);
-            ImGui::TextWrapped("%s", dirEnt.m_fileName.c_str());
-            
-            ImGui::PopTextWrapPos();
-            ImGui::EndGroup();
-            ImGui::PopID();
-
-            // Handle next column / row.
-            float lastBtnX2 = ImGui::GetItemRectMax().x;
-            float nextBtnX2 = lastBtnX2 + style.ItemSpacing.x + m_iconSize.x;
-            if (nextBtnX2 < visX2)
-            {
-              ImGui::SameLine();
-            }
-          }
-        } // Tab item handling ends.
-        ImGui::EndChild();
-
-        ImGui::EndTabItem();
-      }
-    }
-
-    void FolderView::SetPath(const String& path)
-    {
-      m_path = path;
-      StringArray splits;
-      Split(path, GetPathSeparatorAsStr(), splits);
-      m_folder = splits.back();
-    }
-
-    const String& FolderView::GetPath() const { return m_path; }
-
-    void FolderView::Iterate()
-    {
-      // Temporary vectors that holds DirectoryEntry's
-      std::vector<DirectoryEntry> m_temp_dirs;
-      std::vector<DirectoryEntry> m_temp_files;
-
-      m_entries.clear();
-      for (const std::filesystem::directory_entry& e :
-           std::filesystem::directory_iterator(m_path))
-      {
-        DirectoryEntry de;
-        de.m_isDirectory = e.is_directory();
-        de.m_rootPath    = e.path().parent_path().u8string();
-        de.m_fileName    = e.path().stem().u8string();
-        de.m_ext         = e.path().filename().extension().u8string();
-
-        // Do not show hidden files
-        if (de.m_fileName.size() > 1 && de.m_fileName[0] == '.')
-        {
-          continue;
-        }
-        if (de.m_isDirectory)
-        {
-          m_temp_dirs.push_back(de);
-        }
-        else
-        {
-          m_temp_files.push_back(de);
-        }
-      }
-
-      // Folder first, files next
-      for (int i = 0; i < (int) m_temp_dirs.size(); i++)
-      {
-        m_entries.push_back(m_temp_dirs[i]);
-      }
-
-      for (int i = 0; i < (int) m_temp_files.size(); i++)
-      {
-        m_entries.push_back(m_temp_files[i]);
-      }
-    }
-
-    int FolderView::Exist(const String& file, const String& ext)
-    {
-      for (int i = 0; i < (int) m_entries.size(); i++)
-      {
-        if (m_entries[i].m_fileName == file && m_entries[i].m_ext == ext)
-        {
-          return i;
-        }
-      }
-
-      return -1;
-    }
-
-    void FolderView::ShowContextMenu(DirectoryEntry* entry)
-    {
-      StringArray commands;
-      String path = m_path + GetPathSeparatorAsStr();
-      if (path.find(MaterialPath("")) != String::npos)
-      {
-        commands.push_back("Material/Create");
-      }
-      else if (path.find(ScenePath("")) != String::npos)
-      {
-        commands.push_back("Scene/Create");
-      }
-      else if (path.find(PrefabPath("")) != String::npos)
-      {
-        commands.push_back("Scene/Create");
-      }
-      else if (path.find(LayerPath("")) != String::npos)
-      {
-        commands.push_back("Layer/Create");
-      }
-
-      if (ImGui::BeginPopupContextItem())
-      {
-        m_itemActions["FileSystem/Cut"](entry, this);
-        m_itemActions["FileSystem/Copy"](entry, this);
-        m_itemActions["FileSystem/Duplicate"](entry, this);
-        m_itemActions["FileSystem/Delete"](entry, this);
-        m_itemActions["FileSystem/Rename"](entry, this);
-
-        ImGui::EndPopup();
-      }
-
-      if (ImGui::BeginPopupContextWindow(nullptr,
-                                         ImGuiPopupFlags_MouseButtonRight |
-                                             ImGuiPopupFlags_NoOpenOverItems))
-      {
-        for (const String& cmd : commands)
-        {
-          m_itemActions[cmd](entry, this);
-        }
-
-        m_itemActions["FileSystem/Paste"](nullptr, this);
-        m_itemActions["FileSystem/MakeDir"](nullptr, this);
-        m_itemActions["Refresh"](nullptr, this);
-        m_itemActions["FileSystem/CopyPath"](nullptr, this);
-
-        ImGui::EndPopup();
-      }
-    }
-
-    void FolderView::Refresh() { m_dirty = true; }
-
-    float FolderView::GetThumbnailZoomPercent(float thumbnailZoom)
-    {
-      float percent = (thumbnailZoom * 0.36f) - 8.f;
-      return percent;
-    }
-
-    typedef std::vector<FolderView*> FolderViewRawPtrArray;
-
-    void FolderView::CreateItemActions()
-    {
-      auto getSameViewsFn = [](FolderView* thisView) -> FolderViewRawPtrArray
-      {
-        // Always fetch the active view for self.
-        FolderViewRawPtrArray list = {};
-        for (FolderWindow* folder : g_app->GetAssetBrowsers())
-        {
-          if (folder->GetActiveView(true)->GetPath() == thisView->GetPath())
-          {
-            list.push_back(folder->GetActiveView(true));
-          }
-        }
-
-        return list;
-      };
-
-      auto deleteDirFn = [getSameViewsFn](const String& path,
-                                                FolderView* thisView) -> void
-      {
-        std::error_code ec;
-        std::filesystem::remove_all(path, ec);
-        if (ec)
-        {
-          g_app->m_statusMsg = ec.message();
-        }
-
-        for (FolderView* view : getSameViewsFn(thisView))
-        {
-          view->m_dirty = true;
-        }
-      };
-
-      // Copy file path.
-      m_itemActions["FileSystem/CopyPath"] =
-          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
-      {
-        FolderViewRawPtrArray views = getSameViewsFn(thisView);
-        if (views.size() == 0)
-        {
-          return;
-        }
-
-        if (ImGui::MenuItem("CopyPath"))
-        {
-          int copied = SDL_SetClipboardText(views[0]->m_path.c_str());
-          if (copied < 0)
-          {
-            // Error
-            g_app->GetConsole()->AddLog(
-                "Could not copy the folder path to clipboard",
-                LogType::Error);
-          }
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      // Refresh.
-      m_itemActions["Refresh"] = [getSameViewsFn](DirectoryEntry* entry,
-                                        FolderView* thisView) -> void
-      {
-        FolderViewRawPtrArray views = getSameViewsFn(thisView);
-        if (views.size() == 0)
-        {
-          return;
-        }
-
-        if (ImGui::MenuItem("Refresh"))
-        {
-          for (FolderView* view : views)
-          {
-            view->m_dirty = true;
-          }
-          ImGui::CloseCurrentPopup();
-        }
-        thisView->m_parent->ReconstructFolderTree();
-      };
-
-      // FileSystem/MakeDir.
-      m_itemActions["FileSystem/MakeDir"] = [getSameViewsFn]
-                                            (DirectoryEntry* entry,
-                                                 FolderView* thisView) -> void
-      {
-        FolderViewRawPtrArray views = getSameViewsFn(thisView);
-        if (views.size() == 0)
-        {
-          return;
-        }
-
-        if (ImGui::MenuItem("MakeDir"))
-        {
-          StringInputWindow* inputWnd =
-              new StringInputWindow("New Directory##NwDirName", true);
-          inputWnd->m_inputLabel = "Name";
-          inputWnd->m_hint       = "Directory name...";
-          inputWnd
-              ->m_illegalChars = {'/', ':', '*', '?', '"', '<', '>', '|', '\\'};
-
-          inputWnd->m_taskFn   = [views, inputWnd](const String& val)
-          {
-            String file = ConcatPaths({views[0]->m_path, val});
-            std::filesystem::create_directories(file);
-            for (FolderView* view : views)
-            {
-              view->m_dirty = true;
-            }
-          };
-          thisView->m_parent->ReconstructFolderTree();
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      // FileSystem/Rename.
-      m_itemActions["FileSystem/Rename"] =
-          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
-      {
-        FolderViewRawPtrArray views = getSameViewsFn(thisView);
-        if (views.size() == 0)
-        {
-          return;
-        }
-
-        if (ImGui::MenuItem("Rename"))
-        {
-          if (ResourceManager* rm = entry->GetManager())
-          {
-            String oldName;
-            String oldFile = entry->GetFullPath();
-            DecomposePath(oldFile, nullptr, &oldName, nullptr);
-
-            StringInputWindow* inputWnd =
-                new StringInputWindow("New Name##NwName", true);
-            inputWnd->m_inputVal   = oldName;
-            inputWnd->m_inputLabel = "New Name";
-            inputWnd->m_hint       = "New name...";
-
-            inputWnd->m_taskFn     = [views, oldFile](const String& val)
-            {
-              String path, ext;
-              DecomposePath(oldFile, &path, nullptr, &ext);
-
-              String file = ConcatPaths({path, val + ext});
-              if (CheckFile(file))
-              {
-                g_app->GetConsole()->AddLog(
-                    "Can't rename. A file with the same name exist",
-                    LogType::Error);
-              }
-              else
-              {
-                std::filesystem::rename(oldFile, file);
-                for (FolderView* view : views)
-                {
-                  view->m_dirty = true;
-                }
-              }
-            };
-          }
-
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      // FileSystem/Delete.
-      m_itemActions["FileSystem/Delete"] =
-          [getSameViewsFn, deleteDirFn](DirectoryEntry* entry,
-                                        FolderView* thisView) -> void
-      {
-        FolderViewRawPtrArray views = getSameViewsFn(thisView);
-        if (views.size() == 0)
-        {
-          return;
-        }
-
-        if (ImGui::MenuItem("Delete"))
-        {
-          if (entry->m_isDirectory)
-          {
-            deleteDirFn(entry->GetFullPath(), thisView);
-            thisView->m_parent->ReconstructFolderTree();
-          }
-          else
-          {
-            if (ResourceManager* rm = entry->GetManager())
-            {
-              rm->Remove(entry->GetFullPath());
-            }
-
-            std::filesystem::remove(entry->GetFullPath());
-            for (FolderView* view : views)
-            {
-              view->m_dirty = true;
-            }
-          }
-          thisView->m_parent->ReconstructFolderTree();
-
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      // FileSystem/Copy.
-      m_itemActions["FileSystem/Duplicate"] =
-          [getSameViewsFn](DirectoryEntry* entry,
-                                 FolderView* thisView) -> void
-      {
-        FolderViewRawPtrArray views = getSameViewsFn(thisView);
-        if (views.size() == 0)
-        {
-          return;
-        }
-
-        if (ImGui::MenuItem("Duplicate"))
-        {
-          String fullPath = entry->GetFullPath();
-          String cpyPath  = CreateCopyFileFullPath(fullPath);
-          std::filesystem::copy(fullPath, cpyPath);
-          thisView->m_parent->ReconstructFolderTree();
-
-          for (FolderView* view : views)
-          {
-            view->m_dirty = true;
-          }
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      m_itemActions["FileSystem/Cut"] = [](DirectoryEntry* entry,
-                                           FolderView* thisView) -> void
-      {
-        if (ImGui::MenuItem("Cut"))
-        {
-          m_currentEntry   = entry;
-          entry->m_cutting = true;
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      m_itemActions["FileSystem/Copy"] = [](DirectoryEntry* entry,
-                                            FolderView* thisView) -> void
-      {
-        if (ImGui::MenuItem("Copy"))
-        {
-          m_currentEntry            = entry;
-          m_currentEntry->m_cutting = false;
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      m_itemActions["FileSystem/Paste"] =
-           [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
-      {
-        if (ImGui::MenuItem("Paste"))
-        {
-          if (m_currentEntry != nullptr)
-          {
-            String src = m_currentEntry->GetFullPath();
-            String dst = ConcatPaths(
-                {thisView->m_path,
-                 m_currentEntry->m_fileName + m_currentEntry->m_ext});
-          
-            if (m_currentEntry->m_cutting)
-            {
-              // move file to its new position
-              if (std::rename(src.c_str(), dst.c_str()))
-              {
-                GetLogger()->WriteConsole(LogType::Error,
-                                          "file cut paste failed!");
-              }
-              m_currentEntry->m_cutting = false;
-            }
-            else
-            {
-              std::filesystem::copy(src, dst);
-            }
-
-            m_currentEntry = nullptr;
-            // refresh all folder views
-            for (FolderWindow* window : g_app->GetAssetBrowsers())
-            {
-              window->SetViewsDirty();
-            }
-            thisView->m_parent->ReconstructFolderTree();
-          }
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      auto sceneCreateFn = [getSameViewsFn](DirectoryEntry* entry,
-                                            FolderView* thisView,
-                                            const String& extention) -> void
-      {
-        FolderViewRawPtrArray views = getSameViewsFn(thisView);
-        if (views.size() == 0)
-        {
-          return;
-        }
-
-        if (ImGui::MenuItem("Create"))
-        {
-          StringInputWindow* inputWnd =
-              new StringInputWindow("Scene Name##ScnMat", true);
-          inputWnd->m_inputVal   = "New Scene";
-          inputWnd->m_inputLabel = "Name";
-          inputWnd->m_hint       = "New scene name...";
-          inputWnd->m_taskFn     = [views, extention](const String& val)
-          {
-            String file = ConcatPaths({views[0]->m_path, val + extention});
-            if (CheckFile(file))
-            {
-              g_app->GetConsole()->AddLog(
-                  "Can't create. A scene with the same name exist",
-                  LogType::Error);
-            }
-            else
-            {
-              ScenePtr scene = std::make_shared<Scene>(file);
-              scene->Save(false);
-              for (FolderView* view : views)
-              {
-                view->m_dirty = true;
-              }
-            }
-          };
-          thisView->m_parent->ReconstructFolderTree();
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      // Scene/Create.
-      m_itemActions["Scene/Create"] =
-          [sceneCreateFn](DirectoryEntry* entry, FolderView* thisView) -> void
-      { sceneCreateFn(entry, thisView, SCENE); };
-
-      // Layer/Create.
-      m_itemActions["Layer/Create"] =
-          [sceneCreateFn](DirectoryEntry* entry, FolderView* thisView) -> void
-      { sceneCreateFn(entry, thisView, LAYER); };
-
-      // Material/Create.
-      m_itemActions["Material/Create"] =
-          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
-      {
-        FolderViewRawPtrArray views = getSameViewsFn(thisView);
-        if (views.size() == 0)
-        {
-          return;
-        }
-
-        if (ImGui::MenuItem("Create"))
-        {
-          StringInputWindow* inputWnd =
-              new StringInputWindow("Material Name##NwMat", true);
-          inputWnd->m_inputVal   = "New Material";
-          inputWnd->m_inputLabel = "Name";
-          inputWnd->m_hint       = "New material name";
-          inputWnd->m_taskFn     = [views](const String& val)
-          {
-            String file = ConcatPaths({views[0]->m_path, val + MATERIAL});
-            if (CheckFile(file))
-            {
-              g_app->GetConsole()->AddLog(
-                  "Can't create. A material with the same name exist",
-                  LogType::Error);
-            }
-            else
-            {
-              MaterialManager* man = GetMaterialManager();
-              MaterialPtr mat      = man->GetCopyOfDefaultMaterial();
-              mat->m_name          = val;
-              mat->SetFile(file);
-              for (FolderView* view : views)
-              {
-                view->m_dirty = true;
-              }
-              mat->Save(true);
-              man->Manage(mat);
-            }
-          };
-          thisView->m_parent->ReconstructFolderTree();
-          ImGui::CloseCurrentPopup();
-        }
-      };
-    }
-
-    void FolderView::MoveTo(const String& dst)
-    {
-      if (ImGui::BeginDragDropTarget())
-      {
-        if (const ImGuiPayload* payload =
-                ImGui::AcceptDragDropPayload("BrowserDragZone"))
-        {
-          IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
-          DirectoryEntry entry = *(const DirectoryEntry*) payload->Data;
-          String newPath = ConcatPaths({dst, entry.m_fileName + entry.m_ext});
-
-          std::error_code ec;
-          std::filesystem::rename(entry.GetFullPath(), newPath, ec);
-          if (ec)
-          {
-            g_app->m_statusMsg = ec.message();
-          }
-          else
-          {
-            // Update src & dst views.
-            String src = entry.m_rootPath;
-            if (src == m_path)
-            {
-              // Item moved across tabs.
-              src = dst;
-            }
-
-            int indx = m_parent->Exist(src);
-            if (indx != -1)
-            {
-              m_parent->GetView(indx).m_dirty = true;
-            }
-            m_dirty = true;
-          }
-        }
-        ImGui::EndDragDropTarget();
-      }
-    } 
 
     FolderWindow::FolderWindow(XmlNode* node)
     {
@@ -930,7 +134,7 @@ namespace ToolKit
       m_folderNodes.clear();
       CreateTreeRec(-1, DefaultPath());
       m_resourcesTreeIndex = (int)m_folderNodes.size();
-      CreateTreeRec(int(m_folderNodes.size() - 1), ResourcePath());
+      CreateTreeRec(int(m_folderNodes.size()) - 1, ResourcePath());
     }
 
     // parent will start with -1
@@ -938,7 +142,9 @@ namespace ToolKit
     {
       String folderName = path.filename().u8string();
       int index = (int)m_folderNodes.size();
-      m_folderNodes.emplace_back(index, path.u8string(), folderName);
+      m_folderNodes.emplace_back(index,
+                                 std::filesystem::absolute(path).u8string(),
+                                 folderName);
 
       for (const std::filesystem::directory_entry& directory 
           : std::filesystem::directory_iterator(path))
@@ -966,6 +172,8 @@ namespace ToolKit
       }
     }
 
+    extern FolderView* g_dragBeginView;
+
     void FolderWindow::DrawTreeRec(int index, float depth)
     {
       if (index == -1) return; // shouldn't happen
@@ -979,26 +187,54 @@ namespace ToolKit
       
       const auto onClickedFn = [&]() -> void
       {
-        // find clicked entry
+        // find clicked entity
         int selected = Exist(node.path);
-
-        if (selected != -1 && selected != m_activeFolder)
+        if (selected != -1)
         {
           FolderView& selectedEntry = m_entries[selected];
-          // set old node active false
-          if (m_activeFolder != -1) 
+          bool rootChanged          = false;
+
+          if (m_lastSelectedTreeNode != -1 &&
+              m_lastSelectedTreeNode < m_entries.size())
           {
-            DeactivateNode(m_entries[m_activeFolder].m_folder);
-            m_entries[m_activeFolder].m_active = false;
+            FolderView& lastSelectedEntry = m_entries[m_lastSelectedTreeNode];
+
+            // set old node active false(icon will change to closed)
+            DeactivateNode(lastSelectedEntry.m_folder);
+            lastSelectedEntry.m_active = false;
+
+            if (GetRootPath(selectedEntry.GetPath()) !=
+                GetRootPath(lastSelectedEntry.GetPath()))
+            {
+              // root folders different we should switch active folder
+              m_activeFolder = selected;
+            }
           }
           AddEntry(selectedEntry);
-          node.active    = true;
-          m_activeFolder = selected;
-          selectedEntry.m_active = true;
+          node.active                  = true;
+          m_lastSelectedTreeNode       = selected;
+          selectedEntry.m_active       = true;
           selectedEntry.m_activateNext = true;
-          selectedEntry.m_visible = true;
+          selectedEntry.m_visible      = true;
         }
       };
+
+      const auto acceptDrop = [&]() -> void
+      {
+        if (ImGui::BeginDragDropTarget())
+        {
+          if (const ImGuiPayload* payload =
+                ImGui::AcceptDragDropPayload("BrowserDragZone"))
+          {
+            if (g_dragBeginView != nullptr)
+            {
+              g_dragBeginView->DropFiles(node.path);
+            }
+          }
+          ImGui::EndDragDropTarget();
+        }        
+      };
+
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
       String stdId                 = "##" + std::to_string(index);
 
@@ -1014,6 +250,7 @@ namespace ToolKit
             onClickedFn();
           }   
         }
+        acceptDrop();
       }
       else
       {
@@ -1030,6 +267,7 @@ namespace ToolKit
           }
           ImGui::TreePop();
         }
+        acceptDrop();
       }
     }
     
