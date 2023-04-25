@@ -14,7 +14,9 @@ namespace ToolKit
     Drawable();
     virtual ~Drawable();
     EntityType GetType() const override;
-    void SetPose(const AnimationPtr& anim, float time) override;
+    void SetPose(const AnimationPtr& anim,
+                 float time,
+                 BlendTarget* blendTarget = nullptr) override;
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     void RemoveResources() override;

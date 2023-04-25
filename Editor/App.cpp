@@ -324,6 +324,7 @@ namespace ToolKit
         reallyQuit->m_yesCallback = [this]()
         {
           m_workspace.Serialize(nullptr, nullptr);
+          m_workspace.SerializeEngineSettings();
           Serialize(nullptr, nullptr);
           g_running = false;
         };
@@ -1095,6 +1096,7 @@ namespace ToolKit
           !setDefaults)
       {
         DeSerialize(nullptr, nullptr);
+        m_workspace.DeSerializeEngineSettings();
         UI::InitSettings();
       }
       else
@@ -1124,6 +1126,7 @@ namespace ToolKit
           {
             m_workspace.SetActiveProject(project);
             m_workspace.Serialize(nullptr, nullptr);
+            m_workspace.SerializeEngineSettings();
             OnNewScene("New Scene");
           });
     }
@@ -1452,7 +1455,11 @@ namespace ToolKit
           console->AddLog(msg, logType);
         }
       };
+
+      auto genericClearFn = []() -> void { g_app->GetConsole()->ClearLog(); };
+
       GetLogger()->SetWriteConsoleFn(genericReporterFn);
+      GetLogger()->SetClearConsoleFn(genericClearFn);
     }
 
     void App::CreateAndSetNewScene(const String& name)

@@ -27,7 +27,7 @@ namespace ToolKit
     CAM_DATA,
     COLOR,
     FRAME_COUNT,
-    UNUSEDSLOT_1,
+    ELAPSED_TIME,
     EXPOSURE,
     PROJECT_VIEW_NO_TR,
     USE_IBL,
