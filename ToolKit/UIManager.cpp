@@ -185,6 +185,7 @@ namespace ToolKit
   void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)
   {
     // Swap viewport camera with ui camera.
+    ULongID viewportOldAttachedId = viewport->GetAttachedCamera();
     viewport->AttachCamera(m_uiCamera->GetIdVal());
 
     // Update viewports with ui camera.
@@ -201,7 +202,7 @@ namespace ToolKit
       }
     }
 
-    viewport->DetachCamera();
+    viewport->AttachCamera(viewportOldAttachedId);
   }
 
   void UIManager::ResizeLayers(Viewport* viewport)
