@@ -125,17 +125,19 @@ namespace ToolKit
           {
             if (Viewport* av = g_app->GetViewport(g_3dViewport))
             {
-              m_posessed = !m_posessed;
               if (m_posessed)
               {
-                av->AttachCamera(GetIdVal());
-                ParamPoses().m_name = "Free";
+                av->AttachCamera(m_changedCam);
+                ParamPoses().m_name = "Poses";
               }
               else
               {
-                av->DetachCamera();
-                ParamPoses().m_name = "Poses";
+                m_changedCam = av->GetCamera()->GetIdVal();
+                av->AttachCamera(GetIdVal());
+                ParamPoses().m_name = "Free";
               }
+
+              m_posessed = !m_posessed;
             }
           },
           CameraCategory.Name,
