@@ -43,14 +43,6 @@ namespace ToolKit
      */
     virtual void SetCamera(Camera* cam);
 
-    /**
-     * Swaps the Viewport's Camera and Detach any camera if any. If the
-     * provided camera is nullptr, function doesn't do anything.
-     * @param cam is the camera to swap with.
-     * @param attachment is set to current camera attachment for swap backup.
-     */
-    void SwapCamera(Camera** cam, ULongID& attachment);
-
    public:
     /**
      * Viewport identifier. Unique trough the runtime.
@@ -170,6 +162,17 @@ namespace ToolKit
      * Stores the Camera id that the scene will use while rendering.
      */
     virtual void AttachCamera(ULongID camID); // Attach a camera from the scene
+    
+    /**
+     * Gets attached camera.
+     * @return if attached camera index exist, index of camera otherwise NULL_HANDLE
+     */
+    virtual ULongID GetAttachedCamera(); 
+
+    /**
+      * detach attached camera and use default camera
+      */
+    virtual void DetachCamera();
 
     /**
      * Returns the Billboard scale value based on viewport data. This scale is

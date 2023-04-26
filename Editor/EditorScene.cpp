@@ -202,33 +202,30 @@ namespace ToolKit
         {
           AddToSelection(id, true);
         }
-        else // Add, make current or toggle selection.
+        else if (IsSelected(id)) // Add, make current or toggle selection.
         {
-          if (IsSelected(id))
+          if (GetSelectedEntityCount() > 1)
           {
-            if (GetSelectedEntityCount() > 1)
+            if (entities.size() == 1)
             {
-              if (entities.size() == 1)
+              if (IsCurrentSelection(id))
               {
-                if (IsCurrentSelection(id))
-                {
-                  RemoveFromSelection(id);
-                }
-                else
-                {
-                  MakeCurrentSelection(id, false);
-                }
+                RemoveFromSelection(id);
               }
-            }
-            else
-            {
-              RemoveFromSelection(id);
+              else
+              {
+                MakeCurrentSelection(id, false);
+              }
             }
           }
           else
           {
-            AddToSelection(id, true);
+            RemoveFromSelection(id);
           }
+        }
+        else
+        {
+          AddToSelection(id, true);
         }
       }
 

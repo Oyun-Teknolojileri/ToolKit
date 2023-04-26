@@ -36,28 +36,13 @@ namespace ToolKit
 
   void ViewportBase::SetCamera(Camera* cam)
   {
-    SafeDel(m_camera);
+    if (m_camera != nullptr)
+    {
+      // delete the camera and remove it from the scene
+      GetSceneManager()->GetCurrentScene()->RemoveEntity(m_camera->GetIdVal());
+      SafeDel(m_camera);
+    }
     m_camera         = cam;
-    m_attachedCamera = NULL_HANDLE;
-  }
-
-  void ViewportBase::SwapCamera(Camera** cam, ULongID& attachment)
-  {
-    if (cam == nullptr)
-    {
-      return;
-    }
-
-    if (*cam == nullptr)
-    {
-      return;
-    }
-
-    Camera* tmp      = *cam;
-    *cam             = m_camera;
-    m_camera         = tmp;
-
-    attachment       = m_attachedCamera;
     m_attachedCamera = NULL_HANDLE;
   }
 
@@ -233,6 +218,10 @@ namespace ToolKit
   }
 
   void Viewport::AttachCamera(ULongID camId) { m_attachedCamera = camId; }
+
+  void Viewport::DetachCamera() { m_attachedCamera = NULL_HANDLE; }
+
+  ULongID Viewport::GetAttachedCamera() { return m_attachedCamera; }
 
   float Viewport::GetBillboardScale()
   {

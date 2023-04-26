@@ -185,8 +185,7 @@ namespace ToolKit
   void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)
   {
     // Swap viewport camera with ui camera.
-    ULongID attachmentSwap = NULL_HANDLE;
-    viewport->SwapCamera(&m_uiCamera, attachmentSwap);
+    viewport->AttachCamera(m_uiCamera->GetIdVal());
 
     // Update viewports with ui camera.
     for (auto& viewLayerArray : m_viewportIdLayerArrayMap)
@@ -202,7 +201,7 @@ namespace ToolKit
       }
     }
 
-    viewport->SwapCamera(&m_uiCamera, attachmentSwap);
+    viewport->DetachCamera();
   }
 
   void UIManager::ResizeLayers(Viewport* viewport)

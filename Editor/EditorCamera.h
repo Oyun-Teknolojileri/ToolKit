@@ -26,7 +26,8 @@ namespace ToolKit
       void ParameterConstructor();
 
      private:
-      bool m_posessed = false;
+      bool m_posessed = false;  
+      ULongID m_changedCam = NULL_HANDLE;
     };
 
   } // namespace Editor
