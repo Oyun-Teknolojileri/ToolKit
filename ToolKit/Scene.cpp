@@ -410,18 +410,6 @@ namespace ToolKit
     return nullptr;
   }
 
-  void Scene::ReorderRoots(Entity* droppedBelow, EntityRawPtrArray& droppedEntities)
-  {
-    // remove all dropped entites 
-    RemoveEntity(droppedEntities);
-    // find index of dropped entity and
-    // insert all dropped entities below dropped entity
-    m_entities.insert(
-        std::find(m_entities.begin(), m_entities.end(), droppedBelow) + 1,
-        droppedEntities.begin(),
-        droppedEntities.end());
-  }
-
   void Scene::LinkPrefab(const String& fullPath)
   {
     if (fullPath == GetFile())

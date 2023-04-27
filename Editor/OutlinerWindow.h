@@ -56,7 +56,7 @@ namespace ToolKit
        * entities up to down when we look at node tree.
        * these are imgui visible entities.
        */
-      std::vector<Entity*> m_indexToEntity;
+      EntityRawPtrArray m_indexToEntity;
 
       EntityRawPtrArray m_draggingEntities;
       EntityRawPtrArray m_roots;

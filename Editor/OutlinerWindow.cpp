@@ -372,27 +372,40 @@ namespace ToolKit
 
       if (allRoots && isRootFn(droppedBelowNtt) && !droppedAboveFirstChild)
       {
-        g_app->GetCurrentScene()->ReorderRoots(droppedBelowNtt, m_draggingEntities);
+        // remove all dropped entites 
+        EditorScenePtr scene = g_app->GetCurrentScene();
+        scene->RemoveEntity(m_draggingEntities);
+        EntityRawPtrArray& sceneEntities = scene->AccessEntityArray();
+        // find index of dropped entity and
+        // insert all dropped entities below dropped entity
+        sceneEntities.insert(
+          std::find(sceneEntities.begin(), sceneEntities.end(), droppedBelowNtt) + 1,
+          m_draggingEntities.begin(),
+          m_draggingEntities.end());
       }
-      else if (droppedParent != nullptr)
+      else
       {
-        std::vector<Node*>& childs = droppedParent->m_children;
         for (int i = 0; i < m_draggingEntities.size(); i++)
         {
           m_draggingEntities[i]->m_node->OrphanSelf(true);
         }
-
-        int index = droppedAboveFirstChild ? -1
-                        : std::find(childs.begin(), childs.end(),
-                          droppedBelowNtt->m_node) - childs.begin();
-
-        for (int i = 0; i < m_draggingEntities.size(); ++i)
+        
+        if (droppedParent != nullptr)
         {
-          Node* node = m_draggingEntities[i]->m_node;
-          droppedParent->InsertChild(node, index + i + 1, true);
+          std::vector<Node*>& childs = droppedParent->m_children;
+
+          int index = droppedAboveFirstChild ? -1
+                          : std::find(childs.begin(), childs.end(),
+                            droppedBelowNtt->m_node) - childs.begin();
+
+          for (int i = 0; i < m_draggingEntities.size(); ++i)
+          {
+            Node* node = m_draggingEntities[i]->m_node;
+            droppedParent->InsertChild(node, index + i + 1, true);
+          }
         }
-        m_draggingEntities.clear();
       }
+      m_draggingEntities.clear();
     }
 
     void OutlinerWindow::Show()
