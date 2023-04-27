@@ -51,6 +51,12 @@ namespace ToolKit
      */
     void SwapCamera(Camera** cam, ULongID& attachment);
 
+    /**
+     * Stores the Camera id that the scene will use while rendering.
+     * Attached camera must exist in the current scene.
+     */
+    virtual void AttachCamera(ULongID camID);
+
    public:
     /**
      * Viewport identifier. Unique trough the runtime.
@@ -165,11 +171,6 @@ namespace ToolKit
      * @return True if the viewport Camera is orthographic, false otherwise.
      */
     bool IsOrthographic();
-
-    /**
-     * Stores the Camera id that the scene will use while rendering.
-     */
-    virtual void AttachCamera(ULongID camID); // Attach a camera from the scene
 
     /**
      * Returns the Billboard scale value based on viewport data. This scale is

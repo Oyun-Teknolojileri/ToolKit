@@ -57,8 +57,18 @@ namespace ToolKit
     *cam             = m_camera;
     m_camera         = tmp;
 
-    attachment       = m_attachedCamera;
-    m_attachedCamera = NULL_HANDLE;
+    ULongID tmpHdnl  = m_attachedCamera;
+    m_attachedCamera = attachment;
+    attachment       = tmpHdnl;
+  }
+
+  void ViewportBase::AttachCamera(ULongID camId)
+  {
+    assert(camId == NULL_HANDLE ||
+           GetSceneManager()->GetCurrentScene()->GetEntity(camId) != nullptr &&
+               "Given camera must be in the current scene.");
+
+    m_attachedCamera = camId;
   }
 
   ViewportBase::ViewportBase()
@@ -231,8 +241,6 @@ namespace ToolKit
 
     return false;
   }
-
-  void Viewport::AttachCamera(ULongID camId) { m_attachedCamera = camId; }
 
   float Viewport::GetBillboardScale()
   {
