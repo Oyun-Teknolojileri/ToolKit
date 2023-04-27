@@ -327,14 +327,8 @@ namespace ToolKit
     erase_if(m_entities,
              [&entities](const Entity* ntt) -> bool
              {
-               for (const Entity* removeNtt : entities)
-               {
-                 if (removeNtt->GetIdVal() == ntt->GetIdVal())
-                 {
-                   return true;
-                 }
-               }
-               return false;
+               return std::find(entities.begin(), entities.end(), ntt) !=
+                      entities.end();
              });
   }
 

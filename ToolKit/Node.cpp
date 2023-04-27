@@ -155,7 +155,7 @@ namespace ToolKit
       ts = child->GetTransform(TransformationSpace::TS_WORLD);
     }
 
-    m_children.insert(m_children.begin(), child);
+    m_children.insert(m_children.begin() + index, child);
     child->m_parent = this;
     child->m_dirty  = true;
     child->SetChildrenDirty();
@@ -215,7 +215,6 @@ namespace ToolKit
         return;
       }
     }
-    
   }
 
   void Node::OrphanSelf(bool preserveTransform)

@@ -105,6 +105,8 @@ namespace ToolKit
       return numNodes;
     }
 
+    // when we multi select the dragging entities are not sorted 
+    // we need to sort dragged entities in order to preserve order when we move the entities
     void OutlinerWindow::SortDraggedEntitiesByNodeIndex()
     {
       std::sort(m_draggingEntities.begin(), m_draggingEntities.end(),
@@ -172,7 +174,7 @@ namespace ToolKit
       // Change the selected files hierarchy
       EntityRawPtrArray& selected = m_draggingEntities;
 
-      if (parent->GetType() != EntityType::Entity_Prefab)
+      if (parent->GetType() == EntityType::Entity_Prefab)
       {
         return;
       }
@@ -364,7 +366,10 @@ namespace ToolKit
       else if (droppedParent != nullptr)
       {
         std::vector<Node*>& childs = droppedParent->m_children;
-
+        for (int i = 0; i < m_draggingEntities.size(); i++)
+        {
+          m_draggingEntities[i]->m_node->OrphanSelf(true);
+        }  
         int index = std::find(childs.begin(),
                               childs.end(), 
                               droppedBelowNtt->m_node) - childs.begin();
@@ -372,7 +377,6 @@ namespace ToolKit
         for (int i = 0; i < m_draggingEntities.size(); ++i)
         {
           Node* node =  m_draggingEntities[i]->m_node;
-          node->OrphanSelf(true);
           droppedParent->InsertChild(node, index + i + 1, true);
         }
         m_draggingEntities.clear();
