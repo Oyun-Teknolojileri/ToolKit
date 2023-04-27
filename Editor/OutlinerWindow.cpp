@@ -11,7 +11,7 @@
 
 #include <Prefab.h>
 
-#include <vector>
+#include <stack>
 
 #include "DebugNew.h"
 
@@ -31,17 +31,21 @@ namespace ToolKit
 
     // Recursively show entity hierarchy & update via drag drop.
     ULongID g_parent = NULL_HANDLE;
-    std::vector<ULongID> g_child;
+    std::stack<ULongID> g_reparentQueue;
+    
+    // returns row height for tree nodes
+    inline float GetLineHeight()
+    {
+      float item_spacing_y = ImGui::GetStyle().ItemSpacing.y;
+      return ImGui::GetTextLineHeight() + item_spacing_y;
+    }
 
     void DrawTreeNodeLine(int numNodes, ImVec2 rectMin)
     {
-      const ImColor color  = ImGui::GetColorU32(ImGuiCol_Text);
-      ImDrawList* drawList = ImGui::GetWindowDrawList();
-      ImVec2 cursorPos     = ImGui::GetCursorScreenPos();
-      float item_spacing_y = ImGui::GetStyle().ItemSpacing.y;
-      float line_height    = ImGui::GetTextLineHeight() + item_spacing_y;
-      float halfHeight     = line_height * 0.5f;
-
+      float line_height = GetLineHeight();
+      float halfHeight = line_height * 0.5f;
+                       
+      ImVec2 cursorPos = ImGui::GetCursorScreenPos();
       // -11 align line with arrow
       rectMin.x        = cursorPos.x - 11.0f;
       rectMin.y       += halfHeight;
@@ -49,6 +53,8 @@ namespace ToolKit
       float bottom = rectMin.y + (numNodes * line_height);
       bottom -= (halfHeight + 1.0f); // move up a little
 
+      ImDrawList* drawList = ImGui::GetWindowDrawList();
+      const ImColor color  = ImGui::GetColorU32(ImGuiCol_Text);
       drawList->AddLine(rectMin, ImVec2(rectMin.x, bottom), color);
       // a little bulge at the end of the line
       drawList->AddLine(ImVec2(rectMin.x, bottom),
@@ -59,7 +65,7 @@ namespace ToolKit
     // returns total drawed nodes
     int OutlinerWindow::ShowNode(Entity* e, int depth)
     {
-      if (!m_shownEntities[e])
+      if (m_shownEntities.count(e) == 0)
       {
         return 0;
       }
@@ -72,6 +78,7 @@ namespace ToolKit
       }
 
       int numNodes = 1; // 1 itself and we will sum childs
+      m_indexToEntity.push_back(e);
 
       if (e->m_node->m_children.empty() ||
           e->GetType() == EntityType::Entity_Prefab)
@@ -96,6 +103,16 @@ namespace ToolKit
         }
       }
       return numNodes;
+    }
+
+    void OutlinerWindow::SortDraggedEntitiesByNodeIndex()
+    {
+      std::sort(m_draggingEntities.begin(), m_draggingEntities.end(),
+                [this](Entity* a, Entity* b) -> bool
+                {
+                  return std::find(m_indexToEntity.begin(), m_indexToEntity.end(), a) <
+                         std::find(m_indexToEntity.begin(), m_indexToEntity.end(), b);
+                });
     }
 
     void OutlinerWindow::SelectEntitiesBetweenNodes(EditorScene* scene,
@@ -148,6 +165,28 @@ namespace ToolKit
           scene->AddToSelection(children[i]->m_entity->GetIdVal(), true);
         }
       }
+    }
+
+    void OutlinerWindow::PushSelectedEntitiesToReparentQueue(Entity* parent)
+    {
+      // Change the selected files hierarchy
+      EntityRawPtrArray& selected = m_draggingEntities;
+
+      if (parent->GetType() != EntityType::Entity_Prefab)
+      {
+        return;
+      }
+      for (int i = 0; i < selected.size(); i++)
+      {
+        bool sameParent = selected[i]->GetIdVal() != parent->GetIdVal();
+        bool isPrefab = selected[i]->GetType() == EntityType::Entity_Prefab;
+
+        if (sameParent && (!Prefab::GetPrefabRoot(selected[i]) || isPrefab))
+        {
+          g_reparentQueue.push(selected[i]->GetIdVal());
+        }
+      }
+      g_parent = parent->GetIdVal();
     }
 
     void OutlinerWindow::SetItemState(Entity* e)
@@ -208,23 +247,9 @@ namespace ToolKit
         if (const ImGuiPayload* payload =
                 ImGui::AcceptDragDropPayload("HierarcyChange"))
         {
-          // Change the selected files hierarchy
-          EntityRawPtrArray& selected = m_draggingEntities;
-
-          if (e->GetType() != EntityType::Entity_Prefab)
-          {
-            for (int i = 0; i < selected.size(); i++)
-            {
-              if (selected[i]->GetIdVal() != e->GetIdVal() &&
-                  (!Prefab::GetPrefabRoot(selected[i]) ||
-                   selected[i]->GetType() == EntityType::Entity_Prefab))
-              {
-                g_child.push_back(selected[i]->GetIdVal());
-              }
-            }
-          }
+          SortDraggedEntitiesByNodeIndex();
+          PushSelectedEntitiesToReparentQueue(e);
           m_draggingEntities.clear();
-          g_parent = e->GetIdVal();
         }
         ImGui::EndDragDropTarget();
       }
@@ -243,7 +268,10 @@ namespace ToolKit
       // Clear shown entity map
       for (Entity* ntt : ntties)
       {
-        m_shownEntities[ntt] = m_searchString.empty();
+        if (m_searchString.empty())
+        {
+          m_shownEntities.insert(ntt);
+        }
       }
       if (m_searchString.size() > 0)
       {
@@ -272,10 +300,83 @@ namespace ToolKit
           }
         }
       }
+      bool isShown = self || children;
+      if (isShown)
+      {
+        m_shownEntities.insert(e);
+      }
+      return isShown;
+    }
 
-      bool result        = self || children;
-      m_shownEntities[e] = result;
-      return result;
+    void OutlinerWindow::TryReorderEntites(float treeStartY)
+    {
+      if (m_indexToEntity.size() == 0 || m_draggingEntities.size() == 0)
+      {
+        return;
+      }
+      
+      const float lineHeight = GetLineHeight();
+      const float mouseY = ImGui::GetMousePos().y;
+      int selectedIndex = (int)floorf((mouseY - treeStartY) / lineHeight);
+      // min index is 0
+      selectedIndex = glm::clamp(selectedIndex, 0, int(m_indexToEntity.size()) - 1);
+      
+      Entity* droppedBelowNtt = m_indexToEntity[selectedIndex];
+      
+      if (std::find(m_draggingEntities.begin(),
+                    m_draggingEntities.end(),
+                    droppedBelowNtt) != m_draggingEntities.end())
+      {
+        GetLogger()->WriteConsole(LogType::Memo, 
+                                 "cannot reorder if you drag below a selected entity");
+        return;
+      }
+
+      const auto isRootFn = [](Entity* entity) -> bool
+      { 
+         return entity->m_node->m_parent == nullptr; 
+      };
+      
+      bool allRoots = true;
+      bool allSameParent = true;
+      Node* firstParent  = m_draggingEntities[0]->m_node->m_parent;
+
+      for (int i = 0; i < m_draggingEntities.size(); ++i)
+      {
+        allRoots &= isRootFn(m_draggingEntities[i]);
+        allSameParent &= m_draggingEntities[i]->m_node->m_parent == firstParent;
+      }
+      
+      if (!allSameParent)
+      {
+        GetLogger()->WriteConsole(LogType::Memo, "all selected entities should have same parent");
+        return;
+      }
+
+      SortDraggedEntitiesByNodeIndex();
+
+      Node* droppedParent = droppedBelowNtt->m_node->m_parent;
+
+      if (allRoots && isRootFn(droppedBelowNtt))
+      {
+        g_app->GetCurrentScene()->ReorderRoots(droppedBelowNtt, m_draggingEntities);
+      }
+      else if (droppedParent != nullptr)
+      {
+        std::vector<Node*>& childs = droppedParent->m_children;
+
+        int index = std::find(childs.begin(),
+                              childs.end(), 
+                              droppedBelowNtt->m_node) - childs.begin();
+
+        for (int i = 0; i < m_draggingEntities.size(); ++i)
+        {
+          Node* node =  m_draggingEntities[i]->m_node;
+          node->OrphanSelf(true);
+          droppedParent->InsertChild(node, index + i + 1, true);
+        }
+        m_draggingEntities.clear();
+      }
     }
 
     void OutlinerWindow::Show()
@@ -292,13 +393,17 @@ namespace ToolKit
         ImGuiTreeNodeFlags flag =
             g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen;
 
+        float treeStartY = ImGui::GetCursorScreenPos().y;
+
         if (DrawRootHeader("Scene", 0, flag, UI::m_collectionIcon))
         {
           const EntityRawPtrArray& ntties = currScene->GetEntities();
           m_roots.clear();
+          treeStartY = ImGui::GetCursorScreenPos().y;
 
           GetRootEntities(ntties, m_roots);
           HandleSearch(ntties, m_roots);
+          m_indexToEntity.clear();
 
           for (size_t i = 0; i < m_roots.size(); ++i)
           {
@@ -310,13 +415,15 @@ namespace ToolKit
 
         // if we click an empty space in this window. selection list will cleared
         bool multiSelecting = ImGui::IsKeyDown(ImGuiKey_LeftShift) || 
-                              ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+                                ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
 
         bool windowSpaceHovered = !m_anyEntityHovered && ImGui::IsWindowHovered();
         bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
 
         if (windowSpaceHovered && !multiSelecting && mouseReleased)
         {
+          TryReorderEntites(treeStartY);
+        
           for (int i = 0; i < m_draggingEntities.size(); ++i)
           {
             Entity* entity = m_draggingEntities[i];
@@ -330,10 +437,9 @@ namespace ToolKit
       }
 
       // Update hierarchy if there is a change.
-      std::vector<ULongID>::iterator it = g_child.begin();
-      while (it != g_child.end())
+      while (!g_reparentQueue.empty())
       {
-        Entity* child = currScene->GetEntity(*it);
+        Entity* child = currScene->GetEntity(g_reparentQueue.top());
         child->m_node->OrphanSelf(true);
 
         if (g_parent != NULL_HANDLE)
@@ -341,7 +447,7 @@ namespace ToolKit
           Entity* parent = currScene->GetEntity(g_parent);
           parent->m_node->AddChild(child->m_node, true);
         }
-        it = g_child.erase(it);
+        g_reparentQueue.pop();
       }
 
       g_parent = NULL_HANDLE;
@@ -386,7 +492,7 @@ namespace ToolKit
                 (!Prefab::GetPrefabRoot(selected[i]) ||
                  selected[i]->GetType() == EntityType::Entity_Prefab))
             {
-              g_child.push_back(selected[i]->GetIdVal());
+              g_reparentQueue.push(selected[i]->GetIdVal());
             }
           }
           g_parent = NULL_HANDLE;

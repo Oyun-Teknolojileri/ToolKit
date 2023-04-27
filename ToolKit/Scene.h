@@ -219,6 +219,13 @@ namespace ToolKit
     void LinkPrefab(const String& fullPath);
 
     /**
+     * Used for drag drop reorder entitys in Outliner window.
+     * @param droppedBelow the entity that which we will drop given entities below
+     * @param droppedEntities entities that we want to drop
+     */
+    void ReorderRoots(Entity* droppedBelow, EntityRawPtrArray& droppedEntities);
+    
+    /**
      * Returns an array of pointers to all environment volume components in the
      * scene.
      * @returns The array of pointers to environment volume components.
@@ -260,6 +267,7 @@ namespace ToolKit
      * Removes all entities from the scene.
      */
     virtual void ClearEntities();
+
 
     // Serialization.
 

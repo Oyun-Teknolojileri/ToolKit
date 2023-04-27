@@ -4,6 +4,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace ToolKit
 {
@@ -40,15 +41,19 @@ namespace ToolKit
                                       Entity* b);
 
       bool FindShownEntities(Entity* e, const String& str);
-     
+      void PushSelectedEntitiesToReparentQueue(Entity* parent);
+      void TryReorderEntites(float treeStartY);
+      void SortDraggedEntitiesByNodeIndex();
+
     private:
       /**
        * Focus uses this internal array, Show() opens all nodes and sets focus
        * to last ntt in the array.
        */
       EntityRawPtrArray m_nttFocusPath;
-      std::unordered_map<Entity*, bool> m_shownEntities;
-      
+      std::unordered_set<Entity*> m_shownEntities;
+      std::vector<Entity*> m_indexToEntity;
+
       EntityRawPtrArray m_draggingEntities;
       EntityRawPtrArray m_roots;
       Entity* m_lastClickedEntity = nullptr;
