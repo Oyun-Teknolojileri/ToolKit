@@ -52,6 +52,10 @@ namespace ToolKit
        */
       EntityRawPtrArray m_nttFocusPath;
       std::unordered_set<Entity*> m_shownEntities;
+      /**
+       * entities up to down when we look at node tree.
+       * these are imgui visible entities.
+       */
       std::vector<Entity*> m_indexToEntity;
 
       EntityRawPtrArray m_draggingEntities;

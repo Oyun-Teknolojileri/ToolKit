@@ -98,9 +98,7 @@ namespace ToolKit
 
     int StringInputWindow::FilterChars(ImGuiInputTextCallbackData* data)
     {
-      if (std::find(m_illegalChars.begin(),
-                    m_illegalChars.end(),
-                    (char) data->EventChar) != m_illegalChars.end())
+      if (contains(m_illegalChars, (char)data->EventChar))
       {
         g_app->m_statusMsg = "Invalid character.";
         return 1;

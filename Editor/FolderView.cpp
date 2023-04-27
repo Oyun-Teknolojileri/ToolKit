@@ -149,12 +149,6 @@ namespace ToolKit
       }
     }
 
-    template<typename T>
-    static bool contains(const std::vector<T>& arr, const T& val)
-    {
-      return std::count(arr.begin(), arr.end(), val) > 0;
-    }
-
     void FolderView::HandleCopyPasteDelete()
     {
       bool ctrlDown = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);

@@ -913,8 +913,7 @@ namespace ToolKit
     if (parent != nullptr)
     {
       Entity* parentEntity = parent->m_entity;
-      if (std::find(entities.begin(), entities.end(), parentEntity) !=
-          entities.end())
+      if (contains(entities, parentEntity))
       {
         RootsOnly(entities, roots, parentEntity);
       }
@@ -993,8 +992,8 @@ namespace ToolKit
 
   int IndexOf(Entity* ntt, const EntityRawPtrArray& entities)
   {
-    EntityRawPtrArray::const_iterator it =
-        std::find(entities.begin(), entities.end(), ntt);
+    EntityRawPtrArray::const_iterator it = 
+      std::find(entities.begin(), entities.end(), ntt);
 
     if (it != entities.end())
     {

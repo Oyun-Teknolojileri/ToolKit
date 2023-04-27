@@ -112,8 +112,7 @@ namespace ToolKit
       std::sort(m_draggingEntities.begin(), m_draggingEntities.end(),
                 [this](Entity* a, Entity* b) -> bool
                 {
-                  return std::find(m_indexToEntity.begin(), m_indexToEntity.end(), a) <
-                         std::find(m_indexToEntity.begin(), m_indexToEntity.end(), b);
+                  return contains(m_indexToEntity, a) < contains(m_indexToEntity, b);
                 });
     }
 
@@ -325,9 +324,7 @@ namespace ToolKit
       
       Entity* droppedBelowNtt = m_indexToEntity[selectedIndex];
       
-      if (std::find(m_draggingEntities.begin(),
-                    m_draggingEntities.end(),
-                    droppedBelowNtt) != m_draggingEntities.end())
+      if (contains(m_draggingEntities, droppedBelowNtt))
       {
         GetLogger()->WriteConsole(LogType::Memo, 
                                  "cannot reorder if you drag below a selected entity");
@@ -358,8 +355,22 @@ namespace ToolKit
       SortDraggedEntitiesByNodeIndex();
 
       Node* droppedParent = droppedBelowNtt->m_node->m_parent;
+      bool droppedAboveFirstChild = false;
 
-      if (allRoots && isRootFn(droppedBelowNtt))
+      // detect if we dropped above first children
+      if (selectedIndex + 1 < (int)m_indexToEntity.size())
+      {
+        Node* nextNode = m_indexToEntity[selectedIndex + 1]->m_node;
+        NodePtrArray& droppedBelowChildren = droppedBelowNtt->m_node->m_children;
+        
+        if (contains(droppedBelowChildren, nextNode))
+        {
+          droppedParent = droppedBelowNtt->m_node;
+          droppedAboveFirstChild = true;
+        }
+      }
+
+      if (allRoots && isRootFn(droppedBelowNtt) && !droppedAboveFirstChild)
       {
         g_app->GetCurrentScene()->ReorderRoots(droppedBelowNtt, m_draggingEntities);
       }
@@ -369,14 +380,15 @@ namespace ToolKit
         for (int i = 0; i < m_draggingEntities.size(); i++)
         {
           m_draggingEntities[i]->m_node->OrphanSelf(true);
-        }  
-        int index = std::find(childs.begin(),
-                              childs.end(), 
-                              droppedBelowNtt->m_node) - childs.begin();
+        }
+
+        int index = droppedAboveFirstChild ? -1
+                        : std::find(childs.begin(), childs.end(),
+                          droppedBelowNtt->m_node) - childs.begin();
 
         for (int i = 0; i < m_draggingEntities.size(); ++i)
         {
-          Node* node =  m_draggingEntities[i]->m_node;
+          Node* node = m_draggingEntities[i]->m_node;
           droppedParent->InsertChild(node, index + i + 1, true);
         }
         m_draggingEntities.clear();

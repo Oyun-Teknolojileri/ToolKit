@@ -154,8 +154,7 @@ namespace ToolKit
           continue;
         }
 
-        if (std::find(ignoreList.begin(), ignoreList.end(), ntt->GetIdVal()) !=
-            ignoreList.end())
+        if (contains(ignoreList, ntt->GetIdVal()))
         {
           continue;
         }
@@ -219,8 +218,7 @@ namespace ToolKit
           continue;
         }
 
-        if (std::find(ignoreList.begin(), ignoreList.end(), e->GetIdVal()) !=
-            ignoreList.end())
+        if (contains(ignoreList, e->GetIdVal()))
         {
           continue;
         }
@@ -327,8 +325,8 @@ namespace ToolKit
     erase_if(m_entities,
              [&entities](const Entity* ntt) -> bool
              {
-               return std::find(entities.begin(), entities.end(), ntt) !=
-                      entities.end();
+               return std::find(entities.begin(), entities.end(), ntt)
+                         != entities.end();
              });
   }
 

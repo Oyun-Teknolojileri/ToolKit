@@ -196,11 +196,17 @@ namespace ToolKit
   }
   
   template<typename T, typename Pred>
-  void erase_if(T& vec, Pred pred)
+  inline void erase_if(T& vec, Pred pred)
   {
     vec.erase(std::remove_if(vec.begin(), vec.end(), pred), vec.end());
   }
 
+  template<typename T>
+  inline bool contains(const std::vector<T>& arr, const T& val)
+  {
+    return std::find(arr.begin(), arr.end(), val) != arr.end();
+  }
+  
   //  Time.
   ///////////////////////////////////////////////////////
   TK_API float MillisecToSec(float ms);
