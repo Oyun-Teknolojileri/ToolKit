@@ -48,14 +48,14 @@ namespace ToolKit
                        
       ImVec2 cursorPos = ImGui::GetCursorScreenPos();
       // -11 align line with arrow
-      rectMin.x        = cursorPos.x - 11.0f;
-      rectMin.y       += halfHeight;
+      rectMin.x = cursorPos.x - 11.0f;
+      rectMin.y += halfHeight;
 
       float bottom = rectMin.y + (numNodes * line_height);
       bottom -= (halfHeight + 1.0f); // move up a little
 
       ImDrawList* drawList = ImGui::GetWindowDrawList();
-      const ImColor color  = ImGui::GetColorU32(ImGuiCol_Text);
+      const ImColor color = ImGui::GetColorU32(ImGuiCol_Text);
       drawList->AddLine(rectMin, ImVec2(rectMin.x, bottom), color);
       // a little bulge at the end of the line
       drawList->AddLine(ImVec2(rectMin.x, bottom),
@@ -72,7 +72,7 @@ namespace ToolKit
       }
 
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
-      EditorScenePtr currScene     = g_app->GetCurrentScene();
+      EditorScenePtr currScene = g_app->GetCurrentScene();
       if (currScene->IsSelected(e->GetIdVal()))
       {
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
@@ -82,7 +82,7 @@ namespace ToolKit
       m_indexToEntity.push_back(e);
 
       if (e->m_node->m_children.empty() ||
-          e->GetType() == EntityType::Entity_Prefab)
+        e->GetType() == EntityType::Entity_Prefab)
       {
         nodeFlags |=
             ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
@@ -110,10 +110,11 @@ namespace ToolKit
     // we need to sort dragged entities in order to preserve order when we move the entities
     void OutlinerWindow::SortDraggedEntitiesByNodeIndex()
     {
-      std::sort(m_draggingEntities.begin(), m_draggingEntities.end(),
-                [this](Entity* a, Entity* b) -> bool
-                {
-                  return contains(m_indexToEntity, a) < contains(m_indexToEntity, b);
+      std::sort(m_draggingEntities.begin(),
+                m_draggingEntities.end(),
+                [this](Entity* a, Entity* b) -> bool {
+                  return FindIndex(m_indexToEntity, a) <
+                         FindIndex(m_indexToEntity, b);
                 });
     }
 
@@ -127,7 +128,7 @@ namespace ToolKit
 
       if (a->m_node->m_parent != b->m_node->m_parent)
       {
-        GetLogger()->WriteConsole(LogType::Warning, 
+        GetLogger()->WriteConsole(LogType::Warning,
                                   "selected entities should have same parent!");
         return;
       }
@@ -136,10 +137,10 @@ namespace ToolKit
       int numFound = 0;
       // one of the parents null means both of them null,
       // so we will search in roots
-      if (a->m_node->m_parent == nullptr) 
+      if (a->m_node->m_parent == nullptr)
       {
         // find locations of a and b on m_roots
-        for (;i < m_roots.size() && numFound != 2; ++i)
+        for (; i < m_roots.size() && numFound != 2; ++i)
         {
           numFound += (m_roots[i] == a) + (m_roots[i] == b);
 
@@ -199,8 +200,8 @@ namespace ToolKit
 
       if (itemHovered && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
       {
-        bool ctrlDown   = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
-        bool shiftDown  = ImGui::IsKeyDown(ImGuiKey_LeftShift);
+        bool ctrlDown = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+        bool shiftDown = ImGui::IsKeyDown(ImGuiKey_LeftShift);
         bool isSelected = currScene->IsSelected(e->GetIdVal());
 
         if (!shiftDown && !ctrlDown)
@@ -287,7 +288,7 @@ namespace ToolKit
 
     bool OutlinerWindow::FindShownEntities(Entity* e, const String& str)
     {
-      bool self     = Utf8CaseInsensitiveSearch(e->GetNameVal(), str);
+      bool self = Utf8CaseInsensitiveSearch(e->GetNameVal(), str);
 
       bool children = false;
       if (e->GetType() != EntityType::Entity_Prefab)
@@ -298,7 +299,7 @@ namespace ToolKit
           if (childNtt != nullptr)
           {
             bool child = FindShownEntities(childNtt, str);
-            children   = child || children;
+            children = child || children;
           }
         }
       }
@@ -315,7 +316,7 @@ namespace ToolKit
     //   entity_321
     bool OutlinerWindow::IndicatingInBetweenNodes()
     {
-      bool multiSelecting = ImGui::IsKeyDown(ImGuiKey_LeftShift) || 
+      bool multiSelecting = ImGui::IsKeyDown(ImGuiKey_LeftShift) ||
                             ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
       
       bool windowSpaceHovered = !m_anyEntityHovered && ImGui::IsWindowHovered();
@@ -351,6 +352,11 @@ namespace ToolKit
       }
     }
 
+    void OutlinerWindow::SetReorderOnTop(bool value)
+    {
+      m_reorderOnTop = value;
+    }
+
     // the idea behind is: 
     // * detect if we can reorder or not. if so:
     //     orphan all movedEntities
@@ -368,9 +374,19 @@ namespace ToolKit
         return false;
       }
       
-      const int selectedIndex = m_insertSelectedIndex;
+      int selectedIndex = m_insertSelectedIndex;
       EditorScenePtr scene = g_app->GetCurrentScene();
       EntityRawPtrArray& entities = scene->AccessEntityArray();
+
+      // if reorderOnTop boolean is set true from SetReorderOnTop function
+      // we will insert the entities to visible area of the window. 
+      if (m_reorderOnTop)
+      {
+        m_reorderOnTop = false;
+        // 164.0f will cause entities to spawn slightly lower than the topmost location.
+        selectedIndex = (int)floorf((161.0f - m_treeStartY) / GetLineHeight());
+        selectedIndex = glm::clamp(selectedIndex, 0, int(m_indexToEntity.size()) - 1);
+      }
 
       SortDraggedEntitiesByNodeIndex();
       // is dropped to on top of the first entity? 
@@ -476,14 +492,14 @@ namespace ToolKit
         ImGuiTreeNodeFlags flag =
             g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen;
 
-        float treeStartY = ImGui::GetCursorScreenPos().y;
+        m_treeStartY = ImGui::GetCursorScreenPos().y;
 
         if (DrawRootHeader("Scene", 0, flag, UI::m_collectionIcon))
         {
           const EntityRawPtrArray& ntties = currScene->GetEntities();
           m_roots.clear();
           m_indexToEntity.clear();
-          treeStartY = ImGui::GetCursorScreenPos().y;
+          m_treeStartY = ImGui::GetCursorScreenPos().y;
 
           GetRootEntities(ntties, m_roots);
           HandleSearch(ntties, m_roots);
@@ -506,7 +522,7 @@ namespace ToolKit
           {
             // we are using this member variable in try insert entities function
             // (order is important. dont move this below if block)
-            m_insertSelectedIndex = GetMouseHoveredNodeIndex(treeStartY); 
+            m_insertSelectedIndex = GetMouseHoveredNodeIndex(m_treeStartY); 
             
             if (!TryReorderEntites(m_draggingEntities))
             {
@@ -522,7 +538,7 @@ namespace ToolKit
           {
             ImGui::OpenPopup("##Create");
             // fill required argument for reordering.
-            m_insertSelectedIndex = GetMouseHoveredNodeIndex(treeStartY); 
+            m_insertSelectedIndex = GetMouseHoveredNodeIndex(m_treeStartY); 
           }
         }
 

@@ -205,6 +205,12 @@ namespace ToolKit
 
       if (ImGui::BeginPopup("##AddMenu"))
       {
+        if (OutlinerWindow* outliner = g_app->GetOutliner())
+        {
+          // this way spawned entity will be visible in outliner window
+          // if we don't call this, entity will be spawned 0th index of entities.
+          outliner->SetReorderOnTop(true);
+        }
         showMenuFn();
         ImGui::EndPopup();
       }

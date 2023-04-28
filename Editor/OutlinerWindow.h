@@ -24,6 +24,7 @@ namespace ToolKit
       // moves the entities below m_insertSelectedIndex
       // make sure m_insertSelectedIndex properly defined before calling this function.
       bool TryReorderEntites(const EntityRawPtrArray& movedEntities);
+      void SetReorderOnTop(bool value);
 
      private:
       bool DrawRootHeader(const String& rootName,
@@ -76,6 +77,10 @@ namespace ToolKit
       int odd = 0;
       // the objects that we want to reorder will inserted at this index
       int m_insertSelectedIndex = 0;
+      // if true, we will insert given entities 
+      // on top of visible entities (reordering)
+      bool m_reorderOnTop = false;
+      float m_treeStartY = 0.0;
     };
 
   } // namespace Editor

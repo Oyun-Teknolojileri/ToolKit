@@ -323,11 +323,8 @@ namespace ToolKit
   void Scene::RemoveEntity(const EntityRawPtrArray& entities)
   {
     erase_if(m_entities,
-             [&entities](const Entity* ntt) -> bool
-             {
-               return std::find(entities.begin(), entities.end(), ntt)
-                         != entities.end();
-             });
+             [entities](Entity* ntt) -> bool
+             { return FindIndex(entities, ntt) != -1; });
   }
 
   void Scene::RemoveAllEntities() { m_entities.clear(); }
