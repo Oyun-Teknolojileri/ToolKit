@@ -168,7 +168,7 @@ namespace ToolKit
 
   void Node::AddChild(Node* child, bool preserveTransform)
   {
-    InsertChild(child, m_children.size(), preserveTransform);
+    InsertChild(child, (int)m_children.size(), preserveTransform);
   }
 
   void Node::OrphanChild(size_t index, bool preserveTransform)

@@ -4,6 +4,7 @@
 #include "EditorCamera.h"
 #include "GradientSky.h"
 #include "IconsFontAwesome.h"
+#include "OutlinerWindow.h"
 
 #include "DebugNew.h"
 
@@ -14,6 +15,131 @@ namespace ToolKit
 
     OverlayTopBar::OverlayTopBar(EditorViewport* owner) : OverlayUI(owner) {}
 
+    void OverlayTopBar::ShowAddMenuPopup()
+    {
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      Entity* createdEntity = nullptr;
+      if (ImGui::BeginMenu("Mesh"))
+      {
+        if (ImGui::MenuItem(ICON_FA_CUBE " Cube"))
+        {
+          createdEntity = new Cube();
+          createdEntity->GetMeshComponent()->Init(false);
+        }
+        if (ImGui::MenuItem(ICON_FA_CIRCLE " Sphere"))
+        {
+          createdEntity = new Sphere();
+          createdEntity->GetMeshComponent()->Init(false);
+        }
+        if (ImGui::MenuItem("    Cone"))
+        {
+          createdEntity = new Cone({1.0f, 1.0f, 30, 30});
+          createdEntity->GetMeshComponent()->Init(false);
+        }
+        if (ImGui::MenuItem("    Plane"))
+        {
+          createdEntity = new Quad();
+          createdEntity->GetMeshComponent()->Init(false);
+        }
+        if (ImGui::MenuItem("    Monkey"))
+        {
+          Drawable* suzanne = new Drawable();
+          suzanne->SetMesh(
+              GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh", true)));
+          suzanne->GetMesh()->Init(false);
+          createdEntity = suzanne;
+        }
+        ImGui::EndMenu();
+      }
+      ImGui::Separator();
+    
+      if (ImGui::BeginMenu("2D UI"))
+      {
+        if (ImGui::MenuItem("Surface"))
+        {
+          createdEntity = new Surface(Vec2(100.0f, 30.0f), Vec2(0.0f, 0.0f));
+          createdEntity->GetMeshComponent()->Init(false);
+        }
+    
+        if (ImGui::MenuItem("Button"))
+        {
+          createdEntity = new Button(Vec2(100.0f, 30.0f));
+          createdEntity->GetMeshComponent()->Init(false);
+        }
+        ImGui::EndMenu();
+      }
+    
+      ImGui::Separator();
+      if (ImGui::MenuItem("Node"))
+      {
+        createdEntity =
+            GetEntityFactory()->CreateByType(EntityType::Entity_Node);
+      }
+    
+      if (ImGui::MenuItem(ICON_FA_VIDEO_CAMERA " Camera"))
+      {
+        createdEntity = new EditorCamera();
+      }
+    
+      if (ImGui::BeginMenu(ICON_FA_LIGHTBULB " Light"))
+      {
+        if (ImGui::MenuItem(ICON_FA_SUN " Directional"))
+        {
+          EditorDirectionalLight* light = new EditorDirectionalLight();
+          light->Init();
+          createdEntity = static_cast<Entity*>(light);
+        }
+    
+        if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Point"))
+        {
+          EditorPointLight* light = new EditorPointLight();
+          light->Init();
+          createdEntity = static_cast<Entity*>(light);
+        }
+    
+        if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Spot"))
+        {
+          EditorSpotLight* light = new EditorSpotLight();
+          light->Init();
+          createdEntity = static_cast<Entity*>(light);
+        }
+    
+        if (ImGui::MenuItem(ICON_FA_CLOUD " Sky"))
+        {
+          createdEntity = new Sky();
+        }
+    
+        if (ImGui::MenuItem(ICON_FA_SKYATLAS " Gradient Sky"))
+        {
+          createdEntity = new GradientSky();
+        }
+    
+        ImGui::EndMenu();
+      }
+
+      if (createdEntity != nullptr)
+      {
+        const auto isSameTypeFn = [createdEntity](const Entity* e) -> bool
+        { return e->GetType() == createdEntity->GetType(); };
+
+        String typeName = EntityTypeToString(createdEntity->GetType());
+        const EntityRawPtrArray& entities = currScene->GetEntities();
+        size_t numSameType =
+            std::count_if(entities.cbegin(), entities.cend(), isSameTypeFn);
+
+        createdEntity->SetNameVal(typeName + "_" + std::to_string(numSameType));
+        currScene->AddEntity(createdEntity);
+
+        if (OutlinerWindow* outliner = g_app->GetOutliner())
+        {
+          // try to insert created entity to selected point in outliner window
+          // inserting index is determinated when you right click on outliner
+          // window.
+          outliner->TryReorderEntites({createdEntity});
+        }
+      }
+    }
+
     void OverlayTopBar::Show()
     {
       assert(m_owner);
@@ -21,122 +147,6 @@ namespace ToolKit
       {
         return;
       }
-
-      auto ShowAddMenuFn = []() -> void
-      {
-        EditorScenePtr currScene = g_app->GetCurrentScene();
-        if (ImGui::BeginMenu("Mesh"))
-        {
-          
-          if (ImGui::MenuItem(ICON_FA_CUBE " Cube"))
-          {
-            Cube* cube = new Cube();
-            cube->GetMeshComponent()->Init(false);
-            currScene->AddEntity(cube);
-          }
-          if (ImGui::MenuItem(ICON_FA_CIRCLE " Sphere"))
-          {
-            Sphere* sphere = new Sphere();
-            sphere->GetMeshComponent()->Init(false);
-            currScene->AddEntity(sphere);
-          }
-          if (ImGui::MenuItem("    Cone"))
-          {
-            Cone* cone = new Cone({1.0f, 1.0f, 30, 30});
-            cone->GetMeshComponent()->Init(false);
-            currScene->AddEntity(cone);
-          }
-          if (ImGui::MenuItem("    Plane"))
-          {
-            Quad* plane = new Quad();
-            plane->GetMeshComponent()->Init(false);
-            currScene->AddEntity(plane);
-          }
-          if (ImGui::MenuItem("    Monkey"))
-          {
-            Drawable* suzanne = new Drawable();
-            suzanne->SetMesh(
-                GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh", true)));
-
-            suzanne->GetMesh()->Init(false);
-            currScene->AddEntity(suzanne);
-          }
-          ImGui::EndMenu();
-        }
-        ImGui::Separator();
-
-        if (ImGui::BeginMenu("2D UI"))
-        {
-          if (ImGui::MenuItem("Surface"))
-          {
-            Surface* suface =
-                new Surface(Vec2(100.0f, 30.0f), Vec2(0.0f, 0.0f));
-            suface->GetMeshComponent()->Init(false);
-            currScene->AddEntity(suface);
-          }
-
-          if (ImGui::MenuItem("Button"))
-          {
-            Surface* suface = new Button(Vec2(100.0f, 30.0f));
-            suface->GetMeshComponent()->Init(false);
-            currScene->AddEntity(suface);
-          }
-          ImGui::EndMenu();
-        }
-
-        ImGui::Separator();
-        if (ImGui::MenuItem("Node"))
-        {
-          Entity* node =
-              GetEntityFactory()->CreateByType(EntityType::Entity_Node);
-          currScene->AddEntity(node);
-        }
-
-        if (ImGui::MenuItem(ICON_FA_VIDEO_CAMERA " Camera"))
-        {
-          Entity* node = new EditorCamera();
-          currScene->AddEntity(node);
-        }
-
-        if (ImGui::BeginMenu(ICON_FA_LIGHTBULB " Light"))
-        {
-          if (ImGui::MenuItem(ICON_FA_SUN " Directional"))
-          {
-            EditorDirectionalLight* light = new EditorDirectionalLight();
-            light->Init();
-            light->SetNameVal("DirectionalLight");
-            currScene->AddEntity(static_cast<Entity*>(light));
-          }
-
-          if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Point"))
-          {
-            EditorPointLight* light = new EditorPointLight();
-            light->Init();
-            light->SetNameVal("PointLight");
-            currScene->AddEntity(static_cast<Entity*>(light));
-          }
-
-          if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Spot"))
-          {
-            EditorSpotLight* light = new EditorSpotLight();
-            light->Init();
-            light->SetNameVal("SpotLight");
-            currScene->AddEntity(static_cast<Entity*>(light));
-          }
-
-          if (ImGui::MenuItem(ICON_FA_CLOUD " Sky"))
-          {
-            currScene->AddEntity(new Sky());
-          }
-
-          if (ImGui::MenuItem(ICON_FA_SKYATLAS " Gradient Sky"))
-          {
-            currScene->AddEntity(new GradientSky());
-          }
-
-          ImGui::EndMenu();
-        }
-      };
 
       ImVec2 overlaySize(360, 30);
 
@@ -162,7 +172,7 @@ namespace ToolKit
 
         uint nextItemIndex = 0;
 
-        ShowAddMenu(ShowAddMenuFn, nextItemIndex);
+        ShowAddMenu(ShowAddMenuPopup, nextItemIndex);
 
         CameraAlignmentOptions(nextItemIndex);
 

@@ -21,6 +21,10 @@ namespace ToolKit
       void DispatchSignals() const override;
       void Focus(Entity* ntt);
 
+      // moves the entities below m_insertSelectedIndex
+      // make sure m_insertSelectedIndex properly defined before calling this function.
+      bool TryReorderEntites(const EntityRawPtrArray& movedEntities);
+
      private:
       bool DrawRootHeader(const String& rootName,
                           uint id,
@@ -42,9 +46,10 @@ namespace ToolKit
 
       bool FindShownEntities(Entity* e, const String& str);
       void PushSelectedEntitiesToReparentQueue(Entity* parent);
-      void TryReorderEntites(float treeStartY);
+      
       void SortDraggedEntitiesByNodeIndex();
-
+      bool IndicatingInBetweenNodes();
+      int GetMouseHoveredNodeIndex(float treeStartY);
     private:
       /**
        * Focus uses this internal array, Show() opens all nodes and sets focus
@@ -69,6 +74,8 @@ namespace ToolKit
       bool m_anyEntityHovered = false;
       // for even odd pattern
       int odd = 0;
+      // the objects that we want to reorder will inserted at this index
+      int m_insertSelectedIndex = 0;
     };
 
   } // namespace Editor

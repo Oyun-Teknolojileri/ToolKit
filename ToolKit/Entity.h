@@ -32,7 +32,7 @@ namespace ToolKit
     Entity_Cube,
     Entity_Quad,
     Entity_Sphere,
-    Etity_Arrow,
+    Entity_Arrow,
     Entity_LineBatch,
     Entity_Cone,
     Entity_Drawable,

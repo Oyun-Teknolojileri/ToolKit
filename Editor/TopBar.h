@@ -6,12 +6,12 @@ namespace ToolKit
 {
   namespace Editor
   {
-
     class OverlayTopBar : public OverlayUI
     {
      public:
       explicit OverlayTopBar(EditorViewport* owner);
       void Show() override;
+      static void ShowAddMenuPopup();
 
      protected:
       void ShowAddMenu(std::function<void()> showMenuFn,

@@ -144,6 +144,7 @@ namespace ToolKit
       const Mat4* transform = nullptr);
 
   // Entity operations.
+  TK_API String EntityTypeToString(EntityType type);
   TK_API void ToEntityIdArray(EntityIdArray& idArray,
                               const EntityRawPtrArray& ptrArray);
 
@@ -204,9 +205,21 @@ namespace ToolKit
   template<typename T>
   inline bool contains(const std::vector<T>& arr, const T& val)
   {
-    return std::find(arr.begin(), arr.end(), val) != arr.end();
+    return std::find(arr.cbegin(), arr.cend(), val) != arr.cend();
   }
-  
+
+   /**
+   * Find index of val in given array.
+   * @param arr array that we want to search.
+   * @returns if given value exist, returns index of val otherwise -1
+   */
+  template<typename T>
+  inline int FindIndex(const std::vector<T>& arr, const T& val)
+  {
+    auto it = std::find(arr.cbegin(), arr.cend(), val);
+    return it == arr.cend() ? -1 : int(it - arr.cbegin());
+  }
+
   //  Time.
   ///////////////////////////////////////////////////////
   TK_API float MillisecToSec(float ms);

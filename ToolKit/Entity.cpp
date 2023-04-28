@@ -424,7 +424,7 @@ namespace ToolKit
     case EntityType::Entity_Sphere:
       e = new Sphere(false);
       break;
-    case EntityType::Etity_Arrow:
+    case EntityType::Entity_Arrow:
       e = new Arrow2d(false);
       break;
     case EntityType::Entity_LineBatch:
