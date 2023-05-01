@@ -24,6 +24,7 @@ namespace ToolKit
       // moves the entities below m_insertSelectedIndex
       // make sure m_insertSelectedIndex properly defined before calling this function.
       bool TryReorderEntites(const EntityRawPtrArray& movedEntities);
+      void SetInsertIndex(int index);
 
      private:
       bool DrawRootHeader(const String& rootName,

@@ -196,7 +196,6 @@ namespace ToolKit
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
       bool itemHovered = ImGui::IsItemHovered();
-      m_anyEntityHovered |= itemHovered;
 
       if (itemHovered && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
       {
@@ -229,8 +228,6 @@ namespace ToolKit
       if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
       {
         ImGui::SetDragDropPayload("HierarcyChange", nullptr, 0);
-        ImGui::Text("Drop on the new parent.");
-      
         m_draggingEntities.clear();
 
         if (!currScene->IsSelected(e->GetIdVal()))
@@ -316,11 +313,7 @@ namespace ToolKit
     //   entity_321
     bool OutlinerWindow::IndicatingInBetweenNodes()
     {
-      bool multiSelecting = ImGui::IsKeyDown(ImGuiKey_LeftShift) ||
-                            ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
-      
-      bool windowSpaceHovered = !m_anyEntityHovered && ImGui::IsWindowHovered();
-      return windowSpaceHovered && !multiSelecting;
+      return !m_anyEntityHovered && ImGui::IsWindowHovered();
     }
 
     // indicates that dropped on top of all entities
@@ -341,7 +334,8 @@ namespace ToolKit
       }
 
       int selectedIndex = (int)floorf((mouseY - treeStartY) / lineHeight);
-      return glm::clamp(selectedIndex, 0, int(m_indexToEntity.size()) - 1);
+      int maxIdx        = glm::max(0, int(m_indexToEntity.size()) - 1);
+      return glm::clamp(selectedIndex, 0, maxIdx);
     }
 
     void OrphanAll(const EntityRawPtrArray& movedEntities)
@@ -350,6 +344,10 @@ namespace ToolKit
       {
         e->m_node->OrphanSelf(true);
       }
+    }
+    void OutlinerWindow::SetInsertIndex(int index)
+    {
+      m_insertSelectedIndex = index;
     }
 
     // the idea behind is: 
@@ -383,6 +381,7 @@ namespace ToolKit
         return true;
       }
       
+      selectedIndex = glm::clamp(selectedIndex, 0, int(entities.size())-1);
       Entity* droppedBelowNtt = m_indexToEntity[selectedIndex];
 
       if (contains(movedEntities, droppedBelowNtt))
@@ -500,10 +499,14 @@ namespace ToolKit
         // if we click an empty space in this window. selection list will cleared
         bool leftMouseReleased  = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
         bool rightMouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Right);
+        bool dragging = m_draggingEntities.size() > 0ull;
 
-        if (IndicatingInBetweenNodes())
+        bool multiSelecting = ImGui::IsKeyDown(ImGuiKey_LeftShift) ||
+                              ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+
+        if (!multiSelecting && IndicatingInBetweenNodes()) 
         {
-          if (leftMouseReleased)
+          if (leftMouseReleased && dragging)
           {
             // we are using this member variable in try insert entities function
             // (order is important. dont move this below if block)
@@ -519,11 +522,33 @@ namespace ToolKit
             currScene->ClearSelection();
           }
           // right click in between entities.
-          else if (rightMouseReleased && m_indexToEntity.size() != 0)
+          if (rightMouseReleased)
           {
             ImGui::OpenPopup("##Create");
             // fill required argument for reordering.
             m_insertSelectedIndex = GetMouseHoveredNodeIndex(m_treeStartY); 
+          }
+        }
+        
+        if (leftMouseReleased) 
+        {
+          m_draggingEntities.clear();
+        }
+
+        // show drag drop tooltip
+        if (dragging) 
+        {
+          if (!m_anyEntityHovered)
+          {
+            Entity* hoveredEntity =
+                m_indexToEntity[GetMouseHoveredNodeIndex(m_treeStartY)];
+            ImGui::SetTooltip(contains(m_draggingEntities, hoveredEntity)
+                                  ? "Drag Drop for set as child or Reorder"
+                                  : "Set As Child");
+          }
+          else
+          {
+            ImGui::SetTooltip("Reorder Entities");
           }
         }
 
@@ -707,6 +732,8 @@ namespace ToolKit
       ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.4f, 0.5f, 0.8f, 1.0f)); 
       bool isOpen      = ImGui::TreeNodeEx(sId.c_str(), flags);
       ImGui::PopStyleColor(2); 
+
+      m_anyEntityHovered |= ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly);
 
       if (ImGui::BeginPopupContextItem())
       {

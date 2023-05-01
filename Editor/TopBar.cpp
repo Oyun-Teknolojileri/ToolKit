@@ -136,6 +136,8 @@ namespace ToolKit
 
         if (OutlinerWindow* outliner = g_app->GetOutliner())
         {
+          // index is given in OverlayTopBar::Show function(TK_INT_MAX).
+          outliner->TryReorderEntites({createdEntity});
           outliner->Focus(createdEntity);
         }
       }
@@ -201,6 +203,11 @@ namespace ToolKit
       ImGui::TableSetColumnIndex(nextItemIndex++);
       if (ImGui::Button("Add"))
       {
+        if (OutlinerWindow* outliner = g_app->GetOutliner()) 
+        {
+          // request inserting entities to the end of the list
+          outliner->SetInsertIndex(TK_INT_MAX);
+        }
         ImGui::OpenPopup("##AddMenu");
       }
 
