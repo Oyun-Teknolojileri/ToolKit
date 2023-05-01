@@ -251,8 +251,7 @@ namespace ToolKit
 
     bool StatePickingBase::IsIgnored(ULongID id)
     {
-      return std::find(m_ignoreList.begin(), m_ignoreList.end(), id) !=
-             m_ignoreList.end();
+      return contains(m_ignoreList, id);
     }
 
     void StatePickingBase::PickDataToEntityId(EntityIdArray& ids)

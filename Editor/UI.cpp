@@ -1292,7 +1292,8 @@ namespace ToolKit
           {EntityType::Entity_AudioSource,      ICON_FA_FILE_AUDIO ICON_SPACE  },
           {EntityType::Entity_Node,             ICON_FA_ARROWS ICON_SPACE      },
           {EntityType::Entity_Prefab,           ICON_FA_CUBES ICON_SPACE       },
-      
+          {EntityType::Entity_Sphere,           ICON_FA_CIRCLE ICON_SPACE      },
+
           {EntityType::Entity_Light,            ICON_FA_LIGHTBULB ICON_SPACE   },
           {EntityType::Entity_PointLight,       ICON_FA_LIGHTBULB ICON_SPACE   },
           {EntityType::Entity_SpotLight,        ICON_FA_LIGHTBULB ICON_SPACE   },

@@ -4,6 +4,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace ToolKit
 {
@@ -19,6 +20,11 @@ namespace ToolKit
       Type GetType() const override;
       void DispatchSignals() const override;
       void Focus(Entity* ntt);
+
+      // moves the entities below m_insertSelectedIndex
+      // make sure m_insertSelectedIndex properly defined before calling this function.
+      bool TryReorderEntites(const EntityRawPtrArray& movedEntities);
+      void SetInsertIndex(int index);
 
      private:
       bool DrawRootHeader(const String& rootName,
@@ -40,15 +46,24 @@ namespace ToolKit
                                       Entity* b);
 
       bool FindShownEntities(Entity* e, const String& str);
-     
+      void PushSelectedEntitiesToReparentQueue(Entity* parent);
+      
+      void SortDraggedEntitiesByNodeIndex();
+      bool IndicatingInBetweenNodes();
+      int GetMouseHoveredNodeIndex(float treeStartY);
     private:
       /**
        * Focus uses this internal array, Show() opens all nodes and sets focus
        * to last ntt in the array.
        */
       EntityRawPtrArray m_nttFocusPath;
-      std::unordered_map<Entity*, bool> m_shownEntities;
-      
+      std::unordered_set<Entity*> m_shownEntities;
+      /**
+       * entities up to down when we look at node tree.
+       * these are imgui visible entities.
+       */
+      EntityRawPtrArray m_indexToEntity;
+
       EntityRawPtrArray m_draggingEntities;
       EntityRawPtrArray m_roots;
       Entity* m_lastClickedEntity = nullptr;
@@ -60,6 +75,9 @@ namespace ToolKit
       bool m_anyEntityHovered = false;
       // for even odd pattern
       int odd = 0;
+      // the objects that we want to reorder will inserted at this index
+      int m_insertSelectedIndex = 0;
+      float m_treeStartY = 0.0;
     };
 
   } // namespace Editor

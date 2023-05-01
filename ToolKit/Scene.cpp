@@ -154,8 +154,7 @@ namespace ToolKit
           continue;
         }
 
-        if (std::find(ignoreList.begin(), ignoreList.end(), ntt->GetIdVal()) !=
-            ignoreList.end())
+        if (contains(ignoreList, ntt->GetIdVal()))
         {
           continue;
         }
@@ -219,8 +218,7 @@ namespace ToolKit
           continue;
         }
 
-        if (std::find(ignoreList.begin(), ignoreList.end(), e->GetIdVal()) !=
-            ignoreList.end())
+        if (contains(ignoreList, e->GetIdVal()))
         {
           continue;
         }
@@ -325,17 +323,8 @@ namespace ToolKit
   void Scene::RemoveEntity(const EntityRawPtrArray& entities)
   {
     erase_if(m_entities,
-             [&entities](const Entity* ntt) -> bool
-             {
-               for (const Entity* removeNtt : entities)
-               {
-                 if (removeNtt->GetIdVal() == ntt->GetIdVal())
-                 {
-                   return true;
-                 }
-               }
-               return false;
-             });
+             [entities](Entity* ntt) -> bool
+             { return FindIndex(entities, ntt) != -1; });
   }
 
   void Scene::RemoveAllEntities() { m_entities.clear(); }

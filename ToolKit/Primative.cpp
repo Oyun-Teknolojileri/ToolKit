@@ -630,7 +630,7 @@ namespace ToolKit
     return ntt;
   }
 
-  EntityType Arrow2d::GetType() const { return EntityType::Etity_Arrow; }
+  EntityType Arrow2d::GetType() const { return EntityType::Entity_Arrow; }
 
   void Arrow2d::Generate()
   {

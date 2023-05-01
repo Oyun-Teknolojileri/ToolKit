@@ -474,55 +474,72 @@ namespace ToolKit
     assert(false);
     return ResourceType::Base;
   }
+  
+  TK_API String EntityTypeToString(EntityType type)
+  {
+    static const std::unordered_map<EntityType, String> typeToName
+    {
+      { EntityType::Entity_Base            , "Base"             },
+      { EntityType::Entity_AudioSource     , "AudioSource"      }, 
+      { EntityType::Entity_Billboard       , "Billboard"        }, 
+      { EntityType::Entity_Cube            , "Cube"             }, 
+      { EntityType::Entity_Quad            , "Quad"             }, 
+      { EntityType::Entity_Sphere          , "Sphere"           }, 
+      { EntityType::Entity_Arrow           , "Arrow"            }, 
+      { EntityType::Entity_LineBatch       , "LineBatch"        }, 
+      { EntityType::Entity_Cone            , "Cone"             }, 
+      { EntityType::Entity_Drawable        , "Drawable"         }, 
+      { EntityType::Entity_SpriteAnim      , "SpriteAnim"       }, 
+      { EntityType::Entity_Surface         , "Surface"          }, 
+      { EntityType::Entity_Light           , "Light"            }, 
+      { EntityType::Entity_Camera          , "Camera"           }, 
+      { EntityType::Entity_Node            , "Node"             }, 
+      { EntityType::Entity_Button          , "Button"           }, 
+      { EntityType::Entity_Sky             , "Sky"              }, 
+      { EntityType::Entity_DirectionalLight, "DirectionalLight" }, 
+      { EntityType::Entity_PointLight      , "PointLight "      }, 
+      { EntityType::Entity_SpotLight       , "SpotLight"        }, 
+      { EntityType::Entity_Canvas          , "Canvas"           }, 
+      { EntityType::Entity_Prefab          , "Prefab"           }, 
+      { EntityType::Entity_SkyBase         , "SkyBase"          }, 
+      { EntityType::Entity_GradientSky     , "GradientSky"      } 
+    };
+
+    bool exist = typeToName.count(type) != 0;
+    assert(exist);
+    if (!exist)
+    {
+      return "UnknownEntityTypeName";
+    }
+    return typeToName.at(type);
+  }
 
   String GetTypeString(ResourceType type)
   {
-    switch (type)
+    static const std::unordered_map<ResourceType, String> typeToName
     {
-    case ResourceType::Base:
-      return "Base";
-      break;
-    case ResourceType::Animation:
-      return "Animation";
-      break;
-    case ResourceType::Audio:
-      return "Audio";
-      break;
-    case ResourceType::Material:
-      return "Material";
-      break;
-    case ResourceType::Mesh:
-      return "Mesh";
-      break;
-    case ResourceType::Shader:
-      return "Shader";
-      break;
-    case ResourceType::SkinMesh:
-      return "SkinMesh";
-      break;
-    case ResourceType::SpriteSheet:
-      return "SpriteSheet";
-      break;
-    case ResourceType::Texture:
-      return "Texture";
-      break;
-    case ResourceType::CubeMap:
-      return "CubeMap";
-      break;
-    case ResourceType::RenderTarget:
-      return "RenderTarget";
-      break;
-    case ResourceType::Scene:
-      return "Scene";
-      break;
-    case ResourceType::Skeleton:
-      return "Skeleton";
-    default:
-      assert(false);
-      break;
-    }
+      { ResourceType::Base        , "Base"        },               
+      { ResourceType::Animation   , "Animation"   },               
+      { ResourceType::Audio       , "Audio"       },               
+      { ResourceType::Material    , "Material"    },               
+      { ResourceType::Mesh        , "Mesh"        },               
+      { ResourceType::Shader      , "Shader"      },               
+      { ResourceType::SkinMesh    , "SkinMesh"    },               
+      { ResourceType::SpriteSheet , "SpriteSheet" },               
+      { ResourceType::Texture     , "Texture"     },               
+      { ResourceType::CubeMap     , "CubeMap"     },               
+      { ResourceType::RenderTarget, "RenderTarget"},               
+      { ResourceType::Scene       , "Scene"       },               
+      { ResourceType::Skeleton    , "Skeleton"    }               
+    };
 
-    return String();
+    bool exist = typeToName.count(type) != 0;
+    assert(exist);
+    if (!exist)
+    {
+      return "UnknownResourceTypeName";
+    }
+    return typeToName.at(type);
   }
 
   String GetExtFromType(ResourceType type)
@@ -913,8 +930,7 @@ namespace ToolKit
     if (parent != nullptr)
     {
       Entity* parentEntity = parent->m_entity;
-      if (std::find(entities.begin(), entities.end(), parentEntity) !=
-          entities.end())
+      if (contains(entities, parentEntity))
       {
         RootsOnly(entities, roots, parentEntity);
       }
@@ -993,8 +1009,8 @@ namespace ToolKit
 
   int IndexOf(Entity* ntt, const EntityRawPtrArray& entities)
   {
-    EntityRawPtrArray::const_iterator it =
-        std::find(entities.begin(), entities.end(), ntt);
+    EntityRawPtrArray::const_iterator it = 
+      std::find(entities.begin(), entities.end(), ntt);
 
     if (it != entities.end())
     {

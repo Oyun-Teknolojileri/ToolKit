@@ -139,18 +139,23 @@ namespace ToolKit
     return axes;
   }
 
-  void Node::AddChild(Node* child, bool preserveTransform)
+  void Node::InsertChild(Node* child, int index, bool preserveTransform)
   {
-    assert(child->m_id != m_id);
-    assert(child->m_parent == nullptr);
-
+    bool canInsert = index <= m_children.size() && index >= 0;
+    canInsert &= child->m_id != m_id && child->m_parent == nullptr;
+    assert(canInsert);
+    
+    if (!canInsert)
+    {
+      return;
+    }
     Mat4 ts;
     if (preserveTransform)
     {
       ts = child->GetTransform(TransformationSpace::TS_WORLD);
     }
 
-    m_children.push_back(child);
+    m_children.insert(m_children.begin() + index, child);
     child->m_parent = this;
     child->m_dirty  = true;
     child->SetChildrenDirty();
@@ -159,6 +164,11 @@ namespace ToolKit
     {
       child->SetTransform(ts, TransformationSpace::TS_WORLD);
     }
+  }
+
+  void Node::AddChild(Node* child, bool preserveTransform)
+  {
+    InsertChild(child, (int)m_children.size(), preserveTransform);
   }
 
   void Node::OrphanChild(size_t index, bool preserveTransform)
@@ -205,7 +215,6 @@ namespace ToolKit
         return;
       }
     }
-    
   }
 
   void Node::OrphanSelf(bool preserveTransform)

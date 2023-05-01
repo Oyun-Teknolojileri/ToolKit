@@ -516,8 +516,7 @@ namespace ToolKit
 
     bool Gizmo::IsLocked(AxisLabel axis) const
     {
-      return std::find(m_lockedAxis.begin(), m_lockedAxis.end(), axis) !=
-             m_lockedAxis.end();
+      return contains(m_lockedAxis, axis);
     }
 
     void Gizmo::Lock(AxisLabel axis)

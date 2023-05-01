@@ -7,11 +7,12 @@
 #include "Mod.h"
 #include "UI.h"
 #include "Util.h"
+#include "TopBar.h"
 #include "imgui_internal.h"
 
 #include <Prefab.h>
 
-#include <vector>
+#include <stack>
 
 #include "DebugNew.h"
 
@@ -31,24 +32,30 @@ namespace ToolKit
 
     // Recursively show entity hierarchy & update via drag drop.
     ULongID g_parent = NULL_HANDLE;
-    std::vector<ULongID> g_child;
+    std::stack<ULongID> g_reparentQueue;
+    
+    // returns row height for tree nodes
+    inline float GetLineHeight()
+    {
+      float item_spacing_y = ImGui::GetStyle().ItemSpacing.y;
+      return ImGui::GetTextLineHeight() + item_spacing_y;
+    }
 
     void DrawTreeNodeLine(int numNodes, ImVec2 rectMin)
     {
-      const ImColor color  = ImGui::GetColorU32(ImGuiCol_Text);
-      ImDrawList* drawList = ImGui::GetWindowDrawList();
-      ImVec2 cursorPos     = ImGui::GetCursorScreenPos();
-      float item_spacing_y = ImGui::GetStyle().ItemSpacing.y;
-      float line_height    = ImGui::GetTextLineHeight() + item_spacing_y;
-      float halfHeight     = line_height * 0.5f;
-
+      float line_height = GetLineHeight();
+      float halfHeight = line_height * 0.5f;
+                       
+      ImVec2 cursorPos = ImGui::GetCursorScreenPos();
       // -11 align line with arrow
-      rectMin.x        = cursorPos.x - 11.0f;
-      rectMin.y       += halfHeight;
+      rectMin.x = cursorPos.x - 11.0f;
+      rectMin.y += halfHeight;
 
       float bottom = rectMin.y + (numNodes * line_height);
       bottom -= (halfHeight + 1.0f); // move up a little
 
+      ImDrawList* drawList = ImGui::GetWindowDrawList();
+      const ImColor color = ImGui::GetColorU32(ImGuiCol_Text);
       drawList->AddLine(rectMin, ImVec2(rectMin.x, bottom), color);
       // a little bulge at the end of the line
       drawList->AddLine(ImVec2(rectMin.x, bottom),
@@ -59,22 +66,23 @@ namespace ToolKit
     // returns total drawed nodes
     int OutlinerWindow::ShowNode(Entity* e, int depth)
     {
-      if (!m_shownEntities[e])
+      if (m_shownEntities.count(e) == 0)
       {
         return 0;
       }
 
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
-      EditorScenePtr currScene     = g_app->GetCurrentScene();
+      EditorScenePtr currScene = g_app->GetCurrentScene();
       if (currScene->IsSelected(e->GetIdVal()))
       {
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
       }
 
       int numNodes = 1; // 1 itself and we will sum childs
+      m_indexToEntity.push_back(e);
 
       if (e->m_node->m_children.empty() ||
-          e->GetType() == EntityType::Entity_Prefab)
+        e->GetType() == EntityType::Entity_Prefab)
       {
         nodeFlags |=
             ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
@@ -98,6 +106,18 @@ namespace ToolKit
       return numNodes;
     }
 
+    // when we multi select the dragging entities are not sorted
+    // we need to sort dragged entities in order to preserve order when we move the entities
+    void OutlinerWindow::SortDraggedEntitiesByNodeIndex()
+    {
+      std::sort(m_draggingEntities.begin(),
+                m_draggingEntities.end(),
+                [this](Entity* a, Entity* b) -> bool {
+                  return FindIndex(m_indexToEntity, a) <
+                         FindIndex(m_indexToEntity, b);
+                });
+    }
+
     void OutlinerWindow::SelectEntitiesBetweenNodes(EditorScene* scene,
                                                     Entity* a, Entity* b)
     {
@@ -108,7 +128,7 @@ namespace ToolKit
 
       if (a->m_node->m_parent != b->m_node->m_parent)
       {
-        GetLogger()->WriteConsole(LogType::Warning, 
+        GetLogger()->WriteConsole(LogType::Warning,
                                   "selected entities should have same parent!");
         return;
       }
@@ -117,10 +137,10 @@ namespace ToolKit
       int numFound = 0;
       // one of the parents null means both of them null,
       // so we will search in roots
-      if (a->m_node->m_parent == nullptr) 
+      if (a->m_node->m_parent == nullptr)
       {
         // find locations of a and b on m_roots
-        for (;i < m_roots.size() && numFound != 2; ++i)
+        for (; i < m_roots.size() && numFound != 2; ++i)
         {
           numFound += (m_roots[i] == a) + (m_roots[i] == b);
 
@@ -150,16 +170,37 @@ namespace ToolKit
       }
     }
 
+    void OutlinerWindow::PushSelectedEntitiesToReparentQueue(Entity* parent)
+    {
+      // Change the selected files hierarchy
+      EntityRawPtrArray& selected = m_draggingEntities;
+
+      if (parent->GetType() == EntityType::Entity_Prefab)
+      {
+        return;
+      }
+      for (int i = 0; i < selected.size(); i++)
+      {
+        bool sameParent = selected[i]->GetIdVal() != parent->GetIdVal();
+        bool isPrefab = selected[i]->GetType() == EntityType::Entity_Prefab;
+
+        if (sameParent && (!Prefab::GetPrefabRoot(selected[i]) || isPrefab))
+        {
+          g_reparentQueue.push(selected[i]->GetIdVal());
+        }
+      }
+      g_parent = parent->GetIdVal();
+    }
+
     void OutlinerWindow::SetItemState(Entity* e)
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
       bool itemHovered = ImGui::IsItemHovered();
-      m_anyEntityHovered |= itemHovered;
 
       if (itemHovered && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
       {
-        bool ctrlDown   = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
-        bool shiftDown  = ImGui::IsKeyDown(ImGuiKey_LeftShift);
+        bool ctrlDown = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+        bool shiftDown = ImGui::IsKeyDown(ImGuiKey_LeftShift);
         bool isSelected = currScene->IsSelected(e->GetIdVal());
 
         if (!shiftDown && !ctrlDown)
@@ -187,8 +228,6 @@ namespace ToolKit
       if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
       {
         ImGui::SetDragDropPayload("HierarcyChange", nullptr, 0);
-        ImGui::Text("Drop on the new parent.");
-      
         m_draggingEntities.clear();
 
         if (!currScene->IsSelected(e->GetIdVal()))
@@ -208,23 +247,9 @@ namespace ToolKit
         if (const ImGuiPayload* payload =
                 ImGui::AcceptDragDropPayload("HierarcyChange"))
         {
-          // Change the selected files hierarchy
-          EntityRawPtrArray& selected = m_draggingEntities;
-
-          if (e->GetType() != EntityType::Entity_Prefab)
-          {
-            for (int i = 0; i < selected.size(); i++)
-            {
-              if (selected[i]->GetIdVal() != e->GetIdVal() &&
-                  (!Prefab::GetPrefabRoot(selected[i]) ||
-                   selected[i]->GetType() == EntityType::Entity_Prefab))
-              {
-                g_child.push_back(selected[i]->GetIdVal());
-              }
-            }
-          }
+          SortDraggedEntitiesByNodeIndex();
+          PushSelectedEntitiesToReparentQueue(e);
           m_draggingEntities.clear();
-          g_parent = e->GetIdVal();
         }
         ImGui::EndDragDropTarget();
       }
@@ -243,7 +268,10 @@ namespace ToolKit
       // Clear shown entity map
       for (Entity* ntt : ntties)
       {
-        m_shownEntities[ntt] = m_searchString.empty();
+        if (m_searchString.empty())
+        {
+          m_shownEntities.insert(ntt);
+        }
       }
       if (m_searchString.size() > 0)
       {
@@ -257,7 +285,7 @@ namespace ToolKit
 
     bool OutlinerWindow::FindShownEntities(Entity* e, const String& str)
     {
-      bool self     = Utf8CaseInsensitiveSearch(e->GetNameVal(), str);
+      bool self = Utf8CaseInsensitiveSearch(e->GetNameVal(), str);
 
       bool children = false;
       if (e->GetType() != EntityType::Entity_Prefab)
@@ -268,14 +296,170 @@ namespace ToolKit
           if (childNtt != nullptr)
           {
             bool child = FindShownEntities(childNtt, str);
-            children   = child || children;
+            children = child || children;
           }
         }
       }
+      bool isShown = self || children;
+      if (isShown)
+      {
+        m_shownEntities.insert(e);
+      }
+      return isShown;
+    }
 
-      bool result        = self || children;
-      m_shownEntities[e] = result;
-      return result;
+    //   entity_123
+    //   ---------- <- returns true if you indicate here
+    //   entity_321
+    bool OutlinerWindow::IndicatingInBetweenNodes()
+    {
+      return !m_anyEntityHovered && ImGui::IsWindowHovered();
+    }
+
+    // indicates that dropped on top of all entities
+    static const int DroppedOnTopOfEntities = -1;
+
+    // if you are indicating between two nodes this will 
+    // return the index of upper entity, 
+    // if you are indicating on top of all entities this will return DroppedOnTopOfEntities
+    int OutlinerWindow::GetMouseHoveredNodeIndex(float treeStartY)
+    {
+      const float lineHeight = GetLineHeight();
+      const float mouseY = ImGui::GetMousePos().y;
+
+      // is dropped to top of the first entity?
+      if (fabsf(mouseY - treeStartY) < lineHeight * 0.5)
+      {
+        return DroppedOnTopOfEntities;
+      }
+
+      int selectedIndex = (int)floorf((mouseY - treeStartY) / lineHeight);
+      int maxIdx        = glm::max(0, int(m_indexToEntity.size()) - 1);
+      return glm::clamp(selectedIndex, 0, maxIdx);
+    }
+
+    void OrphanAll(const EntityRawPtrArray& movedEntities)
+    {
+      for (Entity* e : movedEntities)
+      {
+        e->m_node->OrphanSelf(true);
+      }
+    }
+    void OutlinerWindow::SetInsertIndex(int index)
+    {
+      m_insertSelectedIndex = index;
+    }
+
+    // the idea behind is: 
+    // * detect if we can reorder or not. if so:
+    //     orphan all movedEntities
+    //     remove all movedEntities from the scene (entities array)
+    // * if all of the moved entities are root entities and the entity we dropped below is also root
+    //   insert all entities below dropped entity (because we removed them)
+    // * else if the entity we dropped bellow is not root
+    //   this means we dropped in childs list. detect the child index
+    //   insert all moved entities to parents children (between the index we detect)
+    bool OutlinerWindow::TryReorderEntites(const EntityRawPtrArray& movedEntities)
+    {
+      // check number of visible entities in outliner is zero or inserted entities.size is zero
+      if (m_indexToEntity.size() == 0 || movedEntities.size() == 0)
+      {
+        return false;
+      }
+      
+      int selectedIndex = m_insertSelectedIndex;
+      EditorScenePtr scene = g_app->GetCurrentScene();
+      EntityRawPtrArray& entities = scene->AccessEntityArray();
+
+      SortDraggedEntitiesByNodeIndex();
+      // is dropped to on top of the first entity? 
+      if (selectedIndex == DroppedOnTopOfEntities)
+      {
+        OrphanAll(movedEntities);
+        scene->RemoveEntity(movedEntities);
+        entities.insert(entities.begin(), movedEntities.begin(), movedEntities.end());
+        return true;
+      }
+      
+      selectedIndex = glm::clamp(selectedIndex, 0, int(entities.size())-1);
+      Entity* droppedBelowNtt = m_indexToEntity[selectedIndex];
+
+      if (contains(movedEntities, droppedBelowNtt))
+      {
+        GetLogger()->WriteConsole(LogType::Memo, 
+                                 "cannot reorder if you drag below a selected entity");
+        return false;
+      }
+ 
+      bool allSameParent = true;
+      Node* firstParent  = movedEntities[0]->m_node->m_parent;
+
+      for (int i = 0; i < movedEntities.size(); ++i)
+      {
+        allSameParent &= movedEntities[i]->m_node->m_parent == firstParent;
+      }
+      
+      if (!allSameParent)
+      {
+        GetLogger()->WriteConsole(LogType::Memo, "all selected entities should have same parent");
+        return false;
+      }
+
+      Node* droppedParent = droppedBelowNtt->m_node->m_parent;
+      int childIndex = 0;
+      bool droppedAboveFirstChild = false;
+
+      // detect if we dropped above first children. childIndex will stay 0
+      //  EntityParent
+      //  ------------- <- did we drop here?
+      //    EntityChild0
+      if (selectedIndex + 1 < (int)m_indexToEntity.size())
+      {
+        Node* nextNode = m_indexToEntity[selectedIndex + 1]->m_node;
+        NodePtrArray& droppedBelowChildren = droppedBelowNtt->m_node->m_children;
+        
+        if (contains(droppedBelowChildren, nextNode))
+        {
+          droppedParent = droppedBelowNtt->m_node;
+          droppedAboveFirstChild = true;
+        }
+      }
+      
+      const auto isRootFn = [](Entity* entity) -> bool
+      { 
+         return entity->m_node->m_parent == nullptr; 
+      };
+
+      OrphanAll(movedEntities);
+      // the object that we dropped below is root ?
+      if (isRootFn(droppedBelowNtt) && !droppedAboveFirstChild)
+      {
+        // remove all dropped entites 
+        scene->RemoveEntity(movedEntities);
+        // find index of dropped entity and
+        // insert all dropped entities below dropped entity
+        entities.insert(
+          std::find(entities.cbegin(), entities.cend(), droppedBelowNtt) + 1,
+          movedEntities.begin(),
+          movedEntities.end());
+      }
+      else if (droppedParent != nullptr) // did we drop in child list?
+      {
+        if (!droppedAboveFirstChild)
+        {
+          NodePtrArray& childs = droppedParent->m_children;
+          childIndex = FindIndex(childs, droppedBelowNtt->m_node) + 1;
+        }
+
+        for (int i = 0; i < movedEntities.size(); ++i)
+        {
+          Node* node = movedEntities[i]->m_node;
+          droppedParent->InsertChild(node, childIndex + i, true);
+        }
+      }
+      // reset to default insert index
+      m_insertSelectedIndex = 0;
+      return true;
     }
 
     void OutlinerWindow::Show()
@@ -292,10 +476,14 @@ namespace ToolKit
         ImGuiTreeNodeFlags flag =
             g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen;
 
+        m_treeStartY = ImGui::GetCursorScreenPos().y;
+
         if (DrawRootHeader("Scene", 0, flag, UI::m_collectionIcon))
         {
           const EntityRawPtrArray& ntties = currScene->GetEntities();
           m_roots.clear();
+          m_indexToEntity.clear();
+          m_treeStartY = ImGui::GetCursorScreenPos().y;
 
           GetRootEntities(ntties, m_roots);
           HandleSearch(ntties, m_roots);
@@ -309,31 +497,76 @@ namespace ToolKit
         }
 
         // if we click an empty space in this window. selection list will cleared
-        bool multiSelecting = ImGui::IsKeyDown(ImGuiKey_LeftShift) || 
+        bool leftMouseReleased  = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+        bool rightMouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Right);
+        bool dragging = m_draggingEntities.size() > 0ull;
+
+        bool multiSelecting = ImGui::IsKeyDown(ImGuiKey_LeftShift) ||
                               ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
 
-        bool windowSpaceHovered = !m_anyEntityHovered && ImGui::IsWindowHovered();
-        bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
-
-        if (windowSpaceHovered && !multiSelecting && mouseReleased)
+        if (!multiSelecting && IndicatingInBetweenNodes()) 
         {
-          for (int i = 0; i < m_draggingEntities.size(); ++i)
+          if (leftMouseReleased && dragging)
           {
-            Entity* entity = m_draggingEntities[i];
-            entity->m_node->OrphanSelf(true);
+            // we are using this member variable in try insert entities function
+            // (order is important. dont move this below if block)
+            m_insertSelectedIndex = GetMouseHoveredNodeIndex(m_treeStartY); 
+            
+            if (!TryReorderEntites(m_draggingEntities))
+            {
+              // if reordering is not possible orphan all dragged entities
+              // because we clicked to an empty space.
+              OrphanAll(m_draggingEntities);
+            }
+            m_draggingEntities.clear();
+            currScene->ClearSelection();
           }
+          // right click in between entities.
+          if (rightMouseReleased)
+          {
+            ImGui::OpenPopup("##Create");
+            // fill required argument for reordering.
+            m_insertSelectedIndex = GetMouseHoveredNodeIndex(m_treeStartY); 
+          }
+        }
+        
+        if (leftMouseReleased) 
+        {
           m_draggingEntities.clear();
-          currScene->ClearSelection();
+        }
+
+        // show drag drop tooltip
+        if (dragging) 
+        {
+          if (!m_anyEntityHovered)
+          {
+            Entity* hoveredEntity =
+                m_indexToEntity[GetMouseHoveredNodeIndex(m_treeStartY)];
+            ImGui::SetTooltip(contains(m_draggingEntities, hoveredEntity)
+                                  ? "Drag Drop for set as child or Reorder"
+                                  : "Set As Child");
+          }
+          else
+          {
+            ImGui::SetTooltip("Reorder Entities");
+          }
+        }
+
+        if (ImGui::BeginPopup("##Create"))
+        {
+          // this function will call TryReorderEntities 
+          // (if we click one of the creation buttons)
+          OverlayTopBar::ShowAddMenuPopup();
+          ImGui::EndPopup();
         }
 
         ImGui::EndChild();
       }
 
       // Update hierarchy if there is a change.
-      std::vector<ULongID>::iterator it = g_child.begin();
-      while (it != g_child.end())
+      while (!g_reparentQueue.empty())
       {
-        Entity* child = currScene->GetEntity(*it);
+        Entity* child = currScene->GetEntity(g_reparentQueue.top());
         child->m_node->OrphanSelf(true);
 
         if (g_parent != NULL_HANDLE)
@@ -341,7 +574,7 @@ namespace ToolKit
           Entity* parent = currScene->GetEntity(g_parent);
           parent->m_node->AddChild(child->m_node, true);
         }
-        it = g_child.erase(it);
+        g_reparentQueue.pop();
       }
 
       g_parent = NULL_HANDLE;
@@ -386,7 +619,7 @@ namespace ToolKit
                 (!Prefab::GetPrefabRoot(selected[i]) ||
                  selected[i]->GetType() == EntityType::Entity_Prefab))
             {
-              g_child.push_back(selected[i]->GetIdVal());
+              g_reparentQueue.push(selected[i]->GetIdVal());
             }
           }
           g_parent = NULL_HANDLE;
@@ -499,6 +732,8 @@ namespace ToolKit
       ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.4f, 0.5f, 0.8f, 1.0f)); 
       bool isOpen      = ImGui::TreeNodeEx(sId.c_str(), flags);
       ImGui::PopStyleColor(2); 
+
+      m_anyEntityHovered |= ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly);
 
       if (ImGui::BeginPopupContextItem())
       {

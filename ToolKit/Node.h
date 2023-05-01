@@ -132,6 +132,15 @@ namespace ToolKit
     Mat3 GetTransformAxes();
 
     /**
+      * Inserts a childs in given index.
+      * @param child child that you want to insert.
+      * @param index index that you want to insert.
+      * @param preserveTransform is the value that indicates to keep the current
+      * world space position of the node to be adopt.
+      */
+    void InsertChild(Node* child, int index, bool preserveTransform = false);
+
+    /**
      * Adds a node as a child to the node.
      * @param child is the node to adopt.
      * @param preserveTransform is the value that indicates to keep the current
@@ -216,8 +225,8 @@ namespace ToolKit
     ULongID m_id;
     Node* m_parent      = nullptr;
     Entity* m_entity    = nullptr;
+    std::vector<Node*> m_children;
     bool m_inheritScale = false;
-    NodePtrArray m_children;
 
    private:
     Vec3 m_translation;        //!< Local translation value.

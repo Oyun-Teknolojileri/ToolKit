@@ -261,6 +261,7 @@ namespace ToolKit
      */
     virtual void ClearEntities();
 
+
     // Serialization.
 
     /**
