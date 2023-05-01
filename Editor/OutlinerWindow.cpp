@@ -538,7 +538,7 @@ namespace ToolKit
         // show drag drop tooltip
         if (dragging) 
         {
-          if (!m_anyEntityHovered)
+          if (m_anyEntityHovered)
           {
             Entity* hoveredEntity =
                 m_indexToEntity[GetMouseHoveredNodeIndex(m_treeStartY)];

@@ -132,7 +132,6 @@ namespace ToolKit
         // if numSameType equals 0 EntityType otherwise EntityType_123
         createdEntity->SetNameVal(typeName + suffix);
         currScene->AddEntity(createdEntity);
-        g_app->FocusEntity(createdEntity);
 
         if (OutlinerWindow* outliner = g_app->GetOutliner())
         {
