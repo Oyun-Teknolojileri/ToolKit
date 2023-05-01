@@ -352,11 +352,6 @@ namespace ToolKit
       }
     }
 
-    void OutlinerWindow::SetReorderOnTop(bool value)
-    {
-      m_reorderOnTop = value;
-    }
-
     // the idea behind is: 
     // * detect if we can reorder or not. if so:
     //     orphan all movedEntities
@@ -377,16 +372,6 @@ namespace ToolKit
       int selectedIndex = m_insertSelectedIndex;
       EditorScenePtr scene = g_app->GetCurrentScene();
       EntityRawPtrArray& entities = scene->AccessEntityArray();
-
-      // if reorderOnTop boolean is set true from SetReorderOnTop function
-      // we will insert the entities to visible area of the window. 
-      if (m_reorderOnTop)
-      {
-        m_reorderOnTop = false;
-        // 164.0f will cause entities to spawn slightly lower than the topmost location.
-        selectedIndex = (int)floorf((161.0f - m_treeStartY) / GetLineHeight());
-        selectedIndex = glm::clamp(selectedIndex, 0, int(m_indexToEntity.size()) - 1);
-      }
 
       SortDraggedEntitiesByNodeIndex();
       // is dropped to on top of the first entity? 
@@ -534,7 +519,7 @@ namespace ToolKit
             currScene->ClearSelection();
           }
           // right click in between entities.
-          else if (rightMouseReleased && !m_indexToEntity.size() == 0)
+          else if (rightMouseReleased && m_indexToEntity.size() != 0)
           {
             ImGui::OpenPopup("##Create");
             // fill required argument for reordering.

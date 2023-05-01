@@ -127,15 +127,16 @@ namespace ToolKit
         size_t numSameType =
             std::count_if(entities.cbegin(), entities.cend(), isSameTypeFn);
 
-        createdEntity->SetNameVal(typeName + "_" + std::to_string(numSameType));
+        String suffix = numSameType == 0 ? "" : "_" + std::to_string(numSameType);
+
+        // if numSameType equals 0 EntityType otherwise EntityType_123
+        createdEntity->SetNameVal(typeName + suffix);
         currScene->AddEntity(createdEntity);
+        g_app->FocusEntity(createdEntity);
 
         if (OutlinerWindow* outliner = g_app->GetOutliner())
         {
-          // try to insert created entity to selected point in outliner window
-          // inserting index is determinated when you right click on outliner
-          // window.
-          outliner->TryReorderEntites({createdEntity});
+          outliner->Focus(createdEntity);
         }
       }
     }
@@ -205,12 +206,6 @@ namespace ToolKit
 
       if (ImGui::BeginPopup("##AddMenu"))
       {
-        if (OutlinerWindow* outliner = g_app->GetOutliner())
-        {
-          // this way spawned entity will be visible in outliner window
-          // if we don't call this, entity will be spawned 0th index of entities.
-          outliner->SetReorderOnTop(true);
-        }
         showMenuFn();
         ImGui::EndPopup();
       }
