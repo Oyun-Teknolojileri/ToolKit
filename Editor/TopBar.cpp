@@ -135,10 +135,13 @@ namespace ToolKit
 
         if (OutlinerWindow* outliner = g_app->GetOutliner())
         {
+          if (outliner->IsInsertingAtTheEndOfEntities()) 
+          {
+            outliner->Focus(createdEntity);
+          }
           // if right clicked this will try to insert to where we clicked
           // otherwise(top bar add) this will spawn at the end of the list.
           outliner->TryReorderEntites({createdEntity});
-          outliner->Focus(createdEntity);
         }
       }
     }

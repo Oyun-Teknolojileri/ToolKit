@@ -66,7 +66,8 @@ namespace ToolKit
     // returns total drawed nodes
     int OutlinerWindow::ShowNode(Entity* e, int depth)
     {
-      if (m_shownEntities.count(e) == 0)
+      // if searching mode is on and entity is not shown return.
+      if (m_stringSearchMode == true && m_shownEntities.count(e) == 0)
       {
         return 0;
       }
@@ -254,35 +255,7 @@ namespace ToolKit
         ImGui::EndDragDropTarget();
       }
     }
-
-    void OutlinerWindow::HandleSearch(const EntityRawPtrArray& ntties,
-                                      const EntityRawPtrArray& roots)
-    {
-      if (ImGui::IsKeyPressed(ImGuiKey_Enter, false) && IsActive())
-      {
-        m_stringSearchMode = true;
-      }
-
-      m_stringSearchMode = m_stringSearchMode && !m_searchString.empty();
-
-      // Clear shown entity map
-      for (Entity* ntt : ntties)
-      {
-        if (m_searchString.empty())
-        {
-          m_shownEntities.insert(ntt);
-        }
-      }
-      if (m_searchString.size() > 0)
-      {
-        // Find which entities should be shown
-        for (Entity* e : roots)
-        {
-          FindShownEntities(e, m_searchString);
-        }
-      }
-    }
-
+    
     bool OutlinerWindow::FindShownEntities(Entity* e, const String& str)
     {
       bool self = Utf8CaseInsensitiveSearch(e->GetNameVal(), str);
@@ -344,6 +317,11 @@ namespace ToolKit
       {
         e->m_node->OrphanSelf(true);
       }
+    }
+
+    bool OutlinerWindow::IsInsertingAtTheEndOfEntities()
+    {
+      return m_insertSelectedIndex == TK_INT_MAX;
     }
 
     // the idea behind is: 
@@ -466,8 +444,15 @@ namespace ToolKit
       {
         odd = 0;
         m_anyEntityHovered = false;
+
+        const EntityRawPtrArray& ntties = currScene->GetEntities();
+        m_roots.clear();
+        m_indexToEntity.clear();
+        GetRootEntities(ntties, m_roots);
+
         HandleStates();
         ShowSearchBar(m_searchString);
+
         ImGui::BeginChild("##Outliner Nodes");
         ImGuiTreeNodeFlags flag =
             g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen;
@@ -476,13 +461,7 @@ namespace ToolKit
 
         if (DrawRootHeader("Scene", 0, flag, UI::m_collectionIcon))
         {
-          const EntityRawPtrArray& ntties = currScene->GetEntities();
-          m_roots.clear();
-          m_indexToEntity.clear();
           m_treeStartY = ImGui::GetCursorScreenPos().y;
-
-          GetRootEntities(ntties, m_roots);
-          HandleSearch(ntties, m_roots);
 
           for (size_t i = 0; i < m_roots.size(); ++i)
           {
@@ -645,7 +624,25 @@ namespace ToolKit
       ImGui::TableNextColumn();
 
       ImGui::PushItemWidth(-1);
-      ImGui::InputTextWithHint(" SearchString", "Search", &searchString);
+      
+      // algorithm will search only if we type. 
+      // if string is empty search mode is of
+      if (ImGui::InputTextWithHint(" SearchString", "Search", &searchString))
+      {
+        m_stringSearchMode = searchString.size() > 0ull;
+        bool searchStrChanged = m_searchStringSize != searchString.size();
+
+        if (searchStrChanged && m_stringSearchMode)
+        {
+          m_shownEntities.clear();
+          // Find which entities should be shown
+          for (Entity* e : m_roots)
+          {
+            FindShownEntities(e, m_searchString);
+          }
+        }
+      }
+
       ImGui::PopItemWidth();
 
       ImGui::TableNextColumn();

@@ -24,7 +24,7 @@ namespace ToolKit
       // moves the entities below m_insertSelectedIndex
       // make sure m_insertSelectedIndex properly defined before calling this function.
       bool TryReorderEntites(const EntityRawPtrArray& movedEntities);
-      void SetInsertIndex(int index);
+      bool IsInsertingAtTheEndOfEntities();
 
      private:
       bool DrawRootHeader(const String& rootName,
@@ -38,9 +38,7 @@ namespace ToolKit
       int ShowNode(Entity* e, int depth);
       void DrawRowBackground(int depth);
       void SetItemState(Entity* e);
-      void HandleSearch(const EntityRawPtrArray& ntties,
-                        const EntityRawPtrArray& roots);
-
+      
       void SelectEntitiesBetweenNodes(class EditorScene* scene,
                                       Entity* a,
                                       Entity* b);
@@ -78,6 +76,7 @@ namespace ToolKit
       // the objects that we want to reorder will inserted at this index
       int m_insertSelectedIndex = TK_INT_MAX;
       float m_treeStartY = 0.0;
+      int m_searchStringSize = 0;
     };
 
   } // namespace Editor
