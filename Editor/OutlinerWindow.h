@@ -76,7 +76,7 @@ namespace ToolKit
       // for even odd pattern
       int odd = 0;
       // the objects that we want to reorder will inserted at this index
-      int m_insertSelectedIndex = 0;
+      int m_insertSelectedIndex = TK_INT_MAX;
       float m_treeStartY = 0.0;
     };
 

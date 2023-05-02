@@ -345,10 +345,6 @@ namespace ToolKit
         e->m_node->OrphanSelf(true);
       }
     }
-    void OutlinerWindow::SetInsertIndex(int index)
-    {
-      m_insertSelectedIndex = index;
-    }
 
     // the idea behind is: 
     // * detect if we can reorder or not. if so:
@@ -372,7 +368,7 @@ namespace ToolKit
       EntityRawPtrArray& entities = scene->AccessEntityArray();
 
       SortDraggedEntitiesByNodeIndex();
-      // is dropped to on top of the first entity? 
+      // is dropped to on top of the first entity?  
       if (selectedIndex == DroppedOnTopOfEntities)
       {
         OrphanAll(movedEntities);
@@ -381,7 +377,7 @@ namespace ToolKit
         return true;
       }
       
-      selectedIndex = glm::clamp(selectedIndex, 0, int(entities.size())-1);
+      selectedIndex = glm::clamp(selectedIndex, 0, int(m_indexToEntity.size())-1);
       Entity* droppedBelowNtt = m_indexToEntity[selectedIndex];
 
       if (contains(movedEntities, droppedBelowNtt))
@@ -457,8 +453,8 @@ namespace ToolKit
           droppedParent->InsertChild(node, childIndex + i, true);
         }
       }
-      // reset to default insert index
-      m_insertSelectedIndex = 0;
+      // reset to default insert index (end of the list)
+      m_insertSelectedIndex = TK_INT_MAX;
       return true;
     }
 
