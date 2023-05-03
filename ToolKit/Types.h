@@ -308,6 +308,6 @@ namespace ToolKit
     Target2DArray              = 0x8C1A
   };
 
-  static const char* TKVersionStr = "v0.4.1";
+  static const char* TKVersionStr = "v0.4.2";
 
 } // namespace ToolKit
