@@ -74,7 +74,7 @@ namespace ToolKit
     {
       BoundingBox box = surface->GetAABB(true);
       Vec2 mp         = vp->GetLastMousePosViewportSpace();
-      return BoxPointIntersection2D(box, mp);
+      return BoxPointIntersection(box, mp);
     }
     return false;
   }

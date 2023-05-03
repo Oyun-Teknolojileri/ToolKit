@@ -58,7 +58,7 @@ namespace ToolKit
 
   TK_API bool BoxPointIntersection(const BoundingBox& box, const Vec3& point);
 
-  TK_API bool BoxPointIntersection2D(const BoundingBox& box, const Vec2& point);
+  TK_API bool BoxPointIntersection(const BoundingBox& box, const Vec2& point);
 
   TK_API bool RayBoxIntersection(const Ray& ray,
                                  const BoundingBox& box,
