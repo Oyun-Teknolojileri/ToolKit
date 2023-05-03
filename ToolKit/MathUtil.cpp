@@ -303,6 +303,12 @@ namespace ToolKit
     return false;
   }
 
+  bool BoxPointIntersection2D(const BoundingBox& box, const Vec2& point)
+  {
+    return box.max.x > point.x && box.max.y > point.y && 
+           box.min.x < point.x && box.min.y < point.y;
+  }
+
   // https://gamedev.stackexchange.com/questions/18436/most-efficient-aabb-vs-ray-collision-algorithms
   bool RayBoxIntersection(const Ray& ray, const BoundingBox& box, float& t)
   {

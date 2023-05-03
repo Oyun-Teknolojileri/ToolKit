@@ -37,21 +37,14 @@ namespace ToolKit
   void UILayer::ResizeUI(const Vec2& size)
   {
     // Sanity checks.
-    if (m_scene == nullptr)
-    {
-      return;
-    }
-
     // Apply sizing only when the resolution has changed.
-    if (VecAllEqual<Vec2>(m_size, size))
+    if (m_scene == nullptr || VecAllEqual<Vec2>(m_size, size))
     {
       return;
     }
-
     m_size                       = size;
 
-    const EntityRawPtrArray& arr = m_scene->GetEntities();
-    for (Entity* ntt : arr)
+    for (Entity* ntt : m_scene->GetEntities())
     {
       if (ntt->GetType() == EntityType::Entity_Canvas)
       {
@@ -72,7 +65,6 @@ namespace ToolKit
       MouseEvent* me = static_cast<MouseEvent*>(e);
       return me->m_action == EventAction::LeftClick;
     }
-
     return false;
   }
 
@@ -81,13 +73,8 @@ namespace ToolKit
     if (e->m_type == Event::EventType::Mouse)
     {
       BoundingBox box = surface->GetAABB(true);
-      Ray ray         = vp->RayFromMousePosition();
-
-      float t         = 0.0f;
-      if (RayBoxIntersection(ray, box, t))
-      {
-        return true;
-      }
+      Vec2 mp         = vp->GetLastMousePosViewportSpace();
+      return BoxPointIntersection2D(box, mp);
     }
     return false;
   }
@@ -108,66 +95,48 @@ namespace ToolKit
       return;
     }
 
-    EntityRawPtrArray& entities = layer->m_scene->AccessEntityArray();
+    EntityRawPtrArray const& entities = layer->m_scene->AccessEntityArray();
     for (Entity* ntt : entities)
     {
       // Process events.
       for (Event* e : events)
       {
-        if (ntt->IsSurfaceInstance())
+        if (!ntt->IsSurfaceInstance())
         {
-          Surface* surface        = static_cast<Surface*>(ntt);
-          bool mouseOverPrev      = surface->m_mouseOver;
-
-          surface->m_mouseOver    = CheckMouseOver(surface, e, vp);
-          surface->m_mouseClicked = CheckMouseClick(surface, e, vp);
-
-          if (ntt->GetType() == EntityType::Entity_Button)
-          {
-            Button* button        = static_cast<Button*>(ntt);
-            MaterialPtr hoverMat  = button->GetHoverMaterialVal();
-            MaterialPtr normalMat = button->GetButtonMaterialVal();
-            if (surface->m_mouseOver && hoverMat)
-            {
-              button->SetMaterialVal(hoverMat);
-            }
-            else
-            {
-              button->SetMaterialVal(normalMat);
-            }
-          }
-
-          if (surface->m_mouseOver)
-          {
-            if (surface->m_onMouseOver)
-            {
-              surface->m_onMouseOver(e, ntt);
-            }
-          }
-
-          if (surface->m_mouseClicked)
-          {
-            if (surface->m_onMouseClick)
-            {
-              surface->m_onMouseClick(e, ntt);
-            }
-          }
-
-          if (!mouseOverPrev && surface->m_mouseOver)
-          {
-            if (surface->m_onMouseEnter)
-            {
-              surface->m_onMouseEnter(e, ntt);
-            }
-          }
-
-          if (mouseOverPrev && !surface->m_mouseOver)
-          {
-            if (surface->m_onMouseExit)
-            {
-              surface->m_onMouseExit(e, ntt);
-            }
-          }
+          continue;
+        }
+        Surface* surface        = static_cast<Surface*>(ntt);
+        bool mouseOverPrev      = surface->m_mouseOver;
+        
+        surface->m_mouseOver    = CheckMouseOver(surface, e, vp);
+        surface->m_mouseClicked = CheckMouseClick(surface, e, vp);
+        
+        if (ntt->GetType() == EntityType::Entity_Button)
+        {
+          Button* button        = static_cast<Button*>(ntt);
+          MaterialPtr hoverMat  = button->GetHoverMaterialVal();
+          MaterialPtr normalMat = button->GetButtonMaterialVal();
+          button->SetMaterialVal(surface->m_mouseOver && hoverMat ? hoverMat : normalMat);
+        }
+        
+        if (surface->m_mouseOver && surface->m_onMouseOver)
+        {
+          surface->m_onMouseOver(e, ntt);
+        }
+        
+        if (surface->m_mouseClicked && surface->m_onMouseClick)
+        {
+          surface->m_onMouseClick(e, ntt);
+        }
+        
+        if (!mouseOverPrev && surface->m_mouseOver && surface->m_onMouseEnter)
+        {
+          surface->m_onMouseEnter(e, ntt);
+        }
+        
+        if (mouseOverPrev && !surface->m_mouseOver && surface->m_onMouseExit)
+        {
+          surface->m_onMouseExit(e, ntt);
         }
       }
     }
