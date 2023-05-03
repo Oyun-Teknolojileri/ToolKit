@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MathUtil.h"
+#include "GeometryTypes.h"
 #include "Types.h"
 
 #include <string>
@@ -144,7 +144,7 @@ namespace ToolKit
       const Mat4* transform = nullptr);
 
   // Entity operations.
-  TK_API String EntityTypeToString(EntityType type);
+  TK_API String EntityTypeToString(enum class EntityType type);
   TK_API void ToEntityIdArray(EntityIdArray& idArray,
                               const EntityRawPtrArray& ptrArray);
 

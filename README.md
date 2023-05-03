@@ -8,7 +8,7 @@
 
 Most games, projects using Unity, UE4 or even Godot, don't need all those tools and functionalities. Having a far simple game engine, increases your comprehension of the framework & tools, which in return gives you more freedom to do things your way. This approach may not be suitable for professional game studios, however it is very suitable for indies whom after unique projects.
 
-This project has a unique goal which is keeping all the source code under 30k lines of code excluding dependencies. Instead of adding more capabilities, tools and getting more complicated, ToolKit will be oriented towards simplicity, performance and being/staying modern.
+This project has a unique goal which is keeping all the source code under 50k lines of code excluding dependencies. Instead of adding more capabilities, tools and getting more complicated, ToolKit will be oriented towards simplicity, performance and being/staying modern.
 
 ### Community
 
@@ -25,16 +25,16 @@ ToolKit can pubish for:
 Although it's possible, publishing to these platforms are not streamlined, still a lot of manual configuration and building is needed. Publishing for Android is on the way.
 
 <p align="center">
-  <img width="600" height="338" src="https://github.com/Oyun-Teknolojileri/ToolKit/blob/master/tk_ed_21.gif?raw=true">
+  <img width="600" height="338" src="https://github.com/Oyun-Teknolojileri/ToolKit/blob/Engine/tk_ed_21.gif?raw=true">
 </p>
 
 ## Dependencies
 - stb_image - MIT 
 - SDL 2.0 - Zlib
 - rapidxml - MIT
-- openal - LGPL (Dynamically linked)
+- openal - LGPL (Subject to Change with MiniAudio MIT)
 - glm - MIT
-- glew - BSD, MIT
+- glad - MIT
 - Dear imgui - MIT
 - Assimp - BSD
 - Zlib - Zlib
