@@ -42,7 +42,7 @@ namespace ToolKit
         renderer->m_overrideMat->m_emissiveColor   = mat->m_emissiveColor;
         renderer->m_overrideMat->m_cubeMap         = mat->m_cubeMap;
         renderer->m_overrideMat->m_color           = mat->m_color;
-        renderer->m_overrideMat->m_alpha           = mat->m_alpha;
+        renderer->m_overrideMat->SetAlpha(mat->GetAlpha());
         renderer->m_overrideMat->Init();
 
         renderer->Render(job, m_params.ForwardParams.Cam, lightList);

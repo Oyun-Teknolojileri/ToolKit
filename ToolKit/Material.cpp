@@ -177,6 +177,18 @@ namespace ToolKit
     }
   }
 
+  void Material::SetAlpha(float val)
+  {
+    val = glm::clamp(val, 0.0f, 1.0f);
+    m_alpha = val;
+    bool isForward = m_alpha < 0.99f;
+    m_renderState.blendFunction =
+                isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA
+                : BlendFunction::NONE;    
+  }
+
+  float& Material::GetAlpha() { return m_alpha; }
+
   bool Material::IsDeferred()
   {
     if (IsTranslucent())
