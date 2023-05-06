@@ -286,12 +286,12 @@ namespace ToolKit
             updateThumbFn();
           }
           if (ImGui::DragFloat("Alpha",
-                               &m_mat->m_alpha,
+                               &m_mat->GetAlpha(),
                                1.0f / 256.0f,
                                0.0f,
                                1.0f))
           {
-            bool isForward = m_mat->m_alpha < 0.99f;
+            bool isForward = m_mat->GetAlpha() < 0.99f;
             renderState->blendFunction =
                 isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA
                           : BlendFunction::NONE;
@@ -352,7 +352,7 @@ namespace ToolKit
           renderState->blendFunction = (BlendFunction) blendMode;
           if (renderState->blendFunction == BlendFunction::NONE)
           {
-            m_mat->m_alpha = 1.0f;
+            m_mat->SetAlpha(1.0f);
           }
 
           m_mat->m_dirty = true;

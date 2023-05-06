@@ -37,12 +37,11 @@ namespace ToolKit
               ImGui::IsKeyPressed(ImGuiKey_Tab));
     }
 
-    void View::DropZone(
-        uint fallbackIcon,
-        const String& file,
-        std::function<void(DirectoryEntry& entry)> dropAction,
-        const String& dropName,
-        bool isEditable)
+    void View::DropZone(uint fallbackIcon,
+                        const String& file,
+                        std::function<void(DirectoryEntry& entry)> dropAction,
+                        const String& dropName,
+                        bool isEditable)
     {
       DirectoryEntry dirEnt;
 
@@ -190,8 +189,7 @@ namespace ToolKit
     PreviewViewport::PreviewViewport(uint width, uint height)
         : EditorViewport((float) width, (float) height)
     {
-      m_renderPass            = std::make_shared<SceneRenderer>();
-      // m_renderPass->m_params.Gfx.BloomEnabled = false;
+      m_previewRenderer       = std::make_shared<SceneRenderer>();
 
       DirectionalLight* light = new DirectionalLight();
       light->SetPCFRadiusVal(0.001f);
@@ -209,19 +207,18 @@ namespace ToolKit
       directionComp->Yaw(glm::radians(-20.0f));
       directionComp->Pitch(glm::radians(-20.0f));
 
-      m_light                                 = light;
-      m_renderPass->m_params.Cam              = GetCamera();
-      m_renderPass->m_params.ClearFramebuffer = true;
-      m_renderPass->m_params.Lights           = {m_light};
-      m_renderPass->m_params.MainFramebuffer  = m_framebuffer;
-      m_renderPass->m_params.Scene            = std::make_shared<Scene>();
-      m_renderPass->m_params.Gfx.DepthOfFieldEnabled = false;
+      m_light                                      = light;
+      m_previewRenderer->m_params.Cam              = GetCamera();
+      m_previewRenderer->m_params.ClearFramebuffer = true;
+      m_previewRenderer->m_params.Lights           = {m_light};
+      m_previewRenderer->m_params.MainFramebuffer  = m_framebuffer;
+      m_previewRenderer->m_params.Scene            = std::make_shared<Scene>();
     }
 
     PreviewViewport::~PreviewViewport()
     {
       SafeDel(m_light);
-      m_renderPass = nullptr;
+      m_previewRenderer = nullptr;
     }
 
     void PreviewViewport::Show()
@@ -234,8 +231,9 @@ namespace ToolKit
       HandleStates();
       DrawCommands();
 
-      m_renderPass->m_params.MainFramebuffer = m_framebuffer;
-      const EntityRawPtrArray& entities      = GetScene()->GetEntities();
+      m_previewRenderer->m_params.MainFramebuffer = m_framebuffer;
+
+      const EntityRawPtrArray& entities           = GetScene()->GetEntities();
       for (const Entity* ntt : entities)
       {
         MeshComponentPtr mc = ntt->GetMeshComponent();
@@ -254,7 +252,7 @@ namespace ToolKit
         }
       }
 
-      GetRenderSystem()->AddRenderTask(m_renderPass);
+      GetRenderSystem()->AddRenderTask(m_previewRenderer);
 
       // Render color attachment as rounded image
       FramebufferSettings fbSettings = m_framebuffer->GetSettings();
@@ -262,7 +260,7 @@ namespace ToolKit
       Vec2 currentCursorPos = Vec2(ImGui::GetWindowContentRegionMin()) +
                               Vec2(ImGui::GetCursorPos()) +
                               Vec2(ImGui::GetWindowPos());
-      
+
       ImGui::Dummy(imageSize);
 
       ImGui::GetWindowDrawList()->AddImageRounded(
@@ -278,7 +276,7 @@ namespace ToolKit
 
     ScenePtr PreviewViewport::GetScene()
     {
-      return m_renderPass->m_params.Scene;
+      return m_previewRenderer->m_params.Scene;
     }
 
     void PreviewViewport::ResetCamera()
@@ -366,13 +364,13 @@ namespace ToolKit
 
             if (view->m_fontIcon.size() > 0)
             {
-              if (ImGui::Button(view->m_fontIcon.data(), ImVec2(27,25)))
+              if (ImGui::Button(view->m_fontIcon.data(), ImVec2(27, 25)))
               {
                 m_activeView = (ViewType) viewIndx;
               }
             }
             else if (ImGui::ImageButton(Convert2ImGuiTexture(view->m_viewIcn),
-                                   sidebarIconSize))
+                                        sidebarIconSize))
             {
               m_activeView = (ViewType) viewIndx;
             }

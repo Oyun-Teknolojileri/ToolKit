@@ -646,7 +646,7 @@ namespace ToolKit
           material->Get(AI_MATKEY_COLOR_TRANSPARENT, transparency);
         }
       }
-      tMaterial->m_alpha    = transparency;
+      tMaterial->SetAlpha(transparency);
 
       aiBlendMode blendFunc = aiBlendMode_Default;
       if (material->Get(AI_MATKEY_BLEND_FUNC, blendFunc) == aiReturn_SUCCESS)

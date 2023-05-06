@@ -112,7 +112,7 @@ namespace ToolKit
         MaterialPtr material = job.Material;
         renderer->m_overrideMat->SetRenderState(material->GetRenderState());
         renderer->m_overrideMat->UnInit();
-        renderer->m_overrideMat->m_alpha          = material->m_alpha;
+        renderer->m_overrideMat->SetAlpha(material->GetAlpha());
         renderer->m_overrideMat->m_diffuseTexture = material->m_diffuseTexture;
         renderer->m_overrideMat->GetRenderState()->blendFunction =
             BlendFunction::NONE;

@@ -31,6 +31,17 @@ namespace ToolKit
     RenderState* GetRenderState();
     void SetRenderState(RenderState* state);
     void SetDefaultMaterialTypeShaders();
+    
+    /**
+      * Acces to alpha value (opacity)
+      * @returns Referance to alpha value
+      */
+    float& GetAlpha();
+
+    /**
+      * Set the alpha value (opacity)
+      */
+    void SetAlpha(float val);
 
     /**
      * States if the material will use deferred render path.
@@ -68,11 +79,11 @@ namespace ToolKit
     Vec3 m_emissiveColor;
     float m_metallic            = 0.2f;
     float m_roughness           = 0.5f;
-    float m_alpha               = 1.0f;
 
     MaterialType m_materialType = MaterialType::Custom;
 
    private:
+    float m_alpha               = 1.0f;
     RenderState m_renderState;
   };
 

@@ -830,7 +830,7 @@ namespace ToolKit
           if (m_mat == nullptr)
             break;
 
-          Vec4 color = Vec4(m_mat->m_color, m_mat->m_alpha);
+          Vec4 color = Vec4(m_mat->m_color, m_mat->GetAlpha());
           if (m_mat->GetRenderState()->blendFunction == BlendFunction::NONE)
           {
             color.a = 1.0f;
@@ -923,7 +923,7 @@ namespace ToolKit
           GLint loc =
               glGetUniformLocation(program->m_handle,
                                    GetUniformName(Uniform::COLOR_ALPHA));
-          glUniform1f(loc, m_mat->m_alpha);
+          glUniform1f(loc, m_mat->GetAlpha());
         }
         break;
         case Uniform::IBL_ROTATION:

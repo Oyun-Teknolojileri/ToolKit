@@ -58,8 +58,8 @@ namespace ToolKit
       void ResizeWindow(uint width, uint height) override;
 
      private:
-      SceneRendererPtr m_renderPass = nullptr;
-      Light* m_light                = nullptr;
+      SceneRendererPtr m_previewRenderer = nullptr;
+      Light* m_light                     = nullptr;
     };
 
     typedef View* ViewRawPtr;
