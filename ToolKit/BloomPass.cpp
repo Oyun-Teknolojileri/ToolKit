@@ -56,6 +56,10 @@ namespace ToolKit
       m_downsampleShader->SetShaderParameter("srcResolution",
                                              ParameterVariant(mainRes));
 
+      m_downsampleShader->SetShaderParameter(
+          "threshold",
+          ParameterVariant(m_params.minThreshold));
+
       TexturePtr prevRt = m_params.FrameBuffer->GetAttachment(
           Framebuffer::Attachment::ColorAttachment0);
 
@@ -69,14 +73,6 @@ namespace ToolKit
 
     // Downsample Pass
     {
-      m_downsampleShader->SetShaderParameter(
-          "threshold",
-          ParameterVariant(m_params.minThreshold));
-
-      GetLogger()->WriteConsole(LogType::Error,
-                                "threshold %f",
-                                m_params.minThreshold);
-
       for (int i = 0; i < m_params.iterationCount; i++)
       {
         // Calculate current and previous resolutions
@@ -155,10 +151,6 @@ namespace ToolKit
       m_upsampleShader->SetShaderParameter(
           "intensity",
           ParameterVariant(m_params.intensity));
-
-      GetLogger()->WriteConsole(LogType::Error,
-                                "intensity %f",
-                                m_params.intensity);
 
       RenderSubPass(m_pass);
     }
