@@ -170,6 +170,12 @@ namespace ToolKit
         glm::min(m_params.iterationCount,
                  glm::min(maxIterCounts.x, maxIterCounts.y));
 
+    if (m_params.iterationCount < 0)
+    {
+      m_invalidRenderParams = true;
+      return;
+    }
+
     m_tempTextures.resize(m_params.iterationCount + 1);
     m_tempFrameBuffers.resize(m_params.iterationCount + 1);
 
