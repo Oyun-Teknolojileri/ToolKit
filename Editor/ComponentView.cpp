@@ -363,30 +363,35 @@ namespace ToolKit
         return isOpen;
       };
 
-      for (VariantCategory& category : categories)
+      // skip if material component,
+      // because we render it below ( ShowMultiMaterialComponent )
+      if (comp->GetType() != ComponentType::MaterialComponent)
       {
-        bool isOpen = showCompFunc(category.Name);
-
-        if (isOpen)
+        for (VariantCategory& category : categories)
         {
-          ParameterVariantRawPtrArray vars;
-          comp->m_localData.GetByCategory(category.Name, vars);
+          bool isOpen = showCompFunc(category.Name);
 
-          for (ParameterVariant* var : vars)
+          if (isOpen)
           {
-            bool editable = var->m_editable;
-            if (!modifiableComp)
-            {
-              var->m_editable = false;
-            }
-            CustomDataView::ShowVariant(var, comp);
-            if (!modifiableComp)
-            {
-              var->m_editable = true;
-            }
-          }
+            ParameterVariantRawPtrArray vars;
+            comp->m_localData.GetByCategory(category.Name, vars);
 
-          ImGui::TreePop();
+            for (ParameterVariant* var : vars)
+            {
+              bool editable = var->m_editable;
+              if (!modifiableComp)
+              {
+                var->m_editable = false;
+              }
+              CustomDataView::ShowVariant(var, comp);
+              if (!modifiableComp)
+              {
+                var->m_editable = true;
+              }
+            }
+
+            ImGui::TreePop();
+          }
         }
       }
 
