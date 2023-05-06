@@ -68,75 +68,83 @@ namespace ToolKit
     }
 
     // Downsample Pass
-    for (int i = 0; i < m_params.iterationCount; i++)
     {
-      // Calculate current and previous resolutions
-
-      float powVal = glm::pow(2.0f, float(i + 1));
-      const Vec2 factor(1.0f / powVal);
-      const UVec2 curRes             = Vec2(mainRes) * factor;
-
-      powVal                         = glm::pow(2.0f, float(i));
-      const Vec2 prevRes             = Vec2(mainRes) * Vec2((1.0f / powVal));
-
-      // Find previous framebuffer & RT
-      FramebufferPtr prevFramebuffer = m_tempFrameBuffers[i];
-      TexturePtr prevRt              = prevFramebuffer->GetAttachment(
-          Framebuffer::Attachment::ColorAttachment0);
-
-      // Set pass' shader and parameters
-      m_pass->m_params.FragmentShader = m_downsampleShader;
-
-      int passIndx                    = i + 1;
-      m_downsampleShader->SetShaderParameter("passIndx",
-                                             ParameterVariant(passIndx));
-
       m_downsampleShader->SetShaderParameter(
           "threshold",
           ParameterVariant(m_params.minThreshold));
 
-      m_downsampleShader->SetShaderParameter("srcResolution",
-                                             ParameterVariant(prevRes));
+      GetLogger()->WriteConsole(LogType::Error,
+                                "threshold %f",
+                                m_params.minThreshold);
 
-      GetRenderer()->SetTexture(0, prevRt->m_textureId);
+      for (int i = 0; i < m_params.iterationCount; i++)
+      {
+        // Calculate current and previous resolutions
 
-      // Set pass parameters
-      m_pass->m_params.ClearFrameBuffer = true;
-      m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[i + 1];
-      m_pass->m_params.BlendFunc        = BlendFunction::NONE;
+        float powVal = glm::pow(2.0f, float(i + 1));
+        const Vec2 factor(1.0f / powVal);
+        const UVec2 curRes             = Vec2(mainRes) * factor;
 
-      RenderSubPass(m_pass);
+        powVal                         = glm::pow(2.0f, float(i));
+        const Vec2 prevRes             = Vec2(mainRes) * Vec2((1.0f / powVal));
+
+        // Find previous framebuffer & RT
+        FramebufferPtr prevFramebuffer = m_tempFrameBuffers[i];
+        TexturePtr prevRt              = prevFramebuffer->GetAttachment(
+            Framebuffer::Attachment::ColorAttachment0);
+
+        // Set pass' shader and parameters
+        m_pass->m_params.FragmentShader = m_downsampleShader;
+
+        int passIndx                    = i + 1;
+        m_downsampleShader->SetShaderParameter("passIndx",
+                                               ParameterVariant(passIndx));
+
+        m_downsampleShader->SetShaderParameter("srcResolution",
+                                               ParameterVariant(prevRes));
+
+        GetRenderer()->SetTexture(0, prevRt->m_textureId);
+
+        // Set pass parameters
+        m_pass->m_params.ClearFrameBuffer = true;
+        m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[i + 1];
+        m_pass->m_params.BlendFunc        = BlendFunction::NONE;
+
+        RenderSubPass(m_pass);
+      }
     }
 
     // Upsample Pass
-    const float filterRadius = 0.002f;
-    for (int i = m_params.iterationCount; i > 0; i--)
     {
-      m_pass->m_params.FragmentShader = m_upsampleShader;
+      const float filterRadius = 0.002f;
       m_upsampleShader->SetShaderParameter("filterRadius",
                                            ParameterVariant(filterRadius));
 
-      FramebufferPtr prevFramebuffer = m_tempFrameBuffers[i];
-      TexturePtr prevRt              = prevFramebuffer->GetAttachment(
-          Framebuffer::Attachment::ColorAttachment0);
-      GetRenderer()->SetTexture(0, prevRt->m_textureId);
-
-      m_pass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE;
-      m_pass->m_params.ClearFrameBuffer = false;
-      m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[i - 1];
       m_upsampleShader->SetShaderParameter("intensity", ParameterVariant(1.0f));
 
-      RenderSubPass(m_pass);
+      for (int i = m_params.iterationCount; i > 0; i--)
+      {
+        m_pass->m_params.FragmentShader = m_upsampleShader;
+
+        FramebufferPtr prevFramebuffer  = m_tempFrameBuffers[i];
+        TexturePtr prevRt               = prevFramebuffer->GetAttachment(
+            Framebuffer::Attachment::ColorAttachment0);
+        GetRenderer()->SetTexture(0, prevRt->m_textureId);
+
+        m_pass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE;
+        m_pass->m_params.ClearFrameBuffer = false;
+        m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[i - 1];
+
+        RenderSubPass(m_pass);
+      }
     }
 
     // Merge Pass
     {
       m_pass->m_params.FragmentShader = m_upsampleShader;
-      m_upsampleShader->SetShaderParameter("filterRadius",
-                                           ParameterVariant(filterRadius));
 
-      FramebufferPtr prevFramebuffer = m_tempFrameBuffers[0];
-      TexturePtr prevRt              = prevFramebuffer->GetAttachment(
+      FramebufferPtr prevFramebuffer  = m_tempFrameBuffers[0];
+      TexturePtr prevRt               = prevFramebuffer->GetAttachment(
           Framebuffer::Attachment::ColorAttachment0);
       GetRenderer()->SetTexture(0, prevRt->m_textureId);
 
@@ -147,6 +155,10 @@ namespace ToolKit
       m_upsampleShader->SetShaderParameter(
           "intensity",
           ParameterVariant(m_params.intensity));
+
+      GetLogger()->WriteConsole(LogType::Error,
+                                "intensity %f",
+                                m_params.intensity);
 
       RenderSubPass(m_pass);
     }
