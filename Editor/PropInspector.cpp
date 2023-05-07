@@ -364,10 +364,13 @@ namespace ToolKit
 
             if (view->m_fontIcon.size() > 0)
             {
+              ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0, 1.0, 1.0, 1.0));
+
               if (ImGui::Button(view->m_fontIcon.data(), ImVec2(27, 25)))
               {
                 m_activeView = (ViewType) viewIndx;
               }
+              ImGui::PopStyleColor();
             }
             else if (ImGui::ImageButton(Convert2ImGuiTexture(view->m_viewIcn),
                                         sidebarIconSize))
