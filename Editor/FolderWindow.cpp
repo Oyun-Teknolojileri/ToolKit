@@ -6,13 +6,12 @@
 #include "Framebuffer.h"
 #include "Gizmo.h"
 #include "Global.h"
-#include "Light.h"
 #include "IconsFontAwesome.h"
-#include "imgui_internal.h"
-
+#include "Light.h"
 #include "PopupWindows.h"
 #include "PropInspector.h"
 #include "Util.h"
+#include "imgui_internal.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -69,18 +68,11 @@ namespace ToolKit
 
     String GetRootPath(const String& folder)
     {
-      static std::unordered_set<String> rootMap = 
-      {
-        "Fonts",
-        "Materials",
-        "Meshes",
-        "Scenes",
-        "Shaders",
-        "Textures"
-      };
+      static std::unordered_set<String> rootMap =
+          {"Fonts", "Materials", "Meshes", "Scenes", "Shaders", "Textures"};
 
       String path = folder;
-      String subFolder{};
+      String subFolder {};
       // traverse parent paths and search a root folder
       while (path.size() > 0ull)
       {
@@ -89,9 +81,9 @@ namespace ToolKit
         while (path.size() > 0ull)
         {
           // pop last character
-          char c = path.back(); 
+          char c = path.back();
           path.erase(path.end() - 1ull);
-          
+
           if (c == '\\' || c == '/')
           {
             break;
@@ -104,7 +96,7 @@ namespace ToolKit
         // if we found a root folder return this path
         if (rootMap.count(subFolder) > 0)
         {
-          return ConcatPaths({path, subFolder });
+          return ConcatPaths({path, subFolder});
         }
       }
       return DefaultPath();
@@ -128,36 +120,37 @@ namespace ToolKit
 
     FolderWindow::~FolderWindow() {}
 
-    // destroy old one and create new tree    
+    // destroy old one and create new tree
     void FolderWindow::ReconstructFolderTree()
     {
       m_folderNodes.clear();
       CreateTreeRec(-1, DefaultPath());
-      m_resourcesTreeIndex = (int)m_folderNodes.size();
+      m_resourcesTreeIndex = (int) m_folderNodes.size();
       CreateTreeRec(int(m_folderNodes.size()) - 1, ResourcePath());
     }
 
     // parent will start with -1
-    int FolderWindow::CreateTreeRec(int parent, const std::filesystem::path& path)
+    int FolderWindow::CreateTreeRec(int parent,
+                                    const std::filesystem::path& path)
     {
       String folderName = path.filename().u8string();
-      int index = (int)m_folderNodes.size();
+      int index         = (int) m_folderNodes.size();
       m_folderNodes.emplace_back(index,
                                  std::filesystem::absolute(path).u8string(),
                                  folderName);
 
-      for (const std::filesystem::directory_entry& directory 
-          : std::filesystem::directory_iterator(path))
+      for (const std::filesystem::directory_entry& directory :
+           std::filesystem::directory_iterator(path))
       {
-        if (!directory.is_directory()) 
+        if (!directory.is_directory())
         {
           continue;
         }
-        
+
         int childIdx = CreateTreeRec(parent + 1, directory.path());
         m_folderNodes[index].childs.push_back(childIdx);
       }
-      
+
       return index;
     }
 
@@ -176,15 +169,19 @@ namespace ToolKit
 
     void FolderWindow::DrawTreeRec(int index, float depth)
     {
-      if (index == -1) return; // shouldn't happen
+      if (index == -1)
+      {
+        return; // shouldn't happen
+      }
+
       FolderNode& node = m_folderNodes[index];
-      String icon = node.active ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
+      String icon      = node.active ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
       String nodeHeader = icon + ICON_SPACE + node.name;
-      float headerLen = ImGui::CalcTextSize(nodeHeader.c_str()).x; 
+      float headerLen   = ImGui::CalcTextSize(nodeHeader.c_str()).x;
       headerLen += (depth * 20.0f) + 70.0f; // depth padding + UI start padding
 
-      m_maxTreeNodeWidth  = glm::max(headerLen, m_maxTreeNodeWidth);
-      
+      m_maxTreeNodeWidth     = glm::max(headerLen, m_maxTreeNodeWidth);
+
       const auto onClickedFn = [&]() -> void
       {
         // find clicked entity
@@ -194,8 +191,11 @@ namespace ToolKit
           FolderView& selectedEntry = m_entries[selected];
           bool rootChanged          = false;
 
-          if (m_lastSelectedTreeNode != -1 &&
-              m_lastSelectedTreeNode < m_entries.size())
+          if (m_lastSelectedTreeNode == -1)
+          {
+            m_activeFolder = selected;
+          }
+          else if (m_lastSelectedTreeNode < m_entries.size())
           {
             FolderView& lastSelectedEntry = m_entries[m_lastSelectedTreeNode];
 
@@ -208,8 +208,18 @@ namespace ToolKit
             {
               // root folders different we should switch active folder
               m_activeFolder = selected;
+
+              for (int i : GetVeiws())
+              {
+                FolderView& v = m_entries[i];
+                if (!v.m_currRoot)
+                {
+                  m_entries[i].m_visible = false;
+                }
+              }
             }
           }
+
           AddEntry(selectedEntry);
           node.active                  = true;
           m_lastSelectedTreeNode       = selected;
@@ -224,7 +234,7 @@ namespace ToolKit
         if (ImGui::BeginDragDropTarget())
         {
           if (const ImGuiPayload* payload =
-                ImGui::AcceptDragDropPayload("BrowserDragZone"))
+                  ImGui::AcceptDragDropPayload("BrowserDragZone"))
           {
             if (g_dragBeginView != nullptr)
             {
@@ -232,7 +242,7 @@ namespace ToolKit
             }
           }
           ImGui::EndDragDropTarget();
-        }        
+        }
       };
 
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
@@ -246,21 +256,21 @@ namespace ToolKit
         if (ImGui::TreeNodeEx(stdId.c_str(), nodeFlags, nodeHeader.c_str()))
         {
           if (ImGui::IsItemClicked())
-          {  
+          {
             onClickedFn();
-          }   
+          }
         }
         acceptDrop();
       }
       else
       {
-        if (ImGui::TreeNodeEx(stdId.c_str(), nodeFlags, nodeHeader.c_str())) 
+        if (ImGui::TreeNodeEx(stdId.c_str(), nodeFlags, nodeHeader.c_str()))
         {
           if (ImGui::IsItemClicked())
           {
             onClickedFn();
           }
-        
+
           for (int i = 0; i < node.childs.size(); ++i)
           {
             DrawTreeRec(node.childs[i], depth + 1.0f);
@@ -270,15 +280,14 @@ namespace ToolKit
         acceptDrop();
       }
     }
-    
+
     void FolderWindow::ShowFolderTree()
     {
       // Show Resource folder structure.
       ImGui::PushID("##FolderStructure");
       ImGui::BeginGroup();
 
-      ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign,
-                          ImVec2(0.0f, 0.5f));
+      ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
       ImGui::TextUnformatted("Resources");
 
       ImGui::SameLine();
@@ -286,11 +295,11 @@ namespace ToolKit
       {
         m_showStructure = !m_showStructure;
       }
-      
+
       ImGui::BeginChild("##Folders", ImVec2(m_maxTreeNodeWidth, 0.0f), true);
-      
+
       // reset tree node default size
-      m_maxTreeNodeWidth = 160.0f; 
+      m_maxTreeNodeWidth = 160.0f;
       // draw tree of folders
       DrawTreeRec(m_resourcesTreeIndex, 0.0f);
       DrawTreeRec(0, 0.0f);
@@ -300,6 +309,35 @@ namespace ToolKit
       ImGui::PopStyleVar();
       ImGui::EndGroup();
       ImGui::PopID();
+    }
+
+    IntArray FolderWindow::GetVeiws()
+    {
+      String currRootPath;
+      auto IsDescendentFn = [&currRootPath](StringView candidate) -> bool
+      {
+        return !currRootPath.empty() &&
+               candidate.find(currRootPath) != std::string::npos;
+      };
+
+      IntArray views;
+
+      for (int i = 0; i < (int) m_entries.size(); i++)
+      {
+        FolderView& view = m_entries[i];
+        String candidate = view.GetPath();
+        if ((view.m_currRoot = (i == m_activeFolder)))
+        {
+          currRootPath = candidate;
+        }
+
+        // Show only current root folder or descendents.
+        if (view.m_currRoot || IsDescendentFn(candidate))
+        {
+          views.push_back(i);
+        }
+      }
+      return views;
     }
 
     void FolderWindow::Show()
@@ -339,27 +377,9 @@ namespace ToolKit
                                    ImGuiWindowFlags_NoScrollWithMouse |
                                    ImGuiWindowFlags_NoScrollbar))
         {
-          String currRootPath;
-          auto IsDescendentFn = [&currRootPath](StringView candidate) -> bool
+          for (int i : GetVeiws())
           {
-            return !currRootPath.empty() &&
-                   candidate.find(currRootPath) != std::string::npos;
-          };
-
-          for (int i = 0; i < static_cast<int>(m_entries.size()); i++)
-          {
-            FolderView& view = m_entries[i];
-            String candidate = view.GetPath();
-            if ((view.m_currRoot = (i == m_activeFolder)))
-            {
-              currRootPath = candidate;
-            }
-
-            // Show only current root folder or descendents.
-            if (view.m_currRoot || IsDescendentFn(candidate))
-            {
-              view.Show();
-            }
+            m_entries[i].Show();
           }
           ImGui::EndTabBar();
         }

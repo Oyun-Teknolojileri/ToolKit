@@ -36,7 +36,7 @@ namespace ToolKit
 
     struct FileDragData
     {
-      int NumFiles = 0;
+      int NumFiles             = 0;
       DirectoryEntry** Entries = nullptr;
     };
 
@@ -58,8 +58,7 @@ namespace ToolKit
       void Refresh();
       float GetThumbnailZoomPercent(float thumbnailZoom);
       int SelectFolder(FolderWindow* window, const String& path);
-      
-      
+
       void DropFiles(const String& dst); //!< drop selectedFiles
 
       static const FileDragData& GetFileDragData();
@@ -99,7 +98,7 @@ namespace ToolKit
        */
       void SelectFilesInRange(int a, int b);
 
-      FolderWindow* m_parent = nullptr;
+      FolderWindow* m_parent  = nullptr;
       bool m_dirty            = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
       String m_filter         = "";
@@ -135,6 +134,10 @@ namespace ToolKit
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
      private:
+      
+      // Returns active root's decendend views (tabs).
+      IntArray GetVeiws();
+
       void ShowFolderTree();
       void DeactivateNode(const String& name);
       int CreateTreeRec(int parent, const std::filesystem::path& path);
@@ -154,12 +157,13 @@ namespace ToolKit
         String path = "undefined";
         String name = "undefined";
         std::vector<int> childs;
-        int index       = -1;
+        int index   = -1;
         bool active = false;
 
         FolderNode() {}
+
         FolderNode(int idx, String p, String n)
-        : index(idx), path(std::move(p)), name(std::move(n))
+            : index(idx), path(std::move(p)), name(std::move(n))
         {
         }
       };
@@ -167,12 +171,12 @@ namespace ToolKit
       std::unordered_map<String, ViewSettings> m_viewSettings;
       std::vector<FolderView> m_entries;
       std::vector<FolderNode> m_folderNodes;
-      float m_maxTreeNodeWidth = 160.0f;
+      float m_maxTreeNodeWidth   = 160.0f;
 
-      int m_activeFolder   = 0;
-      bool m_showStructure = true;
-      int m_resourcesTreeIndex = 0;
-      int m_lastSelectedTreeNode = 0;
+      int m_activeFolder         = 0;
+      bool m_showStructure       = true;
+      int m_resourcesTreeIndex   = 0;
+      int m_lastSelectedTreeNode = -1;
     };
 
   } // namespace Editor
