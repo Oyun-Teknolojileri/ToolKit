@@ -170,7 +170,10 @@ namespace ToolKit
     void FolderWindow::DrawTreeRec(int index, float depth)
     {
       if (index == -1)
+      {
         return; // shouldn't happen
+      }
+
       FolderNode& node = m_folderNodes[index];
       String icon      = node.active ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
       String nodeHeader = icon + ICON_SPACE + node.name;
@@ -205,6 +208,15 @@ namespace ToolKit
             {
               // root folders different we should switch active folder
               m_activeFolder = selected;
+
+              for (int i : GetVeiws())
+              {
+                FolderView& v = m_entries[i];
+                if (!v.m_currRoot)
+                {
+                  m_entries[i].m_visible = false;
+                }
+              }
             }
           }
 
@@ -299,6 +311,35 @@ namespace ToolKit
       ImGui::PopID();
     }
 
+    IntArray FolderWindow::GetVeiws()
+    {
+      String currRootPath;
+      auto IsDescendentFn = [&currRootPath](StringView candidate) -> bool
+      {
+        return !currRootPath.empty() &&
+               candidate.find(currRootPath) != std::string::npos;
+      };
+
+      IntArray views;
+
+      for (int i = 0; i < (int) m_entries.size(); i++)
+      {
+        FolderView& view = m_entries[i];
+        String candidate = view.GetPath();
+        if ((view.m_currRoot = (i == m_activeFolder)))
+        {
+          currRootPath = candidate;
+        }
+
+        // Show only current root folder or descendents.
+        if (view.m_currRoot || IsDescendentFn(candidate))
+        {
+          views.push_back(i);
+        }
+      }
+      return views;
+    }
+
     void FolderWindow::Show()
     {
       ImGui::SetNextWindowSize(ImVec2(300, 150), ImGuiCond_Once);
@@ -336,27 +377,9 @@ namespace ToolKit
                                    ImGuiWindowFlags_NoScrollWithMouse |
                                    ImGuiWindowFlags_NoScrollbar))
         {
-          String currRootPath;
-          auto IsDescendentFn = [&currRootPath](StringView candidate) -> bool
+          for (int i : GetVeiws())
           {
-            return !currRootPath.empty() &&
-                   candidate.find(currRootPath) != std::string::npos;
-          };
-
-          for (int i = 0; i < static_cast<int>(m_entries.size()); i++)
-          {
-            FolderView& view = m_entries[i];
-            String candidate = view.GetPath();
-            if ((view.m_currRoot = (i == m_activeFolder)))
-            {
-              currRootPath = candidate;
-            }
-
-            // Show only current root folder or descendents.
-            if (view.m_currRoot || IsDescendentFn(candidate))
-            {
-              view.Show();
-            }
+            m_entries[i].Show();
           }
           ImGui::EndTabBar();
         }

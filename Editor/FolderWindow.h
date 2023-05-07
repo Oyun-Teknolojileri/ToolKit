@@ -134,6 +134,10 @@ namespace ToolKit
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
      private:
+      
+      // Returns active root's decendend views (tabs).
+      IntArray GetVeiws();
+
       void ShowFolderTree();
       void DeactivateNode(const String& name);
       int CreateTreeRec(int parent, const std::filesystem::path& path);
