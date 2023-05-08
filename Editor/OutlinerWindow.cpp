@@ -295,7 +295,7 @@ namespace ToolKit
     // if you are indicating between two nodes this will 
     // return the index of upper entity, 
     // if you are indicating on top of all entities this will return DroppedOnTopOfEntities
-    int OutlinerWindow::GetMouseHoveredNodeIndex(float treeStartY)
+    int OutlinerWindow::GetMouseHoveredNodeIndex(float treeStartY) const
     {
       const float lineHeight = GetLineHeight();
       const float mouseY = ImGui::GetMousePos().y;
@@ -368,7 +368,7 @@ namespace ToolKit
       bool allSameParent = true;
       Node* firstParent  = movedEntities[0]->m_node->m_parent;
 
-      for (int i = 0; i < movedEntities.size(); ++i)
+      for (int i = 0; i < movedEntities.size(); ++i)      
       {
         allSameParent &= movedEntities[i]->m_node->m_parent == firstParent;
       }
@@ -411,11 +411,9 @@ namespace ToolKit
         // remove all dropped entites 
         scene->RemoveEntity(movedEntities);
         // find index of dropped entity and
-        // insert all dropped entities below dropped entity
-        entities.insert(
-          std::find(entities.cbegin(), entities.cend(), droppedBelowNtt) + 1,
-          movedEntities.begin(),
-          movedEntities.end());
+        // insert all dropped entities below dropped entity 
+        auto find = std::find(entities.cbegin(), entities.cend(), droppedBelowNtt);
+        entities.insert(find + 1, movedEntities.begin(), movedEntities.end());
       }
       else if (droppedParent != nullptr) // did we drop in child list?
       {
@@ -448,8 +446,13 @@ namespace ToolKit
         const EntityRawPtrArray& ntties = currScene->GetEntities();
         m_roots.clear();
         m_indexToEntity.clear();
-        GetRootEntities(ntties, m_roots);
 
+        std::copy_if(ntties.cbegin(),
+                     ntties.cend(),
+                     std::back_inserter(m_roots),
+                     [](const Entity* e)
+                     { return e->m_node->m_parent == nullptr; });
+        
         HandleStates();
         ShowSearchBar(m_searchString);
 
@@ -513,10 +516,12 @@ namespace ToolKit
         // show drag drop tooltip
         if (dragging) 
         {
-          if (m_anyEntityHovered)
+          if (m_anyEntityHovered && m_indexToEntity.size() > 0ull)
           {
-            Entity* hoveredEntity =
-                m_indexToEntity[GetMouseHoveredNodeIndex(m_treeStartY)];
+            int index = glm::clamp(GetMouseHoveredNodeIndex(m_treeStartY),
+                                   0,
+                                   int(m_indexToEntity.size())-1);
+            Entity* hoveredEntity = m_indexToEntity[index];
             ImGui::SetTooltip(contains(m_draggingEntities, hoveredEntity)
                                   ? "Drag Drop for set as child or Reorder"
                                   : "Set As Child");
@@ -630,7 +635,8 @@ namespace ToolKit
       if (ImGui::InputTextWithHint(" SearchString", "Search", &searchString))
       {
         m_stringSearchMode = searchString.size() > 0ull;
-        bool searchStrChanged = m_searchStringSize != searchString.size();
+        bool searchStrChanged = m_searchStringSize != (int)searchString.size();
+        m_searchStringSize = (int)searchString.size();
 
         if (searchStrChanged && m_stringSearchMode)
         {

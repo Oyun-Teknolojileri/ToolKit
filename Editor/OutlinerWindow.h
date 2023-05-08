@@ -48,7 +48,7 @@ namespace ToolKit
       
       void SortDraggedEntitiesByNodeIndex();
       bool IndicatingInBetweenNodes();
-      int GetMouseHoveredNodeIndex(float treeStartY);
+      int GetMouseHoveredNodeIndex(float treeStartY) const;
     private:
       /**
        * Focus uses this internal array, Show() opens all nodes and sets focus
