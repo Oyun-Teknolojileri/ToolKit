@@ -290,8 +290,12 @@ namespace ToolKit
     }
 
     // indicates that dropped on top of all entities
-    static const int DroppedOnTopOfEntities = -1;
-
+    const int DroppedOnTopOfEntities  = -1;
+    const int DroppedBelowAllEntities = TK_INT_MAX;
+    // max -1 because if we set m_insertSelectedIndex
+    // we want to drop below all entities ( clamp function will cause that)
+    const int DropIsNotPossible       = TK_INT_MAX - 1; 
+    
     // if you are indicating between two nodes this will 
     // return the index of upper entity, 
     // if you are indicating on top of all entities this will return DroppedOnTopOfEntities
@@ -304,6 +308,20 @@ namespace ToolKit
       if (fabsf(mouseY - treeStartY) < lineHeight * 0.5)
       {
         return DroppedOnTopOfEntities;
+      }
+
+      float windowPosY = ImGui::GetWindowSize().y + ImGui::GetWindowPos().y;
+      // is dropped below all entities?
+      if (fabsf(mouseY - windowPosY) < lineHeight * 0.5)
+      {
+        return DroppedBelowAllEntities;
+      }
+      
+      // order of this if block important, 
+      // we should call this after two if's above
+      if (!ImGui::IsWindowHovered())
+      {
+        return DropIsNotPossible;
       }
 
       int selectedIndex = (int)floorf((mouseY - treeStartY) / lineHeight);
@@ -355,6 +373,14 @@ namespace ToolKit
         return true;
       }
       
+      if (selectedIndex == DroppedBelowAllEntities) 
+      {
+        OrphanAll(movedEntities);
+        scene->RemoveEntity(movedEntities);
+        entities.insert(entities.end(), movedEntities.begin(), movedEntities.end());
+        return true;
+      }
+
       selectedIndex = glm::clamp(selectedIndex, 0, int(m_indexToEntity.size())-1);
       Entity* droppedBelowNtt = m_indexToEntity[selectedIndex];
 
@@ -430,7 +456,7 @@ namespace ToolKit
         }
       }
       // reset to default insert index (end of the list)
-      m_insertSelectedIndex = TK_INT_MAX;
+      m_insertSelectedIndex = DroppedBelowAllEntities;
       return true;
     }
 
@@ -447,6 +473,7 @@ namespace ToolKit
         m_roots.clear();
         m_indexToEntity.clear();
 
+        // get root entities
         std::copy_if(ntties.cbegin(),
                      ntties.cend(),
                      std::back_inserter(m_roots),
@@ -482,14 +509,20 @@ namespace ToolKit
         bool multiSelecting = ImGui::IsKeyDown(ImGuiKey_LeftShift) ||
                               ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
 
-        if (!multiSelecting && IndicatingInBetweenNodes()) 
+
+        if (!multiSelecting && !m_anyEntityHovered)
         {
-          if (leftMouseReleased && dragging)
+          if (leftMouseReleased || rightMouseReleased)
           {
-            // we are using this member variable in try insert entities function
-            // (order is important. dont move this below if block)
-            m_insertSelectedIndex = GetMouseHoveredNodeIndex(m_treeStartY); 
-            
+            // fill required argument for reordering.
+            // we are using this member variable in TryReorderEntites function
+            // (order is important. dont move this below next if block)
+            m_insertSelectedIndex = GetMouseHoveredNodeIndex(m_treeStartY);
+          }
+          bool canInsert = m_insertSelectedIndex != DropIsNotPossible;
+
+          if (leftMouseReleased && dragging && canInsert)
+          {
             if (!TryReorderEntites(m_draggingEntities))
             {
               // if reordering is not possible orphan all dragged entities
@@ -499,12 +532,11 @@ namespace ToolKit
             m_draggingEntities.clear();
             currScene->ClearSelection();
           }
+
           // right click in between entities.
-          if (rightMouseReleased)
+          if (rightMouseReleased && canInsert)
           {
             ImGui::OpenPopup("##Create");
-            // fill required argument for reordering.
-            m_insertSelectedIndex = GetMouseHoveredNodeIndex(m_treeStartY); 
           }
         }
         
