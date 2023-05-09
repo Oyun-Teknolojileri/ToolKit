@@ -345,6 +345,22 @@ namespace ToolKit
         const ImVec2 spacing         = ImGui::GetStyle().ItemSpacing;
         const ImVec2 sidebarSize =
             ImVec2(spacing.x + sidebarIconSize.x + spacing.x, windowSize.y);
+        
+        Entity* curEntity = g_app->GetCurrentScene()->GetCurrentSelection();
+        
+        if (MaterialView* matView =
+                dynamic_cast<MaterialView*>(m_views[(uint)m_activeView]))
+        {
+          if (curEntity != nullptr)
+          {
+            MaterialComponentPtr mat = curEntity->GetMaterialComponent();
+            if (curEntity != nullptr)
+            {
+              matView->SetMaterial(mat->GetFirstMaterial());
+            }
+          }
+        }
+        
         if (ImGui::BeginChildFrame(ImGui::GetID("ViewTypeSidebar"),
                                    sidebarSize,
                                    0))
@@ -352,6 +368,17 @@ namespace ToolKit
           for (uint viewIndx = 0; viewIndx < m_views.size(); viewIndx++)
           {
             ViewRawPtr view = m_views[viewIndx];
+
+            // is prefab view
+            if (PrefabView* prefabView = dynamic_cast<PrefabView*>(view))
+            {
+              // but entity is not prefab continue
+              if (curEntity == nullptr ||
+                  curEntity->GetType() != EntityType::Entity_Prefab)
+              {
+                continue;
+              }
+            }
 
             if ((uint) m_activeView == viewIndx)
             {
@@ -362,6 +389,7 @@ namespace ToolKit
               ImGui::PushStyleColor(ImGuiCol_Button, childBg);
             }
 
+            // is this font icon ? (prefab's icon is font icon)
             if (view->m_fontIcon.size() > 0)
             {
               ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0, 1.0, 1.0, 1.0));

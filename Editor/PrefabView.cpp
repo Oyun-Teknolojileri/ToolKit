@@ -25,6 +25,11 @@ namespace ToolKit
 
     PrefabView::~PrefabView() {}
 
+    bool PrefabView::HasActiveEntity() const
+    {
+      return m_activeChildEntity != nullptr;
+    }
+
     bool PrefabView::DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags)
     {
       const String sId = "##" + std::to_string(ntt->GetIdVal());
