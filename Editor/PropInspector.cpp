@@ -54,15 +54,19 @@ namespace ToolKit
           fileExist = true;
         }
       }
-      uint iconId           = fallbackIcon;
 
+      uint iconId           = fallbackIcon;
       ImVec2 texCoords      = ImVec2(1.0f, 1.0f);
 
       RenderTargetPtr thumb = dirEnt.GetThumbnail();
-      if (dirEnt.m_ext.length() && thumb != nullptr)
+      if (dirEnt.m_ext.length())
       {
-        texCoords = ImVec2(1.0f, -1.0f);
-        iconId    = thumb->m_textureId;
+        if (thumb->m_textureId != 0 && 
+           !g_app->m_thumbnailManager.IsDefaultThumbnail(thumb))
+        {
+          iconId    = thumb->m_textureId;
+          texCoords = ImVec2(1.0f, -1.0f);
+        }
       }
       else if (fileExist)
       {
@@ -71,8 +75,10 @@ namespace ToolKit
                       &dirEnt.m_fileName,
                       &dirEnt.m_ext);
 
-        if (RenderTargetPtr thumb =
-                g_app->m_thumbnailManager.GetThumbnail(dirEnt))
+        thumb = g_app->m_thumbnailManager.GetThumbnail(dirEnt);
+
+        if (thumb->m_textureId != 0 && 
+           !g_app->m_thumbnailManager.IsDefaultThumbnail(thumb))
         {
           iconId = thumb->m_textureId;
         }
@@ -83,11 +89,10 @@ namespace ToolKit
         ImGui::Text(dropName.c_str());
       }
 
-      bool clicked =
-          ImGui::ImageButton(reinterpret_cast<void*>((intptr_t) iconId),
-                             ImVec2(48.0f, 48.0f),
-                             ImVec2(0.0f, 0.0f),
-                             texCoords);
+      bool clicked = ImGui::ImageButton((ImTextureID) iconId,
+                                         ImVec2(48.0f, 48.0f),
+                                         ImVec2(0.0f, 0.0f),
+                                         texCoords);
 
       if (isEditable && ImGui::BeginDragDropTarget())
       {
@@ -127,7 +132,8 @@ namespace ToolKit
             MaterialPtr mr = man->Create<Material>(file);
             if (clicked)
             {
-              g_app->GetPropInspector()->SetMaterialView(mr);
+              // todo open window
+              g_app->GetPropInspector()->SetMaterials({mr});
             }
 
             info += "File: " + dirEnt.m_fileName + dirEnt.m_ext + "\n";
@@ -163,7 +169,10 @@ namespace ToolKit
         }
       }
 
-      UI::HelpMarker(TKLoc + file, info.c_str(), 0.1f);
+      if (fileExist && info != "") 
+      {
+        UI::HelpMarker(TKLoc + file, info.c_str(), 0.1f);
+      }
     }
 
     void View::DropSubZone(
@@ -203,7 +212,6 @@ namespace ToolKit
 
       DirectionComponentPtr directionComp =
           light->GetComponent<DirectionComponent>();
-
       directionComp->Yaw(glm::radians(-20.0f));
       directionComp->Pitch(glm::radians(-20.0f));
 
@@ -213,6 +221,8 @@ namespace ToolKit
       m_previewRenderer->m_params.Lights           = {m_light};
       m_previewRenderer->m_params.MainFramebuffer  = m_framebuffer;
       m_previewRenderer->m_params.Scene            = std::make_shared<Scene>();
+      
+      // GetScene()->AddEntity(light);
     }
 
     PreviewViewport::~PreviewViewport()
@@ -242,14 +252,7 @@ namespace ToolKit
           continue;
         }
 
-        if (ntt->GetVisibleVal())
-        {
-          mc->SetCastShadowVal(true);
-        }
-        else
-        {
-          mc->SetCastShadowVal(false);
-        }
+        mc->SetCastShadowVal(ntt->GetVisibleVal());
       }
 
       GetRenderSystem()->AddRenderTask(m_previewRenderer);
@@ -260,6 +263,10 @@ namespace ToolKit
       Vec2 currentCursorPos = Vec2(ImGui::GetWindowContentRegionMin()) +
                               Vec2(ImGui::GetCursorPos()) +
                               Vec2(ImGui::GetWindowPos());
+      if (m_isTempView)
+      {
+        currentCursorPos.y -= 24.0f;
+      }
 
       ImGui::Dummy(imageSize);
 
@@ -327,7 +334,7 @@ namespace ToolKit
       ImVec4 windowBg  = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
       ImVec4 childBg   = ImGui::GetStyleColorVec4(ImGuiCol_ChildBg);
       ImGuiStyle style = ImGui::GetStyle();
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.0f, 0.0f));
       ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
                           ImVec2(2.0f, style.ItemSpacing.y));
       if (ImGui::Begin(m_name.c_str(),
@@ -354,9 +361,9 @@ namespace ToolKit
           if (curEntity != nullptr)
           {
             MaterialComponentPtr mat = curEntity->GetMaterialComponent();
-            if (curEntity != nullptr)
+            if (mat != nullptr && curEntity != nullptr)
             {
-              matView->SetMaterial(mat->GetFirstMaterial());
+              matView->SetMaterials(mat->GetMaterialList());
             }
           }
         }
@@ -432,12 +439,12 @@ namespace ToolKit
 
     void PropInspector::DispatchSignals() const { ModShortCutSignals(); }
 
-    void PropInspector::SetMaterialView(MaterialPtr mat)
+    void PropInspector::SetMaterials(const MaterialPtrArray& mat)
     {
       m_activeView          = ViewType::Material;
       uint matViewIndx      = (uint) ViewType::Material;
       MaterialView* matView = (MaterialView*) m_views[matViewIndx];
-      matView->SetMaterial(mat);
+      matView->SetMaterials(mat);
     }
 
     void PropInspector::SetMeshView(MeshPtr mesh)

@@ -112,7 +112,7 @@ namespace ToolKit
                               xSize.x);
       ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
-      xSize = ImGui::CalcTextSize("X");
+      xSize = ImGui::CalcTextSize(ICON_FA_MINUS);
       xSize *= 2.5f;
       ImGui::TableSetupColumn("##Remove",
                               ImGuiTableColumnFlags_WidthFixed,
@@ -240,7 +240,7 @@ namespace ToolKit
       }
 
       ImGui::TableSetColumnIndex(2);
-      if (isListEditable && ImGui::Button("X"))
+      if (isListEditable && ImGui::Button(ICON_FA_MINUS))
       {
         remove = var;
         g_app->m_statusMsg =

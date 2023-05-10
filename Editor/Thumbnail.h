@@ -57,6 +57,9 @@ namespace ToolKit
        */
       void UpdateThumbnail(const DirectoryEntry& dirEnt);
 
+      bool IsDefaultThumbnail(RenderTargetPtr thumb);
+      RenderTargetPtr GetDefaultThumbnail();
+
      private:
       void CreateRenderTask(const DirectoryEntry& dirEnt);
 

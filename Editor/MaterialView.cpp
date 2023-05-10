@@ -54,7 +54,7 @@ namespace ToolKit
 
     MaterialView::~MaterialView() { SafeDel(m_viewport); }
 
-    void MaterialView::SetMaterial(MaterialPtr mat) { m_mat = mat; }
+    void MaterialView::SetMaterials(const MaterialPtrArray& mat) { m_materials = mat; }
 
     void MaterialView::ResetCamera() { m_viewport->ResetCamera(); }
 
@@ -100,9 +100,13 @@ namespace ToolKit
         if (!ntt->IsSkyInstance())
         {
           ntt->SetVisibleVal(!primEntityVis);
-          if (ntt->GetMaterialComponent())
+          if (ntt->GetMaterialComponent() && m_materials.size() > 0)
           {
-            ntt->GetMaterialComponent()->SetFirstMaterial(m_mat);
+            m_currentMaterialIndex =
+                glm::clamp(m_currentMaterialIndex, 0, (int) m_materials.size());
+              
+            ntt->GetMaterialComponent()->SetFirstMaterial(
+                m_materials[m_currentMaterialIndex]);
           }
         }
       }
@@ -113,28 +117,53 @@ namespace ToolKit
       }
     }
 
-    void MaterialView::Show()
+    int DrawTypeToInt(DrawType drawType)
     {
-      if (!m_mat)
+      switch (drawType)
+      {
+        case DrawType::Triangle:  return 0;
+        case DrawType::Line:      return 1;
+        case DrawType::LineStrip: return 2;
+        case DrawType::LineLoop:  return 3;
+        case DrawType::Point:     return 4;
+        default: return -1;
+      }
+    }
+
+    DrawType IntToDrawType(int drawType)
+    {
+      switch (drawType)
+      {
+        case 0: return DrawType::Triangle;
+        case 1: return DrawType::Line;
+        case 2: return DrawType::LineStrip;
+        case 3: return DrawType::LineLoop;
+        case 4: return DrawType::Point;
+      }
+    }
+
+    void MaterialView::ShowMaterial(MaterialPtr mat)
+    {
+      if (!mat)
       {
         ImGui::Text("\nSelect a material");
         return;
       }
 
       String name, ext;
-      DecomposePath(m_mat->GetFile(), nullptr, &name, &ext);
+      DecomposePath(mat->GetFile(), nullptr, &name, &ext);
+      UI::HeaderText(name.c_str());
 
-      ImGui::Text("\nMaterial: %s%s", name.c_str(), ext.c_str());
       // 0th slot was pbr and removed, this is why we are doing -1 adjustments.
-      int matType     = glm::clamp((int) m_mat->m_materialType, 1, 2) - 1;
+      int matType     = glm::clamp((int) mat->m_materialType, 1, 2) - 1;
       int currentType = matType;
       if (ImGui::Combo("Material Type", &matType, "PBR\0Custom"))
       {
         if (matType != currentType)
         {
-          m_mat->m_materialType = (MaterialType) (matType + 1);
-          m_mat->SetDefaultMaterialTypeShaders();
-          m_mat->m_dirty = true;
+          mat->m_materialType = (MaterialType) (matType + 1);
+          mat->SetDefaultMaterialTypeShaders();
+          mat->m_dirty = true;
         }
       }
       ImGui::Separator();
@@ -154,10 +183,11 @@ namespace ToolKit
 
         const ImVec2 viewportSize = ImVec2(ImGui::GetContentRegionAvail().x -
                                                iconSize.x - 9.0f * spacing.x,
-                                           150.0f);
+                                           130.0f);
         if (viewportSize.x > 1 && viewportSize.y > 1)
         {
           ImGui::SameLine();
+          m_viewport->m_isTempView = m_isTempView;
           m_viewport->ResizeWindow((uint) viewportSize.x,
                                    (uint) viewportSize.y);
           m_viewport->Update(g_app->GetDeltaTime());
@@ -180,46 +210,57 @@ namespace ToolKit
 
           ImGui::EndGroup();
         }
+        ImGui::Spacing();
       }
 
-      auto updateThumbFn = [this]() -> void
+      auto updateThumbFn = [this, mat]() -> void
       {
-        DirectoryEntry dirEnt(m_mat->GetFile());
+        DirectoryEntry dirEnt(mat->GetFile());
         g_app->m_thumbnailManager.UpdateThumbnail(dirEnt);
-        m_mat->m_dirty = true;
+        mat->m_dirty = true;
       };
 
-      if (m_mat->m_materialType == MaterialType::Custom)
+      if (mat->m_materialType == MaterialType::Custom)
       {
         if (ImGui::CollapsingHeader("Shaders"))
         {
+          ImGui::BeginGroup();
           ImGui::LabelText("##vertShader", "Vertex Shader: ");
           DropZone(UI::m_codeIcon->m_textureId,
-                   m_mat->m_vertexShader->GetFile(),
-                   [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                   mat->m_vertexShader->GetFile(),
+                   [this, mat, &updateThumbFn](
+                       const DirectoryEntry& dirEnt) -> void
                    {
                      if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
                      {
                        g_app->m_statusMsg = "Failed. Shader expected.";
                        return;
                      }
-                     m_mat->m_vertexShader = GetShaderManager()->Create<Shader>(
+                     mat->m_vertexShader = GetShaderManager()->Create<Shader>(
                          dirEnt.GetFullPath());
-                     m_mat->m_vertexShader->Init();
+                     mat->m_vertexShader->Init();
                      updateThumbFn();
-                   });
+              });
+          ImGui::EndGroup();
+          
+          ImGui::SameLine();
+          
+          ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 35.0f);
 
+          ImGui::BeginGroup();
           ImGui::LabelText("##fragShader", "Fragment Shader: ");
           DropZone(UI::m_codeIcon->m_textureId,
-                   m_mat->m_fragmentShader->GetFile(),
-                   [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                   mat->m_fragmentShader->GetFile(),
+                   [this, mat, &updateThumbFn](
+                       const DirectoryEntry& dirEnt) -> void
                    {
-                     m_mat->m_fragmentShader =
+                mat->m_fragmentShader =
                          GetShaderManager()->Create<Shader>(
                              dirEnt.GetFullPath());
-                     m_mat->m_fragmentShader->Init();
+                mat->m_fragmentShader->Init();
                      updateThumbFn();
                    });
+          ImGui::EndGroup();
         }
       }
 
@@ -231,6 +272,8 @@ namespace ToolKit
                                                  StringView sId,
                                                  StringView label) -> void
         {
+          ImGui::BeginGroup();
+
           ImGui::LabelText(sId.data(), label.data());
           String target = GetPathSeparatorAsStr();
           if (texture)
@@ -262,36 +305,42 @@ namespace ToolKit
             }
             ImGui::PopID();
           }
+
+          ImGui::EndGroup();
         };
 
-        exposeTextureFn(m_mat->m_diffuseTexture, "##diffTexture", "Diffuse");
-        exposeTextureFn(m_mat->m_emissiveTexture,
+        exposeTextureFn(mat->m_diffuseTexture, "##diffTexture", "Diffuse");
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 35.0f);
+        exposeTextureFn(mat->m_emissiveTexture,
                         "##emissiveTexture",
                         "Emissive");
-        exposeTextureFn(m_mat->m_normalMap, "##normalMap", "Normal Map");
-        exposeTextureFn(m_mat->m_metallicRoughnessTexture,
+        exposeTextureFn(mat->m_normalMap, "##normalMap", "Normal Map");
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 35.0f);
+        exposeTextureFn(mat->m_metallicRoughnessTexture,
                         "##metallicRoughnessTexture",
                         "Metallic Roughness");
       }
 
-      RenderState* renderState = m_mat->GetRenderState();
+      RenderState* renderState = mat->GetRenderState();
 
       if (ImGui::CollapsingHeader("Render States",
                                   ImGuiTreeNodeFlags_DefaultOpen))
       {
-        if (m_mat->m_diffuseTexture == nullptr)
+        if (mat->m_diffuseTexture == nullptr)
         {
-          if (ImGui::ColorEdit3("Diffuse Color", &m_mat->m_color.x))
+          if (ImGui::ColorEdit3("Diffuse Color", &mat->m_color.x))
           {
             updateThumbFn();
           }
           if (ImGui::DragFloat("Alpha",
-                               &m_mat->GetAlpha(),
+                               &mat->GetAlpha(),
                                1.0f / 256.0f,
                                0.0f,
                                1.0f))
           {
-            bool isForward = m_mat->GetAlpha() < 0.99f;
+            bool isForward = mat->GetAlpha() < 0.99f;
             renderState->blendFunction =
                 isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA
                           : BlendFunction::NONE;
@@ -300,10 +349,10 @@ namespace ToolKit
           }
         }
 
-        if (m_mat->m_emissiveTexture == nullptr)
+        if (mat->m_emissiveTexture == nullptr)
         {
           if (ImGui::ColorEdit3("Emissive Color Multiplier##1",
-                                &m_mat->m_emissiveColor.x,
+                                &mat->m_emissiveColor.x,
                                 ImGuiColorEditFlags_HDR |
                                     ImGuiColorEditFlags_NoLabel |
                                     ImGuiColorEditFlags_Float))
@@ -314,24 +363,22 @@ namespace ToolKit
           ImGui::Text("Emissive Color");
         }
 
-        if (m_mat->IsPBR() && m_mat->m_metallicRoughnessTexture == nullptr)
+        if (mat->IsPBR() && mat->m_metallicRoughnessTexture == nullptr)
         {
           if (ImGui::DragFloat("Metallic",
-                               &(m_mat->m_metallic),
+                               &(mat->m_metallic),
                                0.001f,
                                0.0f,
-                               1.0f,
-                               "%.3f"))
+                               1.0f))
           {
             updateThumbFn();
           }
 
           if (ImGui::DragFloat("Roughness",
-                               &(m_mat->m_roughness),
+                               &(mat->m_roughness),
                                0.001f,
                                0.0f,
-                               1.0f,
-                               "%.3f"))
+                               1.0f))
           {
             updateThumbFn();
           }
@@ -352,57 +399,21 @@ namespace ToolKit
           renderState->blendFunction = (BlendFunction) blendMode;
           if (renderState->blendFunction == BlendFunction::NONE)
           {
-            m_mat->SetAlpha(1.0f);
+            mat->SetAlpha(1.0f);
           }
 
-          m_mat->m_dirty = true;
+          mat->m_dirty = true;
 
           updateThumbFn();
         }
 
-        int drawType = -1;
-        switch (m_mat->GetRenderState()->drawType)
-        {
-        case DrawType::Triangle:
-          drawType = 0;
-          break;
-        case DrawType::Line:
-          drawType = 1;
-          break;
-        case DrawType::LineStrip:
-          drawType = 2;
-          break;
-        case DrawType::LineLoop:
-          drawType = 3;
-          break;
-        case DrawType::Point:
-          drawType = 4;
-          break;
-        }
+        int drawType = DrawTypeToInt(mat->GetRenderState()->drawType);
 
         if (ImGui::Combo("Draw mode",
                          &drawType,
                          "Triangle\0Line\0Line Strip\0Line Loop\0Point"))
         {
-          switch (drawType)
-          {
-          case 0:
-            renderState->drawType = DrawType::Triangle;
-            break;
-          case 1:
-            renderState->drawType = DrawType::Line;
-            break;
-          case 2:
-            renderState->drawType = DrawType::LineStrip;
-            break;
-          case 3:
-            renderState->drawType = DrawType::LineLoop;
-            break;
-          case 4:
-            renderState->drawType = DrawType::Point;
-            break;
-          }
-
+          renderState->drawType = IntToDrawType(drawType);
           updateThumbFn();
         }
 
@@ -428,5 +439,110 @@ namespace ToolKit
       }
     }
 
+    void MaterialView::Show()
+    {
+      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
+      
+      float treeHeight = glm::min(20.0f + (m_materials.size() * 30.0f), 90.0f);
+      int numMaterials = (int)m_materials.size();
+      
+      const auto showMaterialNodeFn = [this](MaterialPtr mat, int i) -> void
+      {
+        String name;
+        DecomposePath(m_materials[i]->GetFile(), nullptr, &name, nullptr);
+        
+        bool isSelected = i == m_currentMaterialIndex;
+        ImGuiTreeNodeFlags flags = isSelected * ImGuiTreeNodeFlags_Selected;
+        
+        ImGui::TreeNodeEx(name.c_str(),
+                          flags | ImGuiTreeNodeFlags_Leaf |
+                          ImGuiTreeNodeFlags_NoTreePushOnOpen);
+        
+        if (ImGui::IsItemClicked())
+        {
+          m_currentMaterialIndex = i;
+        }
+      };
+
+      if (m_materials.size() == 0)
+      {
+        ImGui::Text("There is no material selected.");
+      }
+      else if (numMaterials > 1)
+      {
+        ImGui::BeginChild("##MultiMaterials", ImVec2(0.0f, treeHeight), true);
+
+        if (ImGui::TreeNode("Multi Materials"))
+        {
+          for (int i = 0; i < m_materials.size(); i++)
+          {
+            showMaterialNodeFn(m_materials[i], i);
+          }
+          ImGui::TreePop();
+        }
+      }
+
+      if (m_materials.size() > 1)
+      {
+        ImGui::EndChild();
+      }
+
+      ImGui::Spacing();
+
+      if (m_materials.size() > 0) 
+      {
+        m_currentMaterialIndex =
+            glm::clamp(m_currentMaterialIndex, 0, (int)m_materials.size());
+        ShowMaterial(m_materials[m_currentMaterialIndex]);
+      }
+    }
+
+    // ######   TempMaterialWindow   ######
+
+    TempMaterialWindow::TempMaterialWindow()
+    {
+      m_view = std::make_shared<MaterialView>();
+      m_view->m_isTempView = true;
+      UI::AddTempWindow(this);
+    }
+
+    TempMaterialWindow::~TempMaterialWindow()
+    {
+      UI::RemoveTempWindow(this);
+      m_view = nullptr;
+    }
+
+    void TempMaterialWindow::SetMaterial(MaterialPtr mat)
+    {
+      m_view->SetMaterials({mat});
+    }
+
+    void TempMaterialWindow::OpenWindow()
+    {
+      m_isOpen = true;
+    }
+
+    void TempMaterialWindow::Show()
+    {
+      if (!m_isOpen)
+      {
+        return;
+      }
+
+      ImGuiIO io = ImGui::GetIO();
+      
+      ImGuiStyle style = ImGui::GetStyle();
+      ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_Once);
+      ImGui::SetNextWindowPos(
+        ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
+        ImGuiCond_Once,
+        ImVec2(0.5f, 0.5f));
+
+      ImGui::Begin("Material View", &m_isOpen);
+      
+      m_view->Show();
+  
+      ImGui::End();
+    }
   } // namespace Editor
 } // namespace ToolKit

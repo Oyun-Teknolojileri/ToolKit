@@ -715,6 +715,7 @@ namespace ToolKit
         char* log = new char[infoLen];
         glGetProgramInfoLog(program, infoLen, nullptr, log);
         GetLogger()->Log(log);
+        GetLogger()->WritePlatformConsole(LogType::Memo, log);
 
         assert(linked);
         SafeDelArray(log);

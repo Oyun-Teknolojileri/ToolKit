@@ -24,7 +24,8 @@ namespace ToolKit
           const String& file,
           std::function<void(DirectoryEntry& entry)> dropAction,
           const String& dropName = "",
-          bool isEditable        = true);
+          bool isEditable        = true); 
+
       static void DropSubZone(
           const String& title,
           uint fallbackIcon,
@@ -60,6 +61,8 @@ namespace ToolKit
      private:
       SceneRendererPtr m_previewRenderer = nullptr;
       Light* m_light                     = nullptr;
+     public:
+      bool m_isTempView = false;
     };
 
     typedef View* ViewRawPtr;
@@ -88,7 +91,7 @@ namespace ToolKit
       void Show() override;
       Type GetType() const override;
       void DispatchSignals() const override;
-      void SetMaterialView(MaterialPtr mat);
+      void SetMaterials(const MaterialPtrArray& mat);
       void SetMeshView(MeshPtr mesh);
 
      public:

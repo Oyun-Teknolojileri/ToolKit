@@ -44,6 +44,7 @@ namespace ToolKit
     {
      public:
       FolderView();
+      ~FolderView();
       explicit FolderView(FolderWindow* parent);
 
       void Show();
@@ -108,6 +109,7 @@ namespace ToolKit
 
       // If you change this value, change the calculaton of thumbnail zoom
       const float m_thumbnailMaxZoom = 300.f;
+      class TempMaterialWindow* m_tempMaterialWindow = nullptr;
     };
 
     class FolderWindow : public Window

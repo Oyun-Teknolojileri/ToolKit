@@ -92,6 +92,9 @@ namespace ToolKit
      public:
       static void Init();
       static void UnInit();
+      static void HeaderText(const char* text);
+      static void PushBoldFont();
+      static void PopBoldFont();
       static void ShowDock();
       static void InitIcons();
       static void InitTheme();

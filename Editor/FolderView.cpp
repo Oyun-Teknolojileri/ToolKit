@@ -8,6 +8,7 @@
 #include "Light.h"
 #include "IconsFontAwesome.h"
 #include "imgui_internal.h"
+#include "MaterialView.h"
 
 #include "PopupWindows.h"
 #include "PropInspector.h"
@@ -21,6 +22,11 @@ namespace ToolKit
   namespace Editor
   {
     FolderView::FolderView() { CreateItemActions(); }
+
+    FolderView::~FolderView() 
+    {
+      SafeDel(m_tempMaterialWindow);
+    }
 
     FolderView::FolderView(class FolderWindow* parent) : FolderView()
     {
@@ -363,8 +369,17 @@ namespace ToolKit
           }
           else if (thumbExtensions.count(dirEnt.m_ext) > 0)
           {
-            iconId           = dirEnt.GetThumbnail()->m_textureId;
-            flipRenderTarget = true;
+            RenderTargetPtr thumb = dirEnt.GetThumbnail();
+            if (thumb->m_textureId != 0 && 
+                !g_app->m_thumbnailManager.IsDefaultThumbnail(thumb))
+            {
+              iconId           = thumb->m_textureId;
+              flipRenderTarget = true;
+            }
+            else
+            {
+              iconId = UI::m_imageIcon->m_textureId;
+            }
           }
           else if (m_onlyNativeTypes)
           {
@@ -420,8 +435,15 @@ namespace ToolKit
               switch (rm->m_type)
               {
               case ResourceType::Material:
-                g_app->GetPropInspector()->SetMaterialView(
-                    rm->Create<Material>(dirEnt.GetFullPath()));
+              {
+                MaterialPtr mat = rm->Create<Material>(dirEnt.GetFullPath());
+                if (m_tempMaterialWindow == nullptr)
+                {
+                  m_tempMaterialWindow = new TempMaterialWindow();
+                }
+                m_tempMaterialWindow->SetMaterial(mat);
+                m_tempMaterialWindow->OpenWindow();
+              }
                 break;
               case ResourceType::Mesh:
                 g_app->GetPropInspector()->SetMeshView(
