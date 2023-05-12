@@ -33,10 +33,14 @@ namespace ToolKit
           DecomposePath(mat->GetFile(), &path, &fileName, &ext);
           String uniqueName = fileName + "##" + std::to_string(i);
           ImGui::PushID(i);
+          // push red color for X
+          ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
           if (UI::ButtonDecorless(ICON_FA_TIMES, Vec2(15), false))
           {
             removeMaterialIndx = i;
           }
+          ImGui::PopStyleColor();
+
           ImGui::SameLine();
           ImGui::EndDisabled();
           CustomDataView::ShowMaterialPtr(uniqueName,
@@ -50,7 +54,6 @@ namespace ToolKit
         {
           mmComp->RemoveMaterial(removeMaterialIndx);
         }
-
 
         if (UI::BeginCenteredTextButton("Update"))
         {

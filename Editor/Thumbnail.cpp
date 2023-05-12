@@ -194,6 +194,17 @@ namespace ToolKit
       return m_thumbnailCache[fullPath];
     }
 
+    bool ThumbnailManager::TryGetThumbnail(uint& iconId, const DirectoryEntry& dirEnt)
+    {
+      RenderTargetPtr thumb = GetThumbnail(dirEnt);
+      bool valid = thumb->m_textureId != 0 && !IsDefaultThumbnail(thumb);
+      if (valid)
+      {
+        iconId = thumb->m_textureId;
+      }
+      return valid;
+    }
+
     bool ThumbnailManager::Exist(const String& fullPath)
     {
       return m_thumbnailCache.find(fullPath) != m_thumbnailCache.end();

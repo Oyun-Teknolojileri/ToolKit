@@ -740,6 +740,22 @@ namespace ToolKit
           wnd->SetVisibility(true);
         }
       }
+      
+      if (g_app->GetRenderSettingsView() == nullptr)
+      {
+        if (ImGui::MenuItem(g_renderSettings.c_str()))
+        {
+          g_app->AddRenderSettingsView();
+          g_app->GetRenderSettingsView()->SetVisibility(true);
+        }
+      }
+      else if (ImGui::MenuItem(g_renderSettings.c_str(),
+                          nullptr,
+                          nullptr,
+                          !g_app->GetRenderSettingsView()->IsVisible()))
+      {
+        g_app->GetRenderSettingsView()->SetVisibility(true);
+      }
 
       ImGui::Separator();
 

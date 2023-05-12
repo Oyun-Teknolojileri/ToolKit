@@ -58,13 +58,12 @@ namespace ToolKit
       uint iconId           = fallbackIcon;
       ImVec2 texCoords      = ImVec2(1.0f, 1.0f);
 
-      RenderTargetPtr thumb = dirEnt.GetThumbnail();
+      ThumbnailManager& thumbnailManager = g_app->m_thumbnailManager;
+
       if (dirEnt.m_ext.length())
       {
-        if (thumb->m_textureId != 0 && 
-           !g_app->m_thumbnailManager.IsDefaultThumbnail(thumb))
+        if (thumbnailManager.TryGetThumbnail(iconId, dirEnt))
         {
-          iconId    = thumb->m_textureId;
           texCoords = ImVec2(1.0f, -1.0f);
         }
       }
@@ -75,13 +74,7 @@ namespace ToolKit
                       &dirEnt.m_fileName,
                       &dirEnt.m_ext);
 
-        thumb = g_app->m_thumbnailManager.GetThumbnail(dirEnt);
-
-        if (thumb->m_textureId != 0 && 
-           !g_app->m_thumbnailManager.IsDefaultThumbnail(thumb))
-        {
-          iconId = thumb->m_textureId;
-        }
+        thumbnailManager.TryGetThumbnail(iconId, dirEnt);
       }
 
       if (!dropName.empty())
@@ -132,8 +125,9 @@ namespace ToolKit
             MaterialPtr mr = man->Create<Material>(file);
             if (clicked)
             {
-              // todo open window
-              g_app->GetPropInspector()->SetMaterials({mr});
+              PropInspector* propInspector = g_app->GetPropInspector();
+              propInspector->GetMaterialView()->SetSelectedMaterial(mr);
+              propInspector->SetActiveView(ViewType::Material);
             }
 
             info += "File: " + dirEnt.m_fileName + dirEnt.m_ext + "\n";
@@ -311,14 +305,27 @@ namespace ToolKit
 
     PropInspector::PropInspector()
     {
-      m_views.resize((uint) ViewType::ViewCount);
-      m_views[(uint) ViewType::Entity]         = new EntityView();
-      m_views[(uint) ViewType::Prefab]         = new PrefabView();
-      m_views[(uint) ViewType::CustomData]     = new CustomDataView();
-      m_views[(uint) ViewType::Component]      = new ComponentView();
-      m_views[(uint) ViewType::Material]       = new MaterialView();
-      m_views[(uint) ViewType::Mesh]           = new MeshView();
-      m_views[(uint) ViewType::RenderSettings] = new RenderSettingsView();
+      // order is important, depends on enum viewType
+      m_views.resize((uint)ViewType::ViewCount);
+      m_views[(uint)ViewType::Entity]     = new EntityView();
+      m_views[(uint)ViewType::CustomData] = new CustomDataView();
+      m_views[(uint)ViewType::Component]  = new ComponentView();
+      m_views[(uint)ViewType::Material]   = new MaterialView();
+      m_views[(uint)ViewType::Mesh]       = new MeshView();
+      m_views[(uint)ViewType::Prefab]     = new PrefabView();
+      
+      m_entityViews.push_back((uint)ViewType::Entity);
+      m_entityViews.push_back((uint)ViewType::CustomData);
+      m_entityViews.push_back((uint)ViewType::Component);
+      m_entityViews.push_back((uint)ViewType::Material);
+      m_entityViews.push_back((uint)ViewType::Mesh);
+
+      // prefab view doesn't have CustomDataView or ComponentView
+      // because prefab view provides this views. hence no need to add views
+      m_prefabViews.push_back((uint)ViewType::Entity);
+      m_prefabViews.push_back((uint)ViewType::Prefab);
+      m_prefabViews.push_back((uint)ViewType::Material);
+      m_prefabViews.push_back((uint)ViewType::Mesh);
     }
 
     PropInspector::~PropInspector()
@@ -326,6 +333,42 @@ namespace ToolKit
       for (ViewRawPtr& view : m_views)
       {
         SafeDel(view);
+      }
+    }
+    
+    void PropInspector::SetActiveView(ViewType viewType)
+    {
+      m_activeView = viewType;
+    }
+
+    MaterialView* PropInspector::GetMaterialView()
+    {
+      return static_cast<MaterialView*>(m_views[(uint)ViewType::Material]);
+    }
+
+    void PropInspector::DeterminateSelectedMaterial(Entity* curEntity)
+    {
+      // if material view is active. determinate selected material
+      MaterialView* matView =
+                dynamic_cast<MaterialView*>(m_views[(uint)m_activeView]);
+      if (matView == nullptr || curEntity == nullptr)
+      {
+        return;
+      }
+      
+      if (curEntity->GetType() == EntityType::Entity_Prefab)
+      {
+        PrefabView* prefView = 
+                      static_cast<PrefabView*>(m_views[(uint)ViewType::Prefab]);
+        if (Entity* prefEntity = prefView->GetActiveEntity())
+        {
+          curEntity = prefEntity;
+        }
+      }
+      
+      if (MaterialComponentPtr mat = curEntity->GetMaterialComponent())
+      {
+        matView->SetMaterials(mat->GetMaterialList());
       }
     }
 
@@ -337,6 +380,13 @@ namespace ToolKit
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.0f, 0.0f));
       ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
                           ImVec2(2.0f, style.ItemSpacing.y));
+
+      Entity* curEntity = g_app->GetCurrentScene()->GetCurrentSelection();
+      bool isPrefab = curEntity != nullptr &&
+                      curEntity->GetType() == EntityType::Entity_Prefab;
+      
+      UIntArray views = isPrefab ? m_prefabViews : m_entityViews;
+
       if (ImGui::Begin(m_name.c_str(),
                        &m_visible,
                        ImGuiWindowFlags_NoScrollbar |
@@ -352,49 +402,21 @@ namespace ToolKit
         const ImVec2 spacing         = ImGui::GetStyle().ItemSpacing;
         const ImVec2 sidebarSize =
             ImVec2(spacing.x + sidebarIconSize.x + spacing.x, windowSize.y);
-        
-        Entity* curEntity = g_app->GetCurrentScene()->GetCurrentSelection();
-        
-        if (MaterialView* matView =
-                dynamic_cast<MaterialView*>(m_views[(uint)m_activeView]))
-        {
-          if (curEntity != nullptr)
-          {
-            MaterialComponentPtr mat = curEntity->GetMaterialComponent();
-            if (mat != nullptr && curEntity != nullptr)
-            {
-              matView->SetMaterials(mat->GetMaterialList());
-            }
-          }
-        }
-        
+
+        DeterminateSelectedMaterial(curEntity);
+
         if (ImGui::BeginChildFrame(ImGui::GetID("ViewTypeSidebar"),
                                    sidebarSize,
                                    0))
         {
-          for (uint viewIndx = 0; viewIndx < m_views.size(); viewIndx++)
+          for (uint viewIndx : views)
           {
-            ViewRawPtr view = m_views[viewIndx];
-
-            // is prefab view
-            if (PrefabView* prefabView = dynamic_cast<PrefabView*>(view))
-            {
-              // but entity is not prefab continue
-              if (curEntity == nullptr ||
-                  curEntity->GetType() != EntityType::Entity_Prefab)
-              {
-                continue;
-              }
-            }
-
-            if ((uint) m_activeView == viewIndx)
-            {
-              ImGui::PushStyleColor(ImGuiCol_Button, windowBg);
-            }
-            else
-            {
-              ImGui::PushStyleColor(ImGuiCol_Button, childBg);
-            }
+            ViewRawPtr view   = m_views[viewIndx];
+            bool isActiveView = (uint) m_activeView == viewIndx;
+            
+            ImGui::PushStyleColor(ImGuiCol_Button, isActiveView ? 
+                                                   windowBg : 
+                                                   childBg);
 
             // is this font icon ? (prefab's icon is font icon)
             if (view->m_fontIcon.size() > 0)

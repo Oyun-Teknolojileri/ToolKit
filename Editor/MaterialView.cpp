@@ -54,6 +54,15 @@ namespace ToolKit
 
     MaterialView::~MaterialView() { SafeDel(m_viewport); }
 
+    void MaterialView::SetSelectedMaterial(MaterialPtr m_mat)
+    {
+      auto find = std::find(m_materials.cbegin(), m_materials.cend(), m_mat);
+      if (find != m_materials.cend())
+      {
+        m_currentMaterialIndex = int(find - m_materials.cbegin());
+      }
+    }
+
     void MaterialView::SetMaterials(const MaterialPtrArray& mat) { m_materials = mat; }
 
     void MaterialView::ResetCamera() { m_viewport->ResetCamera(); }
@@ -492,7 +501,7 @@ namespace ToolKit
       if (m_materials.size() > 0) 
       {
         m_currentMaterialIndex =
-            glm::clamp(m_currentMaterialIndex, 0, (int)m_materials.size());
+            glm::clamp(m_currentMaterialIndex, 0, (int)(m_materials.size())-1);
         ShowMaterial(m_materials[m_currentMaterialIndex]);
       }
     }

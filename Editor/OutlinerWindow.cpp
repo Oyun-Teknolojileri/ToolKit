@@ -221,7 +221,7 @@ namespace ToolKit
         else
         {
           currScene->AddToSelection(e->GetIdVal(), true);
-          g_app->GetPropInspector()->m_activeView = PropInspector::ViewType::Entity;
+          g_app->GetPropInspector()->m_activeView = ViewType::Entity;
         }
         m_lastClickedEntity = e;
       }

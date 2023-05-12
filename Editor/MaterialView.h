@@ -14,6 +14,7 @@ namespace ToolKit
       void Show() override;
       void SetMaterials(const MaterialPtrArray& mat);
       void ResetCamera();
+      void SetSelectedMaterial(MaterialPtr m_mat);
 
      private:
       void UpdatePreviewScene();

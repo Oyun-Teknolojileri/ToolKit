@@ -12,6 +12,7 @@ namespace ToolKit
       virtual ~PrefabView();
       virtual void Show();
       bool HasActiveEntity() const;
+      Entity* GetActiveEntity();
 
      private:
       bool DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags);

@@ -369,11 +369,8 @@ namespace ToolKit
           }
           else if (thumbExtensions.count(dirEnt.m_ext) > 0)
           {
-            RenderTargetPtr thumb = dirEnt.GetThumbnail();
-            if (thumb->m_textureId != 0 && 
-                !g_app->m_thumbnailManager.IsDefaultThumbnail(thumb))
+            if (g_app->m_thumbnailManager.TryGetThumbnail(iconId, dirEnt))
             {
-              iconId           = thumb->m_textureId;
               flipRenderTarget = true;
             }
             else
@@ -444,7 +441,7 @@ namespace ToolKit
                 m_tempMaterialWindow->SetMaterial(mat);
                 m_tempMaterialWindow->OpenWindow();
               }
-                break;
+              break;
               case ResourceType::Mesh:
                 g_app->GetPropInspector()->SetMeshView(
                     rm->Create<Mesh>(dirEnt.GetFullPath()));

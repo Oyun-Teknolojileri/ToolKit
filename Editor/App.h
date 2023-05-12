@@ -11,6 +11,7 @@
 #include "PluginWindow.h"
 #include "PropInspector.h"
 #include "PublishManager.h"
+#include "RenderSettingsView.h"
 #include "Thumbnail.h"
 #include "ToolKit.h"
 #include "Workspace.h"
@@ -97,6 +98,8 @@ namespace ToolKit
       FolderWindowRawPtrArray GetAssetBrowsers();
       OutlinerWindow* GetOutliner();
       PropInspector* GetPropInspector();
+      RenderSettingsView* GetRenderSettingsView();
+      void AddRenderSettingsView();
 
       template <typename T>
       T* GetWindow(const String& name)
