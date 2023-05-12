@@ -300,12 +300,16 @@ namespace ToolKit
     }
 
     // indicates that dropped on top of all entities
-    static const int DroppedOnTopOfEntities = -1;
-
+    const int DroppedOnTopOfEntities  = -1;
+    const int DroppedBelowAllEntities = TK_INT_MAX;
+    // max -1 because if we set m_insertSelectedIndex
+    // we want to drop below all entities ( clamp function will cause that)
+    const int DropIsNotPossible       = TK_INT_MAX - 1; 
+    
     // if you are indicating between two nodes this will 
     // return the index of upper entity, 
     // if you are indicating on top of all entities this will return DroppedOnTopOfEntities
-    int OutlinerWindow::GetMouseHoveredNodeIndex(float treeStartY)
+    int OutlinerWindow::GetMouseHoveredNodeIndex(float treeStartY) const
     {
       const float lineHeight = GetLineHeight();
       const float mouseY = ImGui::GetMousePos().y;
@@ -314,6 +318,20 @@ namespace ToolKit
       if (fabsf(mouseY - treeStartY) < lineHeight * 0.5)
       {
         return DroppedOnTopOfEntities;
+      }
+
+      float windowPosY = ImGui::GetWindowSize().y + ImGui::GetWindowPos().y;
+      // is dropped below all entities?
+      if (fabsf(mouseY - windowPosY) < lineHeight * 0.5)
+      {
+        return DroppedBelowAllEntities;
+      }
+      
+      // order of this if block important, 
+      // we should call this after two if's above
+      if (!ImGui::IsWindowHovered())
+      {
+        return DropIsNotPossible;
       }
 
       int selectedIndex = (int)floorf((mouseY - treeStartY) / lineHeight);
@@ -365,6 +383,14 @@ namespace ToolKit
         return true;
       }
       
+      if (selectedIndex == DroppedBelowAllEntities) 
+      {
+        OrphanAll(movedEntities);
+        scene->RemoveEntity(movedEntities);
+        entities.insert(entities.end(), movedEntities.begin(), movedEntities.end());
+        return true;
+      }
+
       selectedIndex = glm::clamp(selectedIndex, 0, int(m_indexToEntity.size())-1);
       Entity* droppedBelowNtt = m_indexToEntity[selectedIndex];
 
@@ -378,7 +404,7 @@ namespace ToolKit
       bool allSameParent = true;
       Node* firstParent  = movedEntities[0]->m_node->m_parent;
 
-      for (int i = 0; i < movedEntities.size(); ++i)
+      for (int i = 0; i < movedEntities.size(); ++i)      
       {
         allSameParent &= movedEntities[i]->m_node->m_parent == firstParent;
       }
@@ -421,11 +447,9 @@ namespace ToolKit
         // remove all dropped entites 
         scene->RemoveEntity(movedEntities);
         // find index of dropped entity and
-        // insert all dropped entities below dropped entity
-        entities.insert(
-          std::find(entities.cbegin(), entities.cend(), droppedBelowNtt) + 1,
-          movedEntities.begin(),
-          movedEntities.end());
+        // insert all dropped entities below dropped entity 
+        auto find = std::find(entities.cbegin(), entities.cend(), droppedBelowNtt);
+        entities.insert(find + 1, movedEntities.begin(), movedEntities.end());
       }
       else if (droppedParent != nullptr) // did we drop in child list?
       {
@@ -442,7 +466,7 @@ namespace ToolKit
         }
       }
       // reset to default insert index (end of the list)
-      m_insertSelectedIndex = TK_INT_MAX;
+      m_insertSelectedIndex = DroppedBelowAllEntities;
       return true;
     }
 
@@ -458,8 +482,14 @@ namespace ToolKit
         const EntityRawPtrArray& ntties = currScene->GetEntities();
         m_roots.clear();
         m_indexToEntity.clear();
-        GetRootEntities(ntties, m_roots);
 
+        // get root entities
+        std::copy_if(ntties.cbegin(),
+                     ntties.cend(),
+                     std::back_inserter(m_roots),
+                     [](const Entity* e)
+                     { return e->m_node->m_parent == nullptr; });
+        
         HandleStates();
         ShowSearchBar(m_searchString);
 
@@ -489,14 +519,20 @@ namespace ToolKit
         bool multiSelecting = ImGui::IsKeyDown(ImGuiKey_LeftShift) ||
                               ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
 
-        if (!multiSelecting && IndicatingInBetweenNodes()) 
+
+        if (!multiSelecting && !m_anyEntityHovered)
         {
-          if (leftMouseReleased && dragging)
+          if (leftMouseReleased || rightMouseReleased)
           {
-            // we are using this member variable in try insert entities function
-            // (order is important. dont move this below if block)
-            m_insertSelectedIndex = GetMouseHoveredNodeIndex(m_treeStartY); 
-            
+            // fill required argument for reordering.
+            // we are using this member variable in TryReorderEntites function
+            // (order is important. dont move this below next if block)
+            m_insertSelectedIndex = GetMouseHoveredNodeIndex(m_treeStartY);
+          }
+          bool canInsert = m_insertSelectedIndex != DropIsNotPossible;
+
+          if (leftMouseReleased && dragging && canInsert)
+          {
             if (!TryReorderEntites(m_draggingEntities))
             {
               // if reordering is not possible orphan all dragged entities
@@ -506,12 +542,11 @@ namespace ToolKit
             m_draggingEntities.clear();
             currScene->ClearSelection();
           }
+
           // right click in between entities.
-          if (rightMouseReleased)
+          if (rightMouseReleased && canInsert)
           {
             ImGui::OpenPopup("##Create");
-            // fill required argument for reordering.
-            m_insertSelectedIndex = GetMouseHoveredNodeIndex(m_treeStartY); 
           }
         }
         
@@ -523,10 +558,12 @@ namespace ToolKit
         // show drag drop tooltip
         if (dragging) 
         {
-          if (m_anyEntityHovered)
+          if (m_anyEntityHovered && m_indexToEntity.size() > 0ull)
           {
-            Entity* hoveredEntity =
-                m_indexToEntity[GetMouseHoveredNodeIndex(m_treeStartY)];
+            int index = glm::clamp(GetMouseHoveredNodeIndex(m_treeStartY),
+                                   0,
+                                   int(m_indexToEntity.size())-1);
+            Entity* hoveredEntity = m_indexToEntity[index];
             ImGui::SetTooltip(contains(m_draggingEntities, hoveredEntity)
                                   ? "Drag Drop for set as child or Reorder"
                                   : "Set As Child");
@@ -640,7 +677,8 @@ namespace ToolKit
       if (ImGui::InputTextWithHint(" SearchString", "Search", &searchString))
       {
         m_stringSearchMode = searchString.size() > 0ull;
-        bool searchStrChanged = m_searchStringSize != searchString.size();
+        bool searchStrChanged = m_searchStringSize != (int)searchString.size();
+        m_searchStringSize = (int)searchString.size();
 
         if (searchStrChanged && m_stringSearchMode)
         {
