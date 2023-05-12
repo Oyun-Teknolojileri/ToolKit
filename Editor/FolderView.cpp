@@ -330,7 +330,8 @@ namespace ToolKit
 
           DirectoryEntry& dirEnt = m_entries[i];
 
-          if (!Utf8CaseInsensitiveSearch(dirEnt.m_fileName, m_filter))
+          if (m_filter.size() > 0 &&
+            !Utf8CaseInsensitiveSearch(dirEnt.m_fileName, m_filter))
           {
             continue;
           }

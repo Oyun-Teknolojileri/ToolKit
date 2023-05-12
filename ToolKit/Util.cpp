@@ -1,6 +1,5 @@
 #include "Util.h"
 
-#include "Common/utf8.h"
 #include "Primative.h"
 #include "ToolKit.h"
 #include "rapidxml.hpp"
@@ -767,20 +766,26 @@ namespace ToolKit
 
   bool Utf8CaseInsensitiveSearch(const String& text, const String& search)
   {
-    char* findPoint = utf8casestr(text.c_str(), search.c_str());
-    if (!findPoint)
+    if (search.size() > text.size())
     {
       return false;
     }
 
-    if (utf8size_lazy(findPoint) != 0)
+    int i          = 0;
+    int numCorrect = 0;
+
+    while (i < text.size())
     {
-      return true;
+      bool correct = tolower(search[numCorrect]) == tolower(text[i]);
+      numCorrect   = correct ? numCorrect + 1 : 0;
+
+      if (numCorrect == search.size())
+      {
+        return true;
+      }
+      i++;
     }
-    else
-    {
-      return false;
-    }
+    return false;
   }
 
   String Format(const char* msg, ...)

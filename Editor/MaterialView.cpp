@@ -148,6 +148,8 @@ namespace ToolKit
         case 2: return DrawType::LineStrip;
         case 3: return DrawType::LineLoop;
         case 4: return DrawType::Point;
+        default:
+        return DrawType::Triangle;
       }
     }
 
@@ -159,9 +161,11 @@ namespace ToolKit
         return;
       }
 
-      String name, ext;
-      DecomposePath(mat->GetFile(), nullptr, &name, &ext);
+      String name, ext, path;
+      DecomposePath(mat->GetFile(), &path, &name, &ext);
       UI::HeaderText(name.c_str());
+      GetFileManager()->GetRelativeResourcesPath(path);
+      UI::HelpMarker(TKLoc, path.c_str());
 
       // 0th slot was pbr and removed, this is why we are doing -1 adjustments.
       int matType     = glm::clamp((int) mat->m_materialType, 1, 2) - 1;

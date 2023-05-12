@@ -82,10 +82,13 @@ namespace ToolKit
         ImGui::Text(dropName.c_str());
       }
 
-      bool clicked = ImGui::ImageButton((ImTextureID) iconId,
-                                         ImVec2(48.0f, 48.0f),
-                                         ImVec2(0.0f, 0.0f),
-                                         texCoords);
+      ImGui::ImageButton(reinterpret_cast<void*>((intptr_t)iconId),
+                                             ImVec2(48.0f, 48.0f),
+                                             ImVec2(0.0f, 0.0f),
+                                             texCoords);
+
+      bool clicked = ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
+      clicked &= ImGui::IsItemHovered();
 
       if (isEditable && ImGui::BeginDragDropTarget())
       {
@@ -319,7 +322,7 @@ namespace ToolKit
       m_entityViews.push_back((uint)ViewType::Component);
       m_entityViews.push_back((uint)ViewType::Material);
       m_entityViews.push_back((uint)ViewType::Mesh);
-
+      
       // prefab view doesn't have CustomDataView or ComponentView
       // because prefab view provides this views. hence no need to add views
       m_prefabViews.push_back((uint)ViewType::Entity);
@@ -351,8 +354,16 @@ namespace ToolKit
       // if material view is active. determinate selected material
       MaterialView* matView =
                 dynamic_cast<MaterialView*>(m_views[(uint)m_activeView]);
-      if (matView == nullptr || curEntity == nullptr)
+      if (matView == nullptr)
       {
+        return;
+      }
+
+      if (curEntity == nullptr) 
+      {
+        // set empty array, there is no material sellected
+        MaterialPtrArray mats {};
+        matView->SetMaterials(mats);
         return;
       }
       
