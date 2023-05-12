@@ -193,14 +193,14 @@ namespace ToolKit
 
   Vec3 Viewport::TransformViewportToWorldSpace(const Vec2& pnt)
   {
-    Vec3 screenPoint = Vec3(pnt, 0.0f);
+    Vec3 pnt3d   = Vec3(pnt, 0.0f);
 
-    Camera* cam      = GetCamera();
-    Mat4 view        = cam->GetViewMatrix();
-    Mat4 project     = cam->GetProjectionMatrix();
+    Camera* cam  = GetCamera();
+    Mat4 view    = cam->GetViewMatrix();
+    Mat4 project = cam->GetProjectionMatrix();
 
     return glm::unProject(
-        screenPoint,
+        pnt3d,
         view,
         project,
         Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));

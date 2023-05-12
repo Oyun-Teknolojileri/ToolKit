@@ -184,6 +184,8 @@ namespace ToolKit
 
   void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)
   {
+    GetUIManager()->ResizeLayers(viewport);
+
     // Swap viewport camera with ui camera.
     ULongID attachmentSwap = NULL_HANDLE;
     viewport->SwapCamera(&m_uiCamera, attachmentSwap);
@@ -212,8 +214,8 @@ namespace ToolKit
     m_uiCamera->m_orthographicScale = 1.0f;
     m_uiCamera->SetLens(vpSize.x * -0.5f,
                         vpSize.x * 0.5f,
-                        vpSize.y * 0.5f,
                         vpSize.y * -0.5f,
+                        vpSize.y * 0.5f,
                         -100.0f,
                         100.0f);
 
