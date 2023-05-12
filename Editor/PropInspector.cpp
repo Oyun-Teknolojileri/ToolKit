@@ -362,8 +362,7 @@ namespace ToolKit
       if (curEntity == nullptr) 
       {
         // set empty array, there is no material sellected
-        MaterialPtrArray mats {};
-        matView->SetMaterials(mats);
+        matView->SetMaterials({});
         return;
       }
       
@@ -380,6 +379,10 @@ namespace ToolKit
       if (MaterialComponentPtr mat = curEntity->GetMaterialComponent())
       {
         matView->SetMaterials(mat->GetMaterialList());
+      }
+      else
+      {
+        matView->SetMaterials({});
       }
     }
 
