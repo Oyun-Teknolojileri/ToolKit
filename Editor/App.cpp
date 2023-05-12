@@ -642,7 +642,7 @@ namespace ToolKit
 
         DeSerialize(lclDoc.get(), nullptr);
         m_workspace.SetScene(pj.scene);
-
+        
         settingsFile = ConcatPaths({ConfigPath(), g_uiLayoutFile});
         ImGui::LoadIniSettingsFromDisk(settingsFile.c_str());
       }
@@ -691,8 +691,9 @@ namespace ToolKit
         inspector->m_name        = g_propInspector;
         m_windows.push_back(inspector);
 
-        PluginWindow* plugWindow = new PluginWindow();
-        m_windows.push_back(plugWindow);
+        m_windows.push_back(new PluginWindow());
+
+        m_windows.push_back(new RenderSettingsView());
 
         CreateSimulationWindow(m_simulatorSettings.Width,
                                m_simulatorSettings.Height);
@@ -748,6 +749,9 @@ namespace ToolKit
             break;
           case Window::Type::Viewport2d:
             wnd = new EditorViewport2d(wndNode);
+            break;
+          case Window::Type::RenderSettings:
+            wnd = new RenderSettingsView();
             break;
           }
 
@@ -1242,6 +1246,16 @@ namespace ToolKit
     PropInspector* App::GetPropInspector()
     {
       return GetWindow<PropInspector>(g_propInspector);
+    }
+
+    RenderSettingsView* App::GetRenderSettingsView()
+    {
+      return GetWindow<RenderSettingsView>(g_renderSettings);
+    }
+
+    void App::AddRenderSettingsView()
+    {
+      m_windows.push_back(new RenderSettingsView());
     }
 
     void App::HideGizmos()

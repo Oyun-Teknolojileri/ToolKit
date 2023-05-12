@@ -31,14 +31,16 @@ namespace ToolKit
           MaterialPtr& mat = matList[i];
           String path, fileName, ext;
           DecomposePath(mat->GetFile(), &path, &fileName, &ext);
-          String uniqueName = std::to_string(i) + "##" + std::to_string(i);
+          String uniqueName = fileName + "##" + std::to_string(i);
           ImGui::PushID(i);
-          if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
-                                       Vec2(15),
-                                       false))
+          // push red color for X
+          ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+          if (UI::ButtonDecorless(ICON_FA_TIMES, Vec2(15), false))
           {
             removeMaterialIndx = i;
           }
+          ImGui::PopStyleColor();
+
           ImGui::SameLine();
           ImGui::EndDisabled();
           CustomDataView::ShowMaterialPtr(uniqueName,
@@ -52,8 +54,6 @@ namespace ToolKit
         {
           mmComp->RemoveMaterial(removeMaterialIndx);
         }
-
-        ImGui::TreePop();
 
         if (UI::BeginCenteredTextButton("Update"))
         {
@@ -341,17 +341,15 @@ namespace ToolKit
       {
         ImGui::PushID(static_cast<int>(comp->m_id));
         String varName = headerName + "##" + std::to_string(modifiableComp);
-        bool isOpen =
-            ImGui::TreeNodeEx(varName.c_str(),
-                              ImGuiTreeNodeFlags_DefaultOpen | g_treeNodeFlags);
+        bool isOpen = ImGui::CollapsingHeader(varName.c_str(), nullptr, ImGuiTreeNodeFlags_AllowItemOverlap);
 
         if (modifiableComp)
         {
           float offset = ImGui::GetContentRegionAvail().x - 30.0f;
           ImGui::SameLine(offset);
-          if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
-                                       ImVec2(15.0f, 15.0f),
-                                       false) &&
+          if (UI::ButtonDecorless(ICON_FA_TIMES, // X
+                                  ImVec2(15.0f, 15.0f),
+                                  false) &&
               !removeComp)
           {
             g_app->m_statusMsg = "Component " + headerName + " removed.";
@@ -362,6 +360,8 @@ namespace ToolKit
 
         return isOpen;
       };
+
+      ImGui::Indent();
 
       // skip if material component,
       // because we render it below ( ShowMultiMaterialComponent )
@@ -389,8 +389,6 @@ namespace ToolKit
                 var->m_editable = true;
               }
             }
-
-            ImGui::TreePop();
           }
         }
       }
@@ -422,6 +420,7 @@ namespace ToolKit
         }
       }
 
+      ImGui::Unindent();
       return removeComp;
     }
 
@@ -444,14 +443,20 @@ namespace ToolKit
         ImGui::Text("Select an entity");
         return;
       }
+      
+      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
 
+      UI::PushBoldFont();
       if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
+        UI::PopBoldFont();
 
+        ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
+        ImGui::Indent();
         std::vector<ULongID> compRemove;
         for (ComponentPtr& com : m_entity->GetComponentPtrArray())
         {
+          ImGui::Spacing();
           if (ShowComponentBlock(com, true))
           {
             compRemove.push_back(com->m_id);
@@ -527,6 +532,7 @@ namespace ToolKit
               }
             }
           }
+          ImGui::Unindent();
         }
         ImGui::PopItemWidth();
 
@@ -538,6 +544,10 @@ namespace ToolKit
         UI::EndCenteredTextButton();
 
         ImGui::PopStyleVar();
+      }
+      else
+      {
+        UI::PopBoldFont();
       }
     }
 

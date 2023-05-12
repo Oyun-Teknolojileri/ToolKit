@@ -1,6 +1,8 @@
 #include "Thumbnail.h"
 
 #include "Entity.h"
+#include "Global.h"
+#include "App.h"
 #include "MeshComponent.h"
 #include "MaterialComponent.h"
 
@@ -115,6 +117,7 @@ namespace ToolKit
         else
         {
           texture = GetTextureManager()->Create<Texture>(fullpath);
+          texture->Init(true);
         }
 
         float maxDim = float(glm::max(texture->m_width, texture->m_height));
@@ -136,7 +139,10 @@ namespace ToolKit
         m_cam->m_node->SetTranslation(Vec3(0.0f, 0.0f, 10.0f),
                                       TransformationSpace::TS_LOCAL);
       }
-
+      else // extension is not recognised, this is probably shader file.
+      {
+        return g_app->m_thumbnailManager.GetDefaultThumbnail();
+      }
       m_thumbnailRT =
           std::make_shared<RenderTarget>(m_maxThumbSize, m_maxThumbSize);
       m_thumbnailRT->Init();
@@ -165,6 +171,16 @@ namespace ToolKit
 
     ThumbnailManager::~ThumbnailManager() { m_defaultThumbnail = nullptr; }
 
+    bool ThumbnailManager::IsDefaultThumbnail(RenderTargetPtr thumb) 
+    {
+      return thumb == m_defaultThumbnail;
+    }
+
+    RenderTargetPtr ThumbnailManager::GetDefaultThumbnail()
+    {
+      return m_defaultThumbnail;
+    }
+
     RenderTargetPtr ThumbnailManager::GetThumbnail(const DirectoryEntry& dirEnt)
     {
       String fullPath = dirEnt.GetFullPath();
@@ -176,6 +192,17 @@ namespace ToolKit
       }
 
       return m_thumbnailCache[fullPath];
+    }
+
+    bool ThumbnailManager::TryGetThumbnail(uint& iconId, const DirectoryEntry& dirEnt)
+    {
+      RenderTargetPtr thumb = GetThumbnail(dirEnt);
+      bool valid = thumb->m_textureId != 0 && !IsDefaultThumbnail(thumb);
+      if (valid)
+      {
+        iconId = thumb->m_textureId;
+      }
+      return valid;
     }
 
     bool ThumbnailManager::Exist(const String& fullPath)

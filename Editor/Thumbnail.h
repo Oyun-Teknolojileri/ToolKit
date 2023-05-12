@@ -43,6 +43,14 @@ namespace ToolKit
        * @return dirEnt Created RenderTarget for DirectoryEntry.
        */
       RenderTargetPtr GetThumbnail(const DirectoryEntry& dirEnt);
+      
+      /**
+        * Creates or retrieve the thumbnail for the given DirectoryEntry.
+        * @param iconId icon that you want to replace
+        * @param dirEnt DirectoryEntry that will be used to create a thumbnail.
+        * @return true if requested thumbnail is valid
+        */
+      bool TryGetThumbnail(uint& iconId, const DirectoryEntry& dirEnt);
 
       /**
        * Checks if a thumbnail exist for given file.
@@ -56,6 +64,9 @@ namespace ToolKit
        * @param dirEnt DirectoryEntry that will be used to create a thumbnail.
        */
       void UpdateThumbnail(const DirectoryEntry& dirEnt);
+
+      bool IsDefaultThumbnail(RenderTargetPtr thumb);
+      RenderTargetPtr GetDefaultThumbnail();
 
      private:
       void CreateRenderTask(const DirectoryEntry& dirEnt);

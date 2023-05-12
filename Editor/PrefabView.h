@@ -11,12 +11,14 @@ namespace ToolKit
       PrefabView();
       virtual ~PrefabView();
       virtual void Show();
+      bool HasActiveEntity() const;
+      Entity* GetActiveEntity();
 
      private:
       bool DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags);
       void ShowNode(Entity* e);
 
-     private:
+     public:
       Entity* m_activeChildEntity = nullptr;
     };
   } // namespace Editor

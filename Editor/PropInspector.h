@@ -13,6 +13,16 @@ namespace ToolKit
 
   namespace Editor
   {
+    enum class ViewType
+    {
+      Entity,
+      CustomData,
+      Component,
+      Material,
+      Mesh,
+      Prefab,
+      ViewCount
+    };
 
     class View
     {
@@ -24,7 +34,8 @@ namespace ToolKit
           const String& file,
           std::function<void(DirectoryEntry& entry)> dropAction,
           const String& dropName = "",
-          bool isEditable        = true);
+          bool isEditable        = true); 
+
       static void DropSubZone(
           const String& title,
           uint fallbackIcon,
@@ -60,6 +71,8 @@ namespace ToolKit
      private:
       SceneRendererPtr m_previewRenderer = nullptr;
       Light* m_light                     = nullptr;
+     public:
+      bool m_isTempView = false;
     };
 
     typedef View* ViewRawPtr;
@@ -68,31 +81,24 @@ namespace ToolKit
     class PropInspector : public Window
     {
      public:
-      enum class ViewType
-      {
-        Entity,
-        Prefab,
-        CustomData,
-        Component,
-        Material,
-        Mesh,
-        RenderSettings,
-        ViewCount
-      };
-
-     public:
       explicit PropInspector(XmlNode* node);
       PropInspector();
       virtual ~PropInspector();
+      void SetActiveView(ViewType viewType);
+      class MaterialView* GetMaterialView();
 
       void Show() override;
       Type GetType() const override;
       void DispatchSignals() const override;
-      void SetMaterialView(MaterialPtr mat);
+      void SetMaterials(const MaterialPtrArray& mat);
       void SetMeshView(MeshPtr mesh);
-
+     private:
+      void DeterminateSelectedMaterial(Entity* curEntity);
      public:
       ViewRawPtrArray m_views;
+      UIntArray m_prefabViews;
+      UIntArray m_entityViews;
+
       ViewType m_activeView = ViewType::Entity;
     };
 

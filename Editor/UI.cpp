@@ -93,7 +93,7 @@ namespace ToolKit
 
     UI::AnchorPresetImages UI::m_anchorPresetIcons;
 
-    ImFont *LiberationSans, *IconFont;
+    ImFont *LiberationSans, *LiberationSansBold, *IconFont;
 
     void UI::Init()
     {
@@ -123,11 +123,17 @@ namespace ToolKit
       ImFontConfig icons_config; 
       icons_config.MergeMode = true; 
       // icons_config.PixelSnapH = true;
-      IconFont               = io.Fonts->AddFontFromFileTTF(
+      IconFont = io.Fonts->AddFontFromFileTTF(
           FontPath(FONT_ICON_FILE_NAME_FA).c_str(),
           14.0f,
           &icons_config,
           icons_ranges);
+
+      LiberationSansBold = io.Fonts->AddFontFromFileTTF(
+          FontPath("LiberationSans-Bold.ttf").c_str(),
+          14.0f,
+          nullptr,
+          utf8TR);
 
       io.Fonts->Build();
 
@@ -136,6 +142,23 @@ namespace ToolKit
 
       InitIcons();
       InitTheme();
+    }
+
+    void UI::HeaderText(const char* text)
+    {
+      ImGui::PushFont(LiberationSansBold);
+      ImGui::Text(text);
+      ImGui::PopFont();
+    }
+
+    void UI::PushBoldFont()
+    {
+      ImGui::PushFont(LiberationSansBold);
+    }
+
+    void UI::PopBoldFont()
+    {
+      ImGui::PopFont();
     }
 
     void UI::UnInit()
@@ -716,6 +739,22 @@ namespace ToolKit
         {
           wnd->SetVisibility(true);
         }
+      }
+      
+      if (g_app->GetRenderSettingsView() == nullptr)
+      {
+        if (ImGui::MenuItem(g_renderSettings.c_str()))
+        {
+          g_app->AddRenderSettingsView();
+          g_app->GetRenderSettingsView()->SetVisibility(true);
+        }
+      }
+      else if (ImGui::MenuItem(g_renderSettings.c_str(),
+                          nullptr,
+                          nullptr,
+                          !g_app->GetRenderSettingsView()->IsVisible()))
+      {
+        g_app->GetRenderSettingsView()->SetVisibility(true);
       }
 
       ImGui::Separator();

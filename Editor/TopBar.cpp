@@ -31,17 +31,17 @@ namespace ToolKit
           createdEntity = new Sphere();
           createdEntity->GetMeshComponent()->Init(false);
         }
-        if (ImGui::MenuItem("    Cone"))
+        if (ImGui::MenuItem(ICON_FA_CARET_UP " Cone"))
         {
           createdEntity = new Cone({1.0f, 1.0f, 30, 30});
           createdEntity->GetMeshComponent()->Init(false);
         }
-        if (ImGui::MenuItem("    Plane"))
+        if (ImGui::MenuItem(ICON_FA_SQUARE " Plane"))
         {
           createdEntity = new Quad();
           createdEntity->GetMeshComponent()->Init(false);
         }
-        if (ImGui::MenuItem("    Monkey"))
+        if (ImGui::MenuItem(ICON_FA_GITHUB_ALT " Monkey"))
         {
           Drawable* suzanne = new Drawable();
           suzanne->SetMesh(
@@ -70,7 +70,7 @@ namespace ToolKit
       }
     
       ImGui::Separator();
-      if (ImGui::MenuItem("Node"))
+      if (ImGui::MenuItem(ICON_FA_ARROWS " Node"))
       {
         createdEntity =
             GetEntityFactory()->CreateByType(EntityType::Entity_Node);
