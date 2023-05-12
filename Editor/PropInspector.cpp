@@ -382,6 +382,7 @@ namespace ToolKit
       }
       else
       {
+        // entity doesn't have material clear material view.
         matView->SetMaterials({});
       }
     }
