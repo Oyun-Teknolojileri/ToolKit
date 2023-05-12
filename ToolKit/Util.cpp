@@ -3,6 +3,7 @@
 #include "Primative.h"
 #include "ToolKit.h"
 #include "rapidxml.hpp"
+#include "Common/utf8.h"
 
 #include <algorithm>
 #include <cstdarg>
@@ -766,26 +767,8 @@ namespace ToolKit
 
   bool Utf8CaseInsensitiveSearch(const String& text, const String& search)
   {
-    if (search.size() > text.size())
-    {
-      return false;
-    }
-
-    int i          = 0;
-    int numCorrect = 0;
-
-    while (i < text.size())
-    {
-      bool correct = tolower(search[numCorrect]) == tolower(text[i]);
-      numCorrect   = correct ? numCorrect + 1 : 0;
-
-      if (numCorrect == search.size())
-      {
-        return true;
-      }
-      i++;
-    }
-    return false;
+    char* findPoint = utf8casestr(text.c_str(), search.c_str());
+    return !(!findPoint || utf8size_lazy(findPoint) == 0);
   }
 
   String Format(const char* msg, ...)
