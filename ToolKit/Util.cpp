@@ -768,7 +768,7 @@ namespace ToolKit
   bool Utf8CaseInsensitiveSearch(const String& text, const String& search)
   {
     char* findPoint = utf8casestr(text.c_str(), search.c_str());
-    return !(!findPoint || utf8size_lazy(findPoint) == 0);
+    return findPoint && utf8size_lazy(findPoint) != 0;
   }
 
   String Format(const char* msg, ...)
