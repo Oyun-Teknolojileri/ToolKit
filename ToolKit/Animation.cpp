@@ -420,6 +420,11 @@ namespace ToolKit
         continue;
       }
 
+      if (!record->m_entity)
+      {
+        continue;
+      }
+
       AnimRecord::State state = record->m_state;
       if (state == AnimRecord::State::Play)
       {
