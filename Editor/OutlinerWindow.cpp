@@ -66,10 +66,20 @@ namespace ToolKit
     // returns total drawed nodes
     int OutlinerWindow::ShowNode(Entity* e, int depth)
     {
-      // if searching mode is on and entity is not shown return.
-      if (m_stringSearchMode == true && m_shownEntities.count(e) == 0)
+      // if searching mode is on and entity or its parents are not shown return.
+      if (m_stringSearchMode == true)
       {
-        return 0;
+        bool parentsOrSelfOpen = false;
+        Node* parent           = e->m_node;
+        while (parent != nullptr)
+        {
+          parentsOrSelfOpen |= m_shownEntities.count(parent->m_entity) > 0;
+          parent             = parent->m_parent;
+        }
+        if (!parentsOrSelfOpen) 
+        {
+          return 0;
+        }
       }
 
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
@@ -255,12 +265,12 @@ namespace ToolKit
         ImGui::EndDragDropTarget();
       }
     }
-    
+
     bool OutlinerWindow::FindShownEntities(Entity* e, const String& str)
     {
-      bool self = Utf8CaseInsensitiveSearch(e->GetNameVal(), str);
-
+      bool self     = Utf8CaseInsensitiveSearch(e->GetNameVal(), str);
       bool children = false;
+      
       if (e->GetType() != EntityType::Entity_Prefab)
       {
         for (Node* n : e->m_node->m_children)
@@ -680,6 +690,7 @@ namespace ToolKit
           }
         }
       }
+      m_stringSearchMode = searchString.size() > 0ull;
 
       ImGui::PopItemWidth();
 
@@ -731,11 +742,6 @@ namespace ToolKit
                                     ImGuiTreeNodeFlags flags,
                                     int depth)
     {
-      if (ntt->GetNameVal().find(m_searchString) != String::npos)
-      {
-        m_stringSearchMode = false;
-      }
-
       bool focusToItem  = false;
       bool nextItemOpen = false;
       if (!m_nttFocusPath.empty())
@@ -749,7 +755,7 @@ namespace ToolKit
         focusToItem = focusIndx == 0;
       }
 
-      if (nextItemOpen || m_stringSearchMode)
+      if (nextItemOpen)
       {
         ImGui::SetNextItemOpen(true);
       }
