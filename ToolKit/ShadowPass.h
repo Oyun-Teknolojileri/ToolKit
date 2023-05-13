@@ -57,7 +57,6 @@ namespace ToolKit
     EntityIdArray m_previousShadowCasters;
     std::vector<bool> m_clearedLayers;
 
-    RenderJobArray m_renderJobs;
     Quaternion m_cubeMapRotations[6];
     Vec3 m_cubeMapScales[6];
 
