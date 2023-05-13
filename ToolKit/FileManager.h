@@ -35,6 +35,8 @@ namespace ToolKit
     void PackResources(const String& path);
 
     bool CheckFileFromResources(const String& path);
+    
+    void GetRelativeResourcesPath(String& path);
 
    private:
     typedef std::variant<XmlFilePtr, uint8*, float*> FileDataType;
@@ -65,7 +67,6 @@ namespace ToolKit
     void GetAllPaths(const String& path);
     void GetExtraFilePaths(const String& path);
 
-    void GetRelativeResourcesPath(String& path);
     XmlFilePtr ReadXmlFileFromZip(zipFile zfile,
                                   const String& relativePath,
                                   const char* path);

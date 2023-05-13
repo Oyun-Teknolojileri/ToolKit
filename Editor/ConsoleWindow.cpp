@@ -712,7 +712,8 @@ namespace ToolKit
         for (size_t i = 0; i < m_items.size(); i++)
         {
           const String item = m_items[i];
-          if (!Utf8CaseInsensitiveSearch(item, m_filter))
+          if (m_filter.size() > 0 && 
+            !Utf8CaseInsensitiveSearch(item, m_filter))
           {
             continue;
           }

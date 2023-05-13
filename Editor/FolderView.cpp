@@ -330,7 +330,8 @@ namespace ToolKit
 
           DirectoryEntry& dirEnt = m_entries[i];
 
-          if (!Utf8CaseInsensitiveSearch(dirEnt.m_fileName, m_filter))
+          if (m_filter.size() > 0 &&
+            !Utf8CaseInsensitiveSearch(dirEnt.m_fileName, m_filter))
           {
             continue;
           }
@@ -426,30 +427,34 @@ namespace ToolKit
             }
 
             m_lastClickedEntryIdx = i;
+          }
 
+          if (ImGui::IsItemHovered() && 
+              ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+          {
             if (ResourceManager* rm = dirEnt.GetManager())
             {
               switch (rm->m_type)
               {
-              case ResourceType::Material:
-              {
-                MaterialPtr mat = rm->Create<Material>(dirEnt.GetFullPath());
-                if (m_tempMaterialWindow == nullptr)
+                case ResourceType::Material:
                 {
-                  m_tempMaterialWindow = new TempMaterialWindow();
+                  MaterialPtr mat = rm->Create<Material>(dirEnt.GetFullPath());
+                  if (m_tempMaterialWindow == nullptr)
+                  {
+                    m_tempMaterialWindow = new TempMaterialWindow();
+                  }
+                  m_tempMaterialWindow->SetMaterial(mat);
+                  m_tempMaterialWindow->OpenWindow();
                 }
-                m_tempMaterialWindow->SetMaterial(mat);
-                m_tempMaterialWindow->OpenWindow();
-              }
-              break;
-              case ResourceType::Mesh:
-                g_app->GetPropInspector()->SetMeshView(
-                    rm->Create<Mesh>(dirEnt.GetFullPath()));
                 break;
-              case ResourceType::SkinMesh:
-                g_app->GetPropInspector()->SetMeshView(
-                    rm->Create<SkinMesh>(dirEnt.GetFullPath()));
-                break;
+                case ResourceType::Mesh:
+                  g_app->GetPropInspector()->SetMeshView(
+                  rm->Create<Mesh>(dirEnt.GetFullPath()));
+                  break;
+                case ResourceType::SkinMesh:
+                  g_app->GetPropInspector()->SetMeshView(
+                  rm->Create<SkinMesh>(dirEnt.GetFullPath()));
+                  break;
               }
             }
           }
