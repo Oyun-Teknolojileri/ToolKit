@@ -158,7 +158,7 @@ namespace ToolKit
 
      public:
       // UI elements.
-      std::vector<Window*> m_windows;
+      WindowRawPtrArray m_windows;
       String m_statusMsg;
 
       // Editor variables.

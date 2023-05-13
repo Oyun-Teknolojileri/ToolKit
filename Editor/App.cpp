@@ -162,18 +162,26 @@ namespace ToolKit
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
-      std::vector<EditorViewport*> viewports;
+      EditorViewportRawPtrArray viewports;
+
+      bool playOnSimulationWnd =
+          m_gameMod == GameMod::Playing && m_simulatorSettings.Windowed;
 
       for (Window* wnd : m_windows)
       {
         if (wnd->IsViewport())
         {
-          viewports.push_back(dynamic_cast<EditorViewport*>(wnd));
+          viewports.push_back(static_cast<EditorViewport*>(wnd));
         }
-        wnd->DispatchSignals();
+
+        // Skip 3d viewport if game is playing on it.
+        if (playOnSimulationWnd || wnd->m_name != g_3dViewport)
+        {
+          wnd->DispatchSignals();
+        }
       }
 
-      if (m_gameMod == GameMod::Playing && m_simulationWindow->IsVisible())
+      if (playOnSimulationWnd)
       {
         viewports.push_back(m_simulationWindow);
       }

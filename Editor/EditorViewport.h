@@ -108,5 +108,7 @@ namespace ToolKit
       bool m_relMouseModBegin = true;
     };
 
+    typedef std::vector<EditorViewport*> EditorViewportRawPtrArray;
+
   } // namespace Editor
 } // namespace ToolKit

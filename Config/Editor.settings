@@ -74,7 +74,7 @@
 			</E>
 		</Viewport>
 	</Window>
-	<Window name="" id="4" type="1" visible="1"/>
+	<Window name="Console" id="4" type="1" visible="1"/>
 	<Window name="Asset Browser" id="5" type="3" visible="1">
 		<FolderWindow activeFolder="-1" showStructure="1">
 		</FolderWindow>

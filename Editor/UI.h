@@ -1,9 +1,9 @@
 #pragma once
 
+#include "IconsFontAwesome.h"
 #include "ImGui/imgui.h"
 #include "Serialize.h"
 #include "Types.h"
-#include "IconsFontAwesome.h"
 
 #include <functional>
 #include <vector>
@@ -82,6 +82,8 @@ namespace ToolKit
       static uint m_baseId;
     };
 
+    typedef std::vector<Window*> WindowRawPtrArray;
+
     class TempWindow
     {
      public:
@@ -119,8 +121,8 @@ namespace ToolKit
 
       // Custom widgets.
       static bool ButtonDecorless(StringView text,
-                                       const Vec2& size,
-                                       bool flipImage);
+                                  const Vec2& size,
+                                  bool flipImage);
 
       static bool ImageButtonDecorless(uint textureID,
                                        const Vec2& size,
@@ -151,7 +153,7 @@ namespace ToolKit
       static float m_hoverTimeForHelp;
 
       // Volatile windows. (Pop-ups etc.)
-      static std::vector<Window*> m_volatileWindows;
+      static WindowRawPtrArray m_volatileWindows;
 
       static struct Blocker
       {
@@ -236,7 +238,7 @@ namespace ToolKit
       struct AnchorPresetImages
       {
         static const uint presetCount          = 16;
-        const char* m_presetNames[presetCount] = {"Top Left",
+        StringView m_presetNames[presetCount]  = {"Top Left",
                                                   "Top Middle",
                                                   "Top Right",
                                                   "Top Horizontal",
