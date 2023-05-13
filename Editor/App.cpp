@@ -171,13 +171,16 @@ namespace ToolKit
           viewports.push_back(static_cast<EditorViewport*>(wnd));
         }
 
-        // Skip 3d viewport if game is playing on it.
         bool skipDispatch = false;
         if (m_gameMod == GameMod::Playing)
         {
           if (!m_simulatorSettings.Windowed)
           {
-            skipDispatch = true;
+            if (wnd->m_name == g_3dViewport) 
+            {
+              // Skip 3d viewport if game is playing on it.
+              skipDispatch = true;
+            }
           }
         }
 
