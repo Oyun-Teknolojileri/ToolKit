@@ -188,16 +188,15 @@ namespace ToolKit
         if (viewport->IsVisible())
         {
           viewport->Update(deltaTime);
-          GetUIManager()->UpdateLayers(deltaTime, viewport);
 
           GetRenderSystem()->AddRenderTask(
-              {[this, viewport](Renderer* renderer) -> void
+              {[this, viewport, deltaTime](Renderer* renderer) -> void
                {
                  // 2d Viewport should not be updated as it may break the
                  // designers work.
                  if (viewport->m_name != g_2dViewport)
                  {
-                   GetUIManager()->ResizeLayers(viewport);
+                   GetUIManager()->UpdateLayers(deltaTime, viewport);
                  }
 
                  myEditorRenderer->m_params.App      = g_app;
@@ -642,7 +641,7 @@ namespace ToolKit
 
         DeSerialize(lclDoc.get(), nullptr);
         m_workspace.SetScene(pj.scene);
-        
+
         settingsFile = ConcatPaths({ConfigPath(), g_uiLayoutFile});
         ImGui::LoadIniSettingsFromDisk(settingsFile.c_str());
       }

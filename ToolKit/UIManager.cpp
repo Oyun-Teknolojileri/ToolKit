@@ -108,66 +108,49 @@ namespace ToolKit
       return;
     }
 
-    EntityRawPtrArray& entities = layer->m_scene->AccessEntityArray();
+    const EntityRawPtrArray& entities = layer->m_scene->AccessEntityArray();
     for (Entity* ntt : entities)
     {
       // Process events.
       for (Event* e : events)
       {
-        if (ntt->IsSurfaceInstance())
+        if (!ntt->IsSurfaceInstance())
         {
-          Surface* surface        = static_cast<Surface*>(ntt);
-          bool mouseOverPrev      = surface->m_mouseOver;
+          continue;
+        }
+        Surface* surface        = static_cast<Surface*>(ntt);
+        bool mouseOverPrev      = surface->m_mouseOver;
 
-          surface->m_mouseOver    = CheckMouseOver(surface, e, vp);
-          surface->m_mouseClicked = CheckMouseClick(surface, e, vp);
+        surface->m_mouseOver    = CheckMouseOver(surface, e, vp);
+        surface->m_mouseClicked = CheckMouseClick(surface, e, vp);
 
-          if (ntt->GetType() == EntityType::Entity_Button)
-          {
-            Button* button        = static_cast<Button*>(ntt);
-            MaterialPtr hoverMat  = button->GetHoverMaterialVal();
-            MaterialPtr normalMat = button->GetButtonMaterialVal();
-            if (surface->m_mouseOver && hoverMat)
-            {
-              button->SetMaterialVal(hoverMat);
-            }
-            else
-            {
-              button->SetMaterialVal(normalMat);
-            }
-          }
+        if (ntt->GetType() == EntityType::Entity_Button)
+        {
+          Button* button        = static_cast<Button*>(ntt);
+          MaterialPtr hoverMat  = button->GetHoverMaterialVal();
+          MaterialPtr normalMat = button->GetButtonMaterialVal();
+          button->SetMaterialVal(surface->m_mouseOver && hoverMat ? hoverMat
+                                                                  : normalMat);
+        }
 
-          if (surface->m_mouseOver)
-          {
-            if (surface->m_onMouseOver)
-            {
-              surface->m_onMouseOver(e, ntt);
-            }
-          }
+        if (surface->m_mouseOver && surface->m_onMouseOver)
+        {
+          surface->m_onMouseOver(e, ntt);
+        }
 
-          if (surface->m_mouseClicked)
-          {
-            if (surface->m_onMouseClick)
-            {
-              surface->m_onMouseClick(e, ntt);
-            }
-          }
+        if (surface->m_mouseClicked && surface->m_onMouseClick)
+        {
+          surface->m_onMouseClick(e, ntt);
+        }
 
-          if (!mouseOverPrev && surface->m_mouseOver)
-          {
-            if (surface->m_onMouseEnter)
-            {
-              surface->m_onMouseEnter(e, ntt);
-            }
-          }
+        if (!mouseOverPrev && surface->m_mouseOver && surface->m_onMouseEnter)
+        {
+          surface->m_onMouseEnter(e, ntt);
+        }
 
-          if (mouseOverPrev && !surface->m_mouseOver)
-          {
-            if (surface->m_onMouseExit)
-            {
-              surface->m_onMouseExit(e, ntt);
-            }
-          }
+        if (mouseOverPrev && !surface->m_mouseOver && surface->m_onMouseExit)
+        {
+          surface->m_onMouseExit(e, ntt);
         }
       }
     }
@@ -184,6 +167,8 @@ namespace ToolKit
 
   void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)
   {
+    GetUIManager()->ResizeLayers(viewport);
+
     // Swap viewport camera with ui camera.
     ULongID attachmentSwap = NULL_HANDLE;
     viewport->SwapCamera(&m_uiCamera, attachmentSwap);
@@ -212,8 +197,8 @@ namespace ToolKit
     m_uiCamera->m_orthographicScale = 1.0f;
     m_uiCamera->SetLens(vpSize.x * -0.5f,
                         vpSize.x * 0.5f,
-                        vpSize.y * 0.5f,
                         vpSize.y * -0.5f,
+                        vpSize.y * 0.5f,
                         -100.0f,
                         100.0f);
 

@@ -194,7 +194,7 @@ namespace ToolKit
       {
         ReadAttr(node, "alignment", *((int*) (&m_cameraAlignment)));
         ReadAttr(node, "lock", m_orbitLock);
-        
+
         Camera* viewCam = new Camera();
         ULongID id      = viewCam->GetIdVal();
         viewCam->DeSerialize(nullptr, node->first_node("E"));
@@ -247,22 +247,18 @@ namespace ToolKit
     {
       // Content area size
 
-      m_contentAreaMin        = ImGui::GetWindowContentRegionMin();
-      m_contentAreaMax        = ImGui::GetWindowContentRegionMax();
+      m_contentAreaMin      = ImGui::GetWindowContentRegionMin();
+      m_contentAreaMax      = ImGui::GetWindowContentRegionMax();
 
-      m_contentAreaMin.x      += ImGui::GetWindowPos().x;
-      m_contentAreaMin.y      += ImGui::GetWindowPos().y;
-      m_contentAreaMax.x      += ImGui::GetWindowPos().x;
-      m_contentAreaMax.y      += ImGui::GetWindowPos().y;
+      Vec2 wndPos           = Vec2(ImGui::GetWindowPos());
+      m_contentAreaMin      += wndPos;
+      m_contentAreaMax      += wndPos;
 
-      m_contentAreaLocation.x = m_contentAreaMin.x;
-      m_contentAreaLocation.y = m_contentAreaMin.y;
+      m_contentAreaLocation = m_contentAreaMin;
 
-      const Vec2 prevSize     = m_wndContentAreaSize;
+      const Vec2 prevSize   = m_wndContentAreaSize;
 
-      m_wndContentAreaSize =
-          Vec2(glm::abs(m_contentAreaMax.x - m_contentAreaMin.x),
-               glm::abs(m_contentAreaMax.y - m_contentAreaMin.y));
+      m_wndContentAreaSize  = glm::abs(m_contentAreaMax - m_contentAreaMin);
 
       if (glm::all(
               glm::epsilonNotEqual(prevSize, m_wndContentAreaSize, 0.001f)))
@@ -271,8 +267,10 @@ namespace ToolKit
       }
 
       ImGuiIO& io            = ImGui::GetIO();
-      ImVec2 absMousePos     = io.MousePos;
+      Vec2 absMousePos       = io.MousePos;
+      
       m_mouseOverContentArea = false;
+
       if (m_contentAreaMin.x < absMousePos.x &&
           m_contentAreaMax.x > absMousePos.x)
       {
@@ -283,10 +281,7 @@ namespace ToolKit
         }
       }
 
-      m_lastMousePosRelContentArea.x =
-          (int) (absMousePos.x - m_contentAreaMin.x);
-      m_lastMousePosRelContentArea.y =
-          (int) (absMousePos.y - m_contentAreaMin.y);
+      m_lastMousePosRelContentArea = absMousePos - m_contentAreaMin;
     }
 
     void EditorViewport::UpdateWindow()
@@ -631,7 +626,7 @@ namespace ToolKit
         DirectoryEntry& entry        = *dragData.Entries[0]; // get first entry
 
         // Check if the drag object is a mesh
-        Vec3 lastDragMeshPos     = Vec3(0.0f);
+        Vec3 lastDragMeshPos         = Vec3(0.0f);
         if (entry.m_ext == MESH || entry.m_ext == SKINMESH)
         {
           // Load mesh
@@ -646,7 +641,7 @@ namespace ToolKit
         if (const ImGuiPayload* payload =
                 ImGui::AcceptDragDropPayload("BrowserDragZone"))
         {
-         
+
           if (entry.m_ext == MESH || entry.m_ext == SKINMESH)
           {
             // Translate mesh to correct position

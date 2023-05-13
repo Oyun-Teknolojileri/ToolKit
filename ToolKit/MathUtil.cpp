@@ -303,45 +303,24 @@ namespace ToolKit
     return false;
   }
 
-  // https://gamedev.stackexchange.com/questions/18436/most-efficient-aabb-vs-ray-collision-algorithms
   bool RayBoxIntersection(const Ray& ray, const BoundingBox& box, float& t)
   {
     // r.dir is unit direction vector of ray
-    Vec3 dirfrac;
-    dirfrac.x  = 1.0f / ray.direction.x;
-    dirfrac.y  = 1.0f / ray.direction.y;
-    dirfrac.z  = 1.0f / ray.direction.z;
+    Vec3 invDir = 1.0f / ray.direction;
+    Vec3 vmin   = (box.min - ray.position) * invDir;
+    Vec3 vmax   = (box.max - ray.position) * invDir;
 
-    // lb is the corner of AABB with minimal coordinates - left bottom
-    // rt is maximal corner
-    // r.org is origin of ray
-    float t1   = (box.min.x - ray.position.x) * dirfrac.x;
-    float t2   = (box.max.x - ray.position.x) * dirfrac.x;
-    float t3   = (box.min.y - ray.position.y) * dirfrac.y;
-    float t4   = (box.max.y - ray.position.y) * dirfrac.y;
-    float t5   = (box.min.z - ray.position.z) * dirfrac.z;
-    float t6   = (box.max.z - ray.position.z) * dirfrac.z;
-
-    float tmin = glm::max(glm::max(glm::min(t1, t2), glm::min(t3, t4)),
-                          glm::min(t5, t6));
-    float tmax = glm::min(glm::min(glm::max(t1, t2), glm::max(t3, t4)),
-                          glm::max(t5, t6));
+    float tmin  = glm::compMax(glm::min(vmin, vmax));
+    float tmax  = glm::compMin(glm::max(vmin, vmax));
 
     // if tmax < 0, ray (line) is intersecting AABB,
-    // but the whole AABB is behind us
-    if (tmax < 0)
-    {
-      t = tmax;
-      return false;
-    }
-
     // if tmin > tmax, ray doesn't intersect AABB
-    if (tmin > tmax)
+    // but the whole AABB is behind us
+    if (tmax < 0 || tmin > tmax)
     {
       t = tmax;
       return false;
     }
-
     t = tmin;
     return true;
   }
