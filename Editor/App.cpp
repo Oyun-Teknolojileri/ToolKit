@@ -164,9 +164,6 @@ namespace ToolKit
       ModManager::GetInstance()->Update(deltaTime);
       EditorViewportRawPtrArray viewports;
 
-      bool playOnSimulationWnd =
-          m_gameMod == GameMod::Playing && m_simulatorSettings.Windowed;
-
       for (Window* wnd : m_windows)
       {
         if (wnd->IsViewport())
@@ -175,11 +172,23 @@ namespace ToolKit
         }
 
         // Skip 3d viewport if game is playing on it.
-        if (playOnSimulationWnd || wnd->m_name != g_3dViewport)
+        bool skipDispatch = false;
+        if (m_gameMod == GameMod::Playing)
+        {
+          if (!m_simulatorSettings.Windowed)
+          {
+            skipDispatch = true;
+          }
+        }
+
+        if (!skipDispatch)
         {
           wnd->DispatchSignals();
         }
       }
+
+      bool playOnSimulationWnd =
+          m_gameMod == GameMod::Playing && m_simulatorSettings.Windowed;
 
       if (playOnSimulationWnd)
       {
