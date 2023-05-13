@@ -492,6 +492,7 @@ namespace ToolKit
 
       if (mod == GameMod::Stop)
       {
+        GetRenderSystem()->FlushRenderTasks();
         GetPluginManager()->UnloadGamePlugin();
         m_statusMsg = "Game is stopped";
         m_gameMod   = mod;
