@@ -176,7 +176,7 @@ namespace ToolKit
         {
           if (!m_simulatorSettings.Windowed)
           {
-            if (wnd->m_name == g_3dViewport) 
+            if (wnd->m_name == g_3dViewport)
             {
               // Skip 3d viewport if game is playing on it.
               skipDispatch = true;
