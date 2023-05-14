@@ -9,7 +9,7 @@ namespace ToolKit
     {
      public:
       LightMeshGenerator(Light* light);
-      ~LightMeshGenerator();
+      virtual ~LightMeshGenerator();
 
       virtual void InitGizmo() = 0;
 
