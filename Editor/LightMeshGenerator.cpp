@@ -71,7 +71,10 @@ namespace ToolKit
       m_pnts[0]         = Vec3(ZERO);
       m_pnts[1]         = Vec3(d * r * 2.25f);
 
+      m_innerCirclePnts.clear();
       m_innerCirclePnts.reserve(m_circleVertexCount + 1);
+
+      m_outerCirclePnts.clear();
       m_outerCirclePnts.reserve(m_circleVertexCount + 1);
 
       LineBatchRawPtrArray lines = {new LineBatch(),

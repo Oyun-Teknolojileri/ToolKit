@@ -100,7 +100,9 @@ namespace ToolKit
       }
 
       m_gizmoUpdateFn = [this](Value& oldVal, Value& newVal) -> void
-      { m_gizmoGenerator->InitGizmo(); };
+      { 
+        m_gizmoGenerator->InitGizmo();
+      };
     }
 
     LightGizmoController::~LightGizmoController() { SafeDel(m_gizmoGenerator); }
