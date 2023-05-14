@@ -549,8 +549,9 @@ namespace ToolKit
               // because we clicked to an empty space.
               OrphanAll(m_draggingEntities);
             }
-            m_draggingEntities.clear();
             currScene->ClearSelection();
+            currScene->ValidateBillboard(m_draggingEntities);
+            m_draggingEntities.clear();
           }
 
           // right click in between entities.

@@ -70,13 +70,11 @@ namespace ToolKit
       void RemoveBillboardFromEntity(Entity* entity);
       EntityRawPtrArray GetBillboards();
       Entity* GetBillboardOfEntity(Entity* entity);
-      void InitEntityBillboard(Entity* entity);
+      void ValidateBillboard(Entity* entity);
+      void ValidateBillboard(EntityRawPtrArray& entities);
 
      private:
       void CopyTo(Resource* other) override;
-
-      bool InitBillboard(Entity* entity,
-                         EditorBillboardBase::BillboardType type);
 
       /**
        * Updates the billboards to align with current viewports camera for

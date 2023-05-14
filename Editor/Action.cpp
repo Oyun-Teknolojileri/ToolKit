@@ -158,6 +158,9 @@ namespace ToolKit
       {
         m_com->m_entity->AddComponent(m_com);
       }
+
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      currScene->ValidateBillboard(m_com->m_entity);
     }
 
     void DeleteComponentAction::Redo()

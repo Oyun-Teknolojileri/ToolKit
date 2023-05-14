@@ -18,7 +18,7 @@ namespace ToolKit
     void OverlayTopBar::ShowAddMenuPopup()
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
-      Entity* createdEntity = nullptr;
+      Entity* createdEntity    = nullptr;
       if (ImGui::BeginMenu("Mesh"))
       {
         if (ImGui::MenuItem(ICON_FA_CUBE " Cube"))
@@ -52,7 +52,7 @@ namespace ToolKit
         ImGui::EndMenu();
       }
       ImGui::Separator();
-    
+
       if (ImGui::BeginMenu("2D UI"))
       {
         if (ImGui::MenuItem("Surface"))
@@ -60,7 +60,7 @@ namespace ToolKit
           createdEntity = new Surface(Vec2(100.0f, 30.0f), Vec2(0.0f, 0.0f));
           createdEntity->GetMeshComponent()->Init(false);
         }
-    
+
         if (ImGui::MenuItem("Button"))
         {
           createdEntity = new Button(Vec2(100.0f, 30.0f));
@@ -68,19 +68,19 @@ namespace ToolKit
         }
         ImGui::EndMenu();
       }
-    
+
       ImGui::Separator();
       if (ImGui::MenuItem(ICON_FA_ARROWS " Node"))
       {
         createdEntity =
             GetEntityFactory()->CreateByType(EntityType::Entity_Node);
       }
-    
+
       if (ImGui::MenuItem(ICON_FA_VIDEO_CAMERA " Camera"))
       {
         createdEntity = new EditorCamera();
       }
-    
+
       if (ImGui::BeginMenu(ICON_FA_LIGHTBULB " Light"))
       {
         if (ImGui::MenuItem(ICON_FA_SUN " Directional"))
@@ -89,31 +89,31 @@ namespace ToolKit
           light->Init();
           createdEntity = static_cast<Entity*>(light);
         }
-    
+
         if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Point"))
         {
           EditorPointLight* light = new EditorPointLight();
           light->Init();
           createdEntity = static_cast<Entity*>(light);
         }
-    
+
         if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Spot"))
         {
           EditorSpotLight* light = new EditorSpotLight();
           light->Init();
           createdEntity = static_cast<Entity*>(light);
         }
-    
+
         if (ImGui::MenuItem(ICON_FA_CLOUD " Sky"))
         {
           createdEntity = new Sky();
         }
-    
+
         if (ImGui::MenuItem(ICON_FA_SKYATLAS " Gradient Sky"))
         {
           createdEntity = new GradientSky();
         }
-    
+
         ImGui::EndMenu();
       }
 
@@ -127,7 +127,8 @@ namespace ToolKit
         size_t numSameType =
             std::count_if(entities.cbegin(), entities.cend(), isSameTypeFn);
 
-        String suffix = numSameType == 0 ? "" : "_" + std::to_string(numSameType);
+        String suffix =
+            numSameType == 0 ? "" : "_" + std::to_string(numSameType);
 
         // if numSameType equals 0 EntityType otherwise EntityType_123
         createdEntity->SetNameVal(typeName + suffix);
@@ -135,13 +136,14 @@ namespace ToolKit
 
         if (OutlinerWindow* outliner = g_app->GetOutliner())
         {
-          if (outliner->IsInsertingAtTheEndOfEntities()) 
+          if (outliner->IsInsertingAtTheEndOfEntities())
           {
             outliner->Focus(createdEntity);
           }
           // if right clicked this will try to insert to where we clicked
           // otherwise(top bar add) this will spawn at the end of the list.
           outliner->TryReorderEntites({createdEntity});
+          currScene->ValidateBillboard(createdEntity);
         }
       }
     }

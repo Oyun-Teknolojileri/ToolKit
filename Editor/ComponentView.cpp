@@ -455,6 +455,7 @@ namespace ToolKit
 
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
         ImGui::Indent();
+
         std::vector<ULongID> compRemove;
         for (ComponentPtr& com : m_entity->GetComponentPtrArray())
         {
@@ -471,13 +472,14 @@ namespace ToolKit
               new DeleteComponentAction(m_entity->GetComponent(id)));
         }
 
-        // Remove billboards if necessary
-        std::static_pointer_cast<EditorScene>(
-            GetSceneManager()->GetCurrentScene())
-            ->InitEntityBillboard(m_entity);
+        // Remove billboards if necessary.
+        ScenePtr scene          = GetSceneManager()->GetCurrentScene();
+        EditorScenePtr edtScene = std::static_pointer_cast<EditorScene>(scene);
+        edtScene->ValidateBillboard(m_entity);
 
         ImGui::PushItemWidth(150);
         static bool addInAction = false;
+
         if (addInAction)
         {
           int dataType = 0;
@@ -524,14 +526,9 @@ namespace ToolKit
             if (newComponent)
             {
               m_entity->AddComponent(newComponent);
-              addInAction = false;
+              edtScene->AddBillboardToEntity(m_entity);
 
-              ScenePtr s  = GetSceneManager()->GetCurrentScene();
-              if (EditorScenePtr es = std::static_pointer_cast<EditorScene>(s))
-              {
-                // Add billboard.
-                es->AddBillboardToEntity(m_entity);
-              }
+              addInAction = false;
             }
           }
           ImGui::Unindent();
