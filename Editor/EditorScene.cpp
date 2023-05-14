@@ -450,8 +450,8 @@ namespace ToolKit
       };
 
       // Check environment component
-      if (EnvironmentComponentPtr envCom =
-              entity->GetComponent<EnvironmentComponent>())
+      bool envExist = entity->GetComponent<EnvironmentComponent>() != nullptr;
+      if (envExist || entity->IsSkyInstance())
       {
         SkyBillboard* billboard = new SkyBillboard();
         addBillboardFn(billboard);
@@ -526,6 +526,10 @@ namespace ToolKit
 
       // Check Sky billboard. Precedence over light billboard.
       if (entity->GetComponent<EnvironmentComponent>())
+      {
+        sanitizeFn(EditorBillboardBase::BillboardType::Sky);
+      }
+      else if (entity->IsSkyInstance())
       {
         sanitizeFn(EditorBillboardBase::BillboardType::Sky);
       }
