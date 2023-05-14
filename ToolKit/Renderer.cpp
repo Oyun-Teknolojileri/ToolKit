@@ -494,7 +494,7 @@ namespace ToolKit
     quad.GetMeshComponent()->GetMeshVal()->m_material = mat;
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJob(&quad, jobs);
+    RenderJobProcessor::CreateRenderJobs({&quad}, jobs);
     Render(jobs, &quadCam);
   }
 
@@ -512,7 +512,7 @@ namespace ToolKit
     cube.GetMaterialComponent()->SetFirstMaterial(mat);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJob(&cube, jobs);
+    RenderJobProcessor::CreateRenderJobs({&cube}, jobs);
     Render(jobs, cam);
   }
 

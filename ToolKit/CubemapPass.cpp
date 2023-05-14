@@ -28,7 +28,7 @@ namespace ToolKit
     renderer->SetFramebuffer(m_params.FrameBuffer, false);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJob(m_cube.get(), jobs);
+    RenderJobProcessor::CreateRenderJobs({m_cube.get()}, jobs);
     renderer->Render(jobs, m_params.Cam);
   }
 
