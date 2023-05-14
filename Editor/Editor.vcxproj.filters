@@ -31,6 +31,9 @@
     <Filter Include="UI\View">
       <UniqueIdentifier>{0dc80406-1a58-4f44-abab-b7242951b6f2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Entities\Light">
+      <UniqueIdentifier>{c12b5b45-b985-4c76-b98c-0b6df21c0976}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -64,9 +67,6 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="EditorCamera.cpp">
-      <Filter>Entities</Filter>
-    </ClCompile>
-    <ClCompile Include="EditorLight.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
     <ClCompile Include="PublishManager.cpp">
@@ -162,6 +162,12 @@
     <ClCompile Include="FolderView.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
+    <ClCompile Include="EditorLight.cpp">
+      <Filter>Entities\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="LightMeshGenerator.cpp">
+      <Filter>Entities\Light</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mod.h">
@@ -192,9 +198,6 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="EditorCamera.h">
-      <Filter>Entities</Filter>
-    </ClInclude>
-    <ClInclude Include="EditorLight.h">
       <Filter>Entities</Filter>
     </ClInclude>
     <ClInclude Include="PublishManager.h">
@@ -289,6 +292,12 @@
     </ClInclude>
     <ClInclude Include="IconsFontAwesome.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorLight.h">
+      <Filter>Entities\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="LightMeshGenerator.h">
+      <Filter>Entities\Light</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

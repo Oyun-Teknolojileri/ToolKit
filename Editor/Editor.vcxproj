@@ -112,6 +112,7 @@
     <ClCompile Include="GizmoPass.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="LeftBar.cpp" />
+    <ClCompile Include="LightMeshGenerator.cpp" />
     <ClCompile Include="MaterialView.cpp" />
     <ClCompile Include="MeshView.cpp" />
     <ClCompile Include="MultiChoiceParameterWindow.cpp" />
@@ -163,6 +164,7 @@
     <ClInclude Include="Grid.h" />
     <ClInclude Include="IconsFontAwesome.h" />
     <ClInclude Include="LeftBar.h" />
+    <ClInclude Include="LightMeshGenerator.h" />
     <ClInclude Include="MaterialView.h" />
     <ClInclude Include="MeshView.h" />
     <ClInclude Include="MultiChoiceParameterWindow.h" />
