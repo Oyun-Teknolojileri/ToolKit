@@ -6,7 +6,7 @@ namespace ToolKit
 {
   namespace Editor
   {
-    class MultiChoiceParameterWindow : public TempWindow
+    class MultiChoiceCraeteWindow : public TempWindow
     {
      public:
       void OpenCreateWindow(ParameterBlock* parameter);
@@ -21,5 +21,6 @@ namespace ToolKit
       ParameterBlock* m_parameter;
       bool m_menuOpen = false;
     };
+
   } // namespace Editor
 } // namespace ToolKit

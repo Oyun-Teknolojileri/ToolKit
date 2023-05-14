@@ -1,12 +1,6 @@
 #pragma once
 
-#include "ToolKit.h"
 #include "UI.h"
-
-#include <functional>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
 namespace ToolKit
 {
@@ -16,7 +10,7 @@ namespace ToolKit
     typedef std::pair<String, StringArray> TagArg;
     typedef std::vector<TagArg> TagArgArray;
     typedef TagArgArray::const_iterator TagArgCIt;
-    TagArgArray::const_iterator GetTag(String tag, const TagArgArray& tagArgs);
+    TagArgCIt GetTag(String tag, const TagArgArray& tagArgs);
     void ParseVec(Vec3& vec, TagArgCIt tagIt);
 
     // Commands & Executors.
@@ -124,7 +118,7 @@ namespace ToolKit
       String m_filter     = "";
       bool m_reclaimFocus = false;
 
-      std::vector<String> m_history;
+      StringArray m_history;
       // -1: new line, 0..History.Size-1 browsing history.
       int m_historyPos = -1;
     };

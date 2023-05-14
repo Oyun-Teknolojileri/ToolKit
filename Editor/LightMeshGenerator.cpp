@@ -3,6 +3,8 @@
 #include "EditorLight.h"
 #include "Global.h"
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
   namespace Editor
@@ -30,8 +32,10 @@ namespace ToolKit
         return;
       }
 
-      MeshPtr accum = lines[0]->GetMeshComponent()->GetMeshVal();
-      lines[0]->GetMeshComponent()->SetMeshVal(nullptr);
+      LineBatch* lb = lines[0];
+      MeshPtr accum = lb->GetMeshComponent()->GetMeshVal();
+      lb->GetMeshComponent()->SetMeshVal(nullptr);
+      SafeDel(lb);
 
       for (int i = 1; i < (int) lines.size(); i++)
       {
@@ -39,7 +43,6 @@ namespace ToolKit
         MeshPtr subMesh = lb->GetMeshComponent()->GetMeshVal();
         accum->m_subMeshes.push_back(subMesh);
         lb->GetMeshComponent()->SetMeshVal(nullptr);
-
         SafeDel(lb);
       }
 

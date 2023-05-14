@@ -2,7 +2,6 @@
 
 #include "EditorLight.h"
 #include "FolderWindow.h"
-#include "FrameBuffer.h"
 #include "SceneRenderer.h"
 
 namespace ToolKit

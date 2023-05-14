@@ -35,8 +35,6 @@
 #include "Types.h"
 #include "UIManager.h"
 
-#include <limits>
-
 /**
  * Base name space for all the ToolKit functionalities.
  */

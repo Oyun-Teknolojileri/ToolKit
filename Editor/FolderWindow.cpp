@@ -1,24 +1,6 @@
 #include "FolderWindow.h"
 
 #include "App.h"
-#include "ConsoleWindow.h"
-#include "DirectionComponent.h"
-#include "Framebuffer.h"
-#include "Gizmo.h"
-#include "Global.h"
-#include "IconsFontAwesome.h"
-#include "Light.h"
-#include "PopupWindows.h"
-#include "PropInspector.h"
-#include "Util.h"
-#include "imgui_internal.h"
-
-#include <algorithm>
-#include <filesystem>
-#include <memory>
-#include <string>
-#include <unordered_set>
-#include <vector>
 
 #include "DebugNew.h"
 

@@ -144,7 +144,7 @@
     <ClCompile Include="FolderWindow.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
-    <ClCompile Include="MultiChoiceParameterWindow.cpp">
+    <ClCompile Include="MultiChoiceWindow.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
     <ClCompile Include="OutlinerWindow.cpp">
@@ -275,7 +275,7 @@
     <ClInclude Include="FolderWindow.h">
       <Filter>UI\Window</Filter>
     </ClInclude>
-    <ClInclude Include="MultiChoiceParameterWindow.h">
+    <ClInclude Include="MultiChoiceWindow.h">
       <Filter>UI\Window</Filter>
     </ClInclude>
     <ClInclude Include="OutlinerWindow.h">

@@ -1,37 +1,12 @@
 #include "App.h"
 
-#include "Action.h"
-#include "Anchor.h"
-#include "Camera.h"
-#include "ConsoleWindow.h"
 #include "DirectionComponent.h"
 #include "EditorCamera.h"
-#include "EditorRenderer.h"
-#include "EditorViewport.h"
 #include "EditorViewport2d.h"
-#include "FolderWindow.h"
-#include "Framebuffer.h"
-#include "Gizmo.h"
-#include "Global.h"
-#include "Grid.h"
-#include "Mod.h"
-#include "Node.h"
-#include "OutlinerWindow.h"
 #include "OverlayUI.h"
-#include "Pass.h"
-#include "PluginWindow.h"
 #include "PopupWindows.h"
-#include "Primative.h"
-#include "PropInspector.h"
-#include "Renderer.h"
-#include "UI.h"
 
-#include <filesystem>
-#include <iostream>
-#include <memory>
 #include <sstream>
-#include <string>
-#include <vector>
 
 #include "DebugNew.h"
 
@@ -42,7 +17,7 @@ namespace ToolKit
 
   namespace Editor
   {
-    App::App(int windowWidth, int windowHeight) : m_workspace(this)
+    App::App(int windowWidth, int windowHeight)
     {
       m_cursor           = nullptr;
       RenderSystem* rsys = GetRenderSystem();

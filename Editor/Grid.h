@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Entity.h"
-#include "Global.h"
 #include "Shader.h"
 
 namespace ToolKit
@@ -47,14 +46,15 @@ namespace ToolKit
       void Init();
 
      private:
-      UVec2 m_size;                      // m^2 size of the grid.
-      float m_gridCellSize       = 1.0f; // m^2 size of each cell
-      Vec3 m_horizontalAxisColor = g_gridAxisRed;
-      Vec3 m_verticalAxisColor   = g_gridAxisBlue;
-      float m_maxLinePixelCount  = 2.0f;
-      bool m_is2d                = false;
-      bool m_initiated           = false;
-      MaterialPtr m_material     = nullptr;
+      Vec3 m_horizontalAxisColor;
+      Vec3 m_verticalAxisColor;
+
+      UVec2 m_size;                     // m^2 size of the grid.
+      float m_gridCellSize      = 1.0f; // m^2 size of each cell
+      float m_maxLinePixelCount = 2.0f;
+      bool m_is2d               = false;
+      bool m_initiated          = false;
+      MaterialPtr m_material    = nullptr;
     };
 
   } //  namespace Editor

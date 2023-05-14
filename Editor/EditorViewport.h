@@ -1,21 +1,13 @@
 #pragma once
 
-#include "Global.h"
-#include "ToolKit.h"
-#include "UI.h"
+#include "EditorScene.h"
+#include "FolderWindow.h"
 #include "Viewport.h"
-
-#include <functional>
-#include <vector>
 
 namespace ToolKit
 {
-  class Camera;
-  class RenderTarget;
-
   namespace Editor
   {
-    class DirectoryEntry;
 
     enum class CameraAlignment
     {

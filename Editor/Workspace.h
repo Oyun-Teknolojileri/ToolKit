@@ -3,8 +3,6 @@
 #include "Serialize.h"
 #include "ToolKit.h"
 
-#include <vector>
-
 namespace ToolKit
 {
   namespace Editor
@@ -16,12 +14,10 @@ namespace ToolKit
       String scene;
     };
 
-    class App;
-
     class Workspace : public Serializable
     {
      public:
-      explicit Workspace(App* app);
+      Workspace();
       void Init();
 
       // Defaults read / writes to installment directory.
@@ -55,7 +51,6 @@ namespace ToolKit
       std::vector<Project> m_projects;
 
      private:
-      App* m_app = nullptr;
       String m_activeWorkspace;
       Project m_activeProject;
     };

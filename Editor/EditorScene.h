@@ -1,13 +1,7 @@
 #pragma once
 
 #include "EditorLight.h"
-#include "EditorViewport.h"
 #include "Scene.h"
-#include "ToolKit.h"
-#include "Types.h"
-
-#include <unordered_map>
-#include <vector>
 
 namespace ToolKit
 {
@@ -87,7 +81,7 @@ namespace ToolKit
       /**
        * Updates the billboards to align with current viewports camera for
        * proper picking.
-      */
+       */
       void UpdateBillboardsForPicking();
 
      public:
@@ -109,6 +103,8 @@ namespace ToolKit
       virtual ~EditorSceneManager();
       ResourcePtr CreateLocal(ResourceType type) override;
     };
+
+    typedef std::shared_ptr<class EditorScene> EditorScenePtr;
 
   } // namespace Editor
 } // namespace ToolKit

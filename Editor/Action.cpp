@@ -2,12 +2,7 @@
 
 #include "AnimationControllerComponent.h"
 #include "App.h"
-#include "EditorScene.h"
-#include "EnvironmentComponent.h"
-#include "Global.h"
 #include "Prefab.h"
-
-#include <utility>
 
 #include "DebugNew.h"
 
@@ -180,8 +175,9 @@ namespace ToolKit
 
     ActionManager::ActionManager()
     {
-      m_initiated    = false;
-      m_stackPointer = 0;
+      m_initiated      = false;
+      m_stackPointer   = 0;
+      m_actionGrouping = false;
     }
 
     ActionManager::~ActionManager()

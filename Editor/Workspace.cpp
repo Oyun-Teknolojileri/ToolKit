@@ -2,10 +2,6 @@
 
 #include "App.h"
 
-#include <filesystem>
-#include <memory>
-#include <string>
-
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -16,7 +12,7 @@ namespace ToolKit
     static const StringView XmlNodeProject   = "Project";
     static const StringView XmlNodeScene     = "scene";
 
-    Workspace::Workspace(App* app) { m_app = app; }
+    Workspace::Workspace() {}
 
     void Workspace::Init()
     {
@@ -215,7 +211,7 @@ namespace ToolKit
         setNode = CreateXmlNode(lclDoc, XmlNodeProject.data(), settings);
         WriteAttr(setNode, lclDoc, XmlNodeName.data(), m_activeProject.name);
 
-        String sceneFile = m_app->GetCurrentScene()->GetFile();
+        String sceneFile = g_app->GetCurrentScene()->GetFile();
         if (GetSceneManager()->Exist(sceneFile))
         {
           String sceneRoot = ScenePath("");
@@ -241,7 +237,7 @@ namespace ToolKit
 
     void Workspace::SerializeSimulationWindow(XmlDocument* doc) const
     {
-      PluginWindow* pluginWindow = m_app->GetWindow<PluginWindow>("Plugin");
+      PluginWindow* pluginWindow = g_app->GetWindow<PluginWindow>("Plugin");
       XmlNode* settings          = CreateXmlNode(doc, "Simulation", nullptr);
 
       int numCustomRes = (int) pluginWindow->m_screenResolutions.size() -
@@ -274,11 +270,12 @@ namespace ToolKit
     void Workspace::DeSerializeSimulationWindow(XmlDocument* doc)
     {
       XmlNode* node              = doc->first_node("Simulation");
-      PluginWindow* pluginWindow = m_app->GetWindow<PluginWindow>("Plugin");
+      PluginWindow* pluginWindow = g_app->GetWindow<PluginWindow>("Plugin");
       if (node == nullptr || pluginWindow == nullptr)
       {
         return;
       }
+
       const int defaultCnt = pluginWindow->m_numDefaultResNames;
       pluginWindow->m_screenResolutions.resize(defaultCnt);
       pluginWindow->m_emulatorResolutionNames.resize(defaultCnt);

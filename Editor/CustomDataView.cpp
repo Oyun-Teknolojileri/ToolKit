@@ -2,7 +2,7 @@
 
 #include "App.h"
 #include "ComponentView.h"
-#include "MultiChoiceParameterWindow.h"
+#include "MultiChoiceWindow.h"
 #include "Prefab.h"
 
 #include "DebugNew.h"
@@ -13,7 +13,7 @@ namespace ToolKit
   {
     // CustomDataView
     //////////////////////////////////////////////////////////////////////////
-    MultiChoiceParameterWindow CustomDataView::m_multiChoiceParamWindow;
+    MultiChoiceCraeteWindow CustomDataView::m_multiChoiceParamWindow;
 
     void CustomDataView::ShowMaterialPtr(const String& uniqueName,
                                          const String& file,

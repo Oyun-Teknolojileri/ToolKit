@@ -21,12 +21,13 @@ namespace ToolKit
       void ShowMaterial(MaterialPtr m_mat);
 
      private:
-      PreviewViewport* m_viewport  = nullptr;
+      PreviewViewport* m_viewport = nullptr;
       MaterialPtrArray m_materials;
-      uint m_activeObjectIndx      = 0;
-      bool m_isMeshChanged         = true;
-      int m_currentMaterialIndex   = 0;
-    public:
+      uint m_activeObjectIndx    = 0;
+      bool m_isMeshChanged       = true;
+      int m_currentMaterialIndex = 0;
+
+     public:
       bool m_isTempView = false;
     };
 
@@ -34,13 +35,14 @@ namespace ToolKit
 
     class TempMaterialWindow : public TempWindow
     {
-    public:
+     public:
       TempMaterialWindow();
       ~TempMaterialWindow();
       void SetMaterial(MaterialPtr mat);
       void OpenWindow();
       void Show() override;
-    private:
+
+     private:
       MaterialViewPtr m_view;
       bool m_isOpen = true;
     };

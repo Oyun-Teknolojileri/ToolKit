@@ -2,10 +2,6 @@
 
 #include "EditorScene.h"
 #include "StateMachine.h"
-#include "ToolKit.h"
-
-#include <memory>
-#include <vector>
 
 namespace ToolKit
 {

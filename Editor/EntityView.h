@@ -5,6 +5,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     class EntityView : public View
     {
      public:
@@ -16,5 +17,6 @@ namespace ToolKit
      protected:
       void ShowAnchorSettings();
     };
+
   } // namespace Editor
 } // namespace ToolKit

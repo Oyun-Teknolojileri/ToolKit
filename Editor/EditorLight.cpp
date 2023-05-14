@@ -6,9 +6,6 @@
 #include "Material.h"
 #include "Texture.h"
 
-#include <memory>
-#include <string>
-
 #include "DebugNew.h"
 
 namespace ToolKit

@@ -2,11 +2,6 @@
 
 #include "UI.h"
 
-#include <functional>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
 namespace ToolKit
 {
   namespace Editor
@@ -108,7 +103,7 @@ namespace ToolKit
           m_itemActions;
 
       // If you change this value, change the calculaton of thumbnail zoom
-      const float m_thumbnailMaxZoom = 300.f;
+      const float m_thumbnailMaxZoom                 = 300.f;
       class TempMaterialWindow* m_tempMaterialWindow = nullptr;
     };
 
@@ -136,7 +131,6 @@ namespace ToolKit
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
      private:
-      
       // Returns active root's decendend views (tabs).
       IntArray GetVeiws();
 

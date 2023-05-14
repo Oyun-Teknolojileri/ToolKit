@@ -3,12 +3,8 @@
 #include "SDL.h"
 #include "Types.h"
 
-#include <memory>
-#include <vector>
-
 namespace ToolKit
 {
-
   namespace Editor
   {
 
@@ -93,14 +89,10 @@ namespace ToolKit
     const size_t g_maxUndoCount           = 50;
     const UVec2 g_max2dGridSize(100 * 100 * 2);
 
-    // Editor types.
-    typedef std::shared_ptr<class EditorScene> EditorScenePtr;
-
 #define Convert2ImGuiTexture(TexturePtr)                                       \
   (void*) (intptr_t) (TexturePtr->m_textureId) // NOLINT
 
 #define ConvertUIntImGuiTexture(uint) (void*) (intptr_t) (uint)
 
   } // namespace Editor
-
 } // namespace ToolKit

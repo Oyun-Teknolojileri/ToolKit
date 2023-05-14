@@ -1,12 +1,6 @@
 #pragma once
 
-#include "Light.h"
-#include "MathUtil.h"
 #include "Primative.h"
-#include "Renderer.h"
-#include "Viewport.h"
-
-#include <vector>
 
 namespace ToolKit
 {

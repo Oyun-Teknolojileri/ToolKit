@@ -1,11 +1,7 @@
 #include "PluginWindow.h"
 
 #include "App.h"
-#include "ConsoleWindow.h"
 #include "EditorViewport2d.h"
-#include "Global.h"
-
-#include <utility>
 
 #include "DebugNew.h"
 

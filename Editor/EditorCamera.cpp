@@ -1,13 +1,6 @@
 #include "EditorCamera.h"
 
 #include "App.h"
-#include "Global.h"
-#include "Mesh.h"
-#include "Primative.h"
-#include "ResourceComponent.h"
-#include "ToolKit.h"
-
-#include <memory>
 
 #include "DebugNew.h"
 

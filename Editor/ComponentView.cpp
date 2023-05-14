@@ -6,12 +6,11 @@
 #include "CustomDataView.h"
 #include "EnvironmentComponent.h"
 
-#include <utility>
-
 namespace ToolKit
 {
   namespace Editor
   {
+
     void ShowMultiMaterialComponent(
         ComponentPtr& comp,
         std::function<bool(const String&)> showCompFunc,
@@ -341,7 +340,10 @@ namespace ToolKit
       {
         ImGui::PushID(static_cast<int>(comp->m_id));
         String varName = headerName + "##" + std::to_string(modifiableComp);
-        bool isOpen = ImGui::CollapsingHeader(varName.c_str(), nullptr, ImGuiTreeNodeFlags_AllowItemOverlap);
+        bool isOpen =
+            ImGui::CollapsingHeader(varName.c_str(),
+                                    nullptr,
+                                    ImGuiTreeNodeFlags_AllowItemOverlap);
 
         if (modifiableComp)
         {
@@ -443,7 +445,7 @@ namespace ToolKit
         ImGui::Text("Select an entity");
         return;
       }
-      
+
       ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
 
       UI::PushBoldFont();

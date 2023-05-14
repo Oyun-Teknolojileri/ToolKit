@@ -4,8 +4,6 @@
 #include "Anchor.h"
 #include "Mod.h"
 
-#include <vector>
-
 namespace ToolKit
 {
   namespace Editor

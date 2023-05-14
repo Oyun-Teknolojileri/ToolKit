@@ -1,28 +1,10 @@
 #include "EditorViewport2d.h"
 
 #include "App.h"
-#include "Camera.h"
-#include "ConsoleWindow.h"
-#include "FileManager.h"
-#include "FolderWindow.h"
-#include "Gizmo.h"
-#include "Global.h"
-#include "Grid.h"
-#include "Light.h"
-#include "Mod.h"
-#include "Node.h"
-#include "OverlayUI.h"
 #include "PopupWindows.h"
-#include "Primative.h"
-#include "Renderer.h"
-#include "SDL.h"
 #include "TopBar2d.h"
-#include "Util.h"
-
-#include <algorithm>
 
 #include "DebugNew.h"
-
 
 namespace ToolKit
 {
@@ -127,11 +109,11 @@ namespace ToolKit
       // AssetBrowser drop handling.
       if (ImGui::BeginDragDropTarget())
       {
-        if (const ImGuiPayload* payload = 
-               ImGui::AcceptDragDropPayload("BrowserDragZone"))
+        if (const ImGuiPayload* payload =
+                ImGui::AcceptDragDropPayload("BrowserDragZone"))
         {
           const FileDragData& dragData = FolderView::GetFileDragData();
-          const DirectoryEntry* entry = dragData.Entries[0]; // get first entry
+          const DirectoryEntry* entry  = dragData.Entries[0]; // get first entry
 
           if (entry->m_ext == LAYER)
           {

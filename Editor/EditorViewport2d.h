@@ -2,9 +2,6 @@
 
 #include "AnchorMod.h"
 #include "EditorViewport.h"
-#include "ToolKit.h"
-#include "UI.h"
-#include "Viewport.h"
 
 namespace ToolKit
 {
