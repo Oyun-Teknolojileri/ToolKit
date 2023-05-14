@@ -359,7 +359,7 @@ namespace ToolKit
 
           // Add billboards to draw list
           Entity* billboard =
-              m_params.App->GetCurrentScene()->GetBillboardOfEntity(entity);
+              m_params.App->GetCurrentScene()->GetBillboard(entity);
 
           if (billboard)
           {

@@ -587,7 +587,7 @@ namespace ToolKit
         return;
       }
 
-      if (!GetCurrentScene()->GetBillboardOfEntity(entity))
+      if (!GetCurrentScene()->GetBillboard(entity))
       {
         cam->FocusToBoundingBox(entity->GetAABB(true), 1.1f);
       }

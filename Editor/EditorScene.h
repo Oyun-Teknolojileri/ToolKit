@@ -66,10 +66,10 @@ namespace ToolKit
                       bool pickPartiallyInside           = true) override;
 
       // Gizmo operations
-      void AddBillboardToEntity(Entity* entity);
-      void RemoveBillboardFromEntity(Entity* entity);
+      void AddBillboard(Entity* entity);
+      void RemoveBillboard(Entity* entity);
       EntityRawPtrArray GetBillboards();
-      Entity* GetBillboardOfEntity(Entity* entity);
+      Entity* GetBillboard(Entity* entity);
       void ValidateBillboard(Entity* entity);
       void ValidateBillboard(EntityRawPtrArray& entities);
 

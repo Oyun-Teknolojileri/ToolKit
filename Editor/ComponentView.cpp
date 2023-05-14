@@ -526,7 +526,7 @@ namespace ToolKit
             if (newComponent)
             {
               m_entity->AddComponent(newComponent);
-              edtScene->AddBillboardToEntity(m_entity);
+              edtScene->AddBillboard(m_entity);
 
               addInAction = false;
             }

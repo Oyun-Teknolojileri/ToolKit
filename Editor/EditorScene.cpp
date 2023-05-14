@@ -293,7 +293,7 @@ namespace ToolKit
       Scene::AddEntity(entity);
 
       // Add bilboard gizmo
-      AddBillboardToEntity(entity);
+      AddBillboard(entity);
     }
 
     void EditorScene::RemoveEntity(const EntityRawPtrArray& entities)
@@ -303,7 +303,7 @@ namespace ToolKit
       for (Entity* ntt : entities)
       {
         RemoveFromSelection(ntt->GetIdVal());
-        RemoveBillboardFromEntity(ntt);
+        RemoveBillboard(ntt);
       }
     }
 
@@ -313,7 +313,7 @@ namespace ToolKit
       if ((removed = Scene::RemoveEntity(id, deep)))
       {
         RemoveFromSelection(removed->GetIdVal());
-        RemoveBillboardFromEntity(removed);
+        RemoveBillboard(removed);
       }
 
       return removed;
@@ -434,13 +434,13 @@ namespace ToolKit
           pickedObjects.end());
     }
 
-    void EditorScene::AddBillboardToEntity(Entity* entity)
+    void EditorScene::AddBillboard(Entity* entity)
     {
       auto addBillboardFn = [this, &entity](EditorBillboardBase* billboard)
       {
         if (m_entityBillboardMap.find(entity) != m_entityBillboardMap.end())
         {
-          RemoveBillboardFromEntity(entity);
+          RemoveBillboard(entity);
         }
 
         // Note: Only 1 billboard per entity is supported.
@@ -467,7 +467,7 @@ namespace ToolKit
       }
     }
 
-    void EditorScene::RemoveBillboardFromEntity(Entity* entity)
+    void EditorScene::RemoveBillboard(Entity* entity)
     {
       if (m_entityBillboardMap.find(entity) != m_entityBillboardMap.end())
       {
@@ -487,7 +487,7 @@ namespace ToolKit
 
     EntityRawPtrArray EditorScene::GetBillboards() { return m_billboards; }
 
-    Entity* EditorScene::GetBillboardOfEntity(Entity* entity)
+    Entity* EditorScene::GetBillboard(Entity* entity)
     {
       auto billBoard = m_entityBillboardMap.find(entity);
       if (billBoard != m_entityBillboardMap.end())
@@ -542,13 +542,13 @@ namespace ToolKit
         if (billMap != m_entityBillboardMap.end())
         {
           // This entity should not have a billboard.
-          RemoveBillboardFromEntity(entity);
+          RemoveBillboard(entity);
         }
       }
 
       if (addBillboard)
       {
-        AddBillboardToEntity(entity);
+        AddBillboard(entity);
       }
     }
 
