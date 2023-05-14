@@ -1,12 +1,8 @@
 #pragma once
 
 #include "EditorViewport.h"
-#include "FolderWindow.h"
 #include "SceneRenderer.h"
 #include "UI.h"
-
-#include <functional>
-#include <vector>
 
 namespace ToolKit
 {
@@ -34,7 +30,7 @@ namespace ToolKit
           const String& file,
           std::function<void(DirectoryEntry& entry)> dropAction,
           const String& dropName = "",
-          bool isEditable        = true); 
+          bool isEditable        = true);
 
       static void DropSubZone(
           const String& title,
@@ -71,6 +67,7 @@ namespace ToolKit
      private:
       SceneRendererPtr m_previewRenderer = nullptr;
       Light* m_light                     = nullptr;
+
      public:
       bool m_isTempView = false;
     };
@@ -92,8 +89,10 @@ namespace ToolKit
       void DispatchSignals() const override;
       void SetMaterials(const MaterialPtrArray& mat);
       void SetMeshView(MeshPtr mesh);
+
      private:
       void DeterminateSelectedMaterial(Entity* curEntity);
+
      public:
       ViewRawPtrArray m_views;
       UIntArray m_prefabViews;

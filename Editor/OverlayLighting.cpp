@@ -1,5 +1,4 @@
 #include "OverlayLighting.h"
-#include "IconsFontAwesome.h"
 #include "App.h"
 
 #include "DebugNew.h"

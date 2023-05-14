@@ -2,12 +2,7 @@
 
 #include "Action.h"
 #include "App.h"
-#include "EditorCamera.h"
-#include "EditorViewport.h"
-#include "EnvironmentComponent.h"
-#include "Global.h"
 #include "Prefab.h"
-#include "Util.h"
 
 #include "DebugNew.h"
 
@@ -298,7 +293,7 @@ namespace ToolKit
       Scene::AddEntity(entity);
 
       // Add bilboard gizmo
-      AddBillboardToEntity(entity);
+      AddBillboard(entity);
     }
 
     void EditorScene::RemoveEntity(const EntityRawPtrArray& entities)
@@ -308,7 +303,7 @@ namespace ToolKit
       for (Entity* ntt : entities)
       {
         RemoveFromSelection(ntt->GetIdVal());
-        RemoveBillboardFromEntity(ntt);
+        RemoveBillboard(ntt);
       }
     }
 
@@ -318,7 +313,7 @@ namespace ToolKit
       if ((removed = Scene::RemoveEntity(id, deep)))
       {
         RemoveFromSelection(removed->GetIdVal());
-        RemoveBillboardFromEntity(removed);
+        RemoveBillboard(removed);
       }
 
       return removed;
@@ -439,22 +434,24 @@ namespace ToolKit
           pickedObjects.end());
     }
 
-    void EditorScene::AddBillboardToEntity(Entity* entity)
+    void EditorScene::AddBillboard(Entity* entity)
     {
       auto addBillboardFn = [this, &entity](EditorBillboardBase* billboard)
       {
+        if (m_entityBillboardMap.find(entity) != m_entityBillboardMap.end())
+        {
+          RemoveBillboard(entity);
+        }
+
+        // Note: Only 1 billboard per entity is supported.
         billboard->m_entity          = entity;
         m_entityBillboardMap[entity] = billboard;
         m_billboards.push_back(billboard);
       };
 
-      // Note: Only 1 billboard per entity is supported.
-
       // Check environment component
-      EnvironmentComponentPtr envCom =
-          entity->GetComponent<EnvironmentComponent>();
-      if (envCom != nullptr ||
-          entity->GetType() == EntityType::Entity_GradientSky)
+      bool envExist = entity->GetComponent<EnvironmentComponent>() != nullptr;
+      if (envExist || entity->IsSkyInstance())
       {
         SkyBillboard* billboard = new SkyBillboard();
         addBillboardFn(billboard);
@@ -470,7 +467,7 @@ namespace ToolKit
       }
     }
 
-    void EditorScene::RemoveBillboardFromEntity(Entity* entity)
+    void EditorScene::RemoveBillboard(Entity* entity)
     {
       if (m_entityBillboardMap.find(entity) != m_entityBillboardMap.end())
       {
@@ -490,11 +487,12 @@ namespace ToolKit
 
     EntityRawPtrArray EditorScene::GetBillboards() { return m_billboards; }
 
-    Entity* EditorScene::GetBillboardOfEntity(Entity* entity)
+    Entity* EditorScene::GetBillboard(Entity* entity)
     {
-      if (m_entityBillboardMap.find(entity) != m_entityBillboardMap.end())
+      auto billBoard = m_entityBillboardMap.find(entity);
+      if (billBoard != m_entityBillboardMap.end())
       {
-        return m_entityBillboardMap[entity];
+        return billBoard->second;
       }
       else
       {
@@ -502,78 +500,71 @@ namespace ToolKit
       }
     }
 
-    void EditorScene::InitEntityBillboard(Entity* entity)
+    void EditorScene::ValidateBillboard(Entity* entity)
     {
-      if (InitBillboard(entity, EditorBillboardBase::BillboardType::Sky))
+      bool addBillboard = false;
+      auto billMap      = m_entityBillboardMap.find(entity);
+
+      auto sanitizeFn   = [&addBillboard, billMap, this](
+                            EditorBillboardBase::BillboardType type) -> void
       {
-        return;
+        if (billMap != m_entityBillboardMap.end())
+        {
+          // Wrong type.
+          if (billMap->second->GetBillboardType() != type)
+          {
+            // Override it with sky billboard.
+            addBillboard = true;
+          }
+        }
+        else
+        {
+          // Missing.
+          addBillboard = true;
+        }
+      };
+
+      // Check Sky billboard. Precedence over light billboard.
+      if (entity->GetComponent<EnvironmentComponent>())
+      {
+        sanitizeFn(EditorBillboardBase::BillboardType::Sky);
+      }
+      else if (entity->IsSkyInstance())
+      {
+        sanitizeFn(EditorBillboardBase::BillboardType::Sky);
+      }
+      else if (entity->IsLightInstance())
+      {
+        sanitizeFn(EditorBillboardBase::BillboardType::Light);
+      }
+      else
+      {
+        if (billMap != m_entityBillboardMap.end())
+        {
+          // This entity should not have a billboard.
+          RemoveBillboard(entity);
+        }
       }
 
-      if (InitBillboard(entity, EditorBillboardBase::BillboardType::Light))
+      if (addBillboard)
       {
-        return;
+        AddBillboard(entity);
+      }
+    }
+
+    void EditorScene::ValidateBillboard(EntityRawPtrArray& entities)
+    {
+      for (Entity* ntt : entities)
+      {
+        ValidateBillboard(ntt);
       }
     }
 
     void EditorScene::CopyTo(Resource* other)
     {
-      // Clear fixed layers.
       EditorScene* cpy = static_cast<EditorScene*>(other);
       Scene::CopyTo(cpy);
       cpy->m_newScene = true;
-    }
-
-    bool EditorScene::InitBillboard(Entity* entity,
-                                    EditorBillboardBase::BillboardType type)
-    {
-      bool found    = false;
-      Billboard* bb = nullptr;
-
-      if (m_entityBillboardMap.find(entity) == m_entityBillboardMap.end())
-      {
-        found = false;
-      }
-      else
-      {
-        found = true;
-      }
-
-      bool check = false;
-      if (type == EditorBillboardBase::BillboardType::Sky)
-      {
-        check = entity->GetComponent<EnvironmentComponent>() != nullptr ||
-                entity->GetType() == EntityType::Entity_GradientSky;
-      }
-      else if (type == EditorBillboardBase::BillboardType::Light)
-      {
-        check = entity->IsLightInstance();
-      }
-
-      if (!check && found)
-      {
-        // Remove billboard if the entity is not the correct type
-        RemoveBillboardFromEntity(entity);
-        return false;
-      }
-      else if (found)
-      {
-        // Check if the billboard is the correct one and change it if it is not
-        if (m_entityBillboardMap[entity]->GetBillboardType() == type)
-        {
-          return true;
-        }
-        else
-        {
-          RemoveBillboardFromEntity(entity);
-          return false;
-        }
-      }
-      else
-      {
-        // Add billboard
-        AddBillboardToEntity(entity);
-        return true;
-      }
     }
 
     void EditorScene::UpdateBillboardsForPicking()

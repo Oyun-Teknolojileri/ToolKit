@@ -17,7 +17,9 @@ namespace ToolKit
                float linePixelCount,
                bool is2d)
     {
-      m_is2d = is2d;
+      m_is2d                = is2d;
+      m_horizontalAxisColor = g_gridAxisRed;
+      m_verticalAxisColor   = g_gridAxisBlue;
 
       Init();
 

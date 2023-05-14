@@ -1,37 +1,12 @@
 #include "App.h"
 
-#include "Action.h"
-#include "Anchor.h"
-#include "Camera.h"
-#include "ConsoleWindow.h"
 #include "DirectionComponent.h"
 #include "EditorCamera.h"
-#include "EditorRenderer.h"
-#include "EditorViewport.h"
 #include "EditorViewport2d.h"
-#include "FolderWindow.h"
-#include "Framebuffer.h"
-#include "Gizmo.h"
-#include "Global.h"
-#include "Grid.h"
-#include "Mod.h"
-#include "Node.h"
-#include "OutlinerWindow.h"
 #include "OverlayUI.h"
-#include "Pass.h"
-#include "PluginWindow.h"
 #include "PopupWindows.h"
-#include "Primative.h"
-#include "PropInspector.h"
-#include "Renderer.h"
-#include "UI.h"
 
-#include <filesystem>
-#include <iostream>
-#include <memory>
 #include <sstream>
-#include <string>
-#include <vector>
 
 #include "DebugNew.h"
 
@@ -42,7 +17,7 @@ namespace ToolKit
 
   namespace Editor
   {
-    App::App(int windowWidth, int windowHeight) : m_workspace(this)
+    App::App(int windowWidth, int windowHeight)
     {
       m_cursor           = nullptr;
       RenderSystem* rsys = GetRenderSystem();
@@ -164,9 +139,6 @@ namespace ToolKit
       ModManager::GetInstance()->Update(deltaTime);
       EditorViewportRawPtrArray viewports;
 
-      bool playOnSimulationWnd =
-          m_gameMod == GameMod::Playing && m_simulatorSettings.Windowed;
-
       for (Window* wnd : m_windows)
       {
         if (wnd->IsViewport())
@@ -174,12 +146,27 @@ namespace ToolKit
           viewports.push_back(static_cast<EditorViewport*>(wnd));
         }
 
-        // Skip 3d viewport if game is playing on it.
-        if (playOnSimulationWnd || wnd->m_name != g_3dViewport)
+        bool skipDispatch = false;
+        if (m_gameMod == GameMod::Playing)
+        {
+          if (!m_simulatorSettings.Windowed)
+          {
+            if (wnd->m_name == g_3dViewport)
+            {
+              // Skip 3d viewport if game is playing on it.
+              skipDispatch = true;
+            }
+          }
+        }
+
+        if (!skipDispatch)
         {
           wnd->DispatchSignals();
         }
       }
+
+      bool playOnSimulationWnd =
+          m_gameMod == GameMod::Playing && m_simulatorSettings.Windowed;
 
       if (playOnSimulationWnd)
       {
@@ -492,6 +479,7 @@ namespace ToolKit
 
       if (mod == GameMod::Stop)
       {
+        GetRenderSystem()->FlushRenderTasks();
         GetPluginManager()->UnloadGamePlugin();
         m_statusMsg = "Game is stopped";
         m_gameMod   = mod;
@@ -599,7 +587,7 @@ namespace ToolKit
         return;
       }
 
-      if (!GetCurrentScene()->GetBillboardOfEntity(entity))
+      if (!GetCurrentScene()->GetBillboard(entity))
       {
         cam->FocusToBoundingBox(entity->GetAABB(true), 1.1f);
       }

@@ -1,10 +1,6 @@
 #include "Thumbnail.h"
 
-#include "Entity.h"
-#include "Global.h"
 #include "App.h"
-#include "MeshComponent.h"
-#include "MaterialComponent.h"
 
 #include "DebugNew.h"
 
@@ -171,7 +167,7 @@ namespace ToolKit
 
     ThumbnailManager::~ThumbnailManager() { m_defaultThumbnail = nullptr; }
 
-    bool ThumbnailManager::IsDefaultThumbnail(RenderTargetPtr thumb) 
+    bool ThumbnailManager::IsDefaultThumbnail(RenderTargetPtr thumb)
     {
       return thumb == m_defaultThumbnail;
     }
@@ -194,7 +190,8 @@ namespace ToolKit
       return m_thumbnailCache[fullPath];
     }
 
-    bool ThumbnailManager::TryGetThumbnail(uint& iconId, const DirectoryEntry& dirEnt)
+    bool ThumbnailManager::TryGetThumbnail(uint& iconId,
+                                           const DirectoryEntry& dirEnt)
     {
       RenderTargetPtr thumb = GetThumbnail(dirEnt);
       bool valid = thumb->m_textureId != 0 && !IsDefaultThumbnail(thumb);

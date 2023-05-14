@@ -1,14 +1,12 @@
 #pragma once
 
-#include "ImGui/imgui.h"
-#include "Serialize.h"
-#include "Types.h"
 #include "UI.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
+
     class StringInputWindow : public Window
     {
      public:
@@ -74,5 +72,6 @@ namespace ToolKit
       String m_msg;
       bool m_showCancel = false;
     };
+
   } // namespace Editor
 } // namespace ToolKit

@@ -3,12 +3,12 @@
 #include "Animation.h"
 #include "Types.h"
 
-#include <vector>
-
 namespace ToolKit
 {
   namespace Editor
   {
+
+    typedef std::vector<class Action*> ActionRawPtrArray;
 
     class Action
     {
@@ -20,7 +20,7 @@ namespace ToolKit
       virtual void Redo() = 0;
 
      public:
-      std::vector<Action*> m_group;
+      ActionRawPtrArray m_group;
     };
 
     class DeleteAction : public Action
@@ -96,7 +96,8 @@ namespace ToolKit
 
      private:
       static ActionManager m_instance;
-      std::vector<Action*> m_actionStack;
+      ActionRawPtrArray m_actionStack;
+
       int m_stackPointer;
       bool m_initiated;
       bool m_actionGrouping;

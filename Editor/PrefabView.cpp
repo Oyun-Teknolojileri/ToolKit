@@ -4,10 +4,8 @@
 #include "ComponentView.h"
 #include "CustomDataView.h"
 #include "Global.h"
-#include "PrefabView.h"
 #include "IconsFontAwesome.h"
-
-#include <Prefab.h>
+#include "Prefab.h"
 
 namespace ToolKit
 {
@@ -18,8 +16,8 @@ namespace ToolKit
 
     PrefabView::PrefabView() : View("Prefab View")
     {
-      m_viewID  = 2;
-      m_viewIcn = UI::m_prefabIcn;
+      m_viewID   = 2;
+      m_viewIcn  = UI::m_prefabIcn;
       m_fontIcon = ICON_FA_CUBES;
     }
 
@@ -30,10 +28,7 @@ namespace ToolKit
       return m_activeChildEntity != nullptr;
     }
 
-    Entity* PrefabView::GetActiveEntity()
-    {
-      return m_activeChildEntity;
-    }
+    Entity* PrefabView::GetActiveEntity() { return m_activeChildEntity; }
 
     bool PrefabView::DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags)
     {
@@ -47,7 +42,7 @@ namespace ToolKit
       {
         m_activeChildEntity = ntt;
       }
-      
+
       // show name, open and slash eye, lock and unlock.
       UI::ShowEntityTreeNodeContent(ntt);
       return isOpen;

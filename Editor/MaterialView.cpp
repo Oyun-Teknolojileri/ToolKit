@@ -63,7 +63,10 @@ namespace ToolKit
       }
     }
 
-    void MaterialView::SetMaterials(const MaterialPtrArray& mat) { m_materials = mat; }
+    void MaterialView::SetMaterials(const MaterialPtrArray& mat)
+    {
+      m_materials = mat;
+    }
 
     void MaterialView::ResetCamera() { m_viewport->ResetCamera(); }
 
@@ -113,7 +116,7 @@ namespace ToolKit
           {
             m_currentMaterialIndex =
                 glm::clamp(m_currentMaterialIndex, 0, (int) m_materials.size());
-              
+
             ntt->GetMaterialComponent()->SetFirstMaterial(
                 m_materials[m_currentMaterialIndex]);
           }
@@ -130,12 +133,18 @@ namespace ToolKit
     {
       switch (drawType)
       {
-        case DrawType::Triangle:  return 0;
-        case DrawType::Line:      return 1;
-        case DrawType::LineStrip: return 2;
-        case DrawType::LineLoop:  return 3;
-        case DrawType::Point:     return 4;
-        default: return -1;
+      case DrawType::Triangle:
+        return 0;
+      case DrawType::Line:
+        return 1;
+      case DrawType::LineStrip:
+        return 2;
+      case DrawType::LineLoop:
+        return 3;
+      case DrawType::Point:
+        return 4;
+      default:
+        return -1;
       }
     }
 
@@ -143,12 +152,17 @@ namespace ToolKit
     {
       switch (drawType)
       {
-        case 0: return DrawType::Triangle;
-        case 1: return DrawType::Line;
-        case 2: return DrawType::LineStrip;
-        case 3: return DrawType::LineLoop;
-        case 4: return DrawType::Point;
-        default:
+      case 0:
+        return DrawType::Triangle;
+      case 1:
+        return DrawType::Line;
+      case 2:
+        return DrawType::LineStrip;
+      case 3:
+        return DrawType::LineLoop;
+      case 4:
+        return DrawType::Point;
+      default:
         return DrawType::Triangle;
       }
     }
@@ -239,40 +253,39 @@ namespace ToolKit
         {
           ImGui::BeginGroup();
           ImGui::LabelText("##vertShader", "Vertex Shader: ");
-          DropZone(UI::m_codeIcon->m_textureId,
-                   mat->m_vertexShader->GetFile(),
-                   [this, mat, &updateThumbFn](
-                       const DirectoryEntry& dirEnt) -> void
-                   {
-                     if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
-                     {
-                       g_app->m_statusMsg = "Failed. Shader expected.";
-                       return;
-                     }
-                     mat->m_vertexShader = GetShaderManager()->Create<Shader>(
-                         dirEnt.GetFullPath());
-                     mat->m_vertexShader->Init();
-                     updateThumbFn();
+          DropZone(
+              UI::m_codeIcon->m_textureId,
+              mat->m_vertexShader->GetFile(),
+              [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+              {
+                if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
+                {
+                  g_app->m_statusMsg = "Failed. Shader expected.";
+                  return;
+                }
+                mat->m_vertexShader =
+                    GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
+                mat->m_vertexShader->Init();
+                updateThumbFn();
               });
           ImGui::EndGroup();
-          
+
           ImGui::SameLine();
-          
+
           ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 35.0f);
 
           ImGui::BeginGroup();
           ImGui::LabelText("##fragShader", "Fragment Shader: ");
-          DropZone(UI::m_codeIcon->m_textureId,
-                   mat->m_fragmentShader->GetFile(),
-                   [this, mat, &updateThumbFn](
-                       const DirectoryEntry& dirEnt) -> void
-                   {
+          DropZone(
+              UI::m_codeIcon->m_textureId,
+              mat->m_fragmentShader->GetFile(),
+              [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+              {
                 mat->m_fragmentShader =
-                         GetShaderManager()->Create<Shader>(
-                             dirEnt.GetFullPath());
+                    GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
                 mat->m_fragmentShader->Init();
-                     updateThumbFn();
-                   });
+                updateThumbFn();
+              });
           ImGui::EndGroup();
         }
       }
@@ -455,22 +468,22 @@ namespace ToolKit
     void MaterialView::Show()
     {
       ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
-      
+
       float treeHeight = glm::min(20.0f + (m_materials.size() * 30.0f), 90.0f);
-      int numMaterials = (int)m_materials.size();
-      
+      int numMaterials = (int) m_materials.size();
+
       const auto showMaterialNodeFn = [this](MaterialPtr mat, int i) -> void
       {
         String name;
         DecomposePath(m_materials[i]->GetFile(), nullptr, &name, nullptr);
-        
-        bool isSelected = i == m_currentMaterialIndex;
+
+        bool isSelected          = i == m_currentMaterialIndex;
         ImGuiTreeNodeFlags flags = isSelected * ImGuiTreeNodeFlags_Selected;
-        
+
         ImGui::TreeNodeEx(name.c_str(),
                           flags | ImGuiTreeNodeFlags_Leaf |
-                          ImGuiTreeNodeFlags_NoTreePushOnOpen);
-        
+                              ImGuiTreeNodeFlags_NoTreePushOnOpen);
+
         if (ImGui::IsItemClicked())
         {
           m_currentMaterialIndex = i;
@@ -502,10 +515,11 @@ namespace ToolKit
 
       ImGui::Spacing();
 
-      if (m_materials.size() > 0) 
+      if (m_materials.size() > 0)
       {
-        m_currentMaterialIndex =
-            glm::clamp(m_currentMaterialIndex, 0, (int)(m_materials.size())-1);
+        m_currentMaterialIndex = glm::clamp(m_currentMaterialIndex,
+                                            0,
+                                            (int) (m_materials.size()) - 1);
         ShowMaterial(m_materials[m_currentMaterialIndex]);
       }
     }
@@ -514,7 +528,7 @@ namespace ToolKit
 
     TempMaterialWindow::TempMaterialWindow()
     {
-      m_view = std::make_shared<MaterialView>();
+      m_view               = std::make_shared<MaterialView>();
       m_view->m_isTempView = true;
       UI::AddTempWindow(this);
     }
@@ -530,10 +544,7 @@ namespace ToolKit
       m_view->SetMaterials({mat});
     }
 
-    void TempMaterialWindow::OpenWindow()
-    {
-      m_isOpen = true;
-    }
+    void TempMaterialWindow::OpenWindow() { m_isOpen = true; }
 
     void TempMaterialWindow::Show()
     {
@@ -542,19 +553,19 @@ namespace ToolKit
         return;
       }
 
-      ImGuiIO io = ImGui::GetIO();
-      
+      ImGuiIO io       = ImGui::GetIO();
+
       ImGuiStyle style = ImGui::GetStyle();
       ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_Once);
       ImGui::SetNextWindowPos(
-        ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
-        ImGuiCond_Once,
-        ImVec2(0.5f, 0.5f));
+          ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
+          ImGuiCond_Once,
+          ImVec2(0.5f, 0.5f));
 
       ImGui::Begin("Material View", &m_isOpen);
-      
+
       m_view->Show();
-  
+
       ImGui::End();
     }
   } // namespace Editor

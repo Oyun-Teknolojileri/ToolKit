@@ -49,11 +49,14 @@ namespace ToolKit
   void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
 
   void RenderJobProcessor::CreateRenderJobs(EntityRawPtrArray entities,
-                                            RenderJobArray& jobArray)
+                                            RenderJobArray& jobArray,
+                                            bool ignoreVisibility)
   {
     erase_if(entities,
-             [](Entity* ntt) -> bool
-             { return !ntt->IsDrawable() || !ntt->IsVisible(); });
+             [ignoreVisibility](Entity* ntt) -> bool {
+               return !ntt->IsDrawable() ||
+                      (!ntt->IsVisible() && !ignoreVisibility);
+             });
 
     for (Entity* ntt : entities)
     {
@@ -121,14 +124,6 @@ namespace ToolKit
 
       jobArray.insert(jobArray.end(), newJobs.begin(), newJobs.end());
     }
-  }
-
-  void RenderJobProcessor::CreateRenderJob(Entity* entity,
-                                           RenderJobArray& jobArray)
-  {
-    EntityRawPtrArray tmpEntityArray;
-    tmpEntityArray.push_back(entity);
-    CreateRenderJobs(tmpEntityArray, jobArray);
   }
 
   void RenderJobProcessor::SeperateDeferredForward(
@@ -295,7 +290,7 @@ namespace ToolKit
       const LightRawPtrArray& lights)
   {
     RenderJobArray jobs;
-    CreateRenderJob(entity, jobs);
+    CreateRenderJobs({entity}, jobs);
 
     LightRawPtrArray allLights;
     for (RenderJob& rj : jobs)

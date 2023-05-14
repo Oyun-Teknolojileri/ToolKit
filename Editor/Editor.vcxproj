@@ -112,9 +112,12 @@
     <ClCompile Include="GizmoPass.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="LeftBar.cpp" />
+    <ClCompile Include="LightMeshGenerator.cpp" />
     <ClCompile Include="MaterialView.cpp" />
     <ClCompile Include="MeshView.cpp" />
-    <ClCompile Include="MultiChoiceParameterWindow.cpp" />
+    <ClCompile Include="MultiChoiceWindow.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">101</OrderInUnityFile>
+    </ClCompile>
     <ClCompile Include="OutlinerWindow.cpp" />
     <ClCompile Include="OverlayLighting.cpp" />
     <ClCompile Include="PluginWindow.cpp" />
@@ -163,9 +166,10 @@
     <ClInclude Include="Grid.h" />
     <ClInclude Include="IconsFontAwesome.h" />
     <ClInclude Include="LeftBar.h" />
+    <ClInclude Include="LightMeshGenerator.h" />
     <ClInclude Include="MaterialView.h" />
     <ClInclude Include="MeshView.h" />
-    <ClInclude Include="MultiChoiceParameterWindow.h" />
+    <ClInclude Include="MultiChoiceWindow.h" />
     <ClInclude Include="OverlayLighting.h" />
     <ClInclude Include="PluginWindow.h" />
     <ClInclude Include="PopupWindows.h" />

@@ -2,13 +2,11 @@
 
 #include "Gizmo.h"
 #include "Light.h"
+#include "LightMeshGenerator.h"
 #include "Primative.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
 #include "Types.h"
-
-#include <string>
-#include <vector>
 
 namespace ToolKit
 {
@@ -31,30 +29,29 @@ namespace ToolKit
     // Editor Light Utils.
     extern void EnableLightGizmo(Light* light, bool enable);
 
-    class EditorLightBase
+    class LightGizmoController
     {
      public:
-      explicit EditorLightBase(Light* light);
-      virtual ~EditorLightBase();
+      explicit LightGizmoController(Light* light);
+      virtual ~LightGizmoController();
 
-      void EnableGizmo(bool enable);
+      void EnableGizmo(bool enable) const;
       virtual void Init();
 
      protected:
       ValueUpdateFn m_gizmoUpdateFn;
 
      public:
-      LightGizmoBase* m_gizmo    = nullptr;
-      MeshComponentPtr m_gizmoMC = nullptr;
+      LightMeshGenerator* m_gizmoGenerator = nullptr;
 
      protected:
-      Light* m_light     = nullptr;
-      bool m_gizmoActive = false;
-      bool m_initialized = false;
+      Light* m_light             = nullptr;
+      bool m_initialized         = false;
+      mutable bool m_gizmoActive = false;
     };
 
     class EditorDirectionalLight : public DirectionalLight,
-                                   public EditorLightBase
+                                   public LightGizmoController
     {
      public:
       EditorDirectionalLight();
@@ -68,7 +65,7 @@ namespace ToolKit
       LineBatch* GetDebugShadowFrustum();
     };
 
-    class EditorPointLight : public PointLight, public EditorLightBase
+    class EditorPointLight : public PointLight, public LightGizmoController
     {
      public:
       EditorPointLight();
@@ -80,7 +77,7 @@ namespace ToolKit
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     };
 
-    class EditorSpotLight : public SpotLight, public EditorLightBase
+    class EditorSpotLight : public SpotLight, public LightGizmoController
     {
      public:
       EditorSpotLight();

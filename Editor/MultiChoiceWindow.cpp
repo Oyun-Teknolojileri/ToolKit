@@ -1,12 +1,13 @@
-#include "MultiChoiceParameterWindow.h"
+#include "MultiChoiceWindow.h"
 
 #include "App.h"
 #include "CustomDataView.h"
-#include "stdafx.h"
+
+#include "DebugNew.h"
 
 namespace ToolKit::Editor
 {
-  bool MultiChoiceParameterWindow::IsVariantValid()
+  bool MultiChoiceCraeteWindow::IsVariantValid()
   {
     if (m_variant.Choices.size() < 2ull)
     {
@@ -16,13 +17,12 @@ namespace ToolKit::Editor
       return false;
     }
 
-    for (const ParameterVariant& var : m_variant.Choices) 
+    for (const ParameterVariant& var : m_variant.Choices)
     {
-      if (var.m_name.size() < 1) 
+      if (var.m_name.size() < 1)
       {
         g_app->m_statusMsg = "Failed!";
-        GetLogger()->WriteConsole(LogType::Warning,
-                                  "name can't be empty!");
+        GetLogger()->WriteConsole(LogType::Warning, "name can't be empty!");
         return false;
       }
     }
@@ -30,7 +30,7 @@ namespace ToolKit::Editor
     return true;
   }
 
-  void MultiChoiceParameterWindow::ShowVariant()
+  void MultiChoiceCraeteWindow::ShowVariant()
   {
     CustomDataView::BeginShowVariants("New Variant");
     ParameterVariant* remove = nullptr;
@@ -96,7 +96,7 @@ namespace ToolKit::Editor
     }
   }
 
-  void MultiChoiceParameterWindow::Show()
+  void MultiChoiceCraeteWindow::Show()
   {
     ImGuiIO io = ImGui::GetIO();
     ImGui::SetNextWindowSize(ImVec2(400, 250), ImGuiCond_Once);
@@ -139,7 +139,7 @@ namespace ToolKit::Editor
     ImGui::End();
   }
 
-  void MultiChoiceParameterWindow::OpenCreateWindow(ParameterBlock* parameter)
+  void MultiChoiceCraeteWindow::OpenCreateWindow(ParameterBlock* parameter)
   {
     if (m_menuOpen)
       return;

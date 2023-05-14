@@ -55,9 +55,8 @@ namespace ToolKit
   {
    public:
     static void CreateRenderJobs(EntityRawPtrArray entities,
-                                 RenderJobArray& jobArray);
-
-    static void CreateRenderJob(Entity* entity, RenderJobArray& jobArray);
+                                 RenderJobArray& jobArray,
+                                 bool ignoreVisibility = false);
 
     static void SeperateDeferredForward(const RenderJobArray& jobArray,
                                         RenderJobArray& deferred,

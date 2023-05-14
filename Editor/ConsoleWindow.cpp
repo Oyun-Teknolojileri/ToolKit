@@ -1,22 +1,9 @@
 #include "ConsoleWindow.h"
 
+#include "Action.h"
 #include "App.h"
-#include "Camera.h"
 #include "DirectionComponent.h"
-#include "EditorViewport.h"
-#include "Entity.h"
-#include "Global.h"
-#include "Logger.h"
-#include "Mod.h"
-#include "Node.h"
-#include "Primative.h"
 #include "TransformMod.h"
-#include "Util.h"
-
-#include <algorithm>
-#include <filesystem>
-#include <string>
-#include <utility>
 
 #include "DebugNew.h"
 
@@ -25,7 +12,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    TagArgArray::const_iterator GetTag(String tag, const TagArgArray& tagArgs)
+    TagArgCIt GetTag(String tag, const TagArgArray& tagArgs)
     {
       for (TagArgArray::const_iterator ta = tagArgs.cbegin();
            ta != tagArgs.cend();
@@ -565,7 +552,7 @@ namespace ToolKit
         {
           problemsFound++;
 
-          String en = ntt->GetNameVal();
+          String en  = ntt->GetNameVal();
           ULongID id = ntt->GetIdVal();
           GetLogger()->WriteConsole(LogType::Warning,
                                     msg.data(),
@@ -692,9 +679,10 @@ namespace ToolKit
 
     void ConsoleWindow::Show()
     {
-      if (ImGui::Begin(g_consoleStr.c_str(), &m_visible, 
+      if (ImGui::Begin(g_consoleStr.c_str(),
+                       &m_visible,
                        ImGuiWindowFlags_NoScrollWithMouse |
-                       ImGuiWindowFlags_NoScrollbar))
+                           ImGuiWindowFlags_NoScrollbar))
       {
         HandleStates();
 
@@ -712,8 +700,7 @@ namespace ToolKit
         for (size_t i = 0; i < m_items.size(); i++)
         {
           const String item = m_items[i];
-          if (m_filter.size() > 0 && 
-            !Utf8CaseInsensitiveSearch(item, m_filter))
+          if (m_filter.size() > 0 && !Utf8CaseInsensitiveSearch(item, m_filter))
           {
             continue;
           }

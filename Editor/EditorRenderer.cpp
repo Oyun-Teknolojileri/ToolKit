@@ -359,7 +359,7 @@ namespace ToolKit
 
           // Add billboards to draw list
           Entity* billboard =
-              m_params.App->GetCurrentScene()->GetBillboardOfEntity(entity);
+              m_params.App->GetCurrentScene()->GetBillboard(entity);
 
           if (billboard)
           {
@@ -368,12 +368,12 @@ namespace ToolKit
                 viewport->GetBillboardScale());
 
             RenderJobArray jobs;
-            RenderJobProcessor::CreateRenderJob(billboard, jobs);
+            RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
             renderJobs.insert(renderJobs.end(), jobs.begin(), jobs.end());
           }
         }
 
-        RenderJobProcessor::CreateRenderJobs(selection, renderJobs);
+        RenderJobProcessor::CreateRenderJobs(selection, renderJobs, true);
 
         // Set parameters of pass
         m_outlinePass->m_params.Camera       = viewport->GetCamera();

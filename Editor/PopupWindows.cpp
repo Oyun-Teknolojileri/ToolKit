@@ -2,10 +2,6 @@
 
 #include "App.h"
 
-#include <algorithm>
-#include <unordered_map>
-#include <vector>
-
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -98,7 +94,7 @@ namespace ToolKit
 
     int StringInputWindow::FilterChars(ImGuiInputTextCallbackData* data)
     {
-      if (contains(m_illegalChars, (char)data->EventChar))
+      if (contains(m_illegalChars, (char) data->EventChar))
       {
         g_app->m_statusMsg = "Invalid character.";
         return 1;

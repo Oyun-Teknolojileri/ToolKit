@@ -1,30 +1,14 @@
 #include "EditorViewport.h"
 
 #include "App.h"
-#include "Camera.h"
-#include "ConsoleWindow.h"
 #include "DirectionComponent.h"
-#include "FileManager.h"
-#include "FolderWindow.h"
-#include "Gizmo.h"
-#include "Global.h"
-#include "Grid.h"
 #include "LeftBar.h"
 #include "Mod.h"
-#include "Node.h"
 #include "OverlayLighting.h"
-#include "OverlayUI.h"
 #include "PopupWindows.h"
 #include "Prefab.h"
-#include "Primative.h"
-#include "Renderer.h"
-#include "SDL.h"
 #include "StatusBar.h"
 #include "TopBar.h"
-#include "Util.h"
-
-#include <algorithm>
-#include <execution>
 
 #include "DebugNew.h"
 
@@ -268,7 +252,7 @@ namespace ToolKit
 
       ImGuiIO& io            = ImGui::GetIO();
       Vec2 absMousePos       = io.MousePos;
-      
+
       m_mouseOverContentArea = false;
 
       if (m_contentAreaMin.x < absMousePos.x &&

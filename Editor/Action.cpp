@@ -2,12 +2,7 @@
 
 #include "AnimationControllerComponent.h"
 #include "App.h"
-#include "EditorScene.h"
-#include "EnvironmentComponent.h"
-#include "Global.h"
 #include "Prefab.h"
-
-#include <utility>
 
 #include "DebugNew.h"
 
@@ -163,6 +158,9 @@ namespace ToolKit
       {
         m_com->m_entity->AddComponent(m_com);
       }
+
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      currScene->ValidateBillboard(m_com->m_entity);
     }
 
     void DeleteComponentAction::Redo()
@@ -180,8 +178,9 @@ namespace ToolKit
 
     ActionManager::ActionManager()
     {
-      m_initiated    = false;
-      m_stackPointer = 0;
+      m_initiated      = false;
+      m_stackPointer   = 0;
+      m_actionGrouping = false;
     }
 
     ActionManager::~ActionManager()

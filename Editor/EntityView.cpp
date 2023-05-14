@@ -9,8 +9,6 @@ namespace ToolKit
 {
   namespace Editor
   {
-    // EntityView
-    //////////////////////////////////////////////////////////////////////////
 
     EntityView::EntityView() : View("Entity View")
     {

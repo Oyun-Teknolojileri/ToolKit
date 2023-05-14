@@ -1,5 +1,5 @@
 #pragma once
-#include "MultiChoiceParameterWindow.h"
+#include "MultiChoiceWindow.h"
 #include "PropInspector.h"
 
 namespace ToolKit
@@ -36,7 +36,8 @@ namespace ToolKit
       virtual void Show();
 
      private:
-      static MultiChoiceParameterWindow m_multiChoiceParamWindow;
+      static MultiChoiceCraeteWindow m_multiChoiceParamWindow;
     };
+
   } // namespace Editor
 } // namespace ToolKit

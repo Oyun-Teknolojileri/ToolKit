@@ -2,25 +2,8 @@
 #include "Anchor.h"
 
 #include "App.h"
-#include "Camera.h"
-#include "ConsoleWindow.h"
 #include "EditorViewport.h"
-#include "EditorViewport2d.h"
 #include "Global.h"
-#include "Material.h"
-#include "Mesh.h"
-#include "Node.h"
-#include "Primative.h"
-#include "RenderState.h"
-#include "ResourceComponent.h"
-#include "Surface.h"
-#include "Texture.h"
-#include "ToolKit.h"
-
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <memory>
-#include <vector>
 
 #include "DebugNew.h"
 

@@ -67,8 +67,7 @@ namespace ToolKit
     m_lastOverrideMat = GetRenderer()->m_overrideMat;
 
     // Dropout non shadow casters.
-    m_renderJobs      = m_params.RendeJobs;
-    erase_if(m_renderJobs,
+    erase_if(m_params.RendeJobs,
              [](RenderJob& job) -> bool { return !job.ShadowCaster; });
 
     // Dropout non shadow casting lights.

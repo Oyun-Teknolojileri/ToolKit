@@ -13,12 +13,7 @@
 #include "PublishManager.h"
 #include "RenderSettingsView.h"
 #include "Thumbnail.h"
-#include "ToolKit.h"
 #include "Workspace.h"
-
-#include <memory>
-#include <unordered_map>
-#include <vector>
 
 namespace ToolKit
 {

@@ -1,19 +1,6 @@
-#include "FolderWindow.h" 
 #include "App.h"
-#include "ConsoleWindow.h"
-#include "DirectionComponent.h"
-#include "Framebuffer.h"
-#include "Gizmo.h"
-#include "Global.h"
-#include "Light.h"
-#include "IconsFontAwesome.h"
-#include "imgui_internal.h"
 #include "MaterialView.h"
-
 #include "PopupWindows.h"
-#include "PropInspector.h"
-#include "Util.h"
-#include <unordered_set>
 
 #include "DebugNew.h"
 
@@ -23,10 +10,7 @@ namespace ToolKit
   {
     FolderView::FolderView() { CreateItemActions(); }
 
-    FolderView::~FolderView() 
-    {
-      SafeDel(m_tempMaterialWindow);
-    }
+    FolderView::~FolderView() { SafeDel(m_tempMaterialWindow); }
 
     FolderView::FolderView(class FolderWindow* parent) : FolderView()
     {
@@ -36,9 +20,9 @@ namespace ToolKit
     static FileDragData g_fileDragData {};
     static std::vector<DirectoryEntry*> g_selectedFiles {};
     static std::vector<DirectoryEntry*> g_coppiedFiles {};
-    static bool g_carryingFiles        = false;
+    static bool g_carryingFiles = false;
     static bool g_copyingFiles = false, g_cuttingFiles = false;
-    
+
     FolderView* g_dragBeginView = nullptr;
 
     const FileDragData& FolderView::GetFileDragData() { return g_fileDragData; }
@@ -158,7 +142,7 @@ namespace ToolKit
     void FolderView::HandleCopyPasteDelete()
     {
       bool ctrlDown = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
-      if (ctrlDown  && ImGui::IsKeyPressed(ImGuiKey_C))
+      if (ctrlDown && ImGui::IsKeyPressed(ImGuiKey_C))
       {
         g_dragBeginView = this;
         g_copyingFiles  = true;
@@ -246,13 +230,13 @@ namespace ToolKit
 
     void FolderView::DeterminateAndSetBackgroundColor(bool isSelected, int i)
     {
-      ImVec4 hoverColor  = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
-      ImVec4 buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
-          
+      ImVec4 hoverColor     = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
+      ImVec4 buttonColor    = ImGui::GetStyleColorVec4(ImGuiCol_Button);
+
       bool copyingOrCutting = contains(g_coppiedFiles, m_entries.data() + i);
-          
+
       // determinate background color of the file
-      // cutting files will shown red, 
+      // cutting files will shown red,
       // coppying files will shown orange,
       // selected files will shown as blue
       if (copyingOrCutting)
@@ -275,7 +259,7 @@ namespace ToolKit
       }
 
       ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hoverColor);
-      ImGui::PushStyleColor(ImGuiCol_Button, buttonColor); 
+      ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
     }
 
     void FolderView::Show()
@@ -331,7 +315,7 @@ namespace ToolKit
           DirectoryEntry& dirEnt = m_entries[i];
 
           if (m_filter.size() > 0 &&
-            !Utf8CaseInsensitiveSearch(dirEnt.m_fileName, m_filter))
+              !Utf8CaseInsensitiveSearch(dirEnt.m_fileName, m_filter))
           {
             continue;
           }
@@ -391,8 +375,9 @@ namespace ToolKit
 
           DirectoryEntry* entryPtr = m_entries.data() + i;
 
-          bool isSelected = contains(g_selectedFiles, entryPtr);
-          // this function will push color. we are popping it down below this if block
+          bool isSelected          = contains(g_selectedFiles, entryPtr);
+          // this function will push color. we are popping it down below this if
+          // block
           DeterminateAndSetBackgroundColor(isSelected, i);
 
           // Draw Item Icon.
@@ -402,8 +387,8 @@ namespace ToolKit
                                  texCoords))
           {
             anyButtonClicked |= true;
-            bool shiftDown = ImGui::IsKeyDown(ImGuiKey_LeftShift);
-            bool ctrlDown  = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+            bool shiftDown   = ImGui::IsKeyDown(ImGuiKey_LeftShift);
+            bool ctrlDown    = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
             // handle multi selection and input
             if (!shiftDown && !ctrlDown)
             {
@@ -429,39 +414,40 @@ namespace ToolKit
             m_lastClickedEntryIdx = i;
           }
 
-          if (ImGui::IsItemHovered() && 
+          if (ImGui::IsItemHovered() &&
               ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
           {
             if (ResourceManager* rm = dirEnt.GetManager())
             {
               switch (rm->m_type)
               {
-                case ResourceType::Material:
+              case ResourceType::Material:
+              {
+                MaterialPtr mat = rm->Create<Material>(dirEnt.GetFullPath());
+                if (m_tempMaterialWindow == nullptr)
                 {
-                  MaterialPtr mat = rm->Create<Material>(dirEnt.GetFullPath());
-                  if (m_tempMaterialWindow == nullptr)
-                  {
-                    m_tempMaterialWindow = new TempMaterialWindow();
-                  }
-                  m_tempMaterialWindow->SetMaterial(mat);
-                  m_tempMaterialWindow->OpenWindow();
+                  m_tempMaterialWindow = new TempMaterialWindow();
                 }
+                m_tempMaterialWindow->SetMaterial(mat);
+                m_tempMaterialWindow->OpenWindow();
+              }
+              break;
+              case ResourceType::Mesh:
+                g_app->GetPropInspector()->SetMeshView(
+                    rm->Create<Mesh>(dirEnt.GetFullPath()));
                 break;
-                case ResourceType::Mesh:
-                  g_app->GetPropInspector()->SetMeshView(
-                  rm->Create<Mesh>(dirEnt.GetFullPath()));
-                  break;
-                case ResourceType::SkinMesh:
-                  g_app->GetPropInspector()->SetMeshView(
-                  rm->Create<SkinMesh>(dirEnt.GetFullPath()));
-                  break;
+              case ResourceType::SkinMesh:
+                g_app->GetPropInspector()->SetMeshView(
+                    rm->Create<SkinMesh>(dirEnt.GetFullPath()));
+                break;
               }
             }
           }
 
-          // pop colors that comming from DeterminateAndSetBackgroundColor function
+          // pop colors that comming from DeterminateAndSetBackgroundColor
+          // function
           ImGui::PopStyleColor(2);
-          
+
           // Handle context menu.
           ShowContextMenu(&dirEnt);
 
@@ -544,7 +530,7 @@ namespace ToolKit
           {
             g_dragBeginView->DropFiles(m_path);
           }
-          if (!ImGui::IsKeyDown(ImGuiKey_LeftShift) && 
+          if (!ImGui::IsKeyDown(ImGuiKey_LeftShift) &&
               !ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
           {
             g_selectedFiles.clear();
@@ -1125,6 +1111,6 @@ namespace ToolKit
         }
         ImGui::EndDragDropTarget();
       }
-    }  
-  }
-}
+    }
+  } // namespace Editor
+} // namespace ToolKit

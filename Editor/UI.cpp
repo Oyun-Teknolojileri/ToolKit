@@ -3,23 +3,8 @@
 
 #include "Action.h"
 #include "App.h"
-#include "ConsoleWindow.h"
-#include "EditorViewport.h"
-#include "FolderWindow.h"
-#include "Global.h"
-#include "IconsFontAwesome.h"
 #include "Mod.h"
-#include "OutlinerWindow.h"
-#include "OverlayUI.h"
-#include "PluginWindow.h"
 #include "PopupWindows.h"
-#include "PropInspector.h"
-#include "SDL.h"
-#include "Util.h"
-
-#include <algorithm>
-#include <unordered_map>
-#include <vector>
 
 #include "DebugNew.h"
 

@@ -2,24 +2,9 @@
 
 #include "AnchorMod.h"
 #include "App.h"
-#include "Camera.h"
-#include "ConsoleWindow.h"
 #include "DirectionComponent.h"
-#include "EditorViewport.h"
-#include "Gizmo.h"
-#include "Global.h"
-#include "Grid.h"
-#include "Node.h"
-#include "Primative.h"
+#include "Entity.h"
 #include "TransformMod.h"
-#include "Util.h"
-
-#include <Prefab.h>
-
-#include <algorithm>
-#include <memory>
-#include <utility>
-#include <vector>
 
 #include "DebugNew.h"
 

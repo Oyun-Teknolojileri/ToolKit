@@ -1,17 +1,6 @@
 #include "AnchorMod.h"
 
 #include "App.h"
-#include "Camera.h"
-#include "ConsoleWindow.h"
-#include "EditorViewport.h"
-#include "Gizmo.h"
-#include "Global.h"
-#include "Node.h"
-#include "Util.h"
-
-#include <algorithm>
-#include <memory>
-#include <utility>
 
 #include "DebugNew.h"
 

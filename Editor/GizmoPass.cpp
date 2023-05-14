@@ -42,19 +42,19 @@ namespace ToolKit
           renderer->ColorMask(false, false, false, false);
 
           RenderJobArray jobs;
-          RenderJobProcessor::CreateRenderJob(m_depthMaskSphere.get(), jobs);
+          RenderJobProcessor::CreateRenderJobs({m_depthMaskSphere.get()}, jobs);
           renderer->Render(jobs, m_camera);
 
           renderer->ColorMask(true, true, true, true);
 
           jobs.clear();
-          RenderJobProcessor::CreateRenderJob(bb, jobs);
+          RenderJobProcessor::CreateRenderJobs({bb}, jobs);
           renderer->Render(jobs, m_camera);
         }
         else
         {
           RenderJobArray jobs;
-          RenderJobProcessor::CreateRenderJob(bb, jobs);
+          RenderJobProcessor::CreateRenderJobs({bb}, jobs);
           renderer->Render(jobs, m_camera);
         }
       }

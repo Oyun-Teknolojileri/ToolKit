@@ -1,12 +1,6 @@
 #pragma once
 
-#include "Light.h"
-#include "MathUtil.h"
 #include "Primative.h"
-#include "Renderer.h"
-#include "Viewport.h"
-
-#include <vector>
 
 namespace ToolKit
 {
@@ -212,62 +206,6 @@ namespace ToolKit
       BillboardType GetBillboardType() const override;
 
       void Generate() override;
-    };
-
-    class LightGizmoBase
-    {
-     public:
-      LightGizmoBase();
-      virtual ~LightGizmoBase();
-
-      virtual void InitGizmo(Light* light) = 0;
-      LineBatchRawPtrArray GetGizmoLineBatches();
-
-     protected:
-      template <typename T>
-      void GetLightMeshData(Light* light);
-
-     protected:
-      LineBatchRawPtrArray m_gizmoLineBatches;
-    };
-
-    class SpotLightGizmo : public Entity, public LightGizmoBase
-    {
-     public:
-      explicit SpotLightGizmo(SpotLight* light);
-      void InitGizmo(Light* light) override;
-
-     private:
-      int m_circleVertexCount;
-      Vec3Array m_pnts;
-      Vec3Array m_innerCirclePnts;
-      Vec3Array m_outerCirclePnts;
-      Vec3Array m_conePnts;
-      Mat4 m_identityMatrix;
-      Mat4 m_rot;
-    };
-
-    class DirectionalLightGizmo : public Entity, public LightGizmoBase
-    {
-     public:
-      explicit DirectionalLightGizmo(DirectionalLight* light);
-      void InitGizmo(Light* light) override;
-
-     private:
-      Vec3Array m_pnts;
-    };
-
-    class PointLightGizmo : public Entity, public LightGizmoBase
-    {
-     public:
-      explicit PointLightGizmo(PointLight* light);
-      void InitGizmo(Light* light) override;
-
-     private:
-      int m_circleVertexCount = 30;
-      Vec3Array m_circlePntsXY;
-      Vec3Array m_circlePntsYZ;
-      Vec3Array m_circlePntsXZ;
     };
 
   } // namespace Editor

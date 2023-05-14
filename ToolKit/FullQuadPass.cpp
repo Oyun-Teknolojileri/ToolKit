@@ -37,7 +37,7 @@ namespace ToolKit
                              {0.0f, 0.0f, 0.0f, 1.0f});
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJob(m_quad.get(), jobs);
+    RenderJobProcessor::CreateRenderJobs({m_quad.get()}, jobs);
     renderer->Render(jobs, m_camera.get(), m_params.lights);
   }
 

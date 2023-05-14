@@ -5,6 +5,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     class PrefabView : public View
     {
      public:
@@ -21,5 +22,6 @@ namespace ToolKit
      public:
       Entity* m_activeChildEntity = nullptr;
     };
+
   } // namespace Editor
 } // namespace ToolKit
