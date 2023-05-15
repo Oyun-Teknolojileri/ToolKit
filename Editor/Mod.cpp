@@ -515,19 +515,12 @@ namespace ToolKit
       {
         return NullSignal;
       }
-
       // Gather the selection hierarchy.
       EntityRawPtrArray deleteList;
       g_app->GetCurrentScene()->GetSelectedEntities(deleteList);
 
-      EntityRawPtrArray roots;
-      GetRootEntities(deleteList, roots);
-
-      deleteList.clear();
-      for (Entity* e : roots)
+      for (Entity* e : deleteList)
       {
-        // Gather hierarchy from parent to child.
-        deleteList.push_back(e);
         if (e->GetType() == EntityType::Entity_Prefab)
         {
           // Entity will already delete its own childs
