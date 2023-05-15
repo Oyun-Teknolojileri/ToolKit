@@ -904,17 +904,32 @@ namespace ToolKit
                  EntityRawPtrArray& roots,
                  Entity* child)
   {
-    Node* parent = child->m_node;
-    // go to top parent
-    while (parent != nullptr && 
-           parent->m_parent != nullptr)
+    auto AddUnique = [&roots](Entity* e) -> void
     {
-      parent = parent->m_parent;
+      assert(e != nullptr);
+      bool unique = std::find(roots.begin(), roots.end(), e) == roots.end();
+      if (unique)
+      {
+        roots.push_back(e);
+      }
+    };
+
+    Node* parent = child->m_node->m_parent;
+    if (parent != nullptr)
+    {
+      Entity* parentEntity = parent->m_entity;
+      if (contains(entities, parentEntity))
+      {
+        RootsOnly(entities, roots, parentEntity);
+      }
+      else
+      {
+        AddUnique(child);
+      }
     }
-    
-    if (!contains(roots, parent->m_entity))
+    else
     {
-      roots.push_back(parent->m_entity);
+      AddUnique(child);
     }
   }
 
