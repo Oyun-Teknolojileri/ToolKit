@@ -411,10 +411,11 @@ namespace ToolKit
 
   void AnimationPlayer::Update(float deltaTimeSec)
   {
-    int index = 0;
+    int index = -1;
     std::vector<int> removeList;
     for (AnimRecord* record : m_records)
     {
+      index++;
       if (record->m_state == AnimRecord::State::Pause)
       {
         continue;
@@ -467,9 +468,8 @@ namespace ToolKit
       {
         removeList.push_back(index);
       }
-      index++;
     }
-
+ 
     std::reverse(removeList.begin(), removeList.end());
     for (size_t i = 0; i < removeList.size(); i++)
     {
