@@ -411,70 +411,53 @@ namespace ToolKit
 
   void AnimationPlayer::Update(float deltaTimeSec)
   {
-    int index = 0;
-    std::vector<int> removeList;
-    for (AnimRecord* record : m_records)
+    m_records.erase(std::remove_if(m_records.begin(), m_records.end(), [&](AnimRecord* record) {
+    if (record->m_state == AnimRecord::State::Pause)
     {
-      if (record->m_state == AnimRecord::State::Pause)
-      {
-        continue;
-      }
+        return false;
+    }
 
-      AnimRecord::State state = record->m_state;
-      if (state == AnimRecord::State::Play)
+    AnimRecord::State state = record->m_state;
+    if (state == AnimRecord::State::Play)
+    {
+      float thisTime = record->m_currentTime + (deltaTimeSec * record->m_timeMultiplier);
+      float duration = record->m_animation->m_duration;
+      if (record->m_loop)
       {
-        float thisTime =
-            record->m_currentTime + (deltaTimeSec * record->m_timeMultiplier);
-        float duration = record->m_animation->m_duration;
-
-        if (record->m_loop)
+        if (thisTime > duration)
         {
-          if (thisTime > duration)
-          {
-            record->m_currentTime = 0.0f;
-          }
+          record->m_currentTime = 0.0f;
         }
-        else
-        {
-          if (thisTime > duration)
-          {
-            record->m_state = AnimRecord::State::Stop;
-          }
-        }
-      }
-
-      if (state == AnimRecord::State::Rewind ||
-          state == AnimRecord::State::Stop)
-      {
-        record->m_currentTime = 0;
       }
       else
       {
-        record->m_currentTime += deltaTimeSec * record->m_timeMultiplier;
+        if (thisTime > duration)
+        {
+          record->m_state = AnimRecord::State::Stop;
+        }
       }
-
-      record->m_entity->SetPose(
-          record->m_animation,
-          record->m_currentTime,
-          record->m_blendTarget.Blend ? &record->m_blendTarget : nullptr);
-
-      if (state == AnimRecord::State::Rewind)
-      {
-        record->m_state = AnimRecord::State::Play;
-      }
-
-      if (state == AnimRecord::State::Stop)
-      {
-        removeList.push_back(index);
-      }
-      index++;
     }
-
-    std::reverse(removeList.begin(), removeList.end());
-    for (size_t i = 0; i < removeList.size(); i++)
+    if (state == AnimRecord::State::Rewind || state == AnimRecord::State::Stop)
     {
-      m_records.erase(m_records.begin() + removeList[i]);
+      record->m_currentTime = 0;
     }
+    else
+    {
+      record->m_currentTime += deltaTimeSec * record->m_timeMultiplier;
+    }
+    record->m_entity->SetPose
+    (
+      record->m_animation,
+      record->m_currentTime,
+      record->m_blendTarget.Blend ? &record->m_blendTarget : nullptr
+    );
+    if (state == AnimRecord::State::Rewind)
+    {
+      record->m_state = AnimRecord::State::Play;
+    }
+
+    return state == AnimRecord::State::Stop;
+    }), m_records.end());
   }
 
   int AnimationPlayer::Exist(ULongID id) const
