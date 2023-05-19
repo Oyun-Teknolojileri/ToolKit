@@ -4,8 +4,6 @@
 #include "Resource.h"
 #include "ResourceManager.h"
 
-#include <memory>
-
 namespace ToolKit
 {
 
@@ -15,7 +13,7 @@ namespace ToolKit
     TKResourceType(Audio)
 
     Audio();
-    explicit Audio(String file);
+    explicit Audio(const String& file);
     ~Audio();
 
     void Init(bool flushClientSideArray = false) override;
@@ -23,6 +21,7 @@ namespace ToolKit
     void UnInit() override;
 
    public:
+    void* m_sound;
     uint m_buffer;
   };
 
@@ -37,33 +36,30 @@ namespace ToolKit
     ResourcePtr CreateLocal(ResourceType type) override;
 
    public:
-    void* m_device  = nullptr;
-    void* m_context = nullptr;
+    void* m_engine = nullptr;
   };
 
   class TK_API AudioSource : public Entity
   {
    public:
-    AudioSource();
-    ~AudioSource();
-
     EntityType GetType() const override;
     void AttachAudio(std::shared_ptr<Audio> audio);
     void SetLoop(bool enable);
     void SetVolume(float val);
+    void SetSpeed(float val);
+    void SetPosition(Vec3 pos);
+
+    bool GetLoop() const;
+    float GetVolume() const;
+    float GetPitch() const;
+    Vec3 GetPosition() const;
+
+    void Play();
+    void Stop();
+    void Rewind();
 
    public:
     std::shared_ptr<Audio> m_audio;
     uint m_source = 0;
   };
-
-  class TK_API AudioPlayer
-  {
-   public:
-    static void Play(AudioSource* source);
-    static void Stop(AudioSource* source);
-    static void Rewind(AudioSource* source);
-    static void Pause(AudioSource* source);
-  };
-
 } // namespace ToolKit

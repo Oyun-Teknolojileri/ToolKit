@@ -5,6 +5,7 @@ include_directories(
 	"${CMAKE_SOURCE_DIR}/Dependency"
 	"${CMAKE_SOURCE_DIR}/Dependency/glad"
 	"${CMAKE_SOURCE_DIR}/Dependency/OpenAL/include"
+	"${CMAKE_SOURCE_DIR}/Dependency/mini_audio/"
 	"${CMAKE_SOURCE_DIR}/Dependency/RapidXml"
 	"${CMAKE_SOURCE_DIR}/Dependency/stb"
 	"${CMAKE_SOURCE_DIR}/Dependency/zlib-1.2.12/dist/include"
