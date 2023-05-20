@@ -25,6 +25,8 @@ namespace ToolKit
     uint m_buffer;
   };
 
+  typedef std::shared_ptr<Audio> AudioPtr;
+
   class TK_API AudioManager : public ResourceManager
   {
    public:
@@ -46,7 +48,7 @@ namespace ToolKit
     void AttachAudio(std::shared_ptr<Audio> audio);
     void SetLoop(bool enable);
     void SetVolume(float val);
-    void SetSpeed(float val);
+    void SetPitch(float val);
     void SetPosition(Vec3 pos);
 
     bool GetLoop() const;
