@@ -140,7 +140,7 @@ namespace ToolKit
      * Serach the given signal type.
      * @return Queried State if it found or nullptr.
      */
-    State* QueryState(String type);
+    State* QueryState(const String& type);
 
     /**
      * Add a state to the StateMachine.

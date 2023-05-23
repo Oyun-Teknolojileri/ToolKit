@@ -40,7 +40,7 @@
 namespace ToolKit
 {
 
-  StaticBone::StaticBone(String name) { m_name = name; }
+  StaticBone::StaticBone(const String& name) { m_name = name; }
 
   StaticBone::~StaticBone()
   {
@@ -150,7 +150,7 @@ namespace ToolKit
 
   Skeleton::Skeleton() {}
 
-  Skeleton::Skeleton(String file) { SetFile(file); }
+  Skeleton::Skeleton(const String& file) { SetFile(file); }
 
   Skeleton::~Skeleton() { UnInit(); }
 
@@ -419,7 +419,7 @@ namespace ToolKit
     m_loaded = true;
   }
 
-  int Skeleton::GetBoneIndex(String bone)
+  int Skeleton::GetBoneIndex(const String& bone)
   {
     for (size_t i = 0; i < m_bones.size(); i++)
     {
@@ -432,7 +432,7 @@ namespace ToolKit
     return -1;
   }
 
-  StaticBone* Skeleton::GetBone(String bone)
+  StaticBone* Skeleton::GetBone(const String& bone)
   {
     int index = GetBoneIndex(bone);
     if (index == -1)

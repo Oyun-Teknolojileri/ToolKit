@@ -40,7 +40,7 @@ namespace ToolKit
 
   SpriteSheet::SpriteSheet() : m_imageWidth(0), m_imageHeight(0) {}
 
-  SpriteSheet::SpriteSheet(String file) : SpriteSheet() { SetFile(file); }
+  SpriteSheet::SpriteSheet(const String& file) : SpriteSheet() { SetFile(file); }
 
   SpriteSheet::~SpriteSheet() { UnInit(); }
 
@@ -71,7 +71,7 @@ namespace ToolKit
       return;
     }
 
-    for (auto entry : m_sprites)
+    for (const auto& entry : m_sprites)
     {
       entry.second->GetMeshComponent()->Init(flushClientSideArray);
     }

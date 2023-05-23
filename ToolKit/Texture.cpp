@@ -43,7 +43,7 @@ namespace ToolKit
     m_textureId       = 0;
   }
 
-  Texture::Texture(String file, const TextureSettings& settings) : Texture(settings) { SetFile(file); }
+  Texture::Texture(const String& file, const TextureSettings& settings) : Texture(settings) { SetFile(file); }
 
   Texture::Texture(uint textureId)
   {
@@ -185,7 +185,7 @@ namespace ToolKit
 
   CubeMap::CubeMap() : Texture() {}
 
-  CubeMap::CubeMap(String file) : Texture() { SetFile(file); }
+  CubeMap::CubeMap(const String& file) : Texture() { SetFile(file); }
 
   CubeMap::CubeMap(uint cubemapId)
   {

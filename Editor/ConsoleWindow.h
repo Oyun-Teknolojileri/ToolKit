@@ -36,7 +36,7 @@ namespace ToolKit
     typedef std::pair<String, StringArray> TagArg;
     typedef std::vector<TagArg> TagArgArray;
     typedef TagArgArray::const_iterator TagArgCIt;
-    TagArgCIt GetTag(String tag, const TagArgArray& tagArgs);
+    TagArgCIt GetTag(const String& tag, const TagArgArray& tagArgs);
     void ParseVec(Vec3& vec, TagArgCIt tagIt);
 
     // Commands & Executors.
@@ -119,7 +119,7 @@ namespace ToolKit
       void AddLog(const String& log, const String& tag);
       void ClearLog();
       void ExecCommand(const String& commandLine);
-      void ParseCommandLine(String commandLine, String& command, TagArgArray& tagArgs);
+      void ParseCommandLine(const String& commandLine, String& command, TagArgArray& tagArgs);
 
      private:
       // Command line word processing. Auto-complete and history lookups.

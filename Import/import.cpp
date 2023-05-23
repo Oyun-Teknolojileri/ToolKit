@@ -740,7 +740,7 @@ namespace ToolKit
   std::unordered_map<aiMesh*, MeshPtr> g_meshes;
   SkinMeshPtr mainSkinMesh;
 
-  void ImportMeshes(string filePath)
+  void ImportMeshes(string& filePath)
   {
     string path, name;
     Decompose(filePath, path, name);
@@ -882,7 +882,7 @@ namespace ToolKit
     tScene->AddEntity(ntt);
   }
 
-  void ImportScene(string filePath)
+  void ImportScene(string& filePath)
   {
     // Print Scene.
     string path, name;
@@ -912,7 +912,7 @@ namespace ToolKit
     CreateFileAndSerializeObject(tScene, fullPath);
   }
 
-  void ImportSkeleton(string filePath)
+  void ImportSkeleton(string& filePath)
   {
     auto addBoneNodeFn = [](aiNode* node, aiBone* bone) -> void
     {
@@ -1228,7 +1228,7 @@ namespace ToolKit
 
       // Report all in use files.
       fstream inUse("out.txt", ios::out);
-      for (string fs : g_usedFiles)
+      for (const string& fs : g_usedFiles)
       {
         inUse << fs << endl;
       }

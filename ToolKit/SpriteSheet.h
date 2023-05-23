@@ -50,7 +50,7 @@ namespace ToolKit
     TKResourceType(SpriteSheet)
 
     SpriteSheet();
-    explicit SpriteSheet(String file);
+    explicit SpriteSheet(const String& file);
     ~SpriteSheet();
 
     void Load() override;

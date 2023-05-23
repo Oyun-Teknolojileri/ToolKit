@@ -38,7 +38,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    TagArgCIt GetTag(String tag, const TagArgArray& tagArgs)
+    TagArgCIt GetTag(const String& tag, const TagArgArray& tagArgs)
     {
       for (TagArgArray::const_iterator ta = tagArgs.cbegin(); ta != tagArgs.cend(); ta++)
       {
@@ -51,7 +51,7 @@ namespace ToolKit
       return tagArgs.end();
     }
 
-    bool TagExist(String tag, const TagArgArray& tagArgs) { return GetTag(tag, tagArgs) != tagArgs.end(); }
+    bool TagExist(const String& tag, const TagArgArray& tagArgs) { return GetTag(tag, tagArgs) != tagArgs.end(); }
 
     void ParseVec(Vec3& vec, TagArgCIt tagIt)
     {
@@ -882,7 +882,7 @@ namespace ToolKit
       }
     }
 
-    void ConsoleWindow::ParseCommandLine(String commandLine, String& command, TagArgArray& tagArgs)
+    void ConsoleWindow::ParseCommandLine(const String& commandLine, String& command, TagArgArray& tagArgs)
     {
       String args;
       size_t indx = commandLine.find_first_of(" ");

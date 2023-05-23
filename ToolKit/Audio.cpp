@@ -1,29 +1,3 @@
-/*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 #include "Audio.h"
 
 #define MINIAUDIO_IMPLEMENTATION
@@ -114,6 +88,14 @@ namespace ToolKit
 
   void AudioSource::SetVolume(float volume) { ma_sound_set_volume((ma_sound*) m_audio->m_sound, volume); }
 
+  void AudioSource::Seek(float duration)
+  {
+    ma_uint32 sampRate;
+    ma_sound* sound = (ma_sound*) m_audio->m_sound;
+    ma_sound_get_data_format(sound, nullptr, nullptr, &sampRate, nullptr, 0);
+    ma_sound_seek_to_pcm_frame(sound, (ma_uint64) (duration * sampRate));
+  }
+
   void AudioSource::SetPitch(float val) { ma_sound_set_pitch((ma_sound*) m_audio->m_sound, val); }
 
   void AudioSource::SetPosition(Vec3 pos) { ma_sound_set_position((ma_sound*) m_audio->m_sound, pos.x, pos.y, pos.z); }
@@ -124,15 +106,29 @@ namespace ToolKit
 
   // Getters
 
-  bool AudioSource::GetLoop() const { return ma_sound_is_looping((ma_sound*) m_audio->m_sound) == MA_TRUE; }
+  bool AudioSource::IsEnd() const { return ma_sound_at_end((const ma_sound*) m_audio->m_sound) == MA_TRUE; }
 
-  float AudioSource::GetVolume() const { return ma_sound_get_volume((ma_sound*) m_audio->m_sound); }
+  bool AudioSource::IsPlaying() const { return ma_sound_is_playing((const ma_sound*) m_audio->m_sound) == MA_TRUE; }
 
-  float AudioSource::GetPitch() const { return ma_sound_get_pitch((ma_sound*) m_audio->m_sound); }
+  float AudioSource::GetDuration() const
+  {
+    float duration  = 0.0f;
+    // ma_sound_get_length_in_seconds takes a non-const pointer (not sure why).
+    // To get around this, we need a const_cast on the this pointer.
+    ma_sound* sound = (ma_sound*) const_cast<void*>(m_audio->m_sound);
+    ma_sound_get_length_in_seconds(sound, &duration);
+    return duration;
+  }
+
+  bool AudioSource::GetLoop() const { return ma_sound_is_looping((const ma_sound*) m_audio->m_sound) == MA_TRUE; }
+
+  float AudioSource::GetVolume() const { return ma_sound_get_volume((const ma_sound*) m_audio->m_sound); }
+
+  float AudioSource::GetPitch() const { return ma_sound_get_pitch((const ma_sound*) m_audio->m_sound); }
 
   Vec3 AudioSource::GetPosition() const
   {
-    ma_vec3f pos          = ma_sound_get_position((ma_sound*) m_audio->m_sound);
+    ma_vec3f pos = ma_sound_get_position((const ma_sound*) m_audio->m_sound);
     return Vec3(pos.x, pos.y, pos.z);
   }
 
