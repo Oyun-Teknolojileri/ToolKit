@@ -42,7 +42,7 @@ namespace ToolKit
     m_alpha = 1.0f;
   }
 
-  Material::Material(String file) : Material() { SetFile(file); }
+  Material::Material(const String& file) : Material() { SetFile(file); }
 
   Material::~Material() { UnInit(); }
 

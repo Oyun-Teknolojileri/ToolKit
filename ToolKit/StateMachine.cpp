@@ -77,7 +77,7 @@ namespace ToolKit
     m_currentState = nextState;
   }
 
-  State* StateMachine::QueryState(String type)
+  State* StateMachine::QueryState(const String& type)
   {
     if (m_states.find(type) != m_states.end())
     {

@@ -114,6 +114,14 @@ namespace ToolKit
 
   void AudioSource::SetVolume(float volume) { ma_sound_set_volume((ma_sound*) m_audio->m_sound, volume); }
 
+  void AudioSource::Seek(float duration)
+  {
+    ma_uint32 sampRate;
+    ma_sound* sound = (ma_sound*) m_audio->m_sound;
+    ma_sound_get_data_format(sound, nullptr, nullptr, &sampRate, nullptr, 0);
+    ma_sound_seek_to_pcm_frame(sound, (ma_uint64) (duration * sampRate));
+  }
+
   void AudioSource::SetPitch(float val) { ma_sound_set_pitch((ma_sound*) m_audio->m_sound, val); }
 
   void AudioSource::SetPosition(Vec3 pos) { ma_sound_set_position((ma_sound*) m_audio->m_sound, pos.x, pos.y, pos.z); }
@@ -124,15 +132,29 @@ namespace ToolKit
 
   // Getters
 
-  bool AudioSource::GetLoop() const { return ma_sound_is_looping((ma_sound*) m_audio->m_sound) == MA_TRUE; }
+  bool AudioSource::IsEnd() const { return ma_sound_at_end((const ma_sound*) m_audio->m_sound) == MA_TRUE; }
 
-  float AudioSource::GetVolume() const { return ma_sound_get_volume((ma_sound*) m_audio->m_sound); }
+  bool AudioSource::IsPlaying() const { return ma_sound_is_playing((const ma_sound*) m_audio->m_sound) == MA_TRUE; }
 
-  float AudioSource::GetPitch() const { return ma_sound_get_pitch((ma_sound*) m_audio->m_sound); }
+  float AudioSource::GetDuration() const
+  {
+    float duration  = 0.0f;
+    // ma_sound_get_length_in_seconds takes a non-const pointer (not sure why).
+    // To get around this, we need a const_cast on the this pointer.
+    ma_sound* sound = (ma_sound*) const_cast<void*>(m_audio->m_sound);
+    ma_sound_get_length_in_seconds(sound, &duration);
+    return duration;
+  }
+
+  bool AudioSource::GetLoop() const { return ma_sound_is_looping((const ma_sound*) m_audio->m_sound) == MA_TRUE; }
+
+  float AudioSource::GetVolume() const { return ma_sound_get_volume((const ma_sound*) m_audio->m_sound); }
+
+  float AudioSource::GetPitch() const { return ma_sound_get_pitch((const ma_sound*) m_audio->m_sound); }
 
   Vec3 AudioSource::GetPosition() const
   {
-    ma_vec3f pos = ma_sound_get_position((ma_sound*) m_audio->m_sound);
+    ma_vec3f pos = ma_sound_get_position((const ma_sound*) m_audio->m_sound);
     return Vec3(pos.x, pos.y, pos.z);
   }
 

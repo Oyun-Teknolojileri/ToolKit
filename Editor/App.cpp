@@ -1105,7 +1105,7 @@ namespace ToolKit
 
       for (ResourceType t : types)
       {
-        for (auto resource : GetResourceManager(t)->m_storage)
+        for (auto& resource : GetResourceManager(t)->m_storage)
         {
           if (!resource.second->IsDynamic())
           {

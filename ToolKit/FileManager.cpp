@@ -344,7 +344,7 @@ namespace ToolKit
     }
 
     // Add files to zip
-    for (String path : m_allPaths)
+    for (const String& path : m_allPaths)
     {
       if (!AddFileToZip(zFile, path.c_str()))
       {

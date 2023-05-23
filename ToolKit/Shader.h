@@ -86,7 +86,7 @@ namespace ToolKit
     TKResourceType(Shader)
 
     Shader();
-    explicit Shader(String file);
+    explicit Shader(const String& file);
     virtual ~Shader();
 
     void Load() override;
@@ -103,7 +103,7 @@ namespace ToolKit
      * @param param is the name that the parameter is referred in the shader.
      * @param val is the value of the given parameter.
      */
-    void SetShaderParameter(String param, const ParameterVariant& val);
+    void SetShaderParameter(const String& param, const ParameterVariant& val);
 
     /**
      * Renderer calls this function before feeding shader parameters to give

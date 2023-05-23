@@ -72,6 +72,9 @@ namespace ToolKit
    public:
     EntityType GetType() const override;
     void AttachAudio(std::shared_ptr<Audio> audio);
+    
+    // seeks the duration'th second of sound
+    void Seek(float duration);
     void SetLoop(bool enable);
     void SetVolume(float val);
     void SetPitch(float val);
@@ -81,6 +84,10 @@ namespace ToolKit
     float GetVolume() const;
     float GetPitch() const;
     Vec3 GetPosition() const;
+
+    bool IsEnd() const;
+    bool IsPlaying() const;
+    float GetDuration() const;
 
     void Play();
     void Stop();

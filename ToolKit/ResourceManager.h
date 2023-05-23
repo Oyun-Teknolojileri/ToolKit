@@ -102,7 +102,7 @@ namespace ToolKit
       return std::reinterpret_pointer_cast<T>(m_storage[file]);
     }
 
-    bool Exist(String file);
+    bool Exist(const String& file);
     ResourcePtr Remove(const String& file);
     virtual ResourcePtr CreateLocal(ResourceType type) = 0;
 
