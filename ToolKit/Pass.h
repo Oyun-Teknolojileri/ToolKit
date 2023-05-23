@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #pragma once
 
 #include "BinPack2D.h"
@@ -54,9 +80,7 @@ namespace ToolKit
   class TK_API RenderJobProcessor
   {
    public:
-    static void CreateRenderJobs(EntityRawPtrArray entities,
-                                 RenderJobArray& jobArray,
-                                 bool ignoreVisibility = false);
+    static void CreateRenderJobs(EntityRawPtrArray entities, RenderJobArray& jobArray, bool ignoreVisibility = false);
 
     static void SeperateDeferredForward(const RenderJobArray& jobArray,
                                         RenderJobArray& deferred,
@@ -72,22 +96,17 @@ namespace ToolKit
      * best to worst. Make sure lights array has updated shadow camera. Shadow
      * camera is used in culling calculations.
      */
-    static LightRawPtrArray SortLights(const RenderJob& job,
-                                       const LightRawPtrArray& lights);
+    static LightRawPtrArray SortLights(const RenderJob& job, const LightRawPtrArray& lights);
 
-    static LightRawPtrArray SortLights(Entity* entity,
-                                       const LightRawPtrArray& lights);
+    static LightRawPtrArray SortLights(Entity* entity, const LightRawPtrArray& lights);
 
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
-    static void StableSortByDistanceToCamera(RenderJobArray& jobArray,
-                                             const Camera* cam);
+    static void StableSortByDistanceToCamera(RenderJobArray& jobArray, const Camera* cam);
 
     static void CullRenderJobs(RenderJobArray& jobArray, Camera* camera);
 
-    static void AssignEnvironment(
-        RenderJobArray& jobArray,
-        const EnvironmentComponentPtrArray& environments);
+    static void AssignEnvironment(RenderJobArray& jobArray, const EnvironmentComponentPtrArray& environments);
 
     /**
      * Calculates the standard deviation and mean of the given RenderJobArray
@@ -96,19 +115,14 @@ namespace ToolKit
      * @param stdev is the output of calculated standard deviation.
      * @param mean is the calculated mean position.
      */
-    static void CalculateStdev(const RenderJobArray& rjVec,
-                               float& stdev,
-                               Vec3& mean);
+    static void CalculateStdev(const RenderJobArray& rjVec, float& stdev, Vec3& mean);
 
     /**
      * Decides if the given RenderJob is an outlier based on its world position.
      * @param rj is the RenderJob to decide if its outlier.
      * @param sigma is the threshold sigma to accept as outlier or not.
      */
-    static bool IsOutlier(const RenderJob& rj,
-                          float sigma,
-                          const float stdev,
-                          const Vec3& mean);
+    static bool IsOutlier(const RenderJob& rj, float sigma, const float stdev, const Vec3& mean);
   };
 
   /*

@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "CustomDataView.h"
 
 #include "App.h"
@@ -32,16 +58,13 @@ namespace ToolKit
             }
             else
             {
-              GetLogger()->WriteConsole(LogType::Error,
-                                        "Only Material Types are accepted.");
+              GetLogger()->WriteConsole(LogType::Error, "Only Material Types are accepted.");
             }
           },
           isEditable);
     }
 
-    void CustomDataView::ShowMaterialVariant(const String& uniqueName,
-                                             const String& file,
-                                             ParameterVariant* var)
+    void CustomDataView::ShowMaterialVariant(const String& uniqueName, const String& file, ParameterVariant* var)
     {
       DropSubZone(
           uniqueName,
@@ -51,13 +74,11 @@ namespace ToolKit
           {
             if (GetResourceType(entry.m_ext) == ResourceType::Material)
             {
-              *var =
-                  GetMaterialManager()->Create<Material>(entry.GetFullPath());
+              *var = GetMaterialManager()->Create<Material>(entry.GetFullPath());
             }
             else
             {
-              GetLogger()->WriteConsole(LogType::Error,
-                                        "Only Material Types are accepted.");
+              GetLogger()->WriteConsole(LogType::Error, "Only Material Types are accepted.");
             }
           },
           var->m_editable);
@@ -71,8 +92,7 @@ namespace ToolKit
       // Remove current selected because its already updated.
       entities.pop_back();
 
-      ValueUpdateFn multiUpdate = [var, entities](Value& oldVal,
-                                                  Value& newVal) -> void
+      ValueUpdateFn multiUpdate = [var, entities](Value& oldVal, Value& newVal) -> void
       {
         for (Entity* ntt : entities)
         {
@@ -84,9 +104,7 @@ namespace ToolKit
           }
 
           ParameterVariant* vLookUp = nullptr;
-          if (ntt->m_localData.LookUp(var->m_category.Name,
-                                      var->m_name,
-                                      &vLookUp))
+          if (ntt->m_localData.LookUp(var->m_category.Name, var->m_name, &vLookUp))
           {
             vLookUp->SetValue(newVal);
           }
@@ -98,25 +116,18 @@ namespace ToolKit
 
     bool CustomDataView::BeginShowVariants(StringView header)
     {
-      if (!ImGui::BeginTable(header.data(),
-                             3,
-                             ImGuiTableFlags_Resizable |
-                                 ImGuiTableFlags_SizingFixedSame))
+      if (!ImGui::BeginTable(header.data(), 3, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedSame))
       {
         return false;
       }
       Vec2 xSize = ImGui::CalcTextSize("Name");
       xSize      *= 3.0f;
-      ImGui::TableSetupColumn("Name",
-                              ImGuiTableColumnFlags_WidthFixed,
-                              xSize.x);
+      ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, xSize.x);
       ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
       xSize = ImGui::CalcTextSize(ICON_FA_MINUS);
       xSize *= 2.5f;
-      ImGui::TableSetupColumn("##Remove",
-                              ImGuiTableColumnFlags_WidthFixed,
-                              xSize.x);
+      ImGui::TableSetupColumn("##Remove", ImGuiTableColumnFlags_WidthFixed, xSize.x);
 
       ImGui::TableHeadersRow();
 
@@ -128,10 +139,7 @@ namespace ToolKit
       return true;
     }
 
-    void CustomDataView::ShowVariant(ParameterVariant* var,
-                                     ParameterVariant*& remove,
-                                     size_t i,
-                                     bool isListEditable)
+    void CustomDataView::ShowVariant(ParameterVariant* var, ParameterVariant*& remove, size_t i, bool isListEditable)
     {
       ImGui::TableNextRow();
       ImGui::TableSetColumnIndex(0);
@@ -221,9 +229,7 @@ namespace ToolKit
       case ParameterVariant::VariantType::MultiChoice:
       {
         MultiChoiceVariant* mcv = var->GetVarPtr<MultiChoiceVariant>();
-        if (ImGui::BeginCombo(
-                "##MultiChoiceVariant",
-                mcv->Choices[mcv->CurrentVal.Index].m_name.c_str()))
+        if (ImGui::BeginCombo("##MultiChoiceVariant", mcv->Choices[mcv->CurrentVal.Index].m_name.c_str()))
         {
           for (uint i = 0; i < mcv->Choices.size(); ++i)
           {
@@ -242,9 +248,8 @@ namespace ToolKit
       ImGui::TableSetColumnIndex(2);
       if (isListEditable && ImGui::Button(ICON_FA_MINUS))
       {
-        remove = var;
-        g_app->m_statusMsg =
-            Format("Parameter %d: %s removed.", i + 1, var->m_name.c_str());
+        remove             = var;
+        g_app->m_statusMsg = Format("Parameter %d: %s removed.", i + 1, var->m_name.c_str());
       }
 
       ImGui::PopID();
@@ -261,9 +266,7 @@ namespace ToolKit
                                         ParameterVariantRawPtrArray& vars,
                                         bool isListEditable)
     {
-      if (headerName.length() &&
-          !ImGui::CollapsingHeader(headerName.c_str(),
-                                   ImGuiTreeNodeFlags_DefaultOpen))
+      if (headerName.length() && !ImGui::CollapsingHeader(headerName.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
       {
         return;
       }
@@ -390,9 +393,7 @@ namespace ToolKit
       case ParameterVariant::VariantType::Float:
       {
         static float lastVal = 0.0f;
-        float val            = var->m_hint.waitForTheEndOfInput && lastValActive
-                                   ? lastVal
-                                   : var->GetVar<float>();
+        float val            = var->m_hint.waitForTheEndOfInput && lastValActive ? lastVal : var->GetVar<float>();
 
         if (!var->m_hint.isRangeLimited)
         {
@@ -421,8 +422,7 @@ namespace ToolKit
             }
           }
 
-          if (var->m_hint.waitForTheEndOfInput &&
-              ImGui::IsItemDeactivatedAfterEdit())
+          if (var->m_hint.waitForTheEndOfInput && ImGui::IsItemDeactivatedAfterEdit())
           {
             *var          = lastVal;
             lastValActive = false;
@@ -433,9 +433,7 @@ namespace ToolKit
       case ParameterVariant::VariantType::Int:
       {
         static int lastVal = 0;
-        int val            = var->m_hint.waitForTheEndOfInput && lastValActive
-                                 ? lastVal
-                                 : var->GetVar<int>();
+        int val            = var->m_hint.waitForTheEndOfInput && lastValActive ? lastVal : var->GetVar<int>();
 
         if (var->m_hint.isRangeLimited)
         {
@@ -457,8 +455,7 @@ namespace ToolKit
             }
           }
 
-          if (var->m_hint.waitForTheEndOfInput &&
-              ImGui::IsItemDeactivatedAfterEdit())
+          if (var->m_hint.waitForTheEndOfInput && ImGui::IsItemDeactivatedAfterEdit())
           {
             *var          = lastVal;
             lastValActive = false;
@@ -476,9 +473,7 @@ namespace ToolKit
       case ParameterVariant::VariantType::Vec2:
       {
         static Vec2 lastVal = Vec2(0.0f);
-        Vec2 val            = var->m_hint.waitForTheEndOfInput && lastValActive
-                                  ? lastVal
-                                  : var->GetVar<Vec2>();
+        Vec2 val            = var->m_hint.waitForTheEndOfInput && lastValActive ? lastVal : var->GetVar<Vec2>();
 
         if (var->m_hint.isRangeLimited)
         {
@@ -500,8 +495,7 @@ namespace ToolKit
             }
           }
 
-          if (var->m_hint.waitForTheEndOfInput &&
-              ImGui::IsItemDeactivatedAfterEdit())
+          if (var->m_hint.waitForTheEndOfInput && ImGui::IsItemDeactivatedAfterEdit())
           {
             *var          = lastVal;
             lastValActive = false;
@@ -521,9 +515,7 @@ namespace ToolKit
         Vec3 val = var->GetVar<Vec3>();
         if (var->m_hint.isColor)
         {
-          if (ImGui::ColorEdit3(var->m_name.c_str(),
-                                &val[0],
-                                ImGuiColorEditFlags_NoLabel))
+          if (ImGui::ColorEdit3(var->m_name.c_str(), &val[0], ImGuiColorEditFlags_NoLabel))
           {
             *var = val;
           }
@@ -531,9 +523,7 @@ namespace ToolKit
         else if (var->m_hint.isRangeLimited)
         {
           static Vec3 lastVal = Vec3(0.0f);
-          val = var->m_hint.waitForTheEndOfInput && lastValActive
-                    ? lastVal
-                    : var->GetVar<Vec3>();
+          val                 = var->m_hint.waitForTheEndOfInput && lastValActive ? lastVal : var->GetVar<Vec3>();
 
           if (ImGui::DragFloat3(var->m_name.c_str(),
                                 &val[0],
@@ -552,8 +542,7 @@ namespace ToolKit
             }
           }
 
-          if (var->m_hint.waitForTheEndOfInput &&
-              ImGui::IsItemDeactivatedAfterEdit())
+          if (var->m_hint.waitForTheEndOfInput && ImGui::IsItemDeactivatedAfterEdit())
           {
             *var          = lastVal;
             lastValActive = false;
@@ -573,9 +562,7 @@ namespace ToolKit
         Vec4 val = var->GetVar<Vec4>();
         if (var->m_hint.isColor)
         {
-          if (ImGui::ColorEdit4(var->m_name.c_str(),
-                                &val[0],
-                                ImGuiColorEditFlags_NoLabel))
+          if (ImGui::ColorEdit4(var->m_name.c_str(), &val[0], ImGuiColorEditFlags_NoLabel))
           {
             *var = val;
           }
@@ -583,9 +570,7 @@ namespace ToolKit
         else if (var->m_hint.isRangeLimited)
         {
           static Vec4 lastVal = Vec4(0.0f);
-          val = var->m_hint.waitForTheEndOfInput && lastValActive
-                    ? lastVal
-                    : var->GetVar<Vec4>();
+          val                 = var->m_hint.waitForTheEndOfInput && lastValActive ? lastVal : var->GetVar<Vec4>();
 
           if (ImGui::DragFloat4(var->m_name.c_str(),
                                 &val[0],
@@ -604,8 +589,7 @@ namespace ToolKit
             }
           }
 
-          if (var->m_hint.waitForTheEndOfInput &&
-              ImGui::IsItemDeactivatedAfterEdit())
+          if (var->m_hint.waitForTheEndOfInput && ImGui::IsItemDeactivatedAfterEdit())
           {
             *var          = lastVal;
             lastValActive = false;
@@ -623,8 +607,7 @@ namespace ToolKit
       case ParameterVariant::VariantType::String:
       {
         String val = var->GetVar<String>();
-        if (ImGui::InputText(var->m_name.c_str(), &val) &&
-            IsTextInputFinalized())
+        if (ImGui::InputText(var->m_name.c_str(), &val) && IsTextInputFinalized())
         {
           *var = val;
         }
@@ -633,9 +616,7 @@ namespace ToolKit
       case ParameterVariant::VariantType::ULongID:
       {
         ULongID val = var->GetVar<ULongID>();
-        if (ImGui::InputScalar(var->m_name.c_str(),
-                               ImGuiDataType_U32,
-                               var->GetVarPtr<ULongID>()) &&
+        if (ImGui::InputScalar(var->m_name.c_str(), ImGuiDataType_U32, var->GetVarPtr<ULongID>()) &&
             IsTextInputFinalized())
         {
           *var = val;
@@ -678,8 +659,7 @@ namespace ToolKit
               }
               else
               {
-                GetLogger()->WriteConsole(LogType::Error,
-                                          "Only meshes are accepted.");
+                GetLogger()->WriteConsole(LogType::Error, "Only meshes are accepted.");
               }
             },
             var->m_editable);
@@ -709,8 +689,7 @@ namespace ToolKit
               }
               else
               {
-                GetLogger()->WriteConsole(LogType::Error,
-                                          "Only hdri's are accepted.");
+                GetLogger()->WriteConsole(LogType::Error, "Only hdri's are accepted.");
               }
             },
             var->m_editable);
@@ -740,16 +719,11 @@ namespace ToolKit
           }
           else
           {
-            GetLogger()->WriteConsole(LogType::Error,
-                                      "Only skeletons are accepted.");
+            GetLogger()->WriteConsole(LogType::Error, "Only skeletons are accepted.");
           }
         };
         ImGui::EndDisabled();
-        DropSubZone("Skeleton##" + id,
-                    UI::m_boneIcon->m_textureId,
-                    file,
-                    dropZoneFnc,
-                    var->m_editable);
+        DropSubZone("Skeleton##" + id, UI::m_boneIcon->m_textureId, file, dropZoneFnc, var->m_editable);
         ImGui::BeginDisabled(!var->m_editable);
       }
       break;
@@ -771,9 +745,7 @@ namespace ToolKit
       case ParameterVariant::VariantType::MultiChoice:
       {
         MultiChoiceVariant* mcv = var->GetVarPtr<MultiChoiceVariant>();
-        if (ImGui::BeginCombo(
-                "##MultiChoiceVariant",
-                mcv->Choices[mcv->CurrentVal.Index].m_name.c_str()))
+        if (ImGui::BeginCombo("##MultiChoiceVariant", mcv->Choices[mcv->CurrentVal.Index].m_name.c_str()))
         {
           for (uint i = 0; i < mcv->Choices.size(); ++i)
           {
@@ -812,8 +784,7 @@ namespace ToolKit
       }
 
       ParameterVariantRawPtrArray customParams;
-      m_entity->m_localData.GetByCategory(CustomDataCategory.Name,
-                                          customParams);
+      m_entity->m_localData.GetByCategory(CustomDataCategory.Name, customParams);
       ShowCustomData(m_entity, "Custom Data", customParams, true);
     }
 

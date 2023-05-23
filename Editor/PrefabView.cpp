@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "PrefabView.h"
 
 #include "App.h"
@@ -23,10 +49,7 @@ namespace ToolKit
 
     PrefabView::~PrefabView() {}
 
-    bool PrefabView::HasActiveEntity() const
-    {
-      return m_activeChildEntity != nullptr;
-    }
+    bool PrefabView::HasActiveEntity() const { return m_activeChildEntity != nullptr; }
 
     Entity* PrefabView::GetActiveEntity() { return m_activeChildEntity; }
 
@@ -52,11 +75,9 @@ namespace ToolKit
     {
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
 
-      if (e->m_node->m_children.empty() ||
-          e->GetType() == EntityType::Entity_Prefab)
+      if (e->m_node->m_children.empty() || e->GetType() == EntityType::Entity_Prefab)
       {
-        nodeFlags |=
-            ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
         DrawHeader(e, nodeFlags);
       }
       else
@@ -92,13 +113,11 @@ namespace ToolKit
       }
 
       // Display scene hierarchy
-      if (ImGui::CollapsingHeader("Prefab Scene View",
-                                  ImGuiTreeNodeFlags_DefaultOpen))
+      if (ImGui::CollapsingHeader("Prefab Scene View", ImGuiTreeNodeFlags_DefaultOpen))
       {
         if (ImGui::BeginChild("##Prefab Scene Nodes", ImVec2(0, 200), true))
         {
-          if (DrawHeader(m_entity,
-                         g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen))
+          if (DrawHeader(m_entity, g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen))
           {
             for (Node* n : m_entity->m_node->m_children)
             {
@@ -121,15 +140,10 @@ namespace ToolKit
       }
 
       ParameterVariantRawPtrArray inheritedParams;
-      shownEntity->m_localData.GetByCategory(CustomDataCategory.Name,
-                                             inheritedParams);
-      CustomDataView::ShowCustomData(shownEntity,
-                                     "Custom Data##1",
-                                     inheritedParams,
-                                     false);
+      shownEntity->m_localData.GetByCategory(CustomDataCategory.Name, inheritedParams);
+      CustomDataView::ShowCustomData(shownEntity, "Custom Data##1", inheritedParams, false);
 
-      if (ImGui::CollapsingHeader("Components##1",
-                                  ImGuiTreeNodeFlags_DefaultOpen))
+      if (ImGui::CollapsingHeader("Components##1", ImGuiTreeNodeFlags_DefaultOpen))
       {
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
 

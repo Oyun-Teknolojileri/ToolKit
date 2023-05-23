@@ -1,7 +1,33 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Framebuffer.h"
 
-#include "gles2.h"
 #include "ToolKit.h"
+#include "gles2.h"
 
 #include "DebugNew.h"
 
@@ -10,8 +36,7 @@ namespace ToolKit
 
   bool FramebufferSettings::Compare(const FramebufferSettings& settings)
   {
-    return settings.width == width && settings.height == height &&
-           settings.depthStencil == depthStencil &&
+    return settings.width == width && settings.height == height && settings.depthStencil == depthStencil &&
            settings.useDefaultDepth == useDefaultDepth;
   }
 
@@ -66,16 +91,10 @@ namespace ToolKit
         attachment = GL_DEPTH_STENCIL_ATTACHMENT;
       }
 
-      glRenderbufferStorage(GL_RENDERBUFFER,
-                            component,
-                            m_settings.width,
-                            m_settings.height);
+      glRenderbufferStorage(GL_RENDERBUFFER, component, m_settings.width, m_settings.height);
 
       // Attach depth buffer to FBO
-      glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                                attachment,
-                                GL_RENDERBUFFER,
-                                m_defaultRboId);
+      glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, m_defaultRboId);
 
       // Check if framebuffer is complete
       if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -108,8 +127,7 @@ namespace ToolKit
 
   void Framebuffer::ReconstructIfNeeded(uint width, uint height)
   {
-    if (!m_initialized || m_settings.width != width ||
-        m_settings.height != height)
+    if (!m_initialized || m_settings.width != width || m_settings.height != height)
     {
       UnInit();
       m_settings.width  = width;
@@ -118,11 +136,7 @@ namespace ToolKit
     }
   }
 
-  RenderTargetPtr Framebuffer::SetAttachment(Attachment atc,
-                                             RenderTargetPtr rt,
-                                             int mip,
-                                             int layer,
-                                             CubemapFace face)
+  RenderTargetPtr Framebuffer::SetAttachment(Attachment atc, RenderTargetPtr rt, int mip, int layer, CubemapFace face)
   {
     GLenum attachment = GL_DEPTH_ATTACHMENT;
     if (IsColorAttachment(atc))
@@ -165,19 +179,11 @@ namespace ToolKit
       if (layer != -1)
       {
         assert(layer < rt->m_settings.Layers);
-        glFramebufferTextureLayer(GL_FRAMEBUFFER,
-                                  attachment,
-                                  rt->m_textureId,
-                                  mip,
-                                  layer);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, rt->m_textureId, mip, layer);
       }
       else
       {
-        glFramebufferTexture2D(GL_FRAMEBUFFER,
-                               attachment,
-                               GL_TEXTURE_2D,
-                               rt->m_textureId,
-                               mip);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, rt->m_textureId, mip);
       }
     }
 
@@ -345,8 +351,7 @@ namespace ToolKit
 
   bool Framebuffer::IsColorAttachment(Attachment atc)
   {
-    if (atc == Attachment::DepthAttachment ||
-        atc == Attachment::DepthStencilAttachment)
+    if (atc == Attachment::DepthAttachment || atc == Attachment::DepthStencilAttachment)
     {
       return false;
     }

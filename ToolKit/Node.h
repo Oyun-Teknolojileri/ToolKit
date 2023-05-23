@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #pragma once
 
 /**
@@ -36,16 +62,14 @@ namespace ToolKit
      * @param val the delta vector for translation.
      * @param space the space to apply transform in.
      */
-    void Translate(const Vec3& val,
-                   TransformationSpace space = TransformationSpace::TS_WORLD);
+    void Translate(const Vec3& val, TransformationSpace space = TransformationSpace::TS_WORLD);
 
     /**
      * Apply rotation to the node in given space.
      * @param val the quaternion for rotation.
      * @param space the space to apply transform in.
      */
-    void Rotate(const Quaternion& val,
-                TransformationSpace space = TransformationSpace::TS_WORLD);
+    void Rotate(const Quaternion& val, TransformationSpace space = TransformationSpace::TS_WORLD);
 
     /**
      * Apply scale to the node in local space.
@@ -59,9 +83,7 @@ namespace ToolKit
      * @param space the space to apply transform in.
      * @param noScale exclude the scale value from matrix.
      */
-    void Transform(const Mat4& val,
-                   TransformationSpace space = TransformationSpace::TS_WORLD,
-                   bool noScale              = true);
+    void Transform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_WORLD, bool noScale = true);
 
     /**
      * Sets given transform matrix in given space to the node.
@@ -69,49 +91,40 @@ namespace ToolKit
      * @param space the space to set transform in.
      * @param noScale exclude the scale value from matrix.
      */
-    void SetTransform(const Mat4& val,
-                      TransformationSpace space = TransformationSpace::TS_WORLD,
-                      bool noScale              = true);
+    void SetTransform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_WORLD, bool noScale = true);
 
     /**
      * Retrieves the transform matrix in given space.
      * @param space the retrieve transformation in.
      * @returns Calculated transformation matrix.
      */
-    Mat4 GetTransform(
-        TransformationSpace space = TransformationSpace::TS_WORLD);
+    Mat4 GetTransform(TransformationSpace space = TransformationSpace::TS_WORLD);
 
     /**
      * Sets the translation value in given space.
      * @param val New translation value to set.
      * @param space The space to set the translation value in.
      */
-    void SetTranslation(
-        const Vec3& val,
-        TransformationSpace space = TransformationSpace::TS_WORLD);
+    void SetTranslation(const Vec3& val, TransformationSpace space = TransformationSpace::TS_WORLD);
 
     /**
      * Retrieves the translation value in given space.
      * @param space The space to retrieve the translation value in.
      */
-    Vec3 GetTranslation(
-        TransformationSpace space = TransformationSpace::TS_WORLD);
+    Vec3 GetTranslation(TransformationSpace space = TransformationSpace::TS_WORLD);
 
     /**
      * Sets the orientation value in given space.
      * @param val New orientation value to set.
      * @param space The space to set the orientation value in.
      */
-    void SetOrientation(
-        const Quaternion& val,
-        TransformationSpace space = TransformationSpace::TS_WORLD);
+    void SetOrientation(const Quaternion& val, TransformationSpace space = TransformationSpace::TS_WORLD);
 
     /**
      * Retrieves the orientation value in given space.
      * @param space The space to retrieve the orientation value in.
      */
-    Quaternion GetOrientation(
-        TransformationSpace space = TransformationSpace::TS_WORLD);
+    Quaternion GetOrientation(TransformationSpace space = TransformationSpace::TS_WORLD);
 
     /**
      * Sets the scale value in local space.
@@ -132,12 +145,12 @@ namespace ToolKit
     Mat3 GetTransformAxes();
 
     /**
-      * Inserts a childs in given index.
-      * @param child child that you want to insert.
-      * @param index index that you want to insert.
-      * @param preserveTransform is the value that indicates to keep the current
-      * world space position of the node to be adopt.
-      */
+     * Inserts a childs in given index.
+     * @param child child that you want to insert.
+     * @param index index that you want to insert.
+     * @param preserveTransform is the value that indicates to keep the current
+     * world space position of the node to be adopt.
+     */
     void InsertChild(Node* child, int index, bool preserveTransform = false);
 
     /**
@@ -223,8 +236,8 @@ namespace ToolKit
 
    public:
     ULongID m_id;
-    Node* m_parent      = nullptr;
-    Entity* m_entity    = nullptr;
+    Node* m_parent   = nullptr;
+    Entity* m_entity = nullptr;
     std::vector<Node*> m_children;
     bool m_inheritScale = false;
 
@@ -232,8 +245,8 @@ namespace ToolKit
     Vec3 m_translation;        //!< Local translation value.
     Quaternion m_orientation;  //!< Local orientation value.
     Vec3 m_scale = Vec3(1.0f); //!< Local scale value.
-    Mat4 m_parentCache;  //!< Cached transformation of the parent hierarchy.
-    bool m_dirty = true; //!< Hint for child to update its parent cache.
+    Mat4 m_parentCache;        //!< Cached transformation of the parent hierarchy.
+    bool m_dirty = true;       //!< Hint for child to update its parent cache.
   };
 
 } // namespace ToolKit

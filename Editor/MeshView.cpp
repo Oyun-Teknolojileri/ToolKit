@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "MeshView.h"
 
 #include "App.h"
@@ -23,8 +49,7 @@ namespace ToolKit
     void MeshView::ResetCamera()
     {
       m_viewport->GetCamera()->m_node->SetTranslation(Vec3(0, 2.0, 5));
-      m_viewport->GetCamera()->GetComponent<DirectionComponent>()->LookAt(
-          Vec3(0));
+      m_viewport->GetCamera()->GetComponent<DirectionComponent>()->LookAt(Vec3(0));
     }
 
     void MeshView::Show()
@@ -41,12 +66,9 @@ namespace ToolKit
       ImGui::Text("Mesh: %s%s", name.c_str(), ext.c_str());
       ImGui::Separator();
 
-      if (ImGui::CollapsingHeader("Mesh Preview",
-                                  ImGuiTreeNodeFlags_DefaultOpen))
+      if (ImGui::CollapsingHeader("Mesh Preview", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        if (UI::ImageButtonDecorless(UI::m_cameraIcon->m_textureId,
-                                     Vec2(16.0f),
-                                     false))
+        if (UI::ImageButtonDecorless(UI::m_cameraIcon->m_textureId, Vec2(16.0f), false))
         {
           ResetCamera();
         }
@@ -73,9 +95,7 @@ namespace ToolKit
                    {
                      g_app->m_statusMsg = "Failed.";
 
-                     GetLogger()->WriteConsole(
-                         LogType::Warning,
-                         "You can't change mesh's default material.");
+                     GetLogger()->WriteConsole(LogType::Warning, "You can't change mesh's default material.");
                    });
           if (i < submeshes.size() - 1)
           {
@@ -99,15 +119,13 @@ namespace ToolKit
       }
       if (m_mesh->IsSkinned())
       {
-        SkeletonComponentPtr skelComp =
-            previewNtt->GetComponent<SkeletonComponent>();
+        SkeletonComponentPtr skelComp = previewNtt->GetComponent<SkeletonComponent>();
         if (skelComp == nullptr)
         {
           skelComp = std::make_shared<SkeletonComponent>();
           previewNtt->AddComponent(skelComp);
         }
-        skelComp->SetSkeletonResourceVal(
-            ((SkinMesh*) m_mesh.get())->m_skeleton);
+        skelComp->SetSkeletonResourceVal(((SkinMesh*) m_mesh.get())->m_skeleton);
         skelComp->Init();
       }
       m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.0f);

@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "EditorScene.h"
 
 #include "Action.h"
@@ -90,23 +116,19 @@ namespace ToolKit
 
     bool EditorScene::IsSelected(ULongID id) const
     {
-      return std::find(m_selectedEntities.begin(),
-                       m_selectedEntities.end(),
-                       id) != m_selectedEntities.end();
+      return std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id) != m_selectedEntities.end();
     }
 
     void EditorScene::RemoveFromSelection(ULongID id)
     {
-      auto nttIt =
-          std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
+      auto nttIt = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
       if (nttIt != m_selectedEntities.end())
       {
         m_selectedEntities.erase(nttIt);
       }
     }
 
-    void TraverseChildNodes(Node* parent,
-                            const std::function<void(Node* node)>& callbackFn)
+    void TraverseChildNodes(Node* parent, const std::function<void(Node* node)>& callbackFn)
     {
       for (Node* childNode : parent->m_children)
       {
@@ -137,17 +159,15 @@ namespace ToolKit
       //  select all children of the prefab entity too
       if (Prefab* mainPrefab = Prefab::GetPrefabRoot(ntt))
       {
-        auto addToSelectionFn = [this](Node* node)
-        { m_selectedEntities.push_back(node->m_entity->GetIdVal()); };
+        auto addToSelectionFn = [this](Node* node) { m_selectedEntities.push_back(node->m_entity->GetIdVal()); };
         TraverseChildNodes(mainPrefab->m_node, addToSelectionFn);
         return;
       }
 
       if (g_app->m_selectEffectingLights && !ntt->IsLightInstance())
       {
-        LightRawPtrArray lights = GetLights();
-        LightRawPtrArray effectingLights =
-            RenderJobProcessor::SortLights(ntt, lights);
+        LightRawPtrArray lights          = GetLights();
+        LightRawPtrArray effectingLights = RenderJobProcessor::SortLights(ntt, lights);
 
         for (Light* light : effectingLights)
         {
@@ -161,8 +181,7 @@ namespace ToolKit
       m_selectedEntities.push_back(id);
     }
 
-    void EditorScene::AddToSelection(const EntityIdArray& entities,
-                                     bool additive)
+    void EditorScene::AddToSelection(const EntityIdArray& entities, bool additive)
     {
       ULongID currentId = NULL_HANDLE;
       if (entities.size() > 1)
@@ -230,8 +249,7 @@ namespace ToolKit
       MakeCurrentSelection(currentId, true);
     }
 
-    void EditorScene::AddToSelection(const EntityRawPtrArray& entities,
-                                     bool additive)
+    void EditorScene::AddToSelection(const EntityRawPtrArray& entities, bool additive)
     {
       EntityIdArray ids;
       ToEntityIdArray(ids, entities);
@@ -252,8 +270,7 @@ namespace ToolKit
 
     void EditorScene::MakeCurrentSelection(ULongID id, bool ifExist)
     {
-      EntityIdArray::iterator itr =
-          std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
+      EntityIdArray::iterator itr = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
       if (itr != m_selectedEntities.end())
       {
         std::iter_swap(itr, m_selectedEntities.end() - 1);
@@ -267,10 +284,7 @@ namespace ToolKit
       }
     }
 
-    uint EditorScene::GetSelectedEntityCount() const
-    {
-      return (uint) m_selectedEntities.size();
-    }
+    uint EditorScene::GetSelectedEntityCount() const { return (uint) m_selectedEntities.size(); }
 
     Entity* EditorScene::GetCurrentSelection() const
     {
@@ -346,15 +360,9 @@ namespace ToolKit
       }
     }
 
-    void EditorScene::GetSelectedEntities(EntityIdArray& entities) const
-    {
-      entities = m_selectedEntities;
-    }
+    void EditorScene::GetSelectedEntities(EntityIdArray& entities) const { entities = m_selectedEntities; }
 
-    void EditorScene::SelectByTag(const String& tag)
-    {
-      AddToSelection(GetByTag(tag), false);
-    }
+    void EditorScene::SelectByTag(const String& tag) { AddToSelection(GetByTag(tag), false); }
 
     Scene::PickData EditorScene::PickObject(Ray ray,
                                             const EntityIdArray& ignoreList,
@@ -368,8 +376,7 @@ namespace ToolKit
       Scene::PickData pdata = Scene::PickObject(ray, ignoreList, temp);
 
       // If the billboards are picked, pick the entity
-      if (pdata.entity != nullptr &&
-          pdata.entity->GetType() == EntityType::Entity_Billboard &&
+      if (pdata.entity != nullptr && pdata.entity->GetType() == EntityType::Entity_Billboard &&
           static_cast<Billboard*>(pdata.entity)->m_entity != nullptr)
       {
         pdata.entity = static_cast<Billboard*>(pdata.entity)->m_entity;
@@ -389,48 +396,40 @@ namespace ToolKit
       temp.insert(temp.end(), m_billboards.begin(), m_billboards.end());
       UpdateBillboardsForPicking();
 
-      Scene::PickObject(frustum,
-                        pickedObjects,
-                        ignoreList,
-                        temp,
-                        pickPartiallyInside);
+      Scene::PickObject(frustum, pickedObjects, ignoreList, temp, pickPartiallyInside);
 
       // If the billboards are picked, pick the entity.
       pickedObjects.erase(
-          std::remove_if(
-              pickedObjects.begin(),
-              pickedObjects.end(),
-              [&pickedObjects](PickData& pd) -> bool
-              {
-                if (pd.entity != nullptr &&
-                    pd.entity->GetType() == EntityType::Entity_Billboard &&
-                    static_cast<Billboard*>(pd.entity)->m_entity != nullptr)
-                {
-                  // Check if the entity is already picked
-                  bool found = false;
-                  for (PickData& pd2 : pickedObjects)
-                  {
-                    if (pd2.entity->GetIdVal() ==
-                        static_cast<Billboard*>(pd.entity)
-                            ->m_entity->GetIdVal())
-                    {
-                      found = true;
-                      break;
-                    }
-                  }
+          std::remove_if(pickedObjects.begin(),
+                         pickedObjects.end(),
+                         [&pickedObjects](PickData& pd) -> bool
+                         {
+                           if (pd.entity != nullptr && pd.entity->GetType() == EntityType::Entity_Billboard &&
+                               static_cast<Billboard*>(pd.entity)->m_entity != nullptr)
+                           {
+                             // Check if the entity is already picked
+                             bool found = false;
+                             for (PickData& pd2 : pickedObjects)
+                             {
+                               if (pd2.entity->GetIdVal() == static_cast<Billboard*>(pd.entity)->m_entity->GetIdVal())
+                               {
+                                 found = true;
+                                 break;
+                               }
+                             }
 
-                  if (found)
-                  {
-                    return true;
-                  }
-                  else
-                  {
-                    pd.entity = static_cast<Billboard*>(pd.entity)->m_entity;
-                    return false;
-                  }
-                }
-                return false;
-              }),
+                             if (found)
+                             {
+                               return true;
+                             }
+                             else
+                             {
+                               pd.entity = static_cast<Billboard*>(pd.entity)->m_entity;
+                               return false;
+                             }
+                           }
+                           return false;
+                         }),
           pickedObjects.end());
     }
 
@@ -505,8 +504,7 @@ namespace ToolKit
       bool addBillboard = false;
       auto billMap      = m_entityBillboardMap.find(entity);
 
-      auto sanitizeFn   = [&addBillboard, billMap, this](
-                            EditorBillboardBase::BillboardType type) -> void
+      auto sanitizeFn   = [&addBillboard, billMap, this](EditorBillboardBase::BillboardType type) -> void
       {
         if (billMap != m_entityBillboardMap.end())
         {
@@ -575,8 +573,7 @@ namespace ToolKit
         {
           for (Entity* billboard : m_billboards)
           {
-            static_cast<Billboard*>(billboard)->LookAt(cam,
-                                                       vp->GetBillboardScale());
+            static_cast<Billboard*>(billboard)->LookAt(cam, vp->GetBillboardScale());
           }
         }
       }
@@ -586,10 +583,7 @@ namespace ToolKit
 
     EditorSceneManager::~EditorSceneManager() {}
 
-    ResourcePtr EditorSceneManager::CreateLocal(ResourceType type)
-    {
-      return ResourcePtr(new EditorScene());
-    }
+    ResourcePtr EditorSceneManager::CreateLocal(ResourceType type) { return ResourcePtr(new EditorScene()); }
 
   } // namespace Editor
 } // namespace ToolKit

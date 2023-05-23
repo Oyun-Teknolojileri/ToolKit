@@ -1,3 +1,28 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #include "Light.h"
 
@@ -18,38 +43,13 @@ namespace ToolKit
     m_shadowCamera->SetOrthographicScaleVal(1.0f);
 
     Color_Define(Vec3(1.0f), "Light", 0, true, true, {true});
-    Intensity_Define(1.0f,
-                     "Light",
-                     90,
-                     true,
-                     true,
-                     {false, true, 0.0f, 100000.0f, 0.1f});
+    Intensity_Define(1.0f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
     CastShadow_Define(false, "Light", 90, true, true);
-    ShadowRes_Define(1024.0f,
-                     "Light",
-                     90,
-                     true,
-                     true,
-                     {false, true, 32.0f, 4096.0f, 2.0f});
+    ShadowRes_Define(1024.0f, "Light", 90, true, true, {false, true, 32.0f, 4096.0f, 2.0f});
     PCFSamples_Define(32, "Light", 90, true, true, {false, true, 0, 128, 1});
-    PCFRadius_Define(0.01f,
-                     "Light",
-                     90,
-                     true,
-                     true,
-                     {false, true, 0.0f, 5.0f, 0.0001f});
-    ShadowBias_Define(0.1f,
-                      "Light",
-                      90,
-                      true,
-                      true,
-                      {false, true, 0.0f, 20000.0f, 0.01f});
-    LightBleedingReduction_Define(0.1f,
-                                  "Light",
-                                  90,
-                                  true,
-                                  true,
-                                  {false, true, 0.0f, 1.0f, 0.001f});
+    PCFRadius_Define(0.01f, "Light", 90, true, true, {false, true, 0.0f, 5.0f, 0.0001f});
+    ShadowBias_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 20000.0f, 0.01f});
+    LightBleedingReduction_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 1.0f, 0.001f});
 
     ParameterEventConstructor();
   }
@@ -64,8 +64,7 @@ namespace ToolKit
         {
           const float val = std::get<float>(newVal);
 
-          if (val > -0.5f &&
-              val < Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 0.1f)
+          if (val > -0.5f && val < Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 0.1f)
           {
             if (GetCastShadowVal())
             {
@@ -81,10 +80,7 @@ namespace ToolKit
 
   EntityType Light::GetType() const { return EntityType::Entity_Light; }
 
-  void Light::Serialize(XmlDocument* doc, XmlNode* parent) const
-  {
-    Entity::Serialize(doc, parent);
-  }
+  void Light::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
 
   void Light::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
@@ -97,8 +93,8 @@ namespace ToolKit
 
   void Light::UpdateShadowCamera()
   {
-    Mat4 proj = m_shadowCamera->GetProjectionMatrix();
-    Mat4 view = m_shadowCamera->GetViewMatrix();
+    Mat4 proj                             = m_shadowCamera->GetProjectionMatrix();
+    Mat4 view                             = m_shadowCamera->GetViewMatrix();
 
     m_shadowMapCameraProjectionViewMatrix = proj * view;
     m_shadowMapCameraFar                  = m_shadowCamera->Far();
@@ -109,33 +105,22 @@ namespace ToolKit
   void Light::InitShadowMapDepthMaterial()
   {
     // Create shadow material
-    ShaderPtr vert = GetShaderManager()->Create<Shader>(
-        ShaderPath("orthogonalDepthVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(
-        ShaderPath("orthogonalDepthFrag.shader", true));
+    ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthVert.shader", true));
+    ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthFrag.shader", true));
 
-    m_shadowMapMaterial                   = std::make_shared<Material>();
+    m_shadowMapMaterial = std::make_shared<Material>();
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
   }
 
-  void Light::UpdateShadowCameraTransform()
-  {
-    m_shadowCamera->m_node->SetTransform(m_node->GetTransform());
-  }
+  void Light::UpdateShadowCameraTransform() { m_shadowCamera->m_node->SetTransform(m_node->GetTransform()); }
 
-  DirectionalLight::DirectionalLight()
-  {
-    AddComponent(new DirectionComponent(this));
-  }
+  DirectionalLight::DirectionalLight() { AddComponent(new DirectionComponent(this)); }
 
   DirectionalLight::~DirectionalLight() {}
 
-  EntityType DirectionalLight::GetType() const
-  {
-    return EntityType::Entity_DirectionalLight;
-  }
+  EntityType DirectionalLight::GetType() const { return EntityType::Entity_DirectionalLight; }
 
   void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs)
   {
@@ -146,17 +131,16 @@ namespace ToolKit
   // Returns 8 sized array
   Vec3Array DirectionalLight::GetShadowFrustumCorners()
   {
-    Vec3Array frustum = {Vec3(-1.0f, -1.0f, -1.0f),
-                         Vec3(1.0f, -1.0f, -1.0f),
-                         Vec3(1.0f, -1.0f, 1.0f),
-                         Vec3(-1.0f, -1.0f, 1.0f),
-                         Vec3(-1.0f, 1.0f, -1.0f),
-                         Vec3(1.0f, 1.0f, -1.0f),
-                         Vec3(1.0f, 1.0f, 1.0f),
-                         Vec3(-1.0f, 1.0f, 1.0f)};
+    Vec3Array frustum             = {Vec3(-1.0f, -1.0f, -1.0f),
+                                     Vec3(1.0f, -1.0f, -1.0f),
+                                     Vec3(1.0f, -1.0f, 1.0f),
+                                     Vec3(-1.0f, -1.0f, 1.0f),
+                                     Vec3(-1.0f, 1.0f, -1.0f),
+                                     Vec3(1.0f, 1.0f, -1.0f),
+                                     Vec3(1.0f, 1.0f, 1.0f),
+                                     Vec3(-1.0f, 1.0f, 1.0f)};
 
-    const Mat4 inverseSpaceMatrix =
-        glm::inverse(m_shadowMapCameraProjectionViewMatrix);
+    const Mat4 inverseSpaceMatrix = glm::inverse(m_shadowMapCameraProjectionViewMatrix);
     for (int i = 0; i < 8; ++i)
     {
       const Vec4 t = inverseSpaceMatrix * Vec4(frustum[i], 1.0f);
@@ -165,9 +149,7 @@ namespace ToolKit
     return frustum;
   }
 
-  void DirectionalLight::FitEntitiesBBoxIntoShadowFrustum(
-      Camera* lightCamera,
-      const RenderJobArray& jobs)
+  void DirectionalLight::FitEntitiesBBoxIntoShadowFrustum(Camera* lightCamera, const RenderJobArray& jobs)
   {
     // Calculate all scene's bounding box
     BoundingBox totalBBox;
@@ -216,8 +198,7 @@ namespace ToolKit
                          shadowBBox.max.z);
   }
 
-  void DirectionalLight::FitViewFrustumIntoLightFrustum(Camera* lightCamera,
-                                                        Camera* viewCamera)
+  void DirectionalLight::FitViewFrustumIntoLightFrustum(Camera* lightCamera, Camera* viewCamera)
   {
     assert(false && "Experimental.");
     // Fit view frustum into light frustum
@@ -230,8 +211,7 @@ namespace ToolKit
                                   Vec3(1.0f, 1.0f, 1.0f),
                                   Vec3(-1.0f, 1.0f, 1.0f)};
 
-    const Mat4 inverseViewProj = glm::inverse(
-        viewCamera->GetProjectionMatrix() * viewCamera->GetViewMatrix());
+    const Mat4 inverseViewProj = glm::inverse(viewCamera->GetProjectionMatrix() * viewCamera->GetViewMatrix());
 
     for (int i = 0; i < 8; ++i)
     {
@@ -269,28 +249,17 @@ namespace ToolKit
 
   PointLight::PointLight()
   {
-    Radius_Define(3.0f,
-                  "Light",
-                  90,
-                  true,
-                  true,
-                  {false, true, 0.1f, 100000.0f, 0.4f});
+    Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
     ParamPCFRadius().m_hint.increment = 0.02f;
   }
 
   PointLight::~PointLight() {}
 
-  EntityType PointLight::GetType() const
-  {
-    return EntityType::Entity_PointLight;
-  }
+  EntityType PointLight::GetType() const { return EntityType::Entity_PointLight; }
 
   void PointLight::UpdateShadowCamera()
   {
-    m_shadowCamera->SetLens(glm::half_pi<float>(),
-                            1.0f,
-                            0.01f,
-                            AffectDistance());
+    m_shadowCamera->SetLens(glm::half_pi<float>(), 1.0f, 0.01f, AffectDistance());
 
     Light::UpdateShadowCamera();
     UpdateShadowCameraTransform();
@@ -301,12 +270,10 @@ namespace ToolKit
   void PointLight::InitShadowMapDepthMaterial()
   {
     // Create shadow material
-    ShaderPtr vert = GetShaderManager()->Create<Shader>(
-        ShaderPath("perspectiveDepthVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(
-        ShaderPath("perspectiveDepthFrag.shader", true));
+    ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
+    ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
 
-    m_shadowMapMaterial                   = std::make_shared<Material>();
+    m_shadowMapMaterial = std::make_shared<Material>();
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
@@ -314,24 +281,9 @@ namespace ToolKit
 
   SpotLight::SpotLight()
   {
-    Radius_Define(10.0f,
-                  "Light",
-                  90,
-                  true,
-                  true,
-                  {false, true, 0.1f, 100000.0f, 0.4f});
-    OuterAngle_Define(35.0f,
-                      "Light",
-                      90,
-                      true,
-                      true,
-                      {false, true, 0.5f, 179.8f, 1.0f});
-    InnerAngle_Define(30.0f,
-                      "Light",
-                      90,
-                      true,
-                      true,
-                      {false, true, 0.5f, 179.8f, 1.0f});
+    Radius_Define(10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
+    OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
+    InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
 
     AddComponent(new DirectionComponent(this));
   }
@@ -342,16 +294,12 @@ namespace ToolKit
 
   void SpotLight::UpdateShadowCamera()
   {
-    m_shadowCamera->SetLens(glm::radians(GetOuterAngleVal()),
-                            1.0f,
-                            0.01f,
-                            AffectDistance());
+    m_shadowCamera->SetLens(glm::radians(GetOuterAngleVal()), 1.0f, 0.01f, AffectDistance());
 
     Light::UpdateShadowCamera();
     UpdateShadowCameraTransform();
 
-    n_frustumCache =
-        ExtractFrustum(m_shadowMapCameraProjectionViewMatrix, false);
+    n_frustumCache = ExtractFrustum(m_shadowMapCameraProjectionViewMatrix, false);
   }
 
   float SpotLight::AffectDistance() { return GetRadiusVal(); }
@@ -359,12 +307,10 @@ namespace ToolKit
   void SpotLight::InitShadowMapDepthMaterial()
   {
     // Create shadow material
-    ShaderPtr vert = GetShaderManager()->Create<Shader>(
-        ShaderPath("perspectiveDepthVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(
-        ShaderPath("perspectiveDepthFrag.shader", true));
+    ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
+    ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
 
-    m_shadowMapMaterial                   = std::make_shared<Material>();
+    m_shadowMapMaterial = std::make_shared<Material>();
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();

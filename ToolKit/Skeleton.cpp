@@ -1,9 +1,35 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Skeleton.h"
 
-#include "gles2.h"
 #include "Node.h"
 #include "ToolKit.h"
 #include "Util.h"
+#include "gles2.h"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
 
@@ -33,15 +59,7 @@ namespace ToolKit
 
     glGenTextures(1, &ptr->m_textureId);
     glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGBA32F,
-                 ptr->m_width,
-                 ptr->m_height,
-                 0,
-                 GL_RGBA,
-                 GL_FLOAT,
-                 nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, ptr->m_width, ptr->m_height, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
@@ -53,15 +71,7 @@ namespace ToolKit
   void uploadBoneMatrix(Mat4 mat, TexturePtr& ptr, uint boneIndx)
   {
     glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
-    glTexSubImage2D(GL_TEXTURE_2D,
-                    0,
-                    boneIndx * 4,
-                    0,
-                    4,
-                    1,
-                    GL_RGBA,
-                    GL_FLOAT,
-                    &mat);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, boneIndx * 4, 0, 4, 1, GL_RGBA, GL_FLOAT, &mat);
   };
 
   void DynamicBoneMap::AddDynamicBone(const String& boneName,
@@ -148,8 +158,7 @@ namespace ToolKit
 
   // Find skeleton's each child bone from its child nodes
   // Then call childProcessFunc (should be recursive to traverse all childs)
-  void DynamicBoneMap::ForEachRootBone(
-      std::function<void(const DynamicBone*)> childProcessFunc) const
+  void DynamicBoneMap::ForEachRootBone(std::function<void(const DynamicBone*)> childProcessFunc) const
   {
     // For each parent bone of the skeleton, access child bones recursively
     for (auto& bone : boneList)
@@ -176,8 +185,7 @@ namespace ToolKit
     }
   }
 
-  void DynamicBoneMap::ForEachRootBone(
-      std::function<void(DynamicBone*)> childProcessFunc)
+  void DynamicBoneMap::ForEachRootBone(std::function<void(DynamicBone*)> childProcessFunc)
   {
     // For each parent bone of the skeleton, access child bones recursively
     for (auto& bone : boneList)
@@ -268,8 +276,7 @@ namespace ToolKit
 
     WriteAttr(boneXmlNode, doc, "name", sBone->m_name.c_str());
 
-    auto writeTransformFnc =
-        [doc](XmlNode* parent, Vec3 tra, Quaternion rot, Vec3 scale)
+    auto writeTransformFnc = [doc](XmlNode* parent, Vec3 tra, Quaternion rot, Vec3 scale)
     {
       XmlNode* traNode = CreateXmlNode(doc, "translation", parent);
       WriteVec(traNode, doc, tra);
@@ -320,16 +327,12 @@ namespace ToolKit
   {
     XmlNode* container = CreateXmlNode(doc, "skeleton", parent);
 
-    auto writeBoneFnc =
-        [doc, container, this](
-            const DynamicBoneMap::DynamicBone* childBone) -> void
+    auto writeBoneFnc  = [doc, container, this](const DynamicBoneMap::DynamicBone* childBone) -> void
     { WriteBone(this, childBone, doc, container); };
     m_Tpose.ForEachRootBone(writeBoneFnc);
   }
 
-  void Traverse(XmlNode* node,
-                DynamicBoneMap::DynamicBone* parent,
-                Skeleton* skeleton)
+  void Traverse(XmlNode* node, DynamicBoneMap::DynamicBone* parent, Skeleton* skeleton)
   {
     if (node == nullptr)
     {
@@ -389,8 +392,7 @@ namespace ToolKit
     skeleton->m_bones.push_back(sBone);
     skeleton->m_Tpose.AddDynamicBone(sBone->m_name, dBone, parent);
 
-    for (XmlNode* subNode = node->first_node("bone"); subNode;
-         subNode          = subNode->next_sibling())
+    for (XmlNode* subNode = node->first_node("bone"); subNode; subNode = subNode->next_sibling())
     {
       Traverse(subNode, &dBone, skeleton);
     }
@@ -403,8 +405,7 @@ namespace ToolKit
       return;
     }
 
-    for (XmlNode* node = parent->first_node("bone"); node;
-         node          = node->next_sibling())
+    for (XmlNode* node = parent->first_node("bone"); node; node = node->next_sibling())
     {
       Traverse(node, nullptr, this);
     }
@@ -412,9 +413,7 @@ namespace ToolKit
     m_bindPoseTexture = CreateBoneTransformTexture(this);
     for (uint64_t boneIndx = 0; boneIndx < m_bones.size(); boneIndx++)
     {
-      uploadBoneMatrix(m_bones[boneIndx]->m_inverseWorldMatrix,
-                       m_bindPoseTexture,
-                       static_cast<uint>(boneIndx));
+      uploadBoneMatrix(m_bones[boneIndx]->m_inverseWorldMatrix, m_bindPoseTexture, static_cast<uint>(boneIndx));
     }
 
     m_loaded = true;

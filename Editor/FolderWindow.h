@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #pragma once
 
 #include "UI.h"
@@ -69,13 +95,13 @@ namespace ToolKit
      public:
       // Indicates this is a root folder (one level under Resources)
       // and currently selected in the FolderWindow.
-      bool m_currRoot = false;
+      bool m_currRoot        = false;
       // Indicates this is a root folder (one level under Resources)
-      bool m_root     = false;
+      bool m_root            = false;
       // States if the tab is visible.
       // Doesnt necesserly mean active, its just a tab in the FolderView.
-      bool m_visible  = false;
-      bool m_active   = false; // Active tab, whose content is being displayed.
+      bool m_visible         = false;
+      bool m_active          = false; // Active tab, whose content is being displayed.
       // Always false. When set to true,
       // actives the view and becomes false again.
       bool m_activateNext    = false;
@@ -98,9 +124,7 @@ namespace ToolKit
       bool m_dirty            = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
       String m_filter         = "";
-      std::unordered_map<String,
-                         std::function<void(DirectoryEntry*, FolderView*)>>
-          m_itemActions;
+      std::unordered_map<String, std::function<void(DirectoryEntry*, FolderView*)>> m_itemActions;
 
       // If you change this value, change the calculaton of thumbnail zoom
       const float m_thumbnailMaxZoom                 = 300.f;
@@ -158,10 +182,7 @@ namespace ToolKit
 
         FolderNode() {}
 
-        FolderNode(int idx, String p, String n)
-            : index(idx), path(std::move(p)), name(std::move(n))
-        {
-        }
+        FolderNode(int idx, String p, String n) : index(idx), path(std::move(p)), name(std::move(n)) {}
       };
 
       std::unordered_map<String, ViewSettings> m_viewSettings;

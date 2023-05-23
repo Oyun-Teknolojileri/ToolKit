@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Canvas.h"
 
 #include "Material.h"
@@ -32,10 +58,7 @@ namespace ToolKit
 
   EntityType Canvas::GetType() const { return EntityType::Entity_Canvas; }
 
-  void Canvas::Serialize(XmlDocument* doc, XmlNode* parent) const
-  {
-    Surface::Serialize(doc, parent);
-  }
+  void Canvas::Serialize(XmlDocument* doc, XmlNode* parent) const { Surface::Serialize(doc, parent); }
 
   void Canvas::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
@@ -91,15 +114,11 @@ namespace ToolKit
             const float surfaceAbsoluteWidth  = surfaceBB.GetWidth();
             const float surfaceAbsoluteHeight = surfaceBB.GetHeight();
 
-            const float innerWidth  = canvasPoints[1].x - canvasPoints[0].x;
-            const float innerHeight = canvasPoints[0].y - canvasPoints[2].y;
+            const float innerWidth            = canvasPoints[1].x - canvasPoints[0].x;
+            const float innerHeight           = canvasPoints[0].y - canvasPoints[2].y;
 
-            const float offsetWidthRatio =
-                ((innerWidth - (offsets[2] + offsets[3])) /
-                 surfaceAbsoluteWidth);
-            const float offsetHeightRatio =
-                ((innerHeight - (offsets[0] + offsets[1])) /
-                 surfaceAbsoluteHeight);
+            const float offsetWidthRatio      = ((innerWidth - (offsets[2] + offsets[3])) / surfaceAbsoluteWidth);
+            const float offsetHeightRatio     = ((innerHeight - (offsets[0] + offsets[1])) / surfaceAbsoluteHeight);
 
             Vec3 surfaceScale(1.f);
             surfaceScale.x = std::max(offsetWidthRatio, 0.0001f);
@@ -107,28 +126,24 @@ namespace ToolKit
 
             Mat4 scaleMat;
             scaleMat = glm::scale(scaleMat, surfaceScale);
-            childNode->Transform(scaleMat,
-                                 TransformationSpace::TS_WORLD,
-                                 false);
+            childNode->Transform(scaleMat, TransformationSpace::TS_WORLD, false);
           }
 
           // Translate operation
           {
             surface->CalculateAnchorOffsets(canvasPoints, surfacePoints);
 
-            const float innerWidth  = canvasPoints[1].x - canvasPoints[0].x;
-            const float innerHeight = canvasPoints[0].y - canvasPoints[2].y;
+            const float innerWidth         = canvasPoints[1].x - canvasPoints[0].x;
+            const float innerHeight        = canvasPoints[0].y - canvasPoints[2].y;
 
             const Vec3 surfaceCurrentScale = childNode->GetScale();
-            if (glm::epsilonNotEqual<float>(innerWidth, 0.0f, 0.00000001f) &&
-                surfaceCurrentScale.x < 0.0f)
+            if (glm::epsilonNotEqual<float>(innerWidth, 0.0f, 0.00000001f) && surfaceCurrentScale.x < 0.0f)
             {
               std::swap(surfacePoints[0], surfacePoints[1]);
               std::swap(surfacePoints[2], surfacePoints[3]);
             }
 
-            if (glm::epsilonNotEqual<float>(innerHeight, 0.0f, 0.00000001f) &&
-                surfaceCurrentScale.y < 0.0f)
+            if (glm::epsilonNotEqual<float>(innerHeight, 0.0f, 0.00000001f) && surfaceCurrentScale.y < 0.0f)
             {
               std::swap(surfacePoints[0], surfacePoints[2]);
               std::swap(surfacePoints[1], surfacePoints[3]);
@@ -137,16 +152,14 @@ namespace ToolKit
             const Vec3 widthVector(1.f, 0.f, 0.f);
             const Vec3 heightVector(0.f, 1.f, 0.f);
 
-            Vec3 translate = (canvasPoints[0] + widthVector * offsets[2] -
-                              heightVector * offsets[0]);
+            Vec3 translate               = (canvasPoints[0] + widthVector * offsets[2] - heightVector * offsets[0]);
 
-            translate      -= surfacePoints[0];
+            translate                    -= surfacePoints[0];
 
-            const Vec3 surfaceCurrentPos =
-                surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            const Vec3 surfaceCurrentPos = surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
-            translate   += surfaceCurrentPos;
-            translate.z = surfaceCurrentPos.z;
+            translate                    += surfaceCurrentPos;
+            translate.z                  = surfaceCurrentPos.z;
 
             childNode->SetTranslation(translate, TransformationSpace::TS_WORLD);
           }
@@ -155,8 +168,7 @@ namespace ToolKit
           {
             Canvas* canvasPanel  = static_cast<Canvas*>(surface);
             const BoundingBox bb = canvasPanel->GetAABB(true);
-            canvasPanel->ApplyRecursiveResizePolicy(bb.GetWidth(),
-                                                    bb.GetHeight());
+            canvasPanel->ApplyRecursiveResizePolicy(bb.GetWidth(), bb.GetHeight());
           }
         }
       }
@@ -165,24 +177,23 @@ namespace ToolKit
 
   void Canvas::CreateQuadLines()
   {
-    float width  = GetSizeVal().x;
-    float height = GetSizeVal().y;
-    float depth  = 0;
-    Vec2 absOffset =
-        Vec2(GetPivotOffsetVal().x * width, GetPivotOffsetVal().y * height);
+    float width    = GetSizeVal().x;
+    float height   = GetSizeVal().y;
+    float depth    = 0;
+    Vec2 absOffset = Vec2(GetPivotOffsetVal().x * width, GetPivotOffsetVal().y * height);
 
     VertexArray vertices;
     vertices.resize(8);
-    vertices[0].pos = Vec3(-absOffset.x, -absOffset.y, depth);
-    vertices[1].pos = Vec3(width - absOffset.x, -absOffset.y, depth);
-    vertices[2].pos = Vec3(width - absOffset.x, -absOffset.y, depth);
-    vertices[3].pos = Vec3(width - absOffset.x, height - absOffset.y, depth);
-    vertices[4].pos = Vec3(width - absOffset.x, height - absOffset.y, depth);
-    vertices[5].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
-    vertices[6].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
-    vertices[7].pos = Vec3(-absOffset.x, -absOffset.y, depth);
+    vertices[0].pos            = Vec3(-absOffset.x, -absOffset.y, depth);
+    vertices[1].pos            = Vec3(width - absOffset.x, -absOffset.y, depth);
+    vertices[2].pos            = Vec3(width - absOffset.x, -absOffset.y, depth);
+    vertices[3].pos            = Vec3(width - absOffset.x, height - absOffset.y, depth);
+    vertices[4].pos            = Vec3(width - absOffset.x, height - absOffset.y, depth);
+    vertices[5].pos            = Vec3(-absOffset.x, height - absOffset.y, depth);
+    vertices[6].pos            = Vec3(-absOffset.x, height - absOffset.y, depth);
+    vertices[7].pos            = Vec3(-absOffset.x, -absOffset.y, depth);
 
-    MeshPtr mesh    = std::make_shared<Mesh>();
+    MeshPtr mesh               = std::make_shared<Mesh>();
     mesh->m_clientSideVertices = vertices;
     mesh->CalculateAABB();
     mesh->Init();

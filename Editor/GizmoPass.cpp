@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "GizmoPass.h"
 
 #include "Material.h"
@@ -20,10 +46,7 @@ namespace ToolKit
       rs->cullMode        = CullingType::Front;
     }
 
-    GizmoPass::GizmoPass(const GizmoPassParams& params) : GizmoPass()
-    {
-      m_params = params;
-    }
+    GizmoPass::GizmoPass(const GizmoPassParams& params) : GizmoPass() { m_params = params; }
 
     void GizmoPass::Render()
     {
@@ -31,13 +54,10 @@ namespace ToolKit
 
       for (EditorBillboardBase* bb : m_params.GizmoArray)
       {
-        if (bb->GetBillboardType() ==
-            EditorBillboardBase::BillboardType::Rotate)
+        if (bb->GetBillboardType() == EditorBillboardBase::BillboardType::Rotate)
         {
           Mat4 ts = bb->m_node->GetTransform();
-          m_depthMaskSphere->m_node->SetTransform(ts,
-                                                  TransformationSpace::TS_WORLD,
-                                                  false);
+          m_depthMaskSphere->m_node->SetTransform(ts, TransformationSpace::TS_WORLD, false);
 
           renderer->ColorMask(false, false, false, false);
 
@@ -72,21 +92,19 @@ namespace ToolKit
 
       // Update.
       BillboardRawPtrArray& gizmoArray = m_params.GizmoArray;
-      gizmoArray.erase(
-          std::remove_if(gizmoArray.begin(),
-                         gizmoArray.end(),
-                         [this](EditorBillboardBase* bb) -> bool
-                         {
-                           if (bb == nullptr)
-                           {
-                             return true;
-                           }
+      gizmoArray.erase(std::remove_if(gizmoArray.begin(),
+                                      gizmoArray.end(),
+                                      [this](EditorBillboardBase* bb) -> bool
+                                      {
+                                        if (bb == nullptr)
+                                        {
+                                          return true;
+                                        }
 
-                           bb->LookAt(m_camera,
-                                      m_params.Viewport->GetBillboardScale());
-                           return false;
-                         }),
-          gizmoArray.end());
+                                        bb->LookAt(m_camera, m_params.Viewport->GetBillboardScale());
+                                        return false;
+                                      }),
+                       gizmoArray.end());
     }
 
     void GizmoPass::PostRender() { Pass::PostRender(); }

@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Workspace.h"
 
 #include "App.h"
@@ -26,7 +52,7 @@ namespace ToolKit
 
       if (CheckFile(settingsFile))
       {
-        XmlFilePtr lclFile = GetFileManager()->GetXmlFile(settingsFile.c_str());
+        XmlFilePtr lclFile    = GetFileManager()->GetXmlFile(settingsFile.c_str());
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
 
@@ -94,8 +120,7 @@ namespace ToolKit
 
     String Workspace::GetCodePath() const
     {
-      String codePath =
-          ConcatPaths({GetActiveWorkspace(), m_activeProject.name, "Codes"});
+      String codePath = ConcatPaths({GetActiveWorkspace(), m_activeProject.name, "Codes"});
 
       return codePath;
     }
@@ -125,8 +150,7 @@ namespace ToolKit
         return m_activeWorkspace;
       }
 
-      return ConcatPaths(
-          {m_activeWorkspace, m_activeProject.name, "Resources"});
+      return ConcatPaths({m_activeWorkspace, m_activeProject.name, "Resources"});
     }
 
     String Workspace::GetActiveWorkspace() const { return m_activeWorkspace; }
@@ -139,37 +163,28 @@ namespace ToolKit
       Main::GetInstance()->m_resourceRoot = GetResourceRoot();
     }
 
-    void Workspace::SetScene(const String& scene)
-    {
-      m_activeProject.scene = scene;
-    }
+    void Workspace::SetScene(const String& scene) { m_activeProject.scene = scene; }
 
     void Workspace::RefreshProjects()
     {
       m_projects.clear();
-      for (const std::filesystem::directory_entry& dir :
-           std::filesystem::directory_iterator(m_activeWorkspace))
+      for (const std::filesystem::directory_entry& dir : std::filesystem::directory_iterator(m_activeWorkspace))
       {
         if (dir.is_directory())
         {
-          String resourcesPath =
-              ConcatPaths({dir.path().string(), "Resources"});
-          String codesPath = ConcatPaths({dir.path().string(), "Codes"});
+          String resourcesPath = ConcatPaths({dir.path().string(), "Resources"});
+          String codesPath     = ConcatPaths({dir.path().string(), "Codes"});
           // Skip directory if it doesn't have folders: Resources, Codes
           if (!std::filesystem::directory_entry(resourcesPath).is_directory() ||
               !std::filesystem::directory_entry(codesPath).is_directory())
           {
             continue;
           }
-          const StringArray requiredResourceFolders = {"Materials",
-                                                       "Meshes",
-                                                       "Scenes",
-                                                       "Textures"};
+          const StringArray requiredResourceFolders = {"Materials", "Meshes", "Scenes", "Textures"};
           bool foundAllRequiredFolders              = true;
           for (uint i = 0; i < requiredResourceFolders.size(); i++)
           {
-            if (!(std::filesystem::directory_entry(
-                      ConcatPaths({resourcesPath, requiredResourceFolders[i]}))
+            if (!(std::filesystem::directory_entry(ConcatPaths({resourcesPath, requiredResourceFolders[i]}))
                       .is_directory()))
             {
               foundAllRequiredFolders = false;
@@ -204,8 +219,7 @@ namespace ToolKit
         XmlDocument* lclDoc = new XmlDocument();
         XmlNode* settings   = CreateXmlNode(lclDoc, XmlNodeSettings.data());
 
-        XmlNode* setNode =
-            CreateXmlNode(lclDoc, XmlNodeWorkspace.data(), settings);
+        XmlNode* setNode    = CreateXmlNode(lclDoc, XmlNodeWorkspace.data(), settings);
         WriteAttr(setNode, lclDoc, XmlNodePath.data(), m_activeWorkspace);
 
         setNode = CreateXmlNode(lclDoc, XmlNodeProject.data(), settings);
@@ -240,8 +254,7 @@ namespace ToolKit
       PluginWindow* pluginWindow = g_app->GetWindow<PluginWindow>("Plugin");
       XmlNode* settings          = CreateXmlNode(doc, "Simulation", nullptr);
 
-      int numCustomRes = (int) pluginWindow->m_screenResolutions.size() -
-                         pluginWindow->m_numDefaultResNames;
+      int numCustomRes           = (int) pluginWindow->m_screenResolutions.size() - pluginWindow->m_numDefaultResNames;
 
       WriteAttr(settings, doc, "NumCustom", std::to_string(numCustomRes));
 
@@ -250,20 +263,11 @@ namespace ToolKit
         String istr = std::to_string(i);
         int index   = i + pluginWindow->m_numDefaultResNames;
 
-        WriteAttr(settings,
-                  doc,
-                  "name" + istr,
-                  pluginWindow->m_emulatorResolutionNames[index]);
+        WriteAttr(settings, doc, "name" + istr, pluginWindow->m_emulatorResolutionNames[index]);
 
-        WriteAttr(settings,
-                  doc,
-                  "sizeX" + istr,
-                  std::to_string(pluginWindow->m_screenResolutions[index].x));
+        WriteAttr(settings, doc, "sizeX" + istr, std::to_string(pluginWindow->m_screenResolutions[index].x));
 
-        WriteAttr(settings,
-                  doc,
-                  "sizeY" + istr,
-                  std::to_string(pluginWindow->m_screenResolutions[index].y));
+        WriteAttr(settings, doc, "sizeY" + istr, std::to_string(pluginWindow->m_screenResolutions[index].y));
       }
     }
 
@@ -289,15 +293,9 @@ namespace ToolKit
       {
         String istr   = std::to_string(i);
         const int idx = i + defaultCnt;
-        ReadAttr(node,
-                 "name" + istr,
-                 pluginWindow->m_emulatorResolutionNames[idx]);
-        ReadAttr(node,
-                 "sizeX" + istr,
-                 pluginWindow->m_screenResolutions[idx].x);
-        ReadAttr(node,
-                 "sizeY" + istr,
-                 pluginWindow->m_screenResolutions[idx].y);
+        ReadAttr(node, "name" + istr, pluginWindow->m_emulatorResolutionNames[idx]);
+        ReadAttr(node, "sizeX" + istr, pluginWindow->m_screenResolutions[idx].x);
+        ReadAttr(node, "sizeY" + istr, pluginWindow->m_screenResolutions[idx].y);
       }
     }
 
@@ -328,8 +326,7 @@ namespace ToolKit
 
     void Workspace::DeSerializeEngineSettings()
     {
-      String settingsFile =
-          ConcatPaths({GetProjectConfigPath(), "Engine.settings"});
+      String settingsFile = ConcatPaths({GetProjectConfigPath(), "Engine.settings"});
 
       // search for project/Engine.settings file,
       // if its not exist pull default Engine.settings file from appdata

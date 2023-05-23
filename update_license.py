@@ -1,4 +1,14 @@
-/*
+import os
+import subprocess
+
+# Define the directory to start the search from
+root_directory = './ToolKit/Editor'
+
+# Define the file extensions to consider
+file_extensions = ['.h', '.cpp']
+
+# Define the license text to insert
+license_text = '''/*
  * MIT License
  *
  * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
@@ -23,21 +33,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+ 
+'''
 
-#pragma once
-#include "OverlayUI.h"
+# Recursively traverse through the directory structure
+for root, dirs, files in os.walk(root_directory):
+    for file in files:
+        if file.endswith(tuple(file_extensions)):
+            file_path = os.path.join(root, file)
+            with open(file_path, 'r') as f:
+                content = f.read()
 
-namespace ToolKit
-{
-  namespace Editor
-  {
+            # Insert the license text at the beginning of the file
+            modified_content = license_text + content
 
-    class OverlayLeftBar : public OverlayUI
-    {
-     public:
-      explicit OverlayLeftBar(EditorViewport* owner);
-      void Show() override;
-    };
-
-  } // namespace Editor
-} // namespace ToolKit
+            # Write the modified content back to the file
+            with open(file_path, 'w') as f:
+                f.write(modified_content)
+            
+            # Run clang-format to format the file
+            subprocess.run(['clang-format', '-i', file_path])

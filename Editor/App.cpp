@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "App.h"
 
 #include "DirectionComponent.h"
@@ -52,22 +78,20 @@ namespace ToolKit
         sceneName = m_newSceneName;
       }
 
-      EditorScenePtr scene =
-          std::make_shared<EditorScene>(ScenePath(sceneName));
+      EditorScenePtr scene = std::make_shared<EditorScene>(ScenePath(sceneName));
 
-      scene->m_name     = sceneName;
-      scene->m_newScene = true;
+      scene->m_name        = sceneName;
+      scene->m_newScene    = true;
       SetCurrentScene(scene);
       ApplyProjectSettings(false);
 
       if (!CheckFile(m_workspace.GetActiveWorkspace()))
       {
-        StringInputWindow* wsDir =
-            new StringInputWindow("Set Workspace Directory##SetWsdir", false);
-        wsDir->m_hint       = "User/Documents/ToolKit";
-        wsDir->m_inputLabel = "Workspace Directory";
-        wsDir->m_name       = "Set Workspace Directory";
-        wsDir->m_taskFn     = [](const String& val) -> void
+        StringInputWindow* wsDir = new StringInputWindow("Set Workspace Directory##SetWsdir", false);
+        wsDir->m_hint            = "User/Documents/ToolKit";
+        wsDir->m_inputLabel      = "Workspace Directory";
+        wsDir->m_name            = "Set Workspace Directory";
+        wsDir->m_taskFn          = [](const String& val) -> void
         {
           String cmd = "SetWorkspaceDir --path \"" + val + "\"";
           g_app->GetConsole()->ExecCommand(cmd);
@@ -165,8 +189,7 @@ namespace ToolKit
         }
       }
 
-      bool playOnSimulationWnd =
-          m_gameMod == GameMod::Playing && m_simulatorSettings.Windowed;
+      bool playOnSimulationWnd = m_gameMod == GameMod::Playing && m_simulatorSettings.Windowed;
 
       if (playOnSimulationWnd)
       {
@@ -184,21 +207,20 @@ namespace ToolKit
         {
           viewport->Update(deltaTime);
 
-          GetRenderSystem()->AddRenderTask(
-              {[this, viewport, deltaTime](Renderer* renderer) -> void
-               {
-                 // 2d Viewport should not be updated as it may break the
-                 // designers work.
-                 if (viewport->m_name != g_2dViewport)
-                 {
-                   GetUIManager()->UpdateLayers(deltaTime, viewport);
-                 }
+          GetRenderSystem()->AddRenderTask({[this, viewport, deltaTime](Renderer* renderer) -> void
+                                            {
+                                              // 2d Viewport should not be updated as it may break the
+                                              // designers work.
+                                              if (viewport->m_name != g_2dViewport)
+                                              {
+                                                GetUIManager()->UpdateLayers(deltaTime, viewport);
+                                              }
 
-                 myEditorRenderer->m_params.App      = g_app;
-                 myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
-                 myEditorRenderer->m_params.Viewport = viewport;
-                 myEditorRenderer->Render(renderer);
-               }});
+                                              myEditorRenderer->m_params.App      = g_app;
+                                              myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
+                                              myEditorRenderer->m_params.Viewport = viewport;
+                                              myEditorRenderer->Render(renderer);
+                                            }});
         }
       }
 
@@ -227,8 +249,7 @@ namespace ToolKit
     {
       // Prevent overriding default scene.
       EditorScenePtr currScene = GetCurrentScene();
-      if (GetSceneManager()->GetDefaultResource(ResourceType::Scene) ==
-          currScene->GetFile())
+      if (GetSceneManager()->GetDefaultResource(ResourceType::Scene) == currScene->GetFile())
       {
         currScene->SetFile(ScenePath("New Scene" + SCENE));
         return OnSaveAsScene();
@@ -240,9 +261,8 @@ namespace ToolKit
         cScene->Save(false);
 
         String rootFolder;
-        String relPath =
-            GetRelativeResourcePath(cScene->GetFile(), &rootFolder);
-        String msg = "Saved to: " + ConcatPaths({rootFolder, relPath});
+        String relPath = GetRelativeResourcePath(cScene->GetFile(), &rootFolder);
+        String msg     = "Saved to: " + ConcatPaths({rootFolder, relPath});
 
         GetLogger()->WriteConsole(LogType::Memo, msg.c_str());
         g_app->m_statusMsg                    = "Scene saved.";
@@ -258,18 +278,15 @@ namespace ToolKit
       String fullPath = currScene->GetFile();
       if (currScene->m_newScene && CheckFile(fullPath))
       {
-        String msg = "Scene " + fullPath +
-                     " exist on the disk.\nOverride the existing scene ?";
-        YesNoWindow* overrideScene =
-            new YesNoWindow("Override existing file##OvrdScn", msg);
+        String msg                   = "Scene " + fullPath + " exist on the disk.\nOverride the existing scene ?";
+        YesNoWindow* overrideScene   = new YesNoWindow("Override existing file##OvrdScn", msg);
         overrideScene->m_yesCallback = [&saveFn]() { saveFn(); };
 
         overrideScene->m_noCallback  = []()
         {
-          g_app->GetConsole()->AddLog(
-              "Scene has not been saved.\n"
-              "A scene with the same name exist. Use File->SaveAs.",
-              LogType::Error);
+          g_app->GetConsole()->AddLog("Scene has not been saved.\n"
+                                      "A scene with the same name exist. Use File->SaveAs.",
+                                      LogType::Error);
         };
 
         UI::m_volatileWindows.push_back(overrideScene);
@@ -282,11 +299,10 @@ namespace ToolKit
 
     void App::OnSaveAsScene()
     {
-      StringInputWindow* inputWnd =
-          new StringInputWindow("SaveScene##SvScn1", true);
-      inputWnd->m_inputLabel = "Name";
-      inputWnd->m_hint       = "Scene name";
-      inputWnd->m_taskFn     = [](const String& val)
+      StringInputWindow* inputWnd = new StringInputWindow("SaveScene##SvScn1", true);
+      inputWnd->m_inputLabel      = "Name";
+      inputWnd->m_hint            = "Scene name";
+      inputWnd->m_taskFn          = [](const String& val)
       {
         String path;
         EditorScenePtr currScene = g_app->GetCurrentScene();
@@ -311,8 +327,7 @@ namespace ToolKit
 
       if (!m_onQuit)
       {
-        YesNoWindow* reallyQuit =
-            new YesNoWindow("Quiting... Are you sure?##ClsApp");
+        YesNoWindow* reallyQuit   = new YesNoWindow("Quiting... Are you sure?##ClsApp");
 
         reallyQuit->m_yesCallback = [this]()
         {
@@ -333,8 +348,7 @@ namespace ToolKit
     {
       if (m_workspace.GetActiveWorkspace().empty())
       {
-        GetConsole()->AddLog("No workspace. Project can't be created.",
-                             LogType::Error);
+        GetConsole()->AddLog("No workspace. Project can't be created.", LogType::Error);
         return;
       }
 
@@ -345,26 +359,16 @@ namespace ToolKit
         return;
       }
 
-      std::filesystem::create_directories(
-          ConcatPaths({fullPath, "Resources", "Audio"}));
-      std::filesystem::create_directories(
-          ConcatPaths({fullPath, "Resources", "Fonts"}));
-      std::filesystem::create_directories(
-          ConcatPaths({fullPath, "Resources", "Layers"}));
-      std::filesystem::create_directories(
-          ConcatPaths({fullPath, "Resources", "Materials"}));
-      std::filesystem::create_directories(
-          ConcatPaths({fullPath, "Resources", "Meshes"}));
-      std::filesystem::create_directories(
-          ConcatPaths({fullPath, "Resources", "Scenes"}));
-      std::filesystem::create_directories(
-          ConcatPaths({fullPath, "Resources", "Prefabs"}));
-      std::filesystem::create_directories(
-          ConcatPaths({fullPath, "Resources", "Shaders"}));
-      std::filesystem::create_directories(
-          ConcatPaths({fullPath, "Resources", "Sprites"}));
-      std::filesystem::create_directories(
-          ConcatPaths({fullPath, "Resources", "Textures"}));
+      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Audio"}));
+      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Fonts"}));
+      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Layers"}));
+      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Materials"}));
+      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Meshes"}));
+      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Scenes"}));
+      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Prefabs"}));
+      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Shaders"}));
+      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Sprites"}));
+      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Textures"}));
 
       // Create project files.
       String codePath = ConcatPaths({fullPath, "Codes"});
@@ -382,29 +386,20 @@ namespace ToolKit
           "../Template/Bin",
           "../Template/Config",
       };
-      String destFolders[folderCount] = {
-          ConcatPaths({codePath, "Bin"}),
-          ConcatPaths({codePath, "..", "Config"})};
+      String destFolders[folderCount] = {ConcatPaths({codePath, "Bin"}), ConcatPaths({codePath, "..", "Config"})};
 
       for (int i = 0; i < count; i++)
       {
-        std::filesystem::copy(
-            source[i],
-            codePath,
-            std::filesystem::copy_options::overwrite_existing);
+        std::filesystem::copy(source[i], codePath, std::filesystem::copy_options::overwrite_existing);
       }
 
       for (int i = 0; i < folderCount; ++i)
       {
-        std::filesystem::copy(
-            folders[i],
-            destFolders[i],
-            std::filesystem::copy_options::overwrite_existing);
+        std::filesystem::copy(folders[i], destFolders[i], std::filesystem::copy_options::overwrite_existing);
       }
 
       // Update cmake.
-      String currentPath =
-          std::filesystem::current_path().parent_path().u8string();
+      String currentPath = std::filesystem::current_path().parent_path().u8string();
       UnixifyPath(currentPath);
 
       std::fstream cmakelist;
@@ -418,8 +413,7 @@ namespace ToolKit
         cmakelist.close();
 
         // Override the content.
-        cmakelist.open(ConcatPaths({codePath, "CMakeLists.txt"}),
-                       std::ios::out | std::ios::trunc);
+        cmakelist.open(ConcatPaths({codePath, "CMakeLists.txt"}), std::ios::out | std::ios::trunc);
         if (cmakelist.is_open())
         {
           cmakelist << content;
@@ -465,9 +459,7 @@ namespace ToolKit
         }
         else
         {
-          GetConsole()->AddLog(
-              "Expecting a game plugin with the same name of the project.",
-              LogType::Error);
+          GetConsole()->AddLog("Expecting a game plugin with the same name of the project.", LogType::Error);
         }
       }
 
@@ -512,15 +504,14 @@ namespace ToolKit
       m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
       m_isCompiling = true;
 
-      ExecSysCommand(
-          cmd,
-          true,
-          false,
-          [this, buildDir](int res) -> void
-          {
-            String cmd =
-                "cmake --build " + buildDir + " --config " + buildConfig.data();
-            ExecSysCommand(cmd,
+      ExecSysCommand(cmd,
+                     true,
+                     false,
+                     [this, buildDir](int res) -> void
+                     {
+                       String cmd = "cmake --build " + buildDir + " --config " + buildConfig.data();
+                       ExecSysCommand(
+                           cmd,
                            false,
                            false,
                            [=](int res) -> void
@@ -540,35 +531,26 @@ namespace ToolKit
                                  detail = "CMake Generate Failed.";
                                }
 
-                               GetLogger()->WriteConsole(LogType::Error,
-                                                         "%s %s",
-                                                         m_statusMsg.c_str(),
-                                                         detail.c_str());
+                               GetLogger()->WriteConsole(LogType::Error, "%s %s", m_statusMsg.c_str(), detail.c_str());
                              }
                              else
                              {
                                m_statusMsg = "Compiled.";
-                               GetLogger()->WriteConsole(LogType::Memo,
-                                                         "%s",
-                                                         m_statusMsg.c_str());
+                               GetLogger()->WriteConsole(LogType::Memo, "%s", m_statusMsg.c_str());
                              }
                              m_isCompiling = false;
                            });
-          });
+                     });
     }
 
     EditorScenePtr App::GetCurrentScene()
     {
-      EditorScenePtr eScn = std::static_pointer_cast<EditorScene>(
-          GetSceneManager()->GetCurrentScene());
+      EditorScenePtr eScn = std::static_pointer_cast<EditorScene>(GetSceneManager()->GetCurrentScene());
 
       return eScn;
     }
 
-    void App::SetCurrentScene(const EditorScenePtr& scene)
-    {
-      GetSceneManager()->SetCurrentScene(scene);
-    }
+    void App::SetCurrentScene(const EditorScenePtr& scene) { GetSceneManager()->SetCurrentScene(scene); }
 
     void App::FocusEntity(Entity* entity)
     {
@@ -594,18 +576,14 @@ namespace ToolKit
       else
       {
         BoundingBox defaultBBox = {Vec3(-1.0f), Vec3(1.0f)};
-        Vec3 pos =
-            entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        defaultBBox.max += pos;
-        defaultBBox.min += pos;
+        Vec3 pos                = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        defaultBBox.max         += pos;
+        defaultBBox.min         += pos;
         cam->FocusToBoundingBox(defaultBBox, 1.1f);
       }
     }
 
-    int App::ExecSysCommand(StringView cmd,
-                            bool async,
-                            bool showConsole,
-                            SysCommandDoneCallback callback)
+    int App::ExecSysCommand(StringView cmd, bool async, bool showConsole, SysCommandDoneCallback callback)
     {
       if (m_sysComExecFn)
       {
@@ -623,12 +601,11 @@ namespace ToolKit
       if (CheckFile(defEditSet) && CheckFile(m_workspace.GetActiveWorkspace()))
       {
         // Try reading defaults.
-        String settingsFile = defEditSet;
+        String settingsFile              = defEditSet;
 
-        std::shared_ptr<XmlFile> lclFile =
-            std::make_shared<XmlFile>(settingsFile.c_str());
+        std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
 
-        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+        XmlDocumentPtr lclDoc            = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
 
         // Prevent loading last scene.
@@ -665,8 +642,7 @@ namespace ToolKit
         vp->GetCamera()->m_node->SetTranslation({0.0f, 10.0f, 0.0f});
         vp->GetCamera()->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
         vp->GetCamera()->m_orthographicScale = 0.02f;
-        vp->GetCamera()->GetComponent<DirectionComponent>()->Pitch(
-            glm::radians(-90.0f));
+        vp->GetCamera()->GetComponent<DirectionComponent>()->Pitch(glm::radians(-90.0f));
         vp->m_cameraAlignment = CameraAlignment::Top;
         vp->m_orbitLock       = true;
         m_windows.push_back(vp);
@@ -690,8 +666,7 @@ namespace ToolKit
 
         m_windows.push_back(new RenderSettingsView());
 
-        CreateSimulationWindow(m_simulatorSettings.Width,
-                               m_simulatorSettings.Height);
+        CreateSimulationWindow(m_simulatorSettings.Width, m_simulatorSettings.Height);
       }
     }
 
@@ -757,13 +732,10 @@ namespace ToolKit
         } while ((wndNode = wndNode->next_sibling("Window")));
       }
 
-      CreateSimulationWindow(m_simulatorSettings.Width,
-                             m_simulatorSettings.Height);
+      CreateSimulationWindow(m_simulatorSettings.Width, m_simulatorSettings.Height);
     }
 
-    int App::Import(const String& fullPath,
-                    const String& subDir,
-                    bool overwrite)
+    int App::Import(const String& fullPath, const String& subDir, bool overwrite)
     {
       bool doSearch = !UI::SearchFileData.missingFiles.empty();
       if (!CanImport(fullPath) && !doSearch)
@@ -782,8 +754,7 @@ namespace ToolKit
 
       // Set the execute path.
       std::filesystem::path pathBck = std::filesystem::current_path();
-      std::filesystem::path path =
-          pathBck.u8string() + ConcatPaths({"", "..", "Utils", "Import"});
+      std::filesystem::path path    = pathBck.u8string() + ConcatPaths({"", "..", "Utils", "Import"});
       std::filesystem::current_path(path);
 
       std::filesystem::path cpyDir = ".";
@@ -849,8 +820,7 @@ namespace ToolKit
             {
               if (g_app->m_importSlient)
               {
-                g_app->GetConsole()->AddLog("Import: " + fullPath + " failed.",
-                                            LogType::Error);
+                g_app->GetConsole()->AddLog("Import: " + fullPath + " failed.", LogType::Error);
                 goto Fail;
               }
 
@@ -862,15 +832,11 @@ namespace ToolKit
                 {
                   String name, ext;
                   DecomposePath(missingFile, nullptr, &name, &ext);
-                  String missingFullPath =
-                      ConcatPaths({searchPath, name + ext});
+                  String missingFullPath = ConcatPaths({searchPath, name + ext});
                   if (CheckFile(missingFullPath))
                   {
                     numFound++;
-                    std::filesystem::copy(
-                        missingFullPath,
-                        cpyDir,
-                        std::filesystem::copy_options::overwrite_existing);
+                    std::filesystem::copy(missingFullPath, cpyDir, std::filesystem::copy_options::overwrite_existing);
                   }
                 }
               }
@@ -934,10 +900,7 @@ namespace ToolKit
               String path, name;
               DecomposePath(fullPath, &path, &name, &ext);
               std::filesystem::create_directories(path);
-              std::filesystem::copy(
-                  line,
-                  fullPath,
-                  std::filesystem::copy_options::overwrite_existing);
+              std::filesystem::copy(line, fullPath, std::filesystem::copy_options::overwrite_existing);
             }
           }
         }
@@ -1013,11 +976,10 @@ namespace ToolKit
       UI::m_postponedActions.push_back(
           [fileName]() -> void
           {
-            const FolderWindowRawPtrArray& assetBrowsers =
-                g_app->GetAssetBrowsers();
+            const FolderWindowRawPtrArray& assetBrowsers = g_app->GetAssetBrowsers();
 
-            String log = "File isn't imported because it's not dropped onto "
-                         "Asset Browser";
+            String log                                   = "File isn't imported because it's not dropped onto "
+                                                           "Asset Browser";
 
             for (FolderWindow* folderWindow : assetBrowsers)
             {
@@ -1056,8 +1018,7 @@ namespace ToolKit
       EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
       if (IsLayer(fullPath))
       {
-        if (EditorViewport2d* viewport =
-                GetWindow<EditorViewport2d>(g_2dViewport))
+        if (EditorViewport2d* viewport = GetWindow<EditorViewport2d>(g_2dViewport))
         {
           UILayerPtr layer = std::make_shared<UILayer>(scene);
           GetUIManager()->AddLayer(viewport->m_viewportId, layer);
@@ -1081,16 +1042,11 @@ namespace ToolKit
       GetCurrentScene()->Merge(scene);
     }
 
-    void App::LinkScene(const String& fullPath)
-    {
-      GetSceneManager()->GetCurrentScene()->LinkPrefab(fullPath);
-    }
+    void App::LinkScene(const String& fullPath) { GetSceneManager()->GetCurrentScene()->LinkPrefab(fullPath); }
 
     void App::ApplyProjectSettings(bool setDefaults)
     {
-      if (CheckFile(ConcatPaths(
-              {m_workspace.GetProjectConfigPath(), g_editorSettingsFile})) &&
-          !setDefaults)
+      if (CheckFile(ConcatPaths({m_workspace.GetProjectConfigPath(), g_editorSettingsFile})) && !setDefaults)
       {
         DeSerialize(nullptr, nullptr);
         m_workspace.DeSerializeEngineSettings();
@@ -1106,9 +1062,7 @@ namespace ToolKit
 
       SDL_SetWindowSize(g_window, size.x, size.y);
 
-      SDL_SetWindowPosition(g_window,
-                            SDL_WINDOWPOS_CENTERED,
-                            SDL_WINDOWPOS_CENTERED);
+      SDL_SetWindowPosition(g_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
       if (m_windowMaximized)
       {
@@ -1137,10 +1091,7 @@ namespace ToolKit
         return;
       }
 
-      String sceneResourcesPath = ConcatPaths({m_workspace.GetActiveWorkspace(),
-                                               projectName,
-                                               "Resources",
-                                               "Scenes"});
+      String sceneResourcesPath = ConcatPaths({m_workspace.GetActiveWorkspace(), projectName, "Resources", "Scenes"});
 
       GetFileManager()->PackResources(sceneResourcesPath);
     }
@@ -1228,38 +1179,22 @@ namespace ToolKit
       return nullptr;
     }
 
-    FolderWindowRawPtrArray App::GetAssetBrowsers()
-    {
-      return GetAllWindows<FolderWindow>(g_assetBrowserStr);
-    }
+    FolderWindowRawPtrArray App::GetAssetBrowsers() { return GetAllWindows<FolderWindow>(g_assetBrowserStr); }
 
-    OutlinerWindow* App::GetOutliner()
-    {
-      return GetWindow<OutlinerWindow>(g_outlinerStr);
-    }
+    OutlinerWindow* App::GetOutliner() { return GetWindow<OutlinerWindow>(g_outlinerStr); }
 
-    PropInspector* App::GetPropInspector()
-    {
-      return GetWindow<PropInspector>(g_propInspector);
-    }
+    PropInspector* App::GetPropInspector() { return GetWindow<PropInspector>(g_propInspector); }
 
-    RenderSettingsView* App::GetRenderSettingsView()
-    {
-      return GetWindow<RenderSettingsView>(g_renderSettings);
-    }
+    RenderSettingsView* App::GetRenderSettingsView() { return GetWindow<RenderSettingsView>(g_renderSettings); }
 
-    void App::AddRenderSettingsView()
-    {
-      m_windows.push_back(new RenderSettingsView());
-    }
+    void App::AddRenderSettingsView() { m_windows.push_back(new RenderSettingsView()); }
 
     void App::HideGizmos()
     {
       for (Entity* ntt : GetCurrentScene()->GetEntities())
       {
         // Light and camera gizmos
-        if (ntt->IsLightInstance() ||
-            ntt->GetType() == EntityType::Entity_Camera)
+        if (ntt->IsLightInstance() || ntt->GetType() == EntityType::Entity_Camera)
         {
           ntt->SetVisibility(false, false);
         }
@@ -1271,8 +1206,7 @@ namespace ToolKit
       for (Entity* ntt : GetCurrentScene()->GetEntities())
       {
         // Light and camera gizmos
-        if (ntt->IsLightInstance() ||
-            ntt->GetType() == EntityType::Entity_Camera)
+        if (ntt->IsLightInstance() || ntt->GetType() == EntityType::Entity_Camera)
         {
           ntt->SetVisibility(true, false);
         }
@@ -1297,8 +1231,7 @@ namespace ToolKit
           {
             if (m_windowCamLoad)
             {
-              Mat4 camTs = playWindow->GetCamera()->m_node->GetTransform(
-                  TransformationSpace::TS_WORLD);
+              Mat4 camTs = playWindow->GetCamera()->m_node->GetTransform(TransformationSpace::TS_WORLD);
               m_simulationWindow->GetCamera()->m_node->SetTransform(camTs);
               m_windowCamLoad = false;
             }
@@ -1314,8 +1247,8 @@ namespace ToolKit
       m_workspace.Serialize(nullptr, nullptr);
 
       std::ofstream file;
-      String cfgPath  = m_workspace.GetProjectConfigPath();
-      String fileName = ConcatPaths({cfgPath, g_editorSettingsFile});
+      String cfgPath              = m_workspace.GetProjectConfigPath();
+      String fileName             = ConcatPaths({cfgPath, g_editorSettingsFile});
 
       // File or Config folder is missing.
       std::ios::openmode openMode = std::ios::out;
@@ -1329,24 +1262,19 @@ namespace ToolKit
       if (file.is_open())
       {
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
-        XmlNode* app = lclDoc->allocate_node(rapidxml::node_element, "App");
+        XmlNode* app          = lclDoc->allocate_node(rapidxml::node_element, "App");
         lclDoc->append_node(app);
 
-        XmlNode* settings =
-            lclDoc->allocate_node(rapidxml::node_element, "Settings");
+        XmlNode* settings = lclDoc->allocate_node(rapidxml::node_element, "Settings");
         app->append_node(settings);
 
-        XmlNode* setNode =
-            lclDoc->allocate_node(rapidxml::node_element, "Size");
+        XmlNode* setNode = lclDoc->allocate_node(rapidxml::node_element, "Size");
 
-        UVec2 size = GetRenderSystem()->GetAppWindowSize();
+        UVec2 size       = GetRenderSystem()->GetAppWindowSize();
         WriteAttr(setNode, lclDoc.get(), "width", std::to_string(size.x));
         WriteAttr(setNode, lclDoc.get(), "height", std::to_string(size.y));
 
-        WriteAttr(setNode,
-                  lclDoc.get(),
-                  "maximized",
-                  std::to_string(m_windowMaximized));
+        WriteAttr(setNode, lclDoc.get(), "maximized", std::to_string(m_windowMaximized));
 
         settings->append_node(setNode);
 
@@ -1371,15 +1299,13 @@ namespace ToolKit
 
       if (doc == nullptr)
       {
-        String settingsFile = ConcatPaths(
-            {m_workspace.GetProjectConfigPath(), g_editorSettingsFile});
+        String settingsFile = ConcatPaths({m_workspace.GetProjectConfigPath(), g_editorSettingsFile});
 
         if (!CheckFile(settingsFile))
         {
           settingsFile = ConcatPaths({ConfigPath(), g_editorSettingsFile});
 
-          assert(CheckFile(settingsFile) &&
-                 "ToolKit/Config/Editor.settings must exist.");
+          assert(CheckFile(settingsFile) && "ToolKit/Config/Editor.settings must exist.");
         }
 
         lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
@@ -1420,33 +1346,27 @@ namespace ToolKit
 
     void App::OverrideEntityConstructors()
     {
-      GetEntityFactory()->OverrideEntityConstructor(
-          EntityType::Entity_Camera,
-          []() -> Entity* { return new EditorCamera(); });
+      GetEntityFactory()->OverrideEntityConstructor(EntityType::Entity_Camera,
+                                                    []() -> Entity* { return new EditorCamera(); });
 
-      GetEntityFactory()->OverrideEntityConstructor(
-          EntityType::Entity_DirectionalLight,
-          []() -> Entity* { return new EditorDirectionalLight(); });
+      GetEntityFactory()->OverrideEntityConstructor(EntityType::Entity_DirectionalLight,
+                                                    []() -> Entity* { return new EditorDirectionalLight(); });
 
-      GetEntityFactory()->OverrideEntityConstructor(
-          EntityType::Entity_PointLight,
-          []() -> Entity* { return new EditorPointLight(); });
+      GetEntityFactory()->OverrideEntityConstructor(EntityType::Entity_PointLight,
+                                                    []() -> Entity* { return new EditorPointLight(); });
 
-      GetEntityFactory()->OverrideEntityConstructor(
-          EntityType::Entity_SpotLight,
-          []() -> Entity* { return new EditorSpotLight(); });
+      GetEntityFactory()->OverrideEntityConstructor(EntityType::Entity_SpotLight,
+                                                    []() -> Entity* { return new EditorSpotLight(); });
     }
 
     void App::CreateSimulationWindow(float width, float height)
     {
       SafeDel(m_simulationWindow);
-      m_simulationWindow         = new EditorViewport(m_simulatorSettings.Width,
-                                              m_simulatorSettings.Height);
+      m_simulationWindow         = new EditorViewport(m_simulatorSettings.Width, m_simulatorSettings.Height);
 
       m_simulationWindow->m_name = g_simulationViewport;
-      m_simulationWindow->m_additionalWindowFlags = ImGuiWindowFlags_NoResize |
-                                                    ImGuiWindowFlags_NoDocking |
-                                                    ImGuiWindowFlags_NoCollapse;
+      m_simulationWindow->m_additionalWindowFlags =
+          ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse;
 
       m_simulationWindow->SetVisibility(false);
     }
@@ -1470,11 +1390,10 @@ namespace ToolKit
 
     void App::CreateAndSetNewScene(const String& name)
     {
-      EditorScenePtr scene =
-          std::make_shared<EditorScene>(ScenePath(name + SCENE));
+      EditorScenePtr scene = std::make_shared<EditorScene>(ScenePath(name + SCENE));
 
-      scene->m_name     = name;
-      scene->m_newScene = true;
+      scene->m_name        = name;
+      scene->m_newScene    = true;
       GetSceneManager()->Manage(scene);
       SetCurrentScene(scene);
     }
@@ -1487,24 +1406,15 @@ namespace ToolKit
 
       m_grid   = new Grid(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0, false);
 
-      m_2dGrid = new Grid(g_max2dGridSize,
-                          AxisLabel::XY,
-                          10.0f,
-                          4.0,
+      m_2dGrid = new Grid(g_max2dGridSize, AxisLabel::XY, 10.0f, 4.0,
                           true); // Generate grid cells 10 x 10
     }
 
     float App::GetDeltaTime() { return m_deltaTime; }
 
-    void DebugMessage(const String& msg)
-    {
-      g_app->GetConsole()->AddLog(msg, "Debug");
-    }
+    void DebugMessage(const String& msg) { g_app->GetConsole()->AddLog(msg, "Debug"); }
 
-    void DebugMessage(const Vec3& vec)
-    {
-      g_app->GetConsole()->AddLog(glm::to_string(vec), "Debug");
-    }
+    void DebugMessage(const Vec3& vec) { g_app->GetConsole()->AddLog(glm::to_string(vec), "Debug"); }
 
     void DebugMessage(const char* msg, ...)
     {
@@ -1520,14 +1430,10 @@ namespace ToolKit
 
     void DebugCube(const Vec3& p, float size)
     {
-      g_app->m_perFrameDebugObjects.push_back(
-          CreateBoundingBoxDebugObject({p - Vec3(size), p + Vec3(size)}));
+      g_app->m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject({p - Vec3(size), p + Vec3(size)}));
     }
 
-    void DebugLineStrip(const Vec3Array& pnts)
-    {
-      g_app->m_perFrameDebugObjects.push_back(CreateLineDebugObject(pnts));
-    }
+    void DebugLineStrip(const Vec3Array& pnts) { g_app->m_perFrameDebugObjects.push_back(CreateLineDebugObject(pnts)); }
 
   } // namespace Editor
 } // namespace ToolKit

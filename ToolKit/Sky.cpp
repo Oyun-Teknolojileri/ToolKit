@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Sky.h"
 
 #include "DirectionComponent.h"
@@ -33,8 +59,7 @@ namespace ToolKit
       envComp              = std::make_shared<EnvironmentComponent>();
 
       TextureManager* tman = GetTextureManager();
-      HdriPtr defHdr =
-          tman->Create<Hdri>(tman->GetDefaultResource(ResourceType::Hdri));
+      HdriPtr defHdr       = tman->Create<Hdri>(tman->GetDefaultResource(ResourceType::Hdri));
       defHdr->Init();
 
       envComp->SetHdriVal(defHdr);
@@ -91,12 +116,7 @@ namespace ToolKit
   {
     DrawSky_Define(true, "Sky", 90, true, true);
     Illuminate_Define(true, "Sky", 90, true, true);
-    Intensity_Define(1.0f,
-                     "Sky",
-                     90,
-                     true,
-                     true,
-                     {false, true, 0.0f, 100000.0f, 0.1f});
+    Intensity_Define(1.0f, "Sky", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
 
     SetNameVal("SkyBase");
   }
@@ -107,10 +127,9 @@ namespace ToolKit
     ParamIlluminate().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         {
-          if (IsInitialized()) 
+          if (IsInitialized())
           {
-            GetComponent<EnvironmentComponent>()->SetIlluminateVal(
-                std::get<bool>(newVal));
+            GetComponent<EnvironmentComponent>()->SetIlluminateVal(std::get<bool>(newVal));
           }
         });
 
@@ -118,10 +137,9 @@ namespace ToolKit
     ParamIntensity().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         {
-          if (IsInitialized()) 
+          if (IsInitialized())
           {
-            GetComponent<EnvironmentComponent>()->SetIntensityVal(
-                std::get<float>(newVal));
+            GetComponent<EnvironmentComponent>()->SetIntensityVal(std::get<float>(newVal));
           }
         });
   }
@@ -156,11 +174,9 @@ namespace ToolKit
     SkyBase::Init();
 
     // Skybox material
-    ShaderPtr vert = GetShaderManager()->Create<Shader>(
-        ShaderPath("skyboxVert.shader", true));
+    ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("skyboxVert.shader", true));
 
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(
-        ShaderPath("skyboxFrag.shader", true));
+    ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("skyboxFrag.shader", true));
 
     ConstructSkyMaterial(vert, frag);
 
@@ -178,12 +194,7 @@ namespace ToolKit
 
   void Sky::ParameterConstructor()
   {
-    Exposure_Define(1.0f,
-                    "Sky",
-                    90,
-                    true,
-                    true,
-                    {false, true, 0.0f, 50.0f, 0.05f});
+    Exposure_Define(1.0f, "Sky", 90, true, true, {false, true, 0.0f, 50.0f, 0.05f});
 
     Hdri_Define(nullptr, "Sky", 90, true, true);
 
@@ -199,18 +210,12 @@ namespace ToolKit
     ParamHdri().m_onValueChangedFn.clear();
     ParamHdri().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
-        {
-          GetComponent<EnvironmentComponent>()->SetHdriVal(
-              std::get<HdriPtr>(newVal));
-        });
+        { GetComponent<EnvironmentComponent>()->SetHdriVal(std::get<HdriPtr>(newVal)); });
 
     ParamExposure().m_onValueChangedFn.clear();
     ParamExposure().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
-        {
-          GetComponent<EnvironmentComponent>()->SetExposureVal(
-              std::get<float>(newVal));
-        });
+        { GetComponent<EnvironmentComponent>()->SetExposureVal(std::get<float>(newVal)); });
   }
 
 } // namespace ToolKit

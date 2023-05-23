@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "EditorViewport2d.h"
 
 #include "App.h"
@@ -12,21 +38,11 @@ namespace ToolKit
   {
     Overlay2DTopBar* m_2dViewOptions = nullptr;
 
-    EditorViewport2d::EditorViewport2d(XmlNode* node) : EditorViewport(node)
-    {
-      InitViewport();
-    }
+    EditorViewport2d::EditorViewport2d(XmlNode* node) : EditorViewport(node) { InitViewport(); }
 
-    EditorViewport2d::EditorViewport2d(float width, float height)
-        : EditorViewport(width, height)
-    {
-      InitViewport();
-    }
+    EditorViewport2d::EditorViewport2d(float width, float height) : EditorViewport(width, height) { InitViewport(); }
 
-    EditorViewport2d::EditorViewport2d(const Vec2& size)
-        : EditorViewport2d(size.x, size.y)
-    {
-    }
+    EditorViewport2d::EditorViewport2d(const Vec2& size) : EditorViewport2d(size.x, size.y) {}
 
     EditorViewport2d::~EditorViewport2d()
     {
@@ -50,10 +66,7 @@ namespace ToolKit
       }
 
       // Resize Grid
-      g_app->m_2dGrid->Resize(g_max2dGridSize,
-                              AxisLabel::XY,
-                              (float) (m_gridCellSizeByPixel),
-                              2.0f);
+      g_app->m_2dGrid->Resize(g_max2dGridSize, AxisLabel::XY, (float) (m_gridCellSizeByPixel), 2.0f);
 
       PanZoom(deltaTime);
       m_anchorMode->Update(deltaTime);
@@ -90,8 +103,7 @@ namespace ToolKit
         m_anchorMode->Signal(BaseMod::m_leftMouseBtnDragSgnl);
       }
 
-      StateAnchorBase* anchState = static_cast<StateAnchorBase*>(
-          m_anchorMode->m_stateMachine->m_currentState);
+      StateAnchorBase* anchState = static_cast<StateAnchorBase*>(m_anchorMode->m_stateMachine->m_currentState);
 
       if (anchState)
       {
@@ -109,8 +121,7 @@ namespace ToolKit
       // AssetBrowser drop handling.
       if (ImGui::BeginDragDropTarget())
       {
-        if (const ImGuiPayload* payload =
-                ImGui::AcceptDragDropPayload("BrowserDragZone"))
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
         {
           const FileDragData& dragData = FolderView::GetFileDragData();
           const DirectoryEntry* entry  = dragData.Entries[0]; // get first entry
@@ -138,11 +149,10 @@ namespace ToolKit
               String fullPath = entry->GetFullPath();
               g_app->MergeScene(fullPath);
             };
-            MultiChoiceWindow* importOptionWnd =
-                new MultiChoiceWindow("Open Scene",
-                                      {openButton, linkButton, mergeButton},
-                                      "Open, link or merge the scene?",
-                                      true);
+            MultiChoiceWindow* importOptionWnd = new MultiChoiceWindow("Open Scene",
+                                                                       {openButton, linkButton, mergeButton},
+                                                                       "Open, link or merge the scene?",
+                                                                       true);
 
             UI::m_volatileWindows.push_back(importOptionWnd);
           }

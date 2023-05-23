@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Shader.h"
 
 #include "TKAssert.h"
@@ -245,8 +271,7 @@ namespace ToolKit
     m_includeFiles.clear();
 
     XmlNode* rootNode = parent;
-    for (XmlNode* node = rootNode->first_node(); node;
-         node          = node->next_sibling())
+    for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
     {
       if (strcmp("type", node->name()) == 0)
       {
@@ -314,10 +339,7 @@ namespace ToolKit
     }
   }
 
-  void Shader::SetShaderParameter(String param, const ParameterVariant& val)
-  {
-    m_shaderParams[param] = val;
-  }
+  void Shader::SetShaderParameter(String param, const ParameterVariant& val) { m_shaderParams[param] = val; }
 
   void Shader::UpdateShaderParameters() {}
 
@@ -325,21 +347,18 @@ namespace ToolKit
   {
     // Handle source of shader
 
-    ShaderPtr includeShader =
-        GetShaderManager()->Create<Shader>(ShaderPath(file, true));
-    String includeSource = includeShader->m_source; // Copy
+    ShaderPtr includeShader = GetShaderManager()->Create<Shader>(ShaderPath(file, true));
+    String includeSource    = includeShader->m_source; // Copy
 
     // Crop the version and precision defines
-    size_t versionLoc    = includeSource.find("#version");
+    size_t versionLoc       = includeSource.find("#version");
     if (versionLoc != String::npos)
     {
-      for (size_t fileLoc = versionLoc; fileLoc < includeSource.length();
-           ++fileLoc)
+      for (size_t fileLoc = versionLoc; fileLoc < includeSource.length(); ++fileLoc)
       {
         if (includeSource[fileLoc] == '\n')
         {
-          includeSource =
-              includeSource.replace(versionLoc, fileLoc - versionLoc + 1, "");
+          includeSource = includeSource.replace(versionLoc, fileLoc - versionLoc + 1, "");
           break;
         }
       }
@@ -357,14 +376,11 @@ namespace ToolKit
 
       if (precisionLoc != String::npos)
       {
-        for (size_t fileLoc = precisionLoc; fileLoc < includeSource.length();
-             ++fileLoc)
+        for (size_t fileLoc = precisionLoc; fileLoc < includeSource.length(); ++fileLoc)
         {
           if (includeSource[fileLoc] == ';')
           {
-            includeSource = includeSource.replace(precisionLoc,
-                                                  fileLoc - precisionLoc + 1,
-                                                  "");
+            includeSource = includeSource.replace(precisionLoc, fileLoc - precisionLoc + 1, "");
             break;
           }
         }
@@ -384,11 +400,9 @@ namespace ToolKit
     }
 
     precisionLoc = 0;
-    while ((precisionLoc = m_source.find("precision", precisionLoc)) !=
-           String::npos)
+    while ((precisionLoc = m_source.find("precision", precisionLoc)) != String::npos)
     {
-      for (size_t fileLoc = precisionLoc; fileLoc < m_source.length();
-           ++fileLoc)
+      for (size_t fileLoc = precisionLoc; fileLoc < m_source.length(); ++fileLoc)
       {
         if (m_source[fileLoc] == ';')
         {
@@ -456,20 +470,13 @@ namespace ToolKit
     Create<Shader>(m_defaultVertexShaderFile);
   }
 
-  bool ShaderManager::CanStore(ResourceType t)
-  {
-    return t == ResourceType::Shader;
-  }
+  bool ShaderManager::CanStore(ResourceType t) { return t == ResourceType::Shader; }
 
-  ResourcePtr ShaderManager::CreateLocal(ResourceType type)
-  {
-    return ResourcePtr(new Shader());
-  }
+  ResourcePtr ShaderManager::CreateLocal(ResourceType type) { return ResourcePtr(new Shader()); }
 
   ShaderPtr ShaderManager::GetDefaultVertexShader()
   {
-    return std::static_pointer_cast<Shader>(
-        m_storage[m_defaultVertexShaderFile]);
+    return std::static_pointer_cast<Shader>(m_storage[m_defaultVertexShaderFile]);
   }
 
   ShaderPtr ShaderManager::GetPbrDefferedShader()
@@ -482,14 +489,8 @@ namespace ToolKit
     return std::static_pointer_cast<Shader>(m_storage[m_pbrForwardShaderFile]);
   }
 
-  const String& ShaderManager::PbrDefferedShaderFile()
-  {
-    return m_pbrDefferedShaderFile;
-  }
+  const String& ShaderManager::PbrDefferedShaderFile() { return m_pbrDefferedShaderFile; }
 
-  const String& ShaderManager::PbrForwardShaderFile()
-  {
-    return m_pbrForwardShaderFile;
-  }
+  const String& ShaderManager::PbrForwardShaderFile() { return m_pbrForwardShaderFile; }
 
 } // namespace ToolKit

@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Prefab.h"
 
 #include "Scene.h"
@@ -63,8 +89,7 @@ namespace ToolKit
     {
       return static_cast<Prefab*>(ntt);
     }
-    else if (ntt->m_node->m_parent == nullptr ||
-             ntt->m_node->m_parent->m_entity == nullptr)
+    else if (ntt->m_node->m_parent == nullptr || ntt->m_node->m_parent->m_entity == nullptr)
     {
       return nullptr;
     }
@@ -87,8 +112,7 @@ namespace ToolKit
       return;
     }
     m_currentScene = curScene;
-    m_prefabScene =
-        GetSceneManager()->Create<Scene>(PrefabPath(GetPrefabPathVal()));
+    m_prefabScene  = GetSceneManager()->Create<Scene>(PrefabPath(GetPrefabPathVal()));
     if (m_prefabScene == nullptr)
     {
       GetLogger()->WriteConsole(LogType::Warning, "Prefab scene isn't found!");
@@ -112,9 +136,7 @@ namespace ToolKit
         child->SetTransformLockVal(true);
         child->ParamTransformLock().m_editable = false;
       }
-      m_instanceEntities.insert(m_instanceEntities.end(),
-                                instantiatedEntityList.begin(),
-                                instantiatedEntityList.end());
+      m_instanceEntities.insert(m_instanceEntities.end(), instantiatedEntityList.begin(), instantiatedEntityList.end());
     }
 
     for (Entity* ntt : m_instanceEntities)
@@ -147,8 +169,7 @@ namespace ToolKit
     Entity::DeSerialize(doc, parent);
     parent = parent->last_node();
 
-    for (XmlNode* rNode = parent->first_node(); rNode;
-         rNode          = rNode->next_sibling())
+    for (XmlNode* rNode = parent->first_node(); rNode; rNode = rNode->next_sibling())
     {
       String rootName = rNode->name();
       ParameterVariantArray vars;
@@ -196,11 +217,7 @@ namespace ToolKit
 
   void Prefab::ParameterConstructor()
   {
-    PrefabPath_Define("",
-                      PrefabCategory.Name,
-                      PrefabCategory.Priority,
-                      true,
-                      false);
+    PrefabPath_Define("", PrefabCategory.Name, PrefabCategory.Priority, true, false);
   }
 
   void Prefab::ParameterEventConstructor() {}

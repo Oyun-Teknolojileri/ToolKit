@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #pragma once
 
 #include "ConsoleWindow.h"
@@ -22,8 +48,7 @@ namespace ToolKit
 
     typedef std::shared_ptr<class Anchor> AnchorPtr;
     typedef std::function<void(int)> SysCommandDoneCallback;
-    typedef std::function<int(StringView, bool, bool, SysCommandDoneCallback)>
-        SysCommandExecutionFn;
+    typedef std::function<int(StringView, bool, bool, SysCommandDoneCallback)> SysCommandExecutionFn;
 
     class App : Serializable
     {
@@ -56,15 +81,14 @@ namespace ToolKit
        * @param callback function to call when the operation completed.
        * @return 0 if command can be started successfully.
        */
-      int ExecSysCommand(
-          StringView cmd,
-          bool async,
-          bool showConsole,
-          /**
-           * Callback function upon completion of the system command.
-           * @param int is the return value of the cmd.
-           */
-          SysCommandDoneCallback callback = nullptr);
+      int ExecSysCommand(StringView cmd,
+                         bool async,
+                         bool showConsole,
+                         /**
+                          * Callback function upon completion of the system command.
+                          * @param int is the return value of the cmd.
+                          */
+                         SysCommandDoneCallback callback = nullptr);
 
       // UI.
       void ResetUI();
@@ -123,8 +147,7 @@ namespace ToolKit
           T* casted = dynamic_cast<T*>(wnd);
           if (casted)
           {
-            String nameWithoutId =
-                casted->m_name.substr(0, casted->m_name.find_first_of('#'));
+            String nameWithoutId = casted->m_name.substr(0, casted->m_name.find_first_of('#'));
             if (nameWithoutId == name)
             {
               list.push_back(casted);

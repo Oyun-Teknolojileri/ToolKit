@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "App.h"
 #include "MaterialView.h"
 #include "PopupWindows.h"
@@ -12,10 +38,7 @@ namespace ToolKit
 
     FolderView::~FolderView() { SafeDel(m_tempMaterialWindow); }
 
-    FolderView::FolderView(class FolderWindow* parent) : FolderView()
-    {
-      m_parent = parent;
-    }
+    FolderView::FolderView(class FolderWindow* parent) : FolderView() { m_parent = parent; }
 
     static FileDragData g_fileDragData {};
     static std::vector<DirectoryEntry*> g_selectedFiles {};
@@ -37,8 +60,7 @@ namespace ToolKit
       static float thumbnailZoom = m_thumbnailMaxZoom / 6.f;
 
       // Zoom in and out
-      if (io.KeyCtrl &&
-          ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
+      if (io.KeyCtrl && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
       {
         thumbnailZoom += delta * 10.0f;
       }
@@ -74,8 +96,7 @@ namespace ToolKit
 
       // Zoom toggle button
       ImGui::TableNextColumn();
-      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_viewZoomIcon),
-                             ImVec2(20.0f, 20.0f)))
+      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_viewZoomIcon), ImVec2(20.0f, 20.0f)))
       {
         // Toggle zoom
         if (thumbnailZoom == m_thumbnailMaxZoom)
@@ -98,8 +119,7 @@ namespace ToolKit
       UI::HelpMarker(TKLoc, "Ctrl + mouse scroll to adjust thumbnail size.");
 
       ImGui::TableNextColumn();
-      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_diskDriveIcon),
-                             ImVec2(20.0f, 20.0f)))
+      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_diskDriveIcon), ImVec2(20.0f, 20.0f)))
       {
         g_app->SaveAllResources();
       }
@@ -114,7 +134,7 @@ namespace ToolKit
       {
         DirectoryEntry* entry = g_coppiedFiles[i];
         String src            = entry->GetFullPath();
-        String dst = ConcatPaths({path, entry->m_fileName + entry->m_ext});
+        String dst            = ConcatPaths({path, entry->m_fileName + entry->m_ext});
 
         if (g_copyingFiles)
         {
@@ -270,9 +290,8 @@ namespace ToolKit
         visCheck = &m_visible;
       }
 
-      ImGuiTabItemFlags flags =
-          m_activateNext ? ImGuiTabItemFlags_SetSelected : 0;
-      m_activateNext = false;
+      ImGuiTabItemFlags flags = m_activateNext ? ImGuiTabItemFlags_SetSelected : 0;
+      m_activateNext          = false;
       if (ImGui::BeginTabItem(m_folder.c_str(), visCheck, flags))
       {
         m_parent->SetActiveView(this);
@@ -288,8 +307,7 @@ namespace ToolKit
         MoveTo(m_path);
 
         // Start drawing folder items.
-        const float footerHeightReserve = ImGui::GetStyle().ItemSpacing.y +
-                                          ImGui::GetFrameHeightWithSpacing();
+        const float footerHeightReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
         ImGui::BeginChild("##Content");
 
         HandleCopyPasteDelete();
@@ -308,14 +326,12 @@ namespace ToolKit
         for (int i = 0; i < static_cast<int>(m_entries.size()); i++)
         {
           // Prepare Item Icon.
-          ImGuiStyle& style = ImGui::GetStyle();
-          float visX2 =
-              ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+          ImGuiStyle& style      = ImGui::GetStyle();
+          float visX2            = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
           DirectoryEntry& dirEnt = m_entries[i];
 
-          if (m_filter.size() > 0 &&
-              !Utf8CaseInsensitiveSearch(dirEnt.m_fileName, m_filter))
+          if (m_filter.size() > 0 && !Utf8CaseInsensitiveSearch(dirEnt.m_fileName, m_filter))
           {
             continue;
           }
@@ -333,16 +349,8 @@ namespace ToolKit
               {SKELETON, UI::m_boneIcon->m_textureId }
           };
 
-          static std::unordered_set<String> thumbExtensions {PNG,
-                                                             JPG,
-                                                             JPEG,
-                                                             TGA,
-                                                             BMP,
-                                                             PSD,
-                                                             HDR,
-                                                             MESH,
-                                                             SKINMESH,
-                                                             MATERIAL};
+          static std::unordered_set<String>
+              thumbExtensions {PNG, JPG, JPEG, TGA, BMP, PSD, HDR, MESH, SKINMESH, MATERIAL};
 
           if (dirEnt.m_isDirectory)
           {
@@ -370,8 +378,7 @@ namespace ToolKit
 
           ImGui::PushID(i);
           ImGui::BeginGroup();
-          ImVec2 texCoords =
-              flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
+          ImVec2 texCoords         = flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
 
           DirectoryEntry* entryPtr = m_entries.data() + i;
 
@@ -381,10 +388,7 @@ namespace ToolKit
           DeterminateAndSetBackgroundColor(isSelected, i);
 
           // Draw Item Icon.
-          if (ImGui::ImageButton(ConvertUIntImGuiTexture(iconId),
-                                 m_iconSize,
-                                 ImVec2(0.0f, 0.0f),
-                                 texCoords))
+          if (ImGui::ImageButton(ConvertUIntImGuiTexture(iconId), m_iconSize, ImVec2(0.0f, 0.0f), texCoords))
           {
             anyButtonClicked |= true;
             bool shiftDown   = ImGui::IsKeyDown(ImGuiKey_LeftShift);
@@ -398,9 +402,7 @@ namespace ToolKit
             }
             else if (ctrlDown && isSelected)
             {
-              erase_if(g_selectedFiles,
-                       [entryPtr](DirectoryEntry* other) -> bool
-                       { return other == entryPtr; });
+              erase_if(g_selectedFiles, [entryPtr](DirectoryEntry* other) -> bool { return other == entryPtr; });
             }
             else if (shiftDown && m_lastClickedEntryIdx != -1)
             {
@@ -414,8 +416,7 @@ namespace ToolKit
             m_lastClickedEntryIdx = i;
           }
 
-          if (ImGui::IsItemHovered() &&
-              ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+          if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
           {
             if (ResourceManager* rm = dirEnt.GetManager())
             {
@@ -433,12 +434,10 @@ namespace ToolKit
               }
               break;
               case ResourceType::Mesh:
-                g_app->GetPropInspector()->SetMeshView(
-                    rm->Create<Mesh>(dirEnt.GetFullPath()));
+                g_app->GetPropInspector()->SetMeshView(rm->Create<Mesh>(dirEnt.GetFullPath()));
                 break;
               case ResourceType::SkinMesh:
-                g_app->GetPropInspector()->SetMeshView(
-                    rm->Create<SkinMesh>(dirEnt.GetFullPath()));
+                g_app->GetPropInspector()->SetMeshView(rm->Create<SkinMesh>(dirEnt.GetFullPath()));
                 break;
               }
             }
@@ -454,8 +453,7 @@ namespace ToolKit
           // Handle if item is directory.
           if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
           {
-            if (ImGui::IsItemHovered() && dirEnt.m_isDirectory &&
-                m_parent != nullptr)
+            if (ImGui::IsItemHovered() && dirEnt.m_isDirectory && m_parent != nullptr)
             {
               String path = ConcatPaths({dirEnt.m_rootPath, dirEnt.m_fileName});
               SelectFolder(m_parent, path);
@@ -469,11 +467,9 @@ namespace ToolKit
           // Handle drag - drop to scene / inspector.
           if (!dirEnt.m_isDirectory)
           {
-            ImGui::PushStyleColor(ImGuiCol_PopupBg,
-                                  ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+            ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
-            if (ImGui::BeginDragDropSource(
-                    ImGuiDragDropFlags_SourceAllowNullID))
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
             {
               // if the file that we are holding is not selected
               if (!isSelected)
@@ -486,13 +482,8 @@ namespace ToolKit
               g_dragBeginView         = this;
               g_carryingFiles         = true;
 
-              ImGui::SetDragDropPayload("BrowserDragZone",
-                                        &g_fileDragData,
-                                        sizeof(FileDragData));
-              ImGui::ImageButton(ConvertUIntImGuiTexture(iconId),
-                                 m_iconSize,
-                                 ImVec2(0.0f, 0.0f),
-                                 texCoords);
+              ImGui::SetDragDropPayload("BrowserDragZone", &g_fileDragData, sizeof(FileDragData));
+              ImGui::ImageButton(ConvertUIntImGuiTexture(iconId), m_iconSize, ImVec2(0.0f, 0.0f), texCoords);
               ImGui::EndDragDropSource();
             }
             ImGui::PopStyleColor();
@@ -530,8 +521,7 @@ namespace ToolKit
           {
             g_dragBeginView->DropFiles(m_path);
           }
-          if (!ImGui::IsKeyDown(ImGuiKey_LeftShift) &&
-              !ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
+          if (!ImGui::IsKeyDown(ImGuiKey_LeftShift) && !ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
           {
             g_selectedFiles.clear();
           }
@@ -562,8 +552,7 @@ namespace ToolKit
       std::vector<DirectoryEntry> m_temp_files;
 
       m_entries.clear();
-      for (const std::filesystem::directory_entry& e :
-           std::filesystem::directory_iterator(m_path))
+      for (const std::filesystem::directory_entry& e : std::filesystem::directory_iterator(m_path))
       {
         DirectoryEntry de;
         de.m_isDirectory = e.is_directory();
@@ -672,9 +661,7 @@ namespace ToolKit
         ImGui::EndPopup();
       }
 
-      if (ImGui::BeginPopupContextWindow(nullptr,
-                                         ImGuiPopupFlags_MouseButtonRight |
-                                             ImGuiPopupFlags_NoOpenOverItems))
+      if (ImGui::BeginPopupContextWindow(nullptr, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
       {
         for (const String& cmd : commands)
         {
@@ -719,8 +706,7 @@ namespace ToolKit
         return list;
       };
 
-      auto deleteDirFn = [getSameViewsFn](const String& path,
-                                          FolderView* thisView) -> void
+      auto deleteDirFn = [getSameViewsFn](const String& path, FolderView* thisView) -> void
       {
         std::error_code ec;
         std::filesystem::remove_all(path, ec);
@@ -736,8 +722,7 @@ namespace ToolKit
       };
 
       // Copy file path.
-      m_itemActions["FileSystem/CopyPath"] =
-          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      m_itemActions["FileSystem/CopyPath"] = [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
       {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
@@ -751,17 +736,14 @@ namespace ToolKit
           if (copied < 0)
           {
             // Error
-            g_app->GetConsole()->AddLog(
-                "Could not copy the folder path to clipboard",
-                LogType::Error);
+            g_app->GetConsole()->AddLog("Could not copy the folder path to clipboard", LogType::Error);
           }
           ImGui::CloseCurrentPopup();
         }
       };
 
       // Refresh.
-      m_itemActions["Refresh"] = [getSameViewsFn](DirectoryEntry* entry,
-                                                  FolderView* thisView) -> void
+      m_itemActions["Refresh"] = [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
       {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
@@ -781,8 +763,7 @@ namespace ToolKit
       };
 
       // FileSystem/MakeDir.
-      m_itemActions["FileSystem/MakeDir"] =
-          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      m_itemActions["FileSystem/MakeDir"] = [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
       {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
@@ -792,14 +773,12 @@ namespace ToolKit
 
         if (ImGui::MenuItem("MakeDir"))
         {
-          StringInputWindow* inputWnd =
-              new StringInputWindow("New Directory##NwDirName", true);
-          inputWnd->m_inputLabel = "Name";
-          inputWnd->m_hint       = "Directory name...";
-          inputWnd
-              ->m_illegalChars = {'/', ':', '*', '?', '"', '<', '>', '|', '\\'};
+          StringInputWindow* inputWnd = new StringInputWindow("New Directory##NwDirName", true);
+          inputWnd->m_inputLabel      = "Name";
+          inputWnd->m_hint            = "Directory name...";
+          inputWnd->m_illegalChars    = {'/', ':', '*', '?', '"', '<', '>', '|', '\\'};
 
-          inputWnd->m_taskFn   = [views, inputWnd](const String& val)
+          inputWnd->m_taskFn          = [views, inputWnd](const String& val)
           {
             String file = ConcatPaths({views[0]->m_path, val});
             std::filesystem::create_directories(file);
@@ -814,8 +793,7 @@ namespace ToolKit
       };
 
       // FileSystem/Rename.
-      m_itemActions["FileSystem/Rename"] =
-          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      m_itemActions["FileSystem/Rename"] = [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
       {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
@@ -831,13 +809,12 @@ namespace ToolKit
             String oldFile = entry->GetFullPath();
             DecomposePath(oldFile, nullptr, &oldName, nullptr);
 
-            StringInputWindow* inputWnd =
-                new StringInputWindow("New Name##NwName", true);
-            inputWnd->m_inputVal   = oldName;
-            inputWnd->m_inputLabel = "New Name";
-            inputWnd->m_hint       = "New name...";
+            StringInputWindow* inputWnd = new StringInputWindow("New Name##NwName", true);
+            inputWnd->m_inputVal        = oldName;
+            inputWnd->m_inputLabel      = "New Name";
+            inputWnd->m_hint            = "New name...";
 
-            inputWnd->m_taskFn     = [views, oldFile](const String& val)
+            inputWnd->m_taskFn          = [views, oldFile](const String& val)
             {
               String path, ext;
               DecomposePath(oldFile, &path, nullptr, &ext);
@@ -845,9 +822,7 @@ namespace ToolKit
               String file = ConcatPaths({path, val + ext});
               if (CheckFile(file))
               {
-                g_app->GetConsole()->AddLog(
-                    "Can't rename. A file with the same name exist",
-                    LogType::Error);
+                g_app->GetConsole()->AddLog("Can't rename. A file with the same name exist", LogType::Error);
               }
               else
               {
@@ -865,9 +840,8 @@ namespace ToolKit
       };
 
       // FileSystem/Delete.
-      m_itemActions["FileSystem/Delete"] =
-          [getSameViewsFn, deleteDirFn](DirectoryEntry* entry,
-                                        FolderView* thisView) -> void
+      m_itemActions["FileSystem/Delete"] = [getSameViewsFn, deleteDirFn](DirectoryEntry* entry,
+                                                                         FolderView* thisView) -> void
       {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
@@ -906,8 +880,7 @@ namespace ToolKit
       };
 
       // FileSystem/Copy.
-      m_itemActions["FileSystem/Duplicate"] =
-          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      m_itemActions["FileSystem/Duplicate"] = [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
       {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
@@ -930,8 +903,7 @@ namespace ToolKit
         }
       };
 
-      m_itemActions["FileSystem/Cut"] = [](DirectoryEntry* entry,
-                                           FolderView* thisView) -> void
+      m_itemActions["FileSystem/Cut"] = [](DirectoryEntry* entry, FolderView* thisView) -> void
       {
         if (ImGui::MenuItem("Cut"))
         {
@@ -942,8 +914,7 @@ namespace ToolKit
         }
       };
 
-      m_itemActions["FileSystem/Copy"] = [](DirectoryEntry* entry,
-                                            FolderView* thisView) -> void
+      m_itemActions["FileSystem/Copy"] = [](DirectoryEntry* entry, FolderView* thisView) -> void
       {
         if (ImGui::MenuItem("Copy"))
         {
@@ -953,8 +924,7 @@ namespace ToolKit
         }
       };
 
-      m_itemActions["FileSystem/Paste"] =
-          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      m_itemActions["FileSystem/Paste"] = [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
       {
         if (ImGui::MenuItem("Paste"))
         {
@@ -964,9 +934,8 @@ namespace ToolKit
         }
       };
 
-      auto sceneCreateFn = [getSameViewsFn](DirectoryEntry* entry,
-                                            FolderView* thisView,
-                                            const String& extention) -> void
+      auto sceneCreateFn =
+          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView, const String& extention) -> void
       {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
@@ -976,19 +945,16 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Create"))
         {
-          StringInputWindow* inputWnd =
-              new StringInputWindow("Scene Name##ScnMat", true);
-          inputWnd->m_inputVal   = "New Scene";
-          inputWnd->m_inputLabel = "Name";
-          inputWnd->m_hint       = "New scene name...";
-          inputWnd->m_taskFn     = [views, extention](const String& val)
+          StringInputWindow* inputWnd = new StringInputWindow("Scene Name##ScnMat", true);
+          inputWnd->m_inputVal        = "New Scene";
+          inputWnd->m_inputLabel      = "Name";
+          inputWnd->m_hint            = "New scene name...";
+          inputWnd->m_taskFn          = [views, extention](const String& val)
           {
             String file = ConcatPaths({views[0]->m_path, val + extention});
             if (CheckFile(file))
             {
-              g_app->GetConsole()->AddLog(
-                  "Can't create. A scene with the same name exist",
-                  LogType::Error);
+              g_app->GetConsole()->AddLog("Can't create. A scene with the same name exist", LogType::Error);
             }
             else
             {
@@ -1006,18 +972,15 @@ namespace ToolKit
       };
 
       // Scene/Create.
-      m_itemActions["Scene/Create"] =
-          [sceneCreateFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      m_itemActions["Scene/Create"] = [sceneCreateFn](DirectoryEntry* entry, FolderView* thisView) -> void
       { sceneCreateFn(entry, thisView, SCENE); };
 
       // Layer/Create.
-      m_itemActions["Layer/Create"] =
-          [sceneCreateFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      m_itemActions["Layer/Create"] = [sceneCreateFn](DirectoryEntry* entry, FolderView* thisView) -> void
       { sceneCreateFn(entry, thisView, LAYER); };
 
       // Material/Create.
-      m_itemActions["Material/Create"] =
-          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      m_itemActions["Material/Create"] = [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
       {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
@@ -1027,19 +990,16 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Create"))
         {
-          StringInputWindow* inputWnd =
-              new StringInputWindow("Material Name##NwMat", true);
-          inputWnd->m_inputVal   = "New Material";
-          inputWnd->m_inputLabel = "Name";
-          inputWnd->m_hint       = "New material name";
-          inputWnd->m_taskFn     = [views](const String& val)
+          StringInputWindow* inputWnd = new StringInputWindow("Material Name##NwMat", true);
+          inputWnd->m_inputVal        = "New Material";
+          inputWnd->m_inputLabel      = "Name";
+          inputWnd->m_hint            = "New material name";
+          inputWnd->m_taskFn          = [views](const String& val)
           {
             String file = ConcatPaths({views[0]->m_path, val + MATERIAL});
             if (CheckFile(file))
             {
-              g_app->GetConsole()->AddLog(
-                  "Can't create. A material with the same name exist",
-                  LogType::Error);
+              g_app->GetConsole()->AddLog("Can't create. A material with the same name exist", LogType::Error);
             }
             else
             {
@@ -1104,8 +1064,7 @@ namespace ToolKit
     {
       if (ImGui::BeginDragDropTarget())
       {
-        if (const ImGuiPayload* payload =
-                ImGui::AcceptDragDropPayload("BrowserDragZone"))
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
         {
           DropFiles(dst);
         }

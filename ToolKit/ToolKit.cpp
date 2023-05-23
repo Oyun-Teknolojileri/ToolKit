@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "ToolKit.h"
 
 #define GLAD_GLES2_IMPLEMENTATION
@@ -166,46 +192,25 @@ namespace ToolKit
 
   RenderSystem* GetRenderSystem() { return Main::GetInstance()->m_renderSys; }
 
-  AnimationManager* GetAnimationManager()
-  {
-    return Main::GetInstance()->m_animationMan;
-  }
+  AnimationManager* GetAnimationManager() { return Main::GetInstance()->m_animationMan; }
 
-  AnimationPlayer* GetAnimationPlayer()
-  {
-    return Main::GetInstance()->m_animationPlayer;
-  }
+  AnimationPlayer* GetAnimationPlayer() { return Main::GetInstance()->m_animationPlayer; }
 
   AudioManager* GetAudioManager() { return Main::GetInstance()->m_audioMan; }
 
-  MaterialManager* GetMaterialManager()
-  {
-    return Main::GetInstance()->m_materialManager;
-  }
+  MaterialManager* GetMaterialManager() { return Main::GetInstance()->m_materialManager; }
 
   MeshManager* GetMeshManager() { return Main::GetInstance()->m_meshMan; }
 
   ShaderManager* GetShaderManager() { return Main::GetInstance()->m_shaderMan; }
 
-  SpriteSheetManager* GetSpriteSheetManager()
-  {
-    return Main::GetInstance()->m_spriteSheetMan;
-  }
+  SpriteSheetManager* GetSpriteSheetManager() { return Main::GetInstance()->m_spriteSheetMan; }
 
-  TextureManager* GetTextureManager()
-  {
-    return Main::GetInstance()->m_textureMan;
-  }
+  TextureManager* GetTextureManager() { return Main::GetInstance()->m_textureMan; }
 
-  SceneManager* GetSceneManager()
-  {
-    return Main::GetInstance()->m_sceneManager;
-  }
+  SceneManager* GetSceneManager() { return Main::GetInstance()->m_sceneManager; }
 
-  PluginManager* GetPluginManager()
-  {
-    return Main::GetInstance()->m_pluginManager;
-  }
+  PluginManager* GetPluginManager() { return Main::GetInstance()->m_pluginManager; }
 
   ResourceManager* GetResourceManager(ResourceType type)
   {
@@ -243,27 +248,15 @@ namespace ToolKit
 
   UIManager* GetUIManager() { return Main::GetInstance()->m_uiManager; }
 
-  HandleManager* GetHandleManager()
-  {
-    return &Main::GetInstance()->m_handleManager;
-  }
+  HandleManager* GetHandleManager() { return &Main::GetInstance()->m_handleManager; }
 
-  SkeletonManager* GetSkeletonManager()
-  {
-    return Main::GetInstance()->m_skeletonManager;
-  }
+  SkeletonManager* GetSkeletonManager() { return Main::GetInstance()->m_skeletonManager; }
 
   FileManager* GetFileManager() { return Main::GetInstance()->m_fileManager; }
 
-  EntityFactory* GetEntityFactory()
-  {
-    return Main::GetInstance()->m_entityFactory;
-  }
+  EntityFactory* GetEntityFactory() { return Main::GetInstance()->m_entityFactory; }
 
-  EngineSettings& GetEngineSettings()
-  {
-    return Main::GetInstance()->m_engineSettings;
-  }
+  EngineSettings& GetEngineSettings() { return Main::GetInstance()->m_engineSettings; }
 
   String DefaultAbsolutePath()
   {
@@ -315,10 +308,7 @@ namespace ToolKit
    * Check Util.h GetRelativeResourcePath() for more.
    * So here, we try to detect defaul assets.
    */
-  bool CheckForRelative(const String& file)
-  {
-    return file.find("ToolKit") != String::npos;
-  }
+  bool CheckForRelative(const String& file) { return file.find("ToolKit") != String::npos; }
 
   String ProcessPath(const String& file, const String& prefix, bool def)
   {
@@ -326,7 +316,7 @@ namespace ToolKit
     {
       constexpr int length = sizeof("ToolKit");
       String modified      = file.substr(length);
-      String path = ConcatPaths({ResourcePath(true), prefix, modified});
+      String path          = ConcatPaths({ResourcePath(true), prefix, modified});
       return path;
     }
 
@@ -334,65 +324,29 @@ namespace ToolKit
     return path;
   }
 
-  String TexturePath(const String& file, bool def)
-  {
-    return ProcessPath(file, "Textures", def);
-  }
+  String TexturePath(const String& file, bool def) { return ProcessPath(file, "Textures", def); }
 
-  String MeshPath(const String& file, bool def)
-  {
-    return ProcessPath(file, "Meshes", def);
-  }
+  String MeshPath(const String& file, bool def) { return ProcessPath(file, "Meshes", def); }
 
-  String FontPath(const String& file, bool def)
-  {
-    return ProcessPath(file, "Fonts", def);
-  }
+  String FontPath(const String& file, bool def) { return ProcessPath(file, "Fonts", def); }
 
-  String SpritePath(const String& file, bool def)
-  {
-    return ProcessPath(file, "Sprites", def);
-  }
+  String SpritePath(const String& file, bool def) { return ProcessPath(file, "Sprites", def); }
 
-  String AudioPath(const String& file, bool def)
-  {
-    return ProcessPath(file, "Audio", def);
-  }
+  String AudioPath(const String& file, bool def) { return ProcessPath(file, "Audio", def); }
 
-  String AnimationPath(const String& file, bool def)
-  {
-    return ProcessPath(file, "Meshes", def);
-  }
+  String AnimationPath(const String& file, bool def) { return ProcessPath(file, "Meshes", def); }
 
-  String SkeletonPath(const String& file, bool def)
-  {
-    return ProcessPath(file, "Meshes", def);
-  }
+  String SkeletonPath(const String& file, bool def) { return ProcessPath(file, "Meshes", def); }
 
-  String ShaderPath(const String& file, bool def)
-  {
-    return ProcessPath(file, "Shaders", def);
-  }
+  String ShaderPath(const String& file, bool def) { return ProcessPath(file, "Shaders", def); }
 
-  String MaterialPath(const String& file, bool def)
-  {
-    return ProcessPath(file, "Materials", def);
-  }
+  String MaterialPath(const String& file, bool def) { return ProcessPath(file, "Materials", def); }
 
-  String ScenePath(const String& file, bool def)
-  {
-    return ProcessPath(file, "Scenes", def);
-  }
+  String ScenePath(const String& file, bool def) { return ProcessPath(file, "Scenes", def); }
 
-  String PrefabPath(const String& file, bool def)
-  {
-    return ProcessPath(file, "Prefabs", def);
-  }
+  String PrefabPath(const String& file, bool def) { return ProcessPath(file, "Prefabs", def); }
 
-  String LayerPath(const String& file, bool def)
-  {
-    return ProcessPath(file, "Layers", def);
-  }
+  String LayerPath(const String& file, bool def) { return ProcessPath(file, "Layers", def); }
 
   void EngineSettings::SerializeWindow(XmlDocument* doc, XmlNode* parent) const
   {
@@ -402,8 +356,7 @@ namespace ToolKit
     using namespace std;
     const EngineSettings::GraphicSettings& gfx = Graphics;
 
-    const auto writeAttr1 = [&](StringView name, StringView val)
-    { WriteAttr(window, doc, name.data(), val.data()); };
+    const auto writeAttr1 = [&](StringView name, StringView val) { WriteAttr(window, doc, name.data(), val.data()); };
     // serialize window.
     writeAttr1("width", to_string(Window.Width));
     writeAttr1("height", to_string(Window.Height));
@@ -424,16 +377,14 @@ namespace ToolKit
     ReadAttr(node, "fullscreen", Window.FullScreen);
   }
 
-  void EngineSettings::SerializePostProcessing(XmlDocument* doc,
-                                               XmlNode* parent) const
+  void EngineSettings::SerializePostProcessing(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* settings =
-        doc->allocate_node(rapidxml::node_element, "PostProcessing");
+    XmlNode* settings = doc->allocate_node(rapidxml::node_element, "PostProcessing");
     doc->append_node(settings);
 
     const EngineSettings::PostProcessingSettings& gfx = PostProcessing;
 
-    const auto writeAttrFn = [&](StringView name, StringView val) -> void
+    const auto writeAttrFn                            = [&](StringView name, StringView val) -> void
     { WriteAttr(settings, doc, name.data(), val.data()); };
 
     // Serialize Graphics struct.
@@ -444,8 +395,7 @@ namespace ToolKit
     writeAttrFn("BloomIntensity", to_string(gfx.BloomIntensity));
     writeAttrFn("BloomThreshold", to_string(gfx.BloomThreshold));
     writeAttrFn("BloomIterationCount", to_string(gfx.BloomIterationCount));
-    writeAttrFn("GammaCorrectionEnabled",
-                to_string(gfx.GammaCorrectionEnabled));
+    writeAttrFn("GammaCorrectionEnabled", to_string(gfx.GammaCorrectionEnabled));
     writeAttrFn("Gamma", to_string(gfx.Gamma));
     writeAttrFn("SSAOEnabled", to_string(gfx.SSAOEnabled));
     writeAttrFn("SSAORadius", to_string(gfx.SSAORadius));
@@ -457,8 +407,7 @@ namespace ToolKit
     writeAttrFn("FXAAEnabled", to_string(gfx.FXAAEnabled));
   }
 
-  void EngineSettings::DeSerializePostProcessing(XmlDocument* doc,
-                                                 XmlNode* parent)
+  void EngineSettings::DeSerializePostProcessing(XmlDocument* doc, XmlNode* parent)
   {
     XmlNode* node  = doc->first_node("PostProcessing");
     // if post processing settings is not exist use default settings
@@ -473,9 +422,7 @@ namespace ToolKit
     ReadAttr(node, "BloomIntensity", PostProcessing.BloomIntensity);
     ReadAttr(node, "BloomThreshold", PostProcessing.BloomThreshold);
     ReadAttr(node, "BloomIterationCount", PostProcessing.BloomIterationCount);
-    ReadAttr(node,
-             "GammaCorrectionEnabled",
-             PostProcessing.GammaCorrectionEnabled);
+    ReadAttr(node, "GammaCorrectionEnabled", PostProcessing.GammaCorrectionEnabled);
     ReadAttr(node, "Gamma", PostProcessing.Gamma);
     ReadAttr(node, "SSAOEnabled", PostProcessing.SSAOEnabled);
     ReadAttr(node, "SSAORadius", PostProcessing.SSAORadius);
@@ -488,8 +435,7 @@ namespace ToolKit
     ReadAttr(node, "DofQuality", *(int*) &PostProcessing.DofQuality);
   }
 
-  void EngineSettings::SerializeGraphics(XmlDocument* doc,
-                                         XmlNode* parent) const
+  void EngineSettings::SerializeGraphics(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* settings = doc->allocate_node(rapidxml::node_element, "Graphics");
     doc->append_node(settings);

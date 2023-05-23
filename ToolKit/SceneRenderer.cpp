@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #pragma once
 
 #include "SceneRenderer.h"
@@ -25,11 +51,7 @@ namespace ToolKit
     m_dofPass            = std::make_shared<DoFPass>();
   }
 
-  SceneRenderer::SceneRenderer(const SceneRenderPassParams& params)
-      : SceneRenderer()
-  {
-    m_params = params;
-  }
+  SceneRenderer::SceneRenderer(const SceneRenderPassParams& params) : SceneRenderer() { m_params = params; }
 
   SceneRenderer::~SceneRenderer()
   {
@@ -76,8 +98,7 @@ namespace ToolKit
     // Second stage of the render.
     m_passArray.clear();
 
-    renderer->SetShadowAtlas(
-        std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
+    renderer->SetShadowAtlas(std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
     // Render non-blended entities with deferred renderer
     m_passArray.push_back(m_deferredRenderPass);
@@ -159,26 +180,20 @@ namespace ToolKit
 
     RenderJobProcessor::CullRenderJobs(jobs, m_params.Cam);
 
-    RenderJobProcessor::AssignEnvironment(
-        jobs,
-        m_params.Scene->GetEnvironmentVolumes());
+    RenderJobProcessor::AssignEnvironment(jobs, m_params.Scene->GetEnvironmentVolumes());
 
     RenderJobArray deferred, forward, translucent;
-    RenderJobProcessor::SeperateDeferredForward(jobs,
-                                                deferred,
-                                                forward,
-                                                translucent);
+    RenderJobProcessor::SeperateDeferredForward(jobs, deferred, forward, translucent);
 
-    m_gBufferPass->m_params.RendeJobs               = deferred;
-    m_gBufferPass->m_params.Camera                  = m_params.Cam;
+    m_gBufferPass->m_params.RendeJobs                 = deferred;
+    m_gBufferPass->m_params.Camera                    = m_params.Cam;
 
-    m_deferredRenderPass->m_params.ClearFramebuffer = true;
-    m_deferredRenderPass->m_params.GBufferFramebuffer =
-        m_gBufferPass->m_framebuffer;
+    m_deferredRenderPass->m_params.ClearFramebuffer   = true;
+    m_deferredRenderPass->m_params.GBufferFramebuffer = m_gBufferPass->m_framebuffer;
 
-    m_deferredRenderPass->m_params.lights          = m_updatedLights;
-    m_deferredRenderPass->m_params.MainFramebuffer = m_params.MainFramebuffer;
-    m_deferredRenderPass->m_params.Cam             = m_params.Cam;
+    m_deferredRenderPass->m_params.lights             = m_updatedLights;
+    m_deferredRenderPass->m_params.MainFramebuffer    = m_params.MainFramebuffer;
+    m_deferredRenderPass->m_params.Cam                = m_params.Cam;
 
     if (m_params.Gfx.SSAOEnabled)
     {
@@ -198,14 +213,14 @@ namespace ToolKit
 
     m_ssaoPass->m_params.GPositionBuffer           = m_gBufferPass->m_gPosRt;
     m_ssaoPass->m_params.GNormalBuffer             = m_gBufferPass->m_gNormalRt;
-    m_ssaoPass->m_params.GLinearDepthBuffer = m_gBufferPass->m_gLinearDepthRt;
-    m_ssaoPass->m_params.Cam                = m_params.Cam;
-    m_ssaoPass->m_params.Radius             = m_params.Gfx.SSAORadius;
-    m_ssaoPass->m_params.spread             = m_params.Gfx.SSAOSpread;
-    m_ssaoPass->m_params.Bias               = m_params.Gfx.SSAOBias;
+    m_ssaoPass->m_params.GLinearDepthBuffer        = m_gBufferPass->m_gLinearDepthRt;
+    m_ssaoPass->m_params.Cam                       = m_params.Cam;
+    m_ssaoPass->m_params.Radius                    = m_params.Gfx.SSAORadius;
+    m_ssaoPass->m_params.spread                    = m_params.Gfx.SSAOSpread;
+    m_ssaoPass->m_params.Bias                      = m_params.Gfx.SSAOBias;
 
     // Set CubeMapPass for sky.
-    m_drawSky                               = false;
+    m_drawSky                                      = false;
     if (m_sky = m_params.Scene->GetSky())
     {
       if (m_drawSky = m_sky->GetDrawSkyVal())
@@ -224,11 +239,10 @@ namespace ToolKit
     m_bloomPass->m_params.iterationCount = m_params.Gfx.BloomIterationCount;
 
     // DoF pass
-    m_dofPass->m_params.ColorRt = m_params.MainFramebuffer->GetAttachment(
-        Framebuffer::Attachment::ColorAttachment0);
-    m_dofPass->m_params.DepthRt         = m_gBufferPass->m_gLinearDepthRt;
-    m_dofPass->m_params.focusPoint      = m_params.Gfx.FocusPoint;
-    m_dofPass->m_params.focusScale      = m_params.Gfx.FocusScale;
+    m_dofPass->m_params.ColorRt    = m_params.MainFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+    m_dofPass->m_params.DepthRt    = m_gBufferPass->m_gLinearDepthRt;
+    m_dofPass->m_params.focusPoint = m_params.Gfx.FocusPoint;
+    m_dofPass->m_params.focusScale = m_params.Gfx.FocusScale;
     m_dofPass->m_params.blurQuality     = m_params.Gfx.DofQuality;
 
     // Tonemap pass.
@@ -237,12 +251,12 @@ namespace ToolKit
 
     // FXAA Pass
     m_fxaaPass->m_params.FrameBuffer    = m_params.MainFramebuffer;
-    FramebufferSettings fbs           = m_params.MainFramebuffer->GetSettings();
-    m_fxaaPass->m_params.screen_size  = Vec2(fbs.width, fbs.height);
+    FramebufferSettings fbs             = m_params.MainFramebuffer->GetSettings();
+    m_fxaaPass->m_params.screen_size    = Vec2(fbs.width, fbs.height);
 
     // Gamma pass.
-    m_gammaPass->m_params.FrameBuffer = m_params.MainFramebuffer;
-    m_gammaPass->m_params.Gamma       = m_params.Gfx.Gamma;
+    m_gammaPass->m_params.FrameBuffer   = m_params.MainFramebuffer;
+    m_gammaPass->m_params.Gamma         = m_params.Gfx.Gamma;
   }
 
 } // namespace ToolKit

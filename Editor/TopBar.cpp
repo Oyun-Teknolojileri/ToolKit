@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "TopBar.h"
 
 #include "App.h"
@@ -44,8 +70,7 @@ namespace ToolKit
         if (ImGui::MenuItem(ICON_FA_GITHUB_ALT " Monkey"))
         {
           Drawable* suzanne = new Drawable();
-          suzanne->SetMesh(
-              GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh", true)));
+          suzanne->SetMesh(GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh", true)));
           suzanne->GetMesh()->Init(false);
           createdEntity = suzanne;
         }
@@ -72,8 +97,7 @@ namespace ToolKit
       ImGui::Separator();
       if (ImGui::MenuItem(ICON_FA_ARROWS " Node"))
       {
-        createdEntity =
-            GetEntityFactory()->CreateByType(EntityType::Entity_Node);
+        createdEntity = GetEntityFactory()->CreateByType(EntityType::Entity_Node);
       }
 
       if (ImGui::MenuItem(ICON_FA_VIDEO_CAMERA " Camera"))
@@ -122,13 +146,11 @@ namespace ToolKit
         const auto isSameTypeFn = [createdEntity](const Entity* e) -> bool
         { return e->GetType() == createdEntity->GetType(); };
 
-        String typeName = EntityTypeToString(createdEntity->GetType());
+        String typeName                   = EntityTypeToString(createdEntity->GetType());
         const EntityRawPtrArray& entities = currScene->GetEntities();
-        size_t numSameType =
-            std::count_if(entities.cbegin(), entities.cend(), isSameTypeFn);
+        size_t numSameType                = std::count_if(entities.cbegin(), entities.cend(), isSameTypeFn);
 
-        String suffix =
-            numSameType == 0 ? "" : "_" + std::to_string(numSameType);
+        String suffix                     = numSameType == 0 ? "" : "_" + std::to_string(numSameType);
 
         // if numSameType equals 0 EntityType otherwise EntityType_123
         createdEntity->SetNameVal(typeName + suffix);
@@ -166,16 +188,12 @@ namespace ToolKit
       ImGui::SetNextWindowBgAlpha(0.65f);
       if (ImGui::BeginChildFrame(ImGui::GetID("ViewportOptions"),
                                  overlaySize,
-                                 ImGuiWindowFlags_NoMove |
-                                     ImGuiWindowFlags_NoTitleBar |
-                                     ImGuiWindowFlags_NoScrollbar |
+                                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
                                      ImGuiWindowFlags_NoScrollWithMouse))
       {
         SetOwnerState();
 
-        ImGui::BeginTable("##SettingsBar",
-                          8,
-                          ImGuiTableFlags_SizingStretchProp);
+        ImGui::BeginTable("##SettingsBar", 8, ImGuiTableFlags_SizingStretchProp);
         ImGui::TableNextRow();
 
         uint nextItemIndex = 0;
@@ -193,8 +211,7 @@ namespace ToolKit
       ImGui::EndChildFrame();
     }
 
-    void OverlayTopBar::ShowAddMenu(std::function<void()> showMenuFn,
-                                    uint32_t& nextItemIndex)
+    void OverlayTopBar::ShowAddMenu(std::function<void()> showMenuFn, uint32_t& nextItemIndex)
     {
       ImGui::TableSetColumnIndex(nextItemIndex++);
       // Get the current cursor position
@@ -233,9 +250,7 @@ namespace ToolKit
 
       ImGui::TableSetColumnIndex(nextColumnItem++);
       ImGui::PushItemWidth(72);
-      if (ImGui::BeginCombo("##TRS",
-                            itemsOrient[currentItemOrient],
-                            ImGuiComboFlags_None))
+      if (ImGui::BeginCombo("##TRS", itemsOrient[currentItemOrient], ImGuiComboFlags_None))
       {
         for (int n = 0; n < IM_ARRAYSIZE(itemsOrient); n++)
         {
@@ -297,30 +312,15 @@ namespace ToolKit
       }
 
       ImGui::TableSetColumnIndex(nextItemIndex++);
-      g_app->m_snapsEnabled = UI::ToggleButton(UI::m_snapIcon->m_textureId,
-                                               ImVec2(16, 16),
-                                               g_app->m_snapsEnabled);
-      UI::HelpMarker(TKLoc + m_owner->m_name,
-                     "Grid snaping\nRight click for options");
+      g_app->m_snapsEnabled = UI::ToggleButton(UI::m_snapIcon->m_textureId, ImVec2(16, 16), g_app->m_snapsEnabled);
+      UI::HelpMarker(TKLoc + m_owner->m_name, "Grid snaping\nRight click for options");
 
       if (ImGui::BeginPopupContextItem("##SnapMenu"))
       {
         ImGui::PushItemWidth(75);
-        ImGui::InputFloat("Move delta",
-                          &m_owner->m_snapDeltas.x,
-                          0.0f,
-                          0.0f,
-                          "%.2f");
-        ImGui::InputFloat("Rotate delta",
-                          &m_owner->m_snapDeltas.y,
-                          0.0f,
-                          0.0f,
-                          "%.2f");
-        ImGui::InputFloat("Scale delta",
-                          &m_owner->m_snapDeltas.z,
-                          0.0f,
-                          0.0f,
-                          "%.2f");
+        ImGui::InputFloat("Move delta", &m_owner->m_snapDeltas.x, 0.0f, 0.0f, "%.2f");
+        ImGui::InputFloat("Rotate delta", &m_owner->m_snapDeltas.y, 0.0f, 0.0f, "%.2f");
+        ImGui::InputFloat("Scale delta", &m_owner->m_snapDeltas.z, 0.0f, 0.0f, "%.2f");
         ImGui::PopItemWidth();
         ImGui::EndPopup();
       }
@@ -334,10 +334,9 @@ namespace ToolKit
       ImGui::Text(ICON_FA_VIDEO_CAMERA);
 
       ImGui::TableSetColumnIndex(nextItemIndex++);
-      m_owner->m_orbitLock =
-          UI::ToggleButton(m_owner->m_orbitLock ? ICON_FA_LOCK : ICON_FA_UNLOCK,
-                           ImVec2(20.0f, 20.0f),
-                           m_owner->m_orbitLock);
+      m_owner->m_orbitLock = UI::ToggleButton(m_owner->m_orbitLock ? ICON_FA_LOCK : ICON_FA_UNLOCK,
+                                              ImVec2(20.0f, 20.0f),
+                                              m_owner->m_orbitLock);
 
       UI::HelpMarker(TKLoc + m_owner->m_name,
                      "Lock Camera Alignment\nMiddle button drag doesn't orbit."
@@ -350,9 +349,7 @@ namespace ToolKit
 
       ImGui::TableSetColumnIndex(nextItemIndex++);
       ImGui::PushItemWidth(72);
-      if (ImGui::BeginCombo("##VC",
-                            itemsCam[currentItemCam],
-                            ImGuiComboFlags_None))
+      if (ImGui::BeginCombo("##VC", itemsCam[currentItemCam], ImGuiComboFlags_None))
       {
         for (int n = 0; n < IM_ARRAYSIZE(itemsCam); n++)
         {
@@ -418,9 +415,7 @@ namespace ToolKit
           {
             m_owner->m_cameraAlignment = rollBack;
             g_app->m_statusMsg         = "Operation Failed !";
-            g_app->GetConsole()->AddLog(
-                "No camera selected.\nSelect a camera from the scene.",
-                LogType::Error);
+            g_app->GetConsole()->AddLog("No camera selected.\nSelect a camera from the scene.", LogType::Error);
           }
         }
         else
@@ -433,8 +428,7 @@ namespace ToolKit
           if (view != "Free")
           {
             m_owner->m_cameraAlignment = CameraAlignment::Free;
-            String cmd =
-                "SetCameraTransform --v \"" + m_owner->m_name + "\" " + view;
+            String cmd                 = "SetCameraTransform --v \"" + m_owner->m_name + "\" " + view;
             g_app->GetConsole()->ExecCommand(cmd);
           }
         }

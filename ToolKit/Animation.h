@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #pragma once
 
 /**
@@ -24,11 +50,11 @@ namespace ToolKit
   struct BlendTarget
   {
     Animation* TargetAnim = nullptr; //!< Animation to Blend.
-    float OverlapTime     = 1.0f; //!< How early animation will start blending.
-    String RootBone;        //!< Root bone of animation nodes for offsetting.
-    Vec3 TranslationOffset; //!< Transform offset of target animation.
-    Quaternion OrientationOffset; //!< Orientation offset of target animation.
-    bool Blend = false; //!< States if the blending is active for the track.
+    float OverlapTime     = 1.0f;    //!< How early animation will start blending.
+    String RootBone;                 //!< Root bone of animation nodes for offsetting.
+    Vec3 TranslationOffset;          //!< Transform offset of target animation.
+    Quaternion OrientationOffset;    //!< Orientation offset of target animation.
+    bool Blend = false;              //!< States if the blending is active for the track.
   };
 
   /**
@@ -85,9 +111,7 @@ namespace ToolKit
      * Sets the Skeleton's transform from the animation based on time.
      * @param skeleton SkeletonPtr to be transformed.
      */
-    void GetPose(const SkeletonComponentPtr& skeleton,
-                 float time,
-                 BlendTarget* blendTarget = nullptr);
+    void GetPose(const SkeletonComponentPtr& skeleton, float time, BlendTarget* blendTarget = nullptr);
 
     /**
      * Sets the Node's transform from the animation based on frame.
@@ -124,11 +148,7 @@ namespace ToolKit
      * @param ratio output ratio.
      * @param t time to search keys for.
      */
-    void GetNearestKeys(const KeyArray& keys,
-                        int& key1,
-                        int& key2,
-                        float& ratio,
-                        float t);
+    void GetNearestKeys(const KeyArray& keys, int& key1, int& key2, float& ratio, float t);
 
    protected:
     void CopyTo(Resource* other) override;
@@ -179,10 +199,10 @@ namespace ToolKit
     /**
      * Current time of the animation expressed in seconds.
      */
-    float m_currentTime = 0.0f;
-    bool m_loop         = false; //!< States if the animation mean to be looped.
-    float m_timeMultiplier = 1.0f; //!< Speed multiplier for animation.
-    AnimationPtr m_animation;      //!< Animation to play.
+    float m_currentTime    = 0.0f;
+    bool m_loop            = false; //!< States if the animation mean to be looped.
+    float m_timeMultiplier = 1.0f;  //!< Speed multiplier for animation.
+    AnimationPtr m_animation;       //!< Animation to play.
     Entity* m_entity;
     BlendTarget m_blendTarget;
 

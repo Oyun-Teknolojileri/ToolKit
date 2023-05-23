@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Animation.h"
 
 #include "AnimationControllerComponent.h"
@@ -57,9 +83,7 @@ namespace ToolKit
     node->SetChildrenDirty();
   }
 
-  void Animation::GetPose(const SkeletonComponentPtr& skeleton,
-                          float time,
-                          BlendTarget* blendTarget)
+  void Animation::GetPose(const SkeletonComponentPtr& skeleton, float time, BlendTarget* blendTarget)
   {
     if (m_keys.empty())
     {
@@ -97,22 +121,21 @@ namespace ToolKit
       Key k2                             = entry->second[key2];
       DynamicBoneMap::DynamicBone& dBone = dBoneIter.second;
 
-      translation = Interpolate(k1.m_position, k2.m_position, ratio);
-      orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
-      scale       = Interpolate(k1.m_scale, k2.m_scale, ratio);
+      translation                        = Interpolate(k1.m_position, k2.m_position, ratio);
+      orientation                        = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
+      scale                              = Interpolate(k1.m_scale, k2.m_scale, ratio);
 
       // Blending with next animation
       if (blendTarget != nullptr)
       {
         // Calculate the current time of the target animation.
         float targetAnimTime = time - m_duration + blendTarget->OverlapTime;
-        if (targetAnimTime >= 0.0f)  // Start blending. 
+        if (targetAnimTime >= 0.0f) // Start blending.
         {
-          // Calculate blend ratio between source - target. 
+          // Calculate blend ratio between source - target.
           float blendRatio = targetAnimTime / blendTarget->OverlapTime;
           // Find the corresponding bone's transforms on target anim.
-          auto targetEntry =
-              blendTarget->TargetAnim->m_keys.find(dBoneIter.first);
+          auto targetEntry = blendTarget->TargetAnim->m_keys.find(dBoneIter.first);
           int targetKey1, targetKey2;
           float targetRatio;
           blendTarget->TargetAnim->GetNearestKeys(targetEntry->second,
@@ -120,16 +143,12 @@ namespace ToolKit
                                                   targetKey2,
                                                   targetRatio,
                                                   targetAnimTime);
-          Key targetK1      = targetEntry->second[targetKey1];
-          Key targetK2      = targetEntry->second[targetKey2];
+          Key targetK1            = targetEntry->second[targetKey1];
+          Key targetK2            = targetEntry->second[targetKey2];
 
-          Vec3 translationT = Interpolate(targetK1.m_position,
-                                          targetK2.m_position,
-                                          targetRatio);
-          Quaternion orientationT =
-              glm::slerp(targetK1.m_rotation, targetK2.m_rotation, targetRatio);
-          Vec3 scaleT =
-              Interpolate(targetK1.m_scale, targetK2.m_scale, targetRatio);
+          Vec3 translationT       = Interpolate(targetK1.m_position, targetK2.m_position, targetRatio);
+          Quaternion orientationT = glm::slerp(targetK1.m_rotation, targetK2.m_rotation, targetRatio);
+          Vec3 scaleT             = Interpolate(targetK1.m_scale, targetK2.m_scale, targetRatio);
 
           // For the source anims with root motion or rotation,
           // Target anim is offseted from it's root bone.
@@ -137,9 +156,8 @@ namespace ToolKit
           {
             Vec3 entityScale       = skeleton->m_entity->m_node->GetScale();
             float translationCoeff = (1 / entityScale.x);
-            translationT           = translationT +
-                           (blendTarget->TranslationOffset * translationCoeff);
-            orientationT = orientationT * blendTarget->OrientationOffset;
+            translationT           = translationT + (blendTarget->TranslationOffset * translationCoeff);
+            orientationT           = orientationT * blendTarget->OrientationOffset;
           }
           // Blend animations.
           translation = Interpolate(translation, translationT, blendRatio);
@@ -157,10 +175,7 @@ namespace ToolKit
     skeleton->isDirty = true;
   }
 
-  void Animation::GetPose(Node* node, int frame)
-  {
-    GetPose(node, frame * 1.0f / m_fps);
-  }
+  void Animation::GetPose(Node* node, int frame) { GetPose(node, frame * 1.0f / m_fps); }
 
   void Animation::Load()
   {
@@ -185,8 +200,7 @@ namespace ToolKit
     attr               = node->first_attribute("duration");
     m_duration         = static_cast<float>(std::atof(attr->value()));
 
-    for (XmlNode* animNode = node->first_node("node"); animNode;
-         animNode          = animNode->next_sibling())
+    for (XmlNode* animNode = node->first_node("node"); animNode; animNode = animNode->next_sibling())
     {
       attr            = animNode->first_attribute(XmlNodeName.data());
       String boneName = attr->value();
@@ -204,8 +218,7 @@ namespace ToolKit
       else
       {
         // Serialized as xml
-        for (XmlNode* keyNode = animNode->first_node("key"); keyNode;
-             keyNode          = keyNode->next_sibling())
+        for (XmlNode* keyNode = animNode->first_node("key"); keyNode; keyNode = keyNode->next_sibling())
         {
           Key key;
           attr             = keyNode->first_attribute("frame");
@@ -230,16 +243,14 @@ namespace ToolKit
 
   void Animation::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* container = CreateXmlNode(doc, "anim", parent);
+    XmlNode* container      = CreateXmlNode(doc, "anim", parent);
 
-    char* fpsValueStr  = doc->allocate_string(std::to_string(m_fps).c_str());
+    char* fpsValueStr       = doc->allocate_string(std::to_string(m_fps).c_str());
     XmlAttribute* fpsAttrib = doc->allocate_attribute("fps", fpsValueStr);
     container->append_attribute(fpsAttrib);
 
-    char* durationValueStr =
-        doc->allocate_string(std::to_string(m_duration).c_str());
-    XmlAttribute* durAttrib =
-        doc->allocate_attribute("duration", durationValueStr);
+    char* durationValueStr  = doc->allocate_string(std::to_string(m_duration).c_str());
+    XmlAttribute* durAttrib = doc->allocate_attribute("duration", durationValueStr);
     container->append_attribute(durAttrib);
 
     BoneKeyArrayMap::const_iterator iterator;
@@ -247,8 +258,7 @@ namespace ToolKit
     {
       XmlNode* boneNode = CreateXmlNode(doc, "node", container);
 
-      boneNode->append_attribute(
-          doc->allocate_attribute(XmlNodeName.data(), boneName.c_str()));
+      boneNode->append_attribute(doc->allocate_attribute(XmlNodeName.data(), boneName.c_str()));
 
       if constexpr (SERIALIZE_ANIMATION_AS_BINARY)
       {
@@ -264,23 +274,17 @@ namespace ToolKit
       {
         for (uint keyIndex = 0; keyIndex < keys.size(); keyIndex++)
         {
-          XmlNode* keyNode = CreateXmlNode(doc, "key", boneNode);
-          const Key& key   = keys[keyIndex];
+          XmlNode* keyNode         = CreateXmlNode(doc, "key", boneNode);
+          const Key& key           = keys[keyIndex];
 
-          char* frameIndexValueStr =
-              doc->allocate_string(std::to_string(keyIndex).c_str());
-          keyNode->append_attribute(
-              doc->allocate_attribute("frame", frameIndexValueStr));
+          char* frameIndexValueStr = doc->allocate_string(std::to_string(keyIndex).c_str());
+          keyNode->append_attribute(doc->allocate_attribute("frame", frameIndexValueStr));
 
-          WriteVec(CreateXmlNode(doc, "translation", keyNode),
-                   doc,
-                   key.m_position);
+          WriteVec(CreateXmlNode(doc, "translation", keyNode), doc, key.m_position);
 
           WriteVec(CreateXmlNode(doc, "scale", keyNode), doc, key.m_scale);
 
-          WriteVec(CreateXmlNode(doc, "rotation", keyNode),
-                   doc,
-                   key.m_rotation);
+          WriteVec(CreateXmlNode(doc, "rotation", keyNode), doc, key.m_rotation);
         }
       }
     }
@@ -303,8 +307,7 @@ namespace ToolKit
       for (int i = 0; i < lim; i++)
       {
         std::swap(m_keys[keys.first][i], m_keys[keys.first][len - i]);
-        std::swap(m_keys[keys.first][i].m_frame,
-                  m_keys[keys.first][len - i].m_frame);
+        std::swap(m_keys[keys.first][i].m_frame, m_keys[keys.first][len - i].m_frame);
       }
     }
   }
@@ -318,11 +321,7 @@ namespace ToolKit
     cpy->m_duration = m_duration;
   }
 
-  void Animation::GetNearestKeys(const KeyArray& keys,
-                                 int& key1,
-                                 int& key2,
-                                 float& ratio,
-                                 float t)
+  void Animation::GetNearestKeys(const KeyArray& keys, int& key1, int& key2, float& ratio, float t)
   {
     // Find nearset keys.
     key1  = -1;
@@ -378,8 +377,7 @@ namespace ToolKit
 
   AnimRecord::AnimRecord() { m_id = GetHandleManager()->GetNextHandle(); }
 
-  AnimRecord::AnimRecord(Entity* entity, const AnimationPtr& anim)
-      : m_entity(entity), m_animation(anim)
+  AnimRecord::AnimRecord(Entity* entity, const AnimationPtr& anim) : m_entity(entity), m_animation(anim)
   {
     m_id = GetHandleManager()->GetNextHandle();
   }
@@ -404,60 +402,59 @@ namespace ToolKit
     }
   }
 
-  void AnimationPlayer::RemoveRecord(const AnimRecord& rec)
-  {
-    RemoveRecord(rec.m_id);
-  }
+  void AnimationPlayer::RemoveRecord(const AnimRecord& rec) { RemoveRecord(rec.m_id); }
 
   void AnimationPlayer::Update(float deltaTimeSec)
   {
-    m_records.erase(std::remove_if(m_records.begin(), m_records.end(), [&](AnimRecord* record) {
-    if (record->m_state == AnimRecord::State::Pause)
-    {
-        return false;
-    }
+    m_records.erase(
+        std::remove_if(m_records.begin(),
+                       m_records.end(),
+                       [&](AnimRecord* record)
+                       {
+                         if (record->m_state == AnimRecord::State::Pause)
+                         {
+                           return false;
+                         }
 
-    AnimRecord::State state = record->m_state;
-    if (state == AnimRecord::State::Play)
-    {
-      float thisTime = record->m_currentTime + (deltaTimeSec * record->m_timeMultiplier);
-      float duration = record->m_animation->m_duration;
-      if (record->m_loop)
-      {
-        if (thisTime > duration)
-        {
-          record->m_currentTime = 0.0f;
-        }
-      }
-      else
-      {
-        if (thisTime > duration)
-        {
-          record->m_state = AnimRecord::State::Stop;
-        }
-      }
-    }
-    if (state == AnimRecord::State::Rewind || state == AnimRecord::State::Stop)
-    {
-      record->m_currentTime = 0;
-    }
-    else
-    {
-      record->m_currentTime += deltaTimeSec * record->m_timeMultiplier;
-    }
-    record->m_entity->SetPose
-    (
-      record->m_animation,
-      record->m_currentTime,
-      record->m_blendTarget.Blend ? &record->m_blendTarget : nullptr
-    );
-    if (state == AnimRecord::State::Rewind)
-    {
-      record->m_state = AnimRecord::State::Play;
-    }
+                         AnimRecord::State state = record->m_state;
+                         if (state == AnimRecord::State::Play)
+                         {
+                           float thisTime = record->m_currentTime + (deltaTimeSec * record->m_timeMultiplier);
+                           float duration = record->m_animation->m_duration;
+                           if (record->m_loop)
+                           {
+                             if (thisTime > duration)
+                             {
+                               record->m_currentTime = 0.0f;
+                             }
+                           }
+                           else
+                           {
+                             if (thisTime > duration)
+                             {
+                               record->m_state = AnimRecord::State::Stop;
+                             }
+                           }
+                         }
+                         if (state == AnimRecord::State::Rewind || state == AnimRecord::State::Stop)
+                         {
+                           record->m_currentTime = 0;
+                         }
+                         else
+                         {
+                           record->m_currentTime += deltaTimeSec * record->m_timeMultiplier;
+                         }
+                         record->m_entity->SetPose(record->m_animation,
+                                                   record->m_currentTime,
+                                                   record->m_blendTarget.Blend ? &record->m_blendTarget : nullptr);
+                         if (state == AnimRecord::State::Rewind)
+                         {
+                           record->m_state = AnimRecord::State::Play;
+                         }
 
-    return state == AnimRecord::State::Stop;
-    }), m_records.end());
+                         return state == AnimRecord::State::Stop;
+                       }),
+        m_records.end());
   }
 
   int AnimationPlayer::Exist(ULongID id) const
@@ -477,14 +474,8 @@ namespace ToolKit
 
   AnimationManager::~AnimationManager() {}
 
-  bool AnimationManager::CanStore(ResourceType t)
-  {
-    return t == ResourceType::Animation;
-  }
+  bool AnimationManager::CanStore(ResourceType t) { return t == ResourceType::Animation; }
 
-  ResourcePtr AnimationManager::CreateLocal(ResourceType type)
-  {
-    return ResourcePtr(new Animation());
-  }
+  ResourcePtr AnimationManager::CreateLocal(ResourceType type) { return ResourcePtr(new Animation()); }
 
 } // namespace ToolKit

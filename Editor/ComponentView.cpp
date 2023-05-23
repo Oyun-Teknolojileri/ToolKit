@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "ComponentView.h"
 
 #include "Action.h"
@@ -11,10 +37,9 @@ namespace ToolKit
   namespace Editor
   {
 
-    void ShowMultiMaterialComponent(
-        ComponentPtr& comp,
-        std::function<bool(const String&)> showCompFunc,
-        bool modifiableComp)
+    void ShowMultiMaterialComponent(ComponentPtr& comp,
+                                    std::function<bool(const String&)> showCompFunc,
+                                    bool modifiableComp)
     {
       MaterialComponent* mmComp = (MaterialComponent*) comp.get();
       MaterialPtrArray& matList = mmComp->GetMaterialList();
@@ -42,10 +67,7 @@ namespace ToolKit
 
           ImGui::SameLine();
           ImGui::EndDisabled();
-          CustomDataView::ShowMaterialPtr(uniqueName,
-                                          mat->GetFile(),
-                                          mat,
-                                          modifiableComp);
+          CustomDataView::ShowMaterialPtr(uniqueName, mat->GetFile(), mat, modifiableComp);
           ImGui::BeginDisabled(!modifiableComp);
           ImGui::PopID();
         }
@@ -64,23 +86,17 @@ namespace ToolKit
         {
           mmComp->AddMaterial(GetMaterialManager()->GetCopyOfDefaultMaterial());
         }
-        UI::HelpMarker(
-            "Update",
-            "Update material list by first MeshComponent's mesh list");
+        UI::HelpMarker("Update", "Update material list by first MeshComponent's mesh list");
 
         ImGui::EndDisabled();
       }
     }
 
-    void ShowAABBOverrideComponent(
-        ComponentPtr& comp,
-        std::function<bool(const String&)> showCompFunc,
-        bool isEditable)
+    void ShowAABBOverrideComponent(ComponentPtr& comp, std::function<bool(const String&)> showCompFunc, bool isEditable)
     {
       AABBOverrideComponent* overrideComp = (AABBOverrideComponent*) comp.get();
       ImGui::BeginDisabled(!isEditable);
-      MeshComponentPtr meshComp =
-          overrideComp->m_entity->GetComponent<MeshComponent>();
+      MeshComponentPtr meshComp = overrideComp->m_entity->GetComponent<MeshComponent>();
       if (meshComp && ImGui::Button("Update from MeshComponent"))
       {
         overrideComp->SetAABB(meshComp->GetAABB());
@@ -88,119 +104,89 @@ namespace ToolKit
       ImGui::EndDisabled();
     }
 
-    void ComponentView::ShowAnimControllerComponent(ParameterVariant* var,
-                                                    ComponentPtr comp)
+    void ComponentView::ShowAnimControllerComponent(ParameterVariant* var, ComponentPtr comp)
     {
       AnimRecordPtrMap& mref = var->GetVar<AnimRecordPtrMap>();
       String file, id;
 
-      AnimControllerComponent* animPlayerComp =
-          reinterpret_cast<AnimControllerComponent*>(comp.get());
+      AnimControllerComponent* animPlayerComp = reinterpret_cast<AnimControllerComponent*>(comp.get());
 
       // If component isn't AnimationPlayerComponent, don't show variant
       if (!comp || comp->GetType() != ComponentType::AnimControllerComponent)
       {
-        GetLogger()->WriteConsole(
-            LogType::Error,
-            "AnimRecordPtrMap is for AnimationControllerComponent");
+        GetLogger()->WriteConsole(LogType::Error, "AnimRecordPtrMap is for AnimationControllerComponent");
         return;
       }
 
       if (animPlayerComp->GetActiveRecord())
       {
         String file;
-        DecomposePath(animPlayerComp->GetActiveRecord()->m_animation->GetFile(),
-                      nullptr,
-                      &file,
-                      nullptr);
+        DecomposePath(animPlayerComp->GetActiveRecord()->m_animation->GetFile(), nullptr, &file, nullptr);
 
-        String text =
-            Format("Animation: %s, Duration: %f, T: %f",
-                   file.c_str(),
-                   animPlayerComp->GetActiveRecord()->m_animation->m_duration,
-                   animPlayerComp->GetActiveRecord()->m_currentTime);
+        String text = Format("Animation: %s, Duration: %f, T: %f",
+                             file.c_str(),
+                             animPlayerComp->GetActiveRecord()->m_animation->m_duration,
+                             animPlayerComp->GetActiveRecord()->m_currentTime);
 
         ImGui::Text(text.c_str());
       }
 
       if (ImGui::BeginTable("Animation Records and Signals",
                             4,
-                            ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders |
-                                ImGuiTableFlags_Resizable |
-                                ImGuiTableFlags_Reorderable |
-                                ImGuiTableFlags_ScrollY,
+                            ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable |
+                                ImGuiTableFlags_Reorderable | ImGuiTableFlags_ScrollY,
                             ImVec2(ImGui::GetWindowSize().x - 15, 200)))
       {
         float tableWdth = ImGui::GetItemRectSize().x;
-        ImGui::TableSetupColumn("Animation",
-                                ImGuiTableColumnFlags_WidthStretch,
-                                tableWdth / 5.0f);
+        ImGui::TableSetupColumn("Animation", ImGuiTableColumnFlags_WidthStretch, tableWdth / 5.0f);
 
-        ImGui::TableSetupColumn("Name",
-                                ImGuiTableColumnFlags_WidthStretch,
-                                tableWdth / 2.5f);
+        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, tableWdth / 2.5f);
 
-        ImGui::TableSetupColumn("Preview",
-                                ImGuiTableColumnFlags_WidthStretch,
-                                tableWdth / 4.0f);
+        ImGui::TableSetupColumn("Preview", ImGuiTableColumnFlags_WidthStretch, tableWdth / 4.0f);
 
-        ImGui::TableSetupColumn("",
-                                ImGuiTableColumnFlags_WidthStretch,
-                                tableWdth / 20.0f);
+        ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, tableWdth / 20.0f);
 
         ImGui::TableHeadersRow();
 
-        uint rowIndx                                     = 0;
-        String removedSignalName                         = "";
-        String nameUpdated                               = "";
-        std::pair<String, AnimRecordPtr> nameUpdatedPair = {};
+        uint rowIndx                                       = 0;
+        String removedSignalName                           = "";
+        String nameUpdated                                 = "";
+        std::pair<String, AnimRecordPtr> nameUpdatedPair   = {};
 
-        static std::pair<String, AnimRecordPtr> extraTrack =
-            std::make_pair("", std::make_shared<AnimRecord>());
+        static std::pair<String, AnimRecordPtr> extraTrack = std::make_pair("", std::make_shared<AnimRecord>());
 
         // Animation DropZone
-        auto showAnimationDropzone =
-            [tableWdth, file](uint& columnIndx,
-                              const std::pair<String, AnimRecordPtr>& pair)
+        auto showAnimationDropzone = [tableWdth, file](uint& columnIndx, const std::pair<String, AnimRecordPtr>& pair)
         {
           ImGui::TableSetColumnIndex(columnIndx++);
           ImGui::SetCursorPosX(tableWdth / 25.0f);
-          DropZone(
-              static_cast<uint>(UI::m_clipIcon->m_textureId),
-              file,
-              [&pair](const DirectoryEntry& entry) -> void
-              {
-                if (GetResourceType(entry.m_ext) == ResourceType::Animation)
-                {
-                  pair.second->m_animation =
-                      GetAnimationManager()->Create<Animation>(
-                          entry.GetFullPath());
-                  if (pair.first.empty())
-                  {
-                    extraTrack.first = entry.m_fileName;
-                  }
-                }
-                else
-                {
-                  GetLogger()->WriteConsole(LogType::Error,
-                                            "Only animations are accepted.");
-                }
-              });
+          DropZone(static_cast<uint>(UI::m_clipIcon->m_textureId),
+                   file,
+                   [&pair](const DirectoryEntry& entry) -> void
+                   {
+                     if (GetResourceType(entry.m_ext) == ResourceType::Animation)
+                     {
+                       pair.second->m_animation = GetAnimationManager()->Create<Animation>(entry.GetFullPath());
+                       if (pair.first.empty())
+                       {
+                         extraTrack.first = entry.m_fileName;
+                       }
+                     }
+                     else
+                     {
+                       GetLogger()->WriteConsole(LogType::Error, "Only animations are accepted.");
+                     }
+                   });
         };
 
-        auto showSignalName = [&nameUpdated, &nameUpdatedPair, tableWdth](
-                                  uint& columnIndx,
-                                  const std::pair<String, AnimRecordPtr>& pair)
+        auto showSignalName =
+            [&nameUpdated, &nameUpdatedPair, tableWdth](uint& columnIndx, const std::pair<String, AnimRecordPtr>& pair)
         {
           ImGui::TableSetColumnIndex(columnIndx++);
-          ImGui::SetCursorPosY(ImGui::GetCursorPos().y +
-                               (ImGui::GetItemRectSize().y / 4.0f));
+          ImGui::SetCursorPosY(ImGui::GetCursorPos().y + (ImGui::GetItemRectSize().y / 4.0f));
           ImGui::PushItemWidth((tableWdth / 2.5f) - 5.0f);
           String readOnly = pair.first;
-          if (ImGui::InputText("##",
-                               &readOnly,
-                               ImGuiInputTextFlags_EnterReturnsTrue) &&
-              readOnly.length())
+          if (ImGui::InputText("##", &readOnly, ImGuiInputTextFlags_EnterReturnsTrue) && readOnly.length())
           {
             nameUpdated     = readOnly;
             nameUpdatedPair = pair;
@@ -224,37 +210,28 @@ namespace ToolKit
           ImGui::TableSetColumnIndex(columnIndx++);
           if (it->second->m_animation)
           {
-            ImGui::SetCursorPosX(ImGui::GetCursorPos().x +
-                                 (ImGui::GetItemRectSize().x / 10.0f));
+            ImGui::SetCursorPosX(ImGui::GetCursorPos().x + (ImGui::GetItemRectSize().x / 10.0f));
 
-            ImGui::SetCursorPosY(ImGui::GetCursorPos().y +
-                                 (ImGui::GetItemRectSize().y / 5.0f));
+            ImGui::SetCursorPosY(ImGui::GetCursorPos().y + (ImGui::GetItemRectSize().y / 5.0f));
 
             AnimRecordPtr activeRecord = animPlayerComp->GetActiveRecord();
 
             // Alternate between Play - Pause buttons.
-            if (activeRecord == it->second &&
-                activeRecord->m_state == AnimRecord::State::Play)
+            if (activeRecord == it->second && activeRecord->m_state == AnimRecord::State::Play)
             {
-              if (UI::ImageButtonDecorless(UI::m_pauseIcon->m_textureId,
-                                           Vec2(24, 24),
-                                           false))
+              if (UI::ImageButtonDecorless(UI::m_pauseIcon->m_textureId, Vec2(24, 24), false))
               {
                 animPlayerComp->Pause();
               }
             }
-            else if (UI::ImageButtonDecorless(UI::m_playIcon->m_textureId,
-                                              Vec2(24, 24),
-                                              false))
+            else if (UI::ImageButtonDecorless(UI::m_playIcon->m_textureId, Vec2(24, 24), false))
             {
               animPlayerComp->Play(it->first.c_str());
             }
 
             // Draw stop button always.
             ImGui::SameLine();
-            if (UI::ImageButtonDecorless(UI::m_stopIcon->m_textureId,
-                                         Vec2(24, 24),
-                                         false))
+            if (UI::ImageButtonDecorless(UI::m_stopIcon->m_textureId, Vec2(24, 24), false))
             {
               animPlayerComp->Stop();
             }
@@ -265,12 +242,9 @@ namespace ToolKit
           // Remove Button
           {
             ImGui::TableSetColumnIndex(columnIndx++);
-            ImGui::SetCursorPosY(ImGui::GetCursorPos().y +
-                                 (ImGui::GetItemRectSize().y / 4.0f));
+            ImGui::SetCursorPosY(ImGui::GetCursorPos().y + (ImGui::GetItemRectSize().y / 4.0f));
 
-            if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
-                                         Vec2(15, 15),
-                                         false))
+            if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId, Vec2(15, 15), false))
             {
               removedSignalName = it->first;
             }
@@ -328,22 +302,17 @@ namespace ToolKit
       }
     }
 
-    bool ComponentView::ShowComponentBlock(ComponentPtr& comp,
-                                           const bool modifiableComp)
+    bool ComponentView::ShowComponentBlock(ComponentPtr& comp, const bool modifiableComp)
     {
       VariantCategoryArray categories;
       comp->m_localData.GetCategories(categories, true, true);
 
-      bool removeComp = false;
-      auto showCompFunc =
-          [comp, &removeComp, modifiableComp](const String& headerName) -> bool
+      bool removeComp   = false;
+      auto showCompFunc = [comp, &removeComp, modifiableComp](const String& headerName) -> bool
       {
         ImGui::PushID(static_cast<int>(comp->m_id));
         String varName = headerName + "##" + std::to_string(modifiableComp);
-        bool isOpen =
-            ImGui::CollapsingHeader(varName.c_str(),
-                                    nullptr,
-                                    ImGuiTreeNodeFlags_AllowItemOverlap);
+        bool isOpen    = ImGui::CollapsingHeader(varName.c_str(), nullptr, ImGuiTreeNodeFlags_AllowItemOverlap);
 
         if (modifiableComp)
         {
@@ -405,8 +374,7 @@ namespace ToolKit
         break;
       }
 
-      bool isSkeletonComponent =
-          comp->GetType() == ComponentType::SkeletonComponent;
+      bool isSkeletonComponent = comp->GetType() == ComponentType::SkeletonComponent;
 
       if (removeComp && isSkeletonComponent)
       {
@@ -415,9 +383,7 @@ namespace ToolKit
         if (mesh != nullptr && mesh->GetMeshVal()->IsSkinned())
         {
           g_app->m_statusMsg = "Failed";
-          GetLogger()->WriteConsole(
-              LogType::Warning,
-              "Skeleton component is in use, it can't be removed");
+          GetLogger()->WriteConsole(LogType::Warning, "Skeleton component is in use, it can't be removed");
           return false;
         }
       }
@@ -468,8 +434,7 @@ namespace ToolKit
 
         for (ULongID id : compRemove)
         {
-          ActionManager::GetInstance()->AddAction(
-              new DeleteComponentAction(m_entity->GetComponent(id)));
+          ActionManager::GetInstance()->AddAction(new DeleteComponentAction(m_entity->GetComponent(id)));
         }
 
         // Remove billboards if necessary.

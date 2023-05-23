@@ -1,3 +1,28 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #include "Anchor.h"
 
@@ -24,10 +49,7 @@ namespace ToolKit
       Update(0.0f);
     }
 
-    EditorBillboardBase::BillboardType Anchor::GetBillboardType() const
-    {
-      return BillboardType::Anchor;
-    }
+    EditorBillboardBase::BillboardType Anchor::GetBillboardType() const { return BillboardType::Anchor; }
 
     DirectionLabel Anchor::HitTest(const Ray& ray) const
     {
@@ -45,7 +67,7 @@ namespace ToolKit
           if (t < tMin)
           {
             tMin = t;
-            hit = static_cast<DirectionLabel>(m_handles[i]->m_params.direction);
+            hit  = static_cast<DirectionLabel>(m_handles[i]->m_params.direction);
           }
         }
       }
@@ -53,20 +75,11 @@ namespace ToolKit
       return hit;
     }
 
-    bool Anchor::IsGrabbed(DirectionLabel direction) const
-    {
-      return m_grabbedDirection == direction;
-    }
+    bool Anchor::IsGrabbed(DirectionLabel direction) const { return m_grabbedDirection == direction; }
 
-    void Anchor::Grab(DirectionLabel direction)
-    {
-      m_grabbedDirection = direction;
-    }
+    void Anchor::Grab(DirectionLabel direction) { m_grabbedDirection = direction; }
 
-    DirectionLabel Anchor::GetGrabbedDirection() const
-    {
-      return m_grabbedDirection;
-    }
+    DirectionLabel Anchor::GetGrabbedDirection() const { return m_grabbedDirection; }
 
     AnchorHandle::Params Anchor::GetParam() const
     {
@@ -81,15 +94,12 @@ namespace ToolKit
 
     void Anchor::Update(float deltaTime)
     {
-      if (m_entity == nullptr || !m_entity->IsSurfaceInstance() ||
-          m_entity->m_node->m_parent == nullptr ||
+      if (m_entity == nullptr || !m_entity->IsSurfaceInstance() || m_entity->m_node->m_parent == nullptr ||
           m_entity->m_node->m_parent->m_entity == nullptr ||
-          m_entity->m_node->m_parent->m_entity->GetType() !=
-              EntityType::Entity_Canvas)
+          m_entity->m_node->m_parent->m_entity->GetType() != EntityType::Entity_Canvas)
         return;
 
-      Canvas* canvasPanel =
-          static_cast<Canvas*>(m_entity->m_node->m_parent->m_entity);
+      Canvas* canvasPanel = static_cast<Canvas*>(m_entity->m_node->m_parent->m_entity);
 
       Vec3 pos;
       float w = 0, h = 0;
@@ -127,8 +137,7 @@ namespace ToolKit
       const float shapeSize = 15.0f;
       float handleTranslate = shapeSize;
 
-      if ((anchorRatios[0] + anchorRatios[1] < 0.99f) ||
-          (anchorRatios[2] + anchorRatios[3] < 0.99f))
+      if ((anchorRatios[0] + anchorRatios[1] < 0.99f) || (anchorRatios[2] + anchorRatios[3] < 0.99f))
       {
         handleTranslate = shapeSize * (2.0f / 3.0f);
       }
@@ -171,8 +180,7 @@ namespace ToolKit
           p.worldLoc -= axis[1] * ((anchorRatios[2]) * h);
           p.worldLoc += axis[0] * ((anchorRatios[0]) * w);
 
-          if ((anchorRatios[0] + anchorRatios[1] < 0.99f) ||
-              (anchorRatios[2] + anchorRatios[3] < 0.99f))
+          if ((anchorRatios[0] + anchorRatios[1] < 0.99f) || (anchorRatios[2] + anchorRatios[3] < 0.99f))
           {
             handle->m_mesh.reset();
             continue;
@@ -219,10 +227,7 @@ namespace ToolKit
 
         if (direction == DirectionLabel::E)
         {
-          p.worldLoc -=
-              axis[1] * ((anchorRatios[2] +
-                          (1.f - anchorRatios[2] - anchorRatios[3]) / 2.f) *
-                         h);
+          p.worldLoc -= axis[1] * ((anchorRatios[2] + (1.f - anchorRatios[2] - anchorRatios[3]) / 2.f) * h);
           p.worldLoc += axis[0] * ((1.f - anchorRatios[1]) * w);
 
           if (anchorRatios[2] + anchorRatios[3] < 0.99f)
@@ -235,10 +240,7 @@ namespace ToolKit
         }
         if (direction == DirectionLabel::W)
         {
-          p.worldLoc -=
-              axis[1] * ((anchorRatios[2] +
-                          (1.f - anchorRatios[2] - anchorRatios[3]) / 2.f) *
-                         h);
+          p.worldLoc -= axis[1] * ((anchorRatios[2] + (1.f - anchorRatios[2] - anchorRatios[3]) / 2.f) * h);
           p.worldLoc += axis[0] * (anchorRatios[0] * w);
 
           if (anchorRatios[2] + anchorRatios[3] < 0.99f)
@@ -252,10 +254,7 @@ namespace ToolKit
         if (direction == DirectionLabel::N)
         {
           p.worldLoc -= axis[1] * ((anchorRatios[2]) * h);
-          p.worldLoc +=
-              axis[0] * ((anchorRatios[0] +
-                          (1.f - anchorRatios[0] - anchorRatios[1]) / 2.f) *
-                         w);
+          p.worldLoc += axis[0] * ((anchorRatios[0] + (1.f - anchorRatios[0] - anchorRatios[1]) / 2.f) * w);
 
           if (anchorRatios[0] + anchorRatios[1] < 1.f)
           {
@@ -267,10 +266,7 @@ namespace ToolKit
         }
         if (direction == DirectionLabel::S)
         {
-          p.worldLoc +=
-              axis[0] * ((anchorRatios[0] +
-                          (1.f - anchorRatios[0] - anchorRatios[1]) / 2.f) *
-                         w);
+          p.worldLoc += axis[0] * ((anchorRatios[0] + (1.f - anchorRatios[0] - anchorRatios[1]) / 2.f) * w);
           p.worldLoc -= axis[1] * ((1.f - anchorRatios[3]) * h);
 
           if (anchorRatios[0] + anchorRatios[1] < 1.f)
@@ -286,8 +282,7 @@ namespace ToolKit
         {
           if (vp->IsVisible())
           {
-            assert(vp->IsOrthographic() &&
-                   "Viewport must be a 2d orthographic view.");
+            assert(vp->IsOrthographic() && "Viewport must be a 2d orthographic view.");
 
             float zoomScale = vp->GetBillboardScale();
             float s         = shapeSize;
@@ -330,8 +325,7 @@ namespace ToolKit
       //   mesh->m_subMeshes.push_back(guideMesh);
       //}
 
-      if (m_lastHovered != DirectionLabel::None ||
-          GetGrabbedDirection() != DirectionLabel::None)
+      if (m_lastHovered != DirectionLabel::None || GetGrabbedDirection() != DirectionLabel::None)
       {
         Vec3Array pnts = {
             guideLines[0],

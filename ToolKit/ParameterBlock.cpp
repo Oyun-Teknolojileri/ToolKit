@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "ParameterBlock.h"
 
 #include "Animation.h"
@@ -13,10 +39,7 @@
 namespace ToolKit
 {
 
-  ParameterVariantBase::ParameterVariantBase()
-  {
-    m_id = GetHandleManager()->GetNextHandle();
-  }
+  ParameterVariantBase::ParameterVariantBase() { m_id = GetHandleManager()->GetNextHandle(); }
 
   ParameterVariantBase::~ParameterVariantBase() {}
 
@@ -30,10 +53,7 @@ namespace ToolKit
     m_var = newVal;
   }
 
-  ParameterVariant::ParameterVariant(const ParameterVariant& other)
-  {
-    *this = other;
-  }
+  ParameterVariant::ParameterVariant(const ParameterVariant& other) { *this = other; }
 
   ParameterVariant& ParameterVariant::operator=(const ParameterVariant& other)
   {
@@ -87,27 +107,15 @@ namespace ToolKit
 
   ParameterVariant::ParameterVariant(const HdriPtr& var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(const AnimRecordPtrMap& var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(const AnimRecordPtrMap& var) { *this = var; }
 
   ParameterVariant::ParameterVariant(const SkeletonPtr& var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(const VariantCallback& var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(const VariantCallback& var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(const MultiChoiceVariant& var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(const MultiChoiceVariant& var) { *this = var; }
 
-  ParameterVariant::VariantType ParameterVariant::GetType() const
-  {
-    return m_type;
-  }
+  ParameterVariant::VariantType ParameterVariant::GetType() const { return m_type; }
 
   ParameterVariant& ParameterVariant::operator=(bool var)
   {
@@ -265,13 +273,9 @@ namespace ToolKit
 
   void ParameterVariant::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* node =
-        doc->allocate_node(rapidxml::node_element, XmlParamterElement.c_str());
+    XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlParamterElement.c_str());
 
-    WriteAttr(node,
-              doc,
-              XmlParamterTypeAttr,
-              std::to_string(static_cast<int>(m_type)));
+    WriteAttr(node, doc, XmlParamterTypeAttr, std::to_string(static_cast<int>(m_type)));
 
     WriteAttr(node, doc, XmlNodeName.data(), m_name);
     WriteAttr(node, doc, "category", m_category.Name);
@@ -279,69 +283,45 @@ namespace ToolKit
     WriteAttr(node, doc, "exposed", std::to_string(m_exposed));
     WriteAttr(node, doc, "editable", std::to_string(m_editable));
     WriteAttr(node, doc, "hint.isColor", std::to_string(m_hint.isColor));
-    WriteAttr(node,
-              doc,
-              "hint.isRanLim",
-              std::to_string(m_hint.isRangeLimited));
+    WriteAttr(node, doc, "hint.isRanLim", std::to_string(m_hint.isRangeLimited));
     WriteAttr(node, doc, "hint.rangeMin", std::to_string(m_hint.rangeMin));
     WriteAttr(node, doc, "hint.rangeMax", std::to_string(m_hint.rangeMax));
     WriteAttr(node, doc, "hint.increment", std::to_string(m_hint.increment));
 
-    std::function<void(XmlNode*, XmlDocument*, const ParameterVariant*)>
-        serializeDataFn;
-    serializeDataFn = [&serializeDataFn](XmlNode* node,
-                                         XmlDocument* doc,
-                                         const ParameterVariant* var)
+    std::function<void(XmlNode*, XmlDocument*, const ParameterVariant*)> serializeDataFn;
+    serializeDataFn = [&serializeDataFn](XmlNode* node, XmlDocument* doc, const ParameterVariant* var)
     {
       // Serialize data.
       switch (var->GetType())
       {
       case VariantType::Bool:
       {
-        WriteAttr(node,
-                  doc,
-                  XmlParamterValAttr.c_str(),
-                  std::to_string(var->GetCVar<bool>()));
+        WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(var->GetCVar<bool>()));
       }
       break;
       case VariantType::byte:
       {
-        WriteAttr(node,
-                  doc,
-                  XmlParamterValAttr.c_str(),
-                  std::to_string(var->GetCVar<byte>()));
+        WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(var->GetCVar<byte>()));
       }
       break;
       case VariantType::ubyte:
       {
-        WriteAttr(node,
-                  doc,
-                  XmlParamterValAttr.c_str(),
-                  std::to_string(var->GetCVar<ubyte>()));
+        WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(var->GetCVar<ubyte>()));
       }
       break;
       case VariantType::Float:
       {
-        WriteAttr(node,
-                  doc,
-                  XmlParamterValAttr.c_str(),
-                  std::to_string(var->GetCVar<float>()));
+        WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(var->GetCVar<float>()));
       }
       break;
       case VariantType::Int:
       {
-        WriteAttr(node,
-                  doc,
-                  XmlParamterValAttr.c_str(),
-                  std::to_string(var->GetCVar<int>()));
+        WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(var->GetCVar<int>()));
       }
       break;
       case VariantType::UInt:
       {
-        WriteAttr(node,
-                  doc,
-                  XmlParamterValAttr.c_str(),
-                  std::to_string(var->GetCVar<uint>()));
+        WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(var->GetCVar<uint>()));
       }
       break;
       case VariantType::Vec2:
@@ -381,17 +361,11 @@ namespace ToolKit
       break;
       case VariantType::String:
       {
-        WriteAttr(node,
-                  doc,
-                  XmlParamterValAttr.c_str(),
-                  var->GetCVar<String>());
+        WriteAttr(node, doc, XmlParamterValAttr.c_str(), var->GetCVar<String>());
       }
       break;
       case VariantType::ULongID:
-        WriteAttr(node,
-                  doc,
-                  XmlParamterValAttr.c_str(),
-                  std::to_string(var->GetCVar<ULongID>()));
+        WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(var->GetCVar<ULongID>()));
         break;
       case VariantType::MeshPtr:
       {
@@ -432,8 +406,7 @@ namespace ToolKit
         for (auto iter = list.begin(); iter != list.end(); ++iter, recordIndx++)
         {
           const AnimRecordPtr& state = iter->second;
-          XmlNode* elementNode =
-              CreateXmlNode(doc, std::to_string(recordIndx), listNode);
+          XmlNode* elementNode       = CreateXmlNode(doc, std::to_string(recordIndx), listNode);
           if (iter->first.length())
           {
             WriteAttr(elementNode, doc, "SignalName", iter->first);
@@ -461,18 +434,12 @@ namespace ToolKit
         WriteAttr(listNode, doc, "size", std::to_string(choiceCount));
 
         XmlNode* nextNode = CreateXmlNode(doc, "CurrVal", listNode);
-        WriteAttr(nextNode,
-                  doc,
-                  XmlParamterValAttr.c_str(),
-                  std::to_string(mcv.CurrentVal.Index));
+        WriteAttr(nextNode, doc, XmlParamterValAttr.c_str(), std::to_string(mcv.CurrentVal.Index));
 
         for (size_t i = 0; i < choiceCount; ++i)
         {
           nextNode = CreateXmlNode(doc, std::to_string(i), listNode);
-          WriteAttr(nextNode,
-                    doc,
-                    "valType",
-                    std::to_string((int) mcv.Choices[i].GetType()));
+          WriteAttr(nextNode, doc, "valType", std::to_string((int) mcv.Choices[i].GetType()));
           WriteAttr(nextNode, doc, "valName", mcv.Choices[i].m_name.c_str());
           const ParameterVariant* variant = &mcv.Choices[i];
           serializeDataFn(nextNode, doc, variant);
@@ -512,8 +479,7 @@ namespace ToolKit
 
     std::function<void(XmlNode*, ParameterVariant*)> deserializeDataFn;
 
-    deserializeDataFn =
-        [&doc, &deserializeDataFn](XmlNode* parent, ParameterVariant* pVar)
+    deserializeDataFn = [&doc, &deserializeDataFn](XmlNode* parent, ParameterVariant* pVar)
     {
       switch (pVar->GetType())
       {
@@ -682,17 +648,15 @@ namespace ToolKit
         for (uint stateIndx = 0; stateIndx < listSize; stateIndx++)
         {
           AnimRecordPtr record = std::make_shared<AnimRecord>();
-          XmlNode* elementNode =
-              listNode->first_node(std::to_string(stateIndx).c_str());
+          XmlNode* elementNode = listNode->first_node(std::to_string(stateIndx).c_str());
 
           String signalName;
           ReadAttr(elementNode, "SignalName", signalName);
           String file = Resource::DeserializeRef(elementNode);
           if (!file.empty())
           {
-            file = AnimationPath(file);
-            record->m_animation =
-                GetAnimationManager()->Create<Animation>(file);
+            file                = AnimationPath(file);
+            record->m_animation = GetAnimationManager()->Create<Animation>(file);
           }
           list.insert(std::make_pair(signalName, record));
         }
@@ -730,9 +694,8 @@ namespace ToolKit
 
         for (uint i = 0; i < listSize; ++i)
         {
-          XmlNode* currIndexNode =
-              listNode->first_node(std::to_string(i).c_str());
-          int valType = 0;
+          XmlNode* currIndexNode = listNode->first_node(std::to_string(i).c_str());
+          int valType            = 0;
           String valName;
           ReadAttr(currIndexNode, "valType", valType);
           ReadAttr(currIndexNode, "valName", valName);
@@ -755,8 +718,7 @@ namespace ToolKit
 
   void ParameterBlock::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* blockNode = doc->allocate_node(rapidxml::node_element,
-                                            XmlParamBlockElement.c_str());
+    XmlNode* blockNode = doc->allocate_node(rapidxml::node_element, XmlParamBlockElement.c_str());
 
     for (const ParameterVariant& var : m_variants)
     {
@@ -804,20 +766,11 @@ namespace ToolKit
     }
   }
 
-  ParameterVariant& ParameterBlock::operator[](size_t index)
-  {
-    return m_variants[index];
-  }
+  ParameterVariant& ParameterBlock::operator[](size_t index) { return m_variants[index]; }
 
-  const ParameterVariant& ParameterBlock::operator[](size_t index) const
-  {
-    return m_variants[index];
-  }
+  const ParameterVariant& ParameterBlock::operator[](size_t index) const { return m_variants[index]; }
 
-  void ParameterBlock::Add(const ParameterVariant& var)
-  {
-    m_variants.push_back(var);
-  }
+  void ParameterBlock::Add(const ParameterVariant& var) { m_variants.push_back(var); }
 
   void ParameterBlock::Remove(ULongID id)
   {
@@ -831,9 +784,7 @@ namespace ToolKit
     }
   }
 
-  void ParameterBlock::GetCategories(VariantCategoryArray& categories,
-                                     bool sortDesc,
-                                     bool filterByExpose)
+  void ParameterBlock::GetCategories(VariantCategoryArray& categories, bool sortDesc, bool filterByExpose)
   {
     categories.clear();
 
@@ -856,27 +807,22 @@ namespace ToolKit
 
     if (filterByExpose)
     {
-      categories.erase(
-          std::remove_if(
-              categories.begin(),
-              categories.end(),
-              [&containsExposedVar](const VariantCategory& vc) -> bool
-              {
-                // remove if not contains exposed var.
-                return containsExposedVar.find(vc.Name) ==
-                       containsExposedVar.end();
-              }),
-          categories.end());
+      categories.erase(std::remove_if(categories.begin(),
+                                      categories.end(),
+                                      [&containsExposedVar](const VariantCategory& vc) -> bool
+                                      {
+                                        // remove if not contains exposed var.
+                                        return containsExposedVar.find(vc.Name) == containsExposedVar.end();
+                                      }),
+                       categories.end());
     }
 
     std::sort(categories.begin(),
               categories.end(),
-              [](VariantCategory& a, VariantCategory& b) -> bool
-              { return a.Priority > b.Priority; });
+              [](VariantCategory& a, VariantCategory& b) -> bool { return a.Priority > b.Priority; });
   }
 
-  void ParameterBlock::GetByCategory(const String& category,
-                                     ParameterVariantRawPtrArray& variants)
+  void ParameterBlock::GetByCategory(const String& category, ParameterVariantRawPtrArray& variants)
   {
     for (ParameterVariant& var : m_variants)
     {
@@ -887,9 +833,7 @@ namespace ToolKit
     }
   }
 
-  bool ParameterBlock::LookUp(StringView category,
-                              StringView name,
-                              ParameterVariant** var)
+  bool ParameterBlock::LookUp(StringView category, StringView name, ParameterVariant** var)
   {
     for (ParameterVariant& lv : m_variants)
     {
@@ -906,8 +850,7 @@ namespace ToolKit
     return false;
   }
 
-  void ParameterBlock::ExposeByCategory(bool exposed,
-                                        const VariantCategory& category)
+  void ParameterBlock::ExposeByCategory(bool exposed, const VariantCategory& category)
   {
     for (ParameterVariant& var : m_variants)
     {

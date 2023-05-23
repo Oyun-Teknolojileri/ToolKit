@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Pass.h"
 
 #include "DataTexture.h"
@@ -48,15 +74,11 @@ namespace ToolKit
 
   void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
 
-  void RenderJobProcessor::CreateRenderJobs(EntityRawPtrArray entities,
-                                            RenderJobArray& jobArray,
-                                            bool ignoreVisibility)
+  void RenderJobProcessor::CreateRenderJobs(EntityRawPtrArray entities, RenderJobArray& jobArray, bool ignoreVisibility)
   {
     erase_if(entities,
-             [ignoreVisibility](Entity* ntt) -> bool {
-               return !ntt->IsDrawable() ||
-                      (!ntt->IsVisible() && !ignoreVisibility);
-             });
+             [ignoreVisibility](Entity* ntt) -> bool
+             { return !ntt->IsDrawable() || (!ntt->IsVisible() && !ignoreVisibility); });
 
     for (Entity* ntt : entities)
     {
@@ -87,8 +109,7 @@ namespace ToolKit
         }
         else
         {
-          allMaterials.push_back(
-              GetMaterialManager()->GetCopyOfDefaultMaterial());
+          allMaterials.push_back(GetMaterialManager()->GetCopyOfDefaultMaterial());
         }
       }
 
@@ -102,8 +123,7 @@ namespace ToolKit
         rj.Entity         = ntt;
         rj.WorldTransform = transform;
 
-        if (AABBOverrideComponentPtr bbOverride =
-                ntt->GetComponent<AABBOverrideComponent>())
+        if (AABBOverrideComponentPtr bbOverride = ntt->GetComponent<AABBOverrideComponent>())
         {
           rj.BoundingBox = std::move(bbOverride->GetAABB());
         }
@@ -117,20 +137,17 @@ namespace ToolKit
         rj.ShadowCaster = mc->GetCastShadowVal();
         rj.Mesh         = allMeshes[i];
         rj.Material     = allMaterials[i];
-        rj.SkeletonCmp  = rj.Mesh->IsSkinned()
-                              ? ntt->GetComponent<SkeletonComponent>()
-                              : nullptr;
+        rj.SkeletonCmp  = rj.Mesh->IsSkinned() ? ntt->GetComponent<SkeletonComponent>() : nullptr;
       }
 
       jobArray.insert(jobArray.end(), newJobs.begin(), newJobs.end());
     }
   }
 
-  void RenderJobProcessor::SeperateDeferredForward(
-      const RenderJobArray& jobArray,
-      RenderJobArray& deferred,
-      RenderJobArray& forward,
-      RenderJobArray& translucent)
+  void RenderJobProcessor::SeperateDeferredForward(const RenderJobArray& jobArray,
+                                                   RenderJobArray& deferred,
+                                                   RenderJobArray& forward,
+                                                   RenderJobArray& translucent)
   {
     for (const RenderJob& job : jobArray)
     {
@@ -152,10 +169,9 @@ namespace ToolKit
     }
   }
 
-  void RenderJobProcessor::SeperateOpaqueTranslucent(
-      const RenderJobArray& jobArray,
-      RenderJobArray& opaque,
-      RenderJobArray& translucent)
+  void RenderJobProcessor::SeperateOpaqueTranslucent(const RenderJobArray& jobArray,
+                                                     RenderJobArray& opaque,
+                                                     RenderJobArray& translucent)
   {
     for (const RenderJob& job : jobArray)
     {
@@ -178,15 +194,12 @@ namespace ToolKit
   };
 
   // Compares two intervals according to starting times.
-  bool CompareLightIntersects(const LightSortStruct& i1,
-                              const LightSortStruct& i2)
+  bool CompareLightIntersects(const LightSortStruct& i1, const LightSortStruct& i2)
   {
     return (i1.intersectCount > i2.intersectCount);
   }
 
-  LightRawPtrArray RenderJobProcessor::SortLights(
-      const RenderJob& job,
-      const LightRawPtrArray& lights)
+  LightRawPtrArray RenderJobProcessor::SortLights(const RenderJob& job, const LightRawPtrArray& lights)
   {
     LightRawPtrArray bestLights;
     if (lights.empty())
@@ -228,7 +241,7 @@ namespace ToolKit
       }
 
       intersectCounts[lightIndx].light = light;
-      uint& curIntersectCount = intersectCounts[lightIndx].intersectCount;
+      uint& curIntersectCount          = intersectCounts[lightIndx].intersectCount;
 
       /* This algorithms can be used for better sorting
       for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
@@ -250,11 +263,9 @@ namespace ToolKit
       {
         light->UpdateShadowCamera();
 
-        Frustum spotFrustum =
-            ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
+        Frustum spotFrustum = ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
 
-        if (FrustumBoxIntersection(spotFrustum, aabb) !=
-            IntersectResult::Outside)
+        if (FrustumBoxIntersection(spotFrustum, aabb) != IntersectResult::Outside)
         {
           curIntersectCount++;
         }
@@ -269,9 +280,7 @@ namespace ToolKit
       }
     }
 
-    std::sort(intersectCounts.begin(),
-              intersectCounts.end(),
-              CompareLightIntersects);
+    std::sort(intersectCounts.begin(), intersectCounts.end(), CompareLightIntersects);
 
     for (uint i = 0; i < intersectCounts.size(); i++)
     {
@@ -285,9 +294,7 @@ namespace ToolKit
     return bestLights;
   }
 
-  LightRawPtrArray RenderJobProcessor::SortLights(
-      Entity* entity,
-      const LightRawPtrArray& lights)
+  LightRawPtrArray RenderJobProcessor::SortLights(Entity* entity, const LightRawPtrArray& lights)
   {
     RenderJobArray jobs;
     CreateRenderJobs({entity}, jobs);
@@ -302,14 +309,12 @@ namespace ToolKit
     return allLights;
   }
 
-  void RenderJobProcessor::StableSortByDistanceToCamera(
-      RenderJobArray& jobArray,
-      const Camera* cam)
+  void RenderJobProcessor::StableSortByDistanceToCamera(RenderJobArray& jobArray, const Camera* cam)
   {
-    std::function<bool(const RenderJob&, const RenderJob&)> sortFn =
-        [cam](const RenderJob& j1, const RenderJob& j2) -> bool
+    std::function<bool(const RenderJob&, const RenderJob&)> sortFn = [cam](const RenderJob& j1,
+                                                                           const RenderJob& j2) -> bool
     {
-      Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      Vec3 camLoc     = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
       // TODO: Cihan cache calculated world boxes.
       BoundingBox bb1 = j1.Mesh->m_aabb;
@@ -337,15 +342,9 @@ namespace ToolKit
     std::stable_sort(jobArray.begin(), jobArray.end(), sortFn);
   }
 
-  void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray,
-                                          Camera* camera)
-  {
-    FrustumCull(jobArray, camera);
-  }
+  void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, Camera* camera) { FrustumCull(jobArray, camera); }
 
-  void RenderJobProcessor::AssignEnvironment(
-      RenderJobArray& jobArray,
-      const EnvironmentComponentPtrArray& environments)
+  void RenderJobProcessor::AssignEnvironment(RenderJobArray& jobArray, const EnvironmentComponentPtrArray& environments)
   {
     if (environments.empty())
     {
@@ -366,8 +365,7 @@ namespace ToolKit
         BoundingBox vbb = std::move(volume->GetBBox());
         if (BoxBoxIntersection(vbb, job.BoundingBox))
         {
-          if (bestBox.Volume() > vbb.Volume() ||
-              job.EnvironmentVolume == nullptr)
+          if (bestBox.Volume() > vbb.Volume() || job.EnvironmentVolume == nullptr)
           {
             bestBox               = vbb;
             job.EnvironmentVolume = volume;
@@ -377,9 +375,7 @@ namespace ToolKit
     }
   }
 
-  void RenderJobProcessor::CalculateStdev(const RenderJobArray& rjVec,
-                                          float& stdev,
-                                          Vec3& mean)
+  void RenderJobProcessor::CalculateStdev(const RenderJobArray& rjVec, float& stdev, Vec3& mean)
   {
     int n = (int) rjVec.size();
 
@@ -403,10 +399,7 @@ namespace ToolKit
     stdev = std::sqrt(ssd / (float) n);
   }
 
-  bool RenderJobProcessor::IsOutlier(const RenderJob& rj,
-                                     float sigma,
-                                     const float stdev,
-                                     const Vec3& mean)
+  bool RenderJobProcessor::IsOutlier(const RenderJob& rj, float sigma, const float stdev, const Vec3& mean)
   {
     Vec3 pos   = rj.WorldTransform[3].xyz;
     Vec3 diff  = pos - mean;

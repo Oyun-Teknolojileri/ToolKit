@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Thumbnail.h"
 
 #include "App.h"
@@ -43,9 +69,7 @@ namespace ToolKit
       m_lightSystem    = nullptr;
     }
 
-    RenderTargetPtr ThumbnailRenderer::RenderThumbnail(
-        Renderer* renderer,
-        const DirectoryEntry& dirEnt)
+    RenderTargetPtr ThumbnailRenderer::RenderThumbnail(Renderer* renderer, const DirectoryEntry& dirEnt)
     {
       String fullpath = dirEnt.GetFullPath();
       m_thumbnailScene->ClearEntities();
@@ -122,30 +146,25 @@ namespace ToolKit
 
         m_surface    = std::make_shared<Surface>(Vec2(w, h));
         m_surface->UpdateGeometry(false);
-        MaterialComponentPtr matCom = m_surface->GetMaterialComponent();
+        MaterialComponentPtr matCom                  = m_surface->GetMaterialComponent();
         matCom->GetFirstMaterial()->m_diffuseTexture = texture;
         matCom->Init(false);
 
         m_thumbnailScene->AddEntity(m_surface.get());
         m_cam->m_orthographicScale = 1.0f;
-        m_cam
-            ->SetLens(w * -0.5f, w * 0.5f, h * -0.5f, h * 0.5f, 0.01f, 1000.0f);
+        m_cam->SetLens(w * -0.5f, w * 0.5f, h * -0.5f, h * 0.5f, 0.01f, 1000.0f);
 
         m_cam->m_node->SetOrientation(Quaternion());
-        m_cam->m_node->SetTranslation(Vec3(0.0f, 0.0f, 10.0f),
-                                      TransformationSpace::TS_LOCAL);
+        m_cam->m_node->SetTranslation(Vec3(0.0f, 0.0f, 10.0f), TransformationSpace::TS_LOCAL);
       }
       else // extension is not recognised, this is probably shader file.
       {
         return g_app->m_thumbnailManager.GetDefaultThumbnail();
       }
-      m_thumbnailRT =
-          std::make_shared<RenderTarget>(m_maxThumbSize, m_maxThumbSize);
+      m_thumbnailRT = std::make_shared<RenderTarget>(m_maxThumbSize, m_maxThumbSize);
       m_thumbnailRT->Init();
 
-      m_thumbnailBuffer->SetAttachment(
-          Framebuffer::Attachment::ColorAttachment0,
-          m_thumbnailRT);
+      m_thumbnailBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_thumbnailRT);
 
       Mat4 camTs = m_cam->m_node->GetTransform();
       m_lightSystem->m_parentNode->SetTransform(camTs);
@@ -160,22 +179,13 @@ namespace ToolKit
       return m_thumbnailRT;
     }
 
-    ThumbnailManager::ThumbnailManager()
-    {
-      m_defaultThumbnail = std::make_shared<RenderTarget>(10u, 10u);
-    }
+    ThumbnailManager::ThumbnailManager() { m_defaultThumbnail = std::make_shared<RenderTarget>(10u, 10u); }
 
     ThumbnailManager::~ThumbnailManager() { m_defaultThumbnail = nullptr; }
 
-    bool ThumbnailManager::IsDefaultThumbnail(RenderTargetPtr thumb)
-    {
-      return thumb == m_defaultThumbnail;
-    }
+    bool ThumbnailManager::IsDefaultThumbnail(RenderTargetPtr thumb) { return thumb == m_defaultThumbnail; }
 
-    RenderTargetPtr ThumbnailManager::GetDefaultThumbnail()
-    {
-      return m_defaultThumbnail;
-    }
+    RenderTargetPtr ThumbnailManager::GetDefaultThumbnail() { return m_defaultThumbnail; }
 
     RenderTargetPtr ThumbnailManager::GetThumbnail(const DirectoryEntry& dirEnt)
     {
@@ -190,11 +200,10 @@ namespace ToolKit
       return m_thumbnailCache[fullPath];
     }
 
-    bool ThumbnailManager::TryGetThumbnail(uint& iconId,
-                                           const DirectoryEntry& dirEnt)
+    bool ThumbnailManager::TryGetThumbnail(uint& iconId, const DirectoryEntry& dirEnt)
     {
       RenderTargetPtr thumb = GetThumbnail(dirEnt);
-      bool valid = thumb->m_textureId != 0 && !IsDefaultThumbnail(thumb);
+      bool valid            = thumb->m_textureId != 0 && !IsDefaultThumbnail(thumb);
       if (valid)
       {
         iconId = thumb->m_textureId;
@@ -207,23 +216,18 @@ namespace ToolKit
       return m_thumbnailCache.find(fullPath) != m_thumbnailCache.end();
     }
 
-    void ThumbnailManager::UpdateThumbnail(const DirectoryEntry& dirEnt)
-    {
-      CreateRenderTask(dirEnt);
-    }
+    void ThumbnailManager::UpdateThumbnail(const DirectoryEntry& dirEnt) { CreateRenderTask(dirEnt); }
 
-    void ToolKit::Editor::ThumbnailManager::CreateRenderTask(
-        const DirectoryEntry& dirEnt)
+    void ToolKit::Editor::ThumbnailManager::CreateRenderTask(const DirectoryEntry& dirEnt)
     {
       String fullPath = dirEnt.GetFullPath();
-      GetRenderSystem()->AddRenderTask(
-          {[this, fullPath, dirEnt](Renderer* renderer) -> void
-           {
-             RenderTargetPtr rt = m_renderer.RenderThumbnail(renderer, dirEnt);
-             m_thumbnailCache[fullPath] = rt;
-           },
-           nullptr,
-           RenderTaskPriority::Low});
+      GetRenderSystem()->AddRenderTask({[this, fullPath, dirEnt](Renderer* renderer) -> void
+                                        {
+                                          RenderTargetPtr rt         = m_renderer.RenderThumbnail(renderer, dirEnt);
+                                          m_thumbnailCache[fullPath] = rt;
+                                        },
+                                        nullptr,
+                                        RenderTaskPriority::Low});
     }
 
   } // namespace Editor

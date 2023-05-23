@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "PluginWindow.h"
 
 #include "App.h"
@@ -16,10 +42,7 @@ namespace ToolKit
       m_numDefaultResNames = (int) m_emulatorResolutionNames.size();
     }
 
-    PluginWindow::PluginWindow(XmlNode* node) : PluginWindow()
-    {
-      DeSerialize(nullptr, node);
-    }
+    PluginWindow::PluginWindow(XmlNode* node) : PluginWindow() { DeSerialize(nullptr, node); }
 
     PluginWindow::~PluginWindow() {}
 
@@ -38,8 +61,7 @@ namespace ToolKit
       if (canRemove)
       {
         m_screenResolutions.erase(m_screenResolutions.begin() + index);
-        m_emulatorResolutionNames.erase(m_emulatorResolutionNames.begin() +
-                                        index);
+        m_emulatorResolutionNames.erase(m_emulatorResolutionNames.begin() + index);
       }
     }
 
@@ -53,8 +75,7 @@ namespace ToolKit
           return;
         }
       }
-      GetLogger()->WriteConsole(LogType::Warning,
-                                "resolution name is not exist!");
+      GetLogger()->WriteConsole(LogType::Warning, "resolution name is not exist!");
     }
 
     void PluginWindow::Show()
@@ -64,8 +85,7 @@ namespace ToolKit
 
       if (ImGui::Begin("Simulation##Plgn",
                        &m_visible,
-                       ImGuiWindowFlags_NoScrollbar |
-                           ImGuiWindowFlags_NoScrollWithMouse))
+                       ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
       {
         HandleStates();
         ShowActionButtons();
@@ -78,15 +98,9 @@ namespace ToolKit
 
     Window::Type PluginWindow::GetType() const { return Type::PluginWindow; }
 
-    void PluginWindow::Serialize(XmlDocument* doc, XmlNode* parent) const
-    {
-      Window::Serialize(doc, parent);
-    }
+    void PluginWindow::Serialize(XmlDocument* doc, XmlNode* parent) const { Window::Serialize(doc, parent); }
 
-    void PluginWindow::DeSerialize(XmlDocument* doc, XmlNode* parent)
-    {
-      Window::DeSerialize(doc, parent);
-    }
+    void PluginWindow::DeSerialize(XmlDocument* doc, XmlNode* parent) { Window::DeSerialize(doc, parent); }
 
     void PluginWindow::UpdateSimulationWndSize()
     {
@@ -161,8 +175,7 @@ namespace ToolKit
       {
         GreenTint();
         // Play.
-        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_playIcon), btnSize) &&
-            !g_app->IsCompiling())
+        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_playIcon), btnSize) && !g_app->IsCompiling())
         {
           m_simulationModeDisabled = true;
           g_app->SetGameMod(GameMod::Playing);
@@ -203,8 +216,7 @@ namespace ToolKit
         }
         else
         {
-          g_app->GetConsole()->AddLog("There is not a vaild code folder.",
-                                      LogType::Error);
+          g_app->GetConsole()->AddLog("There is not a vaild code folder.", LogType::Error);
         }
       }
 
@@ -220,10 +232,7 @@ namespace ToolKit
       ImGui::SameLine();
     }
 
-    String PluginWindow::EmuResToString(EmulatorResolution emuRes)
-    {
-      return m_emulatorResolutionNames[(uint) emuRes];
-    }
+    String PluginWindow::EmuResToString(EmulatorResolution emuRes) { return m_emulatorResolutionNames[(uint) emuRes]; }
 
     void PluginWindow::ShowSettings()
     {
@@ -235,13 +244,10 @@ namespace ToolKit
       // Resolution Bar
       EmulatorResolution resolution = m_settings->Resolution;
       int resolutionType            = (int) resolution;
-      resolutionType =
-          glm::min(resolutionType, (int) m_screenResolutions.size() - 1);
+      resolutionType                = glm::min(resolutionType, (int) m_screenResolutions.size() - 1);
 
-      float textWidth =
-          ImGui::CalcTextSize(m_emulatorResolutionNames[resolutionType].data())
-              .x;
-      textWidth = glm::max(80.0f, textWidth);
+      float textWidth               = ImGui::CalcTextSize(m_emulatorResolutionNames[resolutionType].data()).x;
+      textWidth                     = glm::max(80.0f, textWidth);
       ImGui::SetNextItemWidth(textWidth * 1.3f);
 
       AddResolutionName("Edit Resolutions");
@@ -255,10 +261,7 @@ namespace ToolKit
         enumNames.push_back(&m_emulatorResolutionNames[i][0]);
       }
 
-      if (ImGui::Combo("##Resolution",
-                       &resolutionType,
-                       enumNames.data(),
-                       (int) enumNames.size()))
+      if (ImGui::Combo("##Resolution", &resolutionType, enumNames.data(), (int) enumNames.size()))
       {
         if (resolutionType == lastEnumIndex)
         {
@@ -267,15 +270,14 @@ namespace ToolKit
         }
         else
         {
-          EmulatorResolution resolution =
-              static_cast<EmulatorResolution>(resolutionType);
+          EmulatorResolution resolution = static_cast<EmulatorResolution>(resolutionType);
 
-          IVec2 resolutionSize   = m_screenResolutions[resolutionType];
+          IVec2 resolutionSize          = m_screenResolutions[resolutionType];
 
-          m_settings->Width      = (float) resolutionSize.x;
-          m_settings->Height     = (float) resolutionSize.y;
+          m_settings->Width             = (float) resolutionSize.x;
+          m_settings->Height            = (float) resolutionSize.y;
 
-          m_settings->Resolution = resolution;
+          m_settings->Resolution        = resolution;
           UpdateSimulationWndSize();
         }
       }
@@ -285,13 +287,10 @@ namespace ToolKit
       {
         ImGui::Begin("Edit Resolutions",
                      &m_resolutionSettingsWindowEnabled,
-                     ImGuiWindowFlags_NoScrollWithMouse |
-                         ImGuiWindowFlags_NoScrollbar |
+                     ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar |
                          ImGuiWindowFlags_AlwaysAutoResize);
 
-        for (int i = m_numDefaultResNames;
-             i < (int) m_emulatorResolutionNames.size();
-             i++)
+        for (int i = m_numDefaultResNames; i < (int) m_emulatorResolutionNames.size(); i++)
         {
           ImGui::PushID(i * 333);
           ImGui::InputText("name", m_emulatorResolutionNames[i].data(), 32);
@@ -342,8 +341,7 @@ namespace ToolKit
       ImGui::Text("Rotate");
       ImGui::SameLine();
 
-      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_phoneRotateIcon),
-                             ImVec2(20, 20)))
+      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_phoneRotateIcon), ImVec2(20, 20)))
       {
         m_settings->Landscape = !m_settings->Landscape;
         UpdateSimulationWndSize();
@@ -352,8 +350,7 @@ namespace ToolKit
 
     void PluginWindow::UpdateCanvas(uint width, uint height)
     {
-      EditorViewport2d* viewport =
-          g_app->GetWindow<EditorViewport2d>(g_2dViewport);
+      EditorViewport2d* viewport = g_app->GetWindow<EditorViewport2d>(g_2dViewport);
 
       if (viewport != nullptr)
       {

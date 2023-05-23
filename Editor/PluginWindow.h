@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #pragma once
 
 #include "UI.h"
@@ -90,22 +116,21 @@ namespace ToolKit
           IVec2(412, 914)    // Galaxy_A51_A71
       };
 
-      std::vector<String> m_emulatorResolutionNames = {
-          "Custom Resolutions\0",
-          "Full HD (1080p)\0",
-          "QHD (1440p)\0",
-          "iPhone SE (375x667)\0",
-          "iPhone XR (414x896)\0",
-          "iPhone 12 Pro (390x844)\0",
-          "Pixel 5 (393x851)\0",
-          "Galaxy S20 Ultra (412x915)\0",
-          "Galaxy Note 20 (412x915)\0",
-          "Galaxy Note 20 Ultra (390x844)\0",
-          "Ipad Air  (820x118)\0",
-          "Ipad Mini (768x102)\0",
-          "Surface Pro 7 (912x139)\0",
-          "Surface Duo (540x720)\0",
-          "Galaxy A51 / A71 (412x914)\0"};
+      std::vector<String> m_emulatorResolutionNames = {"Custom Resolutions\0",
+                                                       "Full HD (1080p)\0",
+                                                       "QHD (1440p)\0",
+                                                       "iPhone SE (375x667)\0",
+                                                       "iPhone XR (414x896)\0",
+                                                       "iPhone 12 Pro (390x844)\0",
+                                                       "Pixel 5 (393x851)\0",
+                                                       "Galaxy S20 Ultra (412x915)\0",
+                                                       "Galaxy Note 20 (412x915)\0",
+                                                       "Galaxy Note 20 Ultra (390x844)\0",
+                                                       "Ipad Air  (820x118)\0",
+                                                       "Ipad Mini (768x102)\0",
+                                                       "Surface Pro 7 (912x139)\0",
+                                                       "Surface Duo (540x720)\0",
+                                                       "Galaxy A51 / A71 (412x914)\0"};
 
      private:
       SimulationSettings* m_settings         = nullptr;
