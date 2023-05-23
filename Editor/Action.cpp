@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Action.h"
 
 #include "AnimationControllerComponent.h"
@@ -43,8 +69,7 @@ namespace ToolKit
     {
       if (isActionCommitted)
       {
-        AnimControllerComponentPtr comp =
-            ntt->GetComponent<AnimControllerComponent>();
+        AnimControllerComponentPtr comp = ntt->GetComponent<AnimControllerComponent>();
         if (comp)
         {
           comp->Stop();
@@ -183,10 +208,7 @@ namespace ToolKit
       m_actionGrouping = false;
     }
 
-    ActionManager::~ActionManager()
-    {
-      assert(m_initiated == false && "Call ActionManager::UnInit.");
-    }
+    ActionManager::~ActionManager() { assert(m_initiated == false && "Call ActionManager::UnInit."); }
 
     void ActionManager::Init()
     {
@@ -213,8 +235,7 @@ namespace ToolKit
             SafeDel(a);
           }
 
-          m_actionStack.erase(m_actionStack.begin() + m_stackPointer + 1,
-                              m_actionStack.end());
+          m_actionStack.erase(m_actionStack.begin() + m_stackPointer + 1, m_actionStack.end());
         }
       }
       else
@@ -247,8 +268,7 @@ namespace ToolKit
       }
 
       // Sanity Checks.
-      assert(m_stackPointer == static_cast<int>(m_actionStack.size()) - 1 &&
-             "Call grouping right after add.");
+      assert(m_stackPointer == static_cast<int>(m_actionStack.size()) - 1 && "Call grouping right after add.");
       if (n >= static_cast<int>(m_actionStack.size()) && !m_actionGrouping)
       {
         assert(static_cast<int>(m_actionStack.size()) >= n &&
@@ -295,8 +315,7 @@ namespace ToolKit
           Action* action = m_actionStack[m_stackPointer];
 
           // Undo in reverse order.
-          for (int i = static_cast<int>(action->m_group.size()) - 1; i > -1;
-               i--)
+          for (int i = static_cast<int>(action->m_group.size()) - 1; i > -1; i--)
           {
             action->m_group[i]->Undo();
           }

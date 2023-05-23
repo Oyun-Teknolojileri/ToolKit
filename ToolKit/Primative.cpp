@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Primative.h"
 
 #include "DirectionComponent.h"
@@ -14,10 +40,7 @@
 namespace ToolKit
 {
 
-  Billboard::Billboard(const Settings& settings) : m_settings(settings)
-  {
-    AddComponent(new MeshComponent());
-  }
+  Billboard::Billboard(const Settings& settings) : m_settings(settings) { AddComponent(new MeshComponent()); }
 
   void Billboard::LookAt(Camera* cam, float scale)
   {
@@ -37,9 +60,9 @@ namespace ToolKit
       }
       else
       {
-        Vec3 cdir        = data.dir;
-        Vec3 camWorldPos = data.pos;
-        Vec3 dir         = glm::normalize(m_worldLocation - camWorldPos);
+        Vec3 cdir                    = data.dir;
+        Vec3 camWorldPos             = data.pos;
+        Vec3 dir                     = glm::normalize(m_worldLocation - camWorldPos);
 
         // Always place at the same distance from the near plane.
         float radialToPlanarDistance = 1.0f / glm::dot(cdir, dir);
@@ -48,22 +71,19 @@ namespace ToolKit
           return;
         }
 
-        Vec3 billWorldPos = camWorldPos + dir * m_settings.distanceToCamera *
-                                              radialToPlanarDistance;
+        Vec3 billWorldPos = camWorldPos + dir * m_settings.distanceToCamera * radialToPlanarDistance;
 
         m_node->SetTranslation(billWorldPos);
         if (m_settings.heightInScreenSpace > 0.0f)
         {
           // Compensate shrinkage due to height changes.
           float magicScale = 6.0f;
-          m_node->SetScale(
-              Vec3(magicScale * m_settings.heightInScreenSpace / scale));
+          m_node->SetScale(Vec3(magicScale * m_settings.heightInScreenSpace / scale));
         }
 
         // Compensate shrinkage due to fov changes.
-        float initialFovRadians =
-            glm::quarter_pi<float>(); // Initial field of view in radians
-        float newFovRadians        = cam->Fov(); // New field of view in radians
+        float initialFovRadians    = glm::quarter_pi<float>(); // Initial field of view in radians
+        float newFovRadians        = cam->Fov();               // New field of view in radians
 
         // Calculate scaling factor
         float initialFrustumHeight = tan(initialFovRadians / 2.0f);
@@ -118,10 +138,7 @@ namespace ToolKit
 
   EntityType Cube::GetType() const { return EntityType::Entity_Cube; }
 
-  void Cube::Serialize(XmlDocument* doc, XmlNode* parent) const
-  {
-    Entity::Serialize(doc, parent);
-  }
+  void Cube::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
 
   void Cube::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
@@ -280,12 +297,11 @@ namespace ToolKit
     MeshPtr mesh               = meshComp->GetMeshVal();
     mesh->m_vertexCount        = (uint) vertices.size();
     mesh->m_clientSideVertices = vertices;
-    mesh->m_clientSideIndices  = {
-        0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17,
-        18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35};
+    mesh->m_clientSideIndices  = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17,
+                                  18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35};
 
-    mesh->m_indexCount = (uint) mesh->m_clientSideIndices.size();
-    mesh->m_material   = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_indexCount         = (uint) mesh->m_clientSideIndices.size();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
@@ -304,10 +320,7 @@ namespace ToolKit
 
   EntityType Quad::GetType() const { return EntityType::Entity_Quad; }
 
-  void Quad::Serialize(XmlDocument* doc, XmlNode* parent) const
-  {
-    Entity::Serialize(doc, parent);
-  }
+  void Quad::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
 
   void Quad::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
@@ -346,7 +359,7 @@ namespace ToolKit
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount         = 6;
     mesh->m_clientSideIndices  = {0, 1, 2, 0, 2, 3};
-    mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
@@ -435,16 +448,13 @@ namespace ToolKit
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount         = (uint) indices.size();
     mesh->m_clientSideIndices  = indices;
-    mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
   }
 
-  void Sphere::Serialize(XmlDocument* doc, XmlNode* parent) const
-  {
-    Entity::Serialize(doc, parent);
-  }
+  void Sphere::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
 
   void Sphere::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
@@ -510,8 +520,7 @@ namespace ToolKit
         Vertex v {
             Vec3(x0, i * deltaHeight, z0),
             q * refNormal,
-            Vec2(j / static_cast<float>(nSegBase),
-                 i / static_cast<float>(nSegHeight)),
+            Vec2(j / static_cast<float>(nSegBase), i / static_cast<float>(nSegHeight)),
             ZERO // btan missing.
         };
 
@@ -570,7 +579,7 @@ namespace ToolKit
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount         = static_cast<uint>(indices.size());
     mesh->m_clientSideIndices  = indices;
-    mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
@@ -585,10 +594,7 @@ namespace ToolKit
 
   EntityType Cone::GetType() const { return EntityType::Entity_Cone; }
 
-  void Cone::Serialize(XmlDocument* doc, XmlNode* parent) const
-  {
-    Entity::Serialize(doc, parent);
-  }
+  void Cone::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
 
   void Cone::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
@@ -638,18 +644,18 @@ namespace ToolKit
     vertices.resize(8);
 
     // Line
-    vertices[0].pos    = Vec3(0.0f, 0.0f, 0.0f);
-    vertices[1].pos    = Vec3(0.8f, 0.0f, 0.0f);
+    vertices[0].pos                    = Vec3(0.0f, 0.0f, 0.0f);
+    vertices[1].pos                    = Vec3(0.8f, 0.0f, 0.0f);
 
     // Triangle
-    vertices[2].pos    = Vec3(0.8f, -0.2f, 0.0f);
-    vertices[3].pos    = Vec3(0.8f, 0.2f, 0.0f);
-    vertices[4].pos    = Vec3(0.8f, 0.2f, 0.0f);
-    vertices[5].pos    = Vec3(1.0f, 0.0f, 0.0f);
-    vertices[6].pos    = Vec3(1.0f, 0.0f, 0.0f);
-    vertices[7].pos    = Vec3(0.8f, -0.2f, 0.0f);
+    vertices[2].pos                    = Vec3(0.8f, -0.2f, 0.0f);
+    vertices[3].pos                    = Vec3(0.8f, 0.2f, 0.0f);
+    vertices[4].pos                    = Vec3(0.8f, 0.2f, 0.0f);
+    vertices[5].pos                    = Vec3(1.0f, 0.0f, 0.0f);
+    vertices[6].pos                    = Vec3(1.0f, 0.0f, 0.0f);
+    vertices[7].pos                    = Vec3(0.8f, -0.2f, 0.0f);
 
-    MaterialPtr newMat = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+    MaterialPtr newMat                 = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
     newMat->GetRenderState()->drawType = DrawType::Line;
     newMat->m_color                    = Vec3(0.89f, 0.239f, 0.341f);
 
@@ -671,8 +677,8 @@ namespace ToolKit
       vertices[i].pos = rotation * vertices[i].pos;
     }
 
-    MeshComponentPtr mesh             = GetComponent<MeshComponent>();
-    mesh->GetMeshVal()->m_vertexCount = static_cast<uint>(vertices.size());
+    MeshComponentPtr mesh                    = GetComponent<MeshComponent>();
+    mesh->GetMeshVal()->m_vertexCount        = static_cast<uint>(vertices.size());
     mesh->GetMeshVal()->m_clientSideVertices = vertices;
     mesh->GetMeshVal()->m_material           = newMat;
 
@@ -680,10 +686,7 @@ namespace ToolKit
     mesh->GetMeshVal()->ConstructFaces();
   }
 
-  LineBatch::LineBatch(const Vec3Array& linePnts,
-                       const Vec3& color,
-                       DrawType t,
-                       float lineWidth)
+  LineBatch::LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
   {
     AddComponent(new MeshComponent());
     Generate(linePnts, color, t, lineWidth);
@@ -691,24 +694,18 @@ namespace ToolKit
 
   LineBatch::LineBatch() { AddComponent(new MeshComponent()); }
 
-  Entity* LineBatch::CopyTo(Entity* copyTo) const
-  {
-    return Entity::CopyTo(copyTo);
-  }
+  Entity* LineBatch::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 
   EntityType LineBatch::GetType() const { return EntityType::Entity_LineBatch; }
 
-  void LineBatch::Generate(const Vec3Array& linePnts,
-                           const Vec3& color,
-                           DrawType t,
-                           float lineWidth)
+  void LineBatch::Generate(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
   {
     VertexArray vertices;
     vertices.resize(linePnts.size());
 
     MeshPtr mesh = GetComponent<MeshComponent>()->GetMeshVal();
     mesh->UnInit();
-    mesh->m_material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+    mesh->m_material                             = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
     mesh->m_material->GetRenderState()->drawType = t;
 
     for (size_t i = 0; i < linePnts.size(); i++)

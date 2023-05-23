@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #pragma once
 
 #ifdef _WIN32
@@ -107,14 +133,13 @@ namespace ToolKit
         //
         // Get size of destination UTF-16 buffer, in WCHAR's
         //
-        int cchUTF16 = ::MultiByteToWideChar(
-            CP_UTF8,              // convert from UTF-8
-            MB_ERR_INVALID_CHARS, // error on invalid chars
-            pszTextUTF8,          // source UTF-8 string
-            cbUTF8,               // total length of source UTF-8 string,
-                    // in CHAR's (= bytes), including end-of-string \0
-            NULL, // unused - no conversion done in this step
-            0     // request size of destination buffer, in WCHAR's
+        int cchUTF16 = ::MultiByteToWideChar(CP_UTF8,              // convert from UTF-8
+                                             MB_ERR_INVALID_CHARS, // error on invalid chars
+                                             pszTextUTF8,          // source UTF-8 string
+                                             cbUTF8,               // total length of source UTF-8 string,
+                                                                   // in CHAR's (= bytes), including end-of-string \0
+                                             NULL,                 // unused - no conversion done in this step
+                                             0                     // request size of destination buffer, in WCHAR's
         );
         ATLASSERT(cchUTF16 != 0);
         if (cchUTF16 == 0)
@@ -131,14 +156,13 @@ namespace ToolKit
         //
         // Do the conversion from UTF-8 to UTF-16
         //
-        int result      = ::MultiByteToWideChar(
-            CP_UTF8,              // convert from UTF-8
-            MB_ERR_INVALID_CHARS, // error on invalid chars
-            pszTextUTF8,          // source UTF-8 string
-            cbUTF8,               // total length of source UTF-8 string,
-                    // in CHAR's (= bytes), including end-of-string \0
-            pszUTF16, // destination buffer
-            cchUTF16  // size of destination buffer, in WCHAR's
+        int result      = ::MultiByteToWideChar(CP_UTF8,              // convert from UTF-8
+                                           MB_ERR_INVALID_CHARS, // error on invalid chars
+                                           pszTextUTF8,          // source UTF-8 string
+                                           cbUTF8,               // total length of source UTF-8 string,
+                                                                 // in CHAR's (= bytes), including end-of-string \0
+                                           pszUTF16,             // destination buffer
+                                           cchUTF16              // size of destination buffer, in WCHAR's
         );
         ATLASSERT(result != 0);
         if (result == 0)
@@ -198,16 +222,15 @@ namespace ToolKit
         //
         // Get size of destination UTF-8 buffer, in CHAR's (= bytes)
         //
-        int cbUTF8 = ::WideCharToMultiByte(
-            CP_UTF8,                    // convert to UTF-8
-            dwConversionFlags,          // specify conversion behavior
-            pszTextUTF16,               // source UTF-16 string
-            static_cast<int>(cchUTF16), // total source string length, in
-                                        // WCHAR's, including end-of-string \0
-            NULL, // unused - no conversion required in this step
-            0,    // request buffer size
-            NULL,
-            NULL // unused
+        int cbUTF8 = ::WideCharToMultiByte(CP_UTF8,                    // convert to UTF-8
+                                           dwConversionFlags,          // specify conversion behavior
+                                           pszTextUTF16,               // source UTF-16 string
+                                           static_cast<int>(cchUTF16), // total source string length, in
+                                                                       // WCHAR's, including end-of-string \0
+                                           NULL,                       // unused - no conversion required in this step
+                                           0,                          // request buffer size
+                                           NULL,
+                                           NULL // unused
         );
         ATLASSERT(cbUTF8 != 0);
         if (cbUTF8 == 0)
@@ -225,16 +248,15 @@ namespace ToolKit
         //
         // Do the conversion from UTF-16 to UTF-8
         //
-        int result    = ::WideCharToMultiByte(
-            CP_UTF8,                    // convert to UTF-8
-            dwConversionFlags,          // specify conversion behavior
-            pszTextUTF16,               // source UTF-16 string
-            static_cast<int>(cchUTF16), // total source string length, in
-                                        // WCHAR's, including end-of-string \0
-            pszUTF8, // destination buffer
-            cbUTF8,  // destination buffer size, in bytes
-            NULL,
-            NULL // unused
+        int result    = ::WideCharToMultiByte(CP_UTF8,                    // convert to UTF-8
+                                           dwConversionFlags,          // specify conversion behavior
+                                           pszTextUTF16,               // source UTF-16 string
+                                           static_cast<int>(cchUTF16), // total source string length, in
+                                                                       // WCHAR's, including end-of-string \0
+                                           pszUTF8,                    // destination buffer
+                                           cbUTF8,                     // destination buffer size, in bytes
+                                           NULL,
+                                           NULL // unused
         );
         ATLASSERT(result != 0);
         if (result == 0)
@@ -252,10 +274,8 @@ namespace ToolKit
     } // namespace UTF8Util
 
     // Win32 console command execution callback.
-    static auto g_SysComExecFn = [](StringView cmd,
-                                    bool async,
-                                    bool showConsole,
-                                    std::function<void(int)> callback) -> int
+    static auto g_SysComExecFn =
+        [](StringView cmd, bool async, bool showConsole, std::function<void(int)> callback) -> int
     {
       // https://learn.microsoft.com/en-us/windows/win32/procthread/creating-processes
       STARTUPINFOW si;
@@ -268,9 +288,8 @@ namespace ToolKit
 
       ZeroMemory(&pi, sizeof(pi));
 
-      CStringW wCmd =
-          ToolKit::Win32Helpers::UTF8Util::ConvertUTF8ToUTF16("cmd /C ") +
-          ToolKit::Win32Helpers::UTF8Util::ConvertUTF8ToUTF16(cmd.data());
+      CStringW wCmd = ToolKit::Win32Helpers::UTF8Util::ConvertUTF8ToUTF16("cmd /C ") +
+                      ToolKit::Win32Helpers::UTF8Util::ConvertUTF8ToUTF16(cmd.data());
 
       // Start the child process.
       if (!CreateProcessW(NULL,             // No module name (use command line)
@@ -282,13 +301,11 @@ namespace ToolKit
                           NULL,             // Use parent's environment block
                           NULL,             // Use parent's starting directory
                           &si,              // Pointer to STARTUPINFO structure
-                          &pi) // Pointer to PROCESS_INFORMATION structure
+                          &pi)              // Pointer to PROCESS_INFORMATION structure
       )
       {
         DWORD errCode = GetLastError();
-        GetLogger()->WriteConsole(LogType::Error,
-                                  "CreateProcess failed (%d).\n",
-                                  errCode);
+        GetLogger()->WriteConsole(LogType::Error, "CreateProcess failed (%d).\n", errCode);
         return (int) errCode;
       }
 
@@ -360,11 +377,7 @@ namespace ToolKit
 
       static char szOutputBuff[1024] = {0};
       // concat log type name and log string
-      _snprintf(szOutputBuff,
-                sizeof(szOutputBuff),
-                "%s %s\n",
-                logNames[logType],
-                szBuff);
+      _snprintf(szOutputBuff, sizeof(szOutputBuff), "%s %s\n", logNames[logType], szBuff);
 
       OutputDebugString(szOutputBuff);
     }

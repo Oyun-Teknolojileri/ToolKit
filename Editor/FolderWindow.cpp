@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "FolderWindow.h"
 
 #include "App.h"
@@ -15,10 +41,7 @@ namespace ToolKit
       DecomposePath(fullPath, &m_rootPath, &m_fileName, &m_ext);
     }
 
-    String DirectoryEntry::GetFullPath() const
-    {
-      return ConcatPaths({m_rootPath, m_fileName + m_ext});
-    }
+    String DirectoryEntry::GetFullPath() const { return ConcatPaths({m_rootPath, m_fileName + m_ext}); }
 
     ResourceManager* DirectoryEntry::GetManager() const
     {
@@ -50,10 +73,9 @@ namespace ToolKit
 
     String GetRootPath(const String& folder)
     {
-      static std::unordered_set<String> rootMap =
-          {"Fonts", "Materials", "Meshes", "Scenes", "Shaders", "Textures"};
+      static std::unordered_set<String> rootMap = {"Fonts", "Materials", "Meshes", "Scenes", "Shaders", "Textures"};
 
-      String path = folder;
+      String path                               = folder;
       String subFolder {};
       // traverse parent paths and search a root folder
       while (path.size() > 0ull)
@@ -84,10 +106,7 @@ namespace ToolKit
       return DefaultPath();
     }
 
-    RenderTargetPtr DirectoryEntry::GetThumbnail() const
-    {
-      return g_app->m_thumbnailManager.GetThumbnail(*this);
-    }
+    RenderTargetPtr DirectoryEntry::GetThumbnail() const { return g_app->m_thumbnailManager.GetThumbnail(*this); }
 
     FolderWindow::FolderWindow(XmlNode* node)
     {
@@ -95,10 +114,7 @@ namespace ToolKit
       Iterate(ResourcePath(), true);
     }
 
-    FolderWindow::FolderWindow(bool addEngine)
-    {
-      Iterate(ResourcePath(), true, addEngine);
-    }
+    FolderWindow::FolderWindow(bool addEngine) { Iterate(ResourcePath(), true, addEngine); }
 
     FolderWindow::~FolderWindow() {}
 
@@ -112,17 +128,13 @@ namespace ToolKit
     }
 
     // parent will start with -1
-    int FolderWindow::CreateTreeRec(int parent,
-                                    const std::filesystem::path& path)
+    int FolderWindow::CreateTreeRec(int parent, const std::filesystem::path& path)
     {
       String folderName = path.filename().u8string();
       int index         = (int) m_folderNodes.size();
-      m_folderNodes.emplace_back(index,
-                                 std::filesystem::absolute(path).u8string(),
-                                 folderName);
+      m_folderNodes.emplace_back(index, std::filesystem::absolute(path).u8string(), folderName);
 
-      for (const std::filesystem::directory_entry& directory :
-           std::filesystem::directory_iterator(path))
+      for (const std::filesystem::directory_entry& directory : std::filesystem::directory_iterator(path))
       {
         if (!directory.is_directory())
         {
@@ -156,11 +168,11 @@ namespace ToolKit
         return; // shouldn't happen
       }
 
-      FolderNode& node = m_folderNodes[index];
-      String icon      = node.active ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
-      String nodeHeader = icon + ICON_SPACE + node.name;
-      float headerLen   = ImGui::CalcTextSize(nodeHeader.c_str()).x;
-      headerLen += (depth * 20.0f) + 70.0f; // depth padding + UI start padding
+      FolderNode& node       = m_folderNodes[index];
+      String icon            = node.active ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
+      String nodeHeader      = icon + ICON_SPACE + node.name;
+      float headerLen        = ImGui::CalcTextSize(nodeHeader.c_str()).x;
+      headerLen              += (depth * 20.0f) + 70.0f; // depth padding + UI start padding
 
       m_maxTreeNodeWidth     = glm::max(headerLen, m_maxTreeNodeWidth);
 
@@ -185,8 +197,7 @@ namespace ToolKit
             DeactivateNode(lastSelectedEntry.m_folder);
             lastSelectedEntry.m_active = false;
 
-            if (GetRootPath(selectedEntry.GetPath()) !=
-                GetRootPath(lastSelectedEntry.GetPath()))
+            if (GetRootPath(selectedEntry.GetPath()) != GetRootPath(lastSelectedEntry.GetPath()))
             {
               // root folders different we should switch active folder
               m_activeFolder = selected;
@@ -215,8 +226,7 @@ namespace ToolKit
       {
         if (ImGui::BeginDragDropTarget())
         {
-          if (const ImGuiPayload* payload =
-                  ImGui::AcceptDragDropPayload("BrowserDragZone"))
+          if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
           {
             if (g_dragBeginView != nullptr)
             {
@@ -232,8 +242,7 @@ namespace ToolKit
 
       if (node.childs.size() == 0)
       {
-        nodeFlags |=
-            ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
         if (ImGui::TreeNodeEx(stdId.c_str(), nodeFlags, nodeHeader.c_str()))
         {
@@ -297,10 +306,7 @@ namespace ToolKit
     {
       String currRootPath;
       auto IsDescendentFn = [&currRootPath](StringView candidate) -> bool
-      {
-        return !currRootPath.empty() &&
-               candidate.find(currRootPath) != std::string::npos;
-      };
+      { return !currRootPath.empty() && candidate.find(currRootPath) != std::string::npos; };
 
       IntArray views;
 
@@ -329,8 +335,7 @@ namespace ToolKit
       {
         HandleStates();
 
-        if (!g_app->m_workspace.GetActiveWorkspace().empty() &&
-            g_app->m_workspace.GetActiveProject().name.empty())
+        if (!g_app->m_workspace.GetActiveWorkspace().empty() && g_app->m_workspace.GetActiveProject().name.empty())
         {
           ImGui::Text("Load a project.");
           ImGui::End();
@@ -354,10 +359,8 @@ namespace ToolKit
         ImGui::PushID("##FolderContent");
         ImGui::BeginGroup();
         if (ImGui::BeginTabBar("Folders",
-                               ImGuiTabBarFlags_NoTooltip |
-                                   ImGuiTabBarFlags_AutoSelectNewTabs |
-                                   ImGuiWindowFlags_NoScrollWithMouse |
-                                   ImGuiWindowFlags_NoScrollbar))
+                               ImGuiTabBarFlags_NoTooltip | ImGuiTabBarFlags_AutoSelectNewTabs |
+                                   ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar))
         {
           for (int i : GetVeiws())
           {
@@ -387,8 +390,7 @@ namespace ToolKit
       char pathSep        = GetPathSeparator();
       int baseCount       = CountChar(resourceRoot, pathSep);
 
-      for (const std::filesystem::directory_entry& entry :
-           std::filesystem::directory_iterator(path))
+      for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(path))
       {
         if (entry.is_directory())
         {
@@ -510,8 +512,7 @@ namespace ToolKit
       return -1;
     }
 
-    bool FolderWindow::GetFileEntry(const String& fullPath,
-                                    DirectoryEntry& entry)
+    bool FolderWindow::GetFileEntry(const String& fullPath, DirectoryEntry& entry)
     {
       String path, name, ext;
       DecomposePath(fullPath, &path, &name, &ext);
@@ -532,24 +533,21 @@ namespace ToolKit
     void FolderWindow::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
       Window::Serialize(doc, parent);
-      XmlNode* node = parent->last_node();
+      XmlNode* node   = parent->last_node();
 
-      XmlNode* folder =
-          doc->allocate_node(rapidxml::node_element, "FolderWindow");
+      XmlNode* folder = doc->allocate_node(rapidxml::node_element, "FolderWindow");
       node->append_node(folder);
       WriteAttr(folder, doc, "activeFolder", std::to_string(m_activeFolder));
       WriteAttr(folder, doc, "showStructure", std::to_string(m_showStructure));
 
       for (const FolderView& view : m_entries)
       {
-        XmlNode* viewNode =
-            doc->allocate_node(rapidxml::node_element, "FolderView");
+        XmlNode* viewNode = doc->allocate_node(rapidxml::node_element, "FolderView");
         WriteAttr(viewNode, doc, XmlNodePath.data(), view.GetPath());
         WriteAttr(viewNode, doc, "vis", std::to_string(view.m_visible));
         WriteAttr(viewNode, doc, "active", std::to_string(view.m_active));
         folder->append_node(viewNode);
-        XmlNode* setting =
-            doc->allocate_node(rapidxml::node_element, "IconSize");
+        XmlNode* setting = doc->allocate_node(rapidxml::node_element, "IconSize");
         WriteVec(setting, doc, view.m_iconSize);
         viewNode->append_node(setting);
       }

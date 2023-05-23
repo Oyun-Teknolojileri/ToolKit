@@ -1,12 +1,38 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Mesh.h"
 
 #include "Common/base64.h"
-#include "gles2.h"
 #include "Material.h"
 #include "Skeleton.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "Util.h"
+#include "gles2.h"
 
 #include <rapidxml.hpp>
 #include <rapidxml_utils.hpp>
@@ -41,30 +67,15 @@ namespace ToolKit
       offset += 3 * sizeof(float);
 
       glEnableVertexAttribArray(1); // Normal
-      glVertexAttribPointer(1,
-                            3,
-                            GL_FLOAT,
-                            GL_FALSE,
-                            sizeof(Vertex),
-                            BUFFER_OFFSET(offset));
+      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
       offset += 3 * sizeof(float);
 
       glEnableVertexAttribArray(2); // Texture
-      glVertexAttribPointer(2,
-                            2,
-                            GL_FLOAT,
-                            GL_FALSE,
-                            sizeof(Vertex),
-                            BUFFER_OFFSET(offset));
+      glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
       offset += 2 * sizeof(float);
 
       glEnableVertexAttribArray(3); // BiTangent
-      glVertexAttribPointer(3,
-                            3,
-                            GL_FLOAT,
-                            GL_FALSE,
-                            sizeof(Vertex),
-                            BUFFER_OFFSET(offset));
+      glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
     }
 
     if (layout == VertexLayout::SkinMesh)
@@ -75,48 +86,23 @@ namespace ToolKit
       offset += 3 * sizeof(float);
 
       glEnableVertexAttribArray(1); // Normal
-      glVertexAttribPointer(1,
-                            3,
-                            GL_FLOAT,
-                            GL_FALSE,
-                            sizeof(SkinVertex),
-                            BUFFER_OFFSET(offset));
+      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
       offset += 3 * sizeof(float);
 
       glEnableVertexAttribArray(2); // Texture
-      glVertexAttribPointer(2,
-                            2,
-                            GL_FLOAT,
-                            GL_FALSE,
-                            sizeof(SkinVertex),
-                            BUFFER_OFFSET(offset));
+      glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
       offset += 2 * sizeof(float);
 
       glEnableVertexAttribArray(3); // BiTangent
-      glVertexAttribPointer(3,
-                            3,
-                            GL_FLOAT,
-                            GL_FALSE,
-                            sizeof(SkinVertex),
-                            BUFFER_OFFSET(offset));
+      glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
       offset += 3 * sizeof(float);
 
       glEnableVertexAttribArray(4); // Bones
-      glVertexAttribPointer(4,
-                            4,
-                            GL_FLOAT,
-                            GL_FALSE,
-                            sizeof(SkinVertex),
-                            BUFFER_OFFSET(offset));
+      glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
       offset += 4 * sizeof(float);
 
       glEnableVertexAttribArray(5); // Weights
-      glVertexAttribPointer(5,
-                            4,
-                            GL_FLOAT,
-                            GL_FALSE,
-                            sizeof(SkinVertex),
-                            BUFFER_OFFSET(offset));
+      glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
     }
   }
 
@@ -224,11 +210,7 @@ namespace ToolKit
       glBindBuffer(GL_COPY_READ_BUFFER, m_vboVertexId);
       uint size = GetVertexSize() * m_vertexCount;
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
-      glCopyBufferSubData(GL_COPY_READ_BUFFER,
-                          GL_COPY_WRITE_BUFFER,
-                          0,
-                          0,
-                          size);
+      glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
     }
 
     if (m_indexCount > 0)
@@ -238,11 +220,7 @@ namespace ToolKit
       glBindBuffer(GL_COPY_READ_BUFFER, m_vboIndexId);
       uint size = sizeof(uint) * m_indexCount;
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
-      glCopyBufferSubData(GL_COPY_READ_BUFFER,
-                          GL_COPY_WRITE_BUFFER,
-                          0,
-                          0,
-                          size);
+      glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
     }
 
     cpy->m_material = m_material->Copy<Material>();
@@ -273,7 +251,7 @@ namespace ToolKit
           }
 
           // Update this aabb to contain submesh aabb.
-          if (!mesh->m_clientSideVertices.empty()) 
+          if (!mesh->m_clientSideVertices.empty())
           {
             m_aabb.UpdateBoundary(mesh->m_aabb);
           }
@@ -287,8 +265,7 @@ namespace ToolKit
 
   void Mesh::GetAllMeshes(MeshRawCPtrArray& meshes) const
   {
-    TraverseAllMesh([&meshes](const Mesh* mesh) -> void
-                    { meshes.push_back(mesh); });
+    TraverseAllMesh([&meshes](const Mesh* mesh) -> void { meshes.push_back(mesh); });
   }
 
   template <typename T>
@@ -379,16 +356,10 @@ namespace ToolKit
     // Serialize vertex
     if constexpr (SERIALIZE_MESH_AS_BINARY)
     {
-      size_t vertexBufferDataSize = mesh->m_clientSideVertices.size() *
-                                    sizeof(mesh->m_clientSideVertices[0]);
-      WriteAttr(vertices,
-                doc,
-                "VertexCount",
-                std::to_string(mesh->m_clientSideVertices.size()));
+      size_t vertexBufferDataSize = mesh->m_clientSideVertices.size() * sizeof(mesh->m_clientSideVertices[0]);
+      WriteAttr(vertices, doc, "VertexCount", std::to_string(mesh->m_clientSideVertices.size()));
       char* b64Data = new char[vertexBufferDataSize * 2];
-      bintob64(b64Data,
-               mesh->m_clientSideVertices.data(),
-               vertexBufferDataSize);
+      bintob64(b64Data, mesh->m_clientSideVertices.data(), vertexBufferDataSize);
       XmlNode* base64XML = CreateXmlNode(doc, "Base64", vertices);
       base64XML->value(doc->allocate_string(b64Data));
       SafeDelArray(b64Data);
@@ -425,12 +396,8 @@ namespace ToolKit
     XmlNode* faces = CreateXmlNode(doc, "faces", meshNode);
     if constexpr (SERIALIZE_MESH_AS_BINARY)
     {
-      size_t facesBufferDataSize = mesh->m_clientSideIndices.size() *
-                                   sizeof(mesh->m_clientSideIndices[0]);
-      WriteAttr(faces,
-                doc,
-                "FaceCount",
-                std::to_string(mesh->m_clientSideIndices.size()));
+      size_t facesBufferDataSize = mesh->m_clientSideIndices.size() * sizeof(mesh->m_clientSideIndices[0]);
+      WriteAttr(faces, doc, "FaceCount", std::to_string(mesh->m_clientSideIndices.size()));
       char* b64Data = new char[facesBufferDataSize * 2];
       bintob64(b64Data, mesh->m_clientSideIndices.data(), facesBufferDataSize);
       XmlNode* base64XML = CreateXmlNode(doc, "Base64", faces);
@@ -443,18 +410,9 @@ namespace ToolKit
       {
         XmlNode* f = CreateXmlNode(doc, "f", faces);
 
-        WriteAttr(f,
-                  doc,
-                  "x",
-                  std::to_string(mesh->m_clientSideIndices[i * 3]));
-        WriteAttr(f,
-                  doc,
-                  "y",
-                  std::to_string(mesh->m_clientSideIndices[i * 3 + 1]));
-        WriteAttr(f,
-                  doc,
-                  "z",
-                  std::to_string(mesh->m_clientSideIndices[i * 3 + 2]));
+        WriteAttr(f, doc, "x", std::to_string(mesh->m_clientSideIndices[i * 3]));
+        WriteAttr(f, doc, "y", std::to_string(mesh->m_clientSideIndices[i * 3 + 1]));
+        WriteAttr(f, doc, "z", std::to_string(mesh->m_clientSideIndices[i * 3 + 2]));
       }
     }
   };
@@ -481,8 +439,7 @@ namespace ToolKit
     {
       typeString = "skinMesh";
     }
-    for (node = node->first_node(typeString.c_str()); node;
-         node = node->next_sibling(typeString.c_str()))
+    for (node = node->first_node(typeString.c_str()); node; node = node->next_sibling(typeString.c_str()))
     {
       if (mesh == nullptr)
       {
@@ -591,13 +548,9 @@ namespace ToolKit
     }
   }
 
-  void Mesh::DeSerialize(XmlDocument* doc, XmlNode* parent)
-  {
-    LoadMesh(doc, parent, this);
-  }
+  void Mesh::DeSerialize(XmlDocument* doc, XmlNode* parent) { LoadMesh(doc, parent, this); }
 
-  void TraverseMeshHelper(const Mesh* mesh,
-                          std::function<void(const Mesh*)> callback)
+  void TraverseMeshHelper(const Mesh* mesh, std::function<void(const Mesh*)> callback)
   {
     if (callback == nullptr)
     {
@@ -615,12 +568,10 @@ namespace ToolKit
   void Mesh::TraverseAllMesh(std::function<void(Mesh*)> callback, Mesh* mesh)
   {
     TraverseMeshHelper(mesh == nullptr ? this : mesh,
-                       [callback](const Mesh* mesh)
-                       { callback(const_cast<Mesh*>(mesh)); });
+                       [callback](const Mesh* mesh) { callback(const_cast<Mesh*>(mesh)); });
   }
 
-  void Mesh::TraverseAllMesh(std::function<void(const Mesh*)> callback,
-                             const Mesh* mesh) const
+  void Mesh::TraverseAllMesh(std::function<void(const Mesh*)> callback, const Mesh* mesh) const
   {
     TraverseMeshHelper(mesh == nullptr ? this : mesh, callback);
   }
@@ -732,13 +683,9 @@ namespace ToolKit
     }
   }
 
-  void SkinMesh::DeSerialize(XmlDocument* doc, XmlNode* parent)
-  {
-    LoadMesh(doc, parent, this);
-  }
+  void SkinMesh::DeSerialize(XmlDocument* doc, XmlNode* parent) { LoadMesh(doc, parent, this); }
 
-  BoundingBox SkinMesh::CalculateAABB(const Skeleton* skel,
-                                      const DynamicBoneMap* boneMap)
+  BoundingBox SkinMesh::CalculateAABB(const Skeleton* skel, const DynamicBoneMap* boneMap)
   {
     BoundingBox finalAABB;
     MeshRawPtrArray meshes;
@@ -752,31 +699,29 @@ namespace ToolKit
     }
 
 #ifndef __EMSCRIPTEN__
-    std::for_each(
-        std::execution::par_unseq,
-        indexes.begin(),
-        indexes.end(),
-        [skel, boneMap, &AABBs, &meshes](uint index)
-        {
-          SkinMesh* m = (SkinMesh*) meshes[index];
-          if (m->m_clientSideVertices.empty())
-          {
-            return;
-          }
-          BoundingBox& meshAABB = AABBs[index];
-          std::mutex meshAABBLocker;
+    std::for_each(std::execution::par_unseq,
+                  indexes.begin(),
+                  indexes.end(),
+                  [skel, boneMap, &AABBs, &meshes](uint index)
+                  {
+                    SkinMesh* m = (SkinMesh*) meshes[index];
+                    if (m->m_clientSideVertices.empty())
+                    {
+                      return;
+                    }
+                    BoundingBox& meshAABB = AABBs[index];
+                    std::mutex meshAABBLocker;
 
-          std::for_each(
-              std::execution::par_unseq,
-              m->m_clientSideVertices.begin(),
-              m->m_clientSideVertices.end(),
-              [skel, boneMap, &meshAABBLocker, &meshAABB](SkinVertex& v)
-              {
-                Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap);
-                std::lock_guard<std::mutex> guard(meshAABBLocker);
-                meshAABB.UpdateBoundary(skinnedPos);
-              });
-        });
+                    std::for_each(std::execution::par_unseq,
+                                  m->m_clientSideVertices.begin(),
+                                  m->m_clientSideVertices.end(),
+                                  [skel, boneMap, &meshAABBLocker, &meshAABB](SkinVertex& v)
+                                  {
+                                    Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap);
+                                    std::lock_guard<std::mutex> guard(meshAABBLocker);
+                                    meshAABB.UpdateBoundary(skinnedPos);
+                                  });
+                  });
 #else
     for (uint index : indexes)
     {
@@ -872,8 +817,5 @@ namespace ToolKit
     return ResourcePtr(res);
   }
 
-  String MeshManager::GetDefaultResource(ResourceType type)
-  {
-    return MeshPath("Suzanne.mesh", true);
-  }
+  String MeshManager::GetDefaultResource(ResourceType type) { return MeshPath("Suzanne.mesh", true); }
 } // namespace ToolKit

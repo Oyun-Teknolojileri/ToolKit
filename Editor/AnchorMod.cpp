@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "AnchorMod.h"
 
 #include "App.h"
@@ -29,10 +55,7 @@ namespace ToolKit
       return NullSignal;
     }
 
-    void StateAnchorBase::TransitionIn(State* prevState)
-    {
-      m_anchorDeltaTransform = ZERO;
-    }
+    void StateAnchorBase::TransitionIn(State* prevState) { m_anchorDeltaTransform = ZERO; }
 
     void StateAnchorBase::TransitionOut(State* nextState)
     {
@@ -80,10 +103,7 @@ namespace ToolKit
     // StateAnchorBegin
     //////////////////////////////////////////////////////////////////////////
 
-    void StateAnchorBegin::TransitionIn(State* prevState)
-    {
-      StateAnchorBase::TransitionIn(prevState);
-    }
+    void StateAnchorBegin::TransitionIn(State* prevState) { StateAnchorBase::TransitionIn(prevState); }
 
     void StateAnchorBegin::TransitionOut(State* nextState)
     {
@@ -109,8 +129,7 @@ namespace ToolKit
       {
         if (EditorViewport* vp = g_app->GetActiveViewport())
         {
-          const DirectionLabel axis =
-              m_anchor->HitTest(vp->RayFromMousePosition());
+          const DirectionLabel axis = m_anchor->HitTest(vp->RayFromMousePosition());
           if (axis != DirectionLabel::None)
           {
             m_anchor->m_lastHovered = axis;
@@ -134,8 +153,7 @@ namespace ToolKit
           m_anchor->Grab(axis);
         }
 
-        if (!m_anchor->IsGrabbed(DirectionLabel::None) &&
-            g_app->GetCurrentScene()->GetCurrentSelection() != nullptr)
+        if (!m_anchor->IsGrabbed(DirectionLabel::None) && g_app->GetCurrentScene()->GetCurrentSelection() != nullptr)
         {
           CalculateIntersectionPlane();
           CalculateGrabPoint();
@@ -170,8 +188,7 @@ namespace ToolKit
     {
       if (EditorViewport* vp = g_app->GetActiveViewport())
       {
-        const Vec3 camOrg = vp->GetCamera()->m_node->GetTranslation(
-            TransformationSpace::TS_WORLD);
+        const Vec3 camOrg    = vp->GetCamera()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         const Vec3 anchorOrg = m_anchor->m_worldLocation;
         const Vec3 dir       = glm::normalize(camOrg - anchorOrg);
         m_intersectionPlane  = PlaneFrom(anchorOrg, Vec3 {0, 0, 1});
@@ -210,11 +227,8 @@ namespace ToolKit
 
     void AnchorAction::Swap()
     {
-      const Mat4 backUp =
-          m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
-      m_entity->m_node->SetTransform(m_transform,
-                                     TransformationSpace::TS_WORLD,
-                                     false);
+      const Mat4 backUp = m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
+      m_entity->m_node->SetTransform(m_transform, TransformationSpace::TS_WORLD, false);
       m_transform = backUp;
     }
 
@@ -252,8 +266,7 @@ namespace ToolKit
 
       m_anchorDeltaTransform = ZERO;
       m_deltaAccum           = ZERO;
-      m_initialLoc = currScene->GetCurrentSelection()->m_node->GetTranslation(
-          TransformationSpace::TS_WORLD);
+      m_initialLoc           = currScene->GetCurrentSelection()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
       SDL_GetGlobalMouseState(&m_mouseInitialLoc.x, &m_mouseInitialLoc.y);
     }
 
@@ -263,8 +276,7 @@ namespace ToolKit
       m_anchor->m_grabPoint = ZERO;
 
       // Set the mouse position roughly.
-      SDL_WarpMouseGlobal(static_cast<int>(m_mouseData[1].x),
-                          static_cast<int>(m_mouseData[1].y));
+      SDL_WarpMouseGlobal(static_cast<int>(m_mouseData[1].x), static_cast<int>(m_mouseData[1].y));
     }
 
     SignalId StateAnchorTo::Update(float deltaTime)
@@ -277,8 +289,7 @@ namespace ToolKit
         Vec2 contentMin, contentMax;
         vp->GetContentAreaScreenCoordinates(&contentMin, &contentMax);
 
-        auto drawMoveCursorFn =
-            [this, contentMin, contentMax](ImDrawList* drawList) -> void
+        auto drawMoveCursorFn = [this, contentMin, contentMax](ImDrawList* drawList) -> void
         {
           // Clamp the mouse pos.
           Vec2 pos = m_mouseData[1];
@@ -286,9 +297,7 @@ namespace ToolKit
 
           // Draw cursor.
           Vec2 size(28.0f);
-          drawList->AddImage(Convert2ImGuiTexture(UI::m_moveIcn),
-                             pos - size * 0.5f,
-                             pos + size * 0.5f);
+          drawList->AddImage(Convert2ImGuiTexture(UI::m_moveIcn), pos - size * 0.5f, pos + size * 0.5f);
         };
 
         vp->m_drawCommands.push_back(drawMoveCursorFn);
@@ -328,10 +337,9 @@ namespace ToolKit
       {
         Vec3 p              = PointOnRay(ray, t);
 
-        Canvas* canvasPanel = static_cast<Canvas*>(
-            m_anchor->m_entity->m_node->m_parent->m_entity);
+        Canvas* canvasPanel = static_cast<Canvas*>(m_anchor->m_entity->m_node->m_parent->m_entity);
 
-        ray = vp->RayFromScreenSpacePoint(m_mouseData[0]);
+        ray                 = vp->RayFromScreenSpacePoint(m_mouseData[0]);
         LinePlaneIntersection(ray, m_intersectionPlane, t);
         Vec3 p0                = PointOnRay(ray, t);
         m_anchorDeltaTransform = p - p0;
@@ -358,21 +366,17 @@ namespace ToolKit
 
     void StateAnchorBase::ReflectAnchorTransform(Entity* ntt)
     {
-      if (m_anchor == nullptr || ntt == nullptr || !ntt->IsSurfaceInstance() ||
-          !ntt->m_node->m_parent || !ntt->m_node->m_parent->m_entity ||
-          ntt->m_node->m_parent->m_entity->GetType() !=
-              EntityType::Entity_Canvas)
+      if (m_anchor == nullptr || ntt == nullptr || !ntt->IsSurfaceInstance() || !ntt->m_node->m_parent ||
+          !ntt->m_node->m_parent->m_entity || ntt->m_node->m_parent->m_entity->GetType() != EntityType::Entity_Canvas)
         return;
 
       Surface* surface               = static_cast<Surface*>(ntt);
 
       const DirectionLabel direction = m_anchor->GetGrabbedDirection();
       const bool hasXDirection =
-          (direction != DirectionLabel::N && direction != DirectionLabel::S) ||
-          (direction == DirectionLabel::CENTER);
+          (direction != DirectionLabel::N && direction != DirectionLabel::S) || (direction == DirectionLabel::CENTER);
       const bool hasYDirection =
-          (direction != DirectionLabel::E && direction != DirectionLabel::W) ||
-          (direction == DirectionLabel::CENTER);
+          (direction != DirectionLabel::E && direction != DirectionLabel::W) || (direction == DirectionLabel::CENTER);
 
       Vec3 deltaX, deltaY;
 
@@ -385,9 +389,8 @@ namespace ToolKit
         {
           if (abs(m_deltaAccum[i]) > spacing)
           {
-            m_anchorDeltaTransform[i] =
-                glm::round(m_deltaAccum[i] / spacing) * spacing;
-            m_deltaAccum[i] = 0.0f;
+            m_anchorDeltaTransform[i] = glm::round(m_deltaAccum[i] / spacing) * spacing;
+            m_deltaAccum[i]           = 0.0f;
           }
         }
       }
@@ -438,8 +441,7 @@ namespace ToolKit
         anchorRatios[3] = 1.f - anchorRatios[2];
       }
 
-      if (direction == DirectionLabel::W || direction == DirectionLabel::NW ||
-          direction == DirectionLabel::SW)
+      if (direction == DirectionLabel::W || direction == DirectionLabel::NW || direction == DirectionLabel::SW)
       {
         const float d   = m_anchorDeltaTransform.x / w;
         anchorRatios[0] += std::min(1.f, d);
@@ -451,8 +453,7 @@ namespace ToolKit
           anchorRatios[0] = 1.f - anchorRatios[1];
         }
       }
-      if (direction == DirectionLabel::E || direction == DirectionLabel::NE ||
-          direction == DirectionLabel::SE)
+      if (direction == DirectionLabel::E || direction == DirectionLabel::NE || direction == DirectionLabel::SE)
       {
         const float d   = m_anchorDeltaTransform.x / w;
         anchorRatios[1] -= std::min(1.f, d);
@@ -465,8 +466,7 @@ namespace ToolKit
           anchorRatios[1] = 1.f - anchorRatios[0];
         }
       }
-      if (direction == DirectionLabel::N || direction == DirectionLabel::NW ||
-          direction == DirectionLabel::NE)
+      if (direction == DirectionLabel::N || direction == DirectionLabel::NW || direction == DirectionLabel::NE)
       {
         const float d   = m_anchorDeltaTransform.y / h;
         anchorRatios[2] -= std::min(1.f, d);
@@ -479,8 +479,7 @@ namespace ToolKit
           anchorRatios[2] = 1.f - anchorRatios[3];
         }
       }
-      if (direction == DirectionLabel::S || direction == DirectionLabel::SW ||
-          direction == DirectionLabel::SE)
+      if (direction == DirectionLabel::S || direction == DirectionLabel::SW || direction == DirectionLabel::SE)
       {
         const float d   = m_anchorDeltaTransform.y / h;
         anchorRatios[3] += std::min(1.f, d);
@@ -497,17 +496,13 @@ namespace ToolKit
       Vec3 canvasPoints[4], surfacePoints[4];
       surface->CalculateAnchorOffsets(canvasPoints, surfacePoints);
 
-      surface->m_anchorParams.m_offsets[2] =
-          surfacePoints[0].x - canvasPoints[0].x;
-      surface->m_anchorParams.m_offsets[3] =
-          canvasPoints[1].x - surfacePoints[1].x;
+      surface->m_anchorParams.m_offsets[2] = surfacePoints[0].x - canvasPoints[0].x;
+      surface->m_anchorParams.m_offsets[3] = canvasPoints[1].x - surfacePoints[1].x;
 
-      surface->m_anchorParams.m_offsets[0] =
-          canvasPoints[0].y - surfacePoints[0].y;
-      surface->m_anchorParams.m_offsets[1] =
-          surfacePoints[2].y - canvasPoints[2].y;
+      surface->m_anchorParams.m_offsets[0] = canvasPoints[0].y - surfacePoints[0].y;
+      surface->m_anchorParams.m_offsets[1] = surfacePoints[2].y - canvasPoints[2].y;
 
-      m_anchorDeltaTransform = ZERO; // Consume the delta.
+      m_anchorDeltaTransform               = ZERO; // Consume the delta.
     }
 
     // StateAnchorEnd
@@ -552,12 +547,11 @@ namespace ToolKit
 
     void AnchorMod::Init()
     {
-      State* state               = new StateAnchorBegin();
-      StateAnchorBase* baseState = static_cast<StateAnchorBase*>(state);
-      m_anchor =
-          std::make_shared<Anchor>(Billboard::Settings {false, 0.0f, 0.0f});
-      baseState->m_type   = StateAnchorBase::TransformType::Translate;
-      baseState->m_anchor = m_anchor;
+      State* state                   = new StateAnchorBegin();
+      StateAnchorBase* baseState     = static_cast<StateAnchorBase*>(state);
+      m_anchor                       = std::make_shared<Anchor>(Billboard::Settings {false, 0.0f, 0.0f});
+      baseState->m_type              = StateAnchorBase::TransformType::Translate;
+      baseState->m_anchor            = m_anchor;
       m_stateMachine->m_currentState = state;
 
       m_stateMachine->PushState(state);

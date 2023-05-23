@@ -1,3 +1,28 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #include "EditorLight.h"
 
@@ -82,16 +107,13 @@ namespace ToolKit
       switch (light->GetType())
       {
       case EntityType::Entity_DirectionalLight:
-        m_gizmoGenerator = new DirectionalLightMeshGenerator(
-            static_cast<DirectionalLight*>(light));
+        m_gizmoGenerator = new DirectionalLightMeshGenerator(static_cast<DirectionalLight*>(light));
         break;
       case EntityType::Entity_PointLight:
-        m_gizmoGenerator =
-            new PointLightMeshGenerator(static_cast<PointLight*>(light));
+        m_gizmoGenerator = new PointLightMeshGenerator(static_cast<PointLight*>(light));
         break;
       case EntityType::Entity_SpotLight:
-        m_gizmoGenerator =
-            new SpotLightMeshGenerator(static_cast<SpotLight*>(light));
+        m_gizmoGenerator = new SpotLightMeshGenerator(static_cast<SpotLight*>(light));
         break;
       case EntityType::Entity_Light:
       default:
@@ -99,10 +121,7 @@ namespace ToolKit
         break;
       }
 
-      m_gizmoUpdateFn = [this](Value& oldVal, Value& newVal) -> void
-      { 
-        m_gizmoGenerator->InitGizmo();
-      };
+      m_gizmoUpdateFn = [this](Value& oldVal, Value& newVal) -> void { m_gizmoGenerator->InitGizmo(); };
     }
 
     LightGizmoController::~LightGizmoController() { SafeDel(m_gizmoGenerator); }
@@ -152,17 +171,11 @@ namespace ToolKit
       m_initialized = true;
     }
 
-    EditorDirectionalLight::EditorDirectionalLight()
-        : LightGizmoController(this)
-    {
-    }
+    EditorDirectionalLight::EditorDirectionalLight() : LightGizmoController(this) {}
 
     EditorDirectionalLight::~EditorDirectionalLight() {}
 
-    void EditorDirectionalLight::ParameterEventConstructor()
-    {
-      Light::ParameterEventConstructor();
-    }
+    void EditorDirectionalLight::ParameterEventConstructor() { Light::ParameterEventConstructor(); }
 
     Entity* EditorDirectionalLight::Copy() const
     {
@@ -172,8 +185,7 @@ namespace ToolKit
       return cpy;
     }
 
-    void EditorDirectionalLight::Serialize(XmlDocument* doc,
-                                           XmlNode* parent) const
+    void EditorDirectionalLight::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
       if (m_gizmoActive)
       {
@@ -191,8 +203,7 @@ namespace ToolKit
     {
       DirectionalLight::DeSerialize(doc, parent);
 
-      assert(m_light->GetMeshComponent() == nullptr &&
-             "MeshComponents should not be serialized.");
+      assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
 
       ParameterEventConstructor();
     }
@@ -202,41 +213,37 @@ namespace ToolKit
       Vec3Array corners = GetShadowFrustumCorners();
       static Vec3Array vertices;
       vertices.resize(24);
-      vertices[0]  = corners[3];
-      vertices[1]  = corners[2];
-      vertices[2]  = corners[2];
-      vertices[3]  = corners[1];
-      vertices[4]  = corners[1];
-      vertices[5]  = corners[0];
-      vertices[6]  = corners[0];
-      vertices[7]  = corners[3];
-      vertices[8]  = corners[6];
-      vertices[9]  = corners[5];
-      vertices[10] = corners[5];
-      vertices[11] = corners[4];
-      vertices[12] = corners[4];
-      vertices[13] = corners[7];
-      vertices[14] = corners[7];
-      vertices[15] = corners[6];
-      vertices[16] = corners[6];
-      vertices[17] = corners[2];
-      vertices[18] = corners[5];
-      vertices[19] = corners[1];
-      vertices[20] = corners[4];
-      vertices[21] = corners[0];
-      vertices[22] = corners[7];
-      vertices[23] = corners[3];
+      vertices[0]   = corners[3];
+      vertices[1]   = corners[2];
+      vertices[2]   = corners[2];
+      vertices[3]   = corners[1];
+      vertices[4]   = corners[1];
+      vertices[5]   = corners[0];
+      vertices[6]   = corners[0];
+      vertices[7]   = corners[3];
+      vertices[8]   = corners[6];
+      vertices[9]   = corners[5];
+      vertices[10]  = corners[5];
+      vertices[11]  = corners[4];
+      vertices[12]  = corners[4];
+      vertices[13]  = corners[7];
+      vertices[14]  = corners[7];
+      vertices[15]  = corners[6];
+      vertices[16]  = corners[6];
+      vertices[17]  = corners[2];
+      vertices[18]  = corners[5];
+      vertices[19]  = corners[1];
+      vertices[20]  = corners[4];
+      vertices[21]  = corners[0];
+      vertices[22]  = corners[7];
+      vertices[23]  = corners[3];
 
-      LineBatch* lb =
-          new LineBatch(vertices, Vec3(1.0f, 0.0f, 0.0f), DrawType::Line, 0.5f);
+      LineBatch* lb = new LineBatch(vertices, Vec3(1.0f, 0.0f, 0.0f), DrawType::Line, 0.5f);
 
       return lb;
     }
 
-    EditorPointLight::EditorPointLight() : LightGizmoController(this)
-    {
-      ParameterEventConstructor();
-    }
+    EditorPointLight::EditorPointLight() : LightGizmoController(this) { ParameterEventConstructor(); }
 
     EditorPointLight::~EditorPointLight() {}
 
@@ -273,16 +280,12 @@ namespace ToolKit
     {
       PointLight::DeSerialize(doc, parent);
 
-      assert(m_light->GetMeshComponent() == nullptr &&
-             "MeshComponents should not be serialized.");
+      assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
 
       ParameterEventConstructor();
     }
 
-    EditorSpotLight::EditorSpotLight() : LightGizmoController(this)
-    {
-      ParameterEventConstructor();
-    }
+    EditorSpotLight::EditorSpotLight() : LightGizmoController(this) { ParameterEventConstructor(); }
 
     EditorSpotLight::~EditorSpotLight() {}
 
@@ -324,8 +327,7 @@ namespace ToolKit
     {
       SpotLight::DeSerialize(doc, parent);
 
-      assert(m_light->GetMeshComponent() == nullptr &&
-             "MeshComponents should not be serialized.");
+      assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
 
       ParameterEventConstructor();
     }

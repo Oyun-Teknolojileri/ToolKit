@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "TopBar2d.h"
 
 #include "App.h"
@@ -11,10 +37,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    Overlay2DTopBar::Overlay2DTopBar(EditorViewport* owner)
-        : OverlayTopBar(owner)
-    {
-    }
+    Overlay2DTopBar::Overlay2DTopBar(EditorViewport* owner) : OverlayTopBar(owner) {}
 
     void Overlay2DTopBar::Show()
     {
@@ -53,8 +76,7 @@ namespace ToolKit
         ImGui::Separator();
         if (ImGui::MenuItem("Node"))
         {
-          Entity* node =
-              GetEntityFactory()->CreateByType(EntityType::Entity_Node);
+          Entity* node = GetEntityFactory()->CreateByType(EntityType::Entity_Node);
           currScene->AddEntity(node);
         }
       };
@@ -69,16 +91,12 @@ namespace ToolKit
       ImGui::SetNextWindowBgAlpha(0.85f);
       if (ImGui::BeginChildFrame(ImGui::GetID("ViewportOptions"),
                                  overlaySize,
-                                 ImGuiWindowFlags_NoMove |
-                                     ImGuiWindowFlags_NoTitleBar |
-                                     ImGuiWindowFlags_NoScrollbar |
+                                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
                                      ImGuiWindowFlags_NoScrollWithMouse))
       {
         SetOwnerState();
 
-        ImGui::BeginTable("##SettingsBar",
-                          8,
-                          ImGuiTableFlags_SizingStretchProp);
+        ImGui::BeginTable("##SettingsBar", 8, ImGuiTableFlags_SizingStretchProp);
         ImGui::TableNextRow();
 
         uint nextItemIndex = 0;
@@ -100,11 +118,9 @@ namespace ToolKit
 
     void Overlay2DTopBar::Show2DViewZoomOptions(uint32_t& nextItemIndex)
     {
-      EditorViewport2d* editorViewport =
-          reinterpret_cast<EditorViewport2d*>(m_owner);
+      EditorViewport2d* editorViewport = reinterpret_cast<EditorViewport2d*>(m_owner);
       ImGui::TableSetColumnIndex(nextItemIndex++);
-      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_viewZoomIcon),
-                             ImVec2(16, 16)))
+      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_viewZoomIcon), ImVec2(16, 16)))
       {
         editorViewport->m_zoomPercentage = 100;
       }
@@ -118,24 +134,17 @@ namespace ToolKit
       auto ShowGridOptionsFn = [this]() -> void
       {
         ImGui::PushItemWidth(75);
-        EditorViewport2d* editorViewport =
-            reinterpret_cast<EditorViewport2d*>(m_owner);
+        EditorViewport2d* editorViewport   = reinterpret_cast<EditorViewport2d*>(m_owner);
 
         static const uint16_t cellSizeStep = 5;
-        ImGui::InputScalar("Cell Size",
-                           ImGuiDataType_U16,
-                           &editorViewport->m_gridCellSizeByPixel,
-                           &cellSizeStep);
+        ImGui::InputScalar("Cell Size", ImGuiDataType_U16, &editorViewport->m_gridCellSizeByPixel, &cellSizeStep);
 
         editorViewport->m_gridCellSizeByPixel =
-            glm::max((editorViewport->m_gridCellSizeByPixel / cellSizeStep) *
-                         cellSizeStep,
-                     1u);
+            glm::max((editorViewport->m_gridCellSizeByPixel / cellSizeStep) * cellSizeStep, 1u);
       };
 
       ImGui::TableSetColumnIndex(nextItemIndex++);
-      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_gridIcon),
-                             ImVec2(18, 18)))
+      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_gridIcon), ImVec2(18, 18)))
       {
         ImGui::OpenPopup("##GridMenu");
       }

@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "EntityView.h"
 
 #include "App.h"
@@ -20,9 +46,8 @@ namespace ToolKit
 
     void EntityView::ShowAnchorSettings()
     {
-      Surface* surface = static_cast<Surface*>(m_entity);
-      Canvas* canvasPanel =
-          static_cast<Canvas*>(surface->m_node->m_parent->m_entity);
+      Surface* surface    = static_cast<Surface*>(m_entity);
+      Canvas* canvasPanel = static_cast<Canvas*>(surface->m_node->m_parent->m_entity);
 
       if (ImGui::CollapsingHeader("Anchor", ImGuiTreeNodeFlags_DefaultOpen))
       {
@@ -35,16 +60,12 @@ namespace ToolKit
         {
           if (ImGui::BeginTable("Anchor Preset Table", 4))
           {
-            for (uint itemIndx = 0;
-                 itemIndx < UI::AnchorPresetImages::presetCount;
-                 itemIndx++)
+            for (uint itemIndx = 0; itemIndx < UI::AnchorPresetImages::presetCount; itemIndx++)
             {
               ImGui::TableNextColumn();
               ImGui::PushID(itemIndx);
               if (ImGui::ImageButton(
-                      reinterpret_cast<void*>((intptr_t) UI::m_anchorPresetIcons
-                                                  .m_presetImages[itemIndx]
-                                                  ->m_textureId),
+                      reinterpret_cast<void*>((intptr_t) UI::m_anchorPresetIcons.m_presetImages[itemIndx]->m_textureId),
                       Vec2(32, 32)))
               {
                 auto changeAnchor = [surface](uint anchorPreset)
@@ -61,10 +82,8 @@ namespace ToolKit
                   };
                   auto gatherAtMiddle = [surface](bool horizontal)
                   {
-                    surface->m_anchorParams
-                        .m_anchorRatios[(horizontal) ? 0 : 2] = 0.5f;
-                    surface->m_anchorParams
-                        .m_anchorRatios[(horizontal) ? 1 : 3] = 0.5f;
+                    surface->m_anchorParams.m_anchorRatios[(horizontal) ? 0 : 2] = 0.5f;
+                    surface->m_anchorParams.m_anchorRatios[(horizontal) ? 1 : 3] = 0.5f;
                   };
                   auto gatherAtTop = [surface]()
                   {
@@ -78,10 +97,8 @@ namespace ToolKit
                   };
                   auto scatterToSide = [surface](bool horizontal)
                   {
-                    surface->m_anchorParams
-                        .m_anchorRatios[(horizontal) ? 0 : 2] = 0.0f;
-                    surface->m_anchorParams
-                        .m_anchorRatios[(horizontal) ? 1 : 3] = 0.0f;
+                    surface->m_anchorParams.m_anchorRatios[(horizontal) ? 0 : 2] = 0.0f;
+                    surface->m_anchorParams.m_anchorRatios[(horizontal) ? 1 : 3] = 0.0f;
                   };
 
                   uint subMode  = anchorPreset % 4;
@@ -163,54 +180,37 @@ namespace ToolKit
           ImGui::EndPopup();
         }
 
-        const Vec2 size = {canvasPanel->GetAABB(true).GetWidth(),
-                           canvasPanel->GetAABB(true).GetHeight()};
+        const Vec2 size = {canvasPanel->GetAABB(true).GetWidth(), canvasPanel->GetAABB(true).GetHeight()};
         float res[]     = {size.x, size.y};
         if (ImGui::InputFloat2("New resolution:", res))
         {
           canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
         }
 
-        if (((surface->m_anchorParams.m_anchorRatios[0] +
-              surface->m_anchorParams.m_anchorRatios[1]) > 0.99f) &&
-            ((surface->m_anchorParams.m_anchorRatios[2] +
-              surface->m_anchorParams.m_anchorRatios[3]) > 0.99f))
+        if (((surface->m_anchorParams.m_anchorRatios[0] + surface->m_anchorParams.m_anchorRatios[1]) > 0.99f) &&
+            ((surface->m_anchorParams.m_anchorRatios[2] + surface->m_anchorParams.m_anchorRatios[3]) > 0.99f))
         {
           float position[2];
           Vec3 pos;
           float w = 0, h = 0;
 
           {
-            pos = canvasPanel->m_node->GetTranslation(
-                TransformationSpace::TS_WORLD);
-            w   = canvasPanel->GetSizeVal().x;
-            h   = canvasPanel->GetSizeVal().y;
-            pos -= Vec3(w / 2.f, h / 2.f, 0.f);
-            const Vec3 surfacePos =
-                surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-            position[0] =
-                surfacePos.x -
-                (pos.x + w * surface->m_anchorParams.m_anchorRatios[0]);
-            position[1] =
-                surfacePos.y -
-                (pos.y + h * surface->m_anchorParams.m_anchorRatios[2]);
+            pos                   = canvasPanel->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            w                     = canvasPanel->GetSizeVal().x;
+            h                     = canvasPanel->GetSizeVal().y;
+            pos                   -= Vec3(w / 2.f, h / 2.f, 0.f);
+            const Vec3 surfacePos = surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            position[0]           = surfacePos.x - (pos.x + w * surface->m_anchorParams.m_anchorRatios[0]);
+            position[1]           = surfacePos.y - (pos.y + h * surface->m_anchorParams.m_anchorRatios[2]);
           }
           ImGui::DragFloat("Position X", &position[0], 0.25f, pos.x, pos.x + w);
           ImGui::DragFloat("Position Y", &position[1], 0.25f, pos.y, pos.y + h);
         }
         else
         {
-          ImGui::DragFloat2("Horizontal",
-                            &surface->m_anchorParams.m_anchorRatios[0],
-                            0.25f,
-                            0.f,
-                            1.f);
+          ImGui::DragFloat2("Horizontal", &surface->m_anchorParams.m_anchorRatios[0], 0.25f, 0.f, 1.f);
 
-          ImGui::DragFloat2("Vertical",
-                            &surface->m_anchorParams.m_anchorRatios[2],
-                            0.25f,
-                            0.f,
-                            1.f);
+          ImGui::DragFloat2("Vertical", &surface->m_anchorParams.m_anchorRatios[2], 0.25f, 0.f, 1.f);
         }
 
         for (int i = 0; i < 4; i++)
@@ -222,25 +222,19 @@ namespace ToolKit
                            1);
         }
 
-        if (((surface->m_anchorParams.m_anchorRatios[2] +
-              surface->m_anchorParams.m_anchorRatios[3]) < 0.99f))
+        if (((surface->m_anchorParams.m_anchorRatios[2] + surface->m_anchorParams.m_anchorRatios[3]) < 0.99f))
         {
-          if (ImGui::DragFloat("Offset Top",
-                               &surface->m_anchorParams.m_offsets[0]) ||
-              ImGui::DragFloat("Offset Bottom",
-                               &surface->m_anchorParams.m_offsets[1]))
+          if (ImGui::DragFloat("Offset Top", &surface->m_anchorParams.m_offsets[0]) ||
+              ImGui::DragFloat("Offset Bottom", &surface->m_anchorParams.m_offsets[1]))
           {
             canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
           }
         }
 
-        if (((surface->m_anchorParams.m_anchorRatios[0] +
-              surface->m_anchorParams.m_anchorRatios[1]) < 0.99f))
+        if (((surface->m_anchorParams.m_anchorRatios[0] + surface->m_anchorParams.m_anchorRatios[1]) < 0.99f))
         {
-          if (ImGui::DragFloat("Offset Left",
-                               &surface->m_anchorParams.m_offsets[2]) ||
-              ImGui::DragFloat("Offset Right",
-                               &surface->m_anchorParams.m_offsets[3]))
+          if (ImGui::DragFloat("Offset Left", &surface->m_anchorParams.m_offsets[2]) ||
+              ImGui::DragFloat("Offset Right", &surface->m_anchorParams.m_offsets[3]))
           {
             canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
           }
@@ -308,11 +302,9 @@ namespace ToolKit
         }
       }
 
-      if (m_entity->IsSurfaceInstance() &&
-          m_entity->m_node->m_parent != nullptr &&
+      if (m_entity->IsSurfaceInstance() && m_entity->m_node->m_parent != nullptr &&
           m_entity->m_node->m_parent->m_entity != nullptr &&
-          m_entity->m_node->m_parent->m_entity->GetType() ==
-              EntityType::Entity_Canvas)
+          m_entity->m_node->m_parent->m_entity->GetType() == EntityType::Entity_Canvas)
       {
         ShowAnchorSettings();
       }
@@ -424,8 +416,7 @@ namespace ToolKit
 
         if (ImGui::Checkbox("Inherit Scale", &m_entity->m_node->m_inheritScale))
         {
-          m_entity->m_node->SetInheritScaleDeep(
-              m_entity->m_node->m_inheritScale);
+          m_entity->m_node->SetInheritScaleDeep(m_entity->m_node->m_inheritScale);
         }
 
         ImGui::EndDisabled();
@@ -463,10 +454,8 @@ namespace ToolKit
           isFromPrefab = true;
         }
 
-        String varName =
-            category.Name + "##" + std::to_string(m_entity->GetIdVal());
-        if (ImGui::CollapsingHeader(varName.c_str(),
-                                    ImGuiTreeNodeFlags_DefaultOpen))
+        String varName = category.Name + "##" + std::to_string(m_entity->GetIdVal());
+        if (ImGui::CollapsingHeader(varName.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
         {
           ParameterVariantRawPtrArray vars;
           m_entity->m_localData.GetByCategory(category.Name, vars);
@@ -483,8 +472,7 @@ namespace ToolKit
 
         // If entity is gradient sky create a "Update IBL Textures" button
         if (m_entity->GetType() == EntityType::Entity_GradientSky &&
-            category.Name.compare("Sky") ==
-                0) // TODO This might not be necessary
+            category.Name.compare("Sky") == 0) // TODO This might not be necessary
         {
           if (UI::BeginCenteredTextButton("Update IBL Textures"))
           {

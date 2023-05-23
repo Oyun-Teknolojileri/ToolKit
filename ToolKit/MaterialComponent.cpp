@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "MaterialComponent.h"
 
 #include "Material.h"
@@ -48,47 +74,38 @@ namespace ToolKit
         m_materialList[i] = GetMaterialManager()->GetCopyOfDefaultMaterial();
         continue;
       }
-      m_materialList[i] = GetMaterialManager()->Create<Material>(
-          MaterialPath(Resource::DeserializeRef(resourceNode)));
+      m_materialList[i] = GetMaterialManager()->Create<Material>(MaterialPath(Resource::DeserializeRef(resourceNode)));
     }
 
     // Deprecated Here for compatibility with 0.4.1
-    if (m_materialList.empty()) 
+    if (m_materialList.empty())
     {
-      if (MaterialPtr mat = GetMaterialVal()) 
+      if (MaterialPtr mat = GetMaterialVal())
       {
         // Transfer the old material in to the list.
         m_materialList.push_back(mat);
         m_localData.Remove(ParamMaterial().m_id);
       }
     }
-
   }
 
   void MaterialComponent::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     Component::Serialize(doc, parent);
     XmlNode* compNode = parent->last_node(XmlComponent.c_str());
-    WriteAttr(compNode,
-              doc,
-              XmlMatCountAttrib,
-              std::to_string(m_materialList.size()));
+    WriteAttr(compNode, doc, XmlMatCountAttrib, std::to_string(m_materialList.size()));
     for (size_t i = 0; i < m_materialList.size(); i++)
     {
       if (m_materialList[i]->m_dirty)
       {
         m_materialList[i]->Save(true);
       }
-      XmlNode* resourceRefNode =
-          CreateXmlNode(doc, std::to_string(i), compNode);
+      XmlNode* resourceRefNode = CreateXmlNode(doc, std::to_string(i), compNode);
       m_materialList[i]->SerializeRef(doc, resourceRefNode);
     }
   }
 
-  void MaterialComponent::AddMaterial(MaterialPtr mat)
-  {
-    m_materialList.push_back(mat);
-  }
+  void MaterialComponent::AddMaterial(MaterialPtr mat) { m_materialList.push_back(mat); }
 
   void MaterialComponent::RemoveMaterial(uint index)
   {
@@ -96,15 +113,9 @@ namespace ToolKit
     m_materialList.erase(m_materialList.begin() + index);
   }
 
-  const MaterialPtrArray& MaterialComponent::GetMaterialList() const
-  {
-    return m_materialList;
-  }
+  const MaterialPtrArray& MaterialComponent::GetMaterialList() const { return m_materialList; }
 
-  MaterialPtrArray& MaterialComponent::GetMaterialList()
-  {
-    return m_materialList;
-  }
+  MaterialPtrArray& MaterialComponent::GetMaterialList() { return m_materialList; }
 
   void MaterialComponent::UpdateMaterialList()
   {

@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "MaterialView.h"
 
 #include "App.h"
@@ -15,20 +41,19 @@ namespace ToolKit
 
     MaterialView::MaterialView() : View("Material View")
     {
-      m_viewID              = 3;
-      m_viewIcn             = UI::m_materialIcon;
-      m_viewport            = new PreviewViewport(300u, 150u);
+      m_viewID                    = 3;
+      m_viewIcn                   = UI::m_materialIcon;
+      m_viewport                  = new PreviewViewport(300u, 150u);
 
       // Initialize ground entity
-      MaterialPtr groundMat = GetMaterialManager()->GetCopyOfDefaultMaterial();
-      groundMat->m_diffuseTexture = GetTextureManager()->Create<Texture>(
-          TexturePath("checkerBoard.png", true));
+      MaterialPtr groundMat       = GetMaterialManager()->GetCopyOfDefaultMaterial();
+      groundMat->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("checkerBoard.png", true));
 
-      Cube* ground = new Cube(Vec3(20.0f, 0.01f, 20.0f));
+      Cube* ground                = new Cube(Vec3(20.0f, 0.01f, 20.0f));
       ground->GetMeshComponent()->SetCastShadowVal(false);
       ground->GetMeshComponent()->GetMeshVal()->m_material = groundMat;
 
-      ScenePtr scene = m_viewport->GetScene();
+      ScenePtr scene                                       = m_viewport->GetScene();
       scene->AddEntity(ground);
 
       // Initialize preview entity (to show primitive meshes)
@@ -40,8 +65,7 @@ namespace ToolKit
       scene->AddEntity(previewEntity);
 
       // Merge ShaderBall scene into preview
-      ScenePtr shaderBallScene =
-          GetSceneManager()->Create<Scene>(ScenePath("ShaderBall.scene", true));
+      ScenePtr shaderBallScene = GetSceneManager()->Create<Scene>(ScenePath("ShaderBall.scene", true));
       scene->Merge(shaderBallScene);
 
       GradientSky* sky = new GradientSky();
@@ -63,10 +87,7 @@ namespace ToolKit
       }
     }
 
-    void MaterialView::SetMaterials(const MaterialPtrArray& mat)
-    {
-      m_materials = mat;
-    }
+    void MaterialView::SetMaterials(const MaterialPtrArray& mat) { m_materials = mat; }
 
     void MaterialView::ResetCamera() { m_viewport->ResetCamera(); }
 
@@ -114,11 +135,9 @@ namespace ToolKit
           ntt->SetVisibleVal(!primEntityVis);
           if (ntt->GetMaterialComponent() && m_materials.size() > 0)
           {
-            m_currentMaterialIndex =
-                glm::clamp(m_currentMaterialIndex, 0, (int) m_materials.size());
+            m_currentMaterialIndex = glm::clamp(m_currentMaterialIndex, 0, (int) m_materials.size());
 
-            ntt->GetMaterialComponent()->SetFirstMaterial(
-                m_materials[m_currentMaterialIndex]);
+            ntt->GetMaterialComponent()->SetFirstMaterial(m_materials[m_currentMaterialIndex]);
           }
         }
       }
@@ -195,28 +214,22 @@ namespace ToolKit
       }
       ImGui::Separator();
 
-      if (ImGui::CollapsingHeader("Material Preview",
-                                  ImGuiTreeNodeFlags_DefaultOpen))
+      if (ImGui::CollapsingHeader("Material Preview", ImGuiTreeNodeFlags_DefaultOpen))
       {
         static const ImVec2 iconSize = ImVec2(16.0f, 16.0f);
         const ImVec2 spacing         = ImGui::GetStyle().ItemSpacing;
         UpdatePreviewScene();
-        if (UI::ImageButtonDecorless(UI::m_cameraIcon->m_textureId,
-                                     iconSize,
-                                     false))
+        if (UI::ImageButtonDecorless(UI::m_cameraIcon->m_textureId, iconSize, false))
         {
           ResetCamera();
         }
 
-        const ImVec2 viewportSize = ImVec2(ImGui::GetContentRegionAvail().x -
-                                               iconSize.x - 9.0f * spacing.x,
-                                           130.0f);
+        const ImVec2 viewportSize = ImVec2(ImGui::GetContentRegionAvail().x - iconSize.x - 9.0f * spacing.x, 130.0f);
         if (viewportSize.x > 1 && viewportSize.y > 1)
         {
           ImGui::SameLine();
           m_viewport->m_isTempView = m_isTempView;
-          m_viewport->ResizeWindow((uint) viewportSize.x,
-                                   (uint) viewportSize.y);
+          m_viewport->ResizeWindow((uint) viewportSize.x, (uint) viewportSize.y);
           m_viewport->Update(g_app->GetDeltaTime());
           m_viewport->Show();
           ImGui::SameLine();
@@ -253,21 +266,19 @@ namespace ToolKit
         {
           ImGui::BeginGroup();
           ImGui::LabelText("##vertShader", "Vertex Shader: ");
-          DropZone(
-              UI::m_codeIcon->m_textureId,
-              mat->m_vertexShader->GetFile(),
-              [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-              {
-                if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
-                {
-                  g_app->m_statusMsg = "Failed. Shader expected.";
-                  return;
-                }
-                mat->m_vertexShader =
-                    GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-                mat->m_vertexShader->Init();
-                updateThumbFn();
-              });
+          DropZone(UI::m_codeIcon->m_textureId,
+                   mat->m_vertexShader->GetFile(),
+                   [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                   {
+                     if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
+                     {
+                       g_app->m_statusMsg = "Failed. Shader expected.";
+                       return;
+                     }
+                     mat->m_vertexShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
+                     mat->m_vertexShader->Init();
+                     updateThumbFn();
+                   });
           ImGui::EndGroup();
 
           ImGui::SameLine();
@@ -276,16 +287,14 @@ namespace ToolKit
 
           ImGui::BeginGroup();
           ImGui::LabelText("##fragShader", "Fragment Shader: ");
-          DropZone(
-              UI::m_codeIcon->m_textureId,
-              mat->m_fragmentShader->GetFile(),
-              [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-              {
-                mat->m_fragmentShader =
-                    GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-                mat->m_fragmentShader->Init();
-                updateThumbFn();
-              });
+          DropZone(UI::m_codeIcon->m_textureId,
+                   mat->m_fragmentShader->GetFile(),
+                   [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                   {
+                     mat->m_fragmentShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
+                     mat->m_fragmentShader->Init();
+                     updateThumbFn();
+                   });
           ImGui::EndGroup();
         }
       }
@@ -294,9 +303,7 @@ namespace ToolKit
       {
         uint textureIndx = 0;
         auto exposeTextureFn =
-            [this, &textureIndx, &updateThumbFn](TexturePtr& texture,
-                                                 StringView sId,
-                                                 StringView label) -> void
+            [this, &textureIndx, &updateThumbFn](TexturePtr& texture, StringView sId, StringView label) -> void
         {
           ImGui::BeginGroup();
 
@@ -307,24 +314,20 @@ namespace ToolKit
             target = texture->GetFile();
           }
 
-          DropZone(
-              UI::m_imageIcon->m_textureId,
-              target,
-              [&texture, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-              {
-                texture =
-                    GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
-                texture->Init();
-                updateThumbFn();
-              });
+          DropZone(UI::m_imageIcon->m_textureId,
+                   target,
+                   [&texture, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                   {
+                     texture = GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
+                     texture->Init();
+                     updateThumbFn();
+                   });
 
           if (texture)
           {
             ImGui::SameLine();
             ImGui::PushID(textureIndx++);
-            if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
-                                         Vec2(16.0f, 16.0f),
-                                         false))
+            if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId, Vec2(16.0f, 16.0f), false))
             {
               texture = nullptr;
               updateThumbFn();
@@ -338,21 +341,16 @@ namespace ToolKit
         exposeTextureFn(mat->m_diffuseTexture, "##diffTexture", "Diffuse");
         ImGui::SameLine();
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 35.0f);
-        exposeTextureFn(mat->m_emissiveTexture,
-                        "##emissiveTexture",
-                        "Emissive");
+        exposeTextureFn(mat->m_emissiveTexture, "##emissiveTexture", "Emissive");
         exposeTextureFn(mat->m_normalMap, "##normalMap", "Normal Map");
         ImGui::SameLine();
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 35.0f);
-        exposeTextureFn(mat->m_metallicRoughnessTexture,
-                        "##metallicRoughnessTexture",
-                        "Metallic Roughness");
+        exposeTextureFn(mat->m_metallicRoughnessTexture, "##metallicRoughnessTexture", "Metallic Roughness");
       }
 
       RenderState* renderState = mat->GetRenderState();
 
-      if (ImGui::CollapsingHeader("Render States",
-                                  ImGuiTreeNodeFlags_DefaultOpen))
+      if (ImGui::CollapsingHeader("Render States", ImGuiTreeNodeFlags_DefaultOpen))
       {
         if (mat->m_diffuseTexture == nullptr)
         {
@@ -360,16 +358,10 @@ namespace ToolKit
           {
             updateThumbFn();
           }
-          if (ImGui::DragFloat("Alpha",
-                               &mat->GetAlpha(),
-                               1.0f / 256.0f,
-                               0.0f,
-                               1.0f))
+          if (ImGui::DragFloat("Alpha", &mat->GetAlpha(), 1.0f / 256.0f, 0.0f, 1.0f))
           {
-            bool isForward = mat->GetAlpha() < 0.99f;
-            renderState->blendFunction =
-                isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA
-                          : BlendFunction::NONE;
+            bool isForward             = mat->GetAlpha() < 0.99f;
+            renderState->blendFunction = isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA : BlendFunction::NONE;
 
             updateThumbFn();
           }
@@ -379,9 +371,7 @@ namespace ToolKit
         {
           if (ImGui::ColorEdit3("Emissive Color Multiplier##1",
                                 &mat->m_emissiveColor.x,
-                                ImGuiColorEditFlags_HDR |
-                                    ImGuiColorEditFlags_NoLabel |
-                                    ImGuiColorEditFlags_Float))
+                                ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_Float))
           {
             updateThumbFn();
           }
@@ -391,20 +381,12 @@ namespace ToolKit
 
         if (mat->IsPBR() && mat->m_metallicRoughnessTexture == nullptr)
         {
-          if (ImGui::DragFloat("Metallic",
-                               &(mat->m_metallic),
-                               0.001f,
-                               0.0f,
-                               1.0f))
+          if (ImGui::DragFloat("Metallic", &(mat->m_metallic), 0.001f, 0.0f, 1.0f))
           {
             updateThumbFn();
           }
 
-          if (ImGui::DragFloat("Roughness",
-                               &(mat->m_roughness),
-                               0.001f,
-                               0.0f,
-                               1.0f))
+          if (ImGui::DragFloat("Roughness", &(mat->m_roughness), 0.001f, 0.0f, 1.0f))
           {
             updateThumbFn();
           }
@@ -418,9 +400,7 @@ namespace ToolKit
         }
 
         int blendMode = (int) renderState->blendFunction;
-        if (ImGui::Combo("Blend mode",
-                         &blendMode,
-                         "None\0Alpha Blending\0Alpha Mask"))
+        if (ImGui::Combo("Blend mode", &blendMode, "None\0Alpha Blending\0Alpha Mask"))
         {
           renderState->blendFunction = (BlendFunction) blendMode;
           if (renderState->blendFunction == BlendFunction::NONE)
@@ -435,9 +415,7 @@ namespace ToolKit
 
         int drawType = DrawTypeToInt(mat->GetRenderState()->drawType);
 
-        if (ImGui::Combo("Draw mode",
-                         &drawType,
-                         "Triangle\0Line\0Line Strip\0Line Loop\0Point"))
+        if (ImGui::Combo("Draw mode", &drawType, "Triangle\0Line\0Line Strip\0Line Loop\0Point"))
         {
           renderState->drawType = IntToDrawType(drawType);
           updateThumbFn();
@@ -446,12 +424,7 @@ namespace ToolKit
         if (renderState->blendFunction == BlendFunction::ALPHA_MASK)
         {
           float alphaMaskTreshold = renderState->alphaMaskTreshold;
-          if (ImGui::DragFloat("Alpha Mask Threshold",
-                               &alphaMaskTreshold,
-                               0.001f,
-                               0.0f,
-                               1.0f,
-                               "%.3f"))
+          if (ImGui::DragFloat("Alpha Mask Threshold", &alphaMaskTreshold, 0.001f, 0.0f, 1.0f, "%.3f"))
           {
             renderState->alphaMaskTreshold = alphaMaskTreshold;
             updateThumbFn();
@@ -469,8 +442,8 @@ namespace ToolKit
     {
       ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
 
-      float treeHeight = glm::min(20.0f + (m_materials.size() * 30.0f), 90.0f);
-      int numMaterials = (int) m_materials.size();
+      float treeHeight              = glm::min(20.0f + (m_materials.size() * 30.0f), 90.0f);
+      int numMaterials              = (int) m_materials.size();
 
       const auto showMaterialNodeFn = [this](MaterialPtr mat, int i) -> void
       {
@@ -480,9 +453,7 @@ namespace ToolKit
         bool isSelected          = i == m_currentMaterialIndex;
         ImGuiTreeNodeFlags flags = isSelected * ImGuiTreeNodeFlags_Selected;
 
-        ImGui::TreeNodeEx(name.c_str(),
-                          flags | ImGuiTreeNodeFlags_Leaf |
-                              ImGuiTreeNodeFlags_NoTreePushOnOpen);
+        ImGui::TreeNodeEx(name.c_str(), flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
 
         if (ImGui::IsItemClicked())
         {
@@ -517,9 +488,7 @@ namespace ToolKit
 
       if (m_materials.size() > 0)
       {
-        m_currentMaterialIndex = glm::clamp(m_currentMaterialIndex,
-                                            0,
-                                            (int) (m_materials.size()) - 1);
+        m_currentMaterialIndex = glm::clamp(m_currentMaterialIndex, 0, (int) (m_materials.size()) - 1);
         ShowMaterial(m_materials[m_currentMaterialIndex]);
       }
     }
@@ -539,10 +508,7 @@ namespace ToolKit
       m_view = nullptr;
     }
 
-    void TempMaterialWindow::SetMaterial(MaterialPtr mat)
-    {
-      m_view->SetMaterials({mat});
-    }
+    void TempMaterialWindow::SetMaterial(MaterialPtr mat) { m_view->SetMaterials({mat}); }
 
     void TempMaterialWindow::OpenWindow() { m_isOpen = true; }
 
@@ -557,10 +523,9 @@ namespace ToolKit
 
       ImGuiStyle style = ImGui::GetStyle();
       ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_Once);
-      ImGui::SetNextWindowPos(
-          ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
-          ImGuiCond_Once,
-          ImVec2(0.5f, 0.5f));
+      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
+                              ImGuiCond_Once,
+                              ImVec2(0.5f, 0.5f));
 
       ImGui::Begin("Material View", &m_isOpen);
 

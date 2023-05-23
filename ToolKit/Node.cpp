@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Node.h"
 
 #include "MathUtil.h"
@@ -56,11 +82,7 @@ namespace ToolKit
       m_scale = Vec3(1.0f);
     }
 
-    TransformImp(val,
-                 space,
-                 &m_translation,
-                 &m_orientation,
-                 noScale ? nullptr : &m_scale);
+    TransformImp(val, space, &m_translation, &m_orientation, noScale ? nullptr : &m_scale);
 
     if (noScale)
     {
@@ -68,9 +90,7 @@ namespace ToolKit
     }
   }
 
-  void Node::SetTransform(const Mat4& val,
-                          TransformationSpace space,
-                          bool noScale)
+  void Node::SetTransform(const Mat4& val, TransformationSpace space, bool noScale)
   {
     Vec3 tmpScl = m_scale;
     if (noScale)
@@ -78,11 +98,7 @@ namespace ToolKit
       m_scale = Vec3(1.0f);
     }
 
-    SetTransformImp(val,
-                    space,
-                    &m_translation,
-                    &m_orientation,
-                    noScale ? nullptr : &m_scale);
+    SetTransformImp(val, space, &m_translation, &m_orientation, noScale ? nullptr : &m_scale);
 
     if (noScale)
     {
@@ -142,9 +158,9 @@ namespace ToolKit
   void Node::InsertChild(Node* child, int index, bool preserveTransform)
   {
     bool canInsert = index <= m_children.size() && index >= 0;
-    canInsert &= child->m_id != m_id && child->m_parent == nullptr;
+    canInsert      &= child->m_id != m_id && child->m_parent == nullptr;
     assert(canInsert);
-    
+
     if (!canInsert)
     {
       return;
@@ -168,7 +184,7 @@ namespace ToolKit
 
   void Node::AddChild(Node* child, bool preserveTransform)
   {
-    InsertChild(child, (int)m_children.size(), preserveTransform);
+    InsertChild(child, (int) m_children.size(), preserveTransform);
   }
 
   void Node::OrphanChild(size_t index, bool preserveTransform)
@@ -253,10 +269,7 @@ namespace ToolKit
   {
     XmlNode* node = CreateXmlNode(doc, XmlNodeElement, parent);
 
-    WriteAttr(node,
-              doc,
-              XmlNodeInheritScaleAttr,
-              std::to_string(static_cast<int>(m_inheritScale)));
+    WriteAttr(node, doc, XmlNodeInheritScaleAttr, std::to_string(static_cast<int>(m_inheritScale)));
 
     XmlNode* tNode = CreateXmlNode(doc, XmlTranslateElement, node);
     WriteVec(tNode, doc, m_translation);
@@ -277,8 +290,7 @@ namespace ToolKit
       return;
     }
 
-    if (XmlAttribute* attr =
-            node->first_attribute(XmlNodeInheritScaleAttr.c_str()))
+    if (XmlAttribute* attr = node->first_attribute(XmlNodeInheritScaleAttr.c_str()))
     {
       String val     = attr->value();
       m_inheritScale = static_cast<bool>(std::atoi(val.c_str()));

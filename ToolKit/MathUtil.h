@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #pragma once
 
 #include "GeometryTypes.h"
@@ -9,23 +35,13 @@ namespace ToolKit
   // Matrix Operations
   //////////////////////////////////////////
 
-  TK_API void DecomposeMatrix(const Mat4& transform,
-                              Vec3* translation,
-                              Quaternion* orientation,
-                              Vec3* scale);
+  TK_API void DecomposeMatrix(const Mat4& transform, Vec3* translation, Quaternion* orientation, Vec3* scale);
 
   TK_API bool IsAffine(const Mat4& transform);
 
-  TK_API void QDUDecomposition(const Mat3& transform,
-                               Mat3& kQ,
-                               Vec3& kD,
-                               Vec3& kU);
+  TK_API void QDUDecomposition(const Mat3& transform, Mat3& kQ, Vec3& kD, Vec3& kU);
 
-  TK_API void ExtractAxes(const Mat4& transform,
-                          Vec3& x,
-                          Vec3& y,
-                          Vec3& z,
-                          bool normalize = true);
+  TK_API void ExtractAxes(const Mat4& transform, Vec3& x, Vec3& y, Vec3& z, bool normalize = true);
 
   TK_API Frustum ExtractFrustum(const Mat4& projectViewModel, bool normalize);
 
@@ -41,32 +57,22 @@ namespace ToolKit
 
   TK_API float SquareDistancePointToAABB(const Vec3& p, const BoundingBox& b);
 
-  TK_API bool SphereBoxIntersection(const BoundingSphere& s,
-                                    const BoundingBox& b);
+  TK_API bool SphereBoxIntersection(const BoundingSphere& s, const BoundingBox& b);
 
-  TK_API bool SpherePointIntersection(const Vec3& spherePos,
-                                      float sphereRadius,
-                                      const Vec3& vertex);
+  TK_API bool SpherePointIntersection(const Vec3& spherePos, float sphereRadius, const Vec3& vertex);
 
   TK_API bool SphereSphereIntersection(const Vec3& spherePos,
                                        float sphereRadius,
                                        const Vec3& spherePos2,
                                        float sphereRadius2);
 
-  TK_API bool BoxBoxIntersection(const BoundingBox& box1,
-                                 const BoundingBox& box2);
+  TK_API bool BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2);
 
   TK_API bool BoxPointIntersection(const BoundingBox& box, const Vec3& point);
 
-  TK_API bool RayBoxIntersection(const Ray& ray,
-                                 const BoundingBox& box,
-                                 float& t);
+  TK_API bool RayBoxIntersection(const Ray& ray, const BoundingBox& box, float& t);
 
-  TK_API bool RayTriangleIntersection(const Ray& ray,
-                                      const Vec3& v0,
-                                      const Vec3& v1,
-                                      const Vec3& v2,
-                                      float& t);
+  TK_API bool RayTriangleIntersection(const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t);
 
   TK_API Vec3 CPUSkinning(const class SkinVertex* vertex,
                           const Skeleton* skel,
@@ -81,27 +87,18 @@ namespace ToolKit
   // @return TK_UINT_MAX = no intersection, otherwise submesh index
   // If there is no tracing possible object, t set as 0.0
   // Tracing possible object: Vertex positions should be in memory
-  TK_API uint FindMeshIntersection(const class Entity* const ntt,
-                                   const Ray& ray,
-                                   float& t);
+  TK_API uint FindMeshIntersection(const class Entity* const ntt, const Ray& ray, float& t);
 
-  TK_API IntersectResult FrustumBoxIntersection(
-      const Frustum& frustum,
-      const BoundingBox& box); // 0 outside, 1 inside, 2 intersect
+  TK_API IntersectResult FrustumBoxIntersection(const Frustum& frustum,
+                                                const BoundingBox& box); // 0 outside, 1 inside, 2 intersect
 
-  TK_API bool RayPlaneIntersection(const Ray& ray,
-                                   const PlaneEquation& plane,
-                                   float& t);
+  TK_API bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t);
 
-  TK_API bool RaySphereIntersection(const Ray& ray,
-                                    const BoundingSphere& sphere,
-                                    float& t);
+  TK_API bool RaySphereIntersection(const Ray& ray, const BoundingSphere& sphere, float& t);
 
   // Line is same as ray but it is infinite on both sides.
   // Unless ray is parallel to plane, it will always yield a result.
-  TK_API bool LinePlaneIntersection(const Ray& ray,
-                                    const PlaneEquation& plane,
-                                    float& t);
+  TK_API bool LinePlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t);
 
   TK_API Vec3 PointOnRay(const Ray& ray, float t);
 
@@ -145,9 +142,7 @@ namespace ToolKit
     return glm::all(glm::equal<T>(a, b));
   }
 
-  TK_API bool PointInsideBBox(const Vec3& point,
-                              const Vec3& max,
-                              const Vec3& min);
+  TK_API bool PointInsideBBox(const Vec3& point, const Vec3& max, const Vec3& min);
 
   // Random Generators
   //////////////////////////////////////////

@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Scene.h"
 
 #include "Component.h"
@@ -105,8 +131,7 @@ namespace ToolKit
         }
 
         // Environment component
-        EnvironmentComponentPtr envCom =
-            ntt->GetComponent<EnvironmentComponent>();
+        EnvironmentComponentPtr envCom = ntt->GetComponent<EnvironmentComponent>();
         if (envCom != nullptr)
         {
           envCom->Init(true);
@@ -135,17 +160,14 @@ namespace ToolKit
     GetSceneManager()->Remove(other->GetFile());
   }
 
-  Scene::PickData Scene::PickObject(Ray ray,
-                                    const EntityIdArray& ignoreList,
-                                    const EntityRawPtrArray& extraList)
+  Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList, const EntityRawPtrArray& extraList)
   {
     PickData pd;
     pd.pickPos                  = ray.position + ray.direction * 5.0f;
 
     float closestPickedDistance = FLT_MAX;
 
-    auto pickFn = [&ignoreList, &ray, &pd, &closestPickedDistance](
-                      const EntityRawPtrArray& entities) -> void
+    auto pickFn = [&ignoreList, &ray, &pd, &closestPickedDistance](const EntityRawPtrArray& entities) -> void
     {
       for (Entity* ntt : entities)
       {
@@ -159,9 +181,9 @@ namespace ToolKit
           continue;
         }
 
-        Ray rayInObjectSpace = ray;
-        Mat4 ts  = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
-        Mat4 its = glm::inverse(ts);
+        Ray rayInObjectSpace       = ray;
+        Mat4 ts                    = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
+        Mat4 its                   = glm::inverse(ts);
         rayInObjectSpace.position  = its * Vec4(ray.position, 1.0f);
         rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);
 
@@ -208,8 +230,8 @@ namespace ToolKit
                          const EntityRawPtrArray& extraList,
                          bool pickPartiallyInside)
   {
-    auto pickFn = [&frustum, &pickedObjects, &ignoreList, &pickPartiallyInside](
-                      const EntityRawPtrArray& entities) -> void
+    auto pickFn =
+        [&frustum, &pickedObjects, &ignoreList, &pickPartiallyInside](const EntityRawPtrArray& entities) -> void
     {
       for (Entity* e : entities)
       {
@@ -322,9 +344,7 @@ namespace ToolKit
 
   void Scene::RemoveEntity(const EntityRawPtrArray& entities)
   {
-    erase_if(m_entities,
-             [entities](Entity* ntt) -> bool
-             { return FindIndex(entities, ntt) != -1; });
+    erase_if(m_entities, [entities](Entity* ntt) -> bool { return FindIndex(entities, ntt) != -1; });
   }
 
   void Scene::RemoveAllEntities() { m_entities.clear(); }
@@ -386,10 +406,7 @@ namespace ToolKit
   EntityRawPtrArray Scene::Filter(std::function<bool(Entity*)> filter)
   {
     EntityRawPtrArray filtered;
-    std::copy_if(m_entities.begin(),
-                 m_entities.end(),
-                 std::back_inserter(filtered),
-                 filter);
+    std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(filtered), filter);
     return filtered;
   }
 
@@ -422,13 +439,10 @@ namespace ToolKit
       String prefabPath = PrefabPath("");
       if (folder != PrefabPath(""))
       {
-        GetLogger()->WriteConsole(
-            LogType::Error,
-            "You can't use a prefab outside of Prefab folder!");
+        GetLogger()->WriteConsole(LogType::Error, "You can't use a prefab outside of Prefab folder!");
         return;
       }
-      String folderName =
-          folder.substr(folder.find_last_of(GetPathSeparator()));
+      String folderName = folder.substr(folder.find_last_of(GetPathSeparator()));
       // if (folderName != GetResourcePath())
     }
     Prefab* prefab = new Prefab();
@@ -444,10 +458,8 @@ namespace ToolKit
     EnvironmentComponentPtrArray environments;
     for (Entity* ntt : m_entities)
     {
-      EnvironmentComponentPtr envCom =
-          ntt->GetComponent<EnvironmentComponent>();
-      if (envCom != nullptr && envCom->GetHdriVal() != nullptr &&
-          envCom->GetIlluminateVal())
+      EnvironmentComponentPtr envCom = ntt->GetComponent<EnvironmentComponent>();
+      if (envCom != nullptr && envCom->GetHdriVal() != nullptr && envCom->GetIlluminateVal())
       {
         envCom->Init(true);
         environments.push_back(envCom);
@@ -548,16 +560,13 @@ namespace ToolKit
     {
       Entity* ntt = m_entities[listIndx];
       // If entity isn't a prefab type but from a prefab, don't serialize it
-      if (ntt->GetType() != EntityType::Entity_Prefab &&
-          Prefab::GetPrefabRoot(ntt))
+      if (ntt->GetType() != EntityType::Entity_Prefab && Prefab::GetPrefabRoot(ntt))
       {
         continue;
       }
       ntt->Serialize(doc, scene);
 
-      NormalizeEntityID(doc,
-                        scene->last_node(XmlEntityElement.c_str()),
-                        listIndx);
+      NormalizeEntityID(doc, scene->last_node(XmlEntityElement.c_str()), listIndx);
     }
 
     if (!m_isPrefab)
@@ -566,14 +575,10 @@ namespace ToolKit
     }
   }
 
-  void Scene::NormalizeEntityID(XmlDocument* doc,
-                                XmlNode* parent,
-                                size_t listIndx) const
+  void Scene::NormalizeEntityID(XmlDocument* doc, XmlNode* parent, size_t listIndx) const
   {
-    XmlAttribute* parentAttrib =
-        parent->first_attribute(XmlParentEntityIdAttr.c_str());
-    XmlAttribute* baseAttrib =
-        parent->first_attribute(XmlBaseEntityIdAttr.c_str());
+    XmlAttribute* parentAttrib = parent->first_attribute(XmlParentEntityIdAttr.c_str());
+    XmlAttribute* baseAttrib   = parent->first_attribute(XmlBaseEntityIdAttr.c_str());
     parent->remove_attribute(parent->first_attribute(XmlEntityIdAttr.c_str()));
     WriteAttr(parent, doc, XmlEntityIdAttr, std::to_string(listIndx + 1));
 
@@ -582,16 +587,12 @@ namespace ToolKit
     // If parent is in scene, save its list index too
     if (parentNode && parentNode->m_entity)
     {
-      for (uint parentSrchIndx = 0; parentSrchIndx < m_entities.size();
-           parentSrchIndx++)
+      for (uint parentSrchIndx = 0; parentSrchIndx < m_entities.size(); parentSrchIndx++)
       {
         if (parentNode->m_entity == m_entities[parentSrchIndx])
         {
           parent->remove_attribute(parentAttrib);
-          WriteAttr(parent,
-                    doc,
-                    XmlParentEntityIdAttr,
-                    std::to_string(parentSrchIndx + 1));
+          WriteAttr(parent, doc, XmlParentEntityIdAttr, std::to_string(parentSrchIndx + 1));
         }
       }
     }
@@ -622,8 +623,7 @@ namespace ToolKit
 
     EntityRawPtrArray prefabList;
 
-    for (node = root->first_node(XmlEntityElement.c_str()); node;
-         node = node->next_sibling(XmlEntityElement.c_str()))
+    for (node = root->first_node(XmlEntityElement.c_str()); node; node = node->next_sibling(XmlEntityElement.c_str()))
     {
       XmlAttribute* typeAttr = node->first_attribute(XmlEntityTypeAttr.c_str());
       EntityType t           = (EntityType) std::atoi(typeAttr->value());
@@ -649,7 +649,7 @@ namespace ToolKit
       AddEntity(ntt);
     }
     GetHandleManager()->SetMaxHandle(biggestID);
-    
+
     // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)
     {
@@ -691,26 +691,14 @@ namespace ToolKit
     ResourceManager::Uninit();
   }
 
-  bool SceneManager::CanStore(ResourceType t)
-  {
-    return t == ResourceType::Scene;
-  }
+  bool SceneManager::CanStore(ResourceType t) { return t == ResourceType::Scene; }
 
-  ResourcePtr SceneManager::CreateLocal(ResourceType type)
-  {
-    return ResourcePtr(new Scene());
-  }
+  ResourcePtr SceneManager::CreateLocal(ResourceType type) { return ResourcePtr(new Scene()); }
 
-  String SceneManager::GetDefaultResource(ResourceType type)
-  {
-    return ScenePath("Sample.scene", true);
-  }
+  String SceneManager::GetDefaultResource(ResourceType type) { return ScenePath("Sample.scene", true); }
 
   ScenePtr SceneManager::GetCurrentScene() { return m_currentScene; }
 
-  void SceneManager::SetCurrentScene(const ScenePtr& scene)
-  {
-    m_currentScene = scene;
-  }
+  void SceneManager::SetCurrentScene(const ScenePtr& scene) { m_currentScene = scene; }
 
 } // namespace ToolKit

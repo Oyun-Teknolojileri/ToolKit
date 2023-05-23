@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #pragma once
 
 /**
@@ -21,57 +47,57 @@
  * @param Class One of the supported types by ParameterVariant.
  * @param Name Name of the ParameterVariant.
  */
-#define TKDeclareParam(Class, Name)                                            \
- private:                                                                      \
-  size_t Name##_Index = -1;                                                    \
-                                                                               \
- private:                                                                      \
-  inline void Name##_Define(Class val,                                         \
-                            const String& category,                            \
-                            int priority,                                      \
-                            bool exposed,                                      \
-                            bool editable,                                     \
-                            UIHint hint = {})                                  \
-  {                                                                            \
-    ParameterVariant var(val);                                                 \
-    var.m_name     = #Name;                                                    \
-    var.m_category = {category, priority};                                     \
-    var.m_exposed  = exposed;                                                  \
-    var.m_editable = editable;                                                 \
-    var.m_hint     = hint;                                                     \
-    if (Name##_Index == -1)                                                    \
-    {                                                                          \
-      Name##_Index = m_localData.m_variants.size();                            \
-      m_localData.Add(var);                                                    \
-    }                                                                          \
-    else                                                                       \
-    {                                                                          \
-      m_localData[Name##_Index] = var;                                         \
-    }                                                                          \
-  }                                                                            \
-                                                                               \
- public:                                                                       \
-  inline ParameterVariant& Param##Name()                                       \
-  {                                                                            \
-    return m_localData[Name##_Index];                                          \
-  }                                                                            \
-                                                                               \
- public:                                                                       \
-  inline const Class& Get##Name##Val() const                                   \
-  {                                                                            \
-    return m_localData[Name##_Index].GetCVar<Class>();                         \
-  }                                                                            \
-                                                                               \
- public:                                                                       \
-  inline void Set##Name##Val(const Class& val)                                 \
-  {                                                                            \
-    m_localData[Name##_Index] = val;                                           \
-  }                                                                            \
-                                                                               \
- public:                                                                       \
-  inline size_t Name##Index()                                                  \
-  {                                                                            \
-    return Name##_Index;                                                       \
+#define TKDeclareParam(Class, Name)                                                                                    \
+ private:                                                                                                              \
+  size_t Name##_Index = -1;                                                                                            \
+                                                                                                                       \
+ private:                                                                                                              \
+  inline void Name##_Define(Class val,                                                                                 \
+                            const String& category,                                                                    \
+                            int priority,                                                                              \
+                            bool exposed,                                                                              \
+                            bool editable,                                                                             \
+                            UIHint hint = {})                                                                          \
+  {                                                                                                                    \
+    ParameterVariant var(val);                                                                                         \
+    var.m_name     = #Name;                                                                                            \
+    var.m_category = {category, priority};                                                                             \
+    var.m_exposed  = exposed;                                                                                          \
+    var.m_editable = editable;                                                                                         \
+    var.m_hint     = hint;                                                                                             \
+    if (Name##_Index == -1)                                                                                            \
+    {                                                                                                                  \
+      Name##_Index = m_localData.m_variants.size();                                                                    \
+      m_localData.Add(var);                                                                                            \
+    }                                                                                                                  \
+    else                                                                                                               \
+    {                                                                                                                  \
+      m_localData[Name##_Index] = var;                                                                                 \
+    }                                                                                                                  \
+  }                                                                                                                    \
+                                                                                                                       \
+ public:                                                                                                               \
+  inline ParameterVariant& Param##Name()                                                                               \
+  {                                                                                                                    \
+    return m_localData[Name##_Index];                                                                                  \
+  }                                                                                                                    \
+                                                                                                                       \
+ public:                                                                                                               \
+  inline const Class& Get##Name##Val() const                                                                           \
+  {                                                                                                                    \
+    return m_localData[Name##_Index].GetCVar<Class>();                                                                 \
+  }                                                                                                                    \
+                                                                                                                       \
+ public:                                                                                                               \
+  inline void Set##Name##Val(const Class& val)                                                                         \
+  {                                                                                                                    \
+    m_localData[Name##_Index] = val;                                                                                   \
+  }                                                                                                                    \
+                                                                                                                       \
+ public:                                                                                                               \
+  inline size_t Name##Index()                                                                                          \
+  {                                                                                                                    \
+    return Name##_Index;                                                                                               \
   }
 
 namespace ToolKit
@@ -623,9 +649,7 @@ namespace ToolKit
      * @param filterByExpose Filters out categories which does not contains any
      * exposed Variants.
      */
-    void GetCategories(VariantCategoryArray& categories,
-                       bool sortDesc,
-                       bool filterByExpose);
+    void GetCategories(VariantCategoryArray& categories, bool sortDesc, bool filterByExpose);
 
     /**
      * Collects every variant by the given category.
@@ -633,8 +657,7 @@ namespace ToolKit
      * @param variants The resulting variant array which holds references to the
      * variants that falls under the requested category.
      */
-    void GetByCategory(const String& category,
-                       ParameterVariantRawPtrArray& variants);
+    void GetByCategory(const String& category, ParameterVariantRawPtrArray& variants);
 
     /**
      * Search the variant with given category and name. Returns true if found

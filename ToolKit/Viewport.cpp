@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Viewport.h"
 
 #include "Camera.h"
@@ -22,8 +48,7 @@ namespace ToolKit
     {
       if (ScenePtr currScene = GetSceneManager()->GetCurrentScene())
       {
-        if (Camera* cam =
-                static_cast<Camera*>(currScene->GetEntity(m_attachedCamera)))
+        if (Camera* cam = static_cast<Camera*>(currScene->GetEntity(m_attachedCamera)))
         {
           assert(cam->GetType() == EntityType::Entity_Camera);
           return cam;
@@ -64,9 +89,8 @@ namespace ToolKit
 
   void ViewportBase::AttachCamera(ULongID camId)
   {
-    assert(camId == NULL_HANDLE ||
-           GetSceneManager()->GetCurrentScene()->GetEntity(camId) != nullptr &&
-               "Given camera must be in the current scene.");
+    assert(camId == NULL_HANDLE || GetSceneManager()->GetCurrentScene()->GetEntity(camId) != nullptr &&
+                                       "Given camera must be in the current scene.");
 
     m_attachedCamera = camId;
   }
@@ -82,8 +106,7 @@ namespace ToolKit
 
   Viewport::Viewport() {}
 
-  Viewport::Viewport(float width, float height)
-      : m_wndContentAreaSize(width, height)
+  Viewport::Viewport(float width, float height) : m_wndContentAreaSize(width, height)
   {
     GetCamera()->SetLens(glm::quarter_pi<float>(), width / height);
     ResetViewportImage(GetRenderTargetSettings());
@@ -101,8 +124,7 @@ namespace ToolKit
   void Viewport::AdjustZoom(float delta)
   {
     Camera* cam = GetCamera();
-    cam->m_node->Translate(Vec3(0.0f, 0.0f, -delta),
-                           TransformationSpace::TS_LOCAL);
+    cam->m_node->Translate(Vec3(0.0f, 0.0f, -delta), TransformationSpace::TS_LOCAL);
 
     if (cam->IsOrtographic())
     {
@@ -111,10 +133,7 @@ namespace ToolKit
     }
   }
 
-  RenderTargetSettigs Viewport::GetRenderTargetSettings()
-  {
-    return RenderTargetSettigs();
-  }
+  RenderTargetSettigs Viewport::GetRenderTargetSettings() { return RenderTargetSettigs(); }
 
   void Viewport::ResetViewportImage(const RenderTargetSettigs& settings)
   {
@@ -124,21 +143,15 @@ namespace ToolKit
     }
 
     m_framebuffer->UnInit();
-    m_framebuffer->Init({(uint) m_wndContentAreaSize.x,
-                         (uint) m_wndContentAreaSize.y,
-                         false,
-                         true});
+    m_framebuffer->Init({(uint) m_wndContentAreaSize.x, (uint) m_wndContentAreaSize.y, false, true});
 
     m_renderTarget =
-        std::make_shared<RenderTarget>((uint) m_wndContentAreaSize.x,
-                                       (uint) m_wndContentAreaSize.y,
-                                       settings);
+        std::make_shared<RenderTarget>((uint) m_wndContentAreaSize.x, (uint) m_wndContentAreaSize.y, settings);
     m_renderTarget->Init();
 
     if (m_renderTarget->m_initiated)
     {
-      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                   m_renderTarget);
+      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_renderTarget);
     }
   }
 
@@ -162,18 +175,13 @@ namespace ToolKit
     }
     else
     {
-      ray.direction =
-          glm::normalize(ray.position - cam->m_node->GetTranslation(
-                                            TransformationSpace::TS_WORLD));
+      ray.direction = glm::normalize(ray.position - cam->m_node->GetTranslation(TransformationSpace::TS_WORLD));
     }
 
     return ray;
   }
 
-  Vec3 Viewport::GetLastMousePosWorldSpace()
-  {
-    return TransformViewportToWorldSpace(GetLastMousePosViewportSpace());
-  }
+  Vec3 Viewport::GetLastMousePosWorldSpace() { return TransformViewportToWorldSpace(GetLastMousePosViewportSpace()); }
 
   Vec2 Viewport::GetLastMousePosViewportSpace()
   {
@@ -199,11 +207,7 @@ namespace ToolKit
     Mat4 view    = cam->GetViewMatrix();
     Mat4 project = cam->GetProjectionMatrix();
 
-    return glm::unProject(
-        pnt3d,
-        view,
-        project,
-        Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));
+    return glm::unProject(pnt3d, view, project, Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));
   }
 
   Vec2 Viewport::TransformWorldSpaceToScreenSpace(const Vec3& pnt)
@@ -212,15 +216,10 @@ namespace ToolKit
     glm::mat4 view    = cam->GetViewMatrix();
     glm::mat4 project = cam->GetProjectionMatrix();
 
-    Vec3 screenPos    = glm::project(
-        pnt,
-        view,
-        project,
-        Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));
+    Vec3 screenPos = glm::project(pnt, view, project, Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));
 
-    screenPos.x += m_contentAreaLocation.x;
-    screenPos.y =
-        m_wndContentAreaSize.y + m_contentAreaLocation.y - screenPos.y;
+    screenPos.x    += m_contentAreaLocation.x;
+    screenPos.y    = m_wndContentAreaSize.y + m_contentAreaLocation.y - screenPos.y;
 
     return screenPos.xy;
   }

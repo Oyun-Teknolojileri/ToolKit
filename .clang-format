@@ -35,7 +35,7 @@ BraceWrapping:
   AfterUnion: true
   BeforeLambdaBody: true
 BreakBeforeBraces: Allman
-ColumnLimit: 80
+ColumnLimit: 120
 IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: DebugNew.h

@@ -1,9 +1,35 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Util.h"
 
+#include "Common/utf8.h"
 #include "Primative.h"
 #include "ToolKit.h"
 #include "rapidxml.hpp"
-#include "Common/utf8.h"
 
 #include <algorithm>
 #include <cstdarg>
@@ -55,36 +81,18 @@ namespace ToolKit
     }
   }
 
-  template TK_API void WriteVec(XmlNode* node,
-                                XmlDocument* doc,
-                                const UVec2& val);
-  template TK_API void WriteVec(XmlNode* node,
-                                XmlDocument* doc,
-                                const IVec2& val);
-  template TK_API void WriteVec(XmlNode* node,
-                                XmlDocument* doc,
-                                const Vec2& val);
-  template TK_API void WriteVec(XmlNode* node,
-                                XmlDocument* doc,
-                                const Vec3& val);
-  template TK_API void WriteVec(XmlNode* node,
-                                XmlDocument* doc,
-                                const Vec4& val);
-  template TK_API void WriteVec(XmlNode* node,
-                                XmlDocument* doc,
-                                const UVec4& val);
-  template TK_API void WriteVec(XmlNode* node,
-                                XmlDocument* doc,
-                                const Quaternion& val);
+  template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const UVec2& val);
+  template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const IVec2& val);
+  template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const Vec2& val);
+  template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const Vec3& val);
+  template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const Vec4& val);
+  template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const UVec4& val);
+  template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const Quaternion& val);
 
-  void WriteAttr(XmlNode* node,
-                 XmlDocument* doc,
-                 const String& name,
-                 const String& val)
+  void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val)
   {
     node->append_attribute(
-        doc->allocate_attribute(doc->allocate_string(name.c_str(), 0),
-                                doc->allocate_string(val.c_str(), 0)));
+        doc->allocate_attribute(doc->allocate_string(name.c_str(), 0), doc->allocate_string(val.c_str(), 0)));
   }
 
   template <typename T>
@@ -117,40 +125,19 @@ namespace ToolKit
     return 0;
   }
 
-  void ReadAttr(XmlNode* node, const String& name, bool& val)
-  {
-    val = ReadVal<bool>(node, name);
-  }
+  void ReadAttr(XmlNode* node, const String& name, bool& val) { val = ReadVal<bool>(node, name); }
 
-  void ReadAttr(XmlNode* node, const String& name, float& val)
-  {
-    val = ReadVal<float>(node, name);
-  }
+  void ReadAttr(XmlNode* node, const String& name, float& val) { val = ReadVal<float>(node, name); }
 
-  void ReadAttr(XmlNode* node, const String& name, int& val)
-  {
-    val = ReadVal<int>(node, name);
-  }
+  void ReadAttr(XmlNode* node, const String& name, int& val) { val = ReadVal<int>(node, name); }
 
-  void ReadAttr(XmlNode* node, const String& name, uint& val)
-  {
-    val = ReadVal<uint>(node, name);
-  }
+  void ReadAttr(XmlNode* node, const String& name, uint& val) { val = ReadVal<uint>(node, name); }
 
-  void ReadAttr(XmlNode* node, const String& name, ULongID& val)
-  {
-    val = ReadVal<ULongID>(node, name);
-  }
+  void ReadAttr(XmlNode* node, const String& name, ULongID& val) { val = ReadVal<ULongID>(node, name); }
 
-  void ReadAttr(XmlNode* node, const String& name, byte& val)
-  {
-    val = ReadVal<byte>(node, name);
-  }
+  void ReadAttr(XmlNode* node, const String& name, byte& val) { val = ReadVal<byte>(node, name); }
 
-  void ReadAttr(XmlNode* node, const String& name, ubyte& val)
-  {
-    val = ReadVal<ubyte>(node, name);
-  }
+  void ReadAttr(XmlNode* node, const String& name, ubyte& val) { val = ReadVal<ubyte>(node, name); }
 
   void ReadAttr(XmlNode* node, const String& name, String& val)
   {
@@ -176,10 +163,7 @@ namespace ToolKit
     return node;
   }
 
-  bool UpdateAttribute(XmlDocument* doc,
-                       const StringArray& path,
-                       const String& attribute,
-                       const String& val)
+  bool UpdateAttribute(XmlDocument* doc, const StringArray& path, const String& attribute, const String& val)
   {
     if (XmlNode* node = Query(doc, path))
     {
@@ -189,8 +173,7 @@ namespace ToolKit
       }
       else
       {
-        XmlAttribute* newAttr =
-            doc->allocate_attribute(attribute.c_str(), val.c_str());
+        XmlAttribute* newAttr = doc->allocate_attribute(attribute.c_str(), val.c_str());
         node->append_attribute(newAttr);
       }
 
@@ -221,8 +204,7 @@ namespace ToolKit
 
   void WriteMaterial(XmlNode* parent, XmlDocument* doc, const String& file)
   {
-    XmlNode* material =
-        doc->allocate_node(rapidxml::node_type::node_element, "material");
+    XmlNode* material = doc->allocate_node(rapidxml::node_type::node_element, "material");
     parent->append_node(material);
 
     String matPath = GetRelativeResourcePath(file);
@@ -231,8 +213,7 @@ namespace ToolKit
       matPath = MaterialPath("default.material", true);
     }
 
-    XmlAttribute* nameAttr =
-        doc->allocate_attribute("name", doc->allocate_string(matPath.c_str()));
+    XmlAttribute* nameAttr = doc->allocate_attribute("name", doc->allocate_string(matPath.c_str()));
     material->append_attribute(nameAttr);
   }
 
@@ -249,15 +230,9 @@ namespace ToolKit
     return nullptr;
   }
 
-  bool CheckSystemFile(StringView path)
-  {
-    return std::filesystem::exists(path);
-  }
+  bool CheckSystemFile(StringView path) { return std::filesystem::exists(path); }
 
-  bool CheckFile(const String& path)
-  {
-    return GetFileManager()->CheckFileFromResources(path);
-  }
+  bool CheckFile(const String& path) { return GetFileManager()->CheckFileFromResources(path); }
 
   String CreateCopyFileFullPath(const String& fullPath)
   {
@@ -272,8 +247,7 @@ namespace ToolKit
         int i = 1;
         do
         {
-          cpyPath = ConcatPaths(
-              {path, name + "_copy(" + std::to_string(i++) + ")" + ext});
+          cpyPath = ConcatPaths({path, name + "_copy(" + std::to_string(i++) + ")" + ext});
         } while (CheckFile(cpyPath));
       }
     }
@@ -281,10 +255,7 @@ namespace ToolKit
     return cpyPath;
   }
 
-  void DecomposePath(const String& fullPath,
-                     String* path,
-                     String* name,
-                     String* ext)
+  void DecomposePath(const String& fullPath, String* path, String* name, String* ext)
   {
     String normal = fullPath;
     NormalizePath(normal);
@@ -375,7 +346,7 @@ namespace ToolKit
         exist      = rel.find(GetPathSeparator());
         if (exist != String::npos)
         {
-          if (rootFolder != nullptr) 
+          if (rootFolder != nullptr)
           {
             *rootFolder = rel.substr(0, exist);
           }
@@ -419,10 +390,7 @@ namespace ToolKit
     return path.substr(i);
   }
 
-  String CreatePathFromResourceType(const String& file, ResourceType type)
-  {
-    return GetResourcePath(type) + file;
-  }
+  String CreatePathFromResourceType(const String& file, ResourceType type) { return GetResourcePath(type) + file; }
 
   ResourceType GetResourceType(const String& ext)
   {
@@ -474,35 +442,34 @@ namespace ToolKit
     assert(false);
     return ResourceType::Base;
   }
-  
+
   TK_API String EntityTypeToString(EntityType type)
   {
-    static const std::unordered_map<EntityType, String> typeToName
-    {
-      { EntityType::Entity_Base            , "Base"             },
-      { EntityType::Entity_AudioSource     , "AudioSource"      }, 
-      { EntityType::Entity_Billboard       , "Billboard"        }, 
-      { EntityType::Entity_Cube            , "Cube"             }, 
-      { EntityType::Entity_Quad            , "Quad"             }, 
-      { EntityType::Entity_Sphere          , "Sphere"           }, 
-      { EntityType::Entity_Arrow           , "Arrow"            }, 
-      { EntityType::Entity_LineBatch       , "LineBatch"        }, 
-      { EntityType::Entity_Cone            , "Cone"             }, 
-      { EntityType::Entity_Drawable        , "Drawable"         }, 
-      { EntityType::Entity_SpriteAnim      , "SpriteAnim"       }, 
-      { EntityType::Entity_Surface         , "Surface"          }, 
-      { EntityType::Entity_Light           , "Light"            }, 
-      { EntityType::Entity_Camera          , "Camera"           }, 
-      { EntityType::Entity_Node            , "Node"             }, 
-      { EntityType::Entity_Button          , "Button"           }, 
-      { EntityType::Entity_Sky             , "Sky"              }, 
-      { EntityType::Entity_DirectionalLight, "DirectionalLight" }, 
-      { EntityType::Entity_PointLight      , "PointLight "      }, 
-      { EntityType::Entity_SpotLight       , "SpotLight"        }, 
-      { EntityType::Entity_Canvas          , "Canvas"           }, 
-      { EntityType::Entity_Prefab          , "Prefab"           }, 
-      { EntityType::Entity_SkyBase         , "SkyBase"          }, 
-      { EntityType::Entity_GradientSky     , "GradientSky"      } 
+    static const std::unordered_map<EntityType, String> typeToName {
+        {EntityType::Entity_Base,             "Base"            },
+        {EntityType::Entity_AudioSource,      "AudioSource"     },
+        {EntityType::Entity_Billboard,        "Billboard"       },
+        {EntityType::Entity_Cube,             "Cube"            },
+        {EntityType::Entity_Quad,             "Quad"            },
+        {EntityType::Entity_Sphere,           "Sphere"          },
+        {EntityType::Entity_Arrow,            "Arrow"           },
+        {EntityType::Entity_LineBatch,        "LineBatch"       },
+        {EntityType::Entity_Cone,             "Cone"            },
+        {EntityType::Entity_Drawable,         "Drawable"        },
+        {EntityType::Entity_SpriteAnim,       "SpriteAnim"      },
+        {EntityType::Entity_Surface,          "Surface"         },
+        {EntityType::Entity_Light,            "Light"           },
+        {EntityType::Entity_Camera,           "Camera"          },
+        {EntityType::Entity_Node,             "Node"            },
+        {EntityType::Entity_Button,           "Button"          },
+        {EntityType::Entity_Sky,              "Sky"             },
+        {EntityType::Entity_DirectionalLight, "DirectionalLight"},
+        {EntityType::Entity_PointLight,       "PointLight "     },
+        {EntityType::Entity_SpotLight,        "SpotLight"       },
+        {EntityType::Entity_Canvas,           "Canvas"          },
+        {EntityType::Entity_Prefab,           "Prefab"          },
+        {EntityType::Entity_SkyBase,          "SkyBase"         },
+        {EntityType::Entity_GradientSky,      "GradientSky"     }
     };
 
     bool exist = typeToName.count(type) != 0;
@@ -516,21 +483,20 @@ namespace ToolKit
 
   String GetTypeString(ResourceType type)
   {
-    static const std::unordered_map<ResourceType, String> typeToName
-    {
-      { ResourceType::Base        , "Base"        },               
-      { ResourceType::Animation   , "Animation"   },               
-      { ResourceType::Audio       , "Audio"       },               
-      { ResourceType::Material    , "Material"    },               
-      { ResourceType::Mesh        , "Mesh"        },               
-      { ResourceType::Shader      , "Shader"      },               
-      { ResourceType::SkinMesh    , "SkinMesh"    },               
-      { ResourceType::SpriteSheet , "SpriteSheet" },               
-      { ResourceType::Texture     , "Texture"     },               
-      { ResourceType::CubeMap     , "CubeMap"     },               
-      { ResourceType::RenderTarget, "RenderTarget"},               
-      { ResourceType::Scene       , "Scene"       },               
-      { ResourceType::Skeleton    , "Skeleton"    }               
+    static const std::unordered_map<ResourceType, String> typeToName {
+        {ResourceType::Base,         "Base"        },
+        {ResourceType::Animation,    "Animation"   },
+        {ResourceType::Audio,        "Audio"       },
+        {ResourceType::Material,     "Material"    },
+        {ResourceType::Mesh,         "Mesh"        },
+        {ResourceType::Shader,       "Shader"      },
+        {ResourceType::SkinMesh,     "SkinMesh"    },
+        {ResourceType::SpriteSheet,  "SpriteSheet" },
+        {ResourceType::Texture,      "Texture"     },
+        {ResourceType::CubeMap,      "CubeMap"     },
+        {ResourceType::RenderTarget, "RenderTarget"},
+        {ResourceType::Scene,        "Scene"       },
+        {ResourceType::Skeleton,     "Skeleton"    }
     };
 
     bool exist = typeToName.count(type) != 0;
@@ -660,10 +626,7 @@ namespace ToolKit
     return supportedFormats.find(ToLower(ext)) != String::npos;
   }
 
-  bool IsLayer(const String& file)
-  {
-    return file.find(ToLower(LAYER)) != String::npos;
-  }
+  bool IsLayer(const String& file) { return file.find(ToLower(LAYER)) != String::npos; }
 
   // split a string into multiple sub strings, based on a separator string
   // for example, if separator="::",
@@ -708,9 +671,7 @@ namespace ToolKit
   }
 
   // https://stackoverflow.com/questions/5878775/how-to-find-and-replace-string
-  void ReplaceStringInPlace(String& subject,
-                            const String& search,
-                            const String& replace)
+  void ReplaceStringInPlace(String& subject, const String& search, const String& replace)
   {
     size_t pos = 0;
     while ((pos = subject.find(search, pos)) != std::string::npos)
@@ -720,9 +681,7 @@ namespace ToolKit
     }
   }
 
-  void ReplaceFirstStringInPlace(String& subject,
-                                 const String& search,
-                                 const String& replace)
+  void ReplaceFirstStringInPlace(String& subject, const String& search, const String& replace)
   {
     size_t pos = 0;
     if ((pos = subject.find(search, pos)) != std::string::npos)
@@ -731,9 +690,7 @@ namespace ToolKit
     }
   }
 
-  void ReplaceCharInPlace(String& subject,
-                          const char search,
-                          const char replace)
+  void ReplaceCharInPlace(String& subject, const char search, const char replace)
   {
     for (char& ch : subject)
     {
@@ -799,10 +756,7 @@ namespace ToolKit
     return str.substr(strBegin, strRange);
   }
 
-  bool StartsWith(const String& str, const String& prefix)
-  {
-    return str.find(prefix) == 0;
-  }
+  bool StartsWith(const String& str, const String& prefix) { return str.find(prefix) == 0; }
 
   bool EndsWith(const String& str, const String& suffix)
   {
@@ -837,10 +791,7 @@ namespace ToolKit
     return obj;
   }
 
-  LineBatch* CreateBoundingBoxDebugObject(const BoundingBox& box,
-                                          const Vec3& color,
-                                          float size,
-                                          const Mat4* transform)
+  LineBatch* CreateBoundingBoxDebugObject(const BoundingBox& box, const Vec3& color, float size, const Mat4* transform)
   {
     Vec3Array corners;
     GetCorners(box, corners);
@@ -872,13 +823,11 @@ namespace ToolKit
       }
     }
 
-    LineBatch* lineForm =
-        new LineBatch(vertices, color, DrawType::LineStrip, size);
+    LineBatch* lineForm = new LineBatch(vertices, color, DrawType::LineStrip, size);
     return lineForm;
   }
 
-  void ToEntityIdArray(EntityIdArray& idArray,
-                       const EntityRawPtrArray& ptrArray)
+  void ToEntityIdArray(EntityIdArray& idArray, const EntityRawPtrArray& ptrArray)
   {
     idArray.reserve(ptrArray.size());
     for (Entity* ntt : ptrArray)
@@ -900,9 +849,7 @@ namespace ToolKit
     return false;
   }
 
-  void RootsOnly(const EntityRawPtrArray& entities,
-                 EntityRawPtrArray& roots,
-                 Entity* child)
+  void RootsOnly(const EntityRawPtrArray& entities, EntityRawPtrArray& roots, Entity* child)
   {
     auto AddUnique = [&roots](Entity* e) -> void
     {
@@ -933,8 +880,7 @@ namespace ToolKit
     }
   }
 
-  void GetRootEntities(const EntityRawPtrArray& entities,
-                       EntityRawPtrArray& roots)
+  void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots)
   {
     for (Entity* e : entities)
     {
@@ -997,8 +943,7 @@ namespace ToolKit
 
   int IndexOf(Entity* ntt, const EntityRawPtrArray& entities)
   {
-    EntityRawPtrArray::const_iterator it = 
-      std::find(entities.begin(), entities.end(), ntt);
+    EntityRawPtrArray::const_iterator it = std::find(entities.begin(), entities.end(), ntt);
 
     if (it != entities.end())
     {
@@ -1025,14 +970,12 @@ namespace ToolKit
 
   float GetElapsedMilliSeconds()
   {
-    namespace ch = std::chrono;
-    static ch::high_resolution_clock::time_point t1 =
-        ch::high_resolution_clock::now();
+    namespace ch                                    = std::chrono;
+    static ch::high_resolution_clock::time_point t1 = ch::high_resolution_clock::now();
 
-    ch::high_resolution_clock::time_point t2 = ch::high_resolution_clock::now();
+    ch::high_resolution_clock::time_point t2        = ch::high_resolution_clock::now();
 
-    ch::duration<double> timeSpan =
-        ch::duration_cast<ch::duration<double>>(t2 - t1);
+    ch::duration<double> timeSpan                   = ch::duration_cast<ch::duration<double>>(t2 - t1);
 
     return static_cast<float>(timeSpan.count() * 1000.0);
   }

@@ -1,3 +1,28 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #include "Gizmo.h"
 
@@ -11,10 +36,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    EditorBillboardBase::EditorBillboardBase(const Settings& settings)
-        : Billboard(settings)
-    {
-    }
+    EditorBillboardBase::EditorBillboardBase(const Settings& settings) : Billboard(settings) {}
 
     void EditorBillboardBase::Generate()
     {
@@ -33,17 +55,11 @@ namespace ToolKit
       mCom->SetMeshVal(meshPtr);
     }
 
-    Cursor::Cursor() : EditorBillboardBase({true, 10.0f, 60.0f, true})
-    {
-      Generate();
-    }
+    Cursor::Cursor() : EditorBillboardBase({true, 10.0f, 60.0f, true}) { Generate(); }
 
     Cursor::~Cursor() {}
 
-    EditorBillboardBase::BillboardType Cursor::GetBillboardType() const
-    {
-      return BillboardType::Cursor;
-    }
+    EditorBillboardBase::BillboardType Cursor::GetBillboardType() const { return BillboardType::Cursor; }
 
     void Cursor::Generate()
     {
@@ -56,8 +72,8 @@ namespace ToolKit
       MeshPtr meshPtr    = quad.GetMeshComponent()->GetMeshVal();
       MaterialPtr matPtr = GetMaterialManager()->GetCopyOfUnlitMaterial();
       matPtr->UnInit();
-      matPtr->m_diffuseTexture = GetTextureManager()->Create<Texture>(
-          TexturePath(ConcatPaths({"Icons", "cursor4k.png"}), true));
+      matPtr->m_diffuseTexture =
+          GetTextureManager()->Create<Texture>(TexturePath(ConcatPaths({"Icons", "cursor4k.png"}), true));
       matPtr->GetRenderState()->blendFunction     = BlendFunction::ALPHA_MASK;
       matPtr->GetRenderState()->alphaMaskTreshold = 0.1f;
       matPtr->Init();
@@ -68,26 +84,25 @@ namespace ToolKit
       VertexArray vertices;
       vertices.resize(12);
 
-      vertices[0].pos.z  = -0.3f;
-      vertices[1].pos.z  = -0.7f;
+      vertices[0].pos.z                       = -0.3f;
+      vertices[1].pos.z                       = -0.7f;
 
-      vertices[2].pos.z  = 0.3f;
-      vertices[3].pos.z  = 0.7f;
+      vertices[2].pos.z                       = 0.3f;
+      vertices[3].pos.z                       = 0.7f;
 
-      vertices[4].pos.x  = 0.3f;
-      vertices[5].pos.x  = 0.7f;
+      vertices[4].pos.x                       = 0.3f;
+      vertices[5].pos.x                       = 0.7f;
 
-      vertices[6].pos.x  = -0.3f;
-      vertices[7].pos.x  = -0.7f;
+      vertices[6].pos.x                       = -0.3f;
+      vertices[7].pos.x                       = -0.7f;
 
-      vertices[8].pos.y  = 0.3f;
-      vertices[9].pos.y  = 0.7f;
+      vertices[8].pos.y                       = 0.3f;
+      vertices[9].pos.y                       = 0.7f;
 
-      vertices[10].pos.y = -0.3f;
-      vertices[11].pos.y = -0.7f;
+      vertices[10].pos.y                      = -0.3f;
+      vertices[11].pos.y                      = -0.7f;
 
-      MaterialPtr newMaterial =
-          GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      MaterialPtr newMaterial                 = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       newMaterial->m_color                    = Vec3(0.1f, 0.1f, 0.1f);
       newMaterial->GetRenderState()->drawType = DrawType::Line;
 
@@ -97,17 +112,11 @@ namespace ToolKit
       parentMesh->CalculateAABB();
     }
 
-    Axis3d::Axis3d() : EditorBillboardBase({false, 10.0f, 60.0f, true})
-    {
-      Generate();
-    }
+    Axis3d::Axis3d() : EditorBillboardBase({false, 10.0f, 60.0f, true}) { Generate(); }
 
     Axis3d::~Axis3d() {}
 
-    EditorBillboardBase::BillboardType Axis3d::GetBillboardType() const
-    {
-      return BillboardType::Axis3d;
-    }
+    EditorBillboardBase::BillboardType Axis3d::GetBillboardType() const { return BillboardType::Axis3d; }
 
     void Axis3d::Generate()
     {
@@ -161,9 +170,8 @@ namespace ToolKit
       MeshPtr lnMesh = line.GetComponent<MeshComponent>()->GetMeshVal();
       m_mesh->m_subMeshes.push_back(lnMesh);
 
-      MaterialPtr material =
-          GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-      material->m_color = params.color;
+      MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      material->m_color    = params.color;
 
       if (params.type == SolidType::Cube)
       {
@@ -362,17 +370,16 @@ namespace ToolKit
       m_params = params;
 
       Quad solid;
-      MaterialPtr material =
-          GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      MaterialPtr material                 = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       material->m_color                    = params.color;
       material->GetRenderState()->cullMode = CullingType::TwoSided;
 
-      MeshPtr mesh     = solid.GetMeshComponent()->GetMeshVal();
-      mesh->m_material = material;
-      m_mesh           = mesh;
+      MeshPtr mesh                         = solid.GetMeshComponent()->GetMeshVal();
+      mesh->m_material                     = material;
+      m_mesh                               = mesh;
 
-      float scale      = 0.15f;
-      float offset     = 2.0f;
+      float scale                          = 0.15f;
+      float offset                         = 2.0f;
 
       for (Vertex& v : m_mesh->m_clientSideVertices)
       {
@@ -456,10 +463,7 @@ namespace ToolKit
     // Gizmo
     //////////////////////////////////////////////////////////////////////////
 
-    Gizmo::Gizmo(const Billboard::Settings& set) : EditorBillboardBase(set)
-    {
-      m_grabbedAxis = AxisLabel::None;
-    }
+    Gizmo::Gizmo(const Billboard::Settings& set) : EditorBillboardBase(set) { m_grabbedAxis = AxisLabel::None; }
 
     Gizmo::~Gizmo()
     {
@@ -469,10 +473,7 @@ namespace ToolKit
       }
     }
 
-    EditorBillboardBase::BillboardType Gizmo::GetBillboardType() const
-    {
-      return BillboardType::Gizmo;
-    }
+    EditorBillboardBase::BillboardType Gizmo::GetBillboardType() const { return BillboardType::Gizmo; }
 
     AxisLabel Gizmo::HitTest(const Ray& ray) const
     {
@@ -497,10 +498,7 @@ namespace ToolKit
       return hit;
     }
 
-    bool Gizmo::IsLocked(AxisLabel axis) const
-    {
-      return contains(m_lockedAxis, axis);
-    }
+    bool Gizmo::IsLocked(AxisLabel axis) const { return contains(m_lockedAxis, axis); }
 
     void Gizmo::Lock(AxisLabel axis)
     {
@@ -513,15 +511,10 @@ namespace ToolKit
 
     void Gizmo::UnLock(AxisLabel axis)
     {
-      m_lockedAxis.erase(
-          std::remove(m_lockedAxis.begin(), m_lockedAxis.end(), axis),
-          m_lockedAxis.end());
+      m_lockedAxis.erase(std::remove(m_lockedAxis.begin(), m_lockedAxis.end(), axis), m_lockedAxis.end());
     }
 
-    bool Gizmo::IsGrabbed(AxisLabel axis) const
-    {
-      return m_grabbedAxis == axis;
-    }
+    bool Gizmo::IsGrabbed(AxisLabel axis) const { return m_grabbedAxis == axis; }
 
     void Gizmo::Grab(AxisLabel axis)
     {
@@ -667,10 +660,7 @@ namespace ToolKit
 
     MoveGizmo::~MoveGizmo() {}
 
-    EditorBillboardBase::BillboardType MoveGizmo::GetBillboardType() const
-    {
-      return BillboardType::Move;
-    }
+    EditorBillboardBase::BillboardType MoveGizmo::GetBillboardType() const { return BillboardType::Move; }
 
     ScaleGizmo::ScaleGizmo()
     {
@@ -700,10 +690,7 @@ namespace ToolKit
 
     ScaleGizmo::~ScaleGizmo() {}
 
-    EditorBillboardBase::BillboardType ScaleGizmo::GetBillboardType() const
-    {
-      return BillboardType::Scale;
-    }
+    EditorBillboardBase::BillboardType ScaleGizmo::GetBillboardType() const { return BillboardType::Scale; }
 
     GizmoHandle::Params ScaleGizmo::GetParam() const
     {
@@ -723,10 +710,7 @@ namespace ToolKit
 
     PolarGizmo::~PolarGizmo() {}
 
-    EditorBillboardBase::BillboardType PolarGizmo::GetBillboardType() const
-    {
-      return BillboardType::Rotate;
-    }
+    EditorBillboardBase::BillboardType PolarGizmo::GetBillboardType() const { return BillboardType::Rotate; }
 
     void PolarGizmo::Update(float deltaTime)
     {
@@ -738,8 +722,7 @@ namespace ToolKit
         m_handles[i]->m_mesh = nullptr;
       }
 
-      EditorViewport2d* viewport2D =
-          dynamic_cast<EditorViewport2d*>(g_app->GetActiveViewport());
+      EditorViewport2d* viewport2D = dynamic_cast<EditorViewport2d*>(g_app->GetActiveViewport());
       for (int i = 0; i < 3; i++)
       {
         // If gizmo is in 2D view, just generate Z axis
@@ -791,17 +774,11 @@ namespace ToolKit
       GetComponent<MeshComponent>()->SetMeshVal(mesh);
     }
 
-    SkyBillboard::SkyBillboard() : EditorBillboardBase({true, 3.5f, 10.0f})
-    {
-      Generate();
-    }
+    SkyBillboard::SkyBillboard() : EditorBillboardBase({true, 3.5f, 10.0f}) { Generate(); }
 
     SkyBillboard::~SkyBillboard() {}
 
-    EditorBillboardBase::BillboardType SkyBillboard::GetBillboardType() const
-    {
-      return BillboardType::Sky;
-    }
+    EditorBillboardBase::BillboardType SkyBillboard::GetBillboardType() const { return BillboardType::Sky; }
 
     void SkyBillboard::Generate()
     {
@@ -809,17 +786,11 @@ namespace ToolKit
       EditorBillboardBase::Generate();
     }
 
-    LightBillboard::LightBillboard() : EditorBillboardBase({true, 3.5f, 10.0f})
-    {
-      Generate();
-    }
+    LightBillboard::LightBillboard() : EditorBillboardBase({true, 3.5f, 10.0f}) { Generate(); }
 
     LightBillboard::~LightBillboard() {}
 
-    EditorBillboardBase::BillboardType LightBillboard::GetBillboardType() const
-    {
-      return BillboardType::Light;
-    }
+    EditorBillboardBase::BillboardType LightBillboard::GetBillboardType() const { return BillboardType::Light; }
 
     void LightBillboard::Generate()
     {

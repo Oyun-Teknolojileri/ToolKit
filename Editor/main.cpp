@@ -1,8 +1,34 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "App.h"
-#include "GlErrorReporter.h"
 #include "Common/SDLEventPool.h"
 #include "Common/Win32Utils.h"
 #include "ConsoleWindow.h"
+#include "GlErrorReporter.h"
 #include "Mod.h"
 #include "SDL.h"
 #include "Types.h"
@@ -47,12 +73,9 @@ namespace ToolKit
         return;
       }
 
-      StringArray files = {"Workspace.settings",
-                           "Editor.settings",
-                           "UILayout.ini",
-                           "Engine.settings"};
+      StringArray files           = {"Workspace.settings", "Editor.settings", "UILayout.ini", "Engine.settings"};
 
-      String cfgPath    = ConcatPaths({String(appData), "ToolKit", "Config"});
+      String cfgPath              = ConcatPaths({String(appData), "ToolKit", "Config"});
 
       // Create ToolKit Configs.
       bool doesConfigFolderExists = true;
@@ -67,10 +90,9 @@ namespace ToolKit
           String targetFile = ConcatPaths({cfgPath, files[i]});
           if (!CheckSystemFile(targetFile))
           {
-            std::filesystem::copy(
-                ConcatPaths({ConfigPath(), files[i]}),
-                ConcatPaths({cfgPath, files[i]}),
-                std::filesystem::copy_options::overwrite_existing);
+            std::filesystem::copy(ConcatPaths({ConfigPath(), files[i]}),
+                                  ConcatPaths({cfgPath, files[i]}),
+                                  std::filesystem::copy_options::overwrite_existing);
           }
         }
       }
@@ -86,8 +108,7 @@ namespace ToolKit
         if (path.has_parent_path())
         {
           String utf8Path = path.parent_path().u8string();
-          utf8Path.erase(remove(utf8Path.begin(), utf8Path.end(), '\"'),
-                         utf8Path.end());
+          utf8Path.erase(remove(utf8Path.begin(), utf8Path.end(), '\"'), utf8Path.end());
 
           file << utf8Path;
         }
@@ -118,14 +139,12 @@ namespace ToolKit
       else
       {
 #ifdef TK_GL_CORE_3_2
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
-                            SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 #elif defined(TK_GL_ES_3_0)
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
-                            SDL_GL_CONTEXT_PROFILE_ES);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -145,8 +164,7 @@ namespace ToolKit
         if (settings.Graphics.MSAA > 0)
         {
           SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-          SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,
-                              settings.Graphics.MSAA);
+          SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, settings.Graphics.MSAA);
         }
 
 #ifdef TK_DEBUG
@@ -159,8 +177,7 @@ namespace ToolKit
                              SDL_WINDOWPOS_UNDEFINED,
                              settings.Window.Width,
                              settings.Window.Height,
-                             SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE |
-                                 SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+                             SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 
         if (g_window == nullptr)
         {
@@ -177,22 +194,20 @@ namespace ToolKit
           else
           {
             // Init OpenGl.
-            g_proxy->m_renderSys->InitGl(
-                SDL_GL_GetProcAddress,
-                [](const std::string& msg) -> void
-                {
-                  if (g_app == nullptr)
-                  {
-                    return;
-                  }
+            g_proxy->m_renderSys->InitGl(SDL_GL_GetProcAddress,
+                                         [](const std::string& msg) -> void
+                                         {
+                                           if (g_app == nullptr)
+                                           {
+                                             return;
+                                           }
 
-                  if (g_app->m_showGraphicsApiErrors)
-                  {
-                    GetLogger()->WriteConsole(LogType::Error, msg.c_str());
-                    GetLogger()->WritePlatformConsole(LogType::Error,
-                                                      msg.c_str());
-                  }
-                });
+                                           if (g_app->m_showGraphicsApiErrors)
+                                           {
+                                             GetLogger()->WriteConsole(LogType::Error, msg.c_str());
+                                             GetLogger()->WritePlatformConsole(LogType::Error, msg.c_str());
+                                           }
+                                         });
 
             // Init Main.
             // Override SceneManager.
@@ -204,11 +219,10 @@ namespace ToolKit
             SDL_GL_SetSwapInterval(0);
 
             // Init app
-            g_app = new App(settings .Window.Width, settings .Window.Height);
+            g_app                 = new App(settings.Window.Width, settings.Window.Height);
             g_app->m_sysComExecFn = ToolKit::Win32Helpers::g_SysComExecFn;
-            GetLogger()->SetPlatformConsoleFn(
-                [](LogType type, const String& msg) -> void
-                { ToolKit::Win32Helpers::OutputLog((int) type, msg.c_str()); });
+            GetLogger()->SetPlatformConsoleFn([](LogType type, const String& msg) -> void
+                                              { ToolKit::Win32Helpers::OutputLog((int) type, msg.c_str()); });
 
             UI::Init();
             g_app->Init();

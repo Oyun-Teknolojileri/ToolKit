@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Entity.h"
 
 #include "GradientSky.h"
@@ -31,16 +57,11 @@ namespace ToolKit
     ClearComponents();
   }
 
-  bool Entity::IsDrawable() const
-  {
-    return GetComponent<MeshComponent>() != nullptr;
-  }
+  bool Entity::IsDrawable() const { return GetComponent<MeshComponent>() != nullptr; }
 
   EntityType Entity::GetType() const { return EntityType::Entity_Base; }
 
-  void Entity::SetPose(const AnimationPtr& anim,
-                       float time,
-                       BlendTarget* blendTarget)
+  void Entity::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
   {
     MeshComponentPtr meshComp = GetMeshComponent();
     if (meshComp)
@@ -60,8 +81,7 @@ namespace ToolKit
   {
     BoundingBox aabb;
 
-    AABBOverrideComponentPtr overrideComp =
-        GetComponent<AABBOverrideComponent>();
+    AABBOverrideComponentPtr overrideComp = GetComponent<AABBOverrideComponent>();
     if (overrideComp)
     {
       aabb = overrideComp->GetAABB();
@@ -133,25 +153,13 @@ namespace ToolKit
 
     Id_Define(id, EntityCategory.Name, EntityCategory.Priority, true, false);
 
-    Name_Define("Entity_" + std::to_string(id),
-                EntityCategory.Name,
-                EntityCategory.Priority,
-                true,
-                true);
+    Name_Define("Entity_" + std::to_string(id), EntityCategory.Name, EntityCategory.Priority, true, true);
 
     Tag_Define("", EntityCategory.Name, EntityCategory.Priority, true, true);
 
-    Visible_Define(true,
-                   EntityCategory.Name,
-                   EntityCategory.Priority,
-                   true,
-                   true);
+    Visible_Define(true, EntityCategory.Name, EntityCategory.Priority, true, true);
 
-    TransformLock_Define(false,
-                         EntityCategory.Name,
-                         EntityCategory.Priority,
-                         true,
-                         true);
+    TransformLock_Define(false, EntityCategory.Name, EntityCategory.Priority, true, true);
   }
 
   void Entity::WeakCopy(Entity* other, bool copyComponents) const
@@ -172,29 +180,19 @@ namespace ToolKit
     }
   }
 
-  void Entity::AddComponent(Component* component)
-  {
-    AddComponent(ComponentPtr(component));
-  }
+  void Entity::AddComponent(Component* component) { AddComponent(ComponentPtr(component)); }
 
   void Entity::AddComponent(ComponentPtr component)
   {
-    assert(GetComponent(component->m_id) == nullptr &&
-           "Component has already been added.");
+    assert(GetComponent(component->m_id) == nullptr && "Component has already been added.");
 
     component->m_entity = this;
     GetComponentPtrArray().push_back(component);
   }
 
-  MeshComponentPtr Entity::GetMeshComponent() const
-  {
-    return GetComponent<MeshComponent>();
-  }
+  MeshComponentPtr Entity::GetMeshComponent() const { return GetComponent<MeshComponent>(); }
 
-  MaterialComponentPtr Entity::GetMaterialComponent() const
-  {
-    return GetComponent<MaterialComponent>();
-  }
+  MaterialComponentPtr Entity::GetMaterialComponent() const { return GetComponent<MaterialComponent>(); }
 
   ComponentPtr Entity::RemoveComponent(ULongID componentId)
   {
@@ -214,10 +212,7 @@ namespace ToolKit
 
   ComponentPtrArray& Entity::GetComponentPtrArray() { return m_components; }
 
-  const ComponentPtrArray& Entity::GetComponentPtrArray() const
-  {
-    return m_components;
-  }
+  const ComponentPtrArray& Entity::GetComponentPtrArray() const { return m_components; }
 
   ComponentPtr Entity::GetComponent(ULongID id) const
   {
@@ -238,16 +233,10 @@ namespace ToolKit
     WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(GetIdVal()));
     if (m_node->m_parent && m_node->m_parent->m_entity)
     {
-      WriteAttr(node,
-                doc,
-                XmlParentEntityIdAttr,
-                std::to_string(m_node->m_parent->m_entity->GetIdVal()));
+      WriteAttr(node, doc, XmlParentEntityIdAttr, std::to_string(m_node->m_parent->m_entity->GetIdVal()));
     }
 
-    WriteAttr(node,
-              doc,
-              XmlEntityTypeAttr,
-              std::to_string(static_cast<int>(GetType())));
+    WriteAttr(node, doc, XmlEntityTypeAttr, std::to_string(static_cast<int>(GetType())));
 
     m_node->Serialize(doc, node);
     m_localData.Serialize(doc, node);
@@ -288,8 +277,7 @@ namespace ToolKit
       {
         int type = -1;
         ReadAttr(comNode, XmlParamterTypeAttr, type);
-        Component* com =
-            Component::CreateByType(static_cast<ComponentType>(type));
+        Component* com = Component::CreateByType(static_cast<ComponentType>(type));
 
         com->DeSerialize(doc, comNode);
         AddComponent(com);
@@ -360,17 +348,14 @@ namespace ToolKit
   bool Entity::IsLightInstance() const
   {
     const EntityType type = GetType();
-    return (type == EntityType::Entity_Light ||
-            type == EntityType::Entity_DirectionalLight ||
-            type == EntityType::Entity_PointLight ||
-            type == EntityType::Entity_SpotLight);
+    return (type == EntityType::Entity_Light || type == EntityType::Entity_DirectionalLight ||
+            type == EntityType::Entity_PointLight || type == EntityType::Entity_SpotLight);
   }
 
   bool Entity::IsSkyInstance() const
   {
     const EntityType type = GetType();
-    return (type == EntityType::Entity_Sky ||
-            type == EntityType::Entity_SkyBase ||
+    return (type == EntityType::Entity_Sky || type == EntityType::Entity_SkyBase ||
             type == EntityType::Entity_GradientSky);
   }
 
@@ -384,11 +369,7 @@ namespace ToolKit
 
   void EntityNode::RemoveResources() {}
 
-  EntityFactory::EntityFactory()
-  {
-    m_overrideFns.resize(static_cast<size_t>(EntityType::ENTITY_TYPE_COUNT),
-                         nullptr);
-  }
+  EntityFactory::EntityFactory() { m_overrideFns.resize(static_cast<size_t>(EntityType::ENTITY_TYPE_COUNT), nullptr); }
 
   EntityFactory::~EntityFactory() { m_overrideFns.clear(); }
 
@@ -481,8 +462,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  void EntityFactory::OverrideEntityConstructor(EntityType type,
-                                                std::function<Entity*()> fn)
+  void EntityFactory::OverrideEntityConstructor(EntityType type, std::function<Entity*()> fn)
   {
     m_overrideFns[static_cast<int>(type)] = fn;
   }

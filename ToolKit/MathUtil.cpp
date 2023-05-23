@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "MathUtil.h"
 
 #include "Camera.h"
@@ -15,10 +41,7 @@
 namespace ToolKit
 {
 
-  void DecomposeMatrix(const Mat4& transform,
-                       Vec3* translation,
-                       Quaternion* orientation,
-                       Vec3* scale)
+  void DecomposeMatrix(const Mat4& transform, Vec3* translation, Quaternion* orientation, Vec3* scale)
   {
     // assert(IsAffine(transform));
 
@@ -47,8 +70,7 @@ namespace ToolKit
 
   bool IsAffine(const Mat4& transform)
   {
-    return transform[0][3] == 0 && transform[1][3] == 0 &&
-           transform[2][3] == 0 && transform[3][3] == 1;
+    return transform[0][3] == 0 && transform[1][3] == 0 && transform[2][3] == 0 && transform[3][3] == 1;
   }
 
   // https://github.com/OGRECave/ogre-next/blob/master/OgreMain/src/OgreMatrix3.cpp
@@ -84,44 +106,39 @@ namespace ToolKit
     // build orthogonal matrix Q
     // TK_MOD To row major. Ogre is row major.
     Mat4 m           = glm::transpose(transform);
-    float fInvLength = glm::inversesqrt(m[0][0] * m[0][0] + m[1][0] * m[1][0] +
-                                        m[2][0] * m[2][0]);
+    float fInvLength = glm::inversesqrt(m[0][0] * m[0][0] + m[1][0] * m[1][0] + m[2][0] * m[2][0]);
 
     kQ[0][0]         = m[0][0] * fInvLength;
     kQ[1][0]         = m[1][0] * fInvLength;
     kQ[2][0]         = m[2][0] * fInvLength;
 
-    float fDot = kQ[0][0] * m[0][1] + kQ[1][0] * m[1][1] + kQ[2][0] * m[2][1];
-    kQ[0][1]   = m[0][1] - fDot * kQ[0][0];
-    kQ[1][1]   = m[1][1] - fDot * kQ[1][0];
-    kQ[2][1]   = m[2][1] - fDot * kQ[2][0];
-    fInvLength = glm::inversesqrt(kQ[0][1] * kQ[0][1] + kQ[1][1] * kQ[1][1] +
-                                  kQ[2][1] * kQ[2][1]);
+    float fDot       = kQ[0][0] * m[0][1] + kQ[1][0] * m[1][1] + kQ[2][0] * m[2][1];
+    kQ[0][1]         = m[0][1] - fDot * kQ[0][0];
+    kQ[1][1]         = m[1][1] - fDot * kQ[1][0];
+    kQ[2][1]         = m[2][1] - fDot * kQ[2][0];
+    fInvLength       = glm::inversesqrt(kQ[0][1] * kQ[0][1] + kQ[1][1] * kQ[1][1] + kQ[2][1] * kQ[2][1]);
 
-    kQ[0][1]   *= fInvLength;
-    kQ[1][1]   *= fInvLength;
-    kQ[2][1]   *= fInvLength;
+    kQ[0][1]         *= fInvLength;
+    kQ[1][1]         *= fInvLength;
+    kQ[2][1]         *= fInvLength;
 
-    fDot       = kQ[0][0] * m[0][2] + kQ[1][0] * m[1][2] + kQ[2][0] * m[2][2];
-    kQ[0][2]   = m[0][2] - fDot * kQ[0][0];
-    kQ[1][2]   = m[1][2] - fDot * kQ[1][0];
-    kQ[2][2]   = m[2][2] - fDot * kQ[2][0];
-    fDot       = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] + kQ[2][1] * m[2][2];
-    kQ[0][2]   -= fDot * kQ[0][1];
-    kQ[1][2]   -= fDot * kQ[1][1];
-    kQ[2][2]   -= fDot * kQ[2][1];
-    fInvLength = glm::inversesqrt(kQ[0][2] * kQ[0][2] + kQ[1][2] * kQ[1][2] +
-                                  kQ[2][2] * kQ[2][2]);
+    fDot             = kQ[0][0] * m[0][2] + kQ[1][0] * m[1][2] + kQ[2][0] * m[2][2];
+    kQ[0][2]         = m[0][2] - fDot * kQ[0][0];
+    kQ[1][2]         = m[1][2] - fDot * kQ[1][0];
+    kQ[2][2]         = m[2][2] - fDot * kQ[2][0];
+    fDot             = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] + kQ[2][1] * m[2][2];
+    kQ[0][2]         -= fDot * kQ[0][1];
+    kQ[1][2]         -= fDot * kQ[1][1];
+    kQ[2][2]         -= fDot * kQ[2][1];
+    fInvLength       = glm::inversesqrt(kQ[0][2] * kQ[0][2] + kQ[1][2] * kQ[1][2] + kQ[2][2] * kQ[2][2]);
 
-    kQ[0][2]   *= fInvLength;
-    kQ[1][2]   *= fInvLength;
-    kQ[2][2]   *= fInvLength;
+    kQ[0][2]         *= fInvLength;
+    kQ[1][2]         *= fInvLength;
+    kQ[2][2]         *= fInvLength;
 
     // guarantee that orthogonal matrix has determinant 1 (no reflections)
-    float fDet =
-        kQ[0][0] * kQ[1][1] * kQ[2][2] + kQ[0][1] * kQ[1][2] * kQ[2][0] +
-        kQ[0][2] * kQ[1][0] * kQ[2][1] - kQ[0][2] * kQ[1][1] * kQ[2][0] -
-        kQ[0][1] * kQ[1][0] * kQ[2][2] - kQ[0][0] * kQ[1][2] * kQ[2][1];
+    float fDet = kQ[0][0] * kQ[1][1] * kQ[2][2] + kQ[0][1] * kQ[1][2] * kQ[2][0] + kQ[0][2] * kQ[1][0] * kQ[2][1] -
+                 kQ[0][2] * kQ[1][1] * kQ[2][0] - kQ[0][1] * kQ[1][0] * kQ[2][2] - kQ[0][0] * kQ[1][2] * kQ[2][1];
 
     if (fDet < 0.0)
     {
@@ -132,20 +149,20 @@ namespace ToolKit
 
     // build "right" matrix R
     Mat3 kR;
-    kR[0][0] = kQ[0][0] * m[0][0] + kQ[1][0] * m[1][0] + kQ[2][0] * m[2][0];
-    kR[0][1] = kQ[0][0] * m[0][1] + kQ[1][0] * m[1][1] + kQ[2][0] * m[2][1];
-    kR[1][1] = kQ[0][1] * m[0][1] + kQ[1][1] * m[1][1] + kQ[2][1] * m[2][1];
-    kR[0][2] = kQ[0][0] * m[0][2] + kQ[1][0] * m[1][2] + kQ[2][0] * m[2][2];
-    kR[1][2] = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] + kQ[2][1] * m[2][2];
-    kR[2][2] = kQ[0][2] * m[0][2] + kQ[1][2] * m[1][2] + kQ[2][2] * m[2][2];
+    kR[0][0]     = kQ[0][0] * m[0][0] + kQ[1][0] * m[1][0] + kQ[2][0] * m[2][0];
+    kR[0][1]     = kQ[0][0] * m[0][1] + kQ[1][0] * m[1][1] + kQ[2][0] * m[2][1];
+    kR[1][1]     = kQ[0][1] * m[0][1] + kQ[1][1] * m[1][1] + kQ[2][1] * m[2][1];
+    kR[0][2]     = kQ[0][0] * m[0][2] + kQ[1][0] * m[1][2] + kQ[2][0] * m[2][2];
+    kR[1][2]     = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] + kQ[2][1] * m[2][2];
+    kR[2][2]     = kQ[0][2] * m[0][2] + kQ[1][2] * m[1][2] + kQ[2][2] * m[2][2];
 
-    kQ       = glm::transpose(kQ); // TK_MOD To column major. Ogre is row major.
-    kR       = glm::transpose(kR); // TK_MOD To column major. Ogre is row major.
+    kQ           = glm::transpose(kQ); // TK_MOD To column major. Ogre is row major.
+    kR           = glm::transpose(kR); // TK_MOD To column major. Ogre is row major.
 
     // the scaling component
-    kD[0]    = kR[0][0];
-    kD[1]    = kR[1][1];
-    kD[2]    = kR[2][2];
+    kD[0]        = kR[0][0];
+    kD[1]        = kR[1][1];
+    kD[2]        = kR[2][2];
 
     // the shear component
     float fInvD0 = 1.0f / kD[0];
@@ -154,11 +171,7 @@ namespace ToolKit
     kU[2]        = kR[1][2] / kD[1];
   }
 
-  void ExtractAxes(const Mat4& transform,
-                   Vec3& x,
-                   Vec3& y,
-                   Vec3& z,
-                   bool normalize)
+  void ExtractAxes(const Mat4& transform, Vec3& x, Vec3& y, Vec3& z, bool normalize)
   {
     x = glm::column(transform, 0);
     y = glm::column(transform, 1);
@@ -265,18 +278,13 @@ namespace ToolKit
     return sqDist <= s.radius * s.radius;
   }
 
-  bool SpherePointIntersection(const Vec3& spherePos,
-                               float sphereRadius,
-                               const Vec3& vertex)
+  bool SpherePointIntersection(const Vec3& spherePos, float sphereRadius, const Vec3& vertex)
   {
     float dist = glm::distance(spherePos, vertex);
     return dist < sphereRadius;
   }
 
-  bool SphereSphereIntersection(const Vec3& spherePos,
-                                float sphereRadius,
-                                const Vec3& spherePos2,
-                                float sphereRadius2)
+  bool SphereSphereIntersection(const Vec3& spherePos, float sphereRadius, const Vec3& spherePos2, float sphereRadius2)
   {
     float dist = glm::distance(spherePos, spherePos2);
     return dist < (sphereRadius + sphereRadius2);
@@ -326,11 +334,7 @@ namespace ToolKit
   }
 
   // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-  bool RayTriangleIntersection(const Ray& ray,
-                               const Vec3& v0,
-                               const Vec3& v1,
-                               const Vec3& v2,
-                               float& t)
+  bool RayTriangleIntersection(const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t)
   {
     const float EPSILON = 0.0000001f;
     Vec3 vertex0        = v0;
@@ -365,9 +369,7 @@ namespace ToolKit
       return false;
   }
 
-  Vec3 CPUSkinning(const SkinVertex* vertex,
-                   const Skeleton* skel,
-                   const DynamicBoneMap* dynamicBoneMap)
+  Vec3 CPUSkinning(const SkinVertex* vertex, const Skeleton* skel, const DynamicBoneMap* dynamicBoneMap)
   {
     Vec3 transformedPos = {};
     for (uint boneIndx = 0; boneIndx < 4; boneIndx++)
@@ -376,72 +378,53 @@ namespace ToolKit
       StaticBone* sBone      = skel->m_bones[currentBone];
       Mat4 bindPoseTransform = sBone->m_inverseWorldMatrix;
       ToolKit::Mat4 boneTransform =
-          dynamicBoneMap->boneList.find(sBone->m_name)
-              ->second.node->GetTransform(TransformationSpace::TS_WORLD);
+          dynamicBoneMap->boneList.find(sBone->m_name)->second.node->GetTransform(TransformationSpace::TS_WORLD);
       transformedPos +=
-          Vec3((boneTransform * bindPoseTransform * Vec4(vertex->pos, 1.0f) *
-                vertex->weights[boneIndx])
-                   .xyz);
+          Vec3((boneTransform * bindPoseTransform * Vec4(vertex->pos, 1.0f) * vertex->weights[boneIndx]).xyz);
     }
     return transformedPos;
   }
 
-  bool RayMeshIntersection(const Mesh* const mesh,
-                           const Ray& ray,
-                           float& t,
-                           const SkeletonComponent* skelComp)
+  bool RayMeshIntersection(const Mesh* const mesh, const Ray& ray, float& t, const SkeletonComponent* skelComp)
   {
     float closestPickedDistance = FLT_MAX;
     bool hit                    = false;
 
 #ifndef __EMSCRIPTEN__
     std::mutex updateHit;
-    std::for_each(
-        std::execution::par_unseq,
-        mesh->m_faces.begin(),
-        mesh->m_faces.end(),
-        [&updateHit, &t, &closestPickedDistance, &ray, &hit, skelComp, mesh](
-            const Face& face)
-        {
-          Vec3 positions[3] = {face.vertices[0]->pos,
-                               face.vertices[1]->pos,
-                               face.vertices[2]->pos};
-          if (skelComp != nullptr && mesh->IsSkinned())
-          {
-            SkinMesh* skinMesh = (SkinMesh*) mesh;
-            for (uint32_t vertexIndx = 0; vertexIndx < 3; vertexIndx++)
-            {
-              positions[vertexIndx] =
-                  CPUSkinning((SkinVertex*) face.vertices[vertexIndx],
-                              skinMesh->m_skeleton.get(),
-                              skelComp->m_map);
-            }
-          }
-          float dist = FLT_MAX;
-          if (RayTriangleIntersection(ray,
-                                      positions[0],
-                                      positions[1],
-                                      positions[2],
-                                      dist))
-          {
-            std::lock_guard<std::mutex> guard(updateHit);
-            if (dist < closestPickedDistance && t >= 0.0f)
-            {
-              t                     = dist;
-              closestPickedDistance = dist;
-              hit                   = true;
-            }
-          }
-        });
+    std::for_each(std::execution::par_unseq,
+                  mesh->m_faces.begin(),
+                  mesh->m_faces.end(),
+                  [&updateHit, &t, &closestPickedDistance, &ray, &hit, skelComp, mesh](const Face& face)
+                  {
+                    Vec3 positions[3] = {face.vertices[0]->pos, face.vertices[1]->pos, face.vertices[2]->pos};
+                    if (skelComp != nullptr && mesh->IsSkinned())
+                    {
+                      SkinMesh* skinMesh = (SkinMesh*) mesh;
+                      for (uint32_t vertexIndx = 0; vertexIndx < 3; vertexIndx++)
+                      {
+                        positions[vertexIndx] = CPUSkinning((SkinVertex*) face.vertices[vertexIndx],
+                                                            skinMesh->m_skeleton.get(),
+                                                            skelComp->m_map);
+                      }
+                    }
+                    float dist = FLT_MAX;
+                    if (RayTriangleIntersection(ray, positions[0], positions[1], positions[2], dist))
+                    {
+                      std::lock_guard<std::mutex> guard(updateHit);
+                      if (dist < closestPickedDistance && t >= 0.0f)
+                      {
+                        t                     = dist;
+                        closestPickedDistance = dist;
+                        hit                   = true;
+                      }
+                    }
+                  });
 #else
     for (const Face& face : mesh->m_faces)
     {
       float dist = FLT_MAX;
-      if (RayTriangleIntersection(ray,
-                                  face.vertices[0]->pos,
-                                  face.vertices[1]->pos,
-                                  face.vertices[2]->pos,
-                                  dist))
+      if (RayTriangleIntersection(ray, face.vertices[0]->pos, face.vertices[1]->pos, face.vertices[2]->pos, dist))
       {
         if (dist < closestPickedDistance && t >= 0.0f)
         {
@@ -456,9 +439,7 @@ namespace ToolKit
     return hit;
   }
 
-  TK_API uint FindMeshIntersection(const class Entity* const ntt,
-                                   const Ray& rayInWorldSpace,
-                                   float& t)
+  TK_API uint FindMeshIntersection(const class Entity* const ntt, const Ray& rayInWorldSpace, float& t)
   {
     SkeletonComponent* skel = ntt->GetComponent<SkeletonComponent>().get();
 
@@ -505,9 +486,9 @@ namespace ToolKit
       return TK_UINT_MAX;
     }
 
-    Ray rayInObjectSpace = rayInWorldSpace;
-    Mat4 ts  = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
-    Mat4 its = glm::inverse(ts);
+    Ray rayInObjectSpace       = rayInWorldSpace;
+    Mat4 ts                    = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
+    Mat4 its                   = glm::inverse(ts);
     rayInObjectSpace.position  = its * Vec4(rayInWorldSpace.position, 1.0f);
     rayInObjectSpace.direction = its * Vec4(rayInWorldSpace.direction, 0.0f);
 
@@ -519,10 +500,7 @@ namespace ToolKit
                   {
                     float t = TK_FLT_MAX;
 
-                    if (RayMeshIntersection(meshes[trace.indx],
-                                            rayInObjectSpace,
-                                            t,
-                                            skel))
+                    if (RayMeshIntersection(meshes[trace.indx], rayInObjectSpace, t, skel))
                     {
                       trace.dist = t;
                     }
@@ -558,8 +536,7 @@ namespace ToolKit
    * If distance = 0 , then the point p lies in the plane.
    * If distance > 0 , then the point p lies in the positive halfspace.
    */
-  IntersectResult FrustumBoxIntersection(const Frustum& frustum,
-                                         const BoundingBox& box)
+  IntersectResult FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box)
   {
     Vec3 vmin, vmax;
     IntersectResult res = IntersectResult::Inside;
@@ -602,12 +579,10 @@ namespace ToolKit
         vmax.z = box.max.z;
       }
 
-      float distmin =
-          glm::dot(frustum.planes[i].normal, vmin) + frustum.planes[i].d;
+      float distmin = glm::dot(frustum.planes[i].normal, vmin) + frustum.planes[i].d;
       if (distmin > 0)
       {
-        float distmax =
-            glm::dot(frustum.planes[i].normal, vmax) + frustum.planes[i].d;
+        float distmax = glm::dot(frustum.planes[i].normal, vmax) + frustum.planes[i].d;
         if (distmax <= 0)
         {
           res = IntersectResult::Intersect;
@@ -630,9 +605,7 @@ namespace ToolKit
     return res;
   }
 
-  bool RayPlaneIntersection(const Ray& ray,
-                            const PlaneEquation& plane,
-                            float& t)
+  bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
   {
     float denom = glm::dot(ray.direction, plane.normal);
     // Ray and plane facing(-). Not parallel (0) or ray facing plane's back (+).
@@ -647,9 +620,7 @@ namespace ToolKit
   }
 
   // https://gist.github.com/wwwtyro/beecc31d65d1004f5a9d
-  bool RaySphereIntersection(const Ray& ray,
-                             const BoundingSphere& sphere,
-                             float& t)
+  bool RaySphereIntersection(const Ray& ray, const BoundingSphere& sphere, float& t)
   {
     Vec3 r0    = ray.position;
     Vec3 rd    = ray.direction;
@@ -669,9 +640,7 @@ namespace ToolKit
     return true;
   }
 
-  bool LinePlaneIntersection(const Ray& ray,
-                             const PlaneEquation& plane,
-                             float& t)
+  bool LinePlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
   {
     float denom = glm::dot(ray.direction, plane.normal);
     if (glm::notEqual(denom, 0.0f)) // Not parallel (0).
@@ -683,10 +652,7 @@ namespace ToolKit
     return false;
   }
 
-  Vec3 PointOnRay(const Ray& ray, float t)
-  {
-    return ray.position + ray.direction * t;
-  }
+  Vec3 PointOnRay(const Ray& ray, float t) { return ray.position + ray.direction * t; }
 
   // https://forum.unity.com/threads/how-do-i-find-the-closest-point-on-a-line.340058/
   TK_API Vec3 ProjectPointOntoLine(const Ray& baseLine, const Vec3& point)
@@ -726,8 +692,7 @@ namespace ToolKit
     Mat4 v          = camera->GetViewMatrix();
     Frustum frustum = ExtractFrustum(pr * v, false);
 
-    auto delFn      = [frustum](Entity* ntt) -> bool
-    { return FrustumTest(frustum, ntt->GetAABB(true)); };
+    auto delFn      = [frustum](Entity* ntt) -> bool { return FrustumTest(frustum, ntt->GetAABB(true)); };
     erase_if(entities, delFn);
   }
 
@@ -738,8 +703,7 @@ namespace ToolKit
     Mat4 v          = camera->GetViewMatrix();
     Frustum frustum = ExtractFrustum(pr * v, false);
 
-    auto delFn      = [frustum](RenderJob& job) -> bool
-    { return FrustumTest(frustum, job.BoundingBox); };
+    auto delFn      = [frustum](RenderJob& job) -> bool { return FrustumTest(frustum, job.BoundingBox); };
     erase_if(jobs, delFn);
   }
 
@@ -812,8 +776,7 @@ namespace ToolKit
 
   float SignedDistance(const PlaneEquation& plane, const Vec3& pnt)
   {
-    assert(glm::isNormalized(plane.normal, 0.0001f) &&
-           "Normalized vector expected.");
+    assert(glm::isNormalized(plane.normal, 0.0001f) && "Normalized vector expected.");
 
     Vec3 planeOrig = plane.normal * plane.d;
     Vec3 checkPnt  = pnt - planeOrig;
@@ -823,16 +786,12 @@ namespace ToolKit
 
   Vec3 ProjectPointOntoPlane(const PlaneEquation& plane, const Vec3& pnt)
   {
-    assert(glm::isNormalized(plane.normal, 0.0001f) &&
-           "Normalized vector expected.");
+    assert(glm::isNormalized(plane.normal, 0.0001f) && "Normalized vector expected.");
 
     return pnt - glm::dot(plane.normal, pnt) * plane.normal;
   }
 
-  Vec3 Interpolate(const Vec3& vec1, const Vec3& vec2, float ratio)
-  {
-    return (vec2 - vec1) * ratio + vec1;
-  }
+  Vec3 Interpolate(const Vec3& vec1, const Vec3& vec2, float ratio) { return (vec2 - vec1) * ratio + vec1; }
 
   void ToSpherical(Vec3 p, float& r, float& zenith, float& azimuth)
   {
@@ -891,8 +850,8 @@ namespace ToolKit
 
   bool PointInsideBBox(const Vec3& point, const Vec3& max, const Vec3& min)
   {
-    return (point.x <= max.x && point.x >= min.x && point.y <= max.y &&
-            point.y >= min.y && point.z <= max.z && point.z >= min.z);
+    return (point.x <= max.x && point.x >= min.x && point.y <= max.y && point.y >= min.y && point.z <= max.z &&
+            point.z >= min.z);
   }
 
   Vec3Array GenerateRandomSamplesOnHemisphere(int numSamples, float bias)

@@ -1,8 +1,39 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+#include "ToolKit.h"
+#include "Util.h"
 #include "assimp/DefaultLogger.hpp"
 #include "assimp/Importer.hpp"
 #include "assimp/pbrmaterial.h"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/quaternion.hpp"
+#include "rapidxml.hpp"
 
 #include <assert.h>
 #include <rapidxml_ext.h>
@@ -16,12 +47,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#include "ToolKit.h"
-#include "Util.h"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtx/quaternion.hpp"
-#include "rapidxml.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -89,11 +114,7 @@ namespace ToolKit
 
   vector<string> g_usedFiles;
 
-  bool IsUsed(const string& file)
-  {
-    return find(g_usedFiles.begin(), g_usedFiles.end(), file) ==
-           g_usedFiles.end();
-  }
+  bool IsUsed(const string& file) { return find(g_usedFiles.begin(), g_usedFiles.end(), file) == g_usedFiles.end(); }
 
   void AddToUsedFiles(const string& file)
   {
@@ -110,8 +131,7 @@ namespace ToolKit
     std::replace_if(
         str.begin(),
         str.end(),
-        [&forbiddenChars](char c)
-        { return std::string::npos != forbiddenChars.find(c); },
+        [&forbiddenChars](char c) { return std::string::npos != forbiddenChars.find(c); },
         ' ');
   }
 
@@ -135,10 +155,7 @@ namespace ToolKit
     name = name.substr(0, name.find_last_of('.'));
   }
 
-  void DecomposeAssimpMatrix(aiMatrix4x4 transform,
-                             Vec3* t,
-                             Quaternion* r,
-                             Vec3* s)
+  void DecomposeAssimpMatrix(aiMatrix4x4 transform, Vec3* t, Quaternion* r, Vec3* s)
   {
     aiVector3D aiT, aiS;
     aiQuaternion aiR;
@@ -180,15 +197,13 @@ namespace ToolKit
   {
     aiString matName;
     g_scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_NAME, matName);
-    return GetMaterialName(g_scene->mMaterials[mesh->mMaterialIndex],
-                           mesh->mMaterialIndex);
+    return GetMaterialName(g_scene->mMaterials[mesh->mMaterialIndex], mesh->mMaterialIndex);
   }
 
   std::vector<MaterialPtr> tMaterials;
 
   template <typename T>
-  void CreateFileAndSerializeObject(T* objectToSerialize,
-                                    const String& filePath)
+  void CreateFileAndSerializeObject(T* objectToSerialize, const String& filePath)
   {
     std::ofstream file;
     file.open(filePath.c_str(), std::ios::out);
@@ -230,9 +245,7 @@ namespace ToolKit
   {
     for (uint i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
     {
-      if (LessEqual(AnimationTime,
-                    static_cast<float>(pNodeAnim->mPositionKeys[i + 1].mTime),
-                    g_animEps))
+      if (LessEqual(AnimationTime, static_cast<float>(pNodeAnim->mPositionKeys[i + 1].mTime), g_animEps))
       {
         return i;
       }
@@ -249,9 +262,7 @@ namespace ToolKit
 
     for (uint i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++)
     {
-      if (LessEqual(AnimationTime,
-                    static_cast<float>(pNodeAnim->mRotationKeys[i + 1].mTime),
-                    g_animEps))
+      if (LessEqual(AnimationTime, static_cast<float>(pNodeAnim->mRotationKeys[i + 1].mTime), g_animEps))
       {
         return i;
       }
@@ -268,9 +279,7 @@ namespace ToolKit
 
     for (uint i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++)
     {
-      if (LessEqual(AnimationTime,
-                    static_cast<float>(pNodeAnim->mScalingKeys[i + 1].mTime),
-                    g_animEps))
+      if (LessEqual(AnimationTime, static_cast<float>(pNodeAnim->mScalingKeys[i + 1].mTime), g_animEps))
       {
         return i;
       }
@@ -281,9 +290,7 @@ namespace ToolKit
     return 0;
   }
 
-  void CalcInterpolatedPosition(aiVector3D& Out,
-                                float AnimationTime,
-                                const aiNodeAnim* pNodeAnim)
+  void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
   {
     if (pNodeAnim->mNumPositionKeys == 1)
     {
@@ -294,14 +301,10 @@ namespace ToolKit
     uint PositionIndex     = FindPosition(AnimationTime, pNodeAnim);
     uint NextPositionIndex = (PositionIndex + 1);
     assert(NextPositionIndex < pNodeAnim->mNumPositionKeys);
-    float DeltaTime =
-        static_cast<float>(pNodeAnim->mPositionKeys[NextPositionIndex].mTime -
-                           pNodeAnim->mPositionKeys[PositionIndex].mTime);
+    float DeltaTime = static_cast<float>(pNodeAnim->mPositionKeys[NextPositionIndex].mTime -
+                                         pNodeAnim->mPositionKeys[PositionIndex].mTime);
 
-    float Factor =
-        (AnimationTime -
-         static_cast<float>(pNodeAnim->mPositionKeys[PositionIndex].mTime)) /
-        DeltaTime;
+    float Factor    = (AnimationTime - static_cast<float>(pNodeAnim->mPositionKeys[PositionIndex].mTime)) / DeltaTime;
 
     if (IsZero(Factor, 0.001f))
     {
@@ -315,14 +318,12 @@ namespace ToolKit
 
     assert(Factor >= 0.0f && Factor <= 1.0f);
     const aiVector3D& Start = pNodeAnim->mPositionKeys[PositionIndex].mValue;
-    const aiVector3D& End = pNodeAnim->mPositionKeys[NextPositionIndex].mValue;
-    aiVector3D Delta      = End - Start;
-    Out                   = Start + Factor * Delta;
+    const aiVector3D& End   = pNodeAnim->mPositionKeys[NextPositionIndex].mValue;
+    aiVector3D Delta        = End - Start;
+    Out                     = Start + Factor * Delta;
   }
 
-  void CalcInterpolatedRotation(aiQuaternion& Out,
-                                float AnimationTime,
-                                const aiNodeAnim* pNodeAnim)
+  void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
   {
     // we need at least two values to interpolate...
     if (pNodeAnim->mNumRotationKeys == 1)
@@ -335,14 +336,10 @@ namespace ToolKit
     uint NextRotationIndex = (RotationIndex + 1);
     assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
 
-    float DeltaTime =
-        static_cast<float>(pNodeAnim->mRotationKeys[NextRotationIndex].mTime -
-                           pNodeAnim->mRotationKeys[RotationIndex].mTime);
+    float DeltaTime = static_cast<float>(pNodeAnim->mRotationKeys[NextRotationIndex].mTime -
+                                         pNodeAnim->mRotationKeys[RotationIndex].mTime);
 
-    float Factor =
-        (AnimationTime -
-         static_cast<float>(pNodeAnim->mRotationKeys[RotationIndex].mTime)) /
-        DeltaTime;
+    float Factor    = (AnimationTime - static_cast<float>(pNodeAnim->mRotationKeys[RotationIndex].mTime)) / DeltaTime;
 
     if (IsZero(Factor, g_animEps))
     {
@@ -355,19 +352,15 @@ namespace ToolKit
     }
 
     assert(Factor >= 0.0f && Factor <= 1.0f);
-    const aiQuaternion& StartRotationQ =
-        pNodeAnim->mRotationKeys[RotationIndex].mValue;
+    const aiQuaternion& StartRotationQ = pNodeAnim->mRotationKeys[RotationIndex].mValue;
 
-    const aiQuaternion& EndRotationQ =
-        pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
+    const aiQuaternion& EndRotationQ   = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
 
     aiQuaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
     Out = Out.Normalize();
   }
 
-  void CalcInterpolatedScaling(aiVector3D& Out,
-                               float AnimationTime,
-                               const aiNodeAnim* pNodeAnim)
+  void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
   {
     if (pNodeAnim->mNumScalingKeys == 1)
     {
@@ -379,14 +372,10 @@ namespace ToolKit
     uint NextScalingIndex = (ScalingIndex + 1);
     assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
 
-    float DeltaTime =
-        static_cast<float>(pNodeAnim->mScalingKeys[NextScalingIndex].mTime -
-                           pNodeAnim->mScalingKeys[ScalingIndex].mTime);
+    float DeltaTime = static_cast<float>(pNodeAnim->mScalingKeys[NextScalingIndex].mTime -
+                                         pNodeAnim->mScalingKeys[ScalingIndex].mTime);
 
-    float Factor =
-        (AnimationTime -
-         static_cast<float>(pNodeAnim->mScalingKeys[ScalingIndex].mTime)) /
-        DeltaTime;
+    float Factor    = (AnimationTime - static_cast<float>(pNodeAnim->mScalingKeys[ScalingIndex].mTime)) / DeltaTime;
 
     if (IsZero(Factor, 0.001f))
     {
@@ -425,11 +414,10 @@ namespace ToolKit
       AddToUsedFiles(animFilePath);
       AnimationPtr tAnim = std::make_shared<Animation>();
 
-      double fps =
-          anim->mTicksPerSecond == 0 ? g_desiredFps : anim->mTicksPerSecond;
+      double fps         = anim->mTicksPerSecond == 0 ? g_desiredFps : anim->mTicksPerSecond;
 
-      double duration = anim->mDuration / fps;
-      uint frameCount = (uint) ceil(duration * g_desiredFps);
+      double duration    = anim->mDuration / fps;
+      uint frameCount    = (uint) ceil(duration * g_desiredFps);
 
       // Used to normalize animation start time.
       int cr, ct, cs, cmax;
@@ -441,17 +429,14 @@ namespace ToolKit
         aiNodeAnim* nodeAnim = anim->mChannels[chIndx];
         for (uint frame = 1; frame < frameCount; frame++)
         {
-          float timeInTicks = (frame / g_desiredFps) *
-                              static_cast<float>(anim->mTicksPerSecond);
+          float timeInTicks = (frame / g_desiredFps) * static_cast<float>(anim->mTicksPerSecond);
 
           aiVector3D t;
           if (
               // Timer is not yet reach the animation begin. Skip frames.
               // Happens when there aren't keys at the beginning of the
               // animation.
-              LessEqual(timeInTicks,
-                        static_cast<float>(nodeAnim->mPositionKeys[0].mTime),
-                        0.001f))
+              LessEqual(timeInTicks, static_cast<float>(nodeAnim->mPositionKeys[0].mTime), 0.001f))
           {
             continue;
           }
@@ -462,9 +447,7 @@ namespace ToolKit
           }
 
           aiQuaternion r;
-          if (LessEqual(timeInTicks,
-                        static_cast<float>(nodeAnim->mRotationKeys[0].mTime),
-                        0.001f))
+          if (LessEqual(timeInTicks, static_cast<float>(nodeAnim->mRotationKeys[0].mTime), 0.001f))
           {
             continue;
           }
@@ -475,9 +458,7 @@ namespace ToolKit
           }
 
           aiVector3D s;
-          if (LessEqual(timeInTicks,
-                        static_cast<float>(nodeAnim->mScalingKeys[0].mTime),
-                        0.001f))
+          if (LessEqual(timeInTicks, static_cast<float>(nodeAnim->mScalingKeys[0].mTime), 0.001f))
           {
             continue;
           }
@@ -510,11 +491,10 @@ namespace ToolKit
 
   void ImportMaterial(const string& filePath, const string& origin)
   {
-    fs::path pathOrg = fs::path(origin).parent_path();
+    fs::path pathOrg              = fs::path(origin).parent_path();
 
-    auto textureFindAndCreateFunc =
-        [filePath, pathOrg](aiTextureType textureAssimpType,
-                            aiMaterial* material) -> TexturePtr
+    auto textureFindAndCreateFunc = [filePath, pathOrg](aiTextureType textureAssimpType,
+                                                        aiMaterial* material) -> TexturePtr
     {
       int texCount = material->GetTextureCount(textureAssimpType);
       TexturePtr tTexture;
@@ -539,8 +519,7 @@ namespace ToolKit
 
         string fileName = tName;
         TrunckToFileName(fileName);
-        string textPath =
-            fs::path(filePath + fileName).lexically_normal().u8string();
+        string textPath = fs::path(filePath + fileName).lexically_normal().u8string();
 
         if (!embedded && !std::filesystem::exists(textPath))
         {
@@ -582,14 +561,13 @@ namespace ToolKit
       string writePath      = filePath + name + MATERIAL;
       MaterialPtr tMaterial = std::make_shared<Material>();
 
-      auto diffuse = textureFindAndCreateFunc(aiTextureType_DIFFUSE, material);
+      auto diffuse          = textureFindAndCreateFunc(aiTextureType_DIFFUSE, material);
       if (diffuse)
       {
         tMaterial->m_diffuseTexture = diffuse;
       }
 
-      auto emissive =
-          textureFindAndCreateFunc(aiTextureType_EMISSIVE, material);
+      auto emissive = textureFindAndCreateFunc(aiTextureType_EMISSIVE, material);
       if (emissive)
       {
         tMaterial->m_emissiveTexture = emissive;
@@ -597,16 +575,13 @@ namespace ToolKit
       else
       {
         aiColor3D emissiveColor;
-        if (material->Get(AI_MATKEY_EMISSIVE_INTENSITY, emissiveColor) ==
-            aiReturn_SUCCESS)
+        if (material->Get(AI_MATKEY_EMISSIVE_INTENSITY, emissiveColor) == aiReturn_SUCCESS)
         {
-          tMaterial->m_emissiveColor =
-              convertAssimpColorToGlm<Vec3>(emissiveColor);
+          tMaterial->m_emissiveColor = convertAssimpColorToGlm<Vec3>(emissiveColor);
         }
       }
 
-      auto metallicRoughness =
-          textureFindAndCreateFunc(aiTextureType_UNKNOWN, material);
+      auto metallicRoughness = textureFindAndCreateFunc(aiTextureType_UNKNOWN, material);
       if (metallicRoughness)
       {
         tMaterial->m_metallicRoughnessTexture = metallicRoughness;
@@ -621,14 +596,12 @@ namespace ToolKit
       else
       {
         float metalness, roughness;
-        if (material->Get(AI_MATKEY_METALLIC_FACTOR, metalness) ==
-            aiReturn_SUCCESS)
+        if (material->Get(AI_MATKEY_METALLIC_FACTOR, metalness) == aiReturn_SUCCESS)
         {
           tMaterial->m_metallic     = metalness;
           tMaterial->m_materialType = MaterialType::PBR;
         }
-        if (material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness) ==
-            aiReturn_SUCCESS)
+        if (material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness) == aiReturn_SUCCESS)
         {
           tMaterial->m_roughness    = roughness;
           tMaterial->m_materialType = MaterialType::PBR;
@@ -638,8 +611,7 @@ namespace ToolKit
       // There are various ways to get alpha value in Assimp, try each step
       // until succeed
       float transparency = 1.0f;
-      if (material->Get(AI_MATKEY_TRANSPARENCYFACTOR, transparency) !=
-          aiReturn_SUCCESS)
+      if (material->Get(AI_MATKEY_TRANSPARENCYFACTOR, transparency) != aiReturn_SUCCESS)
       {
         if (material->Get(AI_MATKEY_OPACITY, transparency) != aiReturn_SUCCESS)
         {
@@ -653,23 +625,19 @@ namespace ToolKit
       {
         if (blendFunc == aiBlendMode_Default)
         {
-          tMaterial->GetRenderState()->blendFunction =
-              BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+          tMaterial->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
         }
         else
         {
-          tMaterial->GetRenderState()->blendFunction =
-              BlendFunction::ONE_TO_ONE;
+          tMaterial->GetRenderState()->blendFunction = BlendFunction::ONE_TO_ONE;
         }
       }
       else if (transparency != 1.0f)
       {
-        tMaterial->GetRenderState()->blendFunction =
-            BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+        tMaterial->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
       }
 
-      material->Get(AI_MATKEY_GLTF_ALPHACUTOFF,
-                    tMaterial->GetRenderState()->alphaMaskTreshold);
+      material->Get(AI_MATKEY_GLTF_ALPHACUTOFF, tMaterial->GetRenderState()->alphaMaskTreshold);
 
       tMaterial->SetFile(writePath);
       CreateFileAndSerializeObject(tMaterial.get(), writePath);
@@ -697,8 +665,7 @@ namespace ToolKit
         for (unsigned int j = 0; j < bone->mNumWeights; j++)
         {
           aiVertexWeight vw = bone->mWeights[j];
-          skinData[vw.mVertexId].push_back(
-              std::pair<int, float>(bn.boneIndex, vw.mWeight));
+          skinData[vw.mVertexId].push_back(std::pair<int, float>(bn.boneIndex, vw.mWeight));
         }
       }
       tMesh->m_skeleton = g_skeleton;
@@ -708,15 +675,11 @@ namespace ToolKit
     for (unsigned int vIndex = 0; vIndex < mesh->mNumVertices; vIndex++)
     {
       auto& v = tMesh->m_clientSideVertices[vIndex];
-      v.pos   = Vec3(mesh->mVertices[vIndex].x,
-                   mesh->mVertices[vIndex].y,
-                   mesh->mVertices[vIndex].z);
+      v.pos   = Vec3(mesh->mVertices[vIndex].x, mesh->mVertices[vIndex].y, mesh->mVertices[vIndex].z);
 
       if (mesh->HasNormals())
       {
-        v.norm = Vec3(mesh->mNormals[vIndex].x,
-                      mesh->mNormals[vIndex].y,
-                      mesh->mNormals[vIndex].z);
+        v.norm = Vec3(mesh->mNormals[vIndex].x, mesh->mNormals[vIndex].y, mesh->mNormals[vIndex].z);
       }
 
       // Does the mesh contain texture coordinates?
@@ -728,9 +691,7 @@ namespace ToolKit
 
       if (mesh->HasTangentsAndBitangents())
       {
-        v.btan = Vec3(mesh->mBitangents[vIndex].x,
-                      mesh->mBitangents[vIndex].y,
-                      mesh->mBitangents[vIndex].z);
+        v.btan = Vec3(mesh->mBitangents[vIndex].x, mesh->mBitangents[vIndex].y, mesh->mBitangents[vIndex].z);
       }
 
       if constexpr (std::is_same<convertType, SkinMeshPtr>::value)
@@ -939,7 +900,7 @@ namespace ToolKit
     {
       DeleteEmptyEntitiesRecursively(tScene, r);
     }
-   
+
     for (Entity* ntt : deletedEntities)
     {
       tScene->RemoveEntity(ntt->GetIdVal(), false);
@@ -993,11 +954,10 @@ namespace ToolKit
           node = node->mParent;
         }
 
-        node = g_scene->mRootNode->FindNode(bone->mName);
+        node                                     = g_scene->mRootNode->FindNode(bone->mName);
 
         // Go Down
-        std::function<void(aiNode*)> checkDownFn =
-            [&checkDownFn, &bone, &addBoneNodeFn](aiNode* node) -> void
+        std::function<void(aiNode*)> checkDownFn = [&checkDownFn, &bone, &addBoneNodeFn](aiNode* node) -> void
         {
           if (node == nullptr)
           {
@@ -1029,8 +989,8 @@ namespace ToolKit
     }
 
     // Assign indices
-    std::function<void(aiNode*, unsigned int&)> assignBoneIndexFn =
-        [&assignBoneIndexFn](aiNode* node, unsigned int& index) -> void
+    std::function<void(aiNode*, unsigned int&)> assignBoneIndexFn = [&assignBoneIndexFn](aiNode* node,
+                                                                                         unsigned int& index) -> void
     {
       if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
       {
@@ -1054,27 +1014,19 @@ namespace ToolKit
     g_skeleton->SetFile(fullPath);
 
     // Print
-    std::function<void(aiNode * node, DynamicBoneMap::DynamicBone*)>
-        setBoneHierarchyFn =
-            [&setBoneHierarchyFn](
-                aiNode* node,
-                DynamicBoneMap::DynamicBone* parentBone) -> void
+    std::function<void(aiNode * node, DynamicBoneMap::DynamicBone*)> setBoneHierarchyFn =
+        [&setBoneHierarchyFn](aiNode* node, DynamicBoneMap::DynamicBone* parentBone) -> void
     {
       DynamicBoneMap::DynamicBone* searchDBone = parentBone;
       if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
       {
         assert(node->mName.length);
-        g_skeleton->m_Tpose.boneList.insert(
-            std::make_pair(String(node->mName.C_Str()),
-                           DynamicBoneMap::DynamicBone()));
-        searchDBone =
-            &g_skeleton->m_Tpose.boneList.find(node->mName.C_Str())->second;
+        g_skeleton->m_Tpose.boneList.insert(std::make_pair(String(node->mName.C_Str()), DynamicBoneMap::DynamicBone()));
+        searchDBone                       = &g_skeleton->m_Tpose.boneList.find(node->mName.C_Str())->second;
         searchDBone->node                 = new Node();
         searchDBone->node->m_inheritScale = true;
         searchDBone->boneIndx             = uint(g_skeleton->m_bones.size());
-        g_skeleton->m_Tpose.AddDynamicBone(node->mName.C_Str(),
-                                           *searchDBone,
-                                           parentBone);
+        g_skeleton->m_Tpose.AddDynamicBone(node->mName.C_Str(), *searchDBone, parentBone);
 
         StaticBone* sBone = new StaticBone(node->mName.C_Str());
         g_skeleton->m_bones.push_back(sBone);
@@ -1085,8 +1037,7 @@ namespace ToolKit
       }
     };
 
-    std::function<void(aiNode * node)> setTransformationsFn =
-        [&setTransformationsFn](aiNode* node) -> void
+    std::function<void(aiNode * node)> setTransformationsFn = [&setTransformationsFn](aiNode* node) -> void
     {
       if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
       {
@@ -1094,8 +1045,7 @@ namespace ToolKit
 
         // Set bone node transformation
         {
-          DynamicBoneMap::DynamicBone& dBone =
-              g_skeleton->m_Tpose.boneList[node->mName.C_Str()];
+          DynamicBoneMap::DynamicBone& dBone = g_skeleton->m_Tpose.boneList[node->mName.C_Str()];
           Vec3 t, s;
           Quaternion r;
           DecomposeAssimpMatrix(node->mTransformation, &t, &r, &s);
@@ -1144,26 +1094,21 @@ namespace ToolKit
     {
       for (unsigned int i = 0; i < g_scene->mNumTextures; i++)
       {
-        aiTexture* texture  = g_scene->mTextures[i];
-        string embId        = GetEmbeddedTextureName(texture, i);
+        aiTexture* texture = g_scene->mTextures[i];
+        string embId       = GetEmbeddedTextureName(texture, i);
 
         // Compressed.
         if (texture->mHeight == 0)
         {
           ofstream file(filePath + embId, fstream::out | std::fstream::binary);
           assert(file.good());
-            
-          file.write((const char*)texture->pcData, texture->mWidth);
+
+          file.write((const char*) texture->pcData, texture->mWidth);
         }
         else
         {
           unsigned char* buffer = (unsigned char*) texture->pcData;
-          stbi_write_png(filePath.c_str(),
-                         texture->mWidth,
-                         texture->mHeight,
-                         4,
-                         buffer,
-                         texture->mWidth * 4);
+          stbi_write_png(filePath.c_str(), texture->mWidth, texture->mHeight, 4, buffer, texture->mWidth * 4);
         }
       }
     }
@@ -1181,8 +1126,7 @@ namespace ToolKit
       }
 
       Assimp::Importer importer;
-      importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE,
-                                  aiPrimitiveType_LINE | aiPrimitiveType_POINT);
+      importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_LINE | aiPrimitiveType_POINT);
 
       string dest, file = argv[1];
       Assimp::DefaultLogger::create("Assimplog.txt", Assimp::Logger::VERBOSE);
@@ -1237,11 +1181,9 @@ namespace ToolKit
       g_proxy->PreInit();
 
       // Create a dummy default material.
-      g_proxy->m_materialManager
-          ->m_storage[MaterialPath("default.material", true)] =
-          std::make_shared<Material>();
+      g_proxy->m_materialManager->m_storage[MaterialPath("default.material", true)] = std::make_shared<Material>();
 
-      g_proxy->m_entityFactory = new EntityFactory();
+      g_proxy->m_entityFactory                                                      = new EntityFactory();
 
       for (int i = 0; i < static_cast<int>(files.size()); i++)
       {
@@ -1251,19 +1193,14 @@ namespace ToolKit
 
         const aiScene* scene = importer.ReadFile(
             file,
-            aiProcess_Triangulate | aiProcess_SortByPType |
-                aiProcess_FindDegenerates | aiProcess_CalcTangentSpace |
-                aiProcess_FlipUVs | aiProcess_LimitBoneWeights |
-                aiProcess_GenSmoothNormals | aiProcess_GlobalScale |
-                aiProcess_FindInvalidData | aiProcess_GenBoundingBoxes |
-                aiProcessPreset_TargetRealtime_MaxQuality |
+            aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_FindDegenerates | aiProcess_CalcTangentSpace |
+                aiProcess_FlipUVs | aiProcess_LimitBoneWeights | aiProcess_GenSmoothNormals | aiProcess_GlobalScale |
+                aiProcess_FindInvalidData | aiProcess_GenBoundingBoxes | aiProcessPreset_TargetRealtime_MaxQuality |
                 aiProcess_PopulateArmatureData);
 
         if (scene == nullptr)
         {
-          assert(
-              0 &&
-              "Assimp failed to import the file. Probably file is corrupted!");
+          assert(0 && "Assimp failed to import the file. Probably file is corrupted!");
           throw(-1);
         }
         g_scene                 = scene;

@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #pragma once
 
 #include "Framebuffer.h"
@@ -57,9 +83,7 @@ namespace ToolKit
     void ClearColorBuffer(const Vec4& color);
     void ClearBuffer(GraphicBitFields fields, const Vec4& value);
     void ColorMask(bool r, bool g, bool b, bool a);
-    void CopyFrameBuffer(FramebufferPtr src,
-                         FramebufferPtr dest,
-                         GraphicBitFields fields);
+    void CopyFrameBuffer(FramebufferPtr src, FramebufferPtr dest, GraphicBitFields fields);
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);
@@ -67,25 +91,15 @@ namespace ToolKit
 
     void DrawFullQuad(ShaderPtr fragmentShader);
     void DrawFullQuad(MaterialPtr mat);
-    void DrawCube(Camera* cam,
-                  MaterialPtr mat,
-                  const Mat4& transform = Mat4(1.0f));
+    void DrawCube(Camera* cam, MaterialPtr mat, const Mat4& transform = Mat4(1.0f));
 
     void SetTexture(ubyte slotIndx, uint textureId);
 
-    CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture,
-                                            uint width,
-                                            uint height,
-                                            float exposure = 1.0f);
+    CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture, uint width, uint height, float exposure = 1.0f);
 
-    CubeMapPtr GenerateEnvPrefilteredMap(CubeMapPtr cubemap,
-                                         uint width,
-                                         uint height,
-                                         int mipMaps);
+    CubeMapPtr GenerateEnvPrefilteredMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps);
 
-    CubeMapPtr GenerateEnvIrradianceMap(CubeMapPtr cubemap,
-                                        uint width,
-                                        uint height);
+    CubeMapPtr GenerateEnvIrradianceMap(CubeMapPtr cubemap, uint width, uint height);
 
     void CopyTexture(TexturePtr source, TexturePtr dest);
 
@@ -109,23 +123,13 @@ namespace ToolKit
     /////////////////////
     // Left public for thumbnail rendering. TODO: there must be techniques
     // handling thumbnail render.
-    void Render(const struct RenderJob& job,
-                Camera* cam,
-                const LightRawPtrArray& lights = {});
+    void Render(const struct RenderJob& job, Camera* cam, const LightRawPtrArray& lights = {});
 
-    void Render(const RenderJobArray& jobArray,
-                Camera* cam,
-                const LightRawPtrArray& lights = {});
+    void Render(const RenderJobArray& jobArray, Camera* cam, const LightRawPtrArray& lights = {});
 
-    void Apply7x1GaussianBlur(const TexturePtr source,
-                              RenderTargetPtr dest,
-                              const Vec3& axis,
-                              const float amount);
+    void Apply7x1GaussianBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
 
-    void ApplyAverageBlur(const TexturePtr source,
-                          RenderTargetPtr dest,
-                          const Vec3& axis,
-                          const float amount);
+    void ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
 
     /**
      * Just before the render, set the lens to fit aspect ratio to frame buffer.

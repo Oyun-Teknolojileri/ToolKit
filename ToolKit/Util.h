@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #pragma once
 
 #include "GeometryTypes.h"
@@ -15,10 +41,7 @@ namespace ToolKit
   void ReadVec(XmlNode* node, T& val);
   template <typename T>
   void WriteVec(XmlNode* node, XmlDocument* doc, const T& val);
-  TK_API void WriteAttr(XmlNode* node,
-                        XmlDocument* doc,
-                        const String& name,
-                        const String& val);
+  TK_API void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val);
 
   TK_API void ReadAttr(XmlNode* node, const String& name, bool& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, float& val);
@@ -31,20 +54,13 @@ namespace ToolKit
   TK_API XmlNode* Query(XmlDocument* doc, const StringArray& path);
 
   // Updates or inject the attribute with val. Returns true if successful.
-  TK_API bool UpdateAttribute(XmlDocument* doc,
-                              const StringArray& path,
-                              const String& attribute,
-                              const String& val);
+  TK_API bool UpdateAttribute(XmlDocument* doc, const StringArray& path, const String& attribute, const String& val);
 
   // Create an xml node with given name.
   // Append it to parent if not null else append it to doc.
-  TK_API XmlNode* CreateXmlNode(XmlDocument* doc,
-                                const String& name,
-                                XmlNode* parent = nullptr);
+  TK_API XmlNode* CreateXmlNode(XmlDocument* doc, const String& name, XmlNode* parent = nullptr);
 
-  TK_API void WriteMaterial(XmlNode* parent,
-                            XmlDocument* doc,
-                            const String& file);
+  TK_API void WriteMaterial(XmlNode* parent, XmlDocument* doc, const String& file);
   TK_API MaterialPtr ReadMaterial(XmlNode* parent);
 
   // File path operations.
@@ -52,10 +68,7 @@ namespace ToolKit
   TK_API bool CheckSystemFile(StringView path);
   TK_API bool CheckFile(const String& path);
   TK_API String CreateCopyFileFullPath(const String& fullPath);
-  TK_API void DecomposePath(const String& fullPath,
-                            String* path,
-                            String* name,
-                            String* ext);
+  TK_API void DecomposePath(const String& fullPath, String* path, String* name, String* ext);
 
   TK_API void NormalizePath(String& path);
   TK_API void UnixifyPath(String& path);
@@ -71,8 +84,7 @@ namespace ToolKit
    * folder.
    * @returns Relative resource path to its root folder.
    */
-  TK_API String GetRelativeResourcePath(const String& path,
-                                        String* rootFolder = nullptr);
+  TK_API String GetRelativeResourcePath(const String& path, String* rootFolder = nullptr);
 
   /**
    * Checks if a resource has default path.
@@ -86,8 +98,7 @@ namespace ToolKit
   TK_API String GetFileName(const String& path);
 
   enum class ResourceType;
-  TK_API String CreatePathFromResourceType(const String& file,
-                                           ResourceType type);
+  TK_API String CreatePathFromResourceType(const String& file, ResourceType type);
 
   TK_API ResourceType GetResourceType(const String& ext);
   TK_API String GetTypeString(ResourceType type);
@@ -105,18 +116,12 @@ namespace ToolKit
   TK_API void Split(const String& s, const String& sep, StringArray& v);
 
   // Replace all occurrences of a string in another string.
-  TK_API void ReplaceStringInPlace(String& subject,
-                                   const String& search,
-                                   const String& replace);
+  TK_API void ReplaceStringInPlace(String& subject, const String& search, const String& replace);
 
   // Replace first occurrences of a string in another string.
-  TK_API void ReplaceFirstStringInPlace(String& subject,
-                                        const String& search,
-                                        const String& replace);
+  TK_API void ReplaceFirstStringInPlace(String& subject, const String& search, const String& replace);
 
-  TK_API void ReplaceCharInPlace(String& subject,
-                                 const char search,
-                                 const char replace);
+  TK_API void ReplaceCharInPlace(String& subject, const char search, const char replace);
 
   TK_API int CountChar(const String& str, const char chr);
 
@@ -129,28 +134,24 @@ namespace ToolKit
   TK_API bool StartsWith(const String& str, const String& prefix);
   TK_API bool EndsWith(const String& str, const String& suffix);
 
-  TK_API bool Utf8CaseInsensitiveSearch(const String& text,
-                                        const String& search);
+  TK_API bool Utf8CaseInsensitiveSearch(const String& text, const String& search);
 
   // Debug geometries.
   ///////////////////////////////////////////////////////
   class LineBatch;
   TK_API LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size);
   TK_API LineBatch* CreateLineDebugObject(const Vec3Array& corners);
-  TK_API LineBatch* CreateBoundingBoxDebugObject(
-      const BoundingBox& box,
-      const Vec3& color     = Vec3(1.0f, 0.0f, 0.0f),
-      float size            = 2.0f,
-      const Mat4* transform = nullptr);
+  TK_API LineBatch* CreateBoundingBoxDebugObject(const BoundingBox& box,
+                                                 const Vec3& color     = Vec3(1.0f, 0.0f, 0.0f),
+                                                 float size            = 2.0f,
+                                                 const Mat4* transform = nullptr);
 
   // Entity operations.
   TK_API String EntityTypeToString(enum class EntityType type);
-  TK_API void ToEntityIdArray(EntityIdArray& idArray,
-                              const EntityRawPtrArray& ptrArray);
+  TK_API void ToEntityIdArray(EntityIdArray& idArray, const EntityRawPtrArray& ptrArray);
 
   TK_API bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
-  TK_API void GetRootEntities(const EntityRawPtrArray& entities,
-                              EntityRawPtrArray& roots);
+  TK_API void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots);
 
   TK_API void GetParents(const Entity* ntt, EntityRawPtrArray& parents);
   // Gather hierarchy from parent (indx 0) to child (indx end).
@@ -195,25 +196,25 @@ namespace ToolKit
     assert(!vec.empty());
     vec.erase(vec.begin());
   }
-  
-  template<typename T, typename Pred>
+
+  template <typename T, typename Pred>
   inline void erase_if(T& vec, Pred pred)
   {
     vec.erase(std::remove_if(vec.begin(), vec.end(), pred), vec.end());
   }
 
-  template<typename T>
+  template <typename T>
   inline bool contains(const std::vector<T>& arr, const T& val)
   {
     return std::find(arr.cbegin(), arr.cend(), val) != arr.cend();
   }
 
-   /**
+  /**
    * Find index of val in given array.
    * @param arr array that we want to search.
    * @returns if given value exist, returns index of val otherwise -1
    */
-  template<typename T>
+  template <typename T>
   inline int FindIndex(const std::vector<T>& arr, const T& val)
   {
     auto it = std::find(arr.cbegin(), arr.cend(), val);

@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #pragma once
 
 #include "MathUtil.h"
@@ -59,15 +85,13 @@ namespace ToolKit
      * @param mesh is this or submesh. Pass null to start iteration from this
      * mesh.
      */
-    void TraverseAllMesh(std::function<void(Mesh*)> callback,
-                         Mesh* mesh = nullptr);
+    void TraverseAllMesh(std::function<void(Mesh*)> callback, Mesh* mesh = nullptr);
 
     /**
      * Const traverse all submeshes recursively. Refer TraverseAllMesh for
      * details.
      */
-    void TraverseAllMesh(std::function<void(const Mesh*)> callback,
-                         const Mesh* mesh = nullptr) const;
+    void TraverseAllMesh(std::function<void(const Mesh*)> callback, const Mesh* mesh = nullptr) const;
 
    protected:
     virtual void InitVertices(bool flush);
@@ -118,8 +142,7 @@ namespace ToolKit
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     // Because AABB is all dependent on active animation, just return AABB
     // (doesn't change m_aabb)
-    BoundingBox CalculateAABB(const Skeleton* skel,
-                              const DynamicBoneMap* boneMap);
+    BoundingBox CalculateAABB(const Skeleton* skel, const DynamicBoneMap* boneMap);
 
    protected:
     void InitVertices(bool flush) override;

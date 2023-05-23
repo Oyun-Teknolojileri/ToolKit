@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #pragma once
 
 #include "IconsFontAwesome.h"
@@ -8,8 +34,8 @@ namespace ToolKit
 
   // Global Style Decelerations
   static const ImGuiTreeNodeFlags g_treeNodeFlags =
-      ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
-      ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap;
+      ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth |
+      ImGuiTreeNodeFlags_AllowItemOverlap;
 
   const float g_indentSpacing = 6.0f;
 
@@ -108,28 +134,17 @@ namespace ToolKit
       static void ShowSearchForFilesWindow();
       static void AddTempWindow(TempWindow* window);
       static void RemoveTempWindow(TempWindow* window);
-      static void HelpMarker(const String& key,
-                             const char* desc,
-                             float wait = m_hoverTimeForHelp);
+      static void HelpMarker(const String& key, const char* desc, float wait = m_hoverTimeForHelp);
       static void ShowNewSceneWindow();
       static void ShowBlocker();
 
       // Custom widgets.
-      static bool ButtonDecorless(StringView text,
-                                  const Vec2& size,
-                                  bool flipImage);
+      static bool ButtonDecorless(StringView text, const Vec2& size, bool flipImage);
 
-      static bool ImageButtonDecorless(uint textureID,
-                                       const Vec2& size,
-                                       bool flipImage);
-      static bool ToggleButton(uint textureID,
-                               const Vec2& size,
-                               bool pushState);
-      static bool ToggleButton(const String& text,
-                               const Vec2& size,
-                               bool pushState);
-      static bool BeginCenteredTextButton(const String& text,
-                                          const String& id = "");
+      static bool ImageButtonDecorless(uint textureID, const Vec2& size, bool flipImage);
+      static bool ToggleButton(uint textureID, const Vec2& size, bool pushState);
+      static bool ToggleButton(const String& text, const Vec2& size, bool pushState);
+      static bool BeginCenteredTextButton(const String& text, const String& id = "");
       static void EndCenteredTextButton();
       static void CenteredText(const String& text);
       //!< returns FontAwesome string (icon) from any given entity type

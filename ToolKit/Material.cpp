@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Material.h"
 
 #include "ToolKit.h"
@@ -70,8 +96,7 @@ namespace ToolKit
 
     if (m_metallicRoughnessTexture)
     {
-      if (m_metallicRoughnessTexture->GetTextureSettings().MinFilter !=
-          GraphicTypes::SampleNearest)
+      if (m_metallicRoughnessTexture->GetTextureSettings().MinFilter != GraphicTypes::SampleNearest)
       {
         m_metallicRoughnessTexture->UnInit();
         TextureSettings set;
@@ -87,8 +112,7 @@ namespace ToolKit
 
     if (m_normalMap)
     {
-      if (m_normalMap->GetTextureSettings().MinFilter !=
-          GraphicTypes::SampleNearest)
+      if (m_normalMap->GetTextureSettings().MinFilter != GraphicTypes::SampleNearest)
       {
         m_normalMap->UnInit();
         TextureSettings set;
@@ -162,13 +186,13 @@ namespace ToolKit
 
   void Material::SetDefaultMaterialTypeShaders()
   {
-    if (IsPBR()) 
+    if (IsPBR())
     {
-      if (IsTranslucent()) 
+      if (IsTranslucent())
       {
         m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
       }
-      else 
+      else
       {
         m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
       }
@@ -179,12 +203,10 @@ namespace ToolKit
 
   void Material::SetAlpha(float val)
   {
-    val = glm::clamp(val, 0.0f, 1.0f);
-    m_alpha = val;
-    bool isForward = m_alpha < 0.99f;
-    m_renderState.blendFunction =
-                isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA
-                : BlendFunction::NONE;    
+    val                         = glm::clamp(val, 0.0f, 1.0f);
+    m_alpha                     = val;
+    bool isForward              = m_alpha < 0.99f;
+    m_renderState.blendFunction = isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA : BlendFunction::NONE;
   }
 
   float& Material::GetAlpha() { return m_alpha; }
@@ -196,21 +218,15 @@ namespace ToolKit
       return false;
     }
 
-    return m_fragmentShader->GetFile() ==
-           GetShaderManager()->PbrDefferedShaderFile();
+    return m_fragmentShader->GetFile() == GetShaderManager()->PbrDefferedShaderFile();
   }
 
-  bool Material::IsTranslucent()
-  {
-    return m_renderState.blendFunction ==
-           BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-  }
+  bool Material::IsTranslucent() { return m_renderState.blendFunction == BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA; }
 
   bool Material::IsPBR()
   {
     const String& file = m_fragmentShader->GetFile();
-    return file == GetShaderManager()->PbrDefferedShaderFile() ||
-           file == GetShaderManager()->PbrForwardShaderFile();
+    return file == GetShaderManager()->PbrDefferedShaderFile() || file == GetShaderManager()->PbrForwardShaderFile();
   }
 
   void Material::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -220,8 +236,7 @@ namespace ToolKit
     if (m_diffuseTexture)
     {
       XmlNode* node = CreateXmlNode(doc, "diffuseTexture", container);
-      String file =
-          GetRelativeResourcePath(m_diffuseTexture->GetSerializeFile());
+      String file   = GetRelativeResourcePath(m_diffuseTexture->GetSerializeFile());
       WriteAttr(node, doc, XmlNodeName.data(), file);
     }
 
@@ -235,31 +250,28 @@ namespace ToolKit
     if (m_vertexShader)
     {
       XmlNode* node = CreateXmlNode(doc, "shader", container);
-      String file = GetRelativeResourcePath(m_vertexShader->GetSerializeFile());
+      String file   = GetRelativeResourcePath(m_vertexShader->GetSerializeFile());
       WriteAttr(node, doc, XmlNodeName.data(), file);
     }
 
     if (m_fragmentShader)
     {
       XmlNode* node = CreateXmlNode(doc, "shader", container);
-      String file =
-          GetRelativeResourcePath(m_fragmentShader->GetSerializeFile());
+      String file   = GetRelativeResourcePath(m_fragmentShader->GetSerializeFile());
       WriteAttr(node, doc, XmlNodeName.data(), file);
     }
 
     if (m_emissiveTexture)
     {
       XmlNode* node = CreateXmlNode(doc, "emissiveTexture", container);
-      String file =
-          GetRelativeResourcePath(m_emissiveTexture->GetSerializeFile());
+      String file   = GetRelativeResourcePath(m_emissiveTexture->GetSerializeFile());
       WriteAttr(node, doc, XmlNodeName.data(), file);
     }
 
     if (m_metallicRoughnessTexture)
     {
       XmlNode* node = CreateXmlNode(doc, "metallicRoughnessTexture", container);
-      String file   = GetRelativeResourcePath(
-          m_metallicRoughnessTexture->GetSerializeFile());
+      String file   = GetRelativeResourcePath(m_metallicRoughnessTexture->GetSerializeFile());
       WriteAttr(node, doc, XmlNodeName.data(), file);
     }
 
@@ -286,10 +298,7 @@ namespace ToolKit
     WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_roughness));
 
     node = CreateXmlNode(doc, "materialType", container);
-    WriteAttr(node,
-              doc,
-              XmlNodeName.data(),
-              std::to_string((int) m_materialType));
+    WriteAttr(node, doc, XmlNodeName.data(), std::to_string((int) m_materialType));
 
     m_renderState.Serialize(doc, container);
   }
@@ -302,16 +311,14 @@ namespace ToolKit
     }
 
     XmlNode* rootNode = parent;
-    for (XmlNode* node = rootNode->first_node(); node;
-         node          = node->next_sibling())
+    for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
     {
       if (strcmp("diffuseTexture", node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute(XmlNodeName.data());
         String path        = attr->value();
         NormalizePath(path);
-        m_diffuseTexture =
-            GetTextureManager()->Create<Texture>(TexturePath(path));
+        m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath(path));
       }
       else if (strcmp("cubeMap", node->name()) == 0)
       {
@@ -356,8 +363,7 @@ namespace ToolKit
         XmlAttribute* attr = node->first_attribute(XmlNodeName.data());
         String path        = attr->value();
         NormalizePath(path);
-        m_emissiveTexture =
-            GetTextureManager()->Create<Texture>(TexturePath(path));
+        m_emissiveTexture = GetTextureManager()->Create<Texture>(TexturePath(path));
       }
       else if (strcmp("emissiveColor", node->name()) == 0)
       {
@@ -368,8 +374,7 @@ namespace ToolKit
         XmlAttribute* attr = node->first_attribute(XmlNodeName.data());
         String path        = attr->value();
         NormalizePath(path);
-        m_metallicRoughnessTexture =
-            GetTextureManager()->Create<Texture>(TexturePath(path));
+        m_metallicRoughnessTexture = GetTextureManager()->Create<Texture>(TexturePath(path));
       }
       else if (strcmp("normalMap", node->name()) == 0)
       {
@@ -419,8 +424,7 @@ namespace ToolKit
       if (!IsDeferred())
       {
         // If not using a custom shader.
-        if (m_fragmentShader->GetFile() ==
-            GetShaderManager()->PbrForwardShaderFile())
+        if (m_fragmentShader->GetFile() == GetShaderManager()->PbrForwardShaderFile())
         {
           // And not translucent.
           if (!IsTranslucent())
@@ -441,13 +445,10 @@ namespace ToolKit
   {
     ResourceManager::Init();
 
-    Material* material       = new Material();
-    material->m_vertexShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("defaultVertex.shader", true));
-    material->m_fragmentShader =
-        GetShaderManager()->GetPbrDefferedShader();
-    material->m_diffuseTexture =
-        GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
+    Material* material         = new Material();
+    material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
+    material->m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
+    material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
 
     m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
@@ -455,34 +456,22 @@ namespace ToolKit
     material                                          = new Material();
     material->m_materialType                          = MaterialType::Custom;
 
-    material->m_vertexShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("defaultVertex.shader", true));
+    material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
 
-    material->m_fragmentShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("unlitFrag.shader", true));
+    material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
 
-    material->m_diffuseTexture =
-        GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
+    material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
 
     material->Init();
 
     m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
   }
 
-  bool MaterialManager::CanStore(ResourceType t)
-  {
-    return t == ResourceType::Material;
-  }
+  bool MaterialManager::CanStore(ResourceType t) { return t == ResourceType::Material; }
 
-  ResourcePtr MaterialManager::CreateLocal(ResourceType type)
-  {
-    return ResourcePtr(new Material());
-  }
+  ResourcePtr MaterialManager::CreateLocal(ResourceType type) { return ResourcePtr(new Material()); }
 
-  String MaterialManager::GetDefaultResource(ResourceType type)
-  {
-    return MaterialPath("missing.material", true);
-  }
+  String MaterialManager::GetDefaultResource(ResourceType type) { return MaterialPath("missing.material", true); }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()
   {
@@ -491,7 +480,7 @@ namespace ToolKit
 
   MaterialPtr MaterialManager::GetCopyOfUIMaterial()
   {
-    MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+    MaterialPtr material                      = GetMaterialManager()->GetCopyOfUnlitMaterial();
     material->GetRenderState()->blendFunction = BlendFunction::ALPHA_MASK;
 
     return material;

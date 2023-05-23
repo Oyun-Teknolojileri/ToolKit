@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "ConsoleWindow.h"
 
 #include "Action.h"
@@ -14,9 +40,7 @@ namespace ToolKit
 
     TagArgCIt GetTag(String tag, const TagArgArray& tagArgs)
     {
-      for (TagArgArray::const_iterator ta = tagArgs.cbegin();
-           ta != tagArgs.cend();
-           ta++)
+      for (TagArgArray::const_iterator ta = tagArgs.cbegin(); ta != tagArgs.cend(); ta++)
       {
         if (ta->first == tag)
         {
@@ -27,10 +51,7 @@ namespace ToolKit
       return tagArgs.end();
     }
 
-    bool TagExist(String tag, const TagArgArray& tagArgs)
-    {
-      return GetTag(tag, tagArgs) != tagArgs.end();
-    }
+    bool TagExist(String tag, const TagArgArray& tagArgs) { return GetTag(tag, tagArgs) != tagArgs.end(); }
 
     void ParseVec(Vec3& vec, TagArgCIt tagIt)
     {
@@ -88,20 +109,11 @@ namespace ToolKit
       }
     }
 
-    void ShowOverlayExec(TagArgArray tagArgs)
-    {
-      BoolCheck(tagArgs, &g_app->m_showOverlayUI);
-    }
+    void ShowOverlayExec(TagArgArray tagArgs) { BoolCheck(tagArgs, &g_app->m_showOverlayUI); }
 
-    void ShowOverlayAlwaysExec(TagArgArray tagArgs)
-    {
-      BoolCheck(tagArgs, &g_app->m_showOverlayUIAlways);
-    }
+    void ShowOverlayAlwaysExec(TagArgArray tagArgs) { BoolCheck(tagArgs, &g_app->m_showOverlayUIAlways); }
 
-    void ShowModTransitionsExec(TagArgArray tagArgs)
-    {
-      BoolCheck(tagArgs, &g_app->m_showStateTransitionsDebug);
-    }
+    void ShowModTransitionsExec(TagArgArray tagArgs) { BoolCheck(tagArgs, &g_app->m_showStateTransitionsDebug); }
 
     void TransformInternal(TagArgArray tagArgs, bool set)
     {
@@ -111,7 +123,7 @@ namespace ToolKit
         return;
       }
 
-      TransformationSpace ts = TransformationSpace::TS_WORLD;
+      TransformationSpace ts                        = TransformationSpace::TS_WORLD;
       TagArgArray::const_iterator transformSpaceTag = GetTag("ts", tagArgs);
       if (transformSpaceTag != tagArgs.end())
       {
@@ -204,15 +216,9 @@ namespace ToolKit
       }
     }
 
-    void SetTransformExec(TagArgArray tagArgs)
-    {
-      TransformInternal(tagArgs, true);
-    }
+    void SetTransformExec(TagArgArray tagArgs) { TransformInternal(tagArgs, true); }
 
-    void TransformExec(TagArgArray tagArgs)
-    {
-      TransformInternal(tagArgs, false);
-    }
+    void TransformExec(TagArgArray tagArgs) { TransformInternal(tagArgs, false); }
 
     void SetCameraTransformExec(TagArgArray tagArgs)
     {
@@ -234,14 +240,13 @@ namespace ToolKit
               if (viewportTag->second[1] == "Top")
               {
                 vp->m_cameraAlignment = CameraAlignment::Top;
-                Quaternion ws = glm::angleAxis(glm::pi<float>(), -Y_AXIS) *
+                Quaternion ws         = glm::angleAxis(glm::pi<float>(), -Y_AXIS) *
                                 glm::angleAxis(glm::half_pi<float>(), X_AXIS) *
                                 glm::angleAxis(glm::pi<float>(), Y_AXIS);
                 node->SetOrientation(ws, TransformationSpace::TS_WORLD);
                 if (c->IsOrtographic())
                 {
-                  node->SetTranslation(Vec3(0.0f, 10.0f, 0.0f),
-                                       TransformationSpace::TS_WORLD);
+                  node->SetTranslation(Vec3(0.0f, 10.0f, 0.0f), TransformationSpace::TS_WORLD);
                 }
               }
 
@@ -251,20 +256,18 @@ namespace ToolKit
                 node->SetOrientation(Quaternion());
                 if (c->IsOrtographic())
                 {
-                  node->SetTranslation(Vec3(0.0f, 0.0f, 10.0f),
-                                       TransformationSpace::TS_WORLD);
+                  node->SetTranslation(Vec3(0.0f, 0.0f, 10.0f), TransformationSpace::TS_WORLD);
                 }
               }
 
               if (viewportTag->second[1] == "Left")
               {
                 vp->m_cameraAlignment = CameraAlignment::Left;
-                Quaternion ws = glm::angleAxis(glm::half_pi<float>(), -Y_AXIS);
+                Quaternion ws         = glm::angleAxis(glm::half_pi<float>(), -Y_AXIS);
                 node->SetOrientation(ws, TransformationSpace::TS_WORLD);
                 if (c->IsOrtographic())
                 {
-                  node->SetTranslation(Vec3(-10.0f, 0.0f, 0.0f),
-                                       TransformationSpace::TS_WORLD);
+                  node->SetTranslation(Vec3(-10.0f, 0.0f, 0.0f), TransformationSpace::TS_WORLD);
                 }
               }
             }
@@ -274,8 +277,7 @@ namespace ToolKit
             {
               Vec3 translate;
               ParseVec(translate, translateTag);
-              c->m_node->SetTranslation(translate,
-                                        TransformationSpace::TS_WORLD);
+              c->m_node->SetTranslation(translate, TransformationSpace::TS_WORLD);
             }
           }
         }
@@ -355,10 +357,7 @@ namespace ToolKit
       }
     }
 
-    void ImportSlient(TagArgArray tagArgs)
-    {
-      BoolCheck(tagArgs, &g_app->m_importSlient);
-    }
+    void ImportSlient(TagArgArray tagArgs) { BoolCheck(tagArgs, &g_app->m_importSlient); }
 
     void SelectByTag(TagArgArray tagArgs)
     {
@@ -406,8 +405,7 @@ namespace ToolKit
       // Caviate: A reload is neded since hardware buffers are not updated.
       // After refreshing hardware buffers,
       // transforms of the entity can be set to identity.
-      if (Drawable* ntt = dynamic_cast<Drawable*>(
-              g_app->GetCurrentScene()->GetCurrentSelection()))
+      if (Drawable* ntt = dynamic_cast<Drawable*>(g_app->GetCurrentScene()->GetCurrentSelection()))
       {
         Mat4 ts = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
         MeshRawPtrArray meshes;
@@ -426,8 +424,7 @@ namespace ToolKit
 
     void SaveMesh(TagArgArray tagArgs)
     {
-      if (Drawable* ntt = dynamic_cast<Drawable*>(
-              g_app->GetCurrentScene()->GetCurrentSelection()))
+      if (Drawable* ntt = dynamic_cast<Drawable*>(g_app->GetCurrentScene()->GetCurrentSelection()))
       {
         TagArgArray::const_iterator nameTag = GetTag("n", tagArgs);
         String fileName                     = ntt->GetMesh()->GetFile();
@@ -462,10 +459,7 @@ namespace ToolKit
       }
     }
 
-    void ShowSelectionBoundary(TagArgArray tagArgs)
-    {
-      BoolCheck(tagArgs, &g_app->m_showSelectionBoundary);
-    }
+    void ShowSelectionBoundary(TagArgArray tagArgs) { BoolCheck(tagArgs, &g_app->m_showSelectionBoundary); }
 
     void ShowGraphicsApiLogs(TagArgArray tagArgs)
     {
@@ -497,8 +491,7 @@ namespace ToolKit
           // Try updating Workspace.settings
           if (g_app->m_workspace.SetDefaultWorkspace(path))
           {
-            String info =
-                "Your Workspace directry set to: " + path + "\n" + manUpMsg;
+            String info = "Your Workspace directry set to: " + path + "\n" + manUpMsg;
             g_app->GetConsole()->AddLog(info, LogType::Memo);
             return;
           }
@@ -528,15 +521,9 @@ namespace ToolKit
       GetPluginManager()->Load(plugin);
     }
 
-    void ShowShadowFrustum(TagArgArray tagArgs)
-    {
-      BoolCheck(tagArgs, &g_app->m_showDirectionalLightShadowFrustum);
-    }
+    void ShowShadowFrustum(TagArgArray tagArgs) { BoolCheck(tagArgs, &g_app->m_showDirectionalLightShadowFrustum); }
 
-    void SelectAllEffectingLights(TagArgArray tagArgs)
-    {
-      BoolCheck(tagArgs, &g_app->m_selectEffectingLights);
-    }
+    void SelectAllEffectingLights(TagArgArray tagArgs) { BoolCheck(tagArgs, &g_app->m_selectEffectingLights); }
 
     void CheckSceneHealth(TagArgArray tagArgs)
     {
@@ -547,17 +534,13 @@ namespace ToolKit
       int problemsFound = 0;
       if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
       {
-        auto fixProblemFn = [&problemsFound, scene, fix](Entity* ntt,
-                                                         StringView msg) -> void
+        auto fixProblemFn = [&problemsFound, scene, fix](Entity* ntt, StringView msg) -> void
         {
           problemsFound++;
 
           String en  = ntt->GetNameVal();
           ULongID id = ntt->GetIdVal();
-          GetLogger()->WriteConsole(LogType::Warning,
-                                    msg.data(),
-                                    en.c_str(),
-                                    id);
+          GetLogger()->WriteConsole(LogType::Warning, msg.data(), en.c_str(), id);
 
           if (fix)
           {
@@ -588,8 +571,7 @@ namespace ToolKit
 
           if (!job.BoundingBox.IsValid())
           {
-            fixProblemFn(job.Entity,
-                         "Entity: %s ID: %llu has invalid bounding box.");
+            fixProblemFn(job.Entity, "Entity: %s ID: %llu has invalid bounding box.");
           }
         }
 
@@ -604,9 +586,7 @@ namespace ToolKit
         }
         else
         {
-          GetLogger()->WriteConsole(LogType::Memo,
-                                    "%d problems found.",
-                                    problemsFound);
+          GetLogger()->WriteConsole(LogType::Memo, "%d problems found.", problemsFound);
         }
       }
     }
@@ -645,10 +625,7 @@ namespace ToolKit
       }
     }
 
-    ConsoleWindow::ConsoleWindow(XmlNode* node) : ConsoleWindow()
-    {
-      DeSerialize(nullptr, node);
-    }
+    ConsoleWindow::ConsoleWindow(XmlNode* node) : ConsoleWindow() { DeSerialize(nullptr, node); }
 
     ConsoleWindow::ConsoleWindow()
     {
@@ -681,15 +658,13 @@ namespace ToolKit
     {
       if (ImGui::Begin(g_consoleStr.c_str(),
                        &m_visible,
-                       ImGuiWindowFlags_NoScrollWithMouse |
-                           ImGuiWindowFlags_NoScrollbar))
+                       ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar))
       {
         HandleStates();
 
         // Output window.
-        ImGuiStyle& style = ImGui::GetStyle();
-        const float footerHeightReserve =
-            style.ItemSpacing.y + ImGui::GetFrameHeightWithSpacing() + 2;
+        ImGuiStyle& style               = ImGui::GetStyle();
+        const float footerHeightReserve = style.ItemSpacing.y + ImGui::GetFrameHeightWithSpacing() + 2;
         ImGui::BeginChild("ScrollingRegion",
                           ImVec2(0, -footerHeightReserve),
                           false,
@@ -763,14 +738,10 @@ namespace ToolKit
                 " Command",
                 "Command",
                 &m_command,
-                ImGuiInputTextFlags_EnterReturnsTrue |
-                    ImGuiInputTextFlags_CallbackCompletion |
+                ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion |
                     ImGuiInputTextFlags_CallbackHistory,
                 [](ImGuiInputTextCallbackData* data) -> int
-                {
-                  return (reinterpret_cast<ConsoleWindow*>(data->UserData))
-                      ->TextEditCallback(data);
-                },
+                { return (reinterpret_cast<ConsoleWindow*>(data->UserData))->TextEditCallback(data); },
                 reinterpret_cast<void*>(this)))
         {
           ExecCommand(m_command);
@@ -911,9 +882,7 @@ namespace ToolKit
       }
     }
 
-    void ConsoleWindow::ParseCommandLine(String commandLine,
-                                         String& command,
-                                         TagArgArray& tagArgs)
+    void ConsoleWindow::ParseCommandLine(String commandLine, String& command, TagArgArray& tagArgs)
     {
       String args;
       size_t indx = commandLine.find_first_of(" ");
@@ -991,9 +960,7 @@ namespace ToolKit
         StringArray candidates;
         for (size_t i = 0; i < m_commands.size(); i++)
         {
-          if (Strnicmp(m_commands[i].c_str(),
-                       word_start,
-                       static_cast<int>(word_end - word_start)) == 0)
+          if (Strnicmp(m_commands[i].c_str(), word_start, static_cast<int>(word_end - word_start)) == 0)
           {
             candidates.push_back(m_commands[i]);
           }
@@ -1002,18 +969,14 @@ namespace ToolKit
         if (candidates.empty())
         {
           // No match
-          sprintf(buffer,
-                  "No match for \"%.*s\"!\n",
-                  static_cast<int>(word_end - word_start),
-                  word_start);
+          sprintf(buffer, "No match for \"%.*s\"!\n", static_cast<int>(word_end - word_start), word_start);
           AddLog(buffer);
         }
         else if (candidates.size() == 1)
         {
           // Single match. Delete the beginning of the word and
           // replace it entirely so we've got nice casing
-          data->DeleteChars(static_cast<int>(word_start - data->Buf),
-                            static_cast<int>(word_end - word_start));
+          data->DeleteChars(static_cast<int>(word_start - data->Buf), static_cast<int>(word_end - word_start));
           data->InsertChars(data->CursorPos, candidates[0].c_str());
           data->InsertChars(data->CursorPos, " ");
         }
@@ -1027,8 +990,7 @@ namespace ToolKit
           {
             int c                       = 0;
             bool all_candidates_matches = true;
-            for (size_t i = 0; i < candidates.size() && all_candidates_matches;
-                 i++)
+            for (size_t i = 0; i < candidates.size() && all_candidates_matches; i++)
             {
               if (i == 0)
               {
@@ -1048,11 +1010,8 @@ namespace ToolKit
 
           if (match_len > 0)
           {
-            data->DeleteChars(static_cast<int>(word_start - data->Buf),
-                              static_cast<int>(word_end - word_start));
-            data->InsertChars(data->CursorPos,
-                              candidates[0].c_str(),
-                              candidates[0].c_str() + match_len);
+            data->DeleteChars(static_cast<int>(word_start - data->Buf), static_cast<int>(word_end - word_start));
+            data->InsertChars(data->CursorPos, candidates[0].c_str(), candidates[0].c_str() + match_len);
           }
 
           // List matches
@@ -1096,8 +1055,7 @@ namespace ToolKit
         // the current input line along with cursor position.
         if (prev_history_pos != m_historyPos)
         {
-          const char* history_str =
-              (m_historyPos >= 0) ? m_history[m_historyPos].c_str() : "";
+          const char* history_str = (m_historyPos >= 0) ? m_history[m_historyPos].c_str() : "";
           data->DeleteChars(0, data->BufTextLen);
           data->InsertChars(0, history_str);
         }
@@ -1107,8 +1065,7 @@ namespace ToolKit
       return 0;
     }
 
-    void ConsoleWindow::CreateCommand(const String& command,
-                                      std::function<void(TagArgArray)> executor)
+    void ConsoleWindow::CreateCommand(const String& command, std::function<void(TagArgArray)> executor)
     {
       m_commands.push_back(command);
       m_commandExecutors[command] = executor;

@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "PropInspector.h"
 
 #include "App.h"
@@ -21,8 +47,7 @@ namespace ToolKit
 
     bool View::IsTextInputFinalized()
     {
-      return (ImGui::IsKeyPressed(ImGuiKey_KeypadEnter) ||
-              ImGui::IsKeyPressed(ImGuiKey_Enter) ||
+      return (ImGui::IsKeyPressed(ImGuiKey_KeypadEnter) || ImGui::IsKeyPressed(ImGuiKey_Enter) ||
               ImGui::IsKeyPressed(ImGuiKey_Tab));
     }
 
@@ -34,7 +59,7 @@ namespace ToolKit
     {
       DirectoryEntry dirEnt;
 
-      bool fileExist = GetFileManager()->CheckFileFromResources(file);
+      bool fileExist                        = GetFileManager()->CheckFileFromResources(file);
       FolderWindowRawPtrArray folderWindows = g_app->GetAssetBrowsers();
       for (FolderWindow* folderWnd : folderWindows)
       {
@@ -58,10 +83,7 @@ namespace ToolKit
       }
       else if (fileExist)
       {
-        DecomposePath(file,
-                      &dirEnt.m_rootPath,
-                      &dirEnt.m_fileName,
-                      &dirEnt.m_ext);
+        DecomposePath(file, &dirEnt.m_rootPath, &dirEnt.m_fileName, &dirEnt.m_ext);
 
         thumbnailManager.TryGetThumbnail(iconId, dirEnt);
       }
@@ -81,11 +103,10 @@ namespace ToolKit
 
       if (isEditable && ImGui::BeginDragDropTarget())
       {
-        if (const ImGuiPayload* payload =
-                ImGui::AcceptDragDropPayload("BrowserDragZone"))
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
         {
           const FileDragData& dragData = FolderView::GetFileDragData();
-          DirectoryEntry& entry = *dragData.Entries[0]; // get first entry
+          DirectoryEntry& entry        = *dragData.Entries[0]; // get first entry
           dropAction(entry);
         }
 
@@ -132,8 +153,7 @@ namespace ToolKit
             textureRepFn(t);
           }
 
-          if (man->m_type == ResourceType::Mesh ||
-              man->m_type == ResourceType::SkinMesh)
+          if (man->m_type == ResourceType::Mesh || man->m_type == ResourceType::SkinMesh)
           {
             MeshPtr mesh = man->Create<Mesh>(file);
 
@@ -143,13 +163,11 @@ namespace ToolKit
             }
 
             info += "File: " + dirEnt.m_fileName + dirEnt.m_ext + "\n";
-            info +=
-                "Vertex Count: " + std::to_string(mesh->m_vertexCount) + "\n";
+            info += "Vertex Count: " + std::to_string(mesh->m_vertexCount) + "\n";
             info += "Index Count: " + std::to_string(mesh->m_indexCount) + "\n";
             if (mesh->m_faces.size())
             {
-              info +=
-                  "Face Count: " + std::to_string(mesh->m_faces.size()) + "\n";
+              info += "Face Count: " + std::to_string(mesh->m_faces.size()) + "\n";
             }
           }
         }
@@ -161,12 +179,11 @@ namespace ToolKit
       }
     }
 
-    void View::DropSubZone(
-        const String& title,
-        uint fallbackIcon,
-        const String& file,
-        std::function<void(const DirectoryEntry& entry)> dropAction,
-        bool isEditable)
+    void View::DropSubZone(const String& title,
+                           uint fallbackIcon,
+                           const String& file,
+                           std::function<void(const DirectoryEntry& entry)> dropAction,
+                           bool isEditable)
     {
       bool isOpen = ImGui::TreeNodeEx(title.c_str());
       if (isOpen)
@@ -181,8 +198,7 @@ namespace ToolKit
     // PreviewViewport
     //////////////////////////////////////////////////////////////////////////
 
-    PreviewViewport::PreviewViewport(uint width, uint height)
-        : EditorViewport((float) width, (float) height)
+    PreviewViewport::PreviewViewport(uint width, uint height) : EditorViewport((float) width, (float) height)
     {
       m_previewRenderer       = std::make_shared<SceneRenderer>();
 
@@ -196,8 +212,7 @@ namespace ToolKit
       light->SetIntensityVal(1.0f);
       light->SetCastShadowVal(true);
 
-      DirectionComponentPtr directionComp =
-          light->GetComponent<DirectionComponent>();
+      DirectionComponentPtr directionComp = light->GetComponent<DirectionComponent>();
       directionComp->Yaw(glm::radians(-20.0f));
       directionComp->Pitch(glm::radians(-20.0f));
 
@@ -245,10 +260,9 @@ namespace ToolKit
 
       // Render color attachment as rounded image
       FramebufferSettings fbSettings = m_framebuffer->GetSettings();
-      Vec2 imageSize        = Vec2(fbSettings.width, fbSettings.height);
-      Vec2 currentCursorPos = Vec2(ImGui::GetWindowContentRegionMin()) +
-                              Vec2(ImGui::GetCursorPos()) +
-                              Vec2(ImGui::GetWindowPos());
+      Vec2 imageSize                 = Vec2(fbSettings.width, fbSettings.height);
+      Vec2 currentCursorPos =
+          Vec2(ImGui::GetWindowContentRegionMin()) + Vec2(ImGui::GetCursorPos()) + Vec2(ImGui::GetWindowPos());
       if (m_isTempView)
       {
         currentCursorPos.y -= 24.0f;
@@ -257,8 +271,7 @@ namespace ToolKit
       ImGui::Dummy(imageSize);
 
       ImGui::GetWindowDrawList()->AddImageRounded(
-          Convert2ImGuiTexture(m_framebuffer->GetAttachment(
-              Framebuffer::Attachment::ColorAttachment0)),
+          Convert2ImGuiTexture(m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0)),
           currentCursorPos,
           currentCursorPos + imageSize,
           Vec2(0.0f, 0.0f),
@@ -267,10 +280,7 @@ namespace ToolKit
           5.0f);
     }
 
-    ScenePtr PreviewViewport::GetScene()
-    {
-      return m_previewRenderer->m_params.Scene;
-    }
+    ScenePtr PreviewViewport::GetScene() { return m_previewRenderer->m_params.Scene; }
 
     void PreviewViewport::ResetCamera()
     {
@@ -290,10 +300,7 @@ namespace ToolKit
     // PropInspector
     //////////////////////////////////////////////////////////////////////////
 
-    PropInspector::PropInspector(XmlNode* node) : PropInspector()
-    {
-      DeSerialize(nullptr, node);
-    }
+    PropInspector::PropInspector(XmlNode* node) : PropInspector() { DeSerialize(nullptr, node); }
 
     PropInspector::PropInspector()
     {
@@ -328,10 +335,7 @@ namespace ToolKit
       }
     }
 
-    void PropInspector::SetActiveView(ViewType viewType)
-    {
-      m_activeView = viewType;
-    }
+    void PropInspector::SetActiveView(ViewType viewType) { m_activeView = viewType; }
 
     MaterialView* PropInspector::GetMaterialView()
     {
@@ -341,8 +345,7 @@ namespace ToolKit
     void PropInspector::DeterminateSelectedMaterial(Entity* curEntity)
     {
       // if material view is active. determinate selected material
-      MaterialView* matView =
-          dynamic_cast<MaterialView*>(m_views[(uint) m_activeView]);
+      MaterialView* matView = dynamic_cast<MaterialView*>(m_views[(uint) m_activeView]);
       if (matView == nullptr)
       {
         return;
@@ -357,8 +360,7 @@ namespace ToolKit
 
       if (curEntity->GetType() == EntityType::Entity_Prefab)
       {
-        PrefabView* prefView =
-            static_cast<PrefabView*>(m_views[(uint) ViewType::Prefab]);
+        PrefabView* prefView = static_cast<PrefabView*>(m_views[(uint) ViewType::Prefab]);
         if (Entity* prefEntity = prefView->GetActiveEntity())
         {
           curEntity = prefEntity;
@@ -382,19 +384,14 @@ namespace ToolKit
       ImVec4 childBg   = ImGui::GetStyleColorVec4(ImGuiCol_ChildBg);
       ImGuiStyle style = ImGui::GetStyle();
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.0f, 0.0f));
-      ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
-                          ImVec2(2.0f, style.ItemSpacing.y));
+      ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, style.ItemSpacing.y));
 
       Entity* curEntity = g_app->GetCurrentScene()->GetCurrentSelection();
-      bool isPrefab     = curEntity != nullptr &&
-                      curEntity->GetType() == EntityType::Entity_Prefab;
+      bool isPrefab     = curEntity != nullptr && curEntity->GetType() == EntityType::Entity_Prefab;
 
-      UIntArray views = isPrefab ? m_prefabViews : m_entityViews;
+      UIntArray views   = isPrefab ? m_prefabViews : m_entityViews;
 
-      if (ImGui::Begin(m_name.c_str(),
-                       &m_visible,
-                       ImGuiWindowFlags_NoScrollbar |
-                           ImGuiWindowFlags_NoScrollWithMouse))
+      if (ImGui::Begin(m_name.c_str(), &m_visible, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
       {
         HandleStates();
 
@@ -404,22 +401,18 @@ namespace ToolKit
         // Show ViewType sidebar
         ImGui::GetStyle()            = style;
         const ImVec2 spacing         = ImGui::GetStyle().ItemSpacing;
-        const ImVec2 sidebarSize =
-            ImVec2(spacing.x + sidebarIconSize.x + spacing.x, windowSize.y);
+        const ImVec2 sidebarSize     = ImVec2(spacing.x + sidebarIconSize.x + spacing.x, windowSize.y);
 
         DeterminateSelectedMaterial(curEntity);
 
-        if (ImGui::BeginChildFrame(ImGui::GetID("ViewTypeSidebar"),
-                                   sidebarSize,
-                                   0))
+        if (ImGui::BeginChildFrame(ImGui::GetID("ViewTypeSidebar"), sidebarSize, 0))
         {
           for (uint viewIndx : views)
           {
             ViewRawPtr view   = m_views[viewIndx];
             bool isActiveView = (uint) m_activeView == viewIndx;
 
-            ImGui::PushStyleColor(ImGuiCol_Button,
-                                  isActiveView ? windowBg : childBg);
+            ImGui::PushStyleColor(ImGuiCol_Button, isActiveView ? windowBg : childBg);
 
             // is this font icon ? (prefab's icon is font icon)
             if (view->m_fontIcon.size() > 0)
@@ -432,13 +425,11 @@ namespace ToolKit
               }
               ImGui::PopStyleColor();
             }
-            else if (ImGui::ImageButton(Convert2ImGuiTexture(view->m_viewIcn),
-                                        sidebarIconSize))
+            else if (ImGui::ImageButton(Convert2ImGuiTexture(view->m_viewIcn), sidebarIconSize))
             {
               m_activeView = (ViewType) viewIndx;
             }
-            UI::HelpMarker("View#" + std::to_string(viewIndx),
-                           view->m_viewName.data());
+            UI::HelpMarker("View#" + std::to_string(viewIndx), view->m_viewName.data());
             ImGui::PopStyleColor(1);
           }
         }
@@ -446,8 +437,7 @@ namespace ToolKit
 
         ImGui::SameLine();
 
-        if (ImGui::BeginChild(ImGui::GetID("PropInspectorActiveView"),
-                              ImGui::GetContentRegionAvail()))
+        if (ImGui::BeginChild(ImGui::GetID("PropInspectorActiveView"), ImGui::GetContentRegionAvail()))
         {
           m_views[(uint) m_activeView]->Show();
         }
@@ -457,10 +447,7 @@ namespace ToolKit
       ImGui::PopStyleVar(2);
     }
 
-    Window::Type PropInspector::GetType() const
-    {
-      return Window::Type::Inspector;
-    }
+    Window::Type PropInspector::GetType() const { return Window::Type::Inspector; }
 
     void PropInspector::DispatchSignals() const { ModShortCutSignals(); }
 

@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "Renderer.h"
 
 #include "Camera.h"
@@ -78,9 +104,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::Render(const RenderJob& job,
-                        Camera* cam,
-                        const LightRawPtrArray& lights)
+  void Renderer::Render(const RenderJob& job, Camera* cam, const LightRawPtrArray& lights)
   {
     // Make ibl assignments.
     m_renderState.IBLInUse = false;
@@ -91,21 +115,18 @@ namespace ToolKit
       HdriPtr hdriPtr                      = envCom->GetHdriVal();
       CubeMapPtr irradianceCubemap         = hdriPtr->m_irradianceCubemap;
       CubeMapPtr preFilteredSpecularIBLMap = hdriPtr->m_prefilteredEnvMap;
-      RenderTargetPtr brdfLut =
-          GetTextureManager()->Create<RenderTarget>(TK_LUT_TEXTURE);
+      RenderTargetPtr brdfLut              = GetTextureManager()->Create<RenderTarget>(TK_LUT_TEXTURE);
 
       if (irradianceCubemap && preFilteredSpecularIBLMap && brdfLut)
       {
-        m_renderState.irradianceMap = irradianceCubemap->m_textureId;
-        m_renderState.preFilteredSpecularMap =
-            preFilteredSpecularIBLMap->m_textureId;
-        m_renderState.brdfLut  = brdfLut->m_textureId;
+        m_renderState.irradianceMap          = irradianceCubemap->m_textureId;
+        m_renderState.preFilteredSpecularMap = preFilteredSpecularIBLMap->m_textureId;
+        m_renderState.brdfLut                = brdfLut->m_textureId;
 
-        m_renderState.IBLInUse = true;
+        m_renderState.IBLInUse               = true;
         if (Entity* env = envCom->m_entity)
         {
-          m_iblRotation =
-              Mat4(env->m_node->GetOrientation(TransformationSpace::TS_WORLD));
+          m_iblRotation = Mat4(env->m_node->GetOrientation(TransformationSpace::TS_WORLD));
         }
       }
     }
@@ -158,8 +179,7 @@ namespace ToolKit
     }
 
     m_mat->Init();
-    ProgramPtr prg =
-        CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
+    ProgramPtr prg = CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
     BindProgram(prg);
 
     auto activateSkinning = [prg, &job](uint isSkinned)
@@ -175,8 +195,7 @@ namespace ToolKit
       if (isSkinned)
       {
         GLint numBonesLoc = glGetUniformLocation(prg->m_handle, "numBones");
-        float boneCount =
-            (float) job.SkeletonCmp->GetSkeletonResourceVal()->m_bones.size();
+        float boneCount   = (float) job.SkeletonCmp->GetSkeletonResourceVal()->m_bones.size();
 
         glUniform1fv(numBonesLoc, 1, &boneCount);
       }
@@ -196,10 +215,7 @@ namespace ToolKit
     if (mesh->m_indexCount != 0)
     {
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-      glDrawElements((GLenum) rs->drawType,
-                     mesh->m_indexCount,
-                     GL_UNSIGNED_INT,
-                     nullptr);
+      glDrawElements((GLenum) rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
     }
     else
     {
@@ -207,9 +223,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::Render(const RenderJobArray& jobArray,
-                        Camera* cam,
-                        const LightRawPtrArray& lights)
+  void Renderer::Render(const RenderJobArray& jobArray, Camera* cam, const LightRawPtrArray& lights)
   {
     for (const RenderJob& rj : jobArray)
     {
@@ -341,9 +355,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetFramebuffer(FramebufferPtr fb,
-                                bool clear,
-                                const Vec4& color)
+  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color)
   {
     if (fb != m_framebuffer)
     {
@@ -370,14 +382,9 @@ namespace ToolKit
     m_framebuffer = fb;
   }
 
-  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear)
-  {
-    SetFramebuffer(fb, clear, m_clearColor);
-  }
+  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear) { SetFramebuffer(fb, clear, m_clearColor); }
 
-  void Renderer::SwapFramebuffer(FramebufferPtr& fb,
-                                 bool clear,
-                                 const Vec4& color)
+  void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color)
   {
     FramebufferPtr& tmp1 = fb;
     FramebufferPtr tmp2  = m_framebuffer;
@@ -385,10 +392,7 @@ namespace ToolKit
     tmp1.swap(tmp2);
   }
 
-  void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear)
-  {
-    SwapFramebuffer(fb, clear, m_clearColor);
-  }
+  void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear) { SwapFramebuffer(fb, clear, m_clearColor); }
 
   FramebufferPtr Renderer::GetFrameBuffer() { return m_framebuffer; }
 
@@ -410,14 +414,9 @@ namespace ToolKit
     glClear((GLbitfield) fields);
   }
 
-  void Renderer::ColorMask(bool r, bool g, bool b, bool a)
-  {
-    glColorMask(r, g, b, a);
-  }
+  void Renderer::ColorMask(bool r, bool g, bool b, bool a) { glColorMask(r, g, b, a); }
 
-  void Renderer::CopyFrameBuffer(FramebufferPtr src,
-                                 FramebufferPtr dest,
-                                 GraphicBitFields fields)
+  void Renderer::CopyFrameBuffer(FramebufferPtr src, FramebufferPtr dest, GraphicBitFields fields)
   {
     GLuint srcId = 0;
     uint width   = m_windowSize.x;
@@ -439,25 +438,13 @@ namespace ToolKit
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, srcId);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
-    glBlitFramebuffer(0,
-                      0,
-                      width,
-                      height,
-                      0,
-                      0,
-                      width,
-                      height,
-                      (GLbitfield) fields,
-                      GL_NEAREST);
+    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, (GLbitfield) fields, GL_NEAREST);
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, readFboId);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
   }
 
-  void Renderer::SetViewport(Viewport* viewport)
-  {
-    SetFramebuffer(viewport->m_framebuffer);
-  }
+  void Renderer::SetViewport(Viewport* viewport) { SetFramebuffer(viewport->m_framebuffer); }
 
   void Renderer::SetViewportSize(uint width, uint height)
   {
@@ -475,9 +462,8 @@ namespace ToolKit
 
   void Renderer::DrawFullQuad(ShaderPtr fragmentShader)
   {
-    static ShaderPtr fullQuadVert = GetShaderManager()->Create<Shader>(
-        ShaderPath("fullQuadVert.shader", true));
-    static MaterialPtr material = std::make_shared<Material>();
+    static ShaderPtr fullQuadVert = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
+    static MaterialPtr material   = std::make_shared<Material>();
     material->UnInit();
 
     material->m_vertexShader   = fullQuadVert;
@@ -518,20 +504,17 @@ namespace ToolKit
 
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
   {
-    assert(source->m_width == dest->m_width &&
-           source->m_height == dest->m_height &&
+    assert(source->m_width == dest->m_width && source->m_height == dest->m_height &&
            "Sizes of the textures are not the same.");
 
-    assert(source->m_initiated && dest->m_initiated &&
-           "Texture is not initialized.");
+    assert(source->m_initiated && dest->m_initiated && "Texture is not initialized.");
 
     assert(source);
 
     if (m_copyFb == nullptr)
     {
       m_copyFb = std::make_shared<Framebuffer>();
-      m_copyFb->Init(
-          {(uint) source->m_width, (uint) source->m_height, false, false});
+      m_copyFb->Init({(uint) source->m_width, (uint) source->m_height, false, false});
     }
 
     RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dest);
@@ -544,11 +527,9 @@ namespace ToolKit
     // Render to texture
     if (m_copyMaterial == nullptr)
     {
-      m_copyMaterial                 = std::make_shared<Material>();
-      m_copyMaterial->m_vertexShader = GetShaderManager()->Create<Shader>(
-          ShaderPath("copyTextureVert.shader", true));
-      m_copyMaterial->m_fragmentShader = GetShaderManager()->Create<Shader>(
-          ShaderPath("copyTextureFrag.shader", true));
+      m_copyMaterial                   = std::make_shared<Material>();
+      m_copyMaterial->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("copyTextureVert.shader", true));
+      m_copyMaterial->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("copyTextureFrag.shader", true));
     }
 
     m_copyMaterial->UnInit();
@@ -610,13 +591,11 @@ namespace ToolKit
 
     if (m_gaussianBlurMaterial == nullptr)
     {
-      ShaderPtr vert = GetShaderManager()->Create<Shader>(
-          ShaderPath("gausBlur7x1Vert.shader", true));
+      ShaderPtr vert         = GetShaderManager()->Create<Shader>(ShaderPath("gausBlur7x1Vert.shader", true));
 
-      ShaderPtr frag = GetShaderManager()->Create<Shader>(
-          ShaderPath("gausBlur7x1Frag.shader", true));
+      ShaderPtr frag         = GetShaderManager()->Create<Shader>(ShaderPath("gausBlur7x1Frag.shader", true));
 
-      m_gaussianBlurMaterial                   = std::make_shared<Material>();
+      m_gaussianBlurMaterial = std::make_shared<Material>();
       m_gaussianBlurMaterial->m_vertexShader   = vert;
       m_gaussianBlurMaterial->m_fragmentShader = frag;
       m_gaussianBlurMaterial->m_diffuseTexture = nullptr;
@@ -624,13 +603,10 @@ namespace ToolKit
 
     m_gaussianBlurMaterial->UnInit();
     m_gaussianBlurMaterial->m_diffuseTexture = source;
-    m_gaussianBlurMaterial->m_fragmentShader->SetShaderParameter(
-        "BlurScale",
-        ParameterVariant(axis * amount));
+    m_gaussianBlurMaterial->m_fragmentShader->SetShaderParameter("BlurScale", ParameterVariant(axis * amount));
     m_gaussianBlurMaterial->Init();
 
-    m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                     dest);
+    m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
 
     SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
     DrawFullQuad(m_gaussianBlurMaterial);
@@ -638,10 +614,7 @@ namespace ToolKit
     SetFramebuffer(frmBackup, false);
   }
 
-  void Renderer::ApplyAverageBlur(const TexturePtr source,
-                                  RenderTargetPtr dest,
-                                  const Vec3& axis,
-                                  const float amount)
+  void Renderer::ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount)
   {
     FramebufferPtr frmBackup = m_framebuffer;
 
@@ -650,13 +623,11 @@ namespace ToolKit
 
     if (m_averageBlurMaterial == nullptr)
     {
-      ShaderPtr vert = GetShaderManager()->Create<Shader>(
-          ShaderPath("avgBlurVert.shader", true));
+      ShaderPtr vert        = GetShaderManager()->Create<Shader>(ShaderPath("avgBlurVert.shader", true));
 
-      ShaderPtr frag = GetShaderManager()->Create<Shader>(
-          ShaderPath("avgBlurFrag.shader", true));
+      ShaderPtr frag        = GetShaderManager()->Create<Shader>(ShaderPath("avgBlurFrag.shader", true));
 
-      m_averageBlurMaterial                   = std::make_shared<Material>();
+      m_averageBlurMaterial = std::make_shared<Material>();
       m_averageBlurMaterial->m_vertexShader   = vert;
       m_averageBlurMaterial->m_fragmentShader = frag;
       m_averageBlurMaterial->m_diffuseTexture = nullptr;
@@ -664,14 +635,11 @@ namespace ToolKit
 
     m_averageBlurMaterial->UnInit();
     m_averageBlurMaterial->m_diffuseTexture = source;
-    m_averageBlurMaterial->m_fragmentShader->SetShaderParameter(
-        "BlurScale",
-        ParameterVariant(axis * amount));
+    m_averageBlurMaterial->m_fragmentShader->SetShaderParameter("BlurScale", ParameterVariant(axis * amount));
 
     m_averageBlurMaterial->Init();
 
-    m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                     dest);
+    m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
 
     SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
     DrawFullQuad(m_averageBlurMaterial);
@@ -738,16 +706,11 @@ namespace ToolKit
     {
       ProgramPtr program = std::make_shared<Program>(vertex, fragment);
       program->m_handle  = glCreateProgram();
-      LinkProgram(program->m_handle,
-                  vertex->m_shaderHandle,
-                  fragment->m_shaderHandle);
+      LinkProgram(program->m_handle, vertex->m_shaderHandle, fragment->m_shaderHandle);
       glUseProgram(program->m_handle);
-      for (ubyte slotIndx = 0; slotIndx < m_rhiSettings::textureSlotCount;
-           slotIndx++)
+      for (ubyte slotIndx = 0; slotIndx < m_rhiSettings::textureSlotCount; slotIndx++)
       {
-        GLint loc = glGetUniformLocation(
-            program->m_handle,
-            ("s_texture" + std::to_string(slotIndx)).c_str());
+        GLint loc = glGetUniformLocation(program->m_handle, ("s_texture" + std::to_string(slotIndx)).c_str());
         if (loc != -1)
         {
           glUniform1i(loc, slotIndx);
@@ -773,31 +736,25 @@ namespace ToolKit
         {
         case Uniform::PROJECT_MODEL_VIEW:
         {
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::PROJECT_MODEL_VIEW));
-          Mat4 mul = m_project * m_view * m_model;
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::PROJECT_MODEL_VIEW));
+          Mat4 mul  = m_project * m_view * m_model;
           glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
         }
         break;
         case Uniform::VIEW:
         {
-          GLint loc = glGetUniformLocation(program->m_handle,
-                                           GetUniformName(Uniform::VIEW));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::VIEW));
           glUniformMatrix4fv(loc, 1, false, &m_view[0][0]);
         }
         case Uniform::MODEL:
         {
-          GLint loc = glGetUniformLocation(program->m_handle,
-                                           GetUniformName(Uniform::MODEL));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::MODEL));
           glUniformMatrix4fv(loc, 1, false, &m_model[0][0]);
         }
         break;
         case Uniform::INV_TR_MODEL:
         {
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::INV_TR_MODEL));
+          GLint loc       = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::INV_TR_MODEL));
           Mat4 invTrModel = glm::transpose(glm::inverse(m_model));
           glUniformMatrix4fv(loc, 1, false, &invTrModel[0][0]);
         }
@@ -814,15 +771,11 @@ namespace ToolKit
 
           Camera::CamData data     = m_cam->GetData();
           String uniformStructName = GetUniformName(Uniform::CAM_DATA);
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   (uniformStructName + ".pos").c_str());
+          GLint loc                = glGetUniformLocation(program->m_handle, (uniformStructName + ".pos").c_str());
           glUniform3fv(loc, 1, &data.pos.x);
-          loc = glGetUniformLocation(program->m_handle,
-                                     (uniformStructName + ".dir").c_str());
+          loc = glGetUniformLocation(program->m_handle, (uniformStructName + ".dir").c_str());
           glUniform3fv(loc, 1, &data.dir.x);
-          loc = glGetUniformLocation(program->m_handle,
-                                     (uniformStructName + ".far").c_str());
+          loc = glGetUniformLocation(program->m_handle, (uniformStructName + ".far").c_str());
           glUniform1f(loc, data.far);
         }
         break;
@@ -837,8 +790,7 @@ namespace ToolKit
             color.a = 1.0f;
           }
 
-          GLint loc = glGetUniformLocation(program->m_handle,
-                                           GetUniformName(Uniform::COLOR));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::COLOR));
           if (m_renderOnlyLighting)
           {
             color = Vec4(1.0f, 1.0f, 1.0f, color.a);
@@ -848,24 +800,19 @@ namespace ToolKit
         break;
         case Uniform::FRAME_COUNT:
         {
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::FRAME_COUNT));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::FRAME_COUNT));
           glUniform1ui(loc, m_frameCount);
         }
         break;
         case Uniform::EXPOSURE:
         {
-          GLint loc = glGetUniformLocation(program->m_handle,
-                                           GetUniformName(Uniform::EXPOSURE));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::EXPOSURE));
           glUniform1f(loc, shader->m_shaderParams["Exposure"].GetVar<float>());
         }
         break;
         case Uniform::PROJECT_VIEW_NO_TR:
         {
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::PROJECT_VIEW_NO_TR));
+          GLint loc  = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::PROJECT_VIEW_NO_TR));
 
           // Zero translate variables in model matrix
           Mat4 view  = m_view;
@@ -883,16 +830,13 @@ namespace ToolKit
         break;
         case Uniform::USE_IBL:
         {
-          GLint loc = glGetUniformLocation(program->m_handle,
-                                           GetUniformName(Uniform::USE_IBL));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::USE_IBL));
           glUniform1i(loc, (GLint) m_renderState.IBLInUse);
         }
         break;
         case Uniform::IBL_INTENSITY:
         {
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::IBL_INTENSITY));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::IBL_INTENSITY));
           glUniform1f(loc, m_renderState.iblIntensity);
         }
         break;
@@ -905,10 +849,8 @@ namespace ToolKit
         break;
         case Uniform::DIFFUSE_TEXTURE_IN_USE:
         {
-          GLint loc = glGetUniformLocation(
-              program->m_handle,
-              GetUniformName(Uniform::DIFFUSE_TEXTURE_IN_USE));
-          int v = (int) (m_mat->m_diffuseTexture != nullptr);
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::DIFFUSE_TEXTURE_IN_USE));
+          int v     = (int) (m_mat->m_diffuseTexture != nullptr);
           if (m_renderOnlyLighting)
           {
             v = false;
@@ -921,52 +863,39 @@ namespace ToolKit
           if (m_mat == nullptr)
             break;
 
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::COLOR_ALPHA));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::COLOR_ALPHA));
           glUniform1f(loc, m_mat->GetAlpha());
         }
         break;
         case Uniform::IBL_ROTATION:
         {
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::IBL_ROTATION));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::IBL_ROTATION));
 
           glUniformMatrix4fv(loc, 1, false, &m_iblRotation[0][0]);
         }
         break;
         case Uniform::USE_ALPHA_MASK:
         {
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::USE_ALPHA_MASK));
-          glUniform1i(loc,
-                      m_renderState.blendFunction == BlendFunction::ALPHA_MASK);
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::USE_ALPHA_MASK));
+          glUniform1i(loc, m_renderState.blendFunction == BlendFunction::ALPHA_MASK);
         }
         break;
         case Uniform::ALPHA_MASK_TRESHOLD:
         {
-          GLint loc = glGetUniformLocation(
-              program->m_handle,
-              GetUniformName(Uniform::ALPHA_MASK_TRESHOLD));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::ALPHA_MASK_TRESHOLD));
           glUniform1f(loc, m_renderState.alphaMaskTreshold);
         }
         break;
         case Uniform::EMISSIVE_COLOR:
         {
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::EMISSIVE_COLOR));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::EMISSIVE_COLOR));
           glUniform3fv(loc, 1, &m_mat->m_emissiveColor.x);
         }
         break;
         case Uniform::EMISSIVE_TEXTURE_IN_USE:
         {
-          GLint loc = glGetUniformLocation(
-              program->m_handle,
-              GetUniformName(Uniform::EMISSIVE_TEXTURE_IN_USE));
-          int v = (int) (m_mat->m_emissiveTexture != nullptr);
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::EMISSIVE_TEXTURE_IN_USE));
+          int v     = (int) (m_mat->m_emissiveTexture != nullptr);
           glUniform1i(loc, v);
         }
         break;
@@ -975,48 +904,38 @@ namespace ToolKit
           break;
         case Uniform::METALLIC:
         {
-          GLint loc = glGetUniformLocation(program->m_handle,
-                                           GetUniformName(Uniform::METALLIC));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::METALLIC));
           glUniform1f(loc, (GLfloat) m_mat->m_metallic);
         }
         break;
         case Uniform::ROUGHNESS:
         {
-          GLint loc = glGetUniformLocation(program->m_handle,
-                                           GetUniformName(Uniform::ROUGHNESS));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::ROUGHNESS));
           glUniform1f(loc, (GLfloat) m_mat->m_roughness);
         }
         break;
         case Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE:
         {
-          GLint loc = glGetUniformLocation(
-              program->m_handle,
-              GetUniformName(Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE));
-          glUniform1i(loc,
-                      (int) (m_mat->m_metallicRoughnessTexture != nullptr));
+          GLint loc =
+              glGetUniformLocation(program->m_handle, GetUniformName(Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE));
+          glUniform1i(loc, (int) (m_mat->m_metallicRoughnessTexture != nullptr));
         }
         break;
         case Uniform::NORMAL_MAP_IN_USE:
         {
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::NORMAL_MAP_IN_USE));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::NORMAL_MAP_IN_USE));
           glUniform1i(loc, (int) (m_mat->m_normalMap != nullptr));
         }
         break;
         case Uniform::IBL_MAX_REFLECTION_LOD:
         {
-          GLint loc = glGetUniformLocation(
-              program->m_handle,
-              GetUniformName(Uniform::IBL_MAX_REFLECTION_LOD));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::IBL_MAX_REFLECTION_LOD));
           glUniform1i(loc, RHIConstants::specularIBLLods - 1);
         }
         break;
         case Uniform::ELAPSED_TIME:
         {
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::ELAPSED_TIME));
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::ELAPSED_TIME));
           glUniform1f(loc, Main::GetInstance()->TimeSinceStartup() / 1000.0f);
         }
         break;
@@ -1050,33 +969,19 @@ namespace ToolKit
           glUniform1ui(loc, var.second.GetVar<uint>());
           break;
         case ParameterVariant::VariantType::Vec2:
-          glUniform2fv(loc,
-                       1,
-                       reinterpret_cast<float*>(&var.second.GetVar<Vec2>()));
+          glUniform2fv(loc, 1, reinterpret_cast<float*>(&var.second.GetVar<Vec2>()));
           break;
         case ParameterVariant::VariantType::Vec3:
-          glUniform3fv(loc,
-                       1,
-                       reinterpret_cast<float*>(&var.second.GetVar<Vec3>()));
+          glUniform3fv(loc, 1, reinterpret_cast<float*>(&var.second.GetVar<Vec3>()));
           break;
         case ParameterVariant::VariantType::Vec4:
-          glUniform4fv(loc,
-                       1,
-                       reinterpret_cast<float*>(&var.second.GetVar<Vec4>()));
+          glUniform4fv(loc, 1, reinterpret_cast<float*>(&var.second.GetVar<Vec4>()));
           break;
         case ParameterVariant::VariantType::Mat3:
-          glUniformMatrix3fv(
-              loc,
-              1,
-              false,
-              reinterpret_cast<float*>(&var.second.GetVar<Mat3>()));
+          glUniformMatrix3fv(loc, 1, false, reinterpret_cast<float*>(&var.second.GetVar<Mat3>()));
           break;
         case ParameterVariant::VariantType::Mat4:
-          glUniformMatrix4fv(
-              loc,
-              1,
-              false,
-              reinterpret_cast<float*>(&var.second.GetVar<Mat4>()));
+          glUniformMatrix4fv(loc, 1, false, reinterpret_cast<float*>(&var.second.GetVar<Mat4>()));
           break;
         default:
           assert(false && "Invalid type.");
@@ -1088,8 +993,7 @@ namespace ToolKit
 
   void Renderer::FeedLightUniforms(ProgramPtr program)
   {
-    size_t lightSize =
-        glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
+    size_t lightSize = glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
     for (size_t i = 0; i < lightSize; i++)
     {
       Light* currLight = m_lights[i];
@@ -1101,24 +1005,18 @@ namespace ToolKit
       {
         Vec3 color      = currLight->GetColorVal();
         float intensity = currLight->GetIntensityVal();
-        Vec3 pos =
-            currLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        float radius = static_cast<PointLight*>(currLight)->GetRadiusVal();
+        Vec3 pos        = currLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        float radius    = static_cast<PointLight*>(currLight)->GetRadiusVal();
 
-        GLuint loc   = glGetUniformLocation(program->m_handle,
-                                          g_lightTypeStrCache[i].c_str());
+        GLuint loc      = glGetUniformLocation(program->m_handle, g_lightTypeStrCache[i].c_str());
         glUniform1i(loc, static_cast<GLuint>(2));
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightColorStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightColorStrCache[i].c_str());
         glUniform3fv(loc, 1, &color.x);
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightIntensityStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightIntensityStrCache[i].c_str());
         glUniform1f(loc, intensity);
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightPosStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightPosStrCache[i].c_str());
         glUniform3fv(loc, 1, &pos.x);
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightRadiusStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightRadiusStrCache[i].c_str());
         glUniform1f(loc, radius);
       }
       // Directional light uniforms
@@ -1126,129 +1024,87 @@ namespace ToolKit
       {
         Vec3 color      = currLight->GetColorVal();
         float intensity = currLight->GetIntensityVal();
-        Vec3 dir        = static_cast<DirectionalLight*>(currLight)
-                       ->GetComponent<DirectionComponent>()
-                       ->GetDirection();
+        Vec3 dir        = static_cast<DirectionalLight*>(currLight)->GetComponent<DirectionComponent>()->GetDirection();
 
-        GLuint loc = glGetUniformLocation(program->m_handle,
-                                          g_lightTypeStrCache[i].c_str());
+        GLuint loc      = glGetUniformLocation(program->m_handle, g_lightTypeStrCache[i].c_str());
         glUniform1i(loc, static_cast<GLuint>(1));
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightColorStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightColorStrCache[i].c_str());
         glUniform3fv(loc, 1, &color.x);
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightIntensityStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightIntensityStrCache[i].c_str());
         glUniform1f(loc, intensity);
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightDirStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightDirStrCache[i].c_str());
         glUniform3fv(loc, 1, &dir.x);
       }
       // Spot light uniforms
       else if (type == EntityType::Entity_SpotLight)
       {
-        Vec3 color      = currLight->GetColorVal();
-        float intensity = currLight->GetIntensityVal();
-        Vec3 pos =
-            currLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        Vec3 color           = currLight->GetColorVal();
+        float intensity      = currLight->GetIntensityVal();
+        Vec3 pos             = currLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         SpotLight* spotLight = static_cast<SpotLight*>(currLight);
-        Vec3 dir =
-            spotLight->GetComponent<DirectionComponent>()->GetDirection();
-        float radius = spotLight->GetRadiusVal();
-        float outAngle =
-            glm::cos(glm::radians(spotLight->GetOuterAngleVal() / 2.0f));
-        float innAngle =
-            glm::cos(glm::radians(spotLight->GetInnerAngleVal() / 2.0f));
+        Vec3 dir             = spotLight->GetComponent<DirectionComponent>()->GetDirection();
+        float radius         = spotLight->GetRadiusVal();
+        float outAngle       = glm::cos(glm::radians(spotLight->GetOuterAngleVal() / 2.0f));
+        float innAngle       = glm::cos(glm::radians(spotLight->GetInnerAngleVal() / 2.0f));
 
-        GLuint loc = glGetUniformLocation(program->m_handle,
-                                          g_lightTypeStrCache[i].c_str());
+        GLuint loc           = glGetUniformLocation(program->m_handle, g_lightTypeStrCache[i].c_str());
         glUniform1i(loc, static_cast<GLuint>(3));
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightColorStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightColorStrCache[i].c_str());
         glUniform3fv(loc, 1, &color.x);
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightIntensityStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightIntensityStrCache[i].c_str());
         glUniform1f(loc, intensity);
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightPosStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightPosStrCache[i].c_str());
         glUniform3fv(loc, 1, &pos.x);
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightDirStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightDirStrCache[i].c_str());
         glUniform3fv(loc, 1, &dir.x);
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightRadiusStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightRadiusStrCache[i].c_str());
         glUniform1f(loc, radius);
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightOuterAngleStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightOuterAngleStrCache[i].c_str());
         glUniform1f(loc, outAngle);
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightInnerAngleStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightInnerAngleStrCache[i].c_str());
         glUniform1f(loc, innAngle);
       }
 
       bool castShadow = currLight->GetCastShadowVal();
       if (castShadow)
       {
-        GLint loc = glGetUniformLocation(
-            program->m_handle,
-            g_lightprojectionViewMatrixStrCache[i].c_str());
-        glUniformMatrix4fv(
-            loc,
-            1,
-            GL_FALSE,
-            &(currLight->m_shadowMapCameraProjectionViewMatrix)[0][0]);
+        GLint loc = glGetUniformLocation(program->m_handle, g_lightprojectionViewMatrixStrCache[i].c_str());
+        glUniformMatrix4fv(loc, 1, GL_FALSE, &(currLight->m_shadowMapCameraProjectionViewMatrix)[0][0]);
 
-        loc =
-            glGetUniformLocation(program->m_handle,
-                                 g_lightShadowMapCameraFarStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightShadowMapCameraFarStrCache[i].c_str());
         glUniform1f(loc, currLight->m_shadowMapCameraFar);
 
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightBleedingReductionStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightBleedingReductionStrCache[i].c_str());
         glUniform1f(loc, currLight->GetLightBleedingReductionVal());
 
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightPCFSamplesStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightPCFSamplesStrCache[i].c_str());
         glUniform1i(loc, currLight->GetPCFSamplesVal());
 
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightPCFRadiusStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightPCFRadiusStrCache[i].c_str());
         glUniform1f(loc, currLight->GetPCFRadiusVal());
 
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightsoftShadowsStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightsoftShadowsStrCache[i].c_str());
         glUniform1i(loc, (int) (currLight->GetPCFSamplesVal() > 1));
 
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightShadowAtlasLayerStrCache[i].c_str());
+        loc = glGetUniformLocation(program->m_handle, g_lightShadowAtlasLayerStrCache[i].c_str());
         glUniform1f(loc, (GLfloat) currLight->m_shadowAtlasLayer);
 
-        const Vec2 coord =
-            currLight->m_shadowAtlasCoord /
-            (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightShadowAtlasCoordStrCache[i].c_str());
+        const Vec2 coord = currLight->m_shadowAtlasCoord / (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+        loc              = glGetUniformLocation(program->m_handle, g_lightShadowAtlasCoordStrCache[i].c_str());
         glUniform2fv(loc, 1, &coord.x);
 
-        loc =
-            glGetUniformLocation(program->m_handle,
-                                 g_lightShadowAtlasResRatioStrCache[i].c_str());
-        glUniform1f(loc,
-                    currLight->GetShadowResVal() /
-                        Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
+        loc = glGetUniformLocation(program->m_handle, g_lightShadowAtlasResRatioStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetShadowResVal() / Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
 
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightShadowBiasStrCache[i].c_str());
-        glUniform1f(loc,
-                    currLight->GetShadowBiasVal() * g_shadowBiasMultiplier);
+        loc = glGetUniformLocation(program->m_handle, g_lightShadowBiasStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetShadowBiasVal() * g_shadowBiasMultiplier);
       }
 
-      GLuint loc = glGetUniformLocation(program->m_handle,
-                                        g_lightCastShadowStrCache[i].c_str());
+      GLuint loc = glGetUniformLocation(program->m_handle, g_lightCastShadowStrCache[i].c_str());
       glUniform1i(loc, static_cast<int>(castShadow));
     }
 
-    GLint loc =
-        glGetUniformLocation(program->m_handle, "LightData.activeCount");
+    GLint loc = glGetUniformLocation(program->m_handle, "LightData.activeCount");
     glUniform1i(loc, static_cast<int>(m_lights.size()));
 
     // Bind shadow map if activated
@@ -1286,15 +1142,9 @@ namespace ToolKit
     glBindTexture(textureTypeLut[slotIndx], m_textureSlots[slotIndx]);
   }
 
-  void Renderer::SetShadowAtlas(TexturePtr shadowAtlas)
-  {
-    m_shadowAtlas = shadowAtlas;
-  }
+  void Renderer::SetShadowAtlas(TexturePtr shadowAtlas) { m_shadowAtlas = shadowAtlas; }
 
-  CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture,
-                                                    uint width,
-                                                    uint height,
-                                                    float exposure)
+  CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture, uint width, uint height, float exposure)
   {
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
@@ -1307,16 +1157,13 @@ namespace ToolKit
                                      GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
 
-    RenderTargetPtr cubeMapRt =
-        std::make_shared<RenderTarget>(width, height, set);
+    RenderTargetPtr cubeMapRt     = std::make_shared<RenderTarget>(width, height, set);
     cubeMapRt->Init();
 
     // Create material
     MaterialPtr mat = std::make_shared<Material>();
-    ShaderPtr vert  = GetShaderManager()->Create<Shader>(
-        ShaderPath("equirectToCubeVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(
-        ShaderPath("equirectToCubeFrag.shader", true));
+    ShaderPtr vert  = GetShaderManager()->Create<Shader>(ShaderPath("equirectToCubeVert.shader", true));
+    ShaderPtr frag  = GetShaderManager()->Create<Shader>(ShaderPath("equirectToCubeFrag.shader", true));
     frag->m_shaderParams["Exposure"] = exposure;
 
     mat->m_diffuseTexture            = texture;
@@ -1331,13 +1178,12 @@ namespace ToolKit
     // Views for 6 different angles
     static Camera cam;
     cam.SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-    Mat4 views[] = {
-        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+    Mat4 views[] = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                    glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                    glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+                    glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+                    glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                    glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
 
     for (int i = 0; i < 6; ++i)
     {
@@ -1350,12 +1196,11 @@ namespace ToolKit
       cam.m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam.m_node->SetScale(sca);
 
-      m_utilFramebuffer->SetAttachment(
-          Framebuffer::Attachment::ColorAttachment0,
-          cubeMapRt,
-          0,
-          -1,
-          (Framebuffer::CubemapFace) i);
+      m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                       cubeMapRt,
+                                       0,
+                                       -1,
+                                       (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
       DrawCube(&cam, mat);
@@ -1370,9 +1215,7 @@ namespace ToolKit
     return cubeMap;
   }
 
-  CubeMapPtr Renderer::GenerateEnvIrradianceMap(CubeMapPtr cubemap,
-                                                uint width,
-                                                uint height)
+  CubeMapPtr Renderer::GenerateEnvIrradianceMap(CubeMapPtr cubemap, uint width, uint height)
   {
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
@@ -1384,31 +1227,27 @@ namespace ToolKit
                                      GraphicTypes::FormatRGBA16F,
                                      GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
-    RenderTargetPtr cubeMapRt =
-        std::make_shared<RenderTarget>(width, height, set);
+    RenderTargetPtr cubeMapRt     = std::make_shared<RenderTarget>(width, height, set);
     cubeMapRt->Init();
 
     // Views for 6 different angles
     CameraPtr cam = std::make_shared<Camera>();
     cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-    Mat4 views[] = {
-        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+    Mat4 views[]          = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                             glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
 
     // Create material
-    MaterialPtr mat = std::make_shared<Material>();
-    ShaderPtr vert  = GetShaderManager()->Create<Shader>(
-        ShaderPath("irradianceGenerateVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(
-        ShaderPath("irradianceGenerateFrag.shader", true));
+    MaterialPtr mat       = std::make_shared<Material>();
+    ShaderPtr vert        = GetShaderManager()->Create<Shader>(ShaderPath("irradianceGenerateVert.shader", true));
+    ShaderPtr frag        = GetShaderManager()->Create<Shader>(ShaderPath("irradianceGenerateFrag.shader", true));
 
-    mat->m_cubeMap                  = cubemap;
-    mat->m_vertexShader             = vert;
-    mat->m_fragmentShader           = frag;
+    mat->m_cubeMap        = cubemap;
+    mat->m_vertexShader   = vert;
+    mat->m_fragmentShader = frag;
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
@@ -1426,12 +1265,11 @@ namespace ToolKit
       cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam->m_node->SetScale(sca);
 
-      m_utilFramebuffer->SetAttachment(
-          Framebuffer::Attachment::ColorAttachment0,
-          cubeMapRt,
-          0,
-          -1,
-          (Framebuffer::CubemapFace) i);
+      m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                       cubeMapRt,
+                                       0,
+                                       -1,
+                                       (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
       DrawCube(cam.get(), mat);
@@ -1446,10 +1284,7 @@ namespace ToolKit
     return cubeMap;
   }
 
-  CubeMapPtr Renderer::GenerateEnvPrefilteredMap(CubeMapPtr cubemap,
-                                                 uint width,
-                                                 uint height,
-                                                 int mipMaps)
+  CubeMapPtr Renderer::GenerateEnvPrefilteredMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps)
   {
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
@@ -1461,38 +1296,32 @@ namespace ToolKit
                                      GraphicTypes::FormatRGBA16F,
                                      GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
-    RenderTargetPtr cubemapRt =
-        std::make_shared<RenderTarget>(width, height, set);
+    RenderTargetPtr cubemapRt     = std::make_shared<RenderTarget>(width, height, set);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
     cubemapRt->Init();
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP,
-                    GL_TEXTURE_MIN_FILTER,
-                    GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 
     // Views for 6 different angles
     CameraPtr cam = std::make_shared<Camera>();
     cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-    Mat4 views[] = {
-        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+    Mat4 views[]          = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                             glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
 
     // Create material
-    MaterialPtr mat = std::make_shared<Material>();
-    ShaderPtr vert  = GetShaderManager()->Create<Shader>(
-        ShaderPath("positionVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(
-        ShaderPath("preFilterEnvMapFrag.shader", true));
+    MaterialPtr mat       = std::make_shared<Material>();
+    ShaderPtr vert        = GetShaderManager()->Create<Shader>(ShaderPath("positionVert.shader", true));
+    ShaderPtr frag        = GetShaderManager()->Create<Shader>(ShaderPath("preFilterEnvMapFrag.shader", true));
 
-    mat->m_cubeMap                  = cubemap;
-    mat->m_vertexShader             = vert;
-    mat->m_fragmentShader           = frag;
+    mat->m_cubeMap        = cubemap;
+    mat->m_vertexShader   = vert;
+    mat->m_fragmentShader = frag;
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
@@ -1515,19 +1344,16 @@ namespace ToolKit
         cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
         cam->m_node->SetScale(sca);
 
-        m_utilFramebuffer->SetAttachment(
-            Framebuffer::Attachment::ColorAttachment0,
-            cubemapRt,
-            mip,
-            -1,
-            (Framebuffer::CubemapFace) i);
+        m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                         cubemapRt,
+                                         mip,
+                                         -1,
+                                         (Framebuffer::CubemapFace) i);
 
         uint w = (uint) (width * std::powf(0.5f, (float) mip));
         uint h = (uint) (height * std::powf(0.5f, (float) mip));
 
-        frag->SetShaderParameter(
-            "roughness",
-            ParameterVariant((float) mip / (float) mipMaps));
+        frag->SetShaderParameter("roughness", ParameterVariant((float) mip / (float) mipMaps));
         frag->SetShaderParameter("resPerFace", ParameterVariant((float) w));
 
         SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0));

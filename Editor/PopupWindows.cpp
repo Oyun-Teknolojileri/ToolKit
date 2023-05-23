@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "PopupWindows.h"
 
 #include "App.h"
@@ -23,15 +49,12 @@ namespace ToolKit
       }
 
       ImGuiIO& io = ImGui::GetIO();
-      ImGui::SetNextWindowPos(
-          ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
-          ImGuiCond_Once,
-          ImVec2(0.5f, 0.5f));
+      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
+                              ImGuiCond_Once,
+                              ImVec2(0.5f, 0.5f));
 
       ImGui::OpenPopup(m_name.c_str());
-      if (ImGui::BeginPopupModal(m_name.c_str(),
-                                 NULL,
-                                 ImGuiWindowFlags_AlwaysAutoResize))
+      if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
       {
         if (ImGui::IsWindowAppearing())
         {
@@ -42,19 +65,13 @@ namespace ToolKit
             m_inputLabel.c_str(),
             m_hint.c_str(),
             &m_inputVal,
-            ImGuiInputTextFlags_AutoSelectAll |
-                ImGuiInputTextFlags_CallbackCharFilter,
+            ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackCharFilter,
             [](ImGuiInputTextCallbackData* data) -> int
-            {
-              return (reinterpret_cast<StringInputWindow*>(data->UserData))
-                  ->FilterChars(data);
-            },
+            { return (reinterpret_cast<StringInputWindow*>(data->UserData))->FilterChars(data); },
             reinterpret_cast<void*>(this));
 
         // Center buttons.
-        ImGui::BeginTable("##FilterZoom",
-                          m_showCancel ? 4 : 3,
-                          ImGuiTableFlags_SizingFixedFit);
+        ImGui::BeginTable("##FilterZoom", m_showCancel ? 4 : 3, ImGuiTableFlags_SizingFixedFit);
 
         ImGui::TableSetupColumn("##spaceL", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("##ok");
@@ -129,15 +146,12 @@ namespace ToolKit
       }
 
       ImGuiIO& io = ImGui::GetIO();
-      ImGui::SetNextWindowPos(
-          ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
-          ImGuiCond_Once,
-          ImVec2(0.5f, 0.5f));
+      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
+                              ImGuiCond_Once,
+                              ImVec2(0.5f, 0.5f));
 
       ImGui::OpenPopup(m_name.c_str());
-      if (ImGui::BeginPopupModal(m_name.c_str(),
-                                 NULL,
-                                 ImGuiWindowFlags_AlwaysAutoResize))
+      if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
       {
         if (!m_msg.empty())
         {
@@ -145,9 +159,7 @@ namespace ToolKit
         }
 
         // Center buttons.
-        ImGui::BeginTable("##FilterZoom",
-                          m_showCancel ? 5 : 4,
-                          ImGuiTableFlags_SizingFixedFit);
+        ImGui::BeginTable("##FilterZoom", m_showCancel ? 5 : 4, ImGuiTableFlags_SizingFixedFit);
 
         ImGui::TableSetupColumn("##spaceL", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("##yes");
@@ -162,8 +174,7 @@ namespace ToolKit
         ImGui::TableNextColumn();
         ImGui::TableNextColumn();
 
-        if (ImGui::Button(m_yesText.empty() ? "Yes" : m_yesText.c_str(),
-                          ImVec2(120, 0)))
+        if (ImGui::Button(m_yesText.empty() ? "Yes" : m_yesText.c_str(), ImVec2(120, 0)))
         {
           m_visible = false;
           m_yesCallback();
@@ -172,8 +183,7 @@ namespace ToolKit
         ImGui::SetItemDefaultFocus();
         ImGui::TableNextColumn();
 
-        if (ImGui::Button(m_noText.empty() ? "No" : m_noText.c_str(),
-                          ImVec2(120, 0)))
+        if (ImGui::Button(m_noText.empty() ? "No" : m_noText.c_str(), ImVec2(120, 0)))
         {
           m_visible = false;
           m_noCallback();
@@ -223,15 +233,12 @@ namespace ToolKit
       }
 
       ImGuiIO& io = ImGui::GetIO();
-      ImGui::SetNextWindowPos(
-          ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
-          ImGuiCond_Once,
-          ImVec2(0.5f, 0.5f));
+      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
+                              ImGuiCond_Once,
+                              ImVec2(0.5f, 0.5f));
 
       ImGui::OpenPopup(m_name.c_str());
-      if (ImGui::BeginPopupModal(m_name.c_str(),
-                                 NULL,
-                                 ImGuiWindowFlags_AlwaysAutoResize))
+      if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
       {
         if (!m_msg.empty())
         {
@@ -241,9 +248,7 @@ namespace ToolKit
         uint columnCount = (uint) m_buttons.size() + 2;
         columnCount      += m_showCancel ? 1 : 0;
         // Center buttons.
-        ImGui::BeginTable("##FilterZoom",
-                          columnCount,
-                          ImGuiTableFlags_SizingFixedFit);
+        ImGui::BeginTable("##FilterZoom", columnCount, ImGuiTableFlags_SizingFixedFit);
 
         ImGui::TableSetupColumn("##spaceL", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("##yes");

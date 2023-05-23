@@ -1,3 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "RenderSettingsView.h"
 
 #include "App.h"
@@ -6,25 +32,18 @@ namespace ToolKit
 {
   namespace Editor
   {
-    RenderSettingsView::RenderSettingsView() 
-    {
-      m_name = g_renderSettings;
-    }
+    RenderSettingsView::RenderSettingsView() { m_name = g_renderSettings; }
 
     RenderSettingsView::~RenderSettingsView() {}
-    
-    Window::Type RenderSettingsView::GetType() const
-    {
-      return Window::Type::RenderSettings;
-    }
+
+    Window::Type RenderSettingsView::GetType() const { return Window::Type::RenderSettings; }
 
     void RenderSettingsView::Show()
     {
       ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_Once);
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        EngineSettings::PostProcessingSettings& gfx =
-            Main::GetInstance()->m_engineSettings.PostProcessing;
+        EngineSettings::PostProcessingSettings& gfx = Main::GetInstance()->m_engineSettings.PostProcessing;
         if (gfx.TonemappingEnabled && ImGui::CollapsingHeader("Tonemapping"))
         {
           const char* items[] = {"Reinhard", "ACES"};
@@ -42,38 +61,27 @@ namespace ToolKit
                 gfx.TonemapperMode = (TonemapMethod) itemIndx;
               }
             }
-  
+
             ImGui::EndCombo();
           }
         }
-  
+
         if (gfx.BloomEnabled && ImGui::CollapsingHeader("Bloom"))
         {
-          ImGui::DragFloat("Bloom Intensity",
-                          &gfx.BloomIntensity,
-                          0.01f,
-                          0.0f,
-                          100.0f);
-  
-          ImGui::DragFloat("Bloom Threshold",
-                          &gfx.BloomThreshold,
-                          0.01f,
-                          0.0f,
-                          FLT_MAX);
-  
-          ImGui::InputInt("Bloom Iteration Count",
-                          &gfx.BloomIterationCount,
-                          1,
-                          2);
+          ImGui::DragFloat("Bloom Intensity", &gfx.BloomIntensity, 0.01f, 0.0f, 100.0f);
+
+          ImGui::DragFloat("Bloom Threshold", &gfx.BloomThreshold, 0.01f, 0.0f, FLT_MAX);
+
+          ImGui::InputInt("Bloom Iteration Count", &gfx.BloomIterationCount, 1, 2);
         }
-  
+
         if (ImGui::CollapsingHeader("Depth of Field"))
         {
           ImGui::Checkbox("Depth of Field##1", &gfx.DepthOfFieldEnabled);
           ImGui::BeginDisabled(!gfx.DepthOfFieldEnabled);
           ImGui::DragFloat("Focus Point", &gfx.FocusPoint, 0.1f, 0.0f, 100.0f);
           ImGui::DragFloat("Focus Scale", &gfx.FocusScale, 0.01f, 1.0f, 200.0f);
-  
+
           const char* items[] = {"Low", "Normal", "High"};
           uint itemCount      = sizeof(items) / sizeof(items[0]);
           uint blurQuality    = (uint) gfx.DofQuality;
@@ -89,24 +97,24 @@ namespace ToolKit
                 gfx.DofQuality = (DoFQuality) itemIndx;
               }
             }
-  
+
             ImGui::EndCombo();
           }
           ImGui::EndDisabled();
         }
-  
+
         if (ImGui::CollapsingHeader("Ambient Occlusion"))
         {
           ImGui::Checkbox("SSAO##1", &gfx.SSAOEnabled);
           ImGui::BeginDisabled(!gfx.SSAOEnabled);
-  
+
           ImGui::DragFloat("Radius", &gfx.SSAORadius, 0.001f, 0.0f, 1.0f);
           ImGui::DragFloat("Spread", &gfx.SSAOSpread, 0.001f, 0.0f, 1.0f);
           ImGui::DragFloat("Bias", &gfx.SSAOBias, 0.001f, 0.0f, 1.0f);
-  
+
           ImGui::EndDisabled();
         }
-  
+
         if (ImGui::CollapsingHeader("Anti Aliasing"))
         {
           ImGui::Checkbox("FXAA##1", &gfx.FXAAEnabled);
