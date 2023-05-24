@@ -178,6 +178,8 @@ namespace ToolKit
         if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_playIcon), btnSize) && !g_app->IsCompiling())
         {
           m_simulationModeDisabled = true;
+          GetAudioManager()->Init();
+          GetAudioManager()->Start();
           g_app->SetGameMod(GameMod::Playing);
         }
 
@@ -192,7 +194,9 @@ namespace ToolKit
         if (g_app->m_gameMod != GameMod::Stop)
         {
           m_simulationModeDisabled = false;
+          GetAudioManager()->Stop();
           g_app->SetGameMod(GameMod::Stop);
+          GetAudioManager()->Uninit();
         }
       }
 

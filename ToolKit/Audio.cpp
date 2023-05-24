@@ -51,7 +51,10 @@ namespace ToolKit
     m_sound           = (void*) sound;
     String path       = GetFile();
     assert(CheckFile(path) && "audio file is not exist!");
-    ma_result result = ma_sound_init_from_file(engine, path.c_str(), 0, nullptr, nullptr, sound);
+    // we don't use spatialization, this flag is for performance. you can see this in the documentations.
+    const ma_uint32 flag = MA_SOUND_FLAG_NO_SPATIALIZATION; 
+    ma_result result = ma_sound_init_from_file(engine, path.c_str(), flag, nullptr, nullptr, sound);
+    
     if (result != MA_SUCCESS)
     {
       GetLogger()->WritePlatformConsole(LogType::Memo, "cannot load sound file! %s", path.c_str());
@@ -75,6 +78,11 @@ namespace ToolKit
 
   void AudioManager::Init()
   {
+    if (m_initialized) 
+    {
+      return;
+    }
+    m_initialized = true;
     ResourceManager::Init();
     ma_engine* engine       = new ma_engine();
     ma_engine_config config = ma_engine_config_init();
@@ -86,9 +94,24 @@ namespace ToolKit
     assert(result == MA_SUCCESS);
   }
 
+  void AudioManager::Start()
+  {
+    ma_engine_start((ma_engine*) m_engine);
+  }
+
+  void AudioManager::Stop()
+  {
+    ma_engine_stop((ma_engine*) m_engine);
+  }
+
   void AudioManager::Uninit()
   {
-    ResourceManager::Uninit();
+    // ResourceManager::Uninit();
+    if (!m_initialized) 
+    {
+      return;
+    }
+    m_initialized     = false;
     ma_engine* engine = (ma_engine*) m_engine;
     ma_engine_uninit(engine);
     SafeDel(engine);
@@ -104,6 +127,20 @@ namespace ToolKit
   EntityType AudioSource::GetType() const { return EntityType::Entity_AudioSource; }
 
   void AudioSource::AttachAudio(std::shared_ptr<Audio> audio) { m_audio = audio; }
+  
+  AudioSource* AudioSource::Duplicate() const
+  {
+    ma_engine* engine   = (ma_engine*) GetAudioManager()->m_engine;
+    const ma_sound* thisSound = (const ma_sound*) m_audio->m_sound;
+    const ma_uint32 flag = MA_SOUND_FLAG_NO_SPATIALIZATION; 
+    ma_sound* copySound = new ma_sound();
+    ma_sound_init_copy(engine, thisSound, flag, nullptr, copySound);
+    AudioSource* source = new AudioSource();
+    std::shared_ptr<Audio> audio = std::make_shared<Audio>();
+    audio->m_sound = copySound;
+    source->AttachAudio(audio);
+    return source;
+  }
 
   // Setters
 
