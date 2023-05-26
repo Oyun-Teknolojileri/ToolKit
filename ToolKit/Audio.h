@@ -47,7 +47,7 @@ namespace ToolKit
     void UnInit() override;
 
    public:
-    void* m_sound;
+    void* m_sound = nullptr;
   };
 
   typedef std::shared_ptr<Audio> AudioPtr;
@@ -67,7 +67,6 @@ namespace ToolKit
 
    public:
     void* m_engine = nullptr;
-    bool m_initialized;
   };
 
   class TK_API AudioSource : public Entity
@@ -75,8 +74,8 @@ namespace ToolKit
    public:
 
     EntityType GetType() const override;
+    ~AudioSource();
     void AttachAudio(std::shared_ptr<Audio> audio);
-    AudioSource* Duplicate() const;
 
     // seeks the duration'th second of sound
     void Seek(float duration);
@@ -99,6 +98,6 @@ namespace ToolKit
     void Rewind();
 
    public:
-    std::shared_ptr<Audio> m_audio;
+    void* m_sound = nullptr;
   };
 } // namespace ToolKit
