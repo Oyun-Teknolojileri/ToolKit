@@ -302,18 +302,11 @@ namespace ToolKit
     return DefaultPath();
   }
 
-  /*
-   * When dynamically created resources refer to default assets,
-   * they got saved with an altered relative path which starts with ToolKit.
-   * Check Util.h GetRelativeResourcePath() for more.
-   * So here, we try to detect defaul assets.
-   */
-  bool CheckForRelative(const String& file) { return file.find("ToolKit") != String::npos; }
-
   String ProcessPath(const String& file, const String& prefix, bool def)
   {
-    if (CheckForRelative(file))
+    if (HasToolKitRoot(file))
     {
+      // Restore the ToolKit with a proper relative path.
       constexpr int length = sizeof("ToolKit");
       String modified      = file.substr(length);
       String path          = ConcatPaths({ResourcePath(true), prefix, modified});

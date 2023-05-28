@@ -369,7 +369,7 @@ namespace ToolKit
 
   bool IsDefaultResource(const String& path)
   {
-    if (StartsWith(path, "ToolKit"))
+    if (HasToolKitRoot(path))
     {
       return true;
     }
@@ -382,6 +382,8 @@ namespace ToolKit
 
     return false;
   }
+
+  bool HasToolKitRoot(const String& path) { return StartsWith(path, "ToolKit\\") || StartsWith(path, "ToolKit/"); }
 
   String GetFileName(const String& path)
   {
