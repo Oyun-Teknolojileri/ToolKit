@@ -124,7 +124,15 @@ namespace ToolKit
       }
       else if (SupportedImageFormat(dirEnt.m_ext))
       {
-        TexturePtr texture = GetTextureManager()->Create<Texture>(fullpath);
+        TexturePtr texture = nullptr;
+        if (dirEnt.m_ext == HDR)
+        {
+          texture = GetTextureManager()->Create<Hdri>(fullpath);
+        }
+        else
+        {
+          texture = GetTextureManager()->Create<Texture>(fullpath);
+        }
         texture->Init(true);
 
         float maxDim = float(glm::max(texture->m_width, texture->m_height));
