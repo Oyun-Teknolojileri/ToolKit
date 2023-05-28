@@ -52,8 +52,8 @@ namespace ToolKit
     String path       = GetFile();
     assert(CheckFile(path) && "audio file is not exist!");
     // we don't use spatialization, this flag is for performance. you can see this in the documentations.
-    const ma_uint32 flag = MA_SOUND_FLAG_NO_SPATIALIZATION; 
-    ma_result result = ma_sound_init_from_file(engine, path.c_str(), flag, nullptr, nullptr, sound);
+    const ma_uint32 flag = MA_SOUND_FLAG_NO_SPATIALIZATION;
+    ma_result result     = ma_sound_init_from_file(engine, path.c_str(), flag, nullptr, nullptr, sound);
 
     if (result != MA_SUCCESS)
     {
@@ -89,15 +89,9 @@ namespace ToolKit
     assert(result == MA_SUCCESS);
   }
 
-  void AudioManager::Start()
-  {
-    ma_engine_start((ma_engine*) m_engine);
-  }
+  void AudioManager::Start() { ma_engine_start((ma_engine*) m_engine); }
 
-  void AudioManager::Stop()
-  {
-    ma_engine_stop((ma_engine*) m_engine);
-  }
+  void AudioManager::Stop() { ma_engine_stop((ma_engine*) m_engine); }
 
   void AudioManager::Uninit()
   {
@@ -126,23 +120,22 @@ namespace ToolKit
     }
   }
 
-  void AudioSource::AttachAudio(std::shared_ptr<Audio> audio) 
+  void AudioSource::AttachAudio(const AudioPtr& audio)
   {
-    ma_engine* engine   = (ma_engine*) GetAudioManager()->m_engine;
+    m_audio                   = audio;
+
+    ma_engine* engine         = (ma_engine*) GetAudioManager()->m_engine;
     const ma_sound* thisSound = (const ma_sound*) audio->m_sound;
-    const ma_uint32 flag = MA_SOUND_FLAG_NO_SPATIALIZATION; 
-    ma_sound* copySound = new ma_sound();
+    const ma_uint32 flag      = MA_SOUND_FLAG_NO_SPATIALIZATION;
+    ma_sound* copySound       = new ma_sound();
     memset(copySound, 0, sizeof(ma_sound));
     ma_sound_init_copy(engine, thisSound, flag, nullptr, copySound);
     m_sound = (void*) copySound;
   }
-  
+
   // Setters
 
-  void AudioSource::SetLoop(bool looping)
-  {
-    ma_sound_set_looping((ma_sound*) m_sound, looping ? MA_TRUE : MA_FALSE);
-  }
+  void AudioSource::SetLoop(bool looping) { ma_sound_set_looping((ma_sound*) m_sound, looping ? MA_TRUE : MA_FALSE); }
 
   void AudioSource::SetVolume(float volume) { ma_sound_set_volume((ma_sound*) m_sound, volume); }
 

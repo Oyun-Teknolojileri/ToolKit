@@ -72,10 +72,9 @@ namespace ToolKit
   class TK_API AudioSource : public Entity
   {
    public:
-
     EntityType GetType() const override;
     ~AudioSource();
-    void AttachAudio(std::shared_ptr<Audio> audio);
+    void AttachAudio(const AudioPtr& audio);
 
     // seeks the duration'th second of sound
     void Seek(float duration);
@@ -98,6 +97,11 @@ namespace ToolKit
     void Rewind();
 
    public:
+    // Audio engine reference.
     void* m_sound = nullptr;
+
+   private:
+    // Actual resource reference.
+    AudioPtr m_audio = nullptr;
   };
 } // namespace ToolKit
