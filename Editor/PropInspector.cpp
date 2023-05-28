@@ -257,7 +257,11 @@ namespace ToolKit
         mc->SetCastShadowVal(ntt->GetVisibleVal());
       }
 
-      GetRenderSystem()->AddRenderTask(m_previewRenderer);
+      GetRenderSystem()->AddRenderTask({[this](Renderer* r) -> void {
+                                          GetLogger()->WritePlatformConsole(LogType::Memo, "Preview Render");
+          m_previewRenderer->Render(r); 
+        }
+      });
 
       // Render color attachment as rounded image
       FramebufferSettings fbSettings = m_framebuffer->GetSettings();

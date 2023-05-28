@@ -110,6 +110,8 @@ namespace ToolKit
     m_renderState.IBLInUse = false;
     if (EnvironmentComponentPtr envCom = job.EnvironmentVolume)
     {
+      GetLogger()->WritePlatformConsole(LogType::Memo, "Volume ID: %ull", envCom->m_id);
+
       m_renderState.iblIntensity           = envCom->GetIntensityVal();
 
       HdriPtr hdriPtr                      = envCom->GetHdriVal();
@@ -746,6 +748,7 @@ namespace ToolKit
           GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::VIEW));
           glUniformMatrix4fv(loc, 1, false, &m_view[0][0]);
         }
+        break;
         case Uniform::MODEL:
         {
           GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::MODEL));
@@ -842,6 +845,7 @@ namespace ToolKit
         break;
         case Uniform::IBL_IRRADIANCE:
         {
+          GetLogger()->WritePlatformConsole(LogType::Memo, "Ibl Map %d", m_renderState.irradianceMap);
           SetTexture(7, m_renderState.irradianceMap);
           SetTexture(15, m_renderState.preFilteredSpecularMap);
           SetTexture(16, m_renderState.brdfLut);
