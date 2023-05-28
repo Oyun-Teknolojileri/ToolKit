@@ -31,6 +31,7 @@
 #include "CustomDataView.h"
 #include "DirectionComponent.h"
 #include "EntityView.h"
+#include "GradientSky.h"
 #include "MaterialView.h"
 #include "MeshView.h"
 #include "PrefabView.h"
@@ -223,7 +224,7 @@ namespace ToolKit
       m_previewRenderer->m_params.MainFramebuffer  = m_framebuffer;
       m_previewRenderer->m_params.Scene            = std::make_shared<Scene>();
 
-      // GetScene()->AddEntity(light);
+      GetScene()->AddEntity(new GradientSky());
     }
 
     PreviewViewport::~PreviewViewport()
