@@ -320,6 +320,7 @@ namespace ToolKit
     {
       const float lineHeight = GetLineHeight();
       const float mouseY     = ImGui::GetMousePos().y;
+      const float mouseX     = ImGui::GetMousePos().x;
 
       // is dropped to top of the first entity?
       if (fabsf(mouseY - treeStartY) < lineHeight * 0.5)
@@ -328,8 +329,11 @@ namespace ToolKit
       }
 
       float windowPosY = ImGui::GetWindowSize().y + ImGui::GetWindowPos().y;
+      float windowPosX = ImGui::GetWindowPos().x;
+
       // is dropped below all entities?
-      if (fabsf(mouseY - windowPosY) < lineHeight * 0.5)
+      if (fabsf(mouseY - windowPosY) < lineHeight * 0.5 && 
+          mouseX >= windowPosX &&  mouseX <= (windowPosX + ImGui::GetWindowSize().x))
       {
         return DroppedBelowAllEntities;
       }
