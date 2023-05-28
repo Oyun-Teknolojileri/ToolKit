@@ -122,23 +122,10 @@ namespace ToolKit
         m_cam->m_node->SetOrientation(Quaternion());
         m_cam->m_node->SetTranslation(Vec3(0.0f, 0.0f, 1.5f));
       }
-      else if (SupportedImageFormat(dirEnt.m_ext) || dirEnt.m_ext == HDR)
+      else if (SupportedImageFormat(dirEnt.m_ext))
       {
-        TexturePtr texture = nullptr;
-        if (dirEnt.m_ext == HDR)
-        {
-          TextureSettings ts;
-          ts.InternalFormat = GraphicTypes::FormatRGB16F;
-          ts.GenerateMipMap = false;
-          texture           = std::make_shared<Texture>(fullpath, ts);
-          texture->Load();
-          texture->Init(true);
-        }
-        else
-        {
-          texture = GetTextureManager()->Create<Texture>(fullpath);
-          texture->Init(true);
-        }
+        TexturePtr texture = GetTextureManager()->Create<Texture>(fullpath);
+        texture->Init(true);
 
         float maxDim = float(glm::max(texture->m_width, texture->m_height));
         float w      = (texture->m_width / maxDim) * m_maxThumbSize;
@@ -157,10 +144,11 @@ namespace ToolKit
         m_cam->m_node->SetOrientation(Quaternion());
         m_cam->m_node->SetTranslation(Vec3(0.0f, 0.0f, 10.0f), TransformationSpace::TS_LOCAL);
       }
-      else // extension is not recognised, this is probably shader file.
+      else // extension is not recognized, this is probably shader file.
       {
         return g_app->m_thumbnailManager.GetDefaultThumbnail();
       }
+
       m_thumbnailRT = std::make_shared<RenderTarget>(m_maxThumbSize, m_maxThumbSize);
       m_thumbnailRT->Init();
 

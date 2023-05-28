@@ -1301,7 +1301,6 @@ namespace ToolKit
                                      GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
     RenderTargetPtr cubemapRt     = std::make_shared<RenderTarget>(width, height, set);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
     cubemapRt->Init();
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);

@@ -68,11 +68,6 @@ namespace ToolKit
       ScenePtr shaderBallScene = GetSceneManager()->Create<Scene>(ScenePath("ShaderBall.scene", true));
       scene->Merge(shaderBallScene);
 
-      GradientSky* sky = new GradientSky();
-      sky->SetIlluminateVal(true);
-      sky->ReInit();
-      scene->AddEntity(sky);
-
       ResetCamera();
     }
 
