@@ -329,9 +329,9 @@ namespace ToolKit
         return DroppedOnTopOfEntities;
       }
 
-      float halfLineHeight = lineHeight * 0.5f;
+      const float halfLineHeight = lineHeight * 0.5f;
       Vec2 bottomRectMin = windowPos + Vec2(0.0f, windowSize.y - halfLineHeight);
-      Vec2 bottomRectMax = bottomRectMin + Vec2(windowSize.x, lineHeight);
+      Vec2 bottomRectMax = windowPos + Vec2(windowSize.x, windowSize.y + halfLineHeight);
 
       // is dropped below all entities?
       // a one line height rect that is bottom of the outliner window to check if we drop below all entities
@@ -347,7 +347,7 @@ namespace ToolKit
         return DropIsNotPossible;
       }
 
-      int selectedIndex = (int) floorf((mousePos.y - treeStartY) / lineHeight);
+      int selectedIndex = (int) glm::floor((mousePos.y - treeStartY) / lineHeight);
       int maxIdx        = glm::max(0, int(m_indexToEntity.size()) - 1);
       return glm::clamp(selectedIndex, 0, maxIdx);
     }
