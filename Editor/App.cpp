@@ -209,8 +209,6 @@ namespace ToolKit
 
           GetRenderSystem()->AddRenderTask({[this, viewport, deltaTime](Renderer* renderer) -> void
                                             {
-                                              GetLogger()->WritePlatformConsole(LogType::Memo, "Viewport Render");
-
                                               // 2d Viewport should not be updated as it may break the
                                               // designers work.
                                               if (viewport->m_name != g_2dViewport)
