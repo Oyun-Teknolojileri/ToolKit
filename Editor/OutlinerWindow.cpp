@@ -319,21 +319,23 @@ namespace ToolKit
     int OutlinerWindow::GetMouseHoveredNodeIndex(float treeStartY) const
     {
       const float lineHeight = GetLineHeight();
-      const float mouseY     = ImGui::GetMousePos().y;
-      const float mouseX     = ImGui::GetMousePos().x;
+      const Vec2 mousePos    = ImGui::GetMousePos();
+      const Vec2 windowPos   = ImGui::GetWindowPos();
+      const Vec2 windowSize  = ImGui::GetWindowSize();
 
       // is dropped to top of the first entity?
-      if (fabsf(mouseY - treeStartY) < lineHeight * 0.5)
+      if (glm::abs(mousePos.y - treeStartY) < lineHeight * 0.5f)
       {
         return DroppedOnTopOfEntities;
       }
 
-      float windowPosY = ImGui::GetWindowSize().y + ImGui::GetWindowPos().y;
-      float windowPosX = ImGui::GetWindowPos().x;
+      float halfLineHeight = lineHeight * 0.5f;
+      Vec2 bottomRectMin = windowPos + Vec2(0.0f, windowSize.y - halfLineHeight);
+      Vec2 bottomRectMax = bottomRectMin + Vec2(windowSize.x, lineHeight);
 
       // is dropped below all entities?
-      if (fabsf(mouseY - windowPosY) < lineHeight * 0.5 && 
-          mouseX >= windowPosX &&  mouseX <= (windowPosX + ImGui::GetWindowSize().x))
+      // a one line height rect that is bottom of the outliner window to check if we drop below all entities
+      if (RectPointIntersection(bottomRectMin, bottomRectMax, mousePos))
       {
         return DroppedBelowAllEntities;
       }
@@ -345,7 +347,7 @@ namespace ToolKit
         return DropIsNotPossible;
       }
 
-      int selectedIndex = (int) floorf((mouseY - treeStartY) / lineHeight);
+      int selectedIndex = (int) floorf((mousePos.y - treeStartY) / lineHeight);
       int maxIdx        = glm::max(0, int(m_indexToEntity.size()) - 1);
       return glm::clamp(selectedIndex, 0, maxIdx);
     }
