@@ -252,7 +252,7 @@ namespace ToolKit
     void PreviewViewport::ResetCamera()
     {
       Camera* cam = GetCamera();
-      cam->m_node->SetTranslation(Vec3(3.0f, 5.0f, 4.0f));
+      cam->m_node->SetTranslation(Vec3(3.0f, 6.55f, 4.0f) * 0.6f);
       cam->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f));
     }
 
