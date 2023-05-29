@@ -112,19 +112,19 @@ namespace ToolKit
       m_mesh = mesh;
       m_previewEntity->GetMeshComponent()->SetMeshVal(m_mesh);
 
-      BoundingBox aabb;
-      for (Entity* ntt : m_viewport->GetScene()->GetEntities())
-      {
-        aabb.UpdateBoundary(ntt->GetAABB(true).min);
-        aabb.UpdateBoundary(ntt->GetAABB(true).max);
-      }
-
       if (m_mesh->IsSkinned())
       {
         SkinMeshPtr skinMesh          = std::static_pointer_cast<SkinMesh>(m_mesh);
         SkeletonComponentPtr skelComp = m_previewEntity->GetComponent<SkeletonComponent>();
         skelComp->SetSkeletonResourceVal(skinMesh->m_skeleton);
         skelComp->Init();
+      }
+
+      BoundingBox aabb;
+      for (Entity* ntt : m_viewport->GetScene()->GetEntities())
+      {
+        aabb.UpdateBoundary(ntt->GetAABB(true).min);
+        aabb.UpdateBoundary(ntt->GetAABB(true).max);
       }
 
       m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.0f);

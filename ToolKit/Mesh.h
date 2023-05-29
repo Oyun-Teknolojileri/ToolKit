@@ -142,7 +142,7 @@ namespace ToolKit
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     // Because AABB is all dependent on active animation, just return AABB
     // (doesn't change m_aabb)
-    BoundingBox CalculateAABB(const Skeleton* skel, const DynamicBoneMap* boneMap);
+    BoundingBox CalculateAABB(const Skeleton* skel, DynamicBoneMapPtr boneMap);
 
    protected:
     void InitVertices(bool flush) override;

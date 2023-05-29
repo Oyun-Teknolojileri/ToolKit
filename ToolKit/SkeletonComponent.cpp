@@ -36,7 +36,7 @@ namespace ToolKit
     SkeletonResource_Define(nullptr, SkeletonComponentCategory.Name, SkeletonComponentCategory.Priority, true, true);
   }
 
-  SkeletonComponent::~SkeletonComponent() { SafeDel(m_map); }
+  SkeletonComponent::~SkeletonComponent() { m_map = nullptr; }
 
   void SkeletonComponent::Init()
   {
@@ -46,9 +46,7 @@ namespace ToolKit
       return;
     }
 
-    assert(m_map == nullptr && "Memory leak !");
-    m_map = new DynamicBoneMap;
-
+    m_map = std::make_shared<DynamicBoneMap>();
     m_map->Init(resource.get());
   }
 
@@ -66,14 +64,7 @@ namespace ToolKit
   void SkeletonComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     Component::DeSerialize(doc, parent);
-
-    assert(m_map == nullptr && "Memory leak !");
-    m_map = new DynamicBoneMap;
-
-    if (SkeletonPtr skel = GetSkeletonResourceVal())
-    {
-      m_map->Init(skel.get());
-    }
+    Init();
   }
 
 } // namespace ToolKit

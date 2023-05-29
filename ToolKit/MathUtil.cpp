@@ -369,7 +369,7 @@ namespace ToolKit
       return false;
   }
 
-  Vec3 CPUSkinning(const SkinVertex* vertex, const Skeleton* skel, const DynamicBoneMap* dynamicBoneMap)
+  Vec3 CPUSkinning(const SkinVertex* vertex, const Skeleton* skel, DynamicBoneMapPtr dynamicBoneMap)
   {
     Vec3 transformedPos = {};
     for (uint boneIndx = 0; boneIndx < 4; boneIndx++)

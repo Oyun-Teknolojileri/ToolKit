@@ -56,8 +56,8 @@ namespace ToolKit
 
    public:
     TKDeclareParam(SkeletonPtr, SkeletonResource);
-    DynamicBoneMap* m_map = nullptr;
-    bool isDirty          = true;
+    DynamicBoneMapPtr m_map = nullptr;
+    bool isDirty            = true;
   };
 
 } // namespace ToolKit
