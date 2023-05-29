@@ -41,7 +41,9 @@ namespace ToolKit
 
       Entity* previewEntity = new Entity;
       previewEntity->AddComponent(std::make_shared<MeshComponent>());
-      m_viewport->GetScene()->AddEntity(previewEntity);
+      
+      // TODO: Add a mesh view scene.
+      // m_viewport->GetScene()->AddEntity(previewEntity);
     }
 
     MeshView::~MeshView() { SafeDel(m_viewport); }

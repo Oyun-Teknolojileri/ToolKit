@@ -205,18 +205,11 @@ namespace ToolKit
       m_scenes[1] = GetSceneManager()->Create<Scene>(ScenePath("ms-box.scene", true));
       m_scenes[2] = GetSceneManager()->Create<Scene>(ScenePath("ms-ball.scene", true));
 
-      for (int i = 0; i < 3; i++)
-      {
-        m_scenes[i]->Load();
-      }
-
       m_previewRenderer                            = std::make_shared<SceneRenderer>();
       m_previewRenderer->m_params.Cam              = GetCamera();
       m_previewRenderer->m_params.ClearFramebuffer = true;
       m_previewRenderer->m_params.MainFramebuffer  = m_framebuffer;
       m_previewRenderer->m_params.Scene            = m_scenes[0];
-
-      GetScene()->AddEntity(new GradientSky());
     }
 
     PreviewViewport::~PreviewViewport() { m_previewRenderer = nullptr; }
