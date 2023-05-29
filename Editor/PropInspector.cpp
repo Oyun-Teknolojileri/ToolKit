@@ -253,7 +253,7 @@ namespace ToolKit
     {
       Camera* cam = GetCamera();
       cam->m_node->SetTranslation(Vec3(3.0f, 6.55f, 4.0f) * 0.6f);
-      cam->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f));
+      cam->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f, 1.1f, 0.0f));
     }
 
     void PreviewViewport::ResizeWindow(uint width, uint height)
