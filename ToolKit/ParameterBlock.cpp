@@ -420,7 +420,10 @@ namespace ToolKit
       break;
       case VariantType::SkeletonPtr:
       {
-        var->GetCVar<SkeletonPtr>()->SerializeRef(doc, node);
+        if (SkeletonPtr sklt = var->GetCVar<SkeletonPtr>())
+        {
+          sklt->SerializeRef(doc, node);
+        }
       }
       break;
       case VariantType::VariantCallback:

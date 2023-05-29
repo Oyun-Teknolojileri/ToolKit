@@ -39,8 +39,6 @@ namespace ToolKit
    * The component that stores skeleton resource reference and dynamic bone
       transformation info
    */
-  class DynamicBoneMap;
-
   class TK_API SkeletonComponent : public Component
   {
    public:
@@ -58,8 +56,8 @@ namespace ToolKit
 
    public:
     TKDeclareParam(SkeletonPtr, SkeletonResource);
-    DynamicBoneMap* m_map;
-    bool isDirty = true;
+    DynamicBoneMap* m_map = nullptr;
+    bool isDirty          = true;
   };
 
 } // namespace ToolKit

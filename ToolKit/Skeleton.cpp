@@ -88,7 +88,10 @@ namespace ToolKit
 
   void DynamicBoneMap::Init(const Skeleton* skeleton)
   {
-    assert(skeleton->m_bones.size() != 0);
+    if (skeleton->m_bones.empty()) 
+    {
+      return;
+    }
 
     // Create a copy of each bone (but create new pointers for Nodes)
     for (const auto& tPoseBone : skeleton->m_Tpose.boneList)
@@ -99,6 +102,7 @@ namespace ToolKit
       *newBone.node    = *tPoseBone.second.node;
       boneList.insert(std::make_pair(tPoseBone.first, newBone));
     }
+
     // Fix parent/child relations
     //  ChildBone's node points to Skeleton's list rather than newly created one
     for (const auto& tPoseBone : skeleton->m_Tpose.boneList)
