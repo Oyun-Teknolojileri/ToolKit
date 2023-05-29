@@ -201,37 +201,25 @@ namespace ToolKit
 
     PreviewViewport::PreviewViewport(uint width, uint height) : EditorViewport((float) width, (float) height)
     {
-      m_previewRenderer       = std::make_shared<SceneRenderer>();
+      m_scenes[0]                     = GetSceneManager()->Create<Scene>(ScenePath("ms-sphere.scene", true));
+      m_scenes[1]                     = GetSceneManager()->Create<Scene>(ScenePath("ms-ball.scene", true));
+      m_scenes[2]                     = GetSceneManager()->Create<Scene>(ScenePath("ms-box.scene", true));
 
-      DirectionalLight* light = new DirectionalLight();
-      light->SetPCFRadiusVal(0.001f);
-      light->SetShadowResVal(1024.0f);
-      light->SetPCFSamplesVal(32);
-      light->SetLightBleedingReductionVal(0.1f);
+      for (int i = 0; i < 3; i++) 
+      {
+        m_scenes[i]->Load();
+      }
 
-      light->SetColorVal(Vec3(1.0f));
-      light->SetIntensityVal(1.0f);
-      light->SetCastShadowVal(true);
-
-      DirectionComponentPtr directionComp = light->GetComponent<DirectionComponent>();
-      directionComp->Yaw(glm::radians(-20.0f));
-      directionComp->Pitch(glm::radians(-20.0f));
-
-      m_light                                      = light;
-      m_previewRenderer->m_params.Cam              = GetCamera();
+      m_previewRenderer               = std::make_shared<SceneRenderer>();
+      m_previewRenderer->m_params.Cam = GetCamera();
       m_previewRenderer->m_params.ClearFramebuffer = true;
-      m_previewRenderer->m_params.Lights           = {m_light};
       m_previewRenderer->m_params.MainFramebuffer  = m_framebuffer;
-      m_previewRenderer->m_params.Scene            = std::make_shared<Scene>();
+      m_previewRenderer->m_params.Scene            = m_scenes[0];
 
       GetScene()->AddEntity(new GradientSky());
     }
 
-    PreviewViewport::~PreviewViewport()
-    {
-      SafeDel(m_light);
-      m_previewRenderer = nullptr;
-    }
+    PreviewViewport::~PreviewViewport() { m_previewRenderer = nullptr; }
 
     void PreviewViewport::Show()
     {
@@ -244,30 +232,14 @@ namespace ToolKit
       DrawCommands();
 
       m_previewRenderer->m_params.MainFramebuffer = m_framebuffer;
-
-      const EntityRawPtrArray& entities           = GetScene()->GetEntities();
-      for (const Entity* ntt : entities)
-      {
-        MeshComponentPtr mc = ntt->GetMeshComponent();
-        if (!mc)
-        {
-          continue;
-        }
-
-        mc->SetCastShadowVal(ntt->GetVisibleVal());
-      }
-
-      GetRenderSystem()->AddRenderTask({[this](Renderer* r) -> void {
-                                          GetLogger()->WritePlatformConsole(LogType::Memo, "Preview Render");
-          m_previewRenderer->Render(r); 
-        }
-      });
+      GetRenderSystem()->AddRenderTask(m_previewRenderer);
 
       // Render color attachment as rounded image
       FramebufferSettings fbSettings = m_framebuffer->GetSettings();
       Vec2 imageSize                 = Vec2(fbSettings.width, fbSettings.height);
       Vec2 currentCursorPos =
           Vec2(ImGui::GetWindowContentRegionMin()) + Vec2(ImGui::GetCursorPos()) + Vec2(ImGui::GetWindowPos());
+
       if (m_isTempView)
       {
         currentCursorPos.y -= 24.0f;
@@ -286,6 +258,8 @@ namespace ToolKit
     }
 
     ScenePtr PreviewViewport::GetScene() { return m_previewRenderer->m_params.Scene; }
+
+    void PreviewViewport::SetScene(int i) { m_previewRenderer->m_params.Scene = m_scenes[glm::clamp(0, 2, i)]; }
 
     void PreviewViewport::ResetCamera()
     {
