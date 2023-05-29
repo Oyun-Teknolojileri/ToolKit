@@ -201,17 +201,17 @@ namespace ToolKit
 
     PreviewViewport::PreviewViewport(uint width, uint height) : EditorViewport((float) width, (float) height)
     {
-      m_scenes[0]                     = GetSceneManager()->Create<Scene>(ScenePath("ms-sphere.scene", true));
-      m_scenes[1]                     = GetSceneManager()->Create<Scene>(ScenePath("ms-ball.scene", true));
-      m_scenes[2]                     = GetSceneManager()->Create<Scene>(ScenePath("ms-box.scene", true));
+      m_scenes[0] = GetSceneManager()->Create<Scene>(ScenePath("ms-sphere.scene", true));
+      m_scenes[1] = GetSceneManager()->Create<Scene>(ScenePath("ms-box.scene", true));
+      m_scenes[2] = GetSceneManager()->Create<Scene>(ScenePath("ms-ball.scene", true));
 
-      for (int i = 0; i < 3; i++) 
+      for (int i = 0; i < 3; i++)
       {
         m_scenes[i]->Load();
       }
 
-      m_previewRenderer               = std::make_shared<SceneRenderer>();
-      m_previewRenderer->m_params.Cam = GetCamera();
+      m_previewRenderer                            = std::make_shared<SceneRenderer>();
+      m_previewRenderer->m_params.Cam              = GetCamera();
       m_previewRenderer->m_params.ClearFramebuffer = true;
       m_previewRenderer->m_params.MainFramebuffer  = m_framebuffer;
       m_previewRenderer->m_params.Scene            = m_scenes[0];
@@ -232,7 +232,7 @@ namespace ToolKit
       DrawCommands();
 
       m_previewRenderer->m_params.MainFramebuffer = m_framebuffer;
-      GetRenderSystem()->AddRenderTask(m_previewRenderer);
+      GetRenderSystem()->AddRenderTask({[this](Renderer* r) -> void { m_previewRenderer->Render(r); }});
 
       // Render color attachment as rounded image
       FramebufferSettings fbSettings = m_framebuffer->GetSettings();
