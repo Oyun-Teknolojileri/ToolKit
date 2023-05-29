@@ -201,15 +201,10 @@ namespace ToolKit
 
     PreviewViewport::PreviewViewport(uint width, uint height) : EditorViewport((float) width, (float) height)
     {
-      m_scenes[0] = GetSceneManager()->Create<Scene>(ScenePath("ms-sphere.scene", true));
-      m_scenes[1] = GetSceneManager()->Create<Scene>(ScenePath("ms-box.scene", true));
-      m_scenes[2] = GetSceneManager()->Create<Scene>(ScenePath("ms-ball.scene", true));
-
       m_previewRenderer                            = std::make_shared<SceneRenderer>();
       m_previewRenderer->m_params.Cam              = GetCamera();
       m_previewRenderer->m_params.ClearFramebuffer = true;
       m_previewRenderer->m_params.MainFramebuffer  = m_framebuffer;
-      m_previewRenderer->m_params.Scene            = m_scenes[0];
     }
 
     PreviewViewport::~PreviewViewport() { m_previewRenderer = nullptr; }
@@ -252,7 +247,7 @@ namespace ToolKit
 
     ScenePtr PreviewViewport::GetScene() { return m_previewRenderer->m_params.Scene; }
 
-    void PreviewViewport::SetScene(int i) { m_previewRenderer->m_params.Scene = m_scenes[glm::clamp(0, 2, i)]; }
+    void PreviewViewport::SetScene(ScenePtr scene) { m_previewRenderer->m_params.Scene = scene; }
 
     void PreviewViewport::ResetCamera()
     {

@@ -51,6 +51,7 @@ namespace ToolKit
       MaterialPtrArray m_materials;
       uint m_activeObjectIndx    = 0;
       int m_currentMaterialIndex = 0;
+      ScenePtr m_scenes[3];
 
      public:
       bool m_isTempView = false;

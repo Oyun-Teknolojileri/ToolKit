@@ -41,9 +41,16 @@ namespace ToolKit
 
     MaterialView::MaterialView() : View("Material View")
     {
-      m_viewID   = 3;
-      m_viewIcn  = UI::m_materialIcon;
-      m_viewport = new PreviewViewport(300u, 150u);
+      m_viewID    = 3;
+      m_viewIcn   = UI::m_materialIcon;
+
+      m_viewport  = new PreviewViewport(300u, 150u);
+
+      m_scenes[0] = GetSceneManager()->Create<Scene>(ScenePath("ms-sphere.scene", true));
+      m_scenes[1] = GetSceneManager()->Create<Scene>(ScenePath("ms-box.scene", true));
+      m_scenes[2] = GetSceneManager()->Create<Scene>(ScenePath("ms-ball.scene", true));
+
+      m_viewport->SetScene(m_scenes[0]);
 
       ResetCamera();
     }
@@ -65,10 +72,10 @@ namespace ToolKit
 
     void MaterialView::UpdatePreviewScene()
     {
-      m_viewport->SetScene(m_activeObjectIndx);
+      m_viewport->SetScene(m_scenes[m_activeObjectIndx]);
 
       EntityRawPtrArray materialNtties = m_viewport->GetScene()->GetByTag("target");
-      for (Entity* ntt : materialNtties) 
+      for (Entity* ntt : materialNtties)
       {
         ntt->GetMaterialComponent()->SetFirstMaterial(m_materials[m_currentMaterialIndex]);
       }
