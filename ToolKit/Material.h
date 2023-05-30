@@ -47,7 +47,7 @@ namespace ToolKit
     TKResourceType(Material)
 
     Material();
-    explicit Material(String file);
+    explicit Material(const String& file);
     ~Material();
 
     void Load() override;

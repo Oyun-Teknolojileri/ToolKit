@@ -36,7 +36,7 @@ namespace ToolKit
   class TK_API StaticBone
   {
    public:
-    explicit StaticBone(String name);
+    explicit StaticBone(const String& name);
     ~StaticBone();
 
    public:
@@ -76,7 +76,7 @@ namespace ToolKit
     TKResourceType(Skeleton)
 
     Skeleton();
-    explicit Skeleton(String file);
+    explicit Skeleton(const String& file);
     ~Skeleton();
 
     void Init(bool flushClientSideArray = false) override;
@@ -85,8 +85,8 @@ namespace ToolKit
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-    int GetBoneIndex(String bone);
-    StaticBone* GetBone(String bone);
+    int GetBoneIndex(const String& bone);
+    StaticBone* GetBone(const String& bone);
 
    protected:
     void CopyTo(Resource* other) override;

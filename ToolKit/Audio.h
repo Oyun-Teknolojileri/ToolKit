@@ -47,8 +47,7 @@ namespace ToolKit
     void UnInit() override;
 
    public:
-    void* m_sound;
-    uint m_buffer;
+    void* m_sound = nullptr;
   };
 
   typedef std::shared_ptr<Audio> AudioPtr;
@@ -60,6 +59,9 @@ namespace ToolKit
     virtual ~AudioManager();
     void Init() override;
     void Uninit() override;
+    void Stop();
+    void Start();
+
     bool CanStore(ResourceType t) override;
     ResourcePtr CreateLocal(ResourceType type) override;
 
@@ -71,7 +73,11 @@ namespace ToolKit
   {
    public:
     EntityType GetType() const override;
-    void AttachAudio(std::shared_ptr<Audio> audio);
+    ~AudioSource();
+    void AttachAudio(const AudioPtr& audio);
+
+    // seeks the duration'th second of sound
+    void Seek(float duration);
     void SetLoop(bool enable);
     void SetVolume(float val);
     void SetPitch(float val);
@@ -82,12 +88,20 @@ namespace ToolKit
     float GetPitch() const;
     Vec3 GetPosition() const;
 
+    bool IsEnd() const;
+    bool IsPlaying() const;
+    float GetDuration() const;
+
     void Play();
     void Stop();
     void Rewind();
 
    public:
-    std::shared_ptr<Audio> m_audio;
-    uint m_source = 0;
+    // Audio engine reference.
+    void* m_sound = nullptr;
+
+   private:
+    // Actual resource reference.
+    AudioPtr m_audio = nullptr;
   };
 } // namespace ToolKit

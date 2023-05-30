@@ -93,6 +93,13 @@ namespace ToolKit
   TK_API bool IsDefaultResource(const String& path);
 
   /**
+   * Checks if the path points to ToolKit folder.
+   * @param path is the file path to check.
+   * @returns true if file path root is ToolKit.
+   */
+  TK_API bool HasToolKitRoot(const String& path);
+
+  /**
    * Extracts the file name with the extension from a path.
    */
   TK_API String GetFileName(const String& path);

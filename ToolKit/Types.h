@@ -136,6 +136,7 @@ namespace ToolKit
   typedef std::shared_ptr<class SpriteSheet> SpriteSheetPtr;
   typedef std::shared_ptr<class Mesh> MeshPtr;
   typedef std::shared_ptr<class Skeleton> SkeletonPtr;
+  typedef std::shared_ptr<class DynamicBoneMap> DynamicBoneMapPtr;
   typedef std::shared_ptr<class Shader> ShaderPtr;
   typedef std::vector<ShaderPtr> ShaderPtrArray;
   typedef std::shared_ptr<class Program> ProgramPtr;
@@ -333,6 +334,6 @@ namespace ToolKit
     Target2DArray              = 0x8C1A
   };
 
-  static const char* TKVersionStr = "v0.4.2";
+  static const char* TKVersionStr = "v0.4.3";
 
 } // namespace ToolKit

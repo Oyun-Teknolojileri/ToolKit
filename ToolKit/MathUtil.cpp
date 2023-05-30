@@ -333,6 +333,12 @@ namespace ToolKit
     return true;
   }
 
+  bool RectPointIntersection(Vec2 rectMin, Vec2 rectMax, Vec2 point)
+  {
+    return point.x >= rectMin.x && point.y >= rectMin.y &&
+           point.x <= rectMax.x && point.y <= rectMax.y;
+  }
+
   // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
   bool RayTriangleIntersection(const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t)
   {
@@ -369,7 +375,7 @@ namespace ToolKit
       return false;
   }
 
-  Vec3 CPUSkinning(const SkinVertex* vertex, const Skeleton* skel, const DynamicBoneMap* dynamicBoneMap)
+  Vec3 CPUSkinning(const SkinVertex* vertex, const Skeleton* skel, DynamicBoneMapPtr dynamicBoneMap)
   {
     Vec3 transformedPos = {};
     for (uint boneIndx = 0; boneIndx < 4; boneIndx++)

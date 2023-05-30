@@ -73,7 +73,7 @@ namespace ToolKit
 
   String ResourceManager::GetDefaultResource(ResourceType type) { return String(); }
 
-  bool ResourceManager::Exist(String file) { return m_storage.find(file) != m_storage.end(); }
+  bool ResourceManager::Exist(const String& file) { return m_storage.find(file) != m_storage.end(); }
 
   ResourcePtr ResourceManager::Remove(const String& file)
   {

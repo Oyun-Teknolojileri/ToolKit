@@ -746,6 +746,7 @@ namespace ToolKit
           GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::VIEW));
           glUniformMatrix4fv(loc, 1, false, &m_view[0][0]);
         }
+        break;
         case Uniform::MODEL:
         {
           GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::MODEL));
@@ -1297,7 +1298,6 @@ namespace ToolKit
                                      GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
     RenderTargetPtr cubemapRt     = std::make_shared<RenderTarget>(width, height, set);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
     cubemapRt->Init();
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);

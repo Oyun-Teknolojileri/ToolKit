@@ -48,7 +48,7 @@ namespace ToolKit
 
   Shader::Shader() {}
 
-  Shader::Shader(String file) : Shader() { SetFile(file); }
+  Shader::Shader(const String& file) : Shader() { SetFile(file); }
 
   Shader::~Shader() { UnInit(); }
 
@@ -242,7 +242,7 @@ namespace ToolKit
       WriteAttr(node, doc, "name", "includeShader");
     }
 
-    for (String file : m_includeFiles)
+    for (const String& file : m_includeFiles)
     {
       XmlNode* node = CreateXmlNode(doc, "include", container);
       WriteAttr(node, doc, "name", file);
@@ -339,7 +339,7 @@ namespace ToolKit
     }
   }
 
-  void Shader::SetShaderParameter(String param, const ParameterVariant& val) { m_shaderParams[param] = val; }
+  void Shader::SetShaderParameter(const String& param, const ParameterVariant& val) { m_shaderParams[param] = val; }
 
   void Shader::UpdateShaderParameters() {}
 

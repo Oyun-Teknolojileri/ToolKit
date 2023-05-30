@@ -85,12 +85,12 @@ namespace ToolKit
       ~PreviewViewport();
       void Show() override;
       ScenePtr GetScene();
+      void SetScene(ScenePtr scene);
       void ResetCamera();
       void ResizeWindow(uint width, uint height) override;
 
      private:
       SceneRendererPtr m_previewRenderer = nullptr;
-      Light* m_light                     = nullptr;
 
      public:
       bool m_isTempView = false;

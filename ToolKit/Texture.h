@@ -49,7 +49,7 @@ namespace ToolKit
     TKResourceType(Texture);
 
     explicit Texture(const TextureSettings& settings = {});
-    explicit Texture(String file, const TextureSettings& settings = {});
+    explicit Texture(const String& file, const TextureSettings& settings = {});
     explicit Texture(uint textureId);
     virtual ~Texture();
 
@@ -81,7 +81,7 @@ namespace ToolKit
     TKResourceType(CubeMap)
 
     CubeMap();
-    explicit CubeMap(String file);
+    explicit CubeMap(const String& file);
     explicit CubeMap(uint cubemapId);
     ~CubeMap();
 

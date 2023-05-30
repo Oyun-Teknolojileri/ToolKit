@@ -81,7 +81,7 @@ namespace ToolKit
      *
      * @param file The file path of the scene to load.
      */
-    explicit Scene(String file);
+    explicit Scene(const String& file);
 
     /**
      * The destructor for the Scene class.

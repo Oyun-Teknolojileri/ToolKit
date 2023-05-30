@@ -42,7 +42,7 @@ namespace ToolKit
     m_alpha = 1.0f;
   }
 
-  Material::Material(String file) : Material() { SetFile(file); }
+  Material::Material(const String& file) : Material() { SetFile(file); }
 
   Material::~Material() { UnInit(); }
 
@@ -99,6 +99,8 @@ namespace ToolKit
       if (m_metallicRoughnessTexture->GetTextureSettings().MinFilter != GraphicTypes::SampleNearest)
       {
         m_metallicRoughnessTexture->UnInit();
+        m_metallicRoughnessTexture->Load();
+
         TextureSettings set;
         set.InternalFormat = GraphicTypes::FormatRGBA;
         set.MinFilter      = GraphicTypes::SampleNearest;
@@ -115,6 +117,8 @@ namespace ToolKit
       if (m_normalMap->GetTextureSettings().MinFilter != GraphicTypes::SampleNearest)
       {
         m_normalMap->UnInit();
+        m_normalMap->Load();
+
         TextureSettings set;
         set.InternalFormat = GraphicTypes::FormatRGBA;
         set.MinFilter      = GraphicTypes::SampleNearest;

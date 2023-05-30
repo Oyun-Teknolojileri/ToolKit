@@ -108,7 +108,7 @@ namespace ToolKit
   void Resource::SerializeRef(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* refNode = CreateXmlNode(doc, XmlResRefElement, parent);
-    WriteAttr(refNode, doc, "Type", std::to_string(static_cast<int>(GetType())));
+    WriteAttr(refNode, doc, "Type", std::to_string((int) GetType()));
 
     String file = GetSerializeFile();
     file        = GetRelativeResourcePath(file);

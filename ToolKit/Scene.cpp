@@ -45,7 +45,7 @@ namespace ToolKit
 
   Scene::Scene() { m_name = "New Scene"; }
 
-  Scene::Scene(String file) : Scene() { SetFile(file); }
+  Scene::Scene(const String& file) : Scene() { SetFile(file); }
 
   Scene::~Scene() { Destroy(false); }
 

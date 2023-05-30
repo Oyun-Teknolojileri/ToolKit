@@ -56,13 +56,22 @@ namespace ToolKit
     if (envComp == nullptr)
     {
       // Create a default environment component.
-      envComp              = std::make_shared<EnvironmentComponent>();
+      envComp      = std::make_shared<EnvironmentComponent>();
+      HdriPtr hdri = nullptr;
 
-      TextureManager* tman = GetTextureManager();
-      HdriPtr defHdr       = tman->Create<Hdri>(tman->GetDefaultResource(ResourceType::Hdri));
-      defHdr->Init();
+      // Provide an empty hdri to construct gradient sky.
+      if (GetType() == EntityType::Entity_GradientSky)
+      {
+        hdri = std::make_shared<Hdri>();
+      }
+      else // Use default hdri image.
+      {
+        TextureManager* tman = GetTextureManager();
+        hdri                 = tman->Create<Hdri>(tman->GetDefaultResource(ResourceType::Hdri));
+        hdri->Init();
+      }
 
-      envComp->SetHdriVal(defHdr);
+      envComp->SetHdriVal(hdri);
       AddComponent(envComp);
     }
 

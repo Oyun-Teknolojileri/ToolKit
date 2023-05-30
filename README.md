@@ -32,7 +32,7 @@ Although it's possible, publishing to these platforms are not streamlined, still
 - stb_image - MIT 
 - SDL 2.0 - Zlib
 - rapidxml - MIT
-- openal - LGPL (Subject to Change with MiniAudio MIT)
+- MiniAudio - MIT
 - glm - MIT
 - glad - MIT
 - Dear imgui - MIT
