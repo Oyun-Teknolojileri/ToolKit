@@ -453,7 +453,7 @@ namespace ToolKit
       return state == AnimRecord::State::Stop;
     };
 
-    m_records.erase(std::remove_if(m_records.begin(), m_records.end(), updateRecordsFn), m_records.end());
+    erase_if(m_records, updateRecordsFn);
   }
 
   int AnimationPlayer::Exist(ULongID id) const
