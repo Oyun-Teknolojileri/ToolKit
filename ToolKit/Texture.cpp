@@ -64,11 +64,6 @@ namespace ToolKit
       return;
     }
 
-    if (GetFile().find("whitepbr.material") != String::npos)
-    {
-      int y = 5;
-    }
-
     if (m_textureSettings.Type == GraphicTypes::TypeFloat)
     {
       if ((m_imagef = GetFileManager()->GetHdriFile(GetFile(), &m_width, &m_height, &m_bytePP, 4)))

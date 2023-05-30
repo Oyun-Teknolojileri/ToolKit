@@ -41,46 +41,25 @@ namespace ToolKit
 
     MaterialView::MaterialView() : View("Material View")
     {
-      m_viewID                    = 3;
-      m_viewIcn                   = UI::m_materialIcon;
-      m_viewport                  = new PreviewViewport(300u, 150u);
+      m_viewID    = 3;
+      m_viewIcn   = UI::m_materialIcon;
 
-      // Initialize ground entity
-      MaterialPtr groundMat       = GetMaterialManager()->GetCopyOfDefaultMaterial();
-      groundMat->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("checkerBoard.png", true));
+      m_viewport  = new PreviewViewport(300u, 150u);
 
-      Cube* ground                = new Cube(Vec3(20.0f, 0.01f, 20.0f));
-      ground->GetMeshComponent()->SetCastShadowVal(false);
-      ground->GetMeshComponent()->GetMeshVal()->m_material = groundMat;
+      m_scenes[0] = GetSceneManager()->Create<Scene>(ScenePath("ms-sphere.scene", true));
+      m_scenes[1] = GetSceneManager()->Create<Scene>(ScenePath("ms-box.scene", true));
+      m_scenes[2] = GetSceneManager()->Create<Scene>(ScenePath("ms-ball.scene", true));
 
-      ScenePtr scene                                       = m_viewport->GetScene();
-      scene->AddEntity(ground);
-
-      // Initialize preview entity (to show primitive meshes)
-      Entity* previewEntity = new Entity;
-      previewEntity->m_node->Translate(Vec3(0.0f, 1.5f, 0.0f));
-      previewEntity->AddComponent(std::make_shared<MaterialComponent>());
-      MeshComponentPtr meshComp = std::make_shared<MeshComponent>();
-      previewEntity->AddComponent(meshComp);
-      scene->AddEntity(previewEntity);
-
-      // Merge ShaderBall scene into preview
-      ScenePtr shaderBallScene = GetSceneManager()->Create<Scene>(ScenePath("ShaderBall.scene", true));
-      scene->Merge(shaderBallScene);
-
-      GradientSky* sky = new GradientSky();
-      sky->SetIlluminateVal(true);
-      sky->ReInit();
-      scene->AddEntity(sky);
+      m_viewport->SetScene(m_scenes[0]);
 
       ResetCamera();
     }
 
     MaterialView::~MaterialView() { SafeDel(m_viewport); }
 
-    void MaterialView::SetSelectedMaterial(MaterialPtr m_mat)
+    void MaterialView::SetSelectedMaterial(MaterialPtr mat)
     {
-      auto find = std::find(m_materials.cbegin(), m_materials.cend(), m_mat);
+      auto find = std::find(m_materials.cbegin(), m_materials.cend(), mat);
       if (find != m_materials.cend())
       {
         m_currentMaterialIndex = int(find - m_materials.cbegin());
@@ -93,58 +72,12 @@ namespace ToolKit
 
     void MaterialView::UpdatePreviewScene()
     {
-      const EntityRawPtrArray& entities = m_viewport->GetScene()->GetEntities();
-      Entity* primNtt                   = nullptr;
-      if (entities.size() > 1u)
+      m_viewport->SetScene(m_scenes[m_activeObjectIndx]);
+
+      EntityRawPtrArray materialNtties = m_viewport->GetScene()->GetByTag("target");
+      for (Entity* ntt : materialNtties)
       {
-        primNtt = entities[1];
-      }
-
-      if (m_isMeshChanged)
-      {
-        MeshComponentPtr newMeshComp = std::make_shared<MeshComponent>();
-        switch (m_activeObjectIndx)
-        {
-        case 0:
-          Sphere::Generate(newMeshComp, 1.35f);
-          primNtt->m_node->SetTranslation(Vec3(0.0f, 1.35f, 0.0f));
-          break;
-        case 1:
-          Cube::Generate(newMeshComp, Vec3(2.3f));
-          primNtt->m_node->SetTranslation(Vec3(0.0f, 2.3f * 0.5f, 0.0f));
-          break;
-        default:
-          primNtt->m_node->SetTranslation(Vec3(0.0f));
-        }
-
-        if (primNtt)
-        {
-          primNtt->RemoveComponent(primNtt->GetMeshComponent()->m_id);
-          primNtt->AddComponent(newMeshComp);
-        }
-
-        m_isMeshChanged = false;
-      }
-
-      bool primEntityVis = m_activeObjectIndx == 2 ? false : true;
-      for (uint i = 1; i < entities.size(); i++)
-      {
-        Entity* ntt = entities[i];
-        if (!ntt->IsSkyInstance())
-        {
-          ntt->SetVisibleVal(!primEntityVis);
-          if (ntt->GetMaterialComponent() && m_materials.size() > 0)
-          {
-            m_currentMaterialIndex = glm::clamp(m_currentMaterialIndex, 0, (int) m_materials.size());
-
-            ntt->GetMaterialComponent()->SetFirstMaterial(m_materials[m_currentMaterialIndex]);
-          }
-        }
-      }
-
-      if (primNtt)
-      {
-        primNtt->SetVisibleVal(primEntityVis);
+        ntt->GetMaterialComponent()->SetFirstMaterial(m_materials[m_currentMaterialIndex]);
       }
     }
 
@@ -240,7 +173,6 @@ namespace ToolKit
             if (ImGui::ImageButton(Convert2ImGuiTexture(icon), iconSize))
             {
               m_activeObjectIndx = id;
-              m_isMeshChanged    = true;
             }
           };
 

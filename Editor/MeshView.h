@@ -31,7 +31,6 @@ namespace ToolKit
 {
   namespace Editor
   {
-    class EditorViewport;
 
     class MeshView : public View
     {
@@ -44,8 +43,9 @@ namespace ToolKit
       void ResetCamera();
 
      private:
-      PreviewViewport* m_viewport;
-      MeshPtr m_mesh;
+      PreviewViewport* m_viewport = nullptr;
+      Entity* m_previewEntity     = nullptr;
+      MeshPtr m_mesh              = nullptr;
     };
 
   } // namespace Editor

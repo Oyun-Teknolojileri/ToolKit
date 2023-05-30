@@ -57,12 +57,16 @@ namespace ToolKit
 
     ConstructSkyMaterial(vert, frag);
 
+    if (m_onInit) 
+    {
+      return;
+    }
+
+    m_onInit = true;
     RenderTask task {[this](Renderer* renderer) -> void
                      {
                        // Render gradient to cubemap and store the output
                        GenerateGradientCubemap();
-
-                       m_onInit = true;
 
                        // Create irradiance map from cubemap and set
                        GenerateIrradianceCubemap();

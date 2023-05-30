@@ -685,7 +685,7 @@ namespace ToolKit
 
   void SkinMesh::DeSerialize(XmlDocument* doc, XmlNode* parent) { LoadMesh(doc, parent, this); }
 
-  BoundingBox SkinMesh::CalculateAABB(const Skeleton* skel, const DynamicBoneMap* boneMap)
+  BoundingBox SkinMesh::CalculateAABB(const Skeleton* skel, DynamicBoneMapPtr boneMap)
   {
     BoundingBox finalAABB;
     MeshRawPtrArray meshes;

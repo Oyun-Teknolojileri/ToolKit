@@ -35,13 +35,14 @@ namespace ToolKit
   {
     MeshView::MeshView() : View("Mesh View")
     {
-      m_viewID              = 3;
-      m_viewIcn             = UI::m_meshIcon;
-      m_viewport            = new PreviewViewport(300, 300);
+      m_viewID        = 3;
+      m_viewIcn       = UI::m_meshIcon;
+      m_viewport      = new PreviewViewport(300, 300);
 
-      Entity* previewEntity = new Entity;
-      previewEntity->AddComponent(std::make_shared<MeshComponent>());
-      m_viewport->GetScene()->AddEntity(previewEntity);
+      ScenePtr scene  = GetSceneManager()->Create<Scene>(ScenePath("mesh-view.scene", true));
+      m_previewEntity = scene->GetFirstByTag("target");
+
+      m_viewport->SetScene(scene);
     }
 
     MeshView::~MeshView() { SafeDel(m_viewport); }
@@ -108,27 +109,26 @@ namespace ToolKit
 
     void MeshView::SetMesh(MeshPtr mesh)
     {
-      m_mesh             = mesh;
-      Entity* previewNtt = m_viewport->GetScene()->GetEntities()[0];
-      previewNtt->GetMeshComponent()->SetMeshVal(m_mesh);
+      m_mesh = mesh;
+      m_previewEntity->GetMeshComponent()->SetMeshVal(m_mesh);
+
+      if (m_mesh->IsSkinned())
+      {
+        SkinMeshPtr skinMesh          = std::static_pointer_cast<SkinMesh>(m_mesh);
+        SkeletonComponentPtr skelComp = m_previewEntity->GetComponent<SkeletonComponent>();
+        skelComp->SetSkeletonResourceVal(skinMesh->m_skeleton);
+        skelComp->Init();
+      }
+
       BoundingBox aabb;
       for (Entity* ntt : m_viewport->GetScene()->GetEntities())
       {
         aabb.UpdateBoundary(ntt->GetAABB(true).min);
         aabb.UpdateBoundary(ntt->GetAABB(true).max);
       }
-      if (m_mesh->IsSkinned())
-      {
-        SkeletonComponentPtr skelComp = previewNtt->GetComponent<SkeletonComponent>();
-        if (skelComp == nullptr)
-        {
-          skelComp = std::make_shared<SkeletonComponent>();
-          previewNtt->AddComponent(skelComp);
-        }
-        skelComp->SetSkeletonResourceVal(((SkinMesh*) m_mesh.get())->m_skeleton);
-        skelComp->Init();
-      }
+
       m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.0f);
     }
+
   } // namespace Editor
 } // namespace ToolKit

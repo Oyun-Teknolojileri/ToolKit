@@ -40,7 +40,7 @@ namespace ToolKit
       void Show() override;
       void SetMaterials(const MaterialPtrArray& mat);
       void ResetCamera();
-      void SetSelectedMaterial(MaterialPtr m_mat);
+      void SetSelectedMaterial(MaterialPtr mat);
 
      private:
       void UpdatePreviewScene();
@@ -50,8 +50,8 @@ namespace ToolKit
       PreviewViewport* m_viewport = nullptr;
       MaterialPtrArray m_materials;
       uint m_activeObjectIndx    = 0;
-      bool m_isMeshChanged       = true;
       int m_currentMaterialIndex = 0;
+      ScenePtr m_scenes[3];
 
      public:
       bool m_isTempView = false;
