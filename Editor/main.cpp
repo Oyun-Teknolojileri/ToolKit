@@ -132,7 +132,7 @@ namespace ToolKit
       EngineSettings& settings = g_proxy->m_engineSettings;
 
       // Init SDL
-      if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0)
+      if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0)
       {
         g_running = false;
       }
@@ -226,6 +226,7 @@ namespace ToolKit
 
             UI::Init();
             g_app->Init();
+            InitializeGamepad();
           }
         }
       }
@@ -291,6 +292,8 @@ namespace ToolKit
           PoolEvent(sdlEvent);
           ProcessEvent(sdlEvent);
         }
+
+        HandleGamepad();
 
         timer->CurrentTime = GetElapsedMilliSeconds();
         if (timer->CurrentTime > timer->LastTime + timer->DeltaTime)
