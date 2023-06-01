@@ -172,7 +172,7 @@ namespace ToolKit
     uint lastButtons = tk_GamepadDownButtons;
     tk_GamepadDownButtons = 0u;
 
-    for (uint i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++)
+    for (uint i = 0; i < (int) GamepadButton::Count; i++)
     {
       uint isDown            = (uint)SDL_GameControllerGetButton(gamepad, (SDL_GameControllerButton)i);
       tk_GamepadDownButtons |= (1u << i) * isDown;
