@@ -118,28 +118,28 @@ namespace ToolKit
     switch (e.type)
     {
     case SDL_CONTROLLERAXISMOTION:
-        ge->m_action = EventAction::GamepadAxis;
-        ge->m_angle  = e.caxis.value / (float) (SDL_JOYSTICK_AXIS_MAX);
-        ge->m_axis   = (GamepadEvent::StickAxis) e.caxis.axis;
-        break;
+      ge->m_action = EventAction::GamepadAxis;
+      ge->m_angle  = e.caxis.value / (float) (SDL_JOYSTICK_AXIS_MAX);
+      ge->m_axis   = (GamepadEvent::StickAxis) e.caxis.axis;
+      break;
     case SDL_CONTROLLERBUTTONDOWN:
-        ge->m_action = EventAction::GamepadButtonDown;
-        ge->m_button = (GamepadButton) (1 << e.cbutton.button);
-        break;
+      ge->m_action = EventAction::GamepadButtonDown;
+      ge->m_button = (GamepadButton) (1 << e.cbutton.button);
+      break;
     case SDL_CONTROLLERBUTTONUP:
-        ge->m_action = EventAction::GamepadButtonUp;
-        ge->m_button = (GamepadButton) (1 << e.cbutton.button);
-        break;
+      ge->m_action = EventAction::GamepadButtonUp;
+      ge->m_button = (GamepadButton) (1 << e.cbutton.button);
+      break;
     case SDL_JOYDEVICEADDED:
-        GetLogger()->WriteConsole(LogType::Memo, "Gamepad connected!");
-        SDL_GameControllerOpen(e.cdevice.which);
-        break;
+      GetLogger()->WriteConsole(LogType::Memo, "Gamepad connected!");
+      SDL_GameControllerOpen(e.cdevice.which);
+      break;
     case SDL_JOYDEVICEREMOVED:
-        GetLogger()->WriteConsole(LogType::Memo, "Gamepad disconnected!");
-        break;
+      GetLogger()->WriteConsole(LogType::Memo, "Gamepad disconnected!");
+      break;
     };
 
-    if (ge != nullptr) 
+    if (ge != nullptr)
     {
       Main::GetInstance()->m_eventPool.push_back(ge);
     }
