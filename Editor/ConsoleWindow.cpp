@@ -115,8 +115,6 @@ namespace ToolKit
 
     void ShowModTransitionsExec(TagArgArray tagArgs) { BoolCheck(tagArgs, &g_app->m_showStateTransitionsDebug); }
 
-    void ShowGamepadLogExec(TagArgArray tagArgs) { BoolCheck(tagArgs, &Main::GetInstance()->m_debugShowGamepadInput); }
-    
     void TransformInternal(TagArgArray tagArgs, bool set)
     {
       Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
@@ -631,9 +629,6 @@ namespace ToolKit
 
     ConsoleWindow::ConsoleWindow()
     {
-      CreateCommand("Help", std::bind(&ConsoleWindow::ShowAllCommands, this));
-      CreateCommand("Clear", std::bind(&ConsoleWindow::ClearLog, this));
-      CreateCommand("ShowAllCommands", std::bind(&ConsoleWindow::ShowAllCommands, this));
       CreateCommand(g_showPickDebugCmd, ShowPickDebugExec);
       CreateCommand(g_showOverlayUICmd, ShowOverlayExec);
       CreateCommand(g_showOverlayUIAlwaysCmd, ShowOverlayAlwaysExec);
@@ -655,20 +650,9 @@ namespace ToolKit
       CreateCommand(g_showShadowFrustum, ShowShadowFrustum);
       CreateCommand(g_selectEffectingLights, SelectAllEffectingLights);
       CreateCommand(g_checkSceneHealth, CheckSceneHealth);
-      CreateCommand(g_showGamepadLog, ShowGamepadLogExec);
     }
 
     ConsoleWindow::~ConsoleWindow() {}
-
-    void ConsoleWindow::ShowAllCommands()
-    {
-      GetLogger()->WriteConsole(LogType::Memo, "[ ALL COMMANDS ]");
-
-      for (const String& command : m_commands)
-      {
-        GetLogger()->WriteConsole(LogType::Memo, command.c_str());
-      }
-    }
 
     // 1   :
     // 12  :

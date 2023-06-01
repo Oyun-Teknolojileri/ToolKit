@@ -226,7 +226,6 @@ namespace ToolKit
 
             UI::Init();
             g_app->Init();
-            InitializeGamepad();
           }
         }
       }
@@ -292,8 +291,6 @@ namespace ToolKit
           PoolEvent(sdlEvent);
           ProcessEvent(sdlEvent);
         }
-
-        HandleGamepad();
 
         timer->CurrentTime = GetElapsedMilliSeconds();
         if (timer->CurrentTime > timer->LastTime + timer->DeltaTime)

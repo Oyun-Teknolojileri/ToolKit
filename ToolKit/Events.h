@@ -41,7 +41,8 @@ namespace ToolKit
     Move,
     Scroll,
     GamepadAxis,
-    GamepadButton
+    GamepadButtonDown,
+    GamepadButtonUp,
   };
 
   class TK_API Event
@@ -105,10 +106,8 @@ namespace ToolKit
     Paddle3       = 1 << 18, //!< Xbox Elite paddle P2 
     Paddle4       = 1 << 19, //!< Xbox Elite paddle P4 
     Touchpad      = 1 << 20, //!< PS4/PS5 touchpad button
-    TriggerRight  = 1 << 21, //!< R2
-    TriggerLeft   = 1 << 22, //!< L2
-    MaxBit        = 1 << 23, //!< You can use when you iterate through bits
-    Count         = 23
+    MaxBit        = 1 << 21, //!< You can use when you iterate through bits
+    Count         = 21
   };
 
   class TK_API GamepadEvent : public Event
@@ -116,27 +115,19 @@ namespace ToolKit
    public:
     GamepadEvent() { m_type = EventType::Gamepad; }
     
-    bool IsButtonDown(GamepadButton button) const
+    enum class StickAxis
     {
-      return (m_downButtons & (uint)button) > 0;
-    }
+      LeftX       , 
+      LeftY       , 
+      RightX      , 
+      RightY      , 
+      TriggerLeft , 
+      TriggerRight
+    };
 
-    bool IsButtonReleased(GamepadButton button) const
-    {
-      return (m_releasedButtons & (uint)button) > 0;
-    }
-
-    bool IsButtonPressed(GamepadButton button) const
-    {
-      return (m_pressedButtons & (uint)button) > 0;
-    }
-
-    // left stick and right stick axis
-    Vec2 m_leftStickAxis{};
-    Vec2 m_rightStickAxis{};
-    uint m_downButtons     = 0;
-    uint m_releasedButtons = 0;
-    uint m_pressedButtons  = 0; 
+    float m_angle;
+    StickAxis m_axis;
+    GamepadButton m_button;
   };
 
 } // namespace ToolKit

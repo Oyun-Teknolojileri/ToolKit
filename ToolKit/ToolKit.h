@@ -214,7 +214,6 @@ namespace ToolKit
 
     bool m_preInitiated = false;
     bool m_initiated    = false;
-    bool m_debugShowGamepadInput = false;
     String m_resourceRoot;
     String m_cfgPath;
     EventPool m_eventPool;
