@@ -161,6 +161,9 @@ namespace ToolKit
   static uint tk_GamepadDownButtons = 0u;
   static uint tk_GamepadReleasedButtons = 0u;
   static uint tk_GamepadPressedButtons  = 0u;
+  bool tk_debugShowGamepadInput = 0;
+
+  static void GamepadTest();
 
   static void HandleGamepad()
   {
@@ -182,8 +185,8 @@ namespace ToolKit
     short rightTrigger  = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
     short leftTrigger   = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
 
-    tk_GamepadDownButtons    |= uint(GamepadButton::TriggerRight) * (rightTrigger > 0);
-    tk_GamepadDownButtons    |= uint(GamepadButton::TriggerLeft ) * (leftTrigger  > 0);
+    tk_GamepadDownButtons    |= uint(GamepadButton::TriggerRight) * (rightTrigger >= 32767);
+    tk_GamepadDownButtons    |= uint(GamepadButton::TriggerLeft ) * (leftTrigger  >= 32767);
 
     tk_GamepadPressedButtons  = ~lastButtons &  tk_GamepadDownButtons; // it was up and pressed 
     tk_GamepadReleasedButtons =  lastButtons & ~tk_GamepadDownButtons; // it was down and released
@@ -226,14 +229,17 @@ namespace ToolKit
       static const char* message = "Guide/Mode button pressed, d-pad and right stick might not work correctly";
       GetLogger()->WriteConsole(LogType::Memo, message);
     }
-    // todo: call gamepad Test function here. if console command LogGamepadInput is set to 1
+
+    if (Main::GetInstance()->m_debugShowGamepadInput)
+    {
+      GamepadTest();
+    }
   }
 
   // we can use this function to test gamepads
   // warning: call this function after HandleGamepad function.
   static void GamepadTest()
   {
-#ifdef _DEBUG
     static const char* buttonNames[(int)GamepadButton::Count] = {
                                                          "Xbox: A PS: ()",
                                                          "Xbox: B PS: X ",
@@ -292,7 +298,6 @@ namespace ToolKit
                                 tk_RightStickAxis.x,
                                 tk_RightStickAxis.y);
     }
-#endif
   }
 
   static void ClearPool()

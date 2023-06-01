@@ -103,6 +103,9 @@ namespace ToolKit
     const String g_checkSceneHealth("CheckSceneHealth");
     void CheckSceneHealth(TagArgArray tagArgs);
 
+    const String g_showGamepadLog("ShowGamepadLog");
+    void ShowGamepadLogExec(TagArgArray tagArgs);
+
     // Command errors
     const String g_noValidEntity("No valid entity");
 
@@ -120,6 +123,7 @@ namespace ToolKit
       void ClearLog();
       void ExecCommand(const String& commandLine);
       void ParseCommandLine(const String& commandLine, String& command, TagArgArray& tagArgs);
+      void ShowAllCommands();
 
      private:
       // Command line word processing. Auto-complete and history lookups.
