@@ -654,6 +654,18 @@ namespace ToolKit
 
     ConsoleWindow::~ConsoleWindow() {}
 
+    // 1   :
+    // 12  :
+    // 123 :
+    // 1234:
+    static String GetLineNumString(size_t line)
+    {
+      String lineNum = std::to_string(++line);
+      size_t numDigits = (size_t)std::log10(line);
+      lineNum.append(std::max(4ull, numDigits) - numDigits, ' ');
+      return lineNum + ": ";
+    }
+
     void ConsoleWindow::Show()
     {
       if (ImGui::Begin(g_consoleStr.c_str(),
@@ -680,7 +692,7 @@ namespace ToolKit
             continue;
           }
 
-          String lineNum = std::to_string(i) + ":  ";
+          String lineNum = GetLineNumString(i);
           ImGui::TextUnformatted(lineNum.c_str());
           ImGui::SameLine();
 

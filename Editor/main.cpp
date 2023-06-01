@@ -132,7 +132,7 @@ namespace ToolKit
       EngineSettings& settings = g_proxy->m_engineSettings;
 
       // Init SDL
-      if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0)
+      if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0)
       {
         g_running = false;
       }

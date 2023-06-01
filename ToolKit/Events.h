@@ -39,7 +39,10 @@ namespace ToolKit
     RightClick,
     MiddleClick,
     Move,
-    Scroll
+    Scroll,
+    GamepadAxis,
+    GamepadButtonDown,
+    GamepadButtonUp,
   };
 
   class TK_API Event
@@ -49,7 +52,8 @@ namespace ToolKit
     {
       Null,
       Mouse,
-      Keyboard
+      Keyboard,
+      Gamepad
     };
 
     EventType m_type     = EventType::Null;
@@ -78,4 +82,53 @@ namespace ToolKit
     int scroll[2]   = {0, 0}; // x, y.
   };
 
+  enum class GamepadButton : uint
+  {
+    None          = 0,
+    A             = 1 << 0, Circle   = 1 << 0, //!< (PS) Circle   () =  (Xbox) A 
+    B             = 1 << 1, Cross    = 1 << 1, //!< (PS) Cross    X  =  (Xbox) B 
+    X             = 1 << 2, Triangle = 1 << 2, //!< (PS) Triangle /\ =  (Xbox) X  
+    Y             = 1 << 3, Square   = 1 << 3, //!< (PS) Square   [] =  (Xbox) Y 
+    Back          = 1 << 4, //!< Select 
+    Guide         = 1 << 5, //!< Mode
+    Start         = 1 << 6, 
+    LeftStick     = 1 << 7,
+    RightStick    = 1 << 8,
+    LeftShoulder  = 1 << 9,  //!< L1
+    RightShoulder = 1 << 10, //!< R1
+    DpadUp        = 1 << 11,
+    DpadDown      = 1 << 12,
+    DpadLeft      = 1 << 13,
+    DpadRight     = 1 << 14,
+    Misc1         = 1 << 15, //!< Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button, Amazon Luna microphone button
+    Paddle1       = 1 << 16, //!< Xbox Elite paddle P1 
+    Paddle2       = 1 << 17, //!< Xbox Elite paddle P3 
+    Paddle3       = 1 << 18, //!< Xbox Elite paddle P2 
+    Paddle4       = 1 << 19, //!< Xbox Elite paddle P4 
+    Touchpad      = 1 << 20, //!< PS4/PS5 touchpad button
+    MaxBit        = 1 << 21, //!< You can use when you iterate through bits
+    Count         = 21
+  };
+
+  class TK_API GamepadEvent : public Event
+  {
+   public:
+    GamepadEvent() { m_type = EventType::Gamepad; }
+    
+    enum class StickAxis
+    {
+      LeftX       , 
+      LeftY       , 
+      RightX      , 
+      RightY      , 
+      TriggerLeft , 
+      TriggerRight
+    };
+
+    float m_angle;
+    StickAxis m_axis;
+    GamepadButton m_button;
+  };
+
 } // namespace ToolKit
+
