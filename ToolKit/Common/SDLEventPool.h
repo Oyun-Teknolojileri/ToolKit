@@ -178,14 +178,12 @@ namespace ToolKit
       tk_GamepadDownButtons |= (1u << i) * isDown;
     }
 
+    // left trigger and right trigger can be used as both button and axis so we getting it here
     short rightTrigger  = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
     short leftTrigger   = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
 
-    // left trigger and right trigger can be used as both button and axis so we are setting it here
-    // TrailingZeroCnt(TriggerRight) and TrailingZeroCnt(TriggerLeft) can be used instead of SDL_CONTROLLER_BUTTON_MAX
-    // or you can even use 21 and 22 to indicate indexes of trigger button bits
-    tk_GamepadDownButtons    |= (1u << (SDL_CONTROLLER_BUTTON_MAX + 0)) * (uint)(rightTrigger > 0);
-    tk_GamepadDownButtons    |= (1u << (SDL_CONTROLLER_BUTTON_MAX + 1)) * (uint) (leftTrigger > 0);
+    tk_GamepadDownButtons    |= uint(GamepadButton::TriggerRight) * (rightTrigger > 0);
+    tk_GamepadDownButtons    |= uint(GamepadButton::TriggerLeft ) * (leftTrigger  > 0);
 
     tk_GamepadPressedButtons  = ~lastButtons &  tk_GamepadDownButtons; // it was up and pressed 
     tk_GamepadReleasedButtons =  lastButtons & ~tk_GamepadDownButtons; // it was down and released
