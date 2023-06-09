@@ -108,7 +108,7 @@ namespace ToolKit
       GetLogger()->WriteConsole(LogType::Warning, "Asnyc Render %d", m_lowQueue.size());
     }
   }
-
+  
   void RenderSystem::FlushRenderTasks()
   {
     auto flushTasksFn = [this](RenderTaskArray& rts) -> void
@@ -141,6 +141,22 @@ namespace ToolKit
 
   void RenderSystem::EnableBlending(bool enable) { m_renderer->EnableBlending(enable); }
 
+  void RenderSystem::DecrementSkipFrame()
+  {
+    if (m_skipFrames == 0)
+    {
+      return;
+    }
+    m_skipFrames--;
+  }
+
+  bool RenderSystem::IsSkipFrame() const 
+  {
+    return m_skipFrames != 0;
+  }
+
+  void RenderSystem::SkipSceneFrames(int numFrames) { m_skipFrames = numFrames; }
+
   void RenderSystem::InitGl(void* glGetProcAddres, GlReportCallback callback)
   {
     // Initialize opengl functions.
@@ -148,7 +164,7 @@ namespace ToolKit
 
     InitGLErrorReport(callback);
 
-    // Default states.
+    // Default states.  
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
   }

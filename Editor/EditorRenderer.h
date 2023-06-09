@@ -128,6 +128,7 @@ namespace ToolKit
       SSAOPassPtr m_ssaoPass                            = nullptr;
       OutlinePassPtr m_outlinePass                      = nullptr;
       FXAAPassPtr m_fxaaPass                            = nullptr;
+      FullQuadPassPtr m_skipFramePass                   = nullptr;
       SingleMatForwardRenderPassPtr m_singleMatRenderer = nullptr;
       Camera* m_camera                                  = nullptr;
 

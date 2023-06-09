@@ -130,11 +130,11 @@ namespace ToolKit
       ge->m_action = EventAction::GamepadButtonUp;
       ge->m_button = (GamepadButton) (1 << e.cbutton.button);
       break;
-    case SDL_JOYDEVICEADDED:
+    case SDL_CONTROLLERDEVICEADDED:
       GetLogger()->WriteConsole(LogType::Memo, "Gamepad connected!");
       SDL_GameControllerOpen(e.cdevice.which);
       break;
-    case SDL_JOYDEVICEREMOVED:
+    case SDL_CONTROLLERDEVICEREMOVED:
       GetLogger()->WriteConsole(LogType::Memo, "Gamepad disconnected!");
       break;
     };
