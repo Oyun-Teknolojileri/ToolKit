@@ -234,7 +234,7 @@ namespace ToolKit
 
       // Skip frame pass.
       m_skipFramePass->m_params.FrameBuffer    = viewport->m_framebuffer;
-      m_skipFramePass->m_material              = m_unlitOverride;
+      m_skipFramePass->m_material              = m_blackMaterial;
 
       // UI pass.
       UILayerPtrArray layers;
@@ -339,7 +339,9 @@ namespace ToolKit
 
       // Create render mode materials.
       m_unlitOverride = GetMaterialManager()->GetCopyOfUnlitMaterial();
+      m_blackMaterial = GetMaterialManager()->GetCopyOfUnlitMaterial();
       m_unlitOverride->Init();
+      m_blackMaterial->Init();
 
       m_billboardPass     = std::make_shared<BillboardPass>();
       m_scenePass         = std::make_shared<SceneRenderer>();

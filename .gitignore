@@ -38,3 +38,5 @@
 Resources/Engine/workspace.settings
 .editorconfig
 /build
+/Dependency/ImGui/CMakeFiles
+*.txt

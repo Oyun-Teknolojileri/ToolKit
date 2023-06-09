@@ -85,10 +85,10 @@ namespace ToolKit
   enum class GamepadButton : uint
   {
     None          = 0,
-    A             = 1 << 0, Circle   = 1 << 0, //!< (PS) Circle   () =  (Xbox) A 
-    B             = 1 << 1, Cross    = 1 << 1, //!< (PS) Cross    X  =  (Xbox) B 
-    X             = 1 << 2, Triangle = 1 << 2, //!< (PS) Triangle /\ =  (Xbox) X  
-    Y             = 1 << 3, Square   = 1 << 3, //!< (PS) Square   [] =  (Xbox) Y 
+    A             = 1 << 0, Cross    = 1 << 0, //!< (PS) Cross    X  =  (Xbox) A 
+    B             = 1 << 1, Circle   = 1 << 1, //!< (PS) Circle   () =  (Xbox) B 
+    Y             = 1 << 2, Square   = 1 << 2, //!< (PS) Square   [] =  (Xbox) Y 
+    X             = 1 << 3, Triangle = 1 << 3, //!< (PS) Triangle /\ =  (Xbox) X  
     Back          = 1 << 4, //!< Select 
     Guide         = 1 << 5, //!< Mode
     Start         = 1 << 6, 

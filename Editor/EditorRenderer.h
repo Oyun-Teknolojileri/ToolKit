@@ -116,7 +116,8 @@ namespace ToolKit
        * Override material for EditorLitMode::Unlit.
        */
       MaterialPtr m_unlitOverride                       = nullptr;
-
+      MaterialPtr m_blackMaterial                       = nullptr;
+      
       BillboardPassPtr m_billboardPass                  = nullptr;
       SceneRendererPtr m_scenePass                      = nullptr;
       ForwardRenderPassPtr m_uiPass                     = nullptr;
