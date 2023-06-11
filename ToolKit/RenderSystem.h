@@ -111,6 +111,12 @@ namespace ToolKit
     void SetFrameCount(uint count);
 
     void EnableBlending(bool enable);
+    
+    void DecrementSkipFrame();
+
+    bool IsSkipFrame() const;
+
+    void SkipSceneFrames(int numFrames);
 
     /**
      * Host application must provide opengl function addresses. This function
@@ -128,6 +134,7 @@ namespace ToolKit
     RenderTaskArray m_lowQueue;
     Renderer* m_renderer         = nullptr;
     Technique* m_renderTechnique = nullptr;
+    int m_skipFrames             = 0;
   };
 
 } // namespace ToolKit

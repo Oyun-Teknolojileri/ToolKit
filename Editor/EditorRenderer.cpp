@@ -68,6 +68,23 @@ namespace ToolKit
 
       m_passArray.clear();
       const EngineSettings::PostProcessingSettings& gfx = GetEngineSettings().PostProcessing;
+      
+      if (GetRenderSystem()->IsSkipFrame())
+      {
+        m_scenePass->m_params.Gfx                        = gfx;
+        m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
+        m_scenePass->m_params.Gfx.TonemappingEnabled     = false;
+        m_scenePass->m_params.Gfx.FXAAEnabled            = false;
+        m_scenePass->Render(renderer);
+
+        m_passArray.push_back(m_skipFramePass);
+        Technique::Render(renderer);
+
+        GetRenderSystem()->DecrementSkipFrame();
+        PostRender();
+        return;
+      }
+
       switch (m_params.LitMode)
       {
       case EditorLitMode::LightComplexity:
@@ -92,7 +109,7 @@ namespace ToolKit
         m_scenePass->Render(renderer);
         break;
       }
-
+      
       if (m_params.LitMode != EditorLitMode::Game)
       {
         // Draw scene and apply bloom effect.
@@ -215,6 +232,10 @@ namespace ToolKit
       m_scenePass->m_params.MainFramebuffer   = viewport->m_framebuffer;
       m_scenePass->m_params.Scene             = scene;
 
+      // Skip frame pass.
+      m_skipFramePass->m_params.FrameBuffer    = viewport->m_framebuffer;
+      m_skipFramePass->m_material              = m_blackMaterial;
+
       // UI pass.
       UILayerPtrArray layers;
       RenderJobArray uiRenderJobs;
@@ -318,7 +339,9 @@ namespace ToolKit
 
       // Create render mode materials.
       m_unlitOverride = GetMaterialManager()->GetCopyOfUnlitMaterial();
+      m_blackMaterial = GetMaterialManager()->GetCopyOfUnlitMaterial();
       m_unlitOverride->Init();
+      m_blackMaterial->Init();
 
       m_billboardPass     = std::make_shared<BillboardPass>();
       m_scenePass         = std::make_shared<SceneRenderer>();
@@ -332,6 +355,7 @@ namespace ToolKit
       m_ssaoPass          = std::make_shared<SSAOPass>();
       m_outlinePass       = std::make_shared<OutlinePass>();
       m_singleMatRenderer = std::make_shared<SingleMatForwardRenderPass>();
+      m_skipFramePass     = std::make_shared<FullQuadPass>();
     }
 
     void EditorRenderer::OutlineSelecteds(Renderer* renderer)
