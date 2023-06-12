@@ -149,6 +149,7 @@ namespace ToolKit
   typedef std::unordered_map<String, AnimRecordPtr> AnimRecordPtrMap;
   typedef class AnimRecord* AnimRecordRawPtr;
   typedef std::vector<AnimRecordRawPtr> AnimRecordRawPtrArray;
+  struct BlendTarget;
 
   // Entity types.
   typedef std::shared_ptr<class Entity> EntityPtr;
@@ -259,7 +260,9 @@ namespace ToolKit
   static const String XmlResRefElement("ResourceRef");
   static const String XmlComponent("Component");
   static const StringView XmlNodeSettings("Settings");
-  static const StringView XmlNodeName = "name";
+  static const StringView XmlNodeName("name");
+  static const StringView XmlObjectClass("Class");
+  static const StringView XmlObjectElement("Object");
 
   enum class AxisLabel
   {

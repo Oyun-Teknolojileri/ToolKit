@@ -79,6 +79,7 @@
     <ClCompile Include="StencilPass.cpp" />
     <ClCompile Include="Surface.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TKObject.cpp" />
     <ClCompile Include="ToneMapPass.cpp" />
     <ClCompile Include="ToolKit.cpp" />
     <ClCompile Include="UIManager.cpp" />
@@ -114,6 +115,7 @@
     <ClInclude Include="GBufferPass.h" />
     <ClInclude Include="GlErrorReporter.h" />
     <ClInclude Include="GradientSky.h" />
+    <ClInclude Include="HashString.h" />
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="OutlinePass.h" />
@@ -153,6 +155,7 @@
     <ClInclude Include="Surface.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TKAssert.h" />
+    <ClInclude Include="TKObject.h" />
     <ClInclude Include="ToneMapPass.h" />
     <ClInclude Include="ToolKit.h" />
     <ClInclude Include="Types.h" />
@@ -216,6 +219,7 @@
       <IncludeInUnityFile>true</IncludeInUnityFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/FI "stdafx.h" /bigobj %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -234,6 +238,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/FI "stdafx.h" %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

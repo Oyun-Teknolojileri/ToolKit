@@ -58,7 +58,7 @@ namespace ToolKit
 
   // Create an xml node with given name.
   // Append it to parent if not null else append it to doc.
-  TK_API XmlNode* CreateXmlNode(XmlDocument* doc, const String& name, XmlNode* parent = nullptr);
+  TK_API XmlNode* CreateXmlNode(XmlDocument* doc, const StringView& name, XmlNode* parent = nullptr);
 
   TK_API void WriteMaterial(XmlNode* parent, XmlDocument* doc, const String& file);
   TK_API MaterialPtr ReadMaterial(XmlNode* parent);

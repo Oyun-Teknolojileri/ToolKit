@@ -183,11 +183,11 @@ namespace ToolKit
     return false;
   }
 
-  XmlNode* CreateXmlNode(XmlDocument* doc, const String& name, XmlNode* parent)
+  XmlNode* CreateXmlNode(XmlDocument* doc, const StringView& name, XmlNode* parent)
   {
     assert(doc);
 
-    char* str     = doc->allocate_string(name.c_str());
+    char* str     = doc->allocate_string(name.data());
     XmlNode* node = doc->allocate_node(rapidxml::node_type::node_element, str);
 
     if (parent)

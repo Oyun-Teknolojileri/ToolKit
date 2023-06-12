@@ -225,6 +225,9 @@
     <ClCompile Include="GlErrorReporter.cpp">
       <Filter>Source\Render</Filter>
     </ClCompile>
+    <ClCompile Include="TKObject.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -445,6 +448,12 @@
     </ClInclude>
     <ClInclude Include="GlErrorReporter.h">
       <Filter>Source\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="TKObject.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="HashString.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

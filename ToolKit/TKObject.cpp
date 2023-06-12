@@ -24,58 +24,35 @@
  * SOFTWARE.
  */
 
-#pragma once
+#include "TKObject.h"
 
-// STL
-#include <assert.h>
+namespace ToolKit
+{
 
-#include <algorithm>
-#include <random>
-#include <unordered_map>
+  TKObject::TKObject() {}
 
-// GLM
-#define GLM_FORCE_XYZW_ONLY
-#define GLM_FORCE_CTOR_INIT
-#define GLM_ENABLE_EXPERIMENTAL
-#ifndef GLM_FORCE_SWIZZLE
-  #define GLM_FORCE_SWIZZLE
-#endif
+  TKObject::~TKObject() {}
 
-#include "glm/glm.hpp"
-#include "glm/gtc/epsilon.hpp"
-#include "glm/gtc/matrix_access.hpp"
-#include "glm/gtc/matrix_inverse.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/quaternion.hpp"
-#include "glm/gtc/random.hpp"
-#include "glm/gtx/closest_point.hpp"
-#include "glm/gtx/component_wise.hpp"
-#include "glm/gtx/euler_angles.hpp"
-#include "glm/gtx/matrix_operation.hpp"
-#include "glm/gtx/matrix_query.hpp"
-#include "glm/gtx/quaternion.hpp"
-#include "glm/gtx/scalar_relational.hpp"
-#include "glm/gtx/string_cast.hpp"
-#include "glm/gtx/vector_query.hpp"
+  void TKObject::NativeConstruct()
+  {
+    ParameterConstructor();
+    ParameterEventConstructor();
+  }
 
-// Stb
-#include "stb/stb_image.h"
+  void TKObject::NativeDestruct() {}
 
-// RapidXml
-#include "rapidxml_ext.h"
-#include "rapidxml_utils.hpp"
+  void TKObject::ParameterConstructor() {}
 
-// ToolKit
-#include "Events.h"
-#include "Logger.h"
-#include "Serialize.h"
-#include "ToolKit.h"
+  void TKObject::ParameterEventConstructor() {}
 
-#ifdef TK_EDITOR
+  void TKObject::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* objNode = CreateXmlNode(doc, XmlObjectElement, parent);
+    m_localData.Serialize(doc, parent);
+  }
 
-  #include "ImGui/imgui.h"
-  #include "ImGui/misc/cpp/imgui_stdlib.h"
-  #include "Imgui/backends/imgui_impl_opengl3.h"
-  #include "Imgui/backends/imgui_impl_sdl2.h"
+  void TKObject::DeSerialize(XmlDocument* doc, XmlNode* parent) {}
 
-#endif
+  TKObjectPtr TKObject::Copy() { return nullptr; }
+
+} // namespace ToolKit

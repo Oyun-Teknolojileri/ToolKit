@@ -37,10 +37,8 @@
 #include "Node.h"
 #include "ParameterBlock.h"
 #include "Serialize.h"
+#include "TKObject.h"
 #include "Types.h"
-
-#include <memory>
-#include <vector>
 
 namespace ToolKit
 {
@@ -81,15 +79,16 @@ namespace ToolKit
   };
 
   static VariantCategory EntityCategory {"Meta", 100};
-  struct BlendTarget;
 
   /**
    * Fundamental object that all the ToolKit utilities can interacted with.
    * Entity is the base class for all the objects that can be inserted in any
    * scene.
    */
-  class TK_API Entity : public Serializable
+  class TK_API Entity : public TKObject
   {
+    TKClass(Entity, TKObject);
+
    public:
     Entity();
     virtual ~Entity();
@@ -214,7 +213,6 @@ namespace ToolKit
     void WeakCopy(Entity* other, bool copyComponents = true) const;
 
    public:
-    TKDeclareParam(ULongID, Id);
     TKDeclareParam(String, Name);
     TKDeclareParam(String, Tag);
     TKDeclareParam(bool, Visible);
