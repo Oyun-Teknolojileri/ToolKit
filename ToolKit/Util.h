@@ -205,13 +205,13 @@ namespace ToolKit
   }
 
   template <typename T, typename Pred>
-  inline void erase_if(T& vec, Pred pred)
+  void erase_if(T& vec, Pred pred)
   {
     vec.erase(std::remove_if(vec.begin(), vec.end(), pred), vec.end());
   }
 
   template <typename T>
-  inline bool contains(const std::vector<T>& arr, const T& val)
+  bool contains(const std::vector<T>& arr, const T& val)
   {
     return std::find(arr.cbegin(), arr.cend(), val) != arr.cend();
   }
@@ -222,7 +222,7 @@ namespace ToolKit
    * @returns if given value exist, returns index of val otherwise -1
    */
   template <typename T>
-  inline int FindIndex(const std::vector<T>& arr, const T& val)
+  int FindIndex(const std::vector<T>& arr, const T& val)
   {
     auto it = std::find(arr.cbegin(), arr.cend(), val);
     return it == arr.cend() ? -1 : int(it - arr.cbegin());

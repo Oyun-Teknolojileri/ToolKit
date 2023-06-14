@@ -115,7 +115,6 @@
     <ClInclude Include="GBufferPass.h" />
     <ClInclude Include="GlErrorReporter.h" />
     <ClInclude Include="GradientSky.h" />
-    <ClInclude Include="HashString.h" />
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="OutlinePass.h" />
@@ -152,6 +151,7 @@
     <ClInclude Include="StateMachine.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StencilPass.h" />
+    <ClInclude Include="StringId.h" />
     <ClInclude Include="Surface.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TKAssert.h" />

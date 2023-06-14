@@ -26,7 +26,6 @@
 
 #pragma once
 
-#include "HashString.h"
 #include "ParameterBlock.h"
 #include "Serialize.h"
 #include "Types.h"
@@ -34,28 +33,34 @@
 namespace ToolKit
 {
 
-#define TKClass(Name, Base)                                                                                            \
- private:                                                                                                              \
-  static constexpr HashString Name##ID(#Name);                                                                         \
-  typedef Base Super;                                                                                                  \
-                                                                                                                       \
- public:                                                                                                               \
-  const HashString& Class() override                                                                                   \
-  {                                                                                                                    \
-    return Name##ID;                                                                                                   \
-  }                                                                                                                    \
-  static const HashString& StaticClass()                                                                               \
-  {                                                                                                                    \
-    return Name##ID;                                                                                                   \
-  }
+  struct Class
+  {
+    Class* Super = nullptr;
+    String Name;
+
+    bool IsSublcassOf(Class* base)
+    {
+      if (Super == nullptr)
+      {
+        return false;
+      }
+
+      if (base->Name == Super->Name)
+      {
+        return true;
+      }
+
+      return IsSublcassOf(Super);
+    }
+  };
 
   typedef std::shared_ptr<class TKObject> TKObjectPtr;
 
   class TK_API TKObject : public Serializable
   {
-   public:
-    virtual const HashString& Class() { return TKObjectID; }
+    Class m_class = {nullptr, ""};
 
+   public:
     TKObject();
     virtual ~TKObject();
     virtual void NativeConstruct();
@@ -72,7 +77,6 @@ namespace ToolKit
 
    private:
     ParameterBlock m_localData;
-    static constexpr HashString TKObjectID("TKObject");
   };
 
 } // namespace ToolKit

@@ -452,7 +452,7 @@
     <ClInclude Include="TKObject.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="HashString.h">
+    <ClInclude Include="StringId.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

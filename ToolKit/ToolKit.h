@@ -60,6 +60,7 @@
 #include "ToneMapPass.h"
 #include "Types.h"
 #include "UIManager.h"
+#include "StringId.h"
 
 /**
  * Base name space for all the ToolKit functionalities.
