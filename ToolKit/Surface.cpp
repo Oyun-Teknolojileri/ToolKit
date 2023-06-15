@@ -77,9 +77,9 @@ namespace ToolKit
 
   EntityType Surface::GetType() const { return EntityType::Entity_Surface; }
 
-  void Surface::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void Surface::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Entity::Serialize(doc, parent);
+    Entity::SerializeImp(doc, parent);
     parent        = parent->last_node();
     XmlNode* node = CreateXmlNode(doc, "Anchor", parent);
 
@@ -90,9 +90,9 @@ namespace ToolKit
     }
   }
 
-  void Surface::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Surface::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Entity::DeSerialize(doc, parent);
+    Entity::DeSerializeImp(doc, parent);
     if (XmlNode* node = parent->first_node("Anchor"))
     {
       for (int i = 0; i < 4; i++)
@@ -365,11 +365,9 @@ namespace ToolKit
 
   EntityType Button::GetType() const { return EntityType::Entity_Button; }
 
-  void Button::Serialize(XmlDocument* doc, XmlNode* parent) const { Surface::Serialize(doc, parent); }
-
-  void Button::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Button::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Surface::DeSerialize(doc, parent);
+    Surface::DeSerializeImp(doc, parent);
     ParameterEventConstructor();
   }
 

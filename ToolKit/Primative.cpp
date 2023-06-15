@@ -138,11 +138,9 @@ namespace ToolKit
 
   EntityType Cube::GetType() const { return EntityType::Entity_Cube; }
 
-  void Cube::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
-
-  void Cube::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Cube::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Entity::DeSerialize(doc, parent);
+    Entity::DeSerializeImp(doc, parent);
     Generate(GetMeshComponent(), GetCubeScaleVal());
   }
 
@@ -320,11 +318,9 @@ namespace ToolKit
 
   EntityType Quad::GetType() const { return EntityType::Entity_Quad; }
 
-  void Quad::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
-
-  void Quad::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Quad::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Entity::DeSerialize(doc, parent);
+    Entity::DeSerializeImp(doc, parent);
     Generate();
   }
 
@@ -454,11 +450,9 @@ namespace ToolKit
     mesh->ConstructFaces();
   }
 
-  void Sphere::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
-
-  void Sphere::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Sphere::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Entity::DeSerialize(doc, parent);
+    Entity::DeSerializeImp(doc, parent);
     Generate(GetMeshComponent(), GetRadiusVal());
   }
 
@@ -594,11 +588,9 @@ namespace ToolKit
 
   EntityType Cone::GetType() const { return EntityType::Entity_Cone; }
 
-  void Cone::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
-
-  void Cone::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Cone::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Entity::DeSerialize(doc, parent);
+    Entity::DeSerializeImp(doc, parent);
     Generate();
   }
 

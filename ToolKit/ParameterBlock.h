@@ -539,14 +539,14 @@ namespace ToolKit
      * @param doc The xml document object to serialize to.
      * @param parent The parent xml node to serialize to.
      */
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
     /**
      * De serializes the variant from the xml document.
      * @param doc The xml document object to read from.
      * @param parent The parent xml node to read from.
      */
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
    public:
     /**
@@ -608,14 +608,14 @@ namespace ToolKit
      * @param doc The xml document object to serialize to.
      * @param parent The parent xml node to serialize to.
      */
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
     /**
      * De serializes the ParameterBlcok from the xml document.
      * @param doc The xml document object to read from.
      * @param parent The parent xml node to read from.
      */
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     /**
      * Used to access ParameterVariant's by index.

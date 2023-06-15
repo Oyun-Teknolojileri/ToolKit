@@ -76,8 +76,8 @@ namespace ToolKit
 
     void SetMaterial(MaterialPtr material);
 
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     /**
      * Traverse all submeshes recursively.
@@ -139,7 +139,8 @@ namespace ToolKit
     int GetVertexSize() const override;
     bool IsSkinned() const override;
 
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+
     // Because AABB is all dependent on active animation, just return AABB
     // (doesn't change m_aabb)
     BoundingBox CalculateAABB(const Skeleton* skel, DynamicBoneMapPtr boneMap);

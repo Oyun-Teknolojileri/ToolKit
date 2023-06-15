@@ -76,8 +76,8 @@ namespace ToolKit
       // System calls.
       virtual void DispatchSignals() const;
 
-      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+      virtual void SerializeImp(XmlDocument* doc, XmlNode* parent) const;
+      virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent);
 
      protected:
       // Internal window handling.

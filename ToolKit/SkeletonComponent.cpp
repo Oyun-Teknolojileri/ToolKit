@@ -61,9 +61,9 @@ namespace ToolKit
     return dst;
   }
 
-  void SkeletonComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void SkeletonComponent::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Component::DeSerialize(doc, parent);
+    Component::DeSerializeImp(doc, parent);
     Init();
   }
 

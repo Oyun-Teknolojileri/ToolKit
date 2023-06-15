@@ -241,7 +241,7 @@ namespace ToolKit
     m_loaded = true;
   }
 
-  void Animation::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void Animation::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container      = CreateXmlNode(doc, "anim", parent);
 

@@ -208,8 +208,8 @@ namespace ToolKit
      */
     void SetInheritScaleDeep(bool val);
 
-    void Serialize(XmlDocument* doc, XmlNode* parent) const;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent);
+    void SerializeImp(XmlDocument* doc, XmlNode* parent) const;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent);
 
    private:
     void TransformImp(const Mat4& val,

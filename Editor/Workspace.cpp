@@ -208,7 +208,7 @@ namespace ToolKit
       }
     }
 
-    void Workspace::Serialize(XmlDocument* doc, XmlNode* parent) const
+    void Workspace::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
       std::ofstream file;
       String fileName = ConcatPaths({ConfigPath(), g_workspaceFile});
@@ -348,7 +348,7 @@ namespace ToolKit
       SafeDel(lclDoc);
     }
 
-    void Workspace::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    void Workspace::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
     {
       String settingsFile   = ConcatPaths({ConfigPath(), g_workspaceFile});
 

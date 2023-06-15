@@ -67,9 +67,9 @@ namespace ToolKit
     return ec;
   }
 
-  void AnimControllerComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void AnimControllerComponent::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Component::DeSerialize(doc, parent);
+    Component::DeSerializeImp(doc, parent);
     AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
     for (auto iter = list.begin(); iter != list.end(); ++iter)
     {

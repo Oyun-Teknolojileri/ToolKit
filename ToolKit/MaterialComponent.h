@@ -52,8 +52,8 @@ namespace ToolKit
     ComponentPtr Copy(Entity* ntt) override;
 
     void Init(bool flushClientSideArray);
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     void AddMaterial(MaterialPtr mat);
     void RemoveMaterial(uint index);
 

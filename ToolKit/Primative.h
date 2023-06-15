@@ -84,8 +84,7 @@ namespace ToolKit
     Cube(const Vec3& scale);
 
     EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     static void Generate(MeshComponentPtr meshComp, const Vec3& scale);
 
@@ -111,8 +110,7 @@ namespace ToolKit
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
    private:
     void Generate();
@@ -127,8 +125,7 @@ namespace ToolKit
     Sphere(float radius);
 
     EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
     static void Generate(MeshComponentPtr mesh, float radius);
 
    protected:
@@ -149,8 +146,7 @@ namespace ToolKit
     Cone(float height, float radius, int segBase, int segHeight);
 
     EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;

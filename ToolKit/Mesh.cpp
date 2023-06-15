@@ -527,7 +527,7 @@ namespace ToolKit
     }
   }
 
-  void Mesh::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void Mesh::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "meshContainer", parent);
 
@@ -548,7 +548,7 @@ namespace ToolKit
     }
   }
 
-  void Mesh::DeSerialize(XmlDocument* doc, XmlNode* parent) { LoadMesh(doc, parent, this); }
+  void Mesh::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { LoadMesh(doc, parent, this); }
 
   void TraverseMeshHelper(const Mesh* mesh, std::function<void(const Mesh*)> callback)
   {
@@ -683,7 +683,7 @@ namespace ToolKit
     }
   }
 
-  void SkinMesh::DeSerialize(XmlDocument* doc, XmlNode* parent) { LoadMesh(doc, parent, this); }
+  void SkinMesh::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { LoadMesh(doc, parent, this); }
 
   BoundingBox SkinMesh::CalculateAABB(const Skeleton* skel, DynamicBoneMapPtr boneMap)
   {

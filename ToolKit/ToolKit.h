@@ -131,8 +131,8 @@ namespace ToolKit
       bool FXAAEnabled             = false;
     } PostProcessing;
 
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     void SerializeWindow(XmlDocument* doc, XmlNode* parent) const;
     void DeSerializeWindow(XmlDocument* doc, XmlNode* parent);

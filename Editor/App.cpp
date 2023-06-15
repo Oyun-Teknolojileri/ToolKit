@@ -1242,7 +1242,7 @@ namespace ToolKit
       }
     }
 
-    void App::Serialize(XmlDocument* doc, XmlNode* parent) const
+    void App::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
       m_workspace.Serialize(nullptr, nullptr);
 
@@ -1292,7 +1292,7 @@ namespace ToolKit
       }
     }
 
-    void App::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    void App::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
     {
       XmlFilePtr lclFile    = nullptr;
       XmlDocumentPtr lclDoc = nullptr;

@@ -90,9 +90,9 @@ namespace ToolKit
     Init();
   }
 
-  void SkyBase::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void SkyBase::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Entity::DeSerialize(doc, parent);
+    Entity::DeSerializeImp(doc, parent);
     ParameterEventConstructor();
   }
 

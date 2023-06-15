@@ -138,7 +138,7 @@ namespace ToolKit
     /**
      * Save animation to disk
      */
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
     /**
      * Finds nearest keys and interpolation ratio for current time.

@@ -44,8 +44,7 @@ namespace ToolKit
     virtual ~EnvironmentComponent();
 
     ComponentPtr Copy(Entity* ntt) override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     BoundingBox GetBBox();
 

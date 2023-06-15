@@ -43,7 +43,7 @@ namespace ToolKit
 
   ComponentType Component::GetType() const { return ComponentType::Base; }
 
-  void Component::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void Component::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* componentNode = CreateXmlNode(doc, XmlComponent, parent);
     WriteAttr(componentNode, doc, XmlParamterTypeAttr, std::to_string(static_cast<int>(GetType())));
@@ -51,7 +51,7 @@ namespace ToolKit
     m_localData.Serialize(doc, componentNode);
   }
 
-  void Component::DeSerialize(XmlDocument* doc, XmlNode* parent) { m_localData.DeSerialize(doc, parent); }
+  void Component::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { m_localData.DeSerialize(doc, parent); }
 
   Component* Component::CreateByType(ComponentType t)
   {

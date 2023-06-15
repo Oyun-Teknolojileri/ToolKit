@@ -164,9 +164,9 @@ namespace ToolKit
     m_initiated = true;
   }
 
-  void Prefab::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Prefab::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Entity::DeSerialize(doc, parent);
+    Entity::DeSerializeImp(doc, parent);
     parent = parent->last_node();
 
     for (XmlNode* rNode = parent->first_node(); rNode; rNode = rNode->next_sibling())
@@ -184,9 +184,9 @@ namespace ToolKit
     }
   }
 
-  void Prefab::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void Prefab::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Entity::Serialize(doc, parent);
+    Entity::SerializeImp(doc, parent);
     parent = CreateXmlNode(doc, "PrefabRoots", parent->last_node());
 
     EntityRawPtrArray childs;

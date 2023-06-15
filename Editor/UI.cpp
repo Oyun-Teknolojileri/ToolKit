@@ -1354,7 +1354,7 @@ namespace ToolKit
 
     void Window::DispatchSignals() const {}
 
-    void Window::Serialize(XmlDocument* doc, XmlNode* parent) const
+    void Window::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
       XmlNode* node = doc->allocate_node(rapidxml::node_element, "Window");
       if (parent != nullptr)
@@ -1378,7 +1378,7 @@ namespace ToolKit
       WriteVec(childNode, doc, m_location);
     }
 
-    void Window::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    void Window::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
     {
       XmlNode* node = nullptr;
       if (parent != nullptr)

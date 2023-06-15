@@ -80,12 +80,10 @@ namespace ToolKit
 
   EntityType Light::GetType() const { return EntityType::Entity_Light; }
 
-  void Light::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
-
-  void Light::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Light::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
     ClearComponents(); // Read from file.
-    Entity::DeSerialize(doc, parent);
+    Entity::DeSerializeImp(doc, parent);
     ParameterEventConstructor();
   }
 

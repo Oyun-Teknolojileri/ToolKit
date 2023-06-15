@@ -52,8 +52,8 @@ namespace ToolKit
     virtual ~Surface();
 
     EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     void CalculateAnchorOffsets(Vec3 canvas[4], Vec3 surface[4]);
 
@@ -108,8 +108,7 @@ namespace ToolKit
     Button(const TexturePtr& buttonImage, const TexturePtr& hoverImage);
     virtual ~Button();
     EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
     void ResetCallbacks() override;
 
    protected:

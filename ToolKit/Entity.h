@@ -98,8 +98,8 @@ namespace ToolKit
     virtual void SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget = nullptr);
     virtual BoundingBox GetAABB(bool inWorld = false) const;
     virtual Entity* Copy() const;
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+    virtual void SerializeImp(XmlDocument* doc, XmlNode* parent) const;
+    virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent);
     virtual void RemoveResources();
 
     /**

@@ -55,12 +55,12 @@ namespace ToolKit
 
   Entity* Drawable::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 
-  void Drawable::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
+  void Drawable::SerializeImp(XmlDocument* doc, XmlNode* parent) const { Entity::SerializeImp(doc, parent); }
 
-  void Drawable::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Drawable::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
     ClearComponents();
-    Entity::DeSerialize(doc, parent);
+    Entity::DeSerializeImp(doc, parent);
   }
 
   void Drawable::RemoveResources() { GetMeshManager()->Remove(GetMesh()->GetFile()); }

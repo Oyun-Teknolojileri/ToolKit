@@ -64,7 +64,6 @@ namespace ToolKit
     m_isPrefab = path.find("Prefabs") != String::npos;
 
     DeSerialize(&sceneDoc, nullptr);
-    PostDeSerialize();
 
     // Update parent - child relation for entities.
     for (Entity* e : m_entities)
@@ -545,7 +544,7 @@ namespace ToolKit
     }
   }
 
-  void Scene::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void Scene::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* scene = CreateXmlNode(doc, XmlSceneElement, parent);
 
@@ -598,7 +597,7 @@ namespace ToolKit
     }
   }
 
-  void Scene::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Scene::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
     XmlNode* root = nullptr;
     if (parent != nullptr)
@@ -630,7 +629,6 @@ namespace ToolKit
       Entity* ntt            = GetEntityFactory()->CreateByType(t);
 
       ntt->DeSerialize(doc, node);
-      ntt->PostDeSerialize();
 
       if (ntt->GetType() == EntityType::Entity_Prefab)
       {

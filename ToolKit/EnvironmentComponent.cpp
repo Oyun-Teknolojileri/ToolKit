@@ -147,11 +147,9 @@ namespace ToolKit
     return ec;
   }
 
-  void EnvironmentComponent::Serialize(XmlDocument* doc, XmlNode* parent) const { Component::Serialize(doc, parent); }
-
-  void EnvironmentComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void EnvironmentComponent::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Component::DeSerialize(doc, parent);
+    Component::DeSerializeImp(doc, parent);
     ParameterEventConstructor();
   }
 

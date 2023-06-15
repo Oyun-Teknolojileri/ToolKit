@@ -77,8 +77,8 @@ namespace ToolKit
     static Prefab* GetPrefabRoot(Entity* ntt);
     Entity* CopyTo(Entity* other) const override;
 
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:
     void ParameterConstructor();

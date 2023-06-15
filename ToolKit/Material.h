@@ -87,8 +87,8 @@ namespace ToolKit
      */
     bool IsPBR();
 
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
    private:
     void CopyTo(Resource* other) override;

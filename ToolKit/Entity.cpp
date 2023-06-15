@@ -223,7 +223,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  void Entity::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void Entity::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = CreateXmlNode(doc, XmlEntityElement, parent);
     WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(GetIdVal()));
@@ -244,7 +244,7 @@ namespace ToolKit
     }
   }
 
-  void Entity::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Entity::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
     XmlNode* node = nullptr;
     if (parent != nullptr)

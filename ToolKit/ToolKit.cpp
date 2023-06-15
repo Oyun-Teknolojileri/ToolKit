@@ -449,14 +449,14 @@ namespace ToolKit
     ReadAttr(node, "FPS", Graphics.FPS);
   }
 
-  void EngineSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void EngineSettings::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     SerializeGraphics(doc, parent);
     SerializePostProcessing(doc, parent);
     SerializeWindow(doc, parent);
   }
 
-  void EngineSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void EngineSettings::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
     assert(doc && "doc must not be null");
     DeSerializeWindow(doc, parent);

@@ -224,7 +224,7 @@ namespace ToolKit
     }
   }
 
-  void Shader::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void Shader::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "shader", parent);
     XmlNode* node      = CreateXmlNode(doc, "type", container);
@@ -261,7 +261,7 @@ namespace ToolKit
     srcInput->value(doc->allocate_string(m_source.c_str()));
   }
 
-  void Shader::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Shader::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
     if (parent == nullptr)
     {

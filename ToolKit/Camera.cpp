@@ -107,9 +107,9 @@ namespace ToolKit
 
   EntityType Camera::GetType() const { return EntityType::Entity_Camera; }
 
-  void Camera::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void Camera::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Entity::Serialize(doc, parent);
+    Entity::SerializeImp(doc, parent);
     parent        = parent->last_node();
 
     XmlNode* node = CreateXmlNode(doc, "Camera", parent);
@@ -126,10 +126,11 @@ namespace ToolKit
     WriteAttr(node, doc, "scale", std::to_string(m_orthographicScale));
   }
 
-  void Camera::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Camera::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
     ClearComponents();
-    Entity::DeSerialize(doc, parent);
+
+    Entity::DeSerializeImp(doc, parent);
 
     if (XmlNode* node = parent->first_node("Camera"))
     {

@@ -55,7 +55,7 @@ namespace ToolKit
       return cpy;
     }
 
-    void EditorCamera::PostDeSerialize()
+    void EditorCamera::PostDeSerializeImp(XmlDocument* doc, XmlNode* parent)
     {
       ParameterConstructor();
       CreateGizmo();

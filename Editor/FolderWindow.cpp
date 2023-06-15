@@ -530,9 +530,9 @@ namespace ToolKit
       return false;
     }
 
-    void FolderWindow::Serialize(XmlDocument* doc, XmlNode* parent) const
+    void FolderWindow::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
-      Window::Serialize(doc, parent);
+      Window::SerializeImp(doc, parent);
       XmlNode* node   = parent->last_node();
 
       XmlNode* folder = doc->allocate_node(rapidxml::node_element, "FolderWindow");
@@ -553,9 +553,9 @@ namespace ToolKit
       }
     }
 
-    void FolderWindow::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    void FolderWindow::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
     {
-      Window::DeSerialize(doc, parent);
+      Window::DeSerializeImp(doc, parent);
       if (XmlNode* node = parent->first_node("FolderWindow"))
       {
         ReadAttr(node, "activeFolder", m_activeFolder);

@@ -101,9 +101,9 @@ namespace ToolKit
 
   ResourceType Resource::GetType() const { return ResourceType::Base; }
 
-  void Resource::Serialize(XmlDocument* doc, XmlNode* parent) const { assert(false && "Not implemented"); }
+  void Resource::SerializeImp(XmlDocument* doc, XmlNode* parent) const { assert(false && "Not implemented"); }
 
-  void Resource::DeSerialize(XmlDocument* doc, XmlNode* parent) { assert(false && "Not implemented"); }
+  void Resource::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { assert(false && "Not implemented"); }
 
   void Resource::SerializeRef(XmlDocument* doc, XmlNode* parent) const
   {

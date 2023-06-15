@@ -60,8 +60,8 @@ namespace ToolKit
       void DispatchSignals() const override;
 
       // Viewport overrides.
-      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+      void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+      void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
       void OnResizeContentArea(float width, float height) override;
       virtual void ResizeWindow(uint width, uint height);
 

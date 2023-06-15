@@ -44,8 +44,7 @@ namespace ToolKit
     virtual void ParameterEventConstructor();
 
     EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     // Shadow
     MaterialPtr GetShadowMaterial();

@@ -265,7 +265,7 @@ namespace ToolKit
     return node;
   }
 
-  void Node::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void Node::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = CreateXmlNode(doc, XmlNodeElement, parent);
 
@@ -281,7 +281,7 @@ namespace ToolKit
     WriteVec(tNode, doc, m_scale);
   }
 
-  void Node::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Node::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
     XmlNode* node = parent;
     if (node == nullptr)

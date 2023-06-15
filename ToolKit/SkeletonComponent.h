@@ -52,7 +52,7 @@ namespace ToolKit
     void Init();
 
     ComponentPtr Copy(Entity* ntt) override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
    public:
     TKDeclareParam(SkeletonPtr, SkeletonResource);

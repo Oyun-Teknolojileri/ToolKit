@@ -86,8 +86,6 @@ namespace ToolKit
     virtual void NativeDestruct();
     virtual void ParameterConstructor();
     virtual void ParameterEventConstructor();
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
     virtual TKObjectPtr Copy();
 
    public:

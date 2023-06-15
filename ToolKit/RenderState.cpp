@@ -34,7 +34,7 @@
 namespace ToolKit
 {
 
-  void RenderState::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void RenderState::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = doc->allocate_node(rapidxml::node_type::node_element, "renderState");
 
@@ -55,7 +55,7 @@ namespace ToolKit
     WriteAttr(container, doc, "drawType", std::to_string(int(drawType)));
   }
 
-  void RenderState::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void RenderState::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
     if (parent == nullptr)
     {

@@ -51,14 +51,6 @@ namespace ToolKit
 
   void TKObject::ParameterEventConstructor() {}
 
-  void TKObject::Serialize(XmlDocument* doc, XmlNode* parent) const
-  {
-    XmlNode* objNode = CreateXmlNode(doc, XmlObjectElement, parent);
-    m_localData.Serialize(doc, parent);
-  }
-
-  void TKObject::DeSerialize(XmlDocument* doc, XmlNode* parent) {}
-
   TKObjectPtr TKObject::Copy() { return nullptr; }
 
 } // namespace ToolKit

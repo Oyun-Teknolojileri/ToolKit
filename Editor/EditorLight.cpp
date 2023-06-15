@@ -185,23 +185,23 @@ namespace ToolKit
       return cpy;
     }
 
-    void EditorDirectionalLight::Serialize(XmlDocument* doc, XmlNode* parent) const
+    void EditorDirectionalLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
       if (m_gizmoActive)
       {
         EnableGizmo(false);
-        DirectionalLight::Serialize(doc, parent);
+        DirectionalLight::SerializeImp(doc, parent);
         EnableGizmo(true);
       }
       else
       {
-        DirectionalLight::Serialize(doc, parent);
+        DirectionalLight::SerializeImp(doc, parent);
       }
     }
 
-    void EditorDirectionalLight::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    void EditorDirectionalLight::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
     {
-      DirectionalLight::DeSerialize(doc, parent);
+      DirectionalLight::DeSerializeImp(doc, parent);
 
       assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
 
@@ -262,23 +262,23 @@ namespace ToolKit
       return cpy;
     }
 
-    void EditorPointLight::Serialize(XmlDocument* doc, XmlNode* parent) const
+    void EditorPointLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
       if (m_gizmoActive)
       {
         EnableGizmo(false);
-        PointLight::Serialize(doc, parent);
+        PointLight::SerializeImp(doc, parent);
         EnableGizmo(true);
       }
       else
       {
-        PointLight::Serialize(doc, parent);
+        PointLight::SerializeImp(doc, parent);
       }
     }
 
-    void EditorPointLight::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    void EditorPointLight::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
     {
-      PointLight::DeSerialize(doc, parent);
+      PointLight::DeSerializeImp(doc, parent);
 
       assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
 
@@ -309,23 +309,23 @@ namespace ToolKit
       return cpy;
     }
 
-    void EditorSpotLight::Serialize(XmlDocument* doc, XmlNode* parent) const
+    void EditorSpotLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
       if (m_gizmoActive)
       {
         EnableGizmo(false);
-        SpotLight::Serialize(doc, parent);
+        SpotLight::SerializeImp(doc, parent);
         EnableGizmo(true);
       }
       else
       {
-        SpotLight::Serialize(doc, parent);
+        SpotLight::SerializeImp(doc, parent);
       }
     }
 
-    void EditorSpotLight::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    void EditorSpotLight::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
     {
-      SpotLight::DeSerialize(doc, parent);
+      SpotLight::DeSerializeImp(doc, parent);
 
       assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
 

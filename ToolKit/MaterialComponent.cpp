@@ -60,9 +60,10 @@ namespace ToolKit
 
   const char *XmlMatCountAttrib = "MaterialCount", *XmlMatIdAttrib = "ID";
 
-  void MaterialComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void MaterialComponent::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Component::DeSerialize(doc, parent);
+    Component::DeSerializeImp(doc, parent);
+
     uint matCount = 0;
     ReadAttr(parent, XmlMatCountAttrib, matCount);
     m_materialList.resize(matCount);
@@ -89,9 +90,10 @@ namespace ToolKit
     }
   }
 
-  void MaterialComponent::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void MaterialComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Component::Serialize(doc, parent);
+    Component::SerializeImp(doc, parent);
+
     XmlNode* compNode = parent->last_node(XmlComponent.c_str());
     WriteAttr(compNode, doc, XmlMatCountAttrib, std::to_string(m_materialList.size()));
     for (size_t i = 0; i < m_materialList.size(); i++)

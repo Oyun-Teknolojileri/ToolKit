@@ -165,9 +165,9 @@ namespace ToolKit
       ModShortCutSignals();
     }
 
-    void EditorViewport::Serialize(XmlDocument* doc, XmlNode* parent) const
+    void EditorViewport::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
-      Window::Serialize(doc, parent);
+      Window::SerializeImp(doc, parent);
       XmlNode* node = doc->allocate_node(rapidxml::node_element, "Viewport");
 
       WriteAttr(node, doc, "alignment", std::to_string((int) m_cameraAlignment));
@@ -179,9 +179,9 @@ namespace ToolKit
       wnd->append_node(node);
     }
 
-    void EditorViewport::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    void EditorViewport::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
     {
-      Window::DeSerialize(doc, parent);
+      Window::DeSerializeImp(doc, parent);
       m_wndContentAreaSize = m_size;
 
       if (XmlNode* node = parent->first_node("Viewport"))

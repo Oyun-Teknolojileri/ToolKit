@@ -58,11 +58,9 @@ namespace ToolKit
 
   EntityType Canvas::GetType() const { return EntityType::Entity_Canvas; }
 
-  void Canvas::Serialize(XmlDocument* doc, XmlNode* parent) const { Surface::Serialize(doc, parent); }
-
-  void Canvas::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Canvas::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Surface::DeSerialize(doc, parent);
+    Surface::DeSerializeImp(doc, parent);
     ParameterEventConstructor();
     CreateQuadLines();
   }

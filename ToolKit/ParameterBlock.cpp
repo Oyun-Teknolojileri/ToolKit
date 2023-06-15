@@ -271,7 +271,7 @@ namespace ToolKit
     return *this;
   }
 
-  void ParameterVariant::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void ParameterVariant::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlParamterElement.c_str());
 
@@ -459,7 +459,7 @@ namespace ToolKit
     parent->append_node(node);
   }
 
-  void ParameterVariant::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void ParameterVariant::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
     if (parent == nullptr)
     {
@@ -719,7 +719,7 @@ namespace ToolKit
     deserializeDataFn(parent, this);
   }
 
-  void ParameterBlock::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void ParameterBlock::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* blockNode = doc->allocate_node(rapidxml::node_element, XmlParamBlockElement.c_str());
 
@@ -730,7 +730,7 @@ namespace ToolKit
     parent->append_node(blockNode);
   }
 
-  void ParameterBlock::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void ParameterBlock::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
     if (XmlNode* block = parent->first_node(XmlParamBlockElement.c_str()))
     {

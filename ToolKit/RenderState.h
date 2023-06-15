@@ -88,8 +88,8 @@ namespace ToolKit
   class TK_API RenderState : public Serializable
   {
    public:
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+    virtual void SerializeImp(XmlDocument* doc, XmlNode* parent) const;
+    virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent);
 
    public:
     // Active state values.

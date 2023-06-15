@@ -88,7 +88,7 @@ namespace ToolKit
 
   void DynamicBoneMap::Init(const Skeleton* skeleton)
   {
-    if (skeleton->m_bones.empty()) 
+    if (skeleton->m_bones.empty())
     {
       return;
     }
@@ -327,7 +327,7 @@ namespace ToolKit
     }
   }
 
-  void Skeleton::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void Skeleton::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "skeleton", parent);
 
@@ -402,7 +402,7 @@ namespace ToolKit
     }
   }
 
-  void Skeleton::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Skeleton::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
     if (parent == nullptr)
     {

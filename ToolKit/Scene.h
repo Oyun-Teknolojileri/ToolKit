@@ -293,14 +293,14 @@ namespace ToolKit
      * @param doc The XML document to serialize to.
      * @param parent The parent XML node to serialize under.
      */
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
     /**
      * Deserializes the scene from an XML document.
      * @param doc The XML document to deserialize from.
      * @param parent The parent XML node to deserialize from.
      */
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     /**
      * Returns the biggest number generated during the current runtime. This

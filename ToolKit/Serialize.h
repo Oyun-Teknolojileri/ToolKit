@@ -34,9 +34,32 @@ namespace ToolKit
   class TK_API Serializable
   {
    public:
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const = 0;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent)     = 0;
-    virtual void PostDeSerialize() {};
+    void Serialize(XmlDocument* doc, XmlNode* parent) const
+    {
+      PreSerializeImp(doc, parent);
+      SerializeImp(doc, parent);
+      PostSerializeImp(doc, parent);
+    }
+
+    void DeSerialize(XmlDocument* doc, XmlNode* parent)
+    {
+      PreDeserializeImp(doc, parent);
+      DeSerializeImp(doc, parent);
+      PostDeSerializeImp(doc, parent);
+    }
+
+   protected:
+    virtual void PreSerializeImp(XmlDocument* doc, XmlNode* parent) const {}
+
+    virtual void SerializeImp(XmlDocument* doc, XmlNode* parent) const = 0;
+
+    virtual void PostSerializeImp(XmlDocument* doc, XmlNode* parent) const {}
+
+    virtual void PreDeserializeImp(XmlDocument* doc, XmlNode* parent) {}
+
+    virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent) = 0;
+
+    virtual void PostDeSerializeImp(XmlDocument* doc, XmlNode* parent) {}
   };
 
 } // namespace ToolKit

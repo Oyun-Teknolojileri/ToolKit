@@ -49,7 +49,7 @@ namespace ToolKit
     virtual ~AnimControllerComponent();
 
     ComponentPtr Copy(Entity* ntt) override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     void Play(const String& recordName);
     void Stop();

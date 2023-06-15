@@ -47,8 +47,7 @@ namespace ToolKit
     Canvas();
     explicit Canvas(const Vec2& size);
     EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     void UpdateGeometry(bool byTexture) override;
     void ApplyRecursiveResizePolicy(float width, float height);
