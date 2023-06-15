@@ -42,6 +42,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(Entity, TKObject);
+
   Entity::Entity()
   {
     ParameterConstructor();
@@ -148,17 +150,11 @@ namespace ToolKit
 
   void Entity::ParameterConstructor()
   {
-    m_localData.m_variants.reserve(6);
-    ULongID id = GetHandleManager()->GetNextHandle();
+    Super::ParameterConstructor();
 
-    Id_Define(id, EntityCategory.Name, EntityCategory.Priority, true, false);
-
-    Name_Define("Entity_" + std::to_string(id), EntityCategory.Name, EntityCategory.Priority, true, true);
-
+    Name_Define(StaticClass()->Name, EntityCategory.Name, EntityCategory.Priority, true, true);
     Tag_Define("", EntityCategory.Name, EntityCategory.Priority, true, true);
-
     Visible_Define(true, EntityCategory.Name, EntityCategory.Priority, true, true);
-
     TransformLock_Define(false, EntityCategory.Name, EntityCategory.Priority, true, true);
   }
 

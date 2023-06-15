@@ -33,12 +33,12 @@
 namespace ToolKit
 {
 
-  struct Class
+  struct TKClass
   {
-    Class* Super = nullptr;
+    TKClass* Super = nullptr;
     String Name;
 
-    bool IsSublcassOf(Class* base)
+    bool IsSublcassOf(TKClass* base)
     {
       if (Super == nullptr)
       {
@@ -56,15 +56,33 @@ namespace ToolKit
 
   typedef std::shared_ptr<class TKObject> TKObjectPtr;
 
+#define TKDeclareClass(This, Base)                                                                                     \
+ private:                                                                                                              \
+  static TKClass This##Cls;                                                                                            \
+  typedef Base Super;                                                                                                  \
+                                                                                                                       \
+ public:                                                                                                               \
+  virtual TKClass* const Class();                                                                                      \
+  static TKClass* const StaticClass()                                                                                  \
+  {                                                                                                                    \
+    return &This##Cls;                                                                                                 \
+  }
+
+#define TKDefineClass(This, Base)                                                                                      \
+  TKClass This::This##Cls = {Base::StaticClass(), #This};                                                              \
+  TKClass* const This::Class()                                                                                         \
+  {                                                                                                                    \
+    return &This##Cls;                                                                                                 \
+  }
+
   class TK_API TKObject : public Serializable
   {
-    Class m_class = {nullptr, ""};
+    TKDeclareClass(TKObject, TKObject);
 
    public:
     TKObject();
     virtual ~TKObject();
     virtual void NativeConstruct();
-
     virtual void NativeDestruct();
     virtual void ParameterConstructor();
     virtual void ParameterEventConstructor();

@@ -29,6 +29,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(TKObject, TKObject);
+
   TKObject::TKObject() {}
 
   TKObject::~TKObject() {}
@@ -41,7 +43,11 @@ namespace ToolKit
 
   void TKObject::NativeDestruct() {}
 
-  void TKObject::ParameterConstructor() {}
+  void TKObject::ParameterConstructor()
+  {
+    ULongID id = GetHandleManager()->GetNextHandle();
+    Id_Define(id, EntityCategory.Name, EntityCategory.Priority, true, false);
+  }
 
   void TKObject::ParameterEventConstructor() {}
 

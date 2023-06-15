@@ -87,9 +87,9 @@ namespace ToolKit
    */
   class TK_API Entity : public TKObject
   {
-    TKClass(Entity, TKObject);
-
    public:
+    TKDeclareClass(Entity, TKObject);
+
     Entity();
     virtual ~Entity();
 
@@ -209,7 +209,7 @@ namespace ToolKit
 
    protected:
     virtual Entity* CopyTo(Entity* other) const;
-    void ParameterConstructor();
+    void ParameterConstructor() override;
     void WeakCopy(Entity* other, bool copyComponents = true) const;
 
    public:
