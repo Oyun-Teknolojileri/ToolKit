@@ -89,10 +89,10 @@ namespace ToolKit
   template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const UVec4& val);
   template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const Quaternion& val);
 
-  void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val)
+  void WriteAttr(XmlNode* node, XmlDocument* doc, const StringView& name, const StringView& val)
   {
     node->append_attribute(
-        doc->allocate_attribute(doc->allocate_string(name.c_str(), 0), doc->allocate_string(val.c_str(), 0)));
+        doc->allocate_attribute(doc->allocate_string(name.data(), 0), doc->allocate_string(val.data(), 0)));
   }
 
   template <typename T>

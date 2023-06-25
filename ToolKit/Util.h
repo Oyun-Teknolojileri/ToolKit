@@ -41,7 +41,7 @@ namespace ToolKit
   void ReadVec(XmlNode* node, T& val);
   template <typename T>
   void WriteVec(XmlNode* node, XmlDocument* doc, const T& val);
-  TK_API void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val);
+  TK_API void WriteAttr(XmlNode* node, XmlDocument* doc, const StringView& name, const StringView& val);
 
   TK_API void ReadAttr(XmlNode* node, const String& name, bool& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, float& val);
