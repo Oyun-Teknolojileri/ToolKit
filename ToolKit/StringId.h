@@ -43,16 +43,36 @@ namespace ToolKit
     friend class StringIdManager;
 
    private:
-    StringId(const String& str, ULongID id) : Str(str), Id(id) {}
+    StringId(const String& str, ULongID id) : m_string(str), m_id(id) {}
 
    public:
-    bool operator==(const StringId& other) const { return (Id == other.Id); }
+    StringId(const StringId& other)
+    {
+      m_string = other.m_string;
+      m_id     = other.m_id;
+    }
+
+    bool operator==(const StringId& other) const { return (m_id == other.m_id); }
 
     bool operator!=(const StringId& other) const { return !(*this == other); }
 
-   public:
-    const String Str;
-    const ULongID Id = 0;
+    StringId& operator=(const StringId& other)
+    {
+      if (this != &other)
+      {
+        m_string = other.m_string;
+        m_id     = other.m_id;
+      }
+      return *this;
+    }
+
+    const String& Str() { return m_string; }
+
+    ULongID Id() { return m_id; }
+
+   private:
+    String m_string;
+    ULongID m_id = 0;
   };
 
   /**
