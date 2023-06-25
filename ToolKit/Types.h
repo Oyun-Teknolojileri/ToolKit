@@ -242,7 +242,6 @@ namespace ToolKit
   static const String XmlEntityTypeAttr("t");
   static const String XmlEntityVisAttr("vi");
   static const String XmlEntityTrLockAttr("lc");
-  static const String XmlBaseEntityIdAttr("bi");
   static const String XmlSceneElement("S");
   static const String XmlParamterElement("P");
   static const String XmlParamterValAttr("v");
@@ -261,8 +260,12 @@ namespace ToolKit
   static const String XmlComponent("Component");
   static const StringView XmlNodeSettings("Settings");
   static const StringView XmlNodeName("name");
-  static const StringView XmlObjectClass("Class");
-  static const StringView XmlObjectElement("Object");
+
+  // V > 0.4.4
+  static const StringView XmlObjectClassAttr("Cl");
+  static const StringView XmlObjectElement("Ob");
+  static const StringView XmlObjectIdAttr("i");
+  static const StringView XmlComponentArrayElement("Ca");
 
   enum class AxisLabel
   {

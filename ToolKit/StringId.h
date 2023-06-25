@@ -91,13 +91,12 @@ namespace ToolKit
       }
 
       std::hash<String> hashFunc;
-      ULongID hashValue = hashFunc(str);
-      ULongID uniqueId  = hashValue ^ ++m_counter;
+      ULongID uniqueId = hashFunc(str);
 
       // Prevent collision.
       while (Exist(uniqueId))
       {
-        uniqueId = hashValue ^ ++m_counter;
+        uniqueId = uniqueId ^ ++m_counter;
       }
 
       m_stringToId[str]      = uniqueId;

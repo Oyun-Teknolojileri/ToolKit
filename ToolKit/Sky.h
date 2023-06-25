@@ -34,6 +34,8 @@ namespace ToolKit
   class TK_API SkyBase : public Entity
   {
    public:
+    TKDeclareClass(SkyBase, Entity);
+
     SkyBase();
 
     EntityType GetType() const override;
@@ -66,6 +68,8 @@ namespace ToolKit
   class TK_API Sky : public SkyBase
   {
    public:
+    TKDeclareClass(Sky, SkyBase);
+
     Sky();
     virtual ~Sky();
 

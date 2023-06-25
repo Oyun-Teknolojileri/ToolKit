@@ -551,6 +551,7 @@ namespace ToolKit
     // Match scene name with saved file.
     String name;
     DecomposePath(GetFile(), nullptr, &name, nullptr);
+
     // Always write the current version.
     WriteAttr(scene, doc, "version", TKVersionStr);
     WriteAttr(scene, doc, "name", name.c_str());
@@ -558,42 +559,19 @@ namespace ToolKit
     for (size_t listIndx = 0; listIndx < m_entities.size(); listIndx++)
     {
       Entity* ntt = m_entities[listIndx];
+
       // If entity isn't a prefab type but from a prefab, don't serialize it
-      if (ntt->GetType() != EntityType::Entity_Prefab && Prefab::GetPrefabRoot(ntt))
+      if (!ntt->IsA<Prefab>() && Prefab::GetPrefabRoot(ntt))
       {
         continue;
       }
-      ntt->Serialize(doc, scene);
 
-      NormalizeEntityID(doc, scene->last_node(XmlEntityElement.c_str()), listIndx);
+      ntt->Serialize(doc, scene);
     }
 
     if (!m_isPrefab)
     {
       GetEngineSettings().SerializePostProcessing(doc, nullptr);
-    }
-  }
-
-  void Scene::NormalizeEntityID(XmlDocument* doc, XmlNode* parent, size_t listIndx) const
-  {
-    XmlAttribute* parentAttrib = parent->first_attribute(XmlParentEntityIdAttr.c_str());
-    XmlAttribute* baseAttrib   = parent->first_attribute(XmlBaseEntityIdAttr.c_str());
-    parent->remove_attribute(parent->first_attribute(XmlEntityIdAttr.c_str()));
-    WriteAttr(parent, doc, XmlEntityIdAttr, std::to_string(listIndx + 1));
-
-    Entity* ntt      = m_entities[listIndx];
-    Node* parentNode = ntt->m_node->m_parent;
-    // If parent is in scene, save its list index too
-    if (parentNode && parentNode->m_entity)
-    {
-      for (uint parentSrchIndx = 0; parentSrchIndx < m_entities.size(); parentSrchIndx++)
-      {
-        if (parentNode->m_entity == m_entities[parentSrchIndx])
-        {
-          parent->remove_attribute(parentAttrib);
-          WriteAttr(parent, doc, XmlParentEntityIdAttr, std::to_string(parentSrchIndx + 1));
-        }
-      }
     }
   }
 

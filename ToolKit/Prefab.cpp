@@ -35,6 +35,9 @@
 
 namespace ToolKit
 {
+
+  TKDefineClass(Prefab, Entity);
+
   Prefab::Prefab()
   {
     ParameterConstructor();
@@ -85,7 +88,7 @@ namespace ToolKit
 
   Prefab* Prefab::GetPrefabRoot(Entity* ntt)
   {
-    if (ntt->GetType() == EntityType::Entity_Prefab)
+    if (ntt->IsA<Prefab>())
     {
       return static_cast<Prefab*>(ntt);
     }
@@ -93,6 +96,7 @@ namespace ToolKit
     {
       return nullptr;
     }
+
     return GetPrefabRoot(ntt->m_node->m_parent->m_entity);
   }
 
@@ -186,7 +190,7 @@ namespace ToolKit
 
   void Prefab::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Entity::SerializeImp(doc, parent);
+    Super::SerializeImp(doc, parent);
     parent = CreateXmlNode(doc, "PrefabRoots", parent->last_node());
 
     EntityRawPtrArray childs;

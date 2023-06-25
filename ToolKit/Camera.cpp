@@ -35,6 +35,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(Camera, Entity);
+
   Camera::Camera()
   {
     SetLens(glm::radians(90.0f), 640.0f / 480.0f, 0.01f, 1000.0f);
@@ -109,10 +111,9 @@ namespace ToolKit
 
   void Camera::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Entity::SerializeImp(doc, parent);
-    parent        = parent->last_node();
+    Super::SerializeImp(doc, parent);
 
-    XmlNode* node = CreateXmlNode(doc, "Camera", parent);
+    XmlNode* node = CreateXmlNode(doc, "Camera", parent->last_node());
 
     WriteAttr(node, doc, "fov", std::to_string(m_fov));
     WriteAttr(node, doc, "aspect", std::to_string(m_aspect));

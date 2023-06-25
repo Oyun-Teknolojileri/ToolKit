@@ -44,6 +44,8 @@ namespace ToolKit
   class TK_API Surface : public Entity
   {
    public:
+    TKDeclareClass(Surface, Entity);
+
     Surface();
     Surface(TexturePtr texture, const Vec2& pivotOffset);
     Surface(TexturePtr texture, const SpriteEntry& entry);
@@ -103,6 +105,8 @@ namespace ToolKit
   class TK_API Button : public Surface
   {
    public:
+    TKDeclareClass(Button, Surface);
+
     Button();
     explicit Button(const Vec2& size);
     Button(const TexturePtr& buttonImage, const TexturePtr& hoverImage);

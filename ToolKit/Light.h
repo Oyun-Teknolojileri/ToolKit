@@ -36,9 +36,14 @@
 namespace ToolKit
 {
 
+  // Light
+  //////////////////////////////////////////
+
   class TK_API Light : public Entity
   {
    public:
+    TKDeclareClass(Light, Entity);
+
     Light();
     virtual ~Light();
     virtual void ParameterEventConstructor();
@@ -77,9 +82,14 @@ namespace ToolKit
     MaterialPtr m_shadowMapMaterial   = nullptr;
   };
 
+  // DirectionalLight
+  //////////////////////////////////////////
+
   class TK_API DirectionalLight : public Light
   {
    public:
+    TKDeclareClass(DirectionalLight, Light);
+
     DirectionalLight();
     virtual ~DirectionalLight();
 
@@ -98,9 +108,14 @@ namespace ToolKit
     void FitViewFrustumIntoLightFrustum(Camera* lightCamera, Camera* viewCamera);
   };
 
+  // PointLight
+  //////////////////////////////////////////
+
   class TK_API PointLight : public Light
   {
    public:
+    TKDeclareClass(PointLight, Light);
+
     PointLight();
     virtual ~PointLight();
 
@@ -114,9 +129,14 @@ namespace ToolKit
     TKDeclareParam(float, Radius);
   };
 
+  // SpotLight
+  //////////////////////////////////////////
+
   class TK_API SpotLight : public Light
   {
    public:
+    TKDeclareClass(SpotLight, Light);
+
     SpotLight();
     virtual ~SpotLight();
 

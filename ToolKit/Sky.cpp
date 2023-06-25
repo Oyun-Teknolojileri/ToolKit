@@ -37,6 +37,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(SkyBase, Entity);
+
   SkyBase::SkyBase()
   {
     ParameterConstructor();
@@ -162,6 +164,8 @@ namespace ToolKit
     m_skyboxMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
     m_skyboxMaterial->Init();
   }
+
+  TKDefineClass(Sky, Entity);
 
   Sky::Sky()
   {

@@ -225,19 +225,17 @@ namespace ToolKit
 
   void Entity::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* node = CreateXmlNode(doc, XmlEntityElement, parent);
-    WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(GetIdVal()));
+    Super::SerializeImp(doc, parent);
+
+    XmlNode* node = CreateXmlNode(doc, XmlEntityElement, parent->last_node());
     if (m_node->m_parent && m_node->m_parent->m_entity)
     {
       WriteAttr(node, doc, XmlParentEntityIdAttr, std::to_string(m_node->m_parent->m_entity->GetIdVal()));
     }
 
-    WriteAttr(node, doc, XmlEntityTypeAttr, std::to_string(static_cast<int>(GetType())));
-
     m_node->Serialize(doc, node);
-    m_localData.Serialize(doc, node);
 
-    XmlNode* compNode = CreateXmlNode(doc, "Components", node);
+    XmlNode* compNode = CreateXmlNode(doc, XmlComponentArrayElement, node);
     for (const ComponentPtr& cmp : GetComponentPtrArray())
     {
       cmp->Serialize(doc, compNode);
@@ -457,6 +455,8 @@ namespace ToolKit
 
     return nullptr;
   }
+
+  TKDefineClass(EntityNode, Entity);
 
   void EntityFactory::OverrideEntityConstructor(EntityType type, std::function<Entity*()> fn)
   {

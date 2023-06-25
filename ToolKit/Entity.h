@@ -98,8 +98,6 @@ namespace ToolKit
     virtual void SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget = nullptr);
     virtual BoundingBox GetAABB(bool inWorld = false) const;
     virtual Entity* Copy() const;
-    virtual void SerializeImp(XmlDocument* doc, XmlNode* parent) const;
-    virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent);
     virtual void RemoveResources();
 
     /**
@@ -211,6 +209,8 @@ namespace ToolKit
     virtual Entity* CopyTo(Entity* other) const;
     void ParameterConstructor() override;
     void WeakCopy(Entity* other, bool copyComponents = true) const;
+    virtual void SerializeImp(XmlDocument* doc, XmlNode* parent) const;
+    virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent);
 
    public:
     TKDeclareParam(String, Name);
@@ -218,8 +218,10 @@ namespace ToolKit
     TKDeclareParam(bool, Visible);
     TKDeclareParam(bool, TransformLock);
 
+    /**
+     * Node that holds the transform and parenting data for the Entity.
+     */
     Node* m_node;
-    ParameterBlock m_localData; // Entity's own data.
 
     /**
      * Internally used variable.
@@ -244,6 +246,8 @@ namespace ToolKit
   class TK_API EntityNode : public Entity
   {
    public:
+    TKDeclareClass(EntityNode, Entity);
+
     EntityNode();
     explicit EntityNode(const String& name);
     virtual ~EntityNode();

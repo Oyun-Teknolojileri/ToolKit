@@ -29,6 +29,27 @@
 namespace ToolKit
 {
 
+  bool TKClass::IsSublcassOf(TKClass* base)
+  {
+    if (Super == TKObject::StaticClass())
+    {
+      // Bottom of the inheritance chain, meaning that no match found.
+      return false;
+    }
+
+    if (base == Super)
+    {
+      return true;
+    }
+
+    if (this == base)
+    {
+      return true;
+    }
+
+    return Super->IsSublcassOf(base);
+  }
+
   TKDefineClass(TKObject, TKObject);
 
   TKObject::TKObject() {}
@@ -52,5 +73,17 @@ namespace ToolKit
   void TKObject::ParameterEventConstructor() {}
 
   TKObjectPtr TKObject::Copy() { return nullptr; }
+
+  void TKObject::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    assert(doc != nullptr && parent != nullptr);
+
+    XmlNode* objNode = CreateXmlNode(doc, XmlObjectElement, parent);
+    WriteAttr(objNode, doc, XmlObjectClassAttr, Class()->Name);
+
+    m_localData.Serialize(doc, objNode);
+  }
+
+  void TKObject::DeSerializeImp(XmlDocument* doc, XmlNode* parent) {}
 
 } // namespace ToolKit

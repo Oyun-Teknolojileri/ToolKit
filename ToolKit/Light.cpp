@@ -37,6 +37,12 @@
 
 namespace ToolKit
 {
+
+  // Light
+  //////////////////////////////////////////
+
+  TKDefineClass(Light, Entity);
+
   Light::Light()
   {
     m_shadowCamera = new Camera();
@@ -113,6 +119,11 @@ namespace ToolKit
   }
 
   void Light::UpdateShadowCameraTransform() { m_shadowCamera->m_node->SetTransform(m_node->GetTransform()); }
+
+  // DirectionalLight
+  //////////////////////////////////////////
+
+  TKDefineClass(DirectionalLight, Light);
 
   DirectionalLight::DirectionalLight() { AddComponent(new DirectionComponent(this)); }
 
@@ -245,6 +256,11 @@ namespace ToolKit
                          shadowBBox.max.z);
   }
 
+  // PointLight
+  //////////////////////////////////////////
+
+  TKDefineClass(PointLight, Light);
+
   PointLight::PointLight()
   {
     Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
@@ -276,6 +292,11 @@ namespace ToolKit
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
   }
+
+  // SpotLight
+  //////////////////////////////////////////
+
+  TKDefineClass(SpotLight, Light);
 
   SpotLight::SpotLight()
   {

@@ -48,6 +48,8 @@ namespace ToolKit
   class TK_API Prefab : public Entity
   {
    public:
+    TKDeclareClass(Prefab, Entity);
+
     Prefab();
     virtual ~Prefab();
 
@@ -70,13 +72,14 @@ namespace ToolKit
     void Unlink();
 
     /**
-     * Add all elements in the prabscene to the current scene.
+     * Add all elements in the prefab scene to the current scene.
      */
     void Link();
 
     static Prefab* GetPrefabRoot(Entity* ntt);
     Entity* CopyTo(Entity* other) const override;
 
+   protected:
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
     void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
@@ -85,8 +88,8 @@ namespace ToolKit
     void ParameterEventConstructor();
 
    public:
-    // Should be in Prefab folder
     TKDeclareParam(String, PrefabPath);
+
     ScenePtr m_prefabScene;
     Scene* m_currentScene;
     bool m_initiated = false;

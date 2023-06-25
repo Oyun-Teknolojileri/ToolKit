@@ -286,8 +286,7 @@ namespace ToolKit
      */
     virtual void ClearEntities();
 
-    // Serialization.
-
+   protected:
     /**
      * Serializes the scene to an XML document.
      * @param doc The XML document to serialize to.
@@ -310,27 +309,18 @@ namespace ToolKit
      */
     ULongID GetBiggestEntityId();
 
-   private:
-    /**
-     * Removes all children of the given entity.
-     * @param removed The entity whose children will be removed.
-     */
-    void RemoveChildren(Entity* removed);
-
-   protected:
     /**
      * Copies the scene to another resource.
      * @param other The resource to copy to.
      */
     void CopyTo(Resource* other) override;
 
+   private:
     /**
-     * Normalize the ID of an entity while serializing the scene.
-     * @param doc The XML document being serialized.
-     * @param parent The parent node of the entity being serialized.
-     * @param indx The index of the entity in the entity list.
+     * Removes all children of the given entity.
+     * @param removed The entity whose children will be removed.
      */
-    void NormalizeEntityID(XmlDocument* doc, XmlNode* prent, size_t indx) const;
+    void RemoveChildren(Entity* removed);
 
    protected:
     EntityRawPtrArray m_entities; //!< The entities in the scene.

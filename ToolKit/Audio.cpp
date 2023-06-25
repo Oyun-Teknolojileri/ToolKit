@@ -108,6 +108,8 @@ namespace ToolKit
   // AudioSource
   //////////////////////////////////////////////////////////////////////////
 
+  TKDefineClass(AudioSource, Entity);
+
   EntityType AudioSource::GetType() const { return EntityType::Entity_AudioSource; }
 
   AudioSource::~AudioSource()

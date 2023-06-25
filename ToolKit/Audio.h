@@ -72,6 +72,8 @@ namespace ToolKit
   class TK_API AudioSource : public Entity
   {
    public:
+    TKDeclareClass(AudioSource, Entity);
+
     EntityType GetType() const override;
     ~AudioSource();
     void AttachAudio(const AudioPtr& audio);

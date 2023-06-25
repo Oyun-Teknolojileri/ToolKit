@@ -63,6 +63,8 @@ namespace ToolKit
     };
 
    public:
+    TKDeclareClass(Billboard, Entity);
+
     explicit Billboard(const Settings& settings);
 
     virtual void LookAt(class Camera* cam, float scale);
@@ -80,6 +82,8 @@ namespace ToolKit
   class TK_API Cube final : public Entity
   {
    public:
+    TKDeclareClass(Cube, Entity);
+
     Cube(bool genDef = true);
     Cube(const Vec3& scale);
 
@@ -104,6 +108,8 @@ namespace ToolKit
   class TK_API Quad final : public Entity
   {
    public:
+    TKDeclareClass(Quad, Entity);
+
     Quad(bool genDef = true);
 
     EntityType GetType() const override;
@@ -121,6 +127,8 @@ namespace ToolKit
   class TK_API Sphere final : public Entity
   {
    public:
+    TKDeclareClass(Sphere, Entity);
+
     Sphere(bool genDef = true);
     Sphere(float radius);
 
@@ -142,6 +150,8 @@ namespace ToolKit
   class TK_API Cone final : public Entity
   {
    public:
+    TKDeclareClass(Cone, Entity);
+
     Cone(bool genDef = true);
     Cone(float height, float radius, int segBase, int segHeight);
 
@@ -167,6 +177,8 @@ namespace ToolKit
   class TK_API Arrow2d final : public Entity
   {
    public:
+    TKDeclareClass(Arrow2d, Entity);
+
     Arrow2d(bool genDef = true);
     Arrow2d(AxisLabel label); // X - Y - Z.
     EntityType GetType() const override;
@@ -186,6 +198,8 @@ namespace ToolKit
   class TK_API LineBatch final : public Entity
   {
    public:
+    TKDeclareClass(LineBatch, Entity);
+
     LineBatch();
     LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);
 

@@ -39,6 +39,9 @@
 
 namespace ToolKit
 {
+
+  TKDefineClass(Surface, Entity);
+
   Surface::Surface()
   {
     ComponentConstructor();
@@ -80,8 +83,7 @@ namespace ToolKit
   void Surface::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     Entity::SerializeImp(doc, parent);
-    parent        = parent->last_node();
-    XmlNode* node = CreateXmlNode(doc, "Anchor", parent);
+    XmlNode* node = CreateXmlNode(doc, "Anchor", parent->last_node());
 
     for (int i = 0; i < 4; i++)
     {
@@ -337,6 +339,8 @@ namespace ToolKit
 
   // Button
   //////////////////////////////////////////
+
+  TKDefineClass(Button, Surface);
 
   Button::Button()
   {

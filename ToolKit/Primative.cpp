@@ -40,6 +40,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(Billboard, Entity);
+
   Billboard::Billboard(const Settings& settings) : m_settings(settings) { AddComponent(new MeshComponent()); }
 
   void Billboard::LookAt(Camera* cam, float scale)
@@ -115,6 +117,8 @@ namespace ToolKit
   }
 
   EntityType Billboard::GetType() const { return EntityType::Entity_Billboard; }
+
+  TKDefineClass(Cube, Entity);
 
   Cube::Cube(bool genDef)
   {
@@ -305,6 +309,8 @@ namespace ToolKit
     mesh->ConstructFaces();
   }
 
+  TKDefineClass(Quad, Entity);
+
   Quad::Quad(bool genDef)
   {
     AddComponent(new MeshComponent());
@@ -360,6 +366,8 @@ namespace ToolKit
     mesh->CalculateAABB();
     mesh->ConstructFaces();
   }
+
+  TKDefineClass(Sphere, Entity);
 
   Sphere::Sphere(bool genDef)
   {
@@ -461,6 +469,8 @@ namespace ToolKit
     AddComponent(new MeshComponent());
     Radius_Define(radius, "Geometry", 90, true, true);
   }
+
+  TKDefineClass(Cone, Entity);
 
   Cone::Cone(bool genDef)
   {
@@ -602,6 +612,8 @@ namespace ToolKit
     SegHeight_Define(20, "Geometry", 90, true, true);
   }
 
+  TKDefineClass(Arrow2d, Entity);
+
   Arrow2d::Arrow2d(bool genDef)
   {
     AddComponent(new MeshComponent());
@@ -677,6 +689,8 @@ namespace ToolKit
     mesh->GetMeshVal()->CalculateAABB();
     mesh->GetMeshVal()->ConstructFaces();
   }
+
+  TKDefineClass(LineBatch, Entity);
 
   LineBatch::LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
   {

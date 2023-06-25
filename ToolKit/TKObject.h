@@ -38,20 +38,20 @@ namespace ToolKit
     TKClass* Super = nullptr;
     String Name;
 
-    bool IsSublcassOf(TKClass* base)
-    {
-      if (Super == nullptr)
-      {
-        return false;
-      }
+    bool operator==(const TKClass& other) const { return (Name == other.Name); }
 
-      if (base->Name == Super->Name)
-      {
-        return true;
-      }
+    bool operator==(const TKClass* other) const { return (Name == other->Name); }
 
-      return IsSublcassOf(Super);
-    }
+    bool operator!=(const TKClass& other) const { return !(*this == other); }
+
+    bool operator!=(const TKClass* other) const { return !(*this == *other); }
+
+    /**
+     * Checks if the class is of the same type of base ( equal or derived from base ).
+     * @param base - The target class to check equality for.
+     * @return true in case of this class being equal base or derived from base.
+     */
+    bool IsSublcassOf(TKClass* base);
   };
 
   typedef std::shared_ptr<class TKObject> TKObjectPtr;
@@ -62,7 +62,7 @@ namespace ToolKit
   typedef Base Super;                                                                                                  \
                                                                                                                        \
  public:                                                                                                               \
-  virtual TKClass* const Class();                                                                                      \
+  virtual TKClass* const Class() const;                                                                                \
   static TKClass* const StaticClass()                                                                                  \
   {                                                                                                                    \
     return &This##Cls;                                                                                                 \
@@ -70,7 +70,7 @@ namespace ToolKit
 
 #define TKDefineClass(This, Base)                                                                                      \
   TKClass This::This##Cls = {Base::StaticClass(), #This};                                                              \
-  TKClass* const This::Class()                                                                                         \
+  TKClass* const This::Class() const                                                                                   \
   {                                                                                                                    \
     return &This##Cls;                                                                                                 \
   }
@@ -88,10 +88,19 @@ namespace ToolKit
     virtual void ParameterEventConstructor();
     virtual TKObjectPtr Copy();
 
+    template <class T>
+    bool IsA()
+    {
+      return Class()->IsSublcassOf(T::StaticClass());
+    }
+
+   protected:
+    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+
    public:
     TKDeclareParam(ULongID, Id);
 
-   private:
     ParameterBlock m_localData;
   };
 

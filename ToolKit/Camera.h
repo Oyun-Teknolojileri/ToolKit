@@ -50,6 +50,8 @@ namespace ToolKit
     };
 
    public:
+    TKDeclareClass(Camera, Entity);
+
     Camera();
     virtual ~Camera();
 
@@ -63,9 +65,6 @@ namespace ToolKit
 
     CamData GetData() const;
     EntityType GetType() const override;
-
-    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     // Tight fit camera frustum to a bounding box with a margin
     void FocusToBoundingBox(const BoundingBox& bb, float margin);
@@ -85,6 +84,8 @@ namespace ToolKit
     Entity* CopyTo(Entity* copyTo) const override;
     void ParameterConstructor();
     void ParameterEventConstructor();
+    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
    public:
     /**
