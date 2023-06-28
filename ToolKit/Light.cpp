@@ -120,6 +120,13 @@ namespace ToolKit
 
   void Light::UpdateShadowCameraTransform() { m_shadowCamera->m_node->SetTransform(m_node->GetTransform()); }
 
+  XmlNode* Light::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* nttNode   = Super::SerializeImp(doc, parent);
+    XmlNode* lightNode = CreateXmlNode(doc, StaticClass()->Name, nttNode);
+    return lightNode;
+  }
+
   // DirectionalLight
   //////////////////////////////////////////
 

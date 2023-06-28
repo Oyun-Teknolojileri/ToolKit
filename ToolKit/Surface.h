@@ -54,7 +54,7 @@ namespace ToolKit
     virtual ~Surface();
 
     EntityType GetType() const override;
-    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     void CalculateAnchorOffsets(Vec3 canvas[4], Vec3 surface[4]);

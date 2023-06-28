@@ -63,11 +63,12 @@ namespace ToolKit
 
       void RefreshProjects();
 
-      void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-      void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
-
       void SerializeEngineSettings() const;
       void DeSerializeEngineSettings();
+
+     protected:
+      XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+      void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
      private:
       void SerializeSimulationWindow(XmlDocument* doc) const;

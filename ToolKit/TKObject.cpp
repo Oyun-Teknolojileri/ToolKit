@@ -74,14 +74,15 @@ namespace ToolKit
 
   TKObjectPtr TKObject::Copy() { return nullptr; }
 
-  void TKObject::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* TKObject::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     assert(doc != nullptr && parent != nullptr);
 
-    XmlNode* objNode = CreateXmlNode(doc, XmlObjectElement, parent);
+    XmlNode* objNode = CreateXmlNode(doc, StaticClass()->Name, parent);
     WriteAttr(objNode, doc, XmlObjectClassAttr, Class()->Name);
 
     m_localData.Serialize(doc, objNode);
+    return objNode;
   }
 
   void TKObject::DeSerializeImp(XmlDocument* doc, XmlNode* parent) {}

@@ -223,11 +223,11 @@ namespace ToolKit
     return nullptr;
   }
 
-  void Entity::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Entity::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Super::SerializeImp(doc, parent);
+    XmlNode* objNode = Super::SerializeImp(doc, parent);
+    XmlNode* node    = CreateXmlNode(doc, StaticClass()->Name, objNode);
 
-    XmlNode* node = CreateXmlNode(doc, XmlEntityElement, parent->last_node());
     if (m_node->m_parent && m_node->m_parent->m_entity)
     {
       WriteAttr(node, doc, XmlParentEntityIdAttr, std::to_string(m_node->m_parent->m_entity->GetIdVal()));
@@ -240,6 +240,8 @@ namespace ToolKit
     {
       cmp->Serialize(doc, compNode);
     }
+
+    return node;
   }
 
   void Entity::DeSerializeImp(XmlDocument* doc, XmlNode* parent)

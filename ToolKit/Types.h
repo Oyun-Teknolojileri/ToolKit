@@ -160,7 +160,7 @@ namespace ToolKit
   typedef std::vector<class PointLight*> PointLightRawPtrArray;
   typedef std::vector<std::shared_ptr<class Entity>> EntityPtrArray;
   typedef std::vector<ULongID> EntityIdArray;
-  typedef std::vector<class Node*> NodePtrArray;
+  typedef std::vector<class Node*> NodeRawPtrArray;
   typedef std::vector<class Vertex> VertexArray;
   typedef std::vector<class Face> FaceArray;
   typedef std::vector<class ParameterVariant> ParameterVariantArray;

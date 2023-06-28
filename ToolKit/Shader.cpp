@@ -224,7 +224,7 @@ namespace ToolKit
     }
   }
 
-  void Shader::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Shader::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "shader", parent);
     XmlNode* node      = CreateXmlNode(doc, "type", container);
@@ -259,6 +259,8 @@ namespace ToolKit
     XmlNode* srcInput = doc->allocate_node(rapidxml::node_type::node_comment);
     src->append_node(srcInput);
     srcInput->value(doc->allocate_string(m_source.c_str()));
+
+    return container;
   }
 
   void Shader::DeSerializeImp(XmlDocument* doc, XmlNode* parent)

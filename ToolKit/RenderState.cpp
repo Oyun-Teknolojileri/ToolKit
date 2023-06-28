@@ -34,7 +34,7 @@
 namespace ToolKit
 {
 
-  void RenderState::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* RenderState::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = doc->allocate_node(rapidxml::node_type::node_element, "renderState");
 
@@ -53,6 +53,8 @@ namespace ToolKit
     WriteAttr(container, doc, "blendFunction", std::to_string(int(blendFunction)));
     WriteAttr(container, doc, "alphaMaskTreshold", std::to_string((float) alphaMaskTreshold));
     WriteAttr(container, doc, "drawType", std::to_string(int(drawType)));
+
+    return container;
   }
 
   void RenderState::DeSerializeImp(XmlDocument* doc, XmlNode* parent)

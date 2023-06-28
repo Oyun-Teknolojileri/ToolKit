@@ -233,7 +233,7 @@ namespace ToolKit
     return file == GetShaderManager()->PbrDefferedShaderFile() || file == GetShaderManager()->PbrForwardShaderFile();
   }
 
-  void Material::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Material::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "material", parent);
 
@@ -305,6 +305,7 @@ namespace ToolKit
     WriteAttr(node, doc, XmlNodeName.data(), std::to_string((int) m_materialType));
 
     m_renderState.Serialize(doc, container);
+    return container;
   }
 
   void Material::DeSerializeImp(XmlDocument* doc, XmlNode* parent)

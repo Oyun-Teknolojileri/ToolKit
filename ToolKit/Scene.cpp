@@ -298,7 +298,7 @@ namespace ToolKit
 
   void Scene::RemoveChildren(Entity* removed)
   {
-    NodePtrArray& children = removed->m_node->m_children;
+    NodeRawPtrArray& children = removed->m_node->m_children;
 
     // recursive remove children
     // (RemoveEntity function will call all children recursively).
@@ -544,7 +544,7 @@ namespace ToolKit
     }
   }
 
-  void Scene::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Scene::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* scene = CreateXmlNode(doc, XmlSceneElement, parent);
 
@@ -573,6 +573,8 @@ namespace ToolKit
     {
       GetEngineSettings().SerializePostProcessing(doc, nullptr);
     }
+
+    return scene;
   }
 
   void Scene::DeSerializeImp(XmlDocument* doc, XmlNode* parent)

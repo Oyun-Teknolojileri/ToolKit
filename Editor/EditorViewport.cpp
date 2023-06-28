@@ -165,18 +165,16 @@ namespace ToolKit
       ModShortCutSignals();
     }
 
-    void EditorViewport::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* EditorViewport::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
-      Window::SerializeImp(doc, parent);
-      XmlNode* node = doc->allocate_node(rapidxml::node_element, "Viewport");
+      XmlNode* wndNode = Window::SerializeImp(doc, parent);
+      XmlNode* node    = CreateXmlNode(doc, "Viewport", wndNode);
 
       WriteAttr(node, doc, "alignment", std::to_string((int) m_cameraAlignment));
-
       WriteAttr(node, doc, "lock", std::to_string((int) m_orbitLock));
       GetCamera()->Serialize(doc, node);
 
-      XmlNode* wnd = parent->last_node();
-      wnd->append_node(node);
+      return node;
     }
 
     void EditorViewport::DeSerializeImp(XmlDocument* doc, XmlNode* parent)

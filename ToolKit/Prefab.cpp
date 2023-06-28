@@ -188,10 +188,11 @@ namespace ToolKit
     }
   }
 
-  void Prefab::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Prefab::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Super::SerializeImp(doc, parent);
-    parent = CreateXmlNode(doc, "PrefabRoots", parent->last_node());
+    XmlNode* nttNode    = Super::SerializeImp(doc, parent);
+    XmlNode* prefabNode = CreateXmlNode(doc, StaticClass()->Name, nttNode);
+    parent              = CreateXmlNode(doc, "PrefabRoots", prefabNode);
 
     EntityRawPtrArray childs;
     GetChildren(this, childs);
@@ -217,6 +218,8 @@ namespace ToolKit
         }
       }
     }
+
+    return prefabNode;
   }
 
   void Prefab::ParameterConstructor()

@@ -209,7 +209,7 @@ namespace ToolKit
     virtual Entity* CopyTo(Entity* other) const;
     void ParameterConstructor() override;
     void WeakCopy(Entity* other, bool copyComponents = true) const;
-    virtual void SerializeImp(XmlDocument* doc, XmlNode* parent) const;
+    virtual XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent);
 
    public:

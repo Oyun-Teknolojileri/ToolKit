@@ -530,13 +530,11 @@ namespace ToolKit
       return false;
     }
 
-    void FolderWindow::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* FolderWindow::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
-      Window::SerializeImp(doc, parent);
-      XmlNode* node   = parent->last_node();
+      XmlNode* wndNode = Window::SerializeImp(doc, parent);
+      XmlNode* folder  = CreateXmlNode(doc, "FolderWindow", wndNode);
 
-      XmlNode* folder = doc->allocate_node(rapidxml::node_element, "FolderWindow");
-      node->append_node(folder);
       WriteAttr(folder, doc, "activeFolder", std::to_string(m_activeFolder));
       WriteAttr(folder, doc, "showStructure", std::to_string(m_showStructure));
 
@@ -551,6 +549,8 @@ namespace ToolKit
         WriteVec(setting, doc, view.m_iconSize);
         viewNode->append_node(setting);
       }
+
+      return folder;
     }
 
     void FolderWindow::DeSerializeImp(XmlDocument* doc, XmlNode* parent)

@@ -53,7 +53,7 @@ namespace ToolKit
 
     void Init(bool flushClientSideArray);
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
-    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     void AddMaterial(MaterialPtr mat);
     void RemoveMaterial(uint index);
 

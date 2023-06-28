@@ -76,14 +76,13 @@ namespace ToolKit
       // System calls.
       virtual void DispatchSignals() const;
 
-      virtual void SerializeImp(XmlDocument* doc, XmlNode* parent) const;
-      virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent);
-
      protected:
       // Internal window handling.
       void HandleStates();
       void SetActive();
       void ModShortCutSignals(const IntArray& mask = {}) const;
+      virtual XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
+      virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent);
 
      protected:
       // States.

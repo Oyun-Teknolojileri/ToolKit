@@ -208,7 +208,7 @@ namespace ToolKit
      */
     void SetInheritScaleDeep(bool val);
 
-    void SerializeImp(XmlDocument* doc, XmlNode* parent) const;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent);
 
    private:
@@ -238,7 +238,7 @@ namespace ToolKit
     ULongID m_id;
     Node* m_parent   = nullptr;
     Entity* m_entity = nullptr;
-    std::vector<Node*> m_children;
+    NodeRawPtrArray m_children;
     bool m_inheritScale = false;
 
    private:

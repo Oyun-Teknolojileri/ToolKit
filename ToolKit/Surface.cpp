@@ -80,16 +80,19 @@ namespace ToolKit
 
   EntityType Surface::GetType() const { return EntityType::Entity_Surface; }
 
-  void Surface::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Surface::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Entity::SerializeImp(doc, parent);
-    XmlNode* node = CreateXmlNode(doc, "Anchor", parent->last_node());
+    XmlNode* nttNode     = Entity::SerializeImp(doc, parent);
+    XmlNode* surfaceNode = CreateXmlNode(doc, StaticClass()->Name, nttNode);
+    XmlNode* node        = CreateXmlNode(doc, "Anchor", surfaceNode);
 
     for (int i = 0; i < 4; i++)
     {
       WriteAttr(node, doc, "ratios" + std::to_string(i), std::to_string(m_anchorParams.m_anchorRatios[i]));
       WriteAttr(node, doc, "offsets" + std::to_string(i), std::to_string(m_anchorParams.m_offsets[i]));
     }
+
+    return surfaceNode;
   }
 
   void Surface::DeSerializeImp(XmlDocument* doc, XmlNode* parent)

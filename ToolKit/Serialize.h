@@ -51,7 +51,15 @@ namespace ToolKit
    protected:
     virtual void PreSerializeImp(XmlDocument* doc, XmlNode* parent) const {}
 
-    virtual void SerializeImp(XmlDocument* doc, XmlNode* parent) const = 0;
+    /**
+     * The implementation of the serialization function.
+     * @param doc - This is the xml document this object will be serialized to.
+     * @param parent - This is the Xml Element that this object will be serialized in.
+     * @return - XmlNode* which this object's root node will written to. If an object is recursively serialized,
+     * return node can be used as derived class's parent. Which provides a structure printed to xml from parent to
+     * child.
+     */
+    virtual XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const = 0;
 
     virtual void PostSerializeImp(XmlDocument* doc, XmlNode* parent) const {}
 

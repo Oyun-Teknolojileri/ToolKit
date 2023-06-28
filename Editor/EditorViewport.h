@@ -60,8 +60,6 @@ namespace ToolKit
       void DispatchSignals() const override;
 
       // Viewport overrides.
-      void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-      void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
       void OnResizeContentArea(float width, float height) override;
       virtual void ResizeWindow(uint width, uint height);
 
@@ -71,6 +69,8 @@ namespace ToolKit
 
      protected:
       RenderTargetSettigs GetRenderTargetSettings() override;
+      XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+      void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
       virtual void UpdateContentArea();
       virtual void UpdateWindow();

@@ -539,7 +539,7 @@ namespace ToolKit
      * @param doc The xml document object to serialize to.
      * @param parent The parent xml node to serialize to.
      */
-    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
     /**
      * De serializes the variant from the xml document.
@@ -668,7 +668,7 @@ namespace ToolKit
      * @param doc The xml document object to serialize to.
      * @param parent The parent xml node to serialize to.
      */
-    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
     /**
      * De serializes the ParameterBlcok from the xml document.

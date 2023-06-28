@@ -72,7 +72,7 @@ namespace ToolKit
     }
 
     virtual ResourceType GetType() const;
-    virtual void SerializeImp(XmlDocument* doc, XmlNode* parent) const;
+    virtual XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent);
 
     /**

@@ -115,7 +115,7 @@ namespace ToolKit
      * Serializes the Component's ParameterBlock to the xml document.
      * If parent is not null appends this component to the parent node.
      */
-    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
     /**
      * De serialize the Component's ParameterBlock from given xml node

@@ -501,7 +501,7 @@ namespace ToolKit
       currScene->GetSelectedEntities(roots);
 
       Entity* e = currScene->GetCurrentSelection();
-      NodePtrArray parents;
+      NodeRawPtrArray parents;
 
       // Make all selecteds child of current & store their original parents.
       for (Entity* ntt : roots)

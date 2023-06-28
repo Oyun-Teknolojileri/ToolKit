@@ -93,7 +93,7 @@ namespace ToolKit
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
-    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     /**

@@ -185,18 +185,21 @@ namespace ToolKit
       return cpy;
     }
 
-    void EditorDirectionalLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* EditorDirectionalLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
+      XmlNode* lightNode = nullptr;
       if (m_gizmoActive)
       {
         EnableGizmo(false);
-        DirectionalLight::SerializeImp(doc, parent);
+        lightNode = DirectionalLight::SerializeImp(doc, parent);
         EnableGizmo(true);
       }
       else
       {
-        DirectionalLight::SerializeImp(doc, parent);
+        lightNode = DirectionalLight::SerializeImp(doc, parent);
       }
+
+      return lightNode;
     }
 
     void EditorDirectionalLight::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
@@ -262,18 +265,21 @@ namespace ToolKit
       return cpy;
     }
 
-    void EditorPointLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* EditorPointLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
+      XmlNode* lightNode = nullptr;
       if (m_gizmoActive)
       {
         EnableGizmo(false);
-        PointLight::SerializeImp(doc, parent);
+        lightNode = PointLight::SerializeImp(doc, parent);
         EnableGizmo(true);
       }
       else
       {
-        PointLight::SerializeImp(doc, parent);
+        lightNode = PointLight::SerializeImp(doc, parent);
       }
+
+      return lightNode;
     }
 
     void EditorPointLight::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
@@ -309,18 +315,21 @@ namespace ToolKit
       return cpy;
     }
 
-    void EditorSpotLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* EditorSpotLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
+      XmlNode* lightNode = nullptr;
       if (m_gizmoActive)
       {
         EnableGizmo(false);
-        SpotLight::SerializeImp(doc, parent);
+        lightNode = SpotLight::SerializeImp(doc, parent);
         EnableGizmo(true);
       }
       else
       {
-        SpotLight::SerializeImp(doc, parent);
+        lightNode = SpotLight::SerializeImp(doc, parent);
       }
+
+      return lightNode;
     }
 
     void EditorSpotLight::DeSerializeImp(XmlDocument* doc, XmlNode* parent)

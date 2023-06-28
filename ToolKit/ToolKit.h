@@ -55,12 +55,12 @@
 #include "Skeleton.h"
 #include "SpriteSheet.h"
 #include "StateMachine.h"
+#include "StringId.h"
 #include "Surface.h"
 #include "Texture.h"
 #include "ToneMapPass.h"
 #include "Types.h"
 #include "UIManager.h"
-#include "StringId.h"
 
 /**
  * Base name space for all the ToolKit functionalities.
@@ -131,7 +131,7 @@ namespace ToolKit
       bool FXAAEnabled             = false;
     } PostProcessing;
 
-    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     void SerializeWindow(XmlDocument* doc, XmlNode* parent) const;

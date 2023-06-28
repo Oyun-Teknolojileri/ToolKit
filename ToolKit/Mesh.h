@@ -76,7 +76,7 @@ namespace ToolKit
 
     void SetMaterial(MaterialPtr material);
 
-    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     /**

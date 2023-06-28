@@ -49,7 +49,6 @@ namespace ToolKit
     virtual void ParameterEventConstructor();
 
     EntityType GetType() const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     // Shadow
     MaterialPtr GetShadowMaterial();
@@ -59,6 +58,8 @@ namespace ToolKit
 
    protected:
     void UpdateShadowCameraTransform();
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
    public:
     TKDeclareParam(Vec3, Color);

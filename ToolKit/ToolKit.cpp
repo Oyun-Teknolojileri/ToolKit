@@ -449,11 +449,13 @@ namespace ToolKit
     ReadAttr(node, "FPS", Graphics.FPS);
   }
 
-  void EngineSettings::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* EngineSettings::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     SerializeGraphics(doc, parent);
     SerializePostProcessing(doc, parent);
     SerializeWindow(doc, parent);
+
+    return nullptr;
   }
 
   void EngineSettings::DeSerializeImp(XmlDocument* doc, XmlNode* parent)

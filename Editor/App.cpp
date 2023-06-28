@@ -1242,7 +1242,7 @@ namespace ToolKit
       }
     }
 
-    void App::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* App::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
       m_workspace.Serialize(nullptr, nullptr);
 
@@ -1290,6 +1290,8 @@ namespace ToolKit
         file.close();
         lclDoc->clear();
       }
+
+      return nullptr;
     }
 
     void App::DeSerializeImp(XmlDocument* doc, XmlNode* parent)

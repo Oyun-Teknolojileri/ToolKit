@@ -109,11 +109,10 @@ namespace ToolKit
 
   EntityType Camera::GetType() const { return EntityType::Entity_Camera; }
 
-  void Camera::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Camera::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Super::SerializeImp(doc, parent);
-
-    XmlNode* node = CreateXmlNode(doc, "Camera", parent->last_node());
+    XmlNode* nttNode = Super::SerializeImp(doc, parent);
+    XmlNode* node    = CreateXmlNode(doc, StaticClass()->Name, nttNode);
 
     WriteAttr(node, doc, "fov", std::to_string(m_fov));
     WriteAttr(node, doc, "aspect", std::to_string(m_aspect));
@@ -125,6 +124,8 @@ namespace ToolKit
     WriteAttr(node, doc, "top", std::to_string(m_top));
     WriteAttr(node, doc, "bottom", std::to_string(m_bottom));
     WriteAttr(node, doc, "scale", std::to_string(m_orthographicScale));
+
+    return node;
   }
 
   void Camera::DeSerializeImp(XmlDocument* doc, XmlNode* parent)

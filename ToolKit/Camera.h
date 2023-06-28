@@ -84,7 +84,7 @@ namespace ToolKit
     Entity* CopyTo(Entity* copyTo) const override;
     void ParameterConstructor();
     void ParameterEventConstructor();
-    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
    public:

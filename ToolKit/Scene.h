@@ -292,7 +292,7 @@ namespace ToolKit
      * @param doc The XML document to serialize to.
      * @param parent The parent XML node to serialize under.
      */
-    void SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
     /**
      * Deserializes the scene from an XML document.

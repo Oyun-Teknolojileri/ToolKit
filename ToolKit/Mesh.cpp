@@ -527,7 +527,7 @@ namespace ToolKit
     }
   }
 
-  void Mesh::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Mesh::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "meshContainer", parent);
 
@@ -546,6 +546,8 @@ namespace ToolKit
         writeMesh(doc, container, static_cast<const Mesh*>(m));
       }
     }
+
+    return container;
   }
 
   void Mesh::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { LoadMesh(doc, parent, this); }

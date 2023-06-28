@@ -90,11 +90,9 @@ namespace ToolKit
     }
   }
 
-  void MaterialComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* MaterialComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Component::SerializeImp(doc, parent);
-
-    XmlNode* compNode = parent->last_node(XmlComponent.c_str());
+    XmlNode* compNode = Component::SerializeImp(doc, parent);
     WriteAttr(compNode, doc, XmlMatCountAttrib, std::to_string(m_materialList.size()));
     for (size_t i = 0; i < m_materialList.size(); i++)
     {
@@ -105,6 +103,8 @@ namespace ToolKit
       XmlNode* resourceRefNode = CreateXmlNode(doc, std::to_string(i), compNode);
       m_materialList[i]->SerializeRef(doc, resourceRefNode);
     }
+
+    return compNode;
   }
 
   void MaterialComponent::AddMaterial(MaterialPtr mat) { m_materialList.push_back(mat); }

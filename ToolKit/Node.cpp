@@ -265,11 +265,10 @@ namespace ToolKit
     return node;
   }
 
-  void Node::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Node::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = CreateXmlNode(doc, XmlNodeElement, parent);
-
-    WriteAttr(node, doc, XmlNodeInheritScaleAttr, std::to_string(static_cast<int>(m_inheritScale)));
+    WriteAttr(node, doc, XmlNodeInheritScaleAttr, std::to_string((int) m_inheritScale));
 
     XmlNode* tNode = CreateXmlNode(doc, XmlTranslateElement, node);
     WriteVec(tNode, doc, m_translation);
@@ -279,6 +278,8 @@ namespace ToolKit
 
     tNode = CreateXmlNode(doc, XmlScaleElement, node);
     WriteVec(tNode, doc, m_scale);
+
+    return node;
   }
 
   void Node::DeSerializeImp(XmlDocument* doc, XmlNode* parent)

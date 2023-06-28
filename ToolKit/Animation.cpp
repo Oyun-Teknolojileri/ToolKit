@@ -241,7 +241,7 @@ namespace ToolKit
     m_loaded = true;
   }
 
-  void Animation::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Animation::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container      = CreateXmlNode(doc, "anim", parent);
 
@@ -288,6 +288,8 @@ namespace ToolKit
         }
       }
     }
+
+    return container;
   }
 
   void Animation::Init(bool flushClientSideArray) { m_initiated = true; }

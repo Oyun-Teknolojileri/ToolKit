@@ -327,13 +327,15 @@ namespace ToolKit
     }
   }
 
-  void Skeleton::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Skeleton::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "skeleton", parent);
 
     auto writeBoneFnc  = [doc, container, this](const DynamicBoneMap::DynamicBone* childBone) -> void
     { WriteBone(this, childBone, doc, container); };
     m_Tpose.ForEachRootBone(writeBoneFnc);
+
+    return container;
   }
 
   void Traverse(XmlNode* node, DynamicBoneMap::DynamicBone* parent, Skeleton* skeleton)
