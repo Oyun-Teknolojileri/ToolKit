@@ -31,6 +31,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(SkeletonComponent, Component);
+
   SkeletonComponent::SkeletonComponent()
   {
     SkeletonResource_Define(nullptr, SkeletonComponentCategory.Name, SkeletonComponentCategory.Priority, true, true);
@@ -65,6 +67,14 @@ namespace ToolKit
   {
     Component::DeSerializeImp(doc, parent);
     Init();
+  }
+
+  XmlNode* SkeletonComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
 } // namespace ToolKit

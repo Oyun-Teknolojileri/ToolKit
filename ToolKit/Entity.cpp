@@ -180,7 +180,7 @@ namespace ToolKit
 
   void Entity::AddComponent(ComponentPtr component)
   {
-    assert(GetComponent(component->m_id) == nullptr && "Component has already been added.");
+    assert(GetComponent(component->GetIdVal()) == nullptr && "Component has already been added.");
 
     component->m_entity = this;
     GetComponentPtrArray().push_back(component);
@@ -196,7 +196,7 @@ namespace ToolKit
     for (size_t i = 0; i < compList.size(); i++)
     {
       ComponentPtr com = compList[i];
-      if (com->m_id == componentId)
+      if (com->GetIdVal() == componentId)
       {
         compList.erase(compList.begin() + i);
         return com;
@@ -214,7 +214,7 @@ namespace ToolKit
   {
     for (const ComponentPtr& com : GetComponentPtrArray())
     {
-      if (com->m_id == id)
+      if (com->GetIdVal() == id)
       {
         return com;
       }
@@ -266,6 +266,7 @@ namespace ToolKit
     m_localData.DeSerialize(doc, parent);
 
     ClearComponents();
+
     if (XmlNode* components = node->first_node("Components"))
     {
       XmlNode* comNode = components->first_node(XmlComponent.c_str());
@@ -273,7 +274,7 @@ namespace ToolKit
       {
         int type = -1;
         ReadAttr(comNode, XmlParamterTypeAttr, type);
-        Component* com = Component::CreateByType(static_cast<ComponentType>(type));
+        Component* com = GetComponentFactory()->Create((ComponentType) type);
 
         com->DeSerialize(doc, comNode);
         AddComponent(com);

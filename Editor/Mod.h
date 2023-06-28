@@ -27,7 +27,8 @@
 #pragma once
 
 #include "EditorScene.h"
-#include "StateMachine.h"
+
+#include <StateMachine.h>
 
 namespace ToolKit
 {

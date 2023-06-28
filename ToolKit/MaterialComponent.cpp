@@ -35,6 +35,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(MaterialComponent, Component);
+
   MaterialComponent::MaterialComponent()
   {
     Material_Define(GetMaterialManager()->GetCopyOfDefaultMaterial(),

@@ -27,16 +27,18 @@
 #include "EditorViewport.h"
 
 #include "App.h"
-#include "DirectionComponent.h"
 #include "LeftBar.h"
 #include "Mod.h"
 #include "OverlayLighting.h"
 #include "PopupWindows.h"
-#include "Prefab.h"
 #include "StatusBar.h"
 #include "TopBar.h"
 
-#include "DebugNew.h"
+#include <DirectionComponent.h>
+#include <MeshComponent.h>
+#include <Prefab.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {

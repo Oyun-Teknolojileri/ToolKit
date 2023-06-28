@@ -33,18 +33,18 @@
 namespace ToolKit
 {
 
-  struct TKClass
+  struct TK_API TKClass
   {
-    TKClass* Super = nullptr;
-    String Name;
+    TKClass* Super = nullptr; //!< Compile time assigned base class for this class.
+    String Name;              //!< Compile time assigned unique class name.
 
     bool operator==(const TKClass& other) const { return (Name == other.Name); }
 
     bool operator==(const TKClass* other) const { return (Name == other->Name); }
 
-    bool operator!=(const TKClass& other) const { return !(*this == other); }
+    bool operator!=(const TKClass& other) const { return this->Name != other.Name; }
 
-    bool operator!=(const TKClass* other) const { return !(*this == *other); }
+    bool operator!=(const TKClass* other) const { return this->Name != other->Name; }
 
     /**
      * Checks if the class is of the same type of base ( equal or derived from base ).
@@ -92,6 +92,17 @@ namespace ToolKit
     bool IsA()
     {
       return Class()->IsSublcassOf(T::StaticClass());
+    }
+
+    template <class T>
+    T* As()
+    {
+      if (IsA<T>())
+      {
+        return static_cast<T*>(this);
+      }
+
+      return nullptr;
     }
 
    protected:

@@ -79,23 +79,24 @@ namespace ToolKit
     }
 
     m_logger->Log("Main PreInit");
-    m_renderSys       = new RenderSystem();
-    m_pluginManager   = new PluginManager();
-    m_animationMan    = new AnimationManager();
-    m_animationPlayer = new AnimationPlayer();
-    m_textureMan      = new TextureManager();
-    m_meshMan         = new MeshManager();
-    m_spriteSheetMan  = new SpriteSheetManager();
-    m_audioMan        = new AudioManager();
-    m_shaderMan       = new ShaderManager();
-    m_materialManager = new MaterialManager();
-    m_sceneManager    = new SceneManager();
-    m_uiManager       = new UIManager();
-    m_skeletonManager = new SkeletonManager();
-    m_fileManager     = new FileManager();
-    m_entityFactory   = new EntityFactory();
+    m_renderSys        = new RenderSystem();
+    m_pluginManager    = new PluginManager();
+    m_animationMan     = new AnimationManager();
+    m_animationPlayer  = new AnimationPlayer();
+    m_textureMan       = new TextureManager();
+    m_meshMan          = new MeshManager();
+    m_spriteSheetMan   = new SpriteSheetManager();
+    m_audioMan         = new AudioManager();
+    m_shaderMan        = new ShaderManager();
+    m_materialManager  = new MaterialManager();
+    m_sceneManager     = new SceneManager();
+    m_uiManager        = new UIManager();
+    m_skeletonManager  = new SkeletonManager();
+    m_fileManager      = new FileManager();
+    m_entityFactory    = new EntityFactory();
+    m_componentFactory = new ComponentFactory();
 
-    m_preInitiated    = true;
+    m_preInitiated     = true;
   }
 
   void Main::Init()
@@ -110,6 +111,7 @@ namespace ToolKit
 
     m_logger->Log("Main Init");
 
+    m_componentFactory->Init();
     m_pluginManager->Init();
     m_animationMan->Init();
     m_textureMan->Init();
@@ -166,6 +168,7 @@ namespace ToolKit
     SafeDel(m_skeletonManager);
     SafeDel(m_fileManager);
     SafeDel(m_entityFactory);
+    SafeDel(m_componentFactory);
   }
 
   void Main::SetConfigPath(StringView cfgPath) { m_cfgPath = cfgPath; }
@@ -174,7 +177,7 @@ namespace ToolKit
 
   Main* Main::GetInstance()
   {
-    assert(m_proxy);
+    assert(m_proxy && "ToolKit is not initialized.");
     return m_proxy;
   }
 
@@ -255,6 +258,8 @@ namespace ToolKit
   FileManager* GetFileManager() { return Main::GetInstance()->m_fileManager; }
 
   EntityFactory* GetEntityFactory() { return Main::GetInstance()->m_entityFactory; }
+
+  ComponentFactory* GetComponentFactory() { return Main::GetInstance()->m_componentFactory; }
 
   EngineSettings& GetEngineSettings() { return Main::GetInstance()->m_engineSettings; }
 

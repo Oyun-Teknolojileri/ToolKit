@@ -151,7 +151,6 @@
     <ClInclude Include="StateMachine.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StencilPass.h" />
-    <ClInclude Include="StringId.h" />
     <ClInclude Include="Surface.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TKAssert.h" />

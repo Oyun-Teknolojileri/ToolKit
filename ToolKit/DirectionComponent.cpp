@@ -33,6 +33,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(DirectionComponent, Component);
+
   DirectionComponent::DirectionComponent() {}
 
   DirectionComponent::DirectionComponent(Entity* entity) { m_entity = entity; }
@@ -121,6 +123,14 @@ namespace ToolKit
     {
       Roll(glm::pi<float>());
     }
+  }
+
+  XmlNode* DirectionComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
 } //  namespace ToolKit

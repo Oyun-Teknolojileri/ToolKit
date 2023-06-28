@@ -30,9 +30,6 @@
 #include "MathUtil.h"
 #include "Types.h"
 
-#include <memory>
-#include <vector>
-
 namespace ToolKit
 {
 
@@ -44,7 +41,7 @@ namespace ToolKit
   class TK_API AABBOverrideComponent : public Component
   {
    public:
-    TKComponentType(AABBOverrideComponent);
+    TKDeclareClass(AABBOverrideComponent, Component);
 
     AABBOverrideComponent();
     virtual ~AABBOverrideComponent();
@@ -58,8 +55,12 @@ namespace ToolKit
 
     void Init(bool flushClientSideArray);
     BoundingBox GetAABB();
+
     // AABB should be in entity space (not world space)
     void SetAABB(BoundingBox aabb);
+
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:
     TKDeclareParam(Vec3, PositionOffset);

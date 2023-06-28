@@ -29,7 +29,7 @@
 #include "App.h"
 #include "OverlayUI.h"
 
-#include "DebugNew.h"
+#include <DebugNew.h>
 
 namespace ToolKit
 {

@@ -37,55 +37,74 @@
 namespace ToolKit
 {
 
-  Component::Component() { m_id = GetHandleManager()->GetNextHandle(); }
+  TKDefineClass(Component, TKObject);
+
+  Component::Component() {}
 
   Component::~Component() {}
 
-  ComponentType Component::GetType() const { return ComponentType::Base; }
-
   XmlNode* Component::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* componentNode = CreateXmlNode(doc, XmlComponent, parent);
-    WriteAttr(componentNode, doc, XmlParamterTypeAttr, std::to_string(static_cast<int>(GetType())));
+    XmlNode* objNode       = Super::SerializeImp(doc, parent);
+    XmlNode* componentNode = CreateXmlNode(doc, StaticClass()->Name, objNode);
 
-    m_localData.Serialize(doc, componentNode);
     return componentNode;
   }
 
   void Component::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { m_localData.DeSerialize(doc, parent); }
 
-  Component* Component::CreateByType(ComponentType t)
+  void ComponentFactory::Init()
   {
-    switch (t)
+    m_constructorFunctions[MeshComponent::StaticClass()->Name] = []() -> Component* { return new MeshComponent(); };
+
+    m_constructorFunctions[DirectionComponent::StaticClass()->Name] = []() -> Component*
+    { return new DirectionComponent(); };
+
+    m_constructorFunctions[MaterialComponent::StaticClass()->Name] = []() -> Component*
+    { return new MaterialComponent(); };
+
+    m_constructorFunctions[EnvironmentComponent::StaticClass()->Name] = []() -> Component*
+    { return new EnvironmentComponent(); };
+
+    m_constructorFunctions[AnimControllerComponent::StaticClass()->Name] = []() -> Component*
+    { return new AnimControllerComponent(); };
+
+    m_constructorFunctions[SkeletonComponent::StaticClass()->Name] = []() -> Component*
+    { return new SkeletonComponent(); };
+
+    m_constructorFunctions[AABBOverrideComponent::StaticClass()->Name] = []() -> Component*
+    { return new AABBOverrideComponent(); };
+  }
+
+  Component* ComponentFactory::Create(ComponentType cls)
+  {
+    switch (cls)
     {
     case ComponentType::MeshComponent:
-      return new MeshComponent();
-      break;
+      return Create(MeshComponent::StaticClass());
     case ComponentType::DirectionComponent:
-      return new DirectionComponent();
-      break;
+      return Create(DirectionComponent::StaticClass());
     case ComponentType::MultiMaterialComponent:
     case ComponentType::MaterialComponent:
-      return new MaterialComponent();
-      break;
+      return Create(MaterialComponent::StaticClass());
     case ComponentType::EnvironmentComponent:
-      return new EnvironmentComponent();
-      break;
+      return Create(EnvironmentComponent::StaticClass());
     case ComponentType::AnimControllerComponent:
-      return new AnimControllerComponent();
-      break;
+      return Create(AnimControllerComponent::StaticClass());
     case ComponentType::SkeletonComponent:
-      return new SkeletonComponent();
-      break;
+      return Create(SkeletonComponent::StaticClass());
     case ComponentType::AABBOverrideComponent:
-      return new AABBOverrideComponent;
-      break;
+      return Create(AABBOverrideComponent::StaticClass());
     case ComponentType::Base:
     default:
-      assert(false && "Unsupported component type.");
+      assert(0 && "Unknown Component Type !");
       break;
     }
     return nullptr;
   }
+
+  Component* ComponentFactory::Create(StringView cls) { return m_constructorFunctions[cls.data()](); }
+
+  Component* ComponentFactory::Create(TKClass* cls) { return m_constructorFunctions[cls->Name](); }
 
 } // namespace ToolKit

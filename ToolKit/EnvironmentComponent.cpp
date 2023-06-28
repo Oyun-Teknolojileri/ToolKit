@@ -35,6 +35,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(EnvironmentComponent, Component);
+
   EnvironmentComponent::EnvironmentComponent()
   {
     ParameterConstructor();
@@ -151,6 +153,14 @@ namespace ToolKit
   {
     Component::DeSerializeImp(doc, parent);
     ParameterEventConstructor();
+  }
+
+  XmlNode* EnvironmentComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   BoundingBox EnvironmentComponent::GetBBox()

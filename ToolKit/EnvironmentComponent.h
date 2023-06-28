@@ -33,22 +33,25 @@ namespace ToolKit
 
   typedef std::shared_ptr<class EnvironmentComponent> EnvironmentComponentPtr;
   typedef std::vector<EnvironmentComponentPtr> EnvironmentComponentPtrArray;
+
   static VariantCategory EnvironmentComponentCategory {"Environment Component", 90};
 
   class TK_API EnvironmentComponent : public Component
   {
    public:
-    TKComponentType(EnvironmentComponent);
+    TKDeclareClass(EnvironmentComponent, Component);
 
     EnvironmentComponent();
     virtual ~EnvironmentComponent();
 
     ComponentPtr Copy(Entity* ntt) override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
-
     BoundingBox GetBBox();
 
     void Init(bool flushClientSideArray);
+
+   protected:
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:
     void ParameterConstructor();

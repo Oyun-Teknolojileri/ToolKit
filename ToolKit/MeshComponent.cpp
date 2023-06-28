@@ -35,6 +35,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(MeshComponent, Component);
+
   MeshComponent::MeshComponent()
   {
     Mesh_Define(std::make_shared<ToolKit::Mesh>(),
@@ -73,5 +75,13 @@ namespace ToolKit
   }
 
   void MeshComponent::Init(bool flushClientSideArray) { GetMeshVal()->Init(flushClientSideArray); }
+
+  XmlNode* MeshComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
 
 } // namespace ToolKit

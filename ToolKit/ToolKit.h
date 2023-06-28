@@ -55,7 +55,6 @@
 #include "Skeleton.h"
 #include "SpriteSheet.h"
 #include "StateMachine.h"
-#include "StringId.h"
 #include "Surface.h"
 #include "Texture.h"
 #include "ToneMapPass.h"
@@ -210,6 +209,7 @@ namespace ToolKit
     SkeletonManager* m_skeletonManager   = nullptr;
     FileManager* m_fileManager           = nullptr;
     EntityFactory* m_entityFactory       = nullptr;
+    ComponentFactory* m_componentFactory = nullptr;
     RenderSystem* m_renderSys            = nullptr;
     HandleManager m_handleManager;
 
@@ -243,6 +243,7 @@ namespace ToolKit
   TK_API SkeletonManager* GetSkeletonManager();
   TK_API FileManager* GetFileManager();
   TK_API EntityFactory* GetEntityFactory();
+  TK_API ComponentFactory* GetComponentFactory();
   TK_API EngineSettings& GetEngineSettings();
 
   TK_API String DefaultPath();

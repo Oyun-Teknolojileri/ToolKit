@@ -39,7 +39,7 @@ namespace ToolKit
   class TK_API MaterialComponent : public Component
   {
    public:
-    TKComponentType(MaterialComponent);
+    TKDeclareClass(MaterialComponent, Component);
 
     MaterialComponent();
     virtual ~MaterialComponent();
@@ -52,8 +52,6 @@ namespace ToolKit
     ComponentPtr Copy(Entity* ntt) override;
 
     void Init(bool flushClientSideArray);
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
-    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     void AddMaterial(MaterialPtr mat);
     void RemoveMaterial(uint index);
 
@@ -88,6 +86,10 @@ namespace ToolKit
      * @params material is the material to set as the first.
      */
     void SetFirstMaterial(const MaterialPtr& material);
+
+   protected:
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:
     /**

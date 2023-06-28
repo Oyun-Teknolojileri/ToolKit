@@ -34,11 +34,11 @@
 namespace ToolKit
 {
 
+  TKDefineClass(AnimControllerComponent, Component);
+
   AnimControllerComponent::AnimControllerComponent()
   {
     Records_Define({}, AnimRecordComponentCategory.Name, AnimRecordComponentCategory.Priority, true, true);
-
-    m_id = GetHandleManager()->GetNextHandle();
   }
 
   AnimControllerComponent::~AnimControllerComponent()
@@ -75,6 +75,14 @@ namespace ToolKit
     {
       iter->second->m_entity = m_entity;
     }
+  }
+
+  XmlNode* AnimControllerComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   void AnimControllerComponent::AddSignal(const String& signalName, AnimRecordPtr record)

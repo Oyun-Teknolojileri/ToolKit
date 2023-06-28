@@ -159,7 +159,7 @@ namespace ToolKit
     {
       for (const ComponentPtr& com : GetComponentPtrArray())
       {
-        if (com->GetType() == T::GetTypeStatic())
+        if (com->IsA<T>())
         {
           return std::reinterpret_pointer_cast<T>(com);
         }
@@ -178,7 +178,7 @@ namespace ToolKit
     {
       for (const ComponentPtr& com : GetComponentPtrArray())
       {
-        if (com->GetType() == T::GetTypeStatic())
+        if (com->IsA<T>())
         {
           components.push_back(std::static_pointer_cast<T>(com));
         }

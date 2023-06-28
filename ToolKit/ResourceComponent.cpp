@@ -39,11 +39,12 @@
 namespace ToolKit
 {
 
+  TKDefineClass(AABBOverrideComponent, Component);
+
   AABBOverrideComponent::AABBOverrideComponent()
   {
-    PositionOffset_Define(Vec3(0), AABBOverrideCompCategory.Name, AABBOverrideCompCategory.Priority, true, true);
-
-    Size_Define(Vec3(1), AABBOverrideCompCategory.Name, AABBOverrideCompCategory.Priority, true, true);
+    PositionOffset_Define(Vec3(0.0f), AABBOverrideCompCategory.Name, AABBOverrideCompCategory.Priority, true, true);
+    Size_Define(Vec3(1.0f), AABBOverrideCompCategory.Name, AABBOverrideCompCategory.Priority, true, true);
   }
 
   AABBOverrideComponent::~AABBOverrideComponent() {}
@@ -71,6 +72,14 @@ namespace ToolKit
   {
     SetPositionOffsetVal(aabb.min);
     SetSizeVal(aabb.max - aabb.min);
+  }
+
+  XmlNode* AABBOverrideComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
 } //  namespace ToolKit

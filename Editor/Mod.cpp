@@ -28,11 +28,12 @@
 
 #include "AnchorMod.h"
 #include "App.h"
-#include "DirectionComponent.h"
-#include "Entity.h"
 #include "TransformMod.h"
 
-#include "DebugNew.h"
+#include <DirectionComponent.h>
+#include <Entity.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
