@@ -31,6 +31,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(GradientSky, SkyBase);
+
   GradientSky::GradientSky()
   {
     ParameterConstructor();
@@ -57,7 +59,7 @@ namespace ToolKit
 
     ConstructSkyMaterial(vert, frag);
 
-    if (m_onInit) 
+    if (m_onInit)
     {
       return;
     }
@@ -202,6 +204,14 @@ namespace ToolKit
                        }};
 
     GetRenderSystem()->AddRenderTask(task);
+  }
+
+  XmlNode* GradientSky::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
 } // namespace ToolKit
