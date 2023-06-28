@@ -365,6 +365,14 @@ namespace ToolKit
 
   void EntityNode::RemoveResources() {}
 
+  XmlNode* EntityNode::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
   EntityFactory::EntityFactory() { m_overrideFns.resize(static_cast<size_t>(EntityType::ENTITY_TYPE_COUNT), nullptr); }
 
   EntityFactory::~EntityFactory() { m_overrideFns.clear(); }

@@ -37,12 +37,13 @@ namespace ToolKit
   class TK_API Drawable final : public Entity
   {
    public:
+    TKDeclareClass(Drawable, Entity);
+
     Drawable();
     virtual ~Drawable();
     EntityType GetType() const override;
     void SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget = nullptr) override;
-    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+
     void RemoveResources() override;
 
     MeshPtr GetMesh() const;
@@ -51,6 +52,8 @@ namespace ToolKit
    protected:
     using Entity::ParameterConstructor;
 
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     Entity* CopyTo(Entity* copyTo) const override;
   };
 

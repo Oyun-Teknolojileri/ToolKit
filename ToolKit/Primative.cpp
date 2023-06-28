@@ -116,6 +116,14 @@ namespace ToolKit
     return ntt;
   }
 
+  XmlNode* Billboard::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
   EntityType Billboard::GetType() const { return EntityType::Entity_Billboard; }
 
   TKDefineClass(Cube, Entity);
@@ -152,6 +160,14 @@ namespace ToolKit
   {
     AddComponent(new MeshComponent());
     CubeScale_Define(Vec3(1.0f), "Geometry", 90, true, true);
+  }
+
+  XmlNode* Cube::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   void Cube::Generate(MeshComponentPtr meshComp, const Vec3& scale)
@@ -322,6 +338,14 @@ namespace ToolKit
 
   Entity* Quad::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 
+  XmlNode* Quad::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
   EntityType Quad::GetType() const { return EntityType::Entity_Quad; }
 
   void Quad::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
@@ -462,6 +486,14 @@ namespace ToolKit
   {
     Entity::DeSerializeImp(doc, parent);
     Generate(GetMeshComponent(), GetRadiusVal());
+  }
+
+  XmlNode* Sphere::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   void Sphere::ParameterConstructor(float radius)
@@ -612,6 +644,14 @@ namespace ToolKit
     SegHeight_Define(20, "Geometry", 90, true, true);
   }
 
+  XmlNode* Cone::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
   TKDefineClass(Arrow2d, Entity);
 
   Arrow2d::Arrow2d(bool genDef)
@@ -638,6 +678,14 @@ namespace ToolKit
     ntt->m_label = m_label;
 
     return ntt;
+  }
+
+  XmlNode* Arrow2d::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   EntityType Arrow2d::GetType() const { return EntityType::Entity_Arrow; }
@@ -701,6 +749,14 @@ namespace ToolKit
   LineBatch::LineBatch() { AddComponent(new MeshComponent()); }
 
   Entity* LineBatch::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
+
+  XmlNode* LineBatch::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
 
   EntityType LineBatch::GetType() const { return EntityType::Entity_LineBatch; }
 

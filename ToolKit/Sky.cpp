@@ -165,6 +165,14 @@ namespace ToolKit
     m_skyboxMaterial->Init();
   }
 
+  XmlNode* SkyBase::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
   TKDefineClass(Sky, Entity);
 
   Sky::Sky()
@@ -229,6 +237,14 @@ namespace ToolKit
     ParamExposure().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         { GetComponent<EnvironmentComponent>()->SetExposureVal(std::get<float>(newVal)); });
+  }
+
+  XmlNode* Sky::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
 } // namespace ToolKit

@@ -99,6 +99,9 @@ namespace ToolKit
     void UpdateShadowFrustum(const RenderJobArray& jobs);
     Vec3Array GetShadowFrustumCorners();
 
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+
    private:
     // Fits the entities into the shadow map camera frustum. As the scene gets
     // bigger, the resolution gets lower.
@@ -126,6 +129,9 @@ namespace ToolKit
     float AffectDistance() override;
     void InitShadowMapDepthMaterial() override;
 
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+
    public:
     TKDeclareParam(float, Radius);
   };
@@ -145,6 +151,9 @@ namespace ToolKit
     void UpdateShadowCamera() override;
     float AffectDistance() override;
     void InitShadowMapDepthMaterial() override;
+
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     TKDeclareParam(float, Radius);

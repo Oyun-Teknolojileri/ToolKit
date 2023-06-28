@@ -157,6 +157,14 @@ namespace ToolKit
 
   void AudioSource::Stop() { ma_sound_stop((ma_sound*) m_sound); }
 
+  XmlNode* AudioSource::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
   // Getters
 
   bool AudioSource::IsEnd() const { return ma_sound_at_end((const ma_sound*) m_sound) == MA_TRUE; }

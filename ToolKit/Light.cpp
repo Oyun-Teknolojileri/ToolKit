@@ -122,9 +122,10 @@ namespace ToolKit
 
   XmlNode* Light::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* nttNode   = Super::SerializeImp(doc, parent);
-    XmlNode* lightNode = CreateXmlNode(doc, StaticClass()->Name, nttNode);
-    return lightNode;
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   // DirectionalLight
@@ -163,6 +164,14 @@ namespace ToolKit
       frustum[i]   = Vec3(t.x / t.w, t.y / t.w, t.z / t.w);
     }
     return frustum;
+  }
+
+  XmlNode* DirectionalLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   void DirectionalLight::FitEntitiesBBoxIntoShadowFrustum(Camera* lightCamera, const RenderJobArray& jobs)
@@ -300,6 +309,14 @@ namespace ToolKit
     m_shadowMapMaterial->Init();
   }
 
+  XmlNode* PointLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
   // SpotLight
   //////////////////////////////////////////
 
@@ -340,5 +357,13 @@ namespace ToolKit
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
+  }
+
+  XmlNode* SpotLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 } // namespace ToolKit

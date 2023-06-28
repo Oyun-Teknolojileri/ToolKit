@@ -254,6 +254,9 @@ namespace ToolKit
 
     EntityType GetType() const override;
     void RemoveResources() override;
+
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
   };
 
   class TK_API EntityFactory

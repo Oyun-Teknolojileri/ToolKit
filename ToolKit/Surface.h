@@ -54,9 +54,6 @@ namespace ToolKit
     virtual ~Surface();
 
     EntityType GetType() const override;
-    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
-
     void CalculateAnchorOffsets(Vec3 canvas[4], Vec3 surface[4]);
 
     virtual void ResetCallbacks();
@@ -69,6 +66,9 @@ namespace ToolKit
     void ParameterConstructor();
     void ParameterEventConstructor();
     Entity* CopyTo(Entity* other) const override;
+
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
    private:
     void CreateQuat();
@@ -118,6 +118,7 @@ namespace ToolKit
    protected:
     void ParameterConstructor();
     void ParameterEventConstructor();
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     TKDeclareParam(MaterialPtr, ButtonMaterial);

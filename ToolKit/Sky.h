@@ -54,6 +54,7 @@ namespace ToolKit
     virtual void ParameterConstructor();
     virtual void ParameterEventConstructor();
     void ConstructSkyMaterial(ShaderPtr vertexPrg, ShaderPtr fragPrg);
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     TKDeclareParam(bool, DrawSky);
@@ -80,6 +81,7 @@ namespace ToolKit
    protected:
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     TKDeclareParam(float, Exposure);

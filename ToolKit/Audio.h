@@ -98,6 +98,9 @@ namespace ToolKit
     void Stop();
     void Rewind();
 
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+
    public:
     // Audio engine reference.
     void* m_sound = nullptr;

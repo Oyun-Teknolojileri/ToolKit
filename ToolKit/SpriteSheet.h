@@ -74,6 +74,8 @@ namespace ToolKit
   class TK_API SpriteAnimation : public Entity
   {
    public:
+    TKDeclareClass(SpriteAnimation, Entity);
+
     SpriteAnimation();
     explicit SpriteAnimation(const SpriteSheetPtr& spriteSheet);
     ~SpriteAnimation();
@@ -81,6 +83,9 @@ namespace ToolKit
     virtual EntityType GetType() const;
     Surface* GetCurrentSurface();
     void Update(float deltaTime);
+
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     float m_animFps        = 23.4f;

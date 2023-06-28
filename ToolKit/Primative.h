@@ -66,12 +66,12 @@ namespace ToolKit
     TKDeclareClass(Billboard, Entity);
 
     explicit Billboard(const Settings& settings);
-
     virtual void LookAt(class Camera* cam, float scale);
     EntityType GetType() const override;
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     Settings m_settings;
@@ -89,7 +89,6 @@ namespace ToolKit
 
     EntityType GetType() const override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
-
     static void Generate(MeshComponentPtr meshComp, const Vec3& scale);
 
    public:
@@ -98,6 +97,7 @@ namespace ToolKit
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
     void ParameterConstructor();
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:
     bool m_generated = false;
@@ -111,11 +111,11 @@ namespace ToolKit
     TKDeclareClass(Quad, Entity);
 
     Quad(bool genDef = true);
-
     EntityType GetType() const override;
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
    private:
@@ -133,12 +133,13 @@ namespace ToolKit
     Sphere(float radius);
 
     EntityType GetType() const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
     static void Generate(MeshComponentPtr mesh, float radius);
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
     void ParameterConstructor(float radius);
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:
    public:
@@ -161,6 +162,7 @@ namespace ToolKit
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
     void ParameterConstructor();
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:
     void Generate();
@@ -185,6 +187,7 @@ namespace ToolKit
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:
     void Generate();
@@ -208,6 +211,7 @@ namespace ToolKit
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
   };
 
   typedef std::shared_ptr<LineBatch> LineBatchPtr;

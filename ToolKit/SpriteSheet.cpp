@@ -142,6 +142,8 @@ namespace ToolKit
     return true;
   }
 
+  TKDefineClass(SpriteAnimation, Entity);
+
   SpriteAnimation::SpriteAnimation() {}
 
   SpriteAnimation::SpriteAnimation(const SpriteSheetPtr& spriteSheet) { m_sheet = spriteSheet; }
@@ -217,6 +219,14 @@ namespace ToolKit
     }
 
     m_currentTime += deltaTime;
+  }
+
+  XmlNode* SpriteAnimation::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   SpriteSheetManager::SpriteSheetManager() { m_type = ResourceType::SpriteSheet; }
