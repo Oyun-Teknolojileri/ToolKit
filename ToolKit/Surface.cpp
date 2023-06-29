@@ -133,17 +133,15 @@ namespace ToolKit
 
   void Surface::ComponentConstructor()
   {
-    MeshComponent* meshComponent         = new MeshComponent();
-    meshComponent->ParamMesh().m_exposed = false;
-    meshComponent->SetCastShadowVal(false);
-    AddComponent(meshComponent);
+    MeshComponentPtr meshCom       = AddComponent<MeshComponent>();
+    meshCom->ParamMesh().m_exposed = false;
+    meshCom->SetCastShadowVal(false);
 
-    MaterialComponent* materialComponent = new MaterialComponent();
+    MaterialComponentPtr matCom = AddComponent<MaterialComponent>();
     // materialComponent->ParamMaterial().m_exposed = false;
-    AddComponent(materialComponent);
 
-    MaterialPtr material = GetMaterialManager()->GetCopyOfUIMaterial();
-    materialComponent->SetFirstMaterial(material);
+    MaterialPtr material        = GetMaterialManager()->GetCopyOfUIMaterial();
+    matCom->SetFirstMaterial(material);
   }
 
   void Surface::ParameterConstructor()

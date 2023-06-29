@@ -28,6 +28,10 @@
 
 #include "App.h"
 
+#include <EngineSettings.h>
+
+#include <DebugNew.h>
+
 namespace ToolKit
 {
   namespace Editor
@@ -43,7 +47,7 @@ namespace ToolKit
       ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_Once);
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        EngineSettings::PostProcessingSettings& gfx = Main::GetInstance()->m_engineSettings.PostProcessing;
+        EngineSettings::PostProcessingSettings& gfx = GetEngineSettings().PostProcessing;
         if (gfx.TonemappingEnabled && ImGui::CollapsingHeader("Tonemapping"))
         {
           const char* items[] = {"Reinhard", "ACES"};

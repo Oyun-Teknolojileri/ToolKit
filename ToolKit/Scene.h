@@ -30,6 +30,7 @@
  * @file Scene.h Header file for the Scene class.
  */
 
+#include "EnvironmentComponent.h"
 #include "Light.h"
 #include "MathUtil.h"
 #include "Resource.h"

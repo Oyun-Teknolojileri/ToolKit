@@ -28,7 +28,10 @@
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <Surface.h>
+#include <Camera.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -45,10 +48,10 @@ namespace ToolKit
       m_thumbnailScene = std::make_shared<Scene>();
 
       m_entity         = std::make_shared<Entity>();
-      m_entity->AddComponent(new MeshComponent());
+      m_entity->AddComponent<MeshComponent>();
 
       m_sphere = std::make_shared<Sphere>();
-      m_sphere->AddComponent(new MaterialComponent());
+      m_sphere->AddComponent<MaterialComponent>();
 
       m_lightSystem = std::make_shared<ThreePointLightSystem>();
       m_cam         = std::make_shared<Camera>();
@@ -97,10 +100,9 @@ namespace ToolKit
         if (dirEnt.m_ext == SKINMESH)
         {
           SkinMesh* skinMesh            = (SkinMesh*) mesh.get();
-          SkeletonComponentPtr skelComp = std::make_shared<SkeletonComponent>();
+          SkeletonComponentPtr skelComp = m_entity->AddComponent<SkeletonComponent>();
           skelComp->SetSkeletonResourceVal(skinMesh->m_skeleton);
           skelComp->Init();
-          m_entity->AddComponent(skelComp);
         }
 
         m_thumbnailScene->AddEntity(m_entity.get());

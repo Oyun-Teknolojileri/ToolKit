@@ -242,7 +242,6 @@ namespace ToolKit
       vertices[23]  = corners[3];
 
       LineBatch* lb = new LineBatch(vertices, Vec3(1.0f, 0.0f, 0.0f), DrawType::Line, 0.5f);
-
       return lb;
     }
 

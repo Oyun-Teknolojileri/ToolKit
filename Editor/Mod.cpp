@@ -30,6 +30,7 @@
 #include "App.h"
 #include "TransformMod.h"
 
+#include <Camera.h>
 #include <DirectionComponent.h>
 #include <Entity.h>
 

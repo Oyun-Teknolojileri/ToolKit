@@ -133,7 +133,7 @@ namespace ToolKit
 
   TKDefineClass(DirectionalLight, Light);
 
-  DirectionalLight::DirectionalLight() { AddComponent(new DirectionComponent(this)); }
+  DirectionalLight::DirectionalLight() { AddComponent<DirectionComponent>(); }
 
   DirectionalLight::~DirectionalLight() {}
 
@@ -328,7 +328,7 @@ namespace ToolKit
     OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
     InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
 
-    AddComponent(new DirectionComponent(this));
+    AddComponent<DirectionComponent>();
   }
 
   SpotLight::~SpotLight() {}

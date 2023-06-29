@@ -28,11 +28,13 @@
 
 #include "App.h"
 #include "EditorCamera.h"
-#include "GradientSky.h"
 #include "IconsFontAwesome.h"
 #include "OutlinerWindow.h"
 
-#include "DebugNew.h"
+#include <GradientSky.h>
+#include <Surface.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {

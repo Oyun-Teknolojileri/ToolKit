@@ -28,10 +28,12 @@
 
 #include "Action.h"
 #include "App.h"
-#include "DirectionComponent.h"
 #include "TransformMod.h"
 
-#include "DebugNew.h"
+#include <DirectionComponent.h>
+#include <PluginManager.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -660,8 +662,8 @@ namespace ToolKit
     // 1234:
     static String GetLineNumString(size_t line)
     {
-      String lineNum = std::to_string(++line);
-      size_t numDigits = (size_t)std::log10(line);
+      String lineNum   = std::to_string(++line);
+      size_t numDigits = (size_t) std::log10(line);
       lineNum.append(std::max(4ull, numDigits) - numDigits, ' ');
       return lineNum + ": ";
     }

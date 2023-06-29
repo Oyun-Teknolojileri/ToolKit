@@ -29,14 +29,18 @@
 #include "App.h"
 #include "ComponentView.h"
 #include "CustomDataView.h"
-#include "DirectionComponent.h"
 #include "EntityView.h"
-#include "GradientSky.h"
 #include "MaterialView.h"
 #include "MeshView.h"
 #include "PrefabView.h"
 
-#include "DebugNew.h"
+#include <Camera.h>
+#include <DirectionComponent.h>
+#include <FileManager.h>
+#include <GradientSky.h>
+#include <Material.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {

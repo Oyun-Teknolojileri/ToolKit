@@ -26,15 +26,19 @@
 
 #include "App.h"
 
-#include "DirectionComponent.h"
 #include "EditorCamera.h"
 #include "EditorViewport2d.h"
 #include "OverlayUI.h"
 #include "PopupWindows.h"
 
+#include <DirectionComponent.h>
+#include <FileManager.h>
+#include <PluginManager.h>
+#include <UIManager.h>
+
 #include <sstream>
 
-#include "DebugNew.h"
+#include <DebugNew.h>
 
 namespace ToolKit
 {

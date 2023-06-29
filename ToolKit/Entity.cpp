@@ -36,6 +36,7 @@
 #include "Sky.h"
 #include "ToolKit.h"
 #include "Util.h"
+#include "Audio.h"
 
 #include "DebugNew.h"
 
@@ -140,9 +141,9 @@ namespace ToolKit
     WeakCopy(other);
 
     other->ClearComponents();
-    for (const ComponentPtr& com : GetComponentPtrArray())
+    for (const ComponentPtr& com : m_components)
     {
-      other->GetComponentPtrArray().push_back(com->Copy(other));
+      other->m_components.push_back(com->Copy(other));
     }
 
     return other;
@@ -172,18 +173,16 @@ namespace ToolKit
 
     if (copyComponents)
     {
-      other->GetComponentPtrArray() = GetComponentPtrArray();
+      other->m_components = m_components;
     }
   }
 
-  void Entity::AddComponent(Component* component) { AddComponent(ComponentPtr(component)); }
-
-  void Entity::AddComponent(ComponentPtr component)
+  void Entity::AddComponent(const ComponentPtr& component)
   {
     assert(GetComponent(component->GetIdVal()) == nullptr && "Component has already been added.");
 
     component->m_entity = this;
-    GetComponentPtrArray().push_back(component);
+    m_components.push_back(component);
   }
 
   MeshComponentPtr Entity::GetMeshComponent() const { return GetComponent<MeshComponent>(); }
@@ -192,13 +191,12 @@ namespace ToolKit
 
   ComponentPtr Entity::RemoveComponent(ULongID componentId)
   {
-    ComponentPtrArray& compList = GetComponentPtrArray();
-    for (size_t i = 0; i < compList.size(); i++)
+    for (size_t i = 0; i < m_components.size(); i++)
     {
-      ComponentPtr com = compList[i];
+      ComponentPtr com = m_components[i];
       if (com->GetIdVal() == componentId)
       {
-        compList.erase(compList.begin() + i);
+        m_components.erase(m_components.begin() + i);
         return com;
       }
     }
@@ -275,9 +273,8 @@ namespace ToolKit
         int type = -1;
         ReadAttr(comNode, XmlParamterTypeAttr, type);
         Component* com = GetComponentFactory()->Create((ComponentType) type);
-
         com->DeSerialize(doc, comNode);
-        AddComponent(com);
+        AddComponent(std::shared_ptr<Component>(com));
 
         comNode = comNode->next_sibling();
       }

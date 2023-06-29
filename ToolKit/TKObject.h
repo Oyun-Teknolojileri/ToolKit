@@ -146,6 +146,13 @@ namespace ToolKit
     void Init();
 
     /**
+     * Constructs a new TKObject from class name.
+     * @param cls - Class name of the object to be created.
+     * @return A new instance of the object with the given class name.
+     */
+    TKObject* MakeNew(const StringView& cls);
+
+    /**
      * Constructs a new TKObject of type T.
      * @return A new instance of TKObject.
      */
@@ -158,25 +165,6 @@ namespace ToolKit
       }
 
       return nullptr;
-    }
-
-    /**
-     * Constructs a new TKObject from class name.
-     * @param cls - Class name of the object to be created.
-     * @return A new instance of the object with the given class name.
-     */
-    TKObject* MakeNew(const StringView& cls)
-    {
-      TKObject* object = nullptr;
-      auto consFnIt    = m_constructorFnMap.find(cls);
-      if (consFnIt != m_constructorFnMap.end())
-      {
-        object = consFnIt->second();
-        object->NativeConstruct();
-      }
-
-      assert(object && "Unknown object type.");
-      return object;
     }
 
    private:

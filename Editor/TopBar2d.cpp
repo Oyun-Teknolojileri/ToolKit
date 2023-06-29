@@ -30,7 +30,9 @@
 #include "EditorScene.h"
 #include "EditorViewport2d.h"
 
-#include "DebugNew.h"
+#include <Canvas.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {

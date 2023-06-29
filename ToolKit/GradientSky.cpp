@@ -27,6 +27,9 @@
 #include "GradientSky.h"
 
 #include "EnvironmentComponent.h"
+#include "RenderSystem.h"
+
+#include "DebugNew.h"
 
 namespace ToolKit
 {

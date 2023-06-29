@@ -129,7 +129,7 @@ namespace ToolKit
 
     void Init()
     {
-      EngineSettings& settings = g_proxy->m_engineSettings;
+      EngineSettings& settings = GetEngineSettings();
 
       // Init SDL
       if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0)

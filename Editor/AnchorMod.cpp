@@ -28,7 +28,9 @@
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <Camera.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {

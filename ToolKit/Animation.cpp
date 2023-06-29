@@ -33,6 +33,7 @@
 #include "Skeleton.h"
 #include "ToolKit.h"
 #include "Util.h"
+#include "FileManager.h"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
 

@@ -27,7 +27,9 @@
 #include "TKObject.h"
 
 #include "AnimationControllerComponent.h"
+#include "Audio.h"
 #include "Camera.h"
+#include "Canvas.h"
 #include "DirectionComponent.h"
 #include "Entity.h"
 #include "EnvironmentComponent.h"
@@ -142,6 +144,20 @@ namespace ToolKit
     Register<Surface>();
     Register<Canvas>();
     Register<Button>();
+  }
+
+  TKObject* TKObjectFactory::MakeNew(const StringView& cls)
+  {
+    TKObject* object = nullptr;
+    auto consFnIt    = m_constructorFnMap.find(cls);
+    if (consFnIt != m_constructorFnMap.end())
+    {
+      object = consFnIt->second();
+      object->NativeConstruct();
+    }
+
+    assert(object && "Unknown object type.");
+    return object;
   }
 
 } // namespace ToolKit

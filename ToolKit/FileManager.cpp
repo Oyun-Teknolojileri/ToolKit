@@ -27,6 +27,7 @@
 #include "FileManager.h"
 
 #include "ToolKit.h"
+#include "Scene.h"
 
 #include <memory>
 #include <string>

@@ -31,13 +31,11 @@
  */
 
 #include "Animation.h"
-#include "Component.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
 #include "Node.h"
-#include "ParameterBlock.h"
-#include "Serialize.h"
 #include "TKObject.h"
+#include "ToolKit.h"
 #include "Types.h"
 
 namespace ToolKit
@@ -112,21 +110,16 @@ namespace ToolKit
     bool IsLightInstance() const;
     bool IsSkyInstance() const;
 
-    /**
-     * Adds the given component into the components of the Entity. While adding
-     * the component to the list, function also converts the component to a
-     * shared pointer for obtaining lifetime management. Also Entity set itself
-     * as the new components parent.
-     * @param component Component pointer that will be added to components of
-     * this entity.
-     */
-    void AddComponent(Component* component);
+    template <typename T>
+    std::shared_ptr<T> AddComponent()
+    {
+      std::shared_ptr<T> component = std::shared_ptr<T>(MakeNew<T>());
+      component->m_entity          = this;
+      m_components.push_back(component);
+      return component;
+    }
 
-    /**
-     * Adds a component to the Entity same as AddComponent(Component*
-     * component).
-     */
-    void AddComponent(ComponentPtr component);
+    void AddComponent(const ComponentPtr& componet);
 
     /**
      * Used to easily access first MeshComponentPtr.
@@ -147,7 +140,16 @@ namespace ToolKit
      */
     ComponentPtr RemoveComponent(ULongID componentId);
 
+    /**
+     * Mutable component array accessors.
+     * @return ComponentPtrArray for this Entity.
+     */
     ComponentPtrArray& GetComponentPtrArray();
+
+    /**
+     * Immutable component array accessors.
+     * @return ComponentPtrArray for this Entity.
+     */
     const ComponentPtrArray& GetComponentPtrArray() const;
 
     /**
@@ -239,7 +241,7 @@ namespace ToolKit
    private:
     // This should be private, because instantiated entities don't use this list
     // NOTE: Entity's own functions shouldn't access this either.
-    //  They should use GetComponentPtrArray instead.
+    // They should use GetComponentPtrArray instead.
     ComponentPtrArray m_components;
   };
 

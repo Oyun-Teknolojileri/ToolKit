@@ -228,6 +228,9 @@
     <ClCompile Include="TKObject.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="EngineSettings.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -450,6 +453,9 @@
       <Filter>Source\Render</Filter>
     </ClInclude>
     <ClInclude Include="TKObject.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineSettings.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

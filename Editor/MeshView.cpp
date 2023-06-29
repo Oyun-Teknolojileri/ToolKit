@@ -27,7 +27,9 @@
 #include "MeshView.h"
 
 #include "App.h"
-#include "DirectionComponent.h"
+
+#include <Camera.h>
+#include <DirectionComponent.h>
 
 namespace ToolKit
 {

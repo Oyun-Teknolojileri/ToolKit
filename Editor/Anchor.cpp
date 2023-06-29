@@ -30,7 +30,10 @@
 #include "EditorViewport.h"
 #include "Global.h"
 
-#include "DebugNew.h"
+#include <Canvas.h>
+#include <Material.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {

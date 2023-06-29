@@ -44,7 +44,7 @@ namespace ToolKit
 
   Billboard::Billboard() {}
 
-  Billboard::Billboard(const Settings& settings) : m_settings(settings) { AddComponent(new MeshComponent()); }
+  Billboard::Billboard(const Settings& settings) : m_settings(settings) { AddComponent<MeshComponent>(); }
 
   void Billboard::LookAt(Camera* cam, float scale)
   {
@@ -160,7 +160,7 @@ namespace ToolKit
 
   void Cube::ParameterConstructor()
   {
-    AddComponent(new MeshComponent());
+    AddComponent<MeshComponent>();
     CubeScale_Define(Vec3(1.0f), "Geometry", 90, true, true);
   }
 
@@ -331,7 +331,7 @@ namespace ToolKit
 
   Quad::Quad(bool genDef)
   {
-    AddComponent(new MeshComponent());
+    AddComponent<MeshComponent>();
     if (genDef)
     {
       Generate();
@@ -500,7 +500,7 @@ namespace ToolKit
 
   void Sphere::ParameterConstructor(float radius)
   {
-    AddComponent(new MeshComponent());
+    AddComponent<MeshComponent>();
     Radius_Define(radius, "Geometry", 90, true, true);
   }
 
@@ -508,7 +508,7 @@ namespace ToolKit
 
   Cone::Cone(bool genDef)
   {
-    AddComponent(new MeshComponent());
+    AddComponent<MeshComponent>();
     ParameterConstructor();
     if (genDef)
     {
@@ -518,7 +518,7 @@ namespace ToolKit
 
   Cone::Cone(float height, float radius, int segBase, int segHeight)
   {
-    AddComponent(new MeshComponent());
+    AddComponent<MeshComponent>();
     ParameterConstructor();
     SetHeightVal(height);
     SetRadiusVal(radius);
@@ -658,7 +658,7 @@ namespace ToolKit
 
   Arrow2d::Arrow2d(bool genDef)
   {
-    AddComponent(new MeshComponent());
+    AddComponent<MeshComponent>();
     m_label = AxisLabel::X;
 
     if (genDef)
@@ -669,7 +669,7 @@ namespace ToolKit
 
   Arrow2d::Arrow2d(AxisLabel label) : m_label(label)
   {
-    AddComponent(new MeshComponent());
+    AddComponent<MeshComponent>();
     Generate();
   }
 
@@ -744,11 +744,11 @@ namespace ToolKit
 
   LineBatch::LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
   {
-    AddComponent(new MeshComponent());
+    AddComponent<MeshComponent>();
     Generate(linePnts, color, t, lineWidth);
   }
 
-  LineBatch::LineBatch() { AddComponent(new MeshComponent()); }
+  LineBatch::LineBatch() { AddComponent<MeshComponent>(); }
 
   Entity* LineBatch::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 

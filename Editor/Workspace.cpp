@@ -28,7 +28,9 @@
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <FileManager.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {

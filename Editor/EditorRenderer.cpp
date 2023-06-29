@@ -27,12 +27,17 @@
 #include "EditorRenderer.h"
 
 #include "App.h"
-#include "DirectionComponent.h"
 #include "EditorScene.h"
 #include "EditorViewport.h"
-#include "EnvironmentComponent.h"
 
-#include "DebugNew.h"
+#include <Camera.h>
+#include <DirectionComponent.h>
+#include <EnvironmentComponent.h>
+#include <Material.h>
+#include <MaterialComponent.h>
+#include <UIManager.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -68,7 +73,7 @@ namespace ToolKit
 
       m_passArray.clear();
       const EngineSettings::PostProcessingSettings& gfx = GetEngineSettings().PostProcessing;
-      
+
       if (GetRenderSystem()->IsSkipFrame())
       {
         m_scenePass->m_params.Gfx                        = gfx;
@@ -109,7 +114,7 @@ namespace ToolKit
         m_scenePass->Render(renderer);
         break;
       }
-      
+
       if (m_params.LitMode != EditorLitMode::Game)
       {
         // Draw scene and apply bloom effect.
@@ -233,8 +238,8 @@ namespace ToolKit
       m_scenePass->m_params.Scene             = scene;
 
       // Skip frame pass.
-      m_skipFramePass->m_params.FrameBuffer    = viewport->m_framebuffer;
-      m_skipFramePass->m_material              = m_blackMaterial;
+      m_skipFramePass->m_params.FrameBuffer   = viewport->m_framebuffer;
+      m_skipFramePass->m_material             = m_blackMaterial;
 
       // UI pass.
       UILayerPtrArray layers;

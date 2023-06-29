@@ -44,7 +44,7 @@ namespace ToolKit
 
   TKDefineClass(Drawable, Entity);
 
-  Drawable::Drawable() { AddComponent(new MeshComponent()); }
+  Drawable::Drawable() { AddComponent<MeshComponent>(); }
 
   Drawable::~Drawable() {}
 

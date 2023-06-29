@@ -26,18 +26,18 @@
 
 #pragma once
 
-#include "BloomPass.h"
-#include "CubemapPass.h"
-#include "DeferredPass.h"
-#include "ForwardPass.h"
-#include "FxaaPass.h"
-#include "GBufferPass.h"
-#include "GammaPass.h"
-#include "Pass.h"
-#include "RenderSystem.h"
-#include "ShadowPass.h"
-#include "SsaoPass.h"
-#include "ToolKit.h"
+#include <BloomPass.h>
+#include <CubemapPass.h>
+#include <DeferredPass.h>
+#include <ForwardPass.h>
+#include <FxaaPass.h>
+#include <GBufferPass.h>
+#include <GammaPass.h>
+#include <Pass.h>
+#include <RenderSystem.h>
+#include <ShadowPass.h>
+#include <SsaoPass.h>
+#include <EngineSettings.h>
 
 namespace ToolKit
 {

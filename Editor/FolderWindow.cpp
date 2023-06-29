@@ -28,7 +28,16 @@
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <Animation.h>
+#include <Audio.h>
+#include <Material.h>
+#include <Mesh.h>
+#include <Scene.h>
+#include <Shader.h>
+#include <Texture.h>
+#include <ToolKit.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -68,6 +77,7 @@ namespace ToolKit
       {
         return GetTextureManager();
       }
+
       return nullptr;
     }
 

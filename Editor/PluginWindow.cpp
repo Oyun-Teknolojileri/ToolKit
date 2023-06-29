@@ -29,7 +29,9 @@
 #include "App.h"
 #include "EditorViewport2d.h"
 
-#include "DebugNew.h"
+#include <UIManager.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {

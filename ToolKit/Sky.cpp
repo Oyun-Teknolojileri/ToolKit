@@ -58,7 +58,7 @@ namespace ToolKit
     if (envComp == nullptr)
     {
       // Create a default environment component.
-      envComp      = std::make_shared<EnvironmentComponent>();
+      envComp      = AddComponent<EnvironmentComponent>();
       HdriPtr hdri = nullptr;
 
       // Provide an empty hdri to construct gradient sky.
@@ -74,7 +74,6 @@ namespace ToolKit
       }
 
       envComp->SetHdriVal(hdri);
-      AddComponent(envComp);
     }
 
     Vec3 mp = Vec3(TK_FLT_MAX);

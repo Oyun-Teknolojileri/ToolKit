@@ -27,9 +27,12 @@
 #include "MaterialView.h"
 
 #include "App.h"
-#include "DirectionComponent.h"
 #include "EditorViewport.h"
-#include "GradientSky.h"
+
+#include <DirectionComponent.h>
+#include <FileManager.h>
+#include <GradientSky.h>
+#include <Material.h>
 
 namespace ToolKit
 {

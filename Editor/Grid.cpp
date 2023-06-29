@@ -190,18 +190,17 @@ namespace ToolKit
 
     void Grid::Init()
     {
-      AddComponent(new MeshComponent());
-      AddComponent(new MaterialComponent());
+      AddComponent<MeshComponent>();
+      AddComponent<MaterialComponent>();
 
       // Create grid material.
       if (!GetMaterialManager()->Exist(g_gridMaterialName))
       {
         MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+        
         material->UnInit();
         material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-
         material->GetRenderState()->cullMode      = CullingType::TwoSided;
-
         material->m_vertexShader  = GetShaderManager()->Create<Shader>(ShaderPath("gridVertex.shader", true));
 
         // Custom creationg & shader management.

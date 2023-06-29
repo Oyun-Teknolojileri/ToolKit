@@ -28,7 +28,9 @@
 #include "MaterialView.h"
 #include "PopupWindows.h"
 
-#include "DebugNew.h"
+#include <Material.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {

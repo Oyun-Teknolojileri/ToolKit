@@ -31,7 +31,8 @@
 #include "MultiChoiceWindow.h"
 #include "Prefab.h"
 
-#include "DebugNew.h"
+#include <Material.h>
+#include <DebugNew.h>
 
 namespace ToolKit
 {

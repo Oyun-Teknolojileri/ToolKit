@@ -493,7 +493,7 @@ namespace ToolKit
     MaterialComponentPtr matc = cube.GetMaterialComponent();
     if (matc == nullptr)
     {
-      cube.AddComponent(new MaterialComponent);
+      cube.AddComponent<MaterialComponent>();
     }
     cube.GetMaterialComponent()->SetFirstMaterial(mat);
 

@@ -27,10 +27,14 @@
 #include "ComponentView.h"
 
 #include "Action.h"
-#include "AnimationControllerComponent.h"
 #include "App.h"
 #include "CustomDataView.h"
-#include "EnvironmentComponent.h"
+
+#include <AnimationControllerComponent.h>
+#include <EnvironmentComponent.h>
+#include <Material.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -458,41 +462,37 @@ namespace ToolKit
                            "\0Skeleton Component"
                            "\0AABB Override Component"))
           {
-            Component* newComponent = nullptr;
+            size_t cmpCnt = m_entity->GetComponentPtrArray().size();
             switch (dataType)
             {
             case 1:
-              newComponent = new MeshComponent();
+              m_entity->AddComponent<MeshComponent>();
               break;
             case 2:
             {
-              MaterialComponent* mmComp = new MaterialComponent();
-              mmComp->m_entity          = m_entity;
+              MaterialComponentPtr mmComp = m_entity->AddComponent<MaterialComponent>();
               mmComp->UpdateMaterialList();
-              newComponent = mmComp;
             }
             break;
             case 3:
-              newComponent = new EnvironmentComponent;
+              m_entity->AddComponent<EnvironmentComponent>();
               break;
             case 4:
-              newComponent = new AnimControllerComponent;
+              m_entity->AddComponent<AnimControllerComponent>();
               break;
             case 5:
-              newComponent = new SkeletonComponent;
+              m_entity->AddComponent<SkeletonComponent>();
               break;
             case 6:
-              newComponent = new AABBOverrideComponent;
+              m_entity->AddComponent<AABBOverrideComponent>();
               break;
             default:
               break;
             }
 
-            if (newComponent)
+            if (cmpCnt > m_entity->GetComponentPtrArray().size())
             {
-              m_entity->AddComponent(newComponent);
               edtScene->AddBillboard(m_entity);
-
               addInAction = false;
             }
           }

@@ -35,6 +35,7 @@
 #include "TopBar.h"
 
 #include <DirectionComponent.h>
+#include <Material.h>
 #include <MeshComponent.h>
 #include <Prefab.h>
 
@@ -232,7 +233,7 @@ namespace ToolKit
     RenderTargetSettigs EditorViewport::GetRenderTargetSettings()
     {
       RenderTargetSettigs sets = Viewport::GetRenderTargetSettings();
-      sets.Msaa                = Main::GetInstance()->m_engineSettings.Graphics.MSAA;
+      sets.Msaa                = GetEngineSettings().Graphics.MSAA;
       return sets;
     }
 
@@ -673,7 +674,6 @@ namespace ToolKit
 
                 // Load material once
                 String path                = ConcatPaths({entry.m_rootPath, entry.m_fileName + entry.m_ext});
-
                 MaterialPtr material       = GetMaterialManager()->Create<Material>(path);
 
                 // Create a material component if missing one.
@@ -681,8 +681,7 @@ namespace ToolKit
                 if (mmPtr == nullptr)
                 {
                   g_app->m_statusMsg = "MaterialComponent added.";
-                  pd.entity->AddComponent(new MaterialComponent());
-                  mmPtr = pd.entity->GetComponent<MaterialComponent>();
+                  mmPtr              = pd.entity->AddComponent<MaterialComponent>();
                   mmPtr->UpdateMaterialList();
                 }
 
@@ -782,7 +781,8 @@ namespace ToolKit
         // Load mesh once
         String path = ConcatPaths({dragEntry.m_rootPath, dragEntry.m_fileName + dragEntry.m_ext});
         *dwMesh     = new Entity();
-        (*dwMesh)->AddComponent(new MeshComponent);
+        (*dwMesh)->AddComponent<MeshComponent>();
+
         MeshPtr mesh;
         if (dragEntry.m_ext == SKINMESH)
         {
@@ -792,19 +792,19 @@ namespace ToolKit
         {
           mesh = GetMeshManager()->Create<Mesh>(path);
         }
+
         (*dwMesh)->GetMeshComponent()->SetMeshVal(mesh);
         mesh->Init(false);
 
         if (mesh->IsSkinned())
         {
-          SkeletonComponentPtr skelComp = std::make_shared<SkeletonComponent>();
+          SkeletonComponentPtr skelComp = (*dwMesh)->AddComponent<SkeletonComponent>();
           skelComp->SetSkeletonResourceVal(((SkinMesh*) mesh.get())->m_skeleton);
-          (*dwMesh)->AddComponent(skelComp);
+
           skelComp->Init();
         }
 
-        MaterialComponentPtr matComp = std::make_shared<MaterialComponent>();
-        (*dwMesh)->AddComponent(matComp);
+        MaterialComponentPtr matComp = (*dwMesh)->AddComponent<MaterialComponent>();
         matComp->UpdateMaterialList();
 
         // Load bounding box once
@@ -823,14 +823,14 @@ namespace ToolKit
                                                    LineBatch** boundingBox)
     {
       Vec3 lastDragMeshPos = Vec3(0.0f);
+      Ray ray              = RayFromMousePosition(); // Find the point of the cursor in 3D coordinates
 
-      // Find the point of the cursor in 3D coordinates
-      Ray ray              = RayFromMousePosition();
       EntityIdArray ignoreList;
       if (meshLoaded)
       {
         ignoreList.push_back((*boundingBox)->GetIdVal());
       }
+
       EditorScene::PickData pd = currScene->PickObject(ray, ignoreList);
       bool meshFound           = false;
       if (pd.entity != nullptr)

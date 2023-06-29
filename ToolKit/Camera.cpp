@@ -40,10 +40,7 @@ namespace ToolKit
   Camera::Camera()
   {
     SetLens(glm::radians(90.0f), 640.0f / 480.0f, 0.01f, 1000.0f);
-
-    DirectionComponent* dc = MakeNew<DirectionComponent>();
-    dc->m_entity           = this;
-    AddComponent(dc);
+    AddComponent<DirectionComponent>();
 
     ParameterConstructor();
     ParameterEventConstructor();
@@ -216,7 +213,7 @@ namespace ToolKit
     cpy->m_projection        = m_projection;
     cpy->m_orthographicScale = m_orthographicScale;
     cpy->ClearComponents();
-    cpy->AddComponent(new DirectionComponent(cpy));
+    cpy->AddComponent<DirectionComponent>();
 
     return cpy;
   }
