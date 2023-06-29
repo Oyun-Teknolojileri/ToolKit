@@ -95,6 +95,7 @@ namespace ToolKit
     m_fileManager      = new FileManager();
     m_entityFactory    = new EntityFactory();
     m_componentFactory = new ComponentFactory();
+    m_objectFactory    = new TKObjectFactory();
 
     m_preInitiated     = true;
   }
@@ -111,6 +112,7 @@ namespace ToolKit
 
     m_logger->Log("Main Init");
 
+    m_objectFactory->Init();
     m_componentFactory->Init();
     m_pluginManager->Init();
     m_animationMan->Init();
@@ -167,6 +169,7 @@ namespace ToolKit
     SafeDel(m_uiManager);
     SafeDel(m_skeletonManager);
     SafeDel(m_fileManager);
+    SafeDel(m_objectFactory);
     SafeDel(m_entityFactory);
     SafeDel(m_componentFactory);
   }
@@ -260,6 +263,8 @@ namespace ToolKit
   EntityFactory* GetEntityFactory() { return Main::GetInstance()->m_entityFactory; }
 
   ComponentFactory* GetComponentFactory() { return Main::GetInstance()->m_componentFactory; }
+
+  TK_API TKObjectFactory* GetObjectFactory() { return Main::GetInstance()->m_objectFactory; }
 
   EngineSettings& GetEngineSettings() { return Main::GetInstance()->m_engineSettings; }
 

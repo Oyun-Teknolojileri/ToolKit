@@ -56,6 +56,7 @@
 #include "SpriteSheet.h"
 #include "StateMachine.h"
 #include "Surface.h"
+#include "TKObject.h"
 #include "Texture.h"
 #include "ToneMapPass.h"
 #include "Types.h"
@@ -210,6 +211,7 @@ namespace ToolKit
     FileManager* m_fileManager           = nullptr;
     EntityFactory* m_entityFactory       = nullptr;
     ComponentFactory* m_componentFactory = nullptr;
+    TKObjectFactory* m_objectFactory     = nullptr;
     RenderSystem* m_renderSys            = nullptr;
     HandleManager m_handleManager;
 
@@ -242,10 +244,25 @@ namespace ToolKit
   TK_API HandleManager* GetHandleManager();
   TK_API SkeletonManager* GetSkeletonManager();
   TK_API FileManager* GetFileManager();
-  TK_API EntityFactory* GetEntityFactory();
-  TK_API ComponentFactory* GetComponentFactory();
   TK_API EngineSettings& GetEngineSettings();
 
+  // Factory.
+  TK_API EntityFactory* GetEntityFactory();
+  TK_API ComponentFactory* GetComponentFactory();
+  TK_API TKObjectFactory* GetObjectFactory();
+
+  template <typename T>
+  T* MakeNew()
+  {
+    if (TKObjectFactory* fac = GetComponentFactory())
+    {
+      return fac->MakeNew<T>();
+    }
+
+    return nullptr;
+  }
+
+  // Path.
   TK_API String DefaultPath();
   TK_API String DefaultAbsolutePath();
   TK_API String ConfigPath();

@@ -26,6 +26,23 @@
 
 #include "TKObject.h"
 
+#include "AnimationControllerComponent.h"
+#include "Camera.h"
+#include "DirectionComponent.h"
+#include "Entity.h"
+#include "EnvironmentComponent.h"
+#include "GradientSky.h"
+#include "Light.h"
+#include "MaterialComponent.h"
+#include "MeshComponent.h"
+#include "Prefab.h"
+#include "Primative.h"
+#include "ResourceComponent.h"
+#include "SkeletonComponent.h"
+#include "Sky.h"
+#include "SpriteSheet.h"
+#include "Surface.h"
+
 namespace ToolKit
 {
 
@@ -86,5 +103,41 @@ namespace ToolKit
   }
 
   void TKObject::DeSerializeImp(XmlDocument* doc, XmlNode* parent) {}
+
+  void TKObjectFactory::Init()
+  {
+    Register<AABBOverrideComponent>();
+    Register<AnimControllerComponent>();
+    Register<DirectionComponent>();
+    Register<EnvironmentComponent>();
+    Register<MaterialComponent>();
+    Register<MeshComponent>();
+    Register<SkeletonComponent>();
+    Register<Arrow2d>();
+    Register<AudioSource>();
+    Register<Billboard>();
+    Register<Camera>();
+    Register<Cone>();
+    Register<Cube>();
+    Register<Drawable>();
+    Register<Entity>();
+    Register<EntityNode>();
+    Register<Light>();
+    Register<DirectionalLight>();
+    Register<PointLight>();
+    Register<SpotLight>();
+    Register<LineBatch>();
+    Register<Prefab>();
+    Register<Quad>();
+    Register<SkyBase>();
+    Register<GradientSky>();
+    Register<Sky>();
+    Register<Sphere>();
+    Register<Quad>();
+    Register<SpriteAnimation>();
+    Register<Surface>();
+    Register<Canvas>();
+    Register<Button>();
+  }
 
 } // namespace ToolKit

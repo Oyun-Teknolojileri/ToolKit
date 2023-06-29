@@ -105,7 +105,11 @@ namespace ToolKit
     Entity* m_entity = nullptr; //!< Parent Entity of the component.
   };
 
-  class TK_API ComponentFactory
+  /**
+  * DEPRECATED use TKObjectFactory
+  * Utility class to construct Components.
+  */
+  class TK_API ComponentFactory final
   {
    public:
     void Init();

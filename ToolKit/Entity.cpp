@@ -381,79 +381,82 @@ namespace ToolKit
   Entity* EntityFactory::CreateByType(EntityType type)
   {
     // Overriden constructors
-    if (m_overrideFns[static_cast<int>(type)] != nullptr)
+    if (m_overrideFns[(int) type] != nullptr)
     {
-      return m_overrideFns[static_cast<int>(type)]();
+      Entity* ntt = m_overrideFns[(int) type]();
+      ntt->NativeConstruct();
+
+      return ntt;
     }
 
-    Entity* e = nullptr;
+    Entity* ntt = nullptr;
     switch (type)
     {
     case EntityType::Entity_Base:
-      e = new Entity();
+      ntt = new Entity();
       break;
     case EntityType::Entity_Node:
-      e = new EntityNode();
+      ntt = new EntityNode();
       break;
     case EntityType::Entity_AudioSource:
-      e = new AudioSource();
+      ntt = new AudioSource();
       break;
     case EntityType::Entity_Billboard:
-      e = new Billboard(Billboard::Settings());
+      ntt = new Billboard(Billboard::Settings());
       break;
     case EntityType::Entity_Cube:
-      e = new Cube(false);
+      ntt = new Cube(false);
       break;
     case EntityType::Entity_Quad:
-      e = new Quad(false);
+      ntt = new Quad(false);
       break;
     case EntityType::Entity_Sphere:
-      e = new Sphere(false);
+      ntt = new Sphere(false);
       break;
     case EntityType::Entity_Arrow:
-      e = new Arrow2d(false);
+      ntt = new Arrow2d(false);
       break;
     case EntityType::Entity_LineBatch:
-      e = new LineBatch();
+      ntt = new LineBatch();
       break;
     case EntityType::Entity_Cone:
-      e = new Cone(false);
+      ntt = new Cone(false);
       break;
     case EntityType::Entity_Drawable:
-      e = new Drawable();
+      ntt = new Drawable();
       break;
     case EntityType::Entity_Camera:
-      e = new Camera();
+      ntt = new Camera();
       break;
     case EntityType::Entity_Surface:
-      e = new Surface();
+      ntt = new Surface();
       break;
     case EntityType::Entity_Button:
-      e = new Button();
+      ntt = new Button();
       break;
     case EntityType::Entity_Light:
-      e = new Light();
+      ntt = new Light();
       break;
     case EntityType::Entity_DirectionalLight:
-      e = new DirectionalLight();
+      ntt = new DirectionalLight();
       break;
     case EntityType::Entity_PointLight:
-      e = new PointLight();
+      ntt = new PointLight();
       break;
     case EntityType::Entity_SpotLight:
-      e = new SpotLight();
+      ntt = new SpotLight();
       break;
     case EntityType::Entity_Sky:
-      e = new Sky();
+      ntt = new Sky();
       break;
     case EntityType::Entity_GradientSky:
-      e = new GradientSky();
+      ntt = new GradientSky();
       break;
     case EntityType::Entity_Canvas:
-      e = new Canvas();
+      ntt = new Canvas();
       break;
     case EntityType::Entity_Prefab:
-      e = new Prefab();
+      ntt = new Prefab();
       break;
     case EntityType::Entity_SpriteAnim:
     case EntityType::UNUSEDSLOT_1:
@@ -462,9 +465,9 @@ namespace ToolKit
       break;
     }
 
-    return e;
+    ntt->NativeConstruct();
 
-    return nullptr;
+    return ntt;
   }
 
   TKDefineClass(EntityNode, Entity);

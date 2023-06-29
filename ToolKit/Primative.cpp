@@ -42,6 +42,8 @@ namespace ToolKit
 
   TKDefineClass(Billboard, Entity);
 
+  Billboard::Billboard() {}
+
   Billboard::Billboard(const Settings& settings) : m_settings(settings) { AddComponent(new MeshComponent()); }
 
   void Billboard::LookAt(Camera* cam, float scale)

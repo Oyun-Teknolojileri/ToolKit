@@ -88,13 +88,13 @@ namespace ToolKit
     virtual void ParameterEventConstructor();
     virtual TKObjectPtr Copy();
 
-    template <class T>
+    template <typename T>
     bool IsA()
     {
       return Class()->IsSublcassOf(T::StaticClass());
     }
 
-    template <class T>
+    template <typename T>
     T* As()
     {
       if (IsA<T>())
@@ -113,6 +113,74 @@ namespace ToolKit
     TKDeclareParam(ULongID, Id);
 
     ParameterBlock m_localData;
+  };
+
+  typedef std::function<TKObject*()> ObjectConstructorCallback;
+
+  class TK_API TKObjectFactory
+  {
+    friend class Main;
+    TKObjectFactory() {};
+    ~TKObjectFactory() {};
+
+    TKObjectFactory(const TKObjectFactory&)            = delete;
+    TKObjectFactory(TKObjectFactory&&)                 = delete;
+    TKObjectFactory& operator=(const TKObjectFactory&) = delete;
+    TKObjectFactory& operator=(TKObjectFactory&&)      = delete;
+
+   public:
+    /**
+     * Registers or overrides the default constructor of given TKObject type.
+     * @param constructorFn - This is the callback function that is responsible of creating the given object.
+     */
+    template <typename T>
+    void Register(ObjectConstructorCallback constructorFn = []() -> T* { return new T(); })
+    {
+      m_constructorFnMap[T::StaticClass()->Name] = constructorFn;
+    }
+
+   private:
+    /**
+     * Registers all the known TKObject constructors.
+     */
+    void Init();
+
+    /**
+     * Constructs a new TKObject of type T.
+     * @return A new instance of TKObject.
+     */
+    template <typename T>
+    T* MakeNew()
+    {
+      if (TKObject* object = MakeNew(T::StaticClass()->Name))
+      {
+        return object->As<T>();
+      }
+
+      return nullptr;
+    }
+
+    /**
+     * Constructs a new TKObject from class name.
+     * @param cls - Class name of the object to be created.
+     * @return A new instance of the object with the given class name.
+     */
+    TKObject* MakeNew(const StringView& cls)
+    {
+      TKObject* object = nullptr;
+      auto consFnIt    = m_constructorFnMap.find(cls);
+      if (consFnIt != m_constructorFnMap.end())
+      {
+        object = consFnIt->second();
+        object->NativeConstruct();
+      }
+
+      assert(object && "Unknown object type.");
+      return object;
+    }
+
+   private:
+    std::unordered_map<StringView, ObjectConstructorCallback> m_constructorFnMap;
   };
 
 } // namespace ToolKit

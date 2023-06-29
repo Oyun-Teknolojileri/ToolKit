@@ -259,7 +259,11 @@ namespace ToolKit
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
   };
 
-  class TK_API EntityFactory
+  /**
+   * DEPRECATED use TKObjectFactory
+   * Utility class to construct Entity.
+   */
+  class TK_API EntityFactory final
   {
    public:
     EntityFactory();

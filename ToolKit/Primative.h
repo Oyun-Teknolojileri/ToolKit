@@ -65,6 +65,7 @@ namespace ToolKit
    public:
     TKDeclareClass(Billboard, Entity);
 
+    Billboard();
     explicit Billboard(const Settings& settings);
     virtual void LookAt(class Camera* cam, float scale);
     EntityType GetType() const override;

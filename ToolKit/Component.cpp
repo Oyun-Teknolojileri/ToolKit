@@ -103,8 +103,19 @@ namespace ToolKit
     return nullptr;
   }
 
-  Component* ComponentFactory::Create(StringView cls) { return m_constructorFunctions[cls.data()](); }
+  Component* ComponentFactory::Create(StringView cls)
+  {
+    Component* com = nullptr;
+    auto comIt     = m_constructorFunctions.find(cls.data());
+    if (comIt != m_constructorFunctions.end())
+    {
+      com = comIt->second();
+      com->NativeConstruct();
+    }
 
-  Component* ComponentFactory::Create(TKClass* cls) { return m_constructorFunctions[cls->Name](); }
+    return com;
+  }
+
+  Component* ComponentFactory::Create(TKClass* cls) { return Create(cls->Name); }
 
 } // namespace ToolKit
