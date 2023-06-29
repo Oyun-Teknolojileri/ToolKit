@@ -79,6 +79,11 @@ namespace ToolKit
     }
 
     m_logger->Log("Main PreInit");
+
+    m_objectFactory    = new TKObjectFactory();
+    m_entityFactory    = new EntityFactory();
+    m_componentFactory = new ComponentFactory();
+
     m_renderSys        = new RenderSystem();
     m_pluginManager    = new PluginManager();
     m_animationMan     = new AnimationManager();
@@ -93,9 +98,6 @@ namespace ToolKit
     m_uiManager        = new UIManager();
     m_skeletonManager  = new SkeletonManager();
     m_fileManager      = new FileManager();
-    m_entityFactory    = new EntityFactory();
-    m_componentFactory = new ComponentFactory();
-    m_objectFactory    = new TKObjectFactory();
 
     m_preInitiated     = true;
   }

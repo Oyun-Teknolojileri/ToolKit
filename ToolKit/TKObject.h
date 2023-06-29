@@ -120,9 +120,9 @@ namespace ToolKit
   class TK_API TKObjectFactory
   {
     friend class Main;
-    TKObjectFactory() {};
-    ~TKObjectFactory() {};
 
+    TKObjectFactory();
+    ~TKObjectFactory();
     TKObjectFactory(const TKObjectFactory&)            = delete;
     TKObjectFactory(TKObjectFactory&&)                 = delete;
     TKObjectFactory& operator=(const TKObjectFactory&) = delete;

@@ -104,6 +104,10 @@ namespace ToolKit
 
   void TKObject::DeSerializeImp(XmlDocument* doc, XmlNode* parent) {}
 
+  TKObjectFactory::TKObjectFactory() { Init(); }
+
+  TKObjectFactory::~TKObjectFactory() {}
+
   void TKObjectFactory::Init()
   {
     Register<AABBOverrideComponent>();
