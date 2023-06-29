@@ -24,21 +24,23 @@
  * SOFTWARE.
  */
 
+#include "Anchor.h"
 #include "App.h"
-#include "Common/SDLEventPool.h"
-#include "Common/Win32Utils.h"
 #include "ConsoleWindow.h"
-#include "GlErrorReporter.h"
+#include "Gizmo.h"
+#include "Grid.h"
 #include "Mod.h"
-#include "SDL.h"
-#include "Types.h"
 #include "UI.h"
 
-#include <stdio.h>
+#include <Common/SDLEventPool.h>
+#include <Common/Win32Utils.h>
+#include <GlErrorReporter.h>
+#include <SDL.h>
+#include <Types.h>
 
 #include <chrono>
 
-#include "DebugNew.h"
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -214,6 +216,18 @@ namespace ToolKit
             SafeDel(g_proxy->m_sceneManager);
             g_proxy->m_sceneManager = new EditorSceneManager();
             g_proxy->Init();
+
+            // Register Custom Classes.
+            g_proxy->m_objectFactory->Register<Grid>();
+            g_proxy->m_objectFactory->Register<Anchor>();
+            g_proxy->m_objectFactory->Register<Cursor>();
+            g_proxy->m_objectFactory->Register<Axis3d>();
+            g_proxy->m_objectFactory->Register<LinearGizmo>();
+            g_proxy->m_objectFactory->Register<MoveGizmo>();
+            g_proxy->m_objectFactory->Register<ScaleGizmo>();
+            g_proxy->m_objectFactory->Register<PolarGizmo>();
+            g_proxy->m_objectFactory->Register<SkyBillboard>();
+            g_proxy->m_objectFactory->Register<LightBillboard>();
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);

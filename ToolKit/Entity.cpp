@@ -26,6 +26,9 @@
 
 #include "Entity.h"
 
+#include "Audio.h"
+#include "Camera.h"
+#include "Canvas.h"
 #include "GradientSky.h"
 #include "Light.h"
 #include "MathUtil.h"
@@ -34,9 +37,9 @@
 #include "ResourceComponent.h"
 #include "Skeleton.h"
 #include "Sky.h"
+#include "Surface.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "Audio.h"
 
 #include "DebugNew.h"
 
@@ -47,8 +50,6 @@ namespace ToolKit
 
   Entity::Entity()
   {
-    ParameterConstructor();
-
     m_node           = new Node();
     m_node->m_entity = this;
     _parentId        = 0;
@@ -158,6 +159,8 @@ namespace ToolKit
     Visible_Define(true, EntityCategory.Name, EntityCategory.Priority, true, true);
     TransformLock_Define(false, EntityCategory.Name, EntityCategory.Priority, true, true);
   }
+
+  void Entity::ParameterEventConstructor() { Super::ParameterEventConstructor(); }
 
   void Entity::WeakCopy(Entity* other, bool copyComponents) const
   {
@@ -402,7 +405,7 @@ namespace ToolKit
       ntt = new Billboard(Billboard::Settings());
       break;
     case EntityType::Entity_Cube:
-      ntt = new Cube(false);
+      ntt = new Cube();
       break;
     case EntityType::Entity_Quad:
       ntt = new Quad(false);

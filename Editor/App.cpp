@@ -1407,13 +1407,15 @@ namespace ToolKit
     void App::CreateEditorEntities()
     {
       // Create editor objects.
-      m_cursor = new Cursor();
-      m_origin = new Axis3d();
+      m_cursor = MakeNew<Cursor>();
+      m_origin = MakeNew<Axis3d>();
 
-      m_grid   = new Grid(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0, false);
+      m_grid   = MakeNew<Grid>();
+      m_grid->Resize(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0);
 
-      m_2dGrid = new Grid(g_max2dGridSize, AxisLabel::XY, 10.0f, 4.0,
-                          true); // Generate grid cells 10 x 10
+      m_2dGrid         = MakeNew<Grid>();
+      m_2dGrid->m_is2d = true;
+      m_2dGrid->Resize(g_max2dGridSize, AxisLabel::XY, 10.0f, 4.0);
     }
 
     float App::GetDeltaTime() { return m_deltaTime; }

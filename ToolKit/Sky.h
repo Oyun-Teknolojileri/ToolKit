@@ -51,8 +51,8 @@ namespace ToolKit
     BoundingBox GetAABB(bool inWorld = false) const override;
 
    protected:
-    virtual void ParameterConstructor();
-    virtual void ParameterEventConstructor();
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
     void ConstructSkyMaterial(ShaderPtr vertexPrg, ShaderPtr fragPrg);
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 

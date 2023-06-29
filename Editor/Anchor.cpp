@@ -39,8 +39,9 @@ namespace ToolKit
 {
   namespace Editor
   {
+    // Anchor::Anchor() {}
 
-    Anchor::Anchor(const Billboard::Settings& set) : EditorBillboardBase(set)
+    Anchor::Anchor() : EditorBillboardBase({false, 0.0f, 0.0f})
     {
       for (int i = 0; i < 9; i++)
       {

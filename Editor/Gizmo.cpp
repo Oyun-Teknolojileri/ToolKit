@@ -29,7 +29,9 @@
 #include "App.h"
 #include "EditorViewport2d.h"
 
-#include "DebugNew.h"
+#include <Material.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -175,7 +177,11 @@ namespace ToolKit
 
       if (params.type == SolidType::Cube)
       {
-        Cube solid(params.solidDim);
+        Cube solid;
+        solid.NativeConstruct();
+        solid.SetCubeScaleVal(params.solidDim);
+        solid.Generate();
+
         MeshPtr mesh     = solid.GetComponent<MeshComponent>()->GetMeshVal();
         mesh->m_material = material;
         m_mesh->m_subMeshes.push_back(mesh);

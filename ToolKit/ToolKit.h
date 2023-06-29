@@ -191,6 +191,17 @@ namespace ToolKit
     return nullptr;
   }
 
+  template <typename T>
+  std::shared_ptr<T> MakeNewPtr()
+  {
+    if (Main* main = Main::GetInstance())
+    {
+      return std::shared_ptr<T>(main->MakeNew<T>());
+    }
+
+    return nullptr;
+  }
+
   // Path.
   TK_API String DefaultPath();
   TK_API String DefaultAbsolutePath();

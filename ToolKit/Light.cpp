@@ -26,12 +26,13 @@
 
 #include "Light.h"
 
+#include "Camera.h"
 #include "Component.h"
 #include "DirectionComponent.h"
+#include "Material.h"
+#include "Renderer.h"
+#include "Shader.h"
 #include "ToolKit.h"
-
-#include <memory>
-#include <string>
 
 #include "DebugNew.h"
 
@@ -45,7 +46,7 @@ namespace ToolKit
 
   Light::Light()
   {
-    m_shadowCamera = new Camera();
+    m_shadowCamera = MakeNew<Camera>();
     m_shadowCamera->SetOrthographicScaleVal(1.0f);
 
     Color_Define(Vec3(1.0f), "Light", 0, true, true, {true});

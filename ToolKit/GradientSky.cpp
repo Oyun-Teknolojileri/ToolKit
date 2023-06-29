@@ -26,8 +26,11 @@
 
 #include "GradientSky.h"
 
+#include "Camera.h"
 #include "EnvironmentComponent.h"
+#include "Material.h"
 #include "RenderSystem.h"
+#include "Shader.h"
 
 #include "DebugNew.h"
 
@@ -36,11 +39,7 @@ namespace ToolKit
 
   TKDefineClass(GradientSky, SkyBase);
 
-  GradientSky::GradientSky()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-  }
+  GradientSky::GradientSky() {}
 
   GradientSky::~GradientSky() {}
 
@@ -97,6 +96,8 @@ namespace ToolKit
 
   void GradientSky::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     TopColor_Define(Vec3(0.3f, 0.3f, 1.0f), "Sky", 90, true, true, {true});
     MiddleColor_Define(Vec3(1.0f, 1.0f, 0.8f), "Sky", 90, true, true, {true});
     BottomColor_Define(Vec3(0.5f, 0.3f, 0.1f), "Sky", 90, true, true, {true});
@@ -107,7 +108,7 @@ namespace ToolKit
     SetNameVal("Gradient Sky");
   }
 
-  void GradientSky::ParameterEventConstructor() { SkyBase::ParameterEventConstructor(); }
+  void GradientSky::ParameterEventConstructor() { Super::ParameterEventConstructor(); }
 
   void GradientSky::GenerateGradientCubemap()
   {

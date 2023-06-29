@@ -28,9 +28,9 @@
 
 #include "DirectionComponent.h"
 #include "EnvironmentComponent.h"
+#include "Material.h"
+#include "Shader.h"
 #include "ToolKit.h"
-
-#include <memory>
 
 #include "DebugNew.h"
 
@@ -39,11 +39,7 @@ namespace ToolKit
 
   TKDefineClass(SkyBase, Entity);
 
-  SkyBase::SkyBase()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-  }
+  SkyBase::SkyBase() {}
 
   EntityType SkyBase::GetType() const { return EntityType::Entity_SkyBase; }
 
@@ -91,11 +87,7 @@ namespace ToolKit
     Init();
   }
 
-  void SkyBase::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
-  {
-    Entity::DeSerializeImp(doc, parent);
-    ParameterEventConstructor();
-  }
+  void SkyBase::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { Entity::DeSerializeImp(doc, parent); }
 
   bool SkyBase::IsInitialized() { return m_initialized; }
 
@@ -124,6 +116,8 @@ namespace ToolKit
 
   void SkyBase::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     DrawSky_Define(true, "Sky", 90, true, true);
     Illuminate_Define(true, "Sky", 90, true, true);
     Intensity_Define(1.0f, "Sky", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
@@ -133,6 +127,8 @@ namespace ToolKit
 
   void SkyBase::ParameterEventConstructor()
   {
+    Super::ParameterEventConstructor();
+
     ParamIlluminate().m_onValueChangedFn.clear();
     ParamIlluminate().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
@@ -174,11 +170,7 @@ namespace ToolKit
 
   TKDefineClass(Sky, Entity);
 
-  Sky::Sky()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-  }
+  Sky::Sky() {}
 
   Sky::~Sky() {}
 
@@ -214,6 +206,8 @@ namespace ToolKit
 
   void Sky::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     Exposure_Define(1.0f, "Sky", 90, true, true, {false, true, 0.0f, 50.0f, 0.05f});
 
     Hdri_Define(nullptr, "Sky", 90, true, true);

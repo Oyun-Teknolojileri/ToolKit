@@ -34,6 +34,7 @@
 #include "StatusBar.h"
 #include "TopBar.h"
 
+#include <Camera.h>
 #include <DirectionComponent.h>
 #include <Material.h>
 #include <MeshComponent.h>
@@ -190,7 +191,7 @@ namespace ToolKit
         ReadAttr(node, "alignment", *((int*) (&m_cameraAlignment)));
         ReadAttr(node, "lock", m_orbitLock);
 
-        Camera* viewCam = new Camera();
+        Camera* viewCam = MakeNew<Camera>();
         ULongID id      = viewCam->GetIdVal();
         viewCam->DeSerialize(nullptr, node->first_node("E"));
         viewCam->SetIdVal(id);

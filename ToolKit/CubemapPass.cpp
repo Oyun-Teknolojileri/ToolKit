@@ -35,7 +35,7 @@ namespace ToolKit
 
   CubeMapPass::CubeMapPass()
   {
-    m_cube = std::make_shared<Cube>();
+    m_cube = MakeNewPtr<Cube>();
     m_cube->AddComponent<MaterialComponent>();
   }
 

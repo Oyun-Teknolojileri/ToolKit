@@ -37,11 +37,7 @@ namespace ToolKit
 
   TKDefineClass(EnvironmentComponent, Component);
 
-  EnvironmentComponent::EnvironmentComponent()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-  }
+  EnvironmentComponent::EnvironmentComponent() {}
 
   EnvironmentComponent::~EnvironmentComponent() {}
 
@@ -63,6 +59,8 @@ namespace ToolKit
 
   void EnvironmentComponent::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     Hdri_Define(nullptr, EnvironmentComponentCategory.Name, EnvironmentComponentCategory.Priority, true, true);
 
     PositionOffset_Define(Vec3(0.0f),
@@ -133,6 +131,8 @@ namespace ToolKit
 
   void EnvironmentComponent::ParameterEventConstructor()
   {
+    Super::ParameterEventConstructor();
+
     ParamExposure().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
                                                  { ReInitHdri(GetHdriVal(), std::get<float>(newVal)); });
 

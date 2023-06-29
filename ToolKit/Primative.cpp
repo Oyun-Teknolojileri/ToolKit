@@ -27,13 +27,12 @@
 #include "Primative.h"
 
 #include "DirectionComponent.h"
+#include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "Node.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
-
-#include <vector>
 
 #include "DebugNew.h"
 
@@ -130,23 +129,7 @@ namespace ToolKit
 
   TKDefineClass(Cube, Entity);
 
-  Cube::Cube(bool genDef)
-  {
-    ParameterConstructor();
-
-    if (genDef)
-    {
-      Generate(GetMeshComponent(), GetCubeScaleVal());
-    }
-  }
-
-  Cube::Cube(const Vec3& scale)
-  {
-    ParameterConstructor();
-
-    SetCubeScaleVal(scale);
-    Generate(GetMeshComponent(), GetCubeScaleVal());
-  }
+  Cube::Cube() { AddComponent<MeshComponent>(); }
 
   Entity* Cube::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 
@@ -154,13 +137,15 @@ namespace ToolKit
 
   void Cube::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Entity::DeSerializeImp(doc, parent);
-    Generate(GetMeshComponent(), GetCubeScaleVal());
+    Super::DeSerializeImp(doc, parent);
+    Generate();
   }
+
+  void Cube::Generate() { Generate(GetMeshComponent(), GetCubeScaleVal()); }
 
   void Cube::ParameterConstructor()
   {
-    AddComponent<MeshComponent>();
+    Super::ParameterConstructor();
     CubeScale_Define(Vec3(1.0f), "Geometry", 90, true, true);
   }
 

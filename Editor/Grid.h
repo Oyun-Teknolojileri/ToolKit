@@ -26,8 +26,8 @@
 
 #pragma once
 
-#include "Entity.h"
-#include "Shader.h"
+#include <Entity.h>
+#include <Shader.h>
 
 namespace ToolKit
 {
@@ -54,15 +54,18 @@ namespace ToolKit
     class Grid : public Entity
     {
      public:
-      explicit Grid(UVec2 size, AxisLabel axis, float cellSize, float linePixelCount, bool is2d);
+      TKDeclareClass(Grid, Entity);
 
+      Grid();
       void Resize(UVec2 size, AxisLabel axis = AxisLabel::ZX, float cellSize = 1.0f, float linePixelCount = 2.0f);
-
       bool HitTest(const Ray& ray, Vec3& pos);
       void UpdateShaderParams();
 
      private:
       void Init();
+
+     public:
+      bool m_is2d = false;
 
      private:
       Vec3 m_horizontalAxisColor;
@@ -71,7 +74,6 @@ namespace ToolKit
       UVec2 m_size;                     // m^2 size of the grid.
       float m_gridCellSize      = 1.0f; // m^2 size of each cell
       float m_maxLinePixelCount = 2.0f;
-      bool m_is2d               = false;
       bool m_initiated          = false;
       MaterialPtr m_material    = nullptr;
     };

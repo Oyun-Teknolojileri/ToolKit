@@ -29,8 +29,10 @@
 #include "AnimationControllerComponent.h"
 #include "DirectionComponent.h"
 #include "EnvironmentComponent.h"
+#include "MaterialComponent.h"
+#include "MeshComponent.h"
 #include "ResourceComponent.h"
-#include "ToolKit.h"
+#include "SkeletonComponent.h"
 
 #include "DebugNew.h"
 

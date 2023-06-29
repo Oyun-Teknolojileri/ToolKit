@@ -41,9 +41,6 @@ namespace ToolKit
   {
     SetLens(glm::radians(90.0f), 640.0f / 480.0f, 0.01f, 1000.0f);
     AddComponent<DirectionComponent>();
-
-    ParameterConstructor();
-    ParameterEventConstructor();
   }
 
   Camera::~Camera() {}
@@ -220,6 +217,8 @@ namespace ToolKit
 
   void Camera::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     Fov_Define(glm::degrees(m_fov),
                CameraCategory.Name,
                CameraCategory.Priority,
@@ -253,6 +252,8 @@ namespace ToolKit
 
   void Camera::ParameterEventConstructor()
   {
+    Super::ParameterEventConstructor();
+
     auto updateLensInternalFn = [this]()
     {
       if (m_ortographic)

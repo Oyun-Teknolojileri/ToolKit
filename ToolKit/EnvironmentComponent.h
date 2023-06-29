@@ -54,8 +54,8 @@ namespace ToolKit
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:
-    void ParameterConstructor();
-    void ParameterEventConstructor();
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
     void ReInitHdri(HdriPtr hdri, float exposure);
 
    public:

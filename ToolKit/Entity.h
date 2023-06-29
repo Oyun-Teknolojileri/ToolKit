@@ -210,6 +210,7 @@ namespace ToolKit
    protected:
     virtual Entity* CopyTo(Entity* other) const;
     void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
     void WeakCopy(Entity* other, bool copyComponents = true) const;
     virtual XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent);

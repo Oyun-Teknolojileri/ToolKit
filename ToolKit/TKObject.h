@@ -84,8 +84,6 @@ namespace ToolKit
     virtual ~TKObject();
     virtual void NativeConstruct();
     virtual void NativeDestruct();
-    virtual void ParameterConstructor();
-    virtual void ParameterEventConstructor();
     virtual TKObjectPtr Copy();
 
     template <typename T>
@@ -106,6 +104,8 @@ namespace ToolKit
     }
 
    protected:
+    virtual void ParameterConstructor();
+    virtual void ParameterEventConstructor();
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
