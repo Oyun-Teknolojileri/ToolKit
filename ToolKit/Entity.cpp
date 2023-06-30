@@ -408,7 +408,7 @@ namespace ToolKit
       ntt = new Cube();
       break;
     case EntityType::Entity_Quad:
-      ntt = new Quad(false);
+      ntt = new Quad();
       break;
     case EntityType::Entity_Sphere:
       ntt = new Sphere(false);

@@ -87,19 +87,21 @@ namespace ToolKit
 
     Cube();
 
+    void NativeConstruct() override;
     EntityType GetType() const override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
-    void Generate();
 
     static void Generate(MeshComponentPtr meshComp, const Vec3& dimention);
 
-   public:
-    TKDeclareParam(Vec3, CubeScale);
-
    protected:
+    void Generate();
     Entity* CopyTo(Entity* copyTo) const override;
     void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+
+   public:
+    TKDeclareParam(Vec3, CubeScale);
 
    private:
     bool m_generated = false;
@@ -112,7 +114,8 @@ namespace ToolKit
    public:
     TKDeclareClass(Quad, Entity);
 
-    Quad(bool genDef = true);
+    Quad();
+    void NativeConstruct() override;
     EntityType GetType() const override;
 
    protected:

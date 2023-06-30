@@ -178,9 +178,7 @@ namespace ToolKit
       if (params.type == SolidType::Cube)
       {
         Cube solid;
-        solid.NativeConstruct();
         solid.SetCubeScaleVal(params.solidDim);
-        solid.Generate();
 
         MeshPtr mesh     = solid.GetComponent<MeshComponent>()->GetMeshVal();
         mesh->m_material = material;

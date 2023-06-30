@@ -133,6 +133,12 @@ namespace ToolKit
 
   Entity* Cube::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 
+  void Cube::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    Generate();
+  }
+
   EntityType Cube::GetType() const { return EntityType::Entity_Cube; }
 
   void Cube::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
@@ -147,6 +153,15 @@ namespace ToolKit
   {
     Super::ParameterConstructor();
     CubeScale_Define(Vec3(1.0f), "Geometry", 90, true, true);
+  }
+
+  void Cube::ParameterEventConstructor()
+  {
+    Super::ParameterEventConstructor();
+
+    ValueUpdateFn upVal = [this](Value& old, Value& val) -> void { Generate(); };
+    ParamCubeScale().m_onValueChangedFn.clear();
+    ParamCubeScale().m_onValueChangedFn.push_back(upVal);
   }
 
   XmlNode* Cube::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -314,13 +329,12 @@ namespace ToolKit
 
   TKDefineClass(Quad, Entity);
 
-  Quad::Quad(bool genDef)
+  Quad::Quad() { AddComponent<MeshComponent>(); }
+
+  void Quad::NativeConstruct()
   {
-    AddComponent<MeshComponent>();
-    if (genDef)
-    {
-      Generate();
-    }
+    Super::NativeConstruct();
+    Generate();
   }
 
   Entity* Quad::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }

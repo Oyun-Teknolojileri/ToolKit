@@ -35,15 +35,19 @@ namespace ToolKit
   namespace Editor
   {
 
-    EditorCamera::EditorCamera()
-    {
-      ParameterConstructor();
-      CreateGizmo();
-    }
+    TKDefineClass(EditorCamera, Camera);
+
+    EditorCamera::EditorCamera() {}
 
     EditorCamera::EditorCamera(const EditorCamera* cam) { cam->CopyTo(this); }
 
     EditorCamera::~EditorCamera() {}
+
+    void EditorCamera::NativeConstruct()
+    {
+      Super::NativeConstruct();
+      CreateGizmo();
+    }
 
     Entity* EditorCamera::Copy() const
     {
@@ -133,7 +137,7 @@ namespace ToolKit
 
     void EditorCamera::ParameterConstructor()
     {
-      Camera::ParameterEventConstructor();
+      Super::ParameterConstructor();
 
       Poses_Define(
           [this]() -> void
