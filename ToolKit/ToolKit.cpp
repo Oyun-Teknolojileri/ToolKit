@@ -27,24 +27,23 @@
 #include "ToolKit.h"
 
 #define GLAD_GLES2_IMPLEMENTATION
+#include "Audio.h"
+#include "EngineSettings.h"
+#include "FileManager.h"
+#include "Material.h"
+#include "Mesh.h"
+#include "PluginManager.h"
+#include "RenderSystem.h"
+#include "Scene.h"
+#include "Shader.h"
+#include "TKObject.h"
+#include "UIManager.h"
 #include "gles2.h"
 
 #include <algorithm>
 #include <filesystem>
 #include <memory>
 #include <string>
-
-#include "EngineSettings.h"
-#include "TKObject.h"
-#include "RenderSystem.h"
-#include "PluginManager.h"
-#include "Mesh.h"
-#include "Audio.h"
-#include "Shader.h"
-#include "Material.h"
-#include "Scene.h"
-#include "UIManager.h"
-#include "FileManager.h"
 
 #include "DebugNew.h"
 
@@ -140,7 +139,8 @@ namespace ToolKit
     m_materialManager->Init();
     m_sceneManager->Init();
     m_skeletonManager->Init();
-    m_timing.Initialize(m_engineSettings->Graphics.FPS);
+    m_renderSys->Init();
+    m_timing.Init(m_engineSettings->Graphics.FPS);
 
     m_initiated = true;
   }
@@ -368,7 +368,7 @@ namespace ToolKit
 
   String LayerPath(const String& file, bool def) { return ProcessPath(file, "Layers", def); }
 
-void Timing::Initialize(uint fps)
+  void Timing::Init(uint fps)
   {
     LastTime    = GetElapsedMilliSeconds();
     CurrentTime = 0.0f;

@@ -129,7 +129,11 @@ namespace ToolKit
 
   TKDefineClass(Cube, Entity);
 
-  Cube::Cube() { AddComponent<MeshComponent>(); }
+  Cube::Cube()
+  {
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
+  }
 
   Entity* Cube::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 

@@ -36,7 +36,6 @@ namespace ToolKit
   CubeMapPass::CubeMapPass()
   {
     m_cube = MakeNewPtr<Cube>();
-    m_cube->AddComponent<MaterialComponent>();
   }
 
   CubeMapPass::CubeMapPass(const CubeMapPassParams& params) : CubeMapPass() { m_params = params; }

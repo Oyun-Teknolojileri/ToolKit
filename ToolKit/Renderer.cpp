@@ -57,10 +57,13 @@ namespace ToolKit
 
 #define TK_LUT_TEXTURE "GLOBAL_BRDF_LUT_TEXTURE"
 
-  Renderer::Renderer()
+  Renderer::Renderer() {}
+
+  void Renderer::Init()
   {
     m_uiCamera        = new Camera();
     m_utilFramebuffer = std::make_shared<Framebuffer>();
+    m_dummyDrawCube   = MakeNewPtr<Cube>();
   }
 
   Renderer::~Renderer()
@@ -486,19 +489,11 @@ namespace ToolKit
 
   void Renderer::DrawCube(Camera* cam, MaterialPtr mat, const Mat4& transform)
   {
-    Cube cube;
-    cube.Generate(cube.GetMeshComponent(), cube.GetCubeScaleVal());
-    cube.m_node->SetTransform(transform);
-
-    MaterialComponentPtr matc = cube.GetMaterialComponent();
-    if (matc == nullptr)
-    {
-      cube.AddComponent<MaterialComponent>();
-    }
-    cube.GetMaterialComponent()->SetFirstMaterial(mat);
+    m_dummyDrawCube->m_node->SetTransform(transform);
+    m_dummyDrawCube->GetMaterialComponent()->SetFirstMaterial(mat);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({&cube}, jobs);
+    RenderJobProcessor::CreateRenderJobs({m_dummyDrawCube.get()}, jobs);
     Render(jobs, cam);
   }
 

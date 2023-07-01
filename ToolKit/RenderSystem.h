@@ -78,6 +78,7 @@ namespace ToolKit
     RenderSystem();
     ~RenderSystem();
 
+    void Init();
     void AddRenderTask(Technique* technique);
     void AddRenderTask(TechniquePtr technique);
     void AddRenderTask(RenderTask task);

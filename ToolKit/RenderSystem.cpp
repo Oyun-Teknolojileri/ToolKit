@@ -53,6 +53,8 @@ namespace ToolKit
 
   RenderSystem::~RenderSystem() { SafeDel(m_renderer); }
 
+  void RenderSystem::Init() { m_renderer->Init(); }
+
   void RenderSystem::AddRenderTask(Technique* technique)
   {
     AddRenderTask({[technique](Renderer* renderer) -> void { technique->Render(renderer); }});
@@ -108,7 +110,7 @@ namespace ToolKit
       GetLogger()->WriteConsole(LogType::Warning, "Asnyc Render %d", m_lowQueue.size());
     }
   }
-  
+
   void RenderSystem::FlushRenderTasks()
   {
     auto flushTasksFn = [this](RenderTaskArray& rts) -> void
@@ -150,10 +152,7 @@ namespace ToolKit
     m_skipFrames--;
   }
 
-  bool RenderSystem::IsSkipFrame() const 
-  {
-    return m_skipFrames != 0;
-  }
+  bool RenderSystem::IsSkipFrame() const { return m_skipFrames != 0; }
 
   void RenderSystem::SkipSceneFrames(int numFrames) { m_skipFrames = numFrames; }
 
@@ -164,7 +163,7 @@ namespace ToolKit
 
     InitGLErrorReport(callback);
 
-    // Default states.  
+    // Default states.
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
   }

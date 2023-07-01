@@ -84,8 +84,7 @@ namespace ToolKit
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:
-    void ParameterConstructor();
-    void ParameterEventConstructor();
+    void ParameterConstructor() override;
 
    public:
     TKDeclareParam(String, PrefabPath);

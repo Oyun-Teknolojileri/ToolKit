@@ -68,7 +68,7 @@ namespace ToolKit
 
   struct Timing
   {
-    void Initialize(uint fps);
+    void Init(uint fps);
 
     float LastTime    = 0.0f;
     float CurrentTime = 0.0f;

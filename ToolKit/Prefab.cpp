@@ -38,11 +38,7 @@ namespace ToolKit
 
   TKDefineClass(Prefab, Entity);
 
-  Prefab::Prefab()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-  }
+  Prefab::Prefab() {}
 
   Prefab::~Prefab() { UnInit(); }
 
@@ -224,8 +220,8 @@ namespace ToolKit
 
   void Prefab::ParameterConstructor()
   {
+    Super::ParameterConstructor();
     PrefabPath_Define("", PrefabCategory.Name, PrefabCategory.Priority, true, false);
   }
 
-  void Prefab::ParameterEventConstructor() {}
 } // namespace ToolKit

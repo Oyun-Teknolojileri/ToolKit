@@ -70,6 +70,7 @@ namespace ToolKit
     Renderer();
     ~Renderer();
 
+    void Init();
     void SetRenderState(const RenderState* const state);
 
     void SetStencilOperation(StencilOperation op);
@@ -203,6 +204,9 @@ namespace ToolKit
     MaterialPtr m_copyMaterial         = nullptr;
 
     int m_maxArrayTextureLayers        = -1;
+
+    // Dummy objects for draw commands.
+    CubePtr m_dummyDrawCube            = nullptr;
   };
 
 } // namespace ToolKit
