@@ -37,17 +37,26 @@ namespace ToolKit
 {
   namespace Editor
   {
+    TKDefineClass(EditorBillboardBase, Billboard);
+
+    EditorBillboardBase::EditorBillboardBase() {}
 
     EditorBillboardBase::EditorBillboardBase(const Settings& settings) : Billboard(settings) {}
+
+    void EditorBillboardBase::NativeConstruct()
+    {
+      Super::NativeConstruct();
+      Generate();
+    }
 
     void EditorBillboardBase::Generate()
     {
       MeshComponentPtr mCom = GetComponent<MeshComponent>();
 
       // Billboard
-      Quad quad;
-      MeshPtr meshPtr    = quad.GetMeshComponent()->GetMeshVal();
-      MaterialPtr matPtr = GetMaterialManager()->GetCopyOfUnlitMaterial();
+      QuadPtr quad          = MakeNewPtr<Quad>();
+      MeshPtr meshPtr       = quad->GetMeshComponent()->GetMeshVal();
+      MaterialPtr matPtr    = GetMaterialManager()->GetCopyOfUnlitMaterial();
       matPtr->UnInit();
       matPtr->m_diffuseTexture                    = m_iconImage;
       matPtr->GetRenderState()->blendFunction     = BlendFunction::ALPHA_MASK;
@@ -57,7 +66,9 @@ namespace ToolKit
       mCom->SetMeshVal(meshPtr);
     }
 
-    Cursor::Cursor() : EditorBillboardBase({true, 10.0f, 60.0f, true}) { Generate(); }
+    TKDefineClass(Cursor, EditorBillboardBase);
+
+    Cursor::Cursor() : EditorBillboardBase({true, 10.0f, 60.0f, true}) {}
 
     Cursor::~Cursor() {}
 
@@ -114,7 +125,9 @@ namespace ToolKit
       parentMesh->CalculateAABB();
     }
 
-    Axis3d::Axis3d() : EditorBillboardBase({false, 10.0f, 60.0f, true}) { Generate(); }
+    TKDefineClass(Axis3d, EditorBillboardBase);
+
+    Axis3d::Axis3d() : EditorBillboardBase({false, 10.0f, 60.0f, true}) {}
 
     Axis3d::~Axis3d() {}
 
@@ -467,7 +480,11 @@ namespace ToolKit
     // Gizmo
     //////////////////////////////////////////////////////////////////////////
 
-    Gizmo::Gizmo(const Billboard::Settings& set) : EditorBillboardBase(set) { m_grabbedAxis = AxisLabel::None; }
+    TKDefineClass(Gizmo, EditorBillboardBase);
+
+    Gizmo::Gizmo() {}
+
+    Gizmo::Gizmo(const Billboard::Settings& set) : EditorBillboardBase(set) {}
 
     Gizmo::~Gizmo()
     {
@@ -560,6 +577,8 @@ namespace ToolKit
     // LinearGizmo
     //////////////////////////////////////////////////////////////////////////
 
+    TKDefineClass(LinearGizmo, Gizmo);
+
     LinearGizmo::LinearGizmo() : Gizmo({false, 6.0f, 60.0f})
     {
       m_handles.resize(3);
@@ -651,6 +670,8 @@ namespace ToolKit
       return p;
     }
 
+    TKDefineClass(MoveGizmo, Gizmo);
+
     MoveGizmo::MoveGizmo()
     {
       for (int i = 3; i < 6; i++)
@@ -665,6 +686,8 @@ namespace ToolKit
     MoveGizmo::~MoveGizmo() {}
 
     EditorBillboardBase::BillboardType MoveGizmo::GetBillboardType() const { return BillboardType::Move; }
+
+    TKDefineClass(ScaleGizmo, Gizmo);
 
     ScaleGizmo::ScaleGizmo()
     {
@@ -704,6 +727,8 @@ namespace ToolKit
 
       return p;
     }
+
+    TKDefineClass(PolarGizmo, Gizmo);
 
     PolarGizmo::PolarGizmo() : Gizmo({false, 6.0f, 60.0f})
     {
@@ -778,7 +803,9 @@ namespace ToolKit
       GetComponent<MeshComponent>()->SetMeshVal(mesh);
     }
 
-    SkyBillboard::SkyBillboard() : EditorBillboardBase({true, 3.5f, 10.0f}) { Generate(); }
+    TKDefineClass(SkyBillboard, EditorBillboardBase);
+
+    SkyBillboard::SkyBillboard() : EditorBillboardBase({true, 3.5f, 10.0f}) {}
 
     SkyBillboard::~SkyBillboard() {}
 
@@ -790,7 +817,9 @@ namespace ToolKit
       EditorBillboardBase::Generate();
     }
 
-    LightBillboard::LightBillboard() : EditorBillboardBase({true, 3.5f, 10.0f}) { Generate(); }
+    TKDefineClass(LightBillboard, EditorBillboardBase);
+
+    LightBillboard::LightBillboard() : EditorBillboardBase({true, 3.5f, 10.0f}) {}
 
     LightBillboard::~LightBillboard() {}
 

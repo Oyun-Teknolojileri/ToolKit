@@ -33,6 +33,7 @@
 #include "Node.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
+#include "Camera.h"
 
 #include "DebugNew.h"
 

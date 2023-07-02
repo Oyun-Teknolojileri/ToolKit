@@ -452,7 +452,7 @@ namespace ToolKit
       bool envExist = entity->GetComponent<EnvironmentComponent>() != nullptr;
       if (envExist || entity->IsSkyInstance())
       {
-        SkyBillboard* billboard = new SkyBillboard();
+        SkyBillboard* billboard = MakeNew<SkyBillboard>();
         addBillboardFn(billboard);
         return;
       }
@@ -460,7 +460,7 @@ namespace ToolKit
       // Check light
       if (entity->IsLightInstance())
       {
-        LightBillboard* billboard = new LightBillboard();
+        LightBillboard* billboard = MakeNew<LightBillboard>();
         addBillboardFn(billboard);
         return;
       }
