@@ -27,6 +27,7 @@
 #include "Anchor.h"
 #include "App.h"
 #include "ConsoleWindow.h"
+#include "EditorCamera.h"
 #include "Gizmo.h"
 #include "Grid.h"
 #include "Mod.h"
@@ -228,6 +229,17 @@ namespace ToolKit
             g_proxy->m_objectFactory->Register<PolarGizmo>();
             g_proxy->m_objectFactory->Register<SkyBillboard>();
             g_proxy->m_objectFactory->Register<LightBillboard>();
+
+            // Overrides.
+            g_proxy->m_objectFactory->Register<Camera>([]() -> EditorCamera* { return new EditorCamera(); });
+
+            g_proxy->m_objectFactory->Register<DirectionalLight>([]() -> EditorDirectionalLight*
+                                                                 { return new EditorDirectionalLight(); });
+
+            g_proxy->m_objectFactory->Register<PointLight>([]() -> EditorPointLight*
+                                                           { return new EditorPointLight(); });
+
+            g_proxy->m_objectFactory->Register<SpotLight>([]() -> EditorSpotLight* { return new EditorSpotLight(); });
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);

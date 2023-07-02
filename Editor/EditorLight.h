@@ -79,10 +79,10 @@ namespace ToolKit
     class EditorDirectionalLight : public DirectionalLight, public LightGizmoController
     {
      public:
+      TKDeclareClass(EditorDirectionalLight, DirectionalLight);
+
       EditorDirectionalLight();
       virtual ~EditorDirectionalLight();
-      void ParameterEventConstructor() override;
-
       Entity* Copy() const override;
       LineBatch* GetDebugShadowFrustum();
 
@@ -94,29 +94,31 @@ namespace ToolKit
     class EditorPointLight : public PointLight, public LightGizmoController
     {
      public:
+      TKDeclareClass(EditorPointLight, PointLight);
+
       EditorPointLight();
       virtual ~EditorPointLight();
-      void ParameterEventConstructor() override;
-
       Entity* Copy() const override;
 
      protected:
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+      void ParameterEventConstructor() override;
     };
 
     class EditorSpotLight : public SpotLight, public LightGizmoController
     {
      public:
+      TKDeclareClass(EditorSpotLight, SpotLight);
+
       EditorSpotLight();
       virtual ~EditorSpotLight();
-      void ParameterEventConstructor() override;
-
       Entity* Copy() const override;
 
      protected:
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+      void ParameterEventConstructor() override;
     };
 
   } // namespace Editor

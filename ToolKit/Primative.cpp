@@ -26,6 +26,7 @@
 
 #include "Primative.h"
 
+#include "Camera.h"
 #include "DirectionComponent.h"
 #include "Material.h"
 #include "MathUtil.h"
@@ -33,7 +34,6 @@
 #include "Node.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
-#include "Camera.h"
 
 #include "DebugNew.h"
 
@@ -165,7 +165,6 @@ namespace ToolKit
     Super::ParameterEventConstructor();
 
     ValueUpdateFn upVal = [this](Value& old, Value& val) -> void { Generate(); };
-    ParamCubeScale().m_onValueChangedFn.clear();
     ParamCubeScale().m_onValueChangedFn.push_back(upVal);
   }
 
@@ -334,7 +333,11 @@ namespace ToolKit
 
   TKDefineClass(Quad, Entity);
 
-  Quad::Quad() { AddComponent<MeshComponent>(); }
+  Quad::Quad()
+  {
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
+  }
 
   void Quad::NativeConstruct()
   {
@@ -399,19 +402,15 @@ namespace ToolKit
 
   TKDefineClass(Sphere, Entity);
 
-  Sphere::Sphere(bool genDef)
+  Sphere::Sphere()
   {
-    ParameterConstructor(1.0f);
-
-    if (genDef)
-    {
-      Generate(GetMeshComponent(), GetRadiusVal());
-    }
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
   }
 
-  Sphere::Sphere(float radius)
+  void Sphere::NativeConstruct()
   {
-    ParameterConstructor(radius);
+    Super::NativeConstruct();
     Generate(GetMeshComponent(), GetRadiusVal());
   }
 
@@ -502,32 +501,31 @@ namespace ToolKit
     return node;
   }
 
-  void Sphere::ParameterConstructor(float radius)
+  void Sphere::ParameterConstructor()
   {
-    AddComponent<MeshComponent>();
-    Radius_Define(radius, "Geometry", 90, true, true);
+    Super::ParameterConstructor();
+    Radius_Define(1.0f, "Geometry", 90, true, true);
+  }
+
+  void Sphere::ParameterEventConstructor()
+  {
+    Super::ParameterEventConstructor();
+
+    ParamRadius().m_onValueChangedFn.push_back([=](Value& oldVal, Value& newVal) -> void
+                                               { Generate(GetMeshComponent(), GetRadiusVal()); });
   }
 
   TKDefineClass(Cone, Entity);
 
-  Cone::Cone(bool genDef)
+  Cone::Cone()
   {
+    AddComponent<MaterialComponent>();
     AddComponent<MeshComponent>();
-    ParameterConstructor();
-    if (genDef)
-    {
-      Generate();
-    }
   }
 
-  Cone::Cone(float height, float radius, int segBase, int segHeight)
+  void Cone::NativeConstruct()
   {
-    AddComponent<MeshComponent>();
-    ParameterConstructor();
-    SetHeightVal(height);
-    SetRadiusVal(radius);
-    SetSegBaseVal(segBase);
-    SetSegHeightVal(segHeight);
+    Super::NativeConstruct();
     Generate();
   }
 
@@ -636,6 +634,18 @@ namespace ToolKit
 
   EntityType Cone::GetType() const { return EntityType::Entity_Cone; }
 
+  void Cone::Generate(float height, float radius, int segBase, int segHeight)
+  {
+    // Specifically doing it this way to prevent ParameterEventConstructor's to regenerate
+    // at each Set()
+    ParamHeight().GetVar<float>()  = height;
+    ParamRadius().GetVar<float>()  = radius;
+    ParamSegBase().GetVar<int>()   = segBase;
+    ParamSegHeight().GetVar<int>() = segHeight;
+
+    Generate();
+  }
+
   void Cone::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
     Entity::DeSerializeImp(doc, parent);
@@ -644,10 +654,23 @@ namespace ToolKit
 
   void Cone::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     Height_Define(1.0f, "Geometry", 90, true, true);
     Radius_Define(1.0f, "Geometry", 90, true, true);
     SegBase_Define(30, "Geometry", 90, true, true);
     SegHeight_Define(20, "Geometry", 90, true, true);
+  }
+
+  void Cone::ParameterEventConstructor()
+  {
+    Super::ParameterEventConstructor();
+
+    auto regenFn = [this](const Value& old, const Value& val) -> void { Generate(); };
+    ParamHeight().m_onValueChangedFn.push_back(regenFn);
+    ParamRadius().m_onValueChangedFn.push_back(regenFn);
+    ParamSegBase().m_onValueChangedFn.push_back(regenFn);
+    ParamSegHeight().m_onValueChangedFn.push_back(regenFn);
   }
 
   XmlNode* Cone::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -660,21 +683,11 @@ namespace ToolKit
 
   TKDefineClass(Arrow2d, Entity);
 
-  Arrow2d::Arrow2d(bool genDef)
+  Arrow2d::Arrow2d()
   {
+    AddComponent<MaterialComponent>();
     AddComponent<MeshComponent>();
     m_label = AxisLabel::X;
-
-    if (genDef)
-    {
-      Generate();
-    }
-  }
-
-  Arrow2d::Arrow2d(AxisLabel label) : m_label(label)
-  {
-    AddComponent<MeshComponent>();
-    Generate();
   }
 
   Entity* Arrow2d::CopyTo(Entity* copyTo) const
@@ -696,8 +709,10 @@ namespace ToolKit
 
   EntityType Arrow2d::GetType() const { return EntityType::Entity_Arrow; }
 
-  void Arrow2d::Generate()
+  void Arrow2d::Generate(AxisLabel axis)
   {
+    m_label = axis;
+
     VertexArray vertices;
     vertices.resize(8);
 
@@ -736,7 +751,7 @@ namespace ToolKit
     }
 
     MeshComponentPtr mesh                    = GetComponent<MeshComponent>();
-    mesh->GetMeshVal()->m_vertexCount        = static_cast<uint>(vertices.size());
+    mesh->GetMeshVal()->m_vertexCount        = (uint) vertices.size();
     mesh->GetMeshVal()->m_clientSideVertices = vertices;
     mesh->GetMeshVal()->m_material           = newMat;
 
@@ -745,12 +760,6 @@ namespace ToolKit
   }
 
   TKDefineClass(LineBatch, Entity);
-
-  LineBatch::LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
-  {
-    AddComponent<MeshComponent>();
-    Generate(linePnts, color, t, lineWidth);
-  }
 
   LineBatch::LineBatch() { AddComponent<MeshComponent>(); }
 

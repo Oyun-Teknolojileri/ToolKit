@@ -327,7 +327,7 @@ namespace ToolKit
 
             if (g_app->m_dbgArrow == nullptr)
             {
-              g_app->m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
+              //              g_app->m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
               m_ignoreList.push_back(g_app->m_dbgArrow->GetIdVal());
               currScene->AddEntity(g_app->m_dbgArrow.get());
             }
@@ -458,7 +458,8 @@ namespace ToolKit
 
             if (g_app->m_dbgFrustum == nullptr)
             {
-              g_app->m_dbgFrustum = std::shared_ptr<LineBatch>(new LineBatch(corners, X_AXIS, DrawType::Line));
+              g_app->m_dbgFrustum = MakeNewPtr<LineBatch>();
+              g_app->m_dbgFrustum->Generate(corners, X_AXIS, DrawType::Line);
               m_ignoreList.push_back(g_app->m_dbgFrustum->GetIdVal());
               currScene->AddEntity(g_app->m_dbgFrustum.get());
             }

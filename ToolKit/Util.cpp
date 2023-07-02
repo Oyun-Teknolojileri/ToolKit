@@ -783,13 +783,17 @@ namespace ToolKit
                        o - x * hSize - y * hSize,
                        o + x * hSize - y * hSize};
 
-    LineBatch* obj = new LineBatch(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+    LineBatch* obj = MakeNew<LineBatch>();
+    obj->Generate(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+
     return obj;
   }
 
   class LineBatch* CreateLineDebugObject(const Vec3Array& corners)
   {
-    LineBatch* obj = new LineBatch(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+    LineBatch* obj = MakeNew<LineBatch>();
+    obj->Generate(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+
     return obj;
   }
 
@@ -825,7 +829,9 @@ namespace ToolKit
       }
     }
 
-    LineBatch* lineForm = new LineBatch(vertices, color, DrawType::LineStrip, size);
+    LineBatch* lineForm = MakeNew<LineBatch>();
+    lineForm->Generate(vertices, color, DrawType::LineStrip, size);
+
     return lineForm;
   }
 

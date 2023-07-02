@@ -168,7 +168,6 @@ namespace ToolKit
       void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
      private:
-      void OverrideEntityConstructors();
       void CreateSimulationWindow(float width, float height);
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);

@@ -151,8 +151,10 @@ namespace ToolKit
           break;
         }
 
-        Arrow2d arrow(t);
-        MeshComponentPtr arrowMeshComp = arrow.GetComponent<MeshComponent>();
+        Arrow2dPtr arrow = MakeNewPtr<Arrow2d>();
+        arrow->Generate(t);
+
+        MeshComponentPtr arrowMeshComp = arrow->GetComponent<MeshComponent>();
         MeshPtr arrowMesh              = arrowMeshComp->GetMeshVal();
         if (i == 0)
         {
@@ -174,15 +176,16 @@ namespace ToolKit
 
     void GizmoHandle::Generate(const Params& params)
     {
-      m_params       = params;
+      m_params          = params;
 
-      Vec3 dir       = AXIS[(int) params.axis % 3];
-      Vec3Array pnts = {dir * params.toeTip.x, dir * params.toeTip.y};
+      Vec3 dir          = AXIS[(int) params.axis % 3];
+      Vec3Array pnts    = {dir * params.toeTip.x, dir * params.toeTip.y};
 
-      m_mesh         = std::make_shared<Mesh>();
+      m_mesh            = std::make_shared<Mesh>();
 
-      LineBatch line(pnts, params.color, DrawType::Line, 2.0f);
-      MeshPtr lnMesh = line.GetComponent<MeshComponent>()->GetMeshVal();
+      LineBatchPtr line = MakeNewPtr<LineBatch>();
+      line->Generate(pnts, params.color, DrawType::Line, 2.0f);
+      MeshPtr lnMesh = line->GetComponent<MeshComponent>()->GetMeshVal();
       m_mesh->m_subMeshes.push_back(lnMesh);
 
       MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
@@ -199,8 +202,10 @@ namespace ToolKit
       }
       else if (params.type == SolidType::Cone)
       {
-        Cone solid({params.solidDim.y, params.solidDim.x, 10, 10});
-        MeshPtr mesh     = solid.GetComponent<MeshComponent>()->GetMeshVal();
+        ConePtr solid = MakeNewPtr<Cone>();
+        solid->Generate(params.solidDim.y, params.solidDim.x, 10, 10);
+
+        MeshPtr mesh     = solid->GetComponent<MeshComponent>()->GetMeshVal();
         mesh->m_material = material;
         m_mesh->m_subMeshes.push_back(mesh);
       }
@@ -231,12 +236,13 @@ namespace ToolKit
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
-        int axisInd    = (int) m_params.axis;
-        Vec3 axis      = AXIS[axisInd];
-        Vec3Array pnts = {axis * 999.0f, axis * -999.0f};
+        int axisInd        = (int) m_params.axis;
+        Vec3 axis          = AXIS[axisInd];
+        Vec3Array pnts     = {axis * 999.0f, axis * -999.0f};
 
-        LineBatch guide(pnts, g_gizmoColor[axisInd % 3], DrawType::Line, 1.0f);
-        MeshPtr guideMesh = guide.GetComponent<MeshComponent>()->GetMeshVal();
+        LineBatchPtr guide = MakeNewPtr<LineBatch>();
+        guide->Generate(pnts, g_gizmoColor[axisInd % 3], DrawType::Line, 1.0f);
+        MeshPtr guideMesh = guide->GetComponent<MeshComponent>()->GetMeshVal();
         m_mesh->m_subMeshes.push_back(guideMesh);
       }
     }
@@ -296,8 +302,9 @@ namespace ToolKit
       }
       corners.push_back(corners.front());
 
-      LineBatch circle(corners, params.color, DrawType::LineStrip, 4.0f);
-      MeshPtr circleMesh = circle.GetComponent<MeshComponent>()->GetMeshVal();
+      LineBatchPtr circle = MakeNewPtr<LineBatch>();
+      circle->Generate(corners, params.color, DrawType::LineStrip, 4.0f);
+      MeshPtr circleMesh = circle->GetComponent<MeshComponent>()->GetMeshVal();
       m_mesh             = circleMesh;
 
       // Guide line.
@@ -320,8 +327,10 @@ namespace ToolKit
         pnts.push_back(glcl + dir * 999.0f);
         pnts.push_back(glcl - dir * 999.0f);
 
-        LineBatch guide(pnts, g_gizmoColor[axisIndx], DrawType::Line, 1.0f);
-        MeshPtr guideMesh = guide.GetComponent<MeshComponent>()->GetMeshVal();
+        LineBatchPtr guide = MakeNewPtr<LineBatch>();
+        guide->Generate(pnts, g_gizmoColor[axisIndx], DrawType::Line, 1.0f);
+
+        MeshPtr guideMesh = guide->GetComponent<MeshComponent>()->GetMeshVal();
         m_mesh->m_subMeshes.push_back(guideMesh);
       }
     }

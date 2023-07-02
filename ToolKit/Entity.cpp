@@ -374,89 +374,76 @@ namespace ToolKit
     return node;
   }
 
-  EntityFactory::EntityFactory() { m_overrideFns.resize(static_cast<size_t>(EntityType::ENTITY_TYPE_COUNT), nullptr); }
-
-  EntityFactory::~EntityFactory() { m_overrideFns.clear(); }
-
   Entity* EntityFactory::CreateByType(EntityType type)
   {
-    // Overriden constructors
-    if (m_overrideFns[(int) type] != nullptr)
-    {
-      Entity* ntt = m_overrideFns[(int) type]();
-      ntt->NativeConstruct();
-
-      return ntt;
-    }
-
     Entity* ntt = nullptr;
     switch (type)
     {
     case EntityType::Entity_Base:
-      ntt = new Entity();
+      ntt = MakeNew<Entity>();
       break;
     case EntityType::Entity_Node:
-      ntt = new EntityNode();
+      ntt = MakeNew<EntityNode>();
       break;
     case EntityType::Entity_AudioSource:
-      ntt = new AudioSource();
+      ntt = MakeNew<AudioSource>();
       break;
     case EntityType::Entity_Billboard:
-      ntt = new Billboard(Billboard::Settings());
+      ntt = MakeNew<Billboard>();
       break;
     case EntityType::Entity_Cube:
-      ntt = new Cube();
+      ntt = MakeNew<Cube>();
       break;
     case EntityType::Entity_Quad:
-      ntt = new Quad();
+      ntt = MakeNew<Quad>();
       break;
     case EntityType::Entity_Sphere:
-      ntt = new Sphere(false);
+      ntt = MakeNew<Sphere>();
       break;
     case EntityType::Entity_Arrow:
-      ntt = new Arrow2d(false);
+      ntt = MakeNew<Arrow2d>();
       break;
     case EntityType::Entity_LineBatch:
-      ntt = new LineBatch();
+      ntt = MakeNew<LineBatch>();
       break;
     case EntityType::Entity_Cone:
-      ntt = new Cone(false);
+      ntt = MakeNew<Cone>();
       break;
     case EntityType::Entity_Drawable:
-      ntt = new Drawable();
+      ntt = MakeNew<Drawable>();
       break;
     case EntityType::Entity_Camera:
-      ntt = new Camera();
+      ntt = MakeNew<Camera>();
       break;
     case EntityType::Entity_Surface:
-      ntt = new Surface();
+      ntt = MakeNew<Surface>();
       break;
     case EntityType::Entity_Button:
-      ntt = new Button();
+      ntt = MakeNew<Button>();
       break;
     case EntityType::Entity_Light:
-      ntt = new Light();
+      ntt = MakeNew<Light>();
       break;
     case EntityType::Entity_DirectionalLight:
-      ntt = new DirectionalLight();
+      ntt = MakeNew<DirectionalLight>();
       break;
     case EntityType::Entity_PointLight:
-      ntt = new PointLight();
+      ntt = MakeNew<PointLight>();
       break;
     case EntityType::Entity_SpotLight:
-      ntt = new SpotLight();
+      ntt = MakeNew<SpotLight>();
       break;
     case EntityType::Entity_Sky:
-      ntt = new Sky();
+      ntt = MakeNew<Sky>();
       break;
     case EntityType::Entity_GradientSky:
-      ntt = new GradientSky();
+      ntt = MakeNew<GradientSky>();
       break;
     case EntityType::Entity_Canvas:
-      ntt = new Canvas();
+      ntt = MakeNew<Canvas>();
       break;
     case EntityType::Entity_Prefab:
-      ntt = new Prefab();
+      ntt = MakeNew<Prefab>();
       break;
     case EntityType::Entity_SpriteAnim:
     case EntityType::UNUSEDSLOT_1:
@@ -465,16 +452,9 @@ namespace ToolKit
       break;
     }
 
-    ntt->NativeConstruct();
-
     return ntt;
   }
 
   TKDefineClass(EntityNode, Entity);
-
-  void EntityFactory::OverrideEntityConstructor(EntityType type, std::function<Entity*()> fn)
-  {
-    m_overrideFns[static_cast<int>(type)] = fn;
-  }
 
 } // namespace ToolKit

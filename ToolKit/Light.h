@@ -46,7 +46,6 @@ namespace ToolKit
 
     Light();
     virtual ~Light();
-    virtual void ParameterEventConstructor();
 
     EntityType GetType() const override;
 
@@ -58,6 +57,7 @@ namespace ToolKit
 
    protected:
     void UpdateShadowCameraTransform();
+    void ParameterEventConstructor() override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 

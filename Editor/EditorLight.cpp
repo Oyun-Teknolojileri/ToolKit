@@ -27,11 +27,12 @@
 #include "EditorLight.h"
 
 #include "App.h"
-#include "DirectionComponent.h"
-#include "Material.h"
-#include "Texture.h"
 
-#include "DebugNew.h"
+#include <DirectionComponent.h>
+#include <Material.h>
+#include <Texture.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -171,11 +172,11 @@ namespace ToolKit
       m_initialized = true;
     }
 
+    TKDefineClass(EditorDirectionalLight, DirectionalLight);
+
     EditorDirectionalLight::EditorDirectionalLight() : LightGizmoController(this) {}
 
     EditorDirectionalLight::~EditorDirectionalLight() {}
-
-    void EditorDirectionalLight::ParameterEventConstructor() { Light::ParameterEventConstructor(); }
 
     Entity* EditorDirectionalLight::Copy() const
     {
@@ -205,10 +206,7 @@ namespace ToolKit
     void EditorDirectionalLight::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
     {
       DirectionalLight::DeSerializeImp(doc, parent);
-
       assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
-
-      ParameterEventConstructor();
     }
 
     LineBatch* EditorDirectionalLight::GetDebugShadowFrustum()
@@ -241,17 +239,22 @@ namespace ToolKit
       vertices[22]  = corners[7];
       vertices[23]  = corners[3];
 
-      LineBatch* lb = new LineBatch(vertices, Vec3(1.0f, 0.0f, 0.0f), DrawType::Line, 0.5f);
+      LineBatch* lb = MakeNew<LineBatch>();
+      lb->Generate(vertices, Vec3(1.0f, 0.0f, 0.0f), DrawType::Line, 0.5f);
+
       return lb;
     }
 
-    EditorPointLight::EditorPointLight() : LightGizmoController(this) { ParameterEventConstructor(); }
+    TKDefineClass(EditorPointLight, PointLight);
+
+    EditorPointLight::EditorPointLight() : LightGizmoController(this) {}
 
     EditorPointLight::~EditorPointLight() {}
 
     void EditorPointLight::ParameterEventConstructor()
     {
-      Light::ParameterEventConstructor();
+      Super::ParameterEventConstructor();
+
       ParamRadius().m_onValueChangedFn.clear();
       ParamRadius().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
     }
@@ -284,11 +287,10 @@ namespace ToolKit
     void EditorPointLight::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
     {
       PointLight::DeSerializeImp(doc, parent);
-
       assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
-
-      ParameterEventConstructor();
     }
+
+    TKDefineClass(EditorSpotLight, SpotLight);
 
     EditorSpotLight::EditorSpotLight() : LightGizmoController(this) { ParameterEventConstructor(); }
 
@@ -296,7 +298,7 @@ namespace ToolKit
 
     void EditorSpotLight::ParameterEventConstructor()
     {
-      Light::ParameterEventConstructor();
+      Super::ParameterEventConstructor();
 
       ParamRadius().m_onValueChangedFn.clear();
       ParamRadius().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
@@ -334,10 +336,7 @@ namespace ToolKit
     void EditorSpotLight::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
     {
       SpotLight::DeSerializeImp(doc, parent);
-
       assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
-
-      ParameterEventConstructor();
     }
 
   } // namespace Editor

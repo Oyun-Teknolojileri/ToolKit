@@ -133,19 +133,18 @@ namespace ToolKit
    public:
     TKDeclareClass(Sphere, Entity);
 
-    Sphere(bool genDef = true);
-    Sphere(float radius);
-
+    Sphere();
+    void NativeConstruct() override;
     EntityType GetType() const override;
     static void Generate(MeshComponentPtr mesh, float radius);
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
-    void ParameterConstructor(float radius);
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
-   private:
    public:
     TKDeclareParam(float, Radius);
   };
@@ -157,16 +156,19 @@ namespace ToolKit
    public:
     TKDeclareClass(Cone, Entity);
 
-    Cone(bool genDef = true);
-    Cone(float height, float radius, int segBase, int segHeight);
-
+    Cone();
+    void NativeConstruct() override;
     EntityType GetType() const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+
+    void Generate(float height, float radius, int segBase, int segHeight);
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
-    void ParameterConstructor();
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
+
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
    private:
     void Generate();
@@ -185,16 +187,14 @@ namespace ToolKit
    public:
     TKDeclareClass(Arrow2d, Entity);
 
-    Arrow2d(bool genDef = true);
-    Arrow2d(AxisLabel label); // X - Y - Z.
+    Arrow2d();
     EntityType GetType() const override;
+
+    void Generate(AxisLabel axis);
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-
-   private:
-    void Generate();
 
    private:
     AxisLabel m_label;
@@ -208,7 +208,6 @@ namespace ToolKit
     TKDeclareClass(LineBatch, Entity);
 
     LineBatch();
-    LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);
 
     EntityType GetType() const override;
     void Generate(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);

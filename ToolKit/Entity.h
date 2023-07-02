@@ -269,14 +269,7 @@ namespace ToolKit
   class TK_API EntityFactory final
   {
    public:
-    EntityFactory();
-    ~EntityFactory();
-
     Entity* CreateByType(EntityType type);
-    void OverrideEntityConstructor(EntityType type, std::function<Entity*()> fn);
-
-   private:
-    std::vector<std::function<Entity*()>> m_overrideFns;
   };
 
 } // namespace ToolKit

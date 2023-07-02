@@ -55,8 +55,6 @@ namespace ToolKit
       m_statusMsg      = "OK";
 
       myEditorRenderer = new EditorRenderer();
-
-      OverrideEntityConstructors();
     }
 
     App::~App()
@@ -1348,21 +1346,6 @@ namespace ToolKit
         String fullPath = ScenePath(scene);
         OpenScene(fullPath);
       }
-    }
-
-    void App::OverrideEntityConstructors()
-    {
-      GetEntityFactory()->OverrideEntityConstructor(EntityType::Entity_Camera,
-                                                    []() -> Entity* { return new EditorCamera(); });
-
-      GetEntityFactory()->OverrideEntityConstructor(EntityType::Entity_DirectionalLight,
-                                                    []() -> Entity* { return new EditorDirectionalLight(); });
-
-      GetEntityFactory()->OverrideEntityConstructor(EntityType::Entity_PointLight,
-                                                    []() -> Entity* { return new EditorPointLight(); });
-
-      GetEntityFactory()->OverrideEntityConstructor(EntityType::Entity_SpotLight,
-                                                    []() -> Entity* { return new EditorSpotLight(); });
     }
 
     void App::CreateSimulationWindow(float width, float height)

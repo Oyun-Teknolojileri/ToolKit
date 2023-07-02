@@ -61,7 +61,7 @@ namespace ToolKit
         }
         if (ImGui::MenuItem(ICON_FA_CARET_UP " Cone"))
         {
-          createdEntity = new Cone({1.0f, 1.0f, 30, 30});
+//          createdEntity = new Cone({1.0f, 1.0f, 30, 30});
           createdEntity->GetMeshComponent()->Init(false);
         }
         if (ImGui::MenuItem(ICON_FA_SQUARE " Plane"))

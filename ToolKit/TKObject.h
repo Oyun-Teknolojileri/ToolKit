@@ -161,7 +161,7 @@ namespace ToolKit
     {
       if (TKObject* object = MakeNew(T::StaticClass()->Name))
       {
-        return object->As<T>();
+        return static_cast<T*>(object);
       }
 
       return nullptr;

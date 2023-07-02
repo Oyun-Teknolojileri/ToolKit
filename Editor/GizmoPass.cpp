@@ -39,7 +39,9 @@ namespace ToolKit
 
     GizmoPass::GizmoPass()
     {
-      m_depthMaskSphere   = std::make_shared<Sphere>(0.95f);
+      m_depthMaskSphere = MakeNewPtr<Sphere>();
+      m_depthMaskSphere->SetRadiusVal(0.95f);
+
       MeshComponentPtr mc = m_depthMaskSphere->GetMeshComponent();
       MeshPtr mesh        = mc->GetMeshVal();
       RenderState* rs     = mesh->m_material->GetRenderState();

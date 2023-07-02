@@ -28,7 +28,9 @@
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <Material.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -95,8 +97,9 @@ namespace ToolKit
                                       corners[2], corners[3], corners[3], corners[0]};
 
       MeshComponentPtr camMeshComp = GetComponent<MeshComponent>();
-      LineBatch frusta(lines, g_cameraGizmoColor, DrawType::Line);
-      camMeshComp->SetMeshVal(frusta.GetComponent<MeshComponent>()->GetMeshVal());
+      LineBatchPtr frusta          = MakeNewPtr<LineBatch>();
+      frusta->Generate(lines, g_cameraGizmoColor, DrawType::Line);
+      camMeshComp->SetMeshVal(frusta->GetComponent<MeshComponent>()->GetMeshVal());
 
       // Triangle part.
       VertexArray vertices;
