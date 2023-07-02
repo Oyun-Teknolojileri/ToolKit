@@ -615,9 +615,9 @@ namespace ToolKit
     }
 
     MeshPtr mesh               = GetComponent<MeshComponent>()->GetMeshVal();
-    mesh->m_vertexCount        = static_cast<uint>(vertices.size());
+    mesh->m_vertexCount        = (uint) vertices.size();
     mesh->m_clientSideVertices = vertices;
-    mesh->m_indexCount         = static_cast<uint>(indices.size());
+    mesh->m_indexCount         = (uint) indices.size();
     mesh->m_clientSideIndices  = indices;
     mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
 

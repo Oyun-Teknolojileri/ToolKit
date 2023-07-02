@@ -42,17 +42,13 @@ namespace ToolKit
   // Canvas
   //////////////////////////////////////////
 
-  Canvas::Canvas() : Surface()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-    CreateQuadLines();
-  }
+  TKDefineClass(Canvas, Surface);
 
-  Canvas::Canvas(const Vec2& size) : Surface(size)
+  Canvas::Canvas() : Surface() {}
+
+  void Canvas::NativeConstruct()
   {
-    ParameterConstructor();
-    ParameterEventConstructor();
+    Super::NativeConstruct();
     CreateQuadLines();
   }
 
@@ -67,6 +63,8 @@ namespace ToolKit
 
   void Canvas::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     // Update surface params.
     ParamMaterial().m_exposed     = false;
     ParamSize().m_category        = CanvasCategory;
@@ -75,7 +73,7 @@ namespace ToolKit
 
   void Canvas::ParameterEventConstructor()
   {
-    Surface::ParameterEventConstructor();
+    Super::ParameterEventConstructor();
     ParamMaterial().m_onValueChangedFn.clear();
   }
 

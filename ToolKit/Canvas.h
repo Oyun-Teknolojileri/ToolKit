@@ -34,9 +34,6 @@
 #include "Surface.h"
 #include "Types.h"
 
-#include <functional>
-#include <vector>
-
 namespace ToolKit
 {
   static VariantCategory CanvasCategory {"Canvas", 90};
@@ -44,8 +41,10 @@ namespace ToolKit
   class TK_API Canvas : public Surface
   {
    public:
+    TKDeclareClass(Canvas, Surface);
+
     Canvas();
-    explicit Canvas(const Vec2& size);
+    void NativeConstruct() override;
     EntityType GetType() const override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
@@ -53,8 +52,8 @@ namespace ToolKit
     void ApplyRecursiveResizePolicy(float width, float height);
 
    protected:
-    void ParameterConstructor();
-    void ParameterEventConstructor();
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
 
    private:
     void CreateQuadLines();

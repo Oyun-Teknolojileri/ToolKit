@@ -29,6 +29,7 @@
 #include "Mesh.h"
 #include "Node.h"
 #include "Surface.h"
+#include "Texture.h"
 #include "ToolKit.h"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
@@ -56,7 +57,8 @@ namespace ToolKit
       m_spriteSheet = GetTextureManager()->Create<Texture>(SpritePath(m_imageFile));
       for (const SpriteEntry& entry : m_entries)
       {
-        Surface* surface      = new Surface(m_spriteSheet, entry);
+        Surface* surface = MakeNew<Surface>();
+        surface->Update(m_spriteSheet, entry);
         m_sprites[entry.name] = surface;
       }
     }

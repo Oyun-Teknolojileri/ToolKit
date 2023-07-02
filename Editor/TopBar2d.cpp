@@ -31,6 +31,7 @@
 #include "EditorViewport2d.h"
 
 #include <Canvas.h>
+#include <Surface.h>
 
 #include <DebugNew.h>
 
@@ -55,22 +56,25 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Surface"))
         {
-          Surface* suface = new Surface(Vec2(100.0f, 30.0f), Vec2(0.0f, 0.0f));
-          suface->GetMeshComponent()->Init(false);
-          currScene->AddEntity(suface);
+          Surface* surface = MakeNew<Surface>();
+          surface->Update(Vec2(100.0f, 30.0f), Vec2(0.0f));
+          surface->GetMeshComponent()->Init(false);
+          currScene->AddEntity(surface);
         }
 
         if (ImGui::MenuItem("Button"))
         {
-          Surface* suface = new Button(Vec2(100.0f, 30.0f));
-          suface->GetMeshComponent()->Init(false);
-          currScene->AddEntity(suface);
+          Button* btn = MakeNew<Button>();
+          btn->Update(Vec2(100.0f, 30.0f));
+          btn->GetMeshComponent()->Init(false);
+          currScene->AddEntity(btn);
         }
 
         if (ImGui::MenuItem("Canvas"))
         {
-          Canvas* canvasPanel = new Canvas(Vec2(800.0f, 600.0f));
-          canvasPanel->SetPivotOffsetVal({0.5f, 0.5f});
+          Canvas* canvasPanel = MakeNew<Canvas>();
+          canvasPanel->Update(Vec2(800.0f, 600.0f));
+          canvasPanel->SetPivotOffsetVal(Vec2(0.5f));
           canvasPanel->GetMeshComponent()->Init(false);
           currScene->AddEntity(canvasPanel);
         }

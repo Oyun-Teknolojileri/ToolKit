@@ -28,8 +28,9 @@
 
 #include "App.h"
 
-#include <Surface.h>
 #include <Camera.h>
+#include <Material.h>
+#include <Surface.h>
 
 #include <DebugNew.h>
 
@@ -141,7 +142,8 @@ namespace ToolKit
         float w      = (texture->m_width / maxDim) * m_maxThumbSize;
         float h      = (texture->m_height / maxDim) * m_maxThumbSize;
 
-        m_surface    = std::make_shared<Surface>(Vec2(w, h));
+        m_surface    = MakeNewPtr<Surface>();
+        m_surface->Update(Vec2(w, h));
         m_surface->UpdateGeometry(false);
         MaterialComponentPtr matCom                  = m_surface->GetMaterialComponent();
         matCom->GetFirstMaterial()->m_diffuseTexture = texture;

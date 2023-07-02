@@ -26,14 +26,13 @@
 
 #include "Surface.h"
 
+#include "Canvas.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "Viewport.h"
-
-#include <memory>
 
 #include "DebugNew.h"
 
@@ -44,25 +43,32 @@ namespace ToolKit
 
   Surface::Surface()
   {
-    ComponentConstructor();
-    ParameterConstructor();
-    ParameterEventConstructor();
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
   }
 
-  Surface::Surface(TexturePtr texture, const Vec2& pivotOffset) : Surface()
+  Surface::~Surface() {}
+
+  void Surface::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    ComponentConstructor();
+  }
+
+  void Surface::Update(TexturePtr texture, const Vec2& pivotOffset)
   {
     GetMaterialComponent()->GetFirstMaterial()->m_diffuseTexture = texture;
     SetPivotOffsetVal(pivotOffset);
     SetSizeFromTexture();
   }
 
-  Surface::Surface(TexturePtr texture, const SpriteEntry& entry) : Surface()
+  void Surface::Update(TexturePtr texture, const SpriteEntry& entry)
   {
     GetMaterialComponent()->GetFirstMaterial()->m_diffuseTexture = texture;
     SetSizeFromTexture();
   }
 
-  Surface::Surface(const String& textureFile, const Vec2& pivotOffset) : Surface()
+  void Surface::Update(const String& textureFile, const Vec2& pivotOffset)
   {
     GetMaterialComponent()->GetFirstMaterial()->m_diffuseTexture = GetTextureManager()->Create<Texture>(textureFile);
 
@@ -70,13 +76,11 @@ namespace ToolKit
     SetSizeFromTexture();
   }
 
-  Surface::Surface(const Vec2& size, const Vec2& offset) : Surface()
+  void Surface::Update(const Vec2& size, const Vec2& offset)
   {
     SetSizeVal(size);
     SetPivotOffsetVal(offset);
   }
-
-  Surface::~Surface() {}
 
   EntityType Surface::GetType() const { return EntityType::Entity_Surface; }
 
@@ -133,19 +137,20 @@ namespace ToolKit
 
   void Surface::ComponentConstructor()
   {
-    MeshComponentPtr meshCom       = AddComponent<MeshComponent>();
-    meshCom->ParamMesh().m_exposed = false;
+    MeshComponentPtr meshCom             = GetComponent<MeshComponent>();
+    meshCom->ParamMesh().m_exposed       = false;
+    meshCom->ParamCastShadow().m_exposed = false;
     meshCom->SetCastShadowVal(false);
 
-    MaterialComponentPtr matCom = AddComponent<MaterialComponent>();
-    // materialComponent->ParamMaterial().m_exposed = false;
-
     MaterialPtr material        = GetMaterialManager()->GetCopyOfUIMaterial();
+    MaterialComponentPtr matCom = GetComponent<MaterialComponent>();
     matCom->SetFirstMaterial(material);
   }
 
   void Surface::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     Size_Define({150.0f, 50.0f}, SurfaceCategory.Name, SurfaceCategory.Priority, true, true);
 
     PivotOffset_Define({0.5f, 0.5f}, SurfaceCategory.Name, SurfaceCategory.Priority, true, true);
@@ -172,6 +177,8 @@ namespace ToolKit
 
   void Surface::ParameterEventConstructor()
   {
+    Super::ParameterEventConstructor();
+
     ParamSize().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void { UpdateGeometry(false); });
 
     ParamPivotOffset().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
@@ -180,9 +187,6 @@ namespace ToolKit
     ParamMaterial().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         { GetMaterialComponent()->SetFirstMaterial(std::get<MaterialPtr>(newVal)); });
-
-    GetMeshComponent()->ParamMesh().m_exposed       = false;
-    GetMeshComponent()->ParamCastShadow().m_exposed = false;
   }
 
   Entity* Surface::CopyTo(Entity* other) const
@@ -240,23 +244,23 @@ namespace ToolKit
     assert(false && "Old function needs to be re factored.");
 
     MeshPtr mesh      = GetMeshComponent()->GetMeshVal();
-    float imageWidth  = static_cast<float>(mesh->m_material->m_diffuseTexture->m_width);
+    float imageWidth  = (float) (mesh->m_material->m_diffuseTexture->m_width);
 
-    float imageHeight = static_cast<float>(mesh->m_material->m_diffuseTexture->m_height);
+    float imageHeight = (float) (mesh->m_material->m_diffuseTexture->m_height);
 
     Rect<float> textureRect;
-    textureRect.X      = static_cast<float>(val.rectangle.X) / static_cast<float>(imageWidth);
+    textureRect.X      = (float) (val.rectangle.X) / (float) (imageWidth);
 
-    textureRect.Height = (static_cast<float>(val.rectangle.Height) / static_cast<float>(imageHeight));
+    textureRect.Height = ((float) (val.rectangle.Height) / (float) (imageHeight));
 
-    textureRect.Y = 1.0f - (static_cast<float>(val.rectangle.Y) / static_cast<float>(imageHeight)) - textureRect.Height;
+    textureRect.Y      = 1.0f - ((float) (val.rectangle.Y) / (float) (imageHeight)) - textureRect.Height;
 
-    textureRect.Width = static_cast<float>(val.rectangle.Width) / static_cast<float>(imageWidth);
+    textureRect.Width  = (float) (val.rectangle.Width) / (float) (imageWidth);
 
-    float depth       = 0.0f;
-    float width       = static_cast<float>(val.rectangle.Width);
-    float height      = static_cast<float>(val.rectangle.Height);
-    Vec2 absOffset    = Vec2(val.offset.x * val.rectangle.Width, val.offset.y * val.rectangle.Height);
+    float depth        = 0.0f;
+    float width        = (float) (val.rectangle.Width);
+    float height       = (float) (val.rectangle.Height);
+    Vec2 absOffset     = Vec2(val.offset.x * val.rectangle.Width, val.offset.y * val.rectangle.Height);
 
     VertexArray vertices;
     vertices.resize(6);
@@ -343,30 +347,21 @@ namespace ToolKit
 
   TKDefineClass(Button, Surface);
 
-  Button::Button()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-    ResetCallbacks();
-  }
-
-  Button::Button(const Vec2& size) : Surface(size)
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-    ResetCallbacks();
-  }
-
-  Button::Button(const TexturePtr& buttonImage, const TexturePtr& hoverImage) : Surface(buttonImage, Vec2())
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-    GetButtonMaterialVal()->m_diffuseTexture = buttonImage;
-    GetHoverMaterialVal()->m_diffuseTexture  = hoverImage;
-    ResetCallbacks();
-  }
+  Button::Button() {}
 
   Button::~Button() {}
+
+  void Button::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    ResetCallbacks();
+  }
+
+  void Button::SetBtnImage(const TexturePtr buttonImage, const TexturePtr hoverImage)
+  {
+    GetButtonMaterialVal()->m_diffuseTexture = buttonImage;
+    GetHoverMaterialVal()->m_diffuseTexture  = hoverImage;
+  }
 
   EntityType Button::GetType() const { return EntityType::Entity_Button; }
 
