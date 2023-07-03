@@ -131,6 +131,7 @@ namespace ToolKit
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void ParameterConstructor() override;
 
    public:
     TKDeclareParam(float, Radius);
@@ -154,6 +155,7 @@ namespace ToolKit
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void ParameterConstructor() override;
 
    public:
     TKDeclareParam(float, Radius);

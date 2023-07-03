@@ -37,16 +37,7 @@ namespace ToolKit
 
   TKDefineClass(MeshComponent, Component);
 
-  MeshComponent::MeshComponent()
-  {
-    Mesh_Define(std::make_shared<ToolKit::Mesh>(),
-                MeshComponentCategory.Name,
-                MeshComponentCategory.Priority,
-                true,
-                true);
-
-    CastShadow_Define(true, MeshComponentCategory.Name, MeshComponentCategory.Priority, true, true);
-  }
+  MeshComponent::MeshComponent() {}
 
   MeshComponent::~MeshComponent() {}
 
@@ -82,6 +73,19 @@ namespace ToolKit
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
     return node;
+  }
+
+  void MeshComponent::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
+
+    Mesh_Define(std::make_shared<ToolKit::Mesh>(),
+                MeshComponentCategory.Name,
+                MeshComponentCategory.Priority,
+                true,
+                true);
+
+    CastShadow_Define(true, MeshComponentCategory.Name, MeshComponentCategory.Priority, true, true);
   }
 
 } // namespace ToolKit

@@ -65,6 +65,8 @@ namespace ToolKit
 
   void Light::ParameterEventConstructor()
   {
+    Super::ParameterConstructor();
+
     ParamShadowRes().m_onValueChangedFn.clear();
     ParamShadowRes().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
@@ -278,11 +280,7 @@ namespace ToolKit
 
   TKDefineClass(PointLight, Light);
 
-  PointLight::PointLight()
-  {
-    Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
-    ParamPCFRadius().m_hint.increment = 0.02f;
-  }
+  PointLight::PointLight() {}
 
   PointLight::~PointLight() {}
 
@@ -318,19 +316,19 @@ namespace ToolKit
     return node;
   }
 
+  void PointLight::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
+    Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
+    ParamPCFRadius().m_hint.increment = 0.02f;
+  }
+
   // SpotLight
   //////////////////////////////////////////
 
   TKDefineClass(SpotLight, Light);
 
-  SpotLight::SpotLight()
-  {
-    Radius_Define(10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
-    OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
-    InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
-
-    AddComponent<DirectionComponent>();
-  }
+  SpotLight::SpotLight() { AddComponent<DirectionComponent>(); }
 
   SpotLight::~SpotLight() {}
 
@@ -366,5 +364,14 @@ namespace ToolKit
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
     return node;
+  }
+
+  void SpotLight::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
+
+    Radius_Define(10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
+    OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
+    InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
   }
 } // namespace ToolKit

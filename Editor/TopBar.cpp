@@ -124,26 +124,26 @@ namespace ToolKit
 
         if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Point"))
         {
-          EditorPointLight* light = new EditorPointLight();
+          EditorPointLight* light = MakeNew<EditorPointLight>();
           light->Init();
           createdEntity = static_cast<Entity*>(light);
         }
 
         if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Spot"))
         {
-          EditorSpotLight* light = new EditorSpotLight();
+          EditorSpotLight* light = MakeNew<EditorSpotLight>();
           light->Init();
           createdEntity = static_cast<Entity*>(light);
         }
 
         if (ImGui::MenuItem(ICON_FA_CLOUD " Sky"))
         {
-          createdEntity = new Sky();
+          createdEntity = MakeNew<Sky>();
         }
 
         if (ImGui::MenuItem(ICON_FA_SKYATLAS " Gradient Sky"))
         {
-          createdEntity = new GradientSky();
+          createdEntity = MakeNew<GradientSky>();
         }
 
         ImGui::EndMenu();

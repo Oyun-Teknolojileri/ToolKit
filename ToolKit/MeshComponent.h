@@ -74,6 +74,7 @@ namespace ToolKit
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void ParameterConstructor() override;
 
    public:
     TKDeclareParam(MeshPtr, Mesh); //!< Component's Mesh resource.
