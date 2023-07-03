@@ -48,14 +48,14 @@ namespace ToolKit
 
       m_thumbnailScene = std::make_shared<Scene>();
 
-      m_entity         = std::make_shared<Entity>();
+      m_entity         = MakeNewPtr<Entity>();
       m_entity->AddComponent<MeshComponent>();
 
-      m_sphere = std::make_shared<Sphere>();
+      m_sphere = MakeNewPtr<Sphere>();
       m_sphere->AddComponent<MaterialComponent>();
 
       m_lightSystem = std::make_shared<ThreePointLightSystem>();
-      m_cam         = std::make_shared<Camera>();
+      m_cam         = MakeNewPtr<Camera>();
     }
 
     ThumbnailRenderer::~ThumbnailRenderer()

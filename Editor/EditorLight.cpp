@@ -64,7 +64,7 @@ namespace ToolKit
       m_parentNode            = new Node();
 
       float intensity         = 1.5f;
-      DirectionalLight* light = new DirectionalLight();
+      DirectionalLight* light = MakeNew<DirectionalLight>();
       light->SetColorVal(Vec3(0.55f));
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
@@ -73,7 +73,7 @@ namespace ToolKit
       m_parentNode->AddChild(light->m_node);
       m_lights.push_back(light);
 
-      light = new DirectionalLight();
+      light = MakeNew<DirectionalLight>();
       light->SetColorVal(Vec3(0.15f));
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
@@ -82,7 +82,7 @@ namespace ToolKit
       m_parentNode->AddChild(light->m_node);
       m_lights.push_back(light);
 
-      light = new DirectionalLight();
+      light = MakeNew<DirectionalLight>();
       light->SetColorVal(Vec3(0.1f));
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
