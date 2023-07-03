@@ -216,6 +216,7 @@ namespace ToolKit
       }
 
       MeshPtr mesh = m_mesh->m_subMeshes.back();
+      mesh->UnInit();
       for (Vertex& v : mesh->m_clientSideVertices)
       {
         v.pos.y += params.toeTip.y;
@@ -232,6 +233,7 @@ namespace ToolKit
           break;
         }
       }
+      mesh->Init();
 
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
@@ -276,7 +278,7 @@ namespace ToolKit
       m_params        = params;
 
       int cornerCount = 60;
-      std::vector<Vec3> corners;
+      Vec3Array corners;
       corners.reserve(cornerCount + 1);
 
       float deltaAngle = glm::two_pi<float>() / cornerCount;
@@ -393,20 +395,21 @@ namespace ToolKit
 
     void QuadHandle::Generate(const Params& params)
     {
-      m_params = params;
+      m_params                             = params;
 
-      Quad solid;
+      QuadPtr solid                        = MakeNewPtr<Quad>();
       MaterialPtr material                 = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       material->m_color                    = params.color;
       material->GetRenderState()->cullMode = CullingType::TwoSided;
 
-      MeshPtr mesh                         = solid.GetMeshComponent()->GetMeshVal();
+      MeshPtr mesh                         = solid->GetMeshComponent()->GetMeshVal();
       mesh->m_material                     = material;
       m_mesh                               = mesh;
 
       float scale                          = 0.15f;
       float offset                         = 2.0f;
 
+      m_mesh->UnInit();
       for (Vertex& v : m_mesh->m_clientSideVertices)
       {
         v.pos.y += params.toeTip.y;
@@ -431,6 +434,7 @@ namespace ToolKit
           break;
         }
       }
+      m_mesh->Init();
 
       // Guide line.
       // Gizmo updates later, transform modes uses previous frame's locatin.
@@ -593,7 +597,7 @@ namespace ToolKit
       m_handles.resize(3);
       for (uint i = 0; i < 3; i++)
       {
-        GizmoHandle* gizmo   = new GizmoHandle;
+        GizmoHandle* gizmo   = new GizmoHandle();
         gizmo->m_params.axis = (AxisLabel) i;
         gizmo->m_params.type = GizmoHandle::SolidType::Cone;
         m_handles[i]         = gizmo;
@@ -613,6 +617,7 @@ namespace ToolKit
         GizmoHandle* handle = m_handles[i];
         AxisLabel axis      = handle->m_params.axis;
         p.type              = handle->m_params.type;
+
         if (m_grabbedAxis == axis)
         {
           p.color = g_selectHighLightPrimaryColor;
