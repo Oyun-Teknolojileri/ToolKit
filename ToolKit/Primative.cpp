@@ -40,6 +40,8 @@
 namespace ToolKit
 {
 
+  UIHint FloatHint = {false, true, 0.0f, 100.0f, 0.25f, false};
+
   TKDefineClass(Billboard, Entity);
 
   Billboard::Billboard() {}
@@ -319,6 +321,7 @@ namespace ToolKit
     vertices[35].norm          = Vec3(0.0f, -1.0f, 0.0f);
 
     MeshPtr mesh               = meshComp->GetMeshVal();
+    mesh->UnInit();
     mesh->m_vertexCount        = (uint) vertices.size();
     mesh->m_clientSideVertices = vertices;
     mesh->m_clientSideIndices  = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17,
@@ -329,6 +332,7 @@ namespace ToolKit
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
+    mesh->Init();
   }
 
   TKDefineClass(Quad, Entity);
@@ -411,7 +415,7 @@ namespace ToolKit
   void Sphere::NativeConstruct()
   {
     Super::NativeConstruct();
-    Generate(GetMeshComponent(), GetRadiusVal());
+    Generate(GetMeshComponent(), GetRadiusVal(), GetNumRingVal(), GetNumSegVal());
   }
 
   Entity* Sphere::CopyTo(Entity* copyTo) const
@@ -423,17 +427,49 @@ namespace ToolKit
 
   EntityType Sphere::GetType() const { return EntityType::Entity_Sphere; }
 
-  void Sphere::Generate(MeshComponentPtr meshComp, float r)
+  void Sphere::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    const int nRings    = 32;
-    const int nSegments = 32;
+    Entity::DeSerializeImp(doc, parent);
+    Generate(GetMeshComponent(), GetRadiusVal(), GetNumRingVal(), GetNumSegVal());
+  }
+
+  XmlNode* Sphere::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
+  void Sphere::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
+    Radius_Define(1.0f, "Geometry", 90, true, true, FloatHint);
+    NumRing_Define(32, "Geometry", 90, true, true);
+    NumSeg_Define(32, "Geometry", 90, true, true);
+  }
+
+  void Sphere::ParameterEventConstructor()
+  {
+    Super::ParameterEventConstructor();
+
+    auto genFn = [this]() -> void { Generate(GetMeshComponent(), GetRadiusVal(), GetNumRingVal(), GetNumSegVal()); };
+    ParamRadius().m_onValueChangedFn.push_back([=](Value& oldVal, Value& newVal) -> void { genFn(); });
+    ParamNumRing().m_onValueChangedFn.push_back([=](Value& oldVal, Value& newVal) -> void { genFn(); });
+    ParamNumSeg().m_onValueChangedFn.push_back([=](Value& oldVal, Value& newVal) -> void { genFn(); });
+  }
+
+  void Sphere::Generate(MeshComponentPtr meshComp, float r, int numRing, int numSeg)
+  {
+    int nRings    = numRing;
+    int nSegments = numSeg;
 
     VertexArray vertices;
     std::vector<uint> indices;
 
-    constexpr float fDeltaRingAngle = (glm::pi<float>() / nRings);
-    constexpr float fDeltaSegAngle  = (glm::two_pi<float>() / nSegments);
-    int16_t wVerticeIndex           = 0;
+    float fDeltaRingAngle = (glm::pi<float>() / nRings);
+    float fDeltaSegAngle  = (glm::two_pi<float>() / nSegments);
+    int wVerticeIndex     = 0;
 
     // Generate the group of rings for the sphere
     for (int ring = 0; ring <= nRings; ring++)
@@ -451,8 +487,7 @@ namespace ToolKit
         Vertex v;
         v.pos  = Vec3(x0, y0, z0);
         v.norm = Vec3(x0, y0, z0);
-        v.tex  = Vec2(static_cast<float>(seg) / static_cast<float>(nSegments),
-                     static_cast<float>(ring) / static_cast<float>(nRings));
+        v.tex  = Vec2((float) seg / (float) nSegments, (float) ring / (float) nRings);
 
         float r2, zenith, azimuth;
         ToSpherical(v.pos, r2, zenith, azimuth);
@@ -476,43 +511,17 @@ namespace ToolKit
       } // end for seg
     }   // end for ring
 
-    MeshPtr mesh               = meshComp->GetMeshVal();
+    MeshPtr mesh = meshComp->GetMeshVal();
+    mesh->UnInit();
     mesh->m_vertexCount        = (uint) vertices.size();
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount         = (uint) indices.size();
     mesh->m_clientSideIndices  = indices;
     mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->Init();
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
-  }
-
-  void Sphere::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
-  {
-    Entity::DeSerializeImp(doc, parent);
-    Generate(GetMeshComponent(), GetRadiusVal());
-  }
-
-  XmlNode* Sphere::SerializeImp(XmlDocument* doc, XmlNode* parent) const
-  {
-    XmlNode* root = Super::SerializeImp(doc, parent);
-    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
-
-    return node;
-  }
-
-  void Sphere::ParameterConstructor()
-  {
-    Super::ParameterConstructor();
-    Radius_Define(1.0f, "Geometry", 90, true, true);
-  }
-
-  void Sphere::ParameterEventConstructor()
-  {
-    Super::ParameterEventConstructor();
-
-    ParamRadius().m_onValueChangedFn.push_back([=](Value& oldVal, Value& newVal) -> void
-                                               { Generate(GetMeshComponent(), GetRadiusVal()); });
   }
 
   TKDefineClass(Cone, Entity);
@@ -533,34 +542,30 @@ namespace ToolKit
   void Cone::Generate()
   {
     VertexArray vertices;
-    std::vector<uint> indices;
+    UIntArray indices;
 
     float height      = GetHeightVal();
     float radius      = GetRadiusVal();
     int nSegBase      = GetSegBaseVal();
     int nSegHeight    = GetSegHeightVal();
 
-    float deltaAngle  = (glm::two_pi<float>() / nSegBase);
+    float deltaAngle  = glm::two_pi<float>() / (float) nSegBase;
     float deltaHeight = height / nSegHeight;
     int offset        = 0;
 
-    Vec3 refNormal    = glm::normalize(Vec3(radius, height, 0.0f));
-    Quaternion q;
-
     for (int i = 0; i <= nSegHeight; i++)
     {
-      float r0 = radius * (1 - i / static_cast<float>(nSegHeight));
+      float r0 = radius * (1 - i / (float) nSegHeight);
       for (int j = 0; j <= nSegBase; j++)
       {
         float x0 = r0 * glm::cos(j * deltaAngle);
         float z0 = r0 * glm::sin(j * deltaAngle);
-
-        q        = glm::angleAxis(glm::radians(-deltaAngle * j), Y_AXIS);
+        Vec3 p   = Vec3(x0, i * deltaHeight, z0);
 
         Vertex v {
-            Vec3(x0, i * deltaHeight, z0),
-            q * refNormal,
-            Vec2(j / static_cast<float>(nSegBase), i / static_cast<float>(nSegHeight)),
+            p,
+            glm::normalize(p),
+            Vec2(j / (float) (nSegBase), i / (float) nSegHeight),
             ZERO // btan missing.
         };
 
@@ -600,7 +605,7 @@ namespace ToolKit
       Vertex v {
           Vec3(x0, 0.0f, z0),
           -Y_AXIS,
-          Vec2(j / static_cast<float>(nSegBase), 0.0f),
+          Vec2(j / (float) nSegBase, 0.0f),
           ZERO // btan missing.
       };
       vertices.push_back(v);
@@ -614,12 +619,14 @@ namespace ToolKit
       offset++;
     }
 
-    MeshPtr mesh               = GetComponent<MeshComponent>()->GetMeshVal();
+    MeshPtr mesh = GetComponent<MeshComponent>()->GetMeshVal();
+    mesh->UnInit();
     mesh->m_vertexCount        = (uint) vertices.size();
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount         = (uint) indices.size();
     mesh->m_clientSideIndices  = indices;
     mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->Init();
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
@@ -656,8 +663,14 @@ namespace ToolKit
   {
     Super::ParameterConstructor();
 
-    Height_Define(1.0f, "Geometry", 90, true, true);
-    Radius_Define(1.0f, "Geometry", 90, true, true);
+    UIHint hint;
+    hint.increment      = 0.25f;
+    hint.isRangeLimited = true;
+    hint.rangeMin       = 0.0f;
+    hint.rangeMax       = 100.0f;
+
+    Height_Define(1.0f, "Geometry", 90, true, true, hint);
+    Radius_Define(1.0f, "Geometry", 90, true, true, hint);
     SegBase_Define(30, "Geometry", 90, true, true);
     SegHeight_Define(20, "Geometry", 90, true, true);
   }

@@ -136,7 +136,7 @@ namespace ToolKit
     Sphere();
     void NativeConstruct() override;
     EntityType GetType() const override;
-    static void Generate(MeshComponentPtr mesh, float radius);
+    static void Generate(MeshComponentPtr mesh, float radius, int numRing, int numSeg);
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
@@ -147,6 +147,8 @@ namespace ToolKit
 
    public:
     TKDeclareParam(float, Radius);
+    TKDeclareParam(int, NumRing);
+    TKDeclareParam(int, NumSeg);
   };
 
   typedef std::shared_ptr<Sphere> SpherePtr;
