@@ -781,15 +781,15 @@ namespace ToolKit
       switch (m_id)
       {
       case ModId::Move:
-        m_gizmo           = new MoveGizmo();
+        m_gizmo = MakeNew<MoveGizmo>();
         baseState->m_type = StateTransformBase::TransformType::Translate;
         break;
       case ModId::Rotate:
-        m_gizmo           = new PolarGizmo();
+        m_gizmo = MakeNew<PolarGizmo>();
         baseState->m_type = StateTransformBase::TransformType::Rotate;
         break;
       case ModId::Scale:
-        m_gizmo           = new ScaleGizmo();
+        m_gizmo = MakeNew<ScaleGizmo>();
         baseState->m_type = StateTransformBase::TransformType::Scale;
         break;
       default:

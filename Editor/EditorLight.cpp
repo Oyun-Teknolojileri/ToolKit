@@ -292,7 +292,7 @@ namespace ToolKit
 
     TKDefineClass(EditorSpotLight, SpotLight);
 
-    EditorSpotLight::EditorSpotLight() : LightGizmoController(this) { ParameterEventConstructor(); }
+    EditorSpotLight::EditorSpotLight() : LightGizmoController(this) {}
 
     EditorSpotLight::~EditorSpotLight() {}
 

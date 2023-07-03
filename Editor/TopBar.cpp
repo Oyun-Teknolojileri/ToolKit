@@ -110,14 +110,14 @@ namespace ToolKit
 
       if (ImGui::MenuItem(ICON_FA_VIDEO_CAMERA " Camera"))
       {
-        createdEntity = new EditorCamera();
+        createdEntity = MakeNew<EditorCamera>();
       }
 
       if (ImGui::BeginMenu(ICON_FA_LIGHTBULB " Light"))
       {
         if (ImGui::MenuItem(ICON_FA_SUN " Directional"))
         {
-          EditorDirectionalLight* light = new EditorDirectionalLight();
+          EditorDirectionalLight* light = MakeNew<EditorDirectionalLight>();
           light->Init();
           createdEntity = static_cast<Entity*>(light);
         }

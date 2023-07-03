@@ -193,10 +193,10 @@ namespace ToolKit
 
       if (params.type == SolidType::Cube)
       {
-        Cube solid;
-        solid.SetCubeScaleVal(params.solidDim);
+        CubePtr solid = MakeNewPtr<Cube>();
+        solid->SetCubeScaleVal(params.solidDim);
 
-        MeshPtr mesh     = solid.GetComponent<MeshComponent>()->GetMeshVal();
+        MeshPtr mesh     = solid->GetComponent<MeshComponent>()->GetMeshVal();
         mesh->m_material = material;
         m_mesh->m_subMeshes.push_back(mesh);
       }

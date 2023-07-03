@@ -229,6 +229,10 @@ namespace ToolKit
             g_proxy->m_objectFactory->Register<PolarGizmo>();
             g_proxy->m_objectFactory->Register<SkyBillboard>();
             g_proxy->m_objectFactory->Register<LightBillboard>();
+            g_proxy->m_objectFactory->Register<EditorCamera>();
+            g_proxy->m_objectFactory->Register<EditorDirectionalLight>();
+            g_proxy->m_objectFactory->Register<EditorPointLight>();
+            g_proxy->m_objectFactory->Register<EditorSpotLight>();
 
             // Overrides.
             g_proxy->m_objectFactory->Register<Camera>([]() -> EditorCamera* { return new EditorCamera(); });
