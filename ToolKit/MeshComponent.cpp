@@ -43,7 +43,7 @@ namespace ToolKit
 
   ComponentPtr MeshComponent::Copy(Entity* ntt)
   {
-    MeshComponentPtr mc = std::make_shared<MeshComponent>();
+    MeshComponentPtr mc = MakeNewPtr<MeshComponent>();
     mc->m_localData     = m_localData;
     mc->m_entity        = ntt;
     return mc;
