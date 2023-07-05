@@ -55,69 +55,32 @@ namespace ToolKit
 
   void Component::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { m_localData.DeSerialize(doc, parent); }
 
-  void ComponentFactory::Init()
-  {
-    m_constructorFunctions[MeshComponent::StaticClass()->Name] = []() -> Component* { return new MeshComponent(); };
-
-    m_constructorFunctions[DirectionComponent::StaticClass()->Name] = []() -> Component*
-    { return new DirectionComponent(); };
-
-    m_constructorFunctions[MaterialComponent::StaticClass()->Name] = []() -> Component*
-    { return new MaterialComponent(); };
-
-    m_constructorFunctions[EnvironmentComponent::StaticClass()->Name] = []() -> Component*
-    { return new EnvironmentComponent(); };
-
-    m_constructorFunctions[AnimControllerComponent::StaticClass()->Name] = []() -> Component*
-    { return new AnimControllerComponent(); };
-
-    m_constructorFunctions[SkeletonComponent::StaticClass()->Name] = []() -> Component*
-    { return new SkeletonComponent(); };
-
-    m_constructorFunctions[AABBOverrideComponent::StaticClass()->Name] = []() -> Component*
-    { return new AABBOverrideComponent(); };
-  }
-
   Component* ComponentFactory::Create(ComponentType cls)
   {
     switch (cls)
     {
     case ComponentType::MeshComponent:
-      return Create(MeshComponent::StaticClass());
+      return MakeNew<MeshComponent>();
     case ComponentType::DirectionComponent:
-      return Create(DirectionComponent::StaticClass());
+      return MakeNew<DirectionComponent>();
     case ComponentType::MultiMaterialComponent:
     case ComponentType::MaterialComponent:
-      return Create(MaterialComponent::StaticClass());
+      return MakeNew<MaterialComponent>();
     case ComponentType::EnvironmentComponent:
-      return Create(EnvironmentComponent::StaticClass());
+      return MakeNew<EnvironmentComponent>();
     case ComponentType::AnimControllerComponent:
-      return Create(AnimControllerComponent::StaticClass());
+      return MakeNew<AnimControllerComponent>();
     case ComponentType::SkeletonComponent:
-      return Create(SkeletonComponent::StaticClass());
+      return MakeNew<SkeletonComponent>();
     case ComponentType::AABBOverrideComponent:
-      return Create(AABBOverrideComponent::StaticClass());
+      return MakeNew<AABBOverrideComponent>();
     case ComponentType::Base:
     default:
       assert(0 && "Unknown Component Type !");
       break;
     }
+
     return nullptr;
   }
-
-  Component* ComponentFactory::Create(StringView cls)
-  {
-    Component* com = nullptr;
-    auto comIt     = m_constructorFunctions.find(cls.data());
-    if (comIt != m_constructorFunctions.end())
-    {
-      com = comIt->second();
-      com->NativeConstruct();
-    }
-
-    return com;
-  }
-
-  Component* ComponentFactory::Create(TKClass* cls) { return Create(cls->Name); }
 
 } // namespace ToolKit

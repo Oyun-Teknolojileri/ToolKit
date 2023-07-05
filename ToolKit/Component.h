@@ -106,19 +106,13 @@ namespace ToolKit
   };
 
   /**
-  * DEPRECATED use TKObjectFactory
-  * Utility class to construct Components.
-  */
+   * DEPRECATED use TKObjectFactory
+   * Utility class to construct Components.
+   */
   class TK_API ComponentFactory final
   {
    public:
-    void Init();
-
     Component* Create(ComponentType cls); //!< Deprecated. Just serving here for backward compatibility.
-    Component* Create(StringView cls);
-    Component* Create(TKClass* cls);
-
-    std::unordered_map<String, std::function<Component*()>> m_constructorFunctions;
   };
 
 } // namespace ToolKit
