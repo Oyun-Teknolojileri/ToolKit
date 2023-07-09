@@ -107,7 +107,7 @@ namespace ToolKit
     return objNode;
   }
 
-  void TKObject::DeSerializeImp(XmlDocument* doc, XmlNode* parent) {}
+  void TKObject::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { m_localData.DeSerialize(doc, parent); }
 
   TKObjectFactory::TKObjectFactory() { Init(); }
 

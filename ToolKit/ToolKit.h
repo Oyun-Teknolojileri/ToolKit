@@ -110,18 +110,6 @@ namespace ToolKit
     static Main* GetInstance();
     static void SetProxy(Main* proxy);
 
-    template <typename T>
-    T* MakeNew()
-    {
-      assert(m_objectFactory && "Object factory is not initialized.");
-      if (m_objectFactory)
-      {
-        return m_objectFactory->MakeNew<T>();
-      }
-
-      return nullptr;
-    }
-
    public:
     Timing m_timing;
     class AnimationManager* m_animationMan     = nullptr;
@@ -185,7 +173,10 @@ namespace ToolKit
   {
     if (Main* main = Main::GetInstance())
     {
-      return main->MakeNew<T>();
+      if (TKObjectFactory* of = main->m_objectFactory) 
+      {
+        return of->MakeNew<T>();
+      }
     }
 
     return nullptr;
@@ -196,7 +187,10 @@ namespace ToolKit
   {
     if (Main* main = Main::GetInstance())
     {
-      return std::shared_ptr<T>(main->MakeNew<T>());
+      if (TKObjectFactory* of = main->m_objectFactory)
+      {
+        return std::shared_ptr<T>(of->MakeNew<T>());
+      }
     }
 
     return nullptr;

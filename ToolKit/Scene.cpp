@@ -600,11 +600,34 @@ namespace ToolKit
 
     EntityRawPtrArray prefabList;
 
-    for (node = root->first_node(XmlEntityElement.c_str()); node; node = node->next_sibling(XmlEntityElement.c_str()))
+    const char* xmlRootObject = XmlEntityElement.c_str();
+    const char* xmlObjectType = XmlEntityTypeAttr.c_str();
+
+    bool newFile              = m_version > String("v0.4.4");
+    if (newFile)
     {
-      XmlAttribute* typeAttr = node->first_attribute(XmlEntityTypeAttr.c_str());
-      EntityType t           = (EntityType) std::atoi(typeAttr->value());
-      Entity* ntt            = GetEntityFactory()->CreateByType(t);
+      xmlRootObject = TKObject::StaticClass()->Name.c_str();
+      xmlObjectType = XmlObjectClassAttr.data();
+    }
+
+    for (node = root->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
+    {
+      XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
+      Entity* ntt            = nullptr;
+      if (newFile)
+      {
+        ntt = GetObjectFactory()->MakeNew(typeAttr->value())->As<Entity>();
+      }
+      else
+      {
+        EntityType t = (EntityType) std::atoi(typeAttr->value());
+        ntt          = GetEntityFactory()->CreateByType(t);
+      }
+
+      if (ntt == nullptr)
+      {
+        continue;
+      }
 
       ntt->DeSerialize(doc, node);
 

@@ -86,7 +86,6 @@ namespace ToolKit
 
     void NativeConstruct() override;
     EntityType GetType() const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
     static void Generate(MeshComponentPtr meshComp, const Vec3& dimention);
 
    protected:
@@ -94,6 +93,7 @@ namespace ToolKit
     Entity* CopyTo(Entity* copyTo) const override;
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
+    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:

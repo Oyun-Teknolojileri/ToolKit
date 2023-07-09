@@ -139,12 +139,6 @@ namespace ToolKit
       m_constructorFnMap[T::StaticClass()->Name] = constructorFn;
     }
 
-   private:
-    /**
-     * Registers all the known TKObject constructors.
-     */
-    void Init();
-
     /**
      * Constructs a new TKObject from class name.
      * @param cls - Class name of the object to be created.
@@ -166,6 +160,12 @@ namespace ToolKit
 
       return nullptr;
     }
+
+   private:
+    /**
+     * Registers all the known TKObject constructors.
+     */
+    void Init();
 
    private:
     std::unordered_map<StringView, ObjectConstructorCallback> m_constructorFnMap;

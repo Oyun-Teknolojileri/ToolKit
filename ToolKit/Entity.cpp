@@ -250,14 +250,12 @@ namespace ToolKit
 
   void Entity::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    XmlNode* node = nullptr;
-    if (parent != nullptr)
+    Super::DeSerializeImp(doc, parent);
+    XmlNode* node = parent->first_node(Entity::StaticClass()->Name.c_str());
+    if (node == nullptr) 
     {
+      // file version < v0.4.4
       node = parent;
-    }
-    else
-    {
-      node = doc->first_node(XmlEntityElement.c_str());
     }
 
     ReadAttr(node, XmlParentEntityIdAttr, _parentId);
@@ -266,8 +264,6 @@ namespace ToolKit
     {
       m_node->DeSerialize(doc, transformNode);
     }
-
-    m_localData.DeSerialize(doc, parent);
 
     ClearComponents();
 
