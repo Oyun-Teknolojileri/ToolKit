@@ -60,6 +60,7 @@ namespace ToolKit
     void SetAABB(BoundingBox aabb);
 
    protected:
+    void ParameterConstructor() override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:

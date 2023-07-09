@@ -88,6 +88,7 @@ namespace ToolKit
     void SetFirstMaterial(const MaterialPtr& material);
 
    protected:
+    void ParameterConstructor() override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 

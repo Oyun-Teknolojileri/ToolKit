@@ -43,7 +43,6 @@ namespace ToolKit
     TKDeclareClass(DirectionComponent, Component);
 
     DirectionComponent();
-    explicit DirectionComponent(Entity* entity);
     virtual ~DirectionComponent();
 
     ComponentPtr Copy(Entity* ntt) override;

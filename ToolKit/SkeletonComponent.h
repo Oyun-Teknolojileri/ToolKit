@@ -54,6 +54,7 @@ namespace ToolKit
     ComponentPtr Copy(Entity* ntt) override;
 
    protected:
+    void ParameterConstructor() override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 

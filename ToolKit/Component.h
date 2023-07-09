@@ -89,6 +89,8 @@ namespace ToolKit
     virtual ComponentPtr Copy(Entity* ntt) = 0;
 
    protected:
+    void ParameterConstructor() override;
+
     /**
      * Serializes the Component's ParameterBlock to the xml document.
      * If parent is not null appends this component to the parent node.

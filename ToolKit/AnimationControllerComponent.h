@@ -59,6 +59,7 @@ namespace ToolKit
     void RemoveSignal(const String& signalName);
 
    protected:
+    void ParameterConstructor() override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 

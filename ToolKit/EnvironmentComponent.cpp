@@ -142,7 +142,7 @@ namespace ToolKit
 
   ComponentPtr EnvironmentComponent::Copy(Entity* ntt)
   {
-    EnvironmentComponentPtr ec = std::make_shared<EnvironmentComponent>();
+    EnvironmentComponentPtr ec = MakeNewPtr<EnvironmentComponent>();
     ec->m_localData            = m_localData;
     ec->m_entity               = ntt;
 

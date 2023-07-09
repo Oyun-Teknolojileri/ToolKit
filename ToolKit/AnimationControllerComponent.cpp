@@ -36,10 +36,7 @@ namespace ToolKit
 
   TKDefineClass(AnimControllerComponent, Component);
 
-  AnimControllerComponent::AnimControllerComponent()
-  {
-    Records_Define({}, AnimRecordComponentCategory.Name, AnimRecordComponentCategory.Priority, true, true);
-  }
+  AnimControllerComponent::AnimControllerComponent() {}
 
   AnimControllerComponent::~AnimControllerComponent()
   {
@@ -51,9 +48,10 @@ namespace ToolKit
 
   ComponentPtr AnimControllerComponent::Copy(Entity* ntt)
   {
-    AnimControllerComponentPtr ec = std::make_shared<AnimControllerComponent>();
+    AnimControllerComponentPtr ec = MakeNewPtr<AnimControllerComponent>();
     ec->m_localData               = m_localData;
     ec->m_entity                  = ntt;
+
     for (auto& record : ec->ParamRecords().GetVar<AnimRecordPtrMap>())
     {
       AnimRecordPtr newRecord = std::make_shared<AnimRecord>();
@@ -65,6 +63,12 @@ namespace ToolKit
     }
 
     return ec;
+  }
+
+  void AnimControllerComponent::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
+    Records_Define({}, AnimRecordComponentCategory.Name, AnimRecordComponentCategory.Priority, true, true);
   }
 
   void AnimControllerComponent::DeSerializeImp(XmlDocument* doc, XmlNode* parent)

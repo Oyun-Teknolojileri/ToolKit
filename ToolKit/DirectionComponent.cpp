@@ -37,13 +37,11 @@ namespace ToolKit
 
   DirectionComponent::DirectionComponent() {}
 
-  DirectionComponent::DirectionComponent(Entity* entity) { m_entity = entity; }
-
   DirectionComponent::~DirectionComponent() {}
 
   ComponentPtr DirectionComponent::Copy(Entity* ntt)
   {
-    DirectionComponentPtr dc = std::make_shared<DirectionComponent>(m_entity);
+    DirectionComponentPtr dc = MakeNewPtr<DirectionComponent>();
     dc->m_entity             = ntt;
     return dc;
   }

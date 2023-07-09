@@ -45,6 +45,12 @@ namespace ToolKit
 
   Component::~Component() {}
 
+  void Component::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
+    ParamId().m_exposed = false;
+  }
+
   XmlNode* Component::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* objNode       = Super::SerializeImp(doc, parent);

@@ -27,6 +27,7 @@
 #include "MaterialComponent.h"
 
 #include "Material.h"
+#include "Mesh.h"
 #include "MeshComponent.h"
 #include "ToolKit.h"
 
@@ -37,20 +38,13 @@ namespace ToolKit
 
   TKDefineClass(MaterialComponent, Component);
 
-  MaterialComponent::MaterialComponent()
-  {
-    Material_Define(GetMaterialManager()->GetCopyOfDefaultMaterial(),
-                    MaterialComponentCategory.Name,
-                    MaterialComponentCategory.Priority,
-                    true,
-                    true);
-  }
+  MaterialComponent::MaterialComponent() {}
 
   MaterialComponent::~MaterialComponent() {}
 
   ComponentPtr MaterialComponent::Copy(Entity* ntt)
   {
-    MaterialComponentPtr mc = std::make_shared<MaterialComponent>();
+    MaterialComponentPtr mc = MakeNewPtr<MaterialComponent>();
     mc->m_localData         = m_localData;
     mc->m_entity            = ntt;
     mc->m_materialList      = m_materialList;
@@ -61,6 +55,16 @@ namespace ToolKit
   void MaterialComponent::Init(bool flushClientSideArray) {}
 
   const char *XmlMatCountAttrib = "MaterialCount", *XmlMatIdAttrib = "ID";
+
+  void MaterialComponent::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
+    Material_Define(GetMaterialManager()->GetCopyOfDefaultMaterial(),
+                    MaterialComponentCategory.Name,
+                    MaterialComponentCategory.Priority,
+                    true,
+                    true);
+  }
 
   void MaterialComponent::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {

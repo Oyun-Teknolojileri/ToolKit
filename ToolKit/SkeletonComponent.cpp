@@ -33,10 +33,7 @@ namespace ToolKit
 
   TKDefineClass(SkeletonComponent, Component);
 
-  SkeletonComponent::SkeletonComponent()
-  {
-    SkeletonResource_Define(nullptr, SkeletonComponentCategory.Name, SkeletonComponentCategory.Priority, true, true);
-  }
+  SkeletonComponent::SkeletonComponent() {}
 
   SkeletonComponent::~SkeletonComponent() { m_map = nullptr; }
 
@@ -54,13 +51,19 @@ namespace ToolKit
 
   ComponentPtr SkeletonComponent::Copy(Entity* ntt)
   {
-    SkeletonComponentPtr dst = std::make_shared<SkeletonComponent>();
+    SkeletonComponentPtr dst = MakeNewPtr<SkeletonComponent>();
     dst->m_entity            = ntt;
 
     dst->SetSkeletonResourceVal(GetSkeletonResourceVal());
     dst->Init();
 
     return dst;
+  }
+
+  void SkeletonComponent::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
+    SkeletonResource_Define(nullptr, SkeletonComponentCategory.Name, SkeletonComponentCategory.Priority, true, true);
   }
 
   void SkeletonComponent::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
