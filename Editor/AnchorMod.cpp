@@ -29,6 +29,9 @@
 #include "App.h"
 
 #include <Camera.h>
+#include <Canvas.h>
+#include <MathUtil.h>
+#include <Surface.h>
 
 #include <DebugNew.h>
 

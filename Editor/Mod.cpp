@@ -33,6 +33,7 @@
 #include <Camera.h>
 #include <DirectionComponent.h>
 #include <Entity.h>
+#include <MathUtil.h>
 
 #include <DebugNew.h>
 

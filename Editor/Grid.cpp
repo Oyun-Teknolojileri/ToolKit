@@ -29,6 +29,7 @@
 #include "Global.h"
 
 #include <Material.h>
+#include <MathUtil.h>
 #include <Mesh.h>
 #include <Primative.h>
 #include <ToolKit.h>

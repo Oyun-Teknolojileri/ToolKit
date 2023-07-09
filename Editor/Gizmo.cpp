@@ -30,6 +30,7 @@
 #include "EditorViewport2d.h"
 
 #include <Material.h>
+#include <MathUtil.h>
 
 #include <DebugNew.h>
 

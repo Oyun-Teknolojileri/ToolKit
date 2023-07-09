@@ -31,6 +31,7 @@
 #include "TransformMod.h"
 
 #include <DirectionComponent.h>
+#include <Drawable.h>
 #include <PluginManager.h>
 
 #include <DebugNew.h>

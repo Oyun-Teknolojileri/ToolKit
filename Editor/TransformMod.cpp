@@ -28,7 +28,9 @@
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <MathUtil.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -781,15 +783,15 @@ namespace ToolKit
       switch (m_id)
       {
       case ModId::Move:
-        m_gizmo = MakeNew<MoveGizmo>();
+        m_gizmo           = MakeNew<MoveGizmo>();
         baseState->m_type = StateTransformBase::TransformType::Translate;
         break;
       case ModId::Rotate:
-        m_gizmo = MakeNew<PolarGizmo>();
+        m_gizmo           = MakeNew<PolarGizmo>();
         baseState->m_type = StateTransformBase::TransformType::Rotate;
         break;
       case ModId::Scale:
-        m_gizmo = MakeNew<ScaleGizmo>();
+        m_gizmo           = MakeNew<ScaleGizmo>();
         baseState->m_type = StateTransformBase::TransformType::Scale;
         break;
       default:

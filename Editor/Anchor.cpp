@@ -32,6 +32,7 @@
 
 #include <Canvas.h>
 #include <Material.h>
+#include <MathUtil.h>
 
 #include <DebugNew.h>
 

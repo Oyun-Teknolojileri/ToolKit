@@ -32,6 +32,8 @@
 #include "Prefab.h"
 #include "TopBar.h"
 
+#include <MathUtil.h>
+
 #include <stack>
 
 #include "DebugNew.h"

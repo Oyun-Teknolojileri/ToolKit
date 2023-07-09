@@ -31,6 +31,7 @@
 #include "IconsFontAwesome.h"
 #include "OutlinerWindow.h"
 
+#include <Drawable.h>
 #include <GradientSky.h>
 #include <Surface.h>
 

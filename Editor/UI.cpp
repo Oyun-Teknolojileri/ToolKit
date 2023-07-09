@@ -31,7 +31,9 @@
 #include "Mod.h"
 #include "PopupWindows.h"
 
-#include "DebugNew.h"
+#include <MathUtil.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {

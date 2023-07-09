@@ -37,6 +37,7 @@
 #include <Camera.h>
 #include <DirectionComponent.h>
 #include <Material.h>
+#include <MathUtil.h>
 #include <MeshComponent.h>
 #include <Prefab.h>
 

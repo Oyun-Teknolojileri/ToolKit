@@ -30,6 +30,7 @@
 
 #include <Camera.h>
 #include <DirectionComponent.h>
+#include <Material.h>
 
 namespace ToolKit
 {

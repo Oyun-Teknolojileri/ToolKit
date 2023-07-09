@@ -31,6 +31,9 @@
 #include "TransformMod.h"
 
 #include <Canvas.h>
+#include <Drawable.h>
+#include <Material.h>
+#include <MathUtil.h>
 #include <Prefab.h>
 
 #include <DebugNew.h>
