@@ -32,6 +32,7 @@
 #include "EnvironmentComponent.h"
 #include "GradientSky.h"
 #include "Material.h"
+#include "MathUtil.h"
 #include "Mesh.h"
 #include "Node.h"
 #include "Pass.h"
@@ -45,10 +46,8 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
-#include "gles2.h"
 
-#include <algorithm>
-#include <random>
+#include <gles2.h>
 
 #include "DebugNew.h"
 

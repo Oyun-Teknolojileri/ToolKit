@@ -29,16 +29,12 @@
 #include "AnimationControllerComponent.h"
 #include "Common/base64.h"
 #include "Entity.h"
+#include "FileManager.h"
+#include "MathUtil.h"
 #include "Node.h"
 #include "Skeleton.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "FileManager.h"
-#include "rapidxml.hpp"
-#include "rapidxml_utils.hpp"
-
-#include <utility>
-#include <vector>
 
 #include "DebugNew.h"
 

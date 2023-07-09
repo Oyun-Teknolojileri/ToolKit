@@ -30,6 +30,8 @@
 #include "Component.h"
 #include "DirectionComponent.h"
 #include "Material.h"
+#include "MathUtil.h"
+#include "Pass.h"
 #include "Renderer.h"
 #include "Shader.h"
 #include "ToolKit.h"

@@ -27,10 +27,14 @@
 #include "Texture.h"
 
 #include "DirectionComponent.h"
+#include "FileManager.h"
+#include "FullQuadPass.h"
+#include "Material.h"
+#include "RenderSystem.h"
+#include "Shader.h"
 #include "ToolKit.h"
-#include "gles2.h"
 
-#include <memory>
+#include <gles2.h>
 
 #include "DebugNew.h"
 

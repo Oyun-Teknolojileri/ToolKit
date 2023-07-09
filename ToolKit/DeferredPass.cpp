@@ -26,9 +26,12 @@
 
 #include "DeferredPass.h"
 
+#include "Camera.h"
+#include "DataTexture.h"
 #include "FullQuadPass.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Shader.h"
 #include "ToolKit.h"
 
 namespace ToolKit

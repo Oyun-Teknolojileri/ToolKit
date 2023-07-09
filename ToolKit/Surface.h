@@ -27,14 +27,8 @@
 #pragma once
 
 #include "Entity.h"
-#include "Events.h"
-#include "MathUtil.h"
-#include "Resource.h"
 #include "SpriteSheet.h"
 #include "Types.h"
-
-#include <functional>
-#include <vector>
 
 namespace ToolKit
 {

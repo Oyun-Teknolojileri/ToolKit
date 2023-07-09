@@ -29,6 +29,7 @@
 #include "Camera.h"
 #include "EnvironmentComponent.h"
 #include "Material.h"
+#include "MathUtil.h"
 #include "RenderSystem.h"
 #include "Shader.h"
 

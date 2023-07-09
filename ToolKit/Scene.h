@@ -31,15 +31,9 @@
  */
 
 #include "EnvironmentComponent.h"
-#include "Light.h"
-#include "MathUtil.h"
 #include "Resource.h"
 #include "Sky.h"
 #include "Types.h"
-
-#include <functional>
-#include <unordered_map>
-#include <vector>
 
 namespace ToolKit
 {

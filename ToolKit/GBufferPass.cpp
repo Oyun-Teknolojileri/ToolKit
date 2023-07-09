@@ -28,6 +28,7 @@
 
 #include "Material.h"
 #include "Mesh.h"
+#include "Shader.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"

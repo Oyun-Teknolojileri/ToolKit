@@ -26,12 +26,8 @@
 
 #pragma once
 
-#include "Logger.h"
 #include "Types.h"
 #include "Util.h"
-
-#include <memory>
-#include <unordered_map>
 
 namespace ToolKit
 {

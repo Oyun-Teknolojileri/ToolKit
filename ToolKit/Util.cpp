@@ -27,15 +27,12 @@
 #include "Util.h"
 
 #include "Common/utf8.h"
+#include "FileManager.h"
+#include "Material.h"
+#include "MathUtil.h"
 #include "Primative.h"
+#include "Scene.h"
 #include "ToolKit.h"
-#include "rapidxml.hpp"
-
-#include <algorithm>
-#include <cstdarg>
-#include <filesystem>
-#include <fstream>
-#include <string>
 
 #include "DebugNew.h"
 

@@ -27,17 +27,9 @@
 #pragma once
 
 #include "Types.h"
-#include "unzip.h"
-#include "zip.h"
 
-#include <rapidxml.hpp>
-#include <rapidxml_utils.hpp>
-
-#include <filesystem>
-#include <fstream>
-#include <unordered_map>
-#include <utility>
-#include <variant>
+#include <unzip.h>
+#include <zip.h>
 
 namespace ToolKit
 {
@@ -100,10 +92,5 @@ namespace ToolKit
     std::unordered_map<String, std::pair<ZPOS64_T, uint32_t>> m_zipFilesOffsetTable;
     bool m_offsetTableCreated = false;
     zipFile m_zfile           = nullptr;
-
-    struct _streambuf : std::streambuf
-    {
-      _streambuf(char* begin, char* end) { this->setg(begin, begin, end); }
-    };
   };
 } // namespace ToolKit

@@ -31,7 +31,6 @@
  */
 
 #include "Serialize.h"
-#include "Types.h"
 
 namespace ToolKit
 {

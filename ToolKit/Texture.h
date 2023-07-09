@@ -30,8 +30,6 @@
 #include "ResourceManager.h"
 #include "Types.h"
 
-#include <vector>
-
 namespace ToolKit
 {
   struct TextureSettings

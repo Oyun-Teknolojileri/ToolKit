@@ -27,12 +27,10 @@
 #include "ParameterBlock.h"
 
 #include "Animation.h"
+#include "Material.h"
 #include "Mesh.h"
 #include "ToolKit.h"
 #include "Util.h"
-
-#include <memory>
-#include <utility>
 
 #include "DebugNew.h"
 

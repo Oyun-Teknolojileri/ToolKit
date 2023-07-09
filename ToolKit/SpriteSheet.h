@@ -26,13 +26,8 @@
 
 #pragma once
 
-#include "Drawable.h"
-#include "MathUtil.h"
+#include "Entity.h"
 #include "Resource.h"
-#include "ResourceManager.h"
-
-#include <unordered_map>
-#include <vector>
 
 namespace ToolKit
 {

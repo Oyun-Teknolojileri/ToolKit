@@ -28,8 +28,6 @@
 
 #include "Component.h"
 
-#include <memory>
-
 namespace ToolKit
 {
 

@@ -26,8 +26,6 @@
 
 #pragma once
 
-#include "Types.h"
-
 #ifdef _WIN32 // Windows.
   #define TK_GAME_API __declspec(dllexport)
 #else // Other OS.

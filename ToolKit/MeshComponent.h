@@ -27,7 +27,6 @@
 #pragma once
 
 #include "Component.h"
-#include "MathUtil.h"
 
 namespace ToolKit
 {

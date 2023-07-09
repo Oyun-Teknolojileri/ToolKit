@@ -30,8 +30,6 @@
 #include "Serialize.h"
 #include "Types.h"
 
-#include <memory>
-
 namespace ToolKit
 {
 

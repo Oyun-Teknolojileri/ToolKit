@@ -26,12 +26,9 @@
 
 #pragma once
 
-#include "ToolKit.h"
 #include "Types.h"
-#include "gles2.h"
 
-#include <functional>
-#include <string>
+#include <gles2.h>
 
 namespace ToolKit
 {

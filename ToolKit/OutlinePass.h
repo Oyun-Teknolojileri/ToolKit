@@ -25,6 +25,7 @@
  */
 
 #pragma once
+
 #include "Pass.h"
 #include "StencilPass.h"
 

@@ -26,11 +26,12 @@
 
 #include "FileManager.h"
 
-#include "ToolKit.h"
+#include "Material.h"
+#include "Mesh.h"
 #include "Scene.h"
+#include "Shader.h"
+#include "ToolKit.h"
 
-#include <memory>
-#include <string>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 

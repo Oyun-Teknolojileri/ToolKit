@@ -28,10 +28,6 @@
 
 #include "ParameterBlock.h"
 #include "Resource.h"
-#include "ResourceManager.h"
-
-#include <unordered_map>
-#include <vector>
 
 namespace ToolKit
 {

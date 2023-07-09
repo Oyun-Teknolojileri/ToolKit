@@ -26,6 +26,7 @@
 
 #include "FullQuadPass.h"
 
+#include "Camera.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Shader.h"

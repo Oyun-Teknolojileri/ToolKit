@@ -28,8 +28,6 @@
 
 #include "Resource.h"
 
-#include <vector>
-
 namespace ToolKit
 {
 

@@ -26,15 +26,52 @@
 
 #include "SsaoPass.h"
 
+#include "Camera.h"
 #include "Material.h"
+#include "MathUtil.h"
 #include "Mesh.h"
+#include "Shader.h"
 #include "ShaderReflectionCache.h"
 #include "ToolKit.h"
+
+#include <gles2.h>
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
+
+  SSAONoiseTexture::SSAONoiseTexture(int width, int height) : DataTexture(width, height) {}
+
+  void SSAONoiseTexture::Init(void* data)
+  {
+    if (m_initiated)
+    {
+      return;
+    }
+
+    GLint currId;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
+
+    glGenTextures(1, &m_textureId);
+    glBindTexture(GL_TEXTURE_2D, m_textureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, m_width, m_height, 0, GL_RG, GL_FLOAT, data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glBindTexture(GL_TEXTURE_2D, currId);
+
+    m_initiated = true;
+  }
+
+  SSAONoiseTexture::SSAONoiseTexture() {}
+
+  void SSAONoiseTexture::Init(bool flushClientSideArray)
+  {
+    assert(false); // The code should never come here
+  }
 
   SSAOPass::SSAOPass()
   {
@@ -67,7 +104,6 @@ namespace ToolKit
     renderer->SetTexture(3, m_params.GLinearDepthBuffer->m_textureId);
 
     m_ssaoShader->SetShaderParameter("radius", ParameterVariant(m_params.Radius));
-
     m_ssaoShader->SetShaderParameter("bias", ParameterVariant(m_params.Bias));
 
     RenderSubPass(m_quadPass);
@@ -133,11 +169,8 @@ namespace ToolKit
     }
 
     m_ssaoShader->SetShaderParameter("screenSize", ParameterVariant(Vec2(width, height)));
-
     m_ssaoShader->SetShaderParameter("bias", ParameterVariant(m_params.Bias));
-
     m_ssaoShader->SetShaderParameter("projection", ParameterVariant(m_params.Cam->GetProjectionMatrix()));
-
     m_ssaoShader->SetShaderParameter("viewMatrix", ParameterVariant(m_params.Cam->GetViewMatrix()));
 
     m_quadPass->m_params.FragmentShader = m_ssaoShader;

@@ -27,11 +27,6 @@
 #pragma once
 
 #include "Entity.h"
-#include "Framebuffer.h"
-#include "Primative.h"
-#include "Types.h"
-
-#include <string>
 
 namespace ToolKit
 {

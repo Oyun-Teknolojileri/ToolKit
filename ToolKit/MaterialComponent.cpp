@@ -26,6 +26,7 @@
 
 #include "MaterialComponent.h"
 
+#include "Entity.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "MeshComponent.h"

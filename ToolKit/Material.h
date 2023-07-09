@@ -27,9 +27,8 @@
 #pragma once
 
 #include "RenderState.h"
-#include "Renderer.h"
 #include "Resource.h"
-#include "ResourceManager.h"
+#include "Texture.h"
 
 namespace ToolKit
 {

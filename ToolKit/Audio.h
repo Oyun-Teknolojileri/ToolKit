@@ -28,7 +28,6 @@
 
 #include "Entity.h"
 #include "Resource.h"
-#include "ResourceManager.h"
 
 namespace ToolKit
 {

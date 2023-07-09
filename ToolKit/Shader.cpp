@@ -26,16 +26,14 @@
 
 #include "Shader.h"
 
+#include "FileManager.h"
 #include "TKAssert.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "gles2.h"
-#include "rapidxml.hpp"
-#include "rapidxml_print.hpp"
-#include "rapidxml_utils.hpp"
+
+#include <gles2.h>
 
 #include <unordered_set>
-#include <vector>
 
 #include "DebugNew.h"
 
@@ -419,7 +417,6 @@ namespace ToolKit
     m_source.replace(includeLoc, 0, includeSource);
 
     // Handle uniforms
-
     std::unordered_set<Uniform> unis;
     for (Uniform uni : m_uniforms)
     {

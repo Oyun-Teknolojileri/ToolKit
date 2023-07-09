@@ -26,7 +26,6 @@
 
 #include "ToolKit.h"
 
-#define GLAD_GLES2_IMPLEMENTATION
 #include "Audio.h"
 #include "EngineSettings.h"
 #include "FileManager.h"
@@ -38,12 +37,9 @@
 #include "Shader.h"
 #include "TKObject.h"
 #include "UIManager.h"
-#include "gles2.h"
 
-#include <algorithm>
-#include <filesystem>
-#include <memory>
-#include <string>
+#define GLAD_GLES2_IMPLEMENTATION
+#include <gles2.h>
 
 #include "DebugNew.h"
 

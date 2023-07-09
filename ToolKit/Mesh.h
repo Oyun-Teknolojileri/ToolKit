@@ -26,14 +26,9 @@
 
 #pragma once
 
-#include "MathUtil.h"
 #include "RenderState.h"
 #include "Resource.h"
-#include "ResourceManager.h"
 #include "Types.h"
-
-#include <memory>
-#include <vector>
 
 namespace ToolKit
 {

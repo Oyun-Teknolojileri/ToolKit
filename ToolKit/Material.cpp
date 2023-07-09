@@ -26,10 +26,10 @@
 
 #include "Material.h"
 
+#include "FileManager.h"
+#include "Shader.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "rapidxml.hpp"
-#include "rapidxml_utils.hpp"
 
 #include "DebugNew.h"
 

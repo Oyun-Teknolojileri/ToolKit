@@ -31,16 +31,9 @@
  * and related structures.
  */
 
-#include "Entity.h"
-#include "Node.h"
 #include "Resource.h"
-#include "ResourceManager.h"
-#include "Skeleton.h"
 #include "SkeletonComponent.h"
 #include "Types.h"
-
-#include <unordered_map>
-#include <vector>
 
 namespace ToolKit
 {

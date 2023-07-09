@@ -29,9 +29,6 @@
 #include "GeometryTypes.h"
 #include "Types.h"
 
-#include <string>
-#include <vector>
-
 namespace ToolKit
 {
 

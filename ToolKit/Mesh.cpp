@@ -27,18 +27,17 @@
 #include "Mesh.h"
 
 #include "Common/base64.h"
+#include "FileManager.h"
 #include "Material.h"
+#include "MathUtil.h"
 #include "Skeleton.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "gles2.h"
 
-#include <rapidxml.hpp>
-#include <rapidxml_utils.hpp>
+#include <gles2.h>
 
 #include <execution>
-#include <unordered_map>
 
 #include "DebugNew.h"
 

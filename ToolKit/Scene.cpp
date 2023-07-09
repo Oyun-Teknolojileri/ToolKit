@@ -30,15 +30,11 @@
 #include "EngineSettings.h"
 #include "EnvironmentComponent.h"
 #include "FileManager.h"
+#include "MathUtil.h"
 #include "Prefab.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
 #include "Util.h"
-
-#include <algorithm>
-#include <string>
-#include <utility>
-#include <vector>
 
 #include "DebugNew.h"
 

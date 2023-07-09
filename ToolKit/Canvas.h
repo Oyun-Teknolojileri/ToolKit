@@ -26,10 +26,6 @@
 
 #pragma once
 
-#include "Entity.h"
-#include "Events.h"
-#include "MathUtil.h"
-#include "Resource.h"
 #include "SpriteSheet.h"
 #include "Surface.h"
 #include "Types.h"

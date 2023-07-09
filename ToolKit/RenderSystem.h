@@ -26,11 +26,7 @@
 
 #pragma once
 
-#include "GlErrorReporter.h"
 #include "Pass.h"
-#include "Renderer.h"
-
-#include <functional>
 
 namespace ToolKit
 {
@@ -112,7 +108,7 @@ namespace ToolKit
     void SetFrameCount(uint count);
 
     void EnableBlending(bool enable);
-    
+
     void DecrementSkipFrame();
 
     bool IsSkipFrame() const;

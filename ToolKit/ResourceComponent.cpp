@@ -32,8 +32,6 @@
 #include "Mesh.h"
 #include "ToolKit.h"
 
-#include <utility>
-
 #include "DebugNew.h"
 
 namespace ToolKit

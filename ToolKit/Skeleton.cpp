@@ -26,14 +26,14 @@
 
 #include "Skeleton.h"
 
+#include "FileManager.h"
+#include "MathUtil.h"
 #include "Node.h"
+#include "Texture.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "gles2.h"
-#include "rapidxml.hpp"
-#include "rapidxml_utils.hpp"
 
-#include <memory>
+#include <gles2.h>
 
 #include "DebugNew.h"
 

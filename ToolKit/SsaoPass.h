@@ -26,10 +26,27 @@
 
 #pragma once
 
+#include "DataTexture.h"
 #include "PostProcessPass.h"
 
 namespace ToolKit
 {
+
+  class SSAONoiseTexture : public DataTexture
+  {
+   public:
+    SSAONoiseTexture(int width, int height);
+
+    void Init(void* data);
+
+   protected:
+    SSAONoiseTexture();
+
+   private:
+    void Init(bool flushClientSideArray = false) override;
+  };
+
+  typedef std::shared_ptr<SSAONoiseTexture> SSAONoiseTexturePtr;
 
   struct SSAOPassParams
   {

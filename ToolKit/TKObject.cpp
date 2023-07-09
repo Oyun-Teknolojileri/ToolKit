@@ -31,6 +31,7 @@
 #include "Camera.h"
 #include "Canvas.h"
 #include "DirectionComponent.h"
+#include "Drawable.h"
 #include "Entity.h"
 #include "EnvironmentComponent.h"
 #include "GradientSky.h"
@@ -44,6 +45,8 @@
 #include "Sky.h"
 #include "SpriteSheet.h"
 #include "Surface.h"
+
+#include "DebugNew.h"
 
 namespace ToolKit
 {

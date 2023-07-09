@@ -26,16 +26,12 @@
 
 #pragma once
 
-#include "Framebuffer.h"
-#include "Light.h"
+#include "Camera.h"
+#include "Primative.h"
 #include "RenderState.h"
 #include "Sky.h"
-#include "SpriteSheet.h"
 #include "Types.h"
 #include "Viewport.h"
-
-#include <memory>
-#include <unordered_map>
 
 namespace ToolKit
 {
