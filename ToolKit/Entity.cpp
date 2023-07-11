@@ -250,12 +250,21 @@ namespace ToolKit
 
   void Entity::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    Super::DeSerializeImp(doc, parent);
-    XmlNode* node = parent->first_node(Entity::StaticClass()->Name.c_str());
-    if (node == nullptr) 
+    if (m_version == String("v0.4.5"))
     {
-      // file version < v0.4.4
+      DeSerializeImpV045(doc, parent);
+      return;
+    }
+
+    // Old file, keep parsing.
+    XmlNode* node = nullptr;
+    if (parent != nullptr)
+    {
       node = parent;
+    }
+    else
+    {
+      node = doc->first_node(XmlEntityElement.c_str());
     }
 
     ReadAttr(node, XmlParentEntityIdAttr, _parentId);
@@ -264,6 +273,8 @@ namespace ToolKit
     {
       m_node->DeSerialize(doc, transformNode);
     }
+
+    m_localData.DeSerialize(doc, parent);
 
     ClearComponents();
 
@@ -275,6 +286,38 @@ namespace ToolKit
         int type = -1;
         ReadAttr(comNode, XmlParamterTypeAttr, type);
         Component* com = GetComponentFactory()->Create((ComponentType) type);
+        com->m_version = m_version;
+        com->DeSerialize(doc, comNode);
+        AddComponent(std::shared_ptr<Component>(com));
+
+        comNode = comNode->next_sibling();
+      }
+    }
+  }
+
+  void Entity::DeSerializeImpV045(XmlDocument* doc, XmlNode* parent)
+  {
+    Super::DeSerializeImp(doc, parent);
+
+    XmlNode* node = parent->first_node(Entity::StaticClass()->Name.c_str());
+    ReadAttr(node, XmlParentEntityIdAttr, _parentId);
+
+    if (XmlNode* transformNode = node->first_node(XmlNodeElement.c_str()))
+    {
+      m_node->DeSerialize(doc, transformNode);
+    }
+
+    ClearComponents();
+
+    if (XmlNode* comArray = node->first_node(XmlComponentArrayElement.data()))
+    {
+      XmlNode* comNode = comArray->first_node(TKObject::StaticClass()->Name.c_str());
+      while (comNode != nullptr)
+      {
+        String cls;
+        ReadAttr(comNode, XmlObjectClassAttr.data(), cls);
+        Component* com = GetObjectFactory()->MakeNew(cls)->As<Component>();
+        com->m_version = m_version;
         com->DeSerialize(doc, comNode);
         AddComponent(std::shared_ptr<Component>(com));
 

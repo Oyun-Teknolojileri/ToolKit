@@ -214,6 +214,7 @@ namespace ToolKit
     void WeakCopy(Entity* other, bool copyComponents = true) const;
     virtual XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent);
+    void DeSerializeImpV045(XmlDocument* doc, XmlNode* parent);
 
    public:
     TKDeclareParam(String, Name);

@@ -729,6 +729,7 @@ namespace ToolKit
 
           if (wnd)
           {
+            wnd->m_version = m_version;
             m_windows.push_back(wnd);
           }
         } while ((wndNode = wndNode->next_sibling("Window")));
@@ -1265,6 +1266,7 @@ namespace ToolKit
       {
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
         XmlNode* app          = lclDoc->allocate_node(rapidxml::node_element, "App");
+        WriteAttr(app, lclDoc.get(), "version", TKVersionStr);
         lclDoc->append_node(app);
 
         XmlNode* settings = lclDoc->allocate_node(rapidxml::node_element, "Settings");
@@ -1320,6 +1322,8 @@ namespace ToolKit
 
       if (XmlNode* root = doc->first_node("App"))
       {
+        ReadAttr(root, "version", m_version);
+
         if (XmlNode* settings = root->first_node("Settings"))
         {
           if (XmlNode* setNode = settings->first_node("Size"))

@@ -68,6 +68,9 @@ namespace ToolKit
     virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent) = 0;
 
     virtual void PostDeSerializeImp(XmlDocument* doc, XmlNode* parent) {}
+
+   public:
+    String m_version = TKVersionStr;
   };
 
 } // namespace ToolKit

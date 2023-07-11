@@ -90,6 +90,7 @@ namespace ToolKit
    protected:
     void ParameterConstructor() override;
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    void DeSerializeImpV045(XmlDocument* doc, XmlNode* parent);
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:

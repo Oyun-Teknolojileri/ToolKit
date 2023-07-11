@@ -296,6 +296,8 @@ namespace ToolKit
      */
     void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
+    void DeSerializeImpV045(XmlDocument* doc, XmlNode* parent); //!< Deserialize files with version v0.4.5
+
     /**
      * Returns the biggest number generated during the current runtime. This
      * function is used to avoid ID collision during scene merges.
@@ -319,7 +321,6 @@ namespace ToolKit
 
    protected:
     EntityRawPtrArray m_entities; //!< The entities in the scene.
-    String m_version;             //!< The version of the scene file.
     bool m_isPrefab;              //!< Whether or not the scene is a prefab.
   };
 

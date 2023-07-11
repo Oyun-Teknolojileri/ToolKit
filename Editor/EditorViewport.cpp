@@ -194,7 +194,15 @@ namespace ToolKit
 
         Camera* viewCam = MakeNew<Camera>();
         ULongID id      = viewCam->GetIdVal();
-        viewCam->DeSerialize(nullptr, node->first_node("E"));
+
+        if (m_version > String("v0.4.4")) 
+        {
+          viewCam->DeSerialize(nullptr, node->first_node("TKObject"));
+        }
+        else 
+        {
+          viewCam->DeSerialize(nullptr, node->first_node("E"));
+        }
         viewCam->SetIdVal(id);
 
         // Reset aspect.

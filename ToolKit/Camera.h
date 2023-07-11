@@ -111,4 +111,5 @@ namespace ToolKit
     bool m_ortographic = false;
     Mat4 m_projection;
   };
+
 } // namespace ToolKit

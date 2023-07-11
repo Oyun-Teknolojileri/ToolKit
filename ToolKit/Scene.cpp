@@ -577,14 +577,11 @@ namespace ToolKit
 
   void Scene::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
-    XmlNode* root = nullptr;
-    if (parent != nullptr)
+    XmlNode* root = doc->first_node(XmlSceneElement.c_str());
+    if (root == nullptr)
     {
-      root = parent->first_node(XmlSceneElement.c_str());
-    }
-    else
-    {
-      root = doc->first_node(XmlSceneElement.c_str());
+      assert(root && "Invalid scene file.");
+      return;
     }
 
     // Match scene name with file name.
@@ -594,6 +591,13 @@ namespace ToolKit
     DecomposePath(path, nullptr, &m_name, nullptr);
     ReadAttr(root, "version", m_version);
 
+    if (m_version == String("v0.4.5"))
+    {
+      DeSerializeImpV045(doc, parent);
+      return;
+    }
+
+    // Old file, keep parsing.
     ULongID lastID    = GetHandleManager()->GetNextHandle();
     ULongID biggestID = 0;
     XmlNode* node     = nullptr;
@@ -603,31 +607,12 @@ namespace ToolKit
     const char* xmlRootObject = XmlEntityElement.c_str();
     const char* xmlObjectType = XmlEntityTypeAttr.c_str();
 
-    bool newFile              = m_version > String("v0.4.4");
-    if (newFile)
-    {
-      xmlRootObject = TKObject::StaticClass()->Name.c_str();
-      xmlObjectType = XmlObjectClassAttr.data();
-    }
-
     for (node = root->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
     {
       XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
-      Entity* ntt            = nullptr;
-      if (newFile)
-      {
-        ntt = GetObjectFactory()->MakeNew(typeAttr->value())->As<Entity>();
-      }
-      else
-      {
-        EntityType t = (EntityType) std::atoi(typeAttr->value());
-        ntt          = GetEntityFactory()->CreateByType(t);
-      }
-
-      if (ntt == nullptr)
-      {
-        continue;
-      }
+      EntityType t           = (EntityType) std::atoi(typeAttr->value());
+      Entity* ntt            = GetEntityFactory()->CreateByType(t);
+      ntt->m_version         = m_version;
 
       ntt->DeSerialize(doc, node);
 
@@ -647,6 +632,60 @@ namespace ToolKit
 
       AddEntity(ntt);
     }
+    GetHandleManager()->SetMaxHandle(biggestID);
+
+    // Do not serialize post processing settings if this is prefab.
+    if (!m_isPrefab)
+    {
+      GetEngineSettings().DeSerializePostProcessing(doc, parent);
+    }
+
+    for (Entity* ntt : prefabList)
+    {
+      Prefab* prefab = static_cast<Prefab*>(ntt);
+      prefab->Init(this);
+      prefab->Link();
+    }
+  }
+
+  void Scene::DeSerializeImpV045(XmlDocument* doc, XmlNode* parent)
+  {
+    XmlNode* root     = doc->first_node(XmlSceneElement.c_str());
+
+    // Old file, keep parsing.
+    ULongID lastID    = GetHandleManager()->GetNextHandle();
+    ULongID biggestID = 0;
+    XmlNode* node     = nullptr;
+
+    EntityRawPtrArray prefabList;
+
+    const char* xmlRootObject = TKObject::StaticClass()->Name.c_str();
+    const char* xmlObjectType = XmlObjectClassAttr.data();
+
+    for (node = root->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
+    {
+      XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
+      Entity* ntt            = GetObjectFactory()->MakeNew(typeAttr->value())->As<Entity>();
+      ntt->m_version         = m_version;
+
+      ntt->DeSerialize(doc, node);
+
+      if (ntt->GetType() == EntityType::Entity_Prefab)
+      {
+        prefabList.push_back(ntt);
+      }
+
+      // Incrementing the incoming ntt ids with current max id value...
+      // to prevent id collisions.
+      ULongID listIndx  = ntt->GetIdVal();
+      ULongID currentID = listIndx + lastID;
+      biggestID         = glm::max(biggestID, currentID);
+      ntt->SetIdVal(currentID);
+      ntt->_parentId += lastID;
+
+      AddEntity(ntt);
+    }
+
     GetHandleManager()->SetMaxHandle(biggestID);
 
     // Do not serialize post processing settings if this is prefab.
