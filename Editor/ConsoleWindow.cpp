@@ -628,8 +628,6 @@ namespace ToolKit
       }
     }
 
-    ConsoleWindow::ConsoleWindow(XmlNode* node) : ConsoleWindow() { DeSerialize(nullptr, node); }
-
     ConsoleWindow::ConsoleWindow()
     {
       CreateCommand(g_showPickDebugCmd, ShowPickDebugExec);

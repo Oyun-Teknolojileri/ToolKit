@@ -36,6 +36,7 @@ namespace ToolKit
     class EditorViewport2d : public EditorViewport
     {
      public:
+      EditorViewport2d();
       explicit EditorViewport2d(XmlNode* node);
       explicit EditorViewport2d(const Vec2& size);
       EditorViewport2d(float width, float height);

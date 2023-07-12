@@ -47,7 +47,7 @@ namespace ToolKit
   TK_API void ReadAttr(XmlNode* node, const String& name, ULongID& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, byte& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, ubyte& val);
-  TK_API void ReadAttr(XmlNode* node, const String& name, String& val);
+  TK_API void ReadAttr(XmlNode* node, const String& name, String& val, StringView defaultVal = "");
   TK_API XmlNode* Query(XmlDocument* doc, const StringArray& path);
 
   // Updates or inject the attribute with val. Returns true if successful.

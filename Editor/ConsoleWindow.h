@@ -109,7 +109,6 @@ namespace ToolKit
     class ConsoleWindow : public Window
     {
      public:
-      explicit ConsoleWindow(XmlNode* node);
       ConsoleWindow();
       virtual ~ConsoleWindow();
       void Show() override;

@@ -102,8 +102,8 @@ namespace ToolKit
     class PropInspector : public Window
     {
      public:
-      explicit PropInspector(XmlNode* node);
       PropInspector();
+      explicit PropInspector(XmlNode* node);
       virtual ~PropInspector();
       void SetActiveView(ViewType viewType);
       class MaterialView* GetMaterialView();

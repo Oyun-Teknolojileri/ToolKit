@@ -38,6 +38,8 @@ namespace ToolKit
   {
     Overlay2DTopBar* m_2dViewOptions = nullptr;
 
+    EditorViewport2d::EditorViewport2d() {}
+
     EditorViewport2d::EditorViewport2d(XmlNode* node) : EditorViewport(node) { InitViewport(); }
 
     EditorViewport2d::EditorViewport2d(float width, float height) : EditorViewport(width, height) { InitViewport(); }

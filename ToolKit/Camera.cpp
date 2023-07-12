@@ -127,11 +127,45 @@ namespace ToolKit
 
   void Camera::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
   {
+    if (m_version == String("v0.4.5"))
+    {
+      DeSerializeImpV045(doc, parent);
+      return;
+    }
+
     ClearComponents();
 
-    Entity::DeSerializeImp(doc, parent);
+    Super::DeSerializeImp(doc, parent);
 
     if (XmlNode* node = parent->first_node("Camera"))
+    {
+      ReadAttr(node, "fov", m_fov);
+      ReadAttr(node, "aspect", m_aspect);
+      ReadAttr(node, "near", m_near);
+      ReadAttr(node, "far", m_far);
+      ReadAttr(node, "ortographic", m_ortographic);
+      ReadAttr(node, "left", m_left);
+      ReadAttr(node, "right", m_right);
+      ReadAttr(node, "top", m_top);
+      ReadAttr(node, "bottom", m_bottom);
+      ReadAttr(node, "scale", m_orthographicScale);
+    }
+
+    if (m_ortographic)
+    {
+      SetLens(m_left, m_right, m_bottom, m_top, m_near, m_far);
+    }
+    else
+    {
+      SetLens(m_fov, m_aspect, m_near, m_far);
+    }
+  }
+
+  void Camera::DeSerializeImpV045(XmlDocument* doc, XmlNode* parent) {
+    ClearComponents();
+    Super::DeSerializeImp(doc, parent);
+    XmlNode* nttNode = parent->first_node(Entity::StaticClass()->Name.c_str());
+    if (XmlNode* node = nttNode->first_node(Camera::StaticClass()->Name.c_str()))
     {
       ReadAttr(node, "fov", m_fov);
       ReadAttr(node, "aspect", m_aspect);

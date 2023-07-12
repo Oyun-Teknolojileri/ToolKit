@@ -48,6 +48,7 @@ namespace ToolKit
     class EditorViewport : public Viewport, public Window
     {
      public:
+      EditorViewport();
       explicit EditorViewport(XmlNode* node);
       explicit EditorViewport(const Vec2& size);
       EditorViewport(float width, float height);
@@ -80,6 +81,8 @@ namespace ToolKit
       virtual void DrawOverlays();
       virtual void ComitResize();
       virtual void UpdateSnaps();
+
+      void Init();
 
       // Mods.
       void FpsNavigationMod(float deltaTime);

@@ -76,6 +76,8 @@ namespace ToolKit
       }
     }
 
+    EditorViewport::EditorViewport() { Init(); }
+
     EditorViewport::EditorViewport(XmlNode* node)
     {
       DeSerialize(nullptr, node);
@@ -87,12 +89,7 @@ namespace ToolKit
 
     EditorViewport::EditorViewport(const Vec2& size) : EditorViewport(size.x, size.y) {}
 
-    EditorViewport::EditorViewport(float width, float height) : Viewport(width, height)
-    {
-      m_name = g_viewportStr + " " + std::to_string(m_id);
-      InitOverlays(this);
-      m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
-    }
+    EditorViewport::EditorViewport(float width, float height) : Viewport(width, height) { Init(); }
 
     EditorViewport::~EditorViewport() {}
 
@@ -192,14 +189,16 @@ namespace ToolKit
         ReadAttr(node, "alignment", *((int*) (&m_cameraAlignment)));
         ReadAttr(node, "lock", m_orbitLock);
 
-        Camera* viewCam = MakeNew<Camera>();
-        ULongID id      = viewCam->GetIdVal();
+        Camera* viewCam    = MakeNew<Camera>();
+        viewCam->m_version = m_version;
+        ULongID id         = viewCam->GetIdVal();
 
-        if (m_version > String("v0.4.4")) 
+        if (m_version > String("v0.4.4"))
         {
-          viewCam->DeSerialize(nullptr, node->first_node("TKObject"));
+          XmlNode* objNode = node->first_node(TKObject::StaticClass()->Name.c_str());
+          viewCam->DeSerialize(nullptr, objNode);
         }
-        else 
+        else
         {
           viewCam->DeSerialize(nullptr, node->first_node("E"));
         }
@@ -778,6 +777,13 @@ namespace ToolKit
         g_app->m_rotateDelta = m_snapDeltas.y;
         g_app->m_scaleDelta  = m_snapDeltas.z;
       }
+    }
+
+    void EditorViewport::Init()
+    {
+      m_name = g_viewportStr + " " + std::to_string(m_id);
+      InitOverlays(this);
+      m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
     }
 
     void EditorViewport::LoadDragMesh(bool& meshLoaded,

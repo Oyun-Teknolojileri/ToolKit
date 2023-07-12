@@ -679,8 +679,9 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Add Browser", "Alt+B"))
         {
-          FolderWindow* wnd = new FolderWindow(true);
+          FolderWindow* wnd = new FolderWindow();
           wnd->m_name       = g_assetBrowserStr + "##" + std::to_string(wnd->m_id);
+          wnd->IterateFolders(true);
           g_app->m_windows.push_back(wnd);
         }
 

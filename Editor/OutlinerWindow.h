@@ -37,7 +37,6 @@ namespace ToolKit
     class OutlinerWindow : public Window
     {
      public:
-      explicit OutlinerWindow(XmlNode* node);
       OutlinerWindow();
       virtual ~OutlinerWindow();
       void Show() override;

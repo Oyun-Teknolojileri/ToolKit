@@ -271,8 +271,6 @@ namespace ToolKit
     // PropInspector
     //////////////////////////////////////////////////////////////////////////
 
-    PropInspector::PropInspector(XmlNode* node) : PropInspector() { DeSerialize(nullptr, node); }
-
     PropInspector::PropInspector()
     {
       // order is important, depends on enum viewType
@@ -297,6 +295,8 @@ namespace ToolKit
       m_prefabViews.push_back((uint) ViewType::Material);
       m_prefabViews.push_back((uint) ViewType::Mesh);
     }
+
+    PropInspector::PropInspector(XmlNode* node) : PropInspector() { DeSerialize(nullptr, node); }
 
     PropInspector::~PropInspector()
     {

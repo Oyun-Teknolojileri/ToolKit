@@ -652,8 +652,9 @@ namespace ToolKit
         ConsoleWindow* console = new ConsoleWindow();
         m_windows.push_back(console);
 
-        FolderWindow* assetBrowser = new FolderWindow(true);
-        assetBrowser->m_name       = g_assetBrowserStr;
+        FolderWindow* assetBrowser = new FolderWindow();
+        assetBrowser->IterateFolders(true);
+        assetBrowser->m_name = g_assetBrowserStr;
         m_windows.push_back(assetBrowser);
 
         OutlinerWindow* outliner = new OutlinerWindow();
@@ -702,25 +703,25 @@ namespace ToolKit
           switch ((Window::Type) type)
           {
           case Window::Type::Viewport:
-            wnd = new EditorViewport(wndNode);
+            wnd = new EditorViewport();
             break;
           case Window::Type::Console:
-            wnd = new ConsoleWindow(wndNode);
+            wnd = new ConsoleWindow();
             break;
           case Window::Type::Outliner:
-            wnd = new OutlinerWindow(wndNode);
+            wnd = new OutlinerWindow();
             break;
           case Window::Type::Browser:
-            wnd = new FolderWindow(wndNode);
+            wnd = new FolderWindow();
             break;
           case Window::Type::Inspector:
-            wnd = new PropInspector(wndNode);
+            wnd = new PropInspector();
             break;
           case Window::Type::PluginWindow:
-            wnd = new PluginWindow(wndNode);
+            wnd = new PluginWindow();
             break;
           case Window::Type::Viewport2d:
-            wnd = new EditorViewport2d(wndNode);
+            wnd = new EditorViewport2d();
             break;
           case Window::Type::RenderSettings:
             wnd = new RenderSettingsView();
@@ -730,6 +731,7 @@ namespace ToolKit
           if (wnd)
           {
             wnd->m_version = m_version;
+            wnd->DeSerialize(nullptr, wndNode);
             m_windows.push_back(wnd);
           }
         } while ((wndNode = wndNode->next_sibling("Window")));
@@ -1322,7 +1324,7 @@ namespace ToolKit
 
       if (XmlNode* root = doc->first_node("App"))
       {
-        ReadAttr(root, "version", m_version);
+        ReadAttr(root, "version", m_version, "");
 
         if (XmlNode* settings = root->first_node("Settings"))
         {

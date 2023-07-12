@@ -136,11 +136,15 @@ namespace ToolKit
 
   void ReadAttr(XmlNode* node, const String& name, ubyte& val) { val = ReadVal<ubyte>(node, name); }
 
-  void ReadAttr(XmlNode* node, const String& name, String& val)
+  void ReadAttr(XmlNode* node, const String& name, String& val, StringView defaultVal)
   {
     if (XmlAttribute* attr = node->first_attribute(name.c_str()))
     {
       val = attr->value();
+    }
+    else
+    {
+      val = defaultVal;
     }
   }
 

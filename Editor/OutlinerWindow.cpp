@@ -43,8 +43,6 @@ namespace ToolKit
   namespace Editor
   {
 
-    OutlinerWindow::OutlinerWindow(XmlNode* node) { DeSerialize(nullptr, node); }
-
     OutlinerWindow::OutlinerWindow() {}
 
     OutlinerWindow::~OutlinerWindow() {}

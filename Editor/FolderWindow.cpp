@@ -118,13 +118,7 @@ namespace ToolKit
 
     RenderTargetPtr DirectoryEntry::GetThumbnail() const { return g_app->m_thumbnailManager.GetThumbnail(*this); }
 
-    FolderWindow::FolderWindow(XmlNode* node)
-    {
-      DeSerialize(nullptr, node);
-      Iterate(ResourcePath(), true);
-    }
-
-    FolderWindow::FolderWindow(bool addEngine) { Iterate(ResourcePath(), true, addEngine); }
+    FolderWindow::FolderWindow() {}
 
     FolderWindow::~FolderWindow() {}
 
@@ -136,6 +130,8 @@ namespace ToolKit
       m_resourcesTreeIndex = (int) m_folderNodes.size();
       CreateTreeRec(int(m_folderNodes.size()) - 1, ResourcePath());
     }
+
+    void FolderWindow::IterateFolders(bool includeEngine) { Iterate(ResourcePath(), true, includeEngine); }
 
     // parent will start with -1
     int FolderWindow::CreateTreeRec(int parent, const std::filesystem::path& path)
@@ -595,6 +591,8 @@ namespace ToolKit
           } while (view = view->next_sibling("FolderView"));
         }
       }
+
+      Iterate(ResourcePath(), true);
     }
 
   } // namespace Editor
