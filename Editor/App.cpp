@@ -626,20 +626,23 @@ namespace ToolKit
         float w            = (float) GetEngineSettings().Window.Width;
         float h            = (float) GetEngineSettings().Window.Height;
         Vec2 vpSize        = Vec2(w, h) * 0.8f;
-        EditorViewport* vp = new EditorViewport(vpSize);
-        vp->m_name         = g_3dViewport;
+        EditorViewport* vp = new EditorViewport();
+        vp->Init(vpSize);
+        vp->m_name = g_3dViewport;
         vp->GetCamera()->m_node->SetTranslation({5.0f, 3.0f, 5.0f});
         vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f));
         m_windows.push_back(vp);
 
         // 2d viewport.
-        vp         = new EditorViewport2d(vpSize);
+        vp = new EditorViewport2d();
+        vp->Init(vpSize);
         vp->m_name = g_2dViewport;
         vp->GetCamera()->m_node->SetTranslation(Z_AXIS);
         m_windows.push_back(vp);
 
         // Isometric viewport.
-        vp         = new EditorViewport(vpSize);
+        vp = new EditorViewport();
+        vp->Init(vpSize);
         vp->m_name = g_IsoViewport;
         vp->GetCamera()->m_node->SetTranslation({0.0f, 10.0f, 0.0f});
         vp->GetCamera()->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
@@ -1357,7 +1360,8 @@ namespace ToolKit
     void App::CreateSimulationWindow(float width, float height)
     {
       SafeDel(m_simulationWindow);
-      m_simulationWindow         = new EditorViewport(m_simulatorSettings.Width, m_simulatorSettings.Height);
+      m_simulationWindow = new EditorViewport();
+      m_simulationWindow->Init({m_simulatorSettings.Width, m_simulatorSettings.Height});
 
       m_simulationWindow->m_name = g_simulationViewport;
       m_simulationWindow->m_additionalWindowFlags =

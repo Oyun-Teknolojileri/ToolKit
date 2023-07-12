@@ -667,9 +667,11 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Add Viewport", "Alt+V"))
         {
-          EditorViewport* vp = new EditorViewport(640, 480);
+          EditorViewport* vp = new EditorViewport();
+          vp->Init({640.0f, 480.0f});
           g_app->m_windows.push_back(vp);
         }
+
         ImGui::EndMenu();
       }
 

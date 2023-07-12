@@ -81,7 +81,7 @@ namespace ToolKit
     class PreviewViewport : public EditorViewport
     {
      public:
-      PreviewViewport(uint width, uint height);
+      PreviewViewport();
       ~PreviewViewport();
       void Show() override;
       ScenePtr GetScene();

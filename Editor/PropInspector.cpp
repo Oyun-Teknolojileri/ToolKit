@@ -203,7 +203,7 @@ namespace ToolKit
     // PreviewViewport
     //////////////////////////////////////////////////////////////////////////
 
-    PreviewViewport::PreviewViewport(uint width, uint height) : EditorViewport((float) width, (float) height)
+    PreviewViewport::PreviewViewport()
     {
       m_previewRenderer                            = std::make_shared<SceneRenderer>();
       m_previewRenderer->m_params.Cam              = GetCamera();

@@ -40,12 +40,6 @@ namespace ToolKit
 
     EditorViewport2d::EditorViewport2d() {}
 
-    EditorViewport2d::EditorViewport2d(XmlNode* node) : EditorViewport(node) { InitViewport(); }
-
-    EditorViewport2d::EditorViewport2d(float width, float height) : EditorViewport(width, height) { InitViewport(); }
-
-    EditorViewport2d::EditorViewport2d(const Vec2& size) : EditorViewport2d(size.x, size.y) {}
-
     EditorViewport2d::~EditorViewport2d()
     {
       SafeDel(m_anchorMode);
@@ -53,6 +47,12 @@ namespace ToolKit
       {
         SafeDel(m_2dViewOptions);
       }
+    }
+
+    void EditorViewport2d::Init(Vec2 size)
+    {
+      EditorViewport::Init(size);
+      InitViewport();
     }
 
     Window::Type EditorViewport2d::GetType() const { return Type::Viewport2d; }

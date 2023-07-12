@@ -38,9 +38,10 @@ namespace ToolKit
   {
     MeshView::MeshView() : View("Mesh View")
     {
-      m_viewID        = 3;
-      m_viewIcn       = UI::m_meshIcon;
-      m_viewport      = new PreviewViewport(300, 300);
+      m_viewID   = 3;
+      m_viewIcn  = UI::m_meshIcon;
+      m_viewport = new PreviewViewport();
+      m_viewport->Init({300.0f, 300.0f});
 
       ScenePtr scene  = GetSceneManager()->Create<Scene>(ScenePath("mesh-view.scene", true));
       m_previewEntity = scene->GetFirstByTag("target");

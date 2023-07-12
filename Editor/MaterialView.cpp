@@ -44,10 +44,11 @@ namespace ToolKit
 
     MaterialView::MaterialView() : View("Material View")
     {
-      m_viewID    = 3;
-      m_viewIcn   = UI::m_materialIcon;
+      m_viewID   = 3;
+      m_viewIcn  = UI::m_materialIcon;
 
-      m_viewport  = new PreviewViewport(300u, 150u);
+      m_viewport = new PreviewViewport();
+      m_viewport->Init({300.0f, 150.0f});
 
       m_scenes[0] = GetSceneManager()->Create<Scene>(ScenePath("ms-sphere.scene", true));
       m_scenes[1] = GetSceneManager()->Create<Scene>(ScenePath("ms-box.scene", true));

@@ -76,20 +76,7 @@ namespace ToolKit
       }
     }
 
-    EditorViewport::EditorViewport() { Init(); }
-
-    EditorViewport::EditorViewport(XmlNode* node)
-    {
-      DeSerialize(nullptr, node);
-      m_needsResize = true;
-      ComitResize();
-      InitOverlays(this);
-      m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
-    }
-
-    EditorViewport::EditorViewport(const Vec2& size) : EditorViewport(size.x, size.y) {}
-
-    EditorViewport::EditorViewport(float width, float height) : Viewport(width, height) { Init(); }
+    EditorViewport::EditorViewport() { m_name = g_viewportStr + " " + std::to_string(m_id); }
 
     EditorViewport::~EditorViewport() {}
 
@@ -779,9 +766,10 @@ namespace ToolKit
       }
     }
 
-    void EditorViewport::Init()
+    void EditorViewport::Init(Vec2 size)
     {
-      m_name = g_viewportStr + " " + std::to_string(m_id);
+      m_needsResize = true;
+      ComitResize();
       InitOverlays(this);
       m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
     }
