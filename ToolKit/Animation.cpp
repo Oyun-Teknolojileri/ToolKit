@@ -181,59 +181,18 @@ namespace ToolKit
       return;
     }
 
-    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
+    SerializationFileInfo info;
+    info.File       = GetFile();
+
+    XmlFilePtr file = GetFileManager()->GetXmlFile(info.File);
     XmlDocument doc;
     doc.parse<0>(file->data());
 
-    XmlNode* node = doc.first_node("anim");
-    if (node == nullptr)
-    {
-      return;
-    }
+    info.Document     = &doc;
+    XmlNode* rootNode = doc.first_node("anim");
+    ReadAttr(rootNode, XmlVersion.data(), info.Version);
 
-    XmlAttribute* attr = node->first_attribute("fps");
-    m_fps              = static_cast<float>(std::atof(attr->value()));
-
-    attr               = node->first_attribute("duration");
-    m_duration         = static_cast<float>(std::atof(attr->value()));
-
-    for (XmlNode* animNode = node->first_node("node"); animNode; animNode = animNode->next_sibling())
-    {
-      attr            = animNode->first_attribute(XmlNodeName.data());
-      String boneName = attr->value();
-
-      // Serialized as base64
-      if (XmlAttribute* keyCountAttr = animNode->first_attribute("KeyCount"))
-      {
-        uint keyCount = 0;
-        ReadAttr(animNode, "KeyCount", keyCount);
-        KeyArray& keys = m_keys[boneName];
-        keys.resize(keyCount);
-        XmlNode* b64Node = animNode->first_node("Base64");
-        b64tobin(keys.data(), b64Node->value());
-      }
-      else
-      {
-        // Serialized as xml
-        for (XmlNode* keyNode = animNode->first_node("key"); keyNode; keyNode = keyNode->next_sibling())
-        {
-          Key key;
-          attr             = keyNode->first_attribute("frame");
-          key.m_frame      = std::atoi(attr->value());
-
-          XmlNode* subNode = keyNode->first_node("translation");
-          ReadVec(subNode, key.m_position);
-
-          subNode = keyNode->first_node("scale");
-          ReadVec(subNode, key.m_scale);
-
-          subNode = keyNode->first_node("rotation");
-          ReadVec(subNode, key.m_rotation);
-
-          m_keys[boneName].push_back(key);
-        }
-      }
-    }
+    DeSerialize(info, nullptr);
 
     m_loaded = true;
   }
@@ -287,6 +246,61 @@ namespace ToolKit
     }
 
     return container;
+  }
+
+  XmlNode* Animation::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* node = info.Document->first_node("anim");
+    if (node == nullptr)
+    {
+      return;
+    }
+
+    XmlAttribute* attr = node->first_attribute("fps");
+    m_fps              = (float) (std::atof(attr->value()));
+
+    attr               = node->first_attribute("duration");
+    m_duration         = (float) (std::atof(attr->value()));
+
+    for (XmlNode* animNode = node->first_node("node"); animNode; animNode = animNode->next_sibling())
+    {
+      attr            = animNode->first_attribute(XmlNodeName.data());
+      String boneName = attr->value();
+
+      // Serialized as base64
+      if (XmlAttribute* keyCountAttr = animNode->first_attribute("KeyCount"))
+      {
+        uint keyCount = 0;
+        ReadAttr(animNode, "KeyCount", keyCount);
+        KeyArray& keys = m_keys[boneName];
+        keys.resize(keyCount);
+        XmlNode* b64Node = animNode->first_node("Base64");
+        b64tobin(keys.data(), b64Node->value());
+      }
+      else
+      {
+        // Serialized as xml
+        for (XmlNode* keyNode = animNode->first_node("key"); keyNode; keyNode = keyNode->next_sibling())
+        {
+          Key key;
+          attr             = keyNode->first_attribute("frame");
+          key.m_frame      = std::atoi(attr->value());
+
+          XmlNode* subNode = keyNode->first_node("translation");
+          ReadVec(subNode, key.m_position);
+
+          subNode = keyNode->first_node("scale");
+          ReadVec(subNode, key.m_scale);
+
+          subNode = keyNode->first_node("rotation");
+          ReadVec(subNode, key.m_rotation);
+
+          m_keys[boneName].push_back(key);
+        }
+      }
+    }
+
+    return nullptr;
   }
 
   void Animation::Init(bool flushClientSideArray) { m_initiated = true; }

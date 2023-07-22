@@ -88,7 +88,7 @@ namespace ToolKit
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    private:
     void CopyTo(Resource* other) override;

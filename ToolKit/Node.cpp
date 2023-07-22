@@ -282,7 +282,7 @@ namespace ToolKit
     return node;
   }
 
-  void Node::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Node::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     XmlNode* node = parent;
     if (node == nullptr)
@@ -311,6 +311,8 @@ namespace ToolKit
     {
       ReadVec(n, m_scale);
     }
+
+    return nullptr;
   }
 
   void Node::SetInheritScaleDeep(bool val)

@@ -545,7 +545,7 @@ namespace ToolKit
      * @param doc The xml document object to read from.
      * @param parent The parent xml node to read from.
      */
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     /**
@@ -674,7 +674,7 @@ namespace ToolKit
      * @param doc The xml document object to read from.
      * @param parent The parent xml node to read from.
      */
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     /**

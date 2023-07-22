@@ -107,7 +107,11 @@ namespace ToolKit
     return nullptr;
   }
 
-  void Resource::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { assert(false && "Not implemented"); }
+  XmlNode* Resource::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    assert(false && "Not implemented");
+    return nullptr;
+  }
 
   void Resource::SerializeRef(XmlDocument* doc, XmlNode* parent) const
   {

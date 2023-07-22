@@ -98,7 +98,7 @@ namespace ToolKit
 
    protected:
     virtual XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
-    virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent);
+    virtual XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent);
 
    private:
     friend class Renderer;

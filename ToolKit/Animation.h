@@ -129,11 +129,6 @@ namespace ToolKit
     void Reverse();
 
     /**
-     * Save animation to disk
-     */
-    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-
-    /**
      * Finds nearest keys and interpolation ratio for current time.
      * @param keys animation key array.
      * @param key1 output key 1.
@@ -145,6 +140,9 @@ namespace ToolKit
 
    protected:
     void CopyTo(Resource* other) override;
+
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     /**

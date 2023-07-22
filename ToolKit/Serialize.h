@@ -31,6 +31,13 @@
 namespace ToolKit
 {
 
+  struct SerializationFileInfo
+  {
+    String File;
+    String Version;
+    XmlDocument* Document = nullptr;
+  };
+
   class TK_API Serializable
   {
    public:
@@ -41,11 +48,11 @@ namespace ToolKit
       PostSerializeImp(doc, parent);
     }
 
-    void DeSerialize(XmlDocument* doc, XmlNode* parent)
+    void DeSerialize(const SerializationFileInfo& info, XmlNode* parent)
     {
-      PreDeserializeImp(doc, parent);
-      DeSerializeImp(doc, parent);
-      PostDeSerializeImp(doc, parent);
+      PreDeserializeImp(info, parent);
+      DeSerializeImp(info, parent);
+      PostDeSerializeImp(info, parent);
     }
 
    protected:
@@ -63,11 +70,11 @@ namespace ToolKit
 
     virtual void PostSerializeImp(XmlDocument* doc, XmlNode* parent) const {}
 
-    virtual void PreDeserializeImp(XmlDocument* doc, XmlNode* parent) {}
+    virtual void PreDeserializeImp(const SerializationFileInfo& info, XmlNode* parent) {}
 
-    virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent) = 0;
+    virtual XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) = 0;
 
-    virtual void PostDeSerializeImp(XmlDocument* doc, XmlNode* parent) {}
+    virtual void PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) {}
 
    public:
     String m_version = TKVersionStr;

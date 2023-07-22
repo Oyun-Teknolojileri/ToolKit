@@ -268,6 +268,7 @@ namespace ToolKit
   static const StringView XmlObjectElement("Ob");
   static const StringView XmlObjectIdAttr("i");
   static const StringView XmlComponentArrayElement("Ca");
+  static const StringView XmlVersion("vesion");
 
   enum class AxisLabel
   {

@@ -458,7 +458,7 @@ namespace ToolKit
     return node;
   }
 
-  void ParameterVariant::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* ParameterVariant::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     if (parent == nullptr)
     {
@@ -481,7 +481,7 @@ namespace ToolKit
 
     std::function<void(XmlNode*, ParameterVariant*)> deserializeDataFn;
 
-    deserializeDataFn = [&doc, &deserializeDataFn](XmlNode* parent, ParameterVariant* pVar)
+    deserializeDataFn = [&deserializeDataFn](XmlNode* parent, ParameterVariant* pVar)
     {
       switch (pVar->GetType())
       {
@@ -715,7 +715,10 @@ namespace ToolKit
         break;
       }
     };
+
     deserializeDataFn(parent, this);
+    
+    return nullptr;
   }
 
   XmlNode* ParameterBlock::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -730,7 +733,7 @@ namespace ToolKit
     return blockNode;
   }
 
-  void ParameterBlock::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* ParameterBlock::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     if (XmlNode* block = parent->first_node(XmlParamBlockElement.c_str()))
     {
@@ -739,7 +742,7 @@ namespace ToolKit
       {
         // Read variant from xml.
         ParameterVariant var;
-        var.DeSerialize(doc, param);
+        var.DeSerialize(info, param);
 
         // Keep the function constructed in ParameterConstructor.
         // Because functions can't be serialized.

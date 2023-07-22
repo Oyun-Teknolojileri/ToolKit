@@ -53,12 +53,18 @@ namespace ToolKit
       return;
     }
 
-    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
+    SerializationFileInfo info;
+    info.File       = GetFile();
+
+    XmlFilePtr file = GetFileManager()->GetXmlFile(info.File);
     XmlDocument doc;
     doc.parse<0>(file->data());
 
+    info.Document     = &doc;
     XmlNode* rootNode = doc.first_node("material");
-    DeSerialize(&doc, rootNode);
+    ReadAttr(rootNode, XmlVersion.data(), info.Version);
+
+    DeSerialize(info, rootNode);
 
     m_loaded = true;
   }
@@ -308,7 +314,7 @@ namespace ToolKit
     return container;
   }
 
-  void Material::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Material::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     if (parent == nullptr)
     {
@@ -361,7 +367,7 @@ namespace ToolKit
       }
       else if (strcmp("renderState", node->name()) == 0)
       {
-        m_renderState.DeSerialize(doc, parent);
+        m_renderState.DeSerialize(info, parent);
       }
       else if (strcmp("emissiveTexture", node->name()) == 0)
       {
@@ -440,6 +446,8 @@ namespace ToolKit
         }
       }
     }
+
+    return nullptr;
   }
 
   MaterialManager::MaterialManager() { m_type = ResourceType::Material; }

@@ -57,7 +57,7 @@ namespace ToolKit
     return container;
   }
 
-  void RenderState::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* RenderState::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     if (parent == nullptr)
     {
@@ -139,6 +139,8 @@ namespace ToolKit
       };
       validateDrawFn(drawType);
     }
+
+    return nullptr;
   }
 
 } // namespace ToolKit

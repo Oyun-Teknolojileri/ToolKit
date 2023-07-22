@@ -71,7 +71,7 @@ namespace ToolKit
     } PostProcessing;
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     void SerializeWindow(XmlDocument* doc, XmlNode* parent) const;
     void DeSerializeWindow(XmlDocument* doc, XmlNode* parent);

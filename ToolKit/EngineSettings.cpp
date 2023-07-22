@@ -148,12 +148,13 @@ namespace ToolKit
     return nullptr;
   }
 
-  void EngineSettings::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* EngineSettings::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    assert(doc && "doc must not be null");
-    DeSerializeWindow(doc, parent);
-    DeSerializeGraphics(doc, parent);
-    DeSerializePostProcessing(doc, parent);
+    DeSerializeWindow(info.Document, parent);
+    DeSerializeGraphics(info.Document, parent);
+    DeSerializePostProcessing(info.Document, parent);
+
+    return nullptr;
   }
 
 } // namespace ToolKit
