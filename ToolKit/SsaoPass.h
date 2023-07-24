@@ -54,7 +54,6 @@ namespace ToolKit
     TexturePtr GNormalBuffer             = nullptr;
     TexturePtr GLinearDepthBuffer        = nullptr;
     Camera* Cam                          = nullptr;
-
     /**
      * How far the samples will be taken from.
      */

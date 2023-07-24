@@ -48,14 +48,10 @@
 			vec3 irradiance = vec3(0.0);
 			irradiance = PBRLightingDeferred(position, n, e, color, metallicRoughness.r, metallicRoughness.g);
 
-			float ambientOcclusion;
+			float ambientOcclusion = 1.0;
 			if (aoEnabled == 1)
 			{
 				ambientOcclusion = AmbientOcclusion();
-			}
-			else
-			{
-				ambientOcclusion = 1.0;
 			}
 
 			irradiance += ibl;

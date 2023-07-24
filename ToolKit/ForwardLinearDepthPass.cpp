@@ -72,7 +72,6 @@ namespace ToolKit
     m_framebuffer->SetDepthFromOther(m_params.gFrameBuffer);
 
     Renderer* renderer = GetRenderer();
-    renderer->ResetTextureSlots();
     renderer->SetFramebuffer(m_framebuffer, false);
     renderer->SetCameraLens(m_params.Cam);
   }

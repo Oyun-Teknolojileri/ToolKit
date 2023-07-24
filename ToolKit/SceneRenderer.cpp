@@ -253,8 +253,8 @@ namespace ToolKit
     m_dofPass->m_params.blurQuality = m_params.Gfx.DofQuality;
 
     // Tonemap pass.
-    m_tonemapPass->m_params.FrameBuffer = m_params.MainFramebuffer;
-    m_tonemapPass->m_params.Method      = m_params.Gfx.TonemapperMode;
+    m_tonemapPass->m_params.FrameBuffer   = m_params.MainFramebuffer;
+    m_tonemapPass->m_params.Method        = m_params.Gfx.TonemapperMode;
 
     // FXAA Pass
     m_fxaaPass->m_params.FrameBuffer    = m_params.MainFramebuffer;
