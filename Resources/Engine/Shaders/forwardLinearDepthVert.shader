@@ -1,11 +1,11 @@
 <shader>
-	  <type name = "vertexShader" />
-	  <include name = "skinning.shader" />
-  	<uniform name = "ProjectViewModel" />
-	  <uniform name = "Model" />
-	  <uniform name = "View" />
-	  <uniform name = "InverseTransModel" />
-	<source>
+  <type name = "vertexShader" />
+  <include name = "skinning.shader" />
+  <uniform name = "ProjectViewModel" />
+  <uniform name = "Model" />
+  <uniform name = "View" />
+  <uniform name = "InverseTransModel" />
+  <source>
 	<!--
       #version 300 es
       precision highp int;
