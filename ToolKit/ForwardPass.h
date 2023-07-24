@@ -35,6 +35,9 @@ namespace ToolKit
   {
     Camera* Cam                    = nullptr;
     FramebufferPtr FrameBuffer     = nullptr;
+    FramebufferPtr gFrameBuffer    = nullptr;
+    RenderTargetPtr gNormalRt      = nullptr;
+    RenderTargetPtr gLinearRt      = nullptr;
     bool ClearFrameBuffer          = true;  //!< Clears whole buffer
     bool ClearDepthBuffer          = false; //!< Clears only depth buffer.
     RenderJobArray OpaqueJobs      = {};
@@ -80,5 +83,4 @@ namespace ToolKit
   };
 
   typedef std::shared_ptr<ForwardRenderPass> ForwardRenderPassPtr;
-
 } // namespace ToolKit

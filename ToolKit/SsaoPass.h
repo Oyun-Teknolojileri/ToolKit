@@ -50,10 +50,10 @@ namespace ToolKit
 
   struct SSAOPassParams
   {
-    TexturePtr GPositionBuffer    = nullptr;
-    TexturePtr GNormalBuffer      = nullptr;
-    TexturePtr GLinearDepthBuffer = nullptr;
-    Camera* Cam                   = nullptr;
+    TexturePtr GPositionBuffer           = nullptr;
+    TexturePtr GNormalBuffer             = nullptr;
+    TexturePtr GLinearDepthBuffer        = nullptr;
+    Camera* Cam                          = nullptr;
 
     /**
      * How far the samples will be taken from.

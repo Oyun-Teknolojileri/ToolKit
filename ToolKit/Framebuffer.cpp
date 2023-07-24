@@ -74,6 +74,8 @@ namespace ToolKit
 
     if (m_settings.useDefaultDepth)
     {
+      RenderTargetPtr defaultDepthRt = std::make_shared<RenderTarget>();
+
       GLint lastFBO;
       glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
 
@@ -133,6 +135,26 @@ namespace ToolKit
       m_settings.width  = width;
       m_settings.height = height;
       Init(m_settings);
+    }
+  }
+  
+  void Framebuffer::SetDepthFromOther(FramebufferPtr fb)
+  {
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
+    GLenum attachment = GL_DEPTH_ATTACHMENT;
+    GLenum component  = GL_DEPTH_COMPONENT24;
+    if (fb->m_settings.depthStencil)
+    {
+      component  = GL_DEPTH24_STENCIL8;
+      attachment = GL_DEPTH_STENCIL_ATTACHMENT;
+    }
+     // Attach depth buffer to FBO
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, fb->m_defaultRboId);
+
+    // Check if framebuffer is complete
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        GetLogger()->Log("Error: Framebuffer incomplete!");
     }
   }
 

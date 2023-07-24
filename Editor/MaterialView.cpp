@@ -201,7 +201,9 @@ namespace ToolKit
         if (ImGui::CollapsingHeader("Shaders"))
         {
           ImGui::BeginGroup();
-          ImGui::LabelText("##vertShader", "Vertex Shader: ");
+          const String& vertPath = mat->m_vertexShader->GetFile();
+
+          ImGui::LabelText("##vertex shader: %s", vertPath.substr(vertPath.find_last_of("/\\") + 1).c_str());
           DropZone(UI::m_codeIcon->m_textureId,
                    mat->m_vertexShader->GetFile(),
                    [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
@@ -219,10 +221,12 @@ namespace ToolKit
 
           ImGui::SameLine();
 
-          ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 35.0f);
+          ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 20.0f);
 
           ImGui::BeginGroup();
-          ImGui::LabelText("##fragShader", "Fragment Shader: ");
+          const String& fragPath = mat->m_fragmentShader->GetFile();
+
+          ImGui::LabelText("##fragShader fragment shader: %s", fragPath.substr(fragPath.find_last_of("/\\") + 1).c_str());
           DropZone(UI::m_codeIcon->m_textureId,
                    mat->m_fragmentShader->GetFile(),
                    [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void

@@ -89,6 +89,7 @@ namespace ToolKit
                                   int mip          = 0,
                                   int layer        = -1,
                                   CubemapFace face = CubemapFace::NONE);
+    void SetDepthFromOther(FramebufferPtr rt);
     RenderTargetPtr GetAttachment(Attachment atc);
     void ClearAttachments();
 
@@ -99,8 +100,8 @@ namespace ToolKit
 
     void ReconstructIfNeeded(uint width, uint height);
 
-   private:
     RenderTargetPtr DetachAttachment(Attachment atc);
+   private:
     void DeleteDefaultDepthAttachment();
     void SetDrawBuffers();
     bool IsColorAttachment(Attachment atc);

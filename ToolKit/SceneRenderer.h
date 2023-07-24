@@ -38,6 +38,7 @@
 #include "RenderSystem.h"
 #include "ShadowPass.h"
 #include "SsaoPass.h"
+#include "ForwardLinearDepthPass.h"
 
 namespace ToolKit
 {
@@ -73,17 +74,18 @@ namespace ToolKit
     SceneRenderPassParams m_params;
 
    public:
-    ShadowPassPtr m_shadowPass                 = nullptr;
-    ForwardRenderPassPtr m_forwardRenderPass   = nullptr;
-    CubeMapPassPtr m_skyPass                   = nullptr;
-    GBufferPassPtr m_gBufferPass               = nullptr;
-    DeferredRenderPassPtr m_deferredRenderPass = nullptr;
-    SSAOPassPtr m_ssaoPass                     = nullptr;
-    FXAAPassPtr m_fxaaPass                     = nullptr;
-    GammaPassPtr m_gammaPass                   = nullptr;
-    BloomPassPtr m_bloomPass                   = nullptr;
-    TonemapPassPtr m_tonemapPass               = nullptr;
-    DoFPassPtr m_dofPass                       = nullptr;
+    ShadowPassPtr m_shadowPass                         = nullptr;
+    ForwardRenderPassPtr m_forwardRenderPass           = nullptr;
+    ForwardLinearDepthPassPtr m_forwardLinearDepthPass = nullptr;
+    CubeMapPassPtr m_skyPass                           = nullptr;
+    GBufferPassPtr m_gBufferPass                       = nullptr;
+    DeferredRenderPassPtr m_deferredRenderPass         = nullptr;
+    SSAOPassPtr m_ssaoPass                             = nullptr;
+    FXAAPassPtr m_fxaaPass                             = nullptr;
+    GammaPassPtr m_gammaPass                           = nullptr;
+    BloomPassPtr m_bloomPass                           = nullptr;
+    TonemapPassPtr m_tonemapPass                       = nullptr;
+    DoFPassPtr m_dofPass                               = nullptr;
     LightRawPtrArray m_updatedLights;
 
    private:

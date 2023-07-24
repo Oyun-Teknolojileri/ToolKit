@@ -29,6 +29,7 @@
 		uniform sampler2D s_texture1; // emissive
 		uniform sampler2D s_texture4; // metallic-roughness
 		uniform sampler2D s_texture9; // normal
+
 		uniform int LightingOnly;
 		uniform int useAlphaMask;
 		uniform float alphaMaskTreshold;
@@ -48,7 +49,8 @@
 		in vec2 v_texture;
 		in mat3 TBN;
 
-		out vec4 fragColor;
+		layout (location = 0) out vec4 fragColor;
+		// layout (location = 1) out vec3 normalColor;
 
 		void main()
 		{
@@ -108,9 +110,8 @@
 
 			irradiance += IBLPBR(n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
 
-			// float ambientOcclusion = AmbientOcclusion();
-
-			fragColor = vec4(irradiance, color.a) + vec4(emissive, 0.0f);
+			float ambientOcclusion = AmbientOcclusion();
+			fragColor   = vec4(irradiance * ambientOcclusion, color.a) + vec4(emissive, 0.0f);
 		}
 	-->
 	</source>
