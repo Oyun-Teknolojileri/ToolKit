@@ -25,28 +25,25 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     renderer->CopyTexture(m_params.gNormalRt, m_normalMergeRt);
 
-    for (RenderJob& job : m_params.OpaqueJobs)
+    const auto renderLinearDepthAndNormalFn = [this, renderer](RenderJobArray& renderJobArray) 
     {
-      MaterialPtr activeMaterial = job.Material;
-      m_linearMaterial->SetRenderState(activeMaterial->GetRenderState());
-      m_linearMaterial->UnInit();
+      for (RenderJob& job : renderJobArray)
+      {
+        MaterialPtr activeMaterial = job.Material;
+        RenderState* renderstate   = activeMaterial->GetRenderState();
+        BlendFunction beforeBlendFunc = renderstate->blendFunction;
+        renderstate->blendFunction = BlendFunction::NONE;
+        m_linearMaterial->SetRenderState(renderstate);
+        m_linearMaterial->UnInit();
 
-      renderer->m_overrideMat = m_linearMaterial;
-      renderer->Render(job, m_params.Cam, {});
-    }
-
-    for (RenderJob& job : m_params.TranslucentJobs)
-    {
-      MaterialPtr activeMaterial = job.Material;
-      RenderState* renderstate   = activeMaterial->GetRenderState();
-      renderstate->blendFunction = BlendFunction::NONE;
-      m_linearMaterial->SetRenderState(renderstate);
-      m_linearMaterial->UnInit();
-
-      renderer->m_overrideMat = m_linearMaterial;
-      renderer->Render(job, m_params.Cam, {});
-      renderstate->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-    }
+        renderer->m_overrideMat = m_linearMaterial;
+        renderer->Render(job, m_params.Cam, {});
+        renderstate->blendFunction = beforeBlendFunc;
+      }
+    };
+    
+    renderLinearDepthAndNormalFn(m_params.OpaqueJobs); 
+    renderLinearDepthAndNormalFn(m_params.TranslucentJobs); 
   }
 
   void ForwardLinearDepth::PreRender()
