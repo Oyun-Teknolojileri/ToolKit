@@ -48,25 +48,11 @@ namespace ToolKit
 
   void Material::Load()
   {
-    if (m_loaded)
+    if (!m_loaded)
     {
-      return;
+      ParseDocument("material");
+      m_loaded = true;
     }
-
-    SerializationFileInfo info;
-    info.File       = GetFile();
-
-    XmlFilePtr file = GetFileManager()->GetXmlFile(info.File);
-    XmlDocument doc;
-    doc.parse<0>(file->data());
-
-    info.Document     = &doc;
-    XmlNode* rootNode = doc.first_node("material");
-    ReadAttr(rootNode, XmlVersion.data(), info.Version);
-
-    DeSerialize(info, rootNode);
-
-    m_loaded = true;
   }
 
   void Material::Save(bool onlyIfDirty)
@@ -316,11 +302,6 @@ namespace ToolKit
 
   XmlNode* Material::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (parent == nullptr)
-    {
-      return;
-    }
-
     XmlNode* rootNode = parent;
     for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
     {

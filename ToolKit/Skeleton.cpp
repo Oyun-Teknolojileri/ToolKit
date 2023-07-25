@@ -42,12 +42,7 @@ namespace ToolKit
 
   StaticBone::StaticBone(const String& name) { m_name = name; }
 
-  StaticBone::~StaticBone()
-  {
-    /*
-    m_node->m_parent = nullptr;
-    m_node->m_children.clear();*/
-  }
+  StaticBone::~StaticBone() {}
 
   // Create a texture such that there is mat4x4 per bone
   TexturePtr CreateBoneTransformTexture(const Skeleton* skeleton)
@@ -218,37 +213,6 @@ namespace ToolKit
 
   void Skeleton::UnInit()
   {
-    /*
-    uint32_t deletedCount = 0;
-    std::function<void(const StaticBone*)> deleteBone =
-        [this, &deleteBone, &deletedCount](
-            const StaticBone* parentBone) -> void {
-      for (Node* childNode : parentBone->m_node->m_children)
-      {
-        // Find child bone
-        StaticBone* childBone = nullptr;
-        for (StaticBone* boneSearch : this->m_bones)
-        {
-          if (boneSearch->m_node == childNode)
-          {
-            childBone = boneSearch;
-            break;
-          }
-        }
-        // If child node is a bone of the skeleton
-        if (childBone)
-        {
-          deleteBone(childBone);
-        }
-      }
-      deletedCount++;
-      SafeDel(parentBone);
-    };
-    ForEachChildBoneNode(this, deleteBone);
-    m_node->m_children.clear();
-    SafeDel(m_node);
-    */
-
     for (StaticBone* sBone : m_bones)
     {
       SafeDel(sBone);
@@ -259,13 +223,9 @@ namespace ToolKit
 
   void Skeleton::Load()
   {
-    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
-    XmlDocument doc;
-    doc.parse<0>(file->data());
-
-    if (XmlNode* node = doc.first_node("skeleton"))
+    if (!m_loaded)
     {
-      DeSerialize(&doc, node);
+      ParseDocument("skeleton");
       m_loaded = true;
     }
   }
@@ -404,12 +364,8 @@ namespace ToolKit
     }
   }
 
-  void Skeleton::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Skeleton::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (parent == nullptr)
-    {
-      return;
-    }
 
     for (XmlNode* node = parent->first_node("bone"); node; node = node->next_sibling())
     {
@@ -422,7 +378,7 @@ namespace ToolKit
       uploadBoneMatrix(m_bones[boneIndx]->m_inverseWorldMatrix, m_bindPoseTexture, static_cast<uint>(boneIndx));
     }
 
-    m_loaded = true;
+    return nullptr;
   }
 
   int Skeleton::GetBoneIndex(const String& bone)

@@ -163,20 +163,9 @@ namespace ToolKit
 
   void Mesh::Load()
   {
-    if (m_loaded)
+    if (!m_loaded)
     {
-      return;
-    }
-
-    String path = GetFile();
-    NormalizePath(path);
-    XmlFilePtr file = GetFileManager()->GetXmlFile(path);
-    XmlDocument doc;
-    doc.parse<0>(file->data());
-
-    if (XmlNode* node = doc.first_node("meshContainer"))
-    {
-      DeSerialize(&doc, node);
+      ParseDocument("meshContainer");
       m_loaded = true;
     }
   }
@@ -419,11 +408,6 @@ namespace ToolKit
   template <typename T>
   void LoadMesh(XmlDocument* doc, XmlNode* parent, T* mainMesh)
   {
-    if (parent == nullptr)
-    {
-      return;
-    }
-
     mainMesh->m_aabb = BoundingBox();
 
     T* mesh          = mainMesh;
@@ -549,7 +533,10 @@ namespace ToolKit
     return container;
   }
 
-  void Mesh::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { LoadMesh(doc, parent, this); }
+  XmlNode* Mesh::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    LoadMesh(info.Document, parent, this);
+  }
 
   void TraverseMeshHelper(const Mesh* mesh, std::function<void(const Mesh*)> callback)
   {
@@ -684,7 +671,10 @@ namespace ToolKit
     }
   }
 
-  void SkinMesh::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { LoadMesh(doc, parent, this); }
+  XmlNode* SkinMesh::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    LoadMesh(info.Document, parent, this);
+  }
 
   BoundingBox SkinMesh::CalculateAABB(const Skeleton* skel, DynamicBoneMapPtr boneMap)
   {

@@ -59,7 +59,12 @@ namespace ToolKit
     return componentNode;
   }
 
-  void Component::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { m_localData.DeSerialize(doc, parent); }
+  XmlNode* Component::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    parent               = Super::DeSerializeImp(info, parent);
+    XmlNode* xmlCompNode = parent->first_node(StaticClass()->Name.c_str());
+    return xmlCompNode;
+  }
 
   Component* ComponentFactory::Create(ComponentType cls)
   {

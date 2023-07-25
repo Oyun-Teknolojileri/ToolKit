@@ -91,11 +91,16 @@ namespace ToolKit
 
     const String& GetFile() const;
     /**
-     * Returns _missingFile if not empty to prevent override actual resource
-     * file.
+     * Returns _missingFile if not empty to prevent override actual resource file.
      * Always call this if you are in Serialize function.
+     * @returns A file path that preserves the original file path in case of a missing file.
      */
     const String& GetSerializeFile() const;
+
+    /**
+     * Sets the file for this resource.
+     * @param file is path to resource file.
+     */
     void SetFile(const String& file);
 
     /**
@@ -108,6 +113,12 @@ namespace ToolKit
    protected:
     virtual void CopyTo(Resource* other);
 
+    /**
+     * Create SerializationFileInfo structure and pass it to DeSerializeImp.
+     * @param firstNode is the name of root node of the xml file of this resource.
+     */
+    void ParseDocument(StringView firstNode);
+
    public:
     String m_name;
     ULongID m_id;
@@ -115,7 +126,12 @@ namespace ToolKit
     bool m_loaded    = false;
     bool m_initiated = false;
 
-    // Internal usage.
+    /**
+     * Internal usage.
+     * When a file can't be located, a default resource gets assigned to the resource.
+     * This member gets written with the original file. Purpose is to prevent data loss.
+     * Because otherwise default resource' file gets written in place of original file.
+     */
     String _missingFile;
 
    private:

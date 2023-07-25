@@ -72,7 +72,7 @@ namespace ToolKit
     void SetMaterial(MaterialPtr material);
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     /**
      * Traverse all submeshes recursively.
@@ -134,7 +134,7 @@ namespace ToolKit
     int GetVertexSize() const override;
     bool IsSkinned() const override;
 
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     // Because AABB is all dependent on active animation, just return AABB
     // (doesn't change m_aabb)

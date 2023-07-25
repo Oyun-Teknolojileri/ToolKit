@@ -26,6 +26,7 @@
 
 #include "Resource.h"
 
+#include "FileManager.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -97,6 +98,25 @@ namespace ToolKit
     other->m_dirty     = m_dirty;
     other->m_loaded    = m_loaded;
     other->m_initiated = m_initiated;
+  }
+
+  void Resource::ParseDocument(StringView firstNode)
+  {
+    SerializationFileInfo info;
+    info.File       = GetSerializeFile();
+
+    XmlFilePtr file = GetFileManager()->GetXmlFile(info.File);
+    XmlDocument doc;
+    doc.parse<0>(file->data());
+
+    info.Document = &doc;
+    if (XmlNode* rootNode = doc.first_node(firstNode.data()))
+    {
+      ReadAttr(rootNode, XmlVersion.data(), info.Version);
+      m_version = info.Version;
+
+      DeSerialize(info, rootNode);
+    }
   }
 
   ResourceType Resource::GetType() const { return ResourceType::Base; }

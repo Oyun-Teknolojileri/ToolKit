@@ -294,7 +294,7 @@ namespace ToolKit
      * @param doc The XML document to deserialize from.
      * @param parent The parent XML node to deserialize from.
      */
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     void DeSerializeImpV045(XmlDocument* doc, XmlNode* parent); //!< Deserialize files with version v0.4.5
 

@@ -81,7 +81,7 @@ namespace ToolKit
     void UnInit() override;
     void Load() override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     int GetBoneIndex(const String& bone);
     StaticBone* GetBone(const String& bone);

@@ -101,7 +101,7 @@ namespace ToolKit
      * De serialize the Component's ParameterBlock from given xml node
      * and document.
      */
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     Entity* m_entity = nullptr; //!< Parent Entity of the component.

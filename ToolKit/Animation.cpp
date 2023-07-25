@@ -176,25 +176,11 @@ namespace ToolKit
 
   void Animation::Load()
   {
-    if (m_loaded)
+    if (!m_loaded)
     {
-      return;
+      ParseDocument("anim");
+      m_loaded = true;
     }
-
-    SerializationFileInfo info;
-    info.File       = GetFile();
-
-    XmlFilePtr file = GetFileManager()->GetXmlFile(info.File);
-    XmlDocument doc;
-    doc.parse<0>(file->data());
-
-    info.Document     = &doc;
-    XmlNode* rootNode = doc.first_node("anim");
-    ReadAttr(rootNode, XmlVersion.data(), info.Version);
-
-    DeSerialize(info, nullptr);
-
-    m_loaded = true;
   }
 
   XmlNode* Animation::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -250,19 +236,13 @@ namespace ToolKit
 
   XmlNode* Animation::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    XmlNode* node = info.Document->first_node("anim");
-    if (node == nullptr)
-    {
-      return;
-    }
-
-    XmlAttribute* attr = node->first_attribute("fps");
+    XmlAttribute* attr = parent->first_attribute("fps");
     m_fps              = (float) (std::atof(attr->value()));
 
-    attr               = node->first_attribute("duration");
+    attr               = parent->first_attribute("duration");
     m_duration         = (float) (std::atof(attr->value()));
 
-    for (XmlNode* animNode = node->first_node("node"); animNode; animNode = animNode->next_sibling())
+    for (XmlNode* animNode = parent->first_node("node"); animNode; animNode = animNode->next_sibling())
     {
       attr            = animNode->first_attribute(XmlNodeName.data());
       String boneName = attr->value();

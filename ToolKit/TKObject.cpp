@@ -107,7 +107,14 @@ namespace ToolKit
     return objNode;
   }
 
-  void TKObject::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { m_localData.DeSerialize(doc, parent); }
+  XmlNode* TKObject::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    assert(parent != nullptr && "Root of the object can't be null.");
+    m_localData.DeSerialize(info, parent);
+
+    // Construction progress from bottom up.
+    return parent;
+  }
 
   TKObjectFactory::TKObjectFactory() { Init(); }
 
