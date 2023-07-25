@@ -38,7 +38,7 @@
 #include "RenderSystem.h"
 #include "ShadowPass.h"
 #include "SsaoPass.h"
-#include "ForwardLinearDepthPass.h"
+#include "ForwardPreProcessPass.h"
 
 namespace ToolKit
 {
@@ -76,7 +76,7 @@ namespace ToolKit
    public:
     ShadowPassPtr m_shadowPass                         = nullptr;
     ForwardRenderPassPtr m_forwardRenderPass           = nullptr;
-    ForwardLinearDepthPassPtr m_forwardPreProcessPass = nullptr;
+    ForwardPreProcessPassPtr   m_forwardPreProcessPass = nullptr;
     CubeMapPassPtr m_skyPass                           = nullptr;
     GBufferPassPtr m_gBufferPass                       = nullptr;
     DeferredRenderPassPtr m_deferredRenderPass         = nullptr;

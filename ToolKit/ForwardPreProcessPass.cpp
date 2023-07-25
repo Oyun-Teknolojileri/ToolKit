@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include "ForwardLinearDepthPass.h"
+#include "ForwardPreProcessPass.h"
 
 #include "stdafx.h"
 
@@ -92,9 +92,10 @@ namespace ToolKit
     m_normalMergeRt->m_settings       = oneChannelSet;
     m_normalMergeRt->ReconstructIfNeeded((uint) width, (uint) height);
 
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.gLinearRt);
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment1, m_normalMergeRt);
-    
+    using FAttachment = Framebuffer::Attachment;
+
+    m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_params.gLinearRt);
+    m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_normalMergeRt);
     m_framebuffer->SetDepthFromOther(m_params.gFrameBuffer);
 
     Renderer* renderer = GetRenderer();

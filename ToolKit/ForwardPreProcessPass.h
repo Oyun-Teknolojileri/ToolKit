@@ -50,6 +50,6 @@ namespace ToolKit
     RenderTargetPtr m_normalMergeRt = nullptr;
   };
 
-  typedef std::shared_ptr<ForwardPreProcess> ForwardLinearDepthPassPtr;
+  typedef std::shared_ptr<ForwardPreProcess> ForwardPreProcessPassPtr;
 
 } // namespace ToolKit
