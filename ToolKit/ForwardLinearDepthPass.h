@@ -33,11 +33,11 @@
 namespace ToolKit
 {
 
-  class TK_API ForwardLinearDepth : public RenderPass
+  class TK_API ForwardPreProcess : public RenderPass
   {
    public:
-    ForwardLinearDepth();
-    ~ForwardLinearDepth();
+    ForwardPreProcess();
+    ~ForwardPreProcess();
 
     void Render() override;
     void PreRender() override;
@@ -50,6 +50,6 @@ namespace ToolKit
     RenderTargetPtr m_normalMergeRt = nullptr;
   };
 
-  typedef std::shared_ptr<ForwardLinearDepth> ForwardLinearDepthPassPtr;
+  typedef std::shared_ptr<ForwardPreProcess> ForwardLinearDepthPassPtr;
 
 } // namespace ToolKit

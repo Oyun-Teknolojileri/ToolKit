@@ -43,7 +43,6 @@
 		uniform float roughness;
 
 		uniform int normalMapInUse;
-		uniform bool aoEnabled;
 
 		in vec3 v_pos;
 		in vec3 v_normal;
@@ -110,12 +109,7 @@
 
 			irradiance += IBLPBR(n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
 
-			float ambientOcclusion = 1.0;
-			if (aoEnabled)
-			{
-				ambientOcclusion = AmbientOcclusion();
-			}
-
+			float ambientOcclusion = AmbientOcclusion();
 			fragColor = vec4(irradiance * ambientOcclusion, color.a) + vec4(emissive, 0.0f);
 		}
 	-->

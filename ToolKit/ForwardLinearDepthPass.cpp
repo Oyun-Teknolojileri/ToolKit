@@ -31,10 +31,10 @@
 namespace ToolKit
 {
 
-  ForwardLinearDepth::ForwardLinearDepth()
+  ForwardPreProcess::ForwardPreProcess()
   {
-    ShaderPtr vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("forwardLinearDepthVert.shader", true));
-    ShaderPtr fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("forwardLinearDepth.shader", true));
+    ShaderPtr vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcessVert.shader", true));
+    ShaderPtr fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcess.shader", true));
 
     m_normalMergeRt  = std::make_shared<RenderTarget>();
     m_framebuffer    = std::make_shared<Framebuffer>();
@@ -44,9 +44,9 @@ namespace ToolKit
     m_linearMaterial->Init();
   }
 
-  ForwardLinearDepth::~ForwardLinearDepth() {}
+  ForwardPreProcess::~ForwardPreProcess() {}
 
-  void ForwardLinearDepth::Render()
+  void ForwardPreProcess::Render()
   {
     Renderer* renderer = GetRenderer();
     renderer->CopyTexture(m_params.gNormalRt, m_normalMergeRt);
@@ -72,7 +72,7 @@ namespace ToolKit
     renderLinearDepthAndNormalFn(m_params.TranslucentJobs); 
   }
 
-  void ForwardLinearDepth::PreRender()
+  void ForwardPreProcess::PreRender()
   {
     RenderPass::PreRender();
 
@@ -102,6 +102,6 @@ namespace ToolKit
     renderer->SetCameraLens(m_params.Cam);
   }
 
-  void ForwardLinearDepth::PostRender() { RenderPass::PostRender(); }
+  void ForwardPreProcess::PostRender() { RenderPass::PostRender(); }
 
 } // namespace ToolKit

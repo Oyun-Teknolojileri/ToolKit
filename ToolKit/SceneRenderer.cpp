@@ -43,7 +43,7 @@ namespace ToolKit
     m_skyPass                = std::make_shared<CubeMapPass>();
     m_gBufferPass            = std::make_shared<GBufferPass>();
     m_deferredRenderPass     = std::make_shared<DeferredRenderPass>();
-    m_forwardLinearDepthPass = std::make_shared<ForwardLinearDepth>();
+    m_forwardPreProcessPass = std::make_shared<ForwardPreProcess>();
     m_ssaoPass               = std::make_shared<SSAOPass>();
     m_tonemapPass            = std::make_shared<TonemapPass>();
     m_fxaaPass               = std::make_shared<FXAAPass>();
@@ -85,7 +85,7 @@ namespace ToolKit
     // Gbuffer for deferred render
     m_passArray.push_back(m_gBufferPass);
     
-    m_passArray.push_back(m_forwardLinearDepthPass);
+    m_passArray.push_back(m_forwardPreProcessPass);
     
     // SSAO pass
     if (m_params.Gfx.SSAOEnabled)
@@ -212,14 +212,15 @@ namespace ToolKit
     m_forwardRenderPass->m_params.gLinearRt        = m_gBufferPass->m_gLinearDepthRt;
     m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.gFrameBuffer     = m_gBufferPass->m_framebuffer;
+    m_forwardRenderPass->m_params.SSAOEnabled      = m_params.Gfx.SSAOEnabled;
     m_forwardRenderPass->m_params.ClearFrameBuffer = false;
     m_forwardRenderPass->m_params.OpaqueJobs       = forward;
     m_forwardRenderPass->m_params.TranslucentJobs  = translucent;
 
-    m_forwardLinearDepthPass->m_params             = m_forwardRenderPass->m_params; 
+    m_forwardPreProcessPass->m_params             = m_forwardRenderPass->m_params; 
 
     m_ssaoPass->m_params.GPositionBuffer           = m_gBufferPass->m_gPosRt;
-    m_ssaoPass->m_params.GNormalBuffer             = m_forwardLinearDepthPass->m_normalMergeRt;
+    m_ssaoPass->m_params.GNormalBuffer             = m_forwardPreProcessPass->m_normalMergeRt;
     m_ssaoPass->m_params.GLinearDepthBuffer        = m_gBufferPass->m_gLinearDepthRt;
     m_ssaoPass->m_params.Cam                       = m_params.Cam;
     m_ssaoPass->m_params.Radius                    = m_params.Gfx.SSAORadius;

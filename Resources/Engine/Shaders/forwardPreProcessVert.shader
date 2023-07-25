@@ -22,14 +22,18 @@
       uniform uint isSkinned;
       
       // out vec3 v_pos;
-      out vec3 v_linearDepth;
+      out vec3 v_viewDepth;
       out vec3 v_normal;
       
       void main()
       {
-        gl_Position   = vec4(vPosition, 1.0f);       
+        gl_Position   = vec4(vPosition, 1.0f);
+        if(isSkinned > 0u) {
+            gl_Position = skin(gl_Position);
+        }
+
         vec3 v_pos    = (Model * gl_Position).xyz;
-        v_linearDepth = (View * vec4(v_pos, 1.0)).xyz;
+        v_viewDepth = (View * vec4(v_pos, 1.0)).xyz;
         
         v_normal = (InverseTransModel * vec4(vNormal, 1.0)).xyz;
         if (isSkinned > 0u)

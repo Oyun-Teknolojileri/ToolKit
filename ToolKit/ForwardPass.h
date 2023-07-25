@@ -40,6 +40,7 @@ namespace ToolKit
     RenderTargetPtr gLinearRt      = nullptr;
     bool ClearFrameBuffer          = true;  //!< Clears whole buffer
     bool ClearDepthBuffer          = false; //!< Clears only depth buffer.
+    bool SSAOEnabled               = false;    
     RenderJobArray OpaqueJobs      = {};
     RenderJobArray TranslucentJobs = {};
     LightRawPtrArray Lights        = {};

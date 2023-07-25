@@ -80,15 +80,11 @@ namespace ToolKit
   void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, Camera* cam, const LightRawPtrArray& lights)
   {
     Renderer* renderer = GetRenderer();
-    
-    if (jobs.size() > 0)
-    {
-      jobs[0].Material->m_fragmentShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.SSAOEnabled));
-    }
 
     for (const RenderJob& job : jobs)
     {
       LightRawPtrArray lightList = RenderJobProcessor::SortLights(job, lights);
+      job.Material->m_fragmentShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.SSAOEnabled));
       renderer->Render(job, m_params.Cam, lightList);
     }
   }
