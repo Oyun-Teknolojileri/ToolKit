@@ -90,7 +90,7 @@ namespace ToolKit
     void UnInit() override;
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     /**
      * Adds a shader parameter to the parameter array with the given name and

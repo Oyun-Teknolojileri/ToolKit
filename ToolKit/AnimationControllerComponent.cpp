@@ -71,14 +71,16 @@ namespace ToolKit
     Records_Define({}, AnimRecordComponentCategory.Name, AnimRecordComponentCategory.Priority, true, true);
   }
 
-  void AnimControllerComponent::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* AnimControllerComponent::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    Component::DeSerializeImp(doc, parent);
+    XmlNode* compNode      = Super::DeSerializeImp(info, parent);
     AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
     for (auto iter = list.begin(); iter != list.end(); ++iter)
     {
       iter->second->m_entity = m_entity;
     }
+
+    return compNode->first_node(StaticClass()->Name.c_str());
   }
 
   XmlNode* AnimControllerComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const

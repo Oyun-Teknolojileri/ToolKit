@@ -52,17 +52,9 @@ namespace ToolKit
 
   void Shader::Load()
   {
-    if (m_loaded)
+    if (!m_loaded)
     {
-      return;
-    }
-
-    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
-    XmlDocument doc;
-    doc.parse<rapidxml::parse_full>(file->data());
-    if (XmlNode* rootNode = doc.first_node("shader"))
-    {
-      DeSerialize(&doc, rootNode);
+      ParseDocument("shader");
       m_loaded = true;
     }
   }
@@ -261,13 +253,8 @@ namespace ToolKit
     return container;
   }
 
-  void Shader::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Shader::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (parent == nullptr)
-    {
-      return;
-    }
-
     m_includeFiles.clear();
 
     XmlNode* rootNode = parent;
@@ -337,6 +324,8 @@ namespace ToolKit
     {
       HandleShaderIncludes(*i);
     }
+
+    return nullptr;
   }
 
   void Shader::SetShaderParameter(const String& param, const ParameterVariant& val) { m_shaderParams[param] = val; }

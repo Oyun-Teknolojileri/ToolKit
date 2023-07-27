@@ -50,7 +50,7 @@ namespace ToolKit
     void Init(bool flushClientSideArray);
 
    protected:
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:

@@ -149,10 +149,12 @@ namespace ToolKit
     return ec;
   }
 
-  void EnvironmentComponent::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* EnvironmentComponent::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    Component::DeSerializeImp(doc, parent);
+    XmlNode* compNode = Super::DeSerializeImp(info, parent);
     ParameterEventConstructor();
+
+    return compNode->first_node(StaticClass()->Name.c_str());
   }
 
   XmlNode* EnvironmentComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const

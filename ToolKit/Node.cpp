@@ -285,16 +285,10 @@ namespace ToolKit
   XmlNode* Node::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     XmlNode* node = parent;
-    if (node == nullptr)
-    {
-      assert(false && "Unbound node can not exist.");
-      return;
-    }
-
     if (XmlAttribute* attr = node->first_attribute(XmlNodeInheritScaleAttr.c_str()))
     {
       String val     = attr->value();
-      m_inheritScale = static_cast<bool>(std::atoi(val.c_str()));
+      m_inheritScale = (bool) std::atoi(val.c_str());
     }
 
     if (XmlNode* n = node->first_node(XmlTranslateElement.c_str()))

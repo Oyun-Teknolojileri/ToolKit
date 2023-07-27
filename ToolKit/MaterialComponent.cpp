@@ -66,18 +66,18 @@ namespace ToolKit
     Material_Define(defMat, MaterialComponentCategory.Name, MaterialComponentCategory.Priority, true, true);
   }
 
-  void MaterialComponent::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* MaterialComponent::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     if (m_version == String("v0.4.5"))
     {
-      DeSerializeImpV045(doc, parent);
-      return;
+      DeSerializeImpV045(info.Document, parent);
+      return nullptr;
     }
 
     // Old file, keep parsing.
-    Component::DeSerializeImp(doc, parent);
+    XmlNode* compNode = Super::DeSerializeImp(info, parent);
 
-    uint matCount = 0;
+    uint matCount     = 0;
     ReadAttr(parent, XmlMatCountAttrib, matCount);
     m_materialList.resize(matCount);
     for (size_t i = 0; i < m_materialList.size(); i++)
@@ -101,11 +101,18 @@ namespace ToolKit
         m_localData.Remove(ParamMaterial().m_id);
       }
     }
+
+    return compNode->first_node(StaticClass()->Name.c_str());
   }
 
   void MaterialComponent::DeSerializeImpV045(XmlDocument* doc, XmlNode* parent)
   {
-    Super::DeSerializeImp(doc, parent);
+    SerializationFileInfo sfi;
+    sfi.Document = doc;
+    sfi.Version  = "v0.4.5";
+
+    Super::DeSerializeImp(sfi, parent);
+
     XmlNode* comNode = parent->first_node(Component::StaticClass()->Name.c_str());
     XmlNode* matNode = comNode->first_node(StaticClass()->Name.c_str());
 

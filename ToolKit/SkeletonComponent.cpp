@@ -66,10 +66,12 @@ namespace ToolKit
     SkeletonResource_Define(nullptr, SkeletonComponentCategory.Name, SkeletonComponentCategory.Priority, true, true);
   }
 
-  void SkeletonComponent::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* SkeletonComponent::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    Component::DeSerializeImp(doc, parent);
+    XmlNode* compNode = Super::DeSerializeImp(info, parent);
     Init();
+
+    return compNode->first_node(StaticClass()->Name.c_str());
   }
 
   XmlNode* SkeletonComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const

@@ -460,12 +460,6 @@ namespace ToolKit
 
   XmlNode* ParameterVariant::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (parent == nullptr)
-    {
-      assert(false && "Unbound parameter can not exist");
-      return;
-    }
-
     XmlAttribute* attr = parent->first_attribute(XmlParamterTypeAttr.c_str());
     m_type             = (VariantType) std::atoi(attr->value());
     ReadAttr(parent, XmlNodeName.data(), m_name);
@@ -717,7 +711,7 @@ namespace ToolKit
     };
 
     deserializeDataFn(parent, this);
-    
+
     return nullptr;
   }
 
