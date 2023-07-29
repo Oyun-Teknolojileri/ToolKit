@@ -54,7 +54,7 @@ namespace ToolKit
     void UpdateShadowCameraTransform();
     void ParameterEventConstructor() override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     TKDeclareParam(Vec3, Color);

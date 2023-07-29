@@ -93,7 +93,7 @@ namespace ToolKit
     Entity* CopyTo(Entity* copyTo) const override;
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
@@ -117,7 +117,7 @@ namespace ToolKit
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    private:
     void Generate();
@@ -139,7 +139,7 @@ namespace ToolKit
     Entity* CopyTo(Entity* copyTo) const override;
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
@@ -167,7 +167,7 @@ namespace ToolKit
     void ParameterEventConstructor() override;
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    private:
     void Generate();

@@ -84,8 +84,8 @@ namespace ToolKit
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
-    void DeSerializeImpV045(XmlDocument* doc, XmlNode* parent);
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
    public:
     /**

@@ -577,8 +577,8 @@ namespace ToolKit
 
     if (m_version == String("v0.4.5"))
     {
-      DeSerializeImpV045(info.Document, parent);
-      return;
+      DeSerializeImpV045(info, parent);
+      return nullptr;
     }
 
     // Old file, keep parsing.
@@ -632,9 +632,9 @@ namespace ToolKit
     }
   }
 
-  void Scene::DeSerializeImpV045(XmlDocument* doc, XmlNode* parent)
+  void Scene::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
   {
-    XmlNode* root     = doc->first_node(XmlSceneElement.c_str());
+    XmlNode* root     = info.Document->first_node(XmlSceneElement.c_str());
 
     // Old file, keep parsing.
     ULongID lastID    = GetHandleManager()->GetNextHandle();
@@ -650,9 +650,8 @@ namespace ToolKit
     {
       XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
       Entity* ntt            = GetObjectFactory()->MakeNew(typeAttr->value())->As<Entity>();
-      ntt->m_version         = m_version;
 
-      ntt->DeSerialize(doc, node);
+      ntt->DeSerialize(info, node);
 
       if (ntt->GetType() == EntityType::Entity_Prefab)
       {
@@ -675,7 +674,7 @@ namespace ToolKit
     // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)
     {
-      GetEngineSettings().DeSerializePostProcessing(doc, parent);
+      GetEngineSettings().DeSerializePostProcessing(info.Document, parent);
     }
 
     for (Entity* ntt : prefabList)

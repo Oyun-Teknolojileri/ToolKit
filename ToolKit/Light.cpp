@@ -91,13 +91,6 @@ namespace ToolKit
 
   EntityType Light::GetType() const { return EntityType::Entity_Light; }
 
-  void Light::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
-  {
-    ClearComponents(); // Read from file.
-    Entity::DeSerializeImp(doc, parent);
-    ParameterEventConstructor();
-  }
-
   MaterialPtr Light::GetShadowMaterial() { return m_shadowMapMaterial; }
 
   void Light::UpdateShadowCamera()
@@ -131,6 +124,16 @@ namespace ToolKit
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
     return node;
+  }
+
+  XmlNode* Light::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    ClearComponents(); // Read from file.
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+
+    ParameterEventConstructor();
+
+    return nttNode->first_node(StaticClass()->Name.c_str());
   }
 
   // DirectionalLight

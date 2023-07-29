@@ -99,9 +99,15 @@ namespace ToolKit
     return surfaceNode;
   }
 
-  void Surface::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Surface::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    Entity::DeSerializeImp(doc, parent);
+    if (info.Version == String("v0.4.5"))
+    {
+      return DeSerializeImpV045(info, parent);
+    }
+
+    // Old file.
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
     if (XmlNode* node = parent->first_node("Anchor"))
     {
       for (int i = 0; i < 4; i++)
@@ -120,6 +126,35 @@ namespace ToolKit
     }
 
     CreateQuat();
+
+    return nttNode;
+  }
+
+  XmlNode* Surface::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* nttNode     = Super::DeSerializeImp(info, parent);
+    XmlNode* surfaceNode = nttNode->first_node(StaticClass()->Name.c_str());
+
+    if (XmlNode* node = surfaceNode->first_node("Anchor"))
+    {
+      for (int i = 0; i < 4; i++)
+      {
+        ReadAttr(node, "ratios" + std::to_string(i), m_anchorParams.m_anchorRatios[i]);
+        ReadAttr(node, "offsets" + std::to_string(i), m_anchorParams.m_offsets[i]);
+      }
+    }
+    ParameterEventConstructor();
+
+    // Re assign default material.
+    MaterialComponentPtr matCom = GetMaterialComponent();
+    if (matCom->GetFirstMaterial()->IsDynamic())
+    {
+      matCom->SetFirstMaterial(GetMaterialManager()->GetCopyOfUIMaterial());
+    }
+
+    CreateQuat();
+
+    return surfaceNode;
   }
 
   void Surface::UpdateGeometry(bool byTexture)
@@ -365,12 +400,6 @@ namespace ToolKit
 
   EntityType Button::GetType() const { return EntityType::Entity_Button; }
 
-  void Button::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
-  {
-    Surface::DeSerializeImp(doc, parent);
-    ParameterEventConstructor();
-  }
-
   void Button::ResetCallbacks()
   {
     Surface::ResetCallbacks();
@@ -425,6 +454,27 @@ namespace ToolKit
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
     return node;
+  }
+
+  XmlNode* Button::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    if (info.Version == String("v0.4.5"))
+    {
+      return DeSerializeImpV045(info, parent);
+    }
+
+    // Old file.
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    ParameterEventConstructor();
+    return nttNode;
+  }
+
+  XmlNode* Button::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* nttNode     = Super::DeSerializeImp(info, parent);
+    XmlNode* surfaceNode = Surface::DeSerializeImp(info, parent);
+    ParameterEventConstructor();
+    return surfaceNode;
   }
 
 } // namespace ToolKit

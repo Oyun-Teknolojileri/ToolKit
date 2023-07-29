@@ -296,7 +296,10 @@ namespace ToolKit
      */
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
-    void DeSerializeImpV045(XmlDocument* doc, XmlNode* parent); //!< Deserialize files with version v0.4.5
+    /**
+     * Deserialize files with version v0.4.5
+     */
+    void DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
     /**
      * Returns the biggest number generated during the current runtime. This

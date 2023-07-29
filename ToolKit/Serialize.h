@@ -31,7 +31,7 @@
 namespace ToolKit
 {
 
-  struct SerializationFileInfo
+  struct TK_API SerializationFileInfo
   {
     String File;
     String Version;

@@ -55,8 +55,10 @@ namespace ToolKit
 
     virtual void ResetCallbacks();
 
-    //  To reflect the size & pivot changes,
-    //  this function regenerates the geometry.
+    /**
+     * To reflect the size & pivot changes,this function regenerates the geometry.
+     * @param byTexture - if true send, the geometry is updated based on material's diffuse texture.
+     */
     virtual void UpdateGeometry(bool byTexture);
 
    protected:
@@ -66,7 +68,8 @@ namespace ToolKit
     Entity* CopyTo(Entity* other) const override;
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
    private:
     void CreateQuat();
@@ -116,7 +119,8 @@ namespace ToolKit
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
    public:
     TKDeclareParam(MaterialPtr, ButtonMaterial);

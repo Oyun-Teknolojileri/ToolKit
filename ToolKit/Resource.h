@@ -70,8 +70,8 @@ namespace ToolKit
     }
 
     virtual ResourceType GetType() const;
-    virtual XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
-    virtual XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent);
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     /**
      * Outputs file path and the resource type to an xml node. Xml node name is

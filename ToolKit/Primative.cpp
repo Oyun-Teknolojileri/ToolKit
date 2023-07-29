@@ -148,12 +148,6 @@ namespace ToolKit
 
   EntityType Cube::GetType() const { return EntityType::Entity_Cube; }
 
-  void Cube::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
-  {
-    Super::DeSerializeImp(doc, parent);
-    Generate();
-  }
-
   void Cube::Generate() { Generate(GetMeshComponent(), GetCubeScaleVal()); }
 
   void Cube::ParameterConstructor()
@@ -168,6 +162,14 @@ namespace ToolKit
 
     ValueUpdateFn upVal = [this](Value& old, Value& val) -> void { Generate(); };
     ParamCubeScale().m_onValueChangedFn.push_back(upVal);
+  }
+
+  XmlNode* Cube::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    Generate();
+
+    return nttNode->first_node(StaticClass()->Name.c_str());
   }
 
   XmlNode* Cube::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -195,132 +197,132 @@ namespace ToolKit
     };
 
     // Front
-    vertices[0].pos            = corners[0];
-    vertices[0].tex            = Vec2(0.0f, 1.0f);
-    vertices[0].norm           = Vec3(0.0f, 0.0f, 1.0f);
-    vertices[1].pos            = corners[1];
-    vertices[1].tex            = Vec2(0.0f, 0.0f);
-    vertices[1].norm           = Vec3(0.0f, 0.0f, 1.0f);
-    vertices[2].pos            = corners[2];
-    vertices[2].tex            = Vec2(1.0f, 0.0f);
-    vertices[2].norm           = Vec3(0.0f, 0.0f, 1.0f);
+    vertices[0].pos   = corners[0];
+    vertices[0].tex   = Vec2(0.0f, 1.0f);
+    vertices[0].norm  = Vec3(0.0f, 0.0f, 1.0f);
+    vertices[1].pos   = corners[1];
+    vertices[1].tex   = Vec2(0.0f, 0.0f);
+    vertices[1].norm  = Vec3(0.0f, 0.0f, 1.0f);
+    vertices[2].pos   = corners[2];
+    vertices[2].tex   = Vec2(1.0f, 0.0f);
+    vertices[2].norm  = Vec3(0.0f, 0.0f, 1.0f);
 
-    vertices[3].pos            = corners[0];
-    vertices[3].tex            = Vec2(0.0f, 1.0f);
-    vertices[3].norm           = Vec3(0.0f, 0.0f, 1.0f);
-    vertices[4].pos            = corners[2];
-    vertices[4].tex            = Vec2(1.0f, 0.0f);
-    vertices[4].norm           = Vec3(0.0f, 0.0f, 1.0f);
-    vertices[5].pos            = corners[3];
-    vertices[5].tex            = Vec2(1.0f, 1.0f);
-    vertices[5].norm           = Vec3(0.0f, 0.0f, 1.0f);
+    vertices[3].pos   = corners[0];
+    vertices[3].tex   = Vec2(0.0f, 1.0f);
+    vertices[3].norm  = Vec3(0.0f, 0.0f, 1.0f);
+    vertices[4].pos   = corners[2];
+    vertices[4].tex   = Vec2(1.0f, 0.0f);
+    vertices[4].norm  = Vec3(0.0f, 0.0f, 1.0f);
+    vertices[5].pos   = corners[3];
+    vertices[5].tex   = Vec2(1.0f, 1.0f);
+    vertices[5].norm  = Vec3(0.0f, 0.0f, 1.0f);
 
     // Right
-    vertices[6].pos            = corners[3];
-    vertices[6].tex            = Vec2(0.0f, 1.0f);
-    vertices[6].norm           = Vec3(1.0f, 0.0f, 0.0f);
-    vertices[7].pos            = corners[2];
-    vertices[7].tex            = Vec2(0.0f, 0.0f);
-    vertices[7].norm           = Vec3(1.0f, 0.0f, 0.0f);
-    vertices[8].pos            = corners[6];
-    vertices[8].tex            = Vec2(1.0f, 0.0f);
-    vertices[8].norm           = Vec3(1.0f, 0.0f, 0.0f);
+    vertices[6].pos   = corners[3];
+    vertices[6].tex   = Vec2(0.0f, 1.0f);
+    vertices[6].norm  = Vec3(1.0f, 0.0f, 0.0f);
+    vertices[7].pos   = corners[2];
+    vertices[7].tex   = Vec2(0.0f, 0.0f);
+    vertices[7].norm  = Vec3(1.0f, 0.0f, 0.0f);
+    vertices[8].pos   = corners[6];
+    vertices[8].tex   = Vec2(1.0f, 0.0f);
+    vertices[8].norm  = Vec3(1.0f, 0.0f, 0.0f);
 
-    vertices[9].pos            = corners[3];
-    vertices[9].tex            = Vec2(0.0f, 1.0f);
-    vertices[9].norm           = Vec3(1.0f, 0.0f, 0.0f);
-    vertices[10].pos           = corners[6];
-    vertices[10].tex           = Vec2(1.0f, 0.0f);
-    vertices[10].norm          = Vec3(1.0f, 0.0f, 0.0f);
-    vertices[11].pos           = corners[7];
-    vertices[11].tex           = Vec2(1.0f, 1.0f);
-    vertices[11].norm          = Vec3(1.0f, 0.0f, 0.0f);
+    vertices[9].pos   = corners[3];
+    vertices[9].tex   = Vec2(0.0f, 1.0f);
+    vertices[9].norm  = Vec3(1.0f, 0.0f, 0.0f);
+    vertices[10].pos  = corners[6];
+    vertices[10].tex  = Vec2(1.0f, 0.0f);
+    vertices[10].norm = Vec3(1.0f, 0.0f, 0.0f);
+    vertices[11].pos  = corners[7];
+    vertices[11].tex  = Vec2(1.0f, 1.0f);
+    vertices[11].norm = Vec3(1.0f, 0.0f, 0.0f);
 
     // Top
-    vertices[12].pos           = corners[0];
-    vertices[12].tex           = Vec2(0.0f, 0.0f);
-    vertices[12].norm          = Vec3(0.0f, 1.0f, 0.0f);
-    vertices[13].pos           = corners[3];
-    vertices[13].tex           = Vec2(1.0f, 0.0f);
-    vertices[13].norm          = Vec3(0.0f, 1.0f, 0.0f);
-    vertices[14].pos           = corners[7];
-    vertices[14].tex           = Vec2(1.0f, 1.0f);
-    vertices[14].norm          = Vec3(0.0f, 1.0f, 0.0f);
+    vertices[12].pos  = corners[0];
+    vertices[12].tex  = Vec2(0.0f, 0.0f);
+    vertices[12].norm = Vec3(0.0f, 1.0f, 0.0f);
+    vertices[13].pos  = corners[3];
+    vertices[13].tex  = Vec2(1.0f, 0.0f);
+    vertices[13].norm = Vec3(0.0f, 1.0f, 0.0f);
+    vertices[14].pos  = corners[7];
+    vertices[14].tex  = Vec2(1.0f, 1.0f);
+    vertices[14].norm = Vec3(0.0f, 1.0f, 0.0f);
 
-    vertices[15].pos           = corners[0];
-    vertices[15].tex           = Vec2(0.0f, 0.0f);
-    vertices[15].norm          = Vec3(0.0f, 1.0f, 0.0f);
-    vertices[16].pos           = corners[7];
-    vertices[16].tex           = Vec2(1.0f, 1.0f);
-    vertices[16].norm          = Vec3(0.0f, 1.0f, 0.0f);
-    vertices[17].pos           = corners[4];
-    vertices[17].tex           = Vec2(0.0f, 1.0f);
-    vertices[17].norm          = Vec3(0.0f, 1.0f, 0.0f);
+    vertices[15].pos  = corners[0];
+    vertices[15].tex  = Vec2(0.0f, 0.0f);
+    vertices[15].norm = Vec3(0.0f, 1.0f, 0.0f);
+    vertices[16].pos  = corners[7];
+    vertices[16].tex  = Vec2(1.0f, 1.0f);
+    vertices[16].norm = Vec3(0.0f, 1.0f, 0.0f);
+    vertices[17].pos  = corners[4];
+    vertices[17].tex  = Vec2(0.0f, 1.0f);
+    vertices[17].norm = Vec3(0.0f, 1.0f, 0.0f);
 
     // Back
-    vertices[18].pos           = corners[4];
-    vertices[18].tex           = Vec2(0.0f, 1.0f);
-    vertices[18].norm          = Vec3(0.0f, 0.0f, -1.0f);
-    vertices[19].pos           = corners[6];
-    vertices[19].tex           = Vec2(1.0f, 0.0f);
-    vertices[19].norm          = Vec3(0.0f, 0.0f, -1.0f);
-    vertices[20].pos           = corners[5];
-    vertices[20].tex           = Vec2(0.0f, 0.0f);
-    vertices[20].norm          = Vec3(0.0f, 0.0f, -1.0f);
+    vertices[18].pos  = corners[4];
+    vertices[18].tex  = Vec2(0.0f, 1.0f);
+    vertices[18].norm = Vec3(0.0f, 0.0f, -1.0f);
+    vertices[19].pos  = corners[6];
+    vertices[19].tex  = Vec2(1.0f, 0.0f);
+    vertices[19].norm = Vec3(0.0f, 0.0f, -1.0f);
+    vertices[20].pos  = corners[5];
+    vertices[20].tex  = Vec2(0.0f, 0.0f);
+    vertices[20].norm = Vec3(0.0f, 0.0f, -1.0f);
 
-    vertices[21].pos           = corners[4];
-    vertices[21].tex           = Vec2(0.0f, 1.0f);
-    vertices[21].norm          = Vec3(0.0f, 0.0f, -1.0f);
-    vertices[22].pos           = corners[7];
-    vertices[22].tex           = Vec2(1.0f, 1.0f);
-    vertices[22].norm          = Vec3(0.0f, 0.0f, -1.0f);
-    vertices[23].pos           = corners[6];
-    vertices[23].tex           = Vec2(1.0f, 0.0f);
-    vertices[23].norm          = Vec3(0.0f, 0.0f, -1.0f);
+    vertices[21].pos  = corners[4];
+    vertices[21].tex  = Vec2(0.0f, 1.0f);
+    vertices[21].norm = Vec3(0.0f, 0.0f, -1.0f);
+    vertices[22].pos  = corners[7];
+    vertices[22].tex  = Vec2(1.0f, 1.0f);
+    vertices[22].norm = Vec3(0.0f, 0.0f, -1.0f);
+    vertices[23].pos  = corners[6];
+    vertices[23].tex  = Vec2(1.0f, 0.0f);
+    vertices[23].norm = Vec3(0.0f, 0.0f, -1.0f);
 
     // Left
-    vertices[24].pos           = corners[0];
-    vertices[24].tex           = Vec2(0.0f, 1.0f);
-    vertices[24].norm          = Vec3(-1.0f, 0.0f, 0.0f);
-    vertices[25].pos           = corners[5];
-    vertices[25].tex           = Vec2(1.0f, 0.0f);
-    vertices[25].norm          = Vec3(-1.0f, 0.0f, 0.0f);
-    vertices[26].pos           = corners[1];
-    vertices[26].tex           = Vec2(0.0f, 0.0f);
-    vertices[26].norm          = Vec3(-1.0f, 0.0f, 0.0f);
+    vertices[24].pos  = corners[0];
+    vertices[24].tex  = Vec2(0.0f, 1.0f);
+    vertices[24].norm = Vec3(-1.0f, 0.0f, 0.0f);
+    vertices[25].pos  = corners[5];
+    vertices[25].tex  = Vec2(1.0f, 0.0f);
+    vertices[25].norm = Vec3(-1.0f, 0.0f, 0.0f);
+    vertices[26].pos  = corners[1];
+    vertices[26].tex  = Vec2(0.0f, 0.0f);
+    vertices[26].norm = Vec3(-1.0f, 0.0f, 0.0f);
 
-    vertices[27].pos           = corners[0];
-    vertices[27].tex           = Vec2(0.0f, 1.0f);
-    vertices[27].norm          = Vec3(-1.0f, 0.0f, 0.0f);
-    vertices[28].pos           = corners[4];
-    vertices[28].tex           = Vec2(1.0f, 1.0f);
-    vertices[28].norm          = Vec3(-1.0f, 0.0f, 0.0f);
-    vertices[29].pos           = corners[5];
-    vertices[29].tex           = Vec2(1.0f, 0.0f);
-    vertices[29].norm          = Vec3(-1.0f, 0.0f, 0.0f);
+    vertices[27].pos  = corners[0];
+    vertices[27].tex  = Vec2(0.0f, 1.0f);
+    vertices[27].norm = Vec3(-1.0f, 0.0f, 0.0f);
+    vertices[28].pos  = corners[4];
+    vertices[28].tex  = Vec2(1.0f, 1.0f);
+    vertices[28].norm = Vec3(-1.0f, 0.0f, 0.0f);
+    vertices[29].pos  = corners[5];
+    vertices[29].tex  = Vec2(1.0f, 0.0f);
+    vertices[29].norm = Vec3(-1.0f, 0.0f, 0.0f);
 
     // Bottom
-    vertices[30].pos           = corners[1];
-    vertices[30].tex           = Vec2(0.0f, 1.0f);
-    vertices[30].norm          = Vec3(0.0f, -1.0f, 0.0f);
-    vertices[31].pos           = corners[6];
-    vertices[31].tex           = Vec2(1.0f, 0.0f);
-    vertices[31].norm          = Vec3(0.0f, -1.0f, 0.0f);
-    vertices[32].pos           = corners[2];
-    vertices[32].tex           = Vec2(0.0f, 0.0f);
-    vertices[32].norm          = Vec3(0.0f, -1.0f, 0.0f);
+    vertices[30].pos  = corners[1];
+    vertices[30].tex  = Vec2(0.0f, 1.0f);
+    vertices[30].norm = Vec3(0.0f, -1.0f, 0.0f);
+    vertices[31].pos  = corners[6];
+    vertices[31].tex  = Vec2(1.0f, 0.0f);
+    vertices[31].norm = Vec3(0.0f, -1.0f, 0.0f);
+    vertices[32].pos  = corners[2];
+    vertices[32].tex  = Vec2(0.0f, 0.0f);
+    vertices[32].norm = Vec3(0.0f, -1.0f, 0.0f);
 
-    vertices[33].pos           = corners[1];
-    vertices[33].tex           = Vec2(0.0f, 1.0f);
-    vertices[33].norm          = Vec3(0.0f, -1.0f, 0.0f);
-    vertices[34].pos           = corners[5];
-    vertices[34].tex           = Vec2(1.0f, 1.0f);
-    vertices[34].norm          = Vec3(0.0f, -1.0f, 0.0f);
-    vertices[35].pos           = corners[6];
-    vertices[35].tex           = Vec2(1.0f, 0.0f);
-    vertices[35].norm          = Vec3(0.0f, -1.0f, 0.0f);
+    vertices[33].pos  = corners[1];
+    vertices[33].tex  = Vec2(0.0f, 1.0f);
+    vertices[33].norm = Vec3(0.0f, -1.0f, 0.0f);
+    vertices[34].pos  = corners[5];
+    vertices[34].tex  = Vec2(1.0f, 1.0f);
+    vertices[34].norm = Vec3(0.0f, -1.0f, 0.0f);
+    vertices[35].pos  = corners[6];
+    vertices[35].tex  = Vec2(1.0f, 0.0f);
+    vertices[35].norm = Vec3(0.0f, -1.0f, 0.0f);
 
-    MeshPtr mesh               = meshComp->GetMeshVal();
+    MeshPtr mesh      = meshComp->GetMeshVal();
     mesh->UnInit();
     mesh->m_vertexCount        = (uint) vertices.size();
     mesh->m_clientSideVertices = vertices;
@@ -361,10 +363,12 @@ namespace ToolKit
 
   EntityType Quad::GetType() const { return EntityType::Entity_Quad; }
 
-  void Quad::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Quad::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    Entity::DeSerializeImp(doc, parent);
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
     Generate();
+
+    return nttNode->first_node(StaticClass()->Name.c_str());
   }
 
   void Quad::Generate()
@@ -427,10 +431,12 @@ namespace ToolKit
 
   EntityType Sphere::GetType() const { return EntityType::Entity_Sphere; }
 
-  void Sphere::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Sphere::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    Entity::DeSerializeImp(doc, parent);
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
     Generate(GetMeshComponent(), GetRadiusVal(), GetNumRingVal(), GetNumSegVal());
+
+    return nttNode->first_node(StaticClass()->Name.c_str());
   }
 
   XmlNode* Sphere::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -653,12 +659,6 @@ namespace ToolKit
     Generate();
   }
 
-  void Cone::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
-  {
-    Entity::DeSerializeImp(doc, parent);
-    Generate();
-  }
-
   void Cone::ParameterConstructor()
   {
     Super::ParameterConstructor();
@@ -692,6 +692,14 @@ namespace ToolKit
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
     return node;
+  }
+
+  XmlNode* Cone::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    Generate();
+
+    return nttNode->first_node(StaticClass()->Name.c_str());
   }
 
   TKDefineClass(Arrow2d, Entity);

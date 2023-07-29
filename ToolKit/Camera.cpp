@@ -125,30 +125,30 @@ namespace ToolKit
     return node;
   }
 
-  void Camera::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Camera::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     if (m_version == String("v0.4.5"))
     {
-      DeSerializeImpV045(doc, parent);
-      return;
+      return DeSerializeImpV045(info, parent);
     }
 
     ClearComponents();
 
-    Super::DeSerializeImp(doc, parent);
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    XmlNode* camNode = nttNode->first_node(StaticClass()->Name.c_str());
 
-    if (XmlNode* node = parent->first_node("Camera"))
+    if (camNode != nullptr)
     {
-      ReadAttr(node, "fov", m_fov);
-      ReadAttr(node, "aspect", m_aspect);
-      ReadAttr(node, "near", m_near);
-      ReadAttr(node, "far", m_far);
-      ReadAttr(node, "ortographic", m_ortographic);
-      ReadAttr(node, "left", m_left);
-      ReadAttr(node, "right", m_right);
-      ReadAttr(node, "top", m_top);
-      ReadAttr(node, "bottom", m_bottom);
-      ReadAttr(node, "scale", m_orthographicScale);
+      ReadAttr(camNode, "fov", m_fov);
+      ReadAttr(camNode, "aspect", m_aspect);
+      ReadAttr(camNode, "near", m_near);
+      ReadAttr(camNode, "far", m_far);
+      ReadAttr(camNode, "ortographic", m_ortographic);
+      ReadAttr(camNode, "left", m_left);
+      ReadAttr(camNode, "right", m_right);
+      ReadAttr(camNode, "top", m_top);
+      ReadAttr(camNode, "bottom", m_bottom);
+      ReadAttr(camNode, "scale", m_orthographicScale);
     }
 
     if (m_ortographic)
@@ -159,24 +159,28 @@ namespace ToolKit
     {
       SetLens(m_fov, m_aspect, m_near, m_far);
     }
+
+    return camNode;
   }
 
-  void Camera::DeSerializeImpV045(XmlDocument* doc, XmlNode* parent) {
+  XmlNode* Camera::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
+  {
     ClearComponents();
-    Super::DeSerializeImp(doc, parent);
-    XmlNode* nttNode = parent->first_node(Entity::StaticClass()->Name.c_str());
-    if (XmlNode* node = nttNode->first_node(Camera::StaticClass()->Name.c_str()))
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    XmlNode* camNode = nttNode->first_node(Camera::StaticClass()->Name.c_str());
+
+    if (camNode != nullptr)
     {
-      ReadAttr(node, "fov", m_fov);
-      ReadAttr(node, "aspect", m_aspect);
-      ReadAttr(node, "near", m_near);
-      ReadAttr(node, "far", m_far);
-      ReadAttr(node, "ortographic", m_ortographic);
-      ReadAttr(node, "left", m_left);
-      ReadAttr(node, "right", m_right);
-      ReadAttr(node, "top", m_top);
-      ReadAttr(node, "bottom", m_bottom);
-      ReadAttr(node, "scale", m_orthographicScale);
+      ReadAttr(camNode, "fov", m_fov);
+      ReadAttr(camNode, "aspect", m_aspect);
+      ReadAttr(camNode, "near", m_near);
+      ReadAttr(camNode, "far", m_far);
+      ReadAttr(camNode, "ortographic", m_ortographic);
+      ReadAttr(camNode, "left", m_left);
+      ReadAttr(camNode, "right", m_right);
+      ReadAttr(camNode, "top", m_top);
+      ReadAttr(camNode, "bottom", m_bottom);
+      ReadAttr(camNode, "scale", m_orthographicScale);
     }
 
     if (m_ortographic)
@@ -187,6 +191,8 @@ namespace ToolKit
     {
       SetLens(m_fov, m_aspect, m_near, m_far);
     }
+
+    return camNode;
   }
 
   // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene

@@ -248,33 +248,36 @@ namespace ToolKit
     return node;
   }
 
-  void Entity::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Entity::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
+    m_version = info.Version;
     if (m_version == String("v0.4.5"))
     {
-      DeSerializeImpV045(doc, parent);
-      return;
+      return DeSerializeImpV045(info, parent);
     }
 
     // Old file, keep parsing.
-    XmlNode* node = nullptr;
+    XmlNode* nttNode = nullptr;
+    XmlDocument* doc = info.Document;
+
     if (parent != nullptr)
     {
-      node = parent;
+      nttNode = parent;
     }
     else
     {
-      node = doc->first_node(XmlEntityElement.c_str());
+      nttNode = doc->first_node(XmlEntityElement.c_str());
     }
 
+    XmlNode* node = nttNode;
     ReadAttr(node, XmlParentEntityIdAttr, _parentId);
 
     if (XmlNode* transformNode = node->first_node(XmlNodeElement.c_str()))
     {
-      m_node->DeSerialize(doc, transformNode);
+      m_node->DeSerialize(info, transformNode);
     }
 
-    m_localData.DeSerialize(doc, parent);
+    m_localData.DeSerialize(info, parent);
 
     ClearComponents();
 
@@ -287,29 +290,30 @@ namespace ToolKit
         ReadAttr(comNode, XmlParamterTypeAttr, type);
         Component* com = GetComponentFactory()->Create((ComponentType) type);
         com->m_version = m_version;
-        com->DeSerialize(doc, comNode);
+        com->DeSerialize(info, comNode);
         AddComponent(std::shared_ptr<Component>(com));
 
         comNode = comNode->next_sibling();
       }
     }
+
+    return nttNode;
   }
 
-  void Entity::DeSerializeImpV045(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Entity::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
   {
-    Super::DeSerializeImp(doc, parent);
+    XmlNode* objNode = Super::DeSerializeImp(info, parent);
+    XmlNode* nttNode = objNode->first_node(Entity::StaticClass()->Name.c_str());
+    ReadAttr(nttNode, XmlParentEntityIdAttr, _parentId);
 
-    XmlNode* node = parent->first_node(Entity::StaticClass()->Name.c_str());
-    ReadAttr(node, XmlParentEntityIdAttr, _parentId);
-
-    if (XmlNode* transformNode = node->first_node(XmlNodeElement.c_str()))
+    if (XmlNode* transformNode = nttNode->first_node(XmlNodeElement.c_str()))
     {
-      m_node->DeSerialize(doc, transformNode);
+      m_node->DeSerialize(info, transformNode);
     }
 
     ClearComponents();
 
-    if (XmlNode* comArray = node->first_node(XmlComponentArrayElement.data()))
+    if (XmlNode* comArray = nttNode->first_node(XmlComponentArrayElement.data()))
     {
       XmlNode* comNode = comArray->first_node(TKObject::StaticClass()->Name.c_str());
       while (comNode != nullptr)
@@ -318,12 +322,14 @@ namespace ToolKit
         ReadAttr(comNode, XmlObjectClassAttr.data(), cls);
         Component* com = GetObjectFactory()->MakeNew(cls)->As<Component>();
         com->m_version = m_version;
-        com->DeSerialize(doc, comNode);
+        com->DeSerialize(info, comNode);
         AddComponent(std::shared_ptr<Component>(com));
 
         comNode = comNode->next_sibling();
       }
     }
+
+    return nttNode;
   }
 
   void Entity::RemoveResources() { assert(false && "Not implemented"); }

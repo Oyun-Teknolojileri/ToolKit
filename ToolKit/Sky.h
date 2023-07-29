@@ -42,7 +42,7 @@ namespace ToolKit
 
     virtual void Init();
     virtual void ReInit();
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     bool IsInitialized();
 
     virtual MaterialPtr GetSkyboxMaterial();

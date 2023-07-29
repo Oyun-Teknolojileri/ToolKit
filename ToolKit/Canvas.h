@@ -42,7 +42,6 @@ namespace ToolKit
     Canvas();
     void NativeConstruct() override;
     EntityType GetType() const override;
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
 
     void UpdateGeometry(bool byTexture) override;
     void ApplyRecursiveResizePolicy(float width, float height);
@@ -50,6 +49,9 @@ namespace ToolKit
    protected:
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
    private:
     void CreateQuadLines();

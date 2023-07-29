@@ -87,7 +87,11 @@ namespace ToolKit
     Init();
   }
 
-  void SkyBase::DeSerializeImp(XmlDocument* doc, XmlNode* parent) { Entity::DeSerializeImp(doc, parent); }
+  XmlNode* SkyBase::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    return nttNode->first_node(StaticClass()->Name.c_str());
+  }
 
   bool SkyBase::IsInitialized() { return m_initialized; }
 
