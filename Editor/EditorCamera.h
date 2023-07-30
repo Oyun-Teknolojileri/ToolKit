@@ -45,8 +45,10 @@ namespace ToolKit
 
       void NativeConstruct() override;
       Entity* Copy() const override;
-      void PostDeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
       void GenerateFrustum();
+
+     protected:
+      void PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
      private:
       void CreateGizmo();

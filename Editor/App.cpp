@@ -603,18 +603,20 @@ namespace ToolKit
       if (CheckFile(defEditSet) && CheckFile(m_workspace.GetActiveWorkspace()))
       {
         // Try reading defaults.
-        String settingsFile              = defEditSet;
-
-        std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
-
-        XmlDocumentPtr lclDoc            = std::make_shared<XmlDocument>();
+        String settingsFile   = defEditSet;
+        XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
+        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
 
+        SerializationFileInfo sif;
+        sif.Document = lclDoc.get();
+        sif.File     = settingsFile;
+
         // Prevent loading last scene.
-        Project pj = m_workspace.GetActiveProject();
+        Project pj   = m_workspace.GetActiveProject();
         m_workspace.SetScene("");
 
-        DeSerialize(lclDoc.get(), nullptr);
+        DeSerialize(sif, nullptr);
         m_workspace.SetScene(pj.scene);
 
         settingsFile = ConcatPaths({ConfigPath(), g_uiLayoutFile});
@@ -734,7 +736,7 @@ namespace ToolKit
           if (wnd)
           {
             wnd->m_version = m_version;
-            wnd->DeSerialize(nullptr, wndNode);
+            wnd->DeSerialize(SerializationFileInfo(), wndNode);
             m_windows.push_back(wnd);
           }
         } while ((wndNode = wndNode->next_sibling("Window")));
@@ -1056,7 +1058,7 @@ namespace ToolKit
     {
       if (CheckFile(ConcatPaths({m_workspace.GetProjectConfigPath(), g_editorSettingsFile})) && !setDefaults)
       {
-        DeSerialize(nullptr, nullptr);
+        DeSerialize(SerializationFileInfo(), nullptr);
         m_workspace.DeSerializeEngineSettings();
         UI::InitSettings();
       }
@@ -1303,27 +1305,21 @@ namespace ToolKit
       return nullptr;
     }
 
-    void App::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+    XmlNode* App::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      XmlFilePtr lclFile    = nullptr;
-      XmlDocumentPtr lclDoc = nullptr;
+      String settingsFile = ConcatPaths({m_workspace.GetProjectConfigPath(), g_editorSettingsFile});
 
-      if (doc == nullptr)
+      if (!CheckFile(settingsFile))
       {
-        String settingsFile = ConcatPaths({m_workspace.GetProjectConfigPath(), g_editorSettingsFile});
+        settingsFile = ConcatPaths({ConfigPath(), g_editorSettingsFile});
 
-        if (!CheckFile(settingsFile))
-        {
-          settingsFile = ConcatPaths({ConfigPath(), g_editorSettingsFile});
-
-          assert(CheckFile(settingsFile) && "ToolKit/Config/Editor.settings must exist.");
-        }
-
-        lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
-        lclDoc  = std::make_shared<XmlDocument>();
-        lclDoc->parse<0>(lclFile->data());
-        doc = lclDoc.get();
+        assert(CheckFile(settingsFile) && "ToolKit/Config/Editor.settings must exist.");
       }
+
+      XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
+      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+      lclDoc->parse<0>(lclFile->data());
+      XmlDocument* doc = lclDoc.get();
 
       if (XmlNode* root = doc->first_node("App"))
       {
@@ -1355,6 +1351,8 @@ namespace ToolKit
         String fullPath = ScenePath(scene);
         OpenScene(fullPath);
       }
+
+      return nullptr;
     }
 
     void App::CreateSimulationWindow(float width, float height)

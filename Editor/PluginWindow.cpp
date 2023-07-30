@@ -44,8 +44,6 @@ namespace ToolKit
       m_numDefaultResNames = (int) m_emulatorResolutionNames.size();
     }
 
-    PluginWindow::PluginWindow(XmlNode* node) : PluginWindow() { DeSerialize(nullptr, node); }
-
     PluginWindow::~PluginWindow() {}
 
     void PluginWindow::AddResolutionName(const String& name)
@@ -99,10 +97,6 @@ namespace ToolKit
     }
 
     Window::Type PluginWindow::GetType() const { return Type::PluginWindow; }
-
-    void PluginWindow::Serialize(XmlDocument* doc, XmlNode* parent) const { Window::Serialize(doc, parent); }
-
-    void PluginWindow::DeSerialize(XmlDocument* doc, XmlNode* parent) { Window::DeSerialize(doc, parent); }
 
     void PluginWindow::UpdateSimulationWndSize()
     {

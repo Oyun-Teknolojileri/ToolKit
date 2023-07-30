@@ -559,9 +559,9 @@ namespace ToolKit
       return folder;
     }
 
-    void FolderWindow::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+    XmlNode* FolderWindow::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      Window::DeSerializeImp(doc, parent);
+      Window::DeSerializeImp(info, parent);
       if (XmlNode* node = parent->first_node("FolderWindow"))
       {
         ReadAttr(node, "activeFolder", m_activeFolder);
@@ -593,6 +593,8 @@ namespace ToolKit
       }
 
       Iterate(ResourcePath(), true);
+
+      return nullptr;
     }
 
   } // namespace Editor

@@ -192,21 +192,23 @@ namespace ToolKit
       if (m_gizmoActive)
       {
         EnableGizmo(false);
-        lightNode = DirectionalLight::SerializeImp(doc, parent);
+        lightNode = Super::SerializeImp(doc, parent);
         EnableGizmo(true);
       }
       else
       {
-        lightNode = DirectionalLight::SerializeImp(doc, parent);
+        lightNode = Super::SerializeImp(doc, parent);
       }
 
       return lightNode;
     }
 
-    void EditorDirectionalLight::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+    XmlNode* EditorDirectionalLight::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      DirectionalLight::DeSerializeImp(doc, parent);
+      XmlNode* dirLightNode = Super::DeSerializeImp(info, parent);
       assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
+
+      return dirLightNode;
     }
 
     LineBatch* EditorDirectionalLight::GetDebugShadowFrustum()
@@ -284,10 +286,12 @@ namespace ToolKit
       return lightNode;
     }
 
-    void EditorPointLight::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+    XmlNode* EditorPointLight::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      PointLight::DeSerializeImp(doc, parent);
+      XmlNode* pointLightNode = Super::DeSerializeImp(info, parent);
       assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
+
+      return pointLightNode;
     }
 
     TKDefineClass(EditorSpotLight, SpotLight);
@@ -333,10 +337,12 @@ namespace ToolKit
       return lightNode;
     }
 
-    void EditorSpotLight::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+    XmlNode* EditorSpotLight::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      SpotLight::DeSerializeImp(doc, parent);
+      XmlNode* spotLightNode = Super::DeSerializeImp(info, parent);
       assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
+
+      return spotLightNode;
     }
 
   } // namespace Editor

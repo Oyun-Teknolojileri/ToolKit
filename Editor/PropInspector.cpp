@@ -296,7 +296,7 @@ namespace ToolKit
       m_prefabViews.push_back((uint) ViewType::Mesh);
     }
 
-    PropInspector::PropInspector(XmlNode* node) : PropInspector() { DeSerialize(nullptr, node); }
+    PropInspector::PropInspector(XmlNode* node) : PropInspector() { DeSerialize(SerializationFileInfo(), node); }
 
     PropInspector::~PropInspector()
     {

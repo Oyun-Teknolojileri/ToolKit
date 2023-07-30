@@ -1361,20 +1361,13 @@ namespace ToolKit
 
     XmlNode* Window::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
-      XmlNode* node = doc->allocate_node(rapidxml::node_element, "Window");
-      if (parent != nullptr)
-      {
-        parent->append_node(node);
-      }
-      else
-      {
-        doc->append_node(node);
-      }
+      XmlNode* node = CreateXmlNode(doc, "Window", parent);
+      WriteAttr(node, doc, XmlVersion, TKVersionStr);
 
       WriteAttr(node, doc, XmlNodeName.data(), m_name);
       WriteAttr(node, doc, "id", std::to_string(m_id));
-      WriteAttr(node, doc, "type", std::to_string(static_cast<int>(GetType())));
-      WriteAttr(node, doc, "visible", std::to_string(static_cast<int>(m_visible)));
+      WriteAttr(node, doc, "type", std::to_string((int) GetType()));
+      WriteAttr(node, doc, "visible", std::to_string((int) m_visible));
 
       XmlNode* childNode = CreateXmlNode(doc, "Size", node);
       WriteVec(childNode, doc, m_size);
@@ -1385,21 +1378,15 @@ namespace ToolKit
       return node;
     }
 
-    void Window::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+    XmlNode* Window::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      XmlNode* node = nullptr;
-      if (parent != nullptr)
-      {
-        node = parent;
-      }
-      else
-      {
-        node = doc->first_node("Window");
-      }
+      XmlNode* node = info.Document->first_node("Window");
+      ReadAttr(node, XmlVersion.data(), m_version);
 
       ReadAttr(node, XmlNodeName.data(), m_name);
       ReadAttr(node, "id", m_id);
-      // Type is determined by the corrsesponding constructor.
+
+      // Type is determined by the corresponding constructor.
       ReadAttr(node, "visible", m_visible);
 
       if (XmlNode* childNode = node->first_node("Size"))
@@ -1411,6 +1398,8 @@ namespace ToolKit
       {
         ReadVec(childNode, m_location);
       }
+
+      return nullptr;
     }
 
     void Window::HandleStates()

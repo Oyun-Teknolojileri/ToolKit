@@ -81,8 +81,8 @@ namespace ToolKit
       void HandleStates();
       void SetActive();
       void ModShortCutSignals(const IntArray& mask = {}) const;
-      virtual XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
-      virtual void DeSerializeImp(XmlDocument* doc, XmlNode* parent);
+      XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+      XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
      protected:
       // States.
