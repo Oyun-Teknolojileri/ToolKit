@@ -536,6 +536,7 @@ namespace ToolKit
   XmlNode* Mesh::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     LoadMesh(info.Document, parent, this);
+    return nullptr;
   }
 
   void TraverseMeshHelper(const Mesh* mesh, std::function<void(const Mesh*)> callback)
@@ -667,6 +668,7 @@ namespace ToolKit
   XmlNode* SkinMesh::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     LoadMesh(info.Document, parent, this);
+    return nullptr;
   }
 
   BoundingBox SkinMesh::CalculateAABB(const Skeleton* skel, DynamicBoneMapPtr boneMap)

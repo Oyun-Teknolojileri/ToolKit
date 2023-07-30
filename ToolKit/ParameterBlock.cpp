@@ -717,8 +717,7 @@ namespace ToolKit
 
   XmlNode* ParameterBlock::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* blockNode = doc->allocate_node(rapidxml::node_element, XmlParamBlockElement.c_str());
-
+    XmlNode* blockNode = CreateXmlNode(doc, XmlParamBlockElement, parent);
     for (const ParameterVariant& var : m_variants)
     {
       var.Serialize(doc, blockNode);
@@ -764,6 +763,8 @@ namespace ToolKit
         param = param->next_sibling();
       }
     }
+
+    return nullptr;
   }
 
   ParameterVariant& ParameterBlock::operator[](size_t index) { return m_variants[index]; }

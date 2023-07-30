@@ -630,6 +630,8 @@ namespace ToolKit
       prefab->Init(this);
       prefab->Link();
     }
+
+    return nullptr;
   }
 
   void Scene::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)

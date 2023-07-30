@@ -52,7 +52,7 @@ namespace ToolKit
    protected:
     using Entity::ParameterConstructor;
 
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     Entity* CopyTo(Entity* copyTo) const override;
   };

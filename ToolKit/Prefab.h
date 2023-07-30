@@ -73,8 +73,9 @@ namespace ToolKit
     Entity* CopyTo(Entity* other) const override;
 
    protected:
-    void DeSerializeImp(XmlDocument* doc, XmlNode* parent) override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
    private:
     void ParameterConstructor() override;

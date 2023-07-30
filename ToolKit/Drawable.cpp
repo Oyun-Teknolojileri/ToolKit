@@ -57,10 +57,10 @@ namespace ToolKit
 
   Entity* Drawable::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 
-  void Drawable::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Drawable::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     ClearComponents();
-    Entity::DeSerializeImp(doc, parent);
+    return Super::DeSerializeImp(info, parent);
   }
 
   XmlNode* Drawable::SerializeImp(XmlDocument* doc, XmlNode* parent) const

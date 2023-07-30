@@ -163,26 +163,6 @@ namespace ToolKit
     m_initiated = true;
   }
 
-  void Prefab::DeSerializeImp(XmlDocument* doc, XmlNode* parent)
-  {
-    Entity::DeSerializeImp(doc, parent);
-    parent = parent->last_node();
-
-    for (XmlNode* rNode = parent->first_node(); rNode; rNode = rNode->next_sibling())
-    {
-      String rootName = rNode->name();
-      ParameterVariantArray vars;
-      for (XmlNode* var = rNode->first_node(); var; var = var->next_sibling())
-      {
-        ParameterVariant param;
-        param.DeSerialize(doc, var);
-        vars.push_back(param);
-      }
-
-      m_childCustomDatas.insert(std::make_pair(rootName, vars));
-    }
-  }
-
   XmlNode* Prefab::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* nttNode    = Super::SerializeImp(doc, parent);
@@ -212,6 +192,58 @@ namespace ToolKit
           mat->Save(true);
         }
       }
+    }
+
+    return prefabNode;
+  }
+
+  XmlNode* Prefab::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    if (info.Version == String("v0.4.5"))
+    {
+      return DeSerializeImpV045(info, parent);
+    }
+
+    // old file.
+
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    parent           = parent->last_node();
+
+    for (XmlNode* rNode = parent->first_node(); rNode; rNode = rNode->next_sibling())
+    {
+      String rootName = rNode->name();
+      ParameterVariantArray vars;
+      for (XmlNode* var = rNode->first_node(); var; var = var->next_sibling())
+      {
+        ParameterVariant param;
+        param.DeSerialize(info, var);
+        vars.push_back(param);
+      }
+
+      m_childCustomDatas.insert(std::make_pair(rootName, vars));
+    }
+
+    return nttNode;
+  }
+
+  XmlNode* Prefab::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* nttNode     = Super::DeSerializeImp(info, parent);
+    XmlNode* prefabNode  = nttNode->first_node(StaticClass()->Name.c_str());
+    XmlNode* prefabRoots = prefabNode->first_node("PrefabRoots");
+
+    for (XmlNode* rNode = prefabRoots->first_node(); rNode; rNode = rNode->next_sibling())
+    {
+      String rootName = rNode->name();
+      ParameterVariantArray vars;
+      for (XmlNode* var = rNode->first_node(); var; var = var->next_sibling())
+      {
+        ParameterVariant param;
+        param.DeSerialize(info, var);
+        vars.push_back(param);
+      }
+
+      m_childCustomDatas.insert(std::make_pair(rootName, vars));
     }
 
     return prefabNode;
