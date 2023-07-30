@@ -722,7 +722,7 @@ namespace ToolKit
     {
       var.Serialize(doc, blockNode);
     }
-    parent->append_node(blockNode);
+
     return blockNode;
   }
 
