@@ -50,9 +50,10 @@ namespace ToolKit
       m_viewport = new PreviewViewport();
       m_viewport->Init({300.0f, 150.0f});
 
-      m_scenes[0] = GetSceneManager()->Create<Scene>(ScenePath("ms-sphere.scene", true));
-      m_scenes[1] = GetSceneManager()->Create<Scene>(ScenePath("ms-box.scene", true));
-      m_scenes[2] = GetSceneManager()->Create<Scene>(ScenePath("ms-ball.scene", true));
+      SceneManager* scnMan = GetSceneManager();
+      m_scenes[0]          = scnMan->Create<Scene>(ScenePath("ms-sphere.scene", true));
+      m_scenes[1]          = scnMan->Create<Scene>(ScenePath("ms-box.scene", true));
+      m_scenes[2]          = scnMan->Create<Scene>(ScenePath("ms-ball.scene", true));
 
       m_viewport->SetScene(m_scenes[0]);
 

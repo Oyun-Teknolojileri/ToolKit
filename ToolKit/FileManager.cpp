@@ -51,7 +51,8 @@ namespace ToolKit
   {
     String path            = filePath;
     ImageFileInfo fileInfo = {path, nullptr, nullptr, nullptr, 0};
-    return std::get<XmlFilePtr>(GetFile(FileType::Xml, fileInfo));
+    FileDataType data      = GetFile(FileType::Xml, fileInfo);
+    return std::get<XmlFilePtr>(data);
   }
 
   uint8* FileManager::GetImageFile(const String& filePath, int* x, int* y, int* comp, int reqComp)

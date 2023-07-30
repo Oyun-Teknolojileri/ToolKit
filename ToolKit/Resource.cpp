@@ -103,16 +103,16 @@ namespace ToolKit
   void Resource::ParseDocument(StringView firstNode)
   {
     SerializationFileInfo info;
-    info.File       = GetSerializeFile();
+    info.File          = GetSerializeFile();
 
-    XmlFilePtr file = GetFileManager()->GetXmlFile(info.File);
-    XmlDocument doc;
-    doc.parse<rapidxml::parse_full>(file->data());
+    XmlFilePtr file    = GetFileManager()->GetXmlFile(info.File);
+    XmlDocumentPtr doc = std::make_shared<XmlDocument>();
+    doc->parse<rapidxml::parse_full>(file->data());
 
-    info.Document = &doc;
-    if (XmlNode* rootNode = doc.first_node(firstNode.data()))
+    info.Document = doc.get();
+    if (XmlNode* rootNode = doc->first_node(firstNode.data()))
     {
-      ReadAttr(rootNode, XmlVersion.data(), info.Version);
+      ReadAttr(rootNode, XmlVersion.data(), info.Version, "v0.4.4");
       m_version = info.Version;
 
       DeSerialize(info, rootNode);

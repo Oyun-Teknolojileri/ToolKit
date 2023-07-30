@@ -61,9 +61,13 @@ namespace ToolKit
 
   XmlNode* Component::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    parent               = Super::DeSerializeImp(info, parent);
-    XmlNode* xmlCompNode = parent->first_node(StaticClass()->Name.c_str());
-    return xmlCompNode;
+    parent = Super::DeSerializeImp(info, parent);
+    if (m_version > String("v0.4.4"))
+    {
+      return parent->first_node(StaticClass()->Name.c_str());
+    }
+
+    return parent;
   }
 
   Component* ComponentFactory::Create(ComponentType cls)

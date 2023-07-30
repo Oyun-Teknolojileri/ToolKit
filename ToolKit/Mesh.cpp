@@ -426,8 +426,8 @@ namespace ToolKit
     {
       if (mesh == nullptr)
       {
-        auto meshPtr = std::make_shared<T>();
-        mesh         = meshPtr.get();
+        std::shared_ptr<T> meshPtr = std::make_shared<T>();
+        mesh                       = meshPtr.get();
         mainMesh->m_subMeshes.push_back(meshPtr);
       }
 
@@ -504,8 +504,8 @@ namespace ToolKit
       }
 
       mesh->m_loaded      = true;
-      mesh->m_vertexCount = static_cast<int>(mesh->m_clientSideVertices.size());
-      mesh->m_indexCount  = static_cast<int>(mesh->m_clientSideIndices.size());
+      mesh->m_vertexCount = (int) (mesh->m_clientSideVertices.size());
+      mesh->m_indexCount  = (int) (mesh->m_clientSideIndices.size());
       mesh                = nullptr;
     }
   }
