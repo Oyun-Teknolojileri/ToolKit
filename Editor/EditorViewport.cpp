@@ -168,13 +168,14 @@ namespace ToolKit
 
     XmlNode* EditorViewport::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      Window::DeSerializeImp(info, parent);
-      m_wndContentAreaSize = m_size;
+      XmlNode* wndNode      = Window::DeSerializeImp(info, parent);
+      XmlNode* viewportNode = wndNode->first_node("Viewport");
+      m_wndContentAreaSize  = m_size;
 
-      if (XmlNode* node = parent->first_node("Viewport"))
+      if (viewportNode)
       {
-        ReadAttr(node, "alignment", *((int*) (&m_cameraAlignment)));
-        ReadAttr(node, "lock", m_orbitLock);
+        ReadAttr(viewportNode, "alignment", *((int*) (&m_cameraAlignment)));
+        ReadAttr(viewportNode, "lock", m_orbitLock);
 
         Camera* viewCam    = MakeNew<Camera>();
         viewCam->m_version = m_version;
@@ -182,12 +183,12 @@ namespace ToolKit
 
         if (m_version > String("v0.4.4"))
         {
-          XmlNode* objNode = node->first_node(TKObject::StaticClass()->Name.c_str());
+          XmlNode* objNode = viewportNode->first_node(TKObject::StaticClass()->Name.c_str());
           viewCam->DeSerialize(info, objNode);
         }
         else
         {
-          viewCam->DeSerialize(info, node->first_node("E"));
+          viewCam->DeSerialize(info, viewportNode->first_node("E"));
         }
         viewCam->SetIdVal(id);
 
@@ -200,7 +201,7 @@ namespace ToolKit
         SetCamera(viewCam);
       }
 
-      return nullptr;
+      return viewportNode;
     }
 
     void EditorViewport::OnResizeContentArea(float width, float height)

@@ -1323,7 +1323,7 @@ namespace ToolKit
 
       if (XmlNode* root = doc->first_node("App"))
       {
-        ReadAttr(root, "version", m_version, "");
+        ReadAttr(root, "version", m_version, "v0.4.4");
 
         if (XmlNode* settings = root->first_node("Settings"))
         {

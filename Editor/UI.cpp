@@ -1380,26 +1380,40 @@ namespace ToolKit
 
     XmlNode* Window::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      XmlNode* node = info.Document->first_node("Window");
-      ReadAttr(node, XmlVersion.data(), m_version);
+      XmlNode* wndNode = parent;
+      if (wndNode == nullptr)
+      {
+        if (info.Document != nullptr)
+        {
+          wndNode = info.Document->first_node("Window");
+        }
+      }
 
-      ReadAttr(node, XmlNodeName.data(), m_name);
-      ReadAttr(node, "id", m_id);
+      if (wndNode == nullptr)
+      {
+        assert(wndNode && "Can't find Window node in document.");
+        return nullptr;
+      }
+
+      // if not present, version must be v0.4.4
+      ReadAttr(wndNode, XmlVersion.data(), m_version, "v0.4.4");
+      ReadAttr(wndNode, XmlNodeName.data(), m_name);
+      ReadAttr(wndNode, "id", m_id);
 
       // Type is determined by the corresponding constructor.
-      ReadAttr(node, "visible", m_visible);
+      ReadAttr(wndNode, "visible", m_visible);
 
-      if (XmlNode* childNode = node->first_node("Size"))
+      if (XmlNode* childNode = wndNode->first_node("Size"))
       {
         ReadVec(childNode, m_size);
       }
 
-      if (XmlNode* childNode = node->first_node("Location"))
+      if (XmlNode* childNode = wndNode->first_node("Location"))
       {
         ReadVec(childNode, m_location);
       }
 
-      return nullptr;
+      return wndNode;
     }
 
     void Window::HandleStates()

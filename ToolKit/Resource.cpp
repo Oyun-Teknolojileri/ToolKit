@@ -107,7 +107,7 @@ namespace ToolKit
 
     XmlFilePtr file = GetFileManager()->GetXmlFile(info.File);
     XmlDocument doc;
-    doc.parse<0>(file->data());
+    doc.parse<rapidxml::parse_full>(file->data());
 
     info.Document = &doc;
     if (XmlNode* rootNode = doc.first_node(firstNode.data()))
