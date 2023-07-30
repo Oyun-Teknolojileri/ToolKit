@@ -116,8 +116,9 @@ namespace ToolKit
     /**
      * Create SerializationFileInfo structure and pass it to DeSerializeImp.
      * @param firstNode is the name of root node of the xml file of this resource.
+     * @param full - parse all the xml file along with comments.
      */
-    void ParseDocument(StringView firstNode);
+    void ParseDocument(StringView firstNode, bool fullParse = false);
 
    public:
     String m_name;

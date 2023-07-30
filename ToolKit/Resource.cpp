@@ -100,14 +100,22 @@ namespace ToolKit
     other->m_initiated = m_initiated;
   }
 
-  void Resource::ParseDocument(StringView firstNode)
+  void Resource::ParseDocument(StringView firstNode, bool fullParse)
   {
     SerializationFileInfo info;
     info.File          = GetSerializeFile();
 
     XmlFilePtr file    = GetFileManager()->GetXmlFile(info.File);
     XmlDocumentPtr doc = std::make_shared<XmlDocument>();
-    doc->parse<rapidxml::parse_full>(file->data());
+
+    if (fullParse)
+    {
+      doc->parse<rapidxml::parse_full>(file->data());
+    }
+    else
+    {
+      doc->parse<rapidxml::parse_default>(file->data());
+    }
 
     info.Document = doc.get();
     if (XmlNode* rootNode = doc->first_node(firstNode.data()))

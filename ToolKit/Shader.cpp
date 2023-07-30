@@ -54,7 +54,7 @@ namespace ToolKit
   {
     if (!m_loaded)
     {
-      ParseDocument("shader");
+      ParseDocument("shader", true);
       m_loaded = true;
     }
   }
