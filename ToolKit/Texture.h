@@ -73,6 +73,21 @@ namespace ToolKit
     TextureSettings m_textureSettings;
   };
 
+  class DepthTexture
+  {
+  public:
+    void Init(int width, int height, bool stencil);
+    void UnInit();
+    
+  public:
+    int m_width;
+    int m_height;
+    uint m_textureId;
+    bool m_stencil;
+  };
+
+  typedef std::shared_ptr<DepthTexture> DepthTexturePtr;
+
   class TK_API CubeMap : public Texture
   {
    public:

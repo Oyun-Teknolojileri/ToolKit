@@ -231,7 +231,7 @@
     <ClCompile Include="EngineSettings.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="ForwardLinearDepthPass.cpp" />
+    <ClCompile Include="ForwardPreProcessPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -459,6 +459,6 @@
     <ClInclude Include="EngineSettings.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="ForwardLinearDepthPass.h" />
+    <ClInclude Include="ForwardPreProcessPass.h" />
   </ItemGroup>
 </Project>

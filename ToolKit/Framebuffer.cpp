@@ -46,6 +46,7 @@ namespace ToolKit
     {
       m_colorAtchs[i] = nullptr;
     }
+    m_depthAtch = nullptr;
   }
 
   Framebuffer::~Framebuffer() { UnInit(); }
@@ -74,37 +75,9 @@ namespace ToolKit
 
     if (m_settings.useDefaultDepth)
     {
-      RenderTargetPtr defaultDepthRt = std::make_shared<RenderTarget>();
-
-      GLint lastFBO;
-      glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
-
-      glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-
-      // Create a default depth, depth-stencil buffer
-      glGenRenderbuffers(1, &m_defaultRboId);
-      glBindRenderbuffer(GL_RENDERBUFFER, m_defaultRboId);
-
-      GLenum attachment = GL_DEPTH_ATTACHMENT;
-      GLenum component  = GL_DEPTH_COMPONENT24;
-      if (m_settings.depthStencil)
-      {
-        component  = GL_DEPTH24_STENCIL8;
-        attachment = GL_DEPTH_STENCIL_ATTACHMENT;
-      }
-
-      glRenderbufferStorage(GL_RENDERBUFFER, component, m_settings.width, m_settings.height);
-
-      // Attach depth buffer to FBO
-      glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, m_defaultRboId);
-
-      // Check if framebuffer is complete
-      if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-      {
-        GetLogger()->Log("Error: Framebuffer incomplete!");
-      }
-
-      glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+      m_depthAtch = std::make_shared<DepthTexture>();
+      m_depthAtch->Init(m_settings.width, m_settings.height, m_settings.depthStencil);
+      AttachDepthTexture(m_depthAtch);
     }
 
     m_initialized = true;
@@ -118,10 +91,10 @@ namespace ToolKit
     }
 
     ClearAttachments();
-
-    // Delete framebuffer
+    // auto err = glGetError();
+    // assert(err != 0);
     glDeleteFramebuffers(1, &m_fboId);
-
+    m_fboId       = 0; 
     m_initialized = false;
   }
 
@@ -138,41 +111,37 @@ namespace ToolKit
     }
   }
   
-  void Framebuffer::SetDepthFromOther(FramebufferPtr fb)
+  void Framebuffer::AttachDepthTexture(DepthTexturePtr dt)
   {
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-    GLenum attachment = GL_DEPTH_ATTACHMENT;
-    GLenum component  = GL_DEPTH_COMPONENT24;
-    if (fb->m_settings.depthStencil)
-    {
-      component  = GL_DEPTH24_STENCIL8;
-      attachment = GL_DEPTH_STENCIL_ATTACHMENT;
-    }
-     // Attach depth buffer to FBO
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, fb->m_defaultRboId);
+    m_depthAtch = dt;
 
+    GLint lastFBO;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
+    
+    GLenum attachment = dt->m_stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_ATTACHMENT;
+
+     // Attach depth buffer to FBO
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, dt->m_textureId);
+    
     // Check if framebuffer is complete
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
-        GetLogger()->Log("Error: Framebuffer incomplete!");
+      GetLogger()->Log("Error: Framebuffer incomplete!");
+      // assert(0);
     }
+    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+  }
+
+  DepthTexturePtr Framebuffer::GetDepthTexture()
+  {
+    return m_depthAtch;
   }
 
   RenderTargetPtr Framebuffer::SetAttachment(Attachment atc, RenderTargetPtr rt, int mip, int layer, CubemapFace face)
   {
     GLenum attachment = GL_DEPTH_ATTACHMENT;
-    if (IsColorAttachment(atc))
-    {
-      attachment = GL_COLOR_ATTACHMENT0 + (int) atc;
-    }
-    else
-    {
-      if (m_settings.depthStencil)
-      {
-        attachment = GL_DEPTH_STENCIL_ATTACHMENT;
-      }
-      DeleteDefaultDepthAttachment();
-    }
+    attachment = GL_COLOR_ATTACHMENT0 + (int) atc;
 
     if (rt->m_width <= 0 || rt->m_height <= 0 || rt->m_textureId == 0)
     {
@@ -209,15 +178,8 @@ namespace ToolKit
       }
     }
 
-    if (!IsColorAttachment(atc))
-    {
-      m_depthAtch = rt;
-    }
-    else
-    {
-      m_colorAtchs[(int) atc] = rt;
-      SetDrawBuffers();
-    }
+    m_colorAtchs[(int) atc] = rt;
+    SetDrawBuffers();
 
     CheckFramebufferComplete();
 
@@ -231,27 +193,18 @@ namespace ToolKit
 
   RenderTargetPtr Framebuffer::GetAttachment(Attachment atc)
   {
-    if (IsColorAttachment(atc))
-    {
-      return m_colorAtchs[(int) atc];
-    }
-    else
-    {
-      return m_depthAtch;
-    }
+    return m_colorAtchs[(int) atc];
   }
 
   void Framebuffer::ClearAttachments()
   {
+    if (!m_initialized) 
+    {
+      return;
+    }
     // Detach all attachments
-    if (m_defaultRboId == 0)
-    {
-      DetachAttachment(Attachment::DepthAttachment);
-    }
-    else
-    {
-      DeleteDefaultDepthAttachment();
-    }
+    RemoveDepthAttachment();
+    
     for (int i = 0; i < m_maxColorAttachmentCount; ++i)
     {
       if (m_colorAtchs[i] != nullptr)
@@ -264,43 +217,29 @@ namespace ToolKit
 
   RenderTargetPtr Framebuffer::DetachAttachment(Attachment atc)
   {
-    RenderTargetPtr rt = m_depthAtch;
-    GLenum attachment  = GL_DEPTH_ATTACHMENT;
-    if (IsColorAttachment(atc))
+    RenderTargetPtr rt = m_colorAtchs[(int) atc];
+    if (rt == nullptr) 
     {
-      attachment = GL_COLOR_ATTACHMENT0 + (int) atc;
-
-      rt         = m_colorAtchs[(int) atc];
-    }
-    else if (atc == Attachment::DepthStencilAttachment)
-    {
-      attachment = GL_DEPTH_STENCIL_ATTACHMENT;
+      return nullptr;
     }
 
-    if (rt != nullptr)
-    {
-      GLint lastFBO;
-      glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+    GLint lastFBO;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
+    
+    GLenum attachment = GL_COLOR_ATTACHMENT0 + (int) atc;
+    glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0); // Detach
 
-      // Detach
-      glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-      glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
+    m_colorAtchs[(int) atc] = nullptr;
+    SetDrawBuffers();
 
-      if (IsColorAttachment(atc))
-      {
-        m_colorAtchs[(int) atc] = nullptr;
-        SetDrawBuffers();
-      }
-
-      glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-    }
-
+    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
     return rt;
   }
 
   uint Framebuffer::GetFboId() { return m_fboId; }
 
-  uint Framebuffer::GetDefaultRboId() { return m_defaultRboId; }
+  uint Framebuffer::GetDefaultRboId() { return m_depthAtch ? m_depthAtch->m_textureId : 0; }
 
   FramebufferSettings Framebuffer::GetSettings() { return m_settings; }
 
@@ -314,31 +253,27 @@ namespace ToolKit
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 
-  void Framebuffer::DeleteDefaultDepthAttachment()
+  void Framebuffer::RemoveDepthAttachment()
   {
-    if (m_defaultRboId == 0)
+    if (m_depthAtch == nullptr)
     {
       return;
     }
-
     GLint lastFBO;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
-
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
 
-    GLenum attachment = GL_DEPTH_ATTACHMENT;
-    if (m_settings.depthStencil)
-    {
-      attachment = GL_DEPTH_STENCIL_ATTACHMENT;
-    }
+    GLenum attachment = m_depthAtch ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
 
     // Detach depth buffer from FBO
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, 0);
 
+    if (m_settings.useDefaultDepth) 
+    {
+      m_depthAtch->UnInit();
+    }
+    m_depthAtch = nullptr;
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-
-    glDeleteRenderbuffers(1, &m_defaultRboId);
-    m_defaultRboId = 0;
   }
 
   void Framebuffer::SetDrawBuffers()

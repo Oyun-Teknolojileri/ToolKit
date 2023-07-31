@@ -79,6 +79,7 @@ namespace ToolKit
     uint width  = (uint) m_params.gLinearRt->m_width;
     uint height = (uint) m_params.gLinearRt->m_height;
 
+    // m_framebuffer->RemoveDepthAttachment();
     m_framebuffer->Init({width, height, false, false});
     
     RenderTargetSettigs oneChannelSet = {};
@@ -96,7 +97,7 @@ namespace ToolKit
 
     m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_params.gLinearRt);
     m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_normalMergeRt);
-    m_framebuffer->SetDepthFromOther(m_params.gFrameBuffer);
+    m_framebuffer->AttachDepthTexture(m_params.gFrameBuffer->GetDepthTexture());
 
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_framebuffer, false);
