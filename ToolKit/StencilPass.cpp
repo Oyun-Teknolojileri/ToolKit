@@ -39,6 +39,8 @@ namespace ToolKit
     m_copyStencilSubPass = std::make_shared<FullQuadPass>();
     m_copyStencilSubPass->m_params.FragmentShader =
         GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
+    
+    m_frameBuffer = std::make_shared<Framebuffer>();
 
     m_solidOverrideMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
   }
@@ -82,8 +84,6 @@ namespace ToolKit
   {
     Pass::PreRender();
 
-    m_frameBuffer = std::make_shared<Framebuffer>();
-
     FramebufferSettings settings;
     settings.depthStencil    = true;
     settings.useDefaultDepth = true;
@@ -91,6 +91,7 @@ namespace ToolKit
     settings.height          = m_params.OutputTarget->m_height;
 
     m_frameBuffer->Init(settings);
+    m_frameBuffer->ReconstructIfNeeded(settings.width, settings.height);
     m_frameBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.OutputTarget);
 
     m_copyStencilSubPass->m_params.FrameBuffer = m_frameBuffer;
