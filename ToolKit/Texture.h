@@ -73,16 +73,17 @@ namespace ToolKit
     TextureSettings m_textureSettings;
   };
 
-  class DepthTexture
+  class DepthTexture : public Texture
   {
-  public:
+   public:
+    void Load() override;
     void Init(int width, int height, bool stencil);
-    void UnInit();
-    
-  public:
-    int m_width;
-    int m_height;
-    uint m_textureId;
+    void UnInit() override;
+
+   protected:
+    void Clear() override;
+
+   public:
     bool m_stencil;
   };
 

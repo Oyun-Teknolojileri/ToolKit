@@ -79,7 +79,6 @@ namespace ToolKit
     uint width  = (uint) m_params.gLinearRt->m_width;
     uint height = (uint) m_params.gLinearRt->m_height;
 
-    // m_framebuffer->RemoveDepthAttachment();
     m_framebuffer->Init({width, height, false, false});
     
     RenderTargetSettigs oneChannelSet = {};

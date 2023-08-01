@@ -119,16 +119,15 @@ namespace ToolKit
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
     
-    GLenum attachment = dt->m_stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_ATTACHMENT;
+    GLenum attachment = dt->m_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
 
-     // Attach depth buffer to FBO
+    // Attach depth buffer to FBO
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, dt->m_textureId);
     
     // Check if framebuffer is complete
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
       GetLogger()->Log("Error: Framebuffer incomplete!");
-      // assert(0);
     }
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
@@ -142,7 +141,7 @@ namespace ToolKit
   {
     GLenum attachment = GL_DEPTH_ATTACHMENT;
     attachment = GL_COLOR_ATTACHMENT0 + (int) atc;
-
+    
     if (rt->m_width <= 0 || rt->m_height <= 0 || rt->m_textureId == 0)
     {
       assert(false && "Render target can't be bind.");
@@ -263,7 +262,7 @@ namespace ToolKit
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
 
-    GLenum attachment = m_depthAtch ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
+    GLenum attachment = m_settings.depthStencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
 
     // Detach depth buffer from FBO
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, 0);

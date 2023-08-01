@@ -182,17 +182,25 @@ namespace ToolKit
     m_loaded = false;
   }
 
+  void DepthTexture::Load() {}
+
+  void DepthTexture::Clear() { UnInit(); }
+
   void DepthTexture::Init(int width, int height, bool stencil)
   {
-    m_width = width;
-    m_height = height;
-    m_stencil = stencil;
-    m_textureId = 0;
+    if (m_initiated)
+    {
+      return;
+    }
+    m_initiated = true;
+    m_width     = width;
+    m_height    = height;
+    m_stencil   = stencil;
 
     // Create a default depth, depth-stencil buffer
     glGenRenderbuffers(1, &m_textureId);
     glBindRenderbuffer(GL_RENDERBUFFER, m_textureId);
-    GLenum component  = stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_COMPONENT24;
+    GLenum component = stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT24;
     glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
   }
 
