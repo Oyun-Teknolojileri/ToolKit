@@ -91,8 +91,7 @@ namespace ToolKit
     }
 
     ClearAttachments();
-    // auto err = glGetError();
-    // assert(err != 0);
+
     glDeleteFramebuffers(1, &m_fboId);
     m_fboId       = 0; 
     m_initialized = false;
