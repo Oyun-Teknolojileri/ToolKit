@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MIT License
  *
  * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
@@ -24,31 +24,32 @@
  * SOFTWARE.
  */
 
-#include "ToneMapPass.h"
+#pragma once
 
-#include "Shader.h"
-#include "ShaderReflectionCache.h"
-#include "ToolKit.h"
-
-#include "DebugNew.h"
+#include "ForwardPass.h"
+#include "Material.h"
+#include "Pass.h"
 
 namespace ToolKit
 {
 
-  TonemapPass::TonemapPass() : PostProcessPass()
+  class TK_API ForwardPreProcess : public RenderPass
   {
-    m_postProcessShader = GetShaderManager()->Create<Shader>(ShaderPath("tonemapFrag.shader", true));
-  }
+   public:
+    ForwardPreProcess();
+    ~ForwardPreProcess();
 
-  TonemapPass::TonemapPass(const TonemapPassParams& params) : TonemapPass() { m_params = params; }
+    void Render() override;
+    void PreRender() override;
+    void PostRender() override;
 
-  TonemapPass::~TonemapPass() {}
+   public:
+    ForwardRenderPassParams m_params;
+    MaterialPtr m_linearMaterial = nullptr;
+    FramebufferPtr m_framebuffer = nullptr;
+    RenderTargetPtr m_normalMergeRt = nullptr;
+  };
 
-  void TonemapPass::PreRender()
-  {
-    PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
-    PostProcessPass::PreRender();
-    m_postProcessShader->SetShaderParameter("UseAcesTonemapper", ParameterVariant((uint) m_params.Method));
-  }
+  typedef std::shared_ptr<ForwardPreProcess> ForwardPreProcessPassPtr;
 
 } // namespace ToolKit

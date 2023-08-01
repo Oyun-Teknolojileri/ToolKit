@@ -169,7 +169,7 @@ namespace ToolKit
     }
 
     m_ssaoShader->SetShaderParameter("screenSize", ParameterVariant(Vec2(width, height)));
-    m_ssaoShader->SetShaderParameter("bias", ParameterVariant(m_params.Bias));
+    m_ssaoShader->SetShaderParameter("bias"      , ParameterVariant(m_params.Bias));
     m_ssaoShader->SetShaderParameter("projection", ParameterVariant(m_params.Cam->GetProjectionMatrix()));
     m_ssaoShader->SetShaderParameter("viewMatrix", ParameterVariant(m_params.Cam->GetViewMatrix()));
 

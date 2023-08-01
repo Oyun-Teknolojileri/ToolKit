@@ -6,9 +6,11 @@
 		precision highp float;
 		
 		uniform sampler2D s_texture0;
+		
 		in vec2 v_texture;
 		
 		uniform uint UseAcesTonemapper;
+		
 		out vec4 fragColor;
 
 		vec3 ACESFilm(vec3 x)

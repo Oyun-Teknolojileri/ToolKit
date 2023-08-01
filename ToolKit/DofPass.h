@@ -40,8 +40,9 @@ namespace ToolKit
 
   struct DoFPassParams
   {
-    RenderTargetPtr ColorRt = nullptr;
-    RenderTargetPtr DepthRt = nullptr;
+    RenderTargetPtr ColorRt        = nullptr;
+    RenderTargetPtr DepthRt        = nullptr;
+   
     float focusPoint        = 0.0f;
     float focusScale        = 0.0f;
     DoFQuality blurQuality  = DoFQuality::Normal;

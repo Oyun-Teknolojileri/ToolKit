@@ -140,7 +140,6 @@ namespace ToolKit
 
     // Gbuffer material
     ShaderPtr vertexShader              = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-
     ShaderPtr fragmentShader            = GetShaderManager()->Create<Shader>(ShaderPath("gBufferFrag.shader", true));
 
     m_gBufferMaterial->m_vertexShader   = vertexShader;

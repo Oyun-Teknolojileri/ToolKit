@@ -32,6 +32,7 @@
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EnvironmentComponent.cpp" />
     <ClCompile Include="FileManager.cpp" />
+    <ClCompile Include="ForwardPreProcessPass.cpp" />
     <ClCompile Include="ForwardPass.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="FullQuadPass.cpp" />
@@ -109,6 +110,7 @@
     <ClInclude Include="EnvironmentComponent.h" />
     <ClInclude Include="Events.h" />
     <ClInclude Include="FileManager.h" />
+    <ClInclude Include="ForwardPreProcessPass.h" />
     <ClInclude Include="ForwardPass.h" />
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="FullQuadPass.h" />
@@ -235,7 +237,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_GL_CORE_3_2;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_GL_CORE_3_2;NDEBUG;GLM_FORCE_SIMD_AVX2;GLM_FORCE_DEFAULT_ALIGNED_GENTYPES;GLM_FORCE_SSE2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/FI "stdafx.h" %(AdditionalOptions)</AdditionalOptions>
