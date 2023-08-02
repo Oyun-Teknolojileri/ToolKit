@@ -126,14 +126,14 @@ namespace ToolKit
         // Draw outlines.
         OutlineSelecteds(renderer);
         m_passArray.clear();
-
+        
         // Draw editor objects.
         m_passArray.push_back(m_editorPass);
         // Clears depth buffer to draw remaining entities always on top.
         m_passArray.push_back(m_gizmoPass);
         // Scene meshs can't block editor billboards. Desired for this case.
         m_passArray.push_back(m_billboardPass);
-
+        
         // Post process.
         m_passArray.push_back(m_tonemapPass);
         if (gfx.FXAAEnabled)
@@ -144,7 +144,7 @@ namespace ToolKit
           }
         }
         m_passArray.push_back(m_gammaPass);
-
+        
         Technique::Render(renderer);
       }
 

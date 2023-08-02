@@ -35,8 +35,12 @@ namespace ToolKit
   {
     Camera* Cam                    = nullptr;
     FramebufferPtr FrameBuffer     = nullptr;
+    FramebufferPtr gFrameBuffer    = nullptr;
+    RenderTargetPtr gNormalRt      = nullptr;
+    RenderTargetPtr gLinearRt      = nullptr;
     bool ClearFrameBuffer          = true;  //!< Clears whole buffer
     bool ClearDepthBuffer          = false; //!< Clears only depth buffer.
+    bool SSAOEnabled               = false;    
     RenderJobArray OpaqueJobs      = {};
     RenderJobArray TranslucentJobs = {};
     LightRawPtrArray Lights        = {};
@@ -64,7 +68,7 @@ namespace ToolKit
      * @param zoom Zoom amount of camera.
      * @param lights All lights.
      */
-    void RenderOpaque(RenderJobArray jobs, Camera* cam, const LightRawPtrArray& lights);
+    void RenderOpaque(RenderJobArray& jobs, Camera* cam, const LightRawPtrArray& lights);
 
     /**
      * Sorts and renders translucent entities. For double-sided blended entities
@@ -73,12 +77,11 @@ namespace ToolKit
      * @param cam Camera for rendering.
      * @param lights ights All lights.
      */
-    void RenderTranslucent(RenderJobArray jobs, Camera* cam, const LightRawPtrArray& lights);
+    void RenderTranslucent(RenderJobArray& jobs, Camera* cam, const LightRawPtrArray& lights);
 
    public:
     ForwardRenderPassParams m_params;
   };
 
   typedef std::shared_ptr<ForwardRenderPass> ForwardRenderPassPtr;
-
 } // namespace ToolKit
