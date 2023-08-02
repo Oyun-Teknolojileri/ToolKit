@@ -26,6 +26,10 @@
 
 #pragma once
 
+#include <Mesh.h>
+#include <MeshComponent.h>
+#include <Types.h>
+
 namespace ToolKit
 {
   namespace Editor

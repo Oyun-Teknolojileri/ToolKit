@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include "BinPack2D.h"
 #include "Pass.h"
 
 namespace ToolKit

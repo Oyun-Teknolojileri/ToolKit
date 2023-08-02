@@ -28,7 +28,11 @@
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <Camera.h>
+#include <Material.h>
+#include <Surface.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -44,14 +48,14 @@ namespace ToolKit
 
       m_thumbnailScene = std::make_shared<Scene>();
 
-      m_entity         = std::make_shared<Entity>();
-      m_entity->AddComponent(new MeshComponent());
+      m_entity         = MakeNewPtr<Entity>();
+      m_entity->AddComponent<MeshComponent>();
 
-      m_sphere = std::make_shared<Sphere>();
-      m_sphere->AddComponent(new MaterialComponent());
+      m_sphere = MakeNewPtr<Sphere>();
+      m_sphere->AddComponent<MaterialComponent>();
 
       m_lightSystem = std::make_shared<ThreePointLightSystem>();
-      m_cam         = std::make_shared<Camera>();
+      m_cam         = MakeNewPtr<Camera>();
     }
 
     ThumbnailRenderer::~ThumbnailRenderer()
@@ -97,10 +101,9 @@ namespace ToolKit
         if (dirEnt.m_ext == SKINMESH)
         {
           SkinMesh* skinMesh            = (SkinMesh*) mesh.get();
-          SkeletonComponentPtr skelComp = std::make_shared<SkeletonComponent>();
+          SkeletonComponentPtr skelComp = m_entity->AddComponent<SkeletonComponent>();
           skelComp->SetSkeletonResourceVal(skinMesh->m_skeleton);
           skelComp->Init();
-          m_entity->AddComponent(skelComp);
         }
 
         m_thumbnailScene->AddEntity(m_entity.get());
@@ -139,7 +142,8 @@ namespace ToolKit
         float w      = (texture->m_width / maxDim) * m_maxThumbSize;
         float h      = (texture->m_height / maxDim) * m_maxThumbSize;
 
-        m_surface    = std::make_shared<Surface>(Vec2(w, h));
+        m_surface    = MakeNewPtr<Surface>();
+        m_surface->Update(Vec2(w, h));
         m_surface->UpdateGeometry(false);
         MaterialComponentPtr matCom                  = m_surface->GetMaterialComponent();
         matCom->GetFirstMaterial()->m_diffuseTexture = texture;

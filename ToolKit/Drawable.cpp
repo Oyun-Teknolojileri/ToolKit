@@ -42,7 +42,9 @@
 namespace ToolKit
 {
 
-  Drawable::Drawable() { AddComponent(new MeshComponent()); }
+  TKDefineClass(Drawable, Entity);
+
+  Drawable::Drawable() { AddComponent<MeshComponent>(); }
 
   Drawable::~Drawable() {}
 
@@ -55,12 +57,18 @@ namespace ToolKit
 
   Entity* Drawable::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 
-  void Drawable::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
-
-  void Drawable::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Drawable::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     ClearComponents();
-    Entity::DeSerialize(doc, parent);
+    return Super::DeSerializeImp(info, parent);
+  }
+
+  XmlNode* Drawable::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   void Drawable::RemoveResources() { GetMeshManager()->Remove(GetMesh()->GetFile()); }

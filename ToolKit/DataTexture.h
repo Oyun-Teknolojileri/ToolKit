@@ -74,20 +74,4 @@ namespace ToolKit
     bool IncrementDataIndex(int& index, int amount = 1);
   };
 
-  class SSAONoiseTexture : public DataTexture
-  {
-   public:
-    SSAONoiseTexture(int width, int height);
-
-    void Init(void* data);
-
-   protected:
-    SSAONoiseTexture();
-
-   private:
-    void Init(bool flushClientSideArray = false) override;
-  };
-
-  using SSAONoiseTexturePtr = std::shared_ptr<SSAONoiseTexture>;
-
 } // namespace ToolKit

@@ -42,20 +42,25 @@ namespace ToolKit
   class TK_API SkeletonComponent : public Component
   {
    public:
-    TKComponentType(SkeletonComponent);
+    TKDeclareClass(SkeletonComponent, Component);
 
     /**
      * Empty constructor.
      */
     SkeletonComponent();
     virtual ~SkeletonComponent();
-    void Init();
 
+    void Init();
     ComponentPtr Copy(Entity* ntt) override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+   protected:
+    void ParameterConstructor() override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     TKDeclareParam(SkeletonPtr, SkeletonResource);
+
     DynamicBoneMapPtr m_map = nullptr;
     bool isDirty            = true;
   };

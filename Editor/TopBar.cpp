@@ -28,11 +28,14 @@
 
 #include "App.h"
 #include "EditorCamera.h"
-#include "GradientSky.h"
 #include "IconsFontAwesome.h"
 #include "OutlinerWindow.h"
 
-#include "DebugNew.h"
+#include <Drawable.h>
+#include <GradientSky.h>
+#include <Surface.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -49,27 +52,29 @@ namespace ToolKit
       {
         if (ImGui::MenuItem(ICON_FA_CUBE " Cube"))
         {
-          createdEntity = new Cube();
+          createdEntity = MakeNew<Cube>();
           createdEntity->GetMeshComponent()->Init(false);
         }
         if (ImGui::MenuItem(ICON_FA_CIRCLE " Sphere"))
         {
-          createdEntity = new Sphere();
+          createdEntity = MakeNew<Sphere>();
           createdEntity->GetMeshComponent()->Init(false);
         }
         if (ImGui::MenuItem(ICON_FA_CARET_UP " Cone"))
         {
-          createdEntity = new Cone({1.0f, 1.0f, 30, 30});
+          Cone* cone = MakeNew<Cone>();
+          cone->Generate(1.0f, 1.0f, 30, 30);
+          createdEntity = cone;
           createdEntity->GetMeshComponent()->Init(false);
         }
         if (ImGui::MenuItem(ICON_FA_SQUARE " Plane"))
         {
-          createdEntity = new Quad();
+          createdEntity = MakeNew<Quad>();
           createdEntity->GetMeshComponent()->Init(false);
         }
         if (ImGui::MenuItem(ICON_FA_GITHUB_ALT " Monkey"))
         {
-          Drawable* suzanne = new Drawable();
+          Drawable* suzanne = MakeNew<Drawable>();
           suzanne->SetMesh(GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh", true)));
           suzanne->GetMesh()->Init(false);
           createdEntity = suzanne;
@@ -82,13 +87,17 @@ namespace ToolKit
       {
         if (ImGui::MenuItem("Surface"))
         {
-          createdEntity = new Surface(Vec2(100.0f, 30.0f), Vec2(0.0f, 0.0f));
+          Surface* srf = MakeNew<Surface>();
+          srf->SetSizeVal(Vec2(100.0f, 30.0f));
+          createdEntity = srf;
           createdEntity->GetMeshComponent()->Init(false);
         }
 
         if (ImGui::MenuItem("Button"))
         {
-          createdEntity = new Button(Vec2(100.0f, 30.0f));
+          Button* btn = MakeNew<Button>();
+          btn->Update(Vec2(100.0f, 30.0f), Vec2(0.5f, 0.5f));
+          createdEntity = btn;
           createdEntity->GetMeshComponent()->Init(false);
         }
         ImGui::EndMenu();
@@ -102,40 +111,40 @@ namespace ToolKit
 
       if (ImGui::MenuItem(ICON_FA_VIDEO_CAMERA " Camera"))
       {
-        createdEntity = new EditorCamera();
+        createdEntity = MakeNew<EditorCamera>();
       }
 
       if (ImGui::BeginMenu(ICON_FA_LIGHTBULB " Light"))
       {
         if (ImGui::MenuItem(ICON_FA_SUN " Directional"))
         {
-          EditorDirectionalLight* light = new EditorDirectionalLight();
+          EditorDirectionalLight* light = MakeNew<EditorDirectionalLight>();
           light->Init();
           createdEntity = static_cast<Entity*>(light);
         }
 
         if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Point"))
         {
-          EditorPointLight* light = new EditorPointLight();
+          EditorPointLight* light = MakeNew<EditorPointLight>();
           light->Init();
           createdEntity = static_cast<Entity*>(light);
         }
 
         if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Spot"))
         {
-          EditorSpotLight* light = new EditorSpotLight();
+          EditorSpotLight* light = MakeNew<EditorSpotLight>();
           light->Init();
           createdEntity = static_cast<Entity*>(light);
         }
 
         if (ImGui::MenuItem(ICON_FA_CLOUD " Sky"))
         {
-          createdEntity = new Sky();
+          createdEntity = MakeNew<Sky>();
         }
 
         if (ImGui::MenuItem(ICON_FA_SKYATLAS " Gradient Sky"))
         {
-          createdEntity = new GradientSky();
+          createdEntity = MakeNew<GradientSky>();
         }
 
         ImGui::EndMenu();

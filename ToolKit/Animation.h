@@ -31,16 +31,9 @@
  * and related structures.
  */
 
-#include "Entity.h"
-#include "Node.h"
 #include "Resource.h"
-#include "ResourceManager.h"
-#include "Skeleton.h"
 #include "SkeletonComponent.h"
 #include "Types.h"
-
-#include <unordered_map>
-#include <vector>
 
 namespace ToolKit
 {
@@ -136,11 +129,6 @@ namespace ToolKit
     void Reverse();
 
     /**
-     * Save animation to disk
-     */
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-
-    /**
      * Finds nearest keys and interpolation ratio for current time.
      * @param keys animation key array.
      * @param key1 output key 1.
@@ -152,6 +140,9 @@ namespace ToolKit
 
    protected:
     void CopyTo(Resource* other) override;
+
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     /**

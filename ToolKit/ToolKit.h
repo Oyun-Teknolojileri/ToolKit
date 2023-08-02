@@ -31,35 +31,9 @@
  * functionalities of the ToolKit framework.
  */
 
-#include "Animation.h"
-#include "Audio.h"
-#include "Camera.h"
-#include "Canvas.h"
-#include "DofPass.h"
-#include "Drawable.h"
-#include "Entity.h"
-#include "Events.h"
-#include "FileManager.h"
-#include "Material.h"
-#include "Mesh.h"
-#include "Node.h"
-#include "Pass.h"
-#include "PluginManager.h"
-#include "PostProcessPass.h"
-#include "Primative.h"
-#include "RenderState.h"
-#include "RenderSystem.h"
-#include "Renderer.h"
-#include "Scene.h"
-#include "Shader.h"
-#include "Skeleton.h"
-#include "SpriteSheet.h"
-#include "StateMachine.h"
-#include "Surface.h"
-#include "Texture.h"
-#include "ToneMapPass.h"
+#include "ResourceManager.h"
+#include "TKObject.h"
 #include "Types.h"
-#include "UIManager.h"
 
 /**
  * Base name space for all the ToolKit functionalities.
@@ -92,65 +66,9 @@ namespace ToolKit
     ULongID m_maxIdLimit = (std::numeric_limits<uint64_t>::max() / 10) * 9;
   };
 
-  class TK_API EngineSettings : public Serializable
-  {
-   public:
-    struct WindowSettings
-    {
-      String Name     = "ToolKit";
-      uint Width      = 1024;
-      uint Height     = 768;
-      bool FullScreen = false;
-    } Window;
-
-    struct GraphicSettings
-    {
-      int MSAA = 2;
-      int FPS  = 60;
-    } Graphics;
-
-    struct PostProcessingSettings
-    {
-      bool TonemappingEnabled      = true;
-      TonemapMethod TonemapperMode = TonemapMethod::Aces;
-      bool BloomEnabled            = true;
-      float BloomIntensity         = 1.0f;
-      float BloomThreshold         = 1.0f;
-      int BloomIterationCount      = 5;
-      bool GammaCorrectionEnabled  = true;
-      float Gamma                  = 2.2f;
-      bool SSAOEnabled             = true;
-      float SSAORadius             = 0.5f;
-      float SSAOBias               = 0.025f;
-      float SSAOSpread             = 1.0f;
-      bool DepthOfFieldEnabled     = false;
-      float FocusPoint             = 10.0f;
-      float FocusScale             = 5.0f;
-      DoFQuality DofQuality        = DoFQuality::Normal;
-      bool FXAAEnabled             = false;
-    } PostProcessing;
-
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-
-    void SerializeWindow(XmlDocument* doc, XmlNode* parent) const;
-    void DeSerializeWindow(XmlDocument* doc, XmlNode* parent);
-    void SerializePostProcessing(XmlDocument* doc, XmlNode* parent) const;
-    void DeSerializePostProcessing(XmlDocument* doc, XmlNode* parent);
-    void SerializeGraphics(XmlDocument* doc, XmlNode* parent) const;
-    void DeSerializeGraphics(XmlDocument* doc, XmlNode* parent);
-  };
-
   struct Timing
   {
-    void Initialize(uint fps)
-    {
-      LastTime    = GetElapsedMilliSeconds();
-      CurrentTime = 0.0f;
-      DeltaTime   = 1000.0f / float(fps);
-      FrameCount  = 0;
-      TimeAccum   = 0.0f;
-    }
+    void Init(uint fps);
 
     float LastTime    = 0.0f;
     float CurrentTime = 0.0f;
@@ -194,22 +112,25 @@ namespace ToolKit
 
    public:
     Timing m_timing;
-    AnimationManager* m_animationMan     = nullptr;
-    AnimationPlayer* m_animationPlayer   = nullptr;
-    AudioManager* m_audioMan             = nullptr;
-    MaterialManager* m_materialManager   = nullptr;
-    MeshManager* m_meshMan               = nullptr;
-    ShaderManager* m_shaderMan           = nullptr;
-    SpriteSheetManager* m_spriteSheetMan = nullptr;
-    TextureManager* m_textureMan         = nullptr;
-    SceneManager* m_sceneManager         = nullptr;
-    PluginManager* m_pluginManager       = nullptr;
-    Logger* m_logger                     = nullptr;
-    UIManager* m_uiManager               = nullptr;
-    SkeletonManager* m_skeletonManager   = nullptr;
-    FileManager* m_fileManager           = nullptr;
-    EntityFactory* m_entityFactory       = nullptr;
-    RenderSystem* m_renderSys            = nullptr;
+    class AnimationManager* m_animationMan     = nullptr;
+    class AnimationPlayer* m_animationPlayer   = nullptr;
+    class AudioManager* m_audioMan             = nullptr;
+    class MaterialManager* m_materialManager   = nullptr;
+    class MeshManager* m_meshMan               = nullptr;
+    class ShaderManager* m_shaderMan           = nullptr;
+    class SpriteSheetManager* m_spriteSheetMan = nullptr;
+    class TextureManager* m_textureMan         = nullptr;
+    class SceneManager* m_sceneManager         = nullptr;
+    class PluginManager* m_pluginManager       = nullptr;
+    class Logger* m_logger                     = nullptr;
+    class UIManager* m_uiManager               = nullptr;
+    class SkeletonManager* m_skeletonManager   = nullptr;
+    class FileManager* m_fileManager           = nullptr;
+    class EntityFactory* m_entityFactory       = nullptr;
+    class ComponentFactory* m_componentFactory = nullptr;
+    class TKObjectFactory* m_objectFactory     = nullptr;
+    class RenderSystem* m_renderSys            = nullptr;
+    class EngineSettings* m_engineSettings     = nullptr;
     HandleManager m_handleManager;
 
     bool m_preInitiated = false;
@@ -217,33 +138,65 @@ namespace ToolKit
     String m_resourceRoot;
     String m_cfgPath;
     EventPool m_eventPool;
-    EngineSettings m_engineSettings;
 
    private:
     static Main* m_proxy;
   };
 
   // Accessors.
-  TK_API Logger* GetLogger();
-  TK_API RenderSystem* GetRenderSystem();
-  TK_API AnimationManager* GetAnimationManager();
-  TK_API AnimationPlayer* GetAnimationPlayer();
-  TK_API AudioManager* GetAudioManager();
-  TK_API MaterialManager* GetMaterialManager();
-  TK_API MeshManager* GetMeshManager();
-  TK_API ShaderManager* GetShaderManager();
-  TK_API SpriteSheetManager* GetSpriteSheetManager();
-  TK_API TextureManager* GetTextureManager();
-  TK_API SceneManager* GetSceneManager();
-  TK_API PluginManager* GetPluginManager();
-  TK_API ResourceManager* GetResourceManager(ResourceType type);
-  TK_API UIManager* GetUIManager();
-  TK_API HandleManager* GetHandleManager();
-  TK_API SkeletonManager* GetSkeletonManager();
-  TK_API FileManager* GetFileManager();
-  TK_API EntityFactory* GetEntityFactory();
-  TK_API EngineSettings& GetEngineSettings();
+  TK_API class Logger* GetLogger();
+  TK_API class RenderSystem* GetRenderSystem();
+  TK_API class AnimationManager* GetAnimationManager();
+  TK_API class AnimationPlayer* GetAnimationPlayer();
+  TK_API class AudioManager* GetAudioManager();
+  TK_API class MaterialManager* GetMaterialManager();
+  TK_API class MeshManager* GetMeshManager();
+  TK_API class ShaderManager* GetShaderManager();
+  TK_API class SpriteSheetManager* GetSpriteSheetManager();
+  TK_API class TextureManager* GetTextureManager();
+  TK_API class SceneManager* GetSceneManager();
+  TK_API class PluginManager* GetPluginManager();
+  TK_API class ResourceManager* GetResourceManager(ResourceType type);
+  TK_API class UIManager* GetUIManager();
+  TK_API class HandleManager* GetHandleManager();
+  TK_API class SkeletonManager* GetSkeletonManager();
+  TK_API class FileManager* GetFileManager();
+  TK_API class EngineSettings& GetEngineSettings();
 
+  // Factory.
+  TK_API class EntityFactory* GetEntityFactory();
+  TK_API class ComponentFactory* GetComponentFactory();
+  TK_API class TKObjectFactory* GetObjectFactory();
+
+  template <typename T>
+  T* MakeNew()
+  {
+    if (Main* main = Main::GetInstance())
+    {
+      if (TKObjectFactory* of = main->m_objectFactory) 
+      {
+        return of->MakeNew<T>();
+      }
+    }
+
+    return nullptr;
+  }
+
+  template <typename T>
+  std::shared_ptr<T> MakeNewPtr()
+  {
+    if (Main* main = Main::GetInstance())
+    {
+      if (TKObjectFactory* of = main->m_objectFactory)
+      {
+        return std::shared_ptr<T>(of->MakeNew<T>());
+      }
+    }
+
+    return nullptr;
+  }
+
+  // Path.
   TK_API String DefaultPath();
   TK_API String DefaultAbsolutePath();
   TK_API String ConfigPath();

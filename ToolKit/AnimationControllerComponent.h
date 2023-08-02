@@ -40,7 +40,7 @@ namespace ToolKit
   class TK_API AnimControllerComponent : public Component
   {
    public:
-    TKComponentType(AnimControllerComponent);
+    TKDeclareClass(AnimControllerComponent, Component);
 
     /**
      * Empty constructor.
@@ -49,7 +49,6 @@ namespace ToolKit
     virtual ~AnimControllerComponent();
 
     ComponentPtr Copy(Entity* ntt) override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     void Play(const String& recordName);
     void Stop();
@@ -58,6 +57,11 @@ namespace ToolKit
     AnimRecordPtr GetAnimRecord(const String& signalName);
     void AddSignal(const String& signalName, AnimRecordPtr record);
     void RemoveSignal(const String& signalName);
+
+   protected:
+    void ParameterConstructor() override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     TKDeclareParam(AnimRecordPtrMap, Records);

@@ -32,6 +32,7 @@
 #include "EnvironmentComponent.h"
 #include "GradientSky.h"
 #include "Material.h"
+#include "MathUtil.h"
 #include "Mesh.h"
 #include "Node.h"
 #include "Pass.h"
@@ -45,10 +46,8 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
-#include "gles2.h"
 
-#include <algorithm>
-#include <random>
+#include <gles2.h>
 
 #include "DebugNew.h"
 
@@ -57,10 +56,13 @@ namespace ToolKit
 
 #define TK_LUT_TEXTURE "GLOBAL_BRDF_LUT_TEXTURE"
 
-  Renderer::Renderer()
+  Renderer::Renderer() {}
+
+  void Renderer::Init()
   {
     m_uiCamera        = new Camera();
     m_utilFramebuffer = std::make_shared<Framebuffer>();
+    m_dummyDrawCube   = MakeNewPtr<Cube>();
   }
 
   Renderer::~Renderer()
@@ -475,30 +477,22 @@ namespace ToolKit
 
   void Renderer::DrawFullQuad(MaterialPtr mat)
   {
-    static Camera quadCam;
-    static Quad quad;
-    quad.GetMeshComponent()->GetMeshVal()->m_material = mat;
+    static CameraPtr quadCam                           = MakeNewPtr<Camera>();
+    static QuadPtr quad                                = MakeNewPtr<Quad>();
+    quad->GetMeshComponent()->GetMeshVal()->m_material = mat;
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({&quad}, jobs);
-    Render(jobs, &quadCam);
+    RenderJobProcessor::CreateRenderJobs({quad.get()}, jobs);
+    Render(jobs, quadCam.get());
   }
 
   void Renderer::DrawCube(Camera* cam, MaterialPtr mat, const Mat4& transform)
   {
-    Cube cube;
-    cube.Generate(cube.GetMeshComponent(), cube.GetCubeScaleVal());
-    cube.m_node->SetTransform(transform);
-
-    MaterialComponentPtr matc = cube.GetMaterialComponent();
-    if (matc == nullptr)
-    {
-      cube.AddComponent(new MaterialComponent);
-    }
-    cube.GetMaterialComponent()->SetFirstMaterial(mat);
+    m_dummyDrawCube->m_node->SetTransform(transform);
+    m_dummyDrawCube->GetMaterialComponent()->SetFirstMaterial(mat);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({&cube}, jobs);
+    RenderJobProcessor::CreateRenderJobs({m_dummyDrawCube.get()}, jobs);
     Render(jobs, cam);
   }
 

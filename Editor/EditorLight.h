@@ -79,39 +79,46 @@ namespace ToolKit
     class EditorDirectionalLight : public DirectionalLight, public LightGizmoController
     {
      public:
+      TKDeclareClass(EditorDirectionalLight, DirectionalLight);
+
       EditorDirectionalLight();
       virtual ~EditorDirectionalLight();
-      void ParameterEventConstructor() override;
-
       Entity* Copy() const override;
-      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-
       LineBatch* GetDebugShadowFrustum();
+
+     protected:
+      XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+      XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     };
 
     class EditorPointLight : public PointLight, public LightGizmoController
     {
      public:
+      TKDeclareClass(EditorPointLight, PointLight);
+
       EditorPointLight();
       virtual ~EditorPointLight();
-      void ParameterEventConstructor() override;
-
       Entity* Copy() const override;
-      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+     protected:
+      XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+      XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+      void ParameterEventConstructor() override;
     };
 
     class EditorSpotLight : public SpotLight, public LightGizmoController
     {
      public:
+      TKDeclareClass(EditorSpotLight, SpotLight);
+
       EditorSpotLight();
       virtual ~EditorSpotLight();
-      void ParameterEventConstructor() override;
-
       Entity* Copy() const override;
-      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+     protected:
+      XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+      XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+      void ParameterEventConstructor() override;
     };
 
   } // namespace Editor

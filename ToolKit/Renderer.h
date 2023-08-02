@@ -26,16 +26,12 @@
 
 #pragma once
 
-#include "Framebuffer.h"
-#include "Light.h"
+#include "Camera.h"
+#include "Primative.h"
 #include "RenderState.h"
 #include "Sky.h"
-#include "SpriteSheet.h"
 #include "Types.h"
 #include "Viewport.h"
-
-#include <memory>
-#include <unordered_map>
 
 namespace ToolKit
 {
@@ -70,6 +66,7 @@ namespace ToolKit
     Renderer();
     ~Renderer();
 
+    void Init();
     void SetRenderState(const RenderState* const state);
 
     void SetStencilOperation(StencilOperation op);
@@ -203,6 +200,9 @@ namespace ToolKit
     MaterialPtr m_copyMaterial         = nullptr;
 
     int m_maxArrayTextureLayers        = -1;
+
+    // Dummy objects for draw commands.
+    CubePtr m_dummyDrawCube            = nullptr;
   };
 
 } // namespace ToolKit

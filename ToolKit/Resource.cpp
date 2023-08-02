@@ -26,6 +26,7 @@
 
 #include "Resource.h"
 
+#include "FileManager.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -99,11 +100,46 @@ namespace ToolKit
     other->m_initiated = m_initiated;
   }
 
+  void Resource::ParseDocument(StringView firstNode, bool fullParse)
+  {
+    SerializationFileInfo info;
+    info.File          = GetSerializeFile();
+
+    XmlFilePtr file    = GetFileManager()->GetXmlFile(info.File);
+    XmlDocumentPtr doc = std::make_shared<XmlDocument>();
+
+    if (fullParse)
+    {
+      doc->parse<rapidxml::parse_full>(file->data());
+    }
+    else
+    {
+      doc->parse<rapidxml::parse_default>(file->data());
+    }
+
+    info.Document = doc.get();
+    if (XmlNode* rootNode = doc->first_node(firstNode.data()))
+    {
+      ReadAttr(rootNode, XmlVersion.data(), info.Version, "v0.4.4");
+      m_version = info.Version;
+
+      DeSerialize(info, rootNode);
+    }
+  }
+
   ResourceType Resource::GetType() const { return ResourceType::Base; }
 
-  void Resource::Serialize(XmlDocument* doc, XmlNode* parent) const { assert(false && "Not implemented"); }
+  XmlNode* Resource::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    assert(false && "Not implemented");
+    return nullptr;
+  }
 
-  void Resource::DeSerialize(XmlDocument* doc, XmlNode* parent) { assert(false && "Not implemented"); }
+  XmlNode* Resource::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    assert(false && "Not implemented");
+    return nullptr;
+  }
 
   void Resource::SerializeRef(XmlDocument* doc, XmlNode* parent) const
   {

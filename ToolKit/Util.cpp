@@ -27,15 +27,12 @@
 #include "Util.h"
 
 #include "Common/utf8.h"
+#include "FileManager.h"
+#include "Material.h"
+#include "MathUtil.h"
 #include "Primative.h"
+#include "Scene.h"
 #include "ToolKit.h"
-#include "rapidxml.hpp"
-
-#include <algorithm>
-#include <cstdarg>
-#include <filesystem>
-#include <fstream>
-#include <string>
 
 #include "DebugNew.h"
 
@@ -89,10 +86,10 @@ namespace ToolKit
   template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const UVec4& val);
   template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const Quaternion& val);
 
-  void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val)
+  void WriteAttr(XmlNode* node, XmlDocument* doc, const StringView& name, const StringView& val)
   {
     node->append_attribute(
-        doc->allocate_attribute(doc->allocate_string(name.c_str(), 0), doc->allocate_string(val.c_str(), 0)));
+        doc->allocate_attribute(doc->allocate_string(name.data(), 0), doc->allocate_string(val.data(), 0)));
   }
 
   template <typename T>
@@ -139,11 +136,15 @@ namespace ToolKit
 
   void ReadAttr(XmlNode* node, const String& name, ubyte& val) { val = ReadVal<ubyte>(node, name); }
 
-  void ReadAttr(XmlNode* node, const String& name, String& val)
+  void ReadAttr(XmlNode* node, const String& name, String& val, StringView defaultVal)
   {
     if (XmlAttribute* attr = node->first_attribute(name.c_str()))
     {
       val = attr->value();
+    }
+    else
+    {
+      val = defaultVal;
     }
   }
 
@@ -183,11 +184,11 @@ namespace ToolKit
     return false;
   }
 
-  XmlNode* CreateXmlNode(XmlDocument* doc, const String& name, XmlNode* parent)
+  XmlNode* CreateXmlNode(XmlDocument* doc, const StringView& name, XmlNode* parent)
   {
     assert(doc);
 
-    char* str     = doc->allocate_string(name.c_str());
+    char* str     = doc->allocate_string(name.data());
     XmlNode* node = doc->allocate_node(rapidxml::node_type::node_element, str);
 
     if (parent)
@@ -783,13 +784,17 @@ namespace ToolKit
                        o - x * hSize - y * hSize,
                        o + x * hSize - y * hSize};
 
-    LineBatch* obj = new LineBatch(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+    LineBatch* obj = MakeNew<LineBatch>();
+    obj->Generate(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+
     return obj;
   }
 
   class LineBatch* CreateLineDebugObject(const Vec3Array& corners)
   {
-    LineBatch* obj = new LineBatch(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+    LineBatch* obj = MakeNew<LineBatch>();
+    obj->Generate(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+
     return obj;
   }
 
@@ -825,7 +830,9 @@ namespace ToolKit
       }
     }
 
-    LineBatch* lineForm = new LineBatch(vertices, color, DrawType::LineStrip, size);
+    LineBatch* lineForm = MakeNew<LineBatch>();
+    lineForm->Generate(vertices, color, DrawType::LineStrip, size);
+
     return lineForm;
   }
 

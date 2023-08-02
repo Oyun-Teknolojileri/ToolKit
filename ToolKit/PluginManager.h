@@ -29,9 +29,6 @@
 #include "Plugin.h"
 #include "Types.h"
 
-#include <functional>
-#include <vector>
-
 namespace ToolKit
 {
 

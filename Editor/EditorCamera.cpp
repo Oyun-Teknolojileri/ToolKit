@@ -28,22 +28,28 @@
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <Material.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
   namespace Editor
   {
 
-    EditorCamera::EditorCamera()
-    {
-      ParameterConstructor();
-      CreateGizmo();
-    }
+    TKDefineClass(EditorCamera, Camera);
+
+    EditorCamera::EditorCamera() {}
 
     EditorCamera::EditorCamera(const EditorCamera* cam) { cam->CopyTo(this); }
 
     EditorCamera::~EditorCamera() {}
+
+    void EditorCamera::NativeConstruct()
+    {
+      Super::NativeConstruct();
+      CreateGizmo();
+    }
 
     Entity* EditorCamera::Copy() const
     {
@@ -55,8 +61,10 @@ namespace ToolKit
       return cpy;
     }
 
-    void EditorCamera::PostDeSerialize()
+    void EditorCamera::PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
+      Super::PostDeSerializeImp(info, parent);
+
       ParameterConstructor();
       CreateGizmo();
     }
@@ -91,8 +99,9 @@ namespace ToolKit
                                       corners[2], corners[3], corners[3], corners[0]};
 
       MeshComponentPtr camMeshComp = GetComponent<MeshComponent>();
-      LineBatch frusta(lines, g_cameraGizmoColor, DrawType::Line);
-      camMeshComp->SetMeshVal(frusta.GetComponent<MeshComponent>()->GetMeshVal());
+      LineBatchPtr frusta          = MakeNewPtr<LineBatch>();
+      frusta->Generate(lines, g_cameraGizmoColor, DrawType::Line);
+      camMeshComp->SetMeshVal(frusta->GetComponent<MeshComponent>()->GetMeshVal());
 
       // Triangle part.
       VertexArray vertices;
@@ -124,15 +133,16 @@ namespace ToolKit
       // Recreate frustum.
       if (GetComponent<MeshComponent>() == nullptr)
       {
-        AddComponent(new MeshComponent());
-        GetMeshComponent()->SetCastShadowVal(false);
+        MeshComponentPtr meshCom = AddComponent<MeshComponent>();
+        meshCom->SetCastShadowVal(false);
       }
+
       GenerateFrustum();
     }
 
     void EditorCamera::ParameterConstructor()
     {
-      Camera::ParameterEventConstructor();
+      Super::ParameterConstructor();
 
       Poses_Define(
           [this]() -> void

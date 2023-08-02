@@ -26,9 +26,12 @@
 
 #include "DeferredPass.h"
 
+#include "Camera.h"
+#include "DataTexture.h"
 #include "FullQuadPass.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Shader.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -97,24 +100,15 @@ namespace ToolKit
     // Set gbuffer
     // 9: Position, 10: Normal, 11: Color, 12: emissive, 14: metallic-roughness,
     // 16: ibl contribution
-    renderer->SetTexture(
-        9,
-        m_params.GBufferFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0)->m_textureId);
-    renderer->SetTexture(
-        10,
-        m_params.GBufferFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment1)->m_textureId);
-    renderer->SetTexture(
-        11,
-        m_params.GBufferFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment2)->m_textureId);
-    renderer->SetTexture(
-        12,
-        m_params.GBufferFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment3)->m_textureId);
-    renderer->SetTexture(
-        14,
-        m_params.GBufferFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment5)->m_textureId);
-    renderer->SetTexture(
-        16,
-        m_params.GBufferFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment6)->m_textureId);
+    using FAttachment = Framebuffer::Attachment;
+    FramebufferPtr gFrameBuffer = m_params.GBufferFramebuffer;
+    
+    renderer->SetTexture(9 , gFrameBuffer->GetAttachment(FAttachment::ColorAttachment0)->m_textureId);
+    renderer->SetTexture(10, gFrameBuffer->GetAttachment(FAttachment::ColorAttachment1)->m_textureId);
+    renderer->SetTexture(11, gFrameBuffer->GetAttachment(FAttachment::ColorAttachment2)->m_textureId);
+    renderer->SetTexture(12, gFrameBuffer->GetAttachment(FAttachment::ColorAttachment3)->m_textureId);
+    renderer->SetTexture(14, gFrameBuffer->GetAttachment(FAttachment::ColorAttachment5)->m_textureId);
+    renderer->SetTexture(16, gFrameBuffer->GetAttachment(FAttachment::ColorAttachment6)->m_textureId);
 
     renderer->SetTexture(13, m_lightDataTexture->m_textureId);
 
@@ -126,6 +120,7 @@ namespace ToolKit
     else
     {
       m_deferredRenderShader->SetShaderParameter("aoEnabled", ParameterVariant(0));
+      renderer->SetTexture(5, 0);
     }
   }
 

@@ -28,8 +28,6 @@
 
 #include "Types.h"
 
-#include <fstream>
-
 namespace ToolKit
 {
   enum class LogType

@@ -27,10 +27,14 @@
 #include "Texture.h"
 
 #include "DirectionComponent.h"
+#include "FileManager.h"
+#include "FullQuadPass.h"
+#include "Material.h"
+#include "RenderSystem.h"
+#include "Shader.h"
 #include "ToolKit.h"
-#include "gles2.h"
 
-#include <memory>
+#include <gles2.h>
 
 #include "DebugNew.h"
 
@@ -176,6 +180,38 @@ namespace ToolKit
     m_image  = nullptr;
     m_imagef = nullptr;
     m_loaded = false;
+  }
+
+  void DepthTexture::Load() {}
+
+  void DepthTexture::Clear() { UnInit(); }
+
+  void DepthTexture::Init(int width, int height, bool stencil)
+  {
+    if (m_initiated)
+    {
+      return;
+    }
+    m_initiated = true;
+    m_width     = width;
+    m_height    = height;
+    m_stencil   = stencil;
+
+    // Create a default depth, depth-stencil buffer
+    glGenRenderbuffers(1, &m_textureId);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_textureId);
+    GLenum component = stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT24;
+    glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
+  }
+
+  void DepthTexture::UnInit()
+  {
+    if (m_textureId == 0)
+    {
+      return;
+    }
+    glDeleteRenderbuffers(1, &m_textureId);
+    m_textureId = 0;
   }
 
   CubeMap::CubeMap() : Texture() {}

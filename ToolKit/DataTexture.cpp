@@ -585,35 +585,4 @@ namespace ToolKit
     sizeNS                             = spotNonShadowSize;
   }
 
-  SSAONoiseTexture::SSAONoiseTexture(int width, int height) : DataTexture(width, height) {}
-
-  void SSAONoiseTexture::Init(void* data)
-  {
-    if (m_initiated)
-    {
-      return;
-    }
-
-    GLint currId;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
-
-    glGenTextures(1, &m_textureId);
-    glBindTexture(GL_TEXTURE_2D, m_textureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, m_width, m_height, 0, GL_RG, GL_FLOAT, data);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glBindTexture(GL_TEXTURE_2D, currId);
-
-    m_initiated = true;
-  }
-
-  SSAONoiseTexture::SSAONoiseTexture() {}
-
-  void SSAONoiseTexture::Init(bool flushClientSideArray)
-  {
-    assert(false); // The code should never come here
-  }
 } // namespace ToolKit

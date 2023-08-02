@@ -48,6 +48,8 @@
   #define TK_STDCAL __stdcall
   #ifdef TK_DLL_EXPORT // Dynamic binding.
     #define TK_API __declspec(dllexport)
+  #elif defined(TK_DLL_IMPORT)
+    #define TK_API __declspec(dllimport)
   #else // Static binding.
     #define TK_API
   #endif
@@ -149,6 +151,7 @@ namespace ToolKit
   typedef std::unordered_map<String, AnimRecordPtr> AnimRecordPtrMap;
   typedef class AnimRecord* AnimRecordRawPtr;
   typedef std::vector<AnimRecordRawPtr> AnimRecordRawPtrArray;
+  struct BlendTarget;
 
   // Entity types.
   typedef std::shared_ptr<class Entity> EntityPtr;
@@ -159,7 +162,7 @@ namespace ToolKit
   typedef std::vector<class PointLight*> PointLightRawPtrArray;
   typedef std::vector<std::shared_ptr<class Entity>> EntityPtrArray;
   typedef std::vector<ULongID> EntityIdArray;
-  typedef std::vector<class Node*> NodePtrArray;
+  typedef std::vector<class Node*> NodeRawPtrArray;
   typedef std::vector<class Vertex> VertexArray;
   typedef std::vector<class Face> FaceArray;
   typedef std::vector<class ParameterVariant> ParameterVariantArray;
@@ -241,7 +244,6 @@ namespace ToolKit
   static const String XmlEntityTypeAttr("t");
   static const String XmlEntityVisAttr("vi");
   static const String XmlEntityTrLockAttr("lc");
-  static const String XmlBaseEntityIdAttr("bi");
   static const String XmlSceneElement("S");
   static const String XmlParamterElement("P");
   static const String XmlParamterValAttr("v");
@@ -259,7 +261,14 @@ namespace ToolKit
   static const String XmlResRefElement("ResourceRef");
   static const String XmlComponent("Component");
   static const StringView XmlNodeSettings("Settings");
-  static const StringView XmlNodeName = "name";
+  static const StringView XmlNodeName("name");
+
+  // V > 0.4.4
+  static const StringView XmlObjectClassAttr("Cl");
+  static const StringView XmlObjectElement("Ob");
+  static const StringView XmlObjectIdAttr("i");
+  static const StringView XmlComponentArrayElement("Ca");
+  static const StringView XmlVersion("vesion");
 
   enum class AxisLabel
   {
@@ -334,6 +343,6 @@ namespace ToolKit
     Target2DArray              = 0x8C1A
   };
 
-  static const char* TKVersionStr = "v0.4.4";
+  static const char* TKVersionStr = "v0.4.5";
 
 } // namespace ToolKit

@@ -42,33 +42,22 @@ namespace ToolKit
   // Canvas
   //////////////////////////////////////////
 
-  Canvas::Canvas() : Surface()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-    CreateQuadLines();
-  }
+  TKDefineClass(Canvas, Surface);
 
-  Canvas::Canvas(const Vec2& size) : Surface(size)
+  Canvas::Canvas() : Surface() {}
+
+  void Canvas::NativeConstruct()
   {
-    ParameterConstructor();
-    ParameterEventConstructor();
+    Super::NativeConstruct();
     CreateQuadLines();
   }
 
   EntityType Canvas::GetType() const { return EntityType::Entity_Canvas; }
 
-  void Canvas::Serialize(XmlDocument* doc, XmlNode* parent) const { Surface::Serialize(doc, parent); }
-
-  void Canvas::DeSerialize(XmlDocument* doc, XmlNode* parent)
-  {
-    Surface::DeSerialize(doc, parent);
-    ParameterEventConstructor();
-    CreateQuadLines();
-  }
-
   void Canvas::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     // Update surface params.
     ParamMaterial().m_exposed     = false;
     ParamSize().m_category        = CanvasCategory;
@@ -77,8 +66,40 @@ namespace ToolKit
 
   void Canvas::ParameterEventConstructor()
   {
-    Surface::ParameterEventConstructor();
+    Super::ParameterEventConstructor();
     ParamMaterial().m_onValueChangedFn.clear();
+  }
+
+  XmlNode* Canvas::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* surfaceNode = Super::SerializeImp(doc, parent);
+    XmlNode* canvasNode  = CreateXmlNode(doc, StaticClass()->Name, surfaceNode);
+
+    return canvasNode;
+  }
+
+  XmlNode* Canvas::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    if (m_version == String("v0.4.5"))
+    {
+      return DeSerializeImpV045(info, parent);
+    }
+
+    // Old file, keep parsing.
+    XmlNode* surfaceNode = Surface::DeSerializeImp(info, parent);
+    ParameterEventConstructor();
+    CreateQuadLines();
+
+    return surfaceNode;
+  }
+
+  XmlNode* Canvas::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* surfaceNode = Surface::DeSerializeImp(info, parent);
+    ParameterEventConstructor();
+    CreateQuadLines();
+
+    return surfaceNode->first_node(StaticClass()->Name.c_str());
   }
 
   void Canvas::UpdateGeometry(bool byTexture) { CreateQuadLines(); }

@@ -26,7 +26,9 @@
 
 #include "MaterialComponent.h"
 
+#include "Entity.h"
 #include "Material.h"
+#include "Mesh.h"
 #include "MeshComponent.h"
 #include "ToolKit.h"
 
@@ -35,20 +37,15 @@
 namespace ToolKit
 {
 
-  MaterialComponent::MaterialComponent()
-  {
-    Material_Define(GetMaterialManager()->GetCopyOfDefaultMaterial(),
-                    MaterialComponentCategory.Name,
-                    MaterialComponentCategory.Priority,
-                    true,
-                    true);
-  }
+  TKDefineClass(MaterialComponent, Component);
+
+  MaterialComponent::MaterialComponent() {}
 
   MaterialComponent::~MaterialComponent() {}
 
   ComponentPtr MaterialComponent::Copy(Entity* ntt)
   {
-    MaterialComponentPtr mc = std::make_shared<MaterialComponent>();
+    MaterialComponentPtr mc = MakeNewPtr<MaterialComponent>();
     mc->m_localData         = m_localData;
     mc->m_entity            = ntt;
     mc->m_materialList      = m_materialList;
@@ -60,10 +57,45 @@ namespace ToolKit
 
   const char *XmlMatCountAttrib = "MaterialCount", *XmlMatIdAttrib = "ID";
 
-  void MaterialComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void MaterialComponent::ParameterConstructor()
   {
-    Component::DeSerialize(doc, parent);
-    uint matCount = 0;
+    Super::ParameterConstructor();
+
+    // DEPRECATED.
+    MaterialPtr defMat = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    Material_Define(defMat, MaterialComponentCategory.Name, MaterialComponentCategory.Priority, true, true);
+  }
+
+  XmlNode* MaterialComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* compNode = Super::SerializeImp(doc, parent);
+    XmlNode* matNode  = CreateXmlNode(doc, StaticClass()->Name, compNode);
+
+    WriteAttr(matNode, doc, XmlMatCountAttrib, std::to_string(m_materialList.size()));
+    for (size_t i = 0; i < m_materialList.size(); i++)
+    {
+      if (m_materialList[i]->m_dirty)
+      {
+        m_materialList[i]->Save(true);
+      }
+      XmlNode* resourceRefNode = CreateXmlNode(doc, std::to_string(i), matNode);
+      m_materialList[i]->SerializeRef(doc, resourceRefNode);
+    }
+
+    return matNode;
+  }
+
+  XmlNode* MaterialComponent::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    if (m_version == String("v0.4.5"))
+    {
+      return DeSerializeImpV045(info, parent);
+    }
+
+    // Old file, keep parsing.
+    XmlNode* compNode = Super::DeSerializeImp(info, parent);
+    uint matCount     = 0;
+
     ReadAttr(parent, XmlMatCountAttrib, matCount);
     m_materialList.resize(matCount);
     for (size_t i = 0; i < m_materialList.size(); i++)
@@ -87,22 +119,46 @@ namespace ToolKit
         m_localData.Remove(ParamMaterial().m_id);
       }
     }
+
+    return compNode->first_node(StaticClass()->Name.c_str());
   }
 
-  void MaterialComponent::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* MaterialComponent::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
   {
-    Component::Serialize(doc, parent);
-    XmlNode* compNode = parent->last_node(XmlComponent.c_str());
-    WriteAttr(compNode, doc, XmlMatCountAttrib, std::to_string(m_materialList.size()));
+    XmlNode* comNode = Super::DeSerializeImp(info, parent);
+    XmlNode* matNode = comNode->first_node(StaticClass()->Name.c_str());
+
+    uint matCount    = 0;
+    ReadAttr(matNode, XmlMatCountAttrib, matCount);
+    m_materialList.resize(matCount);
+
     for (size_t i = 0; i < m_materialList.size(); i++)
     {
-      if (m_materialList[i]->m_dirty)
+      XmlNode* resourceNode = matNode->first_node(std::to_string(i).c_str());
+      if (resourceNode)
       {
-        m_materialList[i]->Save(true);
+        String matRef     = Resource::DeserializeRef(resourceNode);
+        m_materialList[i] = GetMaterialManager()->Create<Material>(MaterialPath(matRef));
       }
-      XmlNode* resourceRefNode = CreateXmlNode(doc, std::to_string(i), compNode);
-      m_materialList[i]->SerializeRef(doc, resourceRefNode);
+      else
+      {
+        m_materialList[i] = GetMaterialManager()->GetCopyOfDefaultMaterial();
+        continue;
+      }
     }
+
+    // Deprecated Here for compatibility with 0.4.1
+    if (m_materialList.empty())
+    {
+      if (MaterialPtr mat = GetMaterialVal())
+      {
+        // Transfer the old material in to the list.
+        m_materialList.push_back(mat);
+        m_localData.Remove(ParamMaterial().m_id);
+      }
+    }
+
+    return matNode;
   }
 
   void MaterialComponent::AddMaterial(MaterialPtr mat) { m_materialList.push_back(mat); }

@@ -26,6 +26,7 @@
 
 #include "Surface.h"
 
+#include "Canvas.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
@@ -33,33 +34,41 @@
 #include "ToolKit.h"
 #include "Viewport.h"
 
-#include <memory>
-
 #include "DebugNew.h"
 
 namespace ToolKit
 {
+
+  TKDefineClass(Surface, Entity);
+
   Surface::Surface()
   {
-    ComponentConstructor();
-    ParameterConstructor();
-    ParameterEventConstructor();
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
   }
 
-  Surface::Surface(TexturePtr texture, const Vec2& pivotOffset) : Surface()
+  Surface::~Surface() {}
+
+  void Surface::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    ComponentConstructor();
+  }
+
+  void Surface::Update(TexturePtr texture, const Vec2& pivotOffset)
   {
     GetMaterialComponent()->GetFirstMaterial()->m_diffuseTexture = texture;
     SetPivotOffsetVal(pivotOffset);
     SetSizeFromTexture();
   }
 
-  Surface::Surface(TexturePtr texture, const SpriteEntry& entry) : Surface()
+  void Surface::Update(TexturePtr texture, const SpriteEntry& entry)
   {
     GetMaterialComponent()->GetFirstMaterial()->m_diffuseTexture = texture;
     SetSizeFromTexture();
   }
 
-  Surface::Surface(const String& textureFile, const Vec2& pivotOffset) : Surface()
+  void Surface::Update(const String& textureFile, const Vec2& pivotOffset)
   {
     GetMaterialComponent()->GetFirstMaterial()->m_diffuseTexture = GetTextureManager()->Create<Texture>(textureFile);
 
@@ -67,32 +76,38 @@ namespace ToolKit
     SetSizeFromTexture();
   }
 
-  Surface::Surface(const Vec2& size, const Vec2& offset) : Surface()
+  void Surface::Update(const Vec2& size, const Vec2& offset)
   {
     SetSizeVal(size);
     SetPivotOffsetVal(offset);
   }
 
-  Surface::~Surface() {}
-
   EntityType Surface::GetType() const { return EntityType::Entity_Surface; }
 
-  void Surface::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Surface::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Entity::Serialize(doc, parent);
-    parent        = parent->last_node();
-    XmlNode* node = CreateXmlNode(doc, "Anchor", parent);
+    XmlNode* nttNode     = Entity::SerializeImp(doc, parent);
+    XmlNode* surfaceNode = CreateXmlNode(doc, StaticClass()->Name, nttNode);
+    XmlNode* node        = CreateXmlNode(doc, "Anchor", surfaceNode);
 
     for (int i = 0; i < 4; i++)
     {
       WriteAttr(node, doc, "ratios" + std::to_string(i), std::to_string(m_anchorParams.m_anchorRatios[i]));
       WriteAttr(node, doc, "offsets" + std::to_string(i), std::to_string(m_anchorParams.m_offsets[i]));
     }
+
+    return surfaceNode;
   }
 
-  void Surface::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Surface::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    Entity::DeSerialize(doc, parent);
+    if (info.Version == String("v0.4.5"))
+    {
+      return DeSerializeImpV045(info, parent);
+    }
+
+    // Old file.
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
     if (XmlNode* node = parent->first_node("Anchor"))
     {
       for (int i = 0; i < 4; i++)
@@ -111,6 +126,35 @@ namespace ToolKit
     }
 
     CreateQuat();
+
+    return nttNode;
+  }
+
+  XmlNode* Surface::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* nttNode     = Super::DeSerializeImp(info, parent);
+    XmlNode* surfaceNode = nttNode->first_node(StaticClass()->Name.c_str());
+
+    if (XmlNode* node = surfaceNode->first_node("Anchor"))
+    {
+      for (int i = 0; i < 4; i++)
+      {
+        ReadAttr(node, "ratios" + std::to_string(i), m_anchorParams.m_anchorRatios[i]);
+        ReadAttr(node, "offsets" + std::to_string(i), m_anchorParams.m_offsets[i]);
+      }
+    }
+    ParameterEventConstructor();
+
+    // Re assign default material.
+    MaterialComponentPtr matCom = GetMaterialComponent();
+    if (matCom->GetFirstMaterial()->IsDynamic())
+    {
+      matCom->SetFirstMaterial(GetMaterialManager()->GetCopyOfUIMaterial());
+    }
+
+    CreateQuat();
+
+    return surfaceNode;
   }
 
   void Surface::UpdateGeometry(bool byTexture)
@@ -128,21 +172,20 @@ namespace ToolKit
 
   void Surface::ComponentConstructor()
   {
-    MeshComponent* meshComponent         = new MeshComponent();
-    meshComponent->ParamMesh().m_exposed = false;
-    meshComponent->SetCastShadowVal(false);
-    AddComponent(meshComponent);
+    MeshComponentPtr meshCom             = GetComponent<MeshComponent>();
+    meshCom->ParamMesh().m_exposed       = false;
+    meshCom->ParamCastShadow().m_exposed = false;
+    meshCom->SetCastShadowVal(false);
 
-    MaterialComponent* materialComponent = new MaterialComponent();
-    // materialComponent->ParamMaterial().m_exposed = false;
-    AddComponent(materialComponent);
-
-    MaterialPtr material = GetMaterialManager()->GetCopyOfUIMaterial();
-    materialComponent->SetFirstMaterial(material);
+    MaterialPtr material        = GetMaterialManager()->GetCopyOfUIMaterial();
+    MaterialComponentPtr matCom = GetComponent<MaterialComponent>();
+    matCom->SetFirstMaterial(material);
   }
 
   void Surface::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     Size_Define({150.0f, 50.0f}, SurfaceCategory.Name, SurfaceCategory.Priority, true, true);
 
     PivotOffset_Define({0.5f, 0.5f}, SurfaceCategory.Name, SurfaceCategory.Priority, true, true);
@@ -169,6 +212,8 @@ namespace ToolKit
 
   void Surface::ParameterEventConstructor()
   {
+    Super::ParameterEventConstructor();
+
     ParamSize().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void { UpdateGeometry(false); });
 
     ParamPivotOffset().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
@@ -177,9 +222,6 @@ namespace ToolKit
     ParamMaterial().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         { GetMaterialComponent()->SetFirstMaterial(std::get<MaterialPtr>(newVal)); });
-
-    GetMeshComponent()->ParamMesh().m_exposed       = false;
-    GetMeshComponent()->ParamCastShadow().m_exposed = false;
   }
 
   Entity* Surface::CopyTo(Entity* other) const
@@ -237,23 +279,23 @@ namespace ToolKit
     assert(false && "Old function needs to be re factored.");
 
     MeshPtr mesh      = GetMeshComponent()->GetMeshVal();
-    float imageWidth  = static_cast<float>(mesh->m_material->m_diffuseTexture->m_width);
+    float imageWidth  = (float) (mesh->m_material->m_diffuseTexture->m_width);
 
-    float imageHeight = static_cast<float>(mesh->m_material->m_diffuseTexture->m_height);
+    float imageHeight = (float) (mesh->m_material->m_diffuseTexture->m_height);
 
     Rect<float> textureRect;
-    textureRect.X      = static_cast<float>(val.rectangle.X) / static_cast<float>(imageWidth);
+    textureRect.X      = (float) (val.rectangle.X) / (float) (imageWidth);
 
-    textureRect.Height = (static_cast<float>(val.rectangle.Height) / static_cast<float>(imageHeight));
+    textureRect.Height = ((float) (val.rectangle.Height) / (float) (imageHeight));
 
-    textureRect.Y = 1.0f - (static_cast<float>(val.rectangle.Y) / static_cast<float>(imageHeight)) - textureRect.Height;
+    textureRect.Y      = 1.0f - ((float) (val.rectangle.Y) / (float) (imageHeight)) - textureRect.Height;
 
-    textureRect.Width = static_cast<float>(val.rectangle.Width) / static_cast<float>(imageWidth);
+    textureRect.Width  = (float) (val.rectangle.Width) / (float) (imageWidth);
 
-    float depth       = 0.0f;
-    float width       = static_cast<float>(val.rectangle.Width);
-    float height      = static_cast<float>(val.rectangle.Height);
-    Vec2 absOffset    = Vec2(val.offset.x * val.rectangle.Width, val.offset.y * val.rectangle.Height);
+    float depth        = 0.0f;
+    float width        = (float) (val.rectangle.Width);
+    float height       = (float) (val.rectangle.Height);
+    Vec2 absOffset     = Vec2(val.offset.x * val.rectangle.Width, val.offset.y * val.rectangle.Height);
 
     VertexArray vertices;
     vertices.resize(6);
@@ -338,40 +380,25 @@ namespace ToolKit
   // Button
   //////////////////////////////////////////
 
-  Button::Button()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-    ResetCallbacks();
-  }
+  TKDefineClass(Button, Surface);
 
-  Button::Button(const Vec2& size) : Surface(size)
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-    ResetCallbacks();
-  }
-
-  Button::Button(const TexturePtr& buttonImage, const TexturePtr& hoverImage) : Surface(buttonImage, Vec2())
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-    GetButtonMaterialVal()->m_diffuseTexture = buttonImage;
-    GetHoverMaterialVal()->m_diffuseTexture  = hoverImage;
-    ResetCallbacks();
-  }
+  Button::Button() {}
 
   Button::~Button() {}
 
-  EntityType Button::GetType() const { return EntityType::Entity_Button; }
-
-  void Button::Serialize(XmlDocument* doc, XmlNode* parent) const { Surface::Serialize(doc, parent); }
-
-  void Button::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Button::NativeConstruct()
   {
-    Surface::DeSerialize(doc, parent);
-    ParameterEventConstructor();
+    Super::NativeConstruct();
+    ResetCallbacks();
   }
+
+  void Button::SetBtnImage(const TexturePtr buttonImage, const TexturePtr hoverImage)
+  {
+    GetButtonMaterialVal()->m_diffuseTexture = buttonImage;
+    GetHoverMaterialVal()->m_diffuseTexture  = hoverImage;
+  }
+
+  EntityType Button::GetType() const { return EntityType::Entity_Button; }
 
   void Button::ResetCallbacks()
   {
@@ -419,6 +446,35 @@ namespace ToolKit
 
     GetMeshComponent()->ParamMesh().m_exposed       = false;
     GetMeshComponent()->ParamCastShadow().m_exposed = false;
+  }
+
+  XmlNode* Button::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
+  XmlNode* Button::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    if (info.Version == String("v0.4.5"))
+    {
+      return DeSerializeImpV045(info, parent);
+    }
+
+    // Old file.
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    ParameterEventConstructor();
+    return nttNode;
+  }
+
+  XmlNode* Button::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* nttNode     = Super::DeSerializeImp(info, parent);
+    XmlNode* surfaceNode = Surface::DeSerializeImp(info, parent);
+    ParameterEventConstructor();
+    return surfaceNode;
   }
 
 } // namespace ToolKit

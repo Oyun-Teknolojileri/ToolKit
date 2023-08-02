@@ -27,9 +27,12 @@
 #include "MaterialView.h"
 
 #include "App.h"
-#include "DirectionComponent.h"
 #include "EditorViewport.h"
-#include "GradientSky.h"
+
+#include <DirectionComponent.h>
+#include <FileManager.h>
+#include <GradientSky.h>
+#include <Material.h>
 
 namespace ToolKit
 {
@@ -41,14 +44,16 @@ namespace ToolKit
 
     MaterialView::MaterialView() : View("Material View")
     {
-      m_viewID    = 3;
-      m_viewIcn   = UI::m_materialIcon;
+      m_viewID   = 3;
+      m_viewIcn  = UI::m_materialIcon;
 
-      m_viewport  = new PreviewViewport(300u, 150u);
+      m_viewport = new PreviewViewport();
+      m_viewport->Init({300.0f, 150.0f});
 
-      m_scenes[0] = GetSceneManager()->Create<Scene>(ScenePath("ms-sphere.scene", true));
-      m_scenes[1] = GetSceneManager()->Create<Scene>(ScenePath("ms-box.scene", true));
-      m_scenes[2] = GetSceneManager()->Create<Scene>(ScenePath("ms-ball.scene", true));
+      SceneManager* scnMan = GetSceneManager();
+      m_scenes[0]          = scnMan->Create<Scene>(ScenePath("ms-sphere.scene", true));
+      m_scenes[1]          = scnMan->Create<Scene>(ScenePath("ms-box.scene", true));
+      m_scenes[2]          = scnMan->Create<Scene>(ScenePath("ms-ball.scene", true));
 
       m_viewport->SetScene(m_scenes[0]);
 
@@ -197,7 +202,10 @@ namespace ToolKit
         if (ImGui::CollapsingHeader("Shaders"))
         {
           ImGui::BeginGroup();
-          ImGui::LabelText("##vertShader", "Vertex Shader: ");
+          String vertName;
+          DecomposePath(mat->m_vertexShader->GetFile(), nullptr, &vertName, nullptr);
+
+          ImGui::LabelText("##vertex shader: %s", vertName.c_str());
           DropZone(UI::m_codeIcon->m_textureId,
                    mat->m_vertexShader->GetFile(),
                    [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
@@ -215,10 +223,13 @@ namespace ToolKit
 
           ImGui::SameLine();
 
-          ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 35.0f);
+          ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 20.0f);
 
           ImGui::BeginGroup();
-          ImGui::LabelText("##fragShader", "Fragment Shader: ");
+          String fragName = mat->m_fragmentShader->GetFile();
+          DecomposePath(mat->m_fragmentShader->GetFile(), nullptr, &fragName, nullptr);
+
+          ImGui::LabelText("##fragShader fragment shader: %s", fragName.c_str());
           DropZone(UI::m_codeIcon->m_textureId,
                    mat->m_fragmentShader->GetFile(),
                    [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void

@@ -26,12 +26,7 @@
 
 #pragma once
 
-#include "BinPack2D.h"
-#include "DataTexture.h"
 #include "EnvironmentComponent.h"
-#include "Framebuffer.h"
-#include "GeometryTypes.h"
-#include "Primative.h"
 #include "Renderer.h"
 
 namespace ToolKit

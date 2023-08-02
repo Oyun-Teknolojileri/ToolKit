@@ -29,6 +29,7 @@
 #include "Mesh.h"
 #include "Node.h"
 #include "Surface.h"
+#include "Texture.h"
 #include "ToolKit.h"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
@@ -56,7 +57,8 @@ namespace ToolKit
       m_spriteSheet = GetTextureManager()->Create<Texture>(SpritePath(m_imageFile));
       for (const SpriteEntry& entry : m_entries)
       {
-        Surface* surface      = new Surface(m_spriteSheet, entry);
+        Surface* surface = MakeNew<Surface>();
+        surface->Update(m_spriteSheet, entry);
         m_sprites[entry.name] = surface;
       }
     }
@@ -142,6 +144,8 @@ namespace ToolKit
     return true;
   }
 
+  TKDefineClass(SpriteAnimation, Entity);
+
   SpriteAnimation::SpriteAnimation() {}
 
   SpriteAnimation::SpriteAnimation(const SpriteSheetPtr& spriteSheet) { m_sheet = spriteSheet; }
@@ -217,6 +221,14 @@ namespace ToolKit
     }
 
     m_currentTime += deltaTime;
+  }
+
+  XmlNode* SpriteAnimation::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   SpriteSheetManager::SpriteSheetManager() { m_type = ResourceType::SpriteSheet; }

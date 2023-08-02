@@ -29,14 +29,18 @@
 #include "App.h"
 #include "ComponentView.h"
 #include "CustomDataView.h"
-#include "DirectionComponent.h"
 #include "EntityView.h"
-#include "GradientSky.h"
 #include "MaterialView.h"
 #include "MeshView.h"
 #include "PrefabView.h"
 
-#include "DebugNew.h"
+#include <Camera.h>
+#include <DirectionComponent.h>
+#include <FileManager.h>
+#include <GradientSky.h>
+#include <Material.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -199,7 +203,7 @@ namespace ToolKit
     // PreviewViewport
     //////////////////////////////////////////////////////////////////////////
 
-    PreviewViewport::PreviewViewport(uint width, uint height) : EditorViewport((float) width, (float) height)
+    PreviewViewport::PreviewViewport()
     {
       m_previewRenderer                            = std::make_shared<SceneRenderer>();
       m_previewRenderer->m_params.Cam              = GetCamera();
@@ -267,8 +271,6 @@ namespace ToolKit
     // PropInspector
     //////////////////////////////////////////////////////////////////////////
 
-    PropInspector::PropInspector(XmlNode* node) : PropInspector() { DeSerialize(nullptr, node); }
-
     PropInspector::PropInspector()
     {
       // order is important, depends on enum viewType
@@ -293,6 +295,8 @@ namespace ToolKit
       m_prefabViews.push_back((uint) ViewType::Material);
       m_prefabViews.push_back((uint) ViewType::Mesh);
     }
+
+    PropInspector::PropInspector(XmlNode* node) : PropInspector() { DeSerialize(SerializationFileInfo(), node); }
 
     PropInspector::~PropInspector()
     {

@@ -27,25 +27,22 @@
 #pragma once
 
 #include "Entity.h"
-#include "Framebuffer.h"
-#include "Primative.h"
-#include "Types.h"
-
-#include <string>
 
 namespace ToolKit
 {
 
+  // Light
+  //////////////////////////////////////////
+
   class TK_API Light : public Entity
   {
    public:
+    TKDeclareClass(Light, Entity);
+
     Light();
     virtual ~Light();
-    virtual void ParameterEventConstructor();
 
     EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     // Shadow
     MaterialPtr GetShadowMaterial();
@@ -55,6 +52,9 @@ namespace ToolKit
 
    protected:
     void UpdateShadowCameraTransform();
+    void ParameterEventConstructor() override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     TKDeclareParam(Vec3, Color);
@@ -78,9 +78,14 @@ namespace ToolKit
     MaterialPtr m_shadowMapMaterial   = nullptr;
   };
 
+  // DirectionalLight
+  //////////////////////////////////////////
+
   class TK_API DirectionalLight : public Light
   {
    public:
+    TKDeclareClass(DirectionalLight, Light);
+
     DirectionalLight();
     virtual ~DirectionalLight();
 
@@ -88,6 +93,9 @@ namespace ToolKit
 
     void UpdateShadowFrustum(const RenderJobArray& jobs);
     Vec3Array GetShadowFrustumCorners();
+
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:
     // Fits the entities into the shadow map camera frustum. As the scene gets
@@ -99,9 +107,14 @@ namespace ToolKit
     void FitViewFrustumIntoLightFrustum(Camera* lightCamera, Camera* viewCamera);
   };
 
+  // PointLight
+  //////////////////////////////////////////
+
   class TK_API PointLight : public Light
   {
    public:
+    TKDeclareClass(PointLight, Light);
+
     PointLight();
     virtual ~PointLight();
 
@@ -111,13 +124,22 @@ namespace ToolKit
     float AffectDistance() override;
     void InitShadowMapDepthMaterial() override;
 
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void ParameterConstructor() override;
+
    public:
     TKDeclareParam(float, Radius);
   };
 
+  // SpotLight
+  //////////////////////////////////////////
+
   class TK_API SpotLight : public Light
   {
    public:
+    TKDeclareClass(SpotLight, Light);
+
     SpotLight();
     virtual ~SpotLight();
 
@@ -125,6 +147,10 @@ namespace ToolKit
     void UpdateShadowCamera() override;
     float AffectDistance() override;
     void InitShadowMapDepthMaterial() override;
+
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void ParameterConstructor() override;
 
    public:
     TKDeclareParam(float, Radius);

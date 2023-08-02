@@ -29,61 +29,72 @@
 #include "AnimationControllerComponent.h"
 #include "DirectionComponent.h"
 #include "EnvironmentComponent.h"
+#include "MaterialComponent.h"
+#include "MeshComponent.h"
 #include "ResourceComponent.h"
-#include "ToolKit.h"
+#include "SkeletonComponent.h"
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
 
-  Component::Component() { m_id = GetHandleManager()->GetNextHandle(); }
+  TKDefineClass(Component, TKObject);
+
+  Component::Component() {}
 
   Component::~Component() {}
 
-  ComponentType Component::GetType() const { return ComponentType::Base; }
-
-  void Component::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void Component::ParameterConstructor()
   {
-    XmlNode* componentNode = CreateXmlNode(doc, XmlComponent, parent);
-    WriteAttr(componentNode, doc, XmlParamterTypeAttr, std::to_string(static_cast<int>(GetType())));
-
-    m_localData.Serialize(doc, componentNode);
+    Super::ParameterConstructor();
+    ParamId().m_exposed = false;
   }
 
-  void Component::DeSerialize(XmlDocument* doc, XmlNode* parent) { m_localData.DeSerialize(doc, parent); }
-
-  Component* Component::CreateByType(ComponentType t)
+  XmlNode* Component::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    switch (t)
+    XmlNode* objNode       = Super::SerializeImp(doc, parent);
+    XmlNode* componentNode = CreateXmlNode(doc, StaticClass()->Name, objNode);
+
+    return componentNode;
+  }
+
+  XmlNode* Component::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    parent = Super::DeSerializeImp(info, parent);
+    if (m_version > String("v0.4.4"))
+    {
+      return parent->first_node(StaticClass()->Name.c_str());
+    }
+
+    return parent;
+  }
+
+  Component* ComponentFactory::Create(ComponentType cls)
+  {
+    switch (cls)
     {
     case ComponentType::MeshComponent:
-      return new MeshComponent();
-      break;
+      return MakeNew<MeshComponent>();
     case ComponentType::DirectionComponent:
-      return new DirectionComponent();
-      break;
+      return MakeNew<DirectionComponent>();
     case ComponentType::MultiMaterialComponent:
     case ComponentType::MaterialComponent:
-      return new MaterialComponent();
-      break;
+      return MakeNew<MaterialComponent>();
     case ComponentType::EnvironmentComponent:
-      return new EnvironmentComponent();
-      break;
+      return MakeNew<EnvironmentComponent>();
     case ComponentType::AnimControllerComponent:
-      return new AnimControllerComponent();
-      break;
+      return MakeNew<AnimControllerComponent>();
     case ComponentType::SkeletonComponent:
-      return new SkeletonComponent();
-      break;
+      return MakeNew<SkeletonComponent>();
     case ComponentType::AABBOverrideComponent:
-      return new AABBOverrideComponent;
-      break;
+      return MakeNew<AABBOverrideComponent>();
     case ComponentType::Base:
     default:
-      assert(false && "Unsupported component type.");
+      assert(0 && "Unknown Component Type !");
       break;
     }
+
     return nullptr;
   }
 

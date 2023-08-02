@@ -26,15 +26,19 @@
 
 #include "App.h"
 
-#include "DirectionComponent.h"
 #include "EditorCamera.h"
 #include "EditorViewport2d.h"
 #include "OverlayUI.h"
 #include "PopupWindows.h"
 
+#include <DirectionComponent.h>
+#include <FileManager.h>
+#include <PluginManager.h>
+#include <UIManager.h>
+
 #include <sstream>
 
-#include "DebugNew.h"
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -51,8 +55,6 @@ namespace ToolKit
       m_statusMsg      = "OK";
 
       myEditorRenderer = new EditorRenderer();
-
-      OverrideEntityConstructors();
     }
 
     App::~App()
@@ -601,18 +603,20 @@ namespace ToolKit
       if (CheckFile(defEditSet) && CheckFile(m_workspace.GetActiveWorkspace()))
       {
         // Try reading defaults.
-        String settingsFile              = defEditSet;
-
-        std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
-
-        XmlDocumentPtr lclDoc            = std::make_shared<XmlDocument>();
+        String settingsFile   = defEditSet;
+        XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
+        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
 
+        SerializationFileInfo sif;
+        sif.Document = lclDoc.get();
+        sif.File     = settingsFile;
+
         // Prevent loading last scene.
-        Project pj = m_workspace.GetActiveProject();
+        Project pj   = m_workspace.GetActiveProject();
         m_workspace.SetScene("");
 
-        DeSerialize(lclDoc.get(), nullptr);
+        DeSerialize(sif, nullptr);
         m_workspace.SetScene(pj.scene);
 
         settingsFile = ConcatPaths({ConfigPath(), g_uiLayoutFile});
@@ -624,20 +628,23 @@ namespace ToolKit
         float w            = (float) GetEngineSettings().Window.Width;
         float h            = (float) GetEngineSettings().Window.Height;
         Vec2 vpSize        = Vec2(w, h) * 0.8f;
-        EditorViewport* vp = new EditorViewport(vpSize);
-        vp->m_name         = g_3dViewport;
+        EditorViewport* vp = new EditorViewport();
+        vp->Init(vpSize);
+        vp->m_name = g_3dViewport;
         vp->GetCamera()->m_node->SetTranslation({5.0f, 3.0f, 5.0f});
         vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f));
         m_windows.push_back(vp);
 
         // 2d viewport.
-        vp         = new EditorViewport2d(vpSize);
+        vp = new EditorViewport2d();
+        vp->Init(vpSize);
         vp->m_name = g_2dViewport;
         vp->GetCamera()->m_node->SetTranslation(Z_AXIS);
         m_windows.push_back(vp);
 
         // Isometric viewport.
-        vp         = new EditorViewport(vpSize);
+        vp = new EditorViewport();
+        vp->Init(vpSize);
         vp->m_name = g_IsoViewport;
         vp->GetCamera()->m_node->SetTranslation({0.0f, 10.0f, 0.0f});
         vp->GetCamera()->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
@@ -650,8 +657,9 @@ namespace ToolKit
         ConsoleWindow* console = new ConsoleWindow();
         m_windows.push_back(console);
 
-        FolderWindow* assetBrowser = new FolderWindow(true);
-        assetBrowser->m_name       = g_assetBrowserStr;
+        FolderWindow* assetBrowser = new FolderWindow();
+        assetBrowser->IterateFolders(true);
+        assetBrowser->m_name = g_assetBrowserStr;
         m_windows.push_back(assetBrowser);
 
         OutlinerWindow* outliner = new OutlinerWindow();
@@ -700,25 +708,25 @@ namespace ToolKit
           switch ((Window::Type) type)
           {
           case Window::Type::Viewport:
-            wnd = new EditorViewport(wndNode);
+            wnd = new EditorViewport();
             break;
           case Window::Type::Console:
-            wnd = new ConsoleWindow(wndNode);
+            wnd = new ConsoleWindow();
             break;
           case Window::Type::Outliner:
-            wnd = new OutlinerWindow(wndNode);
+            wnd = new OutlinerWindow();
             break;
           case Window::Type::Browser:
-            wnd = new FolderWindow(wndNode);
+            wnd = new FolderWindow();
             break;
           case Window::Type::Inspector:
-            wnd = new PropInspector(wndNode);
+            wnd = new PropInspector();
             break;
           case Window::Type::PluginWindow:
-            wnd = new PluginWindow(wndNode);
+            wnd = new PluginWindow();
             break;
           case Window::Type::Viewport2d:
-            wnd = new EditorViewport2d(wndNode);
+            wnd = new EditorViewport2d();
             break;
           case Window::Type::RenderSettings:
             wnd = new RenderSettingsView();
@@ -727,6 +735,8 @@ namespace ToolKit
 
           if (wnd)
           {
+            wnd->m_version = m_version;
+            wnd->DeSerialize(SerializationFileInfo(), wndNode);
             m_windows.push_back(wnd);
           }
         } while ((wndNode = wndNode->next_sibling("Window")));
@@ -1048,7 +1058,7 @@ namespace ToolKit
     {
       if (CheckFile(ConcatPaths({m_workspace.GetProjectConfigPath(), g_editorSettingsFile})) && !setDefaults)
       {
-        DeSerialize(nullptr, nullptr);
+        DeSerialize(SerializationFileInfo(), nullptr);
         m_workspace.DeSerializeEngineSettings();
         UI::InitSettings();
       }
@@ -1242,7 +1252,7 @@ namespace ToolKit
       }
     }
 
-    void App::Serialize(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* App::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
       m_workspace.Serialize(nullptr, nullptr);
 
@@ -1263,6 +1273,7 @@ namespace ToolKit
       {
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
         XmlNode* app          = lclDoc->allocate_node(rapidxml::node_element, "App");
+        WriteAttr(app, lclDoc.get(), "version", TKVersionStr);
         lclDoc->append_node(app);
 
         XmlNode* settings = lclDoc->allocate_node(rapidxml::node_element, "Settings");
@@ -1290,32 +1301,30 @@ namespace ToolKit
         file.close();
         lclDoc->clear();
       }
+
+      return nullptr;
     }
 
-    void App::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    XmlNode* App::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      XmlFilePtr lclFile    = nullptr;
-      XmlDocumentPtr lclDoc = nullptr;
+      String settingsFile = ConcatPaths({m_workspace.GetProjectConfigPath(), g_editorSettingsFile});
 
-      if (doc == nullptr)
+      if (!CheckFile(settingsFile))
       {
-        String settingsFile = ConcatPaths({m_workspace.GetProjectConfigPath(), g_editorSettingsFile});
+        settingsFile = ConcatPaths({ConfigPath(), g_editorSettingsFile});
 
-        if (!CheckFile(settingsFile))
-        {
-          settingsFile = ConcatPaths({ConfigPath(), g_editorSettingsFile});
-
-          assert(CheckFile(settingsFile) && "ToolKit/Config/Editor.settings must exist.");
-        }
-
-        lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
-        lclDoc  = std::make_shared<XmlDocument>();
-        lclDoc->parse<0>(lclFile->data());
-        doc = lclDoc.get();
+        assert(CheckFile(settingsFile) && "ToolKit/Config/Editor.settings must exist.");
       }
+
+      XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
+      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+      lclDoc->parse<0>(lclFile->data());
+      XmlDocument* doc = lclDoc.get();
 
       if (XmlNode* root = doc->first_node("App"))
       {
+        ReadAttr(root, "version", m_version, "v0.4.4");
+
         if (XmlNode* settings = root->first_node("Settings"))
         {
           if (XmlNode* setNode = settings->first_node("Size"))
@@ -1342,27 +1351,15 @@ namespace ToolKit
         String fullPath = ScenePath(scene);
         OpenScene(fullPath);
       }
-    }
 
-    void App::OverrideEntityConstructors()
-    {
-      GetEntityFactory()->OverrideEntityConstructor(EntityType::Entity_Camera,
-                                                    []() -> Entity* { return new EditorCamera(); });
-
-      GetEntityFactory()->OverrideEntityConstructor(EntityType::Entity_DirectionalLight,
-                                                    []() -> Entity* { return new EditorDirectionalLight(); });
-
-      GetEntityFactory()->OverrideEntityConstructor(EntityType::Entity_PointLight,
-                                                    []() -> Entity* { return new EditorPointLight(); });
-
-      GetEntityFactory()->OverrideEntityConstructor(EntityType::Entity_SpotLight,
-                                                    []() -> Entity* { return new EditorSpotLight(); });
+      return nullptr;
     }
 
     void App::CreateSimulationWindow(float width, float height)
     {
       SafeDel(m_simulationWindow);
-      m_simulationWindow         = new EditorViewport(m_simulatorSettings.Width, m_simulatorSettings.Height);
+      m_simulationWindow = new EditorViewport();
+      m_simulationWindow->Init({m_simulatorSettings.Width, m_simulatorSettings.Height});
 
       m_simulationWindow->m_name = g_simulationViewport;
       m_simulationWindow->m_additionalWindowFlags =
@@ -1401,13 +1398,15 @@ namespace ToolKit
     void App::CreateEditorEntities()
     {
       // Create editor objects.
-      m_cursor = new Cursor();
-      m_origin = new Axis3d();
+      m_cursor = MakeNew<Cursor>();
+      m_origin = MakeNew<Axis3d>();
 
-      m_grid   = new Grid(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0, false);
+      m_grid   = MakeNew<Grid>();
+      m_grid->Resize(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0);
 
-      m_2dGrid = new Grid(g_max2dGridSize, AxisLabel::XY, 10.0f, 4.0,
-                          true); // Generate grid cells 10 x 10
+      m_2dGrid         = MakeNew<Grid>();
+      m_2dGrid->m_is2d = true;
+      m_2dGrid->Resize(g_max2dGridSize, AxisLabel::XY, 10.0f, 4.0);
     }
 
     float App::GetDeltaTime() { return m_deltaTime; }

@@ -265,11 +265,10 @@ namespace ToolKit
     return node;
   }
 
-  void Node::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Node::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = CreateXmlNode(doc, XmlNodeElement, parent);
-
-    WriteAttr(node, doc, XmlNodeInheritScaleAttr, std::to_string(static_cast<int>(m_inheritScale)));
+    WriteAttr(node, doc, XmlNodeInheritScaleAttr, std::to_string((int) m_inheritScale));
 
     XmlNode* tNode = CreateXmlNode(doc, XmlTranslateElement, node);
     WriteVec(tNode, doc, m_translation);
@@ -279,21 +278,17 @@ namespace ToolKit
 
     tNode = CreateXmlNode(doc, XmlScaleElement, node);
     WriteVec(tNode, doc, m_scale);
+
+    return node;
   }
 
-  void Node::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Node::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     XmlNode* node = parent;
-    if (node == nullptr)
-    {
-      assert(false && "Unbound node can not exist.");
-      return;
-    }
-
     if (XmlAttribute* attr = node->first_attribute(XmlNodeInheritScaleAttr.c_str()))
     {
       String val     = attr->value();
-      m_inheritScale = static_cast<bool>(std::atoi(val.c_str()));
+      m_inheritScale = (bool) std::atoi(val.c_str());
     }
 
     if (XmlNode* n = node->first_node(XmlTranslateElement.c_str()))
@@ -310,6 +305,8 @@ namespace ToolKit
     {
       ReadVec(n, m_scale);
     }
+
+    return nullptr;
   }
 
   void Node::SetInheritScaleDeep(bool val)

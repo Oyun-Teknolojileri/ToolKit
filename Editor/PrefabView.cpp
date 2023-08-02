@@ -146,8 +146,6 @@ namespace ToolKit
       if (ImGui::CollapsingHeader("Components##1", ImGuiTreeNodeFlags_DefaultOpen))
       {
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
-
-        std::vector<ULongID> compRemove;
         for (ComponentPtr& com : shownEntity->GetComponentPtrArray())
         {
           ComponentView::ShowComponentBlock(com, false);

@@ -88,10 +88,6 @@ namespace ToolKit
   class TK_API RenderState : public Serializable
   {
    public:
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
-
-   public:
     // Active state values.
     // Changing these settings will modify the renderer's state.
     CullingType cullMode        = CullingType::Back;
@@ -99,6 +95,10 @@ namespace ToolKit
     DrawType drawType           = DrawType::Triangle;
     float alphaMaskTreshold     = 0.001f;
     float lineWidth             = 1.0f;
+
+   protected:
+    virtual XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
+    virtual XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent);
 
    private:
     friend class Renderer;

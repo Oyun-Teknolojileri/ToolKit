@@ -28,7 +28,6 @@
 
 #include "Entity.h"
 #include "Resource.h"
-#include "ResourceManager.h"
 
 namespace ToolKit
 {
@@ -72,6 +71,8 @@ namespace ToolKit
   class TK_API AudioSource : public Entity
   {
    public:
+    TKDeclareClass(AudioSource, Entity);
+
     EntityType GetType() const override;
     ~AudioSource();
     void AttachAudio(const AudioPtr& audio);
@@ -95,6 +96,9 @@ namespace ToolKit
     void Play();
     void Stop();
     void Rewind();
+
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     // Audio engine reference.

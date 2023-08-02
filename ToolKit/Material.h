@@ -27,9 +27,8 @@
 #pragma once
 
 #include "RenderState.h"
-#include "Renderer.h"
 #include "Resource.h"
-#include "ResourceManager.h"
+#include "Texture.h"
 
 namespace ToolKit
 {
@@ -87,8 +86,9 @@ namespace ToolKit
      */
     bool IsPBR();
 
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    private:
     void CopyTo(Resource* other) override;

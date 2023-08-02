@@ -134,8 +134,7 @@ namespace ToolKit
     class FolderWindow : public Window
     {
      public:
-      explicit FolderWindow(XmlNode* node);
-      FolderWindow(bool addEngine);
+      FolderWindow();
       virtual ~FolderWindow();
       void Show() override;
       Type GetType() const override;
@@ -150,9 +149,11 @@ namespace ToolKit
       void AddEntry(const FolderView& view);
       void SetViewsDirty();
       void ReconstructFolderTree();
+      void IterateFolders(bool includeEngine);
 
-      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+     protected:
+      XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+      XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
      private:
       // Returns active root's decendend views (tabs).

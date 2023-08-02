@@ -26,13 +26,8 @@
 
 #pragma once
 
-#include "Drawable.h"
-#include "MathUtil.h"
+#include "Entity.h"
 #include "Resource.h"
-#include "ResourceManager.h"
-
-#include <unordered_map>
-#include <vector>
 
 namespace ToolKit
 {
@@ -74,6 +69,8 @@ namespace ToolKit
   class TK_API SpriteAnimation : public Entity
   {
    public:
+    TKDeclareClass(SpriteAnimation, Entity);
+
     SpriteAnimation();
     explicit SpriteAnimation(const SpriteSheetPtr& spriteSheet);
     ~SpriteAnimation();
@@ -81,6 +78,9 @@ namespace ToolKit
     virtual EntityType GetType() const;
     Surface* GetCurrentSurface();
     void Update(float deltaTime);
+
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     float m_animFps        = 23.4f;

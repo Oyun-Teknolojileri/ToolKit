@@ -32,7 +32,6 @@
 #include <algorithm>
 #include <random>
 #include <unordered_map>
-#include <vector>
 
 // GLM
 #define GLM_FORCE_XYZW_ONLY

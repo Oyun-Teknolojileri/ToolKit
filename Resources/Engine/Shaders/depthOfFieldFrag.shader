@@ -12,6 +12,7 @@
 
 		uniform sampler2D s_texture0; //Image to be processed 
 		uniform sampler2D s_texture1; //Linear depth, where max value is far plane distance
+
 		uniform vec2 uPixelSize; //The size of a pixel: vec2(1.0/width, 1.0/height) 
 		uniform float focusPoint;
 		uniform float focusScale;
@@ -32,7 +33,9 @@
 			if(focusScale == 0.0f){
 				return color;
 			}
-			float centerDepth = -texture(s_texture1, texCoord).z;
+			
+			float centerDepth  = -texture(s_texture1, texCoord).z;
+
 			float centerSize = getBlurSize(centerDepth);
 			float tot = 1.0;
 			float radius = radiusScale;

@@ -35,11 +35,9 @@
 namespace ToolKit
 {
 
-  EnvironmentComponent::EnvironmentComponent()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-  }
+  TKDefineClass(EnvironmentComponent, Component);
+
+  EnvironmentComponent::EnvironmentComponent() {}
 
   EnvironmentComponent::~EnvironmentComponent() {}
 
@@ -61,6 +59,8 @@ namespace ToolKit
 
   void EnvironmentComponent::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     Hdri_Define(nullptr, EnvironmentComponentCategory.Name, EnvironmentComponentCategory.Priority, true, true);
 
     PositionOffset_Define(Vec3(0.0f),
@@ -131,6 +131,8 @@ namespace ToolKit
 
   void EnvironmentComponent::ParameterEventConstructor()
   {
+    Super::ParameterEventConstructor();
+
     ParamExposure().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
                                                  { ReInitHdri(GetHdriVal(), std::get<float>(newVal)); });
 
@@ -140,19 +142,27 @@ namespace ToolKit
 
   ComponentPtr EnvironmentComponent::Copy(Entity* ntt)
   {
-    EnvironmentComponentPtr ec = std::make_shared<EnvironmentComponent>();
+    EnvironmentComponentPtr ec = MakeNewPtr<EnvironmentComponent>();
     ec->m_localData            = m_localData;
     ec->m_entity               = ntt;
 
     return ec;
   }
 
-  void EnvironmentComponent::Serialize(XmlDocument* doc, XmlNode* parent) const { Component::Serialize(doc, parent); }
-
-  void EnvironmentComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* EnvironmentComponent::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    Component::DeSerialize(doc, parent);
+    XmlNode* compNode = Super::DeSerializeImp(info, parent);
     ParameterEventConstructor();
+
+    return compNode->first_node(StaticClass()->Name.c_str());
+  }
+
+  XmlNode* EnvironmentComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   BoundingBox EnvironmentComponent::GetBBox()

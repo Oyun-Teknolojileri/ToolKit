@@ -28,7 +28,12 @@
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <Camera.h>
+#include <Canvas.h>
+#include <MathUtil.h>
+#include <Surface.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -549,7 +554,7 @@ namespace ToolKit
     {
       State* state                   = new StateAnchorBegin();
       StateAnchorBase* baseState     = static_cast<StateAnchorBase*>(state);
-      m_anchor                       = std::make_shared<Anchor>(Billboard::Settings {false, 0.0f, 0.0f});
+      m_anchor                       = MakeNewPtr<Anchor>();
       baseState->m_type              = StateAnchorBase::TransformType::Translate;
       baseState->m_anchor            = m_anchor;
       m_stateMachine->m_currentState = state;

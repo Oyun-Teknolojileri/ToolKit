@@ -29,9 +29,6 @@
 #include "GeometryTypes.h"
 #include "Types.h"
 
-#include <string>
-#include <vector>
-
 namespace ToolKit
 {
 
@@ -41,7 +38,7 @@ namespace ToolKit
   void ReadVec(XmlNode* node, T& val);
   template <typename T>
   void WriteVec(XmlNode* node, XmlDocument* doc, const T& val);
-  TK_API void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val);
+  TK_API void WriteAttr(XmlNode* node, XmlDocument* doc, const StringView& name, const StringView& val);
 
   TK_API void ReadAttr(XmlNode* node, const String& name, bool& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, float& val);
@@ -50,7 +47,7 @@ namespace ToolKit
   TK_API void ReadAttr(XmlNode* node, const String& name, ULongID& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, byte& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, ubyte& val);
-  TK_API void ReadAttr(XmlNode* node, const String& name, String& val);
+  TK_API void ReadAttr(XmlNode* node, const String& name, String& val, StringView defaultVal = "");
   TK_API XmlNode* Query(XmlDocument* doc, const StringArray& path);
 
   // Updates or inject the attribute with val. Returns true if successful.
@@ -58,7 +55,7 @@ namespace ToolKit
 
   // Create an xml node with given name.
   // Append it to parent if not null else append it to doc.
-  TK_API XmlNode* CreateXmlNode(XmlDocument* doc, const String& name, XmlNode* parent = nullptr);
+  TK_API XmlNode* CreateXmlNode(XmlDocument* doc, const StringView& name, XmlNode* parent = nullptr);
 
   TK_API void WriteMaterial(XmlNode* parent, XmlDocument* doc, const String& file);
   TK_API MaterialPtr ReadMaterial(XmlNode* parent);
@@ -205,13 +202,13 @@ namespace ToolKit
   }
 
   template <typename T, typename Pred>
-  inline void erase_if(T& vec, Pred pred)
+  void erase_if(T& vec, Pred pred)
   {
     vec.erase(std::remove_if(vec.begin(), vec.end(), pred), vec.end());
   }
 
   template <typename T>
-  inline bool contains(const std::vector<T>& arr, const T& val)
+  bool contains(const std::vector<T>& arr, const T& val)
   {
     return std::find(arr.cbegin(), arr.cend(), val) != arr.cend();
   }
@@ -222,7 +219,7 @@ namespace ToolKit
    * @returns if given value exist, returns index of val otherwise -1
    */
   template <typename T>
-  inline int FindIndex(const std::vector<T>& arr, const T& val)
+  int FindIndex(const std::vector<T>& arr, const T& val)
   {
     auto it = std::find(arr.cbegin(), arr.cend(), val);
     return it == arr.cend() ? -1 : int(it - arr.cbegin());

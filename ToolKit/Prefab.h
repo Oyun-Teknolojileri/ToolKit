@@ -26,15 +26,8 @@
 
 #pragma once
 
-#include "Light.h"
-#include "MathUtil.h"
-#include "Resource.h"
-#include "Sky.h"
+#include "Entity.h"
 #include "Types.h"
-
-#include <functional>
-#include <unordered_map>
-#include <vector>
 
 namespace ToolKit
 {
@@ -48,6 +41,8 @@ namespace ToolKit
   class TK_API Prefab : public Entity
   {
    public:
+    TKDeclareClass(Prefab, Entity);
+
     Prefab();
     virtual ~Prefab();
 
@@ -70,23 +65,24 @@ namespace ToolKit
     void Unlink();
 
     /**
-     * Add all elements in the prabscene to the current scene.
+     * Add all elements in the prefab scene to the current scene.
      */
     void Link();
 
     static Prefab* GetPrefabRoot(Entity* ntt);
     Entity* CopyTo(Entity* other) const override;
 
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
    private:
-    void ParameterConstructor();
-    void ParameterEventConstructor();
+    void ParameterConstructor() override;
 
    public:
-    // Should be in Prefab folder
     TKDeclareParam(String, PrefabPath);
+
     ScenePtr m_prefabScene;
     Scene* m_currentScene;
     bool m_initiated = false;

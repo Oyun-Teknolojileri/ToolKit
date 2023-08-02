@@ -225,6 +225,13 @@
     <ClCompile Include="GlErrorReporter.cpp">
       <Filter>Source\Render</Filter>
     </ClCompile>
+    <ClCompile Include="TKObject.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineSettings.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ForwardPreProcessPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -446,5 +453,12 @@
     <ClInclude Include="GlErrorReporter.h">
       <Filter>Source\Render</Filter>
     </ClInclude>
+    <ClInclude Include="TKObject.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineSettings.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="ForwardPreProcessPass.h" />
   </ItemGroup>
 </Project>

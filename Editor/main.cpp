@@ -24,21 +24,24 @@
  * SOFTWARE.
  */
 
+#include "Anchor.h"
 #include "App.h"
-#include "Common/SDLEventPool.h"
-#include "Common/Win32Utils.h"
 #include "ConsoleWindow.h"
-#include "GlErrorReporter.h"
+#include "EditorCamera.h"
+#include "Gizmo.h"
+#include "Grid.h"
 #include "Mod.h"
-#include "SDL.h"
-#include "Types.h"
 #include "UI.h"
 
-#include <stdio.h>
+#include <Common/SDLEventPool.h>
+#include <Common/Win32Utils.h>
+#include <GlErrorReporter.h>
+#include <SDL.h>
+#include <Types.h>
 
 #include <chrono>
 
-#include "DebugNew.h"
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -129,7 +132,7 @@ namespace ToolKit
 
     void Init()
     {
-      EngineSettings& settings = g_proxy->m_engineSettings;
+      EngineSettings& settings = GetEngineSettings();
 
       // Init SDL
       if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0)
@@ -214,6 +217,33 @@ namespace ToolKit
             SafeDel(g_proxy->m_sceneManager);
             g_proxy->m_sceneManager = new EditorSceneManager();
             g_proxy->Init();
+
+            // Register Custom Classes.
+            g_proxy->m_objectFactory->Register<Grid>();
+            g_proxy->m_objectFactory->Register<Anchor>();
+            g_proxy->m_objectFactory->Register<Cursor>();
+            g_proxy->m_objectFactory->Register<Axis3d>();
+            g_proxy->m_objectFactory->Register<LinearGizmo>();
+            g_proxy->m_objectFactory->Register<MoveGizmo>();
+            g_proxy->m_objectFactory->Register<ScaleGizmo>();
+            g_proxy->m_objectFactory->Register<PolarGizmo>();
+            g_proxy->m_objectFactory->Register<SkyBillboard>();
+            g_proxy->m_objectFactory->Register<LightBillboard>();
+            g_proxy->m_objectFactory->Register<EditorCamera>();
+            g_proxy->m_objectFactory->Register<EditorDirectionalLight>();
+            g_proxy->m_objectFactory->Register<EditorPointLight>();
+            g_proxy->m_objectFactory->Register<EditorSpotLight>();
+
+            // Overrides.
+            g_proxy->m_objectFactory->Register<Camera>([]() -> EditorCamera* { return new EditorCamera(); });
+
+            g_proxy->m_objectFactory->Register<DirectionalLight>([]() -> EditorDirectionalLight*
+                                                                 { return new EditorDirectionalLight(); });
+
+            g_proxy->m_objectFactory->Register<PointLight>([]() -> EditorPointLight*
+                                                           { return new EditorPointLight(); });
+
+            g_proxy->m_objectFactory->Register<SpotLight>([]() -> EditorSpotLight* { return new EditorSpotLight(); });
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);

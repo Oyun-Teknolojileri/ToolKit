@@ -28,9 +28,11 @@
     <ClCompile Include="DirectionComponent.cpp" />
     <ClCompile Include="DofPass.cpp" />
     <ClCompile Include="Drawable.cpp" />
+    <ClCompile Include="EngineSettings.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EnvironmentComponent.cpp" />
     <ClCompile Include="FileManager.cpp" />
+    <ClCompile Include="ForwardPreProcessPass.cpp" />
     <ClCompile Include="ForwardPass.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="FullQuadPass.cpp" />
@@ -79,6 +81,7 @@
     <ClCompile Include="StencilPass.cpp" />
     <ClCompile Include="Surface.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TKObject.cpp" />
     <ClCompile Include="ToneMapPass.cpp" />
     <ClCompile Include="ToolKit.cpp" />
     <ClCompile Include="UIManager.cpp" />
@@ -102,10 +105,12 @@
     <ClInclude Include="DirectionComponent.h" />
     <ClInclude Include="DofPass.h" />
     <ClInclude Include="Drawable.h" />
+    <ClInclude Include="EngineSettings.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="EnvironmentComponent.h" />
     <ClInclude Include="Events.h" />
     <ClInclude Include="FileManager.h" />
+    <ClInclude Include="ForwardPreProcessPass.h" />
     <ClInclude Include="ForwardPass.h" />
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="FullQuadPass.h" />
@@ -153,6 +158,7 @@
     <ClInclude Include="Surface.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TKAssert.h" />
+    <ClInclude Include="TKObject.h" />
     <ClInclude Include="ToneMapPass.h" />
     <ClInclude Include="ToolKit.h" />
     <ClInclude Include="Types.h" />
@@ -216,6 +222,7 @@
       <IncludeInUnityFile>true</IncludeInUnityFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/FI "stdafx.h" /bigobj %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -234,6 +241,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/FI "stdafx.h" %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

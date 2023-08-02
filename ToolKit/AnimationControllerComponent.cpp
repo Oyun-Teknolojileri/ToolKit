@@ -34,12 +34,9 @@
 namespace ToolKit
 {
 
-  AnimControllerComponent::AnimControllerComponent()
-  {
-    Records_Define({}, AnimRecordComponentCategory.Name, AnimRecordComponentCategory.Priority, true, true);
+  TKDefineClass(AnimControllerComponent, Component);
 
-    m_id = GetHandleManager()->GetNextHandle();
-  }
+  AnimControllerComponent::AnimControllerComponent() {}
 
   AnimControllerComponent::~AnimControllerComponent()
   {
@@ -51,9 +48,10 @@ namespace ToolKit
 
   ComponentPtr AnimControllerComponent::Copy(Entity* ntt)
   {
-    AnimControllerComponentPtr ec = std::make_shared<AnimControllerComponent>();
+    AnimControllerComponentPtr ec = MakeNewPtr<AnimControllerComponent>();
     ec->m_localData               = m_localData;
     ec->m_entity                  = ntt;
+
     for (auto& record : ec->ParamRecords().GetVar<AnimRecordPtrMap>())
     {
       AnimRecordPtr newRecord = std::make_shared<AnimRecord>();
@@ -67,14 +65,30 @@ namespace ToolKit
     return ec;
   }
 
-  void AnimControllerComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void AnimControllerComponent::ParameterConstructor()
   {
-    Component::DeSerialize(doc, parent);
+    Super::ParameterConstructor();
+    Records_Define({}, AnimRecordComponentCategory.Name, AnimRecordComponentCategory.Priority, true, true);
+  }
+
+  XmlNode* AnimControllerComponent::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* compNode      = Super::DeSerializeImp(info, parent);
     AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
     for (auto iter = list.begin(); iter != list.end(); ++iter)
     {
       iter->second->m_entity = m_entity;
     }
+
+    return compNode->first_node(StaticClass()->Name.c_str());
+  }
+
+  XmlNode* AnimControllerComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   void AnimControllerComponent::AddSignal(const String& signalName, AnimRecordPtr record)

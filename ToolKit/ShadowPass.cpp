@@ -26,7 +26,9 @@
 
 #include "ShadowPass.h"
 
+#include "Camera.h"
 #include "Material.h"
+#include "MathUtil.h"
 #include "Mesh.h"
 #include "ToolKit.h"
 

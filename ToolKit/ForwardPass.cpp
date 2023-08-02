@@ -30,6 +30,7 @@
 #include "Mesh.h"
 #include "Pass.h"
 #include "ToolKit.h"
+#include "Shader.h"
 
 namespace ToolKit
 {
@@ -57,7 +58,6 @@ namespace ToolKit
   void ForwardRenderPass::PreRender()
   {
     Pass::PreRender();
-
     // Set self data.
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer);
@@ -65,27 +65,31 @@ namespace ToolKit
     {
       renderer->ClearBuffer(GraphicBitFields::DepthStencilBits, Vec4(1.0f));
     }
-
     renderer->SetCameraLens(m_params.Cam);
+    renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
   }
 
   void ForwardRenderPass::PostRender()
   {
     Pass::PostRender();
     GetRenderer()->m_overrideMat = nullptr;
+    Renderer* renderer           = GetRenderer();
+    renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
   }
 
-  void ForwardRenderPass::RenderOpaque(RenderJobArray jobs, Camera* cam, const LightRawPtrArray& lights)
+  void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, Camera* cam, const LightRawPtrArray& lights)
   {
     Renderer* renderer = GetRenderer();
-    for (RenderJob& job : jobs)
+
+    for (const RenderJob& job : jobs)
     {
       LightRawPtrArray lightList = RenderJobProcessor::SortLights(job, lights);
+      job.Material->m_fragmentShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.SSAOEnabled));
       renderer->Render(job, m_params.Cam, lightList);
     }
   }
 
-  void ForwardRenderPass::RenderTranslucent(RenderJobArray jobs, Camera* cam, const LightRawPtrArray& lights)
+  void ForwardRenderPass::RenderTranslucent(RenderJobArray& jobs, Camera* cam, const LightRawPtrArray& lights)
   {
     RenderJobProcessor::StableSortByDistanceToCamera(jobs, cam);
 

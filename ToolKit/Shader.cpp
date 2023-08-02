@@ -26,16 +26,14 @@
 
 #include "Shader.h"
 
+#include "FileManager.h"
 #include "TKAssert.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "gles2.h"
-#include "rapidxml.hpp"
-#include "rapidxml_print.hpp"
-#include "rapidxml_utils.hpp"
+
+#include <gles2.h>
 
 #include <unordered_set>
-#include <vector>
 
 #include "DebugNew.h"
 
@@ -54,17 +52,9 @@ namespace ToolKit
 
   void Shader::Load()
   {
-    if (m_loaded)
+    if (!m_loaded)
     {
-      return;
-    }
-
-    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
-    XmlDocument doc;
-    doc.parse<rapidxml::parse_full>(file->data());
-    if (XmlNode* rootNode = doc.first_node("shader"))
-    {
-      DeSerialize(&doc, rootNode);
+      ParseDocument("shader", true);
       m_loaded = true;
     }
   }
@@ -224,7 +214,7 @@ namespace ToolKit
     }
   }
 
-  void Shader::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Shader::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "shader", parent);
     XmlNode* node      = CreateXmlNode(doc, "type", container);
@@ -259,15 +249,12 @@ namespace ToolKit
     XmlNode* srcInput = doc->allocate_node(rapidxml::node_type::node_comment);
     src->append_node(srcInput);
     srcInput->value(doc->allocate_string(m_source.c_str()));
+
+    return container;
   }
 
-  void Shader::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Shader::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (parent == nullptr)
-    {
-      return;
-    }
-
     m_includeFiles.clear();
 
     XmlNode* rootNode = parent;
@@ -337,6 +324,8 @@ namespace ToolKit
     {
       HandleShaderIncludes(*i);
     }
+
+    return nullptr;
   }
 
   void Shader::SetShaderParameter(const String& param, const ParameterVariant& val) { m_shaderParams[param] = val; }
@@ -417,7 +406,6 @@ namespace ToolKit
     m_source.replace(includeLoc, 0, includeSource);
 
     // Handle uniforms
-
     std::unordered_set<Uniform> unis;
     for (Uniform uni : m_uniforms)
     {

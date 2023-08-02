@@ -26,10 +26,10 @@
 
 #include "UIManager.h"
 
+#include "Canvas.h"
+#include "MathUtil.h"
+#include "Scene.h"
 #include "ToolKit.h"
-
-#include <iterator>
-#include <vector>
 
 #include "DebugNew.h"
 

@@ -27,7 +27,6 @@
 #pragma once
 
 #include "EditorViewport.h"
-#include "ToolKit.h"
 #include "UI.h"
 
 namespace ToolKit

@@ -31,16 +31,12 @@
  */
 
 #include "Framebuffer.h"
-#include "MathUtil.h"
-#include "Types.h"
 
 /**
  * Base name space for all the ToolKit functionalities.
  */
 namespace ToolKit
 {
-  class Framebuffer;
-  struct RenderTargetSettigs;
 
   /**
    * Base class for Viewport class. Holds Camera object that viewport has.

@@ -26,13 +26,20 @@
 
 #include "ToolKit.h"
 
-#define GLAD_GLES2_IMPLEMENTATION
-#include "gles2.h"
+#include "Audio.h"
+#include "EngineSettings.h"
+#include "FileManager.h"
+#include "Material.h"
+#include "Mesh.h"
+#include "PluginManager.h"
+#include "RenderSystem.h"
+#include "Scene.h"
+#include "Shader.h"
+#include "TKObject.h"
+#include "UIManager.h"
 
-#include <algorithm>
-#include <filesystem>
-#include <memory>
-#include <string>
+#define GLAD_GLES2_IMPLEMENTATION
+#include <gles2.h>
 
 #include "DebugNew.h"
 
@@ -79,23 +86,29 @@ namespace ToolKit
     }
 
     m_logger->Log("Main PreInit");
-    m_renderSys       = new RenderSystem();
-    m_pluginManager   = new PluginManager();
-    m_animationMan    = new AnimationManager();
-    m_animationPlayer = new AnimationPlayer();
-    m_textureMan      = new TextureManager();
-    m_meshMan         = new MeshManager();
-    m_spriteSheetMan  = new SpriteSheetManager();
-    m_audioMan        = new AudioManager();
-    m_shaderMan       = new ShaderManager();
-    m_materialManager = new MaterialManager();
-    m_sceneManager    = new SceneManager();
-    m_uiManager       = new UIManager();
-    m_skeletonManager = new SkeletonManager();
-    m_fileManager     = new FileManager();
-    m_entityFactory   = new EntityFactory();
 
-    m_preInitiated    = true;
+    m_engineSettings   = new EngineSettings();
+
+    m_objectFactory    = new TKObjectFactory();
+    m_entityFactory    = new EntityFactory();
+    m_componentFactory = new ComponentFactory();
+
+    m_renderSys        = new RenderSystem();
+    m_pluginManager    = new PluginManager();
+    m_animationMan     = new AnimationManager();
+    m_animationPlayer  = new AnimationPlayer();
+    m_textureMan       = new TextureManager();
+    m_meshMan          = new MeshManager();
+    m_spriteSheetMan   = new SpriteSheetManager();
+    m_audioMan         = new AudioManager();
+    m_shaderMan        = new ShaderManager();
+    m_materialManager  = new MaterialManager();
+    m_sceneManager     = new SceneManager();
+    m_uiManager        = new UIManager();
+    m_skeletonManager  = new SkeletonManager();
+    m_fileManager      = new FileManager();
+
+    m_preInitiated     = true;
   }
 
   void Main::Init()
@@ -110,6 +123,7 @@ namespace ToolKit
 
     m_logger->Log("Main Init");
 
+    m_objectFactory->Init();
     m_pluginManager->Init();
     m_animationMan->Init();
     m_textureMan->Init();
@@ -120,7 +134,8 @@ namespace ToolKit
     m_materialManager->Init();
     m_sceneManager->Init();
     m_skeletonManager->Init();
-    m_timing.Initialize(m_engineSettings.Graphics.FPS);
+    m_renderSys->Init();
+    m_timing.Init(m_engineSettings->Graphics.FPS);
 
     m_initiated = true;
   }
@@ -165,7 +180,10 @@ namespace ToolKit
     SafeDel(m_uiManager);
     SafeDel(m_skeletonManager);
     SafeDel(m_fileManager);
+    SafeDel(m_objectFactory);
     SafeDel(m_entityFactory);
+    SafeDel(m_componentFactory);
+    SafeDel(m_engineSettings);
   }
 
   void Main::SetConfigPath(StringView cfgPath) { m_cfgPath = cfgPath; }
@@ -174,7 +192,7 @@ namespace ToolKit
 
   Main* Main::GetInstance()
   {
-    assert(m_proxy);
+    assert(m_proxy && "ToolKit is not initialized.");
     return m_proxy;
   }
 
@@ -256,7 +274,11 @@ namespace ToolKit
 
   EntityFactory* GetEntityFactory() { return Main::GetInstance()->m_entityFactory; }
 
-  EngineSettings& GetEngineSettings() { return Main::GetInstance()->m_engineSettings; }
+  ComponentFactory* GetComponentFactory() { return Main::GetInstance()->m_componentFactory; }
+
+  TK_API TKObjectFactory* GetObjectFactory() { return Main::GetInstance()->m_objectFactory; }
+
+  EngineSettings& GetEngineSettings() { return *Main::GetInstance()->m_engineSettings; }
 
   String DefaultAbsolutePath()
   {
@@ -341,126 +363,13 @@ namespace ToolKit
 
   String LayerPath(const String& file, bool def) { return ProcessPath(file, "Layers", def); }
 
-  void EngineSettings::SerializeWindow(XmlDocument* doc, XmlNode* parent) const
+  void Timing::Init(uint fps)
   {
-    XmlNode* window = doc->allocate_node(rapidxml::node_element, "Window");
-    doc->append_node(window);
-
-    using namespace std;
-    const EngineSettings::GraphicSettings& gfx = Graphics;
-
-    const auto writeAttr1 = [&](StringView name, StringView val) { WriteAttr(window, doc, name.data(), val.data()); };
-    // serialize window.
-    writeAttr1("width", to_string(Window.Width));
-    writeAttr1("height", to_string(Window.Height));
-    writeAttr1(XmlNodeName, Window.Name);
-    writeAttr1("fullscreen", to_string(Window.FullScreen));
+    LastTime    = GetElapsedMilliSeconds();
+    CurrentTime = 0.0f;
+    DeltaTime   = 1000.0f / float(fps);
+    FrameCount  = 0;
+    TimeAccum   = 0.0f;
   }
 
-  void EngineSettings::DeSerializeWindow(XmlDocument* doc, XmlNode* parent)
-  {
-    XmlNode* node = doc->first_node("Window");
-    if (node == nullptr)
-    {
-      return;
-    }
-    ReadAttr(node, "width", Window.Width);
-    ReadAttr(node, "height", Window.Height);
-    ReadAttr(node, "name", Window.Name);
-    ReadAttr(node, "fullscreen", Window.FullScreen);
-  }
-
-  void EngineSettings::SerializePostProcessing(XmlDocument* doc, XmlNode* parent) const
-  {
-    XmlNode* settings = doc->allocate_node(rapidxml::node_element, "PostProcessing");
-    doc->append_node(settings);
-
-    const EngineSettings::PostProcessingSettings& gfx = PostProcessing;
-
-    const auto writeAttrFn                            = [&](StringView name, StringView val) -> void
-    { WriteAttr(settings, doc, name.data(), val.data()); };
-
-    // Serialize Graphics struct.
-    using namespace std;
-    writeAttrFn("TonemappingEnabled", to_string(gfx.TonemappingEnabled));
-    writeAttrFn("TonemapperMode", to_string((int) gfx.TonemapperMode));
-    writeAttrFn("EnableBloom", to_string((int) gfx.BloomEnabled));
-    writeAttrFn("BloomIntensity", to_string(gfx.BloomIntensity));
-    writeAttrFn("BloomThreshold", to_string(gfx.BloomThreshold));
-    writeAttrFn("BloomIterationCount", to_string(gfx.BloomIterationCount));
-    writeAttrFn("GammaCorrectionEnabled", to_string(gfx.GammaCorrectionEnabled));
-    writeAttrFn("Gamma", to_string(gfx.Gamma));
-    writeAttrFn("SSAOEnabled", to_string(gfx.SSAOEnabled));
-    writeAttrFn("SSAORadius", to_string(gfx.SSAORadius));
-    writeAttrFn("SSAOBias", to_string(gfx.SSAOBias));
-    writeAttrFn("DepthOfFieldEnabled", to_string(gfx.DepthOfFieldEnabled));
-    writeAttrFn("FocusPoint", to_string(gfx.FocusPoint));
-    writeAttrFn("FocusScale", to_string(gfx.FocusScale));
-    writeAttrFn("DofQuality", to_string((int) gfx.DofQuality));
-    writeAttrFn("FXAAEnabled", to_string(gfx.FXAAEnabled));
-  }
-
-  void EngineSettings::DeSerializePostProcessing(XmlDocument* doc, XmlNode* parent)
-  {
-    XmlNode* node  = doc->first_node("PostProcessing");
-    // if post processing settings is not exist use default settings
-    PostProcessing = PostProcessingSettings {};
-    if (node == nullptr)
-    {
-      return;
-    }
-
-    ReadAttr(node, "TonemappingEnabled", PostProcessing.TonemappingEnabled);
-    ReadAttr(node, "BloomEnabled", PostProcessing.BloomEnabled);
-    ReadAttr(node, "BloomIntensity", PostProcessing.BloomIntensity);
-    ReadAttr(node, "BloomThreshold", PostProcessing.BloomThreshold);
-    ReadAttr(node, "BloomIterationCount", PostProcessing.BloomIterationCount);
-    ReadAttr(node, "GammaCorrectionEnabled", PostProcessing.GammaCorrectionEnabled);
-    ReadAttr(node, "Gamma", PostProcessing.Gamma);
-    ReadAttr(node, "SSAOEnabled", PostProcessing.SSAOEnabled);
-    ReadAttr(node, "SSAORadius", PostProcessing.SSAORadius);
-    ReadAttr(node, "SSAOBias", PostProcessing.SSAOBias);
-    ReadAttr(node, "DepthOfFieldEnabled", PostProcessing.DepthOfFieldEnabled);
-    ReadAttr(node, "FocusPoint", PostProcessing.FocusPoint);
-    ReadAttr(node, "FocusScale", PostProcessing.FocusScale);
-    ReadAttr(node, "FXAAEnabled", PostProcessing.FXAAEnabled);
-    ReadAttr(node, "TonemapperMode", *(int*) &PostProcessing.TonemapperMode);
-    ReadAttr(node, "DofQuality", *(int*) &PostProcessing.DofQuality);
-  }
-
-  void EngineSettings::SerializeGraphics(XmlDocument* doc, XmlNode* parent) const
-  {
-    XmlNode* settings = doc->allocate_node(rapidxml::node_element, "Graphics");
-    doc->append_node(settings);
-    const EngineSettings::GraphicSettings& gfx = Graphics;
-
-    WriteAttr(settings, doc, "MSAA", std::to_string(gfx.MSAA));
-    WriteAttr(settings, doc, "FPS", std::to_string(gfx.FPS));
-  }
-
-  void EngineSettings::DeSerializeGraphics(XmlDocument* doc, XmlNode* parent)
-  {
-    XmlNode* node = doc->first_node("Graphics");
-    if (node == nullptr)
-    {
-      return;
-    }
-    ReadAttr(node, "MSAA", Graphics.MSAA);
-    ReadAttr(node, "FPS", Graphics.FPS);
-  }
-
-  void EngineSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
-  {
-    SerializeGraphics(doc, parent);
-    SerializePostProcessing(doc, parent);
-    SerializeWindow(doc, parent);
-  }
-
-  void EngineSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
-  {
-    assert(doc && "doc must not be null");
-    DeSerializeWindow(doc, parent);
-    DeSerializeGraphics(doc, parent);
-    DeSerializePostProcessing(doc, parent);
-  }
 } //  namespace ToolKit

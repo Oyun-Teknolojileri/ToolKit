@@ -28,7 +28,10 @@
 
 #include "Material.h"
 #include "Mesh.h"
+#include "Shader.h"
 #include "ToolKit.h"
+
+#include <glad/gles2.h>
 
 namespace ToolKit
 {
@@ -39,6 +42,7 @@ namespace ToolKit
     m_copyStencilSubPass = std::make_shared<FullQuadPass>();
     m_copyStencilSubPass->m_params.FragmentShader =
         GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
+    m_frameBuffer           = std::make_shared<Framebuffer>();
 
     m_solidOverrideMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
   }
@@ -81,8 +85,7 @@ namespace ToolKit
   void StencilRenderPass::PreRender()
   {
     Pass::PreRender();
-
-    m_frameBuffer = std::make_shared<Framebuffer>();
+    Renderer* renderer = GetRenderer();
 
     FramebufferSettings settings;
     settings.depthStencil    = true;
@@ -91,11 +94,11 @@ namespace ToolKit
     settings.height          = m_params.OutputTarget->m_height;
 
     m_frameBuffer->Init(settings);
+    m_frameBuffer->ReconstructIfNeeded(settings.width, settings.height);
     m_frameBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.OutputTarget);
+    m_copyStencilSubPass->m_params.FrameBuffer      = m_frameBuffer;
+    m_copyStencilSubPass->m_params.ClearFrameBuffer = false;
 
-    m_copyStencilSubPass->m_params.FrameBuffer = m_frameBuffer;
-
-    Renderer* renderer                         = GetRenderer();
     renderer->SetFramebuffer(m_frameBuffer, true, Vec4(0.0f));
     renderer->SetCameraLens(m_params.Camera);
   }

@@ -31,11 +31,10 @@
 #include "Node.h"
 #include "Primative.h"
 #include "Renderer.h"
+#include "Scene.h"
 #include "ToolKit.h"
 #include "Util.h"
 #include "Viewport.h"
-
-#include <algorithm>
 
 #include "DebugNew.h"
 

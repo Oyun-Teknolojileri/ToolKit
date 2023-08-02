@@ -27,12 +27,10 @@
 #include "ParameterBlock.h"
 
 #include "Animation.h"
+#include "Material.h"
 #include "Mesh.h"
 #include "ToolKit.h"
 #include "Util.h"
-
-#include <memory>
-#include <utility>
 
 #include "DebugNew.h"
 
@@ -271,7 +269,7 @@ namespace ToolKit
     return *this;
   }
 
-  void ParameterVariant::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* ParameterVariant::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlParamterElement.c_str());
 
@@ -457,16 +455,11 @@ namespace ToolKit
     serializeDataFn(node, doc, this);
 
     parent->append_node(node);
+    return node;
   }
 
-  void ParameterVariant::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* ParameterVariant::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (parent == nullptr)
-    {
-      assert(false && "Unbound parameter can not exist");
-      return;
-    }
-
     XmlAttribute* attr = parent->first_attribute(XmlParamterTypeAttr.c_str());
     m_type             = (VariantType) std::atoi(attr->value());
     ReadAttr(parent, XmlNodeName.data(), m_name);
@@ -482,7 +475,7 @@ namespace ToolKit
 
     std::function<void(XmlNode*, ParameterVariant*)> deserializeDataFn;
 
-    deserializeDataFn = [&doc, &deserializeDataFn](XmlNode* parent, ParameterVariant* pVar)
+    deserializeDataFn = [&deserializeDataFn](XmlNode* parent, ParameterVariant* pVar)
     {
       switch (pVar->GetType())
       {
@@ -716,21 +709,24 @@ namespace ToolKit
         break;
       }
     };
+
     deserializeDataFn(parent, this);
+
+    return nullptr;
   }
 
-  void ParameterBlock::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* ParameterBlock::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* blockNode = doc->allocate_node(rapidxml::node_element, XmlParamBlockElement.c_str());
-
+    XmlNode* blockNode = CreateXmlNode(doc, XmlParamBlockElement, parent);
     for (const ParameterVariant& var : m_variants)
     {
       var.Serialize(doc, blockNode);
     }
-    parent->append_node(blockNode);
+
+    return blockNode;
   }
 
-  void ParameterBlock::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* ParameterBlock::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     if (XmlNode* block = parent->first_node(XmlParamBlockElement.c_str()))
     {
@@ -739,7 +735,7 @@ namespace ToolKit
       {
         // Read variant from xml.
         ParameterVariant var;
-        var.DeSerialize(doc, param);
+        var.DeSerialize(info, param);
 
         // Keep the function constructed in ParameterConstructor.
         // Because functions can't be serialized.
@@ -767,6 +763,8 @@ namespace ToolKit
         param = param->next_sibling();
       }
     }
+
+    return nullptr;
   }
 
   ParameterVariant& ParameterBlock::operator[](size_t index) { return m_variants[index]; }

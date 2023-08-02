@@ -27,30 +27,29 @@
 #include "Grid.h"
 
 #include "Global.h"
-#include "Primative.h"
-#include "ToolKit.h"
 
-#include "DebugNew.h"
+#include <Material.h>
+#include <MathUtil.h>
+#include <Mesh.h>
+#include <Primative.h>
+#include <ToolKit.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
   namespace Editor
   {
 
-    Grid::Grid(UVec2 size, AxisLabel axis, float cellSize, float linePixelCount, bool is2d)
+    TKDefineClass(Grid, Entity);
+
+    Grid::Grid()
     {
-      m_is2d                = is2d;
-      m_horizontalAxisColor = g_gridAxisRed;
-      m_verticalAxisColor   = g_gridAxisBlue;
+      Vec3 m_horizontalAxisColor = g_gridAxisRed;
+      Vec3 m_verticalAxisColor   = g_gridAxisBlue;
 
       Init();
-
-      // Create grid mesh.
-      Resize(size, axis, cellSize);
-
       UpdateShaderParams();
-
-      m_initiated = true;
     }
 
     void Grid::Resize(UVec2 size, AxisLabel axis, float cellSize, float linePixelCount)
@@ -59,7 +58,7 @@ namespace ToolKit
       m_gridCellSize      = cellSize;
       m_maxLinePixelCount = linePixelCount;
 
-      if (VecAllEqual<UVec2>(size, m_size) && m_initiated)
+      if (VecAllEqual<UVec2>(size, m_size))
       {
         return;
       }
@@ -190,18 +189,22 @@ namespace ToolKit
 
     void Grid::Init()
     {
-      AddComponent(new MeshComponent());
-      AddComponent(new MaterialComponent());
+      if (m_initiated)
+      {
+        return;
+      }
+
+      AddComponent<MeshComponent>();
+      AddComponent<MaterialComponent>();
 
       // Create grid material.
       if (!GetMaterialManager()->Exist(g_gridMaterialName))
       {
         MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+
         material->UnInit();
         material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-
         material->GetRenderState()->cullMode      = CullingType::TwoSided;
-
         material->m_vertexShader  = GetShaderManager()->Create<Shader>(ShaderPath("gridVertex.shader", true));
 
         // Custom creationg & shader management.
@@ -215,6 +218,8 @@ namespace ToolKit
 
       m_material = GetMaterialManager()->Create<Material>(g_gridMaterialName);
       GetMaterialComponent()->SetFirstMaterial(m_material);
+
+      m_initiated = true;
     }
 
     void Grid::UpdateShaderParams()

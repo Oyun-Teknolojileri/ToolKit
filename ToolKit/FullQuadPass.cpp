@@ -26,8 +26,10 @@
 
 #include "FullQuadPass.h"
 
+#include "Camera.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Shader.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -35,8 +37,8 @@ namespace ToolKit
 
   FullQuadPass::FullQuadPass()
   {
-    m_camera                   = std::make_shared<Camera>(); // Unused.
-    m_quad                     = std::make_shared<Quad>();
+    m_camera                   = MakeNewPtr<Camera>(); // Unused.
+    m_quad                     = MakeNewPtr<Quad>();
 
     m_material                 = std::make_shared<Material>();
     m_material->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));

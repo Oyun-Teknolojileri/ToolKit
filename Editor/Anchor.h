@@ -75,7 +75,7 @@ namespace ToolKit
     class Anchor : public EditorBillboardBase
     {
      public:
-      explicit Anchor(const Billboard::Settings& set);
+      Anchor();
       BillboardType GetBillboardType() const override;
 
       virtual DirectionLabel HitTest(const Ray& ray) const;

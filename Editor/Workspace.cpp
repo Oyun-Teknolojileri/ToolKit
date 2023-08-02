@@ -28,7 +28,9 @@
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <FileManager.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -43,7 +45,7 @@ namespace ToolKit
     void Workspace::Init()
     {
       m_activeWorkspace = GetDefaultWorkspace();
-      DeSerialize(nullptr, nullptr);
+      DeSerialize(SerializationFileInfo(), nullptr);
     }
 
     XmlNode* Workspace::GetDefaultWorkspaceNode(XmlDocBundle& bundle) const
@@ -208,7 +210,7 @@ namespace ToolKit
       }
     }
 
-    void Workspace::Serialize(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* Workspace::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
       std::ofstream file;
       String fileName = ConcatPaths({ConfigPath(), g_workspaceFile});
@@ -218,6 +220,7 @@ namespace ToolKit
       {
         XmlDocument* lclDoc = new XmlDocument();
         XmlNode* settings   = CreateXmlNode(lclDoc, XmlNodeSettings.data());
+        WriteAttr(settings, lclDoc, XmlVersion, TKVersionStr);
 
         XmlNode* setNode    = CreateXmlNode(lclDoc, XmlNodeWorkspace.data(), settings);
         WriteAttr(setNode, lclDoc, XmlNodePath.data(), m_activeWorkspace);
@@ -247,6 +250,8 @@ namespace ToolKit
         SafeDel(lclDoc);
       }
       SerializeEngineSettings();
+
+      return nullptr;
     }
 
     void Workspace::SerializeSimulationWindow(XmlDocument* doc) const
@@ -348,7 +353,7 @@ namespace ToolKit
       SafeDel(lclDoc);
     }
 
-    void Workspace::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    XmlNode* Workspace::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
       String settingsFile   = ConcatPaths({ConfigPath(), g_workspaceFile});
 
@@ -358,6 +363,8 @@ namespace ToolKit
 
       if (XmlNode* settings = lclDoc->first_node(XmlNodeSettings.data()))
       {
+        ReadAttr(settings, XmlVersion.data(), m_version);
+
         if (XmlNode* setNode = settings->first_node(XmlNodeWorkspace.data()))
         {
           String foundWorkspacePath;
@@ -391,6 +398,7 @@ namespace ToolKit
       }
 
       DeSerializeEngineSettings();
+      return nullptr;
     }
 
   } // namespace Editor

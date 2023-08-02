@@ -31,16 +31,12 @@
  */
 
 #include "Animation.h"
-#include "Component.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
 #include "Node.h"
-#include "ParameterBlock.h"
-#include "Serialize.h"
+#include "TKObject.h"
+#include "ToolKit.h"
 #include "Types.h"
-
-#include <memory>
-#include <vector>
 
 namespace ToolKit
 {
@@ -81,16 +77,17 @@ namespace ToolKit
   };
 
   static VariantCategory EntityCategory {"Meta", 100};
-  struct BlendTarget;
 
   /**
    * Fundamental object that all the ToolKit utilities can interacted with.
    * Entity is the base class for all the objects that can be inserted in any
    * scene.
    */
-  class TK_API Entity : public Serializable
+  class TK_API Entity : public TKObject
   {
    public:
+    TKDeclareClass(Entity, TKObject);
+
     Entity();
     virtual ~Entity();
 
@@ -99,8 +96,6 @@ namespace ToolKit
     virtual void SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget = nullptr);
     virtual BoundingBox GetAABB(bool inWorld = false) const;
     virtual Entity* Copy() const;
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
     virtual void RemoveResources();
 
     /**
@@ -115,21 +110,16 @@ namespace ToolKit
     bool IsLightInstance() const;
     bool IsSkyInstance() const;
 
-    /**
-     * Adds the given component into the components of the Entity. While adding
-     * the component to the list, function also converts the component to a
-     * shared pointer for obtaining lifetime management. Also Entity set itself
-     * as the new components parent.
-     * @param component Component pointer that will be added to components of
-     * this entity.
-     */
-    void AddComponent(Component* component);
+    template <typename T>
+    std::shared_ptr<T> AddComponent()
+    {
+      std::shared_ptr<T> component = std::shared_ptr<T>(MakeNew<T>());
+      component->m_entity          = this;
+      m_components.push_back(component);
+      return component;
+    }
 
-    /**
-     * Adds a component to the Entity same as AddComponent(Component*
-     * component).
-     */
-    void AddComponent(ComponentPtr component);
+    void AddComponent(const ComponentPtr& componet);
 
     /**
      * Used to easily access first MeshComponentPtr.
@@ -150,7 +140,16 @@ namespace ToolKit
      */
     ComponentPtr RemoveComponent(ULongID componentId);
 
+    /**
+     * Mutable component array accessors.
+     * @return ComponentPtrArray for this Entity.
+     */
     ComponentPtrArray& GetComponentPtrArray();
+
+    /**
+     * Immutable component array accessors.
+     * @return ComponentPtrArray for this Entity.
+     */
     const ComponentPtrArray& GetComponentPtrArray() const;
 
     /**
@@ -162,7 +161,7 @@ namespace ToolKit
     {
       for (const ComponentPtr& com : GetComponentPtrArray())
       {
-        if (com->GetType() == T::GetTypeStatic())
+        if (com->IsA<T>())
         {
           return std::reinterpret_pointer_cast<T>(com);
         }
@@ -181,7 +180,7 @@ namespace ToolKit
     {
       for (const ComponentPtr& com : GetComponentPtrArray())
       {
-        if (com->GetType() == T::GetTypeStatic())
+        if (com->IsA<T>())
         {
           components.push_back(std::static_pointer_cast<T>(com));
         }
@@ -210,18 +209,23 @@ namespace ToolKit
 
    protected:
     virtual Entity* CopyTo(Entity* other) const;
-    void ParameterConstructor();
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
     void WeakCopy(Entity* other, bool copyComponents = true) const;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
    public:
-    TKDeclareParam(ULongID, Id);
     TKDeclareParam(String, Name);
     TKDeclareParam(String, Tag);
     TKDeclareParam(bool, Visible);
     TKDeclareParam(bool, TransformLock);
 
+    /**
+     * Node that holds the transform and parenting data for the Entity.
+     */
     Node* m_node;
-    ParameterBlock m_localData; // Entity's own data.
 
     /**
      * Internally used variable.
@@ -239,32 +243,34 @@ namespace ToolKit
    private:
     // This should be private, because instantiated entities don't use this list
     // NOTE: Entity's own functions shouldn't access this either.
-    //  They should use GetComponentPtrArray instead.
+    // They should use GetComponentPtrArray instead.
     ComponentPtrArray m_components;
   };
 
   class TK_API EntityNode : public Entity
   {
    public:
+    TKDeclareClass(EntityNode, Entity);
+
     EntityNode();
     explicit EntityNode(const String& name);
     virtual ~EntityNode();
 
     EntityType GetType() const override;
     void RemoveResources() override;
+
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
   };
 
-  class TK_API EntityFactory
+  /**
+   * DEPRECATED use TKObjectFactory
+   * Utility class to construct Entity.
+   */
+  class TK_API EntityFactory final
   {
    public:
-    EntityFactory();
-    ~EntityFactory();
-
     Entity* CreateByType(EntityType type);
-    void OverrideEntityConstructor(EntityType type, std::function<Entity*()> fn);
-
-   private:
-    std::vector<std::function<Entity*()>> m_overrideFns;
   };
 
 } // namespace ToolKit

@@ -27,16 +27,21 @@
 #include "EditorViewport.h"
 
 #include "App.h"
-#include "DirectionComponent.h"
 #include "LeftBar.h"
 #include "Mod.h"
 #include "OverlayLighting.h"
 #include "PopupWindows.h"
-#include "Prefab.h"
 #include "StatusBar.h"
 #include "TopBar.h"
 
-#include "DebugNew.h"
+#include <Camera.h>
+#include <DirectionComponent.h>
+#include <Material.h>
+#include <MathUtil.h>
+#include <MeshComponent.h>
+#include <Prefab.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -71,23 +76,7 @@ namespace ToolKit
       }
     }
 
-    EditorViewport::EditorViewport(XmlNode* node)
-    {
-      DeSerialize(nullptr, node);
-      m_needsResize = true;
-      ComitResize();
-      InitOverlays(this);
-      m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
-    }
-
-    EditorViewport::EditorViewport(const Vec2& size) : EditorViewport(size.x, size.y) {}
-
-    EditorViewport::EditorViewport(float width, float height) : Viewport(width, height)
-    {
-      m_name = g_viewportStr + " " + std::to_string(m_id);
-      InitOverlays(this);
-      m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
-    }
+    EditorViewport::EditorViewport() { m_name = g_viewportStr + " " + std::to_string(m_id); }
 
     EditorViewport::~EditorViewport() {}
 
@@ -165,33 +154,42 @@ namespace ToolKit
       ModShortCutSignals();
     }
 
-    void EditorViewport::Serialize(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* EditorViewport::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
-      Window::Serialize(doc, parent);
-      XmlNode* node = doc->allocate_node(rapidxml::node_element, "Viewport");
+      XmlNode* wndNode = Window::SerializeImp(doc, parent);
+      XmlNode* node    = CreateXmlNode(doc, "Viewport", wndNode);
 
       WriteAttr(node, doc, "alignment", std::to_string((int) m_cameraAlignment));
-
       WriteAttr(node, doc, "lock", std::to_string((int) m_orbitLock));
       GetCamera()->Serialize(doc, node);
 
-      XmlNode* wnd = parent->last_node();
-      wnd->append_node(node);
+      return node;
     }
 
-    void EditorViewport::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    XmlNode* EditorViewport::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      Window::DeSerialize(doc, parent);
-      m_wndContentAreaSize = m_size;
+      XmlNode* wndNode      = Window::DeSerializeImp(info, parent);
+      XmlNode* viewportNode = wndNode->first_node("Viewport");
+      m_wndContentAreaSize  = m_size;
 
-      if (XmlNode* node = parent->first_node("Viewport"))
+      if (viewportNode)
       {
-        ReadAttr(node, "alignment", *((int*) (&m_cameraAlignment)));
-        ReadAttr(node, "lock", m_orbitLock);
+        ReadAttr(viewportNode, "alignment", *((int*) (&m_cameraAlignment)));
+        ReadAttr(viewportNode, "lock", m_orbitLock);
 
-        Camera* viewCam = new Camera();
-        ULongID id      = viewCam->GetIdVal();
-        viewCam->DeSerialize(nullptr, node->first_node("E"));
+        Camera* viewCam    = MakeNew<Camera>();
+        viewCam->m_version = m_version;
+        ULongID id         = viewCam->GetIdVal();
+
+        if (m_version > String("v0.4.4"))
+        {
+          XmlNode* objNode = viewportNode->first_node(TKObject::StaticClass()->Name.c_str());
+          viewCam->DeSerialize(info, objNode);
+        }
+        else
+        {
+          viewCam->DeSerialize(info, viewportNode->first_node("E"));
+        }
         viewCam->SetIdVal(id);
 
         // Reset aspect.
@@ -202,6 +200,8 @@ namespace ToolKit
 
         SetCamera(viewCam);
       }
+
+      return viewportNode;
     }
 
     void EditorViewport::OnResizeContentArea(float width, float height)
@@ -232,7 +232,7 @@ namespace ToolKit
     RenderTargetSettigs EditorViewport::GetRenderTargetSettings()
     {
       RenderTargetSettigs sets = Viewport::GetRenderTargetSettings();
-      sets.Msaa                = Main::GetInstance()->m_engineSettings.Graphics.MSAA;
+      sets.Msaa                = GetEngineSettings().Graphics.MSAA;
       return sets;
     }
 
@@ -673,7 +673,6 @@ namespace ToolKit
 
                 // Load material once
                 String path                = ConcatPaths({entry.m_rootPath, entry.m_fileName + entry.m_ext});
-
                 MaterialPtr material       = GetMaterialManager()->Create<Material>(path);
 
                 // Create a material component if missing one.
@@ -681,8 +680,7 @@ namespace ToolKit
                 if (mmPtr == nullptr)
                 {
                   g_app->m_statusMsg = "MaterialComponent added.";
-                  pd.entity->AddComponent(new MaterialComponent());
-                  mmPtr = pd.entity->GetComponent<MaterialComponent>();
+                  mmPtr              = pd.entity->AddComponent<MaterialComponent>();
                   mmPtr->UpdateMaterialList();
                 }
 
@@ -771,6 +769,14 @@ namespace ToolKit
       }
     }
 
+    void EditorViewport::Init(Vec2 size)
+    {
+      m_needsResize = true;
+      ComitResize();
+      InitOverlays(this);
+      m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
+    }
+
     void EditorViewport::LoadDragMesh(bool& meshLoaded,
                                       DirectoryEntry dragEntry,
                                       Entity** dwMesh,
@@ -782,7 +788,8 @@ namespace ToolKit
         // Load mesh once
         String path = ConcatPaths({dragEntry.m_rootPath, dragEntry.m_fileName + dragEntry.m_ext});
         *dwMesh     = new Entity();
-        (*dwMesh)->AddComponent(new MeshComponent);
+        (*dwMesh)->AddComponent<MeshComponent>();
+
         MeshPtr mesh;
         if (dragEntry.m_ext == SKINMESH)
         {
@@ -792,19 +799,19 @@ namespace ToolKit
         {
           mesh = GetMeshManager()->Create<Mesh>(path);
         }
+
         (*dwMesh)->GetMeshComponent()->SetMeshVal(mesh);
         mesh->Init(false);
 
         if (mesh->IsSkinned())
         {
-          SkeletonComponentPtr skelComp = std::make_shared<SkeletonComponent>();
+          SkeletonComponentPtr skelComp = (*dwMesh)->AddComponent<SkeletonComponent>();
           skelComp->SetSkeletonResourceVal(((SkinMesh*) mesh.get())->m_skeleton);
-          (*dwMesh)->AddComponent(skelComp);
+
           skelComp->Init();
         }
 
-        MaterialComponentPtr matComp = std::make_shared<MaterialComponent>();
-        (*dwMesh)->AddComponent(matComp);
+        MaterialComponentPtr matComp = (*dwMesh)->AddComponent<MaterialComponent>();
         matComp->UpdateMaterialList();
 
         // Load bounding box once
@@ -823,14 +830,14 @@ namespace ToolKit
                                                    LineBatch** boundingBox)
     {
       Vec3 lastDragMeshPos = Vec3(0.0f);
+      Ray ray              = RayFromMousePosition(); // Find the point of the cursor in 3D coordinates
 
-      // Find the point of the cursor in 3D coordinates
-      Ray ray              = RayFromMousePosition();
       EntityIdArray ignoreList;
       if (meshLoaded)
       {
         ignoreList.push_back((*boundingBox)->GetIdVal());
       }
+
       EditorScene::PickData pd = currScene->PickObject(ray, ignoreList);
       bool meshFound           = false;
       if (pd.entity != nullptr)

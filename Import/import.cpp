@@ -24,18 +24,24 @@
  * SOFTWARE.
  */
 
-#include "ToolKit.h"
-#include "Util.h"
-#include "assimp/DefaultLogger.hpp"
-#include "assimp/Importer.hpp"
-#include "assimp/pbrmaterial.h"
-#include "assimp/postprocess.h"
-#include "assimp/scene.h"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtx/quaternion.hpp"
-#include "rapidxml.hpp"
-
+#include <Animation.h>
+#include <Material.h>
+#include <MaterialComponent.h>
+#include <Mesh.h>
+#include <MeshComponent.h>
+#include <Scene.h>
+#include <Texture.h>
+#include <ToolKit.h>
+#include <Util.h>
 #include <assert.h>
+#include <assimp/DefaultLogger.hpp>
+#include <assimp/Importer.hpp>
+#include <assimp/pbrmaterial.h>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <rapidxml.hpp>
 #include <rapidxml_ext.h>
 
 #include <algorithm>
@@ -852,22 +858,23 @@ namespace ToolKit
       {
         continue;
       }
-      MeshComponentPtr meshComp = std::make_shared<MeshComponent>();
-      ntt->AddComponent(meshComp);
+
+      MeshComponentPtr meshComp = ntt->AddComponent<MeshComponent>();
       if (aMesh->HasBones())
       {
         meshComp->SetMeshVal(mainSkinMesh);
-        SkeletonComponentPtr skelComp = std::make_shared<SkeletonComponent>();
+
+        SkeletonComponentPtr skelComp = ntt->AddComponent<SkeletonComponent>();
         skelComp->SetSkeletonResourceVal(g_skeleton);
-        ntt->AddComponent(skelComp);
+
         isSkeletonEntityCreated = true;
       }
       else
       {
         meshComp->SetMeshVal(g_meshes[aMesh]);
       }
-      MaterialComponentPtr matComp = std::make_shared<MaterialComponent>();
-      ntt->AddComponent(matComp);
+
+      MaterialComponentPtr matComp = ntt->AddComponent<MaterialComponent>();
       matComp->UpdateMaterialList();
     }
 

@@ -33,15 +33,15 @@
 namespace ToolKit
 {
 
-  DirectionComponent::DirectionComponent() {}
+  TKDefineClass(DirectionComponent, Component);
 
-  DirectionComponent::DirectionComponent(Entity* entity) { m_entity = entity; }
+  DirectionComponent::DirectionComponent() {}
 
   DirectionComponent::~DirectionComponent() {}
 
   ComponentPtr DirectionComponent::Copy(Entity* ntt)
   {
-    DirectionComponentPtr dc = std::make_shared<DirectionComponent>(m_entity);
+    DirectionComponentPtr dc = MakeNewPtr<DirectionComponent>();
     dc->m_entity             = ntt;
     return dc;
   }
@@ -121,6 +121,14 @@ namespace ToolKit
     {
       Roll(glm::pi<float>());
     }
+  }
+
+  XmlNode* DirectionComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
 } //  namespace ToolKit

@@ -34,13 +34,15 @@ namespace ToolKit
   class TK_API SkyBase : public Entity
   {
    public:
+    TKDeclareClass(SkyBase, Entity);
+
     SkyBase();
 
     EntityType GetType() const override;
 
     virtual void Init();
     virtual void ReInit();
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     bool IsInitialized();
 
     virtual MaterialPtr GetSkyboxMaterial();
@@ -49,9 +51,10 @@ namespace ToolKit
     BoundingBox GetAABB(bool inWorld = false) const override;
 
    protected:
-    virtual void ParameterConstructor();
-    virtual void ParameterEventConstructor();
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
     void ConstructSkyMaterial(ShaderPtr vertexPrg, ShaderPtr fragPrg);
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     TKDeclareParam(bool, DrawSky);
@@ -66,6 +69,8 @@ namespace ToolKit
   class TK_API Sky : public SkyBase
   {
    public:
+    TKDeclareClass(Sky, SkyBase);
+
     Sky();
     virtual ~Sky();
 
@@ -76,6 +81,7 @@ namespace ToolKit
    protected:
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     TKDeclareParam(float, Exposure);

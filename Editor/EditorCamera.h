@@ -37,19 +37,25 @@ namespace ToolKit
     class EditorCamera : public Camera
     {
      public:
+      TKDeclareClass(EditorCamera, Camera);
+
       EditorCamera();
       explicit EditorCamera(const EditorCamera* cam);
       virtual ~EditorCamera();
+
+      void NativeConstruct() override;
       Entity* Copy() const override;
-      void PostDeSerialize() override;
       void GenerateFrustum();
 
-     public:
-      TKDeclareParam(VariantCallback, Poses);
+     protected:
+      void PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
      private:
       void CreateGizmo();
-      void ParameterConstructor();
+      void ParameterConstructor() override;
+
+     public:
+      TKDeclareParam(VariantCallback, Poses);
 
      private:
       bool m_posessed = false;

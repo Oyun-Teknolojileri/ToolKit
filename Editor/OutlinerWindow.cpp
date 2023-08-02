@@ -32,6 +32,8 @@
 #include "Prefab.h"
 #include "TopBar.h"
 
+#include <MathUtil.h>
+
 #include <stack>
 
 #include "DebugNew.h"
@@ -40,8 +42,6 @@ namespace ToolKit
 {
   namespace Editor
   {
-
-    OutlinerWindow::OutlinerWindow(XmlNode* node) { DeSerialize(nullptr, node); }
 
     OutlinerWindow::OutlinerWindow() {}
 
@@ -177,7 +177,7 @@ namespace ToolKit
       // otherwise this means both of the entities has same parent
       // so we will select in between childs
 
-      NodePtrArray& children = a->m_node->m_parent->m_children;
+      NodeRawPtrArray& children = a->m_node->m_parent->m_children;
       // find locations of a and b on parents childs
       for (; i < children.size() && numFound != 2; ++i)
       {
@@ -330,8 +330,8 @@ namespace ToolKit
       }
 
       const float halfLineHeight = lineHeight * 0.5f;
-      Vec2 bottomRectMin = windowPos + Vec2(0.0f, windowSize.y - halfLineHeight);
-      Vec2 bottomRectMax = windowPos + Vec2(windowSize.x, windowSize.y + halfLineHeight);
+      Vec2 bottomRectMin         = windowPos + Vec2(0.0f, windowSize.y - halfLineHeight);
+      Vec2 bottomRectMax         = windowPos + Vec2(windowSize.x, windowSize.y + halfLineHeight);
 
       // is dropped below all entities?
       // a one line height rect that is bottom of the outliner window to check if we drop below all entities
@@ -437,8 +437,8 @@ namespace ToolKit
       //    EntityChild0
       if (selectedIndex + 1 < (int) m_indexToEntity.size())
       {
-        Node* nextNode                     = m_indexToEntity[selectedIndex + 1]->m_node;
-        NodePtrArray& droppedBelowChildren = droppedBelowNtt->m_node->m_children;
+        Node* nextNode                        = m_indexToEntity[selectedIndex + 1]->m_node;
+        NodeRawPtrArray& droppedBelowChildren = droppedBelowNtt->m_node->m_children;
 
         if (contains(droppedBelowChildren, nextNode))
         {
@@ -464,8 +464,8 @@ namespace ToolKit
       {
         if (!droppedAboveFirstChild)
         {
-          NodePtrArray& childs = droppedParent->m_children;
-          childIndex           = FindIndex(childs, droppedBelowNtt->m_node) + 1;
+          NodeRawPtrArray& childs = droppedParent->m_children;
+          childIndex              = FindIndex(childs, droppedBelowNtt->m_node) + 1;
         }
 
         for (int i = 0; i < movedEntities.size(); ++i)

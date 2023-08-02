@@ -31,7 +31,8 @@
 #include "MultiChoiceWindow.h"
 #include "Prefab.h"
 
-#include "DebugNew.h"
+#include <Material.h>
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -711,10 +712,9 @@ namespace ToolKit
           if (GetResourceType(entry.m_ext) == ResourceType::Skeleton)
           {
             *var = GetSkeletonManager()->Create<Skeleton>(entry.GetFullPath());
-            if (comp->GetType() == ComponentType::SkeletonComponent)
+            if (SkeletonComponent* scom = comp->As<SkeletonComponent>())
             {
-              SkeletonComponent* skelComp = (SkeletonComponent*) comp.get();
-              skelComp->Init();
+              scom->Init();
             }
           }
           else

@@ -161,13 +161,13 @@ namespace ToolKit
       void ShowGizmos();
 
       void UpdateSimulation(float deltaTime);
-
-      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
       float GetDeltaTime();
 
+     protected:
+      XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+      XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+
      private:
-      void OverrideEntityConstructors();
       void CreateSimulationWindow(float width, float height);
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);

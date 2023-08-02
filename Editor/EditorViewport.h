@@ -28,7 +28,8 @@
 
 #include "EditorScene.h"
 #include "FolderWindow.h"
-#include "Viewport.h"
+
+#include <Viewport.h>
 
 namespace ToolKit
 {
@@ -47,10 +48,10 @@ namespace ToolKit
     class EditorViewport : public Viewport, public Window
     {
      public:
-      explicit EditorViewport(XmlNode* node);
-      explicit EditorViewport(const Vec2& size);
-      EditorViewport(float width, float height);
+      EditorViewport();
       virtual ~EditorViewport();
+
+      virtual void Init(Vec2 size);
 
       // Window Overrides.
       void Show() override;
@@ -60,8 +61,6 @@ namespace ToolKit
       void DispatchSignals() const override;
 
       // Viewport overrides.
-      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
       void OnResizeContentArea(float width, float height) override;
       virtual void ResizeWindow(uint width, uint height);
 
@@ -71,6 +70,8 @@ namespace ToolKit
 
      protected:
       RenderTargetSettigs GetRenderTargetSettings() override;
+      XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+      XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
       virtual void UpdateContentArea();
       virtual void UpdateWindow();

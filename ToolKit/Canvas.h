@@ -26,16 +26,9 @@
 
 #pragma once
 
-#include "Entity.h"
-#include "Events.h"
-#include "MathUtil.h"
-#include "Resource.h"
 #include "SpriteSheet.h"
 #include "Surface.h"
 #include "Types.h"
-
-#include <functional>
-#include <vector>
 
 namespace ToolKit
 {
@@ -44,18 +37,21 @@ namespace ToolKit
   class TK_API Canvas : public Surface
   {
    public:
+    TKDeclareClass(Canvas, Surface);
+
     Canvas();
-    explicit Canvas(const Vec2& size);
+    void NativeConstruct() override;
     EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     void UpdateGeometry(bool byTexture) override;
     void ApplyRecursiveResizePolicy(float width, float height);
 
    protected:
-    void ParameterConstructor();
-    void ParameterEventConstructor();
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
    private:
     void CreateQuadLines();

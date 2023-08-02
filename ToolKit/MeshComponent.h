@@ -27,21 +27,19 @@
 #pragma once
 
 #include "Component.h"
-#include "MathUtil.h"
 
 namespace ToolKit
 {
+
   typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
   typedef std::vector<MeshComponentPtr> MeshComponentPtrArray;
+
   static VariantCategory MeshComponentCategory {"Mesh Component", 90};
 
   class TK_API MeshComponent : public Component
   {
    public:
-    /**
-     * Auto generated code for type information.
-     */
-    TKComponentType(MeshComponent);
+    TKDeclareClass(MeshComponent, Component);
 
     /**
      * Empty constructor.
@@ -73,6 +71,10 @@ namespace ToolKit
      */
     void Init(bool flushClientSideArray);
 
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void ParameterConstructor() override;
+
    public:
     TKDeclareParam(MeshPtr, Mesh); //!< Component's Mesh resource.
     TKDeclareParam(bool, CastShadow);
@@ -80,4 +82,5 @@ namespace ToolKit
    private:
     BoundingBox m_aabb = {};
   };
+
 } // namespace ToolKit

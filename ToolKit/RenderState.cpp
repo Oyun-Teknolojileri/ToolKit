@@ -34,7 +34,7 @@
 namespace ToolKit
 {
 
-  void RenderState::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* RenderState::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = doc->allocate_node(rapidxml::node_type::node_element, "renderState");
 
@@ -53,18 +53,15 @@ namespace ToolKit
     WriteAttr(container, doc, "blendFunction", std::to_string(int(blendFunction)));
     WriteAttr(container, doc, "alphaMaskTreshold", std::to_string((float) alphaMaskTreshold));
     WriteAttr(container, doc, "drawType", std::to_string(int(drawType)));
+
+    return container;
   }
 
-  void RenderState::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* RenderState::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (parent == nullptr)
-    {
-      return;
-    }
-
     if (XmlNode* container = parent->first_node("renderState"))
     {
-      ReadAttr(container, "cullMode", *reinterpret_cast<int*>(&cullMode));
+      ReadAttr(container, "cullMode", *(int*) (&cullMode));
       auto validateCullFn = [](CullingType& ct) -> void
       {
         switch (ct)
@@ -80,9 +77,8 @@ namespace ToolKit
       };
       validateCullFn(cullMode);
 
-      ReadAttr(container, "depthTest", *reinterpret_cast<int*>(&depthTestEnabled));
-
-      ReadAttr(container, "depthFunc", *reinterpret_cast<int*>(&depthFunction));
+      ReadAttr(container, "depthTest", *(int*) (&depthTestEnabled));
+      ReadAttr(container, "depthFunc", *(int*) (&depthFunction));
       auto validateCmpFn = [](CompareFunctions& val) -> void
       {
         switch (val)
@@ -102,7 +98,7 @@ namespace ToolKit
       };
       validateCmpFn(depthFunction);
 
-      ReadAttr(container, "blendFunction", *reinterpret_cast<int*>(&blendFunction));
+      ReadAttr(container, "blendFunction", *(int*) (&blendFunction));
       auto validateBlendFn = [](BlendFunction& bf) -> void
       {
         switch (bf)
@@ -118,9 +114,8 @@ namespace ToolKit
       };
       validateBlendFn(blendFunction);
 
-      ReadAttr(container, "alphaMaskTreshold", *reinterpret_cast<float*>(&alphaMaskTreshold));
-
-      ReadAttr(container, "drawType", *reinterpret_cast<int*>(&drawType));
+      ReadAttr(container, "alphaMaskTreshold", *(float*) (&alphaMaskTreshold));
+      ReadAttr(container, "drawType", *(int*) (&drawType));
       auto validateDrawFn = [](DrawType& dt) -> void
       {
         switch (dt)
@@ -137,6 +132,8 @@ namespace ToolKit
       };
       validateDrawFn(drawType);
     }
+
+    return nullptr;
   }
 
 } // namespace ToolKit

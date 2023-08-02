@@ -30,15 +30,10 @@
  * @file Scene.h Header file for the Scene class.
  */
 
-#include "Light.h"
-#include "MathUtil.h"
+#include "EnvironmentComponent.h"
 #include "Resource.h"
 #include "Sky.h"
 #include "Types.h"
-
-#include <functional>
-#include <unordered_map>
-#include <vector>
 
 namespace ToolKit
 {
@@ -286,21 +281,25 @@ namespace ToolKit
      */
     virtual void ClearEntities();
 
-    // Serialization.
-
+   protected:
     /**
      * Serializes the scene to an XML document.
      * @param doc The XML document to serialize to.
      * @param parent The parent XML node to serialize under.
      */
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
     /**
      * Deserializes the scene from an XML document.
      * @param doc The XML document to deserialize from.
      * @param parent The parent XML node to deserialize from.
      */
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+
+    /**
+     * Deserialize files with version v0.4.5
+     */
+    void DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
     /**
      * Returns the biggest number generated during the current runtime. This
@@ -310,6 +309,12 @@ namespace ToolKit
      */
     ULongID GetBiggestEntityId();
 
+    /**
+     * Copies the scene to another resource.
+     * @param other The resource to copy to.
+     */
+    void CopyTo(Resource* other) override;
+
    private:
     /**
      * Removes all children of the given entity.
@@ -318,23 +323,7 @@ namespace ToolKit
     void RemoveChildren(Entity* removed);
 
    protected:
-    /**
-     * Copies the scene to another resource.
-     * @param other The resource to copy to.
-     */
-    void CopyTo(Resource* other) override;
-
-    /**
-     * Normalize the ID of an entity while serializing the scene.
-     * @param doc The XML document being serialized.
-     * @param parent The parent node of the entity being serialized.
-     * @param indx The index of the entity in the entity list.
-     */
-    void NormalizeEntityID(XmlDocument* doc, XmlNode* prent, size_t indx) const;
-
-   protected:
     EntityRawPtrArray m_entities; //!< The entities in the scene.
-    String m_version;             //!< The version of the scene file.
     bool m_isPrefab;              //!< Whether or not the scene is a prefab.
   };
 

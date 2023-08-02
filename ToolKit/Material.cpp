@@ -26,10 +26,10 @@
 
 #include "Material.h"
 
+#include "FileManager.h"
+#include "Shader.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "rapidxml.hpp"
-#include "rapidxml_utils.hpp"
 
 #include "DebugNew.h"
 
@@ -48,19 +48,11 @@ namespace ToolKit
 
   void Material::Load()
   {
-    if (m_loaded)
+    if (!m_loaded)
     {
-      return;
+      ParseDocument("material");
+      m_loaded = true;
     }
-
-    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
-    XmlDocument doc;
-    doc.parse<0>(file->data());
-
-    XmlNode* rootNode = doc.first_node("material");
-    DeSerialize(&doc, rootNode);
-
-    m_loaded = true;
   }
 
   void Material::Save(bool onlyIfDirty)
@@ -233,7 +225,7 @@ namespace ToolKit
     return file == GetShaderManager()->PbrDefferedShaderFile() || file == GetShaderManager()->PbrForwardShaderFile();
   }
 
-  void Material::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Material::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "material", parent);
 
@@ -305,15 +297,11 @@ namespace ToolKit
     WriteAttr(node, doc, XmlNodeName.data(), std::to_string((int) m_materialType));
 
     m_renderState.Serialize(doc, container);
+    return container;
   }
 
-  void Material::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Material::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (parent == nullptr)
-    {
-      return;
-    }
-
     XmlNode* rootNode = parent;
     for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
     {
@@ -360,7 +348,7 @@ namespace ToolKit
       }
       else if (strcmp("renderState", node->name()) == 0)
       {
-        m_renderState.DeSerialize(doc, parent);
+        m_renderState.DeSerialize(info, parent);
       }
       else if (strcmp("emissiveTexture", node->name()) == 0)
       {
@@ -439,6 +427,8 @@ namespace ToolKit
         }
       }
     }
+
+    return nullptr;
   }
 
   MaterialManager::MaterialManager() { m_type = ResourceType::Material; }

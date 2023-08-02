@@ -28,20 +28,18 @@
 
 #include "DirectionComponent.h"
 #include "EnvironmentComponent.h"
+#include "Material.h"
+#include "Shader.h"
 #include "ToolKit.h"
-
-#include <memory>
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
 
-  SkyBase::SkyBase()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-  }
+  TKDefineClass(SkyBase, Entity);
+
+  SkyBase::SkyBase() {}
 
   EntityType SkyBase::GetType() const { return EntityType::Entity_SkyBase; }
 
@@ -56,7 +54,7 @@ namespace ToolKit
     if (envComp == nullptr)
     {
       // Create a default environment component.
-      envComp      = std::make_shared<EnvironmentComponent>();
+      envComp      = AddComponent<EnvironmentComponent>();
       HdriPtr hdri = nullptr;
 
       // Provide an empty hdri to construct gradient sky.
@@ -72,7 +70,6 @@ namespace ToolKit
       }
 
       envComp->SetHdriVal(hdri);
-      AddComponent(envComp);
     }
 
     Vec3 mp = Vec3(TK_FLT_MAX);
@@ -90,10 +87,10 @@ namespace ToolKit
     Init();
   }
 
-  void SkyBase::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* SkyBase::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    Entity::DeSerialize(doc, parent);
-    ParameterEventConstructor();
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    return nttNode->first_node(StaticClass()->Name.c_str());
   }
 
   bool SkyBase::IsInitialized() { return m_initialized; }
@@ -123,6 +120,8 @@ namespace ToolKit
 
   void SkyBase::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     DrawSky_Define(true, "Sky", 90, true, true);
     Illuminate_Define(true, "Sky", 90, true, true);
     Intensity_Define(1.0f, "Sky", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
@@ -132,6 +131,8 @@ namespace ToolKit
 
   void SkyBase::ParameterEventConstructor()
   {
+    Super::ParameterEventConstructor();
+
     ParamIlluminate().m_onValueChangedFn.clear();
     ParamIlluminate().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
@@ -163,11 +164,17 @@ namespace ToolKit
     m_skyboxMaterial->Init();
   }
 
-  Sky::Sky()
+  XmlNode* SkyBase::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    ParameterConstructor();
-    ParameterEventConstructor();
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
+
+  TKDefineClass(Sky, Entity);
+
+  Sky::Sky() {}
 
   Sky::~Sky() {}
 
@@ -203,6 +210,8 @@ namespace ToolKit
 
   void Sky::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     Exposure_Define(1.0f, "Sky", 90, true, true, {false, true, 0.0f, 50.0f, 0.05f});
 
     Hdri_Define(nullptr, "Sky", 90, true, true);
@@ -225,6 +234,14 @@ namespace ToolKit
     ParamExposure().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         { GetComponent<EnvironmentComponent>()->SetExposureVal(std::get<float>(newVal)); });
+  }
+
+  XmlNode* Sky::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
 } // namespace ToolKit

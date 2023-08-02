@@ -27,18 +27,17 @@
 #include "Mesh.h"
 
 #include "Common/base64.h"
+#include "FileManager.h"
 #include "Material.h"
+#include "MathUtil.h"
 #include "Skeleton.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "gles2.h"
 
-#include <rapidxml.hpp>
-#include <rapidxml_utils.hpp>
+#include <gles2.h>
 
 #include <execution>
-#include <unordered_map>
 
 #include "DebugNew.h"
 
@@ -164,20 +163,9 @@ namespace ToolKit
 
   void Mesh::Load()
   {
-    if (m_loaded)
+    if (!m_loaded)
     {
-      return;
-    }
-
-    String path = GetFile();
-    NormalizePath(path);
-    XmlFilePtr file = GetFileManager()->GetXmlFile(path);
-    XmlDocument doc;
-    doc.parse<0>(file->data());
-
-    if (XmlNode* node = doc.first_node("meshContainer"))
-    {
-      DeSerialize(&doc, node);
+      ParseDocument("meshContainer");
       m_loaded = true;
     }
   }
@@ -420,11 +408,6 @@ namespace ToolKit
   template <typename T>
   void LoadMesh(XmlDocument* doc, XmlNode* parent, T* mainMesh)
   {
-    if (parent == nullptr)
-    {
-      return;
-    }
-
     mainMesh->m_aabb = BoundingBox();
 
     T* mesh          = mainMesh;
@@ -443,8 +426,8 @@ namespace ToolKit
     {
       if (mesh == nullptr)
       {
-        auto meshPtr = std::make_shared<T>();
-        mesh         = meshPtr.get();
+        std::shared_ptr<T> meshPtr = std::make_shared<T>();
+        mesh                       = meshPtr.get();
         mainMesh->m_subMeshes.push_back(meshPtr);
       }
 
@@ -521,13 +504,13 @@ namespace ToolKit
       }
 
       mesh->m_loaded      = true;
-      mesh->m_vertexCount = static_cast<int>(mesh->m_clientSideVertices.size());
-      mesh->m_indexCount  = static_cast<int>(mesh->m_clientSideIndices.size());
+      mesh->m_vertexCount = (int) (mesh->m_clientSideVertices.size());
+      mesh->m_indexCount  = (int) (mesh->m_clientSideIndices.size());
       mesh                = nullptr;
     }
   }
 
-  void Mesh::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Mesh::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "meshContainer", parent);
 
@@ -546,9 +529,15 @@ namespace ToolKit
         writeMesh(doc, container, static_cast<const Mesh*>(m));
       }
     }
+
+    return container;
   }
 
-  void Mesh::DeSerialize(XmlDocument* doc, XmlNode* parent) { LoadMesh(doc, parent, this); }
+  XmlNode* Mesh::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    LoadMesh(info.Document, parent, this);
+    return nullptr;
+  }
 
   void TraverseMeshHelper(const Mesh* mesh, std::function<void(const Mesh*)> callback)
   {
@@ -658,6 +647,7 @@ namespace ToolKit
     {
       return;
     }
+
     // If skeleton is specified, load it
     // While reading from a file, it's probably not loaded
     // So Deserialize will also try to load it
@@ -670,20 +660,16 @@ namespace ToolKit
         return;
       }
     }
-    String path = GetFile();
-    NormalizePath(path);
-    XmlFilePtr file = GetFileManager()->GetXmlFile(path);
-    XmlDocument doc;
-    doc.parse<0>(file->data());
 
-    if (XmlNode* node = doc.first_node("meshContainer"))
-    {
-      DeSerialize(&doc, node);
-      m_loaded = true;
-    }
+    ParseDocument("meshContainer");
+    m_loaded = true;
   }
 
-  void SkinMesh::DeSerialize(XmlDocument* doc, XmlNode* parent) { LoadMesh(doc, parent, this); }
+  XmlNode* SkinMesh::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    LoadMesh(info.Document, parent, this);
+    return nullptr;
+  }
 
   BoundingBox SkinMesh::CalculateAABB(const Skeleton* skel, DynamicBoneMapPtr boneMap)
   {

@@ -28,10 +28,6 @@
 
 #include "ParameterBlock.h"
 #include "Resource.h"
-#include "ResourceManager.h"
-
-#include <unordered_map>
-#include <vector>
 
 namespace ToolKit
 {
@@ -93,8 +89,8 @@ namespace ToolKit
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     /**
      * Adds a shader parameter to the parameter array with the given name and

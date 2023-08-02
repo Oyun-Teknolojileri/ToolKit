@@ -26,16 +26,21 @@
 
 #include "GradientSky.h"
 
+#include "Camera.h"
 #include "EnvironmentComponent.h"
+#include "Material.h"
+#include "MathUtil.h"
+#include "RenderSystem.h"
+#include "Shader.h"
+
+#include "DebugNew.h"
 
 namespace ToolKit
 {
 
-  GradientSky::GradientSky()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-  }
+  TKDefineClass(GradientSky, SkyBase);
+
+  GradientSky::GradientSky() {}
 
   GradientSky::~GradientSky() {}
 
@@ -57,7 +62,7 @@ namespace ToolKit
 
     ConstructSkyMaterial(vert, frag);
 
-    if (m_onInit) 
+    if (m_onInit)
     {
       return;
     }
@@ -92,6 +97,8 @@ namespace ToolKit
 
   void GradientSky::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     TopColor_Define(Vec3(0.3f, 0.3f, 1.0f), "Sky", 90, true, true, {true});
     MiddleColor_Define(Vec3(1.0f, 1.0f, 0.8f), "Sky", 90, true, true, {true});
     BottomColor_Define(Vec3(0.5f, 0.3f, 0.1f), "Sky", 90, true, true, {true});
@@ -102,7 +109,7 @@ namespace ToolKit
     SetNameVal("Gradient Sky");
   }
 
-  void GradientSky::ParameterEventConstructor() { SkyBase::ParameterEventConstructor(); }
+  void GradientSky::ParameterEventConstructor() { Super::ParameterEventConstructor(); }
 
   void GradientSky::GenerateGradientCubemap()
   {
@@ -202,6 +209,14 @@ namespace ToolKit
                        }};
 
     GetRenderSystem()->AddRenderTask(task);
+  }
+
+  XmlNode* GradientSky::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
 } // namespace ToolKit

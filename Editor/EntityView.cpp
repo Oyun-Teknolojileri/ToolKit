@@ -28,8 +28,15 @@
 
 #include "App.h"
 #include "CustomDataView.h"
-#include "Prefab.h"
 #include "TransformMod.h"
+
+#include <Canvas.h>
+#include <Drawable.h>
+#include <Material.h>
+#include <MathUtil.h>
+#include <Prefab.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {

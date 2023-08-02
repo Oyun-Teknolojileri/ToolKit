@@ -28,7 +28,16 @@
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <Animation.h>
+#include <Audio.h>
+#include <Material.h>
+#include <Mesh.h>
+#include <Scene.h>
+#include <Shader.h>
+#include <Texture.h>
+#include <ToolKit.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -68,6 +77,7 @@ namespace ToolKit
       {
         return GetTextureManager();
       }
+
       return nullptr;
     }
 
@@ -108,13 +118,7 @@ namespace ToolKit
 
     RenderTargetPtr DirectoryEntry::GetThumbnail() const { return g_app->m_thumbnailManager.GetThumbnail(*this); }
 
-    FolderWindow::FolderWindow(XmlNode* node)
-    {
-      DeSerialize(nullptr, node);
-      Iterate(ResourcePath(), true);
-    }
-
-    FolderWindow::FolderWindow(bool addEngine) { Iterate(ResourcePath(), true, addEngine); }
+    FolderWindow::FolderWindow() {}
 
     FolderWindow::~FolderWindow() {}
 
@@ -126,6 +130,8 @@ namespace ToolKit
       m_resourcesTreeIndex = (int) m_folderNodes.size();
       CreateTreeRec(int(m_folderNodes.size()) - 1, ResourcePath());
     }
+
+    void FolderWindow::IterateFolders(bool includeEngine) { Iterate(ResourcePath(), true, includeEngine); }
 
     // parent will start with -1
     int FolderWindow::CreateTreeRec(int parent, const std::filesystem::path& path)
@@ -530,13 +536,11 @@ namespace ToolKit
       return false;
     }
 
-    void FolderWindow::Serialize(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* FolderWindow::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
-      Window::Serialize(doc, parent);
-      XmlNode* node   = parent->last_node();
+      XmlNode* wndNode = Window::SerializeImp(doc, parent);
+      XmlNode* folder  = CreateXmlNode(doc, "FolderWindow", wndNode);
 
-      XmlNode* folder = doc->allocate_node(rapidxml::node_element, "FolderWindow");
-      node->append_node(folder);
       WriteAttr(folder, doc, "activeFolder", std::to_string(m_activeFolder));
       WriteAttr(folder, doc, "showStructure", std::to_string(m_showStructure));
 
@@ -551,11 +555,13 @@ namespace ToolKit
         WriteVec(setting, doc, view.m_iconSize);
         viewNode->append_node(setting);
       }
+
+      return folder;
     }
 
-    void FolderWindow::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    XmlNode* FolderWindow::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      Window::DeSerialize(doc, parent);
+      Window::DeSerializeImp(info, parent);
       if (XmlNode* node = parent->first_node("FolderWindow"))
       {
         ReadAttr(node, "activeFolder", m_activeFolder);
@@ -585,6 +591,10 @@ namespace ToolKit
           } while (view = view->next_sibling("FolderView"));
         }
       }
+
+      Iterate(ResourcePath(), true);
+
+      return nullptr;
     }
 
   } // namespace Editor

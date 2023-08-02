@@ -26,18 +26,34 @@
 
 #pragma once
 
+#include "DataTexture.h"
 #include "PostProcessPass.h"
 
 namespace ToolKit
 {
 
+  class SSAONoiseTexture : public DataTexture
+  {
+   public:
+    SSAONoiseTexture(int width, int height);
+
+    void Init(void* data);
+
+   protected:
+    SSAONoiseTexture();
+
+   private:
+    void Init(bool flushClientSideArray = false) override;
+  };
+
+  typedef std::shared_ptr<SSAONoiseTexture> SSAONoiseTexturePtr;
+
   struct SSAOPassParams
   {
-    TexturePtr GPositionBuffer    = nullptr;
-    TexturePtr GNormalBuffer      = nullptr;
-    TexturePtr GLinearDepthBuffer = nullptr;
-    Camera* Cam                   = nullptr;
-
+    TexturePtr GPositionBuffer           = nullptr;
+    TexturePtr GNormalBuffer             = nullptr;
+    TexturePtr GLinearDepthBuffer        = nullptr;
+    Camera* Cam                          = nullptr;
     /**
      * How far the samples will be taken from.
      */

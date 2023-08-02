@@ -26,11 +26,7 @@
 
 #pragma once
 
-#include "GlErrorReporter.h"
 #include "Pass.h"
-#include "Renderer.h"
-
-#include <functional>
 
 namespace ToolKit
 {
@@ -78,6 +74,7 @@ namespace ToolKit
     RenderSystem();
     ~RenderSystem();
 
+    void Init();
     void AddRenderTask(Technique* technique);
     void AddRenderTask(TechniquePtr technique);
     void AddRenderTask(RenderTask task);
@@ -111,7 +108,7 @@ namespace ToolKit
     void SetFrameCount(uint count);
 
     void EnableBlending(bool enable);
-    
+
     void DecrementSkipFrame();
 
     bool IsSkipFrame() const;

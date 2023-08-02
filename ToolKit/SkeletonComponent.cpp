@@ -31,10 +31,9 @@
 namespace ToolKit
 {
 
-  SkeletonComponent::SkeletonComponent()
-  {
-    SkeletonResource_Define(nullptr, SkeletonComponentCategory.Name, SkeletonComponentCategory.Priority, true, true);
-  }
+  TKDefineClass(SkeletonComponent, Component);
+
+  SkeletonComponent::SkeletonComponent() {}
 
   SkeletonComponent::~SkeletonComponent() { m_map = nullptr; }
 
@@ -52,7 +51,7 @@ namespace ToolKit
 
   ComponentPtr SkeletonComponent::Copy(Entity* ntt)
   {
-    SkeletonComponentPtr dst = std::make_shared<SkeletonComponent>();
+    SkeletonComponentPtr dst = MakeNewPtr<SkeletonComponent>();
     dst->m_entity            = ntt;
 
     dst->SetSkeletonResourceVal(GetSkeletonResourceVal());
@@ -61,10 +60,26 @@ namespace ToolKit
     return dst;
   }
 
-  void SkeletonComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void SkeletonComponent::ParameterConstructor()
   {
-    Component::DeSerialize(doc, parent);
+    Super::ParameterConstructor();
+    SkeletonResource_Define(nullptr, SkeletonComponentCategory.Name, SkeletonComponentCategory.Priority, true, true);
+  }
+
+  XmlNode* SkeletonComponent::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* compNode = Super::DeSerializeImp(info, parent);
     Init();
+
+    return compNode->first_node(StaticClass()->Name.c_str());
+  }
+
+  XmlNode* SkeletonComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
 } // namespace ToolKit

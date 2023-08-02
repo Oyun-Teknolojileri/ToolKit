@@ -28,8 +28,6 @@
 
 #include "Types.h"
 
-#include <vector>
-
 namespace ToolKit
 {
   /**

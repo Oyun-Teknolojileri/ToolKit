@@ -26,11 +26,12 @@
 
 #include "Action.h"
 
-#include "AnimationControllerComponent.h"
 #include "App.h"
-#include "Prefab.h"
 
-#include "DebugNew.h"
+#include <AnimationControllerComponent.h>
+#include <Prefab.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -69,13 +70,11 @@ namespace ToolKit
     {
       if (isActionCommitted)
       {
-        AnimControllerComponentPtr comp = ntt->GetComponent<AnimControllerComponent>();
-        if (comp)
+        if (AnimControllerComponentPtr comp = ntt->GetComponent<AnimControllerComponent>())
         {
           comp->Stop();
         }
       }
-      else {}
     }
 
     void DeleteAction::Undo()
@@ -164,16 +163,11 @@ namespace ToolKit
     DeleteComponentAction::DeleteComponentAction(ComponentPtr com)
     {
       m_com = com;
-      switch (com->GetType())
+      if (AnimControllerComponent* ac = com->As<AnimControllerComponent>())
       {
-      case ComponentType::AnimControllerComponent:
-      {
-        reinterpret_cast<AnimControllerComponent*>(com.get())->Stop();
+        ac->Stop();
       }
-      break;
-      default:
-        break;
-      };
+
       Redo();
     }
 
@@ -192,7 +186,7 @@ namespace ToolKit
     {
       if (m_com->m_entity)
       {
-        m_com->m_entity->RemoveComponent(m_com->m_id);
+        m_com->m_entity->RemoveComponent(m_com->GetIdVal());
       }
     }
 

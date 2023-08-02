@@ -26,20 +26,29 @@
 
 #include "Light.h"
 
+#include "Camera.h"
 #include "Component.h"
 #include "DirectionComponent.h"
+#include "Material.h"
+#include "MathUtil.h"
+#include "Pass.h"
+#include "Renderer.h"
+#include "Shader.h"
 #include "ToolKit.h"
-
-#include <memory>
-#include <string>
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
+
+  // Light
+  //////////////////////////////////////////
+
+  TKDefineClass(Light, Entity);
+
   Light::Light()
   {
-    m_shadowCamera = new Camera();
+    m_shadowCamera = MakeNew<Camera>();
     m_shadowCamera->SetOrthographicScaleVal(1.0f);
 
     Color_Define(Vec3(1.0f), "Light", 0, true, true, {true});
@@ -58,6 +67,8 @@ namespace ToolKit
 
   void Light::ParameterEventConstructor()
   {
+    Super::ParameterConstructor();
+
     ParamShadowRes().m_onValueChangedFn.clear();
     ParamShadowRes().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
@@ -79,15 +90,6 @@ namespace ToolKit
   }
 
   EntityType Light::GetType() const { return EntityType::Entity_Light; }
-
-  void Light::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
-
-  void Light::DeSerialize(XmlDocument* doc, XmlNode* parent)
-  {
-    ClearComponents(); // Read from file.
-    Entity::DeSerialize(doc, parent);
-    ParameterEventConstructor();
-  }
 
   MaterialPtr Light::GetShadowMaterial() { return m_shadowMapMaterial; }
 
@@ -116,7 +118,30 @@ namespace ToolKit
 
   void Light::UpdateShadowCameraTransform() { m_shadowCamera->m_node->SetTransform(m_node->GetTransform()); }
 
-  DirectionalLight::DirectionalLight() { AddComponent(new DirectionComponent(this)); }
+  XmlNode* Light::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
+  XmlNode* Light::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    ClearComponents(); // Read from file.
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+
+    ParameterEventConstructor();
+
+    return nttNode->first_node(StaticClass()->Name.c_str());
+  }
+
+  // DirectionalLight
+  //////////////////////////////////////////
+
+  TKDefineClass(DirectionalLight, Light);
+
+  DirectionalLight::DirectionalLight() { AddComponent<DirectionComponent>(); }
 
   DirectionalLight::~DirectionalLight() {}
 
@@ -147,6 +172,14 @@ namespace ToolKit
       frustum[i]   = Vec3(t.x / t.w, t.y / t.w, t.z / t.w);
     }
     return frustum;
+  }
+
+  XmlNode* DirectionalLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   void DirectionalLight::FitEntitiesBBoxIntoShadowFrustum(Camera* lightCamera, const RenderJobArray& jobs)
@@ -247,11 +280,12 @@ namespace ToolKit
                          shadowBBox.max.z);
   }
 
-  PointLight::PointLight()
-  {
-    Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
-    ParamPCFRadius().m_hint.increment = 0.02f;
-  }
+  // PointLight
+  //////////////////////////////////////////
+
+  TKDefineClass(PointLight, Light);
+
+  PointLight::PointLight() {}
 
   PointLight::~PointLight() {}
 
@@ -279,14 +313,27 @@ namespace ToolKit
     m_shadowMapMaterial->Init();
   }
 
-  SpotLight::SpotLight()
+  XmlNode* PointLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Radius_Define(10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
-    OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
-    InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
-    AddComponent(new DirectionComponent(this));
+    return node;
   }
+
+  void PointLight::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
+    Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
+    ParamPCFRadius().m_hint.increment = 0.02f;
+  }
+
+  // SpotLight
+  //////////////////////////////////////////
+
+  TKDefineClass(SpotLight, Light);
+
+  SpotLight::SpotLight() { AddComponent<DirectionComponent>(); }
 
   SpotLight::~SpotLight() {}
 
@@ -314,5 +361,22 @@ namespace ToolKit
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
+  }
+
+  XmlNode* SpotLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
+  void SpotLight::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
+
+    Radius_Define(10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
+    OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
+    InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
   }
 } // namespace ToolKit

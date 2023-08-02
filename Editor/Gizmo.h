@@ -50,9 +50,14 @@ namespace ToolKit
       };
 
      public:
+      TKDeclareClass(EditorBillboardBase, Billboard);
+
+      EditorBillboardBase();
       explicit EditorBillboardBase(const Settings& settings);
       virtual BillboardType GetBillboardType() const = 0;
+      void NativeConstruct() override;
 
+     protected:
       virtual void Generate();
 
      protected:
@@ -64,17 +69,21 @@ namespace ToolKit
     class Cursor : public EditorBillboardBase
     {
      public:
+      TKDeclareClass(Cursor, EditorBillboardBase);
+
       Cursor();
       virtual ~Cursor();
       BillboardType GetBillboardType() const override;
 
-     private:
+     protected:
       void Generate() override;
     };
 
     class Axis3d : public EditorBillboardBase
     {
      public:
+      TKDeclareClass(Axis3d, EditorBillboardBase);
+
       Axis3d();
       virtual ~Axis3d();
       BillboardType GetBillboardType() const override;
@@ -95,7 +104,7 @@ namespace ToolKit
 
       struct Params
       {
-        // Worldspace data.
+        // World space data.
         Vec3 worldLoc;
         Vec3 grabPnt;
         Vec3 initialPnt;
@@ -142,6 +151,9 @@ namespace ToolKit
     class Gizmo : public EditorBillboardBase
     {
      public:
+      TKDeclareClass(Gizmo, EditorBillboardBase);
+
+      Gizmo();
       explicit Gizmo(const Billboard::Settings& set);
       virtual ~Gizmo();
       BillboardType GetBillboardType() const override;
@@ -169,12 +181,14 @@ namespace ToolKit
 
      protected:
       std::vector<AxisLabel> m_lockedAxis;
-      AxisLabel m_grabbedAxis;
+      AxisLabel m_grabbedAxis = AxisLabel::None;
     };
 
     class LinearGizmo : public Gizmo
     {
      public:
+      TKDeclareClass(LinearGizmo, Gizmo);
+
       LinearGizmo();
       virtual ~LinearGizmo();
 
@@ -187,6 +201,8 @@ namespace ToolKit
     class MoveGizmo : public LinearGizmo
     {
      public:
+      TKDeclareClass(MoveGizmo, Gizmo);
+
       MoveGizmo();
       virtual ~MoveGizmo();
       BillboardType GetBillboardType() const override;
@@ -195,6 +211,8 @@ namespace ToolKit
     class ScaleGizmo : public LinearGizmo
     {
      public:
+      TKDeclareClass(ScaleGizmo, Gizmo);
+
       ScaleGizmo();
       virtual ~ScaleGizmo();
       BillboardType GetBillboardType() const override;
@@ -206,6 +224,8 @@ namespace ToolKit
     class PolarGizmo : public Gizmo
     {
      public:
+      TKDeclareClass(PolarGizmo, Gizmo);
+
       PolarGizmo();
       virtual ~PolarGizmo();
       BillboardType GetBillboardType() const override;
@@ -216,6 +236,8 @@ namespace ToolKit
     class SkyBillboard : public EditorBillboardBase
     {
      public:
+      TKDeclareClass(SkyBillboard, EditorBillboardBase);
+
       SkyBillboard();
       virtual ~SkyBillboard();
       BillboardType GetBillboardType() const override;
@@ -227,6 +249,8 @@ namespace ToolKit
     class LightBillboard : public EditorBillboardBase
     {
      public:
+      TKDeclareClass(LightBillboard, EditorBillboardBase);
+
       LightBillboard();
       virtual ~LightBillboard();
       BillboardType GetBillboardType() const override;

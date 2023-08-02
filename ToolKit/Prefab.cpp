@@ -26,20 +26,18 @@
 
 #include "Prefab.h"
 
+#include "Material.h"
 #include "Scene.h"
 #include "ToolKit.h"
-
-#include <utility>
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
-  Prefab::Prefab()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-  }
+
+  TKDefineClass(Prefab, Entity);
+
+  Prefab::Prefab() {}
 
   Prefab::~Prefab() { UnInit(); }
 
@@ -85,7 +83,7 @@ namespace ToolKit
 
   Prefab* Prefab::GetPrefabRoot(Entity* ntt)
   {
-    if (ntt->GetType() == EntityType::Entity_Prefab)
+    if (ntt->IsA<Prefab>())
     {
       return static_cast<Prefab*>(ntt);
     }
@@ -93,6 +91,7 @@ namespace ToolKit
     {
       return nullptr;
     }
+
     return GetPrefabRoot(ntt->m_node->m_parent->m_entity);
   }
 
@@ -164,30 +163,11 @@ namespace ToolKit
     m_initiated = true;
   }
 
-  void Prefab::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Prefab::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Entity::DeSerialize(doc, parent);
-    parent = parent->last_node();
-
-    for (XmlNode* rNode = parent->first_node(); rNode; rNode = rNode->next_sibling())
-    {
-      String rootName = rNode->name();
-      ParameterVariantArray vars;
-      for (XmlNode* var = rNode->first_node(); var; var = var->next_sibling())
-      {
-        ParameterVariant param;
-        param.DeSerialize(doc, var);
-        vars.push_back(param);
-      }
-
-      m_childCustomDatas.insert(std::make_pair(rootName, vars));
-    }
-  }
-
-  void Prefab::Serialize(XmlDocument* doc, XmlNode* parent) const
-  {
-    Entity::Serialize(doc, parent);
-    parent = CreateXmlNode(doc, "PrefabRoots", parent->last_node());
+    XmlNode* nttNode    = Super::SerializeImp(doc, parent);
+    XmlNode* prefabNode = CreateXmlNode(doc, StaticClass()->Name, nttNode);
+    parent              = CreateXmlNode(doc, "PrefabRoots", prefabNode);
 
     EntityRawPtrArray childs;
     GetChildren(this, childs);
@@ -213,12 +193,66 @@ namespace ToolKit
         }
       }
     }
+
+    return prefabNode;
+  }
+
+  XmlNode* Prefab::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    if (info.Version == String("v0.4.5"))
+    {
+      return DeSerializeImpV045(info, parent);
+    }
+
+    // old file.
+
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    parent           = parent->last_node();
+
+    for (XmlNode* rNode = parent->first_node(); rNode; rNode = rNode->next_sibling())
+    {
+      String rootName = rNode->name();
+      ParameterVariantArray vars;
+      for (XmlNode* var = rNode->first_node(); var; var = var->next_sibling())
+      {
+        ParameterVariant param;
+        param.DeSerialize(info, var);
+        vars.push_back(param);
+      }
+
+      m_childCustomDatas.insert(std::make_pair(rootName, vars));
+    }
+
+    return nttNode;
+  }
+
+  XmlNode* Prefab::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* nttNode     = Super::DeSerializeImp(info, parent);
+    XmlNode* prefabNode  = nttNode->first_node(StaticClass()->Name.c_str());
+    XmlNode* prefabRoots = prefabNode->first_node("PrefabRoots");
+
+    for (XmlNode* rNode = prefabRoots->first_node(); rNode; rNode = rNode->next_sibling())
+    {
+      String rootName = rNode->name();
+      ParameterVariantArray vars;
+      for (XmlNode* var = rNode->first_node(); var; var = var->next_sibling())
+      {
+        ParameterVariant param;
+        param.DeSerialize(info, var);
+        vars.push_back(param);
+      }
+
+      m_childCustomDatas.insert(std::make_pair(rootName, vars));
+    }
+
+    return prefabNode;
   }
 
   void Prefab::ParameterConstructor()
   {
+    Super::ParameterConstructor();
     PrefabPath_Define("", PrefabCategory.Name, PrefabCategory.Priority, true, false);
   }
 
-  void Prefab::ParameterEventConstructor() {}
 } // namespace ToolKit

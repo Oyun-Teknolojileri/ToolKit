@@ -27,10 +27,14 @@
 #include "ComponentView.h"
 
 #include "Action.h"
-#include "AnimationControllerComponent.h"
 #include "App.h"
 #include "CustomDataView.h"
-#include "EnvironmentComponent.h"
+
+#include <AnimationControllerComponent.h>
+#include <EnvironmentComponent.h>
+#include <Material.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -109,10 +113,10 @@ namespace ToolKit
       AnimRecordPtrMap& mref = var->GetVar<AnimRecordPtrMap>();
       String file, id;
 
-      AnimControllerComponent* animPlayerComp = reinterpret_cast<AnimControllerComponent*>(comp.get());
+      AnimControllerComponent* animPlayerComp = comp->As<AnimControllerComponent>();
 
-      // If component isn't AnimationPlayerComponent, don't show variant
-      if (!comp || comp->GetType() != ComponentType::AnimControllerComponent)
+      // If component isn't AnimationPlayerComponent, don't show variant.
+      if (animPlayerComp == nullptr)
       {
         GetLogger()->WriteConsole(LogType::Error, "AnimRecordPtrMap is for AnimationControllerComponent");
         return;
@@ -310,7 +314,7 @@ namespace ToolKit
       bool removeComp   = false;
       auto showCompFunc = [comp, &removeComp, modifiableComp](const String& headerName) -> bool
       {
-        ImGui::PushID(static_cast<int>(comp->m_id));
+        ImGui::PushID((int) comp->GetIdVal());
         String varName = headerName + "##" + std::to_string(modifiableComp);
         bool isOpen    = ImGui::CollapsingHeader(varName.c_str(), nullptr, ImGuiTreeNodeFlags_AllowItemOverlap);
 
@@ -336,7 +340,7 @@ namespace ToolKit
 
       // skip if material component,
       // because we render it below ( ShowMultiMaterialComponent )
-      if (comp->GetType() != ComponentType::MaterialComponent)
+      if (!comp->IsA<MaterialComponent>())
       {
         for (VariantCategory& category : categories)
         {
@@ -364,27 +368,27 @@ namespace ToolKit
         }
       }
 
-      switch (comp->GetType())
+      if (comp->IsA<MaterialComponent>())
       {
-      case ComponentType::MaterialComponent:
         ShowMultiMaterialComponent(comp, showCompFunc, modifiableComp);
-        break;
-      case ComponentType::AABBOverrideComponent:
+      }
+      else if (comp->IsA<AABBOverrideComponent>())
+      {
         ShowAABBOverrideComponent(comp, showCompFunc, modifiableComp);
-        break;
       }
 
-      bool isSkeletonComponent = comp->GetType() == ComponentType::SkeletonComponent;
-
-      if (removeComp && isSkeletonComponent)
+      if (removeComp)
       {
-        MeshComponentPtr mesh = comp->m_entity->GetComponent<MeshComponent>();
-
-        if (mesh != nullptr && mesh->GetMeshVal()->IsSkinned())
+        if (comp->IsA<SkeletonComponent>())
         {
-          g_app->m_statusMsg = "Failed";
-          GetLogger()->WriteConsole(LogType::Warning, "Skeleton component is in use, it can't be removed");
-          return false;
+          MeshComponentPtr mesh = comp->m_entity->GetComponent<MeshComponent>();
+
+          if (mesh != nullptr && mesh->GetMeshVal()->IsSkinned())
+          {
+            g_app->m_statusMsg = "Failed";
+            GetLogger()->WriteConsole(LogType::Warning, "Skeleton component is in use, it can't be removed");
+            return false;
+          }
         }
       }
 
@@ -428,7 +432,7 @@ namespace ToolKit
           ImGui::Spacing();
           if (ShowComponentBlock(com, true))
           {
-            compRemove.push_back(com->m_id);
+            compRemove.push_back(com->GetIdVal());
           }
         }
 
@@ -458,41 +462,37 @@ namespace ToolKit
                            "\0Skeleton Component"
                            "\0AABB Override Component"))
           {
-            Component* newComponent = nullptr;
+            size_t cmpCnt = m_entity->GetComponentPtrArray().size();
             switch (dataType)
             {
             case 1:
-              newComponent = new MeshComponent();
+              m_entity->AddComponent<MeshComponent>();
               break;
             case 2:
             {
-              MaterialComponent* mmComp = new MaterialComponent();
-              mmComp->m_entity          = m_entity;
+              MaterialComponentPtr mmComp = m_entity->AddComponent<MaterialComponent>();
               mmComp->UpdateMaterialList();
-              newComponent = mmComp;
             }
             break;
             case 3:
-              newComponent = new EnvironmentComponent;
+              m_entity->AddComponent<EnvironmentComponent>();
               break;
             case 4:
-              newComponent = new AnimControllerComponent;
+              m_entity->AddComponent<AnimControllerComponent>();
               break;
             case 5:
-              newComponent = new SkeletonComponent;
+              m_entity->AddComponent<SkeletonComponent>();
               break;
             case 6:
-              newComponent = new AABBOverrideComponent;
+              m_entity->AddComponent<AABBOverrideComponent>();
               break;
             default:
               break;
             }
 
-            if (newComponent)
+            if (cmpCnt > m_entity->GetComponentPtrArray().size())
             {
-              m_entity->AddComponent(newComponent);
               edtScene->AddBillboard(m_entity);
-
               addInAction = false;
             }
           }

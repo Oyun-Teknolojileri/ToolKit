@@ -108,6 +108,8 @@ namespace ToolKit
   // AudioSource
   //////////////////////////////////////////////////////////////////////////
 
+  TKDefineClass(AudioSource, Entity);
+
   EntityType AudioSource::GetType() const { return EntityType::Entity_AudioSource; }
 
   AudioSource::~AudioSource()
@@ -154,6 +156,14 @@ namespace ToolKit
   void AudioSource::Play() { ma_sound_start((ma_sound*) m_sound); }
 
   void AudioSource::Stop() { ma_sound_stop((ma_sound*) m_sound); }
+
+  XmlNode* AudioSource::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
 
   // Getters
 

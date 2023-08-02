@@ -32,8 +32,6 @@
 
 #include "Types.h"
 
-#include <unordered_map>
-
 namespace ToolKit
 {
 

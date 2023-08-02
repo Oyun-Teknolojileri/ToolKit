@@ -30,8 +30,6 @@
 #include "ResourceManager.h"
 #include "Types.h"
 
-#include <vector>
-
 namespace ToolKit
 {
   struct TextureSettings
@@ -74,6 +72,22 @@ namespace ToolKit
    protected:
     TextureSettings m_textureSettings;
   };
+
+  class DepthTexture : public Texture
+  {
+   public:
+    void Load() override;
+    void Init(int width, int height, bool stencil);
+    void UnInit() override;
+
+   protected:
+    void Clear() override;
+
+   public:
+    bool m_stencil;
+  };
+
+  typedef std::shared_ptr<DepthTexture> DepthTexturePtr;
 
   class TK_API CubeMap : public Texture
   {

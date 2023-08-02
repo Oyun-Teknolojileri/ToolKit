@@ -34,7 +34,6 @@
 #include "Serialize.h"
 #include "Types.h"
 
-#include <unordered_map>
 #include <variant>
 
 /**
@@ -539,14 +538,14 @@ namespace ToolKit
      * @param doc The xml document object to serialize to.
      * @param parent The parent xml node to serialize to.
      */
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
     /**
      * De serializes the variant from the xml document.
      * @param doc The xml document object to read from.
      * @param parent The parent xml node to read from.
      */
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     /**
@@ -603,20 +602,6 @@ namespace ToolKit
   class TK_API ParameterBlock : public Serializable
   {
    public:
-    /**
-     * Serializes the ParameterBlock to the xml document.
-     * @param doc The xml document object to serialize to.
-     * @param parent The parent xml node to serialize to.
-     */
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-
-    /**
-     * De serializes the ParameterBlcok from the xml document.
-     * @param doc The xml document object to read from.
-     * @param parent The parent xml node to read from.
-     */
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-
     /**
      * Used to access ParameterVariant's by index.
      * @return Reference to indexed ParameterVariant.
@@ -675,6 +660,21 @@ namespace ToolKit
      * @param category The category to set exposed status.
      */
     void ExposeByCategory(bool exposed, const VariantCategory& category);
+
+   protected:
+    /**
+     * Serializes the ParameterBlock to the xml document.
+     * @param doc The xml document object to serialize to.
+     * @param parent The parent xml node to serialize to.
+     */
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+
+    /**
+     * De serializes the ParameterBlcok from the xml document.
+     * @param doc The xml document object to read from.
+     * @param parent The parent xml node to read from.
+     */
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     /**

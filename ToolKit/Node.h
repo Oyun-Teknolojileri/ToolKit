@@ -31,7 +31,6 @@
  */
 
 #include "Serialize.h"
-#include "Types.h"
 
 namespace ToolKit
 {
@@ -208,8 +207,8 @@ namespace ToolKit
      */
     void SetInheritScaleDeep(bool val);
 
-    void Serialize(XmlDocument* doc, XmlNode* parent) const;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent);
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent);
 
    private:
     void TransformImp(const Mat4& val,
@@ -238,7 +237,7 @@ namespace ToolKit
     ULongID m_id;
     Node* m_parent   = nullptr;
     Entity* m_entity = nullptr;
-    std::vector<Node*> m_children;
+    NodeRawPtrArray m_children;
     bool m_inheritScale = false;
 
    private:

@@ -35,13 +35,12 @@
 namespace ToolKit
 {
 
+  TKDefineClass(Camera, Entity);
+
   Camera::Camera()
   {
+    AddComponent<DirectionComponent>();
     SetLens(glm::radians(90.0f), 640.0f / 480.0f, 0.01f, 1000.0f);
-    AddComponent(new DirectionComponent(this));
-
-    ParameterConstructor();
-    ParameterEventConstructor();
   }
 
   Camera::~Camera() {}
@@ -107,12 +106,10 @@ namespace ToolKit
 
   EntityType Camera::GetType() const { return EntityType::Entity_Camera; }
 
-  void Camera::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Camera::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Entity::Serialize(doc, parent);
-    parent        = parent->last_node();
-
-    XmlNode* node = CreateXmlNode(doc, "Camera", parent);
+    XmlNode* nttNode = Super::SerializeImp(doc, parent);
+    XmlNode* node    = CreateXmlNode(doc, StaticClass()->Name, nttNode);
 
     WriteAttr(node, doc, "fov", std::to_string(m_fov));
     WriteAttr(node, doc, "aspect", std::to_string(m_aspect));
@@ -124,25 +121,34 @@ namespace ToolKit
     WriteAttr(node, doc, "top", std::to_string(m_top));
     WriteAttr(node, doc, "bottom", std::to_string(m_bottom));
     WriteAttr(node, doc, "scale", std::to_string(m_orthographicScale));
+
+    return node;
   }
 
-  void Camera::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Camera::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    ClearComponents();
-    Entity::DeSerialize(doc, parent);
-
-    if (XmlNode* node = parent->first_node("Camera"))
+    if (m_version == String("v0.4.5"))
     {
-      ReadAttr(node, "fov", m_fov);
-      ReadAttr(node, "aspect", m_aspect);
-      ReadAttr(node, "near", m_near);
-      ReadAttr(node, "far", m_far);
-      ReadAttr(node, "ortographic", m_ortographic);
-      ReadAttr(node, "left", m_left);
-      ReadAttr(node, "right", m_right);
-      ReadAttr(node, "top", m_top);
-      ReadAttr(node, "bottom", m_bottom);
-      ReadAttr(node, "scale", m_orthographicScale);
+      return DeSerializeImpV045(info, parent);
+    }
+
+    ClearComponents();
+
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    XmlNode* camNode = nttNode->first_node(StaticClass()->Name.c_str());
+
+    if (camNode != nullptr)
+    {
+      ReadAttr(camNode, "fov", m_fov);
+      ReadAttr(camNode, "aspect", m_aspect);
+      ReadAttr(camNode, "near", m_near);
+      ReadAttr(camNode, "far", m_far);
+      ReadAttr(camNode, "ortographic", m_ortographic);
+      ReadAttr(camNode, "left", m_left);
+      ReadAttr(camNode, "right", m_right);
+      ReadAttr(camNode, "top", m_top);
+      ReadAttr(camNode, "bottom", m_bottom);
+      ReadAttr(camNode, "scale", m_orthographicScale);
     }
 
     if (m_ortographic)
@@ -153,6 +159,40 @@ namespace ToolKit
     {
       SetLens(m_fov, m_aspect, m_near, m_far);
     }
+
+    return camNode;
+  }
+
+  XmlNode* Camera::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    ClearComponents();
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    XmlNode* camNode = nttNode->first_node(Camera::StaticClass()->Name.c_str());
+
+    if (camNode != nullptr)
+    {
+      ReadAttr(camNode, "fov", m_fov);
+      ReadAttr(camNode, "aspect", m_aspect);
+      ReadAttr(camNode, "near", m_near);
+      ReadAttr(camNode, "far", m_far);
+      ReadAttr(camNode, "ortographic", m_ortographic);
+      ReadAttr(camNode, "left", m_left);
+      ReadAttr(camNode, "right", m_right);
+      ReadAttr(camNode, "top", m_top);
+      ReadAttr(camNode, "bottom", m_bottom);
+      ReadAttr(camNode, "scale", m_orthographicScale);
+    }
+
+    if (m_ortographic)
+    {
+      SetLens(m_left, m_right, m_bottom, m_top, m_near, m_far);
+    }
+    else
+    {
+      SetLens(m_fov, m_aspect, m_near, m_far);
+    }
+
+    return camNode;
   }
 
   // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene
@@ -210,13 +250,15 @@ namespace ToolKit
     cpy->m_projection        = m_projection;
     cpy->m_orthographicScale = m_orthographicScale;
     cpy->ClearComponents();
-    cpy->AddComponent(new DirectionComponent(cpy));
+    cpy->AddComponent<DirectionComponent>();
 
     return cpy;
   }
 
   void Camera::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     Fov_Define(glm::degrees(m_fov),
                CameraCategory.Name,
                CameraCategory.Priority,
@@ -250,6 +292,8 @@ namespace ToolKit
 
   void Camera::ParameterEventConstructor()
   {
+    Super::ParameterEventConstructor();
+
     auto updateLensInternalFn = [this]()
     {
       if (m_ortographic)

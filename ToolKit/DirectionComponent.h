@@ -28,8 +28,6 @@
 
 #include "Component.h"
 
-#include <memory>
-
 namespace ToolKit
 {
 
@@ -40,10 +38,9 @@ namespace ToolKit
   class TK_API DirectionComponent : public Component
   {
    public:
-    TKComponentType(DirectionComponent);
+    TKDeclareClass(DirectionComponent, Component);
 
     DirectionComponent();
-    explicit DirectionComponent(Entity* entity);
     virtual ~DirectionComponent();
 
     ComponentPtr Copy(Entity* ntt) override;
@@ -57,6 +54,9 @@ namespace ToolKit
     Vec3 GetUp() const;
     Vec3 GetRight() const;
     void LookAt(Vec3 target);
+
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
   };
 
 } //  namespace ToolKit

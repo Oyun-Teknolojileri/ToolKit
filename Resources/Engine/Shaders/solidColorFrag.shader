@@ -27,7 +27,7 @@
 		uniform int DiffuseTextureInUse;
 		uniform sampler2D s_texture0;
 		uniform float metallic;
-    uniform float roughness; 
+		uniform float roughness; 
 
 		in vec3 v_pos;
 		in vec3 v_normal;
@@ -62,9 +62,8 @@
 
 			irradiance += IBLPhong(n);
 
-			// float ambientOcclusion = AmbientOcclusion();
-
-			fragColor = vec4(irradiance * color.xyz, color.a);
+			float ambientOcclusion = AmbientOcclusion();
+			fragColor = vec4(irradiance * color.xyz * ambientOcclusion, color.a);
 		}
 	-->
 	</source>

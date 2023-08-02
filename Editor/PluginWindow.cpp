@@ -29,7 +29,9 @@
 #include "App.h"
 #include "EditorViewport2d.h"
 
-#include "DebugNew.h"
+#include <UIManager.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -41,8 +43,6 @@ namespace ToolKit
       m_settings           = &g_app->m_simulatorSettings;
       m_numDefaultResNames = (int) m_emulatorResolutionNames.size();
     }
-
-    PluginWindow::PluginWindow(XmlNode* node) : PluginWindow() { DeSerialize(nullptr, node); }
 
     PluginWindow::~PluginWindow() {}
 
@@ -97,10 +97,6 @@ namespace ToolKit
     }
 
     Window::Type PluginWindow::GetType() const { return Type::PluginWindow; }
-
-    void PluginWindow::Serialize(XmlDocument* doc, XmlNode* parent) const { Window::Serialize(doc, parent); }
-
-    void PluginWindow::DeSerialize(XmlDocument* doc, XmlNode* parent) { Window::DeSerialize(doc, parent); }
 
     void PluginWindow::UpdateSimulationWndSize()
     {

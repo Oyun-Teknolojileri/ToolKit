@@ -34,6 +34,8 @@ namespace ToolKit
   class TK_API GradientSky : public SkyBase
   {
    public:
+    TKDeclareClass(GradientSky, SkyBase);
+
     GradientSky();
     virtual ~GradientSky();
 
@@ -46,6 +48,7 @@ namespace ToolKit
     void ParameterEventConstructor() override;
     void GenerateGradientCubemap();
     void GenerateIrradianceCubemap();
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     TKDeclareParam(Vec3, TopColor);

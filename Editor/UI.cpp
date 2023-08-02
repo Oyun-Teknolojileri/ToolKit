@@ -31,7 +31,9 @@
 #include "Mod.h"
 #include "PopupWindows.h"
 
-#include "DebugNew.h"
+#include <MathUtil.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -665,9 +667,11 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Add Viewport", "Alt+V"))
         {
-          EditorViewport* vp = new EditorViewport(640, 480);
+          EditorViewport* vp = new EditorViewport();
+          vp->Init({640.0f, 480.0f});
           g_app->m_windows.push_back(vp);
         }
+
         ImGui::EndMenu();
       }
 
@@ -677,8 +681,9 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Add Browser", "Alt+B"))
         {
-          FolderWindow* wnd = new FolderWindow(true);
+          FolderWindow* wnd = new FolderWindow();
           wnd->m_name       = g_assetBrowserStr + "##" + std::to_string(wnd->m_id);
+          wnd->IterateFolders(true);
           g_app->m_windows.push_back(wnd);
         }
 
@@ -1354,56 +1359,61 @@ namespace ToolKit
 
     void Window::DispatchSignals() const {}
 
-    void Window::Serialize(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* Window::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
-      XmlNode* node = doc->allocate_node(rapidxml::node_element, "Window");
-      if (parent != nullptr)
-      {
-        parent->append_node(node);
-      }
-      else
-      {
-        doc->append_node(node);
-      }
+      XmlNode* node = CreateXmlNode(doc, "Window", parent);
+      WriteAttr(node, doc, XmlVersion, TKVersionStr);
 
       WriteAttr(node, doc, XmlNodeName.data(), m_name);
       WriteAttr(node, doc, "id", std::to_string(m_id));
-      WriteAttr(node, doc, "type", std::to_string(static_cast<int>(GetType())));
-      WriteAttr(node, doc, "visible", std::to_string(static_cast<int>(m_visible)));
+      WriteAttr(node, doc, "type", std::to_string((int) GetType()));
+      WriteAttr(node, doc, "visible", std::to_string((int) m_visible));
 
       XmlNode* childNode = CreateXmlNode(doc, "Size", node);
       WriteVec(childNode, doc, m_size);
 
       childNode = CreateXmlNode(doc, "Location", node);
       WriteVec(childNode, doc, m_location);
+
+      return node;
     }
 
-    void Window::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    XmlNode* Window::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      XmlNode* node = nullptr;
-      if (parent != nullptr)
+      XmlNode* wndNode = parent;
+      if (wndNode == nullptr)
       {
-        node = parent;
-      }
-      else
-      {
-        node = doc->first_node("Window");
+        if (info.Document != nullptr)
+        {
+          wndNode = info.Document->first_node("Window");
+        }
       }
 
-      ReadAttr(node, XmlNodeName.data(), m_name);
-      ReadAttr(node, "id", m_id);
-      // Type is determined by the corrsesponding constructor.
-      ReadAttr(node, "visible", m_visible);
+      if (wndNode == nullptr)
+      {
+        assert(wndNode && "Can't find Window node in document.");
+        return nullptr;
+      }
 
-      if (XmlNode* childNode = node->first_node("Size"))
+      // if not present, version must be v0.4.4
+      ReadAttr(wndNode, XmlVersion.data(), m_version, "v0.4.4");
+      ReadAttr(wndNode, XmlNodeName.data(), m_name);
+      ReadAttr(wndNode, "id", m_id);
+
+      // Type is determined by the corresponding constructor.
+      ReadAttr(wndNode, "visible", m_visible);
+
+      if (XmlNode* childNode = wndNode->first_node("Size"))
       {
         ReadVec(childNode, m_size);
       }
 
-      if (XmlNode* childNode = node->first_node("Location"))
+      if (XmlNode* childNode = wndNode->first_node("Location"))
       {
         ReadVec(childNode, m_location);
       }
+
+      return wndNode;
     }
 
     void Window::HandleStates()

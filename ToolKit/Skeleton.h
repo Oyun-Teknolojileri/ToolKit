@@ -28,8 +28,6 @@
 
 #include "Resource.h"
 
-#include <vector>
-
 namespace ToolKit
 {
 
@@ -82,8 +80,8 @@ namespace ToolKit
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
     void Load() override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     int GetBoneIndex(const String& bone);
     StaticBone* GetBone(const String& bone);

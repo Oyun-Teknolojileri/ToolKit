@@ -27,14 +27,8 @@
 #pragma once
 
 #include "Entity.h"
-#include "Events.h"
-#include "MathUtil.h"
-#include "Resource.h"
 #include "SpriteSheet.h"
 #include "Types.h"
-
-#include <functional>
-#include <vector>
 
 namespace ToolKit
 {
@@ -44,29 +38,38 @@ namespace ToolKit
   class TK_API Surface : public Entity
   {
    public:
+    TKDeclareClass(Surface, Entity);
+
     Surface();
-    Surface(TexturePtr texture, const Vec2& pivotOffset);
-    Surface(TexturePtr texture, const SpriteEntry& entry);
-    Surface(const String& textureFile, const Vec2& pivotOffset);
-    Surface(const Vec2& size, const Vec2& offset = {0.5f, 0.5f});
     virtual ~Surface();
 
-    EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void NativeConstruct() override;
 
+    void Update(TexturePtr texture, const Vec2& pivotOffset);
+    void Update(TexturePtr texture, const SpriteEntry& entry);
+    void Update(const String& textureFile, const Vec2& pivotOffset);
+    void Update(const Vec2& size, const Vec2& offset = Vec2(0.5f));
+
+    EntityType GetType() const override;
     void CalculateAnchorOffsets(Vec3 canvas[4], Vec3 surface[4]);
 
     virtual void ResetCallbacks();
-    //  To reflect the size & pivot changes,
-    //  this function regenerates the geometry.
+
+    /**
+     * To reflect the size & pivot changes,this function regenerates the geometry.
+     * @param byTexture - if true send, the geometry is updated based on material's diffuse texture.
+     */
     virtual void UpdateGeometry(bool byTexture);
 
    protected:
     void ComponentConstructor();
-    void ParameterConstructor();
-    void ParameterEventConstructor();
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
     Entity* CopyTo(Entity* other) const override;
+
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
    private:
     void CreateQuat();
@@ -103,18 +106,21 @@ namespace ToolKit
   class TK_API Button : public Surface
   {
    public:
+    TKDeclareClass(Button, Surface);
+
     Button();
-    explicit Button(const Vec2& size);
-    Button(const TexturePtr& buttonImage, const TexturePtr& hoverImage);
     virtual ~Button();
+    void NativeConstruct() override;
+    void SetBtnImage(const TexturePtr buttonImage, const TexturePtr hoverImage);
     EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     void ResetCallbacks() override;
 
    protected:
-    void ParameterConstructor();
-    void ParameterEventConstructor();
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
    public:
     TKDeclareParam(MaterialPtr, ButtonMaterial);
