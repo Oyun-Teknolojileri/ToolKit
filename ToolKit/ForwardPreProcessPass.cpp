@@ -88,7 +88,7 @@ namespace ToolKit
     oneChannelSet.Format              = GraphicTypes::FormatRGB;
     oneChannelSet.Type                = GraphicTypes::TypeFloat;
 
-    // Init ssao texture
+    // Init normal merge texture
     m_normalMergeRt->m_settings       = oneChannelSet;
     m_normalMergeRt->ReconstructIfNeeded((uint) width, (uint) height);
 

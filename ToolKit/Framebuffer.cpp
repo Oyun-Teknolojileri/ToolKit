@@ -237,8 +237,6 @@ namespace ToolKit
 
   uint Framebuffer::GetFboId() { return m_fboId; }
 
-  uint Framebuffer::GetDefaultRboId() { return m_depthAtch ? m_depthAtch->m_textureId : 0; }
-
   FramebufferSettings Framebuffer::GetSettings() { return m_settings; }
 
   void Framebuffer::CheckFramebufferComplete()
