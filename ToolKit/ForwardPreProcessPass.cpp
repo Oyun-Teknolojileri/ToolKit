@@ -25,6 +25,7 @@
  */
 
 #include "ForwardPreProcessPass.h"
+#include "Shader.h"
 
 #include "stdafx.h"
 
