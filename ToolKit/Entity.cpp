@@ -124,11 +124,12 @@ namespace ToolKit
     return aabb;
   }
 
-  Entity* Entity::Copy() const
+  TKObjectPtr Entity::Copy() const
   {
-    EntityType t = GetType();
-    Entity* e    = GetEntityFactory()->CreateByType(t);
-    return CopyTo(e);
+    Entity* cpy = static_cast<Entity*>(GetObjectFactory()->MakeNew(Class()->Name));
+    CopyTo(cpy);
+
+    return std::shared_ptr<Entity>(cpy);
   }
 
   void Entity::ClearComponents()

@@ -286,9 +286,9 @@ namespace ToolKit
     }
   }
 
-  EntityRawPtrArray& Scene::AccessEntityArray() { return m_entities; }
+  EntityPtrArray& Scene::AccessEntityArray() { return m_entities; }
 
-  void Scene::RemoveChildren(Entity* removed)
+  void Scene::RemoveChildren(EntityPtr removed)
   {
     NodeRawPtrArray& children = removed->m_node->m_children;
 
@@ -302,9 +302,9 @@ namespace ToolKit
     }
   }
 
-  Entity* Scene::RemoveEntity(ULongID id, bool deep)
+  EntityPtr Scene::RemoveEntity(ULongID id, bool deep)
   {
-    Entity* removed = nullptr;
+    EntityPtr removed = nullptr;
     for (size_t i = 0; i < m_entities.size(); i++)
     {
       if (m_entities[i]->GetIdVal() == id)
@@ -333,54 +333,54 @@ namespace ToolKit
     return removed;
   }
 
-  void Scene::RemoveEntity(const EntityRawPtrArray& entities)
+  void Scene::RemoveEntity(const EntityPtrArray& entities)
   {
-    erase_if(m_entities, [entities](Entity* ntt) -> bool { return FindIndex(entities, ntt) != -1; });
+    erase_if(m_entities, [entities](EntityPtr ntt) -> bool { return FindIndex(entities, ntt) != -1; });
   }
 
   void Scene::RemoveAllEntities() { m_entities.clear(); }
 
-  const EntityRawPtrArray& Scene::GetEntities() const { return m_entities; }
+  const EntityPtrArray& Scene::GetEntities() const { return m_entities; }
 
-  LightRawPtrArray Scene::GetLights() const
+  LightPtrArray Scene::GetLights() const
   {
-    LightRawPtrArray lights;
-    for (Entity* ntt : m_entities)
+    LightPtrArray lights;
+    for (EntityPtr ntt : m_entities)
     {
       if (ntt->IsLightInstance())
       {
-        lights.push_back(static_cast<Light*>(ntt));
+        lights.push_back(std::static_pointer_cast<Light>(ntt));
       }
     }
 
     return lights;
   }
 
-  Entity* Scene::GetFirstEntityByName(const String& name)
+  EntityPtr Scene::GetFirstByName(const String& name)
   {
-    for (Entity* e : m_entities)
+    for (EntityPtr ntt : m_entities)
     {
-      if (e->GetNameVal() == name)
+      if (ntt->GetNameVal() == name)
       {
-        return e;
+        return ntt;
       }
     }
     return nullptr;
   }
 
-  EntityRawPtrArray Scene::GetByTag(const String& tag)
+  EntityPtrArray Scene::GetByTag(const String& tag)
   {
-    EntityRawPtrArray arrayByTag;
-    for (Entity* e : m_entities)
+    EntityPtrArray arrayByTag;
+    for (EntityPtr ntt : m_entities)
     {
       StringArray tokens;
-      Split(e->GetTagVal(), ".", tokens);
+      Split(ntt->GetTagVal(), ".", tokens);
 
       for (const String& token : tokens)
       {
         if (token == tag)
         {
-          arrayByTag.push_back(e);
+          arrayByTag.push_back(ntt);
         }
       }
     }
@@ -402,13 +402,13 @@ namespace ToolKit
   }
 
   // Returns the last sky added
-  SkyBase* Scene::GetSky()
+  SkyBasePtr Scene::GetSky()
   {
-    for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; --i)
+    for (int i = (int) m_entities.size() - 1; i >= 0; --i)
     {
-      if (m_entities[i]->IsSkyInstance())
+      if (m_entities[i]->IsA<SkyBase>())
       {
-        return static_cast<SkyBase*>(m_entities[i]);
+        return std::static_pointer_cast<SkyBase>(m_entities[i]);
       }
     }
 
@@ -436,7 +436,7 @@ namespace ToolKit
       String folderName = folder.substr(folder.find_last_of(GetPathSeparator()));
       // if (folderName != GetResourcePath())
     }
-    Prefab* prefab = new Prefab();
+    PrefabPtr prefab = MakeNewPtr<Prefab>();
     prefab->SetPrefabPathVal(path);
     prefab->Init(this);
     prefab->Link();
@@ -447,7 +447,7 @@ namespace ToolKit
   {
     // Find entities which have environment component
     EnvironmentComponentPtrArray environments;
-    for (Entity* ntt : m_entities)
+    for (EntityPtr ntt : m_entities)
     {
       EnvironmentComponentPtr envCom = ntt->GetComponent<EnvironmentComponent>();
       if (envCom != nullptr && envCom->GetHdriVal() != nullptr && envCom->GetIlluminateVal())
@@ -462,18 +462,17 @@ namespace ToolKit
 
   void Scene::Destroy(bool removeResources)
   {
-    EntityRawPtrArray prefabs;
-    for (Entity* ntt : m_entities)
+    PrefabRawPtrArray prefabs;
+    for (EntityPtr ntt : m_entities)
     {
-      if (ntt->GetType() == EntityType::Entity_Prefab)
+      if (Prefab* prefab = ntt->As<Prefab>())
       {
-        prefabs.push_back(ntt);
+        prefabs.push_back(prefab);
       }
     }
 
-    for (Entity* ntt : prefabs)
+    for (Prefab* prefab : prefabs)
     {
-      Prefab* prefab = static_cast<Prefab*>(ntt);
       prefab->UnInit();
     }
 
@@ -481,12 +480,11 @@ namespace ToolKit
 
     for (int i = maxCnt; i >= 0; i--)
     {
-      Entity* ntt = m_entities[i];
+      EntityPtr ntt = m_entities[i];
       if (removeResources)
       {
         ntt->RemoveResources();
       }
-      SafeDel(m_entities[i]);
     }
 
     m_entities.clear();
@@ -495,7 +493,7 @@ namespace ToolKit
     m_initiated = false;
   }
 
-  void Scene::SavePrefab(Entity* entity)
+  void Scene::SavePrefab(EntityPtr entity)
   {
     // Assign a default node.
     Node* prevNode             = entity->m_node;

@@ -95,7 +95,7 @@ namespace ToolKit
     virtual EntityType GetType() const;
     virtual void SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget = nullptr);
     virtual BoundingBox GetAABB(bool inWorld = false) const;
-    virtual Entity* Copy() const;
+    TKObjectPtr Copy() const override;
     virtual void RemoveResources();
 
     /**

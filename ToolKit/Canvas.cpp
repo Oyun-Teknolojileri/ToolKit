@@ -33,8 +33,6 @@
 #include "ToolKit.h"
 #include "Viewport.h"
 
-#include <memory>
-
 #include "DebugNew.h"
 
 namespace ToolKit

@@ -94,7 +94,7 @@ namespace ToolKit
 
   void TKObject::ParameterEventConstructor() {}
 
-  TKObjectPtr TKObject::Copy() { return nullptr; }
+  TKObjectPtr TKObject::Copy() const { return nullptr; }
 
   XmlNode* TKObject::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {

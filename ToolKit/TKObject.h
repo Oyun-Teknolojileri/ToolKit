@@ -84,7 +84,7 @@ namespace ToolKit
     virtual ~TKObject();
     virtual void NativeConstruct();
     virtual void NativeDestruct();
-    virtual TKObjectPtr Copy();
+    virtual TKObjectPtr Copy() const;
 
     template <typename T>
     bool IsA()
