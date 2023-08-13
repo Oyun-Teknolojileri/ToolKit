@@ -120,9 +120,9 @@ namespace ToolKit
     /////////////////////
     // Left public for thumbnail rendering. TODO: there must be techniques
     // handling thumbnail render.
-    void Render(const struct RenderJob& job, Camera* cam, const LightRawPtrArray& lights = {});
+    void Render(const struct RenderJob& job, Camera* cam, const LightPtrArray& lights = {});
 
-    void Render(const RenderJobArray& jobArray, Camera* cam, const LightRawPtrArray& lights = {});
+    void Render(const RenderJobArray& jobArray, Camera* cam, const LightPtrArray& lights = {});
 
     void Apply7x1GaussianBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
 
@@ -152,7 +152,7 @@ namespace ToolKit
     Vec4 m_clearColor         = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
     MaterialPtr m_overrideMat = nullptr;
     Camera* m_uiCamera        = nullptr;
-    SkyBase* m_sky            = nullptr;
+    SkyBasePtr m_sky          = nullptr;
 
     bool m_renderOnlyLighting = false;
 
@@ -173,7 +173,7 @@ namespace ToolKit
     Mat4 m_view;
     Mat4 m_model;
     Mat4 m_iblRotation;
-    LightRawPtrArray m_lights;
+    LightPtrArray m_lights;
     Camera* m_cam                = nullptr;
     MaterialPtr m_mat            = nullptr;
     MaterialPtr m_aoMat          = nullptr;

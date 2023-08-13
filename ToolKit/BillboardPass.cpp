@@ -46,7 +46,7 @@ namespace ToolKit
     renderer->SetFramebuffer(vp->m_framebuffer, false);
     Camera* cam             = vp->GetCamera();
 
-    auto renderBillboardsFn = [this, cam, renderer](EntityRawPtrArray& billboards) -> void
+    auto renderBillboardsFn = [this, cam, renderer](EntityPtrArray& billboards) -> void
     {
       RenderJobArray jobs;
       RenderJobProcessor::CreateRenderJobs(billboards, jobs);

@@ -445,7 +445,7 @@ namespace ToolKit
     return hit;
   }
 
-  TK_API uint FindMeshIntersection(const class Entity* const ntt, const Ray& rayInWorldSpace, float& t)
+  uint FindMeshIntersection(Entity* const ntt, const Ray& rayInWorldSpace, float& t)
   {
     SkeletonComponent* skel = ntt->GetComponent<SkeletonComponent>().get();
 

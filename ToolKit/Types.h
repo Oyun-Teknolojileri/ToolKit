@@ -203,7 +203,7 @@ namespace ToolKit
   typedef std::shared_ptr<class Surface> SurfacePtr;
 
   // Callbacks.
-  typedef std::function<void(class Event*, class Entity*)> SurfaceEventCallback;
+  typedef std::function<void(class Event*, EntityPtr)> SurfaceEventCallback;
   typedef std::function<void(const String&)> GlReportCallback;
 
   // Math Vector declerations.

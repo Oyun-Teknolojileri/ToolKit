@@ -31,6 +31,7 @@
 #include "DeferredPass.h"
 #include "EngineSettings.h"
 #include "ForwardPass.h"
+#include "ForwardPreProcessPass.h"
 #include "FxaaPass.h"
 #include "GBufferPass.h"
 #include "GammaPass.h"
@@ -38,14 +39,13 @@
 #include "RenderSystem.h"
 #include "ShadowPass.h"
 #include "SsaoPass.h"
-#include "ForwardPreProcessPass.h"
 
 namespace ToolKit
 {
 
   struct SceneRenderPassParams
   {
-    LightRawPtrArray Lights;
+    LightPtrArray Lights;
     ScenePtr Scene                 = nullptr;
     Camera* Cam                    = nullptr;
     FramebufferPtr MainFramebuffer = nullptr;
@@ -74,23 +74,23 @@ namespace ToolKit
     SceneRenderPassParams m_params;
 
    public:
-    ShadowPassPtr m_shadowPass                         = nullptr;
-    ForwardRenderPassPtr m_forwardRenderPass           = nullptr;
-    ForwardPreProcessPassPtr   m_forwardPreProcessPass = nullptr;
-    CubeMapPassPtr m_skyPass                           = nullptr;
-    GBufferPassPtr m_gBufferPass                       = nullptr;
-    DeferredRenderPassPtr m_deferredRenderPass         = nullptr;
-    SSAOPassPtr m_ssaoPass                             = nullptr;
-    FXAAPassPtr m_fxaaPass                             = nullptr;
-    GammaPassPtr m_gammaPass                           = nullptr;
-    BloomPassPtr m_bloomPass                           = nullptr;
-    TonemapPassPtr m_tonemapPass                       = nullptr;
-    DoFPassPtr m_dofPass                               = nullptr;
-    LightRawPtrArray m_updatedLights;
+    ShadowPassPtr m_shadowPass                       = nullptr;
+    ForwardRenderPassPtr m_forwardRenderPass         = nullptr;
+    ForwardPreProcessPassPtr m_forwardPreProcessPass = nullptr;
+    CubeMapPassPtr m_skyPass                         = nullptr;
+    GBufferPassPtr m_gBufferPass                     = nullptr;
+    DeferredRenderPassPtr m_deferredRenderPass       = nullptr;
+    SSAOPassPtr m_ssaoPass                           = nullptr;
+    FXAAPassPtr m_fxaaPass                           = nullptr;
+    GammaPassPtr m_gammaPass                         = nullptr;
+    BloomPassPtr m_bloomPass                         = nullptr;
+    TonemapPassPtr m_tonemapPass                     = nullptr;
+    DoFPassPtr m_dofPass                             = nullptr;
+    LightPtrArray m_updatedLights;
 
    private:
-    bool m_drawSky = false;
-    SkyBase* m_sky = nullptr;
+    bool m_drawSky   = false;
+    SkyBasePtr m_sky = nullptr;
   };
 
   typedef std::shared_ptr<SceneRenderer> SceneRendererPtr;

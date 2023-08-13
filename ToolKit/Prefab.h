@@ -69,7 +69,7 @@ namespace ToolKit
      */
     void Link();
 
-    static Prefab* GetPrefabRoot(Entity* ntt);
+    static Prefab* GetPrefabRoot(Entity* const ntt);
     Entity* CopyTo(Entity* other) const override;
 
    protected:
@@ -92,6 +92,6 @@ namespace ToolKit
 
     // Used only in deserialization
     std::unordered_map<String, ParameterVariantArray> m_childCustomDatas;
-    EntityRawPtrArray m_instanceEntities;
+    EntityPtrArray m_instanceEntities;
   };
 } // namespace ToolKit

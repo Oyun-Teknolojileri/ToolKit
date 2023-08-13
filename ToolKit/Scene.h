@@ -60,8 +60,10 @@ namespace ToolKit
       /**
        * A pointer to the Entity object that was picked.
        */
-      Entity* entity = nullptr;
+      EntityPtr entity = nullptr;
     };
+
+    typedef std::vector<PickData> PickDataArray;
 
    public:
     TKResourceType(Scene)
@@ -138,9 +140,7 @@ namespace ToolKit
      *
      * @return A PickData struct containing the result of the picking operation.
      */
-    virtual PickData PickObject(Ray ray,
-                                const EntityIdArray& ignoreList    = EntityIdArray(),
-                                const EntityRawPtrArray& extraList = EntityRawPtrArray());
+    virtual PickData PickObject(Ray ray, const EntityIdArray& ignoreList = {}, const EntityPtrArray& extraList = {});
 
     /**
      * Performs a frustum culling operation on the scene to find all objects
@@ -157,10 +157,10 @@ namespace ToolKit
      * within the frustum will also be included.
      */
     virtual void PickObject(const Frustum& frustum,
-                            std::vector<PickData>& pickedObjects,
-                            const EntityIdArray& ignoreList    = {},
-                            const EntityRawPtrArray& extraList = {},
-                            bool pickPartiallyInside           = true);
+                            PickDataArray& pickedObjects,
+                            const EntityIdArray& ignoreList = {},
+                            const EntityPtrArray& extraList = {},
+                            bool pickPartiallyInside        = true);
 
     // Entity operations.
 
@@ -170,7 +170,7 @@ namespace ToolKit
      * @returns The entity with the given ID, or nullptr if no entity with that
      * ID exists in the scene.
      */
-    Entity* GetEntity(ULongID id) const;
+    EntityPtr GetEntity(ULongID id) const;
 
     /**
      * Adds an entity to the scene.

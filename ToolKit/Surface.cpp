@@ -404,10 +404,10 @@ namespace ToolKit
   {
     Surface::ResetCallbacks();
 
-    m_onMouseEnterLocal = [this](Event* e, Entity* ntt) -> void { SetMaterialVal(GetHoverMaterialVal()); };
+    m_onMouseEnterLocal = [this](Event* e, EntityPtr ntt) -> void { SetMaterialVal(GetHoverMaterialVal()); };
     m_onMouseEnter      = m_onMouseEnterLocal;
 
-    m_onMouseExitLocal  = [this](Event* e, Entity* ntt) -> void { SetMaterialVal(GetButtonMaterialVal()); };
+    m_onMouseExitLocal  = [this](Event* e, EntityPtr ntt) -> void { SetMaterialVal(GetButtonMaterialVal()); };
     m_onMouseExit       = m_onMouseExitLocal;
   }
 

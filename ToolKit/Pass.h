@@ -62,7 +62,7 @@ namespace ToolKit
 
   struct RenderJob
   {
-    Entity* Entity                            = nullptr;
+    EntityPtr Entity                          = nullptr;
     Mesh* Mesh                                = nullptr;
     SkeletonComponentPtr SkeletonCmp          = nullptr;
     MaterialPtr Material                      = nullptr;
@@ -75,7 +75,7 @@ namespace ToolKit
   class TK_API RenderJobProcessor
   {
    public:
-    static void CreateRenderJobs(EntityRawPtrArray entities, RenderJobArray& jobArray, bool ignoreVisibility = false);
+    static void CreateRenderJobs(EntityPtrArray entities, RenderJobArray& jobArray, bool ignoreVisibility = false);
 
     static void SeperateDeferredForward(const RenderJobArray& jobArray,
                                         RenderJobArray& deferred,
@@ -91,9 +91,9 @@ namespace ToolKit
      * best to worst. Make sure lights array has updated shadow camera. Shadow
      * camera is used in culling calculations.
      */
-    static LightRawPtrArray SortLights(const RenderJob& job, const LightRawPtrArray& lights);
+    static LightPtrArray SortLights(const RenderJob& job, const LightPtrArray& lights);
 
-    static LightRawPtrArray SortLights(Entity* entity, const LightRawPtrArray& lights);
+    static LightPtrArray SortLights(EntityPtr entity, const LightPtrArray& lights);
 
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.

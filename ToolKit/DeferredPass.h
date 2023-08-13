@@ -34,7 +34,7 @@ namespace ToolKit
 
   struct DeferredRenderPassParams
   {
-    LightRawPtrArray lights           = {};
+    LightPtrArray lights              = {};
     FramebufferPtr MainFramebuffer    = nullptr;
     FramebufferPtr GBufferFramebuffer = nullptr;
     bool ClearFramebuffer             = true;

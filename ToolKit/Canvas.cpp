@@ -114,10 +114,9 @@ namespace ToolKit
     {
       if (Entity* ntt = childNode->m_entity)
       {
-        if (ntt->IsSurfaceInstance())
+        if (Surface* surface = ntt->As<Surface>())
         {
-          Surface* surface     = static_cast<Surface*>(ntt);
-          const float* offsets = surface->m_anchorParams.m_offsets;
+          float* const offsets = surface->m_anchorParams.m_offsets;
 
           Vec3 currentScale(1.f, 1.f, 1.f);
           childNode->SetScale(currentScale);

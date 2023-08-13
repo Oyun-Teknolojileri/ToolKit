@@ -44,13 +44,7 @@ namespace ToolKit
   void Prefab::UnInit()
   {
     Unlink();
-    if (m_initiated)
-    {
-      for (Entity* ntt : m_instanceEntities)
-      {
-        SafeDel(ntt);
-      }
-    }
+    m_instanceEntities.clear();
     m_initiated = false;
   }
 
@@ -74,14 +68,14 @@ namespace ToolKit
     if (!m_linked)
     {
       m_linked = true;
-      for (Entity* child : m_instanceEntities)
+      for (EntityPtr child : m_instanceEntities)
       {
         m_currentScene->AddEntity(child);
       }
     }
   }
 
-  Prefab* Prefab::GetPrefabRoot(Entity* ntt)
+  Prefab* Prefab::GetPrefabRoot(Entity* const ntt)
   {
     if (ntt->IsA<Prefab>())
     {
@@ -121,16 +115,16 @@ namespace ToolKit
     m_prefabScene->Init();
     m_instanceEntities.clear();
 
-    EntityRawPtrArray rootEntities;
+    EntityPtrArray rootEntities;
     GetRootEntities(m_prefabScene->GetEntities(), rootEntities);
 
     assert(rootEntities.size() != 0 && "Prefab scene is empty");
-    for (Entity* root : rootEntities)
+    for (EntityPtr root : rootEntities)
     {
-      EntityRawPtrArray instantiatedEntityList;
+      EntityPtrArray instantiatedEntityList;
       DeepCopy(root, instantiatedEntityList);
       m_node->AddChild(instantiatedEntityList[0]->m_node);
-      for (Entity* child : instantiatedEntityList)
+      for (EntityPtr child : instantiatedEntityList)
       {
         child->SetTransformLockVal(true);
         child->ParamTransformLock().m_editable = false;
@@ -138,7 +132,7 @@ namespace ToolKit
       m_instanceEntities.insert(m_instanceEntities.end(), instantiatedEntityList.begin(), instantiatedEntityList.end());
     }
 
-    for (Entity* ntt : m_instanceEntities)
+    for (EntityPtr ntt : m_instanceEntities)
     {
       ntt->_prefabRootEntity = this;
 
@@ -169,9 +163,9 @@ namespace ToolKit
     XmlNode* prefabNode = CreateXmlNode(doc, StaticClass()->Name, nttNode);
     parent              = CreateXmlNode(doc, "PrefabRoots", prefabNode);
 
-    EntityRawPtrArray childs;
+    EntityPtrArray childs;
     GetChildren(this, childs);
-    for (Entity* child : childs)
+    for (EntityPtr child : childs)
     {
       XmlNode* rootSer = CreateXmlNode(doc, child->GetNameVal(), parent);
       for (const ParameterVariant& var : child->m_localData.m_variants)

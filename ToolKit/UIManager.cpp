@@ -72,14 +72,13 @@ namespace ToolKit
       return;
     }
 
-    m_size                       = size;
+    m_size                    = size;
 
-    const EntityRawPtrArray& arr = m_scene->GetEntities();
-    for (Entity* ntt : arr)
+    const EntityPtrArray& arr = m_scene->GetEntities();
+    for (EntityPtr ntt : arr)
     {
-      if (ntt->GetType() == EntityType::Entity_Canvas)
+      if (Canvas* canvasPanel = ntt->As<Canvas>())
       {
-        Canvas* canvasPanel = static_cast<Canvas*>(ntt);
         // Resize only root canvases.
         if (canvasPanel->m_node->m_parent == nullptr)
         {
@@ -132,8 +131,8 @@ namespace ToolKit
       return;
     }
 
-    const EntityRawPtrArray& entities = layer->m_scene->AccessEntityArray();
-    for (Entity* ntt : entities)
+    const EntityPtrArray& entities = layer->m_scene->AccessEntityArray();
+    for (EntityPtr ntt : entities)
     {
       // Process events.
       for (Event* e : events)
@@ -142,7 +141,7 @@ namespace ToolKit
         {
           continue;
         }
-        Surface* surface        = static_cast<Surface*>(ntt);
+        Surface* surface        = ntt->As<Surface>();
         bool mouseOverPrev      = surface->m_mouseOver;
 
         surface->m_mouseOver    = CheckMouseOver(surface, e, vp);
@@ -150,7 +149,7 @@ namespace ToolKit
 
         if (ntt->GetType() == EntityType::Entity_Button)
         {
-          Button* button        = static_cast<Button*>(ntt);
+          Button* button        = ntt->As<Button>();
           MaterialPtr hoverMat  = button->GetHoverMaterialVal();
           MaterialPtr normalMat = button->GetButtonMaterialVal();
           button->SetMaterialVal(surface->m_mouseOver && hoverMat ? hoverMat : normalMat);

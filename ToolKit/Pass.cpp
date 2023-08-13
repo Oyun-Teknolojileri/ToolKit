@@ -78,13 +78,13 @@ namespace ToolKit
 
   void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
 
-  void RenderJobProcessor::CreateRenderJobs(EntityRawPtrArray entities, RenderJobArray& jobArray, bool ignoreVisibility)
+  void RenderJobProcessor::CreateRenderJobs(EntityPtrArray entities, RenderJobArray& jobArray, bool ignoreVisibility)
   {
     erase_if(entities,
              [ignoreVisibility](Entity* ntt) -> bool
              { return !ntt->IsDrawable() || (!ntt->IsVisible() && !ignoreVisibility); });
 
-    for (Entity* ntt : entities)
+    for (EntityPtr ntt : entities)
     {
       MeshRawPtrArray allMeshes;
       MaterialPtrArray allMaterials;
@@ -193,7 +193,7 @@ namespace ToolKit
   // An interval has start time and end time
   struct LightSortStruct
   {
-    Light* light        = nullptr;
+    LightPtr light      = nullptr;
     uint intersectCount = 0;
   };
 
@@ -203,9 +203,9 @@ namespace ToolKit
     return (i1.intersectCount > i2.intersectCount);
   }
 
-  LightRawPtrArray RenderJobProcessor::SortLights(const RenderJob& job, const LightRawPtrArray& lights)
+  LightPtrArray RenderJobProcessor::SortLights(const RenderJob& job, const LightPtrArray& lights)
   {
-    LightRawPtrArray bestLights;
+    LightPtrArray bestLights;
     if (lights.empty())
     {
       return bestLights;
@@ -230,14 +230,14 @@ namespace ToolKit
     for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
     {
       float radius;
-      Light* light = lights[lightIndx];
-      if (light->GetType() == EntityType::Entity_PointLight)
+      LightPtr light = lights[lightIndx];
+      if (PointLight* pLight = light->As<PointLight>())
       {
-        radius = static_cast<PointLight*>(light)->GetRadiusVal();
+        radius = pLight->GetRadiusVal();
       }
-      else if (light->GetType() == EntityType::Entity_SpotLight)
+      else if (SpotLight* sLight = light->As<SpotLight>())
       {
-        radius = static_cast<SpotLight*>(light)->GetRadiusVal();
+        radius = sLight->GetRadiusVal();
       }
       else
       {
@@ -298,15 +298,15 @@ namespace ToolKit
     return bestLights;
   }
 
-  LightRawPtrArray RenderJobProcessor::SortLights(Entity* entity, const LightRawPtrArray& lights)
+  LightPtrArray RenderJobProcessor::SortLights(EntityPtr entity, const LightPtrArray& lights)
   {
     RenderJobArray jobs;
     CreateRenderJobs({entity}, jobs);
 
-    LightRawPtrArray allLights;
+    LightPtrArray allLights;
     for (RenderJob& rj : jobs)
     {
-      LightRawPtrArray la = SortLights(rj, lights);
+      LightPtrArray la = SortLights(rj, lights);
       allLights.insert(allLights.end(), la.begin(), la.end());
     }
 

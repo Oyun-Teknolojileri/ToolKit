@@ -90,7 +90,7 @@ namespace ToolKit
 
   void LightDataTexture::Init(bool flushClientSideArray) { DataTexture::Init(flushClientSideArray); }
 
-  void LightDataTexture::UpdateTextureData(LightRawPtrArray& lights,
+  void LightDataTexture::UpdateTextureData(LightPtrArray& lights,
                                            Vec2& shadowDirLightIndexInterval,
                                            Vec2& shadowPointLightIndexInterval,
                                            Vec2& shadowSpotLightIndexInterval,
@@ -206,7 +206,7 @@ namespace ToolKit
     // element in 4 slotted memory (rgba).
 
     float i    = 0.0f;
-    for (Light* light : lights)
+    for (LightPtr light : lights)
     {
       bool shadow = false;
       if (light->GetCastShadowVal())
@@ -218,7 +218,7 @@ namespace ToolKit
       float currentSize = 0.0f;
 
       // Point light
-      if (type == EntityType::Entity_PointLight)
+      if (PointLight* pLight = light->As<PointLight>())
       {
         // Check data texture limits
         int size = shadow ? (int) pointShadowSize : (int) pointNonShadowSize;
@@ -227,10 +227,10 @@ namespace ToolKit
           break;
         }
 
-        Vec3 color      = light->GetColorVal();
-        float intensity = light->GetIntensityVal();
-        Vec3 pos        = light->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        float radius    = static_cast<PointLight*>(light)->GetRadiusVal();
+        Vec3 color      = pLight->GetColorVal();
+        float intensity = pLight->GetIntensityVal();
+        Vec3 pos        = pLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        float radius    = pLight->GetRadiusVal();
 
         // type
         float t         = 2.0f;
@@ -323,7 +323,7 @@ namespace ToolKit
         }
       }
       // Directional light
-      else if (type == EntityType::Entity_DirectionalLight)
+      else if (DirectionalLight* dLight = light->As<DirectionalLight>())
       {
         // Check data texture limits
         int size = shadow ? (int) dirShadowSize : (int) dirNonShadowSize;
@@ -332,9 +332,9 @@ namespace ToolKit
           break;
         }
 
-        Vec3 color      = light->GetColorVal();
-        float intensity = light->GetIntensityVal();
-        Vec3 dir        = static_cast<DirectionalLight*>(light)->GetComponent<DirectionComponent>()->GetDirection();
+        Vec3 color      = dLight->GetColorVal();
+        float intensity = dLight->GetIntensityVal();
+        Vec3 dir        = dLight->GetComponent<DirectionComponent>()->GetDirection();
 
         // type
         float t         = 1.0f;
@@ -433,7 +433,7 @@ namespace ToolKit
         }
       }
       // Spot light
-      else if (type == EntityType::Entity_SpotLight)
+      else if (SpotLight* sLight = light->As<SpotLight>())
       {
         // Check data texture limits
         int size = shadow ? (int) spotShadowSize : (int) spotNonShadowSize;
@@ -442,17 +442,16 @@ namespace ToolKit
           break;
         }
 
-        Vec3 color           = light->GetColorVal();
-        float intensity      = light->GetIntensityVal();
-        Vec3 pos             = light->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        SpotLight* spotLight = static_cast<SpotLight*>(light);
-        Vec3 dir             = spotLight->GetComponent<DirectionComponent>()->GetDirection();
-        float radius         = spotLight->GetRadiusVal();
-        float outAngle       = glm::cos(glm::radians(spotLight->GetOuterAngleVal() / 2.0f));
-        float innAngle       = glm::cos(glm::radians(spotLight->GetInnerAngleVal() / 2.0f));
+        Vec3 color      = sLight->GetColorVal();
+        float intensity = sLight->GetIntensityVal();
+        Vec3 pos        = sLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        Vec3 dir        = sLight->GetComponent<DirectionComponent>()->GetDirection();
+        float radius    = sLight->GetRadiusVal();
+        float outAngle  = glm::cos(glm::radians(sLight->GetOuterAngleVal() / 2.0f));
+        float innAngle  = glm::cos(glm::radians(sLight->GetInnerAngleVal() / 2.0f));
 
         // type
-        float t              = 3.0f;
+        float t         = 3.0f;
         glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &t);
         yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // color

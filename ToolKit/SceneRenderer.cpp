@@ -168,12 +168,12 @@ namespace ToolKit
       m_updatedLights = m_params.Lights;
     }
 
-    for (Light* light : m_updatedLights)
+    for (LightPtr light : m_updatedLights)
     {
       light->UpdateShadowCamera();
     }
 
-    EntityRawPtrArray allDrawList = m_params.Scene->GetEntities();
+    EntityPtrArray allDrawList = m_params.Scene->GetEntities();
 
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs(allDrawList, jobs);

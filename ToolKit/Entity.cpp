@@ -354,11 +354,11 @@ namespace ToolKit
     SetVisibleVal(vis);
     if (deep)
     {
-      EntityRawPtrArray children;
+      EntityPtrArray children;
       GetChildren(this, children);
-      for (Entity* c : children)
+      for (EntityPtr child : children)
       {
-        c->SetVisibility(vis, true);
+        child->SetVisibility(vis, true);
       }
     }
   }
@@ -368,11 +368,11 @@ namespace ToolKit
     SetTransformLockVal(lock);
     if (deep)
     {
-      EntityRawPtrArray children;
+      EntityPtrArray children;
       GetChildren(this, children);
-      for (Entity* c : children)
+      for (EntityPtr child : children)
       {
-        c->SetTransformLock(lock, true);
+        child->SetTransformLock(lock, true);
       }
     }
   }

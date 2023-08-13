@@ -858,22 +858,27 @@ namespace ToolKit
     return false;
   }
 
-  void RootsOnly(const EntityRawPtrArray& entities, EntityRawPtrArray& roots, Entity* child)
+  void RootsOnly(const EntityPtrArray& entities, EntityPtrArray& roots, EntityPtr child)
   {
-    auto AddUnique = [&roots](Entity* e) -> void
+    auto AddUnique = [&roots](EntityPtr ntt) -> void
     {
-      assert(e != nullptr);
-      bool unique = std::find(roots.begin(), roots.end(), e) == roots.end();
+      assert(ntt != nullptr);
+      bool unique = std::find(roots.begin(), roots.end(), ntt) == roots.end();
       if (unique)
       {
-        roots.push_back(e);
+        roots.push_back(ntt);
       }
     };
 
     Node* parent = child->m_node->m_parent;
     if (parent != nullptr)
     {
-      Entity* parentEntity = parent->m_entity;
+      // TODO: Cihan Convert Node::m_entity to SharedPtr.
+
+      // custom deleter
+      EntityPtr parentEntity;
+      swapper.reset(parent->m_entity);
+      parentEntity.swap(parent->m_entity);
       if (contains(entities, parentEntity))
       {
         RootsOnly(entities, roots, parentEntity);
@@ -882,6 +887,7 @@ namespace ToolKit
       {
         AddUnique(child);
       }
+      parentEntity.swap()
     }
     else
     {
@@ -889,19 +895,19 @@ namespace ToolKit
     }
   }
 
-  void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots)
+  void GetRootEntities(const EntityPtrArray& entities, EntityPtrArray& roots)
   {
-    for (Entity* e : entities)
+    for (EntityPtr ntt : entities)
     {
-      RootsOnly(entities, roots, e);
+      RootsOnly(entities, roots, ntt);
     }
   }
 
-  void GetParents(const Entity* ntt, EntityRawPtrArray& parents)
+  void GetParents(const EntityPtr ntt, EntityPtrArray& parents)
   {
     if (Node* pNode = ntt->m_node->m_parent)
     {
-      if (Entity* parent = pNode->m_entity)
+      if (EntityPtr parent = pNode->m_entity)
       {
         parents.push_back(parent);
         GetParents(parent, parents);
@@ -909,7 +915,7 @@ namespace ToolKit
     }
   }
 
-  void GetChildren(const Entity* ntt, EntityRawPtrArray& children)
+  void GetChildren(const Entity* ntt, EntityPtrArray& children)
   {
     if (ntt == nullptr)
     {
@@ -918,7 +924,7 @@ namespace ToolKit
 
     for (Node* childNode : ntt->m_node->m_children)
     {
-      Entity* child = childNode->m_entity;
+      EntityPtr child = childNode->m_entity;
       if (child)
       {
         children.push_back(child);
@@ -927,16 +933,16 @@ namespace ToolKit
     }
   }
 
-  Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies)
+  EntityPtr DeepCopy(EntityPtr root, EntityPtrArray& copies)
   {
-    Entity* cpy = root->Copy();
+    EntityPtr cpy = std::static_pointer_cast<Entity>(root->Copy());
     copies.push_back(cpy);
 
     for (Node* node : root->m_node->m_children)
     {
       if (node->m_entity)
       {
-        if (Entity* sub = DeepCopy(node->m_entity, copies))
+        if (EntityPtr sub = DeepCopy(node->m_entity, copies))
         {
           cpy->m_node->AddChild(sub->m_node);
         }
