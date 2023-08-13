@@ -38,7 +38,7 @@ namespace ToolKit
     FramebufferPtr MainFramebuffer    = nullptr;
     FramebufferPtr GBufferFramebuffer = nullptr;
     bool ClearFramebuffer             = true;
-    Camera* Cam                       = nullptr;
+    CameraPtr Cam                     = nullptr;
     TexturePtr AOTexture              = nullptr;
   };
 

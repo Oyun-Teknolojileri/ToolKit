@@ -34,7 +34,7 @@ namespace ToolKit
 
   struct StencilRenderPassParams
   {
-    Camera* Camera               = nullptr;
+    CameraPtr Camera             = nullptr;
     RenderTargetPtr OutputTarget = nullptr;
     RenderJobArray RenderJobs    = {};
   };

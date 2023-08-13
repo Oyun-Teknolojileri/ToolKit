@@ -112,7 +112,7 @@ namespace ToolKit
 
     for (Node* childNode : m_node->m_children)
     {
-      if (Entity* ntt = childNode->m_entity)
+      if (EntityPtr ntt = childNode->m_entity)
       {
         if (Surface* surface = ntt->As<Surface>())
         {

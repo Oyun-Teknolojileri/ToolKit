@@ -112,7 +112,7 @@ namespace ToolKit
     // 5- Shadow caster spot lights
     // 6- Non shadow caster spot lights
 
-    auto sortByType = [](const Light* l1, const Light* l2) -> bool
+    auto sortByType = [](const LightPtr l1, const LightPtr l2) -> bool
     {
       EntityType t1 = l1->GetType();
       EntityType t2 = l2->GetType();
@@ -149,7 +149,7 @@ namespace ToolKit
       }
     };
 
-    auto sortByShadow = [](const Light* l1, const Light* l2) -> bool
+    auto sortByShadow = [](const LightPtr l1, const LightPtr l2) -> bool
     {
       bool s1 = l1->GetCastShadowVal();
       bool s2 = l2->GetCastShadowVal();

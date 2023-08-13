@@ -115,13 +115,9 @@ namespace ToolKit
     return false;
   }
 
-  Camera* UIManager::GetUICamera() { return m_uiCamera; }
+  CameraPtr UIManager::GetUICamera() { return m_uiCamera; }
 
-  void UIManager::SetUICamera(Camera* cam)
-  {
-    SafeDel(m_uiCamera);
-    m_uiCamera = cam;
-  }
+  void UIManager::SetUICamera(CameraPtr cam) { m_uiCamera = cam; }
 
   void UIManager::UpdateSurfaces(Viewport* vp, const UILayerPtr& layer)
   {
@@ -180,12 +176,12 @@ namespace ToolKit
 
   UIManager::UIManager()
   {
-    m_uiCamera = new Camera();
+    m_uiCamera = MakeNewPtr<Camera>();
     m_uiCamera->SetLens(-100.0f, 100.0f, -100.0f, 100.0f, 0.5f, 1000.0f);
     m_uiCamera->m_orthographicScale = 1.0f;
   }
 
-  UIManager::~UIManager() { SafeDel(m_uiCamera); }
+  UIManager::~UIManager() {}
 
   void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)
   {
@@ -193,7 +189,7 @@ namespace ToolKit
 
     // Swap viewport camera with ui camera.
     ULongID attachmentSwap = NULL_HANDLE;
-    viewport->SwapCamera(&m_uiCamera, attachmentSwap);
+    viewport->SwapCamera(m_uiCamera, attachmentSwap);
 
     // Update viewports with ui camera.
     for (auto& viewLayerArray : m_viewportIdLayerArrayMap)
@@ -209,7 +205,7 @@ namespace ToolKit
       }
     }
 
-    viewport->SwapCamera(&m_uiCamera, attachmentSwap);
+    viewport->SwapCamera(m_uiCamera, attachmentSwap);
   }
 
   void UIManager::ResizeLayers(Viewport* viewport)

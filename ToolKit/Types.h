@@ -176,6 +176,8 @@ namespace ToolKit
   typedef std::shared_ptr<class Prefab> PrefabPtr;
   typedef std::vector<PrefabPtr> PrefabPtrArray;
   typedef std::vector<class Prefab*> PrefabRawPtrArray;
+  typedef std::shared_ptr<class Canvas> CanvasPtr;
+  typedef std::shared_ptr<class Billboard> BillboardPtr;
 
   // Xml types.
   typedef rapidxml::xml_node<char> XmlNode;

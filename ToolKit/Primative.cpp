@@ -48,7 +48,7 @@ namespace ToolKit
 
   Billboard::Billboard(const Settings& settings) : m_settings(settings) { AddComponent<MeshComponent>(); }
 
-  void Billboard::LookAt(Camera* cam, float scale)
+  void Billboard::LookAt(CameraPtr cam, float scale)
   {
     Camera::CamData data = cam->GetData();
 

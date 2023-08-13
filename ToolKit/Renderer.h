@@ -88,7 +88,7 @@ namespace ToolKit
 
     void DrawFullQuad(ShaderPtr fragmentShader);
     void DrawFullQuad(MaterialPtr mat);
-    void DrawCube(Camera* cam, MaterialPtr mat, const Mat4& transform = Mat4(1.0f));
+    void DrawCube(CameraPtr cam, MaterialPtr mat, const Mat4& transform = Mat4(1.0f));
 
     void SetTexture(ubyte slotIndx, uint textureId);
 
@@ -120,9 +120,9 @@ namespace ToolKit
     /////////////////////
     // Left public for thumbnail rendering. TODO: there must be techniques
     // handling thumbnail render.
-    void Render(const struct RenderJob& job, Camera* cam, const LightPtrArray& lights = {});
+    void Render(const struct RenderJob& job, CameraPtr cam, const LightPtrArray& lights = {});
 
-    void Render(const RenderJobArray& jobArray, Camera* cam, const LightPtrArray& lights = {});
+    void Render(const RenderJobArray& jobArray, CameraPtr cam, const LightPtrArray& lights = {});
 
     void Apply7x1GaussianBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
 
@@ -131,7 +131,7 @@ namespace ToolKit
     /**
      * Just before the render, set the lens to fit aspect ratio to frame buffer.
      */
-    void SetCameraLens(Camera* cam);
+    void SetCameraLens(CameraPtr cam);
     /////////////////////
 
     int GetMaxArrayTextureLayers();
@@ -139,7 +139,7 @@ namespace ToolKit
     void ResetTextureSlots();
 
    private:
-    void SetProjectViewModel(const Mat4& model, Camera* cam);
+    void SetProjectViewModel(const Mat4& model, CameraPtr cam);
     void BindProgram(ProgramPtr program);
     void LinkProgram(uint program, uint vertexP, uint fragmentP);
     ProgramPtr CreateProgram(ShaderPtr vertex, ShaderPtr fragment);
@@ -174,7 +174,7 @@ namespace ToolKit
     Mat4 m_model;
     Mat4 m_iblRotation;
     LightPtrArray m_lights;
-    Camera* m_cam                = nullptr;
+    CameraPtr m_cam              = nullptr;
     MaterialPtr m_mat            = nullptr;
     MaterialPtr m_aoMat          = nullptr;
     FramebufferPtr m_framebuffer = nullptr;

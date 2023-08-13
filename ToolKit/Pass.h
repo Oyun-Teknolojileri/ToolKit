@@ -97,9 +97,9 @@ namespace ToolKit
 
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
-    static void StableSortByDistanceToCamera(RenderJobArray& jobArray, const Camera* cam);
+    static void StableSortByDistanceToCamera(RenderJobArray& jobArray, const CameraPtr cam);
 
-    static void CullRenderJobs(RenderJobArray& jobArray, Camera* camera);
+    static void CullRenderJobs(RenderJobArray& jobArray, CameraPtr camera);
 
     static void AssignEnvironment(RenderJobArray& jobArray, const EnvironmentComponentPtrArray& environments);
 

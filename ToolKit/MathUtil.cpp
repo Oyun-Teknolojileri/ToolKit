@@ -335,8 +335,7 @@ namespace ToolKit
 
   bool RectPointIntersection(Vec2 rectMin, Vec2 rectMax, Vec2 point)
   {
-    return point.x >= rectMin.x && point.y >= rectMin.y &&
-           point.x <= rectMax.x && point.y <= rectMax.y;
+    return point.x >= rectMin.x && point.y >= rectMin.y && point.x <= rectMax.x && point.y <= rectMax.y;
   }
 
   // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
@@ -691,7 +690,7 @@ namespace ToolKit
     }
   }
 
-  void FrustumCull(EntityRawPtrArray& entities, Camera* camera)
+  void FrustumCull(EntityRawPtrArray& entities, CameraPtr camera)
   {
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();
@@ -702,7 +701,7 @@ namespace ToolKit
     erase_if(entities, delFn);
   }
 
-  void FrustumCull(RenderJobArray& jobs, Camera* camera)
+  void FrustumCull(RenderJobArray& jobs, CameraPtr camera)
   {
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();

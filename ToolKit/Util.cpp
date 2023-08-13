@@ -873,12 +873,7 @@ namespace ToolKit
     Node* parent = child->m_node->m_parent;
     if (parent != nullptr)
     {
-      // TODO: Cihan Convert Node::m_entity to SharedPtr.
-
-      // custom deleter
-      EntityPtr parentEntity;
-      swapper.reset(parent->m_entity);
-      parentEntity.swap(parent->m_entity);
+      EntityPtr parentEntity = parent->m_entity;
       if (contains(entities, parentEntity))
       {
         RootsOnly(entities, roots, parentEntity);
@@ -887,7 +882,6 @@ namespace ToolKit
       {
         AddUnique(child);
       }
-      parentEntity.swap()
     }
     else
     {
@@ -915,7 +909,7 @@ namespace ToolKit
     }
   }
 
-  void GetChildren(const Entity* ntt, EntityPtrArray& children)
+  void GetChildren(const EntityPtr ntt, EntityPtrArray& children)
   {
     if (ntt == nullptr)
     {

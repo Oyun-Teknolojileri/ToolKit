@@ -77,7 +77,7 @@ namespace ToolKit
     renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
   }
 
-  void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, Camera* cam, const LightPtrArray& lights)
+  void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)
   {
     Renderer* renderer = GetRenderer();
 
@@ -89,7 +89,7 @@ namespace ToolKit
     }
   }
 
-  void ForwardRenderPass::RenderTranslucent(RenderJobArray& jobs, Camera* cam, const LightPtrArray& lights)
+  void ForwardRenderPass::RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)
   {
     RenderJobProcessor::StableSortByDistanceToCamera(jobs, cam);
 
@@ -98,7 +98,7 @@ namespace ToolKit
     {
       LightPtrArray culledLights = RenderJobProcessor::SortLights(job, lights);
 
-      MaterialPtr mat               = job.Material;
+      MaterialPtr mat            = job.Material;
       if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
       {
         mat->GetRenderState()->cullMode = CullingType::Front;

@@ -223,7 +223,7 @@ namespace ToolKit
      * @returns An array containing pointers to all the entities in the scene
      * that passed the filter function.
      */
-    EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
+    EntityPtrArray Filter(std::function<bool(EntityPtr)> filter);
 
     /**
      * Gets the sky object associated with the scene.

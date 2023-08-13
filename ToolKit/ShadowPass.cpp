@@ -90,7 +90,7 @@ namespace ToolKit
     erase_if(m_params.RendeJobs, [](RenderJob& job) -> bool { return !job.ShadowCaster; });
 
     // Dropout non shadow casting lights.
-    erase_if(m_params.Lights, [](Light* light) -> bool { return !light->GetCastShadowVal(); });
+    erase_if(m_params.Lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
 
     InitShadowAtlas();
 

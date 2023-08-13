@@ -64,7 +64,7 @@ namespace ToolKit
 
     Billboard();
     explicit Billboard(const Settings& settings);
-    virtual void LookAt(class Camera* cam, float scale);
+    virtual void LookAt(CameraPtr cam, float scale);
     EntityType GetType() const override;
 
    protected:

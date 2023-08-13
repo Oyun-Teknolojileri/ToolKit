@@ -47,7 +47,7 @@ namespace ToolKit
   {
     LightPtrArray Lights;
     ScenePtr Scene                 = nullptr;
-    Camera* Cam                    = nullptr;
+    CameraPtr Cam                  = nullptr;
     FramebufferPtr MainFramebuffer = nullptr;
     bool ClearFramebuffer          = true;
     EngineSettings::PostProcessingSettings Gfx;

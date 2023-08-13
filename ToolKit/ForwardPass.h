@@ -33,7 +33,7 @@ namespace ToolKit
 
   struct ForwardRenderPassParams
   {
-    Camera* Cam                    = nullptr;
+    CameraPtr Cam                  = nullptr;
     FramebufferPtr FrameBuffer     = nullptr;
     FramebufferPtr gFrameBuffer    = nullptr;
     RenderTargetPtr gNormalRt      = nullptr;
@@ -68,7 +68,7 @@ namespace ToolKit
      * @param zoom Zoom amount of camera.
      * @param lights All lights.
      */
-    void RenderOpaque(RenderJobArray& jobs, Camera* cam, const LightPtrArray& lights);
+    void RenderOpaque(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights);
 
     /**
      * Sorts and renders translucent entities. For double-sided blended entities
@@ -77,7 +77,7 @@ namespace ToolKit
      * @param cam Camera for rendering.
      * @param lights ights All lights.
      */
-    void RenderTranslucent(RenderJobArray& jobs, Camera* cam, const LightPtrArray& lights);
+    void RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights);
 
    public:
     ForwardRenderPassParams m_params;

@@ -81,7 +81,7 @@ namespace ToolKit
   void RenderJobProcessor::CreateRenderJobs(EntityPtrArray entities, RenderJobArray& jobArray, bool ignoreVisibility)
   {
     erase_if(entities,
-             [ignoreVisibility](Entity* ntt) -> bool
+             [ignoreVisibility](EntityPtr ntt) -> bool
              { return !ntt->IsDrawable() || (!ntt->IsVisible() && !ignoreVisibility); });
 
     for (EntityPtr ntt : entities)
@@ -313,7 +313,7 @@ namespace ToolKit
     return allLights;
   }
 
-  void RenderJobProcessor::StableSortByDistanceToCamera(RenderJobArray& jobArray, const Camera* cam)
+  void RenderJobProcessor::StableSortByDistanceToCamera(RenderJobArray& jobArray, const CameraPtr cam)
   {
     std::function<bool(const RenderJob&, const RenderJob&)> sortFn = [cam](const RenderJob& j1,
                                                                            const RenderJob& j2) -> bool
@@ -346,7 +346,7 @@ namespace ToolKit
     std::stable_sort(jobArray.begin(), jobArray.end(), sortFn);
   }
 
-  void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, Camera* camera) { FrustumCull(jobArray, camera); }
+  void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, CameraPtr camera) { FrustumCull(jobArray, camera); }
 
   void RenderJobProcessor::AssignEnvironment(RenderJobArray& jobArray, const EnvironmentComponentPtrArray& environments)
   {

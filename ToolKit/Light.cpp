@@ -48,7 +48,7 @@ namespace ToolKit
 
   Light::Light()
   {
-    m_shadowCamera = MakeNew<Camera>();
+    m_shadowCamera = MakeNewPtr<Camera>();
     m_shadowCamera->SetOrthographicScaleVal(1.0f);
 
     Color_Define(Vec3(1.0f), "Light", 0, true, true, {true});
@@ -63,7 +63,7 @@ namespace ToolKit
     ParameterEventConstructor();
   }
 
-  Light::~Light() { SafeDel(m_shadowCamera); }
+  Light::~Light() {}
 
   void Light::ParameterEventConstructor()
   {
@@ -182,7 +182,7 @@ namespace ToolKit
     return node;
   }
 
-  void DirectionalLight::FitEntitiesBBoxIntoShadowFrustum(Camera* lightCamera, const RenderJobArray& jobs)
+  void DirectionalLight::FitEntitiesBBoxIntoShadowFrustum(CameraPtr lightCamera, const RenderJobArray& jobs)
   {
     // Calculate all scene's bounding box
     BoundingBox totalBBox;
@@ -231,7 +231,7 @@ namespace ToolKit
                          shadowBBox.max.z);
   }
 
-  void DirectionalLight::FitViewFrustumIntoLightFrustum(Camera* lightCamera, Camera* viewCamera)
+  void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, Camera* viewCamera)
   {
     assert(false && "Experimental.");
     // Fit view frustum into light frustum

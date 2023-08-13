@@ -41,16 +41,19 @@
 namespace ToolKit
 {
 
-  Camera* ViewportBase::GetCamera() const
+  CameraPtr ViewportBase::GetCamera() const
   {
     if (m_attachedCamera != NULL_HANDLE)
     {
       if (ScenePtr currScene = GetSceneManager()->GetCurrentScene())
       {
-        if (Camera* cam = static_cast<Camera*>(currScene->GetEntity(m_attachedCamera)))
+        if (EntityPtr camNtt = currScene->GetEntity(m_attachedCamera))
         {
-          assert(cam->GetType() == EntityType::Entity_Camera);
-          return cam;
+          if (CameraPtr cam = std::static_pointer_cast<Camera>(camNtt))
+          {
+            assert(cam->IsA<Camera>());
+            return cam;
+          }
         }
       }
     }
@@ -58,28 +61,15 @@ namespace ToolKit
     return m_camera;
   }
 
-  void ViewportBase::SetCamera(Camera* cam)
+  void ViewportBase::SetCamera(CameraPtr cam)
   {
-    SafeDel(m_camera);
     m_camera         = cam;
     m_attachedCamera = NULL_HANDLE;
   }
 
-  void ViewportBase::SwapCamera(Camera** cam, ULongID& attachment)
+  void ViewportBase::SwapCamera(CameraPtr& cam, ULongID& attachment)
   {
-    if (cam == nullptr)
-    {
-      return;
-    }
-
-    if (*cam == nullptr)
-    {
-      return;
-    }
-
-    Camera* tmp      = *cam;
-    *cam             = m_camera;
-    m_camera         = tmp;
+    cam.swap(m_camera);
 
     ULongID tmpHdnl  = m_attachedCamera;
     m_attachedCamera = attachment;
@@ -96,12 +86,12 @@ namespace ToolKit
 
   ViewportBase::ViewportBase()
   {
-    m_camera         = new Camera();
+    m_camera         = MakeNewPtr<Camera>();
     m_viewportId     = GetHandleManager()->GetNextHandle();
     m_attachedCamera = NULL_HANDLE;
   }
 
-  ViewportBase::~ViewportBase() { SafeDel(m_camera); }
+  ViewportBase::~ViewportBase() {}
 
   Viewport::Viewport() {}
 
@@ -122,7 +112,7 @@ namespace ToolKit
 
   void Viewport::AdjustZoom(float delta)
   {
-    Camera* cam = GetCamera();
+    CameraPtr cam = GetCamera();
     cam->m_node->Translate(Vec3(0.0f, 0.0f, -delta), TransformationSpace::TS_LOCAL);
 
     if (cam->IsOrtographic())
@@ -165,9 +155,9 @@ namespace ToolKit
     Vec2 mcInVs = TransformScreenToViewportSpace(pnt);
 
     Ray ray;
-    ray.position = TransformViewportToWorldSpace(mcInVs);
+    ray.position  = TransformViewportToWorldSpace(mcInVs);
 
-    Camera* cam  = GetCamera();
+    CameraPtr cam = GetCamera();
     if (cam->IsOrtographic())
     {
       ray.direction = cam->GetComponent<DirectionComponent>()->GetDirection();
@@ -200,20 +190,20 @@ namespace ToolKit
 
   Vec3 Viewport::TransformViewportToWorldSpace(const Vec2& pnt)
   {
-    Vec3 pnt3d   = Vec3(pnt, 0.0f);
+    Vec3 pnt3d    = Vec3(pnt, 0.0f);
 
-    Camera* cam  = GetCamera();
-    Mat4 view    = cam->GetViewMatrix();
-    Mat4 project = cam->GetProjectionMatrix();
+    CameraPtr cam = GetCamera();
+    Mat4 view     = cam->GetViewMatrix();
+    Mat4 project  = cam->GetProjectionMatrix();
 
     return glm::unProject(pnt3d, view, project, Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));
   }
 
   Vec2 Viewport::TransformWorldSpaceToScreenSpace(const Vec3& pnt)
   {
-    Camera* cam       = GetCamera();
-    glm::mat4 view    = cam->GetViewMatrix();
-    glm::mat4 project = cam->GetProjectionMatrix();
+    CameraPtr cam  = GetCamera();
+    Mat4 view      = cam->GetViewMatrix();
+    Mat4 project   = cam->GetProjectionMatrix();
 
     Vec3 screenPos = glm::project(pnt, view, project, Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));
 
@@ -232,7 +222,7 @@ namespace ToolKit
 
   bool Viewport::IsOrthographic()
   {
-    if (Camera* cam = GetCamera())
+    if (CameraPtr cam = GetCamera())
     {
       return cam->IsOrtographic();
     }
@@ -242,7 +232,7 @@ namespace ToolKit
 
   float Viewport::GetBillboardScale()
   {
-    Camera* cam = GetCamera();
+    CameraPtr cam = GetCamera();
     if (cam->IsOrtographic())
     {
       return cam->m_orthographicScale;

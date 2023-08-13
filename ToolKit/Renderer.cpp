@@ -91,7 +91,7 @@ namespace ToolKit
     return m_maxArrayTextureLayers;
   }
 
-  void Renderer::SetCameraLens(Camera* cam)
+  void Renderer::SetCameraLens(CameraPtr cam)
   {
     float aspect = (float) m_viewportSize.x / (float) m_viewportSize.y;
     if (!cam->IsOrtographic())
@@ -106,7 +106,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::Render(const RenderJob& job, Camera* cam, const LightPtrArray& lights)
+  void Renderer::Render(const RenderJob& job, CameraPtr cam, const LightPtrArray& lights)
   {
     // Make ibl assignments.
     m_renderState.IBLInUse = false;
@@ -225,7 +225,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::Render(const RenderJobArray& jobArray, Camera* cam, const LightPtrArray& lights)
+  void Renderer::Render(const RenderJobArray& jobArray, CameraPtr cam, const LightPtrArray& lights)
   {
     for (const RenderJob& rj : jobArray)
     {
@@ -483,10 +483,10 @@ namespace ToolKit
 
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs({quad}, jobs);
-    Render(jobs, quadCam.get());
+    Render(jobs, quadCam);
   }
 
-  void Renderer::DrawCube(Camera* cam, MaterialPtr mat, const Mat4& transform)
+  void Renderer::DrawCube(CameraPtr cam, MaterialPtr mat, const Mat4& transform)
   {
     m_dummyDrawCube->m_node->SetTransform(transform);
     m_dummyDrawCube->GetMaterialComponent()->SetFirstMaterial(mat);
@@ -641,7 +641,7 @@ namespace ToolKit
     SetFramebuffer(frmBackup, false);
   }
 
-  void Renderer::SetProjectViewModel(const Mat4& model, Camera* cam)
+  void Renderer::SetProjectViewModel(const Mat4& model, CameraPtr cam)
   {
     m_view    = cam->GetViewMatrix();
     m_project = cam->GetProjectionMatrix();
@@ -1170,8 +1170,8 @@ namespace ToolKit
     m_utilFramebuffer->Init({width, height, false, false});
 
     // Views for 6 different angles
-    static Camera cam;
-    cam.SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+    static CameraPtr cam = MakeNewPtr<Camera>();
+    cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
     Mat4 views[] = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
                     glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
                     glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
@@ -1186,9 +1186,9 @@ namespace ToolKit
 
       DecomposeMatrix(views[i], &pos, &rot, &sca);
 
-      cam.m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
-      cam.m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
-      cam.m_node->SetScale(sca);
+      cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
+      cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
+      cam->m_node->SetScale(sca);
 
       m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                        cubeMapRt,
@@ -1197,7 +1197,7 @@ namespace ToolKit
                                        (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
-      DrawCube(&cam, mat);
+      DrawCube(cam, mat);
     }
     SetFramebuffer(nullptr);
 
@@ -1266,7 +1266,7 @@ namespace ToolKit
                                        (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
-      DrawCube(cam.get(), mat);
+      DrawCube(cam, mat);
     }
     SetFramebuffer(nullptr);
 
@@ -1352,7 +1352,7 @@ namespace ToolKit
         SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0));
         SetViewportSize(w, h);
 
-        DrawCube(cam.get(), mat);
+        DrawCube(cam, mat);
       }
     }
 

@@ -69,7 +69,7 @@ namespace ToolKit
      */
     void Link();
 
-    static Prefab* GetPrefabRoot(Entity* const ntt);
+    static PrefabPtr GetPrefabRoot(const EntityPtr ntt);
     Entity* CopyTo(Entity* other) const override;
 
    protected:

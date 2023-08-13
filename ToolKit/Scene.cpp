@@ -391,9 +391,9 @@ namespace ToolKit
     return res.empty() ? nullptr : res.front();
   }
 
-  EntityRawPtrArray Scene::Filter(std::function<bool(Entity*)> filter)
+  EntityPtrArray Scene::Filter(std::function<bool(EntityPtr)> filter)
   {
-    EntityRawPtrArray filtered;
+    EntityPtrArray filtered;
     std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(filtered), filter);
     return filtered;
   }
@@ -500,7 +500,7 @@ namespace ToolKit
     // Construct prefab.
     Scene prefab;
     prefab.AddEntity(entity);
-    GetChildren(entity.get(), prefab.m_entities);
+    GetChildren(entity, prefab.m_entities);
     String name = entity->GetNameVal() + SCENE;
     prefab.SetFile(PrefabPath(name));
     prefab.m_name = name;
@@ -548,7 +548,7 @@ namespace ToolKit
       EntityPtr ntt = m_entities[listIndx];
 
       // If entity isn't a prefab type but from a prefab, don't serialize it
-      if (!ntt->IsA<Prefab>() && Prefab::GetPrefabRoot(ntt.get()))
+      if (!ntt->IsA<Prefab>() && Prefab::GetPrefabRoot(ntt))
       {
         continue;
       }
@@ -581,7 +581,7 @@ namespace ToolKit
     ULongID biggestID = 0;
     XmlNode* node     = nullptr;
 
-    EntityRawPtrArray prefabList;
+    EntityPtrArray prefabList;
 
     const char* xmlRootObject = XmlEntityElement.c_str();
     const char* xmlObjectType = XmlEntityTypeAttr.c_str();
@@ -590,7 +590,7 @@ namespace ToolKit
     {
       XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
       EntityType t           = (EntityType) std::atoi(typeAttr->value());
-      Entity* ntt            = GetEntityFactory()->CreateByType(t);
+      EntityPtr ntt          = GetEntityFactory()->CreateByType(t);
       ntt->m_version         = m_version;
 
       ntt->DeSerialize(info, node);
@@ -609,7 +609,7 @@ namespace ToolKit
       ntt->SetIdVal(currentID);
       ntt->_parentId += lastID;
 
-      AddEntity(std::make_shared<Entity>(ntt));
+      AddEntity(ntt);
     }
     GetHandleManager()->SetMaxHandle(biggestID);
 
@@ -619,9 +619,9 @@ namespace ToolKit
       GetEngineSettings().DeSerializePostProcessing(info.Document, parent);
     }
 
-    for (Entity* ntt : prefabList)
+    for (EntityPtr ntt : prefabList)
     {
-      Prefab* prefab = static_cast<Prefab*>(ntt);
+      Prefab* prefab = static_cast<Prefab*>(ntt.get());
       prefab->Init(this);
       prefab->Link();
     }

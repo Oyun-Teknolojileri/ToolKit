@@ -330,11 +330,23 @@ namespace ToolKit
 
   void Surface::CalculateAnchorOffsets(Vec3 canvas[4], Vec3 surface[4])
   {
-    if (canvas == nullptr || surface == nullptr || m_node->m_parent == nullptr ||
-        m_node->m_parent->m_entity == nullptr || m_node->m_parent->m_entity->GetType() != EntityType::Entity_Canvas)
-      return;
 
-    Canvas* canvasPanel  = static_cast<Canvas*>(m_node->m_parent->m_entity);
+    if (canvas == nullptr || surface == nullptr)
+    {
+      return;
+    }
+
+    if (m_node->m_parent == nullptr || m_node->m_parent->m_entity == nullptr)
+    {
+      return;
+    }
+
+    CanvasPtr canvasPanel = std::static_pointer_cast<Canvas>(m_node->m_parent->m_entity);
+
+    if (canvasPanel == nullptr)
+    {
+      return;
+    }
 
     const BoundingBox bb = canvasPanel->GetAABB(true);
     const float w        = bb.GetWidth();

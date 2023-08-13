@@ -240,6 +240,10 @@ namespace ToolKit
      */
     Entity* _prefabRootEntity = nullptr;
 
+    // TODO: Cihan delete this. Instead of maintaining a shared pointer within the object, the shared object should be
+    // maintained in the object factory.
+    EntityPtr m_sharedEntity  = nullptr;
+
    private:
     // This should be private, because instantiated entities don't use this list
     // NOTE: Entity's own functions shouldn't access this either.
@@ -270,7 +274,7 @@ namespace ToolKit
   class TK_API EntityFactory final
   {
    public:
-    Entity* CreateByType(EntityType type);
+    EntityPtr CreateByType(EntityType type);
   };
 
 } // namespace ToolKit

@@ -161,7 +161,7 @@ namespace ToolKit
 
   // Gather hierarchy from parent (indx 0) to child (indx end).
   // Revert the array for child to parent.
-  TK_API void GetChildren(const Entity* ntt, EntityPtrArray& children);
+  TK_API void GetChildren(const EntityPtr ntt, EntityPtrArray& children);
 
   // {copies} First one is the copy root, fallowing are attached children.
   TK_API EntityPtr DeepCopy(EntityPtr root, EntityPtrArray& copies);
