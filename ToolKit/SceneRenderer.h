@@ -39,10 +39,10 @@
 #include "ShadowPass.h"
 #include "SsaoPass.h"
 #include "ForwardPreProcessPass.h"
+#include "LightingPass.h"
 
 namespace ToolKit
 {
-
   struct SceneRenderPassParams
   {
     LightRawPtrArray Lights;
@@ -76,7 +76,8 @@ namespace ToolKit
    public:
     ShadowPassPtr m_shadowPass                         = nullptr;
     ForwardRenderPassPtr m_forwardRenderPass           = nullptr;
-    ForwardPreProcessPassPtr   m_forwardPreProcessPass = nullptr;
+    ForwardPreProcessPassPtr m_forwardPreProcessPass   = nullptr;
+    LightingPassPtr m_lightingPass                     = nullptr;
     CubeMapPassPtr m_skyPass                           = nullptr;
     GBufferPassPtr m_gBufferPass                       = nullptr;
     DeferredRenderPassPtr m_deferredRenderPass         = nullptr;

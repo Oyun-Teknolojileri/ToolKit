@@ -64,7 +64,7 @@ namespace ToolKit
     TKDeclareParam(int, PCFSamples);
     TKDeclareParam(float, PCFRadius);
     TKDeclareParam(float, ShadowBias);
-    TKDeclareParam(float, LightBleedingReduction);
+    TKDeclareParam(float, BleedingReduction);
 
     Mat4 m_shadowMapCameraProjectionViewMatrix;
     float m_shadowMapCameraFar     = 1.0f;

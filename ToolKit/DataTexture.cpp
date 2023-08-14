@@ -111,57 +111,16 @@ namespace ToolKit
     // 4- Non shadow caster point lights
     // 5- Shadow caster spot lights
     // 6- Non shadow caster spot lights
-
     auto sortByType = [](const Light* l1, const Light* l2) -> bool
     {
-      EntityType t1 = l1->GetType();
-      EntityType t2 = l2->GetType();
-
-      if (t1 == EntityType::Entity_DirectionalLight)
-      {
-        if (t2 == EntityType::Entity_DirectionalLight)
-        {
-          return false;
-        }
-        else
-        {
-          return true;
-        }
-      }
-      else if (t1 == EntityType::Entity_PointLight)
-      {
-        if (t2 == EntityType::Entity_DirectionalLight || t2 == EntityType::Entity_PointLight)
-        {
-          return false;
-        }
-        else
-        {
-          return true;
-        }
-      }
-      else if (t1 == EntityType::Entity_SpotLight)
-      {
-        return false;
-      }
-      else
-      {
-        return false; // Never comes here
-      }
+      return (int)l1->GetType() < (int)l2->GetType();
     };
 
     auto sortByShadow = [](const Light* l1, const Light* l2) -> bool
     {
       bool s1 = l1->GetCastShadowVal();
       bool s2 = l2->GetCastShadowVal();
-
-      if (s2)
-      {
-        return false;
-      }
-      else
-      {
-        return s1;
-      }
+      return s2 ? false : s1;
     };
 
     std::stable_sort(lights.begin(), lights.end(), sortByShadow);
@@ -293,7 +252,7 @@ namespace ToolKit
                           1,
                           GL_RGBA,
                           GL_FLOAT,
-                          &light->GetLightBleedingReductionVal());
+                          &light->GetBleedingReductionVal());
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias
@@ -402,7 +361,7 @@ namespace ToolKit
                           1,
                           GL_RGBA,
                           GL_FLOAT,
-                          &light->GetLightBleedingReductionVal());
+                          &light->GetBleedingReductionVal());
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias
@@ -533,7 +492,7 @@ namespace ToolKit
                           1,
                           GL_RGBA,
                           GL_FLOAT,
-                          &light->GetLightBleedingReductionVal());
+                          &light->GetBleedingReductionVal());
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias
