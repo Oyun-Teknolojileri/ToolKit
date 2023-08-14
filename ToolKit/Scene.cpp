@@ -638,7 +638,7 @@ namespace ToolKit
     ULongID biggestID = 0;
     XmlNode* node     = nullptr;
 
-    EntityRawPtrArray prefabList;
+    EntityPtrArray prefabList;
 
     const char* xmlRootObject = TKObject::StaticClass()->Name.c_str();
     const char* xmlObjectType = XmlObjectClassAttr.data();
@@ -646,7 +646,7 @@ namespace ToolKit
     for (node = root->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
     {
       XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
-      Entity* ntt            = GetObjectFactory()->MakeNew(typeAttr->value())->As<Entity>();
+      EntityPtr ntt          = MakeNewPtr<Entity>(typeAttr->value());
 
       ntt->DeSerialize(info, node);
 
@@ -663,7 +663,7 @@ namespace ToolKit
       ntt->SetIdVal(currentID);
       ntt->_parentId += lastID;
 
-      AddEntity(std::make_shared<Entity>(ntt));
+      AddEntity(ntt);
     }
 
     GetHandleManager()->SetMaxHandle(biggestID);
@@ -674,9 +674,9 @@ namespace ToolKit
       GetEngineSettings().DeSerializePostProcessing(info.Document, parent);
     }
 
-    for (Entity* ntt : prefabList)
+    for (EntityPtr ntt : prefabList)
     {
-      Prefab* prefab = static_cast<Prefab*>(ntt);
+      PrefabPtr prefab = std::static_pointer_cast<Prefab>(ntt);
       prefab->Init(this);
       prefab->Link();
     }

@@ -232,7 +232,7 @@ namespace ToolKit
     }
 
     // Sort lights based on resolutions (greater to smaller)
-    auto sortByResFn = [](const Light* l1, const Light* l2) -> bool
+    auto sortByResFn = [](const LightPtr l1, const LightPtr l2) -> bool
     { return l1->GetShadowResVal() > l2->GetShadowResVal(); };
 
     std::sort(dirAndSpotLights.begin(), dirAndSpotLights.end(), sortByResFn);

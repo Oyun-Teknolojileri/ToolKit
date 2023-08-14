@@ -156,10 +156,10 @@ namespace ToolKit
     Register<Button>();
   }
 
-  TKObject* TKObjectFactory::MakeNew(const StringView& cls)
+  TKObject* TKObjectFactory::MakeNew(const StringView Class)
   {
     TKObject* object = nullptr;
-    auto consFnIt    = m_constructorFnMap.find(cls);
+    auto consFnIt    = m_constructorFnMap.find(Class);
     if (consFnIt != m_constructorFnMap.end())
     {
       object = consFnIt->second();
