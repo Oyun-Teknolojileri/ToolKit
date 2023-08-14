@@ -41,11 +41,11 @@ namespace ToolKit
         TexturePtr AOTexture              = nullptr;
     };
 
-    class TK_API LightingPass : public RenderPass
+    class TK_API AdditiveLightingPass : public RenderPass
     {
     public:
-        LightingPass();
-        ~LightingPass();
+        AdditiveLightingPass();
+        ~AdditiveLightingPass();
         
         void Init(const LightingPassParams& params);
         void PreRender() override;
@@ -63,5 +63,5 @@ namespace ToolKit
         ShaderPtr m_lightingShader             = nullptr;
     };
 
-    typedef std::shared_ptr<LightingPass> LightingPassPtr;
+    typedef std::shared_ptr<AdditiveLightingPass> LightingPassPtr;
 }

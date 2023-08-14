@@ -41,7 +41,7 @@ namespace ToolKit
     m_shadowPass             = std::make_shared<ShadowPass>();
     m_forwardRenderPass      = std::make_shared<ForwardRenderPass>();
     m_forwardPreProcessPass  = std::make_shared<ForwardPreProcess>();
-    m_lightingPass           = std::make_shared<LightingPass>();
+    m_lightingPass           = std::make_shared<AdditiveLightingPass>();
     m_skyPass                = std::make_shared<CubeMapPass>();
     m_gBufferPass            = std::make_shared<GBufferPass>();
     m_deferredRenderPass     = std::make_shared<DeferredRenderPass>();
@@ -106,7 +106,7 @@ namespace ToolKit
     renderer->SetShadowAtlas(std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
     // Render non-blended entities with deferred renderer
-    // m_passArray.push_back(m_deferredRenderPass);
+    m_passArray.push_back(m_deferredRenderPass);
     m_passArray.push_back(m_lightingPass);
     
     if (m_drawSky)

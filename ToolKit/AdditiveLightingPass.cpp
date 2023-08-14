@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include "LightingPass.h"
+#include "AdditiveLightingPass.h"
 
 #include "DataTexture.h"
 #include "DirectionComponent.h"
@@ -35,7 +35,7 @@ namespace ToolKit
 {
   using FAttachment = Framebuffer::Attachment;
 
-  LightingPass::LightingPass()
+  AdditiveLightingPass::AdditiveLightingPass()
   {
     m_fullQuadPass        = std::make_shared<FullQuadPass>();
     m_lightingFrameBuffer = std::make_shared<Framebuffer>();
@@ -44,11 +44,11 @@ namespace ToolKit
     m_mergeShader         = GetShaderManager()->Create<Shader>(ShaderPath("lightMerge.shader", true));
   }
 
-  LightingPass::~LightingPass() {}
+  AdditiveLightingPass::~AdditiveLightingPass() {}
 
-  void LightingPass::Init(const LightingPassParams& params) {}
+  void AdditiveLightingPass::Init(const LightingPassParams& params) {}
 
-  void LightingPass::PreRender()
+  void AdditiveLightingPass::PreRender()
   {
     Pass::PreRender();
 
@@ -83,7 +83,7 @@ namespace ToolKit
     renderer->SetTexture(5, m_params.AOTexture ? m_params.AOTexture->m_textureId : 0);
   }
 
-  void LightingPass::SetLightUniforms(Light* light, int lightType)
+  void AdditiveLightingPass::SetLightUniforms(Light* light, int lightType)
   {
     Vec3 pos = light->m_node->GetTranslation();
     m_lightingShader->SetShaderParameter("lightType", ParameterVariant(lightType));
@@ -145,7 +145,7 @@ namespace ToolKit
     m_lightingShader->SetShaderParameter("lightShadowBias", ParameterVariant(bias));
   }
 
-  void LightingPass::Render()
+  void AdditiveLightingPass::Render()
   {
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_lightingFrameBuffer, true, Vec4(0.0f));
@@ -189,7 +189,7 @@ namespace ToolKit
     RenderSubPass(m_fullQuadPass);
   }
 
-  void LightingPass::PostRender()
+  void AdditiveLightingPass::PostRender()
   {
     // swap depth texture of gbuffer and this. because main depth buffer is empty now
     DepthTexturePtr mainDepth = m_params.MainFramebuffer->GetDepthTexture();
