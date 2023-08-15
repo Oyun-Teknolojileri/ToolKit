@@ -18,8 +18,6 @@
 		
 		void main()
 		{
-			if (v_texture.x > 0.5)
-				discard;
 			vec2 texCoord   = vec2(v_texture.x, 1.0 - v_texture.y);
 			vec3 irradiance = texture(s_texture0, texCoord).rgb;
       vec3 emmisive   = texture(s_texture1, texCoord).rgb;

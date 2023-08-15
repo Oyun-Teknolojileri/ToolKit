@@ -1,6 +1,6 @@
 <shader>
 	<type name = "fragmentShader" />
-	<include name = "lighting.shader" />
+	<include name = "AdditivePBRLighting.shader" />
 	<include name = "AO.shader" />
 	<uniform name = "lightingType" />
 	<source>
@@ -32,8 +32,6 @@
 
 		void main()
 		{
-			if (v_texture.x > 0.5)
-				discard;
 			vec2 texCoord = vec2(v_texture.x, 1.0 - v_texture.y);
 			vec3 position = texture(s_texture9, texCoord).rgb;
 			vec3 normal   = texture(s_texture10, texCoord).rgb;
@@ -43,7 +41,7 @@
 			vec3 n = normalize(normal);
 			vec3 e = normalize(camPos - position);
 
-			vec3 irradiance = LightingDeferred2(position, n, e, color, metallicRoughness.r, metallicRoughness.g);
+			vec3 irradiance = AdditivePBRLighting(position, n, e, color, metallicRoughness.r, metallicRoughness.g);
 			fragColor = irradiance;
 		}
 	-->

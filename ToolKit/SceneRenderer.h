@@ -39,7 +39,7 @@
 #include "ShadowPass.h"
 #include "SsaoPass.h"
 #include "ForwardPreProcessPass.h"
-#include "AdditiveLightingPass.h"\
+#include "AdditiveLightingPass.h"
 
 namespace ToolKit
 {

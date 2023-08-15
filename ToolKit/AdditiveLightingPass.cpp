@@ -40,7 +40,7 @@ namespace ToolKit
     m_fullQuadPass        = std::make_shared<FullQuadPass>();
     m_lightingFrameBuffer = std::make_shared<Framebuffer>();
     m_lightingRt          = std::make_shared<RenderTarget>();
-    m_lightingShader      = GetShaderManager()->Create<Shader>(ShaderPath("newDeferredFrag.shader", true));
+    m_lightingShader      = GetShaderManager()->Create<Shader>(ShaderPath("additiveLighting.shader", true));
     m_mergeShader         = GetShaderManager()->Create<Shader>(ShaderPath("lightMerge.shader", true));
   }
 
@@ -61,9 +61,9 @@ namespace ToolKit
     RenderTargetSettigs oneChannelSet = {};
     oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
     oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGB8;
+    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGB16F;
     oneChannelSet.Format              = GraphicTypes::FormatRGB;
-    oneChannelSet.Type                = GraphicTypes::TypeUnsignedByte;
+    oneChannelSet.Type                = GraphicTypes::TypeFloat;
 
     m_lightingRt->m_settings          = oneChannelSet;
     m_lightingRt->ReconstructIfNeeded((uint) width, (uint) height);
