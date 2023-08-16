@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MIT License
  *
  * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
@@ -26,29 +26,42 @@
 
 #pragma once
 
-#include "ForwardPass.h"
-#include "Material.h"
+#include "FullQuadPass.h"
 #include "Pass.h"
 
 namespace ToolKit
 {
+    struct LightingPassParams
+    {
+        LightRawPtrArray lights           = {};
+        FramebufferPtr MainFramebuffer    = nullptr;
+        FramebufferPtr GBufferFramebuffer = nullptr;
+        bool ClearFramebuffer             = true;
+        Camera* Cam                       = nullptr;
+        TexturePtr AOTexture              = nullptr;
+    };
 
-  class TK_API ForwardPreProcess : public RenderPass
-  {
-   public:
-    ForwardPreProcess();
-    ~ForwardPreProcess();
+    class TK_API AdditiveLightingPass : public RenderPass
+    {
+    public:
+        AdditiveLightingPass();
+        ~AdditiveLightingPass();
+        
+        void Init(const LightingPassParams& params);
+        void PreRender() override;
+        void PostRender() override;
+        void Render() override;
+    private:
+        void SetLightUniforms(Light* light, int lightType);
 
-    void Render() override;
-    void PreRender() override;
-    void PostRender() override;
+    public:
+        LightingPassParams m_params;
+        FullQuadPassPtr m_fullQuadPass         = nullptr;
+        RenderTargetPtr m_lightingRt           = nullptr;
+        FramebufferPtr m_lightingFrameBuffer   = nullptr; 
+        ShaderPtr m_mergeShader                = nullptr; 
+        ShaderPtr m_lightingShader             = nullptr;
+    };
 
-   public:
-    ForwardRenderPassParams m_params;
-    MaterialPtr m_linearMaterial = nullptr;
-    FramebufferPtr m_framebuffer = nullptr;
-  };
-
-  typedef std::shared_ptr<ForwardPreProcess> ForwardPreProcessPassPtr;
-
-} // namespace ToolKit
+    typedef std::shared_ptr<AdditiveLightingPass> LightingPassPtr;
+}

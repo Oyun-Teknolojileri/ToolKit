@@ -58,7 +58,7 @@ namespace ToolKit
     PCFSamples_Define(32, "Light", 90, true, true, {false, true, 0, 128, 1});
     PCFRadius_Define(0.01f, "Light", 90, true, true, {false, true, 0.0f, 5.0f, 0.0001f});
     ShadowBias_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 20000.0f, 0.01f});
-    LightBleedingReduction_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 1.0f, 0.001f});
+    BleedingReduction_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 1.0f, 0.001f});
 
     ParameterEventConstructor();
   }

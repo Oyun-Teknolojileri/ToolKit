@@ -232,6 +232,7 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="ForwardPreProcessPass.cpp" />
+    <ClCompile Include="AdditiveLightingPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -460,5 +461,6 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="ForwardPreProcessPass.h" />
+    <ClInclude Include="AdditiveLightingPass.h" />
   </ItemGroup>
 </Project>
