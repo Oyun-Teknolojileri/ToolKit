@@ -39,10 +39,11 @@
 #include "RenderSystem.h"
 #include "ShadowPass.h"
 #include "SsaoPass.h"
+#include "ForwardPreProcessPass.h"
+#include "AdditiveLightingPass.h"
 
 namespace ToolKit
 {
-
   struct SceneRenderPassParams
   {
     LightPtrArray Lights;
@@ -74,18 +75,19 @@ namespace ToolKit
     SceneRenderPassParams m_params;
 
    public:
-    ShadowPassPtr m_shadowPass                       = nullptr;
-    ForwardRenderPassPtr m_forwardRenderPass         = nullptr;
-    ForwardPreProcessPassPtr m_forwardPreProcessPass = nullptr;
-    CubeMapPassPtr m_skyPass                         = nullptr;
-    GBufferPassPtr m_gBufferPass                     = nullptr;
-    DeferredRenderPassPtr m_deferredRenderPass       = nullptr;
-    SSAOPassPtr m_ssaoPass                           = nullptr;
-    FXAAPassPtr m_fxaaPass                           = nullptr;
-    GammaPassPtr m_gammaPass                         = nullptr;
-    BloomPassPtr m_bloomPass                         = nullptr;
-    TonemapPassPtr m_tonemapPass                     = nullptr;
-    DoFPassPtr m_dofPass                             = nullptr;
+    ShadowPassPtr m_shadowPass                         = nullptr;
+    ForwardRenderPassPtr m_forwardRenderPass           = nullptr;
+    ForwardPreProcessPassPtr m_forwardPreProcessPass   = nullptr;
+    LightingPassPtr m_lightingPass                     = nullptr;
+    CubeMapPassPtr m_skyPass                           = nullptr;
+    GBufferPassPtr m_gBufferPass                       = nullptr;
+    DeferredRenderPassPtr m_deferredRenderPass         = nullptr;
+    SSAOPassPtr m_ssaoPass                             = nullptr;
+    FXAAPassPtr m_fxaaPass                             = nullptr;
+    GammaPassPtr m_gammaPass                           = nullptr;
+    BloomPassPtr m_bloomPass                           = nullptr;
+    TonemapPassPtr m_tonemapPass                       = nullptr;
+    DoFPassPtr m_dofPass                               = nullptr;
     LightPtrArray m_updatedLights;
 
    private:

@@ -64,9 +64,7 @@ namespace ToolKit
     {
       m_deferredRenderShader = GetShaderManager()->Create<Shader>(ShaderPath("deferredRenderFrag.shader", true));
     }
-    m_deferredRenderShader->SetShaderParameter(
-        "camPos",
-        ParameterVariant(m_params.Cam->m_node->GetTranslation(TransformationSpace::TS_WORLD)));
+    m_deferredRenderShader->SetShaderParameter("camPos", ParameterVariant(m_params.Cam->m_node->GetTranslation()));
 
     m_fullQuadPass->m_params.ClearFrameBuffer = m_params.ClearFramebuffer;
     m_fullQuadPass->m_params.FragmentShader   = m_deferredRenderShader;
@@ -112,23 +110,14 @@ namespace ToolKit
 
     renderer->SetTexture(13, m_lightDataTexture->m_textureId);
 
-    if (m_params.AOTexture)
-    {
-      m_deferredRenderShader->SetShaderParameter("aoEnabled", ParameterVariant(1));
-      renderer->SetTexture(5, m_params.AOTexture->m_textureId);
-    }
-    else
-    {
-      m_deferredRenderShader->SetShaderParameter("aoEnabled", ParameterVariant(0));
-      renderer->SetTexture(5, 0);
-    }
+    m_deferredRenderShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.AOTexture != nullptr));
+    renderer->SetTexture(5, m_params.AOTexture ? m_params.AOTexture->m_textureId : 0);
   }
 
   void DeferredRenderPass::PostRender()
   {
     // Copy real depth buffer to main framebuffer depth
-    GetRenderer()->CopyFrameBuffer(m_params.GBufferFramebuffer, m_params.MainFramebuffer, GraphicBitFields::DepthBits);
-
+    // GetRenderer()->CopyFrameBuffer(m_params.GBufferFramebuffer, m_params.MainFramebuffer, GraphicBitFields::DepthBits);
     Pass::PostRender();
   }
 

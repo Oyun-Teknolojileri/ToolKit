@@ -1068,8 +1068,8 @@ namespace ToolKit
         loc = glGetUniformLocation(program->m_handle, g_lightShadowMapCameraFarStrCache[i].c_str());
         glUniform1f(loc, currLight->m_shadowMapCameraFar);
 
-        loc = glGetUniformLocation(program->m_handle, g_lightBleedingReductionStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetLightBleedingReductionVal());
+        loc = glGetUniformLocation(program->m_handle, g_BleedingReductionStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetBleedingReductionVal());
 
         loc = glGetUniformLocation(program->m_handle, g_lightPCFSamplesStrCache[i].c_str());
         glUniform1i(loc, currLight->GetPCFSamplesVal());

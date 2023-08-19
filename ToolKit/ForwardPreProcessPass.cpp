@@ -37,7 +37,6 @@ namespace ToolKit
     ShaderPtr vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcessVert.shader", true));
     ShaderPtr fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcess.shader", true));
 
-    m_normalMergeRt  = std::make_shared<RenderTarget>();
     m_framebuffer    = std::make_shared<Framebuffer>();
     m_linearMaterial = std::make_shared<Material>();
     m_linearMaterial->m_vertexShader   = vertexShader;
@@ -50,7 +49,6 @@ namespace ToolKit
   void ForwardPreProcess::Render()
   {
     Renderer* renderer = GetRenderer();
-    renderer->CopyTexture(m_params.gNormalRt, m_normalMergeRt);
 
     const auto renderLinearDepthAndNormalFn = [this, renderer](RenderJobArray& renderJobArray) 
     {
@@ -89,14 +87,10 @@ namespace ToolKit
     oneChannelSet.Format              = GraphicTypes::FormatRGB;
     oneChannelSet.Type                = GraphicTypes::TypeFloat;
 
-    // Init normal merge texture
-    m_normalMergeRt->m_settings       = oneChannelSet;
-    m_normalMergeRt->ReconstructIfNeeded((uint) width, (uint) height);
-
     using FAttachment = Framebuffer::Attachment;
 
     m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_params.gLinearRt);
-    m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_normalMergeRt);
+    m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_params.gNormalRt);
     m_framebuffer->AttachDepthTexture(m_params.gFrameBuffer->GetDepthTexture());
 
     Renderer* renderer = GetRenderer();
@@ -104,6 +98,9 @@ namespace ToolKit
     renderer->SetCameraLens(m_params.Cam);
   }
 
-  void ForwardPreProcess::PostRender() { RenderPass::PostRender(); }
+  void ForwardPreProcess::PostRender() 
+  {
+    RenderPass::PostRender(); 
+  }
 
 } // namespace ToolKit
