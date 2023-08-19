@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include "EditorScene.h"
 #include "UI.h"
 
 #include <unordered_set>
@@ -42,28 +43,28 @@ namespace ToolKit
       void Show() override;
       Type GetType() const override;
       void DispatchSignals() const override;
-      void Focus(Entity* ntt);
+      void Focus(EntityPtr ntt);
 
       // moves the entities below m_insertSelectedIndex
       // make sure m_insertSelectedIndex properly defined before calling this
       // function.
-      bool TryReorderEntites(const EntityRawPtrArray& movedEntities);
+      bool TryReorderEntites(const EntityPtrArray& movedEntities);
       bool IsInsertingAtTheEndOfEntities();
 
      private:
       bool DrawRootHeader(const String& rootName, uint id, ImGuiTreeNodeFlags flags, TexturePtr icon);
 
       void ShowSearchBar(String& searchString);
-      bool DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags, int depth);
+      bool DrawHeader(EntityPtr ntt, ImGuiTreeNodeFlags flags, int depth);
 
-      int ShowNode(Entity* e, int depth);
+      int ShowNode(EntityPtr ntt, int depth);
       void DrawRowBackground(int depth);
-      void SetItemState(Entity* e);
+      void SetItemState(EntityPtr ntt);
 
-      void SelectEntitiesBetweenNodes(class EditorScene* scene, Entity* a, Entity* b);
+      void SelectEntitiesBetweenNodes(EditorScenePtr scene, EntityPtr a, EntityPtr b);
 
-      bool FindShownEntities(Entity* e, const String& str);
-      void PushSelectedEntitiesToReparentQueue(Entity* parent);
+      bool FindShownEntities(EntityPtr ntt, const String& str);
+      void PushSelectedEntitiesToReparentQueue(EntityPtr parent);
 
       void SortDraggedEntitiesByNodeIndex();
       bool IndicatingInBetweenNodes();
@@ -74,18 +75,18 @@ namespace ToolKit
        * Focus uses this internal array, Show() opens all nodes and sets focus
        * to last ntt in the array.
        */
-      EntityRawPtrArray m_nttFocusPath;
-      std::unordered_set<Entity*> m_shownEntities;
+      EntityPtrArray m_nttFocusPath;
+      std::unordered_set<EntityPtr> m_shownEntities;
       /**
        * entities up to down when we look at node tree.
        * these are imgui visible entities.
        */
-      EntityRawPtrArray m_indexToEntity;
+      EntityPtrArray m_indexToEntity;
 
-      EntityRawPtrArray m_draggingEntities;
-      EntityRawPtrArray m_roots;
-      Entity* m_lastClickedEntity = nullptr;
-      Entity* m_rootsParent       = nullptr;
+      EntityPtrArray m_draggingEntities;
+      EntityPtrArray m_roots;
+      EntityPtr m_lastClickedEntity = nullptr;
+      EntityPtr m_rootsParent       = nullptr;
 
       String m_searchString;
       bool m_stringSearchMode   = false;

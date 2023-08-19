@@ -32,6 +32,7 @@
 #include "Prefab.h"
 
 #include <Material.h>
+
 #include <DebugNew.h>
 
 namespace ToolKit
@@ -87,7 +88,7 @@ namespace ToolKit
 
     ValueUpdateFn CustomDataView::MultiUpdate(ParameterVariant* var)
     {
-      EntityRawPtrArray entities;
+      EntityPtrArray entities;
       g_app->GetCurrentScene()->GetSelectedEntities(entities);
 
       // Remove current selected because its already updated.
@@ -95,10 +96,10 @@ namespace ToolKit
 
       ValueUpdateFn multiUpdate = [var, entities](Value& oldVal, Value& newVal) -> void
       {
-        for (Entity* ntt : entities)
+        for (EntityPtr ntt : entities)
         {
           // If entity is a prefab scene entity, skip it
-          Prefab* prefabRoot = Prefab::GetPrefabRoot(ntt);
+          PrefabPtr prefabRoot = Prefab::GetPrefabRoot(ntt);
           if (prefabRoot && prefabRoot != ntt)
           {
             continue;
@@ -262,7 +263,7 @@ namespace ToolKit
       ImGui::Separator();
     }
 
-    void CustomDataView::ShowCustomData(Entity* m_entity,
+    void CustomDataView::ShowCustomData(EntityPtr m_entity,
                                         String headerName,
                                         ParameterVariantRawPtrArray& vars,
                                         bool isListEditable)

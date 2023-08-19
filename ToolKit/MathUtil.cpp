@@ -444,7 +444,7 @@ namespace ToolKit
     return hit;
   }
 
-  uint FindMeshIntersection(Entity* const ntt, const Ray& rayInWorldSpace, float& t)
+  uint FindMeshIntersection(const EntityPtr ntt, const Ray& rayInWorldSpace, float& t)
   {
     SkeletonComponent* skel = ntt->GetComponent<SkeletonComponent>().get();
 

@@ -52,14 +52,14 @@ namespace ToolKit
     class DeleteAction : public Action
     {
      public:
-      explicit DeleteAction(Entity* ntt);
+      explicit DeleteAction(EntityPtr ntt);
       virtual ~DeleteAction();
 
       void Undo() override;
       void Redo() override;
 
      private:
-      Entity* m_ntt;
+      EntityPtr m_ntt;
       ULongID m_parentId;
       EntityIdArray m_children;
       bool m_actionComitted;
@@ -68,7 +68,7 @@ namespace ToolKit
     class CreateAction : public Action
     {
      public:
-      explicit CreateAction(Entity* ntt);
+      explicit CreateAction(EntityPtr ntt);
       virtual ~CreateAction();
 
       void Undo() override;
@@ -78,7 +78,7 @@ namespace ToolKit
       void SwapSelection();
 
      private:
-      Entity* m_ntt;
+      EntityPtr m_ntt;
       bool m_actionComitted;
       EntityIdArray m_selecteds;
     };

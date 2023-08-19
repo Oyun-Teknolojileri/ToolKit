@@ -85,7 +85,7 @@ namespace ToolKit
   // @return TK_UINT_MAX = no intersection, otherwise submesh index
   // If there is no tracing possible object, t set as 0.0
   // Tracing possible object: Vertex positions should be in memory
-  TK_API uint FindMeshIntersection(class Entity* const ntt, const Ray& ray, float& t);
+  TK_API uint FindMeshIntersection(const EntityPtr ntt, const Ray& ray, float& t);
 
   TK_API IntersectResult FrustumBoxIntersection(const Frustum& frustum,
                                                 const BoundingBox& box); // 0 outside, 1 inside, 2 intersect

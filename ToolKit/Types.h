@@ -178,6 +178,10 @@ namespace ToolKit
   typedef std::vector<class Prefab*> PrefabRawPtrArray;
   typedef std::shared_ptr<class Canvas> CanvasPtr;
   typedef std::shared_ptr<class Billboard> BillboardPtr;
+  typedef std::shared_ptr<class Camera> CameraPtr;
+  typedef std::shared_ptr<LineBatch> LineBatchPtr;
+  typedef std::shared_ptr<class Camera> CameraPtr;
+  typedef std::shared_ptr<class Surface> SurfacePtr;
 
   // Xml types.
   typedef rapidxml::xml_node<char> XmlNode;
@@ -199,10 +203,6 @@ namespace ToolKit
 
   // Filesystem variable types
   typedef std::filesystem::path Path;
-
-  // Enitiy types.
-  typedef std::shared_ptr<class Camera> CameraPtr;
-  typedef std::shared_ptr<class Surface> SurfacePtr;
 
   // Callbacks.
   typedef std::function<void(class Event*, EntityPtr)> SurfaceEventCallback;

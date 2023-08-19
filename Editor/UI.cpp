@@ -1293,7 +1293,7 @@ namespace ToolKit
       return icon;
     }
 
-    void UI::ShowEntityTreeNodeContent(Entity* ntt)
+    void UI::ShowEntityTreeNodeContent(EntityPtr ntt)
     {
       String icon = UI::EntityTypeToIcon(ntt->GetType());
 
@@ -1531,7 +1531,7 @@ namespace ToolKit
 
       if (ImGui::IsKeyPressed(ImGuiKey_F, false) && !Exist(mask, ImGuiKey_F))
       {
-        if (Entity* ntt = currSecne->GetCurrentSelection())
+        if (EntityPtr ntt = currSecne->GetCurrentSelection())
         {
           if (Window* wnd = g_app->GetOutliner())
           {

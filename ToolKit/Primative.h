@@ -74,7 +74,7 @@ namespace ToolKit
    public:
     Settings m_settings;
     Vec3 m_worldLocation;
-    Entity* m_entity = nullptr;
+    EntityPtr m_entity = nullptr;
   };
 
   class TK_API Cube final : public Entity
@@ -215,7 +215,5 @@ namespace ToolKit
     Entity* CopyTo(Entity* copyTo) const override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
   };
-
-  typedef std::shared_ptr<LineBatch> LineBatchPtr;
 
 } // namespace ToolKit

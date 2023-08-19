@@ -43,7 +43,7 @@ namespace ToolKit
 
   AABBOverrideComponent::~AABBOverrideComponent() {}
 
-  ComponentPtr AABBOverrideComponent::Copy(Entity* ntt)
+  ComponentPtr AABBOverrideComponent::Copy(EntityPtr ntt)
   {
     AABBOverrideComponentPtr dst = MakeNewPtr<AABBOverrideComponent>();
     dst->m_entity                = ntt;

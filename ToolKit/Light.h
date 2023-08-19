@@ -107,6 +107,8 @@ namespace ToolKit
     void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, Camera* viewCamera);
   };
 
+  typedef std::shared_ptr<DirectionalLight> DirectionalLightPtr;
+
   // PointLight
   //////////////////////////////////////////
 
@@ -131,6 +133,8 @@ namespace ToolKit
    public:
     TKDeclareParam(float, Radius);
   };
+
+  typedef std::shared_ptr<PointLight> PointLightLightPtr;
 
   // SpotLight
   //////////////////////////////////////////
@@ -159,5 +163,7 @@ namespace ToolKit
 
     Frustum n_frustumCache; //!< Updated after call to UpdateShadowCamera().
   };
+
+  typedef std::shared_ptr<SpotLight> SpotLightPtr;
 
 } // namespace ToolKit

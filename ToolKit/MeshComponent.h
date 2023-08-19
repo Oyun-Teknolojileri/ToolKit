@@ -58,7 +58,7 @@ namespace ToolKit
      * @param ntt Parent Entity of the component.
      * @return Copy of the MeshComponent.
      */
-    ComponentPtr Copy(Entity* ntt) override;
+    ComponentPtr Copy(EntityPtr ntt) override;
 
     /**
      * Gets the bounding box of the contained Mesh.

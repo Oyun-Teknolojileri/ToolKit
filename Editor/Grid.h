@@ -78,5 +78,7 @@ namespace ToolKit
       MaterialPtr m_material    = nullptr;
     };
 
+    typedef std::shared_ptr<Grid> GridPtr;
+
   } //  namespace Editor
 } //  namespace ToolKit

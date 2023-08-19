@@ -149,7 +149,7 @@ namespace ToolKit
     other->ClearComponents();
     for (const ComponentPtr& com : m_components)
     {
-      other->m_components.push_back(com->Copy(other));
+      other->m_components.push_back(com->Copy(other->m_sharedEntity));
     }
 
     return other;
@@ -189,7 +189,7 @@ namespace ToolKit
   {
     assert(GetComponent(component->GetIdVal()) == nullptr && "Component has already been added.");
 
-    component->m_entity = this;
+    component->m_entity = m_sharedEntity;
     m_components.push_back(component);
   }
 

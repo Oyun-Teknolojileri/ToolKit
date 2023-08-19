@@ -182,7 +182,7 @@ namespace ToolKit
           bool hit         = false;
 
           float t          = TK_FLT_MAX;
-          uint submeshIndx = FindMeshIntersection(ntt.get(), ray, t);
+          uint submeshIndx = FindMeshIntersection(ntt, ray, t);
 
           // There was no tracing possible object, so hit should be true
           if (t == 0.0f && submeshIndx == TK_UINT_MAX)

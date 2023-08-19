@@ -370,7 +370,7 @@ namespace ToolKit
 
   AnimRecord::AnimRecord() { m_id = GetHandleManager()->GetNextHandle(); }
 
-  AnimRecord::AnimRecord(Entity* entity, const AnimationPtr& anim) : m_entity(entity), m_animation(anim)
+  AnimRecord::AnimRecord(EntityPtr entity, const AnimationPtr& anim) : m_entity(entity), m_animation(anim)
   {
     m_id = GetHandleManager()->GetNextHandle();
   }

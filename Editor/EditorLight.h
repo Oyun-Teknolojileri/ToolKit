@@ -46,7 +46,7 @@ namespace ToolKit
       ~ThreePointLightSystem();
 
      public:
-      LightRawPtrArray m_lights;
+      LightPtrArray m_lights;
       Node* m_parentNode = nullptr;
     };
 
@@ -83,13 +83,15 @@ namespace ToolKit
 
       EditorDirectionalLight();
       virtual ~EditorDirectionalLight();
-      Entity* Copy() const override;
-      LineBatch* GetDebugShadowFrustum();
+      TKObjectPtr Copy() const override;
+      LineBatchPtr GetDebugShadowFrustum();
 
      protected:
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     };
+
+    typedef std::shared_ptr<EditorDirectionalLight> EditorDirectionalLightPtr;
 
     class EditorPointLight : public PointLight, public LightGizmoController
     {
@@ -98,13 +100,15 @@ namespace ToolKit
 
       EditorPointLight();
       virtual ~EditorPointLight();
-      Entity* Copy() const override;
+      TKObjectPtr Copy() const override;
 
      protected:
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
       void ParameterEventConstructor() override;
     };
+
+    typedef std::shared_ptr<EditorPointLight> EditorPointLightPtr;
 
     class EditorSpotLight : public SpotLight, public LightGizmoController
     {
@@ -113,13 +117,15 @@ namespace ToolKit
 
       EditorSpotLight();
       virtual ~EditorSpotLight();
-      Entity* Copy() const override;
+      TKObjectPtr Copy() const override;
 
      protected:
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
       void ParameterEventConstructor() override;
     };
+
+    typedef std::shared_ptr<EditorSpotLight> EditorSpotLightPtr;
 
   } // namespace Editor
 } // namespace ToolKit

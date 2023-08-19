@@ -104,7 +104,7 @@ namespace ToolKit
           m_entity->m_node->m_parent->m_entity->GetType() != EntityType::Entity_Canvas)
         return;
 
-      Canvas* canvasPanel = static_cast<Canvas*>(m_entity->m_node->m_parent->m_entity);
+      Canvas* canvasPanel = static_cast<Canvas*>(m_entity->m_node->m_parent->m_entity.get());
 
       Vec3 pos;
       float w = 0, h = 0;
@@ -115,7 +115,7 @@ namespace ToolKit
         pos                  = Vec3(bb.min.x, bb.max.y, pos.z);
       }
 
-      Surface* surface    = static_cast<Surface*>(m_entity);
+      Surface* surface    = static_cast<Surface*>(m_entity.get());
       float* anchorRatios = surface->m_anchorParams.m_anchorRatios;
 
       const Vec3 axis[3]  = {

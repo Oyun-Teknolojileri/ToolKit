@@ -79,8 +79,8 @@ namespace ToolKit
     {
       m_viewport->SetScene(m_scenes[m_activeObjectIndx]);
 
-      EntityRawPtrArray materialNtties = m_viewport->GetScene()->GetByTag("target");
-      for (Entity* ntt : materialNtties)
+      EntityPtrArray materialNtties = m_viewport->GetScene()->GetByTag("target");
+      for (EntityPtr ntt : materialNtties)
       {
         ntt->GetMaterialComponent()->SetFirstMaterial(m_materials[m_currentMaterialIndex]);
       }

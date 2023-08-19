@@ -53,8 +53,8 @@ namespace ToolKit
 
     void EntityView::ShowAnchorSettings()
     {
-      Surface* surface    = static_cast<Surface*>(m_entity);
-      Canvas* canvasPanel = static_cast<Canvas*>(surface->m_node->m_parent->m_entity);
+      Surface* surface    = static_cast<Surface*>(m_entity.get());
+      Canvas* canvasPanel = static_cast<Canvas*>(surface->m_node->m_parent->m_entity.get());
 
       if (ImGui::CollapsingHeader("Anchor", ImGuiTreeNodeFlags_DefaultOpen))
       {
@@ -265,8 +265,7 @@ namespace ToolKit
       // Missing data reporter.
       if (m_entity->IsDrawable())
       {
-        Drawable* dw = static_cast<Drawable*>(m_entity);
-        MeshPtr mesh = dw->GetMesh();
+        MeshPtr mesh = m_entity->GetComponent<MeshComponent>()->GetMeshVal();
 
         StringArray missingData;
         MeshRawCPtrArray meshes;
@@ -478,12 +477,11 @@ namespace ToolKit
         }
 
         // If entity is gradient sky create a "Update IBL Textures" button
-        if (m_entity->GetType() == EntityType::Entity_GradientSky &&
-            category.Name.compare("Sky") == 0) // TODO This might not be necessary
+        if (m_entity->IsA<GradientSky>() && category.Name.compare("Sky") == 0) // TODO This might not be necessary
         {
           if (UI::BeginCenteredTextButton("Update IBL Textures"))
           {
-            static_cast<Sky*>(m_entity)->ReInit();
+            static_cast<Sky*>(m_entity.get())->ReInit();
           }
           UI::EndCenteredTextButton();
         }

@@ -51,7 +51,7 @@ namespace ToolKit
     virtual ~SkeletonComponent();
 
     void Init();
-    ComponentPtr Copy(Entity* ntt) override;
+    ComponentPtr Copy(EntityPtr ntt) override;
 
    protected:
     void ParameterConstructor() override;

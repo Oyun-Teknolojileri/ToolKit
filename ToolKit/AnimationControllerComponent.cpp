@@ -46,7 +46,7 @@ namespace ToolKit
     }
   }
 
-  ComponentPtr AnimControllerComponent::Copy(Entity* ntt)
+  ComponentPtr AnimControllerComponent::Copy(EntityPtr ntt)
   {
     AnimControllerComponentPtr ec = MakeNewPtr<AnimControllerComponent>();
     ec->m_localData               = m_localData;

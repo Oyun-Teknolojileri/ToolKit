@@ -113,8 +113,8 @@ namespace ToolKit
     template <typename T>
     std::shared_ptr<T> AddComponent()
     {
-      std::shared_ptr<T> component = std::shared_ptr<T>(MakeNew<T>());
-      component->m_entity          = this;
+      std::shared_ptr<T> component = MakeNewPtr<T>();
+      component->m_entity          = m_sharedEntity;
       m_components.push_back(component);
       return component;
     }

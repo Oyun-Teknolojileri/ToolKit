@@ -39,7 +39,7 @@ namespace ToolKit
 
   DirectionComponent::~DirectionComponent() {}
 
-  ComponentPtr DirectionComponent::Copy(Entity* ntt)
+  ComponentPtr DirectionComponent::Copy(EntityPtr ntt)
   {
     DirectionComponentPtr dc = MakeNewPtr<DirectionComponent>();
     dc->m_entity             = ntt;

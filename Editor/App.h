@@ -70,7 +70,7 @@ namespace ToolKit
       bool IsCompiling();
       EditorScenePtr GetCurrentScene();
       void SetCurrentScene(const EditorScenePtr& scene);
-      void FocusEntity(Entity* entity);
+      void FocusEntity(EntityPtr entity);
 
       /**
        * Executes the given system command.
@@ -189,15 +189,15 @@ namespace ToolKit
       SimulationSettings m_simulatorSettings;
 
       // Editor objects.
-      Grid* m_grid;
-      Grid* m_2dGrid;
-      Axis3d* m_origin;
-      Cursor* m_cursor;
-      Gizmo* m_gizmo = nullptr;
+      GridPtr m_grid;
+      GridPtr m_2dGrid;
+      Axis3dPtr m_origin;
+      CursorPtr m_cursor;
+      GizmoPtr m_gizmo = nullptr;
       AnchorPtr m_anchor;
-      EntityRawPtrArray m_perFrameDebugObjects;
-      std::shared_ptr<Arrow2d> m_dbgArrow;
-      std::shared_ptr<LineBatch> m_dbgFrustum;
+      EntityPtrArray m_perFrameDebugObjects;
+      Arrow2dPtr m_dbgArrow;
+      LineBatchPtr m_dbgFrustum;
 
       // Editor states.
       int m_fps                                = 0;

@@ -177,7 +177,7 @@ namespace ToolKit
         ReadAttr(viewportNode, "alignment", *((int*) (&m_cameraAlignment)));
         ReadAttr(viewportNode, "lock", m_orbitLock);
 
-        Camera* viewCam    = MakeNew<Camera>();
+        CameraPtr viewCam  = MakeNewPtr<Camera>();
         viewCam->m_version = m_version;
         ULongID id         = viewCam->GetIdVal();
 
@@ -223,7 +223,7 @@ namespace ToolKit
       *max = m_contentAreaLocation + m_wndContentAreaSize;
     }
 
-    void EditorViewport::SetCamera(Camera* cam)
+    void EditorViewport::SetCamera(CameraPtr cam)
     {
       Viewport::SetCamera(cam);
       AdjustZoom(0.0f);
@@ -331,7 +331,7 @@ namespace ToolKit
 
     void EditorViewport::FpsNavigationMod(float deltaTime)
     {
-      Camera* cam = GetCamera();
+      CameraPtr cam = GetCamera();
       if (cam == nullptr)
       {
         return;
@@ -428,7 +428,7 @@ namespace ToolKit
 
     void EditorViewport::OrbitPanMod(float deltaTime)
     {
-      Camera* cam = GetCamera();
+      CameraPtr cam = GetCamera();
       if (cam)
       {
         // Adjust zoom always.
@@ -450,7 +450,7 @@ namespace ToolKit
         {
           // Figure out orbiting point.
           EditorScenePtr currScene = g_app->GetCurrentScene();
-          Entity* currEntity       = currScene->GetCurrentSelection();
+          EntityPtr currEntity     = currScene->GetCurrentSelection();
           if (currEntity == nullptr)
           {
             if (!hitFound)
@@ -550,7 +550,7 @@ namespace ToolKit
 
     void EditorViewport::AdjustZoom(float delta)
     {
-      Camera* cam = GetCamera();
+      CameraPtr cam = GetCamera();
       cam->m_node->Translate(Vec3(0.0f, 0.0f, -delta), TransformationSpace::TS_LOCAL);
 
       if (cam->IsOrtographic())
@@ -569,13 +569,13 @@ namespace ToolKit
     void EditorViewport::HandleDrop()
     {
       // Current scene
-      EditorScenePtr currScene      = g_app->GetCurrentScene();
+      EditorScenePtr currScene        = g_app->GetCurrentScene();
 
       // Asset drag and drop loading variables
-      static LineBatch* boundingBox = nullptr;
-      static bool meshLoaded        = false;
-      static bool meshAddedToScene  = false;
-      static Entity* dwMesh         = nullptr;
+      static LineBatchPtr boundingBox = nullptr;
+      static bool meshLoaded          = false;
+      static bool meshAddedToScene    = false;
+      static EntityPtr dwMesh         = nullptr;
 
       // AssetBrowser drop handling.
       if (ImGui::BeginDragDropTarget())
@@ -779,15 +779,15 @@ namespace ToolKit
 
     void EditorViewport::LoadDragMesh(bool& meshLoaded,
                                       DirectoryEntry dragEntry,
-                                      Entity** dwMesh,
-                                      LineBatch** boundingBox,
+                                      EntityPtr* dwMesh,
+                                      LineBatchPtr* boundingBox,
                                       EditorScenePtr currScene)
     {
       if (!meshLoaded)
       {
         // Load mesh once
         String path = ConcatPaths({dragEntry.m_rootPath, dragEntry.m_fileName + dragEntry.m_ext});
-        *dwMesh     = new Entity();
+        *dwMesh     = MakeNewPtr<Entity>();
         (*dwMesh)->AddComponent<MeshComponent>();
 
         MeshPtr mesh;
@@ -826,8 +826,8 @@ namespace ToolKit
 
     Vec3 EditorViewport::CalculateDragMeshPosition(bool& meshLoaded,
                                                    EditorScenePtr currScene,
-                                                   Entity* dwMesh,
-                                                   LineBatch** boundingBox)
+                                                   EntityPtr dwMesh,
+                                                   LineBatchPtr* boundingBox)
     {
       Vec3 lastDragMeshPos = Vec3(0.0f);
       Ray ray              = RayFromMousePosition(); // Find the point of the cursor in 3D coordinates
@@ -878,8 +878,8 @@ namespace ToolKit
     void EditorViewport::HandleDropMesh(bool& meshLoaded,
                                         bool& meshAddedToScene,
                                         EditorScenePtr currScene,
-                                        Entity** dwMesh,
-                                        LineBatch** boundingBox)
+                                        EntityPtr* dwMesh,
+                                        LineBatchPtr* boundingBox)
     {
       if (meshLoaded && !ImGui::IsMouseDragging(0))
       {
@@ -889,7 +889,7 @@ namespace ToolKit
 
         if (!meshAddedToScene)
         {
-          SafeDel(*dwMesh);
+          *dwMesh = nullptr;
         }
         else
         {
@@ -897,7 +897,7 @@ namespace ToolKit
         }
 
         // Unload bounding box mesh
-        SafeDel(*boundingBox);
+        *boundingBox = nullptr;
       }
     }
 

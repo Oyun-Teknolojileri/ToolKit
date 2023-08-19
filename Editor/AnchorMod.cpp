@@ -86,19 +86,19 @@ namespace ToolKit
         return;
       }
 
-      if (Entity* e = currScene->GetCurrentSelection())
+      if (EntityPtr e = currScene->GetCurrentSelection())
       {
         if (e->IsSurfaceInstance())
         {
-          Surface* surface = static_cast<Surface*>(e);
+          SurfacePtr surface = Cast<Surface>(e);
           if (Node* parentNode = surface->m_node->m_parent)
           {
-            if (parentNode->m_entity->GetType() == EntityType::Entity_Canvas)
+            if (parentNode->m_entity->IsA<Canvas>())
             {
-              m_anchor->m_entity  = surface;
-              Canvas* canvasPanel = static_cast<Canvas*>(parentNode->m_entity);
+              m_anchor->m_entity    = surface;
+              CanvasPtr canvasPanel = Cast<Canvas>(parentNode->m_entity);
 
-              g_app->m_anchor     = m_anchor;
+              g_app->m_anchor       = m_anchor;
             }
           }
         }
@@ -218,10 +218,10 @@ namespace ToolKit
     // AnchorAction
     //////////////////////////////////////////////////////////////////////////
 
-    AnchorAction::AnchorAction(Entity* ntt)
+    AnchorAction::AnchorAction(EntityPtr ntt)
     {
       m_entity    = ntt;
-      m_transform = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
+      m_transform = ntt->m_node->GetTransform();
     }
 
     AnchorAction::~AnchorAction() {}
@@ -232,7 +232,7 @@ namespace ToolKit
 
     void AnchorAction::Swap()
     {
-      const Mat4 backUp = m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
+      const Mat4 backUp = m_entity->m_node->GetTransform();
       m_entity->m_node->SetTransform(m_transform, TransformationSpace::TS_WORLD, false);
       m_transform = backUp;
     }
@@ -244,7 +244,7 @@ namespace ToolKit
     {
       StateAnchorBase::TransitionIn(prevState);
 
-      EntityRawPtrArray entities, selecteds;
+      EntityPtrArray entities, selecteds;
       EditorScenePtr currScene = g_app->GetCurrentScene();
       currScene->GetSelectedEntities(selecteds);
       GetRootEntities(selecteds, entities);
@@ -256,7 +256,7 @@ namespace ToolKit
         }
 
         int actionEntityCount = 0;
-        for (Entity* ntt : entities)
+        for (EntityPtr ntt : entities)
         {
           if (ntt->GetTransformLockVal())
           {
@@ -342,7 +342,7 @@ namespace ToolKit
       {
         Vec3 p              = PointOnRay(ray, t);
 
-        Canvas* canvasPanel = static_cast<Canvas*>(m_anchor->m_entity->m_node->m_parent->m_entity);
+        Canvas* canvasPanel = static_cast<Canvas*>(m_anchor->m_entity->m_node->m_parent->m_entity.get());
 
         ray                 = vp->RayFromScreenSpacePoint(m_mouseData[0]);
         LinePlaneIntersection(ray, m_intersectionPlane, t);
@@ -360,22 +360,26 @@ namespace ToolKit
 
     void StateAnchorTo::Transform(const Vec3& delta)
     {
-      EntityRawPtrArray roots;
+      EntityPtrArray roots;
       EditorScenePtr currScene = g_app->GetCurrentScene();
       currScene->GetSelectedEntities(roots);
 
-      Entity* e = currScene->GetCurrentSelection();
+      EntityPtr ntt = currScene->GetCurrentSelection();
 
-      ReflectAnchorTransform(e);
+      ReflectAnchorTransform(ntt);
     }
 
-    void StateAnchorBase::ReflectAnchorTransform(Entity* ntt)
+    void StateAnchorBase::ReflectAnchorTransform(EntityPtr ntt)
     {
-      if (m_anchor == nullptr || ntt == nullptr || !ntt->IsSurfaceInstance() || !ntt->m_node->m_parent ||
-          !ntt->m_node->m_parent->m_entity || ntt->m_node->m_parent->m_entity->GetType() != EntityType::Entity_Canvas)
-        return;
+      if (!m_anchor || !ntt || !ntt->m_node->m_parent || !ntt->m_node->m_parent->m_entity)
+      {
+        if (!ntt->IsA<Surface>() || !ntt->m_node->m_parent->m_entity->IsA<Canvas>())
+        {
+          return;
+        }
+      }
 
-      Surface* surface               = static_cast<Surface*>(ntt);
+      Surface* surface               = static_cast<Surface*>(ntt.get());
 
       const DirectionLabel direction = m_anchor->GetGrabbedDirection();
       const bool hasXDirection =
@@ -415,11 +419,11 @@ namespace ToolKit
       }
       float w = 0, h = 0;
 
-      if (Entity* parent = surface->m_node->m_parent->m_entity)
+      if (EntityPtr parent = surface->m_node->m_parent->m_entity)
       {
         if (parent->GetType() == EntityType::Entity_Canvas)
         {
-          Canvas* canvasPanel  = static_cast<Canvas*>(parent);
+          Canvas* canvasPanel  = static_cast<Canvas*>(parent.get());
           const BoundingBox bb = canvasPanel->GetAABB(true);
           w                    = bb.GetWidth();
           h                    = bb.GetHeight();

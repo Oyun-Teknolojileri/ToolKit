@@ -126,9 +126,9 @@ namespace ToolKit
         m_renderState.brdfLut                = brdfLut->m_textureId;
 
         m_renderState.IBLInUse               = true;
-        if (Entity* env = envCom->m_entity)
+        if (EntityPtr env = envCom->m_entity)
         {
-          m_iblRotation = Mat4(env->m_node->GetOrientation(TransformationSpace::TS_WORLD));
+          m_iblRotation = Mat4(env->m_node->GetOrientation());
         }
       }
     }

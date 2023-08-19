@@ -29,10 +29,12 @@
 #include "App.h"
 #include "EditorScene.h"
 #include "EditorViewport.h"
+#include "Gizmo.h"
 
 #include <Camera.h>
 #include <DirectionComponent.h>
 #include <EnvironmentComponent.h>
+#include <GradientSky.h>
 #include <Material.h>
 #include <MaterialComponent.h>
 #include <UIManager.h>
@@ -126,14 +128,14 @@ namespace ToolKit
         // Draw outlines.
         OutlineSelecteds(renderer);
         m_passArray.clear();
-        
+
         // Draw editor objects.
         m_passArray.push_back(m_editorPass);
         // Clears depth buffer to draw remaining entities always on top.
         m_passArray.push_back(m_gizmoPass);
         // Scene meshs can't block editor billboards. Desired for this case.
         m_passArray.push_back(m_billboardPass);
-        
+
         // Post process.
         m_passArray.push_back(m_tonemapPass);
         if (gfx.FXAAEnabled)
@@ -144,7 +146,7 @@ namespace ToolKit
           }
         }
         m_passArray.push_back(m_gammaPass);
-        
+
         Technique::Render(renderer);
       }
 
@@ -165,7 +167,7 @@ namespace ToolKit
       m_selecteds.clear();
       scene->GetSelectedEntities(m_selecteds);
 
-      for (Entity* ntt : m_selecteds)
+      for (EntityPtr ntt : m_selecteds)
       {
         EnvironmentComponentPtr envCom = ntt->GetComponent<EnvironmentComponent>();
 
@@ -185,7 +187,7 @@ namespace ToolKit
           // Directional light shadow map frustum
           if (ntt->GetType() == EntityType::Entity_DirectionalLight)
           {
-            EditorDirectionalLight* light = static_cast<EditorDirectionalLight*>(ntt);
+            EditorDirectionalLight* light = static_cast<EditorDirectionalLight*>(ntt.get());
             if (light->GetCastShadowVal())
             {
               app->m_perFrameDebugObjects.push_back(light->GetDebugShadowFrustum());
@@ -195,7 +197,7 @@ namespace ToolKit
       }
 
       // Per frame objects.
-      EntityRawPtrArray editorEntities;
+      EntityPtrArray editorEntities;
       editorEntities.insert(editorEntities.end(),
                             app->m_perFrameDebugObjects.begin(),
                             app->m_perFrameDebugObjects.end());
@@ -207,12 +209,12 @@ namespace ToolKit
       m_billboardPass->m_params.Viewport = m_params.Viewport;
 
       // Grid.
-      Grid* grid = m_params.Viewport->GetType() == Window::Type::Viewport2d ? app->m_2dGrid : app->m_grid;
+      GridPtr grid = m_params.Viewport->GetType() == Window::Type::Viewport2d ? app->m_2dGrid : app->m_grid;
 
       grid->UpdateShaderParams();
       editorEntities.push_back(grid);
 
-      LightRawPtrArray lights =
+      LightPtrArray lights =
           m_params.LitMode == EditorLitMode::EditorLit ? m_lightSystem->m_lights : scene->GetLights();
 
       EditorViewport* viewport = static_cast<EditorViewport*>(m_params.Viewport);
@@ -248,7 +250,7 @@ namespace ToolKit
 
       for (const UILayerPtr& layer : layers)
       {
-        EntityRawPtrArray& uiNtties = layer->m_scene->AccessEntityArray();
+        EntityPtrArray& uiNtties = layer->m_scene->AccessEntityArray();
         RenderJobProcessor::CreateRenderJobs(uiNtties, uiRenderJobs);
       }
 
@@ -295,23 +297,15 @@ namespace ToolKit
       // Gizmo Pass.
       m_gizmoPass->m_params.Viewport                               = viewport;
 
-      EditorBillboardBase* anchorGizmo                             = nullptr;
+      EditorBillboardPtr anchorGizmo                               = nullptr;
       if (viewport->GetType() == Window::Type::Viewport2d)
       {
-        anchorGizmo = (EditorBillboardBase*) app->m_anchor.get();
+        anchorGizmo = std::static_pointer_cast<EditorBillboardBase>(app->m_anchor);
       }
       m_gizmoPass->m_params.GizmoArray = {app->m_gizmo, anchorGizmo};
     }
 
-    void EditorRenderer::PostRender()
-    {
-      App* app = m_params.App;
-      for (Entity* dbgObj : app->m_perFrameDebugObjects)
-      {
-        SafeDel(dbgObj);
-      }
-      app->m_perFrameDebugObjects.clear();
-    }
+    void EditorRenderer::PostRender() { m_params.App->m_perFrameDebugObjects.clear(); }
 
     void EditorRenderer::SetLitMode(Renderer* renderer, EditorLitMode mode)
     {
@@ -369,10 +363,10 @@ namespace ToolKit
       {
         return;
       }
-      EntityRawPtrArray selecteds = m_selecteds; // Copy
+      EntityPtrArray selecteds = m_selecteds; // Copy
 
-      Viewport* viewport          = m_params.Viewport;
-      auto RenderFn = [this, viewport, renderer](const EntityRawPtrArray& selection, const Vec4& color) -> void
+      Viewport* viewport       = m_params.Viewport;
+      auto RenderFn            = [this, viewport, renderer](const EntityPtrArray& selection, const Vec4& color) -> void
       {
         if (selection.empty())
         {
@@ -380,20 +374,20 @@ namespace ToolKit
         }
 
         RenderJobArray renderJobs;
-        for (Entity* entity : selection)
+        for (EntityPtr entity : selection)
         {
           // Disable light gizmos
           if (entity->IsLightInstance())
           {
-            EnableLightGizmo(static_cast<Light*>(entity), false);
+            EnableLightGizmo(static_cast<Light*>(entity.get()), false);
           }
 
           // Add billboards to draw list
-          Entity* billboard = m_params.App->GetCurrentScene()->GetBillboard(entity);
+          EntityPtr billboard = m_params.App->GetCurrentScene()->GetBillboard(entity);
 
           if (billboard)
           {
-            static_cast<Billboard*>(billboard)->LookAt(viewport->GetCamera(), viewport->GetBillboardScale());
+            static_cast<Billboard*>(billboard.get())->LookAt(viewport->GetCamera(), viewport->GetBillboardScale());
 
             RenderJobArray jobs;
             RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
@@ -414,16 +408,16 @@ namespace ToolKit
         Technique::Render(renderer);
 
         // Enable light gizmos back
-        for (Entity* entity : selection)
+        for (EntityPtr entity : selection)
         {
           if (entity->IsLightInstance())
           {
-            EnableLightGizmo(static_cast<Light*>(entity), true);
+            EnableLightGizmo(static_cast<Light*>(entity.get()), true);
           }
         }
       };
 
-      Entity* primary = selecteds.back();
+      EntityPtr primary = selecteds.back();
 
       selecteds.pop_back();
       RenderFn(selecteds, g_selectHighLightSecondaryColor);

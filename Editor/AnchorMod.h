@@ -52,7 +52,7 @@ namespace ToolKit
 
      protected:
       void MakeSureAnchorIsValid();
-      void ReflectAnchorTransform(Entity* ntt);
+      void ReflectAnchorTransform(EntityPtr ntt);
 
      public:
       AnchorPtr m_anchor;
@@ -84,7 +84,7 @@ namespace ToolKit
     class AnchorAction : public Action
     {
      public:
-      explicit AnchorAction(Entity* ntt);
+      explicit AnchorAction(EntityPtr ntt);
       virtual ~AnchorAction();
 
       virtual void Undo();
@@ -94,7 +94,7 @@ namespace ToolKit
       void Swap();
 
      private:
-      Entity* m_entity;
+      EntityPtr m_entity;
       Mat4 m_transform;
     };
 
