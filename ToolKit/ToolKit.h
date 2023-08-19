@@ -195,7 +195,7 @@ namespace ToolKit
 
     return nullptr;
   }
-
+  
   // Path.
   TK_API String DefaultPath();
   TK_API String DefaultAbsolutePath();

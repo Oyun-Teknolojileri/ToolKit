@@ -84,13 +84,10 @@ namespace ToolKit
     void SpotLightMeshGenerator::InitGizmo()
     {
       assert(m_targetLight->GetType() == EntityType::Entity_SpotLight);
-
       // Middle line.
       SpotLight* sLight = static_cast<SpotLight*>(m_targetLight);
-
       float r           = sLight->GetRadiusVal();
       Vec3 d            = Vec3(0.0f, 0.0f, -1.0f);
-
       m_pnts[0]         = Vec3(ZERO);
       m_pnts[1]         = Vec3(d * r * 2.25f);
 
@@ -103,77 +100,47 @@ namespace ToolKit
       LineBatchRawPtrArray lines = {new LineBatch(), new LineBatch(), new LineBatch()};
 
       // Calculating circles.
-      int zeroCount              = 0;
-      if (d.x == 0.0f)
-      {
-        zeroCount++;
-      }
-      if (d.y == 0.0f)
-      {
-        zeroCount++;
-      }
-      if (d.z == 0.0f)
-      {
-        zeroCount++;
-      }
+      int zeroCount = 0;
+      zeroCount += (int)(d.x == 0.0f);
+      zeroCount += (int)(d.y == 0.0f);
+      zeroCount += (int)(d.z == 0.0f);
 
       Vec3 per;
       if (zeroCount == 0)
       {
-        per.z = 0.0f;
-        per.x = -d.y;
-        per.y = d.x;
+        per = Vec3(-d.y, d.x, 0.0f);
       }
       else if (zeroCount == 1)
       {
         if (d.x == 0.0f)
         {
-          per.x = 0.0f;
-          per.y = -d.z;
-          per.z = d.y;
+          per = Vec3(0.0f, -d.z, d.y);
         }
         else if (d.y == 0.0f)
         {
-          per.y = 0.0f;
-          per.x = -d.z;
-          per.z = d.x;
+          per = Vec3(-d.z, 0.0f, d.x);
         }
         else
         {
-          per.z = 0.0f;
-          per.y = -d.x;
-          per.x = d.y;
+          per = Vec3(d.y, -d.x, 0.0f);
         }
       }
       else if (zeroCount == 2)
       {
-        if (d.x == 0.0f && d.y == 0.0f)
+        if (d.x == 0.0f)
         {
-          per.x = 1.0f;
-          per.y = 0.0f;
-          per.z = 0.0f;
-        }
-        else if (d.x == 0.0f && d.z == 0.0f)
-        {
-          per.x = 1.0f;
-          per.y = 0.0f;
-          per.z = 0.0f;
+          per = Vec3(1.0f, 0.0f, 0.0f);
         }
         else
         {
-          per.x = 0.0f;
-          per.y = 1.0f;
-          per.z = 0.0f;
+          per = Vec3(0.0f, 1.0f, 0.0f);
         }
       }
 
       per                     = glm::normalize(per);
-      d                       = d * r;
-
+      d                      *= r;
       float innerCircleRadius = r * glm::tan(glm::radians(sLight->GetInnerAngleVal() / 2));
-
       float outerCircleRadius = r * glm::tan(glm::radians(sLight->GetOuterAngleVal() / 2));
-
       Vec3 inStartPoint       = d + per * innerCircleRadius;
       Vec3 outStartPoint      = d + per * outerCircleRadius;
 
@@ -188,7 +155,6 @@ namespace ToolKit
         m_rot        = glm::rotate(m_identityMatrix, deltaAngle, d);
         inStartPoint = Vec3(m_rot * Vec4(inStartPoint, 1.0f));
         m_innerCirclePnts.push_back(inStartPoint);
-
         // Outer circle vertices.
         m_rot         = glm::rotate(m_identityMatrix, deltaAngle, d);
         outStartPoint = Vec3(m_rot * Vec4(outStartPoint, 1.0f));
@@ -196,7 +162,6 @@ namespace ToolKit
       }
 
       lines[0]->Generate(m_innerCirclePnts, g_lightGizmoColor, DrawType::LineStrip, 1.0f);
-
       lines[1]->Generate(m_outerCirclePnts, g_lightGizmoColor, DrawType::LineStrip, 1.0f);
 
       // Cone
@@ -211,7 +176,6 @@ namespace ToolKit
       }
 
       lines[2]->Generate(m_conePnts, g_lightGizmoColor, DrawType::Line, 1.0f);
-
       TransferGizmoMesh(lines);
     }
 

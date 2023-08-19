@@ -611,6 +611,59 @@ namespace ToolKit
     return res;
   }
 
+  Quaternion QuaternionLookAt(Vec3 direction)
+  {
+    glm::mat3x3 Result {};
+    Result[2] = -glm::normalize(direction);
+    Result[0] = glm::normalize(glm::cross(Y_AXIS, Result[2]));
+    Result[1] = glm::cross(Result[2], Result[0]);
+    return glm::quat_cast(Result);
+  }
+  
+  // frustum should be normalized
+  bool FrustumSphereIntersection(const Frustum& frustum, const Vec3& pos, float radius)
+  {
+    // check each frustum plane against sphere
+    for (int i = 0; i < 6; i++)
+    {
+      const PlaneEquation& plane = frustum.planes[i];
+      float signedDistance       = glm::dot(plane.normal, pos) + plane.d;
+      if (signedDistance < -radius)
+      {
+        return false; // Sphere is fully outside this plane, no intersection
+      }
+    }
+    return true;
+  }
+
+  bool ConePointIntersection(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, Vec3 point)
+  {
+    Vec3 pointToCone = point - conePos;
+    return glm::dot(glm::normalize(pointToCone), coneDir) > 1.0f - (glm::radians(coneAngle) / glm::pi<float>()) &&
+           glm::length(pointToCone) < coneHeight;
+  }
+
+  bool FrustumConeIntersect(const Frustum& frustum,
+                            Vec3 conePos, 
+                            Vec3 coneDir, 
+                            float coneHeight, 
+                            float coneAngle)
+  {
+    const int numSteps = 3;
+    float outerCircleRadius = coneHeight * glm::tan(glm::radians(coneAngle * 0.5f));
+    
+    for (int i = 1; i <= numSteps; ++i) 
+    {
+      const PlaneEquation& plane = frustum.planes[i];
+      Vec3 point                 = conePos + (coneDir * (coneHeight / i));
+      if (FrustumSphereIntersection(frustum, point, outerCircleRadius / i))
+      {
+        return true;
+      }
+    }
+    return false; // Intersection
+  }
+
   bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
   {
     float denom = glm::dot(ray.direction, plane.normal);
