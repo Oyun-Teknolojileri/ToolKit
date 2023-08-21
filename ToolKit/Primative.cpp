@@ -870,10 +870,14 @@ namespace ToolKit
 
   void MeshGenerator::GenerateConeMesh(MeshPtr mesh, float radius, int numSegments, float outerAngle)
   {
+    mesh->UnInit();
+
     // Middle line.
     Vec3 dir  = Vec3(0.0f, 0.0f, -1.0f) * radius;
     Vec3 per  = Vec3(1.0f, 0.0f, 0.0f);
 
+    mesh->m_clientSideVertices.clear();
+    mesh->m_clientSideIndices.clear();
     mesh->m_clientSideVertices.reserve(numSegments + 1);
     mesh->m_clientSideVertices.push_back({ZERO});
     // Calculating circles.
@@ -900,7 +904,8 @@ namespace ToolKit
     }
     mesh->m_vertexCount = mesh->m_clientSideVertices.size();
     mesh->m_indexCount  = mesh->m_clientSideIndices.size();
-    mesh->ConstructFaces();
+
+    mesh->Init();
   }
 
 } // namespace ToolKit

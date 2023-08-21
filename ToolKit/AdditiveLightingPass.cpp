@@ -193,7 +193,6 @@ namespace ToolKit
     std::vector<LightAndType> screenSpaceLights; // light and type pair
     std::vector<std::pair<LightAndType, RenderJob>> meshLights;
 
-    // Add all lights to a texture
     for (int i = 0; i < m_params.lights.size(); i++)
     {
       Light* light  = m_params.lights[i];
@@ -248,22 +247,9 @@ namespace ToolKit
         {
           continue;// we don't see the cone, no need to render
         }
-        uint64 hash = ConeMeshHash(height, outerAngle);
-        EntityPtr coneEntity;
-        if (m_coneMeshMap.find(hash) == m_coneMeshMap.end())
-        {
-          // if cone is not chaced chace it and use later, it can be used by multiple lights
-          coneEntity = MakeNewPtr<Entity>();
-          coneEntity->AddComponent<MeshComponent>();
-          MeshPtr coneMesh = coneEntity->GetComponent<MeshComponent>()->GetMeshVal();
-          MeshGenerator::GenerateConeMesh(coneMesh, height, 32, outerAngle);
-          m_coneMeshMap.insert({hash, coneEntity});
-        }
-
-        coneEntity = m_coneMeshMap[hash];
 
         RenderJob job {};
-        job.Mesh           = coneEntity->GetMeshComponent()->GetMeshVal().get();
+        job.Mesh           = spotLight->m_volumeMesh.get();
         job.Material       = m_meshMaterial;
         job.ShadowCaster   = false;
         job.WorldTransform = light->m_node->GetTransform();

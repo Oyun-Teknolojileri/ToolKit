@@ -66,7 +66,6 @@ namespace ToolKit
         MaterialPtr m_meshMaterial             = nullptr;
         ShaderPtr m_mergeShader                = nullptr; 
         ShaderPtr m_lightingShader             = nullptr;
-        std::unordered_map<uint64, EntityPtr> m_coneMeshMap;
     };
 
     typedef std::shared_ptr<AdditiveLightingPass> LightingPassPtr;

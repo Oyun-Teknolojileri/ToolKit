@@ -31,6 +31,7 @@
 #include "DirectionComponent.h"
 #include "Material.h"
 #include "MathUtil.h"
+#include "Mesh.h"
 #include "Pass.h"
 #include "Renderer.h"
 #include "Shader.h"
@@ -259,7 +260,7 @@ namespace ToolKit
     }
     center                 /= 8.0f;
 
-    TransformationSpace ts = TransformationSpace::TS_WORLD;
+    TransformationSpace ts  = TransformationSpace::TS_WORLD;
     lightCamera->m_node->SetTranslation(center, ts);
     lightCamera->m_node->SetOrientation(m_node->GetOrientation(ts), ts);
     const Mat4 lightView = lightCamera->GetViewMatrix();
@@ -378,5 +379,27 @@ namespace ToolKit
     Radius_Define(10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.5f});
     OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
     InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
+    m_volumeMesh = std::make_shared<Mesh>();
+    MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
+
+    ParamRadius().m_onValueChangedFn.clear();
+    ParamRadius().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void
+        {
+          const float radius = std::get<float>(newVal);
+          m_volumeMesh->UnInit();
+          MeshGenerator::GenerateConeMesh(m_volumeMesh, radius, 32, GetOuterAngleVal());
+          m_volumeMesh->Init();
+        });
+
+    ParamOuterAngle().m_onValueChangedFn.clear();
+    ParamOuterAngle().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void
+        {
+          const float outerAngle         = std::get<float>(newVal);
+          m_volumeMesh->UnInit();
+          MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, outerAngle);
+          m_volumeMesh->Init();
+        });
   }
 } // namespace ToolKit

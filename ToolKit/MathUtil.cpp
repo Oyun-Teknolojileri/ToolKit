@@ -613,7 +613,7 @@ namespace ToolKit
 
   Quaternion QuaternionLookAt(Vec3 direction)
   {
-    glm::mat3x3 Result {};
+    Mat3 Result {};
     Result[2] = -glm::normalize(direction);
     Result[0] = glm::normalize(glm::cross(Y_AXIS, Result[2]));
     Result[1] = glm::cross(Result[2], Result[0]);
@@ -649,6 +649,7 @@ namespace ToolKit
                             float coneHeight, 
                             float coneAngle)
   {
+    return true;
     const int numSteps = 3;
     float outerCircleRadius = coneHeight * glm::tan(glm::radians(coneAngle * 0.5f));
     
