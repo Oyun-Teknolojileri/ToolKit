@@ -639,30 +639,45 @@ namespace ToolKit
   bool ConePointIntersection(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, Vec3 point)
   {
     Vec3 pointToCone = point - conePos;
-    return glm::dot(glm::normalize(pointToCone), coneDir) > 1.0f - (glm::radians(coneAngle) / glm::pi<float>()) &&
-           glm::length(pointToCone) < coneHeight;
+    float angle01    = glm::radians(coneAngle) / glm::pi<float>();
+    float toLength   = glm::length(pointToCone);
+    // (pointToCone / toLength) for normalization (saved 1 sqrt instruction)
+    return glm::dot(pointToCone / toLength, coneDir) > 1.0f - angle01 && toLength < coneHeight;
+  }
+
+  bool PointBehindPlane(Vec3 p, const PlaneEquation&  plane)
+  {
+    return glm::dot(plane.normal, p) + plane.d < 0.0f;
+  }
+
+  // https://simoncoenen.com/blog/programming/graphics/SpotlightCulling
+  bool ConeBehindPlane(Vec3 conePos, 
+                       Vec3 coneDir, 
+                       float coneHeight, 
+                       float coneAngle,
+                       const PlaneEquation& plane)
+  {
+    Vec3 furthestPointDirection = glm::cross(glm::cross(plane.normal, coneDir), coneDir);
+    Vec3 furthestPointOnCircle = conePos + coneDir * coneHeight - furthestPointDirection * coneAngle;
+    return PointBehindPlane(conePos, plane) && PointBehindPlane(furthestPointOnCircle, plane);
   }
 
   bool FrustumConeIntersect(const Frustum& frustum,
-                            Vec3 conePos, 
-                            Vec3 coneDir, 
+                            Vec3  conePos, 
+                            Vec3  coneDir, 
                             float coneHeight, 
                             float coneAngle)
   {
-    return true;
-    const int numSteps = 3;
-    float outerCircleRadius = coneHeight * glm::tan(glm::radians(coneAngle * 0.5f));
-    
-    for (int i = 1; i <= numSteps; ++i) 
+    float radius = glm::radians(coneAngle);
+    for (int i = 0; i < 6; ++i) 
     {
       const PlaneEquation& plane = frustum.planes[i];
-      Vec3 point                 = conePos + (coneDir * (coneHeight / i));
-      if (FrustumSphereIntersection(frustum, point, outerCircleRadius / i))
+      if (ConeBehindPlane(conePos, coneDir, coneHeight, radius, frustum.planes[i]))
       {
-        return true;
+        return false;
       }
     }
-    return false; // Intersection
+    return true;
   }
 
   bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
