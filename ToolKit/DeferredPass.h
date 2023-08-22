@@ -34,11 +34,11 @@ namespace ToolKit
 
   struct DeferredRenderPassParams
   {
-    LightRawPtrArray lights           = {};
+    LightPtrArray lights              = {};
     FramebufferPtr MainFramebuffer    = nullptr;
     FramebufferPtr GBufferFramebuffer = nullptr;
     bool ClearFramebuffer             = true;
-    Camera* Cam                       = nullptr;
+    CameraPtr Cam                     = nullptr;
     TexturePtr AOTexture              = nullptr;
   };
 

@@ -100,6 +100,7 @@ namespace ToolKit
   typedef std::vector<byte> ByteArray;
   typedef uint32_t uint;
   typedef uint8_t uint8;
+  typedef uint64_t uint64;
   typedef uint64_t ULongID;
   typedef const int16_t SignalId;
   typedef std::shared_ptr<class Resource> ResourcePtr;
@@ -155,12 +156,14 @@ namespace ToolKit
 
   // Entity types.
   typedef std::shared_ptr<class Entity> EntityPtr;
+  typedef std::vector<EntityPtr> EntityPtrArray;
   typedef std::vector<class Entity*> EntityRawPtrArray;
   typedef std::vector<class Light*> LightRawPtrArray;
+  typedef std::shared_ptr<class Light> LightPtr;
+  typedef std::vector<LightPtr> LightPtrArray;
   typedef std::vector<class DirectionalLight*> DirectionalLightRawPtrArray;
   typedef std::vector<class SpotLight*> SpotLightRawPtrArray;
   typedef std::vector<class PointLight*> PointLightRawPtrArray;
-  typedef std::vector<std::shared_ptr<class Entity>> EntityPtrArray;
   typedef std::vector<ULongID> EntityIdArray;
   typedef std::vector<class Node*> NodeRawPtrArray;
   typedef std::vector<class Vertex> VertexArray;
@@ -168,6 +171,18 @@ namespace ToolKit
   typedef std::vector<class ParameterVariant> ParameterVariantArray;
   typedef std::vector<class ParameterVariant*> ParameterVariantRawPtrArray;
   typedef std::vector<class LineBatch*> LineBatchRawPtrArray;
+  typedef std::shared_ptr<class SkyBase> SkyBasePtr;
+  typedef std::shared_ptr<class Sky> SkyPtr;
+  typedef std::shared_ptr<class GradientSky> GradientSkyPtr;
+  typedef std::shared_ptr<class Prefab> PrefabPtr;
+  typedef std::vector<PrefabPtr> PrefabPtrArray;
+  typedef std::vector<class Prefab*> PrefabRawPtrArray;
+  typedef std::shared_ptr<class Canvas> CanvasPtr;
+  typedef std::shared_ptr<class Billboard> BillboardPtr;
+  typedef std::shared_ptr<class Camera> CameraPtr;
+  typedef std::shared_ptr<LineBatch> LineBatchPtr;
+  typedef std::shared_ptr<class Camera> CameraPtr;
+  typedef std::shared_ptr<class Surface> SurfacePtr;
 
   // Xml types.
   typedef rapidxml::xml_node<char> XmlNode;
@@ -190,12 +205,8 @@ namespace ToolKit
   // Filesystem variable types
   typedef std::filesystem::path Path;
 
-  // Enitiy types.
-  typedef std::shared_ptr<class Camera> CameraPtr;
-  typedef std::shared_ptr<class Surface> SurfacePtr;
-
   // Callbacks.
-  typedef std::function<void(class Event*, class Entity*)> SurfaceEventCallback;
+  typedef std::function<void(class Event*, EntityPtr)> SurfaceEventCallback;
   typedef std::function<void(const String&)> GlReportCallback;
 
   // Math Vector declerations.

@@ -570,7 +570,7 @@ namespace ToolKit
 
     AxisLabel Gizmo::GetGrabbedAxis() const { return m_grabbedAxis; }
 
-    void Gizmo::LookAt(Camera* cam, float windowHeight)
+    void Gizmo::LookAt(CameraPtr cam, float windowHeight)
     {
       Billboard::LookAt(cam, windowHeight);
       m_node->SetOrientation(glm::toQuat(m_normalVectors));

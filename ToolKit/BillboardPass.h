@@ -34,7 +34,7 @@ namespace ToolKit
   struct BillboardPassParams
   {
     Viewport* Viewport = nullptr;
-    EntityRawPtrArray Billboards;
+    EntityPtrArray Billboards;
   };
 
   class TK_API BillboardPass : public Pass
@@ -49,7 +49,7 @@ namespace ToolKit
 
    public:
     BillboardPassParams m_params;
-    EntityRawPtrArray m_noDepthBillboards;
+    EntityPtrArray m_noDepthBillboards;
   };
 
   typedef std::shared_ptr<BillboardPass> BillboardPassPtr;

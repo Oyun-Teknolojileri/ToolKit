@@ -31,6 +31,7 @@
 #include "DeferredPass.h"
 #include "EngineSettings.h"
 #include "ForwardPass.h"
+#include "ForwardPreProcessPass.h"
 #include "FxaaPass.h"
 #include "GBufferPass.h"
 #include "GammaPass.h"
@@ -45,9 +46,9 @@ namespace ToolKit
 {
   struct SceneRenderPassParams
   {
-    LightRawPtrArray Lights;
+    LightPtrArray Lights;
     ScenePtr Scene                 = nullptr;
-    Camera* Cam                    = nullptr;
+    CameraPtr Cam                  = nullptr;
     FramebufferPtr MainFramebuffer = nullptr;
     bool ClearFramebuffer          = true;
     EngineSettings::PostProcessingSettings Gfx;
@@ -87,11 +88,11 @@ namespace ToolKit
     BloomPassPtr m_bloomPass                           = nullptr;
     TonemapPassPtr m_tonemapPass                       = nullptr;
     DoFPassPtr m_dofPass                               = nullptr;
-    LightRawPtrArray m_updatedLights;
+    LightPtrArray m_updatedLights;
 
    private:
-    bool m_drawSky = false;
-    SkyBase* m_sky = nullptr;
+    bool m_drawSky   = false;
+    SkyBasePtr m_sky = nullptr;
   };
 
   typedef std::shared_ptr<SceneRenderer> SceneRendererPtr;

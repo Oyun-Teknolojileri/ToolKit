@@ -71,9 +71,6 @@ namespace ToolKit
 
     void SetMaterial(MaterialPtr material);
 
-    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
-
     /**
      * Traverse all submeshes recursively.
      * @param callback is the function to call on each mesh.
@@ -89,6 +86,9 @@ namespace ToolKit
     void TraverseAllMesh(std::function<void(const Mesh*)> callback, const Mesh* mesh = nullptr) const;
 
    protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+
     virtual void InitVertices(bool flush);
     virtual void InitIndices(bool flush);
     void CopyTo(Resource* other) override;

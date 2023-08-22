@@ -39,14 +39,14 @@ namespace ToolKit
       virtual ~PrefabView();
       virtual void Show();
       bool HasActiveEntity() const;
-      Entity* GetActiveEntity();
+      EntityPtr GetActiveEntity();
 
      private:
-      bool DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags);
-      void ShowNode(Entity* e);
+      bool DrawHeader(EntityPtr ntt, ImGuiTreeNodeFlags flags);
+      void ShowNode(EntityPtr e);
 
      public:
-      Entity* m_activeChildEntity = nullptr;
+      EntityPtr m_activeChildEntity = nullptr;
     };
 
   } // namespace Editor

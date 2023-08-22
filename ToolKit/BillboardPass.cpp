@@ -44,9 +44,9 @@ namespace ToolKit
     Viewport* vp       = m_params.Viewport;
 
     renderer->SetFramebuffer(vp->m_framebuffer, false);
-    Camera* cam             = vp->GetCamera();
+    CameraPtr cam           = vp->GetCamera();
 
-    auto renderBillboardsFn = [this, cam, renderer](EntityRawPtrArray& billboards) -> void
+    auto renderBillboardsFn = [this, cam, renderer](EntityPtrArray& billboards) -> void
     {
       RenderJobArray jobs;
       RenderJobProcessor::CreateRenderJobs(billboards, jobs);
@@ -79,17 +79,17 @@ namespace ToolKit
 
     // Process billboards.
     float vpScale = m_params.Viewport->GetBillboardScale();
-    Camera* cam   = m_params.Viewport->GetCamera();
+    CameraPtr cam = m_params.Viewport->GetCamera();
     m_noDepthBillboards.clear();
 
     // Separate functions that does not require depth test.
     move_values(m_params.Billboards,
                 m_noDepthBillboards,
-                [this, vpScale, cam](Entity* bb) -> bool
+                [this, vpScale, cam](EntityPtr bb) -> bool
                 {
                   // Update billboards.
-                  assert(bb->GetType() == EntityType::Entity_Billboard);
-                  Billboard* cbb = static_cast<Billboard*>(bb);
+                  assert(bb->IsA<Billboard>());
+                  BillboardPtr cbb = std::static_pointer_cast<Billboard>(bb);
                   cbb->LookAt(cam, vpScale);
 
                   // Return separation condition.

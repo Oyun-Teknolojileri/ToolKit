@@ -84,7 +84,7 @@ namespace ToolKit
     virtual ~TKObject();
     virtual void NativeConstruct();
     virtual void NativeDestruct();
-    virtual TKObjectPtr Copy();
+    virtual TKObjectPtr Copy() const;
 
     template <typename T>
     bool IsA()
@@ -144,7 +144,7 @@ namespace ToolKit
      * @param cls - Class name of the object to be created.
      * @return A new instance of the object with the given class name.
      */
-    TKObject* MakeNew(const StringView& cls);
+    TKObject* MakeNew(const StringView Class);
 
     /**
      * Constructs a new TKObject of type T.

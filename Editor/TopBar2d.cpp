@@ -56,7 +56,7 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Surface"))
         {
-          Surface* surface = MakeNew<Surface>();
+          SurfacePtr surface = MakeNewPtr<Surface>();
           surface->Update(Vec2(100.0f, 30.0f), Vec2(0.0f));
           surface->GetMeshComponent()->Init(false);
           currScene->AddEntity(surface);
@@ -64,7 +64,7 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Button"))
         {
-          Button* btn = MakeNew<Button>();
+          ButtonPtr btn = MakeNewPtr<Button>();
           btn->Update(Vec2(100.0f, 30.0f));
           btn->GetMeshComponent()->Init(false);
           currScene->AddEntity(btn);
@@ -72,7 +72,7 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Canvas"))
         {
-          Canvas* canvasPanel = MakeNew<Canvas>();
+          CanvasPtr canvasPanel = MakeNewPtr<Canvas>();
           canvasPanel->Update(Vec2(800.0f, 600.0f));
           canvasPanel->SetPivotOffsetVal(Vec2(0.5f));
           canvasPanel->GetMeshComponent()->Init(false);
@@ -82,7 +82,7 @@ namespace ToolKit
         ImGui::Separator();
         if (ImGui::MenuItem("Node"))
         {
-          Entity* node = GetEntityFactory()->CreateByType(EntityType::Entity_Node);
+          EntityPtr node = MakeNewPtr<EntityNode>();
           currScene->AddEntity(node);
         }
       };

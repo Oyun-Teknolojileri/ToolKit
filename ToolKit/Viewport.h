@@ -57,13 +57,13 @@ namespace ToolKit
     /**
      * Returns the Camera of viewport.
      */
-    virtual Camera* GetCamera() const;
+    virtual CameraPtr GetCamera() const;
 
     /**
      * Sets the new Camera for viewport. Deletes the last Camera.
      * @param cam New Camera for viewport.
      */
-    virtual void SetCamera(Camera* cam);
+    virtual void SetCamera(CameraPtr cam);
 
     /**
      * Swaps the Viewport's Camera and Detach any camera if any. If the
@@ -71,7 +71,7 @@ namespace ToolKit
      * @param cam is the camera to swap with.
      * @param attachment is set to current camera attachment for swap backup.
      */
-    void SwapCamera(Camera** cam, ULongID& attachment);
+    void SwapCamera(CameraPtr& cam, ULongID& attachment);
 
     /**
      * Stores the Camera id that the scene will use while rendering.
@@ -95,7 +95,7 @@ namespace ToolKit
     /**
      * Camera that the viewport has.
      */
-    Camera* m_camera = nullptr;
+    CameraPtr m_camera = nullptr;
   };
 
   /**

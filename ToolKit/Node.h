@@ -235,8 +235,8 @@ namespace ToolKit
 
    public:
     ULongID m_id;
-    Node* m_parent   = nullptr;
-    Entity* m_entity = nullptr;
+    Node* m_parent     = nullptr;
+    EntityPtr m_entity = nullptr;
     NodeRawPtrArray m_children;
     bool m_inheritScale = false;
 

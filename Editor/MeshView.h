@@ -44,7 +44,7 @@ namespace ToolKit
 
      private:
       PreviewViewport* m_viewport = nullptr;
-      Entity* m_previewEntity     = nullptr;
+      EntityPtr m_previewEntity   = nullptr;
       MeshPtr m_mesh              = nullptr;
     };
 

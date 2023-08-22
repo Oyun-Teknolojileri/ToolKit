@@ -60,8 +60,10 @@ namespace ToolKit
       /**
        * A pointer to the Entity object that was picked.
        */
-      Entity* entity = nullptr;
+      EntityPtr entity = nullptr;
     };
+
+    typedef std::vector<PickData> PickDataArray;
 
    public:
     TKResourceType(Scene)
@@ -138,9 +140,7 @@ namespace ToolKit
      *
      * @return A PickData struct containing the result of the picking operation.
      */
-    virtual PickData PickObject(Ray ray,
-                                const EntityIdArray& ignoreList    = EntityIdArray(),
-                                const EntityRawPtrArray& extraList = EntityRawPtrArray());
+    virtual PickData PickObject(Ray ray, const EntityIdArray& ignoreList = {}, const EntityPtrArray& extraList = {});
 
     /**
      * Performs a frustum culling operation on the scene to find all objects
@@ -157,10 +157,10 @@ namespace ToolKit
      * within the frustum will also be included.
      */
     virtual void PickObject(const Frustum& frustum,
-                            std::vector<PickData>& pickedObjects,
-                            const EntityIdArray& ignoreList    = {},
-                            const EntityRawPtrArray& extraList = {},
-                            bool pickPartiallyInside           = true);
+                            PickDataArray& pickedObjects,
+                            const EntityIdArray& ignoreList = {},
+                            const EntityPtrArray& extraList = {},
+                            bool pickPartiallyInside        = true);
 
     // Entity operations.
 
@@ -170,26 +170,26 @@ namespace ToolKit
      * @returns The entity with the given ID, or nullptr if no entity with that
      * ID exists in the scene.
      */
-    Entity* GetEntity(ULongID id) const;
+    EntityPtr GetEntity(ULongID id) const;
 
     /**
      * Adds an entity to the scene.
      * @param entity The entity to add.
      */
-    virtual void AddEntity(Entity* entity);
-    EntityRawPtrArray& AccessEntityArray(); //!< Mutable Entity array access.
+    virtual void AddEntity(EntityPtr entity);
+    EntityPtrArray& AccessEntityArray(); //!< Mutable Entity array access.
 
     /**
      * Gets all the entities in the scene.
      * @returns An array containing pointers to all the entities in the scene.
      */
-    const EntityRawPtrArray& GetEntities() const;
+    const EntityPtrArray& GetEntities() const;
 
     /**
      * Gets an array of all the lights in the scene.
      * @returns An array containing pointers to all the lights in the scene.
      */
-    LightRawPtrArray GetLights() const;
+    LightPtrArray GetLights() const;
 
     /**
      * Gets the first entity in the scene with the given name.
@@ -197,7 +197,7 @@ namespace ToolKit
      * @returns The first entity in the scene with the given name, or nullptr if
      * no entity with that name exists in the scene.
      */
-    Entity* GetFirstEntityByName(const String& name);
+    EntityPtr GetFirstByName(const String& name);
 
     /**
      * Gets an array of all the entities in the scene with the given tag.
@@ -205,7 +205,7 @@ namespace ToolKit
      * @returns An array containing pointers to all the entities in the scene
      * with the given tag.
      */
-    EntityRawPtrArray GetByTag(const String& tag);
+    EntityPtrArray GetByTag(const String& tag);
 
     /**
      * Gets the first entity in the scene with the given tag.
@@ -213,7 +213,7 @@ namespace ToolKit
      * @returns The first entity in the scene with the given tag, or nullptr if
      * no entity with that tag exists in the scene.
      */
-    Entity* GetFirstByTag(const String& tag);
+    EntityPtr GetFirstByTag(const String& tag);
 
     /**
      * Filters the entities in the scene using the given filter function.
@@ -223,14 +223,14 @@ namespace ToolKit
      * @returns An array containing pointers to all the entities in the scene
      * that passed the filter function.
      */
-    EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
+    EntityPtrArray Filter(std::function<bool(EntityPtr)> filter);
 
     /**
      * Gets the sky object associated with the scene.
      * @returns A pointer to the SkyBase object associated with the scene, or
      * nullptr if no sky object is associated with the scene.
      */
-    SkyBase* GetSky();
+    SkyBasePtr GetSky();
 
     /**
      * Links a prefab to the scene.
@@ -251,13 +251,13 @@ namespace ToolKit
      * @param  States if the remove will be recursive to the all leafs.
      * @returns The removed entity.
      */
-    virtual Entity* RemoveEntity(ULongID id, bool deep = true);
+    virtual EntityPtr RemoveEntity(ULongID id, bool deep = true);
 
     /**
      * Removes an array of entities from the scene.
      * @param entities An array of pointers to the entities to be removed.
      */
-    virtual void RemoveEntity(const EntityRawPtrArray& entities);
+    virtual void RemoveEntity(const EntityPtrArray& entities);
 
     /**
      * Removes all entities from the scene.
@@ -274,7 +274,7 @@ namespace ToolKit
      * Saves a prefab for an entity in the scene.
      * @param entity The entity to create the prefab from.
      */
-    virtual void SavePrefab(Entity* entity);
+    virtual void SavePrefab(EntityPtr entity);
 
     /**
      * Removes all entities from the scene.
@@ -320,11 +320,11 @@ namespace ToolKit
      * Removes all children of the given entity.
      * @param removed The entity whose children will be removed.
      */
-    void RemoveChildren(Entity* removed);
+    void RemoveChildren(EntityPtr removed);
 
    protected:
-    EntityRawPtrArray m_entities; //!< The entities in the scene.
-    bool m_isPrefab;              //!< Whether or not the scene is a prefab.
+    EntityPtrArray m_entities; //!< The entities in the scene.
+    bool m_isPrefab;           //!< Whether or not the scene is a prefab.
   };
 
   /**

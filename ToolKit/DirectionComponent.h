@@ -43,7 +43,7 @@ namespace ToolKit
     DirectionComponent();
     virtual ~DirectionComponent();
 
-    ComponentPtr Copy(Entity* ntt) override;
+    ComponentPtr Copy(EntityPtr ntt) override;
 
     // Directional functions
     Vec3 GetDirection();

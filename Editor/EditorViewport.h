@@ -66,7 +66,7 @@ namespace ToolKit
 
       // Editor functions
       void GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const;
-      void SetCamera(Camera* cam) override;
+      void SetCamera(CameraPtr cam) override;
 
      protected:
       RenderTargetSettigs GetRenderTargetSettings() override;
@@ -89,20 +89,20 @@ namespace ToolKit
      private:
       void LoadDragMesh(bool& meshLoaded,
                         DirectoryEntry dragEntry,
-                        Entity** dwMesh,
-                        LineBatch** boundingBox,
+                        EntityPtr* dwMesh,
+                        LineBatchPtr* boundingBox,
                         EditorScenePtr currScene);
 
       Vec3 CalculateDragMeshPosition(bool& meshLoaded,
                                      EditorScenePtr currScene,
-                                     Entity* dwMesh,
-                                     LineBatch** boundingBox);
+                                     EntityPtr dwMesh,
+                                     LineBatchPtr* boundingBox);
 
       void HandleDropMesh(bool& meshLoaded,
                           bool& meshAddedToScene,
                           EditorScenePtr currScene,
-                          Entity** dwMesh,
-                          LineBatch** boundingBox);
+                          EntityPtr* dwMesh,
+                          LineBatchPtr* boundingBox);
 
      public:
       // Window properties.

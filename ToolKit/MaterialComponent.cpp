@@ -43,7 +43,7 @@ namespace ToolKit
 
   MaterialComponent::~MaterialComponent() {}
 
-  ComponentPtr MaterialComponent::Copy(Entity* ntt)
+  ComponentPtr MaterialComponent::Copy(EntityPtr ntt)
   {
     MaterialComponentPtr mc = MakeNewPtr<MaterialComponent>();
     mc->m_localData         = m_localData;

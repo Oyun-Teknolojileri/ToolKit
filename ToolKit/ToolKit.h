@@ -173,7 +173,7 @@ namespace ToolKit
   {
     if (Main* main = Main::GetInstance())
     {
-      if (TKObjectFactory* of = main->m_objectFactory) 
+      if (TKObjectFactory* of = main->m_objectFactory)
       {
         return of->MakeNew<T>();
       }
@@ -194,6 +194,26 @@ namespace ToolKit
     }
 
     return nullptr;
+  }
+
+  template <typename T>
+  std::shared_ptr<T> MakeNewPtr(const StringView tkClass)
+  {
+    if (Main* main = Main::GetInstance())
+    {
+      if (TKObjectFactory* of = main->m_objectFactory)
+      {
+        return std::shared_ptr<T>(static_cast<T*>(of->MakeNew(tkClass)));
+      }
+    }
+
+    return nullptr;
+  }
+
+  template <typename T>
+  std::shared_ptr<T> Cast(TKObjectPtr tkObj)
+  {
+    return std::static_pointer_cast<T>(tkObj);
   }
 
   // Path.

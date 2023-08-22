@@ -808,9 +808,9 @@ namespace ToolKit
     }
   }
 
-  EntityRawPtrArray deletedEntities;
+  EntityPtrArray deletedEntities;
 
-  bool DeleteEmptyEntitiesRecursively(Scene* tScene, Entity* ntt)
+  bool DeleteEmptyEntitiesRecursively(Scene* tScene, EntityPtr ntt)
   {
     bool shouldDelete = true;
     if (ntt->GetComponentPtrArray().size())
@@ -839,9 +839,9 @@ namespace ToolKit
     return shouldDelete;
   }
 
-  void TraverseScene(Scene* tScene, const aiNode* node, Entity* parent)
+  void TraverseScene(Scene* tScene, const aiNode* node, EntityPtr parent)
   {
-    Entity* ntt                 = new Entity;
+    EntityPtr ntt               = MakeNewPtr<Entity>();
     ntt->m_node->m_inheritScale = true;
     Vec3 t, s;
     Quaternion rt;
@@ -901,17 +901,16 @@ namespace ToolKit
 
     TraverseScene(tScene, g_scene->mRootNode, nullptr);
     // First entity is the root entity
-    EntityRawPtrArray roots;
+    EntityPtrArray roots;
     GetRootEntities(tScene->GetEntities(), roots);
-    for (Entity* r : roots)
+    for (EntityPtr r : roots)
     {
       DeleteEmptyEntitiesRecursively(tScene, r);
     }
 
-    for (Entity* ntt : deletedEntities)
+    for (EntityPtr ntt : deletedEntities)
     {
       tScene->RemoveEntity(ntt->GetIdVal(), false);
-      SafeDel(ntt);
     }
     deletedEntities.clear();
     Assimp::DefaultLogger::get()->info("scene path: ", fullPath);

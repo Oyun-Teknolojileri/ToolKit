@@ -49,7 +49,7 @@ namespace ToolKit
     m_map->Init(resource.get());
   }
 
-  ComponentPtr SkeletonComponent::Copy(Entity* ntt)
+  ComponentPtr SkeletonComponent::Copy(EntityPtr ntt)
   {
     SkeletonComponentPtr dst = MakeNewPtr<SkeletonComponent>();
     dst->m_entity            = ntt;

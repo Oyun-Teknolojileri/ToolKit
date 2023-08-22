@@ -117,7 +117,7 @@ namespace ToolKit
   void DeferredRenderPass::PostRender()
   {
     // Copy real depth buffer to main framebuffer depth
-    // GetRenderer()->CopyFrameBuffer(m_params.GBufferFramebuffer, m_params.MainFramebuffer, GraphicBitFields::DepthBits);
+    GetRenderer()->CopyFrameBuffer(m_params.GBufferFramebuffer, m_params.MainFramebuffer, GraphicBitFields::DepthBits);
     Pass::PostRender();
   }
 

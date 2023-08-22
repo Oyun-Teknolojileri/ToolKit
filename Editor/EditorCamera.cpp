@@ -51,10 +51,10 @@ namespace ToolKit
       CreateGizmo();
     }
 
-    Entity* EditorCamera::Copy() const
+    TKObjectPtr EditorCamera::Copy() const
     {
-      EditorCamera* cpy = new EditorCamera();
-      Camera::CopyTo(cpy);
+      EditorCameraPtr cpy = MakeNewPtr<EditorCamera>();
+      Camera::CopyTo(cpy.get());
       cpy->CreateGizmo();
       cpy->ParameterConstructor();
 

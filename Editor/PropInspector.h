@@ -71,7 +71,7 @@ namespace ToolKit
       virtual void Show() = 0;
 
      public:
-      Entity* m_entity     = nullptr;
+      EntityPtr m_entity   = nullptr;
       int m_viewID         = 0;
       TexturePtr m_viewIcn = nullptr;
       StringView m_fontIcon;
@@ -115,7 +115,7 @@ namespace ToolKit
       void SetMeshView(MeshPtr mesh);
 
      private:
-      void DeterminateSelectedMaterial(Entity* curEntity);
+      void DeterminateSelectedMaterial(EntityPtr curEntity);
 
      public:
       ViewRawPtrArray m_views;

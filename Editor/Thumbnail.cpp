@@ -106,7 +106,7 @@ namespace ToolKit
           skelComp->Init();
         }
 
-        m_thumbnailScene->AddEntity(m_entity.get());
+        m_thumbnailScene->AddEntity(m_entity);
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
         m_cam->FocusToBoundingBox(m_entity->GetAABB(true), 1.5f);
@@ -119,7 +119,7 @@ namespace ToolKit
           mc->SetFirstMaterial(mat);
         }
 
-        m_thumbnailScene->AddEntity(m_sphere.get());
+        m_thumbnailScene->AddEntity(m_sphere);
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
         m_cam->m_node->SetOrientation(Quaternion());
@@ -149,7 +149,7 @@ namespace ToolKit
         matCom->GetFirstMaterial()->m_diffuseTexture = texture;
         matCom->Init(false);
 
-        m_thumbnailScene->AddEntity(m_surface.get());
+        m_thumbnailScene->AddEntity(m_surface);
         m_cam->m_orthographicScale = 1.0f;
         m_cam->SetLens(w * -0.5f, w * 0.5f, h * -0.5f, h * 0.5f, 0.01f, 1000.0f);
 
@@ -171,7 +171,7 @@ namespace ToolKit
 
       m_params.Lights          = m_lightSystem->m_lights;
       m_params.Scene           = m_thumbnailScene;
-      m_params.Cam             = m_cam.get();
+      m_params.Cam             = m_cam;
       m_params.MainFramebuffer = m_thumbnailBuffer;
 
       Render(renderer);

@@ -44,7 +44,7 @@ namespace ToolKit
       virtual ~EditorCamera();
 
       void NativeConstruct() override;
-      Entity* Copy() const override;
+      TKObjectPtr Copy() const override;
       void GenerateFrustum();
 
      protected:
@@ -60,6 +60,8 @@ namespace ToolKit
      private:
       bool m_posessed = false;
     };
+
+    typedef std::shared_ptr<EditorCamera> EditorCameraPtr;
 
   } // namespace Editor
 } // namespace ToolKit

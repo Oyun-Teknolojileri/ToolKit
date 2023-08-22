@@ -62,12 +62,12 @@ namespace ToolKit
     const Vec4 lastClearColor = GetRenderer()->m_clearColor;
 
     // Update shadow maps.
-    for (Light* light : m_params.Lights)
+    for (LightPtr light : m_params.Lights)
     {
       light->InitShadowMapDepthMaterial();
-      if (light->GetType() == EntityType::Entity_DirectionalLight)
+      if (DirectionalLight* dLight = light->As<DirectionalLight>())
       {
-        static_cast<DirectionalLight*>(light)->UpdateShadowFrustum(m_params.RendeJobs);
+        dLight->UpdateShadowFrustum(m_params.RendeJobs);
       }
       else
       {
@@ -90,7 +90,7 @@ namespace ToolKit
     erase_if(m_params.RendeJobs, [](RenderJob& job) -> bool { return !job.ShadowCaster; });
 
     // Dropout non shadow casting lights.
-    erase_if(m_params.Lights, [](Light* light) -> bool { return !light->GetCastShadowVal(); });
+    erase_if(m_params.Lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
 
     InitShadowAtlas();
 
@@ -114,11 +114,11 @@ namespace ToolKit
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
-  void ShadowPass::RenderShadowMaps(Light* light, const RenderJobArray& jobs)
+  void ShadowPass::RenderShadowMaps(LightPtr light, const RenderJobArray& jobs)
   {
     Renderer* renderer        = GetRenderer();
 
-    auto renderForShadowMapFn = [this, &renderer](Light* light, RenderJobArray jobs) -> void
+    auto renderForShadowMapFn = [this, &renderer](LightPtr light, RenderJobArray jobs) -> void
     {
       FrustumCull(jobs, light->m_shadowCamera);
 
@@ -209,15 +209,15 @@ namespace ToolKit
     }
   }
 
-  int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights)
+  int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights)
   {
     int layerCount                           = -1;
     int lastLayerOfDirAndSpotLightShadowsUse = -1;
 
     // Create 2 arrays: dirandspotlights, point lights
-    LightRawPtrArray dirAndSpotLights        = lights;
-    LightRawPtrArray pointLights;
-    LightRawPtrArray::iterator it = dirAndSpotLights.begin();
+    LightPtrArray dirAndSpotLights           = lights;
+    LightPtrArray pointLights;
+    LightPtrArray::iterator it = dirAndSpotLights.begin();
     while (it != dirAndSpotLights.end())
     {
       if ((*it)->GetType() == EntityType::Entity_PointLight)
@@ -232,7 +232,7 @@ namespace ToolKit
     }
 
     // Sort lights based on resolutions (greater to smaller)
-    auto sortByResFn = [](const Light* l1, const Light* l2) -> bool
+    auto sortByResFn = [](const LightPtr l1, const LightPtr l2) -> bool
     { return l1->GetShadowResVal() > l2->GetShadowResVal(); };
 
     std::sort(dirAndSpotLights.begin(), dirAndSpotLights.end(), sortByResFn);
@@ -241,7 +241,7 @@ namespace ToolKit
     // Get dir and spot lights into the pack
     std::vector<int> resolutions;
     resolutions.reserve(dirAndSpotLights.size());
-    for (Light* light : dirAndSpotLights)
+    for (LightPtr light : dirAndSpotLights)
     {
       resolutions.push_back((int) light->GetShadowResVal());
     }
@@ -261,7 +261,7 @@ namespace ToolKit
     // Get point light into another pack
     resolutions.clear();
     resolutions.reserve(pointLights.size());
-    for (Light* light : pointLights)
+    for (LightPtr light : pointLights)
     {
       resolutions.push_back((int) light->GetShadowResVal());
     }
@@ -275,7 +275,7 @@ namespace ToolKit
     }
 
     // Adjust point light parameters
-    for (Light* light : pointLights)
+    for (LightPtr light : pointLights)
     {
       light->m_shadowAtlasLayer += lastLayerOfDirAndSpotLightShadowsUse + 1;
       light->m_shadowAtlasLayer *= 6;
@@ -294,7 +294,7 @@ namespace ToolKit
     int nextId      = 0;
     for (int i = 0; i < m_params.Lights.size(); ++i)
     {
-      Light* light = m_params.Lights[i];
+      LightPtr light = m_params.Lights[i];
       if (light->m_shadowResolutionUpdated)
       {
         light->m_shadowResolutionUpdated = false;

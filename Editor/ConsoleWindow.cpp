@@ -120,8 +120,8 @@ namespace ToolKit
 
     void TransformInternal(TagArgArray tagArgs, bool set)
     {
-      Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
-      if (e == nullptr)
+      EntityPtr ntt = g_app->GetCurrentScene()->GetCurrentSelection();
+      if (ntt == nullptr)
       {
         return;
       }
@@ -145,7 +145,7 @@ namespace ToolKit
         }
       }
 
-      ActionManager::GetInstance()->AddAction(new TransformAction(e));
+      ActionManager::GetInstance()->AddAction(new TransformAction(ntt));
       bool actionApplied = false;
 
       for (TagArg& tagIt : tagArgs)
@@ -179,11 +179,11 @@ namespace ToolKit
 
           if (set)
           {
-            e->m_node->SetOrientation(q, ts);
+            ntt->m_node->SetOrientation(q, ts);
           }
           else
           {
-            e->m_node->Rotate(q, ts);
+            ntt->m_node->Rotate(q, ts);
           }
           actionApplied = true;
         }
@@ -191,11 +191,11 @@ namespace ToolKit
         {
           if (set)
           {
-            e->m_node->SetScale(transfrom);
+            ntt->m_node->SetScale(transfrom);
           }
           else
           {
-            e->m_node->Scale(transfrom);
+            ntt->m_node->Scale(transfrom);
           }
           actionApplied = true;
         }
@@ -203,11 +203,11 @@ namespace ToolKit
         {
           if (set)
           {
-            e->m_node->SetTranslation(transfrom, ts);
+            ntt->m_node->SetTranslation(transfrom, ts);
           }
           else
           {
-            e->m_node->Translate(transfrom, ts);
+            ntt->m_node->Translate(transfrom, ts);
           }
           actionApplied = true;
         }
@@ -235,7 +235,7 @@ namespace ToolKit
 
         if (EditorViewport* vp = g_app->GetViewport(viewportTag->second[0]))
         {
-          if (Camera* c = vp->GetCamera())
+          if (CameraPtr c = vp->GetCamera())
           {
             if (viewportTag->second.size() == 2)
             {
@@ -289,7 +289,7 @@ namespace ToolKit
 
     void GetTransformExec(TagArgArray tagArgs)
     {
-      Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
+      EntityPtr e = g_app->GetCurrentScene()->GetCurrentSelection();
       if (e != nullptr)
       {
         auto PrintTransform = [e](TransformationSpace ts) -> void
@@ -408,11 +408,14 @@ namespace ToolKit
       // Caviate: A reload is neded since hardware buffers are not updated.
       // After refreshing hardware buffers,
       // transforms of the entity can be set to identity.
-      if (Drawable* ntt = dynamic_cast<Drawable*>(g_app->GetCurrentScene()->GetCurrentSelection()))
+      EntityPtr ntt = g_app->GetCurrentScene()->GetCurrentSelection();
+      if (ntt->IsDrawable())
       {
-        Mat4 ts = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
         MeshRawPtrArray meshes;
-        ntt->GetMesh()->GetAllMeshes(meshes);
+        ntt->GetMeshComponent()->GetMeshVal()->GetAllMeshes(meshes);
+
+        Mat4 ts = ntt->m_node->GetTransform();
+
         for (Mesh* mesh : meshes)
         {
           mesh->ApplyTransform(ts);
@@ -427,10 +430,12 @@ namespace ToolKit
 
     void SaveMesh(TagArgArray tagArgs)
     {
-      if (Drawable* ntt = dynamic_cast<Drawable*>(g_app->GetCurrentScene()->GetCurrentSelection()))
+      EntityPtr ntt = g_app->GetCurrentScene()->GetCurrentSelection();
+      if (ntt->IsDrawable())
       {
-        TagArgArray::const_iterator nameTag = GetTag("n", tagArgs);
-        String fileName                     = ntt->GetMesh()->GetFile();
+        TagArgCIt nameTag = GetTag("n", tagArgs);
+        MeshPtr mesh      = ntt->GetMeshComponent()->GetMeshVal();
+        String fileName   = mesh->GetFile();
         if (fileName.empty())
         {
           fileName = MeshPath(ntt->GetNameVal() + MESH);
@@ -446,7 +451,7 @@ namespace ToolKit
         if (file.is_open())
         {
           XmlDocument doc;
-          ntt->GetMesh()->Serialize(&doc, nullptr);
+          mesh->Serialize(&doc, nullptr);
           std::string xml;
           rapidxml::print(std::back_inserter(xml), doc, 0);
 
@@ -537,7 +542,7 @@ namespace ToolKit
       int problemsFound = 0;
       if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
       {
-        auto fixProblemFn = [&problemsFound, scene, fix](Entity* ntt, StringView msg) -> void
+        auto fixProblemFn = [&problemsFound, scene, fix](EntityPtr ntt, StringView msg) -> void
         {
           problemsFound++;
 

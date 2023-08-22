@@ -125,7 +125,8 @@ namespace ToolKit
       }
 
       BoundingBox aabb;
-      for (Entity* ntt : m_viewport->GetScene()->GetEntities())
+      EntityPtrArray entities = m_viewport->GetScene()->GetEntities();
+      for (EntityPtr ntt : entities)
       {
         aabb.UpdateBoundary(ntt->GetAABB(true).min);
         aabb.UpdateBoundary(ntt->GetAABB(true).max);

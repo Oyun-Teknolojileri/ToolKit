@@ -29,8 +29,8 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "Pass.h"
-#include "ToolKit.h"
 #include "Shader.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {
@@ -77,28 +77,28 @@ namespace ToolKit
     renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
   }
 
-  void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, Camera* cam, const LightRawPtrArray& lights)
+  void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)
   {
     Renderer* renderer = GetRenderer();
 
     for (const RenderJob& job : jobs)
     {
-      LightRawPtrArray lightList = RenderJobProcessor::SortLights(job, lights);
+      LightPtrArray lightList = RenderJobProcessor::SortLights(job, lights);
       job.Material->m_fragmentShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.SSAOEnabled));
       renderer->Render(job, m_params.Cam, lightList);
     }
   }
 
-  void ForwardRenderPass::RenderTranslucent(RenderJobArray& jobs, Camera* cam, const LightRawPtrArray& lights)
+  void ForwardRenderPass::RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)
   {
     RenderJobProcessor::StableSortByDistanceToCamera(jobs, cam);
 
     Renderer* renderer = GetRenderer();
     auto renderFnc     = [cam, lights, renderer](RenderJob& job)
     {
-      LightRawPtrArray culledLights = RenderJobProcessor::SortLights(job, lights);
+      LightPtrArray culledLights = RenderJobProcessor::SortLights(job, lights);
 
-      MaterialPtr mat               = job.Material;
+      MaterialPtr mat            = job.Material;
       if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
       {
         mat->GetRenderState()->cullMode = CullingType::Front;

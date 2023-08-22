@@ -335,8 +335,7 @@ namespace ToolKit
 
   bool RectPointIntersection(Vec2 rectMin, Vec2 rectMax, Vec2 point)
   {
-    return point.x >= rectMin.x && point.y >= rectMin.y &&
-           point.x <= rectMax.x && point.y <= rectMax.y;
+    return point.x >= rectMin.x && point.y >= rectMin.y && point.x <= rectMax.x && point.y <= rectMax.y;
   }
 
   // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
@@ -445,7 +444,7 @@ namespace ToolKit
     return hit;
   }
 
-  TK_API uint FindMeshIntersection(const class Entity* const ntt, const Ray& rayInWorldSpace, float& t)
+  uint FindMeshIntersection(const EntityPtr ntt, const Ray& rayInWorldSpace, float& t)
   {
     SkeletonComponent* skel = ntt->GetComponent<SkeletonComponent>().get();
 
@@ -611,6 +610,75 @@ namespace ToolKit
     return res;
   }
 
+  Quaternion QuaternionLookAt(Vec3 direction)
+  {
+    Mat3 Result {};
+    Result[2] = -glm::normalize(direction);
+    Result[0] = glm::normalize(glm::cross(Y_AXIS, Result[2]));
+    Result[1] = glm::cross(Result[2], Result[0]);
+    return glm::quat_cast(Result);
+  }
+  
+  // frustum should be normalized
+  bool FrustumSphereIntersection(const Frustum& frustum, const Vec3& pos, float radius)
+  {
+    // check each frustum plane against sphere
+    for (int i = 0; i < 6; i++)
+    {
+      const PlaneEquation& plane = frustum.planes[i];
+      float signedDistance       = glm::dot(plane.normal, pos) + plane.d;
+      if (signedDistance < -radius)
+      {
+        return false; // Sphere is fully outside this plane, no intersection
+      }
+    }
+    return true;
+  }
+
+  bool ConePointIntersection(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, Vec3 point)
+  {
+    Vec3 pointToCone = point - conePos;
+    float angle01    = glm::radians(coneAngle) / glm::pi<float>();
+    float toLength   = glm::length(pointToCone);
+    // (pointToCone / toLength) for normalization (saved 1 sqrt instruction)
+    return glm::dot(pointToCone / toLength, coneDir) > 1.0f - angle01 && toLength < coneHeight;
+  }
+
+  bool PointBehindPlane(Vec3 p, const PlaneEquation&  plane)
+  {
+    return glm::dot(plane.normal, p) + plane.d < 0.0f;
+  }
+
+  // https://simoncoenen.com/blog/programming/graphics/SpotlightCulling
+  bool ConeBehindPlane(Vec3 conePos, 
+                       Vec3 coneDir, 
+                       float coneHeight, 
+                       float coneAngle,
+                       const PlaneEquation& plane)
+  {
+    Vec3 furthestPointDirection = glm::cross(glm::cross(plane.normal, coneDir), coneDir);
+    Vec3 furthestPointOnCircle = conePos + coneDir * coneHeight - furthestPointDirection * coneAngle;
+    return PointBehindPlane(conePos, plane) && PointBehindPlane(furthestPointOnCircle, plane);
+  }
+
+  bool FrustumConeIntersect(const Frustum& frustum,
+                            Vec3  conePos, 
+                            Vec3  coneDir, 
+                            float coneHeight, 
+                            float coneAngle)
+  {
+    float radius = glm::radians(coneAngle);
+    for (int i = 0; i < 6; ++i) 
+    {
+      const PlaneEquation& plane = frustum.planes[i];
+      if (ConeBehindPlane(conePos, coneDir, coneHeight, radius, frustum.planes[i]))
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
   bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
   {
     float denom = glm::dot(ray.direction, plane.normal);
@@ -691,7 +759,7 @@ namespace ToolKit
     }
   }
 
-  void FrustumCull(EntityRawPtrArray& entities, Camera* camera)
+  void FrustumCull(EntityRawPtrArray& entities, CameraPtr camera)
   {
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();
@@ -702,7 +770,7 @@ namespace ToolKit
     erase_if(entities, delFn);
   }
 
-  void FrustumCull(RenderJobArray& jobs, Camera* camera)
+  void FrustumCull(RenderJobArray& jobs, CameraPtr camera)
   {
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();

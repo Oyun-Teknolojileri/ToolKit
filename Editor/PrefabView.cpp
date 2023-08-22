@@ -51,9 +51,9 @@ namespace ToolKit
 
     bool PrefabView::HasActiveEntity() const { return m_activeChildEntity != nullptr; }
 
-    Entity* PrefabView::GetActiveEntity() { return m_activeChildEntity; }
+    EntityPtr PrefabView::GetActiveEntity() { return m_activeChildEntity; }
 
-    bool PrefabView::DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags)
+    bool PrefabView::DrawHeader(EntityPtr ntt, ImGuiTreeNodeFlags flags)
     {
       const String sId = "##" + std::to_string(ntt->GetIdVal());
       if (m_activeChildEntity == ntt)
@@ -71,22 +71,22 @@ namespace ToolKit
       return isOpen;
     }
 
-    void PrefabView::ShowNode(Entity* e)
+    void PrefabView::ShowNode(EntityPtr ntt)
     {
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
 
-      if (e->m_node->m_children.empty() || e->GetType() == EntityType::Entity_Prefab)
+      if (ntt->m_node->m_children.empty() || ntt->IsA<Prefab>())
       {
         nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-        DrawHeader(e, nodeFlags);
+        DrawHeader(ntt, nodeFlags);
       }
       else
       {
-        if (DrawHeader(e, nodeFlags))
+        if (DrawHeader(ntt, nodeFlags))
         {
-          for (Node* n : e->m_node->m_children)
+          for (Node* n : ntt->m_node->m_children)
           {
-            Entity* childNtt = n->m_entity;
+            EntityPtr childNtt = n->m_entity;
             if (childNtt != nullptr)
             {
               ShowNode(childNtt);
@@ -100,7 +100,7 @@ namespace ToolKit
 
     void PrefabView::Show()
     {
-      Entity* cur = g_app->GetCurrentScene()->GetCurrentSelection();
+      EntityPtr cur = g_app->GetCurrentScene()->GetCurrentSelection();
       if (cur != m_entity)
       {
         m_entity            = cur;
@@ -133,7 +133,7 @@ namespace ToolKit
         ImGui::EndChild();
       }
 
-      Entity* shownEntity = m_entity;
+      EntityPtr shownEntity = m_entity;
       if (m_activeChildEntity)
       {
         shownEntity = m_activeChildEntity;

@@ -86,7 +86,7 @@ namespace ToolKit
      * @param ntt Parent Entity of the component.
      * @return Copy of the component.
      */
-    virtual ComponentPtr Copy(Entity* ntt) = 0;
+    virtual ComponentPtr Copy(EntityPtr ntt) = 0;
 
    protected:
     void ParameterConstructor() override;
@@ -104,7 +104,7 @@ namespace ToolKit
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
-    Entity* m_entity = nullptr; //!< Parent Entity of the component.
+    EntityPtr m_entity = nullptr; //!< Parent Entity of the component.
   };
 
   /**

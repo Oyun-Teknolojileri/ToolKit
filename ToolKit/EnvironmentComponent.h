@@ -44,7 +44,7 @@ namespace ToolKit
     EnvironmentComponent();
     virtual ~EnvironmentComponent();
 
-    ComponentPtr Copy(Entity* ntt) override;
+    ComponentPtr Copy(EntityPtr ntt) override;
     BoundingBox GetBBox();
 
     void Init(bool flushClientSideArray);

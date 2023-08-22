@@ -148,7 +148,7 @@ namespace ToolKit
       static void CenteredText(const String& text);
       //!< returns FontAwesome string (icon) from any given entity type
       static String EntityTypeToIcon(EntityType type);
-      static void ShowEntityTreeNodeContent(Entity* ntt);
+      static void ShowEntityTreeNodeContent(EntityPtr ntt);
       /**
        * Can be used to see if ui is using the keyboard for input. Most likely
        * usage is to check if user typing text to an input field.

@@ -140,7 +140,7 @@ namespace ToolKit
                                              { ReInitHdri(std::get<HdriPtr>(newVal), GetExposureVal()); });
   }
 
-  ComponentPtr EnvironmentComponent::Copy(Entity* ntt)
+  ComponentPtr EnvironmentComponent::Copy(EntityPtr ntt)
   {
     EnvironmentComponentPtr ec = MakeNewPtr<EnvironmentComponent>();
     ec->m_localData            = m_localData;
