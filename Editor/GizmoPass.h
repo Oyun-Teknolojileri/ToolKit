@@ -37,7 +37,7 @@ namespace ToolKit
     struct GizmoPassParams
     {
       Viewport* Viewport = nullptr;
-      BillboardRawPtrArray GizmoArray;
+      BillboardPtrArray GizmoArray;
     };
 
     class GizmoPass : public Pass
@@ -55,7 +55,7 @@ namespace ToolKit
 
      private:
       SpherePtr m_depthMaskSphere = nullptr;
-      Camera* m_camera            = nullptr;
+      CameraPtr m_camera          = nullptr;
     };
 
     typedef std::shared_ptr<GizmoPass> GizmoPassPtr;

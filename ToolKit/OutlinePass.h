@@ -36,7 +36,7 @@ namespace ToolKit
   {
     RenderJobArray RenderJobs  = {};
     FramebufferPtr FrameBuffer = nullptr;
-    Camera* Camera             = nullptr;
+    CameraPtr Camera           = nullptr;
     Vec4 OutlineColor          = Vec4(1.0f);
   };
 

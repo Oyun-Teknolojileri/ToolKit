@@ -49,7 +49,7 @@ namespace ToolKit
      * @param ntt Parent Entity of the component.
      * @return Copy of the MaterialComponent.
      */
-    ComponentPtr Copy(Entity* ntt) override;
+    ComponentPtr Copy(EntityPtr ntt) override;
 
     void Init(bool flushClientSideArray);
     void AddMaterial(MaterialPtr mat);

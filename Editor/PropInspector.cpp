@@ -39,6 +39,7 @@
 #include <FileManager.h>
 #include <GradientSky.h>
 #include <Material.h>
+#include <Prefab.h>
 
 #include <DebugNew.h>
 
@@ -255,7 +256,7 @@ namespace ToolKit
 
     void PreviewViewport::ResetCamera()
     {
-      Camera* cam = GetCamera();
+      CameraPtr cam = GetCamera();
       cam->m_node->SetTranslation(Vec3(3.0f, 6.55f, 4.0f) * 0.6f);
       cam->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f, 1.1f, 0.0f));
     }
@@ -313,7 +314,7 @@ namespace ToolKit
       return static_cast<MaterialView*>(m_views[(uint) ViewType::Material]);
     }
 
-    void PropInspector::DeterminateSelectedMaterial(Entity* curEntity)
+    void PropInspector::DeterminateSelectedMaterial(EntityPtr curEntity)
     {
       // if material view is active. determinate selected material
       MaterialView* matView = dynamic_cast<MaterialView*>(m_views[(uint) m_activeView]);
@@ -332,7 +333,7 @@ namespace ToolKit
       if (curEntity->GetType() == EntityType::Entity_Prefab)
       {
         PrefabView* prefView = static_cast<PrefabView*>(m_views[(uint) ViewType::Prefab]);
-        if (Entity* prefEntity = prefView->GetActiveEntity())
+        if (EntityPtr prefEntity = prefView->GetActiveEntity())
         {
           curEntity = prefEntity;
         }
@@ -357,10 +358,10 @@ namespace ToolKit
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.0f, 0.0f));
       ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, style.ItemSpacing.y));
 
-      Entity* curEntity = g_app->GetCurrentScene()->GetCurrentSelection();
-      bool isPrefab     = curEntity != nullptr && curEntity->GetType() == EntityType::Entity_Prefab;
+      EntityPtr curEntity = g_app->GetCurrentScene()->GetCurrentSelection();
+      bool isPrefab       = curEntity != nullptr && curEntity->IsA<Prefab>();
 
-      UIntArray views   = isPrefab ? m_prefabViews : m_entityViews;
+      UIntArray views     = isPrefab ? m_prefabViews : m_entityViews;
 
       if (ImGui::Begin(m_name.c_str(), &m_visible, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
       {

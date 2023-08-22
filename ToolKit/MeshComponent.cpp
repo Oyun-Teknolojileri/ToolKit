@@ -41,7 +41,7 @@ namespace ToolKit
 
   MeshComponent::~MeshComponent() {}
 
-  ComponentPtr MeshComponent::Copy(Entity* ntt)
+  ComponentPtr MeshComponent::Copy(EntityPtr ntt)
   {
     MeshComponentPtr mc = MakeNewPtr<MeshComponent>();
     mc->m_localData     = m_localData;

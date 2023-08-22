@@ -54,7 +54,7 @@ namespace ToolKit
 
     void Init(bool flushClientSideArray = false) override;
 
-    void UpdateTextureData(LightRawPtrArray& lights,
+    void UpdateTextureData(LightPtrArray& lights,
                            Vec2& shadowDirLightIndexInterval,
                            Vec2& shadowPointLightIndexInterval,
                            Vec2& shadowSpotLightIndexInterval,

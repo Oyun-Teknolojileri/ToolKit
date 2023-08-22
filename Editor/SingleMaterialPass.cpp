@@ -53,9 +53,9 @@ namespace ToolKit
       renderer->m_overrideMat = std::make_shared<Material>();
       for (RenderJob& job : m_params.ForwardParams.OpaqueJobs)
       {
-        LightRawPtrArray lightList = RenderJobProcessor::SortLights(job, m_params.ForwardParams.Lights);
+        LightPtrArray lightList = RenderJobProcessor::SortLights(job, m_params.ForwardParams.Lights);
 
-        MaterialPtr mat            = job.Material;
+        MaterialPtr mat         = job.Material;
         renderer->m_overrideMat->SetRenderState(mat->GetRenderState());
         renderer->m_overrideMat->m_vertexShader    = mat->m_vertexShader;
         renderer->m_overrideMat->m_fragmentShader  = m_params.OverrideFragmentShader;

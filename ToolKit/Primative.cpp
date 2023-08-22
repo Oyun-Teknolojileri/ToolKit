@@ -48,7 +48,7 @@ namespace ToolKit
 
   Billboard::Billboard(const Settings& settings) : m_settings(settings) { AddComponent<MeshComponent>(); }
 
-  void Billboard::LookAt(Camera* cam, float scale)
+  void Billboard::LookAt(CameraPtr cam, float scale)
   {
     Camera::CamData data = cam->GetData();
 
@@ -824,9 +824,10 @@ namespace ToolKit
     const float step    = glm::two_pi<float>() / (float) (numSegments);
     mesh->m_vertexCount = numSegments + 1;
     mesh->m_indexCount  = numSegments * 3;
-    mesh->m_clientSideVertices.resize(numSegments + 2); 
+    mesh->m_clientSideVertices.resize(numSegments + 2);
     mesh->m_clientSideIndices.resize((numSegments + 1) * 3);
-    mesh->m_clientSideVertices[0] = { // center point
+    mesh->m_clientSideVertices[0] = {
+        // center point
         Vec3(0.0f),
         Vec3(0.0f, 0.0f, -1.0f), // normal
         Vec2(0.5f, 0.5f),        // tex coord
@@ -837,20 +838,20 @@ namespace ToolKit
     // create vertices
     for (int i = 0; i < numSegments; i++)
     {
-      float f = step * (float)i;
+      float f = step * (float) i;
       float s = glm::sin(f), c = glm::cos(f);
-      float snorm       = s * 0.5f + 0.5f;
-      float cnorm       = c * 0.5f + 0.5f;
+      float snorm                       = s * 0.5f + 0.5f;
+      float cnorm                       = c * 0.5f + 0.5f;
 
-      const float sqrt2 = 1.41421356f; // square root of 2
-      float strechS     = sqrt2 * glm::abs(s);
-      float strechC     = sqrt2 * glm::abs(c);
+      const float sqrt2                 = 1.41421356f; // square root of 2
+      float strechS                     = sqrt2 * glm::abs(s);
+      float strechC                     = sqrt2 * glm::abs(c);
 
-      mesh->m_clientSideVertices[i+1] = {
+      mesh->m_clientSideVertices[i + 1] = {
           Vec3(c * radius, s * radius, 0.0f),
           Vec3(0.0f, 0.0f, -1.0f),                // normal
           Vec2(cnorm * strechS, snorm * strechC), // tex coord
-          Vec3(c, s, 0.0f)          // btan
+          Vec3(c, s, 0.0f)                        // btan
       };
     }
 
@@ -863,8 +864,8 @@ namespace ToolKit
     }
     mesh->m_clientSideIndices[numSegments * 3 + 0] = 0;
     mesh->m_clientSideIndices[numSegments * 3 + 1] = numSegments; // jump center point
-    mesh->m_clientSideIndices[numSegments * 3 + 2] = 1; // next vertex pos
-    
+    mesh->m_clientSideIndices[numSegments * 3 + 2] = 1;           // next vertex pos
+
     mesh->ConstructFaces();
   }
 
@@ -873,8 +874,8 @@ namespace ToolKit
     mesh->UnInit();
 
     // Middle line.
-    Vec3 dir  = Vec3(0.0f, 0.0f, -1.0f) * radius;
-    Vec3 per  = Vec3(1.0f, 0.0f, 0.0f);
+    Vec3 dir = Vec3(0.0f, 0.0f, -1.0f) * radius;
+    Vec3 per = Vec3(1.0f, 0.0f, 0.0f);
 
     mesh->m_clientSideVertices.clear();
     mesh->m_clientSideIndices.clear();
@@ -886,12 +887,12 @@ namespace ToolKit
 
     mesh->m_clientSideVertices.push_back({outStartPoint});
     float deltaAngle = glm::two_pi<float>() / (numSegments);
-    Mat4 identity = Mat4();
+    Mat4 identity    = Mat4();
     for (int i = 1; i <= numSegments; i++)
     {
       // Outer circle vertices.
       Mat4 m_rot    = glm::rotate(identity, deltaAngle, dir);
-      outStartPoint = Vec3(m_rot * Vec4(outStartPoint, 1.0f)); 
+      outStartPoint = Vec3(m_rot * Vec4(outStartPoint, 1.0f));
       mesh->m_clientSideVertices.push_back({outStartPoint});
     }
 
@@ -902,8 +903,8 @@ namespace ToolKit
       mesh->m_clientSideIndices.push_back(i + 2);
       mesh->m_clientSideIndices.push_back(i + 1);
     }
-    mesh->m_vertexCount = mesh->m_clientSideVertices.size();
-    mesh->m_indexCount  = mesh->m_clientSideIndices.size();
+    mesh->m_vertexCount = (uint) mesh->m_clientSideVertices.size();
+    mesh->m_indexCount  = (uint) mesh->m_clientSideIndices.size();
 
     mesh->Init();
   }

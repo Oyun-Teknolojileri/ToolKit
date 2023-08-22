@@ -33,10 +33,7 @@
 namespace ToolKit
 {
 
-  CubeMapPass::CubeMapPass()
-  {
-    m_cube = MakeNewPtr<Cube>();
-  }
+  CubeMapPass::CubeMapPass() { m_cube = MakeNewPtr<Cube>(); }
 
   CubeMapPass::CubeMapPass(const CubeMapPassParams& params) : CubeMapPass() { m_params = params; }
 
@@ -50,7 +47,7 @@ namespace ToolKit
     renderer->SetFramebuffer(m_params.FrameBuffer, false);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({m_cube.get()}, jobs);
+    RenderJobProcessor::CreateRenderJobs({m_cube}, jobs);
     renderer->Render(jobs, m_params.Cam);
   }
 

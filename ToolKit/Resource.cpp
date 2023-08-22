@@ -30,12 +30,12 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-#include <string>
-
 #include "DebugNew.h"
 
 namespace ToolKit
 {
+
+  TKDefineClass(Resource, TKObject);
 
   Resource::Resource()
   {

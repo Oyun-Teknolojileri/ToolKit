@@ -147,7 +147,7 @@ namespace ToolKit
           renderer->EnableDepthTest(false);
 
           // Views for 6 different angles
-          CameraPtr cam = std::make_shared<Camera>();
+          CameraPtr cam = MakeNewPtr<Camera>();
           cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
 
           Mat4 views[] = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
@@ -171,7 +171,7 @@ namespace ToolKit
             fb->SetAttachment(Framebuffer::Attachment::ColorAttachment0, cubemap, 0, -1, (Framebuffer::CubemapFace) i);
 
             renderer->SetFramebuffer(fb, true, Vec4(0.0f));
-            renderer->DrawCube(cam.get(), m_skyboxMaterial);
+            renderer->DrawCube(cam, m_skyboxMaterial);
           }
 
           renderer->EnableDepthTest(true);

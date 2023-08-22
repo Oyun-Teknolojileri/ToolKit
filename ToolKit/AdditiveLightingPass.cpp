@@ -95,7 +95,7 @@ namespace ToolKit
     renderer->SetTexture(5, m_params.AOTexture ? m_params.AOTexture->m_textureId : 0);
   }
 
-  void AdditiveLightingPass::SetLightUniforms(Light* light, int lightType)
+  void AdditiveLightingPass::SetLightUniforms(LightPtr light, int lightType)
   {
     Vec3 pos = light->m_node->GetTranslation();
     m_lightingShader->SetShaderParameter("lightType", ParameterVariant(lightType));
@@ -108,19 +108,19 @@ namespace ToolKit
     {
     case 0: // is directional
     case 3:
-      dir = static_cast<DirectionalLight*>(light)->GetComponent<DirectionComponent>()->GetDirection();
+      dir = static_cast<DirectionalLight*>(light.get())->GetComponent<DirectionComponent>()->GetDirection();
       break;
     case 1: // is point
     case 4:
     {
-      PointLight* pointLight = static_cast<PointLight*>(light);
+      PointLight* pointLight = static_cast<PointLight*>(light.get());
       m_lightingShader->SetShaderParameter("lightRadius", ParameterVariant(pointLight->GetRadiusVal()));
     }
     break;
     case 2: // is spot
     case 5:
     {
-      SpotLight* spotLight = static_cast<SpotLight*>(light);
+      SpotLight* spotLight = static_cast<SpotLight*>(light.get());
       dir                  = spotLight->GetComponent<DirectionComponent>()->GetDirection();
       float outAngle       = glm::cos(glm::radians(spotLight->GetOuterAngleVal() * 0.5f));
       float innAngle       = glm::cos(glm::radians(spotLight->GetInnerAngleVal() * 0.5f));
@@ -177,32 +177,32 @@ namespace ToolKit
     m_lightingShader->SetShaderParameter("camPos", ParameterVariant(m_params.Cam->m_node->GetTranslation()));
 
     renderer->EnableDepthTest(true);
-    Camera* camera  = m_params.Cam;
-    Frustum frustum = ExtractFrustum(camera->GetProjectionMatrix() * camera->GetViewMatrix(), true);
+    CameraPtr camera = m_params.Cam;
+    Frustum frustum  = ExtractFrustum(camera->GetProjectionMatrix() * camera->GetViewMatrix(), true);
 
     struct LightAndType
     {
-      Light* light;
+      LightPtr light;
       int type;
 
       LightAndType() {}
 
-      LightAndType(Light* l, int t) : light(l), type(t) {}
+      LightAndType(LightPtr l, int t) : light(l), type(t) {}
     };
 
     std::vector<LightAndType> screenSpaceLights; // light and type pair
     std::vector<std::pair<LightAndType, RenderJob>> meshLights;
 
-    for (int i = 0; i < m_params.lights.size(); i++)
+    for (size_t i = 0; i < m_params.lights.size(); i++)
     {
-      Light* light  = m_params.lights[i];
-      int hasShadow = light->GetCastShadowVal() * 3; // if light has shadow index will start from 3
-      int lightType = ((int) light->GetType() - (int) EntityType::Entity_DirectionalLight) + hasShadow;
+      LightPtr light = m_params.lights[i];
+      int hasShadow  = light->GetCastShadowVal() * 3; // if light has shadow index will start from 3
+      int lightType  = ((int) light->GetType() - (int) EntityType::Entity_DirectionalLight) + hasShadow;
       assert(lightType < 6 && lightType >= 0 && "light type invalid");
 
       if (lightType == 1 || lightType == 4) // point light
       {
-        PointLight* pointLight = static_cast<PointLight*>(light);
+        PointLight* pointLight = static_cast<PointLight*>(light.get());
         RenderJob job {};
         Vec3 pos     = light->m_node->GetTranslation();
         float radius = pointLight->GetRadiusVal();
@@ -230,7 +230,7 @@ namespace ToolKit
       }
       else if (lightType == 2 || lightType == 5) // is spot light
       {
-        SpotLight* spotLight = static_cast<SpotLight*>(light);
+        SpotLight* spotLight = static_cast<SpotLight*>(light.get());
         Vec3 dir             = spotLight->GetComponent<DirectionComponent>()->GetDirection();
         Vec3 pos             = spotLight->m_node->GetTranslation();
         float height         = spotLight->GetRadiusVal();
@@ -245,7 +245,7 @@ namespace ToolKit
 
         if (!FrustumConeIntersect(frustum, pos, dir, height, outerAngle))
         {
-          continue;// we don't see the cone, no need to render
+          continue; // we don't see the cone, no need to render
         }
 
         RenderJob job {};
@@ -262,7 +262,7 @@ namespace ToolKit
     }
 
     m_lightingShader->SetShaderParameter("isScreenSpace", ParameterVariant(1));
-    for (auto [light, lightType] : screenSpaceLights)
+    for (auto& [light, lightType] : screenSpaceLights)
     {
       SetLightUniforms(light, lightType);
       RenderSubPass(m_fullQuadPass);

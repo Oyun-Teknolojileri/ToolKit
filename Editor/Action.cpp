@@ -52,7 +52,7 @@ namespace ToolKit
       m_group.clear();
     }
 
-    DeleteAction::DeleteAction(Entity* ntt)
+    DeleteAction::DeleteAction(EntityPtr ntt)
     {
       m_ntt = ntt;
       Redo();
@@ -62,11 +62,11 @@ namespace ToolKit
     {
       if (m_actionComitted)
       {
-        SafeDel(m_ntt);
+        m_ntt = nullptr;
       }
     }
 
-    void HandleCompSpecificOps(Entity* ntt, bool isActionCommitted)
+    void HandleCompSpecificOps(EntityPtr ntt, bool isActionCommitted)
     {
       if (isActionCommitted)
       {
@@ -82,17 +82,18 @@ namespace ToolKit
       assert(m_ntt != nullptr);
 
       EditorScenePtr currScene = g_app->GetCurrentScene();
-      if (m_ntt->GetType() == EntityType::Entity_Prefab)
+      if (m_ntt->IsA<Prefab>())
       {
-        static_cast<Prefab*>(m_ntt)->Link();
+        static_cast<Prefab*>(m_ntt.get())->Link();
       }
       currScene->AddEntity(m_ntt);
+
       if (m_parentId != NULL_HANDLE)
       {
-        if (Entity* pEntt = currScene->GetEntity(m_parentId))
+        if (EntityPtr parent = currScene->GetEntity(m_parentId))
         {
           m_ntt->m_node->OrphanSelf();
-          pEntt->m_node->AddChild(m_ntt->m_node);
+          parent->m_node->AddChild(m_ntt->m_node);
         }
       }
 
@@ -112,15 +113,15 @@ namespace ToolKit
       }
 
       g_app->GetCurrentScene()->RemoveEntity(m_ntt->GetIdVal());
-      if (m_ntt->GetType() == EntityType::Entity_Prefab)
+      if (m_ntt->IsA<Prefab>())
       {
-        static_cast<Prefab*>(m_ntt)->Unlink();
+        static_cast<Prefab*>(m_ntt.get())->Unlink();
       }
       m_actionComitted = true;
       HandleCompSpecificOps(m_ntt, m_actionComitted);
     }
 
-    CreateAction::CreateAction(Entity* ntt)
+    CreateAction::CreateAction(EntityPtr ntt)
     {
       m_ntt                    = ntt;
       m_actionComitted         = true;
@@ -133,7 +134,7 @@ namespace ToolKit
     {
       if (!m_actionComitted)
       {
-        SafeDel(m_ntt);
+        m_ntt = nullptr;
       }
     }
 

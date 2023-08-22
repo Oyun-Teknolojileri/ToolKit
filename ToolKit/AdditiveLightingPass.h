@@ -32,41 +32,42 @@
 
 namespace ToolKit
 {
-    struct LightingPassParams
-    {
-        LightRawPtrArray lights           = {};
-        FramebufferPtr MainFramebuffer    = nullptr;
-        FramebufferPtr GBufferFramebuffer = nullptr;
-        bool ClearFramebuffer             = true;
-        Camera* Cam                       = nullptr;
-        TexturePtr AOTexture              = nullptr;
-    };
+  struct LightingPassParams
+  {
+    LightPtrArray lights              = {};
+    FramebufferPtr MainFramebuffer    = nullptr;
+    FramebufferPtr GBufferFramebuffer = nullptr;
+    bool ClearFramebuffer             = true;
+    CameraPtr Cam                     = nullptr;
+    TexturePtr AOTexture              = nullptr;
+  };
 
-    class TK_API AdditiveLightingPass : public RenderPass
-    {
-    public:
-        AdditiveLightingPass();
-        ~AdditiveLightingPass();
-        
-        void Init(const LightingPassParams& params);
-        void PreRender() override;
-        void PostRender() override;
-        void Render() override;
-    private:
-        void SetLightUniforms(Light* light, int lightType);
-        uint64 ConeMeshHash(float radius, float outerAngle);
+  class TK_API AdditiveLightingPass : public RenderPass
+  {
+   public:
+    AdditiveLightingPass();
+    ~AdditiveLightingPass();
 
-    public:
-        LightingPassParams m_params;
-        FullQuadPassPtr m_fullQuadPass         = nullptr;
-        RenderTargetPtr m_lightingRt           = nullptr;
-        FramebufferPtr m_lightingFrameBuffer   = nullptr; 
-        SpherePtr m_sphereEntity               = nullptr;
-        SpherePtr m_sphereMesh                 = nullptr;
-        MaterialPtr m_meshMaterial             = nullptr;
-        ShaderPtr m_mergeShader                = nullptr; 
-        ShaderPtr m_lightingShader             = nullptr;
-    };
+    void Init(const LightingPassParams& params);
+    void PreRender() override;
+    void PostRender() override;
+    void Render() override;
 
-    typedef std::shared_ptr<AdditiveLightingPass> LightingPassPtr;
-}
+   private:
+    void SetLightUniforms(LightPtr light, int lightType);
+    uint64 ConeMeshHash(float radius, float outerAngle);
+
+   public:
+    LightingPassParams m_params;
+    FullQuadPassPtr m_fullQuadPass       = nullptr;
+    RenderTargetPtr m_lightingRt         = nullptr;
+    FramebufferPtr m_lightingFrameBuffer = nullptr;
+    SpherePtr m_sphereEntity             = nullptr;
+    SpherePtr m_sphereMesh               = nullptr;
+    MaterialPtr m_meshMaterial           = nullptr;
+    ShaderPtr m_mergeShader              = nullptr;
+    ShaderPtr m_lightingShader           = nullptr;
+  };
+
+  typedef std::shared_ptr<AdditiveLightingPass> LightingPassPtr;
+} // namespace ToolKit

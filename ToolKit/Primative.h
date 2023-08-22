@@ -64,7 +64,7 @@ namespace ToolKit
 
     Billboard();
     explicit Billboard(const Settings& settings);
-    virtual void LookAt(class Camera* cam, float scale);
+    virtual void LookAt(CameraPtr cam, float scale);
     EntityType GetType() const override;
 
    protected:
@@ -74,7 +74,7 @@ namespace ToolKit
    public:
     Settings m_settings;
     Vec3 m_worldLocation;
-    Entity* m_entity = nullptr;
+    EntityPtr m_entity = nullptr;
   };
 
   class TK_API Cube final : public Entity

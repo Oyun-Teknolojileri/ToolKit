@@ -53,8 +53,9 @@ namespace ToolKit
 
   Entity::Entity()
   {
+    m_sharedEntity   = std::shared_ptr<Entity>(this, [](Entity*) {});
     m_node           = new Node();
-    m_node->m_entity = this;
+    m_node->m_entity = m_sharedEntity;
     _parentId        = 0;
   }
 
@@ -124,11 +125,12 @@ namespace ToolKit
     return aabb;
   }
 
-  Entity* Entity::Copy() const
+  TKObjectPtr Entity::Copy() const
   {
-    EntityType t = GetType();
-    Entity* e    = GetEntityFactory()->CreateByType(t);
-    return CopyTo(e);
+    Entity* cpy = static_cast<Entity*>(GetObjectFactory()->MakeNew(Class()->Name));
+    CopyTo(cpy);
+
+    return std::shared_ptr<Entity>(cpy);
   }
 
   void Entity::ClearComponents()
@@ -147,7 +149,7 @@ namespace ToolKit
     other->ClearComponents();
     for (const ComponentPtr& com : m_components)
     {
-      other->m_components.push_back(com->Copy(other));
+      other->m_components.push_back(com->Copy(other->m_sharedEntity));
     }
 
     return other;
@@ -170,7 +172,7 @@ namespace ToolKit
     assert(other->GetType() == GetType());
     SafeDel(other->m_node);
     other->m_node           = m_node->Copy();
-    other->m_node->m_entity = other;
+    other->m_node->m_entity = other->m_sharedEntity;
 
     // Preserve Ids.
     ULongID id              = other->GetIdVal();
@@ -187,7 +189,7 @@ namespace ToolKit
   {
     assert(GetComponent(component->GetIdVal()) == nullptr && "Component has already been added.");
 
-    component->m_entity = this;
+    component->m_entity = m_sharedEntity;
     m_components.push_back(component);
   }
 
@@ -353,11 +355,11 @@ namespace ToolKit
     SetVisibleVal(vis);
     if (deep)
     {
-      EntityRawPtrArray children;
-      GetChildren(this, children);
-      for (Entity* c : children)
+      EntityPtrArray children;
+      GetChildren(m_sharedEntity, children);
+      for (EntityPtr child : children)
       {
-        c->SetVisibility(vis, true);
+        child->SetVisibility(vis, true);
       }
     }
   }
@@ -367,11 +369,11 @@ namespace ToolKit
     SetTransformLockVal(lock);
     if (deep)
     {
-      EntityRawPtrArray children;
-      GetChildren(this, children);
-      for (Entity* c : children)
+      EntityPtrArray children;
+      GetChildren(m_sharedEntity, children);
+      for (EntityPtr child : children)
       {
-        c->SetTransformLock(lock, true);
+        child->SetTransformLock(lock, true);
       }
     }
   }
@@ -421,76 +423,76 @@ namespace ToolKit
     return node;
   }
 
-  Entity* EntityFactory::CreateByType(EntityType type)
+  EntityPtr EntityFactory::CreateByType(EntityType type)
   {
-    Entity* ntt = nullptr;
+    EntityPtr ntt = nullptr;
     switch (type)
     {
     case EntityType::Entity_Base:
-      ntt = MakeNew<Entity>();
+      ntt = MakeNewPtr<Entity>();
       break;
     case EntityType::Entity_Node:
-      ntt = MakeNew<EntityNode>();
+      ntt = MakeNewPtr<EntityNode>();
       break;
     case EntityType::Entity_AudioSource:
-      ntt = MakeNew<AudioSource>();
+      ntt = MakeNewPtr<AudioSource>();
       break;
     case EntityType::Entity_Billboard:
-      ntt = MakeNew<Billboard>();
+      ntt = MakeNewPtr<Billboard>();
       break;
     case EntityType::Entity_Cube:
-      ntt = MakeNew<Cube>();
+      ntt = MakeNewPtr<Cube>();
       break;
     case EntityType::Entity_Quad:
-      ntt = MakeNew<Quad>();
+      ntt = MakeNewPtr<Quad>();
       break;
     case EntityType::Entity_Sphere:
-      ntt = MakeNew<Sphere>();
+      ntt = MakeNewPtr<Sphere>();
       break;
     case EntityType::Entity_Arrow:
-      ntt = MakeNew<Arrow2d>();
+      ntt = MakeNewPtr<Arrow2d>();
       break;
     case EntityType::Entity_LineBatch:
-      ntt = MakeNew<LineBatch>();
+      ntt = MakeNewPtr<LineBatch>();
       break;
     case EntityType::Entity_Cone:
-      ntt = MakeNew<Cone>();
+      ntt = MakeNewPtr<Cone>();
       break;
     case EntityType::Entity_Drawable:
-      ntt = MakeNew<Drawable>();
+      ntt = MakeNewPtr<Drawable>();
       break;
     case EntityType::Entity_Camera:
-      ntt = MakeNew<Camera>();
+      ntt = MakeNewPtr<Camera>();
       break;
     case EntityType::Entity_Surface:
-      ntt = MakeNew<Surface>();
+      ntt = MakeNewPtr<Surface>();
       break;
     case EntityType::Entity_Button:
-      ntt = MakeNew<Button>();
+      ntt = MakeNewPtr<Button>();
       break;
     case EntityType::Entity_Light:
-      ntt = MakeNew<Light>();
+      ntt = MakeNewPtr<Light>();
       break;
     case EntityType::Entity_DirectionalLight:
-      ntt = MakeNew<DirectionalLight>();
+      ntt = MakeNewPtr<DirectionalLight>();
       break;
     case EntityType::Entity_PointLight:
-      ntt = MakeNew<PointLight>();
+      ntt = MakeNewPtr<PointLight>();
       break;
     case EntityType::Entity_SpotLight:
-      ntt = MakeNew<SpotLight>();
+      ntt = MakeNewPtr<SpotLight>();
       break;
     case EntityType::Entity_Sky:
-      ntt = MakeNew<Sky>();
+      ntt = MakeNewPtr<Sky>();
       break;
     case EntityType::Entity_GradientSky:
-      ntt = MakeNew<GradientSky>();
+      ntt = MakeNewPtr<GradientSky>();
       break;
     case EntityType::Entity_Canvas:
-      ntt = MakeNew<Canvas>();
+      ntt = MakeNewPtr<Canvas>();
       break;
     case EntityType::Entity_Prefab:
-      ntt = MakeNew<Prefab>();
+      ntt = MakeNewPtr<Prefab>();
       break;
     case EntityType::Entity_SpriteAnim:
     case EntityType::UNUSEDSLOT_1:

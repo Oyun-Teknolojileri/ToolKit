@@ -38,7 +38,7 @@ namespace ToolKit
      public:
       static void ShowMaterialPtr(const String& uniqueName, const String& file, MaterialPtr& var, bool isEditable);
       static void ShowMaterialVariant(const String& uniqueName, const String& file, ParameterVariant* var);
-      static void ShowCustomData(Entity* m_entity,
+      static void ShowCustomData(EntityPtr m_entity,
                                  String headerName,
                                  ParameterVariantRawPtrArray& vars,
                                  bool isListEditable);

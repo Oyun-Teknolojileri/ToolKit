@@ -27,7 +27,7 @@
 #pragma once
 
 #include "ResourceManager.h"
-#include "Serialize.h"
+#include "TKObject.h"
 #include "Types.h"
 
 namespace ToolKit
@@ -45,9 +45,11 @@ namespace ToolKit
     return ResourceType::type;                                                                                         \
   }
 
-  class TK_API Resource : public Serializable
+  class TK_API Resource : public TKObject
   {
    public:
+    TKDeclareClass(Resource, TKObject);
+
     Resource();
     virtual ~Resource();
     virtual void Load() = 0;

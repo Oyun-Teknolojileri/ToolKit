@@ -72,14 +72,13 @@ namespace ToolKit
       return;
     }
 
-    m_size                       = size;
+    m_size                    = size;
 
-    const EntityRawPtrArray& arr = m_scene->GetEntities();
-    for (Entity* ntt : arr)
+    const EntityPtrArray& arr = m_scene->GetEntities();
+    for (EntityPtr ntt : arr)
     {
-      if (ntt->GetType() == EntityType::Entity_Canvas)
+      if (Canvas* canvasPanel = ntt->As<Canvas>())
       {
-        Canvas* canvasPanel = static_cast<Canvas*>(ntt);
         // Resize only root canvases.
         if (canvasPanel->m_node->m_parent == nullptr)
         {
@@ -116,13 +115,9 @@ namespace ToolKit
     return false;
   }
 
-  Camera* UIManager::GetUICamera() { return m_uiCamera; }
+  CameraPtr UIManager::GetUICamera() { return m_uiCamera; }
 
-  void UIManager::SetUICamera(Camera* cam)
-  {
-    SafeDel(m_uiCamera);
-    m_uiCamera = cam;
-  }
+  void UIManager::SetUICamera(CameraPtr cam) { m_uiCamera = cam; }
 
   void UIManager::UpdateSurfaces(Viewport* vp, const UILayerPtr& layer)
   {
@@ -132,8 +127,8 @@ namespace ToolKit
       return;
     }
 
-    const EntityRawPtrArray& entities = layer->m_scene->AccessEntityArray();
-    for (Entity* ntt : entities)
+    const EntityPtrArray& entities = layer->m_scene->AccessEntityArray();
+    for (EntityPtr ntt : entities)
     {
       // Process events.
       for (Event* e : events)
@@ -142,7 +137,7 @@ namespace ToolKit
         {
           continue;
         }
-        Surface* surface        = static_cast<Surface*>(ntt);
+        Surface* surface        = ntt->As<Surface>();
         bool mouseOverPrev      = surface->m_mouseOver;
 
         surface->m_mouseOver    = CheckMouseOver(surface, e, vp);
@@ -150,7 +145,7 @@ namespace ToolKit
 
         if (ntt->GetType() == EntityType::Entity_Button)
         {
-          Button* button        = static_cast<Button*>(ntt);
+          Button* button        = ntt->As<Button>();
           MaterialPtr hoverMat  = button->GetHoverMaterialVal();
           MaterialPtr normalMat = button->GetButtonMaterialVal();
           button->SetMaterialVal(surface->m_mouseOver && hoverMat ? hoverMat : normalMat);
@@ -181,12 +176,12 @@ namespace ToolKit
 
   UIManager::UIManager()
   {
-    m_uiCamera = new Camera();
+    m_uiCamera = MakeNewPtr<Camera>();
     m_uiCamera->SetLens(-100.0f, 100.0f, -100.0f, 100.0f, 0.5f, 1000.0f);
     m_uiCamera->m_orthographicScale = 1.0f;
   }
 
-  UIManager::~UIManager() { SafeDel(m_uiCamera); }
+  UIManager::~UIManager() {}
 
   void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)
   {
@@ -194,7 +189,7 @@ namespace ToolKit
 
     // Swap viewport camera with ui camera.
     ULongID attachmentSwap = NULL_HANDLE;
-    viewport->SwapCamera(&m_uiCamera, attachmentSwap);
+    viewport->SwapCamera(m_uiCamera, attachmentSwap);
 
     // Update viewports with ui camera.
     for (auto& viewLayerArray : m_viewportIdLayerArrayMap)
@@ -210,7 +205,7 @@ namespace ToolKit
       }
     }
 
-    viewport->SwapCamera(&m_uiCamera, attachmentSwap);
+    viewport->SwapCamera(m_uiCamera, attachmentSwap);
   }
 
   void UIManager::ResizeLayers(Viewport* viewport)

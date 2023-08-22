@@ -192,8 +192,8 @@ namespace ToolKit
 
     void EditorViewport2d::AdjustZoom(float delta)
     {
-      Camera* cam = GetCamera();
-      float zoom  = cam->m_orthographicScale;
+      CameraPtr cam = GetCamera();
+      float zoom    = cam->m_orthographicScale;
       if (delta == 0.0f && glm::equal(100.0f / m_zoomPercentage, zoom))
       {
         return;
@@ -229,7 +229,7 @@ namespace ToolKit
 
     void EditorViewport2d::PanZoom(float deltaTime)
     {
-      Camera* cam = GetCamera();
+      CameraPtr cam = GetCamera();
 
       // Adjust zoom always.
       if (m_mouseOverContentArea)
@@ -262,7 +262,7 @@ namespace ToolKit
       m_anchorMode->Init();
 
       ResetViewportImage(GetRenderTargetSettings());
-      Camera* cam              = GetCamera();
+      CameraPtr cam            = GetCamera();
       cam->m_orthographicScale = 1.0f;
       cam->m_node->SetTranslation(Z_AXIS * 10.0f);
 

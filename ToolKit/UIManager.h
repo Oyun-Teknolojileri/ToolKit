@@ -162,7 +162,7 @@ namespace ToolKit
      * Returns the UI camera that is used to render and update the layers.
      * @return The camera to update and render the Layers with.
      */
-    Camera* GetUICamera();
+    CameraPtr GetUICamera();
 
     /**
      * Sets the UI camera which will be used for updating & rendering layers
@@ -170,7 +170,7 @@ namespace ToolKit
      * camera.
      * @param cam is the camera to be set as the ui camera for the manager.
      */
-    void SetUICamera(Camera* cam);
+    void SetUICamera(CameraPtr cam);
 
    private:
     /**
@@ -211,7 +211,7 @@ namespace ToolKit
     /**
      * Camera to render the UI and update the layers with.
      */
-    Camera* m_uiCamera = nullptr;
+    CameraPtr m_uiCamera = nullptr;
   };
 
 } // namespace ToolKit

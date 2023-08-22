@@ -48,7 +48,7 @@ namespace ToolKit
     AnimControllerComponent();
     virtual ~AnimControllerComponent();
 
-    ComponentPtr Copy(Entity* ntt) override;
+    ComponentPtr Copy(EntityPtr ntt) override;
 
     void Play(const String& recordName);
     void Stop();

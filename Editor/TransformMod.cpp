@@ -57,15 +57,15 @@ namespace ToolKit
         return NullSignal;
       }
 
-      Entity* e = currScene->GetCurrentSelection();
-      if (e != nullptr)
+      EntityPtr ntt = currScene->GetCurrentSelection();
+      if (ntt != nullptr)
       {
         // Get world location as gizmo origin.
-        m_gizmo->m_worldLocation = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        m_gizmo->m_worldLocation = ntt->m_node->GetTranslation();
 
         if (g_app->m_transformSpace == TransformationSpace::TS_LOCAL)
         {
-          m_gizmo->m_normalVectors = e->m_node->GetTransformAxes();
+          m_gizmo->m_normalVectors = ntt->m_node->GetTransformAxes();
         }
         else
         {
@@ -96,8 +96,8 @@ namespace ToolKit
     {
       if (g_app->m_gizmo == nullptr)
       {
-        Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
-        if (e != nullptr)
+        EntityPtr ntt = g_app->GetCurrentScene()->GetCurrentSelection();
+        if (ntt != nullptr)
         {
           g_app->m_gizmo = m_gizmo;
         }
@@ -148,8 +148,8 @@ namespace ToolKit
 
       MakeSureGizmoIsValid();
 
-      Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
-      if (e != nullptr)
+      EntityPtr ntt = g_app->GetCurrentScene()->GetCurrentSelection();
+      if (ntt != nullptr)
       {
         EditorViewport* vp = g_app->GetActiveViewport();
         if (vp == nullptr)
@@ -214,8 +214,8 @@ namespace ToolKit
           }
         }
 
-        Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
-        if (m_gizmo->IsGrabbed(AxisLabel::None) || e == nullptr)
+        EntityPtr ntt = g_app->GetCurrentScene()->GetCurrentSelection();
+        if (m_gizmo->IsGrabbed(AxisLabel::None) || ntt == nullptr)
         {
           return StateType::StateBeginPick;
         }
@@ -234,8 +234,8 @@ namespace ToolKit
 
       if (signal == BaseMod::m_leftMouseBtnDragSgnl)
       {
-        Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
-        if (e == nullptr)
+        EntityPtr ntt = g_app->GetCurrentScene()->GetCurrentSelection();
+        if (ntt == nullptr)
         {
           return StateType::Null;
         }
@@ -263,10 +263,10 @@ namespace ToolKit
 
     void StateTransformBegin::CalculateIntersectionPlane()
     {
-      if (PolarGizmo* pg = dynamic_cast<PolarGizmo*>(m_gizmo))
+      if (PolarGizmo* pg = m_gizmo->As<PolarGizmo>())
       {
         // Polar intersection plane.
-        if (static_cast<int>(m_gizmo->GetGrabbedAxis()) < 3)
+        if ((int) (m_gizmo->GetGrabbedAxis()) < 3)
         {
           assert(m_gizmo->GetGrabbedAxis() != AxisLabel::None);
 
@@ -354,10 +354,10 @@ namespace ToolKit
     // TransformAction
     //////////////////////////////////////////////////////////////////////////
 
-    TransformAction::TransformAction(Entity* ntt)
+    TransformAction::TransformAction(EntityPtr ntt)
     {
       m_entity    = ntt;
-      m_transform = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
+      m_transform = ntt->m_node->GetTransform();
     }
 
     TransformAction::~TransformAction() {}
@@ -368,7 +368,7 @@ namespace ToolKit
 
     void TransformAction::Swap()
     {
-      Mat4 backUp = m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
+      Mat4 backUp = m_entity->m_node->GetTransform();
       m_entity->m_node->SetTransform(m_transform, TransformationSpace::TS_WORLD, false);
       m_transform = backUp;
     }
@@ -380,7 +380,7 @@ namespace ToolKit
     {
       StateTransformBase::TransitionIn(prevState);
 
-      EntityRawPtrArray entities, selecteds;
+      EntityPtrArray entities, selecteds;
       EditorScenePtr currScene = g_app->GetCurrentScene();
       currScene->GetSelectedEntities(selecteds);
       GetRootEntities(selecteds, entities);
@@ -392,7 +392,7 @@ namespace ToolKit
         }
 
         int actionEntityCount = 0;
-        for (Entity* ntt : entities)
+        for (EntityPtr ntt : entities)
         {
           if (ntt->GetTransformLockVal())
           {
@@ -407,7 +407,7 @@ namespace ToolKit
 
       m_delta      = ZERO;
       m_deltaAccum = ZERO;
-      m_initialLoc = currScene->GetCurrentSelection()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      m_initialLoc = currScene->GetCurrentSelection()->m_node->GetTranslation();
       SDL_GetGlobalMouseState(&m_mouseInitialLoc.x, &m_mouseInitialLoc.y);
     }
 
@@ -417,7 +417,7 @@ namespace ToolKit
       m_gizmo->m_grabPoint = ZERO;
 
       // Set the mouse position roughly.
-      SDL_WarpMouseGlobal(static_cast<int>(m_mouseData[1].x), static_cast<int>(m_mouseData[1].y));
+      SDL_WarpMouseGlobal((int) (m_mouseData[1].x), (int) (m_mouseData[1].y));
     }
 
     SignalId StateTransformTo::Update(float deltaTime)
@@ -498,21 +498,21 @@ namespace ToolKit
 
     void StateTransformTo::Transform(const Vec3& delta)
     {
-      EntityRawPtrArray roots;
+      EntityPtrArray roots;
       EditorScenePtr currScene = g_app->GetCurrentScene();
       currScene->GetSelectedEntities(roots);
 
-      Entity* e = currScene->GetCurrentSelection();
+      EntityPtr e = currScene->GetCurrentSelection();
       NodeRawPtrArray parents;
 
       // Make all selecteds child of current & store their original parents.
-      for (Entity* ntt : roots)
+      for (EntityPtr ntt : roots)
       {
         parents.push_back(ntt->m_node->m_parent);
         ntt->m_node->OrphanSelf(true);
       }
 
-      for (Entity* ntt : roots)
+      for (EntityPtr ntt : roots)
       {
         if (ntt != e)
         {
@@ -554,7 +554,7 @@ namespace ToolKit
       }
     }
 
-    void StateTransformTo::Translate(Entity* ntt)
+    void StateTransformTo::Translate(EntityPtr ntt)
     {
       Vec3 delta = m_delta;
       if (!IsPlaneMod())
@@ -602,10 +602,10 @@ namespace ToolKit
       ntt->m_node->SetTranslation(target, TransformationSpace::TS_WORLD);
     }
 
-    void StateTransformTo::Rotate(Entity* ntt)
+    void StateTransformTo::Rotate(EntityPtr ntt)
     {
       EditorViewport* viewport = g_app->GetActiveViewport();
-      PolarGizmo* pg           = static_cast<PolarGizmo*>(m_gizmo);
+      PolarGizmo* pg           = static_cast<PolarGizmo*>(m_gizmo.get());
       int axisInd              = static_cast<int>(m_gizmo->GetGrabbedAxis());
       Vec3 projAxis            = pg->m_handles[axisInd]->m_tangentDir;
       Vec3 mouseDelta          = m_delta;
@@ -639,7 +639,7 @@ namespace ToolKit
       }
     }
 
-    void StateTransformTo::Scale(Entity* ntt)
+    void StateTransformTo::Scale(EntityPtr ntt)
     {
       Vec3 scaleAxes[7];
       scaleAxes[(int) AxisLabel::X]   = X_AXIS;
@@ -770,11 +770,7 @@ namespace ToolKit
 
     TransformMod::TransformMod(ModId id) : BaseMod(id) { m_gizmo = nullptr; }
 
-    TransformMod::~TransformMod()
-    {
-      g_app->m_gizmo = nullptr;
-      SafeDel(m_gizmo);
-    }
+    TransformMod::~TransformMod() { g_app->m_gizmo = nullptr; }
 
     void TransformMod::Init()
     {
@@ -783,15 +779,15 @@ namespace ToolKit
       switch (m_id)
       {
       case ModId::Move:
-        m_gizmo           = MakeNew<MoveGizmo>();
+        m_gizmo           = MakeNewPtr<MoveGizmo>();
         baseState->m_type = StateTransformBase::TransformType::Translate;
         break;
       case ModId::Rotate:
-        m_gizmo           = MakeNew<PolarGizmo>();
+        m_gizmo           = MakeNewPtr<PolarGizmo>();
         baseState->m_type = StateTransformBase::TransformType::Rotate;
         break;
       case ModId::Scale:
-        m_gizmo           = MakeNew<ScaleGizmo>();
+        m_gizmo           = MakeNewPtr<ScaleGizmo>();
         baseState->m_type = StateTransformBase::TransformType::Scale;
         break;
       default:

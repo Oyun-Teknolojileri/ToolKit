@@ -114,10 +114,11 @@ namespace ToolKit
       SafeDel(m_publishManager);
 
       // Editor objects.
-      SafeDel(m_2dGrid);
-      SafeDel(m_grid);
-      SafeDel(m_origin);
-      SafeDel(m_cursor);
+      m_2dGrid = nullptr;
+      m_grid   = nullptr;
+      m_origin = nullptr;
+      m_cursor = nullptr;
+
       if (m_dbgArrow)
       {
         GetCurrentScene()->RemoveEntity(m_dbgArrow->GetIdVal());
@@ -129,10 +130,6 @@ namespace ToolKit
         m_dbgFrustum = nullptr;
       }
 
-      for (Entity* dbgObj : m_perFrameDebugObjects)
-      {
-        SafeDel(dbgObj);
-      }
       m_perFrameDebugObjects.clear();
     }
 
@@ -554,9 +551,9 @@ namespace ToolKit
 
     void App::SetCurrentScene(const EditorScenePtr& scene) { GetSceneManager()->SetCurrentScene(scene); }
 
-    void App::FocusEntity(Entity* entity)
+    void App::FocusEntity(EntityPtr entity)
     {
-      Camera* cam = nullptr;
+      CameraPtr cam = nullptr;
       if (Viewport* viewport = GetActiveViewport())
       {
         cam = viewport->GetCamera();
@@ -1201,7 +1198,8 @@ namespace ToolKit
 
     void App::HideGizmos()
     {
-      for (Entity* ntt : GetCurrentScene()->GetEntities())
+      const EntityPtrArray& entities = GetCurrentScene()->GetEntities();
+      for (EntityPtr ntt : entities)
       {
         // Light and camera gizmos
         if (ntt->IsLightInstance() || ntt->GetType() == EntityType::Entity_Camera)
@@ -1213,7 +1211,8 @@ namespace ToolKit
 
     void App::ShowGizmos()
     {
-      for (Entity* ntt : GetCurrentScene()->GetEntities())
+      const EntityPtrArray& entities = GetCurrentScene()->GetEntities();
+      for (EntityPtr ntt : entities)
       {
         // Light and camera gizmos
         if (ntt->IsLightInstance() || ntt->GetType() == EntityType::Entity_Camera)
@@ -1398,13 +1397,13 @@ namespace ToolKit
     void App::CreateEditorEntities()
     {
       // Create editor objects.
-      m_cursor = MakeNew<Cursor>();
-      m_origin = MakeNew<Axis3d>();
+      m_cursor = MakeNewPtr<Cursor>();
+      m_origin = MakeNewPtr<Axis3d>();
 
-      m_grid   = MakeNew<Grid>();
+      m_grid   = MakeNewPtr<Grid>();
       m_grid->Resize(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0);
 
-      m_2dGrid         = MakeNew<Grid>();
+      m_2dGrid         = MakeNewPtr<Grid>();
       m_2dGrid->m_is2d = true;
       m_2dGrid->Resize(g_max2dGridSize, AxisLabel::XY, 10.0f, 4.0);
     }

@@ -34,6 +34,7 @@
 #include <DirectionComponent.h>
 #include <Entity.h>
 #include <MathUtil.h>
+#include <Surface.h>
 
 #include <DebugNew.h>
 
@@ -279,17 +280,17 @@ namespace ToolKit
     {
       // Construct the ignore list.
       m_ignoreList.clear();
-      EntityRawPtrArray ignores;
+      EntityPtrArray ignores;
       if (EditorViewport* vp = g_app->GetActiveViewport())
       {
         if (vp->GetType() == Window::Type::Viewport)
         {
-          ignores = g_app->GetCurrentScene()->Filter([](Entity* ntt) -> bool { return ntt->IsSurfaceInstance(); });
+          ignores = g_app->GetCurrentScene()->Filter([](EntityPtr ntt) -> bool { return ntt->IsA<Surface>(); });
         }
 
         if (vp->GetType() == Window::Type::Viewport2d)
         {
-          ignores = g_app->GetCurrentScene()->Filter([](Entity* ntt) -> bool { return !ntt->IsSurfaceInstance(); });
+          ignores = g_app->GetCurrentScene()->Filter([](EntityPtr ntt) -> bool { return !ntt->IsA<Surface>(); });
         }
       }
 
@@ -330,7 +331,7 @@ namespace ToolKit
             {
               //              g_app->m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
               m_ignoreList.push_back(g_app->m_dbgArrow->GetIdVal());
-              currScene->AddEntity(g_app->m_dbgArrow.get());
+              currScene->AddEntity(g_app->m_dbgArrow);
             }
 
             g_app->m_dbgArrow->m_node->SetTranslation(ray.position);
@@ -364,7 +365,7 @@ namespace ToolKit
         EditorViewport* vp = g_app->GetActiveViewport();
         if (vp != nullptr)
         {
-          Camera* cam = vp->GetCamera();
+          CameraPtr cam = vp->GetCamera();
 
           Vec2 rect[4];
           GetMouseRect(rect[0], rect[2]);
@@ -462,7 +463,7 @@ namespace ToolKit
               g_app->m_dbgFrustum = MakeNewPtr<LineBatch>();
               g_app->m_dbgFrustum->Generate(corners, X_AXIS, DrawType::Line);
               m_ignoreList.push_back(g_app->m_dbgFrustum->GetIdVal());
-              currScene->AddEntity(g_app->m_dbgFrustum.get());
+              currScene->AddEntity(g_app->m_dbgFrustum);
             }
             else
             {
@@ -530,23 +531,23 @@ namespace ToolKit
       }
 
       // Gather the selection hierarchy.
-      EntityRawPtrArray deleteList;
+      EntityPtrArray deleteList;
       g_app->GetCurrentScene()->GetSelectedEntities(deleteList);
 
-      EntityRawPtrArray roots;
+      EntityPtrArray roots;
       GetRootEntities(deleteList, roots);
 
       deleteList.clear();
-      for (Entity* e : roots)
+      for (EntityPtr ntt : roots)
       {
         // Gather hierarchy from parent to child.
-        deleteList.push_back(e);
-        if (e->GetType() == EntityType::Entity_Prefab)
+        deleteList.push_back(ntt);
+        if (ntt->GetType() == EntityType::Entity_Prefab)
         {
           // Entity will already delete its own childs
           continue;
         }
-        GetChildren(e, deleteList);
+        GetChildren(ntt, deleteList);
       }
 
       // Revert to recover hierarchies.
@@ -557,9 +558,9 @@ namespace ToolKit
       {
         ActionManager::GetInstance()->BeginActionGroup();
 
-        for (Entity* e : deleteList)
+        for (EntityPtr ntt : deleteList)
         {
-          ActionManager::GetInstance()->AddAction(new DeleteAction(e));
+          ActionManager::GetInstance()->AddAction(new DeleteAction(ntt));
           deleteActCount++;
         }
         ActionManager::GetInstance()->GroupLastActions(deleteActCount);
@@ -572,7 +573,7 @@ namespace ToolKit
 
     void StateDuplicate::TransitionIn(State* prevState)
     {
-      EntityRawPtrArray selecteds;
+      EntityPtrArray selecteds;
       EditorScenePtr currScene = g_app->GetCurrentScene();
       currScene->GetSelectedEntities(selecteds);
       if (!selecteds.empty())
@@ -583,21 +584,21 @@ namespace ToolKit
           ActionManager::GetInstance()->BeginActionGroup();
         }
 
-        EntityRawPtrArray selectedRoots;
+        EntityPtrArray selectedRoots;
         GetRootEntities(selecteds, selectedRoots);
 
         int cpyCount = 0;
         bool copy    = ImGui::GetIO().KeyCtrl;
         if (copy)
         {
-          for (Entity* ntt : selectedRoots)
+          for (EntityPtr ntt : selectedRoots)
           {
-            EntityRawPtrArray copies;
+            EntityPtrArray copies;
             // Prefab will already create its own child prefab scene entities,
             //  So don't need to copy them too!
-            if (ntt->GetType() == EntityType::Entity_Prefab)
+            if (ntt->IsA<Prefab>())
             {
-              copies.push_back(ntt->Copy());
+              copies.push_back(Cast<Entity>(ntt->Copy()));
             }
             else
             {
@@ -605,7 +606,7 @@ namespace ToolKit
             }
             copies[0]->m_node->SetTransform(ntt->m_node->GetTransform(), TransformationSpace::TS_WORLD, false);
 
-            for (Entity* cpy : copies)
+            for (EntityPtr cpy : copies)
             {
               ActionManager::GetInstance()->AddAction(new CreateAction(cpy));
             }

@@ -64,6 +64,8 @@ namespace ToolKit
       TexturePtr m_iconImage = nullptr;
     };
 
+    typedef std::shared_ptr<EditorBillboardBase> EditorBillboardPtr;
+    typedef std::vector<EditorBillboardPtr> BillboardPtrArray;
     typedef std::vector<EditorBillboardBase*> BillboardRawPtrArray;
 
     class Cursor : public EditorBillboardBase
@@ -79,6 +81,8 @@ namespace ToolKit
       void Generate() override;
     };
 
+    typedef std::shared_ptr<Cursor> CursorPtr;
+
     class Axis3d : public EditorBillboardBase
     {
      public:
@@ -91,6 +95,8 @@ namespace ToolKit
      private:
       void Generate() override;
     };
+
+    typedef std::shared_ptr<Axis3d> Axis3dPtr;
 
     class GizmoHandle
     {
@@ -167,7 +173,7 @@ namespace ToolKit
       void Grab(AxisLabel axis);
       AxisLabel GetGrabbedAxis() const;
 
-      void LookAt(class Camera* cam, float windowHeight) override;
+      void LookAt(CameraPtr cam, float windowHeight) override;
 
      protected:
       virtual GizmoHandle::Params GetParam() const;
@@ -183,6 +189,8 @@ namespace ToolKit
       std::vector<AxisLabel> m_lockedAxis;
       AxisLabel m_grabbedAxis = AxisLabel::None;
     };
+
+    typedef std::shared_ptr<Gizmo> GizmoPtr;
 
     class LinearGizmo : public Gizmo
     {
@@ -246,6 +254,8 @@ namespace ToolKit
       void Generate() override;
     };
 
+    typedef std::shared_ptr<SkyBillboard> SkyBillboardPtr;
+
     class LightBillboard : public EditorBillboardBase
     {
      public:
@@ -257,6 +267,8 @@ namespace ToolKit
 
       void Generate() override;
     };
+
+    typedef std::shared_ptr<LightBillboard> LightBillboardPtr;
 
   } // namespace Editor
 } // namespace ToolKit

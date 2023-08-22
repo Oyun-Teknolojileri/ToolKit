@@ -54,29 +54,29 @@ namespace ToolKit
     {
       Renderer* renderer = GetRenderer();
 
-      for (EditorBillboardBase* bb : m_params.GizmoArray)
+      for (EditorBillboardPtr billboard : m_params.GizmoArray)
       {
-        if (bb->GetBillboardType() == EditorBillboardBase::BillboardType::Rotate)
+        if (billboard->GetBillboardType() == EditorBillboardBase::BillboardType::Rotate)
         {
-          Mat4 ts = bb->m_node->GetTransform();
+          Mat4 ts = billboard->m_node->GetTransform();
           m_depthMaskSphere->m_node->SetTransform(ts, TransformationSpace::TS_WORLD, false);
 
           renderer->ColorMask(false, false, false, false);
 
           RenderJobArray jobs;
-          RenderJobProcessor::CreateRenderJobs({m_depthMaskSphere.get()}, jobs);
+          RenderJobProcessor::CreateRenderJobs({m_depthMaskSphere}, jobs);
           renderer->Render(jobs, m_camera);
 
           renderer->ColorMask(true, true, true, true);
 
           jobs.clear();
-          RenderJobProcessor::CreateRenderJobs({bb}, jobs);
+          RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
           renderer->Render(jobs, m_camera);
         }
         else
         {
           RenderJobArray jobs;
-          RenderJobProcessor::CreateRenderJobs({bb}, jobs);
+          RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
           renderer->Render(jobs, m_camera);
         }
       }
@@ -93,10 +93,10 @@ namespace ToolKit
       renderer->ClearBuffer(GraphicBitFields::DepthBits, Vec4(1.0f));
 
       // Update.
-      BillboardRawPtrArray& gizmoArray = m_params.GizmoArray;
+      BillboardPtrArray& gizmoArray = m_params.GizmoArray;
       gizmoArray.erase(std::remove_if(gizmoArray.begin(),
                                       gizmoArray.end(),
-                                      [this](EditorBillboardBase* bb) -> bool
+                                      [this](EditorBillboardPtr bb) -> bool
                                       {
                                         if (bb == nullptr)
                                         {

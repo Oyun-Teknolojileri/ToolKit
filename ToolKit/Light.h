@@ -68,7 +68,7 @@ namespace ToolKit
 
     Mat4 m_shadowMapCameraProjectionViewMatrix;
     float m_shadowMapCameraFar     = 1.0f;
-    Camera* m_shadowCamera         = nullptr;
+    CameraPtr m_shadowCamera       = nullptr;
     int m_shadowAtlasLayer         = -1;
     Vec2 m_shadowAtlasCoord        = Vec2(-1.0f);
     bool m_shadowResolutionUpdated = false;
@@ -101,12 +101,14 @@ namespace ToolKit
    private:
     // Fits the entities into the shadow map camera frustum. As the scene gets
     // bigger, the resolution gets lower.
-    void FitEntitiesBBoxIntoShadowFrustum(Camera* lightCamera, const RenderJobArray& jobs);
+    void FitEntitiesBBoxIntoShadowFrustum(CameraPtr lightCamera, const RenderJobArray& jobs);
 
     // Fits view frustum of the camera into shadow map camera frustum. As the
     // view frustum gets bigger, the resolution gets lower.
-    void FitViewFrustumIntoLightFrustum(Camera* lightCamera, Camera* viewCamera);
+    void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, Camera* viewCamera);
   };
+
+  typedef std::shared_ptr<DirectionalLight> DirectionalLightPtr;
 
   // PointLight
   //////////////////////////////////////////
@@ -132,6 +134,8 @@ namespace ToolKit
    public:
     TKDeclareParam(float, Radius);
   };
+
+  typedef std::shared_ptr<PointLight> PointLightLightPtr;
 
   // SpotLight
   //////////////////////////////////////////
@@ -160,5 +164,7 @@ namespace ToolKit
 
     Frustum n_frustumCache; //!< Updated after call to UpdateShadowCamera().
   };
+
+  typedef std::shared_ptr<SpotLight> SpotLightPtr;
 
 } // namespace ToolKit

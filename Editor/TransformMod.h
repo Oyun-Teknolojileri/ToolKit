@@ -58,8 +58,8 @@ namespace ToolKit
       bool IsPlaneMod();
 
      public:
-      Gizmo* m_gizmo;
-      std::vector<Vec2> m_mouseData;
+      GizmoPtr m_gizmo;
+      Vec2Array m_mouseData;
       PlaneEquation m_intersectionPlane;
       TransformType m_type;
     };
@@ -82,7 +82,7 @@ namespace ToolKit
     class TransformAction : public Action
     {
      public:
-      explicit TransformAction(Entity* ntt);
+      explicit TransformAction(EntityPtr ntt);
       virtual ~TransformAction();
 
       virtual void Undo();
@@ -92,7 +92,7 @@ namespace ToolKit
       void Swap();
 
      private:
-      Entity* m_entity;
+      EntityPtr m_entity;
       Mat4 m_transform;
     };
 
@@ -108,9 +108,9 @@ namespace ToolKit
      private:
       void CalculateDelta();
       void Transform(const Vec3& delta);
-      void Translate(Entity* ntt);
-      void Rotate(Entity* ntt);
-      void Scale(Entity* ntt);
+      void Translate(EntityPtr ntt);
+      void Rotate(EntityPtr ntt);
+      void Scale(EntityPtr ntt);
 
      public:
       Vec3 m_delta;
@@ -142,7 +142,7 @@ namespace ToolKit
       void Update(float deltaTime) override;
 
      public:
-      Gizmo* m_gizmo;
+      GizmoPtr m_gizmo;
 
      private:
       TransformationSpace m_prevTransformSpace;

@@ -117,7 +117,7 @@ namespace ToolKit
        */
       MaterialPtr m_unlitOverride                       = nullptr;
       MaterialPtr m_blackMaterial                       = nullptr;
-      
+
       BillboardPassPtr m_billboardPass                  = nullptr;
       SceneRendererPtr m_scenePass                      = nullptr;
       ForwardRenderPassPtr m_uiPass                     = nullptr;
@@ -131,12 +131,12 @@ namespace ToolKit
       FXAAPassPtr m_fxaaPass                            = nullptr;
       FullQuadPassPtr m_skipFramePass                   = nullptr;
       SingleMatForwardRenderPassPtr m_singleMatRenderer = nullptr;
-      Camera* m_camera                                  = nullptr;
+      CameraPtr m_camera                                = nullptr;
 
       /**
        * Selected entity list
        */
-      EntityRawPtrArray m_selecteds;
+      EntityPtrArray m_selecteds;
     };
 
   } // namespace Editor

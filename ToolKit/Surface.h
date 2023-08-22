@@ -131,4 +131,6 @@ namespace ToolKit
     SurfaceEventCallback m_onMouseExitLocal;
   };
 
+  typedef std::shared_ptr<Button> ButtonPtr;
+
 } //  namespace ToolKit

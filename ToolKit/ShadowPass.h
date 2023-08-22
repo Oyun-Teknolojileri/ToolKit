@@ -34,7 +34,7 @@ namespace ToolKit
 
   struct ShadowPassParams
   {
-    LightRawPtrArray Lights  = {};
+    LightPtrArray Lights     = {};
     RenderJobArray RendeJobs = {};
   };
 
@@ -55,14 +55,14 @@ namespace ToolKit
     RenderTargetPtr GetShadowAtlas();
 
    private:
-    void RenderShadowMaps(Light* light, const RenderJobArray& jobs);
+    void RenderShadowMaps(LightPtr light, const RenderJobArray& jobs);
 
     /**
      * Sets layer and coordinates of the shadow maps in shadow atlas.
      * @param lights Light array that have shadows.
      * @return number of layers needed.
      */
-    int PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights);
+    int PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights);
 
     /**
      * Creates a shadow atlas for m_params.Lights
