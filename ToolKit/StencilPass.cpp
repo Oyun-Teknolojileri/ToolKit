@@ -99,6 +99,8 @@ namespace ToolKit
     m_copyStencilSubPass->m_params.FrameBuffer      = m_frameBuffer;
     m_copyStencilSubPass->m_params.ClearFrameBuffer = false;
 
+    // Allow writing on to stencil before clear operation.
+    renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
     renderer->SetFramebuffer(m_frameBuffer, true, Vec4(0.0f));
     renderer->SetCameraLens(m_params.Camera);
   }
