@@ -1,6 +1,7 @@
 <shader>
 	<type name = "fragmentShader" />
 	<include name = "AdditivePBRLighting.shader" />
+	<include name = "AO.shader" />
 	<uniform name = "lightingType" />
 	<source>
 	<!--
@@ -23,24 +24,15 @@
 		// ibl buffer
 		// uniform sampler2D s_texture16;
 
-		uniform int isScreenSpace;
 		uniform vec3 camPos;
 
 		in vec2 v_texture;
+
 		out vec3 fragColor;
 
 		void main()
 		{
-			vec2 texCoord;
-			if (isScreenSpace == 1)
-			{
-				texCoord = vec2(v_texture.x, 1.0 - v_texture.y);
-			}
-			else // mesh space
-			{
-				texCoord = gl_FragCoord.xy / vec2(textureSize(s_texture9, 0));
-			}
-
+			vec2 texCoord = vec2(v_texture.x, 1.0 - v_texture.y);
 			vec3 position = texture(s_texture9, texCoord).rgb;
 			vec3 normal   = texture(s_texture10, texCoord).rgb;
 			vec3 color    = texture(s_texture11, texCoord).rgb;

@@ -59,7 +59,7 @@ namespace ToolKit
     NONE,
     SRC_ALPHA_ONE_MINUS_SRC_ALPHA,
     ALPHA_MASK,
-    ONE_TO_ONE // Additive
+    ONE_TO_ONE
   };
 
   enum class DrawType
@@ -83,7 +83,7 @@ namespace ToolKit
     None,
     Mesh,
     SkinMesh
-  };   
+  };
 
   class TK_API RenderState : public Serializable
   {

@@ -28,7 +28,6 @@
 
 #include "FullQuadPass.h"
 #include "Pass.h"
-#include "Primative.h"
 
 namespace ToolKit
 {
@@ -54,19 +53,14 @@ namespace ToolKit
         void Render() override;
     private:
         void SetLightUniforms(Light* light, int lightType);
-        uint64 ConeMeshHash(float radius, float outerAngle);
 
     public:
         LightingPassParams m_params;
         FullQuadPassPtr m_fullQuadPass         = nullptr;
         RenderTargetPtr m_lightingRt           = nullptr;
         FramebufferPtr m_lightingFrameBuffer   = nullptr; 
-        SpherePtr m_sphereEntity               = nullptr;
-        SpherePtr m_sphereMesh                 = nullptr;
-        MaterialPtr m_meshMaterial             = nullptr;
         ShaderPtr m_mergeShader                = nullptr; 
         ShaderPtr m_lightingShader             = nullptr;
-        std::unordered_map<uint64, EntityPtr> m_coneMeshMap;
     };
 
     typedef std::shared_ptr<AdditiveLightingPass> LightingPassPtr;

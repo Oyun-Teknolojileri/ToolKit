@@ -96,7 +96,7 @@
       }
       break;
     }
-
+  
     return irradiance;
   }
 	-->

@@ -100,7 +100,6 @@ namespace ToolKit
   typedef std::vector<byte> ByteArray;
   typedef uint32_t uint;
   typedef uint8_t uint8;
-  typedef uint64_t uint64;
   typedef uint64_t ULongID;
   typedef const int16_t SignalId;
   typedef std::shared_ptr<class Resource> ResourcePtr;

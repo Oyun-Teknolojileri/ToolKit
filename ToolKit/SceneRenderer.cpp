@@ -106,7 +106,6 @@ namespace ToolKit
     renderer->SetShadowAtlas(std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
     // Render non-blended entities with deferred renderer
-    // m_passArray.push_back(m_deferredRenderPass);
     m_passArray.push_back(m_lightingPass);
     
     if (m_drawSky)

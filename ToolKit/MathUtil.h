@@ -89,20 +89,6 @@ namespace ToolKit
 
   TK_API IntersectResult FrustumBoxIntersection(const Frustum& frustum,
                                                 const BoundingBox& box); // 0 outside, 1 inside, 2 intersect
-  
-  TK_API bool ConePointIntersection(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, Vec3 point);
-  
-  TK_API bool FrustumConeIntersect(const Frustum& frustum, 
-                                   Vec3 conePos, 
-                                   Vec3 coneDir, 
-                                   float coneHeight, 
-                                   float coneAngle);
-
-  TK_API Quaternion QuaternionLookAt(Vec3 direction);
-
-  TK_API bool FrustumSphereIntersection(const Frustum& frustum, const Vec3& pos, float radius);
-  
-  // TK_API bool FrustumSphereIntersection(const Frustum& frustum, Vec3 pos, float radius);
 
   TK_API bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t);
 
