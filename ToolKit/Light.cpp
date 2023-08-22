@@ -31,6 +31,7 @@
 #include "DirectionComponent.h"
 #include "Material.h"
 #include "MathUtil.h"
+#include "Mesh.h"
 #include "Pass.h"
 #include "Renderer.h"
 #include "Shader.h"
@@ -54,7 +55,7 @@ namespace ToolKit
     Color_Define(Vec3(1.0f), "Light", 0, true, true, {true});
     Intensity_Define(1.0f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
     CastShadow_Define(false, "Light", 90, true, true);
-    ShadowRes_Define(1024.0f, "Light", 90, true, true, {false, true, 32.0f, 4096.0f, 2.0f});
+    ShadowRes_Define(512.0f, "Light", 90, true, true, {false, true, 32.0f, 4096.0f, 2.0f});
     PCFSamples_Define(32, "Light", 90, true, true, {false, true, 0, 128, 1});
     PCFRadius_Define(0.01f, "Light", 90, true, true, {false, true, 0.0f, 5.0f, 0.0001f});
     ShadowBias_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 20000.0f, 0.01f});
@@ -259,7 +260,7 @@ namespace ToolKit
     }
     center                 /= 8.0f;
 
-    TransformationSpace ts = TransformationSpace::TS_WORLD;
+    TransformationSpace ts  = TransformationSpace::TS_WORLD;
     lightCamera->m_node->SetTranslation(center, ts);
     lightCamera->m_node->SetOrientation(m_node->GetOrientation(ts), ts);
     const Mat4 lightView = lightCamera->GetViewMatrix();
@@ -324,7 +325,7 @@ namespace ToolKit
   void PointLight::ParameterConstructor()
   {
     Super::ParameterConstructor();
-    Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
+    Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.3f});
     ParamPCFRadius().m_hint.increment = 0.02f;
   }
 
@@ -375,8 +376,30 @@ namespace ToolKit
   {
     Super::ParameterConstructor();
 
-    Radius_Define(10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
+    Radius_Define(10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.5f});
     OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
     InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
+    m_volumeMesh = std::make_shared<Mesh>();
+    MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
+
+    ParamRadius().m_onValueChangedFn.clear();
+    ParamRadius().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void
+        {
+          const float radius = std::get<float>(newVal);
+          m_volumeMesh->UnInit();
+          MeshGenerator::GenerateConeMesh(m_volumeMesh, radius, 32, GetOuterAngleVal());
+          m_volumeMesh->Init();
+        });
+
+    ParamOuterAngle().m_onValueChangedFn.clear();
+    ParamOuterAngle().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void
+        {
+          const float outerAngle         = std::get<float>(newVal);
+          m_volumeMesh->UnInit();
+          MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, outerAngle);
+          m_volumeMesh->Init();
+        });
   }
 } // namespace ToolKit

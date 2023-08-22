@@ -45,11 +45,9 @@
 
 			vec3 irradiance = vec3(0.0);
 			irradiance = PBRLightingDeferred(position, n, e, color, metallicRoughness.r, metallicRoughness.g);
-
 			float ambientOcclusion = AmbientOcclusion();
-
+			
 			irradiance += ibl;
-
 			fragColor = vec4(irradiance * ambientOcclusion, 1.0) + vec4(emissive, 0.0f);
 		}
 	-->
