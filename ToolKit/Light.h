@@ -72,6 +72,7 @@ namespace ToolKit
     int m_shadowAtlasLayer         = -1;
     Vec2 m_shadowAtlasCoord        = Vec2(-1.0f);
     bool m_shadowResolutionUpdated = false;
+    MeshPtr m_volumeMesh           = nullptr;
 
    protected:
     bool m_shadowMapResolutionChanged = false;

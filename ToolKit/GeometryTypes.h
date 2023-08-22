@@ -68,6 +68,10 @@ namespace ToolKit
     Vec3 min = Vec3(TK_FLT_MAX);  //!< The minimum point of the bounding box.
     Vec3 max = Vec3(-TK_FLT_MAX); //!< The maximum point of the bounding box.
 
+    BoundingBox() : min(TK_FLT_MAX), max(-TK_FLT_MAX) { }
+
+    BoundingBox(Vec3 _min, Vec3 _max) : min(_min), max(_max) { }
+    
     /**
      * Check if the bounding box is valid.
      * @return True if the bounding box is valid, false otherwise.
