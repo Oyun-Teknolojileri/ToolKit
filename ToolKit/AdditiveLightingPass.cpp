@@ -54,6 +54,7 @@ namespace ToolKit
     m_sphereEntity             = MakeNewPtr<Sphere>();
     m_sphereEntity->SetNumRingVal(8);
     m_sphereEntity->SetNumSegVal(8);
+    m_sphereEntity->SetRadiusVal(1.05f);
   }
 
   AdditiveLightingPass::~AdditiveLightingPass() {}
