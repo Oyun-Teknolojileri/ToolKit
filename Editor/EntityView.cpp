@@ -32,6 +32,7 @@
 
 #include <Canvas.h>
 #include <Drawable.h>
+#include <GradientSky.h>
 #include <Material.h>
 #include <MathUtil.h>
 #include <Prefab.h>

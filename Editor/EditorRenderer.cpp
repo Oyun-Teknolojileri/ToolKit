@@ -300,7 +300,7 @@ namespace ToolKit
       EditorBillboardPtr anchorGizmo                               = nullptr;
       if (viewport->GetType() == Window::Type::Viewport2d)
       {
-        anchorGizmo = std::static_pointer_cast<EditorBillboardBase>(app->m_anchor);
+        anchorGizmo = app->m_anchor;
       }
       m_gizmoPass->m_params.GizmoArray = {app->m_gizmo, anchorGizmo};
     }

@@ -34,6 +34,7 @@
 #include <DirectionComponent.h>
 #include <Entity.h>
 #include <MathUtil.h>
+#include <Prefab.h>
 #include <Surface.h>
 
 #include <DebugNew.h>
