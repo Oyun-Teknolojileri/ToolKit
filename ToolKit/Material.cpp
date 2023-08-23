@@ -50,8 +50,21 @@ namespace ToolKit
   {
     if (!m_loaded)
     {
-      ParseDocument("material");
       m_loaded = true;
+
+      if (!CheckSystemFile(GetSerializeFile()))
+      {
+        MaterialPtr copyUnlit = GetMaterialManager()->GetCopyOfUnlitMaterial();
+        m_materialType        = MaterialType::Custom;
+        m_vertexShader        = copyUnlit->m_vertexShader;
+        m_fragmentShader      = copyUnlit->m_fragmentShader;
+        m_diffuseTexture      = copyUnlit->m_diffuseTexture;
+        GetLogger()->WriteConsole(LogType::Memo, "material is missing! %s", GetSerializeFile().c_str());
+      }
+      else
+      {
+        ParseDocument("material");
+      }
     }
   }
 
