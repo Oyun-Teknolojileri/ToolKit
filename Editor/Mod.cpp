@@ -35,6 +35,7 @@
 #include <Entity.h>
 #include <MathUtil.h>
 #include <Surface.h>
+#include <Prefab.h>
 
 #include <DebugNew.h>
 
