@@ -55,7 +55,6 @@ namespace ToolKit
 
    private:
     void SetLightUniforms(LightPtr light, int lightType);
-    uint64 ConeMeshHash(float radius, float outerAngle);
 
    public:
     LightingPassParams m_params;

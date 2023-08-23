@@ -299,6 +299,7 @@ namespace ToolKit
     void EditorSpotLight::ParameterEventConstructor()
     {
       Super::ParameterEventConstructor();
+      GenerateVolumeMesh();
 
       ParamRadius().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
       ParamOuterAngle().m_onValueChangedFn.push_back(m_gizmoUpdateFn);

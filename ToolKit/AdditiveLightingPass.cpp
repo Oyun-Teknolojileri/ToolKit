@@ -52,8 +52,8 @@ namespace ToolKit
     RenderState* renderState   = m_meshMaterial->GetRenderState();
     renderState->blendFunction = BlendFunction::ONE_TO_ONE;
     m_sphereEntity             = MakeNewPtr<Sphere>();
-    m_sphereEntity->SetNumRingVal(16);
-    m_sphereEntity->SetNumSegVal(16);
+    m_sphereEntity->SetNumRingVal(8);
+    m_sphereEntity->SetNumSegVal(8);
   }
 
   AdditiveLightingPass::~AdditiveLightingPass() {}
@@ -156,11 +156,6 @@ namespace ToolKit
     m_lightingShader->SetShaderParameter("lightPCFRadius", ParameterVariant(light->GetPCFRadiusVal()));
     m_lightingShader->SetShaderParameter("lightBleedReduction", ParameterVariant(light->GetBleedingReductionVal()));
     m_lightingShader->SetShaderParameter("lightShadowBias", ParameterVariant(bias));
-  }
-
-  uint64 AdditiveLightingPass::ConeMeshHash(float radius, float outerAngle)
-  {
-    return (uint64) (radius * 100.0f) | (uint64(outerAngle * 100.0f) << 32ull);
   }
 
   void AdditiveLightingPass::Render()

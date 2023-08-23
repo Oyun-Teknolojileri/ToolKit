@@ -155,6 +155,7 @@ namespace ToolKit
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    void GenerateVolumeMesh();
     void ParameterConstructor() override;
 
    public:
