@@ -27,6 +27,7 @@
 #pragma once
 
 #include "Resource.h"
+#include "ResourceManager.h"
 
 namespace ToolKit
 {
@@ -71,7 +72,7 @@ namespace ToolKit
   class TK_API Skeleton : public Resource
   {
    public:
-    TKResourceType(Skeleton)
+    TKDeclareClass(Skeleton, Resource);
 
     Skeleton();
     explicit Skeleton(const String& file);
@@ -100,8 +101,8 @@ namespace ToolKit
    public:
     SkeletonManager();
     virtual ~SkeletonManager();
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
+    bool CanStore(TKClass* Class) override;
+    ResourcePtr CreateLocal(TKClass* Class) override;
   };
 
 } // namespace ToolKit

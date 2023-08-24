@@ -26,24 +26,13 @@
 
 #pragma once
 
-#include "ResourceManager.h"
 #include "TKObject.h"
 #include "Types.h"
 
 namespace ToolKit
 {
 
-  extern TK_API ResourceManager* GetResourceManager(ResourceType type);
-
-#define TKResourceType(type)                                                                                           \
-  static ResourceType GetTypeStatic()                                                                                  \
-  {                                                                                                                    \
-    return ResourceType::type;                                                                                         \
-  }                                                                                                                    \
-  ResourceType GetType() const override                                                                                \
-  {                                                                                                                    \
-    return ResourceType::type;                                                                                         \
-  }
+  extern class ResourceManager* GetResourceManager(TKClass* Class);
 
   class TK_API Resource : public TKObject
   {
@@ -64,14 +53,13 @@ namespace ToolKit
     {
       std::shared_ptr<T> resource = std::make_shared<T>();
       CopyTo(resource.get());
-      if (ResourceManager* manager = GetResourceManager(T::GetTypeStatic()))
+      if (class ResourceManager* manager = GetResourceManager(T::GetStaticClass()))
       {
         manager->Manage(resource);
       }
       return resource;
     }
 
-    virtual ResourceType GetType() const;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 

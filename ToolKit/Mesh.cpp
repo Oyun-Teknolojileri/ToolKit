@@ -105,6 +105,11 @@ namespace ToolKit
     }
   }
 
+  // Mesh
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(Mesh, Resource);
+
   Mesh::Mesh()
   {
     m_material     = GetMaterialManager()->GetCopyOfDefaultMaterial();
@@ -612,6 +617,11 @@ namespace ToolKit
       m_clientSideIndices.clear();
     }
   }
+
+  // SkinMesh
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(SkinMesh, Mesh);
 
   SkinMesh::SkinMesh() : Mesh() { m_vertexLayout = VertexLayout::SkinMesh; }
 

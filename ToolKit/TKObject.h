@@ -171,4 +171,52 @@ namespace ToolKit
     std::unordered_map<StringView, ObjectConstructorCallback> m_constructorFnMap;
   };
 
+  template <typename T>
+  T* MakeNew()
+  {
+    if (Main* main = Main::GetInstance())
+    {
+      if (TKObjectFactory* of = main->m_objectFactory)
+      {
+        return of->MakeNew<T>();
+      }
+    }
+
+    return nullptr;
+  }
+
+  template <typename T>
+  std::shared_ptr<T> MakeNewPtr()
+  {
+    if (Main* main = Main::GetInstance())
+    {
+      if (TKObjectFactory* of = main->m_objectFactory)
+      {
+        return std::shared_ptr<T>(of->MakeNew<T>());
+      }
+    }
+
+    return nullptr;
+  }
+
+  template <typename T>
+  std::shared_ptr<T> MakeNewPtr(const StringView tkClass)
+  {
+    if (Main* main = Main::GetInstance())
+    {
+      if (TKObjectFactory* of = main->m_objectFactory)
+      {
+        return std::shared_ptr<T>(static_cast<T*>(of->MakeNew(tkClass)));
+      }
+    }
+
+    return nullptr;
+  }
+
+  template <typename T>
+  std::shared_ptr<T> Cast(TKObjectPtr tkObj)
+  {
+    return std::static_pointer_cast<T>(tkObj);
+  }
+
 } // namespace ToolKit

@@ -44,6 +44,8 @@ namespace ToolKit
 #define TK_DEFAULT_FORWARD_FRAG  "defaultFragment.shader"
 #define TK_DEFAULT_VERTEX_SHADER "defaultVertex.shader"
 
+  TKDefineClass(Shader, Resource);
+
   Shader::Shader() {}
 
   Shader::Shader(const String& file) : Shader() { SetFile(file); }

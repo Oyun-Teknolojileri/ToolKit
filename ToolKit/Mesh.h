@@ -51,7 +51,7 @@ namespace ToolKit
   class TK_API Mesh : public Resource
   {
    public:
-    TKResourceType(Mesh)
+    TKDeclareClass(Mesh, Resource);
 
     Mesh();
     explicit Mesh(const String& file);
@@ -121,7 +121,7 @@ namespace ToolKit
   class TK_API SkinMesh : public Mesh
   {
    public:
-    TKResourceType(SkinMesh)
+    TKDeclareClass(SkinMesh, Mesh);
 
     SkinMesh();
     explicit SkinMesh(const String& file);

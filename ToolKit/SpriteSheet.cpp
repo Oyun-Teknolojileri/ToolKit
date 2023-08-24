@@ -39,6 +39,11 @@
 namespace ToolKit
 {
 
+  // SpriteSheet
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(SpriteSheet, Resource);
+
   SpriteSheet::SpriteSheet() : m_imageWidth(0), m_imageHeight(0) {}
 
   SpriteSheet::SpriteSheet(const String& file) : SpriteSheet() { SetFile(file); }
@@ -143,6 +148,9 @@ namespace ToolKit
 
     return true;
   }
+
+  // SpriteAnimation
+  //////////////////////////////////////////////////////////////////////////
 
   TKDefineClass(SpriteAnimation, Entity);
 

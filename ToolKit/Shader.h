@@ -79,7 +79,7 @@ namespace ToolKit
   class TK_API Shader : public Resource
   {
    public:
-    TKResourceType(Shader)
+    TKDeclareClass(Shader, Resource);
 
     Shader();
     explicit Shader(const String& file);

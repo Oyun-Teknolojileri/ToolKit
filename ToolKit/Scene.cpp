@@ -41,6 +41,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(Scene, Resource);
+
   Scene::Scene() { m_name = "New Scene"; }
 
   Scene::Scene(const String& file) : Scene() { SetFile(file); }

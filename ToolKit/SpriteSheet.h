@@ -42,7 +42,7 @@ namespace ToolKit
   class TK_API SpriteSheet : public Resource
   {
    public:
-    TKResourceType(SpriteSheet)
+    TKDeclareClass(SpriteSheet, Resource);
 
     SpriteSheet();
     explicit SpriteSheet(const String& file);

@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include "Resource.h"
 #include "Types.h"
 #include "Util.h"
 
@@ -58,9 +59,9 @@ namespace ToolKit
     virtual ~ResourceManager();
     virtual void Init();
     virtual void Uninit();
-    virtual void Manage(const ResourcePtr& resource);
-    virtual bool CanStore(ResourceType t) = 0;
-    virtual String GetDefaultResource(ResourceType type);
+    virtual void Manage(ResourcePtr resource);
+    virtual bool CanStore(TKClass* Class) = 0;
+    virtual String GetDefaultResource(TKClass* Class);
 
     ResourceManager(const ResourceManager&) = delete;
     void operator=(const ResourceManager&)  = delete;
@@ -70,10 +71,11 @@ namespace ToolKit
     {
       if (!Exist(file))
       {
-        std::shared_ptr<T> resource = std::static_pointer_cast<T>(CreateLocal(T::GetTypeStatic()));
+        MakeNewPtr<T>();
+        ResourcePtr resource = nullptr; // MakeNewPtr<T>();
         if (!CheckFile(file))
         {
-          String def = GetDefaultResource(T::GetTypeStatic());
+          String def = GetDefaultResource(T::StaticClass());
           if (!CheckFile(def))
           {
             Report("%s", file.c_str());
@@ -100,14 +102,9 @@ namespace ToolKit
 
     bool Exist(const String& file);
     ResourcePtr Remove(const String& file);
-    virtual ResourcePtr CreateLocal(ResourceType type) = 0;
-
-   protected:
-    void Report(const char* msg, ...);
+    virtual ResourcePtr CreateLocal(TKClass* Class) = 0;
 
    public:
-    // Log callback, if provided messages passed to callback.
-    std::function<void(const String&)> m_reporterFn = nullptr;
     std::unordered_map<String, ResourcePtr> m_storage;
     ResourceType m_type = ResourceType::Base;
   };

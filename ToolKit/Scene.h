@@ -46,6 +46,8 @@ namespace ToolKit
   class TK_API Scene : public Resource
   {
    public:
+    TKDeclareClass(Scene, Resource);
+
     /**
      * A helper struct that holds the result of a ray-picking operation in the
      * scene.
@@ -66,8 +68,6 @@ namespace ToolKit
     typedef std::vector<PickData> PickDataArray;
 
    public:
-    TKResourceType(Scene)
-
     /**
      * The constructor for the Scene class.
      */

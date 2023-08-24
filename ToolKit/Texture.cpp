@@ -41,6 +41,11 @@
 namespace ToolKit
 {
 
+  // Texture
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(Texture, Resource);
+
   Texture::Texture(const TextureSettings& settings)
   {
     m_textureSettings = settings;
@@ -182,6 +187,11 @@ namespace ToolKit
     m_loaded = false;
   }
 
+  // DepthTexture
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(DepthTexture, Texture);
+
   void DepthTexture::Load() {}
 
   void DepthTexture::Clear() { UnInit(); }
@@ -213,6 +223,11 @@ namespace ToolKit
     glDeleteRenderbuffers(1, &m_textureId);
     m_textureId = 0;
   }
+
+  // CubeMap
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(CubeMap, Texture);
 
   CubeMap::CubeMap() : Texture() {}
 
@@ -355,6 +370,11 @@ namespace ToolKit
     m_loaded = false;
   }
 
+  // Hdri
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(Hdri, Texture);
+
   Hdri::Hdri()
   {
     m_textureSettings.InternalFormat  = GraphicTypes::FormatRGBA16F;
@@ -479,6 +499,11 @@ namespace ToolKit
 
   bool Hdri::IsTextureAssigned() { return !GetFile().empty(); }
 
+  // RenderTarget
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(RenderTarget, Texture);
+
   RenderTarget::RenderTarget() : Texture() {}
 
   RenderTarget::RenderTarget(uint width, uint height, const RenderTargetSettigs& settings) : RenderTarget()
@@ -597,14 +622,16 @@ namespace ToolKit
 
   const RenderTargetSettigs& RenderTarget::GetSettings() const { return m_settings; }
 
+  // TextureManager
+  //////////////////////////////////////////////////////////////////////////
+
   TextureManager::TextureManager() { m_type = ResourceType::Texture; }
 
   TextureManager::~TextureManager() {}
 
-  bool TextureManager::CanStore(ResourceType t)
+  bool TextureManager::CanStore(TKClass* Class)
   {
-    if (t == ResourceType::Texture || t == ResourceType::CubeMap || t == ResourceType::RenderTarget ||
-        t == ResourceType::Hdri)
+    if (Class->IsSublcassOf(Texture::StaticClass()))
     {
       return true;
     }
@@ -612,9 +639,9 @@ namespace ToolKit
     return false;
   }
 
-  ResourcePtr TextureManager::CreateLocal(ResourceType type)
+  ResourcePtr TextureManager::CreateLocal(TKClass* Class)
   {
-    Texture* tex = nullptr;
+    TexturePtr tex;
     switch (type)
     {
     case ResourceType::Texture:
@@ -633,10 +660,11 @@ namespace ToolKit
       assert(false);
       break;
     }
-    return ResourcePtr(tex);
+
+    return tex;
   }
 
-  String TextureManager::GetDefaultResource(ResourceType type)
+  String TextureManager::GetDefaultResource(TKClass* Class)
   {
     if (type == ResourceType::Hdri)
     {

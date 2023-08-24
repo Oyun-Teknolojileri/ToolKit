@@ -44,7 +44,7 @@ namespace ToolKit
   class TK_API Texture : public Resource
   {
    public:
-    TKResourceType(Texture);
+    TKDeclareClass(Texture, Resource);
 
     explicit Texture(const TextureSettings& settings = {});
     explicit Texture(const String& file, const TextureSettings& settings = {});
@@ -76,6 +76,8 @@ namespace ToolKit
   class DepthTexture : public Texture
   {
    public:
+    TKDeclareClass(DepthTexture, Texture);
+
     void Load() override;
     void Init(int width, int height, bool stencil);
     void UnInit() override;
@@ -92,7 +94,7 @@ namespace ToolKit
   class TK_API CubeMap : public Texture
   {
    public:
-    TKResourceType(CubeMap)
+    TKDeclareClass(CubeMap, Texture);
 
     CubeMap();
     explicit CubeMap(const String& file);
@@ -113,7 +115,7 @@ namespace ToolKit
   class TK_API Hdri : public Texture
   {
    public:
-    TKResourceType(Hdri);
+    TKDeclareClass(Hdri, Texture);
 
     Hdri();
     explicit Hdri(const String& file);
@@ -161,7 +163,7 @@ namespace ToolKit
   class TK_API RenderTarget : public Texture
   {
    public:
-    TKResourceType(RenderTarget)
+    TKDeclareClass(RenderTarget, Texture);
 
     RenderTarget();
     RenderTarget(uint widht, uint height, const RenderTargetSettigs& settings = RenderTargetSettigs());
@@ -185,9 +187,9 @@ namespace ToolKit
    public:
     TextureManager();
     virtual ~TextureManager();
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
-    String GetDefaultResource(ResourceType type) override;
+    bool CanStore(TKClass* Class) override;
+    ResourcePtr CreateLocal(TKClass* Class) override;
+    String GetDefaultResource(TKClass*) override;
   };
 
 } // namespace ToolKit

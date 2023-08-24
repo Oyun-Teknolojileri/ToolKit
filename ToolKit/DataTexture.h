@@ -34,7 +34,7 @@ namespace ToolKit
   class TK_API DataTexture : public Texture
   {
    public:
-    TKResourceType(DataTexture)
+    TKDeclareClass(DataTexture, Texture);
 
     DataTexture(int width, int height);
 
@@ -50,6 +50,8 @@ namespace ToolKit
   class TK_API LightDataTexture : public DataTexture
   {
    public:
+    TKDeclareClass(LightDataTexture, DataTexture);
+
     LightDataTexture(int width, int height);
 
     void Init(bool flushClientSideArray = false) override;
@@ -70,7 +72,6 @@ namespace ToolKit
 
    private:
     LightDataTexture();
-
     bool IncrementDataIndex(int& index, int amount = 1);
   };
 

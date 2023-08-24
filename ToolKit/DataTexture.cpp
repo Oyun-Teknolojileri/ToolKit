@@ -35,6 +35,11 @@
 
 namespace ToolKit
 {
+  // DataTexture
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(DataTexture, Texture);
+
   DataTexture::DataTexture() {}
 
   void DataTexture::Load() { assert(false); }
@@ -77,6 +82,11 @@ namespace ToolKit
     m_initiated = false;
   }
 
+  // LightDataTexture
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(LightDataTexture, Resource);
+
   LightDataTexture::LightDataTexture() {}
 
   bool LightDataTexture::IncrementDataIndex(int& index, int amount)
@@ -113,9 +123,7 @@ namespace ToolKit
     // 6- Non shadow caster spot lights
 
     auto sortByType = [](const LightPtr l1, const LightPtr l2) -> bool
-    {
-      return (int)l1->GetType() < (int)l2->GetType();
-    };
+    { return (int) l1->GetType() < (int) l2->GetType(); };
 
     auto sortByShadow = [](const LightPtr l1, const LightPtr l2) -> bool
     {
@@ -245,15 +253,7 @@ namespace ToolKit
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Light bleeding reduction
-          glTexSubImage2D(GL_TEXTURE_2D,
-                          0,
-                          xIndex,
-                          yIndex,
-                          1,
-                          1,
-                          GL_RGBA,
-                          GL_FLOAT,
-                          &light->GetBleedingReductionVal());
+          glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &light->GetBleedingReductionVal());
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias
@@ -354,15 +354,7 @@ namespace ToolKit
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Light bleeding reduction
-          glTexSubImage2D(GL_TEXTURE_2D,
-                          0,
-                          xIndex,
-                          yIndex,
-                          1,
-                          1,
-                          GL_RGBA,
-                          GL_FLOAT,
-                          &light->GetBleedingReductionVal());
+          glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &light->GetBleedingReductionVal());
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias
@@ -484,15 +476,7 @@ namespace ToolKit
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Light bleeding reduction
-          glTexSubImage2D(GL_TEXTURE_2D,
-                          0,
-                          xIndex,
-                          yIndex,
-                          1,
-                          1,
-                          GL_RGBA,
-                          GL_FLOAT,
-                          &light->GetBleedingReductionVal());
+          glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &light->GetBleedingReductionVal());
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias

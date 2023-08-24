@@ -43,7 +43,7 @@ namespace ToolKit
   class TK_API Material : public Resource
   {
    public:
-    TKResourceType(Material)
+    TKDeclareClass(Material, Resource);
 
     Material();
     explicit Material(const String& file);

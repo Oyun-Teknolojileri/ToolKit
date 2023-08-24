@@ -36,6 +36,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(Material, Resource);
+
   Material::Material()
   {
     m_color = Vec3(1.0f);
