@@ -50,8 +50,8 @@ namespace ToolKit
   {
     if (!m_loaded)
     {
-      ParseDocument("material");
       m_loaded = true;
+      ParseDocument("material");
     }
   }
 

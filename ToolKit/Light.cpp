@@ -334,7 +334,11 @@ namespace ToolKit
 
   TKDefineClass(SpotLight, Light);
 
-  SpotLight::SpotLight() { AddComponent<DirectionComponent>(); }
+  SpotLight::SpotLight()
+  {
+    AddComponent<DirectionComponent>();
+    m_volumeMesh = std::make_shared<Mesh>();
+  }
 
   SpotLight::~SpotLight() {}
 
@@ -368,10 +372,22 @@ namespace ToolKit
   {
     XmlNode* root = Super::SerializeImp(doc, parent);
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
-
     return node;
   }
 
+  XmlNode* SpotLight::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) 
+  { 
+    XmlNode* node = Super::DeSerializeImp(info, parent); 
+    MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
+    return node;
+  }
+
+  void SpotLight::NativeConstruct() 
+  {
+    Super::NativeConstruct();
+    MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
+  }
+  
   void SpotLight::ParameterConstructor()
   {
     Super::ParameterConstructor();
@@ -379,27 +395,21 @@ namespace ToolKit
     Radius_Define(10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.5f});
     OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
     InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
-    m_volumeMesh = std::make_shared<Mesh>();
-    MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
-
+    
     ParamRadius().m_onValueChangedFn.clear();
     ParamRadius().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         {
           const float radius = std::get<float>(newVal);
-          m_volumeMesh->UnInit();
           MeshGenerator::GenerateConeMesh(m_volumeMesh, radius, 32, GetOuterAngleVal());
-          m_volumeMesh->Init();
         });
 
     ParamOuterAngle().m_onValueChangedFn.clear();
     ParamOuterAngle().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         {
-          const float outerAngle         = std::get<float>(newVal);
-          m_volumeMesh->UnInit();
+          const float outerAngle = std::get<float>(newVal);
           MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, outerAngle);
-          m_volumeMesh->Init();
         });
   }
 } // namespace ToolKit

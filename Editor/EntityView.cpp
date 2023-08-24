@@ -35,6 +35,7 @@
 #include <Material.h>
 #include <MathUtil.h>
 #include <Prefab.h>
+#include <GradientSky.h>
 
 #include <DebugNew.h>
 

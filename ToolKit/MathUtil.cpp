@@ -105,32 +105,32 @@ namespace ToolKit
 
     // build orthogonal matrix Q
     // TK_MOD To row major. Ogre is row major.
-    Mat4 m           = glm::transpose(transform);
-    float fInvLength = glm::inversesqrt(m[0][0] * m[0][0] + m[1][0] * m[1][0] + m[2][0] * m[2][0]);
+    Mat4 m            = glm::transpose(transform);
+    float fInvLength  = glm::inversesqrt(m[0][0] * m[0][0] + m[1][0] * m[1][0] + m[2][0] * m[2][0]);
 
-    kQ[0][0]         = m[0][0] * fInvLength;
-    kQ[1][0]         = m[1][0] * fInvLength;
-    kQ[2][0]         = m[2][0] * fInvLength;
+    kQ[0][0]          = m[0][0] * fInvLength;
+    kQ[1][0]          = m[1][0] * fInvLength;
+    kQ[2][0]          = m[2][0] * fInvLength;
 
-    float fDot       = kQ[0][0] * m[0][1] + kQ[1][0] * m[1][1] + kQ[2][0] * m[2][1];
-    kQ[0][1]         = m[0][1] - fDot * kQ[0][0];
-    kQ[1][1]         = m[1][1] - fDot * kQ[1][0];
-    kQ[2][1]         = m[2][1] - fDot * kQ[2][0];
-    fInvLength       = glm::inversesqrt(kQ[0][1] * kQ[0][1] + kQ[1][1] * kQ[1][1] + kQ[2][1] * kQ[2][1]);
+    float fDot        = kQ[0][0] * m[0][1] + kQ[1][0] * m[1][1] + kQ[2][0] * m[2][1];
+    kQ[0][1]          = m[0][1] - fDot * kQ[0][0];
+    kQ[1][1]          = m[1][1] - fDot * kQ[1][0];
+    kQ[2][1]          = m[2][1] - fDot * kQ[2][0];
+    fInvLength        = glm::inversesqrt(kQ[0][1] * kQ[0][1] + kQ[1][1] * kQ[1][1] + kQ[2][1] * kQ[2][1]);
 
     kQ[0][1]         *= fInvLength;
     kQ[1][1]         *= fInvLength;
     kQ[2][1]         *= fInvLength;
 
-    fDot             = kQ[0][0] * m[0][2] + kQ[1][0] * m[1][2] + kQ[2][0] * m[2][2];
-    kQ[0][2]         = m[0][2] - fDot * kQ[0][0];
-    kQ[1][2]         = m[1][2] - fDot * kQ[1][0];
-    kQ[2][2]         = m[2][2] - fDot * kQ[2][0];
-    fDot             = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] + kQ[2][1] * m[2][2];
+    fDot              = kQ[0][0] * m[0][2] + kQ[1][0] * m[1][2] + kQ[2][0] * m[2][2];
+    kQ[0][2]          = m[0][2] - fDot * kQ[0][0];
+    kQ[1][2]          = m[1][2] - fDot * kQ[1][0];
+    kQ[2][2]          = m[2][2] - fDot * kQ[2][0];
+    fDot              = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] + kQ[2][1] * m[2][2];
     kQ[0][2]         -= fDot * kQ[0][1];
     kQ[1][2]         -= fDot * kQ[1][1];
     kQ[2][2]         -= fDot * kQ[2][1];
-    fInvLength       = glm::inversesqrt(kQ[0][2] * kQ[0][2] + kQ[1][2] * kQ[1][2] + kQ[2][2] * kQ[2][2]);
+    fInvLength        = glm::inversesqrt(kQ[0][2] * kQ[0][2] + kQ[1][2] * kQ[1][2] + kQ[2][2] * kQ[2][2]);
 
     kQ[0][2]         *= fInvLength;
     kQ[1][2]         *= fInvLength;
@@ -618,7 +618,7 @@ namespace ToolKit
     Result[1] = glm::cross(Result[2], Result[0]);
     return glm::quat_cast(Result);
   }
-  
+
   // frustum should be normalized
   bool FrustumSphereIntersection(const Frustum& frustum, const Vec3& pos, float radius)
   {
@@ -637,38 +637,31 @@ namespace ToolKit
 
   bool ConePointIntersection(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, Vec3 point)
   {
+    // move cone to backwards
+    conePos -= coneDir;
     Vec3 pointToCone = point - conePos;
     float angle01    = glm::radians(coneAngle) / glm::pi<float>();
     float toLength   = glm::length(pointToCone);
     // (pointToCone / toLength) for normalization (saved 1 sqrt instruction)
-    return glm::dot(pointToCone / toLength, coneDir) > 1.0f - angle01 && toLength < coneHeight;
+    // 1.4f for checking slightly far away from cone end (for example camera near plane)
+    // 0.91f for expanding the cone angle little bit to work correctly (for example camera near plane)
+    return glm::dot(pointToCone / toLength, coneDir) > 0.91f - angle01 && toLength < coneHeight * 1.4f;
   }
 
-  bool PointBehindPlane(Vec3 p, const PlaneEquation&  plane)
-  {
-    return glm::dot(plane.normal, p) + plane.d < 0.0f;
-  }
+  bool PointBehindPlane(Vec3 p, const PlaneEquation& plane) { return glm::dot(plane.normal, p) + plane.d < -1.0f; }
 
   // https://simoncoenen.com/blog/programming/graphics/SpotlightCulling
-  bool ConeBehindPlane(Vec3 conePos, 
-                       Vec3 coneDir, 
-                       float coneHeight, 
-                       float coneAngle,
-                       const PlaneEquation& plane)
+  bool ConeBehindPlane(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, const PlaneEquation& plane)
   {
     Vec3 furthestPointDirection = glm::cross(glm::cross(plane.normal, coneDir), coneDir);
-    Vec3 furthestPointOnCircle = conePos + coneDir * coneHeight - furthestPointDirection * coneAngle;
+    Vec3 furthestPointOnCircle  = conePos + coneDir * coneHeight - furthestPointDirection * coneAngle;
     return PointBehindPlane(conePos, plane) && PointBehindPlane(furthestPointOnCircle, plane);
   }
 
-  bool FrustumConeIntersect(const Frustum& frustum,
-                            Vec3  conePos, 
-                            Vec3  coneDir, 
-                            float coneHeight, 
-                            float coneAngle)
+  bool FrustumConeIntersect(const Frustum& frustum, Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle)
   {
     float radius = glm::radians(coneAngle);
-    for (int i = 0; i < 6; ++i) 
+    for (int i = 0; i < 6; ++i)
     {
       const PlaneEquation& plane = frustum.planes[i];
       if (ConeBehindPlane(conePos, coneDir, coneHeight, radius, frustum.planes[i]))
