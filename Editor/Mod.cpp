@@ -36,6 +36,7 @@
 #include <MathUtil.h>
 #include <Prefab.h>
 #include <Surface.h>
+#include <Prefab.h>
 
 #include <DebugNew.h>
 

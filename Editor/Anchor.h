@@ -96,7 +96,7 @@ namespace ToolKit
       DirectionLabel m_grabbedDirection;
     };
 
-    typedef std::shared_ptr<class Anchor> AnchorPtr;
+    typedef std::shared_ptr<Anchor> AnchorPtr;
 
   } // namespace Editor
 } // namespace ToolKit

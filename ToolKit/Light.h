@@ -152,9 +152,11 @@ namespace ToolKit
     void UpdateShadowCamera() override;
     float AffectDistance() override;
     void InitShadowMapDepthMaterial() override;
+    void NativeConstruct() override;
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     void ParameterConstructor() override;
 
    public:
