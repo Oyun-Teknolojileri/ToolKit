@@ -372,17 +372,22 @@ namespace ToolKit
   {
     XmlNode* root = Super::SerializeImp(doc, parent);
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
-
     return node;
   }
-  
-  void SpotLight::GenerateVolumeMesh()
-  {
-    m_volumeMesh->UnInit();
+
+  XmlNode* SpotLight::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) 
+  { 
+    XmlNode* node = Super::DeSerializeImp(info, parent); 
     MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
-    m_volumeMesh->Init();
+    return node;
   }
 
+  void SpotLight::NativeConstruct() 
+  {
+    Super::NativeConstruct();
+    MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
+  }
+  
   void SpotLight::ParameterConstructor()
   {
     Super::ParameterConstructor();
@@ -391,16 +396,12 @@ namespace ToolKit
     OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
     InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
     
-    GenerateVolumeMesh();
-
     ParamRadius().m_onValueChangedFn.clear();
     ParamRadius().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         {
           const float radius = std::get<float>(newVal);
-          m_volumeMesh->UnInit();
           MeshGenerator::GenerateConeMesh(m_volumeMesh, radius, 32, GetOuterAngleVal());
-          m_volumeMesh->Init();
         });
 
     ParamOuterAngle().m_onValueChangedFn.clear();
@@ -408,9 +409,7 @@ namespace ToolKit
         [this](Value& oldVal, Value& newVal) -> void
         {
           const float outerAngle = std::get<float>(newVal);
-          m_volumeMesh->UnInit();
           MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, outerAngle);
-          m_volumeMesh->Init();
         });
   }
 } // namespace ToolKit
