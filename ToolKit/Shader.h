@@ -28,6 +28,7 @@
 
 #include "ParameterBlock.h"
 #include "Resource.h"
+#include "ResourceManager.h"
 
 namespace ToolKit
 {
@@ -169,8 +170,8 @@ namespace ToolKit
     ShaderManager();
     virtual ~ShaderManager();
     void Init() override;
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
+    bool CanStore(TKClass* Class) override;
+    ResourcePtr CreateLocal(TKClass* Class) override;
 
     ShaderPtr GetDefaultVertexShader();
     ShaderPtr GetPbrDefferedShader();

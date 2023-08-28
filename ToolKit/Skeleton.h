@@ -81,14 +81,14 @@ namespace ToolKit
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
     void Load() override;
-    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     int GetBoneIndex(const String& bone);
     StaticBone* GetBone(const String& bone);
 
    protected:
     void CopyTo(Resource* other) override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     std::vector<StaticBone*> m_bones;

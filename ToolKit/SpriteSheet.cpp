@@ -239,12 +239,19 @@ namespace ToolKit
     return node;
   }
 
-  SpriteSheetManager::SpriteSheetManager() { m_type = ResourceType::SpriteSheet; }
+  SpriteSheetManager::SpriteSheetManager() { m_baseType = SpriteSheet::StaticClass(); }
 
   SpriteSheetManager::~SpriteSheetManager() {}
 
-  bool SpriteSheetManager::CanStore(ResourceType t) { return t == ResourceType::SpriteSheet; }
+  bool SpriteSheetManager::CanStore(TKClass* Class) { return Class == SpriteSheet::StaticClass(); }
 
-  ResourcePtr SpriteSheetManager::CreateLocal(ResourceType type) { return ResourcePtr(new SpriteSheet()); }
+  ResourcePtr SpriteSheetManager::CreateLocal(TKClass* Class)
+  {
+    if (Class == SpriteSheet::StaticClass())
+    {
+      return MakeNewPtr<SpriteSheet>();
+    }
+    return nullptr;
+  }
 
 } // namespace ToolKit

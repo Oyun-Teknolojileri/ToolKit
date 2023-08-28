@@ -26,7 +26,9 @@
 
 #pragma once
 
+#include "Logger.h"
 #include "Resource.h"
+#include "ToolKit.h"
 #include "Types.h"
 #include "Util.h"
 
@@ -78,13 +80,13 @@ namespace ToolKit
           String def = GetDefaultResource(T::StaticClass());
           if (!CheckFile(def))
           {
-            Report("%s", file.c_str());
+            GetLogger()->Log(LogType::Error, "No default for Class %s", T::StaticClass()->Name.c_str());
             assert(0 && "No default resource!");
             return nullptr;
           }
 
           String rel = GetRelativeResourcePath(file);
-          Report("%s is missing. Using default resource.", rel.c_str());
+          GetLogger()->Log(LogType::Warning, "File: %s is missing. Using default resource.", rel.c_str());
           resource->SetFile(def);
           resource->_missingFile = file;
         }
@@ -106,7 +108,7 @@ namespace ToolKit
 
    public:
     std::unordered_map<String, ResourcePtr> m_storage;
-    ResourceType m_type = ResourceType::Base;
+    TKClass* m_baseType = nullptr;
   };
 
 } // namespace ToolKit

@@ -102,12 +102,11 @@ namespace ToolKit
   TK_API String GetFileName(const String& path);
 
   enum class ResourceType;
-  TK_API String CreatePathFromResourceType(const String& file, ResourceType type);
+  TK_API String CreatePathFromResourceType(const String& file, TKClass* Class);
 
   TK_API ResourceType GetResourceType(const String& ext);
-  TK_API String GetTypeString(ResourceType type);
-  TK_API String GetExtFromType(ResourceType type);
-  TK_API String GetResourcePath(ResourceType type);
+  TK_API String GetExtFromType(TKClass* Class);
+  TK_API String GetResourcePath(TKClass* Class);
 
   TK_API char GetPathSeparator();
   TK_API String GetPathSeparatorAsStr();
@@ -150,7 +149,6 @@ namespace ToolKit
                                                    const Mat4* transform = nullptr);
 
   // Entity operations.
-  TK_API String EntityTypeToString(enum class EntityType type);
   TK_API void ToEntityIdArray(EntityIdArray& idArray, const EntityPtrArray& ptrArray);
 
   TK_API bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);

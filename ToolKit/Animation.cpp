@@ -464,7 +464,7 @@ namespace ToolKit
     return -1;
   }
 
-  AnimationManager::AnimationManager() { m_type = ResourceType::Animation; }
+  AnimationManager::AnimationManager() { m_baseType = Animation::StaticClass(); }
 
   AnimationManager::~AnimationManager() {}
 

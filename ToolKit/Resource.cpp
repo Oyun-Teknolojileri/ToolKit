@@ -27,6 +27,7 @@
 #include "Resource.h"
 
 #include "FileManager.h"
+#include "ResourceManager.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -54,8 +55,8 @@ namespace ToolKit
 
     if (m_file.empty())
     {
-      m_file = m_name + GetExtFromType(GetType());
-      m_file = CreatePathFromResourceType(m_file, GetType());
+      m_file = m_name + GetExtFromType(Class());
+      m_file = CreatePathFromResourceType(m_file, Class());
     }
 
     std::ofstream file;
@@ -89,7 +90,7 @@ namespace ToolKit
 
   void Resource::CopyTo(Resource* other)
   {
-    assert(other->GetType() == GetType());
+    assert(other->Class() == Class());
     if (!m_file.empty())
     {
       other->m_file = CreateCopyFileFullPath(m_file);

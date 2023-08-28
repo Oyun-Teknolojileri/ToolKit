@@ -28,6 +28,8 @@
 
 #include "Types.h"
 
+#include <fstream>
+
 namespace ToolKit
 {
   enum class LogType
@@ -47,6 +49,7 @@ namespace ToolKit
     Logger();
     ~Logger();
     void Log(const String& message);
+    void Log(LogType logType, const char* msg, ...);
     void SetWriteConsoleFn(ConsoleOutputFn fn);
     void SetClearConsoleFn(ClearConsoleFn fn);
     void SetPlatformConsoleFn(ConsoleOutputFn fn);

@@ -100,8 +100,8 @@ namespace ToolKit
    public:
     SpriteSheetManager();
     virtual ~SpriteSheetManager();
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
+    bool CanStore(TKClass* Class) override;
+    ResourcePtr CreateLocal(TKClass* Class) override;
   };
 
 } // namespace ToolKit

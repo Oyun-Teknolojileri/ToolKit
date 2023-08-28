@@ -33,6 +33,19 @@
 namespace ToolKit
 {
 
+  void OutputUtil(ConsoleOutputFn logFn, LogType logType, const char* msg, va_list args)
+  {
+    if (logFn == nullptr)
+    {
+      return;
+    }
+
+    static char buff[2048];
+    vsprintf(buff, msg, args);
+
+    logFn(logType, String(buff));
+  }
+
   Logger::Logger() { m_logFile.open("Log.txt", std::ios::out); }
 
   Logger::~Logger() { m_logFile.close(); }
@@ -46,24 +59,26 @@ namespace ToolKit
     m_logFile << message << std::endl;
   }
 
+  void Logger::Log(LogType logType, const char* msg, ...)
+  {
+    va_list args;
+    va_start(args, msg);
+
+    static char buff[2048];
+    static const char* logTypes[] = {"[Memo]", "[Error]", "[Warning]", "[Command]"};
+
+    vsprintf(buff, msg, args);
+
+    m_logFile << logTypes[(int) logType] << msg << std::endl;
+
+    va_end(args);
+  }
+
   void Logger::SetWriteConsoleFn(ConsoleOutputFn fn) { m_writeConsoleFn = fn; }
 
   void Logger::SetClearConsoleFn(ClearConsoleFn fn) { m_clearConsoleFn = fn; }
 
   void Logger::SetPlatformConsoleFn(ConsoleOutputFn fn) { m_platfromConsoleFn = fn; }
-
-  void OutputUtil(ConsoleOutputFn logFn, LogType logType, const char* msg, va_list args)
-  {
-    if (logFn == nullptr)
-    {
-      return;
-    }
-
-    static char buff[2048];
-    vsprintf(buff, msg, args);
-
-    logFn(logType, String(buff));
-  }
 
   void Logger::ClearConsole() { m_clearConsoleFn(); }
 

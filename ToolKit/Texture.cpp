@@ -625,7 +625,7 @@ namespace ToolKit
   // TextureManager
   //////////////////////////////////////////////////////////////////////////
 
-  TextureManager::TextureManager() { m_type = ResourceType::Texture; }
+  TextureManager::TextureManager() { m_baseType = Texture::StaticClass(); }
 
   TextureManager::~TextureManager() {}
 
@@ -641,32 +641,32 @@ namespace ToolKit
 
   ResourcePtr TextureManager::CreateLocal(TKClass* Class)
   {
-    TexturePtr tex;
-    switch (type)
+    if (Class == Texture::StaticClass())
     {
-    case ResourceType::Texture:
-      tex = new Texture();
-      break;
-    case ResourceType::CubeMap:
-      tex = new CubeMap();
-      break;
-    case ResourceType::RenderTarget:
-      tex = new RenderTarget();
-      break;
-    case ResourceType::Hdri:
-      tex = new Hdri();
-      break;
-    default:
-      assert(false);
-      break;
+      return MakeNewPtr<Texture>();
     }
 
-    return tex;
+    if (Class == CubeMap::StaticClass())
+    {
+      return MakeNewPtr<CubeMap>();
+    }
+
+    if (Class == RenderTarget::StaticClass())
+    {
+      return MakeNewPtr<RenderTarget>();
+    }
+
+    if (Class == Hdri::StaticClass())
+    {
+      return MakeNewPtr<Hdri>();
+    }
+
+    return nullptr;
   }
 
   String TextureManager::GetDefaultResource(TKClass* Class)
   {
-    if (type == ResourceType::Hdri)
+    if (Class == Hdri::StaticClass())
     {
       return TexturePath("defaultHDRI.hdr", true);
     }

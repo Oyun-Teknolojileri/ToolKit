@@ -577,7 +577,15 @@ namespace ToolKit
 
     EditorSceneManager::~EditorSceneManager() {}
 
-    ResourcePtr EditorSceneManager::CreateLocal(ResourceType type) { return ResourcePtr(new EditorScene()); }
+    ResourcePtr EditorSceneManager::CreateLocal(TKClass* Class)
+    {
+      if (Class == EditorScene::StaticClass())
+      {
+        return MakeNewPtr<EditorScene>();
+      }
+
+      return nullptr;
+    }
 
   } // namespace Editor
 } // namespace ToolKit

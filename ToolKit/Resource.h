@@ -32,7 +32,9 @@
 namespace ToolKit
 {
 
-  extern class ResourceManager* GetResourceManager(TKClass* Class);
+  enum class ResourceType;
+
+  TK_API extern class ResourceManager* GetResourceManager(TKClass* Class);
 
   class TK_API Resource : public TKObject
   {
@@ -53,7 +55,7 @@ namespace ToolKit
     {
       std::shared_ptr<T> resource = std::make_shared<T>();
       CopyTo(resource.get());
-      if (class ResourceManager* manager = GetResourceManager(T::GetStaticClass()))
+      if (class ResourceManager* manager = GetResourceManager(T::StaticClass()))
       {
         manager->Manage(resource);
       }
@@ -99,6 +101,8 @@ namespace ToolKit
      * @returns Returns true if resource does not have a file path.
      */
     bool IsDynamic();
+
+    virtual ResourceType GetType() const;
 
    protected:
     virtual void CopyTo(Resource* other);

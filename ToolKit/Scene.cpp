@@ -432,8 +432,6 @@ namespace ToolKit
         GetLogger()->WriteConsole(LogType::Error, "You can't use a prefab outside of Prefab folder!");
         return;
       }
-      String folderName = folder.substr(folder.find_last_of(GetPathSeparator()));
-      // if (folderName != GetResourcePath())
     }
     PrefabPtr prefab = MakeNewPtr<Prefab>();
     prefab->SetPrefabPathVal(path);
@@ -695,7 +693,7 @@ namespace ToolKit
     return lastId;
   }
 
-  SceneManager::SceneManager() { m_type = ResourceType::Scene; }
+  SceneManager::SceneManager() { m_baseType = Scene::StaticClass(); }
 
   SceneManager::~SceneManager() {}
 
@@ -711,11 +709,19 @@ namespace ToolKit
     ResourceManager::Uninit();
   }
 
-  bool SceneManager::CanStore(ResourceType t) { return t == ResourceType::Scene; }
+  bool SceneManager::CanStore(TKClass* Class) { return Class == Scene::StaticClass(); }
 
-  ResourcePtr SceneManager::CreateLocal(ResourceType type) { return ResourcePtr(new Scene()); }
+  ResourcePtr SceneManager::CreateLocal(TKClass* Class)
+  {
+    if (Class == Scene::StaticClass())
+    {
+      return MakeNewPtr<Scene>();
+    }
 
-  String SceneManager::GetDefaultResource(ResourceType type) { return ScenePath("Sample.scene", true); }
+    return nullptr;
+  }
+
+  String SceneManager::GetDefaultResource(TKClass* Class) { return ScenePath("Sample.scene", true); }
 
   ScenePtr SceneManager::GetCurrentScene() { return m_currentScene; }
 

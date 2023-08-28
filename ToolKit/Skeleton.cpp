@@ -422,7 +422,7 @@ namespace ToolKit
   // SkeletonManager
   //////////////////////////////////////////////////////////////////////////
 
-  SkeletonManager::SkeletonManager() { m_type = ResourceType::Skeleton; }
+  SkeletonManager::SkeletonManager() { m_baseType = Skeleton::StaticClass(); }
 
   SkeletonManager::~SkeletonManager() {}
 

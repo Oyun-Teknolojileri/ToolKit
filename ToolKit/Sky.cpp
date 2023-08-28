@@ -65,7 +65,7 @@ namespace ToolKit
       else // Use default hdri image.
       {
         TextureManager* tman = GetTextureManager();
-        hdri                 = tman->Create<Hdri>(tman->GetDefaultResource(ResourceType::Hdri));
+        hdri                 = tman->Create<Hdri>(tman->GetDefaultResource(Hdri::StaticClass()));
         hdri->Init();
       }
 

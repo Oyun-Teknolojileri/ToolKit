@@ -34,6 +34,7 @@
 #include <DirectionComponent.h>
 #include <FileManager.h>
 #include <PluginManager.h>
+#include <Resource.h>
 #include <UIManager.h>
 
 #include <sstream>
@@ -248,7 +249,7 @@ namespace ToolKit
     {
       // Prevent overriding default scene.
       EditorScenePtr currScene = GetCurrentScene();
-      if (GetSceneManager()->GetDefaultResource(ResourceType::Scene) == currScene->GetFile())
+      if (GetSceneManager()->GetDefaultResource(Scene::StaticClass()) == currScene->GetFile())
       {
         currScene->SetFile(ScenePath("New Scene" + SCENE));
         return OnSaveAsScene();
@@ -1105,12 +1106,12 @@ namespace ToolKit
 
     void App::SaveAllResources()
     {
-      ResourceType types[] = {ResourceType::Material,
-                              ResourceType::Mesh,
-                              ResourceType::SkinMesh,
-                              ResourceType::Animation};
+      TKClass* types[] = {Material::StaticClass(),
+                          Mesh::StaticClass(),
+                          SkinMesh::StaticClass(),
+                          Animation::StaticClass()};
 
-      for (ResourceType t : types)
+      for (TKClass* t : types)
       {
         for (auto& resource : GetResourceManager(t)->m_storage)
         {

@@ -154,6 +154,7 @@ namespace ToolKit
     Register<Surface>();
     Register<Canvas>();
     Register<Button>();
+    Register<Shader>();
   }
 
   TKObject* TKObjectFactory::MakeNew(const StringView Class)

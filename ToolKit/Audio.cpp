@@ -74,7 +74,7 @@ namespace ToolKit
   // Audio Manager
   //////////////////////////////////////////////////////////////////////////
 
-  AudioManager::AudioManager() { m_type = ResourceType::Audio; }
+  AudioManager::AudioManager() { m_baseType = Audio::StaticClass(); }
 
   AudioManager::~AudioManager() {}
 

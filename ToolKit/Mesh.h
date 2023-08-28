@@ -28,6 +28,7 @@
 
 #include "RenderState.h"
 #include "Resource.h"
+#include "ResourceManager.h"
 #include "Types.h"
 
 namespace ToolKit
@@ -134,13 +135,13 @@ namespace ToolKit
     int GetVertexSize() const override;
     bool IsSkinned() const override;
 
-    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
-
     // Because AABB is all dependent on active animation, just return AABB
     // (doesn't change m_aabb)
     BoundingBox CalculateAABB(const Skeleton* skel, DynamicBoneMapPtr boneMap);
 
    protected:
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+
     void InitVertices(bool flush) override;
     void CopyTo(Resource* other) override;
 
@@ -154,9 +155,9 @@ namespace ToolKit
    public:
     MeshManager();
     virtual ~MeshManager();
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
-    String GetDefaultResource(ResourceType type) override;
+    bool CanStore(TKClass* Class) override;
+    ResourcePtr CreateLocal(TKClass* Class) override;
+    String GetDefaultResource(TKClass* Class) override;
   };
 
   void SetVertexLayout(VertexLayout layout);

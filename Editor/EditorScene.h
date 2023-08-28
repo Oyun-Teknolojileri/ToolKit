@@ -125,7 +125,7 @@ namespace ToolKit
      public:
       EditorSceneManager();
       virtual ~EditorSceneManager();
-      ResourcePtr CreateLocal(ResourceType type) override;
+      ResourcePtr CreateLocal(TKClass* Class) override;
     };
 
     typedef std::shared_ptr<class EditorScene> EditorScenePtr;

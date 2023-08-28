@@ -157,9 +157,9 @@ namespace ToolKit
       if (createdEntity != nullptr)
       {
         const auto isSameTypeFn = [createdEntity](const EntityPtr e) -> bool
-        { return e->GetType() == createdEntity->GetType(); };
+        { return e->Class() == createdEntity->Class(); };
 
-        String typeName                = EntityTypeToString(createdEntity->GetType());
+        String typeName                = createdEntity->Class()->Name;
         const EntityPtrArray& entities = currScene->GetEntities();
         size_t numSameType             = std::count_if(entities.cbegin(), entities.cend(), isSameTypeFn);
 

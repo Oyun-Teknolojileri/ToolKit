@@ -50,11 +50,11 @@ namespace ToolKit
     assert(m_storage.size() == 0); // Uninitialize all resources before exit.
   }
 
-  void ResourceManager::Init() { GetLogger()->Log("Initiating manager " + GetTypeString(m_type)); }
+  void ResourceManager::Init() { GetLogger()->Log("Initiating manager " + m_baseType->Name); }
 
   void ResourceManager::Uninit()
   {
-    GetLogger()->Log("Uninitiating manager " + GetTypeString(m_type));
+    GetLogger()->Log("Uninitiating manager " + m_baseType->Name);
     m_storage.clear();
   }
 
