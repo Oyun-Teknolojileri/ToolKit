@@ -32,8 +32,6 @@
 namespace ToolKit
 {
 
-  enum class ResourceType;
-
   TK_API extern class ResourceManager* GetResourceManager(TKClass* Class);
 
   class TK_API Resource : public TKObject
@@ -101,8 +99,6 @@ namespace ToolKit
      * @returns Returns true if resource does not have a file path.
      */
     bool IsDynamic();
-
-    virtual ResourceType GetType() const;
 
    protected:
     virtual void CopyTo(Resource* other);

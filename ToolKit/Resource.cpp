@@ -128,8 +128,6 @@ namespace ToolKit
     }
   }
 
-  ResourceType Resource::GetType() const { return ResourceType::Base; }
-
   XmlNode* Resource::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     assert(false && "Not implemented");
@@ -145,7 +143,7 @@ namespace ToolKit
   void Resource::SerializeRef(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* refNode = CreateXmlNode(doc, XmlResRefElement, parent);
-    WriteAttr(refNode, doc, "Type", std::to_string((int) GetType()));
+    WriteAttr(refNode, doc, "Class", Class()->Name);
 
     String file = GetSerializeFile();
     file        = GetRelativeResourcePath(file);

@@ -35,25 +35,6 @@
 namespace ToolKit
 {
 
-  enum class ResourceType
-  {
-    Base,
-    Animation,
-    Audio,
-    Material,
-    Mesh,
-    Shader,
-    SkinMesh,
-    SpriteSheet,
-    Texture,
-    CubeMap,
-    Hdri,
-    RenderTarget,
-    Scene,
-    Skeleton,
-    DataTexture
-  };
-
   class TK_API ResourceManager
   {
    public:
