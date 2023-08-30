@@ -969,7 +969,8 @@ namespace ToolKit
             }
             else
             {
-              ScenePtr scene = std::make_shared<Scene>(file);
+              ScenePtr scene = MakeNewPtr<Scene>();
+              scene->SetFile(file);
               scene->Save(false);
               for (FolderView* view : views)
               {

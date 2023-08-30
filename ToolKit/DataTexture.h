@@ -47,6 +47,8 @@ namespace ToolKit
     void Clear() override;
   };
 
+  typedef std::shared_ptr<DataTexture> DataTexturePtr;
+
   class TK_API LightDataTexture : public DataTexture
   {
    public:
@@ -74,5 +76,7 @@ namespace ToolKit
    private:
     bool IncrementDataIndex(int& index, int amount = 1);
   };
+
+  typedef std::shared_ptr<LightDataTexture> LightDataTexturePtr;
 
 } // namespace ToolKit

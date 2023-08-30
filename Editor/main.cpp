@@ -234,6 +234,7 @@ namespace ToolKit
             g_proxy->m_objectFactory->Register<EditorPointLight>();
             g_proxy->m_objectFactory->Register<EditorSpotLight>();
             g_proxy->m_objectFactory->Register<EditorScene>();
+            g_proxy->m_objectFactory->Register<GridFragmentShader>();
 
             // Overrides.
             g_proxy->m_objectFactory->Register<Camera>([]() -> EditorCamera* { return new EditorCamera(); });

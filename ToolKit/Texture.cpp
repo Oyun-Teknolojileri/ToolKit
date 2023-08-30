@@ -384,10 +384,10 @@ namespace ToolKit
     m_textureSettings.GenerateMipMap  = false;
     m_exposure                        = 1.0f;
 
-    m_texToCubemapMat                 = std::make_shared<Material>();
-    m_cubemapToIrradiancemapMat       = std::make_shared<Material>();
-    m_irradianceCubemap               = std::make_shared<CubeMap>(0);
-    m_equirectangularTexture          = std::make_shared<Texture>(static_cast<uint>(0));
+    m_texToCubemapMat                 = MakeNewPtr<Material>();
+    m_cubemapToIrradiancemapMat       = MakeNewPtr<Material>();
+    m_irradianceCubemap               = std::make_shared<CubeMap>(0u);
+    m_equirectangularTexture          = std::make_shared<Texture>(0u);
   }
 
   Hdri::Hdri(const String& file) : Hdri() { SetFile(file); }

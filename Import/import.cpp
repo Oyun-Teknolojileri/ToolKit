@@ -418,7 +418,7 @@ namespace ToolKit
       replace(animName.begin(), animName.end(), '|', '_');
       animFilePath += animName + ".anim";
       AddToUsedFiles(animFilePath);
-      AnimationPtr tAnim = std::make_shared<Animation>();
+      AnimationPtr tAnim = MakeNewPtr<Animation>();
 
       double fps         = anim->mTicksPerSecond == 0 ? g_desiredFps : anim->mTicksPerSecond;
 
@@ -554,7 +554,7 @@ namespace ToolKit
         }
 
         AddToUsedFiles(textPath);
-        tTexture = std::make_shared<Texture>();
+        tTexture = MakeNewPtr<Texture>();
         tTexture->SetFile(textPath);
       }
       return tTexture;
@@ -565,7 +565,7 @@ namespace ToolKit
       aiMaterial* material  = g_scene->mMaterials[i];
       string name           = GetMaterialName(material, i);
       string writePath      = filePath + name + MATERIAL;
-      MaterialPtr tMaterial = std::make_shared<Material>();
+      MaterialPtr tMaterial = MakeNewPtr<Material>();
 
       auto diffuse          = textureFindAndCreateFunc(aiTextureType_DIFFUSE, material);
       if (diffuse)
@@ -759,7 +759,7 @@ namespace ToolKit
       aiMesh* aMesh = g_scene->mMeshes[MeshIndx];
       if (aMesh->HasBones())
       {
-        SkinMeshPtr skinMesh = std::make_shared<SkinMesh>();
+        SkinMeshPtr skinMesh = MakeNewPtr<SkinMesh>();
         ConvertMesh(aMesh, skinMesh);
         if (mainSkinMesh)
         {
@@ -772,7 +772,7 @@ namespace ToolKit
       }
       else
       {
-        MeshPtr mesh = std::make_shared<Mesh>();
+        MeshPtr mesh = MakeNewPtr<Mesh>();
         ConvertMesh(aMesh, mesh);
 
         // Better to use scene node name
@@ -1016,7 +1016,7 @@ namespace ToolKit
     Decompose(filePath, path, name);
     string fullPath = path + name + SKELETON;
 
-    g_skeleton      = std::make_shared<Skeleton>();
+    g_skeleton      = MakeNewPtr<Skeleton>();
     g_skeleton->SetFile(fullPath);
 
     // Print
@@ -1187,7 +1187,7 @@ namespace ToolKit
       g_proxy->PreInit();
 
       // Create a dummy default material.
-      g_proxy->m_materialManager->m_storage[MaterialPath("default.material", true)] = std::make_shared<Material>();
+      g_proxy->m_materialManager->m_storage[MaterialPath("default.material", true)] = MakeNewPtr<Material>();
 
       g_proxy->m_entityFactory                                                      = new EntityFactory();
 

@@ -71,7 +71,7 @@ namespace ToolKit
     m_gMetallicRoughnessRt = std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
     m_framebuffer          = std::make_shared<Framebuffer>();
-    m_gBufferMaterial      = std::make_shared<Material>();
+    m_gBufferMaterial      = MakeNewPtr<Material>();
   }
 
   GBufferPass::GBufferPass(const GBufferPassParams& params) : GBufferPass() { m_params = params; }

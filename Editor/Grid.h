@@ -37,6 +37,8 @@ namespace ToolKit
     class GridFragmentShader : public Shader
     {
      public:
+      TKDeclareClass(GridFragmentShader, Shader);
+
       GridFragmentShader();
       virtual ~GridFragmentShader();
       void UpdateShaderParameters() override;

@@ -465,7 +465,7 @@ namespace ToolKit
   void Renderer::DrawFullQuad(ShaderPtr fragmentShader)
   {
     static ShaderPtr fullQuadVert = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
-    static MaterialPtr material   = std::make_shared<Material>();
+    static MaterialPtr material   = MakeNewPtr<Material>();
     material->UnInit();
 
     material->m_vertexShader   = fullQuadVert;
@@ -521,7 +521,7 @@ namespace ToolKit
     // Render to texture
     if (m_copyMaterial == nullptr)
     {
-      m_copyMaterial                   = std::make_shared<Material>();
+      m_copyMaterial                   = MakeNewPtr<Material>();
       m_copyMaterial->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("copyTextureVert.shader", true));
       m_copyMaterial->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("copyTextureFrag.shader", true));
     }
@@ -589,7 +589,7 @@ namespace ToolKit
 
       ShaderPtr frag         = GetShaderManager()->Create<Shader>(ShaderPath("gausBlur7x1Frag.shader", true));
 
-      m_gaussianBlurMaterial = std::make_shared<Material>();
+      m_gaussianBlurMaterial = MakeNewPtr<Material>();
       m_gaussianBlurMaterial->m_vertexShader   = vert;
       m_gaussianBlurMaterial->m_fragmentShader = frag;
       m_gaussianBlurMaterial->m_diffuseTexture = nullptr;
@@ -621,7 +621,7 @@ namespace ToolKit
 
       ShaderPtr frag        = GetShaderManager()->Create<Shader>(ShaderPath("avgBlurFrag.shader", true));
 
-      m_averageBlurMaterial = std::make_shared<Material>();
+      m_averageBlurMaterial = MakeNewPtr<Material>();
       m_averageBlurMaterial->m_vertexShader   = vert;
       m_averageBlurMaterial->m_fragmentShader = frag;
       m_averageBlurMaterial->m_diffuseTexture = nullptr;
@@ -1155,7 +1155,7 @@ namespace ToolKit
     cubeMapRt->Init();
 
     // Create material
-    MaterialPtr mat = std::make_shared<Material>();
+    MaterialPtr mat = MakeNewPtr<Material>();
     ShaderPtr vert  = GetShaderManager()->Create<Shader>(ShaderPath("equirectToCubeVert.shader", true));
     ShaderPtr frag  = GetShaderManager()->Create<Shader>(ShaderPath("equirectToCubeFrag.shader", true));
     frag->m_shaderParams["Exposure"] = exposure;
@@ -1225,7 +1225,7 @@ namespace ToolKit
     cubeMapRt->Init();
 
     // Views for 6 different angles
-    CameraPtr cam = std::make_shared<Camera>();
+    CameraPtr cam = MakeNewPtr<Camera>();
     cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
     Mat4 views[]          = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
                              glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
@@ -1235,7 +1235,7 @@ namespace ToolKit
                              glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
 
     // Create material
-    MaterialPtr mat       = std::make_shared<Material>();
+    MaterialPtr mat       = MakeNewPtr<Material>();
     ShaderPtr vert        = GetShaderManager()->Create<Shader>(ShaderPath("irradianceGenerateVert.shader", true));
     ShaderPtr frag        = GetShaderManager()->Create<Shader>(ShaderPath("irradianceGenerateFrag.shader", true));
 
@@ -1308,7 +1308,7 @@ namespace ToolKit
                              glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
 
     // Create material
-    MaterialPtr mat       = std::make_shared<Material>();
+    MaterialPtr mat       = MakeNewPtr<Material>();
     ShaderPtr vert        = GetShaderManager()->Create<Shader>(ShaderPath("positionVert.shader", true));
     ShaderPtr frag        = GetShaderManager()->Create<Shader>(ShaderPath("preFilterEnvMapFrag.shader", true));
 

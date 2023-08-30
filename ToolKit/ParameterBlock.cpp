@@ -589,7 +589,7 @@ namespace ToolKit
         String file = Resource::DeserializeRef(parent);
         if (file.empty())
         {
-          pVar->m_var = std::make_shared<Mesh>();
+          pVar->m_var = MakeNewPtr<Mesh>();
         }
         else
         {
@@ -612,7 +612,7 @@ namespace ToolKit
         String file = Resource::DeserializeRef(parent);
         if (file.empty())
         {
-          pVar->m_var = std::make_shared<Material>();
+          pVar->m_var = MakeNewPtr<Material>();
         }
         else
         {
@@ -626,7 +626,7 @@ namespace ToolKit
         String file = Resource::DeserializeRef(parent);
         if (file.empty())
         {
-          pVar->m_var = std::make_shared<Hdri>();
+          pVar->m_var = MakeNewPtr<Hdri>();
         }
         else
         {
@@ -664,7 +664,7 @@ namespace ToolKit
         String file = Resource::DeserializeRef(parent);
         if (file.empty())
         {
-          pVar->m_var = std::make_shared<Skeleton>();
+          pVar->m_var = MakeNewPtr<Skeleton>();
         }
         else
         {

@@ -84,8 +84,8 @@ namespace ToolKit
   SSAOPass::SSAOPass()
   {
     m_ssaoFramebuffer = std::make_shared<Framebuffer>();
-    m_ssaoTexture     = std::make_shared<RenderTarget>();
-    m_tempBlurRt      = std::make_shared<RenderTarget>();
+    m_ssaoTexture     = MakeNewPtr<RenderTarget>();
+    m_tempBlurRt      = MakeNewPtr<RenderTarget>();
     m_noiseTexture    = std::make_shared<SSAONoiseTexture>(4, 4);
     m_quadPass        = std::make_shared<FullQuadPass>();
   }

@@ -49,7 +49,7 @@ namespace ToolKit
       DecomposeMatrix(views[i], nullptr, &m_cubeMapRotations[i], &m_cubeMapScales[i]);
     }
 
-    m_shadowAtlas       = std::make_shared<RenderTarget>();
+    m_shadowAtlas       = MakeNewPtr<RenderTarget>();
     m_shadowFramebuffer = std::make_shared<Framebuffer>();
   }
 

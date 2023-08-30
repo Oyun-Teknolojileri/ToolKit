@@ -1388,10 +1388,11 @@ namespace ToolKit
 
     void App::CreateAndSetNewScene(const String& name)
     {
-      EditorScenePtr scene = std::make_shared<EditorScene>(ScenePath(name + SCENE));
+      EditorScenePtr scene = MakeNewPtr<EditorScene>();
+      scene->SetFile(ScenePath(name + SCENE));
 
-      scene->m_name        = name;
-      scene->m_newScene    = true;
+      scene->m_name     = name;
+      scene->m_newScene = true;
       GetSceneManager()->Manage(scene);
       SetCurrentScene(scene);
     }

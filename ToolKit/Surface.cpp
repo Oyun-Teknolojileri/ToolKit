@@ -229,7 +229,7 @@ namespace ToolKit
     Entity* cpy  = Entity::CopyTo(other);
 
     // Create an independent mesh.
-    MeshPtr mesh = std::make_shared<Mesh>();
+    MeshPtr mesh = MakeNewPtr<Mesh>();
     cpy->GetMeshComponent()->SetMeshVal(mesh);
 
     Surface* surf = static_cast<Surface*>(cpy);

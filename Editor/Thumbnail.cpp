@@ -46,7 +46,7 @@ namespace ToolKit
       m_thumbnailBuffer = std::make_shared<Framebuffer>();
       m_thumbnailBuffer->Init({m_maxThumbSize, m_maxThumbSize, false, true});
 
-      m_thumbnailScene = std::make_shared<Scene>();
+      m_thumbnailScene = MakeNewPtr<Scene>();
 
       m_entity         = MakeNewPtr<Entity>();
       m_entity->AddComponent<MeshComponent>();

@@ -79,11 +79,7 @@ namespace ToolKit
   {
     Super::ParameterConstructor();
 
-    Mesh_Define(std::make_shared<ToolKit::Mesh>(),
-                MeshComponentCategory.Name,
-                MeshComponentCategory.Priority,
-                true,
-                true);
+    Mesh_Define(MakeNewPtr<Mesh>(), MeshComponentCategory.Name, MeshComponentCategory.Priority, true, true);
 
     CastShadow_Define(true, MeshComponentCategory.Name, MeshComponentCategory.Priority, true, true);
   }

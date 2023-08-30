@@ -58,9 +58,9 @@ namespace ToolKit
       HdriPtr hdri = nullptr;
 
       // Provide an empty hdri to construct gradient sky.
-      if (GetType() == EntityType::Entity_GradientSky)
+      if (IsA<GradientSky>())
       {
-        hdri = std::make_shared<Hdri>();
+        hdri = MakeNewPtr<Hdri>();
       }
       else // Use default hdri image.
       {

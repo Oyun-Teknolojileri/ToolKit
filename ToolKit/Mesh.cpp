@@ -431,7 +431,7 @@ namespace ToolKit
     {
       if (mesh == nullptr)
       {
-        std::shared_ptr<T> meshPtr = std::make_shared<T>();
+        std::shared_ptr<T> meshPtr = MakeNewPtr<T>();
         mesh                       = meshPtr.get();
         mainMesh->m_subMeshes.push_back(meshPtr);
       }

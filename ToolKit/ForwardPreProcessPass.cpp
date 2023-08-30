@@ -25,8 +25,8 @@
  */
 
 #include "ForwardPreProcessPass.h"
-#include "Shader.h"
 
+#include "Shader.h"
 #include "stdafx.h"
 
 namespace ToolKit
@@ -37,8 +37,8 @@ namespace ToolKit
     ShaderPtr vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcessVert.shader", true));
     ShaderPtr fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcess.shader", true));
 
-    m_framebuffer    = std::make_shared<Framebuffer>();
-    m_linearMaterial = std::make_shared<Material>();
+    m_framebuffer            = std::make_shared<Framebuffer>();
+    m_linearMaterial         = MakeNewPtr<Material>();
     m_linearMaterial->m_vertexShader   = vertexShader;
     m_linearMaterial->m_fragmentShader = fragmentShader;
     m_linearMaterial->Init();
@@ -48,16 +48,16 @@ namespace ToolKit
 
   void ForwardPreProcess::Render()
   {
-    Renderer* renderer = GetRenderer();
+    Renderer* renderer                      = GetRenderer();
 
-    const auto renderLinearDepthAndNormalFn = [this, renderer](RenderJobArray& renderJobArray) 
+    const auto renderLinearDepthAndNormalFn = [this, renderer](RenderJobArray& renderJobArray)
     {
       for (RenderJob& job : renderJobArray)
       {
-        MaterialPtr activeMaterial = job.Material;
-        RenderState* renderstate   = activeMaterial->GetRenderState();
+        MaterialPtr activeMaterial    = job.Material;
+        RenderState* renderstate      = activeMaterial->GetRenderState();
         BlendFunction beforeBlendFunc = renderstate->blendFunction;
-        renderstate->blendFunction = BlendFunction::NONE;
+        renderstate->blendFunction    = BlendFunction::NONE;
         m_linearMaterial->SetRenderState(renderstate);
         m_linearMaterial->UnInit();
 
@@ -66,9 +66,9 @@ namespace ToolKit
         renderstate->blendFunction = beforeBlendFunc;
       }
     };
-    
-    renderLinearDepthAndNormalFn(m_params.OpaqueJobs); 
-    renderLinearDepthAndNormalFn(m_params.TranslucentJobs); 
+
+    renderLinearDepthAndNormalFn(m_params.OpaqueJobs);
+    renderLinearDepthAndNormalFn(m_params.TranslucentJobs);
   }
 
   void ForwardPreProcess::PreRender()
@@ -79,7 +79,7 @@ namespace ToolKit
     uint height = (uint) m_params.gLinearRt->m_height;
 
     m_framebuffer->Init({width, height, false, false});
-    
+
     RenderTargetSettigs oneChannelSet = {};
     oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
     oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
@@ -87,7 +87,7 @@ namespace ToolKit
     oneChannelSet.Format              = GraphicTypes::FormatRGB;
     oneChannelSet.Type                = GraphicTypes::TypeFloat;
 
-    using FAttachment = Framebuffer::Attachment;
+    using FAttachment                 = Framebuffer::Attachment;
 
     m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_params.gLinearRt);
     m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_params.gNormalRt);
@@ -98,9 +98,6 @@ namespace ToolKit
     renderer->SetCameraLens(m_params.Cam);
   }
 
-  void ForwardPreProcess::PostRender() 
-  {
-    RenderPass::PostRender(); 
-  }
+  void ForwardPreProcess::PostRender() { RenderPass::PostRender(); }
 
 } // namespace ToolKit

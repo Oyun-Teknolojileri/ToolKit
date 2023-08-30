@@ -41,10 +41,10 @@ namespace ToolKit
   {
     m_fullQuadPass                   = std::make_shared<FullQuadPass>();
     m_lightingFrameBuffer            = std::make_shared<Framebuffer>();
-    m_lightingRt                     = std::make_shared<RenderTarget>();
+    m_lightingRt                     = MakeNewPtr<RenderTarget>();
     m_lightingShader                 = GetShaderManager()->Create<Shader>(ShaderPath("additiveLighting.shader", true));
     m_mergeShader                    = GetShaderManager()->Create<Shader>(ShaderPath("lightMerge.shader", true));
-    m_meshMaterial                   = std::make_shared<Material>();
+    m_meshMaterial                   = MakeNewPtr<Material>();
 
     m_meshMaterial->m_fragmentShader = m_lightingShader;
     m_meshMaterial->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("additiveVertex.shader", true));
