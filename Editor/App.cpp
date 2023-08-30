@@ -81,10 +81,11 @@ namespace ToolKit
         sceneName = m_newSceneName;
       }
 
-      EditorScenePtr scene = std::make_shared<EditorScene>(ScenePath(sceneName));
+      EditorScenePtr scene = MakeNewPtr<EditorScene>();
+      scene->SetFile(ScenePath(sceneName));
 
-      scene->m_name        = sceneName;
-      scene->m_newScene    = true;
+      scene->m_name     = sceneName;
+      scene->m_newScene = true;
       SetCurrentScene(scene);
       ApplyProjectSettings(false);
 

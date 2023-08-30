@@ -37,6 +37,8 @@ namespace ToolKit
     class EditorScene : public Scene
     {
      public:
+      TKDeclareClass(EditorScene, Scene);
+
       EditorScene();
       explicit EditorScene(const String& file);
       virtual ~EditorScene();

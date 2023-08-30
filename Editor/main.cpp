@@ -233,6 +233,7 @@ namespace ToolKit
             g_proxy->m_objectFactory->Register<EditorDirectionalLight>();
             g_proxy->m_objectFactory->Register<EditorPointLight>();
             g_proxy->m_objectFactory->Register<EditorSpotLight>();
+            g_proxy->m_objectFactory->Register<EditorScene>();
 
             // Overrides.
             g_proxy->m_objectFactory->Register<Camera>([]() -> EditorCamera* { return new EditorCamera(); });
@@ -244,6 +245,8 @@ namespace ToolKit
                                                            { return new EditorPointLight(); });
 
             g_proxy->m_objectFactory->Register<SpotLight>([]() -> EditorSpotLight* { return new EditorSpotLight(); });
+
+            g_proxy->m_objectFactory->Register<Scene>([]() -> EditorScene* { return new EditorScene(); });
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);
