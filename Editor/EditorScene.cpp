@@ -44,7 +44,7 @@ namespace ToolKit
     EditorScene::EditorScene(const String& file) : EditorScene()
     {
       SetFile(file);
-      m_newScene = false;<
+      m_newScene = false;
     }
 
     EditorScene::~EditorScene() { Destroy(false); }

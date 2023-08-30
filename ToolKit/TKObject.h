@@ -35,16 +35,33 @@ namespace ToolKit
 
   struct TK_API TKClass
   {
-    TKClass* Super = nullptr; //!< Compile time assigned base class for this class.
-    String Name;              //!< Compile time assigned unique class name.
+    TKClass* Super = nullptr;     //!< Compile time assigned base class for this class.
+    String Name;                  //!< Compile time assigned unique class name.
+    ULongID HashId = NULL_HANDLE; //!< Unique has id assigned to class when registered to TKObjectFactory.
 
-    bool operator==(const TKClass& other) const { return (Name == other.Name); }
+    bool operator==(const TKClass& other) const
+    {
+      assert(HashId != NULL_HANDLE && "Class is not registered.");
+      return (HashId == other.HashId);
+    }
 
-    bool operator==(const TKClass* other) const { return (Name == other->Name); }
+    bool operator==(const TKClass* other) const
+    {
+      assert(HashId != NULL_HANDLE && "Class is not registered.");
+      return (HashId == other->HashId);
+    }
 
-    bool operator!=(const TKClass& other) const { return this->Name != other.Name; }
+    bool operator!=(const TKClass& other) const
+    {
+      assert(HashId != NULL_HANDLE && "Class is not registered.");
+      return this->HashId != other.HashId;
+    }
 
-    bool operator!=(const TKClass* other) const { return this->Name != other->Name; }
+    bool operator!=(const TKClass* other) const
+    {
+      assert(HashId != NULL_HANDLE && "Class is not registered.");
+      return this->HashId != other->HashId;
+    }
 
     /**
      * Checks if the class is of the same type of base ( equal or derived from base ).
@@ -121,13 +138,6 @@ namespace ToolKit
   {
     friend class Main;
 
-    TKObjectFactory();
-    ~TKObjectFactory();
-    TKObjectFactory(const TKObjectFactory&)            = delete;
-    TKObjectFactory(TKObjectFactory&&)                 = delete;
-    TKObjectFactory& operator=(const TKObjectFactory&) = delete;
-    TKObjectFactory& operator=(TKObjectFactory&&)      = delete;
-
    public:
     /**
      * Registers or overrides the default constructor of given TKObject type.
@@ -137,6 +147,8 @@ namespace ToolKit
     void Register(ObjectConstructorCallback constructorFn = []() -> T* { return new T(); })
     {
       m_constructorFnMap[T::StaticClass()->Name] = constructorFn;
+      // TODO: Make the Id assignment collision free.
+      T::StaticClass()->HashId                   = std::hash<String> {}(T::StaticClass()->Name);
     }
 
     /**
@@ -166,6 +178,13 @@ namespace ToolKit
      * Registers all the known TKObject constructors.
      */
     void Init();
+
+    TKObjectFactory();
+    ~TKObjectFactory();
+    TKObjectFactory(const TKObjectFactory&)            = delete;
+    TKObjectFactory(TKObjectFactory&&)                 = delete;
+    TKObjectFactory& operator=(const TKObjectFactory&) = delete;
+    TKObjectFactory& operator=(TKObjectFactory&&)      = delete;
 
    private:
     std::unordered_map<StringView, ObjectConstructorCallback> m_constructorFnMap;

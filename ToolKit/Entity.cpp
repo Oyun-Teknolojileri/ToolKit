@@ -127,10 +127,10 @@ namespace ToolKit
 
   TKObjectPtr Entity::Copy() const
   {
-    Entity* cpy = static_cast<Entity*>(GetObjectFactory()->MakeNew(Class()->Name));
-    CopyTo(cpy);
+    EntityPtr cpy = MakeNewPtr<Entity>(Class()->Name);
+    CopyTo(cpy.get());
 
-    return std::shared_ptr<Entity>(cpy);
+    return cpy;
   }
 
   void Entity::ClearComponents()
