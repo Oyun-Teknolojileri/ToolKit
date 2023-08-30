@@ -28,6 +28,7 @@
 
 #include "DirectionComponent.h"
 #include "EnvironmentComponent.h"
+#include "GradientSky.h"
 #include "Material.h"
 #include "Shader.h"
 #include "ToolKit.h"
