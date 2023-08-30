@@ -73,8 +73,7 @@ namespace ToolKit
     {
       if (!Exist(file))
       {
-        MakeNewPtr<T>();
-        ResourcePtr resource = nullptr; // MakeNewPtr<T>();
+        ResourcePtr resource = MakeNewPtr<T>();
         if (!CheckFile(file))
         {
           String def = GetDefaultResource(T::StaticClass());

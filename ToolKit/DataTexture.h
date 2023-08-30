@@ -36,13 +36,13 @@ namespace ToolKit
    public:
     TKDeclareClass(DataTexture, Texture);
 
+    DataTexture();
     DataTexture(int width, int height);
 
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
    protected:
-    DataTexture();
     void Load() override;
     void Clear() override;
   };
@@ -52,6 +52,7 @@ namespace ToolKit
    public:
     TKDeclareClass(LightDataTexture, DataTexture);
 
+    LightDataTexture();
     LightDataTexture(int width, int height);
 
     void Init(bool flushClientSideArray = false) override;
@@ -71,7 +72,6 @@ namespace ToolKit
                            float& sizeNS);
 
    private:
-    LightDataTexture();
     bool IncrementDataIndex(int& index, int amount = 1);
   };
 

@@ -30,6 +30,7 @@
 #include "Audio.h"
 #include "Camera.h"
 #include "Canvas.h"
+#include "DataTexture.h"
 #include "DirectionComponent.h"
 #include "Drawable.h"
 #include "Entity.h"
@@ -44,7 +45,9 @@
 #include "SkeletonComponent.h"
 #include "Sky.h"
 #include "SpriteSheet.h"
+#include "SsaoPass.h"
 #include "Surface.h"
+#include "Texture.h"
 
 #include "DebugNew.h"
 
@@ -122,6 +125,7 @@ namespace ToolKit
 
   void TKObjectFactory::Init()
   {
+    // Entities.
     Register<AABBOverrideComponent>();
     Register<AnimControllerComponent>();
     Register<DirectionComponent>();
@@ -154,7 +158,24 @@ namespace ToolKit
     Register<Surface>();
     Register<Canvas>();
     Register<Button>();
+    // Resources.
+    Register<Animation>();
+    Register<Audio>();
+    Register<Material>();
+    Register<Mesh>();
+    Register<SkinMesh>();
+    Register<Scene>();
     Register<Shader>();
+    Register<Skeleton>();
+    Register<SpriteSheet>();
+    Register<Texture>();
+    Register<CubeMap>();
+    Register<DataTexture>();
+    Register<LightDataTexture>();
+    Register<SSAONoiseTexture>();
+    Register<DepthTexture>();
+    Register<Hdri>();
+    Register<RenderTarget>();
   }
 
   TKObject* TKObjectFactory::MakeNew(const StringView Class)
