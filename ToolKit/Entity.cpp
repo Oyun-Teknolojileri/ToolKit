@@ -167,7 +167,7 @@ namespace ToolKit
 
   void Entity::WeakCopy(Entity* other, bool copyComponents) const
   {
-    assert(other->GetType() == GetType());
+    assert(other->Class() == Class());
     SafeDel(other->m_node);
     other->m_node           = m_node->Copy();
     other->m_node->m_entity = other->m_sharedEntity;
