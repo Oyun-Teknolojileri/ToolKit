@@ -399,55 +399,55 @@ namespace ToolKit
 
   String CreatePathFromResourceType(const String& file, TKClass* Class) { return GetResourcePath(Class) + file; }
 
-  ResourceType GetResourceType(const String& ext)
+  TKClass* GetResourceType(const String& ext)
   {
     if (ext == MESH || ext == SKINMESH || SupportedMeshFormat(ext))
     {
-      return ResourceType::Mesh;
+      return Mesh::StaticClass();
     }
 
     if (ext == ANIM)
     {
-      return ResourceType::Animation;
+      return Animation::StaticClass();
     }
 
     if (ext == MATERIAL)
     {
-      return ResourceType::Material;
+      return Material::StaticClass();
     }
 
     if (SupportedImageFormat(ext))
     {
       if (ext == HDR)
       {
-        return ResourceType::Hdri;
+        return Hdri::StaticClass();
       }
 
-      return ResourceType::Texture;
+      return Texture::StaticClass();
     }
 
     if (ext == SHADER)
     {
-      return ResourceType::Shader;
+      return Shader::StaticClass();
     }
 
     if (ext == AUDIO)
     {
-      return ResourceType::Audio;
+      return Audio::StaticClass();
     }
 
     if (ext == SCENE)
     {
-      return ResourceType::Scene;
+      return Scene::StaticClass();
     }
 
     if (ext == SKELETON)
     {
-      return ResourceType::Skeleton;
+      return Skeleton::StaticClass();
     }
 
-    assert(false);
-    return ResourceType::Base;
+    assert(false && "Extension does not map to a Class.");
+    return nullptr;
   }
 
   String GetExtFromType(TKClass* Class)

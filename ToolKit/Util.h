@@ -101,10 +101,9 @@ namespace ToolKit
    */
   TK_API String GetFileName(const String& path);
 
-  enum class ResourceType;
   TK_API String CreatePathFromResourceType(const String& file, TKClass* Class);
 
-  TK_API ResourceType GetResourceType(const String& ext);
+  TK_API TKClass* GetResourceType(const String& ext);
   TK_API String GetExtFromType(TKClass* Class);
   TK_API String GetResourcePath(TKClass* Class);
 
