@@ -160,8 +160,6 @@ namespace ToolKit
 
   SpriteAnimation::~SpriteAnimation() {}
 
-  EntityType SpriteAnimation::GetType() const { return EntityType::Entity_SpriteAnim; }
-
   Surface* SpriteAnimation::GetCurrentSurface()
   {
     auto res = m_sheet->m_sprites.find(m_currentFrame);

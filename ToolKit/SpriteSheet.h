@@ -75,7 +75,6 @@ namespace ToolKit
     explicit SpriteAnimation(const SpriteSheetPtr& spriteSheet);
     ~SpriteAnimation();
 
-    virtual EntityType GetType() const;
     Surface* GetCurrentSurface();
     void Update(float deltaTime);
 
