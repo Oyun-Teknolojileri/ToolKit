@@ -346,7 +346,7 @@ namespace ToolKit
     LightPtrArray lights;
     for (EntityPtr ntt : m_entities)
     {
-      if (ntt->IsLightInstance())
+      if (ntt->IsA<Light>())
       {
         lights.push_back(std::static_pointer_cast<Light>(ntt));
       }
@@ -595,7 +595,7 @@ namespace ToolKit
 
       ntt->DeSerialize(info, node);
 
-      if (ntt->GetType() == EntityType::Entity_Prefab)
+      if (ntt->IsA<Prefab>())
       {
         prefabList.push_back(ntt);
       }
@@ -650,7 +650,7 @@ namespace ToolKit
 
       ntt->DeSerialize(info, node);
 
-      if (ntt->GetType() == EntityType::Entity_Prefab)
+      if (ntt->IsA<Prefab>())
       {
         prefabList.push_back(ntt);
       }

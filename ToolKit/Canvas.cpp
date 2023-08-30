@@ -50,8 +50,6 @@ namespace ToolKit
     CreateQuadLines();
   }
 
-  EntityType Canvas::GetType() const { return EntityType::Entity_Canvas; }
-
   void Canvas::ParameterConstructor()
   {
     Super::ParameterConstructor();
@@ -182,7 +180,7 @@ namespace ToolKit
             childNode->SetTranslation(translate, TransformationSpace::TS_WORLD);
           }
 
-          if (surface->GetType() == EntityType::Entity_Canvas)
+          if (surface->IsA<Canvas>())
           {
             Canvas* canvasPanel  = static_cast<Canvas*>(surface);
             const BoundingBox bb = canvasPanel->GetAABB(true);

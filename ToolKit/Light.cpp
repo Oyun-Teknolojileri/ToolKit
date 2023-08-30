@@ -90,8 +90,6 @@ namespace ToolKit
         });
   }
 
-  EntityType Light::GetType() const { return EntityType::Entity_Light; }
-
   MaterialPtr Light::GetShadowMaterial() { return m_shadowMapMaterial; }
 
   void Light::UpdateShadowCamera()
@@ -115,6 +113,26 @@ namespace ToolKit
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
+  }
+
+  int Light::ComparableType()
+  {
+    if (IsA<DirectionalLight>())
+    {
+      return 0;
+    }
+
+    if (IsA<PointLight>())
+    {
+      return 1;
+    }
+
+    if (IsA<SpotLight>())
+    {
+      return 2;
+    }
+
+    return 3;
   }
 
   void Light::UpdateShadowCameraTransform() { m_shadowCamera->m_node->SetTransform(m_node->GetTransform()); }
@@ -145,8 +163,6 @@ namespace ToolKit
   DirectionalLight::DirectionalLight() { AddComponent<DirectionComponent>(); }
 
   DirectionalLight::~DirectionalLight() {}
-
-  EntityType DirectionalLight::GetType() const { return EntityType::Entity_DirectionalLight; }
 
   void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs)
   {
@@ -290,8 +306,6 @@ namespace ToolKit
 
   PointLight::~PointLight() {}
 
-  EntityType PointLight::GetType() const { return EntityType::Entity_PointLight; }
-
   void PointLight::UpdateShadowCamera()
   {
     m_shadowCamera->SetLens(glm::half_pi<float>(), 1.0f, 0.01f, AffectDistance());
@@ -341,8 +355,6 @@ namespace ToolKit
   }
 
   SpotLight::~SpotLight() {}
-
-  EntityType SpotLight::GetType() const { return EntityType::Entity_SpotLight; }
 
   void SpotLight::UpdateShadowCamera()
   {

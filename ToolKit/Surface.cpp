@@ -82,8 +82,6 @@ namespace ToolKit
     SetPivotOffsetVal(offset);
   }
 
-  EntityType Surface::GetType() const { return EntityType::Entity_Surface; }
-
   XmlNode* Surface::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* nttNode     = Entity::SerializeImp(doc, parent);
@@ -409,8 +407,6 @@ namespace ToolKit
     GetButtonMaterialVal()->m_diffuseTexture = buttonImage;
     GetHoverMaterialVal()->m_diffuseTexture  = hoverImage;
   }
-
-  EntityType Button::GetType() const { return EntityType::Entity_Button; }
 
   void Button::ResetCallbacks()
   {

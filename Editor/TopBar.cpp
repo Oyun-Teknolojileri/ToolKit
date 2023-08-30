@@ -414,7 +414,7 @@ namespace ToolKit
           bool noCamera = true;
           if (EntityPtr cam = g_app->GetCurrentScene()->GetCurrentSelection())
           {
-            if (cam->GetType() == EntityType::Entity_Camera)
+            if (cam->IsA<Camera>())
             {
               if (EditorViewport* vp = g_app->GetActiveViewport())
               {

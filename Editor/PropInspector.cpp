@@ -330,7 +330,7 @@ namespace ToolKit
         return;
       }
 
-      if (curEntity->GetType() == EntityType::Entity_Prefab)
+      if (curEntity->IsA<Prefab>())
       {
         PrefabView* prefView = static_cast<PrefabView*>(m_views[(uint) ViewType::Prefab]);
         if (EntityPtr prefEntity = prefView->GetActiveEntity())

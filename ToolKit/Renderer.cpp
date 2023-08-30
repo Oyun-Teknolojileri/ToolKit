@@ -993,8 +993,6 @@ namespace ToolKit
     {
       LightPtr currLight = m_lights[i];
 
-      EntityType type    = currLight->GetType();
-
       // Point light uniforms
       if (PointLight* pLight = currLight->As<PointLight>())
       {

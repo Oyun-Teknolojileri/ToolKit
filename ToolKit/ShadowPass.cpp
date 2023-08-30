@@ -136,9 +136,7 @@ namespace ToolKit
       }
     };
 
-    switch (light->GetType())
-    {
-    case EntityType::Entity_PointLight:
+    if (light->IsA<PointLight>())
     {
       renderer->SetFramebuffer(m_shadowFramebuffer, false);
 
@@ -174,11 +172,8 @@ namespace ToolKit
         renderForShadowMapFn(light, jobs);
       }
     }
-    break;
-    case EntityType::Entity_DirectionalLight:
-    case EntityType::Entity_SpotLight:
+    else if (light->IsA<DirectionalLight>() || light->IsA<SpotLight>())
     {
-
       renderer->SetFramebuffer(m_shadowFramebuffer, false);
       m_shadowFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                          m_shadowAtlas,
@@ -203,10 +198,6 @@ namespace ToolKit
 
       renderForShadowMapFn(light, jobs);
     }
-    break;
-    default:
-      break;
-    }
   }
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights)
@@ -220,7 +211,7 @@ namespace ToolKit
     LightPtrArray::iterator it = dirAndSpotLights.begin();
     while (it != dirAndSpotLights.end())
     {
-      if ((*it)->GetType() == EntityType::Entity_PointLight)
+      if ((*it)->IsA<PointLight>())
       {
         pointLights.push_back(*it);
         it = dirAndSpotLights.erase(it);

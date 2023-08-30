@@ -42,8 +42,6 @@ namespace ToolKit
 
   SkyBase::SkyBase() {}
 
-  EntityType SkyBase::GetType() const { return EntityType::Entity_SkyBase; }
-
   void SkyBase::Init()
   {
     if (m_initialized)
@@ -178,8 +176,6 @@ namespace ToolKit
   Sky::Sky() {}
 
   Sky::~Sky() {}
-
-  EntityType Sky::GetType() const { return EntityType::Entity_Sky; }
 
   void Sky::Init()
   {

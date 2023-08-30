@@ -88,7 +88,7 @@ namespace ToolKit
 
       if (EntityPtr e = currScene->GetCurrentSelection())
       {
-        if (e->IsSurfaceInstance())
+        if (e->IsA<Surface>())
         {
           SurfacePtr surface = Cast<Surface>(e);
           if (Node* parentNode = surface->m_node->m_parent)
@@ -421,7 +421,7 @@ namespace ToolKit
 
       if (EntityPtr parent = surface->m_node->m_parent->m_entity)
       {
-        if (parent->GetType() == EntityType::Entity_Canvas)
+        if (parent->IsA<Canvas>())
         {
           Canvas* canvasPanel  = static_cast<Canvas*>(parent.get());
           const BoundingBox bb = canvasPanel->GetAABB(true);

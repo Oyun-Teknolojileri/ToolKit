@@ -63,7 +63,6 @@ namespace ToolKit
     bool IsOrtographic() const;
 
     CamData GetData() const;
-    EntityType GetType() const override;
 
     // Tight fit camera frustum to a bounding box with a margin
     void FocusToBoundingBox(const BoundingBox& bb, float margin);

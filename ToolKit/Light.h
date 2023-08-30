@@ -42,13 +42,16 @@ namespace ToolKit
     Light();
     virtual ~Light();
 
-    EntityType GetType() const override;
-
     // Shadow
     MaterialPtr GetShadowMaterial();
     virtual void UpdateShadowCamera();
     virtual float AffectDistance();
     virtual void InitShadowMapDepthMaterial();
+
+    /**
+     * Returns  0 to 3 number that helps to sort lights by type. DirectionalLight: 0, PointLight: 1, SpotLight: 3.
+     */
+    int ComparableType();
 
    protected:
     void UpdateShadowCameraTransform();
@@ -90,8 +93,6 @@ namespace ToolKit
     DirectionalLight();
     virtual ~DirectionalLight();
 
-    EntityType GetType() const override;
-
     void UpdateShadowFrustum(const RenderJobArray& jobs);
     Vec3Array GetShadowFrustumCorners();
 
@@ -121,8 +122,6 @@ namespace ToolKit
     PointLight();
     virtual ~PointLight();
 
-    EntityType GetType() const override;
-
     void UpdateShadowCamera() override;
     float AffectDistance() override;
     void InitShadowMapDepthMaterial() override;
@@ -148,7 +147,6 @@ namespace ToolKit
     SpotLight();
     virtual ~SpotLight();
 
-    EntityType GetType() const override;
     void UpdateShadowCamera() override;
     float AffectDistance() override;
     void InitShadowMapDepthMaterial() override;

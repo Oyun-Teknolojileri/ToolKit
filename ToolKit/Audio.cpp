@@ -112,8 +112,6 @@ namespace ToolKit
 
   TKDefineClass(AudioSource, Entity);
 
-  EntityType AudioSource::GetType() const { return EntityType::Entity_AudioSource; }
-
   AudioSource::~AudioSource()
   {
     if (m_sound != nullptr)

@@ -73,7 +73,6 @@ namespace ToolKit
    public:
     TKDeclareClass(AudioSource, Entity);
 
-    EntityType GetType() const override;
     ~AudioSource();
     void AttachAudio(const AudioPtr& audio);
 

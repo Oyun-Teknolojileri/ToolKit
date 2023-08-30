@@ -92,7 +92,6 @@ namespace ToolKit
     virtual ~Entity();
 
     virtual bool IsDrawable() const;
-    virtual EntityType GetType() const;
     virtual void SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget = nullptr);
     virtual BoundingBox GetAABB(bool inWorld = false) const;
     TKObjectPtr Copy() const override;
@@ -106,9 +105,6 @@ namespace ToolKit
 
     void SetVisibility(bool vis, bool deep);
     void SetTransformLock(bool vis, bool deep);
-    bool IsSurfaceInstance() const;
-    bool IsLightInstance() const;
-    bool IsSkyInstance() const;
 
     template <typename T>
     std::shared_ptr<T> AddComponent()
@@ -260,7 +256,6 @@ namespace ToolKit
     explicit EntityNode(const String& name);
     virtual ~EntityNode();
 
-    EntityType GetType() const override;
     void RemoveResources() override;
 
    protected:

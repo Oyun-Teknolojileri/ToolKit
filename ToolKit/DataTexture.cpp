@@ -123,7 +123,7 @@ namespace ToolKit
     // 6- Non shadow caster spot lights
 
     auto sortByType = [](const LightPtr l1, const LightPtr l2) -> bool
-    { return (int) l1->GetType() < (int) l2->GetType(); };
+    { return l1->ComparableType() < l2->ComparableType(); };
 
     auto sortByShadow = [](const LightPtr l1, const LightPtr l2) -> bool
     {
@@ -182,7 +182,6 @@ namespace ToolKit
         shadow = light->GetCastShadowVal();
       }
 
-      EntityType type   = light->GetType();
       float currentSize = 0.0f;
 
       // Point light

@@ -99,10 +99,11 @@ namespace ToolKit
 
     void Anchor::Update(float deltaTime)
     {
-      if (m_entity == nullptr || !m_entity->IsSurfaceInstance() || m_entity->m_node->m_parent == nullptr ||
-          m_entity->m_node->m_parent->m_entity == nullptr ||
-          m_entity->m_node->m_parent->m_entity->GetType() != EntityType::Entity_Canvas)
+      if (m_entity == nullptr || !m_entity->IsA<Surface>() || m_entity->m_node->m_parent == nullptr ||
+          m_entity->m_node->m_parent->m_entity == nullptr || !m_entity->m_node->m_parent->m_entity->IsA<Canvas>())
+      {
         return;
+      }
 
       Canvas* canvasPanel = static_cast<Canvas*>(m_entity->m_node->m_parent->m_entity.get());
 

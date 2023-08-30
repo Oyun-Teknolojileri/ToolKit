@@ -1204,7 +1204,7 @@ namespace ToolKit
       for (EntityPtr ntt : entities)
       {
         // Light and camera gizmos
-        if (ntt->IsLightInstance() || ntt->GetType() == EntityType::Entity_Camera)
+        if (ntt->IsA<Light>() || ntt->IsA<Camera>())
         {
           ntt->SetVisibility(false, false);
         }
@@ -1217,7 +1217,7 @@ namespace ToolKit
       for (EntityPtr ntt : entities)
       {
         // Light and camera gizmos
-        if (ntt->IsLightInstance() || ntt->GetType() == EntityType::Entity_Camera)
+        if (ntt->IsA<Light>() || ntt->IsA<Camera>())
         {
           ntt->SetVisibility(true, false);
         }
