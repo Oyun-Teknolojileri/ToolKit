@@ -371,12 +371,10 @@ namespace ToolKit
 
     void StateAnchorBase::ReflectAnchorTransform(EntityPtr ntt)
     {
-      if (!m_anchor || !ntt || !ntt->m_node->m_parent || !ntt->m_node->m_parent->m_entity)
+      if (m_anchor == nullptr || ntt == nullptr || !ntt->m_node->m_parent || !ntt->m_node->m_parent->m_entity ||
+          !ntt->IsA<Surface>() || !ntt->m_node->m_parent->m_entity->IsA<Canvas>())
       {
-        if (!ntt->IsA<Surface>() || !ntt->m_node->m_parent->m_entity->IsA<Canvas>())
-        {
-          return;
-        }
+        return;
       }
 
       Surface* surface               = static_cast<Surface*>(ntt.get());
