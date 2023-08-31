@@ -28,6 +28,7 @@
 
 #include "DirectionComponent.h"
 #include "EnvironmentComponent.h"
+#include "GradientSky.h"
 #include "Material.h"
 #include "Shader.h"
 #include "ToolKit.h"
@@ -40,8 +41,6 @@ namespace ToolKit
   TKDefineClass(SkyBase, Entity);
 
   SkyBase::SkyBase() {}
-
-  EntityType SkyBase::GetType() const { return EntityType::Entity_SkyBase; }
 
   void SkyBase::Init()
   {
@@ -58,14 +57,14 @@ namespace ToolKit
       HdriPtr hdri = nullptr;
 
       // Provide an empty hdri to construct gradient sky.
-      if (GetType() == EntityType::Entity_GradientSky)
+      if (IsA<GradientSky>())
       {
-        hdri = std::make_shared<Hdri>();
+        hdri = MakeNewPtr<Hdri>();
       }
       else // Use default hdri image.
       {
         TextureManager* tman = GetTextureManager();
-        hdri                 = tman->Create<Hdri>(tman->GetDefaultResource(ResourceType::Hdri));
+        hdri                 = tman->Create<Hdri>(tman->GetDefaultResource(Hdri::StaticClass()));
         hdri->Init();
       }
 
@@ -177,8 +176,6 @@ namespace ToolKit
   Sky::Sky() {}
 
   Sky::~Sky() {}
-
-  EntityType Sky::GetType() const { return EntityType::Entity_Sky; }
 
   void Sky::Init()
   {

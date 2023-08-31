@@ -27,6 +27,7 @@
 #include "Resource.h"
 
 #include "FileManager.h"
+#include "ResourceManager.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -54,8 +55,8 @@ namespace ToolKit
 
     if (m_file.empty())
     {
-      m_file = m_name + GetExtFromType(GetType());
-      m_file = CreatePathFromResourceType(m_file, GetType());
+      m_file = m_name + GetExtFromType(Class());
+      m_file = CreatePathFromResourceType(m_file, Class());
     }
 
     std::ofstream file;
@@ -89,7 +90,7 @@ namespace ToolKit
 
   void Resource::CopyTo(Resource* other)
   {
-    assert(other->GetType() == GetType());
+    assert(other->Class() == Class());
     if (!m_file.empty())
     {
       other->m_file = CreateCopyFileFullPath(m_file);
@@ -127,8 +128,6 @@ namespace ToolKit
     }
   }
 
-  ResourceType Resource::GetType() const { return ResourceType::Base; }
-
   XmlNode* Resource::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     assert(false && "Not implemented");
@@ -144,7 +143,7 @@ namespace ToolKit
   void Resource::SerializeRef(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* refNode = CreateXmlNode(doc, XmlResRefElement, parent);
-    WriteAttr(refNode, doc, "Type", std::to_string((int) GetType()));
+    WriteAttr(refNode, doc, "Class", Class()->Name);
 
     String file = GetSerializeFile();
     file        = GetRelativeResourcePath(file);

@@ -46,6 +46,8 @@ namespace ToolKit
   class TK_API Scene : public Resource
   {
    public:
+    TKDeclareClass(Scene, Resource);
+
     /**
      * A helper struct that holds the result of a ray-picking operation in the
      * scene.
@@ -66,8 +68,6 @@ namespace ToolKit
     typedef std::vector<PickData> PickDataArray;
 
    public:
-    TKResourceType(Scene)
-
     /**
      * The constructor for the Scene class.
      */
@@ -358,21 +358,21 @@ namespace ToolKit
      * @param t The resource type to check.
      * @return True if the resource type can be stored, false otherwise.
      */
-    bool CanStore(ResourceType t) override;
+    bool CanStore(TKClass* Class) override;
 
     /**
      * Creates a new local resource of the given type.
      * @param type The type of resource to create.
      * @return A pointer to the newly created resource.
      */
-    ResourcePtr CreateLocal(ResourceType type) override;
+    ResourcePtr CreateLocal(TKClass* Class) override;
 
     /**
      * Gets the default resource file path for the given resource type.
      * @param type The resource type.
      * @return The default resource file path.
      */
-    String GetDefaultResource(ResourceType type) override;
+    String GetDefaultResource(TKClass* Class) override;
 
     /**
      * Gets the currently active scene.

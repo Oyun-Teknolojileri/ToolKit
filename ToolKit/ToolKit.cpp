@@ -230,36 +230,54 @@ namespace ToolKit
 
   PluginManager* GetPluginManager() { return Main::GetInstance()->m_pluginManager; }
 
-  ResourceManager* GetResourceManager(ResourceType type)
+  ResourceManager* GetResourceManager(TKClass* Class)
   {
-    switch (type)
+    if (Class->IsSublcassOf(Animation::StaticClass()))
     {
-    case ResourceType::Animation:
       return GetAnimationManager();
-    case ResourceType::Audio:
-      return GetAudioManager();
-    case ResourceType::Material:
-      return GetMaterialManager();
-    case ResourceType::SkinMesh:
-    case ResourceType::Mesh:
-      return GetMeshManager();
-    case ResourceType::Shader:
-      return GetShaderManager();
-    case ResourceType::SpriteSheet:
-      return GetSpriteSheetManager();
-    case ResourceType::Texture:
-    case ResourceType::CubeMap:
-    case ResourceType::RenderTarget:
-      return GetTextureManager();
-    case ResourceType::Scene:
-      return GetSceneManager();
-    case ResourceType::Skeleton:
-      return nullptr;
-    case ResourceType::Base:
-    default:
-      assert(false);
-      break;
     }
+    else if (Class->IsSublcassOf(Audio::StaticClass()))
+    {
+      return GetAudioManager();
+    }
+    else if (Class->IsSublcassOf(Material::StaticClass()))
+    {
+      return GetMaterialManager();
+    }
+    else if (Class->IsSublcassOf(SkinMesh::StaticClass()))
+    {
+      return GetMeshManager();
+    }
+    else if (Class->IsSublcassOf(Mesh::StaticClass()))
+    {
+      return GetMeshManager();
+    }
+    else if (Class->IsSublcassOf(Shader::StaticClass()))
+    {
+      return GetShaderManager();
+    }
+    else if (Class->IsSublcassOf(SpriteSheet::StaticClass()))
+    {
+      return GetSpriteSheetManager();
+    }
+    else if (Class->IsSublcassOf(Texture::StaticClass()))
+    {
+      return GetTextureManager();
+    }
+    else if (Class->IsSublcassOf(CubeMap::StaticClass()))
+    {
+      return GetTextureManager();
+    }
+    else if (Class->IsSublcassOf(RenderTarget::StaticClass()))
+    {
+      return GetTextureManager();
+    }
+    else if (Class->IsSublcassOf(Scene::StaticClass()))
+    {
+      return GetSceneManager();
+    }
+    // else if (Class->IsSublcassOf(Skeleton::StaticClass())) {}
+    // else if (Class->IsSublcassOf(Resource::StaticClass())) {}
 
     return nullptr;
   }

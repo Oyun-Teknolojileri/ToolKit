@@ -36,6 +36,8 @@ namespace ToolKit
   // Audio
   //////////////////////////////////////////////////////////////////////////
 
+  TKDefineClass(Audio, Resource);
+
   Audio::Audio() {}
 
   Audio::Audio(const String& file) : Audio() { SetFile(file); }
@@ -72,7 +74,7 @@ namespace ToolKit
   // Audio Manager
   //////////////////////////////////////////////////////////////////////////
 
-  AudioManager::AudioManager() { m_type = ResourceType::Audio; }
+  AudioManager::AudioManager() { m_baseType = Audio::StaticClass(); }
 
   AudioManager::~AudioManager() {}
 
@@ -101,16 +103,14 @@ namespace ToolKit
     SafeDel(engine);
   }
 
-  bool AudioManager::CanStore(ResourceType t) { return t == ResourceType::Audio; }
+  bool AudioManager::CanStore(TKClass* Class) { return Class == Audio::StaticClass(); }
 
-  ResourcePtr AudioManager::CreateLocal(ResourceType type) { return ResourcePtr(new Audio()); }
+  ResourcePtr AudioManager::CreateLocal(TKClass* Class) { return MakeNewPtr<Audio>(); }
 
   // AudioSource
   //////////////////////////////////////////////////////////////////////////
 
   TKDefineClass(AudioSource, Entity);
-
-  EntityType AudioSource::GetType() const { return EntityType::Entity_AudioSource; }
 
   AudioSource::~AudioSource()
   {

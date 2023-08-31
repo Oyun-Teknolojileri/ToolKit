@@ -38,8 +38,6 @@ namespace ToolKit
 
     SkyBase();
 
-    EntityType GetType() const override;
-
     virtual void Init();
     virtual void ReInit();
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
@@ -74,7 +72,6 @@ namespace ToolKit
     Sky();
     virtual ~Sky();
 
-    EntityType GetType() const override;
     void Init() override;
     MaterialPtr GetSkyboxMaterial() override;
 

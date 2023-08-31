@@ -46,8 +46,6 @@ namespace ToolKit
     Prefab();
     virtual ~Prefab();
 
-    EntityType GetType() const override;
-
     /**
      * Initiates prefab scene and link to the current scene.
      */

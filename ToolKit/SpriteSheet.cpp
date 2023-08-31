@@ -39,6 +39,11 @@
 namespace ToolKit
 {
 
+  // SpriteSheet
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(SpriteSheet, Resource);
+
   SpriteSheet::SpriteSheet() : m_imageWidth(0), m_imageHeight(0) {}
 
   SpriteSheet::SpriteSheet(const String& file) : SpriteSheet() { SetFile(file); }
@@ -144,6 +149,9 @@ namespace ToolKit
     return true;
   }
 
+  // SpriteAnimation
+  //////////////////////////////////////////////////////////////////////////
+
   TKDefineClass(SpriteAnimation, Entity);
 
   SpriteAnimation::SpriteAnimation() {}
@@ -151,8 +159,6 @@ namespace ToolKit
   SpriteAnimation::SpriteAnimation(const SpriteSheetPtr& spriteSheet) { m_sheet = spriteSheet; }
 
   SpriteAnimation::~SpriteAnimation() {}
-
-  EntityType SpriteAnimation::GetType() const { return EntityType::Entity_SpriteAnim; }
 
   Surface* SpriteAnimation::GetCurrentSurface()
   {
@@ -231,12 +237,19 @@ namespace ToolKit
     return node;
   }
 
-  SpriteSheetManager::SpriteSheetManager() { m_type = ResourceType::SpriteSheet; }
+  SpriteSheetManager::SpriteSheetManager() { m_baseType = SpriteSheet::StaticClass(); }
 
   SpriteSheetManager::~SpriteSheetManager() {}
 
-  bool SpriteSheetManager::CanStore(ResourceType t) { return t == ResourceType::SpriteSheet; }
+  bool SpriteSheetManager::CanStore(TKClass* Class) { return Class == SpriteSheet::StaticClass(); }
 
-  ResourcePtr SpriteSheetManager::CreateLocal(ResourceType type) { return ResourcePtr(new SpriteSheet()); }
+  ResourcePtr SpriteSheetManager::CreateLocal(TKClass* Class)
+  {
+    if (Class == SpriteSheet::StaticClass())
+    {
+      return MakeNewPtr<SpriteSheet>();
+    }
+    return nullptr;
+  }
 
 } // namespace ToolKit

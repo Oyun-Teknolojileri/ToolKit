@@ -65,7 +65,6 @@ namespace ToolKit
     Billboard();
     explicit Billboard(const Settings& settings);
     virtual void LookAt(CameraPtr cam, float scale);
-    EntityType GetType() const override;
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
@@ -83,9 +82,7 @@ namespace ToolKit
     TKDeclareClass(Cube, Entity);
 
     Cube();
-
     void NativeConstruct() override;
-    EntityType GetType() const override;
     static void Generate(MeshComponentPtr meshComp, const Vec3& dimention);
 
    protected:
@@ -112,7 +109,6 @@ namespace ToolKit
 
     Quad();
     void NativeConstruct() override;
-    EntityType GetType() const override;
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
@@ -132,7 +128,6 @@ namespace ToolKit
 
     Sphere();
     void NativeConstruct() override;
-    EntityType GetType() const override;
     static void Generate(MeshComponentPtr mesh, float radius, int numRing, int numSeg);
 
    protected:
@@ -157,8 +152,6 @@ namespace ToolKit
 
     Cone();
     void NativeConstruct() override;
-    EntityType GetType() const override;
-
     void Generate(float height, float radius, int segBase, int segHeight);
 
    protected:
@@ -187,8 +180,6 @@ namespace ToolKit
     TKDeclareClass(Arrow2d, Entity);
 
     Arrow2d();
-    EntityType GetType() const override;
-
     void Generate(AxisLabel axis);
 
    protected:
@@ -207,8 +198,6 @@ namespace ToolKit
     TKDeclareClass(LineBatch, Entity);
 
     LineBatch();
-
-    EntityType GetType() const override;
     void Generate(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);
 
    protected:
@@ -218,10 +207,10 @@ namespace ToolKit
 
   typedef std::shared_ptr<LineBatch> LineBatchPtr;
 
-  class TK_API MeshGenerator final  
+  class TK_API MeshGenerator final
   {
    public:
     static void GenerateCircleMesh(MeshPtr mesh, int numSegments, float radius);
     static void GenerateConeMesh(MeshPtr mesh, float radius, int vertexCount, float outerAngle);
-  }; 
+  };
 } // namespace ToolKit

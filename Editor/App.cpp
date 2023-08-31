@@ -34,6 +34,7 @@
 #include <DirectionComponent.h>
 #include <FileManager.h>
 #include <PluginManager.h>
+#include <Resource.h>
 #include <UIManager.h>
 
 #include <sstream>
@@ -80,10 +81,11 @@ namespace ToolKit
         sceneName = m_newSceneName;
       }
 
-      EditorScenePtr scene = std::make_shared<EditorScene>(ScenePath(sceneName));
+      EditorScenePtr scene = MakeNewPtr<EditorScene>();
+      scene->SetFile(ScenePath(sceneName));
 
-      scene->m_name        = sceneName;
-      scene->m_newScene    = true;
+      scene->m_name     = sceneName;
+      scene->m_newScene = true;
       SetCurrentScene(scene);
       ApplyProjectSettings(false);
 
@@ -248,7 +250,7 @@ namespace ToolKit
     {
       // Prevent overriding default scene.
       EditorScenePtr currScene = GetCurrentScene();
-      if (GetSceneManager()->GetDefaultResource(ResourceType::Scene) == currScene->GetFile())
+      if (GetSceneManager()->GetDefaultResource(Scene::StaticClass()) == currScene->GetFile())
       {
         currScene->SetFile(ScenePath("New Scene" + SCENE));
         return OnSaveAsScene();
@@ -1105,12 +1107,12 @@ namespace ToolKit
 
     void App::SaveAllResources()
     {
-      ResourceType types[] = {ResourceType::Material,
-                              ResourceType::Mesh,
-                              ResourceType::SkinMesh,
-                              ResourceType::Animation};
+      TKClass* types[] = {Material::StaticClass(),
+                          Mesh::StaticClass(),
+                          SkinMesh::StaticClass(),
+                          Animation::StaticClass()};
 
-      for (ResourceType t : types)
+      for (TKClass* t : types)
       {
         for (auto& resource : GetResourceManager(t)->m_storage)
         {
@@ -1202,7 +1204,7 @@ namespace ToolKit
       for (EntityPtr ntt : entities)
       {
         // Light and camera gizmos
-        if (ntt->IsLightInstance() || ntt->GetType() == EntityType::Entity_Camera)
+        if (ntt->IsA<Light>() || ntt->IsA<Camera>())
         {
           ntt->SetVisibility(false, false);
         }
@@ -1215,7 +1217,7 @@ namespace ToolKit
       for (EntityPtr ntt : entities)
       {
         // Light and camera gizmos
-        if (ntt->IsLightInstance() || ntt->GetType() == EntityType::Entity_Camera)
+        if (ntt->IsA<Light>() || ntt->IsA<Camera>())
         {
           ntt->SetVisibility(true, false);
         }
@@ -1386,10 +1388,11 @@ namespace ToolKit
 
     void App::CreateAndSetNewScene(const String& name)
     {
-      EditorScenePtr scene = std::make_shared<EditorScene>(ScenePath(name + SCENE));
+      EditorScenePtr scene = MakeNewPtr<EditorScene>();
+      scene->SetFile(ScenePath(name + SCENE));
 
-      scene->m_name        = name;
-      scene->m_newScene    = true;
+      scene->m_name     = name;
+      scene->m_newScene = true;
       GetSceneManager()->Manage(scene);
       SetCurrentScene(scene);
     }

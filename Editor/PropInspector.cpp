@@ -139,7 +139,7 @@ namespace ToolKit
             }
           };
 
-          if (man->m_type == ResourceType::Material)
+          if (man->m_baseType == Material::StaticClass())
           {
             MaterialPtr mr = man->Create<Material>(file);
             if (clicked)
@@ -153,13 +153,13 @@ namespace ToolKit
             textureRepFn(mr->m_diffuseTexture);
           }
 
-          if (man->m_type == ResourceType::Texture)
+          if (man->m_baseType == Texture::StaticClass())
           {
             TexturePtr t = man->Create<Texture>(file);
             textureRepFn(t);
           }
 
-          if (man->m_type == ResourceType::Mesh || man->m_type == ResourceType::SkinMesh)
+          if (man->m_baseType->IsSublcassOf(Mesh::StaticClass()))
           {
             MeshPtr mesh = man->Create<Mesh>(file);
 
@@ -330,7 +330,7 @@ namespace ToolKit
         return;
       }
 
-      if (curEntity->GetType() == EntityType::Entity_Prefab)
+      if (curEntity->IsA<Prefab>())
       {
         PrefabView* prefView = static_cast<PrefabView*>(m_views[(uint) ViewType::Prefab]);
         if (EntityPtr prefEntity = prefView->GetActiveEntity())

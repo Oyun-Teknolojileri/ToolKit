@@ -31,7 +31,11 @@
 #include "Mod.h"
 #include "PopupWindows.h"
 
+#include <Audio.h>
+#include <GradientSky.h>
 #include <MathUtil.h>
+#include <Prefab.h>
+#include <Sky.h>
 
 #include <DebugNew.h>
 
@@ -1266,26 +1270,27 @@ namespace ToolKit
       ImGui::Text(text.c_str());
     }
 
-    String UI::EntityTypeToIcon(EntityType type)
+    String UI::EntityTypeToIcon(TKClass* Class)
     {
-      String icon                                                       = ICON_FA_CUBE ICON_SPACE;
-      static std::unordered_map<EntityType, String> EntityTypeToIconMap = {
-          {EntityType::Entity_Camera,           ICON_FA_VIDEO_CAMERA ICON_SPACE},
-          {EntityType::Entity_AudioSource,      ICON_FA_FILE_AUDIO ICON_SPACE  },
-          {EntityType::Entity_Node,             ICON_FA_ARROWS ICON_SPACE      },
-          {EntityType::Entity_Prefab,           ICON_FA_CUBES ICON_SPACE       },
-          {EntityType::Entity_Sphere,           ICON_FA_CIRCLE ICON_SPACE      },
+      String icon                                                   = ICON_FA_CUBE ICON_SPACE;
 
-          {EntityType::Entity_Light,            ICON_FA_LIGHTBULB ICON_SPACE   },
-          {EntityType::Entity_PointLight,       ICON_FA_LIGHTBULB ICON_SPACE   },
-          {EntityType::Entity_SpotLight,        ICON_FA_LIGHTBULB ICON_SPACE   },
-          {EntityType::Entity_DirectionalLight, ICON_FA_SUN ICON_SPACE         },
+      static std::unordered_map<String, String> EntityTypeToIconMap = {
+          {Camera::StaticClass()->Name,           ICON_FA_VIDEO_CAMERA ICON_SPACE},
+          {Audio::StaticClass()->Name,            ICON_FA_FILE_AUDIO ICON_SPACE  },
+          {EntityNode::StaticClass()->Name,       ICON_FA_ARROWS ICON_SPACE      },
+          {Prefab::StaticClass()->Name,           ICON_FA_CUBES ICON_SPACE       },
+          {Sphere::StaticClass()->Name,           ICON_FA_CIRCLE ICON_SPACE      },
 
-          {EntityType::Entity_Sky,              ICON_FA_SKYATLAS ICON_SPACE    },
-          {EntityType::Entity_GradientSky,      ICON_FA_SKYATLAS ICON_SPACE    },
+          {Light::StaticClass()->Name,            ICON_FA_LIGHTBULB ICON_SPACE   },
+          {PointLight::StaticClass()->Name,       ICON_FA_LIGHTBULB ICON_SPACE   },
+          {SpotLight::StaticClass()->Name,        ICON_FA_LIGHTBULB ICON_SPACE   },
+          {DirectionalLight::StaticClass()->Name, ICON_FA_SUN ICON_SPACE         },
+
+          {Sky::StaticClass()->Name,              ICON_FA_SKYATLAS ICON_SPACE    },
+          {GradientSky::StaticClass()->Name,      ICON_FA_SKYATLAS ICON_SPACE    },
       };
 
-      auto entityIcon = EntityTypeToIconMap.find(type);
+      auto entityIcon = EntityTypeToIconMap.find(Class->Name);
       if (entityIcon != EntityTypeToIconMap.end())
       {
         icon = entityIcon->second;
@@ -1295,7 +1300,7 @@ namespace ToolKit
 
     void UI::ShowEntityTreeNodeContent(EntityPtr ntt)
     {
-      String icon = UI::EntityTypeToIcon(ntt->GetType());
+      String icon = UI::EntityTypeToIcon(ntt->Class());
 
       ImGui::SameLine();
       ImGui::Text((icon + ntt->GetNameVal()).c_str());

@@ -37,7 +37,7 @@ namespace ToolKit
 
     SingleMatForwardRenderPass::SingleMatForwardRenderPass() : ForwardRenderPass()
     {
-      m_overrideMat = std::make_shared<Material>();
+      m_overrideMat = MakeNewPtr<Material>();
     }
 
     SingleMatForwardRenderPass::SingleMatForwardRenderPass(const SingleMatForwardRenderPassParams& params)
@@ -50,7 +50,7 @@ namespace ToolKit
     {
 
       Renderer* renderer      = GetRenderer();
-      renderer->m_overrideMat = std::make_shared<Material>();
+      renderer->m_overrideMat = MakeNewPtr<Material>();
       for (RenderJob& job : m_params.ForwardParams.OpaqueJobs)
       {
         LightPtrArray lightList = RenderJobProcessor::SortLights(job, m_params.ForwardParams.Lights);

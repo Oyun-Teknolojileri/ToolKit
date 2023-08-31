@@ -44,6 +44,8 @@ namespace ToolKit
 #define TK_DEFAULT_FORWARD_FRAG  "defaultFragment.shader"
 #define TK_DEFAULT_VERTEX_SHADER "defaultVertex.shader"
 
+  TKDefineClass(Shader, Resource);
+
   Shader::Shader() {}
 
   Shader::Shader(const String& file) : Shader() { SetFile(file); }
@@ -441,7 +443,7 @@ namespace ToolKit
     m_handle = 0;
   }
 
-  ShaderManager::ShaderManager() { m_type = ResourceType::Shader; }
+  ShaderManager::ShaderManager() { m_baseType = Shader::StaticClass(); }
 
   ShaderManager::~ShaderManager() {}
 
@@ -458,24 +460,22 @@ namespace ToolKit
     Create<Shader>(m_defaultVertexShaderFile);
   }
 
-  bool ShaderManager::CanStore(ResourceType t) { return t == ResourceType::Shader; }
+  bool ShaderManager::CanStore(TKClass* Class) { return Class == Shader::StaticClass(); }
 
-  ResourcePtr ShaderManager::CreateLocal(ResourceType type) { return ResourcePtr(new Shader()); }
-
-  ShaderPtr ShaderManager::GetDefaultVertexShader()
+  ResourcePtr ShaderManager::CreateLocal(TKClass* Class)
   {
-    return std::static_pointer_cast<Shader>(m_storage[m_defaultVertexShaderFile]);
+    if (Class == Shader::StaticClass())
+    {
+      return MakeNewPtr<Shader>();
+    }
+    return nullptr;
   }
 
-  ShaderPtr ShaderManager::GetPbrDefferedShader()
-  {
-    return std::static_pointer_cast<Shader>(m_storage[m_pbrDefferedShaderFile]);
-  }
+  ShaderPtr ShaderManager::GetDefaultVertexShader() { return Cast<Shader>(m_storage[m_defaultVertexShaderFile]); }
 
-  ShaderPtr ShaderManager::GetPbrForwardShader()
-  {
-    return std::static_pointer_cast<Shader>(m_storage[m_pbrForwardShaderFile]);
-  }
+  ShaderPtr ShaderManager::GetPbrDefferedShader() { return Cast<Shader>(m_storage[m_pbrDefferedShaderFile]); }
+
+  ShaderPtr ShaderManager::GetPbrForwardShader() { return Cast<Shader>(m_storage[m_pbrForwardShaderFile]); }
 
   const String& ShaderManager::PbrDefferedShaderFile() { return m_pbrDefferedShaderFile; }
 

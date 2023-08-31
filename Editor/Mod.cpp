@@ -34,8 +34,8 @@
 #include <DirectionComponent.h>
 #include <Entity.h>
 #include <MathUtil.h>
-#include <Surface.h>
 #include <Prefab.h>
+#include <Surface.h>
 
 #include <DebugNew.h>
 
@@ -543,9 +543,9 @@ namespace ToolKit
       {
         // Gather hierarchy from parent to child.
         deleteList.push_back(ntt);
-        if (ntt->GetType() == EntityType::Entity_Prefab)
+        if (ntt->IsA<Prefab>())
         {
-          // Entity will already delete its own childs
+          // Entity will already delete its own children.
           continue;
         }
         GetChildren(ntt, deleteList);

@@ -111,7 +111,7 @@ namespace ToolKit
       vertices[1].pos                                 = Vec3(0.3f, 0.35f, -1.6f);
       vertices[2].pos                                 = Vec3(0.0f, 0.65f, -1.6f);
 
-      MeshPtr subMesh                                 = std::make_shared<Mesh>();
+      MeshPtr subMesh                                 = MakeNewPtr<Mesh>();
       subMesh->m_vertexCount                          = (uint) vertices.size();
       subMesh->m_clientSideVertices                   = vertices;
       subMesh->m_material                             = GetMaterialManager()->GetCopyOfUnlitColorMaterial();

@@ -147,7 +147,7 @@ namespace ToolKit
       static void EndCenteredTextButton();
       static void CenteredText(const String& text);
       //!< returns FontAwesome string (icon) from any given entity type
-      static String EntityTypeToIcon(EntityType type);
+      static String EntityTypeToIcon(TKClass* Class);
       static void ShowEntityTreeNodeContent(EntityPtr ntt);
       /**
        * Can be used to see if ui is using the keyboard for input. Most likely

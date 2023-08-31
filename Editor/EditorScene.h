@@ -37,6 +37,8 @@ namespace ToolKit
     class EditorScene : public Scene
     {
      public:
+      TKDeclareClass(EditorScene, Scene);
+
       EditorScene();
       explicit EditorScene(const String& file);
       virtual ~EditorScene();
@@ -125,7 +127,7 @@ namespace ToolKit
      public:
       EditorSceneManager();
       virtual ~EditorSceneManager();
-      ResourcePtr CreateLocal(ResourceType type) override;
+      ResourcePtr CreateLocal(TKClass* Class) override;
     };
 
     typedef std::shared_ptr<class EditorScene> EditorScenePtr;

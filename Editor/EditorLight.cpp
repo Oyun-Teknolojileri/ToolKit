@@ -42,18 +42,17 @@ namespace ToolKit
 
     void EnableLightGizmo(Light* light, bool enable)
     {
-      switch (light->GetType())
+      switch (light->ComparableType())
       {
-      case EntityType::Entity_DirectionalLight:
+      case 0:
         static_cast<EditorDirectionalLight*>(light)->EnableGizmo(enable);
         break;
-      case EntityType::Entity_PointLight:
+      case 1:
         static_cast<EditorPointLight*>(light)->EnableGizmo(enable);
         break;
-      case EntityType::Entity_SpotLight:
+      case 2:
         static_cast<EditorSpotLight*>(light)->EnableGizmo(enable);
         break;
-      case EntityType::Entity_Light:
       default:
         assert(false && "Invalid Light Type");
         break;
@@ -101,18 +100,17 @@ namespace ToolKit
 
     LightGizmoController::LightGizmoController(Light* light) : m_light(light)
     {
-      switch (light->GetType())
+      switch (light->ComparableType())
       {
-      case EntityType::Entity_DirectionalLight:
+      case 0:
         m_gizmoGenerator = new DirectionalLightMeshGenerator(static_cast<DirectionalLight*>(light));
         break;
-      case EntityType::Entity_PointLight:
+      case 1:
         m_gizmoGenerator = new PointLightMeshGenerator(static_cast<PointLight*>(light));
         break;
-      case EntityType::Entity_SpotLight:
+      case 2:
         m_gizmoGenerator = new SpotLightMeshGenerator(static_cast<SpotLight*>(light));
         break;
-      case EntityType::Entity_Light:
       default:
         assert(false && "Invalid Light Type");
         break;

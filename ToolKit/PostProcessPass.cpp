@@ -37,7 +37,7 @@ namespace ToolKit
 
   PostProcessPass::PostProcessPass()
   {
-    m_copyTexture = std::make_shared<RenderTarget>();
+    m_copyTexture = MakeNewPtr<RenderTarget>();
     m_copyBuffer  = std::make_shared<Framebuffer>();
     m_copyBuffer->Init({0, 0, false, false});
 

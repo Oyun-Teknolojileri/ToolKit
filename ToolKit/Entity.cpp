@@ -67,8 +67,6 @@ namespace ToolKit
 
   bool Entity::IsDrawable() const { return GetComponent<MeshComponent>() != nullptr; }
 
-  EntityType Entity::GetType() const { return EntityType::Entity_Base; }
-
   void Entity::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
   {
     MeshComponentPtr meshComp = GetMeshComponent();
@@ -127,10 +125,10 @@ namespace ToolKit
 
   TKObjectPtr Entity::Copy() const
   {
-    Entity* cpy = static_cast<Entity*>(GetObjectFactory()->MakeNew(Class()->Name));
-    CopyTo(cpy);
+    EntityPtr cpy = MakeNewPtr<Entity>(Class()->Name);
+    CopyTo(cpy.get());
 
-    return std::shared_ptr<Entity>(cpy);
+    return cpy;
   }
 
   void Entity::ClearComponents()
@@ -169,7 +167,7 @@ namespace ToolKit
 
   void Entity::WeakCopy(Entity* other, bool copyComponents) const
   {
-    assert(other->GetType() == GetType());
+    assert(other->Class() == Class());
     SafeDel(other->m_node);
     other->m_node           = m_node->Copy();
     other->m_node->m_entity = other->m_sharedEntity;
@@ -378,40 +376,11 @@ namespace ToolKit
     }
   }
 
-  bool Entity::IsSurfaceInstance() const
-  {
-    switch (GetType())
-    {
-    case EntityType::Entity_Surface:
-    case EntityType::Entity_Button:
-    case EntityType::Entity_Canvas:
-      return true;
-    default:
-      return false;
-    }
-  }
-
-  bool Entity::IsLightInstance() const
-  {
-    const EntityType type = GetType();
-    return (type == EntityType::Entity_Light || type == EntityType::Entity_DirectionalLight ||
-            type == EntityType::Entity_PointLight || type == EntityType::Entity_SpotLight);
-  }
-
-  bool Entity::IsSkyInstance() const
-  {
-    const EntityType type = GetType();
-    return (type == EntityType::Entity_Sky || type == EntityType::Entity_SkyBase ||
-            type == EntityType::Entity_GradientSky);
-  }
-
   EntityNode::EntityNode() {}
 
   EntityNode::EntityNode(const String& name) { SetNameVal(name); }
 
   EntityNode::~EntityNode() {}
-
-  EntityType EntityNode::GetType() const { return EntityType::Entity_Node; }
 
   void EntityNode::RemoveResources() {}
 

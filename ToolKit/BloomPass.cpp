@@ -200,7 +200,7 @@ namespace ToolKit
       }
 
       RenderTargetPtr& rt           = m_tempTextures[i];
-      rt                            = std::make_shared<RenderTarget>();
+      rt                            = MakeNewPtr<RenderTarget>();
       rt->m_settings.InternalFormat = GraphicTypes::FormatRGBA16F;
       rt->m_settings.Format         = GraphicTypes::FormatRGBA;
       rt->m_settings.Type           = GraphicTypes::TypeFloat;

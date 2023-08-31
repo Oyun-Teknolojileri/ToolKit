@@ -50,9 +50,7 @@ namespace ToolKit
     void Update(const String& textureFile, const Vec2& pivotOffset);
     void Update(const Vec2& size, const Vec2& offset = Vec2(0.5f));
 
-    EntityType GetType() const override;
     void CalculateAnchorOffsets(Vec3 canvas[4], Vec3 surface[4]);
-
     virtual void ResetCallbacks();
 
     /**
@@ -112,7 +110,6 @@ namespace ToolKit
     virtual ~Button();
     void NativeConstruct() override;
     void SetBtnImage(const TexturePtr buttonImage, const TexturePtr hoverImage);
-    EntityType GetType() const override;
     void ResetCallbacks() override;
 
    protected:

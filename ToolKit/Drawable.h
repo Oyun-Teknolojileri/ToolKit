@@ -41,9 +41,8 @@ namespace ToolKit
 
     Drawable();
     virtual ~Drawable();
-    EntityType GetType() const override;
-    void SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget = nullptr) override;
 
+    void SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget = nullptr) override;
     void RemoveResources() override;
 
     MeshPtr GetMesh() const;

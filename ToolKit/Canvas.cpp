@@ -50,8 +50,6 @@ namespace ToolKit
     CreateQuadLines();
   }
 
-  EntityType Canvas::GetType() const { return EntityType::Entity_Canvas; }
-
   void Canvas::ParameterConstructor()
   {
     Super::ParameterConstructor();
@@ -182,7 +180,7 @@ namespace ToolKit
             childNode->SetTranslation(translate, TransformationSpace::TS_WORLD);
           }
 
-          if (surface->GetType() == EntityType::Entity_Canvas)
+          if (surface->IsA<Canvas>())
           {
             Canvas* canvasPanel  = static_cast<Canvas*>(surface);
             const BoundingBox bb = canvasPanel->GetAABB(true);
@@ -211,7 +209,7 @@ namespace ToolKit
     vertices[6].pos            = Vec3(-absOffset.x, height - absOffset.y, depth);
     vertices[7].pos            = Vec3(-absOffset.x, -absOffset.y, depth);
 
-    MeshPtr mesh               = std::make_shared<Mesh>();
+    MeshPtr mesh               = MakeNewPtr<Mesh>();
     mesh->m_clientSideVertices = vertices;
     mesh->CalculateAABB();
     mesh->Init();

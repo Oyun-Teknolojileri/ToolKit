@@ -54,7 +54,7 @@ namespace ToolKit
           file,
           [&var](const DirectoryEntry& entry) -> void
           {
-            if (GetResourceType(entry.m_ext) == ResourceType::Material)
+            if (GetResourceType(entry.m_ext) == Material::StaticClass())
             {
               var = GetMaterialManager()->Create<Material>(entry.GetFullPath());
             }
@@ -74,7 +74,7 @@ namespace ToolKit
           file,
           [&var](const DirectoryEntry& entry) -> void
           {
-            if (GetResourceType(entry.m_ext) == ResourceType::Material)
+            if (GetResourceType(entry.m_ext) == Material::StaticClass())
             {
               *var = GetMaterialManager()->Create<Material>(entry.GetFullPath());
             }
@@ -651,11 +651,11 @@ namespace ToolKit
             mref->GetFile(),
             [&var](const DirectoryEntry& entry) -> void
             {
-              if (GetResourceType(entry.m_ext) == ResourceType::Mesh)
+              if (GetResourceType(entry.m_ext) == Mesh::StaticClass())
               {
                 *var = GetMeshManager()->Create<Mesh>(entry.GetFullPath());
               }
-              else if (GetResourceType(entry.m_ext) == ResourceType::SkinMesh)
+              else if (GetResourceType(entry.m_ext) == SkinMesh::StaticClass())
               {
                 *var = GetMeshManager()->Create<SkinMesh>(entry.GetFullPath());
               }
@@ -685,7 +685,7 @@ namespace ToolKit
             file,
             [&var](const DirectoryEntry& entry) -> void
             {
-              if (GetResourceType(entry.m_ext) == ResourceType::Hdri)
+              if (GetResourceType(entry.m_ext) == Hdri::StaticClass())
               {
                 *var = GetTextureManager()->Create<Hdri>(entry.GetFullPath());
               }
@@ -710,7 +710,7 @@ namespace ToolKit
 
         auto dropZoneFnc = [&var, &comp](const DirectoryEntry& entry) -> void
         {
-          if (GetResourceType(entry.m_ext) == ResourceType::Skeleton)
+          if (GetResourceType(entry.m_ext) == Skeleton::StaticClass())
           {
             *var = GetSkeletonManager()->Create<Skeleton>(entry.GetFullPath());
             if (SkeletonComponent* scom = comp->As<SkeletonComponent>())

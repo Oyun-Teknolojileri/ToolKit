@@ -39,7 +39,6 @@ namespace ToolKit
     GradientSky();
     virtual ~GradientSky();
 
-    EntityType GetType() const override;
     void Init() override;
     MaterialPtr GetSkyboxMaterial() override;
 
