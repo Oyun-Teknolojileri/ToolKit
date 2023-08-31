@@ -41,41 +41,6 @@
 namespace ToolKit
 {
 
-  /**
-   * Enums that shows the type of the Entity. Each derived class should provide
-   * a type identifier for itself to make itself known to the ToolKit.
-   */
-  enum class EntityType
-  {
-    // Order is important. Don't change for backward comparable scene files.
-    Entity_Base,
-    Entity_AudioSource,
-    Entity_Billboard,
-    Entity_Cube,
-    Entity_Quad,
-    Entity_Sphere,
-    Entity_Arrow,
-    Entity_LineBatch,
-    Entity_Cone,
-    Entity_Drawable,
-    Entity_SpriteAnim,
-    Entity_Surface,
-    Entity_Light,
-    Entity_Camera,
-    UNUSEDSLOT_1,
-    Entity_Node,
-    Entity_Button,
-    Entity_Sky,
-    Entity_DirectionalLight,
-    Entity_PointLight,
-    Entity_SpotLight,
-    Entity_Canvas,
-    Entity_Prefab,
-    Entity_SkyBase,
-    Entity_GradientSky,
-    ENTITY_TYPE_COUNT // Holds the size of the enum
-  };
-
   static VariantCategory EntityCategory {"Meta", 100};
 
   /**
@@ -268,6 +233,42 @@ namespace ToolKit
    */
   class TK_API EntityFactory final
   {
+   public:
+    /**
+     * Enums that shows the type of the Entity. Each derived class should provide
+     * a type identifier for itself to make itself known to the ToolKit.
+     */
+    enum class EntityType
+    {
+      // Order is important. Don't change for backward comparable scene files.
+      Entity_Base,
+      Entity_AudioSource,
+      Entity_Billboard,
+      Entity_Cube,
+      Entity_Quad,
+      Entity_Sphere,
+      Entity_Arrow,
+      Entity_LineBatch,
+      Entity_Cone,
+      Entity_Drawable,
+      Entity_SpriteAnim,
+      Entity_Surface,
+      Entity_Light,
+      Entity_Camera,
+      UNUSEDSLOT_1,
+      Entity_Node,
+      Entity_Button,
+      Entity_Sky,
+      Entity_DirectionalLight,
+      Entity_PointLight,
+      Entity_SpotLight,
+      Entity_Canvas,
+      Entity_Prefab,
+      Entity_SkyBase,
+      Entity_GradientSky,
+      ENTITY_TYPE_COUNT // Holds the size of the enum
+    };
+
    public:
     EntityPtr CreateByType(EntityType type);
   };

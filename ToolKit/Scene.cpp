@@ -588,10 +588,10 @@ namespace ToolKit
 
     for (node = parent->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
     {
-      XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
-      EntityType t           = (EntityType) std::atoi(typeAttr->value());
-      EntityPtr ntt          = GetEntityFactory()->CreateByType(t);
-      ntt->m_version         = m_version;
+      XmlAttribute* typeAttr      = node->first_attribute(xmlObjectType);
+      EntityFactory::EntityType t = (EntityFactory::EntityType) std::atoi(typeAttr->value());
+      EntityPtr ntt               = GetEntityFactory()->CreateByType(t);
+      ntt->m_version              = m_version;
 
       ntt->DeSerialize(info, node);
 
