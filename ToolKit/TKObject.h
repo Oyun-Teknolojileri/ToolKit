@@ -125,6 +125,7 @@ namespace ToolKit
     virtual void ParameterEventConstructor();
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    void PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     TKDeclareParam(ULongID, Id);

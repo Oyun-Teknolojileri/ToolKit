@@ -1466,8 +1466,7 @@ namespace ToolKit
 
         if (!m_active)
         {
-          ImGui::SetWindowFocus();
-          m_active = true;
+          SetActive();
         }
       }
 
@@ -1484,6 +1483,11 @@ namespace ToolKit
     {
       m_active = true;
       ImGui::SetWindowFocus();
+
+      if (IsViewport())
+      {
+        g_app->m_lastActiveViewport = static_cast<EditorViewport*>(this);
+      }
     }
 
     void Window::ModShortCutSignals(const IntArray& mask) const

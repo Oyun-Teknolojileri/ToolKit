@@ -123,6 +123,11 @@ namespace ToolKit
     return parent;
   }
 
+  void TKObject::PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    ParameterEventConstructor(); // Set all the events after data deserialized.
+  }
+
   TKObjectFactory::TKObjectFactory() { Init(); }
 
   TKObjectFactory::~TKObjectFactory() {}
