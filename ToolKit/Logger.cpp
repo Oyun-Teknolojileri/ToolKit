@@ -69,7 +69,17 @@ namespace ToolKit
 
     vsprintf(buff, msg, args);
 
-    m_logFile << logTypes[(int) logType] << msg << std::endl;
+    m_logFile << logTypes[(int) logType] << buff << std::endl;
+
+    if (m_writeConsoleFn != nullptr)
+    {
+      m_writeConsoleFn(logType, buff);
+    }
+
+    if (m_platfromConsoleFn != nullptr)
+    {
+      m_platfromConsoleFn(logType, buff);
+    }
 
     va_end(args);
   }
