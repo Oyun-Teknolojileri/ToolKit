@@ -1153,7 +1153,7 @@ namespace ToolKit
         }
       }
 
-      return nullptr;
+      return m_lastActiveViewport;
     }
 
     EditorViewport* App::GetViewport(const String& name)
