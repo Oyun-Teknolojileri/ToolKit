@@ -38,7 +38,7 @@ namespace ToolKit
   {
     Overlay2DTopBar* m_2dViewOptions = nullptr;
 
-    EditorViewport2d::EditorViewport2d() {}
+    EditorViewport2d::EditorViewport2d() { Init({640.0f, 480.0f}); }
 
     EditorViewport2d::~EditorViewport2d()
     {
@@ -52,7 +52,28 @@ namespace ToolKit
     void EditorViewport2d::Init(Vec2 size)
     {
       EditorViewport::Init(size);
-      InitViewport();
+      if (m_anchorMode)
+      {
+        m_anchorMode->UnInit();
+        SafeDel(m_anchorMode);
+      }
+
+      m_anchorMode = new AnchorMod(ModId::Anchor);
+      m_anchorMode->Init();
+
+      ResetViewportImage(GetRenderTargetSettings());
+      CameraPtr cam            = GetCamera();
+      cam->m_orthographicScale = 1.0f;
+      cam->m_node->SetTranslation(Z_AXIS * 10.0f);
+
+      AdjustZoom(TK_FLT_MIN);
+
+      if (m_2dViewOptions == nullptr)
+      {
+        m_2dViewOptions = new Overlay2DTopBar(this);
+      }
+
+      m_snapDeltas = Vec3(10.0f, 45.0f, 0.25f);
     }
 
     Window::Type EditorViewport2d::GetType() const { return Type::Viewport2d; }
@@ -248,31 +269,6 @@ namespace ToolKit
         Vec3 displace = X_AXIS * x + Y_AXIS * y;
         cam->m_node->Translate(displace, TransformationSpace::TS_WORLD);
       }
-    }
-
-    void EditorViewport2d::InitViewport()
-    {
-      if (m_anchorMode)
-      {
-        m_anchorMode->UnInit();
-        SafeDel(m_anchorMode);
-      }
-
-      m_anchorMode = new AnchorMod(ModId::Anchor);
-      m_anchorMode->Init();
-
-      ResetViewportImage(GetRenderTargetSettings());
-      CameraPtr cam            = GetCamera();
-      cam->m_orthographicScale = 1.0f;
-      cam->m_node->SetTranslation(Z_AXIS * 10.0f);
-
-      AdjustZoom(TK_FLT_MIN);
-
-      if (!m_2dViewOptions)
-      {
-        m_2dViewOptions = new Overlay2DTopBar(this);
-      }
-      m_snapDeltas = Vec3(10.0f, 45.0f, 0.25f);
     }
 
   } // namespace Editor

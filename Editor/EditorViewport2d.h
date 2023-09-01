@@ -54,7 +54,6 @@ namespace ToolKit
 
      private:
       void PanZoom(float deltaTime);
-      void InitViewport();
 
      private:
       AnchorMod* m_anchorMode = nullptr;
