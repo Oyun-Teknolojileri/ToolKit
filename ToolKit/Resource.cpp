@@ -104,7 +104,7 @@ namespace ToolKit
   void Resource::ParseDocument(StringView firstNode, bool fullParse)
   {
     SerializationFileInfo info;
-    info.File          = GetSerializeFile();
+    info.File          = GetFile();
 
     XmlFilePtr file    = GetFileManager()->GetXmlFile(info.File);
     XmlDocumentPtr doc = std::make_shared<XmlDocument>();
