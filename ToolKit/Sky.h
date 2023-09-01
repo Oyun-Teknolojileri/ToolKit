@@ -37,6 +37,7 @@ namespace ToolKit
     TKDeclareClass(SkyBase, Entity);
 
     SkyBase();
+    void NativeConstruct() override;
 
     virtual void Init();
     virtual void ReInit();
