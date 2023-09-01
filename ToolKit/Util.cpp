@@ -26,12 +26,16 @@
 
 #include "Util.h"
 
+#include "Audio.h"
 #include "Common/utf8.h"
 #include "FileManager.h"
 #include "Material.h"
 #include "MathUtil.h"
+#include "Mesh.h"
 #include "Primative.h"
 #include "Scene.h"
+#include "Shader.h"
+#include "SpriteSheet.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -393,212 +397,133 @@ namespace ToolKit
     return path.substr(i);
   }
 
-  String CreatePathFromResourceType(const String& file, ResourceType type) { return GetResourcePath(type) + file; }
+  String CreatePathFromResourceType(const String& file, TKClass* Class) { return GetResourcePath(Class) + file; }
 
-  ResourceType GetResourceType(const String& ext)
+  TKClass* GetResourceType(const String& ext)
   {
     if (ext == MESH || ext == SKINMESH || SupportedMeshFormat(ext))
     {
-      return ResourceType::Mesh;
+      return Mesh::StaticClass();
     }
 
     if (ext == ANIM)
     {
-      return ResourceType::Animation;
+      return Animation::StaticClass();
     }
 
     if (ext == MATERIAL)
     {
-      return ResourceType::Material;
+      return Material::StaticClass();
     }
 
     if (SupportedImageFormat(ext))
     {
       if (ext == HDR)
       {
-        return ResourceType::Hdri;
+        return Hdri::StaticClass();
       }
 
-      return ResourceType::Texture;
+      return Texture::StaticClass();
     }
 
     if (ext == SHADER)
     {
-      return ResourceType::Shader;
+      return Shader::StaticClass();
     }
 
     if (ext == AUDIO)
     {
-      return ResourceType::Audio;
+      return Audio::StaticClass();
     }
 
     if (ext == SCENE)
     {
-      return ResourceType::Scene;
+      return Scene::StaticClass();
     }
 
     if (ext == SKELETON)
     {
-      return ResourceType::Skeleton;
+      return Skeleton::StaticClass();
     }
 
-    assert(false);
-    return ResourceType::Base;
+    assert(false && "Extension does not map to a Class.");
+    return nullptr;
   }
 
-  TK_API String EntityTypeToString(EntityType type)
+  String GetExtFromType(TKClass* Class)
   {
-    static const std::unordered_map<EntityType, String> typeToName {
-        {EntityType::Entity_Base,             "Base"            },
-        {EntityType::Entity_AudioSource,      "AudioSource"     },
-        {EntityType::Entity_Billboard,        "Billboard"       },
-        {EntityType::Entity_Cube,             "Cube"            },
-        {EntityType::Entity_Quad,             "Quad"            },
-        {EntityType::Entity_Sphere,           "Sphere"          },
-        {EntityType::Entity_Arrow,            "Arrow"           },
-        {EntityType::Entity_LineBatch,        "LineBatch"       },
-        {EntityType::Entity_Cone,             "Cone"            },
-        {EntityType::Entity_Drawable,         "Drawable"        },
-        {EntityType::Entity_SpriteAnim,       "SpriteAnim"      },
-        {EntityType::Entity_Surface,          "Surface"         },
-        {EntityType::Entity_Light,            "Light"           },
-        {EntityType::Entity_Camera,           "Camera"          },
-        {EntityType::Entity_Node,             "Node"            },
-        {EntityType::Entity_Button,           "Button"          },
-        {EntityType::Entity_Sky,              "Sky"             },
-        {EntityType::Entity_DirectionalLight, "DirectionalLight"},
-        {EntityType::Entity_PointLight,       "PointLight "     },
-        {EntityType::Entity_SpotLight,        "SpotLight"       },
-        {EntityType::Entity_Canvas,           "Canvas"          },
-        {EntityType::Entity_Prefab,           "Prefab"          },
-        {EntityType::Entity_SkyBase,          "SkyBase"         },
-        {EntityType::Entity_GradientSky,      "GradientSky"     }
-    };
-
-    bool exist = typeToName.count(type) != 0;
-    assert(exist);
-    if (!exist)
+    if (Class == Animation::StaticClass())
     {
-      return "UnknownEntityTypeName";
-    }
-    return typeToName.at(type);
-  }
-
-  String GetTypeString(ResourceType type)
-  {
-    static const std::unordered_map<ResourceType, String> typeToName {
-        {ResourceType::Base,         "Base"        },
-        {ResourceType::Animation,    "Animation"   },
-        {ResourceType::Audio,        "Audio"       },
-        {ResourceType::Material,     "Material"    },
-        {ResourceType::Mesh,         "Mesh"        },
-        {ResourceType::Shader,       "Shader"      },
-        {ResourceType::SkinMesh,     "SkinMesh"    },
-        {ResourceType::SpriteSheet,  "SpriteSheet" },
-        {ResourceType::Texture,      "Texture"     },
-        {ResourceType::CubeMap,      "CubeMap"     },
-        {ResourceType::RenderTarget, "RenderTarget"},
-        {ResourceType::Scene,        "Scene"       },
-        {ResourceType::Skeleton,     "Skeleton"    }
-    };
-
-    bool exist = typeToName.count(type) != 0;
-    assert(exist);
-    if (!exist)
-    {
-      return "UnknownResourceTypeName";
-    }
-    return typeToName.at(type);
-  }
-
-  String GetExtFromType(ResourceType type)
-  {
-    switch (type)
-    {
-    case ResourceType::Base:
-      break;
-    case ResourceType::Animation:
       return ANIM;
-      break;
-    case ResourceType::Audio:
-      return AUDIO;
-      break;
-    case ResourceType::Material:
-      return MATERIAL;
-      break;
-    case ResourceType::Mesh:
-      return MESH;
-      break;
-    case ResourceType::Shader:
-      return SHADER;
-      break;
-    case ResourceType::SkinMesh:
-      return SKINMESH;
-      break;
-    case ResourceType::SpriteSheet:
-      assert(false);
-      break;
-    case ResourceType::Texture:
-      assert(false);
-      break;
-    case ResourceType::CubeMap:
-      assert(false);
-      break;
-    case ResourceType::RenderTarget:
-      assert(false);
-      break;
-    case ResourceType::Scene:
-      return SCENE;
-      break;
-    default:
-      assert(false);
-      break;
     }
+    if (Class == Audio::StaticClass())
+    {
+      return AUDIO;
+    }
+    if (Class == Material::StaticClass())
+    {
+      return MATERIAL;
+    }
+    if (Class == Mesh::StaticClass())
+    {
+      return MESH;
+    }
+    if (Class == SkinMesh::StaticClass())
+    {
+      return SKINMESH;
+    }
+    if (Class == Shader::StaticClass())
+    {
+      return SHADER;
+    }
+    if (Class == Scene::StaticClass())
+    {
+      return SCENE;
+    }
+
+    assert(false && "Resource type does not have a corresponding extension.");
 
     return String();
   }
 
-  String GetResourcePath(ResourceType type)
+  String GetResourcePath(TKClass* Class)
   {
-    String path;
-    switch (type)
+    if (Class == Animation::StaticClass())
     {
-    case ResourceType::Base:
-      break;
-    case ResourceType::Animation:
-      path = AnimationPath("");
-      break;
-    case ResourceType::Audio:
-      path = AudioPath("");
-      break;
-    case ResourceType::Material:
-      path = MaterialPath("");
-      break;
-    case ResourceType::Mesh:
-    case ResourceType::SkinMesh:
-      path = MeshPath("");
-      break;
-    case ResourceType::Shader:
-      path = ShaderPath("");
-      break;
-    case ResourceType::SpriteSheet:
-      path = SpritePath("");
-      break;
-    case ResourceType::Texture:
-    case ResourceType::CubeMap:
-      path = TexturePath("");
-      break;
-    case ResourceType::RenderTarget:
-      break;
-    case ResourceType::Scene:
-      path = ScenePath("");
-      break;
-    default:
-      assert(false);
-      break;
+      return AnimationPath("");
+    }
+    if (Class == Audio::StaticClass())
+    {
+      return AudioPath("");
+    }
+    if (Class == Material::StaticClass())
+    {
+      return MaterialPath("");
+    }
+    if (Class->IsSublcassOf(Mesh::StaticClass()))
+    {
+      return MeshPath("");
+    }
+    if (Class == Shader::StaticClass())
+    {
+      return ShaderPath("");
+    }
+    if (Class == SpriteSheet::StaticClass())
+    {
+      return SpritePath("");
+    }
+    if (Class->IsSublcassOf(Texture::StaticClass()))
+    {
+      return TexturePath("");
+    }
+    if (Class == Scene::StaticClass())
+    {
+      return ScenePath("");
     }
 
-    return path;
+    assert(false && "Resource type does not have a dedicated folder.");
+
+    return String();
   }
 
   char GetPathSeparator()

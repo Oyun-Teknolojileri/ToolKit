@@ -37,7 +37,7 @@ namespace ToolKit
   OutlinePass::OutlinePass()
   {
     m_stencilPass  = std::make_shared<StencilRenderPass>();
-    m_stencilAsRt  = std::make_shared<RenderTarget>();
+    m_stencilAsRt  = MakeNewPtr<RenderTarget>();
 
     m_outlinePass  = std::make_shared<FullQuadPass>();
     m_dilateShader = GetShaderManager()->Create<Shader>(ShaderPath("dilateFrag.shader", true));

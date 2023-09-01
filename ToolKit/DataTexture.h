@@ -34,22 +34,27 @@ namespace ToolKit
   class TK_API DataTexture : public Texture
   {
    public:
-    TKResourceType(DataTexture)
+    TKDeclareClass(DataTexture, Texture);
 
+    DataTexture();
     DataTexture(int width, int height);
 
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
    protected:
-    DataTexture();
     void Load() override;
     void Clear() override;
   };
 
+  typedef std::shared_ptr<DataTexture> DataTexturePtr;
+
   class TK_API LightDataTexture : public DataTexture
   {
    public:
+    TKDeclareClass(LightDataTexture, DataTexture);
+
+    LightDataTexture();
     LightDataTexture(int width, int height);
 
     void Init(bool flushClientSideArray = false) override;
@@ -69,9 +74,9 @@ namespace ToolKit
                            float& sizeNS);
 
    private:
-    LightDataTexture();
-
     bool IncrementDataIndex(int& index, int amount = 1);
   };
+
+  typedef std::shared_ptr<LightDataTexture> LightDataTexturePtr;
 
 } // namespace ToolKit

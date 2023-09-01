@@ -27,6 +27,7 @@
 #pragma once
 
 #include "Resource.h"
+#include "ResourceManager.h"
 
 namespace ToolKit
 {
@@ -71,7 +72,7 @@ namespace ToolKit
   class TK_API Skeleton : public Resource
   {
    public:
-    TKResourceType(Skeleton)
+    TKDeclareClass(Skeleton, Resource);
 
     Skeleton();
     explicit Skeleton(const String& file);
@@ -80,14 +81,14 @@ namespace ToolKit
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
     void Load() override;
-    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     int GetBoneIndex(const String& bone);
     StaticBone* GetBone(const String& bone);
 
    protected:
     void CopyTo(Resource* other) override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     std::vector<StaticBone*> m_bones;
@@ -100,8 +101,8 @@ namespace ToolKit
    public:
     SkeletonManager();
     virtual ~SkeletonManager();
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
+    bool CanStore(TKClass* Class) override;
+    ResourcePtr CreateLocal(TKClass* Class) override;
   };
 
 } // namespace ToolKit

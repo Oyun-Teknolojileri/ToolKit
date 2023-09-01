@@ -104,8 +104,6 @@ namespace ToolKit
     return data;
   }
 
-  EntityType Camera::GetType() const { return EntityType::Entity_Camera; }
-
   XmlNode* Camera::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* nttNode = Super::SerializeImp(doc, parent);

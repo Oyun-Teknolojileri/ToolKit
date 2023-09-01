@@ -41,7 +41,6 @@ namespace ToolKit
 
     Canvas();
     void NativeConstruct() override;
-    EntityType GetType() const override;
 
     void UpdateGeometry(bool byTexture) override;
     void ApplyRecursiveResizePolicy(float width, float height);

@@ -216,7 +216,7 @@ namespace ToolKit
     // Find the end of directional lights
     for (int i = 0; i < lights.size(); i++)
     {
-      if (lights[i]->GetType() == EntityType::Entity_DirectionalLight)
+      if (lights[i]->IsA<DirectionalLight>())
       {
         bestLights.push_back(lights[i]);
       }
@@ -263,7 +263,7 @@ namespace ToolKit
         }
       }*/
 
-      if (light->GetType() == EntityType::Entity_SpotLight)
+      if (light->IsA<SpotLight>())
       {
         light->UpdateShadowCamera();
 
@@ -274,7 +274,7 @@ namespace ToolKit
           curIntersectCount++;
         }
       }
-      if (light->GetType() == EntityType::Entity_PointLight)
+      if (light->IsA<PointLight>())
       {
         BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
         if (SphereBoxIntersection(lightSphere, aabb))

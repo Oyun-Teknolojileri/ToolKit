@@ -43,7 +43,7 @@ namespace ToolKit
   class TK_API Material : public Resource
   {
    public:
-    TKResourceType(Material)
+    TKDeclareClass(Material, Resource);
 
     Material();
     explicit Material(const String& file);
@@ -119,9 +119,9 @@ namespace ToolKit
     MaterialManager();
     virtual ~MaterialManager();
     void Init() override;
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
-    String GetDefaultResource(ResourceType type) override;
+    bool CanStore(TKClass* Class) override;
+    ResourcePtr CreateLocal(TKClass* Class) override;
+    String GetDefaultResource(TKClass* Class) override;
 
     MaterialPtr GetCopyOfUnlitMaterial();
     MaterialPtr GetCopyOfUIMaterial();

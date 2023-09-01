@@ -99,10 +99,11 @@ namespace ToolKit
 
     void Anchor::Update(float deltaTime)
     {
-      if (m_entity == nullptr || !m_entity->IsSurfaceInstance() || m_entity->m_node->m_parent == nullptr ||
-          m_entity->m_node->m_parent->m_entity == nullptr ||
-          m_entity->m_node->m_parent->m_entity->GetType() != EntityType::Entity_Canvas)
+      if (m_entity == nullptr || !m_entity->IsA<Surface>() || m_entity->m_node->m_parent == nullptr ||
+          m_entity->m_node->m_parent->m_entity == nullptr || !m_entity->m_node->m_parent->m_entity->IsA<Canvas>())
+      {
         return;
+      }
 
       Canvas* canvasPanel = static_cast<Canvas*>(m_entity->m_node->m_parent->m_entity.get());
 
@@ -298,7 +299,7 @@ namespace ToolKit
         }
       }
 
-      MeshPtr mesh = std::make_shared<Mesh>();
+      MeshPtr mesh = MakeNewPtr<Mesh>();
       for (int i = 0; i < m_handles.size(); i++)
       {
         if (m_handles[i]->m_mesh)
@@ -364,7 +365,7 @@ namespace ToolKit
       mat = glm::scale(mat, params.scale);
       meshPtr->ApplyTransform(mat);
 
-      m_mesh = std::make_shared<Mesh>();
+      m_mesh = MakeNewPtr<Mesh>();
       m_mesh->m_subMeshes.push_back(meshPtr);
       m_mesh->Init(false);
 

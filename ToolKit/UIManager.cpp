@@ -133,7 +133,7 @@ namespace ToolKit
       // Process events.
       for (Event* e : events)
       {
-        if (!ntt->IsSurfaceInstance())
+        if (!ntt->IsA<Surface>())
         {
           continue;
         }
@@ -143,7 +143,7 @@ namespace ToolKit
         surface->m_mouseOver    = CheckMouseOver(surface, e, vp);
         surface->m_mouseClicked = CheckMouseClick(surface, e, vp);
 
-        if (ntt->GetType() == EntityType::Entity_Button)
+        if (ntt->IsA<Button>())
         {
           Button* button        = ntt->As<Button>();
           MaterialPtr hoverMat  = button->GetHoverMaterialVal();

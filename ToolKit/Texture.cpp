@@ -41,6 +41,11 @@
 namespace ToolKit
 {
 
+  // Texture
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(Texture, Resource);
+
   Texture::Texture(const TextureSettings& settings)
   {
     m_textureSettings = settings;
@@ -182,6 +187,11 @@ namespace ToolKit
     m_loaded = false;
   }
 
+  // DepthTexture
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(DepthTexture, Texture);
+
   void DepthTexture::Load() {}
 
   void DepthTexture::Clear() { UnInit(); }
@@ -213,6 +223,11 @@ namespace ToolKit
     glDeleteRenderbuffers(1, &m_textureId);
     m_textureId = 0;
   }
+
+  // CubeMap
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(CubeMap, Texture);
 
   CubeMap::CubeMap() : Texture() {}
 
@@ -355,6 +370,11 @@ namespace ToolKit
     m_loaded = false;
   }
 
+  // Hdri
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(Hdri, Texture);
+
   Hdri::Hdri()
   {
     m_textureSettings.InternalFormat  = GraphicTypes::FormatRGBA16F;
@@ -364,10 +384,10 @@ namespace ToolKit
     m_textureSettings.GenerateMipMap  = false;
     m_exposure                        = 1.0f;
 
-    m_texToCubemapMat                 = std::make_shared<Material>();
-    m_cubemapToIrradiancemapMat       = std::make_shared<Material>();
-    m_irradianceCubemap               = std::make_shared<CubeMap>(0);
-    m_equirectangularTexture          = std::make_shared<Texture>(static_cast<uint>(0));
+    m_texToCubemapMat                 = MakeNewPtr<Material>();
+    m_cubemapToIrradiancemapMat       = MakeNewPtr<Material>();
+    m_irradianceCubemap               = std::make_shared<CubeMap>(0u);
+    m_equirectangularTexture          = std::make_shared<Texture>(0u);
   }
 
   Hdri::Hdri(const String& file) : Hdri() { SetFile(file); }
@@ -478,6 +498,11 @@ namespace ToolKit
   }
 
   bool Hdri::IsTextureAssigned() { return !GetFile().empty(); }
+
+  // RenderTarget
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(RenderTarget, Texture);
 
   RenderTarget::RenderTarget() : Texture() {}
 
@@ -597,14 +622,16 @@ namespace ToolKit
 
   const RenderTargetSettigs& RenderTarget::GetSettings() const { return m_settings; }
 
-  TextureManager::TextureManager() { m_type = ResourceType::Texture; }
+  // TextureManager
+  //////////////////////////////////////////////////////////////////////////
+
+  TextureManager::TextureManager() { m_baseType = Texture::StaticClass(); }
 
   TextureManager::~TextureManager() {}
 
-  bool TextureManager::CanStore(ResourceType t)
+  bool TextureManager::CanStore(TKClass* Class)
   {
-    if (t == ResourceType::Texture || t == ResourceType::CubeMap || t == ResourceType::RenderTarget ||
-        t == ResourceType::Hdri)
+    if (Class->IsSublcassOf(Texture::StaticClass()))
     {
       return true;
     }
@@ -612,33 +639,34 @@ namespace ToolKit
     return false;
   }
 
-  ResourcePtr TextureManager::CreateLocal(ResourceType type)
+  ResourcePtr TextureManager::CreateLocal(TKClass* Class)
   {
-    Texture* tex = nullptr;
-    switch (type)
+    if (Class == Texture::StaticClass())
     {
-    case ResourceType::Texture:
-      tex = new Texture();
-      break;
-    case ResourceType::CubeMap:
-      tex = new CubeMap();
-      break;
-    case ResourceType::RenderTarget:
-      tex = new RenderTarget();
-      break;
-    case ResourceType::Hdri:
-      tex = new Hdri();
-      break;
-    default:
-      assert(false);
-      break;
+      return MakeNewPtr<Texture>();
     }
-    return ResourcePtr(tex);
+
+    if (Class == CubeMap::StaticClass())
+    {
+      return MakeNewPtr<CubeMap>();
+    }
+
+    if (Class == RenderTarget::StaticClass())
+    {
+      return MakeNewPtr<RenderTarget>();
+    }
+
+    if (Class == Hdri::StaticClass())
+    {
+      return MakeNewPtr<Hdri>();
+    }
+
+    return nullptr;
   }
 
-  String TextureManager::GetDefaultResource(ResourceType type)
+  String TextureManager::GetDefaultResource(TKClass* Class)
   {
-    if (type == ResourceType::Hdri)
+    if (Class == Hdri::StaticClass())
     {
       return TexturePath("defaultHDRI.hdr", true);
     }

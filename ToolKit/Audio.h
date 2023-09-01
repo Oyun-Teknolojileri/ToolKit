@@ -35,7 +35,7 @@ namespace ToolKit
   class TK_API Audio : public Resource
   {
    public:
-    TKResourceType(Audio)
+    TKDeclareClass(Audio, Resource);
 
     Audio();
     explicit Audio(const String& file);
@@ -61,8 +61,8 @@ namespace ToolKit
     void Stop();
     void Start();
 
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
+    bool CanStore(TKClass* Class) override;
+    ResourcePtr CreateLocal(TKClass* Class) override;
 
    public:
     void* m_engine = nullptr;
@@ -73,7 +73,6 @@ namespace ToolKit
    public:
     TKDeclareClass(AudioSource, Entity);
 
-    EntityType GetType() const override;
     ~AudioSource();
     void AttachAudio(const AudioPtr& audio);
 

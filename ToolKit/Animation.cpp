@@ -43,6 +43,8 @@ static constexpr bool SERIALIZE_ANIMATION_AS_BINARY = false;
 namespace ToolKit
 {
 
+  TKDefineClass(Animation, Resource);
+
   Animation::Animation() {}
 
   Animation::Animation(const String& file) : Animation() { SetFile(file); }
@@ -462,12 +464,12 @@ namespace ToolKit
     return -1;
   }
 
-  AnimationManager::AnimationManager() { m_type = ResourceType::Animation; }
+  AnimationManager::AnimationManager() { m_baseType = Animation::StaticClass(); }
 
   AnimationManager::~AnimationManager() {}
 
-  bool AnimationManager::CanStore(ResourceType t) { return t == ResourceType::Animation; }
+  bool AnimationManager::CanStore(TKClass* Class) { return Class == Animation::StaticClass(); }
 
-  ResourcePtr AnimationManager::CreateLocal(ResourceType type) { return ResourcePtr(new Animation()); }
+  ResourcePtr AnimationManager::CreateLocal(TKClass* Class) { return MakeNewPtr<Animation>(); }
 
 } // namespace ToolKit

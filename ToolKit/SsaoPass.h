@@ -35,12 +35,12 @@ namespace ToolKit
   class SSAONoiseTexture : public DataTexture
   {
    public:
+    TKDeclareClass(SSAONoiseTexture, DataTexture);
+
+    SSAONoiseTexture();
     SSAONoiseTexture(int width, int height);
 
     void Init(void* data);
-
-   protected:
-    SSAONoiseTexture();
 
    private:
     void Init(bool flushClientSideArray = false) override;

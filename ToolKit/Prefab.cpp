@@ -48,8 +48,6 @@ namespace ToolKit
     m_initiated = false;
   }
 
-  EntityType Prefab::GetType() const { return EntityType::Entity_Prefab; }
-
   void Prefab::Unlink()
   {
     if (m_initiated)

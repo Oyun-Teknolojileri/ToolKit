@@ -48,8 +48,6 @@ namespace ToolKit
 
   Drawable::~Drawable() {}
 
-  EntityType Drawable::GetType() const { return EntityType::Entity_Drawable; }
-
   void Drawable::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
   {
     Entity::SetPose(anim, time, blendTarget);

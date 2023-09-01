@@ -37,6 +37,8 @@ namespace ToolKit
   namespace Editor
   {
 
+    TKDefineClass(EditorScene, Scene);
+
     EditorScene::EditorScene() : Scene() { m_newScene = true; }
 
     EditorScene::EditorScene(const String& file) : EditorScene()
@@ -164,7 +166,7 @@ namespace ToolKit
         return;
       }
 
-      if (g_app->m_selectEffectingLights && !ntt->IsLightInstance())
+      if (g_app->m_selectEffectingLights && !ntt->IsA<Light>())
       {
         LightPtrArray lights          = GetLights();
         LightPtrArray effectingLights = RenderJobProcessor::SortLights(ntt, lights);
@@ -370,7 +372,7 @@ namespace ToolKit
       Scene::PickData pdata = Scene::PickObject(ray, ignoreList, temp);
 
       // If the billboards are picked, pick the entity
-      if (pdata.entity != nullptr && pdata.entity->GetType() == EntityType::Entity_Billboard &&
+      if (pdata.entity != nullptr && pdata.entity->IsA<Billboard>() &&
           static_cast<Billboard*>(pdata.entity.get())->m_entity != nullptr)
       {
         pdata.entity = static_cast<Billboard*>(pdata.entity.get())->m_entity;
@@ -397,8 +399,7 @@ namespace ToolKit
                                          pickedObjects.end(),
                                          [&pickedObjects](PickData& pd) -> bool
                                          {
-                                           if (pd.entity != nullptr &&
-                                               pd.entity->GetType() == EntityType::Entity_Billboard &&
+                                           if (pd.entity != nullptr && pd.entity->IsA<Billboard>() &&
                                                static_cast<Billboard*>(pd.entity.get())->m_entity != nullptr)
                                            {
                                              // Check if the entity is already picked
@@ -445,7 +446,7 @@ namespace ToolKit
 
       // Check environment component
       bool envExist = entity->GetComponent<EnvironmentComponent>() != nullptr;
-      if (envExist || entity->IsSkyInstance())
+      if (envExist || entity->IsA<Sky>())
       {
         SkyBillboardPtr billboard = MakeNewPtr<SkyBillboard>();
         addBillboardFn(billboard);
@@ -453,7 +454,7 @@ namespace ToolKit
       }
 
       // Check light
-      if (entity->IsLightInstance())
+      if (entity->IsA<Light>())
       {
         LightBillboardPtr billboard = MakeNewPtr<LightBillboard>();
         addBillboardFn(billboard);
@@ -521,11 +522,11 @@ namespace ToolKit
       {
         sanitizeFn(EditorBillboardBase::BillboardType::Sky);
       }
-      else if (entity->IsSkyInstance())
+      else if (entity->IsA<Sky>())
       {
         sanitizeFn(EditorBillboardBase::BillboardType::Sky);
       }
-      else if (entity->IsLightInstance())
+      else if (entity->IsA<Light>())
       {
         sanitizeFn(EditorBillboardBase::BillboardType::Light);
       }
@@ -577,7 +578,15 @@ namespace ToolKit
 
     EditorSceneManager::~EditorSceneManager() {}
 
-    ResourcePtr EditorSceneManager::CreateLocal(ResourceType type) { return ResourcePtr(new EditorScene()); }
+    ResourcePtr EditorSceneManager::CreateLocal(TKClass* Class)
+    {
+      if (Class == EditorScene::StaticClass())
+      {
+        return MakeNewPtr<EditorScene>();
+      }
+
+      return nullptr;
+    }
 
   } // namespace Editor
 } // namespace ToolKit

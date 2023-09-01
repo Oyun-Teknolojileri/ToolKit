@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include "Anchor.h"
 #include "ConsoleWindow.h"
 #include "EditorRenderer.h"
 #include "EditorScene.h"
@@ -46,7 +47,6 @@ namespace ToolKit
   namespace Editor
   {
 
-    typedef std::shared_ptr<class Anchor> AnchorPtr;
     typedef std::function<void(int)> SysCommandDoneCallback;
     typedef std::function<int(StringView, bool, bool, SysCommandDoneCallback)> SysCommandExecutionFn;
 

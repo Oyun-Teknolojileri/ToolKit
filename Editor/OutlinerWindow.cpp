@@ -282,7 +282,7 @@ namespace ToolKit
       bool self     = Utf8CaseInsensitiveSearch(ntt->GetNameVal(), str);
       bool children = false;
 
-      if (ntt->GetType() != EntityType::Entity_Prefab)
+      if (!ntt->IsA<Prefab>())
       {
         for (Node* n : ntt->m_node->m_children)
         {
@@ -639,7 +639,7 @@ namespace ToolKit
           for (int i = 0; i < selected.size(); i++)
           {
             if (selected[i]->GetIdVal() != NULL_HANDLE &&
-                (!Prefab::GetPrefabRoot(selected[i]) || selected[i]->GetType() == EntityType::Entity_Prefab))
+                (!Prefab::GetPrefabRoot(selected[i]) || selected[i]->IsA<Prefab>()))
             {
               g_reparentQueue.push(selected[i]->GetIdVal());
             }

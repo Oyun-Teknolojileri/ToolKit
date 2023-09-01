@@ -50,20 +50,20 @@ namespace ToolKit
     assert(m_storage.size() == 0); // Uninitialize all resources before exit.
   }
 
-  void ResourceManager::Init() { GetLogger()->Log("Initiating manager " + GetTypeString(m_type)); }
+  void ResourceManager::Init() { GetLogger()->Log("Initiating manager " + m_baseType->Name); }
 
   void ResourceManager::Uninit()
   {
-    GetLogger()->Log("Uninitiating manager " + GetTypeString(m_type));
+    GetLogger()->Log("Uninitiating manager " + m_baseType->Name);
     m_storage.clear();
   }
 
-  void ResourceManager::Manage(const ResourcePtr& resource)
+  void ResourceManager::Manage(ResourcePtr resource)
   {
     String file = resource->GetFile();
     bool sane   = !file.empty();
     sane        &= !Exist(file);
-    sane        &= CanStore(resource->GetType());
+    sane        &= CanStore(resource->Class());
 
     if (sane)
     {
@@ -71,7 +71,7 @@ namespace ToolKit
     }
   }
 
-  String ResourceManager::GetDefaultResource(ResourceType type) { return String(); }
+  String ResourceManager::GetDefaultResource(TKClass* Class) { return String(); }
 
   bool ResourceManager::Exist(const String& file) { return m_storage.find(file) != m_storage.end(); }
 
@@ -86,26 +86,6 @@ namespace ToolKit
     }
 
     return resource;
-  }
-
-  void ResourceManager::Report(const char* msg, ...)
-  {
-    va_list args;
-    va_start(args, msg);
-
-    static char buff[2048];
-    vsprintf(buff, msg, args);
-
-    if (m_reporterFn)
-    {
-      m_reporterFn(buff);
-    }
-    else
-    {
-      GetLogger()->Log(buff);
-    }
-
-    va_end(args);
   }
 
 } // namespace ToolKit

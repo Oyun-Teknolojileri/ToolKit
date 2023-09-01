@@ -182,7 +182,7 @@ namespace ToolKit
       Vec3 dir          = AXIS[(int) params.axis % 3];
       Vec3Array pnts    = {dir * params.toeTip.x, dir * params.toeTip.y};
 
-      m_mesh            = std::make_shared<Mesh>();
+      m_mesh            = MakeNewPtr<Mesh>();
 
       LineBatchPtr line = MakeNewPtr<LineBatch>();
       line->Generate(pnts, params.color, DrawType::Line, 2.0f);
@@ -657,7 +657,7 @@ namespace ToolKit
         handle->Generate(p);
       }
 
-      MeshPtr mesh = std::make_shared<Mesh>();
+      MeshPtr mesh = MakeNewPtr<Mesh>();
       for (int i = 0; i < m_handles.size(); i++)
       {
         mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
@@ -806,7 +806,7 @@ namespace ToolKit
         m_handles[i]->Generate(p);
       }
 
-      MeshPtr mesh = std::make_shared<Mesh>();
+      MeshPtr mesh = MakeNewPtr<Mesh>();
       for (int i = 0; i < m_handles.size(); i++)
       {
         if (m_handles[i]->m_mesh)

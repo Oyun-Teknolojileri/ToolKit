@@ -36,24 +36,6 @@
 namespace ToolKit
 {
 
-  /**
-   * Enums for component types.
-   * DEPRECATED here for backward compatibility.
-   */
-  enum class ComponentType
-  {
-    // Order is important. Don't change for backward comparable scene files.
-    Base,
-    MeshComponent,
-    DirectionComponent,
-    MaterialComponent,
-    EnvironmentComponent,
-    AnimControllerComponent,
-    SkeletonComponent,
-    MultiMaterialComponent, // Deprecated.
-    AABBOverrideComponent
-  };
-
   typedef std::shared_ptr<class Component> ComponentPtr;
   typedef std::vector<ComponentPtr> ComponentPtrArray;
 
@@ -113,6 +95,21 @@ namespace ToolKit
    */
   class TK_API ComponentFactory final
   {
+   public:
+    enum class ComponentType
+    {
+      // Order is important. Don't change for backward comparable scene files.
+      Base,
+      MeshComponent,
+      DirectionComponent,
+      MaterialComponent,
+      EnvironmentComponent,
+      AnimControllerComponent,
+      SkeletonComponent,
+      MultiMaterialComponent, // Deprecated.
+      AABBOverrideComponent
+    };
+
    public:
     Component* Create(ComponentType cls); //!< Deprecated. Just serving here for backward compatibility.
   };

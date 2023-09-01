@@ -29,6 +29,7 @@
 #include "PopupWindows.h"
 
 #include <Material.h>
+#include <Mesh.h>
 
 #include <DebugNew.h>
 
@@ -422,9 +423,7 @@ namespace ToolKit
           {
             if (ResourceManager* rm = dirEnt.GetManager())
             {
-              switch (rm->m_type)
-              {
-              case ResourceType::Material:
+              if (rm->m_baseType == Material::StaticClass())
               {
                 MaterialPtr mat = rm->Create<Material>(dirEnt.GetFullPath());
                 if (m_tempMaterialWindow == nullptr)
@@ -434,13 +433,23 @@ namespace ToolKit
                 m_tempMaterialWindow->SetMaterial(mat);
                 m_tempMaterialWindow->OpenWindow();
               }
-              break;
-              case ResourceType::Mesh:
+              else if (rm->m_baseType == Material::StaticClass())
+              {
+                MaterialPtr mat = rm->Create<Material>(dirEnt.GetFullPath());
+                if (m_tempMaterialWindow == nullptr)
+                {
+                  m_tempMaterialWindow = new TempMaterialWindow();
+                }
+                m_tempMaterialWindow->SetMaterial(mat);
+                m_tempMaterialWindow->OpenWindow();
+              }
+              else if (rm->m_baseType == Mesh::StaticClass())
+              {
                 g_app->GetPropInspector()->SetMeshView(rm->Create<Mesh>(dirEnt.GetFullPath()));
-                break;
-              case ResourceType::SkinMesh:
+              }
+              else if (rm->m_baseType == SkinMesh::StaticClass())
+              {
                 g_app->GetPropInspector()->SetMeshView(rm->Create<SkinMesh>(dirEnt.GetFullPath()));
-                break;
               }
             }
           }
@@ -960,7 +969,8 @@ namespace ToolKit
             }
             else
             {
-              ScenePtr scene = std::make_shared<Scene>(file);
+              ScenePtr scene = MakeNewPtr<Scene>();
+              scene->SetFile(file);
               scene->Save(false);
               for (FolderView* view : views)
               {

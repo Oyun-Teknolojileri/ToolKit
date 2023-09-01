@@ -41,6 +41,37 @@ namespace ToolKit
   namespace Editor
   {
 
+    // GridFragmentShader
+    //////////////////////////////////////////////////////////////////////////
+
+    TKDefineClass(GridFragmentShader, Shader);
+
+    GridFragmentShader::GridFragmentShader()
+    {
+      SetFile(ShaderPath("gridFragment.shader", true));
+
+      // Set defaults.
+      m_sizeEachCell        = 0.1f;
+      m_maxLinePixelCount   = 2.0f;
+      m_axisColorHorizontal = X_AXIS;
+      m_axisColorVertical   = Z_AXIS;
+      m_is2DViewport        = false;
+    }
+
+    GridFragmentShader::~GridFragmentShader() {}
+
+    void GridFragmentShader::UpdateShaderParameters()
+    {
+      SetShaderParameter("GridData.cellSize", m_sizeEachCell);
+      SetShaderParameter("GridData.lineMaxPixelCount", m_maxLinePixelCount);
+      SetShaderParameter("GridData.horizontalAxisColor", m_axisColorHorizontal);
+      SetShaderParameter("GridData.verticalAxisColor", m_axisColorVertical);
+      SetShaderParameter("GridData.is2DViewport", m_is2DViewport);
+    }
+
+    // Grid
+    //////////////////////////////////////////////////////////////////////////
+
     TKDefineClass(Grid, Entity);
 
     Grid::Grid()
@@ -94,7 +125,7 @@ namespace ToolKit
       MeshPtr mainMesh = GetMeshComponent()->GetMeshVal();
       if (mainMesh == nullptr)
       {
-        mainMesh = std::make_shared<Mesh>();
+        mainMesh = MakeNewPtr<Mesh>();
       }
       mainMesh->UnInit();
 
@@ -231,29 +262,6 @@ namespace ToolKit
       gfs->m_axisColorVertical   = m_verticalAxisColor;
       gfs->m_maxLinePixelCount   = m_maxLinePixelCount;
       gfs->m_is2DViewport        = m_is2d;
-    }
-
-    GridFragmentShader::GridFragmentShader()
-    {
-      SetFile(ShaderPath("gridFragment.shader", true));
-
-      // Set defaults.
-      m_sizeEachCell        = 0.1f;
-      m_maxLinePixelCount   = 2.0f;
-      m_axisColorHorizontal = X_AXIS;
-      m_axisColorVertical   = Z_AXIS;
-      m_is2DViewport        = false;
-    }
-
-    GridFragmentShader::~GridFragmentShader() {}
-
-    void GridFragmentShader::UpdateShaderParameters()
-    {
-      SetShaderParameter("GridData.cellSize", m_sizeEachCell);
-      SetShaderParameter("GridData.lineMaxPixelCount", m_maxLinePixelCount);
-      SetShaderParameter("GridData.horizontalAxisColor", m_axisColorHorizontal);
-      SetShaderParameter("GridData.verticalAxisColor", m_axisColorVertical);
-      SetShaderParameter("GridData.is2DViewport", m_is2DViewport);
     }
 
   } //  namespace Editor

@@ -128,8 +128,6 @@ namespace ToolKit
     return node;
   }
 
-  EntityType Billboard::GetType() const { return EntityType::Entity_Billboard; }
-
   TKDefineClass(Cube, Entity);
 
   Cube::Cube()
@@ -145,8 +143,6 @@ namespace ToolKit
     Super::NativeConstruct();
     Generate();
   }
-
-  EntityType Cube::GetType() const { return EntityType::Entity_Cube; }
 
   void Cube::Generate() { Generate(GetMeshComponent(), GetCubeScaleVal()); }
 
@@ -361,8 +357,6 @@ namespace ToolKit
     return node;
   }
 
-  EntityType Quad::GetType() const { return EntityType::Entity_Quad; }
-
   XmlNode* Quad::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     XmlNode* nttNode = Super::DeSerializeImp(info, parent);
@@ -428,8 +422,6 @@ namespace ToolKit
     Sphere* ntt = static_cast<Sphere*>(copyTo);
     return ntt;
   }
-
-  EntityType Sphere::GetType() const { return EntityType::Entity_Sphere; }
 
   XmlNode* Sphere::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
@@ -645,8 +637,6 @@ namespace ToolKit
     return ntt;
   }
 
-  EntityType Cone::GetType() const { return EntityType::Entity_Cone; }
-
   void Cone::Generate(float height, float radius, int segBase, int segHeight)
   {
     // Specifically doing it this way to prevent ParameterEventConstructor's to regenerate
@@ -728,8 +718,6 @@ namespace ToolKit
     return node;
   }
 
-  EntityType Arrow2d::GetType() const { return EntityType::Entity_Arrow; }
-
   void Arrow2d::Generate(AxisLabel axis)
   {
     m_label = axis;
@@ -793,8 +781,6 @@ namespace ToolKit
 
     return node;
   }
-
-  EntityType LineBatch::GetType() const { return EntityType::Entity_LineBatch; }
 
   void LineBatch::Generate(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
   {
@@ -869,20 +855,22 @@ namespace ToolKit
     mesh->ConstructFaces();
   }
 
-  void MeshGenerator::GenerateConeMesh(MeshPtr mesh, float radius, int numSegments, float outerAngle)
+  void MeshGenerator::GenerateConeMesh(MeshPtr mesh, float height, int numSegments, float outerAngle)
   {
     mesh->UnInit();
 
     // Middle line.
-    Vec3 dir = Vec3(0.0f, 0.0f, -1.0f) * radius;
+    Vec3 dir = Vec3(0.0f, 0.0f, -1.0f) * height;
     Vec3 per = Vec3(1.0f, 0.0f, 0.0f);
 
     mesh->m_clientSideVertices.clear();
     mesh->m_clientSideIndices.clear();
-    mesh->m_clientSideVertices.reserve(numSegments + 1);
+    mesh->m_clientSideVertices.reserve(numSegments + 2);
     mesh->m_clientSideVertices.push_back({ZERO});
+    mesh->m_clientSideVertices.push_back({dir});
     // Calculating circles.
-    float outerCircleRadius = radius * glm::tan(glm::radians(outerAngle * 0.5f));
+    // 0.62 = 0.5 + 0.12 for slightly bigger cone
+    float outerCircleRadius = height * glm::tan(glm::radians(outerAngle * 0.62f));
     Vec3 outStartPoint      = dir + per * outerCircleRadius;
 
     mesh->m_clientSideVertices.push_back({outStartPoint});
@@ -900,9 +888,18 @@ namespace ToolKit
     for (int i = 0; i < numSegments; ++i)
     {
       mesh->m_clientSideIndices.push_back(0);
+      mesh->m_clientSideIndices.push_back(i + 3);
       mesh->m_clientSideIndices.push_back(i + 2);
-      mesh->m_clientSideIndices.push_back(i + 1);
     }
+
+    // circle
+    for (int i = 0; i < numSegments; ++i)
+    {
+      mesh->m_clientSideIndices.push_back(1);
+      mesh->m_clientSideIndices.push_back(i + 2);
+      mesh->m_clientSideIndices.push_back(i + 3);
+    }
+
     mesh->m_vertexCount = (uint) mesh->m_clientSideVertices.size();
     mesh->m_indexCount  = (uint) mesh->m_clientSideIndices.size();
 

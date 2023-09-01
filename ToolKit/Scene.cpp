@@ -41,6 +41,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(Scene, Resource);
+
   Scene::Scene() { m_name = "New Scene"; }
 
   Scene::Scene(const String& file) : Scene() { SetFile(file); }
@@ -344,7 +346,7 @@ namespace ToolKit
     LightPtrArray lights;
     for (EntityPtr ntt : m_entities)
     {
-      if (ntt->IsLightInstance())
+      if (ntt->IsA<Light>())
       {
         lights.push_back(std::static_pointer_cast<Light>(ntt));
       }
@@ -430,8 +432,6 @@ namespace ToolKit
         GetLogger()->WriteConsole(LogType::Error, "You can't use a prefab outside of Prefab folder!");
         return;
       }
-      String folderName = folder.substr(folder.find_last_of(GetPathSeparator()));
-      // if (folderName != GetResourcePath())
     }
     PrefabPtr prefab = MakeNewPtr<Prefab>();
     prefab->SetPrefabPathVal(path);
@@ -588,14 +588,14 @@ namespace ToolKit
 
     for (node = parent->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
     {
-      XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
-      EntityType t           = (EntityType) std::atoi(typeAttr->value());
-      EntityPtr ntt          = GetEntityFactory()->CreateByType(t);
-      ntt->m_version         = m_version;
+      XmlAttribute* typeAttr      = node->first_attribute(xmlObjectType);
+      EntityFactory::EntityType t = (EntityFactory::EntityType) std::atoi(typeAttr->value());
+      EntityPtr ntt               = GetEntityFactory()->CreateByType(t);
+      ntt->m_version              = m_version;
 
       ntt->DeSerialize(info, node);
 
-      if (ntt->GetType() == EntityType::Entity_Prefab)
+      if (ntt->IsA<Prefab>())
       {
         prefabList.push_back(ntt);
       }
@@ -650,7 +650,7 @@ namespace ToolKit
 
       ntt->DeSerialize(info, node);
 
-      if (ntt->GetType() == EntityType::Entity_Prefab)
+      if (ntt->IsA<Prefab>())
       {
         prefabList.push_back(ntt);
       }
@@ -693,7 +693,7 @@ namespace ToolKit
     return lastId;
   }
 
-  SceneManager::SceneManager() { m_type = ResourceType::Scene; }
+  SceneManager::SceneManager() { m_baseType = Scene::StaticClass(); }
 
   SceneManager::~SceneManager() {}
 
@@ -709,11 +709,19 @@ namespace ToolKit
     ResourceManager::Uninit();
   }
 
-  bool SceneManager::CanStore(ResourceType t) { return t == ResourceType::Scene; }
+  bool SceneManager::CanStore(TKClass* Class) { return Class == Scene::StaticClass(); }
 
-  ResourcePtr SceneManager::CreateLocal(ResourceType type) { return ResourcePtr(new Scene()); }
+  ResourcePtr SceneManager::CreateLocal(TKClass* Class)
+  {
+    if (Class == Scene::StaticClass())
+    {
+      return MakeNewPtr<Scene>();
+    }
 
-  String SceneManager::GetDefaultResource(ResourceType type) { return ScenePath("Sample.scene", true); }
+    return nullptr;
+  }
+
+  String SceneManager::GetDefaultResource(TKClass* Class) { return ScenePath("Sample.scene", true); }
 
   ScenePtr SceneManager::GetCurrentScene() { return m_currentScene; }
 

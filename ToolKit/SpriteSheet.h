@@ -42,7 +42,7 @@ namespace ToolKit
   class TK_API SpriteSheet : public Resource
   {
    public:
-    TKResourceType(SpriteSheet)
+    TKDeclareClass(SpriteSheet, Resource);
 
     SpriteSheet();
     explicit SpriteSheet(const String& file);
@@ -75,7 +75,6 @@ namespace ToolKit
     explicit SpriteAnimation(const SpriteSheetPtr& spriteSheet);
     ~SpriteAnimation();
 
-    virtual EntityType GetType() const;
     Surface* GetCurrentSurface();
     void Update(float deltaTime);
 
@@ -100,8 +99,8 @@ namespace ToolKit
    public:
     SpriteSheetManager();
     virtual ~SpriteSheetManager();
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
+    bool CanStore(TKClass* Class) override;
+    ResourcePtr CreateLocal(TKClass* Class) override;
   };
 
 } // namespace ToolKit

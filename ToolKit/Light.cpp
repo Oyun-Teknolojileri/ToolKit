@@ -90,8 +90,6 @@ namespace ToolKit
         });
   }
 
-  EntityType Light::GetType() const { return EntityType::Entity_Light; }
-
   MaterialPtr Light::GetShadowMaterial() { return m_shadowMapMaterial; }
 
   void Light::UpdateShadowCamera()
@@ -111,10 +109,30 @@ namespace ToolKit
     ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthVert.shader", true));
     ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthFrag.shader", true));
 
-    m_shadowMapMaterial = std::make_shared<Material>();
+    m_shadowMapMaterial = MakeNewPtr<Material>();
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
+  }
+
+  int Light::ComparableType()
+  {
+    if (IsA<DirectionalLight>())
+    {
+      return 0;
+    }
+
+    if (IsA<PointLight>())
+    {
+      return 1;
+    }
+
+    if (IsA<SpotLight>())
+    {
+      return 2;
+    }
+
+    return 3;
   }
 
   void Light::UpdateShadowCameraTransform() { m_shadowCamera->m_node->SetTransform(m_node->GetTransform()); }
@@ -145,8 +163,6 @@ namespace ToolKit
   DirectionalLight::DirectionalLight() { AddComponent<DirectionComponent>(); }
 
   DirectionalLight::~DirectionalLight() {}
-
-  EntityType DirectionalLight::GetType() const { return EntityType::Entity_DirectionalLight; }
 
   void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs)
   {
@@ -260,7 +276,7 @@ namespace ToolKit
     }
     center                 /= 8.0f;
 
-    TransformationSpace ts  = TransformationSpace::TS_WORLD;
+    TransformationSpace ts = TransformationSpace::TS_WORLD;
     lightCamera->m_node->SetTranslation(center, ts);
     lightCamera->m_node->SetOrientation(m_node->GetOrientation(ts), ts);
     const Mat4 lightView = lightCamera->GetViewMatrix();
@@ -290,8 +306,6 @@ namespace ToolKit
 
   PointLight::~PointLight() {}
 
-  EntityType PointLight::GetType() const { return EntityType::Entity_PointLight; }
-
   void PointLight::UpdateShadowCamera()
   {
     m_shadowCamera->SetLens(glm::half_pi<float>(), 1.0f, 0.01f, AffectDistance());
@@ -308,7 +322,7 @@ namespace ToolKit
     ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
     ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
 
-    m_shadowMapMaterial = std::make_shared<Material>();
+    m_shadowMapMaterial = MakeNewPtr<Material>();
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
@@ -334,11 +348,13 @@ namespace ToolKit
 
   TKDefineClass(SpotLight, Light);
 
-  SpotLight::SpotLight() { AddComponent<DirectionComponent>(); }
+  SpotLight::SpotLight()
+  {
+    AddComponent<DirectionComponent>();
+    m_volumeMesh = MakeNewPtr<Mesh>();
+  }
 
   SpotLight::~SpotLight() {}
-
-  EntityType SpotLight::GetType() const { return EntityType::Entity_SpotLight; }
 
   void SpotLight::UpdateShadowCamera()
   {
@@ -358,7 +374,7 @@ namespace ToolKit
     ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
     ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
 
-    m_shadowMapMaterial = std::make_shared<Material>();
+    m_shadowMapMaterial = MakeNewPtr<Material>();
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
@@ -368,8 +384,20 @@ namespace ToolKit
   {
     XmlNode* root = Super::SerializeImp(doc, parent);
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
-
     return node;
+  }
+
+  XmlNode* SpotLight::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* node = Super::DeSerializeImp(info, parent);
+    MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
+    return node;
+  }
+
+  void SpotLight::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
   }
 
   void SpotLight::ParameterConstructor()
@@ -379,27 +407,21 @@ namespace ToolKit
     Radius_Define(10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.5f});
     OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
     InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
-    m_volumeMesh = std::make_shared<Mesh>();
-    MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
 
     ParamRadius().m_onValueChangedFn.clear();
     ParamRadius().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         {
           const float radius = std::get<float>(newVal);
-          m_volumeMesh->UnInit();
           MeshGenerator::GenerateConeMesh(m_volumeMesh, radius, 32, GetOuterAngleVal());
-          m_volumeMesh->Init();
         });
 
     ParamOuterAngle().m_onValueChangedFn.clear();
     ParamOuterAngle().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         {
-          const float outerAngle         = std::get<float>(newVal);
-          m_volumeMesh->UnInit();
+          const float outerAngle = std::get<float>(newVal);
           MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, outerAngle);
-          m_volumeMesh->Init();
         });
   }
 } // namespace ToolKit

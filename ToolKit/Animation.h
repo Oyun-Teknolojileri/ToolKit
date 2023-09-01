@@ -72,10 +72,7 @@ namespace ToolKit
   class TK_API Animation : public Resource
   {
    public:
-    /**
-     * Auto generated code for type information.
-     */
-    TKResourceType(Animation);
+    TKDeclareClass(Animation, Resource);
 
     /**
      * Empty constructor.
@@ -163,8 +160,8 @@ namespace ToolKit
    public:
     AnimationManager();
     virtual ~AnimationManager();
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
+    bool CanStore(TKClass* Class) override;
+    ResourcePtr CreateLocal(TKClass* Class) override;
   };
 
   /**

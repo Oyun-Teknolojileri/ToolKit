@@ -36,6 +36,8 @@
 namespace ToolKit
 {
 
+  TKDefineClass(Material, Resource);
+
   Material::Material()
   {
     m_color = Vec3(1.0f);
@@ -50,8 +52,8 @@ namespace ToolKit
   {
     if (!m_loaded)
     {
-      ParseDocument("material");
       m_loaded = true;
+      ParseDocument("material");
     }
   }
 
@@ -431,7 +433,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  MaterialManager::MaterialManager() { m_type = ResourceType::Material; }
+  MaterialManager::MaterialManager() { m_baseType = Material::StaticClass(); }
 
   MaterialManager::~MaterialManager() {}
 
@@ -461,11 +463,19 @@ namespace ToolKit
     m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
   }
 
-  bool MaterialManager::CanStore(ResourceType t) { return t == ResourceType::Material; }
+  bool MaterialManager::CanStore(TKClass* Class) { return Class == Material::StaticClass(); }
 
-  ResourcePtr MaterialManager::CreateLocal(ResourceType type) { return ResourcePtr(new Material()); }
+  ResourcePtr MaterialManager::CreateLocal(TKClass* Class)
+  {
+    if (Class == Material::StaticClass())
+    {
+      return MakeNewPtr<Material>();
+    }
 
-  String MaterialManager::GetDefaultResource(ResourceType type) { return MaterialPath("missing.material", true); }
+    return nullptr;
+  }
+
+  String MaterialManager::GetDefaultResource(TKClass* Class) { return MaterialPath("missing.material", true); }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()
   {

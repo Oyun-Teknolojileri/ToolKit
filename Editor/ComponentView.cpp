@@ -168,7 +168,7 @@ namespace ToolKit
                    file,
                    [&pair](const DirectoryEntry& entry) -> void
                    {
-                     if (GetResourceType(entry.m_ext) == ResourceType::Animation)
+                     if (GetResourceType(entry.m_ext) == Animation::StaticClass())
                      {
                        pair.second->m_animation = GetAnimationManager()->Create<Animation>(entry.GetFullPath());
                        if (pair.first.empty())

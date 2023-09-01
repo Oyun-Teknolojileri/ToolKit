@@ -171,7 +171,7 @@ namespace ToolKit
       {
         EnvironmentComponentPtr envCom = ntt->GetComponent<EnvironmentComponent>();
 
-        if (envCom != nullptr && ntt->GetType() != EntityType::Entity_Sky)
+        if (envCom != nullptr && !ntt->IsA<Sky>())
         {
           app->m_perFrameDebugObjects.push_back(
               CreateBoundingBoxDebugObject(envCom->GetBBox(), g_environmentGizmoColor, 1.0f));
@@ -185,7 +185,7 @@ namespace ToolKit
         if (app->m_showDirectionalLightShadowFrustum)
         {
           // Directional light shadow map frustum
-          if (ntt->GetType() == EntityType::Entity_DirectionalLight)
+          if (ntt->IsA<DirectionalLight>())
           {
             EditorDirectionalLight* light = static_cast<EditorDirectionalLight*>(ntt.get());
             if (light->GetCastShadowVal())
@@ -300,7 +300,7 @@ namespace ToolKit
       EditorBillboardPtr anchorGizmo                               = nullptr;
       if (viewport->GetType() == Window::Type::Viewport2d)
       {
-        anchorGizmo = std::static_pointer_cast<EditorBillboardBase>(app->m_anchor);
+        anchorGizmo = app->m_anchor;
       }
       m_gizmoPass->m_params.GizmoArray = {app->m_gizmo, anchorGizmo};
     }
@@ -377,9 +377,9 @@ namespace ToolKit
         for (EntityPtr entity : selection)
         {
           // Disable light gizmos
-          if (entity->IsLightInstance())
+          if (Light* light = entity->As<Light>())
           {
-            EnableLightGizmo(static_cast<Light*>(entity.get()), false);
+            EnableLightGizmo(light, false);
           }
 
           // Add billboards to draw list
@@ -410,9 +410,9 @@ namespace ToolKit
         // Enable light gizmos back
         for (EntityPtr entity : selection)
         {
-          if (entity->IsLightInstance())
+          if (Light* light = entity->As<Light>())
           {
-            EnableLightGizmo(static_cast<Light*>(entity.get()), true);
+            EnableLightGizmo(light, true);
           }
         }
       };

@@ -47,9 +47,9 @@ namespace ToolKit
   // Create a texture such that there is mat4x4 per bone
   TexturePtr CreateBoneTransformTexture(const Skeleton* skeleton)
   {
-    TexturePtr ptr = std::make_shared<Texture>();
+    TexturePtr ptr = MakeNewPtr<Texture>();
     ptr->m_height  = 1;
-    ptr->m_width   = static_cast<int>(skeleton->m_bones.size()) * 4;
+    ptr->m_width   = (int) (skeleton->m_bones.size()) * 4;
     ptr->m_name    = skeleton->m_name + " BindPoseTexture";
 
     glGenTextures(1, &ptr->m_textureId);
@@ -68,6 +68,9 @@ namespace ToolKit
     glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
     glTexSubImage2D(GL_TEXTURE_2D, 0, boneIndx * 4, 0, 4, 1, GL_RGBA, GL_FLOAT, &mat);
   };
+
+  // DynamicBoneMap
+  //////////////////////////////////////////////////////////////////////////
 
   void DynamicBoneMap::AddDynamicBone(const String& boneName,
                                       DynamicBoneMap::DynamicBone& bone,
@@ -147,6 +150,38 @@ namespace ToolKit
     boneList.clear();
   }
 
+  void DynamicBoneMap::ForEachRootBone(std::function<void(DynamicBone*)> childProcessFunc)
+  {
+    // For each parent bone of the skeleton, access child bones recursively
+    for (auto& bone : boneList)
+    {
+      if (bone.second.node->m_parent == nullptr)
+      {
+        Node* childNode        = bone.second.node;
+        // Dynamic child node
+        DynamicBone* childBone = nullptr;
+        for (auto& boneSearch : boneList)
+        {
+          if (boneSearch.second.node == childNode)
+          {
+            childBone = &boneSearch.second;
+            break;
+          }
+        }
+        // If there is a child bone
+        if (childBone)
+        {
+          childProcessFunc(childBone);
+        }
+      }
+    }
+  }
+
+  // Skeleton
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(Skeleton, Resource);
+
   Skeleton::Skeleton() {}
 
   Skeleton::Skeleton(const String& file) { SetFile(file); }
@@ -167,33 +202,6 @@ namespace ToolKit
         Node* childNode              = bone.second.node;
         // Dynamic child node
         const DynamicBone* childBone = nullptr;
-        for (auto& boneSearch : boneList)
-        {
-          if (boneSearch.second.node == childNode)
-          {
-            childBone = &boneSearch.second;
-            break;
-          }
-        }
-        // If there is a child bone
-        if (childBone)
-        {
-          childProcessFunc(childBone);
-        }
-      }
-    }
-  }
-
-  void DynamicBoneMap::ForEachRootBone(std::function<void(DynamicBone*)> childProcessFunc)
-  {
-    // For each parent bone of the skeleton, access child bones recursively
-    for (auto& bone : boneList)
-    {
-      if (bone.second.node->m_parent == nullptr)
-      {
-        Node* childNode        = bone.second.node;
-        // Dynamic child node
-        DynamicBone* childBone = nullptr;
         for (auto& boneSearch : boneList)
         {
           if (boneSearch.second.node == childNode)
@@ -411,13 +419,16 @@ namespace ToolKit
     dst->Load();
   }
 
-  SkeletonManager::SkeletonManager() { m_type = ResourceType::Skeleton; }
+  // SkeletonManager
+  //////////////////////////////////////////////////////////////////////////
+
+  SkeletonManager::SkeletonManager() { m_baseType = Skeleton::StaticClass(); }
 
   SkeletonManager::~SkeletonManager() {}
 
-  bool SkeletonManager::CanStore(ResourceType t)
+  bool SkeletonManager::CanStore(TKClass* Class)
   {
-    if (t == ResourceType::Skeleton)
+    if (Class == Skeleton::StaticClass())
     {
       return true;
     }
@@ -425,16 +436,14 @@ namespace ToolKit
     return false;
   }
 
-  ResourcePtr SkeletonManager::CreateLocal(ResourceType type)
+  ResourcePtr SkeletonManager::CreateLocal(TKClass* Class)
   {
-    ResourcePtr res;
-    if (type == ResourceType::Skeleton)
+    if (Class == Skeleton::StaticClass())
     {
-      res = std::make_shared<Skeleton>();
+      return MakeNewPtr<Skeleton>();
     }
 
-    assert(res != nullptr);
-    return res;
+    return nullptr;
   }
 
 } // namespace ToolKit

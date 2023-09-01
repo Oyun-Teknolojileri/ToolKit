@@ -41,10 +41,10 @@ namespace ToolKit
   {
     m_fullQuadPass                   = std::make_shared<FullQuadPass>();
     m_lightingFrameBuffer            = std::make_shared<Framebuffer>();
-    m_lightingRt                     = std::make_shared<RenderTarget>();
+    m_lightingRt                     = MakeNewPtr<RenderTarget>();
     m_lightingShader                 = GetShaderManager()->Create<Shader>(ShaderPath("additiveLighting.shader", true));
     m_mergeShader                    = GetShaderManager()->Create<Shader>(ShaderPath("lightMerge.shader", true));
-    m_meshMaterial                   = std::make_shared<Material>();
+    m_meshMaterial                   = MakeNewPtr<Material>();
 
     m_meshMaterial->m_fragmentShader = m_lightingShader;
     m_meshMaterial->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("additiveVertex.shader", true));
@@ -52,8 +52,9 @@ namespace ToolKit
     RenderState* renderState   = m_meshMaterial->GetRenderState();
     renderState->blendFunction = BlendFunction::ONE_TO_ONE;
     m_sphereEntity             = MakeNewPtr<Sphere>();
-    m_sphereEntity->SetNumRingVal(16);
-    m_sphereEntity->SetNumSegVal(16);
+    m_sphereEntity->SetNumRingVal(8);
+    m_sphereEntity->SetNumSegVal(8);
+    m_sphereEntity->SetRadiusVal(1.05f);
   }
 
   AdditiveLightingPass::~AdditiveLightingPass() {}
@@ -158,11 +159,6 @@ namespace ToolKit
     m_lightingShader->SetShaderParameter("lightShadowBias", ParameterVariant(bias));
   }
 
-  uint64 AdditiveLightingPass::ConeMeshHash(float radius, float outerAngle)
-  {
-    return (uint64) (radius * 100.0f) | (uint64(outerAngle * 100.0f) << 32ull);
-  }
-
   void AdditiveLightingPass::Render()
   {
     Renderer* renderer = GetRenderer();
@@ -197,7 +193,7 @@ namespace ToolKit
     {
       LightPtr light = m_params.lights[i];
       int hasShadow  = light->GetCastShadowVal() * 3; // if light has shadow index will start from 3
-      int lightType  = ((int) light->GetType() - (int) EntityType::Entity_DirectionalLight) + hasShadow;
+      int lightType  = light->ComparableType() + hasShadow;
       assert(lightType < 6 && lightType >= 0 && "light type invalid");
 
       if (lightType == 1 || lightType == 4) // point light

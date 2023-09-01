@@ -41,6 +41,11 @@
 namespace ToolKit
 {
 
+  // SSAONoiseTexture
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(SSAONoiseTexture, DataTexture);
+
   SSAONoiseTexture::SSAONoiseTexture(int width, int height) : DataTexture(width, height) {}
 
   void SSAONoiseTexture::Init(void* data)
@@ -73,11 +78,14 @@ namespace ToolKit
     assert(false); // The code should never come here
   }
 
+  // SSAOPass
+  //////////////////////////////////////////////////////////////////////////
+
   SSAOPass::SSAOPass()
   {
     m_ssaoFramebuffer = std::make_shared<Framebuffer>();
-    m_ssaoTexture     = std::make_shared<RenderTarget>();
-    m_tempBlurRt      = std::make_shared<RenderTarget>();
+    m_ssaoTexture     = MakeNewPtr<RenderTarget>();
+    m_tempBlurRt      = MakeNewPtr<RenderTarget>();
     m_noiseTexture    = std::make_shared<SSAONoiseTexture>(4, 4);
     m_quadPass        = std::make_shared<FullQuadPass>();
   }
@@ -169,7 +177,7 @@ namespace ToolKit
     }
 
     m_ssaoShader->SetShaderParameter("screenSize", ParameterVariant(Vec2(width, height)));
-    m_ssaoShader->SetShaderParameter("bias"      , ParameterVariant(m_params.Bias));
+    m_ssaoShader->SetShaderParameter("bias", ParameterVariant(m_params.Bias));
     m_ssaoShader->SetShaderParameter("projection", ParameterVariant(m_params.Cam->GetProjectionMatrix()));
     m_ssaoShader->SetShaderParameter("viewMatrix", ParameterVariant(m_params.Cam->GetViewMatrix()));
 

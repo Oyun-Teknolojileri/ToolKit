@@ -41,41 +41,6 @@
 namespace ToolKit
 {
 
-  /**
-   * Enums that shows the type of the Entity. Each derived class should provide
-   * a type identifier for itself to make itself known to the ToolKit.
-   */
-  enum class EntityType
-  {
-    // Order is important. Don't change for backward comparable scene files.
-    Entity_Base,
-    Entity_AudioSource,
-    Entity_Billboard,
-    Entity_Cube,
-    Entity_Quad,
-    Entity_Sphere,
-    Entity_Arrow,
-    Entity_LineBatch,
-    Entity_Cone,
-    Entity_Drawable,
-    Entity_SpriteAnim,
-    Entity_Surface,
-    Entity_Light,
-    Entity_Camera,
-    UNUSEDSLOT_1,
-    Entity_Node,
-    Entity_Button,
-    Entity_Sky,
-    Entity_DirectionalLight,
-    Entity_PointLight,
-    Entity_SpotLight,
-    Entity_Canvas,
-    Entity_Prefab,
-    Entity_SkyBase,
-    Entity_GradientSky,
-    ENTITY_TYPE_COUNT // Holds the size of the enum
-  };
-
   static VariantCategory EntityCategory {"Meta", 100};
 
   /**
@@ -92,7 +57,6 @@ namespace ToolKit
     virtual ~Entity();
 
     virtual bool IsDrawable() const;
-    virtual EntityType GetType() const;
     virtual void SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget = nullptr);
     virtual BoundingBox GetAABB(bool inWorld = false) const;
     TKObjectPtr Copy() const override;
@@ -106,9 +70,6 @@ namespace ToolKit
 
     void SetVisibility(bool vis, bool deep);
     void SetTransformLock(bool vis, bool deep);
-    bool IsSurfaceInstance() const;
-    bool IsLightInstance() const;
-    bool IsSkyInstance() const;
 
     template <typename T>
     std::shared_ptr<T> AddComponent()
@@ -260,7 +221,6 @@ namespace ToolKit
     explicit EntityNode(const String& name);
     virtual ~EntityNode();
 
-    EntityType GetType() const override;
     void RemoveResources() override;
 
    protected:
@@ -273,6 +233,42 @@ namespace ToolKit
    */
   class TK_API EntityFactory final
   {
+   public:
+    /**
+     * Enums that shows the type of the Entity. Each derived class should provide
+     * a type identifier for itself to make itself known to the ToolKit.
+     */
+    enum class EntityType
+    {
+      // Order is important. Don't change for backward comparable scene files.
+      Entity_Base,
+      Entity_AudioSource,
+      Entity_Billboard,
+      Entity_Cube,
+      Entity_Quad,
+      Entity_Sphere,
+      Entity_Arrow,
+      Entity_LineBatch,
+      Entity_Cone,
+      Entity_Drawable,
+      Entity_SpriteAnim,
+      Entity_Surface,
+      Entity_Light,
+      Entity_Camera,
+      UNUSEDSLOT_1,
+      Entity_Node,
+      Entity_Button,
+      Entity_Sky,
+      Entity_DirectionalLight,
+      Entity_PointLight,
+      Entity_SpotLight,
+      Entity_Canvas,
+      Entity_Prefab,
+      Entity_SkyBase,
+      Entity_GradientSky,
+      ENTITY_TYPE_COUNT // Holds the size of the enum
+    };
+
    public:
     EntityPtr CreateByType(EntityType type);
   };

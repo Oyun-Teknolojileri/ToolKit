@@ -44,8 +44,6 @@ namespace ToolKit
 
   GradientSky::~GradientSky() {}
 
-  EntityType GradientSky::GetType() const { return EntityType::Entity_GradientSky; }
-
   void GradientSky::Init()
   {
     if (m_initialized)

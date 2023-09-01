@@ -83,9 +83,9 @@ namespace ToolKit
 
     void SpotLightMeshGenerator::InitGizmo()
     {
-      assert(m_targetLight->GetType() == EntityType::Entity_SpotLight);
+      assert(m_targetLight->IsA<SpotLight>());
       // Middle line.
-      SpotLight* sLight = static_cast<SpotLight*>(m_targetLight);
+      SpotLight* sLight = m_targetLight->As<SpotLight>();
       float r           = sLight->GetRadiusVal();
       Vec3 d            = Vec3(0.0f, 0.0f, -1.0f);
       m_pnts[0]         = Vec3(ZERO);
@@ -100,10 +100,10 @@ namespace ToolKit
       LineBatchRawPtrArray lines = {new LineBatch(), new LineBatch(), new LineBatch()};
 
       // Calculating circles.
-      int zeroCount = 0;
-      zeroCount += (int)(d.x == 0.0f);
-      zeroCount += (int)(d.y == 0.0f);
-      zeroCount += (int)(d.z == 0.0f);
+      int zeroCount              = 0;
+      zeroCount                  += (int) (d.x == 0.0f);
+      zeroCount                  += (int) (d.y == 0.0f);
+      zeroCount                  += (int) (d.z == 0.0f);
 
       Vec3 per;
       if (zeroCount == 0)
@@ -138,7 +138,7 @@ namespace ToolKit
       }
 
       per                     = glm::normalize(per);
-      d                      *= r;
+      d                       *= r;
       float innerCircleRadius = r * glm::tan(glm::radians(sLight->GetInnerAngleVal() / 2));
       float outerCircleRadius = r * glm::tan(glm::radians(sLight->GetOuterAngleVal() / 2));
       Vec3 inStartPoint       = d + per * innerCircleRadius;
@@ -186,7 +186,7 @@ namespace ToolKit
 
     void DirectionalLightMeshGenerator::InitGizmo()
     {
-      assert(m_targetLight->GetType() == EntityType::Entity_DirectionalLight);
+      assert(m_targetLight->IsA<DirectionalLight>());
 
       // Middle line
       Vec3 d    = Vec3(0.0f, 0.0f, -1.0f);
@@ -209,7 +209,7 @@ namespace ToolKit
 
     void PointLightMeshGenerator::InitGizmo()
     {
-      assert(m_targetLight->GetType() == EntityType::Entity_PointLight);
+      assert(m_targetLight->IsA<PointLight>());
 
       m_circlePntsXY.resize(m_circleVertexCount + 1);
       m_circlePntsYZ.resize(m_circleVertexCount + 1);
@@ -220,7 +220,7 @@ namespace ToolKit
       Vec3 forward               = Vec3(0.0f, 0.0f, 1.0f);
       float deltaAngle           = glm::two_pi<float>() / m_circleVertexCount;
 
-      PointLight* pLight         = static_cast<PointLight*>(m_targetLight);
+      PointLight* pLight         = m_targetLight->As<PointLight>();
 
       Vec3 lightPos              = pLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 

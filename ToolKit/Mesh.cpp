@@ -105,6 +105,11 @@ namespace ToolKit
     }
   }
 
+  // Mesh
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(Mesh, Resource);
+
   Mesh::Mesh()
   {
     m_material     = GetMaterialManager()->GetCopyOfDefaultMaterial();
@@ -426,7 +431,7 @@ namespace ToolKit
     {
       if (mesh == nullptr)
       {
-        std::shared_ptr<T> meshPtr = std::make_shared<T>();
+        std::shared_ptr<T> meshPtr = MakeNewPtr<T>();
         mesh                       = meshPtr.get();
         mainMesh->m_subMeshes.push_back(meshPtr);
       }
@@ -613,6 +618,11 @@ namespace ToolKit
     }
   }
 
+  // SkinMesh
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(SkinMesh, Mesh);
+
   SkinMesh::SkinMesh() : Mesh() { m_vertexLayout = VertexLayout::SkinMesh; }
 
   SkinMesh::SkinMesh(const String& file) : SkinMesh()
@@ -771,37 +781,26 @@ namespace ToolKit
     cpy->m_skeleton->Init();
   }
 
-  MeshManager::MeshManager() { m_type = ResourceType::Mesh; }
+  MeshManager::MeshManager() { m_baseType = Mesh::StaticClass(); }
 
   MeshManager::~MeshManager() {}
 
-  bool MeshManager::CanStore(ResourceType t)
+  bool MeshManager::CanStore(TKClass* Class) { return Class->IsSublcassOf(Mesh::StaticClass()); }
+
+  ResourcePtr MeshManager::CreateLocal(TKClass* Class)
   {
-    if (t == ResourceType::Mesh || t == ResourceType::SkinMesh)
+    if (Class == Mesh::StaticClass())
     {
-      return true;
+      return MakeNewPtr<Mesh>();
     }
 
-    return false;
-  }
-
-  ResourcePtr MeshManager::CreateLocal(ResourceType type)
-  {
-    Mesh* res = nullptr;
-    switch (type)
+    if (Class == SkinMesh::StaticClass())
     {
-    case ResourceType::Mesh:
-      res = new Mesh();
-      break;
-    case ResourceType::SkinMesh:
-      res = new SkinMesh();
-      break;
-    default:
-      assert(false);
-      break;
+      return MakeNewPtr<SkinMesh>();
     }
-    return ResourcePtr(res);
+
+    return nullptr;
   }
 
-  String MeshManager::GetDefaultResource(ResourceType type) { return MeshPath("Suzanne.mesh", true); }
+  String MeshManager::GetDefaultResource(TKClass* Class) { return MeshPath("Suzanne.mesh", true); }
 } // namespace ToolKit
