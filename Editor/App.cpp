@@ -598,27 +598,21 @@ namespace ToolKit
     {
       DeleteWindows();
 
-      String defEditSet = ConcatPaths({ConfigPath(), g_editorSettingsFile});
-      if (CheckFile(defEditSet) && CheckFile(m_workspace.GetActiveWorkspace()))
+      String defaultEditorSettings = ConcatPaths({ConfigPath(), g_editorSettingsFile});
+      if (CheckFile(defaultEditorSettings) && CheckFile(m_workspace.GetActiveWorkspace()))
       {
         // Try reading defaults.
-        String settingsFile   = defEditSet;
-        XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
-        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
-        lclDoc->parse<0>(lclFile->data());
-
-        SerializationFileInfo sif;
-        sif.Document = lclDoc.get();
-        sif.File     = settingsFile;
+        SerializationFileInfo serializeInfo;
+        serializeInfo.File = defaultEditorSettings;
 
         // Prevent loading last scene.
-        Project pj   = m_workspace.GetActiveProject();
+        Project project    = m_workspace.GetActiveProject();
         m_workspace.SetScene("");
 
-        DeSerialize(sif, nullptr);
-        m_workspace.SetScene(pj.scene);
+        DeSerialize(serializeInfo, nullptr);
+        m_workspace.SetScene(project.scene);
 
-        settingsFile = ConcatPaths({ConfigPath(), g_uiLayoutFile});
+        String settingsFile = ConcatPaths({ConfigPath(), g_uiLayoutFile});
         ImGui::LoadIniSettingsFromDisk(settingsFile.c_str());
       }
       else
@@ -1308,7 +1302,11 @@ namespace ToolKit
 
     XmlNode* App::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      String settingsFile = ConcatPaths({m_workspace.GetProjectConfigPath(), g_editorSettingsFile});
+      String settingsFile = info.File;
+      if (settingsFile.empty())
+      {
+        settingsFile = ConcatPaths({m_workspace.GetProjectConfigPath(), g_editorSettingsFile});
+      }
 
       if (!CheckFile(settingsFile))
       {
