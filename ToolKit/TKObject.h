@@ -54,13 +54,13 @@ namespace ToolKit
     bool operator!=(const TKClass& other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return this->HashId != other.HashId;
+      return HashId != other.HashId;
     }
 
     bool operator!=(const TKClass* other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return this->HashId != other->HashId;
+      return HashId != other->HashId;
     }
 
     /**
