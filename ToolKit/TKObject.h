@@ -30,6 +30,8 @@
 #include "Serialize.h"
 #include "Types.h"
 
+#include <type_traits>
+
 namespace ToolKit
 {
 
@@ -133,11 +135,28 @@ namespace ToolKit
     ParameterBlock m_localData;
   };
 
-  typedef std::function<TKObject*()> ObjectConstructorCallback;
+  /**
+   * Helper function to identify if class T has a StaticClass function.
+   */
+  template <typename T>
+  struct HasStaticClass
+  {
+    // Check if T has a StaticClass function
+    template <typename U>
+    static constexpr auto Check(U*) -> decltype(&U::StaticClass, std::true_type {});
+
+    // Fallback for when StaticClass is not found
+    template <typename>
+    static constexpr std::false_type Check(...);
+
+    // Combine the checks for T and its base classes up to TKObject
+    static constexpr bool value = decltype(Check<T>(nullptr))::value;
+  };
 
   class TK_API TKObjectFactory
   {
     friend class Main;
+    typedef std::function<TKObject*()> ObjectConstructorCallback;
 
    public:
     /**
@@ -160,15 +179,22 @@ namespace ToolKit
     TKObject* MakeNew(const StringView Class);
 
     /**
-     * Constructs a new TKObject of type T.
+     * Constructs a new TKObject of type T. In case the T does not have a static class, just returns a regular object.
      * @return A new instance of TKObject.
      */
     template <typename T>
     T* MakeNew()
     {
-      if (TKObject* object = MakeNew(T::StaticClass()->Name))
+      if constexpr (HasStaticClass<T>::value)
       {
-        return static_cast<T*>(object);
+        if (TKObject* object = MakeNew(T::StaticClass()->Name))
+        {
+          return static_cast<T*>(object);
+        }
+      }
+      else
+      {
+        return new T();
       }
 
       return nullptr;
