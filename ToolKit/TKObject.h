@@ -75,7 +75,7 @@ namespace ToolKit
 
   typedef std::shared_ptr<class TKObject> TKObjectPtr;
 
-#define TKDeclareClass(This, Base)                                                                                     \
+#define TKDeclareClassBase(This, Base)                                                                                 \
  private:                                                                                                              \
   static TKClass This##Cls;                                                                                            \
   typedef Base Super;                                                                                                  \
@@ -87,6 +87,8 @@ namespace ToolKit
     return &This##Cls;                                                                                                 \
   }
 
+#define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using TKObject::ObjectInitializer;
+
 #define TKDefineClass(This, Base)                                                                                      \
   TKClass This::This##Cls = {Base::StaticClass(), #This};                                                              \
   TKClass* const This::Class() const                                                                                   \
@@ -96,14 +98,14 @@ namespace ToolKit
 
   class TK_API TKObject : public Serializable
   {
-    TKDeclareClass(TKObject, TKObject);
+    TKDeclareClassBase(TKObject, TKObject);
 
    public:
     TKObject();
     virtual ~TKObject();
     virtual void NativeConstruct();
     virtual void NativeDestruct();
-    virtual void Init();
+    virtual void ObjectInitializer();
     virtual TKObjectPtr Copy() const;
 
     template <typename T>
@@ -178,14 +180,14 @@ namespace ToolKit
      * @return A new instance of the object with the given class name.
      */
     template <typename... Args>
-    TKObject* MakeNew(const StringView Class, Args&&... args)
+    TKObject* MakeNew(const StringView Class)
     {
       auto constructorFnIt = m_constructorFnMap.find(Class);
       if (constructorFnIt != m_constructorFnMap.end())
       {
         TKObject* object = constructorFnIt->second();
         object->NativeConstruct();
-        object->Init(std::forward<Args>(args)...);
+        return object;
       }
 
       assert(false && "Unknown object type.");
@@ -201,15 +203,12 @@ namespace ToolKit
     {
       if constexpr (HasStaticClass<T>::value)
       {
-        if (
-                TKObject* object = MakeNew
-                (
-                    T::StaticClass()->Name,
-                    std::forward<Args>(args)...
-                )
-            )
+        if (TKObject* object = MakeNew(T::StaticClass()->Name))
         {
-          return static_cast<T*>(object);
+          T* castedObject = static_cast<T*>(object);
+          castedObject->ObjectInitializer(std::forward<Args>(args)...);
+
+          return castedObject;
         }
       }
       else

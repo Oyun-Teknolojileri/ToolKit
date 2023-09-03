@@ -128,7 +128,7 @@ namespace ToolKit
                                            GraphicTypes::FormatRGB,
                                            GraphicTypes::TypeUnsignedByte};
 
-          RenderTargetPtr cubemap       = std::make_shared<RenderTarget>(m_size, m_size, set);
+          RenderTargetPtr cubemap       = MakeNewPtr<RenderTarget>(m_size, m_size, set);
 
           cubemap->Init();
 

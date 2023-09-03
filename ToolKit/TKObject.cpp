@@ -93,7 +93,7 @@ namespace ToolKit
 
   void TKObject::NativeDestruct() {}
 
-  void TKObject::Init() {}
+  void TKObject::ObjectInitializer() {}
 
   void TKObject::ParameterConstructor()
   {

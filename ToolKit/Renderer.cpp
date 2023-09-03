@@ -1149,7 +1149,7 @@ namespace ToolKit
                                      GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
 
-    RenderTargetPtr cubeMapRt     = std::make_shared<RenderTarget>(width, height, set);
+    RenderTargetPtr cubeMapRt     = MakeNewPtr<RenderTarget>(width, height, set);
     cubeMapRt->Init();
 
     // Create material
@@ -1219,7 +1219,7 @@ namespace ToolKit
                                      GraphicTypes::FormatRGBA16F,
                                      GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
-    RenderTargetPtr cubeMapRt     = std::make_shared<RenderTarget>(width, height, set);
+    RenderTargetPtr cubeMapRt     = MakeNewPtr<RenderTarget>(width, height, set);
     cubeMapRt->Init();
 
     // Views for 6 different angles
@@ -1288,7 +1288,7 @@ namespace ToolKit
                                      GraphicTypes::FormatRGBA16F,
                                      GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
-    RenderTargetPtr cubemapRt     = std::make_shared<RenderTarget>(width, height, set);
+    RenderTargetPtr cubemapRt     = MakeNewPtr<RenderTarget>(width, height, set);
     cubemapRt->Init();
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
