@@ -103,6 +103,7 @@ namespace ToolKit
     virtual ~TKObject();
     virtual void NativeConstruct();
     virtual void NativeDestruct();
+    virtual void Init();
     virtual TKObjectPtr Copy() const;
 
     template <typename T>
@@ -176,18 +177,37 @@ namespace ToolKit
      * @param cls - Class name of the object to be created.
      * @return A new instance of the object with the given class name.
      */
-    TKObject* MakeNew(const StringView Class);
+    template <typename... Args>
+    TKObject* MakeNew(const StringView Class, Args&&... args)
+    {
+      auto constructorFnIt = m_constructorFnMap.find(Class);
+      if (constructorFnIt != m_constructorFnMap.end())
+      {
+        TKObject* object = constructorFnIt->second();
+        object->NativeConstruct();
+        object->Init(std::forward<Args>(args)...);
+      }
+
+      assert(false && "Unknown object type.");
+      return nullptr;
+    }
 
     /**
      * Constructs a new TKObject of type T. In case the T does not have a static class, just returns a regular object.
      * @return A new instance of TKObject.
      */
-    template <typename T>
-    T* MakeNew()
+    template <typename T, typename... Args>
+    T* MakeNew(Args&&... args)
     {
       if constexpr (HasStaticClass<T>::value)
       {
-        if (TKObject* object = MakeNew(T::StaticClass()->Name))
+        if (
+                TKObject* object = MakeNew
+                (
+                    T::StaticClass()->Name,
+                    std::forward<Args>(args)...
+                )
+            )
         {
           return static_cast<T*>(object);
         }
@@ -217,42 +237,42 @@ namespace ToolKit
     std::unordered_map<StringView, ObjectConstructorCallback> m_constructorFnMap;
   };
 
-  template <typename T>
-  T* MakeNew()
+  template <typename T, typename... Args>
+  T* MakeNew(Args&&... args)
   {
     if (Main* main = Main::GetInstance())
     {
       if (TKObjectFactory* of = main->m_objectFactory)
       {
-        return of->MakeNew<T>();
+        return of->MakeNew<T>(std::forward<Args>(args)...);
       }
     }
 
     return nullptr;
   }
 
-  template <typename T>
-  std::shared_ptr<T> MakeNewPtr()
+  template <typename T, typename... Args>
+  std::shared_ptr<T> MakeNewPtr(Args&&... args)
   {
     if (Main* main = Main::GetInstance())
     {
       if (TKObjectFactory* of = main->m_objectFactory)
       {
-        return std::shared_ptr<T>(of->MakeNew<T>());
+        return std::shared_ptr<T>(of->MakeNew<T>(std::forward<Args>(args)...));
       }
     }
 
     return nullptr;
   }
 
-  template <typename T>
-  std::shared_ptr<T> MakeNewPtr(const StringView tkClass)
+  template <typename T, typename... Args>
+  std::shared_ptr<T> MakeNewPtrCasted(const StringView Class, Args&&... args)
   {
     if (Main* main = Main::GetInstance())
     {
       if (TKObjectFactory* of = main->m_objectFactory)
       {
-        return std::shared_ptr<T>(static_cast<T*>(of->MakeNew(tkClass)));
+        return std::shared_ptr<T>(static_cast<T*>(of->MakeNew(Class, std::forward<Args>(args)...)));
       }
     }
 

@@ -93,6 +93,8 @@ namespace ToolKit
 
   void TKObject::NativeDestruct() {}
 
+  void TKObject::Init() {}
+
   void TKObject::ParameterConstructor()
   {
     ULongID id = GetHandleManager()->GetNextHandle();
@@ -185,20 +187,6 @@ namespace ToolKit
     Register<DepthTexture>();
     Register<Hdri>();
     Register<RenderTarget>();
-  }
-
-  TKObject* TKObjectFactory::MakeNew(const StringView Class)
-  {
-    TKObject* object = nullptr;
-    auto consFnIt    = m_constructorFnMap.find(Class);
-    if (consFnIt != m_constructorFnMap.end())
-    {
-      object = consFnIt->second();
-      object->NativeConstruct();
-    }
-
-    assert(object && "Unknown object type.");
-    return object;
   }
 
 } // namespace ToolKit
