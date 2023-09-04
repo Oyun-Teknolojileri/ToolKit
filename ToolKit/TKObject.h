@@ -173,25 +173,14 @@ namespace ToolKit
       T::StaticClass()->HashId                   = std::hash<String> {}(T::StaticClass()->Name);
     }
 
+    ObjectConstructorCallback& GetConstructorFn(const StringView Class);
+
     /**
      * Constructs a new TKObject from class name.
      * @param cls - Class name of the object to be created.
      * @return A new instance of the object with the given class name.
      */
-    template <typename... Args>
-    TKObject* MakeNew(const StringView Class)
-    {
-      auto constructorFnIt = m_constructorFnMap.find(Class);
-      if (constructorFnIt != m_constructorFnMap.end())
-      {
-        TKObject* object = constructorFnIt->second();
-        object->NativeConstruct();
-        return object;
-      }
-
-      assert(false && "Unknown object type.");
-      return nullptr;
-    }
+    TKObject* MakeNew(const StringView Class);
 
     /**
      * Constructs a new TKObject of type T. In case the T does not have a static class, just returns a regular object.
@@ -202,12 +191,18 @@ namespace ToolKit
     {
       if constexpr (HasStaticClass<T>::value)
       {
-        if (TKObject* object = MakeNew(T::StaticClass()->Name))
+        if (auto constructorFn = GetConstructorFn(T::StaticClass()->Name))
         {
-          T* castedObject = static_cast<T*>(object);
+          TKObject* object = constructorFn();
+          T* castedObject  = static_cast<T*>(object);
           castedObject->NativeConstruct(std::forward<Args>(args)...);
 
           return castedObject;
+        }
+        else
+        {
+          assert(false && "Unknown object type.");
+          return nullptr;
         }
       }
       else
@@ -219,11 +214,6 @@ namespace ToolKit
     }
 
    private:
-    /**
-     * Registers all the known TKObject constructors.
-     */
-    void Init();
-
     TKObjectFactory();
     ~TKObjectFactory();
     TKObjectFactory(const TKObjectFactory&)            = delete;
@@ -231,8 +221,14 @@ namespace ToolKit
     TKObjectFactory& operator=(const TKObjectFactory&) = delete;
     TKObjectFactory& operator=(TKObjectFactory&&)      = delete;
 
+    /**
+     * Registers all the known TKObject constructors.
+     */
+    void Init();
+
    private:
     std::unordered_map<StringView, ObjectConstructorCallback> m_constructorFnMap;
+    ObjectConstructorCallback m_nullFn = nullptr;
   };
 
   template <typename T, typename... Args>

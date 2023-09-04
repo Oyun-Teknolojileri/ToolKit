@@ -132,6 +132,35 @@ namespace ToolKit
 
   TKObjectFactory::~TKObjectFactory() {}
 
+  TKObjectFactory::ObjectConstructorCallback& TKObjectFactory::GetConstructorFn(const StringView Class)
+  {
+    auto constructorFnIt = m_constructorFnMap.find(Class);
+    if (constructorFnIt != m_constructorFnMap.end())
+    {
+      return constructorFnIt->second;
+    }
+
+    return m_nullFn;
+  }
+
+  /**
+   * Constructs a new TKObject from class name.
+   * @param cls - Class name of the object to be created.
+   * @return A new instance of the object with the given class name.
+   */
+  TKObject* TKObjectFactory::MakeNew(const StringView Class)
+  {
+    if (auto constructorFn = GetConstructorFn(Class))
+    {
+      TKObject* object = constructorFn();
+      object->NativeConstruct();
+      return object;
+    }
+
+    assert(false && "Unknown object type.");
+    return nullptr;
+  }
+
   void TKObjectFactory::Init()
   {
     // Entities.
