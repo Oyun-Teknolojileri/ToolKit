@@ -87,7 +87,7 @@ namespace ToolKit
     return &This##Cls;                                                                                                 \
   }
 
-#define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using TKObject::ObjectInitializer;
+#define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using TKObject::NativeConstruct;
 
 #define TKDefineClass(This, Base)                                                                                      \
   TKClass This::This##Cls = {Base::StaticClass(), #This};                                                              \
@@ -105,7 +105,6 @@ namespace ToolKit
     virtual ~TKObject();
     virtual void NativeConstruct();
     virtual void NativeDestruct();
-    virtual void ObjectInitializer();
     virtual TKObjectPtr Copy() const;
 
     template <typename T>
@@ -206,14 +205,14 @@ namespace ToolKit
         if (TKObject* object = MakeNew(T::StaticClass()->Name))
         {
           T* castedObject = static_cast<T*>(object);
-          castedObject->ObjectInitializer(std::forward<Args>(args)...);
+          castedObject->NativeConstruct(std::forward<Args>(args)...);
 
           return castedObject;
         }
       }
       else
       {
-        return new T();
+        return new T(std::forward<Args>(args)...);
       }
 
       return nullptr;

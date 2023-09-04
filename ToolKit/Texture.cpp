@@ -506,15 +506,19 @@ namespace ToolKit
 
   RenderTarget::RenderTarget() : Texture() {}
 
-  void RenderTarget::ObjectInitializer(uint width, uint height, const RenderTargetSettigs& settings)
+  void RenderTarget::NativeConstruct(uint width, uint height, const RenderTargetSettigs& settings)
   {
+    Super::NativeConstruct();
+
     m_width    = width;
     m_height   = height;
     m_settings = settings;
   }
 
-  void RenderTarget::ObjectInitializer(Texture* texture)
+  void RenderTarget::NativeConstruct(Texture* texture)
   {
+    Super::NativeConstruct();
+
     m_width     = texture->m_width;
     m_height    = texture->m_height;
     m_textureId = texture->m_textureId;

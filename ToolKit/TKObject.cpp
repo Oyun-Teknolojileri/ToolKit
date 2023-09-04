@@ -93,8 +93,6 @@ namespace ToolKit
 
   void TKObject::NativeDestruct() {}
 
-  void TKObject::ObjectInitializer() {}
-
   void TKObject::ParameterConstructor()
   {
     ULongID id = GetHandleManager()->GetNextHandle();

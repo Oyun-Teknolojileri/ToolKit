@@ -166,8 +166,8 @@ namespace ToolKit
     TKDeclareClass(RenderTarget, Texture);
 
     RenderTarget();
-    void ObjectInitializer(uint widht, uint height, const RenderTargetSettigs& settings = RenderTargetSettigs());
-    void ObjectInitializer(Texture* texture);
+    virtual void NativeConstruct(uint widht, uint height, const RenderTargetSettigs& settings = RenderTargetSettigs());
+    virtual void NativeConstruct(Texture* texture);
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
