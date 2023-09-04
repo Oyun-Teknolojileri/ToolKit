@@ -646,7 +646,7 @@ namespace ToolKit
     for (node = root->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
     {
       XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
-      EntityPtr ntt          = MakeNewPtr<Entity>(typeAttr->value());
+      EntityPtr ntt          = MakeNewPtrCasted<Entity>(typeAttr->value());
 
       ntt->DeSerialize(info, node);
 

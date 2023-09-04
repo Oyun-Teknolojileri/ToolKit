@@ -456,7 +456,7 @@ namespace ToolKit
             set.Format              = GraphicTypes::FormatRG;
             set.Type                = GraphicTypes::TypeFloat;
 
-            RenderTargetPtr brdfLut = std::make_shared<RenderTarget>(m_brdfLutTextureSize, m_brdfLutTextureSize, set);
+            RenderTargetPtr brdfLut = MakeNewPtr<RenderTarget>(m_brdfLutTextureSize, m_brdfLutTextureSize, set);
             brdfLut->Init();
             FramebufferPtr utilFramebuffer = std::make_shared<Framebuffer>();
 
@@ -506,22 +506,26 @@ namespace ToolKit
 
   RenderTarget::RenderTarget() : Texture() {}
 
-  RenderTarget::RenderTarget(uint width, uint height, const RenderTargetSettigs& settings) : RenderTarget()
+  void RenderTarget::NativeConstruct(uint width, uint height, const RenderTargetSettigs& settings)
   {
+    Super::NativeConstruct();
+
     m_width    = width;
     m_height   = height;
     m_settings = settings;
   }
 
-  void RenderTarget::Load() {}
-
-  RenderTarget::RenderTarget(Texture* texture)
+  void RenderTarget::NativeConstruct(Texture* texture)
   {
+    Super::NativeConstruct();
+
     m_width     = texture->m_width;
     m_height    = texture->m_height;
     m_textureId = texture->m_textureId;
     m_initiated = true;
   }
+
+  void RenderTarget::Load() {}
 
   void RenderTarget::Init(bool flushClientSideArray)
   {

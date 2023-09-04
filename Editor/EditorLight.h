@@ -62,7 +62,7 @@ namespace ToolKit
       virtual ~LightGizmoController();
 
       void EnableGizmo(bool enable) const;
-      virtual void Init();
+      virtual void InitController();
 
      protected:
       ValueUpdateFn m_gizmoUpdateFn;

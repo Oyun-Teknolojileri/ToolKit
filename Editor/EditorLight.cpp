@@ -153,7 +153,7 @@ namespace ToolKit
       }
     }
 
-    void LightGizmoController::Init()
+    void LightGizmoController::InitController()
     {
       if (m_initialized)
       {
@@ -176,7 +176,7 @@ namespace ToolKit
     {
       EditorDirectionalLightPtr cpy = MakeNewPtr<EditorDirectionalLight>();
       WeakCopy(cpy.get(), false);
-      cpy->Init();
+      cpy->InitController();
       return cpy;
     }
 
@@ -259,7 +259,7 @@ namespace ToolKit
     {
       EditorPointLightPtr cpy = MakeNewPtr<EditorPointLight>();
       WeakCopy(cpy.get(), false);
-      cpy->Init();
+      cpy->InitController();
       return cpy;
     }
 
@@ -307,7 +307,7 @@ namespace ToolKit
     {
       EditorSpotLightPtr cpy = MakeNewPtr<EditorSpotLight>();
       WeakCopy(cpy.get(), false);
-      cpy->Init();
+      cpy->InitController();
       return cpy;
     }
 

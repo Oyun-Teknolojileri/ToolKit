@@ -123,21 +123,21 @@ namespace ToolKit
         if (ImGui::MenuItem(ICON_FA_SUN " Directional"))
         {
           EditorDirectionalLightPtr light = MakeNewPtr<EditorDirectionalLight>();
-          light->Init();
+          light->InitController();
           createdEntity = light;
         }
 
         if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Point"))
         {
           EditorPointLightPtr light = MakeNewPtr<EditorPointLight>();
-          light->Init();
+          light->InitController();
           createdEntity = light;
         }
 
         if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Spot"))
         {
           EditorSpotLightPtr light = MakeNewPtr<EditorSpotLight>();
-          light->Init();
+          light->InitController();
           createdEntity = light;
         }
 

@@ -30,6 +30,8 @@
 #include "Serialize.h"
 #include "Types.h"
 
+#include <type_traits>
+
 namespace ToolKit
 {
 
@@ -73,7 +75,7 @@ namespace ToolKit
 
   typedef std::shared_ptr<class TKObject> TKObjectPtr;
 
-#define TKDeclareClass(This, Base)                                                                                     \
+#define TKDeclareClassBase(This, Base)                                                                                 \
  private:                                                                                                              \
   static TKClass This##Cls;                                                                                            \
   typedef Base Super;                                                                                                  \
@@ -85,6 +87,8 @@ namespace ToolKit
     return &This##Cls;                                                                                                 \
   }
 
+#define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using TKObject::NativeConstruct;
+
 #define TKDefineClass(This, Base)                                                                                      \
   TKClass This::This##Cls = {Base::StaticClass(), #This};                                                              \
   TKClass* const This::Class() const                                                                                   \
@@ -94,7 +98,7 @@ namespace ToolKit
 
   class TK_API TKObject : public Serializable
   {
-    TKDeclareClass(TKObject, TKObject);
+    TKDeclareClassBase(TKObject, TKObject);
 
    public:
     TKObject();
@@ -133,11 +137,28 @@ namespace ToolKit
     ParameterBlock m_localData;
   };
 
-  typedef std::function<TKObject*()> ObjectConstructorCallback;
+  /**
+   * Helper function to identify if class T has a StaticClass function.
+   */
+  template <typename T>
+  struct HasStaticClass
+  {
+    // Check if T has a StaticClass function
+    template <typename U>
+    static constexpr auto Check(U*) -> decltype(&U::StaticClass, std::true_type {});
+
+    // Fallback for when StaticClass is not found
+    template <typename>
+    static constexpr std::false_type Check(...);
+
+    // Combine the checks for T and its base classes up to TKObject
+    static constexpr bool value = decltype(Check<T>(nullptr))::value;
+  };
 
   class TK_API TKObjectFactory
   {
     friend class Main;
+    typedef std::function<TKObject*()> ObjectConstructorCallback;
 
    public:
     /**
@@ -152,6 +173,8 @@ namespace ToolKit
       T::StaticClass()->HashId                   = std::hash<String> {}(T::StaticClass()->Name);
     }
 
+    ObjectConstructorCallback& GetConstructorFn(const StringView Class);
+
     /**
      * Constructs a new TKObject from class name.
      * @param cls - Class name of the object to be created.
@@ -160,26 +183,37 @@ namespace ToolKit
     TKObject* MakeNew(const StringView Class);
 
     /**
-     * Constructs a new TKObject of type T.
+     * Constructs a new TKObject of type T. In case the T does not have a static class, just returns a regular object.
      * @return A new instance of TKObject.
      */
-    template <typename T>
-    T* MakeNew()
+    template <typename T, typename... Args>
+    T* MakeNew(Args&&... args)
     {
-      if (TKObject* object = MakeNew(T::StaticClass()->Name))
+      if constexpr (HasStaticClass<T>::value)
       {
-        return static_cast<T*>(object);
+        if (auto constructorFn = GetConstructorFn(T::StaticClass()->Name))
+        {
+          TKObject* object = constructorFn();
+          T* castedObject  = static_cast<T*>(object);
+          castedObject->NativeConstruct(std::forward<Args>(args)...);
+
+          return castedObject;
+        }
+        else
+        {
+          assert(false && "Unknown object type.");
+          return nullptr;
+        }
+      }
+      else
+      {
+        return new T(std::forward<Args>(args)...);
       }
 
       return nullptr;
     }
 
    private:
-    /**
-     * Registers all the known TKObject constructors.
-     */
-    void Init();
-
     TKObjectFactory();
     ~TKObjectFactory();
     TKObjectFactory(const TKObjectFactory&)            = delete;
@@ -187,46 +221,52 @@ namespace ToolKit
     TKObjectFactory& operator=(const TKObjectFactory&) = delete;
     TKObjectFactory& operator=(TKObjectFactory&&)      = delete;
 
+    /**
+     * Registers all the known TKObject constructors.
+     */
+    void Init();
+
    private:
     std::unordered_map<StringView, ObjectConstructorCallback> m_constructorFnMap;
+    ObjectConstructorCallback m_nullFn = nullptr;
   };
 
-  template <typename T>
-  T* MakeNew()
+  template <typename T, typename... Args>
+  T* MakeNew(Args&&... args)
   {
     if (Main* main = Main::GetInstance())
     {
       if (TKObjectFactory* of = main->m_objectFactory)
       {
-        return of->MakeNew<T>();
+        return of->MakeNew<T>(std::forward<Args>(args)...);
       }
     }
 
     return nullptr;
   }
 
-  template <typename T>
-  std::shared_ptr<T> MakeNewPtr()
+  template <typename T, typename... Args>
+  std::shared_ptr<T> MakeNewPtr(Args&&... args)
   {
     if (Main* main = Main::GetInstance())
     {
       if (TKObjectFactory* of = main->m_objectFactory)
       {
-        return std::shared_ptr<T>(of->MakeNew<T>());
+        return std::shared_ptr<T>(of->MakeNew<T>(std::forward<Args>(args)...));
       }
     }
 
     return nullptr;
   }
 
-  template <typename T>
-  std::shared_ptr<T> MakeNewPtr(const StringView tkClass)
+  template <typename T, typename... Args>
+  std::shared_ptr<T> MakeNewPtrCasted(const StringView Class, Args&&... args)
   {
     if (Main* main = Main::GetInstance())
     {
       if (TKObjectFactory* of = main->m_objectFactory)
       {
-        return std::shared_ptr<T>(static_cast<T*>(of->MakeNew(tkClass)));
+        return std::shared_ptr<T>(static_cast<T*>(of->MakeNew(Class, std::forward<Args>(args)...)));
       }
     }
 

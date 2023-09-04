@@ -58,15 +58,15 @@ namespace ToolKit
         // Create gizmos
         if (ntt->IsA<DirectionalLight>())
         {
-          static_cast<EditorDirectionalLight*>(ntt.get())->Init();
+          static_cast<EditorDirectionalLight*>(ntt.get())->InitController();
         }
         else if (ntt->IsA<PointLight>())
         {
-          static_cast<EditorPointLight*>(ntt.get())->Init();
+          static_cast<EditorPointLight*>(ntt.get())->InitController();
         }
         else if (ntt->IsA<SpotLight>())
         {
-          static_cast<EditorSpotLight*>(ntt.get())->Init();
+          static_cast<EditorSpotLight*>(ntt.get())->InitController();
         }
       }
     }

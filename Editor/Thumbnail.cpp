@@ -161,7 +161,7 @@ namespace ToolKit
         return g_app->m_thumbnailManager.GetDefaultThumbnail();
       }
 
-      m_thumbnailRT = std::make_shared<RenderTarget>(m_maxThumbSize, m_maxThumbSize);
+      m_thumbnailRT = MakeNewPtr<RenderTarget>(m_maxThumbSize, m_maxThumbSize);
       m_thumbnailRT->Init();
 
       m_thumbnailBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_thumbnailRT);
@@ -179,7 +179,7 @@ namespace ToolKit
       return m_thumbnailRT;
     }
 
-    ThumbnailManager::ThumbnailManager() { m_defaultThumbnail = std::make_shared<RenderTarget>(10u, 10u); }
+    ThumbnailManager::ThumbnailManager() { m_defaultThumbnail = MakeNewPtr<RenderTarget>(10u, 10u); }
 
     ThumbnailManager::~ThumbnailManager() { m_defaultThumbnail = nullptr; }
 
