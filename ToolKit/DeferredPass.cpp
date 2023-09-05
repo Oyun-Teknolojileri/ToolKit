@@ -37,7 +37,7 @@
 namespace ToolKit
 {
 
-  DeferredRenderPass::DeferredRenderPass() { m_fullQuadPass = std::make_shared<FullQuadPass>(); }
+  DeferredRenderPass::DeferredRenderPass() { m_fullQuadPass = MakeNewPtr<FullQuadPass>(); }
 
   DeferredRenderPass::DeferredRenderPass(const DeferredRenderPassParams& params) : DeferredRenderPass()
   {

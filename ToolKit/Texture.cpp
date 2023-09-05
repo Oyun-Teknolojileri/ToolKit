@@ -54,8 +54,10 @@ namespace ToolKit
 
   Texture::Texture(const String& file, const TextureSettings& settings) : Texture(settings) { SetFile(file); }
 
-  Texture::Texture(uint textureId)
+  void Texture::NativeConstruct(uint textureId)
   {
+    Super::NativeConstruct();
+
     m_textureId = textureId;
     m_initiated = true;
   }
@@ -233,12 +235,6 @@ namespace ToolKit
 
   CubeMap::CubeMap(const String& file) : Texture() { SetFile(file); }
 
-  CubeMap::CubeMap(uint cubemapId)
-  {
-    m_textureId = cubemapId;
-    m_initiated = true;
-  }
-
   CubeMap::~CubeMap() { UnInit(); }
 
   void CubeMap::Load()
@@ -386,8 +382,8 @@ namespace ToolKit
 
     m_texToCubemapMat                 = MakeNewPtr<Material>();
     m_cubemapToIrradiancemapMat       = MakeNewPtr<Material>();
-    m_irradianceCubemap               = std::make_shared<CubeMap>(0u);
-    m_equirectangularTexture          = std::make_shared<Texture>(0u);
+    m_irradianceCubemap               = MakeNewPtr<CubeMap>(0u);
+    m_equirectangularTexture          = MakeNewPtr<Texture>(0u);
   }
 
   Hdri::Hdri(const String& file) : Hdri() { SetFile(file); }
@@ -458,7 +454,7 @@ namespace ToolKit
 
             RenderTargetPtr brdfLut = MakeNewPtr<RenderTarget>(m_brdfLutTextureSize, m_brdfLutTextureSize, set);
             brdfLut->Init();
-            FramebufferPtr utilFramebuffer = std::make_shared<Framebuffer>();
+            FramebufferPtr utilFramebuffer = MakeNewPtr<Framebuffer>();
 
             utilFramebuffer->Init({(uint) m_brdfLutTextureSize, (uint) m_brdfLutTextureSize, false, false});
             utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);

@@ -38,19 +38,19 @@ namespace ToolKit
 
   SceneRenderer::SceneRenderer()
   {
-    m_shadowPass            = std::make_shared<ShadowPass>();
-    m_forwardRenderPass     = std::make_shared<ForwardRenderPass>();
-    m_forwardPreProcessPass = std::make_shared<ForwardPreProcess>();
-    m_lightingPass          = std::make_shared<AdditiveLightingPass>();
-    m_skyPass               = std::make_shared<CubeMapPass>();
-    m_gBufferPass           = std::make_shared<GBufferPass>();
-    m_deferredRenderPass    = std::make_shared<DeferredRenderPass>();
-    m_ssaoPass              = std::make_shared<SSAOPass>();
-    m_tonemapPass           = std::make_shared<TonemapPass>();
-    m_fxaaPass              = std::make_shared<FXAAPass>();
-    m_gammaPass             = std::make_shared<GammaPass>();
-    m_bloomPass             = std::make_shared<BloomPass>();
-    m_dofPass               = std::make_shared<DoFPass>();
+    m_shadowPass            = MakeNewPtr<ShadowPass>();
+    m_forwardRenderPass     = MakeNewPtr<ForwardRenderPass>();
+    m_forwardPreProcessPass = MakeNewPtr<ForwardPreProcess>();
+    m_lightingPass          = MakeNewPtr<AdditiveLightingPass>();
+    m_skyPass               = MakeNewPtr<CubeMapPass>();
+    m_gBufferPass           = MakeNewPtr<GBufferPass>();
+    m_deferredRenderPass    = MakeNewPtr<DeferredRenderPass>();
+    m_ssaoPass              = MakeNewPtr<SSAOPass>();
+    m_tonemapPass           = MakeNewPtr<TonemapPass>();
+    m_fxaaPass              = MakeNewPtr<FXAAPass>();
+    m_gammaPass             = MakeNewPtr<GammaPass>();
+    m_bloomPass             = MakeNewPtr<BloomPass>();
+    m_dofPass               = MakeNewPtr<DoFPass>();
   }
 
   SceneRenderer::SceneRenderer(const SceneRenderPassParams& params) : SceneRenderer() { m_params = params; }

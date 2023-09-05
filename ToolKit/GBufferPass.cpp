@@ -70,7 +70,7 @@ namespace ToolKit
 
     m_gMetallicRoughnessRt                          = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
-    m_framebuffer                                   = std::make_shared<Framebuffer>();
+    m_framebuffer                                   = MakeNewPtr<Framebuffer>();
     m_gBufferMaterial                               = MakeNewPtr<Material>();
   }
 

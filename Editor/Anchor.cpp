@@ -46,7 +46,7 @@ namespace ToolKit
     {
       for (int i = 0; i < 9; i++)
       {
-        m_handles.push_back(std::make_shared<AnchorHandle>());
+        m_handles.push_back(MakeNewPtr<AnchorHandle>());
         constexpr int val                = (int) DirectionLabel::N;
         m_handles[i]->m_params.direction = static_cast<DirectionLabel>(val + i);
       }

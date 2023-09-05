@@ -54,7 +54,7 @@ namespace ToolKit
 
     for (auto& record : ec->ParamRecords().GetVar<AnimRecordPtrMap>())
     {
-      AnimRecordPtr newRecord = std::make_shared<AnimRecord>();
+      AnimRecordPtr newRecord = MakeNewPtr<AnimRecord>();
       ULongID p_id            = newRecord->m_id;
       *newRecord              = *record.second;
       newRecord->m_id         = p_id;

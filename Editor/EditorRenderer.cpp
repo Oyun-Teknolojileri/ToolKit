@@ -334,7 +334,7 @@ namespace ToolKit
 
     void EditorRenderer::InitRenderer()
     {
-      m_lightSystem   = std::make_shared<ThreePointLightSystem>();
+      m_lightSystem   = MakeNewPtr<ThreePointLightSystem>();
 
       // Create render mode materials.
       m_unlitOverride = GetMaterialManager()->GetCopyOfUnlitMaterial();
@@ -342,19 +342,19 @@ namespace ToolKit
       m_unlitOverride->Init();
       m_blackMaterial->Init();
 
-      m_billboardPass     = std::make_shared<BillboardPass>();
-      m_scenePass         = std::make_shared<SceneRenderer>();
-      m_uiPass            = std::make_shared<ForwardRenderPass>();
-      m_editorPass        = std::make_shared<ForwardRenderPass>();
-      m_gizmoPass         = std::make_shared<GizmoPass>();
-      m_tonemapPass       = std::make_shared<TonemapPass>();
-      m_gammaPass         = std::make_shared<GammaPass>();
-      m_fxaaPass          = std::make_shared<FXAAPass>();
-      m_bloomPass         = std::make_shared<BloomPass>();
-      m_ssaoPass          = std::make_shared<SSAOPass>();
-      m_outlinePass       = std::make_shared<OutlinePass>();
-      m_singleMatRenderer = std::make_shared<SingleMatForwardRenderPass>();
-      m_skipFramePass     = std::make_shared<FullQuadPass>();
+      m_billboardPass     = MakeNewPtr<BillboardPass>();
+      m_scenePass         = MakeNewPtr<SceneRenderer>();
+      m_uiPass            = MakeNewPtr<ForwardRenderPass>();
+      m_editorPass        = MakeNewPtr<ForwardRenderPass>();
+      m_gizmoPass         = MakeNewPtr<GizmoPass>();
+      m_tonemapPass       = MakeNewPtr<TonemapPass>();
+      m_gammaPass         = MakeNewPtr<GammaPass>();
+      m_fxaaPass          = MakeNewPtr<FXAAPass>();
+      m_bloomPass         = MakeNewPtr<BloomPass>();
+      m_ssaoPass          = MakeNewPtr<SSAOPass>();
+      m_outlinePass       = MakeNewPtr<OutlinePass>();
+      m_singleMatRenderer = MakeNewPtr<SingleMatForwardRenderPass>();
+      m_skipFramePass     = MakeNewPtr<FullQuadPass>();
     }
 
     void EditorRenderer::OutlineSelecteds(Renderer* renderer)

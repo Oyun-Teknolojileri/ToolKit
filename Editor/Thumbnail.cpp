@@ -43,7 +43,7 @@ namespace ToolKit
     {
       m_maxThumbSize    = 300u;
 
-      m_thumbnailBuffer = std::make_shared<Framebuffer>();
+      m_thumbnailBuffer = MakeNewPtr<Framebuffer>();
       m_thumbnailBuffer->Init({m_maxThumbSize, m_maxThumbSize, false, true});
 
       m_thumbnailScene = MakeNewPtr<Scene>();
@@ -54,7 +54,7 @@ namespace ToolKit
       m_sphere = MakeNewPtr<Sphere>();
       m_sphere->AddComponent<MaterialComponent>();
 
-      m_lightSystem = std::make_shared<ThreePointLightSystem>();
+      m_lightSystem = MakeNewPtr<ThreePointLightSystem>();
       m_cam         = MakeNewPtr<Camera>();
     }
 

@@ -440,7 +440,7 @@ namespace ToolKit
 
     TempMaterialWindow::TempMaterialWindow()
     {
-      m_view               = std::make_shared<MaterialView>();
+      m_view               = MakeNewPtr<MaterialView>();
       m_view->m_isTempView = true;
       UI::AddTempWindow(this);
     }
