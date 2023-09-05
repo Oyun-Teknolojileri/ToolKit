@@ -45,7 +45,6 @@ namespace ToolKit
   void SkyBase::NativeConstruct()
   {
     Super::NativeConstruct();
-    Init();
   }
 
   void SkyBase::Init()
