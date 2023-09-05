@@ -233,6 +233,9 @@
     </ClCompile>
     <ClCompile Include="ForwardPreProcessPass.cpp" />
     <ClCompile Include="AdditiveLightingPass.cpp" />
+    <ClCompile Include="ObjectFactory.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -462,5 +465,8 @@
     </ClInclude>
     <ClInclude Include="ForwardPreProcessPass.h" />
     <ClInclude Include="AdditiveLightingPass.h" />
+    <ClInclude Include="ObjectFactory.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

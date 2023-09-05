@@ -93,7 +93,7 @@ namespace ToolKit
    * DEPRECATED use TKObjectFactory
    * Utility class to construct Components.
    */
-  class TK_API ComponentFactory final
+  class ComponentFactory final
   {
    public:
     enum class ComponentType
@@ -111,7 +111,7 @@ namespace ToolKit
     };
 
    public:
-    Component* Create(ComponentType cls); //!< Deprecated. Just serving here for backward compatibility.
+    static Component* Create(ComponentType cls); //!< Deprecated. Just serving here for backward compatibility.
   };
 
 } // namespace ToolKit

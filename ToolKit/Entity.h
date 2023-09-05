@@ -231,7 +231,7 @@ namespace ToolKit
    * DEPRECATED use TKObjectFactory
    * Utility class to construct Entity.
    */
-  class TK_API EntityFactory final
+  class EntityFactory final
   {
    public:
     /**
@@ -270,7 +270,7 @@ namespace ToolKit
     };
 
    public:
-    EntityPtr CreateByType(EntityType type);
+    static EntityPtr CreateByType(EntityType type);
   };
 
 } // namespace ToolKit
