@@ -42,7 +42,7 @@ namespace ToolKit
 
   /**
    * Draws given entities' outlines to the FrameBuffer.
-   * TODO: It should be Technique instead of Pass
+   * TODO: It should be RenderPath instead of Pass
    */
   class TK_API OutlinePass : public Pass
   {

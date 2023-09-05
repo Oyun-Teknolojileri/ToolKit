@@ -85,7 +85,7 @@ namespace ToolKit
         m_scenePass->Render(renderer);
 
         m_passArray.push_back(m_skipFramePass);
-        Technique::Render(renderer);
+        RenderPath::Render(renderer);
 
         GetRenderSystem()->DecrementSkipFrame();
         PostRender();
@@ -105,7 +105,7 @@ namespace ToolKit
         m_scenePass->Render(renderer);
         m_passArray.push_back(m_uiPass);
         m_passArray.push_back(m_gammaPass);
-        Technique::Render(renderer);
+        RenderPath::Render(renderer);
         m_params.App->ShowGizmos();
         break;
       default:
@@ -120,7 +120,7 @@ namespace ToolKit
       if (m_params.LitMode != EditorLitMode::Game)
       {
         // Draw scene and apply bloom effect.
-        Technique::Render(renderer);
+        RenderPath::Render(renderer);
         m_passArray.clear();
 
         SetLitMode(renderer, EditorLitMode::EditorLit);
@@ -147,7 +147,7 @@ namespace ToolKit
         }
         m_passArray.push_back(m_gammaPass);
 
-        Technique::Render(renderer);
+        RenderPath::Render(renderer);
       }
 
       PostRender();
@@ -405,7 +405,7 @@ namespace ToolKit
 
         m_passArray.clear();
         m_passArray.push_back(m_outlinePass);
-        Technique::Render(renderer);
+        RenderPath::Render(renderer);
 
         // Enable light gizmos back
         for (EntityPtr entity : selection)

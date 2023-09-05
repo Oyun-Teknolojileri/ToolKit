@@ -57,7 +57,7 @@ namespace ToolKit
   /**
    * Main scene renderer.
    */
-  class TK_API SceneRenderer : public Technique
+  class TK_API SceneRenderer : public RenderPath
   {
    public:
     SceneRenderer();
