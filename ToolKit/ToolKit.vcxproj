@@ -98,6 +98,7 @@
     <ClInclude Include="BinPack2D.h" />
     <ClInclude Include="BloomPass.h" />
     <ClInclude Include="Canvas.h" />
+    <ClInclude Include="Class.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="CubemapPass.h" />
     <ClInclude Include="DataTexture.h" />

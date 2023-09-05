@@ -26,52 +26,13 @@
 
 #pragma once
 
+#include "Class.h"
 #include "ParameterBlock.h"
 #include "Serialize.h"
 #include "Types.h"
 
 namespace ToolKit
 {
-
-  struct TK_API TKClass
-  {
-    TKClass* Super = nullptr;     //!< Compile time assigned base class for this class.
-    String Name;                  //!< Compile time assigned unique class name.
-    ULongID HashId = NULL_HANDLE; //!< Unique has id assigned to class when registered to TKObjectFactory.
-
-    bool operator==(const TKClass& other) const
-    {
-      assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return (HashId == other.HashId);
-    }
-
-    bool operator==(const TKClass* other) const
-    {
-      assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return (HashId == other->HashId);
-    }
-
-    bool operator!=(const TKClass& other) const
-    {
-      assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return HashId != other.HashId;
-    }
-
-    bool operator!=(const TKClass* other) const
-    {
-      assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return HashId != other->HashId;
-    }
-
-    /**
-     * Checks if the class is of the same type of base ( equal or derived from base ).
-     * @param base - The target class to check equality for.
-     * @return true in case of this class being equal base or derived from base.
-     */
-    bool IsSublcassOf(TKClass* base);
-  };
-
-  typedef std::shared_ptr<class TKObject> TKObjectPtr;
 
 #define TKDeclareClassBase(This, Base)                                                                                 \
  private:                                                                                                              \
@@ -93,6 +54,8 @@ namespace ToolKit
   {                                                                                                                    \
     return &This##Cls;                                                                                                 \
   }
+
+  typedef std::shared_ptr<class TKObject> TKObjectPtr;
 
   class TK_API TKObject : public Serializable
   {

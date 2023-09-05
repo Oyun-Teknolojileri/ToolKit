@@ -58,27 +58,6 @@
 namespace ToolKit
 {
 
-  bool TKClass::IsSublcassOf(TKClass* base)
-  {
-    if (base == Super)
-    {
-      return true;
-    }
-
-    if (this == base)
-    {
-      return true;
-    }
-
-    // This specific condition is only valid for TKObject, marking this point as the end.
-    if (this == Super)
-    {
-      return false; // No match found.
-    }
-
-    return Super->IsSublcassOf(base);
-  }
-
   TKDefineClass(TKObject, TKObject);
 
   TKObject::TKObject() {}
