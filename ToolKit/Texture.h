@@ -46,10 +46,11 @@ namespace ToolKit
    public:
     TKDeclareClass(Texture, Resource);
 
-    explicit Texture(const TextureSettings& settings = {});
-    explicit Texture(const String& file, const TextureSettings& settings = {});
-    explicit Texture(uint textureId);
+    Texture(const TextureSettings& settings = {});
+    Texture(const String& file, const TextureSettings& settings = {});
     virtual ~Texture();
+
+    virtual void NativeConstruct(uint textureId);
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
@@ -97,9 +98,10 @@ namespace ToolKit
     TKDeclareClass(CubeMap, Texture);
 
     CubeMap();
-    explicit CubeMap(const String& file);
-    explicit CubeMap(uint cubemapId);
+    CubeMap(const String& file);
     ~CubeMap();
+
+    using Texture::NativeConstruct;
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;

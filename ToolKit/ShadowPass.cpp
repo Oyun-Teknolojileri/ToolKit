@@ -50,7 +50,7 @@ namespace ToolKit
     }
 
     m_shadowAtlas       = MakeNewPtr<RenderTarget>();
-    m_shadowFramebuffer = std::make_shared<Framebuffer>();
+    m_shadowFramebuffer = MakeNewPtr<Framebuffer>();
   }
 
   ShadowPass::ShadowPass(const ShadowPassParams& params) : ShadowPass() { m_params = params; }

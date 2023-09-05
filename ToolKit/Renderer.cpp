@@ -61,7 +61,7 @@ namespace ToolKit
   void Renderer::Init()
   {
     m_uiCamera        = new Camera();
-    m_utilFramebuffer = std::make_shared<Framebuffer>();
+    m_utilFramebuffer = MakeNewPtr<Framebuffer>();
     m_dummyDrawCube   = MakeNewPtr<Cube>();
   }
 
@@ -507,7 +507,7 @@ namespace ToolKit
 
     if (m_copyFb == nullptr)
     {
-      m_copyFb = std::make_shared<Framebuffer>();
+      m_copyFb = MakeNewPtr<Framebuffer>();
       m_copyFb->Init({(uint) source->m_width, (uint) source->m_height, false, false});
     }
 
@@ -698,7 +698,7 @@ namespace ToolKit
     tag = vertex->m_tag + fragment->m_tag;
     if (m_programs.find(tag) == m_programs.end())
     {
-      ProgramPtr program = std::make_shared<Program>(vertex, fragment);
+      ProgramPtr program = MakeNewPtr<Program>(vertex, fragment);
       program->m_handle  = glCreateProgram();
       LinkProgram(program->m_handle, vertex->m_shaderHandle, fragment->m_shaderHandle);
       glUseProgram(program->m_handle);
@@ -1200,7 +1200,7 @@ namespace ToolKit
     SetFramebuffer(nullptr);
 
     // Take the ownership of render target.
-    CubeMapPtr cubeMap     = std::make_shared<CubeMap>(cubeMapRt->m_textureId);
+    CubeMapPtr cubeMap     = MakeNewPtr<CubeMap>(cubeMapRt->m_textureId);
     cubeMapRt->m_textureId = 0;
     cubeMapRt              = nullptr;
 
@@ -1269,7 +1269,7 @@ namespace ToolKit
     SetFramebuffer(nullptr);
 
     // Take the ownership of render target.
-    CubeMapPtr cubeMap     = std::make_shared<CubeMap>(cubeMapRt->m_textureId);
+    CubeMapPtr cubeMap     = MakeNewPtr<CubeMap>(cubeMapRt->m_textureId);
     cubeMapRt->m_textureId = 0;
     cubeMapRt              = nullptr;
 
@@ -1296,7 +1296,7 @@ namespace ToolKit
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 
     // Views for 6 different angles
-    CameraPtr cam = std::make_shared<Camera>();
+    CameraPtr cam = MakeNewPtr<Camera>();
     cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
     Mat4 views[]          = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
                              glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
@@ -1358,7 +1358,7 @@ namespace ToolKit
     SetViewportSize(lastViewportSize.x, lastViewportSize.y);
 
     // Take the ownership of render target.
-    CubeMapPtr cubeMap     = std::make_shared<CubeMap>(cubemapRt->m_textureId);
+    CubeMapPtr cubeMap     = MakeNewPtr<CubeMap>(cubemapRt->m_textureId);
     cubemapRt->m_textureId = 0;
     cubemapRt              = nullptr;
 

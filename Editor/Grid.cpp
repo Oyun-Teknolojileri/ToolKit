@@ -239,7 +239,7 @@ namespace ToolKit
         material->m_vertexShader  = GetShaderManager()->Create<Shader>(ShaderPath("gridVertex.shader", true));
 
         // Custom creationg & shader management.
-        GridFragmentShaderPtr gfs = std::make_shared<GridFragmentShader>();
+        GridFragmentShaderPtr gfs = MakeNewPtr<GridFragmentShader>();
         gfs->Load();
         GetShaderManager()->Manage(gfs);
 

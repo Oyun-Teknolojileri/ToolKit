@@ -42,7 +42,7 @@ namespace ToolKit
     // Create a default frame buffer.
     if (m_params.FrameBuffer == nullptr)
     {
-      m_params.FrameBuffer = std::make_shared<Framebuffer>();
+      m_params.FrameBuffer = MakeNewPtr<Framebuffer>();
       m_params.FrameBuffer->Init({1024u, 768u, false, true});
     }
   }

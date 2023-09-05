@@ -55,7 +55,7 @@ namespace ToolKit
       if (CheckFile(settingsFile))
       {
         XmlFilePtr lclFile    = GetFileManager()->GetXmlFile(settingsFile.c_str());
-        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+        XmlDocumentPtr lclDoc = MakeNewPtr<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
 
         bundle.doc       = lclDoc;
@@ -357,8 +357,8 @@ namespace ToolKit
     {
       String settingsFile   = ConcatPaths({ConfigPath(), g_workspaceFile});
 
-      XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
-      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+      XmlFilePtr lclFile    = MakeNewPtr<XmlFile>(settingsFile.c_str());
+      XmlDocumentPtr lclDoc = MakeNewPtr<XmlDocument>();
       lclDoc->parse<0>(lclFile->data());
 
       if (XmlNode* settings = lclDoc->first_node(XmlNodeSettings.data()))

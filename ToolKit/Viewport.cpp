@@ -128,7 +128,7 @@ namespace ToolKit
   {
     if (m_framebuffer == nullptr)
     {
-      m_framebuffer = std::make_shared<Framebuffer>();
+      m_framebuffer = MakeNewPtr<Framebuffer>();
     }
 
     m_framebuffer->UnInit();

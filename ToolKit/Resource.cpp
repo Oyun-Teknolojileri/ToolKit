@@ -107,7 +107,7 @@ namespace ToolKit
     info.File          = GetFile();
 
     XmlFilePtr file    = GetFileManager()->GetXmlFile(info.File);
-    XmlDocumentPtr doc = std::make_shared<XmlDocument>();
+    XmlDocumentPtr doc = MakeNewPtr<XmlDocument>();
 
     if (fullParse)
     {

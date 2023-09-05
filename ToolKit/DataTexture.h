@@ -37,7 +37,7 @@ namespace ToolKit
     TKDeclareClass(DataTexture, Texture);
 
     DataTexture();
-    DataTexture(int width, int height);
+    virtual void NativeConstruct(int width, int height);
 
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
@@ -55,7 +55,7 @@ namespace ToolKit
     TKDeclareClass(LightDataTexture, DataTexture);
 
     LightDataTexture();
-    LightDataTexture(int width, int height);
+    using DataTexture::NativeConstruct;
 
     void Init(bool flushClientSideArray = false) override;
 

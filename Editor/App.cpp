@@ -1023,7 +1023,7 @@ namespace ToolKit
       {
         if (EditorViewport2d* viewport = GetWindow<EditorViewport2d>(g_2dViewport))
         {
-          UILayerPtr layer = std::make_shared<UILayer>(scene);
+          UILayerPtr layer = MakeNewPtr<UILayer>(scene);
           GetUIManager()->AddLayer(viewport->m_viewportId, layer);
         }
         else
@@ -1266,7 +1266,7 @@ namespace ToolKit
       file.open(fileName.c_str(), openMode);
       if (file.is_open())
       {
-        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+        XmlDocumentPtr lclDoc = MakeNewPtr<XmlDocument>();
         XmlNode* app          = lclDoc->allocate_node(rapidxml::node_element, "App");
         WriteAttr(app, lclDoc.get(), "version", TKVersionStr);
         lclDoc->append_node(app);
@@ -1315,8 +1315,8 @@ namespace ToolKit
         assert(CheckFile(settingsFile) && "ToolKit/Config/Editor.settings must exist.");
       }
 
-      XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
-      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+      XmlFilePtr lclFile    = MakeNewPtr<XmlFile>(settingsFile.c_str());
+      XmlDocumentPtr lclDoc = MakeNewPtr<XmlDocument>();
       lclDoc->parse<0>(lclFile->data());
       XmlDocument* doc = lclDoc.get();
 

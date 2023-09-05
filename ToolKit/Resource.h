@@ -27,6 +27,7 @@
 #pragma once
 
 #include "Object.h"
+#include "ObjectFactory.h"
 #include "Types.h"
 
 namespace ToolKit
@@ -51,7 +52,7 @@ namespace ToolKit
     template <typename T>
     std::shared_ptr<T> Copy()
     {
-      std::shared_ptr<T> resource = std::make_shared<T>();
+      std::shared_ptr<T> resource = MakeNewPtr<T>();
       CopyTo(resource.get());
       if (class ResourceManager* manager = GetResourceManager(T::StaticClass()))
       {

@@ -160,7 +160,7 @@ namespace ToolKit
 
   void SkyBase::ConstructSkyMaterial(ShaderPtr vertexPrg, ShaderPtr fragPrg)
   {
-    m_skyboxMaterial                             = std::make_shared<Material>();
+    m_skyboxMaterial                             = MakeNewPtr<Material>();
     m_skyboxMaterial->m_cubeMap                  = GetHdri()->m_cubemap;
     m_skyboxMaterial->m_vertexShader             = vertexPrg;
     m_skyboxMaterial->m_fragmentShader           = fragPrg;

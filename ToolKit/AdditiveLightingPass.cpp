@@ -39,8 +39,8 @@ namespace ToolKit
 
   AdditiveLightingPass::AdditiveLightingPass()
   {
-    m_fullQuadPass                   = std::make_shared<FullQuadPass>();
-    m_lightingFrameBuffer            = std::make_shared<Framebuffer>();
+    m_fullQuadPass                   = MakeNewPtr<FullQuadPass>();
+    m_lightingFrameBuffer            = MakeNewPtr<Framebuffer>();
     m_lightingRt                     = MakeNewPtr<RenderTarget>();
     m_lightingShader                 = GetShaderManager()->Create<Shader>(ShaderPath("additiveLighting.shader", true));
     m_mergeShader                    = GetShaderManager()->Create<Shader>(ShaderPath("lightMerge.shader", true));

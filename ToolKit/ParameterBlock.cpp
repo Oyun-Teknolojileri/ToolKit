@@ -643,7 +643,7 @@ namespace ToolKit
         AnimRecordPtrMap list;
         for (uint stateIndx = 0; stateIndx < listSize; stateIndx++)
         {
-          AnimRecordPtr record = std::make_shared<AnimRecord>();
+          AnimRecordPtr record = MakeNewPtr<AnimRecord>();
           XmlNode* elementNode = listNode->first_node(std::to_string(stateIndx).c_str());
 
           String signalName;
