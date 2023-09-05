@@ -49,7 +49,7 @@
 namespace ToolKit
 {
 
-  TKDefineClass(Entity, TKObject);
+  TKDefineClass(Entity, Object);
 
   Entity::Entity()
   {
@@ -287,7 +287,7 @@ namespace ToolKit
       {
         int type = -1;
         ReadAttr(comNode, XmlParamterTypeAttr, type);
-        Component* com = GetComponentFactory()->Create((ComponentFactory::ComponentType) type);
+        Component* com = ComponentFactory::Create((ComponentFactory::ComponentType) type);
         com->m_version = m_version;
         com->DeSerialize(info, comNode);
         AddComponent(std::shared_ptr<Component>(com));
@@ -314,7 +314,7 @@ namespace ToolKit
 
     if (XmlNode* comArray = nttNode->first_node(XmlComponentArrayElement.data()))
     {
-      XmlNode* comNode = comArray->first_node(TKObject::StaticClass()->Name.c_str());
+      XmlNode* comNode = comArray->first_node(Object::StaticClass()->Name.c_str());
       while (comNode != nullptr)
       {
         String cls;

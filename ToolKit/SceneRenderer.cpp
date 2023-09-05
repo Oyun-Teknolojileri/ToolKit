@@ -98,7 +98,7 @@ namespace ToolKit
     // Shadow pass
     m_passArray.push_back(m_shadowPass);
 
-    Technique::Render(renderer);
+    RenderPath::Render(renderer);
 
     // Second stage of the render.
     m_passArray.clear();
@@ -141,7 +141,7 @@ namespace ToolKit
       m_passArray.push_back(m_gammaPass);
     }
 
-    Technique::Render(renderer);
+    RenderPath::Render(renderer);
 
     renderer->SetShadowAtlas(nullptr);
 

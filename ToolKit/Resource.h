@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include "TKObject.h"
+#include "Object.h"
 #include "Types.h"
 
 namespace ToolKit
@@ -34,10 +34,10 @@ namespace ToolKit
 
   TK_API extern class ResourceManager* GetResourceManager(TKClass* Class);
 
-  class TK_API Resource : public TKObject
+  class TK_API Resource : public Object
   {
    public:
-    TKDeclareClass(Resource, TKObject);
+    TKDeclareClass(Resource, Object);
 
     Resource();
     virtual ~Resource();

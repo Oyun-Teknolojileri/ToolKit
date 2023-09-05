@@ -27,6 +27,7 @@
 #pragma once
 
 #include "Logger.h"
+#include "ObjectFactory.h"
 #include "Resource.h"
 #include "ToolKit.h"
 #include "Types.h"

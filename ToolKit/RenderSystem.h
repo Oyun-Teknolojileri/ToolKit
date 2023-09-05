@@ -34,18 +34,18 @@ namespace ToolKit
   /**
    * Base class responsible of creating render results using passes.
    */
-  class TK_API Technique
+  class TK_API RenderPath
   {
    public:
-    Technique();
-    virtual ~Technique();
+    RenderPath();
+    virtual ~RenderPath();
     virtual void Render(Renderer* renderer);
 
    public:
     PassPtrArray m_passArray;
   };
 
-  typedef std::shared_ptr<Technique> TechniquePtr;
+  typedef std::shared_ptr<RenderPath> TechniquePtr;
 
   typedef std::function<void(Renderer*)> RenderTaskFn;
   typedef std::function<void()> RenderTaskOnComplatedFn;
@@ -75,7 +75,7 @@ namespace ToolKit
     ~RenderSystem();
 
     void Init();
-    void AddRenderTask(Technique* technique);
+    void AddRenderTask(RenderPath* technique);
     void AddRenderTask(TechniquePtr technique);
     void AddRenderTask(RenderTask task);
     void ExecuteRenderTasks();
@@ -130,7 +130,7 @@ namespace ToolKit
     RenderTaskArray m_highQueue;
     RenderTaskArray m_lowQueue;
     Renderer* m_renderer         = nullptr;
-    Technique* m_renderTechnique = nullptr;
+    RenderPath* m_renderTechnique = nullptr;
     int m_skipFrames             = 0;
   };
 
