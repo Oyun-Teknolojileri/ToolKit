@@ -49,7 +49,7 @@
 namespace ToolKit
 {
 
-  TKDefineClass(Entity, TKObject);
+  TKDefineClass(Entity, Object);
 
   Entity::Entity()
   {
@@ -314,7 +314,7 @@ namespace ToolKit
 
     if (XmlNode* comArray = nttNode->first_node(XmlComponentArrayElement.data()))
     {
-      XmlNode* comNode = comArray->first_node(TKObject::StaticClass()->Name.c_str());
+      XmlNode* comNode = comArray->first_node(Object::StaticClass()->Name.c_str());
       while (comNode != nullptr)
       {
         String cls;

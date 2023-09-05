@@ -36,7 +36,7 @@ namespace ToolKit
   class TK_API TKObjectFactory
   {
     friend class Main;
-    typedef std::function<TKObject*()> ObjectConstructorCallback;
+    typedef std::function<Object*()> ObjectConstructorCallback;
 
    public:
     /**
@@ -53,12 +53,12 @@ namespace ToolKit
       template <typename>
       static constexpr std::false_type Check(...);
 
-      // Combine the checks for T and its base classes up to TKObject
+      // Combine the checks for T and its base classes up to Object
       static constexpr bool value = decltype(Check<T>(nullptr))::value;
     };
 
     /**
-     * Registers or overrides the default constructor of given TKObject type.
+     * Registers or overrides the default constructor of given Object type.
      * @param constructorFn - This is the callback function that is responsible of creating the given object.
      */
     template <typename T>
@@ -72,15 +72,15 @@ namespace ToolKit
     ObjectConstructorCallback& GetConstructorFn(const StringView Class);
 
     /**
-     * Constructs a new TKObject from class name.
+     * Constructs a new Object from class name.
      * @param cls - Class name of the object to be created.
      * @return A new instance of the object with the given class name.
      */
-    TKObject* MakeNew(const StringView Class);
+    Object* MakeNew(const StringView Class);
 
     /**
-     * Constructs a new TKObject of type T. In case the T does not have a static class, just returns a regular object.
-     * @return A new instance of TKObject.
+     * Constructs a new Object of type T. In case the T does not have a static class, just returns a regular object.
+     * @return A new instance of Object.
      */
     template <typename T, typename... Args>
     T* MakeNew(Args&&... args)
@@ -89,7 +89,7 @@ namespace ToolKit
       {
         if (auto constructorFn = GetConstructorFn(T::StaticClass()->Name))
         {
-          TKObject* object = constructorFn();
+          Object* object = constructorFn();
           T* castedObject  = static_cast<T*>(object);
           castedObject->NativeConstruct(std::forward<Args>(args)...);
 
@@ -118,7 +118,7 @@ namespace ToolKit
     TKObjectFactory& operator=(TKObjectFactory&&)      = delete;
 
     /**
-     * Registers all the known TKObject constructors.
+     * Registers all the known Object constructors.
      */
     void Init();
 

@@ -236,7 +236,7 @@
     <ClCompile Include="ObjectFactory.cpp">
       <Filter>Source\Reflection</Filter>
     </ClCompile>
-    <ClCompile Include="TKObject.cpp">
+    <ClCompile Include="Object.cpp">
       <Filter>Source\Reflection</Filter>
     </ClCompile>
   </ItemGroup>
@@ -468,7 +468,7 @@
     <ClInclude Include="ObjectFactory.h">
       <Filter>Source\Reflection</Filter>
     </ClInclude>
-    <ClInclude Include="TKObject.h">
+    <ClInclude Include="Object.h">
       <Filter>Source\Reflection</Filter>
     </ClInclude>
     <ClInclude Include="Class.h">

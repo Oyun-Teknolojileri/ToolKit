@@ -74,15 +74,15 @@ namespace ToolKit
   }
 
   /**
-   * Constructs a new TKObject from class name.
+   * Constructs a new Object from class name.
    * @param cls - Class name of the object to be created.
    * @return A new instance of the object with the given class name.
    */
-  TKObject* TKObjectFactory::MakeNew(const StringView Class)
+  Object* TKObjectFactory::MakeNew(const StringView Class)
   {
     if (auto constructorFn = GetConstructorFn(Class))
     {
-      TKObject* object = constructorFn();
+      Object* object = constructorFn();
       object->NativeConstruct();
       return object;
     }

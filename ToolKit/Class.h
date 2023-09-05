@@ -78,7 +78,7 @@ namespace ToolKit
         return true;
       }
 
-      // This specific condition is only valid for TKObject, marking this point as the end.
+      // This specific condition is only valid for Object, marking this point as the end.
       if (this == Super)
       {
         return false; // No match found.

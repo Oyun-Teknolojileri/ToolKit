@@ -34,7 +34,7 @@
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
 #include "Node.h"
-#include "TKObject.h"
+#include "Object.h"
 #include "ToolKit.h"
 #include "Types.h"
 
@@ -48,10 +48,10 @@ namespace ToolKit
    * Entity is the base class for all the objects that can be inserted in any
    * scene.
    */
-  class TK_API Entity : public TKObject
+  class TK_API Entity : public Object
   {
    public:
-    TKDeclareClass(Entity, TKObject);
+    TKDeclareClass(Entity, Object);
 
     Entity();
     virtual ~Entity();

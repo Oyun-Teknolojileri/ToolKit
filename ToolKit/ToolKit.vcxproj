@@ -83,7 +83,7 @@
     <ClCompile Include="StencilPass.cpp" />
     <ClCompile Include="Surface.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="TKObject.cpp" />
+    <ClCompile Include="Object.cpp" />
     <ClCompile Include="ToneMapPass.cpp" />
     <ClCompile Include="ToolKit.cpp" />
     <ClCompile Include="UIManager.cpp" />
@@ -162,7 +162,7 @@
     <ClInclude Include="Surface.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TKAssert.h" />
-    <ClInclude Include="TKObject.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="ToneMapPass.h" />
     <ClInclude Include="AdditiveLightingPass.h" />
     <ClInclude Include="ToolKit.h" />

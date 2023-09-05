@@ -640,7 +640,7 @@ namespace ToolKit
 
     EntityPtrArray prefabList;
 
-    const char* xmlRootObject = TKObject::StaticClass()->Name.c_str();
+    const char* xmlRootObject = Object::StaticClass()->Name.c_str();
     const char* xmlObjectType = XmlObjectClassAttr.data();
 
     for (node = root->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))

@@ -36,7 +36,7 @@
 namespace ToolKit
 {
 
-  TKDefineClass(Resource, TKObject);
+  TKDefineClass(Resource, Object);
 
   Resource::Resource()
   {

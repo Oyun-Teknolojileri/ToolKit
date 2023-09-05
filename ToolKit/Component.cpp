@@ -39,7 +39,7 @@
 namespace ToolKit
 {
 
-  TKDefineClass(Component, TKObject);
+  TKDefineClass(Component, Object);
 
   Component::Component() {}
 

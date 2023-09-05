@@ -187,7 +187,7 @@ namespace ToolKit
 
         if (m_version > String("v0.4.4"))
         {
-          XmlNode* objNode = viewportNode->first_node(TKObject::StaticClass()->Name.c_str());
+          XmlNode* objNode = viewportNode->first_node(Object::StaticClass()->Name.c_str());
           viewCam->DeSerialize(info, objNode);
         }
         else

@@ -36,7 +36,7 @@
 #include "RenderSystem.h"
 #include "Scene.h"
 #include "Shader.h"
-#include "TKObject.h"
+#include "Object.h"
 #include "UIManager.h"
 
 #define GLAD_GLES2_IMPLEMENTATION

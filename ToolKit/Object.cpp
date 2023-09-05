@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include "TKObject.h"
+#include "Object.h"
 
 #include "AnimationControllerComponent.h"
 #include "Audio.h"
@@ -58,31 +58,31 @@
 namespace ToolKit
 {
 
-  TKDefineClass(TKObject, TKObject);
+  TKDefineClass(Object, Object);
 
-  TKObject::TKObject() {}
+  Object::Object() {}
 
-  TKObject::~TKObject() {}
+  Object::~Object() {}
 
-  void TKObject::NativeConstruct()
+  void Object::NativeConstruct()
   {
     ParameterConstructor();
     ParameterEventConstructor();
   }
 
-  void TKObject::NativeDestruct() {}
+  void Object::NativeDestruct() {}
 
-  void TKObject::ParameterConstructor()
+  void Object::ParameterConstructor()
   {
     ULongID id = GetHandleManager()->GetNextHandle();
     Id_Define(id, EntityCategory.Name, EntityCategory.Priority, true, false);
   }
 
-  void TKObject::ParameterEventConstructor() {}
+  void Object::ParameterEventConstructor() {}
 
-  TKObjectPtr TKObject::Copy() const { return nullptr; }
+  TKObjectPtr Object::Copy() const { return nullptr; }
 
-  XmlNode* TKObject::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Object::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     assert(doc != nullptr && parent != nullptr);
 
@@ -93,7 +93,7 @@ namespace ToolKit
     return objNode;
   }
 
-  XmlNode* TKObject::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  XmlNode* Object::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     assert(parent != nullptr && "Root of the object can't be null.");
     m_localData.DeSerialize(info, parent);
@@ -102,7 +102,7 @@ namespace ToolKit
     return parent;
   }
 
-  void TKObject::PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  void Object::PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     ParameterEventConstructor(); // Set all the events after data deserialized.
   }

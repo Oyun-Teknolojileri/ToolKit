@@ -46,7 +46,7 @@ namespace ToolKit
     return &This##Cls;                                                                                                 \
   }
 
-#define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using TKObject::NativeConstruct;
+#define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Object::NativeConstruct;
 
 #define TKDefineClass(This, Base)                                                                                      \
   TKClass This::This##Cls = {Base::StaticClass(), #This};                                                              \
@@ -55,15 +55,15 @@ namespace ToolKit
     return &This##Cls;                                                                                                 \
   }
 
-  typedef std::shared_ptr<class TKObject> TKObjectPtr;
+  typedef std::shared_ptr<class Object> TKObjectPtr;
 
-  class TK_API TKObject : public Serializable
+  class TK_API Object : public Serializable
   {
-    TKDeclareClassBase(TKObject, TKObject);
+    TKDeclareClassBase(Object, Object);
 
    public:
-    TKObject();
-    virtual ~TKObject();
+    Object();
+    virtual ~Object();
     virtual void NativeConstruct();
     virtual void NativeDestruct();
     virtual TKObjectPtr Copy() const;
