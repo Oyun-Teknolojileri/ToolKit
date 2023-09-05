@@ -46,11 +46,12 @@ namespace ToolKit
 
   void DataTexture::Clear() { assert(false); }
 
-  DataTexture::DataTexture(int width, int height)
+  void DataTexture::NativeConstruct(int width, int height)
   {
+    Super::NativeConstruct();
+
     m_width  = width;
     m_height = height;
-
     m_loaded = true;
   }
 
@@ -95,8 +96,6 @@ namespace ToolKit
     index             = (index + amount) % m_width;
     return (bool) verticalIndex;
   }
-
-  LightDataTexture::LightDataTexture(int width, int height) : DataTexture(width, height) {}
 
   void LightDataTexture::Init(bool flushClientSideArray) { DataTexture::Init(flushClientSideArray); }
 

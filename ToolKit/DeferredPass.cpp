@@ -130,7 +130,7 @@ namespace ToolKit
 
   void DeferredRenderPass::InitLightDataTexture()
   {
-    m_lightDataTexture = std::make_shared<LightDataTexture>(m_lightDataTextureSize.x, m_lightDataTextureSize.y);
+    m_lightDataTexture = MakeNewPtr<LightDataTexture>(m_lightDataTextureSize.x, m_lightDataTextureSize.y);
     m_lightDataTexture->Init();
   }
 
