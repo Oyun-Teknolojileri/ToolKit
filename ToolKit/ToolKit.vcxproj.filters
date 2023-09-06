@@ -228,8 +228,6 @@
     <ClCompile Include="EngineSettings.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="ForwardPreProcessPass.cpp" />
-    <ClCompile Include="AdditiveLightingPass.cpp" />
     <ClCompile Include="ParameterBlock.cpp">
       <Filter>Source\Reflection</Filter>
     </ClCompile>
@@ -238,6 +236,12 @@
     </ClCompile>
     <ClCompile Include="Object.cpp">
       <Filter>Source\Reflection</Filter>
+    </ClCompile>
+    <ClCompile Include="AdditiveLightingPass.cpp">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="ForwardPreProcessPass.cpp">
+      <Filter>Source\Render\RenderPass</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -460,8 +464,6 @@
     <ClInclude Include="EngineSettings.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="ForwardPreProcessPass.h" />
-    <ClInclude Include="AdditiveLightingPass.h" />
     <ClInclude Include="ParameterBlock.h">
       <Filter>Source\Reflection</Filter>
     </ClInclude>
@@ -473,6 +475,12 @@
     </ClInclude>
     <ClInclude Include="Class.h">
       <Filter>Source\Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="ForwardPreProcessPass.h">
+      <Filter>Source\Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="AdditiveLightingPass.h">
+      <Filter>Source\Render\RenderPass</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

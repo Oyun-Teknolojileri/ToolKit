@@ -431,10 +431,6 @@ namespace ToolKit
                                                              m_width / 4,
                                                              1.0f);
 
-          // Generate mip maps of cubemap
-          glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemap->m_textureId);
-          glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-
           const int prefilteredEnvMapSize = m_specularIBLTextureSize;
           // Pre-filtered and mip mapped environment map
           m_prefilteredEnvMap             = renderer->GenerateEnvPrefilteredMap(m_cubemap,
