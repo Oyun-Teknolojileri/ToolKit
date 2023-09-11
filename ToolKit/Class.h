@@ -31,11 +31,23 @@
 namespace ToolKit
 {
 
+  /**
+   * MetaKey for storage location in the editor.
+   * Possible Values: Add/Submenu
+   */
+  constexpr StringView MenuMetaKey = "MenuMetaKey"; //!< MetaKey for storage location in the editor.
+
   struct TK_API TKClass
   {
     TKClass* Super = nullptr;     //!< Compile time assigned base class for this class.
     String Name;                  //!< Compile time assigned unique class name.
     ULongID HashId = NULL_HANDLE; //!< Unique has id assigned to class when registered to TKObjectFactory.
+
+    /**
+     * Holds meta data, information such as if the class will be visible to editor, where it will store takes place
+     * here.
+     */
+    std::unordered_map<StringView, StringView> MetaData;
 
     bool operator==(const TKClass& other) const
     {

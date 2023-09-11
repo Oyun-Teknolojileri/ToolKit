@@ -36,7 +36,6 @@ namespace ToolKit
   class TK_API TKObjectFactory
   {
     friend class Main;
-    typedef std::function<Object*()> ObjectConstructorCallback;
 
    public:
     /**
@@ -57,6 +56,9 @@ namespace ToolKit
       static constexpr bool value = decltype(Check<T>(nullptr))::value;
     };
 
+    typedef std::function<Object*()> ObjectConstructorCallback;        //!< Type for object constructor callbacks.
+    typedef std::function<void(StringView val)> MetaProcessorCallback; //!< Type for MetaKey callbacks.
+
     /**
      * Registers or overrides the default constructor of given Object type.
      * @param constructorFn - This is the callback function that is responsible of creating the given object.
@@ -64,11 +66,35 @@ namespace ToolKit
     template <typename T>
     void Register(ObjectConstructorCallback constructorFn = []() -> T* { return new T(); })
     {
-      m_constructorFnMap[T::StaticClass()->Name] = constructorFn;
+      TKClass* objectClass                  = T::StaticClass();
+      m_constructorFnMap[objectClass->Name] = constructorFn;
+
       // TODO: Make the Id assignment collision free.
-      T::StaticClass()->HashId                   = std::hash<String> {}(T::StaticClass()->Name);
+      T::StaticClass()->HashId              = std::hash<String> {}(objectClass->Name);
+
+      // Iterate over all meta processors for each meta entry.
+      for (auto& meta : objectClass->MetaData)
+      {
+        auto metaProcessorArray = m_metaProcessorMap.find(meta.first);
+        if (metaProcessorArray != m_metaProcessorMap.end())
+        {
+          for (auto metaProcessor : metaProcessorArray->second)
+          {
+            metaProcessor(meta.second);
+          }
+        }
+      }
     }
 
+    /**
+     * Each MetaKey can contain multiple processor callbacks. When the class is registered, factory iterates over all
+     * the meta data and associated meta processors.
+     */
+    std::unordered_map<StringView, std::vector<MetaProcessorCallback>> m_metaProcessorMap;
+
+    /**
+     * Returns the Constructor for given class name.
+     */
     ObjectConstructorCallback& GetConstructorFn(const StringView Class);
 
     /**
@@ -89,8 +115,8 @@ namespace ToolKit
       {
         if (auto constructorFn = GetConstructorFn(T::StaticClass()->Name))
         {
-          Object* object = constructorFn();
-          T* castedObject  = static_cast<T*>(object);
+          Object* object  = constructorFn();
+          T* castedObject = static_cast<T*>(object);
           castedObject->NativeConstruct(std::forward<Args>(args)...);
 
           return castedObject;
