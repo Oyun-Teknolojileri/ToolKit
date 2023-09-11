@@ -87,6 +87,21 @@ namespace ToolKit
     }
 
     /**
+     * Alters the ObjectFactory such that when an object with BaseCls needed to be created, it creates the DerivedCls.
+     * The purpose is the ability to create derived class of the engine such as EditorCamera. When you are loading a
+     * scene within the editor, it should create EditorCamera instead of Camera. Also derived class takes the base class
+     * name in order to get serialized as the base class. This also allows the base classes to be serialized instead of
+     * the derived ones. So when a scene is serialized, instead of the EditorCamera, Camera will appear in the file.
+     */
+    template <typename DerivedCls, typename BaseCls>
+    void Override(ObjectConstructorCallback constructorFn = []() -> DerivedCls* { return new DerivedCls(); })
+    {
+      DerivedCls::StaticClass()->Name = BaseCls::StaticClass()->Name;
+      Register<DerivedCls>(constructorFn);
+      Register<BaseCls>(constructorFn);
+    }
+
+    /**
      * Each MetaKey can contain multiple processor callbacks. When the class is registered, factory iterates over all
      * the meta data and associated meta processors.
      */

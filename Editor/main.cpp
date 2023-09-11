@@ -229,25 +229,13 @@ namespace ToolKit
             g_proxy->m_objectFactory->Register<PolarGizmo>();
             g_proxy->m_objectFactory->Register<SkyBillboard>();
             g_proxy->m_objectFactory->Register<LightBillboard>();
-            g_proxy->m_objectFactory->Register<EditorCamera>();
-            g_proxy->m_objectFactory->Register<EditorDirectionalLight>();
-            g_proxy->m_objectFactory->Register<EditorPointLight>();
-            g_proxy->m_objectFactory->Register<EditorSpotLight>();
-            g_proxy->m_objectFactory->Register<EditorScene>();
             g_proxy->m_objectFactory->Register<GridFragmentShader>();
 
             // Overrides.
-            g_proxy->m_objectFactory->Register<Camera>([]() -> EditorCamera* { return new EditorCamera(); });
-
-            g_proxy->m_objectFactory->Register<DirectionalLight>([]() -> EditorDirectionalLight*
-                                                                 { return new EditorDirectionalLight(); });
-
-            g_proxy->m_objectFactory->Register<PointLight>([]() -> EditorPointLight*
-                                                           { return new EditorPointLight(); });
-
-            g_proxy->m_objectFactory->Register<SpotLight>([]() -> EditorSpotLight* { return new EditorSpotLight(); });
-
-            g_proxy->m_objectFactory->Register<Scene>([]() -> EditorScene* { return new EditorScene(); });
+            g_proxy->m_objectFactory->Override<EditorDirectionalLight, DirectionalLight>();
+            g_proxy->m_objectFactory->Override<EditorPointLight, PointLight>();
+            g_proxy->m_objectFactory->Override<EditorSpotLight, SpotLight>();
+            g_proxy->m_objectFactory->Override<EditorScene, Scene>();
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);
