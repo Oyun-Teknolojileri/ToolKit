@@ -236,30 +236,31 @@ namespace ToolKit
             g_proxy->m_objectFactory->Register<EditorScene>();
             g_proxy->m_objectFactory->Register<GridFragmentShader>();
 
+            EditorCamera::StaticClass()->Name = Camera::StaticClass()->Name;
+            EditorDirectionalLight::StaticClass()->Name = DirectionalLight::StaticClass()->Name;
+            EditorPointLight::StaticClass()->Name       = PointLight::StaticClass()->Name;
+            EditorSpotLight::StaticClass()->Name        = SpotLight::StaticClass()->Name;
+            //EditorScene::StaticClass()->Name            = Scene::StaticClass()->Name;
+
             // Overrides.
             g_proxy->m_objectFactory->Register<Camera>(
                 []() -> EditorCamera* {
-                EditorCamera::StaticClass()->Name = Camera::StaticClass()->Name;
                   return new EditorCamera(); });
 
             g_proxy->m_objectFactory->Register<DirectionalLight>(
               []() -> EditorDirectionalLight* {
-                  EditorDirectionalLight::StaticClass()->Name = DirectionalLight::StaticClass()->Name;
                 return new EditorDirectionalLight(); });
 
             g_proxy->m_objectFactory->Register<PointLight>(
               []() -> EditorPointLight* {
-                  EditorPointLight::StaticClass()->Name = PointLight::StaticClass()->Name;
                 return new EditorPointLight(); });
 
             g_proxy->m_objectFactory->Register<SpotLight>(
               []() -> EditorSpotLight* {
-                  EditorSpotLight::StaticClass()->Name = SpotLight::StaticClass()->Name;
               return new EditorSpotLight(); });
 
             g_proxy->m_objectFactory->Register<Scene>(
               []() -> EditorScene* {
-                  EditorScene::StaticClass()->Name = Scene::StaticClass()->Name;
               return new EditorScene(); });
 
             // Set defaults

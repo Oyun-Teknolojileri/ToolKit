@@ -87,7 +87,7 @@ namespace ToolKit
     assert(doc != nullptr && parent != nullptr);
 
     XmlNode* objNode = CreateXmlNode(doc, StaticClass()->Name, parent);
-    WriteAttr(objNode, doc, XmlObjectClassAttr, StaticClass()->Name);
+    WriteAttr(objNode, doc, XmlObjectClassAttr, Class()->Name);
 
     m_localData.Serialize(doc, objNode);
     return objNode;
