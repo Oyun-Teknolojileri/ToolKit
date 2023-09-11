@@ -49,18 +49,6 @@ namespace ToolKit
     virtual void Init(bool flushClientSideArray = false) = 0;
     virtual void UnInit()                                = 0;
 
-    template <typename T>
-    std::shared_ptr<T> Copy()
-    {
-      std::shared_ptr<T> resource = MakeNewPtr<T>();
-      CopyTo(resource.get());
-      if (class ResourceManager* manager = GetResourceManager(T::StaticClass()))
-      {
-        manager->Manage(resource);
-      }
-      return resource;
-    }
-
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
@@ -101,8 +89,9 @@ namespace ToolKit
      */
     bool IsDynamic();
 
-   protected:
     virtual void CopyTo(Resource* other);
+
+   protected:
 
     /**
      * Create SerializationFileInfo structure and pass it to DeSerializeImp.

@@ -1,6 +1,6 @@
 <shader>
 	<type name = "fragmentShader" />
-	<include name = "AdditivePBRLighting.shader" />
+	<include name = "additivePBRLighting.shader" />
 	<uniform name = "lightingType" />
 	<source>
 	<!--

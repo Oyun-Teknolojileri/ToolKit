@@ -29,7 +29,12 @@
 #include "DirectionComponent.h"
 #include "Light.h"
 #include "Renderer.h"
-#include "gles2.h"
+
+#ifdef __EMSCRIPTEN__
+  #include <GL/glew.h>
+#else
+  #include <gles2.h>
+#endif
 
 #include "DebugNew.h"
 

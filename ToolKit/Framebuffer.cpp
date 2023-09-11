@@ -27,7 +27,12 @@
 #include "Framebuffer.h"
 
 #include "ToolKit.h"
-#include "gles2.h"
+
+#ifdef __EMSCRIPTEN__
+  #include <GL/glew.h>
+#else
+  #include <gles2.h>
+#endif
 
 #include "DebugNew.h"
 

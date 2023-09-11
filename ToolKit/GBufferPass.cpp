@@ -60,9 +60,6 @@ namespace ToolKit
 
     m_gIblRt                                        = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
-    gBufferRenderTargetSettings.InternalFormat      = GraphicTypes::FormatRGB32F;
-    gBufferRenderTargetSettings.Format              = GraphicTypes::FormatRGB;
-
     m_gLinearDepthRt                                = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
     gBufferRenderTargetSettings.InternalFormat      = GraphicTypes::FormatRG16F;
