@@ -36,6 +36,7 @@
 #include <Common/SDLEventPool.h>
 #include <Common/Win32Utils.h>
 #include <GlErrorReporter.h>
+#include <Meta.h>
 #include <SDL.h>
 #include <Types.h>
 
@@ -219,23 +220,28 @@ namespace ToolKit
             g_proxy->Init();
 
             // Register Custom Classes.
-            g_proxy->m_objectFactory->Register<Grid>();
-            g_proxy->m_objectFactory->Register<Anchor>();
-            g_proxy->m_objectFactory->Register<Cursor>();
-            g_proxy->m_objectFactory->Register<Axis3d>();
-            g_proxy->m_objectFactory->Register<LinearGizmo>();
-            g_proxy->m_objectFactory->Register<MoveGizmo>();
-            g_proxy->m_objectFactory->Register<ScaleGizmo>();
-            g_proxy->m_objectFactory->Register<PolarGizmo>();
-            g_proxy->m_objectFactory->Register<SkyBillboard>();
-            g_proxy->m_objectFactory->Register<LightBillboard>();
-            g_proxy->m_objectFactory->Register<GridFragmentShader>();
+            TKObjectFactory* of = g_proxy->m_objectFactory;
+            of->Register<Grid>();
+            of->Register<Anchor>();
+            of->Register<Cursor>();
+            of->Register<Axis3d>();
+            of->Register<LinearGizmo>();
+            of->Register<MoveGizmo>();
+            of->Register<ScaleGizmo>();
+            of->Register<PolarGizmo>();
+            of->Register<SkyBillboard>();
+            of->Register<LightBillboard>();
+            of->Register<GridFragmentShader>();
 
             // Overrides.
-            g_proxy->m_objectFactory->Override<EditorDirectionalLight, DirectionalLight>();
-            g_proxy->m_objectFactory->Override<EditorPointLight, PointLight>();
-            g_proxy->m_objectFactory->Override<EditorSpotLight, SpotLight>();
-            g_proxy->m_objectFactory->Override<EditorScene, Scene>();
+            of->Override<EditorDirectionalLight, DirectionalLight>();
+            of->Override<EditorPointLight, PointLight>();
+            of->Override<EditorSpotLight, SpotLight>();
+            of->Override<EditorScene, Scene>();
+
+            // Allow classes with the MenuMetaKey to be created from the add menu.
+            of->m_metaProcessorMap[MenuMetaKey] = [](StringView val) -> void
+            { g_app->m_customObjectArray.push_back(String(val)); };
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);

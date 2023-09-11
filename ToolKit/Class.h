@@ -31,12 +31,6 @@
 namespace ToolKit
 {
 
-  /**
-   * MetaKey for storage location in the editor.
-   * Possible Values: Add/Submenu
-   */
-  constexpr StringView MenuMetaKey = "MenuMetaKey"; //!< MetaKey for storage location in the editor.
-
   struct TK_API TKClass
   {
     TKClass* Super = nullptr;     //!< Compile time assigned base class for this class.

@@ -482,5 +482,8 @@
     <ClInclude Include="AdditiveLightingPass.h">
       <Filter>Source\Render\RenderPass</Filter>
     </ClInclude>
+    <ClInclude Include="Meta.h">
+      <Filter>Source\Reflection</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

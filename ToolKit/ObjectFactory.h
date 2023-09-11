@@ -75,13 +75,10 @@ namespace ToolKit
       // Iterate over all meta processors for each meta entry.
       for (auto& meta : objectClass->MetaData)
       {
-        auto metaProcessorArray = m_metaProcessorMap.find(meta.first);
-        if (metaProcessorArray != m_metaProcessorMap.end())
+        auto metaProcessor = m_metaProcessorMap.find(meta.first);
+        if (metaProcessor != m_metaProcessorMap.end())
         {
-          for (auto metaProcessor : metaProcessorArray->second)
-          {
-            metaProcessor(meta.second);
-          }
+          metaProcessor->second(meta.second);
         }
       }
     }
@@ -105,7 +102,7 @@ namespace ToolKit
      * Each MetaKey can contain multiple processor callbacks. When the class is registered, factory iterates over all
      * the meta data and associated meta processors.
      */
-    std::unordered_map<StringView, std::vector<MetaProcessorCallback>> m_metaProcessorMap;
+    std::unordered_map<StringView, MetaProcessorCallback> m_metaProcessorMap;
 
     /**
      * Returns the Constructor for given class name.
