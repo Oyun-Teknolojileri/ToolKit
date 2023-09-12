@@ -46,7 +46,7 @@ namespace ToolKit
       return;
     }
 
-    m_map = std::make_shared<DynamicBoneMap>();
+    m_map = MakeNewPtr<DynamicBoneMap>();
     m_map->Init(resource.get());
   }
 

@@ -39,10 +39,10 @@ namespace ToolKit
   StencilRenderPass::StencilRenderPass()
   {
     // Init sub pass.
-    m_copyStencilSubPass = std::make_shared<FullQuadPass>();
+    m_copyStencilSubPass = MakeNewPtr<FullQuadPass>();
     m_copyStencilSubPass->m_params.FragmentShader =
         GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
-    m_frameBuffer           = std::make_shared<Framebuffer>();
+    m_frameBuffer           = MakeNewPtr<Framebuffer>();
 
     m_solidOverrideMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
   }

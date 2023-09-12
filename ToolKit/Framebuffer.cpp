@@ -25,9 +25,9 @@
  */
 #include "Framebuffer.h"
 
+#include "TKOpenGL.h"
 #include "ToolKit.h"
 #include "Logger.h"
-#include "glad/OpenGL.h"
 
 #include "DebugNew.h"
 

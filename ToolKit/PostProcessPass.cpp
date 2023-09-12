@@ -38,10 +38,10 @@ namespace ToolKit
   PostProcessPass::PostProcessPass()
   {
     m_copyTexture = MakeNewPtr<RenderTarget>();
-    m_copyBuffer  = std::make_shared<Framebuffer>();
+    m_copyBuffer  = MakeNewPtr<Framebuffer>();
     m_copyBuffer->Init({0, 0, false, false});
 
-    m_postProcessPass = std::make_shared<FullQuadPass>();
+    m_postProcessPass = MakeNewPtr<FullQuadPass>();
   }
 
   PostProcessPass::PostProcessPass(const PostProcessPassParams& params) : PostProcessPass() { m_params = params; }

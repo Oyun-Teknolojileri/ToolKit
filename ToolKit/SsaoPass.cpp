@@ -32,11 +32,10 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "ShaderReflectionCache.h"
+#include "TKOpenGL.h"
 #include "ToolKit.h"
 
 #include <random>
-#include "glad/OpenGL.h"
-
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -46,8 +45,6 @@ namespace ToolKit
   //////////////////////////////////////////////////////////////////////////
 
   TKDefineClass(SSAONoiseTexture, DataTexture);
-
-  SSAONoiseTexture::SSAONoiseTexture(int width, int height) : DataTexture(width, height) {}
 
   void SSAONoiseTexture::Init(void* data)
   {
@@ -84,11 +81,11 @@ namespace ToolKit
 
   SSAOPass::SSAOPass()
   {
-    m_ssaoFramebuffer = std::make_shared<Framebuffer>();
+    m_ssaoFramebuffer = MakeNewPtr<Framebuffer>();
     m_ssaoTexture     = MakeNewPtr<RenderTarget>();
     m_tempBlurRt      = MakeNewPtr<RenderTarget>();
-    m_noiseTexture    = std::make_shared<SSAONoiseTexture>(4, 4);
-    m_quadPass        = std::make_shared<FullQuadPass>();
+    m_noiseTexture    = MakeNewPtr<SSAONoiseTexture>(4, 4);
+    m_quadPass        = MakeNewPtr<FullQuadPass>();
   }
 
   SSAOPass::SSAOPass(const SSAOPassParams& params) : SSAOPass() { m_params = params; }

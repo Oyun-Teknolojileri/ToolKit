@@ -35,11 +35,11 @@
 
 namespace ToolKit
 {
-  Technique::Technique() {}
+  RenderPath::RenderPath() {}
 
-  Technique::~Technique() { m_passArray.clear(); }
+  RenderPath::~RenderPath() { m_passArray.clear(); }
 
-  void Technique::Render(Renderer* renderer)
+  void RenderPath::Render(Renderer* renderer)
   {
     for (PassPtr& pass : m_passArray)
     {
@@ -56,7 +56,7 @@ namespace ToolKit
 
   void RenderSystem::Init() { m_renderer->Init(); }
 
-  void RenderSystem::AddRenderTask(Technique* technique)
+  void RenderSystem::AddRenderTask(RenderPath* technique)
   {
     AddRenderTask({[technique](Renderer* renderer) -> void { technique->Render(renderer); }});
   }

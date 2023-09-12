@@ -32,10 +32,10 @@
 #include "Material.h"
 #include "RenderSystem.h"
 #include "Shader.h"
+#include "TKOpenGL.h"
 #include "ToolKit.h"
 #include "Logger.h"
 
-#include "glad/OpenGL.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -54,8 +54,10 @@ namespace ToolKit
 
   Texture::Texture(const String& file, const TextureSettings& settings) : Texture(settings) { SetFile(file); }
 
-  Texture::Texture(uint textureId)
+  void Texture::NativeConstruct(uint textureId)
   {
+    Super::NativeConstruct();
+
     m_textureId = textureId;
     m_initiated = true;
   }
@@ -232,12 +234,6 @@ namespace ToolKit
 
   CubeMap::CubeMap(const String& file) : Texture() { SetFile(file); }
 
-  CubeMap::CubeMap(uint cubemapId)
-  {
-    m_textureId = cubemapId;
-    m_initiated = true;
-  }
-
   CubeMap::~CubeMap() { UnInit(); }
 
   void CubeMap::Load()
@@ -385,8 +381,8 @@ namespace ToolKit
 
     m_texToCubemapMat                 = MakeNewPtr<Material>();
     m_cubemapToIrradiancemapMat       = MakeNewPtr<Material>();
-    m_irradianceCubemap               = std::make_shared<CubeMap>(0u);
-    m_equirectangularTexture          = std::make_shared<Texture>(0u);
+    m_irradianceCubemap               = MakeNewPtr<CubeMap>(0u);
+    m_equirectangularTexture          = MakeNewPtr<Texture>(0u);
   }
 
   Hdri::Hdri(const String& file) : Hdri() { SetFile(file); }
@@ -449,9 +445,9 @@ namespace ToolKit
             set.Format              = GraphicTypes::FormatRG;
             set.Type                = GraphicTypes::TypeFloat;
 
-            RenderTargetPtr brdfLut = std::make_shared<RenderTarget>(m_brdfLutTextureSize, m_brdfLutTextureSize, set);
+            RenderTargetPtr brdfLut = MakeNewPtr<RenderTarget>(m_brdfLutTextureSize, m_brdfLutTextureSize, set);
             brdfLut->Init();
-            FramebufferPtr utilFramebuffer = std::make_shared<Framebuffer>();
+            FramebufferPtr utilFramebuffer = MakeNewPtr<Framebuffer>();
 
             utilFramebuffer->Init({(uint) m_brdfLutTextureSize, (uint) m_brdfLutTextureSize, false, false});
             utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);
@@ -499,22 +495,26 @@ namespace ToolKit
 
   RenderTarget::RenderTarget() : Texture() {}
 
-  RenderTarget::RenderTarget(uint width, uint height, const RenderTargetSettigs& settings) : RenderTarget()
+  void RenderTarget::NativeConstruct(uint width, uint height, const RenderTargetSettigs& settings)
   {
+    Super::NativeConstruct();
+
     m_width    = width;
     m_height   = height;
     m_settings = settings;
   }
 
-  void RenderTarget::Load() {}
-
-  RenderTarget::RenderTarget(Texture* texture)
+  void RenderTarget::NativeConstruct(Texture* texture)
   {
+    Super::NativeConstruct();
+
     m_width     = texture->m_width;
     m_height    = texture->m_height;
     m_textureId = texture->m_textureId;
     m_initiated = true;
   }
+
+  void RenderTarget::Load() {}
 
   void RenderTarget::Init(bool flushClientSideArray)
   {

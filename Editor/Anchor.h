@@ -33,9 +33,6 @@ namespace ToolKit
   namespace Editor
   {
 
-    using AnchorPtr       = std::shared_ptr<class Anchor>;
-    using AnchorHandlePtr = std::shared_ptr<class AnchorHandle>;
-
     class AnchorHandle
     {
      public:
@@ -71,6 +68,8 @@ namespace ToolKit
       Params m_params;
       MeshPtr m_mesh;
     };
+
+    typedef std::shared_ptr<AnchorHandle> AnchorHandlePtr;
 
     class Anchor : public EditorBillboardBase
     {

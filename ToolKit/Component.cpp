@@ -33,7 +33,7 @@
 #include "MeshComponent.h"
 #include "ResourceComponent.h"
 #include "SkeletonComponent.h"
-#include "TKObject.h"
+#include "Object.h"
 #include "Component.h"
 #include "ToolKit.h"
 
@@ -42,7 +42,7 @@
 namespace ToolKit
 {
 
-  TKDefineClass(Component, TKObject);
+  TKDefineClass(Component, Object);
 
   Component::Component() {}
 

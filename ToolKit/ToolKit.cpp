@@ -31,17 +31,15 @@
 #include "FileManager.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Object.h"
+#include "ObjectFactory.h"
 #include "PluginManager.h"
 #include "RenderSystem.h"
 #include "Scene.h"
 #include "Shader.h"
-#include "TKObject.h"
+#include "TKOpenGL.h"
 #include "UIManager.h"
 #include "Logger.h"
-
-#define GLAD_GLES2_IMPLEMENTATION
-#include "glad/OpenGL.h"
-
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -88,28 +86,26 @@ namespace ToolKit
 
     m_logger->Log("Main PreInit");
 
-    m_engineSettings   = new EngineSettings();
+    m_engineSettings = new EngineSettings();
+    m_objectFactory  = new TKObjectFactory();
+    m_objectFactory->Init();
 
-    m_objectFactory    = new TKObjectFactory();
-    m_entityFactory    = new EntityFactory();
-    m_componentFactory = new ComponentFactory();
+    m_renderSys       = new RenderSystem();
+    m_pluginManager   = new PluginManager();
+    m_animationMan    = new AnimationManager();
+    m_animationPlayer = new AnimationPlayer();
+    m_textureMan      = new TextureManager();
+    m_meshMan         = new MeshManager();
+    m_spriteSheetMan  = new SpriteSheetManager();
+    m_audioMan        = new AudioManager();
+    m_shaderMan       = new ShaderManager();
+    m_materialManager = new MaterialManager();
+    m_sceneManager    = new SceneManager();
+    m_uiManager       = new UIManager();
+    m_skeletonManager = new SkeletonManager();
+    m_fileManager     = new FileManager();
 
-    m_renderSys        = new RenderSystem();
-    m_pluginManager    = new PluginManager();
-    m_animationMan     = new AnimationManager();
-    m_animationPlayer  = new AnimationPlayer();
-    m_textureMan       = new TextureManager();
-    m_meshMan          = new MeshManager();
-    m_spriteSheetMan   = new SpriteSheetManager();
-    m_audioMan         = new AudioManager();
-    m_shaderMan        = new ShaderManager();
-    m_materialManager  = new MaterialManager();
-    m_sceneManager     = new SceneManager();
-    m_uiManager        = new UIManager();
-    m_skeletonManager  = new SkeletonManager();
-    m_fileManager      = new FileManager();
-
-    m_preInitiated     = true;
+    m_preInitiated    = true;
   }
 
   void Main::Init()
@@ -182,8 +178,6 @@ namespace ToolKit
     SafeDel(m_skeletonManager);
     SafeDel(m_fileManager);
     SafeDel(m_objectFactory);
-    SafeDel(m_entityFactory);
-    SafeDel(m_componentFactory);
     SafeDel(m_engineSettings);
   }
 
@@ -288,10 +282,6 @@ namespace ToolKit
   SkeletonManager* GetSkeletonManager() { return Main::GetInstance()->m_skeletonManager; }
 
   FileManager* GetFileManager() { return Main::GetInstance()->m_fileManager; }
-
-  EntityFactory* GetEntityFactory() { return Main::GetInstance()->m_entityFactory; }
-
-  ComponentFactory* GetComponentFactory() { return Main::GetInstance()->m_componentFactory; }
 
   TK_API TKObjectFactory* GetObjectFactory() { return Main::GetInstance()->m_objectFactory; }
 

@@ -28,11 +28,10 @@
 
 #include "FileManager.h"
 #include "TKAssert.h"
+#include "TKOpenGL.h"
 #include "ToolKit.h"
 #include "Util.h"
 #include "Logger.h"
-
-#include "glad/OpenGL.h"
 
 #include <unordered_set>
 
@@ -434,7 +433,7 @@ namespace ToolKit
     m_shaders.push_back(vertex);
     m_shaders.push_back(fragment);
 
-    m_tag = std::to_string(vertex->m_shaderHandle);
+    m_tag  = std::to_string(vertex->m_shaderHandle);
     m_tag += std::to_string(fragment->m_shaderHandle);
   }
 

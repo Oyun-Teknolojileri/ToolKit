@@ -28,6 +28,7 @@
 
 #include "SDL.h"
 #include "ToolKit.h"
+#include "Events.h"
 
 namespace ToolKit
 {

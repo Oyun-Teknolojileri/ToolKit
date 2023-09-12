@@ -76,7 +76,11 @@ namespace ToolKit
       }
     }
 
-    EditorViewport::EditorViewport() { m_name = g_viewportStr + " " + std::to_string(m_id); }
+    EditorViewport::EditorViewport()
+    {
+      m_name = g_viewportStr + " " + std::to_string(m_id);
+      Init({640.0f, 480.0f});
+    }
 
     EditorViewport::~EditorViewport() {}
 
@@ -183,7 +187,7 @@ namespace ToolKit
 
         if (m_version > String("v0.4.4"))
         {
-          XmlNode* objNode = viewportNode->first_node(TKObject::StaticClass()->Name.c_str());
+          XmlNode* objNode = viewportNode->first_node(Object::StaticClass()->Name.c_str());
           viewCam->DeSerialize(info, objNode);
         }
         else

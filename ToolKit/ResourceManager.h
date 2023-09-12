@@ -27,6 +27,7 @@
 #pragma once
 
 #include "Logger.h"
+#include "ObjectFactory.h"
 #include "Resource.h"
 #include "ToolKit.h"
 #include "Types.h"
@@ -34,6 +35,8 @@
 
 namespace ToolKit
 {
+
+  TK_API extern class ResourceManager* GetResourceManager(TKClass* Class);
 
   class TK_API ResourceManager
   {
@@ -80,6 +83,9 @@ namespace ToolKit
         }
         return ReinterpretPointerCast<T>(m_storage[file]);
     }
+
+    template <typename T>
+    std::shared_ptr<T> Copy(ResourcePtr source);
 
     bool Exist(const String& file);
     ResourcePtr Remove(const String& file);

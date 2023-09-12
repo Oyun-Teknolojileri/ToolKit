@@ -42,6 +42,11 @@ namespace ToolKit
 
   SkyBase::SkyBase() {}
 
+  void SkyBase::NativeConstruct()
+  {
+    Super::NativeConstruct();
+  }
+
   void SkyBase::Init()
   {
     if (m_initialized)
@@ -155,7 +160,7 @@ namespace ToolKit
 
   void SkyBase::ConstructSkyMaterial(ShaderPtr vertexPrg, ShaderPtr fragPrg)
   {
-    m_skyboxMaterial                             = std::make_shared<Material>();
+    m_skyboxMaterial                             = MakeNewPtr<Material>();
     m_skyboxMaterial->m_cubeMap                  = GetHdri()->m_cubemap;
     m_skyboxMaterial->m_vertexShader             = vertexPrg;
     m_skyboxMaterial->m_fragmentShader           = fragPrg;
@@ -171,7 +176,7 @@ namespace ToolKit
     return node;
   }
 
-  TKDefineClass(Sky, Entity);
+  TKDefineClass(Sky, SkyBase);
 
   Sky::Sky() {}
 
@@ -225,12 +230,18 @@ namespace ToolKit
     ParamHdri().m_onValueChangedFn.clear();
     ParamHdri().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
-        { GetComponent<EnvironmentComponent>()->SetHdriVal(std::get<HdriPtr>(newVal)); });
+        {
+          EnvironmentComponentPtr environmentCom = GetComponent<EnvironmentComponent>();
+          environmentCom->SetHdriVal(std::get<HdriPtr>(newVal));
+        });
 
     ParamExposure().m_onValueChangedFn.clear();
     ParamExposure().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
-        { GetComponent<EnvironmentComponent>()->SetExposureVal(std::get<float>(newVal)); });
+        {
+          EnvironmentComponentPtr environmentCom = GetComponent<EnvironmentComponent>();
+          environmentCom->SetExposureVal(std::get<float>(newVal));
+        });
   }
 
   XmlNode* Sky::SerializeImp(XmlDocument* doc, XmlNode* parent) const

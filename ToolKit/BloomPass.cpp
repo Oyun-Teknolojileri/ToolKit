@@ -41,7 +41,7 @@ namespace ToolKit
 
     m_upsampleShader   = GetShaderManager()->Create<Shader>(ShaderPath("bloomUpsample.shader", true));
 
-    m_pass             = std::make_shared<FullQuadPass>();
+    m_pass             = MakeNewPtr<FullQuadPass>();
   }
 
   BloomPass::BloomPass(const BloomPassParams& params) : BloomPass() { m_params = params; }
@@ -212,7 +212,7 @@ namespace ToolKit
       rt->ReconstructIfNeeded(curRes.x, curRes.y);
 
       FramebufferPtr& fb = m_tempFrameBuffers[i];
-      fb                 = std::make_shared<Framebuffer>();
+      fb                 = MakeNewPtr<Framebuffer>();
       fb->ReconstructIfNeeded(curRes.x, curRes.y);
       fb->SetAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
     }

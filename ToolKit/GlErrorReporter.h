@@ -27,7 +27,8 @@
 #pragma once
 
 #include "Types.h"
-#include "glad/OpenGL.h"
+
+#include "TKOpenGL.h"
 
 namespace ToolKit
 {

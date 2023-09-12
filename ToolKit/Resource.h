@@ -26,17 +26,18 @@
 
 #pragma once
 
-#include "TKObject.h"
+#include "Object.h"
+#include "ObjectFactory.h"
 #include "Types.h"
 
 namespace ToolKit
 {
-  TK_API extern class ResourceManager* GetResourceManager(TKClass* Class);
-
-  class TK_API Resource : public TKObject
+  class TK_API Resource : public Object
   {
+    friend class ResourceManager;
+
    public:
-    TKDeclareClass(Resource, TKObject);
+    TKDeclareClass(Resource, Object);
 
     Resource();
     virtual ~Resource();
@@ -46,9 +47,6 @@ namespace ToolKit
 
     virtual void Init(bool flushClientSideArray = false) = 0;
     virtual void UnInit()                                = 0;
-
-    template <typename T>
-    std::shared_ptr<T> Copy();
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;

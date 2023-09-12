@@ -28,6 +28,7 @@
 
 #include "RenderState.h"
 #include "Resource.h"
+#include "ResourceManager.h"
 #include "Texture.h"
 
 namespace ToolKit

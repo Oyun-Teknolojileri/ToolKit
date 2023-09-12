@@ -38,7 +38,7 @@ namespace ToolKit
     TKDeclareClass(SSAONoiseTexture, DataTexture);
 
     SSAONoiseTexture();
-    SSAONoiseTexture(int width, int height);
+    using DataTexture::NativeConstruct;
 
     void Init(void* data);
 

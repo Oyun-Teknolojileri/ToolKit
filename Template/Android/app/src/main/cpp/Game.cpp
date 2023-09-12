@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 #include "Game.h"
-#include "TKObject.h"
+#include "Object.h"
 #include "Shader.h"
 #include "Scene.h"
 #include "Primative.h"

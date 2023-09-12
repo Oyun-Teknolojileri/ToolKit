@@ -598,27 +598,21 @@ namespace ToolKit
     {
       DeleteWindows();
 
-      String defEditSet = ConcatPaths({ConfigPath(), g_editorSettingsFile});
-      if (CheckFile(defEditSet) && CheckFile(m_workspace.GetActiveWorkspace()))
+      String defaultEditorSettings = ConcatPaths({ConfigPath(), g_editorSettingsFile});
+      if (CheckFile(defaultEditorSettings) && CheckFile(m_workspace.GetActiveWorkspace()))
       {
         // Try reading defaults.
-        String settingsFile   = defEditSet;
-        XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
-        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
-        lclDoc->parse<0>(lclFile->data());
-
-        SerializationFileInfo sif;
-        sif.Document = lclDoc.get();
-        sif.File     = settingsFile;
+        SerializationFileInfo serializeInfo;
+        serializeInfo.File = defaultEditorSettings;
 
         // Prevent loading last scene.
-        Project pj   = m_workspace.GetActiveProject();
+        Project project    = m_workspace.GetActiveProject();
         m_workspace.SetScene("");
 
-        DeSerialize(sif, nullptr);
-        m_workspace.SetScene(pj.scene);
+        DeSerialize(serializeInfo, nullptr);
+        m_workspace.SetScene(project.scene);
 
-        settingsFile = ConcatPaths({ConfigPath(), g_uiLayoutFile});
+        String settingsFile = ConcatPaths({ConfigPath(), g_uiLayoutFile});
         ImGui::LoadIniSettingsFromDisk(settingsFile.c_str());
       }
       else
@@ -1029,7 +1023,7 @@ namespace ToolKit
       {
         if (EditorViewport2d* viewport = GetWindow<EditorViewport2d>(g_2dViewport))
         {
-          UILayerPtr layer = std::make_shared<UILayer>(scene);
+          UILayerPtr layer = MakeNewPtr<UILayer>(scene);
           GetUIManager()->AddLayer(viewport->m_viewportId, layer);
         }
         else
@@ -1159,7 +1153,7 @@ namespace ToolKit
         }
       }
 
-      return nullptr;
+      return m_lastActiveViewport;
     }
 
     EditorViewport* App::GetViewport(const String& name)
@@ -1272,7 +1266,7 @@ namespace ToolKit
       file.open(fileName.c_str(), openMode);
       if (file.is_open())
       {
-        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+        XmlDocumentPtr lclDoc = MakeNewPtr<XmlDocument>();
         XmlNode* app          = lclDoc->allocate_node(rapidxml::node_element, "App");
         WriteAttr(app, lclDoc.get(), "version", TKVersionStr);
         lclDoc->append_node(app);
@@ -1308,7 +1302,11 @@ namespace ToolKit
 
     XmlNode* App::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      String settingsFile = ConcatPaths({m_workspace.GetProjectConfigPath(), g_editorSettingsFile});
+      String settingsFile = info.File;
+      if (settingsFile.empty())
+      {
+        settingsFile = ConcatPaths({m_workspace.GetProjectConfigPath(), g_editorSettingsFile});
+      }
 
       if (!CheckFile(settingsFile))
       {
@@ -1317,8 +1315,8 @@ namespace ToolKit
         assert(CheckFile(settingsFile) && "ToolKit/Config/Editor.settings must exist.");
       }
 
-      XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
-      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+      XmlFilePtr lclFile    = MakeNewPtr<XmlFile>(settingsFile.c_str());
+      XmlDocumentPtr lclDoc = MakeNewPtr<XmlDocument>();
       lclDoc->parse<0>(lclFile->data());
       XmlDocument* doc = lclDoc.get();
 

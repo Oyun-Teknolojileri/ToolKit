@@ -60,14 +60,7 @@ namespace ToolKit
     };
 
    public:
-   private:
-    static TKClass BillboardClass;
-    typedef Entity Super;
-
-   public:
-    virtual TKClass* const Class() const;
-
-    static TKClass* const StaticClass() { return &BillboardClass; };
+    TKDeclareClass(Billboard, Entity)
 
     Billboard();
     explicit Billboard(const Settings& settings);

@@ -217,6 +217,7 @@ namespace ToolKit
       GameMod m_gameMod                        = GameMod::Stop;
       SysCommandExecutionFn m_sysComExecFn     = nullptr;
       EditorLitMode m_sceneLightingMode        = EditorLitMode::EditorLit;
+      EditorViewport* m_lastActiveViewport     = nullptr;
       Workspace m_workspace;
 
       // Snap settings.

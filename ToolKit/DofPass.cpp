@@ -37,8 +37,8 @@ namespace ToolKit
 
   DoFPass::DoFPass()
   {
-    m_quadPass                       = std::make_shared<FullQuadPass>();
-    m_quadPass->m_params.FrameBuffer = std::make_shared<Framebuffer>();
+    m_quadPass                       = MakeNewPtr<FullQuadPass>();
+    m_quadPass->m_params.FrameBuffer = MakeNewPtr<Framebuffer>();
 
     m_dofShader                      = GetShaderManager()->Create<Shader>(ShaderPath("depthOfFieldFrag.shader", true));
   }

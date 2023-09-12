@@ -206,7 +206,7 @@ namespace ToolKit
 
     PreviewViewport::PreviewViewport()
     {
-      m_previewRenderer                            = std::make_shared<SceneRenderer>();
+      m_previewRenderer                            = MakeNewPtr<SceneRenderer>();
       m_previewRenderer->m_params.Cam              = GetCamera();
       m_previewRenderer->m_params.ClearFramebuffer = true;
       m_previewRenderer->m_params.MainFramebuffer  = m_framebuffer;

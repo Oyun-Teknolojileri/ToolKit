@@ -53,10 +53,22 @@ namespace ToolKit
 
       // Warning: Running batch files are Windows specific
 
-      Path workDir = std::filesystem::current_path();
+      Path workDir         = std::filesystem::current_path();
+
+      auto exitWithErrorFn = [&workDir](const char* msg) -> void
+      {
+        GetLogger()->WriteConsole(LogType::Error, msg);
+        std::filesystem::current_path(workDir);
+      };
+
       Path newWorkDir(ConcatPaths({"..", "Web"}));
       std::filesystem::current_path(newWorkDir);
-      std::system(ConcatPaths({"..", "Web", "Release.bat"}).c_str());
+      int toolKitCompileResult = std::system(ConcatPaths({"..", "Web", "Release.bat"}).c_str());
+      if (toolKitCompileResult != 0)
+      {
+        exitWithErrorFn("ToolKit could not be compiled!");
+        return;
+      }
       newWorkDir = Path(ConcatPaths({ResourcePath(), "..", "Codes", "Web"}));
       if (!std::filesystem::exists(newWorkDir))
       {
@@ -72,7 +84,12 @@ namespace ToolKit
 
       // Run scripts
       std::filesystem::current_path(newWorkDir);
-      std::system(pluginWebBuildScriptsFolder.c_str());
+      int pluginCompileResult = std::system(pluginWebBuildScriptsFolder.c_str());
+      if (pluginCompileResult != 0)
+      {
+        exitWithErrorFn("Plugin could not be compiled!");
+        return;
+      }
       std::filesystem::current_path(workDir);
 
       // Move files to a directory

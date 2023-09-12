@@ -83,7 +83,7 @@ namespace ToolKit
       EditorLitMode LitMode          = EditorLitMode::EditorLit;
     };
 
-    class EditorRenderer : public Technique
+    class EditorRenderer : public RenderPath
     {
      public:
       EditorRenderer();

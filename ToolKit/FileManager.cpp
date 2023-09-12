@@ -138,7 +138,7 @@ namespace ToolKit
       // Zip pak not found, read from file at default path
       if (fileType == FileType::Xml)
       {
-        return std::make_shared<XmlFile>(fileInfo.filePath.c_str());
+        return MakeNewPtr<XmlFile>(fileInfo.filePath.c_str());
       }
       else if (fileType == FileType::ImageUint8)
       {
@@ -316,6 +316,10 @@ namespace ToolKit
       if (absolutePath[0] == '.')
       {
         size_t index = absolutePath.find("Prefabs");
+        if (index == String::npos)
+        {
+          continue;
+        }
         absolutePath = absolutePath.substr(index);
         absolutePath = ConcatPaths({DefaultAbsolutePath(), absolutePath});
       }
@@ -545,7 +549,7 @@ namespace ToolKit
     }
 
     // If the file is not found return the file from path
-    return std::make_shared<XmlFile>(path);
+    return MakeNewPtr<XmlFile>(path);
   }
 
   uint8* FileManager::ReadImageFileFromZip(zipFile zfile, const String& relativePath, ImageFileInfo& fileInfo)
@@ -618,7 +622,7 @@ namespace ToolKit
     }
 
     // Create XmlFile object
-    XmlFilePtr file = std::make_shared<XmlFile>(fileBuffer, readBytes);
+    XmlFilePtr file = MakeNewPtr<XmlFile>(fileBuffer, readBytes);
 
     SafeDelArray(fileBuffer);
 
