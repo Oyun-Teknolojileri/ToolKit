@@ -31,8 +31,8 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "Skeleton.h"
-
 #include "ResourceManager.h"
+#include "Skeleton.h"
 #include "ToolKit.h"
 #include "Util.h"
 

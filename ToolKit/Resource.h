@@ -32,6 +32,7 @@
 
 namespace ToolKit
 {
+
   class TK_API Resource : public Object
   {
     friend class ResourceManager;

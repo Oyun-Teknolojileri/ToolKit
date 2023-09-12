@@ -53,19 +53,16 @@ namespace ToolKit
                                                        1};
 
     m_gPosRt                                        = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-
     m_gNormalRt                                     = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-
     m_gColorRt                                      = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-
     m_gEmissiveRt                                   = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-
     m_gIblRt      = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
     
     gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRGBA32F;
     gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRGBA;
     // Note: A32 is not used, it didn't work on Android devices when we bind it to frame buffer
     m_gLinearDepthRt = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+
 
     gBufferRenderTargetSettings.InternalFormat      = GraphicTypes::FormatRG16F;
     gBufferRenderTargetSettings.Format              = GraphicTypes::FormatRG;
