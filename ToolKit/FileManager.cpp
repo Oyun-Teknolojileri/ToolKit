@@ -282,9 +282,13 @@ namespace ToolKit
     {
       String absolutePath = it->first;
       // If the path is relative, make it absolute
-      if (absolutePath[0] == '.' && absolutePath[1] != '.')
+      if (absolutePath[0] == '.')
       {
         size_t index = absolutePath.find("Prefabs");
+        if (index == String::npos)
+        {
+          continue;
+        }
         absolutePath = absolutePath.substr(index);
         absolutePath = ConcatPaths({DefaultAbsolutePath(), absolutePath});
       }
