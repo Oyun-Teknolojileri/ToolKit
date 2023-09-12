@@ -31,7 +31,6 @@
  * functionalities of the ToolKit framework.
  */
 
-#include "TKObject.h"
 #include "Types.h"
 
 /**

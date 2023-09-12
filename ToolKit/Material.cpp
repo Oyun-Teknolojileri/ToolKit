@@ -30,6 +30,7 @@
 #include "Shader.h"
 #include "ToolKit.h"
 #include "Util.h"
+#include "Logger.h"
 
 #include "DebugNew.h"
 
@@ -53,9 +54,9 @@ namespace ToolKit
     if (!m_loaded)
     {
       m_loaded = true;
-      ParseDocument("material");
+        ParseDocument("material");
+      }
     }
-  }
 
   void Material::Save(bool onlyIfDirty)
   {

@@ -52,34 +52,33 @@ namespace ToolKit
     template <typename T>
     std::shared_ptr<T> Create(const String& file)
     {
-      if (!Exist(file))
-      {
-        ResourcePtr resource = MakeNewPtr<T>();
-        if (!CheckFile(file))
+        if (!Exist(file)) 
         {
-          String def = GetDefaultResource(T::StaticClass());
-          if (!CheckFile(def))
-          {
-            GetLogger()->Log(LogType::Error, "No default for Class %s", T::StaticClass()->Name.c_str());
-            assert(0 && "No default resource!");
-            return nullptr;
-          }
+            ResourcePtr resource = MakeNewPtr<T>();
+            if (!CheckFile(file)) 
+            {
+                String def = GetDefaultResource(T::StaticClass());
+                if (!CheckFile(def)) 
+                {
+                    GetLogger()->Log(LogType::Error, "No default for Class %s", T::StaticClass()->Name.c_str());
+                    assert(0 && "No default resource!");
+                    return nullptr;
+                }
+        
+                String rel = GetRelativeResourcePath(file);
+                GetLogger()->Log(LogType::Warning, "File: %s is missing. Using default resource.", rel.c_str());
+                resource->SetFile(def);
+                resource->_missingFile = file;
+            } 
+            else
+            {
+                resource->SetFile(file);
+            }
 
-          String rel = GetRelativeResourcePath(file);
-          GetLogger()->Log(LogType::Warning, "File: %s is missing. Using default resource.", rel.c_str());
-          resource->SetFile(def);
-          resource->_missingFile = file;
+            resource->Load();
+            m_storage[file] = resource;
         }
-        else
-        {
-          resource->SetFile(file);
-        }
-
-        resource->Load();
-        m_storage[file] = resource;
-      }
-
-      return std::reinterpret_pointer_cast<T>(m_storage[file]);
+        return ReinterpretPointerCast<T>(m_storage[file]);
     }
 
     bool Exist(const String& file);

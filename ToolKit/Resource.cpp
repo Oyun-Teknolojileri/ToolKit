@@ -25,8 +25,13 @@
  */
 
 #include "Resource.h"
+#include "ResourceManager.h"
 
 #include "FileManager.h"
+#include "Material.h"
+#include "Mesh.h"
+#include "Skeleton.h"
+
 #include "ResourceManager.h"
 #include "ToolKit.h"
 #include "Util.h"
@@ -85,6 +90,22 @@ namespace ToolKit
       Load();
     }
   }
+
+  template <typename T>
+  std::shared_ptr<T> Resource::Copy()
+  {
+    std::shared_ptr<T> resource = std::make_shared<T>();
+    CopyTo(resource.get());
+    if (class ResourceManager* manager = GetResourceManager(T::StaticClass()))
+    {
+      manager->Manage(resource);
+    }
+    return resource;
+  }
+
+  template TK_API std::shared_ptr<Material> Resource::Copy();
+  template TK_API std::shared_ptr<Mesh> Resource::Copy();
+  template TK_API std::shared_ptr<Skeleton> Resource::Copy();
 
   bool Resource::IsDynamic() { return GetFile().empty(); }
 

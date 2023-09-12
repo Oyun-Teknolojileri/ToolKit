@@ -30,6 +30,8 @@
 #include "ResourceManager.h"
 #include "Types.h"
 
+#define TK_LUT_TEXTURE "GLOBAL_BRDF_LUT_TEXTURE"
+
 namespace ToolKit
 {
   struct TextureSettings

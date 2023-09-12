@@ -29,7 +29,7 @@
 #include "DirectionComponent.h"
 #include "Light.h"
 #include "Renderer.h"
-#include "gles2.h"
+#include "glad/OpenGL.h"
 
 #include "DebugNew.h"
 

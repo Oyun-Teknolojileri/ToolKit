@@ -50,7 +50,14 @@ namespace ToolKit
       };
 
      public:
-      TKDeclareClass(EditorBillboardBase, Billboard);
+     private:
+      static TKClass EditorBillboardBaseClass;
+      typedef Billboard Super;
+
+     public:
+      virtual TKClass* const Class() const;
+
+      static TKClass* const StaticClass() { return &EditorBillboardBaseClass; };
 
       EditorBillboardBase();
       explicit EditorBillboardBase(const Settings& settings);

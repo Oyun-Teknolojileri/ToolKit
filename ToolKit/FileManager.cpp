@@ -31,14 +31,39 @@
 #include "Scene.h"
 #include "Shader.h"
 #include "ToolKit.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb/stb_image.h"
+#include "Logger.h"
 
 #include "DebugNew.h"
+#define STB_IMAGE_IMPLEMENTATION
+#ifdef __ARM_FP
+# define STBI_NEON
+#endif
+#include "stb/stb_image.h"
 
 namespace ToolKit
 {
+  File File::Open(StringView path, StringView mode)
+  {
+    File file;
+    file.handle = (void*)fopen(path.data(), mode.data());
+    return file;
+  }
+
+  void File::Close(File file)
+  {
+    fclose((FILE*)file.handle);
+  }
+
+  size_t File::Read(char* buffer, size_t len)
+  {
+    return fread(buffer, 1, len, (FILE*)handle);
+  }
+
+  size_t File::Write(char* buffer, size_t len)
+  {
+    return fread(buffer, 1, len, (FILE*)handle);
+  }
+
   FileManager::~FileManager()
   {
     if (m_zfile)
@@ -70,7 +95,7 @@ namespace ToolKit
     FileDataType data      = GetFile(FileType::ImageFloat, fileInfo);
     return std::get<float*>(data);
   }
-
+  
   FileManager::FileDataType FileManager::GetFile(FileType fileType, ImageFileInfo& fileInfo)
   {
     String pakPath      = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
@@ -98,7 +123,10 @@ namespace ToolKit
       }
       else if (fileType == FileType::ImageFloat)
       {
-        return ReadHdriFileFromZip(m_zfile, relativePath, fileInfo);
+        stbi_set_flip_vertically_on_load(true);
+        float* img = ReadHdriFileFromZip(m_zfile, relativePath, fileInfo);
+        stbi_set_flip_vertically_on_load(false);
+        return img;
       }
       else
       {
@@ -118,7 +146,10 @@ namespace ToolKit
       }
       else if (fileType == FileType::ImageFloat)
       {
-        return stbi_loadf(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+        stbi_set_flip_vertically_on_load(true);
+        float* img = stbi_loadf(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+        stbi_set_flip_vertically_on_load(false);
+        return img;
       }
       else
       {
@@ -134,7 +165,7 @@ namespace ToolKit
   void FileManager::PackResources(const String& sceneResourcesPath)
   {
     String zipName = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
-    if (std::filesystem::exists(zipName.c_str()))
+    if (CheckSystemFile(zipName.c_str()))
     {
       if (m_zfile)
       {
@@ -171,7 +202,7 @@ namespace ToolKit
 
     String relativePath = path;
     GetRelativeResourcesPath(relativePath);
-    return std::filesystem::exists(path) || IsFileInPak(relativePath);
+    return CheckSystemFile(path) || IsFileInPak(relativePath);
   }
 
   void FileManager::LoadAllScenes(const String& path)
@@ -362,7 +393,7 @@ namespace ToolKit
 
   bool FileManager::AddFileToZip(zipFile zfile, const char* filename)
   {
-    FILE* f;
+    File f;
     int ret;
     size_t red;
     size_t flen;
@@ -372,8 +403,8 @@ namespace ToolKit
       return false;
     }
 
-    f = fopen(filename, "rb");
-    if (f == NULL)
+    f = File::Open(filename, "rb");
+    if (f.handle == NULL)
     {
       return false;
     }
@@ -414,23 +445,24 @@ namespace ToolKit
                                 0);
     if (ret != ZIP_OK)
     {
-      fclose(f);
+      File::Close(f);
       zipCloseFileInZip(zfile);
       return false;
     }
 
     char* fileData = reinterpret_cast<char*>(malloc((flen + 1) * static_cast<uint>(sizeof(char))));
-    red            = fread(fileData, flen, 1, f);
+    red            = f.Read(fileData, flen);
     ret            = zipWriteInFileInZip(zfile, fileData, static_cast<uint>(red * flen));
+    
     if (ret != ZIP_OK)
     {
-      fclose(f);
+      File::Close(f);
       zipCloseFileInZip(zfile);
       return false;
     }
 
     free(fileData);
-    fclose(f);
+    File::Close(f);
     zipCloseFileInZip(zfile);
 
     return true;
@@ -455,7 +487,7 @@ namespace ToolKit
   {
     String extrFilesPathStr   = ConcatPaths({path, "..", "ExtraFiles.txt"});
     const char* extrFilesPath = extrFilesPathStr.c_str();
-    if (!std::filesystem::exists(extrFilesPath))
+    if (!CheckSystemFile(extrFilesPath))
     {
       GetLogger()->Log("'ExtraFiles.txt' is not found in resources path.");
       GetLogger()->WriteConsole(LogType::Warning, "'ExtraFiles.txt' is not found in resources path.");
@@ -475,7 +507,6 @@ namespace ToolKit
 
       m_allPaths.insert(ConcatPaths({ResourcePath(), line}));
     }
-
     file.close();
   }
 

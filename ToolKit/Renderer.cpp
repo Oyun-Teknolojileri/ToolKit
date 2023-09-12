@@ -46,8 +46,9 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
+#include "Logger.h"
 
-#include <gles2.h>
+#include "glad/OpenGL.h"
 
 #include "DebugNew.h"
 
@@ -168,7 +169,7 @@ namespace ToolKit
     SetProjectViewModel(job.WorldTransform, cam);
     m_lights = lights;
     m_cam    = cam;
-    job.Mesh->Init();
+     job.Mesh->Init();
     job.Material->Init();
 
     // Set render material.
@@ -357,9 +358,9 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color)
+  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color, bool force)
   {
-    if (fb != m_framebuffer)
+    if (force || fb != m_framebuffer)
     {
       if (fb != nullptr)
       {
@@ -384,7 +385,7 @@ namespace ToolKit
     m_framebuffer = fb;
   }
 
-  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear) { SetFramebuffer(fb, clear, m_clearColor); }
+  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, bool force) { SetFramebuffer(fb, clear, m_clearColor, force); }
 
   void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color)
   {
@@ -586,7 +587,6 @@ namespace ToolKit
     if (m_gaussianBlurMaterial == nullptr)
     {
       ShaderPtr vert         = GetShaderManager()->Create<Shader>(ShaderPath("gausBlur7x1Vert.shader", true));
-
       ShaderPtr frag         = GetShaderManager()->Create<Shader>(ShaderPath("gausBlur7x1Frag.shader", true));
 
       m_gaussianBlurMaterial = MakeNewPtr<Material>();
@@ -618,7 +618,6 @@ namespace ToolKit
     if (m_averageBlurMaterial == nullptr)
     {
       ShaderPtr vert        = GetShaderManager()->Create<Shader>(ShaderPath("avgBlurVert.shader", true));
-
       ShaderPtr frag        = GetShaderManager()->Create<Shader>(ShaderPath("avgBlurFrag.shader", true));
 
       m_averageBlurMaterial = MakeNewPtr<Material>();
@@ -722,7 +721,6 @@ namespace ToolKit
     for (ShaderPtr shader : program->m_shaders)
     {
       shader->UpdateShaderParameters();
-
       // Built-in variables.
       for (Uniform uni : shader->m_uniforms)
       {
@@ -1324,6 +1322,9 @@ namespace ToolKit
 
     for (int mip = 0; mip < mipMaps; ++mip)
     {
+      uint w = (uint) (width * std::powf(0.5f, (float) mip));
+      uint h = (uint) (height * std::powf(0.5f, (float) mip));
+
       for (int i = 0; i < 6; ++i)
       {
         Vec3 pos;
@@ -1340,9 +1341,6 @@ namespace ToolKit
                                          mip,
                                          -1,
                                          (Framebuffer::CubemapFace) i);
-
-        uint w = (uint) (width * std::powf(0.5f, (float) mip));
-        uint h = (uint) (height * std::powf(0.5f, (float) mip));
 
         frag->SetShaderParameter("roughness", ParameterVariant((float) mip / (float) mipMaps));
         frag->SetShaderParameter("resPerFace", ParameterVariant((float) w));

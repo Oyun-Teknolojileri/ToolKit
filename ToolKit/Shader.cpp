@@ -30,8 +30,9 @@
 #include "TKAssert.h"
 #include "ToolKit.h"
 #include "Util.h"
+#include "Logger.h"
 
-#include <gles2.h>
+#include "glad/OpenGL.h"
 
 #include <unordered_set>
 
@@ -465,9 +466,9 @@ namespace ToolKit
   ResourcePtr ShaderManager::CreateLocal(TKClass* Class)
   {
     if (Class == Shader::StaticClass())
-    {
+  {
       return MakeNewPtr<Shader>();
-    }
+  }
     return nullptr;
   }
 

@@ -40,7 +40,7 @@ namespace ToolKit
     Command
   };
 
-  typedef std::function<void(LogType, const String&)> ConsoleOutputFn;
+  typedef std::function<void(LogType, const std::string&)> ConsoleOutputFn;
   typedef std::function<void()> ClearConsoleFn;
 
   class TK_API Logger
@@ -48,7 +48,7 @@ namespace ToolKit
    public:
     Logger();
     ~Logger();
-    void Log(const String& message);
+    void Log(const std::string& message);
     void Log(LogType logType, const char* msg, ...);
     void SetWriteConsoleFn(ConsoleOutputFn fn);
     void SetClearConsoleFn(ClearConsoleFn fn);

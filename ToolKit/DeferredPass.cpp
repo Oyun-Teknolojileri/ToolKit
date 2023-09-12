@@ -98,10 +98,10 @@ namespace ToolKit
     // Set gbuffer
     // 9: Position, 10: Normal, 11: Color, 12: emissive, 14: metallic-roughness,
     // 16: ibl contribution
-    using FAttachment           = Framebuffer::Attachment;
+    using FAttachment = Framebuffer::Attachment;
     FramebufferPtr gFrameBuffer = m_params.GBufferFramebuffer;
-
-    renderer->SetTexture(9, gFrameBuffer->GetAttachment(FAttachment::ColorAttachment0)->m_textureId);
+    
+    renderer->SetTexture(9 , gFrameBuffer->GetAttachment(FAttachment::ColorAttachment0)->m_textureId);
     renderer->SetTexture(10, gFrameBuffer->GetAttachment(FAttachment::ColorAttachment1)->m_textureId);
     renderer->SetTexture(11, gFrameBuffer->GetAttachment(FAttachment::ColorAttachment2)->m_textureId);
     renderer->SetTexture(12, gFrameBuffer->GetAttachment(FAttachment::ColorAttachment3)->m_textureId);

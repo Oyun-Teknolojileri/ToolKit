@@ -31,7 +31,6 @@
 
 namespace ToolKit
 {
-
   TK_API extern class ResourceManager* GetResourceManager(TKClass* Class);
 
   class TK_API Resource : public TKObject
@@ -49,16 +48,7 @@ namespace ToolKit
     virtual void UnInit()                                = 0;
 
     template <typename T>
-    std::shared_ptr<T> Copy()
-    {
-      std::shared_ptr<T> resource = std::make_shared<T>();
-      CopyTo(resource.get());
-      if (class ResourceManager* manager = GetResourceManager(T::StaticClass()))
-      {
-        manager->Manage(resource);
-      }
-      return resource;
-    }
+    std::shared_ptr<T> Copy();
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
@@ -129,4 +119,5 @@ namespace ToolKit
     String m_file;
   };
 
+  typedef std::shared_ptr<Resource> ResourcePtr;
 } // namespace ToolKit

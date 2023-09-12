@@ -90,17 +90,19 @@ namespace ToolKit
 
   bool UIManager::CheckMouseClick(Surface* surface, Event* e, Viewport* vp)
   {
+#ifndef __ANDROID__
     if (CheckMouseOver(surface, e, vp))
     {
       MouseEvent* me = static_cast<MouseEvent*>(e);
       return me->m_action == EventAction::LeftClick;
     }
-
+#endif
     return false;
   }
 
   bool UIManager::CheckMouseOver(Surface* surface, Event* e, Viewport* vp)
   {
+#ifndef __ANDROID__
     if (e->m_type == Event::EventType::Mouse)
     {
       BoundingBox box = surface->GetAABB(true);
@@ -112,6 +114,7 @@ namespace ToolKit
         return true;
       }
     }
+#endif
     return false;
   }
 

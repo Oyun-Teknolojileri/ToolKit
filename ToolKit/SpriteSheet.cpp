@@ -31,8 +31,8 @@
 #include "Surface.h"
 #include "Texture.h"
 #include "ToolKit.h"
-#include "rapidxml.hpp"
-#include "rapidxml_utils.hpp"
+#include "RapidXml/rapidxml.hpp"
+#include "RapidXml/rapidxml_utils.hpp"
 
 #include "DebugNew.h"
 
@@ -149,9 +149,6 @@ namespace ToolKit
     return true;
   }
 
-  // SpriteAnimation
-  //////////////////////////////////////////////////////////////////////////
-
   TKDefineClass(SpriteAnimation, Entity);
 
   SpriteAnimation::SpriteAnimation() {}
@@ -240,7 +237,7 @@ namespace ToolKit
   SpriteSheetManager::SpriteSheetManager() { m_baseType = SpriteSheet::StaticClass(); }
 
   SpriteSheetManager::~SpriteSheetManager() {}
-
+  
   bool SpriteSheetManager::CanStore(TKClass* Class) { return Class == SpriteSheet::StaticClass(); }
 
   ResourcePtr SpriteSheetManager::CreateLocal(TKClass* Class)

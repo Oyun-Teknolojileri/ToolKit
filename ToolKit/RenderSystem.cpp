@@ -28,7 +28,8 @@
 
 #include "GlErrorReporter.h"
 #include "ToolKit.h"
-#include "gles2.h"
+#include "glad/OpenGL.h"
+#include "Logger.h"
 
 #include "DebugNew.h"
 
@@ -111,6 +112,8 @@ namespace ToolKit
     }
   }
 
+  Renderer* RenderSystem::GetRenderer() { return m_renderer; }
+
   void RenderSystem::FlushRenderTasks()
   {
     auto flushTasksFn = [this](RenderTaskArray& rts) -> void
@@ -159,8 +162,9 @@ namespace ToolKit
   void RenderSystem::InitGl(void* glGetProcAddres, GlReportCallback callback)
   {
     // Initialize opengl functions.
+#ifndef __ANDROID__
     gladLoadGLES2((GLADloadfunc) glGetProcAddres);
-
+#endif
     InitGLErrorReport(callback);
 
     // Default states.

@@ -33,6 +33,8 @@
 
 #include "DebugNew.h"
 
+#include "glad/OpenGL.h"
+
 namespace ToolKit
 {
 
@@ -59,10 +61,10 @@ namespace ToolKit
     m_gEmissiveRt = std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
     m_gIblRt      = std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-
-    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRGB32F;
-    gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRGB;
-
+    
+    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRGBA32F;
+    gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRGBA;
+    // Note: A32 is not used, it didn't work on Android devices when we bind it to frame buffer
     m_gLinearDepthRt = std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
     gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRG16F;
@@ -72,7 +74,7 @@ namespace ToolKit
 
     m_framebuffer          = std::make_shared<Framebuffer>();
     m_gBufferMaterial      = MakeNewPtr<Material>();
-  }
+  } 
 
   GBufferPass::GBufferPass(const GBufferPassParams& params) : GBufferPass() { m_params = params; }
 

@@ -25,24 +25,24 @@
  */
 
 #include "GlErrorReporter.h"
+#include "Logger.h"
+#include "glad/OpenGL.h"
 
 namespace ToolKit
 {
 
-  GlReportCallback GlErrorReporter::Report = [](const std::string& msg) -> void { GetLogger()->Log(msg); };
+  GlReportCallback GlErrorReporter::Report = [](const std::string& msg) -> void {  };
 
   void InitGLErrorReport(GlReportCallback callback)
   {
-#ifdef TK_GL_CORE_3_2
+#if defined(TK_GL_CORE_3_2) || defined(__ANDROID__)
     if (glDebugMessageCallback != NULL)
     {
       glEnable(GL_DEBUG_OUTPUT);
       glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
       glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
-
       glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
-
       glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DEBUG_SEVERITY_HIGH, 0, NULL, GL_TRUE);
     }
 #endif

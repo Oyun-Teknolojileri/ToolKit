@@ -33,9 +33,9 @@
 #include "RenderSystem.h"
 #include "Shader.h"
 #include "ToolKit.h"
+#include "Logger.h"
 
-#include <gles2.h>
-
+#include "glad/OpenGL.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -143,7 +143,6 @@ namespace ToolKit
     if (m_textureSettings.GenerateMipMap)
     {
       glGenerateMipmap(GL_TEXTURE_2D);
-
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) m_textureSettings.MipMapMinFilter);
     }
 
@@ -180,8 +179,8 @@ namespace ToolKit
 
   void Texture::Clear()
   {
-    stbi_image_free(m_image);
-    stbi_image_free(m_imagef);
+    free(m_image);
+    free(m_imagef);
     m_image  = nullptr;
     m_imagef = nullptr;
     m_loaded = false;
@@ -364,7 +363,7 @@ namespace ToolKit
   {
     for (int i = 0; i < m_images.size(); i++)
     {
-      stbi_image_free(m_images[i]);
+      free(m_images[i]);
       m_images[i] = nullptr;
     }
     m_loaded = false;
@@ -402,9 +401,7 @@ namespace ToolKit
     }
 
     // Load hdri image
-    stbi_set_flip_vertically_on_load(true);
     Texture::Load();
-    stbi_set_flip_vertically_on_load(false);
   }
 
   void Hdri::Init(bool flushClientSideArray)
@@ -435,10 +432,6 @@ namespace ToolKit
                                                              m_width / 4,
                                                              1.0f);
 
-          // Generate mip maps of cubemap
-          glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemap->m_textureId);
-          glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-
           const int prefilteredEnvMapSize = m_specularIBLTextureSize;
           // Pre-filtered and mip mapped environment map
           m_prefilteredEnvMap             = renderer->GenerateEnvPrefilteredMap(m_cubemap,
@@ -447,7 +440,7 @@ namespace ToolKit
                                                                     Renderer::RHIConstants::specularIBLLods);
 
           // Pre-compute BRDF lut
-          if (!GetTextureManager()->Exist("GLOBAL_BRDF_LUT_TEXTURE"))
+          if (!GetTextureManager()->Exist(TK_LUT_TEXTURE))
           {
             FullQuadPass quadPass;
 
@@ -472,7 +465,7 @@ namespace ToolKit
             quadPass.Render();
             quadPass.PostRender();
 
-            brdfLut->SetFile("GLOBAL_BRDF_LUT_TEXTURE");
+            brdfLut->SetFile(TK_LUT_TEXTURE);
             GetTextureManager()->Manage(brdfLut);
           }
 
