@@ -282,7 +282,7 @@ namespace ToolKit
     {
       String absolutePath = it->first;
       // If the path is relative, make it absolute
-      if (absolutePath[0] == '.')
+      if (absolutePath[0] == '.' && absolutePath[1] != '.')
       {
         size_t index = absolutePath.find("Prefabs");
         absolutePath = absolutePath.substr(index);
