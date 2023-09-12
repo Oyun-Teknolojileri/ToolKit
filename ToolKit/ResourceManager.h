@@ -36,6 +36,8 @@
 namespace ToolKit
 {
 
+  TK_API extern class ResourceManager* GetResourceManager(TKClass* Class);
+
   class TK_API ResourceManager
   {
    public:
@@ -81,6 +83,18 @@ namespace ToolKit
       }
 
       return std::reinterpret_pointer_cast<T>(m_storage[file]);
+    }
+
+    template <typename T>
+    std::shared_ptr<T> Copy(ResourcePtr source)
+    {
+      std::shared_ptr<T> resource = MakeNewPtr<T>();
+      source->CopyTo(resource.get());
+      if (ResourceManager* manager = GetResourceManager(T::StaticClass()))
+      {
+        manager->Manage(resource);
+      }
+      return resource;
     }
 
     bool Exist(const String& file);

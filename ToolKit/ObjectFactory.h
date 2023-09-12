@@ -26,16 +26,18 @@
 
 #pragma once
 
+#include "ToolKit.h"
 #include "Types.h"
 
 #include <type_traits>
 
 namespace ToolKit
 {
+  class Main;
 
   class TK_API TKObjectFactory
   {
-    friend class Main;
+    friend Main;
     typedef std::function<Object*()> ObjectConstructorCallback;
 
    public:
@@ -89,8 +91,8 @@ namespace ToolKit
       {
         if (auto constructorFn = GetConstructorFn(T::StaticClass()->Name))
         {
-          Object* object = constructorFn();
-          T* castedObject  = static_cast<T*>(object);
+          Object* object  = constructorFn();
+          T* castedObject = static_cast<T*>(object);
           castedObject->NativeConstruct(std::forward<Args>(args)...);
 
           return castedObject;

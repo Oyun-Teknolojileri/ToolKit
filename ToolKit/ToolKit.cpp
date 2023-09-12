@@ -31,16 +31,14 @@
 #include "FileManager.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Object.h"
 #include "ObjectFactory.h"
 #include "PluginManager.h"
 #include "RenderSystem.h"
 #include "Scene.h"
 #include "Shader.h"
-#include "Object.h"
+#include "TKOpenGL.h"
 #include "UIManager.h"
-
-#define GLAD_GLES2_IMPLEMENTATION
-#include <gles2.h>
 
 #include "DebugNew.h"
 

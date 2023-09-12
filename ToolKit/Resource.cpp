@@ -27,7 +27,10 @@
 #include "Resource.h"
 
 #include "FileManager.h"
+#include "Material.h"
+#include "Mesh.h"
 #include "ResourceManager.h"
+#include "Skeleton.h"
 #include "ToolKit.h"
 #include "Util.h"
 

@@ -236,18 +236,32 @@ namespace ToolKit
             g_proxy->m_objectFactory->Register<EditorScene>();
             g_proxy->m_objectFactory->Register<GridFragmentShader>();
 
+            EditorCamera::StaticClass()->Name = Camera::StaticClass()->Name;
+            EditorDirectionalLight::StaticClass()->Name = DirectionalLight::StaticClass()->Name;
+            EditorPointLight::StaticClass()->Name       = PointLight::StaticClass()->Name;
+            EditorSpotLight::StaticClass()->Name        = SpotLight::StaticClass()->Name;
+            //EditorScene::StaticClass()->Name            = Scene::StaticClass()->Name;
+
             // Overrides.
-            g_proxy->m_objectFactory->Register<Camera>([]() -> EditorCamera* { return new EditorCamera(); });
+            g_proxy->m_objectFactory->Register<Camera>(
+                []() -> EditorCamera* {
+                  return new EditorCamera(); });
 
-            g_proxy->m_objectFactory->Register<DirectionalLight>([]() -> EditorDirectionalLight*
-                                                                 { return new EditorDirectionalLight(); });
+            g_proxy->m_objectFactory->Register<DirectionalLight>(
+              []() -> EditorDirectionalLight* {
+                return new EditorDirectionalLight(); });
 
-            g_proxy->m_objectFactory->Register<PointLight>([]() -> EditorPointLight*
-                                                           { return new EditorPointLight(); });
+            g_proxy->m_objectFactory->Register<PointLight>(
+              []() -> EditorPointLight* {
+                return new EditorPointLight(); });
 
-            g_proxy->m_objectFactory->Register<SpotLight>([]() -> EditorSpotLight* { return new EditorSpotLight(); });
+            g_proxy->m_objectFactory->Register<SpotLight>(
+              []() -> EditorSpotLight* {
+              return new EditorSpotLight(); });
 
-            g_proxy->m_objectFactory->Register<Scene>([]() -> EditorScene* { return new EditorScene(); });
+            g_proxy->m_objectFactory->Register<Scene>(
+              []() -> EditorScene* {
+              return new EditorScene(); });
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);

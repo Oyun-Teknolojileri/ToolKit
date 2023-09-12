@@ -12,7 +12,10 @@ include_directories(
 
 add_definitions(-include stdafx.h)
 
-SET(TK_CXX_FLAGS " -std=c++17")
+# Huge amount of warning messages appears in the output when compiling
+# If there is an error, it is too difficult to notice.
+# Remove -w flag if you want to see the warnings
+SET(TK_CXX_FLAGS " -std=c++17 -w")
 if (NOT TK_CXX_EXTRA STREQUAL "")
 	SET(TK_CXX_FLAGS "${TK_CXX_FLAGS} ${TK_CXX_EXTRA}")
 endif()

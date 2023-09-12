@@ -42,12 +42,11 @@
 #include "ShaderReflectionCache.h"
 #include "Skeleton.h"
 #include "Surface.h"
+#include "TKOpenGL.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
-
-#include <gles2.h>
 
 #include "DebugNew.h"
 
