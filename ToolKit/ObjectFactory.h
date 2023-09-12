@@ -144,7 +144,7 @@ namespace ToolKit
   }
 
   template <typename T, typename... Args>
-  inline std::shared_ptr<T> MakeNewPtr(Args&&... args)
+  std::shared_ptr<T> MakeNewPtr(Args&&... args)
   {
     if (Main* main = Main::GetInstance())
     {
