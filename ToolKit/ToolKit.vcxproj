@@ -84,6 +84,7 @@
     <ClCompile Include="Surface.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Object.cpp" />
+    <ClCompile Include="TKOpenGL.cpp" />
     <ClCompile Include="ToneMapPass.cpp" />
     <ClCompile Include="ToolKit.cpp" />
     <ClCompile Include="UIManager.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="ToneMapPass.h" />
     <ClInclude Include="AdditiveLightingPass.h" />
     <ClInclude Include="ToolKit.h" />
+    <ClInclude Include="TKOpenGL.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="UIManager.h" />
     <ClInclude Include="Util.h" />

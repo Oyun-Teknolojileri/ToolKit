@@ -31,11 +31,7 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-#ifdef __EMSCRIPTEN__
-#include <GL/glew.h>
-#else
-#include <gles2.h>
-#endif
+#include "TKOpenGL.h"
 
 #include <unordered_set>
 

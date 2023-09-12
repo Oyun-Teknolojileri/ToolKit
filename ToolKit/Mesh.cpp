@@ -35,11 +35,7 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-#ifdef __EMSCRIPTEN__
-#include <GL/glew.h>
-#else
-#include <gles2.h>
-#endif
+#include "TKOpenGL.h"
 
 #include <execution>
 
@@ -222,12 +218,12 @@ namespace ToolKit
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
     }
 
-    cpy->m_material = ResourceCopy<Material>(m_material);
+    cpy->m_material = m_material->Copy<Material>();
     cpy->m_aabb     = m_aabb;
 
     for (MeshPtr child : m_subMeshes)
     {
-      MeshPtr ccpy = ResourceCopy<Mesh>(child);
+      MeshPtr ccpy = child->Copy<Mesh>();
       cpy->m_subMeshes.push_back(ccpy);
     }
   }
@@ -783,7 +779,7 @@ namespace ToolKit
   {
     Mesh::CopyTo(other);
     SkinMesh* cpy   = static_cast<SkinMesh*>(other);
-    cpy->m_skeleton = ResourceCopy<Skeleton>(m_skeleton);
+    cpy->m_skeleton = m_skeleton->Copy<Skeleton>();
     cpy->m_skeleton->Init();
   }
 

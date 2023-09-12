@@ -92,16 +92,4 @@ namespace ToolKit
     TKClass* m_baseType = nullptr;
   };
 
-  template <typename T>
-  std::shared_ptr<T> ResourceCopy(ResourcePtr res)
-  {
-    std::shared_ptr<T> resource = MakeNewPtr<T>();
-    res->CopyTo(resource.get());
-    if (ResourceManager* manager = GetResourceManager(T::StaticClass()))
-    {
-      manager->Manage(resource);
-    }
-    return resource;
-  }
-
 } // namespace ToolKit

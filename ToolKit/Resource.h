@@ -49,6 +49,9 @@ namespace ToolKit
     virtual void Init(bool flushClientSideArray = false) = 0;
     virtual void UnInit()                                = 0;
 
+    template <typename T>
+    std::shared_ptr<T> Copy();
+
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
@@ -89,9 +92,8 @@ namespace ToolKit
      */
     bool IsDynamic();
 
-    virtual void CopyTo(Resource* other);
-
    protected:
+    virtual void CopyTo(Resource* other);
 
     /**
      * Create SerializationFileInfo structure and pass it to DeSerializeImp.
@@ -118,5 +120,6 @@ namespace ToolKit
    private:
     String m_file;
   };
+
 
 } // namespace ToolKit

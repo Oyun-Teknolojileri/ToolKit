@@ -39,12 +39,7 @@
 #include "Object.h"
 #include "UIManager.h"
 
-#ifdef __EMSCRIPTEN__
-#include <GL/glew.h>
-#else
-#define GLAD_GLES2_IMPLEMENTATION
-#include <gles2.h>
-#endif
+#include "TKOpenGL.h"
 
 #include "DebugNew.h"
 
