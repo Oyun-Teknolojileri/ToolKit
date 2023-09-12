@@ -30,18 +30,16 @@
 #include "FileManager.h"
 #include "Material.h"
 #include "MathUtil.h"
+#include "ResourceManager.h"
 #include "Skeleton.h"
+#include "TKOpenGL.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "Util.h"
 
-#include "TKOpenGL.h"
-
 #include <execution>
 
 #include "DebugNew.h"
-
-#include "ResourceManager.h"
 
 static constexpr bool SERIALIZE_MESH_AS_BINARY = true;
 
@@ -218,13 +216,13 @@ namespace ToolKit
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
     }
 
-    cpy->m_material = m_material->Copy<Material>();
+    cpy->m_material = GetMaterialManager()->Copy<Material>(m_material);
     cpy->m_aabb     = m_aabb;
 
     for (MeshPtr child : m_subMeshes)
     {
-      MeshPtr ccpy = child->Copy<Mesh>();
-      cpy->m_subMeshes.push_back(ccpy);
+      MeshPtr childCopy = GetMeshManager()->Copy<Mesh>(child);
+      cpy->m_subMeshes.push_back(childCopy);
     }
   }
 
@@ -779,7 +777,7 @@ namespace ToolKit
   {
     Mesh::CopyTo(other);
     SkinMesh* cpy   = static_cast<SkinMesh*>(other);
-    cpy->m_skeleton = m_skeleton->Copy<Skeleton>();
+    cpy->m_skeleton = GetSkeletonManager()->Copy<Skeleton>(m_skeleton);
     cpy->m_skeleton->Init();
   }
 

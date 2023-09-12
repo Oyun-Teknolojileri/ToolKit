@@ -479,7 +479,8 @@ namespace ToolKit
 
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()
   {
-    return m_storage[MaterialPath("unlit.material", true)]->Copy<Material>();
+    ResourcePtr source = m_storage[MaterialPath("unlit.material", true)];
+    return Copy<Material>(source);
   }
 
   MaterialPtr MaterialManager::GetCopyOfUIMaterial()
@@ -499,7 +500,8 @@ namespace ToolKit
 
   MaterialPtr MaterialManager::GetCopyOfDefaultMaterial()
   {
-    return m_storage[MaterialPath("default.material", true)]->Copy<Material>();
+    ResourcePtr source = m_storage[MaterialPath("default.material", true)];
+    return Copy<Material>(source);
   }
 
 } // namespace ToolKit

@@ -53,7 +53,7 @@ namespace ToolKit
 
       // Warning: Running batch files are Windows specific
 
-      Path workDir = std::filesystem::current_path();
+      Path workDir         = std::filesystem::current_path();
 
       auto exitWithErrorFn = [&workDir](const char* msg) -> void
       {
