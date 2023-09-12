@@ -629,10 +629,10 @@ namespace ToolKit
   {
     SetFile(file);
 
-    String skelFile = file.substr(0, file.find_last_of("."));
+    String skelFile  = file.substr(0, file.find_last_of("."));
     skelFile        += ".skeleton";
 
-    m_skeleton      = GetSkeletonManager()->Create<Skeleton>(skelFile);
+    m_skeleton       = GetSkeletonManager()->Create<Skeleton>(skelFile);
   }
 
   SkinMesh::~SkinMesh() { UnInit(); }

@@ -31,15 +31,14 @@
 #include "FileManager.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Object.h"
 #include "ObjectFactory.h"
 #include "PluginManager.h"
 #include "RenderSystem.h"
 #include "Scene.h"
 #include "Shader.h"
-#include "Object.h"
-#include "UIManager.h"
-
 #include "TKOpenGL.h"
+#include "UIManager.h"
 
 #include "DebugNew.h"
 

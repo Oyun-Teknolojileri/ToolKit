@@ -32,9 +32,8 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "ShaderReflectionCache.h"
-#include "ToolKit.h"
-
 #include "TKOpenGL.h"
+#include "ToolKit.h"
 
 #include "DebugNew.h"
 

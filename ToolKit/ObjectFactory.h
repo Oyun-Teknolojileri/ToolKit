@@ -26,10 +26,10 @@
 
 #pragma once
 
+#include "ToolKit.h"
 #include "Types.h"
 
 #include <type_traits>
-#include "ToolKit.h"
 
 namespace ToolKit
 {
@@ -91,8 +91,8 @@ namespace ToolKit
       {
         if (auto constructorFn = GetConstructorFn(T::StaticClass()->Name))
         {
-          Object* object = constructorFn();
-          T* castedObject  = static_cast<T*>(object);
+          Object* object  = constructorFn();
+          T* castedObject = static_cast<T*>(object);
           castedObject->NativeConstruct(std::forward<Args>(args)...);
 
           return castedObject;

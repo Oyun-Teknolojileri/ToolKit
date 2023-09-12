@@ -29,7 +29,6 @@
 #include "DirectionComponent.h"
 #include "Light.h"
 #include "Renderer.h"
-
 #include "TKOpenGL.h"
 
 #include "DebugNew.h"

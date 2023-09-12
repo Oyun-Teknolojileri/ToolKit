@@ -26,9 +26,8 @@
 
 #include "Framebuffer.h"
 
-#include "ToolKit.h"
-
 #include "TKOpenGL.h"
+#include "ToolKit.h"
 
 #include "DebugNew.h"
 
