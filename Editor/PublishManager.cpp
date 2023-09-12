@@ -79,7 +79,7 @@ namespace ToolKit
       const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Codes", "Web", "Release.bat"});
       std::ofstream releaseBuildScript(pluginWebBuildScriptsFolder.c_str());
       releaseBuildScript << "emcmake cmake -DEMSCRIPTEN=TRUE -DTK_CXX_EXTRA:STRING=\" -O3\" "
-                            "-S .. -G Ninja && ninja & pause";
+                            "-S .. -G Ninja && ninja";
       releaseBuildScript.close();
 
       // Run scripts
