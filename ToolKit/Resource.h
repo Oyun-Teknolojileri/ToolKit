@@ -33,10 +33,10 @@
 namespace ToolKit
 {
 
-  TK_API extern class ResourceManager* GetResourceManager(TKClass* Class);
-
   class TK_API Resource : public Object
   {
+    friend class ResourceManager;
+
    public:
     TKDeclareClass(Resource, Object);
 
@@ -48,9 +48,6 @@ namespace ToolKit
 
     virtual void Init(bool flushClientSideArray = false) = 0;
     virtual void UnInit()                                = 0;
-
-    template <typename T>
-    std::shared_ptr<T> Copy();
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
@@ -120,6 +117,5 @@ namespace ToolKit
    private:
     String m_file;
   };
-
 
 } // namespace ToolKit
