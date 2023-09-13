@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.0.0)
 
-project("myapplication")
+project("toolkit")
 
 set(TOOLKIT_DIR "__tkdir__" CACHE FILEPATH "Where is the ToolKit source directory ?")
 
@@ -57,17 +57,21 @@ endif()
 
 # Use file(GLOB ...) to collect all .cpp files in the ToolKit directory.
 file(GLOB TOOLKIT_SOURCES ${TOOLKIT_DIR}/ToolKit/*.cpp)
-file(GLOB UNZIP_SOURCES unzip/*.c)
+file(GLOB UNZIP_SOURCES ${TOOLKIT_DIR}/Dependency/Android/minizip/*.c)
+
+# Define TK_GL_ES_3_0 globally
+add_definitions(-DTK_GL_ES_3_0)
+# Define TK_DLL_EXPORT globally
+add_definitions(-DTK_DLL_EXPORT)
 
 include_directories(${TOOLKIT_DIR}/ToolKit
-                    ${TOOLKIT_DIR}/Dependency
-                    ${CMAKE_SOURCE_DIR}/unzip)
+                    ${TOOLKIT_DIR}/Dependency)
 
 # Creates your game shared library. The name must be the same as the
 # one used for loading in your Kotlin/Java or AndroidManifest.txt files.
-add_library(myapplication SHARED
+add_library(toolkit SHARED
         main.cpp
-        ToolKitMain.cpp
+        AndroidMain.cpp
         Game.cpp
         ${UNZIP_SOURCES}
         ${TOOLKIT_SOURCES}) # Include the list of Toolkit sources here
@@ -81,7 +85,7 @@ find_package(game-activity REQUIRED CONFIG)
 find_package(ZLIB REQUIRED)
 
 # Configure libraries CMake uses to link your target library.
-target_link_libraries(myapplication
+target_link_libraries(toolkit
         # The game activity
         game-activity::game-activity
 

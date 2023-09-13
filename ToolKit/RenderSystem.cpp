@@ -112,8 +112,6 @@ namespace ToolKit
     }
   }
 
-  Renderer* RenderSystem::GetRenderer() { return m_renderer; }
-
   void RenderSystem::FlushRenderTasks()
   {
     auto flushTasksFn = [this](RenderTaskArray& rts) -> void
@@ -162,7 +160,7 @@ namespace ToolKit
   void RenderSystem::InitGl(void* glGetProcAddres, GlReportCallback callback)
   {
     // Initialize opengl functions.
-#ifndef __ANDROID__
+#ifdef _WIN32
     gladLoadGLES2((GLADloadfunc) glGetProcAddres);
 #endif
     InitGLErrorReport(callback);

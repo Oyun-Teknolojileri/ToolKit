@@ -81,7 +81,7 @@ namespace ToolKit
             resource->Load();
             m_storage[file] = resource;
         }
-        return ReinterpretPointerCast<T>(m_storage[file]);
+        return tk_reinterpret_pointer_cast<T>(m_storage[file]);
     }
 
     template <typename T>

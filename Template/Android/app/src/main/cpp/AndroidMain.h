@@ -1,11 +1,5 @@
-//
-// Created by Administrator on 8/30/2023.
-//
 
-#ifndef TOOLKITGAME_TOOLKITMAIN_H
-#define TOOLKITGAME_TOOLKITMAIN_H
-
-#endif //TOOLKITGAME_TOOLKITMAIN_H
+#pragma once
 
 typedef void* EGLSurface;
 typedef void* EGLContext;
@@ -13,7 +7,10 @@ typedef void* EGLDisplay;
 typedef int EGLint;
 typedef unsigned int GLuint;
 
-namespace ToolKit 
+extern struct android_app* g_android_app;
+extern struct AAssetManager* g_asset_manager;
+
+namespace ToolKit
 {
   class Main; 
 
@@ -43,6 +40,7 @@ namespace ToolKit
     EGLDisplay display_;
     EGLint width_  = -1;
     EGLint height_ = -1;
+    class GameViewport* gameViewport;
+    class Game* m_game;
   };
 }
-

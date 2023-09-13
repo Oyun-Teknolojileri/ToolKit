@@ -31,11 +31,11 @@
 namespace ToolKit
 {
 
-  GlReportCallback GlErrorReporter::Report = [](const std::string& msg) -> void {  };
+  GlReportCallback GlErrorReporter::Report = [](const std::string& msg) -> void { };
 
   void InitGLErrorReport(GlReportCallback callback)
   {
-#if defined(TK_GL_CORE_3_2) || defined(__ANDROID__)
+#if defined(TK_GL_CORE_3_2)
     if (glDebugMessageCallback != NULL)
     {
       glEnable(GL_DEBUG_OUTPUT);

@@ -42,28 +42,6 @@
 
 namespace ToolKit
 {
-  File File::Open(StringView path, StringView mode)
-  {
-    File file;
-    file.handle = (void*)fopen(path.data(), mode.data());
-    return file;
-  }
-
-  void File::Close(File file)
-  {
-    fclose((FILE*)file.handle);
-  }
-
-  size_t File::Read(char* buffer, size_t len)
-  {
-    return fread(buffer, 1, len, (FILE*)handle);
-  }
-
-  size_t File::Write(char* buffer, size_t len)
-  {
-    return fread(buffer, 1, len, (FILE*)handle);
-  }
-
   FileManager::~FileManager()
   {
     if (m_zfile)
@@ -397,7 +375,7 @@ namespace ToolKit
 
   bool FileManager::AddFileToZip(zipFile zfile, const char* filename)
   {
-    File f;
+    FILE* f;
     int ret;
     size_t red;
     size_t flen;
@@ -407,8 +385,8 @@ namespace ToolKit
       return false;
     }
 
-    f = File::Open(filename, "rb");
-    if (f.handle == NULL)
+    f = fopen(filename, "rb");
+    if (f == NULL)
     {
       return false;
     }
@@ -449,24 +427,24 @@ namespace ToolKit
                                 0);
     if (ret != ZIP_OK)
     {
-      File::Close(f);
+      fclose(f);
       zipCloseFileInZip(zfile);
       return false;
     }
 
     char* fileData = reinterpret_cast<char*>(malloc((flen + 1) * static_cast<uint>(sizeof(char))));
-    red            = f.Read(fileData, flen);
-    ret            = zipWriteInFileInZip(zfile, fileData, static_cast<uint>(red));
+    red            = fread(fileData, 1, flen, f);
+    ret            = zipWriteInFileInZip(zfile, fileData, static_cast<uint>(red * flen));
     
     if (ret != ZIP_OK)
     {
-      File::Close(f);
+      fclose(f);
       zipCloseFileInZip(zfile);
       return false;
     }
 
     free(fileData);
-    File::Close(f);
+    fclose(f);
     zipCloseFileInZip(zfile);
 
     return true;

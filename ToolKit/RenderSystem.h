@@ -80,8 +80,6 @@ namespace ToolKit
     void AddRenderTask(RenderTask task);
     void ExecuteRenderTasks();
     void FlushRenderTasks();
-    Renderer* GetRenderer();
-
     /**
      * Sets application window size. Doesn't necessarily update any frame buffer
      * or render target. Systems that rely on this data updates them selfs.

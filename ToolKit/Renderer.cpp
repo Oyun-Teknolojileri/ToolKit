@@ -31,6 +31,7 @@
 #include "Drawable.h"
 #include "EnvironmentComponent.h"
 #include "GradientSky.h"
+#include "Logger.h"
 #include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
@@ -47,7 +48,6 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
-#include "Logger.h"
 
 #include "DebugNew.h"
 
@@ -168,7 +168,7 @@ namespace ToolKit
     SetProjectViewModel(job.WorldTransform, cam);
     m_lights = lights;
     m_cam    = cam;
-     job.Mesh->Init();
+    job.Mesh->Init();
     job.Material->Init();
 
     // Set render material.
@@ -384,7 +384,10 @@ namespace ToolKit
     m_framebuffer = fb;
   }
 
-  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, bool force) { SetFramebuffer(fb, clear, m_clearColor, force); }
+  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, bool force)
+  {
+    SetFramebuffer(fb, clear, m_clearColor, force);
+  }
 
   void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color)
   {

@@ -1,12 +1,14 @@
-package com.otyazilim.myapplication;
+package com.otyazilim.toolkit;
 
 import android.view.View;
 
 import com.google.androidgamesdk.GameActivity;
 
-public class MainActivity extends GameActivity {
-    static {
-        System.loadLibrary("myapplication");
+public class MainActivity extends GameActivity
+{
+    static
+    {
+        System.loadLibrary("toolkit");
     }
 
     @Override

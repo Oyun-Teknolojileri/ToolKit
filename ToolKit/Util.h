@@ -210,6 +210,13 @@ namespace ToolKit
     return std::find(arr.cbegin(), arr.cend(), val) != arr.cend();
   }
 
+
+  template<class _Tp, class _Up>
+  inline std::shared_ptr<_Tp> tk_reinterpret_pointer_cast(const std::shared_ptr<_Up>& __r)
+  {
+      return std::shared_ptr<_Tp>(__r, reinterpret_cast<_Tp*>(__r.get()));
+  }
+
   /**
    * Find index of val in given array.
    * @param arr array that we want to search.

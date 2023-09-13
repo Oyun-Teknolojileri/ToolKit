@@ -127,8 +127,10 @@ namespace ToolKit
     m_sceneRenderer.m_params.Scene              = GetSceneManager()->GetCurrentScene();
     m_sceneRenderer.m_params.Gfx.SSAOEnabled    = false;
     m_sceneRenderer.m_params.Gfx.TonemappingEnabled = false;
-    GetRenderSystem()->GetRenderer()->SetFramebuffer(frameBuffer, true, true);
-
+    GetRenderSystem()->AddRenderTask({[&](Renderer* renderer)-> void
+                                      {
+                                        renderer->SetFramebuffer(frameBuffer);
+                                      }});
     static uint totalFrameCount = 0;
     GetRenderSystem()->AddRenderTask(&m_sceneRenderer);
     GetRenderSystem()->ExecuteRenderTasks();

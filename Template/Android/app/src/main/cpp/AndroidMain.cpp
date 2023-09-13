@@ -1,5 +1,5 @@
 
-#include "ToolKitMain.h"
+#include "AndroidMain.h"
 #include <game-activity/native_app_glue/android_native_app_glue.h>
 #include <EGL/egl.h>
 #include <GLES3/gl32.h>
@@ -59,9 +59,6 @@ namespace ToolKit
       void Update(float dt) override { }
   };
 
-  static GameViewport* gameViewport;
-  static Game* m_game;
-
   void AndroidDevice::InitEGL()
   {
       // Choose your render attributes
@@ -110,7 +107,7 @@ namespace ToolKit
 
       // Create a GLES 3 context
       const EGLint contextAttribs[] = { EGL_CONTEXT_MAJOR_VERSION, 3,
-                                        EGL_CONTEXT_MINOR_VERSION, 1,
+                                        EGL_CONTEXT_MINOR_VERSION, 0,
                                         EGL_NONE, EGL_NONE };
       EGLContext context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
       // get some window metrics
@@ -313,21 +310,11 @@ namespace ToolKit
     timing.LastTime = timing.CurrentTime;
   }
 
-  inline bool FileHasExtension(const char* path, int size, const char* extension)
+  inline bool FileHasExtension(const String& path, const String& extension)
   {
-      int extLen = 0;
-      // go to end of extension
-      while (extension[1] != 0)
-          extension++, extLen++;
-    
-      if (size <= extLen) return false;
-    
-      for (int i = 0; i <= extLen; i++)
-      {
-          if (*extension-- != path[--size])
-              return false;
-      }
-      return true;
+      String ext, name;
+      DecomposePath(path, nullptr, nullptr, &ext);
+      return ext == extension;
   }
 
   // copys all of the engine assets to internal data folder if already not coppied
@@ -374,7 +361,7 @@ namespace ToolKit
 
         if (exists(filePath))
         {
-          if (FileHasExtension(filePath.c_str(), filePath.size(), ".shader"))
+          if (FileHasExtension(filePath, ".shader"))
             std::filesystem::remove(filePath);
           else continue;
         }

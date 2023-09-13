@@ -31,21 +31,6 @@
  * relatled structures.
  */
 
-#ifdef __ANDROID__
-#define TK_GL_ES_3_0
-#define TK_DLL_EXPORT
-#include "game-activity/GameActivity.h"
-#include <android/asset_manager.h>
-#include <game-activity/native_app_glue/android_native_app_glue.h>
-
-// defined in ToolKitMain.cpp
-extern struct android_app* g_android_app;
-extern struct AAssetManager* g_asset_manager;
-
-#else
-#define TK_LOG(format, ...) GetLogger()->WriteConsole(LogType::Memo, format, ##__VA_ARGS__)
-#endif
-
 // GLM
 #define GLM_FORCE_XYZW_ONLY
 #define GLM_FORCE_CTOR_INIT
@@ -84,12 +69,6 @@ extern struct AAssetManager* g_asset_manager;
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-template<class _Tp, class _Up>
-inline std::shared_ptr<_Tp> ReinterpretPointerCast(const std::shared_ptr<_Up>& __r)
-{
-  return std::shared_ptr<_Tp>(__r, reinterpret_cast<_Tp*>(__r.get()));
-}
 
 #ifdef _WIN32 // Windows.
   #define TK_STDCAL __stdcall

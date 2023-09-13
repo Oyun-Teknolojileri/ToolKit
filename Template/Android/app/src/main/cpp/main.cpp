@@ -3,7 +3,7 @@
 #include "Utility.h"
 #include "ToolKit.h"
 #include "Logger.h"
-#include "ToolKitMain.h"
+#include "AndroidMain.h"
 
 #include <game-activity/GameActivity.cpp>
 #include <game-text-input/gametextinput.cpp>

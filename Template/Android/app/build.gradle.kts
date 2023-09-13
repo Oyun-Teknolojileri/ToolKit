@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.otyazilim.myapplication"
+    namespace = "com.otyazilim.toolkit"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.otyazilim.myapplication"
+        applicationId = "com.otyazilim.toolkit"
         minSdk = 27
         targetSdk = 33
         versionCode = 1
