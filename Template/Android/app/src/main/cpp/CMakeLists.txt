@@ -11,6 +11,10 @@ set(TOOLKIT_DIR "__tkdir__" CACHE FILEPATH "Where is the ToolKit source director
 if("${TOOLKIT_DIR}" STREQUAL "__tkdir__")
     if(DEFINED ENV{APPDATA})
         cmake_path(SET CFG_FILE_PATH "$ENV{APPDATA}/ToolKit/Config/Path.txt")
+        set(PATH_WITH_BACKSLASH "$ENV{APPDATA}\\ToolKit\\Config\\Path.txt")
+        # Replace backslashes with forward slashes
+        string(REPLACE "\\" "/" CFG_FILE_PATH "${PATH_WITH_BACKSLASH}")
+
         if(NOT EXISTS ${CFG_FILE_PATH})
             message(SEND_ERROR "Set TOOLKIT_DIR or provide ${CFG_FILE_PATH} containing path to ToolKit.")
         else()
