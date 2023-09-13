@@ -456,7 +456,7 @@ namespace ToolKit
 
     char* fileData = reinterpret_cast<char*>(malloc((flen + 1) * static_cast<uint>(sizeof(char))));
     red            = f.Read(fileData, flen);
-    ret            = zipWriteInFileInZip(zfile, fileData, static_cast<uint>(red * flen));
+    ret            = zipWriteInFileInZip(zfile, fileData, static_cast<uint>(red));
     
     if (ret != ZIP_OK)
     {
