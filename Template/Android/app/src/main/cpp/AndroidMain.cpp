@@ -15,7 +15,15 @@
 #include "Utility.h"
 #include "SceneRenderer.h"
 
+#ifndef _NDEBUG
+#define CHECK_GL_ERROR() checkGLError(__FILE_NAME__, __LINE__)
+#else
 #define CHECK_GL_ERROR()
+#endif
+
+#include <android/log.h>
+
+#define ANDROID_LOG(format, ...) __android_log_print(ANDROID_LOG_DEBUG, "TK_LOG", format, ##__VA_ARGS__)
 
 static void checkGLError(const char* file, int line)
 {
@@ -32,7 +40,7 @@ static void checkGLError(const char* file, int line)
       case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: errorString = "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT"; break;
       default: errorString = "UNKNOWN_ERROR"; break;
     }
-    TK_LOG("OpenGL Error: %s in file %s at line %d\n", errorString, file, line);
+    ANDROID_LOG("OpenGL Error: %s in file %s at line %d\n", errorString, file, line);
   }
 }
 
@@ -93,13 +101,13 @@ namespace ToolKit
 
               if(red == 8 && green == 8 && blue == 8 && depth == 24)
               {
-                  TK_LOG( "Found config with %i, %i, %i, %i", red, green, blue, depth);
+                  ANDROID_LOG( "Found config with %i, %i, %i, %i", red, green, blue, depth);
                   break;
               }
           }
       }
 
-      TK_LOG("Found: %i configs", numConfigs);
+      ANDROID_LOG("Found: %i configs", numConfigs);
       // create the proper window surface
       EGLint format;
       eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format);
@@ -140,7 +148,7 @@ namespace ToolKit
           GLint maxLength = 2048;
           char infoLog[2048];
           glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
-          TK_LOG("No compile vs %s", infoLog);
+          ANDROID_LOG("No compile vs %s", infoLog);
           glDeleteShader(shader);
           DestroyRenderer();
           assert(0);
@@ -226,7 +234,7 @@ namespace ToolKit
           GLint maxLength = 0;
           glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &maxLength);
           char* infoLog = new char[maxLength];
-          TK_LOG("linker failed %s", infoLog);
+          ANDROID_LOG("linker failed %s", infoLog);
           glGetProgramInfoLog(shaderProgram, maxLength, &maxLength, &infoLog[0]);
           glDeleteProgram(shaderProgram);
           glDeleteShader(vs);
@@ -325,20 +333,20 @@ namespace ToolKit
     
     if (!exists(internalDataPath + "/Resources"))
       if (create_directories(internalDataPath + "/Resources"))
-        TK_LOG("created resources \n");
+        ANDROID_LOG("created resources \n");
 
     String resourcesEngine = "/Resources/Engine";
 
     if (!exists(internalDataPath + resourcesEngine))
       if (create_directories(internalDataPath + resourcesEngine))
-        TK_LOG("created Resources/Engine\n");
+        ANDROID_LOG("created Resources/Engine\n");
 
     const int numDirectories = 6;
     String directories[numDirectories] { "/Fonts", "/Materials", "/Meshes", "/Scenes", "/Shaders", "/Textures" };
     AAssetManager* assetManager = g_android_app->activity->assetManager;
     std::vector<char> buffer;
 
-    TK_LOG(" traversing directories \n");
+    ANDROID_LOG(" traversing directories \n");
     for (int i = 0; i < numDirectories; i++)
     {
       if (!exists(internalDataPath + resourcesEngine + directories[i]))
@@ -349,15 +357,15 @@ namespace ToolKit
       String assetDirectory = resourcesEngine + directories[i];
       assetDirectory.erase(assetDirectory.begin(), assetDirectory.begin() + 1); // delete first character '/'
       AAssetDir* dir = AAssetManager_openDir(assetManager, assetDirectory.c_str());
-      
-      TK_LOG("asset directory: %s\n", assetDirectory.c_str());
+
+      ANDROID_LOG("asset directory: %s\n", assetDirectory.c_str());
 
       while (const char* file = AAssetDir_getNextFileName(dir))
       {
         String fileName = resourcesEngine + directories[i] + "/" + file;
         String filePath = internalDataPath + fileName;
         fileName.erase(fileName.begin(), fileName.begin() + 1); // delete first character '/'
-        TK_LOG("file: %s\n", filePath.c_str());
+        ANDROID_LOG("file: %s\n", filePath.c_str());
 
         if (exists(filePath))
         {
@@ -369,7 +377,7 @@ namespace ToolKit
         AAsset* asset = AAssetManager_open(assetManager, fileName.c_str(), 0);
         if (!asset)
         {
-            TK_LOG("cannot open asset! %s\n", fileName.c_str());
+            ANDROID_LOG("cannot open asset! %s\n", fileName.c_str());
             continue;
         }
         FILE* fileHandle = fopen(filePath.c_str(), "wb");
@@ -404,12 +412,12 @@ namespace ToolKit
       CopyAllAssetsToDataPath();
 
       proxy->PreInit();
-      ToolKit::GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { TK_LOG("%s", ms.c_str()); });
+      GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { ANDROID_LOG("%s", ms.c_str()); });
       proxy->Init();
 
       proxy->m_renderSys->InitGl(nullptr, [](const std::string& msg) -> void
                                  {
-                                   TK_LOG("tk opengl error: %s \n", msg.c_str());
+                                     GetLogger()->WriteConsole(LogType::Memo, "tk opengl error: %s \n", msg.c_str());
                                  });
 
       gameViewport = new GameViewport((float)width, (float)height);
