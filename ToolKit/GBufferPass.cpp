@@ -33,7 +33,7 @@
 
 #include "DebugNew.h"
 
-#include "glad/OpenGL.h"
+#include "TKOpenGL.h"
 
 namespace ToolKit
 {

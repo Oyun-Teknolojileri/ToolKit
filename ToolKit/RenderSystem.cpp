@@ -28,7 +28,7 @@
 
 #include "GlErrorReporter.h"
 #include "ToolKit.h"
-#include "glad/OpenGL.h"
+#include "TKOpenGL.h"
 #include "Logger.h"
 
 #include "DebugNew.h"
