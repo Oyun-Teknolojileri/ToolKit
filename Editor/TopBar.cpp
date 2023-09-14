@@ -219,15 +219,16 @@ namespace ToolKit
         }
 
         // Loop over menus and fill its entries.
+        String menu;
         for (int i = 0; i < (int) parts.size() - 1; i++)
         {
-          String& menu = parts[i];
-          auto entry   = menuMap.find(menu);
+          menu       += parts[i];
+          auto entry = menuMap.find(menu);
 
           if (entry == menuMap.end())
           {
             DynamicMenuPtr menuPtr = std::make_shared<DynamicMenu>();
-            menuPtr->MenuName      = menu;
+            menuPtr->MenuName      = parts[i];
             menuMap[menu]          = menuPtr;
 
             if (i == 0)
@@ -245,8 +246,13 @@ namespace ToolKit
           // Chain the menus.
           if (i > 0)
           {
-            String& parentMenu = parts[i - 1];
-            auto parentMenuIt  = menuMap.find(parentMenu);
+            String parentMenu;
+            for (int j = 0; j < i; j++)
+            {
+              parentMenu += parts[j];
+            }
+
+            auto parentMenuIt = menuMap.find(parentMenu);
             if (parentMenuIt != menuMap.end())
             {
               parentMenuIt->second->SubMenu = menuMap[menu];
