@@ -243,6 +243,9 @@
     <ClCompile Include="ForwardPreProcessPass.cpp">
       <Filter>Source\Render\RenderPass</Filter>
     </ClCompile>
+    <ClCompile Include="TKOpenGL.cpp">
+      <Filter>Source\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -484,6 +487,9 @@
     </ClInclude>
     <ClInclude Include="Meta.h">
       <Filter>Source\Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="TKOpenGL.h">
+      <Filter>Source\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

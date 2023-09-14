@@ -285,6 +285,10 @@ namespace ToolKit
       if (absolutePath[0] == '.')
       {
         size_t index = absolutePath.find("Prefabs");
+        if (index == String::npos)
+        {
+          continue;
+        }
         absolutePath = absolutePath.substr(index);
         absolutePath = ConcatPaths({DefaultAbsolutePath(), absolutePath});
       }

@@ -32,9 +32,8 @@
 #include "Material.h"
 #include "RenderSystem.h"
 #include "Shader.h"
+#include "TKOpenGL.h"
 #include "ToolKit.h"
-
-#include <gles2.h>
 
 #include "DebugNew.h"
 

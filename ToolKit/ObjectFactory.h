@@ -26,16 +26,19 @@
 
 #pragma once
 
+#include "ToolKit.h"
 #include "Types.h"
 
 #include <type_traits>
 
 namespace ToolKit
 {
+  class Main;
 
   class TK_API TKObjectFactory
   {
-    friend class Main;
+    friend Main;
+    typedef std::function<Object*()> ObjectConstructorCallback;
 
    public:
     /**

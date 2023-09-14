@@ -29,11 +29,10 @@
 #include "FileManager.h"
 #include "MathUtil.h"
 #include "Node.h"
+#include "TKOpenGL.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "Util.h"
-
-#include <gles2.h>
 
 #include "DebugNew.h"
 

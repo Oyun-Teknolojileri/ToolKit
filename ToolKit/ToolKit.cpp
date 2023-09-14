@@ -38,10 +38,8 @@
 #include "RenderSystem.h"
 #include "Scene.h"
 #include "Shader.h"
+#include "TKOpenGL.h"
 #include "UIManager.h"
-
-#define GLAD_GLES2_IMPLEMENTATION
-#include <gles2.h>
 
 #include "DebugNew.h"
 
