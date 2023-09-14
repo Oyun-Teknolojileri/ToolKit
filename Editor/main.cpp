@@ -239,10 +239,6 @@ namespace ToolKit
             of->Override<EditorSpotLight, SpotLight>();
             of->Override<EditorScene, Scene>();
 
-            // Allow classes with the MenuMetaKey to be created from the add menu.
-            of->m_metaProcessorMap[MenuMetaKey] = [](StringView val) -> void
-            { g_app->m_customObjectArray.push_back(String(val)); };
-
             // Set defaults
             SDL_GL_SetSwapInterval(0);
 
@@ -251,6 +247,17 @@ namespace ToolKit
             g_app->m_sysComExecFn = ToolKit::Win32Helpers::g_SysComExecFn;
             GetLogger()->SetPlatformConsoleFn([](LogType type, const String& msg) -> void
                                               { ToolKit::Win32Helpers::OutputLog((int) type, msg.c_str()); });
+
+            // Allow classes with the MenuMetaKey to be created from the add menu.
+            of->m_metaProcessorMap[MenuMetaKey] = [](StringView val) -> void
+            { g_app->m_customObjectMetaValues.push_back(String(val)); };
+
+            g_app->m_customObjectMetaValues.push_back("MySub/Sub/Oley1:Oley11");
+            g_app->m_customObjectMetaValues.push_back("MySub/Sub/Oley2:Oley22");
+            g_app->m_customObjectMetaValues.push_back("MySub/Sub/Pro/Oley3:Oley33");
+            g_app->m_customObjectMetaValues.push_back("MySub/Oley4:Oley44");
+            g_app->m_customObjectMetaValues.push_back("Organics/Sub/Oley5:Oley55");
+
 
             UI::Init();
             g_app->Init();

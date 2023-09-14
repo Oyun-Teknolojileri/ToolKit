@@ -219,7 +219,7 @@ namespace ToolKit
       EditorLitMode m_sceneLightingMode        = EditorLitMode::EditorLit;
       EditorViewport* m_lastActiveViewport     = nullptr;
       Workspace m_workspace;
-      StringArray m_customObjectArray; //!< Add menu shows this additional classes.
+      StringArray m_customObjectMetaValues; //!< Add menu shows this additional classes.
 
       // Snap settings.
       bool m_snapsEnabled  = false; // Delta transforms.

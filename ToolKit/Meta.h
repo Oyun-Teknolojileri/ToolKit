@@ -31,8 +31,12 @@
 namespace ToolKit
 {
   /**
-   * MetaKey for storage location in the editor. Pattern: Add/Sub/Class
+   * MetaKey for Editor to display custom object types registered by plugins.
+   * Value Pattern: Menu/SubMenu/Class:Name
+   * Menu/SubMenu will appear this way in the target menu.
+   * Class will be used to construct object. So it must be T::StaticClass()->Name
+   * Name will be used to display name for the object.
    */
-  constexpr StringView MenuMetaKey = "MenuMetaKey"; //!< MetaKey for storage location in the editor.
+  constexpr StringView MenuMetaKey = "MenuMetaKey";
 
 } // namespace ToolKit

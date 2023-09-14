@@ -33,6 +33,7 @@
 
 #include <Drawable.h>
 #include <GradientSky.h>
+#include <Meta.h>
 #include <Surface.h>
 
 #include <DebugNew.h>
@@ -43,6 +44,40 @@ namespace ToolKit
   {
 
     OverlayTopBar::OverlayTopBar(EditorViewport* owner) : OverlayUI(owner) {}
+
+    typedef std::shared_ptr<struct DynamicMenu> DynamicMenuPtr;
+    typedef std::weak_ptr<struct DynamicMenu> DynamicMenuWeakPtr;
+
+    struct DynamicMenu
+    {
+      String MenuName;
+      std::vector<std::pair<String, String>> MenuEntries; // Class - Name pairs.
+      DynamicMenuWeakPtr SubMenu;
+    };
+
+    void PrintDynamicMenu(DynamicMenuWeakPtr parentMenu)
+    {
+      if (DynamicMenuPtr menu = parentMenu.lock())
+      {
+        if (ImGui::BeginMenu(menu->MenuName.c_str()))
+        {
+          if (DynamicMenuPtr subMenu = menu->SubMenu.lock())
+          {
+            PrintDynamicMenu(subMenu);
+          }
+
+          for (auto& menuEntry : menu->MenuEntries)
+          {
+            if (ImGui::MenuItem(menuEntry.second.c_str()))
+            {
+              Object* obj = GetObjectFactory()->MakeNew(menuEntry.first);
+            }
+          }
+
+          ImGui::EndMenu();
+        }
+      }
+    }
 
     void OverlayTopBar::ShowAddMenuPopup()
     {
@@ -152,6 +187,79 @@ namespace ToolKit
         }
 
         ImGui::EndMenu();
+      }
+
+      // Construct dynamic menu map.
+      std::unordered_map<String, DynamicMenuPtr> menuMap;
+      std::vector<DynamicMenuWeakPtr> rootMenuArray;
+
+      auto errContinueFn = [](String& metaVal) -> void
+      { GetLogger()->WriteConsole(LogType::Warning, "%s value is wrong: %s", MenuMetaKey, metaVal); };
+
+      std::stable_sort(g_app->m_customObjectMetaValues.begin(), g_app->m_customObjectMetaValues.end());
+
+      for (String& customObjectMetaVal : g_app->m_customObjectMetaValues)
+      {
+        StringArray parts;
+        Split(customObjectMetaVal, "/", parts);
+
+        if (parts.size() < 2)
+        {
+          errContinueFn(customObjectMetaVal);
+          continue;
+        }
+
+        StringArray classNamePair;
+        Split(parts.back(), ":", classNamePair);
+
+        if (classNamePair.size() != 2)
+        {
+          errContinueFn(customObjectMetaVal);
+          continue;
+        }
+
+        // Loop over menus and fill its entries.
+        for (int i = 0; i < (int) parts.size() - 1; i++)
+        {
+          String& menu = parts[i];
+          auto entry   = menuMap.find(menu);
+
+          if (entry == menuMap.end())
+          {
+            DynamicMenuPtr menuPtr = std::make_shared<DynamicMenu>();
+            menuPtr->MenuName      = menu;
+            menuMap[menu]          = menuPtr;
+
+            if (i == 0)
+            {
+              rootMenuArray.push_back(menuPtr);
+            }
+          }
+
+          DynamicMenuPtr menuPtr = menuMap[menu];
+          if (i == (int) parts.size() - 2)
+          {
+            menuPtr->MenuEntries.push_back({classNamePair[0], classNamePair[1]});
+          }
+
+          // Chain the menus.
+          if (i > 0)
+          {
+            String& parentMenu = parts[i - 1];
+            auto parentMenuIt  = menuMap.find(parentMenu);
+            if (parentMenuIt != menuMap.end())
+            {
+              parentMenuIt->second->SubMenu = menuMap[menu];
+            }
+          }
+        }
+      }
+
+      // Create dynamic menu.
+      ImGui::Separator();
+      for (DynamicMenuWeakPtr root : rootMenuArray)
+      {
+        PrintDynamicMenu(root);
       }
 
       if (createdEntity != nullptr)

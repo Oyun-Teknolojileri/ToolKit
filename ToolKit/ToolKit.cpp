@@ -135,8 +135,6 @@ namespace ToolKit
     m_renderSys->Init();
     m_timing.Init(m_engineSettings->Graphics.FPS);
 
-    InitMetaProcessors();
-
     m_initiated = true;
   }
 
