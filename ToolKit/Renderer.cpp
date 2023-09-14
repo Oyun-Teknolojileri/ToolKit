@@ -354,9 +354,9 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color, bool force)
+  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color)
   {
-    if (force || fb != m_framebuffer)
+    if (fb != m_framebuffer)
     {
       if (fb != nullptr)
       {
@@ -381,9 +381,9 @@ namespace ToolKit
     m_framebuffer = fb;
   }
 
-  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, bool force)
+  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear)
   {
-    SetFramebuffer(fb, clear, m_clearColor, force);
+    SetFramebuffer(fb, clear, m_clearColor);
   }
 
   void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color)

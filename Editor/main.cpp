@@ -112,6 +112,7 @@ namespace ToolKit
         {
           String utf8Path = path.parent_path().u8string();
           utf8Path.erase(remove(utf8Path.begin(), utf8Path.end(), '\"'), utf8Path.end());
+          utf8Path.replace(utf8Path.begin(), utf8Path.end(), '\\', '/');
 
           file << utf8Path;
         }

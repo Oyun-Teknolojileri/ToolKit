@@ -34,7 +34,8 @@ namespace ToolKit
     {
       Web,
       Windows,
-      Linux
+      Linux,
+      Android
     };
 
     class Publisher
@@ -49,6 +50,18 @@ namespace ToolKit
       void Publish() const override;
     };
 
+    class AndroidPublisher : Publisher
+    {
+    public:
+      void Publish() const override;
+    };
+
+    class WindowsPublisher : Publisher
+    {
+    public:
+      void Publish() const override;
+    };
+
     class PublishManager
     {
      public:
@@ -58,7 +71,9 @@ namespace ToolKit
       void Publish(PublishPlatform platform);
 
      private:
-      WebPublisher* m_webPublisher = nullptr;
+      WebPublisher*     m_webPublisher     = nullptr;
+      AndroidPublisher* m_androidPublisher = nullptr;
+      WindowsPublisher* m_windowsPublisher = nullptr;
     };
 
   } // namespace Editor

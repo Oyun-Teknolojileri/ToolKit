@@ -228,6 +228,9 @@ namespace ToolKit
     auto it = std::find(arr.cbegin(), arr.cend(), val);
     return it == arr.cend() ? -1 : int(it - arr.cbegin());
   }
+  
+  template<typename T, uint64  N>
+  inline constexpr uint64 ArraySize(const T (&)[N]) { return N; }
 
   //  Time.
   ///////////////////////////////////////////////////////

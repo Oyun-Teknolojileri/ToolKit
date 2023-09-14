@@ -72,8 +72,8 @@ namespace ToolKit
     void SetRenderState(const RenderState* const state);
 
     void SetStencilOperation(StencilOperation op);
-    void SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color, bool force = false);
-    void SetFramebuffer(FramebufferPtr fb, bool clear = true, bool force = false);
+    void SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color);
+    void SetFramebuffer(FramebufferPtr fb, bool clear = true);
     void SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color);
     void SwapFramebuffer(FramebufferPtr& fb, bool clear = true);
 

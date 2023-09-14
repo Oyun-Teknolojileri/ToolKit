@@ -793,6 +793,16 @@ namespace ToolKit
           g_app->m_publishManager->Publish(PublishPlatform::Web);
         }
 
+        if (ImGui::MenuItem("Android"))
+        {
+          g_app->m_publishManager->Publish(PublishPlatform::Web);
+        }
+
+        if (ImGui::MenuItem("Windows"))
+        {
+          
+        }
+
         ImGui::EndMenu();
       }
     }

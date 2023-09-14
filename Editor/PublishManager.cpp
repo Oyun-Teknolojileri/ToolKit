@@ -34,7 +34,12 @@ namespace ToolKit
 {
   namespace Editor
   {
-    PublishManager::PublishManager() { m_webPublisher = new WebPublisher(); }
+    PublishManager::PublishManager() 
+    {
+      m_webPublisher     = new WebPublisher(); 
+      m_windowsPublisher = new WindowsPublisher(); 
+      m_androidPublisher = new AndroidPublisher(); 
+    }
 
     PublishManager::~PublishManager() { SafeDel(m_webPublisher); }
 
@@ -44,6 +49,30 @@ namespace ToolKit
       {
         m_webPublisher->Publish();
       }
+
+      if (platform == PublishPlatform::Android)
+      {
+        m_androidPublisher->Publish();
+      }
+
+      if (platform == PublishPlatform::Windows)
+      {
+        m_windowsPublisher->Publish();
+      }
+    }
+
+    void WindowsPublisher::Publish() const
+    {
+      
+    }
+
+    void AndroidPublisher::Publish() const
+    {
+      // Pak project
+      g_app->PackResources();
+      // Warning: Running batch files are Windows specific
+      Path workDir         = std::filesystem::current_path();
+
     }
 
     void WebPublisher::Publish() const
@@ -52,7 +81,6 @@ namespace ToolKit
       g_app->PackResources();
 
       // Warning: Running batch files are Windows specific
-
       Path workDir         = std::filesystem::current_path();
 
       auto exitWithErrorFn = [&workDir](const char* msg) -> void
@@ -103,8 +131,9 @@ namespace ToolKit
       {
         std::filesystem::remove_all(publishDirectory);
       }
+      
       std::filesystem::create_directories(publishDirectory);
-      for (int i = 0; i < 4; i++)
+      for (int i = 0; i < ArraySize(files); i++)
       {
         std::filesystem::copy(files[i].c_str(), publishDirectory);
       }

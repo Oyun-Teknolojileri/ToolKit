@@ -296,7 +296,7 @@ namespace ToolKit
     timing.CurrentTime = GetElapsedMilliSeconds();
     timing.DeltaTime = timing.CurrentTime - timing.LastTime;
 
-    m_game->Frame(0.01f, gameViewport);
+    m_game->Frame(timing.DeltaTime, gameViewport);
     Render(m_game->renderTarget->m_textureId);
 
     timing.FrameCount++;
@@ -323,14 +323,22 @@ namespace ToolKit
     using namespace std::filesystem;
     
     if (!exists(internalDataPath + "/Resources"))
+    {
       if (create_directories(internalDataPath + "/Resources"))
+      {
         ANDROID_LOG("created resources \n");
+      }
+    }
 
     String resourcesEngine = "/Resources/Engine";
 
     if (!exists(internalDataPath + resourcesEngine))
+    {
       if (create_directories(internalDataPath + resourcesEngine))
+      {
         ANDROID_LOG("created Resources/Engine\n");
+      }
+    }
 
     const int numDirectories = 6;
     String directories[numDirectories] { "/Fonts", "/Materials", "/Meshes", "/Scenes", "/Shaders", "/Textures" };
