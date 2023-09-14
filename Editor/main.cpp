@@ -250,7 +250,10 @@ namespace ToolKit
 
             // Allow classes with the MenuMetaKey to be created from the add menu.
             of->m_metaProcessorMap[MenuMetaKey] = [](StringView val) -> void
-            { g_app->m_customObjectMetaValues.push_back(String(val)); };
+            {
+              g_app->m_customObjectMetaValues.push_back(String(val));
+              g_app->ReconstructDynamicMenus();
+            };
 
             g_app->m_customObjectMetaValues.push_back("MySub/Sub/Oley1:Oley11");
             g_app->m_customObjectMetaValues.push_back("MySub/Sub/Oley2:Oley22");
@@ -258,6 +261,7 @@ namespace ToolKit
             g_app->m_customObjectMetaValues.push_back("MySub/Oley4:Oley44");
             g_app->m_customObjectMetaValues.push_back("Organics/Sub/Oley5:Oley55");
 
+            g_app->ReconstructDynamicMenus();
 
             UI::Init();
             g_app->Init();
