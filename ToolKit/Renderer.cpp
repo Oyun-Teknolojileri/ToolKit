@@ -53,9 +53,6 @@
 
 namespace ToolKit
 {
-
-#define TK_LUT_TEXTURE "GLOBAL_BRDF_LUT_TEXTURE"
-
   Renderer::Renderer() {}
 
   void Renderer::Init()
@@ -117,7 +114,7 @@ namespace ToolKit
       HdriPtr hdriPtr                      = envCom->GetHdriVal();
       CubeMapPtr irradianceCubemap         = hdriPtr->m_irradianceCubemap;
       CubeMapPtr preFilteredSpecularIBLMap = hdriPtr->m_prefilteredEnvMap;
-      RenderTargetPtr brdfLut              = GetTextureManager()->Create<RenderTarget>(TK_LUT_TEXTURE);
+      RenderTargetPtr brdfLut              = GetTextureManager()->Create<RenderTarget>(TK_BRDF_LUT_TEXTURE);
 
       if (irradianceCubemap && preFilteredSpecularIBLMap && brdfLut)
       {

@@ -75,10 +75,6 @@ namespace ToolKit
 
   bool ResourceManager::Exist(const String& file) { return m_storage.find(file) != m_storage.end(); }
 
-  template std::shared_ptr<Material> ResourceManager::Copy(ResourcePtr source);
-  template std::shared_ptr<Mesh> ResourceManager::Copy(ResourcePtr source);
-  template std::shared_ptr<Skeleton> ResourceManager::Copy(ResourcePtr source);
-
   ResourcePtr ResourceManager::Remove(const String& file)
   {
     ResourcePtr resource = nullptr;

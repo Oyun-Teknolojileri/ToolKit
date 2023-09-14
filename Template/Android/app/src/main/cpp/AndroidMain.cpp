@@ -11,8 +11,8 @@
 
 #include "ToolKit.h"
 #include "Logger.h"
+#include "Util.h"
 #include "Game.h"
-#include "Utility.h"
 #include "SceneRenderer.h"
 
 #ifndef _NDEBUG
@@ -290,19 +290,10 @@ namespace ToolKit
       glUseProgram(cp);
   }
 
-  float AndroidDevice::GetMilliSeconds()
-  {
-    using namespace std::chrono;
-    static high_resolution_clock::time_point t1 = high_resolution_clock::now();
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-    return static_cast<float>(time_span.count() * 1000.0);
-  }
-
   void AndroidDevice::ToolKitFrame()
   {
     static Timing timing{};
-    timing.CurrentTime = GetMilliSeconds();
+    timing.CurrentTime = GetElapsedMilliSeconds();
     timing.DeltaTime = timing.CurrentTime - timing.LastTime;
 
     m_game->Frame(0.01f, gameViewport);

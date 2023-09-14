@@ -12,7 +12,7 @@
 #define MKDIR(d) mkdir(d, 0775)
 
 const int WRITE_BUFFER_SIZE = 16384;
-const int MAX_FILENAME_LEN = 256;
+#define MAX_FILENAME_LEN 256
 
 // Errors id
 const int ERROR_CREATE_ZIP = -100;

@@ -33,7 +33,7 @@
 #include "Types.h"
 #include "Viewport.h"
 
-#define TK_LUT_TEXTURE "GLOBAL_BRDF_LUT_TEXTURE"
+#define TK_BRDF_LUT_TEXTURE "GLOBAL_BRDF_LUT_TEXTURE"
 
 namespace ToolKit
 {

@@ -39,22 +39,22 @@ namespace ToolKit
 
   void Game::Init(Main* master)
   {
-    material = std::make_shared<Material>();
+    material = MakeNewPtr<Material>();
     shader   = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
     material->m_fragmentShader = shader;
     material->Init();
 
-    cubeMaterial  = std::make_shared<Material>();
+    cubeMaterial  = MakeNewPtr<Material>();
     cubeMaterial->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     cubeMaterial->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment.shader", true));
     cubeMaterial->Init();
-    camera = std::make_shared<Camera>();
+    camera = MakeNewPtr<Camera>();
 
-    frameBuffer   = std::make_shared<Framebuffer>();
-    renderTarget  = std::make_shared<RenderTarget>();
+    frameBuffer   = MakeNewPtr<Framebuffer>();
+    renderTarget  = MakeNewPtr<RenderTarget>();
 
-    ScenePtr scene = std::make_shared<Scene>();
+    ScenePtr scene = MakeNewPtr<Scene>();
     const float maxX = 10.0f;
     const float maxZ = 15.0f;
     const int numMatrices = 10;

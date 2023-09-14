@@ -390,11 +390,7 @@ namespace ToolKit
 
   bool HasToolKitRoot(const String& path) 
   {
-#ifdef __ANDROID__
-    return false;
-#else
     return StartsWith(path, "ToolKit\\") || StartsWith(path, "ToolKit/"); 
-#endif
   }
 
   String GetFileName(const String& path)
@@ -488,6 +484,7 @@ namespace ToolKit
       return SCENE;
     }
 
+    assert(false && "Resource type does not have a corresponding extension.");
     return String();
   }
 
@@ -914,11 +911,8 @@ namespace ToolKit
   {
     namespace ch                                    = std::chrono;
     static ch::high_resolution_clock::time_point t1 = ch::high_resolution_clock::now();
-
     ch::high_resolution_clock::time_point t2        = ch::high_resolution_clock::now();
-
     ch::duration<double> timeSpan                   = ch::duration_cast<ch::duration<double>>(t2 - t1);
-
     return static_cast<float>(timeSpan.count() * 1000.0);
   }
 

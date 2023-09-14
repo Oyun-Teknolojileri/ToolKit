@@ -380,7 +380,7 @@ namespace ToolKit
                                      "../Template/Game.cpp",
                                      "../Template/CMakeLists.txt",
                                      "../Template/CMakeHotReload.cmake",
-                                     "../Template/web_main.cpp"};
+                                     "../Template/Web/web_main.cpp"};
 
       constexpr int folderCount   = 2;
       String folders[folderCount] = {

@@ -29,6 +29,7 @@
 #include "Audio.h"
 #include "EngineSettings.h"
 #include "FileManager.h"
+#include "Logger.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Object.h"
@@ -39,7 +40,7 @@
 #include "Shader.h"
 #include "TKOpenGL.h"
 #include "UIManager.h"
-#include "Logger.h"
+
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -151,7 +152,7 @@ namespace ToolKit
     m_materialManager->Uninit();
     m_sceneManager->Uninit();
     m_skeletonManager->Uninit();
-    
+
     m_initiated    = false;
     m_preInitiated = false;
   }
@@ -178,7 +179,7 @@ namespace ToolKit
     SafeDel(m_skeletonManager);
     SafeDel(m_fileManager);
     SafeDel(m_objectFactory);
-    SafeDel(m_engineSettings);
+    SafeDel(m_engineSettings);  
   }
 
   void Main::SetConfigPath(StringView cfgPath) { m_cfgPath = cfgPath; }
@@ -314,7 +315,7 @@ namespace ToolKit
   String DefaultPath()
   {
 #ifdef __ANDROID__
-    static const String res = ConcatPaths({ Main::GetInstance()->m_resourceRoot, "Resources", "Engine"});
+    static const String res = ConcatPaths({Main::GetInstance()->m_resourceRoot, "Resources", "Engine"});
 #else
     static const String res = ConcatPaths({"..", "Resources", "Engine"});
 #endif

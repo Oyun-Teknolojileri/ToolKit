@@ -22,10 +22,8 @@ namespace ToolKit
     void DestroyToolKit(void* mainHandle);
   private:
     void ToolKitMainWindowResize();
-    float GetMiliSeconds();
     void CheckShaderError(unsigned int shader);
     void InitEGL();
-    float GetMilliSeconds();
     void Render(GLuint tex);
     void InitRender();
     void DestroyRenderer();

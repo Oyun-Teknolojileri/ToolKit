@@ -436,7 +436,7 @@ namespace ToolKit
                                                                     Renderer::RHIConstants::specularIBLLods);
 
           // Pre-compute BRDF lut
-          if (!GetTextureManager()->Exist(TK_LUT_TEXTURE))
+          if (!GetTextureManager()->Exist(TK_BRDF_LUT_TEXTURE))
           {
             FullQuadPass quadPass;
 
@@ -461,7 +461,7 @@ namespace ToolKit
             quadPass.Render();
             quadPass.PostRender();
 
-            brdfLut->SetFile(TK_LUT_TEXTURE);
+            brdfLut->SetFile(TK_BRDF_LUT_TEXTURE);
             GetTextureManager()->Manage(brdfLut);
           }
 

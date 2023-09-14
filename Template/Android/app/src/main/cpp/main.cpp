@@ -1,6 +1,5 @@
 #include <jni.h>
 
-#include "Utility.h"
 #include "ToolKit.h"
 #include "Logger.h"
 #include "AndroidMain.h"

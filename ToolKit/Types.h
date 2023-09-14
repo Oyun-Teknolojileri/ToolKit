@@ -31,6 +31,7 @@
  * relatled structures.
  */
 
+#ifdef __ANDROID__
 // GLM
 #define GLM_FORCE_XYZW_ONLY
 #define GLM_FORCE_CTOR_INIT
@@ -55,7 +56,10 @@
 #include "glm/gtx/scalar_relational.hpp"
 #include "glm/gtx/string_cast.hpp"
 #include "glm/gtx/vector_query.hpp"
-
+#else
+#include "glm/glm.hpp"
+#include "glm/gtc/quaternion.hpp"
+#endif
 // RapidXml
 #include "RapidXml/rapidxml_ext.h"
 #include "RapidXml/rapidxml_utils.hpp"

@@ -26,10 +26,10 @@
 
 #include "RenderSystem.h"
 
-#include "GlErrorReporter.h"
 #include "ToolKit.h"
 #include "TKOpenGL.h"
 #include "Logger.h"
+#include "GlErrorReporter.h"
 
 #include "DebugNew.h"
 

@@ -24,14 +24,14 @@
  * SOFTWARE.
  */
 
-#include "GlErrorReporter.h"
 #include "Logger.h"
+#include "ToolKit.h"
+#include "GlErrorReporter.h"
 #include "TKOpenGL.h"
 
 namespace ToolKit
 {
-
-  GlReportCallback GlErrorReporter::Report = [](const std::string& msg) -> void { };
+  GlReportCallback GlErrorReporter::Report = [](const String& msg) -> void { GetLogger()->Log(msg); };
 
   void InitGLErrorReport(GlReportCallback callback)
   {
@@ -40,7 +40,6 @@ namespace ToolKit
     {
       glEnable(GL_DEBUG_OUTPUT);
       glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-
       glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
       glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
       glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DEBUG_SEVERITY_HIGH, 0, NULL, GL_TRUE);
