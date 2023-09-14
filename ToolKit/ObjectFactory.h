@@ -76,7 +76,7 @@ namespace ToolKit
       T::StaticClass()->HashId              = std::hash<String> {}(objectClass->Name);
 
       // Iterate over all meta processors for each meta entry.
-      for (auto& meta : objectClass->MetaData)
+      for (auto& meta : objectClass->MetaKeys)
       {
         auto metaProcessor = m_metaProcessorMap.find(meta.first);
         if (metaProcessor != m_metaProcessorMap.end())
@@ -102,8 +102,8 @@ namespace ToolKit
     }
 
     /**
-     * Each MetaKey can contain multiple processor callbacks. When the class is registered, factory iterates over all
-     * the meta data and associated meta processors.
+     * Each MetaKey has a corresponding meta processor. When a class registered and it has a MetaKey that corresponds to
+     * one of MetaProcessor in the map, processor gets called with MetaKey's value.
      */
     std::unordered_map<StringView, MetaProcessorCallback> m_metaProcessorMap;
 

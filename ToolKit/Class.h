@@ -41,7 +41,7 @@ namespace ToolKit
      * Holds meta data, information such as if the class will be visible to editor, where it will store takes place
      * here.
      */
-    std::unordered_map<StringView, StringView> MetaData;
+    std::unordered_map<StringView, StringView> MetaKeys;
 
     bool operator==(const TKClass& other) const
     {

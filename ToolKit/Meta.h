@@ -35,9 +35,4 @@ namespace ToolKit
    */
   constexpr StringView MenuMetaKey = "MenuMetaKey"; //!< MetaKey for storage location in the editor.
 
-  /**
-   * Default processor actions for the MetaKeys.
-   */
-  void InitMetaProcessors() {}
-
 } // namespace ToolKit
