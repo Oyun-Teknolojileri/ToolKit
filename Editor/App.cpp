@@ -375,18 +375,19 @@ namespace ToolKit
       String codePath = ConcatPaths({fullPath, "Codes"});
       std::filesystem::create_directories(codePath);
 
-      constexpr int count         = 5;
-      String source[count]        = {"../Template/Game.h",
-                                     "../Template/Game.cpp",
-                                     "../Template/CMakeLists.txt",
-                                     "../Template/CMakeHotReload.cmake",
-                                     "../Template/Web/web_main.cpp"};
+      String source[]        = {"../Template/Game.h",
+                                "../Template/Game.cpp",
+                                "../Template/CMakeLists.txt",
+                                "../Template/CMakeHotReload.cmake",
+                                "../Template/Web/web_main.cpp"};
+      constexpr int count    =  ArraySize(source);
 
-      constexpr int folderCount   = 2;
-      String folders[folderCount] = {
+      String folders[] = {
           "../Template/Bin",
           "../Template/Config",
       };
+
+      constexpr int folderCount       = ArraySize(source);
       String destFolders[folderCount] = {ConcatPaths({codePath, "Bin"}), ConcatPaths({codePath, "..", "Config"})};
 
       for (int i = 0; i < count; i++)

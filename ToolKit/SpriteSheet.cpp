@@ -149,6 +149,9 @@ namespace ToolKit
     return true;
   }
 
+  // SpriteAnimation
+  //////////////////////////////////////////////////////////////////////////
+
   TKDefineClass(SpriteAnimation, Entity);
 
   SpriteAnimation::SpriteAnimation() {}
