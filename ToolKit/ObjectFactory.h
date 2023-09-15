@@ -114,7 +114,7 @@ namespace ToolKit
 
     /**
      * Constructs a new Object from class name.
-     * @param cls - Class name of the object to be created.
+     * @param Class is the class name of the object to be created.
      * @return A new instance of the object with the given class name.
      */
     Object* MakeNew(const StringView Class);

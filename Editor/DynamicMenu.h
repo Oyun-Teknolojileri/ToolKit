@@ -37,8 +37,10 @@ namespace ToolKit
     struct DynamicMenu
     {
       String MenuName;
-      std::vector<std::pair<String, String>> MenuEntries; // Class - Name pairs.
-      DynamicMenuPtr SubMenu;
+      std::vector<std::pair<String, String>> MenuEntries; //!< Class - Name pairs.
+      DynamicMenuPtrArray SubMenuArray;                   //!< SubMenu array of the menu.
+
+      void AddSubMenuUnique(DynamicMenuPtr subMenu);
     };
 
     extern void ShowDynamicMenu(DynamicMenuPtr parentMenu);

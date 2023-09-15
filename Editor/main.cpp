@@ -255,12 +255,11 @@ namespace ToolKit
               g_app->ReconstructDynamicMenus();
             };
 
-            g_app->m_customObjectMetaValues.push_back("MySub/Sub/Oley1:Oley11");
-            g_app->m_customObjectMetaValues.push_back("MySub/Sub/Oley2:Oley22");
-            g_app->m_customObjectMetaValues.push_back("MySub/Sub/Pro/Oley3:Oley33");
-            g_app->m_customObjectMetaValues.push_back("MySub/Oley4:Oley44");
-            g_app->m_customObjectMetaValues.push_back("Organics/Sub/Oley5:Oley55");
-
+            // This code just creates a dummy Primiatives menu to demonstrate the feature.
+            // Game plugins should extend the editor with their custom types this way.
+            g_app->m_customObjectMetaValues.push_back("Primatives/Helper/Arrow2d:Arrow");
+            g_app->m_customObjectMetaValues.push_back("Primatives/Geometry/Cube:Cube");
+            g_app->m_customObjectMetaValues.push_back("Primatives/Geometry/Sphere:Sphere");
             g_app->ReconstructDynamicMenus();
 
             UI::Init();

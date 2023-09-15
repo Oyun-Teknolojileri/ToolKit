@@ -38,13 +38,26 @@ namespace ToolKit
   namespace Editor
   {
 
+    void DynamicMenu::AddSubMenuUnique(DynamicMenuPtr subMenu)
+    {
+      for (DynamicMenuPtr& subIt : SubMenuArray)
+      {
+        if (subIt->MenuName == subMenu->MenuName)
+        {
+          return;
+        }
+      }
+
+      SubMenuArray.push_back(subMenu);
+    }
+
     void ShowDynamicMenu(DynamicMenuPtr parentMenu)
     {
       if (DynamicMenuPtr menu = parentMenu)
       {
         if (ImGui::BeginMenu(menu->MenuName.c_str()))
         {
-          if (DynamicMenuPtr subMenu = menu->SubMenu)
+          for (DynamicMenuPtr& subMenu : menu->SubMenuArray)
           {
             ShowDynamicMenu(subMenu);
           }
@@ -53,8 +66,8 @@ namespace ToolKit
           {
             if (ImGui::MenuItem(menuEntry.second.c_str()))
             {
-              // TODO: There must be a MakeNewPtr with class name. This causes a leak.
-              Object* obj = GetObjectFactory()->MakeNew(menuEntry.first);
+              EntityPtr entity = MakeNewPtrCasted<Entity>(menuEntry.first);
+              g_app->GetCurrentScene()->AddEntity(entity);
             }
           }
 
@@ -70,8 +83,6 @@ namespace ToolKit
 
       auto errContinueFn = [](String& metaVal) -> void
       { GetLogger()->WriteConsole(LogType::Warning, "%s value is wrong: %s", MenuMetaKey, metaVal); };
-
-      std::stable_sort(menuDescriptors.begin(), menuDescriptors.end());
 
       for (String& customObjectMetaVal : menuDescriptors)
       {
@@ -100,26 +111,26 @@ namespace ToolKit
           menu       += parts[i];
           auto entry = menuMap.find(menu);
 
-          if (entry == menuMap.end())
+          if (entry == menuMap.end()) // If menu has not been created, create it.
           {
             DynamicMenuPtr menuPtr = std::make_shared<DynamicMenu>();
             menuPtr->MenuName      = parts[i];
             menuMap[menu]          = menuPtr;
 
-            if (i == 0)
+            if (i == 0) // If this is the first entry, its a root menu.
             {
               menuArray.push_back(menuPtr);
             }
           }
 
           DynamicMenuPtr menuPtr = menuMap[menu];
-          if (i == (int) parts.size() - 2)
+          if (i == (int) parts.size() - 2) // If its the last section, it contains the value pair.
           {
             menuPtr->MenuEntries.push_back({classNamePair[0], classNamePair[1]});
           }
 
           // Chain the menus.
-          if (i > 0)
+          if (i > 0) // If this is not the root, it must be chained.
           {
             String parentMenu;
             for (int j = 0; j < i; j++)
@@ -130,7 +141,7 @@ namespace ToolKit
             auto parentMenuIt = menuMap.find(parentMenu);
             if (parentMenuIt != menuMap.end())
             {
-              parentMenuIt->second->SubMenu = menuMap[menu];
+              parentMenuIt->second->AddSubMenuUnique(menuMap[menu]);
             }
           }
         }

@@ -73,11 +73,6 @@ namespace ToolKit
     return m_nullFn;
   }
 
-  /**
-   * Constructs a new Object from class name.
-   * @param cls - Class name of the object to be created.
-   * @return A new instance of the object with the given class name.
-   */
   Object* TKObjectFactory::MakeNew(const StringView Class)
   {
     if (auto constructorFn = GetConstructorFn(Class))
