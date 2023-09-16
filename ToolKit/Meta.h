@@ -24,10 +24,19 @@
  * SOFTWARE.
  */
 
-#ifdef __ANDROID__
-  #include <GLES3/gl32.h>
-#elif defined(__EMSCRIPTEN__)
-  #include <GL/glew.h>
-#else
-  #include <gles2.h>
-#endif
+#pragma once
+
+#include "Types.h"
+
+namespace ToolKit
+{
+  /**
+   * MetaKey for Editor to display custom object types registered by plugins.
+   * Value Pattern: Menu/SubMenu/Class:Name
+   * Menu/SubMenu will appear this way in the target menu.
+   * Class will be used to construct object. So it must be T::StaticClass()->Name
+   * Name will be used to display name for the object.
+   */
+  constexpr StringView MenuMetaKey = "MenuMetaKey";
+
+} // namespace ToolKit

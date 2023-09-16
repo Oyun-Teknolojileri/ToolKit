@@ -59,6 +59,9 @@ namespace ToolKit
       static constexpr bool value = decltype(Check<T>(nullptr))::value;
     };
 
+    typedef std::function<Object*()> ObjectConstructorCallback;        //!< Type for object constructor callbacks.
+    typedef std::function<void(StringView val)> MetaProcessorCallback; //!< Type for MetaKey callbacks.
+
     /**
      * Registers or overrides the default constructor of given Object type.
      * @param constructorFn - This is the callback function that is responsible of creating the given object.
@@ -66,16 +69,52 @@ namespace ToolKit
     template <typename T>
     void Register(ObjectConstructorCallback constructorFn = []() -> T* { return new T(); })
     {
-      m_constructorFnMap[T::StaticClass()->Name] = constructorFn;
+      TKClass* objectClass                  = T::StaticClass();
+      m_constructorFnMap[objectClass->Name] = constructorFn;
+
       // TODO: Make the Id assignment collision free.
-      T::StaticClass()->HashId                   = std::hash<String> {}(T::StaticClass()->Name);
+      T::StaticClass()->HashId              = std::hash<String> {}(objectClass->Name);
+
+      // Iterate over all meta processors for each meta entry.
+      for (auto& meta : objectClass->MetaKeys)
+      {
+        auto metaProcessor = m_metaProcessorMap.find(meta.first);
+        if (metaProcessor != m_metaProcessorMap.end())
+        {
+          metaProcessor->second(meta.second);
+        }
+      }
     }
 
+    /**
+     * Alters the ObjectFactory such that when an object with BaseCls needed to be created, it creates the DerivedCls.
+     * The purpose is the ability to create derived class of the engine such as EditorCamera. When you are loading a
+     * scene within the editor, it should create EditorCamera instead of Camera. Also derived class takes the base class
+     * name in order to get serialized as the base class. This also allows the base classes to be serialized instead of
+     * the derived ones. So when a scene is serialized, instead of the EditorCamera, Camera will appear in the file.
+     */
+    template <typename DerivedCls, typename BaseCls>
+    void Override(ObjectConstructorCallback constructorFn = []() -> DerivedCls* { return new DerivedCls(); })
+    {
+      DerivedCls::StaticClass()->Name = BaseCls::StaticClass()->Name;
+      Register<DerivedCls>(constructorFn);
+      Register<BaseCls>(constructorFn);
+    }
+
+    /**
+     * Each MetaKey has a corresponding meta processor. When a class registered and it has a MetaKey that corresponds to
+     * one of MetaProcessor in the map, processor gets called with MetaKey's value.
+     */
+    std::unordered_map<StringView, MetaProcessorCallback> m_metaProcessorMap;
+
+    /**
+     * Returns the Constructor for given class name.
+     */
     ObjectConstructorCallback& GetConstructorFn(const StringView Class);
 
     /**
      * Constructs a new Object from class name.
-     * @param cls - Class name of the object to be created.
+     * @param Class is the class name of the object to be created.
      * @return A new instance of the object with the given class name.
      */
     Object* MakeNew(const StringView Class);

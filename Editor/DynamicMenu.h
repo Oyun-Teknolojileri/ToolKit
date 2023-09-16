@@ -24,10 +24,27 @@
  * SOFTWARE.
  */
 
-#ifdef __ANDROID__
-  #include <GLES3/gl32.h>
-#elif defined(__EMSCRIPTEN__)
-  #include <GL/glew.h>
-#else
-  #include <gles2.h>
-#endif
+#pragma once
+
+namespace ToolKit
+{
+  namespace Editor
+  {
+
+    typedef std::shared_ptr<struct DynamicMenu> DynamicMenuPtr;
+    typedef std::vector<DynamicMenuPtr> DynamicMenuPtrArray;
+
+    struct DynamicMenu
+    {
+      String MenuName;
+      std::vector<std::pair<String, String>> MenuEntries; //!< Class - Name pairs.
+      DynamicMenuPtrArray SubMenuArray;                   //!< SubMenu array of the menu.
+
+      void AddSubMenuUnique(DynamicMenuPtr subMenu);
+    };
+
+    extern void ShowDynamicMenu(DynamicMenuPtr parentMenu);
+    extern void ConstructDynamicMenu(StringArray menuDescriptors, DynamicMenuPtrArray& menuArray);
+
+  } // namespace Editor
+} // namespace ToolKit
