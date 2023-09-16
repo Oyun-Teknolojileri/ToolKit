@@ -33,6 +33,7 @@
 
 #include <Drawable.h>
 #include <GradientSky.h>
+#include <Meta.h>
 #include <Surface.h>
 
 #include <DebugNew.h>
@@ -152,6 +153,13 @@ namespace ToolKit
         }
 
         ImGui::EndMenu();
+      }
+
+      // Create dynamic menu.
+      ImGui::Separator();
+      for (DynamicMenuPtr root : g_app->m_customObjectsMenu)
+      {
+        ShowDynamicMenu(root);
       }
 
       if (createdEntity != nullptr)

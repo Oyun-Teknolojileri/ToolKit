@@ -701,6 +701,12 @@ namespace ToolKit
     m_label = AxisLabel::X;
   }
 
+  void Arrow2d::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    Generate(AxisLabel::Y);
+  }
+
   Entity* Arrow2d::CopyTo(Entity* copyTo) const
   {
     Entity::CopyTo(copyTo);

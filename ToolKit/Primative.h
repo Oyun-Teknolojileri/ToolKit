@@ -180,6 +180,7 @@ namespace ToolKit
     TKDeclareClass(Arrow2d, Entity);
 
     Arrow2d();
+    void NativeConstruct() override;
     void Generate(AxisLabel axis);
 
    protected:

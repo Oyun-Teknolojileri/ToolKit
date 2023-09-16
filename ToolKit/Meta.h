@@ -24,5 +24,19 @@
  * SOFTWARE.
  */
 
-#define GLAD_GLES2_IMPLEMENTATION
-#include "TKOpenGL.h"
+#pragma once
+
+#include "Types.h"
+
+namespace ToolKit
+{
+  /**
+   * MetaKey for Editor to display custom object types registered by plugins.
+   * Value Pattern: Menu/SubMenu/Class:Name
+   * Menu/SubMenu will appear this way in the target menu.
+   * Class will be used to construct object. So it must be T::StaticClass()->Name
+   * Name will be used to display name for the object.
+   */
+  constexpr StringView MenuMetaKey = "MenuMetaKey";
+
+} // namespace ToolKit

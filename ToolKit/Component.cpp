@@ -70,9 +70,9 @@ namespace ToolKit
     return parent;
   }
 
-  Component* ComponentFactory::Create(ComponentType cls)
+  Component* ComponentFactory::Create(ComponentType Class)
   {
-    switch (cls)
+    switch (Class)
     {
     case ComponentType::MeshComponent:
       return MakeNew<MeshComponent>();

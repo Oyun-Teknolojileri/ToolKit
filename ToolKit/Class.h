@@ -37,6 +37,12 @@ namespace ToolKit
     String Name;                  //!< Compile time assigned unique class name.
     ULongID HashId = NULL_HANDLE; //!< Unique has id assigned to class when registered to TKObjectFactory.
 
+    /**
+     * Holds meta data, information such as if the class will be visible to editor, where it will store takes place
+     * here.
+     */
+    std::unordered_map<StringView, StringView> MetaKeys;
+
     bool operator==(const TKClass& other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
