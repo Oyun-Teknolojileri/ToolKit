@@ -72,6 +72,12 @@ namespace ToolKit
   TK_API void DosifyPath(String& path);
   TK_API String ConcatPaths(const StringArray& entries);
 
+  // copys all of the directories and folders recursively
+  // note that ignored names can be empty and ignoredExtensions will not copied
+  TK_API void RecursiveCopyDirectory(const String& source,
+                                     const String& destination,
+                                     const StringArray& ignoredExtensions);
+
   /**
    * When a full path of a resource provided, converts it to shorter path
    * relative to its Root folder. If rootFolder pointer is given, set the value
