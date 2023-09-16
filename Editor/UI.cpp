@@ -795,12 +795,12 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Android"))
         {
-          g_app->m_publishManager->Publish(PublishPlatform::Web);
+          g_app->m_publishManager->Publish(PublishPlatform::Android);
         }
 
         if (ImGui::MenuItem("Windows"))
         {
-          
+          g_app->m_publishManager->Publish(PublishPlatform::Windows);
         }
 
         ImGui::EndMenu();

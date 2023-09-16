@@ -24,36 +24,9 @@ if("${TOOLKIT_DIR}" STREQUAL "__tkdir__")
     endif()
 endif()
 
-# copy engine resources to Android/assets folder
-if (NOT EXISTS "${CMAKE_SOURCE_DIR}/../assets/Resources")
-    message("copying engine resources to android assets folder")
-
-    file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/../assets/Resources")
-    file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/../assets/Resources/Engine")
-    file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/../assets/Resources/Engine/Fonts")
-    file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/../assets/Resources/Engine/Materials")
-    file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/../assets/Resources/Engine/Meshes")
-    file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/../assets/Resources/Engine/Shaders")
-    file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/../assets/Resources/Engine/Textures")
-
-    file(GLOB TOOLKIT_TEXTURES
-            "${TOOLKIT_DIR}/Resources/Engine/Textures/*.png"
-            "${TOOLKIT_DIR}/Resources/Engine/Textures/*.jpg"
-            "${TOOLKIT_DIR}/Resources/Engine/Textures/*.hdr")
-
-    file(COPY ${TOOLKIT_TEXTURES} DESTINATION "${CMAKE_SOURCE_DIR}/../assets/Resources/Engine/Textures")
-
-    file(GLOB TOOLKIT_SHADERS "${TOOLKIT_DIR}/Resources/Engine/Shaders/*.png")
-
-    file(COPY ${TOOLKIT_SHADERS} DESTINATION "${CMAKE_SOURCE_DIR}/../assets/Resources/Engine/Shaders")
-
-    file(GLOB TOOLKIT_MESHES "${TOOLKIT_DIR}/Resources/Engine/Meshes/*.mesh")
-    file(COPY ${TOOLKIT_MESHES} DESTINATION "${CMAKE_SOURCE_DIR}/../assets/Resources/Engine/Meshes")
-endif()
-
 # Use file(GLOB ...) to collect all .cpp files in the ToolKit directory.
 file(GLOB TOOLKIT_SOURCES ${TOOLKIT_DIR}/ToolKit/*.cpp)
-file(GLOB GAME_SOURCES ${CMAKE_SOURCE_DIR}/../../../../../*.cpp)
+file(GLOB GAME_SOURCES ${CMAKE_SOURCE_DIR}/../../../../../Codes/*.cpp)
 file(GLOB UNZIP_SOURCES ${TOOLKIT_DIR}/Dependency/Android/minizip/*.c)
 
 # Define TK_GL_ES_3_0 globally
@@ -63,7 +36,7 @@ add_definitions(-DTK_DLL_EXPORT)
 
 include_directories(${TOOLKIT_DIR}/ToolKit
                     ${TOOLKIT_DIR}/Dependency
-                    ${CMAKE_SOURCE_DIR}/../../../../../) # user headers for game
+                    ${CMAKE_SOURCE_DIR}/../../../../../Codes) # user headers for game
 
 # Creates your game shared library. The name must be the same as the
 # one used for loading in your Kotlin/Java or AndroidManifest.txt files.

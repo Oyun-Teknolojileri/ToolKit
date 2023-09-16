@@ -320,75 +320,24 @@ namespace ToolKit
   void AndroidDevice::CopyAllAssetsToDataPath()
   {
     String internalDataPath = g_android_app->activity->internalDataPath;
-    using namespace std::filesystem;
-    
-    if (!exists(internalDataPath + "/Resources"))
-    {
-      if (create_directories(internalDataPath + "/Resources"))
-      {
-        ANDROID_LOG("created resources \n");
-      }
-    }
-
-    String resourcesEngine = "/Resources/Engine";
-
-    if (!exists(internalDataPath + resourcesEngine))
-    {
-      if (create_directories(internalDataPath + resourcesEngine))
-      {
-        ANDROID_LOG("created Resources/Engine\n");
-      }
-    }
-
-    const int numDirectories = 6;
-    String directories[numDirectories] { "/Fonts", "/Materials", "/Meshes", "/Scenes", "/Shaders", "/Textures" };
     AAssetManager* assetManager = g_android_app->activity->assetManager;
-    std::vector<char> buffer;
+    const char* MinResourcesPak = "MinResources.pak";
+    AAsset* asset = AAssetManager_open(assetManager, MinResourcesPak, 0);
 
-    ANDROID_LOG(" traversing directories \n");
-    for (int i = 0; i < numDirectories; i++)
+    if (!asset)
     {
-      if (!exists(internalDataPath + resourcesEngine + directories[i]))
-      {
-        create_directories(internalDataPath + resourcesEngine + directories[i]);
-      }
-
-      String assetDirectory = resourcesEngine + directories[i];
-      assetDirectory.erase(assetDirectory.begin(), assetDirectory.begin() + 1); // delete first character '/'
-      AAssetDir* dir = AAssetManager_openDir(assetManager, assetDirectory.c_str());
-
-      ANDROID_LOG("asset directory: %s\n", assetDirectory.c_str());
-
-      while (const char* file = AAssetDir_getNextFileName(dir))
-      {
-        String fileName = resourcesEngine + directories[i] + "/" + file;
-        String filePath = internalDataPath + fileName;
-        fileName.erase(fileName.begin(), fileName.begin() + 1); // delete first character '/'
-        ANDROID_LOG("file: %s\n", filePath.c_str());
-
-        if (exists(filePath))
-        {
-          if (FileHasExtension(filePath, ".shader"))
-            std::filesystem::remove(filePath);
-          else continue;
-        }
-
-        AAsset* asset = AAssetManager_open(assetManager, fileName.c_str(), 0);
-        if (!asset)
-        {
-            ANDROID_LOG("cannot open asset! %s\n", fileName.c_str());
-            continue;
-        }
-        FILE* fileHandle = fopen(filePath.c_str(), "wb");
-        off_t size = AAsset_getLength(asset);
-        if (buffer.size() < size) buffer.resize(size + 1, '\0');
-        AAsset_read(asset, buffer.data(), size);
-        fwrite(buffer.data(), 1, size + 1, fileHandle);
-        memset(buffer.data(), 0, buffer.capacity());
-        fclose(fileHandle);
-        AAsset_close(asset);
-      }
+        ANDROID_LOG("cannot open MinResources.pak!\n");
+        return;
     }
+    FILE* fileHandle = fopen(ConcatPaths({internalDataPath, MinResourcesPak}).c_str(), "wb");
+    off_t size = AAsset_getLength(asset);
+    std::vector<char> buffer;
+    buffer.resize(size + 1, '\0');
+    AAsset_read(asset, buffer.data(), size);
+    fwrite(buffer.data(), 1, size + 1, fileHandle);
+    memset(buffer.data(), 0, buffer.capacity());
+    fclose(fileHandle);
+    AAsset_close(asset);
   }
 
   void AndroidDevice::InitToolkit()

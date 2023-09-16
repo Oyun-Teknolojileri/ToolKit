@@ -34,11 +34,11 @@ namespace ToolKit
 {
   namespace Editor
   {
-    PublishManager::PublishManager() 
+    PublishManager::PublishManager()
     {
-      m_webPublisher     = new WebPublisher(); 
-      m_windowsPublisher = new WindowsPublisher(); 
-      m_androidPublisher = new AndroidPublisher(); 
+      m_webPublisher     = new WebPublisher();
+      m_windowsPublisher = new WindowsPublisher();
+      m_androidPublisher = new AndroidPublisher();
     }
 
     PublishManager::~PublishManager() { SafeDel(m_webPublisher); }
@@ -61,18 +61,49 @@ namespace ToolKit
       }
     }
 
-    void WindowsPublisher::Publish() const
+    void WindowsPublisher::Publish() const 
     {
-      
+      GetLogger()->WriteConsole(LogType::Error, "windows build not implemented");
     }
 
     void AndroidPublisher::Publish() const
     {
-      // Pak project
       g_app->PackResources();
-      // Warning: Running batch files are Windows specific
-      Path workDir         = std::filesystem::current_path();
 
+      String projectName = g_app->m_workspace.GetActiveProject().name;
+      if (projectName.empty())
+      {
+        GetLogger()->WriteConsole(LogType::Error, "No project is loaded!");
+        return;
+      }
+
+      String assetsPath           = "Android\\app\\src\\main\\assets";
+      NormalizePath(assetsPath);
+      String projectLocation      = ConcatPaths({g_app->m_workspace.GetActiveWorkspace(), projectName});
+      String sceneResourcesPath   = ConcatPaths({projectLocation, "MinResources.pak"});
+      String androidResourcesPath = ConcatPaths({projectLocation, assetsPath, "MinResources.pak"});
+
+      const std::filesystem::copy_options copyOption = std::filesystem::copy_options::overwrite_existing;
+      std::filesystem::copy(sceneResourcesPath, androidResourcesPath, copyOption);
+
+      Path workDir = std::filesystem::current_path(); // chace current work directory
+      std::filesystem::current_path(ConcatPaths({projectLocation, "Android"}));
+
+      const auto afterBuildFn = [projectName, projectLocation](int res) -> void
+      {
+        String buildLocation = ConcatPaths({projectLocation, "Android\\app\\build\\outputs\\apk\\debug"}); 
+        GetLogger()->WriteConsole(LogType::Success, "Android build successfully finished.");
+        GetLogger()->WriteConsole(LogType::Memo, "Exported APK location: %s", buildLocation.c_str());
+        
+        // open generated apk folder location. (windows only)
+        std::system(("explorer /e, " + buildLocation).c_str());
+      };
+
+      g_app->m_statusMsg = "building android apk...";
+      // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build 
+      g_app->ExecSysCommand("gradlew assembleDebug", true, true, afterBuildFn);
+
+      std::filesystem::current_path(workDir); // set work directory back
     }
 
     void WebPublisher::Publish() const
@@ -131,7 +162,7 @@ namespace ToolKit
       {
         std::filesystem::remove_all(publishDirectory);
       }
-      
+
       std::filesystem::create_directories(publishDirectory);
       for (int i = 0; i < ArraySize(files); i++)
       {
@@ -161,7 +192,7 @@ namespace ToolKit
       runBatchFile.close();
 
       // Output user about where are the output files
-      GetLogger()->WriteConsole(LogType::Memo, "Building for web has been completed successfully.");
+      GetLogger()->WriteConsole(LogType::Success, "Building for web has been completed successfully.");
       GetLogger()->WriteConsole(LogType::Memo, "Output files location: %s", publishDirectory);
     }
 

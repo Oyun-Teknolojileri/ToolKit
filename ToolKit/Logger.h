@@ -37,7 +37,8 @@ namespace ToolKit
     Memo,
     Error,
     Warning,
-    Command
+    Command,
+    Success
   };
 
   typedef std::function<void(LogType, const String&)> ConsoleOutputFn;

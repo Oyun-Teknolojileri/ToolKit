@@ -143,6 +143,7 @@ namespace ToolKit
   void FileManager::PackResources(const String& sceneResourcesPath)
   {
     String zipName = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
+    
     if (CheckSystemFile(zipName.c_str()))
     {
       if (m_zfile)
@@ -434,7 +435,7 @@ namespace ToolKit
 
     char* fileData = reinterpret_cast<char*>(malloc((flen + 1) * static_cast<uint>(sizeof(char))));
     red            = fread(fileData, 1, flen, f);
-    ret            = zipWriteInFileInZip(zfile, fileData, static_cast<uint>(red * flen));
+    ret            = zipWriteInFileInZip(zfile, fileData, static_cast<uint>(flen));
     
     if (ret != ZIP_OK)
     {
@@ -650,7 +651,11 @@ namespace ToolKit
       return;
     }
 
+    #ifdef __ANDROID__
+    String pakPath = ConcatPaths({Main::GetInstance()->m_resourceRoot, "MinResources.pak"});
+    #else
     String pakPath = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
+    #endif
 
     if (!m_zfile)
     {

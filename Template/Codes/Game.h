@@ -26,9 +26,9 @@
 
 #pragma once
 
-#include "ToolKit.h"
-#include "Plugin.h"
-#include "SceneRenderer.h"
+#include <ToolKit.h>
+#include <Plugin.h>
+#include <SceneRenderer.h>
 
 namespace ToolKit
 {

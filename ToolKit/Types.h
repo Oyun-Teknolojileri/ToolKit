@@ -60,6 +60,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
 #endif
+
 // RapidXml
 #include "RapidXml/rapidxml_ext.h"
 #include "RapidXml/rapidxml_utils.hpp"

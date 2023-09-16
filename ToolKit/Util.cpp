@@ -37,6 +37,8 @@
 #include "Shader.h"
 #include "SpriteSheet.h"
 #include "ToolKit.h"
+#include <filesystem>
+#include <unordered_set>
 
 #include "DebugNew.h"
 
@@ -874,6 +876,60 @@ namespace ToolKit
     }
 
     return cpy;
+  }
+
+  static void RecursiveCopyDirectoryWithSet(const String& source,
+                                            const String& destination,
+                                            const std::unordered_set<uint64>& ignoredExtSet) 
+  {
+    using namespace std::filesystem;
+    String ext;
+    DecomposePath(source, nullptr, nullptr, &ext);
+    if (ignoredExtSet.count(std::hash<String> {}(ext)) != 0)
+    {
+      return;
+    }
+
+    // Create the destination directory if it doesn't exist
+    if (!exists(destination))
+    {
+      create_directories(destination);
+    }
+
+    for (const auto& entry : directory_iterator(source))
+    {
+      const path current_path = entry.path();
+      const path new_path     = destination / current_path.filename();
+
+      String ext;
+      DecomposePath(current_path.u8string(), nullptr, nullptr, &ext);
+
+      if (ignoredExtSet.count(std::hash<String> {}(ext)) != 0) 
+      {
+        continue;
+      }
+
+      if (is_directory(current_path))
+      {
+        RecursiveCopyDirectoryWithSet(current_path.generic_u8string(), new_path.generic_u8string(), ignoredExtSet);
+      }
+      else if (is_regular_file(current_path))
+      {
+        copy_file(current_path, new_path, copy_options::overwrite_existing);
+      }
+    }
+  }
+
+  void RecursiveCopyDirectory(const String& source,
+                              const String& destination,
+                              const StringArray& ignoredExtensions)
+  {
+    std::unordered_set<uint64> ignoredSet;
+    for (int i = 0; i < ignoredExtensions.size(); i++) 
+    {
+      ignoredSet.insert(std::hash<String> {}(ignoredExtensions[i]));
+    }
+    RecursiveCopyDirectoryWithSet(source, destination, ignoredSet);
   }
 
   void* TKMalloc(size_t sz) { return malloc(sz); }

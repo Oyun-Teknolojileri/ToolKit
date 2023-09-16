@@ -45,7 +45,7 @@ include_directories(
 
 set(
 	SOURCE 
-	Game.cpp
+	Codes/Game.cpp
 )
 
 if (${WEB_BUILD})
@@ -54,7 +54,7 @@ endif()
 
 set(
 	HEADERS 
-	Game.h
+	Codes/Game.h
 )
 
 set(
