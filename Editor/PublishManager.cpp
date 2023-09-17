@@ -104,6 +104,11 @@ namespace ToolKit
 
       const auto afterBuildFn = [projectName, projectLocation](int res) -> void
       {
+        if (res == 1) 
+        {
+          GetLogger()->WriteConsole(LogType::Error, "Android build failed.");
+          return;
+        }
         String buildLocation = ConcatPaths({projectLocation, "Android/app/build/outputs/apk/debug"});
         NormalizePath(buildLocation);
 
