@@ -61,7 +61,7 @@ namespace ToolKit
       }
     }
 
-    void WindowsPublisher::Publish() const 
+    void WindowsPublisher::Publish() const
     {
       GetLogger()->WriteConsole(LogType::Error, "windows build not implemented");
     }
@@ -77,30 +77,38 @@ namespace ToolKit
         return;
       }
 
-      String assetsPath           = "Android\\app\\src\\main\\assets";
+      String assetsPath = "Android/app/src/main/assets";
       NormalizePath(assetsPath);
       String projectLocation      = ConcatPaths({g_app->m_workspace.GetActiveWorkspace(), projectName});
       String sceneResourcesPath   = ConcatPaths({projectLocation, "MinResources.pak"});
       String androidResourcesPath = ConcatPaths({projectLocation, assetsPath, "MinResources.pak"});
 
       const std::filesystem::copy_options copyOption = std::filesystem::copy_options::overwrite_existing;
-      std::filesystem::copy(sceneResourcesPath, androidResourcesPath, copyOption);
+
+      std::error_code ec;
+      std::filesystem::copy(sceneResourcesPath, androidResourcesPath, copyOption, ec);
+      if (ec)
+      {
+        TK_ERR("%s", ec.message().c_str());
+        return;
+      }
 
       Path workDir = std::filesystem::current_path(); // chace current work directory
       std::filesystem::current_path(ConcatPaths({projectLocation, "Android"}));
 
       const auto afterBuildFn = [projectName, projectLocation](int res) -> void
       {
-        String buildLocation = ConcatPaths({projectLocation, "Android\\app\\build\\outputs\\apk\\debug"}); 
+        String buildLocation = ConcatPaths({projectLocation, "Android/app/build/outputs/apk/debug"});
+        NormalizePath(buildLocation);
         GetLogger()->WriteConsole(LogType::Success, "Android build successfully finished.");
         GetLogger()->WriteConsole(LogType::Memo, "Exported APK location: %s", buildLocation.c_str());
-        
+
         // open generated apk folder location. (windows only)
         std::system(("explorer /e, " + buildLocation).c_str());
       };
 
       g_app->m_statusMsg = "building android apk...";
-      // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build 
+      // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
       g_app->ExecSysCommand("gradlew assembleDebug", true, true, afterBuildFn);
 
       std::filesystem::current_path(workDir); // set work directory back
