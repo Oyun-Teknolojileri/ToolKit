@@ -84,6 +84,7 @@ namespace ToolKit
 
       String assetsPath = "Android/app/src/main/assets";
       NormalizePath(assetsPath);
+
       String projectLocation      = ConcatPaths({g_app->m_workspace.GetActiveWorkspace(), projectName});
       String sceneResourcesPath   = ConcatPaths({projectLocation, "MinResources.pak"});
       String androidResourcesPath = ConcatPaths({projectLocation, assetsPath, "MinResources.pak"});
@@ -105,6 +106,7 @@ namespace ToolKit
       {
         String buildLocation = ConcatPaths({projectLocation, "Android/app/build/outputs/apk/debug"});
         NormalizePath(buildLocation);
+
         GetLogger()->WriteConsole(LogType::Success, "Android build successfully finished.");
         GetLogger()->WriteConsole(LogType::Memo, "Exported APK location: %s", buildLocation.c_str());
 
@@ -113,6 +115,7 @@ namespace ToolKit
       };
 
       g_app->m_statusMsg = "building android apk...";
+
       // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
       g_app->ExecSysCommand("gradlew assembleDebug", true, true, afterBuildFn);
 

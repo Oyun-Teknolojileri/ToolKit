@@ -168,7 +168,9 @@
     <ClCompile Include="LightMeshGenerator.cpp">
       <Filter>Entities\Light</Filter>
     </ClCompile>
-    <ClCompile Include="DynamicMenu.cpp" />
+    <ClCompile Include="DynamicMenu.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mod.h">
