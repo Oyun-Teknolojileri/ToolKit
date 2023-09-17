@@ -36,7 +36,6 @@ include_directories(
 	"${TOOLKIT_DIR}/Dependency"
 	"${TOOLKIT_DIR}/Dependency/glad"
 	"${TOOLKIT_DIR}/Dependency/SDL2/include"
-	"${TOOLKIT_DIR}/Dependency/OpenAL/include"
 	"${TOOLKIT_DIR}/Dependency/RapidXml"
 	"${TOOLKIT_DIR}/Dependency/stb"
 	"${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/include"
@@ -115,7 +114,6 @@ else()
 
   target_link_libraries(${PROJECT_NAME} debug ToolKit_d)
   target_link_libraries(${PROJECT_NAME} optimized ToolKit)
-  target_link_libraries(${PROJECT_NAME} OpenGL32 OpenAL32)
   target_link_libraries(${PROJECT_NAME} zlibstatic minizip)
 endif()
 

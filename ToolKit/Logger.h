@@ -32,6 +32,17 @@
 
 namespace ToolKit
 {
+
+#ifdef __clang__
+  #define TK_LOG(format, ...) GetLogger()->WriteConsole(LogType::Memo, format, ##VA_ARGS)
+  #define TK_WRN(format, ...) GetLogger()->WriteConsole(LogType::Warning, format, ##VA_ARGS)
+  #define TK_ERR(format, ...) GetLogger()->WriteConsole(LogType::Error, format, ##VA_ARGS)
+#elif _MSC_VER
+  #define TK_LOG(format, ...) GetLogger()->WriteConsole(LogType::Memo, format, __VA_ARGS__)
+  #define TK_WRN(format, ...) GetLogger()->WriteConsole(LogType::Warning, format, __VA_ARGS__)
+  #define TK_ERR(format, ...) GetLogger()->WriteConsole(LogType::Error, format, __VA_ARGS__)
+#endif
+
   enum class LogType
   {
     Memo,

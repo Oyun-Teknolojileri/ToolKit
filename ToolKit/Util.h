@@ -134,7 +134,7 @@ namespace ToolKit
   TK_API int CountChar(const String& str, const char chr);
 
   /**
-   * Transform ascii chars to lower. Intended usage is extention comparison.
+   * Transform ascii chars to lower. Intended usage is extension comparison.
    */
   TK_API String ToLower(const String& str);
   TK_API String Format(const char* msg, ...);

@@ -24,5 +24,27 @@
  * SOFTWARE.
  */
 
-#define GLAD_GLES2_IMPLEMENTATION
-#include "TKOpenGL.h"
+#pragma once
+
+namespace ToolKit
+{
+  namespace Editor
+  {
+
+    typedef std::shared_ptr<struct DynamicMenu> DynamicMenuPtr;
+    typedef std::vector<DynamicMenuPtr> DynamicMenuPtrArray;
+
+    struct DynamicMenu
+    {
+      String MenuName;
+      std::vector<std::pair<String, String>> MenuEntries; //!< Class - Name pairs.
+      DynamicMenuPtrArray SubMenuArray;                   //!< SubMenu array of the menu.
+
+      void AddSubMenuUnique(DynamicMenuPtr subMenu);
+    };
+
+    extern void ShowDynamicMenu(DynamicMenuPtr parentMenu);
+    extern void ConstructDynamicMenu(StringArray menuDescriptors, DynamicMenuPtrArray& menuArray);
+
+  } // namespace Editor
+} // namespace ToolKit

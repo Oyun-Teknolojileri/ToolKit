@@ -706,6 +706,8 @@ namespace ToolKit
       CreateSimulationWindow(m_simulatorSettings.Width, m_simulatorSettings.Height);
     }
 
+    void App::ReconstructDynamicMenus() { ConstructDynamicMenu(m_customObjectMetaValues, m_customObjectsMenu); }
+
     int App::Import(const String& fullPath, const String& subDir, bool overwrite)
     {
       bool doSearch = !UI::SearchFileData.missingFiles.empty();

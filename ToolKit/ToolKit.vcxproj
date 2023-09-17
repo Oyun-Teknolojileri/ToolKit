@@ -84,7 +84,9 @@
     <ClCompile Include="Surface.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Object.cpp" />
-    <ClCompile Include="TKOpenGL.cpp" />
+    <ClCompile Include="TKOpenGL.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">150</OrderInUnityFile>
+    </ClCompile>
     <ClCompile Include="ToneMapPass.cpp" />
     <ClCompile Include="ToolKit.cpp" />
     <ClCompile Include="UIManager.cpp" />
@@ -125,6 +127,7 @@
     <ClInclude Include="GradientSky.h" />
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
+    <ClInclude Include="Meta.h" />
     <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="OutlinePass.h" />
     <ClInclude Include="Pass.h" />
