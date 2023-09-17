@@ -33,13 +33,10 @@
 
 namespace ToolKit
 {
-  class Main;
 
   class TK_API TKObjectFactory
   {
-    friend Main;
-    typedef std::function<Object*()> ObjectConstructorCallback;
-
+    friend class Main;
    public:
     /**
      * Helper function to identify if class T has a StaticClass function.
