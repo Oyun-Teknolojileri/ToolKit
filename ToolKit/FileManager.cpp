@@ -31,11 +31,14 @@
 #include "Scene.h"
 #include "Shader.h"
 #include "ToolKit.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb/stb_image.h"
+#include "Logger.h"
 
 #include "DebugNew.h"
+#define STB_IMAGE_IMPLEMENTATION
+#ifdef __ARM_FP
+# define STBI_NEON
+#endif
+#include "stb/stb_image.h"
 
 namespace ToolKit
 {
@@ -70,7 +73,7 @@ namespace ToolKit
     FileDataType data      = GetFile(FileType::ImageFloat, fileInfo);
     return std::get<float*>(data);
   }
-
+  
   FileManager::FileDataType FileManager::GetFile(FileType fileType, ImageFileInfo& fileInfo)
   {
     String pakPath      = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
@@ -98,7 +101,10 @@ namespace ToolKit
       }
       else if (fileType == FileType::ImageFloat)
       {
-        return ReadHdriFileFromZip(m_zfile, relativePath, fileInfo);
+        stbi_set_flip_vertically_on_load(true);
+        float* img = ReadHdriFileFromZip(m_zfile, relativePath, fileInfo);
+        stbi_set_flip_vertically_on_load(false);
+        return img;
       }
       else
       {
@@ -118,7 +124,10 @@ namespace ToolKit
       }
       else if (fileType == FileType::ImageFloat)
       {
-        return stbi_loadf(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+        stbi_set_flip_vertically_on_load(true);
+        float* img = stbi_loadf(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+        stbi_set_flip_vertically_on_load(false);
+        return img;
       }
       else
       {
@@ -134,7 +143,8 @@ namespace ToolKit
   void FileManager::PackResources(const String& sceneResourcesPath)
   {
     String zipName = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
-    if (std::filesystem::exists(zipName.c_str()))
+    
+    if (CheckSystemFile(zipName.c_str()))
     {
       if (m_zfile)
       {
@@ -171,7 +181,7 @@ namespace ToolKit
 
     String relativePath = path;
     GetRelativeResourcesPath(relativePath);
-    return std::filesystem::exists(path) || IsFileInPak(relativePath);
+    return CheckSystemFile(path) || IsFileInPak(relativePath);
   }
 
   void FileManager::LoadAllScenes(const String& path)
@@ -424,8 +434,9 @@ namespace ToolKit
     }
 
     char* fileData = reinterpret_cast<char*>(malloc((flen + 1) * static_cast<uint>(sizeof(char))));
-    red            = fread(fileData, flen, 1, f);
-    ret            = zipWriteInFileInZip(zfile, fileData, static_cast<uint>(red * flen));
+    red            = fread(fileData, 1, flen, f);
+    ret            = zipWriteInFileInZip(zfile, fileData, static_cast<uint>(flen));
+    
     if (ret != ZIP_OK)
     {
       fclose(f);
@@ -459,7 +470,7 @@ namespace ToolKit
   {
     String extrFilesPathStr   = ConcatPaths({path, "..", "ExtraFiles.txt"});
     const char* extrFilesPath = extrFilesPathStr.c_str();
-    if (!std::filesystem::exists(extrFilesPath))
+    if (!CheckSystemFile(extrFilesPath))
     {
       GetLogger()->Log("'ExtraFiles.txt' is not found in resources path.");
       GetLogger()->WriteConsole(LogType::Warning, "'ExtraFiles.txt' is not found in resources path.");
@@ -479,7 +490,6 @@ namespace ToolKit
 
       m_allPaths.insert(ConcatPaths({ResourcePath(), line}));
     }
-
     file.close();
   }
 
@@ -641,7 +651,11 @@ namespace ToolKit
       return;
     }
 
+    #ifdef __ANDROID__
+    String pakPath = ConcatPaths({Main::GetInstance()->m_resourceRoot, "MinResources.pak"});
+    #else
     String pakPath = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
+    #endif
 
     if (!m_zfile)
     {

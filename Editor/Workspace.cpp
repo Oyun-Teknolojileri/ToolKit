@@ -174,36 +174,45 @@ namespace ToolKit
       {
         if (dir.is_directory())
         {
-          String resourcesPath = ConcatPaths({dir.path().string(), "Resources"});
-          String codesPath     = ConcatPaths({dir.path().string(), "Codes"});
+          String dirPath = dir.path().string();
+          if (dirPath.find(".git") != String::npos)
+          {
+            // Skip git directory.
+            continue;
+          }
+
+          String resourcesPath = ConcatPaths({dirPath, "Resources"});
+          String codesPath     = ConcatPaths({dirPath, "Codes"});
+          
           // Skip directory if it doesn't have folders: Resources, Codes
           if (!std::filesystem::directory_entry(resourcesPath).is_directory() ||
               !std::filesystem::directory_entry(codesPath).is_directory())
           {
             continue;
           }
+
           const StringArray requiredResourceFolders = {"Materials", "Meshes", "Scenes", "Textures"};
           bool foundAllRequiredFolders              = true;
           for (uint i = 0; i < requiredResourceFolders.size(); i++)
           {
-            if (!(std::filesystem::directory_entry(ConcatPaths({resourcesPath, requiredResourceFolders[i]}))
-                      .is_directory()))
+            String checkDir = ConcatPaths({resourcesPath, requiredResourceFolders[i]});
+            if (!(std::filesystem::directory_entry(checkDir).is_directory()))
             {
               foundAllRequiredFolders = false;
               break;
             }
           }
+
           if (!foundAllRequiredFolders)
           {
             continue;
           }
-          std::string dirName = dir.path().filename().u8string();
 
-          // Hide hidden folders
+          // Don't show hidden folders
+          String dirName = dir.path().filename().u8string();
           if (dirName.size() > 1 && dirName[0] != '.')
           {
             Project project = {dirName, ""};
-
             m_projects.push_back(project);
           }
         }
@@ -222,7 +231,7 @@ namespace ToolKit
         XmlNode* settings   = CreateXmlNode(lclDoc, XmlNodeSettings.data());
         WriteAttr(settings, lclDoc, XmlVersion, TKVersionStr);
 
-        XmlNode* setNode    = CreateXmlNode(lclDoc, XmlNodeWorkspace.data(), settings);
+        XmlNode* setNode = CreateXmlNode(lclDoc, XmlNodeWorkspace.data(), settings);
         WriteAttr(setNode, lclDoc, XmlNodePath.data(), m_activeWorkspace);
 
         setNode = CreateXmlNode(lclDoc, XmlNodeProject.data(), settings);

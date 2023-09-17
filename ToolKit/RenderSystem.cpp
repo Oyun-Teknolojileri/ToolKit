@@ -26,9 +26,10 @@
 
 #include "RenderSystem.h"
 
-#include "GlErrorReporter.h"
 #include "ToolKit.h"
-#include "gles2.h"
+#include "TKOpenGL.h"
+#include "Logger.h"
+#include "GlErrorReporter.h"
 
 #include "DebugNew.h"
 
@@ -159,8 +160,9 @@ namespace ToolKit
   void RenderSystem::InitGl(void* glGetProcAddres, GlReportCallback callback)
   {
     // Initialize opengl functions.
+#ifdef _WIN32
     gladLoadGLES2((GLADloadfunc) glGetProcAddres);
-
+#endif
     InitGLErrorReport(callback);
 
     // Default states.

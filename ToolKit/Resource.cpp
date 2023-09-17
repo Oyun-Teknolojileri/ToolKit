@@ -25,10 +25,12 @@
  */
 
 #include "Resource.h"
+#include "ResourceManager.h"
 
 #include "FileManager.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Skeleton.h"
 #include "ResourceManager.h"
 #include "Skeleton.h"
 #include "ToolKit.h"

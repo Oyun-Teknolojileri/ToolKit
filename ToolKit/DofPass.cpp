@@ -86,7 +86,6 @@ namespace ToolKit
     m_quadPass->m_params.BlendFunc        = BlendFunction::NONE;
     m_quadPass->m_params.ClearFrameBuffer = false;
     m_quadPass->m_params.FragmentShader   = m_dofShader;
-    m_quadPass->m_params.lights           = {};
   }
 
   void DoFPass::Render()

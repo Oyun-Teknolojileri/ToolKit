@@ -72,6 +72,12 @@ namespace ToolKit
   TK_API void DosifyPath(String& path);
   TK_API String ConcatPaths(const StringArray& entries);
 
+  // copys all of the directories and folders recursively
+  // note that ignored names can be empty and ignoredExtensions will not copied
+  TK_API void RecursiveCopyDirectory(const String& source,
+                                     const String& destination,
+                                     const StringArray& ignoredExtensions);
+
   /**
    * When a full path of a resource provided, converts it to shorter path
    * relative to its Root folder. If rootFolder pointer is given, set the value
@@ -101,11 +107,11 @@ namespace ToolKit
    */
   TK_API String GetFileName(const String& path);
 
-  TK_API String CreatePathFromResourceType(const String& file, TKClass* Class);
+  TK_API String CreatePathFromResourceType(const String& file, struct TKClass* Class);
 
-  TK_API TKClass* GetResourceType(const String& ext);
-  TK_API String GetExtFromType(TKClass* Class);
-  TK_API String GetResourcePath(TKClass* Class);
+  TK_API struct TKClass* GetResourceType(const String& ext);
+  TK_API String GetExtFromType(struct TKClass* Class);
+  TK_API String GetResourcePath(struct TKClass* Class);
 
   TK_API char GetPathSeparator();
   TK_API String GetPathSeparatorAsStr();
@@ -128,7 +134,7 @@ namespace ToolKit
   TK_API int CountChar(const String& str, const char chr);
 
   /**
-   * Transform ascii chars to lower. Intended usage is extention comparison.
+   * Transform ascii chars to lower. Intended usage is extension comparison.
    */
   TK_API String ToLower(const String& str);
   TK_API String Format(const char* msg, ...);
@@ -210,6 +216,13 @@ namespace ToolKit
     return std::find(arr.cbegin(), arr.cend(), val) != arr.cend();
   }
 
+
+  template<class _Tp, class _Up>
+  inline std::shared_ptr<_Tp> tk_reinterpret_pointer_cast(const std::shared_ptr<_Up>& __r)
+  {
+      return std::shared_ptr<_Tp>(__r, reinterpret_cast<_Tp*>(__r.get()));
+  }
+
   /**
    * Find index of val in given array.
    * @param arr array that we want to search.
@@ -221,6 +234,9 @@ namespace ToolKit
     auto it = std::find(arr.cbegin(), arr.cend(), val);
     return it == arr.cend() ? -1 : int(it - arr.cbegin());
   }
+  
+  template<typename T, uint64  N>
+  inline constexpr uint64 ArraySize(const T (&)[N]) { return N; }
 
   //  Time.
   ///////////////////////////////////////////////////////

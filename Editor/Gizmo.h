@@ -50,7 +50,7 @@ namespace ToolKit
       };
 
      public:
-      TKDeclareClass(EditorBillboardBase, Billboard);
+      TKDeclareClass(EditorBillboardBase, Billboard)
 
       EditorBillboardBase();
       explicit EditorBillboardBase(const Settings& settings);

@@ -60,7 +60,7 @@ namespace ToolKit
 
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs({m_quad}, jobs);
-    renderer->Render(jobs, m_camera, m_params.lights);
+    renderer->Render(jobs, m_camera, {});
   }
 
   void FullQuadPass::PreRender()

@@ -118,4 +118,5 @@ namespace ToolKit
     String m_file;
   };
 
+  typedef std::shared_ptr<Resource> ResourcePtr;
 } // namespace ToolKit

@@ -33,6 +33,9 @@
 #include "MeshComponent.h"
 #include "ResourceComponent.h"
 #include "SkeletonComponent.h"
+#include "Object.h"
+#include "Component.h"
+#include "ToolKit.h"
 
 #include "DebugNew.h"
 

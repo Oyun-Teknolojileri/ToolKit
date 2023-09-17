@@ -30,6 +30,7 @@
 #include "MathUtil.h"
 #include "Scene.h"
 #include "ToolKit.h"
+#include "Events.h"
 
 #include "DebugNew.h"
 
@@ -95,7 +96,6 @@ namespace ToolKit
       MouseEvent* me = static_cast<MouseEvent*>(e);
       return me->m_action == EventAction::LeftClick;
     }
-
     return false;
   }
 

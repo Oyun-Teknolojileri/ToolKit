@@ -33,7 +33,6 @@ namespace ToolKit
 
   struct FullQuadPassParams
   {
-    LightPtrArray lights       = {};
     FramebufferPtr FrameBuffer = nullptr;
     BlendFunction BlendFunc    = BlendFunction::NONE;
     ShaderPtr FragmentShader   = nullptr;

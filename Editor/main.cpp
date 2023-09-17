@@ -39,6 +39,7 @@
 #include <Meta.h>
 #include <SDL.h>
 #include <Types.h>
+#include <array>
 
 #include <chrono>
 
@@ -77,7 +78,7 @@ namespace ToolKit
         return;
       }
 
-      StringArray files           = {"Workspace.settings", "Editor.settings", "UILayout.ini", "Engine.settings"};
+      std::array<String, 4> files = {"Workspace.settings", "Editor.settings", "UILayout.ini", "Engine.settings"};
 
       String cfgPath              = ConcatPaths({String(appData), "ToolKit", "Config"});
 
@@ -89,7 +90,7 @@ namespace ToolKit
       }
       if (doesConfigFolderExists)
       {
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < files.size(); i++)
         {
           String targetFile = ConcatPaths({cfgPath, files[i]});
           if (!CheckSystemFile(targetFile))
@@ -113,6 +114,7 @@ namespace ToolKit
         {
           String utf8Path = path.parent_path().u8string();
           utf8Path.erase(remove(utf8Path.begin(), utf8Path.end(), '\"'), utf8Path.end());
+          UnixifyPath(utf8Path);
 
           file << utf8Path;
         }

@@ -75,9 +75,6 @@ namespace ToolKit
   {
     PreRender(renderer);
 
-    // CullDrawList(m_gBufferPass->m_params.entities, m_params.Cam);
-    // CullDrawList(m_forwardRenderPass->m_params.Entities, m_params.Cam);
-
     // First stage of the render.
     m_passArray.clear();
 

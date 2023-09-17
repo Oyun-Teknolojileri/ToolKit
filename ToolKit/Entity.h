@@ -124,7 +124,7 @@ namespace ToolKit
       {
         if (com->IsA<T>())
         {
-          return std::reinterpret_pointer_cast<T>(com);
+          return tk_reinterpret_pointer_cast<T>(com);
         }
       }
 

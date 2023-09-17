@@ -33,13 +33,10 @@
 
 namespace ToolKit
 {
-  class Main;
 
   class TK_API TKObjectFactory
   {
-    friend Main;
-    typedef std::function<Object*()> ObjectConstructorCallback;
-
+    friend class Main;
    public:
     /**
      * Helper function to identify if class T has a StaticClass function.
@@ -183,7 +180,7 @@ namespace ToolKit
   }
 
   template <typename T, typename... Args>
-  std::shared_ptr<T> MakeNewPtr(Args&&... args)
+  inline std::shared_ptr<T> MakeNewPtr(Args&&... args)
   {
     if (Main* main = Main::GetInstance())
     {
@@ -197,7 +194,7 @@ namespace ToolKit
   }
 
   template <typename T, typename... Args>
-  std::shared_ptr<T> MakeNewPtrCasted(const StringView Class, Args&&... args)
+  inline std::shared_ptr<T> MakeNewPtrCasted(const StringView Class, Args&&... args)
   {
     if (Main* main = Main::GetInstance())
     {
@@ -211,7 +208,7 @@ namespace ToolKit
   }
 
   template <typename T>
-  std::shared_ptr<T> Cast(TKObjectPtr tkObj)
+  inline std::shared_ptr<T> Cast(TKObjectPtr tkObj)
   {
     return std::static_pointer_cast<T>(tkObj);
   }

@@ -48,9 +48,10 @@ namespace ToolKit
     const String g_propInspector("Property Inspector");
     const String g_renderSettings("Render Settings");
     const String g_matInspector("Material Inspector");
-    const String g_memoStr("");
+    const String g_memoStr("Mem");
     const String g_errorStr("Err");
     const String g_warningStr("Wrn");
+    const String g_successStr("Suc");
     const String g_commandStr("#");
     const String g_newSceneStr("New Scene");
     const String g_2dViewport("2D View");
@@ -90,7 +91,8 @@ namespace ToolKit
 
     const Vec4 g_consoleErrorColor             = Vec4(1.0f, 0.4f, 0.4f, 1.0f);
     const Vec4 g_consoleCommandColor           = Vec4(1.0f, 0.8f, 0.6f, 1.0f);
-    const Vec4 g_consoleWarningColor           = Vec4(0.3f, 0.8f, 0.3f, 1.0f);
+    const Vec4 g_consoleWarningColor           = Vec4(0.9f, 0.8f, 0.1f, 1.0f);
+    const Vec4 g_consoleSuccessColor           = Vec4(0.4f, 0.94f, 0.4f, 1.0f);
     const Vec4 g_consoleMemoColor              = Vec4(0.7f, 0.7f, 0.7f, 1.0f);
 
     const Vec4 g_blueTintButtonColor           = Vec4(0.043f, 0.173f, 0.325f, 1.0f);

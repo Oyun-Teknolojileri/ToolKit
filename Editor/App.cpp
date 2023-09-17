@@ -345,6 +345,7 @@ namespace ToolKit
       }
     }
 
+    // note: only copy template folder
     void App::OnNewProject(const String& name)
     {
       if (m_workspace.GetActiveWorkspace().empty())
@@ -360,51 +361,18 @@ namespace ToolKit
         return;
       }
 
-      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Audio"}));
-      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Fonts"}));
-      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Layers"}));
-      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Materials"}));
-      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Meshes"}));
-      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Scenes"}));
-      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Prefabs"}));
-      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Shaders"}));
-      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Sprites"}));
-      std::filesystem::create_directories(ConcatPaths({fullPath, "Resources", "Textures"}));
+      // copy template folder to new workspace
+      RecursiveCopyDirectory("../Template", fullPath, {".filters", ".vcxproj", ".user", ".cxx"});
 
-      // Create project files.
-      String codePath = ConcatPaths({fullPath, "Codes"});
-      std::filesystem::create_directories(codePath);
-
-      constexpr int count         = 5;
-      String source[count]        = {"../Template/Game.h",
-                                     "../Template/Game.cpp",
-                                     "../Template/CMakeLists.txt",
-                                     "../Template/CMakeHotReload.cmake",
-                                     "../Template/web_main.cpp"};
-
-      constexpr int folderCount   = 2;
-      String folders[folderCount] = {
-          "../Template/Bin",
-          "../Template/Config",
-      };
-      String destFolders[folderCount] = {ConcatPaths({codePath, "Bin"}), ConcatPaths({codePath, "..", "Config"})};
-
-      for (int i = 0; i < count; i++)
-      {
-        std::filesystem::copy(source[i], codePath, std::filesystem::copy_options::overwrite_existing);
-      }
-
-      for (int i = 0; i < folderCount; ++i)
-      {
-        std::filesystem::copy(folders[i], destFolders[i], std::filesystem::copy_options::overwrite_existing);
-      }
+      // todo add windows
 
       // Update cmake.
       String currentPath = std::filesystem::current_path().parent_path().u8string();
       UnixifyPath(currentPath);
 
+      String cmakePath = ConcatPaths({fullPath, "CMakeLists.txt"});
       std::fstream cmakelist;
-      cmakelist.open(ConcatPaths({codePath, "CMakeLists.txt"}), std::ios::in);
+      cmakelist.open(cmakePath, std::ios::in);
       if (cmakelist.is_open())
       {
         std::stringstream buffer;
@@ -414,7 +382,7 @@ namespace ToolKit
         cmakelist.close();
 
         // Override the content.
-        cmakelist.open(ConcatPaths({codePath, "CMakeLists.txt"}), std::ios::out | std::ios::trunc);
+        cmakelist.open(cmakePath, std::ios::out | std::ios::trunc);
         if (cmakelist.is_open())
         {
           cmakelist << content;

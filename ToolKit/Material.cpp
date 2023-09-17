@@ -30,6 +30,7 @@
 #include "Shader.h"
 #include "ToolKit.h"
 #include "Util.h"
+#include "Logger.h"
 
 #include "DebugNew.h"
 

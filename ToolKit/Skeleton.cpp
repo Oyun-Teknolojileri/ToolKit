@@ -421,9 +421,9 @@ namespace ToolKit
   // SkeletonManager
   //////////////////////////////////////////////////////////////////////////
 
-  SkeletonManager::SkeletonManager() { m_baseType = Skeleton::StaticClass(); }
-
   SkeletonManager::~SkeletonManager() {}
+
+  SkeletonManager::SkeletonManager() { m_baseType = Skeleton::StaticClass(); }
 
   bool SkeletonManager::CanStore(TKClass* Class)
   {

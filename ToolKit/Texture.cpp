@@ -34,6 +34,7 @@
 #include "Shader.h"
 #include "TKOpenGL.h"
 #include "ToolKit.h"
+#include "Logger.h"
 
 #include "DebugNew.h"
 
@@ -144,7 +145,6 @@ namespace ToolKit
     if (m_textureSettings.GenerateMipMap)
     {
       glGenerateMipmap(GL_TEXTURE_2D);
-
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) m_textureSettings.MipMapMinFilter);
     }
 
@@ -181,8 +181,8 @@ namespace ToolKit
 
   void Texture::Clear()
   {
-    stbi_image_free(m_image);
-    stbi_image_free(m_imagef);
+    free(m_image);
+    free(m_imagef);
     m_image  = nullptr;
     m_imagef = nullptr;
     m_loaded = false;
@@ -359,7 +359,7 @@ namespace ToolKit
   {
     for (int i = 0; i < m_images.size(); i++)
     {
-      stbi_image_free(m_images[i]);
+      free(m_images[i]);
       m_images[i] = nullptr;
     }
     m_loaded = false;
@@ -397,9 +397,7 @@ namespace ToolKit
     }
 
     // Load hdri image
-    stbi_set_flip_vertically_on_load(true);
     Texture::Load();
-    stbi_set_flip_vertically_on_load(false);
   }
 
   void Hdri::Init(bool flushClientSideArray)
@@ -438,7 +436,7 @@ namespace ToolKit
                                                                     Renderer::RHIConstants::specularIBLLods);
 
           // Pre-compute BRDF lut
-          if (!GetTextureManager()->Exist("GLOBAL_BRDF_LUT_TEXTURE"))
+          if (!GetTextureManager()->Exist(TK_BRDF_LUT_TEXTURE))
           {
             FullQuadPass quadPass;
 
@@ -463,7 +461,7 @@ namespace ToolKit
             quadPass.Render();
             quadPass.PostRender();
 
-            brdfLut->SetFile("GLOBAL_BRDF_LUT_TEXTURE");
+            brdfLut->SetFile(TK_BRDF_LUT_TEXTURE);
             GetTextureManager()->Manage(brdfLut);
           }
 

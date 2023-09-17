@@ -24,28 +24,33 @@
  * SOFTWARE.
  */
 
-#pragma once
+#include "Game.h"
 
-#include <Plugin.h>
-#include <SceneRenderer.h>
-#include <ToolKit.h>
+extern "C" TK_GAME_API ToolKit::Game* TK_STDCAL CreateInstance() { return new ToolKit::Game(); }
 
 namespace ToolKit
 {
 
-  class Game : public GamePlugin
-  {
-   public:
-    virtual void Init(class Main* master);
-    virtual void Destroy();
-    virtual void Frame(float deltaTime, class Viewport* viewport);
+  void Game::Init(Main* master) { Main::SetProxy(master); }
 
-   private:
-#ifdef __EMSCRIPTEN__
-    SceneRenderer m_sceneRenderer;
+  void Game::Destroy() { delete this; }
+
+  void Game::Frame(float deltaTime, class Viewport* viewport)
+  {
+#if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
+    GetRenderSystem()->ExecuteRenderTasks();
+
+    m_sceneRenderer.m_params.Cam                = camera;
+    m_sceneRenderer.m_params.ClearFramebuffer   = true;
+    m_sceneRenderer.m_params.Gfx.BloomIntensity = 0.0;
+    m_sceneRenderer.m_params.Lights             = GetSceneManager()->GetCurrentScene()->GetLights();
+    m_sceneRenderer.m_params.MainFramebuffer    = viewport->m_framebuffer;
+    m_sceneRenderer.m_params.Scene              = GetSceneManager()->GetCurrentScene();
+    GetRenderSystem()->AddRenderTask(&m_sceneRenderer);
+
+    static uint totalFrameCount = 0;
+    GetRenderSystem()->SetFrameCount(totalFrameCount++);
 #endif
-  };
+  }
 
 } // namespace ToolKit
-
-extern "C" TK_GAME_API ToolKit::Game* TK_STDCAL CreateInstance();

@@ -31,8 +31,39 @@
  * relatled structures.
  */
 
+#ifdef __ANDROID__
+// GLM
+#define GLM_FORCE_XYZW_ONLY
+#define GLM_FORCE_CTOR_INIT
+#define GLM_ENABLE_EXPERIMENTAL
+#ifndef GLM_FORCE_SWIZZLE
+# define GLM_FORCE_SWIZZLE
+#endif
+
+#include "glm/glm.hpp"
+#include "glm/gtc/epsilon.hpp"
+#include "glm/gtc/matrix_access.hpp"
+#include "glm/gtc/matrix_inverse.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/quaternion.hpp"
+#include "glm/gtc/random.hpp"
+#include "glm/gtx/closest_point.hpp"
+#include "glm/gtx/component_wise.hpp"
+#include "glm/gtx/euler_angles.hpp"
+#include "glm/gtx/matrix_operation.hpp"
+#include "glm/gtx/matrix_query.hpp"
+#include "glm/gtx/quaternion.hpp"
+#include "glm/gtx/scalar_relational.hpp"
+#include "glm/gtx/string_cast.hpp"
+#include "glm/gtx/vector_query.hpp"
+#else
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
+#endif
+
+// RapidXml
+#include "RapidXml/rapidxml_ext.h"
+#include "RapidXml/rapidxml_utils.hpp"
 
 #include <filesystem>
 #include <functional>
@@ -53,8 +84,8 @@
   #else // Static binding.
     #define TK_API
   #endif
-#else // Other OS.
-  #define TK_API
+#elif defined(__clang__) 
+  #define TK_API __attribute__((visibility("default")))
   #define TK_STDCAL
 #endif
 
@@ -103,7 +134,6 @@ namespace ToolKit
   typedef uint64_t uint64;
   typedef uint64_t ULongID;
   typedef const int16_t SignalId;
-  typedef std::shared_ptr<class Resource> ResourcePtr;
   typedef std::string String;
   typedef std::string_view StringView;
   typedef std::vector<String> StringArray;

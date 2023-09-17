@@ -1,0 +1,3 @@
+# The paths should be relative to "Resources" directory in the project
+# Each line should have 1 FILE path
+Game.settings

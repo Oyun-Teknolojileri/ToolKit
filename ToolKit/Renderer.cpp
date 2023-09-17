@@ -31,6 +31,7 @@
 #include "Drawable.h"
 #include "EnvironmentComponent.h"
 #include "GradientSky.h"
+#include "Logger.h"
 #include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
@@ -52,9 +53,6 @@
 
 namespace ToolKit
 {
-
-#define TK_LUT_TEXTURE "GLOBAL_BRDF_LUT_TEXTURE"
-
   Renderer::Renderer() {}
 
   void Renderer::Init()
@@ -116,7 +114,7 @@ namespace ToolKit
       HdriPtr hdriPtr                      = envCom->GetHdriVal();
       CubeMapPtr irradianceCubemap         = hdriPtr->m_irradianceCubemap;
       CubeMapPtr preFilteredSpecularIBLMap = hdriPtr->m_prefilteredEnvMap;
-      RenderTargetPtr brdfLut              = GetTextureManager()->Create<RenderTarget>(TK_LUT_TEXTURE);
+      RenderTargetPtr brdfLut              = GetTextureManager()->Create<RenderTarget>(TK_BRDF_LUT_TEXTURE);
 
       if (irradianceCubemap && preFilteredSpecularIBLMap && brdfLut)
       {
@@ -383,7 +381,10 @@ namespace ToolKit
     m_framebuffer = fb;
   }
 
-  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear) { SetFramebuffer(fb, clear, m_clearColor); }
+  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear)
+  {
+    SetFramebuffer(fb, clear, m_clearColor);
+  }
 
   void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color)
   {
@@ -585,7 +586,6 @@ namespace ToolKit
     if (m_gaussianBlurMaterial == nullptr)
     {
       ShaderPtr vert         = GetShaderManager()->Create<Shader>(ShaderPath("gausBlur7x1Vert.shader", true));
-
       ShaderPtr frag         = GetShaderManager()->Create<Shader>(ShaderPath("gausBlur7x1Frag.shader", true));
 
       m_gaussianBlurMaterial = MakeNewPtr<Material>();
@@ -617,7 +617,6 @@ namespace ToolKit
     if (m_averageBlurMaterial == nullptr)
     {
       ShaderPtr vert        = GetShaderManager()->Create<Shader>(ShaderPath("avgBlurVert.shader", true));
-
       ShaderPtr frag        = GetShaderManager()->Create<Shader>(ShaderPath("avgBlurFrag.shader", true));
 
       m_averageBlurMaterial = MakeNewPtr<Material>();
@@ -721,7 +720,6 @@ namespace ToolKit
     for (ShaderPtr shader : program->m_shaders)
     {
       shader->UpdateShaderParameters();
-
       // Built-in variables.
       for (Uniform uni : shader->m_uniforms)
       {
@@ -1323,6 +1321,9 @@ namespace ToolKit
 
     for (int mip = 0; mip < mipMaps; ++mip)
     {
+      uint w = (uint) (width * std::powf(0.5f, (float) mip));
+      uint h = (uint) (height * std::powf(0.5f, (float) mip));
+
       for (int i = 0; i < 6; ++i)
       {
         Vec3 pos;
@@ -1339,9 +1340,6 @@ namespace ToolKit
                                          mip,
                                          -1,
                                          (Framebuffer::CubemapFace) i);
-
-        uint w = (uint) (width * std::powf(0.5f, (float) mip));
-        uint h = (uint) (height * std::powf(0.5f, (float) mip));
 
         frag->SetShaderParameter("roughness", ParameterVariant((float) mip / (float) mipMaps));
         frag->SetShaderParameter("resPerFace", ParameterVariant((float) w));

@@ -35,6 +35,7 @@
 #include "TKOpenGL.h"
 #include "ToolKit.h"
 
+#include <random>
 #include "DebugNew.h"
 
 namespace ToolKit

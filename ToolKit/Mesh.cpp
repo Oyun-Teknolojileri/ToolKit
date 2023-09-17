@@ -694,7 +694,7 @@ namespace ToolKit
       indexes[i] = i;
     }
 
-#ifndef __EMSCRIPTEN__
+#ifndef __clang__
     std::for_each(std::execution::par_unseq,
                   indexes.begin(),
                   indexes.end(),
