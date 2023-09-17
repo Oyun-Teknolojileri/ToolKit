@@ -41,7 +41,12 @@ namespace ToolKit
       m_androidPublisher = new AndroidPublisher();
     }
 
-    PublishManager::~PublishManager() { SafeDel(m_webPublisher); }
+    PublishManager::~PublishManager()
+    {
+      SafeDel(m_webPublisher);
+      SafeDel(m_windowsPublisher);
+      SafeDel(m_androidPublisher);
+    }
 
     void PublishManager::Publish(PublishPlatform platform)
     {
