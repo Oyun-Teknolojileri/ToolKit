@@ -195,7 +195,7 @@ namespace ToolKit
   void Main::SetProxy(Main* proxy)
   {
     bool singular = m_proxy == nullptr || m_proxy == proxy;
-    //assert(singular && "You can only have one instance of the main");
+    assert(singular && "You can only have one instance of the main");
     if (singular)
     {
       m_proxy = proxy;

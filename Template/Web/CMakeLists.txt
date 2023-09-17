@@ -45,7 +45,7 @@ include_directories(
 
 set(
 	SOURCE 
-	Game.cpp
+	${CMAKE_SOURCE_DIR}/../Game.cpp
 )
 
 if (${WEB_BUILD})
@@ -54,7 +54,7 @@ endif()
 
 set(
 	HEADERS 
-	Game.h
+	${CMAKE_SOURCE_DIR}../Game.h
 )
 
 set(
