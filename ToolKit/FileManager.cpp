@@ -26,17 +26,17 @@
 
 #include "FileManager.h"
 
+#include "Logger.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Scene.h"
 #include "Shader.h"
 #include "ToolKit.h"
-#include "Logger.h"
 
 #include "DebugNew.h"
 #define STB_IMAGE_IMPLEMENTATION
 #ifdef __ARM_FP
-# define STBI_NEON
+  #define STBI_NEON
 #endif
 #include "stb/stb_image.h"
 
@@ -73,7 +73,7 @@ namespace ToolKit
     FileDataType data      = GetFile(FileType::ImageFloat, fileInfo);
     return std::get<float*>(data);
   }
-  
+
   FileManager::FileDataType FileManager::GetFile(FileType fileType, ImageFileInfo& fileInfo)
   {
     String pakPath      = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
@@ -143,7 +143,7 @@ namespace ToolKit
   void FileManager::PackResources(const String& sceneResourcesPath)
   {
     String zipName = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
-    
+
     if (CheckSystemFile(zipName.c_str()))
     {
       if (m_zfile)
@@ -436,7 +436,7 @@ namespace ToolKit
     char* fileData = reinterpret_cast<char*>(malloc((flen + 1) * static_cast<uint>(sizeof(char))));
     red            = fread(fileData, 1, flen, f);
     ret            = zipWriteInFileInZip(zfile, fileData, static_cast<uint>(flen));
-    
+
     if (ret != ZIP_OK)
     {
       fclose(f);
@@ -495,29 +495,13 @@ namespace ToolKit
 
   void FileManager::GetRelativeResourcesPath(String& path)
   {
-#ifdef __ANDROID__
-      size_t index = path.find("files/Resources");
-      if (index != String::npos)
-      {
-          constexpr int length = sizeof("files/Resources");
-          path                 = path.substr(index + length);
-          return;
-      }
-      index = path.find("files");
-      if (index != String::npos)
-      {
-          constexpr int length = sizeof("files");
-          path                 = path.substr(index + length);
-          return;
-      }
-#else
+
     size_t index = path.find("Resources");
     if (index != String::npos)
     {
       constexpr int length = sizeof("Resources");
       path                 = path.substr(index + length);
     }
-#endif
   }
 
   XmlFilePtr FileManager::ReadXmlFileFromZip(zipFile zfile, const String& relativePath, const char* path)
@@ -668,11 +652,7 @@ namespace ToolKit
       return;
     }
 
-    #ifdef __ANDROID__
-    String pakPath = ConcatPaths({Main::GetInstance()->m_resourceRoot, "MinResources.pak"});
-    #else
     String pakPath = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
-    #endif
 
     if (!m_zfile)
     {

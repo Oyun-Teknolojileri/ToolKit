@@ -315,11 +315,7 @@ namespace ToolKit
 
   String DefaultPath()
   {
-#ifdef __ANDROID__
-    static const String res = ConcatPaths({Main::GetInstance()->m_resourceRoot, "Resources", "Engine"});
-#else
     static const String res = ConcatPaths({"..", "Resources", "Engine"});
-#endif
     return res;
   }
 
