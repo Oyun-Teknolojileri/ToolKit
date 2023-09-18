@@ -51,6 +51,8 @@ namespace ToolKit
   void Game::Frame(float deltaTime, class Viewport* viewport)
   {
     m_sceneRenderer->m_params.MainFramebuffer = viewport->m_framebuffer;
+    m_sceneRenderer->m_params.Cam             = viewport->GetCamera();
+
     GetRenderSystem()->AddRenderTask(
         {[&](Renderer* renderer) -> void { renderer->SetFramebuffer(viewport->m_framebuffer); }});
 
