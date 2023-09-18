@@ -39,8 +39,8 @@
 #include <Meta.h>
 #include <SDL.h>
 #include <Types.h>
-#include <array>
 
+#include <array>
 #include <chrono>
 
 #include <DebugNew.h>
@@ -236,6 +236,7 @@ namespace ToolKit
             of->Register<GridFragmentShader>();
 
             // Overrides.
+            of->Override<EditorCamera, Camera>();
             of->Override<EditorDirectionalLight, DirectionalLight>();
             of->Override<EditorPointLight, PointLight>();
             of->Override<EditorSpotLight, SpotLight>();
