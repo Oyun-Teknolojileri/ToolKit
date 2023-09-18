@@ -31,6 +31,7 @@
   #define WIN32_LEAN_AND_MEAN
   #include <Windows.h>
   #include <atlstr.h>
+  #include <shellapi.h>
   #include <strsafe.h>
 
   #include <chrono>
@@ -274,8 +275,7 @@ namespace ToolKit
     } // namespace UTF8Util
 
     // Win32 console command execution callback.
-    static auto g_SysComExecFn =
-        [](StringView cmd, bool async, bool showConsole, std::function<void(int)> callback) -> int
+    int SysComExec(StringView cmd, bool async, bool showConsole, std::function<void(int)> callback)
     {
       // https://learn.microsoft.com/en-us/windows/win32/procthread/creating-processes
       STARTUPINFOW si;
@@ -381,6 +381,20 @@ namespace ToolKit
 
       OutputDebugString(szOutputBuff);
     }
+
+    void OpenExplorer(const StringView utf8Path)
+    {
+      CStringW utf16Path = UTF8Util::ConvertUTF8ToUTF16(utf8Path.data());
+      HINSTANCE result   = ShellExecuteW(GetActiveWindow(), L"open", L"explorer.exe", utf16Path, NULL, SW_SHOWNORMAL);
+
+      // Check the result of ShellExecute
+      if ((intptr_t) result <= 32)
+      {
+        // ShellExecute failed
+        TK_ERR("Failed to open the folder: %s", utf8Path);
+      }
+    }
+
   } // namespace Win32Helpers
 } // namespace ToolKit
 
