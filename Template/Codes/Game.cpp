@@ -46,7 +46,7 @@ namespace ToolKit
     m_sceneRenderer->m_params.Scene = scene;
   }
 
-  void Game::Destroy() {}
+  void Game::Destroy() { delete this; }
 
   void Game::Frame(float deltaTime, class Viewport* viewport)
   {
