@@ -39,8 +39,8 @@ namespace ToolKit
 
   AdditiveLightingPass::AdditiveLightingPass()
   {
-    m_fullQuadPass                   = std::make_shared<FullQuadPass>();
-    m_lightingFrameBuffer            = std::make_shared<Framebuffer>();
+    m_fullQuadPass                   = MakeNewPtr<FullQuadPass>();
+    m_lightingFrameBuffer            = MakeNewPtr<Framebuffer>();
     m_lightingRt                     = MakeNewPtr<RenderTarget>();
     m_lightingShader                 = GetShaderManager()->Create<Shader>(ShaderPath("additiveLighting.shader", true));
     m_mergeShader                    = GetShaderManager()->Create<Shader>(ShaderPath("lightMerge.shader", true));
@@ -74,8 +74,8 @@ namespace ToolKit
     RenderTargetSettigs oneChannelSet = {};
     oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
     oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGB16F;
-    oneChannelSet.Format              = GraphicTypes::FormatRGB;
+    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGBA16F;
+    oneChannelSet.Format              = GraphicTypes::FormatRGBA;
     oneChannelSet.Type                = GraphicTypes::TypeFloat;
 
     m_lightingRt->m_settings          = oneChannelSet;

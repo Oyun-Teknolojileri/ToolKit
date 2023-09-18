@@ -62,14 +62,14 @@
 #include "stb/stb_image.h"
 
 // RapidXml
-#include "rapidxml_ext.h"
-#include "rapidxml_utils.hpp"
+#include "RapidXml/rapidxml_ext.h"
+#include "RapidXml/rapidxml_utils.hpp"
 
 // ToolKit
 #include "Events.h"
 #include "Logger.h"
 #include "Serialize.h"
-#include "ToolKit.h"
+#include "ToolKit.h"  
 
 #ifdef TK_EDITOR
 

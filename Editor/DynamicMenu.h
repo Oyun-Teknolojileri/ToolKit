@@ -24,33 +24,27 @@
  * SOFTWARE.
  */
 
-#include "Game.h"
-
-extern "C" TK_GAME_API ToolKit::Game* TK_STDCAL CreateInstance() { return new ToolKit::Game(); }
+#pragma once
 
 namespace ToolKit
 {
-
-  void Game::Init(Main* master) { Main::SetProxy(master); }
-
-  void Game::Destroy() { delete this; }
-
-  void Game::Frame(float deltaTime, class Viewport* viewport)
+  namespace Editor
   {
-#ifdef __EMSCRIPTEN__
-    GetRenderSystem()->ExecuteRenderTasks();
 
-    m_sceneRenderer.m_params.Cam                = camera;
-    m_sceneRenderer.m_params.ClearFramebuffer   = true;
-    m_sceneRenderer.m_params.Gfx.BloomIntensity = 0.0;
-    m_sceneRenderer.m_params.Lights             = GetSceneManager()->GetCurrentScene()->GetLights();
-    m_sceneRenderer.m_params.MainFramebuffer    = viewport->m_framebuffer;
-    m_sceneRenderer.m_params.Scene              = GetSceneManager()->GetCurrentScene();
-    GetRenderSystem()->AddRenderTask(&m_sceneRenderer);
+    typedef std::shared_ptr<struct DynamicMenu> DynamicMenuPtr;
+    typedef std::vector<DynamicMenuPtr> DynamicMenuPtrArray;
 
-    static uint totalFrameCount = 0;
-    GetRenderSystem()->SetFrameCount(totalFrameCount++);
-#endif
-  }
+    struct DynamicMenu
+    {
+      String MenuName;
+      std::vector<std::pair<String, String>> MenuEntries; //!< Class - Name pairs.
+      DynamicMenuPtrArray SubMenuArray;                   //!< SubMenu array of the menu.
 
+      void AddSubMenuUnique(DynamicMenuPtr subMenu);
+    };
+
+    extern void ShowDynamicMenu(DynamicMenuPtr parentMenu);
+    extern void ConstructDynamicMenu(StringArray menuDescriptors, DynamicMenuPtrArray& menuArray);
+
+  } // namespace Editor
 } // namespace ToolKit

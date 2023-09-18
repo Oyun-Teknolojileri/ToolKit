@@ -25,9 +25,14 @@
  */
 
 #include "Resource.h"
+#include "ResourceManager.h"
 
 #include "FileManager.h"
+#include "Material.h"
+#include "Mesh.h"
+#include "Skeleton.h"
 #include "ResourceManager.h"
+#include "Skeleton.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -36,7 +41,7 @@
 namespace ToolKit
 {
 
-  TKDefineClass(Resource, TKObject);
+  TKDefineClass(Resource, Object);
 
   Resource::Resource()
   {
@@ -104,10 +109,10 @@ namespace ToolKit
   void Resource::ParseDocument(StringView firstNode, bool fullParse)
   {
     SerializationFileInfo info;
-    info.File          = GetSerializeFile();
+    info.File          = GetFile();
 
     XmlFilePtr file    = GetFileManager()->GetXmlFile(info.File);
-    XmlDocumentPtr doc = std::make_shared<XmlDocument>();
+    XmlDocumentPtr doc = MakeNewPtr<XmlDocument>();
 
     if (fullParse)
     {

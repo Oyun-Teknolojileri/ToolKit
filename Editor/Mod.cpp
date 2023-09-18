@@ -330,7 +330,6 @@ namespace ToolKit
 
             if (g_app->m_dbgArrow == nullptr)
             {
-              //              g_app->m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
               m_ignoreList.push_back(g_app->m_dbgArrow->GetIdVal());
               currScene->AddEntity(g_app->m_dbgArrow);
             }

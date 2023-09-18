@@ -703,24 +703,29 @@ namespace ToolKit
           ImGui::SameLine();
 
           bool popColor = false;
-          if (item.find(g_errorStr) != String::npos)
+          if (item.find(g_memoStr) != String::npos)
           {
-            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleErrorColor);
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleMemoColor);
             popColor = true;
           }
-          else if (item.find(g_commandStr))
+          else if (item.find(g_commandStr) != String::npos)
           {
             ImGui::PushStyleColor(ImGuiCol_Text, g_consoleCommandColor);
             popColor = true;
           }
-          else if (item.find(g_warningStr))
+          else if (item.find(g_warningStr) != String::npos)
           {
             ImGui::PushStyleColor(ImGuiCol_Text, g_consoleWarningColor);
             popColor = true;
           }
-          else // Than its a memo.
+          else if (item.find(g_errorStr) != String::npos)
           {
-            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleMemoColor);
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleErrorColor);
+            popColor = true;
+          }
+          else // Than its a success.
+          {
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleSuccessColor);
             popColor = true;
           }
 
@@ -808,7 +813,9 @@ namespace ToolKit
       case LogType::Command:
         prefix = g_commandStr;
         break;
-      case LogType::Memo:
+      case LogType::Success:
+        prefix = g_successStr;
+        break;
       default:
         prefix = g_memoStr;
         break;

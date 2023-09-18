@@ -32,9 +32,9 @@
 #include "Material.h"
 #include "RenderSystem.h"
 #include "Shader.h"
+#include "TKOpenGL.h"
 #include "ToolKit.h"
-
-#include <gles2.h>
+#include "Logger.h"
 
 #include "DebugNew.h"
 
@@ -54,8 +54,10 @@ namespace ToolKit
 
   Texture::Texture(const String& file, const TextureSettings& settings) : Texture(settings) { SetFile(file); }
 
-  Texture::Texture(uint textureId)
+  void Texture::NativeConstruct(uint textureId)
   {
+    Super::NativeConstruct();
+
     m_textureId = textureId;
     m_initiated = true;
   }
@@ -143,7 +145,6 @@ namespace ToolKit
     if (m_textureSettings.GenerateMipMap)
     {
       glGenerateMipmap(GL_TEXTURE_2D);
-
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) m_textureSettings.MipMapMinFilter);
     }
 
@@ -180,8 +181,8 @@ namespace ToolKit
 
   void Texture::Clear()
   {
-    stbi_image_free(m_image);
-    stbi_image_free(m_imagef);
+    free(m_image);
+    free(m_imagef);
     m_image  = nullptr;
     m_imagef = nullptr;
     m_loaded = false;
@@ -232,12 +233,6 @@ namespace ToolKit
   CubeMap::CubeMap() : Texture() {}
 
   CubeMap::CubeMap(const String& file) : Texture() { SetFile(file); }
-
-  CubeMap::CubeMap(uint cubemapId)
-  {
-    m_textureId = cubemapId;
-    m_initiated = true;
-  }
 
   CubeMap::~CubeMap() { UnInit(); }
 
@@ -364,7 +359,7 @@ namespace ToolKit
   {
     for (int i = 0; i < m_images.size(); i++)
     {
-      stbi_image_free(m_images[i]);
+      free(m_images[i]);
       m_images[i] = nullptr;
     }
     m_loaded = false;
@@ -386,8 +381,8 @@ namespace ToolKit
 
     m_texToCubemapMat                 = MakeNewPtr<Material>();
     m_cubemapToIrradiancemapMat       = MakeNewPtr<Material>();
-    m_irradianceCubemap               = std::make_shared<CubeMap>(0u);
-    m_equirectangularTexture          = std::make_shared<Texture>(0u);
+    m_irradianceCubemap               = MakeNewPtr<CubeMap>(0u);
+    m_equirectangularTexture          = MakeNewPtr<Texture>(0u);
   }
 
   Hdri::Hdri(const String& file) : Hdri() { SetFile(file); }
@@ -402,9 +397,7 @@ namespace ToolKit
     }
 
     // Load hdri image
-    stbi_set_flip_vertically_on_load(true);
     Texture::Load();
-    stbi_set_flip_vertically_on_load(false);
   }
 
   void Hdri::Init(bool flushClientSideArray)
@@ -435,10 +428,6 @@ namespace ToolKit
                                                              m_width / 4,
                                                              1.0f);
 
-          // Generate mip maps of cubemap
-          glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemap->m_textureId);
-          glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-
           const int prefilteredEnvMapSize = m_specularIBLTextureSize;
           // Pre-filtered and mip mapped environment map
           m_prefilteredEnvMap             = renderer->GenerateEnvPrefilteredMap(m_cubemap,
@@ -447,7 +436,7 @@ namespace ToolKit
                                                                     Renderer::RHIConstants::specularIBLLods);
 
           // Pre-compute BRDF lut
-          if (!GetTextureManager()->Exist("GLOBAL_BRDF_LUT_TEXTURE"))
+          if (!GetTextureManager()->Exist(TK_BRDF_LUT_TEXTURE))
           {
             FullQuadPass quadPass;
 
@@ -456,9 +445,9 @@ namespace ToolKit
             set.Format              = GraphicTypes::FormatRG;
             set.Type                = GraphicTypes::TypeFloat;
 
-            RenderTargetPtr brdfLut = std::make_shared<RenderTarget>(m_brdfLutTextureSize, m_brdfLutTextureSize, set);
+            RenderTargetPtr brdfLut = MakeNewPtr<RenderTarget>(m_brdfLutTextureSize, m_brdfLutTextureSize, set);
             brdfLut->Init();
-            FramebufferPtr utilFramebuffer = std::make_shared<Framebuffer>();
+            FramebufferPtr utilFramebuffer = MakeNewPtr<Framebuffer>();
 
             utilFramebuffer->Init({(uint) m_brdfLutTextureSize, (uint) m_brdfLutTextureSize, false, false});
             utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);
@@ -472,7 +461,7 @@ namespace ToolKit
             quadPass.Render();
             quadPass.PostRender();
 
-            brdfLut->SetFile("GLOBAL_BRDF_LUT_TEXTURE");
+            brdfLut->SetFile(TK_BRDF_LUT_TEXTURE);
             GetTextureManager()->Manage(brdfLut);
           }
 
@@ -506,22 +495,26 @@ namespace ToolKit
 
   RenderTarget::RenderTarget() : Texture() {}
 
-  RenderTarget::RenderTarget(uint width, uint height, const RenderTargetSettigs& settings) : RenderTarget()
+  void RenderTarget::NativeConstruct(uint width, uint height, const RenderTargetSettigs& settings)
   {
+    Super::NativeConstruct();
+
     m_width    = width;
     m_height   = height;
     m_settings = settings;
   }
 
-  void RenderTarget::Load() {}
-
-  RenderTarget::RenderTarget(Texture* texture)
+  void RenderTarget::NativeConstruct(Texture* texture)
   {
+    Super::NativeConstruct();
+
     m_width     = texture->m_width;
     m_height    = texture->m_height;
     m_textureId = texture->m_textureId;
     m_initiated = true;
   }
+
+  void RenderTarget::Load() {}
 
   void RenderTarget::Init(bool flushClientSideArray)
   {

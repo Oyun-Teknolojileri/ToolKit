@@ -35,6 +35,7 @@
 #include "ResourceComponent.h"
 #include "ToolKit.h"
 #include "Util.h"
+#include "Logger.h"
 
 #include "DebugNew.h"
 
@@ -590,7 +591,7 @@ namespace ToolKit
     {
       XmlAttribute* typeAttr      = node->first_attribute(xmlObjectType);
       EntityFactory::EntityType t = (EntityFactory::EntityType) std::atoi(typeAttr->value());
-      EntityPtr ntt               = GetEntityFactory()->CreateByType(t);
+      EntityPtr ntt               = EntityFactory::CreateByType(t);
       ntt->m_version              = m_version;
 
       ntt->DeSerialize(info, node);
@@ -640,13 +641,13 @@ namespace ToolKit
 
     EntityPtrArray prefabList;
 
-    const char* xmlRootObject = TKObject::StaticClass()->Name.c_str();
+    const char* xmlRootObject = Object::StaticClass()->Name.c_str();
     const char* xmlObjectType = XmlObjectClassAttr.data();
 
     for (node = root->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
     {
       XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
-      EntityPtr ntt          = MakeNewPtr<Entity>(typeAttr->value());
+      EntityPtr ntt          = MakeNewPtrCasted<Entity>(typeAttr->value());
 
       ntt->DeSerialize(info, node);
 

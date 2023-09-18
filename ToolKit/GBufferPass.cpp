@@ -33,6 +33,8 @@
 
 #include "DebugNew.h"
 
+#include "TKOpenGL.h"
+
 namespace ToolKit
 {
 
@@ -50,28 +52,25 @@ namespace ToolKit
                                                        GraphicTypes::TypeFloat,
                                                        1};
 
-    m_gPosRt      = std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gPosRt                                        = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gNormalRt                                     = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gColorRt                                      = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gEmissiveRt                                   = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gIblRt      = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    
+    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRGBA32F;
+    gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRGBA;
+    // Note: A32 is not used, it didn't work on Android devices when we bind it to frame buffer
+    m_gLinearDepthRt = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
-    m_gNormalRt   = std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
-    m_gColorRt    = std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    gBufferRenderTargetSettings.InternalFormat      = GraphicTypes::FormatRG16F;
+    gBufferRenderTargetSettings.Format              = GraphicTypes::FormatRG;
 
-    m_gEmissiveRt = std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gMetallicRoughnessRt                          = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
-    m_gIblRt      = std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-
-    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRGB32F;
-    gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRGB;
-
-    m_gLinearDepthRt = std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-
-    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRG16F;
-    gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRG;
-
-    m_gMetallicRoughnessRt = std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-
-    m_framebuffer          = std::make_shared<Framebuffer>();
-    m_gBufferMaterial      = MakeNewPtr<Material>();
+    m_framebuffer                                   = MakeNewPtr<Framebuffer>();
+    m_gBufferMaterial                               = MakeNewPtr<Material>();
   }
 
   GBufferPass::GBufferPass(const GBufferPassParams& params) : GBufferPass() { m_params = params; }

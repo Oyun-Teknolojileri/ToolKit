@@ -27,7 +27,7 @@
 #include "Audio.h"
 
 #define MINIAUDIO_IMPLEMENTATION
-#include "miniaudio.h"
+#include "mini_audio/miniaudio.h"
 
 #include "DebugNew.h"
 

@@ -26,19 +26,20 @@
 
 #include "RenderSystem.h"
 
-#include "GlErrorReporter.h"
 #include "ToolKit.h"
-#include "gles2.h"
+#include "TKOpenGL.h"
+#include "Logger.h"
+#include "GlErrorReporter.h"
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
-  Technique::Technique() {}
+  RenderPath::RenderPath() {}
 
-  Technique::~Technique() { m_passArray.clear(); }
+  RenderPath::~RenderPath() { m_passArray.clear(); }
 
-  void Technique::Render(Renderer* renderer)
+  void RenderPath::Render(Renderer* renderer)
   {
     for (PassPtr& pass : m_passArray)
     {
@@ -55,7 +56,7 @@ namespace ToolKit
 
   void RenderSystem::Init() { m_renderer->Init(); }
 
-  void RenderSystem::AddRenderTask(Technique* technique)
+  void RenderSystem::AddRenderTask(RenderPath* technique)
   {
     AddRenderTask({[technique](Renderer* renderer) -> void { technique->Render(renderer); }});
   }
@@ -159,8 +160,9 @@ namespace ToolKit
   void RenderSystem::InitGl(void* glGetProcAddres, GlReportCallback callback)
   {
     // Initialize opengl functions.
+#ifdef _WIN32
     gladLoadGLES2((GLADloadfunc) glGetProcAddres);
-
+#endif
     InitGLErrorReport(callback);
 
     // Default states.

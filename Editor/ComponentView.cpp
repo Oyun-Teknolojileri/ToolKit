@@ -157,7 +157,7 @@ namespace ToolKit
         String nameUpdated                                 = "";
         std::pair<String, AnimRecordPtr> nameUpdatedPair   = {};
 
-        static std::pair<String, AnimRecordPtr> extraTrack = std::make_pair("", std::make_shared<AnimRecord>());
+        static std::pair<String, AnimRecordPtr> extraTrack = std::make_pair("", MakeNewPtr<AnimRecord>());
 
         // Animation DropZone
         auto showAnimationDropzone = [tableWdth, file](uint& columnIndx, const std::pair<String, AnimRecordPtr>& pair)
@@ -299,7 +299,7 @@ namespace ToolKit
         {
           mref.insert(extraTrack);
           extraTrack.first  = "";
-          extraTrack.second = std::make_shared<AnimRecord>();
+          extraTrack.second = MakeNewPtr<AnimRecord>();
         }
 
         ImGui::EndTable();

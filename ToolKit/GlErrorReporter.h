@@ -28,7 +28,7 @@
 
 #include "Types.h"
 
-#include <gles2.h>
+#include "TKOpenGL.h"
 
 namespace ToolKit
 {

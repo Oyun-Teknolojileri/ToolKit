@@ -33,6 +33,7 @@
 
 #include <Drawable.h>
 #include <GradientSky.h>
+#include <Meta.h>
 #include <Surface.h>
 
 #include <DebugNew.h>
@@ -123,21 +124,21 @@ namespace ToolKit
         if (ImGui::MenuItem(ICON_FA_SUN " Directional"))
         {
           EditorDirectionalLightPtr light = MakeNewPtr<EditorDirectionalLight>();
-          light->Init();
+          light->InitController();
           createdEntity = light;
         }
 
         if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Point"))
         {
           EditorPointLightPtr light = MakeNewPtr<EditorPointLight>();
-          light->Init();
+          light->InitController();
           createdEntity = light;
         }
 
         if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Spot"))
         {
           EditorSpotLightPtr light = MakeNewPtr<EditorSpotLight>();
-          light->Init();
+          light->InitController();
           createdEntity = light;
         }
 
@@ -152,6 +153,13 @@ namespace ToolKit
         }
 
         ImGui::EndMenu();
+      }
+
+      // Create dynamic menu.
+      ImGui::Separator();
+      for (DynamicMenuPtr root : g_app->m_customObjectsMenu)
+      {
+        ShowDynamicMenu(root);
       }
 
       if (createdEntity != nullptr)

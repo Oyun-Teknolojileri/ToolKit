@@ -37,7 +37,7 @@ namespace ToolKit
     ShaderPtr vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcessVert.shader", true));
     ShaderPtr fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcess.shader", true));
 
-    m_framebuffer            = std::make_shared<Framebuffer>();
+    m_framebuffer            = MakeNewPtr<Framebuffer>();
     m_linearMaterial         = MakeNewPtr<Material>();
     m_linearMaterial->m_vertexShader   = vertexShader;
     m_linearMaterial->m_fragmentShader = fragmentShader;

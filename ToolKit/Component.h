@@ -31,7 +31,7 @@
  * and related structures.
  */
 
-#include "TKObject.h"
+#include "Object.h"
 
 namespace ToolKit
 {
@@ -44,10 +44,10 @@ namespace ToolKit
    * by entities. Components are responsible bringing in related functionality
    * to the attached Entity classes.
    */
-  class TK_API Component : public TKObject
+  class TK_API Component : public Object
   {
    public:
-    TKDeclareClass(Component, TKObject);
+    TKDeclareClass(Component, Object);
 
     /**
      * Default constructor. It initializes a unique id that is not obtained
@@ -93,7 +93,7 @@ namespace ToolKit
    * DEPRECATED use TKObjectFactory
    * Utility class to construct Components.
    */
-  class TK_API ComponentFactory final
+  class ComponentFactory final
   {
    public:
     enum class ComponentType
@@ -111,7 +111,7 @@ namespace ToolKit
     };
 
    public:
-    Component* Create(ComponentType cls); //!< Deprecated. Just serving here for backward compatibility.
+    static Component* Create(ComponentType Class); //!< Deprecated. Just serving here for backward compatibility.
   };
 
 } // namespace ToolKit

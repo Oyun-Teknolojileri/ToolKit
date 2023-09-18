@@ -64,8 +64,6 @@ namespace ToolKit
     void EditorCamera::PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
       Super::PostDeSerializeImp(info, parent);
-
-      ParameterConstructor();
       CreateGizmo();
     }
 
@@ -147,7 +145,7 @@ namespace ToolKit
       Poses_Define(
           [this]() -> void
           {
-            if (Viewport* av = g_app->GetViewport(g_3dViewport))
+            if (Viewport* av = g_app->GetActiveViewport())
             {
               if (m_posessed)
               {

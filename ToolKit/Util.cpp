@@ -37,6 +37,8 @@
 #include "Shader.h"
 #include "SpriteSheet.h"
 #include "ToolKit.h"
+#include <filesystem>
+#include <unordered_set>
 
 #include "DebugNew.h"
 
@@ -288,7 +290,7 @@ namespace ToolKit
 
   void NormalizePath(String& path)
   {
-#ifdef __EMSCRIPTEN__
+#if __clang__
     UnixifyPath(path);
 #else
     DosifyPath(path);
@@ -388,7 +390,10 @@ namespace ToolKit
     return false;
   }
 
-  bool HasToolKitRoot(const String& path) { return StartsWith(path, "ToolKit\\") || StartsWith(path, "ToolKit/"); }
+  bool HasToolKitRoot(const String& path) 
+  {
+    return StartsWith(path, "ToolKit\\") || StartsWith(path, "ToolKit/"); 
+  }
 
   String GetFileName(const String& path)
   {
@@ -459,9 +464,9 @@ namespace ToolKit
     if (Class == Audio::StaticClass())
     {
       return AUDIO;
-    }
+  }
     if (Class == Material::StaticClass())
-    {
+  {
       return MATERIAL;
     }
     if (Class == Mesh::StaticClass())
@@ -482,7 +487,6 @@ namespace ToolKit
     }
 
     assert(false && "Resource type does not have a corresponding extension.");
-
     return String();
   }
 
@@ -528,7 +532,7 @@ namespace ToolKit
 
   char GetPathSeparator()
   {
-#ifndef __EMSCRIPTEN__
+#ifndef __clang__
     return '\\';
 #else
     return '/';
@@ -874,6 +878,60 @@ namespace ToolKit
     return cpy;
   }
 
+  static void RecursiveCopyDirectoryWithSet(const String& source,
+                                            const String& destination,
+                                            const std::unordered_set<uint64>& ignoredExtSet) 
+  {
+    using namespace std::filesystem;
+    String ext;
+    DecomposePath(source, nullptr, nullptr, &ext);
+    if (ignoredExtSet.count(std::hash<String> {}(ext)) != 0)
+    {
+      return;
+    }
+
+    // Create the destination directory if it doesn't exist
+    if (!exists(destination))
+    {
+      create_directories(destination);
+    }
+
+    for (const auto& entry : directory_iterator(source))
+    {
+      const path current_path = entry.path();
+      const path new_path     = destination / current_path.filename();
+
+      String ext;
+      DecomposePath(current_path.u8string(), nullptr, nullptr, &ext);
+
+      if (ignoredExtSet.count(std::hash<String> {}(ext)) != 0) 
+      {
+        continue;
+      }
+
+      if (is_directory(current_path))
+      {
+        RecursiveCopyDirectoryWithSet(current_path.generic_u8string(), new_path.generic_u8string(), ignoredExtSet);
+      }
+      else if (is_regular_file(current_path))
+      {
+        copy_file(current_path, new_path, copy_options::overwrite_existing);
+      }
+    }
+  }
+
+  void RecursiveCopyDirectory(const String& source,
+                              const String& destination,
+                              const StringArray& ignoredExtensions)
+  {
+    std::unordered_set<uint64> ignoredSet;
+    for (int i = 0; i < ignoredExtensions.size(); i++) 
+    {
+      ignoredSet.insert(std::hash<String> {}(ignoredExtensions[i]));
+    }
+    RecursiveCopyDirectoryWithSet(source, destination, ignoredSet);
+  }
+
   void* TKMalloc(size_t sz) { return malloc(sz); }
 
   void TKFree(void* m) { free(m); }
@@ -909,11 +967,8 @@ namespace ToolKit
   {
     namespace ch                                    = std::chrono;
     static ch::high_resolution_clock::time_point t1 = ch::high_resolution_clock::now();
-
     ch::high_resolution_clock::time_point t2        = ch::high_resolution_clock::now();
-
     ch::duration<double> timeSpan                   = ch::duration_cast<ch::duration<double>>(t2 - t1);
-
     return static_cast<float>(timeSpan.count() * 1000.0);
   }
 

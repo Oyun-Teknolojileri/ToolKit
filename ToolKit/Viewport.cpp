@@ -128,14 +128,13 @@ namespace ToolKit
   {
     if (m_framebuffer == nullptr)
     {
-      m_framebuffer = std::make_shared<Framebuffer>();
+      m_framebuffer = MakeNewPtr<Framebuffer>();
     }
 
     m_framebuffer->UnInit();
     m_framebuffer->Init({(uint) m_wndContentAreaSize.x, (uint) m_wndContentAreaSize.y, false, true});
 
-    m_renderTarget =
-        std::make_shared<RenderTarget>((uint) m_wndContentAreaSize.x, (uint) m_wndContentAreaSize.y, settings);
+    m_renderTarget = MakeNewPtr<RenderTarget>((uint) m_wndContentAreaSize.x, (uint) m_wndContentAreaSize.y, settings);
     m_renderTarget->Init();
 
     if (m_renderTarget->m_initiated)

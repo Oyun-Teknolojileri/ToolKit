@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include "TKObject.h"
+#include "ObjectFactory.h"
 
 #include "AnimationControllerComponent.h"
 #include "Audio.h"
@@ -58,74 +58,33 @@
 namespace ToolKit
 {
 
-  bool TKClass::IsSublcassOf(TKClass* base)
-  {
-    if (base == Super)
-    {
-      return true;
-    }
-
-    if (this == base)
-    {
-      return true;
-    }
-
-    // This specific condition is only valid for TKObject, marking this point as the end.
-    if (this == Super)
-    {
-      return false; // No match found.
-    }
-
-    return Super->IsSublcassOf(base);
-  }
-
-  TKDefineClass(TKObject, TKObject);
-
-  TKObject::TKObject() {}
-
-  TKObject::~TKObject() {}
-
-  void TKObject::NativeConstruct()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-  }
-
-  void TKObject::NativeDestruct() {}
-
-  void TKObject::ParameterConstructor()
-  {
-    ULongID id = GetHandleManager()->GetNextHandle();
-    Id_Define(id, EntityCategory.Name, EntityCategory.Priority, true, false);
-  }
-
-  void TKObject::ParameterEventConstructor() {}
-
-  TKObjectPtr TKObject::Copy() const { return nullptr; }
-
-  XmlNode* TKObject::SerializeImp(XmlDocument* doc, XmlNode* parent) const
-  {
-    assert(doc != nullptr && parent != nullptr);
-
-    XmlNode* objNode = CreateXmlNode(doc, StaticClass()->Name, parent);
-    WriteAttr(objNode, doc, XmlObjectClassAttr, Class()->Name);
-
-    m_localData.Serialize(doc, objNode);
-    return objNode;
-  }
-
-  XmlNode* TKObject::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
-  {
-    assert(parent != nullptr && "Root of the object can't be null.");
-    m_localData.DeSerialize(info, parent);
-
-    // Construction progress from bottom up.
-    return parent;
-  }
-
-  TKObjectFactory::TKObjectFactory() { Init(); }
+  TKObjectFactory::TKObjectFactory() {}
 
   TKObjectFactory::~TKObjectFactory() {}
+
+  TKObjectFactory::ObjectConstructorCallback& TKObjectFactory::GetConstructorFn(const StringView Class)
+  {
+    auto constructorFnIt = m_constructorFnMap.find(Class);
+    if (constructorFnIt != m_constructorFnMap.end())
+    {
+      return constructorFnIt->second;
+    }
+
+    return m_nullFn;
+  }
+
+  Object* TKObjectFactory::MakeNew(const StringView Class)
+  {
+    if (auto constructorFn = GetConstructorFn(Class))
+    {
+      Object* object = constructorFn();
+      object->NativeConstruct();
+      return object;
+    }
+
+    assert(false && "Unknown object type.");
+    return nullptr;
+  }
 
   void TKObjectFactory::Init()
   {
@@ -180,20 +139,6 @@ namespace ToolKit
     Register<DepthTexture>();
     Register<Hdri>();
     Register<RenderTarget>();
-  }
-
-  TKObject* TKObjectFactory::MakeNew(const StringView Class)
-  {
-    TKObject* object = nullptr;
-    auto consFnIt    = m_constructorFnMap.find(Class);
-    if (consFnIt != m_constructorFnMap.end())
-    {
-      object = consFnIt->second();
-      object->NativeConstruct();
-    }
-
-    assert(object && "Unknown object type.");
-    return object;
   }
 
 } // namespace ToolKit

@@ -114,7 +114,7 @@ namespace ToolKit
     RenderTask task = {
         [this](Renderer* renderer) -> void
         {
-          FramebufferPtr fb = std::make_shared<Framebuffer>();
+          FramebufferPtr fb = MakeNewPtr<Framebuffer>();
           fb->Init({m_size, m_size, false, true});
 
           const RenderTargetSettigs set = {0,
@@ -128,7 +128,7 @@ namespace ToolKit
                                            GraphicTypes::FormatRGB,
                                            GraphicTypes::TypeUnsignedByte};
 
-          RenderTargetPtr cubemap       = std::make_shared<RenderTarget>(m_size, m_size, set);
+          RenderTargetPtr cubemap       = MakeNewPtr<RenderTarget>(m_size, m_size, set);
 
           cubemap->Init();
 
@@ -175,7 +175,7 @@ namespace ToolKit
           renderer->EnableDepthTest(true);
 
           // Take the ownership of render target.
-          GetHdri()->m_cubemap = std::make_shared<CubeMap>(cubemap->m_textureId);
+          GetHdri()->m_cubemap = MakeNewPtr<CubeMap>(cubemap->m_textureId);
 
           cubemap->m_textureId = 0;
           cubemap              = nullptr;

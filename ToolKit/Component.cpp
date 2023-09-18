@@ -33,13 +33,16 @@
 #include "MeshComponent.h"
 #include "ResourceComponent.h"
 #include "SkeletonComponent.h"
+#include "Object.h"
+#include "Component.h"
+#include "ToolKit.h"
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
 
-  TKDefineClass(Component, TKObject);
+  TKDefineClass(Component, Object);
 
   Component::Component() {}
 
@@ -70,9 +73,9 @@ namespace ToolKit
     return parent;
   }
 
-  Component* ComponentFactory::Create(ComponentType cls)
+  Component* ComponentFactory::Create(ComponentType Class)
   {
-    switch (cls)
+    switch (Class)
     {
     case ComponentType::MeshComponent:
       return MakeNew<MeshComponent>();

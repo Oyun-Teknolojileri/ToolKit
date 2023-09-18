@@ -60,7 +60,7 @@ namespace ToolKit
     };
 
    public:
-    TKDeclareClass(Billboard, Entity);
+    TKDeclareClass(Billboard, Entity)
 
     Billboard();
     explicit Billboard(const Settings& settings);
@@ -180,6 +180,7 @@ namespace ToolKit
     TKDeclareClass(Arrow2d, Entity);
 
     Arrow2d();
+    void NativeConstruct() override;
     void Generate(AxisLabel axis);
 
    protected:
@@ -207,10 +208,10 @@ namespace ToolKit
 
   typedef std::shared_ptr<LineBatch> LineBatchPtr;
 
-  class TK_API MeshGenerator final
+  class TK_API MeshGenerator final  
   {
    public:
     static void GenerateCircleMesh(MeshPtr mesh, int numSegments, float radius);
     static void GenerateConeMesh(MeshPtr mesh, float radius, int vertexCount, float outerAngle);
-  };
+  }; 
 } // namespace ToolKit

@@ -28,8 +28,16 @@
 
 #include "Types.h"
 
+#include <variant>
+#include <zlib.h>
+
+#ifdef __ANDROID__
+#include <Android/minizip/unzip.h>
+#include <Android/minizip/zip.h>
+#else
 #include <unzip.h>
 #include <zip.h>
+#endif
 
 namespace ToolKit
 {

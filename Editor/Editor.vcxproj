@@ -101,6 +101,7 @@
     <ClCompile Include="ComponentView.cpp" />
     <ClCompile Include="ConsoleWindow.cpp" />
     <ClCompile Include="CustomDataView.cpp" />
+    <ClCompile Include="DynamicMenu.cpp" />
     <ClCompile Include="EditorCamera.cpp" />
     <ClCompile Include="EditorLight.cpp" />
     <ClCompile Include="EditorRenderer.cpp" />
@@ -154,6 +155,7 @@
     <ClInclude Include="ComponentView.h" />
     <ClInclude Include="ConsoleWindow.h" />
     <ClInclude Include="CustomDataView.h" />
+    <ClInclude Include="DynamicMenu.h" />
     <ClInclude Include="EditorCamera.h" />
     <ClInclude Include="EditorLight.h" />
     <ClInclude Include="EditorRenderer.h" />

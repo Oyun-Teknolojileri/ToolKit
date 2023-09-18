@@ -28,6 +28,7 @@
 
 #include "Anchor.h"
 #include "ConsoleWindow.h"
+#include "DynamicMenu.h"
 #include "EditorRenderer.h"
 #include "EditorScene.h"
 #include "FolderWindow.h"
@@ -94,6 +95,7 @@ namespace ToolKit
       void ResetUI();
       void DeleteWindows();
       void CreateWindows(XmlNode* parent);
+      void ReconstructDynamicMenus();
 
       // Import facilities.
       int Import(const String& fullPath, const String& subDir, bool overwrite);
@@ -217,7 +219,10 @@ namespace ToolKit
       GameMod m_gameMod                        = GameMod::Stop;
       SysCommandExecutionFn m_sysComExecFn     = nullptr;
       EditorLitMode m_sceneLightingMode        = EditorLitMode::EditorLit;
+      EditorViewport* m_lastActiveViewport     = nullptr;
       Workspace m_workspace;
+      StringArray m_customObjectMetaValues;    //!< Add menu shows this additional classes.
+      DynamicMenuPtrArray m_customObjectsMenu; //!< Menu for custom objects to display in Add.
 
       // Snap settings.
       bool m_snapsEnabled  = false; // Delta transforms.

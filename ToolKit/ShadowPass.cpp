@@ -31,6 +31,7 @@
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "ToolKit.h"
+#include "Logger.h"
 
 namespace ToolKit
 {
@@ -50,7 +51,7 @@ namespace ToolKit
     }
 
     m_shadowAtlas       = MakeNewPtr<RenderTarget>();
-    m_shadowFramebuffer = std::make_shared<Framebuffer>();
+    m_shadowFramebuffer = MakeNewPtr<Framebuffer>();
   }
 
   ShadowPass::ShadowPass(const ShadowPassParams& params) : ShadowPass() { m_params = params; }
@@ -198,7 +199,7 @@ namespace ToolKit
 
       renderForShadowMapFn(light, jobs);
     }
-  }
+    }
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights)
   {
