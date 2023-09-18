@@ -31,7 +31,7 @@
 #include "Shader.h"
 #include "ToolKit.h"
 
-#include "glad/OpenGL.h"
+#include <glad/gles2.h>
 
 namespace ToolKit
 {

@@ -35,7 +35,6 @@
 
 #include <execution>
 #include <mutex>
-#include <random>
 
 #include "DebugNew.h"
 
@@ -396,7 +395,7 @@ namespace ToolKit
     float closestPickedDistance = FLT_MAX;
     bool hit                    = false;
 
-#ifndef __clang__
+#ifndef __EMSCRIPTEN__
     std::mutex updateHit;
     std::for_each(std::execution::par_unseq,
                   mesh->m_faces.begin(),
@@ -498,7 +497,7 @@ namespace ToolKit
     rayInObjectSpace.position  = its * Vec4(rayInWorldSpace.position, 1.0f);
     rayInObjectSpace.direction = its * Vec4(rayInWorldSpace.direction, 0.0f);
 
-#ifndef __clang__
+#ifndef __EMSCRIPTEN__
     std::for_each(std::execution::par_unseq,
                   meshTraces.begin(),
                   meshTraces.end(),

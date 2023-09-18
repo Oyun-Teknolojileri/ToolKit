@@ -27,7 +27,8 @@
 #pragma once
 
 #include "Types.h"
-#include "glad/OpenGL.h"
+
+#include <gles2.h>
 
 namespace ToolKit
 {

@@ -175,4 +175,3 @@ namespace ToolKit
   Vec3Array GenerateRandomSamplesInHemisphere(int numSamples, float bias);
 
 } // namespace ToolKit
-

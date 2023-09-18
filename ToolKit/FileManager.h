@@ -28,30 +28,11 @@
 
 #include "Types.h"
 
-#include <variant>
-#include <zlib.h>
-
-#ifdef __ANDROID__
-#include "../unzip/unzip.h"
-#include "../unzip/zip.h"
-#else
 #include <unzip.h>
 #include <zip.h>
-#endif
 
 namespace ToolKit
 {
-  struct File
-  {
-    static File Open(StringView path, StringView mode);
-    static void Close(File file);
-
-    size_t Read(char* buffer, size_t len);
-    size_t Write(char* buffer, size_t len);
-    
-    void* handle;
-  };
-
   class TK_API FileManager
   {
    public:

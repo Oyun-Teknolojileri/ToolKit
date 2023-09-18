@@ -196,6 +196,4 @@ namespace ToolKit
     return object;
   }
 
-
 } // namespace ToolKit
-

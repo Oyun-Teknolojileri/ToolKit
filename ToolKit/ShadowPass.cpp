@@ -31,7 +31,6 @@
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "ToolKit.h"
-#include "Logger.h"
 
 namespace ToolKit
 {
@@ -199,7 +198,7 @@ namespace ToolKit
 
       renderForShadowMapFn(light, jobs);
     }
-    }
+  }
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights)
   {

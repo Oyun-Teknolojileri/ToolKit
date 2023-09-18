@@ -33,7 +33,7 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-#include "glad/OpenGL.h"
+#include <gles2.h>
 
 #include "DebugNew.h"
 
@@ -422,9 +422,9 @@ namespace ToolKit
   // SkeletonManager
   //////////////////////////////////////////////////////////////////////////
 
-  SkeletonManager::~SkeletonManager() {}
-
   SkeletonManager::SkeletonManager() { m_baseType = Skeleton::StaticClass(); }
+
+  SkeletonManager::~SkeletonManager() {}
 
   bool SkeletonManager::CanStore(TKClass* Class)
   {

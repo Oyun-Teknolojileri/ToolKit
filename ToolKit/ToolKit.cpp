@@ -37,10 +37,9 @@
 #include "Shader.h"
 #include "TKObject.h"
 #include "UIManager.h"
-#include "Logger.h"
 
 #define GLAD_GLES2_IMPLEMENTATION
-#include "glad/OpenGL.h"
+#include <gles2.h>
 
 #include "DebugNew.h"
 
@@ -155,7 +154,7 @@ namespace ToolKit
     m_materialManager->Uninit();
     m_sceneManager->Uninit();
     m_skeletonManager->Uninit();
-    
+
     m_initiated    = false;
     m_preInitiated = false;
   }
@@ -277,6 +276,8 @@ namespace ToolKit
     {
       return GetSceneManager();
     }
+    // else if (Class->IsSublcassOf(Skeleton::StaticClass())) {}
+    // else if (Class->IsSublcassOf(Resource::StaticClass())) {}
 
     return nullptr;
   }
@@ -323,11 +324,7 @@ namespace ToolKit
 
   String DefaultPath()
   {
-#ifdef __ANDROID__
-    static const String res = ConcatPaths({ Main::GetInstance()->m_resourceRoot, "Resources", "Engine"});
-#else
     static const String res = ConcatPaths({"..", "Resources", "Engine"});
-#endif
     return res;
   }
 

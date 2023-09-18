@@ -98,7 +98,7 @@ namespace ToolKit
 
   class TK_API SkeletonManager : public ResourceManager
   {
-  public:
+   public:
     SkeletonManager();
     virtual ~SkeletonManager();
     bool CanStore(TKClass* Class) override;

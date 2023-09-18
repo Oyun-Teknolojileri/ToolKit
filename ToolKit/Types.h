@@ -31,49 +31,8 @@
  * relatled structures.
  */
 
-#ifdef __ANDROID__
-#define TK_GL_ES_3_0
-#define TK_DLL_EXPORT
-#include "game-activity/GameActivity.h"
-#include <android/asset_manager.h>
-#include <game-activity/native_app_glue/android_native_app_glue.h>
-
-// defined in ToolKitMain.cpp
-extern struct android_app* g_android_app;
-extern struct AAssetManager* g_asset_manager;
-
-#else
-#define TK_LOG(format, ...) GetLogger()->WriteConsole(LogType::Memo, format, ##__VA_ARGS__)
-#endif
-
-// GLM
-#define GLM_FORCE_XYZW_ONLY
-#define GLM_FORCE_CTOR_INIT
-#define GLM_ENABLE_EXPERIMENTAL
-#ifndef GLM_FORCE_SWIZZLE
-# define GLM_FORCE_SWIZZLE
-#endif
-
 #include "glm/glm.hpp"
-#include "glm/gtc/epsilon.hpp"
-#include "glm/gtc/matrix_access.hpp"
-#include "glm/gtc/matrix_inverse.hpp"
-#include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/quaternion.hpp"
-#include "glm/gtc/random.hpp"
-#include "glm/gtx/closest_point.hpp"
-#include "glm/gtx/component_wise.hpp"
-#include "glm/gtx/euler_angles.hpp"
-#include "glm/gtx/matrix_operation.hpp"
-#include "glm/gtx/matrix_query.hpp"
-#include "glm/gtx/quaternion.hpp"
-#include "glm/gtx/scalar_relational.hpp"
-#include "glm/gtx/string_cast.hpp"
-#include "glm/gtx/vector_query.hpp"
-
-// RapidXml
-#include "RapidXml/rapidxml_ext.h"
-#include "RapidXml/rapidxml_utils.hpp"
 
 #include <filesystem>
 #include <functional>
@@ -85,12 +44,6 @@ extern struct AAssetManager* g_asset_manager;
 #include <utility>
 #include <vector>
 
-template<class _Tp, class _Up>
-inline std::shared_ptr<_Tp> ReinterpretPointerCast(const std::shared_ptr<_Up>& __r)
-{
-  return std::shared_ptr<_Tp>(__r, reinterpret_cast<_Tp*>(__r.get()));
-}
-
 #ifdef _WIN32 // Windows.
   #define TK_STDCAL __stdcall
   #ifdef TK_DLL_EXPORT // Dynamic binding.
@@ -100,8 +53,8 @@ inline std::shared_ptr<_Tp> ReinterpretPointerCast(const std::shared_ptr<_Up>& _
   #else // Static binding.
     #define TK_API
   #endif
-#elif defined(__clang__) 
-  #define TK_API __attribute__((visibility("default")))
+#else // Other OS.
+  #define TK_API
   #define TK_STDCAL
 #endif
 
@@ -150,6 +103,7 @@ namespace ToolKit
   typedef uint64_t uint64;
   typedef uint64_t ULongID;
   typedef const int16_t SignalId;
+  typedef std::shared_ptr<class Resource> ResourcePtr;
   typedef std::string String;
   typedef std::string_view StringView;
   typedef std::vector<String> StringArray;
@@ -388,7 +342,6 @@ namespace ToolKit
     FormatRGB16F               = 0x881B,
     FormatRGBA16F              = 0x881A,
     FormatRGB32F               = 0x8815,
-    FormatRGBA32F              = 0x8814,
     FormatR16SNorm             = 0x8F98,
     FormatSRGB8_A8             = 0x8C43,
     FormatDepthComponent       = 0x1902,

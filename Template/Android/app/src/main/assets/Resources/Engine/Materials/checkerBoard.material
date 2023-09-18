@@ -1,7 +1,0 @@
-<material>
-	<diffuseTexture name="ToolKit\checkerBoard.png"/>
-	<shader name="ToolKit\defaultVertex.shader"/>
-	<shader name="ToolKit\deferredRenderFrag.shader"/>
-	<color x="1.000000" y="1.000000" z="1.000000"/>
-</material>
-

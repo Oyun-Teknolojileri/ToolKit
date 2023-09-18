@@ -288,7 +288,7 @@ namespace ToolKit
 
   void NormalizePath(String& path)
   {
-#if __clang__
+#ifdef __EMSCRIPTEN__
     UnixifyPath(path);
 #else
     DosifyPath(path);
@@ -388,14 +388,7 @@ namespace ToolKit
     return false;
   }
 
-  bool HasToolKitRoot(const String& path) 
-  {
-#ifdef __ANDROID__
-    return false;
-#else
-    return StartsWith(path, "ToolKit\\") || StartsWith(path, "ToolKit/"); 
-#endif
-  }
+  bool HasToolKitRoot(const String& path) { return StartsWith(path, "ToolKit\\") || StartsWith(path, "ToolKit/"); }
 
   String GetFileName(const String& path)
   {
@@ -466,9 +459,9 @@ namespace ToolKit
     if (Class == Audio::StaticClass())
     {
       return AUDIO;
-  }
+    }
     if (Class == Material::StaticClass())
-  {
+    {
       return MATERIAL;
     }
     if (Class == Mesh::StaticClass())
@@ -487,6 +480,8 @@ namespace ToolKit
     {
       return SCENE;
     }
+
+    assert(false && "Resource type does not have a corresponding extension.");
 
     return String();
   }
@@ -533,7 +528,7 @@ namespace ToolKit
 
   char GetPathSeparator()
   {
-#ifndef __clang__
+#ifndef __EMSCRIPTEN__
     return '\\';
 #else
     return '/';

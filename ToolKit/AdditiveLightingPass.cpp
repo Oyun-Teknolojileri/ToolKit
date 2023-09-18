@@ -74,8 +74,8 @@ namespace ToolKit
     RenderTargetSettigs oneChannelSet = {};
     oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
     oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGBA16F;
-    oneChannelSet.Format              = GraphicTypes::FormatRGBA;
+    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGB16F;
+    oneChannelSet.Format              = GraphicTypes::FormatRGB;
     oneChannelSet.Type                = GraphicTypes::TypeFloat;
 
     m_lightingRt->m_settings          = oneChannelSet;

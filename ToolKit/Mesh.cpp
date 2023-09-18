@@ -35,7 +35,7 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-#include "glad/OpenGL.h"
+#include <gles2.h>
 
 #include <execution>
 
@@ -694,7 +694,7 @@ namespace ToolKit
       indexes[i] = i;
     }
 
-#ifndef __clang__
+#ifndef __EMSCRIPTEN__
     std::for_each(std::execution::par_unseq,
                   indexes.begin(),
                   indexes.end(),

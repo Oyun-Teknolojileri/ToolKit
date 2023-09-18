@@ -387,19 +387,19 @@ namespace ToolKit
     return node;
   }
 
-  XmlNode* SpotLight::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) 
-  { 
-    XmlNode* node = Super::DeSerializeImp(info, parent); 
+  XmlNode* SpotLight::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* node = Super::DeSerializeImp(info, parent);
     MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
     return node;
   }
 
-  void SpotLight::NativeConstruct() 
+  void SpotLight::NativeConstruct()
   {
     Super::NativeConstruct();
     MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
   }
-  
+
   void SpotLight::ParameterConstructor()
   {
     Super::ParameterConstructor();
@@ -407,7 +407,7 @@ namespace ToolKit
     Radius_Define(10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.5f});
     OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
     InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
-    
+
     ParamRadius().m_onValueChangedFn.clear();
     ParamRadius().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void

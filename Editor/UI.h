@@ -28,7 +28,6 @@
 
 #include "IconsFontAwesome.h"
 #include "ImGui/imgui.h"
-#include "TKObject.h"
 
 namespace ToolKit
 {

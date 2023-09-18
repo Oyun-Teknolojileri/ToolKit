@@ -29,7 +29,6 @@
 #include "ParameterBlock.h"
 #include "Serialize.h"
 #include "Types.h"
-#include "ToolKit.h"
 
 namespace ToolKit
 {
@@ -76,21 +75,21 @@ namespace ToolKit
 
 #define TKDeclareClass(This, Base)                                                                                     \
  private:                                                                                                              \
-  static TKClass This##Class;                                                                                          \
+  static TKClass This##Cls;                                                                                            \
   typedef Base Super;                                                                                                  \
                                                                                                                        \
  public:                                                                                                               \
   virtual TKClass* const Class() const;                                                                                \
   static TKClass* const StaticClass()                                                                                  \
   {                                                                                                                    \
-    return &This##Class;                                                                                               \
+    return &This##Cls;                                                                                                 \
   }
 
 #define TKDefineClass(This, Base)                                                                                      \
-  TKClass This::This##Class = {Base::StaticClass(), #This};                                                            \
+  TKClass This::This##Cls = {Base::StaticClass(), #This};                                                              \
   TKClass* const This::Class() const                                                                                   \
   {                                                                                                                    \
-    return &This##Class;                                                                                               \
+    return &This##Cls;                                                                                                 \
   }
 
   class TK_API TKObject : public Serializable
@@ -192,9 +191,9 @@ namespace ToolKit
   };
 
   template <typename T>
-  inline T* MakeNew()
+  T* MakeNew()
   {
-    if (ToolKit::Main* main = Main::GetInstance())
+    if (Main* main = Main::GetInstance())
     {
       if (TKObjectFactory* of = main->m_objectFactory)
       {
@@ -206,33 +205,35 @@ namespace ToolKit
   }
 
   template <typename T>
-  inline std::shared_ptr<T> MakeNewPtr()
+  std::shared_ptr<T> MakeNewPtr()
   {
-    if (ToolKit::Main* main = ToolKit::Main::GetInstance())
+    if (Main* main = Main::GetInstance())
     {
       if (TKObjectFactory* of = main->m_objectFactory)
       {
         return std::shared_ptr<T>(of->MakeNew<T>());
       }
     }
+
     return nullptr;
   }
 
   template <typename T>
-  inline std::shared_ptr<T> MakeNewPtr(const StringView tkClass)
+  std::shared_ptr<T> MakeNewPtr(const StringView tkClass)
   {
-    if (ToolKit::Main* main = ToolKit::Main::GetInstance())
+    if (Main* main = Main::GetInstance())
     {
       if (TKObjectFactory* of = main->m_objectFactory)
       {
         return std::shared_ptr<T>(static_cast<T*>(of->MakeNew(tkClass)));
       }
     }
+
     return nullptr;
   }
 
   template <typename T>
-  inline std::shared_ptr<T> Cast(TKObjectPtr tkObj)
+  std::shared_ptr<T> Cast(TKObjectPtr tkObj)
   {
     return std::static_pointer_cast<T>(tkObj);
   }

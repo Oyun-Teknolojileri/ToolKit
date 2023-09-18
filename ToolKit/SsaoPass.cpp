@@ -34,8 +34,7 @@
 #include "ShaderReflectionCache.h"
 #include "ToolKit.h"
 
-#include <random>
-#include "glad/OpenGL.h"
+#include <gles2.h>
 
 #include "DebugNew.h"
 

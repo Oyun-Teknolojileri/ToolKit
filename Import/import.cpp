@@ -1189,6 +1189,8 @@ namespace ToolKit
       // Create a dummy default material.
       g_proxy->m_materialManager->m_storage[MaterialPath("default.material", true)] = MakeNewPtr<Material>();
 
+      g_proxy->m_entityFactory                                                      = new EntityFactory();
+
       for (int i = 0; i < static_cast<int>(files.size()); i++)
       {
         file = files[i];
