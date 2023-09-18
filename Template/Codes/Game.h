@@ -40,10 +40,6 @@ namespace ToolKit
     virtual void Destroy();
     virtual void Frame(float deltaTime, class Viewport* viewport);
 
-   private:
-    RenderTargetPtr renderTarget = nullptr;
-    FramebufferPtr frameBuffer   = nullptr;
-    CameraPtr camera             = nullptr;
     SceneRendererPtr m_sceneRenderer;
   };
 

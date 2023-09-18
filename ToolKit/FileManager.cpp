@@ -495,12 +495,29 @@ namespace ToolKit
 
   void FileManager::GetRelativeResourcesPath(String& path)
   {
+#ifdef __ANDROID__
+      size_t index = path.find("files/Resources");
+      if (index != String::npos)
+      {
+          constexpr int length = sizeof("files/Resources");
+          path                 = path.substr(index + length);
+          return;
+      }
+      index = path.find("files");
+      if (index != String::npos)
+      {
+          constexpr int length = sizeof("files");
+          path                 = path.substr(index + length);
+          return;
+      }
+#else
     size_t index = path.find("Resources");
     if (index != String::npos)
     {
       constexpr int length = sizeof("Resources");
       path                 = path.substr(index + length);
     }
+#endif
   }
 
   XmlFilePtr FileManager::ReadXmlFileFromZip(zipFile zfile, const String& relativePath, const char* path)

@@ -101,6 +101,7 @@ namespace ToolKit
     void CheckFramebufferComplete();
 
     void ReconstructIfNeeded(uint width, uint height);
+    IVec2 GetSize() const;
 
     RenderTargetPtr DetachAttachment(Attachment atc);
     void RemoveDepthAttachment();

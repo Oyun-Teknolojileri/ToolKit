@@ -65,8 +65,8 @@ namespace ToolKit
   {
     Pass::PreRender();
 
-    int width  = m_params.MainFramebuffer->GetAttachment(FAttachment::ColorAttachment0)->m_width;
-    int height = m_params.MainFramebuffer->GetAttachment(FAttachment::ColorAttachment0)->m_height;
+    int width  = m_params.MainFramebuffer->GetSettings().width;
+    int height = m_params.MainFramebuffer->GetSettings().height;
 
     m_lightingFrameBuffer->Init({(uint) width, (uint) height, false, false});
     m_lightingFrameBuffer->ReconstructIfNeeded((uint) width, (uint) height);

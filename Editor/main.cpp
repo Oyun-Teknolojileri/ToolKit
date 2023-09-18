@@ -240,6 +240,7 @@ namespace ToolKit
             of->Override<EditorPointLight, PointLight>();
             of->Override<EditorSpotLight, SpotLight>();
             of->Override<EditorScene, Scene>();
+            of->Override<EditorCamera, Camera>();
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);

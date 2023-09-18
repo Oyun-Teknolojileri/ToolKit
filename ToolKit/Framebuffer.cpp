@@ -110,6 +110,11 @@ namespace ToolKit
     }
   }
   
+  IVec2 Framebuffer::GetSize() const
+  {
+    return { m_settings.width, m_settings.height };
+  }
+  
   void Framebuffer::AttachDepthTexture(DepthTexturePtr dt)
   {
     m_depthAtch = dt;
