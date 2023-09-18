@@ -41,9 +41,10 @@ namespace ToolKit
     virtual void Frame(float deltaTime, class Viewport* viewport);
 
    private:
-#if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
-    SceneRenderer m_sceneRenderer;
-#endif
+    RenderTargetPtr renderTarget = nullptr;
+    FramebufferPtr frameBuffer   = nullptr;
+    CameraPtr camera             = nullptr;
+    SceneRendererPtr m_sceneRenderer;
   };
 
 } // namespace ToolKit
