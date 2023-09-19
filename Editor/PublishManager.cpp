@@ -149,14 +149,14 @@ namespace ToolKit
         exitWithErrorFn("ToolKit could not be compiled!");
         return;
       }
-      newWorkDir = Path(ConcatPaths({ResourcePath(), "..", "Codes", "Web"}));
+      newWorkDir = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
       if (!std::filesystem::exists(newWorkDir))
       {
         std::filesystem::create_directories(newWorkDir);
       }
 
       // Create build script
-      const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Codes", "Web", "Release.bat"});
+      const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Web", "Release.bat"});
       std::ofstream releaseBuildScript(pluginWebBuildScriptsFolder.c_str());
       releaseBuildScript << "emcmake cmake -DEMSCRIPTEN=TRUE -DTK_CXX_EXTRA:STRING=\" -O3\" "
                             "-S .. -G Ninja && ninja & pause";
@@ -177,7 +177,7 @@ namespace ToolKit
       String publishDirectoryStr   = ConcatPaths({ResourcePath(), "..", "Publish", "Web"});
       const char* publishDirectory = publishDirectoryStr.c_str();
       String firstPart =
-          ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".";
+          ConcatPaths({ResourcePath(), "..", "Web", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".";
       String files[] = {firstPart + "data", firstPart + "html", firstPart + "js", firstPart + "wasm"};
       if (std::filesystem::exists(publishDirectory))
       {

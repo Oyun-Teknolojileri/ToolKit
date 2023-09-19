@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 
-set(PROJECT_NAME "__projectname__" CACHE STRING "What is the project name ?")
+set(PROJECT_NAME "AndroidProject" CACHE STRING "What is the project name ?")
 set(TOOLKIT_DIR "__tkdir__" CACHE FILEPATH "Where is the ToolKit source directory ?")
 
 if (EMSCRIPTEN)
@@ -96,9 +96,9 @@ if (${WEB_BUILD})
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TK_CXX_FLAGS}")
 
 	if (EXISTS "../../MinResources.pak")
-	  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -o ${PROJECT_NAME}.html --shell-file ../Bin/shell_minimal.html --preload-file ../../MinResources.pak@/../MinResources.pak --preload-file ../../Config@/../Config -sALLOW_MEMORY_GROWTH=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -s USE_ZLIB=1 -sUSE_SDL=2")
+	  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -o ${PROJECT_NAME}.html --shell-file ../Web/Bin/shell_minimal.html --preload-file ../MinResources.pak@/../MinResources.pak --preload-file ../Config@/../Config -sALLOW_MEMORY_GROWTH=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -s USE_ZLIB=1 -sUSE_SDL=2")
 	else()
-	  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -o ${PROJECT_NAME}.html --shell-file ../Bin/shell_minimal.html --preload-file ../../Resources@/../Resources --preload-file ../../Config@/../Config -sALLOW_MEMORY_GROWTH=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -s USE_ZLIB=1 -s USE_SDL=2")
+	  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -o ${PROJECT_NAME}.html --shell-file ../Web/Bin/shell_minimal.html --preload-file ../Resources@/../Resources --preload-file ../Config@/../Config -sALLOW_MEMORY_GROWTH=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -s USE_ZLIB=1 -s USE_SDL=2")
 	endif()  
 
 else()

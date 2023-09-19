@@ -1,4 +1,4 @@
-#include "Game.h"
+#include "../Codes/Game.h"
 
 #include <stdio.h>
 #include <chrono>
@@ -355,27 +355,11 @@ namespace ToolKit
 			}
     }
 
-    struct Timing
-    {
-      Timing()
-      {
-        lastTime = GetMilliSeconds();
-        currentTime = 0.0f;
-        deltaTime = 1000.0f / fps;
-        frameCount = 0;
-        timeAccum = 0.0f;
-      }
-
-      float lastTime = 0.0f;
-      float currentTime = 0.0f;
-      float deltaTime = 0.0f;
-      float timeAccum = 0.0f;
-      int frameCount = 0;
-    };
-
     void TK_Loop(void* args)
     {
       Timing* timer = static_cast<Timing*> (args);
+      timer->Init(fps);
+
       {
         SDL_Event sdlEvent;
         while (SDL_PollEvent(&sdlEvent))
@@ -384,10 +368,10 @@ namespace ToolKit
           ProcessEvent(sdlEvent);
         }
 
-        timer->currentTime = GetMilliSeconds();
-        if (timer->currentTime > timer->lastTime + timer->deltaTime)
+        timer->CurrentTime = GetMilliSeconds();
+        if (timer->CurrentTime > timer->LastTime + timer->DeltaTime)
         {
-          float ft = timer->currentTime - timer->lastTime;
+          float ft = timer->CurrentTime - timer->LastTime;
 					//std::cout << "FPS: " << 1000.0f / ft << std::endl;
 					//std::cout << "MS: " << ft << std::endl;
           g_viewport->Update(ft);
@@ -407,15 +391,15 @@ namespace ToolKit
           ClearPool();  // Clear after consumption.
           SDL_GL_SwapWindow(g_window);
 
-          timer->frameCount++;
-          timer->timeAccum += ft;
-          if (timer->timeAccum >= 1000.0f)
+          timer->FrameCount++;
+          timer->TimeAccum += ft;
+          if (timer->TimeAccum >= 1000.0f)
           {
-            timer->timeAccum = 0;
-            timer->frameCount = 0;
+            timer->TimeAccum = 0;
+            timer->FrameCount = 0;
           }
 
-          timer->lastTime = timer->currentTime;
+          timer->LastTime = timer->CurrentTime;
         }
       }
     }
