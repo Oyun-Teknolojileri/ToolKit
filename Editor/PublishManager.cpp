@@ -177,7 +177,7 @@ namespace ToolKit
       String publishDirectoryStr   = ConcatPaths({ResourcePath(), "..", "Publish", "Web"});
       const char* publishDirectory = publishDirectoryStr.c_str();
       String firstPart =
-          ConcatPaths({ResourcePath(), "..", "Web", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".";
+          ConcatPaths({ResourcePath(), "..", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".";
       String files[] = {firstPart + "data", firstPart + "html", firstPart + "js", firstPart + "wasm"};
       if (std::filesystem::exists(publishDirectory))
       {
