@@ -101,12 +101,11 @@ namespace ToolKit
     };
 
     MultiChoiceVariant mcv = {
-        {createParameterVariant("32", 32),
-         createParameterVariant("64", 64),
-         createParameterVariant("128", 128),
-         createParameterVariant("256", 256),
+        {createParameterVariant("256", 256),
          createParameterVariant("512", 512),
-         createParameterVariant("1024", 1024)},
+         createParameterVariant("1024", 1024),
+         createParameterVariant("2048", 2048),
+         createParameterVariant("4096", 4096)},
         1,
         [&](Value& oldVal, Value& newVal)
         {

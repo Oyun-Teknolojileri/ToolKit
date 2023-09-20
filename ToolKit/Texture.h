@@ -129,19 +129,16 @@ namespace ToolKit
 
     bool IsTextureAssigned();
 
-   protected:
-    void GeneratePrefilteredEnvMap();
-
    public:
-    CubeMapPtr m_cubemap           = nullptr;
-    CubeMapPtr m_prefilteredEnvMap = nullptr;
-    CubeMapPtr m_irradianceCubemap = nullptr;
-    float m_exposure               = 1.0f;
-    int m_specularIBLTextureSize   = 128;
+    CubeMapPtr m_cubemap         = nullptr;
+    CubeMapPtr m_specularEnvMap  = nullptr;
+    CubeMapPtr m_diffuseEnvMap   = nullptr;
+    float m_exposure             = 1.0f;
+    int m_specularIBLTextureSize = 256;
 
    protected:
     MaterialPtr m_texToCubemapMat           = nullptr;
-    MaterialPtr m_cubemapToIrradiancemapMat = nullptr;
+    MaterialPtr m_cubemapToDiffuseEnvMapMat = nullptr;
     TexturePtr m_equirectangularTexture     = nullptr;
 
     const int m_brdfLutTextureSize          = 512;
