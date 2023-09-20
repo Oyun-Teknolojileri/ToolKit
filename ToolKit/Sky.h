@@ -59,6 +59,7 @@ namespace ToolKit
     TKDeclareParam(bool, DrawSky);
     TKDeclareParam(bool, Illuminate);
     TKDeclareParam(float, Intensity);
+    TKDeclareParam(MultiChoiceVariant, IBLTextureSize);
 
    protected:
     bool m_initialized           = false;
