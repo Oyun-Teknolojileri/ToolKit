@@ -62,7 +62,8 @@ namespace ToolKit
   {
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = m_prevOverrideMaterial;
-    renderer->SetFramebuffer(m_prevFrameBuffer, false);
+    if (m_prevFrameBuffer != nullptr)
+        renderer->SetFramebuffer(m_prevFrameBuffer, false);
   }
 
   void Pass::RenderSubPass(const PassPtr& pass)
