@@ -104,7 +104,10 @@ namespace ToolKit
         m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
         m_scenePass->Render(renderer);
         m_passArray.push_back(m_uiPass);
-        m_passArray.push_back(m_gammaPass);
+        if (GetRenderSystem()->IsGammaCorrectionNeeded())
+        {
+          m_passArray.push_back(m_gammaPass);
+        }
         RenderPath::Render(renderer);
         m_params.App->ShowGizmos();
         break;
@@ -145,7 +148,10 @@ namespace ToolKit
             m_passArray.push_back(m_fxaaPass);
           }
         }
-        m_passArray.push_back(m_gammaPass);
+        if (GetRenderSystem()->IsGammaCorrectionNeeded())
+        {
+          m_passArray.push_back(m_gammaPass);
+        }
 
         RenderPath::Render(renderer);
       }

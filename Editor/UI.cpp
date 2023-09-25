@@ -116,14 +116,14 @@ namespace ToolKit
       IMGUI_CHECKVERSION();
       ImGui::CreateContext();
 
-      ImGuiIO& io                          = ImGui::GetIO();
+      ImGuiIO& io                           = ImGui::GetIO();
       io.ConfigFlags                       |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
-      io.ConfigWindowsMoveFromTitleBarOnly = true;
+      io.ConfigWindowsMoveFromTitleBarOnly  = true;
 
       // Handle font loading.
-      static const ImWchar utf8TR[]        = {0x0020, 0x00FF, 0x00c7, 0x00c7, 0x00e7, 0x00e7, 0x011e, 0x011e, 0x011f,
-                                              0x011f, 0x0130, 0x0130, 0x0131, 0x0131, 0x00d6, 0x00d6, 0x00f6, 0x00f6,
-                                              0x015e, 0x015e, 0x015f, 0x015f, 0x00dc, 0x00dc, 0x00fc, 0x00fc, 0};
+      static const ImWchar utf8TR[]         = {0x0020, 0x00FF, 0x00c7, 0x00c7, 0x00e7, 0x00e7, 0x011e, 0x011e, 0x011f,
+                                               0x011f, 0x0130, 0x0130, 0x0131, 0x0131, 0x00d6, 0x00d6, 0x00f6, 0x00f6,
+                                               0x015e, 0x015e, 0x015f, 0x015f, 0x00dc, 0x00dc, 0x00fc, 0x00fc, 0};
 
       io.Fonts->Clear();
       LiberationSans =
@@ -288,6 +288,34 @@ namespace ToolKit
       }
     }
 
+    void SetTheme(Theme theme)
+    {
+      if (theme == Theme::Dark)
+      {
+        DarkTheme();
+      }
+      else if (theme == Theme::Light)
+      {
+        LightTheme();
+      }
+      else // if (theme == Theme::Grey)
+      {
+        GreyTheme();
+      }
+
+      // Fix gamma correction
+      if (!GetRenderSystem()->IsGammaCorrectionNeeded())
+      {
+        float gamma = GetEngineSettings().PostProcessing.Gamma;
+        for (ImVec4& col : ImGui::GetStyle().Colors)
+        {
+          col.x = std::powf(col.x, gamma);
+          col.y = std::powf(col.y, gamma);
+          col.z = std::powf(col.z, gamma);
+        }
+      }
+    }
+
     void DarkTheme()
     {
       ImGuiStyle& style                        = ImGui::GetStyle();
@@ -434,7 +462,7 @@ namespace ToolKit
     void UI::InitTheme()
     {
       ImGui::SetColorEditOptions(ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoOptions);
-      DarkTheme();
+      SetTheme(Theme::Dark);
     }
 
     void UI::InitSettings()
@@ -571,15 +599,15 @@ namespace ToolKit
 
           if (ImGui::MenuItem("Dark Theme"))
           {
-            DarkTheme();
+            SetTheme(Theme::Dark);
           }
           if (ImGui::MenuItem("Grey Theme"))
           {
-            GreyTheme();
+            SetTheme(Theme::Grey);
           }
           if (ImGui::MenuItem("Light Theme"))
           {
-            LightTheme();
+            SetTheme(Theme::Light);
           }
 
           ImGui::EndMenu();
@@ -650,7 +678,7 @@ namespace ToolKit
             wnd->SetVisibility(vis);
           }
 
-          float width = ImGui::CalcItemWidth();
+          float width  = ImGui::CalcItemWidth();
           width       -= 50;
 
           ImGui::SameLine(width);

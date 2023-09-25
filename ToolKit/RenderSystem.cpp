@@ -26,10 +26,10 @@
 
 #include "RenderSystem.h"
 
-#include "ToolKit.h"
-#include "TKOpenGL.h"
-#include "Logger.h"
 #include "GlErrorReporter.h"
+#include "Logger.h"
+#include "TKOpenGL.h"
+#include "ToolKit.h"
 
 #include "DebugNew.h"
 
@@ -164,6 +164,13 @@ namespace ToolKit
     gladLoadGLES2((GLADloadfunc) glGetProcAddres);
 #endif
     InitGLErrorReport(callback);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(0.5f, 0.2f, 0.8f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    GLubyte pixel[4];
+    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+    m_backbufferFormatIsSRGB = (pixel[0] > 150);
 
     // Default states.
     glEnable(GL_CULL_FACE);
