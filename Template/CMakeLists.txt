@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 
-set(PROJECT_NAME "AndroidProject" CACHE STRING "What is the project name ?")
+set(PROJECT_NAME "__projectname__" CACHE STRING "What is the project name ?")
 set(TOOLKIT_DIR "__tkdir__" CACHE FILEPATH "Where is the ToolKit source directory ?")
 
 if (EMSCRIPTEN)

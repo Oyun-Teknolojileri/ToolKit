@@ -296,6 +296,8 @@ namespace ToolKit
     timing.CurrentTime = GetElapsedMilliSeconds();
     timing.DeltaTime = timing.CurrentTime - timing.LastTime;
 
+    GetAnimationPlayer()->Update(MillisecToSec(timing.DeltaTime));
+
     m_game->Frame(timing.DeltaTime, gameViewport);
     Render(gameViewport->m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0)->m_textureId);
 
@@ -372,6 +374,7 @@ namespace ToolKit
                                  });
 
       gameViewport = new GameViewport((float)width, (float)height);
+      proxy->m_renderSys->SetAppWindowSize((uint) width, (uint) height);
       m_game = new Game();
       m_game->Init(proxy);
   }
