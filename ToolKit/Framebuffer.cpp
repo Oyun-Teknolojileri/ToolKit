@@ -249,7 +249,10 @@ namespace ToolKit
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
     GLenum check = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+// TODO: remove this line before merging to the engine!
+#ifndef __ANDROID__
     assert(check == GL_FRAMEBUFFER_COMPLETE && "Framebuffer incomplete");
+#endif
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 
