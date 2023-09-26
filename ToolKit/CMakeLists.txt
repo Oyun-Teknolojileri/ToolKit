@@ -35,10 +35,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TK_CXX_FLAGS}")
 
 set(CMAKE_DEBUG_POSTFIX _d)
 
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
-	add_library(ToolKit STATIC ${SOURCES})
-endif ()
-
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	link_directories("${CMAKE_SOURCE_DIR}/Dependency/Glew/lib/Release/x64")
 	link_directories("${CMAKE_SOURCE_DIR}/Dependency/zlib-1.2.12/dist/lib")
@@ -48,8 +44,10 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 	target_link_libraries(ToolKit zlibstatic minizip)
 	target_link_libraries(ToolKit OpenGL32)
+else () # This is either a web build or release windows build
+	add_library(ToolKit STATIC ${SOURCES})
 endif ()
-
+ 
 set_target_properties(ToolKit PROPERTIES
 		ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
 		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
