@@ -109,6 +109,11 @@ namespace ToolKit
       m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager               = new PublishManager();
       GetRenderSystem()->SetClearColor(g_wndBgColor);
+
+      if (GetFileManager()->CheckPakFile())
+      {
+        TK_LOG("Project uses MinResources.pak for resource gather.");
+      }
     }
 
     void App::DestroyEditorEntities()

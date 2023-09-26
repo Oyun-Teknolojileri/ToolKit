@@ -57,14 +57,7 @@ namespace ToolKit
 
   const char *XmlMatCountAttrib = "MaterialCount", *XmlMatIdAttrib = "ID";
 
-  void MaterialComponent::ParameterConstructor()
-  {
-    Super::ParameterConstructor();
-
-    // DEPRECATED.
-    MaterialPtr defMat = GetMaterialManager()->GetCopyOfDefaultMaterial();
-    Material_Define(defMat, MaterialComponentCategory.Name, MaterialComponentCategory.Priority, true, true);
-  }
+  void MaterialComponent::ParameterConstructor() { Super::ParameterConstructor(); }
 
   XmlNode* MaterialComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
@@ -87,7 +80,7 @@ namespace ToolKit
 
   XmlNode* MaterialComponent::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (m_version == String("v0.4.5"))
+    if (m_version == TKV045)
     {
       return DeSerializeImpV045(info, parent);
     }
@@ -107,17 +100,6 @@ namespace ToolKit
         continue;
       }
       m_materialList[i] = GetMaterialManager()->Create<Material>(MaterialPath(Resource::DeserializeRef(resourceNode)));
-    }
-
-    // Deprecated Here for compatibility with 0.4.1
-    if (m_materialList.empty())
-    {
-      if (MaterialPtr mat = GetMaterialVal())
-      {
-        // Transfer the old material in to the list.
-        m_materialList.push_back(mat);
-        m_localData.Remove(ParamMaterial().m_id);
-      }
     }
 
     return compNode->first_node(StaticClass()->Name.c_str());
@@ -144,17 +126,6 @@ namespace ToolKit
       {
         m_materialList[i] = GetMaterialManager()->GetCopyOfDefaultMaterial();
         continue;
-      }
-    }
-
-    // Deprecated Here for compatibility with 0.4.1
-    if (m_materialList.empty())
-    {
-      if (MaterialPtr mat = GetMaterialVal())
-      {
-        // Transfer the old material in to the list.
-        m_materialList.push_back(mat);
-        m_localData.Remove(ParamMaterial().m_id);
       }
     }
 

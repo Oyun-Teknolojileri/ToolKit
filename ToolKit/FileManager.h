@@ -28,15 +28,16 @@
 
 #include "Types.h"
 
-#include <variant>
 #include <zlib.h>
 
+#include <variant>
+
 #ifdef __ANDROID__
-#include <Android/minizip/unzip.h>
-#include <Android/minizip/zip.h>
+  #include <Android/minizip/unzip.h>
+  #include <Android/minizip/zip.h>
 #else
-#include <unzip.h>
-#include <zip.h>
+  #include <unzip.h>
+  #include <zip.h>
 #endif
 
 namespace ToolKit
@@ -51,10 +52,9 @@ namespace ToolKit
     float* GetHdriFile(const String& filePath, int* x, int* y, int* comp, int reqComp);
 
     void PackResources(const String& path);
-
     bool CheckFileFromResources(const String& path);
-
     void GetRelativeResourcesPath(String& path);
+    bool CheckPakFile(); //!< Returns true if workspace contains pak file.
 
    private:
     typedef std::variant<XmlFilePtr, uint8*, float*> FileDataType;

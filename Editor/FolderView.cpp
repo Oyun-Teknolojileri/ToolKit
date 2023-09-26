@@ -37,6 +37,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     FolderView::FolderView() { CreateItemActions(); }
 
     FolderView::~FolderView() { SafeDel(m_tempMaterialWindow); }
@@ -684,7 +685,7 @@ namespace ToolKit
         }
         m_itemActions["FileSystem/MakeDir"](nullptr, this);
         m_itemActions["Refresh"](nullptr, this);
-        m_itemActions["FileSystem/CopyPath"](nullptr, this);
+        m_itemActions["FileSystem/Show In Explorer"](nullptr, this);
 
         ImGui::EndPopup();
       }
@@ -733,7 +734,8 @@ namespace ToolKit
       };
 
       // Copy file path.
-      m_itemActions["FileSystem/CopyPath"] = [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      m_itemActions["FileSystem/Show In Explorer"] = [getSameViewsFn](DirectoryEntry* entry,
+                                                                      FolderView* thisView) -> void
       {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
@@ -741,14 +743,9 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::MenuItem("CopyPath"))
+        if (ImGui::MenuItem("Show In Explorer"))
         {
-          int copied = SDL_SetClipboardText(views[0]->m_path.c_str());
-          if (copied < 0)
-          {
-            // Error
-            g_app->GetConsole()->AddLog("Could not copy the folder path to clipboard", LogType::Error);
-          }
+          g_app->m_shellOpenDirFn(views[0]->m_path.c_str());
           ImGui::CloseCurrentPopup();
         }
       };

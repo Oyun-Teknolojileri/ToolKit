@@ -250,7 +250,7 @@ namespace ToolKit
 
   XmlNode* Entity::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (m_version == String("v0.4.5"))
+    if (m_version == TKV045)
     {
       return DeSerializeImpV045(info, parent);
     }
