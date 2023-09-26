@@ -100,11 +100,13 @@ namespace ToolKit
       std::filesystem::current_path(workDir);
 
       // Move files to publish directory
-      const String projectName      = g_app->m_workspace.GetActiveProject().name;
-      const String publishDirStr    = ConcatPaths({ResourcePath(), "..", "Publish", "Windows"});
-      const String publishBinDirStr = ConcatPaths({ResourcePath(), "..", "Publish", "Windows", "Bin"});
-      const char* publishDirectory  = publishDirStr.c_str();
-      const char* publishBinDir     = publishBinDirStr.c_str();
+      const String projectName         = g_app->m_workspace.GetActiveProject().name;
+      const String publishDirStr       = ConcatPaths({ResourcePath(), "..", "Publish", "Windows"});
+      const String publishBinDirStr    = ConcatPaths({ResourcePath(), "..", "Publish", "Windows", "Bin"});
+      const String publishConfigDirStr = ConcatPaths({ResourcePath(), "..", "Publish", "Windows", "Config"});
+      const char* publishDirectory     = publishDirStr.c_str();
+      const char* publishBinDir        = publishBinDirStr.c_str();
+      const char* publishConfigDir     = publishConfigDirStr.c_str();
 
       const String exeFile =
           ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".exe";
@@ -114,7 +116,7 @@ namespace ToolKit
       const String sdlDllPath             = ConcatPaths({workDir.string(), "SDL2.dll"});
       const String configDirectory        = ConcatPaths({ResourcePath(), "..", "Config"});
       const String engineSettingsPath     = ConcatPaths({ConfigPath(), "Engine.settings"});
-      const String destEngineSettingsPath = ConcatPaths({configDirectory, "Engine.settings"});
+      const String destEngineSettingsPath = ConcatPaths({publishConfigDirStr, "Engine.settings"});
 
       // Remove the old files
       if (std::filesystem::exists(publishDirectory))
@@ -139,9 +141,9 @@ namespace ToolKit
           exitWithErrorFn("Could not create publish bin directory.");
         }
       }
-      if (!std::filesystem::exists(configDirectory))
+      if (!std::filesystem::exists(publishConfigDir))
       {
-        bool res = std::filesystem::create_directories(configDirectory);
+        bool res = std::filesystem::create_directories(publishConfigDir);
         if (!res)
         {
           exitWithErrorFn("Could not create publish config directory.");
