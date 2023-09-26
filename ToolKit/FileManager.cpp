@@ -180,6 +180,7 @@ namespace ToolKit
     }
 
     String relativePath = path;
+    UnixifyPath(relativePath);
     GetRelativeResourcesPath(relativePath);
     return CheckSystemFile(path) || IsFileInPak(relativePath);
   }
