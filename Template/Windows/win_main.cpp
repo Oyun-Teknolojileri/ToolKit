@@ -28,11 +28,8 @@ namespace ToolKit
   Main* g_proxy           = nullptr;
 
   // Setup.
-  const char* g_appName   = "ThiefGo";
+  const char* g_appName   = "ToolKit";
   const uint g_targetFps  = 120;
-
-  const uint g_width      = 1920;
-  const uint g_height     = 1080;
 
   void SceneRender(Viewport* viewport)
   {
@@ -46,7 +43,7 @@ namespace ToolKit
       sceneRenderer.m_params.Gfx.FXAAEnabled            = true;
       sceneRenderer.m_params.Gfx.GammaCorrectionEnabled = false;
       sceneRenderer.m_params.Gfx.SSAOEnabled            = true;
-      sceneRenderer.m_params.Gfx.TonemappingEnabled     = false;
+      sceneRenderer.m_params.Gfx.TonemappingEnabled     = true;
       sceneRenderer.m_params.Lights                     = scene->GetLights();
       sceneRenderer.m_params.MainFramebuffer            = viewport->m_framebuffer;
       sceneRenderer.m_params.Scene                      = scene;
@@ -152,44 +149,6 @@ namespace ToolKit
     static GammaCorrectionTechnique m_gammaCorrectionTechnique;
     m_gammaCorrectionTechnique.m_params.framebuffer = viewport->m_framebuffer;
     GetRenderSystem()->AddRenderTask(&m_gammaCorrectionTechnique);
-  }
-
-  struct TonemapTechniqueParams
-  {
-    FramebufferPtr framebuffer = nullptr;
-  };
-
-  class TonemapTechnique : public RenderPath
-  {
-   public:
-    TonemapTechnique()
-    {
-      m_tonemapPass = std::make_shared<TonemapPass>();
-
-      m_passArray.resize(1);
-    }
-
-    void Render(Renderer* renderer) override
-    {
-      m_tonemapPass->m_params.FrameBuffer = m_params.framebuffer;
-      m_tonemapPass->m_params.Method      = TonemapMethod::Aces;
-
-      m_passArray[0]                      = m_tonemapPass;
-
-      RenderPath::Render(renderer);
-    }
-
-    TonemapTechniqueParams m_params;
-
-   private:
-    TonemapPassPtr m_tonemapPass = nullptr;
-  };
-
-  void Tonemap(Viewport* viewport)
-  {
-    static TonemapTechnique m_tonemapTechnique;
-    m_tonemapTechnique.m_params.framebuffer = viewport->m_framebuffer;
-    GetRenderSystem()->AddRenderTask(&m_tonemapTechnique);
   }
 
   bool g_enableGammaPass = false;
@@ -323,7 +282,7 @@ namespace ToolKit
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glViewport(0, 0, g_width, g_height);
+    glViewport(0, 0, g_proxy->m_engineSettings->Window.Width, g_proxy->m_engineSettings->Window.Height);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -386,9 +345,7 @@ namespace ToolKit
 
     g_proxy->PreInit();
 
-    g_proxy->m_engineSettings->Window.Width  = g_width;
-    g_proxy->m_engineSettings->Window.Height = g_height;
-    g_proxy->m_resourceRoot                  = ConcatPaths({".", "..", "Resources"});
+    g_proxy->m_resourceRoot = ConcatPaths({".", "..", "Resources"});
   }
 
   void Init()
@@ -449,7 +406,8 @@ namespace ToolKit
           g_proxy->Init();
 
           // Init game
-          g_viewport = new GameViewport(g_width, g_height);
+          g_viewport = new GameViewport((uint) g_proxy->m_engineSettings->Window.Width,
+                                        (uint) g_proxy->m_engineSettings->Window.Height);
           g_game     = new Game();
           g_game->Init(g_proxy);
 
@@ -548,8 +506,6 @@ namespace ToolKit
         else
         {
           UIRender(g_viewport);
-
-          Tonemap(g_viewport);
 
           if (GetRenderSystem()->IsGammaCorrectionNeeded())
           {
