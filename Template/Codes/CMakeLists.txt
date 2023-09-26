@@ -38,7 +38,7 @@ else ()
 endif ()
 
 if(NOT EXISTS ${TOOLKIT_DIR}/ToolKit/ToolKit.h)
-  message(SEND_ERROR "Can't find ToolKit.h in ${TOOLKIT_DIR}")
+	message(SEND_ERROR "Can't find ToolKit.h in ${TOOLKIT_DIR}")
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${TOOLKIT_DIR}/Bin")
@@ -57,20 +57,20 @@ include_directories(
 
 set(
 	SOURCE 
-	Codes/Game.cpp
+	Game.cpp
 )
 
 if (${WEB_BUILD})
-  set(SOURCE ${SOURCE} Web/web_main.cpp)
+  set(SOURCE ${SOURCE} ../Web/web_main.cpp)
 	add_definitions(-DGAME_BUILD=1)
 elseif (${WIN_BUILD})
-	set(SOURCE ${SOURCE} Windows/win_main.cpp)
+	set(SOURCE ${SOURCE} ../Windows/win_main.cpp)
 	add_definitions(-DGAME_BUILD=1)
 endif()
 
 set(
 	HEADERS 
-	Codes/Game.h
+	Game.h
 )
 
 set(
@@ -126,7 +126,7 @@ else()
 
   link_directories("${TOOLKIT_DIR}/Bin")
   link_directories("${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/lib")
-	link_directories("${TOOLKIT_DIR}/Dependency/SDL2/lib/x64")
+  link_directories("${TOOLKIT_DIR}/Dependency/SDL2/lib/x64")
 	
 if (${WIN_BUILD})
 	add_executable(${PROJECT_NAME} WIN32 ${SOURCE})
@@ -134,16 +134,16 @@ else()
 	add_library(${PROJECT_NAME} SHARED ${SOURCE} ${HEADERS})
 endif()
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:TK_DLL_IMPORT>)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:TK_DLL_IMPORT>)
 
-	if (MSVC)
+  if (MSVC)
 		target_link_options(${PROJECT_NAME} PRIVATE $<$<NOT:$<CONFIG:DEBUG>>:/INCREMENTAL:NO> $<$<NOT:$<CONFIG:DEBUG>>:/LTCG>)
-	endif()
+  endif()
 
   target_link_libraries(${PROJECT_NAME} debug ToolKit_d)
   target_link_libraries(${PROJECT_NAME} optimized ToolKit)
   target_link_libraries(${PROJECT_NAME} zlibstatic minizip)
-	target_link_libraries(${PROJECT_NAME} SDL2 SDL2main)
+  target_link_libraries(${PROJECT_NAME} SDL2 SDL2main)
 endif()
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH})
@@ -155,5 +155,5 @@ if (NOT ${WEB_BUILD} OR NOT ${WIN_BUILD})
   set(DLL $<SHELL_PATH:$<TARGET_FILE:${PROJECT_NAME}>>)
   set(PDB $<SHELL_PATH:$<TARGET_PDB_FILE:${PROJECT_NAME}>>)
 
-	add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -Ddll=${DLL} -Dpdb=${PDB} -Dtmp="${OUTDIR}/tmp" -P "${CMAKE_SOURCE_DIR}/CMakeHotReload.cmake")
+  add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -Ddll=${DLL} -Dpdb=${PDB} -Dtmp="${OUTDIR}/tmp" -P "${CMAKE_SOURCE_DIR}/CMakeHotReload.cmake")
 endif()

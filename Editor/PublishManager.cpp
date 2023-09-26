@@ -106,8 +106,10 @@ namespace ToolKit
       const String publishBinDirStr = ConcatPaths({ResourcePath(), "..", "Publish", "Windows", "Bin"});
       const char* publishDirectory  = publishDirStr.c_str();
       const char* publishBinDir     = publishBinDirStr.c_str();
+
       const String exeFile =
-          ConcatPaths({ResourcePath(), "..", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".exe";
+          ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".exe";
+
       const String pakFile                = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
       const String destPakFilePath        = publishDirStr;
       const String sdlDllPath             = ConcatPaths({workDir.string(), "SDL2.dll"});
