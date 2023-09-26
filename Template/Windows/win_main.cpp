@@ -406,8 +406,8 @@ namespace ToolKit
           g_proxy->Init();
 
           // Init game
-          g_viewport = new GameViewport((uint) g_proxy->m_engineSettings->Window.Width,
-                                        (uint) g_proxy->m_engineSettings->Window.Height);
+          g_viewport = new GameViewport((float) g_proxy->m_engineSettings->Window.Width,
+                                        (float) g_proxy->m_engineSettings->Window.Height);
           g_game     = new Game();
           g_game->Init(g_proxy);
 
