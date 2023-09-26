@@ -70,7 +70,6 @@ namespace ToolKit
     {
       g_app->PackResources();
 
-      // Warning: Running batch files are Windows specific
       Path workDir         = std::filesystem::current_path();
 
       auto exitWithErrorFn = [&workDir](const char* msg) -> void
@@ -82,7 +81,7 @@ namespace ToolKit
       // Run toolkit compile script
       Path newWorkDir(ConcatPaths({"..", "BuildScripts"}));
       std::filesystem::current_path(newWorkDir);
-      int toolKitCompileResult = std::system("WinBuildRelease.bat");
+      int toolKitCompileResult = g_app->ExecSysCommand("WinBuildRelease.bat", false, true);
       if (toolKitCompileResult != 0)
       {
         exitWithErrorFn("ToolKit could not be compiled!");
@@ -92,7 +91,7 @@ namespace ToolKit
       // Run plugin compile script
       newWorkDir = Path(ConcatPaths({ResourcePath(), "..", "Windows"}));
       std::filesystem::current_path(newWorkDir);
-      int pluginCompileResult = std::system("WinBuildRelease.bat");
+      int pluginCompileResult = g_app->ExecSysCommand("WinBuildRelease.bat", false, true);
       if (pluginCompileResult != 0)
       {
         exitWithErrorFn("Plugin could not be compiled!");
