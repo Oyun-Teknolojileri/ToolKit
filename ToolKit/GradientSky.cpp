@@ -191,10 +191,10 @@ namespace ToolKit
                          HdriPtr hdr              = GetHdri();
                          uint irRes               = (uint) GetIrradianceResolutionVal();
 
-                         hdr->m_irradianceCubemap = renderer->GenerateEnvIrradianceMap(hdr->m_cubemap, irRes, irRes);
+                         hdr->m_diffuseEnvMap     = renderer->GenerateDiffuseEnvMap(hdr->m_cubemap, irRes, irRes);
 
-                         hdr->m_prefilteredEnvMap =
-                             renderer->GenerateEnvPrefilteredMap(hdr->m_cubemap,
+                         hdr->m_specularEnvMap =
+                             renderer->GenerateSpecularEnvMap(hdr->m_cubemap,
                                                                  irRes,
                                                                  irRes,
                                                                  Renderer::RHIConstants::specularIBLLods);

@@ -109,17 +109,17 @@ namespace ToolKit
     m_renderState.IBLInUse = false;
     if (EnvironmentComponentPtr envCom = job.EnvironmentVolume)
     {
-      m_renderState.iblIntensity           = envCom->GetIntensityVal();
+      m_renderState.iblIntensity = envCom->GetIntensityVal();
 
-      HdriPtr hdriPtr                      = envCom->GetHdriVal();
-      CubeMapPtr irradianceCubemap         = hdriPtr->m_irradianceCubemap;
-      CubeMapPtr preFilteredSpecularIBLMap = hdriPtr->m_prefilteredEnvMap;
-      RenderTargetPtr brdfLut              = GetTextureManager()->Create<RenderTarget>(TK_BRDF_LUT_TEXTURE);
+      HdriPtr hdriPtr            = envCom->GetHdriVal();
+      CubeMapPtr diffuseEnvMap   = hdriPtr->m_diffuseEnvMap;
+      CubeMapPtr specularEnvMap  = hdriPtr->m_specularEnvMap;
+      RenderTargetPtr brdfLut    = GetTextureManager()->Create<RenderTarget>(TK_BRDF_LUT_TEXTURE);
 
-      if (irradianceCubemap && preFilteredSpecularIBLMap && brdfLut)
+      if (diffuseEnvMap && specularEnvMap && brdfLut)
       {
-        m_renderState.irradianceMap          = irradianceCubemap->m_textureId;
-        m_renderState.preFilteredSpecularMap = preFilteredSpecularIBLMap->m_textureId;
+        m_renderState.irradianceMap          = diffuseEnvMap->m_textureId;
+        m_renderState.preFilteredSpecularMap = specularEnvMap->m_textureId;
         m_renderState.brdfLut                = brdfLut->m_textureId;
 
         m_renderState.IBLInUse               = true;
@@ -381,10 +381,7 @@ namespace ToolKit
     m_framebuffer = fb;
   }
 
-  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear)
-  {
-    SetFramebuffer(fb, clear, m_clearColor);
-  }
+  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear) { SetFramebuffer(fb, clear, m_clearColor); }
 
   void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color)
   {
@@ -1204,7 +1201,7 @@ namespace ToolKit
     return cubeMap;
   }
 
-  CubeMapPtr Renderer::GenerateEnvIrradianceMap(CubeMapPtr cubemap, uint width, uint height)
+  CubeMapPtr Renderer::GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint width, uint height)
   {
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
@@ -1273,7 +1270,7 @@ namespace ToolKit
     return cubeMap;
   }
 
-  CubeMapPtr Renderer::GenerateEnvPrefilteredMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps)
+  CubeMapPtr Renderer::GenerateSpecularEnvMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps)
   {
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,

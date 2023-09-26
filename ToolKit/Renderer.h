@@ -26,14 +26,13 @@
 
 #pragma once
 
+#include "RendererGlobals.h"
 #include "Camera.h"
 #include "Primative.h"
 #include "RenderState.h"
 #include "Sky.h"
 #include "Types.h"
 #include "Viewport.h"
-
-#define TK_BRDF_LUT_TEXTURE "GLOBAL_BRDF_LUT_TEXTURE"
 
 namespace ToolKit
 {
@@ -96,9 +95,9 @@ namespace ToolKit
 
     CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture, uint width, uint height, float exposure = 1.0f);
 
-    CubeMapPtr GenerateEnvPrefilteredMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps);
+    CubeMapPtr GenerateSpecularEnvMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps);
 
-    CubeMapPtr GenerateEnvIrradianceMap(CubeMapPtr cubemap, uint width, uint height);
+    CubeMapPtr GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint width, uint height);
 
     void CopyTexture(TexturePtr source, TexturePtr dest);
 

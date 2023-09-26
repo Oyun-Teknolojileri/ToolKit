@@ -29,12 +29,13 @@
 #include "DirectionComponent.h"
 #include "FileManager.h"
 #include "FullQuadPass.h"
+#include "Logger.h"
 #include "Material.h"
 #include "RenderSystem.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
 #include "ToolKit.h"
-#include "Logger.h"
+#include "RendererGlobals.h"
 
 #include "DebugNew.h"
 
@@ -380,8 +381,8 @@ namespace ToolKit
     m_exposure                        = 1.0f;
 
     m_texToCubemapMat                 = MakeNewPtr<Material>();
-    m_cubemapToIrradiancemapMat       = MakeNewPtr<Material>();
-    m_irradianceCubemap               = MakeNewPtr<CubeMap>(0u);
+    m_cubemapToDiffuseEnvMapMat       = MakeNewPtr<Material>();
+    m_diffuseEnvMap                   = MakeNewPtr<CubeMap>(0u);
     m_equirectangularTexture          = MakeNewPtr<Texture>(0u);
   }
 
@@ -428,12 +429,12 @@ namespace ToolKit
                                                              m_width / 4,
                                                              1.0f);
 
-          const int prefilteredEnvMapSize = m_specularIBLTextureSize;
+          const int specularEnvMapSize = m_specularIBLTextureSize;
           // Pre-filtered and mip mapped environment map
-          m_prefilteredEnvMap             = renderer->GenerateEnvPrefilteredMap(m_cubemap,
-                                                                    prefilteredEnvMapSize,
-                                                                    prefilteredEnvMapSize,
-                                                                    Renderer::RHIConstants::specularIBLLods);
+          m_specularEnvMap             = renderer->GenerateSpecularEnvMap(m_cubemap,
+                                                                 specularEnvMapSize,
+                                                                 specularEnvMapSize,
+                                                                 Renderer::RHIConstants::specularIBLLods);
 
           // Pre-compute BRDF lut
           if (!GetTextureManager()->Exist(TK_BRDF_LUT_TEXTURE))
@@ -465,8 +466,8 @@ namespace ToolKit
             GetTextureManager()->Manage(brdfLut);
           }
 
-          // Generate irradience cubemap images
-          m_irradianceCubemap = renderer->GenerateEnvIrradianceMap(m_cubemap, m_width / 32, m_width / 32);
+          // Generate diffuse irradience cubemap images
+          m_diffuseEnvMap     = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
 
           m_initiated         = true;
         }};
@@ -479,8 +480,8 @@ namespace ToolKit
     if (m_initiated)
     {
       m_cubemap->UnInit();
-      m_irradianceCubemap->UnInit();
-      m_prefilteredEnvMap->UnInit();
+      m_diffuseEnvMap->UnInit();
+      m_specularEnvMap->UnInit();
     }
 
     Texture::UnInit();

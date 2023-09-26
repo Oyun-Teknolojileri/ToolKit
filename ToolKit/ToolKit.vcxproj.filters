@@ -491,5 +491,8 @@
     <ClInclude Include="TKOpenGL.h">
       <Filter>Source\Render</Filter>
     </ClInclude>
+    <ClInclude Include="RendererGlobals.h">
+      <Filter>Source\Render</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
