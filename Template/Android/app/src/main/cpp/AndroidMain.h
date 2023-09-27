@@ -38,7 +38,7 @@ namespace ToolKit
     EGLDisplay display_;
     EGLint width_  = -1;
     EGLint height_ = -1;
-    class GameViewport* gameViewport;
+    class GameViewport* m_gameViewport;
     class Game* m_game;
   };
 }
