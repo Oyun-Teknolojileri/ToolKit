@@ -41,6 +41,7 @@ Resources/Engine/workspace.settings
 /build
 /Dependency/ImGui/CMakeFiles
 /BuildScripts/build
+/BuildScripts/ninjaBuild
 
 *.iml
 .gradle

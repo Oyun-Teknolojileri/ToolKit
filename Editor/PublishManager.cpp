@@ -238,9 +238,9 @@ namespace ToolKit
         std::filesystem::current_path(workDir);
       };
 
-      Path newWorkDir(ConcatPaths({"..", "Web"}));
+      Path newWorkDir(ConcatPaths({"..", "BuildScripts"}));
       std::filesystem::current_path(newWorkDir);
-      int toolKitCompileResult = g_app->ExecSysCommand(ConcatPaths({"..", "Web", "Release.bat"}).c_str(), false, true);
+      int toolKitCompileResult = g_app->ExecSysCommand(ConcatPaths({"..", "BuildScripts", "WebBuildRelease.bat"}).c_str(), false, true);
       if (toolKitCompileResult != 0)
       {
         exitWithErrorFn("ToolKit could not be compiled!");
