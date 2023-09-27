@@ -27,14 +27,14 @@
 #include "Component.h"
 
 #include "AnimationControllerComponent.h"
+#include "Component.h"
 #include "DirectionComponent.h"
 #include "EnvironmentComponent.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
+#include "Object.h"
 #include "ResourceComponent.h"
 #include "SkeletonComponent.h"
-#include "Object.h"
-#include "Component.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -65,7 +65,7 @@ namespace ToolKit
   XmlNode* Component::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     parent = Super::DeSerializeImp(info, parent);
-    if (m_version > String("v0.4.4"))
+    if (m_version > TKV044)
     {
       return parent->first_node(StaticClass()->Name.c_str());
     }

@@ -32,33 +32,33 @@
  */
 
 #ifdef __ANDROID__
-// GLM
-#define GLM_FORCE_XYZW_ONLY
-#define GLM_FORCE_CTOR_INIT
-#define GLM_ENABLE_EXPERIMENTAL
-#ifndef GLM_FORCE_SWIZZLE
-# define GLM_FORCE_SWIZZLE
-#endif
+  // GLM
+  #define GLM_FORCE_XYZW_ONLY
+  #define GLM_FORCE_CTOR_INIT
+  #define GLM_ENABLE_EXPERIMENTAL
+  #ifndef GLM_FORCE_SWIZZLE
+    #define GLM_FORCE_SWIZZLE
+  #endif
 
-#include "glm/glm.hpp"
-#include "glm/gtc/epsilon.hpp"
-#include "glm/gtc/matrix_access.hpp"
-#include "glm/gtc/matrix_inverse.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/quaternion.hpp"
-#include "glm/gtc/random.hpp"
-#include "glm/gtx/closest_point.hpp"
-#include "glm/gtx/component_wise.hpp"
-#include "glm/gtx/euler_angles.hpp"
-#include "glm/gtx/matrix_operation.hpp"
-#include "glm/gtx/matrix_query.hpp"
-#include "glm/gtx/quaternion.hpp"
-#include "glm/gtx/scalar_relational.hpp"
-#include "glm/gtx/string_cast.hpp"
-#include "glm/gtx/vector_query.hpp"
+  #include "glm/glm.hpp"
+  #include "glm/gtc/epsilon.hpp"
+  #include "glm/gtc/matrix_access.hpp"
+  #include "glm/gtc/matrix_inverse.hpp"
+  #include "glm/gtc/matrix_transform.hpp"
+  #include "glm/gtc/quaternion.hpp"
+  #include "glm/gtc/random.hpp"
+  #include "glm/gtx/closest_point.hpp"
+  #include "glm/gtx/component_wise.hpp"
+  #include "glm/gtx/euler_angles.hpp"
+  #include "glm/gtx/matrix_operation.hpp"
+  #include "glm/gtx/matrix_query.hpp"
+  #include "glm/gtx/quaternion.hpp"
+  #include "glm/gtx/scalar_relational.hpp"
+  #include "glm/gtx/string_cast.hpp"
+  #include "glm/gtx/vector_query.hpp"
 #else
-#include "glm/glm.hpp"
-#include "glm/gtc/quaternion.hpp"
+  #include "glm/glm.hpp"
+  #include "glm/gtc/quaternion.hpp"
 #endif
 
 // RapidXml
@@ -84,7 +84,7 @@
   #else // Static binding.
     #define TK_API
   #endif
-#elif defined(__clang__) 
+#elif defined(__clang__)
   #define TK_API __attribute__((visibility("default")))
   #define TK_STDCAL
 #endif
@@ -232,14 +232,14 @@ namespace ToolKit
   typedef std::vector<class Event*> EventPool;
   typedef std::shared_ptr<class Viewport> ViewportPtr;
 
-  // Filesystem variable types
+  // File system variable types
   typedef std::filesystem::path Path;
 
   // Callbacks.
   typedef std::function<void(class Event*, EntityPtr)> SurfaceEventCallback;
   typedef std::function<void(const String&)> GlReportCallback;
 
-  // Math Vector declerations.
+  // Math Vector decelerations.
   static const Vec3 ZERO    = Vec3(0.0f);
   static const Vec3 X_AXIS  = Vec3(1.0f, 0.0f, 0.0f);
   static const Vec3 Y_AXIS  = Vec3(0.0f, 1.0f, 0.0f);
@@ -385,6 +385,10 @@ namespace ToolKit
     Target2DArray              = 0x8C1A
   };
 
-  static const char* TKVersionStr = "v0.4.5";
+  static const String TKResourcePak = "MinResources.pak";
+
+  static const char* TKVersionStr   = "v0.4.5";
+  static const String TKV044        = "v0.4.4";
+  static const String TKV045        = "v0.4.5";
 
 } // namespace ToolKit

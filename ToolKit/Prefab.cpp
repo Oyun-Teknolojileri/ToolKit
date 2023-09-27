@@ -191,7 +191,7 @@ namespace ToolKit
 
   XmlNode* Prefab::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (info.Version == String("v0.4.5"))
+    if (info.Version == TKV045)
     {
       return DeSerializeImpV045(info, parent);
     }

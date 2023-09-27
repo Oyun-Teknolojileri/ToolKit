@@ -272,20 +272,8 @@ namespace ToolKit
   XmlNode* ParameterVariant::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlParamterElement.c_str());
-
     WriteAttr(node, doc, XmlParamterTypeAttr, std::to_string(static_cast<int>(m_type)));
-
     WriteAttr(node, doc, XmlNodeName.data(), m_name);
-    WriteAttr(node, doc, "category", m_category.Name);
-    WriteAttr(node, doc, "priority", std::to_string(m_category.Priority));
-    WriteAttr(node, doc, "exposed", std::to_string(m_exposed));
-    WriteAttr(node, doc, "editable", std::to_string(m_editable));
-    WriteAttr(node, doc, "hint.isColor", std::to_string(m_hint.isColor));
-    WriteAttr(node, doc, "hint.isRanLim", std::to_string(m_hint.isRangeLimited));
-    WriteAttr(node, doc, "hint.rangeMin", std::to_string(m_hint.rangeMin));
-    WriteAttr(node, doc, "hint.rangeMax", std::to_string(m_hint.rangeMax));
-    WriteAttr(node, doc, "hint.increment", std::to_string(m_hint.increment));
-
     std::function<void(XmlNode*, XmlDocument*, const ParameterVariant*)> serializeDataFn;
     serializeDataFn = [&serializeDataFn](XmlNode* node, XmlDocument* doc, const ParameterVariant* var)
     {
@@ -463,18 +451,8 @@ namespace ToolKit
     XmlAttribute* attr = parent->first_attribute(XmlParamterTypeAttr.c_str());
     m_type             = (VariantType) std::atoi(attr->value());
     ReadAttr(parent, XmlNodeName.data(), m_name);
-    ReadAttr(parent, "category", m_category.Name);
-    ReadAttr(parent, "priority", m_category.Priority);
-    ReadAttr(parent, "exposed", m_exposed);
-    ReadAttr(parent, "editable", m_editable);
-    ReadAttr(parent, "hint.isColor", m_hint.isColor);
-    ReadAttr(parent, "hint.isRanLim", m_hint.isRangeLimited);
-    ReadAttr(parent, "hint.rangeMin", m_hint.rangeMin);
-    ReadAttr(parent, "hint.rangeMax", m_hint.rangeMax);
-    ReadAttr(parent, "hint.increment", m_hint.increment);
 
     std::function<void(XmlNode*, ParameterVariant*)> deserializeDataFn;
-
     deserializeDataFn = [&deserializeDataFn](XmlNode* parent, ParameterVariant* pVar)
     {
       switch (pVar->GetType())

@@ -213,8 +213,7 @@ namespace ToolKit
         GetLogger()->WriteConsole(LogType::Success, "Android build successfully finished.");
         GetLogger()->WriteConsole(LogType::Memo, "Exported APK location: %s", buildLocation.c_str());
 
-        // open generated apk folder location. (windows only)
-        std::system(("explorer /e, " + buildLocation).c_str());
+        g_app->m_shellOpenDirFn(buildLocation);
       };
 
       g_app->m_statusMsg = "building android apk...";
