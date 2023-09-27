@@ -366,8 +366,8 @@ namespace ToolKit
           SDL_CreateWindow(g_appName,
                            SDL_WINDOWPOS_UNDEFINED,
                            SDL_WINDOWPOS_UNDEFINED,
-                           settings->Window.Width,
-                           settings->Window.Height,
+                           g_engineSettings->Window.Width,
+                           g_engineSettings->Window.Height,
                            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 
       if (g_window == nullptr)
