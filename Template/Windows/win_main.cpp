@@ -346,6 +346,7 @@ namespace ToolKit
     g_proxy->PreInit();
 
     g_proxy->m_resourceRoot = ConcatPaths({".", "..", "Resources"});
+    g_proxy->m_cfgPath      = ConcatPaths({".", "..", "Config"});
   }
 
   void Init()
