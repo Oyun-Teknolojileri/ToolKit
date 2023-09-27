@@ -1,0 +1,1 @@
+emcmake cmake -DEMSCRIPTEN=TRUE -DTK_CXX_EXTRA:STRING="-O0 -g" -S ../Codes -G Ninja && ninja & pause
