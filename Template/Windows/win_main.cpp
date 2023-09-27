@@ -1,19 +1,23 @@
 #include "../Codes/Game.h"
 #include "Common/SDLEventPool.h"
-#include "GLES3/gl3.h"
+#include "EngineSettings.h"
+#include "GlErrorReporter.h"
 #include "SDL.h"
-#include "SDL_opengl.h"
 #include "Scene.h"
 #include "SceneRenderer.h"
 #include "ToolKit.h"
 #include "Types.h"
 #include "UIManager.h"
-#include "emscripten.h"
 
 #include <stdio.h>
 
 #include <chrono>
 #include <iostream>
+
+#ifdef _DEBUG
+  #define GLAD_GLES2_IMPLEMENTATION
+  #include "gles2.h"
+#endif
 
 namespace ToolKit
 {
@@ -342,11 +346,12 @@ namespace ToolKit
     g_proxy->PreInit();
 
     g_proxy->m_resourceRoot = ConcatPaths({".", "..", "Resources"});
+    g_proxy->m_cfgPath      = ConcatPaths({".", "..", "Config"});
   }
 
   void Init()
   {
-    g_engineSettings = g_proxy->m_engineSettings;
+    g_settings = g_proxy->m_engineSettings;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0)
     {
@@ -362,6 +367,8 @@ namespace ToolKit
       SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
       SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
+      SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+
       g_window =
           SDL_CreateWindow(g_appName,
                            SDL_WINDOWPOS_UNDEFINED,
@@ -372,18 +379,14 @@ namespace ToolKit
 
       if (g_window == nullptr)
       {
-        g_running         = false;
-        const char* error = SDL_GetError();
-        std::cout << error << std::endl;
+        g_running = false;
       }
       else
       {
         g_context = SDL_GL_CreateContext(g_window);
         if (g_context == nullptr)
         {
-          g_running         = false;
-          const char* error = SDL_GetError();
-          std::cout << error << std::endl;
+          g_running = false;
         }
         else
         {
@@ -392,22 +395,13 @@ namespace ToolKit
           const char* error = SDL_GetError();
           std::cout << error << std::endl;
 
-          EM_ASM(
-
-          );
-          glEnable(GL_CULL_FACE);
+          // Init OpenGl.
+          g_proxy->m_renderSys->InitGl(SDL_GL_GetProcAddress, [](const String& msg) { std::cout << msg << std::endl; });
+          gladLoadGLES2((GLADloadfunc) SDL_GL_GetProcAddress);
           glEnable(GL_DEPTH_TEST);
-
-          GetRenderSystem()->TestSRGBBackBuffer();
 
           // Set defaults
           SDL_GL_SetSwapInterval(0);
-
-          // There should be a config folder for each export
-          // TODO check if this is needed for windows build too
-          g_proxy->m_cfgPath = ConcatPaths({".", "..", "Config"});
-
-          GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { GetLogger()->Log(ms); });
 
           // ToolKit Init
           g_proxy->Init();
@@ -415,7 +409,6 @@ namespace ToolKit
           // Init game
           g_viewport =
               new GameViewport((float) g_engineSettings->Window.Width, (float) g_engineSettings->Window.Height);
-
           g_game = new Game();
           g_game->Init(g_proxy);
 
@@ -448,7 +441,13 @@ namespace ToolKit
     g_running = false;
   }
 
-  void ProcessEvent(const SDL_Event& e) {}
+  void ProcessEvent(const SDL_Event& e)
+  {
+    if (e.type == SDL_QUIT)
+    {
+      g_running = false;
+    }
+  }
 
   struct CustomTimer
   {
@@ -468,21 +467,23 @@ namespace ToolKit
     int frameCount    = 0;
   };
 
-  void TK_Loop(void* args)
+  void TK_Loop()
   {
-    CustomTimer* timer = static_cast<CustomTimer*>(args);
+    static CustomTimer timer;
+    SDL_Event sdlEvent;
+
+    while (g_running && !g_game->m_quit)
     {
-      SDL_Event sdlEvent;
       while (SDL_PollEvent(&sdlEvent))
       {
         PoolEvent(sdlEvent);
         ProcessEvent(sdlEvent);
       }
 
-      timer->currentTime = GetMilliSeconds();
-      if (timer->currentTime > timer->lastTime + timer->deltaTime)
+      timer.currentTime = GetMilliSeconds();
+      if (timer.currentTime > timer.lastTime + timer.deltaTime)
       {
-        float deltaTime = timer->currentTime - timer->lastTime;
+        float deltaTime = timer.currentTime - timer.lastTime;
 
         if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
         {
@@ -521,15 +522,18 @@ namespace ToolKit
         ClearPool(); // Clear after consumption.
         SDL_GL_SwapWindow(g_window);
 
-        timer->frameCount++;
-        timer->timeAccum += deltaTime;
-        if (timer->timeAccum >= 1000.0f)
+        timer.frameCount++;
+        timer.timeAccum += deltaTime;
+        if (timer.timeAccum >= 1000.0f)
         {
-          timer->timeAccum  = 0;
-          timer->frameCount = 0;
+          timer.timeAccum  = 0;
+          timer.frameCount = 0;
         }
 
-        timer->lastTime = timer->currentTime;
+        timer.lastTime = timer.currentTime;
+
+        // float frameEnd = GetMilliSeconds();
+        // std::cout << "Frame: " << frameEnd - frameStart << std::endl;
       }
     }
   }
@@ -539,8 +543,7 @@ namespace ToolKit
     PreInit();
     Init();
 
-    static CustomTimer timer;
-    emscripten_set_main_loop_arg(TK_Loop, reinterpret_cast<void*>(&timer), 0, 1);
+    TK_Loop();
 
     Exit();
     return 0;

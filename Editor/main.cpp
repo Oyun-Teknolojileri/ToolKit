@@ -235,11 +235,11 @@ namespace ToolKit
             of->Register<GridFragmentShader>();
 
             // Overrides.
-            of->Override<EditorCamera, Camera>();
             of->Override<EditorDirectionalLight, DirectionalLight>();
             of->Override<EditorPointLight, PointLight>();
             of->Override<EditorSpotLight, SpotLight>();
             of->Override<EditorScene, Scene>();
+            of->Override<EditorCamera, Camera>();
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);

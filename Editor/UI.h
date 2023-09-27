@@ -42,6 +42,13 @@ namespace ToolKit
 
   namespace Editor
   {
+    enum class Theme
+    {
+      Light = 1,
+      Dark  = 2,
+      Grey  = 3
+    };
+
     class Window : public Serializable
     {
      public:

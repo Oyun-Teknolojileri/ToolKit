@@ -284,7 +284,7 @@ namespace ToolKit
       ZeroMemory(&si, sizeof(si));
       si.cb          = sizeof(si);
       si.dwFlags     = STARTF_USESHOWWINDOW;
-      si.wShowWindow = showConsole ? SW_SHOW : SW_HIDE;
+      si.wShowWindow = showConsole ? SW_SHOWNORMAL : SW_HIDE;
 
       ZeroMemory(&pi, sizeof(pi));
 

@@ -375,7 +375,7 @@ namespace ToolKit
       String currentPath = std::filesystem::current_path().parent_path().u8string();
       UnixifyPath(currentPath);
 
-      String cmakePath = ConcatPaths({fullPath, "CMakeLists.txt"});
+      String cmakePath = ConcatPaths({fullPath, "Codes", "CMakeLists.txt"});
       std::fstream cmakelist;
       cmakelist.open(cmakePath, std::ios::in);
       if (cmakelist.is_open())
