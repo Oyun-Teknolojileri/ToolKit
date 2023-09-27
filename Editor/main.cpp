@@ -39,6 +39,7 @@
 #include <Meta.h>
 #include <SDL.h>
 #include <Types.h>
+#include <locale.h>
 
 #include <array>
 #include <chrono>
@@ -377,6 +378,8 @@ namespace ToolKit
 
 int main(int argc, char* argv[])
 {
+  setlocale(LC_ALL, ".UTF-8");
+
 #ifdef TK_DEBUG
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
