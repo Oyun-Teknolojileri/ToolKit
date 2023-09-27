@@ -14,9 +14,6 @@
 @rem limitations under the License.
 @rem
 
-set "JAVA_HOME=PATH\TO\JDK17PATH"
-set "ANDROID_HOME=PATH\TO\ANDROID_SDK\33"
-
 @if "%DEBUG%" == "" @echo off
 @rem ##########################################################################
 @rem

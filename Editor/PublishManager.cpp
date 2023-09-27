@@ -207,7 +207,7 @@ namespace ToolKit
           GetLogger()->WriteConsole(LogType::Error, "Android build failed.");
           return;
         }
-        String buildLocation = ConcatPaths({projectLocation, "Android/app/build/outputs/apk/debug"});
+        String buildLocation = ConcatPaths({projectLocation, "Android/app/build/outputs/apk/release"});
         NormalizePath(buildLocation);
 
         GetLogger()->WriteConsole(LogType::Success, "Android build successfully finished.");
@@ -219,7 +219,7 @@ namespace ToolKit
       g_app->m_statusMsg = "building android apk...";
 
       // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
-      g_app->ExecSysCommand("gradlew assembleDebug", true, true, afterBuildFn);
+      g_app->ExecSysCommand("gradlew assemble", false, true, afterBuildFn);
 
       std::filesystem::current_path(workDir); // set work directory back
     }
