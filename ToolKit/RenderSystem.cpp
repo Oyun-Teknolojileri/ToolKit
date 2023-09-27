@@ -165,12 +165,7 @@ namespace ToolKit
 #endif
     InitGLErrorReport(callback);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClearColor(0.5f, 0.2f, 0.8f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    GLubyte pixel[4];
-    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
-    m_backbufferFormatIsSRGB = (pixel[0] > 150);
+    TestSRGBBackBuffer();
 
     // Default states.
     glEnable(GL_CULL_FACE);
@@ -188,6 +183,21 @@ namespace ToolKit
         task.Callback();
       }
     }
+  }
+
+  void RenderSystem::TestSRGBBackBuffer()
+  {
+    GLint lastFBO;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(0.5f, 0.2f, 0.8f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    GLubyte pixel[4];
+    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+    m_backbufferFormatIsSRGB = (pixel[0] > 150);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 
 } // namespace ToolKit
