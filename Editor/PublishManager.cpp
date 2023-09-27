@@ -103,7 +103,7 @@ namespace ToolKit
       const String projectName         = g_app->m_workspace.GetActiveProject().name;
       const String publishDirectory    = ConcatPaths({ResourcePath(), "..", "Publish", "Windows"});
       const String publishBinDir       = ConcatPaths({publishDirectory, "Bin"});
-      const String publishConfigDir    = ConcatPaths({publishConfigDir, "Config"});
+      const String publishConfigDir    = ConcatPaths({publishDirectory, "Config"});
 
       const String exeFile =
           ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".exe";
