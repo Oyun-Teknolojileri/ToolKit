@@ -118,43 +118,34 @@ namespace ToolKit
       const String engineSettingsPath     = ConcatPaths({ConfigPath(), "Engine.settings"});
       const String destEngineSettingsPath = ConcatPaths({publishConfigDirStr, "Engine.settings"});
 
-      // Remove the old files
-      if (std::filesystem::exists(publishDirectory))
-      {
-        std::filesystem::remove_all(publishDirectory);
-      }
-
       // Create directories
       if (!std::filesystem::exists(publishDirectory))
       {
-        bool res = std::filesystem::create_directories(publishDirectory);
-        if (!res)
+        if (!std::filesystem::create_directories(publishDirectory))
         {
           exitWithErrorFn("Could not create publish directory.");
         }
       }
       if (!std::filesystem::exists(publishBinDir))
       {
-        bool res = std::filesystem::create_directories(publishBinDir);
-        if (!res)
+        if (!std::filesystem::create_directories(publishBinDir))
         {
           exitWithErrorFn("Could not create publish bin directory.");
         }
       }
       if (!std::filesystem::exists(publishConfigDir))
       {
-        bool res = std::filesystem::create_directories(publishConfigDir);
-        if (!res)
+        if (!std::filesystem::create_directories(publishConfigDir))
         {
           exitWithErrorFn("Could not create publish config directory.");
         }
       }
 
       // Copy exe file
-      std::filesystem::copy(exeFile.c_str(), publishBinDir);
+      std::filesystem::copy(exeFile.c_str(), publishBinDir, std::filesystem::copy_options::overwrite_existing);
 
       // Copy SDL2.dll from ToolKit bin folder to publish bin folder
-      std::filesystem::copy(sdlDllPath.c_str(), publishBinDir);
+      std::filesystem::copy(sdlDllPath.c_str(), publishBinDir, std::filesystem::copy_options::overwrite_existing);
 
       // Copy pak
       std::filesystem::copy(pakFile.c_str(), destPakFilePath, std::filesystem::copy_options::overwrite_existing);
@@ -216,12 +207,6 @@ namespace ToolKit
         const String publishDirStr  = ConcatPaths({ResourcePath(), "..", "Publish", "Android"});
         const String apkPathStr     = ConcatPaths({buildLocation, "app-release-unsigned.apk"});
         const String publishApkPath = ConcatPaths({publishDirStr, projectName + "_release.apk"});
-
-        // Remove the old files
-        if (std::filesystem::exists(publishDirStr))
-        {
-          std::filesystem::remove_all(publishDirStr);
-        }
 
         // Create directories
         if (!std::filesystem::exists(publishDirStr))
@@ -297,15 +282,11 @@ namespace ToolKit
       String firstPart =
           ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".";
       String files[] = {firstPart + "data", firstPart + "html", firstPart + "js", firstPart + "wasm"};
-      if (std::filesystem::exists(publishDirectory))
-      {
-        std::filesystem::remove_all(publishDirectory);
-      }
-
+      
       std::filesystem::create_directories(publishDirectory);
       for (int i = 0; i < ArraySize(files); i++)
       {
-        std::filesystem::copy(files[i].c_str(), publishDirectory);
+        std::filesystem::copy(files[i].c_str(), publishDirectory, std::filesystem::copy_options::overwrite_existing);
       }
 
       // Create run script
