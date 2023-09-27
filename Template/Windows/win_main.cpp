@@ -21,15 +21,17 @@
 
 namespace ToolKit
 {
-  Game* g_game            = nullptr;
-  bool g_running          = true;
-  SDL_Window* g_window    = nullptr;
-  SDL_GLContext g_context = nullptr;
-  Main* g_proxy           = nullptr;
+  Game* g_game                     = nullptr;
+  bool g_running                   = true;
+  SDL_Window* g_window             = nullptr;
+  SDL_GLContext g_context          = nullptr;
+  Main* g_proxy                    = nullptr;
+  Viewport* g_viewport             = nullptr;
+  EngineSettings* g_engineSettings = nullptr;
 
   // Setup.
-  const char* g_appName   = "ToolKit";
-  const uint g_targetFps  = 120;
+  const char* g_appName            = "ToolKit";
+  const uint g_targetFps           = 120;
 
   void SceneRender(Viewport* viewport)
   {
@@ -282,7 +284,7 @@ namespace ToolKit
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glViewport(0, 0, g_proxy->m_engineSettings->Window.Width, g_proxy->m_engineSettings->Window.Height);
+    glViewport(0, 0, g_engineSettings->Window.Width, g_engineSettings->Window.Height);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -335,8 +337,6 @@ namespace ToolKit
     }
   };
 
-  Viewport* g_viewport = nullptr;
-
   void PreInit()
   {
     // PreInit Main
@@ -351,7 +351,7 @@ namespace ToolKit
 
   void Init()
   {
-    EngineSettings* settings = g_proxy->m_engineSettings;
+    g_settings = g_proxy->m_engineSettings;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0)
     {
@@ -407,9 +407,9 @@ namespace ToolKit
           g_proxy->Init();
 
           // Init game
-          g_viewport = new GameViewport((float) g_proxy->m_engineSettings->Window.Width,
-                                        (float) g_proxy->m_engineSettings->Window.Height);
-          g_game     = new Game();
+          g_viewport =
+              new GameViewport((float) g_engineSettings->Window.Width, (float) g_engineSettings->Window.Height);
+          g_game = new Game();
           g_game->Init(g_proxy);
 
           InitRender();
