@@ -166,7 +166,11 @@ namespace ToolKit
 
       // Tell user about where the location of output files is
       GetLogger()->WriteConsole(LogType::Success, "Building for WINDOWS has been completed successfully.");
-      GetLogger()->WriteConsole(LogType::Memo, "Output files location: %s", publishDirectory);
+      GetLogger()->WriteConsole(LogType::Memo,
+                                "Output files location: %s",
+                                std::filesystem::absolute(publishDirectory).string().c_str());
+
+      g_app->m_shellOpenDirFn(publishDirectory);
     }
 
     void AndroidPublisher::Publish() const
@@ -209,11 +213,36 @@ namespace ToolKit
         }
         String buildLocation = ConcatPaths({projectLocation, "Android/app/build/outputs/apk/release"});
         NormalizePath(buildLocation);
+        const String publishDirStr  = ConcatPaths({ResourcePath(), "..", "Publish", "Android"});
+        const String apkPathStr     = ConcatPaths({buildLocation, "app-release-unsigned.apk"});
+        const String publishApkPath = ConcatPaths({publishDirStr, projectName + "_release.apk"});
 
-        GetLogger()->WriteConsole(LogType::Success, "Android build successfully finished.");
-        GetLogger()->WriteConsole(LogType::Memo, "Exported APK location: %s", buildLocation.c_str());
+        // Remove the old files
+        if (std::filesystem::exists(publishDirStr))
+        {
+          std::filesystem::remove_all(publishDirStr);
+        }
 
-        g_app->m_shellOpenDirFn(buildLocation);
+        // Create directories
+        if (!std::filesystem::exists(publishDirStr))
+        {
+          bool res = std::filesystem::create_directories(publishDirStr);
+          if (!res)
+          {
+            GetLogger()->WriteConsole(LogType::Error, "Could not create publish directory for android.");
+            return;
+          }
+        }
+
+        std::filesystem::copy(apkPathStr.c_str(), publishApkPath, std::filesystem::copy_options::overwrite_existing);
+
+        // Tell user about where the location of output files is
+        GetLogger()->WriteConsole(LogType::Success, "Building for ANDROID has been completed successfully.");
+        GetLogger()->WriteConsole(LogType::Memo,
+                                  "Output files location: %s",
+                                  std::filesystem::absolute(publishDirStr).string().c_str());
+
+        g_app->m_shellOpenDirFn(publishDirStr);
       };
 
       g_app->m_statusMsg = "building android apk...";
@@ -240,13 +269,14 @@ namespace ToolKit
 
       Path newWorkDir(ConcatPaths({"..", "BuildScripts"}));
       std::filesystem::current_path(newWorkDir);
-      int toolKitCompileResult = g_app->ExecSysCommand(ConcatPaths({"..", "BuildScripts", "WebBuildRelease.bat"}).c_str(), false, true);
+      int toolKitCompileResult =
+          g_app->ExecSysCommand(ConcatPaths({"..", "BuildScripts", "WebBuildRelease.bat"}).c_str(), false, true);
       if (toolKitCompileResult != 0)
       {
         exitWithErrorFn("ToolKit could not be compiled!");
         return;
       }
-      newWorkDir = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
+      newWorkDir                               = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
 
       const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Web", "WebBuildRelease.bat"});
 
@@ -287,7 +317,11 @@ namespace ToolKit
 
       // Output user about where are the output files
       GetLogger()->WriteConsole(LogType::Success, "Building for web has been completed successfully.");
-      GetLogger()->WriteConsole(LogType::Memo, "Output files location: %s", publishDirectory);
+      GetLogger()->WriteConsole(LogType::Memo,
+                                "Output files location: %s",
+                                std::filesystem::absolute(publishDirectory).string().c_str());
+
+      g_app->m_shellOpenDirFn(publishDirectory);
     }
 
   } // namespace Editor

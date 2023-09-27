@@ -309,6 +309,8 @@ namespace ToolKit
         return (int) errCode;
       }
 
+      SetForegroundWindow((HWND)pi.hProcess);
+
       auto finalizeFn = [pi, callback](DWORD stat) -> void
       {
         // Close process and thread handles.
