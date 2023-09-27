@@ -55,7 +55,7 @@
     <ClCompile Include="Pass.cpp" />
     <ClCompile Include="AdditiveLightingPass.cpp" />
     <ClCompile Include="PluginManager.cpp">
-      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">102</OrderInUnityFile>
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">100</OrderInUnityFile>
     </ClCompile>
     <ClCompile Include="PostProcessPass.cpp" />
     <ClCompile Include="Prefab.cpp" />

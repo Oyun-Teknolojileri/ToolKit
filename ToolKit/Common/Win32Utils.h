@@ -31,6 +31,7 @@
   #define WIN32_LEAN_AND_MEAN
   #include <Windows.h>
   #include <atlstr.h>
+  #include <fileapi.h>
   #include <shellapi.h>
   #include <strsafe.h>
 
@@ -288,8 +289,7 @@ namespace ToolKit
 
       ZeroMemory(&pi, sizeof(pi));
 
-      CStringW wCmd = ToolKit::Win32Helpers::UTF8Util::ConvertUTF8ToUTF16("cmd /C ") +
-                      ToolKit::Win32Helpers::UTF8Util::ConvertUTF8ToUTF16(cmd.data());
+      CStringW wCmd = UTF8Util::ConvertUTF8ToUTF16("cmd /C ") + UTF8Util::ConvertUTF8ToUTF16(cmd.data());
 
       // Start the child process.
       if (!CreateProcessW(NULL,             // No module name (use command line)
@@ -309,7 +309,8 @@ namespace ToolKit
         return (int) errCode;
       }
 
-      SetForegroundWindow((HWND)pi.hProcess);
+      wCmd.ReleaseBuffer();
+      SetForegroundWindow((HWND) pi.hProcess);
 
       auto finalizeFn = [pi, callback](DWORD stat) -> void
       {
@@ -378,10 +379,12 @@ namespace ToolKit
       va_end(arg);
 
       static char szOutputBuff[1024] = {0};
+
       // concat log type name and log string
       _snprintf(szOutputBuff, sizeof(szOutputBuff), "%s %s\n", logNames[logType], szBuff);
+      CStringW wOutput = UTF8Util::ConvertUTF8ToUTF16(szOutputBuff);
 
-      OutputDebugString(szOutputBuff);
+      OutputDebugStringW(wOutput);
     }
 
     void OpenExplorer(const StringView utf8Path)
@@ -396,6 +399,33 @@ namespace ToolKit
         TK_ERR("Failed to open the folder: %s", utf8Path);
       }
     }
+
+    String GetCreationTime(const String& fullPath)
+    {
+      CStringW wFile = UTF8Util::ConvertUTF8ToUTF16(fullPath.c_str());
+
+      WIN32_FILE_ATTRIBUTE_DATA attrData;
+      GetFileAttributesExW(wFile.GetBuffer(), GetFileExInfoStandard, &attrData);
+      wFile.ReleaseBuffer();
+
+      String time = std::to_string(attrData.ftLastWriteTime.dwHighDateTime) +
+                    std::to_string(attrData.ftLastWriteTime.dwLowDateTime);
+
+      return time;
+    }
+
+    void* TKLoadModule(StringView fullPath)
+    {
+      CStringW wFile = UTF8Util::ConvertUTF8ToUTF16(fullPath.data());
+      HMODULE module = LoadLibraryW(wFile.GetBuffer());
+      wFile.ReleaseBuffer();
+
+      return (void*) module;
+    }
+
+    void TKFreeModule(void* module) { FreeLibrary((HMODULE) module); }
+
+    void* TKGetFunction(void* module, StringView func) { return (void*) GetProcAddress((HMODULE) module, func.data()); }
 
   } // namespace Win32Helpers
 } // namespace ToolKit
