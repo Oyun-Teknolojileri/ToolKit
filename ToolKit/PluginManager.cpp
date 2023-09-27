@@ -169,12 +169,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  void PluginManager::Init()
-  {
-    assert(LoadModule && "PluginManager won't function properly.");
-    assert(FreeModule && "PluginManager won't function properly.");
-    assert(GetFunction && "PluginManager won't function properly.");
-  }
+  void PluginManager::Init() {}
 
   PluginRegister* PluginManager::GetRegister(const String& file)
   {
