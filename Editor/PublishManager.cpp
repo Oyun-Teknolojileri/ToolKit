@@ -68,7 +68,105 @@ namespace ToolKit
 
     void WindowsPublisher::Publish() const
     {
-      GetLogger()->WriteConsole(LogType::Error, "windows build not implemented");
+      g_app->PackResources();
+
+      Path workDir         = std::filesystem::current_path();
+
+      auto exitWithErrorFn = [&workDir](const char* msg) -> void
+      {
+        GetLogger()->WriteConsole(LogType::Error, msg);
+        std::filesystem::current_path(workDir);
+      };
+
+      // Run toolkit compile script
+      Path newWorkDir(ConcatPaths({"..", "BuildScripts"}));
+      std::filesystem::current_path(newWorkDir);
+      int toolKitCompileResult = g_app->ExecSysCommand("WinBuildRelease.bat", false, true);
+      if (toolKitCompileResult != 0)
+      {
+        exitWithErrorFn("ToolKit could not be compiled!");
+        return;
+      }
+
+      // Run plugin compile script
+      newWorkDir = Path(ConcatPaths({ResourcePath(), "..", "Windows"}));
+      std::filesystem::current_path(newWorkDir);
+      int pluginCompileResult = g_app->ExecSysCommand("WinBuildRelease.bat", false, true);
+      if (pluginCompileResult != 0)
+      {
+        exitWithErrorFn("Plugin could not be compiled!");
+        return;
+      }
+      std::filesystem::current_path(workDir);
+
+      // Move files to publish directory
+      const String projectName         = g_app->m_workspace.GetActiveProject().name;
+      const String publishDirStr       = ConcatPaths({ResourcePath(), "..", "Publish", "Windows"});
+      const String publishBinDirStr    = ConcatPaths({ResourcePath(), "..", "Publish", "Windows", "Bin"});
+      const String publishConfigDirStr = ConcatPaths({ResourcePath(), "..", "Publish", "Windows", "Config"});
+      const char* publishDirectory     = publishDirStr.c_str();
+      const char* publishBinDir        = publishBinDirStr.c_str();
+      const char* publishConfigDir     = publishConfigDirStr.c_str();
+
+      const String exeFile =
+          ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".exe";
+
+      const String pakFile                = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
+      const String destPakFilePath        = publishDirStr;
+      const String sdlDllPath             = ConcatPaths({workDir.string(), "SDL2.dll"});
+      const String configDirectory        = ConcatPaths({ResourcePath(), "..", "Config"});
+      const String engineSettingsPath     = ConcatPaths({ConfigPath(), "Engine.settings"});
+      const String destEngineSettingsPath = ConcatPaths({publishConfigDirStr, "Engine.settings"});
+
+      // Remove the old files
+      if (std::filesystem::exists(publishDirectory))
+      {
+        std::filesystem::remove_all(publishDirectory);
+      }
+
+      // Create directories
+      if (!std::filesystem::exists(publishDirectory))
+      {
+        bool res = std::filesystem::create_directories(publishDirectory);
+        if (!res)
+        {
+          exitWithErrorFn("Could not create publish directory.");
+        }
+      }
+      if (!std::filesystem::exists(publishBinDir))
+      {
+        bool res = std::filesystem::create_directories(publishBinDir);
+        if (!res)
+        {
+          exitWithErrorFn("Could not create publish bin directory.");
+        }
+      }
+      if (!std::filesystem::exists(publishConfigDir))
+      {
+        bool res = std::filesystem::create_directories(publishConfigDir);
+        if (!res)
+        {
+          exitWithErrorFn("Could not create publish config directory.");
+        }
+      }
+
+      // Copy exe file
+      std::filesystem::copy(exeFile.c_str(), publishBinDir);
+
+      // Copy SDL2.dll from ToolKit bin folder to publish bin folder
+      std::filesystem::copy(sdlDllPath.c_str(), publishBinDir);
+
+      // Copy pak
+      std::filesystem::copy(pakFile.c_str(), destPakFilePath, std::filesystem::copy_options::overwrite_existing);
+
+      // Copy engine settings to config folder
+      std::filesystem::copy(engineSettingsPath.c_str(),
+                            destEngineSettingsPath.c_str(),
+                            std::filesystem::copy_options::overwrite_existing);
+
+      // Tell user about where the location of output files is
+      GetLogger()->WriteConsole(LogType::Success, "Building for WINDOWS has been completed successfully.");
+      GetLogger()->WriteConsole(LogType::Memo, "Output files location: %s", publishDirectory);
     }
 
     void AndroidPublisher::Publish() const
@@ -104,7 +202,7 @@ namespace ToolKit
 
       const auto afterBuildFn = [projectName, projectLocation](int res) -> void
       {
-        if (res == 1) 
+        if (res == 1)
         {
           GetLogger()->WriteConsole(LogType::Error, "Android build failed.");
           return;
@@ -115,8 +213,7 @@ namespace ToolKit
         GetLogger()->WriteConsole(LogType::Success, "Android build successfully finished.");
         GetLogger()->WriteConsole(LogType::Memo, "Exported APK location: %s", buildLocation.c_str());
 
-        // open generated apk folder location. (windows only)
-        std::system(("explorer /e, " + buildLocation).c_str());
+        g_app->m_shellOpenDirFn(buildLocation);
       };
 
       g_app->m_statusMsg = "building android apk...";
@@ -141,30 +238,21 @@ namespace ToolKit
         std::filesystem::current_path(workDir);
       };
 
-      Path newWorkDir(ConcatPaths({"..", "Web"}));
+      Path newWorkDir(ConcatPaths({"..", "BuildScripts"}));
       std::filesystem::current_path(newWorkDir);
-      int toolKitCompileResult = std::system(ConcatPaths({"..", "Web", "Release.bat"}).c_str());
+      int toolKitCompileResult = g_app->ExecSysCommand(ConcatPaths({"..", "BuildScripts", "WebBuildRelease.bat"}).c_str(), false, true);
       if (toolKitCompileResult != 0)
       {
         exitWithErrorFn("ToolKit could not be compiled!");
         return;
       }
-      newWorkDir = Path(ConcatPaths({ResourcePath(), "..", "Codes", "Web"}));
-      if (!std::filesystem::exists(newWorkDir))
-      {
-        std::filesystem::create_directories(newWorkDir);
-      }
+      newWorkDir = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
 
-      // Create build script
-      const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Codes", "Web", "Release.bat"});
-      std::ofstream releaseBuildScript(pluginWebBuildScriptsFolder.c_str());
-      releaseBuildScript << "emcmake cmake -DEMSCRIPTEN=TRUE -DTK_CXX_EXTRA:STRING=\" -O3\" "
-                            "-S .. -G Ninja && ninja & pause";
-      releaseBuildScript.close();
+      const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Web", "WebBuildRelease.bat"});
 
       // Run scripts
       std::filesystem::current_path(newWorkDir);
-      int pluginCompileResult = std::system(pluginWebBuildScriptsFolder.c_str());
+      int pluginCompileResult = g_app->ExecSysCommand(pluginWebBuildScriptsFolder.c_str(), false, true);
       if (pluginCompileResult != 0)
       {
         exitWithErrorFn("Plugin could not be compiled!");
@@ -190,27 +278,12 @@ namespace ToolKit
         std::filesystem::copy(files[i].c_str(), publishDirectory);
       }
 
-      // Copy engine settings to config folder
-      String configDirectory = ConcatPaths({ResourcePath(), "..", "Config"});
-      if (!std::filesystem::exists(configDirectory))
-      {
-        std::filesystem::create_directories(configDirectory);
-      }
-
-      const String engineSettingsPath     = ConcatPaths({ConfigPath(), "Engine.settings"});
-      const String destEngineSettingsPath = ConcatPaths({configDirectory, "Engine.settings"});
-
-      if (!std::filesystem::exists(destEngineSettingsPath))
-      {
-        std::filesystem::copy(Path(engineSettingsPath.c_str()),
-                              Path(destEngineSettingsPath.c_str()),
-                              std::filesystem::copy_options::overwrite_existing);
-      }
-
       // Create run script
       std::ofstream runBatchFile(ConcatPaths({publishDirectory, "Run.bat"}).c_str());
       runBatchFile << "emrun ./" + projectName + ".html";
       runBatchFile.close();
+
+      std::filesystem::current_path(workDir);
 
       // Output user about where are the output files
       GetLogger()->WriteConsole(LogType::Success, "Building for web has been completed successfully.");

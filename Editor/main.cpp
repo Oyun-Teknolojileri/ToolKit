@@ -39,8 +39,8 @@
 #include <Meta.h>
 #include <SDL.h>
 #include <Types.h>
-#include <array>
 
+#include <array>
 #include <chrono>
 
 #include <DebugNew.h>
@@ -79,7 +79,6 @@ namespace ToolKit
       }
 
       std::array<String, 4> files = {"Workspace.settings", "Editor.settings", "UILayout.ini", "Engine.settings"};
-
       String cfgPath              = ConcatPaths({String(appData), "ToolKit", "Config"});
 
       // Create ToolKit Configs.
@@ -240,13 +239,16 @@ namespace ToolKit
             of->Override<EditorPointLight, PointLight>();
             of->Override<EditorSpotLight, SpotLight>();
             of->Override<EditorScene, Scene>();
+            of->Override<EditorCamera, Camera>();
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);
 
             // Init app
-            g_app                 = new App(settings.Window.Width, settings.Window.Height);
-            g_app->m_sysComExecFn = ToolKit::Win32Helpers::g_SysComExecFn;
+            g_app                   = new App(settings.Window.Width, settings.Window.Height);
+            g_app->m_sysComExecFn   = &ToolKit::Win32Helpers::SysComExec;
+            g_app->m_shellOpenDirFn = &ToolKit::Win32Helpers::OpenExplorer;
+
             GetLogger()->SetPlatformConsoleFn([](LogType type, const String& msg) -> void
                                               { ToolKit::Win32Helpers::OutputLog((int) type, msg.c_str()); });
 

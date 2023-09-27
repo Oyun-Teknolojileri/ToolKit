@@ -109,6 +109,11 @@ namespace ToolKit
       m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager               = new PublishManager();
       GetRenderSystem()->SetClearColor(g_wndBgColor);
+
+      if (GetFileManager()->CheckPakFile())
+      {
+        TK_LOG("Project uses MinResources.pak for resource gather.");
+      }
     }
 
     void App::DestroyEditorEntities()
@@ -370,7 +375,7 @@ namespace ToolKit
       String currentPath = std::filesystem::current_path().parent_path().u8string();
       UnixifyPath(currentPath);
 
-      String cmakePath = ConcatPaths({fullPath, "CMakeLists.txt"});
+      String cmakePath = ConcatPaths({fullPath, "Codes", "CMakeLists.txt"});
       std::fstream cmakelist;
       cmakelist.open(cmakePath, std::ios::in);
       if (cmakelist.is_open())

@@ -122,15 +122,20 @@ namespace ToolKit
      */
     void InitGl(void* glGetProcAddres, GlReportCallback callback = nullptr);
 
+    inline bool IsGammaCorrectionNeeded() { return !m_backbufferFormatIsSRGB; }
+    void TestSRGBBackBuffer();
+
    private:
     void ExecuteTaskImp(RenderTask& task);
 
    private:
     RenderTaskArray m_highQueue;
     RenderTaskArray m_lowQueue;
-    Renderer* m_renderer         = nullptr;
+    Renderer* m_renderer          = nullptr;
     RenderPath* m_renderTechnique = nullptr;
-    int m_skipFrames             = 0;
+    int m_skipFrames              = 0;
+
+    bool m_backbufferFormatIsSRGB = true;
   };
 
 } // namespace ToolKit

@@ -50,6 +50,7 @@ namespace ToolKit
 
     typedef std::function<void(int)> SysCommandDoneCallback;
     typedef std::function<int(StringView, bool, bool, SysCommandDoneCallback)> SysCommandExecutionFn;
+    typedef std::function<void(const StringView)> ShellOpenDirFn;
 
     class App : Serializable
     {
@@ -218,6 +219,7 @@ namespace ToolKit
       PublishManager* m_publishManager         = nullptr;
       GameMod m_gameMod                        = GameMod::Stop;
       SysCommandExecutionFn m_sysComExecFn     = nullptr;
+      ShellOpenDirFn m_shellOpenDirFn          = nullptr;
       EditorLitMode m_sceneLightingMode        = EditorLitMode::EditorLit;
       EditorViewport* m_lastActiveViewport     = nullptr;
       Workspace m_workspace;

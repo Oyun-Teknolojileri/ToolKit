@@ -55,7 +55,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Utils\Import\</OutDir>
     <LibraryPath>$(SolutionDir)Bin;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>

@@ -42,10 +42,7 @@ namespace ToolKit
 
   SkyBase::SkyBase() {}
 
-  void SkyBase::NativeConstruct()
-  {
-    Super::NativeConstruct();
-  }
+  void SkyBase::NativeConstruct() { Super::NativeConstruct(); }
 
   void SkyBase::Init()
   {
@@ -104,7 +101,7 @@ namespace ToolKit
   CubeMapPtr SkyBase::GetIrradianceMap()
   {
     HdriPtr hdri = GetHdri();
-    return hdri->m_irradianceCubemap;
+    return hdri->m_diffuseEnvMap;
   }
 
   HdriPtr SkyBase::GetHdri()
@@ -129,6 +126,32 @@ namespace ToolKit
     DrawSky_Define(true, "Sky", 90, true, true);
     Illuminate_Define(true, "Sky", 90, true, true);
     Intensity_Define(1.0f, "Sky", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
+
+    auto createParameterVariantFn = [](const String& name, int val)
+    {
+      ParameterVariant param {val};
+      param.m_name = name;
+      return param;
+    };
+    MultiChoiceVariant mcv = {
+        {createParameterVariantFn("256", 256),
+         createParameterVariantFn("512", 512),
+         createParameterVariantFn("1024", 1024),
+         createParameterVariantFn("2048", 2048),
+         createParameterVariantFn("4096", 4096)},
+        1,
+        [&](Value& oldVal, Value& newVal)
+        {
+          EnvironmentComponentPtr ec = GetComponent<EnvironmentComponent>();
+          if (ec != nullptr)
+          {
+            ec->m_localData[ec->IBLTextureSizeIndex()].GetVarPtr<MultiChoiceVariant>()->CurrentVal = {
+                std::get<unsigned int>(newVal)};
+          }
+         }
+    };
+
+    IBLTextureSize_Define(mcv, "Sky", 90, true, true, {false, false});
 
     SetNameVal("SkyBase");
   }

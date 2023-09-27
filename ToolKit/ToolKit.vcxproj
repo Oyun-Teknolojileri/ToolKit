@@ -132,6 +132,7 @@
     <ClInclude Include="OutlinePass.h" />
     <ClInclude Include="Pass.h" />
     <ClInclude Include="PostProcessPass.h" />
+    <ClInclude Include="RendererGlobals.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="SceneRenderer.h" />
     <ClInclude Include="ShaderReflectionCache.h" />

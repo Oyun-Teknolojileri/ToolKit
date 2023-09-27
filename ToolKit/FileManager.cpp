@@ -26,17 +26,17 @@
 
 #include "FileManager.h"
 
+#include "Logger.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Scene.h"
 #include "Shader.h"
 #include "ToolKit.h"
-#include "Logger.h"
 
 #include "DebugNew.h"
 #define STB_IMAGE_IMPLEMENTATION
 #ifdef __ARM_FP
-# define STBI_NEON
+  #define STBI_NEON
 #endif
 #include "stb/stb_image.h"
 
@@ -73,7 +73,7 @@ namespace ToolKit
     FileDataType data      = GetFile(FileType::ImageFloat, fileInfo);
     return std::get<float*>(data);
   }
-  
+
   FileManager::FileDataType FileManager::GetFile(FileType fileType, ImageFileInfo& fileInfo)
   {
     String pakPath      = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
@@ -143,7 +143,7 @@ namespace ToolKit
   void FileManager::PackResources(const String& sceneResourcesPath)
   {
     String zipName = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
-    
+
     if (CheckSystemFile(zipName.c_str()))
     {
       if (m_zfile)
@@ -180,6 +180,7 @@ namespace ToolKit
     }
 
     String relativePath = path;
+    UnixifyPath(relativePath);
     GetRelativeResourcesPath(relativePath);
     return CheckSystemFile(path) || IsFileInPak(relativePath);
   }
@@ -349,6 +350,8 @@ namespace ToolKit
     GetExtraFilePaths(sceneResourcesPath);
   }
 
+  bool FileManager::CheckPakFile() { return m_zfile != nullptr; }
+
   bool FileManager::ZipPack(const String& zipName)
   {
     zipFile zFile = zipOpen64(zipName.c_str(), 0);
@@ -436,7 +439,7 @@ namespace ToolKit
     char* fileData = reinterpret_cast<char*>(malloc((flen + 1) * static_cast<uint>(sizeof(char))));
     red            = fread(fileData, 1, flen, f);
     ret            = zipWriteInFileInZip(zfile, fileData, static_cast<uint>(flen));
-    
+
     if (ret != ZIP_OK)
     {
       fclose(f);
@@ -651,11 +654,11 @@ namespace ToolKit
       return;
     }
 
-    #ifdef __ANDROID__
+#ifdef __ANDROID__
     String pakPath = ConcatPaths({Main::GetInstance()->m_resourceRoot, "MinResources.pak"});
-    #else
+#else
     String pakPath = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
-    #endif
+#endif
 
     if (!m_zfile)
     {

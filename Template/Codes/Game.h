@@ -26,9 +26,9 @@
 
 #pragma once
 
-#include <Plugin.h>
-#include <SceneRenderer.h>
-#include <ToolKit.h>
+#include "Plugin.h"
+#include "ToolKit.h"
+#include "Animation.h"
 
 namespace ToolKit
 {
@@ -41,10 +41,9 @@ namespace ToolKit
     virtual void Frame(float deltaTime, class Viewport* viewport);
 
    private:
-#if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
-    SceneRenderer m_sceneRenderer;
-#endif
   };
+
+  extern Game* g_game;
 
 } // namespace ToolKit
 
