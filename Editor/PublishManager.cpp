@@ -101,22 +101,18 @@ namespace ToolKit
 
       // Move files to publish directory
       const String projectName         = g_app->m_workspace.GetActiveProject().name;
-      const String publishDirStr       = ConcatPaths({ResourcePath(), "..", "Publish", "Windows"});
-      const String publishBinDirStr    = ConcatPaths({ResourcePath(), "..", "Publish", "Windows", "Bin"});
-      const String publishConfigDirStr = ConcatPaths({ResourcePath(), "..", "Publish", "Windows", "Config"});
-      const char* publishDirectory     = publishDirStr.c_str();
-      const char* publishBinDir        = publishBinDirStr.c_str();
-      const char* publishConfigDir     = publishConfigDirStr.c_str();
+      const String publishDirectory    = ConcatPaths({ResourcePath(), "..", "Publish", "Windows"});
+      const String publishBinDir       = ConcatPaths({publishDirectory, "Bin"});
+      const String publishConfigDir    = ConcatPaths({publishConfigDir, "Config"});
 
       const String exeFile =
           ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".exe";
 
       const String pakFile                = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
-      const String destPakFilePath        = publishDirStr;
       const String sdlDllPath             = ConcatPaths({workDir.string(), "SDL2.dll"});
       const String configDirectory        = ConcatPaths({ResourcePath(), "..", "Config"});
       const String engineSettingsPath     = ConcatPaths({ConfigPath(), "Engine.settings"});
-      const String destEngineSettingsPath = ConcatPaths({publishConfigDirStr, "Engine.settings"});
+      const String destEngineSettingsPath = ConcatPaths({publishConfigDir, "Engine.settings"});
 
       // Create directories
       if (!std::filesystem::exists(publishDirectory))
@@ -148,7 +144,7 @@ namespace ToolKit
       std::filesystem::copy(sdlDllPath.c_str(), publishBinDir, std::filesystem::copy_options::overwrite_existing);
 
       // Copy pak
-      std::filesystem::copy(pakFile.c_str(), destPakFilePath, std::filesystem::copy_options::overwrite_existing);
+      std::filesystem::copy(pakFile.c_str(), publishDirectory, std::filesystem::copy_options::overwrite_existing);
 
       // Copy engine settings to config folder
       std::filesystem::copy(engineSettingsPath.c_str(),
