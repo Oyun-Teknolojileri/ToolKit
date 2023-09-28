@@ -654,11 +654,7 @@ namespace ToolKit
       return;
     }
 
-#ifdef __ANDROID__
-    String pakPath = ConcatPaths({Main::GetInstance()->m_resourceRoot, "MinResources.pak"});
-#else
     String pakPath = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
-#endif
 
     if (!m_zfile)
     {

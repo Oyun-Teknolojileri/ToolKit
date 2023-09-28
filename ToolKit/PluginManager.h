@@ -32,10 +32,19 @@
 namespace ToolKit
 {
 
+  // Platform dependent function callback decelerations.
+  // Each platform suppose to fill these callbacks inside the plugin manager for functioning properly.
+  typedef void* ModuleHandle;
+  typedef GamePlugin*(__cdecl* FunctionAdress)();
+  typedef std::function<ModuleHandle(StringView)> LoadModuleFn;
+  typedef std::function<void(ModuleHandle)> FreeModuleFn;
+  typedef std::function<void*(ModuleHandle, StringView)> GetFunctionFn;
+  typedef std::function<String(const String&)> GetCreationTimeFn;
+
   struct PluginRegister
   {
     Plugin* m_plugin;
-    void* m_module;
+    ModuleHandle m_module;
     String m_lastWriteTime;
     String m_file;
     bool m_loaded;
@@ -55,18 +64,21 @@ namespace ToolKit
     void Init();
     void UnInit();
     PluginRegister* GetRegister(const String& file);
-    void Report(const char* msg, ...);
 
     // Shorts for game plugin.
     GamePlugin* GetGamePlugin();
     void UnloadGamePlugin();
+
+    LoadModuleFn LoadModule           = nullptr;
+    FreeModuleFn FreeModule           = nullptr;
+    GetFunctionFn GetFunction         = nullptr;
+    GetCreationTimeFn GetCreationTime = nullptr;
 
    private:
     PluginRegister* GetGameRegister();
 
    public:
     std::vector<PluginRegister> m_storage;
-    std::function<void(const String&)> m_reporterFn;
   };
 
 } // namespace ToolKit
