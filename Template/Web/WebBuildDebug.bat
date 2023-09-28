@@ -1,1 +1,1 @@
-emcmake cmake -DEMSCRIPTEN=TRUE -DTK_CXX_EXTRA:STRING="-O0 -g" -S ../Codes -G Ninja && ninja & pause
+emcmake cmake -DEMSCRIPTEN=TRUE -DTK_CXX_EXTRA:STRING="-O0 -g" -S ../Codes -G Ninja && ninja & set exit_code = %errorlevel% & pause & exit exit_code

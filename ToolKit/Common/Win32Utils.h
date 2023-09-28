@@ -312,7 +312,7 @@ namespace ToolKit
       wCmd.ReleaseBuffer();
       SetForegroundWindow((HWND) pi.hProcess);
 
-      auto finalizeFn = [pi, callback](DWORD stat) -> void
+      auto finalizeFn = [pi, callback](DWORD stat) -> int
       {
         // Close process and thread handles.
         CloseHandle(pi.hProcess);
@@ -322,6 +322,8 @@ namespace ToolKit
         {
           callback((int) stat);
         }
+
+        return stat;
       };
 
       if (!async)
@@ -331,7 +333,7 @@ namespace ToolKit
 
         DWORD stat = 0;
         GetExitCodeProcess(pi.hProcess, &stat);
-        finalizeFn(stat);
+        return finalizeFn(stat);
       }
       else
       {
@@ -361,7 +363,7 @@ namespace ToolKit
         }
         else
         {
-          finalizeFn(0);
+          return finalizeFn(0);
         }
       }
 
