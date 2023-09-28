@@ -63,13 +63,13 @@ namespace ToolKit
           String def = GetDefaultResource(T::StaticClass());
           if (!CheckFile(def))
           {
-            GetLogger()->Log(LogType::Error, "No default for Class %s", T::StaticClass()->Name.c_str());
+            TK_ERR("No default for Class %s", T::StaticClass()->Name.c_str());
             assert(0 && "No default resource!");
             return nullptr;
           }
 
           String rel = GetRelativeResourcePath(file);
-          GetLogger()->Log(LogType::Warning, "File: %s is missing. Using default resource.", rel.c_str());
+          TK_WRN("File: %s is missing. Using default resource.", rel.c_str());
           resource->SetFile(def);
           resource->_missingFile = file;
         }
