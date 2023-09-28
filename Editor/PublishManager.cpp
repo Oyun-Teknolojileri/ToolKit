@@ -73,17 +73,13 @@ namespace ToolKit
       Path workDir = std::filesystem::current_path();
 
       std::error_code ec;
-      auto returnLoggingError = [&ec, &workDir](bool setPathBack = false, const char* msg = nullptr) -> bool
+      auto returnLoggingError = [&ec, &workDir](bool setPathBack = false) -> bool
       {
         bool ret     = false;
         bool setback = setPathBack;
         if (ec)
         {
-          if (msg != nullptr)
-          {
-            TK_ERR("%s", msg);
-          }
-
+          TK_ERR("%s", ec.message().c_str());
           setback = true;
           ret     = true;
         }
@@ -109,7 +105,8 @@ namespace ToolKit
       int toolKitCompileResult = g_app->ExecSysCommand("WinBuildRelease.bat", false, true);
       if (toolKitCompileResult != 0)
       {
-        returnLoggingError(true, "ToolKit could not be compiled!");
+        returnLoggingError(true);
+        TK_ERR("ToolKit could not be compiled");
         return;
       }
 
@@ -124,7 +121,8 @@ namespace ToolKit
       int pluginCompileResult = g_app->ExecSysCommand("WinBuildRelease.bat", false, true);
       if (pluginCompileResult != 0)
       {
-        returnLoggingError(true, "Plugin could not be compiled!");
+        returnLoggingError(true);
+        TK_ERR("Plugin could not be compiled.");
         return;
       }
       std::filesystem::current_path(workDir, ec);
@@ -219,17 +217,13 @@ namespace ToolKit
       Path workDir = std::filesystem::current_path();
 
       std::error_code ec;
-      auto returnLoggingError = [&ec, &workDir](bool setPathBack = false, const char* msg = nullptr) -> bool
+      auto returnLoggingError = [&ec, &workDir](bool setPathBack = false) -> bool
       {
         bool ret     = false;
         bool setback = setPathBack;
         if (ec)
         {
-          if (msg != nullptr)
-          {
-            TK_ERR("%s", msg);
-          }
-
+          TK_ERR("%s", ec.message().c_str());
           setback = true;
           ret     = true;
         }
@@ -324,7 +318,8 @@ namespace ToolKit
       int compileResult = g_app->ExecSysCommand("gradlew assemble", false, true, afterBuildFn);
       if (compileResult != 0)
       {
-        returnLoggingError(true, "Compiling failed.");
+        returnLoggingError(true);
+        TK_ERR("Compiling failed.");
         return;
       }
 
@@ -340,17 +335,13 @@ namespace ToolKit
       Path workDir = std::filesystem::current_path();
 
       std::error_code ec;
-      auto returnLoggingError = [&ec, &workDir](bool setPathBack = false, const char* msg = nullptr) -> bool
+      auto returnLoggingError = [&ec, &workDir](bool setPathBack = false) -> bool
       {
         bool ret     = false;
         bool setback = setPathBack;
         if (ec)
         {
-          if (msg != nullptr)
-          {
-            TK_ERR("%s", msg);
-          }
-
+          TK_ERR("%s", ec.message().c_str());
           setback = true;
           ret     = true;
         }
@@ -381,7 +372,8 @@ namespace ToolKit
       int toolKitCompileResult = g_app->ExecSysCommand("WinBuildRelease.bat", false, true);
       if (toolKitCompileResult != 0)
       {
-        returnLoggingError(true, "ToolKit could not be compiled!");
+        returnLoggingError(true);
+        TK_ERR("ToolKit could not be compiled!");
         return;
       }
       newWorkDir                               = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
@@ -398,7 +390,8 @@ namespace ToolKit
       int pluginCompileResult = g_app->ExecSysCommand(pluginWebBuildScriptsFolder.c_str(), false, true);
       if (pluginCompileResult != 0)
       {
-        returnLoggingError(true, "Plugin could not be compiled!");
+        returnLoggingError(true);
+        TK_ERR("Plugin could not be compiled!");
         return;
       }
       std::filesystem::current_path(workDir, ec);
