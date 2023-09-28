@@ -351,7 +351,7 @@ namespace ToolKit
 
   void Init()
   {
-    g_settings = g_proxy->m_engineSettings;
+    g_engineSettings = g_proxy->m_engineSettings;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0)
     {
@@ -373,8 +373,8 @@ namespace ToolKit
           SDL_CreateWindow(g_appName,
                            SDL_WINDOWPOS_UNDEFINED,
                            SDL_WINDOWPOS_UNDEFINED,
-                           settings->Window.Width,
-                           settings->Window.Height,
+                           g_engineSettings->Window.Width,
+                           g_engineSettings->Window.Height,
                            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 
       if (g_window == nullptr)

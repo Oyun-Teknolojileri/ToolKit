@@ -37,8 +37,10 @@
 #include <Common/Win32Utils.h>
 #include <GlErrorReporter.h>
 #include <Meta.h>
+#include <PluginManager.h>
 #include <SDL.h>
 #include <Types.h>
+#include <locale.h>
 
 #include <array>
 #include <chrono>
@@ -130,6 +132,12 @@ namespace ToolKit
       Main::SetProxy(g_proxy);
       CreateAppData();
       g_proxy->PreInit();
+
+      // Platform dependent function assignments.
+      g_proxy->m_pluginManager->FreeModule      = &Win32Helpers::TKFreeModule;
+      g_proxy->m_pluginManager->LoadModule      = &Win32Helpers::TKLoadModule;
+      g_proxy->m_pluginManager->GetFunction     = &Win32Helpers::TKGetFunction;
+      g_proxy->m_pluginManager->GetCreationTime = &Win32Helpers::GetCreationTime;
     }
 
     void Init()
@@ -377,6 +385,8 @@ namespace ToolKit
 
 int main(int argc, char* argv[])
 {
+  setlocale(LC_ALL, ".UTF-8");
+
 #ifdef TK_DEBUG
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
