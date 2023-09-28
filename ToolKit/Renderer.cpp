@@ -1277,8 +1277,8 @@ namespace ToolKit
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::SampleLinear,
-                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::SampleNearest,
+                                     GraphicTypes::SampleNearest,
                                      GraphicTypes::FormatRGBA16F,
                                      GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
@@ -1318,8 +1318,12 @@ namespace ToolKit
 
     for (int mip = 0; mip < mipMaps; ++mip)
     {
-      uint w = (uint) (width * std::powf(0.5f, (float) mip));
-      uint h = (uint) (height * std::powf(0.5f, (float) mip));
+      uint w                        = (uint) (width * std::powf(0.5f, (float) mip));
+      uint h                        = (uint) (height * std::powf(0.5f, (float) mip));
+
+      // Create a temporary cubemap for each mipmap level
+      RenderTargetPtr copyCubemapRt = MakeNewPtr<RenderTarget>(w, h, set);
+      copyCubemapRt->Init();
 
       for (int i = 0; i < 6; ++i)
       {
@@ -1333,8 +1337,8 @@ namespace ToolKit
         cam->m_node->SetScale(sca);
 
         m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                         cubemapRt,
-                                         mip,
+                                         copyCubemapRt,
+                                         0,
                                          -1,
                                          (Framebuffer::CubemapFace) i);
 
@@ -1345,6 +1349,20 @@ namespace ToolKit
         SetViewportSize(w, h);
 
         DrawCube(cam, mat);
+
+        // Copy temporary cubemap texture to the real cubemap mipmap level
+
+        GLint lastread;
+        glGetIntegerv(GL_READ_BUFFER, &lastread);
+        GLint lasttex;
+        glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &lasttex);
+
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
+        glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, 0, 0, 0, 0, w, h);
+
+        glReadBuffer(lastread);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, lasttex);
       }
     }
 
