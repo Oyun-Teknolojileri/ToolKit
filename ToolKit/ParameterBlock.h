@@ -226,6 +226,7 @@ namespace ToolKit
    */
   class TK_API ParameterVariant : public ParameterVariantBase
   {
+    friend class ParameterBlock;
    public:
     /**
      * Enums for supported ParameterVariant types. These types are used for

@@ -726,14 +726,15 @@ namespace ToolKit
           {
             if (var.m_name == memberVar.m_name)
             {
-              memberVar = var;
-              isFound   = true;
+              memberVar.m_var = var.m_var;
+              isFound         = true;
               break;
             }
           }
 
-          if (!isFound && var.m_category.Name == CustomDataCategory.Name)
+          if (!isFound)
           {
+            var.m_category = CustomDataCategory;
             Add(var);
           }
         }
