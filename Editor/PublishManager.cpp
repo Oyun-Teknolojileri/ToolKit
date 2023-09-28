@@ -122,7 +122,7 @@ namespace ToolKit
       if (pluginCompileResult != 0)
       {
         returnLoggingError(true);
-        TK_ERR("Plugin could not be compiled.");
+        TK_ERR("Windows build has failed!");
         return;
       }
       std::filesystem::current_path(workDir, ec);
@@ -391,7 +391,7 @@ namespace ToolKit
       if (pluginCompileResult != 0)
       {
         returnLoggingError(true);
-        TK_ERR("Plugin could not be compiled!");
+        TK_ERR("Web build has failed!");
         return;
       }
       std::filesystem::current_path(workDir, ec);
