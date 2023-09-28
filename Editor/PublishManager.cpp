@@ -321,8 +321,12 @@ namespace ToolKit
       g_app->m_statusMsg = "building android apk...";
 
       // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
-      g_app->ExecSysCommand("gradlew assemble", false, true, afterBuildFn);
-      // TODO handle return value
+      int compileResult = g_app->ExecSysCommand("gradlew assemble", false, true, afterBuildFn);
+      if (compileResult != 0)
+      {
+        returnLoggingError(true, "Compiling failed.");
+        return;
+      }
 
       std::filesystem::current_path(workDir, ec); // set work directory back
       if (returnLoggingError())
