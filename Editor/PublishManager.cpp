@@ -50,6 +50,8 @@ namespace ToolKit
 
     void PublishManager::Publish(PublishPlatform platform)
     {
+      g_app->PackResources();
+
       if (platform == PublishPlatform::Web)
       {
         m_webPublisher->Publish();
@@ -68,14 +70,37 @@ namespace ToolKit
 
     void WindowsPublisher::Publish() const
     {
-      g_app->PackResources();
+      Path workDir = std::filesystem::current_path();
 
-      Path workDir         = std::filesystem::current_path();
-
-      auto exitWithErrorFn = [&workDir](const char* msg) -> void
+      std::error_code ec;
+      auto returnLoggingError = [&ec, &workDir](bool setPathBack = false, const char* msg = nullptr) -> bool
       {
-        GetLogger()->WriteConsole(LogType::Error, msg);
-        std::filesystem::current_path(workDir);
+        bool ret     = false;
+        bool setback = setPathBack;
+        if (ec)
+        {
+          if (msg != nullptr)
+          {
+            TK_ERR("%s", msg);
+          }
+
+          setback = true;
+          ret     = true;
+        }
+
+        if (setback)
+        {
+          std::filesystem::current_path(workDir, ec);
+          if (ec)
+          {
+            TK_ERR("%s", ec.message().c_str());
+            TK_ERR("%s", "******** PLEASE RESTART THE EDITOR ********");
+          }
+
+          ret = true;
+        }
+
+        return ret;
       };
 
       // Run toolkit compile script
@@ -84,26 +109,35 @@ namespace ToolKit
       int toolKitCompileResult = g_app->ExecSysCommand("WinBuildRelease.bat", false, true);
       if (toolKitCompileResult != 0)
       {
-        exitWithErrorFn("ToolKit could not be compiled!");
+        returnLoggingError(true, "ToolKit could not be compiled!");
         return;
       }
 
       // Run plugin compile script
       newWorkDir = Path(ConcatPaths({ResourcePath(), "..", "Windows"}));
-      std::filesystem::current_path(newWorkDir);
+      std::filesystem::current_path(newWorkDir, ec);
+      if (returnLoggingError())
+      {
+        return;
+      }
+
       int pluginCompileResult = g_app->ExecSysCommand("WinBuildRelease.bat", false, true);
       if (pluginCompileResult != 0)
       {
-        exitWithErrorFn("Plugin could not be compiled!");
+        returnLoggingError(true, "Plugin could not be compiled!");
         return;
       }
-      std::filesystem::current_path(workDir);
+      std::filesystem::current_path(workDir, ec);
+      if (returnLoggingError())
+      {
+        return;
+      }
 
       // Move files to publish directory
-      const String projectName         = g_app->m_workspace.GetActiveProject().name;
-      const String publishDirectory    = ConcatPaths({ResourcePath(), "..", "Publish", "Windows"});
-      const String publishBinDir       = ConcatPaths({publishDirectory, "Bin"});
-      const String publishConfigDir    = ConcatPaths({publishDirectory, "Config"});
+      const String projectName      = g_app->m_workspace.GetActiveProject().name;
+      const String publishDirectory = ConcatPaths({ResourcePath(), "..", "Publish", "Windows"});
+      const String publishBinDir    = ConcatPaths({publishDirectory, "Bin"});
+      const String publishConfigDir = ConcatPaths({publishDirectory, "Config"});
 
       const String exeFile =
           ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".exe";
@@ -117,39 +151,59 @@ namespace ToolKit
       // Create directories
       if (!std::filesystem::exists(publishDirectory))
       {
-        if (!std::filesystem::create_directories(publishDirectory))
+        std::filesystem::create_directories(publishDirectory, ec);
+        if (returnLoggingError())
         {
-          exitWithErrorFn("Could not create publish directory.");
+          return;
         }
       }
       if (!std::filesystem::exists(publishBinDir))
       {
-        if (!std::filesystem::create_directories(publishBinDir))
+        std::filesystem::create_directories(publishBinDir, ec);
+        if (returnLoggingError())
         {
-          exitWithErrorFn("Could not create publish bin directory.");
+          return;
         }
       }
       if (!std::filesystem::exists(publishConfigDir))
       {
-        if (!std::filesystem::create_directories(publishConfigDir))
+        std::filesystem::create_directories(publishConfigDir, ec);
+        if (returnLoggingError())
         {
-          exitWithErrorFn("Could not create publish config directory.");
+          return;
         }
       }
 
       // Copy exe file
-      std::filesystem::copy(exeFile.c_str(), publishBinDir, std::filesystem::copy_options::overwrite_existing);
+      std::filesystem::copy(exeFile.c_str(), publishBinDir, std::filesystem::copy_options::overwrite_existing, ec);
+      if (returnLoggingError())
+      {
+        return;
+      }
 
       // Copy SDL2.dll from ToolKit bin folder to publish bin folder
-      std::filesystem::copy(sdlDllPath.c_str(), publishBinDir, std::filesystem::copy_options::overwrite_existing);
+      std::filesystem::copy(sdlDllPath.c_str(), publishBinDir, std::filesystem::copy_options::overwrite_existing, ec);
+      if (returnLoggingError())
+      {
+        return;
+      }
 
       // Copy pak
-      std::filesystem::copy(pakFile.c_str(), publishDirectory, std::filesystem::copy_options::overwrite_existing);
+      std::filesystem::copy(pakFile.c_str(), publishDirectory, std::filesystem::copy_options::overwrite_existing, ec);
+      if (returnLoggingError())
+      {
+        return;
+      }
 
       // Copy engine settings to config folder
       std::filesystem::copy(engineSettingsPath.c_str(),
                             destEngineSettingsPath.c_str(),
-                            std::filesystem::copy_options::overwrite_existing);
+                            std::filesystem::copy_options::overwrite_existing,
+                            ec);
+      if (returnLoggingError())
+      {
+        return;
+      }
 
       // Tell user about where the location of output files is
       GetLogger()->WriteConsole(LogType::Success, "Building for WINDOWS has been completed successfully.");
@@ -162,7 +216,38 @@ namespace ToolKit
 
     void AndroidPublisher::Publish() const
     {
-      g_app->PackResources();
+      Path workDir = std::filesystem::current_path();
+
+      std::error_code ec;
+      auto returnLoggingError = [&ec, &workDir](bool setPathBack = false, const char* msg = nullptr) -> bool
+      {
+        bool ret     = false;
+        bool setback = setPathBack;
+        if (ec)
+        {
+          if (msg != nullptr)
+          {
+            TK_ERR("%s", msg);
+          }
+
+          setback = true;
+          ret     = true;
+        }
+
+        if (setback)
+        {
+          std::filesystem::current_path(workDir, ec);
+          if (ec)
+          {
+            TK_ERR("%s", ec.message().c_str());
+            TK_ERR("%s", "******** PLEASE RESTART THE EDITOR ********");
+          }
+
+          ret = true;
+        }
+
+        return ret;
+      };
 
       String projectName = g_app->m_workspace.GetActiveProject().name;
       if (projectName.empty())
@@ -180,18 +265,19 @@ namespace ToolKit
 
       const std::filesystem::copy_options copyOption = std::filesystem::copy_options::overwrite_existing;
 
-      std::error_code ec;
       std::filesystem::copy(sceneResourcesPath, androidResourcesPath, copyOption, ec);
-      if (ec)
+      if (returnLoggingError())
       {
-        TK_ERR("%s", ec.message().c_str());
         return;
       }
 
-      Path workDir = std::filesystem::current_path(); // chace current work directory
-      std::filesystem::current_path(ConcatPaths({projectLocation, "Android"}));
+      std::filesystem::current_path(ConcatPaths({projectLocation, "Android"}), ec);
+      if (returnLoggingError())
+      {
+        return;
+      }
 
-      const auto afterBuildFn = [projectName, projectLocation](int res) -> void
+      const auto afterBuildFn = [&returnLoggingError, &ec, projectName, projectLocation](int res) -> void
       {
         if (res == 1)
         {
@@ -207,15 +293,21 @@ namespace ToolKit
         // Create directories
         if (!std::filesystem::exists(publishDirStr))
         {
-          bool res = std::filesystem::create_directories(publishDirStr);
-          if (!res)
+          bool res = std::filesystem::create_directories(publishDirStr, ec);
+          if (returnLoggingError())
           {
-            GetLogger()->WriteConsole(LogType::Error, "Could not create publish directory for android.");
             return;
           }
         }
 
-        std::filesystem::copy(apkPathStr.c_str(), publishApkPath, std::filesystem::copy_options::overwrite_existing);
+        std::filesystem::copy(apkPathStr.c_str(),
+                              publishApkPath,
+                              std::filesystem::copy_options::overwrite_existing,
+                              ec);
+        if (returnLoggingError())
+        {
+          return;
+        }
 
         // Tell user about where the location of output files is
         GetLogger()->WriteConsole(LogType::Success, "Building for ANDROID has been completed successfully.");
@@ -230,31 +322,62 @@ namespace ToolKit
 
       // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
       g_app->ExecSysCommand("gradlew assemble", false, true, afterBuildFn);
+      // TODO handle return value
 
-      std::filesystem::current_path(workDir); // set work directory back
+      std::filesystem::current_path(workDir, ec); // set work directory back
+      if (returnLoggingError())
+      {
+        return;
+      }
     }
 
     void WebPublisher::Publish() const
     {
-      // Pak project
-      g_app->PackResources();
+      Path workDir = std::filesystem::current_path();
 
-      // Warning: Running batch files are Windows specific
-      Path workDir         = std::filesystem::current_path();
-
-      auto exitWithErrorFn = [&workDir](const char* msg) -> void
+      std::error_code ec;
+      auto returnLoggingError = [&ec, &workDir](bool setPathBack = false, const char* msg = nullptr) -> bool
       {
-        GetLogger()->WriteConsole(LogType::Error, msg);
-        std::filesystem::current_path(workDir);
+        bool ret     = false;
+        bool setback = setPathBack;
+        if (ec)
+        {
+          if (msg != nullptr)
+          {
+            TK_ERR("%s", msg);
+          }
+
+          setback = true;
+          ret     = true;
+        }
+
+        if (setback)
+        {
+          std::filesystem::current_path(workDir, ec);
+          if (ec)
+          {
+            TK_ERR("%s", ec.message().c_str());
+            TK_ERR("%s", "******** PLEASE RESTART THE EDITOR ********");
+          }
+
+          ret = true;
+        }
+
+        return ret;
       };
 
+      // Run toolkit compile script
       Path newWorkDir(ConcatPaths({"..", "BuildScripts"}));
-      std::filesystem::current_path(newWorkDir);
-      int toolKitCompileResult =
-          g_app->ExecSysCommand(ConcatPaths({"..", "BuildScripts", "WebBuildRelease.bat"}).c_str(), false, true);
+      std::filesystem::current_path(newWorkDir, ec);
+      if (returnLoggingError())
+      {
+        return;
+      }
+
+      int toolKitCompileResult = g_app->ExecSysCommand("WinBuildRelease.bat", false, true);
       if (toolKitCompileResult != 0)
       {
-        exitWithErrorFn("ToolKit could not be compiled!");
+        returnLoggingError(true, "ToolKit could not be compiled!");
         return;
       }
       newWorkDir                               = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
@@ -262,14 +385,23 @@ namespace ToolKit
       const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Web", "WebBuildRelease.bat"});
 
       // Run scripts
-      std::filesystem::current_path(newWorkDir);
+      std::filesystem::current_path(newWorkDir, ec);
+      if (returnLoggingError())
+      {
+        return;
+      }
+
       int pluginCompileResult = g_app->ExecSysCommand(pluginWebBuildScriptsFolder.c_str(), false, true);
       if (pluginCompileResult != 0)
       {
-        exitWithErrorFn("Plugin could not be compiled!");
+        returnLoggingError(true, "Plugin could not be compiled!");
         return;
       }
-      std::filesystem::current_path(workDir);
+      std::filesystem::current_path(workDir, ec);
+      if (returnLoggingError())
+      {
+        return;
+      }
 
       // Move files to a directory
       String projectName           = g_app->m_workspace.GetActiveProject().name;
@@ -278,11 +410,23 @@ namespace ToolKit
       String firstPart =
           ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".";
       String files[] = {firstPart + "data", firstPart + "html", firstPart + "js", firstPart + "wasm"};
-      
-      std::filesystem::create_directories(publishDirectory);
+
+      std::filesystem::create_directories(publishDirectory, ec);
+      if (returnLoggingError())
+      {
+        return;
+      }
+
       for (int i = 0; i < ArraySize(files); i++)
       {
-        std::filesystem::copy(files[i].c_str(), publishDirectory, std::filesystem::copy_options::overwrite_existing);
+        std::filesystem::copy(files[i].c_str(),
+                              publishDirectory,
+                              std::filesystem::copy_options::overwrite_existing,
+                              ec);
+        if (returnLoggingError())
+        {
+          return;
+        }
       }
 
       // Create run script
@@ -290,7 +434,11 @@ namespace ToolKit
       runBatchFile << "emrun ./" + projectName + ".html";
       runBatchFile.close();
 
-      std::filesystem::current_path(workDir);
+      std::filesystem::current_path(workDir, ec);
+      if (returnLoggingError())
+      {
+        return;
+      }
 
       // Output user about where are the output files
       GetLogger()->WriteConsole(LogType::Success, "Building for web has been completed successfully.");
