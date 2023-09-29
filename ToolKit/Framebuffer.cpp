@@ -121,7 +121,7 @@ namespace ToolKit
     GLenum attachment = dt->m_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
 
     // Attach depth buffer to FBO
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, dt->m_textureId, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, dt->m_textureId);
 
     // Check if framebuffer is complete
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -238,9 +238,7 @@ namespace ToolKit
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
     GLenum check = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-#ifndef __ANDROID__ // TODO This will be gone after fixing rendering to mipmap levels for ibl specular
     assert(check == GL_FRAMEBUFFER_COMPLETE && "Framebuffer incomplete");
-#endif
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 
@@ -257,7 +255,7 @@ namespace ToolKit
     GLenum attachment = m_settings.depthStencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
 
     // Detach depth buffer from FBO
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, 0);
 
     if (m_settings.useDefaultDepth)
     {

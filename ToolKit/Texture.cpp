@@ -209,18 +209,11 @@ namespace ToolKit
     m_height    = height;
     m_stencil   = stencil;
 
-    GLint currId;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
-
-    glGenTextures(1, &m_textureId);
-    glBindTexture(GL_TEXTURE_2D, m_textureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glBindTexture(GL_TEXTURE_2D, currId);
+    // Create a default depth, depth-stencil buffer
+    glGenRenderbuffers(1, &m_textureId);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_textureId);
+    GLenum component = stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT24;
+    glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
   }
 
   void DepthTexture::UnInit()
@@ -229,7 +222,7 @@ namespace ToolKit
     {
       return;
     }
-    glDeleteTextures(1, &m_textureId);
+    glDeleteRenderbuffers(1, &m_textureId);
 
     m_textureId = 0;
   }
