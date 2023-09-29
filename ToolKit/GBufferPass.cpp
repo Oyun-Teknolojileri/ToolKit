@@ -63,7 +63,6 @@ namespace ToolKit
     // Note: A32 is not used, it didn't work on Android devices when we bind it to frame buffer
     m_gLinearDepthRt = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
-
     gBufferRenderTargetSettings.InternalFormat      = GraphicTypes::FormatRG16F;
     gBufferRenderTargetSettings.Format              = GraphicTypes::FormatRG;
 
@@ -177,7 +176,10 @@ namespace ToolKit
     renderer->SetCameraLens(m_params.Camera);
   }
 
-  void GBufferPass::PostRender() { Pass::PostRender(); }
+  void GBufferPass::PostRender()
+  {
+    Pass::PostRender(); 
+  }
 
   void GBufferPass::Render()
   {
