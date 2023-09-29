@@ -1,14 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
-
-include_directories(
-	"${CMAKE_SOURCE_DIR}/ToolKit"
-	"${CMAKE_SOURCE_DIR}/Dependency"
-	"${CMAKE_SOURCE_DIR}/Dependency/glad"
-	"${CMAKE_SOURCE_DIR}/Dependency/mini_audio/"
-	"${CMAKE_SOURCE_DIR}/Dependency/RapidXml"
-	"${CMAKE_SOURCE_DIR}/Dependency/stb"
-	"${CMAKE_SOURCE_DIR}/Dependency/zlib-1.2.12/dist/include"
-)
+cmake_minimum_required(VERSION 3.21.0)
 
 if (CLANG_COMPILER)
 	add_definitions(-include stdafx.h)
@@ -29,30 +19,44 @@ if(MSVC_COMPILER)
 	add_compile_options(/D_CRT_SECURE_NO_WARNINGS)
 endif()
 
+include_directories(
+	"${CMAKE_SOURCE_DIR}/ToolKit"
+	"${CMAKE_SOURCE_DIR}/Dependency"
+	"${CMAKE_SOURCE_DIR}/Dependency/glad"
+	"${CMAKE_SOURCE_DIR}/Dependency/mini_audio/"
+	"${CMAKE_SOURCE_DIR}/Dependency/RapidXml"
+	"${CMAKE_SOURCE_DIR}/Dependency/stb"
+	"${CMAKE_SOURCE_DIR}/Dependency/zlib-1.2.12/dist/include"
+)
+
 file(GLOB SOURCES "${CMAKE_SOURCE_DIR}/ToolKit/*.cpp")
+
+link_directories("${CMAKE_SOURCE_DIR}/Dependency/zlib-1.2.12/dist/lib")
+
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TK_CXX_FLAGS}")
-
 set(CMAKE_DEBUG_POSTFIX _d)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
-	add_library(ToolKit STATIC ${SOURCES})
-endif ()
-
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-	link_directories("${CMAKE_SOURCE_DIR}/Dependency/Glew/lib/Release/x64")
-	link_directories("${CMAKE_SOURCE_DIR}/Dependency/zlib-1.2.12/dist/lib")
-	add_definitions(-DTK_DLL_EXPORT)
-
-	add_library(ToolKit SHARED ${SOURCES})
-
-	target_link_libraries(ToolKit zlibstatic minizip)
-	target_link_libraries(ToolKit OpenGL32)
+	message("Release configuration")
+	set(TK_LIB_TYPE STATIC)
+elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+	message("Debug configuration")
+	set(TK_LIB_TYPE SHARED)
+	if (NOT ${WEB_BUILD})
+		set(TK_LINK_LIB zlibstatic minizip OpenGL32)
+		add_definitions(-DTK_DLL_EXPORT)
+	endif()
+	add_definitions(-DTK_DEBUG)
 endif ()
 
 if (${WEB_BUILD})
-	add_library(ToolKit STATIC ${SOURCES})
-endif ()
+	message("Building for web")
+	set(TK_LIB_TYPE STATIC)
+endif()
+
+add_library(ToolKit ${SOURCES})
+target_link_libraries(ToolKit ${TK_LINK_LIB})
 
 set_target_properties(ToolKit PROPERTIES
 		ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
