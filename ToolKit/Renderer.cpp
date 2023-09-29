@@ -203,11 +203,6 @@ namespace ToolKit
     Mesh* mesh = job.Mesh;
     activateSkinning(mesh->IsSkinned());
 
-    if (mesh->m_vertexCount == 0)
-    {
-      return;
-    }
-
     RenderState* rs = m_mat->GetRenderState();
     SetRenderState(rs);
     FeedUniforms(prg);
