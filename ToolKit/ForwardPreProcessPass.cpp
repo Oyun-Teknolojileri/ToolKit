@@ -89,6 +89,7 @@ namespace ToolKit
 
     using FAttachment                 = Framebuffer::Attachment;
 
+    m_framebuffer->ClearAttachments();
     m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_params.gLinearRt);
     m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_params.gNormalRt);
     m_framebuffer->AttachDepthTexture(m_params.gFrameBuffer->GetDepthTexture());

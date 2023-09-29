@@ -32,10 +32,10 @@
 #include "Logger.h"
 #include "Material.h"
 #include "RenderSystem.h"
+#include "RendererGlobals.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
 #include "ToolKit.h"
-#include "RendererGlobals.h"
 
 #include "DebugNew.h"
 
@@ -209,11 +209,18 @@ namespace ToolKit
     m_height    = height;
     m_stencil   = stencil;
 
-    // Create a default depth, depth-stencil buffer
-    glGenRenderbuffers(1, &m_textureId);
-    glBindRenderbuffer(GL_RENDERBUFFER, m_textureId);
-    GLenum component = stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT24;
-    glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
+    GLint currId;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
+
+    glGenTextures(1, &m_textureId);
+    glBindTexture(GL_TEXTURE_2D, m_textureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(GL_TEXTURE_2D, currId);
   }
 
   void DepthTexture::UnInit()
@@ -222,7 +229,8 @@ namespace ToolKit
     {
       return;
     }
-    glDeleteRenderbuffers(1, &m_textureId);
+    glDeleteTextures(1, &m_textureId);
+
     m_textureId = 0;
   }
 
@@ -432,9 +440,9 @@ namespace ToolKit
           const int specularEnvMapSize = m_specularIBLTextureSize;
           // Pre-filtered and mip mapped environment map
           m_specularEnvMap             = renderer->GenerateSpecularEnvMap(m_cubemap,
-                                                                 specularEnvMapSize,
-                                                                 specularEnvMapSize,
-                                                                 Renderer::RHIConstants::specularIBLLods);
+                                                              specularEnvMapSize,
+                                                              specularEnvMapSize,
+                                                              Renderer::RHIConstants::specularIBLLods);
 
           // Pre-compute BRDF lut
           if (!GetTextureManager()->Exist(TK_BRDF_LUT_TEXTURE))
@@ -467,9 +475,9 @@ namespace ToolKit
           }
 
           // Generate diffuse irradience cubemap images
-          m_diffuseEnvMap     = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
+          m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
 
-          m_initiated         = true;
+          m_initiated     = true;
         }};
 
     GetRenderSystem()->AddRenderTask(task);
