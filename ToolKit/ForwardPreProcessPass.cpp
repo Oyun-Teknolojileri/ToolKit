@@ -24,6 +24,8 @@
  * SOFTWARE.
  */
 
+// Purpose of this pass is exporting forward depths and normals before SSAO pass
+
 #include "ForwardPreProcessPass.h"
 
 #include "Shader.h"
@@ -39,6 +41,9 @@ namespace ToolKit
 
     m_framebuffer            = MakeNewPtr<Framebuffer>();
     m_linearMaterial         = MakeNewPtr<Material>();
+    m_normalRt               = MakeNewPtr<RenderTarget>();
+    m_linearDepthRt          = MakeNewPtr<RenderTarget>();
+
     m_linearMaterial->m_vertexShader   = vertexShader;
     m_linearMaterial->m_fragmentShader = fragmentShader;
     m_linearMaterial->Init();
@@ -49,6 +54,9 @@ namespace ToolKit
   void ForwardPreProcess::Render()
   {
     Renderer* renderer                      = GetRenderer();
+    // copy normal and linear depth from gbuffer to this
+    renderer->CopyTexture(m_params.gNormalRt, m_normalRt);
+    renderer->CopyTexture(m_params.gLinearRt, m_linearDepthRt);
 
     const auto renderLinearDepthAndNormalFn = [this, renderer](RenderJobArray& renderJobArray)
     {
@@ -68,7 +76,9 @@ namespace ToolKit
     };
 
     renderLinearDepthAndNormalFn(m_params.OpaqueJobs);
-    renderLinearDepthAndNormalFn(m_params.TranslucentJobs);
+    // currently transparent objects are not rendered to export screen space normals or linear depth
+    // we want SSAO and DOF to effect on opaque objects only
+    // renderLinearDepthAndNormalFn(m_params.TranslucentJobs); 
   }
 
   void ForwardPreProcess::PreRender()
@@ -79,18 +89,24 @@ namespace ToolKit
     uint height = (uint) m_params.gLinearRt->m_height;
 
     m_framebuffer->Init({width, height, false, false});
-
+    
     RenderTargetSettigs oneChannelSet = {};
     oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
     oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGB32F;
-    oneChannelSet.Format              = GraphicTypes::FormatRGB;
+    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGBA16F;
+    oneChannelSet.Format              = GraphicTypes::FormatRGBA;
     oneChannelSet.Type                = GraphicTypes::TypeFloat;
+    
+    m_normalRt->m_settings            = oneChannelSet;
+    m_normalRt->ReconstructIfNeeded(width, height);
+    
+    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGBA32F;
+    m_linearDepthRt->m_settings       = oneChannelSet;
+    m_linearDepthRt->ReconstructIfNeeded(width, height);
 
     using FAttachment                 = Framebuffer::Attachment;
-
-    m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_params.gLinearRt);
-    m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_params.gNormalRt);
+    m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
+    m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_normalRt);
     m_framebuffer->AttachDepthTexture(m_params.gFrameBuffer->GetDepthTexture());
 
     Renderer* renderer = GetRenderer();
