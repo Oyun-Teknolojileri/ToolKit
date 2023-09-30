@@ -83,7 +83,7 @@ namespace ToolKit
 
     // Gbuffer for deferred render
     m_passArray.push_back(m_gBufferPass);
-
+    
     m_passArray.push_back(m_forwardPreProcessPass);
 
     // SSAO pass
@@ -118,6 +118,7 @@ namespace ToolKit
     {
       m_passArray.push_back(m_bloomPass);
     }
+
     if (m_params.Gfx.DepthOfFieldEnabled)
     {
       m_passArray.push_back(m_dofPass);
@@ -211,8 +212,8 @@ namespace ToolKit
     m_lightingPass->m_params.AOTexture                = m_params.Gfx.SSAOEnabled ? m_ssaoPass->m_ssaoTexture : nullptr;
 
     m_ssaoPass->m_params.GPositionBuffer              = m_gBufferPass->m_gPosRt;
-    m_ssaoPass->m_params.GNormalBuffer                = m_gBufferPass->m_gNormalRt;
-    m_ssaoPass->m_params.GLinearDepthBuffer           = m_gBufferPass->m_gLinearDepthRt;
+    m_ssaoPass->m_params.GNormalBuffer                = m_forwardPreProcessPass->m_normalRt;
+    m_ssaoPass->m_params.GLinearDepthBuffer           = m_forwardPreProcessPass->m_linearDepthRt;
     m_ssaoPass->m_params.Cam                          = m_params.Cam;
     m_ssaoPass->m_params.Radius                       = m_params.Gfx.SSAORadius;
     m_ssaoPass->m_params.spread                       = m_params.Gfx.SSAOSpread;
@@ -239,7 +240,7 @@ namespace ToolKit
 
     // DoF pass
     m_dofPass->m_params.ColorRt    = m_params.MainFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
-    m_dofPass->m_params.DepthRt    = m_gBufferPass->m_gLinearDepthRt;
+    m_dofPass->m_params.DepthRt    = m_forwardPreProcessPass->m_linearDepthRt;
     m_dofPass->m_params.focusPoint = m_params.Gfx.FocusPoint;
     m_dofPass->m_params.focusScale = m_params.Gfx.FocusScale;
     m_dofPass->m_params.blurQuality     = m_params.Gfx.DofQuality;

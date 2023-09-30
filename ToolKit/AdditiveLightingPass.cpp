@@ -264,13 +264,9 @@ namespace ToolKit
       RenderSubPass(m_fullQuadPass);
     }
 
-    // swap depth texture of gbuffer and this. because main depth buffer is empty now
-    // and we need depth buffer for mesh lights
-    DepthTexturePtr mainDepth = m_params.MainFramebuffer->GetDepthTexture();
-    m_params.MainFramebuffer->AttachDepthTexture(m_params.GBufferFramebuffer->GetDepthTexture());
+    renderer->CopyFrameBuffer(m_params.GBufferFramebuffer, m_params.MainFramebuffer, GraphicBitFields::DepthBits);
     // we need to use gbuffers depth in this pass in order to make proper depth test
-    m_lightingFrameBuffer->AttachDepthTexture(m_params.GBufferFramebuffer->GetDepthTexture());
-    m_params.GBufferFramebuffer->AttachDepthTexture(mainDepth);
+    renderer->CopyFrameBuffer(m_params.GBufferFramebuffer, m_lightingFrameBuffer, GraphicBitFields::DepthBits);
 
     m_lightingShader->SetShaderParameter("isScreenSpace", ParameterVariant(0));
     renderer->EnableDepthWrite(false);

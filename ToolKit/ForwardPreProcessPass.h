@@ -47,6 +47,9 @@ namespace ToolKit
     ForwardRenderPassParams m_params;
     MaterialPtr m_linearMaterial = nullptr;
     FramebufferPtr m_framebuffer = nullptr;
+    
+    RenderTargetPtr m_normalRt      = nullptr;
+    RenderTargetPtr m_linearDepthRt = nullptr;
   };
 
   typedef std::shared_ptr<ForwardPreProcess> ForwardPreProcessPassPtr;
