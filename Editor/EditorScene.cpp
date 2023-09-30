@@ -338,6 +338,16 @@ namespace ToolKit
     void EditorScene::Destroy(bool removeResources)
     {
       ActionManager::GetInstance()->ClearAllActions();
+
+      // If current scene getting destroyed, clear outliner.
+      if (GetSceneManager()->GetCurrentScene()->IsSame(this))
+      {
+        if (OutlinerWindow* wnd = g_app->GetOutliner())
+        {
+          wnd->ClearOutliner();
+        }
+      }
+
       Scene::Destroy(removeResources);
 
       m_selectedEntities.clear();
