@@ -340,11 +340,14 @@ namespace ToolKit
       ActionManager::GetInstance()->ClearAllActions();
 
       // If current scene getting destroyed, clear outliner.
-      if (GetSceneManager()->GetCurrentScene()->IsSame(this))
+      if (ScenePtr curr = GetSceneManager()->GetCurrentScene())
       {
-        if (OutlinerWindow* wnd = g_app->GetOutliner())
+        if (curr->IsSame(this))
         {
-          wnd->ClearOutliner();
+          if (OutlinerWindow* wnd = g_app->GetOutliner())
+          {
+            wnd->ClearOutliner();
+          }
         }
       }
 
