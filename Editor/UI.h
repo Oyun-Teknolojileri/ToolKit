@@ -147,16 +147,21 @@ namespace ToolKit
 
       // Custom widgets.
       static bool ButtonDecorless(StringView text, const Vec2& size, bool flipImage);
-
       static bool ImageButtonDecorless(uint textureID, const Vec2& size, bool flipImage);
       static bool ToggleButton(uint textureID, const Vec2& size, bool pushState);
       static bool ToggleButton(const String& text, const Vec2& size, bool pushState);
       static bool BeginCenteredTextButton(const String& text, const String& id = "");
       static void EndCenteredTextButton();
       static void CenteredText(const String& text);
-      //!< returns FontAwesome string (icon) from any given entity type
-      static String EntityTypeToIcon(TKClass* Class);
+
+      /**
+       * Returns a font / icon for Entity classes.
+       * @Class is the Class type to query font for.
+       * @return FontAwesome string (icon) from any given entity class.
+       */
+      static String EntityTypeToIcon(TKClass* Class); //!< Returns
       static void ShowEntityTreeNodeContent(EntityPtr ntt);
+
       /**
        * Can be used to see if ui is using the keyboard for input. Most likely
        * usage is to check if user typing text to an input field.
@@ -199,6 +204,8 @@ namespace ToolKit
 
       // Some actions needed to be run after ui rendered.
       static std::vector<std::function<void()>> m_postponedActions;
+
+      // TODO: Volatile window serves this purpose. This one is not needed, merge them.
       static std::vector<TempWindow*> m_tempWindows;
 
       // Toolbar Icons.
