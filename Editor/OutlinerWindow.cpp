@@ -60,19 +60,19 @@ namespace ToolKit
 
     void DrawTreeNodeLine(int numNodes, ImVec2 rectMin)
     {
-      float line_height    = GetLineHeight();
-      float halfHeight     = line_height * 0.5f;
+      float line_height     = GetLineHeight();
+      float halfHeight      = line_height * 0.5f;
 
-      ImVec2 cursorPos     = ImGui::GetCursorScreenPos();
+      ImVec2 cursorPos      = ImGui::GetCursorScreenPos();
       // -11 align line with arrow
-      rectMin.x            = cursorPos.x - 11.0f;
+      rectMin.x             = cursorPos.x - 11.0f;
       rectMin.y            += halfHeight;
 
-      float bottom         = rectMin.y + (numNodes * line_height);
+      float bottom          = rectMin.y + (numNodes * line_height);
       bottom               -= (halfHeight + 1.0f); // move up a little
 
-      ImDrawList* drawList = ImGui::GetWindowDrawList();
-      const ImColor color  = ImGui::GetColorU32(ImGuiCol_Text);
+      ImDrawList* drawList  = ImGui::GetWindowDrawList();
+      const ImColor color   = ImGui::GetColorU32(ImGuiCol_Text);
       drawList->AddLine(rectMin, ImVec2(rectMin.x, bottom), color);
       // a little bulge at the end of the line
       drawList->AddLine(ImVec2(rectMin.x, bottom), ImVec2(rectMin.x + 5.0f, bottom), color);
@@ -90,7 +90,7 @@ namespace ToolKit
         while (parent != nullptr)
         {
           parentsOrSelfOpen |= m_shownEntities.count(parent->m_entity) > 0;
-          parent            = parent->m_parent;
+          parent             = parent->m_parent;
         }
 
         if (!parentsOrSelfOpen)
@@ -622,6 +622,17 @@ namespace ToolKit
       GetParents(ntt, m_nttFocusPath);
     }
 
+    void OutlinerWindow::ClearOutliner()
+    {
+      m_nttFocusPath.clear();
+      m_shownEntities.clear();
+      m_indexToEntity.clear();
+      m_draggingEntities.clear();
+      m_roots.clear();
+      m_lastClickedEntity = nullptr;
+      m_rootsParent       = nullptr;
+    }
+
     bool OutlinerWindow::DrawRootHeader(const String& rootName, uint id, ImGuiTreeNodeFlags flags, TexturePtr icon)
     {
       const String sId = "##" + std::to_string(id);
@@ -711,22 +722,22 @@ namespace ToolKit
       float depths[] = // last two of the offsets are not adjusted well enough
           {18.0f, 30.0f, 51.0f, 71.0f, 96.0f, 115.0f, 140.0f, 155.0f};
 
-      ImRect workRect       = ImGui::GetCurrentWindow()->WorkRect;
-      float x1              = workRect.Min.x + depths[depth];
-      float x2              = workRect.Max.x;
-      float item_spacing_y  = ImGui::GetStyle().ItemSpacing.y;
-      float item_offset_y   = -item_spacing_y * 0.5f;
-      float line_height     = ImGui::GetTextLineHeight() + item_spacing_y;
-      float y0              = ImGui::GetCursorScreenPos().y + (float) item_offset_y;
+      ImRect workRect        = ImGui::GetCurrentWindow()->WorkRect;
+      float x1               = workRect.Min.x + depths[depth];
+      float x2               = workRect.Max.x;
+      float item_spacing_y   = ImGui::GetStyle().ItemSpacing.y;
+      float item_offset_y    = -item_spacing_y * 0.5f;
+      float line_height      = ImGui::GetTextLineHeight() + item_spacing_y;
+      float y0               = ImGui::GetCursorScreenPos().y + (float) item_offset_y;
 
-      ImDrawList* draw_list = ImGui::GetWindowDrawList();
-      ImGuiStyle& style     = ImGui::GetStyle();
-      ImVec4 v4Color        = style.Colors[ImGuiCol_TabHovered];
+      ImDrawList* draw_list  = ImGui::GetWindowDrawList();
+      ImGuiStyle& style      = ImGui::GetStyle();
+      ImVec4 v4Color         = style.Colors[ImGuiCol_TabHovered];
       v4Color.x             *= 0.62f;
       v4Color.y             *= 0.62f;
       v4Color.z             *= 0.62f;
       // if odd black otherwise given color
-      ImU32 col             = ImGui::ColorConvertFloat4ToU32(v4Color) * (odd++ & 1);
+      ImU32 col              = ImGui::ColorConvertFloat4ToU32(v4Color) * (odd++ & 1);
 
       if (col == 0)
       {

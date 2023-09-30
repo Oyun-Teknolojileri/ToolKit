@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.21.0)
 
 set(PROJECT_NAME "__projectname__" CACHE STRING "What is the project name ?")
 set(TOOLKIT_DIR "__tkdir__" CACHE FILEPATH "Where is the ToolKit source directory ?")
@@ -13,29 +13,32 @@ endif()
 if("${TOOLKIT_DIR}" STREQUAL "__tkdir__")
 	if(DEFINED ENV{APPDATA})
 		cmake_path(SET CFG_FILE_PATH "$ENV{APPDATA}/ToolKit/Config/Path.txt")
-    if(NOT EXISTS ${CFG_FILE_PATH})
-      message(SEND_ERROR "Set TOOLKIT_DIR or provide ${CFG_FILE_PATH} containing path to ToolKit.")
-    else()
-		  file(STRINGS ${CFG_FILE_PATH} TOOLKIT_DIR)
-    endif()
+		if(NOT EXISTS ${CFG_FILE_PATH})
+		  message(SEND_ERROR "Set TOOLKIT_DIR or provide ${CFG_FILE_PATH} containing path to ToolKit.")
+		else()
+			  file(STRINGS ${CFG_FILE_PATH} TOOLKIT_DIR)
+		endif()
 	endif()
 endif()
 
 project (${PROJECT_NAME})
 
+string(TOLOWER ${CMAKE_CXX_COMPILER_ID} TK_COMPILER)
+message("Compiling with ${TK_COMPILER}")
+
 # Check if the compiler is Clang
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+if (${TK_COMPILER} STREQUAL "clang")
     set(CLANG_COMPILER TRUE)
-else ()
+else()
     set(CLANG_COMPILER FALSE)
-endif ()
+endif()
 
 # Check if the compiler is MSVC
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
-  set(MSVC_COMPILER TRUE)
-else ()
-  set(MSVC_COMPILER FALSE)
-endif ()
+if (${TK_COMPILER} STREQUAL "msvc")
+    set(MSVC_COMPILER TRUE)
+else()
+    set(MSVC_COMPILER FALSE)
+endif()
 
 if(NOT EXISTS ${TOOLKIT_DIR}/ToolKit/ToolKit.h)
 	message(SEND_ERROR "Can't find ToolKit.h in ${TOOLKIT_DIR}")
@@ -151,7 +154,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH})
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>)
 
-#For hotreload rename the previous output
+#For hot reload rename the previous output
 if (NOT ${WEB_BUILD} OR NOT ${WIN_BUILD})
   set(DLL $<SHELL_PATH:$<TARGET_FILE:${PROJECT_NAME}>>)
   set(PDB $<SHELL_PATH:$<TARGET_PDB_FILE:${PROJECT_NAME}>>)

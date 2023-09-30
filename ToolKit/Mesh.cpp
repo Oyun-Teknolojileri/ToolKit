@@ -317,10 +317,8 @@ namespace ToolKit
   void Mesh::SetMaterial(MaterialPtr material)
   {
     m_material = material;
-    m_material->Init(false);
+    m_material->Init();
     m_dirty = true;
-    Save(true);
-    m_dirty = false;
   }
 
   template <typename T>

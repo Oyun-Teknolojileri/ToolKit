@@ -41,19 +41,13 @@ namespace ToolKit
                                                                                                                        \
  public:                                                                                                               \
   virtual TKClass* const Class() const;                                                                                \
-  static TKClass* const StaticClass()                                                                                  \
-  {                                                                                                                    \
-    return &This##Cls;                                                                                                 \
-  }
+  static TKClass* const StaticClass() { return &This##Cls; }
 
 #define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Object::NativeConstruct;
 
 #define TKDefineClass(This, Base)                                                                                      \
   TKClass This::This##Cls = {Base::StaticClass(), #This};                                                              \
-  TKClass* const This::Class() const                                                                                   \
-  {                                                                                                                    \
-    return &This##Cls;                                                                                                 \
-  }
+  TKClass* const This::Class() const { return &This##Cls; }
 
   typedef std::shared_ptr<class Object> TKObjectPtr;
 
@@ -84,6 +78,10 @@ namespace ToolKit
 
       return nullptr;
     }
+
+    bool IsSame(TKObjectPtr other) { return other->GetIdVal() == GetIdVal(); }
+
+    bool IsSame(Object* other) { return other->GetIdVal() == GetIdVal(); }
 
    protected:
     virtual void ParameterConstructor();

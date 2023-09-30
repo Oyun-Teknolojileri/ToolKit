@@ -26,16 +26,18 @@
 
 #pragma once
 
-#ifndef SKIP_TK_DEBUG_NEW
-  #ifdef TK_DEBUG
-    #define _CRTDBG_MAP_ALLOC
-    #include <crtdbg.h>
+#ifdef _MSC_VER
+  #ifndef SKIP_TK_DEBUG_NEW
+    #ifdef TK_DEBUG
+      #define _CRTDBG_MAP_ALLOC
+      #include <crtdbg.h>
 
-    #include <cstdlib>
-    #define TK_DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
-  #endif
+      #include <cstdlib>
+      #define TK_DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
+    #endif
 
-  #if defined TK_DEBUG_NEW
-    #define new TK_DEBUG_NEW
+    #if defined TK_DEBUG_NEW
+      #define new TK_DEBUG_NEW
+    #endif
   #endif
 #endif
