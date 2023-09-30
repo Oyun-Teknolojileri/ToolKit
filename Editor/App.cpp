@@ -367,39 +367,61 @@ namespace ToolKit
       }
 
       // copy template folder to new workspace
-      RecursiveCopyDirectory("../Template", fullPath, {".filters", ".vcxproj", ".user", ".cxx"});
-
-      // todo add windows
+      RecursiveCopyDirectory(ConcatPaths({"..", "Template"}), fullPath, {".filters", ".vcxproj", ".user", ".cxx"});
 
       // Update cmake.
       String currentPath = std::filesystem::current_path().parent_path().u8string();
-      UnixifyPath(currentPath);
+      String cmakePath   = ConcatPaths({fullPath, "Codes", "CMakeLists.txt"});
+      UnixifyPath(cmakePath);
 
-      String cmakePath = ConcatPaths({fullPath, "Codes", "CMakeLists.txt"});
-      std::fstream cmakelist;
-      cmakelist.open(cmakePath, std::ios::in);
-      if (cmakelist.is_open())
+      std::fstream fileEditStream;
+      auto overrideContentFn = [&fileEditStream](const String& filePath, const String& content) -> void
+      {
+        // Override the content.
+        fileEditStream.open(filePath, std::ios::out | std::ios::trunc);
+        if (fileEditStream.is_open())
+        {
+          fileEditStream << content;
+          fileEditStream.close();
+        }
+      };
+
+      fileEditStream.open(cmakePath, std::ios::in);
+      if (fileEditStream.is_open())
       {
         std::stringstream buffer;
-        buffer << cmakelist.rdbuf();
+        buffer << fileEditStream.rdbuf();
         String content = buffer.str();
         ReplaceFirstStringInPlace(content, "__projectname__", name);
-        cmakelist.close();
+        fileEditStream.close();
 
-        // Override the content.
-        cmakelist.open(cmakePath, std::ios::out | std::ios::trunc);
-        if (cmakelist.is_open())
-        {
-          cmakelist << content;
-          cmakelist.close();
-        }
+        overrideContentFn(cmakePath, content);
       }
 
-      // Create config/engine.settings
+      // update vs code includes.
+      String cppPropertiesPath = ConcatPaths({fullPath, "Codes", ".vscode", "c_cpp_properties.json"});
+      UnixifyPath(cppPropertiesPath);
 
-      // Create main file for web build
+      fileEditStream.open(cppPropertiesPath, std::ios::in);
+      if (fileEditStream.is_open())
+      {
+        std::stringstream buffer;
+        buffer << fileEditStream.rdbuf();
+        String content = buffer.str();
 
-      // Create bin/shell_minimal.html for web build
+        String tkRoot  = std::filesystem::absolute(currentPath).u8string();
+        String tkPath  = ConcatPaths({tkRoot, "ToolKit"});
+        UnixifyPath(tkPath);
+        String depPath = ConcatPaths({tkRoot, "Dependency"});
+        UnixifyPath(depPath);
+
+        String replacement = "\"" + tkPath + "\",\n" + "\t\t\t\t\"" + depPath + "\"";
+
+        ReplaceFirstStringInPlace(content, "__tk_includes__", replacement);
+        fileEditStream.close();
+
+        overrideContentFn(cppPropertiesPath, content);
+      }
 
       OpenProject({name, ""});
     }
@@ -549,8 +571,8 @@ namespace ToolKit
       }
       else
       {
-        BoundingBox defaultBBox = {Vec3(-1.0f), Vec3(1.0f)};
-        Vec3 pos                = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        BoundingBox defaultBBox  = {Vec3(-1.0f), Vec3(1.0f)};
+        Vec3 pos                 = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         defaultBBox.max         += pos;
         defaultBBox.min         += pos;
         cam->FocusToBoundingBox(defaultBBox, 1.1f);
@@ -770,7 +792,7 @@ namespace ToolKit
           cmd    += "\" -s " + std::to_string(UI::ImportData.Scale);
 
           // Execute command
-          result = ExecSysCommand(cmd.c_str(), false, false);
+          result  = ExecSysCommand(cmd.c_str(), false, false);
           if (result != 0)
           {
             GetLogger()->WriteConsole(LogType::Error, "Import failed!");

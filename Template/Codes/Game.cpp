@@ -42,12 +42,7 @@ namespace ToolKit
     g_game = this;
   }
 
-  void Game::Destroy()
-  {
-    delete this;
-  }
+  void Game::Destroy() { delete this; }
 
-  void Game::Frame(float deltaTime, class Viewport* viewport)
-  {
-  }
+  void Game::Frame(float deltaTime, Viewport* viewport) {}
 } // namespace ToolKit
