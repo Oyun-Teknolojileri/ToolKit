@@ -238,9 +238,7 @@ namespace ToolKit
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
     GLenum check = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-#ifndef __ANDROID__ // TODO This will be gone after fixing rendering to mipmap levels for ibl specular
     assert(check == GL_FRAMEBUFFER_COMPLETE && "Framebuffer incomplete");
-#endif
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 

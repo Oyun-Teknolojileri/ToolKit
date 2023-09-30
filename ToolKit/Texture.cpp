@@ -32,10 +32,10 @@
 #include "Logger.h"
 #include "Material.h"
 #include "RenderSystem.h"
+#include "RendererGlobals.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
 #include "ToolKit.h"
-#include "RendererGlobals.h"
 
 #include "DebugNew.h"
 
@@ -223,6 +223,7 @@ namespace ToolKit
       return;
     }
     glDeleteRenderbuffers(1, &m_textureId);
+
     m_textureId = 0;
   }
 
@@ -432,9 +433,9 @@ namespace ToolKit
           const int specularEnvMapSize = m_specularIBLTextureSize;
           // Pre-filtered and mip mapped environment map
           m_specularEnvMap             = renderer->GenerateSpecularEnvMap(m_cubemap,
-                                                                 specularEnvMapSize,
-                                                                 specularEnvMapSize,
-                                                                 Renderer::RHIConstants::specularIBLLods);
+                                                              specularEnvMapSize,
+                                                              specularEnvMapSize,
+                                                              Renderer::RHIConstants::specularIBLLods);
 
           // Pre-compute BRDF lut
           if (!GetTextureManager()->Exist(TK_BRDF_LUT_TEXTURE))
@@ -467,9 +468,9 @@ namespace ToolKit
           }
 
           // Generate diffuse irradience cubemap images
-          m_diffuseEnvMap     = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
+          m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
 
-          m_initiated         = true;
+          m_initiated     = true;
         }};
 
     GetRenderSystem()->AddRenderTask(task);

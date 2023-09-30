@@ -82,8 +82,8 @@ namespace ToolKit
       parentMesh->UnInit();
 
       // Billboard
-      Quad quad;
-      MeshPtr meshPtr    = quad.GetMeshComponent()->GetMeshVal();
+      QuadPtr quad = MakeNewPtr<Quad>();
+      MeshPtr meshPtr    = quad->GetMeshComponent()->GetMeshVal();
       MaterialPtr matPtr = GetMaterialManager()->GetCopyOfUnlitMaterial();
       matPtr->UnInit();
       matPtr->m_diffuseTexture =
@@ -92,29 +92,24 @@ namespace ToolKit
       matPtr->GetRenderState()->alphaMaskTreshold = 0.1f;
       matPtr->Init();
       meshPtr->m_material = matPtr;
+      meshPtr->Init();
       parentMesh->m_subMeshes.push_back(meshPtr);
 
       // Lines
       VertexArray vertices;
-      vertices.resize(12);
+      vertices.resize(8);
 
-      vertices[0].pos.z                       = -0.3f;
-      vertices[1].pos.z                       = -0.7f;
+      vertices[0].pos.x                       = 0.2f;
+      vertices[1].pos.x                       = 0.5f;
 
-      vertices[2].pos.z                       = 0.3f;
-      vertices[3].pos.z                       = 0.7f;
+      vertices[2].pos.x                       = -0.2f;
+      vertices[3].pos.x                       = -0.5f;
 
-      vertices[4].pos.x                       = 0.3f;
-      vertices[5].pos.x                       = 0.7f;
+      vertices[4].pos.y                       = 0.2f;
+      vertices[5].pos.y                       = 0.5f;
 
-      vertices[6].pos.x                       = -0.3f;
-      vertices[7].pos.x                       = -0.7f;
-
-      vertices[8].pos.y                       = 0.3f;
-      vertices[9].pos.y                       = 0.7f;
-
-      vertices[10].pos.y                      = -0.3f;
-      vertices[11].pos.y                      = -0.7f;
+      vertices[6].pos.y                      = -0.2f;
+      vertices[7].pos.y                      = -0.5f;
 
       MaterialPtr newMaterial                 = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       newMaterial->m_color                    = Vec3(0.1f, 0.1f, 0.1f);
@@ -122,6 +117,8 @@ namespace ToolKit
 
       parentMesh->m_clientSideVertices        = vertices;
       parentMesh->m_material                  = newMaterial;
+
+      parentMesh->Init();
 
       parentMesh->CalculateAABB();
     }
