@@ -208,7 +208,7 @@ namespace ToolKit
               // root folders different we should switch active folder
               m_activeFolder = selected;
 
-              for (int i : GetVeiws())
+              for (int i : GetViews())
               {
                 FolderView& v = m_entries[i];
                 if (!v.m_currRoot)
@@ -308,7 +308,7 @@ namespace ToolKit
       ImGui::PopID();
     }
 
-    IntArray FolderWindow::GetVeiws()
+    IntArray FolderWindow::GetViews()
     {
       String currRootPath;
       auto IsDescendentFn = [&currRootPath](StringView candidate) -> bool
@@ -368,7 +368,7 @@ namespace ToolKit
                                ImGuiTabBarFlags_NoTooltip | ImGuiTabBarFlags_AutoSelectNewTabs |
                                    ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar))
         {
-          for (int i : GetVeiws())
+          for (int i : GetViews())
           {
             m_entries[i].Show();
           }

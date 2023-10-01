@@ -43,27 +43,18 @@
 
 namespace ToolKit
 {
-  OutlinePass* myOutlineTechnique          = nullptr;
-  Editor::EditorRenderer* myEditorRenderer = nullptr;
-
   namespace Editor
   {
+
     App::App(int windowWidth, int windowHeight)
     {
       m_cursor           = nullptr;
       RenderSystem* rsys = GetRenderSystem();
       rsys->SetAppWindowSize((uint) windowWidth, (uint) windowHeight);
-      m_statusMsg      = "OK";
-
-      myEditorRenderer = new EditorRenderer();
+      m_statusMsg = "OK";
     }
 
-    App::~App()
-    {
-      Destroy();
-      SafeDel(myEditorRenderer);
-      SafeDel(myOutlineTechnique);
-    }
+    App::~App() { Destroy(); }
 
     void App::Init()
     {
@@ -222,10 +213,10 @@ namespace ToolKit
                                                 GetUIManager()->UpdateLayers(deltaTime, viewport);
                                               }
 
-                                              myEditorRenderer->m_params.App      = g_app;
-                                              myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
-                                              myEditorRenderer->m_params.Viewport = viewport;
-                                              myEditorRenderer->Render(renderer);
+                                              m_editorRenderer->m_params.App      = g_app;
+                                              m_editorRenderer->m_params.LitMode  = m_sceneLightingMode;
+                                              m_editorRenderer->m_params.Viewport = viewport;
+                                              m_editorRenderer->Render(renderer);
                                             }});
         }
       }
@@ -467,14 +458,11 @@ namespace ToolKit
 
       if (mod == GameMod::Stop)
       {
-        GetRenderSystem()->FlushRenderTasks();
-        GetPluginManager()->UnloadGamePlugin();
+
         m_statusMsg = "Game is stopped";
         m_gameMod   = mod;
+        ClearPlayInEditorSession();
 
-        // Set the editor scene back.
-        GetCurrentScene()->Reload();
-        GetCurrentScene()->Init();
         m_simulationWindow->SetVisibility(false);
         m_sceneLightingMode = EditorLitMode::EditorLit;
       }
@@ -576,6 +564,44 @@ namespace ToolKit
         defaultBBox.max         += pos;
         defaultBBox.min         += pos;
         cam->FocusToBoundingBox(defaultBBox, 1.1f);
+      }
+    }
+
+    void App::ClearPlayInEditorSession()
+    {
+      // Clear qued render tasks.
+      GetRenderSystem()->FlushRenderTasks();
+
+      // Clear all the references from the scene about to be destroyed.
+      if (OutlinerWindow* wnd = GetOutliner())
+      {
+        wnd->ClearOutliner();
+      }
+
+      // Destroy pie scene.
+      String sceneFile;
+      EditorSceneManager* esm = (EditorSceneManager*) GetSceneManager();
+      if (ScenePtr scene = esm->GetCurrentScene())
+      {
+        sceneFile = scene->GetFile();
+        esm->Remove(sceneFile);
+        scene->Destroy(false);
+        esm->SetCurrentScene(nullptr);
+      }
+
+      // Kill all the references in the renderer.
+      m_editorRenderer = MakeNewPtr<EditorRenderer>();
+
+      // Kill the plugin. At this point if anything from the dll remains in the editor,
+      // it causes a crash.
+      GetPluginManager()->UnloadGamePlugin();
+
+      // Set the editor scene back.
+      if (!sceneFile.empty())
+      {
+        EditorScenePtr scene = esm->Create<EditorScene>(sceneFile);
+        scene->Init();
+        esm->SetCurrentScene(scene);
       }
     }
 
@@ -1395,10 +1421,11 @@ namespace ToolKit
     void App::CreateEditorEntities()
     {
       // Create editor objects.
-      m_cursor = MakeNewPtr<Cursor>();
-      m_origin = MakeNewPtr<Axis3d>();
+      m_editorRenderer = MakeNewPtr<EditorRenderer>();
+      m_cursor         = MakeNewPtr<Cursor>();
+      m_origin         = MakeNewPtr<Axis3d>();
 
-      m_grid   = MakeNewPtr<Grid>();
+      m_grid           = MakeNewPtr<Grid>();
       m_grid->Resize(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0);
 
       m_2dGrid         = MakeNewPtr<Grid>();
