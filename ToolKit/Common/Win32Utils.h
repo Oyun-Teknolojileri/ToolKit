@@ -30,8 +30,6 @@
   #define NOMINMAX
   #define WIN32_LEAN_AND_MEAN
   #include <Windows.h>
-  #include <atlstr.h>
-  #include <fileapi.h>
   #include <shellapi.h>
   #include <strsafe.h>
 
@@ -39,58 +37,7 @@
   #include <thread>
 
   // ToolKit collisions
-  #undef near
-  #undef far
   #undef WriteConsole
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// *** Routines to convert between Unicode UTF-8 and Unicode UTF-16 ***
-//
-// By Giovanni Dicanio <giovanni.dicanio AT gmail.com>
-//
-// Last update: 2010, January 2nd
-//
-//
-// These routines use ::MultiByteToWideChar and ::WideCharToMultiByte
-// Win32 API functions to convert between Unicode UTF-8 and UTF-16.
-//
-// UTF-16 strings are stored in instances of CStringW.
-// UTF-8 strings are stored in instances of CStringA.
-//
-// On error, the conversion routines use AtlThrow to signal the
-// error condition.
-//
-// If input string pointers are NULL, empty strings are returned.
-//
-//
-// Prefixes used in these routines:
-// --------------------------------
-//
-//  - cch  : count of characters (CHAR's or WCHAR's)
-//  - cb   : count of bytes
-//  - psz  : pointer to a NUL-terminated string (CHAR* or WCHAR*)
-//  - str  : instance of CString(A/W) class
-//
-//
-//
-// Useful Web References:
-// ----------------------
-//
-// WideCharToMultiByte Function
-// http://msdn.microsoft.com/en-us/library/dd374130.aspx
-//
-// MultiByteToWideChar Function
-// http://msdn.microsoft.com/en-us/library/dd319072.aspx
-//
-// AtlThrow
-// http://msdn.microsoft.com/en-us/library/z325eyx0.aspx
-//
-//
-// Developed on VC9 (Visual Studio 2008 SP1)
-//
-//
-//////////////////////////////////////////////////////////////////////////////
 
 namespace ToolKit
 {
@@ -99,180 +46,35 @@ namespace ToolKit
     namespace UTF8Util
     {
 
-      //----------------------------------------------------------------------------
-      // FUNCTION: ConvertUTF8ToUTF16
-      // DESC: Converts Unicode UTF-8 text to Unicode UTF-16 (Windows default).
-      //----------------------------------------------------------------------------
-      CStringW ConvertUTF8ToUTF16(const __in CHAR* pszTextUTF8)
+      // Function to convert UTF-8 to UTF-16
+      std::wstring ConvertUTF8ToUTF16(const std::string& utf8String)
       {
-        //
-        // Special case of NULL or empty input string
-        //
-        if ((pszTextUTF8 == NULL) || (*pszTextUTF8 == '\0'))
+        // Calculate the length of the UTF-16 string
+        int utf16Length = MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), -1, NULL, 0);
+
+        if (utf16Length == 0)
         {
-          // Return empty string
-          return L"";
+          throw std::runtime_error("Error calculating UTF-16 string length");
         }
 
-        //
-        // Consider CHAR's count corresponding to total input string length,
-        // including end-of-string (\0) character
-        //
-        const size_t cchUTF8Max = INT_MAX - 1;
-        size_t cchUTF8;
-        HRESULT hr = ::StringCchLengthA(pszTextUTF8, cchUTF8Max, &cchUTF8);
-        if (FAILED(hr))
+        // Allocate memory for the UTF-16 string
+        wchar_t* utf16String = new wchar_t[utf16Length];
+
+        // Convert UTF-8 to UTF-16
+        if (MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), -1, utf16String, utf16Length) == 0)
         {
-          AtlThrow(hr);
+          delete[] utf16String;
+          throw std::runtime_error("Error converting UTF-8 to UTF-16");
         }
 
-        // Consider also terminating \0
-        ++cchUTF8;
+        // Create a wstring from the UTF-16 string
+        std::wstring result(utf16String);
 
-        // Convert to 'int' for use with MultiByteToWideChar API
-        int cbUTF8   = static_cast<int>(cchUTF8);
+        // Clean up
+        delete[] utf16String;
 
-        //
-        // Get size of destination UTF-16 buffer, in WCHAR's
-        //
-        int cchUTF16 = ::MultiByteToWideChar(CP_UTF8,              // convert from UTF-8
-                                             MB_ERR_INVALID_CHARS, // error on invalid chars
-                                             pszTextUTF8,          // source UTF-8 string
-                                             cbUTF8,               // total length of source UTF-8 string,
-                                                                   // in CHAR's (= bytes), including end-of-string \0
-                                             NULL,                 // unused - no conversion done in this step
-                                             0                     // request size of destination buffer, in WCHAR's
-        );
-        ATLASSERT(cchUTF16 != 0);
-        if (cchUTF16 == 0)
-        {
-          AtlThrowLastWin32();
-        }
-
-        //
-        // Allocate destination buffer to store UTF-16 string
-        //
-        CStringW strUTF16;
-        WCHAR* pszUTF16 = strUTF16.GetBuffer(cchUTF16);
-
-        //
-        // Do the conversion from UTF-8 to UTF-16
-        //
-        int result      = ::MultiByteToWideChar(CP_UTF8,              // convert from UTF-8
-                                           MB_ERR_INVALID_CHARS, // error on invalid chars
-                                           pszTextUTF8,          // source UTF-8 string
-                                           cbUTF8,               // total length of source UTF-8 string,
-                                                                 // in CHAR's (= bytes), including end-of-string \0
-                                           pszUTF16,             // destination buffer
-                                           cchUTF16              // size of destination buffer, in WCHAR's
-        );
-        ATLASSERT(result != 0);
-        if (result == 0)
-        {
-          AtlThrowLastWin32();
-        }
-
-        // Release internal CString buffer
-        strUTF16.ReleaseBuffer();
-
-        // Return resulting UTF16 string
-        return strUTF16;
+        return result;
       }
-
-      //----------------------------------------------------------------------------
-      // FUNCTION: ConvertUTF16ToUTF8
-      // DESC: Converts Unicode UTF-16 (Windows default) text to Unicode UTF-8.
-      //----------------------------------------------------------------------------
-      CStringA ConvertUTF16ToUTF8(const __in WCHAR* pszTextUTF16)
-      {
-        //
-        // Special case of NULL or empty input string
-        //
-        if ((pszTextUTF16 == NULL) || (*pszTextUTF16 == L'\0'))
-        {
-          // Return empty string
-          return "";
-        }
-
-        //
-        // Consider WCHAR's count corresponding to total input string length,
-        // including end-of-string (L'\0') character.
-        //
-        const size_t cchUTF16Max = INT_MAX - 1;
-        size_t cchUTF16;
-        HRESULT hr = ::StringCchLengthW(pszTextUTF16, cchUTF16Max, &cchUTF16);
-        if (FAILED(hr))
-        {
-          AtlThrow(hr);
-        }
-
-        // Consider also terminating \0
-        ++cchUTF16;
-
-        //
-        // WC_ERR_INVALID_CHARS flag is set to fail if invalid input character
-        // is encountered.
-        // This flag is supported on Windows Vista and later.
-        // Don't use it on Windows XP and previous.
-        //
-  #if (WINVER >= 0x0600)
-        DWORD dwConversionFlags = WC_ERR_INVALID_CHARS;
-  #else
-        DWORD dwConversionFlags = 0;
-  #endif
-
-        //
-        // Get size of destination UTF-8 buffer, in CHAR's (= bytes)
-        //
-        int cbUTF8 = ::WideCharToMultiByte(CP_UTF8,                    // convert to UTF-8
-                                           dwConversionFlags,          // specify conversion behavior
-                                           pszTextUTF16,               // source UTF-16 string
-                                           static_cast<int>(cchUTF16), // total source string length, in
-                                                                       // WCHAR's, including end-of-string \0
-                                           NULL,                       // unused - no conversion required in this step
-                                           0,                          // request buffer size
-                                           NULL,
-                                           NULL // unused
-        );
-        ATLASSERT(cbUTF8 != 0);
-        if (cbUTF8 == 0)
-        {
-          AtlThrowLastWin32();
-        }
-
-        //
-        // Allocate destination buffer for UTF-8 string
-        //
-        CStringA strUTF8;
-        int cchUTF8   = cbUTF8; // sizeof(CHAR) = 1 byte
-        CHAR* pszUTF8 = strUTF8.GetBuffer(cchUTF8);
-
-        //
-        // Do the conversion from UTF-16 to UTF-8
-        //
-        int result    = ::WideCharToMultiByte(CP_UTF8,                    // convert to UTF-8
-                                           dwConversionFlags,          // specify conversion behavior
-                                           pszTextUTF16,               // source UTF-16 string
-                                           static_cast<int>(cchUTF16), // total source string length, in
-                                                                       // WCHAR's, including end-of-string \0
-                                           pszUTF8,                    // destination buffer
-                                           cbUTF8,                     // destination buffer size, in bytes
-                                           NULL,
-                                           NULL // unused
-        );
-        ATLASSERT(result != 0);
-        if (result == 0)
-        {
-          AtlThrowLastWin32();
-        }
-
-        // Release internal CString buffer
-        strUTF8.ReleaseBuffer();
-
-        // Return resulting UTF-8 string
-        return strUTF8;
-      }
-
     } // namespace UTF8Util
 
     // Win32 console command execution callback.
@@ -289,19 +91,19 @@ namespace ToolKit
 
       ZeroMemory(&pi, sizeof(pi));
 
-      CStringW wCmd = UTF8Util::ConvertUTF8ToUTF16("cmd /C ") + UTF8Util::ConvertUTF8ToUTF16(cmd.data());
+      std::wstring wCmd = UTF8Util::ConvertUTF8ToUTF16("cmd /C ") + UTF8Util::ConvertUTF8ToUTF16(cmd.data());
 
       // Start the child process.
-      if (!CreateProcessW(NULL,             // No module name (use command line)
-                          wCmd.GetBuffer(), // Command line
-                          NULL,             // Process handle not inheritable
-                          NULL,             // Thread handle not inheritable
-                          FALSE,            // Set handle inheritance to FALSE
-                          0,                // No creation flags
-                          NULL,             // Use parent's environment block
-                          NULL,             // Use parent's starting directory
-                          &si,              // Pointer to STARTUPINFO structure
-                          &pi)              // Pointer to PROCESS_INFORMATION structure
+      if (!CreateProcessW(NULL,        // No module name (use command line)
+                          wCmd.data(), // Command line
+                          NULL,        // Process handle not inheritable
+                          NULL,        // Thread handle not inheritable
+                          FALSE,       // Set handle inheritance to FALSE
+                          0,           // No creation flags
+                          NULL,        // Use parent's environment block
+                          NULL,        // Use parent's starting directory
+                          &si,         // Pointer to STARTUPINFO structure
+                          &pi)         // Pointer to PROCESS_INFORMATION structure
       )
       {
         DWORD errCode = GetLastError();
@@ -309,7 +111,6 @@ namespace ToolKit
         return (int) errCode;
       }
 
-      wCmd.ReleaseBuffer();
       SetForegroundWindow((HWND) pi.hProcess);
 
       auto finalizeFn = [pi, callback](DWORD stat) -> int
@@ -384,15 +185,16 @@ namespace ToolKit
 
       // concat log type name and log string
       _snprintf(szOutputBuff, sizeof(szOutputBuff), "%s %s\n", logNames[logType], szBuff);
-      CStringW wOutput = UTF8Util::ConvertUTF8ToUTF16(szOutputBuff);
+      std::wstring wOutput = UTF8Util::ConvertUTF8ToUTF16(szOutputBuff);
 
-      OutputDebugStringW(wOutput);
+      OutputDebugStringW(wOutput.data());
     }
 
     void OpenExplorer(const StringView utf8Path)
     {
-      CStringW utf16Path = UTF8Util::ConvertUTF8ToUTF16(utf8Path.data());
-      HINSTANCE result   = ShellExecuteW(GetActiveWindow(), L"open", L"explorer.exe", utf16Path, NULL, SW_SHOWNORMAL);
+      std::wstring utf16Path = UTF8Util::ConvertUTF8ToUTF16(utf8Path.data());
+      HINSTANCE result =
+          ShellExecuteW(GetActiveWindow(), L"open", L"explorer.exe", utf16Path.data(), NULL, SW_SHOWNORMAL);
 
       // Check the result of ShellExecute
       if ((intptr_t) result <= 32)
@@ -404,11 +206,10 @@ namespace ToolKit
 
     String GetCreationTime(const String& fullPath)
     {
-      CStringW wFile = UTF8Util::ConvertUTF8ToUTF16(fullPath.c_str());
+      std::wstring wFile = UTF8Util::ConvertUTF8ToUTF16(fullPath.c_str());
 
       WIN32_FILE_ATTRIBUTE_DATA attrData;
-      GetFileAttributesExW(wFile.GetBuffer(), GetFileExInfoStandard, &attrData);
-      wFile.ReleaseBuffer();
+      GetFileAttributesExW(wFile.data(), GetFileExInfoStandard, &attrData);
 
       String time = std::to_string(attrData.ftLastWriteTime.dwHighDateTime) +
                     std::to_string(attrData.ftLastWriteTime.dwLowDateTime);
@@ -418,9 +219,8 @@ namespace ToolKit
 
     void* TKLoadModule(StringView fullPath)
     {
-      CStringW wFile = UTF8Util::ConvertUTF8ToUTF16(fullPath.data());
-      HMODULE module = LoadLibraryW(wFile.GetBuffer());
-      wFile.ReleaseBuffer();
+      std::wstring wFile = UTF8Util::ConvertUTF8ToUTF16(fullPath.data());
+      HMODULE module     = LoadLibraryW(wFile.data());
 
       return (void*) module;
     }

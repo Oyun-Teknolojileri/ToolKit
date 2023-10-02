@@ -159,7 +159,7 @@ namespace ToolKit
 
      private:
       // Returns active root's decendend views (tabs).
-      IntArray GetVeiws();
+      IntArray GetViews();
 
       void ShowFolderTree();
       void DeactivateNode(const String& name);

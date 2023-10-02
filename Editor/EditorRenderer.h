@@ -139,5 +139,7 @@ namespace ToolKit
       EntityPtrArray m_selecteds;
     };
 
+    typedef std::shared_ptr<EditorRenderer> EditorRendererPtr;
+
   } // namespace Editor
 } // namespace ToolKit

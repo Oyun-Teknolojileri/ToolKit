@@ -34,7 +34,6 @@ namespace ToolKit
   struct GBufferPassParams
   {
     RenderJobArray RendeJobs       = {};
-    FramebufferPtr MainFramebuffer = nullptr;
     CameraPtr Camera               = nullptr;
   };
 

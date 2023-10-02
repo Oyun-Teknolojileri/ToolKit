@@ -369,7 +369,7 @@ namespace ToolKit
         return;
       }
 
-      int toolKitCompileResult = g_app->ExecSysCommand("WinBuildRelease.bat", false, true);
+      int toolKitCompileResult = g_app->ExecSysCommand("WebBuildRelease.bat", false, true);
       if (toolKitCompileResult != 0)
       {
         returnLoggingError(true);

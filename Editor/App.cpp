@@ -43,27 +43,18 @@
 
 namespace ToolKit
 {
-  OutlinePass* myOutlineTechnique          = nullptr;
-  Editor::EditorRenderer* myEditorRenderer = nullptr;
-
   namespace Editor
   {
+
     App::App(int windowWidth, int windowHeight)
     {
       m_cursor           = nullptr;
       RenderSystem* rsys = GetRenderSystem();
       rsys->SetAppWindowSize((uint) windowWidth, (uint) windowHeight);
-      m_statusMsg      = "OK";
-
-      myEditorRenderer = new EditorRenderer();
+      m_statusMsg = "OK";
     }
 
-    App::~App()
-    {
-      Destroy();
-      SafeDel(myEditorRenderer);
-      SafeDel(myOutlineTechnique);
-    }
+    App::~App() { Destroy(); }
 
     void App::Init()
     {
@@ -222,10 +213,10 @@ namespace ToolKit
                                                 GetUIManager()->UpdateLayers(deltaTime, viewport);
                                               }
 
-                                              myEditorRenderer->m_params.App      = g_app;
-                                              myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
-                                              myEditorRenderer->m_params.Viewport = viewport;
-                                              myEditorRenderer->Render(renderer);
+                                              m_editorRenderer->m_params.App      = g_app;
+                                              m_editorRenderer->m_params.LitMode  = m_sceneLightingMode;
+                                              m_editorRenderer->m_params.Viewport = viewport;
+                                              m_editorRenderer->Render(renderer);
                                             }});
         }
       }
@@ -367,39 +358,61 @@ namespace ToolKit
       }
 
       // copy template folder to new workspace
-      RecursiveCopyDirectory("../Template", fullPath, {".filters", ".vcxproj", ".user", ".cxx"});
-
-      // todo add windows
+      RecursiveCopyDirectory(ConcatPaths({"..", "Template"}), fullPath, {".filters", ".vcxproj", ".user", ".cxx"});
 
       // Update cmake.
       String currentPath = std::filesystem::current_path().parent_path().u8string();
-      UnixifyPath(currentPath);
+      String cmakePath   = ConcatPaths({fullPath, "Codes", "CMakeLists.txt"});
+      UnixifyPath(cmakePath);
 
-      String cmakePath = ConcatPaths({fullPath, "Codes", "CMakeLists.txt"});
-      std::fstream cmakelist;
-      cmakelist.open(cmakePath, std::ios::in);
-      if (cmakelist.is_open())
+      std::fstream fileEditStream;
+      auto overrideContentFn = [&fileEditStream](const String& filePath, const String& content) -> void
+      {
+        // Override the content.
+        fileEditStream.open(filePath, std::ios::out | std::ios::trunc);
+        if (fileEditStream.is_open())
+        {
+          fileEditStream << content;
+          fileEditStream.close();
+        }
+      };
+
+      fileEditStream.open(cmakePath, std::ios::in);
+      if (fileEditStream.is_open())
       {
         std::stringstream buffer;
-        buffer << cmakelist.rdbuf();
+        buffer << fileEditStream.rdbuf();
         String content = buffer.str();
         ReplaceFirstStringInPlace(content, "__projectname__", name);
-        cmakelist.close();
+        fileEditStream.close();
 
-        // Override the content.
-        cmakelist.open(cmakePath, std::ios::out | std::ios::trunc);
-        if (cmakelist.is_open())
-        {
-          cmakelist << content;
-          cmakelist.close();
-        }
+        overrideContentFn(cmakePath, content);
       }
 
-      // Create config/engine.settings
+      // update vs code includes.
+      String cppPropertiesPath = ConcatPaths({fullPath, "Codes", ".vscode", "c_cpp_properties.json"});
+      UnixifyPath(cppPropertiesPath);
 
-      // Create main file for web build
+      fileEditStream.open(cppPropertiesPath, std::ios::in);
+      if (fileEditStream.is_open())
+      {
+        std::stringstream buffer;
+        buffer << fileEditStream.rdbuf();
+        String content = buffer.str();
 
-      // Create bin/shell_minimal.html for web build
+        String tkRoot  = std::filesystem::absolute(currentPath).u8string();
+        String tkPath  = ConcatPaths({tkRoot, "ToolKit"});
+        UnixifyPath(tkPath);
+        String depPath = ConcatPaths({tkRoot, "Dependency"});
+        UnixifyPath(depPath);
+
+        String replacement = "\"" + tkPath + "\",\n" + "\t\t\t\t\"" + depPath + "\"";
+
+        ReplaceFirstStringInPlace(content, "__tk_includes__", replacement);
+        fileEditStream.close();
+
+        overrideContentFn(cppPropertiesPath, content);
+      }
 
       OpenProject({name, ""});
     }
@@ -445,14 +458,11 @@ namespace ToolKit
 
       if (mod == GameMod::Stop)
       {
-        GetRenderSystem()->FlushRenderTasks();
-        GetPluginManager()->UnloadGamePlugin();
+
         m_statusMsg = "Game is stopped";
         m_gameMod   = mod;
+        ClearPlayInEditorSession();
 
-        // Set the editor scene back.
-        GetCurrentScene()->Reload();
-        GetCurrentScene()->Init();
         m_simulationWindow->SetVisibility(false);
         m_sceneLightingMode = EditorLitMode::EditorLit;
       }
@@ -549,11 +559,49 @@ namespace ToolKit
       }
       else
       {
-        BoundingBox defaultBBox = {Vec3(-1.0f), Vec3(1.0f)};
-        Vec3 pos                = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        BoundingBox defaultBBox  = {Vec3(-1.0f), Vec3(1.0f)};
+        Vec3 pos                 = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         defaultBBox.max         += pos;
         defaultBBox.min         += pos;
         cam->FocusToBoundingBox(defaultBBox, 1.1f);
+      }
+    }
+
+    void App::ClearPlayInEditorSession()
+    {
+      // Clear qued render tasks.
+      GetRenderSystem()->FlushRenderTasks();
+
+      // Clear all the references from the scene about to be destroyed.
+      if (OutlinerWindow* wnd = GetOutliner())
+      {
+        wnd->ClearOutliner();
+      }
+
+      // Destroy pie scene.
+      String sceneFile;
+      EditorSceneManager* esm = (EditorSceneManager*) GetSceneManager();
+      if (ScenePtr scene = esm->GetCurrentScene())
+      {
+        sceneFile = scene->GetFile();
+        esm->Remove(sceneFile);
+        scene->Destroy(false);
+        esm->SetCurrentScene(nullptr);
+      }
+
+      // Kill all the references in the renderer.
+      m_editorRenderer = MakeNewPtr<EditorRenderer>();
+
+      // Kill the plugin. At this point if anything from the dll remains in the editor,
+      // it causes a crash.
+      GetPluginManager()->UnloadGamePlugin();
+
+      // Set the editor scene back.
+      if (!sceneFile.empty())
+      {
+        EditorScenePtr scene = esm->Create<EditorScene>(sceneFile);
+        scene->Init();
+        esm->SetCurrentScene(scene);
       }
     }
 
@@ -770,7 +818,7 @@ namespace ToolKit
           cmd    += "\" -s " + std::to_string(UI::ImportData.Scale);
 
           // Execute command
-          result = ExecSysCommand(cmd.c_str(), false, false);
+          result  = ExecSysCommand(cmd.c_str(), false, false);
           if (result != 0)
           {
             GetLogger()->WriteConsole(LogType::Error, "Import failed!");
@@ -1373,10 +1421,11 @@ namespace ToolKit
     void App::CreateEditorEntities()
     {
       // Create editor objects.
-      m_cursor = MakeNewPtr<Cursor>();
-      m_origin = MakeNewPtr<Axis3d>();
+      m_editorRenderer = MakeNewPtr<EditorRenderer>();
+      m_cursor         = MakeNewPtr<Cursor>();
+      m_origin         = MakeNewPtr<Axis3d>();
 
-      m_grid   = MakeNewPtr<Grid>();
+      m_grid           = MakeNewPtr<Grid>();
       m_grid->Resize(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0);
 
       m_2dGrid         = MakeNewPtr<Grid>();

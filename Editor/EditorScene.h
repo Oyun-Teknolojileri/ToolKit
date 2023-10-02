@@ -122,6 +122,8 @@ namespace ToolKit
       EntityPtrArray m_billboards;
     };
 
+    typedef std::shared_ptr<EditorScene> EditorScenePtr;
+
     class EditorSceneManager : public SceneManager
     {
      public:
@@ -129,8 +131,6 @@ namespace ToolKit
       virtual ~EditorSceneManager();
       ResourcePtr CreateLocal(TKClass* Class) override;
     };
-
-    typedef std::shared_ptr<class EditorScene> EditorScenePtr;
 
   } // namespace Editor
 } // namespace ToolKit

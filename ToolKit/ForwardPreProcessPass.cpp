@@ -105,6 +105,8 @@ namespace ToolKit
     m_linearDepthRt->ReconstructIfNeeded(width, height);
 
     using FAttachment                 = Framebuffer::Attachment;
+
+    m_framebuffer->ClearAttachments();
     m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
     m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_normalRt);
     m_framebuffer->AttachDepthTexture(m_params.gFrameBuffer->GetDepthTexture());

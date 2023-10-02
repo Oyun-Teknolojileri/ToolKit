@@ -75,6 +75,11 @@ namespace ToolKit
       void FocusEntity(EntityPtr entity);
 
       /**
+       * Clears all the objects created in PIE session.
+       */
+      void ClearPlayInEditorSession();
+
+      /**
        * Executes the given system command.
        * @param cmd utf-8 formatted command string to execute.
        * @param async states that if the command will be run async or not.
@@ -196,11 +201,12 @@ namespace ToolKit
       GridPtr m_2dGrid;
       Axis3dPtr m_origin;
       CursorPtr m_cursor;
-      GizmoPtr m_gizmo = nullptr;
+      GizmoPtr m_gizmo;
       AnchorPtr m_anchor;
       EntityPtrArray m_perFrameDebugObjects;
       Arrow2dPtr m_dbgArrow;
       LineBatchPtr m_dbgFrustum;
+      EditorRendererPtr m_editorRenderer;
 
       // Editor states.
       int m_fps                                = 0;

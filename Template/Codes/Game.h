@@ -26,9 +26,9 @@
 
 #pragma once
 
-#include "Plugin.h"
-#include "ToolKit.h"
-#include "Animation.h"
+#include <Plugin.h>
+#include <ToolKit.h>
+#include <Viewport.h>
 
 namespace ToolKit
 {
@@ -36,9 +36,9 @@ namespace ToolKit
   class Game : public GamePlugin
   {
    public:
-    virtual void Init(class Main* master);
+    virtual void Init(Main* master);
     virtual void Destroy();
-    virtual void Frame(float deltaTime, class Viewport* viewport);
+    virtual void Frame(float deltaTime, Viewport* viewport);
 
    private:
   };

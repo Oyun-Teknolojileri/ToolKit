@@ -44,6 +44,7 @@ namespace ToolKit
       Type GetType() const override;
       void DispatchSignals() const override;
       void Focus(EntityPtr ntt);
+      void ClearOutliner();
 
       // moves the entities below m_insertSelectedIndex
       // make sure m_insertSelectedIndex properly defined before calling this
