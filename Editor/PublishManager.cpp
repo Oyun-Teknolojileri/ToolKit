@@ -25,10 +25,18 @@
  */
 
 #include "PublishManager.h"
+#include "FileManager.h"
 
 #include "App.h"
 
 #include "DebugNew.h"
+
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "stb/stb_image_resize.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb/stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb/stb_image_write.h"
 
 namespace ToolKit
 {
@@ -212,6 +220,72 @@ namespace ToolKit
       g_app->m_shellOpenDirFn(publishDirectory);
     }
 
+    void AndroidPublisher::PrepareIcon() const
+    {
+      String assetsPath = "Android/app/src/main/res";
+      NormalizePath(assetsPath);
+      
+      String projectName = g_app->m_workspace.GetActiveProject().name;
+      String resLocation = ConcatPaths({g_app->m_workspace.GetActiveWorkspace(), projectName, assetsPath});
+      if (m_icon == nullptr) 
+      {
+        return;
+      }
+
+      int refWidth, refHeight, refComp;
+      stbi_uc* refImage = stbi_load(m_icon->GetFile().c_str(), &refWidth, &refHeight, &refComp, 0);
+
+      // search each folder in res folder and find icons, replace that icons with new one
+      for (const auto& entry : std::filesystem::directory_iterator(resLocation))
+      {
+        if (!entry.is_directory())
+        {
+          continue;
+        }
+        
+        for (auto& file : std::filesystem::directory_iterator(entry))
+        {
+          String name;
+          String extension;
+          String path = file.path().string();
+          DecomposePath(path, nullptr, &name, &extension);
+          // if this is image replace with new one, don't touch if this is background image
+          if (name.find("background") == std::string::npos && extension == ".png")
+          {
+            int width, height, comp;
+            // get the image that we want to replace
+            stbi_uc* img = stbi_load(path.c_str(), &width, &height, &comp, 0);
+            assert(img && "cannot load android icon");
+            int res;
+            res = stbir_resize_uint8(refImage, refWidth, refHeight, 0, img, width, height, 0, comp);
+            assert(res && "cannot resize android icon");
+            // write resized image
+            res = stbi_write_png(path.c_str(), width, height, comp, img, 0);
+            assert(res && "cannot write to android icon");
+            stbi_image_free(img);
+          }
+        }
+      }
+      stbi_image_free(refImage);
+    }
+
+    void AndroidPublisher::EditAndroidManifest() const
+    {
+      String mainPath = "Android/app/src/main";
+      NormalizePath(mainPath);
+      
+      String projectName = g_app->m_workspace.GetActiveProject().name;
+      String mainLocation = ConcatPaths({g_app->m_workspace.GetActiveWorkspace(), projectName, mainPath}); 
+      String manifestLoc = ConcatPaths({mainLocation, "AndroidManifest.xml"});
+      String androidManifest = GetFileManager()->ReadAllText(ConcatPaths({mainLocation, "AndroidManifest.xml"}));
+    
+      String applicationName = m_appName.empty() ? projectName : m_appName;
+      ReplaceFirstStringInPlace(androidManifest, "@string/app_name", applicationName);
+      ReplaceFirstStringInPlace(androidManifest, "minSdkVersion=\"26\"", "minSdkVersion=\"" + std::to_string(m_minSdk) + "\"");
+      ReplaceFirstStringInPlace(androidManifest, "maxSdkVersion=\"33\"", "maxSdkVersion=\"" + std::to_string(m_maxSdk) + "\"");
+      GetFileManager()->WriteAllText(manifestLoc, androidManifest);
+    }
+
     void AndroidPublisher::Publish() const
     {
       Path workDir = std::filesystem::current_path();
@@ -244,6 +318,7 @@ namespace ToolKit
       };
 
       String projectName = g_app->m_workspace.GetActiveProject().name;
+
       if (projectName.empty())
       {
         GetLogger()->WriteConsole(LogType::Error, "No project is loaded!");
@@ -271,7 +346,10 @@ namespace ToolKit
         return;
       }
 
-      const auto afterBuildFn = [&returnLoggingError, &ec, projectName, projectLocation](int res) -> void
+      PrepareIcon();
+      EditAndroidManifest();
+
+      const auto afterBuildFn = [&](int res) -> void
       {
         if (res == 1)
         {
@@ -282,6 +360,7 @@ namespace ToolKit
         NormalizePath(buildLocation);
         const String publishDirStr  = ConcatPaths({ResourcePath(), "..", "Publish", "Android"});
         const String apkPathStr     = ConcatPaths({buildLocation, "app-release-unsigned.apk"});
+        projectName                 = !m_appName.empty() ? m_appName : projectName;
         const String publishApkPath = ConcatPaths({publishDirStr, projectName + "_release.apk"});
 
         // Create directories

@@ -30,6 +30,7 @@
 #include "App.h"
 #include "Mod.h"
 #include "PopupWindows.h"
+#include "AndroidBuildWindow.h"
 
 #include <Audio.h>
 #include <GradientSky.h>
@@ -53,6 +54,7 @@ namespace ToolKit
     UI::SearchFile UI::SearchFileData;
     WindowRawPtrArray UI::m_volatileWindows;
     std::vector<TempWindow*> UI::m_tempWindows;
+    std::vector<TempWindow*> UI::m_removedTempWindows;
     uint Window::m_baseId = 0; // unused id.
     std::vector<std::function<void()>> UI::m_postponedActions;
 
@@ -106,6 +108,7 @@ namespace ToolKit
     TexturePtr UI::m_packageIcon;
     TexturePtr UI::m_objectDataIcon;
     TexturePtr UI::m_sceneIcon;
+    AndroidBuildWindow* UI::m_androidBuildWindow;
 
     UI::AnchorPresetImages UI::m_anchorPresetIcons;
 
@@ -146,6 +149,8 @@ namespace ToolKit
 
       InitIcons();
       InitTheme();
+      
+      m_androidBuildWindow = new AndroidBuildWindow();
     }
 
     void UI::HeaderText(const char* text)
@@ -161,6 +166,7 @@ namespace ToolKit
 
     void UI::UnInit()
     {
+      delete m_androidBuildWindow;
       for (size_t i = 0; i < m_volatileWindows.size(); i++)
       {
         SafeDel(m_volatileWindows[i]);
@@ -487,7 +493,7 @@ namespace ToolKit
 
     void UI::RemoveTempWindow(TempWindow* window)
     {
-      m_tempWindows.erase(std::find(m_tempWindows.begin(), m_tempWindows.end(), window));
+      m_removedTempWindows.push_back(window);
     }
 
     void UI::ShowUI()
@@ -507,6 +513,12 @@ namespace ToolKit
       {
         wnd->Show();
       }
+
+      erase_if(m_tempWindows, [&](TempWindow* window) -> bool
+               {
+                return contains(m_removedTempWindows, window);
+               });
+      m_removedTempWindows.clear();
 
       if (g_app->m_simulationWindow->IsVisible())
       {
@@ -823,7 +835,7 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Android"))
         {
-          g_app->m_publishManager->Publish(PublishPlatform::Android);
+          m_androidBuildWindow->OpenBuildWindow();
         }
 
         if (ImGui::MenuItem("Windows"))

@@ -1,7 +1,7 @@
-/*
+﻿/*
  * MIT License
  *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazilim
  * https://github.com/Oyun-Teknolojileri
  * https://otyazilim.com/
  *
@@ -25,66 +25,25 @@
  */
 
 #pragma once
+#include "UI.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
-    enum class PublishPlatform
-    {
-      Web,
-      Windows,
-      Linux,
-      Android
-    };
-
-    class Publisher
+    class AndroidBuildWindow : public TempWindow
     {
      public:
-      virtual void Publish() const = 0;
-    };
+      void Show() override;
+      void OpenBuildWindow();
 
-    class WebPublisher : Publisher
-    {
-     public:
-      void Publish() const override;
-    };
-
-    class AndroidPublisher : Publisher
-    {
-    public:
-      void Publish() const override;
-      void PrepareIcon() const;
-      void EditAndroidManifest() const;
-
-    public:
-      TexturePtr m_icon = nullptr;
+      bool m_menuOpen = false;
       String m_appName{};
-      int m_minSdk = 27;
-      int m_maxSdk = 32;
-      
-      enum Oriantation { Landscape, Portrait };
-      Oriantation m_oriantation;
+      int m_minSdk              = 26;
+      int m_maxSdk              = 32;
+      int m_selectedOriantation = 0;
+      TexturePtr m_icon         = nullptr;
+      TexturePtr m_defaultIcon  = nullptr;
     };
-
-    class WindowsPublisher : Publisher
-    {
-    public:
-      void Publish() const override;
-    };
-
-    class PublishManager
-    {
-     public:
-      PublishManager();
-      ~PublishManager();
-
-      void Publish(PublishPlatform platform);
-
-      WebPublisher*     m_webPublisher     = nullptr;
-      AndroidPublisher* m_androidPublisher = nullptr;
-      WindowsPublisher* m_windowsPublisher = nullptr;
-    };
-
   } // namespace Editor
 } // namespace ToolKit
