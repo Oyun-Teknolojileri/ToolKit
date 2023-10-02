@@ -56,6 +56,7 @@ namespace ToolKit
       void Publish() const override;
       void PrepareIcon() const;
       void EditAndroidManifest() const;
+      void RunOnPhone() const;
 
     public:
       TexturePtr m_icon = nullptr;

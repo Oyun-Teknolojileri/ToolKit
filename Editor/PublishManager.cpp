@@ -269,6 +269,37 @@ namespace ToolKit
       stbi_image_free(refImage);
     }
 
+    void AndroidPublisher::RunOnPhone() const
+    {
+#ifdef _DEBUG
+      String apkPath = "Android\\app\\build\\outputs\\apk\\debug\\app-debug.apk";
+#else
+      String apkPath = "Android\\app\\build\\outputs\\apk\\debug\\app-release-unsigned.apk";
+#endif
+      NormalizePath(apkPath);
+      
+      String projectName = g_app->m_workspace.GetActiveProject().name;
+      String apkLocation = ConcatPaths({ g_app->m_workspace.GetActiveWorkspace(), projectName, apkPath });
+      String packageName = "com.otyazilim.toolkit/com.otyazilim.toolkit.MainActivity"; // adb uses / forward slash
+
+      const auto checkIfFailedFn = [](int execResult, String command) -> void
+      {
+        if (execResult == 1)
+        {
+          TK_ERR("%s command failed! compile result: %i", command.c_str(), execResult);
+          TK_ERR("make sure you have installed adb and set the environment path that contains adb.exe ");
+          TK_ERR("lastly uninstall application and rebuild.");
+        }
+      };
+
+      int execResult;
+      execResult = g_app->ExecSysCommand("adb install " + apkLocation, false, true, nullptr);
+      checkIfFailedFn(execResult, "adb install " + apkLocation);
+      
+      execResult = g_app->ExecSysCommand("adb shell am start -n " + packageName, true, true, nullptr);
+      checkIfFailedFn(execResult, "adb shell am start -n " + packageName);
+    }
+
     void AndroidPublisher::EditAndroidManifest() const
     {
       String mainPath = "Android/app/src/main";
@@ -277,7 +308,7 @@ namespace ToolKit
       String projectName = g_app->m_workspace.GetActiveProject().name;
       String mainLocation = ConcatPaths({g_app->m_workspace.GetActiveWorkspace(), projectName, mainPath}); 
       String manifestLoc = ConcatPaths({mainLocation, "AndroidManifest.xml"});
-      String androidManifest = GetFileManager()->ReadAllText(ConcatPaths({mainLocation, "AndroidManifest.xml"}));
+      String androidManifest = GetFileManager()->ReadAllText(manifestLoc);
     
       String applicationName = m_appName.empty() ? projectName : m_appName;
       ReplaceFirstStringInPlace(androidManifest, "@string/app_name", applicationName);
@@ -394,7 +425,11 @@ namespace ToolKit
       g_app->m_statusMsg = "building android apk...";
 
       // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
+#ifdef _DEBUG
+      int compileResult = g_app->ExecSysCommand("gradlew assembleDebug", false, true, afterBuildFn);
+#else
       int compileResult = g_app->ExecSysCommand("gradlew assemble", false, true, afterBuildFn);
+#endif
       if (compileResult != 0)
       {
         returnLoggingError(true);
@@ -403,6 +438,9 @@ namespace ToolKit
       }
 
       std::filesystem::current_path(workDir, ec); // set work directory back
+      
+      RunOnPhone();
+
       if (returnLoggingError())
       {
         return;
