@@ -1,6 +1,8 @@
 #include "MobileSceneRenderPath.h"
 
+#include "Material.h"
 #include "Scene.h"
+#include "Shader.h"
 
 namespace ToolKit
 {
@@ -8,6 +10,7 @@ namespace ToolKit
   {
     m_shadowPass        = MakeNewPtr<ShadowPass>();
     m_forwardRenderPass = MakeNewPtr<ForwardRenderPass>();
+    m_skyPass           = MakeNewPtr<CubeMapPass>();
   }
 
   MobileSceneRenderPath::MobileSceneRenderPath(const MobileSceneRenderPathParams& params) : MobileSceneRenderPath()
@@ -28,13 +31,17 @@ namespace ToolKit
 
     m_passArray.clear();
 
-
-    // Shadow pass
-    m_passArray.push_back(m_shadowPass);
+    renderer->m_sky = m_sky;
 
     renderer->SetShadowAtlas(std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
-    renderer->m_sky = m_sky;
+    if (m_params.ClearFramebuffer)
+    {
+      renderer->ClearFrameBuffer(m_params.MainFramebuffer, {0.0f, 0.0f, 0.0f, 0.0f});
+    }
+
+    m_passArray.push_back(m_shadowPass);
+
     if (m_drawSky)
     {
       m_passArray.push_back(m_skyPass);
@@ -78,10 +85,20 @@ namespace ToolKit
     RenderJobArray opaque, translucent;
     RenderJobProcessor::SeperateOpaqueTranslucent(jobs, opaque, translucent);
 
+    // Set all shaders as forward shader
+    // Tramslucents has already forward shader
+    for (RenderJob& job : opaque)
+    {
+      if (job.Material->m_fragmentShader == GetShaderManager()->GetPbrDefferedShader())
+      {
+        job.Material->m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
+      }
+    }
+
     m_forwardRenderPass->m_params.Lights           = m_updatedLights;
     m_forwardRenderPass->m_params.Cam              = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
-    m_forwardRenderPass->m_params.SSAOEnabled      = m_params.Gfx.SSAOEnabled;
+    m_forwardRenderPass->m_params.SSAOEnabled      = false;//TODO m_params.Gfx.SSAOEnabled;
     m_forwardRenderPass->m_params.ClearFrameBuffer = false;
     m_forwardRenderPass->m_params.OpaqueJobs       = opaque;
     m_forwardRenderPass->m_params.TranslucentJobs  = translucent;

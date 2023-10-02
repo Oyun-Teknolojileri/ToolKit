@@ -246,6 +246,9 @@
     <ClCompile Include="TKOpenGL.cpp">
       <Filter>Source\Render</Filter>
     </ClCompile>
+    <ClCompile Include="MobileSceneRenderPath.cpp">
+      <Filter>Source\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -492,6 +495,9 @@
       <Filter>Source\Render</Filter>
     </ClInclude>
     <ClInclude Include="RendererGlobals.h">
+      <Filter>Source\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="MobileSceneRenderPath.h">
       <Filter>Source\Render</Filter>
     </ClInclude>
   </ItemGroup>
