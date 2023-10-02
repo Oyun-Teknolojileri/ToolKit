@@ -4,13 +4,6 @@
 
 namespace ToolKit::Editor
 {
-  static char appName[128]{};
-  static int minSdk = 26;
-  static int maxSdk = 32;
-  static int selectedOrientation = 0;
-  static TexturePtr icon = nullptr;
-  static TexturePtr defaultIcon = nullptr;
-
   void AndroidBuildWindow::Show()
   {
     ImGuiIO io = ImGui::GetIO();
