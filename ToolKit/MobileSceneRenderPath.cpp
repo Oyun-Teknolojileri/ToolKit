@@ -56,7 +56,7 @@ namespace ToolKit
     PostRender();
   }
 
-  void ToolKit::MobileSceneRenderPath::PreRender(Renderer* renderer) { SetPassParams(); }
+  void MobileSceneRenderPath::PreRender(Renderer* renderer) { SetPassParams(); }
 
   void MobileSceneRenderPath::PostRender() { m_updatedLights.clear(); }
 
@@ -86,9 +86,10 @@ namespace ToolKit
     RenderJobProcessor::SeperateOpaqueTranslucent(jobs, opaque, translucent);
 
     // Set all shaders as forward shader
-    // Tramslucents has already forward shader
+    // Translucents has already forward shader
     for (RenderJob& job : opaque)
     {
+      // Only pbr materials are rendered at deferred shader
       if (job.Material->m_fragmentShader == GetShaderManager()->GetPbrDefferedShader())
       {
         job.Material->m_fragmentShader = GetShaderManager()->GetPbrForwardShader();

@@ -185,6 +185,7 @@ namespace ToolKit
 
   void Material::SetDefaultMaterialTypeShaders()
   {
+    // All PBR opaque materials should be rendered at deferred renderer
     if (IsPBR())
     {
       if (IsTranslucent())
