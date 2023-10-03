@@ -271,35 +271,53 @@ namespace ToolKit
 
     void AndroidPublisher::RunOnPhone() const
     {
+      // adb path is in: 'android-sdk/platform-tools'
+      String sdkPath = String(getenv("ANDROID_HOME"));
+      if (sdkPath.empty())
+      {
+        TK_WRN("ANDROID_HOME environment variable is not set.");
+        return;
+      }
+      Path oldPath = std::filesystem::current_path();
+      std::filesystem::current_path(ConcatPaths({sdkPath, "platform-tools"}));
+      TK_LOG("Trying to execute the app on your phone...");
+
+      const auto checkIfFailedFn = [oldPath](int execResult, const String& command) -> bool
+      {
+        if (execResult == 1)
+        {
+          TK_LOG("Make sure that an android device is connected to your PC");
+          TK_LOG("if still doesn't work uninstall application and rebuild.");
+          TK_LOG("%s command failed! exec result: %i", command.c_str(), execResult);
+          std::filesystem::current_path(oldPath);
+          return true;
+        }
+        return false;
+      };
+
 #ifdef _DEBUG
       String apkPath = "Android\\app\\build\\outputs\\apk\\debug\\app-debug.apk";
 #else
-      String apkPath    = "Android\\app\\build\\outputs\\apk\\debug\\app-release-unsigned.apk";
+      String apkPath = "Android\\app\\build\\outputs\\apk\\debug\\app-release-unsigned.apk";
 #endif
       NormalizePath(apkPath);
       String projectName = g_app->m_workspace.GetActiveProject().name;
       String apkLocation = ConcatPaths({g_app->m_workspace.GetActiveWorkspace(), projectName, apkPath});
       String packageName = "com.otyazilim.toolkit/com.otyazilim.toolkit.MainActivity"; // adb uses / forward slash
 
-      // adb path is in: 'android-sdk/platform-tools'
-      TK_LOG("Trying to execute the app on your phone...");
-      
-      const auto checkIfFailedFn = [](int execResult, String command) -> void
-      {
-        if (execResult == 1)
-        {
-          TK_LOG("make sure you have installed adb and set the environment path that contains adb.exe");
-          TK_LOG("if still doesn't work uninstall application and rebuild.");
-          TK_LOG("%s command failed! exec result: %i", command.c_str(), execResult);
-        }
-      };
-
       int execResult;
       execResult = g_app->ExecSysCommand("adb install " + apkLocation, false, true, nullptr);
-      checkIfFailedFn(execResult, "adb install " + apkLocation);
+      if (checkIfFailedFn(execResult, "adb install " + apkLocation)) 
+      {
+        return;
+      }
 
       execResult = g_app->ExecSysCommand("adb shell am start -n " + packageName, true, true, nullptr);
-      checkIfFailedFn(execResult, "adb shell am start -n " + packageName);
+      if (checkIfFailedFn(execResult, "adb shell am start -n " + packageName))
+      {
+        return;
+      }
+      std::filesystem::current_path(oldPath);
     }
 
     void AndroidPublisher::EditAndroidManifest() const
@@ -319,6 +337,10 @@ namespace ToolKit
       ReplaceFirstStringInPlace(androidManifest,
                                 "maxSdkVersion=\"33\"",
                                 "maxSdkVersion=\"" + std::to_string(m_maxSdk) + "\"");
+      // 0 undefined 1 landscape 2 Portrait
+      String oriantationNames[3] { "fullSensor", "landscape", "portrait" };
+      ReplaceFirstStringInPlace(androidManifest, "screenOrientation=\"portrait\"",
+                                "screenOrientation=\"" + oriantationNames[m_oriantation] + "\"");
 
       String mainLocation = ConcatPaths({g_app->m_workspace.GetActiveWorkspace(), projectName, mainPath});
       String manifestLoc  = ConcatPaths({mainLocation, "AndroidManifest.xml"});
@@ -331,13 +353,13 @@ namespace ToolKit
       Path workDir = std::filesystem::current_path();
 
       std::error_code ec;
-      auto returnLoggingError = [&ec, &workDir](bool setPathBack = false) -> bool
+      auto returnLoggingError = [&ec, &workDir](const String& path = " ", bool setPathBack = false) -> bool
       {
         bool ret     = false;
         bool setback = setPathBack;
         if (ec)
         {
-          TK_ERR("%s", ec.message().c_str());
+          TK_ERR("%s path: %s", ec.message().c_str(), path.c_str());
           setback = true;
           ret     = true;
         }
@@ -379,7 +401,7 @@ namespace ToolKit
       {
         return;
       }
-      
+
       EditAndroidManifest();
 
       std::filesystem::current_path(ConcatPaths({projectLocation, "Android"}), ec);
@@ -436,20 +458,23 @@ namespace ToolKit
 
       // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
       int compileResult  = g_app->ExecSysCommand("gradlew assemble", false, true, afterBuildFn);
-  #ifdef _DEBUG
-      compileResult = g_app->ExecSysCommand("gradlew assembleDebug", false, true, afterBuildFn);
-  #endif
-      
+#ifdef _DEBUG
+      compileResult = g_app->ExecSysCommand("gradlew assembleDebug", false, true, nullptr);
+#endif
+
       if (compileResult != 0)
       {
-        returnLoggingError(true);
+        returnLoggingError("", true);
         TK_ERR("Compiling failed.");
         return;
       }
 
       std::filesystem::current_path(workDir, ec); // set work directory back
 
-      RunOnPhone();
+      if (m_deployAfterBuild)
+      {
+        RunOnPhone();
+      }
 
       if (returnLoggingError())
       {

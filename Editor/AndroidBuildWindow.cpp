@@ -7,12 +7,12 @@ namespace ToolKit::Editor
   void AndroidBuildWindow::Show()
   {
     ImGuiIO io = ImGui::GetIO();
-    ImGui::SetNextWindowSize(ImVec2(400, 250), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(400, 270), ImGuiCond_Once);
     ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
                             ImGuiCond_Once,
                             ImVec2(0.5f, 0.5f));
     
-    ImGui::Begin("Android Build", nullptr);
+    ImGui::Begin("Android Build", nullptr, ImGuiWindowFlags_NoResize);
     
     ImGui::InputText("Name", &m_appName);
     
@@ -39,8 +39,12 @@ namespace ToolKit::Editor
     ImGui::InputInt("Max SDK", &m_maxSdk);
 
     ImGui::Text("Select Orientation:");
-    const char* orientations[] = { "Landscape", "Portrait" };
-    ImGui::Combo("##OrientationCombo", (int*)&m_selectedOriantation, orientations, 2);
+    const char* orientations[] = { "Automatic", "Landscape", "Portrait" };
+    ImGui::Combo("##OrientationCombo", (int*)&m_selectedOriantation, orientations, 3);
+
+    ImGui::Checkbox("Deploy After Build", &m_deployAfterBuild);
+    UI::HelpMarker(TKLoc, "When build finish if this check is true "
+                   "ToolKit will try to run the application on your android device.", 2.0f);
 
     if (ImGui::Button("Cancel"))
     {
@@ -52,13 +56,14 @@ namespace ToolKit::Editor
     
     if (ImGui::Button("Build"))
     {
-      AndroidPublisher* publisher = g_app->m_publishManager->m_androidPublisher;
-      publisher->m_minSdk         = m_minSdk;
-      publisher->m_maxSdk         = m_maxSdk;
-      publisher->m_appName        = m_appName;
-      publisher->m_icon           = m_icon;
+      AndroidPublisher* publisher   = g_app->m_publishManager->m_androidPublisher;
+      publisher->m_minSdk           = m_minSdk;
+      publisher->m_maxSdk           = m_maxSdk;
+      publisher->m_appName          = m_appName;
+      publisher->m_icon             = m_icon;
       publisher->m_oriantation      = (AndroidPublisher::Oriantation)m_selectedOriantation;
-
+      publisher->m_deployAfterBuild = m_deployAfterBuild;
+      
       g_app->m_publishManager->Publish(PublishPlatform::Android);
       UI::RemoveTempWindow(this);
       m_menuOpen = false;

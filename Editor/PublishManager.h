@@ -63,8 +63,9 @@ namespace ToolKit
       String m_appName{};
       int m_minSdk = 27;
       int m_maxSdk = 32;
-      
-      enum Oriantation { Landscape, Portrait };
+      bool m_deployAfterBuild = false;
+
+      enum Oriantation { Undefined, Landscape, Portrait };
       Oriantation m_oriantation;
     };
 

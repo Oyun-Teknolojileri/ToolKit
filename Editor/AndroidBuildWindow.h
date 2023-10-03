@@ -37,13 +37,14 @@ namespace ToolKit
       void Show() override;
       void OpenBuildWindow();
 
-      bool m_menuOpen = false;
       String m_appName{};
       int m_minSdk              = 26;
       int m_maxSdk              = 32;
-      int m_selectedOriantation = 0; // 0 landscape 1 Portrait
+      int m_selectedOriantation = 0; // 0 undefined 1 landscape 2 Portrait
       TexturePtr m_icon         = nullptr;
       TexturePtr m_defaultIcon  = nullptr;
+      bool m_menuOpen = false;
+      bool m_deployAfterBuild = false;
     };
   } // namespace Editor
 } // namespace ToolKit
