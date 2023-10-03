@@ -15,6 +15,7 @@ namespace ToolKit
     m_ssaoPass              = MakeNewPtr<SSAOPass>();
     m_fxaaPass              = MakeNewPtr<FXAAPass>();
     m_bloomPass             = MakeNewPtr<BloomPass>();
+    m_tonemapPass           = MakeNewPtr<TonemapPass>();
   }
 
   MobileSceneRenderPath::MobileSceneRenderPath(const MobileSceneRenderPathParams& params) : MobileSceneRenderPath()
@@ -31,6 +32,7 @@ namespace ToolKit
     m_forwardPreProcessPass = nullptr;
     m_fxaaPass              = nullptr;
     m_bloomPass             = nullptr;
+    m_tonemapPass           = nullptr;
   }
 
   void MobileSceneRenderPath::Render(Renderer* renderer)
@@ -74,6 +76,12 @@ namespace ToolKit
     if (m_params.Gfx.BloomEnabled)
     {
       m_passArray.push_back(m_bloomPass);
+    }
+
+    // Bloom pass
+    if (m_params.Gfx.TonemappingEnabled)
+    {
+      m_passArray.push_back(m_tonemapPass);
     }
 
     // Fxaa pass
@@ -170,6 +178,9 @@ namespace ToolKit
     m_bloomPass->m_params.intensity      = m_params.Gfx.BloomIntensity;
     m_bloomPass->m_params.minThreshold   = m_params.Gfx.BloomThreshold;
     m_bloomPass->m_params.iterationCount = m_params.Gfx.BloomIterationCount;
+
+    m_tonemapPass->m_params.FrameBuffer  = m_params.MainFramebuffer;
+    m_tonemapPass->m_params.Method       = m_params.Gfx.TonemapperMode;
 
     m_fxaaPass->m_params.FrameBuffer     = m_params.MainFramebuffer;
     const FramebufferSettings fbs        = m_params.MainFramebuffer->GetSettings();

@@ -36,6 +36,7 @@
 #include "RenderSystem.h"
 #include "ShadowPass.h"
 #include "SsaoPass.h"
+#include "ToneMapPass.h"
 
 namespace ToolKit
 {
@@ -77,6 +78,7 @@ namespace ToolKit
     SSAOPassPtr m_ssaoPass                           = nullptr;
     FXAAPassPtr m_fxaaPass                           = nullptr;
     BloomPassPtr m_bloomPass                         = nullptr;
+    TonemapPassPtr m_tonemapPass                     = nullptr;
 
     LightPtrArray m_updatedLights;
 
