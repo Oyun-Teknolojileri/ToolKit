@@ -47,21 +47,59 @@ namespace ToolKit
     m_linearMaterial->m_vertexShader   = vertexShader;
     m_linearMaterial->m_fragmentShader = fragmentShader;
     m_linearMaterial->Init();
+
+    RenderTargetSettigs oneChannelSet = {};
+    oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
+    oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
+    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGBA16F;
+    oneChannelSet.Format              = GraphicTypes::FormatRGBA;
+    oneChannelSet.Type                = GraphicTypes::TypeFloat;
+
+    m_normalRt->m_settings            = oneChannelSet;
+
+    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGBA32F;
+    m_linearDepthRt->m_settings       = oneChannelSet;
   }
 
   ForwardPreProcess::~ForwardPreProcess() {}
 
+  void ForwardPreProcess::InitBuffers(uint width, uint height)
+  {
+    m_framebuffer->Init({width, height, false, true});
+    m_framebuffer->ReconstructIfNeeded(width, height);
+    m_normalRt->ReconstructIfNeeded(width, height);
+    m_linearDepthRt->ReconstructIfNeeded(width, height);
+
+    using FAttachment = Framebuffer::Attachment;
+
+    if (m_params.gFrameBuffer)
+    {
+
+      m_framebuffer->ClearAttachments();
+    }
+    else
+    {
+      m_framebuffer->DetachAttachment(FAttachment::ColorAttachment0);
+      m_framebuffer->DetachAttachment(FAttachment::ColorAttachment1);
+    }
+    m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
+    m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_normalRt);
+
+    if (m_params.gFrameBuffer)
+    {
+      m_framebuffer->AttachDepthTexture(m_params.gFrameBuffer->GetDepthTexture());
+    }
+  }
+
   void ForwardPreProcess::Render()
   {
     Renderer* renderer                      = GetRenderer();
-    // copy normal and linear depth from gbuffer to this
-    renderer->CopyTexture(m_params.gNormalRt, m_normalRt);
-    renderer->CopyTexture(m_params.gLinearRt, m_linearDepthRt);
 
     const auto renderLinearDepthAndNormalFn = [this, renderer](RenderJobArray& renderJobArray)
     {
       for (RenderJob& job : renderJobArray)
       {
+
         MaterialPtr activeMaterial    = job.Material;
         RenderState* renderstate      = activeMaterial->GetRenderState();
         BlendFunction beforeBlendFunc = renderstate->blendFunction;
@@ -78,41 +116,27 @@ namespace ToolKit
     renderLinearDepthAndNormalFn(m_params.OpaqueJobs);
     // currently transparent objects are not rendered to export screen space normals or linear depth
     // we want SSAO and DOF to effect on opaque objects only
-    // renderLinearDepthAndNormalFn(m_params.TranslucentJobs); 
+    // renderLinearDepthAndNormalFn(m_params.TranslucentJobs);
   }
 
   void ForwardPreProcess::PreRender()
   {
     RenderPass::PreRender();
 
-    uint width  = (uint) m_params.gLinearRt->m_width;
-    uint height = (uint) m_params.gLinearRt->m_height;
-
-    m_framebuffer->Init({width, height, false, false});
-    
-    RenderTargetSettigs oneChannelSet = {};
-    oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGBA16F;
-    oneChannelSet.Format              = GraphicTypes::FormatRGBA;
-    oneChannelSet.Type                = GraphicTypes::TypeFloat;
-    
-    m_normalRt->m_settings            = oneChannelSet;
-    m_normalRt->ReconstructIfNeeded(width, height);
-    
-    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGBA32F;
-    m_linearDepthRt->m_settings       = oneChannelSet;
-    m_linearDepthRt->ReconstructIfNeeded(width, height);
-
-    using FAttachment                 = Framebuffer::Attachment;
-
-    m_framebuffer->ClearAttachments();
-    m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
-    m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_normalRt);
-    m_framebuffer->AttachDepthTexture(m_params.gFrameBuffer->GetDepthTexture());
-
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_framebuffer, false);
+    if (m_params.gFrameBuffer)
+    {
+      renderer->SetFramebuffer(m_framebuffer, false);
+      // copy normal and linear depth from gbuffer to this
+      renderer->CopyTexture(m_params.gNormalRt, m_normalRt);
+      renderer->CopyTexture(m_params.gLinearRt, m_linearDepthRt);
+    }
+    else
+    {
+      // If no gbuffer, clear the current buffers to render onto
+      GetRenderer()->SetFramebuffer(m_framebuffer, true, {0.0f, 0.0f, 0.0f, 1.0f});
+    }
+
     renderer->SetCameraLens(m_params.Cam);
   }
 

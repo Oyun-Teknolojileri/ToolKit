@@ -81,6 +81,11 @@ namespace ToolKit
   {
     Renderer* renderer = GetRenderer();
 
+    if (m_params.SsaoTexture)
+    {
+      renderer->SetTexture(5, m_params.SsaoTexture->m_textureId);
+    }
+
     for (const RenderJob& job : jobs)
     {
       LightPtrArray lightList = RenderJobProcessor::SortLights(job, lights);

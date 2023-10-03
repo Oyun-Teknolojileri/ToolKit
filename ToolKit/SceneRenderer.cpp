@@ -152,6 +152,9 @@ namespace ToolKit
 
     m_gBufferPass->InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
                                 m_params.MainFramebuffer->GetSettings().height);
+
+    m_forwardPreProcessPass->InitBuffers(m_params.MainFramebuffer->GetSettings().width,
+                                         m_params.MainFramebuffer->GetSettings().height);
   }
 
   void SceneRenderer::PostRender() { m_updatedLights.clear(); }
@@ -198,6 +201,7 @@ namespace ToolKit
     m_forwardRenderPass->m_params.FrameBuffer         = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.gFrameBuffer        = m_gBufferPass->m_framebuffer;
     m_forwardRenderPass->m_params.SSAOEnabled         = m_params.Gfx.SSAOEnabled;
+    m_forwardRenderPass->m_params.SsaoTexture         = m_ssaoPass->m_ssaoTexture;
     m_forwardRenderPass->m_params.ClearFrameBuffer    = false;
     m_forwardRenderPass->m_params.OpaqueJobs          = forward;
     m_forwardRenderPass->m_params.TranslucentJobs     = translucent;
