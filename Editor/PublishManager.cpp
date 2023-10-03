@@ -295,7 +295,7 @@ namespace ToolKit
         return false;
       };
 
-      String apkPath = "Android\\app\\build\\outputs\\apk\\debug";
+      String apkPath = "Android\\app\\build\\outputs\\apk";
       NormalizePath(apkPath);
       apkPath        = ConcatPaths({apkPath, m_isDebugBuild ? "debug" : "release"});
       apkPath        = ConcatPaths({apkPath, m_isDebugBuild ? "app-debug.apk" : "app-release-unsigned.apk"});
