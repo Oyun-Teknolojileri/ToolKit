@@ -256,7 +256,7 @@ namespace ToolKit
 
   void PublishManager::Publish(PublishPlatform platform)
   {
-    // PackResources();
+    PackResources();
 
     if (platform == PublishPlatform::Web)
     {
@@ -429,7 +429,7 @@ namespace ToolKit
     {
       return;
     }
-
+    TK_LOG("Preparing Icons");
     int refWidth, refHeight, refComp;
     stbi_uc* refImage = stbi_load(m_icon->GetFile().c_str(), &refWidth, &refHeight, &refComp, 0);
 
@@ -519,6 +519,7 @@ namespace ToolKit
 
   void AndroidPublisher::EditAndroidManifest() const
   {
+    TK_LOG("Editing Android Manifest");
     String projectName     = activeProjectName;
     String applicationName = m_appName.empty() ? projectName : m_appName;
     String mainPath        = "Android/app/src/main";
@@ -653,7 +654,7 @@ namespace ToolKit
       OpenExplorer(publishDirStr);
     };
 
-    // g_app->m_statusMsg = "building android apk...";
+    TK_LOG("building android apk...");
 
     // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
     String command    = m_isDebugBuild ? "gradlew assembleDebug" : "gradlew assemble";
@@ -859,18 +860,6 @@ namespace ToolKit
       return 1;
     }
 
-    // Send an initial buffer
-    iResult = send(ConnectSocket, sendbuf.c_str(), sendbuf.size(), 0);
-    if (iResult == SOCKET_ERROR)
-    {
-      printf("send failed with error: %d\n", WSAGetLastError());
-      closesocket(ConnectSocket);
-      WSACleanup();
-      return 1;
-    }
-
-    printf("Bytes Sent: %ld\n", iResult);
-
     // Receive until the peer closes the connection
     while (!finished || !messages.empty())
     {
@@ -894,8 +883,6 @@ namespace ToolKit
         WSACleanup();
         return 1;
       }
-      using namespace std::chrono_literals;
-      std::this_thread::sleep_for(1ms);
     }
   end:
   {

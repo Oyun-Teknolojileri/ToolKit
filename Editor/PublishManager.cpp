@@ -212,12 +212,12 @@ namespace ToolKit
     void PublishManager::Publish(PublishPlatform platform)
     {
       HANDLE hThread = CreateThread(nullptr, 0, CreatePipe, nullptr, 0, nullptr);
-      g_app->PackResources();
       String packerPath = "Utils\\Packer\\Packer.exe";
       NormalizePath(packerPath);
       packerPath = std::filesystem::absolute(ConcatPaths({ "..", packerPath})).string();
 
       g_app->ExecSysCommand(packerPath, true, false, nullptr);
+
       return;
     }
 
