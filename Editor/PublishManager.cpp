@@ -426,7 +426,8 @@ namespace ToolKit
         const String apkPathStr     = ConcatPaths({buildLocation, apkName});
 
         projectName                 = !m_appName.empty() ? m_appName : projectName;
-        const String publishApkPath = ConcatPaths({publishDirStr, projectName + "_release.apk"});
+        projectName                 += m_isDebugBuild ? "_debug.apk" : "_release.apk";                 
+        const String publishApkPath = ConcatPaths({publishDirStr, projectName});
 
         // Create directories
         if (!std::filesystem::exists(publishDirStr))
