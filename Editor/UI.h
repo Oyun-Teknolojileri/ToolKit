@@ -207,6 +207,7 @@ namespace ToolKit
 
       // TODO: Volatile window serves this purpose. This one is not needed, merge them.
       static std::vector<TempWindow*> m_tempWindows;
+      static std::vector<TempWindow*> m_removedTempWindows;
 
       // Toolbar Icons.
       static TexturePtr m_selectIcn;
@@ -282,7 +283,8 @@ namespace ToolKit
       };
 
       static AnchorPresetImages m_anchorPresetIcons;
+  
+      static class AndroidBuildWindow* m_androidBuildWindow;
     };
-
   } // namespace Editor
 } // namespace ToolKit

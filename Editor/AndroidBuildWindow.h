@@ -1,7 +1,7 @@
-/*
+﻿/*
  * MIT License
  *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazilim
  * https://github.com/Oyun-Teknolojileri
  * https://otyazilim.com/
  *
@@ -25,69 +25,27 @@
  */
 
 #pragma once
+#include "UI.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
-    enum class PublishPlatform
-    {
-      Web,
-      Windows,
-      Linux,
-      Android
-    };
-
-    class Publisher
+    class AndroidBuildWindow : public TempWindow
     {
      public:
-      virtual void Publish() const = 0;
-    };
+      void Show() override;
+      void OpenBuildWindow();
 
-    class WebPublisher : Publisher
-    {
-     public:
-      void Publish() const override;
-    };
-
-    class AndroidPublisher : Publisher
-    {
-    public:
-      void Publish() const override;
-      void PrepareIcon() const;
-      void EditAndroidManifest() const;
-      void RunOnPhone() const;
-
-    public:
-      TexturePtr m_icon = nullptr;
       String m_appName{};
-      int m_minSdk = 27;
-      int m_maxSdk = 32;
+      int m_minSdk              = 27;
+      int m_maxSdk              = 32;
+      int m_selectedOriantation = 0; // 0 undefined 1 landscape 2 Portrait
+      TexturePtr m_icon         = nullptr;
+      TexturePtr m_defaultIcon  = nullptr;
+      bool m_menuOpen = false;
       bool m_deployAfterBuild = false;
       bool m_isDebugBuild = false;
-
-      enum Oriantation { Undefined, Landscape, Portrait };
-      Oriantation m_oriantation;
     };
-
-    class WindowsPublisher : Publisher
-    {
-    public:
-      void Publish() const override;
-    };
-
-    class PublishManager
-    {
-     public:
-      PublishManager();
-      ~PublishManager();
-
-      void Publish(PublishPlatform platform);
-
-      WebPublisher*     m_webPublisher     = nullptr;
-      AndroidPublisher* m_androidPublisher = nullptr;
-      WindowsPublisher* m_windowsPublisher = nullptr;
-    };
-
   } // namespace Editor
 } // namespace ToolKit

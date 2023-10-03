@@ -171,6 +171,9 @@
     <ClCompile Include="DynamicMenu.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="AndroidBuildWindow.cpp">
+      <Filter>UI\Window</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mod.h">
@@ -304,6 +307,9 @@
     </ClInclude>
     <ClInclude Include="DynamicMenu.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="AndroidBuildWindow.h">
+      <Filter>UI\Window</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

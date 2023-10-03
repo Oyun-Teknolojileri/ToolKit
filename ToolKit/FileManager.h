@@ -55,6 +55,8 @@ namespace ToolKit
     bool CheckFileFromResources(const String& path);
     void GetRelativeResourcesPath(String& path);
     bool CheckPakFile(); //!< Returns true if workspace contains pak file.
+    String ReadAllText(const String& file);
+    void WriteAllText(const String& file, const String& text);
 
    private:
     typedef std::variant<XmlFilePtr, uint8*, float*> FileDataType;
