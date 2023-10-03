@@ -13,6 +13,7 @@ namespace ToolKit
     m_skyPass               = MakeNewPtr<CubeMapPass>();
     m_forwardPreProcessPass = MakeNewPtr<ForwardPreProcess>();
     m_ssaoPass              = MakeNewPtr<SSAOPass>();
+    m_fxaaPass              = MakeNewPtr<FXAAPass>();
   }
 
   MobileSceneRenderPath::MobileSceneRenderPath(const MobileSceneRenderPathParams& params) : MobileSceneRenderPath()
@@ -27,6 +28,7 @@ namespace ToolKit
     m_skyPass               = nullptr;
     m_ssaoPass              = nullptr;
     m_forwardPreProcessPass = nullptr;
+    m_fxaaPass              = nullptr;
   }
 
   void MobileSceneRenderPath::Render(Renderer* renderer)
@@ -65,6 +67,12 @@ namespace ToolKit
 
     // Forward pass
     m_passArray.push_back(m_forwardRenderPass);
+
+    // Fxaa pass
+    if (m_params.Gfx.FXAAEnabled)
+    {
+      m_passArray.push_back(m_fxaaPass);
+    }
 
     RenderPath::Render(renderer);
 
@@ -149,5 +157,9 @@ namespace ToolKit
         m_skyPass->m_params.Material    = m_sky->GetSkyboxMaterial();
       }
     }
+
+    m_fxaaPass->m_params.FrameBuffer = m_params.MainFramebuffer;
+    const FramebufferSettings fbs    = m_params.MainFramebuffer->GetSettings();
+    m_fxaaPass->m_params.screen_size = Vec2(fbs.width, fbs.height);
   }
 } // namespace ToolKit

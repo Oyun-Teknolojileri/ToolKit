@@ -34,6 +34,7 @@
 #include "RenderSystem.h"
 #include "ShadowPass.h"
 #include "SsaoPass.h"
+#include "FxaaPass.h"
 
 namespace ToolKit
 {
@@ -73,6 +74,7 @@ namespace ToolKit
     CubeMapPassPtr m_skyPass                         = nullptr;
     ForwardPreProcessPassPtr m_forwardPreProcessPass = nullptr;
     SSAOPassPtr m_ssaoPass                           = nullptr;
+    FXAAPassPtr m_fxaaPass                           = nullptr;
 
     LightPtrArray m_updatedLights;
 
