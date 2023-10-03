@@ -1,0 +1,7 @@
+﻿  Packer.cpp
+C:\Users\Administrator\source\repos\ToolKit\Packer\Packer.cpp(863,64): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Administrator\source\repos\ToolKit\Packer\Packer.cpp(889,66): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Administrator\source\repos\ToolKit\Packer\Packer.cpp(804,10): warning C4101: 'recvbuf': unreferenced local variable
+C:\Users\Administrator\source\repos\ToolKit\Packer\Packer.cpp(945,35): warning C4309: 'argument': truncation of constant value
+  Packer.vcxproj -> C:\Users\Administrator\source\repos\ToolKit\Utils\Packer\Packer.exe
+          1 file(s) copied.
