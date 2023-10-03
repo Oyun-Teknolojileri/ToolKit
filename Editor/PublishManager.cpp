@@ -297,6 +297,7 @@ namespace ToolKit
 
       String apkPath = "Android\\app\\build\\outputs\\apk\\debug";
       NormalizePath(apkPath);
+      apkPath        = ConcatPaths({apkPath, m_isDebugBuild ? "debug" : "release"});
       apkPath        = ConcatPaths({apkPath, m_isDebugBuild ? "app-debug.apk" : "app-release-unsigned.apk"});
 
       String projectName = g_app->m_workspace.GetActiveProject().name;
