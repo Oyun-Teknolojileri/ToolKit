@@ -13,7 +13,6 @@
 		in vec3 v_normal;
 		in vec2 v_texture;
 
-		uniform sampler2D s_texture0; // position (in world space)
 		uniform sampler2D s_texture1; // normal (in world space)
 		uniform sampler2D s_texture2; // noise
 		uniform sampler2D s_texture3; // linear depth

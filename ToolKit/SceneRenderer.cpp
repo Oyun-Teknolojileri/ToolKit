@@ -211,7 +211,6 @@ namespace ToolKit
     m_lightingPass->m_params.Cam                      = m_params.Cam;
     m_lightingPass->m_params.AOTexture                = m_params.Gfx.SSAOEnabled ? m_ssaoPass->m_ssaoTexture : nullptr;
 
-    m_ssaoPass->m_params.GPositionBuffer              = m_gBufferPass->m_gPosRt;
     m_ssaoPass->m_params.GNormalBuffer                = m_forwardPreProcessPass->m_normalRt;
     m_ssaoPass->m_params.GLinearDepthBuffer           = m_forwardPreProcessPass->m_linearDepthRt;
     m_ssaoPass->m_params.Cam                          = m_params.Cam;

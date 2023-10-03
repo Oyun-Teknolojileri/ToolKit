@@ -104,7 +104,6 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
 
     // Generate SSAO texture
-    renderer->SetTexture(0, m_params.GPositionBuffer->m_textureId);
     renderer->SetTexture(1, m_params.GNormalBuffer->m_textureId);
     renderer->SetTexture(2, m_noiseTexture->m_textureId);
     renderer->SetTexture(3, m_params.GLinearDepthBuffer->m_textureId);
@@ -125,8 +124,8 @@ namespace ToolKit
   {
     Pass::PreRender();
 
-    int width  = m_params.GPositionBuffer->m_width;
-    int height = m_params.GPositionBuffer->m_height;
+    int width  = m_params.GNormalBuffer->m_width;
+    int height = m_params.GNormalBuffer->m_height;
 
     GenerateSSAONoise();
 
