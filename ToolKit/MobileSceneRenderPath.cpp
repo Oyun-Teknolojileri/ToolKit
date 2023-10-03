@@ -14,6 +14,7 @@ namespace ToolKit
     m_forwardPreProcessPass = MakeNewPtr<ForwardPreProcess>();
     m_ssaoPass              = MakeNewPtr<SSAOPass>();
     m_fxaaPass              = MakeNewPtr<FXAAPass>();
+    m_bloomPass             = MakeNewPtr<BloomPass>();
   }
 
   MobileSceneRenderPath::MobileSceneRenderPath(const MobileSceneRenderPathParams& params) : MobileSceneRenderPath()
@@ -29,6 +30,7 @@ namespace ToolKit
     m_ssaoPass              = nullptr;
     m_forwardPreProcessPass = nullptr;
     m_fxaaPass              = nullptr;
+    m_bloomPass             = nullptr;
   }
 
   void MobileSceneRenderPath::Render(Renderer* renderer)
@@ -67,6 +69,12 @@ namespace ToolKit
 
     // Forward pass
     m_passArray.push_back(m_forwardRenderPass);
+
+    // Bloom pass
+    if (m_params.Gfx.BloomEnabled)
+    {
+      m_passArray.push_back(m_bloomPass);
+    }
 
     // Fxaa pass
     if (m_params.Gfx.FXAAEnabled)
@@ -158,8 +166,13 @@ namespace ToolKit
       }
     }
 
-    m_fxaaPass->m_params.FrameBuffer = m_params.MainFramebuffer;
-    const FramebufferSettings fbs    = m_params.MainFramebuffer->GetSettings();
-    m_fxaaPass->m_params.screen_size = Vec2(fbs.width, fbs.height);
+    m_bloomPass->m_params.FrameBuffer    = m_params.MainFramebuffer;
+    m_bloomPass->m_params.intensity      = m_params.Gfx.BloomIntensity;
+    m_bloomPass->m_params.minThreshold   = m_params.Gfx.BloomThreshold;
+    m_bloomPass->m_params.iterationCount = m_params.Gfx.BloomIterationCount;
+
+    m_fxaaPass->m_params.FrameBuffer     = m_params.MainFramebuffer;
+    const FramebufferSettings fbs        = m_params.MainFramebuffer->GetSettings();
+    m_fxaaPass->m_params.screen_size     = Vec2(fbs.width, fbs.height);
   }
 } // namespace ToolKit

@@ -100,7 +100,7 @@ namespace ToolKit
         break;
       case EditorLitMode::Game:
         m_params.App->HideGizmos();
-        m_mscenePass->m_params.Gfx                       = gfx;
+        m_mscenePass->m_params.Gfx                        = gfx;
         m_mscenePass->m_params.Gfx.GammaCorrectionEnabled = false;
         m_mscenePass->Render(renderer);
         m_passArray.push_back(m_uiPass);
@@ -240,10 +240,10 @@ namespace ToolKit
       m_editorPass->m_params.ClearFrameBuffer = false;
 
       // Scene pass.
-      m_mscenePass->m_params.Cam               = m_camera;
-      m_mscenePass->m_params.Lights            = lights;
-      m_mscenePass->m_params.MainFramebuffer   = viewport->m_framebuffer;
-      m_mscenePass->m_params.Scene             = scene;
+      m_mscenePass->m_params.Cam              = m_camera;
+      m_mscenePass->m_params.Lights           = lights;
+      m_mscenePass->m_params.MainFramebuffer  = viewport->m_framebuffer;
+      m_mscenePass->m_params.Scene            = scene;
 
       // Skip frame pass.
       m_skipFramePass->m_params.FrameBuffer   = viewport->m_framebuffer;

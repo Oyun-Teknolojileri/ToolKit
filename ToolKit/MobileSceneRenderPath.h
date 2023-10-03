@@ -26,15 +26,16 @@
 
 #pragma once
 
+#include "BloomPass.h"
 #include "CubemapPass.h"
 #include "EngineSettings.h"
 #include "ForwardPass.h"
 #include "ForwardPreProcessPass.h"
+#include "FxaaPass.h"
 #include "Pass.h"
 #include "RenderSystem.h"
 #include "ShadowPass.h"
 #include "SsaoPass.h"
-#include "FxaaPass.h"
 
 namespace ToolKit
 {
@@ -75,6 +76,7 @@ namespace ToolKit
     ForwardPreProcessPassPtr m_forwardPreProcessPass = nullptr;
     SSAOPassPtr m_ssaoPass                           = nullptr;
     FXAAPassPtr m_fxaaPass                           = nullptr;
+    BloomPassPtr m_bloomPass                         = nullptr;
 
     LightPtrArray m_updatedLights;
 
