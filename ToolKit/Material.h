@@ -118,6 +118,7 @@ namespace ToolKit
     MaterialPtr GetCopyOfUIMaterial();
     MaterialPtr GetCopyOfUnlitColorMaterial();
     MaterialPtr GetCopyOfDefaultMaterial();
+    MaterialPtr GetCopyOfPhongMaterial();
   };
 
 } // namespace ToolKit

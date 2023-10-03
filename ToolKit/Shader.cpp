@@ -27,11 +27,11 @@
 #include "Shader.h"
 
 #include "FileManager.h"
+#include "Logger.h"
 #include "TKAssert.h"
 #include "TKOpenGL.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "Logger.h"
 
 #include <unordered_set>
 
@@ -40,9 +40,10 @@
 namespace ToolKit
 {
 
-#define TK_DEFAULT_DEFERRED_FRAG "deferredRenderFrag.shader"
-#define TK_DEFAULT_FORWARD_FRAG  "defaultFragment.shader"
-#define TK_DEFAULT_VERTEX_SHADER "defaultVertex.shader"
+#define TK_DEFAULT_DEFERRED_FRAG         "deferredRenderFrag.shader"
+#define TK_DEFAULT_FORWARD_FRAG          "defaultFragment.shader"
+#define TK_DEFAULT_VERTEX_SHADER         "defaultVertex.shader"
+#define TK_PHONG_FORWARD_FRAGMENT_SHADER "phongForwardFragment.shader"
 
   TKDefineClass(Shader, Resource);
 
@@ -454,10 +455,12 @@ namespace ToolKit
     m_pbrDefferedShaderFile   = ShaderPath(TK_DEFAULT_DEFERRED_FRAG, true);
     m_pbrForwardShaderFile    = ShaderPath(TK_DEFAULT_FORWARD_FRAG, true);
     m_defaultVertexShaderFile = ShaderPath(TK_DEFAULT_VERTEX_SHADER, true);
+    m_phongForwardShaderFile  = ShaderPath(TK_PHONG_FORWARD_FRAGMENT_SHADER, true);
 
     Create<Shader>(m_pbrDefferedShaderFile);
     Create<Shader>(m_pbrForwardShaderFile);
     Create<Shader>(m_defaultVertexShaderFile);
+    Create<Shader>(m_phongForwardShaderFile);
   }
 
   bool ShaderManager::CanStore(TKClass* Class) { return Class == Shader::StaticClass(); }
@@ -465,9 +468,9 @@ namespace ToolKit
   ResourcePtr ShaderManager::CreateLocal(TKClass* Class)
   {
     if (Class == Shader::StaticClass())
-  {
+    {
       return MakeNewPtr<Shader>();
-  }
+    }
     return nullptr;
   }
 
@@ -476,6 +479,8 @@ namespace ToolKit
   ShaderPtr ShaderManager::GetPbrDefferedShader() { return Cast<Shader>(m_storage[m_pbrDefferedShaderFile]); }
 
   ShaderPtr ShaderManager::GetPbrForwardShader() { return Cast<Shader>(m_storage[m_pbrForwardShaderFile]); }
+
+  ShaderPtr ShaderManager::GetPhongForwardShader() { return Cast<Shader>(m_storage[m_phongForwardShaderFile]); }
 
   const String& ShaderManager::PbrDefferedShaderFile() { return m_pbrDefferedShaderFile; }
 

@@ -27,10 +27,10 @@
 #include "Material.h"
 
 #include "FileManager.h"
+#include "Logger.h"
 #include "Shader.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "Logger.h"
 
 #include "DebugNew.h"
 
@@ -384,9 +384,7 @@ namespace ToolKit
       {
         ReadAttr(node, XmlNodeName.data(), m_roughness);
       }
-      else if (strcmp("materialType", node->name()) == 0)
-      {
-      }
+      else if (strcmp("materialType", node->name()) == 0) {}
       else
       {
         assert(false);
@@ -436,24 +434,28 @@ namespace ToolKit
   {
     ResourceManager::Init();
 
+    // PBR material
     Material* material         = new Material();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
-
     m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
 
+    // Phong material
     material                                          = new Material();
-
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-
-    material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
-
+    material->m_fragmentShader = GetShaderManager()->GetPhongForwardShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
-
     material->Init();
+    m_storage[MaterialPath("phongForward.material", true)] = MaterialPtr(material);
 
+    // Unlit material
+    material                                               = new Material();
+    material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
+    material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
+    material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
+    material->Init();
     m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
   }
 
@@ -495,6 +497,12 @@ namespace ToolKit
   MaterialPtr MaterialManager::GetCopyOfDefaultMaterial()
   {
     ResourcePtr source = m_storage[MaterialPath("default.material", true)];
+    return Copy<Material>(source);
+  }
+
+  MaterialPtr MaterialManager::GetCopyOfPhongMaterial()
+  {
+    ResourcePtr source = m_storage[MaterialPath("phongForward.material", true)];
     return Copy<Material>(source);
   }
 

@@ -176,6 +176,7 @@ namespace ToolKit
     ShaderPtr GetDefaultVertexShader();
     ShaderPtr GetPbrDefferedShader();
     ShaderPtr GetPbrForwardShader();
+    ShaderPtr GetPhongForwardShader();
 
     const String& PbrDefferedShaderFile();
     const String& PbrForwardShaderFile();
@@ -184,6 +185,7 @@ namespace ToolKit
     String m_pbrDefferedShaderFile;
     String m_pbrForwardShaderFile;
     String m_defaultVertexShaderFile;
+    String m_phongForwardShaderFile;
   };
 
 } // namespace ToolKit
