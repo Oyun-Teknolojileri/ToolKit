@@ -198,7 +198,6 @@ namespace ToolKit
       m_gBufferMaterial->m_color                    = activeMaterial->m_color;
       m_gBufferMaterial->m_metallic                 = activeMaterial->m_metallic;
       m_gBufferMaterial->m_roughness                = activeMaterial->m_roughness;
-      m_gBufferMaterial->m_materialType             = activeMaterial->m_materialType;
       m_gBufferMaterial->SetAlpha(activeMaterial->GetAlpha());
       m_gBufferMaterial->Init();
 

@@ -297,9 +297,6 @@ namespace ToolKit
     node = CreateXmlNode(doc, "roughness", container);
     WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_roughness));
 
-    node = CreateXmlNode(doc, "materialType", container);
-    WriteAttr(node, doc, XmlNodeName.data(), std::to_string((int) m_materialType));
-
     m_renderState.Serialize(doc, container);
     return container;
   }
@@ -389,10 +386,6 @@ namespace ToolKit
       }
       else if (strcmp("materialType", node->name()) == 0)
       {
-        int matType;
-        ReadAttr(node, XmlNodeName.data(), matType);
-        matType        = glm::clamp(matType, 1, 2);
-        m_materialType = (MaterialType) matType;
       }
       else
       {
@@ -452,7 +445,6 @@ namespace ToolKit
     m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
 
     material                                          = new Material();
-    material->m_materialType                          = MaterialType::Custom;
 
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
 

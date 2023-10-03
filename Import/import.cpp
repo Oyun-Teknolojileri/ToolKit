@@ -591,7 +591,6 @@ namespace ToolKit
       if (metallicRoughness)
       {
         tMaterial->m_metallicRoughnessTexture = metallicRoughness;
-        tMaterial->m_materialType             = MaterialType::PBR;
       }
 
       auto normal = textureFindAndCreateFunc(aiTextureType_NORMALS, material);
@@ -605,12 +604,10 @@ namespace ToolKit
         if (material->Get(AI_MATKEY_METALLIC_FACTOR, metalness) == aiReturn_SUCCESS)
         {
           tMaterial->m_metallic     = metalness;
-          tMaterial->m_materialType = MaterialType::PBR;
         }
         if (material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness) == aiReturn_SUCCESS)
         {
           tMaterial->m_roughness    = roughness;
-          tMaterial->m_materialType = MaterialType::PBR;
         }
       }
 

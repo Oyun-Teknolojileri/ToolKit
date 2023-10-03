@@ -33,14 +33,6 @@
 
 namespace ToolKit
 {
-
-  enum class MaterialType
-  {
-    UNUSEDSLOT_1 = 0,
-    PBR          = 1,
-    Custom       = 2
-  };
-
   class TK_API Material : public Resource
   {
    public:
@@ -106,8 +98,6 @@ namespace ToolKit
     Vec3 m_emissiveColor;
     float m_metallic            = 0.2f;
     float m_roughness           = 0.5f;
-
-    MaterialType m_materialType = MaterialType::Custom;
 
    private:
     float m_alpha = 1.0f;

@@ -83,7 +83,7 @@ namespace ToolKit
 
     // Gbuffer for deferred render
     m_passArray.push_back(m_gBufferPass);
-    
+
     m_passArray.push_back(m_forwardPreProcessPass);
 
     // SSAO pass

@@ -164,7 +164,6 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_lightingFrameBuffer, true, Vec4(0.0f));
     // Deferred render always uses PBR material
-    m_fullQuadPass->m_material->m_materialType = MaterialType::PBR;
     m_fullQuadPass->m_params.BlendFunc         = BlendFunction::ONE_TO_ONE; // additive blending
     m_fullQuadPass->m_params.FrameBuffer       = m_lightingFrameBuffer;
     m_fullQuadPass->m_params.FragmentShader    = m_lightingShader;
