@@ -1,3 +1,28 @@
+﻿/*
+ * MIT License
+ *
+ * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
+ * https://github.com/Oyun-Teknolojileri
+ * https://otyazilim.com/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #include "AndroidBuildWindow.h"
 #include "App.h"
@@ -7,7 +32,7 @@ namespace ToolKit::Editor
   void AndroidBuildWindow::Show()
   {
     ImGuiIO io = ImGui::GetIO();
-    ImGui::SetNextWindowSize(ImVec2(400, 270), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(400, 295), ImGuiCond_Once);
     ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
                             ImGuiCond_Once,
                             ImVec2(0.5f, 0.5f));
@@ -46,6 +71,8 @@ namespace ToolKit::Editor
     UI::HelpMarker(TKLoc, "When build finish if this check is true "
                    "ToolKit will try to run the application on your android device.", 2.0f);
 
+    ImGui::Checkbox("Debug", &m_isDebugBuild);
+
     if (ImGui::Button("Cancel"))
     {
       UI::RemoveTempWindow(this);
@@ -63,7 +90,8 @@ namespace ToolKit::Editor
       publisher->m_icon             = m_icon;
       publisher->m_oriantation      = (AndroidPublisher::Oriantation)m_selectedOriantation;
       publisher->m_deployAfterBuild = m_deployAfterBuild;
-      
+      publisher->m_isDebugBuild     = m_isDebugBuild;
+
       g_app->m_publishManager->Publish(PublishPlatform::Android);
       UI::RemoveTempWindow(this);
       m_menuOpen = false;

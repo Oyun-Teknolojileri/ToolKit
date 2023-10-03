@@ -286,21 +286,19 @@ namespace ToolKit
       {
         if (execResult == 1)
         {
-          TK_LOG("Make sure that an android device is connected to your PC");
-          TK_LOG("if still doesn't work uninstall application and rebuild.");
           TK_LOG("%s command failed! exec result: %i", command.c_str(), execResult);
+          TK_WRN("Make sure that an android device is connected to your PC");
+          TK_WRN("if still doesn't work uninstall application and rebuild.");
           std::filesystem::current_path(oldPath);
           return true;
         }
         return false;
       };
 
-#ifdef _DEBUG
-      String apkPath = "Android\\app\\build\\outputs\\apk\\debug\\app-debug.apk";
-#else
-      String apkPath = "Android\\app\\build\\outputs\\apk\\debug\\app-release-unsigned.apk";
-#endif
+      String apkPath = "Android\\app\\build\\outputs\\apk\\debug";
       NormalizePath(apkPath);
+      apkPath        = ConcatPaths({apkPath, m_isDebugBuild ? "app-debug.apk" : "app-release-unsigned.apk"});
+
       String projectName = g_app->m_workspace.GetActiveProject().name;
       String apkLocation = ConcatPaths({g_app->m_workspace.GetActiveWorkspace(), projectName, apkPath});
       String packageName = "com.otyazilim.toolkit/com.otyazilim.toolkit.MainActivity"; // adb uses / forward slash
@@ -419,10 +417,13 @@ namespace ToolKit
           GetLogger()->WriteConsole(LogType::Error, "Android build failed.");
           return;
         }
-        String buildLocation = ConcatPaths({projectLocation, "Android/app/build/outputs/apk/release"});
+        String buildLocation = ConcatPaths({projectLocation, "Android/app/build/outputs/apk"});
         NormalizePath(buildLocation);
+        buildLocation = ConcatPaths({ buildLocation, m_isDebugBuild ? "debug" : "release"});
         const String publishDirStr  = ConcatPaths({ResourcePath(), "..", "Publish", "Android"});
-        const String apkPathStr     = ConcatPaths({buildLocation, "app-release-unsigned.apk"});
+        const String apkName        = m_isDebugBuild ? "app-debug.apk" : "app-release-unsigned.apk";
+        const String apkPathStr     = ConcatPaths({buildLocation, apkName});
+
         projectName                 = !m_appName.empty() ? m_appName : projectName;
         const String publishApkPath = ConcatPaths({publishDirStr, projectName + "_release.apk"});
 
@@ -457,10 +458,8 @@ namespace ToolKit
       g_app->m_statusMsg = "building android apk...";
 
       // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
-      int compileResult  = g_app->ExecSysCommand("gradlew assemble", false, true, afterBuildFn);
-#ifdef _DEBUG
-      compileResult = g_app->ExecSysCommand("gradlew assembleDebug", false, true, nullptr);
-#endif
+      String command = m_isDebugBuild ? "gradlew assembleDebug" : "gradlew assemble";
+      int compileResult = compileResult = g_app->ExecSysCommand(command, false, true, afterBuildFn);
 
       if (compileResult != 0)
       {

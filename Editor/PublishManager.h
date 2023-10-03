@@ -64,6 +64,7 @@ namespace ToolKit
       int m_minSdk = 27;
       int m_maxSdk = 32;
       bool m_deployAfterBuild = false;
+      bool m_isDebugBuild = false;
 
       enum Oriantation { Undefined, Landscape, Portrait };
       Oriantation m_oriantation;
