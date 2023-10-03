@@ -72,23 +72,14 @@ namespace ToolKit
 
     using FAttachment = Framebuffer::Attachment;
 
-    if (m_params.gFrameBuffer)
-    {
-
-      m_framebuffer->ClearAttachments();
-    }
-    else
-    {
-      m_framebuffer->DetachAttachment(FAttachment::ColorAttachment0);
-      m_framebuffer->DetachAttachment(FAttachment::ColorAttachment1);
-    }
-    m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
-    m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_normalRt);
-
+    m_framebuffer->DetachAttachment(FAttachment::ColorAttachment0);
+    m_framebuffer->DetachAttachment(FAttachment::ColorAttachment1);
     if (m_params.gFrameBuffer)
     {
       m_framebuffer->AttachDepthTexture(m_params.gFrameBuffer->GetDepthTexture());
     }
+    m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
+    m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_normalRt);
   }
 
   void ForwardPreProcess::Render()

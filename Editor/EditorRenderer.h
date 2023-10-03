@@ -27,7 +27,10 @@
 #pragma once
 
 #include "BillboardPass.h"
+#include "BloomPass.h"
 #include "EditorLight.h"
+#include "FxaaPass.h"
+#include "GammaPass.h"
 #include "Gizmo.h"
 #include "GizmoPass.h"
 #include "Global.h"
@@ -37,10 +40,7 @@
 #include "Primative.h"
 #include "RenderSystem.h"
 #include "SingleMaterialPass.h"
-#include "MobileSceneRenderPath.h"
-#include "GammaPass.h"
-#include "BloomPass.h"
-#include "FxaaPass.h"
+#include "SceneRenderer.h"
 
 namespace ToolKit
 {
@@ -122,7 +122,7 @@ namespace ToolKit
       MaterialPtr m_blackMaterial                       = nullptr;
 
       BillboardPassPtr m_billboardPass                  = nullptr;
-      MobileSceneRenderPathPtr m_mscenePass             = nullptr;
+      SceneRendererPtr m_scenePass                      = nullptr;
       ForwardRenderPassPtr m_uiPass                     = nullptr;
       ForwardRenderPassPtr m_editorPass                 = nullptr;
       GizmoPassPtr m_gizmoPass                          = nullptr;

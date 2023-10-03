@@ -54,7 +54,7 @@ namespace ToolKit
     {
       m_billboardPass     = nullptr;
       m_lightSystem       = nullptr;
-      m_mscenePass        = nullptr;
+      m_scenePass         = nullptr;
       m_uiPass            = nullptr;
       m_editorPass        = nullptr;
       m_gizmoPass         = nullptr;
@@ -78,11 +78,11 @@ namespace ToolKit
 
       if (GetRenderSystem()->IsSkipFrame())
       {
-        m_mscenePass->m_params.Gfx                        = gfx;
-        m_mscenePass->m_params.Gfx.GammaCorrectionEnabled = false;
-        m_mscenePass->m_params.Gfx.TonemappingEnabled     = false;
-        m_mscenePass->m_params.Gfx.FXAAEnabled            = false;
-        m_mscenePass->Render(renderer);
+        m_scenePass->m_params.Gfx                        = gfx;
+        m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
+        m_scenePass->m_params.Gfx.TonemappingEnabled     = false;
+        m_scenePass->m_params.Gfx.FXAAEnabled            = false;
+        m_scenePass->Render(renderer);
 
         m_passArray.push_back(m_skipFramePass);
         RenderPath::Render(renderer);
@@ -100,9 +100,9 @@ namespace ToolKit
         break;
       case EditorLitMode::Game:
         m_params.App->HideGizmos();
-        m_mscenePass->m_params.Gfx                        = gfx;
-        m_mscenePass->m_params.Gfx.GammaCorrectionEnabled = false;
-        m_mscenePass->Render(renderer);
+        m_scenePass->m_params.Gfx                        = gfx;
+        m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
+        m_scenePass->Render(renderer);
         m_passArray.push_back(m_uiPass);
         if (GetRenderSystem()->IsGammaCorrectionNeeded())
         {
@@ -112,11 +112,11 @@ namespace ToolKit
         m_params.App->ShowGizmos();
         break;
       default:
-        m_mscenePass->m_params.Gfx                        = gfx;
-        m_mscenePass->m_params.Gfx.GammaCorrectionEnabled = false;
-        m_mscenePass->m_params.Gfx.TonemappingEnabled     = false;
-        m_mscenePass->m_params.Gfx.FXAAEnabled            = false;
-        m_mscenePass->Render(renderer);
+        m_scenePass->m_params.Gfx                        = gfx;
+        m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
+        m_scenePass->m_params.Gfx.TonemappingEnabled     = false;
+        m_scenePass->m_params.Gfx.FXAAEnabled            = false;
+        m_scenePass->Render(renderer);
         break;
       }
 
@@ -240,10 +240,10 @@ namespace ToolKit
       m_editorPass->m_params.ClearFrameBuffer = false;
 
       // Scene pass.
-      m_mscenePass->m_params.Cam              = m_camera;
-      m_mscenePass->m_params.Lights           = lights;
-      m_mscenePass->m_params.MainFramebuffer  = viewport->m_framebuffer;
-      m_mscenePass->m_params.Scene            = scene;
+      m_scenePass->m_params.Cam               = m_camera;
+      m_scenePass->m_params.Lights            = lights;
+      m_scenePass->m_params.MainFramebuffer   = viewport->m_framebuffer;
+      m_scenePass->m_params.Scene             = scene;
 
       // Skip frame pass.
       m_skipFramePass->m_params.FrameBuffer   = viewport->m_framebuffer;
@@ -349,7 +349,7 @@ namespace ToolKit
       m_blackMaterial->Init();
 
       m_billboardPass     = MakeNewPtr<BillboardPass>();
-      m_mscenePass        = MakeNewPtr<MobileSceneRenderPath>();
+      m_scenePass         = MakeNewPtr<SceneRenderer>();
       m_uiPass            = MakeNewPtr<ForwardRenderPass>();
       m_editorPass        = MakeNewPtr<ForwardRenderPass>();
       m_gizmoPass         = MakeNewPtr<GizmoPass>();
