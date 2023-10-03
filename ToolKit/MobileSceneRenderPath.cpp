@@ -16,6 +16,7 @@ namespace ToolKit
     m_fxaaPass              = MakeNewPtr<FXAAPass>();
     m_bloomPass             = MakeNewPtr<BloomPass>();
     m_tonemapPass           = MakeNewPtr<TonemapPass>();
+    m_dofPass               = MakeNewPtr<DoFPass>();
   }
 
   MobileSceneRenderPath::MobileSceneRenderPath(const MobileSceneRenderPathParams& params) : MobileSceneRenderPath()
@@ -33,6 +34,7 @@ namespace ToolKit
     m_fxaaPass              = nullptr;
     m_bloomPass             = nullptr;
     m_tonemapPass           = nullptr;
+    m_dofPass               = nullptr;
   }
 
   void MobileSceneRenderPath::Render(Renderer* renderer)
@@ -82,6 +84,12 @@ namespace ToolKit
     if (m_params.Gfx.TonemappingEnabled)
     {
       m_passArray.push_back(m_tonemapPass);
+    }
+
+    // Depth of field pass
+    if (m_params.Gfx.DepthOfFieldEnabled)
+    {
+      m_passArray.push_back(m_dofPass);
     }
 
     // Fxaa pass
@@ -182,8 +190,14 @@ namespace ToolKit
     m_tonemapPass->m_params.FrameBuffer  = m_params.MainFramebuffer;
     m_tonemapPass->m_params.Method       = m_params.Gfx.TonemapperMode;
 
-    m_fxaaPass->m_params.FrameBuffer     = m_params.MainFramebuffer;
-    const FramebufferSettings fbs        = m_params.MainFramebuffer->GetSettings();
-    m_fxaaPass->m_params.screen_size     = Vec2(fbs.width, fbs.height);
+    m_dofPass->m_params.ColorRt    = m_params.MainFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+    m_dofPass->m_params.DepthRt    = m_forwardPreProcessPass->m_linearDepthRt;
+    m_dofPass->m_params.focusPoint = m_params.Gfx.FocusPoint;
+    m_dofPass->m_params.focusScale = m_params.Gfx.FocusScale;
+    m_dofPass->m_params.blurQuality  = m_params.Gfx.DofQuality;
+
+    m_fxaaPass->m_params.FrameBuffer = m_params.MainFramebuffer;
+    const FramebufferSettings fbs    = m_params.MainFramebuffer->GetSettings();
+    m_fxaaPass->m_params.screen_size = Vec2(fbs.width, fbs.height);
   }
 } // namespace ToolKit

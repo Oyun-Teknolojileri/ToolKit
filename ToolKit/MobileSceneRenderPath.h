@@ -79,6 +79,7 @@ namespace ToolKit
     FXAAPassPtr m_fxaaPass                           = nullptr;
     BloomPassPtr m_bloomPass                         = nullptr;
     TonemapPassPtr m_tonemapPass                     = nullptr;
+    DoFPassPtr m_dofPass                             = nullptr;
 
     LightPtrArray m_updatedLights;
 
