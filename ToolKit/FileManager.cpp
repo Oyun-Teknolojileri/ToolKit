@@ -496,6 +496,41 @@ namespace ToolKit
     file.close();
   }
 
+  String FileManager::ReadAllText(const String& file)
+  {
+    std::ifstream inputFile(file, std::ios::binary); // Replace with your file path
+
+    if (!inputFile.is_open()) 
+    {
+      TK_ERR("cannot read all text! file: %s", file.c_str());
+      assert(0);
+      return "";
+    }
+
+    inputFile.seekg(0, std::ios::end);
+    std::streampos fileSize = inputFile.tellg();
+    inputFile.seekg(0, std::ios::beg);
+
+    // Create a string of size, filled with spaces
+    std::string fileContent(fileSize, ' '); 
+    inputFile.read(&fileContent[0], fileSize);
+    return fileContent;
+  }
+
+  void FileManager::WriteAllText(const String& file, const String& text)
+  {
+    std::ofstream outputFile(file);
+
+    if (!outputFile.is_open()) {
+      TK_ERR("cannot write all text! file: %s", file.c_str());
+      assert(0);
+      return;
+    }
+
+    outputFile << text;  // Write the text to the file
+    outputFile.close(); 
+  }
+
   void FileManager::GetRelativeResourcesPath(String& path)
   {
     size_t index = path.find("Resources");
