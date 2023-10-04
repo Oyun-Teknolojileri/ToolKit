@@ -65,7 +65,7 @@ namespace ToolKit
 
   void ForwardPreProcess::InitBuffers(uint width, uint height)
   {
-    m_framebuffer->Init({width, height, false, true});
+    m_framebuffer->Init({width, height, false, false});
     m_framebuffer->ReconstructIfNeeded(width, height);
     m_normalRt->ReconstructIfNeeded(width, height);
     m_linearDepthRt->ReconstructIfNeeded(width, height);
@@ -74,12 +74,18 @@ namespace ToolKit
 
     m_framebuffer->DetachAttachment(FAttachment::ColorAttachment0);
     m_framebuffer->DetachAttachment(FAttachment::ColorAttachment1);
+
+    m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
+    m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_normalRt);
     if (m_params.gFrameBuffer)
     {
       m_framebuffer->AttachDepthTexture(m_params.gFrameBuffer->GetDepthTexture());
     }
-    m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
-    m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_normalRt);
+    else
+    {
+      InitDefaultDepthTexture(width, height);
+      m_framebuffer->AttachDepthTexture(m_depthTexture);
+    }
   }
 
   void ForwardPreProcess::Render()
@@ -133,4 +139,12 @@ namespace ToolKit
 
   void ForwardPreProcess::PostRender() { RenderPass::PostRender(); }
 
+  void ForwardPreProcess::InitDefaultDepthTexture(int width, int height)
+  {
+    if (m_depthTexture == nullptr)
+    {
+      m_depthTexture = MakeNewPtr<DepthTexture>();
+      m_depthTexture->Init(width, height, false);
+    }
+  } // namespace ToolKit
 } // namespace ToolKit

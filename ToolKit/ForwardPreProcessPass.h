@@ -29,6 +29,7 @@
 #include "ForwardPass.h"
 #include "Material.h"
 #include "Pass.h"
+#include "Texture.h"
 
 namespace ToolKit
 {
@@ -44,11 +45,15 @@ namespace ToolKit
     void PreRender() override;
     void PostRender() override;
 
+    private:
+    void InitDefaultDepthTexture(int width, int height);
+
    public:
     ForwardRenderPassParams m_params;
-    MaterialPtr m_linearMaterial = nullptr;
-    FramebufferPtr m_framebuffer = nullptr;
-    
+    MaterialPtr m_linearMaterial    = nullptr;
+    FramebufferPtr m_framebuffer    = nullptr;
+
+    DepthTexturePtr m_depthTexture  = nullptr; // This is used in case there is no gbuffer
     RenderTargetPtr m_normalRt      = nullptr;
     RenderTargetPtr m_linearDepthRt = nullptr;
   };
