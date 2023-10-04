@@ -68,7 +68,7 @@
     <ClCompile Include="ResourceComponent.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="SceneRenderer.cpp" />
+    <ClCompile Include="SceneRenderPath.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShadowPass.cpp" />
     <ClCompile Include="Skeleton.cpp" />
@@ -136,7 +136,7 @@
     <ClInclude Include="PostProcessPass.h" />
     <ClInclude Include="RendererGlobals.h" />
     <ClInclude Include="RenderSystem.h" />
-    <ClInclude Include="SceneRenderer.h" />
+    <ClInclude Include="SceneRenderPath.h" />
     <ClInclude Include="ShaderReflectionCache.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Logger.h" />

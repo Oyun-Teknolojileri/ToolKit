@@ -40,7 +40,7 @@
 #include "PostProcessPass.h"
 #include "Primative.h"
 #include "RenderSystem.h"
-#include "SceneRenderer.h"
+#include "SceneRenderPath.h"
 #include "SingleMaterialPass.h"
 
 namespace ToolKit
@@ -124,7 +124,7 @@ namespace ToolKit
       MaterialPtr m_blackMaterial                       = nullptr;
 
       BillboardPassPtr m_billboardPass                  = nullptr;
-      SceneRendererPtr m_scenePass                      = nullptr;
+      SceneRenderPathPtr m_sceneRenderPath              = nullptr;
       MobileSceneRenderPathPtr m_mobileSceneRenderPath  = nullptr;
       ForwardRenderPassPtr m_uiPass                     = nullptr;
       ForwardRenderPassPtr m_editorPass                 = nullptr;

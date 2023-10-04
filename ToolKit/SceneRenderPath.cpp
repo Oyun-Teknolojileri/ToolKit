@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include "SceneRenderer.h"
+#include "SceneRenderPath.h"
 
 #include "Scene.h"
 #include "ToolKit.h"
@@ -36,7 +36,7 @@
 namespace ToolKit
 {
 
-  SceneRenderer::SceneRenderer()
+  SceneRenderPath::SceneRenderPath()
   {
     m_shadowPass            = MakeNewPtr<ShadowPass>();
     m_forwardRenderPass     = MakeNewPtr<ForwardRenderPass>();
@@ -53,9 +53,9 @@ namespace ToolKit
     m_dofPass               = MakeNewPtr<DoFPass>();
   }
 
-  SceneRenderer::SceneRenderer(const SceneRenderPassParams& params) : SceneRenderer() { m_params = params; }
+  SceneRenderPath::SceneRenderPath(const SceneRenderPathParams& params) : SceneRenderPath() { m_params = params; }
 
-  SceneRenderer::~SceneRenderer()
+  SceneRenderPath::~SceneRenderPath()
   {
     m_shadowPass         = nullptr;
     m_forwardRenderPass  = nullptr;
@@ -71,7 +71,7 @@ namespace ToolKit
     m_dofPass            = nullptr;
   }
 
-  void SceneRenderer::Render(Renderer* renderer)
+  void SceneRenderPath::Render(Renderer* renderer)
   {
     PreRender(renderer);
 
@@ -146,7 +146,7 @@ namespace ToolKit
     PostRender();
   }
 
-  void SceneRenderer::PreRender(Renderer* renderer)
+  void SceneRenderPath::PreRender(Renderer* renderer)
   {
     SetPassParams();
 
@@ -157,9 +157,9 @@ namespace ToolKit
                                          m_params.MainFramebuffer->GetSettings().height);
   }
 
-  void SceneRenderer::PostRender() { m_updatedLights.clear(); }
+  void SceneRenderPath::PostRender() { m_updatedLights.clear(); }
 
-  void SceneRenderer::SetPassParams()
+  void SceneRenderPath::SetPassParams()
   {
     // Update all lights before using them.
     m_updatedLights = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;

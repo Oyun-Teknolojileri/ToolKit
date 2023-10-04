@@ -150,7 +150,7 @@
     <ClCompile Include="RenderState.cpp">
       <Filter>Source\Render</Filter>
     </ClCompile>
-    <ClCompile Include="SceneRenderer.cpp">
+    <ClCompile Include="SceneRenderPath.cpp">
       <Filter>Source\Render</Filter>
     </ClCompile>
     <ClCompile Include="RenderSystem.cpp">
@@ -392,7 +392,7 @@
     <ClInclude Include="RenderState.h">
       <Filter>Source\Render</Filter>
     </ClInclude>
-    <ClInclude Include="SceneRenderer.h">
+    <ClInclude Include="SceneRenderPath.h">
       <Filter>Source\Render</Filter>
     </ClInclude>
     <ClInclude Include="GBufferPass.h">

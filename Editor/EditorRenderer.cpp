@@ -54,7 +54,7 @@ namespace ToolKit
     {
       m_billboardPass         = nullptr;
       m_lightSystem           = nullptr;
-      m_scenePass             = nullptr;
+      m_sceneRenderPath       = nullptr;
       m_mobileSceneRenderPath = nullptr;
       m_uiPass                = nullptr;
       m_editorPass            = nullptr;
@@ -77,14 +77,14 @@ namespace ToolKit
       m_passArray.clear();
       const EngineSettings::PostProcessingSettings& gfx = GetEngineSettings().PostProcessing;
 
-      SceneRendererPtr sceneRenderer                    = nullptr;
+      SceneRenderPathPtr sceneRenderer                  = nullptr;
       if (m_params.UseMobileRenderPath)
       {
         sceneRenderer = m_mobileSceneRenderPath;
       }
       else
       {
-        sceneRenderer = m_scenePass;
+        sceneRenderer = m_sceneRenderPath;
       }
 
       if (GetRenderSystem()->IsSkipFrame())
@@ -244,27 +244,32 @@ namespace ToolKit
       RenderJobProcessor::SeperateOpaqueTranslucent(renderJobs, opaque, translucent);
 
       // Editor pass.
-      m_editorPass->m_params.Cam                        = m_camera;
-      m_editorPass->m_params.FrameBuffer                = viewport->m_framebuffer;
-      m_editorPass->m_params.OpaqueJobs                 = opaque;
-      m_editorPass->m_params.TranslucentJobs            = translucent;
-      m_editorPass->m_params.ClearFrameBuffer           = false;
+      m_editorPass->m_params.Cam              = m_camera;
+      m_editorPass->m_params.FrameBuffer      = viewport->m_framebuffer;
+      m_editorPass->m_params.OpaqueJobs       = opaque;
+      m_editorPass->m_params.TranslucentJobs  = translucent;
+      m_editorPass->m_params.ClearFrameBuffer = false;
 
-      // Scene pass.
-      m_scenePass->m_params.Cam                         = m_camera;
-      m_scenePass->m_params.Lights                      = lights;
-      m_scenePass->m_params.MainFramebuffer             = viewport->m_framebuffer;
-      m_scenePass->m_params.Scene                       = scene;
-
-      // Mobile scene pass
-      m_mobileSceneRenderPath->m_params.Cam             = m_camera;
-      m_mobileSceneRenderPath->m_params.Lights          = lights;
-      m_mobileSceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
-      m_mobileSceneRenderPath->m_params.Scene           = scene;
+      if (m_params.UseMobileRenderPath)
+      {
+        // Mobile scene pass
+        m_mobileSceneRenderPath->m_params.Cam             = m_camera;
+        m_mobileSceneRenderPath->m_params.Lights          = lights;
+        m_mobileSceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
+        m_mobileSceneRenderPath->m_params.Scene           = scene;
+      }
+      else
+      {
+        // Scene pass.
+        m_sceneRenderPath->m_params.Cam             = m_camera;
+        m_sceneRenderPath->m_params.Lights          = lights;
+        m_sceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
+        m_sceneRenderPath->m_params.Scene           = scene;
+      }
 
       // Skip frame pass.
-      m_skipFramePass->m_params.FrameBuffer             = viewport->m_framebuffer;
-      m_skipFramePass->m_material                       = m_blackMaterial;
+      m_skipFramePass->m_params.FrameBuffer = viewport->m_framebuffer;
+      m_skipFramePass->m_material           = m_blackMaterial;
 
       // UI pass.
       UILayerPtrArray layers;
@@ -366,7 +371,7 @@ namespace ToolKit
       m_blackMaterial->Init();
 
       m_billboardPass         = MakeNewPtr<BillboardPass>();
-      m_scenePass             = MakeNewPtr<SceneRenderer>();
+      m_sceneRenderPath       = MakeNewPtr<SceneRenderPath>();
       m_mobileSceneRenderPath = MakeNewPtr<MobileSceneRenderPath>();
       m_uiPass                = MakeNewPtr<ForwardRenderPass>();
       m_editorPass            = MakeNewPtr<ForwardRenderPass>();

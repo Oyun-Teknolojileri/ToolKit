@@ -126,6 +126,8 @@ namespace ToolKit
           ImGui::Checkbox("FXAA##1", &gfx.FXAAEnabled);
         }
 
+        ImGui::Separator();
+
         const char* renderSpecNames[] = {"High", "Low"};
         const int currentRenderSpec   = (int) engineSettings.Graphics.RenderSpec;
         const int specCount           = 2;

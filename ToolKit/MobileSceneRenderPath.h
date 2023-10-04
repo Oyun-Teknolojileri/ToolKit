@@ -37,18 +37,18 @@
 #include "ShadowPass.h"
 #include "SsaoPass.h"
 #include "ToneMapPass.h"
-#include "SceneRenderer.h"
+#include "SceneRenderPath.h"
 
 namespace ToolKit
 {
   /**
    * Mobile scene render path.
    */
-  class TK_API MobileSceneRenderPath : public SceneRenderer
+  class TK_API MobileSceneRenderPath : public SceneRenderPath
   {
    public:
     MobileSceneRenderPath();
-    explicit MobileSceneRenderPath(const SceneRenderPassParams& params);
+    explicit MobileSceneRenderPath(const SceneRenderPathParams& params);
     virtual ~MobileSceneRenderPath();
 
     void Render(Renderer* renderer) override;
