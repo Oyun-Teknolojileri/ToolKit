@@ -96,11 +96,12 @@ namespace ToolKit
     {
       for (RenderJob& job : renderJobArray)
       {
-
-        MaterialPtr activeMaterial    = job.Material;
-        RenderState* renderstate      = activeMaterial->GetRenderState();
-        BlendFunction beforeBlendFunc = renderstate->blendFunction;
-        renderstate->blendFunction    = BlendFunction::NONE;
+        MaterialPtr activeMaterial         = job.Material;
+        RenderState* renderstate           = activeMaterial->GetRenderState();
+        BlendFunction beforeBlendFunc      = renderstate->blendFunction;
+        m_linearMaterial->m_diffuseTexture = activeMaterial->m_diffuseTexture;
+        m_linearMaterial->m_color          = activeMaterial->m_color;
+        m_linearMaterial->SetAlpha(activeMaterial->GetAlpha());
         m_linearMaterial->SetRenderState(renderstate);
         m_linearMaterial->UnInit();
 

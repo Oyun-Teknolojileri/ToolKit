@@ -205,8 +205,11 @@ namespace ToolKit
   {
     val                         = glm::clamp(val, 0.0f, 1.0f);
     m_alpha                     = val;
-    bool isForward              = m_alpha < 0.99f;
-    m_renderState.blendFunction = isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA : BlendFunction::NONE;
+    bool isForward         = m_alpha < 0.999f;
+    if (isForward && m_renderState.blendFunction != BlendFunction::ALPHA_MASK)
+    {
+      m_renderState.blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+    }
   }
 
   float& Material::GetAlpha() { return m_alpha; }

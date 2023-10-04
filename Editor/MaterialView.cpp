@@ -286,9 +286,7 @@ namespace ToolKit
           }
           if (ImGui::DragFloat("Alpha", &mat->GetAlpha(), 1.0f / 256.0f, 0.0f, 1.0f))
           {
-            bool isForward             = mat->GetAlpha() < 0.99f;
-            renderState->blendFunction = isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA : BlendFunction::NONE;
-
+            mat->SetAlpha(mat->GetAlpha());
             updateThumbFn();
           }
         }

@@ -11,7 +11,6 @@
 	<uniform name = "Color" />
 	<uniform name = "emissiveColor" />
 	<uniform name = "emissiveTextureInUse" />
-	<uniform name = "lightingType" />
 	<uniform name = "metallicRoughnessTextureInUse" />
 	<uniform name = "metallic" />
 	<uniform name = "roughness" />

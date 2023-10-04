@@ -24,6 +24,7 @@
       // out vec3 v_pos;
       out vec3 v_viewDepth;
       out vec3 v_normal;
+      out vec2 v_texture;
       
       void main()
       {
@@ -41,6 +42,8 @@
           v_normal = skinNormal(v_normal);
         }
         
+        v_texture = vTexture;
+
         gl_Position   = ProjectViewModel * gl_Position;
       }
 	-->
