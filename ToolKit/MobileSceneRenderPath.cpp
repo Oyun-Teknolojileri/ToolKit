@@ -19,10 +19,7 @@ namespace ToolKit
     m_dofPass               = MakeNewPtr<DoFPass>();
   }
 
-  MobileSceneRenderPath::MobileSceneRenderPath(const MobileSceneRenderPathParams& params) : MobileSceneRenderPath()
-  {
-    m_params = params;
-  }
+  MobileSceneRenderPath::MobileSceneRenderPath(const SceneRenderPassParams& params) { m_params = params; }
 
   MobileSceneRenderPath::~MobileSceneRenderPath()
   {

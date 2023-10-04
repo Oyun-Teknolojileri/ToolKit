@@ -34,13 +34,14 @@
 #include "Gizmo.h"
 #include "GizmoPass.h"
 #include "Global.h"
+#include "MobileSceneRenderPath.h"
 #include "OutlinePass.h"
 #include "Pass.h"
 #include "PostProcessPass.h"
 #include "Primative.h"
 #include "RenderSystem.h"
-#include "SingleMaterialPass.h"
 #include "SceneRenderer.h"
+#include "SingleMaterialPass.h"
 
 namespace ToolKit
 {
@@ -84,6 +85,7 @@ namespace ToolKit
       class App* App                 = nullptr;
       class EditorViewport* Viewport = nullptr;
       EditorLitMode LitMode          = EditorLitMode::EditorLit;
+      bool UseMobileRenderPath       = false;
     };
 
     class EditorRenderer : public RenderPath
@@ -123,6 +125,7 @@ namespace ToolKit
 
       BillboardPassPtr m_billboardPass                  = nullptr;
       SceneRendererPtr m_scenePass                      = nullptr;
+      MobileSceneRenderPathPtr m_mobileSceneRenderPath  = nullptr;
       ForwardRenderPassPtr m_uiPass                     = nullptr;
       ForwardRenderPassPtr m_editorPass                 = nullptr;
       GizmoPassPtr m_gizmoPass                          = nullptr;

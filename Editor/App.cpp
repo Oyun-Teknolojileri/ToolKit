@@ -213,6 +213,8 @@ namespace ToolKit
                                                 GetUIManager()->UpdateLayers(deltaTime, viewport);
                                               }
 
+                                              m_editorRenderer->m_params.UseMobileRenderPath =
+                                                  GetEngineSettings().Graphics.RenderSpec == RenderingSpec::Mobile;
                                               m_editorRenderer->m_params.App      = g_app;
                                               m_editorRenderer->m_params.LitMode  = m_sceneLightingMode;
                                               m_editorRenderer->m_params.Viewport = viewport;

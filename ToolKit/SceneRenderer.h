@@ -64,12 +64,12 @@ namespace ToolKit
     explicit SceneRenderer(const SceneRenderPassParams& params);
     virtual ~SceneRenderer();
 
-    void Render(Renderer* renderer) override;
-    void PreRender(Renderer* renderer);
-    void PostRender();
+    virtual void Render(Renderer* renderer) override;
+    virtual void PreRender(Renderer* renderer);
+    virtual void PostRender();
 
    private:
-    void SetPassParams();
+    virtual void SetPassParams();
 
    public:
     SceneRenderPassParams m_params;
@@ -90,7 +90,7 @@ namespace ToolKit
     DoFPassPtr m_dofPass                               = nullptr;
     LightPtrArray m_updatedLights;
 
-   private:
+   protected:
     bool m_drawSky   = false;
     SkyBasePtr m_sky = nullptr;
   };

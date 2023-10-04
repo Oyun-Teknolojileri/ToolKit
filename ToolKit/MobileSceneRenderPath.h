@@ -37,55 +37,26 @@
 #include "ShadowPass.h"
 #include "SsaoPass.h"
 #include "ToneMapPass.h"
+#include "SceneRenderer.h"
 
 namespace ToolKit
 {
-  struct MobileSceneRenderPathParams
-  {
-    LightPtrArray Lights;
-    ScenePtr Scene                 = nullptr;
-    CameraPtr Cam                  = nullptr;
-    FramebufferPtr MainFramebuffer = nullptr;
-    bool ClearFramebuffer          = true;
-    EngineSettings::PostProcessingSettings Gfx;
-  };
-
   /**
    * Mobile scene render path.
    */
-  class TK_API MobileSceneRenderPath : public RenderPath
+  class TK_API MobileSceneRenderPath : public SceneRenderer
   {
    public:
     MobileSceneRenderPath();
-    explicit MobileSceneRenderPath(const MobileSceneRenderPathParams& params);
+    explicit MobileSceneRenderPath(const SceneRenderPassParams& params);
     virtual ~MobileSceneRenderPath();
 
     void Render(Renderer* renderer) override;
-    void PreRender(Renderer* renderer);
-    void PostRender();
+    void PreRender(Renderer* renderer) override;
+    void PostRender() override;
 
    private:
-    void SetPassParams();
-
-   public:
-    MobileSceneRenderPathParams m_params;
-
-   public:
-    ShadowPassPtr m_shadowPass                       = nullptr;
-    ForwardRenderPassPtr m_forwardRenderPass         = nullptr;
-    CubeMapPassPtr m_skyPass                         = nullptr;
-    ForwardPreProcessPassPtr m_forwardPreProcessPass = nullptr;
-    SSAOPassPtr m_ssaoPass                           = nullptr;
-    FXAAPassPtr m_fxaaPass                           = nullptr;
-    BloomPassPtr m_bloomPass                         = nullptr;
-    TonemapPassPtr m_tonemapPass                     = nullptr;
-    DoFPassPtr m_dofPass                             = nullptr;
-
-    LightPtrArray m_updatedLights;
-
-   private:
-    bool m_drawSky   = false;
-    SkyBasePtr m_sky = nullptr;
+    void SetPassParams() override;
   };
 
   typedef std::shared_ptr<MobileSceneRenderPath> MobileSceneRenderPathPtr;

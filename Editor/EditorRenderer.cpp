@@ -52,19 +52,20 @@ namespace ToolKit
 
     EditorRenderer::~EditorRenderer()
     {
-      m_billboardPass     = nullptr;
-      m_lightSystem       = nullptr;
-      m_scenePass         = nullptr;
-      m_uiPass            = nullptr;
-      m_editorPass        = nullptr;
-      m_gizmoPass         = nullptr;
-      m_tonemapPass       = nullptr;
-      m_gammaPass         = nullptr;
-      m_fxaaPass          = nullptr;
-      m_bloomPass         = nullptr;
-      m_ssaoPass          = nullptr;
-      m_outlinePass       = nullptr;
-      m_singleMatRenderer = nullptr;
+      m_billboardPass         = nullptr;
+      m_lightSystem           = nullptr;
+      m_scenePass             = nullptr;
+      m_mobileSceneRenderPath = nullptr;
+      m_uiPass                = nullptr;
+      m_editorPass            = nullptr;
+      m_gizmoPass             = nullptr;
+      m_tonemapPass           = nullptr;
+      m_gammaPass             = nullptr;
+      m_fxaaPass              = nullptr;
+      m_bloomPass             = nullptr;
+      m_ssaoPass              = nullptr;
+      m_outlinePass           = nullptr;
+      m_singleMatRenderer     = nullptr;
     }
 
     void EditorRenderer::Render(Renderer* renderer)
@@ -76,13 +77,23 @@ namespace ToolKit
       m_passArray.clear();
       const EngineSettings::PostProcessingSettings& gfx = GetEngineSettings().PostProcessing;
 
+      SceneRendererPtr sceneRenderer                    = nullptr;
+      if (m_params.UseMobileRenderPath)
+      {
+        sceneRenderer = m_mobileSceneRenderPath;
+      }
+      else
+      {
+        sceneRenderer = m_scenePass;
+      }
+
       if (GetRenderSystem()->IsSkipFrame())
       {
-        m_scenePass->m_params.Gfx                        = gfx;
-        m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
-        m_scenePass->m_params.Gfx.TonemappingEnabled     = false;
-        m_scenePass->m_params.Gfx.FXAAEnabled            = false;
-        m_scenePass->Render(renderer);
+        sceneRenderer->m_params.Gfx                        = gfx;
+        sceneRenderer->m_params.Gfx.GammaCorrectionEnabled = false;
+        sceneRenderer->m_params.Gfx.TonemappingEnabled     = false;
+        sceneRenderer->m_params.Gfx.FXAAEnabled            = false;
+        sceneRenderer->Render(renderer);
 
         m_passArray.push_back(m_skipFramePass);
         RenderPath::Render(renderer);
@@ -100,9 +111,9 @@ namespace ToolKit
         break;
       case EditorLitMode::Game:
         m_params.App->HideGizmos();
-        m_scenePass->m_params.Gfx                        = gfx;
-        m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
-        m_scenePass->Render(renderer);
+        sceneRenderer->m_params.Gfx                        = gfx;
+        sceneRenderer->m_params.Gfx.GammaCorrectionEnabled = false;
+        sceneRenderer->Render(renderer);
         m_passArray.push_back(m_uiPass);
         if (GetRenderSystem()->IsGammaCorrectionNeeded())
         {
@@ -112,11 +123,11 @@ namespace ToolKit
         m_params.App->ShowGizmos();
         break;
       default:
-        m_scenePass->m_params.Gfx                        = gfx;
-        m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
-        m_scenePass->m_params.Gfx.TonemappingEnabled     = false;
-        m_scenePass->m_params.Gfx.FXAAEnabled            = false;
-        m_scenePass->Render(renderer);
+        sceneRenderer->m_params.Gfx                        = gfx;
+        sceneRenderer->m_params.Gfx.GammaCorrectionEnabled = false;
+        sceneRenderer->m_params.Gfx.TonemappingEnabled     = false;
+        sceneRenderer->m_params.Gfx.FXAAEnabled            = false;
+        sceneRenderer->Render(renderer);
         break;
       }
 
@@ -233,21 +244,27 @@ namespace ToolKit
       RenderJobProcessor::SeperateOpaqueTranslucent(renderJobs, opaque, translucent);
 
       // Editor pass.
-      m_editorPass->m_params.Cam              = m_camera;
-      m_editorPass->m_params.FrameBuffer      = viewport->m_framebuffer;
-      m_editorPass->m_params.OpaqueJobs       = opaque;
-      m_editorPass->m_params.TranslucentJobs  = translucent;
-      m_editorPass->m_params.ClearFrameBuffer = false;
+      m_editorPass->m_params.Cam                        = m_camera;
+      m_editorPass->m_params.FrameBuffer                = viewport->m_framebuffer;
+      m_editorPass->m_params.OpaqueJobs                 = opaque;
+      m_editorPass->m_params.TranslucentJobs            = translucent;
+      m_editorPass->m_params.ClearFrameBuffer           = false;
 
       // Scene pass.
-      m_scenePass->m_params.Cam               = m_camera;
-      m_scenePass->m_params.Lights            = lights;
-      m_scenePass->m_params.MainFramebuffer   = viewport->m_framebuffer;
-      m_scenePass->m_params.Scene             = scene;
+      m_scenePass->m_params.Cam                         = m_camera;
+      m_scenePass->m_params.Lights                      = lights;
+      m_scenePass->m_params.MainFramebuffer             = viewport->m_framebuffer;
+      m_scenePass->m_params.Scene                       = scene;
+
+      // Mobile scene pass
+      m_mobileSceneRenderPath->m_params.Cam             = m_camera;
+      m_mobileSceneRenderPath->m_params.Lights          = lights;
+      m_mobileSceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
+      m_mobileSceneRenderPath->m_params.Scene           = scene;
 
       // Skip frame pass.
-      m_skipFramePass->m_params.FrameBuffer   = viewport->m_framebuffer;
-      m_skipFramePass->m_material             = m_blackMaterial;
+      m_skipFramePass->m_params.FrameBuffer             = viewport->m_framebuffer;
+      m_skipFramePass->m_material                       = m_blackMaterial;
 
       // UI pass.
       UILayerPtrArray layers;
@@ -348,19 +365,20 @@ namespace ToolKit
       m_unlitOverride->Init();
       m_blackMaterial->Init();
 
-      m_billboardPass     = MakeNewPtr<BillboardPass>();
-      m_scenePass         = MakeNewPtr<SceneRenderer>();
-      m_uiPass            = MakeNewPtr<ForwardRenderPass>();
-      m_editorPass        = MakeNewPtr<ForwardRenderPass>();
-      m_gizmoPass         = MakeNewPtr<GizmoPass>();
-      m_tonemapPass       = MakeNewPtr<TonemapPass>();
-      m_gammaPass         = MakeNewPtr<GammaPass>();
-      m_fxaaPass          = MakeNewPtr<FXAAPass>();
-      m_bloomPass         = MakeNewPtr<BloomPass>();
-      m_ssaoPass          = MakeNewPtr<SSAOPass>();
-      m_outlinePass       = MakeNewPtr<OutlinePass>();
-      m_singleMatRenderer = MakeNewPtr<SingleMatForwardRenderPass>();
-      m_skipFramePass     = MakeNewPtr<FullQuadPass>();
+      m_billboardPass         = MakeNewPtr<BillboardPass>();
+      m_scenePass             = MakeNewPtr<SceneRenderer>();
+      m_mobileSceneRenderPath = MakeNewPtr<MobileSceneRenderPath>();
+      m_uiPass                = MakeNewPtr<ForwardRenderPass>();
+      m_editorPass            = MakeNewPtr<ForwardRenderPass>();
+      m_gizmoPass             = MakeNewPtr<GizmoPass>();
+      m_tonemapPass           = MakeNewPtr<TonemapPass>();
+      m_gammaPass             = MakeNewPtr<GammaPass>();
+      m_fxaaPass              = MakeNewPtr<FXAAPass>();
+      m_bloomPass             = MakeNewPtr<BloomPass>();
+      m_ssaoPass              = MakeNewPtr<SSAOPass>();
+      m_outlinePass           = MakeNewPtr<OutlinePass>();
+      m_singleMatRenderer     = MakeNewPtr<SingleMatForwardRenderPass>();
+      m_skipFramePass         = MakeNewPtr<FullQuadPass>();
     }
 
     void EditorRenderer::OutlineSelecteds(Renderer* renderer)

@@ -44,10 +44,12 @@ namespace ToolKit
 
     void RenderSettingsView::Show()
     {
+      EngineSettings& engineSettings = GetEngineSettings();
+
       ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_Once);
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        EngineSettings::PostProcessingSettings& gfx = GetEngineSettings().PostProcessing;
+        EngineSettings::PostProcessingSettings& gfx = engineSettings.PostProcessing;
         if (gfx.TonemappingEnabled && ImGui::CollapsingHeader("Tonemapping"))
         {
           const char* items[] = {"Reinhard", "ACES"};
@@ -123,6 +125,25 @@ namespace ToolKit
         {
           ImGui::Checkbox("FXAA##1", &gfx.FXAAEnabled);
         }
+
+        const char* renderSpecNames[] = {"High", "Low"};
+        const int currentRenderSpec   = (int) engineSettings.Graphics.RenderSpec;
+        const int specCount           = 2;
+        if (ImGui::BeginCombo("Rendering Spec", renderSpecNames[currentRenderSpec]))
+        {
+          for (uint specIndex = 0; specIndex < specCount; specIndex++)
+          {
+            bool isSelected      = false;
+            const char* itemName = renderSpecNames[specIndex];
+            ImGui::Selectable(itemName, &isSelected);
+            if (isSelected)
+            {
+              engineSettings.Graphics.RenderSpec = (RenderingSpec) specIndex;
+            }
+          }
+          ImGui::EndCombo();
+        }
+
       } // Imgui::Begin
       ImGui::End();
     }
