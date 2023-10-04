@@ -33,14 +33,6 @@
 
 namespace ToolKit
 {
-
-  enum class MaterialType
-  {
-    UNUSEDSLOT_1 = 0,
-    PBR          = 1,
-    Custom       = 2
-  };
-
   class TK_API Material : public Resource
   {
    public:
@@ -107,8 +99,6 @@ namespace ToolKit
     float m_metallic            = 0.2f;
     float m_roughness           = 0.5f;
 
-    MaterialType m_materialType = MaterialType::Custom;
-
    private:
     float m_alpha = 1.0f;
     RenderState m_renderState;
@@ -128,6 +118,7 @@ namespace ToolKit
     MaterialPtr GetCopyOfUIMaterial();
     MaterialPtr GetCopyOfUnlitColorMaterial();
     MaterialPtr GetCopyOfDefaultMaterial();
+    MaterialPtr GetCopyOfPhongMaterial();
   };
 
 } // namespace ToolKit

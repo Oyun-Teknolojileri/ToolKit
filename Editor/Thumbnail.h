@@ -28,14 +28,14 @@
 
 #include "EditorLight.h"
 #include "FolderWindow.h"
-#include "SceneRenderer.h"
+#include "SceneRenderPath.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
 
-    class ThumbnailRenderer : private SceneRenderer
+    class ThumbnailRenderer : private SceneRenderPath
     {
      public:
       ThumbnailRenderer();

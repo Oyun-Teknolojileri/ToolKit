@@ -31,6 +31,12 @@
 
 namespace ToolKit
 {
+  enum class RenderingSpec
+  {
+    // Make sure there is no gap between integer values
+    Default = 0,
+    Mobile = 1
+  };
 
   class TK_API EngineSettings : public Serializable
   {
@@ -45,8 +51,9 @@ namespace ToolKit
 
     struct GraphicSettings
     {
-      int MSAA = 2;
-      int FPS  = 60;
+      int MSAA                 = 2;
+      int FPS                  = 60;
+      RenderingSpec RenderSpec = RenderingSpec::Default;
     } Graphics;
 
     struct PostProcessingSettings

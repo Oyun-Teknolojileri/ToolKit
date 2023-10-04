@@ -27,10 +27,10 @@
 #include "Material.h"
 
 #include "FileManager.h"
+#include "Logger.h"
 #include "Shader.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "Logger.h"
 
 #include "DebugNew.h"
 
@@ -185,6 +185,7 @@ namespace ToolKit
 
   void Material::SetDefaultMaterialTypeShaders()
   {
+    // All PBR opaque materials should be rendered at deferred renderer
     if (IsPBR())
     {
       if (IsTranslucent())
@@ -204,8 +205,11 @@ namespace ToolKit
   {
     val                         = glm::clamp(val, 0.0f, 1.0f);
     m_alpha                     = val;
-    bool isForward              = m_alpha < 0.99f;
-    m_renderState.blendFunction = isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA : BlendFunction::NONE;
+    bool isForward         = m_alpha < 0.999f;
+    if (isForward && m_renderState.blendFunction != BlendFunction::ALPHA_MASK)
+    {
+      m_renderState.blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+    }
   }
 
   float& Material::GetAlpha() { return m_alpha; }
@@ -296,9 +300,6 @@ namespace ToolKit
     node = CreateXmlNode(doc, "roughness", container);
     WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_roughness));
 
-    node = CreateXmlNode(doc, "materialType", container);
-    WriteAttr(node, doc, XmlNodeName.data(), std::to_string((int) m_materialType));
-
     m_renderState.Serialize(doc, container);
     return container;
   }
@@ -386,13 +387,7 @@ namespace ToolKit
       {
         ReadAttr(node, XmlNodeName.data(), m_roughness);
       }
-      else if (strcmp("materialType", node->name()) == 0)
-      {
-        int matType;
-        ReadAttr(node, XmlNodeName.data(), matType);
-        matType        = glm::clamp(matType, 1, 2);
-        m_materialType = (MaterialType) matType;
-      }
+      else if (strcmp("materialType", node->name()) == 0) {}
       else
       {
         assert(false);
@@ -442,25 +437,28 @@ namespace ToolKit
   {
     ResourceManager::Init();
 
+    // PBR material
     Material* material         = new Material();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
-
     m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
 
+    // Phong material
     material                                          = new Material();
-    material->m_materialType                          = MaterialType::Custom;
-
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-
-    material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
-
+    material->m_fragmentShader = GetShaderManager()->GetPhongForwardShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
-
     material->Init();
+    m_storage[MaterialPath("phongForward.material", true)] = MaterialPtr(material);
 
+    // Unlit material
+    material                                               = new Material();
+    material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
+    material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
+    material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
+    material->Init();
     m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
   }
 
@@ -502,6 +500,12 @@ namespace ToolKit
   MaterialPtr MaterialManager::GetCopyOfDefaultMaterial()
   {
     ResourcePtr source = m_storage[MaterialPath("default.material", true)];
+    return Copy<Material>(source);
+  }
+
+  MaterialPtr MaterialManager::GetCopyOfPhongMaterial()
+  {
+    ResourcePtr source = m_storage[MaterialPath("phongForward.material", true)];
     return Copy<Material>(source);
   }
 

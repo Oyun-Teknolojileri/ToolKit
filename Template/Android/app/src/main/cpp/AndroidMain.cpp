@@ -15,9 +15,11 @@
 #include "Logger.h"
 #include "Util.h"
 #include "Game.h"
-#include "SceneRenderer.h"
+#include "MobileSceneRenderPath.h"
 #include "Types.h"
 #include "UIManager.h"
+#include "GammaPass.h"
+#include "ToneMapPass.h"
 
 #ifndef _NDEBUG
 #define CHECK_GL_ERROR() checkGLError(__FILE_NAME__, __LINE__)
@@ -59,19 +61,19 @@ namespace ToolKit
 	{
 		if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
 		{
-			static SceneRenderer sceneRenderer;
-			sceneRenderer.m_params.Cam = viewport->GetCamera();
-			sceneRenderer.m_params.ClearFramebuffer = true;
-			sceneRenderer.m_params.Gfx.BloomEnabled = true;
-			sceneRenderer.m_params.Gfx.DepthOfFieldEnabled = true;
-			sceneRenderer.m_params.Gfx.FXAAEnabled = true;
-			sceneRenderer.m_params.Gfx.GammaCorrectionEnabled = false;
-			sceneRenderer.m_params.Gfx.SSAOEnabled = true;
-			sceneRenderer.m_params.Gfx.TonemappingEnabled = true;
-			sceneRenderer.m_params.Lights = scene->GetLights();
-			sceneRenderer.m_params.MainFramebuffer = viewport->m_framebuffer;
-			sceneRenderer.m_params.Scene = scene;
-			GetRenderSystem()->AddRenderTask(&sceneRenderer);
+			static MobileSceneRenderPath mobileSceneRenderPath = {};
+			mobileSceneRenderPath.m_params.Cam = viewport->GetCamera();
+			mobileSceneRenderPath.m_params.ClearFramebuffer = true;
+			mobileSceneRenderPath.m_params.Gfx.BloomEnabled = false;
+			mobileSceneRenderPath.m_params.Gfx.DepthOfFieldEnabled = false;
+			mobileSceneRenderPath.m_params.Gfx.FXAAEnabled = false;
+			mobileSceneRenderPath.m_params.Gfx.GammaCorrectionEnabled = false;
+			mobileSceneRenderPath.m_params.Gfx.SSAOEnabled = false;
+			mobileSceneRenderPath.m_params.Gfx.TonemappingEnabled = false;
+			mobileSceneRenderPath.m_params.Lights = scene->GetLights();
+			mobileSceneRenderPath.m_params.MainFramebuffer = viewport->m_framebuffer;
+			mobileSceneRenderPath.m_params.Scene = scene;
+			GetRenderSystem()->AddRenderTask(&mobileSceneRenderPath);
 		}
 
 		static uint totalFrameCount = 0;
@@ -245,8 +247,10 @@ namespace ToolKit
 																			EGL_CONTEXT_MINOR_VERSION, 0,
 																			EGL_NONE, EGL_NONE };
 		EGLContext context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
+
 		// get some window metrics
 		EGLBoolean madeCurrent = eglMakeCurrent(display, surface, surface, context);
+
 		assert(madeCurrent);
 
 		display_ = display;
@@ -428,6 +432,7 @@ namespace ToolKit
 		m_gameViewport->Update(timing.DeltaTime);
 
 		m_game->Frame(timing.DeltaTime, m_gameViewport);
+
 
 		SceneRender(m_gameViewport);
 
