@@ -114,7 +114,9 @@ namespace ToolKit
       HdriPtr hdriPtr            = envCom->GetHdriVal();
       CubeMapPtr diffuseEnvMap   = hdriPtr->m_diffuseEnvMap;
       CubeMapPtr specularEnvMap  = hdriPtr->m_specularEnvMap;
-      RenderTargetPtr brdfLut    = GetTextureManager()->Create<RenderTarget>(TK_BRDF_LUT_TEXTURE);
+
+      GenerateBRDFLutTexture();
+      RenderTargetPtr brdfLut = GetTextureManager()->Create<RenderTarget>(TK_BRDF_LUT_TEXTURE);
 
       if (diffuseEnvMap && specularEnvMap && brdfLut)
       {
@@ -634,6 +636,53 @@ namespace ToolKit
     DrawFullQuad(m_averageBlurMaterial);
 
     SetFramebuffer(frmBackup, false);
+  }
+
+  void Renderer::GenerateBRDFLutTexture()
+  {
+    if (!GetTextureManager()->Exist(TK_BRDF_LUT_TEXTURE))
+    {
+      MaterialPtr prevOverrideMaterial = m_overrideMat;
+      FramebufferPtr prevFrameBuffer   = GetFrameBuffer();
+
+      m_overrideMat                    = nullptr;
+
+      RenderTargetSettigs set;
+      set.InternalFormat = GraphicTypes::FormatRG16F;
+      set.Format         = GraphicTypes::FormatRG;
+      set.Type           = GraphicTypes::TypeFloat;
+      RenderTargetPtr brdfLut =
+          MakeNewPtr<RenderTarget>(m_rhiSettings::brdfLutTextureSize, m_rhiSettings::brdfLutTextureSize, set);
+      brdfLut->Init();
+
+      FramebufferPtr utilFramebuffer = MakeNewPtr<Framebuffer>();
+      utilFramebuffer->Init(
+          {(uint) m_rhiSettings::brdfLutTextureSize, (uint) m_rhiSettings::brdfLutTextureSize, false, false});
+      utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);
+
+      MaterialPtr material       = MakeNewPtr<Material>();
+      material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
+      material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("BRDFLutFrag.shader", true));
+
+      QuadPtr quad               = MakeNewPtr<Quad>();
+      MeshPtr mesh               = quad->GetMeshComponent()->GetMeshVal();
+      mesh->m_material           = material;
+      mesh->Init();
+
+      SetFramebuffer(utilFramebuffer, true, {0.0f, 0.0f, 0.0f, 1.0f});
+
+      CameraPtr camera = MakeNewPtr<Camera>();
+
+      RenderJobArray jobs;
+      RenderJobProcessor::CreateRenderJobs({quad}, jobs);
+      Render(jobs, camera, {});
+
+      brdfLut->SetFile(TK_BRDF_LUT_TEXTURE);
+      GetTextureManager()->Manage(brdfLut);
+
+      m_overrideMat = prevOverrideMaterial;
+      SetFramebuffer(prevFrameBuffer, false);
+    }
   }
 
   void Renderer::SetProjectViewModel(const Mat4& model, CameraPtr cam)
