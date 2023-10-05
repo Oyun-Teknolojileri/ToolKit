@@ -114,6 +114,8 @@ namespace ToolKit
       HdriPtr hdriPtr            = envCom->GetHdriVal();
       CubeMapPtr diffuseEnvMap   = hdriPtr->m_diffuseEnvMap;
       CubeMapPtr specularEnvMap  = hdriPtr->m_specularEnvMap;
+
+      GenerateBRDFLutTexture();
       RenderTargetPtr brdfLut    = GetTextureManager()->Create<RenderTarget>(TK_BRDF_LUT_TEXTURE);
 
       if (diffuseEnvMap && specularEnvMap && brdfLut)

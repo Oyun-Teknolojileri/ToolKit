@@ -437,9 +437,6 @@ namespace ToolKit
                                                               specularEnvMapSize,
                                                               Renderer::RHIConstants::specularIBLLods);
 
-          // Pre-compute BRDF lut
-          renderer->GenerateBRDFLutTexture();
-
           // Generate diffuse irradience cubemap images
           m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
 
