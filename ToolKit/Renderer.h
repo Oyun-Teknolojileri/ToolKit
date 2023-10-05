@@ -166,9 +166,8 @@ namespace ToolKit
       static constexpr int shadowAtlasSlot          = 8;
       static constexpr int g_shadowAtlasTextureSize = 4096;
       static constexpr int specularIBLLods          = 5;
+      static constexpr int brdfLutTextureSize       = 512;
     } m_rhiSettings;
-
-    const int m_brdfLutTextureSize                = 512;
 
     static constexpr float g_shadowBiasMultiplier = 0.0001f;
 

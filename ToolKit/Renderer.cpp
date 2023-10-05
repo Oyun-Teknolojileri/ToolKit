@@ -116,7 +116,7 @@ namespace ToolKit
       CubeMapPtr specularEnvMap  = hdriPtr->m_specularEnvMap;
 
       GenerateBRDFLutTexture();
-      RenderTargetPtr brdfLut    = GetTextureManager()->Create<RenderTarget>(TK_BRDF_LUT_TEXTURE);
+      RenderTargetPtr brdfLut = GetTextureManager()->Create<RenderTarget>(TK_BRDF_LUT_TEXTURE);
 
       if (diffuseEnvMap && specularEnvMap && brdfLut)
       {
@@ -648,14 +648,16 @@ namespace ToolKit
       m_overrideMat                    = nullptr;
 
       RenderTargetSettigs set;
-      set.InternalFormat      = GraphicTypes::FormatRG16F;
-      set.Format              = GraphicTypes::FormatRG;
-      set.Type                = GraphicTypes::TypeFloat;
-      RenderTargetPtr brdfLut = MakeNewPtr<RenderTarget>(m_brdfLutTextureSize, m_brdfLutTextureSize, set);
+      set.InternalFormat = GraphicTypes::FormatRG16F;
+      set.Format         = GraphicTypes::FormatRG;
+      set.Type           = GraphicTypes::TypeFloat;
+      RenderTargetPtr brdfLut =
+          MakeNewPtr<RenderTarget>(m_rhiSettings::brdfLutTextureSize, m_rhiSettings::brdfLutTextureSize, set);
       brdfLut->Init();
 
       FramebufferPtr utilFramebuffer = MakeNewPtr<Framebuffer>();
-      utilFramebuffer->Init({(uint) m_brdfLutTextureSize, (uint) m_brdfLutTextureSize, false, false});
+      utilFramebuffer->Init(
+          {(uint) m_rhiSettings::brdfLutTextureSize, (uint) m_rhiSettings::brdfLutTextureSize, false, false});
       utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);
 
       MaterialPtr material       = MakeNewPtr<Material>();
