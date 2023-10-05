@@ -151,7 +151,10 @@ namespace ToolKit
         m_passArray.push_back(m_billboardPass);
 
         // Post process.
-        m_passArray.push_back(m_tonemapPass);
+        if (gfx.TonemappingEnabled)
+        {
+          m_passArray.push_back(m_tonemapPass);
+        }
         if (gfx.FXAAEnabled)
         {
           if (m_params.Viewport->m_name != g_2dViewport)
