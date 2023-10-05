@@ -168,19 +168,32 @@ namespace ToolKit
       // Receive until the peer shuts down the connection
       do
       {
-
         iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
         if (iResult > 0)
         {
-          if (recvbuf[0] == 'a' + (char) LogType::Error) TK_ERR("PACKER %s", recvbuf+1);
-          else if (recvbuf[0] == 'a' + (char)LogType::Memo) TK_LOG("PACKER %s", recvbuf+1);
-          else if (recvbuf[0] == 'a' + (char)LogType::Success) GetLogger()->WriteConsole(LogType::Success, "PACKER %s", recvbuf+1);
-          else if (recvbuf[0] == 'a' + (char)LogType::Warning) TK_WRN("PACKER %s", recvbuf+1);
+          if (recvbuf[0] == 'a' + (char) LogType::Error)
+          {
+            TK_ERR("PACKER %s", recvbuf+1);
+          }
+          else if (recvbuf[0] == 'a' + (char)LogType::Memo)
+          {
+            TK_LOG("PACKER %s", recvbuf+1);
+          }
+          else if (recvbuf[0] == 'a' + (char)LogType::Success)
+          {
+            GetLogger()->WriteConsole(LogType::Success, "PACKER %s", recvbuf+1);
+          }
+          else if (recvbuf[0] == 'a' + (char)LogType::Warning)
+          {
+            TK_WRN("PACKER %s", recvbuf+1);
+          }
           
           memset(recvbuf, 0, sizeof(recvbuf));
         }
-        else if (iResult == 0)
+        else if (iResult == 0) 
+        {
           TK_LOG("Connection closing...\n");
+        }
         else
         {
           TK_ERR("recv failed with error: %d\n", WSAGetLastError());
