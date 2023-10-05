@@ -438,34 +438,7 @@ namespace ToolKit
                                                               Renderer::RHIConstants::specularIBLLods);
 
           // Pre-compute BRDF lut
-          if (!GetTextureManager()->Exist(TK_BRDF_LUT_TEXTURE))
-          {
-            FullQuadPass quadPass;
-
-            RenderTargetSettigs set;
-            set.InternalFormat      = GraphicTypes::FormatRG16F;
-            set.Format              = GraphicTypes::FormatRG;
-            set.Type                = GraphicTypes::TypeFloat;
-
-            RenderTargetPtr brdfLut = MakeNewPtr<RenderTarget>(m_brdfLutTextureSize, m_brdfLutTextureSize, set);
-            brdfLut->Init();
-            FramebufferPtr utilFramebuffer = MakeNewPtr<Framebuffer>();
-
-            utilFramebuffer->Init({(uint) m_brdfLutTextureSize, (uint) m_brdfLutTextureSize, false, false});
-            utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);
-
-            quadPass.m_params.FrameBuffer = utilFramebuffer;
-            quadPass.m_params.FragmentShader =
-                GetShaderManager()->Create<Shader>(ShaderPath("BRDFLutFrag.shader", true));
-
-            quadPass.SetRenderer(renderer);
-            quadPass.PreRender();
-            quadPass.Render();
-            quadPass.PostRender();
-
-            brdfLut->SetFile(TK_BRDF_LUT_TEXTURE);
-            GetTextureManager()->Manage(brdfLut);
-          }
+          renderer->GenerateBRDFLutTexture();
 
           // Generate diffuse irradience cubemap images
           m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);

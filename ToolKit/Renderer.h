@@ -26,10 +26,10 @@
 
 #pragma once
 
-#include "RendererGlobals.h"
 #include "Camera.h"
 #include "Primative.h"
 #include "RenderState.h"
+#include "RendererGlobals.h"
 #include "Sky.h"
 #include "Types.h"
 #include "Viewport.h"
@@ -129,6 +129,8 @@ namespace ToolKit
 
     void ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
 
+    void GenerateBRDFLutTexture();
+
     /**
      * Just before the render, set the lens to fit aspect ratio to frame buffer.
      */
@@ -165,6 +167,8 @@ namespace ToolKit
       static constexpr int g_shadowAtlasTextureSize = 4096;
       static constexpr int specularIBLLods          = 5;
     } m_rhiSettings;
+
+    const int m_brdfLutTextureSize                = 512;
 
     static constexpr float g_shadowBiasMultiplier = 0.0001f;
 

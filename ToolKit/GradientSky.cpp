@@ -71,6 +71,8 @@ namespace ToolKit
                        // Render gradient to cubemap and store the output
                        GenerateGradientCubemap();
 
+                       renderer->GenerateBRDFLutTexture();
+
                        // Create irradiance map from cubemap and set
                        GenerateIrradianceCubemap();
                      }};
