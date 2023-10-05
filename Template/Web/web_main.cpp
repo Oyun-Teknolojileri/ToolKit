@@ -4,7 +4,7 @@
 #include "SDL.h"
 #include "SDL_opengl.h"
 #include "Scene.h"
-#include "SceneRenderer.h"
+#include "SceneRenderPath.h"
 #include "ToolKit.h"
 #include "Types.h"
 #include "UIManager.h"
@@ -33,7 +33,7 @@ namespace ToolKit
   {
     if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
     {
-      static SceneRenderer sceneRenderer;
+      static SceneRenderPath sceneRenderer;
       sceneRenderer.m_params.Cam                        = viewport->GetCamera();
       sceneRenderer.m_params.ClearFramebuffer           = true;
       sceneRenderer.m_params.Gfx.BloomEnabled           = true;

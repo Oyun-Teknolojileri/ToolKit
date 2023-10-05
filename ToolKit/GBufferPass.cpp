@@ -29,11 +29,10 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "TKOpenGL.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
-
-#include "TKOpenGL.h"
 
 namespace ToolKit
 {
@@ -56,12 +55,12 @@ namespace ToolKit
     m_gNormalRt                                     = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
     m_gColorRt                                      = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
     m_gEmissiveRt                                   = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-    m_gIblRt      = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-    
-    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRGBA32F;
-    gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRGBA;
+    m_gIblRt                                        = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+
+    gBufferRenderTargetSettings.InternalFormat      = GraphicTypes::FormatRGBA32F;
+    gBufferRenderTargetSettings.Format              = GraphicTypes::FormatRGBA;
     // Note: A32 is not used, it didn't work on Android devices when we bind it to frame buffer
-    m_gLinearDepthRt = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gLinearDepthRt                                = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
     gBufferRenderTargetSettings.InternalFormat      = GraphicTypes::FormatRG16F;
     gBufferRenderTargetSettings.Format              = GraphicTypes::FormatRG;
@@ -176,10 +175,7 @@ namespace ToolKit
     renderer->SetCameraLens(m_params.Camera);
   }
 
-  void GBufferPass::PostRender()
-  {
-    Pass::PostRender(); 
-  }
+  void GBufferPass::PostRender() { Pass::PostRender(); }
 
   void GBufferPass::Render()
   {
@@ -198,7 +194,6 @@ namespace ToolKit
       m_gBufferMaterial->m_color                    = activeMaterial->m_color;
       m_gBufferMaterial->m_metallic                 = activeMaterial->m_metallic;
       m_gBufferMaterial->m_roughness                = activeMaterial->m_roughness;
-      m_gBufferMaterial->m_materialType             = activeMaterial->m_materialType;
       m_gBufferMaterial->SetAlpha(activeMaterial->GetAlpha());
       m_gBufferMaterial->Init();
 

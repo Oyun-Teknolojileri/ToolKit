@@ -395,8 +395,8 @@ namespace ToolKit
           if (ImGui::ImageButton(ConvertUIntImGuiTexture(iconId), m_iconSize, ImVec2(0.0f, 0.0f), texCoords))
           {
             anyButtonClicked |= true;
-            bool shiftDown   = ImGui::IsKeyDown(ImGuiKey_LeftShift);
-            bool ctrlDown    = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+            bool shiftDown    = ImGui::IsKeyDown(ImGuiKey_LeftShift);
+            bool ctrlDown     = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
             // handle multi selection and input
             if (!shiftDown && !ctrlDown)
             {
@@ -997,35 +997,48 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::MenuItem("Create"))
+        if (ImGui::BeginMenu("Create"))
         {
-          StringInputWindow* inputWnd = new StringInputWindow("Material Name##NwMat", true);
-          inputWnd->m_inputVal        = "New Material";
-          inputWnd->m_inputLabel      = "Name";
-          inputWnd->m_hint            = "New material name";
-          inputWnd->m_taskFn          = [views](const String& val)
+          auto inputWindowFn = [&views, &thisView](bool isPbr)
           {
-            String file = ConcatPaths({views[0]->m_path, val + MATERIAL});
-            if (CheckFile(file))
+            StringInputWindow* inputWnd = new StringInputWindow("Material Name##NwMat", true);
+            inputWnd->m_inputVal        = "New Material";
+            inputWnd->m_inputLabel      = "Name";
+            inputWnd->m_hint            = "New material name";
+            inputWnd->m_taskFn          = [views, isPbr](const String& val)
             {
-              g_app->GetConsole()->AddLog("Can't create. A material with the same name exist", LogType::Error);
-            }
-            else
-            {
-              MaterialManager* man = GetMaterialManager();
-              MaterialPtr mat      = man->GetCopyOfDefaultMaterial();
-              mat->m_name          = val;
-              mat->SetFile(file);
-              for (FolderView* view : views)
+              String file = ConcatPaths({views[0]->m_path, val + MATERIAL});
+              if (CheckFile(file))
               {
-                view->m_dirty = true;
+                g_app->GetConsole()->AddLog("Can't create. A material with the same name exist", LogType::Error);
               }
-              mat->Save(true);
-              man->Manage(mat);
-            }
+              else
+              {
+                MaterialManager* man = GetMaterialManager();
+                MaterialPtr mat      = isPbr ? man->GetCopyOfDefaultMaterial() : man->GetCopyOfPhongMaterial();
+                mat->m_name          = val;
+                mat->SetFile(file);
+                for (FolderView* view : views)
+                {
+                  view->m_dirty = true;
+                }
+                mat->Save(true);
+                man->Manage(mat);
+              }
+            };
+            thisView->m_parent->ReconstructFolderTree();
+            ImGui::CloseCurrentPopup();
           };
-          thisView->m_parent->ReconstructFolderTree();
-          ImGui::CloseCurrentPopup();
+
+          if (ImGui::MenuItem("PBR"))
+          {
+            inputWindowFn(true);
+          }
+          if (ImGui::MenuItem("Phong"))
+          {
+            inputWindowFn(false);
+          }
+          ImGui::EndMenu();
         }
       };
     }

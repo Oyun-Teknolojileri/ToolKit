@@ -138,20 +138,6 @@ namespace ToolKit
       GetFileManager()->GetRelativeResourcesPath(path);
       UI::HelpMarker(TKLoc, path.c_str());
 
-      // 0th slot was pbr and removed, this is why we are doing -1 adjustments.
-      int matType     = glm::clamp((int) mat->m_materialType, 1, 2) - 1;
-      int currentType = matType;
-      if (ImGui::Combo("Material Type", &matType, "PBR\0Custom"))
-      {
-        if (matType != currentType)
-        {
-          mat->m_materialType = (MaterialType) (matType + 1);
-          mat->SetDefaultMaterialTypeShaders();
-          mat->m_dirty = true;
-        }
-      }
-      ImGui::Separator();
-
       if (ImGui::CollapsingHeader("Material Preview", ImGuiTreeNodeFlags_DefaultOpen))
       {
         static const ImVec2 iconSize = ImVec2(16.0f, 16.0f);
@@ -197,49 +183,46 @@ namespace ToolKit
         mat->m_dirty = true;
       };
 
-      if (mat->m_materialType == MaterialType::Custom)
+      if (ImGui::CollapsingHeader("Shaders"))
       {
-        if (ImGui::CollapsingHeader("Shaders"))
-        {
-          ImGui::BeginGroup();
-          String vertName;
-          DecomposePath(mat->m_vertexShader->GetFile(), nullptr, &vertName, nullptr);
+        ImGui::BeginGroup();
+        String vertName;
+        DecomposePath(mat->m_vertexShader->GetFile(), nullptr, &vertName, nullptr);
 
-          ImGui::LabelText("##vertex shader: %s", vertName.c_str());
-          DropZone(UI::m_codeIcon->m_textureId,
-                   mat->m_vertexShader->GetFile(),
-                   [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+        ImGui::LabelText("##vertex shader: %s", vertName.c_str());
+        DropZone(UI::m_codeIcon->m_textureId,
+                 mat->m_vertexShader->GetFile(),
+                 [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                 {
+                   if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
                    {
-                     if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
-                     {
-                       g_app->m_statusMsg = "Failed. Shader expected.";
-                       return;
-                     }
-                     mat->m_vertexShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-                     mat->m_vertexShader->Init();
-                     updateThumbFn();
-                   });
-          ImGui::EndGroup();
+                     g_app->m_statusMsg = "Failed. Shader expected.";
+                     return;
+                   }
+                   mat->m_vertexShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
+                   mat->m_vertexShader->Init();
+                   updateThumbFn();
+                 });
+        ImGui::EndGroup();
 
-          ImGui::SameLine();
+        ImGui::SameLine();
 
-          ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 20.0f);
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 20.0f);
 
-          ImGui::BeginGroup();
-          String fragName = mat->m_fragmentShader->GetFile();
-          DecomposePath(mat->m_fragmentShader->GetFile(), nullptr, &fragName, nullptr);
+        ImGui::BeginGroup();
+        String fragName = mat->m_fragmentShader->GetFile();
+        DecomposePath(mat->m_fragmentShader->GetFile(), nullptr, &fragName, nullptr);
 
-          ImGui::LabelText("##fragShader fragment shader: %s", fragName.c_str());
-          DropZone(UI::m_codeIcon->m_textureId,
-                   mat->m_fragmentShader->GetFile(),
-                   [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-                   {
-                     mat->m_fragmentShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-                     mat->m_fragmentShader->Init();
-                     updateThumbFn();
-                   });
-          ImGui::EndGroup();
-        }
+        ImGui::LabelText("##fragShader fragment shader: %s", fragName.c_str());
+        DropZone(UI::m_codeIcon->m_textureId,
+                 mat->m_fragmentShader->GetFile(),
+                 [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                 {
+                   mat->m_fragmentShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
+                   mat->m_fragmentShader->Init();
+                   updateThumbFn();
+                 });
+        ImGui::EndGroup();
       }
 
       if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
@@ -303,9 +286,7 @@ namespace ToolKit
           }
           if (ImGui::DragFloat("Alpha", &mat->GetAlpha(), 1.0f / 256.0f, 0.0f, 1.0f))
           {
-            bool isForward             = mat->GetAlpha() < 0.99f;
-            renderState->blendFunction = isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA : BlendFunction::NONE;
-
+            mat->SetAlpha(mat->GetAlpha());
             updateThumbFn();
           }
         }

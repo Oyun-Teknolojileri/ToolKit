@@ -27,7 +27,7 @@
 #pragma once
 
 #include "EditorViewport.h"
-#include "SceneRenderer.h"
+#include "SceneRenderPath.h"
 #include "UI.h"
 
 namespace ToolKit
@@ -90,7 +90,7 @@ namespace ToolKit
       void ResizeWindow(uint width, uint height) override;
 
      private:
-      SceneRendererPtr m_previewRenderer = nullptr;
+      SceneRenderPathPtr m_previewRenderer = nullptr;
 
      public:
       bool m_isTempView = false;
