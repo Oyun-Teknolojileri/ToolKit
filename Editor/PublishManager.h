@@ -38,55 +38,27 @@ namespace ToolKit
       Android
     };
 
-    class Publisher
-    {
-     public:
-      virtual void Publish() const = 0;
-    };
-
-    class WebPublisher : Publisher
-    {
-     public:
-      void Publish() const override;
-    };
-
-    class AndroidPublisher : Publisher
-    {
-    public:
-      void Publish() const override;
-      void PrepareIcon() const;
-      void EditAndroidManifest() const;
-      void RunOnPhone() const;
-
-    public:
-      TexturePtr m_icon = nullptr;
-      String m_appName{};
-      int m_minSdk = 27;
-      int m_maxSdk = 32;
-      bool m_deployAfterBuild = false;
-      bool m_isDebugBuild = false;
-
-      enum Oriantation { Undefined, Landscape, Portrait };
-      Oriantation m_oriantation;
-    };
-
-    class WindowsPublisher : Publisher
-    {
-    public:
-      void Publish() const override;
-    };
-
     class PublishManager
     {
      public:
-      PublishManager();
-      ~PublishManager();
-
       void Publish(PublishPlatform platform);
 
-      WebPublisher*     m_webPublisher     = nullptr;
-      AndroidPublisher* m_androidPublisher = nullptr;
-      WindowsPublisher* m_windowsPublisher = nullptr;
+     public:
+      TexturePtr m_icon = nullptr;
+      String m_appName {};
+      bool m_deployAfterBuild = false;
+      bool m_isDebugBuild     = false;
+      int m_minSdk            = 27;
+      int m_maxSdk            = 32;
+
+      enum Oriantation
+      {
+        Undefined,
+        Landscape,
+        Portrait
+      };
+
+      Oriantation m_oriantation;
     };
 
   } // namespace Editor

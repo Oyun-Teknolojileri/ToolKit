@@ -859,6 +859,10 @@ namespace ToolKit
       WSACleanup();
       return 1;
     }
+    
+    iResult = recv(ConnectSocket, recvbuf, 4, 0);
+    int correct = *((int*)recvbuf) == 0xff0ff;
+    iResult = send(ConnectSocket, (char*)&correct, 4, 0);
 
     // Receive until the peer closes the connection
     while (!finished || !messages.empty())

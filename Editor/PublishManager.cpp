@@ -68,19 +68,8 @@ namespace ToolKit
 {
   namespace Editor
   {
-    PublishManager::PublishManager()
-    {
-      m_webPublisher     = new WebPublisher();
-      m_windowsPublisher = new WindowsPublisher();
-      m_androidPublisher = new AndroidPublisher();
-    }
-
-    PublishManager::~PublishManager()
-    {
-      SafeDel(m_webPublisher);
-      SafeDel(m_windowsPublisher);
-      SafeDel(m_androidPublisher);
-    }
+    char BuildArguments[256] {};
+    int BuildArgLen;
 
     DWORD WINAPI CreatePipe(LPVOID lpParam)
     {
@@ -165,6 +154,12 @@ namespace ToolKit
       // No longer need server socket
       closesocket(ListenSocket);
 
+      int x        = 0xff0ff;
+      iResult      = send(ClientSocket, (char*)&x, 4, 0);
+      iResult      = recv(ClientSocket, recvbuf, 4, 0);
+      int correct = *((int*)recvbuf) == 1;
+      TK_LOG(correct ? "data send correctly" : "data send failed");
+
       // Receive until the peer shuts down the connection
       do
       {
@@ -224,36 +219,15 @@ namespace ToolKit
 
     void PublishManager::Publish(PublishPlatform platform)
     {
-      HANDLE hThread = CreateThread(nullptr, 0, CreatePipe, nullptr, 0, nullptr);
+      int mask          = (m_deployAfterBuild << 0) | (m_isDebugBuild << 8);
+      mask             |= (m_minSdk << 16) | (m_maxSdk << 24);
+
+      HANDLE hThread    = CreateThread(nullptr, 0, CreatePipe, nullptr, 0, nullptr);
       String packerPath = "Utils\\Packer\\Packer.exe";
       NormalizePath(packerPath);
       packerPath = std::filesystem::absolute(ConcatPaths({ "..", packerPath})).string();
 
       g_app->ExecSysCommand(packerPath, true, false, nullptr);
-
-      return;
-    }
-
-    void WindowsPublisher::Publish() const
-    {
-    }
-
-    void AndroidPublisher::RunOnPhone() const
-    {
-    }
-
-    void AndroidPublisher::EditAndroidManifest() const
-    {
-    }
-
-    void AndroidPublisher::Publish() const
-    {
-
-    }
-
-    void WebPublisher::Publish() const
-    {
-
     }
 
   } // namespace Editor
