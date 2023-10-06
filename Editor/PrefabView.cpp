@@ -100,13 +100,15 @@ namespace ToolKit
 
     void PrefabView::Show()
     {
+      EntityPtr ntt = m_entity.lock();
       EntityPtr cur = g_app->GetCurrentScene()->GetCurrentSelection();
-      if (cur != m_entity)
+      if (cur != ntt)
       {
         m_entity            = cur;
         m_activeChildEntity = nullptr;
       }
-      if (m_entity == nullptr || Prefab::GetPrefabRoot(m_entity) == nullptr)
+
+      if (ntt == nullptr || Prefab::GetPrefabRoot(ntt) == nullptr)
       {
         ImGui::Text("Select a prefab entity");
         return;
@@ -117,9 +119,9 @@ namespace ToolKit
       {
         if (ImGui::BeginChild("##Prefab Scene Nodes", ImVec2(0, 200), true))
         {
-          if (DrawHeader(m_entity, g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen))
+          if (DrawHeader(ntt, g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen))
           {
-            for (Node* n : m_entity->m_node->m_children)
+            for (Node* n : ntt->m_node->m_children)
             {
               if (n->m_entity)
               {
@@ -133,7 +135,7 @@ namespace ToolKit
         ImGui::EndChild();
       }
 
-      EntityPtr shownEntity = m_entity;
+      EntityPtr shownEntity = ntt;
       if (m_activeChildEntity)
       {
         shownEntity = m_activeChildEntity;

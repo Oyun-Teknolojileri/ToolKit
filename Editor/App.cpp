@@ -595,14 +595,6 @@ namespace ToolKit
       // Kill all the references in the renderer.
       m_editorRenderer = MakeNewPtr<EditorRenderer>();
 
-      if (PropInspector* inspectorView = GetPropInspector())
-      {
-        for (View* view : inspectorView->m_views)
-        {
-          view->m_entity = nullptr;
-        }
-      }
-
       m_perFrameDebugObjects.clear();
       UI::m_postponedActions.clear();
 

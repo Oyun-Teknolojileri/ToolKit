@@ -186,6 +186,7 @@ namespace ToolKit
 
   // Entity types.
   typedef std::shared_ptr<class Entity> EntityPtr;
+  typedef std::weak_ptr<class Entity> EntityWeakPtr;
   typedef std::vector<EntityPtr> EntityPtrArray;
   typedef std::vector<class Entity*> EntityRawPtrArray;
   typedef std::vector<class Light*> LightRawPtrArray;
