@@ -561,8 +561,8 @@ namespace ToolKit
       }
       else
       {
-        BoundingBox defaultBBox  = {Vec3(-1.0f), Vec3(1.0f)};
-        Vec3 pos                 = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        BoundingBox defaultBBox = {Vec3(-1.0f), Vec3(1.0f)};
+        Vec3 pos                = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         defaultBBox.max         += pos;
         defaultBBox.min         += pos;
         cam->FocusToBoundingBox(defaultBBox, 1.1f);
@@ -585,6 +585,7 @@ namespace ToolKit
       EditorSceneManager* esm = (EditorSceneManager*) GetSceneManager();
       if (ScenePtr scene = esm->GetCurrentScene())
       {
+        scene->ClearEntities();
         sceneFile = scene->GetFile();
         esm->Remove(sceneFile);
         scene->Destroy(false);
@@ -593,6 +594,20 @@ namespace ToolKit
 
       // Kill all the references in the renderer.
       m_editorRenderer = MakeNewPtr<EditorRenderer>();
+
+      if (PropInspector* inspectorView = GetPropInspector())
+      {
+        for (View* view : inspectorView->m_views)
+        {
+          view->m_entity = nullptr;
+        }
+      }
+
+      m_perFrameDebugObjects.clear();
+      UI::m_postponedActions.clear();
+
+      ModManager::GetInstance()->UnInit();
+      ModManager::GetInstance()->Init();
 
       // Kill the plugin. At this point if anything from the dll remains in the editor,
       // it causes a crash.
@@ -820,7 +835,7 @@ namespace ToolKit
           cmd    += "\" -s " + std::to_string(UI::ImportData.Scale);
 
           // Execute command
-          result  = ExecSysCommand(cmd.c_str(), false, false);
+          result = ExecSysCommand(cmd.c_str(), false, false);
           if (result != 0)
           {
             GetLogger()->WriteConsole(LogType::Error, "Import failed!");
@@ -1100,6 +1115,7 @@ namespace ToolKit
 
     void App::OpenProject(const Project& project)
     {
+      ClearPlayInEditorSession();
       UI::m_postponedActions.push_back(
           [this, project]() -> void
           {
