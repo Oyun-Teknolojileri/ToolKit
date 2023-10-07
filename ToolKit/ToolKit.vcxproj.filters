@@ -494,5 +494,8 @@
     <ClInclude Include="RendererGlobals.h">
       <Filter>Source\Render</Filter>
     </ClInclude>
+    <ClInclude Include="TKSocket.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

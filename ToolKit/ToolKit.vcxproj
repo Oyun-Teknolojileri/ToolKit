@@ -168,6 +168,7 @@
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TKAssert.h" />
     <ClInclude Include="Object.h" />
+    <ClInclude Include="TKSocket.h" />
     <ClInclude Include="ToneMapPass.h" />
     <ClInclude Include="AdditiveLightingPass.h" />
     <ClInclude Include="ToolKit.h" />

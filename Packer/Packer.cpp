@@ -34,6 +34,7 @@
 #include <ToolKit.h>
 #include <Util.h>
 #include "Common/Win32Utils.h"
+#include "TKSocket.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -763,7 +764,7 @@ namespace ToolKit
       pop_front(messages);
       messageMutex.unlock();
 
-      iResult = send(ConnectSocket, sendbuf.c_str(), sendbuf.size(), 0);
+      iResult = send(ConnectSocket, sendbuf.c_str(), (int)sendbuf.size(), 0);
       if (iResult == SOCKET_ERROR)
       {
         perror("client message send failed with error");
