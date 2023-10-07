@@ -24,39 +24,23 @@
  * SOFTWARE.
  */
 
-#ifdef _WIN32
-  #define NOMINMAX
-  #define WIN32_LEAN_AND_MEAN
-  #include <Windows.h>
-  #include <shellapi.h>
-  #include <strsafe.h>
-
-  #include <chrono>
-  #include <mutex>
-  #include <thread>
-
-  // ToolKit collisions
-  #undef WriteConsole
-
-  #define _WINSOCK_DEPRECATED_NO_WARNINGS
-  #include <WinSock2.h>
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <ws2tcpip.h>
-
-  #define DEFAULT_BUFLEN 512
-  #define DEFAULT_PORT   "27015"
-  #pragma comment(lib, "ws2_32.lib")
-
-#endif
-
 #include "FileManager.h"
 
 #include <Animation.h>
+#include <Material.h>
+#include <RenderSystem.h>
+#include <TKOpenGL.h>
 #include <Texture.h>
 #include <ToolKit.h>
 #include <Util.h>
+#include "Common/Win32Utils.h"
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <chrono>
+#include <mutex>
+#include <thread>
 
 #include "DebugNew.h"
 
@@ -67,99 +51,14 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
 
+#include <SDL.h>
+
 namespace ToolKit
 {
   static String activeProjectName = "OsmanTest";
   static String workspacePath     = "C:\\Users\\Administrator\\source\\repos\\Go2";
 
   std::vector<String> messages;
-
-  // Function to convert UTF-8 to UTF-16
-  static std::wstring ConvertUTF8ToUTF16(const std::string& utf8String)
-  {
-    // Calculate the length of the UTF-16 string
-    int utf16Length = MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), -1, NULL, 0);
-
-    if (utf16Length == 0)
-    {
-      throw std::runtime_error("Error calculating UTF-16 string length");
-    }
-    // Allocate memory for the UTF-16 string
-
-    wchar_t* utf16String = new wchar_t[utf16Length];
-    // Convert UTF-8 to UTF-16
-    if (MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), -1, utf16String, utf16Length) == 0)
-    {
-      delete[] utf16String;
-      throw std::runtime_error("Error converting UTF-8 to UTF-16");
-    }
-    // Create a wstring from the UTF-16 string
-    std::wstring result(utf16String);
-    // Clean up
-    delete[] utf16String;
-    return result;
-  }
-
-  // Win32 console command execution callback.
-  static int SysComExec(
-      StringView cmd,
-      bool async,
-      bool showConsole,
-      std::function<void(int)> callback = [](int x) {})
-  {
-    // https://learn.microsoft.com/en-us/windows/win32/procthread/creating-processes
-    STARTUPINFOW si;
-    PROCESS_INFORMATION pi;
-    ZeroMemory(&si, sizeof(si));
-    ZeroMemory(&pi, sizeof(pi));
-    si.cb             = sizeof(si);
-    si.dwFlags        = STARTF_USESHOWWINDOW;
-    si.wShowWindow    = showConsole ? SW_SHOWNORMAL : SW_HIDE;
-
-    std::wstring wCmd = ConvertUTF8ToUTF16("cmd /C ") + ConvertUTF8ToUTF16(cmd.data());
-
-    // Start the child process.
-    if (!CreateProcessW(NULL, wCmd.data(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
-    {
-      DWORD errCode = GetLastError();
-      GetLogger()->WriteConsole(LogType::Error, "CreateProcess failed (%d).\n", errCode);
-      return (int) errCode;
-    }
-
-    SetForegroundWindow((HWND) pi.hProcess);
-
-    auto finalizeFn = [pi, callback](DWORD stat) -> int
-    {
-      // Close process and thread handles.
-      CloseHandle(pi.hProcess);
-      CloseHandle(pi.hThread);
-      if (callback != nullptr)
-      {
-        callback((int) stat);
-      }
-      return stat;
-    };
-
-    // Wait until child process exits.
-    WaitForSingleObject(pi.hProcess, INFINITE);
-
-    DWORD stat = 0;
-    GetExitCodeProcess(pi.hProcess, &stat);
-    return finalizeFn(stat);
-  }
-
-  static void OpenExplorer(const StringView utf8Path)
-  {
-    std::wstring utf16Path = ConvertUTF8ToUTF16(utf8Path.data());
-    HINSTANCE result       = ShellExecuteW(nullptr, L"open", L"explorer.exe", utf16Path.data(), NULL, SW_SHOWNORMAL);
-
-    // Check the result of ShellExecute
-    if ((intptr_t) result <= 32)
-    {
-      // ShellExecute failed
-      TK_ERR("Failed to open the folder: %s", utf8Path);
-    }
-  }
 
   enum class PublishPlatform
   {
@@ -169,25 +68,25 @@ namespace ToolKit
     Android
   };
 
-  class Publisher
+  enum Oriantation
   {
-   public:
-    virtual void Publish() const = 0;
+    Undefined,
+    Landscape,
+    Portrait
   };
 
-  class WebPublisher : Publisher
+  class PublishManager
   {
    public:
-    void Publish() const override;
-  };
+    void Publish();
+    void WindowsPublish();
+    void WebPublish();
+    void AndroidPublish();
 
-  class AndroidPublisher : Publisher
-  {
-   public:
-    void Publish() const override;
-    void PrepareIcon() const;
-    void EditAndroidManifest() const;
-    void RunOnPhone() const;
+    void AndroidPrepareIcon();
+    void EditAndroidManifest();
+    void AndroidRunOnPhone();
+    int PackResources();
 
    public:
     TexturePtr m_icon = nullptr;
@@ -197,95 +96,61 @@ namespace ToolKit
     bool m_deployAfterBuild = false;
     bool m_isDebugBuild     = false;
 
-    enum Oriantation
-    {
-      Undefined,
-      Landscape,
-      Portrait
-    };
-
     Oriantation m_oriantation;
+    PublishPlatform m_platform = PublishPlatform::Windows;
   };
 
-  class WindowsPublisher : Publisher
-  {
-   public:
-    void Publish() const override;
-  };
-
-  class PublishManager
-  {
-   public:
-    PublishManager();
-    ~PublishManager();
-
-    void Publish(PublishPlatform platform);
-
-    WebPublisher* m_webPublisher         = nullptr;
-    AndroidPublisher* m_androidPublisher = nullptr;
-    WindowsPublisher* m_windowsPublisher = nullptr;
-  };
-
-  PublishManager::PublishManager()
-  {
-    m_webPublisher     = new WebPublisher();
-    m_windowsPublisher = new WindowsPublisher();
-    m_androidPublisher = new AndroidPublisher();
-  }
-
-  PublishManager::~PublishManager()
-  {
-    SafeDel(m_webPublisher);
-    SafeDel(m_windowsPublisher);
-    SafeDel(m_androidPublisher);
-  }
-
-  void PackResources()
+  int PublishManager::PackResources()
   {
     String projectName = activeProjectName;
     if (projectName.empty())
     {
       GetLogger()->WriteConsole(LogType::Error, "No project is loaded!");
+      return 0;
+    }
+
+    String sceneResourcesPath = ConcatPaths({ResourcePath(), "Scenes"});
+
+    return GetFileManager()->PackResources(sceneResourcesPath);
+  }
+
+  void PublishManager::Publish()
+  {
+    if (!PackResources())
+    {
       return;
     }
 
-    String sceneResourcesPath = ConcatPaths({workspacePath, projectName, "Resources", "Scenes"});
-
-    GetFileManager()->PackResources(sceneResourcesPath);
-  }
-
-  void PublishManager::Publish(PublishPlatform platform)
-  {
-    PackResources();
-
-    if (platform == PublishPlatform::Web)
+    switch (m_platform)
     {
-      m_webPublisher->Publish();
-    }
-
-    if (platform == PublishPlatform::Android)
-    {
-      m_androidPublisher->Publish();
-    }
-
-    if (platform == PublishPlatform::Windows)
-    {
-      m_windowsPublisher->Publish();
+    case ToolKit::PublishPlatform::Web:
+      WebPublish();
+      break;
+    case ToolKit::PublishPlatform::Windows:
+      WindowsPublish();
+      break;
+    case ToolKit::PublishPlatform::Android:
+      AndroidPublish();
+      break;
+    default:
+      TK_ERR("unknown publish platform: %i", (int) m_platform);
+      break;
     }
   }
 
-  void WindowsPublisher::Publish() const
+  void PublishManager::WindowsPublish()
   {
+    TK_LOG("Building for Windows");
     Path workDir = std::filesystem::current_path();
 
     std::error_code ec;
-    auto returnLoggingError = [&ec, &workDir](bool setPathBack = false) -> bool
+    auto returnLoggingError = [&ec, &workDir](String path = "", bool setPathBack = false) -> bool
     {
       bool ret     = false;
       bool setback = setPathBack;
       if (ec)
       {
-        TK_ERR("%s", ec.message().c_str());
+        TK_ERR("%s %s", ec.message().c_str(), path.c_str());
         setback = true;
         ret     = true;
       }
@@ -295,7 +160,7 @@ namespace ToolKit
         std::filesystem::current_path(workDir, ec);
         if (ec)
         {
-          TK_ERR("%s", ec.message().c_str());
+          TK_ERR("%s", ec.message().c_str(), path.c_str());
           TK_ERR("%s", "******** PLEASE RESTART THE EDITOR ********");
         }
 
@@ -308,10 +173,10 @@ namespace ToolKit
     // Run toolkit compile script
     Path newWorkDir(ConcatPaths({"..", "BuildScripts"}));
     std::filesystem::current_path(newWorkDir);
-    int toolKitCompileResult = SysComExec("WinBuildRelease.bat", false, true);
+    int toolKitCompileResult = PlatformHelpers::SysComExec("WinBuildRelease.bat", false, true, nullptr);
     if (toolKitCompileResult != 0)
     {
-      returnLoggingError(true);
+      returnLoggingError("WinBuildRelease", true);
       TK_ERR("ToolKit could not be compiled");
       return;
     }
@@ -319,20 +184,20 @@ namespace ToolKit
     // Run plugin compile script
     newWorkDir = Path(ConcatPaths({ResourcePath(), "..", "Windows"}));
     std::filesystem::current_path(newWorkDir, ec);
-    if (returnLoggingError())
+    if (returnLoggingError(newWorkDir.string()))
     {
       return;
     }
 
-    int pluginCompileResult = SysComExec("WinBuildRelease.bat", false, true);
+    int pluginCompileResult = PlatformHelpers::SysComExec("WinBuildRelease.bat", false, true, nullptr);
     if (pluginCompileResult != 0)
     {
-      returnLoggingError(true);
+      returnLoggingError("WinBuildRelease.bat", true);
       TK_ERR("Windows build has failed!");
       return;
     }
     std::filesystem::current_path(workDir, ec);
-    if (returnLoggingError())
+    if (returnLoggingError(workDir.string()))
     {
       return;
     }
@@ -352,59 +217,51 @@ namespace ToolKit
     const String engineSettingsPath     = ConcatPaths({ConfigPath(), "Engine.settings"});
     const String destEngineSettingsPath = ConcatPaths({publishConfigDir, "Engine.settings"});
 
-    // Create directories
-    if (!std::filesystem::exists(publishDirectory))
-    {
-      std::filesystem::create_directories(publishDirectory, ec);
-      if (returnLoggingError())
-      {
-        return;
-      }
-    }
-    if (!std::filesystem::exists(publishBinDir))
-    {
-      std::filesystem::create_directories(publishBinDir, ec);
-      if (returnLoggingError())
-      {
-        return;
-      }
-    }
-    if (!std::filesystem::exists(publishConfigDir))
-    {
-      std::filesystem::create_directories(publishConfigDir, ec);
-      if (returnLoggingError())
-      {
-        return;
-      }
-    }
+    TK_LOG("windows build done creating and moving directories");
 
+    // Create directories
+    std::filesystem::create_directories(publishDirectory, ec);
+    if (returnLoggingError(publishDirectory))
+    {
+      return;
+    }
+    std::filesystem::create_directories(publishBinDir, ec);
+    if (returnLoggingError(publishBinDir))
+    {
+      return;
+    }
+    std::filesystem::create_directories(publishConfigDir, ec);
+    if (returnLoggingError(publishConfigDir))
+    {
+      return;
+    }
     // Copy exe file
-    std::filesystem::copy(exeFile.c_str(), publishBinDir, std::filesystem::copy_options::overwrite_existing, ec);
-    if (returnLoggingError())
+    std::filesystem::copy(exeFile, publishBinDir, std::filesystem::copy_options::overwrite_existing, ec);
+    if (returnLoggingError(publishBinDir))
     {
       return;
     }
 
     // Copy SDL2.dll from ToolKit bin folder to publish bin folder
-    std::filesystem::copy(sdlDllPath.c_str(), publishBinDir, std::filesystem::copy_options::overwrite_existing, ec);
-    if (returnLoggingError())
+    std::filesystem::copy(sdlDllPath, publishBinDir, std::filesystem::copy_options::overwrite_existing, ec);
+    if (returnLoggingError(publishBinDir))
     {
       return;
     }
 
     // Copy pak
-    std::filesystem::copy(pakFile.c_str(), publishDirectory, std::filesystem::copy_options::overwrite_existing, ec);
-    if (returnLoggingError())
+    std::filesystem::copy(pakFile, publishDirectory, std::filesystem::copy_options::overwrite_existing, ec);
+    if (returnLoggingError(publishDirectory))
     {
       return;
     }
 
     // Copy engine settings to config folder
-    std::filesystem::copy(engineSettingsPath.c_str(),
-                          destEngineSettingsPath.c_str(),
+    std::filesystem::copy(engineSettingsPath,
+                          destEngineSettingsPath,
                           std::filesystem::copy_options::overwrite_existing,
                           ec);
-    if (returnLoggingError())
+    if (returnLoggingError(engineSettingsPath))
     {
       return;
     }
@@ -415,10 +272,10 @@ namespace ToolKit
                               "Output files location: %s",
                               std::filesystem::absolute(publishDirectory).string().c_str());
 
-    OpenExplorer(publishDirectory);
+    PlatformHelpers::OpenExplorer(publishDirectory);
   }
 
-  void AndroidPublisher::PrepareIcon() const
+  void PublishManager::AndroidPrepareIcon()
   {
     String assetsPath = "Android/app/src/main/res";
     NormalizePath(assetsPath);
@@ -467,7 +324,7 @@ namespace ToolKit
     stbi_image_free(refImage);
   }
 
-  void AndroidPublisher::RunOnPhone() const
+  void PublishManager::AndroidRunOnPhone()
   {
     // adb path is in: 'android-sdk/platform-tools'
     String sdkPath = String(getenv("ANDROID_HOME"));
@@ -503,13 +360,13 @@ namespace ToolKit
     String packageName = "com.otyazilim.toolkit/com.otyazilim.toolkit.MainActivity"; // adb uses / forward slash
 
     int execResult;
-    execResult = SysComExec("adb install " + apkLocation, false, true, nullptr);
+    execResult = PlatformHelpers::SysComExec("adb install " + apkLocation, false, true, nullptr);
     if (checkIfFailedFn(execResult, "adb install " + apkLocation))
     {
       return;
     }
 
-    execResult = SysComExec("adb shell am start -n " + packageName, true, true, nullptr);
+    execResult = PlatformHelpers::SysComExec("adb shell am start -n " + packageName, true, true, nullptr);
     if (checkIfFailedFn(execResult, "adb shell am start -n " + packageName))
     {
       return;
@@ -517,11 +374,11 @@ namespace ToolKit
     std::filesystem::current_path(oldPath);
   }
 
-  void AndroidPublisher::EditAndroidManifest() const
+  void PublishManager::EditAndroidManifest()
   {
     TK_LOG("Editing Android Manifest");
     String projectName     = activeProjectName;
-    String applicationName = m_appName.empty() ? projectName : m_appName;
+    String applicationName = m_appName;
     String mainPath        = "Android/app/src/main";
     NormalizePath(mainPath);
     // get manifest file from template
@@ -539,7 +396,7 @@ namespace ToolKit
     String oriantationNames[3] {"fullSensor", "landscape", "portrait"};
     ReplaceFirstStringInPlace(androidManifest,
                               "screenOrientation=\"portrait\"",
-                              "screenOrientation=\"" + oriantationNames[m_oriantation] + "\"");
+                              "screenOrientation=\"" + oriantationNames[(int) m_oriantation] + "\"");
 
     String mainLocation = ConcatPaths({workspacePath, projectName, mainPath});
     String manifestLoc  = ConcatPaths({mainLocation, "AndroidManifest.xml"});
@@ -547,8 +404,9 @@ namespace ToolKit
     GetFileManager()->WriteAllText(manifestLoc, androidManifest);
   }
 
-  void AndroidPublisher::Publish() const
+  void PublishManager::AndroidPublish()
   {
+    TK_LOG("Building for android");
     Path workDir = std::filesystem::current_path();
 
     std::error_code ec;
@@ -609,7 +467,7 @@ namespace ToolKit
       return;
     }
 
-    PrepareIcon();
+    AndroidPrepareIcon();
 
     const auto afterBuildFn = [&](int res) -> void
     {
@@ -625,21 +483,21 @@ namespace ToolKit
       const String apkName         = m_isDebugBuild ? "app-debug.apk" : "app-release-unsigned.apk";
       const String apkPathStr      = ConcatPaths({buildLocation, apkName});
 
-      projectName                  = !m_appName.empty() ? m_appName : projectName;
+      projectName                  = m_appName;
       projectName                 += m_isDebugBuild ? "_debug.apk" : "_release.apk";
       const String publishApkPath  = ConcatPaths({publishDirStr, projectName});
 
       // Create directories
       if (!std::filesystem::exists(publishDirStr))
       {
-        bool res = std::filesystem::create_directories(publishDirStr, ec);
+        std::filesystem::create_directories(publishDirStr, ec);
         if (returnLoggingError())
         {
           return;
         }
       }
 
-      std::filesystem::copy(apkPathStr.c_str(), publishApkPath, std::filesystem::copy_options::overwrite_existing, ec);
+      std::filesystem::copy(apkPathStr, publishApkPath, std::filesystem::copy_options::overwrite_existing, ec);
       if (returnLoggingError())
       {
         return;
@@ -651,18 +509,18 @@ namespace ToolKit
                                 "Output files location: %s",
                                 std::filesystem::absolute(publishDirStr).string().c_str());
 
-      OpenExplorer(publishDirStr);
+      PlatformHelpers::OpenExplorer(publishDirStr);
     };
 
-    TK_LOG("building android apk...");
+    TK_LOG("Building android apk, Gradle scripts running...");
 
     // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
     String command    = m_isDebugBuild ? "gradlew assembleDebug" : "gradlew assemble";
-    int compileResult = compileResult = SysComExec(command, false, true, afterBuildFn);
+    int compileResult = compileResult = PlatformHelpers::SysComExec(command, false, true, afterBuildFn);
 
     if (compileResult != 0)
     {
-      returnLoggingError("", true);
+      returnLoggingError("Compiling Fail", true);
       TK_ERR("Compiling failed.");
       return;
     }
@@ -671,7 +529,7 @@ namespace ToolKit
 
     if (m_deployAfterBuild)
     {
-      RunOnPhone();
+      AndroidRunOnPhone();
     }
 
     if (returnLoggingError())
@@ -680,8 +538,9 @@ namespace ToolKit
     }
   }
 
-  void WebPublisher::Publish() const
+  void PublishManager::WebPublish()
   {
+    TK_LOG("Building for Web");
     Path workDir = std::filesystem::current_path();
 
     std::error_code ec;
@@ -719,7 +578,7 @@ namespace ToolKit
       return;
     }
 
-    int toolKitCompileResult = SysComExec("WebBuildRelease.bat", false, true);
+    int toolKitCompileResult = PlatformHelpers::SysComExec("WebBuildRelease.bat", false, true, nullptr);
     if (toolKitCompileResult != 0)
     {
       returnLoggingError(true);
@@ -737,7 +596,7 @@ namespace ToolKit
       return;
     }
 
-    int pluginCompileResult = SysComExec(pluginWebBuildScriptsFolder.c_str(), false, true);
+    int pluginCompileResult = PlatformHelpers::SysComExec(pluginWebBuildScriptsFolder.c_str(), false, true, nullptr);
     if (pluginCompileResult != 0)
     {
       returnLoggingError(true);
@@ -790,31 +649,32 @@ namespace ToolKit
                               "Output files location: %s",
                               std::filesystem::absolute(publishDirectory).string().c_str());
 
-    OpenExplorer(publishDirectory);
+    PlatformHelpers::OpenExplorer(publishDirectory);
   }
 
-  static bool finished = false;
+  static bool finished   = false;
+  static bool canPublish = false;
+
+  PublishManager publisher {};
+
   std::mutex messageMutex;
 
   static DWORD CreatePipe(void*)
   {
-    WSADATA wsaData;
     SOCKET ConnectSocket    = INVALID_SOCKET;
     struct addrinfo *result = NULL, *ptr = NULL, hints;
     String sendbuf = "a Hello from Packer";
-    char recvbuf[DEFAULT_BUFLEN];
     int iResult;
-    int recvbuflen = DEFAULT_BUFLEN;
 
     // Initialize Winsock
-    iResult        = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    iResult = sock_init();
     if (iResult != 0)
     {
-      printf("WSAStartup failed with error: %d\n", iResult);
+      sock_perror("socket init failed with error");
       return 1;
     }
 
-    ZeroMemory(&hints, sizeof(hints));
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family   = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
@@ -823,8 +683,8 @@ namespace ToolKit
     iResult           = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
     if (iResult != 0)
     {
-      printf("getaddrinfo failed with error: %d\n", iResult);
-      WSACleanup();
+      sock_perror("getaddrinfo failed with error");
+      sock_cleanup();
       return 1;
     }
 
@@ -835,8 +695,8 @@ namespace ToolKit
       ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
       if (ConnectSocket == INVALID_SOCKET)
       {
-        printf("socket failed with error: %ld\n", WSAGetLastError());
-        WSACleanup();
+        sock_perror("socket failed with error");
+        sock_cleanup();
         return 1;
       }
 
@@ -855,14 +715,36 @@ namespace ToolKit
 
     if (ConnectSocket == INVALID_SOCKET)
     {
-      printf("Unable to connect to server!\n");
-      WSACleanup();
+      perror("Unable to connect to server!\n");
+      sock_cleanup();
       return 1;
     }
-    
-    iResult = recv(ConnectSocket, recvbuf, 4, 0);
-    int correct = *((int*)recvbuf) == 0xff0ff;
-    iResult = send(ConnectSocket, (char*)&correct, 4, 0);
+
+    uint64_t mask = 0;
+    recv(ConnectSocket, (char*) &mask, 8, 0);
+    // Get platform arguments that toolkit sended
+    publisher.m_deployAfterBuild = (mask >> 0) & 0xff;
+    publisher.m_isDebugBuild     = (mask >> 8) & 0xff;
+    publisher.m_minSdk           = (mask >> 16) & 0xff;
+    publisher.m_maxSdk           = (mask >> 24) & 0xff;
+    publisher.m_platform         = (PublishPlatform) ((mask >> 32) & 0xff);
+    publisher.m_oriantation      = (Oriantation) ((mask >> 40) & 0xff);
+    canPublish                   = true;
+
+    TK_LOG("deployAfterBuild %i"
+           " isDebugBuild %i"
+           " minSdk %i"
+           " maxSdk %i"
+           " platform %i"
+           " oriantation %i",
+           publisher.m_deployAfterBuild,
+           publisher.m_isDebugBuild,
+           publisher.m_minSdk,
+           publisher.m_maxSdk,
+           (int) publisher.m_platform,
+           (int) publisher.m_oriantation);
+
+    TK_LOG("Packing Resources...");
 
     // Receive until the peer closes the connection
     while (!finished || !messages.empty())
@@ -870,8 +752,10 @@ namespace ToolKit
       while (messages.empty())
       {
         std::this_thread::yield();
-        if (finished)
+        if (finished) 
+        {
           goto end;
+        }
       }
 
       messageMutex.lock();
@@ -882,9 +766,9 @@ namespace ToolKit
       iResult = send(ConnectSocket, sendbuf.c_str(), sendbuf.size(), 0);
       if (iResult == SOCKET_ERROR)
       {
-        printf("send failed with error: %d\n", WSAGetLastError());
+        perror("client message send failed with error");
         closesocket(ConnectSocket);
-        WSACleanup();
+        sock_cleanup();
         return 1;
       }
       using namespace std::chrono_literals;
@@ -898,14 +782,14 @@ namespace ToolKit
 
     if (iResult == SOCKET_ERROR)
     {
-      printf("shutdown failed with error: %d\n", WSAGetLastError());
+      sock_perror("client shutdown failed with error");
       closesocket(ConnectSocket);
-      WSACleanup();
+      sock_cleanup();
       return 1;
     }
     // cleanup
     closesocket(ConnectSocket);
-    WSACleanup();
+    sock_cleanup();
     return 0;
   }
 
@@ -914,9 +798,26 @@ namespace ToolKit
     // Initialize ToolKit to serialize resources
     Main* g_proxy = new Main();
     Main::SetProxy(g_proxy);
-    g_proxy->m_resourceRoot = ConcatPaths({"..", "Resources"});
+
+    String publishArguments = GetFileManager()->ReadAllText("PublishArguments.txt");
+    StringArray arguments;
+    Split(publishArguments, "\n", arguments);
+
+    activeProjectName      = arguments[0];
+    workspacePath          = arguments[1];
+    publisher.m_appName    = arguments[2];
+
+    const auto whitePredFn = [](char c) { return std::isspace(c); };
+    erase_if(activeProjectName, whitePredFn);
+    erase_if(workspacePath, whitePredFn);
+    erase_if(publisher.m_appName, whitePredFn);
+
+    // Set resource root to project's Resources folder
+    g_proxy->m_resourceRoot = ConcatPaths({workspacePath, activeProjectName, "Resources"});
+
     g_proxy->SetConfigPath(ConcatPaths({"..", "Config"}));
     g_proxy->PreInit();
+
     GetLogger()->SetWriteConsoleFn(
         [](LogType lt, String ms) -> void
         {
@@ -925,17 +826,46 @@ namespace ToolKit
           messages.push_back(ms);
           messageMutex.unlock();
         });
-    messages.push_back("a building android project");
-    HANDLE hThread = CreateThread(nullptr, 0, CreatePipe, nullptr, 0, nullptr);
-    AndroidPublisher publisher {};
-    publisher.m_isDebugBuild     = true;
-    publisher.m_deployAfterBuild = false;
+
+    // Init SDL
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+
+    SDL_Window* g_window    = SDL_CreateWindow("temp",
+                                            SDL_WINDOWPOS_UNDEFINED,
+                                            SDL_WINDOWPOS_UNDEFINED,
+                                            32,
+                                            32,
+                                            SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+    SDL_GLContext g_context = SDL_GL_CreateContext(g_window);
+
+    g_proxy->m_renderSys->InitGl(SDL_GL_GetProcAddress, nullptr);
+
+    g_proxy->Init();
+
+    std::thread hThread(CreatePipe, nullptr);
+
+    // wait untill packer to connect toolkit server
+    while (!canPublish)
+    {
+      std::this_thread::yield();
+    }
+
     publisher.Publish();
     finished = true;
+    SDL_GL_DeleteContext(g_context);
+    SDL_DestroyWindow(g_window);
 
+    // wait untill all messages writen to the toolkit console
     while (messages.size())
+    {
       std::this_thread::yield();
-    WaitForSingleObject(hThread, ~0ull);
+    }
+    hThread.join();
+    getchar();
     return 0;
   }
 } // namespace ToolKit

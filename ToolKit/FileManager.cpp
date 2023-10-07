@@ -42,11 +42,22 @@
 
 namespace ToolKit
 {
+
   FileManager::~FileManager()
   {
     if (m_zfile)
     {
       unzClose(m_zfile);
+      m_zfile = nullptr;
+    }
+  }
+
+  void FileManager::CloseZipFile()
+  {
+    if (m_zfile)
+    {
+      unzClose(m_zfile);
+      m_zfile = nullptr;
     }
   }
 
@@ -140,7 +151,7 @@ namespace ToolKit
     return temp;
   }
 
-  void FileManager::PackResources(const String& sceneResourcesPath)
+  int FileManager::PackResources(const String& sceneResourcesPath)
   {
     String zipName = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
 
@@ -151,7 +162,13 @@ namespace ToolKit
         unzClose(m_zfile);
         m_zfile = nullptr;
       }
-      std::filesystem::remove(zipName.c_str());
+
+      std::error_code err;
+      if (!std::filesystem::remove(zipName, err)) 
+      {
+        TK_LOG("cannot remove MinResources.pak! message: %s", err.message().c_str());
+        return 0;
+      }
     }
 
     // Load all scenes once in order to fill resource managers
@@ -165,11 +182,13 @@ namespace ToolKit
     {
       // Error
       GetLogger()->WriteConsole(LogType::Error, "Error zipping.");
+      return 0;
     }
     else
     {
       GetLogger()->WriteConsole(LogType::Memo, "Resources packed.");
     }
+    return 1;
   }
 
   bool FileManager::CheckFileFromResources(const String& path)

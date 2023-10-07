@@ -34,13 +34,13 @@ namespace ToolKit
 {
 
 #ifdef __clang__
-  #define TK_LOG(format, ...) GetLogger()->WriteConsole(LogType::Memo, format, ##__VA_ARGS__)
-  #define TK_WRN(format, ...) GetLogger()->WriteConsole(LogType::Warning, format, ##__VA_ARGS__)
-  #define TK_ERR(format, ...) GetLogger()->WriteConsole(LogType::Error, format, ##__VA_ARGS__)
+  #define TK_LOG(format, ...) ToolKit::GetLogger()->WriteConsole(ToolKit::LogType::Memo, format, ##__VA_ARGS__)
+  #define TK_WRN(format, ...) ToolKit::GetLogger()->WriteConsole(ToolKit::LogType::Warning, format, ##__VA_ARGS__)
+  #define TK_ERR(format, ...) ToolKit::GetLogger()->WriteConsole(ToolKit::LogType::Error, format, ##__VA_ARGS__)
 #elif _MSC_VER
-  #define TK_LOG(format, ...) GetLogger()->WriteConsole(LogType::Memo, format, __VA_ARGS__)
-  #define TK_WRN(format, ...) GetLogger()->WriteConsole(LogType::Warning, format, __VA_ARGS__)
-  #define TK_ERR(format, ...) GetLogger()->WriteConsole(LogType::Error, format, __VA_ARGS__)
+  #define TK_LOG(format, ...) ToolKit::GetLogger()->WriteConsole(ToolKit::LogType::Memo, format, __VA_ARGS__)
+  #define TK_WRN(format, ...) ToolKit::GetLogger()->WriteConsole(ToolKit::LogType::Warning, format, __VA_ARGS__)
+  #define TK_ERR(format, ...) ToolKit::GetLogger()->WriteConsole(ToolKit::LogType::Error, format, __VA_ARGS__)
 #endif
 
   enum class LogType

@@ -51,13 +51,15 @@ namespace ToolKit
     uint8* GetImageFile(const String& filePath, int* x, int* y, int* comp, int reqComp);
     float* GetHdriFile(const String& filePath, int* x, int* y, int* comp, int reqComp);
 
-    void PackResources(const String& path);
+    int PackResources(const String& path);
+    void CloseZipFile();
+
     bool CheckFileFromResources(const String& path);
     void GetRelativeResourcesPath(String& path);
     bool CheckPakFile(); //!< Returns true if workspace contains pak file.
     String ReadAllText(const String& file);
     void WriteAllText(const String& file, const String& text);
-
+    
    private:
     typedef std::variant<XmlFilePtr, uint8*, float*> FileDataType;
 
