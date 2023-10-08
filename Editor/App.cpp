@@ -595,6 +595,8 @@ namespace ToolKit
       // Kill all the references in the renderer.
       m_editorRenderer = MakeNewPtr<EditorRenderer>();
 
+      GetAnimationPlayer()->m_records.clear();
+
       m_perFrameDebugObjects.clear();
       UI::m_postponedActions.clear();
 
