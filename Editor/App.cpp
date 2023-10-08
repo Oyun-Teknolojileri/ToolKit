@@ -573,6 +573,7 @@ namespace ToolKit
     {
       // Clear qued render tasks.
       GetRenderSystem()->FlushRenderTasks();
+      GetRenderSystem()->FlushGpuPrograms();
 
       // Clear all the references from the scene about to be destroyed.
       if (OutlinerWindow* wnd = GetOutliner())

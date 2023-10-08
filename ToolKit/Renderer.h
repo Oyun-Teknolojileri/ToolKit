@@ -27,6 +27,7 @@
 #pragma once
 
 #include "Camera.h"
+#include "GpuProgram.h"
 #include "Primative.h"
 #include "RenderState.h"
 #include "RendererGlobals.h"
@@ -143,11 +144,9 @@ namespace ToolKit
 
    private:
     void SetProjectViewModel(const Mat4& model, CameraPtr cam);
-    void BindProgram(ProgramPtr program);
-    void LinkProgram(uint program, uint vertexP, uint fragmentP);
-    ProgramPtr CreateProgram(ShaderPtr vertex, ShaderPtr fragment);
-    void FeedUniforms(ProgramPtr program);
-    void FeedLightUniforms(ProgramPtr program);
+    void BindProgram(GpuProgramPtr program);
+    void FeedUniforms(GpuProgramPtr program);
+    void FeedLightUniforms(GpuProgramPtr program);
 
    public:
     uint m_frameCount = 0;
@@ -156,6 +155,7 @@ namespace ToolKit
     MaterialPtr m_overrideMat = nullptr;
     Camera* m_uiCamera        = nullptr;
     SkyBasePtr m_sky          = nullptr;
+    GpuProgramManager m_gpuProgramManager;
 
     bool m_renderOnlyLighting = false;
 
@@ -167,9 +167,8 @@ namespace ToolKit
       static constexpr int g_shadowAtlasTextureSize = 4096;
       static constexpr int specularIBLLods          = 5;
       static constexpr int brdfLutTextureSize       = 512;
+      static constexpr float g_shadowBiasMultiplier = 0.0001f;
     } m_rhiSettings;
-
-    static constexpr float g_shadowBiasMultiplier = 0.0001f;
 
    private:
     uint m_currentProgram = 0;
@@ -186,7 +185,6 @@ namespace ToolKit
 
     uint m_textureSlots[RHIConstants::textureSlotCount];
 
-    std::unordered_map<String, ProgramPtr> m_programs;
     RenderState m_renderState;
 
     UVec2 m_viewportSize; //!< Current viewport size.

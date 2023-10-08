@@ -143,7 +143,7 @@ namespace ToolKit
     }
 
     float atlasTextureSize = (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
-    float bias             = light->GetShadowBiasVal() * Renderer::g_shadowBiasMultiplier;
+    float bias             = light->GetShadowBiasVal() * Renderer::RHIConstants::g_shadowBiasMultiplier;
     const Mat4& projView   = light->m_shadowMapCameraProjectionViewMatrix;
     float atlasResRatio    = light->GetShadowResVal() / atlasTextureSize;
 
@@ -164,10 +164,10 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_lightingFrameBuffer, true, Vec4(0.0f));
     // Deferred render always uses PBR material
-    m_fullQuadPass->m_params.BlendFunc         = BlendFunction::ONE_TO_ONE; // additive blending
-    m_fullQuadPass->m_params.FrameBuffer       = m_lightingFrameBuffer;
-    m_fullQuadPass->m_params.FragmentShader    = m_lightingShader;
-    m_fullQuadPass->m_params.ClearFrameBuffer  = false;
+    m_fullQuadPass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE; // additive blending
+    m_fullQuadPass->m_params.FrameBuffer      = m_lightingFrameBuffer;
+    m_fullQuadPass->m_params.FragmentShader   = m_lightingShader;
+    m_fullQuadPass->m_params.ClearFrameBuffer = false;
 
     m_lightingShader->SetShaderParameter("camPos", ParameterVariant(m_params.Cam->m_node->GetTranslation()));
 

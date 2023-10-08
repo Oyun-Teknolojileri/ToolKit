@@ -40,6 +40,7 @@
     <ClCompile Include="GammaPass.cpp" />
     <ClCompile Include="GBufferPass.cpp" />
     <ClCompile Include="GlErrorReporter.cpp" />
+    <ClCompile Include="GpuProgram.cpp" />
     <ClCompile Include="GradientSky.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Logger.cpp" />
@@ -125,6 +126,7 @@
     <ClInclude Include="GammaPass.h" />
     <ClInclude Include="GBufferPass.h" />
     <ClInclude Include="GlErrorReporter.h" />
+    <ClInclude Include="GpuProgram.h" />
     <ClInclude Include="GradientSky.h" />
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />

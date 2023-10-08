@@ -255,7 +255,7 @@ namespace ToolKit
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias
-          const float bias = light->GetShadowBiasVal() * Renderer::g_shadowBiasMultiplier;
+          const float bias = light->GetShadowBiasVal() * Renderer::RHIConstants::g_shadowBiasMultiplier;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &bias);
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -356,7 +356,7 @@ namespace ToolKit
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias
-          const float bias = light->GetShadowBiasVal() * Renderer::g_shadowBiasMultiplier;
+          const float bias = light->GetShadowBiasVal() * Renderer::RHIConstants::g_shadowBiasMultiplier;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &bias);
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -478,7 +478,7 @@ namespace ToolKit
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias
-          const float bias = light->GetShadowBiasVal() * Renderer::g_shadowBiasMultiplier;
+          const float bias = light->GetShadowBiasVal() * Renderer::RHIConstants::g_shadowBiasMultiplier;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &bias);
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 

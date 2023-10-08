@@ -45,6 +45,9 @@ namespace ToolKit
 #define TK_DEFAULT_VERTEX_SHADER         "defaultVertex.shader"
 #define TK_PHONG_FORWARD_FRAGMENT_SHADER "phongForwardFragment.shader"
 
+  // Shader
+  //////////////////////////////////////////////////////////////////////////
+
   TKDefineClass(Shader, Resource);
 
   Shader::Shader() {}
@@ -427,22 +430,8 @@ namespace ToolKit
     }
   }
 
-  Program::Program() {}
-
-  Program::Program(ShaderPtr vertex, ShaderPtr fragment)
-  {
-    m_shaders.push_back(vertex);
-    m_shaders.push_back(fragment);
-
-    m_tag  = std::to_string(vertex->m_shaderHandle);
-    m_tag += std::to_string(fragment->m_shaderHandle);
-  }
-
-  Program::~Program()
-  {
-    glDeleteProgram(m_handle);
-    m_handle = 0;
-  }
+  // ShaderManager
+  //////////////////////////////////////////////////////////////////////////
 
   ShaderManager::ShaderManager() { m_baseType = Shader::StaticClass(); }
 

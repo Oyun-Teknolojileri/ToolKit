@@ -249,6 +249,9 @@
     <ClCompile Include="MobileSceneRenderPath.cpp">
       <Filter>Source\Render</Filter>
     </ClCompile>
+    <ClCompile Include="GpuProgram.cpp">
+      <Filter>Source\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -258,9 +261,6 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Events.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderReflectionCache.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Logger.h">
@@ -498,6 +498,12 @@
       <Filter>Source\Render</Filter>
     </ClInclude>
     <ClInclude Include="MobileSceneRenderPath.h">
+      <Filter>Source\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderReflectionCache.h">
+      <Filter>Source\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="GpuProgram.h">
       <Filter>Source\Render</Filter>
     </ClInclude>
   </ItemGroup>
