@@ -98,7 +98,7 @@ namespace ToolKit
 
       LinkProgram(program->m_handle, vertexShader->m_shaderHandle, fragmentShader->m_shaderHandle);
       glUseProgram(program->m_handle);
-      for (ubyte slotIndx = 0; slotIndx < Renderer::RHIConstants::textureSlotCount; slotIndx++)
+      for (ubyte slotIndx = 0; slotIndx < Renderer::RHIConstants::TextureSlotCount; slotIndx++)
       {
         GLint loc = glGetUniformLocation(program->m_handle, ("s_texture" + std::to_string(slotIndx)).c_str());
         if (loc != -1)

@@ -222,7 +222,7 @@ namespace ToolKit
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow atlas coordinates
-          const Vec2 coord = light->m_shadowAtlasCoord / (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+          const Vec2 coord = light->m_shadowAtlasCoord / (float) Renderer::RHIConstants::ShadowAtlasTextureSize;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &coord.x);
           yIndex            = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -232,7 +232,7 @@ namespace ToolKit
           yIndex               = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow atlas resolution ratio
-          const float resRatio = light->GetShadowResVal() / Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+          const float resRatio = light->GetShadowResVal() / Renderer::RHIConstants::ShadowAtlasTextureSize;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &resRatio);
           yIndex                  = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -255,7 +255,7 @@ namespace ToolKit
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias
-          const float bias = light->GetShadowBiasVal() * Renderer::RHIConstants::g_shadowBiasMultiplier;
+          const float bias = light->GetShadowBiasVal() * Renderer::RHIConstants::ShadowBiasMultiplier;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &bias);
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -323,7 +323,7 @@ namespace ToolKit
           yIndex           = IncrementDataIndex(xIndex, 4) ? yIndex + 1 : yIndex;
 
           // Shadow atlas coordinates
-          const Vec2 coord = light->m_shadowAtlasCoord / (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+          const Vec2 coord = light->m_shadowAtlasCoord / (float) Renderer::RHIConstants::ShadowAtlasTextureSize;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &coord.x);
           yIndex            = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -333,7 +333,7 @@ namespace ToolKit
           yIndex               = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow atlas resolution ratio
-          const float resRatio = light->GetShadowResVal() / Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+          const float resRatio = light->GetShadowResVal() / Renderer::RHIConstants::ShadowAtlasTextureSize;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &resRatio);
           yIndex                  = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -356,7 +356,7 @@ namespace ToolKit
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias
-          const float bias = light->GetShadowBiasVal() * Renderer::RHIConstants::g_shadowBiasMultiplier;
+          const float bias = light->GetShadowBiasVal() * Renderer::RHIConstants::ShadowBiasMultiplier;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &bias);
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -445,7 +445,7 @@ namespace ToolKit
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow atlas coordinates
-          const Vec2 coord = light->m_shadowAtlasCoord / (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+          const Vec2 coord = light->m_shadowAtlasCoord / (float) Renderer::RHIConstants::ShadowAtlasTextureSize;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &coord.x);
           yIndex            = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -455,7 +455,7 @@ namespace ToolKit
           yIndex               = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow atlas resolution ratio
-          const float resRatio = light->GetShadowResVal() / Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+          const float resRatio = light->GetShadowResVal() / Renderer::RHIConstants::ShadowAtlasTextureSize;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &resRatio);
           yIndex                  = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -478,7 +478,7 @@ namespace ToolKit
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias
-          const float bias = light->GetShadowBiasVal() * Renderer::RHIConstants::g_shadowBiasMultiplier;
+          const float bias = light->GetShadowBiasVal() * Renderer::RHIConstants::ShadowBiasMultiplier;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &bias);
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 

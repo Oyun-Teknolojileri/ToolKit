@@ -159,16 +159,16 @@ namespace ToolKit
 
     bool m_renderOnlyLighting = false;
 
-    typedef struct RHIConstants
+    struct RHIConstants
     {
-      static constexpr ubyte textureSlotCount       = 32;
-      static constexpr size_t maxLightsPerObject    = 16;
-      static constexpr int shadowAtlasSlot          = 8;
-      static constexpr int g_shadowAtlasTextureSize = 4096;
-      static constexpr int specularIBLLods          = 5;
-      static constexpr int brdfLutTextureSize       = 512;
-      static constexpr float g_shadowBiasMultiplier = 0.0001f;
-    } m_rhiSettings;
+      static constexpr ubyte TextureSlotCount     = 32;
+      static constexpr size_t MaxLightsPerObject  = 16;
+      static constexpr int ShadowAtlasSlot        = 8;
+      static constexpr int ShadowAtlasTextureSize = 4096;
+      static constexpr int SpecularIBLLods        = 5;
+      static constexpr int BrdfLutTextureSize     = 512;
+      static constexpr float ShadowBiasMultiplier = 0.0001f;
+    };
 
    private:
     uint m_currentProgram = 0;
@@ -183,7 +183,7 @@ namespace ToolKit
     FramebufferPtr m_framebuffer = nullptr;
     TexturePtr m_shadowAtlas     = nullptr;
 
-    uint m_textureSlots[RHIConstants::textureSlotCount];
+    uint m_textureSlots[RHIConstants::TextureSlotCount];
 
     RenderState m_renderState;
 

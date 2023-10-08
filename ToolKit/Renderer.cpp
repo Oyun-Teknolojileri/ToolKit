@@ -652,12 +652,12 @@ namespace ToolKit
       set.Format         = GraphicTypes::FormatRG;
       set.Type           = GraphicTypes::TypeFloat;
       RenderTargetPtr brdfLut =
-          MakeNewPtr<RenderTarget>(m_rhiSettings::brdfLutTextureSize, m_rhiSettings::brdfLutTextureSize, set);
+          MakeNewPtr<RenderTarget>(RHIConstants::BrdfLutTextureSize, RHIConstants::BrdfLutTextureSize, set);
       brdfLut->Init();
 
       FramebufferPtr utilFramebuffer = MakeNewPtr<Framebuffer>();
       utilFramebuffer->Init(
-          {(uint) m_rhiSettings::brdfLutTextureSize, (uint) m_rhiSettings::brdfLutTextureSize, false, false});
+          {(uint) RHIConstants::BrdfLutTextureSize, (uint) RHIConstants::BrdfLutTextureSize, false, false});
       utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);
 
       MaterialPtr material       = MakeNewPtr<Material>();
@@ -910,7 +910,7 @@ namespace ToolKit
         case Uniform::IBL_MAX_REFLECTION_LOD:
         {
           GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::IBL_MAX_REFLECTION_LOD));
-          glUniform1i(loc, RHIConstants::specularIBLLods - 1);
+          glUniform1i(loc, RHIConstants::SpecularIBLLods - 1);
         }
         break;
         case Uniform::ELAPSED_TIME:
@@ -973,7 +973,7 @@ namespace ToolKit
 
   void Renderer::FeedLightUniforms(GpuProgramPtr program)
   {
-    size_t lightSize = glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
+    size_t lightSize = glm::min(m_lights.size(), RHIConstants::MaxLightsPerObject);
     for (size_t i = 0; i < lightSize; i++)
     {
       LightPtr currLight = m_lights[i];
@@ -1066,15 +1066,15 @@ namespace ToolKit
         loc = glGetUniformLocation(program->m_handle, g_lightShadowAtlasLayerStrCache[i].c_str());
         glUniform1f(loc, (GLfloat) currLight->m_shadowAtlasLayer);
 
-        const Vec2 coord = currLight->m_shadowAtlasCoord / (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+        const Vec2 coord = currLight->m_shadowAtlasCoord / (float) Renderer::RHIConstants::ShadowAtlasTextureSize;
         loc              = glGetUniformLocation(program->m_handle, g_lightShadowAtlasCoordStrCache[i].c_str());
         glUniform2fv(loc, 1, &coord.x);
 
         loc = glGetUniformLocation(program->m_handle, g_lightShadowAtlasResRatioStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetShadowResVal() / Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
+        glUniform1f(loc, currLight->GetShadowResVal() / Renderer::RHIConstants::ShadowAtlasTextureSize);
 
         loc = glGetUniformLocation(program->m_handle, g_lightShadowBiasStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetShadowBiasVal() * Renderer::RHIConstants::g_shadowBiasMultiplier);
+        glUniform1f(loc, currLight->GetShadowBiasVal() * Renderer::RHIConstants::ShadowBiasMultiplier);
       }
 
       GLuint loc = glGetUniformLocation(program->m_handle, g_lightCastShadowStrCache[i].c_str());

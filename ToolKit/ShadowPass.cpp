@@ -27,11 +27,11 @@
 #include "ShadowPass.h"
 
 #include "Camera.h"
+#include "Logger.h"
 #include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "ToolKit.h"
-#include "Logger.h"
 
 namespace ToolKit
 {
@@ -199,7 +199,7 @@ namespace ToolKit
 
       renderForShadowMapFn(light, jobs);
     }
-    }
+  }
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights)
   {
@@ -239,7 +239,7 @@ namespace ToolKit
     }
 
     std::vector<BinPack2D::PackedRect> rects =
-        m_packer.Pack(resolutions, Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
+        m_packer.Pack(resolutions, Renderer::RHIConstants::ShadowAtlasTextureSize);
 
     for (int i = 0; i < rects.size(); ++i)
     {
@@ -258,7 +258,7 @@ namespace ToolKit
       resolutions.push_back((int) light->GetShadowResVal());
     }
 
-    rects = m_packer.Pack(resolutions, Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
+    rects = m_packer.Pack(resolutions, Renderer::RHIConstants::ShadowAtlasTextureSize);
 
     for (int i = 0; i < rects.size(); ++i)
     {
@@ -271,7 +271,7 @@ namespace ToolKit
     {
       light->m_shadowAtlasLayer += lastLayerOfDirAndSpotLightShadowsUse + 1;
       light->m_shadowAtlasLayer *= 6;
-      layerCount                = std::max(light->m_shadowAtlasLayer + 5, layerCount);
+      layerCount                 = std::max(light->m_shadowAtlasLayer + 5, layerCount);
     }
 
     return layerCount + 1;
@@ -336,14 +336,14 @@ namespace ToolKit
                                        GraphicTypes::TypeFloat,
                                        m_layerCount};
 
-      m_shadowAtlas->Reconstruct(Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
-                                 Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
+      m_shadowAtlas->Reconstruct(Renderer::RHIConstants::ShadowAtlasTextureSize,
+                                 Renderer::RHIConstants::ShadowAtlasTextureSize,
                                  set);
 
       if (!m_shadowFramebuffer->Initialized())
       {
-        m_shadowFramebuffer->Init({Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
-                                   Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
+        m_shadowFramebuffer->Init({Renderer::RHIConstants::ShadowAtlasTextureSize,
+                                   Renderer::RHIConstants::ShadowAtlasTextureSize,
                                    false,
                                    true});
       }

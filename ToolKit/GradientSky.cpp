@@ -197,7 +197,7 @@ namespace ToolKit
                              renderer->GenerateSpecularEnvMap(hdr->m_cubemap,
                                                                  irRes,
                                                                  irRes,
-                                                                 Renderer::RHIConstants::specularIBLLods);
+                                                                 Renderer::RHIConstants::SpecularIBLLods);
 
                          if (m_onInit)
                          {

@@ -142,8 +142,8 @@ namespace ToolKit
       return;
     }
 
-    float atlasTextureSize = (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
-    float bias             = light->GetShadowBiasVal() * Renderer::RHIConstants::g_shadowBiasMultiplier;
+    float atlasTextureSize = (float) Renderer::RHIConstants::ShadowAtlasTextureSize;
+    float bias             = light->GetShadowBiasVal() * Renderer::RHIConstants::ShadowBiasMultiplier;
     const Mat4& projView   = light->m_shadowMapCameraProjectionViewMatrix;
     float atlasResRatio    = light->GetShadowResVal() / atlasTextureSize;
 
