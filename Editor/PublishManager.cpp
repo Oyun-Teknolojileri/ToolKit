@@ -185,7 +185,7 @@ namespace ToolKit
     {
       if (m_thread.joinable())
       {
-        m_thread.join();
+        m_thread.detach();
       }
     }
 
@@ -210,8 +210,8 @@ namespace ToolKit
       String publishArguments  = g_app->m_workspace.GetActiveProject().name + '\n';
       publishArguments        += g_app->m_workspace.GetActiveWorkspace() + '\n';
       publishArguments        += m_appName.empty() ? g_app->m_workspace.GetActiveProject().name : m_appName;
+      g_app->m_statusMsg       = "Building...";
       GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
-
       m_thread          = std::thread(CreatePackerMessageListener);
 
       String packerPath = "Utils\\Packer.exe";

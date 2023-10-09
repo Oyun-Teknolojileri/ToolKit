@@ -172,9 +172,11 @@ namespace ToolKit
     }
 
     // Load all scenes once in order to fill resource managers
+    TK_LOG("Packing Scenes");
     LoadAllScenes(sceneResourcesPath);
 
     // Get all paths of resources
+    TK_LOG("Getting all used paths");
     GetAllUsedResourcePaths(sceneResourcesPath);
 
     // Zip used resources
@@ -218,6 +220,9 @@ namespace ToolKit
 
       // Load all scenes
       String pt      = entry.path().string();
+      String name;
+      DecomposePath(pt, nullptr, &name, nullptr);
+      TK_LOG("Packing Scene: %s", name.c_str());
       ScenePtr scene = GetSceneManager()->Create<Scene>(pt);
       scene->Load();
       scene->Init();

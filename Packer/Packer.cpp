@@ -110,7 +110,6 @@ namespace ToolKit
       return 1;
     }
     char path[512] {};
-    /* Read the output a line at a time - output it. */
     while (fgets(path, sizeof(path), fp) != NULL)
     {
       TK_LOG("%s", path);
@@ -188,54 +187,11 @@ namespace ToolKit
       return ret;
     };
 
-    // Run toolkit compile script
-    Path newWorkDir(ConcatPaths({"..", "BuildScripts"}));
-    std::filesystem::current_path(newWorkDir);
-    int toolKitCompileResult = PlatformHelpers::SysComExec("WinBuildRelease.bat", false, true, nullptr);
-    if (toolKitCompileResult != 0)
-    {
-      returnLoggingError("WinBuildRelease", true);
-      TK_ERR("ToolKit could not be compiled");
-      return;
-    }
-
-    // Run plugin compile script
-    newWorkDir = Path(ConcatPaths({ResourcePath(), "..", "Windows"}));
-    std::filesystem::current_path(newWorkDir, ec);
-    if (returnLoggingError(newWorkDir.string()))
-    {
-      return;
-    }
-
-    int pluginCompileResult = PlatformHelpers::SysComExec("WinBuildRelease.bat", false, true, nullptr);
-    if (pluginCompileResult != 0)
-    {
-      returnLoggingError("WinBuildRelease.bat", true);
-      TK_ERR("Windows build has failed!");
-      return;
-    }
-    std::filesystem::current_path(workDir, ec);
-    if (returnLoggingError(workDir.string()))
-    {
-      return;
-    }
-
     // Move files to publish directory
     const String projectName      = activeProjectName;
     const String publishDirectory = ConcatPaths({ResourcePath(), "..", "Publish", "Windows"});
     const String publishBinDir    = ConcatPaths({publishDirectory, "Bin"});
     const String publishConfigDir = ConcatPaths({publishDirectory, "Config"});
-
-    const String exeFile =
-        ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".exe";
-
-    const String pakFile                = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
-    const String sdlDllPath             = ConcatPaths({workDir.string(), "SDL2.dll"});
-    const String configDirectory        = ConcatPaths({ResourcePath(), "..", "Config"});
-    const String engineSettingsPath     = ConcatPaths({ConfigPath(), "Engine.settings"});
-    const String destEngineSettingsPath = ConcatPaths({publishConfigDir, "Engine.settings"});
-
-    TK_LOG("windows build done creating and moving directories");
 
     // Create directories
     std::filesystem::create_directories(publishDirectory, ec);
@@ -253,6 +209,52 @@ namespace ToolKit
     {
       return;
     }
+
+    TK_LOG("Run toolkit compile script");
+    Path newWorkDir(ConcatPaths({"..", "BuildScripts"}));
+    std::filesystem::current_path(newWorkDir);
+    int toolKitCompileResult = RunPipe("WinBuildRelease.bat");
+    if (toolKitCompileResult != 0)
+    {
+      returnLoggingError("WinBuildRelease", true);
+      TK_ERR("ToolKit could not be compiled");
+      return;
+    }
+
+    // Run plugin compile script
+    newWorkDir = Path(ConcatPaths({ResourcePath(), "..", "Windows"}));
+    std::filesystem::current_path(newWorkDir, ec);
+    if (returnLoggingError(newWorkDir.string()))
+    {
+      return;
+    }
+
+    int pluginCompileResult = RunPipe("WinBuildRelease.bat");
+    if (pluginCompileResult != 0)
+    {
+      returnLoggingError("WinBuildRelease.bat", true);
+      TK_ERR("Windows build has failed!");
+      return;
+    }
+    std::filesystem::current_path(workDir, ec);
+    if (returnLoggingError(workDir.string()))
+    {
+      return;
+    }
+
+    std::filesystem::create_directories(ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}));
+
+    const String exeFile =
+        ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".exe";
+
+    const String pakFile                = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
+    const String sdlDllPath             = ConcatPaths({workDir.string(), "SDL2.dll"});
+    const String configDirectory        = ConcatPaths({ResourcePath(), "..", "Config"});
+    const String engineSettingsPath     = ConcatPaths({ConfigPath(), "Engine.settings"});
+    const String destEngineSettingsPath = ConcatPaths({publishConfigDir, "Engine.settings"});
+
+    TK_LOG("windows build done moving files");
+
     // Copy exe file
     std::filesystem::copy(exeFile, publishBinDir, std::filesystem::copy_options::overwrite_existing, ec);
     if (returnLoggingError(publishBinDir))
@@ -595,7 +597,7 @@ namespace ToolKit
       return;
     }
 
-    int toolKitCompileResult = PlatformHelpers::SysComExec("WebBuildRelease.bat", false, true, nullptr);
+    int toolKitCompileResult = RunPipe("WebBuildRelease.bat"); // PlatformHelpers::SysComExec("WebBuildRelease.bat", false, true, nullptr);
     if (toolKitCompileResult != 0)
     {
       returnLoggingError(true);
@@ -613,7 +615,10 @@ namespace ToolKit
       return;
     }
 
-    int pluginCompileResult = PlatformHelpers::SysComExec(pluginWebBuildScriptsFolder.c_str(), false, true, nullptr);
+    int pluginCompileResult = RunPipe(pluginWebBuildScriptsFolder);
+    // RunPipe("emcmake cmake -DEMSCRIPTEN=TRUE -DTK_CXX_EXTRA:STRING=\"-O3\" -S ../Codes -G Ninja && ninja");
+    // PlatformHelpers::SysComExec(pluginWebBuildScriptsFolder.c_str(), false, true, nullptr);
+    
     if (pluginCompileResult != 0)
     {
       returnLoggingError(true);
@@ -748,19 +753,6 @@ namespace ToolKit
     publisher.m_oriantation      = (Oriantation) ((mask >> 40) & 0xff);
     canPublish                   = true;
 
-    TK_LOG("deployAfterBuild %i"
-           " isDebugBuild %i"
-           " minSdk %i"
-           " maxSdk %i"
-           " platform %i"
-           " oriantation %i",
-           publisher.m_deployAfterBuild,
-           publisher.m_isDebugBuild,
-           publisher.m_minSdk,
-           publisher.m_maxSdk,
-           (int) publisher.m_platform,
-           (int) publisher.m_oriantation);
-
     TK_LOG("Packing Resources...");
 
     // Receive until the peer closes the connection
@@ -870,19 +862,6 @@ namespace ToolKit
     {
       std::this_thread::yield();
     }
-
-    FILE* fp = _popen("cmake --version", "r");
-    if (fp == NULL)
-    {
-      TK_LOG("Failed to run command\n");
-    }
-
-    char path[256] {};
-    /* Read the output a line at a time - output it. */
-    while (fgets(path, sizeof(path), fp) != NULL) {
-      TK_LOG("%s", path);
-    }
-    fclose(fp);
 
     publisher.Publish();
     finished = true;
