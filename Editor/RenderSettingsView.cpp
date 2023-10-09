@@ -50,8 +50,10 @@ namespace ToolKit
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         EngineSettings::PostProcessingSettings& gfx = engineSettings.PostProcessing;
-        if (gfx.TonemappingEnabled && ImGui::CollapsingHeader("Tonemapping"))
+        if (ImGui::CollapsingHeader("Tonemapping"))
         {
+          ImGui::Checkbox("ToneMapping##1", &gfx.TonemappingEnabled);
+
           const char* items[] = {"Reinhard", "ACES"};
           uint itemCount      = sizeof(items) / sizeof(items[0]);
           uint tonemapperMode = (uint) gfx.TonemapperMode;
@@ -72,8 +74,10 @@ namespace ToolKit
           }
         }
 
-        if (gfx.BloomEnabled && ImGui::CollapsingHeader("Bloom"))
+        if (ImGui::CollapsingHeader("Bloom"))
         {
+          ImGui::Checkbox("Bloom##1", &gfx.BloomEnabled);
+
           ImGui::DragFloat("Bloom Intensity", &gfx.BloomIntensity, 0.01f, 0.0f, 100.0f);
 
           ImGui::DragFloat("Bloom Threshold", &gfx.BloomThreshold, 0.01f, 0.0f, FLT_MAX);

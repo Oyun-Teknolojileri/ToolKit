@@ -37,7 +37,7 @@ namespace ToolKit
       sceneRenderer.m_params.Cam                        = viewport->GetCamera();
       sceneRenderer.m_params.ClearFramebuffer           = true;
       sceneRenderer.m_params.Gfx.BloomEnabled           = true;
-      sceneRenderer.m_params.Gfx.DepthOfFieldEnabled    = true;
+      sceneRenderer.m_params.Gfx.DepthOfFieldEnabled    = false;
       sceneRenderer.m_params.Gfx.FXAAEnabled            = true;
       sceneRenderer.m_params.Gfx.GammaCorrectionEnabled = false;
       sceneRenderer.m_params.Gfx.SSAOEnabled            = true;

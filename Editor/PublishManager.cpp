@@ -33,8 +33,10 @@
 
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "stb/stb_image_resize.h"
+#ifdef TK_DEBUG
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
+#endif
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
 
