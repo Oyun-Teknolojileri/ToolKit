@@ -44,7 +44,7 @@
 
 namespace ToolKit
 {
-  struct SceneRenderPassParams
+  struct SceneRenderPathParams
   {
     LightPtrArray Lights;
     ScenePtr Scene                 = nullptr;
@@ -57,22 +57,22 @@ namespace ToolKit
   /**
    * Main scene renderer.
    */
-  class TK_API SceneRenderer : public RenderPath
+  class TK_API SceneRenderPath : public RenderPath
   {
    public:
-    SceneRenderer();
-    explicit SceneRenderer(const SceneRenderPassParams& params);
-    virtual ~SceneRenderer();
+    SceneRenderPath();
+    explicit SceneRenderPath(const SceneRenderPathParams& params);
+    virtual ~SceneRenderPath();
 
-    void Render(Renderer* renderer) override;
-    void PreRender(Renderer* renderer);
-    void PostRender();
+    virtual void Render(Renderer* renderer) override;
+    virtual void PreRender(Renderer* renderer);
+    virtual void PostRender();
 
    private:
-    void SetPassParams();
+    virtual void SetPassParams();
 
    public:
-    SceneRenderPassParams m_params;
+    SceneRenderPathParams m_params;
 
    public:
     ShadowPassPtr m_shadowPass                         = nullptr;
@@ -90,10 +90,10 @@ namespace ToolKit
     DoFPassPtr m_dofPass                               = nullptr;
     LightPtrArray m_updatedLights;
 
-   private:
+   protected:
     bool m_drawSky   = false;
     SkyBasePtr m_sky = nullptr;
   };
 
-  typedef std::shared_ptr<SceneRenderer> SceneRendererPtr;
+  typedef std::shared_ptr<SceneRenderPath> SceneRenderPathPtr;
 } // namespace ToolKit

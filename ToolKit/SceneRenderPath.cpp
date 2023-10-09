@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include "SceneRenderer.h"
+#include "SceneRenderPath.h"
 
 #include "Scene.h"
 #include "ToolKit.h"
@@ -36,7 +36,7 @@
 namespace ToolKit
 {
 
-  SceneRenderer::SceneRenderer()
+  SceneRenderPath::SceneRenderPath()
   {
     m_shadowPass            = MakeNewPtr<ShadowPass>();
     m_forwardRenderPass     = MakeNewPtr<ForwardRenderPass>();
@@ -53,9 +53,9 @@ namespace ToolKit
     m_dofPass               = MakeNewPtr<DoFPass>();
   }
 
-  SceneRenderer::SceneRenderer(const SceneRenderPassParams& params) : SceneRenderer() { m_params = params; }
+  SceneRenderPath::SceneRenderPath(const SceneRenderPathParams& params) : SceneRenderPath() { m_params = params; }
 
-  SceneRenderer::~SceneRenderer()
+  SceneRenderPath::~SceneRenderPath()
   {
     m_shadowPass         = nullptr;
     m_forwardRenderPass  = nullptr;
@@ -71,7 +71,7 @@ namespace ToolKit
     m_dofPass            = nullptr;
   }
 
-  void SceneRenderer::Render(Renderer* renderer)
+  void SceneRenderPath::Render(Renderer* renderer)
   {
     PreRender(renderer);
 
@@ -83,7 +83,7 @@ namespace ToolKit
 
     // Gbuffer for deferred render
     m_passArray.push_back(m_gBufferPass);
-    
+
     m_passArray.push_back(m_forwardPreProcessPass);
 
     // SSAO pass
@@ -146,17 +146,20 @@ namespace ToolKit
     PostRender();
   }
 
-  void SceneRenderer::PreRender(Renderer* renderer)
+  void SceneRenderPath::PreRender(Renderer* renderer)
   {
     SetPassParams();
 
     m_gBufferPass->InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
                                 m_params.MainFramebuffer->GetSettings().height);
+
+    m_forwardPreProcessPass->InitBuffers(m_params.MainFramebuffer->GetSettings().width,
+                                         m_params.MainFramebuffer->GetSettings().height);
   }
 
-  void SceneRenderer::PostRender() { m_updatedLights.clear(); }
+  void SceneRenderPath::PostRender() { m_updatedLights.clear(); }
 
-  void SceneRenderer::SetPassParams()
+  void SceneRenderPath::SetPassParams()
   {
     // Update all lights before using them.
     m_updatedLights = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
@@ -198,6 +201,7 @@ namespace ToolKit
     m_forwardRenderPass->m_params.FrameBuffer         = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.gFrameBuffer        = m_gBufferPass->m_framebuffer;
     m_forwardRenderPass->m_params.SSAOEnabled         = m_params.Gfx.SSAOEnabled;
+    m_forwardRenderPass->m_params.SsaoTexture         = m_ssaoPass->m_ssaoTexture;
     m_forwardRenderPass->m_params.ClearFrameBuffer    = false;
     m_forwardRenderPass->m_params.OpaqueJobs          = forward;
     m_forwardRenderPass->m_params.TranslucentJobs     = translucent;
@@ -211,7 +215,6 @@ namespace ToolKit
     m_lightingPass->m_params.Cam                      = m_params.Cam;
     m_lightingPass->m_params.AOTexture                = m_params.Gfx.SSAOEnabled ? m_ssaoPass->m_ssaoTexture : nullptr;
 
-    m_ssaoPass->m_params.GPositionBuffer              = m_gBufferPass->m_gPosRt;
     m_ssaoPass->m_params.GNormalBuffer                = m_forwardPreProcessPass->m_normalRt;
     m_ssaoPass->m_params.GLinearDepthBuffer           = m_forwardPreProcessPass->m_linearDepthRt;
     m_ssaoPass->m_params.Cam                          = m_params.Cam;

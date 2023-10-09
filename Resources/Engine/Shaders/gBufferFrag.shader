@@ -13,7 +13,6 @@
 	<uniform name = "metallic" />
 	<uniform name = "roughness" />
   <uniform name = "normalMapInUse" />
-	<uniform name = "lightingType" />
 	<source>
 	<!--
 		#version 300 es
@@ -52,8 +51,6 @@
 		uniform int normalMapInUse;
 
 		uniform mat4 View;
-
-		uniform int lightingType;
 
 		void main()
 		{

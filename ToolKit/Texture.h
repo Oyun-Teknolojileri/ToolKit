@@ -140,8 +140,6 @@ namespace ToolKit
     MaterialPtr m_texToCubemapMat           = nullptr;
     MaterialPtr m_cubemapToDiffuseEnvMapMat = nullptr;
     TexturePtr m_equirectangularTexture     = nullptr;
-
-    const int m_brdfLutTextureSize          = 512;
   };
 
   struct RenderTargetSettigs

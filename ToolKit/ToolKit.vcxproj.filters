@@ -150,7 +150,7 @@
     <ClCompile Include="RenderState.cpp">
       <Filter>Source\Render</Filter>
     </ClCompile>
-    <ClCompile Include="SceneRenderer.cpp">
+    <ClCompile Include="SceneRenderPath.cpp">
       <Filter>Source\Render</Filter>
     </ClCompile>
     <ClCompile Include="RenderSystem.cpp">
@@ -244,6 +244,9 @@
       <Filter>Source\Render\RenderPass</Filter>
     </ClCompile>
     <ClCompile Include="TKOpenGL.cpp">
+      <Filter>Source\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="MobileSceneRenderPath.cpp">
       <Filter>Source\Render</Filter>
     </ClCompile>
   </ItemGroup>
@@ -389,7 +392,7 @@
     <ClInclude Include="RenderState.h">
       <Filter>Source\Render</Filter>
     </ClInclude>
-    <ClInclude Include="SceneRenderer.h">
+    <ClInclude Include="SceneRenderPath.h">
       <Filter>Source\Render</Filter>
     </ClInclude>
     <ClInclude Include="GBufferPass.h">
@@ -496,6 +499,8 @@
     </ClInclude>
     <ClInclude Include="TKSocket.h">
       <Filter>Source</Filter>
+    <ClInclude Include="MobileSceneRenderPath.h">
+      <Filter>Source\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

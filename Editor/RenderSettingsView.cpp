@@ -44,12 +44,16 @@ namespace ToolKit
 
     void RenderSettingsView::Show()
     {
+      EngineSettings& engineSettings = GetEngineSettings();
+
       ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_Once);
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        EngineSettings::PostProcessingSettings& gfx = GetEngineSettings().PostProcessing;
-        if (gfx.TonemappingEnabled && ImGui::CollapsingHeader("Tonemapping"))
+        EngineSettings::PostProcessingSettings& gfx = engineSettings.PostProcessing;
+        if (ImGui::CollapsingHeader("Tonemapping"))
         {
+          ImGui::Checkbox("ToneMapping##1", &gfx.TonemappingEnabled);
+
           const char* items[] = {"Reinhard", "ACES"};
           uint itemCount      = sizeof(items) / sizeof(items[0]);
           uint tonemapperMode = (uint) gfx.TonemapperMode;
@@ -70,8 +74,10 @@ namespace ToolKit
           }
         }
 
-        if (gfx.BloomEnabled && ImGui::CollapsingHeader("Bloom"))
+        if (ImGui::CollapsingHeader("Bloom"))
         {
+          ImGui::Checkbox("Bloom##1", &gfx.BloomEnabled);
+
           ImGui::DragFloat("Bloom Intensity", &gfx.BloomIntensity, 0.01f, 0.0f, 100.0f);
 
           ImGui::DragFloat("Bloom Threshold", &gfx.BloomThreshold, 0.01f, 0.0f, FLT_MAX);
@@ -123,6 +129,27 @@ namespace ToolKit
         {
           ImGui::Checkbox("FXAA##1", &gfx.FXAAEnabled);
         }
+
+        ImGui::Separator();
+
+        const char* renderSpecNames[] = {"High", "Low"};
+        const int currentRenderSpec   = (int) engineSettings.Graphics.RenderSpec;
+        const int specCount           = 2;
+        if (ImGui::BeginCombo("Rendering Spec", renderSpecNames[currentRenderSpec]))
+        {
+          for (uint specIndex = 0; specIndex < specCount; specIndex++)
+          {
+            bool isSelected      = false;
+            const char* itemName = renderSpecNames[specIndex];
+            ImGui::Selectable(itemName, &isSelected);
+            if (isSelected)
+            {
+              engineSettings.Graphics.RenderSpec = (RenderingSpec) specIndex;
+            }
+          }
+          ImGui::EndCombo();
+        }
+
       } // Imgui::Begin
       ImGui::End();
     }

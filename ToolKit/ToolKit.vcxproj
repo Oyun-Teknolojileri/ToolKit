@@ -48,6 +48,7 @@
     <ClCompile Include="MathUtil.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
+    <ClCompile Include="MobileSceneRenderPath.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="ObjectFactory.cpp" />
     <ClCompile Include="OutlinePass.cpp" />
@@ -67,7 +68,7 @@
     <ClCompile Include="ResourceComponent.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="SceneRenderer.cpp" />
+    <ClCompile Include="SceneRenderPath.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShadowPass.cpp" />
     <ClCompile Include="Skeleton.cpp" />
@@ -128,13 +129,14 @@
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="Meta.h" />
+    <ClInclude Include="MobileSceneRenderPath.h" />
     <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="OutlinePass.h" />
     <ClInclude Include="Pass.h" />
     <ClInclude Include="PostProcessPass.h" />
     <ClInclude Include="RendererGlobals.h" />
     <ClInclude Include="RenderSystem.h" />
-    <ClInclude Include="SceneRenderer.h" />
+    <ClInclude Include="SceneRenderPath.h" />
     <ClInclude Include="ShaderReflectionCache.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Logger.h" />
