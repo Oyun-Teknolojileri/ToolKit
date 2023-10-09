@@ -47,10 +47,11 @@
 
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "stb/stb_image_resize.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb/stb_image.h"
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
+
+extern "C" unsigned char* stbi_load(const char* filename, int* x, int* y, int* comp, int req_comp);
 
 #include <SDL.h>
 
@@ -110,7 +111,7 @@ namespace ToolKit
 #endif
     if (fp == nullptr) 
     {
-      TK_LOG("pipe run failed! %s", command.c_str());
+      TK_LOG("pipe run failed! command: %s", command.c_str());
       return 1;
     }
     char path[512] {};
@@ -312,7 +313,7 @@ namespace ToolKit
     }
     TK_LOG("Preparing Icons");
     int refWidth, refHeight, refComp;
-    stbi_uc* refImage = stbi_load(m_icon->GetFile().c_str(), &refWidth, &refHeight, &refComp, 0);
+    unsigned char* refImage = stbi_load(m_icon->GetFile().c_str(), &refWidth, &refHeight, &refComp, 0);
 
     // search each folder in res folder and find icons, replace that icons with new ones
     for (const auto& entry : std::filesystem::directory_iterator(resLocation))
@@ -333,7 +334,7 @@ namespace ToolKit
         {
           int width, height, comp;
           // get the image that we want to replace
-          stbi_uc* img = stbi_load(path.c_str(), &width, &height, &comp, 0);
+          unsigned char* img = stbi_load(path.c_str(), &width, &height, &comp, 0);
           assert(img && "cannot load android icon");
           int res;
           res = stbir_resize_uint8(refImage, refWidth, refHeight, 0, img, width, height, 0, comp);
@@ -341,11 +342,11 @@ namespace ToolKit
           // write resized image
           res = stbi_write_png(path.c_str(), width, height, comp, img, 0);
           assert(res && "cannot write to android icon");
-          stbi_image_free(img);
+          free(img);
         }
       }
     }
-    stbi_image_free(refImage);
+    free(refImage);
   }
 
   void PublishManager::AndroidRunOnPhone()
