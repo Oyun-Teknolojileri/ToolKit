@@ -214,7 +214,7 @@ namespace ToolKit
       GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
       m_thread          = std::thread(CreatePackerMessageListener);
 
-      String packerPath = "Utils\\Packer.exe";
+      String packerPath = "Utils\\Packer\\Packer.exe";
       NormalizePath(packerPath);
       // close zip file before running packer, because packer will use this file as well,
       // this will cause errors otherwise
