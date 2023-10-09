@@ -103,7 +103,11 @@ namespace ToolKit
 
   int RunPipe(const String& command) 
   {
+#ifdef _WIN32
     FILE* fp = _popen(command.c_str(), "r");
+#else
+    FILE* fp = popen(command.c_str(), "r");
+#endif
     if (fp == nullptr) 
     {
       TK_LOG("pipe run failed! %s", command.c_str());
@@ -616,8 +620,6 @@ namespace ToolKit
     }
 
     int pluginCompileResult = RunPipe(pluginWebBuildScriptsFolder);
-    // RunPipe("emcmake cmake -DEMSCRIPTEN=TRUE -DTK_CXX_EXTRA:STRING=\"-O3\" -S ../Codes -G Ninja && ninja");
-    // PlatformHelpers::SysComExec(pluginWebBuildScriptsFolder.c_str(), false, true, nullptr);
     
     if (pluginCompileResult != 0)
     {
