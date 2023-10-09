@@ -38,6 +38,7 @@ namespace ToolKit
     FramebufferPtr gFrameBuffer    = nullptr;
     RenderTargetPtr gNormalRt      = nullptr;
     RenderTargetPtr gLinearRt      = nullptr;
+    RenderTargetPtr SsaoTexture    = nullptr;
     bool ClearFrameBuffer          = true;  //!< Clears whole buffer
     bool ClearDepthBuffer          = false; //!< Clears only depth buffer.
     bool SSAOEnabled               = false;

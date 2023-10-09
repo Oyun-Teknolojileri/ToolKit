@@ -126,6 +126,7 @@ namespace ToolKit
 
     WriteAttr(settings, doc, "MSAA", std::to_string(gfx.MSAA));
     WriteAttr(settings, doc, "FPS", std::to_string(gfx.FPS));
+    WriteAttr(settings, doc, "RenderSpec", std::to_string((int) gfx.RenderSpec));
   }
 
   void EngineSettings::DeSerializeGraphics(XmlDocument* doc, XmlNode* parent)
@@ -137,6 +138,10 @@ namespace ToolKit
     }
     ReadAttr(node, "MSAA", Graphics.MSAA);
     ReadAttr(node, "FPS", Graphics.FPS);
+
+    int renderSpec;
+    ReadAttr(node, "RenderSpec", renderSpec);
+    Graphics.RenderSpec = (RenderingSpec) renderSpec;
   }
 
   XmlNode* EngineSettings::SerializeImp(XmlDocument* doc, XmlNode* parent) const

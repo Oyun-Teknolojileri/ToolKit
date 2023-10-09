@@ -26,38 +26,38 @@
 
 #pragma once
 
+#include "BloomPass.h"
+#include "CubemapPass.h"
+#include "EngineSettings.h"
 #include "ForwardPass.h"
-#include "Material.h"
+#include "ForwardPreProcessPass.h"
+#include "FxaaPass.h"
 #include "Pass.h"
-#include "Texture.h"
+#include "RenderSystem.h"
+#include "ShadowPass.h"
+#include "SsaoPass.h"
+#include "ToneMapPass.h"
+#include "SceneRenderPath.h"
 
 namespace ToolKit
 {
-
-  class TK_API ForwardPreProcess : public RenderPass
+  /**
+   * Mobile scene render path.
+   */
+  class TK_API MobileSceneRenderPath : public SceneRenderPath
   {
    public:
-    ForwardPreProcess();
-    ~ForwardPreProcess();
+    MobileSceneRenderPath();
+    explicit MobileSceneRenderPath(const SceneRenderPathParams& params);
+    virtual ~MobileSceneRenderPath();
 
-    void InitBuffers(uint width, uint height);
-    void Render() override;
-    void PreRender() override;
+    void Render(Renderer* renderer) override;
+    void PreRender(Renderer* renderer) override;
     void PostRender() override;
 
-    private:
-    void InitDefaultDepthTexture(int width, int height);
-
-   public:
-    ForwardRenderPassParams m_params;
-    MaterialPtr m_linearMaterial    = nullptr;
-    FramebufferPtr m_framebuffer    = nullptr;
-
-    DepthTexturePtr m_depthTexture  = nullptr; // This is used in case there is no gbuffer
-    RenderTargetPtr m_normalRt      = nullptr;
-    RenderTargetPtr m_linearDepthRt = nullptr;
+   private:
+    void SetPassParams() override;
   };
 
-  typedef std::shared_ptr<ForwardPreProcess> ForwardPreProcessPassPtr;
-
+  typedef std::shared_ptr<MobileSceneRenderPath> MobileSceneRenderPathPtr;
 } // namespace ToolKit

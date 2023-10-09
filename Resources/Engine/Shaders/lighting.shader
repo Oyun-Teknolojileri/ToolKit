@@ -488,6 +488,123 @@ vec3 PBRLightingDeferred(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo,
 
 	return irradiance;
 }
+
+// Vectors should be normalized (except for color)
+vec3 PhongDiffuse(vec3 normal, vec3 fragToLight, vec3 color)
+{
+			float diff = max(dot(normal, fragToLight), 0.0);
+			vec3 diffuse = diff * color;
+			return diffuse;
+}
+
+// Vectors should be normalized (except for color)
+vec3 BlinnPhongSpecular(vec3 fragToLight, vec3 fragToEye, vec3 normal, float shininess, float strength, vec3 color)
+{
+	vec3 halfwayDir = normalize(fragToLight + fragToEye);  
+	float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
+	vec3 specular = strength * spec * color;
+	return specular;
+}
+
+void PointLightBlinnPhong(vec3 fragToLight, vec3 fragToEye, vec3 normal, vec3 color, float radius, out vec3 diffuse, out vec3 specular)
+{
+	vec3 l = normalize(fragToLight);
+
+	// No need calculation for the fragments outside of the light radius
+	float radiusCheck = RadiusCheck(radius, length(fragToLight));
+
+	float attenuation = Attenuation(length(fragToLight), radius, 1.0, 0.09, 0.032);
+	diffuse = PhongDiffuse(normal, l, color);
+	specular = BlinnPhongSpecular(l, fragToEye, normal, 32.0, 0.4, color);
+
+	diffuse  *= attenuation * radiusCheck;
+	specular *= attenuation * radiusCheck;
+}
+
+void DirectionalLightBlinnPhong(vec3 fragToLight, vec3 fragToEye, vec3 normal, vec3 color, out vec3 diffuse, out vec3 specular)
+{
+	diffuse = PhongDiffuse(normal, fragToLight, color);
+	specular = BlinnPhongSpecular(fragToLight, fragToEye, normal, 32.0, 0.4, color);
+}
+
+void SpotLightBlinnPhong(vec3 fragToLight, vec3 fragToEye, vec3 normal, vec3 color, vec3 direction, float radius,
+	float innerAngle, float outerAngle, out vec3 diffuse, out vec3 specular)
+{
+			vec3 fragToLightNorm = normalize(fragToLight);
+			float fragToLightDist = length(fragToLight);
+
+			// No need calculation for the fragments outside of the light radius
+			float radiusCheck = RadiusCheck(radius, fragToLightDist);
+
+			float attenuation = Attenuation(fragToLightDist, radius, 1.0, 0.09, 0.032);
+			diffuse = PhongDiffuse(normal, fragToLightNorm, color);
+			specular = BlinnPhongSpecular(fragToLightNorm, fragToEye, normal, 32.0, 0.4, color);
+
+			// Lighting angle and falloff
+			float theta = dot(-fragToLightNorm, direction);
+			float epsilon = innerAngle - outerAngle;
+			float intensity = clamp((theta - outerAngle) / epsilon, 0.0, 1.0);
+
+			diffuse *= intensity * radiusCheck * attenuation;
+			specular *= intensity * radiusCheck * attenuation;
+}
+
+vec3 BlinnPhongLighting(vec3 fragPos, vec3 normal, vec3 fragToEye)
+{
+	float shadow = 1.0;
+	vec3 irradiance = vec3(0.0);
+
+	for (int i = 0; i < LightData.activeCount; i++)
+	{
+		shadow = 1.0;
+		vec3 diffuse = vec3(0.0);
+		vec3 specular = vec3(0.0);
+		if (LightData.type[i] == 2) // Point light
+		{
+			// Light
+			PointLightBlinnPhong(LightData.pos[i] - fragPos, fragToEye, normal, LightData.color[i], LightData.radius[i], diffuse, specular);
+
+			// Shadow
+			if (LightData.castShadow[i] == 1)
+			{
+				shadow = CalculatePointShadow(fragPos, LightData.pos[i], LightData.shadowMapCameraFar[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
+					LightData.shadowAtlasLayer[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.BleedingReduction[i], LightData.shadowBias[i]);
+			}
+		}
+		else if (LightData.type[i] == 1) // Directional light
+		{
+			// Light
+			DirectionalLightBlinnPhong(-LightData.dir[i], fragToEye, normal, LightData.color[i], diffuse, specular);
+
+			// Shadow
+			if (LightData.castShadow[i] == 1)
+			{
+				shadow = CalculateDirectionalShadow(fragPos, LightData.projectionViewMatrix[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
+					LightData.shadowAtlasLayer[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.BleedingReduction[i],
+					LightData.shadowBias[i]);
+			}		
+		}
+		else if (LightData.type[i] == 3) // Spot light
+		{
+			// Light
+			SpotLightBlinnPhong(LightData.pos[i] - fragPos, fragToEye, normal, LightData.color[i], LightData.dir[i], LightData.radius[i],
+				LightData.innAngle[i], LightData.outAngle[i], diffuse, specular);
+
+			// Shadow
+			if (LightData.castShadow[i] == 1)
+			{
+				shadow = CalculateSpotShadow(fragPos, LightData.pos[i], LightData.projectionViewMatrix[i], LightData.shadowMapCameraFar[i], LightData.shadowAtlasCoord[i],
+					LightData.shadowAtlasResRatio[i], LightData.shadowAtlasLayer[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.BleedingReduction[i],
+					LightData.shadowBias[i]);
+			}
+		}
+
+		irradiance += (diffuse + specular) * LightData.intensity[i] * shadow;
+	}
+
+	return irradiance;
+}
+
 	-->
 	</source>
 </shader>

@@ -27,16 +27,20 @@
 #pragma once
 
 #include "BillboardPass.h"
+#include "BloomPass.h"
 #include "EditorLight.h"
+#include "FxaaPass.h"
+#include "GammaPass.h"
 #include "Gizmo.h"
 #include "GizmoPass.h"
 #include "Global.h"
+#include "MobileSceneRenderPath.h"
 #include "OutlinePass.h"
 #include "Pass.h"
 #include "PostProcessPass.h"
 #include "Primative.h"
 #include "RenderSystem.h"
-#include "SceneRenderer.h"
+#include "SceneRenderPath.h"
 #include "SingleMaterialPass.h"
 
 namespace ToolKit
@@ -81,6 +85,7 @@ namespace ToolKit
       class App* App                 = nullptr;
       class EditorViewport* Viewport = nullptr;
       EditorLitMode LitMode          = EditorLitMode::EditorLit;
+      bool UseMobileRenderPath       = false;
     };
 
     class EditorRenderer : public RenderPath
@@ -119,7 +124,8 @@ namespace ToolKit
       MaterialPtr m_blackMaterial                       = nullptr;
 
       BillboardPassPtr m_billboardPass                  = nullptr;
-      SceneRendererPtr m_scenePass                      = nullptr;
+      SceneRenderPathPtr m_sceneRenderPath              = nullptr;
+      MobileSceneRenderPathPtr m_mobileSceneRenderPath  = nullptr;
       ForwardRenderPassPtr m_uiPass                     = nullptr;
       ForwardRenderPassPtr m_editorPass                 = nullptr;
       GizmoPassPtr m_gizmoPass                          = nullptr;

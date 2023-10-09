@@ -183,7 +183,7 @@ namespace ToolKit
 
           String resourcesPath = ConcatPaths({dirPath, "Resources"});
           String codesPath     = ConcatPaths({dirPath, "Codes"});
-          
+
           // Skip directory if it doesn't have folders: Resources, Codes
           if (!std::filesystem::directory_entry(resourcesPath).is_directory() ||
               !std::filesystem::directory_entry(codesPath).is_directory())
@@ -323,6 +323,11 @@ namespace ToolKit
       if (file.is_open())
       {
         XmlDocument* lclDoc = new XmlDocument();
+
+        // Always write the current version.
+        XmlNode* version    = lclDoc->allocate_node(rapidxml::node_element, "Version");
+        lclDoc->append_node(version);
+        WriteAttr(version, lclDoc, "version", TKVersionStr);
 
         GetEngineSettings().SerializeWindow(lclDoc, nullptr);
         GetEngineSettings().SerializeGraphics(lclDoc, nullptr);
