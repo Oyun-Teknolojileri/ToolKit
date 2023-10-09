@@ -101,6 +101,23 @@ namespace ToolKit
     PublishPlatform m_platform = PublishPlatform::Windows;
   };
 
+  int RunPipe(const String& command) 
+  {
+    FILE* fp = _popen(command.c_str(), "r");
+    if (fp == nullptr) 
+    {
+      TK_LOG("pipe run failed! %s", command.c_str());
+      return 1;
+    }
+    char path[512] {};
+    /* Read the output a line at a time - output it. */
+    while (fgets(path, sizeof(path), fp) != NULL)
+    {
+      TK_LOG("%s", path);
+    }
+    return fclose(fp);
+  }
+
   int PublishManager::PackResources()
   {
     String projectName = activeProjectName;
@@ -489,13 +506,10 @@ namespace ToolKit
       const String publishApkPath  = ConcatPaths({publishDirStr, projectName});
 
       // Create directories
-      if (!std::filesystem::exists(publishDirStr))
+      std::filesystem::create_directories(publishDirStr, ec);
+      if (returnLoggingError())
       {
-        std::filesystem::create_directories(publishDirStr, ec);
-        if (returnLoggingError())
-        {
-          return;
-        }
+        return;
       }
 
       std::filesystem::copy(apkPathStr, publishApkPath, std::filesystem::copy_options::overwrite_existing, ec);
@@ -517,7 +531,9 @@ namespace ToolKit
 
     // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
     String command    = m_isDebugBuild ? "gradlew assembleDebug" : "gradlew assemble";
-    int compileResult = compileResult = PlatformHelpers::SysComExec(command, false, true, afterBuildFn);
+    
+    int compileResult = RunPipe(command); // compileResult = PlatformHelpers::SysComExec(command, false, true, afterBuildFn);
+    afterBuildFn(compileResult);
 
     if (compileResult != 0)
     {
@@ -854,6 +870,19 @@ namespace ToolKit
     {
       std::this_thread::yield();
     }
+
+    FILE* fp = _popen("cmake --version", "r");
+    if (fp == NULL)
+    {
+      TK_LOG("Failed to run command\n");
+    }
+
+    char path[256] {};
+    /* Read the output a line at a time - output it. */
+    while (fgets(path, sizeof(path), fp) != NULL) {
+      TK_LOG("%s", path);
+    }
+    fclose(fp);
 
     publisher.Publish();
     finished = true;

@@ -140,11 +140,11 @@ namespace ToolKit
           // a: error, b: memo, c: success, d: warning
           if (recvbuf[0] == 'a' + (char) LogType::Error)
           {
-            TK_ERR("PACKER %s", recvbuf + 1);
+            TK_ERR("P: %s", recvbuf + 1);
           }
           else if (recvbuf[0] == 'a' + (char) LogType::Memo)
           {
-            TK_LOG("PACKER %s", recvbuf + 1);
+            TK_LOG("P: %s", recvbuf + 1);
           }
           else if (recvbuf[0] == 'a' + (char) LogType::Success)
           {
@@ -152,7 +152,7 @@ namespace ToolKit
           }
           else if (recvbuf[0] == 'a' + (char) LogType::Warning)
           {
-            TK_WRN("PACKER %s", recvbuf + 1);
+            TK_WRN("P: %s", recvbuf + 1);
           }
 
           memset(recvbuf, 0, sizeof(recvbuf));
