@@ -264,8 +264,7 @@ namespace ToolKit
 
   void DecomposePath(const String& fullPath, String* path, String* name, String* ext)
   {
-    String normal = fullPath;
-    NormalizePath(normal);
+    String normal = NormalizePathInplace(fullPath);
 
     size_t ind1 = normal.find_last_of(GetPathSeparator());
     if (path != nullptr)
@@ -295,6 +294,16 @@ namespace ToolKit
 #else
     DosifyPath(path);
 #endif
+  }
+  
+  String NormalizePathInplace(String path)
+  {
+#if __clang__
+    UnixifyPath(path);
+#else
+    DosifyPath(path);
+#endif
+    return path;
   }
 
   void UnixifyPath(String& path) { ReplaceCharInPlace(path, '\\', '/'); }

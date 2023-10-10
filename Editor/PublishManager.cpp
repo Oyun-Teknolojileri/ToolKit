@@ -140,19 +140,19 @@ namespace ToolKit
           // a: error, b: memo, c: success, d: warning
           if (recvbuf[0] == 'a' + (char) LogType::Error)
           {
-            TK_ERR("P: %s", recvbuf + 1);
+            TK_ERR("Packer: %s", recvbuf + 1);
           }
           else if (recvbuf[0] == 'a' + (char) LogType::Memo)
           {
-            TK_LOG("P: %s", recvbuf + 1);
+            TK_LOG("Packer: %s", recvbuf + 1);
           }
           else if (recvbuf[0] == 'a' + (char) LogType::Success)
           {
-            GetLogger()->WriteConsole(LogType::Success, "PACKER %s", recvbuf + 1);
+            GetLogger()->WriteConsole(LogType::Success, "Packer: %s", recvbuf + 1);
           }
           else if (recvbuf[0] == 'a' + (char) LogType::Warning)
           {
-            TK_WRN("P: %s", recvbuf + 1);
+            TK_WRN("Packer: %s", recvbuf + 1);
           }
 
           memset(recvbuf, 0, sizeof(recvbuf));
@@ -210,7 +210,7 @@ namespace ToolKit
       String publishArguments  = g_app->m_workspace.GetActiveProject().name + '\n';
       publishArguments        += g_app->m_workspace.GetActiveWorkspace() + '\n';
       publishArguments        += m_appName.empty() ? g_app->m_workspace.GetActiveProject().name : m_appName;
-      g_app->m_statusMsg       = "Building...";
+      g_app->m_statusMsg       = "Packing...";
       GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
       m_thread          = std::thread(CreatePackerMessageListener);
 

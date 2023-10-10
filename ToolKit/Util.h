@@ -68,6 +68,8 @@ namespace ToolKit
   TK_API void DecomposePath(const String& fullPath, String* path, String* name, String* ext);
 
   TK_API void NormalizePath(String& path);
+  TK_API String NormalizePathInplace(String path);
+  
   TK_API void UnixifyPath(String& path);
   TK_API void DosifyPath(String& path);
   TK_API String ConcatPaths(const StringArray& entries);
