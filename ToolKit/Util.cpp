@@ -229,7 +229,7 @@ namespace ToolKit
     if (XmlNode* materialNode = parent->first_node("material"))
     {
       String path = materialNode->first_attribute("name")->value();
-      NormalizePath(path);
+      NormalizePathInplace(path);
       String matFile = MaterialPath(path);
       return GetMaterialManager()->Create<Material>(matFile);
     }
@@ -264,7 +264,7 @@ namespace ToolKit
 
   void DecomposePath(const String& fullPath, String* path, String* name, String* ext)
   {
-    String normal = NormalizePathInplace(fullPath);
+    String normal = NormalizePath(fullPath);
 
     size_t ind1 = normal.find_last_of(GetPathSeparator());
     if (path != nullptr)
@@ -287,7 +287,7 @@ namespace ToolKit
     }
   }
 
-  void NormalizePath(String& path)
+  void NormalizePathInplace(String& path)
   {
 #if __clang__
     UnixifyPath(path);
@@ -296,7 +296,7 @@ namespace ToolKit
 #endif
   }
   
-  String NormalizePathInplace(String path)
+  String NormalizePath(String path)
   {
 #if __clang__
     UnixifyPath(path);

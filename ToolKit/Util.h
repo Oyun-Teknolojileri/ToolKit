@@ -67,8 +67,8 @@ namespace ToolKit
   TK_API String CreateCopyFileFullPath(const String& fullPath);
   TK_API void DecomposePath(const String& fullPath, String* path, String* name, String* ext);
 
-  TK_API void NormalizePath(String& path);
-  TK_API String NormalizePathInplace(String path);
+  TK_API String NormalizePath(String path);
+  TK_API void NormalizePathInplace(String& path);
   
   TK_API void UnixifyPath(String& path);
   TK_API void DosifyPath(String& path);

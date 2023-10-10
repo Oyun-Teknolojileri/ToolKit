@@ -278,7 +278,7 @@ namespace ToolKit
     {
       return;
     }
-    String assetsPath = NormalizePathInplace("Android/app/src/main/res");
+    String assetsPath = NormalizePath("Android/app/src/main/res");
     String projectName = activeProjectName;
     String resLocation = ConcatPaths({workspacePath, projectName, assetsPath});
     
@@ -346,7 +346,7 @@ namespace ToolKit
       return false;
     };
 
-    String apkPath = NormalizePathInplace("Android\\app\\build\\outputs\\apk");
+    String apkPath     = NormalizePath("Android\\app\\build\\outputs\\apk");
     apkPath            = ConcatPaths({apkPath, m_isDebugBuild ? "debug" : "release"});
     apkPath            = ConcatPaths({apkPath, m_isDebugBuild ? "app-debug.apk" : "app-release-unsigned.apk"});
 
@@ -374,7 +374,7 @@ namespace ToolKit
     TK_LOG("Editing Android Manifest\n");
     String projectName     = activeProjectName;
     String applicationName = m_appName;
-    String mainPath        = NormalizePathInplace("Android/app/src/main");
+    String mainPath        = NormalizePath("Android/app/src/main");
     // get manifest file from template
     String androidManifest = GetFileManager()->ReadAllText(
         std::filesystem::absolute(ConcatPaths({"..", "Template", mainPath, "AndroidManifest.xml"})).string());
@@ -438,7 +438,7 @@ namespace ToolKit
       return 1;
     }
 
-    String assetsPath = NormalizePathInplace("Android/app/src/main/assets");
+    String assetsPath = NormalizePath("Android/app/src/main/assets");
     String projectLocation                         = ConcatPaths({workspacePath, projectName});
     String sceneResourcesPath                      = ConcatPaths({projectLocation, "MinResources.pak"});
     String androidResourcesPath                    = ConcatPaths({projectLocation, assetsPath, "MinResources.pak"});
@@ -474,7 +474,7 @@ namespace ToolKit
         return 1;
       }
 
-      String buildLocation = NormalizePathInplace(ConcatPaths({projectLocation, "Android/app/build/outputs/apk"}));
+      String buildLocation = NormalizePath(ConcatPaths({projectLocation, "Android/app/build/outputs/apk"}));
       buildLocation        = ConcatPaths({buildLocation, m_isDebugBuild ? "debug" : "release"});
       const String publishDirStr   = ConcatPaths({ResourcePath(), "..", "Publish", "Android"});
       const String apkName         = m_isDebugBuild ? "app-debug.apk" : "app-release-unsigned.apk";

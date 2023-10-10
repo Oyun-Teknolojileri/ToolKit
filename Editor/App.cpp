@@ -307,7 +307,7 @@ namespace ToolKit
         EditorScenePtr currScene = g_app->GetCurrentScene();
         DecomposePath(currScene->GetFile(), &path, nullptr, nullptr);
 
-        String fullPath = NormalizePathInplace(ConcatPaths({path, val + SCENE}));
+        String fullPath = NormalizePath(ConcatPaths({path, val + SCENE}));
 
         currScene->SetFile(fullPath);
         currScene->m_name = val;

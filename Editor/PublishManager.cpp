@@ -78,7 +78,7 @@ namespace ToolKit
       GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
       g_app->m_statusMsg = "Packing...";
 
-      String packerPath  = NormalizePathInplace("Utils\\Packer\\Packer.exe");
+      String packerPath  = NormalizePath("Utils\\Packer\\Packer.exe");
       // close zip file before running packer, because packer will use this file as well,
       // this will cause errors otherwise
       GetFileManager()->CloseZipFile();
