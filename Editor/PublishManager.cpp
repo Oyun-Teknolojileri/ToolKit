@@ -41,6 +41,14 @@ namespace ToolKit
 {
   namespace Editor
   {
+    PublishManager::~PublishManager() 
+    {
+      if (m_thread.joinable())
+      {
+        m_thread.detach();
+      }
+    }
+
     void PublishManager::Publish(PublishPlatform platform)
     {
       if (IsBuilding)

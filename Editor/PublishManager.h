@@ -44,7 +44,7 @@ namespace ToolKit
     class PublishManager
     {
      public:
-
+      ~PublishManager();
       void Publish(PublishPlatform platform);
 
      public:
