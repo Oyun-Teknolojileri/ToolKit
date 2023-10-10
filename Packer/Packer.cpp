@@ -33,6 +33,7 @@
 #include <Texture.h>
 #include <ToolKit.h>
 #include <Util.h>
+#include <TKImage.h>
 #include "Common/Win32Utils.h"
 #include <assert.h>
 #include <stdio.h>
@@ -43,14 +44,6 @@
 #include <thread>
 
 #include "DebugNew.h"
-
-#define STB_IMAGE_RESIZE_IMPLEMENTATION
-#include "stb/stb_image_resize.h"
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb/stb_image_write.h"
-
-extern "C" unsigned char* stbi_load(const char* filename, int* x, int* y, int* comp, int req_comp);
 
 #include <SDL.h>
 
@@ -90,7 +83,7 @@ namespace ToolKit
     int PackResources();
 
    public:
-    TexturePtr m_icon = nullptr;
+    String m_icon {};
     String m_appName {};
     int m_minSdk            = 27;
     int m_maxSdk            = 32;
@@ -281,17 +274,17 @@ namespace ToolKit
 
   void Packer::AndroidPrepareIcon()
   {
-    String assetsPath = NormalizePathInplace("Android/app/src/main/res");
-
-    String projectName = activeProjectName;
-    String resLocation = ConcatPaths({workspacePath, projectName, assetsPath});
-    if (m_icon == nullptr)
+    if (m_icon.empty() || m_icon == "default")
     {
       return;
     }
+    String assetsPath = NormalizePathInplace("Android/app/src/main/res");
+    String projectName = activeProjectName;
+    String resLocation = ConcatPaths({workspacePath, projectName, assetsPath});
+    
     TK_LOG("Preparing Icons");
     int refWidth, refHeight, refComp;
-    unsigned char* refImage = stbi_load(m_icon->GetFile().c_str(), &refWidth, &refHeight, &refComp, 0);
+    unsigned char* refImage = ImageLoad(m_icon.c_str(), &refWidth, &refHeight, &refComp, 0);
 
     // search each folder in res folder and find icons, replace that icons with new ones
     for (const auto& entry : std::filesystem::directory_iterator(resLocation))
@@ -312,19 +305,19 @@ namespace ToolKit
         {
           int width, height, comp;
           // get the image that we want to replace
-          unsigned char* img = stbi_load(path.c_str(), &width, &height, &comp, 0);
+          unsigned char* img = ImageLoad(path.c_str(), &width, &height, &comp, 0);
           assert(img && "cannot load android icon");
           int res;
-          res = stbir_resize_uint8(refImage, refWidth, refHeight, 0, img, width, height, 0, comp);
+          res = ImageResize(refImage, refWidth, refHeight, 0, img, width, height, 0, comp);
           assert(res && "cannot resize android icon");
           // write resized image
-          res = stbi_write_png(path.c_str(), width, height, comp, img, 0);
+          res = WritePNG(path.c_str(), width, height, comp, img, 0);
           assert(res && "cannot write to android icon");
-          free(img);
+          ImageFree(img);
         }
       }
     }
-    free(refImage);
+    ImageFree(refImage);
   }
 
   void Packer::AndroidRunOnPhone()
@@ -664,6 +657,7 @@ namespace ToolKit
     StringArray arguments;
     
     const auto whitePredFn = [](char c) { return c != '\n' && std::isspace(c); };
+    // remove whitespace from string 
     erase_if(publishArguments, whitePredFn);
 
     Split(publishArguments, "\n", arguments);
@@ -677,6 +671,7 @@ namespace ToolKit
     packer.m_maxSdk           = std::atoi(arguments[6].c_str());
     packer.m_oriantation      = (Oriantation)std::atoi(arguments[7].c_str());
     packer.m_platform         = (PublishPlatform)std::atoi(arguments[8].c_str());
+    packer.m_icon             = arguments[9];
 
     // Set resource root to project's Resources folder
     g_proxy->m_resourceRoot = ConcatPaths({workspacePath, activeProjectName, "Resources"});

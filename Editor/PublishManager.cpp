@@ -72,7 +72,8 @@ namespace ToolKit
       publishArguments        += std::to_string(m_minSdk) + '\n';
       publishArguments        += std::to_string(m_maxSdk) + '\n';
       publishArguments        += std::to_string(m_oriantation) + '\n';
-      publishArguments        += std::to_string((int)platform);
+      publishArguments        += std::to_string((int) platform) + '\n';
+      publishArguments        += m_icon == nullptr ? "default" : m_icon->GetFile();
       
       GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
       g_app->m_statusMsg = "Packing...";
@@ -85,14 +86,7 @@ namespace ToolKit
       IsBuilding         = true;
       const auto afterFn = [&](int res) -> void
       {
-        if (res != 0)
-        {
-          TK_ERR("build failed return code %i", res);
-        }
-        else
-        {
-          TK_SUC("Build Succeded");
-        }
+        TK_LOG("Build Ended");
         IsBuilding = false;
       };
 

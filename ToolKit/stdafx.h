@@ -58,9 +58,6 @@
 #include "glm/gtx/string_cast.hpp"
 #include "glm/gtx/vector_query.hpp"
 
-// Stb
-#include "stb/stb_image.h"
-
 // RapidXml
 #include "RapidXml/rapidxml_ext.h"
 #include "RapidXml/rapidxml_utils.hpp"

@@ -26,6 +26,7 @@
 
 #include "FileManager.h"
 
+#include "TKImage.h"
 #include "Logger.h"
 #include "Material.h"
 #include "Mesh.h"
@@ -34,12 +35,6 @@
 #include "ToolKit.h"
 
 #include "DebugNew.h"
-#define STB_IMAGE_IMPLEMENTATION
-#ifdef __ARM_FP
-  // enables simd on android phones, if supported
-  #define STBI_NEON
-#endif
-#include "stb/stb_image.h"
 
 namespace ToolKit
 {
@@ -140,9 +135,9 @@ namespace ToolKit
       }
       else if (fileType == FileType::ImageFloat)
       {
-        stbi_set_flip_vertically_on_load(true);
+        ImageSetVerticalOnLoad(true);
         float* img = ReadHdriFileFromZip(m_zfile, relativePath, fileInfo);
-        stbi_set_flip_vertically_on_load(false);
+        ImageSetVerticalOnLoad(false);
         return img;
       }
       else
@@ -159,13 +154,13 @@ namespace ToolKit
       }
       else if (fileType == FileType::ImageUint8)
       {
-        return stbi_load(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+        return ImageLoad(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
       }
       else if (fileType == FileType::ImageFloat)
       {
-        stbi_set_flip_vertically_on_load(true);
-        float* img = stbi_loadf(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
-        stbi_set_flip_vertically_on_load(false);
+        ImageSetVerticalOnLoad(true);
+        float* img = ImageLoadF(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+        ImageSetVerticalOnLoad(false);
         return img;
       }
       else
@@ -647,7 +642,7 @@ namespace ToolKit
     }
 
     // If the file is not found return the file from path
-    return stbi_load(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+    return ImageLoad(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
   }
 
   float* FileManager::ReadHdriFileFromZip(zipFile zfile, const String& relativePath, ImageFileInfo& fileInfo)
@@ -676,7 +671,7 @@ namespace ToolKit
     }
 
     // If the file is not found return the file from path
-    return stbi_loadf(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+    return ImageLoadF(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
   }
 
   XmlFilePtr FileManager::CreateXmlFileFromZip(zipFile zfile, const String& filename, uint filesize)
@@ -709,7 +704,7 @@ namespace ToolKit
     }
 
     // Load image
-    uint8* img = stbi_load_from_memory(fileBuffer, filesize, fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+    uint8* img = ImageLoadFromMemory(fileBuffer, filesize, fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
 
     SafeDelArray(fileBuffer);
 
@@ -727,7 +722,7 @@ namespace ToolKit
     }
 
     // Load image
-    float* img = stbi_loadf_from_memory(fileBuffer, filesize, fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+    float* img = ImageLoadFromMemoryF(fileBuffer, filesize, fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
 
     SafeDelArray(fileBuffer);
 

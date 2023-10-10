@@ -85,6 +85,7 @@
     <ClCompile Include="Surface.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Object.cpp" />
+    <ClCompile Include="TKImage.cpp" />
     <ClCompile Include="TKOpenGL.cpp">
       <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">150</OrderInUnityFile>
     </ClCompile>
@@ -170,6 +171,7 @@
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TKAssert.h" />
     <ClInclude Include="Object.h" />
+    <ClInclude Include="TKImage.h" />
     <ClInclude Include="TKSocket.h" />
     <ClInclude Include="ToneMapPass.h" />
     <ClInclude Include="AdditiveLightingPass.h" />
