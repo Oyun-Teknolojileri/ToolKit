@@ -28,14 +28,19 @@
 
 namespace ToolKit
 {
-  unsigned char* ImageLoad(const char* filename, int* x, int* y, int* comp, int req_comp);
-  float* ImageLoadF(const char* filename, int* x, int* y, int* comp, int req_comp);
+  TK_API unsigned char* ImageLoad(const char* filename, int* x, int* y, int* comp, int req_comp);
+  TK_API float* ImageLoadF(const char* filename, int* x, int* y, int* comp, int req_comp);
   
-  unsigned char* ImageLoadFromMemory(const unsigned char* buffer, int len, int* x, int* y, int* comp, int req_comp);
+  TK_API unsigned char* ImageLoadFromMemory(const unsigned char* buffer,
+                                            int len, 
+                                            int* x,
+                                            int* y,
+                                            int* comp,
+                                            int req_comp);
   
-  float* ImageLoadFromMemoryF(const unsigned char* buffer, int len, int* x, int* y, int* comp, int req_comp);
+  TK_API float* ImageLoadFromMemoryF(const unsigned char* buffer, int len, int* x, int* y, int* comp, int req_comp);
  
-  int ImageResize(const unsigned char* input_pixels,
+  TK_API int ImageResize(const unsigned char* input_pixels,
                   int input_w,
                   int input_h,
                   int input_stride_in_bytes,
@@ -45,9 +50,9 @@ namespace ToolKit
                   int output_stride_in_bytes,
                   int num_channels);
  
-  int WritePNG(const char* filename, int x, int y, int comp, const void* data, int stride_bytes);
+  TK_API int WritePNG(const char* filename, int x, int y, int comp, const void* data, int stride_bytes);
   
-  void ImageSetVerticalOnLoad(bool val);
+  TK_API void ImageSetVerticalOnLoad(bool val);
 
-  void ImageFree(void* img);
+  TK_API void ImageFree(void* img);
 }

@@ -44,8 +44,6 @@ namespace ToolKit
     class PublishManager
     {
      public:
-      PublishManager();
-      ~PublishManager();
 
       void Publish(PublishPlatform platform);
 
@@ -66,7 +64,7 @@ namespace ToolKit
 
       Oriantation m_oriantation;
       std::thread m_thread;
-      bool IsBuilding;
+      bool IsBuilding = false;
     };
 
   } // namespace Editor

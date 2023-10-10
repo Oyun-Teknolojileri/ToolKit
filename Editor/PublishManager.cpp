@@ -41,16 +41,6 @@ namespace ToolKit
 {
   namespace Editor
   {
-    PublishManager::PublishManager() {}
-
-    PublishManager::~PublishManager()
-    {
-      if (m_thread.joinable())
-      {
-        m_thread.detach();
-      }
-    }
-
     void PublishManager::Publish(PublishPlatform platform)
     {
       if (IsBuilding)
@@ -91,7 +81,7 @@ namespace ToolKit
       };
 
       packerPath = std::filesystem::absolute(ConcatPaths({"..", packerPath})).string();
-      m_thread   = std::thread(FileManager::RunPipe, packerPath, afterFn);
+      m_thread   = std::thread(RunPipe, packerPath, afterFn);
     }
   } // namespace Editor
 } // namespace ToolKit

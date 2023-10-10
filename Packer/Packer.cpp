@@ -50,9 +50,9 @@
 namespace ToolKit
 {
   static String activeProjectName;
-  static String workspacePath    ;
+  static String workspacePath;
 
-  std::vector<String> messages;
+  StringArray messages;
 
   enum class PublishPlatform
   {
@@ -189,7 +189,7 @@ namespace ToolKit
     TK_LOG("Run toolkit compile script\n");
     Path newWorkDir(ConcatPaths({"..", "BuildScripts"}));
     std::filesystem::current_path(newWorkDir);
-    int toolKitCompileResult = FileManager::RunPipe("WinBuildRelease.bat", nullptr);
+    int toolKitCompileResult = RunPipe("WinBuildRelease.bat", nullptr);
     if (toolKitCompileResult != 0)
     {
       returnLoggingError("WinBuildRelease", true);
@@ -205,7 +205,7 @@ namespace ToolKit
       return 1;
     }
 
-    int pluginCompileResult = FileManager::RunPipe("WinBuildRelease.bat", nullptr);
+    int pluginCompileResult = RunPipe("WinBuildRelease.bat", nullptr);
     if (pluginCompileResult != 0)
     {
       returnLoggingError("WinBuildRelease.bat", true);
@@ -466,7 +466,7 @@ namespace ToolKit
     // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
     String command    = m_isDebugBuild ? "gradlew assembleDebug" : "gradlew assemble";
     
-    int compileResult = FileManager::RunPipe(command, nullptr);
+    int compileResult = RunPipe(command, nullptr);
     {
       if (compileResult == 1)
       {
@@ -567,7 +567,7 @@ namespace ToolKit
       return 1;
     }
 
-    int toolKitCompileResult = FileManager::RunPipe("WebBuildRelease.bat", nullptr);
+    int toolKitCompileResult = RunPipe("WebBuildRelease.bat", nullptr);
     if (toolKitCompileResult != 0)
     {
       returnLoggingError("bat failed", true, __LINE__);
@@ -586,7 +586,7 @@ namespace ToolKit
     }
 
     TK_LOG("Plugin web build\n");
-    int pluginCompileResult = FileManager::RunPipe(pluginWebBuildScriptsFolder, nullptr);
+    int pluginCompileResult = RunPipe(pluginWebBuildScriptsFolder, nullptr);
     
     if (pluginCompileResult != 0)
     {

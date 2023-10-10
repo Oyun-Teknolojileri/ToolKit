@@ -306,6 +306,33 @@ namespace ToolKit
     return path;
   }
 
+  int RunPipe(const String& command, std::function<void(int)> afterFn);
+  {
+#ifdef _WIN32
+    FILE* fp = _popen(command.c_str(), "r");
+#else
+    FILE* fp = popen(command.c_str(), "r");
+#endif
+    if (fp == nullptr)
+    {
+      TK_ERR("pipe run failed! command: %s", command.c_str());
+      afterFn(1);
+      return 0;
+    }
+    char path[512] {};
+    while (fgets(path, sizeof(path), fp) != NULL)
+    {
+      TK_LOG("%s", path);
+    }
+
+    int res = fclose(fp);
+    if (afterFn) 
+    {
+      afterFn(res);
+    }
+    return res;
+  }
+
   void UnixifyPath(String& path) { ReplaceCharInPlace(path, '\\', '/'); }
 
   void DosifyPath(String& path) { ReplaceCharInPlace(path, '/', '\\'); }
