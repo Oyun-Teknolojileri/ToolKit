@@ -306,7 +306,7 @@ namespace ToolKit
     return path;
   }
 
-  int RunPipe(const String& command, std::function<void(int)> afterFn);
+  int RunPipe(const String& command, std::function<void(int)> afterFn)
   {
 #ifdef _WIN32
     FILE* fp = _popen(command.c_str(), "r");
