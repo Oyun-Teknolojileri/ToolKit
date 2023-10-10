@@ -203,6 +203,12 @@ namespace ToolKit
       }
     }
 
+    void HideConsoleWindow() 
+    {
+      HWND handle = GetConsoleWindow();
+      ShowWindow(handle, SW_HIDE);
+    }
+
     String GetCreationTime(const String& fullPath)
     {
       std::wstring wFile = UTF8Util::ConvertUTF8ToUTF16(fullPath.c_str());

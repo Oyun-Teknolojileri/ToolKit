@@ -49,8 +49,6 @@ namespace ToolKit
 
       void Publish(PublishPlatform platform);
 
-     private:
-      static int CreatePackerMessageListener();
      public:
       TexturePtr m_icon = nullptr;
       String m_appName {};
@@ -68,9 +66,7 @@ namespace ToolKit
 
       Oriantation m_oriantation;
       std::thread m_thread;
-
-      static uint64 BuildArgs;
-      static bool IsBuilding;
+      bool IsBuilding;
     };
 
   } // namespace Editor

@@ -36,6 +36,7 @@
 #include "DebugNew.h"
 #define STB_IMAGE_IMPLEMENTATION
 #ifdef __ARM_FP
+  // enables simd on android phones, if supported
   #define STBI_NEON
 #endif
 #include "stb/stb_image.h"
@@ -59,6 +60,33 @@ namespace ToolKit
       unzClose(m_zfile);
       m_zfile = nullptr;
     }
+  }
+
+  int FileManager::RunPipe(const String& command, std::function<void(int)> afterFn)
+  {
+#ifdef _WIN32
+    FILE* fp = _popen(command.c_str(), "r");
+#else
+    FILE* fp = popen(command.c_str(), "r");
+#endif
+    if (fp == nullptr)
+    {
+      TK_ERR("pipe run failed! command: %s", command.c_str());
+      afterFn(1);
+      return 0;
+    }
+    char path[512] {};
+    while (fgets(path, sizeof(path), fp) != NULL)
+    {
+      TK_LOG("%s", path);
+    }
+
+    int res = fclose(fp);
+    if (afterFn) 
+    {
+      afterFn(res);
+    }
+    return res;
   }
 
   XmlFilePtr FileManager::GetXmlFile(const String& filePath)
@@ -166,17 +194,17 @@ namespace ToolKit
       std::error_code err;
       if (!std::filesystem::remove(zipName, err)) 
       {
-        TK_LOG("cannot remove MinResources.pak! message: %s", err.message().c_str());
+        TK_LOG("cannot remove MinResources.pak! message: %s\n", err.message().c_str());
         return 0;
       }
     }
 
     // Load all scenes once in order to fill resource managers
-    TK_LOG("Packing Scenes");
+    TK_LOG("Packing Scenes\n");
     LoadAllScenes(sceneResourcesPath);
 
     // Get all paths of resources
-    TK_LOG("Getting all used paths");
+    TK_LOG("Getting all used paths\n");
     GetAllUsedResourcePaths(sceneResourcesPath);
 
     // Zip used resources
@@ -188,7 +216,7 @@ namespace ToolKit
     }
     else
     {
-      GetLogger()->WriteConsole(LogType::Memo, "Resources packed.");
+      GetLogger()->WriteConsole(LogType::Memo, "Resources packed.\n");
     }
     return 1;
   }
@@ -222,7 +250,7 @@ namespace ToolKit
       String pt      = entry.path().string();
       String name;
       DecomposePath(pt, nullptr, &name, nullptr);
-      TK_LOG("Packing Scene: %s", name.c_str());
+      TK_LOG("Packing Scene: %s\n", name.c_str());
       ScenePtr scene = GetSceneManager()->Create<Scene>(pt);
       scene->Load();
       scene->Init();
@@ -392,7 +420,7 @@ namespace ToolKit
     {
       if (!AddFileToZip(zFile, path.c_str()))
       {
-        GetLogger()->WriteConsole(LogType::Warning, "Failed to add this file to zip: %s", path.c_str());
+        GetLogger()->WriteConsole(LogType::Warning, "Failed to add this file to zip: %s\n", path.c_str());
       }
     }
 

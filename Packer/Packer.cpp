@@ -34,7 +34,6 @@
 #include <ToolKit.h>
 #include <Util.h>
 #include "Common/Win32Utils.h"
-#include "TKSocket.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,28 +98,8 @@ namespace ToolKit
     bool m_isDebugBuild     = false;
 
     Oriantation m_oriantation;
-    PublishPlatform m_platform = PublishPlatform::Windows;
+    PublishPlatform m_platform = PublishPlatform::Android;
   };
-
-  int RunPipe(const String& command) 
-  {
-#ifdef _WIN32
-    FILE* fp = _popen(command.c_str(), "r");
-#else
-    FILE* fp = popen(command.c_str(), "r");
-#endif
-    if (fp == nullptr) 
-    {
-      TK_LOG("pipe run failed! command: %s", command.c_str());
-      return 1;
-    }
-    char path[512] {};
-    while (fgets(path, sizeof(path), fp) != NULL)
-    {
-      TK_LOG("%s", path);
-    }
-    return fclose(fp);
-  }
 
   int Packer::PackResources()
   {
@@ -154,14 +133,14 @@ namespace ToolKit
     case ToolKit::PublishPlatform::Android:
       return AndroidPublish();
     default:
-      TK_ERR("unknown publish platform: %i", (int) m_platform);
+      TK_ERR("unknown publish platform: %i\n", (int) m_platform);
       return 0;
     }
   }
 
   int Packer::WindowsPublish()
   {
-    TK_LOG("Building for Windows");
+    TK_LOG("Building for Windows\n");
     Path workDir = std::filesystem::current_path();
 
     std::error_code ec;
@@ -181,8 +160,8 @@ namespace ToolKit
         std::filesystem::current_path(workDir, ec);
         if (ec)
         {
-          TK_ERR("%s", ec.message().c_str(), path.c_str());
-          TK_ERR("%s", "******** PLEASE RESTART THE EDITOR ********");
+          TK_ERR("%s\n", ec.message().c_str(), path.c_str());
+          TK_ERR("%s\n", "******** PLEASE RESTART THE EDITOR ********");
         }
 
         ret = true;
@@ -214,14 +193,14 @@ namespace ToolKit
       return 1;
     }
 
-    TK_LOG("Run toolkit compile script");
+    TK_LOG("Run toolkit compile script\n");
     Path newWorkDir(ConcatPaths({"..", "BuildScripts"}));
     std::filesystem::current_path(newWorkDir);
-    int toolKitCompileResult = RunPipe("WinBuildRelease.bat");
+    int toolKitCompileResult = FileManager::RunPipe("WinBuildRelease.bat", nullptr);
     if (toolKitCompileResult != 0)
     {
       returnLoggingError("WinBuildRelease", true);
-      TK_ERR("ToolKit could not be compiled");
+      TK_ERR("ToolKit could not be compiled\n");
       return 1;
     }
 
@@ -233,11 +212,11 @@ namespace ToolKit
       return 1;
     }
 
-    int pluginCompileResult = RunPipe("WinBuildRelease.bat");
+    int pluginCompileResult = FileManager::RunPipe("WinBuildRelease.bat", nullptr);
     if (pluginCompileResult != 0)
     {
       returnLoggingError("WinBuildRelease.bat", true);
-      TK_ERR("Windows build has failed!");
+      TK_ERR("Windows build has failed!\n");
       return 1;
     }
     std::filesystem::current_path(workDir, ec);
@@ -257,7 +236,7 @@ namespace ToolKit
     const String engineSettingsPath     = ConcatPaths({ConfigPath(), "Engine.settings"});
     const String destEngineSettingsPath = ConcatPaths({publishConfigDir, "Engine.settings"});
 
-    TK_LOG("windows build done moving files");
+    TK_LOG("Windows build done, moving files\n");
 
     // Copy exe file
     std::filesystem::copy(exeFile, publishBinDir, std::filesystem::copy_options::overwrite_existing, ec);
@@ -291,9 +270,9 @@ namespace ToolKit
     }
 
     // Tell user about where the location of output files is
-    GetLogger()->WriteConsole(LogType::Success, "Building for WINDOWS has been completed successfully.");
+    GetLogger()->WriteConsole(LogType::Success, "Building for WINDOWS has been completed successfully.\n");
     GetLogger()->WriteConsole(LogType::Memo,
-                              "Output files location: %s",
+                              "Output files location: %s\n",
                               std::filesystem::absolute(publishDirectory).string().c_str());
 
     PlatformHelpers::OpenExplorer(publishDirectory);
@@ -399,7 +378,7 @@ namespace ToolKit
 
   void Packer::EditAndroidManifest()
   {
-    TK_LOG("Editing Android Manifest");
+    TK_LOG("Editing Android Manifest\n");
     String projectName     = activeProjectName;
     String applicationName = m_appName;
     String mainPath        = NormalizePathInplace("Android/app/src/main");
@@ -428,7 +407,7 @@ namespace ToolKit
 
   int Packer::AndroidPublish()
   {
-    TK_LOG("Building for android");
+    TK_LOG("Building for android\n");
     Path workDir = std::filesystem::current_path();
 
     std::error_code ec;
@@ -438,7 +417,7 @@ namespace ToolKit
       bool setback = setPathBack;
       if (ec)
       {
-        TK_ERR("%s path: %s", ec.message().c_str(), path.c_str());
+        TK_ERR("%s path: %s\n", ec.message().c_str(), path.c_str());
         setback = true;
         ret     = true;
       }
@@ -448,7 +427,7 @@ namespace ToolKit
         std::filesystem::current_path(workDir, ec);
         if (ec)
         {
-          TK_ERR("%s", ec.message().c_str());
+          TK_ERR("%s\n", ec.message().c_str());
           TK_ERR("%s", "******** PLEASE RESTART THE EDITOR ********");
         }
 
@@ -462,7 +441,7 @@ namespace ToolKit
 
     if (projectName.empty())
     {
-      GetLogger()->WriteConsole(LogType::Error, "No project is loaded!");
+      GetLogger()->WriteConsole(LogType::Error, "No project is loaded!\n");
       return 1;
     }
 
@@ -489,17 +468,16 @@ namespace ToolKit
 
     AndroidPrepareIcon();
 
-    TK_LOG("Building android apk, Gradle scripts running...");
+    TK_LOG("Building android apk, Gradle scripts running...\n");
 
     // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
     String command    = m_isDebugBuild ? "gradlew assembleDebug" : "gradlew assemble";
     
-    int compileResult = RunPipe(command);
-    
+    int compileResult = FileManager::RunPipe(command, nullptr);
     {
       if (compileResult == 1)
       {
-        GetLogger()->WriteConsole(LogType::Error, "Android build failed.");
+        GetLogger()->WriteConsole(LogType::Error, "Android build failed.\n");
         return 1;
       }
 
@@ -527,9 +505,9 @@ namespace ToolKit
       }
 
       // Tell user about where the location of output files is
-      GetLogger()->WriteConsole(LogType::Success, "Building for ANDROID has been completed successfully.");
+      GetLogger()->WriteConsole(LogType::Success, "Building for ANDROID has been completed successfully.\n");
       GetLogger()->WriteConsole(LogType::Memo,
-                                "Output files location: %s",
+                                "Output files location: %s\n",
                                 std::filesystem::absolute(publishDirStr).string().c_str());
 
       PlatformHelpers::OpenExplorer(publishDirStr);
@@ -538,7 +516,7 @@ namespace ToolKit
     if (compileResult != 0)
     {
       returnLoggingError("Compiling Fail", true);
-      TK_ERR("Compiling failed.");
+      TK_ERR("Compiling failed.\n");
       return 1;
     }
 
@@ -558,7 +536,7 @@ namespace ToolKit
 
   int Packer::WebPublish()
   {
-    TK_LOG("Building for Web");
+    TK_LOG("Building for Web\n");
     Path workDir = std::filesystem::current_path();
 
     std::error_code ec;
@@ -568,7 +546,7 @@ namespace ToolKit
       bool setback = setPathBack;
       if (ec)
       {
-        TK_ERR("line %i; %s %s", line, ec.message().c_str(), path.c_str());
+        TK_ERR("line %i; %s %s\n", line, ec.message().c_str(), path.c_str());
         setback = true;
         ret     = true;
       }
@@ -578,8 +556,8 @@ namespace ToolKit
         std::filesystem::current_path(workDir, ec);
         if (ec)
         {
-          TK_ERR("line %i; %s %s", line, ec.message().c_str(), path.c_str());
-          TK_ERR("%s", "******** PLEASE RESTART THE EDITOR ********");
+          TK_ERR("line %i; %s %s\n", line, ec.message().c_str(), path.c_str());
+          TK_ERR("%s", "******** PLEASE RESTART THE EDITOR ********\n");
         }
 
         ret = true;
@@ -588,7 +566,7 @@ namespace ToolKit
       return ret;
     };
 
-    // Run toolkit compile script
+    TK_LOG("Run toolkit compile script");
     Path newWorkDir(ConcatPaths({"..", "BuildScripts"}));
     std::filesystem::current_path(newWorkDir, ec);
     if (returnLoggingError(newWorkDir.string(), false, __LINE__))
@@ -596,11 +574,11 @@ namespace ToolKit
       return 1;
     }
 
-    int toolKitCompileResult = RunPipe("WebBuildRelease.bat"); // PlatformHelpers::SysComExec("WebBuildRelease.bat", false, true, nullptr);
+    int toolKitCompileResult = FileManager::RunPipe("WebBuildRelease.bat", nullptr);
     if (toolKitCompileResult != 0)
     {
       returnLoggingError("bat failed", true, __LINE__);
-      TK_ERR("ToolKit could not be compiled!");
+      TK_ERR("ToolKit could not be compiled!\n");
       return 1;
     }
     newWorkDir                               = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
@@ -614,12 +592,13 @@ namespace ToolKit
       return 1;
     }
 
-    int pluginCompileResult = RunPipe(pluginWebBuildScriptsFolder);
+    TK_LOG("Plugin web build\n");
+    int pluginCompileResult = FileManager::RunPipe(pluginWebBuildScriptsFolder, nullptr);
     
     if (pluginCompileResult != 0)
     {
       returnLoggingError(pluginWebBuildScriptsFolder, true, __LINE__);
-      TK_ERR("Web build has failed!");
+      TK_ERR("Web build has failed!\n");
       return 1;
     }
     std::filesystem::current_path(workDir, ec);
@@ -661,161 +640,43 @@ namespace ToolKit
     }
 
     // Output user about where are the output files
-    GetLogger()->WriteConsole(LogType::Success, "Building for web has been completed successfully.");
+    GetLogger()->WriteConsole(LogType::Success, "Building for web has been completed successfully.\n");
     GetLogger()->WriteConsole(LogType::Memo,
-                              "Output files location: %s",
+                              "Output files location: %s\n",
                               std::filesystem::absolute(publishDirectory).string().c_str());
 
     PlatformHelpers::OpenExplorer(publishDirectory);
     return 0;
   }
 
-  static bool finished   = false;
-  static bool canPublish = false;
-
-  Packer packer {};
-
-  std::mutex messageMutex;
-
-  static DWORD CreatePipe(void*)
-  {
-    SOCKET ConnectSocket    = INVALID_SOCKET;
-    struct addrinfo *result = NULL, *ptr = NULL, hints;
-    String sendbuf = "a Hello from Packer";
-    int iResult;
-
-    // Initialize Winsock
-    iResult = sock_init();
-    if (iResult != 0)
-    {
-      sock_perror("socket init failed with error");
-      return 1;
-    }
-
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family   = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-
-    // Resolve the server address and port
-    iResult           = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
-    if (iResult != 0)
-    {
-      sock_perror("getaddrinfo failed with error");
-      sock_cleanup();
-      return 1;
-    }
-
-    // Attempt to connect to an address until one succeeds
-    for (ptr = result; ptr != NULL; ptr = ptr->ai_next)
-    {
-      // Create a SOCKET for connecting to server
-      ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
-      if (ConnectSocket == INVALID_SOCKET)
-      {
-        sock_perror("socket failed with error");
-        sock_cleanup();
-        return 1;
-      }
-
-      // Connect to server.
-      iResult = connect(ConnectSocket, ptr->ai_addr, (int) ptr->ai_addrlen);
-      if (iResult == SOCKET_ERROR)
-      {
-        closesocket(ConnectSocket);
-        ConnectSocket = INVALID_SOCKET;
-        continue;
-      }
-      break;
-    }
-
-    freeaddrinfo(result);
-
-    if (ConnectSocket == INVALID_SOCKET)
-    {
-      perror("Unable to connect to server!\n");
-      sock_cleanup();
-      return 1;
-    }
-
-    uint64_t mask = 0;
-    recv(ConnectSocket, (char*) &mask, 8, 0);
-    // Get platform arguments that toolkit sended
-    packer.m_deployAfterBuild = (mask >> 0) & 0xff;
-    packer.m_isDebugBuild     = (mask >> 8) & 0xff;
-    packer.m_minSdk           = (mask >> 16) & 0xff;
-    packer.m_maxSdk           = (mask >> 24) & 0xff;
-    packer.m_platform         = (PublishPlatform) ((mask >> 32) & 0xff);
-    packer.m_oriantation      = (Oriantation) ((mask >> 40) & 0xff);
-    canPublish                   = true;
-
-    TK_LOG("Packing Resources...");
-
-    // Receive until the peer closes the connection
-    while (!finished || !messages.empty())
-    {
-      while (messages.empty())
-      {
-        std::this_thread::yield();
-        if (finished) 
-        {
-          goto end;
-        }
-      }
-
-      messageMutex.lock();
-      sendbuf = messages.front();
-      pop_front(messages);
-      messageMutex.unlock();
-
-      iResult = send(ConnectSocket, sendbuf.c_str(), (int)sendbuf.size(), 0);
-      if (iResult == SOCKET_ERROR)
-      {
-        perror("client message send failed with error");
-        closesocket(ConnectSocket);
-        sock_cleanup();
-        return 1;
-      }
-      using namespace std::chrono_literals;
-      std::this_thread::sleep_for(1ms);
-    }
-  end:
-  {
-  }
-    // shutdown the connection since no more data will be sent
-    iResult = shutdown(ConnectSocket, SD_SEND);
-
-    if (iResult == SOCKET_ERROR)
-    {
-      sock_perror("client shutdown failed with error");
-      closesocket(ConnectSocket);
-      sock_cleanup();
-      return 1;
-    }
-    // cleanup
-    closesocket(ConnectSocket);
-    sock_cleanup();
-    return 0;
-  }
-
   int ToolKitMain(int argc, char* argv[])
   {
+    // https://stackoverflow.com/questions/59828628/read-on-a-pipe-blocks-until-program-running-at-end-of-pipe-terminates-windows
+    // enables writing to toolkit asynchronusly. life saver posix code: 
+    setvbuf(stdout, NULL, _IONBF, 0); // Disable buffering on stdout. 
+    PlatformHelpers::HideConsoleWindow();
+
     // Initialize ToolKit to serialize resources
     Main* g_proxy = new Main();
     Main::SetProxy(g_proxy);
 
     String publishArguments = GetFileManager()->ReadAllText("PublishArguments.txt");
     StringArray arguments;
+    
+    const auto whitePredFn = [](char c) { return c != '\n' && std::isspace(c); };
+    erase_if(publishArguments, whitePredFn);
+
     Split(publishArguments, "\n", arguments);
-
-    activeProjectName      = arguments[0];
-    workspacePath          = arguments[1];
-    packer.m_appName    = arguments[2];
-
-    const auto whitePredFn = [](char c) { return std::isspace(c); };
-    erase_if(activeProjectName, whitePredFn);
-    erase_if(workspacePath, whitePredFn);
-    erase_if(packer.m_appName, whitePredFn);
+    Packer packer {};
+    activeProjectName         = arguments[0];
+    workspacePath             = arguments[1];
+    packer.m_appName          = arguments[2];
+    packer.m_deployAfterBuild = std::atoi(arguments[3].c_str());
+    packer.m_isDebugBuild     = std::atoi(arguments[4].c_str());
+    packer.m_minSdk           = std::atoi(arguments[5].c_str());
+    packer.m_maxSdk           = std::atoi(arguments[6].c_str());
+    packer.m_oriantation      = (Oriantation)std::atoi(arguments[7].c_str());
+    packer.m_platform         = (PublishPlatform)std::atoi(arguments[8].c_str());
 
     // Set resource root to project's Resources folder
     g_proxy->m_resourceRoot = ConcatPaths({workspacePath, activeProjectName, "Resources"});
@@ -823,14 +684,10 @@ namespace ToolKit
     g_proxy->SetConfigPath(ConcatPaths({"..", "Config"}));
     g_proxy->PreInit();
 
-    GetLogger()->SetWriteConsoleFn(
-        [](LogType lt, String ms) -> void
-        {
-          ms.insert(ms.begin(), 'a' + (char) lt);
-          messageMutex.lock();
-          messages.push_back(ms);
-          messageMutex.unlock();
-        });
+    GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void
+    {
+      printf("%s", ms.c_str());
+    });
 
     // Init SDL
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER);
@@ -851,27 +708,12 @@ namespace ToolKit
 
     g_proxy->Init();
 
-    std::thread hThread(CreatePipe, nullptr);
-
-    // wait untill packer to connect toolkit server
-    while (!canPublish)
-    {
-      std::this_thread::yield();
-    }
-
     int result = packer.Publish();
-    finished = true;
     SDL_GL_DeleteContext(g_context);
     SDL_DestroyWindow(g_window);
 
-    // wait untill all messages writen to the toolkit console
-    while (messages.size())
-    {
-      std::this_thread::yield();
-    }
-    hThread.detach();
     getchar();
-    return 0;
+    return result;
   }
 } // namespace ToolKit
 

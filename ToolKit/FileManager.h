@@ -53,6 +53,7 @@ namespace ToolKit
 
     int PackResources(const String& path);
     void CloseZipFile();
+    static int RunPipe(const String& command, std::function<void(int)> afterFn);
 
     bool CheckFileFromResources(const String& path);
     void GetRelativeResourcesPath(String& path);
