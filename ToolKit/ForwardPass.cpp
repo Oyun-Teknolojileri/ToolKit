@@ -32,6 +32,10 @@
 #include "Shader.h"
 #include "ToolKit.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
 
@@ -49,6 +53,8 @@ namespace ToolKit
 
   void ForwardRenderPass::Render()
   {
+    NVTX3_FUNC_RANGE();
+
     RenderOpaque(m_params.OpaqueJobs, m_params.Cam, m_params.Lights);
     RenderTranslucent(m_params.TranslucentJobs, m_params.Cam, m_params.Lights);
   }
@@ -57,6 +63,9 @@ namespace ToolKit
 
   void ForwardRenderPass::PreRender()
   {
+    nvtx3::mark("ForwardRender Pass");
+    NVTX3_FUNC_RANGE();
+
     Pass::PreRender();
     // Set self data.
     Renderer* renderer = GetRenderer();
@@ -71,6 +80,8 @@ namespace ToolKit
 
   void ForwardRenderPass::PostRender()
   {
+    NVTX3_FUNC_RANGE();
+
     Pass::PostRender();
     GetRenderer()->m_overrideMat = nullptr;
     Renderer* renderer           = GetRenderer();
@@ -79,6 +90,8 @@ namespace ToolKit
 
   void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)
   {
+    NVTX3_FUNC_RANGE();
+
     Renderer* renderer = GetRenderer();
 
     if (m_params.SsaoTexture)
@@ -96,6 +109,8 @@ namespace ToolKit
 
   void ForwardRenderPass::RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)
   {
+    NVTX3_FUNC_RANGE();
+
     RenderJobProcessor::StableSortByDistanceToCamera(jobs, cam);
 
     Renderer* renderer = GetRenderer();

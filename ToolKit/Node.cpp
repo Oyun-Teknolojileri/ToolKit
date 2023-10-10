@@ -32,6 +32,11 @@
 
 #include "DebugNew.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+#undef far
+
 namespace ToolKit
 {
 
@@ -48,6 +53,8 @@ namespace ToolKit
 
   void Node::Translate(const Vec3& val, TransformationSpace space)
   {
+    NVTX3_FUNC_RANGE();
+
     Vec3 tmpScl = m_scale;
     m_scale     = Vec3(1.0f);
 
@@ -59,6 +66,8 @@ namespace ToolKit
 
   void Node::Rotate(const Quaternion& val, TransformationSpace space)
   {
+    NVTX3_FUNC_RANGE();
+
     Vec3 tmpScl = m_scale;
     m_scale     = Vec3(1.0f);
 
@@ -70,12 +79,16 @@ namespace ToolKit
 
   void Node::Scale(const Vec3& val)
   {
+    NVTX3_FUNC_RANGE();
+
     m_scale *= val;
     SetChildrenDirty();
   }
 
   void Node::Transform(const Mat4& val, TransformationSpace space, bool noScale)
   {
+    NVTX3_FUNC_RANGE();
+
     Vec3 tmpScl = m_scale;
     if (noScale)
     {
@@ -92,6 +105,8 @@ namespace ToolKit
 
   void Node::SetTransform(const Mat4& val, TransformationSpace space, bool noScale)
   {
+    NVTX3_FUNC_RANGE();
+
     Vec3 tmpScl = m_scale;
     if (noScale)
     {
@@ -108,6 +123,8 @@ namespace ToolKit
 
   Mat4 Node::GetTransform(TransformationSpace space)
   {
+    NVTX3_FUNC_RANGE();
+
     Mat4 ts;
     GetTransformImp(space, &ts, nullptr, nullptr, nullptr);
     return ts;
@@ -115,12 +132,16 @@ namespace ToolKit
 
   void Node::SetTranslation(const Vec3& val, TransformationSpace space)
   {
+    NVTX3_FUNC_RANGE();
+
     Mat4 ts = glm::translate(Mat4(), val);
     SetTransformImp(ts, space, &m_translation, nullptr, nullptr);
   }
 
   Vec3 Node::GetTranslation(TransformationSpace space)
   {
+    NVTX3_FUNC_RANGE();
+
     Vec3 t;
     GetTransformImp(space, nullptr, &t, nullptr, nullptr);
     return t;
@@ -128,12 +149,16 @@ namespace ToolKit
 
   void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
   {
+    NVTX3_FUNC_RANGE();
+
     Mat4 ts = glm::toMat4(val);
     SetTransformImp(ts, space, nullptr, &m_orientation, nullptr);
   }
 
   Quaternion Node::GetOrientation(TransformationSpace space)
   {
+    NVTX3_FUNC_RANGE();
+
     Quaternion q;
     GetTransformImp(space, nullptr, nullptr, &q, nullptr);
     return q;
@@ -141,6 +166,8 @@ namespace ToolKit
 
   void Node::SetScale(const Vec3& val)
   {
+    NVTX3_FUNC_RANGE();
+
     m_scale = val;
     SetChildrenDirty();
   }
@@ -149,6 +176,8 @@ namespace ToolKit
 
   Mat3 Node::GetTransformAxes()
   {
+    NVTX3_FUNC_RANGE();
+
     Quaternion q = GetOrientation();
     Mat3 axes    = glm::toMat3(q);
 
@@ -157,6 +186,8 @@ namespace ToolKit
 
   void Node::InsertChild(Node* child, int index, bool preserveTransform)
   {
+    NVTX3_FUNC_RANGE();
+
     bool canInsert = index <= m_children.size() && index >= 0;
     canInsert      &= child->m_id != m_id && child->m_parent == nullptr;
     assert(canInsert);
@@ -189,6 +220,8 @@ namespace ToolKit
 
   void Node::OrphanChild(size_t index, bool preserveTransform)
   {
+    NVTX3_FUNC_RANGE();
+
     if (index >= m_children.size())
     {
       return;
@@ -235,6 +268,8 @@ namespace ToolKit
 
   void Node::OrphanSelf(bool preserveTransform)
   {
+    NVTX3_FUNC_RANGE();
+
     if (m_parent)
     {
       m_parent->Orphan(this, preserveTransform);
@@ -243,6 +278,8 @@ namespace ToolKit
 
   Node* Node::GetRoot() const
   {
+    NVTX3_FUNC_RANGE();
+
     if (m_parent == nullptr)
     {
       return nullptr;

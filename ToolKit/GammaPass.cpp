@@ -32,6 +32,10 @@
 
 #include "DebugNew.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
 
@@ -46,6 +50,9 @@ namespace ToolKit
 
   void GammaPass::PreRender()
   {
+    nvtx3::mark("Gamma Pass");
+    NVTX3_FUNC_RANGE();
+
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
 

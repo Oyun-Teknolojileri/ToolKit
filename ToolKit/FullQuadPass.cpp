@@ -32,6 +32,10 @@
 #include "Shader.h"
 #include "ToolKit.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
 
@@ -55,6 +59,8 @@ namespace ToolKit
 
   void FullQuadPass::Render()
   {
+    NVTX3_FUNC_RANGE();
+
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer, {0.0f, 0.0f, 0.0f, 1.0f});
 
@@ -65,6 +71,9 @@ namespace ToolKit
 
   void FullQuadPass::PreRender()
   {
+    nvtx3::mark("FullQuad Pass");
+    NVTX3_FUNC_RANGE();
+
     Pass::PreRender();
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = nullptr;
@@ -83,6 +92,8 @@ namespace ToolKit
 
   void FullQuadPass::PostRender()
   {
+    NVTX3_FUNC_RANGE();
+
     Pass::PostRender();
     GetRenderer()->EnableDepthTest(true);
   }

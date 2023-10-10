@@ -33,6 +33,9 @@
 #include "Mod.h"
 #include "UI.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+
 #include <Common/SDLEventPool.h>
 #include <Common/Win32Utils.h>
 #include <GlErrorReporter.h>
@@ -206,6 +209,8 @@ namespace ToolKit
           }
           else
           {
+            SDL_GL_MakeCurrent(g_window, g_context);
+
             // Init OpenGl.
             g_proxy->m_renderSys->InitGl(SDL_GL_GetProcAddress,
                                          [](const std::string& msg) -> void
@@ -332,9 +337,12 @@ namespace ToolKit
     void TK_Loop()
     {
       Timing* timer = &Main::GetInstance()->m_timing;
+      timer->DeltaTime = 0.0f;
 
       while (g_running)
       {
+        nvtxRangePushA("Frame Start");
+
         SDL_Event sdlEvent;
         while (SDL_PollEvent(&sdlEvent))
         {
@@ -345,13 +353,25 @@ namespace ToolKit
         timer->CurrentTime = GetElapsedMilliSeconds();
         if (timer->CurrentTime > timer->LastTime + timer->DeltaTime)
         {
+          nvtxRangePushA("App Frame");
+
           g_app->Frame(timer->CurrentTime - timer->LastTime);
+
+          nvtxRangePop();
+
+          nvtxRangePushA("ImGui Update Platform Windows");
 
           // Update Present imgui windows.
           ImGui::UpdatePlatformWindows();
           ImGui::RenderPlatformWindowsDefault();
-          SDL_GL_MakeCurrent(g_window, g_context);
+
+          nvtxRangePop();
+          
+          nvtxRangePushA("Swap Window");
+
           SDL_GL_SwapWindow(g_window);
+
+          nvtxRangePop();
 
           ClearPool(); // Clear after consumption.
 
@@ -366,6 +386,8 @@ namespace ToolKit
 
           timer->LastTime = timer->CurrentTime;
         }
+
+        nvtxRangePop();
       }
     }
 

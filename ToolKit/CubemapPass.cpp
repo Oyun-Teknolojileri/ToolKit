@@ -30,6 +30,10 @@
 #include "Mesh.h"
 #include "ToolKit.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
 
@@ -41,6 +45,8 @@ namespace ToolKit
 
   void CubeMapPass::Render()
   {
+    NVTX3_FUNC_RANGE();
+
     m_cube->m_node->SetTransform(m_params.Transform);
 
     Renderer* renderer = GetRenderer();
@@ -53,6 +59,9 @@ namespace ToolKit
 
   void CubeMapPass::PreRender()
   {
+    nvtx3::mark("Cubemap Pass");
+    NVTX3_FUNC_RANGE();
+
     Pass::PreRender();
     MaterialComponentPtr matCom = m_cube->GetMaterialComponent();
     matCom->SetFirstMaterial(m_params.Material);
@@ -61,6 +70,8 @@ namespace ToolKit
 
   void CubeMapPass::PostRender()
   {
+    NVTX3_FUNC_RANGE();
+
     Pass::PostRender();
     GetRenderer()->SetDepthTestFunc(CompareFunctions::FuncLess);
   }

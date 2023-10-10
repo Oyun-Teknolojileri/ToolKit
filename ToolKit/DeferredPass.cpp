@@ -34,6 +34,10 @@
 #include "Shader.h"
 #include "ToolKit.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
 
@@ -53,6 +57,9 @@ namespace ToolKit
 
   void DeferredRenderPass::PreRender()
   {
+    nvtx3::mark("DeferredRender Pass");
+    NVTX3_FUNC_RANGE();
+
     Pass::PreRender();
 
     if (m_lightDataTexture == nullptr)
@@ -116,6 +123,8 @@ namespace ToolKit
 
   void DeferredRenderPass::PostRender()
   {
+    NVTX3_FUNC_RANGE();
+
     // Copy real depth buffer to main framebuffer depth
     GetRenderer()->CopyFrameBuffer(m_params.GBufferFramebuffer, m_params.MainFramebuffer, GraphicBitFields::DepthBits);
     Pass::PostRender();
@@ -123,12 +132,16 @@ namespace ToolKit
 
   void DeferredRenderPass::Render()
   {
+    NVTX3_FUNC_RANGE();
+
     // Deferred render always uses PBR material
     RenderSubPass(m_fullQuadPass);
   }
 
   void DeferredRenderPass::InitLightDataTexture()
   {
+    NVTX3_FUNC_RANGE();
+
     m_lightDataTexture = MakeNewPtr<LightDataTexture>(m_lightDataTextureSize.x, m_lightDataTextureSize.y);
     m_lightDataTexture->Init();
   }

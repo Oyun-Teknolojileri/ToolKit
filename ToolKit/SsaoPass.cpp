@@ -36,7 +36,12 @@
 #include "ToolKit.h"
 
 #include <random>
+
 #include "DebugNew.h"
+
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
 
 namespace ToolKit
 {
@@ -101,6 +106,8 @@ namespace ToolKit
 
   void SSAOPass::Render()
   {
+    NVTX3_FUNC_RANGE();
+
     Renderer* renderer = GetRenderer();
 
     // Generate SSAO texture
@@ -122,6 +129,9 @@ namespace ToolKit
 
   void SSAOPass::PreRender()
   {
+    nvtx3::mark("SSAO Pass");
+    NVTX3_FUNC_RANGE();
+
     Pass::PreRender();
 
     int width  = m_params.GNormalBuffer->m_width;
@@ -162,6 +172,9 @@ namespace ToolKit
       m_ssaoShader = GetShaderManager()->Create<Shader>(ShaderPath("ssaoCalcFrag.shader", true));
     }
 
+    nvtxRangePushA("Set SSAO Shader Parameters");
+
+
     if (m_prevSpread != m_params.spread)
     {
       // Update kernel
@@ -178,13 +191,22 @@ namespace ToolKit
     m_ssaoShader->SetShaderParameter("projection", ParameterVariant(m_params.Cam->GetProjectionMatrix()));
     m_ssaoShader->SetShaderParameter("viewMatrix", ParameterVariant(m_params.Cam->GetViewMatrix()));
 
+    nvtxRangePop();
+    
     m_quadPass->m_params.FragmentShader = m_ssaoShader;
   }
 
-  void SSAOPass::PostRender() { Pass::PostRender(); }
+  void SSAOPass::PostRender()
+  {
+    NVTX3_FUNC_RANGE();
+
+    Pass::PostRender();
+  }
 
   void SSAOPass::GenerateSSAONoise()
   {
+    NVTX3_FUNC_RANGE();
+
     if (m_ssaoKernel.size() == 0 || m_prevSpread != m_params.spread)
     {
       m_ssaoKernel = GenerateRandomSamplesInHemisphere(64, m_params.spread);

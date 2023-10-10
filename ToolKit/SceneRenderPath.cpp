@@ -33,9 +33,12 @@
 
 #include "DebugNew.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
-
   SceneRenderPath::SceneRenderPath()
   {
     m_shadowPass            = MakeNewPtr<ShadowPass>();
@@ -73,7 +76,13 @@ namespace ToolKit
 
   void SceneRenderPath::Render(Renderer* renderer)
   {
+    nvtxRangePushA("SceneRender PreRender");
+
     PreRender(renderer);
+
+    nvtxRangePop();
+
+    nvtxRangePushA("SceneRender Render");
 
     // First stage of the render.
     m_passArray.clear();
@@ -143,7 +152,13 @@ namespace ToolKit
 
     renderer->SetShadowAtlas(nullptr);
 
+    nvtxRangePop();
+    
+    nvtxRangePushA("SceneRender PostRender");
+
     PostRender();
+    
+    nvtxRangePop();
   }
 
   void SceneRenderPath::PreRender(Renderer* renderer)

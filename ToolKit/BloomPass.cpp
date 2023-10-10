@@ -32,6 +32,10 @@
 
 #include "DebugNew.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
 
@@ -56,6 +60,8 @@ namespace ToolKit
 
   void BloomPass::Render()
   {
+    NVTX3_FUNC_RANGE();
+
     RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
 
     if (mainRt == nullptr || m_invalidRenderParams)
@@ -165,6 +171,9 @@ namespace ToolKit
 
   void BloomPass::PreRender()
   {
+    nvtx3::mark("Bloom Pass");
+    NVTX3_FUNC_RANGE();
+
     Pass::PreRender();
 
     RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
@@ -218,6 +227,11 @@ namespace ToolKit
     }
   }
 
-  void BloomPass::PostRender() { Pass::PostRender(); }
+  void BloomPass::PostRender()
+  {
+    NVTX3_FUNC_RANGE();
+
+    Pass::PostRender();
+  }
 
 } // namespace ToolKit

@@ -39,6 +39,11 @@
 
 #include "DebugNew.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+#undef far
+
 namespace ToolKit
 {
 
@@ -490,6 +495,8 @@ namespace ToolKit
 
   void RenderTarget::Init(bool flushClientSideArray)
   {
+    NVTX3_FUNC_RANGE();
+
     if (m_initiated)
     {
       return;
@@ -570,6 +577,8 @@ namespace ToolKit
 
   void RenderTarget::Reconstruct(uint width, uint height, const RenderTargetSettigs& settings)
   {
+    NVTX3_FUNC_RANGE();
+
     UnInit();
     m_width    = width;
     m_height   = height;
@@ -579,6 +588,8 @@ namespace ToolKit
 
   void RenderTarget::ReconstructIfNeeded(uint width, uint height)
   {
+    NVTX3_FUNC_RANGE();
+
     if (!m_initiated || m_width != width || m_height != height)
     {
       Reconstruct(width, height, m_settings);

@@ -32,6 +32,10 @@
 
 #include "DebugNew.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
 
@@ -44,6 +48,9 @@ namespace ToolKit
 
   void FXAAPass::PreRender()
   {
+    nvtx3::mark("Fxaa Pass");
+    NVTX3_FUNC_RANGE();
+
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
 

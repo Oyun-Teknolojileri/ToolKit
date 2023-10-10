@@ -41,6 +41,10 @@
 
 #include <DebugNew.h>
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
   namespace Editor
@@ -70,9 +74,13 @@ namespace ToolKit
 
     void EditorRenderer::Render(Renderer* renderer)
     {
+      nvtxRangePushA("PreRender");
+
       PreRender();
 
-      SetLitMode(renderer, m_params.LitMode);
+      nvtxRangePop();
+
+      nvtxRangePushA("SceneRender");
 
       m_passArray.clear();
       const EngineSettings::PostProcessingSettings& gfx = GetEngineSettings().PostProcessing;
@@ -131,6 +139,10 @@ namespace ToolKit
         break;
       }
 
+      nvtxRangePop();
+
+      nvtxRangePushA("Editor Render");
+
       if (m_params.LitMode != EditorLitMode::Game)
       {
         // Draw scene and apply bloom effect.
@@ -170,11 +182,19 @@ namespace ToolKit
         RenderPath::Render(renderer);
       }
 
+      nvtxRangePop();
+
+      nvtxRangePushA("Post Render");
+
       PostRender();
+
+      nvtxRangePop();
     }
 
     void EditorRenderer::PreRender()
     {
+      NVTX3_FUNC_RANGE();
+
       App* app = m_params.App;
       m_camera = m_params.Viewport->GetCamera();
 
@@ -216,6 +236,8 @@ namespace ToolKit
         }
       }
 
+      nvtxRangePushA("Per Frame & Grid & Billboards");
+      
       // Per frame objects.
       EntityPtrArray editorEntities;
       editorEntities.insert(editorEntities.end(),
@@ -237,6 +259,8 @@ namespace ToolKit
       LightPtrArray lights =
           m_params.LitMode == EditorLitMode::EditorLit ? m_lightSystem->m_lights : scene->GetLights();
 
+      nvtxRangePop();
+
       EditorViewport* viewport = static_cast<EditorViewport*>(m_params.Viewport);
 
       RenderJobArray renderJobs;
@@ -245,6 +269,8 @@ namespace ToolKit
 
       RenderJobProcessor::CreateRenderJobs(editorEntities, renderJobs);
       RenderJobProcessor::SeperateOpaqueTranslucent(renderJobs, opaque, translucent);
+
+      nvtxRangePushA("Fill Pass Params");
 
       // Editor pass.
       m_editorPass->m_params.Cam              = m_camera;
@@ -334,6 +360,8 @@ namespace ToolKit
         anchorGizmo = app->m_anchor;
       }
       m_gizmoPass->m_params.GizmoArray = {app->m_gizmo, anchorGizmo};
+
+      nvtxRangePop();
     }
 
     void EditorRenderer::PostRender() { m_params.App->m_perFrameDebugObjects.clear(); }

@@ -32,6 +32,10 @@
 
 #include "DebugNew.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
   namespace Editor
@@ -52,6 +56,8 @@ namespace ToolKit
 
     void GizmoPass::Render()
     {
+      NVTX3_FUNC_RANGE();
+
       Renderer* renderer = GetRenderer();
 
       for (EditorBillboardPtr billboard : m_params.GizmoArray)
@@ -84,6 +90,9 @@ namespace ToolKit
 
     void GizmoPass::PreRender()
     {
+      nvtx3::mark("Gizmo Pass");
+      NVTX3_FUNC_RANGE();
+
       Pass::PreRender();
 
       Renderer* renderer = GetRenderer();
@@ -109,7 +118,12 @@ namespace ToolKit
                        gizmoArray.end());
     }
 
-    void GizmoPass::PostRender() { Pass::PostRender(); }
+    void GizmoPass::PostRender()
+    {
+      NVTX3_FUNC_RANGE();
+
+      Pass::PostRender();
+    }
 
   } // namespace Editor
 } // namespace ToolKit

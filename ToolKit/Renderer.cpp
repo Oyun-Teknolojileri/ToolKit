@@ -51,6 +51,11 @@
 
 #include "DebugNew.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+#undef far
+
 namespace ToolKit
 {
   Renderer::Renderer() {}
@@ -81,6 +86,8 @@ namespace ToolKit
 
   int Renderer::GetMaxArrayTextureLayers()
   {
+    NVTX3_FUNC_RANGE();
+
     if (m_maxArrayTextureLayers == -1)
     {
       glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &m_maxArrayTextureLayers);
@@ -90,6 +97,8 @@ namespace ToolKit
 
   void Renderer::SetCameraLens(CameraPtr cam)
   {
+    NVTX3_FUNC_RANGE();
+
     float aspect = (float) m_viewportSize.x / (float) m_viewportSize.y;
     if (!cam->IsOrtographic())
     {
@@ -105,6 +114,9 @@ namespace ToolKit
 
   void Renderer::Render(const RenderJob& job, CameraPtr cam, const LightPtrArray& lights)
   {
+    nvtx3::mark("Renderer");
+    NVTX3_FUNC_RANGE();
+
     // Make ibl assignments.
     m_renderState.IBLInUse = false;
     if (EnvironmentComponentPtr envCom = job.EnvironmentVolume)
@@ -234,6 +246,8 @@ namespace ToolKit
 
   void Renderer::SetRenderState(const RenderState* const state)
   {
+    NVTX3_FUNC_RANGE();
+
     if (m_renderState.cullMode != state->cullMode)
     {
       if (state->cullMode == CullingType::TwoSided)
@@ -331,6 +345,8 @@ namespace ToolKit
 
   void Renderer::SetStencilOperation(StencilOperation op)
   {
+    NVTX3_FUNC_RANGE();
+
     switch (op)
     {
     case StencilOperation::None:
@@ -358,6 +374,8 @@ namespace ToolKit
 
   void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color)
   {
+    NVTX3_FUNC_RANGE();
+
     if (fb != m_framebuffer)
     {
       if (fb != nullptr)
@@ -387,6 +405,8 @@ namespace ToolKit
 
   void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color)
   {
+    NVTX3_FUNC_RANGE();
+
     FramebufferPtr& tmp1 = fb;
     FramebufferPtr tmp2  = m_framebuffer;
     SetFramebuffer(fb, clear, color);
@@ -399,26 +419,39 @@ namespace ToolKit
 
   void Renderer::ClearFrameBuffer(FramebufferPtr fb, const Vec4& color)
   {
+    NVTX3_FUNC_RANGE();
+
     SwapFramebuffer(fb, true, color);
     SwapFramebuffer(fb, false);
   }
 
   void Renderer::ClearColorBuffer(const Vec4& color)
   {
+    NVTX3_FUNC_RANGE();
+
     glClearColor(color.r, color.g, color.b, color.a);
     glClear((GLbitfield) GraphicBitFields::ColorBits);
   }
 
   void Renderer::ClearBuffer(GraphicBitFields fields, const Vec4& value)
   {
+    NVTX3_FUNC_RANGE();
+
     glClearColor(value.r, value.g, value.b, value.a);
     glClear((GLbitfield) fields);
   }
 
-  void Renderer::ColorMask(bool r, bool g, bool b, bool a) { glColorMask(r, g, b, a); }
+  void Renderer::ColorMask(bool r, bool g, bool b, bool a)
+  {
+    NVTX3_FUNC_RANGE();
+
+    glColorMask(r, g, b, a);
+  }
 
   void Renderer::CopyFrameBuffer(FramebufferPtr src, FramebufferPtr dest, GraphicBitFields fields)
   {
+    NVTX3_FUNC_RANGE();
+
     GLuint srcId = 0;
     uint width   = m_windowSize.x;
     uint height  = m_windowSize.y;
@@ -445,10 +478,17 @@ namespace ToolKit
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
   }
 
-  void Renderer::SetViewport(Viewport* viewport) { SetFramebuffer(viewport->m_framebuffer); }
+  void Renderer::SetViewport(Viewport* viewport)
+  {
+    NVTX3_FUNC_RANGE();
+
+    SetFramebuffer(viewport->m_framebuffer);
+  }
 
   void Renderer::SetViewportSize(uint width, uint height)
   {
+    NVTX3_FUNC_RANGE();
+
     m_viewportSize.x = width;
     m_viewportSize.y = height;
     glViewport(0, 0, width, height);
@@ -456,6 +496,8 @@ namespace ToolKit
 
   void Renderer::SetViewportSize(uint x, uint y, uint width, uint height)
   {
+    NVTX3_FUNC_RANGE();
+
     m_viewportSize.x = width;
     m_viewportSize.y = height;
     glViewport(x, y, width, height);
@@ -476,6 +518,8 @@ namespace ToolKit
 
   void Renderer::DrawFullQuad(MaterialPtr mat)
   {
+    NVTX3_FUNC_RANGE();
+
     static CameraPtr quadCam                           = MakeNewPtr<Camera>();
     static QuadPtr quad                                = MakeNewPtr<Quad>();
     quad->GetMeshComponent()->GetMeshVal()->m_material = mat;
@@ -487,6 +531,8 @@ namespace ToolKit
 
   void Renderer::DrawCube(CameraPtr cam, MaterialPtr mat, const Mat4& transform)
   {
+    NVTX3_FUNC_RANGE();
+
     m_dummyDrawCube->m_node->SetTransform(transform);
     m_dummyDrawCube->GetMaterialComponent()->SetFirstMaterial(mat);
 
@@ -497,6 +543,8 @@ namespace ToolKit
 
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
   {
+    NVTX3_FUNC_RANGE();
+
     assert(source->m_width == dest->m_width && source->m_height == dest->m_height &&
            "Sizes of the textures are not the same.");
 
@@ -535,6 +583,8 @@ namespace ToolKit
 
   void Renderer::EnableBlending(bool enable)
   {
+    NVTX3_FUNC_RANGE();
+
     if (enable)
     {
       glEnable(GL_BLEND);
@@ -545,10 +595,17 @@ namespace ToolKit
     }
   }
 
-  void Renderer::EnableDepthWrite(bool enable) { glDepthMask(enable); }
+  void Renderer::EnableDepthWrite(bool enable)
+  {
+    NVTX3_FUNC_RANGE();
+
+    glDepthMask(enable);
+  }
 
   void Renderer::EnableDepthTest(bool enable)
   {
+    NVTX3_FUNC_RANGE();
+
     if (m_renderState.depthTestEnabled != enable)
     {
       if (enable)
@@ -565,6 +622,8 @@ namespace ToolKit
 
   void Renderer::SetDepthTestFunc(CompareFunctions func)
   {
+    NVTX3_FUNC_RANGE();
+
     if (m_renderState.depthFunction != func)
     {
       m_renderState.depthFunction = func;
@@ -577,6 +636,8 @@ namespace ToolKit
                                       const Vec3& axis,
                                       const float amount)
   {
+    NVTX3_FUNC_RANGE();
+
     FramebufferPtr frmBackup = m_framebuffer;
 
     m_utilFramebuffer->UnInit();
@@ -608,6 +669,8 @@ namespace ToolKit
 
   void Renderer::ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount)
   {
+    NVTX3_FUNC_RANGE();
+
     FramebufferPtr frmBackup = m_framebuffer;
 
     m_utilFramebuffer->UnInit();
@@ -640,6 +703,8 @@ namespace ToolKit
 
   void Renderer::GenerateBRDFLutTexture()
   {
+    NVTX3_FUNC_RANGE();
+
     if (!GetTextureManager()->Exist(TK_BRDF_LUT_TEXTURE))
     {
       MaterialPtr prevOverrideMaterial = m_overrideMat;
@@ -687,6 +752,8 @@ namespace ToolKit
 
   void Renderer::SetProjectViewModel(const Mat4& model, CameraPtr cam)
   {
+    NVTX3_FUNC_RANGE();
+
     m_view    = cam->GetViewMatrix();
     m_project = cam->GetProjectionMatrix();
     m_model   = model;
@@ -694,6 +761,8 @@ namespace ToolKit
 
   void Renderer::BindProgram(ProgramPtr program)
   {
+    NVTX3_FUNC_RANGE();
+
     if (m_currentProgram == program->m_handle)
     {
       return;
@@ -705,6 +774,8 @@ namespace ToolKit
 
   void Renderer::LinkProgram(GLuint program, GLuint vertexP, GLuint fragmentP)
   {
+    NVTX3_FUNC_RANGE();
+
     glAttachShader(program, vertexP);
     glAttachShader(program, fragmentP);
 
@@ -733,6 +804,8 @@ namespace ToolKit
 
   ProgramPtr Renderer::CreateProgram(ShaderPtr vertex, ShaderPtr fragment)
   {
+    NVTX3_FUNC_RANGE();
+
     assert(vertex);
     assert(fragment);
     vertex->Init();
@@ -763,6 +836,8 @@ namespace ToolKit
 
   void Renderer::FeedUniforms(ProgramPtr program)
   {
+    NVTX3_FUNC_RANGE();
+
     for (ShaderPtr shader : program->m_shaders)
     {
       shader->UpdateShaderParameters();
@@ -1031,6 +1106,8 @@ namespace ToolKit
 
   void Renderer::FeedLightUniforms(ProgramPtr program)
   {
+    NVTX3_FUNC_RANGE();
+
     size_t lightSize = glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
     for (size_t i = 0; i < lightSize; i++)
     {
@@ -1151,6 +1228,8 @@ namespace ToolKit
 
   void Renderer::SetTexture(ubyte slotIndx, uint textureId)
   {
+    NVTX3_FUNC_RANGE();
+
     assert(slotIndx < 17 && "You exceed texture slot count");
     m_textureSlots[slotIndx] = textureId;
     glActiveTexture(GL_TEXTURE0 + slotIndx);
@@ -1181,6 +1260,8 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture, uint width, uint height, float exposure)
   {
+    NVTX3_FUNC_RANGE();
+
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
@@ -1252,6 +1333,8 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint width, uint height)
   {
+    NVTX3_FUNC_RANGE();
+
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
@@ -1321,6 +1404,8 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateSpecularEnvMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps)
   {
+    NVTX3_FUNC_RANGE();
+
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
@@ -1428,6 +1513,8 @@ namespace ToolKit
 
   void Renderer::ResetTextureSlots()
   {
+    NVTX3_FUNC_RANGE();
+
     for (int i = 0; i < 17; i++)
     {
       SetTexture(i, 0);

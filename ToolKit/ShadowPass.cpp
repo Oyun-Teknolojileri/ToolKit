@@ -33,6 +33,10 @@
 #include "ToolKit.h"
 #include "Logger.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
 
@@ -60,6 +64,8 @@ namespace ToolKit
 
   void ShadowPass::Render()
   {
+    NVTX3_FUNC_RANGE();
+
     const Vec4 lastClearColor = GetRenderer()->m_clearColor;
 
     // Update shadow maps.
@@ -83,6 +89,9 @@ namespace ToolKit
 
   void ShadowPass::PreRender()
   {
+    nvtx3::mark("Shadow Pass");
+    NVTX3_FUNC_RANGE();
+
     Pass::PreRender();
 
     m_lastOverrideMat = GetRenderer()->m_overrideMat;
@@ -109,6 +118,8 @@ namespace ToolKit
 
   void ShadowPass::PostRender()
   {
+    NVTX3_FUNC_RANGE();
+
     GetRenderer()->m_overrideMat = m_lastOverrideMat;
     Pass::PostRender();
   }
@@ -117,6 +128,8 @@ namespace ToolKit
 
   void ShadowPass::RenderShadowMaps(LightPtr light, const RenderJobArray& jobs)
   {
+    NVTX3_FUNC_RANGE();
+
     Renderer* renderer        = GetRenderer();
 
     auto renderForShadowMapFn = [this, &renderer](LightPtr light, RenderJobArray jobs) -> void
@@ -203,6 +216,8 @@ namespace ToolKit
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights)
   {
+    NVTX3_FUNC_RANGE();
+
     int layerCount                           = -1;
     int lastLayerOfDirAndSpotLightShadowsUse = -1;
 
@@ -279,6 +294,8 @@ namespace ToolKit
 
   void ShadowPass::InitShadowAtlas()
   {
+    NVTX3_FUNC_RANGE();
+
     // Check if the shadow atlas needs to be updated
     bool needChange = false;
 

@@ -32,6 +32,10 @@
 
 #include "DebugNew.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
 
@@ -53,6 +57,9 @@ namespace ToolKit
 
   void DoFPass::PreRender()
   {
+    nvtx3::mark("Dof Pass");
+    NVTX3_FUNC_RANGE();
+
     Pass::PreRender();
     if (m_params.ColorRt == nullptr)
     {
@@ -90,6 +97,8 @@ namespace ToolKit
 
   void DoFPass::Render()
   {
+    NVTX3_FUNC_RANGE();
+
     Renderer* renderer = GetRenderer();
     if (m_params.ColorRt == nullptr)
     {
@@ -102,6 +111,11 @@ namespace ToolKit
     RenderSubPass(m_quadPass);
   }
 
-  void DoFPass::PostRender() { Pass::PostRender(); }
+  void DoFPass::PostRender()
+  {
+    NVTX3_FUNC_RANGE();
+
+    Pass::PostRender();
+  }
 
 } // namespace ToolKit

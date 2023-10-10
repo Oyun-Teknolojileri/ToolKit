@@ -32,6 +32,10 @@
 
 #include "DebugNew.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
 
@@ -56,6 +60,9 @@ namespace ToolKit
 
   void PostProcessPass::PreRender()
   {
+    nvtx3::mark("PostProcess Pass");
+    NVTX3_FUNC_RANGE();
+
     Pass::PreRender();
 
     Renderer* renderer = GetRenderer();
@@ -91,8 +98,18 @@ namespace ToolKit
     m_postProcessPass->m_params.ClearFrameBuffer = false;
   }
 
-  void PostProcessPass::Render() { RenderSubPass(m_postProcessPass); }
+  void PostProcessPass::Render()
+  {
+    NVTX3_FUNC_RANGE();
 
-  void PostProcessPass::PostRender() { Pass::PostRender(); }
+    RenderSubPass(m_postProcessPass);
+  }
+
+  void PostProcessPass::PostRender()
+  {
+    NVTX3_FUNC_RANGE();
+
+    Pass::PostRender();
+  }
 
 } // namespace ToolKit

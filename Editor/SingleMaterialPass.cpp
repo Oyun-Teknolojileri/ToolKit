@@ -30,6 +30,10 @@
 
 #include "DebugNew.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
   namespace Editor
@@ -48,6 +52,7 @@ namespace ToolKit
 
     void SingleMatForwardRenderPass::Render()
     {
+      NVTX3_FUNC_RANGE();
 
       Renderer* renderer      = GetRenderer();
       renderer->m_overrideMat = MakeNewPtr<Material>();
@@ -77,6 +82,9 @@ namespace ToolKit
 
     void SingleMatForwardRenderPass::PreRender()
     {
+      nvtx3::mark("SingleMatForward Pass");
+      NVTX3_FUNC_RANGE();
+
       ForwardRenderPass::m_params = m_params.ForwardParams;
       ForwardRenderPass::PreRender();
 

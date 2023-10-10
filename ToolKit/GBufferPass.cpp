@@ -34,6 +34,10 @@
 
 #include "DebugNew.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
 
@@ -87,6 +91,8 @@ namespace ToolKit
 
   void GBufferPass::InitGBuffers(int width, int height)
   {
+    NVTX3_FUNC_RANGE();
+
     bool reInitGBuffers = false;
     if (m_initialized)
     {
@@ -147,6 +153,8 @@ namespace ToolKit
 
   void GBufferPass::UnInitGBuffers()
   {
+    NVTX3_FUNC_RANGE();
+
     if (!m_initialized)
     {
       return;
@@ -167,6 +175,9 @@ namespace ToolKit
 
   void GBufferPass::PreRender()
   {
+    nvtx3::mark("GBuffer Pass");
+    NVTX3_FUNC_RANGE();
+
     Pass::PreRender();
 
     Renderer* renderer = GetRenderer();
@@ -175,10 +186,17 @@ namespace ToolKit
     renderer->SetCameraLens(m_params.Camera);
   }
 
-  void GBufferPass::PostRender() { Pass::PostRender(); }
+  void GBufferPass::PostRender()
+  {
+    NVTX3_FUNC_RANGE();
+
+    Pass::PostRender();
+  }
 
   void GBufferPass::Render()
   {
+    NVTX3_FUNC_RANGE();
+
     Renderer* renderer = GetRenderer();
     for (RenderJob& job : m_params.RendeJobs)
     {

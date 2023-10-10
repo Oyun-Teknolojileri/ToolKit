@@ -41,6 +41,10 @@
 
 #include "DebugNew.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
   RenderPass::RenderPass() {}
@@ -53,6 +57,9 @@ namespace ToolKit
 
   void Pass::PreRender()
   {
+    nvtx3::mark("Pass");
+    NVTX3_FUNC_RANGE();
+
     Renderer* renderer     = GetRenderer();
     m_prevOverrideMaterial = renderer->m_overrideMat;
     m_prevFrameBuffer      = renderer->GetFrameBuffer();
@@ -60,6 +67,8 @@ namespace ToolKit
 
   void Pass::PostRender()
   {
+    NVTX3_FUNC_RANGE();
+
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = m_prevOverrideMaterial;
     renderer->SetFramebuffer(m_prevFrameBuffer, false);
@@ -67,6 +76,8 @@ namespace ToolKit
 
   void Pass::RenderSubPass(const PassPtr& pass)
   {
+    NVTX3_FUNC_RANGE();
+
     Renderer* renderer = GetRenderer();
     pass->SetRenderer(renderer);
     pass->PreRender();
@@ -80,6 +91,8 @@ namespace ToolKit
 
   void RenderJobProcessor::CreateRenderJobs(EntityPtrArray entities, RenderJobArray& jobArray, bool ignoreVisibility)
   {
+    NVTX3_FUNC_RANGE();
+
     erase_if(entities,
              [ignoreVisibility](EntityPtr ntt) -> bool
              { return !ntt->IsDrawable() || (!ntt->IsVisible() && !ignoreVisibility); });
@@ -153,6 +166,8 @@ namespace ToolKit
                                                    RenderJobArray& forward,
                                                    RenderJobArray& translucent)
   {
+    NVTX3_FUNC_RANGE();
+
     for (const RenderJob& job : jobArray)
     {
       if (job.Material->IsTranslucent())
@@ -177,6 +192,8 @@ namespace ToolKit
                                                      RenderJobArray& opaque,
                                                      RenderJobArray& translucent)
   {
+    NVTX3_FUNC_RANGE();
+
     for (const RenderJob& job : jobArray)
     {
       if (job.Material->IsTranslucent())
@@ -205,6 +222,8 @@ namespace ToolKit
 
   LightPtrArray RenderJobProcessor::SortLights(const RenderJob& job, const LightPtrArray& lights)
   {
+    NVTX3_FUNC_RANGE();
+
     LightPtrArray bestLights;
     if (lights.empty())
     {
@@ -300,6 +319,8 @@ namespace ToolKit
 
   LightPtrArray RenderJobProcessor::SortLights(EntityPtr entity, const LightPtrArray& lights)
   {
+    NVTX3_FUNC_RANGE();
+
     RenderJobArray jobs;
     CreateRenderJobs({entity}, jobs);
 
@@ -315,6 +336,8 @@ namespace ToolKit
 
   void RenderJobProcessor::StableSortByDistanceToCamera(RenderJobArray& jobArray, const CameraPtr cam)
   {
+    NVTX3_FUNC_RANGE();
+
     std::function<bool(const RenderJob&, const RenderJob&)> sortFn = [cam](const RenderJob& j1,
                                                                            const RenderJob& j2) -> bool
     {
@@ -346,10 +369,17 @@ namespace ToolKit
     std::stable_sort(jobArray.begin(), jobArray.end(), sortFn);
   }
 
-  void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, CameraPtr camera) { FrustumCull(jobArray, camera); }
+  void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, CameraPtr camera)
+  {
+    NVTX3_FUNC_RANGE();
+    
+    FrustumCull(jobArray, camera);
+  }
 
   void RenderJobProcessor::AssignEnvironment(RenderJobArray& jobArray, const EnvironmentComponentPtrArray& environments)
   {
+    NVTX3_FUNC_RANGE();
+
     if (environments.empty())
     {
       return;
@@ -381,6 +411,8 @@ namespace ToolKit
 
   void RenderJobProcessor::CalculateStdev(const RenderJobArray& rjVec, float& stdev, Vec3& mean)
   {
+    NVTX3_FUNC_RANGE();
+
     int n = (int) rjVec.size();
 
     // Calculate mean position

@@ -31,6 +31,10 @@
 #include "Shader.h"
 #include "stdafx.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
 
@@ -65,6 +69,8 @@ namespace ToolKit
 
   void ForwardPreProcess::InitBuffers(uint width, uint height)
   {
+    NVTX3_FUNC_RANGE();
+
     m_framebuffer->Init({width, height, false, false});
     m_framebuffer->ReconstructIfNeeded(width, height);
     m_normalRt->ReconstructIfNeeded(width, height);
@@ -90,6 +96,8 @@ namespace ToolKit
 
   void ForwardPreProcess::Render()
   {
+    NVTX3_FUNC_RANGE();
+
     Renderer* renderer                      = GetRenderer();
 
     const auto renderLinearDepthAndNormalFn = [this, renderer](RenderJobArray& renderJobArray)
@@ -119,6 +127,9 @@ namespace ToolKit
 
   void ForwardPreProcess::PreRender()
   {
+    nvtx3::mark("ForwardPreProcess Pass");
+    NVTX3_FUNC_RANGE();
+
     RenderPass::PreRender();
 
     Renderer* renderer = GetRenderer();
@@ -138,7 +149,12 @@ namespace ToolKit
     renderer->SetCameraLens(m_params.Cam);
   }
 
-  void ForwardPreProcess::PostRender() { RenderPass::PostRender(); }
+  void ForwardPreProcess::PostRender()
+  {
+    NVTX3_FUNC_RANGE();
+
+    RenderPass::PostRender();
+  }
 
   void ForwardPreProcess::InitDefaultDepthTexture(int width, int height)
   {

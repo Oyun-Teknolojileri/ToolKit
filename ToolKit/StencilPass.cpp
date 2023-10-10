@@ -29,9 +29,12 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "TKOpenGL.h"
 #include "ToolKit.h"
 
-#include "TKOpenGL.h"
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
 
 namespace ToolKit
 {
@@ -61,6 +64,8 @@ namespace ToolKit
 
   void StencilRenderPass::Render()
   {
+    NVTX3_FUNC_RANGE();
+
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = m_solidOverrideMaterial;
 
@@ -84,6 +89,9 @@ namespace ToolKit
 
   void StencilRenderPass::PreRender()
   {
+    nvtx3::mark("StencilRender Pass");
+    NVTX3_FUNC_RANGE();
+
     Pass::PreRender();
     Renderer* renderer = GetRenderer();
 
@@ -105,6 +113,11 @@ namespace ToolKit
     renderer->SetCameraLens(m_params.Camera);
   }
 
-  void StencilRenderPass::PostRender() { Pass::PostRender(); }
+  void StencilRenderPass::PostRender()
+  {
+    NVTX3_FUNC_RANGE();
+
+    Pass::PostRender();
+  }
 
 } // namespace ToolKit

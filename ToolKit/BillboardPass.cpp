@@ -30,6 +30,10 @@
 
 #include "DebugNew.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
   BillboardPass::BillboardPass() {}
@@ -40,6 +44,8 @@ namespace ToolKit
 
   void BillboardPass::Render()
   {
+    NVTX3_FUNC_RANGE();
+
     Renderer* renderer = GetRenderer();
     Viewport* vp       = m_params.Viewport;
 
@@ -75,6 +81,9 @@ namespace ToolKit
 
   void BillboardPass::PreRender()
   {
+    nvtx3::mark("Billboard Pass");
+    NVTX3_FUNC_RANGE();
+
     Pass::PreRender();
 
     // Process billboards.
