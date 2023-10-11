@@ -46,16 +46,21 @@
 
 namespace ToolKit
 {
-  ULongID HandleManager::GetNextHandle()
+  HandleManager::HandleManager()
   {
-    assert(m_baseHandle < m_maxIdLimit && "Generated id is too long.");
-    return ++m_baseHandle;
+    Xoroshiro128PlusSeed(m_randomXor, time(nullptr) + (uint64)(this) + m_randomXor[0]);
   }
 
-  void HandleManager::SetMaxHandle(ULongID val)
+  ULongID HandleManager::GetNextHandle()
   {
-    m_baseHandle = glm::max(m_baseHandle, val);
-    assert(m_baseHandle < m_maxIdLimit && "Generated id is too long.");
+    ULongID id = Xoroshiro128Plus(m_randomXor);
+    // search until we found id that is unique, 
+    // note: this will run only once most of the time, since random generator is awesome
+    while (m_uniqueIDs.find(id) != m_uniqueIDs.end())
+    {
+      id = Xoroshiro128Plus(m_randomXor);
+    }
+    return id + (id == 0); // non zero
   }
 
   Main* Main::m_proxy = nullptr;

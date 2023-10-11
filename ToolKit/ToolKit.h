@@ -33,6 +33,7 @@
 
 #include "Object.h"
 #include "Types.h"
+#include <unordered_set>
 
 /**
  * Base name space for all the ToolKit functionalities.
@@ -46,6 +47,7 @@ namespace ToolKit
   class TK_API HandleManager
   {
    public:
+    HandleManager();
     /**
      * Creates a handle that has not been allocated within the current runtime.
      * Increments the m_baseHandle by one.
@@ -53,16 +55,9 @@ namespace ToolKit
      */
     ULongID GetNextHandle();
 
-    /**
-     * This function allows to set the m_baseHandle to maximum of
-     * val and m_baseHandle. That is m_baseHandle = max(m_baseHandle, val).
-     * @param val The value to compare with current handle.
-     */
-    void SetMaxHandle(ULongID val);
-
    private:
-    ULongID m_baseHandle = 1000; //!< Starting value of the handles.
-    ULongID m_maxIdLimit = (std::numeric_limits<uint64_t>::max() / 10) * 9;
+    uint64 m_randomXor[2];
+    std::unordered_set<uint64> m_uniqueIDs;
   };
 
   struct Timing

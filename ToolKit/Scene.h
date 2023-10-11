@@ -177,6 +177,7 @@ namespace ToolKit
      * @param entity The entity to add.
      */
     virtual void AddEntity(EntityPtr entity);
+
     EntityPtrArray& AccessEntityArray(); //!< Mutable Entity array access.
 
     /**
@@ -302,14 +303,6 @@ namespace ToolKit
     void DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
     /**
-     * Returns the biggest number generated during the current runtime. This
-     * function is used to avoid ID collision during scene merges.
-     *
-     * @return The biggest entity ID generated during the current runtime.
-     */
-    ULongID GetBiggestEntityId();
-
-    /**
      * Copies the scene to another resource.
      * @param other The resource to copy to.
      */
@@ -322,8 +315,11 @@ namespace ToolKit
      */
     void RemoveChildren(EntityPtr removed);
 
+    void AddUniqueEntity(ULongID lastID, std::unordered_set<uint64>& newAddedIds, EntityPtr entity);
+
    protected:
     EntityPtrArray m_entities; //!< The entities in the scene.
+    std::unordered_map<uint64, int> m_idToEntityMap;
     bool m_isPrefab;           //!< Whether or not the scene is a prefab.
   };
 

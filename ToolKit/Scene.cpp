@@ -36,6 +36,7 @@
 #include "ToolKit.h"
 #include "Util.h"
 #include "Logger.h"
+#include <unordered_set>
 
 #include "DebugNew.h"
 
@@ -138,15 +139,50 @@ namespace ToolKit
 
   void Scene::Update(float deltaTime) {}
 
+  void Scene::AddUniqueEntity(ULongID lastID, std::unordered_set<uint64>& newAddedIds, EntityPtr ntt)
+  {
+    // Incrementing the incoming ntt ids with current max id value...
+    // to prevent id collisions.
+    ULongID listIndx  = ntt->GetIdVal();
+    ULongID currentID = listIndx + lastID;
+    // even though number overflows we are going to set this index to entity 
+    // find unique new id
+    uint rnd = 259347823;
+    while (GetEntity(currentID))
+    {
+      currentID += PCGNext(rnd);
+    }
+    
+    ntt->SetIdVal(currentID);
+    
+    ntt->_parentId += lastID;
+    
+    // if parent entity is not in newAddedIds that means parent is not added yet
+    if (ntt->_parentId != lastID && // entity has parent ?
+        newAddedIds.find(ntt->_parentId) == newAddedIds.end() && // parent is not added 
+        GetEntity(ntt->_parentId) != nullptr // parent entity id is already exist in scene
+    ) 
+    {
+      rnd = 259347823;
+      while (GetEntity(ntt->_parentId))
+      {
+        ntt->_parentId += PCGNext(rnd);
+      }
+    }
+    newAddedIds.insert(currentID);
+    AddEntity(ntt); // Insert into this scene.
+  }
+
   void Scene::Merge(ScenePtr other)
   {
-    ULongID lastID = GetHandleManager()->GetNextHandle(), biggestID = 0;
+    ULongID lastID = GetHandleManager()->GetNextHandle();
     const EntityPtrArray& entities = other->GetEntities();
+    std::unordered_set<uint64> newAddedIds;
+
     for (EntityPtr ntt : entities)
     {
-      AddEntity(ntt); // Insert into this scene.
+      AddUniqueEntity(lastID, newAddedIds, ntt);
     }
-    GetHandleManager()->SetMaxHandle(biggestID);
 
     other->RemoveAllEntities();
     GetSceneManager()->Remove(other->GetFile());
@@ -262,26 +298,30 @@ namespace ToolKit
 
   EntityPtr Scene::GetEntity(ULongID id) const
   {
-    for (EntityPtr ntt : m_entities)
+    if (m_entities.size() == 0) 
     {
-      if (ntt->GetIdVal() == id)
-      {
-        return ntt;
-      }
+      return nullptr;
     }
-
-    return nullptr;
+    auto fnd = m_idToEntityMap.find(id);
+    return fnd != m_idToEntityMap.end() ? m_entities[fnd->second] : nullptr;
   }
 
   void Scene::AddEntity(EntityPtr entity)
   {
     if (entity)
     {
-      bool isUnique = GetEntity(entity->GetIdVal()) == nullptr;
-      assert(isUnique);
+      ULongID id    = entity->GetIdVal();
+      bool isUnique = GetEntity(id) == nullptr;
+      // assert(isUnique);
       if (isUnique)
       {
+        m_idToEntityMap[id] = m_entities.size();
         m_entities.push_back(entity);
+      }
+      else 
+      {
+        printf("eneen");
+        assert(0);
       }
     }
   }
@@ -305,40 +345,60 @@ namespace ToolKit
   EntityPtr Scene::RemoveEntity(ULongID id, bool deep)
   {
     EntityPtr removed = nullptr;
-    for (size_t i = 0; i < m_entities.size(); i++)
+   
+    auto fnd = m_idToEntityMap.find(id);
+    if (fnd != m_idToEntityMap.end())
     {
-      if (m_entities[i]->GetIdVal() == id)
-      {
-        removed = m_entities[i];
-        m_entities.erase(m_entities.begin() + i);
-
-        // Keep hierarchy if its prefab.
-        if (removed->GetPrefabRoot() == nullptr)
-        {
-          removed->m_node->OrphanSelf();
-        }
-
-        if (deep)
-        {
-          RemoveChildren(removed);
-        }
-        else
-        {
-          removed->m_node->OrphanAllChildren(true);
-        }
-        break;
-      }
+      return removed;
     }
+    
+    int index = m_idToEntityMap[fnd->first];
+    removed = m_entities[index];
+    // move last entity to index
+    m_entities[index]   = m_entities.back();
+    m_idToEntityMap[id] = index; // replace index
+    // remove last entity because we moved it to index
+    m_entities.pop_back();
+    
+    // Keep hierarchy if its prefab.
+    if (removed->GetPrefabRoot() == nullptr)
+    {
+      removed->m_node->OrphanSelf();
+    }
+    
+    if (deep)
+    {
+      RemoveChildren(removed);
+    }
+    else
+    {
+      removed->m_node->OrphanAllChildren(true);
+    } 
 
     return removed;
   }
 
   void Scene::RemoveEntity(const EntityPtrArray& entities)
   {
-    erase_if(m_entities, [entities](EntityPtr ntt) -> bool { return FindIndex(entities, ntt) != -1; });
+    for (EntityPtr ntt : entities)
+    {
+      ULongID id = ntt->GetIdVal();
+      if (m_idToEntityMap.find(id) != m_idToEntityMap.end())
+      {
+        int index = m_idToEntityMap[id];
+        const EntityPtr& last = m_entities.back();
+        m_entities[index] = last;
+        m_idToEntityMap[last->GetIdVal()] = index;
+        m_entities.pop_back();
+      }
+    }
   }
 
-  void Scene::RemoveAllEntities() { m_entities.clear(); }
+  void Scene::RemoveAllEntities() 
+  {
+    m_entities.clear(); 
+    m_idToEntityMap.clear();
+  }
 
   const EntityPtrArray& Scene::GetEntities() const { return m_entities; }
 
@@ -486,6 +546,7 @@ namespace ToolKit
     }
 
     m_entities.clear();
+    m_idToEntityMap.clear();
 
     m_loaded    = false;
     m_initiated = false;
@@ -514,7 +575,11 @@ namespace ToolKit
     entity->m_node = prevNode;
   }
 
-  void Scene::ClearEntities() { m_entities.clear(); }
+  void Scene::ClearEntities() 
+  {
+    m_entities.clear(); 
+    m_idToEntityMap.clear();
+  }
 
   void Scene::CopyTo(Resource* other)
   {
@@ -530,6 +595,7 @@ namespace ToolKit
     {
       DeepCopy(ntt, cpy->m_entities);
     }
+    cpy->m_idToEntityMap = m_idToEntityMap;
   }
 
   XmlNode* Scene::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -578,15 +644,16 @@ namespace ToolKit
     }
 
     // Old file, keep parsing.
-    ULongID lastID    = GetHandleManager()->GetNextHandle();
-    ULongID biggestID = 0;
+    // choose scene's start index, entities will have indexes starting from this, 
+    // even though number overflows we don't care
+    ULongID lastID    = GetHandleManager()->GetNextHandle();   
     XmlNode* node     = nullptr;
 
     EntityPtrArray prefabList;
 
     const char* xmlRootObject = XmlEntityElement.c_str();
     const char* xmlObjectType = XmlEntityTypeAttr.c_str();
-
+    
     for (node = parent->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
     {
       XmlAttribute* typeAttr      = node->first_attribute(xmlObjectType);
@@ -600,19 +667,11 @@ namespace ToolKit
       {
         prefabList.push_back(ntt);
       }
-
-      // Incrementing the incoming ntt ids with current max id value...
-      // to prevent id collisions.
-      ULongID listIndx = 0;
+      uint64 listIndx = 0;
       ReadAttr(node, XmlEntityIdAttr, listIndx);
-      ULongID currentID = listIndx + lastID;
-      biggestID         = glm::max(biggestID, currentID);
-      ntt->SetIdVal(currentID);
-      ntt->_parentId += lastID;
-
+      ntt->SetIdVal(listIndx);
       AddEntity(ntt);
     }
-    GetHandleManager()->SetMaxHandle(biggestID);
 
     // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)
@@ -635,7 +694,6 @@ namespace ToolKit
     XmlNode* root     = info.Document->first_node(XmlSceneElement.c_str());
 
     // Old file, keep parsing.
-    ULongID lastID    = GetHandleManager()->GetNextHandle();
     ULongID biggestID = 0;
     XmlNode* node     = nullptr;
 
@@ -656,18 +714,8 @@ namespace ToolKit
         prefabList.push_back(ntt);
       }
 
-      // Incrementing the incoming ntt ids with current max id value...
-      // to prevent id collisions.
-      ULongID listIndx  = ntt->GetIdVal();
-      ULongID currentID = listIndx + lastID;
-      biggestID         = glm::max(biggestID, currentID);
-      ntt->SetIdVal(currentID);
-      ntt->_parentId += lastID;
-
       AddEntity(ntt);
     }
-
-    GetHandleManager()->SetMaxHandle(biggestID);
 
     // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)
@@ -681,17 +729,6 @@ namespace ToolKit
       prefab->Init(this);
       prefab->Link();
     }
-  }
-
-  ULongID Scene::GetBiggestEntityId()
-  {
-    ULongID lastId = 0;
-    for (EntityPtr ntt : m_entities)
-    {
-      lastId = glm::max(lastId, ntt->GetIdVal());
-    }
-
-    return lastId;
   }
 
   SceneManager::SceneManager() { m_baseType = Scene::StaticClass(); }

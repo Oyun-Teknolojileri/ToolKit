@@ -379,6 +379,8 @@ namespace ToolKit
     //   detect)
     bool OutlinerWindow::TryReorderEntites(const EntityPtrArray& movedEntities)
     {
+      // todo: reordering is not possible currently!!!
+      return false;
       // check number of visible entities in outliner is zero or inserted
       // entities.size is zero
       if (m_indexToEntity.size() == 0 || movedEntities.size() == 0)
