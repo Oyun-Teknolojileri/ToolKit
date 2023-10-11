@@ -375,9 +375,12 @@ namespace ToolKit
     String projectName     = activeProjectName;
     String applicationName = m_appName;
     String mainPath        = NormalizePath("Android/app/src/main");
+    
+    String toolkitPath = GetFileManager()->ReadAllText(ConcatPaths({getenv("APPDATA"), "ToolKit", "Config", "Path.txt"}));
     // get manifest file from template
     String androidManifest = GetFileManager()->ReadAllText(
-        std::filesystem::absolute(ConcatPaths({"..", "Template", mainPath, "AndroidManifest.xml"})).string());
+        std::filesystem::absolute(ConcatPaths({toolkitPath, "Template", mainPath, "AndroidManifest.xml"})).string());
+    
     // replace template values with our settings
     ReplaceFirstStringInPlace(androidManifest, "@string/app_name", applicationName);
     ReplaceFirstStringInPlace(androidManifest,
@@ -446,15 +449,16 @@ namespace ToolKit
     const std::filesystem::copy_options copyOption = std::filesystem::copy_options::overwrite_existing;
 
     std::filesystem::copy(sceneResourcesPath, androidResourcesPath, copyOption, ec);
-    if (returnLoggingError())
+    if (returnLoggingError("Copy: " + sceneResourcesPath + " and " + androidResourcesPath))
     {
       return 1;
     }
 
     EditAndroidManifest();
-
-    std::filesystem::current_path(ConcatPaths({projectLocation, "Android"}), ec);
-    if (returnLoggingError())
+    
+    String androidPath = ConcatPaths({ projectLocation, "Android" });
+    std::filesystem::current_path(androidPath, ec);
+    if (returnLoggingError(androidPath))
     {
       return 1;
     }
@@ -467,44 +471,42 @@ namespace ToolKit
     String command    = m_isDebugBuild ? "gradlew assembleDebug" : "gradlew assemble";
     
     int compileResult = RunPipe(command, nullptr);
+    if (compileResult != 0)
     {
-      if (compileResult == 1)
-      {
-        GetLogger()->WriteConsole(LogType::Error, "Android build failed.\n");
-        return 1;
-      }
-
-      String buildLocation = NormalizePath(ConcatPaths({projectLocation, "Android/app/build/outputs/apk"}));
-      buildLocation        = ConcatPaths({buildLocation, m_isDebugBuild ? "debug" : "release"});
-      const String publishDirStr   = ConcatPaths({ResourcePath(), "..", "Publish", "Android"});
-      const String apkName         = m_isDebugBuild ? "app-debug.apk" : "app-release-unsigned.apk";
-      const String apkPathStr      = ConcatPaths({buildLocation, apkName});
-
-      projectName                  = m_appName;
-      projectName                 += m_isDebugBuild ? "_debug.apk" : "_release.apk";
-      const String publishApkPath  = ConcatPaths({publishDirStr, projectName});
-
-      // Create directories
-      std::filesystem::create_directories(publishDirStr, ec);
-      if (returnLoggingError())
-      {
-        return 1;
-      }
-
-      std::filesystem::copy(apkPathStr, publishApkPath, std::filesystem::copy_options::overwrite_existing, ec);
-      if (returnLoggingError())
-      {
-        return 1;
-      }
-
-      // Tell user about where the location of output files is
-      GetLogger()->WriteConsole(LogType::Success, "Building for ANDROID has been completed successfully.\n");
-      GetLogger()->WriteConsole(LogType::Memo,
-                                "Output files location: %s\n",
-                                std::filesystem::absolute(publishDirStr).string().c_str());
-
-      PlatformHelpers::OpenExplorer(publishDirStr);
+      GetLogger()->WriteConsole(LogType::Error, "Android build failed.\n");
+      return 1;
     }
+
+    String buildLocation = NormalizePath(ConcatPaths({projectLocation, "Android/app/build/outputs/apk"}));
+    buildLocation        = ConcatPaths({buildLocation, m_isDebugBuild ? "debug" : "release"});
+    const String publishDirStr   = ConcatPaths({ResourcePath(), "..", "Publish", "Android"});
+    const String apkName         = m_isDebugBuild ? "app-debug.apk" : "app-release-unsigned.apk";
+    const String apkPathStr      = ConcatPaths({buildLocation, apkName});
+
+    projectName                  = m_appName;
+    projectName                 += m_isDebugBuild ? "_debug.apk" : "_release.apk";
+    const String publishApkPath  = ConcatPaths({publishDirStr, projectName});
+
+    // Create directories
+    std::filesystem::create_directories(publishDirStr, ec);
+    if (returnLoggingError("Trying Create Dir:" + publishDirStr))
+    {
+      return 1;
+    }
+
+    std::filesystem::copy(apkPathStr, publishApkPath, std::filesystem::copy_options::overwrite_existing, ec);
+    if (returnLoggingError("Trying Copy: " + apkPathStr + " and " + publishApkPath))
+    {
+      return 1;
+    }
+
+    // Tell user about where the location of output files is
+    GetLogger()->WriteConsole(LogType::Success, "Building for ANDROID has been completed successfully.\n");
+    GetLogger()->WriteConsole(LogType::Memo,
+                              "Output files location: %s\n",
+                              std::filesystem::absolute(publishDirStr).string().c_str());
+
+    PlatformHelpers::OpenExplorer(publishDirStr);
 
     if (compileResult != 0)
     {
@@ -514,16 +516,16 @@ namespace ToolKit
     }
 
     std::filesystem::current_path(workDir, ec); // set work directory back
+    if (returnLoggingError("Set Work Directory: " + workDir.string()))
+    {
+      return 1;
+    }
 
     if (m_deployAfterBuild)
     {
       AndroidRunOnPhone();
     }
 
-    if (returnLoggingError())
-    {
-      return 1;
-    }
     return 0;
   }
 
@@ -560,22 +562,16 @@ namespace ToolKit
     };
 
     TK_LOG("Run toolkit compile script");
-    Path newWorkDir(ConcatPaths({"..", "BuildScripts"}));
-    std::filesystem::current_path(newWorkDir, ec);
-    if (returnLoggingError(newWorkDir.string(), false, __LINE__))
-    {
-      return 1;
-    }
-
-    int toolKitCompileResult = RunPipe("WebBuildRelease.bat", nullptr);
+    String toolkitPath = GetFileManager()->ReadAllText(ConcatPaths({getenv("APPDATA"), "ToolKit", "Config", "Path.txt"}));
+   
+    int toolKitCompileResult = RunPipe(ConcatPaths({"BuildScripts", "WebBuildRelease.bat"}), nullptr);
     if (toolKitCompileResult != 0)
     {
       returnLoggingError("bat failed", true, __LINE__);
       TK_ERR("ToolKit could not be compiled!\n");
       return 1;
     }
-    newWorkDir                               = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
-
+    Path newWorkDir                          = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
     const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Web", "WebBuildRelease.bat"});
 
     // Run scripts
@@ -615,7 +611,7 @@ namespace ToolKit
     for (int i = 0; i < ArraySize(files); i++)
     {
       std::filesystem::copy(files[i].c_str(), publishDirectory, std::filesystem::copy_options::overwrite_existing, ec);
-      if (returnLoggingError(files[i], false, __LINE__))
+      if (returnLoggingError("Copy: " + files[i] + " to " + publishDirectory, false, __LINE__))
       {
         return 1;
       }
@@ -676,7 +672,8 @@ namespace ToolKit
     // Set resource root to project's Resources folder
     g_proxy->m_resourceRoot = ConcatPaths({workspacePath, activeProjectName, "Resources"});
 
-    g_proxy->SetConfigPath(ConcatPaths({"..", "Config"}));
+    String toolkitPath = GetFileManager()->ReadAllText(ConcatPaths({getenv("APPDATA"), "ToolKit", "Config", "Path.txt"}));
+    g_proxy->SetConfigPath(ConcatPaths({toolkitPath, "Config"}));
     g_proxy->PreInit();
 
     GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void

@@ -339,18 +339,30 @@ namespace ToolKit
 
   String ConcatPaths(const StringArray& entries)
   {
-    String path;
     if (entries.empty())
     {
-      return path;
+      return "";
     }
 
-    for (size_t i = 0; i < entries.size() - 1; i++)
+    // Calculate the total length needed for the concatenated string to reduce allocations
+    uint64 totalLength = 0;
+    for (const String& entry : entries)
     {
-      path += entries[i] + GetPathSeparatorAsStr();
+      totalLength += entry.length() + 1; // +1 for path separator
     }
 
-    return path + entries.back();
+    // Create a string builder and reserve the needed capacity
+    String path;
+    path.reserve(totalLength);
+
+    for (uint64 i = 0; i < entries.size() - 1; i++)
+    {
+      path += entries[i];
+      path += GetPathSeparatorAsStr();
+    }
+
+    path += entries.back(); // Add the last entry
+    return path;
   }
 
   String GetRelativeResourcePath(const String& path, String* rootFolder)
