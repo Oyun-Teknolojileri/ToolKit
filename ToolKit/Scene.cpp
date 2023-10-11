@@ -312,16 +312,11 @@ namespace ToolKit
     {
       ULongID id    = entity->GetIdVal();
       bool isUnique = GetEntity(id) == nullptr;
-      // assert(isUnique);
+      assert(isUnique);
       if (isUnique)
       {
         m_idToEntityMap[id] = m_entities.size();
         m_entities.push_back(entity);
-      }
-      else 
-      {
-        printf("eneen");
-        assert(0);
       }
     }
   }
