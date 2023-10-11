@@ -349,9 +349,11 @@ namespace ToolKit
     
     int index = m_idToEntityMap[fnd->first];
     removed = m_entities[index];
+    EntityPtr last = m_entities.back();
+    ULongID lastId = last->GetIdVal();
     // move last entity to index
-    m_entities[index]   = m_entities.back();
-    m_idToEntityMap[id] = index; // replace index
+    m_entities[index]       = last;
+    m_idToEntityMap[lastId] = index; // we moved last to index
     // remove last entity because we moved it to index
     m_entities.pop_back();
     
