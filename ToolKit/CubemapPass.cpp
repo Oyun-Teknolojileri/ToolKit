@@ -45,7 +45,7 @@ namespace ToolKit
 
   void CubeMapPass::Render()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("CubeMapPass Render");
 
     m_cube->m_node->SetTransform(m_params.Transform);
 
@@ -55,25 +55,30 @@ namespace ToolKit
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs({m_cube}, jobs);
     renderer->Render(jobs, m_params.Cam);
+
+    nvtxRangePop();
   }
 
   void CubeMapPass::PreRender()
   {
-    nvtx3::mark("Cubemap Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("CubeMapPass PreRender");
 
     Pass::PreRender();
     MaterialComponentPtr matCom = m_cube->GetMaterialComponent();
     matCom->SetFirstMaterial(m_params.Material);
     GetRenderer()->SetDepthTestFunc(m_params.DepthFn);
+
+    nvtxRangePop();
   }
 
   void CubeMapPass::PostRender()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("CubeMapPass PostRender");
 
     Pass::PostRender();
     GetRenderer()->SetDepthTestFunc(CompareFunctions::FuncLess);
+
+    nvtxRangePop();
   }
 
 } // namespace ToolKit

@@ -91,7 +91,7 @@ namespace ToolKit
 
   void GBufferPass::InitGBuffers(int width, int height)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("GBufferPass InitGBuffers");
 
     bool reInitGBuffers = false;
     if (m_initialized)
@@ -149,6 +149,8 @@ namespace ToolKit
     m_gBufferMaterial->m_fragmentShader = fragmentShader;
 
     m_initialized                       = true;
+    
+    nvtxRangePop();
   }
 
   void GBufferPass::UnInitGBuffers()
@@ -175,8 +177,7 @@ namespace ToolKit
 
   void GBufferPass::PreRender()
   {
-    nvtx3::mark("GBuffer Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("GBufferPass PreRender");
 
     Pass::PreRender();
 
@@ -184,18 +185,22 @@ namespace ToolKit
     renderer->ResetTextureSlots();
     renderer->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
     renderer->SetCameraLens(m_params.Camera);
+
+    nvtxRangePop();
   }
 
   void GBufferPass::PostRender()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("GBufferPass PostRender");
 
     Pass::PostRender();
+    
+    nvtxRangePop();
   }
 
   void GBufferPass::Render()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("GBufferPass Render");
 
     Renderer* renderer = GetRenderer();
     for (RenderJob& job : m_params.RendeJobs)
@@ -218,6 +223,8 @@ namespace ToolKit
       renderer->m_overrideMat = m_gBufferMaterial;
       renderer->Render(job, m_params.Camera, {});
     }
+
+    nvtxRangePop();
   }
 
 } // namespace ToolKit

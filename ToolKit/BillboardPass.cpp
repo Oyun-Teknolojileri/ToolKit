@@ -44,7 +44,7 @@ namespace ToolKit
 
   void BillboardPass::Render()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("BillboardPass Render");
 
     Renderer* renderer = GetRenderer();
     Viewport* vp       = m_params.Viewport;
@@ -77,12 +77,13 @@ namespace ToolKit
 
     renderer->EnableDepthTest(true);
     renderBillboardsFn(m_params.Billboards);
+
+    nvtxRangePop();
   }
 
   void BillboardPass::PreRender()
   {
-    nvtx3::mark("Billboard Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("Billboard PreRender");
 
     Pass::PreRender();
 
@@ -104,6 +105,8 @@ namespace ToolKit
                   // Return separation condition.
                   return cbb->m_settings.bypassDepthTest;
                 });
+
+    nvtxRangePop();
   }
 
 } // namespace ToolKit

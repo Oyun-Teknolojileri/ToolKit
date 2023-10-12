@@ -59,7 +59,7 @@ namespace ToolKit
 
   void OutlinePass::Render()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("OutlinePass Render");
 
     // Generate stencil binary image.
     RenderSubPass(m_stencilPass);
@@ -74,12 +74,13 @@ namespace ToolKit
     m_outlinePass->m_params.ClearFrameBuffer = false;
 
     RenderSubPass(m_outlinePass);
+
+    nvtxRangePop();
   }
 
   void OutlinePass::PreRender()
   {
-    nvtx3::mark("Outline Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("OutlinePass PreRender");
 
     Pass::PreRender();
 
@@ -91,13 +92,17 @@ namespace ToolKit
     FramebufferSettings fbs            = m_params.FrameBuffer->GetSettings();
     m_stencilAsRt->ReconstructIfNeeded(fbs.width, fbs.height);
     m_stencilPass->m_params.OutputTarget = m_stencilAsRt;
+    
+    nvtxRangePop();
   }
 
   void OutlinePass::PostRender()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("OutlinePass PostRender");
 
     Pass::PostRender();
+    
+    nvtxRangePop();
   }
 
 } // namespace ToolKit

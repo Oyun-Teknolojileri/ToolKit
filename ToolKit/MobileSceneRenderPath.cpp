@@ -30,6 +30,10 @@
 #include "Scene.h"
 #include "Shader.h"
 
+#define NOMINMAX
+#include "nvtx3.hpp"
+#undef WriteConsole
+
 namespace ToolKit
 {
   MobileSceneRenderPath::MobileSceneRenderPath()
@@ -62,7 +66,13 @@ namespace ToolKit
 
   void MobileSceneRenderPath::Render(Renderer* renderer)
   {
+    nvtxRangePushA("MobileSceneRenderPath PreRender");
+ 
     PreRender(renderer);
+
+    nvtxRangePop();
+
+    nvtxRangePushA("MobileSceneRenderPath Render");
 
     m_passArray.clear();
 
@@ -125,7 +135,14 @@ namespace ToolKit
 
     renderer->SetShadowAtlas(nullptr);
 
+
+    nvtxRangePop();
+
+    nvtxRangePushA("MobileSceneRenderPath PostRender");
+    
     PostRender();
+
+    nvtxRangePop();
   }
 
   void MobileSceneRenderPath::PreRender(Renderer* renderer)

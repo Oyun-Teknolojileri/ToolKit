@@ -57,8 +57,7 @@ namespace ToolKit
 
   void DoFPass::PreRender()
   {
-    nvtx3::mark("Dof Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("DofPass PreRender");
 
     Pass::PreRender();
     if (m_params.ColorRt == nullptr)
@@ -93,11 +92,15 @@ namespace ToolKit
     m_quadPass->m_params.BlendFunc        = BlendFunction::NONE;
     m_quadPass->m_params.ClearFrameBuffer = false;
     m_quadPass->m_params.FragmentShader   = m_dofShader;
+
+    nvtxRangePop();
   }
 
   void DoFPass::Render()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("DoFPass Render");
+
+    nvtxRangePop();
 
     Renderer* renderer = GetRenderer();
     if (m_params.ColorRt == nullptr)
@@ -109,13 +112,17 @@ namespace ToolKit
     renderer->SetTexture(1, m_params.DepthRt->m_textureId);
 
     RenderSubPass(m_quadPass);
+
+    nvtxRangePop();
   }
 
   void DoFPass::PostRender()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("DoFPass PostRender");
 
     Pass::PostRender();
+    
+    nvtxRangePop();
   }
 
 } // namespace ToolKit

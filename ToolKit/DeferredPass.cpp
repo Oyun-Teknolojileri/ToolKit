@@ -57,8 +57,7 @@ namespace ToolKit
 
   void DeferredRenderPass::PreRender()
   {
-    nvtx3::mark("DeferredRender Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("DeferredRenderPass PreRender");
 
     Pass::PreRender();
 
@@ -119,6 +118,8 @@ namespace ToolKit
 
     m_deferredRenderShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.AOTexture != nullptr));
     renderer->SetTexture(5, m_params.AOTexture ? m_params.AOTexture->m_textureId : 0);
+
+    nvtxRangePop();
   }
 
   void DeferredRenderPass::PostRender()
@@ -132,10 +133,12 @@ namespace ToolKit
 
   void DeferredRenderPass::Render()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("DeferredRenderPass Render");
 
     // Deferred render always uses PBR material
     RenderSubPass(m_fullQuadPass);
+    
+    nvtxRangePop();
   }
 
   void DeferredRenderPass::InitLightDataTexture()

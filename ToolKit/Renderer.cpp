@@ -374,7 +374,7 @@ namespace ToolKit
 
   void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("SetFramebuffer");
 
     if (fb != m_framebuffer)
     {
@@ -399,6 +399,8 @@ namespace ToolKit
     }
 
     m_framebuffer = fb;
+
+    nvtxRangePop();
   }
 
   void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear) { SetFramebuffer(fb, clear, m_clearColor); }
@@ -419,26 +421,32 @@ namespace ToolKit
 
   void Renderer::ClearFrameBuffer(FramebufferPtr fb, const Vec4& color)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("ClearFramebuffer");
 
     SwapFramebuffer(fb, true, color);
     SwapFramebuffer(fb, false);
+
+    nvtxRangePop();
   }
 
   void Renderer::ClearColorBuffer(const Vec4& color)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("ClearColorBuffer");
 
     glClearColor(color.r, color.g, color.b, color.a);
     glClear((GLbitfield) GraphicBitFields::ColorBits);
+
+    nvtxRangePop();
   }
 
   void Renderer::ClearBuffer(GraphicBitFields fields, const Vec4& value)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("ClearBuffer");
 
     glClearColor(value.r, value.g, value.b, value.a);
     glClear((GLbitfield) fields);
+
+    nvtxRangePop();
   }
 
   void Renderer::ColorMask(bool r, bool g, bool b, bool a)
@@ -450,7 +458,7 @@ namespace ToolKit
 
   void Renderer::CopyFrameBuffer(FramebufferPtr src, FramebufferPtr dest, GraphicBitFields fields)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("CopyFramebuffer");
 
     GLuint srcId = 0;
     uint width   = m_windowSize.x;
@@ -476,6 +484,8 @@ namespace ToolKit
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, readFboId);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
+
+    nvtxRangePop();
   }
 
   void Renderer::SetViewport(Viewport* viewport)
@@ -518,7 +528,7 @@ namespace ToolKit
 
   void Renderer::DrawFullQuad(MaterialPtr mat)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("DrawFullQuad");
 
     static CameraPtr quadCam                           = MakeNewPtr<Camera>();
     static QuadPtr quad                                = MakeNewPtr<Quad>();
@@ -527,11 +537,13 @@ namespace ToolKit
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs({quad}, jobs);
     Render(jobs, quadCam);
+
+    nvtxRangePop();
   }
 
   void Renderer::DrawCube(CameraPtr cam, MaterialPtr mat, const Mat4& transform)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("DrawCube");
 
     m_dummyDrawCube->m_node->SetTransform(transform);
     m_dummyDrawCube->GetMaterialComponent()->SetFirstMaterial(mat);
@@ -539,11 +551,13 @@ namespace ToolKit
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs({m_dummyDrawCube}, jobs);
     Render(jobs, cam);
+
+    nvtxRangePop();
   }
 
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("CopyTexture");
 
     assert(source->m_width == dest->m_width && source->m_height == dest->m_height &&
            "Sizes of the textures are not the same.");
@@ -579,6 +593,8 @@ namespace ToolKit
 
     DrawFullQuad(m_copyMaterial);
     SetFramebuffer(lastFb, false);
+
+    nvtxRangePop();
   }
 
   void Renderer::EnableBlending(bool enable)
@@ -636,7 +652,7 @@ namespace ToolKit
                                       const Vec3& axis,
                                       const float amount)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("Apply7x1GaussianBlur");
 
     FramebufferPtr frmBackup = m_framebuffer;
 
@@ -665,11 +681,13 @@ namespace ToolKit
     DrawFullQuad(m_gaussianBlurMaterial);
 
     SetFramebuffer(frmBackup, false);
+
+    nvtxRangePop();
   }
 
   void Renderer::ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("ApplyAverageBlur");
 
     FramebufferPtr frmBackup = m_framebuffer;
 
@@ -699,6 +717,8 @@ namespace ToolKit
     DrawFullQuad(m_averageBlurMaterial);
 
     SetFramebuffer(frmBackup, false);
+
+    nvtxRangePop();
   }
 
   void Renderer::GenerateBRDFLutTexture()
@@ -836,7 +856,7 @@ namespace ToolKit
 
   void Renderer::FeedUniforms(ProgramPtr program)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("FeedUniforms");
 
     for (ShaderPtr shader : program->m_shaders)
     {
@@ -1102,11 +1122,13 @@ namespace ToolKit
         }
       }
     }
+
+    nvtxRangePop();
   }
 
   void Renderer::FeedLightUniforms(ProgramPtr program)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("FeedLightUniforms");
 
     size_t lightSize = glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
     for (size_t i = 0; i < lightSize; i++)
@@ -1224,6 +1246,8 @@ namespace ToolKit
     {
       SetTexture(8, m_shadowAtlas->m_textureId);
     }
+
+    nvtxRangePop();
   }
 
   void Renderer::SetTexture(ubyte slotIndx, uint textureId)

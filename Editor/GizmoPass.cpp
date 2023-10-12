@@ -56,7 +56,7 @@ namespace ToolKit
 
     void GizmoPass::Render()
     {
-      NVTX3_FUNC_RANGE();
+      nvtxRangePushA("GizmoPass Render");
 
       Renderer* renderer = GetRenderer();
 
@@ -86,12 +86,13 @@ namespace ToolKit
           renderer->Render(jobs, m_camera);
         }
       }
+
+      nvtxRangePop();
     }
 
     void GizmoPass::PreRender()
     {
-      nvtx3::mark("Gizmo Pass");
-      NVTX3_FUNC_RANGE();
+      nvtxRangePushA("GizmoPass PreRender");
 
       Pass::PreRender();
 
@@ -116,13 +117,17 @@ namespace ToolKit
                                         return false;
                                       }),
                        gizmoArray.end());
+
+      nvtxRangePop();
     }
 
     void GizmoPass::PostRender()
     {
-      NVTX3_FUNC_RANGE();
+      nvtxRangePushA("GizmoPass PostRender");
 
       Pass::PostRender();
+
+      nvtxRangePop();
     }
 
   } // namespace Editor

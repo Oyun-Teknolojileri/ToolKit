@@ -50,13 +50,14 @@ namespace ToolKit
 
   void GammaPass::PreRender()
   {
-    nvtx3::mark("Gamma Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("GammaPass PreRender");
 
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
 
     m_postProcessShader->SetShaderParameter("Gamma", ParameterVariant(m_params.Gamma));
+    
+    nvtxRangePop();
   }
 
 } // namespace ToolKit

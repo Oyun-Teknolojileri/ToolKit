@@ -48,13 +48,14 @@ namespace ToolKit
 
   void FXAAPass::PreRender()
   {
-    nvtx3::mark("Fxaa Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("FXAAPass PreRender");
 
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
 
     m_postProcessShader->SetShaderParameter("screen_size", ParameterVariant(m_params.screen_size));
+    
+    nvtxRangePop();
   }
 
 } // namespace ToolKit

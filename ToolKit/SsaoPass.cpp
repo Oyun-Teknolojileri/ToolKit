@@ -106,7 +106,7 @@ namespace ToolKit
 
   void SSAOPass::Render()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("SSAOPass Render");
 
     Renderer* renderer = GetRenderer();
 
@@ -125,12 +125,13 @@ namespace ToolKit
 
     // Vertical blur
     renderer->Apply7x1GaussianBlur(m_tempBlurRt, m_ssaoTexture, Y_AXIS, 1.0f / m_ssaoTexture->m_height);
+
+    nvtxRangePop();
   }
 
   void SSAOPass::PreRender()
   {
-    nvtx3::mark("SSAO Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("SSAOPass PreRender");
 
     Pass::PreRender();
 
@@ -194,13 +195,17 @@ namespace ToolKit
     nvtxRangePop();
     
     m_quadPass->m_params.FragmentShader = m_ssaoShader;
+
+    nvtxRangePop();
   }
 
   void SSAOPass::PostRender()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("SSAOPass PostRender");
 
     Pass::PostRender();
+    
+    nvtxRangePop();
   }
 
   void SSAOPass::GenerateSSAONoise()

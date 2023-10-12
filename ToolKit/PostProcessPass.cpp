@@ -60,8 +60,7 @@ namespace ToolKit
 
   void PostProcessPass::PreRender()
   {
-    nvtx3::mark("PostProcess Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("PostProcessPas PreRender");
 
     Pass::PreRender();
 
@@ -96,20 +95,26 @@ namespace ToolKit
     m_postProcessPass->m_params.FragmentShader   = m_postProcessShader;
     m_postProcessPass->m_params.FrameBuffer      = m_params.FrameBuffer;
     m_postProcessPass->m_params.ClearFrameBuffer = false;
+
+    nvtxRangePop();
   }
 
   void PostProcessPass::Render()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("PostProcessPass Render");
 
     RenderSubPass(m_postProcessPass);
+    
+    nvtxRangePop();
   }
 
   void PostProcessPass::PostRender()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("PostProcessPass PostRender");
 
     Pass::PostRender();
+    
+    nvtxRangePop();
   }
 
 } // namespace ToolKit

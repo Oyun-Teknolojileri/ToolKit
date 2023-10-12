@@ -50,12 +50,13 @@ namespace ToolKit
 
   void TonemapPass::PreRender()
   {
-    nvtx3::mark("Tonemap Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("TonemapPass PreRender");
 
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
     m_postProcessShader->SetShaderParameter("UseAcesTonemapper", ParameterVariant((uint) m_params.Method));
+    
+    nvtxRangePop();
   }
 
 } // namespace ToolKit

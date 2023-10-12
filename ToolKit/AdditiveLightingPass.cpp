@@ -67,8 +67,7 @@ namespace ToolKit
 
   void AdditiveLightingPass::PreRender()
   {
-    nvtx3::mark("AdditiveLighting Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("AdditiveLightingPass PreRender");
 
     Pass::PreRender();
 
@@ -101,6 +100,8 @@ namespace ToolKit
 
     m_lightingShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.AOTexture != nullptr));
     renderer->SetTexture(5, m_params.AOTexture ? m_params.AOTexture->m_textureId : 0);
+
+    nvtxRangePop();
   }
 
   void AdditiveLightingPass::SetLightUniforms(LightPtr light, int lightType)
@@ -168,7 +169,7 @@ namespace ToolKit
 
   void AdditiveLightingPass::Render()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("AdditiveLightingPass Render");
 
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_lightingFrameBuffer, true, Vec4(0.0f));
@@ -302,12 +303,16 @@ namespace ToolKit
     // merge lighting, ibl, ao, and emmisive
     RenderSubPass(m_fullQuadPass);
     renderer->EnableDepthWrite(true);
+
+    nvtxRangePop();
   }
 
   void AdditiveLightingPass::PostRender()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("AdditiveLightingPass PostRender");
 
     Pass::PostRender();
+    
+    nvtxRangePop();
   }
 } // namespace ToolKit

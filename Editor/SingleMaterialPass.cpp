@@ -52,7 +52,7 @@ namespace ToolKit
 
     void SingleMatForwardRenderPass::Render()
     {
-      NVTX3_FUNC_RANGE();
+      nvtxRangePushA("SingleMatForwardRenderPass Render");
 
       Renderer* renderer      = GetRenderer();
       renderer->m_overrideMat = MakeNewPtr<Material>();
@@ -78,12 +78,13 @@ namespace ToolKit
       RenderTranslucent(m_params.ForwardParams.TranslucentJobs,
                         m_params.ForwardParams.Cam,
                         m_params.ForwardParams.Lights);
+
+      nvtxRangePop();
     }
 
     void SingleMatForwardRenderPass::PreRender()
     {
-      nvtx3::mark("SingleMatForward Pass");
-      NVTX3_FUNC_RANGE();
+      nvtxRangePushA("SingleMatForwardRenderPass PreRender");
 
       ForwardRenderPass::m_params = m_params.ForwardParams;
       ForwardRenderPass::PreRender();
@@ -91,6 +92,8 @@ namespace ToolKit
       m_overrideMat->UnInit();
       m_overrideMat->m_fragmentShader = m_params.OverrideFragmentShader;
       m_overrideMat->Init();
+
+      nvtxRangePop();
     };
 
   } // namespace Editor

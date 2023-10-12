@@ -57,32 +57,37 @@ namespace ToolKit
 
   void Pass::PreRender()
   {
-    nvtx3::mark("Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("Pass PreRender");
 
     Renderer* renderer     = GetRenderer();
     m_prevOverrideMaterial = renderer->m_overrideMat;
     m_prevFrameBuffer      = renderer->GetFrameBuffer();
+
+    nvtxRangePop();
   }
 
   void Pass::PostRender()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("Pass PostRender");
 
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = m_prevOverrideMaterial;
     renderer->SetFramebuffer(m_prevFrameBuffer, false);
+
+    nvtxRangePop();
   }
 
   void Pass::RenderSubPass(const PassPtr& pass)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("Pass RenderSubPass");
 
     Renderer* renderer = GetRenderer();
     pass->SetRenderer(renderer);
     pass->PreRender();
     pass->Render();
     pass->PostRender();
+
+    nvtxRangePop();
   }
 
   Renderer* Pass::GetRenderer() { return m_renderer; }

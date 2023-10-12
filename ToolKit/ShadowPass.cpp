@@ -27,11 +27,11 @@
 #include "ShadowPass.h"
 
 #include "Camera.h"
+#include "Logger.h"
 #include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "ToolKit.h"
-#include "Logger.h"
 
 #define NOMINMAX
 #include "nvtx3.hpp"
@@ -64,7 +64,7 @@ namespace ToolKit
 
   void ShadowPass::Render()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("ShadowPass Render");
 
     const Vec4 lastClearColor = GetRenderer()->m_clearColor;
 
@@ -85,12 +85,13 @@ namespace ToolKit
     }
 
     GetRenderer()->m_clearColor = lastClearColor;
+
+    nvtxRangePop();
   }
 
   void ShadowPass::PreRender()
   {
-    nvtx3::mark("Shadow Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("ShadowPass PreRender");
 
     Pass::PreRender();
 
@@ -114,21 +115,25 @@ namespace ToolKit
     {
       m_clearedLayers[i] = false;
     }
+
+    nvtxRangePop();
   }
 
   void ShadowPass::PostRender()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("ShadowPass PostRender");
 
     GetRenderer()->m_overrideMat = m_lastOverrideMat;
     Pass::PostRender();
+
+    nvtxRangePop();
   }
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
   void ShadowPass::RenderShadowMaps(LightPtr light, const RenderJobArray& jobs)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("ShadowPass RenderShadowMaps");
 
     Renderer* renderer        = GetRenderer();
 
@@ -212,7 +217,9 @@ namespace ToolKit
 
       renderForShadowMapFn(light, jobs);
     }
-    }
+
+    nvtxRangePop();
+  }
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights)
   {
@@ -286,7 +293,7 @@ namespace ToolKit
     {
       light->m_shadowAtlasLayer += lastLayerOfDirAndSpotLightShadowsUse + 1;
       light->m_shadowAtlasLayer *= 6;
-      layerCount                = std::max(light->m_shadowAtlasLayer + 5, layerCount);
+      layerCount                 = std::max(light->m_shadowAtlasLayer + 5, layerCount);
     }
 
     return layerCount + 1;

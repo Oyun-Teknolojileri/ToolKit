@@ -59,7 +59,7 @@ namespace ToolKit
 
   void FullQuadPass::Render()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("FullQuadPass Render");
 
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer, {0.0f, 0.0f, 0.0f, 1.0f});
@@ -67,12 +67,13 @@ namespace ToolKit
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs({m_quad}, jobs);
     renderer->Render(jobs, m_camera, {});
+
+    nvtxRangePop();
   }
 
   void FullQuadPass::PreRender()
   {
-    nvtx3::mark("FullQuad Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("FullQuadPass PreRender");
 
     Pass::PreRender();
     Renderer* renderer      = GetRenderer();
@@ -88,14 +89,18 @@ namespace ToolKit
     MeshPtr mesh                                = mc->GetMeshVal();
     mesh->m_material                            = m_material;
     mesh->Init();
+
+    nvtxRangePop();
   }
 
   void FullQuadPass::PostRender()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("FullQuadPass PostRender");
 
     Pass::PostRender();
     GetRenderer()->EnableDepthTest(true);
+
+    nvtxRangePop();
   }
 
 } // namespace ToolKit

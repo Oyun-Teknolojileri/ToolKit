@@ -60,7 +60,7 @@ namespace ToolKit
 
   void BloomPass::Render()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("BloomPass Render");
 
     RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
 
@@ -167,12 +167,13 @@ namespace ToolKit
 
       RenderSubPass(m_pass);
     }
+
+    nvtxRangePop();
   }
 
   void BloomPass::PreRender()
   {
-    nvtx3::mark("Bloom Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("BloomPass PreRender");
 
     Pass::PreRender();
 
@@ -225,13 +226,17 @@ namespace ToolKit
       fb->ReconstructIfNeeded(curRes.x, curRes.y);
       fb->SetAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
     }
+
+    nvtxRangePop();
   }
 
   void BloomPass::PostRender()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("BloomPass PostRender");
 
     Pass::PostRender();
+
+    nvtxRangePop();
   }
 
 } // namespace ToolKit

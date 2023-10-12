@@ -69,7 +69,7 @@ namespace ToolKit
 
   void ForwardPreProcess::InitBuffers(uint width, uint height)
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("ForwardPreProcess InitBuffers");
 
     m_framebuffer->Init({width, height, false, false});
     m_framebuffer->ReconstructIfNeeded(width, height);
@@ -92,11 +92,13 @@ namespace ToolKit
       InitDefaultDepthTexture(width, height);
       m_framebuffer->AttachDepthTexture(m_depthTexture);
     }
+
+    nvtxRangePop();
   }
 
   void ForwardPreProcess::Render()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("ForwardPreProcess Render");
 
     Renderer* renderer                      = GetRenderer();
 
@@ -123,12 +125,13 @@ namespace ToolKit
     // currently transparent objects are not rendered to export screen space normals or linear depth
     // we want SSAO and DOF to effect on opaque objects only
     // renderLinearDepthAndNormalFn(m_params.TranslucentJobs);
+
+    nvtxRangePop();
   }
 
   void ForwardPreProcess::PreRender()
   {
-    nvtx3::mark("ForwardPreProcess Pass");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("ForwardPreProcess PreRender");
 
     RenderPass::PreRender();
 
@@ -147,13 +150,17 @@ namespace ToolKit
     }
 
     renderer->SetCameraLens(m_params.Cam);
+
+    nvtxRangePop();
   }
 
   void ForwardPreProcess::PostRender()
   {
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("ForwardPreProcess PostRender");
 
     RenderPass::PostRender();
+    
+    nvtxRangePop();
   }
 
   void ForwardPreProcess::InitDefaultDepthTexture(int width, int height)
