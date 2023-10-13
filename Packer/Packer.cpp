@@ -562,15 +562,17 @@ namespace ToolKit
     };
 
     TK_LOG("Run toolkit compile script");
-    String toolkitPath = GetFileManager()->ReadAllText(ConcatPaths({getenv("APPDATA"), "ToolKit", "Config", "Path.txt"}));
-   
-    int toolKitCompileResult = RunPipe(ConcatPaths({"BuildScripts", "WebBuildRelease.bat"}), nullptr);
+    String toolkitPath       = GetFileManager()->ReadAllText(ConcatPaths({getenv("APPDATA"), "ToolKit", "Config", "Path.txt"}));
+    String tkBuildPath       = ConcatPaths({toolkitPath, "BuildScripts", "WebBuildRelease.bat"}); 
+    int toolKitCompileResult = RunPipe(tkBuildPath + " > webPipeOut1.txt", nullptr);
+    
     if (toolKitCompileResult != 0)
     {
       returnLoggingError("bat failed", true, __LINE__);
       TK_ERR("ToolKit could not be compiled!\n");
       return 1;
     }
+    TK_LOG(GetFileManager()->ReadAllText("webPipeOut1.txt").c_str());
     Path newWorkDir                          = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
     const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Web", "WebBuildRelease.bat"});
 
@@ -582,7 +584,7 @@ namespace ToolKit
     }
 
     TK_LOG("Plugin web build\n");
-    int pluginCompileResult = RunPipe(pluginWebBuildScriptsFolder, nullptr);
+    int pluginCompileResult = RunPipe(pluginWebBuildScriptsFolder + " > webPipeOut2.txt", nullptr);
     
     if (pluginCompileResult != 0)
     {
@@ -590,6 +592,8 @@ namespace ToolKit
       TK_ERR("Web build has failed!\n");
       return 1;
     }
+    TK_LOG(GetFileManager()->ReadAllText("webPipeOut2.txt").c_str());
+
     std::filesystem::current_path(workDir, ec);
     if (returnLoggingError(workDir.string(), false, __LINE__))
     {
@@ -676,10 +680,16 @@ namespace ToolKit
     g_proxy->SetConfigPath(ConcatPaths({toolkitPath, "Config"}));
     g_proxy->PreInit();
 
-    GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void
+    String webOutput;
+
+    if (packer.m_platform != PublishPlatform::Web) 
     {
-      printf("%s", ms.c_str());
-    });
+      GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { printf("%s", ms.c_str()); });
+    }
+    else 
+    {
+      GetLogger()->SetWriteConsoleFn([&webOutput](LogType lt, String ms) -> void { webOutput += ms; });
+    }
 
     // Init SDL
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER);
@@ -701,10 +711,15 @@ namespace ToolKit
     g_proxy->Init();
 
     int result = packer.Publish();
+    
     SDL_GL_DeleteContext(g_context);
     SDL_DestroyWindow(g_window);
+    
+    if (packer.m_platform == PublishPlatform::Web) 
+    {
+      GetFileManager()->WriteAllText("PackerWebOutput.txt", webOutput);
+    }
 
-    getchar();
     return result;
   }
 } // namespace ToolKit

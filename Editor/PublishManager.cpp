@@ -88,8 +88,36 @@ namespace ToolKit
         IsBuilding = false;
       };
 
+      const auto afterFnWeb = [&](int res) -> void
+      {
+        if (std::filesystem::exists("webPipeOut1.txt"))
+        {
+          TK_LOG(GetFileManager()->ReadAllText("webPipeOut1.txt").c_str());
+        }
+        if (std::filesystem::exists("webPipeOut2.txt"))
+        {
+          TK_LOG(GetFileManager()->ReadAllText("webPipeOut2.txt").c_str());
+        }
+        if (std::filesystem::exists("PackerWebOutput.txt"))
+        {
+          TK_LOG(GetFileManager()->ReadAllText("PackerWebOutput.txt").c_str());
+        }
+        TK_LOG("Build Ended");
+        IsBuilding = false;
+      };
+
       packerPath = std::filesystem::absolute(ConcatPaths({"..", packerPath})).string();
-      m_thread   = std::thread(RunPipe, packerPath, afterFn);
+      
+      // unfortunately packer doesn't work correctly when we try to build with pipe.
+      if (platform != PublishPlatform::Web) 
+      {
+        m_thread   = std::thread(RunPipe, packerPath, afterFn);
+      }
+      else 
+      {
+        TK_LOG("Building for web...");
+        g_app->ExecSysCommand(packerPath, true, false, afterFnWeb);
+      }
     }
   } // namespace Editor
 } // namespace ToolKit
