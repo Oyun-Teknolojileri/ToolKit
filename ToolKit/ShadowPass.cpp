@@ -157,6 +157,8 @@ namespace ToolKit
 
     if (light->IsA<PointLight>())
     {
+      nvtxRangePushA("ShadowPass PointLightShadow");
+
       renderer->SetFramebuffer(m_shadowFramebuffer, false);
 
       for (int i = 0; i < 6; ++i)
@@ -169,12 +171,8 @@ namespace ToolKit
         // Clear the layer if needed
         if (!m_clearedLayers[light->m_shadowAtlasLayer + i])
         {
-          renderer->ClearBuffer(GraphicBitFields::AllBits, m_shadowClearColor);
+          renderer->ClearBuffer(GraphicBitFields::ColorDepthBits, m_shadowClearColor);
           m_clearedLayers[light->m_shadowAtlasLayer + i] = true;
-        }
-        else
-        {
-          renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
         }
 
         light->m_shadowCamera->m_node->SetTranslation(light->m_node->GetTranslation());
@@ -190,9 +188,13 @@ namespace ToolKit
 
         renderForShadowMapFn(light, jobs);
       }
+
+      nvtxRangePop();
     }
     else if (light->IsA<DirectionalLight>() || light->IsA<SpotLight>())
     {
+      nvtxRangePushA("ShadowPass Dir-SpotLightShadow");
+
       renderer->SetFramebuffer(m_shadowFramebuffer, false);
       m_shadowFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                          m_shadowAtlas,
@@ -202,12 +204,8 @@ namespace ToolKit
       // Clear the layer if needed
       if (!m_clearedLayers[light->m_shadowAtlasLayer])
       {
-        renderer->ClearBuffer(GraphicBitFields::AllBits, m_shadowClearColor);
+        renderer->ClearBuffer(GraphicBitFields::ColorDepthBits, m_shadowClearColor);
         m_clearedLayers[light->m_shadowAtlasLayer] = true;
-      }
-      else
-      {
-        renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
       }
 
       renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
@@ -216,6 +214,8 @@ namespace ToolKit
                                 (uint) light->GetShadowResVal());
 
       renderForShadowMapFn(light, jobs);
+
+      nvtxRangePop();
     }
 
     nvtxRangePop();

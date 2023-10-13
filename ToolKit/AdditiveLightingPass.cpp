@@ -172,7 +172,7 @@ namespace ToolKit
     nvtxRangePushA("AdditiveLightingPass Render");
 
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_lightingFrameBuffer, true, Vec4(0.0f));
+    renderer->SetFramebuffer(m_lightingFrameBuffer, false);
     // Deferred render always uses PBR material
     m_fullQuadPass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE; // additive blending
     m_fullQuadPass->m_params.FrameBuffer      = m_lightingFrameBuffer;
@@ -267,13 +267,24 @@ namespace ToolKit
     }
 
     m_lightingShader->SetShaderParameter("isScreenSpace", ParameterVariant(1));
+    bool firstRender = true;
     for (auto& [light, lightType] : screenSpaceLights)
     {
+      if (firstRender)
+      {
+        firstRender                        = false;
+        m_fullQuadPass->m_params.BlendFunc = BlendFunction::NONE;
+      }
+      else
+      {
+        m_fullQuadPass->m_params.BlendFunc = BlendFunction::ONE_TO_ONE;
+      }
       SetLightUniforms(light, lightType);
       RenderSubPass(m_fullQuadPass);
     }
 
     renderer->CopyFrameBuffer(m_params.GBufferFramebuffer, m_params.MainFramebuffer, GraphicBitFields::DepthBits);
+
     // we need to use gbuffers depth in this pass in order to make proper depth test
     renderer->CopyFrameBuffer(m_params.GBufferFramebuffer, m_lightingFrameBuffer, GraphicBitFields::DepthBits);
 
@@ -312,7 +323,7 @@ namespace ToolKit
     nvtxRangePushA("AdditiveLightingPass PostRender");
 
     Pass::PostRender();
-    
+
     nvtxRangePop();
   }
 } // namespace ToolKit

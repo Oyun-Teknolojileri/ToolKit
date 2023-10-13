@@ -114,8 +114,7 @@ namespace ToolKit
 
   void Renderer::Render(const RenderJob& job, CameraPtr cam, const LightPtrArray& lights)
   {
-    nvtx3::mark("Renderer");
-    NVTX3_FUNC_RANGE();
+    nvtxRangePushA("Renderer Render");
 
     // Make ibl assignments.
     m_renderState.IBLInUse = false;
@@ -234,6 +233,8 @@ namespace ToolKit
     {
       glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
     }
+
+    nvtxRangePop();
   }
 
   void Renderer::Render(const RenderJobArray& jobArray, CameraPtr cam, const LightPtrArray& lights)
@@ -536,7 +537,12 @@ namespace ToolKit
 
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs({quad}, jobs);
+
+    EnableDepthTest(false);
+
     Render(jobs, quadCam);
+
+    EnableDepthTest(true);
 
     nvtxRangePop();
   }
@@ -577,7 +583,7 @@ namespace ToolKit
 
     // Set and clear fb
     FramebufferPtr lastFb = m_framebuffer;
-    SetFramebuffer(m_copyFb, true, Vec4(0.0f));
+    SetFramebuffer(m_copyFb, false);
 
     // Render to texture
     if (m_copyMaterial == nullptr)
@@ -677,7 +683,7 @@ namespace ToolKit
 
     m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
 
-    SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
+    SetFramebuffer(m_utilFramebuffer, false);
     DrawFullQuad(m_gaussianBlurMaterial);
 
     SetFramebuffer(frmBackup, false);

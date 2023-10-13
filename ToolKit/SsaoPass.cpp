@@ -165,7 +165,7 @@ namespace ToolKit
     m_noiseTexture->Init(&m_ssaoNoise[0]);
 
     m_quadPass->m_params.FrameBuffer      = m_ssaoFramebuffer;
-    m_quadPass->m_params.ClearFrameBuffer = true;
+    m_quadPass->m_params.ClearFrameBuffer = false;
 
     // SSAO fragment shader
     if (!m_ssaoShader)
