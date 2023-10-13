@@ -288,15 +288,18 @@ namespace ToolKit
       pointLights[i]->m_shadowAtlasLayer = rects[i].ArrayIndex;
     }
 
+    int pointLightShadowLayerStartIndex = lastLayerOfDirAndSpotLightShadowsUse + 1;
+
     // Adjust point light parameters
+    int pointLightIndex                 = 0;
     for (LightPtr light : pointLights)
     {
-      light->m_shadowAtlasLayer += lastLayerOfDirAndSpotLightShadowsUse + 1;
-      light->m_shadowAtlasLayer *= 6;
-      layerCount                 = std::max(light->m_shadowAtlasLayer + 5, layerCount);
+      light->m_shadowAtlasLayer = pointLightShadowLayerStartIndex + pointLightIndex * 6;
+      layerCount                 = light->m_shadowAtlasLayer + 6;
+      pointLightIndex++;
     }
 
-    return layerCount + 1;
+    return layerCount;
   }
 
   void ShadowPass::InitShadowAtlas()
