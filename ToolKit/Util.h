@@ -70,7 +70,9 @@ namespace ToolKit
   TK_API String NormalizePath(String path);
   TK_API void NormalizePathInplace(String& path);
   
-  TK_API int RunPipe(const String& command, std::function<void(int)> afterFn);
+  typedef std::function<void(int)> RunPipeCallback;
+
+  TK_API int RunPipe(const String& command, RunPipeCallback afterFn);
   
   TK_API void UnixifyPath(String& path);
   TK_API void DosifyPath(String& path);

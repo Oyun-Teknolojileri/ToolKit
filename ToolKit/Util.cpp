@@ -289,7 +289,7 @@ namespace ToolKit
 
   void NormalizePathInplace(String& path)
   {
-#if __clang__
+#if _WIN32
     UnixifyPath(path);
 #else
     DosifyPath(path);
@@ -298,7 +298,7 @@ namespace ToolKit
   
   String NormalizePath(String path)
   {
-#if __clang__
+#ifndef _WIN32
     UnixifyPath(path);
 #else
     DosifyPath(path);
@@ -306,7 +306,7 @@ namespace ToolKit
     return path;
   }
 
-  int RunPipe(const String& command, std::function<void(int)> afterFn)
+  int RunPipe(const String& command, RunPipeCallback afterFn)
   {
 #ifdef _WIN32
     FILE* fp = _popen(command.c_str(), "r");
@@ -341,7 +341,7 @@ namespace ToolKit
   {
     if (entries.empty())
     {
-      return "";
+      return String();
     }
 
     // Calculate the total length needed for the concatenated string to reduce allocations
@@ -580,7 +580,7 @@ namespace ToolKit
 
   char GetPathSeparator()
   {
-#ifndef __clang__
+#ifdef _WIN32
     return '\\';
 #else
     return '/';

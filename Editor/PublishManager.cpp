@@ -41,11 +41,11 @@ namespace ToolKit
 {
   namespace Editor
   {
-    PublishManager::~PublishManager() 
+    void WriteConsoleIfFileExist(const String& file) 
     {
-      if (m_thread.joinable())
+      if (std::filesystem::exists(file))
       {
-        m_thread.detach();
+        TK_LOG(GetFileManager()->ReadAllText(file).c_str());
       }
     }
 
@@ -55,11 +55,6 @@ namespace ToolKit
       {
         TK_WRN("Toolkit already building an project");
         return;
-      }
-
-      if (m_thread.joinable())
-      {
-        m_thread.join();
       }
 
       String publishArguments  = g_app->m_workspace.GetActiveProject().name + '\n';
@@ -76,7 +71,7 @@ namespace ToolKit
       GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
       g_app->m_statusMsg = "Packing...";
 
-      String packerPath  = NormalizePath("Utils\\Packer\\Packer.exe");
+      String packerPath  = NormalizePath("Utils/Packer/Packer.exe");
       // close zip file before running packer, because packer will use this file as well,
       // this will cause errors otherwise
       GetFileManager()->CloseZipFile();
@@ -88,20 +83,11 @@ namespace ToolKit
         IsBuilding = false;
       };
 
-      const auto afterFnWeb = [&](int res) -> void
+      const auto afterWebFn = [&](int res) -> void
       {
-        if (std::filesystem::exists("webPipeOut1.txt"))
-        {
-          TK_LOG(GetFileManager()->ReadAllText("webPipeOut1.txt").c_str());
-        }
-        if (std::filesystem::exists("webPipeOut2.txt"))
-        {
-          TK_LOG(GetFileManager()->ReadAllText("webPipeOut2.txt").c_str());
-        }
-        if (std::filesystem::exists("PackerWebOutput.txt"))
-        {
-          TK_LOG(GetFileManager()->ReadAllText("PackerWebOutput.txt").c_str());
-        }
+        WriteConsoleIfFileExist("WebPipeOut1.txt");
+        WriteConsoleIfFileExist("WebPipeOut2.txt");
+        WriteConsoleIfFileExist("PackerWebOutput.txt");
         TK_LOG("Build Ended");
         IsBuilding = false;
       };
@@ -111,12 +97,13 @@ namespace ToolKit
       // unfortunately packer doesn't work correctly when we try to build with pipe.
       if (platform != PublishPlatform::Web) 
       {
-        m_thread   = std::thread(RunPipe, packerPath, afterFn);
+        std::thread thread = std::thread(RunPipe, packerPath, afterFn);
+        thread.detach();
       }
       else 
       {
         TK_LOG("Building for web...");
-        g_app->ExecSysCommand(packerPath, true, false, afterFnWeb);
+        g_app->ExecSysCommand(packerPath, true, true, afterWebFn);
       }
     }
   } // namespace Editor

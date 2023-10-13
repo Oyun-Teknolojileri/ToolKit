@@ -26,8 +26,7 @@
 
 #pragma once
 
-#include "Texture.h"
-#include <thread>
+#include "Types.h"
 
 namespace ToolKit
 {
@@ -44,7 +43,6 @@ namespace ToolKit
     class PublishManager
     {
      public:
-      ~PublishManager();
       void Publish(PublishPlatform platform);
 
      public:
@@ -63,7 +61,6 @@ namespace ToolKit
       };
 
       Oriantation m_oriantation;
-      std::thread m_thread;
       bool IsBuilding = false;
     };
 

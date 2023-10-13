@@ -24,17 +24,17 @@
  * SOFTWARE.
  */
 
-#include "FileManager.h"
-
 #include <Animation.h>
+#include <FileManager.h>
 #include <Material.h>
 #include <RenderSystem.h>
+#include <SDL.h>
+#include <TKImage.h>
 #include <TKOpenGL.h>
 #include <Texture.h>
 #include <ToolKit.h>
 #include <Util.h>
-#include <TKImage.h>
-#include "Common/Win32Utils.h"
+#include <Common/Win32Utils.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,8 +44,6 @@
 #include <thread>
 
 #include "DebugNew.h"
-
-#include <SDL.h>
 
 namespace ToolKit
 {
@@ -83,13 +81,14 @@ namespace ToolKit
     int PackResources();
 
    public:
-    String m_icon {};
-    String m_appName {};
+    String m_icon;
+    String m_appName;
     int m_minSdk            = 27;
     int m_maxSdk            = 32;
     bool m_deployAfterBuild = false;
     bool m_isDebugBuild     = false;
 
+    String m_toolkitPath;
     Oriantation m_oriantation;
     PublishPlatform m_platform = PublishPlatform::Android;
   };
@@ -187,7 +186,7 @@ namespace ToolKit
     }
 
     TK_LOG("Run toolkit compile script\n");
-    Path newWorkDir(ConcatPaths({"..", "BuildScripts"}));
+    Path newWorkDir(ConcatPaths({m_toolkitPath, "BuildScripts"}));
     std::filesystem::current_path(newWorkDir);
     int toolKitCompileResult = RunPipe("WinBuildRelease.bat", nullptr);
     if (toolKitCompileResult != 0)
@@ -278,10 +277,10 @@ namespace ToolKit
     {
       return;
     }
-    String assetsPath = NormalizePath("Android/app/src/main/res");
+    String assetsPath  = NormalizePath("Android/app/src/main/res");
     String projectName = activeProjectName;
     String resLocation = ConcatPaths({workspacePath, projectName, assetsPath});
-    
+
     TK_LOG("Preparing Icons");
     int refWidth, refHeight, refComp;
     unsigned char* refImage = ImageLoad(m_icon.c_str(), &refWidth, &refHeight, &refComp, 0);
@@ -375,12 +374,11 @@ namespace ToolKit
     String projectName     = activeProjectName;
     String applicationName = m_appName;
     String mainPath        = NormalizePath("Android/app/src/main");
-    
-    String toolkitPath = GetFileManager()->ReadAllText(ConcatPaths({getenv("APPDATA"), "ToolKit", "Config", "Path.txt"}));
+
     // get manifest file from template
     String androidManifest = GetFileManager()->ReadAllText(
-        std::filesystem::absolute(ConcatPaths({toolkitPath, "Template", mainPath, "AndroidManifest.xml"})).string());
-    
+        std::filesystem::absolute(ConcatPaths({m_toolkitPath, "Template", mainPath, "AndroidManifest.xml"})).string());
+
     // replace template values with our settings
     ReplaceFirstStringInPlace(androidManifest, "@string/app_name", applicationName);
     ReplaceFirstStringInPlace(androidManifest,
@@ -441,7 +439,7 @@ namespace ToolKit
       return 1;
     }
 
-    String assetsPath = NormalizePath("Android/app/src/main/assets");
+    String assetsPath                              = NormalizePath("Android/app/src/main/assets");
     String projectLocation                         = ConcatPaths({workspacePath, projectName});
     String sceneResourcesPath                      = ConcatPaths({projectLocation, "MinResources.pak"});
     String androidResourcesPath                    = ConcatPaths({projectLocation, assetsPath, "MinResources.pak"});
@@ -455,8 +453,8 @@ namespace ToolKit
     }
 
     EditAndroidManifest();
-    
-    String androidPath = ConcatPaths({ projectLocation, "Android" });
+
+    String androidPath = ConcatPaths({projectLocation, "Android"});
     std::filesystem::current_path(androidPath, ec);
     if (returnLoggingError(androidPath))
     {
@@ -469,7 +467,7 @@ namespace ToolKit
 
     // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
     String command    = m_isDebugBuild ? "gradlew assembleDebug" : "gradlew assemble";
-    
+
     int compileResult = RunPipe(command, nullptr);
     if (compileResult != 0)
     {
@@ -477,8 +475,8 @@ namespace ToolKit
       return 1;
     }
 
-    String buildLocation = NormalizePath(ConcatPaths({projectLocation, "Android/app/build/outputs/apk"}));
-    buildLocation        = ConcatPaths({buildLocation, m_isDebugBuild ? "debug" : "release"});
+    String buildLocation         = NormalizePath(ConcatPaths({projectLocation, "Android/app/build/outputs/apk"}));
+    buildLocation                = ConcatPaths({buildLocation, m_isDebugBuild ? "debug" : "release"});
     const String publishDirStr   = ConcatPaths({ResourcePath(), "..", "Publish", "Android"});
     const String apkName         = m_isDebugBuild ? "app-debug.apk" : "app-release-unsigned.apk";
     const String apkPathStr      = ConcatPaths({buildLocation, apkName});
@@ -562,17 +560,16 @@ namespace ToolKit
     };
 
     TK_LOG("Run toolkit compile script");
-    String toolkitPath       = GetFileManager()->ReadAllText(ConcatPaths({getenv("APPDATA"), "ToolKit", "Config", "Path.txt"}));
-    String tkBuildPath       = ConcatPaths({toolkitPath, "BuildScripts", "WebBuildRelease.bat"}); 
-    int toolKitCompileResult = RunPipe(tkBuildPath + " > webPipeOut1.txt", nullptr);
-    
+    String tkBuildPath       = ConcatPaths({m_toolkitPath, "BuildScripts", "WebBuildRelease.bat"});
+    int toolKitCompileResult = RunPipe(tkBuildPath + " > WebPipeOut1.txt", nullptr);
+
     if (toolKitCompileResult != 0)
     {
       returnLoggingError("bat failed", true, __LINE__);
       TK_ERR("ToolKit could not be compiled!\n");
       return 1;
     }
-    TK_LOG(GetFileManager()->ReadAllText("webPipeOut1.txt").c_str());
+    TK_LOG(GetFileManager()->ReadAllText("WebPipeOut1.txt").c_str());
     Path newWorkDir                          = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
     const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Web", "WebBuildRelease.bat"});
 
@@ -584,15 +581,15 @@ namespace ToolKit
     }
 
     TK_LOG("Plugin web build\n");
-    int pluginCompileResult = RunPipe(pluginWebBuildScriptsFolder + " > webPipeOut2.txt", nullptr);
-    
+    int pluginCompileResult = RunPipe(pluginWebBuildScriptsFolder + " > WebPipeOut2.txt", nullptr);
+
     if (pluginCompileResult != 0)
     {
       returnLoggingError(pluginWebBuildScriptsFolder, true, __LINE__);
       TK_ERR("Web build has failed!\n");
       return 1;
     }
-    TK_LOG(GetFileManager()->ReadAllText("webPipeOut2.txt").c_str());
+    TK_LOG(GetFileManager()->ReadAllText("WebPipeOut2.txt").c_str());
 
     std::filesystem::current_path(workDir, ec);
     if (returnLoggingError(workDir.string(), false, __LINE__))
@@ -601,11 +598,11 @@ namespace ToolKit
     }
 
     // Move files to a directory
-    String projectName           = activeProjectName;
-    String publishDirectory      = ConcatPaths({ResourcePath(), "..", "Publish", "Web"});
-    String firstPart             = ConcatPaths({ResourcePath(), "..", "Codes", "Bin", projectName}) + ".";
-    String files[] = {firstPart + "data", firstPart + "html", firstPart + "js", firstPart + "wasm"};
-    
+    String projectName      = activeProjectName;
+    String publishDirectory = ConcatPaths({ResourcePath(), "..", "Publish", "Web"});
+    String firstPart        = ConcatPaths({ResourcePath(), "..", "Codes", "Bin", projectName}) + ".";
+    String files[]          = {firstPart + "data", firstPart + "html", firstPart + "js", firstPart + "wasm"};
+
     std::filesystem::create_directories(publishDirectory, ec);
     if (returnLoggingError(publishDirectory, false, __LINE__))
     {
@@ -645,9 +642,8 @@ namespace ToolKit
   int ToolKitMain(int argc, char* argv[])
   {
     // https://stackoverflow.com/questions/59828628/read-on-a-pipe-blocks-until-program-running-at-end-of-pipe-terminates-windows
-    // enables writing to toolkit asynchronusly. life saver posix code: 
-    setvbuf(stdout, NULL, _IONBF, 0); // Disable buffering on stdout. 
-    PlatformHelpers::HideConsoleWindow();
+    // enables writing to toolkit asynchronusly. life saver posix code:
+    setvbuf(stdout, NULL, _IONBF, 0); // Disable buffering on stdout.
 
     // Initialize ToolKit to serialize resources
     Main* g_proxy = new Main();
@@ -655,40 +651,52 @@ namespace ToolKit
 
     String publishArguments = GetFileManager()->ReadAllText("PublishArguments.txt");
     StringArray arguments;
-    
+
     const auto whitePredFn = [](char c) { return c != '\n' && std::isspace(c); };
-    // remove whitespace from string 
+    // remove whitespace from string
     erase_if(publishArguments, whitePredFn);
 
     Split(publishArguments, "\n", arguments);
     Packer packer {};
-    activeProjectName         = arguments[0];
-    workspacePath             = arguments[1];
-    packer.m_appName          = arguments[2];
+    activeProjectName         = NormalizePath(arguments[0]);
+    workspacePath             = NormalizePath(arguments[1]);
+    packer.m_appName          = NormalizePath(arguments[2]);
     packer.m_deployAfterBuild = std::atoi(arguments[3].c_str());
     packer.m_isDebugBuild     = std::atoi(arguments[4].c_str());
     packer.m_minSdk           = std::atoi(arguments[5].c_str());
     packer.m_maxSdk           = std::atoi(arguments[6].c_str());
-    packer.m_oriantation      = (Oriantation)std::atoi(arguments[7].c_str());
-    packer.m_platform         = (PublishPlatform)std::atoi(arguments[8].c_str());
+    packer.m_oriantation      = (Oriantation) std::atoi(arguments[7].c_str());
+    packer.m_platform         = (PublishPlatform) std::atoi(arguments[8].c_str());
     packer.m_icon             = arguments[9];
 
+    if (packer.m_platform != PublishPlatform::Web)
+    {
+      PlatformHelpers::HideConsoleWindow();
+    }
     // Set resource root to project's Resources folder
     g_proxy->m_resourceRoot = ConcatPaths({workspacePath, activeProjectName, "Resources"});
-
-    String toolkitPath = GetFileManager()->ReadAllText(ConcatPaths({getenv("APPDATA"), "ToolKit", "Config", "Path.txt"}));
+    
+    String toolkitAppdata   = ConcatPaths({getenv("APPDATA"), "ToolKit", "Config", "Path.txt"});
+    String toolkitPath      = GetFileManager()->ReadAllText(toolkitAppdata);
+    NormalizePathInplace(toolkitPath);
+    packer.m_toolkitPath = toolkitPath;
     g_proxy->SetConfigPath(ConcatPaths({toolkitPath, "Config"}));
     g_proxy->PreInit();
 
     String webOutput;
 
-    if (packer.m_platform != PublishPlatform::Web) 
+    if (packer.m_platform != PublishPlatform::Web)
     {
       GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { printf("%s", ms.c_str()); });
     }
-    else 
+    else
     {
-      GetLogger()->SetWriteConsoleFn([&webOutput](LogType lt, String ms) -> void { webOutput += ms; });
+      GetLogger()->SetWriteConsoleFn(
+          [&webOutput](LogType lt, String ms) -> void
+          {
+            printf("%s", ms.c_str());
+            webOutput += ms;
+          });
     }
 
     // Init SDL
@@ -711,11 +719,11 @@ namespace ToolKit
     g_proxy->Init();
 
     int result = packer.Publish();
-    
+
     SDL_GL_DeleteContext(g_context);
     SDL_DestroyWindow(g_window);
-    
-    if (packer.m_platform == PublishPlatform::Web) 
+
+    if (packer.m_platform == PublishPlatform::Web)
     {
       GetFileManager()->WriteAllText("PackerWebOutput.txt", webOutput);
     }
