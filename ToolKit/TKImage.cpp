@@ -61,20 +61,20 @@ namespace ToolKit
     return stbi_loadf_from_memory(buffer, len, x, y, comp, req_comp);
   }
 
-  int ImageResize(const unsigned char* input_pixels,
-                  int input_w,
-                  int input_h,
+  int ImageResize(const unsigned char *input_pixels,
+                  int input_w , 
+                  int input_h , 
                   int input_stride_in_bytes,
-                  unsigned char* output_pixels,
-                  int output_w,
-                  int output_h,
+                  unsigned char *output_pixels, 
+                  int output_w, 
+                  int output_h, 
                   int output_stride_in_bytes,
                   int num_channels)
   {
     return stbir_resize_uint8(input_pixels,
-                              input_w,
+                              input_w ,
+                              input_h ,
                               input_stride_in_bytes,
-                              output_stride_in_bytes,
                               output_pixels,
                               output_w,
                               output_h,

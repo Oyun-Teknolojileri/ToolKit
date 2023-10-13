@@ -325,27 +325,27 @@ namespace ToolKit
     String sdkPath = String(getenv("ANDROID_HOME"));
     if (sdkPath.empty())
     {
-      TK_WRN("ANDROID_HOME environment variable is not set.");
+      TK_WRN("ANDROID_HOME environment variable is not set.\n ");
       return;
     }
     Path oldPath = std::filesystem::current_path();
     std::filesystem::current_path(ConcatPaths({sdkPath, "platform-tools"}));
-    TK_LOG("Trying to execute the app on your phone...");
+    TK_LOG("Trying to execute the app on your phone...\n");
 
     const auto checkIfFailedFn = [oldPath](int execResult, const String& command) -> bool
     {
       if (execResult == 1)
       {
-        TK_LOG("%s command failed! exec result: %i", command.c_str(), execResult);
-        TK_WRN("Make sure that an android device is connected to your PC");
-        TK_WRN("if still doesn't work uninstall application and rebuild.");
+        TK_LOG("%s command failed! exec result: %i\n", command.c_str(), execResult);
+        TK_WRN("Make sure that an android device is connected to your PC\n");
+        TK_WRN("if still doesn't work uninstall application and rebuild.\n");
         std::filesystem::current_path(oldPath);
         return true;
       }
       return false;
     };
 
-    String apkPath     = NormalizePath("Android\\app\\build\\outputs\\apk");
+    String apkPath     = NormalizePath("Android/app/build/outputs/apk");
     apkPath            = ConcatPaths({apkPath, m_isDebugBuild ? "debug" : "release"});
     apkPath            = ConcatPaths({apkPath, m_isDebugBuild ? "app-debug.apk" : "app-release-unsigned.apk"});
 
@@ -468,12 +468,13 @@ namespace ToolKit
     // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
     String command    = m_isDebugBuild ? "gradlew assembleDebug" : "gradlew assemble";
 
-    int compileResult = RunPipe(command, nullptr);
+    int compileResult = RunPipe(command + " > AndroidPipeOut1.txt", nullptr);
     if (compileResult != 0)
     {
       GetLogger()->WriteConsole(LogType::Error, "Android build failed.\n");
       return 1;
     }
+    TK_LOG(GetFileManager()->ReadAllText("AndroidPipeOut1.txt").c_str());
 
     String buildLocation         = NormalizePath(ConcatPaths({projectLocation, "Android/app/build/outputs/apk"}));
     buildLocation                = ConcatPaths({buildLocation, m_isDebugBuild ? "debug" : "release"});
@@ -669,7 +670,8 @@ namespace ToolKit
     packer.m_platform         = (PublishPlatform) std::atoi(arguments[8].c_str());
     packer.m_icon             = arguments[9];
 
-    if (packer.m_platform != PublishPlatform::Web)
+    // in windows we are hiding the console because pipe works fine and we output to the toolkit console
+    if (packer.m_platform == PublishPlatform::Windows)
     {
       PlatformHelpers::HideConsoleWindow();
     }
@@ -683,20 +685,20 @@ namespace ToolKit
     g_proxy->SetConfigPath(ConcatPaths({toolkitPath, "Config"}));
     g_proxy->PreInit();
 
-    String webOutput;
+    String packerOutput;
 
-    if (packer.m_platform != PublishPlatform::Web)
+    if (packer.m_platform == PublishPlatform::Web || packer.m_platform == PublishPlatform::Android)
     {
-      GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { printf("%s", ms.c_str()); });
+      GetLogger()->SetWriteConsoleFn(
+          [&packerOutput](LogType lt, String ms) -> void
+          {
+            printf("%s", ms.c_str());
+            packerOutput += ms;
+          });
     }
     else
     {
-      GetLogger()->SetWriteConsoleFn(
-          [&webOutput](LogType lt, String ms) -> void
-          {
-            printf("%s", ms.c_str());
-            webOutput += ms;
-          });
+      GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { printf("%s", ms.c_str()); });
     }
 
     // Init SDL
@@ -723,11 +725,12 @@ namespace ToolKit
     SDL_GL_DeleteContext(g_context);
     SDL_DestroyWindow(g_window);
 
-    if (packer.m_platform == PublishPlatform::Web)
+    if (packer.m_platform == PublishPlatform::Web || packer.m_platform == PublishPlatform::Android)
     {
-      GetFileManager()->WriteAllText("PackerWebOutput.txt", webOutput);
+      GetFileManager()->WriteAllText("PackerOutput.txt", packerOutput);
     }
 
+    getchar();
     return result;
   }
 } // namespace ToolKit

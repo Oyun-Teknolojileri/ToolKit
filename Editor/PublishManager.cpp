@@ -33,6 +33,7 @@
 #include <stdlib.h>
 
 #include <chrono>
+#include <functional>
 #include <thread>
 
 #include "DebugNew.h"
@@ -41,17 +42,9 @@ namespace ToolKit
 {
   namespace Editor
   {
-    void WriteConsoleIfFileExist(const String& file) 
-    {
-      if (std::filesystem::exists(file))
-      {
-        TK_LOG(GetFileManager()->ReadAllText(file).c_str());
-      }
-    }
-
     void PublishManager::Publish(PublishPlatform platform)
     {
-      if (IsBuilding)
+      if (m_isBuilding)
       {
         TK_WRN("Toolkit already building an project");
         return;
@@ -59,15 +52,15 @@ namespace ToolKit
 
       String publishArguments  = g_app->m_workspace.GetActiveProject().name + '\n';
       publishArguments        += g_app->m_workspace.GetActiveWorkspace() + '\n';
-      publishArguments        += m_appName.empty() ? g_app->m_workspace.GetActiveProject().name + '\n' : m_appName +'\n';
-      publishArguments        += std::to_string((int)m_deployAfterBuild) + '\n';
-      publishArguments        += std::to_string((int)m_isDebugBuild) + '\n';
+      publishArguments        += m_appName.empty() ? g_app->m_workspace.GetActiveProject().name + '\n' : m_appName + '\n';
+      publishArguments        += std::to_string((int) m_deployAfterBuild) + '\n';
+      publishArguments        += std::to_string((int) m_isDebugBuild) + '\n';
       publishArguments        += std::to_string(m_minSdk) + '\n';
       publishArguments        += std::to_string(m_maxSdk) + '\n';
       publishArguments        += std::to_string(m_oriantation) + '\n';
       publishArguments        += std::to_string((int) platform) + '\n';
       publishArguments        += m_icon == nullptr ? "default" : m_icon->GetFile();
-      
+
       GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
       g_app->m_statusMsg = "Packing...";
 
@@ -76,34 +69,35 @@ namespace ToolKit
       // this will cause errors otherwise
       GetFileManager()->CloseZipFile();
 
-      IsBuilding         = true;
-      const auto afterFn = [&](int res) -> void
-      {
-        TK_LOG("Build Ended");
-        IsBuilding = false;
-      };
-
-      const auto afterWebFn = [&](int res) -> void
-      {
-        WriteConsoleIfFileExist("WebPipeOut1.txt");
-        WriteConsoleIfFileExist("WebPipeOut2.txt");
-        WriteConsoleIfFileExist("PackerWebOutput.txt");
-        TK_LOG("Build Ended");
-        IsBuilding = false;
-      };
-
+      m_isBuilding = true;
       packerPath = std::filesystem::absolute(ConcatPaths({"..", packerPath})).string();
-      
-      // unfortunately packer doesn't work correctly when we try to build with pipe.
-      if (platform != PublishPlatform::Web) 
+
+      const auto afterPackFn = [&](int res) -> void
       {
-        std::thread thread = std::thread(RunPipe, packerPath, afterFn);
-        thread.detach();
+        if (std::filesystem::exists("PackerOutput.txt"))
+        {
+          TK_LOG(GetFileManager()->ReadAllText("PackerOutput.txt").c_str());
+          std::filesystem::remove("PackerOutput.txt");
+        }
+        TK_LOG("Build Ended.");
+        m_isBuilding = false;
+      };
+
+      if (platform == PublishPlatform::Web)
+      {
+        TK_LOG("Packing to Web...");
+        g_app->ExecSysCommand(packerPath, true, true, afterPackFn);
       }
-      else 
+      else if (platform == PublishPlatform::Android)
       {
-        TK_LOG("Building for web...");
-        g_app->ExecSysCommand(packerPath, true, true, afterWebFn);
+        TK_LOG("Packing to Android...");
+        g_app->ExecSysCommand(packerPath, true, true, afterPackFn);
+      }
+      else // windows build
+      {
+        TK_LOG("Packing to Windows...");
+        std::thread thread = std::thread(RunPipe, packerPath, afterPackFn);
+        thread.detach();
       }
     }
   } // namespace Editor

@@ -61,7 +61,7 @@ namespace ToolKit
       };
 
       Oriantation m_oriantation;
-      bool IsBuilding = false;
+      bool m_isBuilding = false;
     };
 
   } // namespace Editor
