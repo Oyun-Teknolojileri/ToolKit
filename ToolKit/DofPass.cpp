@@ -100,8 +100,6 @@ namespace ToolKit
   {
     nvtxRangePushA("DoFPass Render");
 
-    nvtxRangePop();
-
     Renderer* renderer = GetRenderer();
     if (m_params.ColorRt == nullptr)
     {
