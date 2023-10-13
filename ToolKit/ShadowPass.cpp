@@ -298,6 +298,11 @@ namespace ToolKit
       layerCount                 = light->m_shadowAtlasLayer + 6;
       pointLightIndex++;
     }
+    
+    if (pointLights.empty())
+    {
+      layerCount += 1;
+    }
 
     return layerCount;
   }
