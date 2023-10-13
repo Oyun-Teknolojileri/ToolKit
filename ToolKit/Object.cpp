@@ -78,7 +78,10 @@ namespace ToolKit
     Id_Define(id, EntityCategory.Name, EntityCategory.Priority, true, false);
   }
 
-  void Object::ParameterEventConstructor() {}
+  void Object::ParameterEventConstructor() 
+  {
+    GetHandleManager()->ReleaseHandle(GetIdVal()); 
+  }
 
   TKObjectPtr Object::Copy() const { return nullptr; }
 

@@ -102,7 +102,7 @@ namespace ToolKit
      * Each MetaKey has a corresponding meta processor. When a class registered and it has a MetaKey that corresponds to
      * one of MetaProcessor in the map, processor gets called with MetaKey's value.
      */
-    std::unordered_map<StringView, MetaProcessorCallback> m_metaProcessorMap;
+    TKMap<StringView, MetaProcessorCallback> m_metaProcessorMap;
 
     /**
      * Returns the Constructor for given class name.
@@ -161,7 +161,7 @@ namespace ToolKit
     void Init();
 
    private:
-    std::unordered_map<StringView, ObjectConstructorCallback> m_constructorFnMap;
+    TKMap<StringView, ObjectConstructorCallback> m_constructorFnMap;
     ObjectConstructorCallback m_nullFn = nullptr;
   };
 

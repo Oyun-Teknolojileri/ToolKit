@@ -186,7 +186,7 @@ namespace ToolKit
 
     uint m_textureSlots[RHIConstants::textureSlotCount];
 
-    std::unordered_map<String, ProgramPtr> m_programs;
+    TKMap<String, ProgramPtr> m_programs;
     RenderState m_renderState;
 
     UVec2 m_viewportSize; //!< Current viewport size.

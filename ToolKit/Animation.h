@@ -62,7 +62,7 @@ namespace ToolKit
   };
 
   typedef std::vector<Key> KeyArray;
-  typedef std::unordered_map<String, KeyArray> BoneKeyArrayMap;
+  typedef TKMap<String, KeyArray> BoneKeyArrayMap;
 
   /**
    * The class that represents animations which can be played with
@@ -175,6 +175,11 @@ namespace ToolKit
      * Empty constructor.
      */
     AnimRecord();
+
+    /**
+    * Empty destructor.
+    */
+    ~AnimRecord();
 
     /**
      * Construct an animation record for the enitiy with given animation.

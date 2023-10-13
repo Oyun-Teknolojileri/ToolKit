@@ -65,7 +65,6 @@ using std::ios;
 using std::ofstream;
 using std::string;
 using std::to_string;
-using std::unordered_map;
 using std::vector;
 namespace fs = std::filesystem;
 
@@ -141,7 +140,7 @@ namespace ToolKit
         ' ');
   }
 
-  unordered_map<string, BoneNode> g_skeletonMap;
+  TKMap<string, BoneNode> g_skeletonMap;
   SkeletonPtr g_skeleton;
   bool isSkeletonEntityCreated = false;
   const aiScene* g_scene       = nullptr;
@@ -657,7 +656,7 @@ namespace ToolKit
     assert(mesh->mNumVertices && "Mesh has no vertices!");
 
     // Skin data
-    unordered_map<int, vector<std::pair<int, float>>> skinData;
+    std::unordered_map<int, std::vector<std::pair<int, float>>> skinData;
     if constexpr (std::is_same<convertType, SkinMeshPtr>::value)
     {
       for (unsigned int i = 0; i < mesh->mNumBones; i++)
@@ -740,7 +739,7 @@ namespace ToolKit
     }
   }
 
-  std::unordered_map<aiMesh*, MeshPtr> g_meshes;
+  TKMap<aiMesh*, MeshPtr> g_meshes;
   SkinMeshPtr mainSkinMesh;
 
   void ImportMeshes(string& filePath)

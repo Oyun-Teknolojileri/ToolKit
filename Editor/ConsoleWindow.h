@@ -132,7 +132,7 @@ namespace ToolKit
       // Buffers.
       StringArray m_items;
       StringArray m_commands;
-      std::unordered_map<String, std::function<void(TagArgArray&)>> m_commandExecutors;
+      TKMap<String, std::function<void(TagArgArray&)>> m_commandExecutors;
 
       // Command text
       String m_command    = "";

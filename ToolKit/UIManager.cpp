@@ -51,7 +51,7 @@ namespace ToolKit
     m_scene->Load();
   }
 
-  UILayer::~UILayer() {}
+  UILayer::~UILayer() { GetHandleManager()->ReleaseHandle(m_id); }
 
   void UILayer::Init() {}
 

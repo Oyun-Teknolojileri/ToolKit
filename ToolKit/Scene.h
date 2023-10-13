@@ -315,11 +315,9 @@ namespace ToolKit
      */
     void RemoveChildren(EntityPtr removed);
 
-    void AddUniqueEntity(ULongID lastID, std::unordered_set<uint64>& newAddedIds, EntityPtr entity);
-
    protected:
     EntityPtrArray m_entities; //!< The entities in the scene.
-    std::unordered_map<uint64, int> m_idToEntityMap;
+    TKMap<ULongID, int> m_idToEntityMap;
     bool m_isPrefab;           //!< Whether or not the scene is a prefab.
   };
 

@@ -50,14 +50,19 @@ namespace ToolKit
     HandleManager();
     /**
      * Creates a handle that has not been allocated within the current runtime.
-     * Increments the m_baseHandle by one.
      * @return A unique handle for the current runtime.
      */
     ULongID GetNextHandle();
 
+    /**
+     * Removes id from cache, not releasing an handle is not considered an error 
+     * but releasing an handle is memory friendly and it will block id overflow
+     */
+    void ReleaseHandle(ULongID id);
+
    private:
     uint64 m_randomXor[2];
-    std::unordered_set<uint64> m_uniqueIDs;
+    TKSet<uint64> m_uniqueIDs;
   };
 
   struct Timing

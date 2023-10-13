@@ -126,7 +126,7 @@ namespace ToolKit
       bool m_dirty            = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
       String m_filter         = "";
-      std::unordered_map<String, std::function<void(DirectoryEntry*, FolderView*)>> m_itemActions;
+      TKMap<String, std::function<void(DirectoryEntry*, FolderView*)>> m_itemActions;
 
       // If you change this value, change the calculaton of thumbnail zoom
       const float m_thumbnailMaxZoom                 = 300.f;
@@ -188,7 +188,7 @@ namespace ToolKit
         FolderNode(int idx, String p, String n) : index(idx), path(std::move(p)), name(std::move(n)) {}
       };
 
-      std::unordered_map<String, ViewSettings> m_viewSettings;
+      TKMap<String, ViewSettings> m_viewSettings;
       std::vector<FolderView> m_entries;
       std::vector<FolderNode> m_folderNodes;
       float m_maxTreeNodeWidth   = 160.0f;

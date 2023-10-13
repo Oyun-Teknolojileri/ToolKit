@@ -48,7 +48,8 @@ namespace ToolKit
 {
   HandleManager::HandleManager()
   {
-    Xoroshiro128PlusSeed(m_randomXor, time(nullptr) + (uint64)(this) + m_randomXor[0]);
+    uint64 seed = time(nullptr) + ((uint64) (this) ^ m_randomXor[0]);
+    Xoroshiro128PlusSeed(m_randomXor, seed);
   }
 
   ULongID HandleManager::GetNextHandle()
@@ -56,11 +57,21 @@ namespace ToolKit
     ULongID id = Xoroshiro128Plus(m_randomXor);
     // search until we found id that is unique, 
     // note: this will run only once most of the time, since random generator is awesome
-    while (m_uniqueIDs.find(id) != m_uniqueIDs.end())
+    while (m_uniqueIDs.find(id) != m_uniqueIDs.end() || id == 0)
     {
       id = Xoroshiro128Plus(m_randomXor);
     }
-    return id + (id == 0); // non zero
+    m_uniqueIDs.insert(id);
+    return id; // non zero
+  }
+
+  void HandleManager::ReleaseHandle(ULongID id)
+  {
+    auto find = m_uniqueIDs.find(id);
+    if (find != m_uniqueIDs.end()) 
+    {
+      m_uniqueIDs.erase(find);
+    }
   }
 
   Main* Main::m_proxy = nullptr;

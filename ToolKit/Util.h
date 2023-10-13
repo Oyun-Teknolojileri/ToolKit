@@ -246,38 +246,16 @@ namespace ToolKit
 
   // Random.
   ///////////////////////////////////////////////////////
-  inline uint PCGNext(uint& rng_state)
-  {
-    uint state = rng_state;
-    rng_state  = state * 747796405u + 2891336453u;
-    uint word  = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
-    return (word >> 22u) ^ word;
-  }
+  TK_API float MillisecToSec(float ms);
 
-  constexpr inline uint64 MurmurHash(uint64 x) 
-  {
-    x ^= x >> 30ULL; x *= 0xbf58476d1ce4e5b9ULL;
-    x ^= x >> 27ULL; x *= 0x94d049bb133111ebULL;
-    return x ^ (x >> 31ULL);
-  }
+  TK_API float GetElapsedMilliSeconds();
 
-  inline void Xoroshiro128PlusSeed(uint64 s[2], uint64  seed)
-  {
-    s[0]  = MurmurHash(seed); 
-    s[0] |= 1; // non zero
-    s[1]  = MurmurHash(s[0] ^ (seed * 1099511628211ULL));
-  }
+  TK_API uint PCGNext(uint& rng_state);
+
+  TK_API uint64 MurmurHash(uint64 x);
+
+  TK_API void Xoroshiro128PlusSeed(uint64 s[2], uint64 seed);
 	
-  // concise hashing function. https://nullprogram.com/blog/2017/09/21/
-  inline uint64 Xoroshiro128Plus(uint64 s[2])
-  {
-    uint64  s0 = s[0];
-    uint64  s1 = s[1];
-    uint64  result = s0 + s1;
-    s1 ^= s0;
-    s[0] = ((s0 << 55) | (s0 >> 9)) ^ s1 ^ (s1 << 14);
-    s[1] = (s1 << 36) | (s1 >> 28);
-    return result;
-  }
+  TK_API uint64 Xoroshiro128Plus(uint64 s[2]);
 
 } // namespace ToolKit

@@ -1095,7 +1095,7 @@ namespace ToolKit
 
     void UI::HelpMarker(const String& key, const char* desc, float wait)
     {
-      static std::unordered_map<String, float> helpTimers;
+      static TKMap<String, float> helpTimers;
       if (helpTimers.find(key) == helpTimers.end())
       {
         helpTimers[key] = 0.0f;
@@ -1324,7 +1324,7 @@ namespace ToolKit
     {
       String icon                                                   = ICON_FA_CUBE ICON_SPACE;
 
-      static std::unordered_map<String, String> EntityTypeToIconMap = {
+      static TKMap<String, String> EntityTypeToIconMap = {
           {Camera::StaticClass()->Name,           ICON_FA_VIDEO_CAMERA ICON_SPACE},
           {Audio::StaticClass()->Name,            ICON_FA_FILE_AUDIO ICON_SPACE  },
           {EntityNode::StaticClass()->Name,       ICON_FA_ARROWS ICON_SPACE      },

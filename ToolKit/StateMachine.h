@@ -104,7 +104,7 @@ namespace ToolKit
      * even if there is no transition between states, this link map helps
      * to make the jump.
      */
-    std::unordered_map<int, String> m_links;
+    TKMap<int, String> m_links;
 
     /**
      * Global signal that tells not to take any action to the StateMachine.
@@ -156,7 +156,7 @@ namespace ToolKit
     State* m_currentState; //!< Current state.
 
    private:
-    std::unordered_map<String, State*> m_states; //!< State container.
+    TKMap<String, State*> m_states; //!< State container.
   };
 
 } // namespace ToolKit

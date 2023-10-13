@@ -59,7 +59,7 @@ namespace ToolKit
     // Call after skeleton fills m_bones list
     void Init(const Skeleton* skeleton);
     ~DynamicBoneMap();
-    std::unordered_map<String, DynamicBone> boneList;
+    TKMap<String, DynamicBone> boneList;
     TexturePtr boneTransformNodeTexture;
     void UpdateGPUTexture();
     // Find all child bones by recursively searching child bones

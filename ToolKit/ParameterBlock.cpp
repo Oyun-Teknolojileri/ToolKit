@@ -39,7 +39,7 @@ namespace ToolKit
 
   ParameterVariantBase::ParameterVariantBase() { m_id = GetHandleManager()->GetNextHandle(); }
 
-  ParameterVariantBase::~ParameterVariantBase() {}
+  ParameterVariantBase::~ParameterVariantBase() { }
 
   ParameterVariant::ParameterVariant() { *this = 0; }
 
@@ -768,8 +768,8 @@ namespace ToolKit
   {
     categories.clear();
 
-    std::unordered_map<String, bool> containsExposedVar;
-    std::unordered_map<String, bool> isCategoryAdded;
+    TKMap<String, bool> containsExposedVar;
+    TKMap<String, bool> isCategoryAdded;
     for (const ParameterVariant& var : m_variants)
     {
       const String& name = var.m_category.Name;

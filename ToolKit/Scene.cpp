@@ -139,49 +139,18 @@ namespace ToolKit
 
   void Scene::Update(float deltaTime) {}
 
-  void Scene::AddUniqueEntity(ULongID lastID, std::unordered_set<uint64>& newAddedIds, EntityPtr ntt)
-  {
-    // Incrementing the incoming ntt ids with current max id value...
-    // to prevent id collisions.
-    ULongID listIndx  = ntt->GetIdVal();
-    ULongID currentID = listIndx + lastID;
-    // even though number overflows we are going to set this index to entity 
-    // find unique new id
-    uint rnd = 259347823;
-    while (GetEntity(currentID))
-    {
-      currentID += PCGNext(rnd);
-    }
-    
-    ntt->SetIdVal(currentID);
-    
-    ntt->_parentId += lastID;
-    
-    // if parent entity is not in newAddedIds that means parent is not added yet
-    if (ntt->_parentId != lastID && // entity has parent ?
-        newAddedIds.find(ntt->_parentId) == newAddedIds.end() && // parent is not added 
-        GetEntity(ntt->_parentId) != nullptr // parent entity id is already exist in scene
-    ) 
-    {
-      rnd = 259347823;
-      while (GetEntity(ntt->_parentId))
-      {
-        ntt->_parentId += PCGNext(rnd);
-      }
-    }
-    newAddedIds.insert(currentID);
-    AddEntity(ntt); // Insert into this scene.
-  }
-
   void Scene::Merge(ScenePtr other)
   {
-    ULongID lastID = GetHandleManager()->GetNextHandle();
     const EntityPtrArray& entities = other->GetEntities();
-    std::unordered_set<uint64> newAddedIds;
+    TKSet<uint64> newAddedIds;
 
     for (EntityPtr ntt : entities)
     {
-      AddUniqueEntity(lastID, newAddedIds, ntt);
+      // release the handle and get new random id to ensure we have unique id
+      GetHandleManager()->ReleaseHandle(ntt->GetIdVal()); 
+      ULongID id = GetHandleManager()->GetNextHandle();
+      ntt->SetIdVal(id);
+      AddEntity(ntt);
     }
 
     other->RemoveAllEntities();
@@ -339,19 +308,18 @@ namespace ToolKit
 
   EntityPtr Scene::RemoveEntity(ULongID id, bool deep)
   {
-    EntityPtr removed = nullptr;
-   
     auto fnd = m_idToEntityMap.find(id);
-    if (fnd != m_idToEntityMap.end())
+    if (fnd == m_idToEntityMap.end())
     {
-      return removed;
+      return nullptr;
     }
     
     int index = m_idToEntityMap[fnd->first];
-    removed = m_entities[index];
+    EntityPtr removed = m_entities[index];
     EntityPtr last = m_entities.back();
     ULongID lastId = last->GetIdVal();
     // move last entity to index
+    m_idToEntityMap.erase(id);
     m_entities[index]       = last;
     m_idToEntityMap[lastId] = index; // we moved last to index
     // remove last entity because we moved it to index
@@ -379,15 +347,7 @@ namespace ToolKit
   {
     for (EntityPtr ntt : entities)
     {
-      ULongID id = ntt->GetIdVal();
-      if (m_idToEntityMap.find(id) != m_idToEntityMap.end())
-      {
-        int index = m_idToEntityMap[id];
-        const EntityPtr& last = m_entities.back();
-        m_entities[index] = last;
-        m_idToEntityMap[last->GetIdVal()] = index;
-        m_entities.pop_back();
-      }
+      RemoveEntity(ntt->GetIdVal(), false);
     }
   }
 

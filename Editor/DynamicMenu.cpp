@@ -79,7 +79,7 @@ namespace ToolKit
     void ConstructDynamicMenu(StringArray menuDescriptors, DynamicMenuPtrArray& menuArray)
     {
       // Construct dynamic menu map.
-      std::unordered_map<String, DynamicMenuPtr> menuMap;
+      TKMap<String, DynamicMenuPtr> menuMap;
 
       auto errContinueFn = [](String& metaVal) -> void
       { GetLogger()->WriteConsole(LogType::Warning, "%s value is wrong: %s", MenuMetaKey, metaVal); };

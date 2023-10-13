@@ -72,6 +72,7 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -154,6 +155,12 @@ namespace ToolKit
   typedef std::vector<uint> UIntArray;
   typedef std::vector<struct VariantCategory> VariantCategoryArray;
   typedef std::vector<struct RenderJob> RenderJobArray;
+  
+  template<typename T>
+  using TKSet = std::unordered_set<T>;
+  
+  template<typename KeyT, typename ValueT>
+  using TKMap = std::unordered_map<KeyT, ValueT>;
 
   // Resource types.
   typedef std::shared_ptr<class Animation> AnimationPtr;
@@ -179,7 +186,7 @@ namespace ToolKit
   typedef std::vector<class Mesh*> MeshRawPtrArray;
   typedef std::vector<const class Mesh*> MeshRawCPtrArray;
   typedef std::shared_ptr<class AnimRecord> AnimRecordPtr;
-  typedef std::unordered_map<String, AnimRecordPtr> AnimRecordPtrMap;
+  typedef TKMap<String, AnimRecordPtr> AnimRecordPtrMap;
   typedef class AnimRecord* AnimRecordRawPtr;
   typedef std::vector<AnimRecordRawPtr> AnimRecordRawPtrArray;
   struct BlendTarget;

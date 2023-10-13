@@ -99,7 +99,7 @@ namespace ToolKit
 
    private:
     StringSet m_allPaths;
-    std::unordered_map<String, std::pair<ZPOS64_T, uint32_t>> m_zipFilesOffsetTable;
+    TKMap<String, std::pair<ZPOS64_T, uint32_t>> m_zipFilesOffsetTable;
     bool m_offsetTableCreated = false;
     zipFile m_zfile           = nullptr;
   };

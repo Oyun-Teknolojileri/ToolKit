@@ -343,7 +343,7 @@ namespace ToolKit
           bool flipRenderTarget = false;
           uint iconId           = UI::m_fileIcon->m_textureId;
 
-          std::unordered_map<String, uint> extensionIconMap {
+          TKMap<String, uint> extensionIconMap {
               {SCENE,    UI::m_worldIcon->m_textureId},
               {LAYER,    UI::m_worldIcon->m_textureId},
               {ANIM,     UI::m_clipIcon->m_textureId },
@@ -353,7 +353,7 @@ namespace ToolKit
               {SKELETON, UI::m_boneIcon->m_textureId }
           };
 
-          static std::unordered_set<String>
+          static TKSet<String>
               thumbExtensions {PNG, JPG, JPEG, TGA, BMP, PSD, HDR, MESH, SKINMESH, MATERIAL};
 
           if (dirEnt.m_isDirectory)

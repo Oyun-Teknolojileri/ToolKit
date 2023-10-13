@@ -371,6 +371,8 @@ namespace ToolKit
   }
 
   AnimRecord::AnimRecord() { m_id = GetHandleManager()->GetNextHandle(); }
+  
+  AnimRecord::~AnimRecord() { GetHandleManager()->ReleaseHandle(m_id); }
 
   AnimRecord::AnimRecord(EntityPtr entity, const AnimationPtr& anim) : m_entity(entity), m_animation(anim)
   {

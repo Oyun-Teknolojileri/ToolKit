@@ -409,7 +409,7 @@ namespace ToolKit
     m_source.replace(includeLoc, 0, includeSource);
 
     // Handle uniforms
-    std::unordered_set<Uniform> unis;
+    TKSet<Uniform> unis;
     for (Uniform uni : m_uniforms)
     {
       unis.insert(uni);

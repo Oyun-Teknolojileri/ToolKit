@@ -49,7 +49,7 @@ namespace ToolKit
     m_name = "Resource_" + std::to_string(m_id);
   }
 
-  Resource::~Resource() {}
+  Resource::~Resource() { }
 
   void Resource::Save(bool onlyIfDirty)
   {

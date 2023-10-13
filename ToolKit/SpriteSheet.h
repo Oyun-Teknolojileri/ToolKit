@@ -63,7 +63,7 @@ namespace ToolKit
     int m_imageHeight;
 
    public:
-    std::unordered_map<String, Surface*> m_sprites;
+    TKMap<String, Surface*> m_sprites;
   };
 
   class TK_API SpriteAnimation : public Entity

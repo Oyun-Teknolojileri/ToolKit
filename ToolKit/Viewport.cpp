@@ -91,7 +91,7 @@ namespace ToolKit
     m_attachedCamera = NULL_HANDLE;
   }
 
-  ViewportBase::~ViewportBase() {}
+  ViewportBase::~ViewportBase() { GetHandleManager()->ReleaseHandle(m_viewportId); }
 
   Viewport::Viewport() {}
 

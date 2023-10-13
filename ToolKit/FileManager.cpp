@@ -207,7 +207,7 @@ namespace ToolKit
 
   void FileManager::GetAllUsedResourcePaths(const String& sceneResourcesPath)
   {
-    std::unordered_map<String, ResourcePtr> mp;
+    TKMap<String, ResourcePtr> mp;
 
     // Get all engine resources
     GetAllPaths(DefaultPath());

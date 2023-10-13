@@ -116,7 +116,7 @@ namespace ToolKit
     /**
      * Container that holds custom shader parameters.
      */
-    std::unordered_map<String, ParameterVariant> m_shaderParams;
+    TKMap<String, ParameterVariant> m_shaderParams;
 
     /**
      * Shader hash to look up. Any shader resolving to the same tag can be

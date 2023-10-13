@@ -101,7 +101,7 @@ namespace ToolKit
     virtual ResourcePtr CreateLocal(TKClass* Class) = 0;
 
    public:
-    std::unordered_map<String, ResourcePtr> m_storage;
+    TKMap<String, ResourcePtr> m_storage;
     TKClass* m_baseType = nullptr;
   };
 

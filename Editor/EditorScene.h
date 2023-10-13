@@ -118,7 +118,7 @@ namespace ToolKit
       EntityIdArray m_selectedEntities;
 
       // Billboard gizmos
-      std::unordered_map<EntityPtr, EditorBillboardPtr> m_entityBillboardMap;
+      TKMap<EntityPtr, EditorBillboardPtr> m_entityBillboardMap;
       EntityPtrArray m_billboards;
     };
 

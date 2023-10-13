@@ -77,7 +77,7 @@ namespace ToolKit
        * to last ntt in the array.
        */
       EntityPtrArray m_nttFocusPath;
-      std::unordered_set<EntityPtr> m_shownEntities;
+      TKSet<EntityPtr> m_shownEntities;
       /**
        * entities up to down when we look at node tree.
        * these are imgui visible entities.

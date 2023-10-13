@@ -205,7 +205,7 @@ namespace ToolKit
      * multiple layer on a single Viewport, for this reason an array of
      * layers are stored for each Viewport.
      */
-    std::unordered_map<ULongID, UILayerPtrArray> m_viewportIdLayerArrayMap;
+    TKMap<ULongID, UILayerPtrArray> m_viewportIdLayerArrayMap;
 
    private:
     /**

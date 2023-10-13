@@ -98,7 +98,7 @@ namespace ToolKit
      private:
       ThumbnailRenderer m_renderer;
       RenderTargetPtr m_defaultThumbnail = nullptr;
-      std::unordered_map<String, RenderTargetPtr> m_thumbnailCache;
+      TKMap<String, RenderTargetPtr> m_thumbnailCache;
     };
 
   } // namespace Editor

@@ -56,7 +56,7 @@ namespace ToolKit
     {
       using GetterFunction = std::function<ResourceManager*()>;
 
-      static std::unordered_map<String, GetterFunction> extToResource {
+      static TKMap<String, GetterFunction> extToResource {
           {ANIM,     GetAnimationManager},
           {AUDIO,    GetAudioManager    },
           {MATERIAL, GetMaterialManager },
@@ -83,7 +83,7 @@ namespace ToolKit
 
     String GetRootPath(const String& folder)
     {
-      static std::unordered_set<String> rootMap = {"Fonts", "Materials", "Meshes", "Scenes", "Shaders", "Textures"};
+      static TKSet<String> rootMap = {"Fonts", "Materials", "Meshes", "Scenes", "Shaders", "Textures"};
 
       String path                               = folder;
       String subFolder {};
