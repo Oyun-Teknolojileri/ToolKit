@@ -47,7 +47,6 @@ namespace ToolKit
     m_lightingPass          = MakeNewPtr<AdditiveLightingPass>();
     m_skyPass               = MakeNewPtr<CubeMapPass>();
     m_gBufferPass           = MakeNewPtr<GBufferPass>();
-    m_deferredRenderPass    = MakeNewPtr<DeferredRenderPass>();
     m_ssaoPass              = MakeNewPtr<SSAOPass>();
     m_tonemapPass           = MakeNewPtr<TonemapPass>();
     m_fxaaPass              = MakeNewPtr<FXAAPass>();
@@ -65,7 +64,6 @@ namespace ToolKit
     m_lightingPass       = nullptr;
     m_skyPass            = nullptr;
     m_gBufferPass        = nullptr;
-    m_deferredRenderPass = nullptr;
     m_ssaoPass           = nullptr;
     m_tonemapPass        = nullptr;
     m_fxaaPass           = nullptr;
@@ -201,13 +199,6 @@ namespace ToolKit
 
     m_gBufferPass->m_params.RendeJobs                 = deferred;
     m_gBufferPass->m_params.Camera                    = m_params.Cam;
-
-    m_deferredRenderPass->m_params.ClearFramebuffer   = true;
-    m_deferredRenderPass->m_params.GBufferFramebuffer = m_gBufferPass->m_framebuffer;
-    m_deferredRenderPass->m_params.lights             = m_updatedLights;
-    m_deferredRenderPass->m_params.MainFramebuffer    = m_params.MainFramebuffer;
-    m_deferredRenderPass->m_params.Cam                = m_params.Cam;
-    m_deferredRenderPass->m_params.AOTexture          = m_params.Gfx.SSAOEnabled ? m_ssaoPass->m_ssaoTexture : nullptr;
 
     m_forwardRenderPass->m_params.Lights              = m_updatedLights;
     m_forwardRenderPass->m_params.Cam                 = m_params.Cam;

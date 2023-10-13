@@ -237,7 +237,7 @@ namespace ToolKit
       }
 
       nvtxRangePushA("Per Frame & Grid & Billboards");
-      
+
       // Per frame objects.
       EntityPtrArray editorEntities;
       editorEntities.insert(editorEntities.end(),
