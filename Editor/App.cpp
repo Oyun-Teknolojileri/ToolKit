@@ -38,6 +38,7 @@
 #include <UIManager.h>
 
 #include <sstream>
+#include <thread>
 
 #include <DebugNew.h>
 
@@ -489,43 +490,43 @@ namespace ToolKit
       m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
       m_isCompiling = true;
 
-      ExecSysCommand(cmd,
-                     true,
-                     false,
-                     [this, buildDir](int res) -> void
-                     {
-                       String cmd = "cmake --build " + buildDir + " --config " + buildConfig.data();
-                       ExecSysCommand(
-                           cmd,
-                           false,
-                           false,
-                           [=](int res) -> void
-                           {
-                             if (res)
-                             {
-                               m_statusMsg = "Compile Failed.";
-
-                               String detail;
-                               if (res == 1)
-                               {
-                                 detail = "CMake Build Failed.";
-                               }
-
-                               if (res == -1)
-                               {
-                                 detail = "CMake Generate Failed.";
-                               }
-
-                               GetLogger()->WriteConsole(LogType::Error, "%s %s", m_statusMsg.c_str(), detail.c_str());
-                             }
-                             else
-                             {
-                               m_statusMsg = "Compiled.";
-                               GetLogger()->WriteConsole(LogType::Memo, "%s", m_statusMsg.c_str());
-                             }
-                             m_isCompiling = false;
-                           });
-                     });
+      std::thread pipeThread( 
+              RunPipe, cmd, 
+              [this, buildDir](int res) -> void
+              {
+                String cmd = "cmake --build " + buildDir + " --config " + buildConfig.data();
+                std::thread pip(
+                  RunPipe,
+                  cmd,
+                  [=](int res) -> void
+                  {
+                    if (res)
+                    {
+                      m_statusMsg = "Compile Failed.";
+                  
+                      String detail;
+                      if (res == 1)
+                      {
+                        detail = "CMake Build Failed.";
+                      }
+                  
+                      if (res == -1)
+                      {
+                        detail = "CMake Generate Failed.";
+                      }
+                  
+                      GetLogger()->WriteConsole(LogType::Error, "%s %s", m_statusMsg.c_str(), detail.c_str());
+                    }
+                    else
+                    {
+                      m_statusMsg = "Compiled.";
+                      GetLogger()->WriteConsole(LogType::Memo, "%s", m_statusMsg.c_str());
+                    }
+                    m_isCompiling = false;
+                  });
+                pip.detach();
+              });
+      pipeThread.detach();
     }
 
     EditorScenePtr App::GetCurrentScene()

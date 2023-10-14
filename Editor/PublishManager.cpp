@@ -74,10 +74,9 @@ namespace ToolKit
 
       const auto afterPackFn = [&](int res) -> void
       {
-        if (std::filesystem::exists("PackerOutput.txt"))
+        if (res != 1 && std::filesystem::exists("PackerOutput.txt"))
         {
           TK_LOG(GetFileManager()->ReadAllText("PackerOutput.txt").c_str());
-          std::filesystem::remove("PackerOutput.txt");
         }
         TK_LOG("Build Ended.");
         m_isBuilding = false;

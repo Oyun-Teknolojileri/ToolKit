@@ -126,7 +126,7 @@ namespace ToolKit
       return AndroidPublish();
     default:
       TK_ERR("unknown publish platform: %i\n", (int) m_platform);
-      return 0;
+      return 1;
     }
   }
 

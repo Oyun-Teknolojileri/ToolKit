@@ -325,7 +325,11 @@ namespace ToolKit
       TK_LOG("%s", path);
     }
 
-    int res = fclose(fp);
+#ifdef _WIN32
+    int res = _pclose(fp);
+#else
+    int res  = pclose(fp);
+#endif
     if (afterFn) 
     {
       afterFn(res);
