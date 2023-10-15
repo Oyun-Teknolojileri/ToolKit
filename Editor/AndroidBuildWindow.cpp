@@ -83,12 +83,12 @@ namespace ToolKit::Editor
     
     if (ImGui::Button("Build"))
     {
-      AndroidPublisher* publisher   = g_app->m_publishManager->m_androidPublisher;
+      PublishManager* publisher     = g_app->m_publishManager;
       publisher->m_minSdk           = m_minSdk;
       publisher->m_maxSdk           = m_maxSdk;
       publisher->m_appName          = m_appName;
       publisher->m_icon             = m_icon;
-      publisher->m_oriantation      = (AndroidPublisher::Oriantation)m_selectedOriantation;
+      publisher->m_oriantation      = (PublishManager::Oriantation)m_selectedOriantation;
       publisher->m_deployAfterBuild = m_deployAfterBuild;
       publisher->m_isDebugBuild     = m_isDebugBuild;
 

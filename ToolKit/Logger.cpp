@@ -32,6 +32,8 @@
 
 namespace ToolKit
 {
+  const uint64 buffLen = 4096;
+  static char buff[buffLen];
 
   void OutputUtil(ConsoleOutputFn logFn, LogType logType, const char* msg, va_list args)
   {
@@ -40,7 +42,6 @@ namespace ToolKit
       return;
     }
 
-    static char buff[2048];
     vsprintf(buff, msg, args);
 
     logFn(logType, String(buff));
@@ -64,7 +65,6 @@ namespace ToolKit
     va_list args;
     va_start(args, msg);
 
-    static char buff[2048];
     static const char* logTypes[] = {"[Memo]", "[Error]", "[Warning]", "[Command]"};
 
     vsprintf(buff, msg, args);
@@ -94,6 +94,12 @@ namespace ToolKit
 
   void Logger::WriteConsole(LogType logType, const char* msg, ...)
   {
+    if (strlen(msg) >= buffLen)
+    {
+      m_writeConsoleFn(LogType::Warning, "maximum size for WriteConsole exceeded, cannot format.");
+      m_writeConsoleFn(logType, msg);
+      return;
+    }
     va_list args;
     va_start(args, msg);
 
@@ -104,6 +110,12 @@ namespace ToolKit
 
   void Logger::WritePlatformConsole(LogType logType, const char* msg, ...)
   {
+    if (strlen(msg) >= buffLen)
+    {
+      m_platfromConsoleFn(logType, "maximum size for WriteConsole exceeded, cannot format.");
+      m_platfromConsoleFn(logType, msg);
+      return;
+    }
     va_list args;
     va_start(args, msg);
 

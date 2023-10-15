@@ -229,7 +229,7 @@ namespace ToolKit
     if (XmlNode* materialNode = parent->first_node("material"))
     {
       String path = materialNode->first_attribute("name")->value();
-      NormalizePath(path);
+      NormalizePathInplace(path);
       String matFile = MaterialPath(path);
       return GetMaterialManager()->Create<Material>(matFile);
     }
@@ -264,8 +264,7 @@ namespace ToolKit
 
   void DecomposePath(const String& fullPath, String* path, String* name, String* ext)
   {
-    String normal = fullPath;
-    NormalizePath(normal);
+    String normal = NormalizePath(fullPath);
 
     size_t ind1 = normal.find_last_of(GetPathSeparator());
     if (path != nullptr)
@@ -288,13 +287,54 @@ namespace ToolKit
     }
   }
 
-  void NormalizePath(String& path)
+  void NormalizePathInplace(String& path)
   {
-#if __clang__
+#if _WIN32
     UnixifyPath(path);
 #else
     DosifyPath(path);
 #endif
+  }
+  
+  String NormalizePath(String path)
+  {
+#ifndef _WIN32
+    UnixifyPath(path);
+#else
+    DosifyPath(path);
+#endif
+    return path;
+  }
+
+  int RunPipe(const String& command, RunPipeCallback afterFn)
+  {
+#ifdef _WIN32
+    FILE* fp = _popen(command.c_str(), "r");
+#else
+    FILE* fp = popen(command.c_str(), "r");
+#endif
+    if (fp == nullptr)
+    {
+      TK_ERR("pipe run failed! command: %s", command.c_str());
+      afterFn(1);
+      return 0;
+    }
+    char path[512] {};
+    while (fgets(path, sizeof(path), fp) != NULL)
+    {
+      TK_LOG("%s", path);
+    }
+
+#ifdef _WIN32
+    int res = _pclose(fp);
+#else
+    int res  = pclose(fp);
+#endif
+    if (afterFn) 
+    {
+      afterFn(res);
+    }
+    return res;
   }
 
   void UnixifyPath(String& path) { ReplaceCharInPlace(path, '\\', '/'); }
@@ -303,18 +343,30 @@ namespace ToolKit
 
   String ConcatPaths(const StringArray& entries)
   {
-    String path;
     if (entries.empty())
     {
-      return path;
+      return String();
     }
 
-    for (size_t i = 0; i < entries.size() - 1; i++)
+    // Calculate the total length needed for the concatenated string to reduce allocations
+    uint64 totalLength = 0;
+    for (const String& entry : entries)
     {
-      path += entries[i] + GetPathSeparatorAsStr();
+      totalLength += entry.length() + 1; // +1 for path separator
     }
 
-    return path + entries.back();
+    // Create a string builder and reserve the needed capacity
+    String path;
+    path.reserve(totalLength);
+
+    for (uint64 i = 0; i < entries.size() - 1; i++)
+    {
+      path += entries[i];
+      path += GetPathSeparatorAsStr();
+    }
+
+    path += entries.back(); // Add the last entry
+    return path;
   }
 
   String GetRelativeResourcePath(const String& path, String* rootFolder)
@@ -532,7 +584,7 @@ namespace ToolKit
 
   char GetPathSeparator()
   {
-#ifndef __clang__
+#ifdef _WIN32
     return '\\';
 #else
     return '/';

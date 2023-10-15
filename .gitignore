@@ -58,4 +58,7 @@ Template/Android/app/build
 .cxx
 Template/Android/local.properties
 Template/Android/app/src/main/assets
-
+Template/Windows/build/CMakeFiles
+Utils/Packer/Log.txt
+Utils/Packer/Packer.pdb
+Packer/x64

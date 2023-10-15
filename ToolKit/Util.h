@@ -67,7 +67,13 @@ namespace ToolKit
   TK_API String CreateCopyFileFullPath(const String& fullPath);
   TK_API void DecomposePath(const String& fullPath, String* path, String* name, String* ext);
 
-  TK_API void NormalizePath(String& path);
+  TK_API String NormalizePath(String path);
+  TK_API void NormalizePathInplace(String& path);
+  
+  typedef std::function<void(int)> RunPipeCallback;
+
+  TK_API int RunPipe(const String& command, RunPipeCallback afterFn);
+  
   TK_API void UnixifyPath(String& path);
   TK_API void DosifyPath(String& path);
   TK_API String ConcatPaths(const StringArray& entries);
