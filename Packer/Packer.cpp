@@ -730,7 +730,6 @@ namespace ToolKit
       GetFileManager()->WriteAllText("PackerOutput.txt", packerOutput);
     }
 
-    getchar();
     return result;
   }
 } // namespace ToolKit

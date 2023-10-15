@@ -27,7 +27,7 @@
 #pragma once
 
 #include "Entity.h"
-#undef far
+
 namespace ToolKit
 {
   static VariantCategory CameraCategory {"Camera", 100};
