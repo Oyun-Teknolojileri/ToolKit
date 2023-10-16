@@ -164,7 +164,7 @@ namespace ToolKit
       static constexpr ubyte textureSlotCount       = 32;
       static constexpr size_t maxLightsPerObject    = 16;
       static constexpr int shadowAtlasSlot          = 8;
-      static constexpr int g_shadowAtlasTextureSize = 4096;
+      static constexpr int g_shadowAtlasTextureSize = 1024;
       static constexpr int specularIBLLods          = 5;
       static constexpr int brdfLutTextureSize       = 512;
     } m_rhiSettings;
