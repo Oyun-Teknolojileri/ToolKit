@@ -63,6 +63,8 @@ namespace ToolKit
     ShaderPtr m_upsampleShader   = nullptr;
 
     bool m_invalidRenderParams   = false;
+
+    int m_currentIterationCount  = 0;
   };
 
   typedef std::shared_ptr<BloomPass> BloomPassPtr;
