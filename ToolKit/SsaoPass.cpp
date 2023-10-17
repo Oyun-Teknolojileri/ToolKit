@@ -179,7 +179,7 @@ namespace ToolKit
     if (m_prevSpread != m_params.spread)
     {
       // Update kernel
-      for (uint i = 0; i < 64; ++i)
+      for (uint i = 0; i < m_kernelSize; ++i)
       {
         m_ssaoShader->SetShaderParameter(g_ssaoSamplesStrCache[i], ParameterVariant(m_ssaoKernel[i]));
       }
@@ -214,7 +214,7 @@ namespace ToolKit
 
     if (m_ssaoKernel.size() == 0 || m_prevSpread != m_params.spread)
     {
-      m_ssaoKernel = GenerateRandomSamplesInHemisphere(64, m_params.spread);
+      m_ssaoKernel = GenerateRandomSamplesInHemisphere(m_kernelSize, m_params.spread);
     }
 
     if (m_ssaoNoise.size() == 0)

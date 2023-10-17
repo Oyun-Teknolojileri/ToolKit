@@ -959,10 +959,12 @@ namespace ToolKit
       // Calculate phi based on the parameter
       float phi    = glm::acos(1.f - bias * glm::linearRand(0.f, 1.f));
 
+      float scale  = (float) i / numSamples;
+      scale        = glm::lerp(0.1f, 1.0f, scale * scale);
       float length = glm::linearRand(0.f, 1.f);
-      float x      = glm::sin(phi) * glm::cos(theta) * length;
-      float y      = glm::sin(phi) * glm::sin(theta) * length;
-      float z      = glm::cos(phi) * length;
+      float x      = glm::sin(phi) * glm::cos(theta) * length * scale;
+      float y      = glm::sin(phi) * glm::sin(theta) * length * scale;
+      float z      = glm::cos(phi) * length * scale;
       samples.push_back(glm::vec3(x, y, z));
     }
 

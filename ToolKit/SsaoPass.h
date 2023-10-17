@@ -98,6 +98,8 @@ namespace ToolKit
     FullQuadPassPtr m_quadPass         = nullptr;
     ShaderPtr m_ssaoShader             = nullptr;
 
+    uint m_kernelSize                  = 64;
+
     // Used to detect if the spread has changed. If so, kernel updated.
     float m_prevSpread                 = -1.0f;
   };
