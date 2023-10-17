@@ -67,6 +67,8 @@ namespace ToolKit
      * 0-1 value defining how diverse the samples from the normal.
      */
     float spread                  = 1.0;
+
+    int KernelSize                = 64;
   };
 
   class TK_API SSAOPass : public Pass
@@ -98,7 +100,10 @@ namespace ToolKit
     FullQuadPassPtr m_quadPass         = nullptr;
     ShaderPtr m_ssaoShader             = nullptr;
 
-    uint m_kernelSize                  = 64;
+    int m_currentKernelSize            = 0;
+
+    const int m_minimumKernelSize      = 8;
+    const int m_maximumKernelSize      = 128;
 
     // Used to detect if the spread has changed. If so, kernel updated.
     float m_prevSpread                 = -1.0f;

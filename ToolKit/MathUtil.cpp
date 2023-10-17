@@ -946,10 +946,8 @@ namespace ToolKit
     return points;
   }
 
-  Vec3Array GenerateRandomSamplesInHemisphere(int numSamples, float bias)
+  void GenerateRandomSamplesInHemisphere(int numSamples, float bias, Vec3Array& array)
   {
-    Vec3Array samples;
-
     // Generate random samples on the hemisphere with random length between 0
     // and 1
     for (int i = 0; i < numSamples; ++i)
@@ -965,10 +963,8 @@ namespace ToolKit
       float x      = glm::sin(phi) * glm::cos(theta) * length * scale;
       float y      = glm::sin(phi) * glm::sin(theta) * length * scale;
       float z      = glm::cos(phi) * length * scale;
-      samples.push_back(glm::vec3(x, y, z));
+      array.push_back(glm::vec3(x, y, z));
     }
-
-    return samples;
   }
 
 } // namespace ToolKit

@@ -135,8 +135,11 @@ namespace ToolKit
 
     Pass::PreRender();
 
-    int width  = m_params.GNormalBuffer->m_width;
-    int height = m_params.GNormalBuffer->m_height;
+    int width           = m_params.GNormalBuffer->m_width;
+    int height          = m_params.GNormalBuffer->m_height;
+
+    // Clamp kernel size
+    m_params.KernelSize = glm::clamp(m_params.KernelSize, m_minimumKernelSize, m_maximumKernelSize);
 
     GenerateSSAONoise();
 
@@ -175,11 +178,10 @@ namespace ToolKit
 
     nvtxRangePushA("Set SSAO Shader Parameters");
 
-
-    if (m_prevSpread != m_params.spread)
+    if (m_params.KernelSize != m_currentKernelSize || m_prevSpread != m_params.spread)
     {
       // Update kernel
-      for (uint i = 0; i < m_kernelSize; ++i)
+      for (int i = 0; i < m_params.KernelSize; ++i)
       {
         m_ssaoShader->SetShaderParameter(g_ssaoSamplesStrCache[i], ParameterVariant(m_ssaoKernel[i]));
       }
@@ -189,11 +191,12 @@ namespace ToolKit
 
     m_ssaoShader->SetShaderParameter("screenSize", ParameterVariant(Vec2(width, height)));
     m_ssaoShader->SetShaderParameter("bias", ParameterVariant(m_params.Bias));
+    m_ssaoShader->SetShaderParameter("kernelSize", ParameterVariant(m_params.KernelSize));
     m_ssaoShader->SetShaderParameter("projection", ParameterVariant(m_params.Cam->GetProjectionMatrix()));
     m_ssaoShader->SetShaderParameter("viewMatrix", ParameterVariant(m_params.Cam->GetViewMatrix()));
 
     nvtxRangePop();
-    
+
     m_quadPass->m_params.FragmentShader = m_ssaoShader;
 
     nvtxRangePop();
@@ -203,8 +206,10 @@ namespace ToolKit
   {
     nvtxRangePushA("SSAOPass PostRender");
 
+    m_currentKernelSize = m_params.KernelSize;
+
     Pass::PostRender();
-    
+
     nvtxRangePop();
   }
 
@@ -212,9 +217,9 @@ namespace ToolKit
   {
     NVTX3_FUNC_RANGE();
 
-    if (m_ssaoKernel.size() == 0 || m_prevSpread != m_params.spread)
+    if (m_prevSpread != m_params.spread)
     {
-      m_ssaoKernel = GenerateRandomSamplesInHemisphere(m_kernelSize, m_params.spread);
+      GenerateRandomSamplesInHemisphere(m_maximumKernelSize, m_params.spread, m_ssaoKernel);
     }
 
     if (m_ssaoNoise.size() == 0)

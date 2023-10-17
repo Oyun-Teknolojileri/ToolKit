@@ -35,7 +35,7 @@ namespace ToolKit
   {
     // Make sure there is no gap between integer values
     Default = 0,
-    Mobile = 1
+    Mobile  = 1
   };
 
   class TK_API EngineSettings : public Serializable
@@ -70,6 +70,7 @@ namespace ToolKit
       float SSAORadius             = 0.5f;
       float SSAOBias               = 0.025f;
       float SSAOSpread             = 1.0f;
+      int SSAOKernelSize           = 16;
       bool DepthOfFieldEnabled     = false;
       float FocusPoint             = 10.0f;
       float FocusScale             = 5.0f;

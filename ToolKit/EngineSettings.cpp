@@ -83,6 +83,7 @@ namespace ToolKit
     writeAttrFn("SSAOEnabled", to_string(gfx.SSAOEnabled));
     writeAttrFn("SSAORadius", to_string(gfx.SSAORadius));
     writeAttrFn("SSAOBias", to_string(gfx.SSAOBias));
+    writeAttrFn("SSAOKernelSize", to_string(gfx.SSAOKernelSize));
     writeAttrFn("DepthOfFieldEnabled", to_string(gfx.DepthOfFieldEnabled));
     writeAttrFn("FocusPoint", to_string(gfx.FocusPoint));
     writeAttrFn("FocusScale", to_string(gfx.FocusScale));
@@ -110,6 +111,7 @@ namespace ToolKit
     ReadAttr(node, "SSAOEnabled", PostProcessing.SSAOEnabled);
     ReadAttr(node, "SSAORadius", PostProcessing.SSAORadius);
     ReadAttr(node, "SSAOBias", PostProcessing.SSAOBias);
+    ReadAttr(node, "SSAOKernelSize", PostProcessing.SSAOKernelSize);
     ReadAttr(node, "DepthOfFieldEnabled", PostProcessing.DepthOfFieldEnabled);
     ReadAttr(node, "FocusPoint", PostProcessing.FocusPoint);
     ReadAttr(node, "FocusScale", PostProcessing.FocusScale);
