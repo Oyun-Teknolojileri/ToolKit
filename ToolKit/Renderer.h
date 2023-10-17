@@ -191,22 +191,21 @@ namespace ToolKit
 
     UVec2 m_viewportSize; //!< Current viewport size.
 
-    /**
-     * Temporary frame buffer to use in various operation. Don't rely on its
-     * sate or use it to cache state.
-     * Only use ColorAttachment 0 and do not init with depth buffer.
-     */
-    FramebufferPtr m_utilFramebuffer   = nullptr;
-    MaterialPtr m_gaussianBlurMaterial = nullptr;
-    MaterialPtr m_averageBlurMaterial  = nullptr;
+    /*
+    * This framebuffer can ONLY have 1 color attachment and no other attachments.
+    * This way, we can use without needing to resize or reInit.
+    */
+    FramebufferPtr m_oneColorAttachmentFramebuffer = nullptr;
+    MaterialPtr m_gaussianBlurMaterial             = nullptr;
+    MaterialPtr m_averageBlurMaterial              = nullptr;
 
-    FramebufferPtr m_copyFb            = nullptr;
-    MaterialPtr m_copyMaterial         = nullptr;
+    FramebufferPtr m_copyFb                        = nullptr;
+    MaterialPtr m_copyMaterial                     = nullptr;
 
-    int m_maxArrayTextureLayers        = -1;
+    int m_maxArrayTextureLayers                    = -1;
 
     // Dummy objects for draw commands.
-    CubePtr m_dummyDrawCube            = nullptr;
+    CubePtr m_dummyDrawCube                        = nullptr;
   };
 
 } // namespace ToolKit

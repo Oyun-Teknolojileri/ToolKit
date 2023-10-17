@@ -63,14 +63,14 @@ namespace ToolKit
   void Renderer::Init()
   {
     m_uiCamera        = new Camera();
-    m_utilFramebuffer = MakeNewPtr<Framebuffer>();
+    m_oneColorAttachmentFramebuffer = MakeNewPtr<Framebuffer>();
     m_dummyDrawCube   = MakeNewPtr<Cube>();
   }
 
   Renderer::~Renderer()
   {
     SafeDel(m_uiCamera);
-    m_utilFramebuffer      = nullptr;
+    m_oneColorAttachmentFramebuffer = nullptr;
     m_gaussianBlurMaterial = nullptr;
     m_averageBlurMaterial  = nullptr;
     m_copyFb               = nullptr;
@@ -662,8 +662,7 @@ namespace ToolKit
 
     FramebufferPtr frmBackup = m_framebuffer;
 
-    m_utilFramebuffer->UnInit();
-    m_utilFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
 
     if (m_gaussianBlurMaterial == nullptr)
     {
@@ -681,9 +680,9 @@ namespace ToolKit
     m_gaussianBlurMaterial->m_fragmentShader->SetShaderParameter("BlurScale", ParameterVariant(axis * amount));
     m_gaussianBlurMaterial->Init();
 
-    m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
+    m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
 
-    SetFramebuffer(m_utilFramebuffer, false);
+    SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
     DrawFullQuad(m_gaussianBlurMaterial);
 
     SetFramebuffer(frmBackup, false);
@@ -697,8 +696,7 @@ namespace ToolKit
 
     FramebufferPtr frmBackup = m_framebuffer;
 
-    m_utilFramebuffer->UnInit();
-    m_utilFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
 
     if (m_averageBlurMaterial == nullptr)
     {
@@ -717,9 +715,9 @@ namespace ToolKit
 
     m_averageBlurMaterial->Init();
 
-    m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
+    m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
 
-    SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
+    SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
     DrawFullQuad(m_averageBlurMaterial);
 
     SetFramebuffer(frmBackup, false);
@@ -1318,11 +1316,10 @@ namespace ToolKit
     mat->GetRenderState()->cullMode  = CullingType::TwoSided;
     mat->Init();
 
-    m_utilFramebuffer->UnInit();
-    m_utilFramebuffer->Init({width, height, false, false});
+    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
 
     // Views for 6 different angles
-    static CameraPtr cam = MakeNewPtr<Camera>();
+    CameraPtr cam = MakeNewPtr<Camera>();
     cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
     Mat4 views[] = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
                     glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
@@ -1342,13 +1339,13 @@ namespace ToolKit
       cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam->m_node->SetScale(sca);
 
-      m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+      m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                        cubeMapRt,
                                        0,
                                        -1,
                                        (Framebuffer::CubemapFace) i);
 
-      SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
+      SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
       DrawCube(cam, mat);
     }
     SetFramebuffer(nullptr);
@@ -1399,8 +1396,7 @@ namespace ToolKit
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
-    m_utilFramebuffer->UnInit();
-    m_utilFramebuffer->Init({width, height, false, false});
+    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
 
     for (int i = 0; i < 6; ++i)
     {
@@ -1413,13 +1409,13 @@ namespace ToolKit
       cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam->m_node->SetScale(sca);
 
-      m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+      m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                        cubeMapRt,
                                        0,
                                        -1,
                                        (Framebuffer::CubemapFace) i);
 
-      SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
+      SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
       DrawCube(cam, mat);
     }
     SetFramebuffer(nullptr);
@@ -1474,9 +1470,7 @@ namespace ToolKit
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
-    // No need to re init framebuffer since m_util framebuffer has only 1
-    // render target
-    m_utilFramebuffer->Init({width, height, false, false});
+    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
 
     UVec2 lastViewportSize = m_viewportSize;
 
@@ -1500,7 +1494,7 @@ namespace ToolKit
         cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
         cam->m_node->SetScale(sca);
 
-        m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+        m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                          copyCubemapRt,
                                          0,
                                          -1,
@@ -1509,7 +1503,7 @@ namespace ToolKit
         frag->SetShaderParameter("roughness", ParameterVariant((float) mip / (float) mipMaps));
         frag->SetShaderParameter("resPerFace", ParameterVariant((float) w));
 
-        SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0));
+        SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
         SetViewportSize(w, h);
 
         DrawCube(cam, mat);
