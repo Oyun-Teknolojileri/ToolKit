@@ -37,6 +37,7 @@ namespace ToolKit
   class TK_API TKObjectFactory
   {
     friend class Main;
+
    public:
     /**
      * Helper function to identify if class T has a StaticClass function.
@@ -68,9 +69,6 @@ namespace ToolKit
     {
       TKClass* objectClass                  = T::StaticClass();
       m_constructorFnMap[objectClass->Name] = constructorFn;
-
-      // TODO: Make the Id assignment collision free.
-      T::StaticClass()->HashId              = std::hash<String> {}(objectClass->Name);
 
       // Iterate over all meta processors for each meta entry.
       for (auto& meta : objectClass->MetaKeys)

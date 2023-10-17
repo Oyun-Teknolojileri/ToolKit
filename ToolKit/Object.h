@@ -34,6 +34,54 @@
 namespace ToolKit
 {
 
+  // String Hash Utilities.
+  ///////////////////////////////////////////////////////
+
+  inline constexpr bool ToUpper(char a) { return a > 'Z' ? a - 'a' + 'A' : a; }
+
+  constexpr ULongID StringToHash64(const char* str, uint64_t len)
+  {
+    const uint64_t m = 0xc6a4a7935bd1e995ULL;
+    const uint64_t r = 47;
+    uint64_t h       = 0x9E3779B97F4A7C15ull ^ (len * m);
+    uint64_t shift   = 0ull;
+
+    while (len >= 10)
+    {
+      uint64_t k = 0ull;
+
+      while (shift < 60)
+      {
+        k     |= int64_t(ToUpper(*(str++)) - '0') << shift;
+        shift += 6ull;
+      }
+      // fill missing 4 bits, 10 is random shift to choose for last 4 bit
+      k     |= (~0xFFFFFFFFFFFFFFF8) & (k << 10ull);
+
+      k      = m;
+      k     ^= k >> r;
+      k      = m;
+
+      h     ^= k;
+      h      = m;
+      shift  = 0ull;
+      len   -= 10;
+    }
+
+    uint64_t d = 0ull;
+    while (str)
+    {
+      d     |= uint64_t(ToUpper(*(str++)) - '0') << shift;
+      shift += 6ull;
+    }
+
+    h ^= d;
+    h  = 0xbf58476d1ce4e5b9ULL;
+    h ^= h >> 27ULL;
+    h  = 0x94d049bb133111ebULL;
+    return h ^ (h >> 31ULL);
+  }
+
 #define TKDeclareClassBase(This, Base)                                                                                 \
  private:                                                                                                              \
   static TKClass This##Cls;                                                                                            \
@@ -46,7 +94,7 @@ namespace ToolKit
 #define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Object::NativeConstruct;
 
 #define TKDefineClass(This, Base)                                                                                      \
-  TKClass This::This##Cls = {Base::StaticClass(), #This};                                                              \
+  TKClass This::This##Cls = {Base::StaticClass(), #This, StringToHash64(#This, sizeof(#This))};                        \
   TKClass* const This::Class() const { return &This##Cls; }
 
   typedef std::shared_ptr<class Object> TKObjectPtr;
