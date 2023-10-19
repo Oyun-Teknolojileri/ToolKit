@@ -122,8 +122,6 @@ namespace ToolKit
     {
       for (const ComponentPtr& com : GetComponentPtrArray())
       {
-        TK_LOG("T: %s", T::StaticClass()->Name.c_str());
-        TK_LOG("Com: %s", com->Class()->Name.c_str());
         if (com->IsA<T>())
         {
           return tk_reinterpret_pointer_cast<T>(com);

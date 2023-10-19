@@ -37,49 +37,55 @@ namespace ToolKit
   // String Hash Utilities.
   ///////////////////////////////////////////////////////
 
-  inline constexpr bool ToUpper(char a) { return a > 'Z' ? a - 'a' + 'A' : a; }
-
-  constexpr ULongID StringToHash64(const char* str, uint64_t len)
+  // https://github.com/explosion/murmurhash/blob/master/murmurhash/MurmurHash2.cpp#L130
+  constexpr uint64_t MurmurHash64A(const void* key, int len, uint64_t seed)
   {
-    const uint64_t m = 0xc6a4a7935bd1e995ULL;
-    const uint64_t r = 47;
-    uint64_t h       = 0x9E3779B97F4A7C15ull ^ (len * m);
-    uint64_t shift   = 0ull;
+    const uint64_t m     = 0xc6a4a7935bd1e995;
+    const int r          = 47;
 
-    while (len >= 10)
+    uint64_t h           = seed ^ (len * m);
+
+    const uint64_t* data = (const uint64_t*) key;
+    const uint64_t* end  = data + (len / 8);
+
+    while (data != end)
     {
-      uint64_t k = 0ull;
+      uint64_t k  = *(data++);
 
-      while (shift < 60)
-      {
-        k     |= int64_t(ToUpper(*(str++)) - '0') << shift;
-        shift += 6ull;
-      }
-      // fill missing 4 bits, 10 is random shift to choose for last 4 bit
-      k     |= (~0xFFFFFFFFFFFFFFF8) & (k << 10ull);
+      k          *= m;
+      k          ^= k >> r;
+      k          *= m;
 
-      k      = m;
-      k     ^= k >> r;
-      k      = m;
-
-      h     ^= k;
-      h      = m;
-      shift  = 0ull;
-      len   -= 10;
+      h          ^= k;
+      h          *= m;
     }
 
-    uint64_t d = 0ull;
-    while (str)
-    {
-      d     |= uint64_t(ToUpper(*(str++)) - '0') << shift;
-      shift += 6ull;
-    }
+    const unsigned char* data2 = (const unsigned char*) data;
 
-    h ^= d;
-    h  = 0xbf58476d1ce4e5b9ULL;
-    h ^= h >> 27ULL;
-    h  = 0x94d049bb133111ebULL;
-    return h ^ (h >> 31ULL);
+    switch (len & 7)
+    {
+    case 7:
+      h ^= uint64_t(data2[6]) << 48;
+    case 6:
+      h ^= uint64_t(data2[5]) << 40;
+    case 5:
+      h ^= uint64_t(data2[4]) << 32;
+    case 4:
+      h ^= uint64_t(data2[3]) << 24;
+    case 3:
+      h ^= uint64_t(data2[2]) << 16;
+    case 2:
+      h ^= uint64_t(data2[1]) << 8;
+    case 1:
+      h ^= uint64_t(data2[0]);
+      h *= m;
+    };
+
+    h ^= h >> r;
+    h *= m;
+    h ^= h >> r;
+
+    return h;
   }
 
 #define TKDeclareClassBase(This, Base)                                                                                 \
@@ -94,7 +100,7 @@ namespace ToolKit
 #define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Object::NativeConstruct;
 
 #define TKDefineClass(This, Base)                                                                                      \
-  TKClass This::This##Cls(Base::StaticClass(), #This, StringToHash64(#This, sizeof(#This)));                 \
+  TKClass This::This##Cls(Base::StaticClass(), #This, MurmurHash64A(#This, sizeof(#This), 0));                         \
   TKClass* const This::Class() const { return &This##Cls; }
 
   typedef std::shared_ptr<class Object> TKObjectPtr;

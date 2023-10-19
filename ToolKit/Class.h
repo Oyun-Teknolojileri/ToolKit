@@ -46,25 +46,25 @@ namespace ToolKit
     bool operator==(const TKClass& other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return (Name == other.Name);
+      return (HashId == other.HashId);
     }
 
     bool operator==(const TKClass* other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return (Name == other->Name);
+      return (HashId == other->HashId);
     }
 
     bool operator!=(const TKClass& other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return Name != other.Name;
+      return HashId != other.HashId;
     }
 
     bool operator!=(const TKClass* other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return Name != other->Name;
+      return HashId != other->HashId;
     }
 
     /**
@@ -74,18 +74,18 @@ namespace ToolKit
      */
     bool IsSublcassOf(TKClass* base)
     {
-      if (base == Super)
+      if (*base == *Super)
       {
         return true;
       }
 
-      if (this == base)
+      if (*this == *base)
       {
         return true;
       }
 
       // This specific condition is only valid for Object, marking this point as the end.
-      if (this == Super)
+      if (*this == *Super)
       {
         return false; // No match found.
       }
