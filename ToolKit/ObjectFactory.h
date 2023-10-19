@@ -31,7 +31,6 @@
 #include "Types.h"
 
 #include <type_traits>
-#include <unordered_set>
 
 namespace ToolKit
 {
@@ -68,8 +67,8 @@ namespace ToolKit
      */
     template <typename T>
     void Register(
-        bool overrideClass                      = false,
-        ObjectConstructorCallback constructorFn = []() -> T* { return new T(); })
+        ObjectConstructorCallback constructorFn = []() -> T* { return new T(); },
+        bool overrideClass                      = false)
     {
       TKClass* objectClass = T::StaticClass();
 
@@ -87,7 +86,7 @@ namespace ToolKit
               "the same hash id for your class and another class.",
               objectClass->Name.c_str(),
               m_allRegisteredClasses.find(objectClass->HashId)->second->Name.c_str());
-          assert(false && "Trying to register the same class or two different classes have the same hash ids!");
+          std::exit(-1);
         }
       }
 
@@ -117,8 +116,8 @@ namespace ToolKit
     void Override(ObjectConstructorCallback constructorFn = []() -> DerivedCls* { return new DerivedCls(); })
     {
       DerivedCls::StaticClass()->Name = BaseCls::StaticClass()->Name;
-      Register<DerivedCls>(true, constructorFn);
-      Register<BaseCls>(true, constructorFn);
+      Register<DerivedCls>(constructorFn, true);
+      Register<BaseCls>(constructorFn, true);
     }
 
     /**

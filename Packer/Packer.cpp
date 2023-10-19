@@ -684,7 +684,6 @@ namespace ToolKit
     NormalizePathInplace(toolkitPath);
     packer.m_toolkitPath = toolkitPath;
     g_proxy->SetConfigPath(ConcatPaths({toolkitPath, "Config"}));
-    
 
     String packerOutput;
 

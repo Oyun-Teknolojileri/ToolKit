@@ -100,7 +100,7 @@ namespace ToolKit
 #define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Object::NativeConstruct;
 
 #define TKDefineClass(This, Base)                                                                                      \
-  TKClass This::This##Cls = {Base::StaticClass(), #This, MurmurHash64A(#This, sizeof(#This), 0)};                      \
+  TKClass This::This##Cls = {Base::StaticClass(), #This, MurmurHash64A(#This, sizeof(#This), 41)};                     \
   TKClass* const This::Class() const { return &This##Cls; }
 
   typedef std::shared_ptr<class Object> TKObjectPtr;
