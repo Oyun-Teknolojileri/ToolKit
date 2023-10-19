@@ -649,6 +649,7 @@ namespace ToolKit
     // Initialize ToolKit to serialize resources
     Main* g_proxy = new Main();
     Main::SetProxy(g_proxy);
+    g_proxy->PreInit();
 
     String publishArguments = GetFileManager()->ReadAllText("PublishArguments.txt");
     StringArray arguments;
@@ -683,7 +684,7 @@ namespace ToolKit
     NormalizePathInplace(toolkitPath);
     packer.m_toolkitPath = toolkitPath;
     g_proxy->SetConfigPath(ConcatPaths({toolkitPath, "Config"}));
-    g_proxy->PreInit();
+    
 
     String packerOutput;
 
