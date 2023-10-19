@@ -26,10 +26,12 @@
 
 #pragma once
 
+#include "Logger.h"
 #include "ToolKit.h"
 #include "Types.h"
 
 #include <type_traits>
+#include <unordered_set>
 
 namespace ToolKit
 {
@@ -65,13 +67,36 @@ namespace ToolKit
      * @param constructorFn - This is the callback function that is responsible of creating the given object.
      */
     template <typename T>
-    void Register(ObjectConstructorCallback constructorFn = []() -> T* { return new T(); })
+    void Register(
+        bool overrideClass                      = false,
+        ObjectConstructorCallback constructorFn = []() -> T* { return new T(); })
     {
-      TKClass* objectClass                  = T::StaticClass();
+      TKClass* objectClass = T::StaticClass();
+
+      if (!overrideClass)
+      {
+        // Sanity check
+        // Check if the same class is already registered
+        // Also checks if two different class TKClass has same HashId
+        if (m_allRegisteredClasses.find(objectClass->HashId) != m_allRegisteredClasses.end())
+        {
+          ToolKit::GetLogger()->Log(
+              LogType::Error,
+              "Trying to Register the same class twice->\tRegistered Class: %s, New Registering Class: %s\n"
+              "Note: If the class names are different please change the class name. ToolKit is generating "
+              "the same hash id for your class and another class.",
+              objectClass->Name.c_str(),
+              m_allRegisteredClasses.find(objectClass->HashId)->second->Name.c_str());
+          assert(false && "Trying to register the same class or two different classes have the same hash ids!");
+        }
+      }
+
+      m_allRegisteredClasses.insert({objectClass->HashId, objectClass});
+
       m_constructorFnMap[objectClass->Name] = constructorFn;
 
       // Iterate over all meta processors for each meta entry.
-      //for (auto& meta : objectClass->MetaKeys)
+      // for (auto& meta : objectClass->MetaKeys)
       //{
       //  auto metaProcessor = m_metaProcessorMap.find(meta.first);
       //  if (metaProcessor != m_metaProcessorMap.end())
@@ -92,8 +117,8 @@ namespace ToolKit
     void Override(ObjectConstructorCallback constructorFn = []() -> DerivedCls* { return new DerivedCls(); })
     {
       DerivedCls::StaticClass()->Name = BaseCls::StaticClass()->Name;
-      Register<DerivedCls>(constructorFn);
-      Register<BaseCls>(constructorFn);
+      Register<DerivedCls>(true, constructorFn);
+      Register<BaseCls>(true, constructorFn);
     }
 
     /**
@@ -161,6 +186,7 @@ namespace ToolKit
    private:
     std::unordered_map<StringView, ObjectConstructorCallback> m_constructorFnMap;
     ObjectConstructorCallback m_nullFn = nullptr;
+    std::unordered_map<ULongID, TKClass*> m_allRegisteredClasses;
   };
 
   template <typename T, typename... Args>
