@@ -33,38 +33,38 @@ namespace ToolKit
 
   struct TK_API TKClass
   {
+    template <std::size_t N>
+    constexpr TKClass(TKClass* superCls, const char (&name)[N], ULongID hash)
+        : Super(superCls), Name(name, N - 1), HashId(hash)
+    {
+    }
+
     TKClass* Super = nullptr;     //!< Compile time assigned base class for this class.
     String Name;                  //!< Compile time assigned unique class name.
     ULongID HashId = NULL_HANDLE; //!< Compile time assigned hash code.
 
-    /**
-     * Holds meta data, information such as if the class will be visible to editor, where it will store takes place
-     * here.
-     */
-    std::unordered_map<StringView, StringView> MetaKeys;
-
     bool operator==(const TKClass& other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return (HashId == other.HashId);
+      return (Name == other.Name);
     }
 
     bool operator==(const TKClass* other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return (HashId == other->HashId);
+      return (Name == other->Name);
     }
 
     bool operator!=(const TKClass& other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return HashId != other.HashId;
+      return Name != other.Name;
     }
 
     bool operator!=(const TKClass* other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return HashId != other->HashId;
+      return Name != other->Name;
     }
 
     /**

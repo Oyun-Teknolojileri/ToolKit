@@ -94,7 +94,7 @@ namespace ToolKit
 #define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Object::NativeConstruct;
 
 #define TKDefineClass(This, Base)                                                                                      \
-  TKClass This::This##Cls = {Base::StaticClass(), #This, StringToHash64(#This, sizeof(#This))};                        \
+  TKClass This::This##Cls(Base::StaticClass(), #This, StringToHash64(#This, sizeof(#This)));                 \
   TKClass* const This::Class() const { return &This##Cls; }
 
   typedef std::shared_ptr<class Object> TKObjectPtr;
@@ -142,6 +142,12 @@ namespace ToolKit
     TKDeclareParam(ULongID, Id);
 
     ParameterBlock m_localData;
+
+    /**
+     * Holds meta data, information such as if the class will be visible to editor, where it will store takes place
+     * here.
+     */
+    std::unordered_map<StringView, StringView> MetaKeys;
   };
 
 } // namespace ToolKit
