@@ -35,7 +35,7 @@ namespace ToolKit
   {
     TKClass* Super = nullptr;     //!< Compile time assigned base class for this class.
     String Name;                  //!< Compile time assigned unique class name.
-    ULongID HashId = NULL_HANDLE; //!< Unique has id assigned to class when registered to TKObjectFactory.
+    ULongID HashId = NULL_HANDLE; //!< Compile time assigned hash code.
 
     /**
      * Holds meta data, information such as if the class will be visible to editor, where it will store takes place
@@ -49,22 +49,10 @@ namespace ToolKit
       return (HashId == other.HashId);
     }
 
-    bool operator==(const TKClass* other) const
-    {
-      assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return (HashId == other->HashId);
-    }
-
     bool operator!=(const TKClass& other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
       return HashId != other.HashId;
-    }
-
-    bool operator!=(const TKClass* other) const
-    {
-      assert(HashId != NULL_HANDLE && "Class is not registered.");
-      return HashId != other->HashId;
     }
 
     /**
@@ -74,18 +62,18 @@ namespace ToolKit
      */
     bool IsSublcassOf(TKClass* base)
     {
-      if (base == Super)
+      if (*base == *Super)
       {
         return true;
       }
 
-      if (this == base)
+      if (*this == *base)
       {
         return true;
       }
 
       // This specific condition is only valid for Object, marking this point as the end.
-      if (this == Super)
+      if (*this == *Super)
       {
         return false; // No match found.
       }

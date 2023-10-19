@@ -111,7 +111,6 @@ namespace ToolKit
     Register<SpotLight>();
     Register<LineBatch>();
     Register<Prefab>();
-    Register<Quad>();
     Register<SkyBase>();
     Register<GradientSky>();
     Register<Sky>();

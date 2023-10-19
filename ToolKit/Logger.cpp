@@ -105,6 +105,12 @@ namespace ToolKit
 
     OutputUtil(m_writeConsoleFn, logType, msg, args);
 
+    // Echo to platform console.
+    if (m_platfromConsoleFn)
+    {
+      OutputUtil(m_platfromConsoleFn, logType, msg, args);
+    }
+
     va_end(args);
   }
 

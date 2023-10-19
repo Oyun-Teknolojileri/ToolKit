@@ -122,7 +122,6 @@ namespace ToolKit
 
     m_logger->Log("Main Init");
 
-    m_objectFactory->Init();
     m_pluginManager->Init();
     m_animationMan->Init();
     m_textureMan->Init();
