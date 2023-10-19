@@ -96,14 +96,14 @@ namespace ToolKit
       m_constructorFnMap[objectClass->Name] = constructorFn;
 
       // Iterate over all meta processors for each meta entry.
-      // for (auto& meta : objectClass->MetaKeys)
-      //{
-      //  auto metaProcessor = m_metaProcessorMap.find(meta.first);
-      //  if (metaProcessor != m_metaProcessorMap.end())
-      //  {
-      //    metaProcessor->second(meta.second);
-      //  }
-      //}
+      for (auto& meta : objectClass->MetaKeys)
+      {
+        auto metaProcessor = m_metaProcessorMap.find(meta.first);
+        if (metaProcessor != m_metaProcessorMap.end())
+        {
+          metaProcessor->second(meta.second);
+        }
+      }
     }
 
     /**
