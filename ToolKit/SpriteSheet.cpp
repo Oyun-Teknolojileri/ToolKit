@@ -241,9 +241,9 @@ namespace ToolKit
 
   SpriteSheetManager::~SpriteSheetManager() {}
   
-  bool SpriteSheetManager::CanStore(TKClass* Class) { return Class == SpriteSheet::StaticClass(); }
+  bool SpriteSheetManager::CanStore(ClassMeta* Class) { return Class == SpriteSheet::StaticClass(); }
 
-  ResourcePtr SpriteSheetManager::CreateLocal(TKClass* Class)
+  ResourcePtr SpriteSheetManager::CreateLocal(ClassMeta* Class)
   {
     if (Class == SpriteSheet::StaticClass())
     {

@@ -110,9 +110,9 @@ namespace ToolKit
     MaterialManager();
     virtual ~MaterialManager();
     void Init() override;
-    bool CanStore(TKClass* Class) override;
-    ResourcePtr CreateLocal(TKClass* Class) override;
-    String GetDefaultResource(TKClass* Class) override;
+    bool CanStore(ClassMeta* Class) override;
+    ResourcePtr CreateLocal(ClassMeta* Class) override;
+    String GetDefaultResource(ClassMeta* Class) override;
 
     MaterialPtr GetCopyOfUnlitMaterial();
     MaterialPtr GetCopyOfUIMaterial();

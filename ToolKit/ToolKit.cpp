@@ -89,7 +89,7 @@ namespace ToolKit
     m_logger->Log("Main PreInit");
 
     m_engineSettings = new EngineSettings();
-    m_objectFactory  = new TKObjectFactory();
+    m_objectFactory  = new ObjectFactory();
     m_objectFactory->Init();
 
     m_renderSys       = new RenderSystem();
@@ -226,7 +226,7 @@ namespace ToolKit
 
   PluginManager* GetPluginManager() { return Main::GetInstance()->m_pluginManager; }
 
-  ResourceManager* GetResourceManager(TKClass* Class)
+  ResourceManager* GetResourceManager(ClassMeta* Class)
   {
     if (Class->IsSublcassOf(Animation::StaticClass()))
     {
@@ -284,7 +284,7 @@ namespace ToolKit
 
   FileManager* GetFileManager() { return Main::GetInstance()->m_fileManager; }
 
-  TK_API TKObjectFactory* GetObjectFactory() { return Main::GetInstance()->m_objectFactory; }
+  TK_API ObjectFactory* GetObjectFactory() { return Main::GetInstance()->m_objectFactory; }
 
   EngineSettings& GetEngineSettings() { return *Main::GetInstance()->m_engineSettings; }
 

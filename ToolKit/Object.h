@@ -90,18 +90,18 @@ namespace ToolKit
 
 #define TKDeclareClassBase(This, Base)                                                                                 \
  private:                                                                                                              \
-  static TKClass This##Cls;                                                                                            \
+  static ClassMeta This##Cls;                                                                                            \
   typedef Base Super;                                                                                                  \
                                                                                                                        \
  public:                                                                                                               \
-  virtual TKClass* const Class() const;                                                                                \
-  static TKClass* const StaticClass() { return &This##Cls; }
+  virtual ClassMeta* const Class() const;                                                                                \
+  static ClassMeta* const StaticClass() { return &This##Cls; }
 
 #define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Object::NativeConstruct;
 
 #define TKDefineClass(This, Base)                                                                                      \
-  TKClass This::This##Cls = {Base::StaticClass(), #This, MurmurHash64A(#This, sizeof(#This), 41)};                     \
-  TKClass* const This::Class() const { return &This##Cls; }
+  ClassMeta This::This##Cls = {Base::StaticClass(), #This, MurmurHash64A(#This, sizeof(#This), 41)};                     \
+  ClassMeta* const This::Class() const { return &This##Cls; }
 
   typedef std::shared_ptr<class Object> TKObjectPtr;
 

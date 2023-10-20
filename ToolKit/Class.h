@@ -31,9 +31,9 @@
 namespace ToolKit
 {
 
-  struct TK_API TKClass
+  struct TK_API ClassMeta
   {
-    TKClass* Super = nullptr;     //!< Compile time assigned base class for this class.
+    ClassMeta* Super = nullptr;     //!< Compile time assigned base class for this class.
     String Name;                  //!< Compile time assigned unique class name.
     ULongID HashId = NULL_HANDLE; //!< Compile time assigned hash code.
 
@@ -43,13 +43,13 @@ namespace ToolKit
      */
     std::unordered_map<StringView, StringView> MetaKeys;
 
-    bool operator==(const TKClass& other) const
+    bool operator==(const ClassMeta& other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
       return (HashId == other.HashId);
     }
 
-    bool operator!=(const TKClass& other) const
+    bool operator!=(const ClassMeta& other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
       return HashId != other.HashId;
@@ -60,7 +60,7 @@ namespace ToolKit
      * @param base - The target class to check equality for.
      * @return true in case of this class being equal base or derived from base.
      */
-    bool IsSublcassOf(TKClass* base)
+    bool IsSublcassOf(ClassMeta* base)
     {
       if (*base == *Super)
       {

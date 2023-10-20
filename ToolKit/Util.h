@@ -113,11 +113,11 @@ namespace ToolKit
    */
   TK_API String GetFileName(const String& path);
 
-  TK_API String CreatePathFromResourceType(const String& file, struct TKClass* Class);
+  TK_API String CreatePathFromResourceType(const String& file, struct ClassMeta* Class);
 
-  TK_API struct TKClass* GetResourceType(const String& ext);
-  TK_API String GetExtFromType(struct TKClass* Class);
-  TK_API String GetResourcePath(struct TKClass* Class);
+  TK_API struct ClassMeta* GetResourceType(const String& ext);
+  TK_API String GetExtFromType(struct ClassMeta* Class);
+  TK_API String GetResourcePath(struct ClassMeta* Class);
 
   TK_API char GetPathSeparator();
   TK_API String GetPathSeparatorAsStr();

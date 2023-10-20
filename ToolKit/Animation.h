@@ -160,8 +160,8 @@ namespace ToolKit
    public:
     AnimationManager();
     virtual ~AnimationManager();
-    bool CanStore(TKClass* Class) override;
-    ResourcePtr CreateLocal(TKClass* Class) override;
+    bool CanStore(ClassMeta* Class) override;
+    ResourcePtr CreateLocal(ClassMeta* Class) override;
   };
 
   /**

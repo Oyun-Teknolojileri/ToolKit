@@ -229,7 +229,7 @@ namespace ToolKit
             g_proxy->Init();
 
             // Register Custom Classes.
-            TKObjectFactory* of = g_proxy->m_objectFactory;
+            ObjectFactory* of = g_proxy->m_objectFactory;
             of->Register<Grid>();
             of->Register<Anchor>();
             of->Register<Cursor>();

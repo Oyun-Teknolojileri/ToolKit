@@ -35,7 +35,7 @@
 namespace ToolKit
 {
 
-  class TK_API TKObjectFactory
+  class TK_API ObjectFactory
   {
     friend class Main;
 
@@ -70,7 +70,7 @@ namespace ToolKit
         ObjectConstructorCallback constructorFn = []() -> T* { return new T(); },
         bool overrideClass                      = false)
     {
-      TKClass* objectClass = T::StaticClass();
+      ClassMeta* objectClass = T::StaticClass();
 
       if (!overrideClass)
       {
@@ -177,12 +177,12 @@ namespace ToolKit
     }
 
    private:
-    TKObjectFactory();
-    ~TKObjectFactory();
-    TKObjectFactory(const TKObjectFactory&)            = delete;
-    TKObjectFactory(TKObjectFactory&&)                 = delete;
-    TKObjectFactory& operator=(const TKObjectFactory&) = delete;
-    TKObjectFactory& operator=(TKObjectFactory&&)      = delete;
+    ObjectFactory();
+    ~ObjectFactory();
+    ObjectFactory(const ObjectFactory&)            = delete;
+    ObjectFactory(ObjectFactory&&)                 = delete;
+    ObjectFactory& operator=(const ObjectFactory&) = delete;
+    ObjectFactory& operator=(ObjectFactory&&)      = delete;
 
     /**
      * Registers all the known Object constructors.
@@ -192,7 +192,7 @@ namespace ToolKit
    private:
     std::unordered_map<StringView, ObjectConstructorCallback> m_constructorFnMap;
     ObjectConstructorCallback m_nullFn = nullptr;
-    std::unordered_map<ULongID, TKClass*> m_allRegisteredClasses;
+    std::unordered_map<ULongID, ClassMeta*> m_allRegisteredClasses;
   };
 
   template <typename T, typename... Args>
@@ -200,7 +200,7 @@ namespace ToolKit
   {
     if (Main* main = Main::GetInstance())
     {
-      if (TKObjectFactory* of = main->m_objectFactory)
+      if (ObjectFactory* of = main->m_objectFactory)
       {
         return of->MakeNew<T>(std::forward<Args>(args)...);
       }
@@ -214,7 +214,7 @@ namespace ToolKit
   {
     if (Main* main = Main::GetInstance())
     {
-      if (TKObjectFactory* of = main->m_objectFactory)
+      if (ObjectFactory* of = main->m_objectFactory)
       {
         return std::shared_ptr<T>(of->MakeNew<T>(std::forward<Args>(args)...));
       }
@@ -228,7 +228,7 @@ namespace ToolKit
   {
     if (Main* main = Main::GetInstance())
     {
-      if (TKObjectFactory* of = main->m_objectFactory)
+      if (ObjectFactory* of = main->m_objectFactory)
       {
         return std::shared_ptr<T>(static_cast<T*>(of->MakeNew(Class, std::forward<Args>(args)...)));
       }

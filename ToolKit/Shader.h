@@ -170,8 +170,8 @@ namespace ToolKit
     ShaderManager();
     virtual ~ShaderManager();
     void Init() override;
-    bool CanStore(TKClass* Class) override;
-    ResourcePtr CreateLocal(TKClass* Class) override;
+    bool CanStore(ClassMeta* Class) override;
+    ResourcePtr CreateLocal(ClassMeta* Class) override;
 
     ShaderPtr GetDefaultVertexShader();
     ShaderPtr GetPbrDefferedShader();

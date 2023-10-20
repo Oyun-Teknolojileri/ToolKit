@@ -184,9 +184,9 @@ namespace ToolKit
    public:
     TextureManager();
     virtual ~TextureManager();
-    bool CanStore(TKClass* Class) override;
-    ResourcePtr CreateLocal(TKClass* Class) override;
-    String GetDefaultResource(TKClass*) override;
+    bool CanStore(ClassMeta* Class) override;
+    ResourcePtr CreateLocal(ClassMeta* Class) override;
+    String GetDefaultResource(ClassMeta*) override;
   };
 
 } // namespace ToolKit

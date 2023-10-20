@@ -58,11 +58,11 @@
 namespace ToolKit
 {
 
-  TKObjectFactory::TKObjectFactory() {}
+  ObjectFactory::ObjectFactory() {}
 
-  TKObjectFactory::~TKObjectFactory() {}
+  ObjectFactory::~ObjectFactory() {}
 
-  TKObjectFactory::ObjectConstructorCallback& TKObjectFactory::GetConstructorFn(const StringView Class)
+  ObjectFactory::ObjectConstructorCallback& ObjectFactory::GetConstructorFn(const StringView Class)
   {
     auto constructorFnIt = m_constructorFnMap.find(Class);
     if (constructorFnIt != m_constructorFnMap.end())
@@ -73,7 +73,7 @@ namespace ToolKit
     return m_nullFn;
   }
 
-  Object* TKObjectFactory::MakeNew(const StringView Class)
+  Object* ObjectFactory::MakeNew(const StringView Class)
   {
     if (auto constructorFn = GetConstructorFn(Class))
     {
@@ -86,7 +86,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  void TKObjectFactory::Init()
+  void ObjectFactory::Init()
   {
     // Entities.
     Register<AABBOverrideComponent>();
