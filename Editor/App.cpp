@@ -41,10 +41,6 @@
 
 #include <DebugNew.h>
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
   namespace Editor
@@ -156,27 +152,13 @@ namespace ToolKit
     {
       m_deltaTime = deltaTime;
 
-      nvtxRangePushA("Show UI");
-
       UI::BeginUI();
       UI::ShowUI();
 
-      nvtxRangePop();
-
-      nvtxRangePushA("Editor Render");
-
       GetRenderSystem()->ExecuteRenderTasks();
-      
-      nvtxRangePop();
-
-      nvtxRangePushA("Mod Update");
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
-
-      nvtxRangePop();
-
-      nvtxRangePushA("Gather Viewports & Dispatch Signals");
 
       EditorViewportRawPtrArray viewports;
       for (Window* wnd : m_windows)
@@ -212,22 +194,10 @@ namespace ToolKit
         viewports.push_back(m_simulationWindow);
       }
 
-      nvtxRangePop();
-
-      nvtxRangePushA("Scene Update");
-
       EditorScenePtr scene = GetCurrentScene();
       scene->Update(deltaTime);
-      
-      nvtxRangePop();
-      
-      nvtxRangePushA("Update Simulation");
 
       UpdateSimulation(deltaTime);
-
-      nvtxRangePop();
-      
-      nvtxRangePushA("Add Viewport Render Tasks");
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
@@ -255,14 +225,8 @@ namespace ToolKit
         }
       }
 
-      nvtxRangePop();
-
-      nvtxRangePushA("End UI");
-
       // Render UI.
       UI::EndUI();
-
-      nvtxRangePop();
 
       GetRenderSystem()->SetFrameCount(m_totalFrameCount++);
     }

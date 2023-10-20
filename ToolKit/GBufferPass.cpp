@@ -34,10 +34,6 @@
 
 #include "DebugNew.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
 
@@ -91,8 +87,6 @@ namespace ToolKit
 
   void GBufferPass::InitGBuffers(int width, int height)
   {
-    nvtxRangePushA("GBufferPass InitGBuffers");
-
     bool reInitGBuffers = false;
     if (m_initialized)
     {
@@ -149,14 +143,10 @@ namespace ToolKit
     m_gBufferMaterial->m_fragmentShader = fragmentShader;
 
     m_initialized                       = true;
-    
-    nvtxRangePop();
   }
 
   void GBufferPass::UnInitGBuffers()
   {
-    NVTX3_FUNC_RANGE();
-
     if (!m_initialized)
     {
       return;
@@ -177,31 +167,18 @@ namespace ToolKit
 
   void GBufferPass::PreRender()
   {
-    nvtxRangePushA("GBufferPass PreRender");
-
     Pass::PreRender();
 
     Renderer* renderer = GetRenderer();
     renderer->ResetTextureSlots();
     renderer->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
     renderer->SetCameraLens(m_params.Camera);
-
-    nvtxRangePop();
   }
 
-  void GBufferPass::PostRender()
-  {
-    nvtxRangePushA("GBufferPass PostRender");
-
-    Pass::PostRender();
-    
-    nvtxRangePop();
-  }
+  void GBufferPass::PostRender() { Pass::PostRender(); }
 
   void GBufferPass::Render()
   {
-    nvtxRangePushA("GBufferPass Render");
-
     Renderer* renderer = GetRenderer();
     for (RenderJob& job : m_params.RendeJobs)
     {
@@ -223,8 +200,6 @@ namespace ToolKit
       renderer->m_overrideMat = m_gBufferMaterial;
       renderer->Render(job, m_params.Camera, {});
     }
-
-    nvtxRangePop();
   }
 
 } // namespace ToolKit

@@ -33,10 +33,6 @@
 #include "Mesh.h"
 #include "ToolKit.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
 
@@ -64,8 +60,6 @@ namespace ToolKit
 
   void ShadowPass::Render()
   {
-    nvtxRangePushA("ShadowPass Render");
-
     const Vec4 lastClearColor = GetRenderer()->m_clearColor;
 
     // Update shadow maps.
@@ -85,14 +79,10 @@ namespace ToolKit
     }
 
     GetRenderer()->m_clearColor = lastClearColor;
-
-    nvtxRangePop();
   }
 
   void ShadowPass::PreRender()
   {
-    nvtxRangePushA("ShadowPass PreRender");
-
     Pass::PreRender();
 
     m_lastOverrideMat = GetRenderer()->m_overrideMat;
@@ -115,26 +105,18 @@ namespace ToolKit
     {
       m_clearedLayers[i] = false;
     }
-
-    nvtxRangePop();
   }
 
   void ShadowPass::PostRender()
   {
-    nvtxRangePushA("ShadowPass PostRender");
-
     GetRenderer()->m_overrideMat = m_lastOverrideMat;
     Pass::PostRender();
-
-    nvtxRangePop();
   }
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
   void ShadowPass::RenderShadowMaps(LightPtr light, const RenderJobArray& jobs)
   {
-    nvtxRangePushA("ShadowPass RenderShadowMaps");
-
     Renderer* renderer        = GetRenderer();
 
     auto renderForShadowMapFn = [this, &renderer](LightPtr light, RenderJobArray jobs) -> void
@@ -157,8 +139,6 @@ namespace ToolKit
 
     if (light->IsA<PointLight>())
     {
-      nvtxRangePushA("ShadowPass PointLightShadow");
-
       renderer->SetFramebuffer(m_shadowFramebuffer, false);
 
       for (int i = 0; i < 6; ++i)
@@ -188,13 +168,9 @@ namespace ToolKit
 
         renderForShadowMapFn(light, jobs);
       }
-
-      nvtxRangePop();
     }
     else if (light->IsA<DirectionalLight>() || light->IsA<SpotLight>())
     {
-      nvtxRangePushA("ShadowPass Dir-SpotLightShadow");
-
       renderer->SetFramebuffer(m_shadowFramebuffer, false);
       m_shadowFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                          m_shadowAtlas,
@@ -214,17 +190,11 @@ namespace ToolKit
                                 (uint) light->GetShadowResVal());
 
       renderForShadowMapFn(light, jobs);
-
-      nvtxRangePop();
     }
-
-    nvtxRangePop();
   }
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights)
   {
-    NVTX3_FUNC_RANGE();
-
     int layerCount                           = -1;
     int lastLayerOfDirAndSpotLightShadowsUse = -1;
 
@@ -295,10 +265,10 @@ namespace ToolKit
     for (LightPtr light : pointLights)
     {
       light->m_shadowAtlasLayer = pointLightShadowLayerStartIndex + pointLightIndex * 6;
-      layerCount                 = light->m_shadowAtlasLayer + 6;
+      layerCount                = light->m_shadowAtlasLayer + 6;
       pointLightIndex++;
     }
-    
+
     if (pointLights.empty())
     {
       layerCount += 1;
@@ -309,8 +279,6 @@ namespace ToolKit
 
   void ShadowPass::InitShadowAtlas()
   {
-    NVTX3_FUNC_RANGE();
-
     // Check if the shadow atlas needs to be updated
     bool needChange = false;
 

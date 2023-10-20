@@ -32,10 +32,6 @@
 
 #include "DebugNew.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
 
@@ -60,8 +56,6 @@ namespace ToolKit
 
   void BloomPass::Render()
   {
-    nvtxRangePushA("BloomPass Render");
-
     RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
 
     if (mainRt == nullptr || m_invalidRenderParams)
@@ -167,14 +161,10 @@ namespace ToolKit
 
       RenderSubPass(m_pass);
     }
-
-    nvtxRangePop();
   }
 
   void BloomPass::PreRender()
   {
-    nvtxRangePushA("BloomPass PreRender");
-
     Pass::PreRender();
 
     RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
@@ -193,7 +183,7 @@ namespace ToolKit
       m_invalidRenderParams = true;
       return;
     }
-    
+
     if (iterationCount != m_currentIterationCount)
     {
       m_tempTextures.resize(m_params.iterationCount + 1);
@@ -231,17 +221,8 @@ namespace ToolKit
 
       m_currentIterationCount = iterationCount;
     }
-
-    nvtxRangePop();
   }
 
-  void BloomPass::PostRender()
-  {
-    nvtxRangePushA("BloomPass PostRender");
-
-    Pass::PostRender();
-
-    nvtxRangePop();
-  }
+  void BloomPass::PostRender() { Pass::PostRender(); }
 
 } // namespace ToolKit

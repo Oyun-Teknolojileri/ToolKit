@@ -34,10 +34,6 @@
 #include "Shader.h"
 #include "ToolKit.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
 
@@ -57,8 +53,6 @@ namespace ToolKit
 
   void DeferredRenderPass::PreRender()
   {
-    nvtxRangePushA("DeferredRenderPass PreRender");
-
     Pass::PreRender();
 
     if (m_lightDataTexture == nullptr)
@@ -118,14 +112,10 @@ namespace ToolKit
 
     m_deferredRenderShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.AOTexture != nullptr));
     renderer->SetTexture(5, m_params.AOTexture ? m_params.AOTexture->m_textureId : 0);
-
-    nvtxRangePop();
   }
 
   void DeferredRenderPass::PostRender()
   {
-    NVTX3_FUNC_RANGE();
-
     // Copy real depth buffer to main framebuffer depth
     GetRenderer()->CopyFrameBuffer(m_params.GBufferFramebuffer, m_params.MainFramebuffer, GraphicBitFields::DepthBits);
     Pass::PostRender();
@@ -133,18 +123,12 @@ namespace ToolKit
 
   void DeferredRenderPass::Render()
   {
-    nvtxRangePushA("DeferredRenderPass Render");
-
     // Deferred render always uses PBR material
     RenderSubPass(m_fullQuadPass);
-    
-    nvtxRangePop();
   }
 
   void DeferredRenderPass::InitLightDataTexture()
   {
-    NVTX3_FUNC_RANGE();
-
     m_lightDataTexture = MakeNewPtr<LightDataTexture>(m_lightDataTextureSize.x, m_lightDataTextureSize.y);
     m_lightDataTexture->Init();
   }

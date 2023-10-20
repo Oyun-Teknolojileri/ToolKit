@@ -32,10 +32,6 @@
 #include "Shader.h"
 #include "ToolKit.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
 
@@ -53,20 +49,14 @@ namespace ToolKit
 
   void ForwardRenderPass::Render()
   {
-    nvtxRangePushA("ForwardRenderPass Render");;
-
     RenderOpaque(m_params.OpaqueJobs, m_params.Cam, m_params.Lights);
     RenderTranslucent(m_params.TranslucentJobs, m_params.Cam, m_params.Lights);
-
-    nvtxRangePop();
   }
 
   ForwardRenderPass::~ForwardRenderPass() {}
 
   void ForwardRenderPass::PreRender()
   {
-    nvtxRangePushA("ForwardRenderPass PreRender");
-
     Pass::PreRender();
     // Set self data.
     Renderer* renderer = GetRenderer();
@@ -77,26 +67,18 @@ namespace ToolKit
     }
     renderer->SetCameraLens(m_params.Cam);
     renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
-
-    nvtxRangePop();
   }
 
   void ForwardRenderPass::PostRender()
   {
-    nvtxRangePushA("ForwardRenderPass PostRender");
-
     Pass::PostRender();
     GetRenderer()->m_overrideMat = nullptr;
     Renderer* renderer           = GetRenderer();
     renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
-    
-    nvtxRangePop();
   }
 
   void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)
   {
-    nvtxRangePushA("ForwardRenderPass RenderOpaque");
-
     Renderer* renderer = GetRenderer();
 
     if (m_params.SsaoTexture)
@@ -110,14 +92,10 @@ namespace ToolKit
       job.Material->m_fragmentShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.SSAOEnabled));
       renderer->Render(job, m_params.Cam, lightList);
     }
-
-    nvtxRangePop();
   }
 
   void ForwardRenderPass::RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)
   {
-    nvtxRangePushA("ForwardRenderPass RenderTranslucent");
-
     RenderJobProcessor::StableSortByDistanceToCamera(jobs, cam);
 
     Renderer* renderer = GetRenderer();
@@ -146,8 +124,6 @@ namespace ToolKit
     {
       renderFnc(job);
     }
-
-    nvtxRangePop();
   }
 
 } // namespace ToolKit

@@ -46,11 +46,6 @@
 
 #include "DebugNew.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-#undef far
-
 namespace ToolKit
 {
 
@@ -74,8 +69,6 @@ namespace ToolKit
 
   void Entity::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
   {
-    NVTX3_FUNC_RANGE();
-
     MeshComponentPtr meshComp = GetMeshComponent();
     if (meshComp)
     {
@@ -92,8 +85,6 @@ namespace ToolKit
 
   BoundingBox Entity::GetAABB(bool inWorld) const
   {
-    NVTX3_FUNC_RANGE();
-
     BoundingBox aabb;
 
     AABBOverrideComponentPtr overrideComp = GetComponent<AABBOverrideComponent>();

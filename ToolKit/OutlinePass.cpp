@@ -31,10 +31,6 @@
 #include "Shader.h"
 #include "ToolKit.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
 
@@ -59,8 +55,6 @@ namespace ToolKit
 
   void OutlinePass::Render()
   {
-    nvtxRangePushA("OutlinePass Render");
-
     // Generate stencil binary image.
     RenderSubPass(m_stencilPass);
 
@@ -74,14 +68,10 @@ namespace ToolKit
     m_outlinePass->m_params.ClearFrameBuffer = false;
 
     RenderSubPass(m_outlinePass);
-
-    nvtxRangePop();
   }
 
   void OutlinePass::PreRender()
   {
-    nvtxRangePushA("OutlinePass PreRender");
-
     Pass::PreRender();
 
     // Create stencil image.
@@ -92,17 +82,8 @@ namespace ToolKit
     FramebufferSettings fbs            = m_params.FrameBuffer->GetSettings();
     m_stencilAsRt->ReconstructIfNeeded(fbs.width, fbs.height);
     m_stencilPass->m_params.OutputTarget = m_stencilAsRt;
-    
-    nvtxRangePop();
   }
 
-  void OutlinePass::PostRender()
-  {
-    nvtxRangePushA("OutlinePass PostRender");
-
-    Pass::PostRender();
-    
-    nvtxRangePop();
-  }
+  void OutlinePass::PostRender() { Pass::PostRender(); }
 
 } // namespace ToolKit

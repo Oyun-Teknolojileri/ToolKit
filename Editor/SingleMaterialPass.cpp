@@ -30,10 +30,6 @@
 
 #include "DebugNew.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
   namespace Editor
@@ -52,8 +48,6 @@ namespace ToolKit
 
     void SingleMatForwardRenderPass::Render()
     {
-      nvtxRangePushA("SingleMatForwardRenderPass Render");
-
       Renderer* renderer      = GetRenderer();
       renderer->m_overrideMat = MakeNewPtr<Material>();
       for (RenderJob& job : m_params.ForwardParams.OpaqueJobs)
@@ -78,22 +72,16 @@ namespace ToolKit
       RenderTranslucent(m_params.ForwardParams.TranslucentJobs,
                         m_params.ForwardParams.Cam,
                         m_params.ForwardParams.Lights);
-
-      nvtxRangePop();
     }
 
     void SingleMatForwardRenderPass::PreRender()
     {
-      nvtxRangePushA("SingleMatForwardRenderPass PreRender");
-
       ForwardRenderPass::m_params = m_params.ForwardParams;
       ForwardRenderPass::PreRender();
 
       m_overrideMat->UnInit();
       m_overrideMat->m_fragmentShader = m_params.OverrideFragmentShader;
       m_overrideMat->Init();
-
-      nvtxRangePop();
     };
 
   } // namespace Editor

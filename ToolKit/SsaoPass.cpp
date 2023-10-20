@@ -39,10 +39,6 @@
 
 #include "DebugNew.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
 
@@ -106,8 +102,6 @@ namespace ToolKit
 
   void SSAOPass::Render()
   {
-    nvtxRangePushA("SSAOPass Render");
-
     Renderer* renderer = GetRenderer();
 
     // Generate SSAO texture
@@ -125,14 +119,10 @@ namespace ToolKit
 
     // Vertical blur
     renderer->Apply7x1GaussianBlur(m_tempBlurRt, m_ssaoTexture, Y_AXIS, 1.0f / m_ssaoTexture->m_height);
-
-    nvtxRangePop();
   }
 
   void SSAOPass::PreRender()
   {
-    nvtxRangePushA("SSAOPass PreRender");
-
     Pass::PreRender();
 
     int width           = m_params.GNormalBuffer->m_width;
@@ -176,8 +166,6 @@ namespace ToolKit
       m_ssaoShader = GetShaderManager()->Create<Shader>(ShaderPath("ssaoCalcFrag.shader", true));
     }
 
-    nvtxRangePushA("Set SSAO Shader Parameters");
-
     if (m_params.KernelSize != m_currentKernelSize || m_prevSpread != m_params.spread)
     {
       // Update kernel
@@ -195,28 +183,18 @@ namespace ToolKit
     m_ssaoShader->SetShaderParameter("projection", ParameterVariant(m_params.Cam->GetProjectionMatrix()));
     m_ssaoShader->SetShaderParameter("viewMatrix", ParameterVariant(m_params.Cam->GetViewMatrix()));
 
-    nvtxRangePop();
-
     m_quadPass->m_params.FragmentShader = m_ssaoShader;
-
-    nvtxRangePop();
   }
 
   void SSAOPass::PostRender()
   {
-    nvtxRangePushA("SSAOPass PostRender");
-
     m_currentKernelSize = m_params.KernelSize;
 
     Pass::PostRender();
-
-    nvtxRangePop();
   }
 
   void SSAOPass::GenerateSSAONoise()
   {
-    NVTX3_FUNC_RANGE();
-
     if (m_prevSpread != m_params.spread)
     {
       GenerateRandomSamplesInHemisphere(m_maximumKernelSize, m_params.spread, m_ssaoKernel);

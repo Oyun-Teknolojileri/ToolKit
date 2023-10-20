@@ -33,10 +33,6 @@
 
 #include "DebugNew.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
   RenderPath::RenderPath() {}
@@ -72,8 +68,6 @@ namespace ToolKit
 
   void RenderSystem::AddRenderTask(RenderTask task)
   {
-    NVTX3_FUNC_RANGE();
-
     switch (task.Priority)
     {
     case RenderTaskPriority::High:
@@ -87,8 +81,6 @@ namespace ToolKit
 
   void RenderSystem::ExecuteRenderTasks()
   {
-    NVTX3_FUNC_RANGE();
-
     // Immediate execution.
     RenderTaskArray tasks = std::move(m_highQueue);
     for (RenderTask& rt : tasks)

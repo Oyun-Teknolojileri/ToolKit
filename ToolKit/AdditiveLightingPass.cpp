@@ -33,10 +33,6 @@
 #include "Mesh.h"
 #include "Shader.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
   using FAttachment = Framebuffer::Attachment;
@@ -67,8 +63,6 @@ namespace ToolKit
 
   void AdditiveLightingPass::PreRender()
   {
-    nvtxRangePushA("AdditiveLightingPass PreRender");
-
     Pass::PreRender();
 
     int width  = m_params.MainFramebuffer->GetSettings().width;
@@ -100,8 +94,6 @@ namespace ToolKit
 
     m_lightingShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.AOTexture != nullptr));
     renderer->SetTexture(5, m_params.AOTexture ? m_params.AOTexture->m_textureId : 0);
-
-    nvtxRangePop();
   }
 
   void AdditiveLightingPass::SetLightUniforms(LightPtr light, int lightType)
@@ -169,8 +161,6 @@ namespace ToolKit
 
   void AdditiveLightingPass::Render()
   {
-    nvtxRangePushA("AdditiveLightingPass Render");
-
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_lightingFrameBuffer, true, Vec4(0.0f));
     // Deferred render always uses PBR material
@@ -304,16 +294,7 @@ namespace ToolKit
     // merge lighting, ibl, ao, and emmisive
     RenderSubPass(m_fullQuadPass);
     renderer->EnableDepthWrite(true);
-
-    nvtxRangePop();
   }
 
-  void AdditiveLightingPass::PostRender()
-  {
-    nvtxRangePushA("AdditiveLightingPass PostRender");
-
-    Pass::PostRender();
-
-    nvtxRangePop();
-  }
+  void AdditiveLightingPass::PostRender() { Pass::PostRender(); }
 } // namespace ToolKit

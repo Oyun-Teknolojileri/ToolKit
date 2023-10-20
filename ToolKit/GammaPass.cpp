@@ -32,10 +32,6 @@
 
 #include "DebugNew.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
 
@@ -50,14 +46,10 @@ namespace ToolKit
 
   void GammaPass::PreRender()
   {
-    nvtxRangePushA("GammaPass PreRender");
-
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
 
     m_postProcessShader->SetShaderParameter("Gamma", ParameterVariant(m_params.Gamma));
-    
-    nvtxRangePop();
   }
 
 } // namespace ToolKit

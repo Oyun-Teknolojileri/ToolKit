@@ -39,11 +39,6 @@
 
 #include "DebugNew.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-#undef far
-
 namespace ToolKit
 {
 
@@ -426,27 +421,27 @@ namespace ToolKit
     // Only ready after cubemap constructed and irradiance calculated.
     m_initiated     = false;
 
-    RenderTask task = {
-        [this, flushClientSideArray](Renderer* renderer) -> void
-        {
-          // Convert hdri image to cubemap images.
-          m_cubemap = renderer->GenerateCubemapFrom2DTexture(GetTextureManager()->Create<Texture>(GetFile()),
-                                                             m_width / 4,
-                                                             m_width / 4,
-                                                             1.0f);
+    RenderTask task = {[this, flushClientSideArray](Renderer* renderer) -> void
+                       {
+                         // Convert hdri image to cubemap images.
+                         m_cubemap =
+                             renderer->GenerateCubemapFrom2DTexture(GetTextureManager()->Create<Texture>(GetFile()),
+                                                                    m_width / 4,
+                                                                    m_width / 4,
+                                                                    1.0f);
 
-          const int specularEnvMapSize = m_specularIBLTextureSize;
-          // Pre-filtered and mip mapped environment map
-          m_specularEnvMap             = renderer->GenerateSpecularEnvMap(m_cubemap,
-                                                              specularEnvMapSize,
-                                                              specularEnvMapSize,
-                                                              Renderer::RHIConstants::specularIBLLods);
+                         const int specularEnvMapSize = m_specularIBLTextureSize;
+                         // Pre-filtered and mip mapped environment map
+                         m_specularEnvMap             = renderer->GenerateSpecularEnvMap(m_cubemap,
+                                                                             specularEnvMapSize,
+                                                                             specularEnvMapSize,
+                                                                             Renderer::RHIConstants::specularIBLLods);
 
-          // Generate diffuse irradience cubemap images
-          m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
+                         // Generate diffuse irradience cubemap images
+                         m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
 
-          m_initiated     = true;
-        }};
+                         m_initiated     = true;
+                       }};
 
     GetRenderSystem()->AddRenderTask(task);
   }
@@ -495,8 +490,6 @@ namespace ToolKit
 
   void RenderTarget::Init(bool flushClientSideArray)
   {
-    NVTX3_FUNC_RANGE();
-
     if (m_initiated)
     {
       return;
@@ -577,8 +570,6 @@ namespace ToolKit
 
   void RenderTarget::Reconstruct(uint width, uint height, const RenderTargetSettigs& settings)
   {
-    NVTX3_FUNC_RANGE();
-
     UnInit();
     m_width    = width;
     m_height   = height;
@@ -588,8 +579,6 @@ namespace ToolKit
 
   void RenderTarget::ReconstructIfNeeded(uint width, uint height)
   {
-    NVTX3_FUNC_RANGE();
-
     if (!m_initiated || m_width != width || m_height != height)
     {
       Reconstruct(width, height, m_settings);

@@ -32,10 +32,6 @@
 #include "TKOpenGL.h"
 #include "ToolKit.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
 
@@ -64,8 +60,6 @@ namespace ToolKit
 
   void StencilRenderPass::Render()
   {
-    nvtxRangePushA("StencilRenderPass Render");
-
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = m_solidOverrideMaterial;
 
@@ -85,14 +79,10 @@ namespace ToolKit
     RenderSubPass(m_copyStencilSubPass);
 
     renderer->SetStencilOperation(StencilOperation::None);
-
-    nvtxRangePop();
   }
 
   void StencilRenderPass::PreRender()
   {
-    nvtxRangePushA("StencilRenderPass PreRender");
-
     Pass::PreRender();
     Renderer* renderer = GetRenderer();
 
@@ -112,17 +102,8 @@ namespace ToolKit
     renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
     renderer->SetFramebuffer(m_frameBuffer, true, Vec4(0.0f));
     renderer->SetCameraLens(m_params.Camera);
-
-    nvtxRangePop();
   }
 
-  void StencilRenderPass::PostRender()
-  {
-    nvtxRangePushA("StencilRenderPass PostRender");
-
-    Pass::PostRender();
-
-    nvtxRangePop();
-  }
+  void StencilRenderPass::PostRender() { Pass::PostRender(); }
 
 } // namespace ToolKit

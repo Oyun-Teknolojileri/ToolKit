@@ -36,11 +36,6 @@
 
 #include "DebugNew.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-#undef far
-
 namespace ToolKit
 {
 
@@ -51,8 +46,6 @@ namespace ToolKit
   // Create a texture such that there is mat4x4 per bone
   TexturePtr CreateBoneTransformTexture(const Skeleton* skeleton)
   {
-    NVTX3_FUNC_RANGE();
-
     TexturePtr ptr = MakeNewPtr<Texture>();
     ptr->m_height  = 1;
     ptr->m_width   = (int) (skeleton->m_bones.size()) * 4;
@@ -71,8 +64,6 @@ namespace ToolKit
 
   void uploadBoneMatrix(Mat4 mat, TexturePtr& ptr, uint boneIndx)
   {
-    NVTX3_FUNC_RANGE();
-
     glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
     glTexSubImage2D(GL_TEXTURE_2D, 0, boneIndx * 4, 0, 4, 1, GL_RGBA, GL_FLOAT, &mat);
   };
@@ -84,8 +75,6 @@ namespace ToolKit
                                       DynamicBoneMap::DynamicBone& bone,
                                       DynamicBoneMap::DynamicBone* parent)
   {
-    NVTX3_FUNC_RANGE();
-
     if (parent)
     {
       parent->node->AddChild(bone.node);
@@ -96,8 +85,6 @@ namespace ToolKit
 
   void DynamicBoneMap::Init(const Skeleton* skeleton)
   {
-    NVTX3_FUNC_RANGE();
-
     if (skeleton->m_bones.empty())
     {
       return;
@@ -140,8 +127,6 @@ namespace ToolKit
 
   void DynamicBoneMap::UpdateGPUTexture()
   {
-    NVTX3_FUNC_RANGE();
-
     for (auto& dBoneIter : boneList)
     {
       const String& name = dBoneIter.first;
@@ -166,8 +151,6 @@ namespace ToolKit
 
   void DynamicBoneMap::ForEachRootBone(std::function<void(DynamicBone*)> childProcessFunc)
   {
-    NVTX3_FUNC_RANGE();
-
     // For each parent bone of the skeleton, access child bones recursively
     for (auto& bone : boneList)
     {
@@ -210,8 +193,6 @@ namespace ToolKit
   // Then call childProcessFunc (should be recursive to traverse all childs)
   void DynamicBoneMap::ForEachRootBone(std::function<void(const DynamicBone*)> childProcessFunc) const
   {
-    NVTX3_FUNC_RANGE();
-
     // For each parent bone of the skeleton, access child bones recursively
     for (auto& bone : boneList)
     {
@@ -409,8 +390,6 @@ namespace ToolKit
 
   int Skeleton::GetBoneIndex(const String& bone)
   {
-    NVTX3_FUNC_RANGE();
-
     for (size_t i = 0; i < m_bones.size(); i++)
     {
       if (m_bones[i]->m_name.compare(bone) == 0)

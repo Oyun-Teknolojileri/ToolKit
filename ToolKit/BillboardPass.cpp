@@ -30,10 +30,6 @@
 
 #include "DebugNew.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
   BillboardPass::BillboardPass() {}
@@ -44,8 +40,6 @@ namespace ToolKit
 
   void BillboardPass::Render()
   {
-    nvtxRangePushA("BillboardPass Render");
-
     Renderer* renderer = GetRenderer();
     Viewport* vp       = m_params.Viewport;
 
@@ -77,14 +71,10 @@ namespace ToolKit
 
     renderer->EnableDepthTest(true);
     renderBillboardsFn(m_params.Billboards);
-
-    nvtxRangePop();
   }
 
   void BillboardPass::PreRender()
   {
-    nvtxRangePushA("Billboard PreRender");
-
     Pass::PreRender();
 
     // Process billboards.
@@ -105,8 +95,6 @@ namespace ToolKit
                   // Return separation condition.
                   return cbb->m_settings.bypassDepthTest;
                 });
-
-    nvtxRangePop();
   }
 
 } // namespace ToolKit

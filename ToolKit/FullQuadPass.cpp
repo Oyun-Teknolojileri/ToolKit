@@ -32,10 +32,6 @@
 #include "Shader.h"
 #include "ToolKit.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
 
@@ -59,22 +55,16 @@ namespace ToolKit
 
   void FullQuadPass::Render()
   {
-    nvtxRangePushA("FullQuadPass Render");
-
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer, {0.0f, 0.0f, 0.0f, 1.0f});
 
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs({m_quad}, jobs);
     renderer->Render(jobs, m_camera, {});
-
-    nvtxRangePop();
   }
 
   void FullQuadPass::PreRender()
   {
-    nvtxRangePushA("FullQuadPass PreRender");
-
     Pass::PreRender();
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = nullptr;
@@ -89,18 +79,12 @@ namespace ToolKit
     MeshPtr mesh                                = mc->GetMeshVal();
     mesh->m_material                            = m_material;
     mesh->Init();
-
-    nvtxRangePop();
   }
 
   void FullQuadPass::PostRender()
   {
-    nvtxRangePushA("FullQuadPass PostRender");
-
     Pass::PostRender();
     GetRenderer()->EnableDepthTest(true);
-
-    nvtxRangePop();
   }
 
 } // namespace ToolKit

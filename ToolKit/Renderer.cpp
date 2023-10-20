@@ -51,43 +51,36 @@
 
 #include "DebugNew.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-#undef far
-
 namespace ToolKit
 {
   Renderer::Renderer() {}
 
   void Renderer::Init()
   {
-    m_uiCamera        = new Camera();
+    m_uiCamera                      = new Camera();
     m_oneColorAttachmentFramebuffer = MakeNewPtr<Framebuffer>();
-    m_dummyDrawCube   = MakeNewPtr<Cube>();
+    m_dummyDrawCube                 = MakeNewPtr<Cube>();
   }
 
   Renderer::~Renderer()
   {
     SafeDel(m_uiCamera);
     m_oneColorAttachmentFramebuffer = nullptr;
-    m_gaussianBlurMaterial = nullptr;
-    m_averageBlurMaterial  = nullptr;
-    m_copyFb               = nullptr;
-    m_copyMaterial         = nullptr;
+    m_gaussianBlurMaterial          = nullptr;
+    m_averageBlurMaterial           = nullptr;
+    m_copyFb                        = nullptr;
+    m_copyMaterial                  = nullptr;
 
-    m_mat                  = nullptr;
-    m_aoMat                = nullptr;
-    m_framebuffer          = nullptr;
-    m_shadowAtlas          = nullptr;
+    m_mat                           = nullptr;
+    m_aoMat                         = nullptr;
+    m_framebuffer                   = nullptr;
+    m_shadowAtlas                   = nullptr;
 
     m_programs.clear();
   }
 
   int Renderer::GetMaxArrayTextureLayers()
   {
-    NVTX3_FUNC_RANGE();
-
     if (m_maxArrayTextureLayers == -1)
     {
       glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &m_maxArrayTextureLayers);
@@ -97,8 +90,6 @@ namespace ToolKit
 
   void Renderer::SetCameraLens(CameraPtr cam)
   {
-    NVTX3_FUNC_RANGE();
-
     float aspect = (float) m_viewportSize.x / (float) m_viewportSize.y;
     if (!cam->IsOrtographic())
     {
@@ -114,8 +105,6 @@ namespace ToolKit
 
   void Renderer::Render(const RenderJob& job, CameraPtr cam, const LightPtrArray& lights)
   {
-    nvtxRangePushA("Renderer Render");
-
     // Make ibl assignments.
     m_renderState.IBLInUse = false;
     if (EnvironmentComponentPtr envCom = job.EnvironmentVolume)
@@ -233,8 +222,6 @@ namespace ToolKit
     {
       glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
     }
-
-    nvtxRangePop();
   }
 
   void Renderer::Render(const RenderJobArray& jobArray, CameraPtr cam, const LightPtrArray& lights)
@@ -247,8 +234,6 @@ namespace ToolKit
 
   void Renderer::SetRenderState(const RenderState* const state)
   {
-    NVTX3_FUNC_RANGE();
-
     if (m_renderState.cullMode != state->cullMode)
     {
       if (state->cullMode == CullingType::TwoSided)
@@ -346,8 +331,6 @@ namespace ToolKit
 
   void Renderer::SetStencilOperation(StencilOperation op)
   {
-    NVTX3_FUNC_RANGE();
-
     switch (op)
     {
     case StencilOperation::None:
@@ -375,8 +358,6 @@ namespace ToolKit
 
   void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color)
   {
-    nvtxRangePushA("SetFramebuffer");
-
     if (fb != m_framebuffer)
     {
       if (fb != nullptr)
@@ -400,16 +381,12 @@ namespace ToolKit
     }
 
     m_framebuffer = fb;
-
-    nvtxRangePop();
   }
 
   void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear) { SetFramebuffer(fb, clear, m_clearColor); }
 
   void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color)
   {
-    NVTX3_FUNC_RANGE();
-
     FramebufferPtr& tmp1 = fb;
     FramebufferPtr tmp2  = m_framebuffer;
     SetFramebuffer(fb, clear, color);
@@ -422,45 +399,26 @@ namespace ToolKit
 
   void Renderer::ClearFrameBuffer(FramebufferPtr fb, const Vec4& color)
   {
-    nvtxRangePushA("ClearFramebuffer");
-
     SwapFramebuffer(fb, true, color);
     SwapFramebuffer(fb, false);
-
-    nvtxRangePop();
   }
 
   void Renderer::ClearColorBuffer(const Vec4& color)
   {
-    nvtxRangePushA("ClearColorBuffer");
-
     glClearColor(color.r, color.g, color.b, color.a);
     glClear((GLbitfield) GraphicBitFields::ColorBits);
-
-    nvtxRangePop();
   }
 
   void Renderer::ClearBuffer(GraphicBitFields fields, const Vec4& value)
   {
-    nvtxRangePushA("ClearBuffer");
-
     glClearColor(value.r, value.g, value.b, value.a);
     glClear((GLbitfield) fields);
-
-    nvtxRangePop();
   }
 
-  void Renderer::ColorMask(bool r, bool g, bool b, bool a)
-  {
-    NVTX3_FUNC_RANGE();
-
-    glColorMask(r, g, b, a);
-  }
+  void Renderer::ColorMask(bool r, bool g, bool b, bool a) { glColorMask(r, g, b, a); }
 
   void Renderer::CopyFrameBuffer(FramebufferPtr src, FramebufferPtr dest, GraphicBitFields fields)
   {
-    nvtxRangePushA("CopyFramebuffer");
-
     GLuint srcId = 0;
     uint width   = m_windowSize.x;
     uint height  = m_windowSize.y;
@@ -485,21 +443,12 @@ namespace ToolKit
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, readFboId);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
-
-    nvtxRangePop();
   }
 
-  void Renderer::SetViewport(Viewport* viewport)
-  {
-    NVTX3_FUNC_RANGE();
-
-    SetFramebuffer(viewport->m_framebuffer);
-  }
+  void Renderer::SetViewport(Viewport* viewport) { SetFramebuffer(viewport->m_framebuffer); }
 
   void Renderer::SetViewportSize(uint width, uint height)
   {
-    NVTX3_FUNC_RANGE();
-
     m_viewportSize.x = width;
     m_viewportSize.y = height;
     glViewport(0, 0, width, height);
@@ -507,8 +456,6 @@ namespace ToolKit
 
   void Renderer::SetViewportSize(uint x, uint y, uint width, uint height)
   {
-    NVTX3_FUNC_RANGE();
-
     m_viewportSize.x = width;
     m_viewportSize.y = height;
     glViewport(x, y, width, height);
@@ -529,8 +476,6 @@ namespace ToolKit
 
   void Renderer::DrawFullQuad(MaterialPtr mat)
   {
-    nvtxRangePushA("DrawFullQuad");
-
     static CameraPtr quadCam                           = MakeNewPtr<Camera>();
     static QuadPtr quad                                = MakeNewPtr<Quad>();
     quad->GetMeshComponent()->GetMeshVal()->m_material = mat;
@@ -543,28 +488,20 @@ namespace ToolKit
     Render(jobs, quadCam);
 
     EnableDepthTest(true);
-
-    nvtxRangePop();
   }
 
   void Renderer::DrawCube(CameraPtr cam, MaterialPtr mat, const Mat4& transform)
   {
-    nvtxRangePushA("DrawCube");
-
     m_dummyDrawCube->m_node->SetTransform(transform);
     m_dummyDrawCube->GetMaterialComponent()->SetFirstMaterial(mat);
 
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs({m_dummyDrawCube}, jobs);
     Render(jobs, cam);
-
-    nvtxRangePop();
   }
 
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
   {
-    nvtxRangePushA("CopyTexture");
-
     assert(source->m_width == dest->m_width && source->m_height == dest->m_height &&
            "Sizes of the textures are not the same.");
 
@@ -599,14 +536,10 @@ namespace ToolKit
 
     DrawFullQuad(m_copyMaterial);
     SetFramebuffer(lastFb, false);
-
-    nvtxRangePop();
   }
 
   void Renderer::EnableBlending(bool enable)
   {
-    NVTX3_FUNC_RANGE();
-
     if (enable)
     {
       glEnable(GL_BLEND);
@@ -617,17 +550,10 @@ namespace ToolKit
     }
   }
 
-  void Renderer::EnableDepthWrite(bool enable)
-  {
-    NVTX3_FUNC_RANGE();
-
-    glDepthMask(enable);
-  }
+  void Renderer::EnableDepthWrite(bool enable) { glDepthMask(enable); }
 
   void Renderer::EnableDepthTest(bool enable)
   {
-    NVTX3_FUNC_RANGE();
-
     if (m_renderState.depthTestEnabled != enable)
     {
       if (enable)
@@ -644,8 +570,6 @@ namespace ToolKit
 
   void Renderer::SetDepthTestFunc(CompareFunctions func)
   {
-    NVTX3_FUNC_RANGE();
-
     if (m_renderState.depthFunction != func)
     {
       m_renderState.depthFunction = func;
@@ -658,8 +582,6 @@ namespace ToolKit
                                       const Vec3& axis,
                                       const float amount)
   {
-    nvtxRangePushA("Apply7x1GaussianBlur");
-
     FramebufferPtr frmBackup = m_framebuffer;
 
     m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
@@ -686,14 +608,10 @@ namespace ToolKit
     DrawFullQuad(m_gaussianBlurMaterial);
 
     SetFramebuffer(frmBackup, false);
-
-    nvtxRangePop();
   }
 
   void Renderer::ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount)
   {
-    nvtxRangePushA("ApplyAverageBlur");
-
     FramebufferPtr frmBackup = m_framebuffer;
 
     m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
@@ -721,14 +639,10 @@ namespace ToolKit
     DrawFullQuad(m_averageBlurMaterial);
 
     SetFramebuffer(frmBackup, false);
-
-    nvtxRangePop();
   }
 
   void Renderer::GenerateBRDFLutTexture()
   {
-    NVTX3_FUNC_RANGE();
-
     if (!GetTextureManager()->Exist(TK_BRDF_LUT_TEXTURE))
     {
       MaterialPtr prevOverrideMaterial = m_overrideMat;
@@ -776,8 +690,6 @@ namespace ToolKit
 
   void Renderer::SetProjectViewModel(const Mat4& model, CameraPtr cam)
   {
-    NVTX3_FUNC_RANGE();
-
     m_view    = cam->GetViewMatrix();
     m_project = cam->GetProjectionMatrix();
     m_model   = model;
@@ -785,8 +697,6 @@ namespace ToolKit
 
   void Renderer::BindProgram(ProgramPtr program)
   {
-    NVTX3_FUNC_RANGE();
-
     if (m_currentProgram == program->m_handle)
     {
       return;
@@ -798,8 +708,6 @@ namespace ToolKit
 
   void Renderer::LinkProgram(GLuint program, GLuint vertexP, GLuint fragmentP)
   {
-    NVTX3_FUNC_RANGE();
-
     glAttachShader(program, vertexP);
     glAttachShader(program, fragmentP);
 
@@ -828,8 +736,6 @@ namespace ToolKit
 
   ProgramPtr Renderer::CreateProgram(ShaderPtr vertex, ShaderPtr fragment)
   {
-    NVTX3_FUNC_RANGE();
-
     assert(vertex);
     assert(fragment);
     vertex->Init();
@@ -860,8 +766,6 @@ namespace ToolKit
 
   void Renderer::FeedUniforms(ProgramPtr program)
   {
-    nvtxRangePushA("FeedUniforms");
-
     for (ShaderPtr shader : program->m_shaders)
     {
       shader->UpdateShaderParameters();
@@ -1126,14 +1030,10 @@ namespace ToolKit
         }
       }
     }
-
-    nvtxRangePop();
   }
 
   void Renderer::FeedLightUniforms(ProgramPtr program)
   {
-    nvtxRangePushA("FeedLightUniforms");
-
     size_t lightSize = glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
     for (size_t i = 0; i < lightSize; i++)
     {
@@ -1250,14 +1150,10 @@ namespace ToolKit
     {
       SetTexture(8, m_shadowAtlas->m_textureId);
     }
-
-    nvtxRangePop();
   }
 
   void Renderer::SetTexture(ubyte slotIndx, uint textureId)
   {
-    NVTX3_FUNC_RANGE();
-
     assert(slotIndx < 17 && "You exceed texture slot count");
     m_textureSlots[slotIndx] = textureId;
     glActiveTexture(GL_TEXTURE0 + slotIndx);
@@ -1288,8 +1184,6 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture, uint width, uint height, float exposure)
   {
-    NVTX3_FUNC_RANGE();
-
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
@@ -1340,10 +1234,10 @@ namespace ToolKit
       cam->m_node->SetScale(sca);
 
       m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                       cubeMapRt,
-                                       0,
-                                       -1,
-                                       (Framebuffer::CubemapFace) i);
+                                                     cubeMapRt,
+                                                     0,
+                                                     -1,
+                                                     (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
       DrawCube(cam, mat);
@@ -1360,8 +1254,6 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint width, uint height)
   {
-    NVTX3_FUNC_RANGE();
-
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
@@ -1410,10 +1302,10 @@ namespace ToolKit
       cam->m_node->SetScale(sca);
 
       m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                       cubeMapRt,
-                                       0,
-                                       -1,
-                                       (Framebuffer::CubemapFace) i);
+                                                     cubeMapRt,
+                                                     0,
+                                                     -1,
+                                                     (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
       DrawCube(cam, mat);
@@ -1430,8 +1322,6 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateSpecularEnvMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps)
   {
-    NVTX3_FUNC_RANGE();
-
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
@@ -1495,10 +1385,10 @@ namespace ToolKit
         cam->m_node->SetScale(sca);
 
         m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                         copyCubemapRt,
-                                         0,
-                                         -1,
-                                         (Framebuffer::CubemapFace) i);
+                                                       copyCubemapRt,
+                                                       0,
+                                                       -1,
+                                                       (Framebuffer::CubemapFace) i);
 
         frag->SetShaderParameter("roughness", ParameterVariant((float) mip / (float) mipMaps));
         frag->SetShaderParameter("resPerFace", ParameterVariant((float) w));
@@ -1537,8 +1427,6 @@ namespace ToolKit
 
   void Renderer::ResetTextureSlots()
   {
-    NVTX3_FUNC_RANGE();
-
     for (int i = 0; i < 17; i++)
     {
       SetTexture(i, 0);

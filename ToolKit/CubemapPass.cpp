@@ -30,10 +30,6 @@
 #include "Mesh.h"
 #include "ToolKit.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
 
@@ -45,8 +41,6 @@ namespace ToolKit
 
   void CubeMapPass::Render()
   {
-    nvtxRangePushA("CubeMapPass Render");
-
     m_cube->m_node->SetTransform(m_params.Transform);
 
     Renderer* renderer = GetRenderer();
@@ -55,30 +49,20 @@ namespace ToolKit
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs({m_cube}, jobs);
     renderer->Render(jobs, m_params.Cam);
-
-    nvtxRangePop();
   }
 
   void CubeMapPass::PreRender()
   {
-    nvtxRangePushA("CubeMapPass PreRender");
-
     Pass::PreRender();
     MaterialComponentPtr matCom = m_cube->GetMaterialComponent();
     matCom->SetFirstMaterial(m_params.Material);
     GetRenderer()->SetDepthTestFunc(m_params.DepthFn);
-
-    nvtxRangePop();
   }
 
   void CubeMapPass::PostRender()
   {
-    nvtxRangePushA("CubeMapPass PostRender");
-
     Pass::PostRender();
     GetRenderer()->SetDepthTestFunc(CompareFunctions::FuncLess);
-
-    nvtxRangePop();
   }
 
 } // namespace ToolKit

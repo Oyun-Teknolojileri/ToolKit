@@ -32,10 +32,6 @@
 
 #include "DebugNew.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
 
@@ -48,14 +44,10 @@ namespace ToolKit
 
   void FXAAPass::PreRender()
   {
-    nvtxRangePushA("FXAAPass PreRender");
-
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
 
     m_postProcessShader->SetShaderParameter("screen_size", ParameterVariant(m_params.screen_size));
-    
-    nvtxRangePop();
   }
 
 } // namespace ToolKit

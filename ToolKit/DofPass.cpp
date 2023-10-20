@@ -32,10 +32,6 @@
 
 #include "DebugNew.h"
 
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-
 namespace ToolKit
 {
 
@@ -57,8 +53,6 @@ namespace ToolKit
 
   void DoFPass::PreRender()
   {
-    nvtxRangePushA("DofPass PreRender");
-
     Pass::PreRender();
     if (m_params.ColorRt == nullptr)
     {
@@ -92,14 +86,10 @@ namespace ToolKit
     m_quadPass->m_params.BlendFunc        = BlendFunction::NONE;
     m_quadPass->m_params.ClearFrameBuffer = false;
     m_quadPass->m_params.FragmentShader   = m_dofShader;
-
-    nvtxRangePop();
   }
 
   void DoFPass::Render()
   {
-    nvtxRangePushA("DoFPass Render");
-
     Renderer* renderer = GetRenderer();
     if (m_params.ColorRt == nullptr)
     {
@@ -110,17 +100,8 @@ namespace ToolKit
     renderer->SetTexture(1, m_params.DepthRt->m_textureId);
 
     RenderSubPass(m_quadPass);
-
-    nvtxRangePop();
   }
 
-  void DoFPass::PostRender()
-  {
-    nvtxRangePushA("DoFPass PostRender");
-
-    Pass::PostRender();
-    
-    nvtxRangePop();
-  }
+  void DoFPass::PostRender() { Pass::PostRender(); }
 
 } // namespace ToolKit
