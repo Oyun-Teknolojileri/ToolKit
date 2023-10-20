@@ -594,7 +594,7 @@ namespace ToolKit
 
   TextureManager::~TextureManager() {}
 
-  bool TextureManager::CanStore(TKClass* Class)
+  bool TextureManager::CanStore(ClassMeta* Class)
   {
     if (Class->IsSublcassOf(Texture::StaticClass()))
     {
@@ -604,7 +604,7 @@ namespace ToolKit
     return false;
   }
 
-  ResourcePtr TextureManager::CreateLocal(TKClass* Class)
+  ResourcePtr TextureManager::CreateLocal(ClassMeta* Class)
   {
     if (Class == Texture::StaticClass())
     {
@@ -629,7 +629,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  String TextureManager::GetDefaultResource(TKClass* Class)
+  String TextureManager::GetDefaultResource(ClassMeta* Class)
   {
     if (Class == Hdri::StaticClass())
     {

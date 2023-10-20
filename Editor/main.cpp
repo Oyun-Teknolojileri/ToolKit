@@ -134,10 +134,10 @@ namespace ToolKit
       g_proxy->PreInit();
 
       // Platform dependent function assignments.
-      g_proxy->m_pluginManager->FreeModule      = &Win32Helpers::TKFreeModule;
-      g_proxy->m_pluginManager->LoadModule      = &Win32Helpers::TKLoadModule;
-      g_proxy->m_pluginManager->GetFunction     = &Win32Helpers::TKGetFunction;
-      g_proxy->m_pluginManager->GetCreationTime = &Win32Helpers::GetCreationTime;
+      g_proxy->m_pluginManager->FreeModule      = &PlatformHelpers::TKFreeModule;
+      g_proxy->m_pluginManager->LoadModule      = &PlatformHelpers::TKLoadModule;
+      g_proxy->m_pluginManager->GetFunction     = &PlatformHelpers::TKGetFunction;
+      g_proxy->m_pluginManager->GetCreationTime = &PlatformHelpers::GetCreationTime;
     }
 
     void Init()
@@ -231,7 +231,7 @@ namespace ToolKit
             g_proxy->Init();
 
             // Register Custom Classes.
-            TKObjectFactory* of = g_proxy->m_objectFactory;
+            ObjectFactory* of = g_proxy->m_objectFactory;
             of->Register<Grid>();
             of->Register<Anchor>();
             of->Register<Cursor>();
@@ -256,11 +256,11 @@ namespace ToolKit
 
             // Init app
             g_app                   = new App(settings.Window.Width, settings.Window.Height);
-            g_app->m_sysComExecFn   = &ToolKit::Win32Helpers::SysComExec;
-            g_app->m_shellOpenDirFn = &ToolKit::Win32Helpers::OpenExplorer;
+            g_app->m_sysComExecFn   = &ToolKit::PlatformHelpers::SysComExec;
+            g_app->m_shellOpenDirFn = &ToolKit::PlatformHelpers::OpenExplorer;
 
             GetLogger()->SetPlatformConsoleFn([](LogType type, const String& msg) -> void
-                                              { ToolKit::Win32Helpers::OutputLog((int) type, msg.c_str()); });
+                                              { ToolKit::PlatformHelpers::OutputLog((int) type, msg.c_str()); });
 
             // Allow classes with the MenuMetaKey to be created from the add menu.
             of->m_metaProcessorMap[MenuMetaKey] = [](StringView val) -> void

@@ -710,9 +710,9 @@ namespace ToolKit
     ResourceManager::Uninit();
   }
 
-  bool SceneManager::CanStore(TKClass* Class) { return Class == Scene::StaticClass(); }
+  bool SceneManager::CanStore(ClassMeta* Class) { return Class == Scene::StaticClass(); }
 
-  ResourcePtr SceneManager::CreateLocal(TKClass* Class)
+  ResourcePtr SceneManager::CreateLocal(ClassMeta* Class)
   {
     if (Class == Scene::StaticClass())
     {
@@ -722,7 +722,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  String SceneManager::GetDefaultResource(TKClass* Class) { return ScenePath("Sample.scene", true); }
+  String SceneManager::GetDefaultResource(ClassMeta* Class) { return ScenePath("Sample.scene", true); }
 
   ScenePtr SceneManager::GetCurrentScene() { return m_currentScene; }
 

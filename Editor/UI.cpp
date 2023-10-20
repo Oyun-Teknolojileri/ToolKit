@@ -1320,7 +1320,7 @@ namespace ToolKit
       ImGui::Text(text.c_str());
     }
 
-    String UI::EntityTypeToIcon(TKClass* Class)
+    String UI::EntityTypeToIcon(ClassMeta* Class)
     {
       String icon                                                   = ICON_FA_CUBE ICON_SPACE;
 

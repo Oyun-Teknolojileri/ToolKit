@@ -33,6 +33,7 @@
 #include <Texture.h>
 #include <ToolKit.h>
 #include <Util.h>
+#include <TKImage.h>
 #include <assert.h>
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/Importer.hpp>
@@ -53,9 +54,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
 
 using std::cout;
 using std::endl;
@@ -1111,7 +1109,7 @@ namespace ToolKit
         else
         {
           unsigned char* buffer = (unsigned char*) texture->pcData;
-          stbi_write_png(filePath.c_str(), texture->mWidth, texture->mHeight, 4, buffer, texture->mWidth * 4);
+          WritePNG(filePath.c_str(), texture->mWidth, texture->mHeight, 4, buffer, texture->mWidth * 4);
         }
       }
     }

@@ -17,7 +17,6 @@
 /ToolKit/Release_Editor
 /Bin
 /.vs
-/.vs
 /Dependency/Glm/out/build/x64-Debug
 /Dependency/ImGui/CMakeChace.txt
 /Editor/x64
@@ -58,4 +57,7 @@ Template/Android/app/build
 .cxx
 Template/Android/local.properties
 Template/Android/app/src/main/assets
+Template/Windows/build/CMakeFiles
 
+Packer/x64
+/Utils/Packer

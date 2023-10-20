@@ -783,9 +783,9 @@ namespace ToolKit
 
   MeshManager::~MeshManager() {}
 
-  bool MeshManager::CanStore(TKClass* Class) { return Class->IsSublcassOf(Mesh::StaticClass()); }
+  bool MeshManager::CanStore(ClassMeta* Class) { return Class->IsSublcassOf(Mesh::StaticClass()); }
 
-  ResourcePtr MeshManager::CreateLocal(TKClass* Class)
+  ResourcePtr MeshManager::CreateLocal(ClassMeta* Class)
   {
     if (Class == Mesh::StaticClass())
     {
@@ -800,5 +800,5 @@ namespace ToolKit
     return nullptr;
   }
 
-  String MeshManager::GetDefaultResource(TKClass* Class) { return MeshPath("Suzanne.mesh", true); }
+  String MeshManager::GetDefaultResource(ClassMeta* Class) { return MeshPath("Suzanne.mesh", true); }
 } // namespace ToolKit

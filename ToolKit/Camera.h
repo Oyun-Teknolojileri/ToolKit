@@ -30,7 +30,6 @@
 
 namespace ToolKit
 {
-
   static VariantCategory CameraCategory {"Camera", 100};
 
   class TK_API Camera : public Entity
