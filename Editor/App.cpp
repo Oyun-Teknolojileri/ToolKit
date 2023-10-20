@@ -1126,12 +1126,12 @@ namespace ToolKit
 
     void App::SaveAllResources()
     {
-      TKClass* types[] = {Material::StaticClass(),
+      ClassMeta* types[] = {Material::StaticClass(),
                           Mesh::StaticClass(),
                           SkinMesh::StaticClass(),
                           Animation::StaticClass()};
 
-      for (TKClass* t : types)
+      for (ClassMeta* t : types)
       {
         for (auto& resource : GetResourceManager(t)->m_storage)
         {

@@ -155,9 +155,9 @@ namespace ToolKit
    public:
     MeshManager();
     virtual ~MeshManager();
-    bool CanStore(TKClass* Class) override;
-    ResourcePtr CreateLocal(TKClass* Class) override;
-    String GetDefaultResource(TKClass* Class) override;
+    bool CanStore(ClassMeta* Class) override;
+    ResourcePtr CreateLocal(ClassMeta* Class) override;
+    String GetDefaultResource(ClassMeta* Class) override;
   };
 
   void SetVertexLayout(VertexLayout layout);

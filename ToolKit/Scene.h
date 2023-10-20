@@ -358,21 +358,21 @@ namespace ToolKit
      * @param t The resource type to check.
      * @return True if the resource type can be stored, false otherwise.
      */
-    bool CanStore(TKClass* Class) override;
+    bool CanStore(ClassMeta* Class) override;
 
     /**
      * Creates a new local resource of the given type.
      * @param type The type of resource to create.
      * @return A pointer to the newly created resource.
      */
-    ResourcePtr CreateLocal(TKClass* Class) override;
+    ResourcePtr CreateLocal(ClassMeta* Class) override;
 
     /**
      * Gets the default resource file path for the given resource type.
      * @param type The resource type.
      * @return The default resource file path.
      */
-    String GetDefaultResource(TKClass* Class) override;
+    String GetDefaultResource(ClassMeta* Class) override;
 
     /**
      * Gets the currently active scene.

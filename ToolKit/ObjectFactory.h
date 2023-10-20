@@ -31,12 +31,11 @@
 #include "Types.h"
 
 #include <type_traits>
-#include <unordered_set>
 
 namespace ToolKit
 {
 
-  class TK_API TKObjectFactory
+  class TK_API ObjectFactory
   {
     friend class Main;
 
@@ -68,26 +67,33 @@ namespace ToolKit
      */
     template <typename T>
     void Register(
-        bool overrideClass                      = false,
-        ObjectConstructorCallback constructorFn = []() -> T* { return new T(); })
+        ObjectConstructorCallback constructorFn = []() -> T* { return new T(); },
+        bool overrideClass                      = false)
     {
-      TKClass* objectClass = T::StaticClass();
+      ClassMeta* objectClass = T::StaticClass();
 
       if (!overrideClass)
       {
         // Sanity check
-        // Check if the same class is already registered
-        // Also checks if two different class TKClass has same HashId
-        if (m_allRegisteredClasses.find(objectClass->HashId) != m_allRegisteredClasses.end())
+        auto classItr = m_allRegisteredClasses.find(objectClass->HashId);
+        if (classItr != m_allRegisteredClasses.end())
         {
-          ToolKit::GetLogger()->Log(
-              LogType::Error,
-              "Trying to Register the same class twice->\tRegistered Class: %s, New Registering Class: %s\n"
-              "Note: If the class names are different please change the class name. ToolKit is generating "
-              "the same hash id for your class and another class.",
-              objectClass->Name.c_str(),
-              m_allRegisteredClasses.find(objectClass->HashId)->second->Name.c_str());
-          assert(false && "Trying to register the same class or two different classes have the same hash ids!");
+          String& clsName = classItr->second->Name;
+          if (clsName == objectClass->Name)
+          {
+            TK_ERR("Registering the same class multiple times: %s", clsName.c_str());
+            assert(false && "Registering the same class multiple times");
+          }
+          else
+          {
+            ToolKit::GetLogger()->Log(LogType::Error,
+                                      "Hash collision between Class: %s and Class: %s",
+                                      objectClass->Name.c_str(),
+                                      clsName.c_str());
+
+            assert(false && "Hash collision.");
+            std::exit(-1);
+          }
         }
       }
 
@@ -117,8 +123,8 @@ namespace ToolKit
     void Override(ObjectConstructorCallback constructorFn = []() -> DerivedCls* { return new DerivedCls(); })
     {
       DerivedCls::StaticClass()->Name = BaseCls::StaticClass()->Name;
-      Register<DerivedCls>(true, constructorFn);
-      Register<BaseCls>(true, constructorFn);
+      Register<DerivedCls>(constructorFn, true);
+      Register<BaseCls>(constructorFn, true);
     }
 
     /**
@@ -171,12 +177,12 @@ namespace ToolKit
     }
 
    private:
-    TKObjectFactory();
-    ~TKObjectFactory();
-    TKObjectFactory(const TKObjectFactory&)            = delete;
-    TKObjectFactory(TKObjectFactory&&)                 = delete;
-    TKObjectFactory& operator=(const TKObjectFactory&) = delete;
-    TKObjectFactory& operator=(TKObjectFactory&&)      = delete;
+    ObjectFactory();
+    ~ObjectFactory();
+    ObjectFactory(const ObjectFactory&)            = delete;
+    ObjectFactory(ObjectFactory&&)                 = delete;
+    ObjectFactory& operator=(const ObjectFactory&) = delete;
+    ObjectFactory& operator=(ObjectFactory&&)      = delete;
 
     /**
      * Registers all the known Object constructors.
@@ -186,7 +192,7 @@ namespace ToolKit
    private:
     std::unordered_map<StringView, ObjectConstructorCallback> m_constructorFnMap;
     ObjectConstructorCallback m_nullFn = nullptr;
-    std::unordered_map<ULongID, TKClass*> m_allRegisteredClasses;
+    std::unordered_map<ULongID, ClassMeta*> m_allRegisteredClasses;
   };
 
   template <typename T, typename... Args>
@@ -194,7 +200,7 @@ namespace ToolKit
   {
     if (Main* main = Main::GetInstance())
     {
-      if (TKObjectFactory* of = main->m_objectFactory)
+      if (ObjectFactory* of = main->m_objectFactory)
       {
         return of->MakeNew<T>(std::forward<Args>(args)...);
       }
@@ -208,7 +214,7 @@ namespace ToolKit
   {
     if (Main* main = Main::GetInstance())
     {
-      if (TKObjectFactory* of = main->m_objectFactory)
+      if (ObjectFactory* of = main->m_objectFactory)
       {
         return std::shared_ptr<T>(of->MakeNew<T>(std::forward<Args>(args)...));
       }
@@ -222,7 +228,7 @@ namespace ToolKit
   {
     if (Main* main = Main::GetInstance())
     {
-      if (TKObjectFactory* of = main->m_objectFactory)
+      if (ObjectFactory* of = main->m_objectFactory)
       {
         return std::shared_ptr<T>(static_cast<T*>(of->MakeNew(Class, std::forward<Args>(args)...)));
       }

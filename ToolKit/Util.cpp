@@ -454,9 +454,9 @@ namespace ToolKit
     return path.substr(i);
   }
 
-  String CreatePathFromResourceType(const String& file, TKClass* Class) { return GetResourcePath(Class) + file; }
+  String CreatePathFromResourceType(const String& file, ClassMeta* Class) { return GetResourcePath(Class) + file; }
 
-  TKClass* GetResourceType(const String& ext)
+  ClassMeta* GetResourceType(const String& ext)
   {
     if (ext == MESH || ext == SKINMESH || SupportedMeshFormat(ext))
     {
@@ -507,7 +507,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  String GetExtFromType(TKClass* Class)
+  String GetExtFromType(ClassMeta* Class)
   {
     if (Class == Animation::StaticClass())
     {
@@ -542,7 +542,7 @@ namespace ToolKit
     return String();
   }
 
-  String GetResourcePath(TKClass* Class)
+  String GetResourcePath(ClassMeta* Class)
   {
     if (Class == Animation::StaticClass())
     {

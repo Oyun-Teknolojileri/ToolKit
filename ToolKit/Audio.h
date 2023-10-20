@@ -61,8 +61,8 @@ namespace ToolKit
     void Stop();
     void Start();
 
-    bool CanStore(TKClass* Class) override;
-    ResourcePtr CreateLocal(TKClass* Class) override;
+    bool CanStore(ClassMeta* Class) override;
+    ResourcePtr CreateLocal(ClassMeta* Class) override;
 
    public:
     void* m_engine = nullptr;

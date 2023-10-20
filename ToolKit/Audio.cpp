@@ -103,9 +103,9 @@ namespace ToolKit
     SafeDel(engine);
   }
 
-  bool AudioManager::CanStore(TKClass* Class) { return Class == Audio::StaticClass(); }
+  bool AudioManager::CanStore(ClassMeta* Class) { return Class == Audio::StaticClass(); }
 
-  ResourcePtr AudioManager::CreateLocal(TKClass* Class) { return MakeNewPtr<Audio>(); }
+  ResourcePtr AudioManager::CreateLocal(ClassMeta* Class) { return MakeNewPtr<Audio>(); }
 
   // AudioSource
   //////////////////////////////////////////////////////////////////////////

@@ -71,7 +71,7 @@ namespace ToolKit
     }
   }
 
-  String ResourceManager::GetDefaultResource(TKClass* Class) { return String(); }
+  String ResourceManager::GetDefaultResource(ClassMeta* Class) { return String(); }
 
   bool ResourceManager::Exist(const String& file) { return m_storage.find(file) != m_storage.end(); }
 
