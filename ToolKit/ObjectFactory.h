@@ -75,18 +75,25 @@ namespace ToolKit
       if (!overrideClass)
       {
         // Sanity check
-        // Check if the same class is already registered
-        // Also checks if two different class TKClass has same HashId
-        if (m_allRegisteredClasses.find(objectClass->HashId) != m_allRegisteredClasses.end())
+        auto classItr = m_allRegisteredClasses.find(objectClass->HashId);
+        if (classItr != m_allRegisteredClasses.end())
         {
-          ToolKit::GetLogger()->Log(
-              LogType::Error,
-              "Trying to Register the same class twice->\tRegistered Class: %s, New Registering Class: %s\n"
-              "Note: If the class names are different please change the class name. ToolKit is generating "
-              "the same hash id for your class and another class.",
-              objectClass->Name.c_str(),
-              m_allRegisteredClasses.find(objectClass->HashId)->second->Name.c_str());
-          std::exit(-1);
+          String& clsName = classItr->second->Name;
+          if (clsName == objectClass->Name)
+          {
+            TK_ERR("Registering the same class multiple times: %s", clsName.c_str());
+            assert(false && "Registering the same class multiple times");
+          }
+          else
+          {
+            ToolKit::GetLogger()->Log(LogType::Error,
+                                      "Hash collision between Class: %s and Class: %s",
+                                      objectClass->Name.c_str(),
+                                      clsName.c_str());
+
+            assert(false && "Hash collision.");
+            std::exit(-1);
+          }
         }
       }
 
