@@ -334,7 +334,6 @@ namespace ToolKit
     void TK_Loop()
     {
       Timing* timer    = &Main::GetInstance()->m_timing;
-      timer->DeltaTime = 0.0f;
 
       while (g_running)
       {
