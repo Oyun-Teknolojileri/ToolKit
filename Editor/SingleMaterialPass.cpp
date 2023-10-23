@@ -48,7 +48,6 @@ namespace ToolKit
 
     void SingleMatForwardRenderPass::Render()
     {
-
       Renderer* renderer      = GetRenderer();
       renderer->m_overrideMat = MakeNewPtr<Material>();
       for (RenderJob& job : m_params.ForwardParams.OpaqueJobs)

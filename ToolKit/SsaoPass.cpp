@@ -36,6 +36,7 @@
 #include "ToolKit.h"
 
 #include <random>
+
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -124,8 +125,11 @@ namespace ToolKit
   {
     Pass::PreRender();
 
-    int width  = m_params.GNormalBuffer->m_width;
-    int height = m_params.GNormalBuffer->m_height;
+    int width           = m_params.GNormalBuffer->m_width;
+    int height          = m_params.GNormalBuffer->m_height;
+
+    // Clamp kernel size
+    m_params.KernelSize = glm::clamp(m_params.KernelSize, m_minimumKernelSize, m_maximumKernelSize);
 
     GenerateSSAONoise();
 
@@ -154,7 +158,7 @@ namespace ToolKit
     m_noiseTexture->Init(&m_ssaoNoise[0]);
 
     m_quadPass->m_params.FrameBuffer      = m_ssaoFramebuffer;
-    m_quadPass->m_params.ClearFrameBuffer = true;
+    m_quadPass->m_params.ClearFrameBuffer = false;
 
     // SSAO fragment shader
     if (!m_ssaoShader)
@@ -162,10 +166,10 @@ namespace ToolKit
       m_ssaoShader = GetShaderManager()->Create<Shader>(ShaderPath("ssaoCalcFrag.shader", true));
     }
 
-    if (m_prevSpread != m_params.spread)
+    if (m_params.KernelSize != m_currentKernelSize || m_prevSpread != m_params.spread)
     {
       // Update kernel
-      for (uint i = 0; i < 64; ++i)
+      for (int i = 0; i < m_params.KernelSize; ++i)
       {
         m_ssaoShader->SetShaderParameter(g_ssaoSamplesStrCache[i], ParameterVariant(m_ssaoKernel[i]));
       }
@@ -175,19 +179,25 @@ namespace ToolKit
 
     m_ssaoShader->SetShaderParameter("screenSize", ParameterVariant(Vec2(width, height)));
     m_ssaoShader->SetShaderParameter("bias", ParameterVariant(m_params.Bias));
+    m_ssaoShader->SetShaderParameter("kernelSize", ParameterVariant(m_params.KernelSize));
     m_ssaoShader->SetShaderParameter("projection", ParameterVariant(m_params.Cam->GetProjectionMatrix()));
     m_ssaoShader->SetShaderParameter("viewMatrix", ParameterVariant(m_params.Cam->GetViewMatrix()));
 
     m_quadPass->m_params.FragmentShader = m_ssaoShader;
   }
 
-  void SSAOPass::PostRender() { Pass::PostRender(); }
+  void SSAOPass::PostRender()
+  {
+    m_currentKernelSize = m_params.KernelSize;
+
+    Pass::PostRender();
+  }
 
   void SSAOPass::GenerateSSAONoise()
   {
-    if (m_ssaoKernel.size() == 0 || m_prevSpread != m_params.spread)
+    if (m_prevSpread != m_params.spread)
     {
-      m_ssaoKernel = GenerateRandomSamplesInHemisphere(64, m_params.spread);
+      GenerateRandomSamplesInHemisphere(m_maximumKernelSize, m_params.spread, m_ssaoKernel);
     }
 
     if (m_ssaoNoise.size() == 0)

@@ -387,7 +387,7 @@ namespace ToolKit
     Vec3 sum(0.0f);
     for (int i = 0; i < n; i++)
     {
-      Vec3 pos = rjVec[i].WorldTransform[3].xyz;
+      Vec3 pos  = rjVec[i].WorldTransform[3].xyz;
       sum      += pos;
     }
     mean      = sum / (float) n;
@@ -396,8 +396,8 @@ namespace ToolKit
     float ssd = 0.0f;
     for (int i = 0; i < n; i++)
     {
-      Vec3 pos  = rjVec[i].WorldTransform[3].xyz;
-      Vec3 diff = pos - mean;
+      Vec3 pos   = rjVec[i].WorldTransform[3].xyz;
+      Vec3 diff  = pos - mean;
       ssd       += glm::dot(diff, diff);
     }
     stdev = std::sqrt(ssd / (float) n);

@@ -27,11 +27,11 @@
 #include "ShadowPass.h"
 
 #include "Camera.h"
+#include "Logger.h"
 #include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "ToolKit.h"
-#include "Logger.h"
 
 namespace ToolKit
 {
@@ -151,12 +151,8 @@ namespace ToolKit
         // Clear the layer if needed
         if (!m_clearedLayers[light->m_shadowAtlasLayer + i])
         {
-          renderer->ClearBuffer(GraphicBitFields::AllBits, m_shadowClearColor);
+          renderer->ClearBuffer(GraphicBitFields::ColorDepthBits, m_shadowClearColor);
           m_clearedLayers[light->m_shadowAtlasLayer + i] = true;
-        }
-        else
-        {
-          renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
         }
 
         light->m_shadowCamera->m_node->SetTranslation(light->m_node->GetTranslation());
@@ -184,12 +180,8 @@ namespace ToolKit
       // Clear the layer if needed
       if (!m_clearedLayers[light->m_shadowAtlasLayer])
       {
-        renderer->ClearBuffer(GraphicBitFields::AllBits, m_shadowClearColor);
+        renderer->ClearBuffer(GraphicBitFields::ColorDepthBits, m_shadowClearColor);
         m_clearedLayers[light->m_shadowAtlasLayer] = true;
-      }
-      else
-      {
-        renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
       }
 
       renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
@@ -199,7 +191,7 @@ namespace ToolKit
 
       renderForShadowMapFn(light, jobs);
     }
-    }
+  }
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights)
   {
@@ -266,15 +258,23 @@ namespace ToolKit
       pointLights[i]->m_shadowAtlasLayer = rects[i].ArrayIndex;
     }
 
+    int pointLightShadowLayerStartIndex = lastLayerOfDirAndSpotLightShadowsUse + 1;
+
     // Adjust point light parameters
+    int pointLightIndex                 = 0;
     for (LightPtr light : pointLights)
     {
-      light->m_shadowAtlasLayer += lastLayerOfDirAndSpotLightShadowsUse + 1;
-      light->m_shadowAtlasLayer *= 6;
-      layerCount                = std::max(light->m_shadowAtlasLayer + 5, layerCount);
+      light->m_shadowAtlasLayer = pointLightShadowLayerStartIndex + pointLightIndex * 6;
+      layerCount                = light->m_shadowAtlasLayer + 6;
+      pointLightIndex++;
     }
 
-    return layerCount + 1;
+    if (pointLights.empty())
+    {
+      layerCount += 1;
+    }
+
+    return layerCount;
   }
 
   void ShadowPass::InitShadowAtlas()

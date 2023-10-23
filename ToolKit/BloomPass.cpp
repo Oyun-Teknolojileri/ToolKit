@@ -88,7 +88,7 @@ namespace ToolKit
 
     // Downsample Pass
     {
-      for (int i = 0; i < m_params.iterationCount; i++)
+      for (int i = 0; i < m_currentIterationCount; i++)
       {
         // Calculate current and previous resolutions
 
@@ -129,7 +129,7 @@ namespace ToolKit
 
       m_upsampleShader->SetShaderParameter("intensity", ParameterVariant(1.0f));
 
-      for (int i = m_params.iterationCount; i > 0; i--)
+      for (int i = m_currentIterationCount; i > 0; i--)
       {
         m_pass->m_params.FragmentShader = m_upsampleShader;
 
@@ -176,45 +176,50 @@ namespace ToolKit
     // Set to minimum iteration count
     Vec2 mainRes = UVec2(mainRt->m_width, mainRt->m_height);
     const IVec2 maxIterCounts(glm::log2(mainRes) - 1.0f);
-    m_params.iterationCount = glm::min(m_params.iterationCount, glm::min(maxIterCounts.x, maxIterCounts.y));
+    int iterationCount = glm::min(m_params.iterationCount, glm::min(maxIterCounts.x, maxIterCounts.y));
 
-    if (m_params.iterationCount < 0)
+    if (iterationCount < 0)
     {
       m_invalidRenderParams = true;
       return;
     }
 
-    m_tempTextures.resize(m_params.iterationCount + 1);
-    m_tempFrameBuffers.resize(m_params.iterationCount + 1);
-
-    for (int i = 0; i < m_params.iterationCount + 1; i++)
+    if (iterationCount != m_currentIterationCount)
     {
-      const Vec2 factor(1.0f / glm::pow(2.0f, float(i)));
-      const UVec2 curRes    = Vec2(mainRes) * factor;
+      m_tempTextures.resize(m_params.iterationCount + 1);
+      m_tempFrameBuffers.resize(m_params.iterationCount + 1);
 
-      m_invalidRenderParams = false;
-      if (curRes.x == 1 || curRes.y == 1)
+      for (int i = 0; i < m_params.iterationCount + 1; i++)
       {
-        m_invalidRenderParams = true;
-        return;
+        const Vec2 factor(1.0f / glm::pow(2.0f, float(i)));
+        const UVec2 curRes    = Vec2(mainRes) * factor;
+
+        m_invalidRenderParams = false;
+        if (curRes.x == 1 || curRes.y == 1)
+        {
+          m_invalidRenderParams = true;
+          return;
+        }
+
+        RenderTargetPtr& rt           = m_tempTextures[i];
+        rt                            = MakeNewPtr<RenderTarget>();
+        rt->m_settings.InternalFormat = GraphicTypes::FormatRGBA16F;
+        rt->m_settings.Format         = GraphicTypes::FormatRGBA;
+        rt->m_settings.Type           = GraphicTypes::TypeFloat;
+        rt->m_settings.MagFilter      = GraphicTypes::SampleLinear;
+        rt->m_settings.MinFilter      = GraphicTypes::SampleLinear;
+        rt->m_settings.WarpR          = GraphicTypes::UVClampToEdge;
+        rt->m_settings.WarpS          = GraphicTypes::UVClampToEdge;
+        rt->m_settings.WarpT          = GraphicTypes::UVClampToEdge;
+        rt->ReconstructIfNeeded(curRes.x, curRes.y);
+
+        FramebufferPtr& fb = m_tempFrameBuffers[i];
+        fb                 = MakeNewPtr<Framebuffer>();
+        fb->ReconstructIfNeeded(curRes.x, curRes.y);
+        fb->SetAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
       }
 
-      RenderTargetPtr& rt           = m_tempTextures[i];
-      rt                            = MakeNewPtr<RenderTarget>();
-      rt->m_settings.InternalFormat = GraphicTypes::FormatRGBA16F;
-      rt->m_settings.Format         = GraphicTypes::FormatRGBA;
-      rt->m_settings.Type           = GraphicTypes::TypeFloat;
-      rt->m_settings.MagFilter      = GraphicTypes::SampleLinear;
-      rt->m_settings.MinFilter      = GraphicTypes::SampleLinear;
-      rt->m_settings.WarpR          = GraphicTypes::UVClampToEdge;
-      rt->m_settings.WarpS          = GraphicTypes::UVClampToEdge;
-      rt->m_settings.WarpT          = GraphicTypes::UVClampToEdge;
-      rt->ReconstructIfNeeded(curRes.x, curRes.y);
-
-      FramebufferPtr& fb = m_tempFrameBuffers[i];
-      fb                 = MakeNewPtr<Framebuffer>();
-      fb->ReconstructIfNeeded(curRes.x, curRes.y);
-      fb->SetAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
+      m_currentIterationCount = iterationCount;
     }
   }
 

@@ -35,7 +35,6 @@
 
 namespace ToolKit
 {
-
   SceneRenderPath::SceneRenderPath()
   {
     m_shadowPass            = MakeNewPtr<ShadowPass>();
@@ -44,7 +43,6 @@ namespace ToolKit
     m_lightingPass          = MakeNewPtr<AdditiveLightingPass>();
     m_skyPass               = MakeNewPtr<CubeMapPass>();
     m_gBufferPass           = MakeNewPtr<GBufferPass>();
-    m_deferredRenderPass    = MakeNewPtr<DeferredRenderPass>();
     m_ssaoPass              = MakeNewPtr<SSAOPass>();
     m_tonemapPass           = MakeNewPtr<TonemapPass>();
     m_fxaaPass              = MakeNewPtr<FXAAPass>();
@@ -57,18 +55,17 @@ namespace ToolKit
 
   SceneRenderPath::~SceneRenderPath()
   {
-    m_shadowPass         = nullptr;
-    m_forwardRenderPass  = nullptr;
-    m_lightingPass       = nullptr;
-    m_skyPass            = nullptr;
-    m_gBufferPass        = nullptr;
-    m_deferredRenderPass = nullptr;
-    m_ssaoPass           = nullptr;
-    m_tonemapPass        = nullptr;
-    m_fxaaPass           = nullptr;
-    m_gammaPass          = nullptr;
-    m_bloomPass          = nullptr;
-    m_dofPass            = nullptr;
+    m_shadowPass        = nullptr;
+    m_forwardRenderPass = nullptr;
+    m_lightingPass      = nullptr;
+    m_skyPass           = nullptr;
+    m_gBufferPass       = nullptr;
+    m_ssaoPass          = nullptr;
+    m_tonemapPass       = nullptr;
+    m_fxaaPass          = nullptr;
+    m_gammaPass         = nullptr;
+    m_bloomPass         = nullptr;
+    m_dofPass           = nullptr;
   }
 
   void SceneRenderPath::Render(Renderer* renderer)
@@ -184,46 +181,40 @@ namespace ToolKit
     RenderJobArray deferred, forward, translucent;
     RenderJobProcessor::SeperateDeferredForward(jobs, deferred, forward, translucent);
 
-    m_gBufferPass->m_params.RendeJobs                 = deferred;
-    m_gBufferPass->m_params.Camera                    = m_params.Cam;
+    m_gBufferPass->m_params.RendeJobs              = deferred;
+    m_gBufferPass->m_params.Camera                 = m_params.Cam;
 
-    m_deferredRenderPass->m_params.ClearFramebuffer   = true;
-    m_deferredRenderPass->m_params.GBufferFramebuffer = m_gBufferPass->m_framebuffer;
-    m_deferredRenderPass->m_params.lights             = m_updatedLights;
-    m_deferredRenderPass->m_params.MainFramebuffer    = m_params.MainFramebuffer;
-    m_deferredRenderPass->m_params.Cam                = m_params.Cam;
-    m_deferredRenderPass->m_params.AOTexture          = m_params.Gfx.SSAOEnabled ? m_ssaoPass->m_ssaoTexture : nullptr;
+    m_forwardRenderPass->m_params.Lights           = m_updatedLights;
+    m_forwardRenderPass->m_params.Cam              = m_params.Cam;
+    m_forwardRenderPass->m_params.gNormalRt        = m_gBufferPass->m_gNormalRt;
+    m_forwardRenderPass->m_params.gLinearRt        = m_gBufferPass->m_gLinearDepthRt;
+    m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
+    m_forwardRenderPass->m_params.gFrameBuffer     = m_gBufferPass->m_framebuffer;
+    m_forwardRenderPass->m_params.SSAOEnabled      = m_params.Gfx.SSAOEnabled;
+    m_forwardRenderPass->m_params.SsaoTexture      = m_ssaoPass->m_ssaoTexture;
+    m_forwardRenderPass->m_params.ClearFrameBuffer = false;
+    m_forwardRenderPass->m_params.OpaqueJobs       = forward;
+    m_forwardRenderPass->m_params.TranslucentJobs  = translucent;
 
-    m_forwardRenderPass->m_params.Lights              = m_updatedLights;
-    m_forwardRenderPass->m_params.Cam                 = m_params.Cam;
-    m_forwardRenderPass->m_params.gNormalRt           = m_gBufferPass->m_gNormalRt;
-    m_forwardRenderPass->m_params.gLinearRt           = m_gBufferPass->m_gLinearDepthRt;
-    m_forwardRenderPass->m_params.FrameBuffer         = m_params.MainFramebuffer;
-    m_forwardRenderPass->m_params.gFrameBuffer        = m_gBufferPass->m_framebuffer;
-    m_forwardRenderPass->m_params.SSAOEnabled         = m_params.Gfx.SSAOEnabled;
-    m_forwardRenderPass->m_params.SsaoTexture         = m_ssaoPass->m_ssaoTexture;
-    m_forwardRenderPass->m_params.ClearFrameBuffer    = false;
-    m_forwardRenderPass->m_params.OpaqueJobs          = forward;
-    m_forwardRenderPass->m_params.TranslucentJobs     = translucent;
+    m_forwardPreProcessPass->m_params              = m_forwardRenderPass->m_params;
 
-    m_forwardPreProcessPass->m_params                 = m_forwardRenderPass->m_params;
+    m_lightingPass->m_params.ClearFramebuffer      = false;
+    m_lightingPass->m_params.GBufferFramebuffer    = m_gBufferPass->m_framebuffer;
+    m_lightingPass->m_params.lights                = m_updatedLights;
+    m_lightingPass->m_params.MainFramebuffer       = m_params.MainFramebuffer;
+    m_lightingPass->m_params.Cam                   = m_params.Cam;
+    m_lightingPass->m_params.AOTexture             = m_params.Gfx.SSAOEnabled ? m_ssaoPass->m_ssaoTexture : nullptr;
 
-    m_lightingPass->m_params.ClearFramebuffer         = false;
-    m_lightingPass->m_params.GBufferFramebuffer       = m_gBufferPass->m_framebuffer;
-    m_lightingPass->m_params.lights                   = m_updatedLights;
-    m_lightingPass->m_params.MainFramebuffer          = m_params.MainFramebuffer;
-    m_lightingPass->m_params.Cam                      = m_params.Cam;
-    m_lightingPass->m_params.AOTexture                = m_params.Gfx.SSAOEnabled ? m_ssaoPass->m_ssaoTexture : nullptr;
-
-    m_ssaoPass->m_params.GNormalBuffer                = m_forwardPreProcessPass->m_normalRt;
-    m_ssaoPass->m_params.GLinearDepthBuffer           = m_forwardPreProcessPass->m_linearDepthRt;
-    m_ssaoPass->m_params.Cam                          = m_params.Cam;
-    m_ssaoPass->m_params.Radius                       = m_params.Gfx.SSAORadius;
-    m_ssaoPass->m_params.spread                       = m_params.Gfx.SSAOSpread;
-    m_ssaoPass->m_params.Bias                         = m_params.Gfx.SSAOBias;
+    m_ssaoPass->m_params.GNormalBuffer             = m_forwardPreProcessPass->m_normalRt;
+    m_ssaoPass->m_params.GLinearDepthBuffer        = m_forwardPreProcessPass->m_linearDepthRt;
+    m_ssaoPass->m_params.Cam                       = m_params.Cam;
+    m_ssaoPass->m_params.Radius                    = m_params.Gfx.SSAORadius;
+    m_ssaoPass->m_params.spread                    = m_params.Gfx.SSAOSpread;
+    m_ssaoPass->m_params.Bias                      = m_params.Gfx.SSAOBias;
+    m_ssaoPass->m_params.KernelSize                = m_params.Gfx.SSAOKernelSize;
 
     // Set CubeMapPass for sky.
-    m_drawSky                                         = false;
+    m_drawSky                                      = false;
     if (m_sky = m_params.Scene->GetSky())
     {
       if (m_drawSky = m_sky->GetDrawSkyVal())

@@ -152,6 +152,7 @@ namespace ToolKit
     void App::Frame(float deltaTime)
     {
       m_deltaTime = deltaTime;
+
       UI::BeginUI();
       UI::ShowUI();
 
@@ -159,8 +160,8 @@ namespace ToolKit
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
-      EditorViewportRawPtrArray viewports;
 
+      EditorViewportRawPtrArray viewports;
       for (Window* wnd : m_windows)
       {
         if (wnd->IsViewport())
@@ -196,6 +197,7 @@ namespace ToolKit
 
       EditorScenePtr scene = GetCurrentScene();
       scene->Update(deltaTime);
+
       UpdateSimulation(deltaTime);
 
       // Render Viewports.

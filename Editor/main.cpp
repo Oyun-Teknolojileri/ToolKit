@@ -206,6 +206,8 @@ namespace ToolKit
           }
           else
           {
+            SDL_GL_MakeCurrent(g_window, g_context);
+
             // Init OpenGl.
             g_proxy->m_renderSys->InitGl(SDL_GL_GetProcAddress,
                                          [](const std::string& msg) -> void
@@ -331,7 +333,7 @@ namespace ToolKit
 
     void TK_Loop()
     {
-      Timing* timer = &Main::GetInstance()->m_timing;
+      Timing* timer    = &Main::GetInstance()->m_timing;
 
       while (g_running)
       {
@@ -350,7 +352,7 @@ namespace ToolKit
           // Update Present imgui windows.
           ImGui::UpdatePlatformWindows();
           ImGui::RenderPlatformWindowsDefault();
-          SDL_GL_MakeCurrent(g_window, g_context);
+
           SDL_GL_SwapWindow(g_window);
 
           ClearPool(); // Clear after consumption.

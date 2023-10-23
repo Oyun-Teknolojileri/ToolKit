@@ -172,7 +172,7 @@ namespace ToolKit
    * Same as GenerateRandomSamplesOnHemisphere() however this version allows
    * samples to be inside the hemisphere.
    */
-  Vec3Array GenerateRandomSamplesInHemisphere(int numSamples, float bias);
+  void GenerateRandomSamplesInHemisphere(int numSamples, float bias, Vec3Array& array);
 
 } // namespace ToolKit
 

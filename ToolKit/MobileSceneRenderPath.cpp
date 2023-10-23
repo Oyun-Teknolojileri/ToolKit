@@ -191,6 +191,7 @@ namespace ToolKit
     m_ssaoPass->m_params.Radius                    = m_params.Gfx.SSAORadius;
     m_ssaoPass->m_params.spread                    = m_params.Gfx.SSAOSpread;
     m_ssaoPass->m_params.Bias                      = m_params.Gfx.SSAOBias;
+    m_ssaoPass->m_params.KernelSize                = m_params.Gfx.SSAOKernelSize;
 
     // Set CubeMapPass for sky.
     m_drawSky                                      = false;

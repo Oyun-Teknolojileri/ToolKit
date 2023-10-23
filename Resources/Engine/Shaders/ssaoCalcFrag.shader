@@ -19,12 +19,11 @@
 
 		uniform vec2 screenSize;
 		uniform mat4 viewMatrix;
-		uniform vec3 samples[64];
+		uniform vec3 samples[128];
 		uniform mat4 projection;
 		uniform float radius;
 		uniform float bias;
-		
-		const int kernelSize = 64;
+		uniform int kernelSize;
 
 		void main()
 		{

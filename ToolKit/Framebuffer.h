@@ -89,7 +89,7 @@ namespace ToolKit
                                   int mip          = 0,
                                   int layer        = -1,
                                   CubemapFace face = CubemapFace::NONE);
-    
+
     DepthTexturePtr GetDepthTexture();
     void AttachDepthTexture(DepthTexturePtr rt);
     RenderTargetPtr GetAttachment(Attachment atc);
@@ -104,6 +104,7 @@ namespace ToolKit
 
     RenderTargetPtr DetachAttachment(Attachment atc);
     void RemoveDepthAttachment();
+
    private:
     void SetDrawBuffers();
     bool IsColorAttachment(Attachment atc);
