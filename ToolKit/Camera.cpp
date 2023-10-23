@@ -76,14 +76,6 @@ namespace ToolKit
     m_ortographic = true;
   }
 
-  Mat4 Camera::GetViewMatrix() const
-  {
-    Mat4 view = m_node->GetTransform();
-    return glm::inverse(view);
-  }
-
-  Mat4 Camera::GetProjectionMatrix() const { return m_projection; }
-
   bool Camera::IsOrtographic() const { return m_ortographic; }
 
   Camera::CamData Camera::GetData() const

@@ -1,12 +1,17 @@
 #pragma once
 
-// TODO make DEFINE macros for CPU profiles for both function range & push-pop
-
 // CPU profile
-#define NOMINMAX
-#include "nvtx3.hpp"
-#undef WriteConsole
-#undef far
+#ifdef TK_CPU_PROFILE
+  #define NOMINMAX
+  #include "nvtx3.hpp"
+  #undef WriteConsole
+  #undef far
+  #define PUSH_CPU_MARKER(msg) nvtxRangePushA(##msg)
+  #define POP_CPU_MARKER()     nvtxRangePop()
+#else
+  #define PUSH_CPU_MARKER(msg)
+  #define POP_CPU_MARKER()
+#endif
 
 // GPU profile
 #ifdef TK_GPU_PROFILE

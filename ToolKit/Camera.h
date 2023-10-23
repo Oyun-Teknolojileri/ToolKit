@@ -57,8 +57,14 @@ namespace ToolKit
     void SetLens(float fov, float aspect, float near, float far);
     void SetLens(float left, float right, float bottom, float top, float near, float far);
 
-    Mat4 GetViewMatrix() const;
-    Mat4 GetProjectionMatrix() const;
+    inline const Mat4& GetViewMatrix() const
+    {
+      Mat4 view = m_node->GetTransform();
+      return glm::inverse(view);
+    }
+
+    inline const Mat4& GetProjectionMatrix() const { return m_projection; }
+
     bool IsOrtographic() const;
 
     CamData GetData() const;

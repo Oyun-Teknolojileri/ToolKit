@@ -73,10 +73,7 @@ namespace ToolKit
       {
         dLight->UpdateShadowFrustum(m_params.RendeJobs);
       }
-      else
-      {
-        light->UpdateShadowCamera();
-      }
+      // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
 
       RenderShadowMaps(light, m_params.RendeJobs);
     }
