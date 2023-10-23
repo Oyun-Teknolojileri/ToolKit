@@ -31,6 +31,7 @@
 #include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -60,6 +61,8 @@ namespace ToolKit
 
   void ShadowPass::Render()
   {
+    PUSH_GPU_MARKER("ShadowPass::Render");
+
     const Vec4 lastClearColor = GetRenderer()->m_clearColor;
 
     // Update shadow maps.
@@ -79,10 +82,14 @@ namespace ToolKit
     }
 
     GetRenderer()->m_clearColor = lastClearColor;
+
+    POP_GPU_MARKER();
   }
 
   void ShadowPass::PreRender()
   {
+    PUSH_GPU_MARKER("ShadowPass::PreRender");
+
     Pass::PreRender();
 
     m_lastOverrideMat = GetRenderer()->m_overrideMat;
@@ -105,12 +112,18 @@ namespace ToolKit
     {
       m_clearedLayers[i] = false;
     }
+
+    POP_GPU_MARKER();
   }
 
   void ShadowPass::PostRender()
   {
+    PUSH_GPU_MARKER("ShadowPas::PostRender");
+
     GetRenderer()->m_overrideMat = m_lastOverrideMat;
     Pass::PostRender();
+
+    POP_GPU_MARKER();
   }
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }

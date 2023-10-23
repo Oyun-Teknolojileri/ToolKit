@@ -30,6 +30,7 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -87,6 +88,8 @@ namespace ToolKit
 
   void GBufferPass::InitGBuffers(int width, int height)
   {
+    PUSH_GPU_MARKER("GBufferPass::InitGBuffers");
+
     bool reInitGBuffers = false;
     if (m_initialized)
     {
@@ -143,6 +146,8 @@ namespace ToolKit
     m_gBufferMaterial->m_fragmentShader = fragmentShader;
 
     m_initialized                       = true;
+
+    POP_GPU_MARKER();
   }
 
   void GBufferPass::UnInitGBuffers()
@@ -167,18 +172,31 @@ namespace ToolKit
 
   void GBufferPass::PreRender()
   {
+    PUSH_GPU_MARKER("GBufferPass::PreRender");
+
     Pass::PreRender();
 
     Renderer* renderer = GetRenderer();
     renderer->ResetTextureSlots();
     renderer->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
     renderer->SetCameraLens(m_params.Camera);
+
+    POP_GPU_MARKER();
   }
 
-  void GBufferPass::PostRender() { Pass::PostRender(); }
+  void GBufferPass::PostRender()
+  {
+    PUSH_GPU_MARKER("GBufferPass::PostRender");
+
+    Pass::PostRender();
+
+    POP_GPU_MARKER();
+  }
 
   void GBufferPass::Render()
   {
+    PUSH_GPU_MARKER("GBufferPass::Render");
+
     Renderer* renderer = GetRenderer();
     for (RenderJob& job : m_params.RendeJobs)
     {
@@ -200,6 +218,8 @@ namespace ToolKit
       renderer->m_overrideMat = m_gBufferMaterial;
       renderer->Render(job, m_params.Camera, {});
     }
+
+    POP_GPU_MARKER();
   }
 
 } // namespace ToolKit

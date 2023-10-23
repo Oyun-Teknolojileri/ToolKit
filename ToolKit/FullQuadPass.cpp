@@ -30,6 +30,7 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -55,16 +56,22 @@ namespace ToolKit
 
   void FullQuadPass::Render()
   {
+    PUSH_GPU_MARKER("FullQuadPass::Render");
+
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer, {0.0f, 0.0f, 0.0f, 1.0f});
 
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs({m_quad}, jobs);
     renderer->Render(jobs, m_camera, {});
+
+    POP_GPU_MARKER();
   }
 
   void FullQuadPass::PreRender()
   {
+    PUSH_GPU_MARKER("FullQuadPass::PreRender");
+
     Pass::PreRender();
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = nullptr;
@@ -79,12 +86,18 @@ namespace ToolKit
     MeshPtr mesh                                = mc->GetMeshVal();
     mesh->m_material                            = m_material;
     mesh->Init();
+
+    POP_GPU_MARKER();
   }
 
   void FullQuadPass::PostRender()
   {
+    PUSH_GPU_MARKER("FullQuadPass::PostRender");
+
     Pass::PostRender();
     GetRenderer()->EnableDepthTest(true);
+
+    POP_GPU_MARKER();
   }
 
 } // namespace ToolKit

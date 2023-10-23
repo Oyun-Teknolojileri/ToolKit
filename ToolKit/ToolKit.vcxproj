@@ -172,6 +172,7 @@
     <ClInclude Include="TKAssert.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="TKImage.h" />
+    <ClInclude Include="TKProfiler.h" />
     <ClInclude Include="TKSocket.h" />
     <ClInclude Include="ToneMapPass.h" />
     <ClInclude Include="AdditiveLightingPass.h" />
@@ -223,7 +224,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\mini_audio\</IncludePath>
+    <IncludePath>$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\mini_audio\;$(SolutionDir)Dependency\NVTX-3.1.0\c\include\nvtx3</IncludePath>
     <LibraryPath>$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib</LibraryPath>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
@@ -253,7 +254,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_GL_CORE_3_2;NDEBUG;TK_DLL_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_GL_ES_3_0;NDEBUG;TK_DLL_EXPORT;TK_GPU_PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/FI "stdafx.h" %(AdditionalOptions)</AdditionalOptions>

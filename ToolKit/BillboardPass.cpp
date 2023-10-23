@@ -27,6 +27,7 @@
 #include "BillboardPass.h"
 
 #include "Entity.h"
+#include "TKProfiler.h"
 
 #include "DebugNew.h"
 
@@ -40,6 +41,8 @@ namespace ToolKit
 
   void BillboardPass::Render()
   {
+    PUSH_GPU_MARKER("BillboardPass::Render");
+
     Renderer* renderer = GetRenderer();
     Viewport* vp       = m_params.Viewport;
 
@@ -71,10 +74,14 @@ namespace ToolKit
 
     renderer->EnableDepthTest(true);
     renderBillboardsFn(m_params.Billboards);
+
+    POP_GPU_MARKER();
   }
 
   void BillboardPass::PreRender()
   {
+    PUSH_GPU_MARKER("BillboardPass::PreRender");
+
     Pass::PreRender();
 
     // Process billboards.
@@ -95,6 +102,8 @@ namespace ToolKit
                   // Return separation condition.
                   return cbb->m_settings.bypassDepthTest;
                 });
+
+    POP_GPU_MARKER();
   }
 
 } // namespace ToolKit

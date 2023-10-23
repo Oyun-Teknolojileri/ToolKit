@@ -30,6 +30,7 @@
 #include "Mesh.h"
 #include "Pass.h"
 #include "Shader.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -49,14 +50,20 @@ namespace ToolKit
 
   void ForwardRenderPass::Render()
   {
+    PUSH_GPU_MARKER("ForwardRenderPass::Render");
+
     RenderOpaque(m_params.OpaqueJobs, m_params.Cam, m_params.Lights);
     RenderTranslucent(m_params.TranslucentJobs, m_params.Cam, m_params.Lights);
+
+    POP_GPU_MARKER();
   }
 
   ForwardRenderPass::~ForwardRenderPass() {}
 
   void ForwardRenderPass::PreRender()
   {
+    PUSH_GPU_MARKER("ForwardRenderPass::PreRender");
+
     Pass::PreRender();
     // Set self data.
     Renderer* renderer = GetRenderer();
@@ -67,14 +74,20 @@ namespace ToolKit
     }
     renderer->SetCameraLens(m_params.Cam);
     renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
+
+    POP_GPU_MARKER();
   }
 
   void ForwardRenderPass::PostRender()
   {
+    PUSH_GPU_MARKER("ForwardRenderPass::PostRender");
+
     Pass::PostRender();
     GetRenderer()->m_overrideMat = nullptr;
     Renderer* renderer           = GetRenderer();
     renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
+
+    POP_GPU_MARKER();
   }
 
   void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)

@@ -28,6 +28,7 @@
 
 #include "Shader.h"
 #include "ShaderReflectionCache.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -53,6 +54,8 @@ namespace ToolKit
 
   void DoFPass::PreRender()
   {
+    PUSH_GPU_MARKER("DoFPass::PreRender");
+
     Pass::PreRender();
     if (m_params.ColorRt == nullptr)
     {
@@ -86,10 +89,14 @@ namespace ToolKit
     m_quadPass->m_params.BlendFunc        = BlendFunction::NONE;
     m_quadPass->m_params.ClearFrameBuffer = false;
     m_quadPass->m_params.FragmentShader   = m_dofShader;
+
+    POP_GPU_MARKER();
   }
 
   void DoFPass::Render()
   {
+    PUSH_GPU_MARKER("DoFPass::Render");
+
     Renderer* renderer = GetRenderer();
     if (m_params.ColorRt == nullptr)
     {
@@ -100,8 +107,15 @@ namespace ToolKit
     renderer->SetTexture(1, m_params.DepthRt->m_textureId);
 
     RenderSubPass(m_quadPass);
+
+    POP_GPU_MARKER();
   }
 
-  void DoFPass::PostRender() { Pass::PostRender(); }
+  void DoFPass::PostRender()
+  {
+    PUSH_GPU_MARKER("DoFPass::PostRender");
+    Pass::PostRender();
+    POP_GPU_MARKER();
+  }
 
 } // namespace ToolKit

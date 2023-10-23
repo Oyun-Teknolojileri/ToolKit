@@ -28,6 +28,7 @@
 
 #include "Shader.h"
 #include "ShaderReflectionCache.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -56,6 +57,8 @@ namespace ToolKit
 
   void BloomPass::Render()
   {
+    PUSH_GPU_MARKER("BloomPass::Render");
+
     RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
 
     if (mainRt == nullptr || m_invalidRenderParams)
@@ -161,10 +164,14 @@ namespace ToolKit
 
       RenderSubPass(m_pass);
     }
+
+    POP_GPU_MARKER();
   }
 
   void BloomPass::PreRender()
   {
+    PUSH_GPU_MARKER("BloomPass::PreRender");
+
     Pass::PreRender();
 
     RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
@@ -221,8 +228,15 @@ namespace ToolKit
 
       m_currentIterationCount = iterationCount;
     }
+
+    POP_GPU_MARKER();
   }
 
-  void BloomPass::PostRender() { Pass::PostRender(); }
+  void BloomPass::PostRender()
+  {
+    PUSH_GPU_MARKER("BloomPass::PostRender");
+    Pass::PostRender();
+    POP_GPU_MARKER();
+  }
 
 } // namespace ToolKit

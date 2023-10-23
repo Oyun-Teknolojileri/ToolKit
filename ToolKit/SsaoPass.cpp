@@ -33,6 +33,7 @@
 #include "Shader.h"
 #include "ShaderReflectionCache.h"
 #include "TKOpenGL.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 #include <random>
@@ -102,6 +103,8 @@ namespace ToolKit
 
   void SSAOPass::Render()
   {
+    PUSH_GPU_MARKER("SSAOPass::Render");
+
     Renderer* renderer = GetRenderer();
 
     // Generate SSAO texture
@@ -119,10 +122,14 @@ namespace ToolKit
 
     // Vertical blur
     renderer->Apply7x1GaussianBlur(m_tempBlurRt, m_ssaoTexture, Y_AXIS, 1.0f / m_ssaoTexture->m_height);
+
+    POP_GPU_MARKER();
   }
 
   void SSAOPass::PreRender()
   {
+    PUSH_GPU_MARKER("SSAOPass::PreRender");
+
     Pass::PreRender();
 
     int width           = m_params.GNormalBuffer->m_width;
@@ -184,13 +191,19 @@ namespace ToolKit
     m_ssaoShader->SetShaderParameter("viewMatrix", ParameterVariant(m_params.Cam->GetViewMatrix()));
 
     m_quadPass->m_params.FragmentShader = m_ssaoShader;
+
+    POP_GPU_MARKER();
   }
 
   void SSAOPass::PostRender()
   {
+    PUSH_GPU_MARKER("SSAOPass::PostRender");
+
     m_currentKernelSize = m_params.KernelSize;
 
     Pass::PostRender();
+
+    POP_GPU_MARKER();
   }
 
   void SSAOPass::GenerateSSAONoise()

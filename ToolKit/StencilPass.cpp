@@ -30,6 +30,7 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -60,6 +61,8 @@ namespace ToolKit
 
   void StencilRenderPass::Render()
   {
+    PUSH_GPU_MARKER("StencilRenderPass::Render");
+
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = m_solidOverrideMaterial;
 
@@ -79,10 +82,14 @@ namespace ToolKit
     RenderSubPass(m_copyStencilSubPass);
 
     renderer->SetStencilOperation(StencilOperation::None);
+
+    POP_GPU_MARKER();
   }
 
   void StencilRenderPass::PreRender()
   {
+    PUSH_GPU_MARKER("StencilRenderPass::PreRender");
+
     Pass::PreRender();
     Renderer* renderer = GetRenderer();
 
@@ -102,8 +109,17 @@ namespace ToolKit
     renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
     renderer->SetFramebuffer(m_frameBuffer, true, Vec4(0.0f));
     renderer->SetCameraLens(m_params.Camera);
+
+    POP_GPU_MARKER();
   }
 
-  void StencilRenderPass::PostRender() { Pass::PostRender(); }
+  void StencilRenderPass::PostRender()
+  {
+    PUSH_GPU_MARKER("StencilRenderPass::PostRender");
+
+    Pass::PostRender();
+
+    POP_GPU_MARKER();
+  }
 
 } // namespace ToolKit
