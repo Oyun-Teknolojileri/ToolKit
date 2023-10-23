@@ -30,8 +30,6 @@
 #include "SDL.h"
 #include "ToolKit.h"
 
-#undef WriteConsole
-
 namespace ToolKit
 {
   // Utility functions for Pooling & Releaseing SDL events for ToolKit.

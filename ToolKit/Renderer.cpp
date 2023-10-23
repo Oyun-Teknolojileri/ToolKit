@@ -483,11 +483,12 @@ namespace ToolKit
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs({quad}, jobs);
 
+    bool lastDepthTestState = m_renderState.depthTestEnabled;
     EnableDepthTest(false);
 
     Render(jobs, quadCam);
 
-    EnableDepthTest(true);
+    EnableDepthTest(lastDepthTestState);
   }
 
   void Renderer::DrawCube(CameraPtr cam, MaterialPtr mat, const Mat4& transform)
