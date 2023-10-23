@@ -72,6 +72,8 @@ namespace ToolKit
     {
       PreRender();
 
+      SetLitMode(renderer, m_params.LitMode);
+
       m_passArray.clear();
       const EngineSettings::PostProcessingSettings& gfx = GetEngineSettings().PostProcessing;
 
