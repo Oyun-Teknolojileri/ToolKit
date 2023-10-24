@@ -75,7 +75,9 @@ namespace ToolKit
   class TK_API RenderJobProcessor
   {
    public:
-    static void CreateRenderJobs(EntityPtrArray entities, RenderJobArray& jobArray, bool ignoreVisibility = false);
+    static void CreateRenderJobs(const EntityPtrArray& entities,
+                                 RenderJobArray& jobArray,
+                                 bool ignoreVisibility = false);
 
     static void SeperateDeferredForward(const RenderJobArray& jobArray,
                                         RenderJobArray& deferred,

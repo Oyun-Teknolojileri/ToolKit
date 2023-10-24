@@ -96,7 +96,7 @@ namespace ToolKit
   void Light::UpdateShadowCamera()
   {
     const Mat4& proj                      = m_shadowCamera->GetProjectionMatrix();
-    const Mat4& view                      = m_shadowCamera->GetViewMatrix();
+    Mat4 view                             = m_shadowCamera->GetViewMatrix();
 
     m_shadowMapCameraProjectionViewMatrix = proj * view;
     m_shadowMapCameraFar                  = m_shadowCamera->Far();

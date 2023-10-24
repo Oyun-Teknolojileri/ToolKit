@@ -63,7 +63,8 @@ namespace ToolKit
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer, {0.0f, 0.0f, 0.0f, 1.0f});
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({m_quad}, jobs);
+    EntityPtrArray oneQuad = {m_quad};
+    RenderJobProcessor::CreateRenderJobs(oneQuad, jobs);
     renderer->Render(jobs, m_camera, {});
 
     POP_CPU_MARKER();

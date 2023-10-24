@@ -69,11 +69,11 @@ namespace ToolKit
 
   TK_API String NormalizePath(String path);
   TK_API void NormalizePathInplace(String& path);
-  
+
   typedef std::function<void(int)> RunPipeCallback;
 
   TK_API int RunPipe(const String& command, RunPipeCallback afterFn);
-  
+
   TK_API void UnixifyPath(String& path);
   TK_API void DosifyPath(String& path);
   TK_API String ConcatPaths(const StringArray& entries);
@@ -222,11 +222,10 @@ namespace ToolKit
     return std::find(arr.cbegin(), arr.cend(), val) != arr.cend();
   }
 
-
-  template<class _Tp, class _Up>
+  template <class _Tp, class _Up>
   inline std::shared_ptr<_Tp> tk_reinterpret_pointer_cast(const std::shared_ptr<_Up>& __r)
   {
-      return std::shared_ptr<_Tp>(__r, reinterpret_cast<_Tp*>(__r.get()));
+    return std::shared_ptr<_Tp>(__r, reinterpret_cast<_Tp*>(__r.get()));
   }
 
   /**
@@ -240,9 +239,12 @@ namespace ToolKit
     auto it = std::find(arr.cbegin(), arr.cend(), val);
     return it == arr.cend() ? -1 : int(it - arr.cbegin());
   }
-  
-  template<typename T, uint64  N>
-  inline constexpr uint64 ArraySize(const T (&)[N]) { return N; }
+
+  template <typename T, uint64 N>
+  inline constexpr uint64 ArraySize(const T (&)[N])
+  {
+    return N;
+  }
 
   //  Time.
   ///////////////////////////////////////////////////////

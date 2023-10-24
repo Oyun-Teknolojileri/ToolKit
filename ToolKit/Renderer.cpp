@@ -487,7 +487,8 @@ namespace ToolKit
     quad->GetMeshComponent()->GetMeshVal()->m_material = mat;
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({quad}, jobs);
+    EntityPtrArray oneQuad = {quad};
+    RenderJobProcessor::CreateRenderJobs(oneQuad, jobs);
 
     bool lastDepthTestState = m_renderState.depthTestEnabled;
     EnableDepthTest(false);
@@ -503,7 +504,8 @@ namespace ToolKit
     m_dummyDrawCube->GetMaterialComponent()->SetFirstMaterial(mat);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({m_dummyDrawCube}, jobs);
+    EntityPtrArray oneDummyDrawCube = {m_dummyDrawCube};
+    RenderJobProcessor::CreateRenderJobs(oneDummyDrawCube, jobs);
     Render(jobs, cam);
   }
 
@@ -690,7 +692,8 @@ namespace ToolKit
       CameraPtr camera = MakeNewPtr<Camera>();
 
       RenderJobArray jobs;
-      RenderJobProcessor::CreateRenderJobs({quad}, jobs);
+      EntityPtrArray oneQuad = {quad};
+      RenderJobProcessor::CreateRenderJobs(oneQuad, jobs);
       Render(jobs, camera, {});
 
       brdfLut->SetFile(TK_BRDF_LUT_TEXTURE);

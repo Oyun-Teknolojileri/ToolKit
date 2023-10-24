@@ -177,20 +177,20 @@ namespace ToolKit
       light->UpdateShadowCamera();
     }
 
-    EntityPtrArray allDrawList = m_params.Scene->GetEntities();
+    const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
-    RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs(allDrawList, jobs);
+    m_jobs.clear();
+    RenderJobProcessor::CreateRenderJobs(allDrawList, m_jobs);
 
-    m_shadowPass->m_params.RendeJobs = jobs;
+    m_shadowPass->m_params.RendeJobs = m_jobs;
     m_shadowPass->m_params.Lights    = m_updatedLights;
 
-    RenderJobProcessor::CullRenderJobs(jobs, m_params.Cam);
+    RenderJobProcessor::CullRenderJobs(m_jobs, m_params.Cam);
 
-    RenderJobProcessor::AssignEnvironment(jobs, m_params.Scene->GetEnvironmentVolumes());
+    RenderJobProcessor::AssignEnvironment(m_jobs, m_params.Scene->GetEnvironmentVolumes());
 
     RenderJobArray deferred, forward, translucent;
-    RenderJobProcessor::SeperateDeferredForward(jobs, deferred, forward, translucent);
+    RenderJobProcessor::SeperateDeferredForward(m_jobs, deferred, forward, translucent);
 
     m_gBufferPass->m_params.RendeJobs              = deferred;
     m_gBufferPass->m_params.Camera                 = m_params.Cam;

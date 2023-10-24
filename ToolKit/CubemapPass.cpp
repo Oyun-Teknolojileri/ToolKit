@@ -51,7 +51,8 @@ namespace ToolKit
     renderer->SetFramebuffer(m_params.FrameBuffer, false);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({m_cube}, jobs);
+    EntityPtrArray oneCube = {m_cube};
+    RenderJobProcessor::CreateRenderJobs(oneCube, jobs);
     renderer->Render(jobs, m_params.Cam);
 
     POP_CPU_MARKER();
