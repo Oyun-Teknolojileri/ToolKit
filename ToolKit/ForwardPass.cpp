@@ -51,10 +51,12 @@ namespace ToolKit
   void ForwardRenderPass::Render()
   {
     PUSH_GPU_MARKER("ForwardRenderPass::Render");
+    PUSH_CPU_MARKER("ForwardRenderPass::Render");
 
     RenderOpaque(m_params.OpaqueJobs, m_params.Cam, m_params.Lights);
     RenderTranslucent(m_params.TranslucentJobs, m_params.Cam, m_params.Lights);
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
@@ -63,6 +65,7 @@ namespace ToolKit
   void ForwardRenderPass::PreRender()
   {
     PUSH_GPU_MARKER("ForwardRenderPass::PreRender");
+    PUSH_CPU_MARKER("ForwardRenderPass::PreRender");
 
     Pass::PreRender();
     // Set self data.
@@ -75,23 +78,28 @@ namespace ToolKit
     renderer->SetCameraLens(m_params.Cam);
     renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void ForwardRenderPass::PostRender()
   {
     PUSH_GPU_MARKER("ForwardRenderPass::PostRender");
+    PUSH_CPU_MARKER("ForwardRenderPass::PostRender");
 
     Pass::PostRender();
     GetRenderer()->m_overrideMat = nullptr;
     Renderer* renderer           = GetRenderer();
     renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)
   {
+    PUSH_CPU_MARKER("ForwardRenderPass::RenderOpaque");
+
     Renderer* renderer = GetRenderer();
 
     if (m_params.SsaoTexture)
@@ -105,10 +113,14 @@ namespace ToolKit
       job.Material->m_fragmentShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.SSAOEnabled));
       renderer->Render(job, m_params.Cam, lightList);
     }
+
+    POP_CPU_MARKER();
   }
 
   void ForwardRenderPass::RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)
   {
+    PUSH_CPU_MARKER("ForwardRenderPass::RenderTranslucent");
+
     RenderJobProcessor::StableSortByDistanceToCamera(jobs, cam);
 
     Renderer* renderer = GetRenderer();
@@ -137,6 +149,8 @@ namespace ToolKit
     {
       renderFnc(job);
     }
+
+    POP_CPU_MARKER();
   }
 
 } // namespace ToolKit

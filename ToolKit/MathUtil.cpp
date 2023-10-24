@@ -32,6 +32,7 @@
 #include "Pass.h"
 #include "ResourceComponent.h"
 #include "Skeleton.h"
+#include "TKProfiler.h"
 
 #include <execution>
 #include <mutex>
@@ -639,10 +640,10 @@ namespace ToolKit
   bool ConePointIntersection(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, Vec3 point)
   {
     // move cone to backwards
-    conePos -= coneDir;
-    Vec3 pointToCone = point - conePos;
-    float angle01    = glm::radians(coneAngle) / glm::pi<float>();
-    float toLength   = glm::length(pointToCone);
+    conePos          -= coneDir;
+    Vec3 pointToCone  = point - conePos;
+    float angle01     = glm::radians(coneAngle) / glm::pi<float>();
+    float toLength    = glm::length(pointToCone);
     // (pointToCone / toLength) for normalization (saved 1 sqrt instruction)
     // 1.4f for checking slightly far away from cone end (for example camera near plane)
     // 0.91f for expanding the cone angle little bit to work correctly (for example camera near plane)
@@ -766,6 +767,8 @@ namespace ToolKit
 
   void FrustumCull(RenderJobArray& jobs, CameraPtr camera)
   {
+    CPU_FUNC_RANGE();
+
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();
     Mat4 v          = camera->GetViewMatrix();

@@ -44,6 +44,7 @@
 #include "Skeleton.h"
 #include "Surface.h"
 #include "TKOpenGL.h"
+#include "TKProfiler.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "UIManager.h"
@@ -159,6 +160,7 @@ namespace ToolKit
 
       SetTexture(2, skel->m_bindPoseTexture->m_textureId);
       SetTexture(3, skCom->m_map->boneTransformNodeTexture->m_textureId);
+
       skCom->m_map->UpdateGPUTexture();
     };
 
@@ -234,6 +236,8 @@ namespace ToolKit
 
   void Renderer::SetRenderState(const RenderState* const state)
   {
+    CPU_FUNC_RANGE();
+
     if (m_renderState.cullMode != state->cullMode)
     {
       if (state->cullMode == CullingType::TwoSided)
@@ -358,6 +362,8 @@ namespace ToolKit
 
   void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color)
   {
+    CPU_FUNC_RANGE();
+
     if (fb != m_framebuffer)
     {
       if (fb != nullptr)
@@ -503,6 +509,8 @@ namespace ToolKit
 
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
   {
+    CPU_FUNC_RANGE();
+
     assert(source->m_width == dest->m_width && source->m_height == dest->m_height &&
            "Sizes of the textures are not the same.");
 
@@ -583,6 +591,8 @@ namespace ToolKit
                                       const Vec3& axis,
                                       const float amount)
   {
+    CPU_FUNC_RANGE();
+
     FramebufferPtr frmBackup = m_framebuffer;
 
     m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
@@ -613,6 +623,8 @@ namespace ToolKit
 
   void Renderer::ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount)
   {
+    CPU_FUNC_RANGE();
+
     FramebufferPtr frmBackup = m_framebuffer;
 
     m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
@@ -767,9 +779,14 @@ namespace ToolKit
 
   void Renderer::FeedUniforms(ProgramPtr program)
   {
+    CPU_FUNC_RANGE();
+
     for (ShaderPtr shader : program->m_shaders)
     {
       shader->UpdateShaderParameters();
+
+      PUSH_CPU_MARKER("Defined Shader Uniforms");
+
       // Built-in variables.
       for (Uniform uni : shader->m_uniforms)
       {
@@ -987,6 +1004,9 @@ namespace ToolKit
         }
       }
 
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("Parameter Defined Shader Uniforms");
+
       // Custom variables.
       for (auto& var : shader->m_shaderParams)
       {
@@ -1030,11 +1050,15 @@ namespace ToolKit
           break;
         }
       }
+
+      POP_CPU_MARKER();
     }
   }
 
   void Renderer::FeedLightUniforms(ProgramPtr program)
   {
+    CPU_FUNC_RANGE();
+
     size_t lightSize = glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
     for (size_t i = 0; i < lightSize; i++)
     {
@@ -1185,6 +1209,8 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture, uint width, uint height, float exposure)
   {
+    CPU_FUNC_RANGE();
+
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
@@ -1255,6 +1281,8 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint width, uint height)
   {
+    CPU_FUNC_RANGE();
+
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
@@ -1323,6 +1351,8 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateSpecularEnvMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps)
   {
+    CPU_FUNC_RANGE();
+
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,

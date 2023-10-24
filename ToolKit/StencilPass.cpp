@@ -62,6 +62,7 @@ namespace ToolKit
   void StencilRenderPass::Render()
   {
     PUSH_GPU_MARKER("StencilRenderPass::Render");
+    PUSH_CPU_MARKER("StencilRenderPass::Render");
 
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = m_solidOverrideMaterial;
@@ -83,12 +84,14 @@ namespace ToolKit
 
     renderer->SetStencilOperation(StencilOperation::None);
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void StencilRenderPass::PreRender()
   {
     PUSH_GPU_MARKER("StencilRenderPass::PreRender");
+    PUSH_CPU_MARKER("StencilRenderPass::PreRender");
 
     Pass::PreRender();
     Renderer* renderer = GetRenderer();
@@ -110,15 +113,18 @@ namespace ToolKit
     renderer->SetFramebuffer(m_frameBuffer, true, Vec4(0.0f));
     renderer->SetCameraLens(m_params.Camera);
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void StencilRenderPass::PostRender()
   {
     PUSH_GPU_MARKER("StencilRenderPass::PostRender");
+    PUSH_CPU_MARKER("StencilRenderPass::PostRender");
 
     Pass::PostRender();
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 

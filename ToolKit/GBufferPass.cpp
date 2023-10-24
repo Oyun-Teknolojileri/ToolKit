@@ -89,6 +89,7 @@ namespace ToolKit
   void GBufferPass::InitGBuffers(int width, int height)
   {
     PUSH_GPU_MARKER("GBufferPass::InitGBuffers");
+    PUSH_CPU_MARKER("GBufferPass::InitGBuffers");
 
     bool reInitGBuffers = false;
     if (m_initialized)
@@ -147,6 +148,7 @@ namespace ToolKit
 
     m_initialized                       = true;
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
@@ -173,6 +175,7 @@ namespace ToolKit
   void GBufferPass::PreRender()
   {
     PUSH_GPU_MARKER("GBufferPass::PreRender");
+    PUSH_CPU_MARKER("GBufferPass::PreRender");
 
     Pass::PreRender();
 
@@ -181,21 +184,25 @@ namespace ToolKit
     renderer->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
     renderer->SetCameraLens(m_params.Camera);
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void GBufferPass::PostRender()
   {
     PUSH_GPU_MARKER("GBufferPass::PostRender");
+    PUSH_CPU_MARKER("GBufferPass::PostRender");
 
     Pass::PostRender();
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void GBufferPass::Render()
   {
     PUSH_GPU_MARKER("GBufferPass::Render");
+    PUSH_CPU_MARKER("GBufferPass::Render");
 
     Renderer* renderer = GetRenderer();
     for (RenderJob& job : m_params.RendeJobs)
@@ -219,6 +226,7 @@ namespace ToolKit
       renderer->Render(job, m_params.Camera, {});
     }
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 

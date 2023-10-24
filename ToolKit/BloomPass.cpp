@@ -58,6 +58,7 @@ namespace ToolKit
   void BloomPass::Render()
   {
     PUSH_GPU_MARKER("BloomPass::Render");
+    PUSH_CPU_MARKER("BloomPass::Render");
 
     RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
 
@@ -165,12 +166,14 @@ namespace ToolKit
       RenderSubPass(m_pass);
     }
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void BloomPass::PreRender()
   {
     PUSH_GPU_MARKER("BloomPass::PreRender");
+    PUSH_CPU_MARKER("BloomPass::PreRender");
 
     Pass::PreRender();
 
@@ -229,13 +232,18 @@ namespace ToolKit
       m_currentIterationCount = iterationCount;
     }
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void BloomPass::PostRender()
   {
     PUSH_GPU_MARKER("BloomPass::PostRender");
+    PUSH_CPU_MARKER("BloomPass::PostRender");
+    
     Pass::PostRender();
+    
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 

@@ -65,6 +65,7 @@ namespace ToolKit
   void AdditiveLightingPass::PreRender()
   {
     PUSH_GPU_MARKER("AdditiveLightingPass::PreRender");
+    PUSH_CPU_MARKER("AdditiveLightingPass::PreRender");
 
     Pass::PreRender();
 
@@ -98,11 +99,14 @@ namespace ToolKit
     m_lightingShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.AOTexture != nullptr));
     renderer->SetTexture(5, m_params.AOTexture ? m_params.AOTexture->m_textureId : 0);
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void AdditiveLightingPass::SetLightUniforms(LightPtr light, int lightType)
   {
+    CPU_FUNC_RANGE();
+
     Vec3 pos = light->m_node->GetTranslation();
     m_lightingShader->SetShaderParameter("lightType", ParameterVariant(lightType));
     m_lightingShader->SetShaderParameter("lightPos", ParameterVariant(pos));
@@ -167,6 +171,7 @@ namespace ToolKit
   void AdditiveLightingPass::Render()
   {
     PUSH_GPU_MARKER("AdditiveLightingPass::Render");
+    PUSH_CPU_MARKER("AdditiveLightingPass::Render");
 
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_lightingFrameBuffer, true, Vec4(0.0f));
@@ -302,13 +307,18 @@ namespace ToolKit
     RenderSubPass(m_fullQuadPass);
     renderer->EnableDepthWrite(true);
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void AdditiveLightingPass::PostRender()
   {
     PUSH_GPU_MARKER("AdditiveLightingPass::PostRender");
+    PUSH_CPU_MARKER("AdditiveLightingPass::PostRender");
+
     Pass::PostRender();
+
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 } // namespace ToolKit

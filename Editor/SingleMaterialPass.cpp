@@ -27,6 +27,7 @@
 #include "SingleMaterialPass.h"
 
 #include "Material.h"
+#include "TKProfiler.h"
 
 #include "DebugNew.h"
 
@@ -48,6 +49,8 @@ namespace ToolKit
 
     void SingleMatForwardRenderPass::Render()
     {
+      PUSH_CPU_MARKER("SingleMatForwardRenderPass::Render");
+
       Renderer* renderer      = GetRenderer();
       renderer->m_overrideMat = MakeNewPtr<Material>();
       for (RenderJob& job : m_params.ForwardParams.OpaqueJobs)
@@ -72,16 +75,22 @@ namespace ToolKit
       RenderTranslucent(m_params.ForwardParams.TranslucentJobs,
                         m_params.ForwardParams.Cam,
                         m_params.ForwardParams.Lights);
+
+      POP_CPU_MARKER();
     }
 
     void SingleMatForwardRenderPass::PreRender()
     {
+      PUSH_CPU_MARKER("SingleMatForwardRenderPass::PreRender");
+
       ForwardRenderPass::m_params = m_params.ForwardParams;
       ForwardRenderPass::PreRender();
 
       m_overrideMat->UnInit();
       m_overrideMat->m_fragmentShader = m_params.OverrideFragmentShader;
       m_overrideMat->Init();
+
+      POP_CPU_MARKER();
     };
 
   } // namespace Editor

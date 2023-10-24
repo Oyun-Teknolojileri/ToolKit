@@ -36,6 +36,7 @@
 #include "Renderer.h"
 #include "ResourceComponent.h"
 #include "ShaderReflectionCache.h"
+#include "TKProfiler.h"
 #include "Toolkit.h"
 #include "Viewport.h"
 
@@ -80,6 +81,8 @@ namespace ToolKit
 
   void RenderJobProcessor::CreateRenderJobs(EntityPtrArray entities, RenderJobArray& jobArray, bool ignoreVisibility)
   {
+    CPU_FUNC_RANGE();
+
     erase_if(entities,
              [ignoreVisibility](EntityPtr ntt) -> bool
              { return !ntt->IsDrawable() || (!ntt->IsVisible() && !ignoreVisibility); });
@@ -153,6 +156,8 @@ namespace ToolKit
                                                    RenderJobArray& forward,
                                                    RenderJobArray& translucent)
   {
+    CPU_FUNC_RANGE();
+
     for (const RenderJob& job : jobArray)
     {
       if (job.Material->IsTranslucent())
@@ -177,6 +182,8 @@ namespace ToolKit
                                                      RenderJobArray& opaque,
                                                      RenderJobArray& translucent)
   {
+    CPU_FUNC_RANGE();
+
     for (const RenderJob& job : jobArray)
     {
       if (job.Material->IsTranslucent())
@@ -205,6 +212,8 @@ namespace ToolKit
 
   LightPtrArray RenderJobProcessor::SortLights(const RenderJob& job, const LightPtrArray& lights)
   {
+    CPU_FUNC_RANGE();
+
     LightPtrArray bestLights;
     if (lights.empty())
     {
@@ -300,6 +309,8 @@ namespace ToolKit
 
   LightPtrArray RenderJobProcessor::SortLights(EntityPtr entity, const LightPtrArray& lights)
   {
+    CPU_FUNC_RANGE();
+
     RenderJobArray jobs;
     CreateRenderJobs({entity}, jobs);
 
@@ -315,6 +326,8 @@ namespace ToolKit
 
   void RenderJobProcessor::StableSortByDistanceToCamera(RenderJobArray& jobArray, const CameraPtr cam)
   {
+    CPU_FUNC_RANGE();
+
     std::function<bool(const RenderJob&, const RenderJob&)> sortFn = [cam](const RenderJob& j1,
                                                                            const RenderJob& j2) -> bool
     {
@@ -350,6 +363,8 @@ namespace ToolKit
 
   void RenderJobProcessor::AssignEnvironment(RenderJobArray& jobArray, const EnvironmentComponentPtrArray& environments)
   {
+    CPU_FUNC_RANGE();
+
     if (environments.empty())
     {
       return;

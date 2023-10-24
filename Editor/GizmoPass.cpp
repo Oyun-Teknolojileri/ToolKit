@@ -29,6 +29,7 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "ResourceComponent.h"
+#include "TKProfiler.h"
 
 #include "DebugNew.h"
 
@@ -52,6 +53,8 @@ namespace ToolKit
 
     void GizmoPass::Render()
     {
+      PUSH_CPU_MARKER("GizmoPass::Render");
+
       Renderer* renderer = GetRenderer();
 
       for (EditorBillboardPtr billboard : m_params.GizmoArray)
@@ -80,10 +83,14 @@ namespace ToolKit
           renderer->Render(jobs, m_camera);
         }
       }
+
+      POP_CPU_MARKER();
     }
 
     void GizmoPass::PreRender()
     {
+      PUSH_CPU_MARKER("GizmoPass::PreRender");
+
       Pass::PreRender();
 
       Renderer* renderer = GetRenderer();
@@ -107,9 +114,16 @@ namespace ToolKit
                                         return false;
                                       }),
                        gizmoArray.end());
+
+      POP_CPU_MARKER();
     }
 
-    void GizmoPass::PostRender() { Pass::PostRender(); }
+    void GizmoPass::PostRender()
+    {
+      PUSH_CPU_MARKER("GizmoPass::PostRender");
+      Pass::PostRender();
+      POP_CPU_MARKER();
+    }
 
   } // namespace Editor
 } // namespace ToolKit

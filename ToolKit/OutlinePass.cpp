@@ -57,6 +57,7 @@ namespace ToolKit
   void OutlinePass::Render()
   {
     PUSH_GPU_MARKER("OutlinePass::Render");
+    PUSH_CPU_MARKER("OutlinePass::Render");
 
     // Generate stencil binary image.
     RenderSubPass(m_stencilPass);
@@ -72,12 +73,14 @@ namespace ToolKit
 
     RenderSubPass(m_outlinePass);
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void OutlinePass::PreRender()
   {
     PUSH_GPU_MARKER("OutlinePass::PreRender");
+    PUSH_CPU_MARKER("OutlinePass::PreRender");
 
     Pass::PreRender();
 
@@ -90,15 +93,18 @@ namespace ToolKit
     m_stencilAsRt->ReconstructIfNeeded(fbs.width, fbs.height);
     m_stencilPass->m_params.OutputTarget = m_stencilAsRt;
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void OutlinePass::PostRender()
   {
     PUSH_GPU_MARKER("OutlinePass::PostRender");
+    PUSH_CPU_MARKER("OutlinePass::PostRender");
 
     Pass::PostRender();
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 

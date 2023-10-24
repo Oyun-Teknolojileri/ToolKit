@@ -58,6 +58,7 @@ namespace ToolKit
   void PostProcessPass::PreRender()
   {
     PUSH_GPU_MARKER("PostProcessPass::PreRender");
+    PUSH_CPU_MARKER("PostProcessPass::PreRender");
 
     Pass::PreRender();
 
@@ -93,24 +94,29 @@ namespace ToolKit
     m_postProcessPass->m_params.FrameBuffer      = m_params.FrameBuffer;
     m_postProcessPass->m_params.ClearFrameBuffer = false;
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void PostProcessPass::Render()
   {
     PUSH_GPU_MARKER("PostProcessPass::Render");
+    PUSH_CPU_MARKER("PostProcessPass::Render");
 
     RenderSubPass(m_postProcessPass);
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void PostProcessPass::PostRender()
   {
     PUSH_GPU_MARKER("PostProcessPass::PostRender");
+    PUSH_CPU_MARKER("PostProcessPass::PostRender");
 
     Pass::PostRender();
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 

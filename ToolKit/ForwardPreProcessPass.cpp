@@ -67,6 +67,7 @@ namespace ToolKit
   void ForwardPreProcess::InitBuffers(uint width, uint height)
   {
     PUSH_GPU_MARKER("ForwardPreProcess::InitBuffers");
+    PUSH_CPU_MARKER("ForwardPreProcess::InitBuffers");
 
     m_framebuffer->Init({width, height, false, false});
     m_framebuffer->ReconstructIfNeeded(width, height);
@@ -90,12 +91,14 @@ namespace ToolKit
       m_framebuffer->AttachDepthTexture(m_depthTexture);
     }
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void ForwardPreProcess::Render()
   {
     PUSH_GPU_MARKER("ForwardPreProcess::Render");
+    PUSH_CPU_MARKER("ForwardPreProcess::Render");
 
     Renderer* renderer                      = GetRenderer();
 
@@ -123,12 +126,14 @@ namespace ToolKit
     // we want SSAO and DOF to effect on opaque objects only
     // renderLinearDepthAndNormalFn(m_params.TranslucentJobs);
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void ForwardPreProcess::PreRender()
   {
     PUSH_GPU_MARKER("ForwardPreProcess::PreRender");
+    PUSH_CPU_MARKER("ForwardPreProcess::PreRender");
 
     RenderPass::PreRender();
 
@@ -148,13 +153,18 @@ namespace ToolKit
 
     renderer->SetCameraLens(m_params.Cam);
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void ForwardPreProcess::PostRender()
   {
     PUSH_GPU_MARKER("ForwardPreProcess::PostRender");
+    PUSH_CPU_MARKER("ForwardPreProcess::PostRender");
+    
     RenderPass::PostRender();
+
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 

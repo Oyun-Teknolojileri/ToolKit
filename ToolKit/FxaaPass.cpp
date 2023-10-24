@@ -46,12 +46,14 @@ namespace ToolKit
   void FXAAPass::PreRender()
   {
     PUSH_GPU_MARKER("FXAAPass::PreRender");
+    PUSH_CPU_MARKER("FXAAPass::PreRender");
 
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
 
     m_postProcessShader->SetShaderParameter("screen_size", ParameterVariant(m_params.screen_size));
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 

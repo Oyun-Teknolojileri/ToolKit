@@ -57,6 +57,7 @@ namespace ToolKit
   void FullQuadPass::Render()
   {
     PUSH_GPU_MARKER("FullQuadPass::Render");
+    PUSH_CPU_MARKER("FullQuadPass::Render");
 
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer, {0.0f, 0.0f, 0.0f, 1.0f});
@@ -65,12 +66,14 @@ namespace ToolKit
     RenderJobProcessor::CreateRenderJobs({m_quad}, jobs);
     renderer->Render(jobs, m_camera, {});
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void FullQuadPass::PreRender()
   {
     PUSH_GPU_MARKER("FullQuadPass::PreRender");
+    PUSH_CPU_MARKER("FullQuadPass::PreRender");
 
     Pass::PreRender();
     Renderer* renderer      = GetRenderer();
@@ -87,16 +90,19 @@ namespace ToolKit
     mesh->m_material                            = m_material;
     mesh->Init();
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void FullQuadPass::PostRender()
   {
     PUSH_GPU_MARKER("FullQuadPass::PostRender");
+    PUSH_CPU_MARKER("FullQuadPass::PostRender");
 
     Pass::PostRender();
     GetRenderer()->EnableDepthTest(true);
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 

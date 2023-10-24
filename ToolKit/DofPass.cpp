@@ -55,6 +55,7 @@ namespace ToolKit
   void DoFPass::PreRender()
   {
     PUSH_GPU_MARKER("DoFPass::PreRender");
+    PUSH_CPU_MARKER("DoFPass::PreRender");
 
     Pass::PreRender();
     if (m_params.ColorRt == nullptr)
@@ -90,12 +91,14 @@ namespace ToolKit
     m_quadPass->m_params.ClearFrameBuffer = false;
     m_quadPass->m_params.FragmentShader   = m_dofShader;
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void DoFPass::Render()
   {
     PUSH_GPU_MARKER("DoFPass::Render");
+    PUSH_CPU_MARKER("DoFPass::Render");
 
     Renderer* renderer = GetRenderer();
     if (m_params.ColorRt == nullptr)
@@ -108,13 +111,18 @@ namespace ToolKit
 
     RenderSubPass(m_quadPass);
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void DoFPass::PostRender()
   {
     PUSH_GPU_MARKER("DoFPass::PostRender");
+    PUSH_CPU_MARKER("DoFPass::PostRender");
+
     Pass::PostRender();
+
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 

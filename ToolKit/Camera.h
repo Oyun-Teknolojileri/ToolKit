@@ -57,7 +57,7 @@ namespace ToolKit
     void SetLens(float fov, float aspect, float near, float far);
     void SetLens(float left, float right, float bottom, float top, float near, float far);
 
-    inline const Mat4& GetViewMatrix() const
+    inline Mat4 GetViewMatrix() const
     {
       Mat4 view = m_node->GetTransform();
       return glm::inverse(view);

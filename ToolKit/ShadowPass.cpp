@@ -62,6 +62,7 @@ namespace ToolKit
   void ShadowPass::Render()
   {
     PUSH_GPU_MARKER("ShadowPass::Render");
+    PUSH_CPU_MARKER("ShadowPass::Render");
 
     const Vec4 lastClearColor = GetRenderer()->m_clearColor;
 
@@ -80,12 +81,14 @@ namespace ToolKit
 
     GetRenderer()->m_clearColor = lastClearColor;
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void ShadowPass::PreRender()
   {
     PUSH_GPU_MARKER("ShadowPass::PreRender");
+    PUSH_CPU_MARKER("ShadowPass::PreRender");
 
     Pass::PreRender();
 
@@ -110,16 +113,19 @@ namespace ToolKit
       m_clearedLayers[i] = false;
     }
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void ShadowPass::PostRender()
   {
     PUSH_GPU_MARKER("ShadowPas::PostRender");
+    PUSH_CPU_MARKER("ShadowPas::PostRender");
 
     GetRenderer()->m_overrideMat = m_lastOverrideMat;
     Pass::PostRender();
 
+    POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
@@ -127,10 +133,13 @@ namespace ToolKit
 
   void ShadowPass::RenderShadowMaps(LightPtr light, const RenderJobArray& jobs)
   {
+    CPU_FUNC_RANGE();
+
     Renderer* renderer        = GetRenderer();
 
     auto renderForShadowMapFn = [this, &renderer](LightPtr light, RenderJobArray jobs) -> void
     {
+      PUSH_CPU_MARKER("Render Call");
       FrustumCull(jobs, light->m_shadowCamera);
 
       renderer->m_overrideMat = light->GetShadowMaterial();
@@ -145,6 +154,8 @@ namespace ToolKit
         renderer->m_overrideMat->Init();
         renderer->Render(job, light->m_shadowCamera);
       }
+
+      POP_CPU_MARKER();
     };
 
     if (light->IsA<PointLight>())
@@ -205,6 +216,8 @@ namespace ToolKit
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights)
   {
+    CPU_FUNC_RANGE();
+
     int layerCount                           = -1;
     int lastLayerOfDirAndSpotLightShadowsUse = -1;
 
@@ -289,6 +302,8 @@ namespace ToolKit
 
   void ShadowPass::InitShadowAtlas()
   {
+    CPU_FUNC_RANGE();
+
     // Check if the shadow atlas needs to be updated
     bool needChange = false;
 
