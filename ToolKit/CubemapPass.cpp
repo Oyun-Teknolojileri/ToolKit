@@ -50,7 +50,8 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, false);
 
-    RenderJobArray jobs;
+    static thread_local RenderJobArray jobs;
+    jobs.clear();
     EntityPtrArray oneCube = {m_cube};
     RenderJobProcessor::CreateRenderJobs(oneCube, jobs);
     renderer->Render(jobs, m_params.Cam);

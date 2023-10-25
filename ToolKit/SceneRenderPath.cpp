@@ -180,7 +180,6 @@ namespace ToolKit
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
     m_jobs.clear();
-
     RenderJobProcessor::CreateRenderJobs(allDrawList, m_jobs);
 
     m_shadowPass->m_params.RendeJobs = m_jobs; // Copy
