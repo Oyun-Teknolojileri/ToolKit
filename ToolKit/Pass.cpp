@@ -99,18 +99,36 @@ namespace ToolKit
       MaterialComponentPtr matComp = ntt->GetMaterialComponent();
       uint matIndex                = 0;
       MeshComponentPtr mc          = ntt->GetMeshComponent();
+      bool castShadow              = mc->GetCastShadowVal();
       MeshPtr parentMesh           = mc->GetMeshVal();
+      Mat4 nttTransform            = ntt->m_node->GetTransform();
+      bool overrideBBoxExists      = false;
+      BoundingBox overrideBBox;
+      if (AABBOverrideComponentPtr bbOverride = ntt->GetComponent<AABBOverrideComponent>())
+      {
+        overrideBBoxExists = true;
+        overrideBBox       = std::move(bbOverride->GetAABB());
+      }
 
-      auto addRenderJobForMeshFn   = [&materialMissing, &matComp, &matIndex, &mc, &ntt, &jobArray](MeshPtr mesh)
+      auto addRenderJobForMeshFn = [&materialMissing,
+                                    &matComp,
+                                    &matIndex,
+                                    &mc,
+                                    &ntt,
+                                    &jobArray,
+                                    &nttTransform,
+                                    overrideBBoxExists,
+                                    &overrideBBox,
+                                    castShadow](MeshPtr mesh)
       {
         if (mesh)
         {
           RenderJob job;
           job.Entity         = ntt;
-          job.WorldTransform = ntt->m_node->GetTransform();
-          if (AABBOverrideComponentPtr bbOverride = ntt->GetComponent<AABBOverrideComponent>())
+          job.WorldTransform = nttTransform;
+          if (overrideBBoxExists)
           {
-            job.BoundingBox = std::move(bbOverride->GetAABB());
+            job.BoundingBox = overrideBBox;
           }
           else
           {
@@ -118,7 +136,7 @@ namespace ToolKit
           }
           TransformAABB(job.BoundingBox, job.WorldTransform);
 
-          job.ShadowCaster = mc->GetCastShadowVal();
+          job.ShadowCaster = castShadow;
           job.Mesh         = mesh.get();
           job.SkeletonCmp  = job.Mesh->IsSkinned() ? ntt->GetComponent<SkeletonComponent>() : nullptr;
 

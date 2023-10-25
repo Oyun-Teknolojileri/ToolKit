@@ -180,19 +180,25 @@ namespace ToolKit
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
     m_jobs.clear();
+
     RenderJobProcessor::CreateRenderJobs(allDrawList, m_jobs);
 
-    m_shadowPass->m_params.RendeJobs = m_jobs;
+    m_shadowPass->m_params.RendeJobs = m_jobs; // Copy
+
     m_shadowPass->m_params.Lights    = m_updatedLights;
 
     RenderJobProcessor::CullRenderJobs(m_jobs, m_params.Cam);
 
     RenderJobProcessor::AssignEnvironment(m_jobs, m_params.Scene->GetEnvironmentVolumes());
 
-    RenderJobArray deferred, forward, translucent;
-    RenderJobProcessor::SeperateDeferredForward(m_jobs, deferred, forward, translucent);
+    m_gBufferPass->m_params.RendeJobs.clear();
+    m_forwardRenderPass->m_params.OpaqueJobs.clear();
+    m_forwardRenderPass->m_params.TranslucentJobs.clear();
+    RenderJobProcessor::SeperateDeferredForward(m_jobs,
+                                                m_gBufferPass->m_params.RendeJobs,
+                                                m_forwardRenderPass->m_params.OpaqueJobs,
+                                                m_forwardRenderPass->m_params.TranslucentJobs);
 
-    m_gBufferPass->m_params.RendeJobs              = deferred;
     m_gBufferPass->m_params.Camera                 = m_params.Cam;
 
     m_forwardRenderPass->m_params.Lights           = m_updatedLights;
@@ -204,8 +210,6 @@ namespace ToolKit
     m_forwardRenderPass->m_params.SSAOEnabled      = m_params.Gfx.SSAOEnabled;
     m_forwardRenderPass->m_params.SsaoTexture      = m_ssaoPass->m_ssaoTexture;
     m_forwardRenderPass->m_params.ClearFrameBuffer = false;
-    m_forwardRenderPass->m_params.OpaqueJobs       = forward;
-    m_forwardRenderPass->m_params.TranslucentJobs  = translucent;
 
     m_forwardPreProcessPass->m_params              = m_forwardRenderPass->m_params;
 
