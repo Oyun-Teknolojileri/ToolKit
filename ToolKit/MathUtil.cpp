@@ -744,14 +744,7 @@ namespace ToolKit
   bool FrustumTest(const Frustum& frustum, const BoundingBox& box)
   {
     IntersectResult res = FrustumBoxIntersection(frustum, box);
-    if (res == IntersectResult::Outside)
-    {
-      return true;
-    }
-    else
-    {
-      return false;
-    }
+    return res == IntersectResult::Outside;
   }
 
   void FrustumCull(EntityRawPtrArray& entities, CameraPtr camera)

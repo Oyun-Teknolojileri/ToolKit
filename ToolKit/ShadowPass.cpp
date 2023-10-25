@@ -24,13 +24,12 @@
  * SOFTWARE.
  */
 
-#include "ShadowPass.h"
-
 #include "Camera.h"
 #include "Logger.h"
 #include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
+#include "ShadowPass.h"
 #include "TKProfiler.h"
 #include "ToolKit.h"
 
@@ -137,14 +136,23 @@ namespace ToolKit
 
     Renderer* renderer        = GetRenderer();
 
-    auto renderForShadowMapFn = [this, &renderer](LightPtr light, RenderJobArray jobs) -> void
+    auto renderForShadowMapFn = [this, &renderer](LightPtr light, const RenderJobArray& jobs) -> void
     {
       PUSH_CPU_MARKER("Render Call");
-      FrustumCull(jobs, light->m_shadowCamera);
+
+      const Mat4& pr          = light->m_shadowCamera->GetProjectionMatrix();
+      const Mat4 v            = light->m_shadowCamera->GetViewMatrix();
+      const Frustum frustum   = ExtractFrustum(pr * v, false);
 
       renderer->m_overrideMat = light->GetShadowMaterial();
-      for (RenderJob& job : jobs)
+      for (const RenderJob& job : jobs)
       {
+        // Frustum cull
+        if (FrustumTest(frustum, job.BoundingBox))
+        {
+          continue;
+        }
+
         MaterialPtr material = job.Material;
         renderer->m_overrideMat->SetRenderState(material->GetRenderState());
         renderer->m_overrideMat->UnInit();
