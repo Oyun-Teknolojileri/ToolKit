@@ -97,7 +97,8 @@ namespace ToolKit
 
     uint GetFboId();
     uint GetDefaultRboId();
-    FramebufferSettings GetSettings();
+
+    inline FramebufferSettings GetSettings() { return m_settings; }
 
     void ReconstructIfNeeded(uint width, uint height);
 

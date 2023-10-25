@@ -52,11 +52,12 @@ namespace ToolKit
 
     auto renderBillboardsFn = [this, cam, renderer](EntityPtrArray& billboards) -> void
     {
-      RenderJobArray jobs;
-      RenderJobProcessor::CreateRenderJobs(billboards, jobs);
+      m_jobs.clear();
+      RenderJobProcessor::CreateRenderJobs(billboards, m_jobs);
 
-      RenderJobArray opaque, translucent;
-      RenderJobProcessor::SeperateOpaqueTranslucent(jobs, opaque, translucent);
+      m_opaque.clear();
+      m_translucent.clear();
+      RenderJobProcessor::SeperateOpaqueTranslucent(m_jobs, m_opaque, m_translucent);
 
       auto renderArrayFn = [cam, renderer](RenderJobArray& jobs) -> void
       {
@@ -66,8 +67,8 @@ namespace ToolKit
         }
       };
 
-      renderArrayFn(opaque);
-      renderArrayFn(translucent);
+      renderArrayFn(m_opaque);
+      renderArrayFn(m_translucent);
     };
 
     renderer->EnableDepthTest(false);

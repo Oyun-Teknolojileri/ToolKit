@@ -242,8 +242,6 @@ namespace ToolKit
 
   uint Framebuffer::GetFboId() { return m_fboId; }
 
-  FramebufferSettings Framebuffer::GetSettings() { return m_settings; }
-
   void Framebuffer::CheckFramebufferComplete()
   {
     CPU_FUNC_RANGE();
