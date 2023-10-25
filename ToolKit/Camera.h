@@ -35,19 +35,6 @@ namespace ToolKit
   class TK_API Camera : public Entity
   {
    public:
-    struct CamData
-    {
-      Vec3 pos;
-      Vec3 dir;
-      Mat4 projection;
-      float fov;
-      float aspect;
-      float nearDist;
-      float far;
-      bool ortographic;
-    };
-
-   public:
     TKDeclareClass(Camera, Entity);
 
     Camera();
@@ -66,8 +53,6 @@ namespace ToolKit
     inline const Mat4& GetProjectionMatrix() const { return m_projection; }
 
     bool IsOrtographic() const;
-
-    CamData GetData() const;
 
     // Tight fit camera frustum to a bounding box with a margin
     void FocusToBoundingBox(const BoundingBox& bb, float margin);

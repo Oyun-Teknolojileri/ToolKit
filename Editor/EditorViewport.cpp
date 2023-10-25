@@ -244,18 +244,18 @@ namespace ToolKit
     {
       // Content area size
 
-      m_contentAreaMin      = ImGui::GetWindowContentRegionMin();
-      m_contentAreaMax      = ImGui::GetWindowContentRegionMax();
+      m_contentAreaMin       = ImGui::GetWindowContentRegionMin();
+      m_contentAreaMax       = ImGui::GetWindowContentRegionMax();
 
-      Vec2 wndPos           = Vec2(ImGui::GetWindowPos());
+      Vec2 wndPos            = Vec2(ImGui::GetWindowPos());
       m_contentAreaMin      += wndPos;
       m_contentAreaMax      += wndPos;
 
-      m_contentAreaLocation = m_contentAreaMin;
+      m_contentAreaLocation  = m_contentAreaMin;
 
-      const Vec2 prevSize   = m_wndContentAreaSize;
+      const Vec2 prevSize    = m_wndContentAreaSize;
 
-      m_wndContentAreaSize  = glm::abs(m_contentAreaMax - m_contentAreaMin);
+      m_wndContentAreaSize   = glm::abs(m_contentAreaMax - m_contentAreaMin);
 
       if (glm::all(glm::epsilonNotEqual(prevSize, m_wndContentAreaSize, 0.001f)))
       {
@@ -449,7 +449,7 @@ namespace ToolKit
         static Vec3 orbitPnt;
         static bool hitFound = false;
         static float dist    = 0.0f;
-        Camera::CamData dat  = cam->GetData();
+        const Vec3 camPos    = cam->m_node->GetTranslation();
         if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
         {
           // Figure out orbiting point.
@@ -474,14 +474,14 @@ namespace ToolKit
                 orbitPnt = pd.pickPos;
               }
               hitFound = true;
-              dist     = glm::distance(orbitPnt, dat.pos);
+              dist     = glm::distance(orbitPnt, camPos);
             }
           }
           else
           {
             hitFound = true;
             orbitPnt = currEntity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-            dist     = glm::distance(orbitPnt, dat.pos);
+            dist     = glm::distance(orbitPnt, camPos);
           }
 
           // Orbit around it.
@@ -497,11 +497,11 @@ namespace ToolKit
                 // Here, mouse delta is transformed to viewport center.
                 Vec3(x + m_wndContentAreaSize.x * 0.5f, y + m_wndContentAreaSize.y * 0.5f, 0.0f),
                 Mat4(),
-                dat.projection,
+                cam->GetProjectionMatrix(),
                 Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));
 
             // Thales ! Reflect imageplane displacement to world space.
-            Vec3 deltaOnWorld = deltaOnImagePlane * dist / dat.nearDist;
+            Vec3 deltaOnWorld = deltaOnImagePlane * dist / cam->Near();
             if (cam->IsOrtographic())
             {
               deltaOnWorld = deltaOnImagePlane;
@@ -563,8 +563,8 @@ namespace ToolKit
         if (m_attachedCamera == NULL_HANDLE)
         {
           // Magic zoom.
-          Camera::CamData dat      = cam->GetData();
-          float dist               = glm::distance(ZERO, dat.pos);
+          const Vec3 camPos        = cam->m_node->GetTranslation();
+          float dist               = glm::distance(ZERO, camPos);
           cam->m_orthographicScale = dist / 600.0f;
         }
       }
@@ -865,7 +865,7 @@ namespace ToolKit
 
       if (meshFound && boxMode)
       {
-        float firstY      = lastDragMeshPos.y;
+        float firstY       = lastDragMeshPos.y;
         lastDragMeshPos.y -= dwMesh->GetAABB(false).min.y;
 
         if (firstY > lastDragMeshPos.y)

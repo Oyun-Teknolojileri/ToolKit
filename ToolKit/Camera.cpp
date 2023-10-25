@@ -78,24 +78,6 @@ namespace ToolKit
 
   bool Camera::IsOrtographic() const { return m_ortographic; }
 
-  Camera::CamData Camera::GetData() const
-  {
-    CamData data;
-    DirectionComponentPtr dcp = GetComponent<DirectionComponent>();
-    assert(dcp);
-    data.dir         = dcp->GetDirection();
-
-    data.pos         = m_node->GetTranslation();
-    data.projection  = m_projection;
-    data.fov         = m_fov;
-    data.aspect      = m_aspect;
-    data.nearDist    = m_near;
-    data.far         = m_far;
-    data.ortographic = m_ortographic;
-
-    return data;
-  }
-
   XmlNode* Camera::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* nttNode = Super::SerializeImp(doc, parent);

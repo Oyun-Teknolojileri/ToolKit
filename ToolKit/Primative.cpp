@@ -50,12 +50,10 @@ namespace ToolKit
 
   void Billboard::LookAt(CameraPtr cam, float scale)
   {
-    Camera::CamData data = cam->GetData();
-
     // Billboard placement.
     if (m_settings.distanceToCamera > 0.0f)
     {
-      if (data.ortographic)
+      if (cam->IsOrtographic())
       {
         m_node->SetTranslation(m_worldLocation);
         if (m_settings.heightInScreenSpace > 0.0f)
@@ -66,8 +64,8 @@ namespace ToolKit
       }
       else
       {
-        Vec3 cdir                    = data.dir;
-        Vec3 camWorldPos             = data.pos;
+        Vec3 cdir                    = cam->GetComponent<DirectionComponent>()->GetDirection();
+        Vec3 camWorldPos             = cam->m_node->GetTranslation();
         Vec3 dir                     = glm::normalize(m_worldLocation - camWorldPos);
 
         // Always place at the same distance from the near plane.

@@ -831,14 +831,15 @@ namespace ToolKit
           if (m_cam == nullptr)
             break;
 
-          Camera::CamData data     = m_cam->GetData();
+          const Vec3 pos           = m_cam->m_node->GetTranslation();
+          const Vec3 dir           = m_cam->GetComponent<DirectionComponent>()->GetDirection();
           String uniformStructName = GetUniformName(Uniform::CAM_DATA);
           GLint loc                = glGetUniformLocation(program->m_handle, (uniformStructName + ".pos").c_str());
-          glUniform3fv(loc, 1, &data.pos.x);
+          glUniform3fv(loc, 1, &pos.x);
           loc = glGetUniformLocation(program->m_handle, (uniformStructName + ".dir").c_str());
-          glUniform3fv(loc, 1, &data.dir.x);
+          glUniform3fv(loc, 1, &dir.x);
           loc = glGetUniformLocation(program->m_handle, (uniformStructName + ".far").c_str());
-          glUniform1f(loc, data.far);
+          glUniform1f(loc, m_cam->Far());
         }
         break;
         case Uniform::COLOR:
