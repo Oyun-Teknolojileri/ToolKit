@@ -86,7 +86,7 @@ namespace ToolKit
 
     m_quadPass->m_params.FrameBuffer->Init({size.x, size.y, false, false});
     m_dofShader->SetShaderParameter("uPixelSize", ParameterVariant(Vec2(1.0f) / Vec2(size)));
-    m_quadPass->m_params.FrameBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.ColorRt);
+    m_quadPass->m_params.FrameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.ColorRt);
     m_quadPass->m_params.BlendFunc        = BlendFunction::NONE;
     m_quadPass->m_params.ClearFrameBuffer = false;
     m_quadPass->m_params.FragmentShader   = m_dofShader;

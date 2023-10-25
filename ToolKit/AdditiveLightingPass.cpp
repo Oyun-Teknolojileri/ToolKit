@@ -84,7 +84,7 @@ namespace ToolKit
 
     m_lightingRt->m_settings          = oneChannelSet;
     m_lightingRt->ReconstructIfNeeded((uint) width, (uint) height);
-    m_lightingFrameBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_lightingRt);
+    m_lightingFrameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_lightingRt);
 
     Renderer* renderer          = GetRenderer();
     // Set gbuffer

@@ -158,7 +158,7 @@ namespace ToolKit
     m_ssaoTexture->m_settings         = oneChannelSet;
     m_ssaoTexture->ReconstructIfNeeded((uint) width, (uint) height);
 
-    m_ssaoFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_ssaoTexture);
+    m_ssaoFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_ssaoTexture);
 
     // Init temporary blur render target
     m_tempBlurRt->m_settings = oneChannelSet;

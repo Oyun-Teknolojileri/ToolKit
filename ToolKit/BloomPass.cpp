@@ -226,7 +226,7 @@ namespace ToolKit
         FramebufferPtr& fb = m_tempFrameBuffers[i];
         fb                 = MakeNewPtr<Framebuffer>();
         fb->ReconstructIfNeeded(curRes.x, curRes.y);
-        fb->SetAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
+        fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
       }
 
       m_currentIterationCount = iterationCount;
@@ -240,9 +240,9 @@ namespace ToolKit
   {
     PUSH_GPU_MARKER("BloomPass::PostRender");
     PUSH_CPU_MARKER("BloomPass::PostRender");
-    
+
     Pass::PostRender();
-    
+
     POP_CPU_MARKER();
     POP_GPU_MARKER();
   }

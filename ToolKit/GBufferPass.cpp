@@ -131,13 +131,13 @@ namespace ToolKit
       m_gMetallicRoughnessRt->Init();
     }
 
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_gPosRt);
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment1, m_gNormalRt);
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment2, m_gColorRt);
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment3, m_gEmissiveRt);
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment4, m_gLinearDepthRt);
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment5, m_gMetallicRoughnessRt);
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment6, m_gIblRt);
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_gPosRt);
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment1, m_gNormalRt);
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment2, m_gColorRt);
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment3, m_gEmissiveRt);
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment4, m_gLinearDepthRt);
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment5, m_gMetallicRoughnessRt);
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment6, m_gIblRt);
 
     // Gbuffer material
     ShaderPtr vertexShader              = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));

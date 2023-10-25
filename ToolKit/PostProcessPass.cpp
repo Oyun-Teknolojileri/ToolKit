@@ -82,7 +82,7 @@ namespace ToolKit
 
     m_copyTexture->ReconstructIfNeeded(fbs.width, fbs.height);
     m_copyBuffer->ReconstructIfNeeded(fbs.width, fbs.height);
-    m_copyBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_copyTexture);
+    m_copyBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_copyTexture);
 
     // Copy given buffer.
     renderer->CopyFrameBuffer(m_params.FrameBuffer, m_copyBuffer, GraphicBitFields::ColorBits);

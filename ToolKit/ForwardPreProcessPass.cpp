@@ -76,11 +76,11 @@ namespace ToolKit
 
     using FAttachment = Framebuffer::Attachment;
 
-    m_framebuffer->DetachAttachment(FAttachment::ColorAttachment0);
-    m_framebuffer->DetachAttachment(FAttachment::ColorAttachment1);
+    m_framebuffer->DetachColorAttachment(FAttachment::ColorAttachment0);
+    m_framebuffer->DetachColorAttachment(FAttachment::ColorAttachment1);
 
-    m_framebuffer->SetAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
-    m_framebuffer->SetAttachment(FAttachment::ColorAttachment1, m_normalRt);
+    m_framebuffer->SetColorAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
+    m_framebuffer->SetColorAttachment(FAttachment::ColorAttachment1, m_normalRt);
     if (m_params.gFrameBuffer)
     {
       m_framebuffer->AttachDepthTexture(m_params.gFrameBuffer->GetDepthTexture());
@@ -161,7 +161,7 @@ namespace ToolKit
   {
     PUSH_GPU_MARKER("ForwardPreProcess::PostRender");
     PUSH_CPU_MARKER("ForwardPreProcess::PostRender");
-    
+
     RenderPass::PostRender();
 
     POP_CPU_MARKER();

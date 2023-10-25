@@ -164,10 +164,10 @@ namespace ToolKit
 
       for (int i = 0; i < 6; ++i)
       {
-        m_shadowFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                           m_shadowAtlas,
-                                           0,
-                                           light->m_shadowAtlasLayer + i);
+        m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                                m_shadowAtlas,
+                                                0,
+                                                light->m_shadowAtlasLayer + i);
 
         // Clear the layer if needed
         if (!m_clearedLayers[light->m_shadowAtlasLayer + i])
@@ -193,10 +193,10 @@ namespace ToolKit
     else if (light->IsA<DirectionalLight>() || light->IsA<SpotLight>())
     {
       renderer->SetFramebuffer(m_shadowFramebuffer, false);
-      m_shadowFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                         m_shadowAtlas,
-                                         0,
-                                         light->m_shadowAtlasLayer);
+      m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                              m_shadowAtlas,
+                                              0,
+                                              light->m_shadowAtlasLayer);
 
       // Clear the layer if needed
       if (!m_clearedLayers[light->m_shadowAtlasLayer])

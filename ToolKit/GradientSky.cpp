@@ -166,7 +166,11 @@ namespace ToolKit
             cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
             cam->m_node->SetScale(sca);
 
-            fb->SetAttachment(Framebuffer::Attachment::ColorAttachment0, cubemap, 0, -1, (Framebuffer::CubemapFace) i);
+            fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                   cubemap,
+                                   0,
+                                   -1,
+                                   (Framebuffer::CubemapFace) i);
 
             renderer->SetFramebuffer(fb, true, Vec4(0.0f));
             renderer->DrawCube(cam, m_skyboxMaterial);
@@ -186,25 +190,23 @@ namespace ToolKit
 
   void GradientSky::GenerateIrradianceCubemap()
   {
-    RenderTask task = {[this](Renderer* renderer) -> void
-                       {
-                         HdriPtr hdr              = GetHdri();
-                         uint irRes               = (uint) GetIrradianceResolutionVal();
+    RenderTask task = {
+        [this](Renderer* renderer) -> void
+        {
+          HdriPtr hdr          = GetHdri();
+          uint irRes           = (uint) GetIrradianceResolutionVal();
 
-                         hdr->m_diffuseEnvMap     = renderer->GenerateDiffuseEnvMap(hdr->m_cubemap, irRes, irRes);
+          hdr->m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(hdr->m_cubemap, irRes, irRes);
 
-                         hdr->m_specularEnvMap =
-                             renderer->GenerateSpecularEnvMap(hdr->m_cubemap,
-                                                                 irRes,
-                                                                 irRes,
-                                                                 Renderer::RHIConstants::specularIBLLods);
+          hdr->m_specularEnvMap =
+              renderer->GenerateSpecularEnvMap(hdr->m_cubemap, irRes, irRes, Renderer::RHIConstants::specularIBLLods);
 
-                         if (m_onInit)
-                         {
-                           m_initialized = true;
-                           m_onInit      = false;
-                         }
-                       }};
+          if (m_onInit)
+          {
+            m_initialized = true;
+            m_onInit      = false;
+          }
+        }};
 
     GetRenderSystem()->AddRenderTask(task);
   }

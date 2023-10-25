@@ -527,7 +527,7 @@ namespace ToolKit
     }
 
     RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dest);
-    m_copyFb->SetAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
+    m_copyFb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
 
     // Set and clear fb
     FramebufferPtr lastFb = m_framebuffer;
@@ -615,7 +615,7 @@ namespace ToolKit
     m_gaussianBlurMaterial->m_fragmentShader->SetShaderParameter("BlurScale", ParameterVariant(axis * amount));
     m_gaussianBlurMaterial->Init();
 
-    m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
+    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
 
     SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
     DrawFullQuad(m_gaussianBlurMaterial);
@@ -648,7 +648,7 @@ namespace ToolKit
 
     m_averageBlurMaterial->Init();
 
-    m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
+    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
 
     SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
     DrawFullQuad(m_averageBlurMaterial);
@@ -676,7 +676,7 @@ namespace ToolKit
       FramebufferPtr utilFramebuffer = MakeNewPtr<Framebuffer>();
       utilFramebuffer->Init(
           {(uint) m_rhiSettings::brdfLutTextureSize, (uint) m_rhiSettings::brdfLutTextureSize, false, false});
-      utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);
+      utilFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);
 
       MaterialPtr material       = MakeNewPtr<Material>();
       material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
@@ -1263,11 +1263,11 @@ namespace ToolKit
       cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam->m_node->SetScale(sca);
 
-      m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                                     cubeMapRt,
-                                                     0,
-                                                     -1,
-                                                     (Framebuffer::CubemapFace) i);
+      m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                                          cubeMapRt,
+                                                          0,
+                                                          -1,
+                                                          (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
       DrawCube(cam, mat);
@@ -1333,11 +1333,11 @@ namespace ToolKit
       cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam->m_node->SetScale(sca);
 
-      m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                                     cubeMapRt,
-                                                     0,
-                                                     -1,
-                                                     (Framebuffer::CubemapFace) i);
+      m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                                          cubeMapRt,
+                                                          0,
+                                                          -1,
+                                                          (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
       DrawCube(cam, mat);
@@ -1418,11 +1418,11 @@ namespace ToolKit
         cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
         cam->m_node->SetScale(sca);
 
-        m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                                       copyCubemapRt,
-                                                       0,
-                                                       -1,
-                                                       (Framebuffer::CubemapFace) i);
+        m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                                            copyCubemapRt,
+                                                            0,
+                                                            -1,
+                                                            (Framebuffer::CubemapFace) i);
 
         frag->SetShaderParameter("roughness", ParameterVariant((float) mip / (float) mipMaps));
         frag->SetShaderParameter("resPerFace", ParameterVariant((float) w));

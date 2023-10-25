@@ -138,12 +138,15 @@ namespace ToolKit
 
   DepthTexturePtr Framebuffer::GetDepthTexture() { return m_depthAtch; }
 
-  RenderTargetPtr Framebuffer::SetAttachment(Attachment atc, RenderTargetPtr rt, int mip, int layer, CubemapFace face)
+  RenderTargetPtr Framebuffer::SetColorAttachment(Attachment atc,
+                                                  RenderTargetPtr rt,
+                                                  int mip,
+                                                  int layer,
+                                                  CubemapFace face)
   {
     CPU_FUNC_RANGE();
 
-    GLenum attachment = GL_DEPTH_ATTACHMENT;
-    attachment        = GL_COLOR_ATTACHMENT0 + (int) atc;
+    GLenum attachment = GL_COLOR_ATTACHMENT0 + (int) atc;
 
     if (rt->m_width <= 0 || rt->m_height <= 0 || rt->m_textureId == 0)
     {
@@ -151,7 +154,7 @@ namespace ToolKit
       return nullptr;
     }
 
-    RenderTargetPtr oldRt = DetachAttachment(atc);
+    RenderTargetPtr oldRt = m_colorAtchs[(int) atc];
 
     GLint lastFBO;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
@@ -207,13 +210,13 @@ namespace ToolKit
     {
       if (m_colorAtchs[i] != nullptr)
       {
-        DetachAttachment((Attachment) i);
+        DetachColorAttachment((Attachment) i);
         m_colorAtchs[i] = nullptr;
       }
     }
   }
 
-  RenderTargetPtr Framebuffer::DetachAttachment(Attachment atc)
+  RenderTargetPtr Framebuffer::DetachColorAttachment(Attachment atc)
   {
     CPU_FUNC_RANGE();
 
@@ -245,12 +248,9 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    GLint lastFBO;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
     GLenum check = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     assert(check == GL_FRAMEBUFFER_COMPLETE && "Framebuffer incomplete");
-    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 
   void Framebuffer::RemoveDepthAttachment()
@@ -280,9 +280,6 @@ namespace ToolKit
 
   void Framebuffer::SetDrawBuffers()
   {
-    GLint lastFBO;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
-
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
 
     GLenum colorAttachments[8] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -304,8 +301,6 @@ namespace ToolKit
     {
       glDrawBuffers(count, colorAttachments);
     }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 
   bool Framebuffer::IsColorAttachment(Attachment atc)

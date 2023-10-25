@@ -104,7 +104,7 @@ namespace ToolKit
 
     m_frameBuffer->Init(settings);
     m_frameBuffer->ReconstructIfNeeded(settings.width, settings.height);
-    m_frameBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.OutputTarget);
+    m_frameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.OutputTarget);
     m_copyStencilSubPass->m_params.FrameBuffer      = m_frameBuffer;
     m_copyStencilSubPass->m_params.ClearFrameBuffer = false;
 
