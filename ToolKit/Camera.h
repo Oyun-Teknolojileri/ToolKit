@@ -57,15 +57,24 @@ namespace ToolKit
     // Tight fit camera frustum to a bounding box with a margin
     void FocusToBoundingBox(const BoundingBox& bb, float margin);
 
-    float Fov() const;
-    float Aspect() const;
-    float Near() const;
-    float Far() const;
-    float Left() const;
-    float Right() const;
-    float Top() const;
-    float Bottom() const;
-    Vec3 Position() const;
+    inline float Fov() const { return m_fov; }
+
+    inline float Aspect() const { return m_aspect; }
+
+    inline float Near() const { return m_near; }
+
+    inline float Far() const { return m_far; }
+
+    inline float Left() const { return m_left; }
+
+    inline float Right() const { return m_right; }
+
+    inline float Top() const { return m_top; }
+
+    inline float Bottom() const { return m_bottom; }
+
+    inline Vec3 Position() const { return m_node->GetTranslation(); }
+
     Vec3 Direction() const;
 
    protected:

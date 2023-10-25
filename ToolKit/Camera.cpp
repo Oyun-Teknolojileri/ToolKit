@@ -183,24 +183,6 @@ namespace ToolKit
     GetComponent<DirectionComponent>()->LookAt(geoCenter);
   }
 
-  float Camera::Fov() const { return m_fov; }
-
-  float Camera::Aspect() const { return m_aspect; }
-
-  float Camera::Near() const { return m_near; }
-
-  float Camera::Far() const { return m_far; }
-
-  float Camera::Left() const { return m_left; }
-
-  float Camera::Right() const { return m_right; }
-
-  float Camera::Top() const { return m_top; }
-
-  float Camera::Bottom() const { return m_bottom; }
-
-  Vec3 Camera::Position() const { return m_node->GetTranslation(); }
-
   Vec3 Camera::Direction() const
   {
     DirectionComponentPtr dcp = GetComponent<DirectionComponent>();
