@@ -24,6 +24,7 @@ namespace ToolKit
   Main* g_proxy                    = nullptr;
   Viewport* g_viewport             = nullptr;
   EngineSettings* g_engineSettings = nullptr;
+  SDLEventPool* g_sdlEventPool     = nullptr;
 
   // Setup.
   const char* g_appName            = "ToolKit";
@@ -335,6 +336,8 @@ namespace ToolKit
 
   void PreInit()
   {
+    g_sdlEventPool = new SDLEventPool();
+
     // PreInit Main
     g_proxy = new Main();
     Main::SetProxy(g_proxy);
@@ -442,6 +445,7 @@ namespace ToolKit
     Main::GetInstance()->Uninit();
     SafeDel(g_proxy);
 
+    SafeDel(g_sdlEventPool);
     SDL_DestroyWindow(g_window);
     SDL_Quit();
 
@@ -475,7 +479,7 @@ namespace ToolKit
       SDL_Event sdlEvent;
       while (SDL_PollEvent(&sdlEvent))
       {
-        PoolEvent(sdlEvent);
+        g_sdlEventPool->PoolEvent(sdlEvent);
         ProcessEvent(sdlEvent);
       }
 
@@ -518,7 +522,7 @@ namespace ToolKit
 
         Render(g_viewport->m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0)->m_textureId);
 
-        ClearPool(); // Clear after consumption.
+        g_sdlEventPool->ClearPool(); // Clear after consumption.
         SDL_GL_SwapWindow(g_window);
 
         timer->frameCount++;
