@@ -75,19 +75,19 @@ namespace ToolKit
 
       // UI pass.
       UILayerPtrArray layers;
-      RenderJobArray uiRenderJobs;
+      m_uiRenderJobs.clear();
       GetUIManager()->GetLayers(m_params.viewport->m_viewportId, layers);
 
       for (const UILayerPtr& layer : layers)
       {
         EntityPtrArray& uiNtties = layer->m_scene->AccessEntityArray();
-        RenderJobProcessor::CreateRenderJobs(uiNtties, uiRenderJobs);
+        RenderJobProcessor::CreateRenderJobs(uiNtties, m_uiRenderJobs);
       }
 
       m_uiPass->m_params.OpaqueJobs.clear();
       m_uiPass->m_params.TranslucentJobs.clear();
 
-      RenderJobProcessor::SeperateOpaqueTranslucent(uiRenderJobs,
+      RenderJobProcessor::SeperateOpaqueTranslucent(m_uiRenderJobs,
                                                     m_uiPass->m_params.OpaqueJobs,
                                                     m_uiPass->m_params.TranslucentJobs);
 
@@ -105,6 +105,7 @@ namespace ToolKit
 
    private:
     ForwardRenderPassPtr m_uiPass = nullptr;
+    RenderJobArray m_uiRenderJobs;
   };
 
   UIRenderTechnique m_uiRenderTechnique;
@@ -343,7 +344,7 @@ namespace ToolKit
     g_sdlEventPool = new SDLEventPool();
 
     // PreInit Main
-    g_proxy = new Main();
+    g_proxy        = new Main();
     Main::SetProxy(g_proxy);
 
     g_proxy->PreInit();
