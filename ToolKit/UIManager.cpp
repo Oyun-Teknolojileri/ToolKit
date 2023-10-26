@@ -131,7 +131,7 @@ namespace ToolKit
     for (EntityPtr ntt : entities)
     {
       // Process events.
-      for (Event* e : events)
+      for (Event& e : events)
       {
         if (!ntt->IsA<Surface>())
         {
@@ -140,8 +140,8 @@ namespace ToolKit
         Surface* surface        = ntt->As<Surface>();
         bool mouseOverPrev      = surface->m_mouseOver;
 
-        surface->m_mouseOver    = CheckMouseOver(surface, e, vp);
-        surface->m_mouseClicked = CheckMouseClick(surface, e, vp);
+        surface->m_mouseOver    = CheckMouseOver(surface, &e, vp);
+        surface->m_mouseClicked = CheckMouseClick(surface, &e, vp);
 
         if (ntt->IsA<Button>())
         {
@@ -153,22 +153,22 @@ namespace ToolKit
 
         if (surface->m_mouseOver && surface->m_onMouseOver)
         {
-          surface->m_onMouseOver(e, ntt);
+          surface->m_onMouseOver(&e, ntt);
         }
 
         if (surface->m_mouseClicked && surface->m_onMouseClick)
         {
-          surface->m_onMouseClick(e, ntt);
+          surface->m_onMouseClick(&e, ntt);
         }
 
         if (!mouseOverPrev && surface->m_mouseOver && surface->m_onMouseEnter)
         {
-          surface->m_onMouseEnter(e, ntt);
+          surface->m_onMouseEnter(&e, ntt);
         }
 
         if (mouseOverPrev && !surface->m_mouseOver && surface->m_onMouseExit)
         {
-          surface->m_onMouseExit(e, ntt);
+          surface->m_onMouseExit(&e, ntt);
         }
       }
     }
