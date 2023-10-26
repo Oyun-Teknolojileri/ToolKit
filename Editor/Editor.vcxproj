@@ -81,7 +81,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_EDITOR;TK_GL_ES_3_0;NDEBUG;GLM_FORCE_SIMD_AVX2;GLM_FORCE_DEFAULT_ALIGNED_GENTYPES;TK_GPU_PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_EDITOR;TK_GL_ES_3_0;NDEBUG;GLM_FORCE_SIMD_AVX2;GLM_FORCE_DEFAULT_ALIGNED_GENTYPES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/FI "stdafx.h" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>

@@ -31,6 +31,7 @@
 #include "Gizmo.h"
 #include "Grid.h"
 #include "Mod.h"
+#include "TKProfiler.h"
 #include "UI.h"
 
 #include <Common/SDLEventPool.h>
@@ -350,6 +351,10 @@ namespace ToolKit
 
       while (g_running)
       {
+        PUSH_CPU_MARKER("Whole Frame");
+
+        PUSH_CPU_MARKER("SDL Poll Event");
+
         SDL_Event sdlEvent;
         while (SDL_PollEvent(&sdlEvent))
         {
@@ -357,18 +362,33 @@ namespace ToolKit
           ProcessEvent(sdlEvent);
         }
 
+        POP_CPU_MARKER();
+
         timer->CurrentTime = GetElapsedMilliSeconds();
         if (timer->CurrentTime > timer->LastTime + timer->DeltaTime)
         {
+          PUSH_CPU_MARKER("App Frame");
+
           g_app->Frame(timer->CurrentTime - timer->LastTime);
+
+          POP_CPU_MARKER();
+          PUSH_CPU_MARKER("Update Imgui Windows");
 
           // Update Present imgui windows.
           ImGui::UpdatePlatformWindows();
           ImGui::RenderPlatformWindowsDefault();
 
+          POP_CPU_MARKER();
+          PUSH_CPU_MARKER("Swap Window");
+
           SDL_GL_SwapWindow(g_window);
 
+          POP_CPU_MARKER();
+          PUSH_CPU_MARKER("Clear SDL Event Pool");
+
           ClearPool(); // Clear after consumption.
+
+          POP_CPU_MARKER();
 
           timer->FrameCount++;
           timer->TimeAccum += timer->CurrentTime - timer->LastTime;
@@ -381,6 +401,8 @@ namespace ToolKit
 
           timer->LastTime = timer->CurrentTime;
         }
+
+        POP_CPU_MARKER();
       }
     }
 
