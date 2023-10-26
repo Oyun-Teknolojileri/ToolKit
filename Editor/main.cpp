@@ -53,11 +53,12 @@ namespace ToolKit
   namespace Editor
   {
 
-    bool g_running          = true;
-    SDL_Window* g_window    = nullptr;
-    SDL_GLContext g_context = nullptr;
-    App* g_app              = nullptr;
-    Main* g_proxy           = nullptr;
+    bool g_running               = true;
+    SDL_Window* g_window         = nullptr;
+    SDL_GLContext g_context      = nullptr;
+    App* g_app                   = nullptr;
+    Main* g_proxy                = nullptr;
+    SDLEventPool* g_sdlEventPool = nullptr;
 
     /*
      * Refactor as below.
@@ -128,8 +129,10 @@ namespace ToolKit
 
     void PreInit()
     {
+      g_sdlEventPool = new SDLEventPool();
+
       // PreInit Main
-      g_proxy = new Main();
+      g_proxy        = new Main();
       Main::SetProxy(g_proxy);
       CreateAppData();
       g_proxy->PreInit();
@@ -305,6 +308,7 @@ namespace ToolKit
       g_proxy->PostUninit();
       SafeDel(g_proxy);
 
+      SafeDel(g_sdlEventPool);
       SDL_DestroyWindow(g_window);
       SDL_Quit();
 
@@ -347,7 +351,6 @@ namespace ToolKit
     void TK_Loop()
     {
       Timing* timer    = &Main::GetInstance()->m_timing;
-      timer->DeltaTime = 0.0f;
 
       while (g_running)
       {
@@ -358,7 +361,7 @@ namespace ToolKit
         SDL_Event sdlEvent;
         while (SDL_PollEvent(&sdlEvent))
         {
-          PoolEvent(sdlEvent);
+          g_sdlEventPool->PoolEvent(sdlEvent);
           ProcessEvent(sdlEvent);
         }
 
@@ -386,7 +389,7 @@ namespace ToolKit
           POP_CPU_MARKER();
           PUSH_CPU_MARKER("Clear SDL Event Pool");
 
-          ClearPool(); // Clear after consumption.
+          g_sdlEventPool->ClearPool(); // Clear after consumption.
 
           POP_CPU_MARKER();
 

@@ -184,7 +184,7 @@ namespace ToolKit
       if (materialMissing)
       {
         TK_WRN("Entity \"%s\" have less material than mesh count! ToolKit uses default material for now.",
-               ntt->GetNameVal());
+               ntt->GetNameVal().c_str());
       }
     }
   }
@@ -289,7 +289,6 @@ namespace ToolKit
       }
     };
 
-    // Stable sort?
     std::sort(lights.begin(), lights.end(), sortLightsFn);
   }
 
