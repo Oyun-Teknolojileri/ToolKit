@@ -168,12 +168,17 @@ namespace ToolKit
         }
       };
 
-      // Add render job for mesh
-      addRenderJobForMeshFn(parentMesh);
-      // Add render jobs for sub-meshes
-      for (MeshPtr submesh : parentMesh->m_subMeshes)
+      static thread_local MeshPtrArray allMeshes;
+      allMeshes.clear();
+      allMeshes.push_back(parentMesh);
+      for (size_t i = 0; i < allMeshes.size(); ++i)
       {
-        addRenderJobForMeshFn(submesh);
+        MeshPtr currentMesh = allMeshes[i];
+        for (MeshPtr submesh : currentMesh->m_subMeshes)
+        {
+          allMeshes.push_back(submesh);
+        }
+        addRenderJobForMeshFn(currentMesh);
       }
 
       if (materialMissing)
