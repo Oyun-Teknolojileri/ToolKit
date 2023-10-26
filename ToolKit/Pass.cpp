@@ -243,104 +243,52 @@ namespace ToolKit
     return (i1.intersectCount > i2.intersectCount);
   }
 
-  LightPtrArray RenderJobProcessor::SortLights(const RenderJob& job, const LightPtrArray& lights)
+  void RenderJobProcessor::SortLights(const RenderJob& job, LightPtrArray& lights)
   {
-    CPU_FUNC_RANGE();
-
-    LightPtrArray bestLights;
-    if (lights.empty())
+    auto sortLightsFn = [](LightPtr light1, LightPtr light2) -> bool
     {
-      return bestLights;
-    }
-
-    bestLights.reserve(lights.size());
-
-    // Find the end of directional lights
-    for (int i = 0; i < lights.size(); i++)
-    {
-      if (lights[i]->IsA<DirectionalLight>())
+      if (light1->IsA<DirectionalLight>())
       {
-        bestLights.push_back(lights[i]);
+        return true;
       }
-    }
-
-    // Add the lights inside of the radius first
-    std::vector<LightSortStruct> intersectCounts(lights.size());
-    BoundingBox aabb = job.Mesh->m_aabb;
-    TransformAABB(aabb, job.WorldTransform);
-
-    for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
-    {
-      float radius;
-      LightPtr light = lights[lightIndx];
-      if (PointLight* pLight = light->As<PointLight>())
+      else if (light2->IsA<DirectionalLight>())
       {
-        radius = pLight->GetRadiusVal();
-      }
-      else if (SpotLight* sLight = light->As<SpotLight>())
-      {
-        radius = sLight->GetRadiusVal();
+        return false;
       }
       else
       {
-        continue;
-      }
+        // TODO: Consider spot light direction too
 
-      intersectCounts[lightIndx].light = light;
-      uint& curIntersectCount          = intersectCounts[lightIndx].intersectCount;
+        float radius1 = 0.0;
+        float radius2 = 0.0;
 
-      /* This algorithms can be used for better sorting
-      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
-      {
-        for (uint isMin = 0; isMin < 2; isMin++)
+        if (light1->IsA<SpotLight>())
         {
-          Vec3 p     = aabb.min;
-          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
-          float dist = glm::length(
-              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
-          if (dist <= radius)
-          {
-            curIntersectCount++;
-          }
+          radius1 = Cast<SpotLight>(light1)->GetRadiusVal();
         }
-      }*/
-
-      if (light->IsA<SpotLight>())
-      {
-        light->UpdateShadowCamera();
-
-        Frustum spotFrustum = ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
-
-        if (FrustumBoxIntersection(spotFrustum, aabb) != IntersectResult::Outside)
+        else // if (light1->IsA<PointLight>())
         {
-          curIntersectCount++;
+          radius1 = Cast<PointLight>(light1)->GetRadiusVal();
         }
-      }
-      if (light->IsA<PointLight>())
-      {
-        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
-        if (SphereBoxIntersection(lightSphere, aabb))
+
+        if (light2->IsA<SpotLight>())
         {
-          curIntersectCount++;
+          radius2 = Cast<SpotLight>(light2)->GetRadiusVal();
         }
+        else // if (light2->IsA<PointLight>())
+        {
+          radius2 = Cast<PointLight>(light1)->GetRadiusVal();
+        }
+
+        return radius1 < radius2;
       }
-    }
+    };
 
-    std::sort(intersectCounts.begin(), intersectCounts.end(), CompareLightIntersects);
-
-    for (uint i = 0; i < intersectCounts.size(); i++)
-    {
-      if (intersectCounts[i].intersectCount == 0)
-      {
-        break;
-      }
-      bestLights.push_back(intersectCounts[i].light);
-    }
-
-    return bestLights;
+    // Stable sort?
+    std::sort(lights.begin(), lights.end(), sortLightsFn);
   }
 
-  LightPtrArray RenderJobProcessor::SortLights(EntityPtr entity, const LightPtrArray& lights)
+  LightPtrArray RenderJobProcessor::SortLights(EntityPtr entity, LightPtrArray& lights)
   {
     CPU_FUNC_RANGE();
 
@@ -351,14 +299,14 @@ namespace ToolKit
     LightPtrArray allLights;
     for (RenderJob& rj : jobs)
     {
-      LightPtrArray la = SortLights(rj, lights);
-      allLights.insert(allLights.end(), la.begin(), la.end());
+      SortLights(rj, lights);
+      allLights.insert(allLights.end(), lights.begin(), lights.end());
     }
 
     return allLights;
   }
 
-  void RenderJobProcessor::StableSortByDistanceToCamera(RenderJobArray& jobArray, const CameraPtr cam)
+  void RenderJobProcessor::SortByDistanceToCamera(RenderJobArray& jobArray, const CameraPtr cam)
   {
     CPU_FUNC_RANGE();
 
@@ -390,7 +338,7 @@ namespace ToolKit
       };
     }
 
-    std::stable_sort(jobArray.begin(), jobArray.end(), sortFn);
+    std::sort(jobArray.begin(), jobArray.end(), sortFn);
   }
 
   void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, CameraPtr camera) { FrustumCull(jobArray, camera); }

@@ -69,7 +69,7 @@ namespace ToolKit
      * @param zoom Zoom amount of camera.
      * @param lights All lights.
      */
-    void RenderOpaque(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights);
+    void RenderOpaque(RenderJobArray& jobs, CameraPtr cam, LightPtrArray& lights);
 
     /**
      * Sorts and renders translucent entities. For double-sided blended entities
@@ -78,7 +78,7 @@ namespace ToolKit
      * @param cam Camera for rendering.
      * @param lights ights All lights.
      */
-    void RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights);
+    void RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, LightPtrArray& lights);
 
    public:
     ForwardRenderPassParams m_params;

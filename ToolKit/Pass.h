@@ -93,13 +93,13 @@ namespace ToolKit
      * best to worst. Make sure lights array has updated shadow camera. Shadow
      * camera is used in culling calculations.
      */
-    static LightPtrArray SortLights(const RenderJob& job, const LightPtrArray& lights);
+    static void SortLights(const RenderJob& job, LightPtrArray& lights);
 
-    static LightPtrArray SortLights(EntityPtr entity, const LightPtrArray& lights);
+    static LightPtrArray SortLights(EntityPtr entity, LightPtrArray& lights);
 
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
-    static void StableSortByDistanceToCamera(RenderJobArray& jobArray, const CameraPtr cam);
+    static void SortByDistanceToCamera(RenderJobArray& jobArray, const CameraPtr cam);
 
     static void CullRenderJobs(RenderJobArray& jobArray, CameraPtr camera);
 

@@ -96,7 +96,7 @@ namespace ToolKit
     POP_GPU_MARKER();
   }
 
-  void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)
+  void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, CameraPtr cam, LightPtrArray& lights)
   {
     PUSH_CPU_MARKER("ForwardRenderPass::RenderOpaque");
 
@@ -109,39 +109,39 @@ namespace ToolKit
 
     for (const RenderJob& job : jobs)
     {
-      LightPtrArray lightList = RenderJobProcessor::SortLights(job, lights);
+      RenderJobProcessor::SortLights(job, lights);
       job.Material->m_fragmentShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.SSAOEnabled));
-      renderer->Render(job, m_params.Cam, lightList);
+      renderer->Render(job, m_params.Cam, lights);
     }
 
     POP_CPU_MARKER();
   }
 
-  void ForwardRenderPass::RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)
+  void ForwardRenderPass::RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, LightPtrArray& lights)
   {
     PUSH_CPU_MARKER("ForwardRenderPass::RenderTranslucent");
 
-    RenderJobProcessor::StableSortByDistanceToCamera(jobs, cam);
+    RenderJobProcessor::SortByDistanceToCamera(jobs, cam);
 
     Renderer* renderer = GetRenderer();
-    auto renderFnc     = [cam, lights, renderer](RenderJob& job)
+    auto renderFnc     = [cam, &lights, renderer](RenderJob& job)
     {
-      LightPtrArray culledLights = RenderJobProcessor::SortLights(job, lights);
+      RenderJobProcessor::SortLights(job, lights);
 
-      MaterialPtr mat            = job.Material;
+      MaterialPtr mat = job.Material;
       if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
       {
         mat->GetRenderState()->cullMode = CullingType::Front;
-        renderer->Render(job, cam, culledLights);
+        renderer->Render(job, cam, lights);
 
         mat->GetRenderState()->cullMode = CullingType::Back;
-        renderer->Render(job, cam, culledLights);
+        renderer->Render(job, cam, lights);
 
         mat->GetRenderState()->cullMode = CullingType::TwoSided;
       }
       else
       {
-        renderer->Render(job, cam, culledLights);
+        renderer->Render(job, cam, lights);
       }
     };
 
