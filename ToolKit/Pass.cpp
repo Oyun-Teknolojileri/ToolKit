@@ -250,7 +250,7 @@ namespace ToolKit
 
   void RenderJobProcessor::SortLights(const RenderJob& job, LightPtrArray& lights)
   {
-    auto sortLightsFn = [](LightPtr light1, LightPtr light2) -> bool
+    auto sortLightsFn = [](const LightPtr light1, const LightPtr light2) -> bool
     {
       if (light1->IsA<DirectionalLight>())
       {
@@ -282,7 +282,7 @@ namespace ToolKit
         }
         else // if (light2->IsA<PointLight>())
         {
-          radius2 = Cast<PointLight>(light1)->GetRadiusVal();
+          radius2 = Cast<PointLight>(light2)->GetRadiusVal();
         }
 
         return radius1 < radius2;
