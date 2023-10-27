@@ -250,46 +250,95 @@ namespace ToolKit
 
   void RenderJobProcessor::SortLights(const RenderJob& job, LightPtrArray& lights)
   {
-    auto sortLightsFn = [](const LightPtr light1, const LightPtr light2) -> bool
+    // Get all directional lights to beginning first
+    uint directionalLightEndIndex = 0;
+    for (size_t i = 0; i < lights.size(); ++i)
     {
-      if (light1->IsA<DirectionalLight>())
+      if (lights[i]->IsA<DirectionalLight>())
       {
-        return true;
+        if (i == directionalLightEndIndex)
+        {
+          directionalLightEndIndex++;
+          continue;
+        }
+
+        std::iter_swap(lights.begin() + i, lights.begin() + directionalLightEndIndex);
+        directionalLightEndIndex++;
       }
-      else if (light2->IsA<DirectionalLight>())
+    }
+
+    static thread_local std::vector<LightSortStruct> intersectCounts;
+    intersectCounts.clear();
+    TK_WRN("%d", intersectCounts.capacity());
+    intersectCounts.resize(lights.size() - directionalLightEndIndex);
+    BoundingBox aabb = job.Mesh->m_aabb;
+    TransformAABB(aabb, job.WorldTransform);
+
+    for (uint lightIndx = directionalLightEndIndex; lightIndx < lights.size(); lightIndx++)
+    {
+      float radius;
+      LightPtr light = lights[lightIndx];
+      if (PointLight* pLight = light->As<PointLight>())
       {
-        return false;
+        radius = pLight->GetRadiusVal();
+      }
+      else if (SpotLight* sLight = light->As<SpotLight>())
+      {
+        radius = sLight->GetRadiusVal();
       }
       else
       {
-        // TODO: Consider spot light direction too
-
-        float radius1 = 0.0;
-        float radius2 = 0.0;
-
-        if (light1->IsA<SpotLight>())
-        {
-          radius1 = Cast<SpotLight>(light1)->GetRadiusVal();
-        }
-        else // if (light1->IsA<PointLight>())
-        {
-          radius1 = Cast<PointLight>(light1)->GetRadiusVal();
-        }
-
-        if (light2->IsA<SpotLight>())
-        {
-          radius2 = Cast<SpotLight>(light2)->GetRadiusVal();
-        }
-        else // if (light2->IsA<PointLight>())
-        {
-          radius2 = Cast<PointLight>(light2)->GetRadiusVal();
-        }
-
-        return radius1 < radius2;
+        continue;
       }
-    };
 
-    std::sort(lights.begin(), lights.end(), sortLightsFn);
+      intersectCounts[lightIndx - directionalLightEndIndex].light = light;
+      uint& curIntersectCount = intersectCounts[lightIndx - directionalLightEndIndex].intersectCount;
+
+      /* This algorithms can be used for better sorting
+      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
+      {
+        for (uint isMin = 0; isMin < 2; isMin++)
+        {
+          Vec3 p     = aabb.min;
+          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
+          float dist = glm::length(
+              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+          if (dist <= radius)
+          {
+            curIntersectCount++;
+          }
+        }
+      }*/
+
+      if (light->IsA<SpotLight>())
+      {
+        // The shadow camera of light should be updated before calling this function
+        // RenderPath PreRender functions should do that
+
+        Frustum spotFrustum = ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
+
+        if (FrustumBoxIntersection(spotFrustum, aabb) != IntersectResult::Outside)
+        {
+          curIntersectCount++;
+        }
+      }
+      if (light->IsA<PointLight>())
+      {
+        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
+        if (SphereBoxIntersection(lightSphere, aabb))
+        {
+          curIntersectCount++;
+        }
+      }
+    }
+
+    // Sort point & spot lights
+    std::sort(intersectCounts.begin(), intersectCounts.end(), CompareLightIntersects);
+
+    for (int i = 0; i < intersectCounts.size(); ++i)
+    {
+      lights[i + directionalLightEndIndex] = intersectCounts[i].light;
+    }
   }
 
   LightPtrArray RenderJobProcessor::SortLights(EntityPtr entity, LightPtrArray& lights)
