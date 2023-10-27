@@ -30,7 +30,6 @@
 #include "EditorScene.h"
 #include "EditorViewport.h"
 #include "Gizmo.h"
-#include "TKProfiler.h"
 
 #include <Camera.h>
 #include <DirectionComponent.h>
@@ -38,6 +37,7 @@
 #include <GradientSky.h>
 #include <Material.h>
 #include <MaterialComponent.h>
+#include <TKProfiler.h>
 #include <UIManager.h>
 
 #include <DebugNew.h>

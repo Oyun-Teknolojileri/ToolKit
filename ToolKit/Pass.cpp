@@ -168,7 +168,7 @@ namespace ToolKit
         }
       };
 
-      static thread_local MeshPtrArray allMeshes;
+      static MeshPtrArray allMeshes;
       allMeshes.clear();
       allMeshes.push_back(parentMesh);
       for (size_t i = 0; i < allMeshes.size(); ++i)
@@ -267,9 +267,8 @@ namespace ToolKit
       }
     }
 
-    static thread_local std::vector<LightSortStruct> intersectCounts;
+    static std::vector<LightSortStruct> intersectCounts;
     intersectCounts.clear();
-    TK_WRN("%d", intersectCounts.capacity());
     intersectCounts.resize(lights.size() - directionalLightEndIndex);
     BoundingBox aabb = job.Mesh->m_aabb;
     TransformAABB(aabb, job.WorldTransform);

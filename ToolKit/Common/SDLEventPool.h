@@ -37,15 +37,15 @@ namespace ToolKit
    public:
     SDLEventPool()
     {
-      for (size_t i = 0; i < m_mouseEventPoolSize; ++i)
+      for (uint64 i = 0; i < m_mouseEventPoolSize; ++i)
       {
         m_mouseEventPool.push_back(new MouseEvent());
       }
-      for (size_t i = 0; i < m_keyboardEventPoolSize; ++i)
+      for (uint64 i = 0; i < m_keyboardEventPoolSize; ++i)
       {
         m_keyboardEventPool.push_back(new KeyboardEvent());
       }
-      for (size_t i = 0; i < m_gamepadEventPoolSize; ++i)
+      for (uint64 i = 0; i < m_gamepadEventPoolSize; ++i)
       {
         m_gamepadEventPool.push_back(new GamepadEvent());
       }
@@ -220,12 +220,12 @@ namespace ToolKit
     }
 
    private:
-    const size_t m_mouseEventPoolSize      = 1024;
-    const size_t m_keyboardEventPoolSize   = 1024;
-    const size_t m_gamepadEventPoolSize    = 1024;
-    size_t m_mouseEventPoolCurrentIndex    = 0;
-    size_t m_keyboardEventPoolCurrentIndex = 0;
-    size_t m_gamepadEventPoolCurrentIndex  = 0;
+    const uint64 m_mouseEventPoolSize      = 1024;
+    const uint64 m_keyboardEventPoolSize   = 1024;
+    const uint64 m_gamepadEventPoolSize    = 1024;
+    uint64 m_mouseEventPoolCurrentIndex    = 0;
+    uint64 m_keyboardEventPoolCurrentIndex = 0;
+    uint64 m_gamepadEventPoolCurrentIndex  = 0;
     std::vector<MouseEvent*> m_mouseEventPool;
     std::vector<KeyboardEvent*> m_keyboardEventPool;
     std::vector<GamepadEvent*> m_gamepadEventPool;

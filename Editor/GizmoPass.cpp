@@ -66,7 +66,7 @@ namespace ToolKit
 
           renderer->ColorMask(false, false, false, false);
 
-          static thread_local RenderJobArray jobs;
+          static RenderJobArray jobs;
           jobs.clear();
           RenderJobProcessor::CreateRenderJobs({m_depthMaskSphere}, jobs);
           renderer->Render(jobs, m_camera);
@@ -79,7 +79,7 @@ namespace ToolKit
         }
         else
         {
-          static thread_local RenderJobArray jobs;
+          static RenderJobArray jobs;
           jobs.clear();
           RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
           renderer->Render(jobs, m_camera);

@@ -157,15 +157,8 @@ namespace ToolKit
       {
 #ifdef TK_GL_CORE_3_2
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-        // gpu performance markers are aveilable on OpenGL ES 3.2 pr OpenGL Core 4.3+
-  #ifdef TK_GPU_PROFILE
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-  #else
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-  #endif
 
 #elif defined(TK_GL_ES_3_0)
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
@@ -350,7 +343,7 @@ namespace ToolKit
 
     void TK_Loop()
     {
-      Timing* timer    = &Main::GetInstance()->m_timing;
+      Timing* timer = &Main::GetInstance()->m_timing;
 
       while (g_running)
       {

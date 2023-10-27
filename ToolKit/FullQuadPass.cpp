@@ -62,7 +62,7 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer, {0.0f, 0.0f, 0.0f, 1.0f});
 
-    static thread_local RenderJobArray jobs;
+    static RenderJobArray jobs;
     jobs.clear();
     EntityPtrArray oneQuad = {m_quad};
     RenderJobProcessor::CreateRenderJobs(oneQuad, jobs);

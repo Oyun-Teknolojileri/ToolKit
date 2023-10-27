@@ -486,7 +486,7 @@ namespace ToolKit
     static QuadPtr quad                                = MakeNewPtr<Quad>();
     quad->GetMeshComponent()->GetMeshVal()->m_material = mat;
 
-    static thread_local RenderJobArray jobs;
+    static RenderJobArray jobs;
     jobs.clear();
     EntityPtrArray oneQuad = {quad};
     RenderJobProcessor::CreateRenderJobs(oneQuad, jobs);
@@ -504,7 +504,7 @@ namespace ToolKit
     m_dummyDrawCube->m_node->SetTransform(transform);
     m_dummyDrawCube->GetMaterialComponent()->SetFirstMaterial(mat);
 
-    static thread_local RenderJobArray jobs;
+    static RenderJobArray jobs;
     jobs.clear();
     EntityPtrArray oneDummyDrawCube = {m_dummyDrawCube};
     RenderJobProcessor::CreateRenderJobs(oneDummyDrawCube, jobs);
