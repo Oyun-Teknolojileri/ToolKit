@@ -159,7 +159,7 @@ namespace ToolKit
        * @Class is the Class type to query font for.
        * @return FontAwesome string (icon) from any given entity class.
        */
-      static String EntityTypeToIcon(TKClass* Class); //!< Returns
+      static String EntityTypeToIcon(ClassMeta* Class); //!< Returns
       static void ShowEntityTreeNodeContent(EntityPtr ntt);
 
       /**

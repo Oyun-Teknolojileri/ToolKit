@@ -36,7 +36,7 @@
 namespace ToolKit
 {
 
-  TK_API extern class ResourceManager* GetResourceManager(TKClass* Class);
+  TK_API extern class ResourceManager* GetResourceManager(ClassMeta* Class);
 
   class TK_API ResourceManager
   {
@@ -46,8 +46,8 @@ namespace ToolKit
     virtual void Init();
     virtual void Uninit();
     virtual void Manage(ResourcePtr resource);
-    virtual bool CanStore(TKClass* Class) = 0;
-    virtual String GetDefaultResource(TKClass* Class);
+    virtual bool CanStore(ClassMeta* Class) = 0;
+    virtual String GetDefaultResource(ClassMeta* Class);
 
     ResourceManager(const ResourceManager&) = delete;
     void operator=(const ResourceManager&)  = delete;
@@ -98,11 +98,11 @@ namespace ToolKit
 
     bool Exist(const String& file);
     ResourcePtr Remove(const String& file);
-    virtual ResourcePtr CreateLocal(TKClass* Class) = 0;
+    virtual ResourcePtr CreateLocal(ClassMeta* Class) = 0;
 
    public:
     std::unordered_map<String, ResourcePtr> m_storage;
-    TKClass* m_baseType = nullptr;
+    ClassMeta* m_baseType = nullptr;
   };
 
 } // namespace ToolKit

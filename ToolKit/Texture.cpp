@@ -421,27 +421,27 @@ namespace ToolKit
     // Only ready after cubemap constructed and irradiance calculated.
     m_initiated     = false;
 
-    RenderTask task = {
-        [this, flushClientSideArray](Renderer* renderer) -> void
-        {
-          // Convert hdri image to cubemap images.
-          m_cubemap = renderer->GenerateCubemapFrom2DTexture(GetTextureManager()->Create<Texture>(GetFile()),
-                                                             m_width / 4,
-                                                             m_width / 4,
-                                                             1.0f);
+    RenderTask task = {[this, flushClientSideArray](Renderer* renderer) -> void
+                       {
+                         // Convert hdri image to cubemap images.
+                         m_cubemap =
+                             renderer->GenerateCubemapFrom2DTexture(GetTextureManager()->Create<Texture>(GetFile()),
+                                                                    m_width / 4,
+                                                                    m_width / 4,
+                                                                    1.0f);
 
-          const int specularEnvMapSize = m_specularIBLTextureSize;
-          // Pre-filtered and mip mapped environment map
-          m_specularEnvMap             = renderer->GenerateSpecularEnvMap(m_cubemap,
-                                                              specularEnvMapSize,
-                                                              specularEnvMapSize,
-                                                              Renderer::RHIConstants::SpecularIBLLods);
+                         const int specularEnvMapSize = m_specularIBLTextureSize;
+                         // Pre-filtered and mip mapped environment map
+                         m_specularEnvMap             = renderer->GenerateSpecularEnvMap(m_cubemap,
+                                                                             specularEnvMapSize,
+                                                                             specularEnvMapSize,
+                                                                             Renderer::RHIConstants::SpecularIBLLods);
 
-          // Generate diffuse irradience cubemap images
-          m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
+                         // Generate diffuse irradience cubemap images
+                         m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
 
-          m_initiated     = true;
-        }};
+                         m_initiated     = true;
+                       }};
 
     GetRenderSystem()->AddRenderTask(task);
   }
@@ -594,7 +594,7 @@ namespace ToolKit
 
   TextureManager::~TextureManager() {}
 
-  bool TextureManager::CanStore(TKClass* Class)
+  bool TextureManager::CanStore(ClassMeta* Class)
   {
     if (Class->IsSublcassOf(Texture::StaticClass()))
     {
@@ -604,7 +604,7 @@ namespace ToolKit
     return false;
   }
 
-  ResourcePtr TextureManager::CreateLocal(TKClass* Class)
+  ResourcePtr TextureManager::CreateLocal(ClassMeta* Class)
   {
     if (Class == Texture::StaticClass())
     {
@@ -629,7 +629,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  String TextureManager::GetDefaultResource(TKClass* Class)
+  String TextureManager::GetDefaultResource(ClassMeta* Class)
   {
     if (Class == Hdri::StaticClass())
     {

@@ -462,9 +462,9 @@ namespace ToolKit
     m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
   }
 
-  bool MaterialManager::CanStore(TKClass* Class) { return Class == Material::StaticClass(); }
+  bool MaterialManager::CanStore(ClassMeta* Class) { return Class == Material::StaticClass(); }
 
-  ResourcePtr MaterialManager::CreateLocal(TKClass* Class)
+  ResourcePtr MaterialManager::CreateLocal(ClassMeta* Class)
   {
     if (Class == Material::StaticClass())
     {
@@ -474,7 +474,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  String MaterialManager::GetDefaultResource(TKClass* Class) { return MaterialPath("missing.material", true); }
+  String MaterialManager::GetDefaultResource(ClassMeta* Class) { return MaterialPath("missing.material", true); }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()
   {

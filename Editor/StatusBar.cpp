@@ -94,7 +94,14 @@ namespace ToolKit
         }
         else
         {
-          ImGui::Text(g_app->m_statusMsg.c_str());
+          if (g_app->m_publishManager != nullptr && g_app->m_publishManager->m_isBuilding)
+          {
+            ImGui::Text("Packing...");
+          }
+          else
+          {
+            ImGui::Text(g_app->m_statusMsg.c_str());
+          }
         }
 
         ImVec2 msgSize = ImGui::CalcTextSize(g_app->m_statusMsg.c_str());

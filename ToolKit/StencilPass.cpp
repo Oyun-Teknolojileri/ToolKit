@@ -29,9 +29,9 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "Shader.h"
-#include "ToolKit.h"
-
 #include "TKOpenGL.h"
+#include "TKProfiler.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {
@@ -61,6 +61,9 @@ namespace ToolKit
 
   void StencilRenderPass::Render()
   {
+    PUSH_GPU_MARKER("StencilRenderPass::Render");
+    PUSH_CPU_MARKER("StencilRenderPass::Render");
+
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = m_solidOverrideMaterial;
 
@@ -80,10 +83,16 @@ namespace ToolKit
     RenderSubPass(m_copyStencilSubPass);
 
     renderer->SetStencilOperation(StencilOperation::None);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void StencilRenderPass::PreRender()
   {
+    PUSH_GPU_MARKER("StencilRenderPass::PreRender");
+    PUSH_CPU_MARKER("StencilRenderPass::PreRender");
+
     Pass::PreRender();
     Renderer* renderer = GetRenderer();
 
@@ -95,7 +104,7 @@ namespace ToolKit
 
     m_frameBuffer->Init(settings);
     m_frameBuffer->ReconstructIfNeeded(settings.width, settings.height);
-    m_frameBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.OutputTarget);
+    m_frameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.OutputTarget);
     m_copyStencilSubPass->m_params.FrameBuffer      = m_frameBuffer;
     m_copyStencilSubPass->m_params.ClearFrameBuffer = false;
 
@@ -103,8 +112,20 @@ namespace ToolKit
     renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
     renderer->SetFramebuffer(m_frameBuffer, true, Vec4(0.0f));
     renderer->SetCameraLens(m_params.Camera);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
-  void StencilRenderPass::PostRender() { Pass::PostRender(); }
+  void StencilRenderPass::PostRender()
+  {
+    PUSH_GPU_MARKER("StencilRenderPass::PostRender");
+    PUSH_CPU_MARKER("StencilRenderPass::PostRender");
+
+    Pass::PostRender();
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
+  }
 
 } // namespace ToolKit

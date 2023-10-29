@@ -33,19 +33,18 @@
   #include <shellapi.h>
   #include <strsafe.h>
 
-  #include <chrono>
-  #include <thread>
-
   // ToolKit collisions
   #undef WriteConsole
 
+  #include <chrono>
+  #include <thread>
+
 namespace ToolKit
 {
-  namespace Win32Helpers
+  namespace PlatformHelpers
   {
     namespace UTF8Util
     {
-
       // Function to convert UTF-8 to UTF-16
       std::wstring ConvertUTF8ToUTF16(const std::string& utf8String)
       {
@@ -59,7 +58,7 @@ namespace ToolKit
 
         // Allocate memory for the UTF-16 string
         wchar_t* utf16String = new wchar_t[utf16Length];
-
+        
         // Convert UTF-8 to UTF-16
         if (MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), -1, utf16String, utf16Length) == 0)
         {
@@ -204,6 +203,12 @@ namespace ToolKit
       }
     }
 
+    void HideConsoleWindow() 
+    {
+      HWND handle = GetConsoleWindow();
+      ShowWindow(handle, SW_HIDE);
+    }
+
     String GetCreationTime(const String& fullPath)
     {
       std::wstring wFile = UTF8Util::ConvertUTF8ToUTF16(fullPath.c_str());
@@ -229,7 +234,7 @@ namespace ToolKit
 
     void* TKGetFunction(void* module, StringView func) { return (void*) GetProcAddress((HMODULE) module, func.data()); }
 
-  } // namespace Win32Helpers
+  } // namespace PlatformHelpers
 } // namespace ToolKit
 
 #endif

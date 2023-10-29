@@ -468,8 +468,8 @@ namespace ToolKit
 
   AnimationManager::~AnimationManager() {}
 
-  bool AnimationManager::CanStore(TKClass* Class) { return Class == Animation::StaticClass(); }
+  bool AnimationManager::CanStore(ClassMeta* Class) { return Class == Animation::StaticClass(); }
 
-  ResourcePtr AnimationManager::CreateLocal(TKClass* Class) { return MakeNewPtr<Animation>(); }
+  ResourcePtr AnimationManager::CreateLocal(ClassMeta* Class) { return MakeNewPtr<Animation>(); }
 
 } // namespace ToolKit

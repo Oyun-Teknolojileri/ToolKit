@@ -33,9 +33,11 @@
 #include "Shader.h"
 #include "ShaderReflectionCache.h"
 #include "TKOpenGL.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 #include <random>
+
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -101,6 +103,9 @@ namespace ToolKit
 
   void SSAOPass::Render()
   {
+    PUSH_GPU_MARKER("SSAOPass::Render");
+    PUSH_CPU_MARKER("SSAOPass::Render");
+
     Renderer* renderer = GetRenderer();
 
     // Generate SSAO texture
@@ -118,14 +123,23 @@ namespace ToolKit
 
     // Vertical blur
     renderer->Apply7x1GaussianBlur(m_tempBlurRt, m_ssaoTexture, Y_AXIS, 1.0f / m_ssaoTexture->m_height);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void SSAOPass::PreRender()
   {
+    PUSH_GPU_MARKER("SSAOPass::PreRender");
+    PUSH_CPU_MARKER("SSAOPass::PreRender");
+
     Pass::PreRender();
 
-    int width  = m_params.GNormalBuffer->m_width;
-    int height = m_params.GNormalBuffer->m_height;
+    int width           = m_params.GNormalBuffer->m_width;
+    int height          = m_params.GNormalBuffer->m_height;
+
+    // Clamp kernel size
+    m_params.KernelSize = glm::clamp(m_params.KernelSize, m_minimumKernelSize, m_maximumKernelSize);
 
     GenerateSSAONoise();
 
@@ -144,7 +158,7 @@ namespace ToolKit
     m_ssaoTexture->m_settings         = oneChannelSet;
     m_ssaoTexture->ReconstructIfNeeded((uint) width, (uint) height);
 
-    m_ssaoFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_ssaoTexture);
+    m_ssaoFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_ssaoTexture);
 
     // Init temporary blur render target
     m_tempBlurRt->m_settings = oneChannelSet;
@@ -154,7 +168,7 @@ namespace ToolKit
     m_noiseTexture->Init(&m_ssaoNoise[0]);
 
     m_quadPass->m_params.FrameBuffer      = m_ssaoFramebuffer;
-    m_quadPass->m_params.ClearFrameBuffer = true;
+    m_quadPass->m_params.ClearFrameBuffer = false;
 
     // SSAO fragment shader
     if (!m_ssaoShader)
@@ -162,10 +176,10 @@ namespace ToolKit
       m_ssaoShader = GetShaderManager()->Create<Shader>(ShaderPath("ssaoCalcFrag.shader", true));
     }
 
-    if (m_prevSpread != m_params.spread)
+    if (m_params.KernelSize != m_currentKernelSize || m_prevSpread != m_params.spread)
     {
       // Update kernel
-      for (uint i = 0; i < 64; ++i)
+      for (int i = 0; i < m_params.KernelSize; ++i)
       {
         m_ssaoShader->SetShaderParameter(g_ssaoSamplesStrCache[i], ParameterVariant(m_ssaoKernel[i]));
       }
@@ -175,19 +189,36 @@ namespace ToolKit
 
     m_ssaoShader->SetShaderParameter("screenSize", ParameterVariant(Vec2(width, height)));
     m_ssaoShader->SetShaderParameter("bias", ParameterVariant(m_params.Bias));
+    m_ssaoShader->SetShaderParameter("kernelSize", ParameterVariant(m_params.KernelSize));
     m_ssaoShader->SetShaderParameter("projection", ParameterVariant(m_params.Cam->GetProjectionMatrix()));
     m_ssaoShader->SetShaderParameter("viewMatrix", ParameterVariant(m_params.Cam->GetViewMatrix()));
 
     m_quadPass->m_params.FragmentShader = m_ssaoShader;
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
-  void SSAOPass::PostRender() { Pass::PostRender(); }
+  void SSAOPass::PostRender()
+  {
+    PUSH_GPU_MARKER("SSAOPass::PostRender");
+    PUSH_CPU_MARKER("SSAOPass::PostRender");
+
+    m_currentKernelSize = m_params.KernelSize;
+
+    Pass::PostRender();
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
+  }
 
   void SSAOPass::GenerateSSAONoise()
   {
-    if (m_ssaoKernel.size() == 0 || m_prevSpread != m_params.spread)
+    CPU_FUNC_RANGE();
+
+    if (m_prevSpread != m_params.spread)
     {
-      m_ssaoKernel = GenerateRandomSamplesInHemisphere(64, m_params.spread);
+      GenerateRandomSamplesInHemisphere(m_maximumKernelSize, m_params.spread, m_ssaoKernel);
     }
 
     if (m_ssaoNoise.size() == 0)

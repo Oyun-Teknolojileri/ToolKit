@@ -150,18 +150,18 @@ namespace ToolKit
 
     EntityPtrArray allDrawList = m_params.Scene->GetEntities();
 
-    RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs(allDrawList, jobs);
+    m_jobs.clear();
+    RenderJobProcessor::CreateRenderJobs(allDrawList, m_jobs);
 
-    m_shadowPass->m_params.RendeJobs = jobs;
+    m_shadowPass->m_params.RendeJobs = m_jobs;
     m_shadowPass->m_params.Lights    = m_updatedLights;
 
-    RenderJobProcessor::CullRenderJobs(jobs, m_params.Cam);
+    RenderJobProcessor::CullRenderJobs(m_jobs, m_params.Cam);
 
-    RenderJobProcessor::AssignEnvironment(jobs, m_params.Scene->GetEnvironmentVolumes());
+    RenderJobProcessor::AssignEnvironment(m_jobs, m_params.Scene->GetEnvironmentVolumes());
 
     RenderJobArray opaque, translucent;
-    RenderJobProcessor::SeperateOpaqueTranslucent(jobs, opaque, translucent);
+    RenderJobProcessor::SeperateOpaqueTranslucent(m_jobs, opaque, translucent);
 
     // Set all shaders as forward shader
     // Translucents has already forward shader
@@ -191,6 +191,7 @@ namespace ToolKit
     m_ssaoPass->m_params.Radius                    = m_params.Gfx.SSAORadius;
     m_ssaoPass->m_params.spread                    = m_params.Gfx.SSAOSpread;
     m_ssaoPass->m_params.Bias                      = m_params.Gfx.SSAOBias;
+    m_ssaoPass->m_params.KernelSize                = m_params.Gfx.SSAOKernelSize;
 
     // Set CubeMapPass for sky.
     m_drawSky                                      = false;

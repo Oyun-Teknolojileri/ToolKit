@@ -157,7 +157,7 @@ namespace ToolKit
 
   void Node::InsertChild(Node* child, int index, bool preserveTransform)
   {
-    bool canInsert = index <= m_children.size() && index >= 0;
+    bool canInsert  = index <= m_children.size() && index >= 0;
     canInsert      &= child->m_id != m_id && child->m_parent == nullptr;
     assert(canInsert);
 

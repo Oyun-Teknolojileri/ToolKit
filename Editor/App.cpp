@@ -38,8 +38,11 @@
 #include <UIManager.h>
 
 #include <sstream>
+#include <thread>
 
 #include <DebugNew.h>
+
+#include "TKProfiler.h"
 
 namespace ToolKit
 {
@@ -151,15 +154,28 @@ namespace ToolKit
     void App::Frame(float deltaTime)
     {
       m_deltaTime = deltaTime;
+
+      PUSH_CPU_MARKER("UI Begin & Show UI");
+
       UI::BeginUI();
       UI::ShowUI();
 
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("Exec Render Tasks");
+
       GetRenderSystem()->ExecuteRenderTasks();
+      
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("Mod Manager Update");
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
-      EditorViewportRawPtrArray viewports;
+      
+      POP_CPU_MARKER();
 
+      PUSH_CPU_MARKER("Gather viewports & windows to dispatch signals");
+
+      EditorViewportRawPtrArray viewports;
       for (Window* wnd : m_windows)
       {
         if (wnd->IsViewport())
@@ -186,6 +202,7 @@ namespace ToolKit
         }
       }
 
+
       bool playOnSimulationWnd = m_gameMod == GameMod::Playing && m_simulatorSettings.Windowed;
 
       if (playOnSimulationWnd)
@@ -193,9 +210,19 @@ namespace ToolKit
         viewports.push_back(m_simulationWindow);
       }
 
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("Update Scene");
+
       EditorScenePtr scene = GetCurrentScene();
       scene->Update(deltaTime);
+
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("Update Scene");
+
       UpdateSimulation(deltaTime);
+      
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("Update Viewports & Add render tasks");
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
@@ -223,8 +250,13 @@ namespace ToolKit
         }
       }
 
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("End UI");
+
       // Render UI.
       UI::EndUI();
+
+      POP_CPU_MARKER();
 
       GetRenderSystem()->SetFrameCount(m_totalFrameCount++);
     }
@@ -307,8 +339,7 @@ namespace ToolKit
         EditorScenePtr currScene = g_app->GetCurrentScene();
         DecomposePath(currScene->GetFile(), &path, nullptr, nullptr);
 
-        String fullPath = ConcatPaths({path, val + SCENE});
-        NormalizePath(fullPath);
+        String fullPath = NormalizePath(ConcatPaths({path, val + SCENE}));
 
         currScene->SetFile(fullPath);
         currScene->m_name = val;
@@ -490,43 +521,43 @@ namespace ToolKit
       m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
       m_isCompiling = true;
 
-      ExecSysCommand(cmd,
-                     true,
-                     false,
-                     [this, buildDir](int res) -> void
-                     {
-                       String cmd = "cmake --build " + buildDir + " --config " + buildConfig.data();
-                       ExecSysCommand(
-                           cmd,
-                           false,
-                           false,
-                           [=](int res) -> void
-                           {
-                             if (res)
-                             {
-                               m_statusMsg = "Compile Failed.";
+      std::thread pipeThread(
+          RunPipe,
+          cmd,
+          [this, buildDir](int res) -> void
+          {
+            String cmd = "cmake --build " + buildDir + " --config " + buildConfig.data();
+            std::thread pip(RunPipe,
+                            cmd,
+                            [=](int res) -> void
+                            {
+                              if (res)
+                              {
+                                m_statusMsg = "Compile Failed.";
 
-                               String detail;
-                               if (res == 1)
-                               {
-                                 detail = "CMake Build Failed.";
-                               }
+                                String detail;
+                                if (res == 1)
+                                {
+                                  detail = "CMake Build Failed.";
+                                }
 
-                               if (res == -1)
-                               {
-                                 detail = "CMake Generate Failed.";
-                               }
+                                if (res == -1)
+                                {
+                                  detail = "CMake Generate Failed.";
+                                }
 
-                               GetLogger()->WriteConsole(LogType::Error, "%s %s", m_statusMsg.c_str(), detail.c_str());
-                             }
-                             else
-                             {
-                               m_statusMsg = "Compiled.";
-                               GetLogger()->WriteConsole(LogType::Memo, "%s", m_statusMsg.c_str());
-                             }
-                             m_isCompiling = false;
-                           });
-                     });
+                                GetLogger()->WriteConsole(LogType::Error, "%s %s", m_statusMsg.c_str(), detail.c_str());
+                              }
+                              else
+                              {
+                                m_statusMsg = "Compiled.";
+                                GetLogger()->WriteConsole(LogType::Memo, "%s", m_statusMsg.c_str());
+                              }
+                              m_isCompiling = false;
+                            });
+            pip.detach();
+          });
+      pipeThread.detach();
     }
 
     EditorScenePtr App::GetCurrentScene()
@@ -1146,12 +1177,12 @@ namespace ToolKit
 
     void App::SaveAllResources()
     {
-      TKClass* types[] = {Material::StaticClass(),
-                          Mesh::StaticClass(),
-                          SkinMesh::StaticClass(),
-                          Animation::StaticClass()};
+      ClassMeta* types[] = {Material::StaticClass(),
+                            Mesh::StaticClass(),
+                            SkinMesh::StaticClass(),
+                            Animation::StaticClass()};
 
-      for (TKClass* t : types)
+      for (ClassMeta* t : types)
       {
         for (auto& resource : GetResourceManager(t)->m_storage)
         {

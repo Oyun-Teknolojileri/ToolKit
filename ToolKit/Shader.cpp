@@ -452,9 +452,9 @@ namespace ToolKit
     Create<Shader>(m_phongForwardShaderFile);
   }
 
-  bool ShaderManager::CanStore(TKClass* Class) { return Class == Shader::StaticClass(); }
+  bool ShaderManager::CanStore(ClassMeta* Class) { return Class == Shader::StaticClass(); }
 
-  ResourcePtr ShaderManager::CreateLocal(TKClass* Class)
+  ResourcePtr ShaderManager::CreateLocal(ClassMeta* Class)
   {
     if (Class == Shader::StaticClass())
     {

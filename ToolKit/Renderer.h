@@ -161,13 +161,13 @@ namespace ToolKit
 
     struct RHIConstants
     {
-      static constexpr ubyte TextureSlotCount     = 32;
-      static constexpr size_t MaxLightsPerObject  = 16;
-      static constexpr int ShadowAtlasSlot        = 8;
-      static constexpr int ShadowAtlasTextureSize = 4096;
-      static constexpr int SpecularIBLLods        = 5;
-      static constexpr int BrdfLutTextureSize     = 512;
-      static constexpr float ShadowBiasMultiplier = 0.0001f;
+      static constexpr ubyte TextureSlotCount      = 32;
+      static constexpr ubyte MaxLightsPerObject    = 16;
+      static constexpr uint ShadowAtlasSlot        = 8;
+      static constexpr uint ShadowAtlasTextureSize = 1024;
+      static constexpr uint SpecularIBLLods        = 5;
+      static constexpr uint BrdfLutTextureSize     = 512;
+      static constexpr float ShadowBiasMultiplier  = 0.0001f;
     };
 
    private:
@@ -189,22 +189,21 @@ namespace ToolKit
 
     UVec2 m_viewportSize; //!< Current viewport size.
 
-    /**
-     * Temporary frame buffer to use in various operation. Don't rely on its
-     * sate or use it to cache state.
-     * Only use ColorAttachment 0 and do not init with depth buffer.
+    /*
+     * This framebuffer can ONLY have 1 color attachment and no other attachments.
+     * This way, we can use without needing to resize or reInit.
      */
-    FramebufferPtr m_utilFramebuffer   = nullptr;
-    MaterialPtr m_gaussianBlurMaterial = nullptr;
-    MaterialPtr m_averageBlurMaterial  = nullptr;
+    FramebufferPtr m_oneColorAttachmentFramebuffer = nullptr;
+    MaterialPtr m_gaussianBlurMaterial             = nullptr;
+    MaterialPtr m_averageBlurMaterial              = nullptr;
 
-    FramebufferPtr m_copyFb            = nullptr;
-    MaterialPtr m_copyMaterial         = nullptr;
+    FramebufferPtr m_copyFb                        = nullptr;
+    MaterialPtr m_copyMaterial                     = nullptr;
 
-    int m_maxArrayTextureLayers        = -1;
+    int m_maxArrayTextureLayers                    = -1;
 
     // Dummy objects for draw commands.
-    CubePtr m_dummyDrawCube            = nullptr;
+    CubePtr m_dummyDrawCube                        = nullptr;
   };
 
 } // namespace ToolKit

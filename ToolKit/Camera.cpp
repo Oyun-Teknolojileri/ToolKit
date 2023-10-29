@@ -76,33 +76,7 @@ namespace ToolKit
     m_ortographic = true;
   }
 
-  Mat4 Camera::GetViewMatrix() const
-  {
-    Mat4 view = m_node->GetTransform();
-    return glm::inverse(view);
-  }
-
-  Mat4 Camera::GetProjectionMatrix() const { return m_projection; }
-
   bool Camera::IsOrtographic() const { return m_ortographic; }
-
-  Camera::CamData Camera::GetData() const
-  {
-    CamData data;
-    DirectionComponentPtr dcp = GetComponent<DirectionComponent>();
-    assert(dcp);
-    data.dir         = dcp->GetDirection();
-
-    data.pos         = m_node->GetTranslation();
-    data.projection  = m_projection;
-    data.fov         = m_fov;
-    data.aspect      = m_aspect;
-    data.nearDist    = m_near;
-    data.far         = m_far;
-    data.ortographic = m_ortographic;
-
-    return data;
-  }
 
   XmlNode* Camera::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
@@ -208,24 +182,6 @@ namespace ToolKit
     m_node->SetTranslation(eye, TransformationSpace::TS_WORLD);
     GetComponent<DirectionComponent>()->LookAt(geoCenter);
   }
-
-  float Camera::Fov() const { return m_fov; }
-
-  float Camera::Aspect() const { return m_aspect; }
-
-  float Camera::Near() const { return m_near; }
-
-  float Camera::Far() const { return m_far; }
-
-  float Camera::Left() const { return m_left; }
-
-  float Camera::Right() const { return m_right; }
-
-  float Camera::Top() const { return m_top; }
-
-  float Camera::Bottom() const { return m_bottom; }
-
-  Vec3 Camera::Position() const { return m_node->GetTranslation(); }
 
   Vec3 Camera::Direction() const
   {

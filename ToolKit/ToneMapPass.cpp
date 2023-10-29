@@ -28,6 +28,7 @@
 
 #include "Shader.h"
 #include "ShaderReflectionCache.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -46,9 +47,15 @@ namespace ToolKit
 
   void TonemapPass::PreRender()
   {
+    PUSH_GPU_MARKER("TonemapPass::PreRender");
+    PUSH_CPU_MARKER("TonemapPass::PreRender");
+
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
     m_postProcessShader->SetShaderParameter("UseAcesTonemapper", ParameterVariant((uint) m_params.Method));
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
 } // namespace ToolKit

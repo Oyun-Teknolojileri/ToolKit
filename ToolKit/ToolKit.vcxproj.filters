@@ -1,33 +1,80 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source">
-      <UniqueIdentifier>{b9272a08-74f2-4119-add4-68697b39f5e9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Component">
-      <UniqueIdentifier>{abe79bd2-78b3-46a4-99b4-82b7fbc43e63}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Resource">
-      <UniqueIdentifier>{c9634dd9-c2e5-4ff9-8745-07519d53981c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Entity">
-      <UniqueIdentifier>{354f4c99-8d95-42cf-b41b-a522f643c0f7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\UI">
-      <UniqueIdentifier>{b83754ed-1ff1-4e41-8b4e-68bd5094ba69}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Render">
-      <UniqueIdentifier>{6736831a-564c-47ad-bcfb-a3a3aa194285}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Render\RenderPass">
-      <UniqueIdentifier>{3bf51b1e-9da9-41ef-bac7-0d39d55fd50c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Render\PostProcessPass">
-      <UniqueIdentifier>{d2993129-0199-49c6-91fd-e82cc756b97f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Reflection">
-      <UniqueIdentifier>{be940542-2f55-45a4-9c61-3f2c593d7c45}</UniqueIdentifier>
-    </Filter>
+    <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="AnimationControllerComponent.cpp" />
+    <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="BillboardPass.cpp" />
+    <ClCompile Include="BinPack2D.cpp" />
+    <ClCompile Include="BloomPass.cpp" />
+    <ClCompile Include="Canvas.cpp" />
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CubemapPass.cpp" />
+    <ClCompile Include="DataTexture.cpp" />
+    <ClCompile Include="DeferredPass.cpp" />
+    <ClCompile Include="DirectionComponent.cpp" />
+    <ClCompile Include="DofPass.cpp" />
+    <ClCompile Include="Drawable.cpp" />
+    <ClCompile Include="EngineSettings.cpp" />
+    <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="EnvironmentComponent.cpp" />
+    <ClCompile Include="FileManager.cpp" />
+    <ClCompile Include="ForwardPreProcessPass.cpp" />
+    <ClCompile Include="ForwardPass.cpp" />
+    <ClCompile Include="Framebuffer.cpp" />
+    <ClCompile Include="FullQuadPass.cpp" />
+    <ClCompile Include="FxaaPass.cpp" />
+    <ClCompile Include="GammaPass.cpp" />
+    <ClCompile Include="GBufferPass.cpp" />
+    <ClCompile Include="GlErrorReporter.cpp" />
+    <ClCompile Include="GradientSky.cpp" />
+    <ClCompile Include="Light.cpp" />
+    <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="MaterialComponent.cpp" />
+    <ClCompile Include="MathUtil.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshComponent.cpp" />
+    <ClCompile Include="MobileSceneRenderPath.cpp" />
+    <ClCompile Include="Node.cpp" />
+    <ClCompile Include="ObjectFactory.cpp" />
+    <ClCompile Include="OutlinePass.cpp" />
+    <ClCompile Include="ParameterBlock.cpp" />
+    <ClCompile Include="Pass.cpp" />
+    <ClCompile Include="AdditiveLightingPass.cpp" />
+    <ClCompile Include="PluginManager.cpp" />
+    <ClCompile Include="PostProcessPass.cpp" />
+    <ClCompile Include="Prefab.cpp" />
+    <ClCompile Include="Primative.cpp" />
+    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="RenderState.cpp" />
+    <ClCompile Include="RenderSystem.cpp" />
+    <ClCompile Include="Resource.cpp" />
+    <ClCompile Include="ResourceComponent.cpp" />
+    <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneRenderPath.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShadowPass.cpp" />
+    <ClCompile Include="Skeleton.cpp" />
+    <ClCompile Include="SkeletonComponent.cpp" />
+    <ClCompile Include="Sky.cpp" />
+    <ClCompile Include="SpriteSheet.cpp" />
+    <ClCompile Include="SsaoPass.cpp" />
+    <ClCompile Include="StateMachine.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="StencilPass.cpp" />
+    <ClCompile Include="Surface.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Object.cpp" />
+    <ClCompile Include="TKOpenGL.cpp" />
+    <ClCompile Include="ToneMapPass.cpp" />
+    <ClCompile Include="ToolKit.cpp" />
+    <ClCompile Include="UIManager.cpp" />
+    <ClCompile Include="Util.cpp" />
+    <ClCompile Include="Viewport.cpp" />
+    <ClCompile Include="TKImage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Drawable.cpp">

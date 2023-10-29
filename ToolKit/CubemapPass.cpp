@@ -28,6 +28,7 @@
 
 #include "Material.h"
 #include "Mesh.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -41,28 +42,48 @@ namespace ToolKit
 
   void CubeMapPass::Render()
   {
+    PUSH_GPU_MARKER("CubeMapPass::Render");
+    PUSH_CPU_MARKER("CubeMapPass::Render");
+
     m_cube->m_node->SetTransform(m_params.Transform);
 
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, false);
 
-    RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({m_cube}, jobs);
+    static RenderJobArray jobs;
+    jobs.clear();
+    EntityPtrArray oneCube = {m_cube};
+    RenderJobProcessor::CreateRenderJobs(oneCube, jobs);
     renderer->Render(jobs, m_params.Cam);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void CubeMapPass::PreRender()
   {
+    PUSH_GPU_MARKER("CubeMapPass::PreRender");
+    PUSH_CPU_MARKER("CubeMapPass::PreRender");
+
     Pass::PreRender();
     MaterialComponentPtr matCom = m_cube->GetMaterialComponent();
     matCom->SetFirstMaterial(m_params.Material);
     GetRenderer()->SetDepthTestFunc(m_params.DepthFn);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void CubeMapPass::PostRender()
   {
+    PUSH_GPU_MARKER("CubeMapPass::PostRender");
+    PUSH_CPU_MARKER("CubeMapPass::PostRender");
+
     Pass::PostRender();
     GetRenderer()->SetDepthTestFunc(CompareFunctions::FuncLess);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
 } // namespace ToolKit

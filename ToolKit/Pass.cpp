@@ -36,6 +36,7 @@
 #include "Renderer.h"
 #include "ResourceComponent.h"
 #include "ShaderReflectionCache.h"
+#include "TKProfiler.h"
 #include "Toolkit.h"
 #include "Viewport.h"
 
@@ -78,73 +79,113 @@ namespace ToolKit
 
   void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
 
-  void RenderJobProcessor::CreateRenderJobs(EntityPtrArray entities, RenderJobArray& jobArray, bool ignoreVisibility)
+  void RenderJobProcessor::CreateRenderJobs(const EntityPtrArray& entities,
+                                            RenderJobArray& jobArray,
+                                            bool ignoreVisibility)
   {
-    erase_if(entities,
-             [ignoreVisibility](EntityPtr ntt) -> bool
-             { return !ntt->IsDrawable() || (!ntt->IsVisible() && !ignoreVisibility); });
+    CPU_FUNC_RANGE();
+
+    auto checkDrawableFn = [ignoreVisibility](EntityPtr ntt) -> bool
+    { return ntt->IsDrawable() && (ntt->IsVisible() || ignoreVisibility); };
 
     for (EntityPtr ntt : entities)
     {
-      MeshRawPtrArray allMeshes;
-      MaterialPtrArray allMaterials;
-
-      MeshComponentPtr mc = ntt->GetMeshComponent();
-      mc->GetMeshVal()->GetAllMeshes(allMeshes);
-
-      allMaterials.reserve(allMeshes.size());
-      if (MaterialComponentPtr mmc = ntt->GetMaterialComponent())
+      if (!checkDrawableFn(ntt))
       {
-        // There are material assignments per sub mesh.
-        MaterialPtrArray& mlist = mmc->GetMaterialList();
-        for (size_t i = 0; i < mlist.size(); i++)
-        {
-          allMaterials.push_back(mlist[i]);
-        }
+        continue;
       }
 
-      // Fill remaining if any with default or mesh materials.
-      size_t startIndx = allMaterials.empty() ? 0 : allMaterials.size();
-      for (size_t i = startIndx; i < allMeshes.size(); i++)
+      bool materialMissing         = false;
+      MaterialComponentPtr matComp = ntt->GetMaterialComponent();
+      uint matIndex                = 0;
+      MeshComponentPtr mc          = ntt->GetMeshComponent();
+      bool castShadow              = mc->GetCastShadowVal();
+      MeshPtr parentMesh           = mc->GetMeshVal();
+      Mat4 nttTransform            = ntt->m_node->GetTransform();
+      bool overrideBBoxExists      = false;
+      BoundingBox overrideBBox;
+      if (AABBOverrideComponentPtr bbOverride = ntt->GetComponent<AABBOverrideComponent>())
       {
-        if (MaterialPtr mp = allMeshes[i]->m_material)
-        {
-          allMaterials.push_back(mp);
-        }
-        else
-        {
-          allMaterials.push_back(GetMaterialManager()->GetCopyOfDefaultMaterial());
-        }
+        overrideBBoxExists = true;
+        overrideBBox       = std::move(bbOverride->GetAABB());
       }
 
-      // Here we have all mesh and corresponding materials.
-      RenderJobArray newJobs;
-      newJobs.resize(allMeshes.size());
-      Mat4 transform = ntt->m_node->GetTransform();
-      for (size_t i = 0; i < allMeshes.size(); i++)
+      auto addRenderJobForMeshFn = [&materialMissing,
+                                    &matComp,
+                                    &matIndex,
+                                    &mc,
+                                    &ntt,
+                                    &jobArray,
+                                    &nttTransform,
+                                    overrideBBoxExists,
+                                    &overrideBBox,
+                                    castShadow](MeshPtr mesh)
       {
-        RenderJob& rj     = newJobs[i];
-        rj.Entity         = ntt;
-        rj.WorldTransform = transform;
-
-        if (AABBOverrideComponentPtr bbOverride = ntt->GetComponent<AABBOverrideComponent>())
+        if (mesh)
         {
-          rj.BoundingBox = std::move(bbOverride->GetAABB());
+          RenderJob job;
+          job.Entity         = ntt;
+          job.WorldTransform = nttTransform;
+          if (overrideBBoxExists)
+          {
+            job.BoundingBox = overrideBBox;
+          }
+          else
+          {
+            job.BoundingBox = mesh->m_aabb;
+          }
+          TransformAABB(job.BoundingBox, job.WorldTransform);
+
+          job.ShadowCaster = castShadow;
+          job.Mesh         = mesh.get();
+          job.SkeletonCmp  = job.Mesh->IsSkinned() ? ntt->GetComponent<SkeletonComponent>() : nullptr;
+
+          // Look material component first, if we can not find a corresponding material in there, look inside mesh. If
+          // still there is no corresponding material, give a warning to the user and use default material
+          if (matComp)
+          {
+            const MaterialPtrArray& mats = matComp->GetMaterialList();
+            if (matIndex < mats.size())
+            {
+              job.Material = mats[matIndex++];
+            }
+          }
+          if (job.Material == nullptr)
+          {
+            if (mesh->m_material)
+            {
+              job.Material = mesh->m_material;
+            }
+          }
+          if (job.Material == nullptr)
+          {
+            // Warn user that we use the default material for the mesh
+            materialMissing = true;
+            job.Material    = GetMaterialManager()->GetCopyOfDefaultMaterial();
+          }
+
+          jobArray.push_back(job);
         }
-        else
+      };
+
+      static MeshPtrArray allMeshes;
+      allMeshes.clear();
+      allMeshes.push_back(parentMesh);
+      for (size_t i = 0; i < allMeshes.size(); ++i)
+      {
+        MeshPtr currentMesh = allMeshes[i];
+        for (MeshPtr submesh : currentMesh->m_subMeshes)
         {
-          rj.BoundingBox = allMeshes[i]->m_aabb;
+          allMeshes.push_back(submesh);
         }
-
-        TransformAABB(rj.BoundingBox, transform);
-
-        rj.ShadowCaster = mc->GetCastShadowVal();
-        rj.Mesh         = allMeshes[i];
-        rj.Material     = allMaterials[i];
-        rj.SkeletonCmp  = rj.Mesh->IsSkinned() ? ntt->GetComponent<SkeletonComponent>() : nullptr;
+        addRenderJobForMeshFn(currentMesh);
       }
 
-      jobArray.insert(jobArray.end(), newJobs.begin(), newJobs.end());
+      if (materialMissing)
+      {
+        TK_WRN("Entity \"%s\" have less material than mesh count! ToolKit uses default material for now.",
+               ntt->GetNameVal().c_str());
+      }
     }
   }
 
@@ -153,6 +194,8 @@ namespace ToolKit
                                                    RenderJobArray& forward,
                                                    RenderJobArray& translucent)
   {
+    CPU_FUNC_RANGE();
+
     for (const RenderJob& job : jobArray)
     {
       if (job.Material->IsTranslucent())
@@ -177,6 +220,8 @@ namespace ToolKit
                                                      RenderJobArray& opaque,
                                                      RenderJobArray& translucent)
   {
+    CPU_FUNC_RANGE();
+
     for (const RenderJob& job : jobArray)
     {
       if (job.Material->IsTranslucent())
@@ -203,31 +248,32 @@ namespace ToolKit
     return (i1.intersectCount > i2.intersectCount);
   }
 
-  LightPtrArray RenderJobProcessor::SortLights(const RenderJob& job, const LightPtrArray& lights)
+  void RenderJobProcessor::SortLights(const RenderJob& job, LightPtrArray& lights)
   {
-    LightPtrArray bestLights;
-    if (lights.empty())
-    {
-      return bestLights;
-    }
-
-    bestLights.reserve(lights.size());
-
-    // Find the end of directional lights
-    for (int i = 0; i < lights.size(); i++)
+    // Get all directional lights to beginning first
+    uint directionalLightEndIndex = 0;
+    for (size_t i = 0; i < lights.size(); ++i)
     {
       if (lights[i]->IsA<DirectionalLight>())
       {
-        bestLights.push_back(lights[i]);
+        if (i == directionalLightEndIndex)
+        {
+          directionalLightEndIndex++;
+          continue;
+        }
+
+        std::iter_swap(lights.begin() + i, lights.begin() + directionalLightEndIndex);
+        directionalLightEndIndex++;
       }
     }
 
-    // Add the lights inside of the radius first
-    std::vector<LightSortStruct> intersectCounts(lights.size());
+    static std::vector<LightSortStruct> intersectCounts;
+    intersectCounts.clear();
+    intersectCounts.resize(lights.size() - directionalLightEndIndex);
     BoundingBox aabb = job.Mesh->m_aabb;
     TransformAABB(aabb, job.WorldTransform);
 
-    for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
+    for (uint lightIndx = directionalLightEndIndex; lightIndx < lights.size(); lightIndx++)
     {
       float radius;
       LightPtr light = lights[lightIndx];
@@ -244,8 +290,8 @@ namespace ToolKit
         continue;
       }
 
-      intersectCounts[lightIndx].light = light;
-      uint& curIntersectCount          = intersectCounts[lightIndx].intersectCount;
+      intersectCounts[lightIndx - directionalLightEndIndex].light = light;
+      uint& curIntersectCount = intersectCounts[lightIndx - directionalLightEndIndex].intersectCount;
 
       /* This algorithms can be used for better sorting
       for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
@@ -265,7 +311,8 @@ namespace ToolKit
 
       if (light->IsA<SpotLight>())
       {
-        light->UpdateShadowCamera();
+        // The shadow camera of light should be updated before calling this function
+        // RenderPath PreRender functions should do that
 
         Frustum spotFrustum = ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
 
@@ -284,37 +331,37 @@ namespace ToolKit
       }
     }
 
+    // Sort point & spot lights
     std::sort(intersectCounts.begin(), intersectCounts.end(), CompareLightIntersects);
 
-    for (uint i = 0; i < intersectCounts.size(); i++)
+    for (int i = 0; i < intersectCounts.size(); ++i)
     {
-      if (intersectCounts[i].intersectCount == 0)
-      {
-        break;
-      }
-      bestLights.push_back(intersectCounts[i].light);
+      lights[i + directionalLightEndIndex] = intersectCounts[i].light;
     }
-
-    return bestLights;
   }
 
-  LightPtrArray RenderJobProcessor::SortLights(EntityPtr entity, const LightPtrArray& lights)
+  LightPtrArray RenderJobProcessor::SortLights(EntityPtr entity, LightPtrArray& lights)
   {
+    CPU_FUNC_RANGE();
+
     RenderJobArray jobs;
-    CreateRenderJobs({entity}, jobs);
+    EntityPtrArray oneEntity = {entity};
+    CreateRenderJobs(oneEntity, jobs);
 
     LightPtrArray allLights;
     for (RenderJob& rj : jobs)
     {
-      LightPtrArray la = SortLights(rj, lights);
-      allLights.insert(allLights.end(), la.begin(), la.end());
+      SortLights(rj, lights);
+      allLights.insert(allLights.end(), lights.begin(), lights.end());
     }
 
     return allLights;
   }
 
-  void RenderJobProcessor::StableSortByDistanceToCamera(RenderJobArray& jobArray, const CameraPtr cam)
+  void RenderJobProcessor::SortByDistanceToCamera(RenderJobArray& jobArray, const CameraPtr cam)
   {
+    CPU_FUNC_RANGE();
+
     std::function<bool(const RenderJob&, const RenderJob&)> sortFn = [cam](const RenderJob& j1,
                                                                            const RenderJob& j2) -> bool
     {
@@ -343,13 +390,15 @@ namespace ToolKit
       };
     }
 
-    std::stable_sort(jobArray.begin(), jobArray.end(), sortFn);
+    std::sort(jobArray.begin(), jobArray.end(), sortFn);
   }
 
   void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, CameraPtr camera) { FrustumCull(jobArray, camera); }
 
   void RenderJobProcessor::AssignEnvironment(RenderJobArray& jobArray, const EnvironmentComponentPtrArray& environments)
   {
+    CPU_FUNC_RANGE();
+
     if (environments.empty())
     {
       return;
@@ -387,7 +436,7 @@ namespace ToolKit
     Vec3 sum(0.0f);
     for (int i = 0; i < n; i++)
     {
-      Vec3 pos = rjVec[i].WorldTransform[3].xyz;
+      Vec3 pos  = rjVec[i].WorldTransform[3].xyz;
       sum      += pos;
     }
     mean      = sum / (float) n;
@@ -396,8 +445,8 @@ namespace ToolKit
     float ssd = 0.0f;
     for (int i = 0; i < n; i++)
     {
-      Vec3 pos  = rjVec[i].WorldTransform[3].xyz;
-      Vec3 diff = pos - mean;
+      Vec3 pos   = rjVec[i].WorldTransform[3].xyz;
+      Vec3 diff  = pos - mean;
       ssd       += glm::dot(diff, diff);
     }
     stdev = std::sqrt(ssd / (float) n);

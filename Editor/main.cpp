@@ -31,6 +31,7 @@
 #include "Gizmo.h"
 #include "Grid.h"
 #include "Mod.h"
+#include "TKProfiler.h"
 #include "UI.h"
 
 #include <Common/SDLEventPool.h>
@@ -52,11 +53,12 @@ namespace ToolKit
   namespace Editor
   {
 
-    bool g_running          = true;
-    SDL_Window* g_window    = nullptr;
-    SDL_GLContext g_context = nullptr;
-    App* g_app              = nullptr;
-    Main* g_proxy           = nullptr;
+    bool g_running               = true;
+    SDL_Window* g_window         = nullptr;
+    SDL_GLContext g_context      = nullptr;
+    App* g_app                   = nullptr;
+    Main* g_proxy                = nullptr;
+    SDLEventPool* g_sdlEventPool = nullptr;
 
     /*
      * Refactor as below.
@@ -127,17 +129,19 @@ namespace ToolKit
 
     void PreInit()
     {
+      g_sdlEventPool = new SDLEventPool();
+
       // PreInit Main
-      g_proxy = new Main();
+      g_proxy        = new Main();
       Main::SetProxy(g_proxy);
       CreateAppData();
       g_proxy->PreInit();
 
       // Platform dependent function assignments.
-      g_proxy->m_pluginManager->FreeModule      = &Win32Helpers::TKFreeModule;
-      g_proxy->m_pluginManager->LoadModule      = &Win32Helpers::TKLoadModule;
-      g_proxy->m_pluginManager->GetFunction     = &Win32Helpers::TKGetFunction;
-      g_proxy->m_pluginManager->GetCreationTime = &Win32Helpers::GetCreationTime;
+      g_proxy->m_pluginManager->FreeModule      = &PlatformHelpers::TKFreeModule;
+      g_proxy->m_pluginManager->LoadModule      = &PlatformHelpers::TKLoadModule;
+      g_proxy->m_pluginManager->GetFunction     = &PlatformHelpers::TKGetFunction;
+      g_proxy->m_pluginManager->GetCreationTime = &PlatformHelpers::GetCreationTime;
     }
 
     void Init()
@@ -153,14 +157,19 @@ namespace ToolKit
       {
 #ifdef TK_GL_CORE_3_2
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+
 #elif defined(TK_GL_ES_3_0)
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        // gpu performance markers are aveilable on OpenGL ES 3.2 pr OpenGL Core 4.3+
+  #ifdef TK_GPU_PROFILE
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+  #else
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+  #endif
 #endif // TK_GL_CORE_3_2
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -206,6 +215,8 @@ namespace ToolKit
           }
           else
           {
+            SDL_GL_MakeCurrent(g_window, g_context);
+
             // Init OpenGl.
             g_proxy->m_renderSys->InitGl(SDL_GL_GetProcAddress,
                                          [](const std::string& msg) -> void
@@ -229,7 +240,7 @@ namespace ToolKit
             g_proxy->Init();
 
             // Register Custom Classes.
-            TKObjectFactory* of = g_proxy->m_objectFactory;
+            ObjectFactory* of = g_proxy->m_objectFactory;
             of->Register<Grid>();
             of->Register<Anchor>();
             of->Register<Cursor>();
@@ -254,11 +265,11 @@ namespace ToolKit
 
             // Init app
             g_app                   = new App(settings.Window.Width, settings.Window.Height);
-            g_app->m_sysComExecFn   = &ToolKit::Win32Helpers::SysComExec;
-            g_app->m_shellOpenDirFn = &ToolKit::Win32Helpers::OpenExplorer;
+            g_app->m_sysComExecFn   = &ToolKit::PlatformHelpers::SysComExec;
+            g_app->m_shellOpenDirFn = &ToolKit::PlatformHelpers::OpenExplorer;
 
             GetLogger()->SetPlatformConsoleFn([](LogType type, const String& msg) -> void
-                                              { ToolKit::Win32Helpers::OutputLog((int) type, msg.c_str()); });
+                                              { ToolKit::PlatformHelpers::OutputLog((int) type, msg.c_str()); });
 
             // Allow classes with the MenuMetaKey to be created from the add menu.
             of->m_metaProcessorMap[MenuMetaKey] = [](StringView val) -> void
@@ -303,6 +314,7 @@ namespace ToolKit
       g_proxy->PostUninit();
       SafeDel(g_proxy);
 
+      SafeDel(g_sdlEventPool);
       SDL_DestroyWindow(g_window);
       SDL_Quit();
 
@@ -348,25 +360,44 @@ namespace ToolKit
 
       while (g_running)
       {
+        PUSH_CPU_MARKER("Whole Frame");
+
+        PUSH_CPU_MARKER("SDL Poll Event");
+
         SDL_Event sdlEvent;
         while (SDL_PollEvent(&sdlEvent))
         {
-          PoolEvent(sdlEvent);
+          g_sdlEventPool->PoolEvent(sdlEvent);
           ProcessEvent(sdlEvent);
         }
+
+        POP_CPU_MARKER();
 
         timer->CurrentTime = GetElapsedMilliSeconds();
         if (timer->CurrentTime > timer->LastTime + timer->DeltaTime)
         {
+          PUSH_CPU_MARKER("App Frame");
+
           g_app->Frame(timer->CurrentTime - timer->LastTime);
+
+          POP_CPU_MARKER();
+          PUSH_CPU_MARKER("Update Imgui Windows");
 
           // Update Present imgui windows.
           ImGui::UpdatePlatformWindows();
           ImGui::RenderPlatformWindowsDefault();
-          SDL_GL_MakeCurrent(g_window, g_context);
+
+          POP_CPU_MARKER();
+          PUSH_CPU_MARKER("Swap Window");
+
           SDL_GL_SwapWindow(g_window);
 
-          ClearPool(); // Clear after consumption.
+          POP_CPU_MARKER();
+          PUSH_CPU_MARKER("Clear SDL Event Pool");
+
+          g_sdlEventPool->ClearPool(); // Clear after consumption.
+
+          POP_CPU_MARKER();
 
           timer->FrameCount++;
           timer->TimeAccum += timer->CurrentTime - timer->LastTime;
@@ -379,6 +410,8 @@ namespace ToolKit
 
           timer->LastTime = timer->CurrentTime;
         }
+
+        POP_CPU_MARKER();
       }
     }
 

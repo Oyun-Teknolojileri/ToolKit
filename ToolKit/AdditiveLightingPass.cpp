@@ -32,6 +32,7 @@
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "TKProfiler.h"
 
 namespace ToolKit
 {
@@ -63,6 +64,9 @@ namespace ToolKit
 
   void AdditiveLightingPass::PreRender()
   {
+    PUSH_GPU_MARKER("AdditiveLightingPass::PreRender");
+    PUSH_CPU_MARKER("AdditiveLightingPass::PreRender");
+
     Pass::PreRender();
 
     int width  = m_params.MainFramebuffer->GetSettings().width;
@@ -80,7 +84,7 @@ namespace ToolKit
 
     m_lightingRt->m_settings          = oneChannelSet;
     m_lightingRt->ReconstructIfNeeded((uint) width, (uint) height);
-    m_lightingFrameBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_lightingRt);
+    m_lightingFrameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_lightingRt);
 
     Renderer* renderer          = GetRenderer();
     // Set gbuffer
@@ -94,10 +98,15 @@ namespace ToolKit
 
     m_lightingShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.AOTexture != nullptr));
     renderer->SetTexture(5, m_params.AOTexture ? m_params.AOTexture->m_textureId : 0);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void AdditiveLightingPass::SetLightUniforms(LightPtr light, int lightType)
   {
+    CPU_FUNC_RANGE();
+
     Vec3 pos = light->m_node->GetTranslation();
     m_lightingShader->SetShaderParameter("lightType", ParameterVariant(lightType));
     m_lightingShader->SetShaderParameter("lightPos", ParameterVariant(pos));
@@ -161,6 +170,9 @@ namespace ToolKit
 
   void AdditiveLightingPass::Render()
   {
+    PUSH_GPU_MARKER("AdditiveLightingPass::Render");
+    PUSH_CPU_MARKER("AdditiveLightingPass::Render");
+
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_lightingFrameBuffer, true, Vec4(0.0f));
     // Deferred render always uses PBR material
@@ -264,6 +276,7 @@ namespace ToolKit
     }
 
     renderer->CopyFrameBuffer(m_params.GBufferFramebuffer, m_params.MainFramebuffer, GraphicBitFields::DepthBits);
+
     // we need to use gbuffers depth in this pass in order to make proper depth test
     renderer->CopyFrameBuffer(m_params.GBufferFramebuffer, m_lightingFrameBuffer, GraphicBitFields::DepthBits);
 
@@ -293,7 +306,19 @@ namespace ToolKit
     // merge lighting, ibl, ao, and emmisive
     RenderSubPass(m_fullQuadPass);
     renderer->EnableDepthWrite(true);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
-  void AdditiveLightingPass::PostRender() { Pass::PostRender(); }
+  void AdditiveLightingPass::PostRender()
+  {
+    PUSH_GPU_MARKER("AdditiveLightingPass::PostRender");
+    PUSH_CPU_MARKER("AdditiveLightingPass::PostRender");
+
+    Pass::PostRender();
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
+  }
 } // namespace ToolKit

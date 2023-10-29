@@ -139,7 +139,7 @@ namespace ToolKit
 
     if (m_renderTarget->m_initiated)
     {
-      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_renderTarget);
+      m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_renderTarget);
     }
   }
 
@@ -206,8 +206,8 @@ namespace ToolKit
 
     Vec3 screenPos = glm::project(pnt, view, project, Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));
 
-    screenPos.x    += m_contentAreaLocation.x;
-    screenPos.y    = m_wndContentAreaSize.y + m_contentAreaLocation.y - screenPos.y;
+    screenPos.x += m_contentAreaLocation.x;
+    screenPos.y  = m_wndContentAreaSize.y + m_contentAreaLocation.y - screenPos.y;
 
     return screenPos.xy;
   }

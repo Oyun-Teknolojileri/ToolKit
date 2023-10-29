@@ -28,6 +28,7 @@
 
 #include "Shader.h"
 #include "ShaderReflectionCache.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -46,10 +47,16 @@ namespace ToolKit
 
   void GammaPass::PreRender()
   {
+    PUSH_GPU_MARKER("GammaPass::PreRender");
+    PUSH_CPU_MARKER("GammaPass::PreRender");
+
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
 
     m_postProcessShader->SetShaderParameter("Gamma", ParameterVariant(m_params.Gamma));
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
 } // namespace ToolKit

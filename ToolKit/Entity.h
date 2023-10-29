@@ -228,7 +228,7 @@ namespace ToolKit
   };
 
   /**
-   * DEPRECATED use TKObjectFactory
+   * DEPRECATED use ObjectFactory
    * Utility class to construct Entity.
    */
   class EntityFactory final

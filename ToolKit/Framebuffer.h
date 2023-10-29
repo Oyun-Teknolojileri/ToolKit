@@ -84,12 +84,12 @@ namespace ToolKit
     void UnInit();
     bool Initialized();
 
-    RenderTargetPtr SetAttachment(Attachment atc,
-                                  RenderTargetPtr rt,
-                                  int mip          = 0,
-                                  int layer        = -1,
-                                  CubemapFace face = CubemapFace::NONE);
-    
+    RenderTargetPtr SetColorAttachment(Attachment atc,
+                                       RenderTargetPtr rt,
+                                       int mip          = 0,
+                                       int layer        = -1,
+                                       CubemapFace face = CubemapFace::NONE);
+
     DepthTexturePtr GetDepthTexture();
     void AttachDepthTexture(DepthTexturePtr rt);
     RenderTargetPtr GetAttachment(Attachment atc);
@@ -97,16 +97,18 @@ namespace ToolKit
 
     uint GetFboId();
     uint GetDefaultRboId();
-    FramebufferSettings GetSettings();
-    void CheckFramebufferComplete();
+
+    inline FramebufferSettings GetSettings() { return m_settings; }
 
     void ReconstructIfNeeded(uint width, uint height);
 
-    RenderTargetPtr DetachAttachment(Attachment atc);
+    RenderTargetPtr DetachColorAttachment(Attachment atc);
     void RemoveDepthAttachment();
+
    private:
     void SetDrawBuffers();
     bool IsColorAttachment(Attachment atc);
+    void CheckFramebufferComplete();
 
    public:
     static const int m_maxColorAttachmentCount = 8;

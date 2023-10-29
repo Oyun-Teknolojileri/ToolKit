@@ -32,6 +32,7 @@
 #include "Pass.h"
 #include "ResourceComponent.h"
 #include "Skeleton.h"
+#include "TKProfiler.h"
 
 #include <execution>
 #include <mutex>
@@ -639,10 +640,10 @@ namespace ToolKit
   bool ConePointIntersection(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, Vec3 point)
   {
     // move cone to backwards
-    conePos -= coneDir;
-    Vec3 pointToCone = point - conePos;
-    float angle01    = glm::radians(coneAngle) / glm::pi<float>();
-    float toLength   = glm::length(pointToCone);
+    conePos          -= coneDir;
+    Vec3 pointToCone  = point - conePos;
+    float angle01     = glm::radians(coneAngle) / glm::pi<float>();
+    float toLength    = glm::length(pointToCone);
     // (pointToCone / toLength) for normalization (saved 1 sqrt instruction)
     // 1.4f for checking slightly far away from cone end (for example camera near plane)
     // 0.91f for expanding the cone angle little bit to work correctly (for example camera near plane)
@@ -743,14 +744,7 @@ namespace ToolKit
   bool FrustumTest(const Frustum& frustum, const BoundingBox& box)
   {
     IntersectResult res = FrustumBoxIntersection(frustum, box);
-    if (res == IntersectResult::Outside)
-    {
-      return true;
-    }
-    else
-    {
-      return false;
-    }
+    return res == IntersectResult::Outside;
   }
 
   void FrustumCull(EntityRawPtrArray& entities, CameraPtr camera)
@@ -766,6 +760,8 @@ namespace ToolKit
 
   void FrustumCull(RenderJobArray& jobs, CameraPtr camera)
   {
+    CPU_FUNC_RANGE();
+
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();
     Mat4 v          = camera->GetViewMatrix();
@@ -946,10 +942,8 @@ namespace ToolKit
     return points;
   }
 
-  Vec3Array GenerateRandomSamplesInHemisphere(int numSamples, float bias)
+  void GenerateRandomSamplesInHemisphere(int numSamples, float bias, Vec3Array& array)
   {
-    Vec3Array samples;
-
     // Generate random samples on the hemisphere with random length between 0
     // and 1
     for (int i = 0; i < numSamples; ++i)
@@ -959,14 +953,14 @@ namespace ToolKit
       // Calculate phi based on the parameter
       float phi    = glm::acos(1.f - bias * glm::linearRand(0.f, 1.f));
 
+      float scale  = (float) i / numSamples;
+      scale        = glm::lerp(0.1f, 1.0f, scale * scale);
       float length = glm::linearRand(0.f, 1.f);
-      float x      = glm::sin(phi) * glm::cos(theta) * length;
-      float y      = glm::sin(phi) * glm::sin(theta) * length;
-      float z      = glm::cos(phi) * length;
-      samples.push_back(glm::vec3(x, y, z));
+      float x      = glm::sin(phi) * glm::cos(theta) * length * scale;
+      float y      = glm::sin(phi) * glm::sin(theta) * length * scale;
+      float z      = glm::cos(phi) * length * scale;
+      array.push_back(glm::vec3(x, y, z));
     }
-
-    return samples;
   }
 
 } // namespace ToolKit

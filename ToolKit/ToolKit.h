@@ -125,7 +125,7 @@ namespace ToolKit
     class UIManager* m_uiManager               = nullptr;
     class SkeletonManager* m_skeletonManager   = nullptr;
     class FileManager* m_fileManager           = nullptr;
-    class TKObjectFactory* m_objectFactory     = nullptr;
+    class ObjectFactory* m_objectFactory     = nullptr;
     class RenderSystem* m_renderSys            = nullptr;
     class EngineSettings* m_engineSettings     = nullptr;
     HandleManager m_handleManager;
@@ -158,7 +158,7 @@ namespace ToolKit
   TK_API class SkeletonManager* GetSkeletonManager();
   TK_API class FileManager* GetFileManager();
   TK_API class EngineSettings& GetEngineSettings();
-  TK_API class TKObjectFactory* GetObjectFactory();
+  TK_API class ObjectFactory* GetObjectFactory();
 
   // Path.
   TK_API String DefaultPath();

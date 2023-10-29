@@ -24,13 +24,13 @@
  * SOFTWARE.
  */
 
-#include "ShadowPass.h"
-
 #include "Camera.h"
 #include "Logger.h"
 #include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
+#include "ShadowPass.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -60,6 +60,9 @@ namespace ToolKit
 
   void ShadowPass::Render()
   {
+    PUSH_GPU_MARKER("ShadowPass::Render");
+    PUSH_CPU_MARKER("ShadowPass::Render");
+
     const Vec4 lastClearColor = GetRenderer()->m_clearColor;
 
     // Update shadow maps.
@@ -70,19 +73,22 @@ namespace ToolKit
       {
         dLight->UpdateShadowFrustum(m_params.RendeJobs);
       }
-      else
-      {
-        light->UpdateShadowCamera();
-      }
+      // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
 
       RenderShadowMaps(light, m_params.RendeJobs);
     }
 
     GetRenderer()->m_clearColor = lastClearColor;
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void ShadowPass::PreRender()
   {
+    PUSH_GPU_MARKER("ShadowPass::PreRender");
+    PUSH_CPU_MARKER("ShadowPass::PreRender");
+
     Pass::PreRender();
 
     m_lastOverrideMat = GetRenderer()->m_overrideMat;
@@ -105,27 +111,48 @@ namespace ToolKit
     {
       m_clearedLayers[i] = false;
     }
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void ShadowPass::PostRender()
   {
+    PUSH_GPU_MARKER("ShadowPas::PostRender");
+    PUSH_CPU_MARKER("ShadowPas::PostRender");
+
     GetRenderer()->m_overrideMat = m_lastOverrideMat;
     Pass::PostRender();
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
   void ShadowPass::RenderShadowMaps(LightPtr light, const RenderJobArray& jobs)
   {
+    CPU_FUNC_RANGE();
+
     Renderer* renderer        = GetRenderer();
 
-    auto renderForShadowMapFn = [this, &renderer](LightPtr light, RenderJobArray jobs) -> void
+    auto renderForShadowMapFn = [this, &renderer](LightPtr light, const RenderJobArray& jobs) -> void
     {
-      FrustumCull(jobs, light->m_shadowCamera);
+      PUSH_CPU_MARKER("Render Call");
+
+      const Mat4& pr          = light->m_shadowCamera->GetProjectionMatrix();
+      const Mat4 v            = light->m_shadowCamera->GetViewMatrix();
+      const Frustum frustum   = ExtractFrustum(pr * v, false);
 
       renderer->m_overrideMat = light->GetShadowMaterial();
-      for (RenderJob& job : jobs)
+      for (const RenderJob& job : jobs)
       {
+        // Frustum cull
+        if (FrustumTest(frustum, job.BoundingBox))
+        {
+          continue;
+        }
+
         MaterialPtr material = job.Material;
         renderer->m_overrideMat->SetRenderState(material->GetRenderState());
         renderer->m_overrideMat->UnInit();
@@ -135,6 +162,8 @@ namespace ToolKit
         renderer->m_overrideMat->Init();
         renderer->Render(job, light->m_shadowCamera);
       }
+
+      POP_CPU_MARKER();
     };
 
     if (light->IsA<PointLight>())
@@ -143,20 +172,16 @@ namespace ToolKit
 
       for (int i = 0; i < 6; ++i)
       {
-        m_shadowFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                           m_shadowAtlas,
-                                           0,
-                                           light->m_shadowAtlasLayer + i);
+        m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                                m_shadowAtlas,
+                                                0,
+                                                light->m_shadowAtlasLayer + i);
 
         // Clear the layer if needed
         if (!m_clearedLayers[light->m_shadowAtlasLayer + i])
         {
-          renderer->ClearBuffer(GraphicBitFields::AllBits, m_shadowClearColor);
+          renderer->ClearBuffer(GraphicBitFields::ColorDepthBits, m_shadowClearColor);
           m_clearedLayers[light->m_shadowAtlasLayer + i] = true;
-        }
-        else
-        {
-          renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
         }
 
         light->m_shadowCamera->m_node->SetTranslation(light->m_node->GetTranslation());
@@ -176,20 +201,16 @@ namespace ToolKit
     else if (light->IsA<DirectionalLight>() || light->IsA<SpotLight>())
     {
       renderer->SetFramebuffer(m_shadowFramebuffer, false);
-      m_shadowFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                         m_shadowAtlas,
-                                         0,
-                                         light->m_shadowAtlasLayer);
+      m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                              m_shadowAtlas,
+                                              0,
+                                              light->m_shadowAtlasLayer);
 
       // Clear the layer if needed
       if (!m_clearedLayers[light->m_shadowAtlasLayer])
       {
-        renderer->ClearBuffer(GraphicBitFields::AllBits, m_shadowClearColor);
+        renderer->ClearBuffer(GraphicBitFields::ColorDepthBits, m_shadowClearColor);
         m_clearedLayers[light->m_shadowAtlasLayer] = true;
-      }
-      else
-      {
-        renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
       }
 
       renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
@@ -203,6 +224,8 @@ namespace ToolKit
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights)
   {
+    CPU_FUNC_RANGE();
+
     int layerCount                           = -1;
     int lastLayerOfDirAndSpotLightShadowsUse = -1;
 
@@ -266,19 +289,29 @@ namespace ToolKit
       pointLights[i]->m_shadowAtlasLayer = rects[i].ArrayIndex;
     }
 
+    int pointLightShadowLayerStartIndex = lastLayerOfDirAndSpotLightShadowsUse + 1;
+
     // Adjust point light parameters
+    int pointLightIndex                 = 0;
     for (LightPtr light : pointLights)
     {
-      light->m_shadowAtlasLayer += lastLayerOfDirAndSpotLightShadowsUse + 1;
-      light->m_shadowAtlasLayer *= 6;
-      layerCount                 = std::max(light->m_shadowAtlasLayer + 5, layerCount);
+      light->m_shadowAtlasLayer = pointLightShadowLayerStartIndex + pointLightIndex * 6;
+      layerCount                = light->m_shadowAtlasLayer + 6;
+      pointLightIndex++;
     }
 
-    return layerCount + 1;
+    if (pointLights.empty())
+    {
+      layerCount += 1;
+    }
+
+    return layerCount;
   }
 
   void ShadowPass::InitShadowAtlas()
   {
+    CPU_FUNC_RANGE();
+
     // Check if the shadow atlas needs to be updated
     bool needChange = false;
 

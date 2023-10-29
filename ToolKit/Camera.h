@@ -30,24 +30,10 @@
 
 namespace ToolKit
 {
-
   static VariantCategory CameraCategory {"Camera", 100};
 
   class TK_API Camera : public Entity
   {
-   public:
-    struct CamData
-    {
-      Vec3 pos;
-      Vec3 dir;
-      Mat4 projection;
-      float fov;
-      float aspect;
-      float nearDist;
-      float far;
-      bool ortographic;
-    };
-
    public:
     TKDeclareClass(Camera, Entity);
 
@@ -58,24 +44,37 @@ namespace ToolKit
     void SetLens(float fov, float aspect, float near, float far);
     void SetLens(float left, float right, float bottom, float top, float near, float far);
 
-    Mat4 GetViewMatrix() const;
-    Mat4 GetProjectionMatrix() const;
-    bool IsOrtographic() const;
+    inline Mat4 GetViewMatrix() const
+    {
+      Mat4 view = m_node->GetTransform();
+      return glm::inverse(view);
+    }
 
-    CamData GetData() const;
+    inline const Mat4& GetProjectionMatrix() const { return m_projection; }
+
+    bool IsOrtographic() const;
 
     // Tight fit camera frustum to a bounding box with a margin
     void FocusToBoundingBox(const BoundingBox& bb, float margin);
 
-    float Fov() const;
-    float Aspect() const;
-    float Near() const;
-    float Far() const;
-    float Left() const;
-    float Right() const;
-    float Top() const;
-    float Bottom() const;
-    Vec3 Position() const;
+    inline float Fov() const { return m_fov; }
+
+    inline float Aspect() const { return m_aspect; }
+
+    inline float Near() const { return m_near; }
+
+    inline float Far() const { return m_far; }
+
+    inline float Left() const { return m_left; }
+
+    inline float Right() const { return m_right; }
+
+    inline float Top() const { return m_top; }
+
+    inline float Bottom() const { return m_bottom; }
+
+    inline Vec3 Position() const { return m_node->GetTranslation(); }
+
     Vec3 Direction() const;
 
    protected:

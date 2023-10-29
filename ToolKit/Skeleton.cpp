@@ -425,7 +425,7 @@ namespace ToolKit
 
   SkeletonManager::SkeletonManager() { m_baseType = Skeleton::StaticClass(); }
 
-  bool SkeletonManager::CanStore(TKClass* Class)
+  bool SkeletonManager::CanStore(ClassMeta* Class)
   {
     if (Class == Skeleton::StaticClass())
     {
@@ -435,7 +435,7 @@ namespace ToolKit
     return false;
   }
 
-  ResourcePtr SkeletonManager::CreateLocal(TKClass* Class)
+  ResourcePtr SkeletonManager::CreateLocal(ClassMeta* Class)
   {
     if (Class == Skeleton::StaticClass())
     {

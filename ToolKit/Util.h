@@ -67,7 +67,13 @@ namespace ToolKit
   TK_API String CreateCopyFileFullPath(const String& fullPath);
   TK_API void DecomposePath(const String& fullPath, String* path, String* name, String* ext);
 
-  TK_API void NormalizePath(String& path);
+  TK_API String NormalizePath(String path);
+  TK_API void NormalizePathInplace(String& path);
+
+  typedef std::function<void(int)> RunPipeCallback;
+
+  TK_API int RunPipe(const String& command, RunPipeCallback afterFn);
+
   TK_API void UnixifyPath(String& path);
   TK_API void DosifyPath(String& path);
   TK_API String ConcatPaths(const StringArray& entries);
@@ -107,11 +113,11 @@ namespace ToolKit
    */
   TK_API String GetFileName(const String& path);
 
-  TK_API String CreatePathFromResourceType(const String& file, struct TKClass* Class);
+  TK_API String CreatePathFromResourceType(const String& file, struct ClassMeta* Class);
 
-  TK_API struct TKClass* GetResourceType(const String& ext);
-  TK_API String GetExtFromType(struct TKClass* Class);
-  TK_API String GetResourcePath(struct TKClass* Class);
+  TK_API struct ClassMeta* GetResourceType(const String& ext);
+  TK_API String GetExtFromType(struct ClassMeta* Class);
+  TK_API String GetResourcePath(struct ClassMeta* Class);
 
   TK_API char GetPathSeparator();
   TK_API String GetPathSeparatorAsStr();
@@ -216,11 +222,10 @@ namespace ToolKit
     return std::find(arr.cbegin(), arr.cend(), val) != arr.cend();
   }
 
-
-  template<class _Tp, class _Up>
+  template <class _Tp, class _Up>
   inline std::shared_ptr<_Tp> tk_reinterpret_pointer_cast(const std::shared_ptr<_Up>& __r)
   {
-      return std::shared_ptr<_Tp>(__r, reinterpret_cast<_Tp*>(__r.get()));
+    return std::shared_ptr<_Tp>(__r, reinterpret_cast<_Tp*>(__r.get()));
   }
 
   /**
@@ -234,9 +239,12 @@ namespace ToolKit
     auto it = std::find(arr.cbegin(), arr.cend(), val);
     return it == arr.cend() ? -1 : int(it - arr.cbegin());
   }
-  
-  template<typename T, uint64  N>
-  inline constexpr uint64 ArraySize(const T (&)[N]) { return N; }
+
+  template <typename T, uint64 N>
+  inline constexpr uint64 ArraySize(const T (&)[N])
+  {
+    return N;
+  }
 
   //  Time.
   ///////////////////////////////////////////////////////

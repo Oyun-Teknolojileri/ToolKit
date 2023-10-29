@@ -591,7 +591,7 @@ namespace ToolKit
 
     EditorSceneManager::~EditorSceneManager() {}
 
-    ResourcePtr EditorSceneManager::CreateLocal(TKClass* Class)
+    ResourcePtr EditorSceneManager::CreateLocal(ClassMeta* Class)
     {
       if (Class == EditorScene::StaticClass())
       {

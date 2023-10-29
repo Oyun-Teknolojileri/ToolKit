@@ -30,6 +30,7 @@
 #include "Mesh.h"
 #include "Pass.h"
 #include "Shader.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -49,14 +50,23 @@ namespace ToolKit
 
   void ForwardRenderPass::Render()
   {
+    PUSH_GPU_MARKER("ForwardRenderPass::Render");
+    PUSH_CPU_MARKER("ForwardRenderPass::Render");
+
     RenderOpaque(m_params.OpaqueJobs, m_params.Cam, m_params.Lights);
     RenderTranslucent(m_params.TranslucentJobs, m_params.Cam, m_params.Lights);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   ForwardRenderPass::~ForwardRenderPass() {}
 
   void ForwardRenderPass::PreRender()
   {
+    PUSH_GPU_MARKER("ForwardRenderPass::PreRender");
+    PUSH_CPU_MARKER("ForwardRenderPass::PreRender");
+
     Pass::PreRender();
     // Set self data.
     Renderer* renderer = GetRenderer();
@@ -67,18 +77,29 @@ namespace ToolKit
     }
     renderer->SetCameraLens(m_params.Cam);
     renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void ForwardRenderPass::PostRender()
   {
+    PUSH_GPU_MARKER("ForwardRenderPass::PostRender");
+    PUSH_CPU_MARKER("ForwardRenderPass::PostRender");
+
     Pass::PostRender();
     GetRenderer()->m_overrideMat = nullptr;
     Renderer* renderer           = GetRenderer();
     renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
-  void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)
+  void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, CameraPtr cam, LightPtrArray& lights)
   {
+    PUSH_CPU_MARKER("ForwardRenderPass::RenderOpaque");
+
     Renderer* renderer = GetRenderer();
 
     if (m_params.SsaoTexture)
@@ -88,35 +109,39 @@ namespace ToolKit
 
     for (const RenderJob& job : jobs)
     {
-      LightPtrArray lightList = RenderJobProcessor::SortLights(job, lights);
+      RenderJobProcessor::SortLights(job, lights);
       job.Material->m_fragmentShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.SSAOEnabled));
-      renderer->Render(job, m_params.Cam, lightList);
+      renderer->Render(job, m_params.Cam, lights);
     }
+
+    POP_CPU_MARKER();
   }
 
-  void ForwardRenderPass::RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, const LightPtrArray& lights)
+  void ForwardRenderPass::RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, LightPtrArray& lights)
   {
-    RenderJobProcessor::StableSortByDistanceToCamera(jobs, cam);
+    PUSH_CPU_MARKER("ForwardRenderPass::RenderTranslucent");
+
+    RenderJobProcessor::SortByDistanceToCamera(jobs, cam);
 
     Renderer* renderer = GetRenderer();
-    auto renderFnc     = [cam, lights, renderer](RenderJob& job)
+    auto renderFnc     = [cam, &lights, renderer](RenderJob& job)
     {
-      LightPtrArray culledLights = RenderJobProcessor::SortLights(job, lights);
+      RenderJobProcessor::SortLights(job, lights);
 
-      MaterialPtr mat            = job.Material;
+      MaterialPtr mat = job.Material;
       if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
       {
         mat->GetRenderState()->cullMode = CullingType::Front;
-        renderer->Render(job, cam, culledLights);
+        renderer->Render(job, cam, lights);
 
         mat->GetRenderState()->cullMode = CullingType::Back;
-        renderer->Render(job, cam, culledLights);
+        renderer->Render(job, cam, lights);
 
         mat->GetRenderState()->cullMode = CullingType::TwoSided;
       }
       else
       {
-        renderer->Render(job, cam, culledLights);
+        renderer->Render(job, cam, lights);
       }
     };
 
@@ -124,6 +149,8 @@ namespace ToolKit
     {
       renderFnc(job);
     }
+
+    POP_CPU_MARKER();
   }
 
 } // namespace ToolKit
