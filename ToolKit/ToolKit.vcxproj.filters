@@ -162,5 +162,6 @@
     <ClInclude Include="Util.h" />
     <ClInclude Include="Viewport.h" />
     <ClInclude Include="TKImage.h" />
+    <ClInclude Include="TKProfiler.h" />
   </ItemGroup>
 </Project>

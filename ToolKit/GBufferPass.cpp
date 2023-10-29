@@ -30,6 +30,7 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -87,6 +88,9 @@ namespace ToolKit
 
   void GBufferPass::InitGBuffers(int width, int height)
   {
+    PUSH_GPU_MARKER("GBufferPass::InitGBuffers");
+    PUSH_CPU_MARKER("GBufferPass::InitGBuffers");
+
     bool reInitGBuffers = false;
     if (m_initialized)
     {
@@ -127,13 +131,13 @@ namespace ToolKit
       m_gMetallicRoughnessRt->Init();
     }
 
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_gPosRt);
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment1, m_gNormalRt);
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment2, m_gColorRt);
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment3, m_gEmissiveRt);
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment4, m_gLinearDepthRt);
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment5, m_gMetallicRoughnessRt);
-    m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment6, m_gIblRt);
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_gPosRt);
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment1, m_gNormalRt);
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment2, m_gColorRt);
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment3, m_gEmissiveRt);
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment4, m_gLinearDepthRt);
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment5, m_gMetallicRoughnessRt);
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment6, m_gIblRt);
 
     // Gbuffer material
     ShaderPtr vertexShader              = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
@@ -143,6 +147,9 @@ namespace ToolKit
     m_gBufferMaterial->m_fragmentShader = fragmentShader;
 
     m_initialized                       = true;
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void GBufferPass::UnInitGBuffers()
@@ -167,18 +174,36 @@ namespace ToolKit
 
   void GBufferPass::PreRender()
   {
+    PUSH_GPU_MARKER("GBufferPass::PreRender");
+    PUSH_CPU_MARKER("GBufferPass::PreRender");
+
     Pass::PreRender();
 
     Renderer* renderer = GetRenderer();
     renderer->ResetTextureSlots();
     renderer->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
     renderer->SetCameraLens(m_params.Camera);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
-  void GBufferPass::PostRender() { Pass::PostRender(); }
+  void GBufferPass::PostRender()
+  {
+    PUSH_GPU_MARKER("GBufferPass::PostRender");
+    PUSH_CPU_MARKER("GBufferPass::PostRender");
+
+    Pass::PostRender();
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
+  }
 
   void GBufferPass::Render()
   {
+    PUSH_GPU_MARKER("GBufferPass::Render");
+    PUSH_CPU_MARKER("GBufferPass::Render");
+
     Renderer* renderer = GetRenderer();
     for (RenderJob& job : m_params.RendeJobs)
     {
@@ -200,6 +225,9 @@ namespace ToolKit
       renderer->m_overrideMat = m_gBufferMaterial;
       renderer->Render(job, m_params.Camera, {});
     }
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
 } // namespace ToolKit

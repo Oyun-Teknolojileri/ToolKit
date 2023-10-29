@@ -29,6 +29,7 @@
 #include "SceneRenderPath.h"
 
 #include "Scene.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -70,7 +71,11 @@ namespace ToolKit
 
   void SceneRenderPath::Render(Renderer* renderer)
   {
+    PUSH_CPU_MARKER("SceneRenderPath::PreRender");
     PreRender(renderer);
+    POP_CPU_MARKER();
+
+    PUSH_CPU_MARKER("SceneRenderPath::Render");
 
     // First stage of the render.
     m_passArray.clear();
@@ -140,7 +145,11 @@ namespace ToolKit
 
     renderer->SetShadowAtlas(nullptr);
 
+    POP_CPU_MARKER();
+
+    PUSH_CPU_MARKER("SceneRenderer::PostRender");
     PostRender();
+    POP_CPU_MARKER();
   }
 
   void SceneRenderPath::PreRender(Renderer* renderer)
@@ -158,6 +167,8 @@ namespace ToolKit
 
   void SceneRenderPath::SetPassParams()
   {
+    CPU_FUNC_RANGE();
+
     // Update all lights before using them.
     m_updatedLights = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
 
@@ -166,22 +177,27 @@ namespace ToolKit
       light->UpdateShadowCamera();
     }
 
-    EntityPtrArray allDrawList = m_params.Scene->GetEntities();
+    const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
-    RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs(allDrawList, jobs);
+    m_jobs.clear();
+    RenderJobProcessor::CreateRenderJobs(allDrawList, m_jobs);
 
-    m_shadowPass->m_params.RendeJobs = jobs;
+    m_shadowPass->m_params.RendeJobs = m_jobs; // Copy
+
     m_shadowPass->m_params.Lights    = m_updatedLights;
 
-    RenderJobProcessor::CullRenderJobs(jobs, m_params.Cam);
+    RenderJobProcessor::CullRenderJobs(m_jobs, m_params.Cam);
 
-    RenderJobProcessor::AssignEnvironment(jobs, m_params.Scene->GetEnvironmentVolumes());
+    RenderJobProcessor::AssignEnvironment(m_jobs, m_params.Scene->GetEnvironmentVolumes());
 
-    RenderJobArray deferred, forward, translucent;
-    RenderJobProcessor::SeperateDeferredForward(jobs, deferred, forward, translucent);
+    m_gBufferPass->m_params.RendeJobs.clear();
+    m_forwardRenderPass->m_params.OpaqueJobs.clear();
+    m_forwardRenderPass->m_params.TranslucentJobs.clear();
+    RenderJobProcessor::SeperateDeferredForward(m_jobs,
+                                                m_gBufferPass->m_params.RendeJobs,
+                                                m_forwardRenderPass->m_params.OpaqueJobs,
+                                                m_forwardRenderPass->m_params.TranslucentJobs);
 
-    m_gBufferPass->m_params.RendeJobs              = deferred;
     m_gBufferPass->m_params.Camera                 = m_params.Cam;
 
     m_forwardRenderPass->m_params.Lights           = m_updatedLights;
@@ -193,8 +209,6 @@ namespace ToolKit
     m_forwardRenderPass->m_params.SSAOEnabled      = m_params.Gfx.SSAOEnabled;
     m_forwardRenderPass->m_params.SsaoTexture      = m_ssaoPass->m_ssaoTexture;
     m_forwardRenderPass->m_params.ClearFrameBuffer = false;
-    m_forwardRenderPass->m_params.OpaqueJobs       = forward;
-    m_forwardRenderPass->m_params.TranslucentJobs  = translucent;
 
     m_forwardPreProcessPass->m_params              = m_forwardRenderPass->m_params;
 

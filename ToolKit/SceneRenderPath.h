@@ -91,6 +91,9 @@ namespace ToolKit
    protected:
     bool m_drawSky   = false;
     SkyBasePtr m_sky = nullptr;
+
+    // Cached variables
+    RenderJobArray m_jobs;
   };
 
   typedef std::shared_ptr<SceneRenderPath> SceneRenderPathPtr;

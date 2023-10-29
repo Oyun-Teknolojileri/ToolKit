@@ -27,6 +27,7 @@
 #include "BillboardPass.h"
 
 #include "Entity.h"
+#include "TKProfiler.h"
 
 #include "DebugNew.h"
 
@@ -40,6 +41,9 @@ namespace ToolKit
 
   void BillboardPass::Render()
   {
+    PUSH_GPU_MARKER("BillboardPass::Render");
+    PUSH_CPU_MARKER("BillboardPass::Render");
+
     Renderer* renderer = GetRenderer();
     Viewport* vp       = m_params.Viewport;
 
@@ -48,11 +52,12 @@ namespace ToolKit
 
     auto renderBillboardsFn = [this, cam, renderer](EntityPtrArray& billboards) -> void
     {
-      RenderJobArray jobs;
-      RenderJobProcessor::CreateRenderJobs(billboards, jobs);
+      m_jobs.clear();
+      RenderJobProcessor::CreateRenderJobs(billboards, m_jobs);
 
-      RenderJobArray opaque, translucent;
-      RenderJobProcessor::SeperateOpaqueTranslucent(jobs, opaque, translucent);
+      m_opaque.clear();
+      m_translucent.clear();
+      RenderJobProcessor::SeperateOpaqueTranslucent(m_jobs, m_opaque, m_translucent);
 
       auto renderArrayFn = [cam, renderer](RenderJobArray& jobs) -> void
       {
@@ -62,8 +67,8 @@ namespace ToolKit
         }
       };
 
-      renderArrayFn(opaque);
-      renderArrayFn(translucent);
+      renderArrayFn(m_opaque);
+      renderArrayFn(m_translucent);
     };
 
     renderer->EnableDepthTest(false);
@@ -71,10 +76,16 @@ namespace ToolKit
 
     renderer->EnableDepthTest(true);
     renderBillboardsFn(m_params.Billboards);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void BillboardPass::PreRender()
   {
+    PUSH_GPU_MARKER("BillboardPass::PreRender");
+    PUSH_CPU_MARKER("BillboardPass::PreRender");
+
     Pass::PreRender();
 
     // Process billboards.
@@ -95,6 +106,9 @@ namespace ToolKit
                   // Return separation condition.
                   return cbb->m_settings.bypassDepthTest;
                 });
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
 } // namespace ToolKit

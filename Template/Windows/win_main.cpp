@@ -28,6 +28,7 @@ namespace ToolKit
   Main* g_proxy                    = nullptr;
   Viewport* g_viewport             = nullptr;
   EngineSettings* g_engineSettings = nullptr;
+  SDLEventPool* g_sdlEventPool     = nullptr;
 
   // Setup.
   const char* g_appName            = "ToolKit";
@@ -74,19 +75,19 @@ namespace ToolKit
 
       // UI pass.
       UILayerPtrArray layers;
-      RenderJobArray uiRenderJobs;
+      m_uiRenderJobs.clear();
       GetUIManager()->GetLayers(m_params.viewport->m_viewportId, layers);
 
       for (const UILayerPtr& layer : layers)
       {
         EntityPtrArray& uiNtties = layer->m_scene->AccessEntityArray();
-        RenderJobProcessor::CreateRenderJobs(uiNtties, uiRenderJobs);
+        RenderJobProcessor::CreateRenderJobs(uiNtties, m_uiRenderJobs);
       }
 
       m_uiPass->m_params.OpaqueJobs.clear();
       m_uiPass->m_params.TranslucentJobs.clear();
 
-      RenderJobProcessor::SeperateOpaqueTranslucent(uiRenderJobs,
+      RenderJobProcessor::SeperateOpaqueTranslucent(m_uiRenderJobs,
                                                     m_uiPass->m_params.OpaqueJobs,
                                                     m_uiPass->m_params.TranslucentJobs);
 
@@ -104,6 +105,7 @@ namespace ToolKit
 
    private:
     ForwardRenderPassPtr m_uiPass = nullptr;
+    RenderJobArray m_uiRenderJobs;
   };
 
   UIRenderTechnique m_uiRenderTechnique;
@@ -339,8 +341,10 @@ namespace ToolKit
 
   void PreInit()
   {
+    g_sdlEventPool = new SDLEventPool();
+
     // PreInit Main
-    g_proxy = new Main();
+    g_proxy        = new Main();
     Main::SetProxy(g_proxy);
 
     g_proxy->PreInit();
@@ -435,6 +439,7 @@ namespace ToolKit
     Main::GetInstance()->Uninit();
     SafeDel(g_proxy);
 
+    SafeDel(g_sdlEventPool);
     SDL_DestroyWindow(g_window);
     SDL_Quit();
 
@@ -476,7 +481,7 @@ namespace ToolKit
     {
       while (SDL_PollEvent(&sdlEvent))
       {
-        PoolEvent(sdlEvent);
+        g_sdlEventPool->PoolEvent(sdlEvent);
         ProcessEvent(sdlEvent);
       }
 
@@ -519,7 +524,7 @@ namespace ToolKit
 
         Render(g_viewport->m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0)->m_textureId);
 
-        ClearPool(); // Clear after consumption.
+        g_sdlEventPool->ClearPool(); // Clear after consumption.
         SDL_GL_SwapWindow(g_window);
 
         timer.frameCount++;

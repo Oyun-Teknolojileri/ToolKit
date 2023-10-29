@@ -37,6 +37,7 @@
 #include <GradientSky.h>
 #include <Material.h>
 #include <MaterialComponent.h>
+#include <TKProfiler.h>
 #include <UIManager.h>
 
 #include <DebugNew.h>
@@ -70,7 +71,12 @@ namespace ToolKit
 
     void EditorRenderer::Render(Renderer* renderer)
     {
+      PUSH_CPU_MARKER("EditorRenderer::PreRender");
+
       PreRender();
+
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("EditorRenderer::Render");
 
       SetLitMode(renderer, m_params.LitMode);
 
@@ -131,6 +137,9 @@ namespace ToolKit
         break;
       }
 
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("EditorRender Editor & PostProcess Render");
+
       if (m_params.LitMode != EditorLitMode::Game)
       {
         // Draw scene and apply bloom effect.
@@ -170,7 +179,11 @@ namespace ToolKit
         RenderPath::Render(renderer);
       }
 
+      POP_CPU_MARKER();
+
+      PUSH_CPU_MARKER("EditorRender::PostRender");
       PostRender();
+      POP_CPU_MARKER();
     }
 
     void EditorRenderer::PreRender()
@@ -239,18 +252,17 @@ namespace ToolKit
 
       EditorViewport* viewport = static_cast<EditorViewport*>(m_params.Viewport);
 
-      RenderJobArray renderJobs;
-      RenderJobArray opaque;
-      RenderJobArray translucent;
-
-      RenderJobProcessor::CreateRenderJobs(editorEntities, renderJobs);
-      RenderJobProcessor::SeperateOpaqueTranslucent(renderJobs, opaque, translucent);
+      m_renderJobs.clear();
+      RenderJobProcessor::CreateRenderJobs(editorEntities, m_renderJobs);
+      m_opaque.clear();
+      m_translucent.clear();
+      RenderJobProcessor::SeperateOpaqueTranslucent(m_renderJobs, m_opaque, m_translucent);
 
       // Editor pass.
       m_editorPass->m_params.Cam              = m_camera;
       m_editorPass->m_params.FrameBuffer      = viewport->m_framebuffer;
-      m_editorPass->m_params.OpaqueJobs       = opaque;
-      m_editorPass->m_params.TranslucentJobs  = translucent;
+      m_editorPass->m_params.OpaqueJobs       = m_opaque;
+      m_editorPass->m_params.TranslucentJobs  = m_translucent;
       m_editorPass->m_params.ClearFrameBuffer = false;
 
       if (m_params.UseMobileRenderPath)
@@ -276,19 +288,19 @@ namespace ToolKit
 
       // UI pass.
       UILayerPtrArray layers;
-      RenderJobArray uiRenderJobs;
+      m_uiRenderJobs.clear();
       GetUIManager()->GetLayers(viewport->m_viewportId, layers);
 
       for (const UILayerPtr& layer : layers)
       {
         EntityPtrArray& uiNtties = layer->m_scene->AccessEntityArray();
-        RenderJobProcessor::CreateRenderJobs(uiNtties, uiRenderJobs);
+        RenderJobProcessor::CreateRenderJobs(uiNtties, m_uiRenderJobs);
       }
 
       m_uiPass->m_params.OpaqueJobs.clear();
       m_uiPass->m_params.TranslucentJobs.clear();
 
-      RenderJobProcessor::SeperateOpaqueTranslucent(uiRenderJobs,
+      RenderJobProcessor::SeperateOpaqueTranslucent(m_uiRenderJobs,
                                                     m_uiPass->m_params.OpaqueJobs,
                                                     m_uiPass->m_params.TranslucentJobs);
 
@@ -310,7 +322,7 @@ namespace ToolKit
       m_singleMatRenderer->m_params.ForwardParams.Lights           = lights;
       m_singleMatRenderer->m_params.ForwardParams.ClearFrameBuffer = true;
 
-      m_singleMatRenderer->m_params.ForwardParams.OpaqueJobs       = renderJobs;
+      m_singleMatRenderer->m_params.ForwardParams.OpaqueJobs       = m_renderJobs;
 
       m_singleMatRenderer->m_params.ForwardParams.FrameBuffer      = viewport->m_framebuffer;
 

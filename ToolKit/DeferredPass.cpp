@@ -32,6 +32,7 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -53,6 +54,9 @@ namespace ToolKit
 
   void DeferredRenderPass::PreRender()
   {
+    PUSH_GPU_MARKER("DeferredRenderPas::PreRender");
+    PUSH_CPU_MARKER("DeferredRenderPas::PreRender");
+
     Pass::PreRender();
 
     if (m_lightDataTexture == nullptr)
@@ -112,19 +116,34 @@ namespace ToolKit
 
     m_deferredRenderShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.AOTexture != nullptr));
     renderer->SetTexture(5, m_params.AOTexture ? m_params.AOTexture->m_textureId : 0);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void DeferredRenderPass::PostRender()
   {
+    PUSH_GPU_MARKER("DeferredRenderPass::PostRender");
+    PUSH_CPU_MARKER("DeferredRenderPass::PostRender");
+
     // Copy real depth buffer to main framebuffer depth
     GetRenderer()->CopyFrameBuffer(m_params.GBufferFramebuffer, m_params.MainFramebuffer, GraphicBitFields::DepthBits);
     Pass::PostRender();
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void DeferredRenderPass::Render()
   {
+    PUSH_GPU_MARKER("DeferredRenderPass::Render");
+    PUSH_CPU_MARKER("DeferredRenderPass::Render");
+
     // Deferred render always uses PBR material
     RenderSubPass(m_fullQuadPass);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void DeferredRenderPass::InitLightDataTexture()

@@ -164,7 +164,7 @@ namespace ToolKit
       m_thumbnailRT = MakeNewPtr<RenderTarget>(m_maxThumbSize, m_maxThumbSize);
       m_thumbnailRT->Init();
 
-      m_thumbnailBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_thumbnailRT);
+      m_thumbnailBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_thumbnailRT);
 
       Mat4 camTs = m_cam->m_node->GetTransform();
       m_lightSystem->m_parentNode->SetTransform(camTs);

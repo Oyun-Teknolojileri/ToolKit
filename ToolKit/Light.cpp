@@ -35,6 +35,7 @@
 #include "Pass.h"
 #include "Renderer.h"
 #include "Shader.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -94,7 +95,7 @@ namespace ToolKit
 
   void Light::UpdateShadowCamera()
   {
-    Mat4 proj                             = m_shadowCamera->GetProjectionMatrix();
+    const Mat4& proj                      = m_shadowCamera->GetProjectionMatrix();
     Mat4 view                             = m_shadowCamera->GetViewMatrix();
 
     m_shadowMapCameraProjectionViewMatrix = proj * view;
@@ -106,10 +107,14 @@ namespace ToolKit
   void Light::InitShadowMapDepthMaterial()
   {
     // Create shadow material
-    ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthVert.shader", true));
-    ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthFrag.shader", true));
+    ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthVert.shader", true));
+    ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthFrag.shader", true));
 
-    m_shadowMapMaterial = MakeNewPtr<Material>();
+    if (m_shadowMapMaterial == nullptr)
+    {
+      m_shadowMapMaterial = MakeNewPtr<Material>();
+    }
+    m_shadowMapMaterial->UnInit();
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
@@ -167,6 +172,7 @@ namespace ToolKit
   void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs)
   {
     FitEntitiesBBoxIntoShadowFrustum(m_shadowCamera, jobs);
+
     UpdateShadowCamera();
   }
 
@@ -276,7 +282,7 @@ namespace ToolKit
     }
     center                 /= 8.0f;
 
-    TransformationSpace ts = TransformationSpace::TS_WORLD;
+    TransformationSpace ts  = TransformationSpace::TS_WORLD;
     lightCamera->m_node->SetTranslation(center, ts);
     lightCamera->m_node->SetOrientation(m_node->GetOrientation(ts), ts);
     const Mat4 lightView = lightCamera->GetViewMatrix();
@@ -311,6 +317,7 @@ namespace ToolKit
     m_shadowCamera->SetLens(glm::half_pi<float>(), 1.0f, 0.01f, AffectDistance());
 
     Light::UpdateShadowCamera();
+
     UpdateShadowCameraTransform();
   }
 
@@ -361,6 +368,7 @@ namespace ToolKit
     m_shadowCamera->SetLens(glm::radians(GetOuterAngleVal()), 1.0f, 0.01f, AffectDistance());
 
     Light::UpdateShadowCamera();
+
     UpdateShadowCameraTransform();
 
     n_frustumCache = ExtractFrustum(m_shadowMapCameraProjectionViewMatrix, false);
@@ -387,19 +395,19 @@ namespace ToolKit
     return node;
   }
 
-  XmlNode* SpotLight::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) 
-  { 
-    XmlNode* node = Super::DeSerializeImp(info, parent); 
+  XmlNode* SpotLight::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* node = Super::DeSerializeImp(info, parent);
     MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
     return node;
   }
 
-  void SpotLight::NativeConstruct() 
+  void SpotLight::NativeConstruct()
   {
     Super::NativeConstruct();
     MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
   }
-  
+
   void SpotLight::ParameterConstructor()
   {
     Super::ParameterConstructor();
@@ -407,7 +415,7 @@ namespace ToolKit
     Radius_Define(10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.5f});
     OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
     InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
-    
+
     ParamRadius().m_onValueChangedFn.clear();
     ParamRadius().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void

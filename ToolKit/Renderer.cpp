@@ -44,6 +44,7 @@
 #include "Skeleton.h"
 #include "Surface.h"
 #include "TKOpenGL.h"
+#include "TKProfiler.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "UIManager.h"
@@ -159,6 +160,7 @@ namespace ToolKit
 
       SetTexture(2, skel->m_bindPoseTexture->m_textureId);
       SetTexture(3, skCom->m_map->boneTransformNodeTexture->m_textureId);
+
       skCom->m_map->UpdateGPUTexture();
     };
 
@@ -234,6 +236,8 @@ namespace ToolKit
 
   void Renderer::SetRenderState(const RenderState* const state)
   {
+    CPU_FUNC_RANGE();
+
     if (m_renderState.cullMode != state->cullMode)
     {
       if (state->cullMode == CullingType::TwoSided)
@@ -358,6 +362,8 @@ namespace ToolKit
 
   void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color)
   {
+    CPU_FUNC_RANGE();
+
     if (fb != m_framebuffer)
     {
       if (fb != nullptr)
@@ -480,8 +486,10 @@ namespace ToolKit
     static QuadPtr quad                                = MakeNewPtr<Quad>();
     quad->GetMeshComponent()->GetMeshVal()->m_material = mat;
 
-    RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({quad}, jobs);
+    static RenderJobArray jobs;
+    jobs.clear();
+    EntityPtrArray oneQuad = {quad};
+    RenderJobProcessor::CreateRenderJobs(oneQuad, jobs);
 
     bool lastDepthTestState = m_renderState.depthTestEnabled;
     EnableDepthTest(false);
@@ -496,13 +504,17 @@ namespace ToolKit
     m_dummyDrawCube->m_node->SetTransform(transform);
     m_dummyDrawCube->GetMaterialComponent()->SetFirstMaterial(mat);
 
-    RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({m_dummyDrawCube}, jobs);
+    static RenderJobArray jobs;
+    jobs.clear();
+    EntityPtrArray oneDummyDrawCube = {m_dummyDrawCube};
+    RenderJobProcessor::CreateRenderJobs(oneDummyDrawCube, jobs);
     Render(jobs, cam);
   }
 
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
   {
+    CPU_FUNC_RANGE();
+
     assert(source->m_width == dest->m_width && source->m_height == dest->m_height &&
            "Sizes of the textures are not the same.");
 
@@ -517,7 +529,7 @@ namespace ToolKit
     }
 
     RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dest);
-    m_copyFb->SetAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
+    m_copyFb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
 
     // Set and clear fb
     FramebufferPtr lastFb = m_framebuffer;
@@ -583,6 +595,8 @@ namespace ToolKit
                                       const Vec3& axis,
                                       const float amount)
   {
+    CPU_FUNC_RANGE();
+
     FramebufferPtr frmBackup = m_framebuffer;
 
     m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
@@ -603,7 +617,7 @@ namespace ToolKit
     m_gaussianBlurMaterial->m_fragmentShader->SetShaderParameter("BlurScale", ParameterVariant(axis * amount));
     m_gaussianBlurMaterial->Init();
 
-    m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
+    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
 
     SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
     DrawFullQuad(m_gaussianBlurMaterial);
@@ -613,6 +627,8 @@ namespace ToolKit
 
   void Renderer::ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount)
   {
+    CPU_FUNC_RANGE();
+
     FramebufferPtr frmBackup = m_framebuffer;
 
     m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
@@ -634,7 +650,7 @@ namespace ToolKit
 
     m_averageBlurMaterial->Init();
 
-    m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
+    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
 
     SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
     DrawFullQuad(m_averageBlurMaterial);
@@ -662,7 +678,7 @@ namespace ToolKit
       FramebufferPtr utilFramebuffer = MakeNewPtr<Framebuffer>();
       utilFramebuffer->Init(
           {(uint) m_rhiSettings::brdfLutTextureSize, (uint) m_rhiSettings::brdfLutTextureSize, false, false});
-      utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);
+      utilFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);
 
       MaterialPtr material       = MakeNewPtr<Material>();
       material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
@@ -678,7 +694,8 @@ namespace ToolKit
       CameraPtr camera = MakeNewPtr<Camera>();
 
       RenderJobArray jobs;
-      RenderJobProcessor::CreateRenderJobs({quad}, jobs);
+      EntityPtrArray oneQuad = {quad};
+      RenderJobProcessor::CreateRenderJobs(oneQuad, jobs);
       Render(jobs, camera, {});
 
       brdfLut->SetFile(TK_BRDF_LUT_TEXTURE);
@@ -767,9 +784,14 @@ namespace ToolKit
 
   void Renderer::FeedUniforms(ProgramPtr program)
   {
+    CPU_FUNC_RANGE();
+
     for (ShaderPtr shader : program->m_shaders)
     {
       shader->UpdateShaderParameters();
+
+      PUSH_CPU_MARKER("Defined Shader Uniforms");
+
       // Built-in variables.
       for (Uniform uni : shader->m_uniforms)
       {
@@ -811,14 +833,15 @@ namespace ToolKit
           if (m_cam == nullptr)
             break;
 
-          Camera::CamData data     = m_cam->GetData();
+          const Vec3 pos           = m_cam->m_node->GetTranslation();
+          const Vec3 dir           = m_cam->GetComponent<DirectionComponent>()->GetDirection();
           String uniformStructName = GetUniformName(Uniform::CAM_DATA);
           GLint loc                = glGetUniformLocation(program->m_handle, (uniformStructName + ".pos").c_str());
-          glUniform3fv(loc, 1, &data.pos.x);
+          glUniform3fv(loc, 1, &pos.x);
           loc = glGetUniformLocation(program->m_handle, (uniformStructName + ".dir").c_str());
-          glUniform3fv(loc, 1, &data.dir.x);
+          glUniform3fv(loc, 1, &dir.x);
           loc = glGetUniformLocation(program->m_handle, (uniformStructName + ".far").c_str());
-          glUniform1f(loc, data.far);
+          glUniform1f(loc, m_cam->Far());
         }
         break;
         case Uniform::COLOR:
@@ -987,6 +1010,9 @@ namespace ToolKit
         }
       }
 
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("Parameter Defined Shader Uniforms");
+
       // Custom variables.
       for (auto& var : shader->m_shaderParams)
       {
@@ -1030,11 +1056,15 @@ namespace ToolKit
           break;
         }
       }
+
+      POP_CPU_MARKER();
     }
   }
 
   void Renderer::FeedLightUniforms(ProgramPtr program)
   {
+    CPU_FUNC_RANGE();
+
     size_t lightSize = glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
     for (size_t i = 0; i < lightSize; i++)
     {
@@ -1185,6 +1215,8 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture, uint width, uint height, float exposure)
   {
+    CPU_FUNC_RANGE();
+
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
@@ -1234,11 +1266,11 @@ namespace ToolKit
       cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam->m_node->SetScale(sca);
 
-      m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                                     cubeMapRt,
-                                                     0,
-                                                     -1,
-                                                     (Framebuffer::CubemapFace) i);
+      m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                                          cubeMapRt,
+                                                          0,
+                                                          -1,
+                                                          (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
       DrawCube(cam, mat);
@@ -1255,6 +1287,8 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint width, uint height)
   {
+    CPU_FUNC_RANGE();
+
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
@@ -1302,11 +1336,11 @@ namespace ToolKit
       cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam->m_node->SetScale(sca);
 
-      m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                                     cubeMapRt,
-                                                     0,
-                                                     -1,
-                                                     (Framebuffer::CubemapFace) i);
+      m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                                          cubeMapRt,
+                                                          0,
+                                                          -1,
+                                                          (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
       DrawCube(cam, mat);
@@ -1323,6 +1357,8 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateSpecularEnvMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps)
   {
+    CPU_FUNC_RANGE();
+
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
@@ -1385,11 +1421,11 @@ namespace ToolKit
         cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
         cam->m_node->SetScale(sca);
 
-        m_oneColorAttachmentFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                                       copyCubemapRt,
-                                                       0,
-                                                       -1,
-                                                       (Framebuffer::CubemapFace) i);
+        m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                                            copyCubemapRt,
+                                                            0,
+                                                            -1,
+                                                            (Framebuffer::CubemapFace) i);
 
         frag->SetShaderParameter("roughness", ParameterVariant((float) mip / (float) mipMaps));
         frag->SetShaderParameter("resPerFace", ParameterVariant((float) w));

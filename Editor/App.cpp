@@ -42,6 +42,8 @@
 
 #include <DebugNew.h>
 
+#include "TKProfiler.h"
+
 namespace ToolKit
 {
   namespace Editor
@@ -153,13 +155,25 @@ namespace ToolKit
     {
       m_deltaTime = deltaTime;
 
+      PUSH_CPU_MARKER("UI Begin & Show UI");
+
       UI::BeginUI();
       UI::ShowUI();
 
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("Exec Render Tasks");
+
       GetRenderSystem()->ExecuteRenderTasks();
+      
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("Mod Manager Update");
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
+      
+      POP_CPU_MARKER();
+
+      PUSH_CPU_MARKER("Gather viewports & windows to dispatch signals");
 
       EditorViewportRawPtrArray viewports;
       for (Window* wnd : m_windows)
@@ -188,6 +202,7 @@ namespace ToolKit
         }
       }
 
+
       bool playOnSimulationWnd = m_gameMod == GameMod::Playing && m_simulatorSettings.Windowed;
 
       if (playOnSimulationWnd)
@@ -195,10 +210,19 @@ namespace ToolKit
         viewports.push_back(m_simulationWindow);
       }
 
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("Update Scene");
+
       EditorScenePtr scene = GetCurrentScene();
       scene->Update(deltaTime);
 
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("Update Scene");
+
       UpdateSimulation(deltaTime);
+      
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("Update Viewports & Add render tasks");
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
@@ -226,8 +250,13 @@ namespace ToolKit
         }
       }
 
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("End UI");
+
       // Render UI.
       UI::EndUI();
+
+      POP_CPU_MARKER();
 
       GetRenderSystem()->SetFrameCount(m_totalFrameCount++);
     }
@@ -492,42 +521,42 @@ namespace ToolKit
       m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
       m_isCompiling = true;
 
-      std::thread pipeThread( 
-              RunPipe, cmd, 
-              [this, buildDir](int res) -> void
-              {
-                String cmd = "cmake --build " + buildDir + " --config " + buildConfig.data();
-                std::thread pip(
-                  RunPipe,
-                  cmd,
-                  [=](int res) -> void
-                  {
-                    if (res)
-                    {
-                      m_statusMsg = "Compile Failed.";
-                  
-                      String detail;
-                      if (res == 1)
-                      {
-                        detail = "CMake Build Failed.";
-                      }
-                  
-                      if (res == -1)
-                      {
-                        detail = "CMake Generate Failed.";
-                      }
-                  
-                      GetLogger()->WriteConsole(LogType::Error, "%s %s", m_statusMsg.c_str(), detail.c_str());
-                    }
-                    else
-                    {
-                      m_statusMsg = "Compiled.";
-                      GetLogger()->WriteConsole(LogType::Memo, "%s", m_statusMsg.c_str());
-                    }
-                    m_isCompiling = false;
-                  });
-                pip.detach();
-              });
+      std::thread pipeThread(
+          RunPipe,
+          cmd,
+          [this, buildDir](int res) -> void
+          {
+            String cmd = "cmake --build " + buildDir + " --config " + buildConfig.data();
+            std::thread pip(RunPipe,
+                            cmd,
+                            [=](int res) -> void
+                            {
+                              if (res)
+                              {
+                                m_statusMsg = "Compile Failed.";
+
+                                String detail;
+                                if (res == 1)
+                                {
+                                  detail = "CMake Build Failed.";
+                                }
+
+                                if (res == -1)
+                                {
+                                  detail = "CMake Generate Failed.";
+                                }
+
+                                GetLogger()->WriteConsole(LogType::Error, "%s %s", m_statusMsg.c_str(), detail.c_str());
+                              }
+                              else
+                              {
+                                m_statusMsg = "Compiled.";
+                                GetLogger()->WriteConsole(LogType::Memo, "%s", m_statusMsg.c_str());
+                              }
+                              m_isCompiling = false;
+                            });
+            pip.detach();
+          });
       pipeThread.detach();
     }
 
@@ -1129,9 +1158,9 @@ namespace ToolKit
     void App::SaveAllResources()
     {
       ClassMeta* types[] = {Material::StaticClass(),
-                          Mesh::StaticClass(),
-                          SkinMesh::StaticClass(),
-                          Animation::StaticClass()};
+                            Mesh::StaticClass(),
+                            SkinMesh::StaticClass(),
+                            Animation::StaticClass()};
 
       for (ClassMeta* t : types)
       {

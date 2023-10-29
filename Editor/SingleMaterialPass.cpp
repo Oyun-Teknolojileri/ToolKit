@@ -27,6 +27,7 @@
 #include "SingleMaterialPass.h"
 
 #include "Material.h"
+#include "TKProfiler.h"
 
 #include "DebugNew.h"
 
@@ -48,13 +49,15 @@ namespace ToolKit
 
     void SingleMatForwardRenderPass::Render()
     {
+      PUSH_CPU_MARKER("SingleMatForwardRenderPass::Render");
+
       Renderer* renderer      = GetRenderer();
-      renderer->m_overrideMat = MakeNewPtr<Material>();
+      renderer->m_overrideMat = m_overrideMat;
       for (RenderJob& job : m_params.ForwardParams.OpaqueJobs)
       {
-        LightPtrArray lightList = RenderJobProcessor::SortLights(job, m_params.ForwardParams.Lights);
+        RenderJobProcessor::SortLights(job, m_params.ForwardParams.Lights);
 
-        MaterialPtr mat         = job.Material;
+        MaterialPtr mat = job.Material;
         renderer->m_overrideMat->SetRenderState(mat->GetRenderState());
         renderer->m_overrideMat->m_vertexShader    = mat->m_vertexShader;
         renderer->m_overrideMat->m_fragmentShader  = m_params.OverrideFragmentShader;
@@ -66,22 +69,28 @@ namespace ToolKit
         renderer->m_overrideMat->SetAlpha(mat->GetAlpha());
         renderer->m_overrideMat->Init();
 
-        renderer->Render(job, m_params.ForwardParams.Cam, lightList);
+        renderer->Render(job, m_params.ForwardParams.Cam, m_params.ForwardParams.Lights);
       }
 
       RenderTranslucent(m_params.ForwardParams.TranslucentJobs,
                         m_params.ForwardParams.Cam,
                         m_params.ForwardParams.Lights);
+
+      POP_CPU_MARKER();
     }
 
     void SingleMatForwardRenderPass::PreRender()
     {
+      PUSH_CPU_MARKER("SingleMatForwardRenderPass::PreRender");
+
       ForwardRenderPass::m_params = m_params.ForwardParams;
       ForwardRenderPass::PreRender();
 
       m_overrideMat->UnInit();
       m_overrideMat->m_fragmentShader = m_params.OverrideFragmentShader;
       m_overrideMat->Init();
+
+      POP_CPU_MARKER();
     };
 
   } // namespace Editor

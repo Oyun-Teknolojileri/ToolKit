@@ -34,10 +34,10 @@
 #include "FxaaPass.h"
 #include "Pass.h"
 #include "RenderSystem.h"
+#include "SceneRenderPath.h"
 #include "ShadowPass.h"
 #include "SsaoPass.h"
 #include "ToneMapPass.h"
-#include "SceneRenderPath.h"
 
 namespace ToolKit
 {
@@ -55,8 +55,11 @@ namespace ToolKit
     void PreRender(Renderer* renderer) override;
     void PostRender() override;
 
-   private:
+   protected:
     void SetPassParams() override;
+
+   protected:
+    RenderJobArray m_jobs;
   };
 
   typedef std::shared_ptr<MobileSceneRenderPath> MobileSceneRenderPathPtr;

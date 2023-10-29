@@ -31,6 +31,7 @@
 #include "Gizmo.h"
 #include "Grid.h"
 #include "Mod.h"
+#include "TKProfiler.h"
 #include "UI.h"
 
 #include <Common/SDLEventPool.h>
@@ -52,11 +53,12 @@ namespace ToolKit
   namespace Editor
   {
 
-    bool g_running          = true;
-    SDL_Window* g_window    = nullptr;
-    SDL_GLContext g_context = nullptr;
-    App* g_app              = nullptr;
-    Main* g_proxy           = nullptr;
+    bool g_running               = true;
+    SDL_Window* g_window         = nullptr;
+    SDL_GLContext g_context      = nullptr;
+    App* g_app                   = nullptr;
+    Main* g_proxy                = nullptr;
+    SDLEventPool* g_sdlEventPool = nullptr;
 
     /*
      * Refactor as below.
@@ -127,8 +129,10 @@ namespace ToolKit
 
     void PreInit()
     {
+      g_sdlEventPool = new SDLEventPool();
+
       // PreInit Main
-      g_proxy = new Main();
+      g_proxy        = new Main();
       Main::SetProxy(g_proxy);
       CreateAppData();
       g_proxy->PreInit();
@@ -153,14 +157,19 @@ namespace ToolKit
       {
 #ifdef TK_GL_CORE_3_2
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+
 #elif defined(TK_GL_ES_3_0)
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        // gpu performance markers are aveilable on OpenGL ES 3.2 pr OpenGL Core 4.3+
+  #ifdef TK_GPU_PROFILE
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+  #else
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+  #endif
 #endif // TK_GL_CORE_3_2
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -292,6 +301,7 @@ namespace ToolKit
       g_proxy->PostUninit();
       SafeDel(g_proxy);
 
+      SafeDel(g_sdlEventPool);
       SDL_DestroyWindow(g_window);
       SDL_Quit();
 
@@ -333,29 +343,48 @@ namespace ToolKit
 
     void TK_Loop()
     {
-      Timing* timer    = &Main::GetInstance()->m_timing;
+      Timing* timer = &Main::GetInstance()->m_timing;
 
       while (g_running)
       {
+        PUSH_CPU_MARKER("Whole Frame");
+
+        PUSH_CPU_MARKER("SDL Poll Event");
+
         SDL_Event sdlEvent;
         while (SDL_PollEvent(&sdlEvent))
         {
-          PoolEvent(sdlEvent);
+          g_sdlEventPool->PoolEvent(sdlEvent);
           ProcessEvent(sdlEvent);
         }
+
+        POP_CPU_MARKER();
 
         timer->CurrentTime = GetElapsedMilliSeconds();
         if (timer->CurrentTime > timer->LastTime + timer->DeltaTime)
         {
+          PUSH_CPU_MARKER("App Frame");
+
           g_app->Frame(timer->CurrentTime - timer->LastTime);
+
+          POP_CPU_MARKER();
+          PUSH_CPU_MARKER("Update Imgui Windows");
 
           // Update Present imgui windows.
           ImGui::UpdatePlatformWindows();
           ImGui::RenderPlatformWindowsDefault();
 
+          POP_CPU_MARKER();
+          PUSH_CPU_MARKER("Swap Window");
+
           SDL_GL_SwapWindow(g_window);
 
-          ClearPool(); // Clear after consumption.
+          POP_CPU_MARKER();
+          PUSH_CPU_MARKER("Clear SDL Event Pool");
+
+          g_sdlEventPool->ClearPool(); // Clear after consumption.
+
+          POP_CPU_MARKER();
 
           timer->FrameCount++;
           timer->TimeAccum += timer->CurrentTime - timer->LastTime;
@@ -368,6 +397,8 @@ namespace ToolKit
 
           timer->LastTime = timer->CurrentTime;
         }
+
+        POP_CPU_MARKER();
       }
     }
 
