@@ -93,7 +93,7 @@ namespace ToolKit
     DirectionalLight();
     virtual ~DirectionalLight();
 
-    void UpdateShadowFrustum(const RenderJobArray& jobs);
+    void UpdateShadowFrustum(const RenderJobArray& jobs, const CameraPtr cameraView);
     Vec3Array GetShadowFrustumCorners();
 
    protected:
@@ -106,7 +106,7 @@ namespace ToolKit
 
     // Fits view frustum of the camera into shadow map camera frustum. As the
     // view frustum gets bigger, the resolution gets lower.
-    void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, Camera* viewCamera);
+    void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera);
   };
 
   typedef std::shared_ptr<DirectionalLight> DirectionalLightPtr;

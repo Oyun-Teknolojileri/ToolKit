@@ -153,8 +153,9 @@ namespace ToolKit
     m_jobs.clear();
     RenderJobProcessor::CreateRenderJobs(allDrawList, m_jobs);
 
-    m_shadowPass->m_params.RendeJobs = m_jobs;
-    m_shadowPass->m_params.Lights    = m_updatedLights;
+    m_shadowPass->m_params.RendeJobs  = m_jobs;
+    m_shadowPass->m_params.Lights     = m_updatedLights;
+    m_shadowPass->m_params.ViewCamera = m_params.Cam;
 
     RenderJobProcessor::CullRenderJobs(m_jobs, m_params.Cam);
 

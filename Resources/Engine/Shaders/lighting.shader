@@ -139,7 +139,9 @@ float CalculateDirectionalShadow(vec3 pos, mat4 lightProjView, vec2 shadowAtlasC
 	vec4 fragPosForLight = lightProjView * vec4(pos, 1.0);
 	vec3 projCoord = fragPosForLight.xyz;
 	projCoord = projCoord * 0.5 + 0.5;
-	if (projCoord.z < 0.0 || projCoord.z > 1.0)
+	if (projCoord.x < 0.0 || projCoord.x > 1.0	||
+			projCoord.y < 0.0 || projCoord.y > 1.0 	||
+			projCoord.z < 0.0 || projCoord.z > 1.0)
 	{
 		return 1.0;
 	}
