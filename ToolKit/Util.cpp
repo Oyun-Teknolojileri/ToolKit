@@ -37,6 +37,7 @@
 #include "Shader.h"
 #include "SpriteSheet.h"
 #include "ToolKit.h"
+
 #include <filesystem>
 #include <unordered_set>
 
@@ -266,7 +267,7 @@ namespace ToolKit
   {
     String normal = NormalizePath(fullPath);
 
-    size_t ind1 = normal.find_last_of(GetPathSeparator());
+    size_t ind1   = normal.find_last_of(GetPathSeparator());
     if (path != nullptr)
     {
       *path = normal.substr(0, ind1);
@@ -295,7 +296,7 @@ namespace ToolKit
     DosifyPath(path);
 #endif
   }
-  
+
   String NormalizePath(String path)
   {
 #ifndef _WIN32
@@ -330,7 +331,7 @@ namespace ToolKit
 #else
     int res  = pclose(fp);
 #endif
-    if (afterFn) 
+    if (afterFn)
     {
       afterFn(res);
     }
@@ -442,10 +443,7 @@ namespace ToolKit
     return false;
   }
 
-  bool HasToolKitRoot(const String& path) 
-  {
-    return StartsWith(path, "ToolKit\\") || StartsWith(path, "ToolKit/"); 
-  }
+  bool HasToolKitRoot(const String& path) { return StartsWith(path, "ToolKit\\") || StartsWith(path, "ToolKit/"); }
 
   String GetFileName(const String& path)
   {
@@ -516,9 +514,9 @@ namespace ToolKit
     if (Class == Audio::StaticClass())
     {
       return AUDIO;
-  }
+    }
     if (Class == Material::StaticClass())
-  {
+    {
       return MATERIAL;
     }
     if (Class == Mesh::StaticClass())
@@ -932,7 +930,7 @@ namespace ToolKit
 
   static void RecursiveCopyDirectoryWithSet(const String& source,
                                             const String& destination,
-                                            const std::unordered_set<uint64>& ignoredExtSet) 
+                                            const std::unordered_set<uint64>& ignoredExtSet)
   {
     using namespace std::filesystem;
     String ext;
@@ -956,7 +954,7 @@ namespace ToolKit
       String ext;
       DecomposePath(current_path.u8string(), nullptr, nullptr, &ext);
 
-      if (ignoredExtSet.count(std::hash<String> {}(ext)) != 0) 
+      if (ignoredExtSet.count(std::hash<String> {}(ext)) != 0)
       {
         continue;
       }
@@ -972,12 +970,10 @@ namespace ToolKit
     }
   }
 
-  void RecursiveCopyDirectory(const String& source,
-                              const String& destination,
-                              const StringArray& ignoredExtensions)
+  void RecursiveCopyDirectory(const String& source, const String& destination, const StringArray& ignoredExtensions)
   {
     std::unordered_set<uint64> ignoredSet;
-    for (int i = 0; i < ignoredExtensions.size(); i++) 
+    for (int i = 0; i < ignoredExtensions.size(); i++)
     {
       ignoredSet.insert(std::hash<String> {}(ignoredExtensions[i]));
     }
@@ -1022,6 +1018,34 @@ namespace ToolKit
     ch::high_resolution_clock::time_point t2        = ch::high_resolution_clock::now();
     ch::duration<double> timeSpan                   = ch::duration_cast<ch::duration<double>>(t2 - t1);
     return static_cast<float>(timeSpan.count() * 1000.0);
+  }
+
+  uint64 MurmurHash(uint64 x)
+  {
+    x ^= x >> 30ULL;
+    x *= 0xbf58476d1ce4e5b9ULL;
+    x ^= x >> 27ULL;
+    x *= 0x94d049bb133111ebULL;
+    return x ^ (x >> 31ULL);
+  }
+
+  void Xoroshiro128PlusSeed(uint64 s[2], uint64 seed)
+  {
+    s[0]  = MurmurHash(seed);
+    s[0] |= 1; // non zero
+    s[1]  = MurmurHash(s[0] ^ (seed * 1099511628211ULL));
+  }
+
+  // concise hashing function. https://nullprogram.com/blog/2017/09/21/
+  uint64 Xoroshiro128Plus(uint64 s[2])
+  {
+    uint64 s0      = s[0];
+    uint64 s1      = s[1];
+    uint64 result  = s0 + s1;
+    s1            ^= s0;
+    s[0]           = ((s0 << 55) | (s0 >> 9)) ^ s1 ^ (s1 << 14);
+    s[1]           = (s1 << 36) | (s1 >> 28);
+    return result;
   }
 
 } //  namespace ToolKit

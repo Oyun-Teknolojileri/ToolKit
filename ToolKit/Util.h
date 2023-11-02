@@ -252,4 +252,13 @@ namespace ToolKit
   //  Returns elapsed time from the ToolKit Init.
   TK_API float GetElapsedMilliSeconds();
 
+  // Random.
+  ///////////////////////////////////////////////////////
+
+  TK_API uint64 MurmurHash(uint64 x);
+
+  TK_API void Xoroshiro128PlusSeed(uint64 s[2], uint64 seed);
+
+  TK_API uint64 Xoroshiro128Plus(uint64 s[2]);
+
 } // namespace ToolKit

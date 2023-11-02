@@ -30,12 +30,12 @@
 #include "EngineSettings.h"
 #include "EnvironmentComponent.h"
 #include "FileManager.h"
+#include "Logger.h"
 #include "MathUtil.h"
 #include "Prefab.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "Logger.h"
 
 #include "DebugNew.h"
 
@@ -58,18 +58,6 @@ namespace ToolKit
       m_isPrefab  = path.find("Prefabs") != String::npos;
 
       ParseDocument(XmlSceneElement);
-
-      // Update parent - child relation for entities.
-      for (EntityPtr ntt : m_entities)
-      {
-        if (ntt->_parentId != 0)
-        {
-          if (EntityPtr parent = GetEntity(ntt->_parentId))
-          {
-            parent->m_node->AddChild(ntt->m_node);
-          }
-        }
-      }
 
       m_loaded = true;
     }
@@ -140,14 +128,27 @@ namespace ToolKit
 
   void Scene::Merge(ScenePtr other)
   {
-    ULongID lastID = GetHandleManager()->GetNextHandle(), biggestID = 0;
-    const EntityPtrArray& entities = other->GetEntities();
-    for (EntityPtr ntt : entities)
+    auto testAndRegenerateIdFn = [this](EntityPtr otherNtt) -> bool
     {
-      AddEntity(ntt); // Insert into this scene.
-    }
-    GetHandleManager()->SetMaxHandle(biggestID);
+      for (EntityPtr ntt : m_entities)
+      {
+        if (ntt->GetIdVal() == otherNtt->GetIdVal())
+        {
+          ntt->SetIdVal(GetHandleManager()->GenerateHandle());
+          return true;
+        }
+      }
 
+      return false;
+    };
+
+    // If there is a collision between ids, regenerate the id
+    for (EntityPtr otherNtt : other->GetEntities())
+    {
+      while (testAndRegenerateIdFn(otherNtt)) {}
+
+      AddEntity(otherNtt);
+    }
     other->RemoveAllEntities();
     GetSceneManager()->Remove(other->GetFile());
   }
@@ -577,15 +578,18 @@ namespace ToolKit
       return nullptr;
     }
 
-    // Old file, keep parsing.
-    ULongID lastID    = GetHandleManager()->GetNextHandle();
-    ULongID biggestID = 0;
-    XmlNode* node     = nullptr;
+    // For old type of scenes, load the entites and find the parent-child relations
+    // Then regenerate the ids
 
-    EntityPtrArray prefabList;
+    XmlNode* node             = nullptr;
 
     const char* xmlRootObject = XmlEntityElement.c_str();
     const char* xmlObjectType = XmlEntityTypeAttr.c_str();
+
+    EntityPtrArray prefabList;
+    std::vector<ULongID> deserializedIds;
+    std::vector<ULongID> deserializedParentIds;
+    EntityPtrArray deserializedEntities;
 
     for (node = parent->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
     {
@@ -601,18 +605,31 @@ namespace ToolKit
         prefabList.push_back(ntt);
       }
 
-      // Incrementing the incoming ntt ids with current max id value...
-      // to prevent id collisions.
-      ULongID listIndx = 0;
-      ReadAttr(node, XmlEntityIdAttr, listIndx);
-      ULongID currentID = listIndx + lastID;
-      biggestID         = glm::max(biggestID, currentID);
-      ntt->SetIdVal(currentID);
-      ntt->_parentId += lastID;
+      ULongID id = 0;
+      ReadAttr(node, XmlEntityIdAttr, id);
+      // Temporary id. This will be regenerated later. Do not use this id until it is regenerated later in
+      // deserialization.
+      ntt->SetIdVal(id);
 
+      deserializedIds.push_back(id);
+      deserializedEntities.push_back(ntt);
+    }
+
+    // Solve the parent-child relations & regenerate ids
+    for (EntityPtr ntt : deserializedEntities)
+    {
+      for (EntityPtr parentCandidate : deserializedEntities)
+      {
+        if (parentCandidate->GetIdVal() == ntt->_parentId)
+        {
+          parentCandidate->m_node->AddChild(ntt->m_node);
+          break;
+        }
+      }
+
+      ntt->SetIdVal(GetHandleManager()->GenerateHandle());
       AddEntity(ntt);
     }
-    GetHandleManager()->SetMaxHandle(biggestID);
 
     // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)
@@ -632,14 +649,11 @@ namespace ToolKit
 
   void Scene::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
   {
-    XmlNode* root     = info.Document->first_node(XmlSceneElement.c_str());
-
-    // Old file, keep parsing.
-    ULongID lastID    = GetHandleManager()->GetNextHandle();
-    ULongID biggestID = 0;
-    XmlNode* node     = nullptr;
+    XmlNode* root = info.Document->first_node(XmlSceneElement.c_str());
+    XmlNode* node = nullptr;
 
     EntityPtrArray prefabList;
+    EntityPtrArray deserializedEntities;
 
     const char* xmlRootObject = Object::StaticClass()->Name.c_str();
     const char* xmlObjectType = XmlObjectClassAttr.data();
@@ -656,18 +670,47 @@ namespace ToolKit
         prefabList.push_back(ntt);
       }
 
-      // Incrementing the incoming ntt ids with current max id value...
-      // to prevent id collisions.
-      ULongID listIndx  = ntt->GetIdVal();
-      ULongID currentID = listIndx + lastID;
-      biggestID         = glm::max(biggestID, currentID);
-      ntt->SetIdVal(currentID);
-      ntt->_parentId += lastID;
-
-      AddEntity(ntt);
+      deserializedEntities.push_back(ntt);
     }
 
-    GetHandleManager()->SetMaxHandle(biggestID);
+    // Solve the parent-child relations
+    for (EntityPtr ntt : deserializedEntities)
+    {
+      for (EntityPtr parentCandidate : deserializedEntities)
+      {
+        if (parentCandidate->GetIdVal() == ntt->_parentId)
+        {
+          parentCandidate->m_node->AddChild(ntt->m_node);
+          break;
+        }
+      }
+    }
+
+    auto testAndRegenerateIdFn = [this, &deserializedEntities](EntityPtr ntt) -> bool
+    {
+      if (GetEntity(ntt->GetIdVal()) != nullptr)
+      {
+        ntt->SetIdVal(GetHandleManager()->GenerateHandle());
+        return true;
+      }
+
+      for (EntityPtr deserializedNtt : deserializedEntities)
+      {
+        if (deserializedNtt != ntt && deserializedNtt->GetIdVal() == ntt->GetIdVal())
+        {
+          ntt->SetIdVal(GetHandleManager()->GenerateHandle());
+          return true;
+        }
+      }
+      return false;
+    };
+
+    // Fix id collisions then add the entities to the scene
+    for (EntityPtr ntt : deserializedEntities)
+    {
+      while (testAndRegenerateIdFn(ntt)) {}
+      AddEntity(ntt);
+    }
 
     // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)

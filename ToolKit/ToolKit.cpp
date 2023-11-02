@@ -46,16 +46,31 @@
 
 namespace ToolKit
 {
-  ULongID HandleManager::GetNextHandle()
+  HandleManager::HandleManager()
   {
-    assert(m_baseHandle < m_maxIdLimit && "Generated id is too long.");
-    return ++m_baseHandle;
+    uint64 seed = time(nullptr) + ((uint64) (this) ^ m_randomXor[0]);
+    Xoroshiro128PlusSeed(m_randomXor, seed);
   }
 
-  void HandleManager::SetMaxHandle(ULongID val)
+  ULongID HandleManager::GenerateHandle()
   {
-    m_baseHandle = glm::max(m_baseHandle, val);
-    assert(m_baseHandle < m_maxIdLimit && "Generated id is too long.");
+    ULongID id = Xoroshiro128Plus(m_randomXor);
+    // If collision happens, change generate new id
+    while (m_uniqueIDs.find(id) != m_uniqueIDs.end() || id == 0)
+    {
+      id = Xoroshiro128Plus(m_randomXor);
+    }
+    m_uniqueIDs.insert(id);
+    return id; // non zero
+  }
+
+  void HandleManager::ReleaseHandle(ULongID val)
+  {
+    auto it = m_uniqueIDs.find(val);
+    if (it != m_uniqueIDs.end())
+    {
+      m_uniqueIDs.erase(it);
+    }
   }
 
   Main* Main::m_proxy = nullptr;
@@ -179,7 +194,7 @@ namespace ToolKit
     SafeDel(m_skeletonManager);
     SafeDel(m_fileManager);
     SafeDel(m_objectFactory);
-    SafeDel(m_engineSettings);  
+    SafeDel(m_engineSettings);
   }
 
   void Main::SetConfigPath(StringView cfgPath) { m_cfgPath = cfgPath; }

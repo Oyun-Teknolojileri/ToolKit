@@ -88,7 +88,7 @@ namespace ToolKit
     /**
      * Uninitiate and frees the memory.
      */
-    ~Animation();
+    virtual ~Animation();
 
     /**
      * Sets the Node's transform from the animation based on time.
@@ -182,6 +182,8 @@ namespace ToolKit
      * @param anim Is the animation to play for the record.
      */
     AnimRecord(EntityPtr entity, const AnimationPtr& anim);
+
+    ~AnimRecord();
 
    public:
     /**

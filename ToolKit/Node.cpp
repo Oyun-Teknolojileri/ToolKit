@@ -35,7 +35,7 @@
 namespace ToolKit
 {
 
-  Node::Node() { m_id = GetHandleManager()->GetNextHandle(); }
+  Node::Node() { m_id = GetHandleManager()->GenerateHandle(); }
 
   Node::~Node()
   {
@@ -44,6 +44,8 @@ namespace ToolKit
     {
       Orphan(m_children[i], true);
     }
+
+    GetHandleManager()->ReleaseHandle(m_id);
   }
 
   void Node::Translate(const Vec3& val, TransformationSpace space)

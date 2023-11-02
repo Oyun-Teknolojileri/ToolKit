@@ -37,9 +37,9 @@
 namespace ToolKit
 {
 
-  ParameterVariantBase::ParameterVariantBase() { m_id = GetHandleManager()->GetNextHandle(); }
+  ParameterVariantBase::ParameterVariantBase() { m_id = GetHandleManager()->GenerateHandle(); }
 
-  ParameterVariantBase::~ParameterVariantBase() {}
+  ParameterVariantBase::~ParameterVariantBase() { GetHandleManager()->ReleaseHandle(m_id); }
 
   ParameterVariant::ParameterVariant() { *this = 0; }
 

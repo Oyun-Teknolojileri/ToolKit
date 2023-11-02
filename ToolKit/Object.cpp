@@ -62,7 +62,7 @@ namespace ToolKit
 
   Object::Object() {}
 
-  Object::~Object() {}
+  Object::~Object() { GetHandleManager()->ReleaseHandle(GetIdVal()); }
 
   void Object::NativeConstruct()
   {
@@ -74,7 +74,13 @@ namespace ToolKit
 
   void Object::ParameterConstructor()
   {
-    ULongID id = GetHandleManager()->GetNextHandle();
+    // If this constructor is called multiple times, release the last id from manager
+    if (m_localData.m_variants.size() > Id_Index)
+    {
+      GetHandleManager()->ReleaseHandle(GetIdVal());
+    }
+
+    ULongID id = GetHandleManager()->GenerateHandle();
     Id_Define(id, EntityCategory.Name, EntityCategory.Priority, true, false);
   }
 

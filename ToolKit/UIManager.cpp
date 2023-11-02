@@ -37,7 +37,7 @@
 namespace ToolKit
 {
 
-  UILayer::UILayer() { m_id = GetHandleManager()->GetNextHandle(); }
+  UILayer::UILayer() { m_id = GetHandleManager()->GenerateHandle(); }
 
   UILayer::UILayer(const String& file) : UILayer()
   {
@@ -51,7 +51,7 @@ namespace ToolKit
     m_scene->Load();
   }
 
-  UILayer::~UILayer() {}
+  UILayer::~UILayer() { GetHandleManager()->ReleaseHandle(m_id); }
 
   void UILayer::Init() {}
 
