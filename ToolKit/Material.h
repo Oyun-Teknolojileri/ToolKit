@@ -40,7 +40,7 @@ namespace ToolKit
 
     Material();
     explicit Material(const String& file);
-    ~Material();
+    virtual ~Material();
 
     void Load() override;
     void Save(bool onlyIfDirty) override;

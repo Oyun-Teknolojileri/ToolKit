@@ -203,9 +203,9 @@ namespace ToolKit
 
   void Material::SetAlpha(float val)
   {
-    val                         = glm::clamp(val, 0.0f, 1.0f);
-    m_alpha                     = val;
-    bool isForward         = m_alpha < 0.999f;
+    val            = glm::clamp(val, 0.0f, 1.0f);
+    m_alpha        = val;
+    bool isForward = m_alpha < 0.999f;
     if (isForward && m_renderState.blendFunction != BlendFunction::ALPHA_MASK)
     {
       m_renderState.blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
@@ -438,7 +438,7 @@ namespace ToolKit
     ResourceManager::Init();
 
     // PBR material
-    Material* material         = new Material();
+    MaterialPtr material       = MakeNewPtr<Material>();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
@@ -446,7 +446,7 @@ namespace ToolKit
     m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
 
     // Phong material
-    material                                          = new Material();
+    material                                          = MakeNewPtr<Material>();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->GetPhongForwardShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
@@ -454,7 +454,7 @@ namespace ToolKit
     m_storage[MaterialPath("phongForward.material", true)] = MaterialPtr(material);
 
     // Unlit material
-    material                                               = new Material();
+    material                                               = MakeNewPtr<Material>();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));

@@ -54,6 +54,11 @@ namespace ToolKit
 
   ULongID HandleManager::GenerateHandle()
   {
+    if (m_uniqueIDs.size() > 10000000)
+    {
+      volatile int x = 5;
+    }
+
     ULongID id = Xoroshiro128Plus(m_randomXor);
     // If collision happens, change generate new id
     while (m_uniqueIDs.find(id) != m_uniqueIDs.end() || id == 0)
@@ -66,6 +71,11 @@ namespace ToolKit
 
   void HandleManager::ReleaseHandle(ULongID val)
   {
+    if (m_uniqueIDs.size() > 10000000)
+    {
+      volatile int x = 5;
+    }
+
     auto it = m_uniqueIDs.find(val);
     if (it != m_uniqueIDs.end())
     {

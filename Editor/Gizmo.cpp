@@ -445,7 +445,7 @@ namespace ToolKit
         LineBatch* guides[3];
         for (int i = 0; i < 3; i++)
         {
-          guides[i] = new LineBatch
+          guides[i] = new LineBatch // Use MakeNewPtr if this comment is opened
           (
             {
               glcl + AXIS[i] * 999.0f,

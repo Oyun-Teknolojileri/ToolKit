@@ -58,14 +58,13 @@ namespace ToolKit
 
   void Renderer::Init()
   {
-    m_uiCamera                      = new Camera();
+    m_uiCamera                      = MakeNewPtr<Camera>();
     m_oneColorAttachmentFramebuffer = MakeNewPtr<Framebuffer>();
     m_dummyDrawCube                 = MakeNewPtr<Cube>();
   }
 
   Renderer::~Renderer()
   {
-    SafeDel(m_uiCamera);
     m_oneColorAttachmentFramebuffer = nullptr;
     m_gaussianBlurMaterial          = nullptr;
     m_averageBlurMaterial           = nullptr;

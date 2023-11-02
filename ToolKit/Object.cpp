@@ -62,7 +62,7 @@ namespace ToolKit
 
   Object::Object() {}
 
-  Object::~Object() { GetHandleManager()->ReleaseHandle(GetIdVal()); }
+  Object::~Object() {}
 
   void Object::NativeConstruct()
   {
