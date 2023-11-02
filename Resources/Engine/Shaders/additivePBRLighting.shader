@@ -34,7 +34,7 @@
     */
   uniform int lightType;
   
-  vec3 AdditivePBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo, float metallic, float roughness)
+  vec3 AdditivePBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamPos, vec3 albedo, float metallic, float roughness)
   {
     float shadow = 1.0;
     vec3 irradiance = vec3(0.0);
@@ -44,7 +44,7 @@
     {
       case 3: // directional with shadows
       {
-        shadow = CalculateDirectionalShadow(fragPos, lightProjectionViewMatrix, lightShadowAtlasCoord, lightShadowAtlasResRatio,
+        shadow = CalculateDirectionalShadow(fragPos, viewCamPos, lightProjectionViewMatrix, lightShadowAtlasCoord, lightShadowAtlasResRatio,
                                             lightShadowAtlasLayer, lightPCFSamples, lightPCFRadius, 
                                             lightBleedReduction, lightShadowBias);
       } // fallthrough

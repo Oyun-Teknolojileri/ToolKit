@@ -88,7 +88,7 @@
 			vec3 e = normalize(CamData.pos - v_pos);
 
       // phong lighting
-			vec3 irradiance = BlinnPhongLighting(v_pos, n, e);
+			vec3 irradiance = BlinnPhongLighting(v_pos, n, e, CamData.pos);
       irradiance *= color.xyz;
 
       // ibl diffuse

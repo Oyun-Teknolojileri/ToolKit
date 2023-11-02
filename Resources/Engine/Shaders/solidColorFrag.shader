@@ -58,7 +58,7 @@
 			vec3 n = normalize(v_normal);
 			vec3 e = normalize(CamData.pos - v_pos);
 
-			vec3 irradiance = PBRLighting(v_pos, n, e, color.rgb, metallic, roughness);
+			vec3 irradiance = PBRLighting(v_pos, n, e, CamData.pos, color.rgb, metallic, roughness);
 
 			irradiance += IBLPhong(n);
 

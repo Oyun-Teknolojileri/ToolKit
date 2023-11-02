@@ -5,9 +5,11 @@
 	<include name = "lightDataTextureUtils.shader" />
 	<include name = "pbr.shader" />
 	<uniform name = "LightData" />
+	<uniform name = "shadowDistance" />
 
 	<source>
 	<!--
+
 // Fixed Declaretions
 struct _LightData
 {
@@ -40,6 +42,7 @@ struct _LightData
 	float shadowBias[16];
 };
 uniform _LightData LightData;
+uniform float shadowDistance;
 
 uniform sampler2DArray s_texture8; // Shadow atlas
 
@@ -59,6 +62,8 @@ uniform float spotShadowLightDataSize;
 uniform float dirNonShadowLightDataSize;
 uniform float pointNonShadowLightDataSize;
 uniform float spotNonShadowLightDataSize;
+
+const float shadowFadeOutDistanceNorm = 0.9;
 
 // Returns uv coordinates and layers such as: vec3(u,v,layer)
 // https://kosmonautblog.wordpress.com/2017/03/25/shadow-filtering-for-pointlights/
@@ -133,7 +138,7 @@ bool EpsilonEqual(float a, float b, float eps)
 	return abs(a - b) < eps;
 }
 
-float CalculateDirectionalShadow(vec3 pos, mat4 lightProjView, vec2 shadowAtlasCoord,
+float CalculateDirectionalShadow(vec3 pos, vec3 viewCamPos, mat4 lightProjView, vec2 shadowAtlasCoord,
 	float shadowAtlasResRatio, float shadowAtlasLayer, int PCFSamples, float PCFRadius, float lightBleedReduction, float shadowBias)
 {
 	vec4 fragPosForLight = lightProjView * vec4(pos, 1.0);
@@ -153,9 +158,10 @@ float CalculateDirectionalShadow(vec3 pos, mat4 lightProjView, vec2 shadowAtlasC
 	float resRatio = shadowAtlasResRatio;
 	vec3 coord = vec3(startCoord + resRatio * projCoord.xy, shadowAtlasLayer);
 
+	float shadow = 1.0;
 	if (PCFSamples >= 1)
 	{
-		return PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + resRatio,
+		shadow = PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + resRatio,
 		PCFSamples, PCFRadius * shadowAtlasResRatio,
 		projCoord.z, lightBleedReduction, shadowBias);
 	}
@@ -163,10 +169,14 @@ float CalculateDirectionalShadow(vec3 pos, mat4 lightProjView, vec2 shadowAtlasC
 	{
 		coord.xy = ClampTextureCoordinates(coord.xy, startCoord, startCoord + resRatio);
 		vec2 moments = texture(s_texture8, coord).xy;
-		return ChebyshevUpperBound(moments, projCoord.z, lightBleedReduction, shadowBias);
+		shadow = ChebyshevUpperBound(moments, projCoord.z, lightBleedReduction, shadowBias);
 	}
 
-	return 1.0;
+	// Fade shadow out after min shadow fade out distance
+	float currentDistance = length(pos - viewCamPos);
+	float fade = (currentDistance - shadowDistance * shadowFadeOutDistanceNorm) / (shadowDistance * (1.0 - shadowFadeOutDistanceNorm));
+	fade = clamp(fade, 0.0, 1.0);
+	return clamp(shadow + fade, 0.0, 1.0);
 }
 
 float CalculateSpotShadow(vec3 pos, vec3 lightPos, mat4 lightProjView, float shadowCameraFar, vec2 shadowAtlasCoord,
@@ -241,7 +251,7 @@ float Attenuation(float distance, float radius, float constant, float linear, fl
 	return attenuation;
 }
 
-vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo, float metallic, float roughness)
+vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamPos, vec3 albedo, float metallic, float roughness)
 {
 	vec3 irradiance = vec3(0.0);
 
@@ -278,7 +288,7 @@ vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo, float m
 			float shadow = 1.0;
 			if (LightData.castShadow[i] == 1)
 			{
-				shadow = CalculateDirectionalShadow(fragPos, LightData.projectionViewMatrix[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
+				shadow = CalculateDirectionalShadow(fragPos, viewCamPos, LightData.projectionViewMatrix[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
 					LightData.shadowAtlasLayer[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.BleedingReduction[i],
 					LightData.shadowBias[i]);
 			}
@@ -318,7 +328,7 @@ vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo, float m
 	return irradiance;
 }
  
-vec3 PBRLightingDeferred(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo, float metallic, float roughness)
+vec3 PBRLightingDeferred(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamPos, vec3 albedo, float metallic, float roughness)
 {
 	float shadow = 1.0;
 	vec3 irradiance = vec3(0.0);
@@ -343,7 +353,7 @@ vec3 PBRLightingDeferred(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo,
 		float lbr = DirLightBleedReduction(s_texture13, lightDataIndex, lightDataTextureWidth);
 		float shadowBias = DirLightShadowBias(s_texture13, lightDataIndex, lightDataTextureWidth);
 		// shadow
-		float shadow = CalculateDirectionalShadow(fragPos, pv, shadowAtlasCoord, shadowAtlasResRatio,
+		float shadow = CalculateDirectionalShadow(fragPos, viewCamPos, pv, shadowAtlasCoord, shadowAtlasResRatio,
 		                                          shadowAtlasLayer, PCFSamples, PCFRadius, lbr, shadowBias);
 
 		irradiance += Lo * shadow;
@@ -551,7 +561,7 @@ void SpotLightBlinnPhong(vec3 fragToLight, vec3 fragToEye, vec3 normal, vec3 col
 			specular *= intensity * radiusCheck * attenuation;
 }
 
-vec3 BlinnPhongLighting(vec3 fragPos, vec3 normal, vec3 fragToEye)
+vec3 BlinnPhongLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamPos)
 {
 	float shadow = 1.0;
 	vec3 irradiance = vec3(0.0);
@@ -581,7 +591,7 @@ vec3 BlinnPhongLighting(vec3 fragPos, vec3 normal, vec3 fragToEye)
 			// Shadow
 			if (LightData.castShadow[i] == 1)
 			{
-				shadow = CalculateDirectionalShadow(fragPos, LightData.projectionViewMatrix[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
+				shadow = CalculateDirectionalShadow(fragPos, viewCamPos, LightData.projectionViewMatrix[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
 					LightData.shadowAtlasLayer[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.BleedingReduction[i],
 					LightData.shadowBias[i]);
 			}		

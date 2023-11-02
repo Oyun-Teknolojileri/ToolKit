@@ -104,7 +104,7 @@
 				metallicRoughness = vec2(metallic, roughness);
 			}
 
-			vec3 irradiance = PBRLighting(v_pos, n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
+			vec3 irradiance = PBRLighting(v_pos, n, e, CamData.pos, color.xyz, metallicRoughness.x, metallicRoughness.y);
 
 			irradiance += IBLPBR(n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
 

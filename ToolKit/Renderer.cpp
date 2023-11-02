@@ -1004,6 +1004,13 @@ namespace ToolKit
           glUniform1f(loc, Main::GetInstance()->TimeSinceStartup() / 1000.0f);
         }
         break;
+        case Uniform::SHADOW_DISTANCE:
+        {
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::SHADOW_DISTANCE));
+          EngineSettings& set = GetEngineSettings();
+          glUniform1f(loc, set.Graphics.ShadowDistance);
+        }
+        break;
         default:
           assert(false);
           break;

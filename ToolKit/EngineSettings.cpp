@@ -144,7 +144,7 @@ namespace ToolKit
     ReadAttr(node, "MSAA", Graphics.MSAA);
     ReadAttr(node, "FPS", Graphics.FPS);
     ReadAttr(node, "ShadowDistance", Graphics.ShadowDistance);
-    if (glm::epsilonNotEqual(Graphics.ShadowDistance, 0.0f, 0.001f))
+    if (!glm::epsilonNotEqual(Graphics.ShadowDistance, 0.0f, 0.001f))
     {
       // Set the value to the default value if the variable is not deserialized
       Graphics.ShadowDistance = 50.0f;
