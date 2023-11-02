@@ -164,7 +164,7 @@ namespace ToolKit
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        // gpu performance markers are aveilable on OpenGL ES 3.2 pr OpenGL Core 4.3+
+        // gpu performance markers are available on OpenGL ES 3.2 or OpenGL Core 4.3+
   #ifdef TK_GPU_PROFILE
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
   #else

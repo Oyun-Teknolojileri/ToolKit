@@ -44,7 +44,7 @@
 			vec3 e = normalize(camPos - position);
 
 			vec3 irradiance = vec3(0.0);
-			irradiance = PBRLightingDeferred(position, n, e, color, metallicRoughness.r, metallicRoughness.g);
+			irradiance = PBRLightingDeferred(position, n, e, camPos, color, metallicRoughness.r, metallicRoughness.g);
 			float ambientOcclusion = AmbientOcclusion();
 			
 			irradiance += ibl;

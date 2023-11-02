@@ -29,6 +29,7 @@
 #include "Camera.h"
 #include "Component.h"
 #include "DirectionComponent.h"
+#include "EngineSettings.h"
 #include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
@@ -169,9 +170,10 @@ namespace ToolKit
 
   DirectionalLight::~DirectionalLight() {}
 
-  void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs)
+  void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs, const CameraPtr cameraView)
   {
-    FitEntitiesBBoxIntoShadowFrustum(m_shadowCamera, jobs);
+    //FitEntitiesBBoxIntoShadowFrustum(m_shadowCamera, jobs);
+    FitViewFrustumIntoLightFrustum(m_shadowCamera, cameraView);
 
     UpdateShadowCamera();
   }
@@ -254,9 +256,8 @@ namespace ToolKit
                          shadowBBox.max.z);
   }
 
-  void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, Camera* viewCamera)
+  void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera)
   {
-    assert(false && "Experimental.");
     // Fit view frustum into light frustum
     Vec3 frustum[8]            = {Vec3(-1.0f, -1.0f, -1.0f),
                                   Vec3(1.0f, -1.0f, -1.0f),
@@ -267,7 +268,14 @@ namespace ToolKit
                                   Vec3(1.0f, 1.0f, 1.0f),
                                   Vec3(-1.0f, 1.0f, 1.0f)};
 
+    // Set far for view frustum
+    float lastCameraFar        = viewCamera->GetFarClipVal();
+    float shadowDistance       = GetEngineSettings().Graphics.ShadowDistance;
+    viewCamera->SetFarClipVal(shadowDistance);
+
     const Mat4 inverseViewProj = glm::inverse(viewCamera->GetProjectionMatrix() * viewCamera->GetViewMatrix());
+
+    viewCamera->SetFarClipVal(lastCameraFar);
 
     for (int i = 0; i < 8; ++i)
     {

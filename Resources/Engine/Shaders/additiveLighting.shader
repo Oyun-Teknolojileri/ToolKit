@@ -49,7 +49,7 @@
 			vec3 n = normalize(normal);
 			vec3 e = normalize(camPos - position);
 
-			vec3 irradiance = AdditivePBRLighting(position, n, e, color, metallicRoughness.r, metallicRoughness.g);
+			vec3 irradiance = AdditivePBRLighting(position, n, e, camPos, color, metallicRoughness.r, metallicRoughness.g);
 			fragColor = irradiance;
 		}
 	-->

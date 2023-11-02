@@ -54,6 +54,7 @@ namespace ToolKit
       int MSAA                 = 2;
       int FPS                  = 60;
       RenderingSpec RenderSpec = RenderingSpec::Default;
+      float ShadowDistance     = 100.0f;
     } Graphics;
 
     struct PostProcessingSettings

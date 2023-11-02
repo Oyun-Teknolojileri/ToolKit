@@ -50,6 +50,11 @@ namespace ToolKit
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         EngineSettings::PostProcessingSettings& gfx = engineSettings.PostProcessing;
+
+        ImGui::DragFloat("Shadow Distance", &engineSettings.Graphics.ShadowDistance, 1.0f, 0.01f, 100000.0f);
+
+        ImGui::Separator();
+
         if (ImGui::CollapsingHeader("Tonemapping"))
         {
           ImGui::Checkbox("ToneMapping##1", &gfx.TonemappingEnabled);
