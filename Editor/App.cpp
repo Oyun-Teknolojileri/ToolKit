@@ -600,30 +600,48 @@ namespace ToolKit
       }
     }
 
-    void App::ClearPlayInEditorSession()
+    void App::ClearSession()
     {
-      // Clear qued render tasks.
+      // Clear queued render tasks.
       GetRenderSystem()->FlushRenderTasks();
+      GetRenderSystem()->FlushGpuPrograms();
 
-      // Clear all the references from the scene about to be destroyed.
+      // Clear all the object references from the scene about to be destroyed.
       if (OutlinerWindow* wnd = GetOutliner())
       {
         wnd->ClearOutliner();
       }
 
+      // Kill all the object references in the renderer.
+      m_editorRenderer = MakeNewPtr<EditorRenderer>();
+
+      // Clear all animations potentially added from game module.
+      GetAnimationPlayer()->m_records.clear();
+
+      m_perFrameDebugObjects.clear();
+      UI::m_postponedActions.clear();
+
+      ActionManager::GetInstance()->ClearAllActions();
+
+      ModManager::GetInstance()->UnInit();
+      ModManager::GetInstance()->Init();
+    }
+
+    void App::ClearPlayInEditorSession()
+    {
+      ClearSession();
+
       // Destroy pie scene.
       String sceneFile;
-      EditorSceneManager* esm = (EditorSceneManager*) GetSceneManager();
-      if (ScenePtr scene = esm->GetCurrentScene())
+      EditorSceneManager* sceneManager = (EditorSceneManager*) GetSceneManager();
+      if (ScenePtr scene = sceneManager->GetCurrentScene())
       {
+        scene->ClearEntities();
         sceneFile = scene->GetFile();
-        esm->Remove(sceneFile);
+        sceneManager->Remove(sceneFile);
         scene->Destroy(false);
-        esm->SetCurrentScene(nullptr);
+        sceneManager->SetCurrentScene(nullptr);
       }
-
-      // Kill all the references in the renderer.
-      m_editorRenderer = MakeNewPtr<EditorRenderer>();
 
       // Kill the plugin. At this point if anything from the dll remains in the editor,
       // it causes a crash.
@@ -632,9 +650,9 @@ namespace ToolKit
       // Set the editor scene back.
       if (!sceneFile.empty())
       {
-        EditorScenePtr scene = esm->Create<EditorScene>(sceneFile);
+        EditorScenePtr scene = sceneManager->Create<EditorScene>(sceneFile);
         scene->Init();
-        esm->SetCurrentScene(scene);
+        sceneManager->SetCurrentScene(scene);
       }
     }
 
@@ -1131,6 +1149,8 @@ namespace ToolKit
 
     void App::OpenProject(const Project& project)
     {
+      ClearSession();
+
       UI::m_postponedActions.push_back(
           [this, project]() -> void
           {

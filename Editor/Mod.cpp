@@ -153,6 +153,11 @@ namespace ToolKit
 
     void ModManager::Init()
     {
+      if (m_initiated)
+      {
+        return;
+      }
+
       m_modStack.push_back(new BaseMod(ModId::Base));
       m_initiated = true;
     }
@@ -614,7 +619,7 @@ namespace ToolKit
             currScene->AddToSelection(copies.front()->GetIdVal(), true);
             cpyCount           += static_cast<int>(copies.size());
             // Status info
-            g_app->m_statusMsg = std::to_string(cpyCount) + " entities are copied.";
+            g_app->m_statusMsg  = std::to_string(cpyCount) + " entities are copied.";
           }
         }
         ActionManager::GetInstance()->GroupLastActions(cpyCount);

@@ -777,16 +777,18 @@ namespace ToolKit
 
     void CustomDataView::Show()
     {
-      m_entity = g_app->GetCurrentScene()->GetCurrentSelection();
-      if (m_entity == nullptr)
+      m_entity      = g_app->GetCurrentScene()->GetCurrentSelection();
+      EntityPtr ntt = m_entity.lock();
+
+      if (ntt == nullptr)
       {
         ImGui::Text("Select an entity");
         return;
       }
 
       ParameterVariantRawPtrArray customParams;
-      m_entity->m_localData.GetByCategory(CustomDataCategory.Name, customParams);
-      ShowCustomData(m_entity, "Custom Data", customParams, true);
+      ntt->m_localData.GetByCategory(CustomDataCategory.Name, customParams);
+      ShowCustomData(ntt, "Custom Data", customParams, true);
     }
 
   } // namespace Editor

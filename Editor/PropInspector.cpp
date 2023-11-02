@@ -201,6 +201,8 @@ namespace ToolKit
 
     View::View(const StringView viewName) : m_viewName(viewName) {}
 
+    inline View::~View() {}
+
     // PreviewViewport
     //////////////////////////////////////////////////////////////////////////
 

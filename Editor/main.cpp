@@ -274,8 +274,21 @@ namespace ToolKit
             // Allow classes with the MenuMetaKey to be created from the add menu.
             of->m_metaProcessorMap[MenuMetaKey] = [](StringView val) -> void
             {
-              g_app->m_customObjectMetaValues.push_back(String(val));
-              g_app->ReconstructDynamicMenus();
+              bool exist = false;
+              for (String& meta : g_app->m_customObjectMetaValues) 
+              {
+                if (meta == val) 
+                {
+                  exist = true;
+                  break;
+                }
+              }
+
+              if (!exist) 
+              {
+                g_app->m_customObjectMetaValues.push_back(String(val));
+                g_app->ReconstructDynamicMenus();
+              }
             };
 
             // This code just creates a dummy Primiatives menu to demonstrate the feature.

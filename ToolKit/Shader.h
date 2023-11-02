@@ -151,19 +151,6 @@ namespace ToolKit
     String m_source;
   };
 
-  class TK_API Program
-  {
-   public:
-    Program();
-    Program(ShaderPtr vertex, ShaderPtr fragment);
-    ~Program();
-
-   public:
-    uint m_handle = 0;
-    String m_tag;
-    ShaderPtrArray m_shaders;
-  };
-
   class TK_API ShaderManager : public ResourceManager
   {
    public:

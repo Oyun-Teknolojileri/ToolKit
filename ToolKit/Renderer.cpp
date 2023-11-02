@@ -77,7 +77,7 @@ namespace ToolKit
     m_framebuffer                   = nullptr;
     m_shadowAtlas                   = nullptr;
 
-    m_programs.clear();
+    m_gpuProgramManager.FlushPrograms();
   }
 
   int Renderer::GetMaxArrayTextureLayers()
@@ -182,7 +182,7 @@ namespace ToolKit
     }
 
     m_mat->Init();
-    ProgramPtr prg = CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
+    GpuProgramPtr prg = m_gpuProgramManager.CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
     BindProgram(prg);
 
     auto activateSkinning = [prg, &job](uint isSkinned)
@@ -672,12 +672,11 @@ namespace ToolKit
       set.Format         = GraphicTypes::FormatRG;
       set.Type           = GraphicTypes::TypeFloat;
       RenderTargetPtr brdfLut =
-          MakeNewPtr<RenderTarget>(m_rhiSettings::brdfLutTextureSize, m_rhiSettings::brdfLutTextureSize, set);
+          MakeNewPtr<RenderTarget>(RHIConstants::BrdfLutTextureSize, RHIConstants::BrdfLutTextureSize, set);
       brdfLut->Init();
 
       FramebufferPtr utilFramebuffer = MakeNewPtr<Framebuffer>();
-      utilFramebuffer->Init(
-          {(uint) m_rhiSettings::brdfLutTextureSize, (uint) m_rhiSettings::brdfLutTextureSize, false, false});
+      utilFramebuffer->Init({RHIConstants::BrdfLutTextureSize, RHIConstants::BrdfLutTextureSize, false, false});
       utilFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);
 
       MaterialPtr material       = MakeNewPtr<Material>();
@@ -713,7 +712,7 @@ namespace ToolKit
     m_model   = model;
   }
 
-  void Renderer::BindProgram(ProgramPtr program)
+  void Renderer::BindProgram(GpuProgramPtr program)
   {
     if (m_currentProgram == program->m_handle)
     {
@@ -724,65 +723,7 @@ namespace ToolKit
     glUseProgram(program->m_handle);
   }
 
-  void Renderer::LinkProgram(GLuint program, GLuint vertexP, GLuint fragmentP)
-  {
-    glAttachShader(program, vertexP);
-    glAttachShader(program, fragmentP);
-
-    glLinkProgram(program);
-
-    GLint linked;
-    glGetProgramiv(program, GL_LINK_STATUS, &linked);
-    if (!linked)
-    {
-      GLint infoLen = 0;
-      glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
-      if (infoLen > 1)
-      {
-        char* log = new char[infoLen];
-        glGetProgramInfoLog(program, infoLen, nullptr, log);
-        GetLogger()->Log(log);
-        GetLogger()->WritePlatformConsole(LogType::Memo, log);
-
-        assert(linked);
-        SafeDelArray(log);
-      }
-
-      glDeleteProgram(program);
-    }
-  }
-
-  ProgramPtr Renderer::CreateProgram(ShaderPtr vertex, ShaderPtr fragment)
-  {
-    assert(vertex);
-    assert(fragment);
-    vertex->Init();
-    fragment->Init();
-
-    String tag;
-    tag = vertex->m_tag + fragment->m_tag;
-    if (m_programs.find(tag) == m_programs.end())
-    {
-      ProgramPtr program = MakeNewPtr<Program>(vertex, fragment);
-      program->m_handle  = glCreateProgram();
-      LinkProgram(program->m_handle, vertex->m_shaderHandle, fragment->m_shaderHandle);
-      glUseProgram(program->m_handle);
-      for (ubyte slotIndx = 0; slotIndx < m_rhiSettings::textureSlotCount; slotIndx++)
-      {
-        GLint loc = glGetUniformLocation(program->m_handle, ("s_texture" + std::to_string(slotIndx)).c_str());
-        if (loc != -1)
-        {
-          glUniform1i(loc, slotIndx);
-        }
-      }
-
-      m_programs[program->m_tag] = program;
-    }
-
-    return m_programs[tag];
-  }
-
-  void Renderer::FeedUniforms(ProgramPtr program)
+  void Renderer::FeedUniforms(GpuProgramPtr program)
   {
     CPU_FUNC_RANGE();
 
@@ -995,7 +936,7 @@ namespace ToolKit
         case Uniform::IBL_MAX_REFLECTION_LOD:
         {
           GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::IBL_MAX_REFLECTION_LOD));
-          glUniform1i(loc, RHIConstants::specularIBLLods - 1);
+          glUniform1i(loc, RHIConstants::SpecularIBLLods - 1);
         }
         break;
         case Uniform::ELAPSED_TIME:
@@ -1061,11 +1002,11 @@ namespace ToolKit
     }
   }
 
-  void Renderer::FeedLightUniforms(ProgramPtr program)
+  void Renderer::FeedLightUniforms(GpuProgramPtr program)
   {
     CPU_FUNC_RANGE();
 
-    size_t lightSize = glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
+    size_t lightSize = glm::min(m_lights.size(), (size_t) RHIConstants::MaxLightsPerObject);
     for (size_t i = 0; i < lightSize; i++)
     {
       LightPtr currLight = m_lights[i];
@@ -1158,15 +1099,15 @@ namespace ToolKit
         loc = glGetUniformLocation(program->m_handle, g_lightShadowAtlasLayerStrCache[i].c_str());
         glUniform1f(loc, (GLfloat) currLight->m_shadowAtlasLayer);
 
-        const Vec2 coord = currLight->m_shadowAtlasCoord / (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+        const Vec2 coord = currLight->m_shadowAtlasCoord / (float) Renderer::RHIConstants::ShadowAtlasTextureSize;
         loc              = glGetUniformLocation(program->m_handle, g_lightShadowAtlasCoordStrCache[i].c_str());
         glUniform2fv(loc, 1, &coord.x);
 
         loc = glGetUniformLocation(program->m_handle, g_lightShadowAtlasResRatioStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetShadowResVal() / Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
+        glUniform1f(loc, currLight->GetShadowResVal() / Renderer::RHIConstants::ShadowAtlasTextureSize);
 
         loc = glGetUniformLocation(program->m_handle, g_lightShadowBiasStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetShadowBiasVal() * g_shadowBiasMultiplier);
+        glUniform1f(loc, currLight->GetShadowBiasVal() * Renderer::RHIConstants::ShadowBiasMultiplier);
       }
 
       GLuint loc = glGetUniformLocation(program->m_handle, g_lightCastShadowStrCache[i].c_str());

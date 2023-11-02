@@ -112,6 +112,12 @@ namespace ToolKit
       }
     }
 
+    template <typename T>
+    void Unregister()
+    {
+      m_constructorFnMap.erase(T::StaticClass()->Name);
+    }
+
     /**
      * Alters the ObjectFactory such that when an object with BaseCls needed to be created, it creates the DerivedCls.
      * The purpose is the ability to create derived class of the engine such as EditorCamera. When you are loading a

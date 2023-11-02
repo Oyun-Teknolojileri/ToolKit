@@ -409,8 +409,10 @@ namespace ToolKit
 
     void ComponentView::Show()
     {
-      m_entity = g_app->GetCurrentScene()->GetCurrentSelection();
-      if (m_entity == nullptr)
+      m_entity      = g_app->GetCurrentScene()->GetCurrentSelection();
+      EntityPtr ntt = m_entity.lock();
+
+      if (ntt == nullptr)
       {
         ImGui::Text("Select an entity");
         return;
@@ -427,7 +429,7 @@ namespace ToolKit
         ImGui::Indent();
 
         std::vector<ULongID> compRemove;
-        for (ComponentPtr& com : m_entity->GetComponentPtrArray())
+        for (ComponentPtr& com : ntt->GetComponentPtrArray())
         {
           ImGui::Spacing();
           if (ShowComponentBlock(com, true))
@@ -438,13 +440,13 @@ namespace ToolKit
 
         for (ULongID id : compRemove)
         {
-          ActionManager::GetInstance()->AddAction(new DeleteComponentAction(m_entity->GetComponent(id)));
+          ActionManager::GetInstance()->AddAction(new DeleteComponentAction(ntt->GetComponent(id)));
         }
 
         // Remove billboards if necessary.
         ScenePtr scene          = GetSceneManager()->GetCurrentScene();
         EditorScenePtr edtScene = std::static_pointer_cast<EditorScene>(scene);
-        edtScene->ValidateBillboard(m_entity);
+        edtScene->ValidateBillboard(ntt);
 
         ImGui::PushItemWidth(150);
         static bool addInAction = false;
@@ -462,37 +464,37 @@ namespace ToolKit
                            "\0Skeleton Component"
                            "\0AABB Override Component"))
           {
-            size_t cmpCnt = m_entity->GetComponentPtrArray().size();
+            size_t cmpCnt = ntt->GetComponentPtrArray().size();
             switch (dataType)
             {
             case 1:
-              m_entity->AddComponent<MeshComponent>();
+              ntt->AddComponent<MeshComponent>();
               break;
             case 2:
             {
-              MaterialComponentPtr mmComp = m_entity->AddComponent<MaterialComponent>();
+              MaterialComponentPtr mmComp = ntt->AddComponent<MaterialComponent>();
               mmComp->UpdateMaterialList();
             }
             break;
             case 3:
-              m_entity->AddComponent<EnvironmentComponent>();
+              ntt->AddComponent<EnvironmentComponent>();
               break;
             case 4:
-              m_entity->AddComponent<AnimControllerComponent>();
+              ntt->AddComponent<AnimControllerComponent>();
               break;
             case 5:
-              m_entity->AddComponent<SkeletonComponent>();
+              ntt->AddComponent<SkeletonComponent>();
               break;
             case 6:
-              m_entity->AddComponent<AABBOverrideComponent>();
+              ntt->AddComponent<AABBOverrideComponent>();
               break;
             default:
               break;
             }
 
-            if (cmpCnt > m_entity->GetComponentPtrArray().size())
+            if (cmpCnt > ntt->GetComponentPtrArray().size())
             {
-              edtScene->AddBillboard(m_entity);
+              edtScene->AddBillboard(ntt);
               addInAction = false;
             }
           }

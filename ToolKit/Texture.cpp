@@ -435,7 +435,7 @@ namespace ToolKit
                          m_specularEnvMap             = renderer->GenerateSpecularEnvMap(m_cubemap,
                                                                              specularEnvMapSize,
                                                                              specularEnvMapSize,
-                                                                             Renderer::RHIConstants::specularIBLLods);
+                                                                             Renderer::RHIConstants::SpecularIBLLods);
 
                          // Generate diffuse irradience cubemap images
                          m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);

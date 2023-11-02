@@ -65,13 +65,12 @@ namespace ToolKit
       static bool IsTextInputFinalized();
 
       View(const StringView viewName);
-
-      virtual ~View() {}
+      virtual ~View();
 
       virtual void Show() = 0;
 
      public:
-      EntityPtr m_entity   = nullptr;
+      EntityWeakPtr m_entity;
       int m_viewID         = 0;
       TexturePtr m_viewIcn = nullptr;
       StringView m_fontIcon;
