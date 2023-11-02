@@ -70,7 +70,6 @@ namespace ToolKit
 
     renderer->SetShadowAtlas(std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
-    // TODO remove and see if this is necessary
     if (m_params.ClearFramebuffer)
     {
       renderer->ClearFrameBuffer(m_params.MainFramebuffer, {0.0f, 0.0f, 0.0f, 0.0f});
