@@ -49,6 +49,7 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
+#include "EngineSettings.h"
 
 #include "DebugNew.h"
 
