@@ -147,7 +147,7 @@ namespace ToolKit
     if (!glm::epsilonNotEqual(Graphics.ShadowDistance, 0.0f, 0.001f))
     {
       // Set the value to the default value if the variable is not deserialized
-      Graphics.ShadowDistance = 50.0f;
+      Graphics.ShadowDistance = 100.0f;
     }
 
     int renderSpec;
