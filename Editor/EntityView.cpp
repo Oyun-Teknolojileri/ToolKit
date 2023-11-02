@@ -54,8 +54,14 @@ namespace ToolKit
 
     void EntityView::ShowAnchorSettings()
     {
-      Surface* surface    = static_cast<Surface*>(m_entity.get());
-      Canvas* canvasPanel = static_cast<Canvas*>(surface->m_node->m_parent->m_entity.get());
+      EntityPtr ntt = m_entity.lock();
+      if (ntt == nullptr)
+      {
+        return;
+      }
+
+      SurfacePtr surface    = Cast<Surface>(ntt);
+      CanvasPtr canvasPanel = Cast<Canvas>(surface->m_node->m_parent->m_entity);
 
       if (ImGui::CollapsingHeader("Anchor", ImGuiTreeNodeFlags_DefaultOpen))
       {
@@ -254,8 +260,10 @@ namespace ToolKit
 
     void EntityView::Show()
     {
-      m_entity = g_app->GetCurrentScene()->GetCurrentSelection();
-      if (m_entity == nullptr)
+      m_entity      = g_app->GetCurrentScene()->GetCurrentSelection();
+      EntityPtr ntt = m_entity.lock();
+
+      if (ntt == nullptr)
       {
         ImGui::Text("Select an entity");
         return;
@@ -264,9 +272,9 @@ namespace ToolKit
       ShowParameterBlock();
 
       // Missing data reporter.
-      if (m_entity->IsDrawable())
+      if (ntt->IsDrawable())
       {
-        MeshPtr mesh = m_entity->GetComponent<MeshComponent>()->GetMeshVal();
+        MeshPtr mesh = ntt->GetComponent<MeshComponent>()->GetMeshVal();
 
         StringArray missingData;
         MeshRawCPtrArray meshes;
@@ -309,8 +317,8 @@ namespace ToolKit
         }
       }
 
-      if (m_entity->IsA<Surface>() && m_entity->m_node->m_parent != nullptr &&
-          m_entity->m_node->m_parent->m_entity != nullptr && m_entity->m_node->m_parent->m_entity->IsA<Canvas>())
+      if (ntt->IsA<Surface>() && ntt->m_node->m_parent != nullptr && ntt->m_node->m_parent->m_entity != nullptr &&
+          ntt->m_node->m_parent->m_entity->IsA<Canvas>())
       {
         ShowAnchorSettings();
       }
@@ -319,20 +327,20 @@ namespace ToolKit
       {
         Quaternion rotate;
         Vec3 translate;
-        Mat4 ts = m_entity->m_node->GetTransform(g_app->m_transformSpace);
+        Mat4 ts = ntt->m_node->GetTransform(g_app->m_transformSpace);
         DecomposeMatrix(ts, &translate, &rotate, nullptr);
 
-        Vec3 scale = m_entity->m_node->GetScale();
+        Vec3 scale = ntt->m_node->GetScale();
 
-        ImGui::BeginDisabled(m_entity->GetTransformLockVal());
+        ImGui::BeginDisabled(ntt->GetTransformLockVal());
 
         // Continuous edit utils.
         static TransformAction* dragMem = nullptr;
-        const auto saveDragMemFn        = [this]() -> void
+        const auto saveDragMemFn        = [ntt]() -> void
         {
           if (dragMem == nullptr)
           {
-            dragMem = new TransformAction(m_entity);
+            dragMem = new TransformAction(ntt);
           }
         };
 
@@ -354,11 +362,11 @@ namespace ToolKit
           bool isDrag = ImGui::IsMouseDragging(0, 0.25f);
           if (isDrag)
           {
-            m_entity->m_node->Translate(newTranslate - translate, space);
+            ntt->m_node->Translate(newTranslate - translate, space);
           }
           else if (!isDrag && IsTextInputFinalized())
           {
-            m_entity->m_node->SetTranslation(newTranslate, space);
+            ntt->m_node->SetTranslation(newTranslate, space);
           }
         }
 
@@ -387,11 +395,11 @@ namespace ToolKit
 
           if (isDrag)
           {
-            m_entity->m_node->Rotate(q, space);
+            ntt->m_node->Rotate(q, space);
           }
           else if (IsTextInputFinalized())
           {
-            m_entity->m_node->SetOrientation(q, space);
+            ntt->m_node->SetOrientation(q, space);
           }
         }
 
@@ -413,23 +421,23 @@ namespace ToolKit
             bool isDrag = ImGui::IsMouseDragging(0, 0.25f);
             if (isDrag || IsTextInputFinalized())
             {
-              m_entity->m_node->SetScale(scale);
+              ntt->m_node->SetScale(scale);
             }
           }
         }
 
         saveTransformActionFn();
 
-        if (ImGui::Checkbox("Inherit Scale", &m_entity->m_node->m_inheritScale))
+        if (ImGui::Checkbox("Inherit Scale", &ntt->m_node->m_inheritScale))
         {
-          m_entity->m_node->SetInheritScaleDeep(m_entity->m_node->m_inheritScale);
+          ntt->m_node->SetInheritScaleDeep(ntt->m_node->m_inheritScale);
         }
 
         ImGui::EndDisabled();
 
         ImGui::Separator();
 
-        BoundingBox bb = m_entity->GetAABB(true);
+        BoundingBox bb = ntt->GetAABB(true);
         Vec3 dim       = bb.max - bb.min;
         ImGui::Text("Bounding box dimensions:");
         ImGui::Text("x: %.2f", dim.x);
@@ -442,8 +450,10 @@ namespace ToolKit
 
     void EntityView::ShowParameterBlock()
     {
+      EntityPtr ntt = m_entity.lock();
+
       VariantCategoryArray categories;
-      m_entity->m_localData.GetCategories(categories, true, true);
+      ntt->m_localData.GetCategories(categories, true, true);
 
       for (VariantCategory& category : categories)
       {
@@ -455,16 +465,16 @@ namespace ToolKit
         // If entity belongs to a prefab,
         // don't show transform lock and transformation.
         bool isFromPrefab = false;
-        if (m_entity->GetPrefabRoot())
+        if (ntt->GetPrefabRoot())
         {
           isFromPrefab = true;
         }
 
-        String varName = category.Name + "##" + std::to_string(m_entity->GetIdVal());
+        String varName = category.Name + "##" + std::to_string(ntt->GetIdVal());
         if (ImGui::CollapsingHeader(varName.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
         {
           ParameterVariantRawPtrArray vars;
-          m_entity->m_localData.GetByCategory(category.Name, vars);
+          ntt->m_localData.GetByCategory(category.Name, vars);
 
           for (ParameterVariant* var : vars)
           {
@@ -477,11 +487,11 @@ namespace ToolKit
         }
 
         // If entity is gradient sky create a "Update IBL Textures" button
-        if (m_entity->IsA<GradientSky>() && category.Name.compare("Sky") == 0) // TODO This might not be necessary
+        if (ntt->IsA<GradientSky>() && category.Name.compare("Sky") == 0) // TODO This might not be necessary
         {
           if (UI::BeginCenteredTextButton("Update IBL Textures"))
           {
-            static_cast<Sky*>(m_entity.get())->ReInit();
+            Cast<Sky>(ntt)->ReInit();
           }
           UI::EndCenteredTextButton();
         }

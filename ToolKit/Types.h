@@ -172,7 +172,7 @@ namespace ToolKit
   typedef std::shared_ptr<class DynamicBoneMap> DynamicBoneMapPtr;
   typedef std::shared_ptr<class Shader> ShaderPtr;
   typedef std::vector<ShaderPtr> ShaderPtrArray;
-  typedef std::shared_ptr<class Program> ProgramPtr;
+  typedef std::shared_ptr<class GpuProgram> GpuProgramPtr;
   typedef std::shared_ptr<class SkinMesh> SkinMeshPtr;
   typedef std::shared_ptr<class Scene> ScenePtr;
   typedef std::vector<MeshPtr> MeshPtrArray;
@@ -186,6 +186,7 @@ namespace ToolKit
 
   // Entity types.
   typedef std::shared_ptr<class Entity> EntityPtr;
+  typedef std::weak_ptr<class Entity> EntityWeakPtr;
   typedef std::vector<EntityPtr> EntityPtrArray;
   typedef std::vector<class Entity*> EntityRawPtrArray;
   typedef std::vector<class Light*> LightRawPtrArray;

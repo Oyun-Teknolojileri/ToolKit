@@ -27,6 +27,7 @@
 #pragma once
 
 #include "Camera.h"
+#include "GpuProgram.h"
 #include "Primative.h"
 #include "RenderState.h"
 #include "RendererGlobals.h"
@@ -143,11 +144,9 @@ namespace ToolKit
 
    private:
     void SetProjectViewModel(const Mat4& model, CameraPtr cam);
-    void BindProgram(ProgramPtr program);
-    void LinkProgram(uint program, uint vertexP, uint fragmentP);
-    ProgramPtr CreateProgram(ShaderPtr vertex, ShaderPtr fragment);
-    void FeedUniforms(ProgramPtr program);
-    void FeedLightUniforms(ProgramPtr program);
+    void BindProgram(GpuProgramPtr program);
+    void FeedUniforms(GpuProgramPtr program);
+    void FeedLightUniforms(GpuProgramPtr program);
 
    public:
     uint m_frameCount = 0;
@@ -156,20 +155,20 @@ namespace ToolKit
     MaterialPtr m_overrideMat = nullptr;
     Camera* m_uiCamera        = nullptr;
     SkyBasePtr m_sky          = nullptr;
+    GpuProgramManager m_gpuProgramManager;
 
     bool m_renderOnlyLighting = false;
 
-    typedef struct RHIConstants
+    struct RHIConstants
     {
-      static constexpr ubyte textureSlotCount       = 32;
-      static constexpr size_t maxLightsPerObject    = 16;
-      static constexpr int shadowAtlasSlot          = 8;
-      static constexpr int g_shadowAtlasTextureSize = 1024;
-      static constexpr int specularIBLLods          = 5;
-      static constexpr int brdfLutTextureSize       = 512;
-    } m_rhiSettings;
-
-    static constexpr float g_shadowBiasMultiplier = 0.0001f;
+      static constexpr ubyte TextureSlotCount      = 32;
+      static constexpr ubyte MaxLightsPerObject    = 16;
+      static constexpr uint ShadowAtlasSlot        = 8;
+      static constexpr uint ShadowAtlasTextureSize = 1024;
+      static constexpr uint SpecularIBLLods        = 5;
+      static constexpr uint BrdfLutTextureSize     = 512;
+      static constexpr float ShadowBiasMultiplier  = 0.0001f;
+    };
 
    private:
     uint m_currentProgram = 0;
@@ -184,17 +183,16 @@ namespace ToolKit
     FramebufferPtr m_framebuffer = nullptr;
     TexturePtr m_shadowAtlas     = nullptr;
 
-    uint m_textureSlots[RHIConstants::textureSlotCount];
+    uint m_textureSlots[RHIConstants::TextureSlotCount];
 
-    std::unordered_map<String, ProgramPtr> m_programs;
     RenderState m_renderState;
 
     UVec2 m_viewportSize; //!< Current viewport size.
 
     /*
-    * This framebuffer can ONLY have 1 color attachment and no other attachments.
-    * This way, we can use without needing to resize or reInit.
-    */
+     * This framebuffer can ONLY have 1 color attachment and no other attachments.
+     * This way, we can use without needing to resize or reInit.
+     */
     FramebufferPtr m_oneColorAttachmentFramebuffer = nullptr;
     MaterialPtr m_gaussianBlurMaterial             = nullptr;
     MaterialPtr m_averageBlurMaterial              = nullptr;

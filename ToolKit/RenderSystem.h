@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include "GpuProgram.h"
 #include "Pass.h"
 
 namespace ToolKit
@@ -80,6 +81,8 @@ namespace ToolKit
     void AddRenderTask(RenderTask task);
     void ExecuteRenderTasks();
     void FlushRenderTasks();
+    void FlushGpuPrograms();
+
     /**
      * Sets application window size. Doesn't necessarily update any frame buffer
      * or render target. Systems that rely on this data updates them selfs.
@@ -123,6 +126,7 @@ namespace ToolKit
     void InitGl(void* glGetProcAddres, GlReportCallback callback = nullptr);
 
     inline bool IsGammaCorrectionNeeded() { return !m_backbufferFormatIsSRGB; }
+
     void TestSRGBBackBuffer();
 
    private:
@@ -132,9 +136,7 @@ namespace ToolKit
     RenderTaskArray m_highQueue;
     RenderTaskArray m_lowQueue;
     Renderer* m_renderer          = nullptr;
-    RenderPath* m_renderTechnique = nullptr;
     int m_skipFrames              = 0;
-
     bool m_backbufferFormatIsSRGB = true;
   };
 

@@ -199,7 +199,7 @@ namespace ToolKit
           hdr->m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(hdr->m_cubemap, irRes, irRes);
 
           hdr->m_specularEnvMap =
-              renderer->GenerateSpecularEnvMap(hdr->m_cubemap, irRes, irRes, Renderer::RHIConstants::specularIBLLods);
+              renderer->GenerateSpecularEnvMap(hdr->m_cubemap, irRes, irRes, Renderer::RHIConstants::SpecularIBLLods);
 
           if (m_onInit)
           {
