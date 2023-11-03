@@ -612,7 +612,7 @@ namespace ToolKit
       deserializedEntities.push_back(ntt);
     }
 
-    // Solve the parent-child relations & regenerate ids
+    // Solve the parent-child relations
     for (EntityPtr ntt : deserializedEntities)
     {
       for (EntityPtr parentCandidate : deserializedEntities)
@@ -623,7 +623,12 @@ namespace ToolKit
           break;
         }
       }
+    }
 
+    //  regenerate ids and add to scene
+    // Solve the parent-child relations
+    for (EntityPtr ntt : deserializedEntities)
+    {
       // Generate new handle for old version scene entities
       ntt->SetIdVal(GetHandleManager()->GenerateHandle());
       AddEntity(ntt);
