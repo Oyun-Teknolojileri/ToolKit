@@ -26,6 +26,8 @@
 
 #include "EngineSettings.h"
 
+#include "MathUtil.h"
+
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -129,6 +131,7 @@ namespace ToolKit
     WriteAttr(settings, doc, "MSAA", std::to_string(gfx.MSAA));
     WriteAttr(settings, doc, "FPS", std::to_string(gfx.FPS));
     WriteAttr(settings, doc, "RenderSpec", std::to_string((int) gfx.RenderSpec));
+    WriteAttr(settings, doc, "ShadowDistance", std::to_string(gfx.ShadowDistance));
   }
 
   void EngineSettings::DeSerializeGraphics(XmlDocument* doc, XmlNode* parent)
@@ -140,6 +143,12 @@ namespace ToolKit
     }
     ReadAttr(node, "MSAA", Graphics.MSAA);
     ReadAttr(node, "FPS", Graphics.FPS);
+    ReadAttr(node, "ShadowDistance", Graphics.ShadowDistance);
+    if (!glm::epsilonNotEqual(Graphics.ShadowDistance, 0.0f, 0.001f))
+    {
+      // Set the value to the default value if the variable is not deserialized
+      Graphics.ShadowDistance = 100.0f;
+    }
 
     int renderSpec;
     ReadAttr(node, "RenderSpec", renderSpec);

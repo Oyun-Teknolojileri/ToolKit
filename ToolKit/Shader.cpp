@@ -214,6 +214,8 @@ namespace ToolKit
       return "normalMapInUse";
     case Uniform::IBL_MAX_REFLECTION_LOD:
       return "iblMaxReflectionLod";
+    case Uniform::SHADOW_DISTANCE:
+      return "shadowDistance";
     case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";

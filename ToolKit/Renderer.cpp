@@ -49,6 +49,7 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
+#include "EngineSettings.h"
 
 #include "DebugNew.h"
 
@@ -942,6 +943,13 @@ namespace ToolKit
         {
           GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::ELAPSED_TIME));
           glUniform1f(loc, Main::GetInstance()->TimeSinceStartup() / 1000.0f);
+        }
+        break;
+        case Uniform::SHADOW_DISTANCE:
+        {
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::SHADOW_DISTANCE));
+          EngineSettings& set = GetEngineSettings();
+          glUniform1f(loc, set.Graphics.ShadowDistance);
         }
         break;
         default:

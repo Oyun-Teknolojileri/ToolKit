@@ -36,6 +36,7 @@ namespace ToolKit
   {
     LightPtrArray Lights     = {};
     RenderJobArray RendeJobs = {};
+    CameraPtr ViewCamera     = nullptr;
   };
 
   /**

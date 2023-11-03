@@ -135,7 +135,7 @@
     );
 
     // NOTE: "ClampTextureCoordinates" function is from "textureUtil.shader" and this shader includes from "lighting.shader" which already includes that.
-    // If you need to use this shader from your shader, include "textureUtil.shader".
+    // If you need to use that function from your shader, include "textureUtil.shader".
 
 		float PCFFilterShadow2D(sampler2DArray shadowAtlas, vec3 uvLayer, vec2 coordStart, vec2 coordEnd, int samples, float radius, float currDepth, float LBR, float shadowBias)
 		{

@@ -24,12 +24,13 @@
  * SOFTWARE.
  */
 
+#include "ShadowPass.h"
+
 #include "Camera.h"
 #include "Logger.h"
 #include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
-#include "ShadowPass.h"
 #include "TKProfiler.h"
 #include "ToolKit.h"
 
@@ -71,7 +72,7 @@ namespace ToolKit
       light->InitShadowMapDepthMaterial();
       if (DirectionalLight* dLight = light->As<DirectionalLight>())
       {
-        dLight->UpdateShadowFrustum(m_params.RendeJobs);
+        dLight->UpdateShadowFrustum(m_params.RendeJobs, m_params.ViewCamera);
       }
       // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
 

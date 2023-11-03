@@ -70,7 +70,6 @@ namespace ToolKit
 
     renderer->SetShadowAtlas(std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
-    // TODO remove and see if this is necessary
     if (m_params.ClearFramebuffer)
     {
       renderer->ClearFrameBuffer(m_params.MainFramebuffer, {0.0f, 0.0f, 0.0f, 0.0f});
@@ -153,8 +152,9 @@ namespace ToolKit
     m_jobs.clear();
     RenderJobProcessor::CreateRenderJobs(allDrawList, m_jobs);
 
-    m_shadowPass->m_params.RendeJobs = m_jobs;
-    m_shadowPass->m_params.Lights    = m_updatedLights;
+    m_shadowPass->m_params.RendeJobs  = m_jobs;
+    m_shadowPass->m_params.Lights     = m_updatedLights;
+    m_shadowPass->m_params.ViewCamera = m_params.Cam;
 
     RenderJobProcessor::CullRenderJobs(m_jobs, m_params.Cam);
 
