@@ -689,29 +689,17 @@ namespace ToolKit
       }
     }
 
-    auto testAndRegenerateIdFn = [this, &deserializedEntities](EntityPtr ntt) -> bool
-    {
-      if (GetEntity(ntt->GetIdVal()) != nullptr)
-      {
-        ntt->SetIdVal(GetHandleManager()->GenerateHandle());
-        return true;
-      }
-
-      for (EntityPtr deserializedNtt : deserializedEntities)
-      {
-        if (deserializedNtt != ntt && deserializedNtt->GetIdVal() == ntt->GetIdVal())
-        {
-          ntt->SetIdVal(GetHandleManager()->GenerateHandle());
-          return true;
-        }
-      }
-      return false;
-    };
-
     // Fix id collisions then add the entities to the scene
     for (EntityPtr ntt : deserializedEntities)
     {
-      while (testAndRegenerateIdFn(ntt)) {}
+      if (!GetHandleManager()->IsHandleUnique(ntt->GetIdVal()))
+      {
+        ntt->SetIdVal(GetHandleManager()->GenerateHandle());
+      }
+      else
+      {
+        GetHandleManager()->AddHandle(ntt->GetIdVal());
+      }
       AddEntity(ntt);
     }
 

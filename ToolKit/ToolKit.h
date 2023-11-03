@@ -51,6 +51,7 @@ namespace ToolKit
     HandleManager();
 
     ULongID GenerateHandle();
+    void AddHandle(ULongID val);
     void ReleaseHandle(ULongID val);
 
     inline bool IsHandleUnique(ULongID val) { return m_uniqueIDs.find(val) == m_uniqueIDs.end(); }
