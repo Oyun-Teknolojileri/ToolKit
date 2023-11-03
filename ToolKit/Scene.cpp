@@ -587,8 +587,6 @@ namespace ToolKit
     const char* xmlObjectType = XmlEntityTypeAttr.c_str();
 
     EntityPtrArray prefabList;
-    std::vector<ULongID> deserializedIds;
-    std::vector<ULongID> deserializedParentIds;
     EntityPtrArray deserializedEntities;
 
     for (node = parent->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
@@ -611,7 +609,6 @@ namespace ToolKit
       // deserialization.
       ntt->SetIdVal(id);
 
-      deserializedIds.push_back(id);
       deserializedEntities.push_back(ntt);
     }
 
@@ -627,6 +624,7 @@ namespace ToolKit
         }
       }
 
+      // Generate new handle for old version scene entities
       ntt->SetIdVal(GetHandleManager()->GenerateHandle());
       AddEntity(ntt);
     }

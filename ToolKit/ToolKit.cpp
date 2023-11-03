@@ -54,6 +54,7 @@ namespace ToolKit
 
   ULongID HandleManager::GenerateHandle()
   {
+    //TODO delete here
     if (m_uniqueIDs.size() > 10000000)
     {
       volatile int x = 5;
@@ -71,6 +72,7 @@ namespace ToolKit
 
   void HandleManager::ReleaseHandle(ULongID val)
   {
+    //TODO delete here
     if (m_uniqueIDs.size() > 10000000)
     {
       volatile int x = 5;
