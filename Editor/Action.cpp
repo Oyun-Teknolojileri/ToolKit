@@ -106,7 +106,7 @@ namespace ToolKit
     {
       if (Node* pNode = m_ntt->m_node->m_parent)
       {
-        if (EntityPtr ntt = pNode->m_entity.lock())
+        if (EntityPtr ntt = pNode->OwnerEntity())
         {
           m_parentId = ntt->GetIdVal();
         }

@@ -822,7 +822,7 @@ namespace ToolKit
 
     for (Node* child : ntt->m_node->m_children)
     {
-      if (!DeleteEmptyEntitiesRecursively(tScene, child->m_entity.lock()))
+      if (!DeleteEmptyEntitiesRecursively(tScene, child->OwnerEntity()))
       {
         shouldDelete = false;
       }

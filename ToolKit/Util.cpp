@@ -852,13 +852,11 @@ namespace ToolKit
       }
     };
 
-    Node* parent = child->m_node->m_parent;
-    if (parent != nullptr)
+    if (EntityPtr parent = child->Parent())
     {
-      EntityPtr parentEntity = parent->m_entity.lock();
-      if (contains(entities, parentEntity))
+      if (contains(entities, parent))
       {
-        RootsOnly(entities, roots, parentEntity);
+        RootsOnly(entities, roots, parent);
       }
       else
       {
@@ -897,7 +895,7 @@ namespace ToolKit
 
     for (Node* childNode : ntt->m_node->m_children)
     {
-      if (EntityPtr child = childNode->m_entity.lock())
+      if (EntityPtr child = childNode->OwnerEntity())
       {
         children.push_back(child);
         GetChildren(child, children);
@@ -912,7 +910,7 @@ namespace ToolKit
 
     for (Node* node : root->m_node->m_children)
     {
-      if (EntityPtr ntt = node->m_entity.lock())
+      if (EntityPtr ntt = node->OwnerEntity())
       {
         if (EntityPtr sub = DeepCopy(ntt, copies))
         {

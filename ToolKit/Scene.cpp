@@ -283,7 +283,7 @@ namespace ToolKit
     {
       Node* child = children.back();
       children.pop_back();
-      if (EntityPtr childNtt = child->m_entity.lock())
+      if (EntityPtr childNtt = child->OwnerEntity())
       {
         RemoveEntity(childNtt->GetIdVal());
       }

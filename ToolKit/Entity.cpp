@@ -67,7 +67,7 @@ namespace ToolKit
   void Entity::NativeConstruct()
   {
     Super::NativeConstruct();
-    m_node->m_entity = Self<Entity>();
+    m_node->OwnerEntity(Self<Entity>());
   }
 
   EntityPtr Entity::Parent() const
@@ -76,7 +76,7 @@ namespace ToolKit
     {
       if (m_node->m_parent)
       {
-        if (EntityPtr parent = m_node->m_parent->m_entity.lock())
+        if (EntityPtr parent = m_node->m_parent->OwnerEntity())
         {
           return parent;
         }
@@ -189,12 +189,12 @@ namespace ToolKit
   {
     assert(other->Class() == Class());
     SafeDel(other->m_node);
-    other->m_node           = m_node->Copy();
-    other->m_node->m_entity = other->Self<Entity>();
+    other->m_node = m_node->Copy();
+    other->m_node->OwnerEntity(other->Self<Entity>());
 
     // Preserve Ids.
-    ULongID id              = other->GetIdVal();
-    other->m_localData      = m_localData;
+    ULongID id         = other->GetIdVal();
+    other->m_localData = m_localData;
     other->SetIdVal(id);
 
     if (copyComponents)

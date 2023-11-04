@@ -89,7 +89,7 @@ namespace ToolKit
 
         while (parent != nullptr)
         {
-          parentsOrSelfOpen |= m_shownEntities.count(parent->m_entity.lock()) > 0;
+          parentsOrSelfOpen |= m_shownEntities.count(parent->OwnerEntity()) > 0;
           parent             = parent->m_parent;
         }
 
@@ -122,7 +122,7 @@ namespace ToolKit
 
           for (Node* node : ntt->m_node->m_children)
           {
-            numNodes += ShowNode(node->m_entity.lock(), depth + 1);
+            numNodes += ShowNode(node->OwnerEntity(), depth + 1);
           }
 
           DrawTreeNodeLine(numNodes, rectMin);
@@ -177,18 +177,18 @@ namespace ToolKit
       }
 
       // otherwise this means both of the entities has same parent
-      // so we will select in between childs
+      // so we will select in between children.
 
       NodeRawPtrArray& children = a->m_node->m_parent->m_children;
-      // find locations of a and b on parents childs
+      // find locations of a and b on parents children.
       for (; i < children.size() && numFound != 2; ++i)
       {
         numFound += (children[i] == a->m_node) + (children[i] == b->m_node);
 
-        // if we found a or b we will select all of the nodes in bettween them
+        // if we found a or b we will select all of the nodes in between them
         if (numFound >= 1ull)
         {
-          if (EntityPtr childNtt = children[i]->m_entity.lock())
+          if (EntityPtr childNtt = children[i]->OwnerEntity())
           {
             scene->AddToSelection(childNtt->GetIdVal(), true);
           }
@@ -289,7 +289,7 @@ namespace ToolKit
       {
         for (Node* node : ntt->m_node->m_children)
         {
-          if (EntityPtr childNtt = node->m_entity.lock())
+          if (EntityPtr childNtt = node->OwnerEntity())
           {
             bool child = FindShownEntities(childNtt, str);
             children   = child || children;

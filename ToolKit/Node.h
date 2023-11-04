@@ -213,6 +213,18 @@ namespace ToolKit
      */
     EntityPtr ParentEntity();
 
+    /**
+     * Getter function for owner entity.
+     * @return Owner EntityPtr.
+     */
+    EntityPtr OwnerEntity() const { return m_entity.lock(); }
+
+    /**
+     * Setter function for owner entity.
+     * @param owner owning EntityPtr.
+     */
+    void OwnerEntity(EntityPtr owner) { m_entity = owner; }
+
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent);
 
@@ -242,11 +254,11 @@ namespace ToolKit
    public:
     ULongID m_id;
     Node* m_parent;
-    EntityWeakPtr m_entity;
     NodeRawPtrArray m_children;
     bool m_inheritScale;
 
    private:
+    EntityWeakPtr m_entity;   //!< Entity that owns this node.
     Vec3 m_translation;       //!< Local translation value.
     Quaternion m_orientation; //!< Local orientation value.
     Vec3 m_scale;             //!< Local scale value.

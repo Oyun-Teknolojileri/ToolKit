@@ -163,7 +163,7 @@ namespace ToolKit
       {
         auto addToSelectionFn = [this](Node* node)
         {
-          EntityPtr ntt = node->m_entity.lock();
+          EntityPtr ntt = node->OwnerEntity();
           m_selectedEntities.push_back(ntt->GetIdVal());
         };
 

@@ -110,7 +110,7 @@ namespace ToolKit
 
     for (Node* childNode : m_node->m_children)
     {
-      if (EntityPtr ntt = childNode->m_entity.lock())
+      if (EntityPtr ntt = childNode->OwnerEntity())
       {
         if (Surface* surface = ntt->As<Surface>())
         {

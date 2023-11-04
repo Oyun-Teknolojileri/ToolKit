@@ -86,7 +86,7 @@ namespace ToolKit
         {
           for (Node* node : ntt->m_node->m_children)
           {
-            if (EntityPtr childNtt = node->m_entity.lock())
+            if (EntityPtr childNtt = node->OwnerEntity())
             {
               ShowNode(childNtt);
             }
@@ -122,7 +122,7 @@ namespace ToolKit
           {
             for (Node* node : ntt->m_node->m_children)
             {
-              if (EntityPtr childNtt = node->m_entity.lock())
+              if (EntityPtr childNtt = node->OwnerEntity())
               {
                 ShowNode(childNtt);
               }
