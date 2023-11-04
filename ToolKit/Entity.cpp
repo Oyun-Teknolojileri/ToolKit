@@ -251,12 +251,9 @@ namespace ToolKit
     XmlNode* objNode = Super::SerializeImp(doc, parent);
     XmlNode* node    = CreateXmlNode(doc, StaticClass()->Name, objNode);
 
-    if (m_node->m_parent)
+    if (EntityPtr parentNtt = m_node->ParentEntity())
     {
-      if (EntityPtr parentNtt = m_node->m_parent->m_entity.lock())
-      {
-        WriteAttr(node, doc, XmlParentEntityIdAttr, std::to_string(parentNtt->GetIdVal()));
-      }
+      WriteAttr(node, doc, XmlParentEntityIdAttr, std::to_string(parentNtt->GetIdVal()));
     }
 
     m_node->Serialize(doc, node);
@@ -300,7 +297,8 @@ namespace ToolKit
 
     // Release the generated id.
     HandleManager* handleMan = GetHandleManager();
-    handleMan->ReleaseHandle(GetIdVal());
+    ULongID id               = GetIdVal();
+    handleMan->ReleaseHandle(id);
 
     // Read id and other parameters.
     m_localData.DeSerialize(info, parent);

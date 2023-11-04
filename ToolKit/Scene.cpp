@@ -594,6 +594,11 @@ namespace ToolKit
 
     for (EntityPtr ntt : deserializedEntities)
     {
+      if (ntt->_parentId == NULL_HANDLE)
+      {
+        continue;
+      }
+
       for (EntityPtr parentCandidate : deserializedEntities)
       {
         ULongID id = parentCandidate->_idBeforeCollision;
@@ -659,6 +664,11 @@ namespace ToolKit
 
     for (EntityPtr ntt : deserializedEntities)
     {
+      if (ntt->_parentId == NULL_HANDLE)
+      {
+        continue;
+      }
+
       for (EntityPtr parentCandidate : deserializedEntities)
       {
         ULongID id = parentCandidate->_idBeforeCollision;

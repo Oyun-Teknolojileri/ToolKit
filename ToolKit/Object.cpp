@@ -103,7 +103,8 @@ namespace ToolKit
   {
     assert(parent != nullptr && "Root of the object can't be null.");
 
-    GetHandleManager()->ReleaseHandle(GetIdVal());
+    ULongID id = GetIdVal();
+    GetHandleManager()->ReleaseHandle(id);
     m_localData.DeSerialize(info, parent);
     PreventIdCollision();
 
@@ -125,6 +126,10 @@ namespace ToolKit
     {
       _idBeforeCollision = idInFile;
       SetIdVal(handleMan->GenerateHandle());
+    }
+    else
+    {
+      handleMan->AddHandle(idInFile);
     }
   }
 
