@@ -334,12 +334,13 @@ namespace ToolKit
       return;
     }
 
-    if (m_node->m_parent == nullptr || m_node->m_parent->m_entity == nullptr)
+    EntityPtr parentNtt = m_node->ParentEntity();
+    if (parentNtt == nullptr)
     {
       return;
     }
 
-    CanvasPtr canvasPanel = std::static_pointer_cast<Canvas>(m_node->m_parent->m_entity);
+    CanvasPtr canvasPanel = Cast<Canvas>(parentNtt);
 
     if (canvasPanel == nullptr)
     {

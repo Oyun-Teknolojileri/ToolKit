@@ -855,7 +855,7 @@ namespace ToolKit
     Node* parent = child->m_node->m_parent;
     if (parent != nullptr)
     {
-      EntityPtr parentEntity = parent->m_entity;
+      EntityPtr parentEntity = parent->m_entity.lock();
       if (contains(entities, parentEntity))
       {
         RootsOnly(entities, roots, parentEntity);
@@ -881,13 +881,10 @@ namespace ToolKit
 
   void GetParents(const EntityPtr ntt, EntityPtrArray& parents)
   {
-    if (Node* pNode = ntt->m_node->m_parent)
+    if (EntityPtr parent = ntt->Parent())
     {
-      if (EntityPtr parent = pNode->m_entity)
-      {
-        parents.push_back(parent);
-        GetParents(parent, parents);
-      }
+      parents.push_back(parent);
+      GetParents(parent, parents);
     }
   }
 
@@ -900,8 +897,7 @@ namespace ToolKit
 
     for (Node* childNode : ntt->m_node->m_children)
     {
-      EntityPtr child = childNode->m_entity;
-      if (child)
+      if (EntityPtr child = childNode->m_entity.lock())
       {
         children.push_back(child);
         GetChildren(child, children);
@@ -916,9 +912,9 @@ namespace ToolKit
 
     for (Node* node : root->m_node->m_children)
     {
-      if (node->m_entity)
+      if (EntityPtr ntt = node->m_entity.lock())
       {
-        if (EntityPtr sub = DeepCopy(node->m_entity, copies))
+        if (EntityPtr sub = DeepCopy(ntt, copies))
         {
           cpy->m_node->AddChild(sub->m_node);
         }

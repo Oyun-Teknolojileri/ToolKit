@@ -70,6 +70,21 @@ namespace ToolKit
     m_node->m_entity = Self<Entity>();
   }
 
+  EntityPtr Entity::Parent() const
+  {
+    if (m_node)
+    {
+      if (m_node->m_parent)
+      {
+        if (EntityPtr parent = m_node->m_parent->m_entity.lock())
+        {
+          return parent;
+        }
+      }
+    }
+    return nullptr;
+  }
+
   bool Entity::IsDrawable() const { return GetComponent<MeshComponent>() != nullptr; }
 
   void Entity::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
@@ -237,9 +252,12 @@ namespace ToolKit
     XmlNode* objNode = Super::SerializeImp(doc, parent);
     XmlNode* node    = CreateXmlNode(doc, StaticClass()->Name, objNode);
 
-    if (m_node->m_parent && m_node->m_parent->m_entity)
+    if (m_node->m_parent)
     {
-      WriteAttr(node, doc, XmlParentEntityIdAttr, std::to_string(m_node->m_parent->m_entity->GetIdVal()));
+      if (EntityPtr parentNtt = m_node->m_parent->m_entity.lock())
+      {
+        WriteAttr(node, doc, XmlParentEntityIdAttr, std::to_string(parentNtt->GetIdVal()));
+      }
     }
 
     m_node->Serialize(doc, node);

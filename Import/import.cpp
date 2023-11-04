@@ -30,10 +30,10 @@
 #include <Mesh.h>
 #include <MeshComponent.h>
 #include <Scene.h>
+#include <TKImage.h>
 #include <Texture.h>
 #include <ToolKit.h>
 #include <Util.h>
-#include <TKImage.h>
 #include <assert.h>
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/Importer.hpp>
@@ -601,11 +601,11 @@ namespace ToolKit
         float metalness, roughness;
         if (material->Get(AI_MATKEY_METALLIC_FACTOR, metalness) == aiReturn_SUCCESS)
         {
-          tMaterial->m_metallic     = metalness;
+          tMaterial->m_metallic = metalness;
         }
         if (material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness) == aiReturn_SUCCESS)
         {
-          tMaterial->m_roughness    = roughness;
+          tMaterial->m_roughness = roughness;
         }
       }
 
@@ -822,7 +822,7 @@ namespace ToolKit
 
     for (Node* child : ntt->m_node->m_children)
     {
-      if (!DeleteEmptyEntitiesRecursively(tScene, child->m_entity))
+      if (!DeleteEmptyEntitiesRecursively(tScene, child->m_entity.lock()))
       {
         shouldDelete = false;
       }

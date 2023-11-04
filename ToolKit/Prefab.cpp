@@ -79,12 +79,13 @@ namespace ToolKit
     {
       return std::static_pointer_cast<Prefab>(ntt);
     }
-    else if (ntt->m_node->m_parent == nullptr || ntt->m_node->m_parent->m_entity == nullptr)
+
+    if (EntityPtr parent = ntt->Parent())
     {
-      return nullptr;
+      return GetPrefabRoot(parent);
     }
 
-    return GetPrefabRoot(ntt->m_node->m_parent->m_entity);
+    return nullptr;
   }
 
   Entity* Prefab::CopyTo(Entity* other) const

@@ -106,9 +106,9 @@ namespace ToolKit
     {
       if (Node* pNode = m_ntt->m_node->m_parent)
       {
-        if (pNode->m_entity)
+        if (EntityPtr ntt = pNode->m_entity.lock())
         {
-          m_parentId = pNode->m_entity->GetIdVal();
+          m_parentId = ntt->GetIdVal();
         }
         pNode->Orphan(m_ntt->m_node);
       }

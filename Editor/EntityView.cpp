@@ -61,7 +61,7 @@ namespace ToolKit
       }
 
       SurfacePtr surface    = Cast<Surface>(ntt);
-      CanvasPtr canvasPanel = Cast<Canvas>(surface->m_node->m_parent->m_entity);
+      CanvasPtr canvasPanel = Cast<Canvas>(surface->Parent());
 
       if (ImGui::CollapsingHeader("Anchor", ImGuiTreeNodeFlags_DefaultOpen))
       {
@@ -209,13 +209,13 @@ namespace ToolKit
           float w = 0, h = 0;
 
           {
-            pos                   = canvasPanel->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-            w                     = canvasPanel->GetSizeVal().x;
-            h                     = canvasPanel->GetSizeVal().y;
+            pos                    = canvasPanel->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            w                      = canvasPanel->GetSizeVal().x;
+            h                      = canvasPanel->GetSizeVal().y;
             pos                   -= Vec3(w / 2.f, h / 2.f, 0.f);
-            const Vec3 surfacePos = surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-            position[0]           = surfacePos.x - (pos.x + w * surface->m_anchorParams.m_anchorRatios[0]);
-            position[1]           = surfacePos.y - (pos.y + h * surface->m_anchorParams.m_anchorRatios[2]);
+            const Vec3 surfacePos  = surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            position[0]            = surfacePos.x - (pos.x + w * surface->m_anchorParams.m_anchorRatios[0]);
+            position[1]            = surfacePos.y - (pos.y + h * surface->m_anchorParams.m_anchorRatios[2]);
           }
           ImGui::DragFloat("Position X", &position[0], 0.25f, pos.x, pos.x + w);
           ImGui::DragFloat("Position Y", &position[1], 0.25f, pos.y, pos.y + h);
@@ -317,10 +317,15 @@ namespace ToolKit
         }
       }
 
-      if (ntt->IsA<Surface>() && ntt->m_node->m_parent != nullptr && ntt->m_node->m_parent->m_entity != nullptr &&
-          ntt->m_node->m_parent->m_entity->IsA<Canvas>())
+      if (ntt->IsA<Surface>())
       {
-        ShowAnchorSettings();
+        if (EntityPtr parentNtt = ntt->Parent())
+        {
+          if (parentNtt->IsA<Canvas>())
+          {
+            ShowAnchorSettings();
+          }
+        }
       }
 
       if (ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen))

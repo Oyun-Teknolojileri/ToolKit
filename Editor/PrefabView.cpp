@@ -84,10 +84,9 @@ namespace ToolKit
       {
         if (DrawHeader(ntt, nodeFlags))
         {
-          for (Node* n : ntt->m_node->m_children)
+          for (Node* node : ntt->m_node->m_children)
           {
-            EntityPtr childNtt = n->m_entity;
-            if (childNtt != nullptr)
+            if (EntityPtr childNtt = node->m_entity.lock())
             {
               ShowNode(childNtt);
             }
@@ -121,11 +120,11 @@ namespace ToolKit
         {
           if (DrawHeader(ntt, g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen))
           {
-            for (Node* n : ntt->m_node->m_children)
+            for (Node* node : ntt->m_node->m_children)
             {
-              if (n->m_entity)
+              if (EntityPtr childNtt = node->m_entity.lock())
               {
-                ShowNode(n->m_entity);
+                ShowNode(childNtt);
               }
             }
 

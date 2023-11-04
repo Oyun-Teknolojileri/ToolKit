@@ -58,6 +58,7 @@ namespace ToolKit
 
     void NativeConstruct() override;
 
+    EntityPtr Parent() const;
     virtual bool IsDrawable() const;
     virtual void SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget = nullptr);
     virtual BoundingBox GetAABB(bool inWorld = false) const;

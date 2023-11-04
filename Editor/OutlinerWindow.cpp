@@ -89,7 +89,7 @@ namespace ToolKit
 
         while (parent != nullptr)
         {
-          parentsOrSelfOpen |= m_shownEntities.count(parent->m_entity) > 0;
+          parentsOrSelfOpen |= m_shownEntities.count(parent->m_entity.lock()) > 0;
           parent             = parent->m_parent;
         }
 
@@ -120,9 +120,9 @@ namespace ToolKit
         {
           ImVec2 rectMin = ImGui::GetItemRectMin();
 
-          for (Node* n : ntt->m_node->m_children)
+          for (Node* node : ntt->m_node->m_children)
           {
-            numNodes += ShowNode(n->m_entity, depth + 1);
+            numNodes += ShowNode(node->m_entity.lock(), depth + 1);
           }
 
           DrawTreeNodeLine(numNodes, rectMin);
@@ -188,7 +188,10 @@ namespace ToolKit
         // if we found a or b we will select all of the nodes in bettween them
         if (numFound >= 1ull)
         {
-          scene->AddToSelection(children[i]->m_entity->GetIdVal(), true);
+          if (EntityPtr childNtt = children[i]->m_entity.lock())
+          {
+            scene->AddToSelection(childNtt->GetIdVal(), true);
+          }
         }
       }
     }
@@ -284,10 +287,9 @@ namespace ToolKit
 
       if (!ntt->IsA<Prefab>())
       {
-        for (Node* n : ntt->m_node->m_children)
+        for (Node* node : ntt->m_node->m_children)
         {
-          EntityPtr childNtt = n->m_entity;
-          if (childNtt != nullptr)
+          if (EntityPtr childNtt = node->m_entity.lock())
           {
             bool child = FindShownEntities(childNtt, str);
             children   = child || children;
