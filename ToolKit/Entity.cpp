@@ -206,8 +206,7 @@ namespace ToolKit
   void Entity::AddComponent(const ComponentPtr& component)
   {
     assert(GetComponent(component->GetIdVal()) == nullptr && "Component has already been added.");
-
-    component->m_entity = Self<Entity>();
+    component->OwnerEntity(Self<Entity>());
     m_components.push_back(component);
   }
 

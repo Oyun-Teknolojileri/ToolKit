@@ -70,6 +70,18 @@ namespace ToolKit
      */
     virtual ComponentPtr Copy(EntityPtr ntt) = 0;
 
+    /**
+     * Getter function for owner entity.
+     * @return Owner EntityPtr.
+     */
+    EntityPtr OwnerEntity() const { return m_entity.lock(); }
+
+    /**
+     * Setter function for owner entity.
+     * @param owner owning EntityPtr.
+     */
+    void OwnerEntity(EntityPtr owner) { m_entity = owner; }
+
    protected:
     void ParameterConstructor() override;
 
@@ -85,8 +97,8 @@ namespace ToolKit
      */
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
-   public:
-    EntityPtr m_entity = nullptr; //!< Parent Entity of the component.
+   protected:
+    EntityWeakPtr m_entity; //!< Parent Entity of the component.
   };
 
   /**

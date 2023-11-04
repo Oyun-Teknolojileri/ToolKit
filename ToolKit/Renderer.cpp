@@ -29,6 +29,7 @@
 #include "Camera.h"
 #include "DirectionComponent.h"
 #include "Drawable.h"
+#include "EngineSettings.h"
 #include "EnvironmentComponent.h"
 #include "GradientSky.h"
 #include "Logger.h"
@@ -49,7 +50,6 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
-#include "EngineSettings.h"
 
 #include "DebugNew.h"
 
@@ -126,7 +126,7 @@ namespace ToolKit
         m_renderState.brdfLut                = brdfLut->m_textureId;
 
         m_renderState.IBLInUse               = true;
-        if (EntityPtr env = envCom->m_entity)
+        if (EntityPtr env = envCom->OwnerEntity())
         {
           m_iblRotation = Mat4(env->m_node->GetOrientation());
         }
@@ -947,7 +947,7 @@ namespace ToolKit
         break;
         case Uniform::SHADOW_DISTANCE:
         {
-          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::SHADOW_DISTANCE));
+          GLint loc           = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::SHADOW_DISTANCE));
           EngineSettings& set = GetEngineSettings();
           glUniform1f(loc, set.Graphics.ShadowDistance);
         }

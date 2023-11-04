@@ -100,7 +100,7 @@ namespace ToolKit
     {
       AABBOverrideComponent* overrideComp = (AABBOverrideComponent*) comp.get();
       ImGui::BeginDisabled(!isEditable);
-      MeshComponentPtr meshComp = overrideComp->m_entity->GetComponent<MeshComponent>();
+      MeshComponentPtr meshComp = overrideComp->OwnerEntity()->GetComponent<MeshComponent>();
       if (meshComp && ImGui::Button("Update from MeshComponent"))
       {
         overrideComp->SetAABB(meshComp->GetAABB());
@@ -381,7 +381,7 @@ namespace ToolKit
       {
         if (comp->IsA<SkeletonComponent>())
         {
-          MeshComponentPtr mesh = comp->m_entity->GetComponent<MeshComponent>();
+          MeshComponentPtr mesh = comp->OwnerEntity()->GetComponent<MeshComponent>();
 
           if (mesh != nullptr && mesh->GetMeshVal()->IsSkinned())
           {

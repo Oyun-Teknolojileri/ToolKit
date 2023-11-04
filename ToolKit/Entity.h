@@ -78,7 +78,7 @@ namespace ToolKit
     std::shared_ptr<T> AddComponent()
     {
       std::shared_ptr<T> component = MakeNewPtr<T>();
-      component->m_entity          = Self<Entity>();
+      component->OwnerEntity(Self<Entity>());
       m_components.push_back(component);
       return component;
     }

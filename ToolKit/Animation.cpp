@@ -94,6 +94,8 @@ namespace ToolKit
     Vec3 translation;
     Quaternion orientation;
     Vec3 scale;
+
+    EntityPtr owner = skeleton->OwnerEntity();
     for (auto& dBoneIter : skeleton->m_map->boneList)
     {
       auto entry = m_keys.find(dBoneIter.first);
@@ -153,7 +155,7 @@ namespace ToolKit
           // Target anim is offseted from it's root bone.
           if (dBoneIter.first == blendTarget->RootBone)
           {
-            Vec3 entityScale       = skeleton->m_entity->m_node->GetScale();
+            Vec3 entityScale       = owner->m_node->GetScale();
             float translationCoeff = (1 / entityScale.x);
             translationT           = translationT + (blendTarget->TranslationOffset * translationCoeff);
             orientationT           = orientationT * blendTarget->OrientationOffset;
