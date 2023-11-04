@@ -102,6 +102,9 @@ namespace ToolKit
     StringView GetConfigPath();
 
     static Main* GetInstance();
+
+    static Main* GetInstance_noexcep() { return m_proxy; };
+
     static void SetProxy(Main* proxy);
 
    public:

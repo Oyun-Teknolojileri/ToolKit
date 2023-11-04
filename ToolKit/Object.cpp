@@ -62,7 +62,13 @@ namespace ToolKit
 
   Object::Object() { _idBeforeCollision = NULL_HANDLE; }
 
-  Object::~Object() {}
+  Object::~Object()
+  {
+    if (HandleManager* handleMan = GetHandleManager())
+    {
+      handleMan->ReleaseHandle(GetIdVal());
+    }
+  }
 
   void Object::NativeConstruct()
   {
@@ -74,12 +80,6 @@ namespace ToolKit
 
   void Object::ParameterConstructor()
   {
-    // If this constructor is called multiple times, release the last id from manager
-    if (m_localData.m_variants.size() > Id_Index)
-    {
-      GetHandleManager()->ReleaseHandle(GetIdVal());
-    }
-
     ULongID id = GetHandleManager()->GenerateHandle();
     Id_Define(id, EntityCategory.Name, EntityCategory.Priority, true, false);
   }

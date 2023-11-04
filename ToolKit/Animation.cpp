@@ -374,12 +374,19 @@ namespace ToolKit
 
   AnimRecord::AnimRecord() { m_id = GetHandleManager()->GenerateHandle(); }
 
-  AnimRecord::AnimRecord(EntityPtr entity, const AnimationPtr& anim) : m_entity(entity), m_animation(anim)
+  void AnimRecord::Construct(EntityPtr entity, const AnimationPtr& anim)
   {
-    m_id = GetHandleManager()->GenerateHandle();
+    m_entity    = entity;
+    m_animation = m_animation;
   }
 
-  AnimRecord::~AnimRecord() { GetHandleManager()->ReleaseHandle(m_id); }
+  AnimRecord::~AnimRecord()
+  {
+    if (HandleManager* handleMan = GetHandleManager())
+    {
+      handleMan->ReleaseHandle(m_id);
+    }
+  }
 
   void AnimationPlayer::AddRecord(AnimRecord* rec)
   {
@@ -441,9 +448,14 @@ namespace ToolKit
       {
         record->m_currentTime += deltaTimeSec * record->m_timeMultiplier;
       }
-      record->m_entity->SetPose(record->m_animation,
-                                record->m_currentTime,
-                                record->m_blendTarget.Blend ? &record->m_blendTarget : nullptr);
+
+      if (EntityPtr ntt = record->m_entity.lock())
+      {
+        ntt->SetPose(record->m_animation,
+                     record->m_currentTime,
+                     record->m_blendTarget.Blend ? &record->m_blendTarget : nullptr);
+      }
+
       if (state == AnimRecord::State::Rewind)
       {
         record->m_state = AnimRecord::State::Play;

@@ -181,7 +181,7 @@ namespace ToolKit
      * @param entity Is the entity to play the animation on.
      * @param anim Is the animation to play for the record.
      */
-    AnimRecord(EntityPtr entity, const AnimationPtr& anim);
+    void Construct(EntityPtr entity, const AnimationPtr& anim);
 
     ~AnimRecord();
 
@@ -193,7 +193,7 @@ namespace ToolKit
     bool m_loop            = false; //!< States if the animation mean to be looped.
     float m_timeMultiplier = 1.0f;  //!< Speed multiplier for animation.
     AnimationPtr m_animation;       //!< Animation to play.
-    EntityPtr m_entity;
+    EntityWeakPtr m_entity;
     BlendTarget m_blendTarget;
 
     /**

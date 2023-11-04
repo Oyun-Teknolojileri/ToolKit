@@ -91,6 +91,7 @@ namespace ToolKit
   Main::~Main()
   {
     assert(m_initiated == false && "Uninitiate before destruct");
+    m_proxy = nullptr;
 
     m_logger->Log("Main Destructed");
     SafeDel(m_logger);
@@ -297,7 +298,15 @@ namespace ToolKit
 
   UIManager* GetUIManager() { return Main::GetInstance()->m_uiManager; }
 
-  HandleManager* GetHandleManager() { return &Main::GetInstance()->m_handleManager; }
+  HandleManager* GetHandleManager()
+  {
+    if (Main* instance = Main::GetInstance_noexcep())
+    {
+      return &instance->m_handleManager;
+    }
+
+    return nullptr;
+  }
 
   SkeletonManager* GetSkeletonManager() { return Main::GetInstance()->m_skeletonManager; }
 
