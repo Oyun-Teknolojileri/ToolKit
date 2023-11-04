@@ -53,10 +53,12 @@ namespace ToolKit
 
   Entity::Entity()
   {
-    m_sharedEntity   = std::shared_ptr<Entity>(this, [](Entity*) {});
-    m_node           = new Node();
-    m_node->m_entity = m_sharedEntity;
-    _parentId        = 0;
+    m_sharedEntity    = std::shared_ptr<Entity>(this, [](Entity*) {});
+    m_node            = new Node();
+    m_node->m_entity  = m_sharedEntity;
+    m_sharedEntity    = nullptr;
+    _prefabRootEntity = nullptr;
+    _parentId         = NULL_HANDLE;
   }
 
   Entity::~Entity()
@@ -276,7 +278,14 @@ namespace ToolKit
       m_node->DeSerialize(info, transformNode);
     }
 
+    // Release the generated id.
+    HandleManager* handleMan = GetHandleManager();
+    handleMan->ReleaseHandle(GetIdVal());
+
+    // Read id and other parameters.
     m_localData.DeSerialize(info, parent);
+
+    PreventIdCollision();
 
     ClearComponents();
 

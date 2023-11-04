@@ -128,27 +128,11 @@ namespace ToolKit
 
   void Scene::Merge(ScenePtr other)
   {
-    auto testAndRegenerateIdFn = [this](EntityPtr otherNtt) -> bool
-    {
-      for (EntityPtr ntt : m_entities)
-      {
-        if (ntt->GetIdVal() == otherNtt->GetIdVal())
-        {
-          ntt->SetIdVal(GetHandleManager()->GenerateHandle());
-          return true;
-        }
-      }
-
-      return false;
-    };
-
-    // If there is a collision between ids, regenerate the id
     for (EntityPtr otherNtt : other->GetEntities())
     {
-      while (testAndRegenerateIdFn(otherNtt)) {}
-
       AddEntity(otherNtt);
     }
+
     other->RemoveAllEntities();
     GetSceneManager()->Remove(other->GetFile());
   }
@@ -578,18 +562,14 @@ namespace ToolKit
       return nullptr;
     }
 
-    // For old type of scenes, load the entites and find the parent-child relations
-    // Then regenerate the ids
-
-    XmlNode* node             = nullptr;
-
+    // For old type of scenes, load the entities and find the parent-child relations
     const char* xmlRootObject = XmlEntityElement.c_str();
     const char* xmlObjectType = XmlEntityTypeAttr.c_str();
 
     EntityPtrArray prefabList;
     EntityPtrArray deserializedEntities;
 
-    for (node = parent->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
+    for (XmlNode* node = parent->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
     {
       XmlAttribute* typeAttr      = node->first_attribute(xmlObjectType);
       EntityFactory::EntityType t = (EntityFactory::EntityType) std::atoi(typeAttr->value());
@@ -603,34 +583,29 @@ namespace ToolKit
         prefabList.push_back(ntt);
       }
 
-      ULongID id = 0;
-      ReadAttr(node, XmlEntityIdAttr, id);
-      // Temporary id. This will be regenerated later. Do not use this id until it is regenerated later in
-      // deserialization.
-      ntt->SetIdVal(id);
-
       deserializedEntities.push_back(ntt);
     }
 
     // Solve the parent-child relations
+    m_entities.reserve(deserializedEntities.size());
+
     for (EntityPtr ntt : deserializedEntities)
     {
       for (EntityPtr parentCandidate : deserializedEntities)
       {
-        if (parentCandidate->GetIdVal() == ntt->_parentId)
+        ULongID id = parentCandidate->_idBeforeCollision;
+        if (id == NULL_HANDLE)
+        {
+          id = parentCandidate->GetIdVal();
+        }
+
+        if (ntt->_parentId == id)
         {
           parentCandidate->m_node->AddChild(ntt->m_node);
           break;
         }
       }
-    }
 
-    //  regenerate ids and add to scene
-    // Solve the parent-child relations
-    for (EntityPtr ntt : deserializedEntities)
-    {
-      // Generate new handle for old version scene entities
-      ntt->SetIdVal(GetHandleManager()->GenerateHandle());
       AddEntity(ntt);
     }
 
@@ -677,29 +652,25 @@ namespace ToolKit
     }
 
     // Solve the parent-child relations
+    m_entities.reserve(deserializedEntities.size());
+
     for (EntityPtr ntt : deserializedEntities)
     {
       for (EntityPtr parentCandidate : deserializedEntities)
       {
-        if (parentCandidate->GetIdVal() == ntt->_parentId)
+        ULongID id = parentCandidate->_idBeforeCollision;
+        if (id == NULL_HANDLE)
+        {
+          id = parentCandidate->GetIdVal();
+        }
+
+        if (ntt->_parentId == id)
         {
           parentCandidate->m_node->AddChild(ntt->m_node);
           break;
         }
       }
-    }
 
-    // Fix id collisions then add the entities to the scene
-    for (EntityPtr ntt : deserializedEntities)
-    {
-      if (!GetHandleManager()->IsHandleUnique(ntt->GetIdVal()))
-      {
-        ntt->SetIdVal(GetHandleManager()->GenerateHandle());
-      }
-      else
-      {
-        GetHandleManager()->AddHandle(ntt->GetIdVal());
-      }
       AddEntity(ntt);
     }
 

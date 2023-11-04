@@ -56,7 +56,7 @@ namespace ToolKit
   {
     ULongID id = Xoroshiro128Plus(m_randomXor);
     // If collision happens, change generate new id
-    while (m_uniqueIDs.find(id) != m_uniqueIDs.end() || id == 0)
+    while (m_uniqueIDs.find(id) != m_uniqueIDs.end() || id == NULL_HANDLE)
     {
       id = Xoroshiro128Plus(m_randomXor);
     }
@@ -74,6 +74,8 @@ namespace ToolKit
       m_uniqueIDs.erase(it);
     }
   }
+
+  bool HandleManager::IsHandleUnique(ULongID val) { return m_uniqueIDs.find(val) == m_uniqueIDs.end(); }
 
   Main* Main::m_proxy = nullptr;
 

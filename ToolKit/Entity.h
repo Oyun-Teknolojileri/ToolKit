@@ -199,11 +199,11 @@ namespace ToolKit
      * Used to indicate this entity belongs to a prefab entity. Set by the
      * Prefab Entity during Prefab::Init.
      */
-    Entity* _prefabRootEntity = nullptr;
+    Entity* _prefabRootEntity;
 
     // TODO: Cihan delete this. Instead of maintaining a shared pointer within the object, the shared object should be
     // maintained in the object factory.
-    EntityPtr m_sharedEntity  = nullptr;
+    EntityPtr m_sharedEntity;
 
    private:
     // This should be private, because instantiated entities don't use this list
