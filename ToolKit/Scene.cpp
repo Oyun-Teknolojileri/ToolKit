@@ -586,34 +586,35 @@ namespace ToolKit
         prefabList.push_back(ntt);
       }
 
+      // Old file id trick.
+      ULongID id = 0;
+      ReadAttr(node, XmlEntityIdAttr, id);
+
+      // Temporary id. This will be regenerated later. Do not use this id until it is regenerated later.
+      ntt->SetIdVal(id);
       deserializedEntities.push_back(ntt);
     }
 
     // Solve the parent-child relations
-    m_entities.reserve(deserializedEntities.size());
-
     for (EntityPtr ntt : deserializedEntities)
     {
-      if (ntt->_parentId == NULL_HANDLE)
-      {
-        continue;
-      }
-
       for (EntityPtr parentCandidate : deserializedEntities)
       {
-        ULongID id = parentCandidate->_idBeforeCollision;
-        if (id == NULL_HANDLE)
-        {
-          id = parentCandidate->GetIdVal();
-        }
-
-        if (ntt->_parentId == id)
+        if (parentCandidate->GetIdVal() == ntt->_parentId)
         {
           parentCandidate->m_node->AddChild(ntt->m_node);
           break;
         }
       }
+    }
 
+    // Old file id trick.
+    // Regenerate ids and add to scene
+    // Solve the parent-child relations
+    for (EntityPtr ntt : deserializedEntities)
+    {
+      // Generate new handle for old version scene entities
+      ntt->SetIdVal(GetHandleManager()->GenerateHandle());
       AddEntity(ntt);
     }
 
