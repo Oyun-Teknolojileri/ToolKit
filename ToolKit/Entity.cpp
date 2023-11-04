@@ -56,7 +56,6 @@ namespace ToolKit
     m_sharedEntity    = std::shared_ptr<Entity>(this, [](Entity*) {});
     m_node            = new Node();
     m_node->m_entity  = m_sharedEntity;
-    m_sharedEntity    = nullptr;
     _prefabRootEntity = nullptr;
     _parentId         = NULL_HANDLE;
   }

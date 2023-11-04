@@ -54,7 +54,8 @@ namespace ToolKit
 
     DeleteAction::DeleteAction(EntityPtr ntt)
     {
-      m_ntt = ntt;
+      m_parentId = NULL_HANDLE;
+      m_ntt      = ntt;
       Redo();
     }
 

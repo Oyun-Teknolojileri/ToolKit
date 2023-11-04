@@ -55,6 +55,7 @@ namespace ToolKit
 
    protected:
     void UpdateShadowCameraTransform();
+    void ParameterConstructor() override;
     void ParameterEventConstructor() override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
