@@ -667,6 +667,7 @@ namespace ToolKit
     {
       if (ntt->_parentId == NULL_HANDLE)
       {
+        AddEntity(ntt);
         continue;
       }
 
