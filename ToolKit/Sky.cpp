@@ -75,7 +75,7 @@ namespace ToolKit
 
     Vec3 mp = Vec3(TK_FLT_MAX);
     envComp->SetSizeVal(mp);
-    envComp->m_entity = m_sharedEntity;
+    envComp->m_entity = Self<Entity>();
     envComp->Init(false);
 
     // Do not expose environment component

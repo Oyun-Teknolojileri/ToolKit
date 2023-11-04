@@ -169,9 +169,15 @@ namespace ToolKit
 
   TKDefineClass(DirectionalLight, Light);
 
-  DirectionalLight::DirectionalLight() { AddComponent<DirectionComponent>(); }
+  DirectionalLight::DirectionalLight() {}
 
   DirectionalLight::~DirectionalLight() {}
+
+  void DirectionalLight::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    AddComponent<DirectionComponent>();
+  }
 
   void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs, const CameraPtr cameraView)
   {
@@ -366,11 +372,7 @@ namespace ToolKit
 
   TKDefineClass(SpotLight, Light);
 
-  SpotLight::SpotLight()
-  {
-    AddComponent<DirectionComponent>();
-    m_volumeMesh = MakeNewPtr<Mesh>();
-  }
+  SpotLight::SpotLight() {}
 
   SpotLight::~SpotLight() {}
 
@@ -416,6 +418,10 @@ namespace ToolKit
   void SpotLight::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    AddComponent<DirectionComponent>();
+    m_volumeMesh = MakeNewPtr<Mesh>();
+
     MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
   }
 

@@ -73,25 +73,25 @@ namespace ToolKit
     return parent;
   }
 
-  Component* ComponentFactory::Create(ComponentType Class)
+  ComponentPtr ComponentFactory::Create(ComponentType Class)
   {
     switch (Class)
     {
     case ComponentType::MeshComponent:
-      return MakeNew<MeshComponent>();
+      return MakeNewPtr<MeshComponent>();
     case ComponentType::DirectionComponent:
-      return MakeNew<DirectionComponent>();
+      return MakeNewPtr<DirectionComponent>();
     case ComponentType::MultiMaterialComponent:
     case ComponentType::MaterialComponent:
-      return MakeNew<MaterialComponent>();
+      return MakeNewPtr<MaterialComponent>();
     case ComponentType::EnvironmentComponent:
-      return MakeNew<EnvironmentComponent>();
+      return MakeNewPtr<EnvironmentComponent>();
     case ComponentType::AnimControllerComponent:
-      return MakeNew<AnimControllerComponent>();
+      return MakeNewPtr<AnimControllerComponent>();
     case ComponentType::SkeletonComponent:
-      return MakeNew<SkeletonComponent>();
+      return MakeNewPtr<SkeletonComponent>();
     case ComponentType::AABBOverrideComponent:
-      return MakeNew<AABBOverrideComponent>();
+      return MakeNewPtr<AABBOverrideComponent>();
     case ComponentType::Base:
     default:
       assert(0 && "Unknown Component Type !");

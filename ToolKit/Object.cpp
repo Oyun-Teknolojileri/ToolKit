@@ -60,7 +60,7 @@ namespace ToolKit
 
   TKDefineClass(Object, Object);
 
-  Object::Object() {}
+  Object::Object() { _idBeforeCollision = NULL_HANDLE; }
 
   Object::~Object() {}
 

@@ -46,7 +46,13 @@ namespace ToolKit
 
   Billboard::Billboard() {}
 
-  Billboard::Billboard(const Settings& settings) : m_settings(settings) { AddComponent<MeshComponent>(); }
+  Billboard::Billboard(const Settings& settings) : m_settings(settings) {}
+
+  void Billboard::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    AddComponent<MeshComponent>();
+  }
 
   void Billboard::LookAt(CameraPtr cam, float scale)
   {
@@ -128,17 +134,17 @@ namespace ToolKit
 
   TKDefineClass(Cube, Entity);
 
-  Cube::Cube()
-  {
-    AddComponent<MeshComponent>();
-    AddComponent<MaterialComponent>();
-  }
+  Cube::Cube() {}
 
   Entity* Cube::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 
   void Cube::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
+
     Generate();
   }
 
@@ -333,15 +339,15 @@ namespace ToolKit
 
   TKDefineClass(Quad, Entity);
 
-  Quad::Quad()
-  {
-    AddComponent<MeshComponent>();
-    AddComponent<MaterialComponent>();
-  }
+  Quad::Quad() {}
 
   void Quad::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
+
     Generate();
   }
 
@@ -402,15 +408,15 @@ namespace ToolKit
 
   TKDefineClass(Sphere, Entity);
 
-  Sphere::Sphere()
-  {
-    AddComponent<MeshComponent>();
-    AddComponent<MaterialComponent>();
-  }
+  Sphere::Sphere() {}
 
   void Sphere::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
+
     Generate(GetMeshComponent(), GetRadiusVal(), GetNumRingVal(), GetNumSegVal());
   }
 
@@ -522,15 +528,15 @@ namespace ToolKit
 
   TKDefineClass(Cone, Entity);
 
-  Cone::Cone()
-  {
-    AddComponent<MaterialComponent>();
-    AddComponent<MeshComponent>();
-  }
+  Cone::Cone() {}
 
   void Cone::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    AddComponent<MaterialComponent>();
+    AddComponent<MeshComponent>();
+
     Generate();
   }
 
@@ -692,16 +698,15 @@ namespace ToolKit
 
   TKDefineClass(Arrow2d, Entity);
 
-  Arrow2d::Arrow2d()
-  {
-    AddComponent<MaterialComponent>();
-    AddComponent<MeshComponent>();
-    m_label = AxisLabel::X;
-  }
+  Arrow2d::Arrow2d() { m_label = AxisLabel::X; }
 
   void Arrow2d::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    AddComponent<MaterialComponent>();
+    AddComponent<MeshComponent>();
+
     Generate(AxisLabel::Y);
   }
 
@@ -774,7 +779,13 @@ namespace ToolKit
 
   TKDefineClass(LineBatch, Entity);
 
-  LineBatch::LineBatch() { AddComponent<MeshComponent>(); }
+  LineBatch::LineBatch() {}
+
+  void LineBatch::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    AddComponent<MeshComponent>();
+  }
 
   Entity* LineBatch::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 

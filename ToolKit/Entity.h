@@ -56,6 +56,8 @@ namespace ToolKit
     Entity();
     virtual ~Entity();
 
+    void NativeConstruct() override;
+
     virtual bool IsDrawable() const;
     virtual void SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget = nullptr);
     virtual BoundingBox GetAABB(bool inWorld = false) const;
@@ -75,7 +77,7 @@ namespace ToolKit
     std::shared_ptr<T> AddComponent()
     {
       std::shared_ptr<T> component = MakeNewPtr<T>();
-      component->m_entity          = m_sharedEntity;
+      component->m_entity          = Self<Entity>();
       m_components.push_back(component);
       return component;
     }
@@ -200,10 +202,6 @@ namespace ToolKit
      * Prefab Entity during Prefab::Init.
      */
     Entity* _prefabRootEntity;
-
-    // TODO: Cihan delete this. Instead of maintaining a shared pointer within the object, the shared object should be
-    // maintained in the object factory.
-    EntityPtr m_sharedEntity;
 
    private:
     // This should be private, because instantiated entities don't use this list

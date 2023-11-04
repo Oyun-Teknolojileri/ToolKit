@@ -28,11 +28,11 @@
 
 #include "Mesh.h"
 #include "Node.h"
+#include "RapidXml/rapidxml.hpp"
+#include "RapidXml/rapidxml_utils.hpp"
 #include "Surface.h"
 #include "Texture.h"
 #include "ToolKit.h"
-#include "RapidXml/rapidxml.hpp"
-#include "RapidXml/rapidxml_utils.hpp"
 
 #include "DebugNew.h"
 
@@ -62,7 +62,7 @@ namespace ToolKit
       m_spriteSheet = GetTextureManager()->Create<Texture>(SpritePath(m_imageFile));
       for (const SpriteEntry& entry : m_entries)
       {
-        Surface* surface = MakeNew<Surface>();
+        SurfacePtr surface = MakeNewPtr<Surface>();
         surface->Update(m_spriteSheet, entry);
         m_sprites[entry.name] = surface;
       }
@@ -88,10 +88,7 @@ namespace ToolKit
 
   void SpriteSheet::UnInit()
   {
-    for (auto entry : m_sprites)
-    {
-      SafeDel(entry.second);
-    }
+    m_sprites.clear();
     m_initiated = false;
   }
 
@@ -160,7 +157,7 @@ namespace ToolKit
 
   SpriteAnimation::~SpriteAnimation() {}
 
-  Surface* SpriteAnimation::GetCurrentSurface()
+  SurfacePtr SpriteAnimation::GetCurrentSurface()
   {
     auto res = m_sheet->m_sprites.find(m_currentFrame);
     if (res == m_sheet->m_sprites.end())
@@ -240,7 +237,7 @@ namespace ToolKit
   SpriteSheetManager::SpriteSheetManager() { m_baseType = SpriteSheet::StaticClass(); }
 
   SpriteSheetManager::~SpriteSheetManager() {}
-  
+
   bool SpriteSheetManager::CanStore(ClassMeta* Class) { return Class == SpriteSheet::StaticClass(); }
 
   ResourcePtr SpriteSheetManager::CreateLocal(ClassMeta* Class)

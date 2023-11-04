@@ -82,7 +82,7 @@ namespace ToolKit
       parentMesh->UnInit();
 
       // Billboard
-      QuadPtr quad = MakeNewPtr<Quad>();
+      QuadPtr quad       = MakeNewPtr<Quad>();
       MeshPtr meshPtr    = quad->GetMeshComponent()->GetMeshVal();
       MaterialPtr matPtr = GetMaterialManager()->GetCopyOfUnlitMaterial();
       matPtr->UnInit();
@@ -108,8 +108,8 @@ namespace ToolKit
       vertices[4].pos.y                       = 0.2f;
       vertices[5].pos.y                       = 0.5f;
 
-      vertices[6].pos.y                      = -0.2f;
-      vertices[7].pos.y                      = -0.5f;
+      vertices[6].pos.y                       = -0.2f;
+      vertices[7].pos.y                       = -0.5f;
 
       MaterialPtr newMaterial                 = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       newMaterial->m_color                    = Vec3(0.1f, 0.1f, 0.1f);
@@ -419,12 +419,12 @@ namespace ToolKit
           v.pos.xy += Vec2(offset * scale);
           break;
         case AxisLabel::YZ:
-          v.pos    = v.pos.zyx * scale;
+          v.pos     = v.pos.zyx * scale;
           v.pos.z  += 0.75f * scale;
           v.pos.yz += Vec2(offset * scale);
           break;
         case AxisLabel::ZX:
-          v.pos    = v.pos.xzy * scale;
+          v.pos     = v.pos.xzy * scale;
           v.pos.x  += 0.75f * scale;
           v.pos.zx += Vec2(offset * scale);
           break;
@@ -503,6 +503,12 @@ namespace ToolKit
       {
         SafeDel(m_handles[i]);
       }
+    }
+
+    void Gizmo::NativeConstruct()
+    {
+      Super::NativeConstruct();
+      Update(0.0f);
     }
 
     EditorBillboardBase::BillboardType Gizmo::GetBillboardType() const { return BillboardType::Gizmo; }
@@ -600,8 +606,6 @@ namespace ToolKit
         gizmo->m_params.type = GizmoHandle::SolidType::Cone;
         m_handles[i]         = gizmo;
       }
-
-      Update(0.0f);
     }
 
     LinearGizmo::~LinearGizmo() {}
@@ -691,8 +695,6 @@ namespace ToolKit
         m_handles.push_back(new QuadHandle());
         m_handles[i]->m_params.axis = (AxisLabel) i;
       }
-
-      Update(0.0);
     }
 
     MoveGizmo::~MoveGizmo() {}
@@ -723,8 +725,6 @@ namespace ToolKit
         cube->m_params.color = Vec3(1.0);
         cube->m_params.scale = Vec3(5);
       }
-
-      Update(0.0);
     }
 
     ScaleGizmo::~ScaleGizmo() {}
@@ -745,8 +745,6 @@ namespace ToolKit
     PolarGizmo::PolarGizmo() : Gizmo({false, 6.0f, 60.0f})
     {
       m_handles = {new PolarHandle(), new PolarHandle(), new PolarHandle()};
-
-      Update(0.0f);
     }
 
     PolarGizmo::~PolarGizmo() {}

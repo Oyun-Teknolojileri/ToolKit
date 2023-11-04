@@ -104,10 +104,17 @@ namespace ToolKit
   ClassMeta* const This::Class() const { return &This##Cls; }
 
   typedef std::shared_ptr<class Object> TKObjectPtr;
+  typedef std::weak_ptr<class Object> ObjectWeakPtr;
 
   class TK_API Object : public Serializable
   {
     TKDeclareClassBase(Object, Object);
+
+    template <typename T, typename... Args>
+    friend std::shared_ptr<T> MakeNewPtrCasted(const StringView Class, Args&&... args); //!< Friend constructor.
+
+    template <typename T, typename... Args>
+    friend std::shared_ptr<T> MakeNewPtr(Args&&... args); //!< Friend constructor.
 
    public:
     Object();
@@ -137,6 +144,12 @@ namespace ToolKit
 
     bool IsSame(Object* other) { return other->GetIdVal() == GetIdVal(); }
 
+    template <typename T>
+    std::shared_ptr<T> Self() const
+    {
+      return std::static_pointer_cast<T>(m_self.lock());
+    }
+
    protected:
     virtual void ParameterConstructor();
     virtual void ParameterEventConstructor();
@@ -151,6 +164,9 @@ namespace ToolKit
      */
     void PreventIdCollision();
 
+   protected:
+    ObjectWeakPtr m_self;
+
    public:
     TKDeclareParam(ULongID, Id);
 
@@ -160,7 +176,7 @@ namespace ToolKit
      * This is internally used to match parent, child pairs.
      * If a collision occurs, the original value is stored here to be used in parent - child matching.
      */
-    ULongID _idBeforeCollision = NULL_HANDLE;
+    ULongID _idBeforeCollision;
   };
 
 } // namespace ToolKit

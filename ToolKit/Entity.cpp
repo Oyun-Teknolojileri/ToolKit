@@ -53,9 +53,7 @@ namespace ToolKit
 
   Entity::Entity()
   {
-    m_sharedEntity    = std::shared_ptr<Entity>(this, [](Entity*) {});
     m_node            = new Node();
-    m_node->m_entity  = m_sharedEntity;
     _prefabRootEntity = nullptr;
     _parentId         = NULL_HANDLE;
   }
@@ -64,6 +62,12 @@ namespace ToolKit
   {
     SafeDel(m_node);
     ClearComponents();
+  }
+
+  void Entity::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    m_node->m_entity = Self<Entity>();
   }
 
   bool Entity::IsDrawable() const { return GetComponent<MeshComponent>() != nullptr; }
@@ -148,7 +152,7 @@ namespace ToolKit
     other->ClearComponents();
     for (const ComponentPtr& com : m_components)
     {
-      other->m_components.push_back(com->Copy(other->m_sharedEntity));
+      other->m_components.push_back(com->Copy(other->Self<Entity>()));
     }
 
     return other;
@@ -171,7 +175,7 @@ namespace ToolKit
     assert(other->Class() == Class());
     SafeDel(other->m_node);
     other->m_node           = m_node->Copy();
-    other->m_node->m_entity = other->m_sharedEntity;
+    other->m_node->m_entity = other->Self<Entity>();
 
     // Preserve Ids.
     ULongID id              = other->GetIdVal();
@@ -188,7 +192,7 @@ namespace ToolKit
   {
     assert(GetComponent(component->GetIdVal()) == nullptr && "Component has already been added.");
 
-    component->m_entity = m_sharedEntity;
+    component->m_entity = Self<Entity>();
     m_components.push_back(component);
   }
 
@@ -295,10 +299,10 @@ namespace ToolKit
       {
         int type = -1;
         ReadAttr(comNode, XmlParamterTypeAttr, type);
-        Component* com = ComponentFactory::Create((ComponentFactory::ComponentType) type);
-        com->m_version = m_version;
+        ComponentPtr com = ComponentFactory::Create((ComponentFactory::ComponentType) type);
+        com->m_version   = m_version;
         com->DeSerialize(info, comNode);
-        AddComponent(std::shared_ptr<Component>(com));
+        AddComponent(com);
 
         comNode = comNode->next_sibling();
       }
@@ -327,10 +331,11 @@ namespace ToolKit
       {
         String cls;
         ReadAttr(comNode, XmlObjectClassAttr.data(), cls);
-        Component* com = GetObjectFactory()->MakeNew(cls)->As<Component>();
-        com->m_version = m_version;
+        ComponentPtr com = MakeNewPtrCasted<Component>(cls);
+        com->m_version   = m_version;
         com->DeSerialize(info, comNode);
-        AddComponent(std::shared_ptr<Component>(com));
+
+        AddComponent(com);
 
         comNode = comNode->next_sibling();
       }
@@ -362,7 +367,7 @@ namespace ToolKit
     if (deep)
     {
       EntityPtrArray children;
-      GetChildren(m_sharedEntity, children);
+      GetChildren(Self<Entity>(), children);
       for (EntityPtr child : children)
       {
         child->SetVisibility(vis, true);
@@ -376,7 +381,7 @@ namespace ToolKit
     if (deep)
     {
       EntityPtrArray children;
-      GetChildren(m_sharedEntity, children);
+      GetChildren(Self<Entity>(), children);
       for (EntityPtr child : children)
       {
         child->SetTransformLock(lock, true);

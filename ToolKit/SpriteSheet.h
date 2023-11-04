@@ -63,7 +63,7 @@ namespace ToolKit
     int m_imageHeight;
 
    public:
-    std::unordered_map<String, Surface*> m_sprites;
+    std::unordered_map<String, SurfacePtr> m_sprites;
   };
 
   class TK_API SpriteAnimation : public Entity
@@ -75,7 +75,7 @@ namespace ToolKit
     explicit SpriteAnimation(const SpriteSheetPtr& spriteSheet);
     ~SpriteAnimation();
 
-    Surface* GetCurrentSurface();
+    SurfacePtr GetCurrentSurface();
     void Update(float deltaTime);
 
    protected:

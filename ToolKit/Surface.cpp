@@ -41,17 +41,17 @@ namespace ToolKit
 
   TKDefineClass(Surface, Entity);
 
-  Surface::Surface()
-  {
-    AddComponent<MeshComponent>();
-    AddComponent<MaterialComponent>();
-  }
+  Surface::Surface() {}
 
   Surface::~Surface() {}
 
   void Surface::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
+
     ComponentConstructor();
   }
 
@@ -360,31 +360,31 @@ namespace ToolKit
         {0.f, 0.f, 1.f}
     };
 
-    canvas[0]                   = pos;
+    canvas[0]                    = pos;
     canvas[0]                   -= axis[1] * ((m_anchorParams.m_anchorRatios[2]) * h);
     canvas[0]                   += axis[0] * ((m_anchorParams.m_anchorRatios[0]) * w);
-    canvas[0].z                 = 0.f;
+    canvas[0].z                  = 0.f;
 
-    canvas[1]                   = pos;
+    canvas[1]                    = pos;
     canvas[1]                   -= axis[1] * ((m_anchorParams.m_anchorRatios[2]) * h);
     canvas[1]                   += axis[0] * ((1.f - m_anchorParams.m_anchorRatios[1]) * w);
-    canvas[1].z                 = 0.f;
+    canvas[1].z                  = 0.f;
 
-    canvas[2]                   = pos;
+    canvas[2]                    = pos;
     canvas[2]                   -= axis[1] * ((1.f - m_anchorParams.m_anchorRatios[3]) * h);
     canvas[2]                   += axis[0] * ((m_anchorParams.m_anchorRatios[0]) * w);
-    canvas[2].z                 = 0.f;
+    canvas[2].z                  = 0.f;
 
-    canvas[3]                   = pos;
+    canvas[3]                    = pos;
     canvas[3]                   -= axis[1] * ((1.f - m_anchorParams.m_anchorRatios[3]) * h);
     canvas[3]                   += axis[0] * ((1.f - m_anchorParams.m_anchorRatios[1]) * w);
-    canvas[3].z                 = 0.f;
+    canvas[3].z                  = 0.f;
 
-    const BoundingBox surfaceBB = GetAABB(true);
-    surface[0]                  = Vec3(surfaceBB.min.x, surfaceBB.max.y, 0.f);
-    surface[1]                  = Vec3(surfaceBB.max.x, surfaceBB.max.y, 0.f);
-    surface[2]                  = Vec3(surfaceBB.min.x, surfaceBB.min.y, 0.f);
-    surface[3]                  = Vec3(surfaceBB.max.x, surfaceBB.min.y, 0.f);
+    const BoundingBox surfaceBB  = GetAABB(true);
+    surface[0]                   = Vec3(surfaceBB.min.x, surfaceBB.max.y, 0.f);
+    surface[1]                   = Vec3(surfaceBB.max.x, surfaceBB.max.y, 0.f);
+    surface[2]                   = Vec3(surfaceBB.min.x, surfaceBB.min.y, 0.f);
+    surface[3]                   = Vec3(surfaceBB.max.x, surfaceBB.min.y, 0.f);
   }
 
   // Button

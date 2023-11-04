@@ -162,7 +162,7 @@ namespace ToolKit
     parent              = CreateXmlNode(doc, "PrefabRoots", prefabNode);
 
     EntityPtrArray childs;
-    GetChildren(m_sharedEntity, childs);
+    GetChildren(Self<Entity>(), childs);
     for (EntityPtr child : childs)
     {
       XmlNode* rootSer = CreateXmlNode(doc, child->GetNameVal(), parent);

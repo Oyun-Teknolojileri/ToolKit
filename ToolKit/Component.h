@@ -111,7 +111,7 @@ namespace ToolKit
     };
 
    public:
-    static Component* Create(ComponentType Class); //!< Deprecated. Just serving here for backward compatibility.
+    static ComponentPtr Create(ComponentType Class); //!< Deprecated. Just serving here for backward compatibility.
   };
 
 } // namespace ToolKit

@@ -94,6 +94,8 @@ namespace ToolKit
     DirectionalLight();
     virtual ~DirectionalLight();
 
+    void NativeConstruct() override;
+
     void UpdateShadowFrustum(const RenderJobArray& jobs, const CameraPtr cameraView);
     Vec3Array GetShadowFrustumCorners();
 
