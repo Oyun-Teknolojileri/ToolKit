@@ -26,12 +26,12 @@
 
 #include "FileManager.h"
 
-#include "TKImage.h"
 #include "Logger.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Scene.h"
 #include "Shader.h"
+#include "TKImage.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -94,7 +94,7 @@ namespace ToolKit
       m_zfile = unzOpen(pakPath.c_str());
     }
 
-    if (m_zfile)
+    if (m_zfile && !m_ignorePakFile)
     {
       GenerateOffsetTableForPakFiles();
 
@@ -160,7 +160,7 @@ namespace ToolKit
       }
 
       std::error_code err;
-      if (!std::filesystem::remove(zipName, err)) 
+      if (!std::filesystem::remove(zipName, err))
       {
         TK_LOG("cannot remove MinResources.pak! message: %s\n", err.message().c_str());
         return 0;
@@ -215,7 +215,7 @@ namespace ToolKit
       }
 
       // Load all scenes
-      String pt      = entry.path().string();
+      String pt = entry.path().string();
       String name;
       DecomposePath(pt, nullptr, &name, nullptr);
       TK_LOG("Packing Scene: %s\n", name.c_str());
@@ -520,7 +520,7 @@ namespace ToolKit
   {
     std::ifstream inputFile(file, std::ios::binary); // Replace with your file path
 
-    if (!inputFile.is_open()) 
+    if (!inputFile.is_open())
     {
       TK_ERR("cannot read all text! file: %s", file.c_str());
       assert(0);
@@ -532,7 +532,7 @@ namespace ToolKit
     inputFile.seekg(0, std::ios::beg);
 
     // Create a string of size, filled with spaces
-    std::string fileContent(fileSize, ' '); 
+    std::string fileContent(fileSize, ' ');
     inputFile.read(&fileContent[0], fileSize);
     return fileContent;
   }
@@ -541,14 +541,15 @@ namespace ToolKit
   {
     std::ofstream outputFile(file);
 
-    if (!outputFile.is_open()) {
+    if (!outputFile.is_open())
+    {
       TK_ERR("cannot write all text! file: %s", file.c_str());
       assert(0);
       return;
     }
 
-    outputFile << text;  // Write the text to the file
-    outputFile.close(); 
+    outputFile << text; // Write the text to the file
+    outputFile.close();
   }
 
   void FileManager::GetRelativeResourcesPath(String& path)

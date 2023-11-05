@@ -128,8 +128,10 @@ namespace ToolKit
 
   void Scene::Merge(ScenePtr other)
   {
+    HandleManager* handleMan = GetHandleManager();
     for (EntityPtr otherNtt : other->GetEntities())
     {
+      otherNtt->SetIdVal(handleMan->GenerateHandle());
       AddEntity(otherNtt);
     }
 
