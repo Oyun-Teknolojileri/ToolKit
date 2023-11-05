@@ -47,12 +47,9 @@ namespace ToolKit
 
   void Surface::NativeConstruct()
   {
-    Super::NativeConstruct();
-
-    AddComponent<MeshComponent>();
-    AddComponent<MaterialComponent>();
-
     ComponentConstructor();
+
+    Super::NativeConstruct();
   }
 
   void Surface::Update(TexturePtr texture, const Vec2& pivotOffset)
@@ -170,6 +167,9 @@ namespace ToolKit
 
   void Surface::ComponentConstructor()
   {
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
+
     MeshComponentPtr meshCom             = GetComponent<MeshComponent>();
     meshCom->ParamMesh().m_exposed       = false;
     meshCom->ParamCastShadow().m_exposed = false;
