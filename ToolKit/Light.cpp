@@ -346,7 +346,11 @@ namespace ToolKit
     ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
     ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
 
-    m_shadowMapMaterial = MakeNewPtr<Material>();
+    //TODO if (m_shadowMapMaterial == nullptr)
+    {
+      m_shadowMapMaterial = MakeNewPtr<Material>();
+    }
+    m_shadowMapMaterial->UnInit();
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
@@ -392,10 +396,14 @@ namespace ToolKit
   void SpotLight::InitShadowMapDepthMaterial()
   {
     // Create shadow material
-    ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
-    ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
+    ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
+    ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
 
-    m_shadowMapMaterial = MakeNewPtr<Material>();
+    //TODO if (m_shadowMapMaterial == nullptr)
+    {
+      m_shadowMapMaterial = MakeNewPtr<Material>();
+    }
+    m_shadowMapMaterial->UnInit();
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();

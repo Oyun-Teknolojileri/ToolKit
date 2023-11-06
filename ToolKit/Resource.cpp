@@ -43,11 +43,13 @@ namespace ToolKit
 
   Resource::Resource()
   {
-    m_id   = GetHandleManager()->GenerateHandle();
-    m_name = "Resource_" + std::to_string(m_id);
+    static ULongID globalCounter = 1;
+    m_name = "Resource_" + std::to_string(globalCounter++);
   }
 
-  Resource::~Resource() {}
+  Resource::~Resource()
+  {
+  }
 
   void Resource::Save(bool onlyIfDirty)
   {
