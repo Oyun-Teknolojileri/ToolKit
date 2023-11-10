@@ -54,14 +54,6 @@ namespace ToolKit
 
   ULongID HandleManager::GenerateHandle()
   {
-    //TODO
-    if (m_uniqueIDs.size() > 1000000)
-    {
-      volatile int x = 5;
-    }
-    TK_WRN("%d", m_uniqueIDs.size());
-
-
     ULongID id = Xoroshiro128Plus(m_randomXor);
     // If collision happens, change generate new id
     while (m_uniqueIDs.find(id) != m_uniqueIDs.end() || id == NULL_HANDLE)
@@ -70,36 +62,13 @@ namespace ToolKit
     }
     m_uniqueIDs.insert(id);
 
-    // TODO
-    REMOVETHIS[id] = rem++;
-    if (rem > 150000)
-    {
-      volatile int y = 5;
-    }
-
     return id; // non zero
   }
 
-  void HandleManager::AddHandle(ULongID val) { 
-    // TODO
-    REMOVETHIS[val] = rem++;
-
-    m_uniqueIDs.insert(val); }
+  void HandleManager::AddHandle(ULongID val) { m_uniqueIDs.insert(val); }
 
   void HandleManager::ReleaseHandle(ULongID val)
   {
-    // TODO
-    auto remit = REMOVETHIS.find(val);
-    if (remit != REMOVETHIS.end())
-    {
-      REMOVETHIS.erase(remit);
-    }
-
-    if (m_uniqueIDs.size() > 1000000)
-    {
-      volatile int x = 5;
-    }
-
 
     auto it = m_uniqueIDs.find(val);
     if (it != m_uniqueIDs.end())

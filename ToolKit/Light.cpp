@@ -346,7 +346,7 @@ namespace ToolKit
     ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
     ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
 
-    //TODO if (m_shadowMapMaterial == nullptr)
+    if (m_shadowMapMaterial == nullptr)
     {
       m_shadowMapMaterial = MakeNewPtr<Material>();
     }
@@ -399,7 +399,7 @@ namespace ToolKit
     ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
     ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
 
-    //TODO if (m_shadowMapMaterial == nullptr)
+    if (m_shadowMapMaterial == nullptr)
     {
       m_shadowMapMaterial = MakeNewPtr<Material>();
     }

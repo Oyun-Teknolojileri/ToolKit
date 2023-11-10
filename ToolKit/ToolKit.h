@@ -58,9 +58,6 @@ namespace ToolKit
    private:
     uint64 m_randomXor[2];
     std::unordered_set<uint64> m_uniqueIDs;
-
-    std::unordered_map<uint64, uint64> REMOVETHIS;
-    uint64 rem = 1;
   };
 
   struct Timing
