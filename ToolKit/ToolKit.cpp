@@ -69,13 +69,32 @@ namespace ToolKit
       id = Xoroshiro128Plus(m_randomXor);
     }
     m_uniqueIDs.insert(id);
+
+    // TODO
+    REMOVETHIS[id] = rem++;
+    if (rem > 150000)
+    {
+      volatile int y = 5;
+    }
+
     return id; // non zero
   }
 
-  void HandleManager::AddHandle(ULongID val) { m_uniqueIDs.insert(val); }
+  void HandleManager::AddHandle(ULongID val) { 
+    // TODO
+    REMOVETHIS[val] = rem++;
+
+    m_uniqueIDs.insert(val); }
 
   void HandleManager::ReleaseHandle(ULongID val)
   {
+    // TODO
+    auto remit = REMOVETHIS.find(val);
+    if (remit != REMOVETHIS.end())
+    {
+      REMOVETHIS.erase(remit);
+    }
+
     if (m_uniqueIDs.size() > 1000000)
     {
       volatile int x = 5;

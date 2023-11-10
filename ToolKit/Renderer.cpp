@@ -178,7 +178,7 @@ namespace ToolKit
     if (m_mat == nullptr)
     {
       assert(false);
-      m_mat = GetMaterialManager()->GetCopyOfDefaultMaterial();
+      m_mat = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
     }
 
     m_mat->Init();

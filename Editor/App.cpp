@@ -153,8 +153,6 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
-      static volatile EntityPtr en = MakeNewPtr<Entity>();
-
       m_deltaTime = deltaTime;
 
       PUSH_CPU_MARKER("UI Begin & Show UI");

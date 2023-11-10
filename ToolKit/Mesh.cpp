@@ -112,7 +112,7 @@ namespace ToolKit
 
   Mesh::Mesh()
   {
-    m_material     = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    m_material     = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
     m_vertexLayout = VertexLayout::Mesh;
   }
 

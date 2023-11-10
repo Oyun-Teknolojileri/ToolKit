@@ -193,7 +193,7 @@ namespace ToolKit
     }
 
     // Worst case, a default material.
-    return GetMaterialManager()->GetCopyOfDefaultMaterial();
+    return GetMaterialManager()->GetCopyOfDefaultMaterial(false);
   }
 
   void MaterialComponent::SetFirstMaterial(const MaterialPtr& material)

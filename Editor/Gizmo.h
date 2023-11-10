@@ -137,7 +137,7 @@ namespace ToolKit
      public:
       Vec3 m_tangentDir;
       Params m_params;
-      MeshPtr m_mesh;
+      MeshPtr m_mesh = nullptr;
     };
 
     class PolarHandle : public GizmoHandle

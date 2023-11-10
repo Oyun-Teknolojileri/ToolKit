@@ -85,11 +85,12 @@ namespace ToolKit
     }
 
     template <typename T>
-    std::shared_ptr<T> Copy(ResourcePtr source)
+    std::shared_ptr<T> Copy(ResourcePtr source, bool storeInResourceManager = true)
     {
       std::shared_ptr<T> resource = MakeNewPtr<T>();
       source->CopyTo(resource.get());
-      if (ResourceManager* manager = GetResourceManager(T::StaticClass()))
+      ResourceManager* manager = GetResourceManager(T::StaticClass());
+      if (manager != nullptr && storeInResourceManager)
       {
         manager->Manage(resource);
       }

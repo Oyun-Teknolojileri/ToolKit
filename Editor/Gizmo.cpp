@@ -186,7 +186,7 @@ namespace ToolKit
       MeshPtr lnMesh = line->GetComponent<MeshComponent>()->GetMeshVal();
       m_mesh->m_subMeshes.push_back(lnMesh);
 
-      MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial(false);
       material->m_color    = params.color;
 
       if (params.type == SolidType::Cube)
@@ -396,7 +396,7 @@ namespace ToolKit
       m_params                             = params;
 
       QuadPtr solid                        = MakeNewPtr<Quad>();
-      MaterialPtr material                 = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      MaterialPtr material                 = GetMaterialManager()->GetCopyOfUnlitColorMaterial(false);
       material->m_color                    = params.color;
       material->GetRenderState()->cullMode = CullingType::TwoSided;
 

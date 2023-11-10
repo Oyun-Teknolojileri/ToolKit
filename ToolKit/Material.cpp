@@ -476,37 +476,37 @@ namespace ToolKit
 
   String MaterialManager::GetDefaultResource(ClassMeta* Class) { return MaterialPath("missing.material", true); }
 
-  MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()
+  MaterialPtr MaterialManager::GetCopyOfUnlitMaterial(bool storeInMaterialManager)
   {
     ResourcePtr source = m_storage[MaterialPath("unlit.material", true)];
-    return Copy<Material>(source);
+    return Copy<Material>(source, storeInMaterialManager);
   }
 
-  MaterialPtr MaterialManager::GetCopyOfUIMaterial()
+  MaterialPtr MaterialManager::GetCopyOfUIMaterial(bool storeInMaterialManager)
   {
-    MaterialPtr material                      = GetMaterialManager()->GetCopyOfUnlitMaterial();
+    MaterialPtr material                      = GetMaterialManager()->GetCopyOfUnlitMaterial(storeInMaterialManager);
     material->GetRenderState()->blendFunction = BlendFunction::ALPHA_MASK;
 
     return material;
   }
 
-  MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial()
+  MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial(bool storeInMaterialManager)
   {
-    MaterialPtr umat       = GetCopyOfUnlitMaterial();
+    MaterialPtr umat       = GetCopyOfUnlitMaterial(storeInMaterialManager);
     umat->m_diffuseTexture = nullptr;
     return umat;
   }
 
-  MaterialPtr MaterialManager::GetCopyOfDefaultMaterial()
+  MaterialPtr MaterialManager::GetCopyOfDefaultMaterial(bool storeInMaterialManager)
   {
     ResourcePtr source = m_storage[MaterialPath("default.material", true)];
-    return Copy<Material>(source);
+    return Copy<Material>(source, storeInMaterialManager);
   }
 
-  MaterialPtr MaterialManager::GetCopyOfPhongMaterial()
+  MaterialPtr MaterialManager::GetCopyOfPhongMaterial(bool storeInMaterialManager)
   {
     ResourcePtr source = m_storage[MaterialPath("phongForward.material", true)];
-    return Copy<Material>(source);
+    return Copy<Material>(source, storeInMaterialManager);
   }
 
 } // namespace ToolKit

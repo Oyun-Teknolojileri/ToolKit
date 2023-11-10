@@ -114,11 +114,11 @@ namespace ToolKit
     ResourcePtr CreateLocal(ClassMeta* Class) override;
     String GetDefaultResource(ClassMeta* Class) override;
 
-    MaterialPtr GetCopyOfUnlitMaterial();
-    MaterialPtr GetCopyOfUIMaterial();
-    MaterialPtr GetCopyOfUnlitColorMaterial();
-    MaterialPtr GetCopyOfDefaultMaterial();
-    MaterialPtr GetCopyOfPhongMaterial();
+    MaterialPtr GetCopyOfUnlitMaterial(bool storeInMaterialManager = true);
+    MaterialPtr GetCopyOfUIMaterial(bool storeInMaterialManager = true);
+    MaterialPtr GetCopyOfUnlitColorMaterial(bool storeInMaterialManager = true);
+    MaterialPtr GetCopyOfDefaultMaterial(bool storeInMaterialManager = true);
+    MaterialPtr GetCopyOfPhongMaterial(bool storeInMaterialManager = true);
   };
 
 } // namespace ToolKit

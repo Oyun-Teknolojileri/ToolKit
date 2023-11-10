@@ -330,7 +330,7 @@ namespace ToolKit
                                   18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35};
 
     mesh->m_indexCount         = (uint) mesh->m_clientSideIndices.size();
-    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
@@ -400,7 +400,7 @@ namespace ToolKit
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount         = 6;
     mesh->m_clientSideIndices  = {0, 1, 2, 0, 2, 3};
-    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
@@ -519,7 +519,7 @@ namespace ToolKit
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount         = (uint) indices.size();
     mesh->m_clientSideIndices  = indices;
-    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
     mesh->Init();
 
     mesh->CalculateAABB();
@@ -627,7 +627,7 @@ namespace ToolKit
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount         = (uint) indices.size();
     mesh->m_clientSideIndices  = indices;
-    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
     mesh->Init();
 
     mesh->CalculateAABB();
@@ -804,7 +804,7 @@ namespace ToolKit
 
     MeshPtr mesh = GetComponent<MeshComponent>()->GetMeshVal();
     mesh->UnInit();
-    mesh->m_material                             = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+    mesh->m_material                             = GetMaterialManager()->GetCopyOfUnlitColorMaterial(false);
     mesh->m_material->GetRenderState()->drawType = t;
 
     for (size_t i = 0; i < linePnts.size(); i++)
