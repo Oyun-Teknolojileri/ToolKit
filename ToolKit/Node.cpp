@@ -50,6 +50,11 @@ namespace ToolKit
     {
       Orphan(m_children[i], true);
     }
+
+    if (HandleManager* handleManager = GetHandleManager())
+    {
+      handleManager->ReleaseHandle(m_id);
+    }
   }
 
   void Node::Translate(const Vec3& val, TransformationSpace space)
