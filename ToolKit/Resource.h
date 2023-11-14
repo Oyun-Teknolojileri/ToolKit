@@ -101,7 +101,6 @@ namespace ToolKit
 
    public:
     String m_name;
-    ULongID m_id;
     bool m_dirty     = false;
     bool m_loaded    = false;
     bool m_initiated = false;

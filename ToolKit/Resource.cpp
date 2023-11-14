@@ -25,12 +25,10 @@
  */
 
 #include "Resource.h"
-#include "ResourceManager.h"
 
 #include "FileManager.h"
 #include "Material.h"
 #include "Mesh.h"
-#include "Skeleton.h"
 #include "ResourceManager.h"
 #include "Skeleton.h"
 #include "ToolKit.h"
@@ -45,11 +43,13 @@ namespace ToolKit
 
   Resource::Resource()
   {
-    m_id   = GetHandleManager()->GetNextHandle();
-    m_name = "Resource_" + std::to_string(m_id);
+    static ULongID globalCounter = 1;
+    m_name = "Resource_" + std::to_string(globalCounter++);
   }
 
-  Resource::~Resource() {}
+  Resource::~Resource()
+  {
+  }
 
   void Resource::Save(bool onlyIfDirty)
   {

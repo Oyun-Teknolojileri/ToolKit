@@ -58,7 +58,7 @@ namespace ToolKit
     bool CheckPakFile(); //!< Returns true if workspace contains pak file.
     String ReadAllText(const String& file);
     void WriteAllText(const String& file, const String& text);
-    
+
    private:
     typedef std::variant<XmlFilePtr, uint8*, float*> FileDataType;
 
@@ -103,5 +103,8 @@ namespace ToolKit
     std::unordered_map<String, std::pair<ZPOS64_T, uint32_t>> m_zipFilesOffsetTable;
     bool m_offsetTableCreated = false;
     zipFile m_zfile           = nullptr;
+
+   public:
+    bool m_ignorePakFile = false;
   };
 } // namespace ToolKit

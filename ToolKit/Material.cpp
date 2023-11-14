@@ -203,9 +203,9 @@ namespace ToolKit
 
   void Material::SetAlpha(float val)
   {
-    val                         = glm::clamp(val, 0.0f, 1.0f);
-    m_alpha                     = val;
-    bool isForward         = m_alpha < 0.999f;
+    val            = glm::clamp(val, 0.0f, 1.0f);
+    m_alpha        = val;
+    bool isForward = m_alpha < 0.999f;
     if (isForward && m_renderState.blendFunction != BlendFunction::ALPHA_MASK)
     {
       m_renderState.blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
@@ -438,7 +438,7 @@ namespace ToolKit
     ResourceManager::Init();
 
     // PBR material
-    Material* material         = new Material();
+    MaterialPtr material       = MakeNewPtr<Material>();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
@@ -446,7 +446,7 @@ namespace ToolKit
     m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
 
     // Phong material
-    material                                          = new Material();
+    material                                          = MakeNewPtr<Material>();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->GetPhongForwardShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
@@ -454,7 +454,7 @@ namespace ToolKit
     m_storage[MaterialPath("phongForward.material", true)] = MaterialPtr(material);
 
     // Unlit material
-    material                                               = new Material();
+    material                                               = MakeNewPtr<Material>();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
@@ -476,37 +476,37 @@ namespace ToolKit
 
   String MaterialManager::GetDefaultResource(ClassMeta* Class) { return MaterialPath("missing.material", true); }
 
-  MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()
+  MaterialPtr MaterialManager::GetCopyOfUnlitMaterial(bool storeInMaterialManager)
   {
     ResourcePtr source = m_storage[MaterialPath("unlit.material", true)];
-    return Copy<Material>(source);
+    return Copy<Material>(source, storeInMaterialManager);
   }
 
-  MaterialPtr MaterialManager::GetCopyOfUIMaterial()
+  MaterialPtr MaterialManager::GetCopyOfUIMaterial(bool storeInMaterialManager)
   {
-    MaterialPtr material                      = GetMaterialManager()->GetCopyOfUnlitMaterial();
+    MaterialPtr material                      = GetMaterialManager()->GetCopyOfUnlitMaterial(storeInMaterialManager);
     material->GetRenderState()->blendFunction = BlendFunction::ALPHA_MASK;
 
     return material;
   }
 
-  MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial()
+  MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial(bool storeInMaterialManager)
   {
-    MaterialPtr umat       = GetCopyOfUnlitMaterial();
+    MaterialPtr umat       = GetCopyOfUnlitMaterial(storeInMaterialManager);
     umat->m_diffuseTexture = nullptr;
     return umat;
   }
 
-  MaterialPtr MaterialManager::GetCopyOfDefaultMaterial()
+  MaterialPtr MaterialManager::GetCopyOfDefaultMaterial(bool storeInMaterialManager)
   {
     ResourcePtr source = m_storage[MaterialPath("default.material", true)];
-    return Copy<Material>(source);
+    return Copy<Material>(source, storeInMaterialManager);
   }
 
-  MaterialPtr MaterialManager::GetCopyOfPhongMaterial()
+  MaterialPtr MaterialManager::GetCopyOfPhongMaterial(bool storeInMaterialManager)
   {
     ResourcePtr source = m_storage[MaterialPath("phongForward.material", true)];
-    return Copy<Material>(source);
+    return Copy<Material>(source, storeInMaterialManager);
   }
 
 } // namespace ToolKit

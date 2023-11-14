@@ -161,7 +161,7 @@ namespace ToolKit
           {
             // Warn user that we use the default material for the mesh
             materialMissing = true;
-            job.Material    = GetMaterialManager()->GetCopyOfDefaultMaterial();
+            job.Material    = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
           }
 
           jobArray.push_back(job);
@@ -169,7 +169,6 @@ namespace ToolKit
       };
 
       static MeshPtrArray allMeshes;
-      allMeshes.clear();
       allMeshes.push_back(parentMesh);
       for (size_t i = 0; i < allMeshes.size(); ++i)
       {
@@ -180,6 +179,7 @@ namespace ToolKit
         }
         addRenderJobForMeshFn(currentMesh);
       }
+      allMeshes.clear();
 
       if (materialMissing)
       {

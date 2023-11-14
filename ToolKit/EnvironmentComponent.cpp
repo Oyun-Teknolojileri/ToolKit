@@ -168,10 +168,12 @@ namespace ToolKit
   {
     Vec3 pos;
     BoundingBox aabb;
-    if (m_entity != nullptr)
+
+    if (EntityPtr owner = OwnerEntity())
     {
-      pos += m_entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      pos += owner->m_node->GetTranslation(TransformationSpace::TS_WORLD);
     }
+
     aabb.min = GetPositionOffsetVal() + pos - GetSizeVal() * 0.5f;
     aabb.max = GetPositionOffsetVal() + pos + GetSizeVal() * 0.5f;
     return aabb;

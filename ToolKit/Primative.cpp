@@ -46,7 +46,13 @@ namespace ToolKit
 
   Billboard::Billboard() {}
 
-  Billboard::Billboard(const Settings& settings) : m_settings(settings) { AddComponent<MeshComponent>(); }
+  Billboard::Billboard(const Settings& settings) : m_settings(settings) {}
+
+  void Billboard::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    AddComponent<MeshComponent>();
+  }
 
   void Billboard::LookAt(CameraPtr cam, float scale)
   {
@@ -128,17 +134,17 @@ namespace ToolKit
 
   TKDefineClass(Cube, Entity);
 
-  Cube::Cube()
-  {
-    AddComponent<MeshComponent>();
-    AddComponent<MaterialComponent>();
-  }
+  Cube::Cube() {}
 
   Entity* Cube::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 
   void Cube::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
+
     Generate();
   }
 
@@ -324,7 +330,7 @@ namespace ToolKit
                                   18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35};
 
     mesh->m_indexCount         = (uint) mesh->m_clientSideIndices.size();
-    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
@@ -333,15 +339,15 @@ namespace ToolKit
 
   TKDefineClass(Quad, Entity);
 
-  Quad::Quad()
-  {
-    AddComponent<MeshComponent>();
-    AddComponent<MaterialComponent>();
-  }
+  Quad::Quad() {}
 
   void Quad::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
+
     Generate();
   }
 
@@ -394,7 +400,7 @@ namespace ToolKit
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount         = 6;
     mesh->m_clientSideIndices  = {0, 1, 2, 0, 2, 3};
-    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
@@ -402,15 +408,15 @@ namespace ToolKit
 
   TKDefineClass(Sphere, Entity);
 
-  Sphere::Sphere()
-  {
-    AddComponent<MeshComponent>();
-    AddComponent<MaterialComponent>();
-  }
+  Sphere::Sphere() {}
 
   void Sphere::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
+
     Generate(GetMeshComponent(), GetRadiusVal(), GetNumRingVal(), GetNumSegVal());
   }
 
@@ -513,7 +519,7 @@ namespace ToolKit
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount         = (uint) indices.size();
     mesh->m_clientSideIndices  = indices;
-    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
     mesh->Init();
 
     mesh->CalculateAABB();
@@ -522,15 +528,15 @@ namespace ToolKit
 
   TKDefineClass(Cone, Entity);
 
-  Cone::Cone()
-  {
-    AddComponent<MaterialComponent>();
-    AddComponent<MeshComponent>();
-  }
+  Cone::Cone() {}
 
   void Cone::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    AddComponent<MaterialComponent>();
+    AddComponent<MeshComponent>();
+
     Generate();
   }
 
@@ -621,7 +627,7 @@ namespace ToolKit
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount         = (uint) indices.size();
     mesh->m_clientSideIndices  = indices;
-    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
     mesh->Init();
 
     mesh->CalculateAABB();
@@ -692,16 +698,15 @@ namespace ToolKit
 
   TKDefineClass(Arrow2d, Entity);
 
-  Arrow2d::Arrow2d()
-  {
-    AddComponent<MaterialComponent>();
-    AddComponent<MeshComponent>();
-    m_label = AxisLabel::X;
-  }
+  Arrow2d::Arrow2d() { m_label = AxisLabel::X; }
 
   void Arrow2d::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    AddComponent<MaterialComponent>();
+    AddComponent<MeshComponent>();
+
     Generate(AxisLabel::Y);
   }
 
@@ -774,7 +779,13 @@ namespace ToolKit
 
   TKDefineClass(LineBatch, Entity);
 
-  LineBatch::LineBatch() { AddComponent<MeshComponent>(); }
+  LineBatch::LineBatch() {}
+
+  void LineBatch::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    AddComponent<MeshComponent>();
+  }
 
   Entity* LineBatch::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 
@@ -793,7 +804,7 @@ namespace ToolKit
 
     MeshPtr mesh = GetComponent<MeshComponent>()->GetMeshVal();
     mesh->UnInit();
-    mesh->m_material                             = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+    mesh->m_material                             = GetMaterialManager()->GetCopyOfUnlitColorMaterial(false);
     mesh->m_material->GetRenderState()->drawType = t;
 
     for (size_t i = 0; i < linePnts.size(); i++)

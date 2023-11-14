@@ -60,9 +60,15 @@ namespace ToolKit
 
   TKDefineClass(Object, Object);
 
-  Object::Object() {}
+  Object::Object() { _idBeforeCollision = NULL_HANDLE; }
 
-  Object::~Object() {}
+  Object::~Object()
+  {
+    if (HandleManager* handleMan = GetHandleManager())
+    {
+      handleMan->ReleaseHandle(GetIdVal());
+    }
+  }
 
   void Object::NativeConstruct()
   {
@@ -74,7 +80,7 @@ namespace ToolKit
 
   void Object::ParameterConstructor()
   {
-    ULongID id = GetHandleManager()->GetNextHandle();
+    ULongID id = GetHandleManager()->GenerateHandle();
     Id_Define(id, EntityCategory.Name, EntityCategory.Priority, true, false);
   }
 
@@ -96,7 +102,11 @@ namespace ToolKit
   XmlNode* Object::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     assert(parent != nullptr && "Root of the object can't be null.");
+
+    ULongID id = GetIdVal();
+    GetHandleManager()->ReleaseHandle(id);
     m_localData.DeSerialize(info, parent);
+    PreventIdCollision();
 
     // Construction progress from bottom up.
     return parent;
@@ -105,6 +115,22 @@ namespace ToolKit
   void Object::PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     ParameterEventConstructor(); // Set all the events after data deserialized.
+  }
+
+  void Object::PreventIdCollision()
+  {
+    HandleManager* handleMan = GetHandleManager();
+    ULongID idInFile         = GetIdVal();
+
+    if (!handleMan->IsHandleUnique(idInFile))
+    {
+      _idBeforeCollision = idInFile;
+      SetIdVal(handleMan->GenerateHandle());
+    }
+    else
+    {
+      handleMan->AddHandle(idInFile);
+    }
   }
 
 } // namespace ToolKit

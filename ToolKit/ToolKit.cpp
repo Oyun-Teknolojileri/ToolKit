@@ -46,17 +46,38 @@
 
 namespace ToolKit
 {
-  ULongID HandleManager::GetNextHandle()
+  HandleManager::HandleManager()
   {
-    assert(m_baseHandle < m_maxIdLimit && "Generated id is too long.");
-    return ++m_baseHandle;
+    uint64 seed = time(nullptr) + ((uint64) (this) ^ m_randomXor[0]);
+    Xoroshiro128PlusSeed(m_randomXor, seed);
   }
 
-  void HandleManager::SetMaxHandle(ULongID val)
+  ULongID HandleManager::GenerateHandle()
   {
-    m_baseHandle = glm::max(m_baseHandle, val);
-    assert(m_baseHandle < m_maxIdLimit && "Generated id is too long.");
+    ULongID id = Xoroshiro128Plus(m_randomXor);
+    // If collision happens, change generate new id
+    while (m_uniqueIDs.find(id) != m_uniqueIDs.end() || id == NULL_HANDLE)
+    {
+      id = Xoroshiro128Plus(m_randomXor);
+    }
+    m_uniqueIDs.insert(id);
+
+    return id; // non zero
   }
+
+  void HandleManager::AddHandle(ULongID val) { m_uniqueIDs.insert(val); }
+
+  void HandleManager::ReleaseHandle(ULongID val)
+  {
+
+    auto it = m_uniqueIDs.find(val);
+    if (it != m_uniqueIDs.end())
+    {
+      m_uniqueIDs.erase(it);
+    }
+  }
+
+  bool HandleManager::IsHandleUnique(ULongID val) { return m_uniqueIDs.find(val) == m_uniqueIDs.end(); }
 
   Main* Main::m_proxy = nullptr;
 
@@ -72,6 +93,7 @@ namespace ToolKit
   Main::~Main()
   {
     assert(m_initiated == false && "Uninitiate before destruct");
+    m_proxy = nullptr;
 
     m_logger->Log("Main Destructed");
     SafeDel(m_logger);
@@ -179,7 +201,7 @@ namespace ToolKit
     SafeDel(m_skeletonManager);
     SafeDel(m_fileManager);
     SafeDel(m_objectFactory);
-    SafeDel(m_engineSettings);  
+    SafeDel(m_engineSettings);
   }
 
   void Main::SetConfigPath(StringView cfgPath) { m_cfgPath = cfgPath; }
@@ -278,7 +300,15 @@ namespace ToolKit
 
   UIManager* GetUIManager() { return Main::GetInstance()->m_uiManager; }
 
-  HandleManager* GetHandleManager() { return &Main::GetInstance()->m_handleManager; }
+  HandleManager* GetHandleManager()
+  {
+    if (Main* instance = Main::GetInstance_noexcep())
+    {
+      return &instance->m_handleManager;
+    }
+
+    return nullptr;
+  }
 
   SkeletonManager* GetSkeletonManager() { return Main::GetInstance()->m_skeletonManager; }
 

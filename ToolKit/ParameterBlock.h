@@ -210,7 +210,7 @@ namespace ToolKit
     /**
      * Empty destructor.
      */
-    ~ParameterVariantBase();
+    virtual ~ParameterVariantBase();
 
    public:
     ULongID m_id; //!< Unique id for the current runtime.
@@ -265,7 +265,7 @@ namespace ToolKit
     /**
      * Empty destructor.
      */
-    ~ParameterVariant();
+    virtual ~ParameterVariant();
 
     /**
      * Directly sets the new value.

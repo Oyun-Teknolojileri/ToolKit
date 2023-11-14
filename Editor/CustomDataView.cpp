@@ -631,7 +631,7 @@ namespace ToolKit
         String file, id;
         if (mref)
         {
-          id   = std::to_string(mref->m_id);
+          id   = std::to_string(mref->GetIdVal());
           file = mref->GetFile();
         }
 
@@ -646,7 +646,7 @@ namespace ToolKit
         MeshPtr mref = var->GetVar<MeshPtr>();
         ImGui::EndDisabled();
         DropSubZone(
-            "Mesh##" + std::to_string(mref->m_id),
+            "Mesh##" + std::to_string(mref->GetIdVal()),
             static_cast<uint>(UI::m_meshIcon->m_textureId),
             mref->GetFile(),
             [&var](const DirectoryEntry& entry) -> void
@@ -674,7 +674,7 @@ namespace ToolKit
         String file, id;
         if (mref)
         {
-          id   = std::to_string(mref->m_id);
+          id   = std::to_string(mref->GetIdVal());
           file = mref->GetFile();
         }
 
@@ -704,7 +704,7 @@ namespace ToolKit
         String file, id;
         if (mref)
         {
-          id   = std::to_string(mref->m_id);
+          id   = std::to_string(mref->GetIdVal());
           file = mref->GetFile();
         }
 

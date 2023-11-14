@@ -99,13 +99,22 @@ namespace ToolKit
 
     void Anchor::Update(float deltaTime)
     {
-      if (m_entity == nullptr || !m_entity->IsA<Surface>() || m_entity->m_node->m_parent == nullptr ||
-          m_entity->m_node->m_parent->m_entity == nullptr || !m_entity->m_node->m_parent->m_entity->IsA<Canvas>())
+      if (m_entity == nullptr || !m_entity->IsA<Surface>())
       {
         return;
       }
 
-      Canvas* canvasPanel = static_cast<Canvas*>(m_entity->m_node->m_parent->m_entity.get());
+      EntityPtr parentNtt = m_entity->Parent();
+      if (parentNtt == nullptr)
+      {
+        return;
+      }
+
+      Canvas* canvasPanel = parentNtt->As<Canvas>();
+      if (canvasPanel == nullptr)
+      {
+        return;
+      }
 
       Vec3 pos;
       float w = 0, h = 0;
@@ -199,36 +208,36 @@ namespace ToolKit
           p.worldLoc  -= axis[1] * ((anchorRatios[2]) * h);
           p.worldLoc  += axis[0] * ((1.f - anchorRatios[1]) * w);
 
-          p.translate = Vec3(0.f, handleTranslate, 0.f);
-          p.scale     = Vec3(0.5f, 1.1f, 1.f);
-          p.angle     = glm::radians(-45.f);
+          p.translate  = Vec3(0.f, handleTranslate, 0.f);
+          p.scale      = Vec3(0.5f, 1.1f, 1.f);
+          p.angle      = glm::radians(-45.f);
         }
         if (direction == DirectionLabel::SE)
         {
           p.worldLoc  -= axis[1] * ((1.f - anchorRatios[3]) * h);
           p.worldLoc  += axis[0] * ((1.f - anchorRatios[1]) * w);
 
-          p.translate = Vec3(0.f, -handleTranslate, 0.f);
-          p.scale     = Vec3(0.5f, 1.1f, 1.f);
-          p.angle     = glm::radians(45.f);
+          p.translate  = Vec3(0.f, -handleTranslate, 0.f);
+          p.scale      = Vec3(0.5f, 1.1f, 1.f);
+          p.angle      = glm::radians(45.f);
         }
         if (direction == DirectionLabel::NW)
         {
           p.worldLoc  -= axis[1] * ((anchorRatios[2]) * h);
           p.worldLoc  += axis[0] * ((anchorRatios[0]) * w);
 
-          p.translate = Vec3(0.f, handleTranslate, 0.f);
-          p.scale     = Vec3(0.5f, 1.1f, 1.f);
-          p.angle     = glm::radians(45.f);
+          p.translate  = Vec3(0.f, handleTranslate, 0.f);
+          p.scale      = Vec3(0.5f, 1.1f, 1.f);
+          p.angle      = glm::radians(45.f);
         }
         if (direction == DirectionLabel::SW)
         {
           p.worldLoc  -= axis[1] * ((1.f - anchorRatios[3]) * h);
           p.worldLoc  += axis[0] * ((anchorRatios[0]) * w);
 
-          p.translate = Vec3(0.f, handleTranslate, 0.f);
-          p.scale     = Vec3(0.5f, 1.1f, 1.f);
-          p.angle     = glm::radians(135.f);
+          p.translate  = Vec3(0.f, handleTranslate, 0.f);
+          p.scale      = Vec3(0.5f, 1.1f, 1.f);
+          p.angle      = glm::radians(135.f);
         }
 
         if (direction == DirectionLabel::E)
@@ -290,8 +299,8 @@ namespace ToolKit
           {
             assert(vp->IsOrthographic() && "Viewport must be a 2d orthographic view.");
 
-            float zoomScale = vp->GetBillboardScale();
-            float s         = shapeSize;
+            float zoomScale  = vp->GetBillboardScale();
+            float s          = shapeSize;
             p.translate     *= zoomScale;
             p.scale         *= Vec3(s * zoomScale, s * zoomScale, 1.f);
             handle->Generate(p);

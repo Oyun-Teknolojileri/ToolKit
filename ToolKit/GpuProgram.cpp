@@ -89,7 +89,7 @@ namespace ToolKit
     vertexShader->Init();
     fragmentShader->Init();
 
-    String tag = GenerateTag((int) vertexShader->m_id, (int) fragmentShader->m_id);
+    String tag = GenerateTag((int) vertexShader->GetIdVal(), (int) fragmentShader->GetIdVal());
     if (m_programs.find(tag) == m_programs.end())
     {
       GpuProgramPtr program = MakeNewPtr<GpuProgram>(vertexShader, fragmentShader);

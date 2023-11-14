@@ -207,6 +207,24 @@ namespace ToolKit
      */
     void SetInheritScaleDeep(bool val);
 
+    /**
+     * Returns parent entity if any exist.
+     * @return Parent Entity.
+     */
+    EntityPtr ParentEntity();
+
+    /**
+     * Getter function for owner entity.
+     * @return Owner EntityPtr.
+     */
+    EntityPtr OwnerEntity() const { return m_entity.lock(); }
+
+    /**
+     * Setter function for owner entity.
+     * @param owner owning EntityPtr.
+     */
+    void OwnerEntity(EntityPtr owner) { m_entity = owner; }
+
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent);
 
@@ -235,17 +253,17 @@ namespace ToolKit
 
    public:
     ULongID m_id;
-    Node* m_parent     = nullptr;
-    EntityPtr m_entity = nullptr;
+    Node* m_parent;
     NodeRawPtrArray m_children;
-    bool m_inheritScale = false;
+    bool m_inheritScale;
 
    private:
-    Vec3 m_translation;        //!< Local translation value.
-    Quaternion m_orientation;  //!< Local orientation value.
-    Vec3 m_scale = Vec3(1.0f); //!< Local scale value.
-    Mat4 m_parentCache;        //!< Cached transformation of the parent hierarchy.
-    bool m_dirty = true;       //!< Hint for child to update its parent cache.
+    EntityWeakPtr m_entity;   //!< Entity that owns this node.
+    Vec3 m_translation;       //!< Local translation value.
+    Quaternion m_orientation; //!< Local orientation value.
+    Vec3 m_scale;             //!< Local scale value.
+    Mat4 m_parentCache;       //!< Cached transformation of the parent hierarchy.
+    bool m_dirty;             //!< Hint for child to update its parent cache.
   };
 
 } // namespace ToolKit

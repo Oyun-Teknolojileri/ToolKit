@@ -91,14 +91,12 @@ namespace ToolKit
         if (e->IsA<Surface>())
         {
           SurfacePtr surface = Cast<Surface>(e);
-          if (Node* parentNode = surface->m_node->m_parent)
+          if (EntityPtr parentNtt = surface->Parent())
           {
-            if (parentNode->m_entity->IsA<Canvas>())
+            if (parentNtt->IsA<Canvas>())
             {
-              m_anchor->m_entity    = surface;
-              CanvasPtr canvasPanel = Cast<Canvas>(parentNode->m_entity);
-
-              g_app->m_anchor       = m_anchor;
+              m_anchor->m_entity = surface;
+              g_app->m_anchor    = m_anchor;
             }
           }
         }
@@ -340,11 +338,8 @@ namespace ToolKit
       Ray ray            = vp->RayFromScreenSpacePoint(m_mouseData[1]);
       if (LinePlaneIntersection(ray, m_intersectionPlane, t))
       {
-        Vec3 p              = PointOnRay(ray, t);
-
-        Canvas* canvasPanel = static_cast<Canvas*>(m_anchor->m_entity->m_node->m_parent->m_entity.get());
-
-        ray                 = vp->RayFromScreenSpacePoint(m_mouseData[0]);
+        Vec3 p = PointOnRay(ray, t);
+        ray    = vp->RayFromScreenSpacePoint(m_mouseData[0]);
         LinePlaneIntersection(ray, m_intersectionPlane, t);
         Vec3 p0                = PointOnRay(ray, t);
         m_anchorDeltaTransform = p - p0;
@@ -371,14 +366,23 @@ namespace ToolKit
 
     void StateAnchorBase::ReflectAnchorTransform(EntityPtr ntt)
     {
-      if (m_anchor == nullptr || ntt == nullptr || !ntt->m_node->m_parent || !ntt->m_node->m_parent->m_entity ||
-          !ntt->IsA<Surface>() || !ntt->m_node->m_parent->m_entity->IsA<Canvas>())
+      if (m_anchor == nullptr || ntt == nullptr)
       {
         return;
       }
 
-      Surface* surface               = static_cast<Surface*>(ntt.get());
+      if (!ntt->IsA<Surface>())
+      {
+        return;
+      }
 
+      EntityPtr parentNtt = ntt->Parent();
+      if (!parentNtt->IsA<Canvas>())
+      {
+        return;
+      }
+
+      Surface* surface               = ntt->As<Surface>();
       const DirectionLabel direction = m_anchor->GetGrabbedDirection();
       const bool hasXDirection =
           (direction != DirectionLabel::N && direction != DirectionLabel::S) || (direction == DirectionLabel::CENTER);
@@ -390,8 +394,8 @@ namespace ToolKit
       if (g_app->m_snapsEnabled)
       {
         m_deltaAccum           += m_anchorDeltaTransform;
-        m_anchorDeltaTransform = ZERO;
-        float spacing          = g_app->m_moveDelta;
+        m_anchorDeltaTransform  = ZERO;
+        float spacing           = g_app->m_moveDelta;
         for (uint i = 0; i < 2; i++)
         {
           if (abs(m_deltaAccum[i]) > spacing)
@@ -405,23 +409,23 @@ namespace ToolKit
       if (hasXDirection)
       {
         Vec3 dir {1.f, 0.f, 0.f};
-        dir    = glm::normalize(dir);
+        dir     = glm::normalize(dir);
         deltaX += glm::dot(dir, m_anchorDeltaTransform) * dir;
       }
 
       if (hasYDirection)
       {
         Vec3 dir {0.f, 1.f, 0.f};
-        dir    = glm::normalize(dir);
+        dir     = glm::normalize(dir);
         deltaY += glm::dot(dir, m_anchorDeltaTransform) * dir;
       }
       float w = 0, h = 0;
 
-      if (EntityPtr parent = surface->m_node->m_parent->m_entity)
+      if (EntityPtr parent = surface->Parent())
       {
         if (parent->IsA<Canvas>())
         {
-          Canvas* canvasPanel  = static_cast<Canvas*>(parent.get());
+          Canvas* canvasPanel  = parent->As<Canvas>();
           const BoundingBox bb = canvasPanel->GetAABB(true);
           w                    = bb.GetWidth();
           h                    = bb.GetHeight();
@@ -432,28 +436,28 @@ namespace ToolKit
 
       if (direction == DirectionLabel::CENTER)
       {
-        const float dX  = m_anchorDeltaTransform.x / w;
-        const float dY  = m_anchorDeltaTransform.y / h;
+        const float dX   = m_anchorDeltaTransform.x / w;
+        const float dY   = m_anchorDeltaTransform.y / h;
 
         anchorRatios[0] += std::min(1.f, dX);
-        anchorRatios[0] = std::max(0.f, anchorRatios[0]);
-        anchorRatios[0] = std::min(1.f, anchorRatios[0]);
+        anchorRatios[0]  = std::max(0.f, anchorRatios[0]);
+        anchorRatios[0]  = std::min(1.f, anchorRatios[0]);
 
-        anchorRatios[1] = 1.f - anchorRatios[0];
+        anchorRatios[1]  = 1.f - anchorRatios[0];
 
         anchorRatios[2] -= std::min(1.f, dY);
-        anchorRatios[2] = std::max(0.f, anchorRatios[2]);
-        anchorRatios[2] = std::min(1.f, anchorRatios[2]);
+        anchorRatios[2]  = std::max(0.f, anchorRatios[2]);
+        anchorRatios[2]  = std::min(1.f, anchorRatios[2]);
 
-        anchorRatios[3] = 1.f - anchorRatios[2];
+        anchorRatios[3]  = 1.f - anchorRatios[2];
       }
 
       if (direction == DirectionLabel::W || direction == DirectionLabel::NW || direction == DirectionLabel::SW)
       {
-        const float d   = m_anchorDeltaTransform.x / w;
+        const float d    = m_anchorDeltaTransform.x / w;
         anchorRatios[0] += std::min(1.f, d);
-        anchorRatios[0] = std::max(0.f, anchorRatios[0]);
-        anchorRatios[0] = std::min(1.f, anchorRatios[0]);
+        anchorRatios[0]  = std::max(0.f, anchorRatios[0]);
+        anchorRatios[0]  = std::min(1.f, anchorRatios[0]);
 
         if ((anchorRatios[0] + anchorRatios[1]) > 1.f)
         {
@@ -462,11 +466,11 @@ namespace ToolKit
       }
       if (direction == DirectionLabel::E || direction == DirectionLabel::NE || direction == DirectionLabel::SE)
       {
-        const float d   = m_anchorDeltaTransform.x / w;
+        const float d    = m_anchorDeltaTransform.x / w;
         anchorRatios[1] -= std::min(1.f, d);
 
-        anchorRatios[1] = std::max(0.f, anchorRatios[1]);
-        anchorRatios[1] = std::min(1.f, anchorRatios[1]);
+        anchorRatios[1]  = std::max(0.f, anchorRatios[1]);
+        anchorRatios[1]  = std::min(1.f, anchorRatios[1]);
 
         if ((anchorRatios[1] + anchorRatios[0]) > 1.f)
         {
@@ -475,11 +479,11 @@ namespace ToolKit
       }
       if (direction == DirectionLabel::N || direction == DirectionLabel::NW || direction == DirectionLabel::NE)
       {
-        const float d   = m_anchorDeltaTransform.y / h;
+        const float d    = m_anchorDeltaTransform.y / h;
         anchorRatios[2] -= std::min(1.f, d);
 
-        anchorRatios[2] = std::max(0.f, anchorRatios[2]);
-        anchorRatios[2] = std::min(1.f, anchorRatios[2]);
+        anchorRatios[2]  = std::max(0.f, anchorRatios[2]);
+        anchorRatios[2]  = std::min(1.f, anchorRatios[2]);
 
         if ((anchorRatios[2] + anchorRatios[3]) > 1.f)
         {
@@ -488,11 +492,11 @@ namespace ToolKit
       }
       if (direction == DirectionLabel::S || direction == DirectionLabel::SW || direction == DirectionLabel::SE)
       {
-        const float d   = m_anchorDeltaTransform.y / h;
+        const float d    = m_anchorDeltaTransform.y / h;
         anchorRatios[3] += std::min(1.f, d);
 
-        anchorRatios[3] = std::max(0.f, anchorRatios[3]);
-        anchorRatios[3] = std::min(1.f, anchorRatios[3]);
+        anchorRatios[3]  = std::max(0.f, anchorRatios[3]);
+        anchorRatios[3]  = std::min(1.f, anchorRatios[3]);
 
         if ((anchorRatios[3] + anchorRatios[2]) > 1.f)
         {

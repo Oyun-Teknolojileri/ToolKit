@@ -502,7 +502,12 @@ namespace ToolKit
       EditorScenePtr currScene = g_app->GetCurrentScene();
       currScene->GetSelectedEntities(roots);
 
-      EntityPtr e = currScene->GetCurrentSelection();
+      EntityPtr currentNtt = currScene->GetCurrentSelection();
+      if (currentNtt == nullptr)
+      {
+        return;
+      }
+
       NodeRawPtrArray parents;
 
       // Make all selecteds child of current & store their original parents.
@@ -514,26 +519,26 @@ namespace ToolKit
 
       for (EntityPtr ntt : roots)
       {
-        if (ntt != e)
+        if (ntt != currentNtt)
         {
-          e->m_node->AddChild(ntt->m_node, true);
+          currentNtt->m_node->AddChild(ntt->m_node, true);
         }
       }
 
       // Apply transform.
-      if (!e->GetTransformLockVal())
+      if (!currentNtt->GetTransformLockVal())
       {
         if (m_type == TransformType::Translate)
         {
-          Translate(e);
+          Translate(currentNtt);
         }
         else if (m_type == TransformType::Rotate)
         {
-          Rotate(e);
+          Rotate(currentNtt);
         }
         else if (m_type == TransformType::Scale)
         {
-          Scale(e);
+          Scale(currentNtt);
         }
       }
       else
@@ -566,7 +571,7 @@ namespace ToolKit
       }
 
       m_deltaAccum += delta;
-      Vec3 target  = ntt->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      Vec3 target   = ntt->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
       // Snap for pos.
       if (g_app->m_snapsEnabled)
@@ -604,22 +609,22 @@ namespace ToolKit
 
     void StateTransformTo::Rotate(EntityPtr ntt)
     {
-      EditorViewport* viewport = g_app->GetActiveViewport();
-      PolarGizmo* pg           = static_cast<PolarGizmo*>(m_gizmo.get());
-      int axisInd              = static_cast<int>(m_gizmo->GetGrabbedAxis());
-      Vec3 projAxis            = pg->m_handles[axisInd]->m_tangentDir;
-      Vec3 mouseDelta          = m_delta;
+      EditorViewport* viewport  = g_app->GetActiveViewport();
+      PolarGizmo* pg            = static_cast<PolarGizmo*>(m_gizmo.get());
+      int axisInd               = static_cast<int>(m_gizmo->GetGrabbedAxis());
+      Vec3 projAxis             = pg->m_handles[axisInd]->m_tangentDir;
+      Vec3 mouseDelta           = m_delta;
 
-      float delta              = glm::dot(projAxis, mouseDelta);
-      Vec3 deltaInWS           = Vec3(delta, 0.0f, 0.0f);
-      Vec2 deltaInSS           = viewport->TransformWorldSpaceToScreenSpace(deltaInWS);
+      float delta               = glm::dot(projAxis, mouseDelta);
+      Vec3 deltaInWS            = Vec3(delta, 0.0f, 0.0f);
+      Vec2 deltaInSS            = viewport->TransformWorldSpaceToScreenSpace(deltaInWS);
       deltaInSS                -= viewport->TransformWorldSpaceToScreenSpace(Vec3(0));
       deltaInSS = Vec2(deltaInSS.x / viewport->m_wndContentAreaSize.x, deltaInSS.y / viewport->m_wndContentAreaSize.y);
       delta     = glm::length(deltaInSS) * ((delta > 0.0f) ? 1 : -1);
       delta     = glm::degrees(delta) / 9.0f;
 
       m_deltaAccum.x += delta;
-      float spacing  = glm::radians(g_app->m_rotateDelta);
+      float spacing   = glm::radians(g_app->m_rotateDelta);
       if (g_app->m_snapsEnabled)
       {
         if (glm::abs(m_deltaAccum.x) < spacing)
@@ -642,28 +647,28 @@ namespace ToolKit
     void StateTransformTo::Scale(EntityPtr ntt)
     {
       Vec3 scaleAxes[7];
-      scaleAxes[(int) AxisLabel::X]   = X_AXIS;
-      scaleAxes[(int) AxisLabel::Y]   = Y_AXIS;
-      scaleAxes[(int) AxisLabel::Z]   = Z_AXIS;
-      scaleAxes[(int) AxisLabel::XY]  = XY_AXIS;
-      scaleAxes[(int) AxisLabel::YZ]  = YZ_AXIS;
-      scaleAxes[(int) AxisLabel::ZX]  = ZX_AXIS;
-      scaleAxes[(int) AxisLabel::XYZ] = Vec3(1.0f);
+      scaleAxes[(int) AxisLabel::X]    = X_AXIS;
+      scaleAxes[(int) AxisLabel::Y]    = Y_AXIS;
+      scaleAxes[(int) AxisLabel::Z]    = Z_AXIS;
+      scaleAxes[(int) AxisLabel::XY]   = XY_AXIS;
+      scaleAxes[(int) AxisLabel::YZ]   = YZ_AXIS;
+      scaleAxes[(int) AxisLabel::ZX]   = ZX_AXIS;
+      scaleAxes[(int) AxisLabel::XYZ]  = Vec3(1.0f);
 
-      BoundingBox bb                  = ntt->GetAABB();
-      Vec3 aabbSize                   = bb.max - bb.min;
+      BoundingBox bb                   = ntt->GetAABB();
+      Vec3 aabbSize                    = bb.max - bb.min;
 
-      int axisIndex                   = int(m_gizmo->GetGrabbedAxis());
-      Vec3 axis                       = scaleAxes[axisIndex];
+      int axisIndex                    = int(m_gizmo->GetGrabbedAxis());
+      Vec3 axis                        = scaleAxes[axisIndex];
 
       aabbSize                        *= axis;
-      aabbSize                        = glm::max(aabbSize, 0.0001f);
-      Vec3 delta                      = Vec3(glm::length(m_delta) / glm::length(aabbSize));
+      aabbSize                         = glm::max(aabbSize, 0.0001f);
+      Vec3 delta                       = Vec3(glm::length(m_delta) / glm::length(aabbSize));
 
       delta                           *= glm::normalize(axis);
       m_deltaAccum                    += delta;
 
-      float spacing                   = g_app->m_scaleDelta;
+      float spacing                    = g_app->m_scaleDelta;
       if (g_app->m_snapsEnabled)
       {
         if (IsPlaneMod())
@@ -694,7 +699,7 @@ namespace ToolKit
       // Transfer world space delta to local axis.
       if (axisIndex <= (int) AxisLabel::Z)
       {
-        Vec3 axisDir = m_gizmo->m_normalVectors[axisIndex % 3];
+        Vec3 axisDir  = m_gizmo->m_normalVectors[axisIndex % 3];
         delta        *= glm::sign(glm::dot(m_delta, axisDir));
       }
       else

@@ -37,13 +37,15 @@ namespace ToolKit
 
   TKDefineClass(Camera, Entity);
 
-  Camera::Camera()
-  {
-    AddComponent<DirectionComponent>();
-    SetLens(glm::radians(90.0f), 640.0f / 480.0f, 0.01f, 1000.0f);
-  }
+  Camera::Camera() { SetLens(glm::radians(90.0f), 640.0f / 480.0f, 0.01f, 1000.0f); }
 
   Camera::~Camera() {}
+
+  void Camera::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    AddComponent<DirectionComponent>();
+  }
 
   void Camera::SetLens(float fov, float aspect) { SetLens(fov, aspect, 0.5f, 1000.0f); }
 

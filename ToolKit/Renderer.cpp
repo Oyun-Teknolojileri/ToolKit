@@ -29,6 +29,7 @@
 #include "Camera.h"
 #include "DirectionComponent.h"
 #include "Drawable.h"
+#include "EngineSettings.h"
 #include "EnvironmentComponent.h"
 #include "GradientSky.h"
 #include "Logger.h"
@@ -49,7 +50,6 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
-#include "EngineSettings.h"
 
 #include "DebugNew.h"
 
@@ -59,14 +59,13 @@ namespace ToolKit
 
   void Renderer::Init()
   {
-    m_uiCamera                      = new Camera();
+    m_uiCamera                      = MakeNewPtr<Camera>();
     m_oneColorAttachmentFramebuffer = MakeNewPtr<Framebuffer>();
     m_dummyDrawCube                 = MakeNewPtr<Cube>();
   }
 
   Renderer::~Renderer()
   {
-    SafeDel(m_uiCamera);
     m_oneColorAttachmentFramebuffer = nullptr;
     m_gaussianBlurMaterial          = nullptr;
     m_averageBlurMaterial           = nullptr;
@@ -127,7 +126,7 @@ namespace ToolKit
         m_renderState.brdfLut                = brdfLut->m_textureId;
 
         m_renderState.IBLInUse               = true;
-        if (EntityPtr env = envCom->m_entity)
+        if (EntityPtr env = envCom->OwnerEntity())
         {
           m_iblRotation = Mat4(env->m_node->GetOrientation());
         }
@@ -179,7 +178,7 @@ namespace ToolKit
     if (m_mat == nullptr)
     {
       assert(false);
-      m_mat = GetMaterialManager()->GetCopyOfDefaultMaterial();
+      m_mat = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
     }
 
     m_mat->Init();
@@ -948,7 +947,7 @@ namespace ToolKit
         break;
         case Uniform::SHADOW_DISTANCE:
         {
-          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::SHADOW_DISTANCE));
+          GLint loc           = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::SHADOW_DISTANCE));
           EngineSettings& set = GetEngineSettings();
           glUniform1f(loc, set.Graphics.ShadowDistance);
         }

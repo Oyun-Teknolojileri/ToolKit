@@ -50,7 +50,7 @@ namespace ToolKit
       };
 
      public:
-      TKDeclareClass(EditorBillboardBase, Billboard)
+      TKDeclareClass(EditorBillboardBase, Billboard);
 
       EditorBillboardBase();
       explicit EditorBillboardBase(const Settings& settings);
@@ -137,7 +137,7 @@ namespace ToolKit
      public:
       Vec3 m_tangentDir;
       Params m_params;
-      MeshPtr m_mesh;
+      MeshPtr m_mesh = nullptr;
     };
 
     class PolarHandle : public GizmoHandle
@@ -162,6 +162,7 @@ namespace ToolKit
       Gizmo();
       explicit Gizmo(const Billboard::Settings& set);
       virtual ~Gizmo();
+      void NativeConstruct() override;
       BillboardType GetBillboardType() const override;
 
       virtual AxisLabel HitTest(const Ray& ray) const;

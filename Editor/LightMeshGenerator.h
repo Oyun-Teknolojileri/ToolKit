@@ -49,7 +49,7 @@ namespace ToolKit
        * @param lines is the line batch array that contains generated gizmo
        * data.
        */
-      void TransferGizmoMesh(LineBatchRawPtrArray& lines);
+      void TransferGizmoMesh(LineBatchPtrArray& lines);
 
      public:
       MeshComponentPtr m_lightMesh; //!< Component that contains generated data.

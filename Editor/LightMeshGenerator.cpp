@@ -28,6 +28,8 @@
 
 #include "EditorLight.h"
 #include "Global.h"
+#include "Primative.h"
+#include "Types.h"
 
 #include "DebugNew.h"
 
@@ -51,25 +53,23 @@ namespace ToolKit
 
     LightMeshGenerator::~LightMeshGenerator() { m_targetLight = nullptr; }
 
-    void LightMeshGenerator::TransferGizmoMesh(LineBatchRawPtrArray& lines)
+    void LightMeshGenerator::TransferGizmoMesh(LineBatchPtrArray& lines)
     {
       if (lines.empty())
       {
         return;
       }
 
-      LineBatch* lb = lines[0];
-      MeshPtr accum = lb->GetMeshComponent()->GetMeshVal();
+      LineBatchPtr lb = lines[0];
+      MeshPtr accum   = lb->GetMeshComponent()->GetMeshVal();
       lb->GetMeshComponent()->SetMeshVal(nullptr);
-      SafeDel(lb);
 
       for (int i = 1; i < (int) lines.size(); i++)
       {
-        LineBatch* lb   = lines[i];
+        lb              = lines[i];
         MeshPtr subMesh = lb->GetMeshComponent()->GetMeshVal();
         accum->m_subMeshes.push_back(subMesh);
         lb->GetMeshComponent()->SetMeshVal(nullptr);
-        SafeDel(lb);
       }
 
       lines.clear();
@@ -97,13 +97,13 @@ namespace ToolKit
       m_outerCirclePnts.clear();
       m_outerCirclePnts.reserve(m_circleVertexCount + 1);
 
-      LineBatchRawPtrArray lines = {new LineBatch(), new LineBatch(), new LineBatch()};
+      LineBatchPtrArray lines  = {MakeNewPtr<LineBatch>(), MakeNewPtr<LineBatch>(), MakeNewPtr<LineBatch>()};
 
       // Calculating circles.
-      int zeroCount              = 0;
-      zeroCount                  += (int) (d.x == 0.0f);
-      zeroCount                  += (int) (d.y == 0.0f);
-      zeroCount                  += (int) (d.z == 0.0f);
+      int zeroCount            = 0;
+      zeroCount               += (int) (d.x == 0.0f);
+      zeroCount               += (int) (d.y == 0.0f);
+      zeroCount               += (int) (d.z == 0.0f);
 
       Vec3 per;
       if (zeroCount == 0)
@@ -137,12 +137,12 @@ namespace ToolKit
         }
       }
 
-      per                     = glm::normalize(per);
+      per                      = glm::normalize(per);
       d                       *= r;
-      float innerCircleRadius = r * glm::tan(glm::radians(sLight->GetInnerAngleVal() / 2));
-      float outerCircleRadius = r * glm::tan(glm::radians(sLight->GetOuterAngleVal() / 2));
-      Vec3 inStartPoint       = d + per * innerCircleRadius;
-      Vec3 outStartPoint      = d + per * outerCircleRadius;
+      float innerCircleRadius  = r * glm::tan(glm::radians(sLight->GetInnerAngleVal() / 2));
+      float outerCircleRadius  = r * glm::tan(glm::radians(sLight->GetOuterAngleVal() / 2));
+      Vec3 inStartPoint        = d + per * innerCircleRadius;
+      Vec3 outStartPoint       = d + per * outerCircleRadius;
 
       m_innerCirclePnts.push_back(inStartPoint);
       m_outerCirclePnts.push_back(outStartPoint);
@@ -170,8 +170,8 @@ namespace ToolKit
       int coneIndex = 0;
       for (int i = 0; i < m_circleVertexCount; i += 4)
       {
-        m_conePnts[coneIndex]     = ZERO;
-        m_conePnts[coneIndex + 1] = m_outerCirclePnts[i];
+        m_conePnts[coneIndex]      = ZERO;
+        m_conePnts[coneIndex + 1]  = m_outerCirclePnts[i];
         coneIndex                 += 2;
       }
 
@@ -196,7 +196,7 @@ namespace ToolKit
       m_pnts[0] = Vec3(ZERO);
       m_pnts[1] = Vec3(d * 10.0f);
 
-      LineBatchRawPtrArray lines {new LineBatch()};
+      LineBatchPtrArray lines {MakeNewPtr<LineBatch>()};
       lines[0]->Generate(m_pnts, g_lightGizmoColor, DrawType::Line, 1.0f);
 
       TransferGizmoMesh(lines);
@@ -215,18 +215,18 @@ namespace ToolKit
       m_circlePntsYZ.resize(m_circleVertexCount + 1);
       m_circlePntsXZ.resize(m_circleVertexCount + 1);
 
-      Vec3 up                    = Vec3(0.0f, 1.0f, 0.0f);
-      Vec3 right                 = Vec3(1.0f, 0.0f, 0.0f);
-      Vec3 forward               = Vec3(0.0f, 0.0f, 1.0f);
-      float deltaAngle           = glm::two_pi<float>() / m_circleVertexCount;
+      Vec3 up                 = Vec3(0.0f, 1.0f, 0.0f);
+      Vec3 right              = Vec3(1.0f, 0.0f, 0.0f);
+      Vec3 forward            = Vec3(0.0f, 0.0f, 1.0f);
+      float deltaAngle        = glm::two_pi<float>() / m_circleVertexCount;
 
-      PointLight* pLight         = m_targetLight->As<PointLight>();
+      PointLight* pLight      = m_targetLight->As<PointLight>();
 
-      Vec3 lightPos              = pLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      Vec3 lightPos           = pLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
-      LineBatchRawPtrArray lines = {new LineBatch(), new LineBatch(), new LineBatch()};
+      LineBatchPtrArray lines = {MakeNewPtr<LineBatch>(), MakeNewPtr<LineBatch>(), MakeNewPtr<LineBatch>()};
 
-      auto drawCircleGizmoFn     = [&pLight, &deltaAngle, &lines, this](Vec3Array vertices,
+      auto drawCircleGizmoFn  = [&pLight, &deltaAngle, &lines, this](Vec3Array vertices,
                                                                     const Vec3& axis,
                                                                     const Vec3& perpAxis,
                                                                     int lineBatchIndex)

@@ -155,8 +155,8 @@ namespace ToolKit
      * Constructs a new Object of type T. In case the T does not have a static class, just returns a regular object.
      * @return A new instance of Object.
      */
-    template <typename T, typename... Args>
-    T* MakeNew(Args&&... args)
+    template <typename T>
+    T* MakeNew()
     {
       if constexpr (HasStaticClass<T>::value)
       {
@@ -164,21 +164,11 @@ namespace ToolKit
         {
           Object* object  = constructorFn();
           T* castedObject = static_cast<T*>(object);
-          castedObject->NativeConstruct(std::forward<Args>(args)...);
-
           return castedObject;
         }
-        else
-        {
-          assert(false && "Unknown object type.");
-          return nullptr;
-        }
-      }
-      else
-      {
-        return new T(std::forward<Args>(args)...);
       }
 
+      assert(false && "Unknown object type.");
       return nullptr;
     }
 
@@ -202,27 +192,23 @@ namespace ToolKit
   };
 
   template <typename T, typename... Args>
-  T* MakeNew(Args&&... args)
-  {
-    if (Main* main = Main::GetInstance())
-    {
-      if (ObjectFactory* of = main->m_objectFactory)
-      {
-        return of->MakeNew<T>(std::forward<Args>(args)...);
-      }
-    }
-
-    return nullptr;
-  }
-
-  template <typename T, typename... Args>
   inline std::shared_ptr<T> MakeNewPtr(Args&&... args)
   {
     if (Main* main = Main::GetInstance())
     {
       if (ObjectFactory* of = main->m_objectFactory)
       {
-        return std::shared_ptr<T>(of->MakeNew<T>(std::forward<Args>(args)...));
+        if constexpr (ObjectFactory::HasStaticClass<T>::value)
+        {
+          std::shared_ptr<T> obj = std::shared_ptr<T>(of->MakeNew<T>());
+          obj->m_self            = obj;
+          obj->NativeConstruct(std::forward<Args>(args)...);
+          return obj;
+        }
+        else
+        {
+          return std::shared_ptr<T>(new T(std::forward<Args>(args)...));
+        }
       }
     }
 
@@ -236,7 +222,15 @@ namespace ToolKit
     {
       if (ObjectFactory* of = main->m_objectFactory)
       {
-        return std::shared_ptr<T>(static_cast<T*>(of->MakeNew(Class, std::forward<Args>(args)...)));
+        std::shared_ptr<T> obj = std::shared_ptr<T>(static_cast<T*>(of->MakeNew(Class)));
+
+        if constexpr (ObjectFactory::HasStaticClass<T>::value)
+        {
+          obj->m_self = obj;
+          obj->NativeConstruct(std::forward<Args>(args)...);
+        }
+
+        return obj;
       }
     }
 

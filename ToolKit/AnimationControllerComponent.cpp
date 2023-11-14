@@ -77,7 +77,7 @@ namespace ToolKit
     AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
     for (auto iter = list.begin(); iter != list.end(); ++iter)
     {
-      iter->second->m_entity = m_entity;
+      iter->second->m_entity = OwnerEntity();
     }
 
     return compNode->first_node(StaticClass()->Name.c_str());
@@ -123,7 +123,7 @@ namespace ToolKit
     }
     rec->m_state  = AnimRecord::State::Play;
     rec->m_loop   = true;
-    rec->m_entity = m_entity;
+    rec->m_entity = OwnerEntity();
     activeRecord  = rec;
     GetAnimationPlayer()->AddRecord(rec.get());
   }

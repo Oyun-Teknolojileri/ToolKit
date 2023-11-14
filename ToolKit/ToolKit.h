@@ -34,6 +34,8 @@
 #include "Object.h"
 #include "Types.h"
 
+#include <unordered_set>
+
 /**
  * Base name space for all the ToolKit functionalities.
  */
@@ -46,23 +48,16 @@ namespace ToolKit
   class TK_API HandleManager
   {
    public:
-    /**
-     * Creates a handle that has not been allocated within the current runtime.
-     * Increments the m_baseHandle by one.
-     * @return A unique handle for the current runtime.
-     */
-    ULongID GetNextHandle();
+    HandleManager();
 
-    /**
-     * This function allows to set the m_baseHandle to maximum of
-     * val and m_baseHandle. That is m_baseHandle = max(m_baseHandle, val).
-     * @param val The value to compare with current handle.
-     */
-    void SetMaxHandle(ULongID val);
+    ULongID GenerateHandle();
+    void AddHandle(ULongID val);
+    void ReleaseHandle(ULongID val);
+    bool IsHandleUnique(ULongID val);
 
    private:
-    ULongID m_baseHandle = 1000; //!< Starting value of the handles.
-    ULongID m_maxIdLimit = (std::numeric_limits<uint64_t>::max() / 10) * 9;
+    uint64 m_randomXor[2];
+    std::unordered_set<uint64> m_uniqueIDs;
   };
 
   struct Timing
@@ -107,6 +102,9 @@ namespace ToolKit
     StringView GetConfigPath();
 
     static Main* GetInstance();
+
+    static Main* GetInstance_noexcep() { return m_proxy; };
+
     static void SetProxy(Main* proxy);
 
    public:
@@ -125,7 +123,7 @@ namespace ToolKit
     class UIManager* m_uiManager               = nullptr;
     class SkeletonManager* m_skeletonManager   = nullptr;
     class FileManager* m_fileManager           = nullptr;
-    class ObjectFactory* m_objectFactory     = nullptr;
+    class ObjectFactory* m_objectFactory       = nullptr;
     class RenderSystem* m_renderSys            = nullptr;
     class EngineSettings* m_engineSettings     = nullptr;
     HandleManager m_handleManager;

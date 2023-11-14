@@ -161,7 +161,12 @@ namespace ToolKit
       //  select all children of the prefab entity too
       if (PrefabPtr mainPrefab = Prefab::GetPrefabRoot(ntt))
       {
-        auto addToSelectionFn = [this](Node* node) { m_selectedEntities.push_back(node->m_entity->GetIdVal()); };
+        auto addToSelectionFn = [this](Node* node)
+        {
+          EntityPtr ntt = node->OwnerEntity();
+          m_selectedEntities.push_back(ntt->GetIdVal());
+        };
+
         TraverseChildNodes(mainPrefab->m_node, addToSelectionFn);
         return;
       }

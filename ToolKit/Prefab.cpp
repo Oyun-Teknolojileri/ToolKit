@@ -79,12 +79,13 @@ namespace ToolKit
     {
       return std::static_pointer_cast<Prefab>(ntt);
     }
-    else if (ntt->m_node->m_parent == nullptr || ntt->m_node->m_parent->m_entity == nullptr)
+
+    if (EntityPtr parent = ntt->Parent())
     {
-      return nullptr;
+      return GetPrefabRoot(parent);
     }
 
-    return GetPrefabRoot(ntt->m_node->m_parent->m_entity);
+    return nullptr;
   }
 
   Entity* Prefab::CopyTo(Entity* other) const
@@ -162,7 +163,7 @@ namespace ToolKit
     parent              = CreateXmlNode(doc, "PrefabRoots", prefabNode);
 
     EntityPtrArray childs;
-    GetChildren(m_sharedEntity, childs);
+    GetChildren(Self<Entity>(), childs);
     for (EntityPtr child : childs)
     {
       XmlNode* rootSer = CreateXmlNode(doc, child->GetNameVal(), parent);

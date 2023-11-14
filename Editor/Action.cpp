@@ -54,7 +54,8 @@ namespace ToolKit
 
     DeleteAction::DeleteAction(EntityPtr ntt)
     {
-      m_ntt = ntt;
+      m_parentId = NULL_HANDLE;
+      m_ntt      = ntt;
       Redo();
     }
 
@@ -105,9 +106,9 @@ namespace ToolKit
     {
       if (Node* pNode = m_ntt->m_node->m_parent)
       {
-        if (pNode->m_entity)
+        if (EntityPtr ntt = pNode->OwnerEntity())
         {
-          m_parentId = pNode->m_entity->GetIdVal();
+          m_parentId = ntt->GetIdVal();
         }
         pNode->Orphan(m_ntt->m_node);
       }
@@ -174,20 +175,20 @@ namespace ToolKit
 
     void DeleteComponentAction::Undo()
     {
-      if (m_com->m_entity)
+      if (EntityPtr owner = m_com->OwnerEntity())
       {
-        m_com->m_entity->AddComponent(m_com);
-      }
+        owner->AddComponent(m_com);
 
-      EditorScenePtr currScene = g_app->GetCurrentScene();
-      currScene->ValidateBillboard(m_com->m_entity);
+        EditorScenePtr currScene = g_app->GetCurrentScene();
+        currScene->ValidateBillboard(m_com->OwnerEntity());
+      }
     }
 
     void DeleteComponentAction::Redo()
     {
-      if (m_com->m_entity)
+      if (EntityPtr owner = m_com->OwnerEntity())
       {
-        m_com->m_entity->RemoveComponent(m_com->GetIdVal());
+        owner->RemoveComponent(m_com->GetIdVal());
       }
     }
 

@@ -51,7 +51,7 @@ namespace ToolKit
 
   BoundingBox MeshComponent::GetAABB()
   {
-    SkeletonComponentPtr skelComp = m_entity->GetComponent<SkeletonComponent>();
+    SkeletonComponentPtr skelComp = OwnerEntity()->GetComponent<SkeletonComponent>();
     if (skelComp && GetMeshVal()->IsSkinned())
     {
       SkinMesh* skinMesh = (SkinMesh*) GetMeshVal().get();

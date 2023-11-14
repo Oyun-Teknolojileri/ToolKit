@@ -110,7 +110,7 @@ namespace ToolKit
 
     for (Node* childNode : m_node->m_children)
     {
-      if (EntityPtr ntt = childNode->m_entity)
+      if (EntityPtr ntt = childNode->OwnerEntity())
       {
         if (Surface* surface = ntt->As<Surface>())
         {
@@ -168,14 +168,14 @@ namespace ToolKit
             const Vec3 widthVector(1.f, 0.f, 0.f);
             const Vec3 heightVector(0.f, 1.f, 0.f);
 
-            Vec3 translate               = (canvasPoints[0] + widthVector * offsets[2] - heightVector * offsets[0]);
+            Vec3 translate                = (canvasPoints[0] + widthVector * offsets[2] - heightVector * offsets[0]);
 
             translate                    -= surfacePoints[0];
 
-            const Vec3 surfaceCurrentPos = surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            const Vec3 surfaceCurrentPos  = surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
             translate                    += surfaceCurrentPos;
-            translate.z                  = surfaceCurrentPos.z;
+            translate.z                   = surfaceCurrentPos.z;
 
             childNode->SetTranslation(translate, TransformationSpace::TS_WORLD);
           }

@@ -59,6 +59,7 @@ namespace ToolKit
       TKDeclareClass(Grid, Entity);
 
       Grid();
+      void NativeConstruct() override;
       void Resize(UVec2 size, AxisLabel axis = AxisLabel::ZX, float cellSize = 1.0f, float linePixelCount = 2.0f);
       bool HitTest(const Ray& ray, Vec3& pos);
       void UpdateShaderParams();

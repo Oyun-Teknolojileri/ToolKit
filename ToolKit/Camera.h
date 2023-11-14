@@ -40,6 +40,8 @@ namespace ToolKit
     Camera();
     virtual ~Camera();
 
+    void NativeConstruct() override;
+
     void SetLens(float fov, float aspect);
     void SetLens(float fov, float aspect, float near, float far);
     void SetLens(float left, float right, float bottom, float top, float near, float far);

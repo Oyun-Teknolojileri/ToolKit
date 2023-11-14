@@ -94,6 +94,8 @@ namespace ToolKit
     Vec3 translation;
     Quaternion orientation;
     Vec3 scale;
+
+    EntityPtr owner = skeleton->OwnerEntity();
     for (auto& dBoneIter : skeleton->m_map->boneList)
     {
       auto entry = m_keys.find(dBoneIter.first);
@@ -153,7 +155,7 @@ namespace ToolKit
           // Target anim is offseted from it's root bone.
           if (dBoneIter.first == blendTarget->RootBone)
           {
-            Vec3 entityScale       = skeleton->m_entity->m_node->GetScale();
+            Vec3 entityScale       = owner->m_node->GetScale();
             float translationCoeff = (1 / entityScale.x);
             translationT           = translationT + (blendTarget->TranslationOffset * translationCoeff);
             orientationT           = orientationT * blendTarget->OrientationOffset;
@@ -370,11 +372,20 @@ namespace ToolKit
     }
   }
 
-  AnimRecord::AnimRecord() { m_id = GetHandleManager()->GetNextHandle(); }
+  AnimRecord::AnimRecord() { m_id = GetHandleManager()->GenerateHandle(); }
 
-  AnimRecord::AnimRecord(EntityPtr entity, const AnimationPtr& anim) : m_entity(entity), m_animation(anim)
+  void AnimRecord::Construct(EntityPtr entity, const AnimationPtr& anim)
   {
-    m_id = GetHandleManager()->GetNextHandle();
+    m_entity    = entity;
+    m_animation = m_animation;
+  }
+
+  AnimRecord::~AnimRecord()
+  {
+    if (HandleManager* handleMan = GetHandleManager())
+    {
+      handleMan->ReleaseHandle(m_id);
+    }
   }
 
   void AnimationPlayer::AddRecord(AnimRecord* rec)
@@ -437,9 +448,14 @@ namespace ToolKit
       {
         record->m_currentTime += deltaTimeSec * record->m_timeMultiplier;
       }
-      record->m_entity->SetPose(record->m_animation,
-                                record->m_currentTime,
-                                record->m_blendTarget.Blend ? &record->m_blendTarget : nullptr);
+
+      if (EntityPtr ntt = record->m_entity.lock())
+      {
+        ntt->SetPose(record->m_animation,
+                     record->m_currentTime,
+                     record->m_blendTarget.Blend ? &record->m_blendTarget : nullptr);
+      }
+
       if (state == AnimRecord::State::Rewind)
       {
         record->m_state = AnimRecord::State::Play;

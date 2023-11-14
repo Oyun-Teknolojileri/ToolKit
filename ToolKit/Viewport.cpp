@@ -87,7 +87,7 @@ namespace ToolKit
   ViewportBase::ViewportBase()
   {
     m_camera         = MakeNewPtr<Camera>();
-    m_viewportId     = GetHandleManager()->GetNextHandle();
+    m_viewportId     = GetHandleManager()->GenerateHandle();
     m_attachedCamera = NULL_HANDLE;
   }
 

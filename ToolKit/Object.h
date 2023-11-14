@@ -90,24 +90,31 @@ namespace ToolKit
 
 #define TKDeclareClassBase(This, Base)                                                                                 \
  private:                                                                                                              \
-  static ClassMeta This##Cls;                                                                                            \
+  static ClassMeta This##Cls;                                                                                          \
   typedef Base Super;                                                                                                  \
                                                                                                                        \
  public:                                                                                                               \
-  virtual ClassMeta* const Class() const;                                                                                \
+  virtual ClassMeta* const Class() const;                                                                              \
   static ClassMeta* const StaticClass() { return &This##Cls; }
 
 #define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Object::NativeConstruct;
 
 #define TKDefineClass(This, Base)                                                                                      \
-  ClassMeta This::This##Cls = {Base::StaticClass(), #This, MurmurHash64A(#This, sizeof(#This), 41)};                     \
+  ClassMeta This::This##Cls = {Base::StaticClass(), #This, MurmurHash64A(#This, sizeof(#This), 41)};                   \
   ClassMeta* const This::Class() const { return &This##Cls; }
 
   typedef std::shared_ptr<class Object> TKObjectPtr;
+  typedef std::weak_ptr<class Object> ObjectWeakPtr;
 
   class TK_API Object : public Serializable
   {
     TKDeclareClassBase(Object, Object);
+
+    template <typename T, typename... Args>
+    friend std::shared_ptr<T> MakeNewPtrCasted(const StringView Class, Args&&... args); //!< Friend constructor.
+
+    template <typename T, typename... Args>
+    friend std::shared_ptr<T> MakeNewPtr(Args&&... args); //!< Friend constructor.
 
    public:
     Object();
@@ -137,6 +144,12 @@ namespace ToolKit
 
     bool IsSame(Object* other) { return other->GetIdVal() == GetIdVal(); }
 
+    template <typename T>
+    std::shared_ptr<T> Self() const
+    {
+      return std::static_pointer_cast<T>(m_self.lock());
+    }
+
    protected:
     virtual void ParameterConstructor();
     virtual void ParameterEventConstructor();
@@ -144,10 +157,26 @@ namespace ToolKit
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     void PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
+    /**
+     * Utility function that checks if the current id is colliding with anything currently in the handle manager.
+     * If a collision happens, it sets _idBeforeCollision with the colliding id to resolve parent - child relations
+     * and assigns a new non colliding id.
+     */
+    void PreventIdCollision();
+
+   protected:
+    ObjectWeakPtr m_self;
+
    public:
     TKDeclareParam(ULongID, Id);
 
     ParameterBlock m_localData;
+
+    /**
+     * This is internally used to match parent, child pairs.
+     * If a collision occurs, the original value is stored here to be used in parent - child matching.
+     */
+    ULongID _idBeforeCollision;
   };
 
 } // namespace ToolKit

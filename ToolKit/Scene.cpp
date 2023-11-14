@@ -30,12 +30,12 @@
 #include "EngineSettings.h"
 #include "EnvironmentComponent.h"
 #include "FileManager.h"
+#include "Logger.h"
 #include "MathUtil.h"
 #include "Prefab.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "Logger.h"
 
 #include "DebugNew.h"
 
@@ -58,18 +58,6 @@ namespace ToolKit
       m_isPrefab  = path.find("Prefabs") != String::npos;
 
       ParseDocument(XmlSceneElement);
-
-      // Update parent - child relation for entities.
-      for (EntityPtr ntt : m_entities)
-      {
-        if (ntt->_parentId != 0)
-        {
-          if (EntityPtr parent = GetEntity(ntt->_parentId))
-          {
-            parent->m_node->AddChild(ntt->m_node);
-          }
-        }
-      }
 
       m_loaded = true;
     }
@@ -140,13 +128,12 @@ namespace ToolKit
 
   void Scene::Merge(ScenePtr other)
   {
-    ULongID lastID = GetHandleManager()->GetNextHandle(), biggestID = 0;
-    const EntityPtrArray& entities = other->GetEntities();
-    for (EntityPtr ntt : entities)
+    HandleManager* handleMan = GetHandleManager();
+    for (EntityPtr otherNtt : other->GetEntities())
     {
-      AddEntity(ntt); // Insert into this scene.
+      otherNtt->SetIdVal(handleMan->GenerateHandle());
+      AddEntity(otherNtt);
     }
-    GetHandleManager()->SetMaxHandle(biggestID);
 
     other->RemoveAllEntities();
     GetSceneManager()->Remove(other->GetFile());
@@ -298,7 +285,10 @@ namespace ToolKit
     {
       Node* child = children.back();
       children.pop_back();
-      RemoveEntity(child->m_entity->GetIdVal());
+      if (EntityPtr childNtt = child->OwnerEntity())
+      {
+        RemoveEntity(childNtt->GetIdVal());
+      }
     }
   }
 
@@ -577,17 +567,14 @@ namespace ToolKit
       return nullptr;
     }
 
-    // Old file, keep parsing.
-    ULongID lastID    = GetHandleManager()->GetNextHandle();
-    ULongID biggestID = 0;
-    XmlNode* node     = nullptr;
-
-    EntityPtrArray prefabList;
-
+    // For old type of scenes, load the entities and find the parent-child relations
     const char* xmlRootObject = XmlEntityElement.c_str();
     const char* xmlObjectType = XmlEntityTypeAttr.c_str();
 
-    for (node = parent->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
+    EntityPtrArray prefabList;
+    EntityPtrArray deserializedEntities;
+
+    for (XmlNode* node = parent->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
     {
       XmlAttribute* typeAttr      = node->first_attribute(xmlObjectType);
       EntityFactory::EntityType t = (EntityFactory::EntityType) std::atoi(typeAttr->value());
@@ -601,18 +588,37 @@ namespace ToolKit
         prefabList.push_back(ntt);
       }
 
-      // Incrementing the incoming ntt ids with current max id value...
-      // to prevent id collisions.
-      ULongID listIndx = 0;
-      ReadAttr(node, XmlEntityIdAttr, listIndx);
-      ULongID currentID = listIndx + lastID;
-      biggestID         = glm::max(biggestID, currentID);
-      ntt->SetIdVal(currentID);
-      ntt->_parentId += lastID;
+      // Old file id trick.
+      ULongID id = 0;
+      ReadAttr(node, XmlEntityIdAttr, id);
 
+      // Temporary id. This will be regenerated later. Do not use this id until it is regenerated later.
+      ntt->SetIdVal(id);
+      deserializedEntities.push_back(ntt);
+    }
+
+    // Solve the parent-child relations
+    for (EntityPtr ntt : deserializedEntities)
+    {
+      for (EntityPtr parentCandidate : deserializedEntities)
+      {
+        if (parentCandidate->GetIdVal() == ntt->_parentId)
+        {
+          parentCandidate->m_node->AddChild(ntt->m_node);
+          break;
+        }
+      }
+    }
+
+    // Old file id trick.
+    // Regenerate ids and add to scene
+    // Solve the parent-child relations
+    for (EntityPtr ntt : deserializedEntities)
+    {
+      // Generate new handle for old version scene entities
+      ntt->SetIdVal(GetHandleManager()->GenerateHandle());
       AddEntity(ntt);
     }
-    GetHandleManager()->SetMaxHandle(biggestID);
 
     // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)
@@ -632,14 +638,11 @@ namespace ToolKit
 
   void Scene::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
   {
-    XmlNode* root     = info.Document->first_node(XmlSceneElement.c_str());
-
-    // Old file, keep parsing.
-    ULongID lastID    = GetHandleManager()->GetNextHandle();
-    ULongID biggestID = 0;
-    XmlNode* node     = nullptr;
+    XmlNode* root = info.Document->first_node(XmlSceneElement.c_str());
+    XmlNode* node = nullptr;
 
     EntityPtrArray prefabList;
+    EntityPtrArray deserializedEntities;
 
     const char* xmlRootObject = Object::StaticClass()->Name.c_str();
     const char* xmlObjectType = XmlObjectClassAttr.data();
@@ -656,18 +659,37 @@ namespace ToolKit
         prefabList.push_back(ntt);
       }
 
-      // Incrementing the incoming ntt ids with current max id value...
-      // to prevent id collisions.
-      ULongID listIndx  = ntt->GetIdVal();
-      ULongID currentID = listIndx + lastID;
-      biggestID         = glm::max(biggestID, currentID);
-      ntt->SetIdVal(currentID);
-      ntt->_parentId += lastID;
+      deserializedEntities.push_back(ntt);
+    }
+
+    // Solve the parent-child relations
+    m_entities.reserve(deserializedEntities.size());
+
+    for (EntityPtr ntt : deserializedEntities)
+    {
+      if (ntt->_parentId == NULL_HANDLE)
+      {
+        AddEntity(ntt);
+        continue;
+      }
+
+      for (EntityPtr parentCandidate : deserializedEntities)
+      {
+        ULongID id = parentCandidate->_idBeforeCollision;
+        if (id == NULL_HANDLE)
+        {
+          id = parentCandidate->GetIdVal();
+        }
+
+        if (ntt->_parentId == id)
+        {
+          parentCandidate->m_node->AddChild(ntt->m_node);
+          break;
+        }
+      }
 
       AddEntity(ntt);
     }
-
-    GetHandleManager()->SetMaxHandle(biggestID);
 
     // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)

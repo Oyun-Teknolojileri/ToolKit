@@ -78,7 +78,11 @@ namespace ToolKit
     {
       Vec3 m_horizontalAxisColor = g_gridAxisRed;
       Vec3 m_verticalAxisColor   = g_gridAxisBlue;
+    }
 
+    void Grid::NativeConstruct()
+    {
+      Super::NativeConstruct();
       Init();
       UpdateShaderParams();
     }
@@ -137,8 +141,8 @@ namespace ToolKit
       UVec2 gridMeshCount(0);
       for (uint dimIndx = 0; dimIndx < 2; dimIndx++)
       {
-        gridMeshCount[dimIndx] = m_size[dimIndx] / maxGridSize[dimIndx];
-        bool isThereRemaining  = (m_size[dimIndx] % maxGridSize[dimIndx]);
+        gridMeshCount[dimIndx]  = m_size[dimIndx] / maxGridSize[dimIndx];
+        bool isThereRemaining   = (m_size[dimIndx] % maxGridSize[dimIndx]);
         gridMeshCount[dimIndx] += isThereRemaining ? 1 : 0;
       }
 
@@ -187,11 +191,11 @@ namespace ToolKit
           VertexArray currentQuad = quadVertexBuffer;
           for (int j = 0; j < 6; j++)
           {
-            Vertex& clientVertex = currentQuad[j];
-            clientVertex.pos     = (clientVertex.pos * Vec3(scale, 0.0f));
+            Vertex& clientVertex  = currentQuad[j];
+            clientVertex.pos      = (clientVertex.pos * Vec3(scale, 0.0f));
             clientVertex.pos.xy  -= Vec2(m_size / UVec2(2)) - Vec2(gridIndx * maxGridSize);
             // clientVertex.pos.xy += Vec2(maxGridSize / UVec2(2));
-            clientVertex.tex     = clientVertex.pos.xy * m_gridCellSize;
+            clientVertex.tex      = clientVertex.pos.xy * m_gridCellSize;
           }
 
           mainMesh->m_clientSideVertices.insert(mainMesh->m_clientSideVertices.end(),

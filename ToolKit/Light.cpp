@@ -53,6 +53,13 @@ namespace ToolKit
   {
     m_shadowCamera = MakeNewPtr<Camera>();
     m_shadowCamera->SetOrthographicScaleVal(1.0f);
+  }
+
+  Light::~Light() {}
+
+  void Light::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
 
     Color_Define(Vec3(1.0f), "Light", 0, true, true, {true});
     Intensity_Define(1.0f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
@@ -62,15 +69,11 @@ namespace ToolKit
     PCFRadius_Define(0.01f, "Light", 90, true, true, {false, true, 0.0f, 5.0f, 0.0001f});
     ShadowBias_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 20000.0f, 0.01f});
     BleedingReduction_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 1.0f, 0.001f});
-
-    ParameterEventConstructor();
   }
-
-  Light::~Light() {}
 
   void Light::ParameterEventConstructor()
   {
-    Super::ParameterConstructor();
+    Super::ParameterEventConstructor();
 
     ParamShadowRes().m_onValueChangedFn.clear();
     ParamShadowRes().m_onValueChangedFn.push_back(
@@ -166,13 +169,19 @@ namespace ToolKit
 
   TKDefineClass(DirectionalLight, Light);
 
-  DirectionalLight::DirectionalLight() { AddComponent<DirectionComponent>(); }
+  DirectionalLight::DirectionalLight() {}
 
   DirectionalLight::~DirectionalLight() {}
 
+  void DirectionalLight::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    AddComponent<DirectionComponent>();
+  }
+
   void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs, const CameraPtr cameraView)
   {
-    //FitEntitiesBBoxIntoShadowFrustum(m_shadowCamera, jobs);
+    // FitEntitiesBBoxIntoShadowFrustum(m_shadowCamera, jobs);
     FitViewFrustumIntoLightFrustum(m_shadowCamera, cameraView);
 
     UpdateShadowCamera();
@@ -259,18 +268,18 @@ namespace ToolKit
   void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera)
   {
     // Fit view frustum into light frustum
-    Vec3 frustum[8]            = {Vec3(-1.0f, -1.0f, -1.0f),
-                                  Vec3(1.0f, -1.0f, -1.0f),
-                                  Vec3(1.0f, -1.0f, 1.0f),
-                                  Vec3(-1.0f, -1.0f, 1.0f),
-                                  Vec3(-1.0f, 1.0f, -1.0f),
-                                  Vec3(1.0f, 1.0f, -1.0f),
-                                  Vec3(1.0f, 1.0f, 1.0f),
-                                  Vec3(-1.0f, 1.0f, 1.0f)};
+    Vec3 frustum[8]      = {Vec3(-1.0f, -1.0f, -1.0f),
+                            Vec3(1.0f, -1.0f, -1.0f),
+                            Vec3(1.0f, -1.0f, 1.0f),
+                            Vec3(-1.0f, -1.0f, 1.0f),
+                            Vec3(-1.0f, 1.0f, -1.0f),
+                            Vec3(1.0f, 1.0f, -1.0f),
+                            Vec3(1.0f, 1.0f, 1.0f),
+                            Vec3(-1.0f, 1.0f, 1.0f)};
 
     // Set far for view frustum
-    float lastCameraFar        = viewCamera->GetFarClipVal();
-    float shadowDistance       = GetEngineSettings().Graphics.ShadowDistance;
+    float lastCameraFar  = viewCamera->GetFarClipVal();
+    float shadowDistance = GetEngineSettings().Graphics.ShadowDistance;
     viewCamera->SetFarClipVal(shadowDistance);
 
     const Mat4 inverseViewProj = glm::inverse(viewCamera->GetProjectionMatrix() * viewCamera->GetViewMatrix());
@@ -337,7 +346,11 @@ namespace ToolKit
     ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
     ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
 
-    m_shadowMapMaterial = MakeNewPtr<Material>();
+    if (m_shadowMapMaterial == nullptr)
+    {
+      m_shadowMapMaterial = MakeNewPtr<Material>();
+    }
+    m_shadowMapMaterial->UnInit();
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
@@ -363,11 +376,7 @@ namespace ToolKit
 
   TKDefineClass(SpotLight, Light);
 
-  SpotLight::SpotLight()
-  {
-    AddComponent<DirectionComponent>();
-    m_volumeMesh = MakeNewPtr<Mesh>();
-  }
+  SpotLight::SpotLight() {}
 
   SpotLight::~SpotLight() {}
 
@@ -387,10 +396,14 @@ namespace ToolKit
   void SpotLight::InitShadowMapDepthMaterial()
   {
     // Create shadow material
-    ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
-    ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
+    ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
+    ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
 
-    m_shadowMapMaterial = MakeNewPtr<Material>();
+    if (m_shadowMapMaterial == nullptr)
+    {
+      m_shadowMapMaterial = MakeNewPtr<Material>();
+    }
+    m_shadowMapMaterial->UnInit();
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
@@ -413,6 +426,10 @@ namespace ToolKit
   void SpotLight::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    AddComponent<DirectionComponent>();
+    m_volumeMesh = MakeNewPtr<Mesh>();
+
     MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
   }
 

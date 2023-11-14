@@ -36,6 +36,7 @@
 
 #include <Common/SDLEventPool.h>
 #include <Common/Win32Utils.h>
+#include <FileManager.h>
 #include <GlErrorReporter.h>
 #include <Meta.h>
 #include <PluginManager.h>
@@ -239,8 +240,10 @@ namespace ToolKit
             g_proxy->m_sceneManager = new EditorSceneManager();
             g_proxy->Init();
 
+            GetFileManager()->m_ignorePakFile = true;
+
             // Register Custom Classes.
-            ObjectFactory* of = g_proxy->m_objectFactory;
+            ObjectFactory* of                 = g_proxy->m_objectFactory;
             of->Register<Grid>();
             of->Register<Anchor>();
             of->Register<Cursor>();
@@ -275,16 +278,16 @@ namespace ToolKit
             of->m_metaProcessorMap[MenuMetaKey] = [](StringView val) -> void
             {
               bool exist = false;
-              for (String& meta : g_app->m_customObjectMetaValues) 
+              for (String& meta : g_app->m_customObjectMetaValues)
               {
-                if (meta == val) 
+                if (meta == val)
                 {
                   exist = true;
                   break;
                 }
               }
 
-              if (!exist) 
+              if (!exist)
               {
                 g_app->m_customObjectMetaValues.push_back(String(val));
                 g_app->ReconstructDynamicMenus();

@@ -148,7 +148,11 @@ namespace ToolKit
   {
     m_materialList.clear();
     MeshComponentPtrArray meshComps;
-    m_entity->GetComponent<MeshComponent>(meshComps);
+
+    if (EntityPtr owner = OwnerEntity())
+    {
+      owner->GetComponent<MeshComponent>(meshComps);
+    }
 
     for (MeshComponentPtr meshComp : meshComps)
     {
@@ -170,7 +174,7 @@ namespace ToolKit
   {
     if (m_materialList.empty())
     {
-      if (const MeshComponentPtr& mc = m_entity->GetMeshComponent())
+      if (const MeshComponentPtr& mc = OwnerEntity()->GetMeshComponent())
       {
         if (MeshPtr m = mc->GetMeshVal())
         {
@@ -189,7 +193,7 @@ namespace ToolKit
     }
 
     // Worst case, a default material.
-    return GetMaterialManager()->GetCopyOfDefaultMaterial();
+    return GetMaterialManager()->GetCopyOfDefaultMaterial(false);
   }
 
   void MaterialComponent::SetFirstMaterial(const MaterialPtr& material)

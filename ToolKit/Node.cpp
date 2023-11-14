@@ -35,7 +35,13 @@
 namespace ToolKit
 {
 
-  Node::Node() { m_id = GetHandleManager()->GetNextHandle(); }
+  Node::Node() : m_scale(Vec3(1.0f))
+  {
+    m_id           = GetHandleManager()->GenerateHandle();
+    m_parent       = nullptr;
+    m_inheritScale = false;
+    m_dirty        = true;
+  }
 
   Node::~Node()
   {
@@ -43,6 +49,11 @@ namespace ToolKit
     for (int i = static_cast<int>(m_children.size()) - 1; i >= 0; i--)
     {
       Orphan(m_children[i], true);
+    }
+
+    if (HandleManager* handleManager = GetHandleManager())
+    {
+      handleManager->ReleaseHandle(m_id);
     }
   }
 
@@ -263,6 +274,18 @@ namespace ToolKit
     node->m_scale        = m_scale;
 
     return node;
+  }
+
+  EntityPtr Node::ParentEntity()
+  {
+    if (m_parent != nullptr)
+    {
+      if (EntityPtr parentNtt = m_parent->m_entity.lock())
+      {
+        return parentNtt;
+      }
+    }
+    return nullptr;
   }
 
   XmlNode* Node::SerializeImp(XmlDocument* doc, XmlNode* parent) const
