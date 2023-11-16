@@ -172,7 +172,7 @@ namespace ToolKit
 
     EditorDirectionalLight::~EditorDirectionalLight() {}
 
-    TKObjectPtr EditorDirectionalLight::Copy() const
+    ObjectPtr EditorDirectionalLight::Copy() const
     {
       EditorDirectionalLightPtr cpy = MakeNewPtr<EditorDirectionalLight>();
       WeakCopy(cpy.get(), false);
@@ -255,7 +255,7 @@ namespace ToolKit
       ParamRadius().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
     }
 
-    TKObjectPtr EditorPointLight::Copy() const
+    ObjectPtr EditorPointLight::Copy() const
     {
       EditorPointLightPtr cpy = MakeNewPtr<EditorPointLight>();
       WeakCopy(cpy.get(), false);
@@ -303,7 +303,7 @@ namespace ToolKit
       ParamInnerAngle().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
     }
 
-    TKObjectPtr EditorSpotLight::Copy() const
+    ObjectPtr EditorSpotLight::Copy() const
     {
       EditorSpotLightPtr cpy = MakeNewPtr<EditorSpotLight>();
       WeakCopy(cpy.get(), false);

@@ -175,7 +175,6 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="TKImage.h" />
     <ClInclude Include="TKProfiler.h" />
-    <ClInclude Include="TKSocket.h" />
     <ClInclude Include="ToneMapPass.h" />
     <ClInclude Include="AdditiveLightingPass.h" />
     <ClInclude Include="ToolKit.h" />

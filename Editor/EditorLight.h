@@ -83,7 +83,7 @@ namespace ToolKit
 
       EditorDirectionalLight();
       virtual ~EditorDirectionalLight();
-      TKObjectPtr Copy() const override;
+      ObjectPtr Copy() const override;
       LineBatchPtr GetDebugShadowFrustum();
 
      protected:
@@ -100,7 +100,7 @@ namespace ToolKit
 
       EditorPointLight();
       virtual ~EditorPointLight();
-      TKObjectPtr Copy() const override;
+      ObjectPtr Copy() const override;
 
      protected:
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
@@ -117,7 +117,7 @@ namespace ToolKit
 
       EditorSpotLight();
       virtual ~EditorSpotLight();
-      TKObjectPtr Copy() const override;
+      ObjectPtr Copy() const override;
 
      protected:
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;

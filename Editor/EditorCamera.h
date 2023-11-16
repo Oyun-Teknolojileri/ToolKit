@@ -44,7 +44,7 @@ namespace ToolKit
       virtual ~EditorCamera();
 
       void NativeConstruct() override;
-      TKObjectPtr Copy() const override;
+      ObjectPtr Copy() const override;
       void GenerateFrustum();
 
      protected:

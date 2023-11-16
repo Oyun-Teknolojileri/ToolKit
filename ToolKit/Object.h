@@ -37,7 +37,10 @@ namespace ToolKit
   // String Hash Utilities.
   ///////////////////////////////////////////////////////
 
-  // https://github.com/explosion/murmurhash/blob/master/murmurhash/MurmurHash2.cpp#L130
+  /**
+   * 64 bit hash function for strings.
+   * https://github.com/explosion/murmurhash/blob/master/murmurhash/MurmurHash2.cpp#L130
+   */
   constexpr uint64_t MurmurHash64A(const void* key, int len, uint64_t seed)
   {
     const uint64_t m     = 0xc6a4a7935bd1e995;
@@ -88,6 +91,13 @@ namespace ToolKit
     return h;
   }
 
+  // Object
+  ///////////////////////////////////////////////////////
+
+  /**
+   * Base Macro that declares required fields and functions for each class that will be part of
+   * ToolKit framework.
+   */
 #define TKDeclareClassBase(This, Base)                                                                                 \
  private:                                                                                                              \
   static ClassMeta This##Cls;                                                                                          \
@@ -99,13 +109,19 @@ namespace ToolKit
 
 #define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Object::NativeConstruct;
 
+  /**
+   * Defines all the
+   */
 #define TKDefineClass(This, Base)                                                                                      \
   ClassMeta This::This##Cls = {Base::StaticClass(), #This, MurmurHash64A(#This, sizeof(#This), 41)};                   \
   ClassMeta* const This::Class() const { return &This##Cls; }
 
-  typedef std::shared_ptr<class Object> TKObjectPtr;
+  typedef std::shared_ptr<class Object> ObjectPtr;
   typedef std::weak_ptr<class Object> ObjectWeakPtr;
 
+  /**
+   * This base class provides basic reflection, type checking and serialization functionalities for ToolKit framework.
+   */
   class TK_API Object : public Serializable
   {
     TKDeclareClassBase(Object, Object);
@@ -121,7 +137,7 @@ namespace ToolKit
     virtual ~Object();
     virtual void NativeConstruct();
     virtual void NativeDestruct();
-    virtual TKObjectPtr Copy() const;
+    virtual ObjectPtr Copy() const;
 
     template <typename T>
     bool IsA()
@@ -140,7 +156,7 @@ namespace ToolKit
       return nullptr;
     }
 
-    bool IsSame(TKObjectPtr other) { return other->GetIdVal() == GetIdVal(); }
+    bool IsSame(ObjectPtr other) { return other->GetIdVal() == GetIdVal(); }
 
     bool IsSame(Object* other) { return other->GetIdVal() == GetIdVal(); }
 

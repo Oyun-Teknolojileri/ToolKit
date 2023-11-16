@@ -143,7 +143,7 @@ namespace ToolKit
     return aabb;
   }
 
-  TKObjectPtr Entity::Copy() const
+  ObjectPtr Entity::Copy() const
   {
     EntityPtr cpy = MakeNewPtrCasted<Entity>(Class()->Name);
     CopyTo(cpy.get());

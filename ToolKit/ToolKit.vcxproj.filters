@@ -16,6 +16,12 @@
     <ClCompile Include="ToolKit.cpp" />
     <ClCompile Include="Util.cpp" />
     <ClCompile Include="Viewport.cpp" />
+    <ClCompile Include="GpuProgram.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="TKImage.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
     <ClCompile Include="AnimationControllerComponent.cpp">
       <Filter>Component</Filter>
     </ClCompile>
@@ -28,22 +34,31 @@
     <ClCompile Include="EnvironmentComponent.cpp">
       <Filter>Component</Filter>
     </ClCompile>
-    <ClCompile Include="MaterialComponent.cpp">
+    <ClCompile Include="ResourceComponent.cpp">
       <Filter>Component</Filter>
     </ClCompile>
     <ClCompile Include="MeshComponent.cpp">
       <Filter>Component</Filter>
     </ClCompile>
-    <ClCompile Include="ResourceComponent.cpp">
+    <ClCompile Include="MaterialComponent.cpp">
       <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletonComponent.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Resource</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Entity</Filter>
     </ClCompile>
-    <ClCompile Include="Entity.cpp">
+    <ClCompile Include="Drawable.cpp">
       <Filter>Entity</Filter>
     </ClCompile>
-    <ClCompile Include="GradientSky.cpp">
+    <ClCompile Include="Entity.cpp">
       <Filter>Entity</Filter>
     </ClCompile>
     <ClCompile Include="Light.cpp">
@@ -58,6 +73,9 @@
     <ClCompile Include="Sky.cpp">
       <Filter>Entity</Filter>
     </ClCompile>
+    <ClCompile Include="GradientSky.cpp">
+      <Filter>Entity</Filter>
+    </ClCompile>
     <ClCompile Include="BloomPass.cpp">
       <Filter>Render\PostProcessPass</Filter>
     </ClCompile>
@@ -70,14 +88,17 @@
     <ClCompile Include="GammaPass.cpp">
       <Filter>Render\PostProcessPass</Filter>
     </ClCompile>
-    <ClCompile Include="PostProcessPass.cpp">
+    <ClCompile Include="SsaoPass.cpp">
       <Filter>Render\PostProcessPass</Filter>
     </ClCompile>
-    <ClCompile Include="SsaoPass.cpp">
+    <ClCompile Include="PostProcessPass.cpp">
       <Filter>Render\PostProcessPass</Filter>
     </ClCompile>
     <ClCompile Include="ToneMapPass.cpp">
       <Filter>Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="AdditiveLightingPass.cpp">
+      <Filter>Render\RenderPass</Filter>
     </ClCompile>
     <ClCompile Include="BillboardPass.cpp">
       <Filter>Render\RenderPass</Filter>
@@ -85,10 +106,10 @@
     <ClCompile Include="CubemapPass.cpp">
       <Filter>Render\RenderPass</Filter>
     </ClCompile>
-    <ClCompile Include="DeferredPass.cpp">
+    <ClCompile Include="ForwardPass.cpp">
       <Filter>Render\RenderPass</Filter>
     </ClCompile>
-    <ClCompile Include="ForwardPass.cpp">
+    <ClCompile Include="ForwardPreProcessPass.cpp">
       <Filter>Render\RenderPass</Filter>
     </ClCompile>
     <ClCompile Include="FullQuadPass.cpp">
@@ -100,59 +121,41 @@
     <ClCompile Include="OutlinePass.cpp">
       <Filter>Render\RenderPass</Filter>
     </ClCompile>
-    <ClCompile Include="Pass.cpp">
+    <ClCompile Include="ShadowPass.cpp">
       <Filter>Render\RenderPass</Filter>
     </ClCompile>
-    <ClCompile Include="ShadowPass.cpp">
+    <ClCompile Include="Pass.cpp">
       <Filter>Render\RenderPass</Filter>
     </ClCompile>
     <ClCompile Include="StencilPass.cpp">
       <Filter>Render\RenderPass</Filter>
-    </ClCompile>
-    <ClCompile Include="GlErrorReporter.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
-    <ClCompile Include="GpuProgram.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderSystem.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderState.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneRenderPath.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
-    <ClCompile Include="AdditiveLightingPass.cpp">
-      <Filter>Render\RenderPass</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation.cpp">
-      <Filter>Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="Audio.cpp">
-      <Filter>Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="DataTexture.cpp">
-      <Filter>Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="ForwardPreProcessPass.cpp">
-      <Filter>Render\RenderPass</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="Framebuffer.cpp">
-      <Filter>Render</Filter>
     </ClCompile>
     <ClCompile Include="MobileSceneRenderPath.cpp">
       <Filter>Render</Filter>
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderState.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderSystem.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneRenderPath.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="TKOpenGL.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="DataTexture.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Resource</Filter>
     </ClCompile>
     <ClCompile Include="Resource.cpp">
       <Filter>Resource</Filter>
@@ -169,19 +172,10 @@
     <ClCompile Include="Skeleton.cpp">
       <Filter>Resource</Filter>
     </ClCompile>
-    <ClCompile Include="Drawable.cpp">
-      <Filter>Entity</Filter>
-    </ClCompile>
-    <ClCompile Include="SkeletonComponent.cpp">
-      <Filter>Component</Filter>
-    </ClCompile>
     <ClCompile Include="SpriteSheet.cpp">
       <Filter>Resource</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
-      <Filter>Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="TKImage.cpp">
       <Filter>Resource</Filter>
     </ClCompile>
     <ClCompile Include="Canvas.cpp">
@@ -193,7 +187,13 @@
     <ClCompile Include="UIManager.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="TKOpenGL.cpp">
+    <ClCompile Include="DeferredPass.cpp">
+      <Filter>Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="Framebuffer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GlErrorReporter.cpp">
       <Filter>Render</Filter>
     </ClCompile>
   </ItemGroup>
@@ -439,7 +439,6 @@
     <ClInclude Include="TKAssert.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="TKProfiler.h" />
-    <ClInclude Include="TKSocket.h" />
     <ClInclude Include="ToolKit.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="Util.h" />

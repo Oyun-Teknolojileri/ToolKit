@@ -51,7 +51,7 @@ namespace ToolKit
       CreateGizmo();
     }
 
-    TKObjectPtr EditorCamera::Copy() const
+    ObjectPtr EditorCamera::Copy() const
     {
       EditorCameraPtr cpy = MakeNewPtr<EditorCamera>();
       Camera::CopyTo(cpy.get());

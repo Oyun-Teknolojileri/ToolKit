@@ -34,8 +34,6 @@
 #include "Object.h"
 #include "Types.h"
 
-#include <unordered_set>
-
 /**
  * Base name space for all the ToolKit functionalities.
  */
@@ -60,7 +58,11 @@ namespace ToolKit
     std::unordered_set<uint64> m_uniqueIDs;
   };
 
-  struct Timing
+  /**
+   * Structure that holds time related data.
+   * Main has one of this which gives current application time.
+   */
+  struct TK_API Timing
   {
     void Init(uint fps);
 
@@ -71,6 +73,9 @@ namespace ToolKit
     int FrameCount    = 0;
   };
 
+  /**
+   * Main class that provides access to all sorts of manager and utility functionalities provided by the Engine.
+   */
   class TK_API Main
   {
    public:
