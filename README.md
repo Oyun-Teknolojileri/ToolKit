@@ -6,7 +6,7 @@
 
 ### Simplicity
 
-Most games, projects using Unity, UE4 or even Godot, don't need all those tools and functionalities. Having a far simple game engine, increases your comprehension of the framework & tools, which in return gives you more freedom to do things your way. This approach may not be suitable for professional game studios, however it is very suitable for indies whom after unique projects.
+Most games, projects using Unity, Unreal Engine or even Godot, don't need all those tools and functionalities. Having a far simple game engine, increases your comprehension of the framework & tools, which in return gives you more freedom to do things your way. This approach may not be suitable for professional game studios, however it is very suitable for indies whom after unique projects.
 
 This project has a unique goal which is keeping all the source code under 50k lines of code excluding dependencies. Instead of adding more capabilities, tools and getting more complicated, ToolKit will be oriented towards simplicity, performance and being/staying modern.
 
@@ -16,13 +16,15 @@ Bringing like minded people together around a project outputs invaluable assets 
 
 ## Platforms
 
-ToolKit does not have any Windows dependency and can be build for Linux and Mac easily. However my main OS is Windows, compiling from source and publishing the created apps will be done from Windows and I don't have any plans to support other OS anytime soon.
-ToolKit can pubish for:
+ToolKit does not have any Windows dependency and can be build for Linux and Mac easily. However the main OS is Windows for the Editor.
 
-- Windows executable
+ToolKit can publish for:
+
+- Windows exe
 - Web html + .wasm or .js
+- Android apk
 
-Although it's possible, publishing to these platforms are not streamlined, still a lot of manual configuration and building is needed. Publishing for Android is on the way.
+All the publishing can be achieved from within the editor via click of a button. However for publishing to given platforms there are required configurations steps and installments such as emscripten and android sdk.
 
 <p align="center">
   <img width="600" src="https://github.com/Oyun-Teknolojileri/ToolKit/blob/Engine/tk_ed_21.gif?raw=true">
@@ -39,8 +41,15 @@ Although it's possible, publishing to these platforms are not streamlined, still
 - Assimp - BSD
 - Zlib - Zlib
 
+## License
+
+ Source code is dual-licensed. It is available under the terms of the GNU Lesser General Public License v3.0 (LGPL-3.0) for open-source use. Additionally, we offer a proprietary license with more permissive terms suitable for commercial applications.
+ For information on using the open-source LGPL v3 license, please refer to the accompanying LICENSE file. If you require a more flexible commercial license for proprietary projects or custom development, please contact us for personalized licensing terms and conditions. 
+
+ [OtSoftware](https://www.otyazilim.com)
+ 
 ## Final Words
 
-Project is in active development. Feel free to play around with it and get in touch with [us](https://www.linkedin.com/company/oyun-teknolojileri)
+Project is in active development. Feel free to play around with it and get in touch with [us](https://www.otyazilim.com)
 
 Enjoy!
