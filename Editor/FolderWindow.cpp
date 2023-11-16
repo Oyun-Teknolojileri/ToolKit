@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "FolderWindow.h"
@@ -174,15 +155,15 @@ namespace ToolKit
         return; // shouldn't happen
       }
 
-      FolderNode& node       = m_folderNodes[index];
-      String icon            = node.active ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
-      String nodeHeader      = icon + ICON_SPACE + node.name;
-      float headerLen        = ImGui::CalcTextSize(nodeHeader.c_str()).x;
+      FolderNode& node        = m_folderNodes[index];
+      String icon             = node.active ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
+      String nodeHeader       = icon + ICON_SPACE + node.name;
+      float headerLen         = ImGui::CalcTextSize(nodeHeader.c_str()).x;
       headerLen              += (depth * 20.0f) + 70.0f; // depth padding + UI start padding
 
-      m_maxTreeNodeWidth     = glm::max(headerLen, m_maxTreeNodeWidth);
+      m_maxTreeNodeWidth      = glm::max(headerLen, m_maxTreeNodeWidth);
 
-      const auto onClickedFn = [&]() -> void
+      const auto onClickedFn  = [&]() -> void
       {
         // find clicked entity
         int selected = Exist(node.path);
