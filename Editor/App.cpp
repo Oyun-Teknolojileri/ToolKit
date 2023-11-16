@@ -638,7 +638,16 @@ namespace ToolKit
       }
 
       // Set back the viewport camera
-      GetActiveViewport()->AttachCamera(NULL_HANDLE);
+      EditorViewport* vp = GetActiveViewport();
+      if (vp == nullptr)
+      {
+        vp = GetViewport(g_3dViewport);
+      }
+
+      if (vp != nullptr)
+      {
+        vp->AttachCamera(NULL_HANDLE);
+      }
     }
 
     int App::ExecSysCommand(StringView cmd, bool async, bool showConsole, SysCommandDoneCallback callback)
