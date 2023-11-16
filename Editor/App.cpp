@@ -636,8 +636,8 @@ namespace ToolKit
       EditorSceneManager* sceneManager = (EditorSceneManager*) GetSceneManager();
       if (ScenePtr scene = sceneManager->GetCurrentScene())
       {
-        scene->ClearEntities();
         sceneFile = scene->GetFile();
+
         sceneManager->Remove(sceneFile);
         scene->Destroy(false);
         sceneManager->SetCurrentScene(nullptr);
