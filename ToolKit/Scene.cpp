@@ -489,14 +489,14 @@ namespace ToolKit
     entity->m_node->m_children = prevNode->m_children;
 
     // Construct prefab.
-    Scene prefab;
-    prefab.AddEntity(entity);
-    GetChildren(entity, prefab.m_entities);
+    ScenePtr prefab            = MakeNewPtr<Scene>();
+    prefab->AddEntity(entity);
+    GetChildren(entity, prefab->m_entities);
     String name = entity->GetNameVal() + SCENE;
-    prefab.SetFile(PrefabPath(name));
-    prefab.m_name = name;
-    prefab.Save(false);
-    prefab.m_entities.clear();
+    prefab->SetFile(PrefabPath(name));
+    prefab->m_name = name;
+    prefab->Save(false);
+    prefab->m_entities.clear();
 
     // Restore the old node.
     entity->m_node->m_children.clear();

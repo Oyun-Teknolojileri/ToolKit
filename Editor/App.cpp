@@ -164,13 +164,13 @@ namespace ToolKit
       PUSH_CPU_MARKER("Exec Render Tasks");
 
       GetRenderSystem()->ExecuteRenderTasks();
-      
+
       POP_CPU_MARKER();
       PUSH_CPU_MARKER("Mod Manager Update");
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
-      
+
       POP_CPU_MARKER();
 
       PUSH_CPU_MARKER("Gather viewports & windows to dispatch signals");
@@ -202,7 +202,6 @@ namespace ToolKit
         }
       }
 
-
       bool playOnSimulationWnd = m_gameMod == GameMod::Playing && m_simulatorSettings.Windowed;
 
       if (playOnSimulationWnd)
@@ -220,7 +219,7 @@ namespace ToolKit
       PUSH_CPU_MARKER("Update Scene");
 
       UpdateSimulation(deltaTime);
-      
+
       POP_CPU_MARKER();
       PUSH_CPU_MARKER("Update Viewports & Add render tasks");
 
@@ -472,10 +471,14 @@ namespace ToolKit
           m_statusMsg = "Game is playing";
           m_gameMod   = mod;
 
+          // Set last active viewport
+          m_lastActiveViewport = GetActiveViewport();
+
           if (m_simulatorSettings.Windowed)
           {
             m_simulationWindow->SetVisibility(true);
           }
+
         }
         else
         {
@@ -636,8 +639,8 @@ namespace ToolKit
       EditorSceneManager* sceneManager = (EditorSceneManager*) GetSceneManager();
       if (ScenePtr scene = sceneManager->GetCurrentScene())
       {
-        scene->ClearEntities();
         sceneFile = scene->GetFile();
+
         sceneManager->Remove(sceneFile);
         scene->Destroy(false);
         sceneManager->SetCurrentScene(nullptr);
@@ -654,6 +657,9 @@ namespace ToolKit
         scene->Init();
         sceneManager->SetCurrentScene(scene);
       }
+
+      // Set back the viewport camera
+      GetActiveViewport()->AttachCamera(NULL_HANDLE);
     }
 
     int App::ExecSysCommand(StringView cmd, bool async, bool showConsole, SysCommandDoneCallback callback)
