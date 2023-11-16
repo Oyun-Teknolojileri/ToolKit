@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
@@ -86,13 +67,17 @@ namespace ToolKit
   enum class GamepadButton : uint
   {
     None          = 0,
-    A             = 1 << 0, Cross    = 1 << 0, //!< (PS) Cross    X  =  (Xbox) A 
-    B             = 1 << 1, Circle   = 1 << 1, //!< (PS) Circle   () =  (Xbox) B 
-    Y             = 1 << 2, Square   = 1 << 2, //!< (PS) Square   [] =  (Xbox) Y 
-    X             = 1 << 3, Triangle = 1 << 3, //!< (PS) Triangle /\ =  (Xbox) X  
-    Back          = 1 << 4, //!< Select 
+    A             = 1 << 0,
+    Cross         = 1 << 0, //!< (PS) Cross    X  =  (Xbox) A
+    B             = 1 << 1,
+    Circle        = 1 << 1, //!< (PS) Circle   () =  (Xbox) B
+    Y             = 1 << 2,
+    Square        = 1 << 2, //!< (PS) Square   [] =  (Xbox) Y
+    X             = 1 << 3,
+    Triangle      = 1 << 3, //!< (PS) Triangle /\ =  (Xbox) X
+    Back          = 1 << 4, //!< Select
     Guide         = 1 << 5, //!< Mode
-    Start         = 1 << 6, 
+    Start         = 1 << 6,
     LeftStick     = 1 << 7,
     RightStick    = 1 << 8,
     LeftShoulder  = 1 << 9,  //!< L1
@@ -101,28 +86,29 @@ namespace ToolKit
     DpadDown      = 1 << 12,
     DpadLeft      = 1 << 13,
     DpadRight     = 1 << 14,
-    Misc1         = 1 << 15, //!< Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button, Amazon Luna microphone button
-    Paddle1       = 1 << 16, //!< Xbox Elite paddle P1 
-    Paddle2       = 1 << 17, //!< Xbox Elite paddle P3 
-    Paddle3       = 1 << 18, //!< Xbox Elite paddle P2 
-    Paddle4       = 1 << 19, //!< Xbox Elite paddle P4 
-    Touchpad      = 1 << 20, //!< PS4/PS5 touchpad button
-    MaxBit        = 1 << 21, //!< You can use when you iterate through bits
-    Count         = 21
+    Misc1 = 1 << 15, //!< Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button, Amazon
+                     //!< Luna microphone button
+    Paddle1  = 1 << 16, //!< Xbox Elite paddle P1
+    Paddle2  = 1 << 17, //!< Xbox Elite paddle P3
+    Paddle3  = 1 << 18, //!< Xbox Elite paddle P2
+    Paddle4  = 1 << 19, //!< Xbox Elite paddle P4
+    Touchpad = 1 << 20, //!< PS4/PS5 touchpad button
+    MaxBit   = 1 << 21, //!< You can use when you iterate through bits
+    Count    = 21
   };
 
   class TK_API GamepadEvent : public Event
   {
    public:
     GamepadEvent() { m_type = EventType::Gamepad; }
-    
+
     enum class StickAxis
     {
-      LeftX       , 
-      LeftY       , 
-      RightX      , 
-      RightY      , 
-      TriggerLeft , 
+      LeftX,
+      LeftY,
+      RightX,
+      RightY,
+      TriggerLeft,
       TriggerRight
     };
 
@@ -132,4 +118,3 @@ namespace ToolKit
   };
 
 } // namespace ToolKit
-

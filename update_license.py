@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Define the directory to start the search from
-root_directory = './Editor'
+root_directory = './ToolKit'
 
 # Define the file extensions to consider
 file_extensions = ['.h', '.cpp']
