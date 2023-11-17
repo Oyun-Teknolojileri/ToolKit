@@ -71,7 +71,7 @@ namespace ToolKit
       ImVec2 overlaySize(300, 30);
 
       // Center the toolbar.
-      float width  = ImGui::GetWindowContentRegionWidth();
+      float width  = ImGui::GetContentRegionAvail().x;
       float offset = (width - overlaySize.x) * 0.5f;
       ImGui::SameLine(offset);
 
