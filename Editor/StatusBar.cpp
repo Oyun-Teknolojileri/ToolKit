@@ -86,7 +86,7 @@ namespace ToolKit
         }
 
         ImVec2 msgSize = ImGui::CalcTextSize(g_app->m_statusMsg.c_str());
-        float wndWidth = ImGui::GetWindowContentRegionWidth();
+        float wndWidth = ImGui::GetContentRegionAvail().x;
 
         // If there is enough space for info.
         if (wndWidth * 0.3f > msgSize.x)
