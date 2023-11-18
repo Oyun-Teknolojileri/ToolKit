@@ -364,13 +364,6 @@ namespace ToolKit
           g_app->Frame(timer->CurrentTime - timer->LastTime);
 
           POP_CPU_MARKER();
-          PUSH_CPU_MARKER("Update Imgui Windows");
-
-          // Update Present imgui windows.
-          ImGui::UpdatePlatformWindows();
-          ImGui::RenderPlatformWindowsDefault();
-
-          POP_CPU_MARKER();
           PUSH_CPU_MARKER("Swap Window");
 
           SDL_GL_SwapWindow(g_window);

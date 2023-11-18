@@ -14,6 +14,7 @@
 #include "PopupWindows.h"
 
 #include <Audio.h>
+#include <GlErrorReporter.h>
 #include <GradientSky.h>
 #include <ImGui/backends/imgui_impl_opengl3.h>
 #include <ImGui/backends/imgui_impl_sdl2.h>
@@ -551,10 +552,13 @@ namespace ToolKit
     void UI::EndUI()
     {
       ImGui::Render();
-
+      
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
+      
       ImGui::EndFrame();
+
+      ImGui::UpdatePlatformWindows();
+      ImGui::RenderPlatformWindowsDefault();
 
       // UI deferred functions.
       for (auto& action : m_postponedActions)

@@ -106,6 +106,8 @@ namespace ToolKit
      */
     void InitGl(void* glGetProcAddres, GlReportCallback callback = nullptr);
 
+
+
     inline bool IsGammaCorrectionNeeded() { return !m_backbufferFormatIsSRGB; }
 
     void TestSRGBBackBuffer();
