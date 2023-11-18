@@ -48,12 +48,3 @@
 #include "Logger.h"
 #include "Serialize.h"
 #include "ToolKit.h"
-
-#ifdef TK_EDITOR
-
-  #include "ImGui/imgui.h"
-  #include "ImGui/misc/cpp/imgui_stdlib.h"
-  #include "Imgui/backends/imgui_impl_opengl3.h"
-  #include "Imgui/backends/imgui_impl_sdl2.h"
-
-#endif

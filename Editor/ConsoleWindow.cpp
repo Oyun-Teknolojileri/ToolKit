@@ -13,6 +13,7 @@
 
 #include <DirectionComponent.h>
 #include <Drawable.h>
+#include <Mesh.h>
 #include <PluginManager.h>
 
 #include <DebugNew.h>

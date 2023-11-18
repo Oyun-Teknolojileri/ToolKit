@@ -10,9 +10,10 @@
 #include "App.h"
 #include "ComponentView.h"
 #include "MultiChoiceWindow.h"
-#include "Prefab.h"
 
 #include <Material.h>
+#include <Mesh.h>
+#include <Prefab.h>
 
 #include <DebugNew.h>
 

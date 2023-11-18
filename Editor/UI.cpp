@@ -15,6 +15,8 @@
 
 #include <Audio.h>
 #include <GradientSky.h>
+#include <ImGui/backends/imgui_impl_opengl3.h>
+#include <ImGui/backends/imgui_impl_sdl2.h>
 #include <MathUtil.h>
 #include <Prefab.h>
 #include <Sky.h>
@@ -25,6 +27,10 @@ namespace ToolKit
 {
   namespace Editor
   {
+
+    const float g_indentSpacing = 6.0f;
+    const int g_treeNodeFlags   = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+                                ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap;
 
     bool UI::m_windowMenushowMetrics = false;
     bool UI::m_imguiSampleWindow     = false;

@@ -8,21 +8,21 @@
 #pragma once
 
 #include "IconsFontAwesome.h"
-#include "ImGui/imgui.h"
-#include "Object.h"
+
+#include <ImGui/imgui.h>
+#include <ImGui/misc/cpp/imgui_stdlib.h>
+#include <Object.h>
+#include <Types.h>
 
 namespace ToolKit
 {
-
-  // Global Style Decelerations
-  static const ImGuiTreeNodeFlags g_treeNodeFlags =
-      ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth |
-      ImGuiTreeNodeFlags_AllowItemOverlap;
-
-  const float g_indentSpacing = 6.0f;
-
   namespace Editor
   {
+
+    // Global Style Decelerations
+    extern const float g_indentSpacing;
+    extern const int g_treeNodeFlags;
+
     enum class Theme
     {
       Light = 1,

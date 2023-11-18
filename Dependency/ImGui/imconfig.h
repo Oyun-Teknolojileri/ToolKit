@@ -119,6 +119,8 @@
   }                                                                                                                    \
   operator glm::vec4() const { return glm::vec4(x, y, z, w); }
 
+#define TK_DISABLE_POLYGON_MODE
+
 //---- ...Or use Dear ImGui's own very basic math operators.
 //#define IMGUI_DEFINE_MATH_OPERATORS
 

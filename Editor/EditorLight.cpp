@@ -8,6 +8,7 @@
 #include "EditorLight.h"
 
 #include "App.h"
+#include "LightMeshGenerator.h"
 
 #include <DirectionComponent.h>
 #include <Light.h>

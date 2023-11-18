@@ -14,6 +14,7 @@
 #include <Canvas.h>
 #include <Material.h>
 #include <MathUtil.h>
+#include <Mesh.h>
 
 #include <DebugNew.h>
 

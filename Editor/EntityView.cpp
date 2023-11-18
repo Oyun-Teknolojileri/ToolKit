@@ -16,6 +16,7 @@
 #include <GradientSky.h>
 #include <Material.h>
 #include <MathUtil.h>
+#include <Mesh.h>
 #include <Prefab.h>
 
 #include <DebugNew.h>

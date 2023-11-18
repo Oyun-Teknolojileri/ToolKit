@@ -20,6 +20,7 @@
 #include <FileManager.h>
 #include <GradientSky.h>
 #include <Material.h>
+#include <Mesh.h>
 #include <Prefab.h>
 
 #include <DebugNew.h>

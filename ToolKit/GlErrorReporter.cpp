@@ -17,7 +17,6 @@ namespace ToolKit
 
   void InitGLErrorReport(GlReportCallback callback)
   {
-#ifdef TK_GL_CORE_3_2
     if (glDebugMessageCallback != NULL)
     {
       glEnable(GL_DEBUG_OUTPUT);
@@ -26,7 +25,6 @@ namespace ToolKit
       glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
       glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DEBUG_SEVERITY_HIGH, 0, NULL, GL_TRUE);
     }
-#endif
 
     if (callback)
     {

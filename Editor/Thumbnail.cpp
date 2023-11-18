@@ -11,6 +11,7 @@
 
 #include <Camera.h>
 #include <Material.h>
+#include <Mesh.h>
 #include <Surface.h>
 
 #include <DebugNew.h>

@@ -19,6 +19,7 @@
 #include <DirectionComponent.h>
 #include <Material.h>
 #include <MathUtil.h>
+#include <Mesh.h>
 #include <MeshComponent.h>
 #include <Prefab.h>
 

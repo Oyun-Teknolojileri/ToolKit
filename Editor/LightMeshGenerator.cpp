@@ -9,10 +9,11 @@
 
 #include "EditorLight.h"
 #include "Global.h"
-#include "Primative.h"
-#include "Types.h"
 
-#include "DebugNew.h"
+#include <Primative.h>
+#include <Types.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {

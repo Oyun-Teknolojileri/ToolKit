@@ -113,9 +113,13 @@
     <ClCompile Include="Gizmo.cpp" />
     <ClCompile Include="GizmoPass.cpp" />
     <ClCompile Include="Grid.cpp" />
-    <ClCompile Include="LeftBar.cpp" />
+    <ClCompile Include="LeftBar.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">50</OrderInUnityFile>
+    </ClCompile>
     <ClCompile Include="LightMeshGenerator.cpp" />
-    <ClCompile Include="MaterialView.cpp" />
+    <ClCompile Include="MaterialView.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">50</OrderInUnityFile>
+    </ClCompile>
     <ClCompile Include="MeshView.cpp" />
     <ClCompile Include="MultiChoiceWindow.cpp">
       <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">101</OrderInUnityFile>
@@ -135,7 +139,9 @@
     <ClCompile Include="TopBar2d.cpp" />
     <ClCompile Include="TransformMod.cpp" />
     <ClCompile Include="EditorScene.cpp" />
-    <ClCompile Include="UI.cpp" />
+    <ClCompile Include="UI.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">50</OrderInUnityFile>
+    </ClCompile>
     <ClCompile Include="main.cpp">
       <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">50</OrderInUnityFile>
     </ClCompile>
