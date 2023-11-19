@@ -711,7 +711,12 @@ namespace ToolKit
             popColor = true;
           }
 
-          ImGui::TextUnformatted(item.c_str());
+          ImGui::PushID((int) i);
+          ImGui::PushItemWidth(-1.0f);
+          ImGui::InputText("##txt", const_cast<char*>(item.c_str()), item.size(), ImGuiInputTextFlags_ReadOnly);
+          ImGui::PopItemWidth();
+          ImGui::PopID();
+
           if (popColor)
           {
             ImGui::PopStyleColor();

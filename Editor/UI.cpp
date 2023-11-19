@@ -552,9 +552,9 @@ namespace ToolKit
     void UI::EndUI()
     {
       ImGui::Render();
-      
+
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-      
+
       ImGui::EndFrame();
 
       ImGui::UpdatePlatformWindows();
@@ -738,7 +738,7 @@ namespace ToolKit
 
       if (PluginWindow* wnd = g_app->GetWindow<PluginWindow>("Plugin"))
       {
-        if (ImGui::MenuItem("Plugin Window", "", nullptr, !wnd->IsVisible()))
+        if (ImGui::MenuItem("Simulation Window", "", nullptr, !wnd->IsVisible()))
         {
           wnd->SetVisibility(true);
         }
