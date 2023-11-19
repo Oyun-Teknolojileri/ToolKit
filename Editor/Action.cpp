@@ -1,36 +1,18 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Action.h"
 
-#include "AnimationControllerComponent.h"
 #include "App.h"
-#include "Prefab.h"
 
-#include "DebugNew.h"
+#include <AnimationControllerComponent.h>
+#include <Prefab.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -51,9 +33,10 @@ namespace ToolKit
       m_group.clear();
     }
 
-    DeleteAction::DeleteAction(Entity* ntt)
+    DeleteAction::DeleteAction(EntityPtr ntt)
     {
-      m_ntt = ntt;
+      m_parentId = NULL_HANDLE;
+      m_ntt      = ntt;
       Redo();
     }
 
@@ -61,21 +44,19 @@ namespace ToolKit
     {
       if (m_actionComitted)
       {
-        SafeDel(m_ntt);
+        m_ntt = nullptr;
       }
     }
 
-    void HandleCompSpecificOps(Entity* ntt, bool isActionCommitted)
+    void HandleCompSpecificOps(EntityPtr ntt, bool isActionCommitted)
     {
       if (isActionCommitted)
       {
-        AnimControllerComponentPtr comp = ntt->GetComponent<AnimControllerComponent>();
-        if (comp)
+        if (AnimControllerComponentPtr comp = ntt->GetComponent<AnimControllerComponent>())
         {
           comp->Stop();
         }
       }
-      else {}
     }
 
     void DeleteAction::Undo()
@@ -83,17 +64,18 @@ namespace ToolKit
       assert(m_ntt != nullptr);
 
       EditorScenePtr currScene = g_app->GetCurrentScene();
-      if (m_ntt->GetType() == EntityType::Entity_Prefab)
+      if (m_ntt->IsA<Prefab>())
       {
-        static_cast<Prefab*>(m_ntt)->Link();
+        static_cast<Prefab*>(m_ntt.get())->Link();
       }
       currScene->AddEntity(m_ntt);
+
       if (m_parentId != NULL_HANDLE)
       {
-        if (Entity* pEntt = currScene->GetEntity(m_parentId))
+        if (EntityPtr parent = currScene->GetEntity(m_parentId))
         {
           m_ntt->m_node->OrphanSelf();
-          pEntt->m_node->AddChild(m_ntt->m_node);
+          parent->m_node->AddChild(m_ntt->m_node);
         }
       }
 
@@ -105,23 +87,23 @@ namespace ToolKit
     {
       if (Node* pNode = m_ntt->m_node->m_parent)
       {
-        if (pNode->m_entity)
+        if (EntityPtr ntt = pNode->OwnerEntity())
         {
-          m_parentId = pNode->m_entity->GetIdVal();
+          m_parentId = ntt->GetIdVal();
         }
         pNode->Orphan(m_ntt->m_node);
       }
 
       g_app->GetCurrentScene()->RemoveEntity(m_ntt->GetIdVal());
-      if (m_ntt->GetType() == EntityType::Entity_Prefab)
+      if (m_ntt->IsA<Prefab>())
       {
-        static_cast<Prefab*>(m_ntt)->Unlink();
+        static_cast<Prefab*>(m_ntt.get())->Unlink();
       }
       m_actionComitted = true;
       HandleCompSpecificOps(m_ntt, m_actionComitted);
     }
 
-    CreateAction::CreateAction(Entity* ntt)
+    CreateAction::CreateAction(EntityPtr ntt)
     {
       m_ntt                    = ntt;
       m_actionComitted         = true;
@@ -134,7 +116,7 @@ namespace ToolKit
     {
       if (!m_actionComitted)
       {
-        SafeDel(m_ntt);
+        m_ntt = nullptr;
       }
     }
 
@@ -164,35 +146,30 @@ namespace ToolKit
     DeleteComponentAction::DeleteComponentAction(ComponentPtr com)
     {
       m_com = com;
-      switch (com->GetType())
+      if (AnimControllerComponent* ac = com->As<AnimControllerComponent>())
       {
-      case ComponentType::AnimControllerComponent:
-      {
-        reinterpret_cast<AnimControllerComponent*>(com.get())->Stop();
+        ac->Stop();
       }
-      break;
-      default:
-        break;
-      };
+
       Redo();
     }
 
     void DeleteComponentAction::Undo()
     {
-      if (m_com->m_entity)
+      if (EntityPtr owner = m_com->OwnerEntity())
       {
-        m_com->m_entity->AddComponent(m_com);
-      }
+        owner->AddComponent(m_com);
 
-      EditorScenePtr currScene = g_app->GetCurrentScene();
-      currScene->ValidateBillboard(m_com->m_entity);
+        EditorScenePtr currScene = g_app->GetCurrentScene();
+        currScene->ValidateBillboard(m_com->OwnerEntity());
+      }
     }
 
     void DeleteComponentAction::Redo()
     {
-      if (m_com->m_entity)
+      if (EntityPtr owner = m_com->OwnerEntity())
       {
-        m_com->m_entity->RemoveComponent(m_com->m_id);
+        owner->RemoveComponent(m_com->GetIdVal());
       }
     }
 

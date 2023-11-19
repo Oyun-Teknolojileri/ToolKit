@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "MeshComponent.h"
@@ -35,22 +16,15 @@
 namespace ToolKit
 {
 
-  MeshComponent::MeshComponent()
-  {
-    Mesh_Define(std::make_shared<ToolKit::Mesh>(),
-                MeshComponentCategory.Name,
-                MeshComponentCategory.Priority,
-                true,
-                true);
+  TKDefineClass(MeshComponent, Component);
 
-    CastShadow_Define(true, MeshComponentCategory.Name, MeshComponentCategory.Priority, true, true);
-  }
+  MeshComponent::MeshComponent() {}
 
   MeshComponent::~MeshComponent() {}
 
-  ComponentPtr MeshComponent::Copy(Entity* ntt)
+  ComponentPtr MeshComponent::Copy(EntityPtr ntt)
   {
-    MeshComponentPtr mc = std::make_shared<MeshComponent>();
+    MeshComponentPtr mc = MakeNewPtr<MeshComponent>();
     mc->m_localData     = m_localData;
     mc->m_entity        = ntt;
     return mc;
@@ -58,7 +32,7 @@ namespace ToolKit
 
   BoundingBox MeshComponent::GetAABB()
   {
-    SkeletonComponentPtr skelComp = m_entity->GetComponent<SkeletonComponent>();
+    SkeletonComponentPtr skelComp = OwnerEntity()->GetComponent<SkeletonComponent>();
     if (skelComp && GetMeshVal()->IsSkinned())
     {
       SkinMesh* skinMesh = (SkinMesh*) GetMeshVal().get();
@@ -73,5 +47,22 @@ namespace ToolKit
   }
 
   void MeshComponent::Init(bool flushClientSideArray) { GetMeshVal()->Init(flushClientSideArray); }
+
+  XmlNode* MeshComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
+  void MeshComponent::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
+
+    Mesh_Define(MakeNewPtr<Mesh>(), MeshComponentCategory.Name, MeshComponentCategory.Priority, true, true);
+
+    CastShadow_Define(true, MeshComponentCategory.Name, MeshComponentCategory.Priority, true, true);
+  }
 
 } // namespace ToolKit

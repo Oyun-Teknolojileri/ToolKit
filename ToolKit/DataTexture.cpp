@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "DataTexture.h"
@@ -29,23 +10,29 @@
 #include "DirectionComponent.h"
 #include "Light.h"
 #include "Renderer.h"
-#include "gles2.h"
+#include "TKOpenGL.h"
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
+  // DataTexture
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(DataTexture, Texture);
+
   DataTexture::DataTexture() {}
 
   void DataTexture::Load() { assert(false); }
 
   void DataTexture::Clear() { assert(false); }
 
-  DataTexture::DataTexture(int width, int height)
+  void DataTexture::NativeConstruct(int width, int height)
   {
+    Super::NativeConstruct();
+
     m_width  = width;
     m_height = height;
-
     m_loaded = true;
   }
 
@@ -77,6 +64,11 @@ namespace ToolKit
     m_initiated = false;
   }
 
+  // LightDataTexture
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(LightDataTexture, Resource);
+
   LightDataTexture::LightDataTexture() {}
 
   bool LightDataTexture::IncrementDataIndex(int& index, int amount)
@@ -86,11 +78,9 @@ namespace ToolKit
     return (bool) verticalIndex;
   }
 
-  LightDataTexture::LightDataTexture(int width, int height) : DataTexture(width, height) {}
-
   void LightDataTexture::Init(bool flushClientSideArray) { DataTexture::Init(flushClientSideArray); }
 
-  void LightDataTexture::UpdateTextureData(LightRawPtrArray& lights,
+  void LightDataTexture::UpdateTextureData(LightPtrArray& lights,
                                            Vec2& shadowDirLightIndexInterval,
                                            Vec2& shadowPointLightIndexInterval,
                                            Vec2& shadowSpotLightIndexInterval,
@@ -112,56 +102,14 @@ namespace ToolKit
     // 5- Shadow caster spot lights
     // 6- Non shadow caster spot lights
 
-    auto sortByType = [](const Light* l1, const Light* l2) -> bool
-    {
-      EntityType t1 = l1->GetType();
-      EntityType t2 = l2->GetType();
+    auto sortByType = [](const LightPtr l1, const LightPtr l2) -> bool
+    { return l1->ComparableType() < l2->ComparableType(); };
 
-      if (t1 == EntityType::Entity_DirectionalLight)
-      {
-        if (t2 == EntityType::Entity_DirectionalLight)
-        {
-          return false;
-        }
-        else
-        {
-          return true;
-        }
-      }
-      else if (t1 == EntityType::Entity_PointLight)
-      {
-        if (t2 == EntityType::Entity_DirectionalLight || t2 == EntityType::Entity_PointLight)
-        {
-          return false;
-        }
-        else
-        {
-          return true;
-        }
-      }
-      else if (t1 == EntityType::Entity_SpotLight)
-      {
-        return false;
-      }
-      else
-      {
-        return false; // Never comes here
-      }
-    };
-
-    auto sortByShadow = [](const Light* l1, const Light* l2) -> bool
+    auto sortByShadow = [](const LightPtr l1, const LightPtr l2) -> bool
     {
       bool s1 = l1->GetCastShadowVal();
       bool s2 = l2->GetCastShadowVal();
-
-      if (s2)
-      {
-        return false;
-      }
-      else
-      {
-        return s1;
-      }
+      return s2 ? false : s1;
     };
 
     std::stable_sort(lights.begin(), lights.end(), sortByShadow);
@@ -206,7 +154,7 @@ namespace ToolKit
     // element in 4 slotted memory (rgba).
 
     float i    = 0.0f;
-    for (Light* light : lights)
+    for (LightPtr light : lights)
     {
       bool shadow = false;
       if (light->GetCastShadowVal())
@@ -214,11 +162,10 @@ namespace ToolKit
         shadow = light->GetCastShadowVal();
       }
 
-      EntityType type   = light->GetType();
       float currentSize = 0.0f;
 
       // Point light
-      if (type == EntityType::Entity_PointLight)
+      if (PointLight* pLight = light->As<PointLight>())
       {
         // Check data texture limits
         int size = shadow ? (int) pointShadowSize : (int) pointNonShadowSize;
@@ -227,10 +174,10 @@ namespace ToolKit
           break;
         }
 
-        Vec3 color      = light->GetColorVal();
-        float intensity = light->GetIntensityVal();
-        Vec3 pos        = light->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        float radius    = static_cast<PointLight*>(light)->GetRadiusVal();
+        Vec3 color      = pLight->GetColorVal();
+        float intensity = pLight->GetIntensityVal();
+        Vec3 pos        = pLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        float radius    = pLight->GetRadiusVal();
 
         // type
         float t         = 2.0f;
@@ -256,7 +203,7 @@ namespace ToolKit
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow atlas coordinates
-          const Vec2 coord = light->m_shadowAtlasCoord / (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+          const Vec2 coord = light->m_shadowAtlasCoord / (float) Renderer::RHIConstants::ShadowAtlasTextureSize;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &coord.x);
           yIndex            = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -266,7 +213,7 @@ namespace ToolKit
           yIndex               = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow atlas resolution ratio
-          const float resRatio = light->GetShadowResVal() / Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+          const float resRatio = light->GetShadowResVal() / Renderer::RHIConstants::ShadowAtlasTextureSize;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &resRatio);
           yIndex                  = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -285,19 +232,11 @@ namespace ToolKit
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Light bleeding reduction
-          glTexSubImage2D(GL_TEXTURE_2D,
-                          0,
-                          xIndex,
-                          yIndex,
-                          1,
-                          1,
-                          GL_RGBA,
-                          GL_FLOAT,
-                          &light->GetLightBleedingReductionVal());
+          glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &light->GetBleedingReductionVal());
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias
-          const float bias = light->GetShadowBiasVal() * Renderer::g_shadowBiasMultiplier;
+          const float bias = light->GetShadowBiasVal() * Renderer::RHIConstants::ShadowBiasMultiplier;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &bias);
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -323,7 +262,7 @@ namespace ToolKit
         }
       }
       // Directional light
-      else if (type == EntityType::Entity_DirectionalLight)
+      else if (DirectionalLight* dLight = light->As<DirectionalLight>())
       {
         // Check data texture limits
         int size = shadow ? (int) dirShadowSize : (int) dirNonShadowSize;
@@ -332,9 +271,9 @@ namespace ToolKit
           break;
         }
 
-        Vec3 color      = light->GetColorVal();
-        float intensity = light->GetIntensityVal();
-        Vec3 dir        = static_cast<DirectionalLight*>(light)->GetComponent<DirectionComponent>()->GetDirection();
+        Vec3 color      = dLight->GetColorVal();
+        float intensity = dLight->GetIntensityVal();
+        Vec3 dir        = dLight->GetComponent<DirectionComponent>()->GetDirection();
 
         // type
         float t         = 1.0f;
@@ -365,7 +304,7 @@ namespace ToolKit
           yIndex           = IncrementDataIndex(xIndex, 4) ? yIndex + 1 : yIndex;
 
           // Shadow atlas coordinates
-          const Vec2 coord = light->m_shadowAtlasCoord / (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+          const Vec2 coord = light->m_shadowAtlasCoord / (float) Renderer::RHIConstants::ShadowAtlasTextureSize;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &coord.x);
           yIndex            = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -375,7 +314,7 @@ namespace ToolKit
           yIndex               = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow atlas resolution ratio
-          const float resRatio = light->GetShadowResVal() / Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+          const float resRatio = light->GetShadowResVal() / Renderer::RHIConstants::ShadowAtlasTextureSize;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &resRatio);
           yIndex                  = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -394,19 +333,11 @@ namespace ToolKit
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Light bleeding reduction
-          glTexSubImage2D(GL_TEXTURE_2D,
-                          0,
-                          xIndex,
-                          yIndex,
-                          1,
-                          1,
-                          GL_RGBA,
-                          GL_FLOAT,
-                          &light->GetLightBleedingReductionVal());
+          glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &light->GetBleedingReductionVal());
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias
-          const float bias = light->GetShadowBiasVal() * Renderer::g_shadowBiasMultiplier;
+          const float bias = light->GetShadowBiasVal() * Renderer::RHIConstants::ShadowBiasMultiplier;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &bias);
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -433,7 +364,7 @@ namespace ToolKit
         }
       }
       // Spot light
-      else if (type == EntityType::Entity_SpotLight)
+      else if (SpotLight* sLight = light->As<SpotLight>())
       {
         // Check data texture limits
         int size = shadow ? (int) spotShadowSize : (int) spotNonShadowSize;
@@ -442,17 +373,16 @@ namespace ToolKit
           break;
         }
 
-        Vec3 color           = light->GetColorVal();
-        float intensity      = light->GetIntensityVal();
-        Vec3 pos             = light->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        SpotLight* spotLight = static_cast<SpotLight*>(light);
-        Vec3 dir             = spotLight->GetComponent<DirectionComponent>()->GetDirection();
-        float radius         = spotLight->GetRadiusVal();
-        float outAngle       = glm::cos(glm::radians(spotLight->GetOuterAngleVal() / 2.0f));
-        float innAngle       = glm::cos(glm::radians(spotLight->GetInnerAngleVal() / 2.0f));
+        Vec3 color      = sLight->GetColorVal();
+        float intensity = sLight->GetIntensityVal();
+        Vec3 pos        = sLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        Vec3 dir        = sLight->GetComponent<DirectionComponent>()->GetDirection();
+        float radius    = sLight->GetRadiusVal();
+        float outAngle  = glm::cos(glm::radians(sLight->GetOuterAngleVal() / 2.0f));
+        float innAngle  = glm::cos(glm::radians(sLight->GetInnerAngleVal() / 2.0f));
 
         // type
-        float t              = 3.0f;
+        float t         = 3.0f;
         glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &t);
         yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // color
@@ -496,7 +426,7 @@ namespace ToolKit
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow atlas coordinates
-          const Vec2 coord = light->m_shadowAtlasCoord / (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+          const Vec2 coord = light->m_shadowAtlasCoord / (float) Renderer::RHIConstants::ShadowAtlasTextureSize;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &coord.x);
           yIndex            = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -506,7 +436,7 @@ namespace ToolKit
           yIndex               = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow atlas resolution ratio
-          const float resRatio = light->GetShadowResVal() / Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+          const float resRatio = light->GetShadowResVal() / Renderer::RHIConstants::ShadowAtlasTextureSize;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &resRatio);
           yIndex                  = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -525,19 +455,11 @@ namespace ToolKit
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Light bleeding reduction
-          glTexSubImage2D(GL_TEXTURE_2D,
-                          0,
-                          xIndex,
-                          yIndex,
-                          1,
-                          1,
-                          GL_RGBA,
-                          GL_FLOAT,
-                          &light->GetLightBleedingReductionVal());
+          glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &light->GetBleedingReductionVal());
           yIndex           = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow bias
-          const float bias = light->GetShadowBiasVal() * Renderer::g_shadowBiasMultiplier;
+          const float bias = light->GetShadowBiasVal() * Renderer::RHIConstants::ShadowBiasMultiplier;
           glTexSubImage2D(GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &bias);
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
@@ -585,35 +507,4 @@ namespace ToolKit
     sizeNS                             = spotNonShadowSize;
   }
 
-  SSAONoiseTexture::SSAONoiseTexture(int width, int height) : DataTexture(width, height) {}
-
-  void SSAONoiseTexture::Init(void* data)
-  {
-    if (m_initiated)
-    {
-      return;
-    }
-
-    GLint currId;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
-
-    glGenTextures(1, &m_textureId);
-    glBindTexture(GL_TEXTURE_2D, m_textureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, m_width, m_height, 0, GL_RG, GL_FLOAT, data);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glBindTexture(GL_TEXTURE_2D, currId);
-
-    m_initiated = true;
-  }
-
-  SSAONoiseTexture::SSAONoiseTexture() {}
-
-  void SSAONoiseTexture::Init(bool flushClientSideArray)
-  {
-    assert(false); // The code should never come here
-  }
 } // namespace ToolKit

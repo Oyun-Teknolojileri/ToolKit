@@ -1,40 +1,15 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
 
 #include "Entity.h"
-#include "Events.h"
-#include "MathUtil.h"
-#include "Resource.h"
 #include "SpriteSheet.h"
 #include "Types.h"
-
-#include <functional>
-#include <vector>
 
 namespace ToolKit
 {
@@ -44,29 +19,36 @@ namespace ToolKit
   class TK_API Surface : public Entity
   {
    public:
+    TKDeclareClass(Surface, Entity);
+
     Surface();
-    Surface(TexturePtr texture, const Vec2& pivotOffset);
-    Surface(TexturePtr texture, const SpriteEntry& entry);
-    Surface(const String& textureFile, const Vec2& pivotOffset);
-    Surface(const Vec2& size, const Vec2& offset = {0.5f, 0.5f});
     virtual ~Surface();
 
-    EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void NativeConstruct() override;
+
+    void Update(TexturePtr texture, const Vec2& pivotOffset);
+    void Update(TexturePtr texture, const SpriteEntry& entry);
+    void Update(const String& textureFile, const Vec2& pivotOffset);
+    void Update(const Vec2& size, const Vec2& offset = Vec2(0.5f));
 
     void CalculateAnchorOffsets(Vec3 canvas[4], Vec3 surface[4]);
-
     virtual void ResetCallbacks();
-    //  To reflect the size & pivot changes,
-    //  this function regenerates the geometry.
+
+    /**
+     * To reflect the size & pivot changes,this function regenerates the geometry.
+     * @param byTexture - if true send, the geometry is updated based on material's diffuse texture.
+     */
     virtual void UpdateGeometry(bool byTexture);
 
    protected:
     void ComponentConstructor();
-    void ParameterConstructor();
-    void ParameterEventConstructor();
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
     Entity* CopyTo(Entity* other) const override;
+
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
    private:
     void CreateQuat();
@@ -103,18 +85,20 @@ namespace ToolKit
   class TK_API Button : public Surface
   {
    public:
+    TKDeclareClass(Button, Surface);
+
     Button();
-    explicit Button(const Vec2& size);
-    Button(const TexturePtr& buttonImage, const TexturePtr& hoverImage);
     virtual ~Button();
-    EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void NativeConstruct() override;
+    void SetBtnImage(const TexturePtr buttonImage, const TexturePtr hoverImage);
     void ResetCallbacks() override;
 
    protected:
-    void ParameterConstructor();
-    void ParameterEventConstructor();
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
    public:
     TKDeclareParam(MaterialPtr, ButtonMaterial);
@@ -124,5 +108,7 @@ namespace ToolKit
     SurfaceEventCallback m_onMouseEnterLocal;
     SurfaceEventCallback m_onMouseExitLocal;
   };
+
+  typedef std::shared_ptr<Button> ButtonPtr;
 
 } //  namespace ToolKit

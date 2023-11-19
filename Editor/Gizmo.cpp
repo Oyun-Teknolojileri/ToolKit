@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Gizmo.h"
@@ -29,23 +10,36 @@
 #include "App.h"
 #include "EditorViewport2d.h"
 
-#include "DebugNew.h"
+#include <Material.h>
+#include <MathUtil.h>
+#include <Mesh.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
   namespace Editor
   {
+    TKDefineClass(EditorBillboardBase, Billboard);
+
+    EditorBillboardBase::EditorBillboardBase() {}
 
     EditorBillboardBase::EditorBillboardBase(const Settings& settings) : Billboard(settings) {}
+
+    void EditorBillboardBase::NativeConstruct()
+    {
+      Super::NativeConstruct();
+      Generate();
+    }
 
     void EditorBillboardBase::Generate()
     {
       MeshComponentPtr mCom = GetComponent<MeshComponent>();
 
       // Billboard
-      Quad quad;
-      MeshPtr meshPtr    = quad.GetMeshComponent()->GetMeshVal();
-      MaterialPtr matPtr = GetMaterialManager()->GetCopyOfUnlitMaterial();
+      QuadPtr quad          = MakeNewPtr<Quad>();
+      MeshPtr meshPtr       = quad->GetMeshComponent()->GetMeshVal();
+      MaterialPtr matPtr    = GetMaterialManager()->GetCopyOfUnlitMaterial();
       matPtr->UnInit();
       matPtr->m_diffuseTexture                    = m_iconImage;
       matPtr->GetRenderState()->blendFunction     = BlendFunction::ALPHA_MASK;
@@ -55,7 +49,9 @@ namespace ToolKit
       mCom->SetMeshVal(meshPtr);
     }
 
-    Cursor::Cursor() : EditorBillboardBase({true, 10.0f, 60.0f, true}) { Generate(); }
+    TKDefineClass(Cursor, EditorBillboardBase);
+
+    Cursor::Cursor() : EditorBillboardBase({true, 10.0f, 60.0f, true}) {}
 
     Cursor::~Cursor() {}
 
@@ -68,8 +64,8 @@ namespace ToolKit
       parentMesh->UnInit();
 
       // Billboard
-      Quad quad;
-      MeshPtr meshPtr    = quad.GetMeshComponent()->GetMeshVal();
+      QuadPtr quad       = MakeNewPtr<Quad>();
+      MeshPtr meshPtr    = quad->GetMeshComponent()->GetMeshVal();
       MaterialPtr matPtr = GetMaterialManager()->GetCopyOfUnlitMaterial();
       matPtr->UnInit();
       matPtr->m_diffuseTexture =
@@ -78,29 +74,24 @@ namespace ToolKit
       matPtr->GetRenderState()->alphaMaskTreshold = 0.1f;
       matPtr->Init();
       meshPtr->m_material = matPtr;
+      meshPtr->Init();
       parentMesh->m_subMeshes.push_back(meshPtr);
 
       // Lines
       VertexArray vertices;
-      vertices.resize(12);
+      vertices.resize(8);
 
-      vertices[0].pos.z                       = -0.3f;
-      vertices[1].pos.z                       = -0.7f;
+      vertices[0].pos.x                       = 0.2f;
+      vertices[1].pos.x                       = 0.5f;
 
-      vertices[2].pos.z                       = 0.3f;
-      vertices[3].pos.z                       = 0.7f;
+      vertices[2].pos.x                       = -0.2f;
+      vertices[3].pos.x                       = -0.5f;
 
-      vertices[4].pos.x                       = 0.3f;
-      vertices[5].pos.x                       = 0.7f;
+      vertices[4].pos.y                       = 0.2f;
+      vertices[5].pos.y                       = 0.5f;
 
-      vertices[6].pos.x                       = -0.3f;
-      vertices[7].pos.x                       = -0.7f;
-
-      vertices[8].pos.y                       = 0.3f;
-      vertices[9].pos.y                       = 0.7f;
-
-      vertices[10].pos.y                      = -0.3f;
-      vertices[11].pos.y                      = -0.7f;
+      vertices[6].pos.y                       = -0.2f;
+      vertices[7].pos.y                       = -0.5f;
 
       MaterialPtr newMaterial                 = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       newMaterial->m_color                    = Vec3(0.1f, 0.1f, 0.1f);
@@ -109,10 +100,14 @@ namespace ToolKit
       parentMesh->m_clientSideVertices        = vertices;
       parentMesh->m_material                  = newMaterial;
 
+      parentMesh->Init();
+
       parentMesh->CalculateAABB();
     }
 
-    Axis3d::Axis3d() : EditorBillboardBase({false, 10.0f, 60.0f, true}) { Generate(); }
+    TKDefineClass(Axis3d, EditorBillboardBase);
+
+    Axis3d::Axis3d() : EditorBillboardBase({false, 10.0f, 60.0f, true}) {}
 
     Axis3d::~Axis3d() {}
 
@@ -136,8 +131,10 @@ namespace ToolKit
           break;
         }
 
-        Arrow2d arrow(t);
-        MeshComponentPtr arrowMeshComp = arrow.GetComponent<MeshComponent>();
+        Arrow2dPtr arrow = MakeNewPtr<Arrow2d>();
+        arrow->Generate(t);
+
+        MeshComponentPtr arrowMeshComp = arrow->GetComponent<MeshComponent>();
         MeshPtr arrowMesh              = arrowMeshComp->GetMeshVal();
         if (i == 0)
         {
@@ -159,31 +156,36 @@ namespace ToolKit
 
     void GizmoHandle::Generate(const Params& params)
     {
-      m_params       = params;
+      m_params          = params;
 
-      Vec3 dir       = AXIS[(int) params.axis % 3];
-      Vec3Array pnts = {dir * params.toeTip.x, dir * params.toeTip.y};
+      Vec3 dir          = AXIS[(int) params.axis % 3];
+      Vec3Array pnts    = {dir * params.toeTip.x, dir * params.toeTip.y};
 
-      m_mesh         = std::make_shared<Mesh>();
+      m_mesh            = MakeNewPtr<Mesh>();
 
-      LineBatch line(pnts, params.color, DrawType::Line, 2.0f);
-      MeshPtr lnMesh = line.GetComponent<MeshComponent>()->GetMeshVal();
+      LineBatchPtr line = MakeNewPtr<LineBatch>();
+      line->Generate(pnts, params.color, DrawType::Line, 2.0f);
+      MeshPtr lnMesh = line->GetComponent<MeshComponent>()->GetMeshVal();
       m_mesh->m_subMeshes.push_back(lnMesh);
 
-      MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial(false);
       material->m_color    = params.color;
 
       if (params.type == SolidType::Cube)
       {
-        Cube solid(params.solidDim);
-        MeshPtr mesh     = solid.GetComponent<MeshComponent>()->GetMeshVal();
+        CubePtr solid = MakeNewPtr<Cube>();
+        solid->SetCubeScaleVal(params.solidDim);
+
+        MeshPtr mesh     = solid->GetComponent<MeshComponent>()->GetMeshVal();
         mesh->m_material = material;
         m_mesh->m_subMeshes.push_back(mesh);
       }
       else if (params.type == SolidType::Cone)
       {
-        Cone solid({params.solidDim.y, params.solidDim.x, 10, 10});
-        MeshPtr mesh     = solid.GetComponent<MeshComponent>()->GetMeshVal();
+        ConePtr solid = MakeNewPtr<Cone>();
+        solid->Generate(params.solidDim.y, params.solidDim.x, 10, 10);
+
+        MeshPtr mesh     = solid->GetComponent<MeshComponent>()->GetMeshVal();
         mesh->m_material = material;
         m_mesh->m_subMeshes.push_back(mesh);
       }
@@ -194,6 +196,7 @@ namespace ToolKit
       }
 
       MeshPtr mesh = m_mesh->m_subMeshes.back();
+      mesh->UnInit();
       for (Vertex& v : mesh->m_clientSideVertices)
       {
         v.pos.y += params.toeTip.y;
@@ -210,16 +213,18 @@ namespace ToolKit
           break;
         }
       }
+      mesh->Init();
 
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
-        int axisInd    = (int) m_params.axis;
-        Vec3 axis      = AXIS[axisInd];
-        Vec3Array pnts = {axis * 999.0f, axis * -999.0f};
+        int axisInd        = (int) m_params.axis;
+        Vec3 axis          = AXIS[axisInd];
+        Vec3Array pnts     = {axis * 999.0f, axis * -999.0f};
 
-        LineBatch guide(pnts, g_gizmoColor[axisInd % 3], DrawType::Line, 1.0f);
-        MeshPtr guideMesh = guide.GetComponent<MeshComponent>()->GetMeshVal();
+        LineBatchPtr guide = MakeNewPtr<LineBatch>();
+        guide->Generate(pnts, g_gizmoColor[axisInd % 3], DrawType::Line, 1.0f);
+        MeshPtr guideMesh = guide->GetComponent<MeshComponent>()->GetMeshVal();
         m_mesh->m_subMeshes.push_back(guideMesh);
       }
     }
@@ -253,7 +258,7 @@ namespace ToolKit
       m_params        = params;
 
       int cornerCount = 60;
-      std::vector<Vec3> corners;
+      Vec3Array corners;
       corners.reserve(cornerCount + 1);
 
       float deltaAngle = glm::two_pi<float>() / cornerCount;
@@ -279,8 +284,9 @@ namespace ToolKit
       }
       corners.push_back(corners.front());
 
-      LineBatch circle(corners, params.color, DrawType::LineStrip, 4.0f);
-      MeshPtr circleMesh = circle.GetComponent<MeshComponent>()->GetMeshVal();
+      LineBatchPtr circle = MakeNewPtr<LineBatch>();
+      circle->Generate(corners, params.color, DrawType::LineStrip, 4.0f);
+      MeshPtr circleMesh = circle->GetComponent<MeshComponent>()->GetMeshVal();
       m_mesh             = circleMesh;
 
       // Guide line.
@@ -303,8 +309,10 @@ namespace ToolKit
         pnts.push_back(glcl + dir * 999.0f);
         pnts.push_back(glcl - dir * 999.0f);
 
-        LineBatch guide(pnts, g_gizmoColor[axisIndx], DrawType::Line, 1.0f);
-        MeshPtr guideMesh = guide.GetComponent<MeshComponent>()->GetMeshVal();
+        LineBatchPtr guide = MakeNewPtr<LineBatch>();
+        guide->Generate(pnts, g_gizmoColor[axisIndx], DrawType::Line, 1.0f);
+
+        MeshPtr guideMesh = guide->GetComponent<MeshComponent>()->GetMeshVal();
         m_mesh->m_subMeshes.push_back(guideMesh);
       }
     }
@@ -367,20 +375,21 @@ namespace ToolKit
 
     void QuadHandle::Generate(const Params& params)
     {
-      m_params = params;
+      m_params                             = params;
 
-      Quad solid;
-      MaterialPtr material                 = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      QuadPtr solid                        = MakeNewPtr<Quad>();
+      MaterialPtr material                 = GetMaterialManager()->GetCopyOfUnlitColorMaterial(false);
       material->m_color                    = params.color;
       material->GetRenderState()->cullMode = CullingType::TwoSided;
 
-      MeshPtr mesh                         = solid.GetMeshComponent()->GetMeshVal();
+      MeshPtr mesh                         = solid->GetMeshComponent()->GetMeshVal();
       mesh->m_material                     = material;
       m_mesh                               = mesh;
 
       float scale                          = 0.15f;
       float offset                         = 2.0f;
 
+      m_mesh->UnInit();
       for (Vertex& v : m_mesh->m_clientSideVertices)
       {
         v.pos.y += params.toeTip.y;
@@ -392,12 +401,12 @@ namespace ToolKit
           v.pos.xy += Vec2(offset * scale);
           break;
         case AxisLabel::YZ:
-          v.pos    = v.pos.zyx * scale;
+          v.pos     = v.pos.zyx * scale;
           v.pos.z  += 0.75f * scale;
           v.pos.yz += Vec2(offset * scale);
           break;
         case AxisLabel::ZX:
-          v.pos    = v.pos.xzy * scale;
+          v.pos     = v.pos.xzy * scale;
           v.pos.x  += 0.75f * scale;
           v.pos.zx += Vec2(offset * scale);
           break;
@@ -405,6 +414,7 @@ namespace ToolKit
           break;
         }
       }
+      m_mesh->Init();
 
       // Guide line.
       // Gizmo updates later, transform modes uses previous frame's locatin.
@@ -417,7 +427,7 @@ namespace ToolKit
         LineBatch* guides[3];
         for (int i = 0; i < 3; i++)
         {
-          guides[i] = new LineBatch
+          guides[i] = new LineBatch // Use MakeNewPtr if this comment is opened
           (
             {
               glcl + AXIS[i] * 999.0f,
@@ -463,7 +473,11 @@ namespace ToolKit
     // Gizmo
     //////////////////////////////////////////////////////////////////////////
 
-    Gizmo::Gizmo(const Billboard::Settings& set) : EditorBillboardBase(set) { m_grabbedAxis = AxisLabel::None; }
+    TKDefineClass(Gizmo, EditorBillboardBase);
+
+    Gizmo::Gizmo() {}
+
+    Gizmo::Gizmo(const Billboard::Settings& set) : EditorBillboardBase(set) {}
 
     Gizmo::~Gizmo()
     {
@@ -471,6 +485,12 @@ namespace ToolKit
       {
         SafeDel(m_handles[i]);
       }
+    }
+
+    void Gizmo::NativeConstruct()
+    {
+      Super::NativeConstruct();
+      Update(0.0f);
     }
 
     EditorBillboardBase::BillboardType Gizmo::GetBillboardType() const { return BillboardType::Gizmo; }
@@ -535,7 +555,7 @@ namespace ToolKit
 
     AxisLabel Gizmo::GetGrabbedAxis() const { return m_grabbedAxis; }
 
-    void Gizmo::LookAt(Camera* cam, float windowHeight)
+    void Gizmo::LookAt(CameraPtr cam, float windowHeight)
     {
       Billboard::LookAt(cam, windowHeight);
       m_node->SetOrientation(glm::toQuat(m_normalVectors));
@@ -556,18 +576,18 @@ namespace ToolKit
     // LinearGizmo
     //////////////////////////////////////////////////////////////////////////
 
+    TKDefineClass(LinearGizmo, Gizmo);
+
     LinearGizmo::LinearGizmo() : Gizmo({false, 6.0f, 60.0f})
     {
       m_handles.resize(3);
       for (uint i = 0; i < 3; i++)
       {
-        GizmoHandle* gizmo   = new GizmoHandle;
+        GizmoHandle* gizmo   = new GizmoHandle();
         gizmo->m_params.axis = (AxisLabel) i;
         gizmo->m_params.type = GizmoHandle::SolidType::Cone;
         m_handles[i]         = gizmo;
       }
-
-      Update(0.0f);
     }
 
     LinearGizmo::~LinearGizmo() {}
@@ -581,6 +601,7 @@ namespace ToolKit
         GizmoHandle* handle = m_handles[i];
         AxisLabel axis      = handle->m_params.axis;
         p.type              = handle->m_params.type;
+
         if (m_grabbedAxis == axis)
         {
           p.color = g_selectHighLightPrimaryColor;
@@ -619,7 +640,7 @@ namespace ToolKit
         handle->Generate(p);
       }
 
-      MeshPtr mesh = std::make_shared<Mesh>();
+      MeshPtr mesh = MakeNewPtr<Mesh>();
       for (int i = 0; i < m_handles.size(); i++)
       {
         mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
@@ -647,6 +668,8 @@ namespace ToolKit
       return p;
     }
 
+    TKDefineClass(MoveGizmo, Gizmo);
+
     MoveGizmo::MoveGizmo()
     {
       for (int i = 3; i < 6; i++)
@@ -654,13 +677,13 @@ namespace ToolKit
         m_handles.push_back(new QuadHandle());
         m_handles[i]->m_params.axis = (AxisLabel) i;
       }
-
-      Update(0.0);
     }
 
     MoveGizmo::~MoveGizmo() {}
 
     EditorBillboardBase::BillboardType MoveGizmo::GetBillboardType() const { return BillboardType::Move; }
+
+    TKDefineClass(ScaleGizmo, Gizmo);
 
     ScaleGizmo::ScaleGizmo()
     {
@@ -684,8 +707,6 @@ namespace ToolKit
         cube->m_params.color = Vec3(1.0);
         cube->m_params.scale = Vec3(5);
       }
-
-      Update(0.0);
     }
 
     ScaleGizmo::~ScaleGizmo() {}
@@ -701,11 +722,11 @@ namespace ToolKit
       return p;
     }
 
+    TKDefineClass(PolarGizmo, Gizmo);
+
     PolarGizmo::PolarGizmo() : Gizmo({false, 6.0f, 60.0f})
     {
       m_handles = {new PolarHandle(), new PolarHandle(), new PolarHandle()};
-
-      Update(0.0f);
     }
 
     PolarGizmo::~PolarGizmo() {}
@@ -762,7 +783,7 @@ namespace ToolKit
         m_handles[i]->Generate(p);
       }
 
-      MeshPtr mesh = std::make_shared<Mesh>();
+      MeshPtr mesh = MakeNewPtr<Mesh>();
       for (int i = 0; i < m_handles.size(); i++)
       {
         if (m_handles[i]->m_mesh)
@@ -774,7 +795,9 @@ namespace ToolKit
       GetComponent<MeshComponent>()->SetMeshVal(mesh);
     }
 
-    SkyBillboard::SkyBillboard() : EditorBillboardBase({true, 3.5f, 10.0f}) { Generate(); }
+    TKDefineClass(SkyBillboard, EditorBillboardBase);
+
+    SkyBillboard::SkyBillboard() : EditorBillboardBase({true, 3.5f, 10.0f}) {}
 
     SkyBillboard::~SkyBillboard() {}
 
@@ -786,7 +809,9 @@ namespace ToolKit
       EditorBillboardBase::Generate();
     }
 
-    LightBillboard::LightBillboard() : EditorBillboardBase({true, 3.5f, 10.0f}) { Generate(); }
+    TKDefineClass(LightBillboard, EditorBillboardBase);
+
+    LightBillboard::LightBillboard() : EditorBillboardBase({true, 3.5f, 10.0f}) {}
 
     LightBillboard::~LightBillboard() {}
 

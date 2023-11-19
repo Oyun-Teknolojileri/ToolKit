@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "EnvironmentComponent.h"
@@ -35,11 +16,9 @@
 namespace ToolKit
 {
 
-  EnvironmentComponent::EnvironmentComponent()
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-  }
+  TKDefineClass(EnvironmentComponent, Component);
+
+  EnvironmentComponent::EnvironmentComponent() {}
 
   EnvironmentComponent::~EnvironmentComponent() {}
 
@@ -61,6 +40,8 @@ namespace ToolKit
 
   void EnvironmentComponent::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     Hdri_Define(nullptr, EnvironmentComponentCategory.Name, EnvironmentComponentCategory.Priority, true, true);
 
     PositionOffset_Define(Vec3(0.0f),
@@ -101,12 +82,11 @@ namespace ToolKit
     };
 
     MultiChoiceVariant mcv = {
-        {createParameterVariant("32", 32),
-         createParameterVariant("64", 64),
-         createParameterVariant("128", 128),
-         createParameterVariant("256", 256),
+        {createParameterVariant("256", 256),
          createParameterVariant("512", 512),
-         createParameterVariant("1024", 1024)},
+         createParameterVariant("1024", 1024),
+         createParameterVariant("2048", 2048),
+         createParameterVariant("4096", 4096)},
         1,
         [&](Value& oldVal, Value& newVal)
         {
@@ -131,6 +111,8 @@ namespace ToolKit
 
   void EnvironmentComponent::ParameterEventConstructor()
   {
+    Super::ParameterEventConstructor();
+
     ParamExposure().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
                                                  { ReInitHdri(GetHdriVal(), std::get<float>(newVal)); });
 
@@ -138,31 +120,41 @@ namespace ToolKit
                                              { ReInitHdri(std::get<HdriPtr>(newVal), GetExposureVal()); });
   }
 
-  ComponentPtr EnvironmentComponent::Copy(Entity* ntt)
+  ComponentPtr EnvironmentComponent::Copy(EntityPtr ntt)
   {
-    EnvironmentComponentPtr ec = std::make_shared<EnvironmentComponent>();
+    EnvironmentComponentPtr ec = MakeNewPtr<EnvironmentComponent>();
     ec->m_localData            = m_localData;
     ec->m_entity               = ntt;
 
     return ec;
   }
 
-  void EnvironmentComponent::Serialize(XmlDocument* doc, XmlNode* parent) const { Component::Serialize(doc, parent); }
-
-  void EnvironmentComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* EnvironmentComponent::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    Component::DeSerialize(doc, parent);
+    XmlNode* compNode = Super::DeSerializeImp(info, parent);
     ParameterEventConstructor();
+
+    return compNode->first_node(StaticClass()->Name.c_str());
+  }
+
+  XmlNode* EnvironmentComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   BoundingBox EnvironmentComponent::GetBBox()
   {
     Vec3 pos;
     BoundingBox aabb;
-    if (m_entity != nullptr)
+
+    if (EntityPtr owner = OwnerEntity())
     {
-      pos += m_entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      pos += owner->m_node->GetTranslation(TransformationSpace::TS_WORLD);
     }
+
     aabb.min = GetPositionOffsetVal() + pos - GetSizeVal() * 0.5f;
     aabb.max = GetPositionOffsetVal() + pos + GetSizeVal() * 0.5f;
     return aabb;

@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "CustomDataView.h"
@@ -29,9 +10,12 @@
 #include "App.h"
 #include "ComponentView.h"
 #include "MultiChoiceWindow.h"
-#include "Prefab.h"
 
-#include "DebugNew.h"
+#include <Material.h>
+#include <Mesh.h>
+#include <Prefab.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -52,7 +36,7 @@ namespace ToolKit
           file,
           [&var](const DirectoryEntry& entry) -> void
           {
-            if (GetResourceType(entry.m_ext) == ResourceType::Material)
+            if (GetResourceType(entry.m_ext) == Material::StaticClass())
             {
               var = GetMaterialManager()->Create<Material>(entry.GetFullPath());
             }
@@ -72,7 +56,7 @@ namespace ToolKit
           file,
           [&var](const DirectoryEntry& entry) -> void
           {
-            if (GetResourceType(entry.m_ext) == ResourceType::Material)
+            if (GetResourceType(entry.m_ext) == Material::StaticClass())
             {
               *var = GetMaterialManager()->Create<Material>(entry.GetFullPath());
             }
@@ -86,7 +70,7 @@ namespace ToolKit
 
     ValueUpdateFn CustomDataView::MultiUpdate(ParameterVariant* var)
     {
-      EntityRawPtrArray entities;
+      EntityPtrArray entities;
       g_app->GetCurrentScene()->GetSelectedEntities(entities);
 
       // Remove current selected because its already updated.
@@ -94,10 +78,10 @@ namespace ToolKit
 
       ValueUpdateFn multiUpdate = [var, entities](Value& oldVal, Value& newVal) -> void
       {
-        for (Entity* ntt : entities)
+        for (EntityPtr ntt : entities)
         {
           // If entity is a prefab scene entity, skip it
-          Prefab* prefabRoot = Prefab::GetPrefabRoot(ntt);
+          PrefabPtr prefabRoot = Prefab::GetPrefabRoot(ntt);
           if (prefabRoot && prefabRoot != ntt)
           {
             continue;
@@ -120,12 +104,12 @@ namespace ToolKit
       {
         return false;
       }
-      Vec2 xSize = ImGui::CalcTextSize("Name");
+      Vec2 xSize  = ImGui::CalcTextSize("Name");
       xSize      *= 3.0f;
       ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, xSize.x);
       ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
-      xSize = ImGui::CalcTextSize(ICON_FA_MINUS);
+      xSize  = ImGui::CalcTextSize(ICON_FA_MINUS);
       xSize *= 2.5f;
       ImGui::TableSetupColumn("##Remove", ImGuiTableColumnFlags_WidthFixed, xSize.x);
 
@@ -205,7 +189,7 @@ namespace ToolKit
         for (int j = 0; j < 3; j++)
         {
           pId += std::to_string(j);
-          vec = glm::row(val, j);
+          vec  = glm::row(val, j);
           ImGui::InputFloat3(pId.c_str(), &vec[0]);
           val  = glm::row(val, j, vec);
           *var = val;
@@ -219,7 +203,7 @@ namespace ToolKit
         for (int j = 0; j < 4; j++)
         {
           pId += std::to_string(j);
-          vec = glm::row(val, j);
+          vec  = glm::row(val, j);
           ImGui::InputFloat4(pId.c_str(), &vec[0]);
           val  = glm::row(val, j, vec);
           *var = val;
@@ -261,7 +245,7 @@ namespace ToolKit
       ImGui::Separator();
     }
 
-    void CustomDataView::ShowCustomData(Entity* m_entity,
+    void CustomDataView::ShowCustomData(EntityPtr m_entity,
                                         String headerName,
                                         ParameterVariantRawPtrArray& vars,
                                         bool isListEditable)
@@ -629,7 +613,7 @@ namespace ToolKit
         String file, id;
         if (mref)
         {
-          id   = std::to_string(mref->m_id);
+          id   = std::to_string(mref->GetIdVal());
           file = mref->GetFile();
         }
 
@@ -644,16 +628,16 @@ namespace ToolKit
         MeshPtr mref = var->GetVar<MeshPtr>();
         ImGui::EndDisabled();
         DropSubZone(
-            "Mesh##" + std::to_string(mref->m_id),
+            "Mesh##" + std::to_string(mref->GetIdVal()),
             static_cast<uint>(UI::m_meshIcon->m_textureId),
             mref->GetFile(),
             [&var](const DirectoryEntry& entry) -> void
             {
-              if (GetResourceType(entry.m_ext) == ResourceType::Mesh)
+              if (GetResourceType(entry.m_ext) == Mesh::StaticClass())
               {
                 *var = GetMeshManager()->Create<Mesh>(entry.GetFullPath());
               }
-              else if (GetResourceType(entry.m_ext) == ResourceType::SkinMesh)
+              else if (GetResourceType(entry.m_ext) == SkinMesh::StaticClass())
               {
                 *var = GetMeshManager()->Create<SkinMesh>(entry.GetFullPath());
               }
@@ -672,7 +656,7 @@ namespace ToolKit
         String file, id;
         if (mref)
         {
-          id   = std::to_string(mref->m_id);
+          id   = std::to_string(mref->GetIdVal());
           file = mref->GetFile();
         }
 
@@ -683,7 +667,7 @@ namespace ToolKit
             file,
             [&var](const DirectoryEntry& entry) -> void
             {
-              if (GetResourceType(entry.m_ext) == ResourceType::Hdri)
+              if (GetResourceType(entry.m_ext) == Hdri::StaticClass())
               {
                 *var = GetTextureManager()->Create<Hdri>(entry.GetFullPath());
               }
@@ -702,19 +686,18 @@ namespace ToolKit
         String file, id;
         if (mref)
         {
-          id   = std::to_string(mref->m_id);
+          id   = std::to_string(mref->GetIdVal());
           file = mref->GetFile();
         }
 
         auto dropZoneFnc = [&var, &comp](const DirectoryEntry& entry) -> void
         {
-          if (GetResourceType(entry.m_ext) == ResourceType::Skeleton)
+          if (GetResourceType(entry.m_ext) == Skeleton::StaticClass())
           {
             *var = GetSkeletonManager()->Create<Skeleton>(entry.GetFullPath());
-            if (comp->GetType() == ComponentType::SkeletonComponent)
+            if (SkeletonComponent* scom = comp->As<SkeletonComponent>())
             {
-              SkeletonComponent* skelComp = (SkeletonComponent*) comp.get();
-              skelComp->Init();
+              scom->Init();
             }
           }
           else
@@ -776,16 +759,18 @@ namespace ToolKit
 
     void CustomDataView::Show()
     {
-      m_entity = g_app->GetCurrentScene()->GetCurrentSelection();
-      if (m_entity == nullptr)
+      m_entity      = g_app->GetCurrentScene()->GetCurrentSelection();
+      EntityPtr ntt = m_entity.lock();
+
+      if (ntt == nullptr)
       {
         ImGui::Text("Select an entity");
         return;
       }
 
       ParameterVariantRawPtrArray customParams;
-      m_entity->m_localData.GetByCategory(CustomDataCategory.Name, customParams);
-      ShowCustomData(m_entity, "Custom Data", customParams, true);
+      ntt->m_localData.GetByCategory(CustomDataCategory.Name, customParams);
+      ShowCustomData(ntt, "Custom Data", customParams, true);
     }
 
   } // namespace Editor

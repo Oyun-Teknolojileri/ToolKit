@@ -1,42 +1,29 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "SpriteSheet.h"
 
 #include "Mesh.h"
 #include "Node.h"
+#include "RapidXml/rapidxml.hpp"
+#include "RapidXml/rapidxml_utils.hpp"
 #include "Surface.h"
+#include "Texture.h"
 #include "ToolKit.h"
-#include "rapidxml.hpp"
-#include "rapidxml_utils.hpp"
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
+
+  // SpriteSheet
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(SpriteSheet, Resource);
 
   SpriteSheet::SpriteSheet() : m_imageWidth(0), m_imageHeight(0) {}
 
@@ -56,7 +43,8 @@ namespace ToolKit
       m_spriteSheet = GetTextureManager()->Create<Texture>(SpritePath(m_imageFile));
       for (const SpriteEntry& entry : m_entries)
       {
-        Surface* surface      = new Surface(m_spriteSheet, entry);
+        SurfacePtr surface = MakeNewPtr<Surface>();
+        surface->Update(m_spriteSheet, entry);
         m_sprites[entry.name] = surface;
       }
     }
@@ -81,10 +69,7 @@ namespace ToolKit
 
   void SpriteSheet::UnInit()
   {
-    for (auto entry : m_sprites)
-    {
-      SafeDel(entry.second);
-    }
+    m_sprites.clear();
     m_initiated = false;
   }
 
@@ -142,15 +127,18 @@ namespace ToolKit
     return true;
   }
 
+  // SpriteAnimation
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(SpriteAnimation, Entity);
+
   SpriteAnimation::SpriteAnimation() {}
 
   SpriteAnimation::SpriteAnimation(const SpriteSheetPtr& spriteSheet) { m_sheet = spriteSheet; }
 
   SpriteAnimation::~SpriteAnimation() {}
 
-  EntityType SpriteAnimation::GetType() const { return EntityType::Entity_SpriteAnim; }
-
-  Surface* SpriteAnimation::GetCurrentSurface()
+  SurfacePtr SpriteAnimation::GetCurrentSurface()
   {
     auto res = m_sheet->m_sprites.find(m_currentFrame);
     if (res == m_sheet->m_sprites.end())
@@ -219,12 +207,27 @@ namespace ToolKit
     m_currentTime += deltaTime;
   }
 
-  SpriteSheetManager::SpriteSheetManager() { m_type = ResourceType::SpriteSheet; }
+  XmlNode* SpriteAnimation::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
+  SpriteSheetManager::SpriteSheetManager() { m_baseType = SpriteSheet::StaticClass(); }
 
   SpriteSheetManager::~SpriteSheetManager() {}
 
-  bool SpriteSheetManager::CanStore(ResourceType t) { return t == ResourceType::SpriteSheet; }
+  bool SpriteSheetManager::CanStore(ClassMeta* Class) { return Class == SpriteSheet::StaticClass(); }
 
-  ResourcePtr SpriteSheetManager::CreateLocal(ResourceType type) { return ResourcePtr(new SpriteSheet()); }
+  ResourcePtr SpriteSheetManager::CreateLocal(ClassMeta* Class)
+  {
+    if (Class == SpriteSheet::StaticClass())
+    {
+      return MakeNewPtr<SpriteSheet>();
+    }
+    return nullptr;
+  }
 
 } // namespace ToolKit

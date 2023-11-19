@@ -1,36 +1,14 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
 
 #include "GeometryTypes.h"
 #include "Types.h"
-
-#include <string>
-#include <vector>
 
 namespace ToolKit
 {
@@ -41,7 +19,7 @@ namespace ToolKit
   void ReadVec(XmlNode* node, T& val);
   template <typename T>
   void WriteVec(XmlNode* node, XmlDocument* doc, const T& val);
-  TK_API void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val);
+  TK_API void WriteAttr(XmlNode* node, XmlDocument* doc, const StringView& name, const StringView& val);
 
   TK_API void ReadAttr(XmlNode* node, const String& name, bool& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, float& val);
@@ -50,7 +28,7 @@ namespace ToolKit
   TK_API void ReadAttr(XmlNode* node, const String& name, ULongID& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, byte& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, ubyte& val);
-  TK_API void ReadAttr(XmlNode* node, const String& name, String& val);
+  TK_API void ReadAttr(XmlNode* node, const String& name, String& val, StringView defaultVal = "");
   TK_API XmlNode* Query(XmlDocument* doc, const StringArray& path);
 
   // Updates or inject the attribute with val. Returns true if successful.
@@ -58,7 +36,7 @@ namespace ToolKit
 
   // Create an xml node with given name.
   // Append it to parent if not null else append it to doc.
-  TK_API XmlNode* CreateXmlNode(XmlDocument* doc, const String& name, XmlNode* parent = nullptr);
+  TK_API XmlNode* CreateXmlNode(XmlDocument* doc, const StringView& name, XmlNode* parent = nullptr);
 
   TK_API void WriteMaterial(XmlNode* parent, XmlDocument* doc, const String& file);
   TK_API MaterialPtr ReadMaterial(XmlNode* parent);
@@ -70,10 +48,22 @@ namespace ToolKit
   TK_API String CreateCopyFileFullPath(const String& fullPath);
   TK_API void DecomposePath(const String& fullPath, String* path, String* name, String* ext);
 
-  TK_API void NormalizePath(String& path);
+  TK_API String NormalizePath(String path);
+  TK_API void NormalizePathInplace(String& path);
+
+  typedef std::function<void(int)> RunPipeCallback;
+
+  TK_API int RunPipe(const String& command, RunPipeCallback afterFn);
+
   TK_API void UnixifyPath(String& path);
   TK_API void DosifyPath(String& path);
   TK_API String ConcatPaths(const StringArray& entries);
+
+  // copys all of the directories and folders recursively
+  // note that ignored names can be empty and ignoredExtensions will not copied
+  TK_API void RecursiveCopyDirectory(const String& source,
+                                     const String& destination,
+                                     const StringArray& ignoredExtensions);
 
   /**
    * When a full path of a resource provided, converts it to shorter path
@@ -104,13 +94,11 @@ namespace ToolKit
    */
   TK_API String GetFileName(const String& path);
 
-  enum class ResourceType;
-  TK_API String CreatePathFromResourceType(const String& file, ResourceType type);
+  TK_API String CreatePathFromResourceType(const String& file, struct ClassMeta* Class);
 
-  TK_API ResourceType GetResourceType(const String& ext);
-  TK_API String GetTypeString(ResourceType type);
-  TK_API String GetExtFromType(ResourceType type);
-  TK_API String GetResourcePath(ResourceType type);
+  TK_API struct ClassMeta* GetResourceType(const String& ext);
+  TK_API String GetExtFromType(struct ClassMeta* Class);
+  TK_API String GetResourcePath(struct ClassMeta* Class);
 
   TK_API char GetPathSeparator();
   TK_API String GetPathSeparatorAsStr();
@@ -133,7 +121,7 @@ namespace ToolKit
   TK_API int CountChar(const String& str, const char chr);
 
   /**
-   * Transform ascii chars to lower. Intended usage is extention comparison.
+   * Transform ascii chars to lower. Intended usage is extension comparison.
    */
   TK_API String ToLower(const String& str);
   TK_API String Format(const char* msg, ...);
@@ -145,28 +133,27 @@ namespace ToolKit
 
   // Debug geometries.
   ///////////////////////////////////////////////////////
-  class LineBatch;
-  TK_API LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size);
-  TK_API LineBatch* CreateLineDebugObject(const Vec3Array& corners);
-  TK_API LineBatch* CreateBoundingBoxDebugObject(const BoundingBox& box,
-                                                 const Vec3& color     = Vec3(1.0f, 0.0f, 0.0f),
-                                                 float size            = 2.0f,
-                                                 const Mat4* transform = nullptr);
+  TK_API LineBatchPtr CreatePlaneDebugObject(PlaneEquation plane, float size);
+  TK_API LineBatchPtr CreateLineDebugObject(const Vec3Array& corners);
+  TK_API LineBatchPtr CreateBoundingBoxDebugObject(const BoundingBox& box,
+                                                   const Vec3& color     = Vec3(1.0f, 0.0f, 0.0f),
+                                                   float size            = 2.0f,
+                                                   const Mat4* transform = nullptr);
 
   // Entity operations.
-  TK_API String EntityTypeToString(enum class EntityType type);
-  TK_API void ToEntityIdArray(EntityIdArray& idArray, const EntityRawPtrArray& ptrArray);
+  TK_API void ToEntityIdArray(EntityIdArray& idArray, const EntityPtrArray& ptrArray);
 
   TK_API bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
-  TK_API void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots);
+  TK_API void GetRootEntities(const EntityPtrArray& entities, EntityPtrArray& roots);
 
-  TK_API void GetParents(const Entity* ntt, EntityRawPtrArray& parents);
+  TK_API void GetParents(const EntityPtr ntt, EntityPtrArray& parents);
+
   // Gather hierarchy from parent (indx 0) to child (indx end).
   // Revert the array for child to parent.
-  TK_API void GetChildren(const Entity* ntt, EntityRawPtrArray& children);
+  TK_API void GetChildren(const EntityPtr ntt, EntityPtrArray& children);
 
   // {copies} First one is the copy root, fallowing are attached children.
-  TK_API Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies);
+  TK_API EntityPtr DeepCopy(EntityPtr root, EntityPtrArray& copies);
 
   // Memory operations.
   ///////////////////////////////////////////////////////
@@ -177,7 +164,7 @@ namespace ToolKit
 
   // Vector operations.
   ///////////////////////////////////////////////////////
-  TK_API int IndexOf(Entity* ntt, const EntityRawPtrArray& entities);
+  TK_API int IndexOf(EntityPtr ntt, const EntityPtrArray& entities);
   TK_API bool Exist(const IntArray& vec, int val);
 
   template <typename T, typename Predicate>
@@ -205,15 +192,21 @@ namespace ToolKit
   }
 
   template <typename T, typename Pred>
-  inline void erase_if(T& vec, Pred pred)
+  void erase_if(T& vec, Pred pred)
   {
     vec.erase(std::remove_if(vec.begin(), vec.end(), pred), vec.end());
   }
 
   template <typename T>
-  inline bool contains(const std::vector<T>& arr, const T& val)
+  bool contains(const std::vector<T>& arr, const T& val)
   {
     return std::find(arr.cbegin(), arr.cend(), val) != arr.cend();
+  }
+
+  template <class _Tp, class _Up>
+  inline std::shared_ptr<_Tp> tk_reinterpret_pointer_cast(const std::shared_ptr<_Up>& __r)
+  {
+    return std::shared_ptr<_Tp>(__r, reinterpret_cast<_Tp*>(__r.get()));
   }
 
   /**
@@ -222,10 +215,16 @@ namespace ToolKit
    * @returns if given value exist, returns index of val otherwise -1
    */
   template <typename T>
-  inline int FindIndex(const std::vector<T>& arr, const T& val)
+  int FindIndex(const std::vector<T>& arr, const T& val)
   {
     auto it = std::find(arr.cbegin(), arr.cend(), val);
     return it == arr.cend() ? -1 : int(it - arr.cbegin());
+  }
+
+  template <typename T, uint64 N>
+  inline constexpr uint64 ArraySize(const T (&)[N])
+  {
+    return N;
   }
 
   //  Time.
@@ -233,5 +232,14 @@ namespace ToolKit
   TK_API float MillisecToSec(float ms);
   //  Returns elapsed time from the ToolKit Init.
   TK_API float GetElapsedMilliSeconds();
+
+  // Random.
+  ///////////////////////////////////////////////////////
+
+  TK_API uint64 MurmurHash(uint64 x);
+
+  TK_API void Xoroshiro128PlusSeed(uint64 s[2], uint64 seed);
+
+  TK_API uint64 Xoroshiro128Plus(uint64 s[2]);
 
 } // namespace ToolKit

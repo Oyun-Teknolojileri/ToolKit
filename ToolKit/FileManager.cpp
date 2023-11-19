@@ -1,47 +1,40 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "FileManager.h"
 
+#include "Logger.h"
+#include "Material.h"
+#include "Mesh.h"
+#include "Scene.h"
+#include "Shader.h"
+#include "TKImage.h"
 #include "ToolKit.h"
-
-#include <memory>
-#include <string>
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb/stb_image.h"
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
+
   FileManager::~FileManager()
   {
     if (m_zfile)
     {
       unzClose(m_zfile);
+      m_zfile = nullptr;
+    }
+  }
+
+  void FileManager::CloseZipFile()
+  {
+    if (m_zfile)
+    {
+      unzClose(m_zfile);
+      m_zfile = nullptr;
     }
   }
 
@@ -49,7 +42,8 @@ namespace ToolKit
   {
     String path            = filePath;
     ImageFileInfo fileInfo = {path, nullptr, nullptr, nullptr, 0};
-    return std::get<XmlFilePtr>(GetFile(FileType::Xml, fileInfo));
+    FileDataType data      = GetFile(FileType::Xml, fileInfo);
+    return std::get<XmlFilePtr>(data);
   }
 
   uint8* FileManager::GetImageFile(const String& filePath, int* x, int* y, int* comp, int reqComp)
@@ -81,7 +75,7 @@ namespace ToolKit
       m_zfile = unzOpen(pakPath.c_str());
     }
 
-    if (m_zfile)
+    if (m_zfile && !m_ignorePakFile)
     {
       GenerateOffsetTableForPakFiles();
 
@@ -95,7 +89,10 @@ namespace ToolKit
       }
       else if (fileType == FileType::ImageFloat)
       {
-        return ReadHdriFileFromZip(m_zfile, relativePath, fileInfo);
+        ImageSetVerticalOnLoad(true);
+        float* img = ReadHdriFileFromZip(m_zfile, relativePath, fileInfo);
+        ImageSetVerticalOnLoad(false);
+        return img;
       }
       else
       {
@@ -107,15 +104,18 @@ namespace ToolKit
       // Zip pak not found, read from file at default path
       if (fileType == FileType::Xml)
       {
-        return std::make_shared<XmlFile>(fileInfo.filePath.c_str());
+        return MakeNewPtr<XmlFile>(fileInfo.filePath.c_str());
       }
       else if (fileType == FileType::ImageUint8)
       {
-        return stbi_load(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+        return ImageLoad(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
       }
       else if (fileType == FileType::ImageFloat)
       {
-        return stbi_loadf(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+        ImageSetVerticalOnLoad(true);
+        float* img = ImageLoadF(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+        ImageSetVerticalOnLoad(false);
+        return img;
       }
       else
       {
@@ -128,23 +128,32 @@ namespace ToolKit
     return temp;
   }
 
-  void FileManager::PackResources(const String& sceneResourcesPath)
+  int FileManager::PackResources(const String& sceneResourcesPath)
   {
     String zipName = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
-    if (std::filesystem::exists(zipName.c_str()))
+
+    if (CheckSystemFile(zipName.c_str()))
     {
       if (m_zfile)
       {
         unzClose(m_zfile);
         m_zfile = nullptr;
       }
-      std::filesystem::remove(zipName.c_str());
+
+      std::error_code err;
+      if (!std::filesystem::remove(zipName, err))
+      {
+        TK_LOG("cannot remove MinResources.pak! message: %s\n", err.message().c_str());
+        return 0;
+      }
     }
 
     // Load all scenes once in order to fill resource managers
+    TK_LOG("Packing Scenes\n");
     LoadAllScenes(sceneResourcesPath);
 
     // Get all paths of resources
+    TK_LOG("Getting all used paths\n");
     GetAllUsedResourcePaths(sceneResourcesPath);
 
     // Zip used resources
@@ -152,11 +161,13 @@ namespace ToolKit
     {
       // Error
       GetLogger()->WriteConsole(LogType::Error, "Error zipping.");
+      return 0;
     }
     else
     {
-      GetLogger()->WriteConsole(LogType::Memo, "Resources packed.");
+      GetLogger()->WriteConsole(LogType::Memo, "Resources packed.\n");
     }
+    return 1;
   }
 
   bool FileManager::CheckFileFromResources(const String& path)
@@ -167,8 +178,9 @@ namespace ToolKit
     }
 
     String relativePath = path;
+    UnixifyPath(relativePath);
     GetRelativeResourcesPath(relativePath);
-    return std::filesystem::exists(path) || IsFileInPak(relativePath);
+    return CheckSystemFile(path) || IsFileInPak(relativePath);
   }
 
   void FileManager::LoadAllScenes(const String& path)
@@ -184,7 +196,10 @@ namespace ToolKit
       }
 
       // Load all scenes
-      String pt      = entry.path().string();
+      String pt = entry.path().string();
+      String name;
+      DecomposePath(pt, nullptr, &name, nullptr);
+      TK_LOG("Packing Scene: %s\n", name.c_str());
       ScenePtr scene = GetSceneManager()->Create<Scene>(pt);
       scene->Load();
       scene->Init();
@@ -282,6 +297,10 @@ namespace ToolKit
       if (absolutePath[0] == '.')
       {
         size_t index = absolutePath.find("Prefabs");
+        if (index == String::npos)
+        {
+          continue;
+        }
         absolutePath = absolutePath.substr(index);
         absolutePath = ConcatPaths({DefaultAbsolutePath(), absolutePath});
       }
@@ -332,6 +351,8 @@ namespace ToolKit
     GetExtraFilePaths(sceneResourcesPath);
   }
 
+  bool FileManager::CheckPakFile() { return m_zfile != nullptr; }
+
   bool FileManager::ZipPack(const String& zipName)
   {
     zipFile zFile = zipOpen64(zipName.c_str(), 0);
@@ -348,7 +369,7 @@ namespace ToolKit
     {
       if (!AddFileToZip(zFile, path.c_str()))
       {
-        GetLogger()->WriteConsole(LogType::Warning, "Failed to add this file to zip: %s", path.c_str());
+        GetLogger()->WriteConsole(LogType::Warning, "Failed to add this file to zip: %s\n", path.c_str());
       }
     }
 
@@ -417,8 +438,9 @@ namespace ToolKit
     }
 
     char* fileData = reinterpret_cast<char*>(malloc((flen + 1) * static_cast<uint>(sizeof(char))));
-    red            = fread(fileData, flen, 1, f);
-    ret            = zipWriteInFileInZip(zfile, fileData, static_cast<uint>(red * flen));
+    red            = fread(fileData, 1, flen, f);
+    ret            = zipWriteInFileInZip(zfile, fileData, static_cast<uint>(flen));
+
     if (ret != ZIP_OK)
     {
       fclose(f);
@@ -452,7 +474,7 @@ namespace ToolKit
   {
     String extrFilesPathStr   = ConcatPaths({path, "..", "ExtraFiles.txt"});
     const char* extrFilesPath = extrFilesPathStr.c_str();
-    if (!std::filesystem::exists(extrFilesPath))
+    if (!CheckSystemFile(extrFilesPath))
     {
       GetLogger()->Log("'ExtraFiles.txt' is not found in resources path.");
       GetLogger()->WriteConsole(LogType::Warning, "'ExtraFiles.txt' is not found in resources path.");
@@ -472,8 +494,43 @@ namespace ToolKit
 
       m_allPaths.insert(ConcatPaths({ResourcePath(), line}));
     }
-
     file.close();
+  }
+
+  String FileManager::ReadAllText(const String& file)
+  {
+    std::ifstream inputFile(file, std::ios::binary); // Replace with your file path
+
+    if (!inputFile.is_open())
+    {
+      TK_ERR("cannot read all text! file: %s", file.c_str());
+      assert(0);
+      return "";
+    }
+
+    inputFile.seekg(0, std::ios::end);
+    std::streampos fileSize = inputFile.tellg();
+    inputFile.seekg(0, std::ios::beg);
+
+    // Create a string of size, filled with spaces
+    std::string fileContent(fileSize, ' ');
+    inputFile.read(&fileContent[0], fileSize);
+    return fileContent;
+  }
+
+  void FileManager::WriteAllText(const String& file, const String& text)
+  {
+    std::ofstream outputFile(file);
+
+    if (!outputFile.is_open())
+    {
+      TK_ERR("cannot write all text! file: %s", file.c_str());
+      assert(0);
+      return;
+    }
+
+    outputFile << text; // Write the text to the file
+    outputFile.close();
   }
 
   void FileManager::GetRelativeResourcesPath(String& path)
@@ -511,7 +568,7 @@ namespace ToolKit
     }
 
     // If the file is not found return the file from path
-    return std::make_shared<XmlFile>(path);
+    return MakeNewPtr<XmlFile>(path);
   }
 
   uint8* FileManager::ReadImageFileFromZip(zipFile zfile, const String& relativePath, ImageFileInfo& fileInfo)
@@ -540,7 +597,7 @@ namespace ToolKit
     }
 
     // If the file is not found return the file from path
-    return stbi_load(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+    return ImageLoad(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
   }
 
   float* FileManager::ReadHdriFileFromZip(zipFile zfile, const String& relativePath, ImageFileInfo& fileInfo)
@@ -569,7 +626,7 @@ namespace ToolKit
     }
 
     // If the file is not found return the file from path
-    return stbi_loadf(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+    return ImageLoadF(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
   }
 
   XmlFilePtr FileManager::CreateXmlFileFromZip(zipFile zfile, const String& filename, uint filesize)
@@ -584,7 +641,7 @@ namespace ToolKit
     }
 
     // Create XmlFile object
-    XmlFilePtr file = std::make_shared<XmlFile>(fileBuffer, readBytes);
+    XmlFilePtr file = MakeNewPtr<XmlFile>(fileBuffer, readBytes);
 
     SafeDelArray(fileBuffer);
 
@@ -602,7 +659,7 @@ namespace ToolKit
     }
 
     // Load image
-    uint8* img = stbi_load_from_memory(fileBuffer, filesize, fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+    uint8* img = ImageLoadFromMemory(fileBuffer, filesize, fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
 
     SafeDelArray(fileBuffer);
 
@@ -620,7 +677,7 @@ namespace ToolKit
     }
 
     // Load image
-    float* img = stbi_loadf_from_memory(fileBuffer, filesize, fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
+    float* img = ImageLoadFromMemoryF(fileBuffer, filesize, fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
 
     SafeDelArray(fileBuffer);
 

@@ -1,32 +1,17 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "RenderSettingsView.h"
 
 #include "App.h"
+
+#include <EngineSettings.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -40,12 +25,21 @@ namespace ToolKit
 
     void RenderSettingsView::Show()
     {
+      EngineSettings& engineSettings = GetEngineSettings();
+
       ImGui::SetNextWindowSize(ImVec2(300, 600), ImGuiCond_Once);
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        EngineSettings::PostProcessingSettings& gfx = Main::GetInstance()->m_engineSettings.PostProcessing;
-        if (gfx.TonemappingEnabled && ImGui::CollapsingHeader("Tonemapping"))
+        EngineSettings::PostProcessingSettings& gfx = engineSettings.PostProcessing;
+
+        ImGui::DragFloat("Shadow Distance", &engineSettings.Graphics.ShadowDistance, 1.0f, 0.01f, 100000.0f);
+
+        ImGui::Separator();
+
+        if (ImGui::CollapsingHeader("Tonemapping"))
         {
+          ImGui::Checkbox("ToneMapping##1", &gfx.TonemappingEnabled);
+
           const char* items[] = {"Reinhard", "ACES"};
           uint itemCount      = sizeof(items) / sizeof(items[0]);
           uint tonemapperMode = (uint) gfx.TonemapperMode;
@@ -66,8 +60,10 @@ namespace ToolKit
           }
         }
 
-        if (gfx.BloomEnabled && ImGui::CollapsingHeader("Bloom"))
+        if (ImGui::CollapsingHeader("Bloom"))
         {
+          ImGui::Checkbox("Bloom##1", &gfx.BloomEnabled);
+
           ImGui::DragFloat("Bloom Intensity", &gfx.BloomIntensity, 0.01f, 0.0f, 100.0f);
 
           ImGui::DragFloat("Bloom Threshold", &gfx.BloomThreshold, 0.01f, 0.0f, FLT_MAX);
@@ -111,6 +107,7 @@ namespace ToolKit
           ImGui::DragFloat("Radius", &gfx.SSAORadius, 0.001f, 0.0f, 1.0f);
           ImGui::DragFloat("Spread", &gfx.SSAOSpread, 0.001f, 0.0f, 1.0f);
           ImGui::DragFloat("Bias", &gfx.SSAOBias, 0.001f, 0.0f, 1.0f);
+          ImGui::DragInt("KernelSize", &gfx.SSAOKernelSize, 1, 8, 128);
 
           ImGui::EndDisabled();
         }
@@ -119,6 +116,27 @@ namespace ToolKit
         {
           ImGui::Checkbox("FXAA##1", &gfx.FXAAEnabled);
         }
+
+        ImGui::Separator();
+
+        const char* renderSpecNames[] = {"High", "Low"};
+        const int currentRenderSpec   = (int) engineSettings.Graphics.RenderSpec;
+        const int specCount           = 2;
+        if (ImGui::BeginCombo("Rendering Spec", renderSpecNames[currentRenderSpec]))
+        {
+          for (uint specIndex = 0; specIndex < specCount; specIndex++)
+          {
+            bool isSelected      = false;
+            const char* itemName = renderSpecNames[specIndex];
+            ImGui::Selectable(itemName, &isSelected);
+            if (isSelected)
+            {
+              engineSettings.Graphics.RenderSpec = (RenderingSpec) specIndex;
+            }
+          }
+          ImGui::EndCombo();
+        }
+
       } // Imgui::Begin
       ImGui::End();
     }

@@ -13,19 +13,17 @@
 		in vec3 v_normal;
 		in vec2 v_texture;
 
-		uniform sampler2D s_texture0; // position (in world space)
 		uniform sampler2D s_texture1; // normal (in world space)
 		uniform sampler2D s_texture2; // noise
 		uniform sampler2D s_texture3; // linear depth
 
 		uniform vec2 screenSize;
 		uniform mat4 viewMatrix;
-		uniform vec3 samples[64];
+		uniform vec3 samples[128];
 		uniform mat4 projection;
 		uniform float radius;
 		uniform float bias;
-		
-		const int kernelSize = 64;
+		uniform int kernelSize;
 
 		void main()
 		{

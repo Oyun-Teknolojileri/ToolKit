@@ -24,8 +24,6 @@
 		// ibl buffer
 		uniform sampler2D s_texture16;
 
-		uniform int aoEnabled;
-
 		uniform vec3 camPos;
 
 		in vec2 v_texture;
@@ -46,20 +44,10 @@
 			vec3 e = normalize(camPos - position);
 
 			vec3 irradiance = vec3(0.0);
-			irradiance = PBRLightingDeferred(position, n, e, color, metallicRoughness.r, metallicRoughness.g);
-
-			float ambientOcclusion;
-			if (aoEnabled == 1)
-			{
-				ambientOcclusion = AmbientOcclusion();
-			}
-			else
-			{
-				ambientOcclusion = 1.0;
-			}
-
+			irradiance = PBRLightingDeferred(position, n, e, camPos, color, metallicRoughness.r, metallicRoughness.g);
+			float ambientOcclusion = AmbientOcclusion();
+			
 			irradiance += ibl;
-
 			fragColor = vec4(irradiance * ambientOcclusion, 1.0) + vec4(emissive, 0.0f);
 		}
 	-->

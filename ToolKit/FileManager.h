@@ -1,43 +1,25 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
 
 #include "Types.h"
-#include "unzip.h"
-#include "zip.h"
 
-#include <rapidxml.hpp>
-#include <rapidxml_utils.hpp>
+#include <zlib.h>
 
-#include <filesystem>
-#include <fstream>
-#include <unordered_map>
-#include <utility>
 #include <variant>
+
+#ifdef __ANDROID__
+  #include <Android/minizip/unzip.h>
+  #include <Android/minizip/zip.h>
+#else
+  #include <unzip.h>
+  #include <zip.h>
+#endif
 
 namespace ToolKit
 {
@@ -50,11 +32,13 @@ namespace ToolKit
     uint8* GetImageFile(const String& filePath, int* x, int* y, int* comp, int reqComp);
     float* GetHdriFile(const String& filePath, int* x, int* y, int* comp, int reqComp);
 
-    void PackResources(const String& path);
-
+    int PackResources(const String& path);
+    void CloseZipFile();
     bool CheckFileFromResources(const String& path);
-
     void GetRelativeResourcesPath(String& path);
+    bool CheckPakFile(); //!< Returns true if workspace contains pak file.
+    String ReadAllText(const String& file);
+    void WriteAllText(const String& file, const String& text);
 
    private:
     typedef std::variant<XmlFilePtr, uint8*, float*> FileDataType;
@@ -101,9 +85,7 @@ namespace ToolKit
     bool m_offsetTableCreated = false;
     zipFile m_zfile           = nullptr;
 
-    struct _streambuf : std::streambuf
-    {
-      _streambuf(char* begin, char* end) { this->setg(begin, begin, end); }
-    };
+   public:
+    bool m_ignorePakFile = false;
   };
 } // namespace ToolKit

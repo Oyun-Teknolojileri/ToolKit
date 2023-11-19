@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
@@ -31,16 +12,9 @@
  * and related structures.
  */
 
-#include "Entity.h"
-#include "Node.h"
 #include "Resource.h"
-#include "ResourceManager.h"
-#include "Skeleton.h"
 #include "SkeletonComponent.h"
 #include "Types.h"
-
-#include <unordered_map>
-#include <vector>
 
 namespace ToolKit
 {
@@ -79,10 +53,7 @@ namespace ToolKit
   class TK_API Animation : public Resource
   {
    public:
-    /**
-     * Auto generated code for type information.
-     */
-    TKResourceType(Animation);
+    TKDeclareClass(Animation, Resource);
 
     /**
      * Empty constructor.
@@ -98,7 +69,7 @@ namespace ToolKit
     /**
      * Uninitiate and frees the memory.
      */
-    ~Animation();
+    virtual ~Animation();
 
     /**
      * Sets the Node's transform from the animation based on time.
@@ -136,11 +107,6 @@ namespace ToolKit
     void Reverse();
 
     /**
-     * Save animation to disk
-     */
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-
-    /**
      * Finds nearest keys and interpolation ratio for current time.
      * @param keys animation key array.
      * @param key1 output key 1.
@@ -152,6 +118,9 @@ namespace ToolKit
 
    protected:
     void CopyTo(Resource* other) override;
+
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     /**
@@ -172,8 +141,8 @@ namespace ToolKit
    public:
     AnimationManager();
     virtual ~AnimationManager();
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
+    bool CanStore(ClassMeta* Class) override;
+    ResourcePtr CreateLocal(ClassMeta* Class) override;
   };
 
   /**
@@ -193,7 +162,9 @@ namespace ToolKit
      * @param entity Is the entity to play the animation on.
      * @param anim Is the animation to play for the record.
      */
-    AnimRecord(Entity* entity, const AnimationPtr& anim);
+    void Construct(EntityPtr entity, const AnimationPtr& anim);
+
+    ~AnimRecord();
 
    public:
     /**
@@ -203,7 +174,7 @@ namespace ToolKit
     bool m_loop            = false; //!< States if the animation mean to be looped.
     float m_timeMultiplier = 1.0f;  //!< Speed multiplier for animation.
     AnimationPtr m_animation;       //!< Animation to play.
-    Entity* m_entity;
+    EntityWeakPtr m_entity;
     BlendTarget m_blendTarget;
 
     /**

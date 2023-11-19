@@ -1,35 +1,13 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
 
-#include "Drawable.h"
-#include "MaterialComponent.h"
-#include "MeshComponent.h"
-#include "ParameterBlock.h"
+#include "Entity.h"
 #include "RenderState.h"
 #include "Types.h"
 
@@ -63,38 +41,42 @@ namespace ToolKit
     };
 
    public:
-    explicit Billboard(const Settings& settings);
+    TKDeclareClass(Billboard, Entity);
 
-    virtual void LookAt(class Camera* cam, float scale);
-    EntityType GetType() const override;
+    Billboard();
+    explicit Billboard(const Settings& settings);
+    void NativeConstruct() override;
+    virtual void LookAt(CameraPtr cam, float scale);
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     Settings m_settings;
     Vec3 m_worldLocation;
-    Entity* m_entity = nullptr;
+    EntityPtr m_entity = nullptr;
   };
 
   class TK_API Cube final : public Entity
   {
    public:
-    Cube(bool genDef = true);
-    Cube(const Vec3& scale);
+    TKDeclareClass(Cube, Entity);
 
-    EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    Cube();
+    void NativeConstruct() override;
+    static void Generate(MeshComponentPtr meshComp, const Vec3& dimention);
 
-    static void Generate(MeshComponentPtr meshComp, const Vec3& scale);
+   protected:
+    void Generate();
+    Entity* CopyTo(Entity* copyTo) const override;
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
     TKDeclareParam(Vec3, CubeScale);
-
-   protected:
-    Entity* CopyTo(Entity* copyTo) const override;
-    void ParameterConstructor();
 
    private:
     bool m_generated = false;
@@ -105,14 +87,15 @@ namespace ToolKit
   class TK_API Quad final : public Entity
   {
    public:
-    Quad(bool genDef = true);
+    TKDeclareClass(Quad, Entity);
 
-    EntityType GetType() const override;
+    Quad();
+    void NativeConstruct() override;
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    private:
     void Generate();
@@ -123,21 +106,23 @@ namespace ToolKit
   class TK_API Sphere final : public Entity
   {
    public:
-    Sphere(bool genDef = true);
-    Sphere(float radius);
+    TKDeclareClass(Sphere, Entity);
 
-    EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-    static void Generate(MeshComponentPtr mesh, float radius);
+    Sphere();
+    void NativeConstruct() override;
+    static void Generate(MeshComponentPtr mesh, float radius, int numRing, int numSeg);
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
-    void ParameterConstructor(float radius);
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
-   private:
    public:
     TKDeclareParam(float, Radius);
+    TKDeclareParam(int, NumRing);
+    TKDeclareParam(int, NumSeg);
   };
 
   typedef std::shared_ptr<Sphere> SpherePtr;
@@ -145,16 +130,19 @@ namespace ToolKit
   class TK_API Cone final : public Entity
   {
    public:
-    Cone(bool genDef = true);
-    Cone(float height, float radius, int segBase, int segHeight);
+    TKDeclareClass(Cone, Entity);
 
-    EntityType GetType() const override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    Cone();
+    void NativeConstruct() override;
+    void Generate(float height, float radius, int segBase, int segHeight);
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
-    void ParameterConstructor();
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
+
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    private:
     void Generate();
@@ -171,15 +159,15 @@ namespace ToolKit
   class TK_API Arrow2d final : public Entity
   {
    public:
-    Arrow2d(bool genDef = true);
-    Arrow2d(AxisLabel label); // X - Y - Z.
-    EntityType GetType() const override;
+    TKDeclareClass(Arrow2d, Entity);
+
+    Arrow2d();
+    void NativeConstruct() override;
+    void Generate(AxisLabel axis);
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
-
-   private:
-    void Generate();
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:
     AxisLabel m_label;
@@ -190,16 +178,24 @@ namespace ToolKit
   class TK_API LineBatch final : public Entity
   {
    public:
-    LineBatch();
-    LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);
+    TKDeclareClass(LineBatch, Entity);
 
-    EntityType GetType() const override;
+    LineBatch();
+    void NativeConstruct() override;
+
     void Generate(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
   };
 
   typedef std::shared_ptr<LineBatch> LineBatchPtr;
 
+  class TK_API MeshGenerator final
+  {
+   public:
+    static void GenerateCircleMesh(MeshPtr mesh, int numSegments, float radius);
+    static void GenerateConeMesh(MeshPtr mesh, float radius, int vertexCount, float outerAngle);
+  };
 } // namespace ToolKit

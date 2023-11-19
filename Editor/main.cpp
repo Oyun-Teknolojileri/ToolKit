@@ -1,55 +1,47 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
+#include "Anchor.h"
 #include "App.h"
-#include "Common/SDLEventPool.h"
-#include "Common/Win32Utils.h"
 #include "ConsoleWindow.h"
-#include "GlErrorReporter.h"
+#include "EditorCamera.h"
+#include "Gizmo.h"
+#include "Grid.h"
 #include "Mod.h"
-#include "SDL.h"
-#include "Types.h"
+#include "TKProfiler.h"
 #include "UI.h"
 
-#include <stdio.h>
+#include <Common/SDLEventPool.h>
+#include <Common/Win32Utils.h>
+#include <FileManager.h>
+#include <GlErrorReporter.h>
+#include <ImGui/backends/imgui_impl_sdl2.h>
+#include <Meta.h>
+#include <PluginManager.h>
+#include <SDL.h>
+#include <Types.h>
+#include <locale.h>
 
+#include <array>
 #include <chrono>
 
-#include "DebugNew.h"
+#include <DebugNew.h>
 
 namespace ToolKit
 {
   namespace Editor
   {
 
-    bool g_running          = true;
-    SDL_Window* g_window    = nullptr;
-    SDL_GLContext g_context = nullptr;
-    App* g_app              = nullptr;
-    Main* g_proxy           = nullptr;
+    bool g_running               = true;
+    SDL_Window* g_window         = nullptr;
+    SDL_GLContext g_context      = nullptr;
+    App* g_app                   = nullptr;
+    Main* g_proxy                = nullptr;
+    SDLEventPool* g_sdlEventPool = nullptr;
 
     /*
      * Refactor as below.
@@ -73,8 +65,7 @@ namespace ToolKit
         return;
       }
 
-      StringArray files           = {"Workspace.settings", "Editor.settings", "UILayout.ini", "Engine.settings"};
-
+      std::array<String, 4> files = {"Workspace.settings", "Editor.settings", "UILayout.ini", "Engine.settings"};
       String cfgPath              = ConcatPaths({String(appData), "ToolKit", "Config"});
 
       // Create ToolKit Configs.
@@ -85,7 +76,7 @@ namespace ToolKit
       }
       if (doesConfigFolderExists)
       {
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < files.size(); i++)
         {
           String targetFile = ConcatPaths({cfgPath, files[i]});
           if (!CheckSystemFile(targetFile))
@@ -109,6 +100,7 @@ namespace ToolKit
         {
           String utf8Path = path.parent_path().u8string();
           utf8Path.erase(remove(utf8Path.begin(), utf8Path.end(), '\"'), utf8Path.end());
+          UnixifyPath(utf8Path);
 
           file << utf8Path;
         }
@@ -120,16 +112,24 @@ namespace ToolKit
 
     void PreInit()
     {
+      g_sdlEventPool = new SDLEventPool();
+
       // PreInit Main
-      g_proxy = new Main();
+      g_proxy        = new Main();
       Main::SetProxy(g_proxy);
       CreateAppData();
       g_proxy->PreInit();
+
+      // Platform dependent function assignments.
+      g_proxy->m_pluginManager->FreeModule      = &PlatformHelpers::TKFreeModule;
+      g_proxy->m_pluginManager->LoadModule      = &PlatformHelpers::TKLoadModule;
+      g_proxy->m_pluginManager->GetFunction     = &PlatformHelpers::TKGetFunction;
+      g_proxy->m_pluginManager->GetCreationTime = &PlatformHelpers::GetCreationTime;
     }
 
     void Init()
     {
-      EngineSettings& settings = g_proxy->m_engineSettings;
+      EngineSettings& settings = GetEngineSettings();
 
       // Init SDL
       if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0)
@@ -138,17 +138,19 @@ namespace ToolKit
       }
       else
       {
-#ifdef TK_GL_CORE_3_2
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-#elif defined(TK_GL_ES_3_0)
+#ifdef TK_GL_ES_3_0
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#endif // TK_GL_CORE_3_2
+#endif
+
+// Opengl debuging & profiling features requires es 3_2 context
+#ifdef TK_GL_ES_3_2
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#endif
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -193,6 +195,8 @@ namespace ToolKit
           }
           else
           {
+            SDL_GL_MakeCurrent(g_window, g_context);
+
             // Init OpenGl.
             g_proxy->m_renderSys->InitGl(SDL_GL_GetProcAddress,
                                          [](const std::string& msg) -> void
@@ -205,8 +209,9 @@ namespace ToolKit
                                            if (g_app->m_showGraphicsApiErrors)
                                            {
                                              GetLogger()->WriteConsole(LogType::Error, msg.c_str());
-                                             GetLogger()->WritePlatformConsole(LogType::Error, msg.c_str());
                                            }
+
+                                           GetLogger()->WritePlatformConsole(LogType::Error, msg.c_str());
                                          });
 
             // Init Main.
@@ -215,14 +220,66 @@ namespace ToolKit
             g_proxy->m_sceneManager = new EditorSceneManager();
             g_proxy->Init();
 
+            GetFileManager()->m_ignorePakFile = true;
+
+            // Register Custom Classes.
+            ObjectFactory* of                 = g_proxy->m_objectFactory;
+            of->Register<Grid>();
+            of->Register<Anchor>();
+            of->Register<Cursor>();
+            of->Register<Axis3d>();
+            of->Register<LinearGizmo>();
+            of->Register<MoveGizmo>();
+            of->Register<ScaleGizmo>();
+            of->Register<PolarGizmo>();
+            of->Register<SkyBillboard>();
+            of->Register<LightBillboard>();
+            of->Register<GridFragmentShader>();
+
+            // Overrides.
+            of->Override<EditorDirectionalLight, DirectionalLight>();
+            of->Override<EditorPointLight, PointLight>();
+            of->Override<EditorSpotLight, SpotLight>();
+            of->Override<EditorScene, Scene>();
+            of->Override<EditorCamera, Camera>();
+
             // Set defaults
             SDL_GL_SetSwapInterval(0);
 
             // Init app
-            g_app                 = new App(settings.Window.Width, settings.Window.Height);
-            g_app->m_sysComExecFn = ToolKit::Win32Helpers::g_SysComExecFn;
+            g_app                   = new App(settings.Window.Width, settings.Window.Height);
+            g_app->m_sysComExecFn   = &ToolKit::PlatformHelpers::SysComExec;
+            g_app->m_shellOpenDirFn = &ToolKit::PlatformHelpers::OpenExplorer;
+
             GetLogger()->SetPlatformConsoleFn([](LogType type, const String& msg) -> void
-                                              { ToolKit::Win32Helpers::OutputLog((int) type, msg.c_str()); });
+                                              { ToolKit::PlatformHelpers::OutputLog((int) type, msg.c_str()); });
+
+            // Allow classes with the MenuMetaKey to be created from the add menu.
+            of->m_metaProcessorMap[MenuMetaKey] = [](StringView val) -> void
+            {
+              bool exist = false;
+              for (String& meta : g_app->m_customObjectMetaValues)
+              {
+                if (meta == val)
+                {
+                  exist = true;
+                  break;
+                }
+              }
+
+              if (!exist)
+              {
+                g_app->m_customObjectMetaValues.push_back(String(val));
+                g_app->ReconstructDynamicMenus();
+              }
+            };
+
+            // This code just creates a dummy Primiatives menu to demonstrate the feature.
+            // Game plugins should extend the editor with their custom types this way.
+            g_app->m_customObjectMetaValues.push_back("Primatives/Helper/Arrow2d:Arrow");
+            g_app->m_customObjectMetaValues.push_back("Primatives/Geometry/Cube:Cube");
+            g_app->m_customObjectMetaValues.push_back("Primatives/Geometry/Sphere:Sphere");
+            g_app->ReconstructDynamicMenus();
 
             UI::Init();
             g_app->Init();
@@ -240,6 +297,7 @@ namespace ToolKit
       g_proxy->PostUninit();
       SafeDel(g_proxy);
 
+      SafeDel(g_sdlEventPool);
       SDL_DestroyWindow(g_window);
       SDL_Quit();
 
@@ -285,25 +343,38 @@ namespace ToolKit
 
       while (g_running)
       {
+        PUSH_CPU_MARKER("Whole Frame");
+
+        PUSH_CPU_MARKER("SDL Poll Event");
+
         SDL_Event sdlEvent;
         while (SDL_PollEvent(&sdlEvent))
         {
-          PoolEvent(sdlEvent);
+          g_sdlEventPool->PoolEvent(sdlEvent);
           ProcessEvent(sdlEvent);
         }
+
+        POP_CPU_MARKER();
 
         timer->CurrentTime = GetElapsedMilliSeconds();
         if (timer->CurrentTime > timer->LastTime + timer->DeltaTime)
         {
+          PUSH_CPU_MARKER("App Frame");
+
           g_app->Frame(timer->CurrentTime - timer->LastTime);
 
-          // Update Present imgui windows.
-          ImGui::UpdatePlatformWindows();
-          ImGui::RenderPlatformWindowsDefault();
+          POP_CPU_MARKER();
+          PUSH_CPU_MARKER("Swap Window");
+
           SDL_GL_MakeCurrent(g_window, g_context);
           SDL_GL_SwapWindow(g_window);
 
-          ClearPool(); // Clear after consumption.
+          POP_CPU_MARKER();
+          PUSH_CPU_MARKER("Clear SDL Event Pool");
+
+          g_sdlEventPool->ClearPool(); // Clear after consumption.
+
+          POP_CPU_MARKER();
 
           timer->FrameCount++;
           timer->TimeAccum += timer->CurrentTime - timer->LastTime;
@@ -316,6 +387,8 @@ namespace ToolKit
 
           timer->LastTime = timer->CurrentTime;
         }
+
+        POP_CPU_MARKER();
       }
     }
 
@@ -335,6 +408,9 @@ namespace ToolKit
 
 int main(int argc, char* argv[])
 {
+  setlocale(LC_ALL, ".UTF-8");
+  setlocale(LC_NUMERIC, "C");
+
 #ifdef TK_DEBUG
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif

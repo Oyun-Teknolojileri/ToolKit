@@ -1,40 +1,24 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Material.h"
 
+#include "FileManager.h"
+#include "Logger.h"
+#include "Shader.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "rapidxml.hpp"
-#include "rapidxml_utils.hpp"
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
+
+  TKDefineClass(Material, Resource);
 
   Material::Material()
   {
@@ -48,19 +32,11 @@ namespace ToolKit
 
   void Material::Load()
   {
-    if (m_loaded)
+    if (!m_loaded)
     {
-      return;
+      m_loaded = true;
+      ParseDocument("material");
     }
-
-    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
-    XmlDocument doc;
-    doc.parse<0>(file->data());
-
-    XmlNode* rootNode = doc.first_node("material");
-    DeSerialize(&doc, rootNode);
-
-    m_loaded = true;
   }
 
   void Material::Save(bool onlyIfDirty)
@@ -190,6 +166,7 @@ namespace ToolKit
 
   void Material::SetDefaultMaterialTypeShaders()
   {
+    // All PBR opaque materials should be rendered at deferred renderer
     if (IsPBR())
     {
       if (IsTranslucent())
@@ -207,10 +184,13 @@ namespace ToolKit
 
   void Material::SetAlpha(float val)
   {
-    val                         = glm::clamp(val, 0.0f, 1.0f);
-    m_alpha                     = val;
-    bool isForward              = m_alpha < 0.99f;
-    m_renderState.blendFunction = isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA : BlendFunction::NONE;
+    val            = glm::clamp(val, 0.0f, 1.0f);
+    m_alpha        = val;
+    bool isForward = m_alpha < 0.999f;
+    if (isForward && m_renderState.blendFunction != BlendFunction::ALPHA_MASK)
+    {
+      m_renderState.blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+    }
   }
 
   float& Material::GetAlpha() { return m_alpha; }
@@ -233,7 +213,7 @@ namespace ToolKit
     return file == GetShaderManager()->PbrDefferedShaderFile() || file == GetShaderManager()->PbrForwardShaderFile();
   }
 
-  void Material::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Material::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "material", parent);
 
@@ -301,19 +281,12 @@ namespace ToolKit
     node = CreateXmlNode(doc, "roughness", container);
     WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_roughness));
 
-    node = CreateXmlNode(doc, "materialType", container);
-    WriteAttr(node, doc, XmlNodeName.data(), std::to_string((int) m_materialType));
-
     m_renderState.Serialize(doc, container);
+    return container;
   }
 
-  void Material::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Material::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (parent == nullptr)
-    {
-      return;
-    }
-
     XmlNode* rootNode = parent;
     for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
     {
@@ -360,7 +333,7 @@ namespace ToolKit
       }
       else if (strcmp("renderState", node->name()) == 0)
       {
-        m_renderState.DeSerialize(doc, parent);
+        m_renderState.DeSerialize(info, parent);
       }
       else if (strcmp("emissiveTexture", node->name()) == 0)
       {
@@ -395,13 +368,7 @@ namespace ToolKit
       {
         ReadAttr(node, XmlNodeName.data(), m_roughness);
       }
-      else if (strcmp("materialType", node->name()) == 0)
-      {
-        int matType;
-        ReadAttr(node, XmlNodeName.data(), matType);
-        matType        = glm::clamp(matType, 1, 2);
-        m_materialType = (MaterialType) matType;
-      }
+      else if (strcmp("materialType", node->name()) == 0) {}
       else
       {
         assert(false);
@@ -439,9 +406,11 @@ namespace ToolKit
         }
       }
     }
+
+    return nullptr;
   }
 
-  MaterialManager::MaterialManager() { m_type = ResourceType::Material; }
+  MaterialManager::MaterialManager() { m_baseType = Material::StaticClass(); }
 
   MaterialManager::~MaterialManager() {}
 
@@ -449,57 +418,76 @@ namespace ToolKit
   {
     ResourceManager::Init();
 
-    Material* material         = new Material();
+    // PBR material
+    MaterialPtr material       = MakeNewPtr<Material>();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
-
     m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
 
-    material                                          = new Material();
-    material->m_materialType                          = MaterialType::Custom;
-
+    // Phong material
+    material                                          = MakeNewPtr<Material>();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-
-    material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
-
+    material->m_fragmentShader = GetShaderManager()->GetPhongForwardShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
-
     material->Init();
+    m_storage[MaterialPath("phongForward.material", true)] = MaterialPtr(material);
 
+    // Unlit material
+    material                                               = MakeNewPtr<Material>();
+    material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
+    material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
+    material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
+    material->Init();
     m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
   }
 
-  bool MaterialManager::CanStore(ResourceType t) { return t == ResourceType::Material; }
+  bool MaterialManager::CanStore(ClassMeta* Class) { return Class == Material::StaticClass(); }
 
-  ResourcePtr MaterialManager::CreateLocal(ResourceType type) { return ResourcePtr(new Material()); }
-
-  String MaterialManager::GetDefaultResource(ResourceType type) { return MaterialPath("missing.material", true); }
-
-  MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()
+  ResourcePtr MaterialManager::CreateLocal(ClassMeta* Class)
   {
-    return m_storage[MaterialPath("unlit.material", true)]->Copy<Material>();
+    if (Class == Material::StaticClass())
+    {
+      return MakeNewPtr<Material>();
+    }
+
+    return nullptr;
   }
 
-  MaterialPtr MaterialManager::GetCopyOfUIMaterial()
+  String MaterialManager::GetDefaultResource(ClassMeta* Class) { return MaterialPath("missing.material", true); }
+
+  MaterialPtr MaterialManager::GetCopyOfUnlitMaterial(bool storeInMaterialManager)
   {
-    MaterialPtr material                      = GetMaterialManager()->GetCopyOfUnlitMaterial();
+    ResourcePtr source = m_storage[MaterialPath("unlit.material", true)];
+    return Copy<Material>(source, storeInMaterialManager);
+  }
+
+  MaterialPtr MaterialManager::GetCopyOfUIMaterial(bool storeInMaterialManager)
+  {
+    MaterialPtr material                      = GetMaterialManager()->GetCopyOfUnlitMaterial(storeInMaterialManager);
     material->GetRenderState()->blendFunction = BlendFunction::ALPHA_MASK;
 
     return material;
   }
 
-  MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial()
+  MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial(bool storeInMaterialManager)
   {
-    MaterialPtr umat       = GetCopyOfUnlitMaterial();
+    MaterialPtr umat       = GetCopyOfUnlitMaterial(storeInMaterialManager);
     umat->m_diffuseTexture = nullptr;
     return umat;
   }
 
-  MaterialPtr MaterialManager::GetCopyOfDefaultMaterial()
+  MaterialPtr MaterialManager::GetCopyOfDefaultMaterial(bool storeInMaterialManager)
   {
-    return m_storage[MaterialPath("default.material", true)]->Copy<Material>();
+    ResourcePtr source = m_storage[MaterialPath("default.material", true)];
+    return Copy<Material>(source, storeInMaterialManager);
+  }
+
+  MaterialPtr MaterialManager::GetCopyOfPhongMaterial(bool storeInMaterialManager)
+  {
+    ResourcePtr source = m_storage[MaterialPath("phongForward.material", true)];
+    return Copy<Material>(source, storeInMaterialManager);
   }
 
 } // namespace ToolKit

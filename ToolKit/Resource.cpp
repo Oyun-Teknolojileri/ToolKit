@@ -1,45 +1,31 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Resource.h"
 
+#include "FileManager.h"
+#include "Material.h"
+#include "Mesh.h"
+#include "ResourceManager.h"
+#include "Skeleton.h"
 #include "ToolKit.h"
 #include "Util.h"
-
-#include <string>
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
 
+  TKDefineClass(Resource, Object);
+
   Resource::Resource()
   {
-    m_id   = GetHandleManager()->GetNextHandle();
-    m_name = "Resource_" + std::to_string(m_id);
+    static ULongID globalCounter = 1;
+    m_name                       = "Resource_" + std::to_string(globalCounter++);
   }
 
   Resource::~Resource() {}
@@ -53,8 +39,8 @@ namespace ToolKit
 
     if (m_file.empty())
     {
-      m_file = m_name + GetExtFromType(GetType());
-      m_file = CreatePathFromResourceType(m_file, GetType());
+      m_file = m_name + GetExtFromType(Class());
+      m_file = CreatePathFromResourceType(m_file, Class());
     }
 
     std::ofstream file;
@@ -88,7 +74,7 @@ namespace ToolKit
 
   void Resource::CopyTo(Resource* other)
   {
-    assert(other->GetType() == GetType());
+    assert(other->Class() == Class());
     if (!m_file.empty())
     {
       other->m_file = CreateCopyFileFullPath(m_file);
@@ -99,16 +85,49 @@ namespace ToolKit
     other->m_initiated = m_initiated;
   }
 
-  ResourceType Resource::GetType() const { return ResourceType::Base; }
+  void Resource::ParseDocument(StringView firstNode, bool fullParse)
+  {
+    SerializationFileInfo info;
+    info.File          = GetFile();
 
-  void Resource::Serialize(XmlDocument* doc, XmlNode* parent) const { assert(false && "Not implemented"); }
+    XmlFilePtr file    = GetFileManager()->GetXmlFile(info.File);
+    XmlDocumentPtr doc = MakeNewPtr<XmlDocument>();
 
-  void Resource::DeSerialize(XmlDocument* doc, XmlNode* parent) { assert(false && "Not implemented"); }
+    if (fullParse)
+    {
+      doc->parse<rapidxml::parse_full>(file->data());
+    }
+    else
+    {
+      doc->parse<rapidxml::parse_default>(file->data());
+    }
+
+    info.Document = doc.get();
+    if (XmlNode* rootNode = doc->first_node(firstNode.data()))
+    {
+      ReadAttr(rootNode, XmlVersion.data(), info.Version, "v0.4.4");
+      m_version = info.Version;
+
+      DeSerialize(info, rootNode);
+    }
+  }
+
+  XmlNode* Resource::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    assert(false && "Not implemented");
+    return nullptr;
+  }
+
+  XmlNode* Resource::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    assert(false && "Not implemented");
+    return nullptr;
+  }
 
   void Resource::SerializeRef(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* refNode = CreateXmlNode(doc, XmlResRefElement, parent);
-    WriteAttr(refNode, doc, "Type", std::to_string((int) GetType()));
+    WriteAttr(refNode, doc, "Class", Class()->Name);
 
     String file = GetSerializeFile();
     file        = GetRelativeResourcePath(file);

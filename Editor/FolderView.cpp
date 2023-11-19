@@ -1,39 +1,24 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "App.h"
 #include "MaterialView.h"
 #include "PopupWindows.h"
 
-#include "DebugNew.h"
+#include <Material.h>
+#include <Mesh.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
   namespace Editor
   {
+
     FolderView::FolderView() { CreateItemActions(); }
 
     FolderView::~FolderView() { SafeDel(m_tempMaterialWindow); }
@@ -391,8 +376,8 @@ namespace ToolKit
           if (ImGui::ImageButton(ConvertUIntImGuiTexture(iconId), m_iconSize, ImVec2(0.0f, 0.0f), texCoords))
           {
             anyButtonClicked |= true;
-            bool shiftDown   = ImGui::IsKeyDown(ImGuiKey_LeftShift);
-            bool ctrlDown    = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+            bool shiftDown    = ImGui::IsKeyDown(ImGuiKey_LeftShift);
+            bool ctrlDown     = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
             // handle multi selection and input
             if (!shiftDown && !ctrlDown)
             {
@@ -420,9 +405,7 @@ namespace ToolKit
           {
             if (ResourceManager* rm = dirEnt.GetManager())
             {
-              switch (rm->m_type)
-              {
-              case ResourceType::Material:
+              if (rm->m_baseType == Material::StaticClass())
               {
                 MaterialPtr mat = rm->Create<Material>(dirEnt.GetFullPath());
                 if (m_tempMaterialWindow == nullptr)
@@ -432,13 +415,23 @@ namespace ToolKit
                 m_tempMaterialWindow->SetMaterial(mat);
                 m_tempMaterialWindow->OpenWindow();
               }
-              break;
-              case ResourceType::Mesh:
+              else if (rm->m_baseType == Material::StaticClass())
+              {
+                MaterialPtr mat = rm->Create<Material>(dirEnt.GetFullPath());
+                if (m_tempMaterialWindow == nullptr)
+                {
+                  m_tempMaterialWindow = new TempMaterialWindow();
+                }
+                m_tempMaterialWindow->SetMaterial(mat);
+                m_tempMaterialWindow->OpenWindow();
+              }
+              else if (rm->m_baseType == Mesh::StaticClass())
+              {
                 g_app->GetPropInspector()->SetMeshView(rm->Create<Mesh>(dirEnt.GetFullPath()));
-                break;
-              case ResourceType::SkinMesh:
+              }
+              else if (rm->m_baseType == SkinMesh::StaticClass())
+              {
                 g_app->GetPropInspector()->SetMeshView(rm->Create<SkinMesh>(dirEnt.GetFullPath()));
-                break;
               }
             }
           }
@@ -673,7 +666,7 @@ namespace ToolKit
         }
         m_itemActions["FileSystem/MakeDir"](nullptr, this);
         m_itemActions["Refresh"](nullptr, this);
-        m_itemActions["FileSystem/CopyPath"](nullptr, this);
+        m_itemActions["FileSystem/Show In Explorer"](nullptr, this);
 
         ImGui::EndPopup();
       }
@@ -722,7 +715,8 @@ namespace ToolKit
       };
 
       // Copy file path.
-      m_itemActions["FileSystem/CopyPath"] = [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      m_itemActions["FileSystem/Show In Explorer"] = [getSameViewsFn](DirectoryEntry* entry,
+                                                                      FolderView* thisView) -> void
       {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
@@ -730,14 +724,9 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::MenuItem("CopyPath"))
+        if (ImGui::MenuItem("Show In Explorer"))
         {
-          int copied = SDL_SetClipboardText(views[0]->m_path.c_str());
-          if (copied < 0)
-          {
-            // Error
-            g_app->GetConsole()->AddLog("Could not copy the folder path to clipboard", LogType::Error);
-          }
+          g_app->m_shellOpenDirFn(views[0]->m_path.c_str());
           ImGui::CloseCurrentPopup();
         }
       };
@@ -958,7 +947,8 @@ namespace ToolKit
             }
             else
             {
-              ScenePtr scene = std::make_shared<Scene>(file);
+              ScenePtr scene = MakeNewPtr<Scene>();
+              scene->SetFile(file);
               scene->Save(false);
               for (FolderView* view : views)
               {
@@ -988,35 +978,48 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::MenuItem("Create"))
+        if (ImGui::BeginMenu("Create"))
         {
-          StringInputWindow* inputWnd = new StringInputWindow("Material Name##NwMat", true);
-          inputWnd->m_inputVal        = "New Material";
-          inputWnd->m_inputLabel      = "Name";
-          inputWnd->m_hint            = "New material name";
-          inputWnd->m_taskFn          = [views](const String& val)
+          auto inputWindowFn = [&views, &thisView](bool isPbr)
           {
-            String file = ConcatPaths({views[0]->m_path, val + MATERIAL});
-            if (CheckFile(file))
+            StringInputWindow* inputWnd = new StringInputWindow("Material Name##NwMat", true);
+            inputWnd->m_inputVal        = "New Material";
+            inputWnd->m_inputLabel      = "Name";
+            inputWnd->m_hint            = "New material name";
+            inputWnd->m_taskFn          = [views, isPbr](const String& val)
             {
-              g_app->GetConsole()->AddLog("Can't create. A material with the same name exist", LogType::Error);
-            }
-            else
-            {
-              MaterialManager* man = GetMaterialManager();
-              MaterialPtr mat      = man->GetCopyOfDefaultMaterial();
-              mat->m_name          = val;
-              mat->SetFile(file);
-              for (FolderView* view : views)
+              String file = ConcatPaths({views[0]->m_path, val + MATERIAL});
+              if (CheckFile(file))
               {
-                view->m_dirty = true;
+                g_app->GetConsole()->AddLog("Can't create. A material with the same name exist", LogType::Error);
               }
-              mat->Save(true);
-              man->Manage(mat);
-            }
+              else
+              {
+                MaterialManager* man = GetMaterialManager();
+                MaterialPtr mat      = isPbr ? man->GetCopyOfDefaultMaterial() : man->GetCopyOfPhongMaterial();
+                mat->m_name          = val;
+                mat->SetFile(file);
+                for (FolderView* view : views)
+                {
+                  view->m_dirty = true;
+                }
+                mat->Save(true);
+                man->Manage(mat);
+              }
+            };
+            thisView->m_parent->ReconstructFolderTree();
+            ImGui::CloseCurrentPopup();
           };
-          thisView->m_parent->ReconstructFolderTree();
-          ImGui::CloseCurrentPopup();
+
+          if (ImGui::MenuItem("PBR"))
+          {
+            inputWindowFn(true);
+          }
+          if (ImGui::MenuItem("Phong"))
+          {
+            inputWindowFn(false);
+          }
+          ImGui::EndMenu();
         }
       };
     }

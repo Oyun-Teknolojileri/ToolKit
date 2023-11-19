@@ -1,41 +1,29 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#include "ToolKit.h"
-#include "Util.h"
-#include "assimp/DefaultLogger.hpp"
-#include "assimp/Importer.hpp"
-#include "assimp/pbrmaterial.h"
-#include "assimp/postprocess.h"
-#include "assimp/scene.h"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtx/quaternion.hpp"
-#include "rapidxml.hpp"
-
+#include <Animation.h>
+#include <Material.h>
+#include <MaterialComponent.h>
+#include <Mesh.h>
+#include <MeshComponent.h>
+#include <Scene.h>
+#include <TKImage.h>
+#include <Texture.h>
+#include <ToolKit.h>
+#include <Util.h>
 #include <assert.h>
+#include <assimp/DefaultLogger.hpp>
+#include <assimp/Importer.hpp>
+#include <assimp/pbrmaterial.h>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <rapidxml.hpp>
 #include <rapidxml_ext.h>
 
 #include <algorithm>
@@ -47,9 +35,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
 
 using std::cout;
 using std::endl;
@@ -412,7 +397,7 @@ namespace ToolKit
       replace(animName.begin(), animName.end(), '|', '_');
       animFilePath += animName + ".anim";
       AddToUsedFiles(animFilePath);
-      AnimationPtr tAnim = std::make_shared<Animation>();
+      AnimationPtr tAnim = MakeNewPtr<Animation>();
 
       double fps         = anim->mTicksPerSecond == 0 ? g_desiredFps : anim->mTicksPerSecond;
 
@@ -548,7 +533,7 @@ namespace ToolKit
         }
 
         AddToUsedFiles(textPath);
-        tTexture = std::make_shared<Texture>();
+        tTexture = MakeNewPtr<Texture>();
         tTexture->SetFile(textPath);
       }
       return tTexture;
@@ -559,7 +544,7 @@ namespace ToolKit
       aiMaterial* material  = g_scene->mMaterials[i];
       string name           = GetMaterialName(material, i);
       string writePath      = filePath + name + MATERIAL;
-      MaterialPtr tMaterial = std::make_shared<Material>();
+      MaterialPtr tMaterial = MakeNewPtr<Material>();
 
       auto diffuse          = textureFindAndCreateFunc(aiTextureType_DIFFUSE, material);
       if (diffuse)
@@ -585,7 +570,6 @@ namespace ToolKit
       if (metallicRoughness)
       {
         tMaterial->m_metallicRoughnessTexture = metallicRoughness;
-        tMaterial->m_materialType             = MaterialType::PBR;
       }
 
       auto normal = textureFindAndCreateFunc(aiTextureType_NORMALS, material);
@@ -598,13 +582,11 @@ namespace ToolKit
         float metalness, roughness;
         if (material->Get(AI_MATKEY_METALLIC_FACTOR, metalness) == aiReturn_SUCCESS)
         {
-          tMaterial->m_metallic     = metalness;
-          tMaterial->m_materialType = MaterialType::PBR;
+          tMaterial->m_metallic = metalness;
         }
         if (material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness) == aiReturn_SUCCESS)
         {
-          tMaterial->m_roughness    = roughness;
-          tMaterial->m_materialType = MaterialType::PBR;
+          tMaterial->m_roughness = roughness;
         }
       }
 
@@ -753,7 +735,7 @@ namespace ToolKit
       aiMesh* aMesh = g_scene->mMeshes[MeshIndx];
       if (aMesh->HasBones())
       {
-        SkinMeshPtr skinMesh = std::make_shared<SkinMesh>();
+        SkinMeshPtr skinMesh = MakeNewPtr<SkinMesh>();
         ConvertMesh(aMesh, skinMesh);
         if (mainSkinMesh)
         {
@@ -766,7 +748,7 @@ namespace ToolKit
       }
       else
       {
-        MeshPtr mesh = std::make_shared<Mesh>();
+        MeshPtr mesh = MakeNewPtr<Mesh>();
         ConvertMesh(aMesh, mesh);
 
         // Better to use scene node name
@@ -802,9 +784,9 @@ namespace ToolKit
     }
   }
 
-  EntityRawPtrArray deletedEntities;
+  EntityPtrArray deletedEntities;
 
-  bool DeleteEmptyEntitiesRecursively(Scene* tScene, Entity* ntt)
+  bool DeleteEmptyEntitiesRecursively(Scene* tScene, EntityPtr ntt)
   {
     bool shouldDelete = true;
     if (ntt->GetComponentPtrArray().size())
@@ -821,7 +803,7 @@ namespace ToolKit
 
     for (Node* child : ntt->m_node->m_children)
     {
-      if (!DeleteEmptyEntitiesRecursively(tScene, child->m_entity))
+      if (!DeleteEmptyEntitiesRecursively(tScene, child->OwnerEntity()))
       {
         shouldDelete = false;
       }
@@ -833,9 +815,9 @@ namespace ToolKit
     return shouldDelete;
   }
 
-  void TraverseScene(Scene* tScene, const aiNode* node, Entity* parent)
+  void TraverseScene(Scene* tScene, const aiNode* node, EntityPtr parent)
   {
-    Entity* ntt                 = new Entity;
+    EntityPtr ntt               = MakeNewPtr<Entity>();
     ntt->m_node->m_inheritScale = true;
     Vec3 t, s;
     Quaternion rt;
@@ -852,22 +834,23 @@ namespace ToolKit
       {
         continue;
       }
-      MeshComponentPtr meshComp = std::make_shared<MeshComponent>();
-      ntt->AddComponent(meshComp);
+
+      MeshComponentPtr meshComp = ntt->AddComponent<MeshComponent>();
       if (aMesh->HasBones())
       {
         meshComp->SetMeshVal(mainSkinMesh);
-        SkeletonComponentPtr skelComp = std::make_shared<SkeletonComponent>();
+
+        SkeletonComponentPtr skelComp = ntt->AddComponent<SkeletonComponent>();
         skelComp->SetSkeletonResourceVal(g_skeleton);
-        ntt->AddComponent(skelComp);
+
         isSkeletonEntityCreated = true;
       }
       else
       {
         meshComp->SetMeshVal(g_meshes[aMesh]);
       }
-      MaterialComponentPtr matComp = std::make_shared<MaterialComponent>();
-      ntt->AddComponent(matComp);
+
+      MaterialComponentPtr matComp = ntt->AddComponent<MaterialComponent>();
       matComp->UpdateMaterialList();
     }
 
@@ -894,17 +877,16 @@ namespace ToolKit
 
     TraverseScene(tScene, g_scene->mRootNode, nullptr);
     // First entity is the root entity
-    EntityRawPtrArray roots;
+    EntityPtrArray roots;
     GetRootEntities(tScene->GetEntities(), roots);
-    for (Entity* r : roots)
+    for (EntityPtr r : roots)
     {
       DeleteEmptyEntitiesRecursively(tScene, r);
     }
 
-    for (Entity* ntt : deletedEntities)
+    for (EntityPtr ntt : deletedEntities)
     {
       tScene->RemoveEntity(ntt->GetIdVal(), false);
-      SafeDel(ntt);
     }
     deletedEntities.clear();
     Assimp::DefaultLogger::get()->info("scene path: ", fullPath);
@@ -1010,7 +992,7 @@ namespace ToolKit
     Decompose(filePath, path, name);
     string fullPath = path + name + SKELETON;
 
-    g_skeleton      = std::make_shared<Skeleton>();
+    g_skeleton      = MakeNewPtr<Skeleton>();
     g_skeleton->SetFile(fullPath);
 
     // Print
@@ -1108,7 +1090,7 @@ namespace ToolKit
         else
         {
           unsigned char* buffer = (unsigned char*) texture->pcData;
-          stbi_write_png(filePath.c_str(), texture->mWidth, texture->mHeight, 4, buffer, texture->mWidth * 4);
+          WritePNG(filePath.c_str(), texture->mWidth, texture->mHeight, 4, buffer, texture->mWidth * 4);
         }
       }
     }
@@ -1181,9 +1163,7 @@ namespace ToolKit
       g_proxy->PreInit();
 
       // Create a dummy default material.
-      g_proxy->m_materialManager->m_storage[MaterialPath("default.material", true)] = std::make_shared<Material>();
-
-      g_proxy->m_entityFactory                                                      = new EntityFactory();
+      g_proxy->m_materialManager->m_storage[MaterialPath("default.material", true)] = MakeNewPtr<Material>();
 
       for (int i = 0; i < static_cast<int>(files.size()); i++)
       {

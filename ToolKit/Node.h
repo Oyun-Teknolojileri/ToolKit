@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
@@ -31,7 +12,6 @@
  */
 
 #include "Serialize.h"
-#include "Types.h"
 
 namespace ToolKit
 {
@@ -208,8 +188,26 @@ namespace ToolKit
      */
     void SetInheritScaleDeep(bool val);
 
-    void Serialize(XmlDocument* doc, XmlNode* parent) const;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent);
+    /**
+     * Returns parent entity if any exist.
+     * @return Parent Entity.
+     */
+    EntityPtr ParentEntity();
+
+    /**
+     * Getter function for owner entity.
+     * @return Owner EntityPtr.
+     */
+    EntityPtr OwnerEntity() const { return m_entity.lock(); }
+
+    /**
+     * Setter function for owner entity.
+     * @param owner owning EntityPtr.
+     */
+    void OwnerEntity(EntityPtr owner) { m_entity = owner; }
+
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent);
 
    private:
     void TransformImp(const Mat4& val,
@@ -236,17 +234,17 @@ namespace ToolKit
 
    public:
     ULongID m_id;
-    Node* m_parent   = nullptr;
-    Entity* m_entity = nullptr;
-    std::vector<Node*> m_children;
-    bool m_inheritScale = false;
+    Node* m_parent;
+    NodeRawPtrArray m_children;
+    bool m_inheritScale;
 
    private:
-    Vec3 m_translation;        //!< Local translation value.
-    Quaternion m_orientation;  //!< Local orientation value.
-    Vec3 m_scale = Vec3(1.0f); //!< Local scale value.
-    Mat4 m_parentCache;        //!< Cached transformation of the parent hierarchy.
-    bool m_dirty = true;       //!< Hint for child to update its parent cache.
+    EntityWeakPtr m_entity;   //!< Entity that owns this node.
+    Vec3 m_translation;       //!< Local translation value.
+    Quaternion m_orientation; //!< Local orientation value.
+    Vec3 m_scale;             //!< Local scale value.
+    Mat4 m_parentCache;       //!< Cached transformation of the parent hierarchy.
+    bool m_dirty;             //!< Hint for child to update its parent cache.
   };
 
 } // namespace ToolKit

@@ -1,54 +1,64 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "ToolKit.h"
 
-#define GLAD_GLES2_IMPLEMENTATION
-#include "gles2.h"
-
-#include <algorithm>
-#include <filesystem>
-#include <memory>
-#include <string>
+#include "Audio.h"
+#include "EngineSettings.h"
+#include "FileManager.h"
+#include "Logger.h"
+#include "Material.h"
+#include "Mesh.h"
+#include "Meta.h"
+#include "Object.h"
+#include "ObjectFactory.h"
+#include "PluginManager.h"
+#include "RenderSystem.h"
+#include "Scene.h"
+#include "Shader.h"
+#include "TKOpenGL.h"
+#include "UIManager.h"
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
-  ULongID HandleManager::GetNextHandle()
+  HandleManager::HandleManager()
   {
-    assert(m_baseHandle < m_maxIdLimit && "Generated id is too long.");
-    return ++m_baseHandle;
+    uint64 seed = time(nullptr) + ((uint64) (this) ^ m_randomXor[0]);
+    Xoroshiro128PlusSeed(m_randomXor, seed);
   }
 
-  void HandleManager::SetMaxHandle(ULongID val)
+  ULongID HandleManager::GenerateHandle()
   {
-    m_baseHandle = glm::max(m_baseHandle, val);
-    assert(m_baseHandle < m_maxIdLimit && "Generated id is too long.");
+    ULongID id = Xoroshiro128Plus(m_randomXor);
+    // If collision happens, change generate new id
+    while (m_uniqueIDs.find(id) != m_uniqueIDs.end() || id == NULL_HANDLE)
+    {
+      id = Xoroshiro128Plus(m_randomXor);
+    }
+    m_uniqueIDs.insert(id);
+
+    return id; // non zero
   }
+
+  void HandleManager::AddHandle(ULongID val) { m_uniqueIDs.insert(val); }
+
+  void HandleManager::ReleaseHandle(ULongID val)
+  {
+
+    auto it = m_uniqueIDs.find(val);
+    if (it != m_uniqueIDs.end())
+    {
+      m_uniqueIDs.erase(it);
+    }
+  }
+
+  bool HandleManager::IsHandleUnique(ULongID val) { return m_uniqueIDs.find(val) == m_uniqueIDs.end(); }
 
   Main* Main::m_proxy = nullptr;
 
@@ -64,6 +74,7 @@ namespace ToolKit
   Main::~Main()
   {
     assert(m_initiated == false && "Uninitiate before destruct");
+    m_proxy = nullptr;
 
     m_logger->Log("Main Destructed");
     SafeDel(m_logger);
@@ -79,6 +90,11 @@ namespace ToolKit
     }
 
     m_logger->Log("Main PreInit");
+
+    m_engineSettings = new EngineSettings();
+    m_objectFactory  = new ObjectFactory();
+    m_objectFactory->Init();
+
     m_renderSys       = new RenderSystem();
     m_pluginManager   = new PluginManager();
     m_animationMan    = new AnimationManager();
@@ -93,7 +109,6 @@ namespace ToolKit
     m_uiManager       = new UIManager();
     m_skeletonManager = new SkeletonManager();
     m_fileManager     = new FileManager();
-    m_entityFactory   = new EntityFactory();
 
     m_preInitiated    = true;
   }
@@ -120,7 +135,8 @@ namespace ToolKit
     m_materialManager->Init();
     m_sceneManager->Init();
     m_skeletonManager->Init();
-    m_timing.Initialize(m_engineSettings.Graphics.FPS);
+    m_renderSys->Init();
+    m_timing.Init(m_engineSettings->Graphics.FPS);
 
     m_initiated = true;
   }
@@ -165,7 +181,8 @@ namespace ToolKit
     SafeDel(m_uiManager);
     SafeDel(m_skeletonManager);
     SafeDel(m_fileManager);
-    SafeDel(m_entityFactory);
+    SafeDel(m_objectFactory);
+    SafeDel(m_engineSettings);
   }
 
   void Main::SetConfigPath(StringView cfgPath) { m_cfgPath = cfgPath; }
@@ -174,7 +191,7 @@ namespace ToolKit
 
   Main* Main::GetInstance()
   {
-    assert(m_proxy);
+    assert(m_proxy && "ToolKit is not initialized.");
     return m_proxy;
   }
 
@@ -212,35 +229,51 @@ namespace ToolKit
 
   PluginManager* GetPluginManager() { return Main::GetInstance()->m_pluginManager; }
 
-  ResourceManager* GetResourceManager(ResourceType type)
+  ResourceManager* GetResourceManager(ClassMeta* Class)
   {
-    switch (type)
+    if (Class->IsSublcassOf(Animation::StaticClass()))
     {
-    case ResourceType::Animation:
       return GetAnimationManager();
-    case ResourceType::Audio:
+    }
+    else if (Class->IsSublcassOf(Audio::StaticClass()))
+    {
       return GetAudioManager();
-    case ResourceType::Material:
+    }
+    else if (Class->IsSublcassOf(Material::StaticClass()))
+    {
       return GetMaterialManager();
-    case ResourceType::SkinMesh:
-    case ResourceType::Mesh:
+    }
+    else if (Class->IsSublcassOf(SkinMesh::StaticClass()))
+    {
       return GetMeshManager();
-    case ResourceType::Shader:
+    }
+    else if (Class->IsSublcassOf(Mesh::StaticClass()))
+    {
+      return GetMeshManager();
+    }
+    else if (Class->IsSublcassOf(Shader::StaticClass()))
+    {
       return GetShaderManager();
-    case ResourceType::SpriteSheet:
+    }
+    else if (Class->IsSublcassOf(SpriteSheet::StaticClass()))
+    {
       return GetSpriteSheetManager();
-    case ResourceType::Texture:
-    case ResourceType::CubeMap:
-    case ResourceType::RenderTarget:
+    }
+    else if (Class->IsSublcassOf(Texture::StaticClass()))
+    {
       return GetTextureManager();
-    case ResourceType::Scene:
+    }
+    else if (Class->IsSublcassOf(CubeMap::StaticClass()))
+    {
+      return GetTextureManager();
+    }
+    else if (Class->IsSublcassOf(RenderTarget::StaticClass()))
+    {
+      return GetTextureManager();
+    }
+    else if (Class->IsSublcassOf(Scene::StaticClass()))
+    {
       return GetSceneManager();
-    case ResourceType::Skeleton:
-      return nullptr;
-    case ResourceType::Base:
-    default:
-      assert(false);
-      break;
     }
 
     return nullptr;
@@ -248,15 +281,23 @@ namespace ToolKit
 
   UIManager* GetUIManager() { return Main::GetInstance()->m_uiManager; }
 
-  HandleManager* GetHandleManager() { return &Main::GetInstance()->m_handleManager; }
+  HandleManager* GetHandleManager()
+  {
+    if (Main* instance = Main::GetInstance_noexcep())
+    {
+      return &instance->m_handleManager;
+    }
+
+    return nullptr;
+  }
 
   SkeletonManager* GetSkeletonManager() { return Main::GetInstance()->m_skeletonManager; }
 
   FileManager* GetFileManager() { return Main::GetInstance()->m_fileManager; }
 
-  EntityFactory* GetEntityFactory() { return Main::GetInstance()->m_entityFactory; }
+  TK_API ObjectFactory* GetObjectFactory() { return Main::GetInstance()->m_objectFactory; }
 
-  EngineSettings& GetEngineSettings() { return Main::GetInstance()->m_engineSettings; }
+  EngineSettings& GetEngineSettings() { return *Main::GetInstance()->m_engineSettings; }
 
   String DefaultAbsolutePath()
   {
@@ -341,126 +382,13 @@ namespace ToolKit
 
   String LayerPath(const String& file, bool def) { return ProcessPath(file, "Layers", def); }
 
-  void EngineSettings::SerializeWindow(XmlDocument* doc, XmlNode* parent) const
+  void Timing::Init(uint fps)
   {
-    XmlNode* window = doc->allocate_node(rapidxml::node_element, "Window");
-    doc->append_node(window);
-
-    using namespace std;
-    const EngineSettings::GraphicSettings& gfx = Graphics;
-
-    const auto writeAttr1 = [&](StringView name, StringView val) { WriteAttr(window, doc, name.data(), val.data()); };
-    // serialize window.
-    writeAttr1("width", to_string(Window.Width));
-    writeAttr1("height", to_string(Window.Height));
-    writeAttr1(XmlNodeName, Window.Name);
-    writeAttr1("fullscreen", to_string(Window.FullScreen));
+    LastTime    = GetElapsedMilliSeconds();
+    CurrentTime = 0.0f;
+    DeltaTime   = 1000.0f / float(fps);
+    FrameCount  = 0;
+    TimeAccum   = 0.0f;
   }
 
-  void EngineSettings::DeSerializeWindow(XmlDocument* doc, XmlNode* parent)
-  {
-    XmlNode* node = doc->first_node("Window");
-    if (node == nullptr)
-    {
-      return;
-    }
-    ReadAttr(node, "width", Window.Width);
-    ReadAttr(node, "height", Window.Height);
-    ReadAttr(node, "name", Window.Name);
-    ReadAttr(node, "fullscreen", Window.FullScreen);
-  }
-
-  void EngineSettings::SerializePostProcessing(XmlDocument* doc, XmlNode* parent) const
-  {
-    XmlNode* settings = doc->allocate_node(rapidxml::node_element, "PostProcessing");
-    doc->append_node(settings);
-
-    const EngineSettings::PostProcessingSettings& gfx = PostProcessing;
-
-    const auto writeAttrFn                            = [&](StringView name, StringView val) -> void
-    { WriteAttr(settings, doc, name.data(), val.data()); };
-
-    // Serialize Graphics struct.
-    using namespace std;
-    writeAttrFn("TonemappingEnabled", to_string(gfx.TonemappingEnabled));
-    writeAttrFn("TonemapperMode", to_string((int) gfx.TonemapperMode));
-    writeAttrFn("EnableBloom", to_string((int) gfx.BloomEnabled));
-    writeAttrFn("BloomIntensity", to_string(gfx.BloomIntensity));
-    writeAttrFn("BloomThreshold", to_string(gfx.BloomThreshold));
-    writeAttrFn("BloomIterationCount", to_string(gfx.BloomIterationCount));
-    writeAttrFn("GammaCorrectionEnabled", to_string(gfx.GammaCorrectionEnabled));
-    writeAttrFn("Gamma", to_string(gfx.Gamma));
-    writeAttrFn("SSAOEnabled", to_string(gfx.SSAOEnabled));
-    writeAttrFn("SSAORadius", to_string(gfx.SSAORadius));
-    writeAttrFn("SSAOBias", to_string(gfx.SSAOBias));
-    writeAttrFn("DepthOfFieldEnabled", to_string(gfx.DepthOfFieldEnabled));
-    writeAttrFn("FocusPoint", to_string(gfx.FocusPoint));
-    writeAttrFn("FocusScale", to_string(gfx.FocusScale));
-    writeAttrFn("DofQuality", to_string((int) gfx.DofQuality));
-    writeAttrFn("FXAAEnabled", to_string(gfx.FXAAEnabled));
-  }
-
-  void EngineSettings::DeSerializePostProcessing(XmlDocument* doc, XmlNode* parent)
-  {
-    XmlNode* node  = doc->first_node("PostProcessing");
-    // if post processing settings is not exist use default settings
-    PostProcessing = PostProcessingSettings {};
-    if (node == nullptr)
-    {
-      return;
-    }
-
-    ReadAttr(node, "TonemappingEnabled", PostProcessing.TonemappingEnabled);
-    ReadAttr(node, "BloomEnabled", PostProcessing.BloomEnabled);
-    ReadAttr(node, "BloomIntensity", PostProcessing.BloomIntensity);
-    ReadAttr(node, "BloomThreshold", PostProcessing.BloomThreshold);
-    ReadAttr(node, "BloomIterationCount", PostProcessing.BloomIterationCount);
-    ReadAttr(node, "GammaCorrectionEnabled", PostProcessing.GammaCorrectionEnabled);
-    ReadAttr(node, "Gamma", PostProcessing.Gamma);
-    ReadAttr(node, "SSAOEnabled", PostProcessing.SSAOEnabled);
-    ReadAttr(node, "SSAORadius", PostProcessing.SSAORadius);
-    ReadAttr(node, "SSAOBias", PostProcessing.SSAOBias);
-    ReadAttr(node, "DepthOfFieldEnabled", PostProcessing.DepthOfFieldEnabled);
-    ReadAttr(node, "FocusPoint", PostProcessing.FocusPoint);
-    ReadAttr(node, "FocusScale", PostProcessing.FocusScale);
-    ReadAttr(node, "FXAAEnabled", PostProcessing.FXAAEnabled);
-    ReadAttr(node, "TonemapperMode", *(int*) &PostProcessing.TonemapperMode);
-    ReadAttr(node, "DofQuality", *(int*) &PostProcessing.DofQuality);
-  }
-
-  void EngineSettings::SerializeGraphics(XmlDocument* doc, XmlNode* parent) const
-  {
-    XmlNode* settings = doc->allocate_node(rapidxml::node_element, "Graphics");
-    doc->append_node(settings);
-    const EngineSettings::GraphicSettings& gfx = Graphics;
-
-    WriteAttr(settings, doc, "MSAA", std::to_string(gfx.MSAA));
-    WriteAttr(settings, doc, "FPS", std::to_string(gfx.FPS));
-  }
-
-  void EngineSettings::DeSerializeGraphics(XmlDocument* doc, XmlNode* parent)
-  {
-    XmlNode* node = doc->first_node("Graphics");
-    if (node == nullptr)
-    {
-      return;
-    }
-    ReadAttr(node, "MSAA", Graphics.MSAA);
-    ReadAttr(node, "FPS", Graphics.FPS);
-  }
-
-  void EngineSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
-  {
-    SerializeGraphics(doc, parent);
-    SerializePostProcessing(doc, parent);
-    SerializeWindow(doc, parent);
-  }
-
-  void EngineSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
-  {
-    assert(doc && "doc must not be null");
-    DeSerializeWindow(doc, parent);
-    DeSerializeGraphics(doc, parent);
-    DeSerializePostProcessing(doc, parent);
-  }
 } //  namespace ToolKit

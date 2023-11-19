@@ -1,47 +1,28 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "OutlinerWindow.h"
 
 #include "App.h"
-#include "ImGui/imgui_internal.h"
 #include "Mod.h"
 #include "Prefab.h"
 #include "TopBar.h"
 
+#include <ImGui/imgui_internal.h>
+#include <MathUtil.h>
+
 #include <stack>
 
-#include "DebugNew.h"
+#include <DebugNew.h>
 
 namespace ToolKit
 {
   namespace Editor
   {
-
-    OutlinerWindow::OutlinerWindow(XmlNode* node) { DeSerialize(nullptr, node); }
 
     OutlinerWindow::OutlinerWindow() {}
 
@@ -60,37 +41,39 @@ namespace ToolKit
 
     void DrawTreeNodeLine(int numNodes, ImVec2 rectMin)
     {
-      float line_height    = GetLineHeight();
-      float halfHeight     = line_height * 0.5f;
+      float line_height     = GetLineHeight();
+      float halfHeight      = line_height * 0.5f;
 
-      ImVec2 cursorPos     = ImGui::GetCursorScreenPos();
+      ImVec2 cursorPos      = ImGui::GetCursorScreenPos();
       // -11 align line with arrow
-      rectMin.x            = cursorPos.x - 11.0f;
+      rectMin.x             = cursorPos.x - 11.0f;
       rectMin.y            += halfHeight;
 
-      float bottom         = rectMin.y + (numNodes * line_height);
+      float bottom          = rectMin.y + (numNodes * line_height);
       bottom               -= (halfHeight + 1.0f); // move up a little
 
-      ImDrawList* drawList = ImGui::GetWindowDrawList();
-      const ImColor color  = ImGui::GetColorU32(ImGuiCol_Text);
+      ImDrawList* drawList  = ImGui::GetWindowDrawList();
+      const ImColor color   = ImGui::GetColorU32(ImGuiCol_Text);
       drawList->AddLine(rectMin, ImVec2(rectMin.x, bottom), color);
       // a little bulge at the end of the line
       drawList->AddLine(ImVec2(rectMin.x, bottom), ImVec2(rectMin.x + 5.0f, bottom), color);
     }
 
     // returns total drawed nodes
-    int OutlinerWindow::ShowNode(Entity* e, int depth)
+    int OutlinerWindow::ShowNode(EntityPtr ntt, int depth)
     {
       // if searching mode is on and entity or its parents are not shown return.
       if (m_stringSearchMode == true)
       {
         bool parentsOrSelfOpen = false;
-        Node* parent           = e->m_node;
+        Node* parent           = ntt->m_node;
+
         while (parent != nullptr)
         {
-          parentsOrSelfOpen |= m_shownEntities.count(parent->m_entity) > 0;
-          parent            = parent->m_parent;
+          parentsOrSelfOpen |= m_shownEntities.count(parent->OwnerEntity()) > 0;
+          parent             = parent->m_parent;
         }
+
         if (!parentsOrSelfOpen)
         {
           return 0;
@@ -99,28 +82,28 @@ namespace ToolKit
 
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
       EditorScenePtr currScene     = g_app->GetCurrentScene();
-      if (currScene->IsSelected(e->GetIdVal()))
+      if (currScene->IsSelected(ntt->GetIdVal()))
       {
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
       }
 
       int numNodes = 1; // 1 itself and we will sum childs
-      m_indexToEntity.push_back(e);
+      m_indexToEntity.push_back(ntt);
 
-      if (e->m_node->m_children.empty() || e->GetType() == EntityType::Entity_Prefab)
+      if (ntt->m_node->m_children.empty() || ntt->IsA<Prefab>())
       {
         nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-        DrawHeader(e, nodeFlags, depth);
+        DrawHeader(ntt, nodeFlags, depth);
       }
       else
       {
-        if (DrawHeader(e, nodeFlags, depth))
+        if (DrawHeader(ntt, nodeFlags, depth))
         {
           ImVec2 rectMin = ImGui::GetItemRectMin();
 
-          for (Node* n : e->m_node->m_children)
+          for (Node* node : ntt->m_node->m_children)
           {
-            numNodes += ShowNode(n->m_entity, depth + 1);
+            numNodes += ShowNode(node->OwnerEntity(), depth + 1);
           }
 
           DrawTreeNodeLine(numNodes, rectMin);
@@ -137,11 +120,11 @@ namespace ToolKit
     {
       std::sort(m_draggingEntities.begin(),
                 m_draggingEntities.end(),
-                [this](Entity* a, Entity* b) -> bool
+                [this](EntityPtr a, EntityPtr b) -> bool
                 { return FindIndex(m_indexToEntity, a) < FindIndex(m_indexToEntity, b); });
     }
 
-    void OutlinerWindow::SelectEntitiesBetweenNodes(EditorScene* scene, Entity* a, Entity* b)
+    void OutlinerWindow::SelectEntitiesBetweenNodes(EditorScenePtr scene, EntityPtr a, EntityPtr b)
     {
       if (a == b)
       {
@@ -175,35 +158,38 @@ namespace ToolKit
       }
 
       // otherwise this means both of the entities has same parent
-      // so we will select in between childs
+      // so we will select in between children.
 
-      NodePtrArray& children = a->m_node->m_parent->m_children;
-      // find locations of a and b on parents childs
+      NodeRawPtrArray& children = a->m_node->m_parent->m_children;
+      // find locations of a and b on parents children.
       for (; i < children.size() && numFound != 2; ++i)
       {
         numFound += (children[i] == a->m_node) + (children[i] == b->m_node);
 
-        // if we found a or b we will select all of the nodes in bettween them
+        // if we found a or b we will select all of the nodes in between them
         if (numFound >= 1ull)
         {
-          scene->AddToSelection(children[i]->m_entity->GetIdVal(), true);
+          if (EntityPtr childNtt = children[i]->OwnerEntity())
+          {
+            scene->AddToSelection(childNtt->GetIdVal(), true);
+          }
         }
       }
     }
 
-    void OutlinerWindow::PushSelectedEntitiesToReparentQueue(Entity* parent)
+    void OutlinerWindow::PushSelectedEntitiesToReparentQueue(EntityPtr parent)
     {
       // Change the selected files hierarchy
-      EntityRawPtrArray& selected = m_draggingEntities;
+      EntityPtrArray& selected = m_draggingEntities;
 
-      if (parent->GetType() == EntityType::Entity_Prefab)
+      if (parent->IsA<Prefab>())
       {
         return;
       }
       for (int i = 0; i < selected.size(); i++)
       {
         bool sameParent = selected[i]->GetIdVal() != parent->GetIdVal();
-        bool isPrefab   = selected[i]->GetType() == EntityType::Entity_Prefab;
+        bool isPrefab   = selected[i]->IsA<Prefab>();
 
         if (sameParent && (!Prefab::GetPrefabRoot(selected[i]) || isPrefab))
         {
@@ -213,7 +199,7 @@ namespace ToolKit
       g_parent = parent->GetIdVal();
     }
 
-    void OutlinerWindow::SetItemState(Entity* e)
+    void OutlinerWindow::SetItemState(EntityPtr ntt)
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
       bool itemHovered         = ImGui::IsItemHovered();
@@ -222,28 +208,28 @@ namespace ToolKit
       {
         bool ctrlDown   = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
         bool shiftDown  = ImGui::IsKeyDown(ImGuiKey_LeftShift);
-        bool isSelected = currScene->IsSelected(e->GetIdVal());
+        bool isSelected = currScene->IsSelected(ntt->GetIdVal());
 
         if (!shiftDown && !ctrlDown)
         {
           // this means not multiselecting so select only this
           currScene->ClearSelection();
-          currScene->AddToSelection(e->GetIdVal(), true);
+          currScene->AddToSelection(ntt->GetIdVal(), true);
         }
         else if (ctrlDown && isSelected)
         {
-          currScene->RemoveFromSelection(e->GetIdVal());
+          currScene->RemoveFromSelection(ntt->GetIdVal());
         }
         else if (shiftDown && m_lastClickedEntity != nullptr)
         {
-          SelectEntitiesBetweenNodes(currScene.get(), m_lastClickedEntity, e);
+          SelectEntitiesBetweenNodes(currScene, m_lastClickedEntity, ntt);
         }
         else
         {
-          currScene->AddToSelection(e->GetIdVal(), true);
+          currScene->AddToSelection(ntt->GetIdVal(), true);
           g_app->GetPropInspector()->m_activeView = ViewType::Entity;
         }
-        m_lastClickedEntity = e;
+        m_lastClickedEntity = ntt;
       }
 
       if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
@@ -251,9 +237,9 @@ namespace ToolKit
         ImGui::SetDragDropPayload("HierarcyChange", nullptr, 0);
         m_draggingEntities.clear();
 
-        if (!currScene->IsSelected(e->GetIdVal()))
+        if (!currScene->IsSelected(ntt->GetIdVal()))
         {
-          m_draggingEntities.push_back(e);
+          m_draggingEntities.push_back(ntt);
         }
         else
         {
@@ -268,35 +254,36 @@ namespace ToolKit
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
         {
           SortDraggedEntitiesByNodeIndex();
-          PushSelectedEntitiesToReparentQueue(e);
+          PushSelectedEntitiesToReparentQueue(ntt);
           m_draggingEntities.clear();
         }
         ImGui::EndDragDropTarget();
       }
     }
 
-    bool OutlinerWindow::FindShownEntities(Entity* e, const String& str)
+    bool OutlinerWindow::FindShownEntities(EntityPtr ntt, const String& str)
     {
-      bool self     = Utf8CaseInsensitiveSearch(e->GetNameVal(), str);
+      bool self     = Utf8CaseInsensitiveSearch(ntt->GetNameVal(), str);
       bool children = false;
 
-      if (e->GetType() != EntityType::Entity_Prefab)
+      if (!ntt->IsA<Prefab>())
       {
-        for (Node* n : e->m_node->m_children)
+        for (Node* node : ntt->m_node->m_children)
         {
-          Entity* childNtt = n->m_entity;
-          if (childNtt != nullptr)
+          if (EntityPtr childNtt = node->OwnerEntity())
           {
             bool child = FindShownEntities(childNtt, str);
             children   = child || children;
           }
         }
       }
+
       bool isShown = self || children;
       if (isShown)
       {
-        m_shownEntities.insert(e);
+        m_shownEntities.insert(ntt);
       }
+
       return isShown;
     }
 
@@ -330,8 +317,8 @@ namespace ToolKit
       }
 
       const float halfLineHeight = lineHeight * 0.5f;
-      Vec2 bottomRectMin = windowPos + Vec2(0.0f, windowSize.y - halfLineHeight);
-      Vec2 bottomRectMax = windowPos + Vec2(windowSize.x, windowSize.y + halfLineHeight);
+      Vec2 bottomRectMin         = windowPos + Vec2(0.0f, windowSize.y - halfLineHeight);
+      Vec2 bottomRectMax         = windowPos + Vec2(windowSize.x, windowSize.y + halfLineHeight);
 
       // is dropped below all entities?
       // a one line height rect that is bottom of the outliner window to check if we drop below all entities
@@ -352,11 +339,11 @@ namespace ToolKit
       return glm::clamp(selectedIndex, 0, maxIdx);
     }
 
-    void OrphanAll(const EntityRawPtrArray& movedEntities)
+    void OrphanAll(const EntityPtrArray& movedEntities)
     {
-      for (Entity* e : movedEntities)
+      for (EntityPtr ntt : movedEntities)
       {
-        e->m_node->OrphanSelf(true);
+        ntt->m_node->OrphanSelf(true);
       }
     }
 
@@ -373,7 +360,7 @@ namespace ToolKit
     //   this means we dropped in childs list. detect the child index
     //   insert all moved entities to parents children (between the index we
     //   detect)
-    bool OutlinerWindow::TryReorderEntites(const EntityRawPtrArray& movedEntities)
+    bool OutlinerWindow::TryReorderEntites(const EntityPtrArray& movedEntities)
     {
       // check number of visible entities in outliner is zero or inserted
       // entities.size is zero
@@ -382,9 +369,9 @@ namespace ToolKit
         return false;
       }
 
-      int selectedIndex           = m_insertSelectedIndex;
-      EditorScenePtr scene        = g_app->GetCurrentScene();
-      EntityRawPtrArray& entities = scene->AccessEntityArray();
+      int selectedIndex        = m_insertSelectedIndex;
+      EditorScenePtr scene     = g_app->GetCurrentScene();
+      EntityPtrArray& entities = scene->AccessEntityArray();
 
       SortDraggedEntitiesByNodeIndex();
       // is dropped to on top of the first entity?
@@ -404,8 +391,8 @@ namespace ToolKit
         return true;
       }
 
-      selectedIndex           = glm::clamp(selectedIndex, 0, int(m_indexToEntity.size()) - 1);
-      Entity* droppedBelowNtt = m_indexToEntity[selectedIndex];
+      selectedIndex             = glm::clamp(selectedIndex, 0, int(m_indexToEntity.size()) - 1);
+      EntityPtr droppedBelowNtt = m_indexToEntity[selectedIndex];
 
       if (contains(movedEntities, droppedBelowNtt))
       {
@@ -437,8 +424,8 @@ namespace ToolKit
       //    EntityChild0
       if (selectedIndex + 1 < (int) m_indexToEntity.size())
       {
-        Node* nextNode                     = m_indexToEntity[selectedIndex + 1]->m_node;
-        NodePtrArray& droppedBelowChildren = droppedBelowNtt->m_node->m_children;
+        Node* nextNode                        = m_indexToEntity[selectedIndex + 1]->m_node;
+        NodeRawPtrArray& droppedBelowChildren = droppedBelowNtt->m_node->m_children;
 
         if (contains(droppedBelowChildren, nextNode))
         {
@@ -447,7 +434,7 @@ namespace ToolKit
         }
       }
 
-      const auto isRootFn = [](Entity* entity) -> bool { return entity->m_node->m_parent == nullptr; };
+      const auto isRootFn = [](EntityPtr entity) -> bool { return entity->m_node->m_parent == nullptr; };
 
       OrphanAll(movedEntities);
       // the object that we dropped below is root ?
@@ -464,8 +451,8 @@ namespace ToolKit
       {
         if (!droppedAboveFirstChild)
         {
-          NodePtrArray& childs = droppedParent->m_children;
-          childIndex           = FindIndex(childs, droppedBelowNtt->m_node) + 1;
+          NodeRawPtrArray& childs = droppedParent->m_children;
+          childIndex              = FindIndex(childs, droppedBelowNtt->m_node) + 1;
         }
 
         for (int i = 0; i < movedEntities.size(); ++i)
@@ -485,10 +472,10 @@ namespace ToolKit
 
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        odd                             = 0;
-        m_anyEntityHovered              = false;
+        odd                          = 0;
+        m_anyEntityHovered           = false;
 
-        const EntityRawPtrArray& ntties = currScene->GetEntities();
+        const EntityPtrArray& ntties = currScene->GetEntities();
         m_roots.clear();
         m_indexToEntity.clear();
 
@@ -496,7 +483,7 @@ namespace ToolKit
         std::copy_if(ntties.cbegin(),
                      ntties.cend(),
                      std::back_inserter(m_roots),
-                     [](const Entity* e) { return e->m_node->m_parent == nullptr; });
+                     [](const EntityPtr e) { return e->m_node->m_parent == nullptr; });
 
         HandleStates();
         ShowSearchBar(m_searchString);
@@ -568,7 +555,7 @@ namespace ToolKit
           if (m_anyEntityHovered && m_indexToEntity.size() > 0ull)
           {
             int index = glm::clamp(GetMouseHoveredNodeIndex(m_treeStartY), 0, int(m_indexToEntity.size()) - 1);
-            Entity* hoveredEntity = m_indexToEntity[index];
+            EntityPtr hoveredEntity = m_indexToEntity[index];
             ImGui::SetTooltip(contains(m_draggingEntities, hoveredEntity) ? "Drag Drop for set as child or Reorder"
                                                                           : "Set As Child");
           }
@@ -592,12 +579,12 @@ namespace ToolKit
       // Update hierarchy if there is a change.
       while (!g_reparentQueue.empty())
       {
-        Entity* child = currScene->GetEntity(g_reparentQueue.top());
+        EntityPtr child = currScene->GetEntity(g_reparentQueue.top());
         child->m_node->OrphanSelf(true);
 
         if (g_parent != NULL_HANDLE)
         {
-          Entity* parent = currScene->GetEntity(g_parent);
+          EntityPtr parent = currScene->GetEntity(g_parent);
           parent->m_node->AddChild(child->m_node, true);
         }
         g_reparentQueue.pop();
@@ -612,10 +599,21 @@ namespace ToolKit
 
     void OutlinerWindow::DispatchSignals() const { ModShortCutSignals(); }
 
-    void OutlinerWindow::Focus(Entity* ntt)
+    void OutlinerWindow::Focus(EntityPtr ntt)
     {
       m_nttFocusPath.push_back(ntt);
       GetParents(ntt, m_nttFocusPath);
+    }
+
+    void OutlinerWindow::ClearOutliner()
+    {
+      m_nttFocusPath.clear();
+      m_shownEntities.clear();
+      m_indexToEntity.clear();
+      m_draggingEntities.clear();
+      m_roots.clear();
+      m_lastClickedEntity = nullptr;
+      m_rootsParent       = nullptr;
     }
 
     bool OutlinerWindow::DrawRootHeader(const String& rootName, uint id, ImGuiTreeNodeFlags flags, TexturePtr icon)
@@ -628,14 +626,14 @@ namespace ToolKit
       {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
         {
-          EntityRawPtrArray selected;
+          EntityPtrArray selected;
           EditorScenePtr currScene = g_app->GetCurrentScene();
           currScene->GetSelectedEntities(selected);
 
           for (int i = 0; i < selected.size(); i++)
           {
             if (selected[i]->GetIdVal() != NULL_HANDLE &&
-                (!Prefab::GetPrefabRoot(selected[i]) || selected[i]->GetType() == EntityType::Entity_Prefab))
+                (!Prefab::GetPrefabRoot(selected[i]) || selected[i]->IsA<Prefab>()))
             {
               g_reparentQueue.push(selected[i]->GetIdVal());
             }
@@ -679,9 +677,9 @@ namespace ToolKit
         {
           m_shownEntities.clear();
           // Find which entities should be shown
-          for (Entity* e : m_roots)
+          for (EntityPtr ntt : m_roots)
           {
-            FindShownEntities(e, m_searchString);
+            FindShownEntities(ntt, m_searchString);
           }
         }
       }
@@ -707,22 +705,22 @@ namespace ToolKit
       float depths[] = // last two of the offsets are not adjusted well enough
           {18.0f, 30.0f, 51.0f, 71.0f, 96.0f, 115.0f, 140.0f, 155.0f};
 
-      ImRect workRect       = ImGui::GetCurrentWindow()->WorkRect;
-      float x1              = workRect.Min.x + depths[depth];
-      float x2              = workRect.Max.x;
-      float item_spacing_y  = ImGui::GetStyle().ItemSpacing.y;
-      float item_offset_y   = -item_spacing_y * 0.5f;
-      float line_height     = ImGui::GetTextLineHeight() + item_spacing_y;
-      float y0              = ImGui::GetCursorScreenPos().y + (float) item_offset_y;
+      ImRect workRect        = ImGui::GetCurrentWindow()->WorkRect;
+      float x1               = workRect.Min.x + depths[depth];
+      float x2               = workRect.Max.x;
+      float item_spacing_y   = ImGui::GetStyle().ItemSpacing.y;
+      float item_offset_y    = -item_spacing_y * 0.5f;
+      float line_height      = ImGui::GetTextLineHeight() + item_spacing_y;
+      float y0               = ImGui::GetCursorScreenPos().y + (float) item_offset_y;
 
-      ImDrawList* draw_list = ImGui::GetWindowDrawList();
-      ImGuiStyle& style     = ImGui::GetStyle();
-      ImVec4 v4Color        = style.Colors[ImGuiCol_TabHovered];
+      ImDrawList* draw_list  = ImGui::GetWindowDrawList();
+      ImGuiStyle& style      = ImGui::GetStyle();
+      ImVec4 v4Color         = style.Colors[ImGuiCol_TabHovered];
       v4Color.x             *= 0.62f;
       v4Color.y             *= 0.62f;
       v4Color.z             *= 0.62f;
       // if odd black otherwise given color
-      ImU32 col             = ImGui::ColorConvertFloat4ToU32(v4Color) * (odd++ & 1);
+      ImU32 col              = ImGui::ColorConvertFloat4ToU32(v4Color) * (odd++ & 1);
 
       if (col == 0)
       {
@@ -732,7 +730,7 @@ namespace ToolKit
       draw_list->AddRectFilled(ImVec2(x1, y0), ImVec2(x2, y1), col);
     }
 
-    bool OutlinerWindow::DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags, int depth)
+    bool OutlinerWindow::DrawHeader(EntityPtr ntt, ImGuiTreeNodeFlags flags, int depth)
     {
       bool focusToItem  = false;
       bool nextItemOpen = false;

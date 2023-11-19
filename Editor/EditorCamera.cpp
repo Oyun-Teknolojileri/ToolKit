@@ -1,63 +1,51 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "EditorCamera.h"
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <Material.h>
+#include <Mesh.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
   namespace Editor
   {
 
-    EditorCamera::EditorCamera()
-    {
-      ParameterConstructor();
-      CreateGizmo();
-    }
+    TKDefineClass(EditorCamera, Camera);
+
+    EditorCamera::EditorCamera() {}
 
     EditorCamera::EditorCamera(const EditorCamera* cam) { cam->CopyTo(this); }
 
     EditorCamera::~EditorCamera() {}
 
-    Entity* EditorCamera::Copy() const
+    void EditorCamera::NativeConstruct()
     {
-      EditorCamera* cpy = new EditorCamera();
-      Camera::CopyTo(cpy);
+      Super::NativeConstruct();
+      CreateGizmo();
+    }
+
+    ObjectPtr EditorCamera::Copy() const
+    {
+      EditorCameraPtr cpy = MakeNewPtr<EditorCamera>();
+      Camera::CopyTo(cpy.get());
       cpy->CreateGizmo();
       cpy->ParameterConstructor();
 
       return cpy;
     }
 
-    void EditorCamera::PostDeSerialize()
+    void EditorCamera::PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      ParameterConstructor();
+      Super::PostDeSerializeImp(info, parent);
       CreateGizmo();
     }
 
@@ -91,8 +79,9 @@ namespace ToolKit
                                       corners[2], corners[3], corners[3], corners[0]};
 
       MeshComponentPtr camMeshComp = GetComponent<MeshComponent>();
-      LineBatch frusta(lines, g_cameraGizmoColor, DrawType::Line);
-      camMeshComp->SetMeshVal(frusta.GetComponent<MeshComponent>()->GetMeshVal());
+      LineBatchPtr frusta          = MakeNewPtr<LineBatch>();
+      frusta->Generate(lines, g_cameraGizmoColor, DrawType::Line);
+      camMeshComp->SetMeshVal(frusta->GetComponent<MeshComponent>()->GetMeshVal());
 
       // Triangle part.
       VertexArray vertices;
@@ -102,7 +91,7 @@ namespace ToolKit
       vertices[1].pos                                 = Vec3(0.3f, 0.35f, -1.6f);
       vertices[2].pos                                 = Vec3(0.0f, 0.65f, -1.6f);
 
-      MeshPtr subMesh                                 = std::make_shared<Mesh>();
+      MeshPtr subMesh                                 = MakeNewPtr<Mesh>();
       subMesh->m_vertexCount                          = (uint) vertices.size();
       subMesh->m_clientSideVertices                   = vertices;
       subMesh->m_material                             = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
@@ -124,20 +113,21 @@ namespace ToolKit
       // Recreate frustum.
       if (GetComponent<MeshComponent>() == nullptr)
       {
-        AddComponent(new MeshComponent());
-        GetMeshComponent()->SetCastShadowVal(false);
+        MeshComponentPtr meshCom = AddComponent<MeshComponent>();
+        meshCom->SetCastShadowVal(false);
       }
+
       GenerateFrustum();
     }
 
     void EditorCamera::ParameterConstructor()
     {
-      Camera::ParameterEventConstructor();
+      Super::ParameterConstructor();
 
       Poses_Define(
           [this]() -> void
           {
-            if (Viewport* av = g_app->GetViewport(g_3dViewport))
+            if (Viewport* av = g_app->GetActiveViewport())
             {
               if (m_posessed)
               {

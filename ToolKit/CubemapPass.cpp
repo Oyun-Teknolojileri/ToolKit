@@ -1,43 +1,21 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "CubemapPass.h"
 
 #include "Material.h"
 #include "Mesh.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
 {
 
-  CubeMapPass::CubeMapPass()
-  {
-    m_cube = std::make_shared<Cube>();
-    m_cube->AddComponent(new MaterialComponent());
-  }
+  CubeMapPass::CubeMapPass() { m_cube = MakeNewPtr<Cube>(); }
 
   CubeMapPass::CubeMapPass(const CubeMapPassParams& params) : CubeMapPass() { m_params = params; }
 
@@ -45,28 +23,48 @@ namespace ToolKit
 
   void CubeMapPass::Render()
   {
+    PUSH_GPU_MARKER("CubeMapPass::Render");
+    PUSH_CPU_MARKER("CubeMapPass::Render");
+
     m_cube->m_node->SetTransform(m_params.Transform);
 
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, false);
 
-    RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({m_cube.get()}, jobs);
+    static RenderJobArray jobs;
+    jobs.clear();
+    EntityPtrArray oneCube = {m_cube};
+    RenderJobProcessor::CreateRenderJobs(oneCube, jobs);
     renderer->Render(jobs, m_params.Cam);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void CubeMapPass::PreRender()
   {
+    PUSH_GPU_MARKER("CubeMapPass::PreRender");
+    PUSH_CPU_MARKER("CubeMapPass::PreRender");
+
     Pass::PreRender();
     MaterialComponentPtr matCom = m_cube->GetMaterialComponent();
     matCom->SetFirstMaterial(m_params.Material);
     GetRenderer()->SetDepthTestFunc(m_params.DepthFn);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void CubeMapPass::PostRender()
   {
+    PUSH_GPU_MARKER("CubeMapPass::PostRender");
+    PUSH_CPU_MARKER("CubeMapPass::PostRender");
+
     Pass::PostRender();
     GetRenderer()->SetDepthTestFunc(CompareFunctions::FuncLess);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
 } // namespace ToolKit

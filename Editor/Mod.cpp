@@ -1,38 +1,24 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Mod.h"
 
 #include "AnchorMod.h"
 #include "App.h"
-#include "DirectionComponent.h"
-#include "Entity.h"
 #include "TransformMod.h"
 
-#include "DebugNew.h"
+#include <Camera.h>
+#include <DirectionComponent.h>
+#include <Entity.h>
+#include <MathUtil.h>
+#include <Prefab.h>
+#include <Surface.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -148,6 +134,11 @@ namespace ToolKit
 
     void ModManager::Init()
     {
+      if (m_initiated)
+      {
+        return;
+      }
+
       m_modStack.push_back(new BaseMod(ModId::Base));
       m_initiated = true;
     }
@@ -276,17 +267,17 @@ namespace ToolKit
     {
       // Construct the ignore list.
       m_ignoreList.clear();
-      EntityRawPtrArray ignores;
+      EntityPtrArray ignores;
       if (EditorViewport* vp = g_app->GetActiveViewport())
       {
         if (vp->GetType() == Window::Type::Viewport)
         {
-          ignores = g_app->GetCurrentScene()->Filter([](Entity* ntt) -> bool { return ntt->IsSurfaceInstance(); });
+          ignores = g_app->GetCurrentScene()->Filter([](EntityPtr ntt) -> bool { return ntt->IsA<Surface>(); });
         }
 
         if (vp->GetType() == Window::Type::Viewport2d)
         {
-          ignores = g_app->GetCurrentScene()->Filter([](Entity* ntt) -> bool { return !ntt->IsSurfaceInstance(); });
+          ignores = g_app->GetCurrentScene()->Filter([](EntityPtr ntt) -> bool { return !ntt->IsA<Surface>(); });
         }
       }
 
@@ -325,9 +316,8 @@ namespace ToolKit
 
             if (g_app->m_dbgArrow == nullptr)
             {
-              g_app->m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
               m_ignoreList.push_back(g_app->m_dbgArrow->GetIdVal());
-              currScene->AddEntity(g_app->m_dbgArrow.get());
+              currScene->AddEntity(g_app->m_dbgArrow);
             }
 
             g_app->m_dbgArrow->m_node->SetTranslation(ray.position);
@@ -361,7 +351,7 @@ namespace ToolKit
         EditorViewport* vp = g_app->GetActiveViewport();
         if (vp != nullptr)
         {
-          Camera* cam = vp->GetCamera();
+          CameraPtr cam = vp->GetCamera();
 
           Vec2 rect[4];
           GetMouseRect(rect[0], rect[2]);
@@ -456,9 +446,10 @@ namespace ToolKit
 
             if (g_app->m_dbgFrustum == nullptr)
             {
-              g_app->m_dbgFrustum = std::shared_ptr<LineBatch>(new LineBatch(corners, X_AXIS, DrawType::Line));
+              g_app->m_dbgFrustum = MakeNewPtr<LineBatch>();
+              g_app->m_dbgFrustum->Generate(corners, X_AXIS, DrawType::Line);
               m_ignoreList.push_back(g_app->m_dbgFrustum->GetIdVal());
-              currScene->AddEntity(g_app->m_dbgFrustum.get());
+              currScene->AddEntity(g_app->m_dbgFrustum);
             }
             else
             {
@@ -526,23 +517,23 @@ namespace ToolKit
       }
 
       // Gather the selection hierarchy.
-      EntityRawPtrArray deleteList;
+      EntityPtrArray deleteList;
       g_app->GetCurrentScene()->GetSelectedEntities(deleteList);
 
-      EntityRawPtrArray roots;
+      EntityPtrArray roots;
       GetRootEntities(deleteList, roots);
 
       deleteList.clear();
-      for (Entity* e : roots)
+      for (EntityPtr ntt : roots)
       {
         // Gather hierarchy from parent to child.
-        deleteList.push_back(e);
-        if (e->GetType() == EntityType::Entity_Prefab)
+        deleteList.push_back(ntt);
+        if (ntt->IsA<Prefab>())
         {
-          // Entity will already delete its own childs
+          // Entity will already delete its own children.
           continue;
         }
-        GetChildren(e, deleteList);
+        GetChildren(ntt, deleteList);
       }
 
       // Revert to recover hierarchies.
@@ -553,9 +544,9 @@ namespace ToolKit
       {
         ActionManager::GetInstance()->BeginActionGroup();
 
-        for (Entity* e : deleteList)
+        for (EntityPtr ntt : deleteList)
         {
-          ActionManager::GetInstance()->AddAction(new DeleteAction(e));
+          ActionManager::GetInstance()->AddAction(new DeleteAction(ntt));
           deleteActCount++;
         }
         ActionManager::GetInstance()->GroupLastActions(deleteActCount);
@@ -568,7 +559,7 @@ namespace ToolKit
 
     void StateDuplicate::TransitionIn(State* prevState)
     {
-      EntityRawPtrArray selecteds;
+      EntityPtrArray selecteds;
       EditorScenePtr currScene = g_app->GetCurrentScene();
       currScene->GetSelectedEntities(selecteds);
       if (!selecteds.empty())
@@ -579,21 +570,21 @@ namespace ToolKit
           ActionManager::GetInstance()->BeginActionGroup();
         }
 
-        EntityRawPtrArray selectedRoots;
+        EntityPtrArray selectedRoots;
         GetRootEntities(selecteds, selectedRoots);
 
         int cpyCount = 0;
         bool copy    = ImGui::GetIO().KeyCtrl;
         if (copy)
         {
-          for (Entity* ntt : selectedRoots)
+          for (EntityPtr ntt : selectedRoots)
           {
-            EntityRawPtrArray copies;
+            EntityPtrArray copies;
             // Prefab will already create its own child prefab scene entities,
             //  So don't need to copy them too!
-            if (ntt->GetType() == EntityType::Entity_Prefab)
+            if (ntt->IsA<Prefab>())
             {
-              copies.push_back(ntt->Copy());
+              copies.push_back(Cast<Entity>(ntt->Copy()));
             }
             else
             {
@@ -601,7 +592,7 @@ namespace ToolKit
             }
             copies[0]->m_node->SetTransform(ntt->m_node->GetTransform(), TransformationSpace::TS_WORLD, false);
 
-            for (Entity* cpy : copies)
+            for (EntityPtr cpy : copies)
             {
               ActionManager::GetInstance()->AddAction(new CreateAction(cpy));
             }
@@ -609,7 +600,7 @@ namespace ToolKit
             currScene->AddToSelection(copies.front()->GetIdVal(), true);
             cpyCount           += static_cast<int>(copies.size());
             // Status info
-            g_app->m_statusMsg = std::to_string(cpyCount) + " entities are copied.";
+            g_app->m_statusMsg  = std::to_string(cpyCount) + " entities are copied.";
           }
         }
         ActionManager::GetInstance()->GroupLastActions(cpyCount);

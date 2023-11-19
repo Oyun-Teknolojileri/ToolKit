@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "MathUtil.h"
@@ -32,9 +13,11 @@
 #include "Pass.h"
 #include "ResourceComponent.h"
 #include "Skeleton.h"
+#include "TKProfiler.h"
 
 #include <execution>
 #include <mutex>
+#include <random>
 
 #include "DebugNew.h"
 
@@ -105,32 +88,32 @@ namespace ToolKit
 
     // build orthogonal matrix Q
     // TK_MOD To row major. Ogre is row major.
-    Mat4 m           = glm::transpose(transform);
-    float fInvLength = glm::inversesqrt(m[0][0] * m[0][0] + m[1][0] * m[1][0] + m[2][0] * m[2][0]);
+    Mat4 m            = glm::transpose(transform);
+    float fInvLength  = glm::inversesqrt(m[0][0] * m[0][0] + m[1][0] * m[1][0] + m[2][0] * m[2][0]);
 
-    kQ[0][0]         = m[0][0] * fInvLength;
-    kQ[1][0]         = m[1][0] * fInvLength;
-    kQ[2][0]         = m[2][0] * fInvLength;
+    kQ[0][0]          = m[0][0] * fInvLength;
+    kQ[1][0]          = m[1][0] * fInvLength;
+    kQ[2][0]          = m[2][0] * fInvLength;
 
-    float fDot       = kQ[0][0] * m[0][1] + kQ[1][0] * m[1][1] + kQ[2][0] * m[2][1];
-    kQ[0][1]         = m[0][1] - fDot * kQ[0][0];
-    kQ[1][1]         = m[1][1] - fDot * kQ[1][0];
-    kQ[2][1]         = m[2][1] - fDot * kQ[2][0];
-    fInvLength       = glm::inversesqrt(kQ[0][1] * kQ[0][1] + kQ[1][1] * kQ[1][1] + kQ[2][1] * kQ[2][1]);
+    float fDot        = kQ[0][0] * m[0][1] + kQ[1][0] * m[1][1] + kQ[2][0] * m[2][1];
+    kQ[0][1]          = m[0][1] - fDot * kQ[0][0];
+    kQ[1][1]          = m[1][1] - fDot * kQ[1][0];
+    kQ[2][1]          = m[2][1] - fDot * kQ[2][0];
+    fInvLength        = glm::inversesqrt(kQ[0][1] * kQ[0][1] + kQ[1][1] * kQ[1][1] + kQ[2][1] * kQ[2][1]);
 
     kQ[0][1]         *= fInvLength;
     kQ[1][1]         *= fInvLength;
     kQ[2][1]         *= fInvLength;
 
-    fDot             = kQ[0][0] * m[0][2] + kQ[1][0] * m[1][2] + kQ[2][0] * m[2][2];
-    kQ[0][2]         = m[0][2] - fDot * kQ[0][0];
-    kQ[1][2]         = m[1][2] - fDot * kQ[1][0];
-    kQ[2][2]         = m[2][2] - fDot * kQ[2][0];
-    fDot             = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] + kQ[2][1] * m[2][2];
+    fDot              = kQ[0][0] * m[0][2] + kQ[1][0] * m[1][2] + kQ[2][0] * m[2][2];
+    kQ[0][2]          = m[0][2] - fDot * kQ[0][0];
+    kQ[1][2]          = m[1][2] - fDot * kQ[1][0];
+    kQ[2][2]          = m[2][2] - fDot * kQ[2][0];
+    fDot              = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] + kQ[2][1] * m[2][2];
     kQ[0][2]         -= fDot * kQ[0][1];
     kQ[1][2]         -= fDot * kQ[1][1];
     kQ[2][2]         -= fDot * kQ[2][1];
-    fInvLength       = glm::inversesqrt(kQ[0][2] * kQ[0][2] + kQ[1][2] * kQ[1][2] + kQ[2][2] * kQ[2][2]);
+    fInvLength        = glm::inversesqrt(kQ[0][2] * kQ[0][2] + kQ[1][2] * kQ[1][2] + kQ[2][2] * kQ[2][2]);
 
     kQ[0][2]         *= fInvLength;
     kQ[1][2]         *= fInvLength;
@@ -335,8 +318,7 @@ namespace ToolKit
 
   bool RectPointIntersection(Vec2 rectMin, Vec2 rectMax, Vec2 point)
   {
-    return point.x >= rectMin.x && point.y >= rectMin.y &&
-           point.x <= rectMax.x && point.y <= rectMax.y;
+    return point.x >= rectMin.x && point.y >= rectMin.y && point.x <= rectMax.x && point.y <= rectMax.y;
   }
 
   // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
@@ -396,7 +378,7 @@ namespace ToolKit
     float closestPickedDistance = FLT_MAX;
     bool hit                    = false;
 
-#ifndef __EMSCRIPTEN__
+#ifndef __clang__
     std::mutex updateHit;
     std::for_each(std::execution::par_unseq,
                   mesh->m_faces.begin(),
@@ -445,7 +427,7 @@ namespace ToolKit
     return hit;
   }
 
-  TK_API uint FindMeshIntersection(const class Entity* const ntt, const Ray& rayInWorldSpace, float& t)
+  uint FindMeshIntersection(const EntityPtr ntt, const Ray& rayInWorldSpace, float& t)
   {
     SkeletonComponent* skel = ntt->GetComponent<SkeletonComponent>().get();
 
@@ -498,7 +480,7 @@ namespace ToolKit
     rayInObjectSpace.position  = its * Vec4(rayInWorldSpace.position, 1.0f);
     rayInObjectSpace.direction = its * Vec4(rayInWorldSpace.direction, 0.0f);
 
-#ifndef __EMSCRIPTEN__
+#ifndef __clang__
     std::for_each(std::execution::par_unseq,
                   meshTraces.begin(),
                   meshTraces.end(),
@@ -611,6 +593,68 @@ namespace ToolKit
     return res;
   }
 
+  Quaternion QuaternionLookAt(Vec3 direction)
+  {
+    Mat3 Result {};
+    Result[2] = -glm::normalize(direction);
+    Result[0] = glm::normalize(glm::cross(Y_AXIS, Result[2]));
+    Result[1] = glm::cross(Result[2], Result[0]);
+    return glm::quat_cast(Result);
+  }
+
+  // frustum should be normalized
+  bool FrustumSphereIntersection(const Frustum& frustum, const Vec3& pos, float radius)
+  {
+    // check each frustum plane against sphere
+    for (int i = 0; i < 6; i++)
+    {
+      const PlaneEquation& plane = frustum.planes[i];
+      float signedDistance       = glm::dot(plane.normal, pos) + plane.d;
+      if (signedDistance < -radius)
+      {
+        return false; // Sphere is fully outside this plane, no intersection
+      }
+    }
+    return true;
+  }
+
+  bool ConePointIntersection(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, Vec3 point)
+  {
+    // move cone to backwards
+    conePos          -= coneDir;
+    Vec3 pointToCone  = point - conePos;
+    float angle01     = glm::radians(coneAngle) / glm::pi<float>();
+    float toLength    = glm::length(pointToCone);
+    // (pointToCone / toLength) for normalization (saved 1 sqrt instruction)
+    // 1.4f for checking slightly far away from cone end (for example camera near plane)
+    // 0.91f for expanding the cone angle little bit to work correctly (for example camera near plane)
+    return glm::dot(pointToCone / toLength, coneDir) > 0.91f - angle01 && toLength < coneHeight * 1.4f;
+  }
+
+  bool PointBehindPlane(Vec3 p, const PlaneEquation& plane) { return glm::dot(plane.normal, p) + plane.d < -1.0f; }
+
+  // https://simoncoenen.com/blog/programming/graphics/SpotlightCulling
+  bool ConeBehindPlane(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, const PlaneEquation& plane)
+  {
+    Vec3 furthestPointDirection = glm::cross(glm::cross(plane.normal, coneDir), coneDir);
+    Vec3 furthestPointOnCircle  = conePos + coneDir * coneHeight - furthestPointDirection * coneAngle;
+    return PointBehindPlane(conePos, plane) && PointBehindPlane(furthestPointOnCircle, plane);
+  }
+
+  bool FrustumConeIntersect(const Frustum& frustum, Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle)
+  {
+    float radius = glm::radians(coneAngle);
+    for (int i = 0; i < 6; ++i)
+    {
+      const PlaneEquation& plane = frustum.planes[i];
+      if (ConeBehindPlane(conePos, coneDir, coneHeight, radius, frustum.planes[i]))
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
   bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
   {
     float denom = glm::dot(ray.direction, plane.normal);
@@ -681,17 +725,10 @@ namespace ToolKit
   bool FrustumTest(const Frustum& frustum, const BoundingBox& box)
   {
     IntersectResult res = FrustumBoxIntersection(frustum, box);
-    if (res == IntersectResult::Outside)
-    {
-      return true;
-    }
-    else
-    {
-      return false;
-    }
+    return res == IntersectResult::Outside;
   }
 
-  void FrustumCull(EntityRawPtrArray& entities, Camera* camera)
+  void FrustumCull(EntityRawPtrArray& entities, CameraPtr camera)
   {
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();
@@ -702,8 +739,10 @@ namespace ToolKit
     erase_if(entities, delFn);
   }
 
-  void FrustumCull(RenderJobArray& jobs, Camera* camera)
+  void FrustumCull(RenderJobArray& jobs, CameraPtr camera)
   {
+    CPU_FUNC_RANGE();
+
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();
     Mat4 v          = camera->GetViewMatrix();
@@ -884,10 +923,8 @@ namespace ToolKit
     return points;
   }
 
-  Vec3Array GenerateRandomSamplesInHemisphere(int numSamples, float bias)
+  void GenerateRandomSamplesInHemisphere(int numSamples, float bias, Vec3Array& array)
   {
-    Vec3Array samples;
-
     // Generate random samples on the hemisphere with random length between 0
     // and 1
     for (int i = 0; i < numSamples; ++i)
@@ -897,14 +934,14 @@ namespace ToolKit
       // Calculate phi based on the parameter
       float phi    = glm::acos(1.f - bias * glm::linearRand(0.f, 1.f));
 
+      float scale  = (float) i / numSamples;
+      scale        = glm::lerp(0.1f, 1.0f, scale * scale);
       float length = glm::linearRand(0.f, 1.f);
-      float x      = glm::sin(phi) * glm::cos(theta) * length;
-      float y      = glm::sin(phi) * glm::sin(theta) * length;
-      float z      = glm::cos(phi) * length;
-      samples.push_back(glm::vec3(x, y, z));
+      float x      = glm::sin(phi) * glm::cos(theta) * length * scale;
+      float y      = glm::sin(phi) * glm::sin(theta) * length * scale;
+      float z      = glm::cos(phi) * length * scale;
+      array.push_back(glm::vec3(x, y, z));
     }
-
-    return samples;
   }
 
 } // namespace ToolKit

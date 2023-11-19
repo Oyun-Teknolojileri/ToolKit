@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Animation.h"
@@ -29,15 +10,12 @@
 #include "AnimationControllerComponent.h"
 #include "Common/base64.h"
 #include "Entity.h"
+#include "FileManager.h"
+#include "MathUtil.h"
 #include "Node.h"
 #include "Skeleton.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "rapidxml.hpp"
-#include "rapidxml_utils.hpp"
-
-#include <utility>
-#include <vector>
 
 #include "DebugNew.h"
 
@@ -45,6 +23,8 @@ static constexpr bool SERIALIZE_ANIMATION_AS_BINARY = false;
 
 namespace ToolKit
 {
+
+  TKDefineClass(Animation, Resource);
 
   Animation::Animation() {}
 
@@ -95,6 +75,8 @@ namespace ToolKit
     Vec3 translation;
     Quaternion orientation;
     Vec3 scale;
+
+    EntityPtr owner = skeleton->OwnerEntity();
     for (auto& dBoneIter : skeleton->m_map->boneList)
     {
       auto entry = m_keys.find(dBoneIter.first);
@@ -154,7 +136,7 @@ namespace ToolKit
           // Target anim is offseted from it's root bone.
           if (dBoneIter.first == blendTarget->RootBone)
           {
-            Vec3 entityScale       = skeleton->m_entity->m_node->GetScale();
+            Vec3 entityScale       = owner->m_node->GetScale();
             float translationCoeff = (1 / entityScale.x);
             translationT           = translationT + (blendTarget->TranslationOffset * translationCoeff);
             orientationT           = orientationT * blendTarget->OrientationOffset;
@@ -179,69 +161,14 @@ namespace ToolKit
 
   void Animation::Load()
   {
-    if (m_loaded)
+    if (!m_loaded)
     {
-      return;
+      ParseDocument("anim");
+      m_loaded = true;
     }
-
-    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
-    XmlDocument doc;
-    doc.parse<0>(file->data());
-
-    XmlNode* node = doc.first_node("anim");
-    if (node == nullptr)
-    {
-      return;
-    }
-
-    XmlAttribute* attr = node->first_attribute("fps");
-    m_fps              = static_cast<float>(std::atof(attr->value()));
-
-    attr               = node->first_attribute("duration");
-    m_duration         = static_cast<float>(std::atof(attr->value()));
-
-    for (XmlNode* animNode = node->first_node("node"); animNode; animNode = animNode->next_sibling())
-    {
-      attr            = animNode->first_attribute(XmlNodeName.data());
-      String boneName = attr->value();
-
-      // Serialized as base64
-      if (XmlAttribute* keyCountAttr = animNode->first_attribute("KeyCount"))
-      {
-        uint keyCount = 0;
-        ReadAttr(animNode, "KeyCount", keyCount);
-        KeyArray& keys = m_keys[boneName];
-        keys.resize(keyCount);
-        XmlNode* b64Node = animNode->first_node("Base64");
-        b64tobin(keys.data(), b64Node->value());
-      }
-      else
-      {
-        // Serialized as xml
-        for (XmlNode* keyNode = animNode->first_node("key"); keyNode; keyNode = keyNode->next_sibling())
-        {
-          Key key;
-          attr             = keyNode->first_attribute("frame");
-          key.m_frame      = std::atoi(attr->value());
-
-          XmlNode* subNode = keyNode->first_node("translation");
-          ReadVec(subNode, key.m_position);
-
-          subNode = keyNode->first_node("scale");
-          ReadVec(subNode, key.m_scale);
-
-          subNode = keyNode->first_node("rotation");
-          ReadVec(subNode, key.m_rotation);
-
-          m_keys[boneName].push_back(key);
-        }
-      }
-    }
-
-    m_loaded = true;
   }
 
-  void Animation::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Animation::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container      = CreateXmlNode(doc, "anim", parent);
 
@@ -288,6 +215,57 @@ namespace ToolKit
         }
       }
     }
+
+    return container;
+  }
+
+  XmlNode* Animation::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlAttribute* attr = parent->first_attribute("fps");
+    m_fps              = (float) (std::atof(attr->value()));
+
+    attr               = parent->first_attribute("duration");
+    m_duration         = (float) (std::atof(attr->value()));
+
+    for (XmlNode* animNode = parent->first_node("node"); animNode; animNode = animNode->next_sibling())
+    {
+      attr            = animNode->first_attribute(XmlNodeName.data());
+      String boneName = attr->value();
+
+      // Serialized as base64
+      if (XmlAttribute* keyCountAttr = animNode->first_attribute("KeyCount"))
+      {
+        uint keyCount = 0;
+        ReadAttr(animNode, "KeyCount", keyCount);
+        KeyArray& keys = m_keys[boneName];
+        keys.resize(keyCount);
+        XmlNode* b64Node = animNode->first_node("Base64");
+        b64tobin(keys.data(), b64Node->value());
+      }
+      else
+      {
+        // Serialized as xml
+        for (XmlNode* keyNode = animNode->first_node("key"); keyNode; keyNode = keyNode->next_sibling())
+        {
+          Key key;
+          attr             = keyNode->first_attribute("frame");
+          key.m_frame      = std::atoi(attr->value());
+
+          XmlNode* subNode = keyNode->first_node("translation");
+          ReadVec(subNode, key.m_position);
+
+          subNode = keyNode->first_node("scale");
+          ReadVec(subNode, key.m_scale);
+
+          subNode = keyNode->first_node("rotation");
+          ReadVec(subNode, key.m_rotation);
+
+          m_keys[boneName].push_back(key);
+        }
+      }
+    }
+
+    return nullptr;
   }
 
   void Animation::Init(bool flushClientSideArray) { m_initiated = true; }
@@ -375,11 +353,20 @@ namespace ToolKit
     }
   }
 
-  AnimRecord::AnimRecord() { m_id = GetHandleManager()->GetNextHandle(); }
+  AnimRecord::AnimRecord() { m_id = GetHandleManager()->GenerateHandle(); }
 
-  AnimRecord::AnimRecord(Entity* entity, const AnimationPtr& anim) : m_entity(entity), m_animation(anim)
+  void AnimRecord::Construct(EntityPtr entity, const AnimationPtr& anim)
   {
-    m_id = GetHandleManager()->GetNextHandle();
+    m_entity    = entity;
+    m_animation = m_animation;
+  }
+
+  AnimRecord::~AnimRecord()
+  {
+    if (HandleManager* handleMan = GetHandleManager())
+    {
+      handleMan->ReleaseHandle(m_id);
+    }
   }
 
   void AnimationPlayer::AddRecord(AnimRecord* rec)
@@ -442,9 +429,14 @@ namespace ToolKit
       {
         record->m_currentTime += deltaTimeSec * record->m_timeMultiplier;
       }
-      record->m_entity->SetPose(record->m_animation,
-                                record->m_currentTime,
-                                record->m_blendTarget.Blend ? &record->m_blendTarget : nullptr);
+
+      if (EntityPtr ntt = record->m_entity.lock())
+      {
+        ntt->SetPose(record->m_animation,
+                     record->m_currentTime,
+                     record->m_blendTarget.Blend ? &record->m_blendTarget : nullptr);
+      }
+
       if (state == AnimRecord::State::Rewind)
       {
         record->m_state = AnimRecord::State::Play;
@@ -469,12 +461,12 @@ namespace ToolKit
     return -1;
   }
 
-  AnimationManager::AnimationManager() { m_type = ResourceType::Animation; }
+  AnimationManager::AnimationManager() { m_baseType = Animation::StaticClass(); }
 
   AnimationManager::~AnimationManager() {}
 
-  bool AnimationManager::CanStore(ResourceType t) { return t == ResourceType::Animation; }
+  bool AnimationManager::CanStore(ClassMeta* Class) { return Class == Animation::StaticClass(); }
 
-  ResourcePtr AnimationManager::CreateLocal(ResourceType type) { return ResourcePtr(new Animation()); }
+  ResourcePtr AnimationManager::CreateLocal(ClassMeta* Class) { return MakeNewPtr<Animation>(); }
 
 } // namespace ToolKit

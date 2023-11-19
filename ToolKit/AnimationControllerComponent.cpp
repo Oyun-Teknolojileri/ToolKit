@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "AnimationControllerComponent.h"
@@ -34,12 +15,9 @@
 namespace ToolKit
 {
 
-  AnimControllerComponent::AnimControllerComponent()
-  {
-    Records_Define({}, AnimRecordComponentCategory.Name, AnimRecordComponentCategory.Priority, true, true);
+  TKDefineClass(AnimControllerComponent, Component);
 
-    m_id = GetHandleManager()->GetNextHandle();
-  }
+  AnimControllerComponent::AnimControllerComponent() {}
 
   AnimControllerComponent::~AnimControllerComponent()
   {
@@ -49,14 +27,15 @@ namespace ToolKit
     }
   }
 
-  ComponentPtr AnimControllerComponent::Copy(Entity* ntt)
+  ComponentPtr AnimControllerComponent::Copy(EntityPtr ntt)
   {
-    AnimControllerComponentPtr ec = std::make_shared<AnimControllerComponent>();
+    AnimControllerComponentPtr ec = MakeNewPtr<AnimControllerComponent>();
     ec->m_localData               = m_localData;
     ec->m_entity                  = ntt;
+
     for (auto& record : ec->ParamRecords().GetVar<AnimRecordPtrMap>())
     {
-      AnimRecordPtr newRecord = std::make_shared<AnimRecord>();
+      AnimRecordPtr newRecord = MakeNewPtr<AnimRecord>();
       ULongID p_id            = newRecord->m_id;
       *newRecord              = *record.second;
       newRecord->m_id         = p_id;
@@ -67,14 +46,30 @@ namespace ToolKit
     return ec;
   }
 
-  void AnimControllerComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void AnimControllerComponent::ParameterConstructor()
   {
-    Component::DeSerialize(doc, parent);
+    Super::ParameterConstructor();
+    Records_Define({}, AnimRecordComponentCategory.Name, AnimRecordComponentCategory.Priority, true, true);
+  }
+
+  XmlNode* AnimControllerComponent::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* compNode      = Super::DeSerializeImp(info, parent);
     AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
     for (auto iter = list.begin(); iter != list.end(); ++iter)
     {
-      iter->second->m_entity = m_entity;
+      iter->second->m_entity = OwnerEntity();
     }
+
+    return compNode->first_node(StaticClass()->Name.c_str());
+  }
+
+  XmlNode* AnimControllerComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   void AnimControllerComponent::AddSignal(const String& signalName, AnimRecordPtr record)
@@ -109,7 +104,7 @@ namespace ToolKit
     }
     rec->m_state  = AnimRecord::State::Play;
     rec->m_loop   = true;
-    rec->m_entity = m_entity;
+    rec->m_entity = OwnerEntity();
     activeRecord  = rec;
     GetAnimationPlayer()->AddRecord(rec.get());
   }

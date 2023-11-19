@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
@@ -29,8 +10,6 @@
 #include "Resource.h"
 #include "ResourceManager.h"
 #include "Types.h"
-
-#include <vector>
 
 namespace ToolKit
 {
@@ -46,12 +25,13 @@ namespace ToolKit
   class TK_API Texture : public Resource
   {
    public:
-    TKResourceType(Texture);
+    TKDeclareClass(Texture, Resource);
 
-    explicit Texture(const TextureSettings& settings = {});
-    explicit Texture(const String& file, const TextureSettings& settings = {});
-    explicit Texture(uint textureId);
+    Texture(const TextureSettings& settings = {});
+    Texture(const String& file, const TextureSettings& settings = {});
     virtual ~Texture();
+
+    virtual void NativeConstruct(uint textureId);
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
@@ -75,15 +55,34 @@ namespace ToolKit
     TextureSettings m_textureSettings;
   };
 
+  class DepthTexture : public Texture
+  {
+   public:
+    TKDeclareClass(DepthTexture, Texture);
+
+    void Load() override;
+    void Init(int width, int height, bool stencil);
+    void UnInit() override;
+
+   protected:
+    void Clear() override;
+
+   public:
+    bool m_stencil;
+  };
+
+  typedef std::shared_ptr<DepthTexture> DepthTexturePtr;
+
   class TK_API CubeMap : public Texture
   {
    public:
-    TKResourceType(CubeMap)
+    TKDeclareClass(CubeMap, Texture);
 
     CubeMap();
-    explicit CubeMap(const String& file);
-    explicit CubeMap(uint cubemapId);
+    CubeMap(const String& file);
     ~CubeMap();
+
+    using Texture::NativeConstruct;
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
@@ -99,7 +98,7 @@ namespace ToolKit
   class TK_API Hdri : public Texture
   {
    public:
-    TKResourceType(Hdri);
+    TKDeclareClass(Hdri, Texture);
 
     Hdri();
     explicit Hdri(const String& file);
@@ -111,22 +110,17 @@ namespace ToolKit
 
     bool IsTextureAssigned();
 
-   protected:
-    void GeneratePrefilteredEnvMap();
-
    public:
-    CubeMapPtr m_cubemap           = nullptr;
-    CubeMapPtr m_prefilteredEnvMap = nullptr;
-    CubeMapPtr m_irradianceCubemap = nullptr;
-    float m_exposure               = 1.0f;
-    int m_specularIBLTextureSize   = 128;
+    CubeMapPtr m_cubemap         = nullptr;
+    CubeMapPtr m_specularEnvMap  = nullptr;
+    CubeMapPtr m_diffuseEnvMap   = nullptr;
+    float m_exposure             = 1.0f;
+    int m_specularIBLTextureSize = 256;
 
    protected:
     MaterialPtr m_texToCubemapMat           = nullptr;
-    MaterialPtr m_cubemapToIrradiancemapMat = nullptr;
+    MaterialPtr m_cubemapToDiffuseEnvMapMat = nullptr;
     TexturePtr m_equirectangularTexture     = nullptr;
-
-    const int m_brdfLutTextureSize          = 512;
   };
 
   struct RenderTargetSettigs
@@ -147,11 +141,11 @@ namespace ToolKit
   class TK_API RenderTarget : public Texture
   {
    public:
-    TKResourceType(RenderTarget)
+    TKDeclareClass(RenderTarget, Texture);
 
     RenderTarget();
-    RenderTarget(uint widht, uint height, const RenderTargetSettigs& settings = RenderTargetSettigs());
-    RenderTarget(Texture* texture);
+    virtual void NativeConstruct(uint widht, uint height, const RenderTargetSettigs& settings = RenderTargetSettigs());
+    virtual void NativeConstruct(Texture* texture);
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
@@ -171,9 +165,9 @@ namespace ToolKit
    public:
     TextureManager();
     virtual ~TextureManager();
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
-    String GetDefaultResource(ResourceType type) override;
+    bool CanStore(ClassMeta* Class) override;
+    ResourcePtr CreateLocal(ClassMeta* Class) override;
+    String GetDefaultResource(ClassMeta*) override;
   };
 
 } // namespace ToolKit

@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
@@ -270,22 +251,22 @@ namespace ToolKit
                                                                   "LightData.softShadows[14]",
                                                                   "LightData.softShadows[15]"};
 
-  static const StringArray g_lightBleedingReductionStrCache    = {"LightData.lightBleedingReduction[0]",
-                                                                  "LightData.lightBleedingReduction[1]",
-                                                                  "LightData.lightBleedingReduction[2]",
-                                                                  "LightData.lightBleedingReduction[3]",
-                                                                  "LightData.lightBleedingReduction[4]",
-                                                                  "LightData.lightBleedingReduction[5]",
-                                                                  "LightData.lightBleedingReduction[6]",
-                                                                  "LightData.lightBleedingReduction[7]",
-                                                                  "LightData.lightBleedingReduction[8]",
-                                                                  "LightData.lightBleedingReduction[9]",
-                                                                  "LightData.lightBleedingReduction[10]",
-                                                                  "LightData.lightBleedingReduction[11]",
-                                                                  "LightData.lightBleedingReduction[12]",
-                                                                  "LightData.lightBleedingReduction[13]",
-                                                                  "LightData.lightBleedingReduction[14]",
-                                                                  "LightData.lightBleedingReduction[15]"};
+  static const StringArray g_BleedingReductionStrCache         = {"LightData.BleedingReduction[0]",
+                                                                  "LightData.BleedingReduction[1]",
+                                                                  "LightData.BleedingReduction[2]",
+                                                                  "LightData.BleedingReduction[3]",
+                                                                  "LightData.BleedingReduction[4]",
+                                                                  "LightData.BleedingReduction[5]",
+                                                                  "LightData.BleedingReduction[6]",
+                                                                  "LightData.BleedingReduction[7]",
+                                                                  "LightData.BleedingReduction[8]",
+                                                                  "LightData.BleedingReduction[9]",
+                                                                  "LightData.BleedingReduction[10]",
+                                                                  "LightData.BleedingReduction[11]",
+                                                                  "LightData.BleedingReduction[12]",
+                                                                  "LightData.BleedingReduction[13]",
+                                                                  "LightData.BleedingReduction[14]",
+                                                                  "LightData.BleedingReduction[15]"};
 
   static const StringArray g_lightShadowAtlasLayerStrCache     = {"LightData.shadowAtlasLayer[0]",
                                                                   "LightData.shadowAtlasLayer[1]",
@@ -356,15 +337,24 @@ namespace ToolKit
                                                                   "LightData.shadowAtlasCoord[15]"};
 
   static const StringArray g_ssaoSamplesStrCache               = {
-      "samples[0]",  "samples[1]",  "samples[2]",  "samples[3]",  "samples[4]",  "samples[5]",  "samples[6]",
-      "samples[7]",  "samples[8]",  "samples[9]",  "samples[10]", "samples[11]", "samples[12]", "samples[13]",
-      "samples[14]", "samples[15]", "samples[16]", "samples[17]", "samples[18]", "samples[19]", "samples[20]",
-      "samples[21]", "samples[22]", "samples[23]", "samples[24]", "samples[25]", "samples[26]", "samples[27]",
-      "samples[28]", "samples[29]", "samples[30]", "samples[31]", "samples[32]", "samples[33]", "samples[34]",
-      "samples[35]", "samples[36]", "samples[37]", "samples[38]", "samples[39]", "samples[40]", "samples[41]",
-      "samples[42]", "samples[43]", "samples[44]", "samples[45]", "samples[46]", "samples[47]", "samples[48]",
-      "samples[49]", "samples[50]", "samples[51]", "samples[52]", "samples[53]", "samples[54]", "samples[55]",
-      "samples[56]", "samples[57]", "samples[58]", "samples[59]", "samples[60]", "samples[61]", "samples[62]",
-      "samples[63]"};
+      "samples[0]",   "samples[1]",   "samples[2]",   "samples[3]",   "samples[4]",   "samples[5]",   "samples[6]",
+      "samples[7]",   "samples[8]",   "samples[9]",   "samples[10]",  "samples[11]",  "samples[12]",  "samples[13]",
+      "samples[14]",  "samples[15]",  "samples[16]",  "samples[17]",  "samples[18]",  "samples[19]",  "samples[20]",
+      "samples[21]",  "samples[22]",  "samples[23]",  "samples[24]",  "samples[25]",  "samples[26]",  "samples[27]",
+      "samples[28]",  "samples[29]",  "samples[30]",  "samples[31]",  "samples[32]",  "samples[33]",  "samples[34]",
+      "samples[35]",  "samples[36]",  "samples[37]",  "samples[38]",  "samples[39]",  "samples[40]",  "samples[41]",
+      "samples[42]",  "samples[43]",  "samples[44]",  "samples[45]",  "samples[46]",  "samples[47]",  "samples[48]",
+      "samples[49]",  "samples[50]",  "samples[51]",  "samples[52]",  "samples[53]",  "samples[54]",  "samples[55]",
+      "samples[56]",  "samples[57]",  "samples[58]",  "samples[59]",  "samples[60]",  "samples[61]",  "samples[62]",
+      "samples[63]",  "samples[64]",  "samples[65]",  "samples[66]",  "samples[67]",  "samples[68]",  "samples[69]",
+      "samples[70]",  "samples[71]",  "samples[72]",  "samples[73]",  "samples[74]",  "samples[75]",  "samples[76]",
+      "samples[77]",  "samples[78]",  "samples[79]",  "samples[80]",  "samples[81]",  "samples[82]",  "samples[83]",
+      "samples[84]",  "samples[85]",  "samples[86]",  "samples[87]",  "samples[88]",  "samples[89]",  "samples[90]",
+      "samples[91]",  "samples[92]",  "samples[93]",  "samples[94]",  "samples[95]",  "samples[96]",  "samples[97]",
+      "samples[98]",  "samples[99]",  "samples[100]", "samples[101]", "samples[102]", "samples[103]", "samples[104]",
+      "samples[105]", "samples[106]", "samples[107]", "samples[108]", "samples[109]", "samples[110]", "samples[111]",
+      "samples[112]", "samples[113]", "samples[114]", "samples[115]", "samples[116]", "samples[117]", "samples[118]",
+      "samples[119]", "samples[120]", "samples[121]", "samples[122]", "samples[123]", "samples[124]", "samples[125]",
+      "samples[126]", "samples[127]"};
 
 } // namespace ToolKit

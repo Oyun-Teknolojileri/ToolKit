@@ -1,34 +1,24 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "FolderWindow.h"
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <Animation.h>
+#include <Audio.h>
+#include <Material.h>
+#include <Mesh.h>
+#include <Scene.h>
+#include <Shader.h>
+#include <Texture.h>
+#include <ToolKit.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -68,6 +58,7 @@ namespace ToolKit
       {
         return GetTextureManager();
       }
+
       return nullptr;
     }
 
@@ -108,13 +99,7 @@ namespace ToolKit
 
     RenderTargetPtr DirectoryEntry::GetThumbnail() const { return g_app->m_thumbnailManager.GetThumbnail(*this); }
 
-    FolderWindow::FolderWindow(XmlNode* node)
-    {
-      DeSerialize(nullptr, node);
-      Iterate(ResourcePath(), true);
-    }
-
-    FolderWindow::FolderWindow(bool addEngine) { Iterate(ResourcePath(), true, addEngine); }
+    FolderWindow::FolderWindow() {}
 
     FolderWindow::~FolderWindow() {}
 
@@ -126,6 +111,8 @@ namespace ToolKit
       m_resourcesTreeIndex = (int) m_folderNodes.size();
       CreateTreeRec(int(m_folderNodes.size()) - 1, ResourcePath());
     }
+
+    void FolderWindow::IterateFolders(bool includeEngine) { Iterate(ResourcePath(), true, includeEngine); }
 
     // parent will start with -1
     int FolderWindow::CreateTreeRec(int parent, const std::filesystem::path& path)
@@ -168,15 +155,15 @@ namespace ToolKit
         return; // shouldn't happen
       }
 
-      FolderNode& node       = m_folderNodes[index];
-      String icon            = node.active ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
-      String nodeHeader      = icon + ICON_SPACE + node.name;
-      float headerLen        = ImGui::CalcTextSize(nodeHeader.c_str()).x;
+      FolderNode& node        = m_folderNodes[index];
+      String icon             = node.active ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
+      String nodeHeader       = icon + ICON_SPACE + node.name;
+      float headerLen         = ImGui::CalcTextSize(nodeHeader.c_str()).x;
       headerLen              += (depth * 20.0f) + 70.0f; // depth padding + UI start padding
 
-      m_maxTreeNodeWidth     = glm::max(headerLen, m_maxTreeNodeWidth);
+      m_maxTreeNodeWidth      = glm::max(headerLen, m_maxTreeNodeWidth);
 
-      const auto onClickedFn = [&]() -> void
+      const auto onClickedFn  = [&]() -> void
       {
         // find clicked entity
         int selected = Exist(node.path);
@@ -202,7 +189,7 @@ namespace ToolKit
               // root folders different we should switch active folder
               m_activeFolder = selected;
 
-              for (int i : GetVeiws())
+              for (int i : GetViews())
               {
                 FolderView& v = m_entries[i];
                 if (!v.m_currRoot)
@@ -302,7 +289,7 @@ namespace ToolKit
       ImGui::PopID();
     }
 
-    IntArray FolderWindow::GetVeiws()
+    IntArray FolderWindow::GetViews()
     {
       String currRootPath;
       auto IsDescendentFn = [&currRootPath](StringView candidate) -> bool
@@ -362,7 +349,7 @@ namespace ToolKit
                                ImGuiTabBarFlags_NoTooltip | ImGuiTabBarFlags_AutoSelectNewTabs |
                                    ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar))
         {
-          for (int i : GetVeiws())
+          for (int i : GetViews())
           {
             m_entries[i].Show();
           }
@@ -530,13 +517,11 @@ namespace ToolKit
       return false;
     }
 
-    void FolderWindow::Serialize(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* FolderWindow::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
-      Window::Serialize(doc, parent);
-      XmlNode* node   = parent->last_node();
+      XmlNode* wndNode = Window::SerializeImp(doc, parent);
+      XmlNode* folder  = CreateXmlNode(doc, "FolderWindow", wndNode);
 
-      XmlNode* folder = doc->allocate_node(rapidxml::node_element, "FolderWindow");
-      node->append_node(folder);
       WriteAttr(folder, doc, "activeFolder", std::to_string(m_activeFolder));
       WriteAttr(folder, doc, "showStructure", std::to_string(m_showStructure));
 
@@ -551,11 +536,13 @@ namespace ToolKit
         WriteVec(setting, doc, view.m_iconSize);
         viewNode->append_node(setting);
       }
+
+      return folder;
     }
 
-    void FolderWindow::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    XmlNode* FolderWindow::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      Window::DeSerialize(doc, parent);
+      Window::DeSerializeImp(info, parent);
       if (XmlNode* node = parent->first_node("FolderWindow"))
       {
         ReadAttr(node, "activeFolder", m_activeFolder);
@@ -585,6 +572,10 @@ namespace ToolKit
           } while (view = view->next_sibling("FolderView"));
         }
       }
+
+      Iterate(ResourcePath(), true);
+
+      return nullptr;
     }
 
   } // namespace Editor

@@ -1,33 +1,13 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
 
 #include "GeometryTypes.h"
-#include "Types.h"
 
 namespace ToolKit
 {
@@ -71,7 +51,7 @@ namespace ToolKit
   TK_API bool BoxPointIntersection(const BoundingBox& box, const Vec3& point);
 
   TK_API bool RayBoxIntersection(const Ray& ray, const BoundingBox& box, float& t);
-  
+
   TK_API bool RectPointIntersection(Vec2 rectMin, Vec2 rectMax, Vec2 point);
 
   TK_API bool RayTriangleIntersection(const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t);
@@ -86,10 +66,24 @@ namespace ToolKit
   // @return TK_UINT_MAX = no intersection, otherwise submesh index
   // If there is no tracing possible object, t set as 0.0
   // Tracing possible object: Vertex positions should be in memory
-  TK_API uint FindMeshIntersection(const class Entity* const ntt, const Ray& ray, float& t);
+  TK_API uint FindMeshIntersection(const EntityPtr ntt, const Ray& ray, float& t);
 
   TK_API IntersectResult FrustumBoxIntersection(const Frustum& frustum,
                                                 const BoundingBox& box); // 0 outside, 1 inside, 2 intersect
+
+  TK_API bool ConePointIntersection(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, Vec3 point);
+
+  TK_API bool FrustumConeIntersect(const Frustum& frustum,
+                                   Vec3 conePos,
+                                   Vec3 coneDir,
+                                   float coneHeight,
+                                   float coneAngle);
+
+  TK_API Quaternion QuaternionLookAt(Vec3 direction);
+
+  TK_API bool FrustumSphereIntersection(const Frustum& frustum, const Vec3& pos, float radius);
+
+  // TK_API bool FrustumSphereIntersection(const Frustum& frustum, Vec3 pos, float radius);
 
   TK_API bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t);
 
@@ -113,13 +107,14 @@ namespace ToolKit
   TK_API Vec3 ProjectPointOntoPlane(const PlaneEquation& plane, const Vec3& pt);
   TK_API Vec3 ProjectPointOntoLine(const Ray& ray, const Vec3& pnt);
 
+  TK_API bool FrustumTest(const Frustum& frustum, const BoundingBox& box);
   /**
    * Removes the entities that are outside of the camera.
    * @param entities All entities.
    * @param camera Camera that is being used for generating frustum.
    */
-  TK_API void FrustumCull(EntityRawPtrArray& entities, Camera* camera);
-  TK_API void FrustumCull(RenderJobArray& jobs, Camera* camera);
+  TK_API void FrustumCull(EntityRawPtrArray& entities, CameraPtr camera);
+  TK_API void FrustumCull(RenderJobArray& jobs, CameraPtr camera);
 
   // Conversions and Interpolation
   //////////////////////////////////////////
@@ -159,6 +154,6 @@ namespace ToolKit
    * Same as GenerateRandomSamplesOnHemisphere() however this version allows
    * samples to be inside the hemisphere.
    */
-  Vec3Array GenerateRandomSamplesInHemisphere(int numSamples, float bias);
+  void GenerateRandomSamplesInHemisphere(int numSamples, float bias, Vec3Array& array);
 
 } // namespace ToolKit

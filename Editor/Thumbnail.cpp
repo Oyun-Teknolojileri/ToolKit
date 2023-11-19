@@ -1,34 +1,20 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Thumbnail.h"
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <Camera.h>
+#include <Material.h>
+#include <Mesh.h>
+#include <Surface.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -39,19 +25,19 @@ namespace ToolKit
     {
       m_maxThumbSize    = 300u;
 
-      m_thumbnailBuffer = std::make_shared<Framebuffer>();
+      m_thumbnailBuffer = MakeNewPtr<Framebuffer>();
       m_thumbnailBuffer->Init({m_maxThumbSize, m_maxThumbSize, false, true});
 
-      m_thumbnailScene = std::make_shared<Scene>();
+      m_thumbnailScene = MakeNewPtr<Scene>();
 
-      m_entity         = std::make_shared<Entity>();
-      m_entity->AddComponent(new MeshComponent());
+      m_entity         = MakeNewPtr<Entity>();
+      m_entity->AddComponent<MeshComponent>();
 
-      m_sphere = std::make_shared<Sphere>();
-      m_sphere->AddComponent(new MaterialComponent());
+      m_sphere = MakeNewPtr<Sphere>();
+      m_sphere->AddComponent<MaterialComponent>();
 
-      m_lightSystem = std::make_shared<ThreePointLightSystem>();
-      m_cam         = std::make_shared<Camera>();
+      m_lightSystem = MakeNewPtr<ThreePointLightSystem>();
+      m_cam         = MakeNewPtr<Camera>();
     }
 
     ThumbnailRenderer::~ThumbnailRenderer()
@@ -97,13 +83,12 @@ namespace ToolKit
         if (dirEnt.m_ext == SKINMESH)
         {
           SkinMesh* skinMesh            = (SkinMesh*) mesh.get();
-          SkeletonComponentPtr skelComp = std::make_shared<SkeletonComponent>();
+          SkeletonComponentPtr skelComp = m_entity->AddComponent<SkeletonComponent>();
           skelComp->SetSkeletonResourceVal(skinMesh->m_skeleton);
           skelComp->Init();
-          m_entity->AddComponent(skelComp);
         }
 
-        m_thumbnailScene->AddEntity(m_entity.get());
+        m_thumbnailScene->AddEntity(m_entity);
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
         m_cam->FocusToBoundingBox(m_entity->GetAABB(true), 1.5f);
@@ -116,7 +101,7 @@ namespace ToolKit
           mc->SetFirstMaterial(mat);
         }
 
-        m_thumbnailScene->AddEntity(m_sphere.get());
+        m_thumbnailScene->AddEntity(m_sphere);
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
         m_cam->m_node->SetOrientation(Quaternion());
@@ -139,13 +124,14 @@ namespace ToolKit
         float w      = (texture->m_width / maxDim) * m_maxThumbSize;
         float h      = (texture->m_height / maxDim) * m_maxThumbSize;
 
-        m_surface    = std::make_shared<Surface>(Vec2(w, h));
+        m_surface    = MakeNewPtr<Surface>();
+        m_surface->Update(Vec2(w, h));
         m_surface->UpdateGeometry(false);
         MaterialComponentPtr matCom                  = m_surface->GetMaterialComponent();
         matCom->GetFirstMaterial()->m_diffuseTexture = texture;
         matCom->Init(false);
 
-        m_thumbnailScene->AddEntity(m_surface.get());
+        m_thumbnailScene->AddEntity(m_surface);
         m_cam->m_orthographicScale = 1.0f;
         m_cam->SetLens(w * -0.5f, w * 0.5f, h * -0.5f, h * 0.5f, 0.01f, 1000.0f);
 
@@ -157,17 +143,17 @@ namespace ToolKit
         return g_app->m_thumbnailManager.GetDefaultThumbnail();
       }
 
-      m_thumbnailRT = std::make_shared<RenderTarget>(m_maxThumbSize, m_maxThumbSize);
+      m_thumbnailRT = MakeNewPtr<RenderTarget>(m_maxThumbSize, m_maxThumbSize);
       m_thumbnailRT->Init();
 
-      m_thumbnailBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_thumbnailRT);
+      m_thumbnailBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_thumbnailRT);
 
       Mat4 camTs = m_cam->m_node->GetTransform();
       m_lightSystem->m_parentNode->SetTransform(camTs);
 
       m_params.Lights          = m_lightSystem->m_lights;
       m_params.Scene           = m_thumbnailScene;
-      m_params.Cam             = m_cam.get();
+      m_params.Cam             = m_cam;
       m_params.MainFramebuffer = m_thumbnailBuffer;
 
       Render(renderer);
@@ -175,7 +161,7 @@ namespace ToolKit
       return m_thumbnailRT;
     }
 
-    ThumbnailManager::ThumbnailManager() { m_defaultThumbnail = std::make_shared<RenderTarget>(10u, 10u); }
+    ThumbnailManager::ThumbnailManager() { m_defaultThumbnail = MakeNewPtr<RenderTarget>(10u, 10u); }
 
     ThumbnailManager::~ThumbnailManager() { m_defaultThumbnail = nullptr; }
 

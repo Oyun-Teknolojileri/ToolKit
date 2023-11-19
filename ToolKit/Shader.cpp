@@ -1,50 +1,35 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Shader.h"
 
+#include "FileManager.h"
+#include "Logger.h"
 #include "TKAssert.h"
+#include "TKOpenGL.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "gles2.h"
-#include "rapidxml.hpp"
-#include "rapidxml_print.hpp"
-#include "rapidxml_utils.hpp"
 
 #include <unordered_set>
-#include <vector>
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
 
-#define TK_DEFAULT_DEFERRED_FRAG "deferredRenderFrag.shader"
-#define TK_DEFAULT_FORWARD_FRAG  "defaultFragment.shader"
-#define TK_DEFAULT_VERTEX_SHADER "defaultVertex.shader"
+#define TK_DEFAULT_DEFERRED_FRAG         "deferredRenderFrag.shader"
+#define TK_DEFAULT_FORWARD_FRAG          "defaultFragment.shader"
+#define TK_DEFAULT_VERTEX_SHADER         "defaultVertex.shader"
+#define TK_PHONG_FORWARD_FRAGMENT_SHADER "phongForwardFragment.shader"
+
+  // Shader
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(Shader, Resource);
 
   Shader::Shader() {}
 
@@ -54,17 +39,9 @@ namespace ToolKit
 
   void Shader::Load()
   {
-    if (m_loaded)
+    if (!m_loaded)
     {
-      return;
-    }
-
-    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
-    XmlDocument doc;
-    doc.parse<rapidxml::parse_full>(file->data());
-    if (XmlNode* rootNode = doc.first_node("shader"))
-    {
-      DeSerialize(&doc, rootNode);
+      ParseDocument("shader", true);
       m_loaded = true;
     }
   }
@@ -218,13 +195,15 @@ namespace ToolKit
       return "normalMapInUse";
     case Uniform::IBL_MAX_REFLECTION_LOD:
       return "iblMaxReflectionLod";
+    case Uniform::SHADOW_DISTANCE:
+      return "shadowDistance";
     case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";
     }
   }
 
-  void Shader::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Shader::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "shader", parent);
     XmlNode* node      = CreateXmlNode(doc, "type", container);
@@ -259,15 +238,12 @@ namespace ToolKit
     XmlNode* srcInput = doc->allocate_node(rapidxml::node_type::node_comment);
     src->append_node(srcInput);
     srcInput->value(doc->allocate_string(m_source.c_str()));
+
+    return container;
   }
 
-  void Shader::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Shader::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (parent == nullptr)
-    {
-      return;
-    }
-
     m_includeFiles.clear();
 
     XmlNode* rootNode = parent;
@@ -337,6 +313,8 @@ namespace ToolKit
     {
       HandleShaderIncludes(*i);
     }
+
+    return nullptr;
   }
 
   void Shader::SetShaderParameter(const String& param, const ParameterVariant& val) { m_shaderParams[param] = val; }
@@ -417,7 +395,6 @@ namespace ToolKit
     m_source.replace(includeLoc, 0, includeSource);
 
     // Handle uniforms
-
     std::unordered_set<Uniform> unis;
     for (Uniform uni : m_uniforms)
     {
@@ -436,24 +413,10 @@ namespace ToolKit
     }
   }
 
-  Program::Program() {}
+  // ShaderManager
+  //////////////////////////////////////////////////////////////////////////
 
-  Program::Program(ShaderPtr vertex, ShaderPtr fragment)
-  {
-    m_shaders.push_back(vertex);
-    m_shaders.push_back(fragment);
-
-    m_tag = std::to_string(vertex->m_shaderHandle);
-    m_tag += std::to_string(fragment->m_shaderHandle);
-  }
-
-  Program::~Program()
-  {
-    glDeleteProgram(m_handle);
-    m_handle = 0;
-  }
-
-  ShaderManager::ShaderManager() { m_type = ResourceType::Shader; }
+  ShaderManager::ShaderManager() { m_baseType = Shader::StaticClass(); }
 
   ShaderManager::~ShaderManager() {}
 
@@ -464,30 +427,32 @@ namespace ToolKit
     m_pbrDefferedShaderFile   = ShaderPath(TK_DEFAULT_DEFERRED_FRAG, true);
     m_pbrForwardShaderFile    = ShaderPath(TK_DEFAULT_FORWARD_FRAG, true);
     m_defaultVertexShaderFile = ShaderPath(TK_DEFAULT_VERTEX_SHADER, true);
+    m_phongForwardShaderFile  = ShaderPath(TK_PHONG_FORWARD_FRAGMENT_SHADER, true);
 
     Create<Shader>(m_pbrDefferedShaderFile);
     Create<Shader>(m_pbrForwardShaderFile);
     Create<Shader>(m_defaultVertexShaderFile);
+    Create<Shader>(m_phongForwardShaderFile);
   }
 
-  bool ShaderManager::CanStore(ResourceType t) { return t == ResourceType::Shader; }
+  bool ShaderManager::CanStore(ClassMeta* Class) { return Class == Shader::StaticClass(); }
 
-  ResourcePtr ShaderManager::CreateLocal(ResourceType type) { return ResourcePtr(new Shader()); }
-
-  ShaderPtr ShaderManager::GetDefaultVertexShader()
+  ResourcePtr ShaderManager::CreateLocal(ClassMeta* Class)
   {
-    return std::static_pointer_cast<Shader>(m_storage[m_defaultVertexShaderFile]);
+    if (Class == Shader::StaticClass())
+    {
+      return MakeNewPtr<Shader>();
+    }
+    return nullptr;
   }
 
-  ShaderPtr ShaderManager::GetPbrDefferedShader()
-  {
-    return std::static_pointer_cast<Shader>(m_storage[m_pbrDefferedShaderFile]);
-  }
+  ShaderPtr ShaderManager::GetDefaultVertexShader() { return Cast<Shader>(m_storage[m_defaultVertexShaderFile]); }
 
-  ShaderPtr ShaderManager::GetPbrForwardShader()
-  {
-    return std::static_pointer_cast<Shader>(m_storage[m_pbrForwardShaderFile]);
-  }
+  ShaderPtr ShaderManager::GetPbrDefferedShader() { return Cast<Shader>(m_storage[m_pbrDefferedShaderFile]); }
+
+  ShaderPtr ShaderManager::GetPbrForwardShader() { return Cast<Shader>(m_storage[m_pbrForwardShaderFile]); }
+
+  ShaderPtr ShaderManager::GetPhongForwardShader() { return Cast<Shader>(m_storage[m_phongForwardShaderFile]); }
 
   const String& ShaderManager::PbrDefferedShaderFile() { return m_pbrDefferedShaderFile; }
 

@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Camera.h"
@@ -35,16 +16,17 @@
 namespace ToolKit
 {
 
-  Camera::Camera()
-  {
-    SetLens(glm::radians(90.0f), 640.0f / 480.0f, 0.01f, 1000.0f);
-    AddComponent(new DirectionComponent(this));
+  TKDefineClass(Camera, Entity);
 
-    ParameterConstructor();
-    ParameterEventConstructor();
-  }
+  Camera::Camera() { SetLens(glm::radians(90.0f), 640.0f / 480.0f, 0.01f, 1000.0f); }
 
   Camera::~Camera() {}
+
+  void Camera::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    AddComponent<DirectionComponent>();
+  }
 
   void Camera::SetLens(float fov, float aspect) { SetLens(fov, aspect, 0.5f, 1000.0f); }
 
@@ -77,42 +59,12 @@ namespace ToolKit
     m_ortographic = true;
   }
 
-  Mat4 Camera::GetViewMatrix() const
-  {
-    Mat4 view = m_node->GetTransform();
-    return glm::inverse(view);
-  }
-
-  Mat4 Camera::GetProjectionMatrix() const { return m_projection; }
-
   bool Camera::IsOrtographic() const { return m_ortographic; }
 
-  Camera::CamData Camera::GetData() const
+  XmlNode* Camera::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    CamData data;
-    DirectionComponentPtr dcp = GetComponent<DirectionComponent>();
-    assert(dcp);
-    data.dir         = dcp->GetDirection();
-
-    data.pos         = m_node->GetTranslation();
-    data.projection  = m_projection;
-    data.fov         = m_fov;
-    data.aspect      = m_aspect;
-    data.nearDist    = m_near;
-    data.far         = m_far;
-    data.ortographic = m_ortographic;
-
-    return data;
-  }
-
-  EntityType Camera::GetType() const { return EntityType::Entity_Camera; }
-
-  void Camera::Serialize(XmlDocument* doc, XmlNode* parent) const
-  {
-    Entity::Serialize(doc, parent);
-    parent        = parent->last_node();
-
-    XmlNode* node = CreateXmlNode(doc, "Camera", parent);
+    XmlNode* nttNode = Super::SerializeImp(doc, parent);
+    XmlNode* node    = CreateXmlNode(doc, StaticClass()->Name, nttNode);
 
     WriteAttr(node, doc, "fov", std::to_string(m_fov));
     WriteAttr(node, doc, "aspect", std::to_string(m_aspect));
@@ -124,25 +76,34 @@ namespace ToolKit
     WriteAttr(node, doc, "top", std::to_string(m_top));
     WriteAttr(node, doc, "bottom", std::to_string(m_bottom));
     WriteAttr(node, doc, "scale", std::to_string(m_orthographicScale));
+
+    return node;
   }
 
-  void Camera::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Camera::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    ClearComponents();
-    Entity::DeSerialize(doc, parent);
-
-    if (XmlNode* node = parent->first_node("Camera"))
+    if (m_version == TKV045)
     {
-      ReadAttr(node, "fov", m_fov);
-      ReadAttr(node, "aspect", m_aspect);
-      ReadAttr(node, "near", m_near);
-      ReadAttr(node, "far", m_far);
-      ReadAttr(node, "ortographic", m_ortographic);
-      ReadAttr(node, "left", m_left);
-      ReadAttr(node, "right", m_right);
-      ReadAttr(node, "top", m_top);
-      ReadAttr(node, "bottom", m_bottom);
-      ReadAttr(node, "scale", m_orthographicScale);
+      return DeSerializeImpV045(info, parent);
+    }
+
+    ClearComponents();
+
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    XmlNode* camNode = nttNode->first_node(StaticClass()->Name.c_str());
+
+    if (camNode != nullptr)
+    {
+      ReadAttr(camNode, "fov", m_fov);
+      ReadAttr(camNode, "aspect", m_aspect);
+      ReadAttr(camNode, "near", m_near);
+      ReadAttr(camNode, "far", m_far);
+      ReadAttr(camNode, "ortographic", m_ortographic);
+      ReadAttr(camNode, "left", m_left);
+      ReadAttr(camNode, "right", m_right);
+      ReadAttr(camNode, "top", m_top);
+      ReadAttr(camNode, "bottom", m_bottom);
+      ReadAttr(camNode, "scale", m_orthographicScale);
     }
 
     if (m_ortographic)
@@ -153,6 +114,40 @@ namespace ToolKit
     {
       SetLens(m_fov, m_aspect, m_near, m_far);
     }
+
+    return camNode;
+  }
+
+  XmlNode* Camera::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    ClearComponents();
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    XmlNode* camNode = nttNode->first_node(Camera::StaticClass()->Name.c_str());
+
+    if (camNode != nullptr)
+    {
+      ReadAttr(camNode, "fov", m_fov);
+      ReadAttr(camNode, "aspect", m_aspect);
+      ReadAttr(camNode, "near", m_near);
+      ReadAttr(camNode, "far", m_far);
+      ReadAttr(camNode, "ortographic", m_ortographic);
+      ReadAttr(camNode, "left", m_left);
+      ReadAttr(camNode, "right", m_right);
+      ReadAttr(camNode, "top", m_top);
+      ReadAttr(camNode, "bottom", m_bottom);
+      ReadAttr(camNode, "scale", m_orthographicScale);
+    }
+
+    if (m_ortographic)
+    {
+      SetLens(m_left, m_right, m_bottom, m_top, m_near, m_far);
+    }
+    else
+    {
+      SetLens(m_fov, m_aspect, m_near, m_far);
+    }
+
+    return camNode;
   }
 
   // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene
@@ -170,24 +165,6 @@ namespace ToolKit
     m_node->SetTranslation(eye, TransformationSpace::TS_WORLD);
     GetComponent<DirectionComponent>()->LookAt(geoCenter);
   }
-
-  float Camera::Fov() const { return m_fov; }
-
-  float Camera::Aspect() const { return m_aspect; }
-
-  float Camera::Near() const { return m_near; }
-
-  float Camera::Far() const { return m_far; }
-
-  float Camera::Left() const { return m_left; }
-
-  float Camera::Right() const { return m_right; }
-
-  float Camera::Top() const { return m_top; }
-
-  float Camera::Bottom() const { return m_bottom; }
-
-  Vec3 Camera::Position() const { return m_node->GetTranslation(); }
 
   Vec3 Camera::Direction() const
   {
@@ -210,13 +187,15 @@ namespace ToolKit
     cpy->m_projection        = m_projection;
     cpy->m_orthographicScale = m_orthographicScale;
     cpy->ClearComponents();
-    cpy->AddComponent(new DirectionComponent(cpy));
+    cpy->AddComponent<DirectionComponent>();
 
     return cpy;
   }
 
   void Camera::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     Fov_Define(glm::degrees(m_fov),
                CameraCategory.Name,
                CameraCategory.Priority,
@@ -250,6 +229,8 @@ namespace ToolKit
 
   void Camera::ParameterEventConstructor()
   {
+    Super::ParameterEventConstructor();
+
     auto updateLensInternalFn = [this]()
     {
       if (m_ortographic)

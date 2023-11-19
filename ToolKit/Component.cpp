@@ -1,35 +1,21 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Component.h"
 
 #include "AnimationControllerComponent.h"
+#include "Component.h"
 #include "DirectionComponent.h"
 #include "EnvironmentComponent.h"
+#include "MaterialComponent.h"
+#include "MeshComponent.h"
+#include "Object.h"
 #include "ResourceComponent.h"
+#include "SkeletonComponent.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -37,53 +23,62 @@
 namespace ToolKit
 {
 
-  Component::Component() { m_id = GetHandleManager()->GetNextHandle(); }
+  TKDefineClass(Component, Object);
+
+  Component::Component() {}
 
   Component::~Component() {}
 
-  ComponentType Component::GetType() const { return ComponentType::Base; }
-
-  void Component::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void Component::ParameterConstructor()
   {
-    XmlNode* componentNode = CreateXmlNode(doc, XmlComponent, parent);
-    WriteAttr(componentNode, doc, XmlParamterTypeAttr, std::to_string(static_cast<int>(GetType())));
-
-    m_localData.Serialize(doc, componentNode);
+    Super::ParameterConstructor();
+    ParamId().m_exposed = false;
   }
 
-  void Component::DeSerialize(XmlDocument* doc, XmlNode* parent) { m_localData.DeSerialize(doc, parent); }
-
-  Component* Component::CreateByType(ComponentType t)
+  XmlNode* Component::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    switch (t)
+    XmlNode* objNode       = Super::SerializeImp(doc, parent);
+    XmlNode* componentNode = CreateXmlNode(doc, StaticClass()->Name, objNode);
+
+    return componentNode;
+  }
+
+  XmlNode* Component::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    parent = Super::DeSerializeImp(info, parent);
+    if (m_version > TKV044)
+    {
+      return parent->first_node(StaticClass()->Name.c_str());
+    }
+
+    return parent;
+  }
+
+  ComponentPtr ComponentFactory::Create(ComponentType Class)
+  {
+    switch (Class)
     {
     case ComponentType::MeshComponent:
-      return new MeshComponent();
-      break;
+      return MakeNewPtr<MeshComponent>();
     case ComponentType::DirectionComponent:
-      return new DirectionComponent();
-      break;
+      return MakeNewPtr<DirectionComponent>();
     case ComponentType::MultiMaterialComponent:
     case ComponentType::MaterialComponent:
-      return new MaterialComponent();
-      break;
+      return MakeNewPtr<MaterialComponent>();
     case ComponentType::EnvironmentComponent:
-      return new EnvironmentComponent();
-      break;
+      return MakeNewPtr<EnvironmentComponent>();
     case ComponentType::AnimControllerComponent:
-      return new AnimControllerComponent();
-      break;
+      return MakeNewPtr<AnimControllerComponent>();
     case ComponentType::SkeletonComponent:
-      return new SkeletonComponent();
-      break;
+      return MakeNewPtr<SkeletonComponent>();
     case ComponentType::AABBOverrideComponent:
-      return new AABBOverrideComponent;
-      break;
+      return MakeNewPtr<AABBOverrideComponent>();
     case ComponentType::Base:
     default:
-      assert(false && "Unsupported component type.");
+      assert(0 && "Unknown Component Type !");
       break;
     }
+
     return nullptr;
   }
 

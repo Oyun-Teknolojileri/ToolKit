@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "PropInspector.h"
@@ -29,14 +10,20 @@
 #include "App.h"
 #include "ComponentView.h"
 #include "CustomDataView.h"
-#include "DirectionComponent.h"
 #include "EntityView.h"
-#include "GradientSky.h"
 #include "MaterialView.h"
 #include "MeshView.h"
 #include "PrefabView.h"
 
-#include "DebugNew.h"
+#include <Camera.h>
+#include <DirectionComponent.h>
+#include <FileManager.h>
+#include <GradientSky.h>
+#include <Material.h>
+#include <Mesh.h>
+#include <Prefab.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -99,7 +86,7 @@ namespace ToolKit
                          ImVec2(0.0f, 0.0f),
                          texCoords);
 
-      bool clicked = ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
+      bool clicked  = ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
       clicked      &= ImGui::IsItemHovered();
 
       if (isEditable && ImGui::BeginDragDropTarget())
@@ -134,7 +121,7 @@ namespace ToolKit
             }
           };
 
-          if (man->m_type == ResourceType::Material)
+          if (man->m_baseType == Material::StaticClass())
           {
             MaterialPtr mr = man->Create<Material>(file);
             if (clicked)
@@ -148,13 +135,13 @@ namespace ToolKit
             textureRepFn(mr->m_diffuseTexture);
           }
 
-          if (man->m_type == ResourceType::Texture)
+          if (man->m_baseType == Texture::StaticClass())
           {
             TexturePtr t = man->Create<Texture>(file);
             textureRepFn(t);
           }
 
-          if (man->m_type == ResourceType::Mesh || man->m_type == ResourceType::SkinMesh)
+          if (man->m_baseType->IsSublcassOf(Mesh::StaticClass()))
           {
             MeshPtr mesh = man->Create<Mesh>(file);
 
@@ -196,12 +183,14 @@ namespace ToolKit
 
     View::View(const StringView viewName) : m_viewName(viewName) {}
 
+    inline View::~View() {}
+
     // PreviewViewport
     //////////////////////////////////////////////////////////////////////////
 
-    PreviewViewport::PreviewViewport(uint width, uint height) : EditorViewport((float) width, (float) height)
+    PreviewViewport::PreviewViewport()
     {
-      m_previewRenderer                            = std::make_shared<SceneRenderer>();
+      m_previewRenderer                            = MakeNewPtr<SceneRenderPath>();
       m_previewRenderer->m_params.Cam              = GetCamera();
       m_previewRenderer->m_params.ClearFramebuffer = true;
       m_previewRenderer->m_params.MainFramebuffer  = m_framebuffer;
@@ -251,7 +240,7 @@ namespace ToolKit
 
     void PreviewViewport::ResetCamera()
     {
-      Camera* cam = GetCamera();
+      CameraPtr cam = GetCamera();
       cam->m_node->SetTranslation(Vec3(3.0f, 6.55f, 4.0f) * 0.6f);
       cam->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f, 1.1f, 0.0f));
     }
@@ -266,8 +255,6 @@ namespace ToolKit
 
     // PropInspector
     //////////////////////////////////////////////////////////////////////////
-
-    PropInspector::PropInspector(XmlNode* node) : PropInspector() { DeSerialize(nullptr, node); }
 
     PropInspector::PropInspector()
     {
@@ -294,6 +281,8 @@ namespace ToolKit
       m_prefabViews.push_back((uint) ViewType::Mesh);
     }
 
+    PropInspector::PropInspector(XmlNode* node) : PropInspector() { DeSerialize(SerializationFileInfo(), node); }
+
     PropInspector::~PropInspector()
     {
       for (ViewRawPtr& view : m_views)
@@ -309,7 +298,7 @@ namespace ToolKit
       return static_cast<MaterialView*>(m_views[(uint) ViewType::Material]);
     }
 
-    void PropInspector::DeterminateSelectedMaterial(Entity* curEntity)
+    void PropInspector::DeterminateSelectedMaterial(EntityPtr curEntity)
     {
       // if material view is active. determinate selected material
       MaterialView* matView = dynamic_cast<MaterialView*>(m_views[(uint) m_activeView]);
@@ -325,10 +314,10 @@ namespace ToolKit
         return;
       }
 
-      if (curEntity->GetType() == EntityType::Entity_Prefab)
+      if (curEntity->IsA<Prefab>())
       {
         PrefabView* prefView = static_cast<PrefabView*>(m_views[(uint) ViewType::Prefab]);
-        if (Entity* prefEntity = prefView->GetActiveEntity())
+        if (EntityPtr prefEntity = prefView->GetActiveEntity())
         {
           curEntity = prefEntity;
         }
@@ -353,10 +342,10 @@ namespace ToolKit
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.0f, 0.0f));
       ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, style.ItemSpacing.y));
 
-      Entity* curEntity = g_app->GetCurrentScene()->GetCurrentSelection();
-      bool isPrefab     = curEntity != nullptr && curEntity->GetType() == EntityType::Entity_Prefab;
+      EntityPtr curEntity = g_app->GetCurrentScene()->GetCurrentSelection();
+      bool isPrefab       = curEntity != nullptr && curEntity->IsA<Prefab>();
 
-      UIntArray views   = isPrefab ? m_prefabViews : m_entityViews;
+      UIntArray views     = isPrefab ? m_prefabViews : m_entityViews;
 
       if (ImGui::Begin(m_name.c_str(), &m_visible, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
       {

@@ -1,38 +1,24 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "TopBar.h"
 
 #include "App.h"
 #include "EditorCamera.h"
-#include "GradientSky.h"
 #include "IconsFontAwesome.h"
 #include "OutlinerWindow.h"
 
-#include "DebugNew.h"
+#include <Drawable.h>
+#include <GradientSky.h>
+#include <Mesh.h>
+#include <Meta.h>
+#include <Surface.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -44,34 +30,40 @@ namespace ToolKit
     void OverlayTopBar::ShowAddMenuPopup()
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
-      Entity* createdEntity    = nullptr;
+      EntityPtr createdEntity  = nullptr;
       if (ImGui::BeginMenu("Mesh"))
       {
         if (ImGui::MenuItem(ICON_FA_CUBE " Cube"))
         {
-          createdEntity = new Cube();
+          createdEntity = MakeNewPtr<Cube>();
           createdEntity->GetMeshComponent()->Init(false);
         }
         if (ImGui::MenuItem(ICON_FA_CIRCLE " Sphere"))
         {
-          createdEntity = new Sphere();
+          createdEntity = MakeNewPtr<Sphere>();
           createdEntity->GetMeshComponent()->Init(false);
         }
         if (ImGui::MenuItem(ICON_FA_CARET_UP " Cone"))
         {
-          createdEntity = new Cone({1.0f, 1.0f, 30, 30});
+          ConePtr cone = MakeNewPtr<Cone>();
+          cone->Generate(1.0f, 1.0f, 30, 30);
+          createdEntity = cone;
           createdEntity->GetMeshComponent()->Init(false);
         }
         if (ImGui::MenuItem(ICON_FA_SQUARE " Plane"))
         {
-          createdEntity = new Quad();
+          createdEntity = MakeNewPtr<Quad>();
           createdEntity->GetMeshComponent()->Init(false);
         }
         if (ImGui::MenuItem(ICON_FA_GITHUB_ALT " Monkey"))
         {
-          Drawable* suzanne = new Drawable();
-          suzanne->SetMesh(GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh", true)));
-          suzanne->GetMesh()->Init(false);
+          MeshPtr mesh = GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh", true));
+          mesh->Init(false);
+          MeshComponentPtr meshCom = MakeNewPtr<MeshComponent>();
+          meshCom->SetMeshVal(mesh);
+          EntityPtr suzanne = MakeNewPtr<Entity>();
+          suzanne->AddComponent(meshCom);
+
           createdEntity = suzanne;
         }
         ImGui::EndMenu();
@@ -82,13 +74,17 @@ namespace ToolKit
       {
         if (ImGui::MenuItem("Surface"))
         {
-          createdEntity = new Surface(Vec2(100.0f, 30.0f), Vec2(0.0f, 0.0f));
+          SurfacePtr srf = MakeNewPtr<Surface>();
+          srf->SetSizeVal(Vec2(100.0f, 30.0f));
+          createdEntity = srf;
           createdEntity->GetMeshComponent()->Init(false);
         }
 
         if (ImGui::MenuItem("Button"))
         {
-          createdEntity = new Button(Vec2(100.0f, 30.0f));
+          ButtonPtr btn = MakeNewPtr<Button>();
+          btn->Update(Vec2(100.0f, 30.0f), Vec2(0.5f, 0.5f));
+          createdEntity = btn;
           createdEntity->GetMeshComponent()->Init(false);
         }
         ImGui::EndMenu();
@@ -97,60 +93,67 @@ namespace ToolKit
       ImGui::Separator();
       if (ImGui::MenuItem(ICON_FA_ARROWS " Node"))
       {
-        createdEntity = GetEntityFactory()->CreateByType(EntityType::Entity_Node);
+        createdEntity = MakeNewPtr<EntityNode>();
       }
 
       if (ImGui::MenuItem(ICON_FA_VIDEO_CAMERA " Camera"))
       {
-        createdEntity = new EditorCamera();
+        createdEntity = MakeNewPtr<EditorCamera>();
       }
 
       if (ImGui::BeginMenu(ICON_FA_LIGHTBULB " Light"))
       {
         if (ImGui::MenuItem(ICON_FA_SUN " Directional"))
         {
-          EditorDirectionalLight* light = new EditorDirectionalLight();
-          light->Init();
-          createdEntity = static_cast<Entity*>(light);
+          EditorDirectionalLightPtr light = MakeNewPtr<EditorDirectionalLight>();
+          light->InitController();
+          createdEntity = light;
         }
 
         if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Point"))
         {
-          EditorPointLight* light = new EditorPointLight();
-          light->Init();
-          createdEntity = static_cast<Entity*>(light);
+          EditorPointLightPtr light = MakeNewPtr<EditorPointLight>();
+          light->InitController();
+          createdEntity = light;
         }
 
         if (ImGui::MenuItem(ICON_FA_LIGHTBULB " Spot"))
         {
-          EditorSpotLight* light = new EditorSpotLight();
-          light->Init();
-          createdEntity = static_cast<Entity*>(light);
+          EditorSpotLightPtr light = MakeNewPtr<EditorSpotLight>();
+          light->InitController();
+          createdEntity = light;
         }
 
         if (ImGui::MenuItem(ICON_FA_CLOUD " Sky"))
         {
-          createdEntity = new Sky();
+          createdEntity = MakeNewPtr<Sky>();
         }
 
         if (ImGui::MenuItem(ICON_FA_SKYATLAS " Gradient Sky"))
         {
-          createdEntity = new GradientSky();
+          createdEntity = MakeNewPtr<GradientSky>();
         }
 
         ImGui::EndMenu();
       }
 
+      // Create dynamic menu.
+      ImGui::Separator();
+      for (DynamicMenuPtr root : g_app->m_customObjectsMenu)
+      {
+        ShowDynamicMenu(root);
+      }
+
       if (createdEntity != nullptr)
       {
-        const auto isSameTypeFn = [createdEntity](const Entity* e) -> bool
-        { return e->GetType() == createdEntity->GetType(); };
+        const auto isSameTypeFn = [createdEntity](const EntityPtr e) -> bool
+        { return e->Class() == createdEntity->Class(); };
 
-        String typeName                   = EntityTypeToString(createdEntity->GetType());
-        const EntityRawPtrArray& entities = currScene->GetEntities();
-        size_t numSameType                = std::count_if(entities.cbegin(), entities.cend(), isSameTypeFn);
+        String typeName                = createdEntity->Class()->Name;
+        const EntityPtrArray& entities = currScene->GetEntities();
+        size_t numSameType             = std::count_if(entities.cbegin(), entities.cend(), isSameTypeFn);
 
-        String suffix                     = numSameType == 0 ? "" : "_" + std::to_string(numSameType);
+        String suffix                  = numSameType == 0 ? "" : "_" + std::to_string(numSameType);
 
         // if numSameType equals 0 EntityType otherwise EntityType_123
         createdEntity->SetNameVal(typeName + suffix);
@@ -181,7 +184,7 @@ namespace ToolKit
       ImVec2 overlaySize(360, 30);
 
       // Center the toolbar.
-      float width  = ImGui::GetWindowContentRegionWidth();
+      float width  = ImGui::GetContentRegionAvail().x;
       float offset = (width - overlaySize.x) * 0.5f;
       ImGui::SameLine(offset);
 
@@ -399,9 +402,9 @@ namespace ToolKit
         if (view == "User")
         {
           bool noCamera = true;
-          if (Entity* cam = g_app->GetCurrentScene()->GetCurrentSelection())
+          if (EntityPtr cam = g_app->GetCurrentScene()->GetCurrentSelection())
           {
-            if (cam->GetType() == EntityType::Entity_Camera)
+            if (cam->IsA<Camera>())
             {
               if (EditorViewport* vp = g_app->GetActiveViewport())
               {

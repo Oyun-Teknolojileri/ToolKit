@@ -1,55 +1,46 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Primative.h"
 
+#include "Camera.h"
 #include "DirectionComponent.h"
+#include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "Node.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
 
-#include <vector>
-
 #include "DebugNew.h"
 
 namespace ToolKit
 {
 
-  Billboard::Billboard(const Settings& settings) : m_settings(settings) { AddComponent(new MeshComponent()); }
+  UIHint FloatHint = {false, true, 0.0f, 100.0f, 0.25f, false};
 
-  void Billboard::LookAt(Camera* cam, float scale)
+  TKDefineClass(Billboard, Entity);
+
+  Billboard::Billboard() {}
+
+  Billboard::Billboard(const Settings& settings) : m_settings(settings) {}
+
+  void Billboard::NativeConstruct()
   {
-    Camera::CamData data = cam->GetData();
+    Super::NativeConstruct();
+    AddComponent<MeshComponent>();
+  }
 
+  void Billboard::LookAt(CameraPtr cam, float scale)
+  {
     // Billboard placement.
     if (m_settings.distanceToCamera > 0.0f)
     {
-      if (data.ortographic)
+      if (cam->IsOrtographic())
       {
         m_node->SetTranslation(m_worldLocation);
         if (m_settings.heightInScreenSpace > 0.0f)
@@ -60,8 +51,8 @@ namespace ToolKit
       }
       else
       {
-        Vec3 cdir                    = data.dir;
-        Vec3 camWorldPos             = data.pos;
+        Vec3 cdir                    = cam->GetComponent<DirectionComponent>()->GetDirection();
+        Vec3 camWorldPos             = cam->m_node->GetTranslation();
         Vec3 dir                     = glm::normalize(m_worldLocation - camWorldPos);
 
         // Always place at the same distance from the near plane.
@@ -114,42 +105,60 @@ namespace ToolKit
     return ntt;
   }
 
-  EntityType Billboard::GetType() const { return EntityType::Entity_Billboard; }
-
-  Cube::Cube(bool genDef)
+  XmlNode* Billboard::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    ParameterConstructor();
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
-    if (genDef)
-    {
-      Generate(GetMeshComponent(), GetCubeScaleVal());
-    }
+    return node;
   }
 
-  Cube::Cube(const Vec3& scale)
-  {
-    ParameterConstructor();
+  TKDefineClass(Cube, Entity);
 
-    SetCubeScaleVal(scale);
-    Generate(GetMeshComponent(), GetCubeScaleVal());
-  }
+  Cube::Cube() {}
 
   Entity* Cube::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 
-  EntityType Cube::GetType() const { return EntityType::Entity_Cube; }
-
-  void Cube::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
-
-  void Cube::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Cube::NativeConstruct()
   {
-    Entity::DeSerialize(doc, parent);
-    Generate(GetMeshComponent(), GetCubeScaleVal());
+    Super::NativeConstruct();
+
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
+
+    Generate();
   }
+
+  void Cube::Generate() { Generate(GetMeshComponent(), GetCubeScaleVal()); }
 
   void Cube::ParameterConstructor()
   {
-    AddComponent(new MeshComponent());
+    Super::ParameterConstructor();
     CubeScale_Define(Vec3(1.0f), "Geometry", 90, true, true);
+  }
+
+  void Cube::ParameterEventConstructor()
+  {
+    Super::ParameterEventConstructor();
+
+    ValueUpdateFn upVal = [this](Value& old, Value& val) -> void { Generate(); };
+    ParamCubeScale().m_onValueChangedFn.push_back(upVal);
+  }
+
+  XmlNode* Cube::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    Generate();
+
+    return nttNode->first_node(StaticClass()->Name.c_str());
+  }
+
+  XmlNode* Cube::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
   }
 
   void Cube::Generate(MeshComponentPtr meshComp, const Vec3& scale)
@@ -169,163 +178,176 @@ namespace ToolKit
     };
 
     // Front
-    vertices[0].pos            = corners[0];
-    vertices[0].tex            = Vec2(0.0f, 1.0f);
-    vertices[0].norm           = Vec3(0.0f, 0.0f, 1.0f);
-    vertices[1].pos            = corners[1];
-    vertices[1].tex            = Vec2(0.0f, 0.0f);
-    vertices[1].norm           = Vec3(0.0f, 0.0f, 1.0f);
-    vertices[2].pos            = corners[2];
-    vertices[2].tex            = Vec2(1.0f, 0.0f);
-    vertices[2].norm           = Vec3(0.0f, 0.0f, 1.0f);
+    vertices[0].pos   = corners[0];
+    vertices[0].tex   = Vec2(0.0f, 1.0f);
+    vertices[0].norm  = Vec3(0.0f, 0.0f, 1.0f);
+    vertices[1].pos   = corners[1];
+    vertices[1].tex   = Vec2(0.0f, 0.0f);
+    vertices[1].norm  = Vec3(0.0f, 0.0f, 1.0f);
+    vertices[2].pos   = corners[2];
+    vertices[2].tex   = Vec2(1.0f, 0.0f);
+    vertices[2].norm  = Vec3(0.0f, 0.0f, 1.0f);
 
-    vertices[3].pos            = corners[0];
-    vertices[3].tex            = Vec2(0.0f, 1.0f);
-    vertices[3].norm           = Vec3(0.0f, 0.0f, 1.0f);
-    vertices[4].pos            = corners[2];
-    vertices[4].tex            = Vec2(1.0f, 0.0f);
-    vertices[4].norm           = Vec3(0.0f, 0.0f, 1.0f);
-    vertices[5].pos            = corners[3];
-    vertices[5].tex            = Vec2(1.0f, 1.0f);
-    vertices[5].norm           = Vec3(0.0f, 0.0f, 1.0f);
+    vertices[3].pos   = corners[0];
+    vertices[3].tex   = Vec2(0.0f, 1.0f);
+    vertices[3].norm  = Vec3(0.0f, 0.0f, 1.0f);
+    vertices[4].pos   = corners[2];
+    vertices[4].tex   = Vec2(1.0f, 0.0f);
+    vertices[4].norm  = Vec3(0.0f, 0.0f, 1.0f);
+    vertices[5].pos   = corners[3];
+    vertices[5].tex   = Vec2(1.0f, 1.0f);
+    vertices[5].norm  = Vec3(0.0f, 0.0f, 1.0f);
 
     // Right
-    vertices[6].pos            = corners[3];
-    vertices[6].tex            = Vec2(0.0f, 1.0f);
-    vertices[6].norm           = Vec3(1.0f, 0.0f, 0.0f);
-    vertices[7].pos            = corners[2];
-    vertices[7].tex            = Vec2(0.0f, 0.0f);
-    vertices[7].norm           = Vec3(1.0f, 0.0f, 0.0f);
-    vertices[8].pos            = corners[6];
-    vertices[8].tex            = Vec2(1.0f, 0.0f);
-    vertices[8].norm           = Vec3(1.0f, 0.0f, 0.0f);
+    vertices[6].pos   = corners[3];
+    vertices[6].tex   = Vec2(0.0f, 1.0f);
+    vertices[6].norm  = Vec3(1.0f, 0.0f, 0.0f);
+    vertices[7].pos   = corners[2];
+    vertices[7].tex   = Vec2(0.0f, 0.0f);
+    vertices[7].norm  = Vec3(1.0f, 0.0f, 0.0f);
+    vertices[8].pos   = corners[6];
+    vertices[8].tex   = Vec2(1.0f, 0.0f);
+    vertices[8].norm  = Vec3(1.0f, 0.0f, 0.0f);
 
-    vertices[9].pos            = corners[3];
-    vertices[9].tex            = Vec2(0.0f, 1.0f);
-    vertices[9].norm           = Vec3(1.0f, 0.0f, 0.0f);
-    vertices[10].pos           = corners[6];
-    vertices[10].tex           = Vec2(1.0f, 0.0f);
-    vertices[10].norm          = Vec3(1.0f, 0.0f, 0.0f);
-    vertices[11].pos           = corners[7];
-    vertices[11].tex           = Vec2(1.0f, 1.0f);
-    vertices[11].norm          = Vec3(1.0f, 0.0f, 0.0f);
+    vertices[9].pos   = corners[3];
+    vertices[9].tex   = Vec2(0.0f, 1.0f);
+    vertices[9].norm  = Vec3(1.0f, 0.0f, 0.0f);
+    vertices[10].pos  = corners[6];
+    vertices[10].tex  = Vec2(1.0f, 0.0f);
+    vertices[10].norm = Vec3(1.0f, 0.0f, 0.0f);
+    vertices[11].pos  = corners[7];
+    vertices[11].tex  = Vec2(1.0f, 1.0f);
+    vertices[11].norm = Vec3(1.0f, 0.0f, 0.0f);
 
     // Top
-    vertices[12].pos           = corners[0];
-    vertices[12].tex           = Vec2(0.0f, 0.0f);
-    vertices[12].norm          = Vec3(0.0f, 1.0f, 0.0f);
-    vertices[13].pos           = corners[3];
-    vertices[13].tex           = Vec2(1.0f, 0.0f);
-    vertices[13].norm          = Vec3(0.0f, 1.0f, 0.0f);
-    vertices[14].pos           = corners[7];
-    vertices[14].tex           = Vec2(1.0f, 1.0f);
-    vertices[14].norm          = Vec3(0.0f, 1.0f, 0.0f);
+    vertices[12].pos  = corners[0];
+    vertices[12].tex  = Vec2(0.0f, 0.0f);
+    vertices[12].norm = Vec3(0.0f, 1.0f, 0.0f);
+    vertices[13].pos  = corners[3];
+    vertices[13].tex  = Vec2(1.0f, 0.0f);
+    vertices[13].norm = Vec3(0.0f, 1.0f, 0.0f);
+    vertices[14].pos  = corners[7];
+    vertices[14].tex  = Vec2(1.0f, 1.0f);
+    vertices[14].norm = Vec3(0.0f, 1.0f, 0.0f);
 
-    vertices[15].pos           = corners[0];
-    vertices[15].tex           = Vec2(0.0f, 0.0f);
-    vertices[15].norm          = Vec3(0.0f, 1.0f, 0.0f);
-    vertices[16].pos           = corners[7];
-    vertices[16].tex           = Vec2(1.0f, 1.0f);
-    vertices[16].norm          = Vec3(0.0f, 1.0f, 0.0f);
-    vertices[17].pos           = corners[4];
-    vertices[17].tex           = Vec2(0.0f, 1.0f);
-    vertices[17].norm          = Vec3(0.0f, 1.0f, 0.0f);
+    vertices[15].pos  = corners[0];
+    vertices[15].tex  = Vec2(0.0f, 0.0f);
+    vertices[15].norm = Vec3(0.0f, 1.0f, 0.0f);
+    vertices[16].pos  = corners[7];
+    vertices[16].tex  = Vec2(1.0f, 1.0f);
+    vertices[16].norm = Vec3(0.0f, 1.0f, 0.0f);
+    vertices[17].pos  = corners[4];
+    vertices[17].tex  = Vec2(0.0f, 1.0f);
+    vertices[17].norm = Vec3(0.0f, 1.0f, 0.0f);
 
     // Back
-    vertices[18].pos           = corners[4];
-    vertices[18].tex           = Vec2(0.0f, 1.0f);
-    vertices[18].norm          = Vec3(0.0f, 0.0f, -1.0f);
-    vertices[19].pos           = corners[6];
-    vertices[19].tex           = Vec2(1.0f, 0.0f);
-    vertices[19].norm          = Vec3(0.0f, 0.0f, -1.0f);
-    vertices[20].pos           = corners[5];
-    vertices[20].tex           = Vec2(0.0f, 0.0f);
-    vertices[20].norm          = Vec3(0.0f, 0.0f, -1.0f);
+    vertices[18].pos  = corners[4];
+    vertices[18].tex  = Vec2(0.0f, 1.0f);
+    vertices[18].norm = Vec3(0.0f, 0.0f, -1.0f);
+    vertices[19].pos  = corners[6];
+    vertices[19].tex  = Vec2(1.0f, 0.0f);
+    vertices[19].norm = Vec3(0.0f, 0.0f, -1.0f);
+    vertices[20].pos  = corners[5];
+    vertices[20].tex  = Vec2(0.0f, 0.0f);
+    vertices[20].norm = Vec3(0.0f, 0.0f, -1.0f);
 
-    vertices[21].pos           = corners[4];
-    vertices[21].tex           = Vec2(0.0f, 1.0f);
-    vertices[21].norm          = Vec3(0.0f, 0.0f, -1.0f);
-    vertices[22].pos           = corners[7];
-    vertices[22].tex           = Vec2(1.0f, 1.0f);
-    vertices[22].norm          = Vec3(0.0f, 0.0f, -1.0f);
-    vertices[23].pos           = corners[6];
-    vertices[23].tex           = Vec2(1.0f, 0.0f);
-    vertices[23].norm          = Vec3(0.0f, 0.0f, -1.0f);
+    vertices[21].pos  = corners[4];
+    vertices[21].tex  = Vec2(0.0f, 1.0f);
+    vertices[21].norm = Vec3(0.0f, 0.0f, -1.0f);
+    vertices[22].pos  = corners[7];
+    vertices[22].tex  = Vec2(1.0f, 1.0f);
+    vertices[22].norm = Vec3(0.0f, 0.0f, -1.0f);
+    vertices[23].pos  = corners[6];
+    vertices[23].tex  = Vec2(1.0f, 0.0f);
+    vertices[23].norm = Vec3(0.0f, 0.0f, -1.0f);
 
     // Left
-    vertices[24].pos           = corners[0];
-    vertices[24].tex           = Vec2(0.0f, 1.0f);
-    vertices[24].norm          = Vec3(-1.0f, 0.0f, 0.0f);
-    vertices[25].pos           = corners[5];
-    vertices[25].tex           = Vec2(1.0f, 0.0f);
-    vertices[25].norm          = Vec3(-1.0f, 0.0f, 0.0f);
-    vertices[26].pos           = corners[1];
-    vertices[26].tex           = Vec2(0.0f, 0.0f);
-    vertices[26].norm          = Vec3(-1.0f, 0.0f, 0.0f);
+    vertices[24].pos  = corners[0];
+    vertices[24].tex  = Vec2(0.0f, 1.0f);
+    vertices[24].norm = Vec3(-1.0f, 0.0f, 0.0f);
+    vertices[25].pos  = corners[5];
+    vertices[25].tex  = Vec2(1.0f, 0.0f);
+    vertices[25].norm = Vec3(-1.0f, 0.0f, 0.0f);
+    vertices[26].pos  = corners[1];
+    vertices[26].tex  = Vec2(0.0f, 0.0f);
+    vertices[26].norm = Vec3(-1.0f, 0.0f, 0.0f);
 
-    vertices[27].pos           = corners[0];
-    vertices[27].tex           = Vec2(0.0f, 1.0f);
-    vertices[27].norm          = Vec3(-1.0f, 0.0f, 0.0f);
-    vertices[28].pos           = corners[4];
-    vertices[28].tex           = Vec2(1.0f, 1.0f);
-    vertices[28].norm          = Vec3(-1.0f, 0.0f, 0.0f);
-    vertices[29].pos           = corners[5];
-    vertices[29].tex           = Vec2(1.0f, 0.0f);
-    vertices[29].norm          = Vec3(-1.0f, 0.0f, 0.0f);
+    vertices[27].pos  = corners[0];
+    vertices[27].tex  = Vec2(0.0f, 1.0f);
+    vertices[27].norm = Vec3(-1.0f, 0.0f, 0.0f);
+    vertices[28].pos  = corners[4];
+    vertices[28].tex  = Vec2(1.0f, 1.0f);
+    vertices[28].norm = Vec3(-1.0f, 0.0f, 0.0f);
+    vertices[29].pos  = corners[5];
+    vertices[29].tex  = Vec2(1.0f, 0.0f);
+    vertices[29].norm = Vec3(-1.0f, 0.0f, 0.0f);
 
     // Bottom
-    vertices[30].pos           = corners[1];
-    vertices[30].tex           = Vec2(0.0f, 1.0f);
-    vertices[30].norm          = Vec3(0.0f, -1.0f, 0.0f);
-    vertices[31].pos           = corners[6];
-    vertices[31].tex           = Vec2(1.0f, 0.0f);
-    vertices[31].norm          = Vec3(0.0f, -1.0f, 0.0f);
-    vertices[32].pos           = corners[2];
-    vertices[32].tex           = Vec2(0.0f, 0.0f);
-    vertices[32].norm          = Vec3(0.0f, -1.0f, 0.0f);
+    vertices[30].pos  = corners[1];
+    vertices[30].tex  = Vec2(0.0f, 1.0f);
+    vertices[30].norm = Vec3(0.0f, -1.0f, 0.0f);
+    vertices[31].pos  = corners[6];
+    vertices[31].tex  = Vec2(1.0f, 0.0f);
+    vertices[31].norm = Vec3(0.0f, -1.0f, 0.0f);
+    vertices[32].pos  = corners[2];
+    vertices[32].tex  = Vec2(0.0f, 0.0f);
+    vertices[32].norm = Vec3(0.0f, -1.0f, 0.0f);
 
-    vertices[33].pos           = corners[1];
-    vertices[33].tex           = Vec2(0.0f, 1.0f);
-    vertices[33].norm          = Vec3(0.0f, -1.0f, 0.0f);
-    vertices[34].pos           = corners[5];
-    vertices[34].tex           = Vec2(1.0f, 1.0f);
-    vertices[34].norm          = Vec3(0.0f, -1.0f, 0.0f);
-    vertices[35].pos           = corners[6];
-    vertices[35].tex           = Vec2(1.0f, 0.0f);
-    vertices[35].norm          = Vec3(0.0f, -1.0f, 0.0f);
+    vertices[33].pos  = corners[1];
+    vertices[33].tex  = Vec2(0.0f, 1.0f);
+    vertices[33].norm = Vec3(0.0f, -1.0f, 0.0f);
+    vertices[34].pos  = corners[5];
+    vertices[34].tex  = Vec2(1.0f, 1.0f);
+    vertices[34].norm = Vec3(0.0f, -1.0f, 0.0f);
+    vertices[35].pos  = corners[6];
+    vertices[35].tex  = Vec2(1.0f, 0.0f);
+    vertices[35].norm = Vec3(0.0f, -1.0f, 0.0f);
 
-    MeshPtr mesh               = meshComp->GetMeshVal();
+    MeshPtr mesh      = meshComp->GetMeshVal();
+    mesh->UnInit();
     mesh->m_vertexCount        = (uint) vertices.size();
     mesh->m_clientSideVertices = vertices;
     mesh->m_clientSideIndices  = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17,
                                   18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35};
 
     mesh->m_indexCount         = (uint) mesh->m_clientSideIndices.size();
-    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
+    mesh->Init();
   }
 
-  Quad::Quad(bool genDef)
+  TKDefineClass(Quad, Entity);
+
+  Quad::Quad() {}
+
+  void Quad::NativeConstruct()
   {
-    AddComponent(new MeshComponent());
-    if (genDef)
-    {
-      Generate();
-    }
+    Super::NativeConstruct();
+
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
+
+    Generate();
   }
 
   Entity* Quad::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 
-  EntityType Quad::GetType() const { return EntityType::Entity_Quad; }
-
-  void Quad::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
-
-  void Quad::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Quad::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Entity::DeSerialize(doc, parent);
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
+  XmlNode* Quad::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
     Generate();
+
+    return nttNode->first_node(StaticClass()->Name.c_str());
   }
 
   void Quad::Generate()
@@ -359,26 +381,24 @@ namespace ToolKit
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount         = 6;
     mesh->m_clientSideIndices  = {0, 1, 2, 0, 2, 3};
-    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
   }
 
-  Sphere::Sphere(bool genDef)
-  {
-    ParameterConstructor(1.0f);
+  TKDefineClass(Sphere, Entity);
 
-    if (genDef)
-    {
-      Generate(GetMeshComponent(), GetRadiusVal());
-    }
-  }
+  Sphere::Sphere() {}
 
-  Sphere::Sphere(float radius)
+  void Sphere::NativeConstruct()
   {
-    ParameterConstructor(radius);
-    Generate(GetMeshComponent(), GetRadiusVal());
+    Super::NativeConstruct();
+
+    AddComponent<MeshComponent>();
+    AddComponent<MaterialComponent>();
+
+    Generate(GetMeshComponent(), GetRadiusVal(), GetNumRingVal(), GetNumSegVal());
   }
 
   Entity* Sphere::CopyTo(Entity* copyTo) const
@@ -388,19 +408,51 @@ namespace ToolKit
     return ntt;
   }
 
-  EntityType Sphere::GetType() const { return EntityType::Entity_Sphere; }
-
-  void Sphere::Generate(MeshComponentPtr meshComp, float r)
+  XmlNode* Sphere::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    const int nRings    = 32;
-    const int nSegments = 32;
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+    Generate(GetMeshComponent(), GetRadiusVal(), GetNumRingVal(), GetNumSegVal());
+
+    return nttNode->first_node(StaticClass()->Name.c_str());
+  }
+
+  XmlNode* Sphere::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
+  void Sphere::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
+    Radius_Define(1.0f, "Geometry", 90, true, true, FloatHint);
+    NumRing_Define(32, "Geometry", 90, true, true);
+    NumSeg_Define(32, "Geometry", 90, true, true);
+  }
+
+  void Sphere::ParameterEventConstructor()
+  {
+    Super::ParameterEventConstructor();
+
+    auto genFn = [this]() -> void { Generate(GetMeshComponent(), GetRadiusVal(), GetNumRingVal(), GetNumSegVal()); };
+    ParamRadius().m_onValueChangedFn.push_back([=](Value& oldVal, Value& newVal) -> void { genFn(); });
+    ParamNumRing().m_onValueChangedFn.push_back([=](Value& oldVal, Value& newVal) -> void { genFn(); });
+    ParamNumSeg().m_onValueChangedFn.push_back([=](Value& oldVal, Value& newVal) -> void { genFn(); });
+  }
+
+  void Sphere::Generate(MeshComponentPtr meshComp, float r, int numRing, int numSeg)
+  {
+    int nRings    = numRing;
+    int nSegments = numSeg;
 
     VertexArray vertices;
     std::vector<uint> indices;
 
-    constexpr float fDeltaRingAngle = (glm::pi<float>() / nRings);
-    constexpr float fDeltaSegAngle  = (glm::two_pi<float>() / nSegments);
-    int16_t wVerticeIndex           = 0;
+    float fDeltaRingAngle = (glm::pi<float>() / nRings);
+    float fDeltaSegAngle  = (glm::two_pi<float>() / nSegments);
+    int wVerticeIndex     = 0;
 
     // Generate the group of rings for the sphere
     for (int ring = 0; ring <= nRings; ring++)
@@ -418,8 +470,7 @@ namespace ToolKit
         Vertex v;
         v.pos  = Vec3(x0, y0, z0);
         v.norm = Vec3(x0, y0, z0);
-        v.tex  = Vec2(static_cast<float>(seg) / static_cast<float>(nSegments),
-                     static_cast<float>(ring) / static_cast<float>(nRings));
+        v.tex  = Vec2((float) seg / (float) nSegments, (float) ring / (float) nRings);
 
         float r2, zenith, azimuth;
         ToSpherical(v.pos, r2, zenith, azimuth);
@@ -443,49 +494,30 @@ namespace ToolKit
       } // end for seg
     }   // end for ring
 
-    MeshPtr mesh               = meshComp->GetMeshVal();
+    MeshPtr mesh = meshComp->GetMeshVal();
+    mesh->UnInit();
     mesh->m_vertexCount        = (uint) vertices.size();
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount         = (uint) indices.size();
     mesh->m_clientSideIndices  = indices;
-    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
+    mesh->Init();
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
   }
 
-  void Sphere::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
+  TKDefineClass(Cone, Entity);
 
-  void Sphere::DeSerialize(XmlDocument* doc, XmlNode* parent)
-  {
-    Entity::DeSerialize(doc, parent);
-    Generate(GetMeshComponent(), GetRadiusVal());
-  }
+  Cone::Cone() {}
 
-  void Sphere::ParameterConstructor(float radius)
+  void Cone::NativeConstruct()
   {
-    AddComponent(new MeshComponent());
-    Radius_Define(radius, "Geometry", 90, true, true);
-  }
+    Super::NativeConstruct();
 
-  Cone::Cone(bool genDef)
-  {
-    AddComponent(new MeshComponent());
-    ParameterConstructor();
-    if (genDef)
-    {
-      Generate();
-    }
-  }
+    AddComponent<MaterialComponent>();
+    AddComponent<MeshComponent>();
 
-  Cone::Cone(float height, float radius, int segBase, int segHeight)
-  {
-    AddComponent(new MeshComponent());
-    ParameterConstructor();
-    SetHeightVal(height);
-    SetRadiusVal(radius);
-    SetSegBaseVal(segBase);
-    SetSegHeightVal(segHeight);
     Generate();
   }
 
@@ -493,34 +525,30 @@ namespace ToolKit
   void Cone::Generate()
   {
     VertexArray vertices;
-    std::vector<uint> indices;
+    UIntArray indices;
 
     float height      = GetHeightVal();
     float radius      = GetRadiusVal();
     int nSegBase      = GetSegBaseVal();
     int nSegHeight    = GetSegHeightVal();
 
-    float deltaAngle  = (glm::two_pi<float>() / nSegBase);
+    float deltaAngle  = glm::two_pi<float>() / (float) nSegBase;
     float deltaHeight = height / nSegHeight;
     int offset        = 0;
 
-    Vec3 refNormal    = glm::normalize(Vec3(radius, height, 0.0f));
-    Quaternion q;
-
     for (int i = 0; i <= nSegHeight; i++)
     {
-      float r0 = radius * (1 - i / static_cast<float>(nSegHeight));
+      float r0 = radius * (1 - i / (float) nSegHeight);
       for (int j = 0; j <= nSegBase; j++)
       {
         float x0 = r0 * glm::cos(j * deltaAngle);
         float z0 = r0 * glm::sin(j * deltaAngle);
-
-        q        = glm::angleAxis(glm::radians(-deltaAngle * j), Y_AXIS);
+        Vec3 p   = Vec3(x0, i * deltaHeight, z0);
 
         Vertex v {
-            Vec3(x0, i * deltaHeight, z0),
-            q * refNormal,
-            Vec2(j / static_cast<float>(nSegBase), i / static_cast<float>(nSegHeight)),
+            p,
+            glm::normalize(p),
+            Vec2(j / (float) (nSegBase), i / (float) nSegHeight),
             ZERO // btan missing.
         };
 
@@ -560,7 +588,7 @@ namespace ToolKit
       Vertex v {
           Vec3(x0, 0.0f, z0),
           -Y_AXIS,
-          Vec2(j / static_cast<float>(nSegBase), 0.0f),
+          Vec2(j / (float) nSegBase, 0.0f),
           ZERO // btan missing.
       };
       vertices.push_back(v);
@@ -574,12 +602,14 @@ namespace ToolKit
       offset++;
     }
 
-    MeshPtr mesh               = GetComponent<MeshComponent>()->GetMeshVal();
-    mesh->m_vertexCount        = static_cast<uint>(vertices.size());
+    MeshPtr mesh = GetComponent<MeshComponent>()->GetMeshVal();
+    mesh->UnInit();
+    mesh->m_vertexCount        = (uint) vertices.size();
     mesh->m_clientSideVertices = vertices;
-    mesh->m_indexCount         = static_cast<uint>(indices.size());
+    mesh->m_indexCount         = (uint) indices.size();
     mesh->m_clientSideIndices  = indices;
-    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
+    mesh->Init();
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
@@ -592,39 +622,73 @@ namespace ToolKit
     return ntt;
   }
 
-  EntityType Cone::GetType() const { return EntityType::Entity_Cone; }
-
-  void Cone::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
-
-  void Cone::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Cone::Generate(float height, float radius, int segBase, int segHeight)
   {
-    Entity::DeSerialize(doc, parent);
+    // Specifically doing it this way to prevent ParameterEventConstructor's to regenerate
+    // at each Set()
+    ParamHeight().GetVar<float>()  = height;
+    ParamRadius().GetVar<float>()  = radius;
+    ParamSegBase().GetVar<int>()   = segBase;
+    ParamSegHeight().GetVar<int>() = segHeight;
+
     Generate();
   }
 
   void Cone::ParameterConstructor()
   {
-    Height_Define(1.0f, "Geometry", 90, true, true);
-    Radius_Define(1.0f, "Geometry", 90, true, true);
+    Super::ParameterConstructor();
+
+    UIHint hint;
+    hint.increment      = 0.25f;
+    hint.isRangeLimited = true;
+    hint.rangeMin       = 0.0f;
+    hint.rangeMax       = 100.0f;
+
+    Height_Define(1.0f, "Geometry", 90, true, true, hint);
+    Radius_Define(1.0f, "Geometry", 90, true, true, hint);
     SegBase_Define(30, "Geometry", 90, true, true);
     SegHeight_Define(20, "Geometry", 90, true, true);
   }
 
-  Arrow2d::Arrow2d(bool genDef)
+  void Cone::ParameterEventConstructor()
   {
-    AddComponent(new MeshComponent());
-    m_label = AxisLabel::X;
+    Super::ParameterEventConstructor();
 
-    if (genDef)
-    {
-      Generate();
-    }
+    auto regenFn = [this](const Value& old, const Value& val) -> void { Generate(); };
+    ParamHeight().m_onValueChangedFn.push_back(regenFn);
+    ParamRadius().m_onValueChangedFn.push_back(regenFn);
+    ParamSegBase().m_onValueChangedFn.push_back(regenFn);
+    ParamSegHeight().m_onValueChangedFn.push_back(regenFn);
   }
 
-  Arrow2d::Arrow2d(AxisLabel label) : m_label(label)
+  XmlNode* Cone::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    AddComponent(new MeshComponent());
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
+  XmlNode* Cone::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
     Generate();
+
+    return nttNode->first_node(StaticClass()->Name.c_str());
+  }
+
+  TKDefineClass(Arrow2d, Entity);
+
+  Arrow2d::Arrow2d() { m_label = AxisLabel::X; }
+
+  void Arrow2d::NativeConstruct()
+  {
+    Super::NativeConstruct();
+
+    AddComponent<MaterialComponent>();
+    AddComponent<MeshComponent>();
+
+    Generate(AxisLabel::Y);
   }
 
   Entity* Arrow2d::CopyTo(Entity* copyTo) const
@@ -636,10 +700,18 @@ namespace ToolKit
     return ntt;
   }
 
-  EntityType Arrow2d::GetType() const { return EntityType::Entity_Arrow; }
-
-  void Arrow2d::Generate()
+  XmlNode* Arrow2d::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
+  void Arrow2d::Generate(AxisLabel axis)
+  {
+    m_label = axis;
+
     VertexArray vertices;
     vertices.resize(8);
 
@@ -678,7 +750,7 @@ namespace ToolKit
     }
 
     MeshComponentPtr mesh                    = GetComponent<MeshComponent>();
-    mesh->GetMeshVal()->m_vertexCount        = static_cast<uint>(vertices.size());
+    mesh->GetMeshVal()->m_vertexCount        = (uint) vertices.size();
     mesh->GetMeshVal()->m_clientSideVertices = vertices;
     mesh->GetMeshVal()->m_material           = newMat;
 
@@ -686,17 +758,25 @@ namespace ToolKit
     mesh->GetMeshVal()->ConstructFaces();
   }
 
-  LineBatch::LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
-  {
-    AddComponent(new MeshComponent());
-    Generate(linePnts, color, t, lineWidth);
-  }
+  TKDefineClass(LineBatch, Entity);
 
-  LineBatch::LineBatch() { AddComponent(new MeshComponent()); }
+  LineBatch::LineBatch() {}
+
+  void LineBatch::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    AddComponent<MeshComponent>();
+  }
 
   Entity* LineBatch::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 
-  EntityType LineBatch::GetType() const { return EntityType::Entity_LineBatch; }
+  XmlNode* LineBatch::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
 
   void LineBatch::Generate(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
   {
@@ -705,7 +785,7 @@ namespace ToolKit
 
     MeshPtr mesh = GetComponent<MeshComponent>()->GetMeshVal();
     mesh->UnInit();
-    mesh->m_material                             = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+    mesh->m_material                             = GetMaterialManager()->GetCopyOfUnlitColorMaterial(false);
     mesh->m_material->GetRenderState()->drawType = t;
 
     for (size_t i = 0; i < linePnts.size(); i++)
@@ -719,6 +799,107 @@ namespace ToolKit
     mesh->m_material->GetRenderState()->lineWidth = lineWidth;
 
     mesh->CalculateAABB();
+  }
+
+  void MeshGenerator::GenerateCircleMesh(MeshPtr mesh, int numSegments, float radius)
+  {
+    const float step    = glm::two_pi<float>() / (float) (numSegments);
+    mesh->m_vertexCount = numSegments + 1;
+    mesh->m_indexCount  = numSegments * 3;
+    mesh->m_clientSideVertices.resize(numSegments + 2);
+    mesh->m_clientSideIndices.resize((numSegments + 1) * 3);
+    mesh->m_clientSideVertices[0] = {
+        // center point
+        Vec3(0.0f),
+        Vec3(0.0f, 0.0f, -1.0f), // normal
+        Vec2(0.5f, 0.5f),        // tex coord
+        Vec3(0.0f, 1.0f, 0.0f)   // btan
+    };
+    mesh->m_aabb = BoundingBox(Vec3(-radius), Vec3(radius));
+
+    // create vertices
+    for (int i = 0; i < numSegments; i++)
+    {
+      float f = step * (float) i;
+      float s = glm::sin(f), c = glm::cos(f);
+      float snorm                       = s * 0.5f + 0.5f;
+      float cnorm                       = c * 0.5f + 0.5f;
+
+      const float sqrt2                 = 1.41421356f; // square root of 2
+      float strechS                     = sqrt2 * glm::abs(s);
+      float strechC                     = sqrt2 * glm::abs(c);
+
+      mesh->m_clientSideVertices[i + 1] = {
+          Vec3(c * radius, s * radius, 0.0f),
+          Vec3(0.0f, 0.0f, -1.0f),                // normal
+          Vec2(cnorm * strechS, snorm * strechC), // tex coord
+          Vec3(c, s, 0.0f)                        // btan
+      };
+    }
+
+    // create indices
+    for (int i = 0; i < numSegments; i++)
+    {
+      mesh->m_clientSideIndices[i * 3 + 0] = 0;
+      mesh->m_clientSideIndices[i * 3 + 1] = i + 1; // jump center point
+      mesh->m_clientSideIndices[i * 3 + 2] = i + 2; // next vertex pos
+    }
+    mesh->m_clientSideIndices[numSegments * 3 + 0] = 0;
+    mesh->m_clientSideIndices[numSegments * 3 + 1] = numSegments; // jump center point
+    mesh->m_clientSideIndices[numSegments * 3 + 2] = 1;           // next vertex pos
+
+    mesh->ConstructFaces();
+  }
+
+  void MeshGenerator::GenerateConeMesh(MeshPtr mesh, float height, int numSegments, float outerAngle)
+  {
+    mesh->UnInit();
+
+    // Middle line.
+    Vec3 dir = Vec3(0.0f, 0.0f, -1.0f) * height;
+    Vec3 per = Vec3(1.0f, 0.0f, 0.0f);
+
+    mesh->m_clientSideVertices.clear();
+    mesh->m_clientSideIndices.clear();
+    mesh->m_clientSideVertices.reserve(numSegments + 2);
+    mesh->m_clientSideVertices.push_back({ZERO});
+    mesh->m_clientSideVertices.push_back({dir});
+    // Calculating circles.
+    // 0.62 = 0.5 + 0.12 for slightly bigger cone
+    float outerCircleRadius = height * glm::tan(glm::radians(outerAngle * 0.62f));
+    Vec3 outStartPoint      = dir + per * outerCircleRadius;
+
+    mesh->m_clientSideVertices.push_back({outStartPoint});
+    float deltaAngle = glm::two_pi<float>() / (numSegments);
+    Mat4 identity    = Mat4();
+    for (int i = 1; i <= numSegments; i++)
+    {
+      // Outer circle vertices.
+      Mat4 m_rot    = glm::rotate(identity, deltaAngle, dir);
+      outStartPoint = Vec3(m_rot * Vec4(outStartPoint, 1.0f));
+      mesh->m_clientSideVertices.push_back({outStartPoint});
+    }
+
+    // Cone
+    for (int i = 0; i < numSegments; ++i)
+    {
+      mesh->m_clientSideIndices.push_back(0);
+      mesh->m_clientSideIndices.push_back(i + 3);
+      mesh->m_clientSideIndices.push_back(i + 2);
+    }
+
+    // circle
+    for (int i = 0; i < numSegments; ++i)
+    {
+      mesh->m_clientSideIndices.push_back(1);
+      mesh->m_clientSideIndices.push_back(i + 2);
+      mesh->m_clientSideIndices.push_back(i + 3);
+    }
+
+    mesh->m_vertexCount = (uint) mesh->m_clientSideVertices.size();
+    mesh->m_indexCount  = (uint) mesh->m_clientSideIndices.size();
+
+    mesh->Init();
   }
 
 } // namespace ToolKit

@@ -1,39 +1,16 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
 
-#include "MathUtil.h"
 #include "RenderState.h"
 #include "Resource.h"
 #include "ResourceManager.h"
 #include "Types.h"
-
-#include <memory>
-#include <vector>
 
 namespace ToolKit
 {
@@ -56,7 +33,7 @@ namespace ToolKit
   class TK_API Mesh : public Resource
   {
    public:
-    TKResourceType(Mesh)
+    TKDeclareClass(Mesh, Resource);
 
     Mesh();
     explicit Mesh(const String& file);
@@ -76,9 +53,6 @@ namespace ToolKit
 
     void SetMaterial(MaterialPtr material);
 
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-
     /**
      * Traverse all submeshes recursively.
      * @param callback is the function to call on each mesh.
@@ -94,6 +68,9 @@ namespace ToolKit
     void TraverseAllMesh(std::function<void(const Mesh*)> callback, const Mesh* mesh = nullptr) const;
 
    protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+
     virtual void InitVertices(bool flush);
     virtual void InitIndices(bool flush);
     void CopyTo(Resource* other) override;
@@ -126,7 +103,7 @@ namespace ToolKit
   class TK_API SkinMesh : public Mesh
   {
    public:
-    TKResourceType(SkinMesh)
+    TKDeclareClass(SkinMesh, Mesh);
 
     SkinMesh();
     explicit SkinMesh(const String& file);
@@ -139,12 +116,13 @@ namespace ToolKit
     int GetVertexSize() const override;
     bool IsSkinned() const override;
 
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     // Because AABB is all dependent on active animation, just return AABB
     // (doesn't change m_aabb)
     BoundingBox CalculateAABB(const Skeleton* skel, DynamicBoneMapPtr boneMap);
 
    protected:
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+
     void InitVertices(bool flush) override;
     void CopyTo(Resource* other) override;
 
@@ -158,9 +136,9 @@ namespace ToolKit
    public:
     MeshManager();
     virtual ~MeshManager();
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
-    String GetDefaultResource(ResourceType type) override;
+    bool CanStore(ClassMeta* Class) override;
+    ResourcePtr CreateLocal(ClassMeta* Class) override;
+    String GetDefaultResource(ClassMeta* Class) override;
   };
 
   void SetVertexLayout(VertexLayout layout);

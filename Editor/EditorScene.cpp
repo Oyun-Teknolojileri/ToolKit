@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "EditorScene.h"
@@ -37,6 +18,8 @@ namespace ToolKit
   namespace Editor
   {
 
+    TKDefineClass(EditorScene, Scene);
+
     EditorScene::EditorScene() : Scene() { m_newScene = true; }
 
     EditorScene::EditorScene(const String& file) : EditorScene()
@@ -51,20 +34,20 @@ namespace ToolKit
     {
       Scene::Load();
 
-      for (Entity* ntt : m_entities)
+      for (EntityPtr ntt : m_entities)
       {
         // Create gizmos
-        if (ntt->GetType() == EntityType::Entity_DirectionalLight)
+        if (ntt->IsA<DirectionalLight>())
         {
-          static_cast<EditorDirectionalLight*>(ntt)->Init();
+          static_cast<EditorDirectionalLight*>(ntt.get())->InitController();
         }
-        else if (ntt->GetType() == EntityType::Entity_PointLight)
+        else if (ntt->IsA<PointLight>())
         {
-          static_cast<EditorPointLight*>(ntt)->Init();
+          static_cast<EditorPointLight*>(ntt.get())->InitController();
         }
-        else if (ntt->GetType() == EntityType::Entity_SpotLight)
+        else if (ntt->IsA<SpotLight>())
         {
-          static_cast<EditorSpotLight*>(ntt)->Init();
+          static_cast<EditorSpotLight*>(ntt.get())->InitController();
         }
       }
     }
@@ -75,17 +58,17 @@ namespace ToolKit
       GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
 
       // Show selected light gizmos.
-      EntityRawPtrArray selecteds;
+      EntityPtrArray selecteds;
       GetSelectedEntities(selecteds);
 
-      LightRawPtrArray sceneLights = GetLights();
+      LightPtrArray sceneLights   = GetLights();
 
-      bool foundFirstLight         = false;
-      Light* firstSelectedLight    = nullptr;
-      for (Light* light : sceneLights)
+      bool foundFirstLight        = false;
+      LightPtr firstSelectedLight = nullptr;
+      for (LightPtr light : sceneLights)
       {
         bool found = false;
-        for (Entity* ntt : selecteds)
+        for (EntityPtr ntt : selecteds)
         {
           if (light->GetIdVal() == ntt->GetIdVal())
           {
@@ -94,7 +77,7 @@ namespace ToolKit
               firstSelectedLight = light;
               foundFirstLight    = true;
             }
-            EnableLightGizmo(light, true);
+            EnableLightGizmo(light.get(), true);
             found = true;
             break;
           }
@@ -102,14 +85,14 @@ namespace ToolKit
 
         if (!found)
         {
-          EnableLightGizmo(light, false);
+          EnableLightGizmo(light.get(), false);
         }
       }
 
       // Update billboards attached to entities.
-      for (Entity* billboard : m_billboards)
+      for (EntityPtr billboard : m_billboards)
       {
-        Billboard* bb       = static_cast<Billboard*>(billboard);
+        BillboardPtr bb     = Cast<Billboard>(billboard);
         bb->m_worldLocation = bb->m_entity->m_node->GetTranslation();
       }
     }
@@ -153,23 +136,28 @@ namespace ToolKit
         return;
       }
 
-      Entity* ntt = GetEntity(id);
+      EntityPtr ntt = GetEntity(id);
 
       // If selected entity belongs to a prefab
       //  select all children of the prefab entity too
-      if (Prefab* mainPrefab = Prefab::GetPrefabRoot(ntt))
+      if (PrefabPtr mainPrefab = Prefab::GetPrefabRoot(ntt))
       {
-        auto addToSelectionFn = [this](Node* node) { m_selectedEntities.push_back(node->m_entity->GetIdVal()); };
+        auto addToSelectionFn = [this](Node* node)
+        {
+          EntityPtr ntt = node->OwnerEntity();
+          m_selectedEntities.push_back(ntt->GetIdVal());
+        };
+
         TraverseChildNodes(mainPrefab->m_node, addToSelectionFn);
         return;
       }
 
-      if (g_app->m_selectEffectingLights && !ntt->IsLightInstance())
+      if (g_app->m_selectEffectingLights && !ntt->IsA<Light>())
       {
-        LightRawPtrArray lights          = GetLights();
-        LightRawPtrArray effectingLights = RenderJobProcessor::SortLights(ntt, lights);
+        LightPtrArray lights          = GetLights();
+        LightPtrArray effectingLights = RenderJobProcessor::SortLights(ntt, lights);
 
-        for (Light* light : effectingLights)
+        for (LightPtr light : effectingLights)
         {
           if (!IsSelected(light->GetIdVal()))
           {
@@ -249,7 +237,7 @@ namespace ToolKit
       MakeCurrentSelection(currentId, true);
     }
 
-    void EditorScene::AddToSelection(const EntityRawPtrArray& entities, bool additive)
+    void EditorScene::AddToSelection(const EntityPtrArray& entities, bool additive)
     {
       EntityIdArray ids;
       ToEntityIdArray(ids, entities);
@@ -286,7 +274,7 @@ namespace ToolKit
 
     uint EditorScene::GetSelectedEntityCount() const { return (uint) m_selectedEntities.size(); }
 
-    Entity* EditorScene::GetCurrentSelection() const
+    EntityPtr EditorScene::GetCurrentSelection() const
     {
       if (!m_selectedEntities.empty())
       {
@@ -302,7 +290,7 @@ namespace ToolKit
       m_newScene = false;
     }
 
-    void EditorScene::AddEntity(Entity* entity)
+    void EditorScene::AddEntity(EntityPtr entity)
     {
       Scene::AddEntity(entity);
 
@@ -310,21 +298,21 @@ namespace ToolKit
       AddBillboard(entity);
     }
 
-    void EditorScene::RemoveEntity(const EntityRawPtrArray& entities)
+    void EditorScene::RemoveEntity(const EntityPtrArray& entities)
     {
       Scene::RemoveEntity(entities);
 
-      for (Entity* ntt : entities)
+      for (EntityPtr ntt : entities)
       {
         RemoveFromSelection(ntt->GetIdVal());
         RemoveBillboard(ntt);
       }
     }
 
-    Entity* EditorScene::RemoveEntity(ULongID id, bool deep)
+    EntityPtr EditorScene::RemoveEntity(ULongID id, bool deep)
     {
-      Entity* removed = nullptr;
-      if ((removed = Scene::RemoveEntity(id, deep)))
+      EntityPtr removed = nullptr;
+      if (removed = Scene::RemoveEntity(id, deep))
       {
         RemoveFromSelection(removed->GetIdVal());
         RemoveBillboard(removed);
@@ -336,27 +324,36 @@ namespace ToolKit
     void EditorScene::Destroy(bool removeResources)
     {
       ActionManager::GetInstance()->ClearAllActions();
+
+      // If current scene getting destroyed, clear outliner.
+      if (ScenePtr curr = GetSceneManager()->GetCurrentScene())
+      {
+        if (curr->IsSame(this))
+        {
+          if (OutlinerWindow* wnd = g_app->GetOutliner())
+          {
+            wnd->ClearOutliner();
+          }
+        }
+      }
+
       Scene::Destroy(removeResources);
 
       m_selectedEntities.clear();
 
       // Destroy gizmos too
-      for (auto it = m_billboards.begin(); it != m_billboards.end(); ++it)
-      {
-        SafeDel(*it);
-      }
       m_entityBillboardMap.clear();
       m_billboards.clear();
     }
 
-    void EditorScene::GetSelectedEntities(EntityRawPtrArray& entities) const
+    void EditorScene::GetSelectedEntities(EntityPtrArray& entities) const
     {
       for (ULongID id : m_selectedEntities)
       {
-        Entity* e = GetEntity(id);
-        assert(e);
+        EntityPtr ntt = GetEntity(id);
+        assert(ntt != nullptr && "Null entity found in the scene.");
 
-        entities.push_back(e);
+        entities.push_back(ntt);
       }
     }
 
@@ -364,78 +361,76 @@ namespace ToolKit
 
     void EditorScene::SelectByTag(const String& tag) { AddToSelection(GetByTag(tag), false); }
 
-    Scene::PickData EditorScene::PickObject(Ray ray,
-                                            const EntityIdArray& ignoreList,
-                                            const EntityRawPtrArray& extraList)
+    Scene::PickData EditorScene::PickObject(Ray ray, const EntityIdArray& ignoreList, const EntityPtrArray& extraList)
     {
       // Add billboards to scene
-      EntityRawPtrArray temp = extraList;
+      EntityPtrArray temp = extraList;
       temp.insert(temp.end(), m_billboards.begin(), m_billboards.end());
       UpdateBillboardsForPicking();
 
       Scene::PickData pdata = Scene::PickObject(ray, ignoreList, temp);
 
       // If the billboards are picked, pick the entity
-      if (pdata.entity != nullptr && pdata.entity->GetType() == EntityType::Entity_Billboard &&
-          static_cast<Billboard*>(pdata.entity)->m_entity != nullptr)
+      if (pdata.entity != nullptr && pdata.entity->IsA<Billboard>() &&
+          static_cast<Billboard*>(pdata.entity.get())->m_entity != nullptr)
       {
-        pdata.entity = static_cast<Billboard*>(pdata.entity)->m_entity;
+        pdata.entity = static_cast<Billboard*>(pdata.entity.get())->m_entity;
       }
 
       return pdata;
     }
 
     void EditorScene::PickObject(const Frustum& frustum,
-                                 std::vector<PickData>& pickedObjects,
+                                 PickDataArray& pickedObjects,
                                  const EntityIdArray& ignoreList,
-                                 const EntityRawPtrArray& extraList,
+                                 const EntityPtrArray& extraList,
                                  bool pickPartiallyInside)
     {
       // Add billboards to scene
-      EntityRawPtrArray temp = extraList;
+      EntityPtrArray temp = extraList;
       temp.insert(temp.end(), m_billboards.begin(), m_billboards.end());
       UpdateBillboardsForPicking();
 
       Scene::PickObject(frustum, pickedObjects, ignoreList, temp, pickPartiallyInside);
 
       // If the billboards are picked, pick the entity.
-      pickedObjects.erase(
-          std::remove_if(pickedObjects.begin(),
-                         pickedObjects.end(),
-                         [&pickedObjects](PickData& pd) -> bool
-                         {
-                           if (pd.entity != nullptr && pd.entity->GetType() == EntityType::Entity_Billboard &&
-                               static_cast<Billboard*>(pd.entity)->m_entity != nullptr)
-                           {
-                             // Check if the entity is already picked
-                             bool found = false;
-                             for (PickData& pd2 : pickedObjects)
-                             {
-                               if (pd2.entity->GetIdVal() == static_cast<Billboard*>(pd.entity)->m_entity->GetIdVal())
-                               {
-                                 found = true;
-                                 break;
-                               }
-                             }
+      pickedObjects.erase(std::remove_if(pickedObjects.begin(),
+                                         pickedObjects.end(),
+                                         [&pickedObjects](PickData& pd) -> bool
+                                         {
+                                           if (pd.entity != nullptr && pd.entity->IsA<Billboard>() &&
+                                               static_cast<Billboard*>(pd.entity.get())->m_entity != nullptr)
+                                           {
+                                             // Check if the entity is already picked
+                                             bool found = false;
+                                             for (PickData& pd2 : pickedObjects)
+                                             {
+                                               if (pd2.entity->GetIdVal() ==
+                                                   static_cast<Billboard*>(pd.entity.get())->m_entity->GetIdVal())
+                                               {
+                                                 found = true;
+                                                 break;
+                                               }
+                                             }
 
-                             if (found)
-                             {
-                               return true;
-                             }
-                             else
-                             {
-                               pd.entity = static_cast<Billboard*>(pd.entity)->m_entity;
-                               return false;
-                             }
-                           }
-                           return false;
-                         }),
-          pickedObjects.end());
+                                             if (found)
+                                             {
+                                               return true;
+                                             }
+                                             else
+                                             {
+                                               pd.entity = static_cast<Billboard*>(pd.entity.get())->m_entity;
+                                               return false;
+                                             }
+                                           }
+                                           return false;
+                                         }),
+                          pickedObjects.end());
     }
 
-    void EditorScene::AddBillboard(Entity* entity)
+    void EditorScene::AddBillboard(EntityPtr entity)
     {
-      auto addBillboardFn = [this, &entity](EditorBillboardBase* billboard)
+      auto addBillboardFn = [this, &entity](EditorBillboardPtr billboard)
       {
         if (m_entityBillboardMap.find(entity) != m_entityBillboardMap.end())
         {
@@ -450,43 +445,42 @@ namespace ToolKit
 
       // Check environment component
       bool envExist = entity->GetComponent<EnvironmentComponent>() != nullptr;
-      if (envExist || entity->IsSkyInstance())
+      if (envExist || entity->IsA<Sky>())
       {
-        SkyBillboard* billboard = new SkyBillboard();
+        SkyBillboardPtr billboard = MakeNewPtr<SkyBillboard>();
         addBillboardFn(billboard);
         return;
       }
 
       // Check light
-      if (entity->IsLightInstance())
+      if (entity->IsA<Light>())
       {
-        LightBillboard* billboard = new LightBillboard();
+        LightBillboardPtr billboard = MakeNewPtr<LightBillboard>();
         addBillboardFn(billboard);
         return;
       }
     }
 
-    void EditorScene::RemoveBillboard(Entity* entity)
+    void EditorScene::RemoveBillboard(EntityPtr entity)
     {
       if (m_entityBillboardMap.find(entity) != m_entityBillboardMap.end())
       {
-        Entity* bb = m_entityBillboardMap[entity];
+        EntityPtr billboard = m_entityBillboardMap[entity];
         m_entityBillboardMap.erase(entity);
         for (auto it = m_billboards.begin(); it != m_billboards.end(); ++it)
         {
-          if ((*it)->GetIdVal() == bb->GetIdVal())
+          if ((*it)->GetIdVal() == billboard->GetIdVal())
           {
             m_billboards.erase(it);
             break;
           }
         }
-        SafeDel(bb);
       }
     }
 
-    EntityRawPtrArray EditorScene::GetBillboards() { return m_billboards; }
+    EntityPtrArray EditorScene::GetBillboards() { return m_billboards; }
 
-    Entity* EditorScene::GetBillboard(Entity* entity)
+    EntityPtr EditorScene::GetBillboard(EntityPtr entity)
     {
       auto billBoard = m_entityBillboardMap.find(entity);
       if (billBoard != m_entityBillboardMap.end())
@@ -499,7 +493,7 @@ namespace ToolKit
       }
     }
 
-    void EditorScene::ValidateBillboard(Entity* entity)
+    void EditorScene::ValidateBillboard(EntityPtr entity)
     {
       bool addBillboard = false;
       auto billMap      = m_entityBillboardMap.find(entity);
@@ -527,11 +521,11 @@ namespace ToolKit
       {
         sanitizeFn(EditorBillboardBase::BillboardType::Sky);
       }
-      else if (entity->IsSkyInstance())
+      else if (entity->IsA<Sky>())
       {
         sanitizeFn(EditorBillboardBase::BillboardType::Sky);
       }
-      else if (entity->IsLightInstance())
+      else if (entity->IsA<Light>())
       {
         sanitizeFn(EditorBillboardBase::BillboardType::Light);
       }
@@ -550,9 +544,9 @@ namespace ToolKit
       }
     }
 
-    void EditorScene::ValidateBillboard(EntityRawPtrArray& entities)
+    void EditorScene::ValidateBillboard(EntityPtrArray& entities)
     {
-      for (Entity* ntt : entities)
+      for (EntityPtr ntt : entities)
       {
         ValidateBillboard(ntt);
       }
@@ -569,11 +563,11 @@ namespace ToolKit
     {
       if (Viewport* vp = g_app->GetActiveViewport())
       {
-        if (Camera* cam = vp->GetCamera())
+        if (CameraPtr cam = vp->GetCamera())
         {
-          for (Entity* billboard : m_billboards)
+          for (EntityPtr billboard : m_billboards)
           {
-            static_cast<Billboard*>(billboard)->LookAt(cam, vp->GetBillboardScale());
+            static_cast<Billboard*>(billboard.get())->LookAt(cam, vp->GetBillboardScale());
           }
         }
       }
@@ -583,7 +577,15 @@ namespace ToolKit
 
     EditorSceneManager::~EditorSceneManager() {}
 
-    ResourcePtr EditorSceneManager::CreateLocal(ResourceType type) { return ResourcePtr(new EditorScene()); }
+    ResourcePtr EditorSceneManager::CreateLocal(ClassMeta* Class)
+    {
+      if (Class == EditorScene::StaticClass())
+      {
+        return MakeNewPtr<EditorScene>();
+      }
+
+      return nullptr;
+    }
 
   } // namespace Editor
 } // namespace ToolKit

@@ -1,39 +1,19 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Skeleton.h"
 
+#include "FileManager.h"
+#include "MathUtil.h"
 #include "Node.h"
+#include "TKOpenGL.h"
+#include "Texture.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "gles2.h"
-#include "rapidxml.hpp"
-#include "rapidxml_utils.hpp"
-
-#include <memory>
 
 #include "DebugNew.h"
 
@@ -42,19 +22,14 @@ namespace ToolKit
 
   StaticBone::StaticBone(const String& name) { m_name = name; }
 
-  StaticBone::~StaticBone()
-  {
-    /*
-    m_node->m_parent = nullptr;
-    m_node->m_children.clear();*/
-  }
+  StaticBone::~StaticBone() {}
 
   // Create a texture such that there is mat4x4 per bone
   TexturePtr CreateBoneTransformTexture(const Skeleton* skeleton)
   {
-    TexturePtr ptr = std::make_shared<Texture>();
+    TexturePtr ptr = MakeNewPtr<Texture>();
     ptr->m_height  = 1;
-    ptr->m_width   = static_cast<int>(skeleton->m_bones.size()) * 4;
+    ptr->m_width   = (int) (skeleton->m_bones.size()) * 4;
     ptr->m_name    = skeleton->m_name + " BindPoseTexture";
 
     glGenTextures(1, &ptr->m_textureId);
@@ -74,6 +49,9 @@ namespace ToolKit
     glTexSubImage2D(GL_TEXTURE_2D, 0, boneIndx * 4, 0, 4, 1, GL_RGBA, GL_FLOAT, &mat);
   };
 
+  // DynamicBoneMap
+  //////////////////////////////////////////////////////////////////////////
+
   void DynamicBoneMap::AddDynamicBone(const String& boneName,
                                       DynamicBoneMap::DynamicBone& bone,
                                       DynamicBoneMap::DynamicBone* parent)
@@ -88,7 +66,7 @@ namespace ToolKit
 
   void DynamicBoneMap::Init(const Skeleton* skeleton)
   {
-    if (skeleton->m_bones.empty()) 
+    if (skeleton->m_bones.empty())
     {
       return;
     }
@@ -152,6 +130,38 @@ namespace ToolKit
     boneList.clear();
   }
 
+  void DynamicBoneMap::ForEachRootBone(std::function<void(DynamicBone*)> childProcessFunc)
+  {
+    // For each parent bone of the skeleton, access child bones recursively
+    for (auto& bone : boneList)
+    {
+      if (bone.second.node->m_parent == nullptr)
+      {
+        Node* childNode        = bone.second.node;
+        // Dynamic child node
+        DynamicBone* childBone = nullptr;
+        for (auto& boneSearch : boneList)
+        {
+          if (boneSearch.second.node == childNode)
+          {
+            childBone = &boneSearch.second;
+            break;
+          }
+        }
+        // If there is a child bone
+        if (childBone)
+        {
+          childProcessFunc(childBone);
+        }
+      }
+    }
+  }
+
+  // Skeleton
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(Skeleton, Resource);
+
   Skeleton::Skeleton() {}
 
   Skeleton::Skeleton(const String& file) { SetFile(file); }
@@ -189,66 +199,8 @@ namespace ToolKit
     }
   }
 
-  void DynamicBoneMap::ForEachRootBone(std::function<void(DynamicBone*)> childProcessFunc)
-  {
-    // For each parent bone of the skeleton, access child bones recursively
-    for (auto& bone : boneList)
-    {
-      if (bone.second.node->m_parent == nullptr)
-      {
-        Node* childNode        = bone.second.node;
-        // Dynamic child node
-        DynamicBone* childBone = nullptr;
-        for (auto& boneSearch : boneList)
-        {
-          if (boneSearch.second.node == childNode)
-          {
-            childBone = &boneSearch.second;
-            break;
-          }
-        }
-        // If there is a child bone
-        if (childBone)
-        {
-          childProcessFunc(childBone);
-        }
-      }
-    }
-  }
-
   void Skeleton::UnInit()
   {
-    /*
-    uint32_t deletedCount = 0;
-    std::function<void(const StaticBone*)> deleteBone =
-        [this, &deleteBone, &deletedCount](
-            const StaticBone* parentBone) -> void {
-      for (Node* childNode : parentBone->m_node->m_children)
-      {
-        // Find child bone
-        StaticBone* childBone = nullptr;
-        for (StaticBone* boneSearch : this->m_bones)
-        {
-          if (boneSearch->m_node == childNode)
-          {
-            childBone = boneSearch;
-            break;
-          }
-        }
-        // If child node is a bone of the skeleton
-        if (childBone)
-        {
-          deleteBone(childBone);
-        }
-      }
-      deletedCount++;
-      SafeDel(parentBone);
-    };
-    ForEachChildBoneNode(this, deleteBone);
-    m_node->m_children.clear();
-    SafeDel(m_node);
-    */
-
     for (StaticBone* sBone : m_bones)
     {
       SafeDel(sBone);
@@ -259,13 +211,9 @@ namespace ToolKit
 
   void Skeleton::Load()
   {
-    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
-    XmlDocument doc;
-    doc.parse<0>(file->data());
-
-    if (XmlNode* node = doc.first_node("skeleton"))
+    if (!m_loaded)
     {
-      DeSerialize(&doc, node);
+      ParseDocument("skeleton");
       m_loaded = true;
     }
   }
@@ -327,13 +275,15 @@ namespace ToolKit
     }
   }
 
-  void Skeleton::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Skeleton::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "skeleton", parent);
 
     auto writeBoneFnc  = [doc, container, this](const DynamicBoneMap::DynamicBone* childBone) -> void
     { WriteBone(this, childBone, doc, container); };
     m_Tpose.ForEachRootBone(writeBoneFnc);
+
+    return container;
   }
 
   void Traverse(XmlNode* node, DynamicBoneMap::DynamicBone* parent, Skeleton* skeleton)
@@ -402,12 +352,8 @@ namespace ToolKit
     }
   }
 
-  void Skeleton::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Skeleton::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (parent == nullptr)
-    {
-      return;
-    }
 
     for (XmlNode* node = parent->first_node("bone"); node; node = node->next_sibling())
     {
@@ -420,7 +366,7 @@ namespace ToolKit
       uploadBoneMatrix(m_bones[boneIndx]->m_inverseWorldMatrix, m_bindPoseTexture, static_cast<uint>(boneIndx));
     }
 
-    m_loaded = true;
+    return nullptr;
   }
 
   int Skeleton::GetBoneIndex(const String& bone)
@@ -453,13 +399,16 @@ namespace ToolKit
     dst->Load();
   }
 
-  SkeletonManager::SkeletonManager() { m_type = ResourceType::Skeleton; }
+  // SkeletonManager
+  //////////////////////////////////////////////////////////////////////////
 
   SkeletonManager::~SkeletonManager() {}
 
-  bool SkeletonManager::CanStore(ResourceType t)
+  SkeletonManager::SkeletonManager() { m_baseType = Skeleton::StaticClass(); }
+
+  bool SkeletonManager::CanStore(ClassMeta* Class)
   {
-    if (t == ResourceType::Skeleton)
+    if (Class == Skeleton::StaticClass())
     {
       return true;
     }
@@ -467,16 +416,14 @@ namespace ToolKit
     return false;
   }
 
-  ResourcePtr SkeletonManager::CreateLocal(ResourceType type)
+  ResourcePtr SkeletonManager::CreateLocal(ClassMeta* Class)
   {
-    ResourcePtr res;
-    if (type == ResourceType::Skeleton)
+    if (Class == Skeleton::StaticClass())
     {
-      res = std::make_shared<Skeleton>();
+      return MakeNewPtr<Skeleton>();
     }
 
-    assert(res != nullptr);
-    return res;
+    return nullptr;
   }
 
 } // namespace ToolKit

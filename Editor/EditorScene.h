@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
@@ -37,6 +18,8 @@ namespace ToolKit
     class EditorScene : public Scene
     {
      public:
+      TKDeclareClass(EditorScene, Scene);
+
       EditorScene();
       explicit EditorScene(const String& file);
       virtual ~EditorScene();
@@ -48,7 +31,7 @@ namespace ToolKit
       bool IsSelected(ULongID id) const;
       void RemoveFromSelection(ULongID id);
       void AddToSelection(const EntityIdArray& entities, bool additive);
-      void AddToSelection(const EntityRawPtrArray& entities, bool additive);
+      void AddToSelection(const EntityPtrArray& entities, bool additive);
       void AddToSelection(ULongID id, bool additive);
       void ClearSelection();
       bool IsCurrentSelection(ULongID id) const;
@@ -59,14 +42,15 @@ namespace ToolKit
       void MakeCurrentSelection(ULongID id, bool ifExist);
 
       uint GetSelectedEntityCount() const;
-      Entity* GetCurrentSelection() const;
+      EntityPtr GetCurrentSelection() const;
 
       // Resource operations
       void Save(bool onlyIfDirty) override;
 
       // Entity operations.
-      void AddEntity(Entity* entity) override;
-      void RemoveEntity(const EntityRawPtrArray& entities) override;
+      void AddEntity(EntityPtr entity) override;
+      void RemoveEntity(const EntityPtrArray& entities) override;
+
       /**
        * remove entity from the scene
        * @param  the id of the entity you want to remove
@@ -74,29 +58,28 @@ namespace ToolKit
        *         be aware that removed childs transforms preserved
        * @returns the entity that you removed, nullptr if entity is not in scene
        */
-      Entity* RemoveEntity(ULongID id, bool deep = true) override;
+      EntityPtr RemoveEntity(ULongID id, bool deep = true) override;
       void Destroy(bool removeResources) override;
-      void GetSelectedEntities(EntityRawPtrArray& entities) const;
+      void GetSelectedEntities(EntityPtrArray& entities) const;
       void GetSelectedEntities(EntityIdArray& entities) const;
       void SelectByTag(const String& tag);
 
       // Pick operations
-      PickData PickObject(Ray ray,
-                          const EntityIdArray& ignoreList    = EntityIdArray(),
-                          const EntityRawPtrArray& extraList = EntityRawPtrArray()) override;
+      PickData PickObject(Ray ray, const EntityIdArray& ignoreList = {}, const EntityPtrArray& extraList = {}) override;
+
       void PickObject(const Frustum& frustum,
-                      std::vector<PickData>& pickedObjects,
-                      const EntityIdArray& ignoreList    = EntityIdArray(),
-                      const EntityRawPtrArray& extraList = EntityRawPtrArray(),
-                      bool pickPartiallyInside           = true) override;
+                      PickDataArray& pickedObjects,
+                      const EntityIdArray& ignoreList = {},
+                      const EntityPtrArray& extraList = {},
+                      bool pickPartiallyInside        = true) override;
 
       // Gizmo operations
-      void AddBillboard(Entity* entity);
-      void RemoveBillboard(Entity* entity);
-      EntityRawPtrArray GetBillboards();
-      Entity* GetBillboard(Entity* entity);
-      void ValidateBillboard(Entity* entity);
-      void ValidateBillboard(EntityRawPtrArray& entities);
+      void AddBillboard(EntityPtr entity);
+      void RemoveBillboard(EntityPtr entity);
+      EntityPtrArray GetBillboards();
+      EntityPtr GetBillboard(EntityPtr entity);
+      void ValidateBillboard(EntityPtr entity);
+      void ValidateBillboard(EntityPtrArray& entities);
 
      private:
       void CopyTo(Resource* other) override;
@@ -114,20 +97,21 @@ namespace ToolKit
 
      private:
       EntityIdArray m_selectedEntities;
+
       // Billboard gizmos
-      std::unordered_map<Entity*, EditorBillboardBase*> m_entityBillboardMap;
-      EntityRawPtrArray m_billboards;
+      std::unordered_map<EntityPtr, EditorBillboardPtr> m_entityBillboardMap;
+      EntityPtrArray m_billboards;
     };
+
+    typedef std::shared_ptr<EditorScene> EditorScenePtr;
 
     class EditorSceneManager : public SceneManager
     {
      public:
       EditorSceneManager();
       virtual ~EditorSceneManager();
-      ResourcePtr CreateLocal(ResourceType type) override;
+      ResourcePtr CreateLocal(ClassMeta* Class) override;
     };
-
-    typedef std::shared_ptr<class EditorScene> EditorScenePtr;
 
   } // namespace Editor
 } // namespace ToolKit

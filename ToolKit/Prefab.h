@@ -1,40 +1,14 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
 
-#include "Light.h"
-#include "MathUtil.h"
-#include "Resource.h"
-#include "Sky.h"
+#include "Entity.h"
 #include "Types.h"
-
-#include <functional>
-#include <unordered_map>
-#include <vector>
 
 namespace ToolKit
 {
@@ -48,10 +22,10 @@ namespace ToolKit
   class TK_API Prefab : public Entity
   {
    public:
+    TKDeclareClass(Prefab, Entity);
+
     Prefab();
     virtual ~Prefab();
-
-    EntityType GetType() const override;
 
     /**
      * Initiates prefab scene and link to the current scene.
@@ -70,23 +44,24 @@ namespace ToolKit
     void Unlink();
 
     /**
-     * Add all elements in the prabscene to the current scene.
+     * Add all elements in the prefab scene to the current scene.
      */
     void Link();
 
-    static Prefab* GetPrefabRoot(Entity* ntt);
+    static PrefabPtr GetPrefabRoot(const EntityPtr ntt);
     Entity* CopyTo(Entity* other) const override;
 
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+   protected:
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
    private:
-    void ParameterConstructor();
-    void ParameterEventConstructor();
+    void ParameterConstructor() override;
 
    public:
-    // Should be in Prefab folder
     TKDeclareParam(String, PrefabPath);
+
     ScenePtr m_prefabScene;
     Scene* m_currentScene;
     bool m_initiated = false;
@@ -96,6 +71,6 @@ namespace ToolKit
 
     // Used only in deserialization
     std::unordered_map<String, ParameterVariantArray> m_childCustomDatas;
-    EntityRawPtrArray m_instanceEntities;
+    EntityPtrArray m_instanceEntities;
   };
 } // namespace ToolKit

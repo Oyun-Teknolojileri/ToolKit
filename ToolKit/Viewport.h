@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
@@ -31,16 +12,12 @@
  */
 
 #include "Framebuffer.h"
-#include "MathUtil.h"
-#include "Types.h"
 
 /**
  * Base name space for all the ToolKit functionalities.
  */
 namespace ToolKit
 {
-  class Framebuffer;
-  struct RenderTargetSettigs;
 
   /**
    * Base class for Viewport class. Holds Camera object that viewport has.
@@ -61,13 +38,13 @@ namespace ToolKit
     /**
      * Returns the Camera of viewport.
      */
-    virtual Camera* GetCamera() const;
+    virtual CameraPtr GetCamera() const;
 
     /**
      * Sets the new Camera for viewport. Deletes the last Camera.
      * @param cam New Camera for viewport.
      */
-    virtual void SetCamera(Camera* cam);
+    virtual void SetCamera(CameraPtr cam);
 
     /**
      * Swaps the Viewport's Camera and Detach any camera if any. If the
@@ -75,7 +52,7 @@ namespace ToolKit
      * @param cam is the camera to swap with.
      * @param attachment is set to current camera attachment for swap backup.
      */
-    void SwapCamera(Camera** cam, ULongID& attachment);
+    void SwapCamera(CameraPtr& cam, ULongID& attachment);
 
     /**
      * Stores the Camera id that the scene will use while rendering.
@@ -99,7 +76,7 @@ namespace ToolKit
     /**
      * Camera that the viewport has.
      */
-    Camera* m_camera = nullptr;
+    CameraPtr m_camera = nullptr;
   };
 
   /**

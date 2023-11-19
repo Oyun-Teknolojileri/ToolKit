@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Canvas.h"
@@ -33,8 +14,6 @@
 #include "ToolKit.h"
 #include "Viewport.h"
 
-#include <memory>
-
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -42,33 +21,20 @@ namespace ToolKit
   // Canvas
   //////////////////////////////////////////
 
-  Canvas::Canvas() : Surface()
+  TKDefineClass(Canvas, Surface);
+
+  Canvas::Canvas() : Surface() {}
+
+  void Canvas::NativeConstruct()
   {
-    ParameterConstructor();
-    ParameterEventConstructor();
-    CreateQuadLines();
-  }
-
-  Canvas::Canvas(const Vec2& size) : Surface(size)
-  {
-    ParameterConstructor();
-    ParameterEventConstructor();
-    CreateQuadLines();
-  }
-
-  EntityType Canvas::GetType() const { return EntityType::Entity_Canvas; }
-
-  void Canvas::Serialize(XmlDocument* doc, XmlNode* parent) const { Surface::Serialize(doc, parent); }
-
-  void Canvas::DeSerialize(XmlDocument* doc, XmlNode* parent)
-  {
-    Surface::DeSerialize(doc, parent);
-    ParameterEventConstructor();
+    Super::NativeConstruct();
     CreateQuadLines();
   }
 
   void Canvas::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     // Update surface params.
     ParamMaterial().m_exposed     = false;
     ParamSize().m_category        = CanvasCategory;
@@ -77,8 +43,40 @@ namespace ToolKit
 
   void Canvas::ParameterEventConstructor()
   {
-    Surface::ParameterEventConstructor();
+    Super::ParameterEventConstructor();
     ParamMaterial().m_onValueChangedFn.clear();
+  }
+
+  XmlNode* Canvas::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* surfaceNode = Super::SerializeImp(doc, parent);
+    XmlNode* canvasNode  = CreateXmlNode(doc, StaticClass()->Name, surfaceNode);
+
+    return canvasNode;
+  }
+
+  XmlNode* Canvas::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    if (m_version == TKV045)
+    {
+      return DeSerializeImpV045(info, parent);
+    }
+
+    // Old file, keep parsing.
+    XmlNode* surfaceNode = Surface::DeSerializeImp(info, parent);
+    ParameterEventConstructor();
+    CreateQuadLines();
+
+    return surfaceNode;
+  }
+
+  XmlNode* Canvas::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* surfaceNode = Surface::DeSerializeImp(info, parent);
+    ParameterEventConstructor();
+    CreateQuadLines();
+
+    return surfaceNode->first_node(StaticClass()->Name.c_str());
   }
 
   void Canvas::UpdateGeometry(bool byTexture) { CreateQuadLines(); }
@@ -93,12 +91,11 @@ namespace ToolKit
 
     for (Node* childNode : m_node->m_children)
     {
-      if (Entity* ntt = childNode->m_entity)
+      if (EntityPtr ntt = childNode->OwnerEntity())
       {
-        if (ntt->IsSurfaceInstance())
+        if (Surface* surface = ntt->As<Surface>())
         {
-          Surface* surface     = static_cast<Surface*>(ntt);
-          const float* offsets = surface->m_anchorParams.m_offsets;
+          float* const offsets = surface->m_anchorParams.m_offsets;
 
           Vec3 currentScale(1.f, 1.f, 1.f);
           childNode->SetScale(currentScale);
@@ -152,19 +149,19 @@ namespace ToolKit
             const Vec3 widthVector(1.f, 0.f, 0.f);
             const Vec3 heightVector(0.f, 1.f, 0.f);
 
-            Vec3 translate               = (canvasPoints[0] + widthVector * offsets[2] - heightVector * offsets[0]);
+            Vec3 translate                = (canvasPoints[0] + widthVector * offsets[2] - heightVector * offsets[0]);
 
             translate                    -= surfacePoints[0];
 
-            const Vec3 surfaceCurrentPos = surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            const Vec3 surfaceCurrentPos  = surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
             translate                    += surfaceCurrentPos;
-            translate.z                  = surfaceCurrentPos.z;
+            translate.z                   = surfaceCurrentPos.z;
 
             childNode->SetTranslation(translate, TransformationSpace::TS_WORLD);
           }
 
-          if (surface->GetType() == EntityType::Entity_Canvas)
+          if (surface->IsA<Canvas>())
           {
             Canvas* canvasPanel  = static_cast<Canvas*>(surface);
             const BoundingBox bb = canvasPanel->GetAABB(true);
@@ -193,7 +190,7 @@ namespace ToolKit
     vertices[6].pos            = Vec3(-absOffset.x, height - absOffset.y, depth);
     vertices[7].pos            = Vec3(-absOffset.x, -absOffset.y, depth);
 
-    MeshPtr mesh               = std::make_shared<Mesh>();
+    MeshPtr mesh               = MakeNewPtr<Mesh>();
     mesh->m_clientSideVertices = vertices;
     mesh->CalculateAABB();
     mesh->Init();

@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "GizmoPass.h"
@@ -29,6 +10,7 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "ResourceComponent.h"
+#include "TKProfiler.h"
 
 #include "DebugNew.h"
 
@@ -39,7 +21,9 @@ namespace ToolKit
 
     GizmoPass::GizmoPass()
     {
-      m_depthMaskSphere   = std::make_shared<Sphere>(0.95f);
+      m_depthMaskSphere = MakeNewPtr<Sphere>();
+      m_depthMaskSphere->SetRadiusVal(0.95f);
+
       MeshComponentPtr mc = m_depthMaskSphere->GetMeshComponent();
       MeshPtr mesh        = mc->GetMeshVal();
       RenderState* rs     = mesh->m_material->GetRenderState();
@@ -50,38 +34,46 @@ namespace ToolKit
 
     void GizmoPass::Render()
     {
+      PUSH_CPU_MARKER("GizmoPass::Render");
+
       Renderer* renderer = GetRenderer();
 
-      for (EditorBillboardBase* bb : m_params.GizmoArray)
+      for (EditorBillboardPtr billboard : m_params.GizmoArray)
       {
-        if (bb->GetBillboardType() == EditorBillboardBase::BillboardType::Rotate)
+        if (billboard->GetBillboardType() == EditorBillboardBase::BillboardType::Rotate)
         {
-          Mat4 ts = bb->m_node->GetTransform();
+          Mat4 ts = billboard->m_node->GetTransform();
           m_depthMaskSphere->m_node->SetTransform(ts, TransformationSpace::TS_WORLD, false);
 
           renderer->ColorMask(false, false, false, false);
 
-          RenderJobArray jobs;
-          RenderJobProcessor::CreateRenderJobs({m_depthMaskSphere.get()}, jobs);
+          static RenderJobArray jobs;
+          jobs.clear();
+          RenderJobProcessor::CreateRenderJobs({m_depthMaskSphere}, jobs);
           renderer->Render(jobs, m_camera);
 
           renderer->ColorMask(true, true, true, true);
 
           jobs.clear();
-          RenderJobProcessor::CreateRenderJobs({bb}, jobs);
+          RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
           renderer->Render(jobs, m_camera);
         }
         else
         {
-          RenderJobArray jobs;
-          RenderJobProcessor::CreateRenderJobs({bb}, jobs);
+          static RenderJobArray jobs;
+          jobs.clear();
+          RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
           renderer->Render(jobs, m_camera);
         }
       }
+
+      POP_CPU_MARKER();
     }
 
     void GizmoPass::PreRender()
     {
+      PUSH_CPU_MARKER("GizmoPass::PreRender");
+
       Pass::PreRender();
 
       Renderer* renderer = GetRenderer();
@@ -91,10 +83,10 @@ namespace ToolKit
       renderer->ClearBuffer(GraphicBitFields::DepthBits, Vec4(1.0f));
 
       // Update.
-      BillboardRawPtrArray& gizmoArray = m_params.GizmoArray;
+      BillboardPtrArray& gizmoArray = m_params.GizmoArray;
       gizmoArray.erase(std::remove_if(gizmoArray.begin(),
                                       gizmoArray.end(),
-                                      [this](EditorBillboardBase* bb) -> bool
+                                      [this](EditorBillboardPtr bb) -> bool
                                       {
                                         if (bb == nullptr)
                                         {
@@ -105,9 +97,16 @@ namespace ToolKit
                                         return false;
                                       }),
                        gizmoArray.end());
+
+      POP_CPU_MARKER();
     }
 
-    void GizmoPass::PostRender() { Pass::PostRender(); }
+    void GizmoPass::PostRender()
+    {
+      PUSH_CPU_MARKER("GizmoPass::PostRender");
+      Pass::PostRender();
+      POP_CPU_MARKER();
+    }
 
   } // namespace Editor
 } // namespace ToolKit

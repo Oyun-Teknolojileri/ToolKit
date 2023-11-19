@@ -1,47 +1,32 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "ParameterBlock.h"
 
 #include "Animation.h"
+#include "Material.h"
 #include "Mesh.h"
 #include "ToolKit.h"
 #include "Util.h"
-
-#include <memory>
-#include <utility>
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
 
-  ParameterVariantBase::ParameterVariantBase() { m_id = GetHandleManager()->GetNextHandle(); }
+  ParameterVariantBase::ParameterVariantBase() { m_id = GetHandleManager()->GenerateHandle(); }
 
-  ParameterVariantBase::~ParameterVariantBase() {}
+  ParameterVariantBase::~ParameterVariantBase()
+  {
+    if (HandleManager* handleMan = GetHandleManager())
+    {
+      handleMan->ReleaseHandle(m_id);
+    }
+  }
 
   ParameterVariant::ParameterVariant() { *this = 0; }
 
@@ -271,23 +256,11 @@ namespace ToolKit
     return *this;
   }
 
-  void ParameterVariant::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* ParameterVariant::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlParamterElement.c_str());
-
     WriteAttr(node, doc, XmlParamterTypeAttr, std::to_string(static_cast<int>(m_type)));
-
     WriteAttr(node, doc, XmlNodeName.data(), m_name);
-    WriteAttr(node, doc, "category", m_category.Name);
-    WriteAttr(node, doc, "priority", std::to_string(m_category.Priority));
-    WriteAttr(node, doc, "exposed", std::to_string(m_exposed));
-    WriteAttr(node, doc, "editable", std::to_string(m_editable));
-    WriteAttr(node, doc, "hint.isColor", std::to_string(m_hint.isColor));
-    WriteAttr(node, doc, "hint.isRanLim", std::to_string(m_hint.isRangeLimited));
-    WriteAttr(node, doc, "hint.rangeMin", std::to_string(m_hint.rangeMin));
-    WriteAttr(node, doc, "hint.rangeMax", std::to_string(m_hint.rangeMax));
-    WriteAttr(node, doc, "hint.increment", std::to_string(m_hint.increment));
-
     std::function<void(XmlNode*, XmlDocument*, const ParameterVariant*)> serializeDataFn;
     serializeDataFn = [&serializeDataFn](XmlNode* node, XmlDocument* doc, const ParameterVariant* var)
     {
@@ -457,32 +430,17 @@ namespace ToolKit
     serializeDataFn(node, doc, this);
 
     parent->append_node(node);
+    return node;
   }
 
-  void ParameterVariant::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* ParameterVariant::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (parent == nullptr)
-    {
-      assert(false && "Unbound parameter can not exist");
-      return;
-    }
-
     XmlAttribute* attr = parent->first_attribute(XmlParamterTypeAttr.c_str());
     m_type             = (VariantType) std::atoi(attr->value());
     ReadAttr(parent, XmlNodeName.data(), m_name);
-    ReadAttr(parent, "category", m_category.Name);
-    ReadAttr(parent, "priority", m_category.Priority);
-    ReadAttr(parent, "exposed", m_exposed);
-    ReadAttr(parent, "editable", m_editable);
-    ReadAttr(parent, "hint.isColor", m_hint.isColor);
-    ReadAttr(parent, "hint.isRanLim", m_hint.isRangeLimited);
-    ReadAttr(parent, "hint.rangeMin", m_hint.rangeMin);
-    ReadAttr(parent, "hint.rangeMax", m_hint.rangeMax);
-    ReadAttr(parent, "hint.increment", m_hint.increment);
 
     std::function<void(XmlNode*, ParameterVariant*)> deserializeDataFn;
-
-    deserializeDataFn = [&doc, &deserializeDataFn](XmlNode* parent, ParameterVariant* pVar)
+    deserializeDataFn = [&deserializeDataFn](XmlNode* parent, ParameterVariant* pVar)
     {
       switch (pVar->GetType())
       {
@@ -596,7 +554,7 @@ namespace ToolKit
         String file = Resource::DeserializeRef(parent);
         if (file.empty())
         {
-          pVar->m_var = std::make_shared<Mesh>();
+          pVar->m_var = MakeNewPtr<Mesh>();
         }
         else
         {
@@ -619,7 +577,7 @@ namespace ToolKit
         String file = Resource::DeserializeRef(parent);
         if (file.empty())
         {
-          pVar->m_var = std::make_shared<Material>();
+          pVar->m_var = MakeNewPtr<Material>();
         }
         else
         {
@@ -633,7 +591,7 @@ namespace ToolKit
         String file = Resource::DeserializeRef(parent);
         if (file.empty())
         {
-          pVar->m_var = std::make_shared<Hdri>();
+          pVar->m_var = MakeNewPtr<Hdri>();
         }
         else
         {
@@ -650,7 +608,7 @@ namespace ToolKit
         AnimRecordPtrMap list;
         for (uint stateIndx = 0; stateIndx < listSize; stateIndx++)
         {
-          AnimRecordPtr record = std::make_shared<AnimRecord>();
+          AnimRecordPtr record = MakeNewPtr<AnimRecord>();
           XmlNode* elementNode = listNode->first_node(std::to_string(stateIndx).c_str());
 
           String signalName;
@@ -671,7 +629,7 @@ namespace ToolKit
         String file = Resource::DeserializeRef(parent);
         if (file.empty())
         {
-          pVar->m_var = std::make_shared<Skeleton>();
+          pVar->m_var = MakeNewPtr<Skeleton>();
         }
         else
         {
@@ -716,21 +674,24 @@ namespace ToolKit
         break;
       }
     };
+
     deserializeDataFn(parent, this);
+
+    return nullptr;
   }
 
-  void ParameterBlock::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* ParameterBlock::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* blockNode = doc->allocate_node(rapidxml::node_element, XmlParamBlockElement.c_str());
-
+    XmlNode* blockNode = CreateXmlNode(doc, XmlParamBlockElement, parent);
     for (const ParameterVariant& var : m_variants)
     {
       var.Serialize(doc, blockNode);
     }
-    parent->append_node(blockNode);
+
+    return blockNode;
   }
 
-  void ParameterBlock::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* ParameterBlock::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     if (XmlNode* block = parent->first_node(XmlParamBlockElement.c_str()))
     {
@@ -739,7 +700,7 @@ namespace ToolKit
       {
         // Read variant from xml.
         ParameterVariant var;
-        var.DeSerialize(doc, param);
+        var.DeSerialize(info, param);
 
         // Keep the function constructed in ParameterConstructor.
         // Because functions can't be serialized.
@@ -752,14 +713,15 @@ namespace ToolKit
           {
             if (var.m_name == memberVar.m_name)
             {
-              memberVar = var;
-              isFound   = true;
+              memberVar.m_var = var.m_var;
+              isFound         = true;
               break;
             }
           }
 
-          if (!isFound && var.m_category.Name == CustomDataCategory.Name)
+          if (!isFound)
           {
+            var.m_category = CustomDataCategory;
             Add(var);
           }
         }
@@ -767,6 +729,8 @@ namespace ToolKit
         param = param->next_sibling();
       }
     }
+
+    return nullptr;
   }
 
   ParameterVariant& ParameterBlock::operator[](size_t index) { return m_variants[index]; }

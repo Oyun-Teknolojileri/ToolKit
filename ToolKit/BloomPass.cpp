@@ -1,33 +1,15 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "BloomPass.h"
 
 #include "Shader.h"
 #include "ShaderReflectionCache.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -41,7 +23,7 @@ namespace ToolKit
 
     m_upsampleShader   = GetShaderManager()->Create<Shader>(ShaderPath("bloomUpsample.shader", true));
 
-    m_pass             = std::make_shared<FullQuadPass>();
+    m_pass             = MakeNewPtr<FullQuadPass>();
   }
 
   BloomPass::BloomPass(const BloomPassParams& params) : BloomPass() { m_params = params; }
@@ -56,6 +38,9 @@ namespace ToolKit
 
   void BloomPass::Render()
   {
+    PUSH_GPU_MARKER("BloomPass::Render");
+    PUSH_CPU_MARKER("BloomPass::Render");
+
     RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
 
     if (mainRt == nullptr || m_invalidRenderParams)
@@ -88,7 +73,7 @@ namespace ToolKit
 
     // Downsample Pass
     {
-      for (int i = 0; i < m_params.iterationCount; i++)
+      for (int i = 0; i < m_currentIterationCount; i++)
       {
         // Calculate current and previous resolutions
 
@@ -129,7 +114,7 @@ namespace ToolKit
 
       m_upsampleShader->SetShaderParameter("intensity", ParameterVariant(1.0f));
 
-      for (int i = m_params.iterationCount; i > 0; i--)
+      for (int i = m_currentIterationCount; i > 0; i--)
       {
         m_pass->m_params.FragmentShader = m_upsampleShader;
 
@@ -161,10 +146,16 @@ namespace ToolKit
 
       RenderSubPass(m_pass);
     }
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void BloomPass::PreRender()
   {
+    PUSH_GPU_MARKER("BloomPass::PreRender");
+    PUSH_CPU_MARKER("BloomPass::PreRender");
+
     Pass::PreRender();
 
     RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
@@ -176,48 +167,65 @@ namespace ToolKit
     // Set to minimum iteration count
     Vec2 mainRes = UVec2(mainRt->m_width, mainRt->m_height);
     const IVec2 maxIterCounts(glm::log2(mainRes) - 1.0f);
-    m_params.iterationCount = glm::min(m_params.iterationCount, glm::min(maxIterCounts.x, maxIterCounts.y));
+    int iterationCount = glm::min(m_params.iterationCount, glm::min(maxIterCounts.x, maxIterCounts.y));
 
-    if (m_params.iterationCount < 0)
+    if (iterationCount < 0)
     {
       m_invalidRenderParams = true;
       return;
     }
 
-    m_tempTextures.resize(m_params.iterationCount + 1);
-    m_tempFrameBuffers.resize(m_params.iterationCount + 1);
-
-    for (int i = 0; i < m_params.iterationCount + 1; i++)
+    if (iterationCount != m_currentIterationCount)
     {
-      const Vec2 factor(1.0f / glm::pow(2.0f, float(i)));
-      const UVec2 curRes    = Vec2(mainRes) * factor;
+      m_tempTextures.resize(m_params.iterationCount + 1);
+      m_tempFrameBuffers.resize(m_params.iterationCount + 1);
 
-      m_invalidRenderParams = false;
-      if (curRes.x == 1 || curRes.y == 1)
+      for (int i = 0; i < m_params.iterationCount + 1; i++)
       {
-        m_invalidRenderParams = true;
-        return;
+        const Vec2 factor(1.0f / glm::pow(2.0f, float(i)));
+        const UVec2 curRes    = Vec2(mainRes) * factor;
+
+        m_invalidRenderParams = false;
+        if (curRes.x == 1 || curRes.y == 1)
+        {
+          m_invalidRenderParams = true;
+          return;
+        }
+
+        RenderTargetPtr& rt           = m_tempTextures[i];
+        rt                            = MakeNewPtr<RenderTarget>();
+        rt->m_settings.InternalFormat = GraphicTypes::FormatRGBA16F;
+        rt->m_settings.Format         = GraphicTypes::FormatRGBA;
+        rt->m_settings.Type           = GraphicTypes::TypeFloat;
+        rt->m_settings.MagFilter      = GraphicTypes::SampleLinear;
+        rt->m_settings.MinFilter      = GraphicTypes::SampleLinear;
+        rt->m_settings.WarpR          = GraphicTypes::UVClampToEdge;
+        rt->m_settings.WarpS          = GraphicTypes::UVClampToEdge;
+        rt->m_settings.WarpT          = GraphicTypes::UVClampToEdge;
+        rt->ReconstructIfNeeded(curRes.x, curRes.y);
+
+        FramebufferPtr& fb = m_tempFrameBuffers[i];
+        fb                 = MakeNewPtr<Framebuffer>();
+        fb->ReconstructIfNeeded(curRes.x, curRes.y);
+        fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
       }
 
-      RenderTargetPtr& rt           = m_tempTextures[i];
-      rt                            = std::make_shared<RenderTarget>();
-      rt->m_settings.InternalFormat = GraphicTypes::FormatRGBA16F;
-      rt->m_settings.Format         = GraphicTypes::FormatRGBA;
-      rt->m_settings.Type           = GraphicTypes::TypeFloat;
-      rt->m_settings.MagFilter      = GraphicTypes::SampleLinear;
-      rt->m_settings.MinFilter      = GraphicTypes::SampleLinear;
-      rt->m_settings.WarpR          = GraphicTypes::UVClampToEdge;
-      rt->m_settings.WarpS          = GraphicTypes::UVClampToEdge;
-      rt->m_settings.WarpT          = GraphicTypes::UVClampToEdge;
-      rt->ReconstructIfNeeded(curRes.x, curRes.y);
-
-      FramebufferPtr& fb = m_tempFrameBuffers[i];
-      fb                 = std::make_shared<Framebuffer>();
-      fb->ReconstructIfNeeded(curRes.x, curRes.y);
-      fb->SetAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
+      m_currentIterationCount = iterationCount;
     }
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
-  void BloomPass::PostRender() { Pass::PostRender(); }
+  void BloomPass::PostRender()
+  {
+    PUSH_GPU_MARKER("BloomPass::PostRender");
+    PUSH_CPU_MARKER("BloomPass::PostRender");
+
+    Pass::PostRender();
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
+  }
 
 } // namespace ToolKit

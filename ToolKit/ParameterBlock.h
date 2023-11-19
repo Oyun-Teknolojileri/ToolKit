@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
@@ -34,7 +15,6 @@
 #include "Serialize.h"
 #include "Types.h"
 
-#include <unordered_map>
 #include <variant>
 
 /**
@@ -77,28 +57,16 @@
   }                                                                                                                    \
                                                                                                                        \
  public:                                                                                                               \
-  inline ParameterVariant& Param##Name()                                                                               \
-  {                                                                                                                    \
-    return m_localData[Name##_Index];                                                                                  \
-  }                                                                                                                    \
+  inline ParameterVariant& Param##Name() { return m_localData[Name##_Index]; }                                         \
                                                                                                                        \
  public:                                                                                                               \
-  inline const Class& Get##Name##Val() const                                                                           \
-  {                                                                                                                    \
-    return m_localData[Name##_Index].GetCVar<Class>();                                                                 \
-  }                                                                                                                    \
+  inline const Class& Get##Name##Val() const { return m_localData[Name##_Index].GetCVar<Class>(); }                    \
                                                                                                                        \
  public:                                                                                                               \
-  inline void Set##Name##Val(const Class& val)                                                                         \
-  {                                                                                                                    \
-    m_localData[Name##_Index] = val;                                                                                   \
-  }                                                                                                                    \
+  inline void Set##Name##Val(const Class& val) { m_localData[Name##_Index] = val; }                                    \
                                                                                                                        \
  public:                                                                                                               \
-  inline size_t Name##Index()                                                                                          \
-  {                                                                                                                    \
-    return Name##_Index;                                                                                               \
-  }
+  inline size_t Name##Index() { return Name##_Index; }
 
 namespace ToolKit
 {
@@ -211,7 +179,7 @@ namespace ToolKit
     /**
      * Empty destructor.
      */
-    ~ParameterVariantBase();
+    virtual ~ParameterVariantBase();
 
    public:
     ULongID m_id; //!< Unique id for the current runtime.
@@ -227,6 +195,8 @@ namespace ToolKit
    */
   class TK_API ParameterVariant : public ParameterVariantBase
   {
+    friend class ParameterBlock;
+
    public:
     /**
      * Enums for supported ParameterVariant types. These types are used for
@@ -265,7 +235,7 @@ namespace ToolKit
     /**
      * Empty destructor.
      */
-    ~ParameterVariant();
+    virtual ~ParameterVariant();
 
     /**
      * Directly sets the new value.
@@ -539,14 +509,14 @@ namespace ToolKit
      * @param doc The xml document object to serialize to.
      * @param parent The parent xml node to serialize to.
      */
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
     /**
      * De serializes the variant from the xml document.
      * @param doc The xml document object to read from.
      * @param parent The parent xml node to read from.
      */
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     /**
@@ -603,20 +573,6 @@ namespace ToolKit
   class TK_API ParameterBlock : public Serializable
   {
    public:
-    /**
-     * Serializes the ParameterBlock to the xml document.
-     * @param doc The xml document object to serialize to.
-     * @param parent The parent xml node to serialize to.
-     */
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-
-    /**
-     * De serializes the ParameterBlcok from the xml document.
-     * @param doc The xml document object to read from.
-     * @param parent The parent xml node to read from.
-     */
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-
     /**
      * Used to access ParameterVariant's by index.
      * @return Reference to indexed ParameterVariant.
@@ -675,6 +631,21 @@ namespace ToolKit
      * @param category The category to set exposed status.
      */
     void ExposeByCategory(bool exposed, const VariantCategory& category);
+
+   protected:
+    /**
+     * Serializes the ParameterBlock to the xml document.
+     * @param doc The xml document object to serialize to.
+     * @param parent The parent xml node to serialize to.
+     */
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+
+    /**
+     * De serializes the ParameterBlcok from the xml document.
+     * @param doc The xml document object to read from.
+     * @param parent The parent xml node to read from.
+     */
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    public:
     /**

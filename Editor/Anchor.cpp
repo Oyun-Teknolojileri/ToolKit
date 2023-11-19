@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Anchor.h"
@@ -30,18 +11,24 @@
 #include "EditorViewport.h"
 #include "Global.h"
 
-#include "DebugNew.h"
+#include <Canvas.h>
+#include <Material.h>
+#include <MathUtil.h>
+#include <Mesh.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
   namespace Editor
   {
+    // Anchor::Anchor() {}
 
-    Anchor::Anchor(const Billboard::Settings& set) : EditorBillboardBase(set)
+    Anchor::Anchor() : EditorBillboardBase({false, 0.0f, 0.0f})
     {
       for (int i = 0; i < 9; i++)
       {
-        m_handles.push_back(std::make_shared<AnchorHandle>());
+        m_handles.push_back(MakeNewPtr<AnchorHandle>());
         constexpr int val                = (int) DirectionLabel::N;
         m_handles[i]->m_params.direction = static_cast<DirectionLabel>(val + i);
       }
@@ -94,12 +81,22 @@ namespace ToolKit
 
     void Anchor::Update(float deltaTime)
     {
-      if (m_entity == nullptr || !m_entity->IsSurfaceInstance() || m_entity->m_node->m_parent == nullptr ||
-          m_entity->m_node->m_parent->m_entity == nullptr ||
-          m_entity->m_node->m_parent->m_entity->GetType() != EntityType::Entity_Canvas)
+      if (m_entity == nullptr || !m_entity->IsA<Surface>())
+      {
         return;
+      }
 
-      Canvas* canvasPanel = static_cast<Canvas*>(m_entity->m_node->m_parent->m_entity);
+      EntityPtr parentNtt = m_entity->Parent();
+      if (parentNtt == nullptr)
+      {
+        return;
+      }
+
+      Canvas* canvasPanel = parentNtt->As<Canvas>();
+      if (canvasPanel == nullptr)
+      {
+        return;
+      }
 
       Vec3 pos;
       float w = 0, h = 0;
@@ -110,7 +107,7 @@ namespace ToolKit
         pos                  = Vec3(bb.min.x, bb.max.y, pos.z);
       }
 
-      Surface* surface    = static_cast<Surface*>(m_entity);
+      Surface* surface    = static_cast<Surface*>(m_entity.get());
       float* anchorRatios = surface->m_anchorParams.m_anchorRatios;
 
       const Vec3 axis[3]  = {
@@ -193,36 +190,36 @@ namespace ToolKit
           p.worldLoc  -= axis[1] * ((anchorRatios[2]) * h);
           p.worldLoc  += axis[0] * ((1.f - anchorRatios[1]) * w);
 
-          p.translate = Vec3(0.f, handleTranslate, 0.f);
-          p.scale     = Vec3(0.5f, 1.1f, 1.f);
-          p.angle     = glm::radians(-45.f);
+          p.translate  = Vec3(0.f, handleTranslate, 0.f);
+          p.scale      = Vec3(0.5f, 1.1f, 1.f);
+          p.angle      = glm::radians(-45.f);
         }
         if (direction == DirectionLabel::SE)
         {
           p.worldLoc  -= axis[1] * ((1.f - anchorRatios[3]) * h);
           p.worldLoc  += axis[0] * ((1.f - anchorRatios[1]) * w);
 
-          p.translate = Vec3(0.f, -handleTranslate, 0.f);
-          p.scale     = Vec3(0.5f, 1.1f, 1.f);
-          p.angle     = glm::radians(45.f);
+          p.translate  = Vec3(0.f, -handleTranslate, 0.f);
+          p.scale      = Vec3(0.5f, 1.1f, 1.f);
+          p.angle      = glm::radians(45.f);
         }
         if (direction == DirectionLabel::NW)
         {
           p.worldLoc  -= axis[1] * ((anchorRatios[2]) * h);
           p.worldLoc  += axis[0] * ((anchorRatios[0]) * w);
 
-          p.translate = Vec3(0.f, handleTranslate, 0.f);
-          p.scale     = Vec3(0.5f, 1.1f, 1.f);
-          p.angle     = glm::radians(45.f);
+          p.translate  = Vec3(0.f, handleTranslate, 0.f);
+          p.scale      = Vec3(0.5f, 1.1f, 1.f);
+          p.angle      = glm::radians(45.f);
         }
         if (direction == DirectionLabel::SW)
         {
           p.worldLoc  -= axis[1] * ((1.f - anchorRatios[3]) * h);
           p.worldLoc  += axis[0] * ((anchorRatios[0]) * w);
 
-          p.translate = Vec3(0.f, handleTranslate, 0.f);
-          p.scale     = Vec3(0.5f, 1.1f, 1.f);
-          p.angle     = glm::radians(135.f);
+          p.translate  = Vec3(0.f, handleTranslate, 0.f);
+          p.scale      = Vec3(0.5f, 1.1f, 1.f);
+          p.angle      = glm::radians(135.f);
         }
 
         if (direction == DirectionLabel::E)
@@ -284,8 +281,8 @@ namespace ToolKit
           {
             assert(vp->IsOrthographic() && "Viewport must be a 2d orthographic view.");
 
-            float zoomScale = vp->GetBillboardScale();
-            float s         = shapeSize;
+            float zoomScale  = vp->GetBillboardScale();
+            float s          = shapeSize;
             p.translate     *= zoomScale;
             p.scale         *= Vec3(s * zoomScale, s * zoomScale, 1.f);
             handle->Generate(p);
@@ -293,37 +290,12 @@ namespace ToolKit
         }
       }
 
-      MeshPtr mesh = std::make_shared<Mesh>();
+      MeshPtr mesh = MakeNewPtr<Mesh>();
       for (int i = 0; i < m_handles.size(); i++)
       {
         if (m_handles[i]->m_mesh)
           mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
-
-      //{
-      //  Vec3 canvasPoints[4], surfacePoints[4];
-      //  surface->CalculateAnchorOffsets(canvasPoints, surfacePoints);
-
-      //  {
-      //    Vec3Array pnts = { surfacePoints[0], surfacePoints[3],
-      //      surfacePoints[1], surfacePoints[2] };
-
-      //    LineBatch guide(
-      //      pnts, Vec4(0.81f, 0.24f, 0.44f, 0.7f), DrawType::Line, 2.5f);
-      //    MeshPtr guideMesh =
-      //    guide.GetComponent<MeshComponent>()->GetMeshVal();
-      //    mesh->m_subMeshes.push_back(guideMesh);
-      //  }
-
-      //   Vec3Array pnts = { canvasPoints[0], canvasPoints[3], canvasPoints[1],
-      //     canvasPoints[2] };
-
-      //   LineBatch guide(
-      //     pnts, Vec4(0.11f, 0.84f, 0.34f, 0.7f), DrawType::Line, 2.5f);
-      //   MeshPtr guideMesh =
-      //   guide.GetComponent<MeshComponent>()->GetMeshVal();
-      //   mesh->m_subMeshes.push_back(guideMesh);
-      //}
 
       if (m_lastHovered != DirectionLabel::None || GetGrabbedDirection() != DirectionLabel::None)
       {
@@ -338,8 +310,9 @@ namespace ToolKit
             guideLines[7],
         };
 
-        LineBatch guide(pnts, g_anchorGuideLineColor, DrawType::Line, 2.5f);
-        MeshPtr guideMesh = guide.GetComponent<MeshComponent>()->GetMeshVal();
+        LineBatchPtr guide = MakeNewPtr<LineBatch>();
+        guide->Generate(pnts, g_anchorGuideLineColor, DrawType::Line, 2.5f);
+        MeshPtr guideMesh = guide->GetComponent<MeshComponent>()->GetMeshVal();
         mesh->m_subMeshes.push_back(guideMesh);
       }
 
@@ -366,8 +339,9 @@ namespace ToolKit
       }
       else if (params.type == AnchorHandle::SolidType::Circle)
       {
-        Sphere sphere(.35f);
-        meshPtr = sphere.GetMeshComponent()->GetMeshVal();
+        SpherePtr sphere = MakeNewPtr<Sphere>();
+        sphere->SetRadiusVal(0.35f);
+        meshPtr = sphere->GetMeshComponent()->GetMeshVal();
       }
       else
       {
@@ -382,7 +356,7 @@ namespace ToolKit
       mat = glm::scale(mat, params.scale);
       meshPtr->ApplyTransform(mat);
 
-      m_mesh = std::make_shared<Mesh>();
+      m_mesh = MakeNewPtr<Mesh>();
       m_mesh->m_subMeshes.push_back(meshPtr);
       m_mesh->Init(false);
 

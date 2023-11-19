@@ -1,46 +1,35 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
 
 #include "IconsFontAwesome.h"
-#include "ImGui/imgui.h"
+
+#include <ImGui/imgui.h>
+#include <ImGui/misc/cpp/imgui_stdlib.h>
+#include <Object.h>
+#include <Types.h>
 
 namespace ToolKit
 {
-
-  // Global Style Decelerations
-  static const ImGuiTreeNodeFlags g_treeNodeFlags =
-      ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth |
-      ImGuiTreeNodeFlags_AllowItemOverlap;
-
-  const float g_indentSpacing = 6.0f;
-
   namespace Editor
   {
+
+    // Global Style Decelerations
+    extern const float g_indentSpacing;
+    extern const int g_treeNodeFlags;
+
+    enum class Theme
+    {
+      Light = 1,
+      Dark  = 2,
+      Grey  = 3
+    };
+
     class Window : public Serializable
     {
      public:
@@ -76,14 +65,13 @@ namespace ToolKit
       // System calls.
       virtual void DispatchSignals() const;
 
-      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
-
      protected:
       // Internal window handling.
       void HandleStates();
       void SetActive();
       void ModShortCutSignals(const IntArray& mask = {}) const;
+      XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+      XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
      protected:
       // States.
@@ -140,16 +128,21 @@ namespace ToolKit
 
       // Custom widgets.
       static bool ButtonDecorless(StringView text, const Vec2& size, bool flipImage);
-
       static bool ImageButtonDecorless(uint textureID, const Vec2& size, bool flipImage);
       static bool ToggleButton(uint textureID, const Vec2& size, bool pushState);
       static bool ToggleButton(const String& text, const Vec2& size, bool pushState);
       static bool BeginCenteredTextButton(const String& text, const String& id = "");
       static void EndCenteredTextButton();
       static void CenteredText(const String& text);
-      //!< returns FontAwesome string (icon) from any given entity type
-      static String EntityTypeToIcon(EntityType type);
-      static void ShowEntityTreeNodeContent(Entity* ntt);
+
+      /**
+       * Returns a font / icon for Entity classes.
+       * @Class is the Class type to query font for.
+       * @return FontAwesome string (icon) from any given entity class.
+       */
+      static String EntityTypeToIcon(ClassMeta* Class); //!< Returns
+      static void ShowEntityTreeNodeContent(EntityPtr ntt);
+
       /**
        * Can be used to see if ui is using the keyboard for input. Most likely
        * usage is to check if user typing text to an input field.
@@ -192,7 +185,10 @@ namespace ToolKit
 
       // Some actions needed to be run after ui rendered.
       static std::vector<std::function<void()>> m_postponedActions;
+
+      // TODO: Volatile window serves this purpose. This one is not needed, merge them.
       static std::vector<TempWindow*> m_tempWindows;
+      static std::vector<TempWindow*> m_removedTempWindows;
 
       // Toolbar Icons.
       static TexturePtr m_selectIcn;
@@ -268,7 +264,8 @@ namespace ToolKit
       };
 
       static AnchorPresetImages m_anchorPresetIcons;
-    };
 
+      static class AndroidBuildWindow* m_androidBuildWindow;
+    };
   } // namespace Editor
 } // namespace ToolKit

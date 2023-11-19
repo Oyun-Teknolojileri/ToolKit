@@ -1,32 +1,15 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "MaterialComponent.h"
 
+#include "Entity.h"
 #include "Material.h"
+#include "Mesh.h"
 #include "MeshComponent.h"
 #include "ToolKit.h"
 
@@ -35,20 +18,15 @@
 namespace ToolKit
 {
 
-  MaterialComponent::MaterialComponent()
-  {
-    Material_Define(GetMaterialManager()->GetCopyOfDefaultMaterial(),
-                    MaterialComponentCategory.Name,
-                    MaterialComponentCategory.Priority,
-                    true,
-                    true);
-  }
+  TKDefineClass(MaterialComponent, Component);
+
+  MaterialComponent::MaterialComponent() {}
 
   MaterialComponent::~MaterialComponent() {}
 
-  ComponentPtr MaterialComponent::Copy(Entity* ntt)
+  ComponentPtr MaterialComponent::Copy(EntityPtr ntt)
   {
-    MaterialComponentPtr mc = std::make_shared<MaterialComponent>();
+    MaterialComponentPtr mc = MakeNewPtr<MaterialComponent>();
     mc->m_localData         = m_localData;
     mc->m_entity            = ntt;
     mc->m_materialList      = m_materialList;
@@ -60,10 +38,38 @@ namespace ToolKit
 
   const char *XmlMatCountAttrib = "MaterialCount", *XmlMatIdAttrib = "ID";
 
-  void MaterialComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void MaterialComponent::ParameterConstructor() { Super::ParameterConstructor(); }
+
+  XmlNode* MaterialComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Component::DeSerialize(doc, parent);
-    uint matCount = 0;
+    XmlNode* compNode = Super::SerializeImp(doc, parent);
+    XmlNode* matNode  = CreateXmlNode(doc, StaticClass()->Name, compNode);
+
+    WriteAttr(matNode, doc, XmlMatCountAttrib, std::to_string(m_materialList.size()));
+    for (size_t i = 0; i < m_materialList.size(); i++)
+    {
+      if (m_materialList[i]->m_dirty)
+      {
+        m_materialList[i]->Save(true);
+      }
+      XmlNode* resourceRefNode = CreateXmlNode(doc, std::to_string(i), matNode);
+      m_materialList[i]->SerializeRef(doc, resourceRefNode);
+    }
+
+    return matNode;
+  }
+
+  XmlNode* MaterialComponent::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    if (m_version == TKV045)
+    {
+      return DeSerializeImpV045(info, parent);
+    }
+
+    // Old file, keep parsing.
+    XmlNode* compNode = Super::DeSerializeImp(info, parent);
+    uint matCount     = 0;
+
     ReadAttr(parent, XmlMatCountAttrib, matCount);
     m_materialList.resize(matCount);
     for (size_t i = 0; i < m_materialList.size(); i++)
@@ -77,32 +83,34 @@ namespace ToolKit
       m_materialList[i] = GetMaterialManager()->Create<Material>(MaterialPath(Resource::DeserializeRef(resourceNode)));
     }
 
-    // Deprecated Here for compatibility with 0.4.1
-    if (m_materialList.empty())
-    {
-      if (MaterialPtr mat = GetMaterialVal())
-      {
-        // Transfer the old material in to the list.
-        m_materialList.push_back(mat);
-        m_localData.Remove(ParamMaterial().m_id);
-      }
-    }
+    return compNode->first_node(StaticClass()->Name.c_str());
   }
 
-  void MaterialComponent::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* MaterialComponent::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
   {
-    Component::Serialize(doc, parent);
-    XmlNode* compNode = parent->last_node(XmlComponent.c_str());
-    WriteAttr(compNode, doc, XmlMatCountAttrib, std::to_string(m_materialList.size()));
+    XmlNode* comNode = Super::DeSerializeImp(info, parent);
+    XmlNode* matNode = comNode->first_node(StaticClass()->Name.c_str());
+
+    uint matCount    = 0;
+    ReadAttr(matNode, XmlMatCountAttrib, matCount);
+    m_materialList.resize(matCount);
+
     for (size_t i = 0; i < m_materialList.size(); i++)
     {
-      if (m_materialList[i]->m_dirty)
+      XmlNode* resourceNode = matNode->first_node(std::to_string(i).c_str());
+      if (resourceNode)
       {
-        m_materialList[i]->Save(true);
+        String matRef     = Resource::DeserializeRef(resourceNode);
+        m_materialList[i] = GetMaterialManager()->Create<Material>(MaterialPath(matRef));
       }
-      XmlNode* resourceRefNode = CreateXmlNode(doc, std::to_string(i), compNode);
-      m_materialList[i]->SerializeRef(doc, resourceRefNode);
+      else
+      {
+        m_materialList[i] = GetMaterialManager()->GetCopyOfDefaultMaterial();
+        continue;
+      }
     }
+
+    return matNode;
   }
 
   void MaterialComponent::AddMaterial(MaterialPtr mat) { m_materialList.push_back(mat); }
@@ -121,7 +129,11 @@ namespace ToolKit
   {
     m_materialList.clear();
     MeshComponentPtrArray meshComps;
-    m_entity->GetComponent<MeshComponent>(meshComps);
+
+    if (EntityPtr owner = OwnerEntity())
+    {
+      owner->GetComponent<MeshComponent>(meshComps);
+    }
 
     for (MeshComponentPtr meshComp : meshComps)
     {
@@ -143,7 +155,7 @@ namespace ToolKit
   {
     if (m_materialList.empty())
     {
-      if (const MeshComponentPtr& mc = m_entity->GetMeshComponent())
+      if (const MeshComponentPtr& mc = OwnerEntity()->GetMeshComponent())
       {
         if (MeshPtr m = mc->GetMeshVal())
         {
@@ -162,7 +174,7 @@ namespace ToolKit
     }
 
     // Worst case, a default material.
-    return GetMaterialManager()->GetCopyOfDefaultMaterial();
+    return GetMaterialManager()->GetCopyOfDefaultMaterial(false);
   }
 
   void MaterialComponent::SetFirstMaterial(const MaterialPtr& material)

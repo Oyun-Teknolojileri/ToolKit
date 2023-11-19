@@ -1,70 +1,68 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Light.h"
 
+#include "Camera.h"
 #include "Component.h"
 #include "DirectionComponent.h"
+#include "EngineSettings.h"
+#include "Material.h"
+#include "MathUtil.h"
+#include "Mesh.h"
+#include "Pass.h"
+#include "Renderer.h"
+#include "Shader.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
-
-#include <memory>
-#include <string>
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
+
+  // Light
+  //////////////////////////////////////////
+
+  TKDefineClass(Light, Entity);
+
   Light::Light()
   {
-    m_shadowCamera = new Camera();
+    m_shadowCamera = MakeNewPtr<Camera>();
     m_shadowCamera->SetOrthographicScaleVal(1.0f);
+  }
+
+  Light::~Light() {}
+
+  void Light::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
 
     Color_Define(Vec3(1.0f), "Light", 0, true, true, {true});
     Intensity_Define(1.0f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
     CastShadow_Define(false, "Light", 90, true, true);
-    ShadowRes_Define(1024.0f, "Light", 90, true, true, {false, true, 32.0f, 4096.0f, 2.0f});
+    ShadowRes_Define(512.0f, "Light", 90, true, true, {false, true, 32.0f, 4096.0f, 2.0f});
     PCFSamples_Define(32, "Light", 90, true, true, {false, true, 0, 128, 1});
     PCFRadius_Define(0.01f, "Light", 90, true, true, {false, true, 0.0f, 5.0f, 0.0001f});
     ShadowBias_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 20000.0f, 0.01f});
-    LightBleedingReduction_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 1.0f, 0.001f});
-
-    ParameterEventConstructor();
+    BleedingReduction_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 1.0f, 0.001f});
   }
-
-  Light::~Light() { SafeDel(m_shadowCamera); }
 
   void Light::ParameterEventConstructor()
   {
+    Super::ParameterEventConstructor();
+
     ParamShadowRes().m_onValueChangedFn.clear();
     ParamShadowRes().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         {
           const float val = std::get<float>(newVal);
 
-          if (val > -0.5f && val < Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 0.1f)
+          if (val > -0.5f && val < Renderer::RHIConstants::ShadowAtlasTextureSize + 0.1f)
           {
             if (GetCastShadowVal())
             {
@@ -78,22 +76,11 @@ namespace ToolKit
         });
   }
 
-  EntityType Light::GetType() const { return EntityType::Entity_Light; }
-
-  void Light::Serialize(XmlDocument* doc, XmlNode* parent) const { Entity::Serialize(doc, parent); }
-
-  void Light::DeSerialize(XmlDocument* doc, XmlNode* parent)
-  {
-    ClearComponents(); // Read from file.
-    Entity::DeSerialize(doc, parent);
-    ParameterEventConstructor();
-  }
-
   MaterialPtr Light::GetShadowMaterial() { return m_shadowMapMaterial; }
 
   void Light::UpdateShadowCamera()
   {
-    Mat4 proj                             = m_shadowCamera->GetProjectionMatrix();
+    const Mat4& proj                      = m_shadowCamera->GetProjectionMatrix();
     Mat4 view                             = m_shadowCamera->GetViewMatrix();
 
     m_shadowMapCameraProjectionViewMatrix = proj * view;
@@ -105,26 +92,79 @@ namespace ToolKit
   void Light::InitShadowMapDepthMaterial()
   {
     // Create shadow material
-    ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthVert.shader", true));
-    ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthFrag.shader", true));
+    ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthVert.shader", true));
+    ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthFrag.shader", true));
 
-    m_shadowMapMaterial = std::make_shared<Material>();
+    if (m_shadowMapMaterial == nullptr)
+    {
+      m_shadowMapMaterial = MakeNewPtr<Material>();
+    }
+    m_shadowMapMaterial->UnInit();
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
   }
 
+  int Light::ComparableType()
+  {
+    if (IsA<DirectionalLight>())
+    {
+      return 0;
+    }
+
+    if (IsA<PointLight>())
+    {
+      return 1;
+    }
+
+    if (IsA<SpotLight>())
+    {
+      return 2;
+    }
+
+    return 3;
+  }
+
   void Light::UpdateShadowCameraTransform() { m_shadowCamera->m_node->SetTransform(m_node->GetTransform()); }
 
-  DirectionalLight::DirectionalLight() { AddComponent(new DirectionComponent(this)); }
+  XmlNode* Light::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
+  XmlNode* Light::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    ClearComponents(); // Read from file.
+    XmlNode* nttNode = Super::DeSerializeImp(info, parent);
+
+    ParameterEventConstructor();
+
+    return nttNode->first_node(StaticClass()->Name.c_str());
+  }
+
+  // DirectionalLight
+  //////////////////////////////////////////
+
+  TKDefineClass(DirectionalLight, Light);
+
+  DirectionalLight::DirectionalLight() {}
 
   DirectionalLight::~DirectionalLight() {}
 
-  EntityType DirectionalLight::GetType() const { return EntityType::Entity_DirectionalLight; }
-
-  void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs)
+  void DirectionalLight::NativeConstruct()
   {
-    FitEntitiesBBoxIntoShadowFrustum(m_shadowCamera, jobs);
+    Super::NativeConstruct();
+    AddComponent<DirectionComponent>();
+  }
+
+  void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs, const CameraPtr cameraView)
+  {
+    // FitEntitiesBBoxIntoShadowFrustum(m_shadowCamera, jobs);
+    FitViewFrustumIntoLightFrustum(m_shadowCamera, cameraView);
+
     UpdateShadowCamera();
   }
 
@@ -149,7 +189,15 @@ namespace ToolKit
     return frustum;
   }
 
-  void DirectionalLight::FitEntitiesBBoxIntoShadowFrustum(Camera* lightCamera, const RenderJobArray& jobs)
+  XmlNode* DirectionalLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+
+    return node;
+  }
+
+  void DirectionalLight::FitEntitiesBBoxIntoShadowFrustum(CameraPtr lightCamera, const RenderJobArray& jobs)
   {
     // Calculate all scene's bounding box
     BoundingBox totalBBox;
@@ -198,20 +246,26 @@ namespace ToolKit
                          shadowBBox.max.z);
   }
 
-  void DirectionalLight::FitViewFrustumIntoLightFrustum(Camera* lightCamera, Camera* viewCamera)
+  void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera)
   {
-    assert(false && "Experimental.");
     // Fit view frustum into light frustum
-    Vec3 frustum[8]            = {Vec3(-1.0f, -1.0f, -1.0f),
-                                  Vec3(1.0f, -1.0f, -1.0f),
-                                  Vec3(1.0f, -1.0f, 1.0f),
-                                  Vec3(-1.0f, -1.0f, 1.0f),
-                                  Vec3(-1.0f, 1.0f, -1.0f),
-                                  Vec3(1.0f, 1.0f, -1.0f),
-                                  Vec3(1.0f, 1.0f, 1.0f),
-                                  Vec3(-1.0f, 1.0f, 1.0f)};
+    Vec3 frustum[8]      = {Vec3(-1.0f, -1.0f, -1.0f),
+                            Vec3(1.0f, -1.0f, -1.0f),
+                            Vec3(1.0f, -1.0f, 1.0f),
+                            Vec3(-1.0f, -1.0f, 1.0f),
+                            Vec3(-1.0f, 1.0f, -1.0f),
+                            Vec3(1.0f, 1.0f, -1.0f),
+                            Vec3(1.0f, 1.0f, 1.0f),
+                            Vec3(-1.0f, 1.0f, 1.0f)};
+
+    // Set far for view frustum
+    float lastCameraFar  = viewCamera->GetFarClipVal();
+    float shadowDistance = GetEngineSettings().Graphics.ShadowDistance;
+    viewCamera->SetFarClipVal(shadowDistance);
 
     const Mat4 inverseViewProj = glm::inverse(viewCamera->GetProjectionMatrix() * viewCamera->GetViewMatrix());
+
+    viewCamera->SetFarClipVal(lastCameraFar);
 
     for (int i = 0; i < 8; ++i)
     {
@@ -226,7 +280,7 @@ namespace ToolKit
     }
     center                 /= 8.0f;
 
-    TransformationSpace ts = TransformationSpace::TS_WORLD;
+    TransformationSpace ts  = TransformationSpace::TS_WORLD;
     lightCamera->m_node->SetTranslation(center, ts);
     lightCamera->m_node->SetOrientation(m_node->GetOrientation(ts), ts);
     const Mat4 lightView = lightCamera->GetViewMatrix();
@@ -247,21 +301,21 @@ namespace ToolKit
                          shadowBBox.max.z);
   }
 
-  PointLight::PointLight()
-  {
-    Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
-    ParamPCFRadius().m_hint.increment = 0.02f;
-  }
+  // PointLight
+  //////////////////////////////////////////
+
+  TKDefineClass(PointLight, Light);
+
+  PointLight::PointLight() {}
 
   PointLight::~PointLight() {}
-
-  EntityType PointLight::GetType() const { return EntityType::Entity_PointLight; }
 
   void PointLight::UpdateShadowCamera()
   {
     m_shadowCamera->SetLens(glm::half_pi<float>(), 1.0f, 0.01f, AffectDistance());
 
     Light::UpdateShadowCamera();
+
     UpdateShadowCameraTransform();
   }
 
@@ -270,33 +324,49 @@ namespace ToolKit
   void PointLight::InitShadowMapDepthMaterial()
   {
     // Create shadow material
-    ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
-    ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
+    ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
+    ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
 
-    m_shadowMapMaterial = std::make_shared<Material>();
+    if (m_shadowMapMaterial == nullptr)
+    {
+      m_shadowMapMaterial = MakeNewPtr<Material>();
+    }
+    m_shadowMapMaterial->UnInit();
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
   }
 
-  SpotLight::SpotLight()
+  XmlNode* PointLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    Radius_Define(10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
-    OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
-    InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
-    AddComponent(new DirectionComponent(this));
+    return node;
   }
 
-  SpotLight::~SpotLight() {}
+  void PointLight::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
+    Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.3f});
+    ParamPCFRadius().m_hint.increment = 0.02f;
+  }
 
-  EntityType SpotLight::GetType() const { return EntityType::Entity_SpotLight; }
+  // SpotLight
+  //////////////////////////////////////////
+
+  TKDefineClass(SpotLight, Light);
+
+  SpotLight::SpotLight() {}
+
+  SpotLight::~SpotLight() {}
 
   void SpotLight::UpdateShadowCamera()
   {
     m_shadowCamera->SetLens(glm::radians(GetOuterAngleVal()), 1.0f, 0.01f, AffectDistance());
 
     Light::UpdateShadowCamera();
+
     UpdateShadowCameraTransform();
 
     n_frustumCache = ExtractFrustum(m_shadowMapCameraProjectionViewMatrix, false);
@@ -307,12 +377,65 @@ namespace ToolKit
   void SpotLight::InitShadowMapDepthMaterial()
   {
     // Create shadow material
-    ShaderPtr vert      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
-    ShaderPtr frag      = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
+    ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
+    ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
 
-    m_shadowMapMaterial = std::make_shared<Material>();
+    if (m_shadowMapMaterial == nullptr)
+    {
+      m_shadowMapMaterial = MakeNewPtr<Material>();
+    }
+    m_shadowMapMaterial->UnInit();
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
+  }
+
+  XmlNode* SpotLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
+    return node;
+  }
+
+  XmlNode* SpotLight::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* node = Super::DeSerializeImp(info, parent);
+    MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
+    return node;
+  }
+
+  void SpotLight::NativeConstruct()
+  {
+    Super::NativeConstruct();
+
+    AddComponent<DirectionComponent>();
+    m_volumeMesh = MakeNewPtr<Mesh>();
+
+    MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, GetOuterAngleVal());
+  }
+
+  void SpotLight::ParameterConstructor()
+  {
+    Super::ParameterConstructor();
+
+    Radius_Define(10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.5f});
+    OuterAngle_Define(35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
+    InnerAngle_Define(30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
+
+    ParamRadius().m_onValueChangedFn.clear();
+    ParamRadius().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void
+        {
+          const float radius = std::get<float>(newVal);
+          MeshGenerator::GenerateConeMesh(m_volumeMesh, radius, 32, GetOuterAngleVal());
+        });
+
+    ParamOuterAngle().m_onValueChangedFn.clear();
+    ParamOuterAngle().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void
+        {
+          const float outerAngle = std::get<float>(newVal);
+          MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, outerAngle);
+        });
   }
 } // namespace ToolKit

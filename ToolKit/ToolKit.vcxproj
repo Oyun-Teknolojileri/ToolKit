@@ -28,9 +28,11 @@
     <ClCompile Include="DirectionComponent.cpp" />
     <ClCompile Include="DofPass.cpp" />
     <ClCompile Include="Drawable.cpp" />
+    <ClCompile Include="EngineSettings.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EnvironmentComponent.cpp" />
     <ClCompile Include="FileManager.cpp" />
+    <ClCompile Include="ForwardPreProcessPass.cpp" />
     <ClCompile Include="ForwardPass.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="FullQuadPass.cpp" />
@@ -38,6 +40,7 @@
     <ClCompile Include="GammaPass.cpp" />
     <ClCompile Include="GBufferPass.cpp" />
     <ClCompile Include="GlErrorReporter.cpp" />
+    <ClCompile Include="GpuProgram.cpp" />
     <ClCompile Include="GradientSky.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Logger.cpp" />
@@ -46,12 +49,15 @@
     <ClCompile Include="MathUtil.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
+    <ClCompile Include="MobileSceneRenderPath.cpp" />
     <ClCompile Include="Node.cpp" />
+    <ClCompile Include="ObjectFactory.cpp" />
     <ClCompile Include="OutlinePass.cpp" />
     <ClCompile Include="ParameterBlock.cpp" />
     <ClCompile Include="Pass.cpp" />
+    <ClCompile Include="AdditiveLightingPass.cpp" />
     <ClCompile Include="PluginManager.cpp">
-      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">102</OrderInUnityFile>
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">100</OrderInUnityFile>
     </ClCompile>
     <ClCompile Include="PostProcessPass.cpp" />
     <ClCompile Include="Prefab.cpp" />
@@ -63,7 +69,7 @@
     <ClCompile Include="ResourceComponent.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="SceneRenderer.cpp" />
+    <ClCompile Include="SceneRenderPath.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShadowPass.cpp" />
     <ClCompile Include="Skeleton.cpp" />
@@ -79,6 +85,11 @@
     <ClCompile Include="StencilPass.cpp" />
     <ClCompile Include="Surface.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Object.cpp" />
+    <ClCompile Include="TKImage.cpp" />
+    <ClCompile Include="TKOpenGL.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">150</OrderInUnityFile>
+    </ClCompile>
     <ClCompile Include="ToneMapPass.cpp" />
     <ClCompile Include="ToolKit.cpp" />
     <ClCompile Include="UIManager.cpp" />
@@ -93,6 +104,7 @@
     <ClInclude Include="BinPack2D.h" />
     <ClInclude Include="BloomPass.h" />
     <ClInclude Include="Canvas.h" />
+    <ClInclude Include="Class.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="CubemapPass.h" />
     <ClInclude Include="DataTexture.h" />
@@ -102,10 +114,12 @@
     <ClInclude Include="DirectionComponent.h" />
     <ClInclude Include="DofPass.h" />
     <ClInclude Include="Drawable.h" />
+    <ClInclude Include="EngineSettings.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="EnvironmentComponent.h" />
     <ClInclude Include="Events.h" />
     <ClInclude Include="FileManager.h" />
+    <ClInclude Include="ForwardPreProcessPass.h" />
     <ClInclude Include="ForwardPass.h" />
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="FullQuadPass.h" />
@@ -113,14 +127,19 @@
     <ClInclude Include="GammaPass.h" />
     <ClInclude Include="GBufferPass.h" />
     <ClInclude Include="GlErrorReporter.h" />
+    <ClInclude Include="GpuProgram.h" />
     <ClInclude Include="GradientSky.h" />
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
+    <ClInclude Include="Meta.h" />
+    <ClInclude Include="MobileSceneRenderPath.h" />
+    <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="OutlinePass.h" />
     <ClInclude Include="Pass.h" />
     <ClInclude Include="PostProcessPass.h" />
+    <ClInclude Include="RendererGlobals.h" />
     <ClInclude Include="RenderSystem.h" />
-    <ClInclude Include="SceneRenderer.h" />
+    <ClInclude Include="SceneRenderPath.h" />
     <ClInclude Include="ShaderReflectionCache.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Logger.h" />
@@ -153,8 +172,13 @@
     <ClInclude Include="Surface.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TKAssert.h" />
+    <ClInclude Include="Object.h" />
+    <ClInclude Include="TKImage.h" />
+    <ClInclude Include="TKProfiler.h" />
     <ClInclude Include="ToneMapPass.h" />
+    <ClInclude Include="AdditiveLightingPass.h" />
     <ClInclude Include="ToolKit.h" />
+    <ClInclude Include="TKOpenGL.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="UIManager.h" />
     <ClInclude Include="Util.h" />
@@ -201,7 +225,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\mini_audio\</IncludePath>
+    <IncludePath>$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\mini_audio\;$(SolutionDir)Dependency\NVTX-3.1.0\c\include\nvtx3</IncludePath>
     <LibraryPath>$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib</LibraryPath>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
@@ -216,6 +240,7 @@
       <IncludeInUnityFile>true</IncludeInUnityFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/FI "stdafx.h" /bigobj %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -230,10 +255,11 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_GL_CORE_3_2;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_GL_ES_3_0;NDEBUG;TK_DLL_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/FI "stdafx.h" %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

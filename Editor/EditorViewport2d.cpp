@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "EditorViewport2d.h"
@@ -38,11 +19,7 @@ namespace ToolKit
   {
     Overlay2DTopBar* m_2dViewOptions = nullptr;
 
-    EditorViewport2d::EditorViewport2d(XmlNode* node) : EditorViewport(node) { InitViewport(); }
-
-    EditorViewport2d::EditorViewport2d(float width, float height) : EditorViewport(width, height) { InitViewport(); }
-
-    EditorViewport2d::EditorViewport2d(const Vec2& size) : EditorViewport2d(size.x, size.y) {}
+    EditorViewport2d::EditorViewport2d() { Init({640.0f, 480.0f}); }
 
     EditorViewport2d::~EditorViewport2d()
     {
@@ -51,6 +28,33 @@ namespace ToolKit
       {
         SafeDel(m_2dViewOptions);
       }
+    }
+
+    void EditorViewport2d::Init(Vec2 size)
+    {
+      EditorViewport::Init(size);
+      if (m_anchorMode)
+      {
+        m_anchorMode->UnInit();
+        SafeDel(m_anchorMode);
+      }
+
+      m_anchorMode = new AnchorMod(ModId::Anchor);
+      m_anchorMode->Init();
+
+      ResetViewportImage(GetRenderTargetSettings());
+      CameraPtr cam            = GetCamera();
+      cam->m_orthographicScale = 1.0f;
+      cam->m_node->SetTranslation(Z_AXIS * 10.0f);
+
+      AdjustZoom(TK_FLT_MIN);
+
+      if (m_2dViewOptions == nullptr)
+      {
+        m_2dViewOptions = new Overlay2DTopBar(this);
+      }
+
+      m_snapDeltas = Vec3(10.0f, 45.0f, 0.25f);
     }
 
     Window::Type EditorViewport2d::GetType() const { return Type::Viewport2d; }
@@ -190,8 +194,8 @@ namespace ToolKit
 
     void EditorViewport2d::AdjustZoom(float delta)
     {
-      Camera* cam = GetCamera();
-      float zoom  = cam->m_orthographicScale;
+      CameraPtr cam = GetCamera();
+      float zoom    = cam->m_orthographicScale;
       if (delta == 0.0f && glm::equal(100.0f / m_zoomPercentage, zoom))
       {
         return;
@@ -227,7 +231,7 @@ namespace ToolKit
 
     void EditorViewport2d::PanZoom(float deltaTime)
     {
-      Camera* cam = GetCamera();
+      CameraPtr cam = GetCamera();
 
       // Adjust zoom always.
       if (m_mouseOverContentArea)
@@ -246,31 +250,6 @@ namespace ToolKit
         Vec3 displace = X_AXIS * x + Y_AXIS * y;
         cam->m_node->Translate(displace, TransformationSpace::TS_WORLD);
       }
-    }
-
-    void EditorViewport2d::InitViewport()
-    {
-      if (m_anchorMode)
-      {
-        m_anchorMode->UnInit();
-        SafeDel(m_anchorMode);
-      }
-
-      m_anchorMode = new AnchorMod(ModId::Anchor);
-      m_anchorMode->Init();
-
-      ResetViewportImage(GetRenderTargetSettings());
-      Camera* cam              = GetCamera();
-      cam->m_orthographicScale = 1.0f;
-      cam->m_node->SetTranslation(Z_AXIS * 10.0f);
-
-      AdjustZoom(TK_FLT_MIN);
-
-      if (!m_2dViewOptions)
-      {
-        m_2dViewOptions = new Overlay2DTopBar(this);
-      }
-      m_snapDeltas = Vec3(10.0f, 45.0f, 0.25f);
     }
 
   } // namespace Editor

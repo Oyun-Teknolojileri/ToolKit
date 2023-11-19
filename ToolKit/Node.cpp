@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Node.h"
@@ -35,7 +16,13 @@
 namespace ToolKit
 {
 
-  Node::Node() { m_id = GetHandleManager()->GetNextHandle(); }
+  Node::Node() : m_scale(Vec3(1.0f))
+  {
+    m_id           = GetHandleManager()->GenerateHandle();
+    m_parent       = nullptr;
+    m_inheritScale = false;
+    m_dirty        = true;
+  }
 
   Node::~Node()
   {
@@ -43,6 +30,11 @@ namespace ToolKit
     for (int i = static_cast<int>(m_children.size()) - 1; i >= 0; i--)
     {
       Orphan(m_children[i], true);
+    }
+
+    if (HandleManager* handleManager = GetHandleManager())
+    {
+      handleManager->ReleaseHandle(m_id);
     }
   }
 
@@ -157,7 +149,7 @@ namespace ToolKit
 
   void Node::InsertChild(Node* child, int index, bool preserveTransform)
   {
-    bool canInsert = index <= m_children.size() && index >= 0;
+    bool canInsert  = index <= m_children.size() && index >= 0;
     canInsert      &= child->m_id != m_id && child->m_parent == nullptr;
     assert(canInsert);
 
@@ -265,11 +257,22 @@ namespace ToolKit
     return node;
   }
 
-  void Node::Serialize(XmlDocument* doc, XmlNode* parent) const
+  EntityPtr Node::ParentEntity()
+  {
+    if (m_parent != nullptr)
+    {
+      if (EntityPtr parentNtt = m_parent->m_entity.lock())
+      {
+        return parentNtt;
+      }
+    }
+    return nullptr;
+  }
+
+  XmlNode* Node::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = CreateXmlNode(doc, XmlNodeElement, parent);
-
-    WriteAttr(node, doc, XmlNodeInheritScaleAttr, std::to_string(static_cast<int>(m_inheritScale)));
+    WriteAttr(node, doc, XmlNodeInheritScaleAttr, std::to_string((int) m_inheritScale));
 
     XmlNode* tNode = CreateXmlNode(doc, XmlTranslateElement, node);
     WriteVec(tNode, doc, m_translation);
@@ -279,21 +282,17 @@ namespace ToolKit
 
     tNode = CreateXmlNode(doc, XmlScaleElement, node);
     WriteVec(tNode, doc, m_scale);
+
+    return node;
   }
 
-  void Node::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Node::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     XmlNode* node = parent;
-    if (node == nullptr)
-    {
-      assert(false && "Unbound node can not exist.");
-      return;
-    }
-
     if (XmlAttribute* attr = node->first_attribute(XmlNodeInheritScaleAttr.c_str()))
     {
       String val     = attr->value();
-      m_inheritScale = static_cast<bool>(std::atoi(val.c_str()));
+      m_inheritScale = (bool) std::atoi(val.c_str());
     }
 
     if (XmlNode* n = node->first_node(XmlTranslateElement.c_str()))
@@ -310,6 +309,8 @@ namespace ToolKit
     {
       ReadVec(n, m_scale);
     }
+
+    return nullptr;
   }
 
   void Node::SetInheritScaleDeep(bool val)

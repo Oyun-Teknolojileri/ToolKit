@@ -1,59 +1,23 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
 
 #include "Logger.h"
+#include "ObjectFactory.h"
+#include "Resource.h"
+#include "ToolKit.h"
 #include "Types.h"
 #include "Util.h"
-
-#include <memory>
-#include <unordered_map>
 
 namespace ToolKit
 {
 
-  enum class ResourceType
-  {
-    Base,
-    Animation,
-    Audio,
-    Material,
-    Mesh,
-    Shader,
-    SkinMesh,
-    SpriteSheet,
-    Texture,
-    CubeMap,
-    Hdri,
-    RenderTarget,
-    Scene,
-    Skeleton,
-    DataTexture
-  };
+  TK_API extern class ResourceManager* GetResourceManager(ClassMeta* Class);
 
   class TK_API ResourceManager
   {
@@ -62,9 +26,9 @@ namespace ToolKit
     virtual ~ResourceManager();
     virtual void Init();
     virtual void Uninit();
-    virtual void Manage(const ResourcePtr& resource);
-    virtual bool CanStore(ResourceType t) = 0;
-    virtual String GetDefaultResource(ResourceType type);
+    virtual void Manage(ResourcePtr resource);
+    virtual bool CanStore(ClassMeta* Class) = 0;
+    virtual String GetDefaultResource(ClassMeta* Class);
 
     ResourceManager(const ResourceManager&) = delete;
     void operator=(const ResourceManager&)  = delete;
@@ -74,19 +38,19 @@ namespace ToolKit
     {
       if (!Exist(file))
       {
-        std::shared_ptr<T> resource = std::static_pointer_cast<T>(CreateLocal(T::GetTypeStatic()));
+        ResourcePtr resource = MakeNewPtr<T>();
         if (!CheckFile(file))
         {
-          String def = GetDefaultResource(T::GetTypeStatic());
+          String def = GetDefaultResource(T::StaticClass());
           if (!CheckFile(def))
           {
-            Report("%s", file.c_str());
+            TK_ERR("No default for Class %s", T::StaticClass()->Name.c_str());
             assert(0 && "No default resource!");
             return nullptr;
           }
 
           String rel = GetRelativeResourcePath(file);
-          Report("%s is missing. Using default resource.", rel.c_str());
+          TK_WRN("File: %s is missing. Using default resource.", rel.c_str());
           resource->SetFile(def);
           resource->_missingFile = file;
         }
@@ -98,22 +62,29 @@ namespace ToolKit
         resource->Load();
         m_storage[file] = resource;
       }
+      return tk_reinterpret_pointer_cast<T>(m_storage[file]);
+    }
 
-      return std::reinterpret_pointer_cast<T>(m_storage[file]);
+    template <typename T>
+    std::shared_ptr<T> Copy(ResourcePtr source, bool storeInResourceManager = true)
+    {
+      std::shared_ptr<T> resource = MakeNewPtr<T>();
+      source->CopyTo(resource.get());
+      ResourceManager* manager = GetResourceManager(T::StaticClass());
+      if (manager != nullptr && storeInResourceManager)
+      {
+        manager->Manage(resource);
+      }
+      return resource;
     }
 
     bool Exist(const String& file);
     ResourcePtr Remove(const String& file);
-    virtual ResourcePtr CreateLocal(ResourceType type) = 0;
-
-   protected:
-    void Report(const char* msg, ...);
+    virtual ResourcePtr CreateLocal(ClassMeta* Class) = 0;
 
    public:
-    // Log callback, if provided messages passed to callback.
-    std::function<void(const String&)> m_reporterFn = nullptr;
     std::unordered_map<String, ResourcePtr> m_storage;
-    ResourceType m_type = ResourceType::Base;
+    ClassMeta* m_baseType = nullptr;
   };
 
 } // namespace ToolKit

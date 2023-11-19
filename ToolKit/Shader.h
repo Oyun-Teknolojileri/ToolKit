@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
@@ -29,9 +10,6 @@
 #include "ParameterBlock.h"
 #include "Resource.h"
 #include "ResourceManager.h"
-
-#include <unordered_map>
-#include <vector>
 
 namespace ToolKit
 {
@@ -75,6 +53,7 @@ namespace ToolKit
     METALLIC_ROUGHNESS_TEXTURE_IN_USE,
     NORMAL_MAP_IN_USE,
     IBL_MAX_REFLECTION_LOD,
+    SHADOW_DISTANCE,
     UNIFORM_MAX_INVALID
   };
 
@@ -83,7 +62,7 @@ namespace ToolKit
   class TK_API Shader : public Resource
   {
    public:
-    TKResourceType(Shader)
+    TKDeclareClass(Shader, Resource);
 
     Shader();
     explicit Shader(const String& file);
@@ -93,8 +72,8 @@ namespace ToolKit
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     /**
      * Adds a shader parameter to the parameter array with the given name and
@@ -154,31 +133,19 @@ namespace ToolKit
     String m_source;
   };
 
-  class TK_API Program
-  {
-   public:
-    Program();
-    Program(ShaderPtr vertex, ShaderPtr fragment);
-    ~Program();
-
-   public:
-    uint m_handle = 0;
-    String m_tag;
-    ShaderPtrArray m_shaders;
-  };
-
   class TK_API ShaderManager : public ResourceManager
   {
    public:
     ShaderManager();
     virtual ~ShaderManager();
     void Init() override;
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
+    bool CanStore(ClassMeta* Class) override;
+    ResourcePtr CreateLocal(ClassMeta* Class) override;
 
     ShaderPtr GetDefaultVertexShader();
     ShaderPtr GetPbrDefferedShader();
     ShaderPtr GetPbrForwardShader();
+    ShaderPtr GetPhongForwardShader();
 
     const String& PbrDefferedShaderFile();
     const String& PbrForwardShaderFile();
@@ -187,6 +154,7 @@ namespace ToolKit
     String m_pbrDefferedShaderFile;
     String m_pbrForwardShaderFile;
     String m_defaultVertexShaderFile;
+    String m_phongForwardShaderFile;
   };
 
 } // namespace ToolKit

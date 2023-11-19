@@ -1,35 +1,19 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "MaterialView.h"
 
 #include "App.h"
-#include "DirectionComponent.h"
 #include "EditorViewport.h"
-#include "GradientSky.h"
+
+#include <DirectionComponent.h>
+#include <FileManager.h>
+#include <GradientSky.h>
+#include <Material.h>
 
 namespace ToolKit
 {
@@ -41,14 +25,16 @@ namespace ToolKit
 
     MaterialView::MaterialView() : View("Material View")
     {
-      m_viewID    = 3;
-      m_viewIcn   = UI::m_materialIcon;
+      m_viewID   = 3;
+      m_viewIcn  = UI::m_materialIcon;
 
-      m_viewport  = new PreviewViewport(300u, 150u);
+      m_viewport = new PreviewViewport();
+      m_viewport->Init({300.0f, 150.0f});
 
-      m_scenes[0] = GetSceneManager()->Create<Scene>(ScenePath("ms-sphere.scene", true));
-      m_scenes[1] = GetSceneManager()->Create<Scene>(ScenePath("ms-box.scene", true));
-      m_scenes[2] = GetSceneManager()->Create<Scene>(ScenePath("ms-ball.scene", true));
+      SceneManager* scnMan = GetSceneManager();
+      m_scenes[0]          = scnMan->Create<Scene>(ScenePath("ms-sphere.scene", true));
+      m_scenes[1]          = scnMan->Create<Scene>(ScenePath("ms-box.scene", true));
+      m_scenes[2]          = scnMan->Create<Scene>(ScenePath("ms-ball.scene", true));
 
       m_viewport->SetScene(m_scenes[0]);
 
@@ -74,8 +60,8 @@ namespace ToolKit
     {
       m_viewport->SetScene(m_scenes[m_activeObjectIndx]);
 
-      EntityRawPtrArray materialNtties = m_viewport->GetScene()->GetByTag("target");
-      for (Entity* ntt : materialNtties)
+      EntityPtrArray materialNtties = m_viewport->GetScene()->GetByTag("target");
+      for (EntityPtr ntt : materialNtties)
       {
         ntt->GetMaterialComponent()->SetFirstMaterial(m_materials[m_currentMaterialIndex]);
       }
@@ -133,20 +119,6 @@ namespace ToolKit
       GetFileManager()->GetRelativeResourcesPath(path);
       UI::HelpMarker(TKLoc, path.c_str());
 
-      // 0th slot was pbr and removed, this is why we are doing -1 adjustments.
-      int matType     = glm::clamp((int) mat->m_materialType, 1, 2) - 1;
-      int currentType = matType;
-      if (ImGui::Combo("Material Type", &matType, "PBR\0Custom"))
-      {
-        if (matType != currentType)
-        {
-          mat->m_materialType = (MaterialType) (matType + 1);
-          mat->SetDefaultMaterialTypeShaders();
-          mat->m_dirty = true;
-        }
-      }
-      ImGui::Separator();
-
       if (ImGui::CollapsingHeader("Material Preview", ImGuiTreeNodeFlags_DefaultOpen))
       {
         static const ImVec2 iconSize = ImVec2(16.0f, 16.0f);
@@ -192,43 +164,46 @@ namespace ToolKit
         mat->m_dirty = true;
       };
 
-      if (mat->m_materialType == MaterialType::Custom)
+      if (ImGui::CollapsingHeader("Shaders"))
       {
-        if (ImGui::CollapsingHeader("Shaders"))
-        {
-          ImGui::BeginGroup();
-          ImGui::LabelText("##vertShader", "Vertex Shader: ");
-          DropZone(UI::m_codeIcon->m_textureId,
-                   mat->m_vertexShader->GetFile(),
-                   [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+        ImGui::BeginGroup();
+        String vertName;
+        DecomposePath(mat->m_vertexShader->GetFile(), nullptr, &vertName, nullptr);
+
+        ImGui::LabelText("##vertex shader: %s", vertName.c_str());
+        DropZone(UI::m_codeIcon->m_textureId,
+                 mat->m_vertexShader->GetFile(),
+                 [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                 {
+                   if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
                    {
-                     if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
-                     {
-                       g_app->m_statusMsg = "Failed. Shader expected.";
-                       return;
-                     }
-                     mat->m_vertexShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-                     mat->m_vertexShader->Init();
-                     updateThumbFn();
-                   });
-          ImGui::EndGroup();
+                     g_app->m_statusMsg = "Failed. Shader expected.";
+                     return;
+                   }
+                   mat->m_vertexShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
+                   mat->m_vertexShader->Init();
+                   updateThumbFn();
+                 });
+        ImGui::EndGroup();
 
-          ImGui::SameLine();
+        ImGui::SameLine();
 
-          ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 35.0f);
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 20.0f);
 
-          ImGui::BeginGroup();
-          ImGui::LabelText("##fragShader", "Fragment Shader: ");
-          DropZone(UI::m_codeIcon->m_textureId,
-                   mat->m_fragmentShader->GetFile(),
-                   [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-                   {
-                     mat->m_fragmentShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-                     mat->m_fragmentShader->Init();
-                     updateThumbFn();
-                   });
-          ImGui::EndGroup();
-        }
+        ImGui::BeginGroup();
+        String fragName = mat->m_fragmentShader->GetFile();
+        DecomposePath(mat->m_fragmentShader->GetFile(), nullptr, &fragName, nullptr);
+
+        ImGui::LabelText("##fragShader fragment shader: %s", fragName.c_str());
+        DropZone(UI::m_codeIcon->m_textureId,
+                 mat->m_fragmentShader->GetFile(),
+                 [this, mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                 {
+                   mat->m_fragmentShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
+                   mat->m_fragmentShader->Init();
+                   updateThumbFn();
+                 });
+        ImGui::EndGroup();
       }
 
       if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
@@ -292,9 +267,7 @@ namespace ToolKit
           }
           if (ImGui::DragFloat("Alpha", &mat->GetAlpha(), 1.0f / 256.0f, 0.0f, 1.0f))
           {
-            bool isForward             = mat->GetAlpha() < 0.99f;
-            renderState->blendFunction = isForward ? BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA : BlendFunction::NONE;
-
+            mat->SetAlpha(mat->GetAlpha());
             updateThumbFn();
           }
         }
@@ -429,7 +402,7 @@ namespace ToolKit
 
     TempMaterialWindow::TempMaterialWindow()
     {
-      m_view               = std::make_shared<MaterialView>();
+      m_view               = MakeNewPtr<MaterialView>();
       m_view->m_isTempView = true;
       UI::AddTempWindow(this);
     }

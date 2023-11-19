@@ -1,44 +1,26 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "RenderSystem.h"
 
 #include "GlErrorReporter.h"
+#include "Logger.h"
+#include "TKOpenGL.h"
 #include "ToolKit.h"
-#include "gles2.h"
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
-  Technique::Technique() {}
+  RenderPath::RenderPath() {}
 
-  Technique::~Technique() { m_passArray.clear(); }
+  RenderPath::~RenderPath() { m_passArray.clear(); }
 
-  void Technique::Render(Renderer* renderer)
+  void RenderPath::Render(Renderer* renderer)
   {
     for (PassPtr& pass : m_passArray)
     {
@@ -53,7 +35,9 @@ namespace ToolKit
 
   RenderSystem::~RenderSystem() { SafeDel(m_renderer); }
 
-  void RenderSystem::AddRenderTask(Technique* technique)
+  void RenderSystem::Init() { m_renderer->Init(); }
+
+  void RenderSystem::AddRenderTask(RenderPath* technique)
   {
     AddRenderTask({[technique](Renderer* renderer) -> void { technique->Render(renderer); }});
   }
@@ -108,7 +92,7 @@ namespace ToolKit
       GetLogger()->WriteConsole(LogType::Warning, "Asnyc Render %d", m_lowQueue.size());
     }
   }
-  
+
   void RenderSystem::FlushRenderTasks()
   {
     auto flushTasksFn = [this](RenderTaskArray& rts) -> void
@@ -131,6 +115,8 @@ namespace ToolKit
     m_renderer->m_sky = nullptr;
   }
 
+  void RenderSystem::FlushGpuPrograms() { m_renderer->m_gpuProgramManager.FlushPrograms(); }
+
   void RenderSystem::SetAppWindowSize(uint width, uint height) { m_renderer->m_windowSize = UVec2(width, height); }
 
   UVec2 RenderSystem::GetAppWindowSize() { return m_renderer->m_windowSize; }
@@ -150,21 +136,21 @@ namespace ToolKit
     m_skipFrames--;
   }
 
-  bool RenderSystem::IsSkipFrame() const 
-  {
-    return m_skipFrames != 0;
-  }
+  bool RenderSystem::IsSkipFrame() const { return m_skipFrames != 0; }
 
   void RenderSystem::SkipSceneFrames(int numFrames) { m_skipFrames = numFrames; }
 
   void RenderSystem::InitGl(void* glGetProcAddres, GlReportCallback callback)
   {
     // Initialize opengl functions.
+#ifdef _WIN32
     gladLoadGLES2((GLADloadfunc) glGetProcAddres);
-
+#endif
     InitGLErrorReport(callback);
 
-    // Default states.  
+    TestSRGBBackBuffer();
+
+    // Default states.
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
   }
@@ -180,6 +166,21 @@ namespace ToolKit
         task.Callback();
       }
     }
+  }
+
+  void RenderSystem::TestSRGBBackBuffer()
+  {
+    GLint lastFBO;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(0.5f, 0.2f, 0.8f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    GLubyte pixel[4];
+    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+    m_backbufferFormatIsSRGB = (pixel[0] > 150);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 
 } // namespace ToolKit

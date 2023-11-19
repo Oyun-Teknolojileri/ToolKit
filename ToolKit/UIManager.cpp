@@ -1,42 +1,24 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "UIManager.h"
 
+#include "Canvas.h"
+#include "Events.h"
+#include "MathUtil.h"
+#include "Scene.h"
 #include "ToolKit.h"
-
-#include <iterator>
-#include <vector>
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
 
-  UILayer::UILayer() { m_id = GetHandleManager()->GetNextHandle(); }
+  UILayer::UILayer() { m_id = GetHandleManager()->GenerateHandle(); }
 
   UILayer::UILayer(const String& file) : UILayer()
   {
@@ -72,14 +54,13 @@ namespace ToolKit
       return;
     }
 
-    m_size                       = size;
+    m_size                    = size;
 
-    const EntityRawPtrArray& arr = m_scene->GetEntities();
-    for (Entity* ntt : arr)
+    const EntityPtrArray& arr = m_scene->GetEntities();
+    for (EntityPtr ntt : arr)
     {
-      if (ntt->GetType() == EntityType::Entity_Canvas)
+      if (Canvas* canvasPanel = ntt->As<Canvas>())
       {
-        Canvas* canvasPanel = static_cast<Canvas*>(ntt);
         // Resize only root canvases.
         if (canvasPanel->m_node->m_parent == nullptr)
         {
@@ -96,7 +77,6 @@ namespace ToolKit
       MouseEvent* me = static_cast<MouseEvent*>(e);
       return me->m_action == EventAction::LeftClick;
     }
-
     return false;
   }
 
@@ -116,13 +96,9 @@ namespace ToolKit
     return false;
   }
 
-  Camera* UIManager::GetUICamera() { return m_uiCamera; }
+  CameraPtr UIManager::GetUICamera() { return m_uiCamera; }
 
-  void UIManager::SetUICamera(Camera* cam)
-  {
-    SafeDel(m_uiCamera);
-    m_uiCamera = cam;
-  }
+  void UIManager::SetUICamera(CameraPtr cam) { m_uiCamera = cam; }
 
   void UIManager::UpdateSurfaces(Viewport* vp, const UILayerPtr& layer)
   {
@@ -132,25 +108,25 @@ namespace ToolKit
       return;
     }
 
-    const EntityRawPtrArray& entities = layer->m_scene->AccessEntityArray();
-    for (Entity* ntt : entities)
+    const EntityPtrArray& entities = layer->m_scene->AccessEntityArray();
+    for (EntityPtr ntt : entities)
     {
       // Process events.
       for (Event* e : events)
       {
-        if (!ntt->IsSurfaceInstance())
+        if (!ntt->IsA<Surface>())
         {
           continue;
         }
-        Surface* surface        = static_cast<Surface*>(ntt);
+        Surface* surface        = ntt->As<Surface>();
         bool mouseOverPrev      = surface->m_mouseOver;
 
         surface->m_mouseOver    = CheckMouseOver(surface, e, vp);
         surface->m_mouseClicked = CheckMouseClick(surface, e, vp);
 
-        if (ntt->GetType() == EntityType::Entity_Button)
+        if (ntt->IsA<Button>())
         {
-          Button* button        = static_cast<Button*>(ntt);
+          Button* button        = ntt->As<Button>();
           MaterialPtr hoverMat  = button->GetHoverMaterialVal();
           MaterialPtr normalMat = button->GetButtonMaterialVal();
           button->SetMaterialVal(surface->m_mouseOver && hoverMat ? hoverMat : normalMat);
@@ -181,12 +157,12 @@ namespace ToolKit
 
   UIManager::UIManager()
   {
-    m_uiCamera = new Camera();
+    m_uiCamera = MakeNewPtr<Camera>();
     m_uiCamera->SetLens(-100.0f, 100.0f, -100.0f, 100.0f, 0.5f, 1000.0f);
     m_uiCamera->m_orthographicScale = 1.0f;
   }
 
-  UIManager::~UIManager() { SafeDel(m_uiCamera); }
+  UIManager::~UIManager() {}
 
   void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)
   {
@@ -194,7 +170,7 @@ namespace ToolKit
 
     // Swap viewport camera with ui camera.
     ULongID attachmentSwap = NULL_HANDLE;
-    viewport->SwapCamera(&m_uiCamera, attachmentSwap);
+    viewport->SwapCamera(m_uiCamera, attachmentSwap);
 
     // Update viewports with ui camera.
     for (auto& viewLayerArray : m_viewportIdLayerArrayMap)
@@ -210,7 +186,7 @@ namespace ToolKit
       }
     }
 
-    viewport->SwapCamera(&m_uiCamera, attachmentSwap);
+    viewport->SwapCamera(m_uiCamera, attachmentSwap);
   }
 
   void UIManager::ResizeLayers(Viewport* viewport)

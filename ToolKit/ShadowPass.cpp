@@ -1,33 +1,18 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "ShadowPass.h"
 
+#include "Camera.h"
+#include "Logger.h"
 #include "Material.h"
+#include "MathUtil.h"
 #include "Mesh.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -47,8 +32,8 @@ namespace ToolKit
       DecomposeMatrix(views[i], nullptr, &m_cubeMapRotations[i], &m_cubeMapScales[i]);
     }
 
-    m_shadowAtlas       = std::make_shared<RenderTarget>();
-    m_shadowFramebuffer = std::make_shared<Framebuffer>();
+    m_shadowAtlas       = MakeNewPtr<RenderTarget>();
+    m_shadowFramebuffer = MakeNewPtr<Framebuffer>();
   }
 
   ShadowPass::ShadowPass(const ShadowPassParams& params) : ShadowPass() { m_params = params; }
@@ -57,29 +42,35 @@ namespace ToolKit
 
   void ShadowPass::Render()
   {
+    PUSH_GPU_MARKER("ShadowPass::Render");
+    PUSH_CPU_MARKER("ShadowPass::Render");
+
     const Vec4 lastClearColor = GetRenderer()->m_clearColor;
 
     // Update shadow maps.
-    for (Light* light : m_params.Lights)
+    for (LightPtr light : m_params.Lights)
     {
       light->InitShadowMapDepthMaterial();
-      if (light->GetType() == EntityType::Entity_DirectionalLight)
+      if (DirectionalLight* dLight = light->As<DirectionalLight>())
       {
-        static_cast<DirectionalLight*>(light)->UpdateShadowFrustum(m_params.RendeJobs);
+        dLight->UpdateShadowFrustum(m_params.RendeJobs, m_params.ViewCamera);
       }
-      else
-      {
-        light->UpdateShadowCamera();
-      }
+      // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
 
       RenderShadowMaps(light, m_params.RendeJobs);
     }
 
     GetRenderer()->m_clearColor = lastClearColor;
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void ShadowPass::PreRender()
   {
+    PUSH_GPU_MARKER("ShadowPass::PreRender");
+    PUSH_CPU_MARKER("ShadowPass::PreRender");
+
     Pass::PreRender();
 
     m_lastOverrideMat = GetRenderer()->m_overrideMat;
@@ -88,7 +79,7 @@ namespace ToolKit
     erase_if(m_params.RendeJobs, [](RenderJob& job) -> bool { return !job.ShadowCaster; });
 
     // Dropout non shadow casting lights.
-    erase_if(m_params.Lights, [](Light* light) -> bool { return !light->GetCastShadowVal(); });
+    erase_if(m_params.Lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
 
     InitShadowAtlas();
 
@@ -102,27 +93,48 @@ namespace ToolKit
     {
       m_clearedLayers[i] = false;
     }
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void ShadowPass::PostRender()
   {
+    PUSH_GPU_MARKER("ShadowPas::PostRender");
+    PUSH_CPU_MARKER("ShadowPas::PostRender");
+
     GetRenderer()->m_overrideMat = m_lastOverrideMat;
     Pass::PostRender();
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
-  void ShadowPass::RenderShadowMaps(Light* light, const RenderJobArray& jobs)
+  void ShadowPass::RenderShadowMaps(LightPtr light, const RenderJobArray& jobs)
   {
+    CPU_FUNC_RANGE();
+
     Renderer* renderer        = GetRenderer();
 
-    auto renderForShadowMapFn = [this, &renderer](Light* light, RenderJobArray jobs) -> void
+    auto renderForShadowMapFn = [this, &renderer](LightPtr light, const RenderJobArray& jobs) -> void
     {
-      FrustumCull(jobs, light->m_shadowCamera);
+      PUSH_CPU_MARKER("Render Call");
+
+      const Mat4& pr          = light->m_shadowCamera->GetProjectionMatrix();
+      const Mat4 v            = light->m_shadowCamera->GetViewMatrix();
+      const Frustum frustum   = ExtractFrustum(pr * v, false);
 
       renderer->m_overrideMat = light->GetShadowMaterial();
-      for (RenderJob& job : jobs)
+      for (const RenderJob& job : jobs)
       {
+        // Frustum cull
+        if (FrustumTest(frustum, job.BoundingBox))
+        {
+          continue;
+        }
+
         MaterialPtr material = job.Material;
         renderer->m_overrideMat->SetRenderState(material->GetRenderState());
         renderer->m_overrideMat->UnInit();
@@ -132,30 +144,26 @@ namespace ToolKit
         renderer->m_overrideMat->Init();
         renderer->Render(job, light->m_shadowCamera);
       }
+
+      POP_CPU_MARKER();
     };
 
-    switch (light->GetType())
-    {
-    case EntityType::Entity_PointLight:
+    if (light->IsA<PointLight>())
     {
       renderer->SetFramebuffer(m_shadowFramebuffer, false);
 
       for (int i = 0; i < 6; ++i)
       {
-        m_shadowFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                           m_shadowAtlas,
-                                           0,
-                                           light->m_shadowAtlasLayer + i);
+        m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                                m_shadowAtlas,
+                                                0,
+                                                light->m_shadowAtlasLayer + i);
 
         // Clear the layer if needed
         if (!m_clearedLayers[light->m_shadowAtlasLayer + i])
         {
-          renderer->ClearBuffer(GraphicBitFields::AllBits, m_shadowClearColor);
+          renderer->ClearBuffer(GraphicBitFields::ColorDepthBits, m_shadowClearColor);
           m_clearedLayers[light->m_shadowAtlasLayer + i] = true;
-        }
-        else
-        {
-          renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
         }
 
         light->m_shadowCamera->m_node->SetTranslation(light->m_node->GetTranslation());
@@ -172,26 +180,19 @@ namespace ToolKit
         renderForShadowMapFn(light, jobs);
       }
     }
-    break;
-    case EntityType::Entity_DirectionalLight:
-    case EntityType::Entity_SpotLight:
+    else if (light->IsA<DirectionalLight>() || light->IsA<SpotLight>())
     {
-
       renderer->SetFramebuffer(m_shadowFramebuffer, false);
-      m_shadowFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                         m_shadowAtlas,
-                                         0,
-                                         light->m_shadowAtlasLayer);
+      m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                              m_shadowAtlas,
+                                              0,
+                                              light->m_shadowAtlasLayer);
 
       // Clear the layer if needed
       if (!m_clearedLayers[light->m_shadowAtlasLayer])
       {
-        renderer->ClearBuffer(GraphicBitFields::AllBits, m_shadowClearColor);
+        renderer->ClearBuffer(GraphicBitFields::ColorDepthBits, m_shadowClearColor);
         m_clearedLayers[light->m_shadowAtlasLayer] = true;
-      }
-      else
-      {
-        renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
       }
 
       renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
@@ -201,24 +202,22 @@ namespace ToolKit
 
       renderForShadowMapFn(light, jobs);
     }
-    break;
-    default:
-      break;
-    }
   }
 
-  int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights)
+  int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights)
   {
+    CPU_FUNC_RANGE();
+
     int layerCount                           = -1;
     int lastLayerOfDirAndSpotLightShadowsUse = -1;
 
     // Create 2 arrays: dirandspotlights, point lights
-    LightRawPtrArray dirAndSpotLights        = lights;
-    LightRawPtrArray pointLights;
-    LightRawPtrArray::iterator it = dirAndSpotLights.begin();
+    LightPtrArray dirAndSpotLights           = lights;
+    LightPtrArray pointLights;
+    LightPtrArray::iterator it = dirAndSpotLights.begin();
     while (it != dirAndSpotLights.end())
     {
-      if ((*it)->GetType() == EntityType::Entity_PointLight)
+      if ((*it)->IsA<PointLight>())
       {
         pointLights.push_back(*it);
         it = dirAndSpotLights.erase(it);
@@ -230,7 +229,7 @@ namespace ToolKit
     }
 
     // Sort lights based on resolutions (greater to smaller)
-    auto sortByResFn = [](const Light* l1, const Light* l2) -> bool
+    auto sortByResFn = [](const LightPtr l1, const LightPtr l2) -> bool
     { return l1->GetShadowResVal() > l2->GetShadowResVal(); };
 
     std::sort(dirAndSpotLights.begin(), dirAndSpotLights.end(), sortByResFn);
@@ -239,13 +238,13 @@ namespace ToolKit
     // Get dir and spot lights into the pack
     std::vector<int> resolutions;
     resolutions.reserve(dirAndSpotLights.size());
-    for (Light* light : dirAndSpotLights)
+    for (LightPtr light : dirAndSpotLights)
     {
       resolutions.push_back((int) light->GetShadowResVal());
     }
 
     std::vector<BinPack2D::PackedRect> rects =
-        m_packer.Pack(resolutions, Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
+        m_packer.Pack(resolutions, Renderer::RHIConstants::ShadowAtlasTextureSize);
 
     for (int i = 0; i < rects.size(); ++i)
     {
@@ -259,12 +258,12 @@ namespace ToolKit
     // Get point light into another pack
     resolutions.clear();
     resolutions.reserve(pointLights.size());
-    for (Light* light : pointLights)
+    for (LightPtr light : pointLights)
     {
       resolutions.push_back((int) light->GetShadowResVal());
     }
 
-    rects = m_packer.Pack(resolutions, Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
+    rects = m_packer.Pack(resolutions, Renderer::RHIConstants::ShadowAtlasTextureSize);
 
     for (int i = 0; i < rects.size(); ++i)
     {
@@ -272,19 +271,29 @@ namespace ToolKit
       pointLights[i]->m_shadowAtlasLayer = rects[i].ArrayIndex;
     }
 
+    int pointLightShadowLayerStartIndex = lastLayerOfDirAndSpotLightShadowsUse + 1;
+
     // Adjust point light parameters
-    for (Light* light : pointLights)
+    int pointLightIndex                 = 0;
+    for (LightPtr light : pointLights)
     {
-      light->m_shadowAtlasLayer += lastLayerOfDirAndSpotLightShadowsUse + 1;
-      light->m_shadowAtlasLayer *= 6;
-      layerCount                = std::max(light->m_shadowAtlasLayer + 5, layerCount);
+      light->m_shadowAtlasLayer = pointLightShadowLayerStartIndex + pointLightIndex * 6;
+      layerCount                = light->m_shadowAtlasLayer + 6;
+      pointLightIndex++;
     }
 
-    return layerCount + 1;
+    if (pointLights.empty())
+    {
+      layerCount += 1;
+    }
+
+    return layerCount;
   }
 
   void ShadowPass::InitShadowAtlas()
   {
+    CPU_FUNC_RANGE();
+
     // Check if the shadow atlas needs to be updated
     bool needChange = false;
 
@@ -292,7 +301,7 @@ namespace ToolKit
     int nextId      = 0;
     for (int i = 0; i < m_params.Lights.size(); ++i)
     {
-      Light* light = m_params.Lights[i];
+      LightPtr light = m_params.Lights[i];
       if (light->m_shadowResolutionUpdated)
       {
         light->m_shadowResolutionUpdated = false;
@@ -342,14 +351,14 @@ namespace ToolKit
                                        GraphicTypes::TypeFloat,
                                        m_layerCount};
 
-      m_shadowAtlas->Reconstruct(Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
-                                 Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
+      m_shadowAtlas->Reconstruct(Renderer::RHIConstants::ShadowAtlasTextureSize,
+                                 Renderer::RHIConstants::ShadowAtlasTextureSize,
                                  set);
 
       if (!m_shadowFramebuffer->Initialized())
       {
-        m_shadowFramebuffer->Init({Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
-                                   Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
+        m_shadowFramebuffer->Init({Renderer::RHIConstants::ShadowAtlasTextureSize,
+                                   Renderer::RHIConstants::ShadowAtlasTextureSize,
                                    false,
                                    true});
       }

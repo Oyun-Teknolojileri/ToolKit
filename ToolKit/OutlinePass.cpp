@@ -1,33 +1,16 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "OutlinePass.h"
 
 #include "Material.h"
 #include "Mesh.h"
+#include "Shader.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -35,10 +18,10 @@ namespace ToolKit
 
   OutlinePass::OutlinePass()
   {
-    m_stencilPass  = std::make_shared<StencilRenderPass>();
-    m_stencilAsRt  = std::make_shared<RenderTarget>();
+    m_stencilPass  = MakeNewPtr<StencilRenderPass>();
+    m_stencilAsRt  = MakeNewPtr<RenderTarget>();
 
-    m_outlinePass  = std::make_shared<FullQuadPass>();
+    m_outlinePass  = MakeNewPtr<FullQuadPass>();
     m_dilateShader = GetShaderManager()->Create<Shader>(ShaderPath("dilateFrag.shader", true));
   }
 
@@ -54,6 +37,9 @@ namespace ToolKit
 
   void OutlinePass::Render()
   {
+    PUSH_GPU_MARKER("OutlinePass::Render");
+    PUSH_CPU_MARKER("OutlinePass::Render");
+
     // Generate stencil binary image.
     RenderSubPass(m_stencilPass);
 
@@ -67,10 +53,16 @@ namespace ToolKit
     m_outlinePass->m_params.ClearFrameBuffer = false;
 
     RenderSubPass(m_outlinePass);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void OutlinePass::PreRender()
   {
+    PUSH_GPU_MARKER("OutlinePass::PreRender");
+    PUSH_CPU_MARKER("OutlinePass::PreRender");
+
     Pass::PreRender();
 
     // Create stencil image.
@@ -81,8 +73,20 @@ namespace ToolKit
     FramebufferSettings fbs            = m_params.FrameBuffer->GetSettings();
     m_stencilAsRt->ReconstructIfNeeded(fbs.width, fbs.height);
     m_stencilPass->m_params.OutputTarget = m_stencilAsRt;
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
-  void OutlinePass::PostRender() { Pass::PostRender(); }
+  void OutlinePass::PostRender()
+  {
+    PUSH_GPU_MARKER("OutlinePass::PostRender");
+    PUSH_CPU_MARKER("OutlinePass::PostRender");
+
+    Pass::PostRender();
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
+  }
 
 } // namespace ToolKit

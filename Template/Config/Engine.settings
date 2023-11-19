@@ -1,0 +1,4 @@
+<Settings>
+	<Window name="ToolKit" width="1280" height="800" fullscreen="0" />
+	<Graphics msaa="0" fps="60" />
+</Settings>

@@ -1,41 +1,32 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Texture.h"
 
 #include "DirectionComponent.h"
+#include "FileManager.h"
+#include "FullQuadPass.h"
+#include "Logger.h"
+#include "Material.h"
+#include "RenderSystem.h"
+#include "RendererGlobals.h"
+#include "Shader.h"
+#include "TKOpenGL.h"
 #include "ToolKit.h"
-#include "gles2.h"
-
-#include <memory>
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
+
+  // Texture
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(Texture, Resource);
 
   Texture::Texture(const TextureSettings& settings)
   {
@@ -45,8 +36,10 @@ namespace ToolKit
 
   Texture::Texture(const String& file, const TextureSettings& settings) : Texture(settings) { SetFile(file); }
 
-  Texture::Texture(uint textureId)
+  void Texture::NativeConstruct(uint textureId)
   {
+    Super::NativeConstruct();
+
     m_textureId = textureId;
     m_initiated = true;
   }
@@ -134,20 +127,17 @@ namespace ToolKit
     if (m_textureSettings.GenerateMipMap)
     {
       glGenerateMipmap(GL_TEXTURE_2D);
-
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) m_textureSettings.MipMapMinFilter);
     }
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) m_textureSettings.MinFilter);
 
-#ifndef TK_GL_ES_3_0
-    if (GL_EXT_texture_filter_anisotropic)
+    if constexpr (GL_EXT_texture_filter_anisotropic)
     {
       float aniso = 0.0f;
       glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
     }
-#endif // TK_GL_ES_3_0
 
     if (flushClientSideArray)
     {
@@ -171,22 +161,59 @@ namespace ToolKit
 
   void Texture::Clear()
   {
-    stbi_image_free(m_image);
-    stbi_image_free(m_imagef);
+    free(m_image);
+    free(m_imagef);
     m_image  = nullptr;
     m_imagef = nullptr;
     m_loaded = false;
   }
 
+  // DepthTexture
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(DepthTexture, Texture);
+
+  void DepthTexture::Load() {}
+
+  void DepthTexture::Clear() { UnInit(); }
+
+  void DepthTexture::Init(int width, int height, bool stencil)
+  {
+    if (m_initiated)
+    {
+      return;
+    }
+    m_initiated = true;
+    m_width     = width;
+    m_height    = height;
+    m_stencil   = stencil;
+
+    // Create a default depth, depth-stencil buffer
+    glGenRenderbuffers(1, &m_textureId);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_textureId);
+    GLenum component = stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT24;
+    glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
+  }
+
+  void DepthTexture::UnInit()
+  {
+    if (m_textureId == 0)
+    {
+      return;
+    }
+    glDeleteRenderbuffers(1, &m_textureId);
+
+    m_textureId = 0;
+  }
+
+  // CubeMap
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(CubeMap, Texture);
+
   CubeMap::CubeMap() : Texture() {}
 
   CubeMap::CubeMap(const String& file) : Texture() { SetFile(file); }
-
-  CubeMap::CubeMap(uint cubemapId)
-  {
-    m_textureId = cubemapId;
-    m_initiated = true;
-  }
 
   CubeMap::~CubeMap() { UnInit(); }
 
@@ -313,11 +340,16 @@ namespace ToolKit
   {
     for (int i = 0; i < m_images.size(); i++)
     {
-      stbi_image_free(m_images[i]);
+      free(m_images[i]);
       m_images[i] = nullptr;
     }
     m_loaded = false;
   }
+
+  // Hdri
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(Hdri, Texture);
 
   Hdri::Hdri()
   {
@@ -328,10 +360,10 @@ namespace ToolKit
     m_textureSettings.GenerateMipMap  = false;
     m_exposure                        = 1.0f;
 
-    m_texToCubemapMat                 = std::make_shared<Material>();
-    m_cubemapToIrradiancemapMat       = std::make_shared<Material>();
-    m_irradianceCubemap               = std::make_shared<CubeMap>(0);
-    m_equirectangularTexture          = std::make_shared<Texture>(static_cast<uint>(0));
+    m_texToCubemapMat                 = MakeNewPtr<Material>();
+    m_cubemapToDiffuseEnvMapMat       = MakeNewPtr<Material>();
+    m_diffuseEnvMap                   = MakeNewPtr<CubeMap>(0u);
+    m_equirectangularTexture          = MakeNewPtr<Texture>(0u);
   }
 
   Hdri::Hdri(const String& file) : Hdri() { SetFile(file); }
@@ -346,9 +378,7 @@ namespace ToolKit
     }
 
     // Load hdri image
-    stbi_set_flip_vertically_on_load(true);
     Texture::Load();
-    stbi_set_flip_vertically_on_load(false);
   }
 
   void Hdri::Init(bool flushClientSideArray)
@@ -370,61 +400,27 @@ namespace ToolKit
     // Only ready after cubemap constructed and irradiance calculated.
     m_initiated     = false;
 
-    RenderTask task = {
-        [this, flushClientSideArray](Renderer* renderer) -> void
-        {
-          // Convert hdri image to cubemap images.
-          m_cubemap = renderer->GenerateCubemapFrom2DTexture(GetTextureManager()->Create<Texture>(GetFile()),
-                                                             m_width / 4,
-                                                             m_width / 4,
-                                                             1.0f);
+    RenderTask task = {[this, flushClientSideArray](Renderer* renderer) -> void
+                       {
+                         // Convert hdri image to cubemap images.
+                         m_cubemap =
+                             renderer->GenerateCubemapFrom2DTexture(GetTextureManager()->Create<Texture>(GetFile()),
+                                                                    m_width / 4,
+                                                                    m_width / 4,
+                                                                    1.0f);
 
-          // Generate mip maps of cubemap
-          glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemap->m_textureId);
-          glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+                         const int specularEnvMapSize = m_specularIBLTextureSize;
+                         // Pre-filtered and mip mapped environment map
+                         m_specularEnvMap             = renderer->GenerateSpecularEnvMap(m_cubemap,
+                                                                             specularEnvMapSize,
+                                                                             specularEnvMapSize,
+                                                                             Renderer::RHIConstants::SpecularIBLLods);
 
-          const int prefilteredEnvMapSize = m_specularIBLTextureSize;
-          // Pre-filtered and mip mapped environment map
-          m_prefilteredEnvMap             = renderer->GenerateEnvPrefilteredMap(m_cubemap,
-                                                                    prefilteredEnvMapSize,
-                                                                    prefilteredEnvMapSize,
-                                                                    Renderer::RHIConstants::specularIBLLods);
+                         // Generate diffuse irradience cubemap images
+                         m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
 
-          // Pre-compute BRDF lut
-          if (!GetTextureManager()->Exist("GLOBAL_BRDF_LUT_TEXTURE"))
-          {
-            FullQuadPass quadPass;
-
-            RenderTargetSettigs set;
-            set.InternalFormat      = GraphicTypes::FormatRG16F;
-            set.Format              = GraphicTypes::FormatRG;
-            set.Type                = GraphicTypes::TypeFloat;
-
-            RenderTargetPtr brdfLut = std::make_shared<RenderTarget>(m_brdfLutTextureSize, m_brdfLutTextureSize, set);
-            brdfLut->Init();
-            FramebufferPtr utilFramebuffer = std::make_shared<Framebuffer>();
-
-            utilFramebuffer->Init({(uint) m_brdfLutTextureSize, (uint) m_brdfLutTextureSize, false, false});
-            utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);
-
-            quadPass.m_params.FrameBuffer = utilFramebuffer;
-            quadPass.m_params.FragmentShader =
-                GetShaderManager()->Create<Shader>(ShaderPath("BRDFLutFrag.shader", true));
-
-            quadPass.SetRenderer(renderer);
-            quadPass.PreRender();
-            quadPass.Render();
-            quadPass.PostRender();
-
-            brdfLut->SetFile("GLOBAL_BRDF_LUT_TEXTURE");
-            GetTextureManager()->Manage(brdfLut);
-          }
-
-          // Generate irradience cubemap images
-          m_irradianceCubemap = renderer->GenerateEnvIrradianceMap(m_cubemap, m_width / 32, m_width / 32);
-
-          m_initiated         = true;
-        }};
+                         m_initiated     = true;
+                       }};
 
     GetRenderSystem()->AddRenderTask(task);
   }
@@ -434,8 +430,8 @@ namespace ToolKit
     if (m_initiated)
     {
       m_cubemap->UnInit();
-      m_irradianceCubemap->UnInit();
-      m_prefilteredEnvMap->UnInit();
+      m_diffuseEnvMap->UnInit();
+      m_specularEnvMap->UnInit();
     }
 
     Texture::UnInit();
@@ -443,24 +439,33 @@ namespace ToolKit
 
   bool Hdri::IsTextureAssigned() { return !GetFile().empty(); }
 
+  // RenderTarget
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(RenderTarget, Texture);
+
   RenderTarget::RenderTarget() : Texture() {}
 
-  RenderTarget::RenderTarget(uint width, uint height, const RenderTargetSettigs& settings) : RenderTarget()
+  void RenderTarget::NativeConstruct(uint width, uint height, const RenderTargetSettigs& settings)
   {
+    Super::NativeConstruct();
+
     m_width    = width;
     m_height   = height;
     m_settings = settings;
   }
 
-  void RenderTarget::Load() {}
-
-  RenderTarget::RenderTarget(Texture* texture)
+  void RenderTarget::NativeConstruct(Texture* texture)
   {
+    Super::NativeConstruct();
+
     m_width     = texture->m_width;
     m_height    = texture->m_height;
     m_textureId = texture->m_textureId;
     m_initiated = true;
   }
+
+  void RenderTarget::Load() {}
 
   void RenderTarget::Init(bool flushClientSideArray)
   {
@@ -561,14 +566,16 @@ namespace ToolKit
 
   const RenderTargetSettigs& RenderTarget::GetSettings() const { return m_settings; }
 
-  TextureManager::TextureManager() { m_type = ResourceType::Texture; }
+  // TextureManager
+  //////////////////////////////////////////////////////////////////////////
+
+  TextureManager::TextureManager() { m_baseType = Texture::StaticClass(); }
 
   TextureManager::~TextureManager() {}
 
-  bool TextureManager::CanStore(ResourceType t)
+  bool TextureManager::CanStore(ClassMeta* Class)
   {
-    if (t == ResourceType::Texture || t == ResourceType::CubeMap || t == ResourceType::RenderTarget ||
-        t == ResourceType::Hdri)
+    if (Class->IsSublcassOf(Texture::StaticClass()))
     {
       return true;
     }
@@ -576,33 +583,34 @@ namespace ToolKit
     return false;
   }
 
-  ResourcePtr TextureManager::CreateLocal(ResourceType type)
+  ResourcePtr TextureManager::CreateLocal(ClassMeta* Class)
   {
-    Texture* tex = nullptr;
-    switch (type)
+    if (Class == Texture::StaticClass())
     {
-    case ResourceType::Texture:
-      tex = new Texture();
-      break;
-    case ResourceType::CubeMap:
-      tex = new CubeMap();
-      break;
-    case ResourceType::RenderTarget:
-      tex = new RenderTarget();
-      break;
-    case ResourceType::Hdri:
-      tex = new Hdri();
-      break;
-    default:
-      assert(false);
-      break;
+      return MakeNewPtr<Texture>();
     }
-    return ResourcePtr(tex);
+
+    if (Class == CubeMap::StaticClass())
+    {
+      return MakeNewPtr<CubeMap>();
+    }
+
+    if (Class == RenderTarget::StaticClass())
+    {
+      return MakeNewPtr<RenderTarget>();
+    }
+
+    if (Class == Hdri::StaticClass())
+    {
+      return MakeNewPtr<Hdri>();
+    }
+
+    return nullptr;
   }
 
-  String TextureManager::GetDefaultResource(ResourceType type)
+  String TextureManager::GetDefaultResource(ClassMeta* Class)
   {
-    if (type == ResourceType::Hdri)
+    if (Class == Hdri::StaticClass())
     {
       return TexturePath("defaultHDRI.hdr", true);
     }

@@ -1,41 +1,26 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Util.h"
 
+#include "Audio.h"
 #include "Common/utf8.h"
+#include "FileManager.h"
+#include "Material.h"
+#include "MathUtil.h"
+#include "Mesh.h"
 #include "Primative.h"
+#include "Scene.h"
+#include "Shader.h"
+#include "SpriteSheet.h"
 #include "ToolKit.h"
-#include "rapidxml.hpp"
 
-#include <algorithm>
-#include <cstdarg>
 #include <filesystem>
-#include <fstream>
-#include <string>
+#include <unordered_set>
 
 #include "DebugNew.h"
 
@@ -89,10 +74,10 @@ namespace ToolKit
   template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const UVec4& val);
   template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const Quaternion& val);
 
-  void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val)
+  void WriteAttr(XmlNode* node, XmlDocument* doc, const StringView& name, const StringView& val)
   {
     node->append_attribute(
-        doc->allocate_attribute(doc->allocate_string(name.c_str(), 0), doc->allocate_string(val.c_str(), 0)));
+        doc->allocate_attribute(doc->allocate_string(name.data(), 0), doc->allocate_string(val.data(), 0)));
   }
 
   template <typename T>
@@ -139,11 +124,15 @@ namespace ToolKit
 
   void ReadAttr(XmlNode* node, const String& name, ubyte& val) { val = ReadVal<ubyte>(node, name); }
 
-  void ReadAttr(XmlNode* node, const String& name, String& val)
+  void ReadAttr(XmlNode* node, const String& name, String& val, StringView defaultVal)
   {
     if (XmlAttribute* attr = node->first_attribute(name.c_str()))
     {
       val = attr->value();
+    }
+    else
+    {
+      val = defaultVal;
     }
   }
 
@@ -183,11 +172,11 @@ namespace ToolKit
     return false;
   }
 
-  XmlNode* CreateXmlNode(XmlDocument* doc, const String& name, XmlNode* parent)
+  XmlNode* CreateXmlNode(XmlDocument* doc, const StringView& name, XmlNode* parent)
   {
     assert(doc);
 
-    char* str     = doc->allocate_string(name.c_str());
+    char* str     = doc->allocate_string(name.data());
     XmlNode* node = doc->allocate_node(rapidxml::node_type::node_element, str);
 
     if (parent)
@@ -222,7 +211,7 @@ namespace ToolKit
     if (XmlNode* materialNode = parent->first_node("material"))
     {
       String path = materialNode->first_attribute("name")->value();
-      NormalizePath(path);
+      NormalizePathInplace(path);
       String matFile = MaterialPath(path);
       return GetMaterialManager()->Create<Material>(matFile);
     }
@@ -257,10 +246,9 @@ namespace ToolKit
 
   void DecomposePath(const String& fullPath, String* path, String* name, String* ext)
   {
-    String normal = fullPath;
-    NormalizePath(normal);
+    String normal = NormalizePath(fullPath);
 
-    size_t ind1 = normal.find_last_of(GetPathSeparator());
+    size_t ind1   = normal.find_last_of(GetPathSeparator());
     if (path != nullptr)
     {
       *path = normal.substr(0, ind1);
@@ -281,13 +269,54 @@ namespace ToolKit
     }
   }
 
-  void NormalizePath(String& path)
+  void NormalizePathInplace(String& path)
   {
-#ifdef __EMSCRIPTEN__
+#if _WIN32
     UnixifyPath(path);
 #else
     DosifyPath(path);
 #endif
+  }
+
+  String NormalizePath(String path)
+  {
+#ifndef _WIN32
+    UnixifyPath(path);
+#else
+    DosifyPath(path);
+#endif
+    return path;
+  }
+
+  int RunPipe(const String& command, RunPipeCallback afterFn)
+  {
+#ifdef _WIN32
+    FILE* fp = _popen(command.c_str(), "r");
+#else
+    FILE* fp = popen(command.c_str(), "r");
+#endif
+    if (fp == nullptr)
+    {
+      TK_ERR("pipe run failed! command: %s", command.c_str());
+      afterFn(1);
+      return 0;
+    }
+    char path[512] {};
+    while (fgets(path, sizeof(path), fp) != NULL)
+    {
+      TK_LOG("%s", path);
+    }
+
+#ifdef _WIN32
+    int res = _pclose(fp);
+#else
+    int res = pclose(fp);
+#endif
+    if (afterFn)
+    {
+      afterFn(res);
+    }
+    return res;
   }
 
   void UnixifyPath(String& path) { ReplaceCharInPlace(path, '\\', '/'); }
@@ -296,18 +325,30 @@ namespace ToolKit
 
   String ConcatPaths(const StringArray& entries)
   {
-    String path;
     if (entries.empty())
     {
-      return path;
+      return String();
     }
 
-    for (size_t i = 0; i < entries.size() - 1; i++)
+    // Calculate the total length needed for the concatenated string to reduce allocations
+    uint64 totalLength = 0;
+    for (const String& entry : entries)
     {
-      path += entries[i] + GetPathSeparatorAsStr();
+      totalLength += entry.length() + 1; // +1 for path separator
     }
 
-    return path + entries.back();
+    // Create a string builder and reserve the needed capacity
+    String path;
+    path.reserve(totalLength);
+
+    for (uint64 i = 0; i < entries.size() - 1; i++)
+    {
+      path += entries[i];
+      path += GetPathSeparatorAsStr();
+    }
+
+    path += entries.back(); // Add the last entry
+    return path;
   }
 
   String GetRelativeResourcePath(const String& path, String* rootFolder)
@@ -392,217 +433,137 @@ namespace ToolKit
     return path.substr(i);
   }
 
-  String CreatePathFromResourceType(const String& file, ResourceType type) { return GetResourcePath(type) + file; }
+  String CreatePathFromResourceType(const String& file, ClassMeta* Class) { return GetResourcePath(Class) + file; }
 
-  ResourceType GetResourceType(const String& ext)
+  ClassMeta* GetResourceType(const String& ext)
   {
     if (ext == MESH || ext == SKINMESH || SupportedMeshFormat(ext))
     {
-      return ResourceType::Mesh;
+      return Mesh::StaticClass();
     }
 
     if (ext == ANIM)
     {
-      return ResourceType::Animation;
+      return Animation::StaticClass();
     }
 
     if (ext == MATERIAL)
     {
-      return ResourceType::Material;
+      return Material::StaticClass();
     }
 
     if (SupportedImageFormat(ext))
     {
       if (ext == HDR)
       {
-        return ResourceType::Hdri;
+        return Hdri::StaticClass();
       }
 
-      return ResourceType::Texture;
+      return Texture::StaticClass();
     }
 
     if (ext == SHADER)
     {
-      return ResourceType::Shader;
+      return Shader::StaticClass();
     }
 
     if (ext == AUDIO)
     {
-      return ResourceType::Audio;
+      return Audio::StaticClass();
     }
 
     if (ext == SCENE)
     {
-      return ResourceType::Scene;
+      return Scene::StaticClass();
     }
 
     if (ext == SKELETON)
     {
-      return ResourceType::Skeleton;
+      return Skeleton::StaticClass();
     }
 
-    assert(false);
-    return ResourceType::Base;
+    assert(false && "Extension does not map to a Class.");
+    return nullptr;
   }
 
-  TK_API String EntityTypeToString(EntityType type)
+  String GetExtFromType(ClassMeta* Class)
   {
-    static const std::unordered_map<EntityType, String> typeToName {
-        {EntityType::Entity_Base,             "Base"            },
-        {EntityType::Entity_AudioSource,      "AudioSource"     },
-        {EntityType::Entity_Billboard,        "Billboard"       },
-        {EntityType::Entity_Cube,             "Cube"            },
-        {EntityType::Entity_Quad,             "Quad"            },
-        {EntityType::Entity_Sphere,           "Sphere"          },
-        {EntityType::Entity_Arrow,            "Arrow"           },
-        {EntityType::Entity_LineBatch,        "LineBatch"       },
-        {EntityType::Entity_Cone,             "Cone"            },
-        {EntityType::Entity_Drawable,         "Drawable"        },
-        {EntityType::Entity_SpriteAnim,       "SpriteAnim"      },
-        {EntityType::Entity_Surface,          "Surface"         },
-        {EntityType::Entity_Light,            "Light"           },
-        {EntityType::Entity_Camera,           "Camera"          },
-        {EntityType::Entity_Node,             "Node"            },
-        {EntityType::Entity_Button,           "Button"          },
-        {EntityType::Entity_Sky,              "Sky"             },
-        {EntityType::Entity_DirectionalLight, "DirectionalLight"},
-        {EntityType::Entity_PointLight,       "PointLight "     },
-        {EntityType::Entity_SpotLight,        "SpotLight"       },
-        {EntityType::Entity_Canvas,           "Canvas"          },
-        {EntityType::Entity_Prefab,           "Prefab"          },
-        {EntityType::Entity_SkyBase,          "SkyBase"         },
-        {EntityType::Entity_GradientSky,      "GradientSky"     }
-    };
-
-    bool exist = typeToName.count(type) != 0;
-    assert(exist);
-    if (!exist)
+    if (Class == Animation::StaticClass())
     {
-      return "UnknownEntityTypeName";
-    }
-    return typeToName.at(type);
-  }
-
-  String GetTypeString(ResourceType type)
-  {
-    static const std::unordered_map<ResourceType, String> typeToName {
-        {ResourceType::Base,         "Base"        },
-        {ResourceType::Animation,    "Animation"   },
-        {ResourceType::Audio,        "Audio"       },
-        {ResourceType::Material,     "Material"    },
-        {ResourceType::Mesh,         "Mesh"        },
-        {ResourceType::Shader,       "Shader"      },
-        {ResourceType::SkinMesh,     "SkinMesh"    },
-        {ResourceType::SpriteSheet,  "SpriteSheet" },
-        {ResourceType::Texture,      "Texture"     },
-        {ResourceType::CubeMap,      "CubeMap"     },
-        {ResourceType::RenderTarget, "RenderTarget"},
-        {ResourceType::Scene,        "Scene"       },
-        {ResourceType::Skeleton,     "Skeleton"    }
-    };
-
-    bool exist = typeToName.count(type) != 0;
-    assert(exist);
-    if (!exist)
-    {
-      return "UnknownResourceTypeName";
-    }
-    return typeToName.at(type);
-  }
-
-  String GetExtFromType(ResourceType type)
-  {
-    switch (type)
-    {
-    case ResourceType::Base:
-      break;
-    case ResourceType::Animation:
       return ANIM;
-      break;
-    case ResourceType::Audio:
-      return AUDIO;
-      break;
-    case ResourceType::Material:
-      return MATERIAL;
-      break;
-    case ResourceType::Mesh:
-      return MESH;
-      break;
-    case ResourceType::Shader:
-      return SHADER;
-      break;
-    case ResourceType::SkinMesh:
-      return SKINMESH;
-      break;
-    case ResourceType::SpriteSheet:
-      assert(false);
-      break;
-    case ResourceType::Texture:
-      assert(false);
-      break;
-    case ResourceType::CubeMap:
-      assert(false);
-      break;
-    case ResourceType::RenderTarget:
-      assert(false);
-      break;
-    case ResourceType::Scene:
-      return SCENE;
-      break;
-    default:
-      assert(false);
-      break;
     }
+    if (Class == Audio::StaticClass())
+    {
+      return AUDIO;
+    }
+    if (Class == Material::StaticClass())
+    {
+      return MATERIAL;
+    }
+    if (Class == Mesh::StaticClass())
+    {
+      return MESH;
+    }
+    if (Class == SkinMesh::StaticClass())
+    {
+      return SKINMESH;
+    }
+    if (Class == Shader::StaticClass())
+    {
+      return SHADER;
+    }
+    if (Class == Scene::StaticClass())
+    {
+      return SCENE;
+    }
+
+    assert(false && "Resource type does not have a corresponding extension.");
+    return String();
+  }
+
+  String GetResourcePath(ClassMeta* Class)
+  {
+    if (Class == Animation::StaticClass())
+    {
+      return AnimationPath("");
+    }
+    if (Class == Audio::StaticClass())
+    {
+      return AudioPath("");
+    }
+    if (Class == Material::StaticClass())
+    {
+      return MaterialPath("");
+    }
+    if (Class->IsSublcassOf(Mesh::StaticClass()))
+    {
+      return MeshPath("");
+    }
+    if (Class == Shader::StaticClass())
+    {
+      return ShaderPath("");
+    }
+    if (Class == SpriteSheet::StaticClass())
+    {
+      return SpritePath("");
+    }
+    if (Class->IsSublcassOf(Texture::StaticClass()))
+    {
+      return TexturePath("");
+    }
+    if (Class == Scene::StaticClass())
+    {
+      return ScenePath("");
+    }
+
+    assert(false && "Resource type does not have a dedicated folder.");
 
     return String();
   }
 
-  String GetResourcePath(ResourceType type)
-  {
-    String path;
-    switch (type)
-    {
-    case ResourceType::Base:
-      break;
-    case ResourceType::Animation:
-      path = AnimationPath("");
-      break;
-    case ResourceType::Audio:
-      path = AudioPath("");
-      break;
-    case ResourceType::Material:
-      path = MaterialPath("");
-      break;
-    case ResourceType::Mesh:
-    case ResourceType::SkinMesh:
-      path = MeshPath("");
-      break;
-    case ResourceType::Shader:
-      path = ShaderPath("");
-      break;
-    case ResourceType::SpriteSheet:
-      path = SpritePath("");
-      break;
-    case ResourceType::Texture:
-    case ResourceType::CubeMap:
-      path = TexturePath("");
-      break;
-    case ResourceType::RenderTarget:
-      break;
-    case ResourceType::Scene:
-      path = ScenePath("");
-      break;
-    default:
-      assert(false);
-      break;
-    }
-
-    return path;
-  }
-
   char GetPathSeparator()
   {
-#ifndef __EMSCRIPTEN__
+#ifdef _WIN32
     return '\\';
 #else
     return '/';
@@ -765,7 +726,7 @@ namespace ToolKit
     return str.rfind(suffix) == glm::abs(str.size() - suffix.size());
   }
 
-  LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size)
+  LineBatchPtr CreatePlaneDebugObject(PlaneEquation plane, float size)
   {
     // Searching perpendicular axes on the plane.
     Vec3 z = plane.normal;
@@ -783,17 +744,24 @@ namespace ToolKit
                        o - x * hSize - y * hSize,
                        o + x * hSize - y * hSize};
 
-    LineBatch* obj = new LineBatch(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+    LineBatchPtr obj = MakeNewPtr<LineBatch>();
+    obj->Generate(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+
     return obj;
   }
 
-  class LineBatch* CreateLineDebugObject(const Vec3Array& corners)
+  LineBatchPtr CreateLineDebugObject(const Vec3Array& corners)
   {
-    LineBatch* obj = new LineBatch(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+    LineBatchPtr obj = MakeNewPtr<LineBatch>();
+    obj->Generate(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+
     return obj;
   }
 
-  LineBatch* CreateBoundingBoxDebugObject(const BoundingBox& box, const Vec3& color, float size, const Mat4* transform)
+  LineBatchPtr CreateBoundingBoxDebugObject(const BoundingBox& box,
+                                            const Vec3& color,
+                                            float size,
+                                            const Mat4* transform)
   {
     Vec3Array corners;
     GetCorners(box, corners);
@@ -825,14 +793,16 @@ namespace ToolKit
       }
     }
 
-    LineBatch* lineForm = new LineBatch(vertices, color, DrawType::LineStrip, size);
+    LineBatchPtr lineForm = MakeNewPtr<LineBatch>();
+    lineForm->Generate(vertices, color, DrawType::LineStrip, size);
+
     return lineForm;
   }
 
-  void ToEntityIdArray(EntityIdArray& idArray, const EntityRawPtrArray& ptrArray)
+  void ToEntityIdArray(EntityIdArray& idArray, const EntityPtrArray& ptrArray)
   {
     idArray.reserve(ptrArray.size());
-    for (Entity* ntt : ptrArray)
+    for (EntityPtr ntt : ptrArray)
     {
       idArray.push_back(ntt->GetIdVal());
     }
@@ -851,25 +821,23 @@ namespace ToolKit
     return false;
   }
 
-  void RootsOnly(const EntityRawPtrArray& entities, EntityRawPtrArray& roots, Entity* child)
+  void RootsOnly(const EntityPtrArray& entities, EntityPtrArray& roots, EntityPtr child)
   {
-    auto AddUnique = [&roots](Entity* e) -> void
+    auto AddUnique = [&roots](EntityPtr ntt) -> void
     {
-      assert(e != nullptr);
-      bool unique = std::find(roots.begin(), roots.end(), e) == roots.end();
+      assert(ntt != nullptr);
+      bool unique = std::find(roots.begin(), roots.end(), ntt) == roots.end();
       if (unique)
       {
-        roots.push_back(e);
+        roots.push_back(ntt);
       }
     };
 
-    Node* parent = child->m_node->m_parent;
-    if (parent != nullptr)
+    if (EntityPtr parent = child->Parent())
     {
-      Entity* parentEntity = parent->m_entity;
-      if (contains(entities, parentEntity))
+      if (contains(entities, parent))
       {
-        RootsOnly(entities, roots, parentEntity);
+        RootsOnly(entities, roots, parent);
       }
       else
       {
@@ -882,27 +850,24 @@ namespace ToolKit
     }
   }
 
-  void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots)
+  void GetRootEntities(const EntityPtrArray& entities, EntityPtrArray& roots)
   {
-    for (Entity* e : entities)
+    for (EntityPtr ntt : entities)
     {
-      RootsOnly(entities, roots, e);
+      RootsOnly(entities, roots, ntt);
     }
   }
 
-  void GetParents(const Entity* ntt, EntityRawPtrArray& parents)
+  void GetParents(const EntityPtr ntt, EntityPtrArray& parents)
   {
-    if (Node* pNode = ntt->m_node->m_parent)
+    if (EntityPtr parent = ntt->Parent())
     {
-      if (Entity* parent = pNode->m_entity)
-      {
-        parents.push_back(parent);
-        GetParents(parent, parents);
-      }
+      parents.push_back(parent);
+      GetParents(parent, parents);
     }
   }
 
-  void GetChildren(const Entity* ntt, EntityRawPtrArray& children)
+  void GetChildren(const EntityPtr ntt, EntityPtrArray& children)
   {
     if (ntt == nullptr)
     {
@@ -911,8 +876,7 @@ namespace ToolKit
 
     for (Node* childNode : ntt->m_node->m_children)
     {
-      Entity* child = childNode->m_entity;
-      if (child)
+      if (EntityPtr child = childNode->OwnerEntity())
       {
         children.push_back(child);
         GetChildren(child, children);
@@ -920,16 +884,16 @@ namespace ToolKit
     }
   }
 
-  Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies)
+  EntityPtr DeepCopy(EntityPtr root, EntityPtrArray& copies)
   {
-    Entity* cpy = root->Copy();
+    EntityPtr cpy = std::static_pointer_cast<Entity>(root->Copy());
     copies.push_back(cpy);
 
     for (Node* node : root->m_node->m_children)
     {
-      if (node->m_entity)
+      if (EntityPtr ntt = node->OwnerEntity())
       {
-        if (Entity* sub = DeepCopy(node->m_entity, copies))
+        if (EntityPtr sub = DeepCopy(ntt, copies))
         {
           cpy->m_node->AddChild(sub->m_node);
         }
@@ -939,13 +903,65 @@ namespace ToolKit
     return cpy;
   }
 
+  static void RecursiveCopyDirectoryWithSet(const String& source,
+                                            const String& destination,
+                                            const std::unordered_set<uint64>& ignoredExtSet)
+  {
+    using namespace std::filesystem;
+    String ext;
+    DecomposePath(source, nullptr, nullptr, &ext);
+    if (ignoredExtSet.count(std::hash<String> {}(ext)) != 0)
+    {
+      return;
+    }
+
+    // Create the destination directory if it doesn't exist
+    if (!exists(destination))
+    {
+      create_directories(destination);
+    }
+
+    for (const auto& entry : directory_iterator(source))
+    {
+      const path current_path = entry.path();
+      const path new_path     = destination / current_path.filename();
+
+      String ext;
+      DecomposePath(current_path.u8string(), nullptr, nullptr, &ext);
+
+      if (ignoredExtSet.count(std::hash<String> {}(ext)) != 0)
+      {
+        continue;
+      }
+
+      if (is_directory(current_path))
+      {
+        RecursiveCopyDirectoryWithSet(current_path.generic_u8string(), new_path.generic_u8string(), ignoredExtSet);
+      }
+      else if (is_regular_file(current_path))
+      {
+        copy_file(current_path, new_path, copy_options::overwrite_existing);
+      }
+    }
+  }
+
+  void RecursiveCopyDirectory(const String& source, const String& destination, const StringArray& ignoredExtensions)
+  {
+    std::unordered_set<uint64> ignoredSet;
+    for (int i = 0; i < ignoredExtensions.size(); i++)
+    {
+      ignoredSet.insert(std::hash<String> {}(ignoredExtensions[i]));
+    }
+    RecursiveCopyDirectoryWithSet(source, destination, ignoredSet);
+  }
+
   void* TKMalloc(size_t sz) { return malloc(sz); }
 
   void TKFree(void* m) { free(m); }
 
-  int IndexOf(Entity* ntt, const EntityRawPtrArray& entities)
+  int IndexOf(EntityPtr ntt, const EntityPtrArray& entities)
   {
-    EntityRawPtrArray::const_iterator it = std::find(entities.begin(), entities.end(), ntt);
+    auto it = std::find(entities.begin(), entities.end(), ntt);
 
     if (it != entities.end())
     {
@@ -974,12 +990,37 @@ namespace ToolKit
   {
     namespace ch                                    = std::chrono;
     static ch::high_resolution_clock::time_point t1 = ch::high_resolution_clock::now();
-
     ch::high_resolution_clock::time_point t2        = ch::high_resolution_clock::now();
-
     ch::duration<double> timeSpan                   = ch::duration_cast<ch::duration<double>>(t2 - t1);
-
     return static_cast<float>(timeSpan.count() * 1000.0);
+  }
+
+  uint64 MurmurHash(uint64 x)
+  {
+    x ^= x >> 30ULL;
+    x *= 0xbf58476d1ce4e5b9ULL;
+    x ^= x >> 27ULL;
+    x *= 0x94d049bb133111ebULL;
+    return x ^ (x >> 31ULL);
+  }
+
+  void Xoroshiro128PlusSeed(uint64 s[2], uint64 seed)
+  {
+    s[0]  = MurmurHash(seed);
+    s[0] |= 1; // non zero
+    s[1]  = MurmurHash(s[0] ^ (seed * 1099511628211ULL));
+  }
+
+  // concise hashing function. https://nullprogram.com/blog/2017/09/21/
+  uint64 Xoroshiro128Plus(uint64 s[2])
+  {
+    uint64 s0      = s[0];
+    uint64 s1      = s[1];
+    uint64 result  = s0 + s1;
+    s1            ^= s0;
+    s[0]           = ((s0 << 55) | (s0 >> 9)) ^ s1 ^ (s1 << 14);
+    s[1]           = (s1 << 36) | (s1 >> 28);
+    return result;
   }
 
 } //  namespace ToolKit

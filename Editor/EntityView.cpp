@@ -1,35 +1,25 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "EntityView.h"
 
 #include "App.h"
 #include "CustomDataView.h"
-#include "Prefab.h"
 #include "TransformMod.h"
+
+#include <Canvas.h>
+#include <Drawable.h>
+#include <GradientSky.h>
+#include <Material.h>
+#include <MathUtil.h>
+#include <Mesh.h>
+#include <Prefab.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -46,8 +36,14 @@ namespace ToolKit
 
     void EntityView::ShowAnchorSettings()
     {
-      Surface* surface    = static_cast<Surface*>(m_entity);
-      Canvas* canvasPanel = static_cast<Canvas*>(surface->m_node->m_parent->m_entity);
+      EntityPtr ntt = m_entity.lock();
+      if (ntt == nullptr)
+      {
+        return;
+      }
+
+      SurfacePtr surface    = Cast<Surface>(ntt);
+      CanvasPtr canvasPanel = Cast<Canvas>(surface->Parent());
 
       if (ImGui::CollapsingHeader("Anchor", ImGuiTreeNodeFlags_DefaultOpen))
       {
@@ -195,13 +191,13 @@ namespace ToolKit
           float w = 0, h = 0;
 
           {
-            pos                   = canvasPanel->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-            w                     = canvasPanel->GetSizeVal().x;
-            h                     = canvasPanel->GetSizeVal().y;
+            pos                    = canvasPanel->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            w                      = canvasPanel->GetSizeVal().x;
+            h                      = canvasPanel->GetSizeVal().y;
             pos                   -= Vec3(w / 2.f, h / 2.f, 0.f);
-            const Vec3 surfacePos = surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-            position[0]           = surfacePos.x - (pos.x + w * surface->m_anchorParams.m_anchorRatios[0]);
-            position[1]           = surfacePos.y - (pos.y + h * surface->m_anchorParams.m_anchorRatios[2]);
+            const Vec3 surfacePos  = surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            position[0]            = surfacePos.x - (pos.x + w * surface->m_anchorParams.m_anchorRatios[0]);
+            position[1]            = surfacePos.y - (pos.y + h * surface->m_anchorParams.m_anchorRatios[2]);
           }
           ImGui::DragFloat("Position X", &position[0], 0.25f, pos.x, pos.x + w);
           ImGui::DragFloat("Position Y", &position[1], 0.25f, pos.y, pos.y + h);
@@ -246,8 +242,10 @@ namespace ToolKit
 
     void EntityView::Show()
     {
-      m_entity = g_app->GetCurrentScene()->GetCurrentSelection();
-      if (m_entity == nullptr)
+      m_entity      = g_app->GetCurrentScene()->GetCurrentSelection();
+      EntityPtr ntt = m_entity.lock();
+
+      if (ntt == nullptr)
       {
         ImGui::Text("Select an entity");
         return;
@@ -256,10 +254,9 @@ namespace ToolKit
       ShowParameterBlock();
 
       // Missing data reporter.
-      if (m_entity->IsDrawable())
+      if (ntt->IsDrawable())
       {
-        Drawable* dw = static_cast<Drawable*>(m_entity);
-        MeshPtr mesh = dw->GetMesh();
+        MeshPtr mesh = ntt->GetComponent<MeshComponent>()->GetMeshVal();
 
         StringArray missingData;
         MeshRawCPtrArray meshes;
@@ -302,31 +299,35 @@ namespace ToolKit
         }
       }
 
-      if (m_entity->IsSurfaceInstance() && m_entity->m_node->m_parent != nullptr &&
-          m_entity->m_node->m_parent->m_entity != nullptr &&
-          m_entity->m_node->m_parent->m_entity->GetType() == EntityType::Entity_Canvas)
+      if (ntt->IsA<Surface>())
       {
-        ShowAnchorSettings();
+        if (EntityPtr parentNtt = ntt->Parent())
+        {
+          if (parentNtt->IsA<Canvas>())
+          {
+            ShowAnchorSettings();
+          }
+        }
       }
 
       if (ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen))
       {
         Quaternion rotate;
         Vec3 translate;
-        Mat4 ts = m_entity->m_node->GetTransform(g_app->m_transformSpace);
+        Mat4 ts = ntt->m_node->GetTransform(g_app->m_transformSpace);
         DecomposeMatrix(ts, &translate, &rotate, nullptr);
 
-        Vec3 scale = m_entity->m_node->GetScale();
+        Vec3 scale = ntt->m_node->GetScale();
 
-        ImGui::BeginDisabled(m_entity->GetTransformLockVal());
+        ImGui::BeginDisabled(ntt->GetTransformLockVal());
 
         // Continuous edit utils.
         static TransformAction* dragMem = nullptr;
-        const auto saveDragMemFn        = [this]() -> void
+        const auto saveDragMemFn        = [ntt]() -> void
         {
           if (dragMem == nullptr)
           {
-            dragMem = new TransformAction(m_entity);
+            dragMem = new TransformAction(ntt);
           }
         };
 
@@ -348,11 +349,11 @@ namespace ToolKit
           bool isDrag = ImGui::IsMouseDragging(0, 0.25f);
           if (isDrag)
           {
-            m_entity->m_node->Translate(newTranslate - translate, space);
+            ntt->m_node->Translate(newTranslate - translate, space);
           }
           else if (!isDrag && IsTextInputFinalized())
           {
-            m_entity->m_node->SetTranslation(newTranslate, space);
+            ntt->m_node->SetTranslation(newTranslate, space);
           }
         }
 
@@ -381,11 +382,11 @@ namespace ToolKit
 
           if (isDrag)
           {
-            m_entity->m_node->Rotate(q, space);
+            ntt->m_node->Rotate(q, space);
           }
           else if (IsTextInputFinalized())
           {
-            m_entity->m_node->SetOrientation(q, space);
+            ntt->m_node->SetOrientation(q, space);
           }
         }
 
@@ -407,23 +408,23 @@ namespace ToolKit
             bool isDrag = ImGui::IsMouseDragging(0, 0.25f);
             if (isDrag || IsTextInputFinalized())
             {
-              m_entity->m_node->SetScale(scale);
+              ntt->m_node->SetScale(scale);
             }
           }
         }
 
         saveTransformActionFn();
 
-        if (ImGui::Checkbox("Inherit Scale", &m_entity->m_node->m_inheritScale))
+        if (ImGui::Checkbox("Inherit Scale", &ntt->m_node->m_inheritScale))
         {
-          m_entity->m_node->SetInheritScaleDeep(m_entity->m_node->m_inheritScale);
+          ntt->m_node->SetInheritScaleDeep(ntt->m_node->m_inheritScale);
         }
 
         ImGui::EndDisabled();
 
         ImGui::Separator();
 
-        BoundingBox bb = m_entity->GetAABB(true);
+        BoundingBox bb = ntt->GetAABB(true);
         Vec3 dim       = bb.max - bb.min;
         ImGui::Text("Bounding box dimensions:");
         ImGui::Text("x: %.2f", dim.x);
@@ -436,8 +437,10 @@ namespace ToolKit
 
     void EntityView::ShowParameterBlock()
     {
+      EntityPtr ntt = m_entity.lock();
+
       VariantCategoryArray categories;
-      m_entity->m_localData.GetCategories(categories, true, true);
+      ntt->m_localData.GetCategories(categories, true, true);
 
       for (VariantCategory& category : categories)
       {
@@ -449,16 +452,16 @@ namespace ToolKit
         // If entity belongs to a prefab,
         // don't show transform lock and transformation.
         bool isFromPrefab = false;
-        if (m_entity->GetPrefabRoot())
+        if (ntt->GetPrefabRoot())
         {
           isFromPrefab = true;
         }
 
-        String varName = category.Name + "##" + std::to_string(m_entity->GetIdVal());
+        String varName = category.Name + "##" + std::to_string(ntt->GetIdVal());
         if (ImGui::CollapsingHeader(varName.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
         {
           ParameterVariantRawPtrArray vars;
-          m_entity->m_localData.GetByCategory(category.Name, vars);
+          ntt->m_localData.GetByCategory(category.Name, vars);
 
           for (ParameterVariant* var : vars)
           {
@@ -471,12 +474,11 @@ namespace ToolKit
         }
 
         // If entity is gradient sky create a "Update IBL Textures" button
-        if (m_entity->GetType() == EntityType::Entity_GradientSky &&
-            category.Name.compare("Sky") == 0) // TODO This might not be necessary
+        if (ntt->IsA<GradientSky>() && category.Name.compare("Sky") == 0) // TODO This might not be necessary
         {
           if (UI::BeginCenteredTextButton("Update IBL Textures"))
           {
-            static_cast<Sky*>(m_entity)->ReInit();
+            Cast<Sky>(ntt)->ReInit();
           }
           UI::EndCenteredTextButton();
         }

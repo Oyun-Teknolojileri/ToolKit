@@ -1,37 +1,22 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "ConsoleWindow.h"
 
 #include "Action.h"
 #include "App.h"
-#include "DirectionComponent.h"
 #include "TransformMod.h"
 
-#include "DebugNew.h"
+#include <DirectionComponent.h>
+#include <Drawable.h>
+#include <Mesh.h>
+#include <PluginManager.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -117,8 +102,8 @@ namespace ToolKit
 
     void TransformInternal(TagArgArray tagArgs, bool set)
     {
-      Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
-      if (e == nullptr)
+      EntityPtr ntt = g_app->GetCurrentScene()->GetCurrentSelection();
+      if (ntt == nullptr)
       {
         return;
       }
@@ -142,7 +127,7 @@ namespace ToolKit
         }
       }
 
-      ActionManager::GetInstance()->AddAction(new TransformAction(e));
+      ActionManager::GetInstance()->AddAction(new TransformAction(ntt));
       bool actionApplied = false;
 
       for (TagArg& tagIt : tagArgs)
@@ -176,11 +161,11 @@ namespace ToolKit
 
           if (set)
           {
-            e->m_node->SetOrientation(q, ts);
+            ntt->m_node->SetOrientation(q, ts);
           }
           else
           {
-            e->m_node->Rotate(q, ts);
+            ntt->m_node->Rotate(q, ts);
           }
           actionApplied = true;
         }
@@ -188,11 +173,11 @@ namespace ToolKit
         {
           if (set)
           {
-            e->m_node->SetScale(transfrom);
+            ntt->m_node->SetScale(transfrom);
           }
           else
           {
-            e->m_node->Scale(transfrom);
+            ntt->m_node->Scale(transfrom);
           }
           actionApplied = true;
         }
@@ -200,11 +185,11 @@ namespace ToolKit
         {
           if (set)
           {
-            e->m_node->SetTranslation(transfrom, ts);
+            ntt->m_node->SetTranslation(transfrom, ts);
           }
           else
           {
-            e->m_node->Translate(transfrom, ts);
+            ntt->m_node->Translate(transfrom, ts);
           }
           actionApplied = true;
         }
@@ -232,7 +217,7 @@ namespace ToolKit
 
         if (EditorViewport* vp = g_app->GetViewport(viewportTag->second[0]))
         {
-          if (Camera* c = vp->GetCamera())
+          if (CameraPtr c = vp->GetCamera())
           {
             if (viewportTag->second.size() == 2)
             {
@@ -286,7 +271,7 @@ namespace ToolKit
 
     void GetTransformExec(TagArgArray tagArgs)
     {
-      Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
+      EntityPtr e = g_app->GetCurrentScene()->GetCurrentSelection();
       if (e != nullptr)
       {
         auto PrintTransform = [e](TransformationSpace ts) -> void
@@ -405,11 +390,14 @@ namespace ToolKit
       // Caviate: A reload is neded since hardware buffers are not updated.
       // After refreshing hardware buffers,
       // transforms of the entity can be set to identity.
-      if (Drawable* ntt = dynamic_cast<Drawable*>(g_app->GetCurrentScene()->GetCurrentSelection()))
+      EntityPtr ntt = g_app->GetCurrentScene()->GetCurrentSelection();
+      if (ntt->IsDrawable())
       {
-        Mat4 ts = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
         MeshRawPtrArray meshes;
-        ntt->GetMesh()->GetAllMeshes(meshes);
+        ntt->GetMeshComponent()->GetMeshVal()->GetAllMeshes(meshes);
+
+        Mat4 ts = ntt->m_node->GetTransform();
+
         for (Mesh* mesh : meshes)
         {
           mesh->ApplyTransform(ts);
@@ -424,10 +412,12 @@ namespace ToolKit
 
     void SaveMesh(TagArgArray tagArgs)
     {
-      if (Drawable* ntt = dynamic_cast<Drawable*>(g_app->GetCurrentScene()->GetCurrentSelection()))
+      EntityPtr ntt = g_app->GetCurrentScene()->GetCurrentSelection();
+      if (ntt->IsDrawable())
       {
-        TagArgArray::const_iterator nameTag = GetTag("n", tagArgs);
-        String fileName                     = ntt->GetMesh()->GetFile();
+        TagArgCIt nameTag = GetTag("n", tagArgs);
+        MeshPtr mesh      = ntt->GetMeshComponent()->GetMeshVal();
+        String fileName   = mesh->GetFile();
         if (fileName.empty())
         {
           fileName = MeshPath(ntt->GetNameVal() + MESH);
@@ -443,7 +433,7 @@ namespace ToolKit
         if (file.is_open())
         {
           XmlDocument doc;
-          ntt->GetMesh()->Serialize(&doc, nullptr);
+          mesh->Serialize(&doc, nullptr);
           std::string xml;
           rapidxml::print(std::back_inserter(xml), doc, 0);
 
@@ -534,7 +524,7 @@ namespace ToolKit
       int problemsFound = 0;
       if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
       {
-        auto fixProblemFn = [&problemsFound, scene, fix](Entity* ntt, StringView msg) -> void
+        auto fixProblemFn = [&problemsFound, scene, fix](EntityPtr ntt, StringView msg) -> void
         {
           problemsFound++;
 
@@ -625,8 +615,6 @@ namespace ToolKit
       }
     }
 
-    ConsoleWindow::ConsoleWindow(XmlNode* node) : ConsoleWindow() { DeSerialize(nullptr, node); }
-
     ConsoleWindow::ConsoleWindow()
     {
       CreateCommand(g_showPickDebugCmd, ShowPickDebugExec);
@@ -660,8 +648,8 @@ namespace ToolKit
     // 1234:
     static String GetLineNumString(size_t line)
     {
-      String lineNum = std::to_string(++line);
-      size_t numDigits = (size_t)std::log10(line);
+      String lineNum   = std::to_string(++line);
+      size_t numDigits = (size_t) std::log10(line);
       lineNum.append(std::max(4ull, numDigits) - numDigits, ' ');
       return lineNum + ": ";
     }
@@ -697,28 +685,38 @@ namespace ToolKit
           ImGui::SameLine();
 
           bool popColor = false;
-          if (item.find(g_errorStr) != String::npos)
-          {
-            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleErrorColor);
-            popColor = true;
-          }
-          else if (item.find(g_commandStr))
-          {
-            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleCommandColor);
-            popColor = true;
-          }
-          else if (item.find(g_warningStr))
-          {
-            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleWarningColor);
-            popColor = true;
-          }
-          else // Than its a memo.
+          if (item.find(g_memoStr) != String::npos)
           {
             ImGui::PushStyleColor(ImGuiCol_Text, g_consoleMemoColor);
             popColor = true;
           }
+          else if (item.find(g_commandStr) != String::npos)
+          {
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleCommandColor);
+            popColor = true;
+          }
+          else if (item.find(g_warningStr) != String::npos)
+          {
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleWarningColor);
+            popColor = true;
+          }
+          else if (item.find(g_errorStr) != String::npos)
+          {
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleErrorColor);
+            popColor = true;
+          }
+          else // Than its a success.
+          {
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleSuccessColor);
+            popColor = true;
+          }
 
-          ImGui::TextUnformatted(item.c_str());
+          ImGui::PushID((int) i);
+          ImGui::PushItemWidth(-1.0f);
+          ImGui::InputText("##txt", const_cast<char*>(item.c_str()), item.size(), ImGuiInputTextFlags_ReadOnly);
+          ImGui::PopItemWidth();
+          ImGui::PopID();
+
           if (popColor)
           {
             ImGui::PopStyleColor();
@@ -802,7 +800,9 @@ namespace ToolKit
       case LogType::Command:
         prefix = g_commandStr;
         break;
-      case LogType::Memo:
+      case LogType::Success:
+        prefix = g_successStr;
+        break;
       default:
         prefix = g_memoStr;
         break;

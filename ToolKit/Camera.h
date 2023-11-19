@@ -1,90 +1,72 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
 
 #include "Entity.h"
-#include "Types.h"
 
 namespace ToolKit
 {
-
   static VariantCategory CameraCategory {"Camera", 100};
 
   class TK_API Camera : public Entity
   {
    public:
-    struct CamData
-    {
-      Vec3 pos;
-      Vec3 dir;
-      Mat4 projection;
-      float fov;
-      float aspect;
-      float nearDist;
-      float far;
-      bool ortographic;
-    };
+    TKDeclareClass(Camera, Entity);
 
-   public:
     Camera();
     virtual ~Camera();
+
+    void NativeConstruct() override;
 
     void SetLens(float fov, float aspect);
     void SetLens(float fov, float aspect, float near, float far);
     void SetLens(float left, float right, float bottom, float top, float near, float far);
 
-    Mat4 GetViewMatrix() const;
-    Mat4 GetProjectionMatrix() const;
+    inline Mat4 GetViewMatrix() const
+    {
+      Mat4 view = m_node->GetTransform();
+      return glm::inverse(view);
+    }
+
+    inline const Mat4& GetProjectionMatrix() const { return m_projection; }
+
     bool IsOrtographic() const;
-
-    CamData GetData() const;
-    EntityType GetType() const override;
-
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     // Tight fit camera frustum to a bounding box with a margin
     void FocusToBoundingBox(const BoundingBox& bb, float margin);
 
-    float Fov() const;
-    float Aspect() const;
-    float Near() const;
-    float Far() const;
-    float Left() const;
-    float Right() const;
-    float Top() const;
-    float Bottom() const;
-    Vec3 Position() const;
+    inline float Fov() const { return m_fov; }
+
+    inline float Aspect() const { return m_aspect; }
+
+    inline float Near() const { return m_near; }
+
+    inline float Far() const { return m_far; }
+
+    inline float Left() const { return m_left; }
+
+    inline float Right() const { return m_right; }
+
+    inline float Top() const { return m_top; }
+
+    inline float Bottom() const { return m_bottom; }
+
+    inline Vec3 Position() const { return m_node->GetTranslation(); }
+
     Vec3 Direction() const;
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
-    void ParameterConstructor();
-    void ParameterEventConstructor();
+    void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+    XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
    public:
     /**
@@ -111,4 +93,5 @@ namespace ToolKit
     bool m_ortographic = false;
     Mat4 m_projection;
   };
+
 } // namespace ToolKit

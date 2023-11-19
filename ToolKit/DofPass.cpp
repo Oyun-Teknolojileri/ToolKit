@@ -1,33 +1,15 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "DofPass.h"
 
 #include "Shader.h"
 #include "ShaderReflectionCache.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -37,8 +19,8 @@ namespace ToolKit
 
   DoFPass::DoFPass()
   {
-    m_quadPass                       = std::make_shared<FullQuadPass>();
-    m_quadPass->m_params.FrameBuffer = std::make_shared<Framebuffer>();
+    m_quadPass                       = MakeNewPtr<FullQuadPass>();
+    m_quadPass->m_params.FrameBuffer = MakeNewPtr<Framebuffer>();
 
     m_dofShader                      = GetShaderManager()->Create<Shader>(ShaderPath("depthOfFieldFrag.shader", true));
   }
@@ -53,6 +35,9 @@ namespace ToolKit
 
   void DoFPass::PreRender()
   {
+    PUSH_GPU_MARKER("DoFPass::PreRender");
+    PUSH_CPU_MARKER("DoFPass::PreRender");
+
     Pass::PreRender();
     if (m_params.ColorRt == nullptr)
     {
@@ -82,15 +67,20 @@ namespace ToolKit
 
     m_quadPass->m_params.FrameBuffer->Init({size.x, size.y, false, false});
     m_dofShader->SetShaderParameter("uPixelSize", ParameterVariant(Vec2(1.0f) / Vec2(size)));
-    m_quadPass->m_params.FrameBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.ColorRt);
+    m_quadPass->m_params.FrameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.ColorRt);
     m_quadPass->m_params.BlendFunc        = BlendFunction::NONE;
     m_quadPass->m_params.ClearFrameBuffer = false;
     m_quadPass->m_params.FragmentShader   = m_dofShader;
-    m_quadPass->m_params.lights           = {};
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void DoFPass::Render()
   {
+    PUSH_GPU_MARKER("DoFPass::Render");
+    PUSH_CPU_MARKER("DoFPass::Render");
+
     Renderer* renderer = GetRenderer();
     if (m_params.ColorRt == nullptr)
     {
@@ -101,8 +91,20 @@ namespace ToolKit
     renderer->SetTexture(1, m_params.DepthRt->m_textureId);
 
     RenderSubPass(m_quadPass);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
-  void DoFPass::PostRender() { Pass::PostRender(); }
+  void DoFPass::PostRender()
+  {
+    PUSH_GPU_MARKER("DoFPass::PostRender");
+    PUSH_CPU_MARKER("DoFPass::PostRender");
+
+    Pass::PostRender();
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
+  }
 
 } // namespace ToolKit

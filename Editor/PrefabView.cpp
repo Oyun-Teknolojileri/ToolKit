@@ -1,27 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "PrefabView.h"
@@ -51,9 +32,9 @@ namespace ToolKit
 
     bool PrefabView::HasActiveEntity() const { return m_activeChildEntity != nullptr; }
 
-    Entity* PrefabView::GetActiveEntity() { return m_activeChildEntity; }
+    EntityPtr PrefabView::GetActiveEntity() { return m_activeChildEntity; }
 
-    bool PrefabView::DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags)
+    bool PrefabView::DrawHeader(EntityPtr ntt, ImGuiTreeNodeFlags flags)
     {
       const String sId = "##" + std::to_string(ntt->GetIdVal());
       if (m_activeChildEntity == ntt)
@@ -71,23 +52,22 @@ namespace ToolKit
       return isOpen;
     }
 
-    void PrefabView::ShowNode(Entity* e)
+    void PrefabView::ShowNode(EntityPtr ntt)
     {
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
 
-      if (e->m_node->m_children.empty() || e->GetType() == EntityType::Entity_Prefab)
+      if (ntt->m_node->m_children.empty() || ntt->IsA<Prefab>())
       {
         nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-        DrawHeader(e, nodeFlags);
+        DrawHeader(ntt, nodeFlags);
       }
       else
       {
-        if (DrawHeader(e, nodeFlags))
+        if (DrawHeader(ntt, nodeFlags))
         {
-          for (Node* n : e->m_node->m_children)
+          for (Node* node : ntt->m_node->m_children)
           {
-            Entity* childNtt = n->m_entity;
-            if (childNtt != nullptr)
+            if (EntityPtr childNtt = node->OwnerEntity())
             {
               ShowNode(childNtt);
             }
@@ -100,13 +80,15 @@ namespace ToolKit
 
     void PrefabView::Show()
     {
-      Entity* cur = g_app->GetCurrentScene()->GetCurrentSelection();
-      if (cur != m_entity)
+      EntityPtr ntt = m_entity.lock();
+      EntityPtr cur = g_app->GetCurrentScene()->GetCurrentSelection();
+      if (cur != ntt)
       {
         m_entity            = cur;
         m_activeChildEntity = nullptr;
       }
-      if (m_entity == nullptr || Prefab::GetPrefabRoot(m_entity) == nullptr)
+
+      if (ntt == nullptr || Prefab::GetPrefabRoot(ntt) == nullptr)
       {
         ImGui::Text("Select a prefab entity");
         return;
@@ -117,13 +99,13 @@ namespace ToolKit
       {
         if (ImGui::BeginChild("##Prefab Scene Nodes", ImVec2(0, 200), true))
         {
-          if (DrawHeader(m_entity, g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen))
+          if (DrawHeader(ntt, g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen))
           {
-            for (Node* n : m_entity->m_node->m_children)
+            for (Node* node : ntt->m_node->m_children)
             {
-              if (n->m_entity)
+              if (EntityPtr childNtt = node->OwnerEntity())
               {
-                ShowNode(n->m_entity);
+                ShowNode(childNtt);
               }
             }
 
@@ -133,7 +115,7 @@ namespace ToolKit
         ImGui::EndChild();
       }
 
-      Entity* shownEntity = m_entity;
+      EntityPtr shownEntity = ntt;
       if (m_activeChildEntity)
       {
         shownEntity = m_activeChildEntity;
@@ -146,8 +128,6 @@ namespace ToolKit
       if (ImGui::CollapsingHeader("Components##1", ImGuiTreeNodeFlags_DefaultOpen))
       {
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
-
-        std::vector<ULongID> compRemove;
         for (ComponentPtr& com : shownEntity->GetComponentPtrArray())
         {
           ComponentView::ShowComponentBlock(com, false);

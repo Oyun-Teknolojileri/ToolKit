@@ -1,32 +1,15 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #pragma once
 
+#include "Anchor.h"
 #include "ConsoleWindow.h"
+#include "DynamicMenu.h"
 #include "EditorRenderer.h"
 #include "EditorScene.h"
 #include "FolderWindow.h"
@@ -46,9 +29,9 @@ namespace ToolKit
   namespace Editor
   {
 
-    typedef std::shared_ptr<class Anchor> AnchorPtr;
     typedef std::function<void(int)> SysCommandDoneCallback;
     typedef std::function<int(StringView, bool, bool, SysCommandDoneCallback)> SysCommandExecutionFn;
+    typedef std::function<void(const StringView)> ShellOpenDirFn;
 
     class App : Serializable
     {
@@ -70,7 +53,18 @@ namespace ToolKit
       bool IsCompiling();
       EditorScenePtr GetCurrentScene();
       void SetCurrentScene(const EditorScenePtr& scene);
-      void FocusEntity(Entity* entity);
+      void FocusEntity(EntityPtr entity);
+
+      /**
+       * Clears all the data cached for current project / scene. Required to clear
+       * all referenced objects before switching projects or stoping the play session.
+       */
+      void ClearSession();
+
+      /**
+       * Clears all the objects created in PIE session.
+       */
+      void ClearPlayInEditorSession();
 
       /**
        * Executes the given system command.
@@ -94,6 +88,7 @@ namespace ToolKit
       void ResetUI();
       void DeleteWindows();
       void CreateWindows(XmlNode* parent);
+      void ReconstructDynamicMenus();
 
       // Import facilities.
       int Import(const String& fullPath, const String& subDir, bool overwrite);
@@ -161,13 +156,13 @@ namespace ToolKit
       void ShowGizmos();
 
       void UpdateSimulation(float deltaTime);
-
-      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
       float GetDeltaTime();
 
+     protected:
+      XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+      XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+
      private:
-      void OverrideEntityConstructors();
       void CreateSimulationWindow(float width, float height);
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
@@ -189,15 +184,16 @@ namespace ToolKit
       SimulationSettings m_simulatorSettings;
 
       // Editor objects.
-      Grid* m_grid;
-      Grid* m_2dGrid;
-      Axis3d* m_origin;
-      Cursor* m_cursor;
-      Gizmo* m_gizmo = nullptr;
+      GridPtr m_grid;
+      GridPtr m_2dGrid;
+      Axis3dPtr m_origin;
+      CursorPtr m_cursor;
+      GizmoPtr m_gizmo;
       AnchorPtr m_anchor;
-      EntityRawPtrArray m_perFrameDebugObjects;
-      std::shared_ptr<Arrow2d> m_dbgArrow;
-      std::shared_ptr<LineBatch> m_dbgFrustum;
+      EntityPtrArray m_perFrameDebugObjects;
+      Arrow2dPtr m_dbgArrow;
+      LineBatchPtr m_dbgFrustum;
+      EditorRendererPtr m_editorRenderer;
 
       // Editor states.
       int m_fps                                = 0;
@@ -216,8 +212,12 @@ namespace ToolKit
       PublishManager* m_publishManager         = nullptr;
       GameMod m_gameMod                        = GameMod::Stop;
       SysCommandExecutionFn m_sysComExecFn     = nullptr;
+      ShellOpenDirFn m_shellOpenDirFn          = nullptr;
       EditorLitMode m_sceneLightingMode        = EditorLitMode::EditorLit;
+      EditorViewport* m_lastActiveViewport     = nullptr;
       Workspace m_workspace;
+      StringArray m_customObjectMetaValues;    //!< Add menu shows this additional classes.
+      DynamicMenuPtrArray m_customObjectsMenu; //!< Menu for custom objects to display in Add.
 
       // Snap settings.
       bool m_snapsEnabled  = false; // Delta transforms.

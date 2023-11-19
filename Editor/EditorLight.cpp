@@ -1,37 +1,21 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "EditorLight.h"
 
 #include "App.h"
-#include "DirectionComponent.h"
-#include "Material.h"
-#include "Texture.h"
+#include "LightMeshGenerator.h"
 
-#include "DebugNew.h"
+#include <DirectionComponent.h>
+#include <Light.h>
+#include <Material.h>
+#include <Texture.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -40,18 +24,17 @@ namespace ToolKit
 
     void EnableLightGizmo(Light* light, bool enable)
     {
-      switch (light->GetType())
+      switch (light->ComparableType())
       {
-      case EntityType::Entity_DirectionalLight:
+      case 0:
         static_cast<EditorDirectionalLight*>(light)->EnableGizmo(enable);
         break;
-      case EntityType::Entity_PointLight:
+      case 1:
         static_cast<EditorPointLight*>(light)->EnableGizmo(enable);
         break;
-      case EntityType::Entity_SpotLight:
+      case 2:
         static_cast<EditorSpotLight*>(light)->EnableGizmo(enable);
         break;
-      case EntityType::Entity_Light:
       default:
         assert(false && "Invalid Light Type");
         break;
@@ -60,10 +43,10 @@ namespace ToolKit
 
     ThreePointLightSystem::ThreePointLightSystem()
     {
-      m_parentNode            = new Node();
+      m_parentNode    = new Node();
 
-      float intensity         = 1.5f;
-      DirectionalLight* light = new DirectionalLight();
+      float intensity = 1.5f;
+      LightPtr light  = MakeNewPtr<DirectionalLight>();
       light->SetColorVal(Vec3(0.55f));
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
@@ -72,7 +55,7 @@ namespace ToolKit
       m_parentNode->AddChild(light->m_node);
       m_lights.push_back(light);
 
-      light = new DirectionalLight();
+      light = MakeNewPtr<DirectionalLight>();
       light->SetColorVal(Vec3(0.15f));
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
@@ -81,7 +64,7 @@ namespace ToolKit
       m_parentNode->AddChild(light->m_node);
       m_lights.push_back(light);
 
-      light = new DirectionalLight();
+      light = MakeNewPtr<DirectionalLight>();
       light->SetColorVal(Vec3(0.1f));
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
@@ -93,29 +76,23 @@ namespace ToolKit
 
     ThreePointLightSystem::~ThreePointLightSystem()
     {
-      for (Light* light : m_lights)
-      {
-        SafeDel(light);
-      }
-
       m_lights.clear();
       SafeDel(m_parentNode);
     }
 
     LightGizmoController::LightGizmoController(Light* light) : m_light(light)
     {
-      switch (light->GetType())
+      switch (light->ComparableType())
       {
-      case EntityType::Entity_DirectionalLight:
+      case 0:
         m_gizmoGenerator = new DirectionalLightMeshGenerator(static_cast<DirectionalLight*>(light));
         break;
-      case EntityType::Entity_PointLight:
+      case 1:
         m_gizmoGenerator = new PointLightMeshGenerator(static_cast<PointLight*>(light));
         break;
-      case EntityType::Entity_SpotLight:
+      case 2:
         m_gizmoGenerator = new SpotLightMeshGenerator(static_cast<SpotLight*>(light));
         break;
-      case EntityType::Entity_Light:
       default:
         assert(false && "Invalid Light Type");
         break;
@@ -140,7 +117,7 @@ namespace ToolKit
         {
           if (MeshComponentPtr mc = m_light->GetMeshComponent())
           {
-            m_light->RemoveComponent(mc->m_id);
+            m_light->RemoveComponent(mc->GetIdVal());
           }
         };
 
@@ -158,7 +135,7 @@ namespace ToolKit
       }
     }
 
-    void LightGizmoController::Init()
+    void LightGizmoController::InitController()
     {
       if (m_initialized)
       {
@@ -171,165 +148,174 @@ namespace ToolKit
       m_initialized = true;
     }
 
+    TKDefineClass(EditorDirectionalLight, DirectionalLight);
+
     EditorDirectionalLight::EditorDirectionalLight() : LightGizmoController(this) {}
 
     EditorDirectionalLight::~EditorDirectionalLight() {}
 
-    void EditorDirectionalLight::ParameterEventConstructor() { Light::ParameterEventConstructor(); }
-
-    Entity* EditorDirectionalLight::Copy() const
+    ObjectPtr EditorDirectionalLight::Copy() const
     {
-      EditorDirectionalLight* cpy = new EditorDirectionalLight();
-      WeakCopy(cpy, false);
-      cpy->Init();
+      EditorDirectionalLightPtr cpy = MakeNewPtr<EditorDirectionalLight>();
+      WeakCopy(cpy.get(), false);
+      cpy->InitController();
       return cpy;
     }
 
-    void EditorDirectionalLight::Serialize(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* EditorDirectionalLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
+      XmlNode* lightNode = nullptr;
       if (m_gizmoActive)
       {
         EnableGizmo(false);
-        DirectionalLight::Serialize(doc, parent);
+        lightNode = Super::SerializeImp(doc, parent);
         EnableGizmo(true);
       }
       else
       {
-        DirectionalLight::Serialize(doc, parent);
+        lightNode = Super::SerializeImp(doc, parent);
       }
+
+      return lightNode;
     }
 
-    void EditorDirectionalLight::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    XmlNode* EditorDirectionalLight::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      DirectionalLight::DeSerialize(doc, parent);
-
+      XmlNode* dirLightNode = Super::DeSerializeImp(info, parent);
       assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
 
-      ParameterEventConstructor();
+      return dirLightNode;
     }
 
-    LineBatch* EditorDirectionalLight::GetDebugShadowFrustum()
+    LineBatchPtr EditorDirectionalLight::GetDebugShadowFrustum()
     {
       Vec3Array corners = GetShadowFrustumCorners();
       static Vec3Array vertices;
       vertices.resize(24);
-      vertices[0]   = corners[3];
-      vertices[1]   = corners[2];
-      vertices[2]   = corners[2];
-      vertices[3]   = corners[1];
-      vertices[4]   = corners[1];
-      vertices[5]   = corners[0];
-      vertices[6]   = corners[0];
-      vertices[7]   = corners[3];
-      vertices[8]   = corners[6];
-      vertices[9]   = corners[5];
-      vertices[10]  = corners[5];
-      vertices[11]  = corners[4];
-      vertices[12]  = corners[4];
-      vertices[13]  = corners[7];
-      vertices[14]  = corners[7];
-      vertices[15]  = corners[6];
-      vertices[16]  = corners[6];
-      vertices[17]  = corners[2];
-      vertices[18]  = corners[5];
-      vertices[19]  = corners[1];
-      vertices[20]  = corners[4];
-      vertices[21]  = corners[0];
-      vertices[22]  = corners[7];
-      vertices[23]  = corners[3];
+      vertices[0]     = corners[3];
+      vertices[1]     = corners[2];
+      vertices[2]     = corners[2];
+      vertices[3]     = corners[1];
+      vertices[4]     = corners[1];
+      vertices[5]     = corners[0];
+      vertices[6]     = corners[0];
+      vertices[7]     = corners[3];
+      vertices[8]     = corners[6];
+      vertices[9]     = corners[5];
+      vertices[10]    = corners[5];
+      vertices[11]    = corners[4];
+      vertices[12]    = corners[4];
+      vertices[13]    = corners[7];
+      vertices[14]    = corners[7];
+      vertices[15]    = corners[6];
+      vertices[16]    = corners[6];
+      vertices[17]    = corners[2];
+      vertices[18]    = corners[5];
+      vertices[19]    = corners[1];
+      vertices[20]    = corners[4];
+      vertices[21]    = corners[0];
+      vertices[22]    = corners[7];
+      vertices[23]    = corners[3];
 
-      LineBatch* lb = new LineBatch(vertices, Vec3(1.0f, 0.0f, 0.0f), DrawType::Line, 0.5f);
+      LineBatchPtr lb = MakeNewPtr<LineBatch>();
+      lb->Generate(vertices, Vec3(1.0f, 0.0f, 0.0f), DrawType::Line, 0.5f);
 
       return lb;
     }
 
-    EditorPointLight::EditorPointLight() : LightGizmoController(this) { ParameterEventConstructor(); }
+    TKDefineClass(EditorPointLight, PointLight);
+
+    EditorPointLight::EditorPointLight() : LightGizmoController(this) {}
 
     EditorPointLight::~EditorPointLight() {}
 
     void EditorPointLight::ParameterEventConstructor()
     {
-      Light::ParameterEventConstructor();
+      Super::ParameterEventConstructor();
+
       ParamRadius().m_onValueChangedFn.clear();
       ParamRadius().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
     }
 
-    Entity* EditorPointLight::Copy() const
+    ObjectPtr EditorPointLight::Copy() const
     {
-      EditorPointLight* cpy = new EditorPointLight();
-      WeakCopy(cpy, false);
-      cpy->Init();
+      EditorPointLightPtr cpy = MakeNewPtr<EditorPointLight>();
+      WeakCopy(cpy.get(), false);
+      cpy->InitController();
       return cpy;
     }
 
-    void EditorPointLight::Serialize(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* EditorPointLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
+      XmlNode* lightNode = nullptr;
       if (m_gizmoActive)
       {
         EnableGizmo(false);
-        PointLight::Serialize(doc, parent);
+        lightNode = PointLight::SerializeImp(doc, parent);
         EnableGizmo(true);
       }
       else
       {
-        PointLight::Serialize(doc, parent);
+        lightNode = PointLight::SerializeImp(doc, parent);
       }
+
+      return lightNode;
     }
 
-    void EditorPointLight::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    XmlNode* EditorPointLight::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      PointLight::DeSerialize(doc, parent);
-
+      XmlNode* pointLightNode = Super::DeSerializeImp(info, parent);
       assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
 
-      ParameterEventConstructor();
+      return pointLightNode;
     }
 
-    EditorSpotLight::EditorSpotLight() : LightGizmoController(this) { ParameterEventConstructor(); }
+    TKDefineClass(EditorSpotLight, SpotLight);
+
+    EditorSpotLight::EditorSpotLight() : LightGizmoController(this) {}
 
     EditorSpotLight::~EditorSpotLight() {}
 
     void EditorSpotLight::ParameterEventConstructor()
     {
-      Light::ParameterEventConstructor();
+      Super::ParameterEventConstructor();
 
-      ParamRadius().m_onValueChangedFn.clear();
       ParamRadius().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
-      ParamOuterAngle().m_onValueChangedFn.clear();
       ParamOuterAngle().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
-      ParamInnerAngle().m_onValueChangedFn.clear();
       ParamInnerAngle().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
     }
 
-    Entity* EditorSpotLight::Copy() const
+    ObjectPtr EditorSpotLight::Copy() const
     {
-      EditorSpotLight* cpy = new EditorSpotLight();
-      WeakCopy(cpy, false);
-      cpy->Init();
+      EditorSpotLightPtr cpy = MakeNewPtr<EditorSpotLight>();
+      WeakCopy(cpy.get(), false);
+      cpy->InitController();
       return cpy;
     }
 
-    void EditorSpotLight::Serialize(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* EditorSpotLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
+      XmlNode* lightNode = nullptr;
       if (m_gizmoActive)
       {
         EnableGizmo(false);
-        SpotLight::Serialize(doc, parent);
+        lightNode = SpotLight::SerializeImp(doc, parent);
         EnableGizmo(true);
       }
       else
       {
-        SpotLight::Serialize(doc, parent);
+        lightNode = SpotLight::SerializeImp(doc, parent);
       }
+
+      return lightNode;
     }
 
-    void EditorSpotLight::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    XmlNode* EditorSpotLight::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      SpotLight::DeSerialize(doc, parent);
-
+      XmlNode* spotLightNode = Super::DeSerializeImp(info, parent);
       assert(m_light->GetMeshComponent() == nullptr && "MeshComponents should not be serialized.");
 
-      ParameterEventConstructor();
+      return spotLightNode;
     }
 
   } // namespace Editor

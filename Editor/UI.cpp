@@ -1,42 +1,37 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "UI.h"
 
 #include "Action.h"
+#include "AndroidBuildWindow.h"
 #include "App.h"
 #include "Mod.h"
 #include "PopupWindows.h"
 
-#include "DebugNew.h"
+#include <Audio.h>
+#include <GlErrorReporter.h>
+#include <GradientSky.h>
+#include <ImGui/backends/imgui_impl_opengl3.h>
+#include <ImGui/backends/imgui_impl_sdl2.h>
+#include <MathUtil.h>
+#include <Prefab.h>
+#include <Sky.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
   namespace Editor
   {
+
+    const float g_indentSpacing = 6.0f;
+    const int g_treeNodeFlags   = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+                                ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap;
 
     bool UI::m_windowMenushowMetrics = false;
     bool UI::m_imguiSampleWindow     = false;
@@ -47,6 +42,7 @@ namespace ToolKit
     UI::SearchFile UI::SearchFileData;
     WindowRawPtrArray UI::m_volatileWindows;
     std::vector<TempWindow*> UI::m_tempWindows;
+    std::vector<TempWindow*> UI::m_removedTempWindows;
     uint Window::m_baseId = 0; // unused id.
     std::vector<std::function<void()>> UI::m_postponedActions;
 
@@ -100,6 +96,7 @@ namespace ToolKit
     TexturePtr UI::m_packageIcon;
     TexturePtr UI::m_objectDataIcon;
     TexturePtr UI::m_sceneIcon;
+    AndroidBuildWindow* UI::m_androidBuildWindow;
 
     UI::AnchorPresetImages UI::m_anchorPresetIcons;
 
@@ -110,14 +107,14 @@ namespace ToolKit
       IMGUI_CHECKVERSION();
       ImGui::CreateContext();
 
-      ImGuiIO& io                          = ImGui::GetIO();
+      ImGuiIO& io                           = ImGui::GetIO();
       io.ConfigFlags                       |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
-      io.ConfigWindowsMoveFromTitleBarOnly = true;
+      io.ConfigWindowsMoveFromTitleBarOnly  = true;
 
       // Handle font loading.
-      static const ImWchar utf8TR[]        = {0x0020, 0x00FF, 0x00c7, 0x00c7, 0x00e7, 0x00e7, 0x011e, 0x011e, 0x011f,
-                                              0x011f, 0x0130, 0x0130, 0x0131, 0x0131, 0x00d6, 0x00d6, 0x00f6, 0x00f6,
-                                              0x015e, 0x015e, 0x015f, 0x015f, 0x00dc, 0x00dc, 0x00fc, 0x00fc, 0};
+      static const ImWchar utf8TR[]         = {0x0020, 0x00FF, 0x00c7, 0x00c7, 0x00e7, 0x00e7, 0x011e, 0x011e, 0x011f,
+                                               0x011f, 0x0130, 0x0130, 0x0131, 0x0131, 0x00d6, 0x00d6, 0x00f6, 0x00f6,
+                                               0x015e, 0x015e, 0x015f, 0x015f, 0x00dc, 0x00dc, 0x00fc, 0x00fc, 0};
 
       io.Fonts->Clear();
       LiberationSans =
@@ -140,6 +137,8 @@ namespace ToolKit
 
       InitIcons();
       InitTheme();
+
+      m_androidBuildWindow = new AndroidBuildWindow();
     }
 
     void UI::HeaderText(const char* text)
@@ -155,6 +154,7 @@ namespace ToolKit
 
     void UI::UnInit()
     {
+      delete m_androidBuildWindow;
       for (size_t i = 0; i < m_volatileWindows.size(); i++)
       {
         SafeDel(m_volatileWindows[i]);
@@ -279,6 +279,34 @@ namespace ToolKit
             TexturePath("Icons/Anchor Presets/" + String(m_anchorPresetIcons.m_presetNames[anchorPresentIndx]) + ".png",
                         true));
         preset->Init();
+      }
+    }
+
+    void SetTheme(Theme theme)
+    {
+      if (theme == Theme::Dark)
+      {
+        DarkTheme();
+      }
+      else if (theme == Theme::Light)
+      {
+        LightTheme();
+      }
+      else // if (theme == Theme::Grey)
+      {
+        GreyTheme();
+      }
+
+      // Fix gamma correction
+      if (!GetRenderSystem()->IsGammaCorrectionNeeded())
+      {
+        float gamma = GetEngineSettings().PostProcessing.Gamma;
+        for (ImVec4& col : ImGui::GetStyle().Colors)
+        {
+          col.x = std::powf(col.x, gamma);
+          col.y = std::powf(col.y, gamma);
+          col.z = std::powf(col.z, gamma);
+        }
       }
     }
 
@@ -428,7 +456,7 @@ namespace ToolKit
     void UI::InitTheme()
     {
       ImGui::SetColorEditOptions(ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoOptions);
-      DarkTheme();
+      SetTheme(Theme::Dark);
     }
 
     void UI::InitSettings()
@@ -451,10 +479,7 @@ namespace ToolKit
 
     void UI::AddTempWindow(TempWindow* window) { m_tempWindows.push_back(window); }
 
-    void UI::RemoveTempWindow(TempWindow* window)
-    {
-      m_tempWindows.erase(std::find(m_tempWindows.begin(), m_tempWindows.end(), window));
-    }
+    void UI::RemoveTempWindow(TempWindow* window) { m_removedTempWindows.push_back(window); }
 
     void UI::ShowUI()
     {
@@ -473,6 +498,9 @@ namespace ToolKit
       {
         wnd->Show();
       }
+
+      erase_if(m_tempWindows, [&](TempWindow* window) -> bool { return contains(m_removedTempWindows, window); });
+      m_removedTempWindows.clear();
 
       if (g_app->m_simulationWindow->IsVisible())
       {
@@ -529,6 +557,9 @@ namespace ToolKit
 
       ImGui::EndFrame();
 
+      ImGui::UpdatePlatformWindows();
+      ImGui::RenderPlatformWindowsDefault();
+
       // UI deferred functions.
       for (auto& action : m_postponedActions)
       {
@@ -565,15 +596,15 @@ namespace ToolKit
 
           if (ImGui::MenuItem("Dark Theme"))
           {
-            DarkTheme();
+            SetTheme(Theme::Dark);
           }
           if (ImGui::MenuItem("Grey Theme"))
           {
-            GreyTheme();
+            SetTheme(Theme::Grey);
           }
           if (ImGui::MenuItem("Light Theme"))
           {
-            LightTheme();
+            SetTheme(Theme::Light);
           }
 
           ImGui::EndMenu();
@@ -644,7 +675,7 @@ namespace ToolKit
             wnd->SetVisibility(vis);
           }
 
-          float width = ImGui::CalcItemWidth();
+          float width  = ImGui::CalcItemWidth();
           width       -= 50;
 
           ImGui::SameLine(width);
@@ -665,9 +696,11 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Add Viewport", "Alt+V"))
         {
-          EditorViewport* vp = new EditorViewport(640, 480);
+          EditorViewport* vp = new EditorViewport();
+          vp->Init({640.0f, 480.0f});
           g_app->m_windows.push_back(vp);
         }
+
         ImGui::EndMenu();
       }
 
@@ -677,8 +710,9 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Add Browser", "Alt+B"))
         {
-          FolderWindow* wnd = new FolderWindow(true);
+          FolderWindow* wnd = new FolderWindow();
           wnd->m_name       = g_assetBrowserStr + "##" + std::to_string(wnd->m_id);
+          wnd->IterateFolders(true);
           g_app->m_windows.push_back(wnd);
         }
 
@@ -704,7 +738,7 @@ namespace ToolKit
 
       if (PluginWindow* wnd = g_app->GetWindow<PluginWindow>("Plugin"))
       {
-        if (ImGui::MenuItem("Plugin Window", "", nullptr, !wnd->IsVisible()))
+        if (ImGui::MenuItem("Simulation Window", "", nullptr, !wnd->IsVisible()))
         {
           wnd->SetVisibility(true);
         }
@@ -782,6 +816,16 @@ namespace ToolKit
         if (ImGui::MenuItem("Web"))
         {
           g_app->m_publishManager->Publish(PublishPlatform::Web);
+        }
+
+        if (ImGui::MenuItem("Android"))
+        {
+          m_androidBuildWindow->OpenBuildWindow();
+        }
+
+        if (ImGui::MenuItem("Windows"))
+        {
+          g_app->m_publishManager->Publish(PublishPlatform::Windows);
         }
 
         ImGui::EndMenu();
@@ -1261,26 +1305,27 @@ namespace ToolKit
       ImGui::Text(text.c_str());
     }
 
-    String UI::EntityTypeToIcon(EntityType type)
+    String UI::EntityTypeToIcon(ClassMeta* Class)
     {
-      String icon                                                       = ICON_FA_CUBE ICON_SPACE;
-      static std::unordered_map<EntityType, String> EntityTypeToIconMap = {
-          {EntityType::Entity_Camera,           ICON_FA_VIDEO_CAMERA ICON_SPACE},
-          {EntityType::Entity_AudioSource,      ICON_FA_FILE_AUDIO ICON_SPACE  },
-          {EntityType::Entity_Node,             ICON_FA_ARROWS ICON_SPACE      },
-          {EntityType::Entity_Prefab,           ICON_FA_CUBES ICON_SPACE       },
-          {EntityType::Entity_Sphere,           ICON_FA_CIRCLE ICON_SPACE      },
+      String icon                                                   = ICON_FA_CUBE ICON_SPACE;
 
-          {EntityType::Entity_Light,            ICON_FA_LIGHTBULB ICON_SPACE   },
-          {EntityType::Entity_PointLight,       ICON_FA_LIGHTBULB ICON_SPACE   },
-          {EntityType::Entity_SpotLight,        ICON_FA_LIGHTBULB ICON_SPACE   },
-          {EntityType::Entity_DirectionalLight, ICON_FA_SUN ICON_SPACE         },
+      static std::unordered_map<String, String> EntityTypeToIconMap = {
+          {Camera::StaticClass()->Name,           ICON_FA_VIDEO_CAMERA ICON_SPACE},
+          {Audio::StaticClass()->Name,            ICON_FA_FILE_AUDIO ICON_SPACE  },
+          {EntityNode::StaticClass()->Name,       ICON_FA_ARROWS ICON_SPACE      },
+          {Prefab::StaticClass()->Name,           ICON_FA_CUBES ICON_SPACE       },
+          {Sphere::StaticClass()->Name,           ICON_FA_CIRCLE ICON_SPACE      },
 
-          {EntityType::Entity_Sky,              ICON_FA_SKYATLAS ICON_SPACE    },
-          {EntityType::Entity_GradientSky,      ICON_FA_SKYATLAS ICON_SPACE    },
+          {Light::StaticClass()->Name,            ICON_FA_LIGHTBULB ICON_SPACE   },
+          {PointLight::StaticClass()->Name,       ICON_FA_LIGHTBULB ICON_SPACE   },
+          {SpotLight::StaticClass()->Name,        ICON_FA_LIGHTBULB ICON_SPACE   },
+          {DirectionalLight::StaticClass()->Name, ICON_FA_SUN ICON_SPACE         },
+
+          {Sky::StaticClass()->Name,              ICON_FA_SKYATLAS ICON_SPACE    },
+          {GradientSky::StaticClass()->Name,      ICON_FA_SKYATLAS ICON_SPACE    },
       };
 
-      auto entityIcon = EntityTypeToIconMap.find(type);
+      auto entityIcon = EntityTypeToIconMap.find(Class->Name);
       if (entityIcon != EntityTypeToIconMap.end())
       {
         icon = entityIcon->second;
@@ -1288,9 +1333,9 @@ namespace ToolKit
       return icon;
     }
 
-    void UI::ShowEntityTreeNodeContent(Entity* ntt)
+    void UI::ShowEntityTreeNodeContent(EntityPtr ntt)
     {
-      String icon = UI::EntityTypeToIcon(ntt->GetType());
+      String icon = UI::EntityTypeToIcon(ntt->Class());
 
       ImGui::SameLine();
       ImGui::Text((icon + ntt->GetNameVal()).c_str());
@@ -1354,56 +1399,61 @@ namespace ToolKit
 
     void Window::DispatchSignals() const {}
 
-    void Window::Serialize(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* Window::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
-      XmlNode* node = doc->allocate_node(rapidxml::node_element, "Window");
-      if (parent != nullptr)
-      {
-        parent->append_node(node);
-      }
-      else
-      {
-        doc->append_node(node);
-      }
+      XmlNode* node = CreateXmlNode(doc, "Window", parent);
+      WriteAttr(node, doc, XmlVersion, TKVersionStr);
 
       WriteAttr(node, doc, XmlNodeName.data(), m_name);
       WriteAttr(node, doc, "id", std::to_string(m_id));
-      WriteAttr(node, doc, "type", std::to_string(static_cast<int>(GetType())));
-      WriteAttr(node, doc, "visible", std::to_string(static_cast<int>(m_visible)));
+      WriteAttr(node, doc, "type", std::to_string((int) GetType()));
+      WriteAttr(node, doc, "visible", std::to_string((int) m_visible));
 
       XmlNode* childNode = CreateXmlNode(doc, "Size", node);
       WriteVec(childNode, doc, m_size);
 
       childNode = CreateXmlNode(doc, "Location", node);
       WriteVec(childNode, doc, m_location);
+
+      return node;
     }
 
-    void Window::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    XmlNode* Window::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      XmlNode* node = nullptr;
-      if (parent != nullptr)
+      XmlNode* wndNode = parent;
+      if (wndNode == nullptr)
       {
-        node = parent;
-      }
-      else
-      {
-        node = doc->first_node("Window");
+        if (info.Document != nullptr)
+        {
+          wndNode = info.Document->first_node("Window");
+        }
       }
 
-      ReadAttr(node, XmlNodeName.data(), m_name);
-      ReadAttr(node, "id", m_id);
-      // Type is determined by the corrsesponding constructor.
-      ReadAttr(node, "visible", m_visible);
+      if (wndNode == nullptr)
+      {
+        assert(wndNode && "Can't find Window node in document.");
+        return nullptr;
+      }
 
-      if (XmlNode* childNode = node->first_node("Size"))
+      // if not present, version must be v0.4.4
+      ReadAttr(wndNode, XmlVersion.data(), m_version, "v0.4.4");
+      ReadAttr(wndNode, XmlNodeName.data(), m_name);
+      ReadAttr(wndNode, "id", m_id);
+
+      // Type is determined by the corresponding constructor.
+      ReadAttr(wndNode, "visible", m_visible);
+
+      if (XmlNode* childNode = wndNode->first_node("Size"))
       {
         ReadVec(childNode, m_size);
       }
 
-      if (XmlNode* childNode = node->first_node("Location"))
+      if (XmlNode* childNode = wndNode->first_node("Location"))
       {
         ReadVec(childNode, m_location);
       }
+
+      return wndNode;
     }
 
     void Window::HandleStates()
@@ -1451,8 +1501,7 @@ namespace ToolKit
 
         if (!m_active)
         {
-          ImGui::SetWindowFocus();
-          m_active = true;
+          SetActive();
         }
       }
 
@@ -1469,6 +1518,11 @@ namespace ToolKit
     {
       m_active = true;
       ImGui::SetWindowFocus();
+
+      if (IsViewport())
+      {
+        g_app->m_lastActiveViewport = static_cast<EditorViewport*>(this);
+      }
     }
 
     void Window::ModShortCutSignals(const IntArray& mask) const
@@ -1521,7 +1575,7 @@ namespace ToolKit
 
       if (ImGui::IsKeyPressed(ImGuiKey_F, false) && !Exist(mask, ImGuiKey_F))
       {
-        if (Entity* ntt = currSecne->GetCurrentSelection())
+        if (EntityPtr ntt = currSecne->GetCurrentSelection())
         {
           if (Window* wnd = g_app->GetOutliner())
           {

@@ -1,44 +1,24 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Mesh.h"
 
 #include "Common/base64.h"
+#include "FileManager.h"
 #include "Material.h"
+#include "MathUtil.h"
+#include "ResourceManager.h"
 #include "Skeleton.h"
+#include "TKOpenGL.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "gles2.h"
-
-#include <rapidxml.hpp>
-#include <rapidxml_utils.hpp>
 
 #include <execution>
-#include <unordered_map>
 
 #include "DebugNew.h"
 
@@ -106,9 +86,14 @@ namespace ToolKit
     }
   }
 
+  // Mesh
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(Mesh, Resource);
+
   Mesh::Mesh()
   {
-    m_material     = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    m_material     = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
     m_vertexLayout = VertexLayout::Mesh;
   }
 
@@ -164,20 +149,9 @@ namespace ToolKit
 
   void Mesh::Load()
   {
-    if (m_loaded)
+    if (!m_loaded)
     {
-      return;
-    }
-
-    String path = GetFile();
-    NormalizePath(path);
-    XmlFilePtr file = GetFileManager()->GetXmlFile(path);
-    XmlDocument doc;
-    doc.parse<0>(file->data());
-
-    if (XmlNode* node = doc.first_node("meshContainer"))
-    {
-      DeSerialize(&doc, node);
+      ParseDocument("meshContainer");
       m_loaded = true;
     }
   }
@@ -223,13 +197,13 @@ namespace ToolKit
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
     }
 
-    cpy->m_material = m_material->Copy<Material>();
+    cpy->m_material = GetMaterialManager()->Copy<Material>(m_material);
     cpy->m_aabb     = m_aabb;
 
     for (MeshPtr child : m_subMeshes)
     {
-      MeshPtr ccpy = child->Copy<Mesh>();
-      cpy->m_subMeshes.push_back(ccpy);
+      MeshPtr childCopy = GetMeshManager()->Copy<Mesh>(child);
+      cpy->m_subMeshes.push_back(childCopy);
     }
   }
 
@@ -324,10 +298,8 @@ namespace ToolKit
   void Mesh::SetMaterial(MaterialPtr material)
   {
     m_material = material;
-    m_material->Init(false);
+    m_material->Init();
     m_dirty = true;
-    Save(true);
-    m_dirty = false;
   }
 
   template <typename T>
@@ -420,11 +392,6 @@ namespace ToolKit
   template <typename T>
   void LoadMesh(XmlDocument* doc, XmlNode* parent, T* mainMesh)
   {
-    if (parent == nullptr)
-    {
-      return;
-    }
-
     mainMesh->m_aabb = BoundingBox();
 
     T* mesh          = mainMesh;
@@ -443,8 +410,8 @@ namespace ToolKit
     {
       if (mesh == nullptr)
       {
-        auto meshPtr = std::make_shared<T>();
-        mesh         = meshPtr.get();
+        std::shared_ptr<T> meshPtr = MakeNewPtr<T>();
+        mesh                       = meshPtr.get();
         mainMesh->m_subMeshes.push_back(meshPtr);
       }
 
@@ -521,13 +488,13 @@ namespace ToolKit
       }
 
       mesh->m_loaded      = true;
-      mesh->m_vertexCount = static_cast<int>(mesh->m_clientSideVertices.size());
-      mesh->m_indexCount  = static_cast<int>(mesh->m_clientSideIndices.size());
+      mesh->m_vertexCount = (int) (mesh->m_clientSideVertices.size());
+      mesh->m_indexCount  = (int) (mesh->m_clientSideIndices.size());
       mesh                = nullptr;
     }
   }
 
-  void Mesh::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Mesh::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "meshContainer", parent);
 
@@ -546,9 +513,15 @@ namespace ToolKit
         writeMesh(doc, container, static_cast<const Mesh*>(m));
       }
     }
+
+    return container;
   }
 
-  void Mesh::DeSerialize(XmlDocument* doc, XmlNode* parent) { LoadMesh(doc, parent, this); }
+  XmlNode* Mesh::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    LoadMesh(info.Document, parent, this);
+    return nullptr;
+  }
 
   void TraverseMeshHelper(const Mesh* mesh, std::function<void(const Mesh*)> callback)
   {
@@ -624,16 +597,21 @@ namespace ToolKit
     }
   }
 
+  // SkinMesh
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(SkinMesh, Mesh);
+
   SkinMesh::SkinMesh() : Mesh() { m_vertexLayout = VertexLayout::SkinMesh; }
 
   SkinMesh::SkinMesh(const String& file) : SkinMesh()
   {
     SetFile(file);
 
-    String skelFile = file.substr(0, file.find_last_of("."));
+    String skelFile  = file.substr(0, file.find_last_of("."));
     skelFile        += ".skeleton";
 
-    m_skeleton      = GetSkeletonManager()->Create<Skeleton>(skelFile);
+    m_skeleton       = GetSkeletonManager()->Create<Skeleton>(skelFile);
   }
 
   SkinMesh::~SkinMesh() { UnInit(); }
@@ -658,6 +636,7 @@ namespace ToolKit
     {
       return;
     }
+
     // If skeleton is specified, load it
     // While reading from a file, it's probably not loaded
     // So Deserialize will also try to load it
@@ -670,20 +649,16 @@ namespace ToolKit
         return;
       }
     }
-    String path = GetFile();
-    NormalizePath(path);
-    XmlFilePtr file = GetFileManager()->GetXmlFile(path);
-    XmlDocument doc;
-    doc.parse<0>(file->data());
 
-    if (XmlNode* node = doc.first_node("meshContainer"))
-    {
-      DeSerialize(&doc, node);
-      m_loaded = true;
-    }
+    ParseDocument("meshContainer");
+    m_loaded = true;
   }
 
-  void SkinMesh::DeSerialize(XmlDocument* doc, XmlNode* parent) { LoadMesh(doc, parent, this); }
+  XmlNode* SkinMesh::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    LoadMesh(info.Document, parent, this);
+    return nullptr;
+  }
 
   BoundingBox SkinMesh::CalculateAABB(const Skeleton* skel, DynamicBoneMapPtr boneMap)
   {
@@ -698,7 +673,7 @@ namespace ToolKit
       indexes[i] = i;
     }
 
-#ifndef __EMSCRIPTEN__
+#ifndef __clang__
     std::for_each(std::execution::par_unseq,
                   indexes.begin(),
                   indexes.end(),
@@ -781,41 +756,30 @@ namespace ToolKit
   {
     Mesh::CopyTo(other);
     SkinMesh* cpy   = static_cast<SkinMesh*>(other);
-    cpy->m_skeleton = m_skeleton->Copy<Skeleton>();
+    cpy->m_skeleton = GetSkeletonManager()->Copy<Skeleton>(m_skeleton);
     cpy->m_skeleton->Init();
   }
 
-  MeshManager::MeshManager() { m_type = ResourceType::Mesh; }
+  MeshManager::MeshManager() { m_baseType = Mesh::StaticClass(); }
 
   MeshManager::~MeshManager() {}
 
-  bool MeshManager::CanStore(ResourceType t)
+  bool MeshManager::CanStore(ClassMeta* Class) { return Class->IsSublcassOf(Mesh::StaticClass()); }
+
+  ResourcePtr MeshManager::CreateLocal(ClassMeta* Class)
   {
-    if (t == ResourceType::Mesh || t == ResourceType::SkinMesh)
+    if (Class == Mesh::StaticClass())
     {
-      return true;
+      return MakeNewPtr<Mesh>();
     }
 
-    return false;
-  }
-
-  ResourcePtr MeshManager::CreateLocal(ResourceType type)
-  {
-    Mesh* res = nullptr;
-    switch (type)
+    if (Class == SkinMesh::StaticClass())
     {
-    case ResourceType::Mesh:
-      res = new Mesh();
-      break;
-    case ResourceType::SkinMesh:
-      res = new SkinMesh();
-      break;
-    default:
-      assert(false);
-      break;
+      return MakeNewPtr<SkinMesh>();
     }
-    return ResourcePtr(res);
+
+    return nullptr;
   }
 
-  String MeshManager::GetDefaultResource(ResourceType type) { return MeshPath("Suzanne.mesh", true); }
+  String MeshManager::GetDefaultResource(ClassMeta* Class) { return MeshPath("Suzanne.mesh", true); }
 } // namespace ToolKit

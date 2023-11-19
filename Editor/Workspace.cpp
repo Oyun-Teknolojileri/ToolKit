@@ -1,34 +1,17 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Workspace.h"
 
 #include "App.h"
 
-#include "DebugNew.h"
+#include <FileManager.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -43,7 +26,7 @@ namespace ToolKit
     void Workspace::Init()
     {
       m_activeWorkspace = GetDefaultWorkspace();
-      DeSerialize(nullptr, nullptr);
+      DeSerialize(SerializationFileInfo(), nullptr);
     }
 
     XmlNode* Workspace::GetDefaultWorkspaceNode(XmlDocBundle& bundle) const
@@ -53,7 +36,7 @@ namespace ToolKit
       if (CheckFile(settingsFile))
       {
         XmlFilePtr lclFile    = GetFileManager()->GetXmlFile(settingsFile.c_str());
-        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+        XmlDocumentPtr lclDoc = MakeNewPtr<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
 
         bundle.doc       = lclDoc;
@@ -172,43 +155,52 @@ namespace ToolKit
       {
         if (dir.is_directory())
         {
-          String resourcesPath = ConcatPaths({dir.path().string(), "Resources"});
-          String codesPath     = ConcatPaths({dir.path().string(), "Codes"});
+          String dirPath = dir.path().string();
+          if (dirPath.find(".git") != String::npos)
+          {
+            // Skip git directory.
+            continue;
+          }
+
+          String resourcesPath = ConcatPaths({dirPath, "Resources"});
+          String codesPath     = ConcatPaths({dirPath, "Codes"});
+
           // Skip directory if it doesn't have folders: Resources, Codes
           if (!std::filesystem::directory_entry(resourcesPath).is_directory() ||
               !std::filesystem::directory_entry(codesPath).is_directory())
           {
             continue;
           }
+
           const StringArray requiredResourceFolders = {"Materials", "Meshes", "Scenes", "Textures"};
           bool foundAllRequiredFolders              = true;
           for (uint i = 0; i < requiredResourceFolders.size(); i++)
           {
-            if (!(std::filesystem::directory_entry(ConcatPaths({resourcesPath, requiredResourceFolders[i]}))
-                      .is_directory()))
+            String checkDir = ConcatPaths({resourcesPath, requiredResourceFolders[i]});
+            if (!(std::filesystem::directory_entry(checkDir).is_directory()))
             {
               foundAllRequiredFolders = false;
               break;
             }
           }
+
           if (!foundAllRequiredFolders)
           {
             continue;
           }
-          std::string dirName = dir.path().filename().u8string();
 
-          // Hide hidden folders
+          // Don't show hidden folders
+          String dirName = dir.path().filename().u8string();
           if (dirName.size() > 1 && dirName[0] != '.')
           {
             Project project = {dirName, ""};
-
             m_projects.push_back(project);
           }
         }
       }
     }
 
-    void Workspace::Serialize(XmlDocument* doc, XmlNode* parent) const
+    XmlNode* Workspace::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
       std::ofstream file;
       String fileName = ConcatPaths({ConfigPath(), g_workspaceFile});
@@ -218,8 +210,9 @@ namespace ToolKit
       {
         XmlDocument* lclDoc = new XmlDocument();
         XmlNode* settings   = CreateXmlNode(lclDoc, XmlNodeSettings.data());
+        WriteAttr(settings, lclDoc, XmlVersion, TKVersionStr);
 
-        XmlNode* setNode    = CreateXmlNode(lclDoc, XmlNodeWorkspace.data(), settings);
+        XmlNode* setNode = CreateXmlNode(lclDoc, XmlNodeWorkspace.data(), settings);
         WriteAttr(setNode, lclDoc, XmlNodePath.data(), m_activeWorkspace);
 
         setNode = CreateXmlNode(lclDoc, XmlNodeProject.data(), settings);
@@ -247,6 +240,8 @@ namespace ToolKit
         SafeDel(lclDoc);
       }
       SerializeEngineSettings();
+
+      return nullptr;
     }
 
     void Workspace::SerializeSimulationWindow(XmlDocument* doc) const
@@ -310,6 +305,11 @@ namespace ToolKit
       {
         XmlDocument* lclDoc = new XmlDocument();
 
+        // Always write the current version.
+        XmlNode* version    = lclDoc->allocate_node(rapidxml::node_element, "Version");
+        lclDoc->append_node(version);
+        WriteAttr(version, lclDoc, "version", TKVersionStr);
+
         GetEngineSettings().SerializeWindow(lclDoc, nullptr);
         GetEngineSettings().SerializeGraphics(lclDoc, nullptr);
         SerializeSimulationWindow(lclDoc);
@@ -348,16 +348,18 @@ namespace ToolKit
       SafeDel(lclDoc);
     }
 
-    void Workspace::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    XmlNode* Workspace::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
       String settingsFile   = ConcatPaths({ConfigPath(), g_workspaceFile});
 
-      XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
-      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+      XmlFilePtr lclFile    = MakeNewPtr<XmlFile>(settingsFile.c_str());
+      XmlDocumentPtr lclDoc = MakeNewPtr<XmlDocument>();
       lclDoc->parse<0>(lclFile->data());
 
       if (XmlNode* settings = lclDoc->first_node(XmlNodeSettings.data()))
       {
+        ReadAttr(settings, XmlVersion.data(), m_version);
+
         if (XmlNode* setNode = settings->first_node(XmlNodeWorkspace.data()))
         {
           String foundWorkspacePath;
@@ -391,6 +393,7 @@ namespace ToolKit
       }
 
       DeSerializeEngineSettings();
+      return nullptr;
     }
 
   } // namespace Editor

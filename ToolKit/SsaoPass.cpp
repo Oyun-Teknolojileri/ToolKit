@@ -1,48 +1,74 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "SsaoPass.h"
 
+#include "Camera.h"
 #include "Material.h"
+#include "MathUtil.h"
 #include "Mesh.h"
+#include "Shader.h"
 #include "ShaderReflectionCache.h"
+#include "TKOpenGL.h"
+#include "TKProfiler.h"
 #include "ToolKit.h"
+
+#include <random>
 
 #include "DebugNew.h"
 
 namespace ToolKit
 {
 
+  // SSAONoiseTexture
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(SSAONoiseTexture, DataTexture);
+
+  void SSAONoiseTexture::Init(void* data)
+  {
+    if (m_initiated)
+    {
+      return;
+    }
+
+    GLint currId;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
+
+    glGenTextures(1, &m_textureId);
+    glBindTexture(GL_TEXTURE_2D, m_textureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, m_width, m_height, 0, GL_RG, GL_FLOAT, data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glBindTexture(GL_TEXTURE_2D, currId);
+
+    m_initiated = true;
+  }
+
+  SSAONoiseTexture::SSAONoiseTexture() {}
+
+  void SSAONoiseTexture::Init(bool flushClientSideArray)
+  {
+    assert(false); // The code should never come here
+  }
+
+  // SSAOPass
+  //////////////////////////////////////////////////////////////////////////
+
   SSAOPass::SSAOPass()
   {
-    m_ssaoFramebuffer = std::make_shared<Framebuffer>();
-    m_ssaoTexture     = std::make_shared<RenderTarget>();
-    m_tempBlurRt      = std::make_shared<RenderTarget>();
-    m_noiseTexture    = std::make_shared<SSAONoiseTexture>(4, 4);
-    m_quadPass        = std::make_shared<FullQuadPass>();
+    m_ssaoFramebuffer = MakeNewPtr<Framebuffer>();
+    m_ssaoTexture     = MakeNewPtr<RenderTarget>();
+    m_tempBlurRt      = MakeNewPtr<RenderTarget>();
+    m_noiseTexture    = MakeNewPtr<SSAONoiseTexture>(4, 4);
+    m_quadPass        = MakeNewPtr<FullQuadPass>();
   }
 
   SSAOPass::SSAOPass(const SSAOPassParams& params) : SSAOPass() { m_params = params; }
@@ -58,16 +84,17 @@ namespace ToolKit
 
   void SSAOPass::Render()
   {
+    PUSH_GPU_MARKER("SSAOPass::Render");
+    PUSH_CPU_MARKER("SSAOPass::Render");
+
     Renderer* renderer = GetRenderer();
 
     // Generate SSAO texture
-    renderer->SetTexture(0, m_params.GPositionBuffer->m_textureId);
     renderer->SetTexture(1, m_params.GNormalBuffer->m_textureId);
     renderer->SetTexture(2, m_noiseTexture->m_textureId);
     renderer->SetTexture(3, m_params.GLinearDepthBuffer->m_textureId);
 
     m_ssaoShader->SetShaderParameter("radius", ParameterVariant(m_params.Radius));
-
     m_ssaoShader->SetShaderParameter("bias", ParameterVariant(m_params.Bias));
 
     RenderSubPass(m_quadPass);
@@ -77,14 +104,23 @@ namespace ToolKit
 
     // Vertical blur
     renderer->Apply7x1GaussianBlur(m_tempBlurRt, m_ssaoTexture, Y_AXIS, 1.0f / m_ssaoTexture->m_height);
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
   void SSAOPass::PreRender()
   {
+    PUSH_GPU_MARKER("SSAOPass::PreRender");
+    PUSH_CPU_MARKER("SSAOPass::PreRender");
+
     Pass::PreRender();
 
-    int width  = m_params.GPositionBuffer->m_width;
-    int height = m_params.GPositionBuffer->m_height;
+    int width           = m_params.GNormalBuffer->m_width;
+    int height          = m_params.GNormalBuffer->m_height;
+
+    // Clamp kernel size
+    m_params.KernelSize = glm::clamp(m_params.KernelSize, m_minimumKernelSize, m_maximumKernelSize);
 
     GenerateSSAONoise();
 
@@ -103,7 +139,7 @@ namespace ToolKit
     m_ssaoTexture->m_settings         = oneChannelSet;
     m_ssaoTexture->ReconstructIfNeeded((uint) width, (uint) height);
 
-    m_ssaoFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0, m_ssaoTexture);
+    m_ssaoFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_ssaoTexture);
 
     // Init temporary blur render target
     m_tempBlurRt->m_settings = oneChannelSet;
@@ -113,7 +149,7 @@ namespace ToolKit
     m_noiseTexture->Init(&m_ssaoNoise[0]);
 
     m_quadPass->m_params.FrameBuffer      = m_ssaoFramebuffer;
-    m_quadPass->m_params.ClearFrameBuffer = true;
+    m_quadPass->m_params.ClearFrameBuffer = false;
 
     // SSAO fragment shader
     if (!m_ssaoShader)
@@ -121,10 +157,10 @@ namespace ToolKit
       m_ssaoShader = GetShaderManager()->Create<Shader>(ShaderPath("ssaoCalcFrag.shader", true));
     }
 
-    if (m_prevSpread != m_params.spread)
+    if (m_params.KernelSize != m_currentKernelSize || m_prevSpread != m_params.spread)
     {
       // Update kernel
-      for (uint i = 0; i < 64; ++i)
+      for (int i = 0; i < m_params.KernelSize; ++i)
       {
         m_ssaoShader->SetShaderParameter(g_ssaoSamplesStrCache[i], ParameterVariant(m_ssaoKernel[i]));
       }
@@ -133,23 +169,37 @@ namespace ToolKit
     }
 
     m_ssaoShader->SetShaderParameter("screenSize", ParameterVariant(Vec2(width, height)));
-
     m_ssaoShader->SetShaderParameter("bias", ParameterVariant(m_params.Bias));
-
+    m_ssaoShader->SetShaderParameter("kernelSize", ParameterVariant(m_params.KernelSize));
     m_ssaoShader->SetShaderParameter("projection", ParameterVariant(m_params.Cam->GetProjectionMatrix()));
-
     m_ssaoShader->SetShaderParameter("viewMatrix", ParameterVariant(m_params.Cam->GetViewMatrix()));
 
     m_quadPass->m_params.FragmentShader = m_ssaoShader;
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
   }
 
-  void SSAOPass::PostRender() { Pass::PostRender(); }
+  void SSAOPass::PostRender()
+  {
+    PUSH_GPU_MARKER("SSAOPass::PostRender");
+    PUSH_CPU_MARKER("SSAOPass::PostRender");
+
+    m_currentKernelSize = m_params.KernelSize;
+
+    Pass::PostRender();
+
+    POP_CPU_MARKER();
+    POP_GPU_MARKER();
+  }
 
   void SSAOPass::GenerateSSAONoise()
   {
-    if (m_ssaoKernel.size() == 0 || m_prevSpread != m_params.spread)
+    CPU_FUNC_RANGE();
+
+    if (m_prevSpread != m_params.spread)
     {
-      m_ssaoKernel = GenerateRandomSamplesInHemisphere(64, m_params.spread);
+      GenerateRandomSamplesInHemisphere(m_maximumKernelSize, m_params.spread, m_ssaoKernel);
     }
 
     if (m_ssaoNoise.size() == 0)

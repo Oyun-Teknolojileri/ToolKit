@@ -1,39 +1,27 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Entity.h"
 
+#include "Audio.h"
+#include "Camera.h"
+#include "Canvas.h"
+#include "Drawable.h"
 #include "GradientSky.h"
 #include "Light.h"
 #include "MathUtil.h"
+#include "Mesh.h"
 #include "Node.h"
 #include "Prefab.h"
+#include "Primative.h"
 #include "ResourceComponent.h"
 #include "Skeleton.h"
 #include "Sky.h"
+#include "Surface.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -42,13 +30,13 @@
 namespace ToolKit
 {
 
+  TKDefineClass(Entity, Object);
+
   Entity::Entity()
   {
-    ParameterConstructor();
-
-    m_node           = new Node();
-    m_node->m_entity = this;
-    _parentId        = 0;
+    m_node            = new Node();
+    _prefabRootEntity = nullptr;
+    _parentId         = NULL_HANDLE;
   }
 
   Entity::~Entity()
@@ -57,9 +45,28 @@ namespace ToolKit
     ClearComponents();
   }
 
-  bool Entity::IsDrawable() const { return GetComponent<MeshComponent>() != nullptr; }
+  void Entity::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    m_node->OwnerEntity(Self<Entity>());
+  }
 
-  EntityType Entity::GetType() const { return EntityType::Entity_Base; }
+  EntityPtr Entity::Parent() const
+  {
+    if (m_node)
+    {
+      if (m_node->m_parent)
+      {
+        if (EntityPtr parent = m_node->m_parent->OwnerEntity())
+        {
+          return parent;
+        }
+      }
+    }
+    return nullptr;
+  }
+
+  bool Entity::IsDrawable() const { return GetComponent<MeshComponent>() != nullptr; }
 
   void Entity::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
   {
@@ -117,11 +124,12 @@ namespace ToolKit
     return aabb;
   }
 
-  Entity* Entity::Copy() const
+  ObjectPtr Entity::Copy() const
   {
-    EntityType t = GetType();
-    Entity* e    = GetEntityFactory()->CreateByType(t);
-    return CopyTo(e);
+    EntityPtr cpy = MakeNewPtrCasted<Entity>(Class()->Name);
+    CopyTo(cpy.get());
+
+    return cpy;
   }
 
   void Entity::ClearComponents()
@@ -138,9 +146,9 @@ namespace ToolKit
     WeakCopy(other);
 
     other->ClearComponents();
-    for (const ComponentPtr& com : GetComponentPtrArray())
+    for (const ComponentPtr& com : m_components)
     {
-      other->GetComponentPtrArray().push_back(com->Copy(other));
+      other->m_components.push_back(com->Copy(other->Self<Entity>()));
     }
 
     return other;
@@ -148,46 +156,39 @@ namespace ToolKit
 
   void Entity::ParameterConstructor()
   {
-    m_localData.m_variants.reserve(6);
-    ULongID id = GetHandleManager()->GetNextHandle();
+    Super::ParameterConstructor();
 
-    Id_Define(id, EntityCategory.Name, EntityCategory.Priority, true, false);
-
-    Name_Define("Entity_" + std::to_string(id), EntityCategory.Name, EntityCategory.Priority, true, true);
-
+    Name_Define(StaticClass()->Name, EntityCategory.Name, EntityCategory.Priority, true, true);
     Tag_Define("", EntityCategory.Name, EntityCategory.Priority, true, true);
-
     Visible_Define(true, EntityCategory.Name, EntityCategory.Priority, true, true);
-
     TransformLock_Define(false, EntityCategory.Name, EntityCategory.Priority, true, true);
   }
 
+  void Entity::ParameterEventConstructor() { Super::ParameterEventConstructor(); }
+
   void Entity::WeakCopy(Entity* other, bool copyComponents) const
   {
-    assert(other->GetType() == GetType());
+    assert(other->Class() == Class());
     SafeDel(other->m_node);
-    other->m_node           = m_node->Copy();
-    other->m_node->m_entity = other;
+    other->m_node = m_node->Copy();
+    other->m_node->OwnerEntity(other->Self<Entity>());
 
     // Preserve Ids.
-    ULongID id              = other->GetIdVal();
-    other->m_localData      = m_localData;
+    ULongID id         = other->GetIdVal();
+    other->m_localData = m_localData;
     other->SetIdVal(id);
 
     if (copyComponents)
     {
-      other->GetComponentPtrArray() = GetComponentPtrArray();
+      other->m_components = m_components;
     }
   }
 
-  void Entity::AddComponent(Component* component) { AddComponent(ComponentPtr(component)); }
-
-  void Entity::AddComponent(ComponentPtr component)
+  void Entity::AddComponent(const ComponentPtr& component)
   {
-    assert(GetComponent(component->m_id) == nullptr && "Component has already been added.");
-
-    component->m_entity = this;
-    GetComponentPtrArray().push_back(component);
+    assert(GetComponent(component->GetIdVal()) == nullptr && "Component has already been added.");
+    component->OwnerEntity(Self<Entity>());
+    m_components.push_back(component);
   }
 
   MeshComponentPtr Entity::GetMeshComponent() const { return GetComponent<MeshComponent>(); }
@@ -196,13 +197,12 @@ namespace ToolKit
 
   ComponentPtr Entity::RemoveComponent(ULongID componentId)
   {
-    ComponentPtrArray& compList = GetComponentPtrArray();
-    for (size_t i = 0; i < compList.size(); i++)
+    for (size_t i = 0; i < m_components.size(); i++)
     {
-      ComponentPtr com = compList[i];
-      if (com->m_id == componentId)
+      ComponentPtr com = m_components[i];
+      if (com->GetIdVal() == componentId)
       {
-        compList.erase(compList.begin() + i);
+        m_components.erase(m_components.begin() + i);
         return com;
       }
     }
@@ -218,7 +218,7 @@ namespace ToolKit
   {
     for (const ComponentPtr& com : GetComponentPtrArray())
     {
-      if (com->m_id == id)
+      if (com->GetIdVal() == id)
       {
         return com;
       }
@@ -227,49 +227,67 @@ namespace ToolKit
     return nullptr;
   }
 
-  void Entity::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Entity::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* node = CreateXmlNode(doc, XmlEntityElement, parent);
-    WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(GetIdVal()));
-    if (m_node->m_parent && m_node->m_parent->m_entity)
+    XmlNode* objNode = Super::SerializeImp(doc, parent);
+    XmlNode* node    = CreateXmlNode(doc, StaticClass()->Name, objNode);
+
+    if (EntityPtr parentNtt = m_node->ParentEntity())
     {
-      WriteAttr(node, doc, XmlParentEntityIdAttr, std::to_string(m_node->m_parent->m_entity->GetIdVal()));
+      WriteAttr(node, doc, XmlParentEntityIdAttr, std::to_string(parentNtt->GetIdVal()));
     }
 
-    WriteAttr(node, doc, XmlEntityTypeAttr, std::to_string(static_cast<int>(GetType())));
-
     m_node->Serialize(doc, node);
-    m_localData.Serialize(doc, node);
 
-    XmlNode* compNode = CreateXmlNode(doc, "Components", node);
+    XmlNode* compNode = CreateXmlNode(doc, XmlComponentArrayElement, node);
     for (const ComponentPtr& cmp : GetComponentPtrArray())
     {
       cmp->Serialize(doc, compNode);
     }
+
+    return node;
   }
 
-  void Entity::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  XmlNode* Entity::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    XmlNode* node = nullptr;
+    if (m_version == TKV045)
+    {
+      return DeSerializeImpV045(info, parent);
+    }
+
+    // Old file, keep parsing.
+    XmlNode* nttNode = nullptr;
+    XmlDocument* doc = info.Document;
+
     if (parent != nullptr)
     {
-      node = parent;
+      nttNode = parent;
     }
     else
     {
-      node = doc->first_node(XmlEntityElement.c_str());
+      nttNode = doc->first_node(XmlEntityElement.c_str());
     }
 
+    XmlNode* node = nttNode;
     ReadAttr(node, XmlParentEntityIdAttr, _parentId);
 
     if (XmlNode* transformNode = node->first_node(XmlNodeElement.c_str()))
     {
-      m_node->DeSerialize(doc, transformNode);
+      m_node->DeSerialize(info, transformNode);
     }
 
-    m_localData.DeSerialize(doc, parent);
+    // Release the generated id.
+    HandleManager* handleMan = GetHandleManager();
+    ULongID id               = GetIdVal();
+    handleMan->ReleaseHandle(id);
+
+    // Read id and other parameters.
+    m_localData.DeSerialize(info, parent);
+
+    PreventIdCollision();
 
     ClearComponents();
+
     if (XmlNode* components = node->first_node("Components"))
     {
       XmlNode* comNode = components->first_node(XmlComponent.c_str());
@@ -277,14 +295,49 @@ namespace ToolKit
       {
         int type = -1;
         ReadAttr(comNode, XmlParamterTypeAttr, type);
-        Component* com = Component::CreateByType(static_cast<ComponentType>(type));
-
-        com->DeSerialize(doc, comNode);
+        ComponentPtr com = ComponentFactory::Create((ComponentFactory::ComponentType) type);
+        com->m_version   = m_version;
+        com->DeSerialize(info, comNode);
         AddComponent(com);
 
         comNode = comNode->next_sibling();
       }
     }
+
+    return nttNode;
+  }
+
+  XmlNode* Entity::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* objNode = Super::DeSerializeImp(info, parent);
+    XmlNode* nttNode = objNode->first_node(Entity::StaticClass()->Name.c_str());
+    ReadAttr(nttNode, XmlParentEntityIdAttr, _parentId);
+
+    if (XmlNode* transformNode = nttNode->first_node(XmlNodeElement.c_str()))
+    {
+      m_node->DeSerialize(info, transformNode);
+    }
+
+    ClearComponents();
+
+    if (XmlNode* comArray = nttNode->first_node(XmlComponentArrayElement.data()))
+    {
+      XmlNode* comNode = comArray->first_node(Object::StaticClass()->Name.c_str());
+      while (comNode != nullptr)
+      {
+        String cls;
+        ReadAttr(comNode, XmlObjectClassAttr.data(), cls);
+        ComponentPtr com = MakeNewPtrCasted<Component>(cls);
+        com->m_version   = m_version;
+        com->DeSerialize(info, comNode);
+
+        AddComponent(com);
+
+        comNode = comNode->next_sibling();
+      }
+    }
+
+    return nttNode;
   }
 
   void Entity::RemoveResources() { assert(false && "Not implemented"); }
@@ -309,11 +362,11 @@ namespace ToolKit
     SetVisibleVal(vis);
     if (deep)
     {
-      EntityRawPtrArray children;
-      GetChildren(this, children);
-      for (Entity* c : children)
+      EntityPtrArray children;
+      GetChildren(Self<Entity>(), children);
+      for (EntityPtr child : children)
       {
-        c->SetVisibility(vis, true);
+        child->SetVisibility(vis, true);
       }
     }
   }
@@ -323,40 +376,13 @@ namespace ToolKit
     SetTransformLockVal(lock);
     if (deep)
     {
-      EntityRawPtrArray children;
-      GetChildren(this, children);
-      for (Entity* c : children)
+      EntityPtrArray children;
+      GetChildren(Self<Entity>(), children);
+      for (EntityPtr child : children)
       {
-        c->SetTransformLock(lock, true);
+        child->SetTransformLock(lock, true);
       }
     }
-  }
-
-  bool Entity::IsSurfaceInstance() const
-  {
-    switch (GetType())
-    {
-    case EntityType::Entity_Surface:
-    case EntityType::Entity_Button:
-    case EntityType::Entity_Canvas:
-      return true;
-    default:
-      return false;
-    }
-  }
-
-  bool Entity::IsLightInstance() const
-  {
-    const EntityType type = GetType();
-    return (type == EntityType::Entity_Light || type == EntityType::Entity_DirectionalLight ||
-            type == EntityType::Entity_PointLight || type == EntityType::Entity_SpotLight);
-  }
-
-  bool Entity::IsSkyInstance() const
-  {
-    const EntityType type = GetType();
-    return (type == EntityType::Entity_Sky || type == EntityType::Entity_SkyBase ||
-            type == EntityType::Entity_GradientSky);
   }
 
   EntityNode::EntityNode() {}
@@ -365,90 +391,86 @@ namespace ToolKit
 
   EntityNode::~EntityNode() {}
 
-  EntityType EntityNode::GetType() const { return EntityType::Entity_Node; }
-
   void EntityNode::RemoveResources() {}
 
-  EntityFactory::EntityFactory() { m_overrideFns.resize(static_cast<size_t>(EntityType::ENTITY_TYPE_COUNT), nullptr); }
-
-  EntityFactory::~EntityFactory() { m_overrideFns.clear(); }
-
-  Entity* EntityFactory::CreateByType(EntityType type)
+  XmlNode* EntityNode::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
-    // Overriden constructors
-    if (m_overrideFns[static_cast<int>(type)] != nullptr)
-    {
-      return m_overrideFns[static_cast<int>(type)]();
-    }
+    XmlNode* root = Super::SerializeImp(doc, parent);
+    XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
-    Entity* e = nullptr;
+    return node;
+  }
+
+  EntityPtr EntityFactory::CreateByType(EntityType type)
+  {
+    EntityPtr ntt = nullptr;
     switch (type)
     {
     case EntityType::Entity_Base:
-      e = new Entity();
+      ntt = MakeNewPtr<Entity>();
       break;
     case EntityType::Entity_Node:
-      e = new EntityNode();
+      ntt = MakeNewPtr<EntityNode>();
       break;
     case EntityType::Entity_AudioSource:
-      e = new AudioSource();
+      ntt = MakeNewPtr<AudioSource>();
       break;
     case EntityType::Entity_Billboard:
-      e = new Billboard(Billboard::Settings());
+      ntt = MakeNewPtr<Billboard>();
       break;
     case EntityType::Entity_Cube:
-      e = new Cube(false);
+      ntt = MakeNewPtr<Cube>();
       break;
     case EntityType::Entity_Quad:
-      e = new Quad(false);
+      ntt = MakeNewPtr<Quad>();
       break;
     case EntityType::Entity_Sphere:
-      e = new Sphere(false);
+      ntt = MakeNewPtr<Sphere>();
       break;
     case EntityType::Entity_Arrow:
-      e = new Arrow2d(false);
+      ntt = MakeNewPtr<Arrow2d>();
       break;
     case EntityType::Entity_LineBatch:
-      e = new LineBatch();
+      ntt = MakeNewPtr<LineBatch>();
       break;
     case EntityType::Entity_Cone:
-      e = new Cone(false);
+      ntt = MakeNewPtr<Cone>();
       break;
     case EntityType::Entity_Drawable:
-      e = new Drawable();
+      ntt = MakeNewPtr<Drawable>();
       break;
     case EntityType::Entity_Camera:
-      e = new Camera();
+      ntt = MakeNewPtr<Camera>();
       break;
     case EntityType::Entity_Surface:
-      e = new Surface();
+      ntt = MakeNewPtr<Surface>();
       break;
     case EntityType::Entity_Button:
-      e = new Button();
+      ntt = MakeNewPtr<Button>();
       break;
     case EntityType::Entity_Light:
-      e = new Light();
+      ntt = MakeNewPtr<Light>();
       break;
     case EntityType::Entity_DirectionalLight:
-      e = new DirectionalLight();
+      ntt = MakeNewPtr<DirectionalLight>();
       break;
     case EntityType::Entity_PointLight:
-      e = new PointLight();
+      ntt = MakeNewPtr<PointLight>();
       break;
     case EntityType::Entity_SpotLight:
-      e = new SpotLight();
+      ntt = MakeNewPtr<SpotLight>();
       break;
     case EntityType::Entity_Sky:
-      e = new Sky();
+      ntt = MakeNewPtr<Sky>();
       break;
     case EntityType::Entity_GradientSky:
-      e = new GradientSky();
+      ntt = MakeNewPtr<GradientSky>();
       break;
     case EntityType::Entity_Canvas:
-      e = new Canvas();
+      ntt = MakeNewPtr<Canvas>();
       break;
     case EntityType::Entity_Prefab:
-      e = new Prefab();
+      ntt = MakeNewPtr<Prefab>();
       break;
     case EntityType::Entity_SpriteAnim:
     case EntityType::UNUSEDSLOT_1:
@@ -457,14 +479,9 @@ namespace ToolKit
       break;
     }
 
-    return e;
-
-    return nullptr;
+    return ntt;
   }
 
-  void EntityFactory::OverrideEntityConstructor(EntityType type, std::function<Entity*()> fn)
-  {
-    m_overrideFns[static_cast<int>(type)] = fn;
-  }
+  TKDefineClass(EntityNode, Entity);
 
 } // namespace ToolKit

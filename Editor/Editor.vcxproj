@@ -46,12 +46,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>..\Bin\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\ImGui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\ImGui\lib;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\ImGui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\ImGui\lib;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\ImGui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\ImGui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\NVTX-3.1.0\c\include\nvtx3;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\ImGui\lib;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -61,7 +61,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_EDITOR;TK_GL_CORE_3_2;TK_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_EDITOR;TK_GL_ES_3_0;TK_DEBUG;TK_DLL_IMPORT;GLM_FORCE_SIMD_AVX2;GLM_FORCE_DEFAULT_ALIGNED_GENTYPES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <IncludeInUnityFile>true</IncludeInUnityFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -69,7 +69,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;zlibstatic.lib;minizip.lib;SDL2main.lib;SDL2.lib;OpenGL32.lib;ToolKit_d.lib;imgui_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;SDL2main.lib;SDL2.lib;OpenGL32.lib;ToolKit_d.lib;imgui_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -81,7 +81,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_EDITOR;TK_GL_CORE_3_2;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_EDITOR;TK_GL_ES_3_0;NDEBUG;GLM_FORCE_SIMD_AVX2;GLM_FORCE_DEFAULT_ALIGNED_GENTYPES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/FI "stdafx.h" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -97,10 +97,12 @@
     <ClCompile Include="Action.cpp" />
     <ClCompile Include="Anchor.cpp" />
     <ClCompile Include="AnchorMod.cpp" />
+    <ClCompile Include="AndroidBuildWindow.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="ComponentView.cpp" />
     <ClCompile Include="ConsoleWindow.cpp" />
     <ClCompile Include="CustomDataView.cpp" />
+    <ClCompile Include="DynamicMenu.cpp" />
     <ClCompile Include="EditorCamera.cpp" />
     <ClCompile Include="EditorLight.cpp" />
     <ClCompile Include="EditorRenderer.cpp" />
@@ -111,9 +113,13 @@
     <ClCompile Include="Gizmo.cpp" />
     <ClCompile Include="GizmoPass.cpp" />
     <ClCompile Include="Grid.cpp" />
-    <ClCompile Include="LeftBar.cpp" />
+    <ClCompile Include="LeftBar.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">50</OrderInUnityFile>
+    </ClCompile>
     <ClCompile Include="LightMeshGenerator.cpp" />
-    <ClCompile Include="MaterialView.cpp" />
+    <ClCompile Include="MaterialView.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">50</OrderInUnityFile>
+    </ClCompile>
     <ClCompile Include="MeshView.cpp" />
     <ClCompile Include="MultiChoiceWindow.cpp">
       <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">101</OrderInUnityFile>
@@ -133,7 +139,9 @@
     <ClCompile Include="TopBar2d.cpp" />
     <ClCompile Include="TransformMod.cpp" />
     <ClCompile Include="EditorScene.cpp" />
-    <ClCompile Include="UI.cpp" />
+    <ClCompile Include="UI.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">50</OrderInUnityFile>
+    </ClCompile>
     <ClCompile Include="main.cpp">
       <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">50</OrderInUnityFile>
     </ClCompile>
@@ -150,10 +158,12 @@
     <ClInclude Include="Action.h" />
     <ClInclude Include="Anchor.h" />
     <ClInclude Include="AnchorMod.h" />
+    <ClInclude Include="AndroidBuildWindow.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="ComponentView.h" />
     <ClInclude Include="ConsoleWindow.h" />
     <ClInclude Include="CustomDataView.h" />
+    <ClInclude Include="DynamicMenu.h" />
     <ClInclude Include="EditorCamera.h" />
     <ClInclude Include="EditorLight.h" />
     <ClInclude Include="EditorRenderer.h" />
@@ -193,11 +203,6 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ToolKit\ToolKit.vcxproj">
-      <Project>{85523a06-924e-4b9d-b95c-411cb388936b}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

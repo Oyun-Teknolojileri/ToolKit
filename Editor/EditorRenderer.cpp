@@ -1,38 +1,27 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "EditorRenderer.h"
 
 #include "App.h"
-#include "DirectionComponent.h"
 #include "EditorScene.h"
 #include "EditorViewport.h"
-#include "EnvironmentComponent.h"
+#include "Gizmo.h"
 
-#include "DebugNew.h"
+#include <Camera.h>
+#include <DirectionComponent.h>
+#include <EnvironmentComponent.h>
+#include <GradientSky.h>
+#include <Material.h>
+#include <MaterialComponent.h>
+#include <TKProfiler.h>
+#include <UIManager.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
@@ -45,40 +34,56 @@ namespace ToolKit
 
     EditorRenderer::~EditorRenderer()
     {
-      m_billboardPass     = nullptr;
-      m_lightSystem       = nullptr;
-      m_scenePass         = nullptr;
-      m_uiPass            = nullptr;
-      m_editorPass        = nullptr;
-      m_gizmoPass         = nullptr;
-      m_tonemapPass       = nullptr;
-      m_gammaPass         = nullptr;
-      m_fxaaPass          = nullptr;
-      m_bloomPass         = nullptr;
-      m_ssaoPass          = nullptr;
-      m_outlinePass       = nullptr;
-      m_singleMatRenderer = nullptr;
+      m_billboardPass         = nullptr;
+      m_lightSystem           = nullptr;
+      m_sceneRenderPath       = nullptr;
+      m_mobileSceneRenderPath = nullptr;
+      m_uiPass                = nullptr;
+      m_editorPass            = nullptr;
+      m_gizmoPass             = nullptr;
+      m_tonemapPass           = nullptr;
+      m_gammaPass             = nullptr;
+      m_fxaaPass              = nullptr;
+      m_bloomPass             = nullptr;
+      m_ssaoPass              = nullptr;
+      m_outlinePass           = nullptr;
+      m_singleMatRenderer     = nullptr;
     }
 
     void EditorRenderer::Render(Renderer* renderer)
     {
+      PUSH_CPU_MARKER("EditorRenderer::PreRender");
+
       PreRender();
+
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("EditorRenderer::Render");
 
       SetLitMode(renderer, m_params.LitMode);
 
       m_passArray.clear();
       const EngineSettings::PostProcessingSettings& gfx = GetEngineSettings().PostProcessing;
-      
+
+      SceneRenderPathPtr sceneRenderer                  = nullptr;
+      if (m_params.UseMobileRenderPath)
+      {
+        sceneRenderer = m_mobileSceneRenderPath;
+      }
+      else
+      {
+        sceneRenderer = m_sceneRenderPath;
+      }
+
       if (GetRenderSystem()->IsSkipFrame())
       {
-        m_scenePass->m_params.Gfx                        = gfx;
-        m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
-        m_scenePass->m_params.Gfx.TonemappingEnabled     = false;
-        m_scenePass->m_params.Gfx.FXAAEnabled            = false;
-        m_scenePass->Render(renderer);
+        sceneRenderer->m_params.Gfx                        = gfx;
+        sceneRenderer->m_params.Gfx.GammaCorrectionEnabled = false;
+        sceneRenderer->m_params.Gfx.TonemappingEnabled     = false;
+        sceneRenderer->m_params.Gfx.FXAAEnabled            = false;
+        sceneRenderer->Render(renderer);
 
         m_passArray.push_back(m_skipFramePass);
-        Technique::Render(renderer);
+        RenderPath::Render(renderer);
 
         GetRenderSystem()->DecrementSkipFrame();
         PostRender();
@@ -93,27 +98,33 @@ namespace ToolKit
         break;
       case EditorLitMode::Game:
         m_params.App->HideGizmos();
-        m_scenePass->m_params.Gfx                        = gfx;
-        m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
-        m_scenePass->Render(renderer);
+        sceneRenderer->m_params.Gfx                        = gfx;
+        sceneRenderer->m_params.Gfx.GammaCorrectionEnabled = false;
+        sceneRenderer->Render(renderer);
         m_passArray.push_back(m_uiPass);
-        m_passArray.push_back(m_gammaPass);
-        Technique::Render(renderer);
+        if (GetRenderSystem()->IsGammaCorrectionNeeded())
+        {
+          m_passArray.push_back(m_gammaPass);
+        }
+        RenderPath::Render(renderer);
         m_params.App->ShowGizmos();
         break;
       default:
-        m_scenePass->m_params.Gfx                        = gfx;
-        m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
-        m_scenePass->m_params.Gfx.TonemappingEnabled     = false;
-        m_scenePass->m_params.Gfx.FXAAEnabled            = false;
-        m_scenePass->Render(renderer);
+        sceneRenderer->m_params.Gfx                        = gfx;
+        sceneRenderer->m_params.Gfx.GammaCorrectionEnabled = false;
+        sceneRenderer->m_params.Gfx.TonemappingEnabled     = false;
+        sceneRenderer->m_params.Gfx.FXAAEnabled            = false;
+        sceneRenderer->Render(renderer);
         break;
       }
-      
+
+      POP_CPU_MARKER();
+      PUSH_CPU_MARKER("EditorRender Editor & PostProcess Render");
+
       if (m_params.LitMode != EditorLitMode::Game)
       {
         // Draw scene and apply bloom effect.
-        Technique::Render(renderer);
+        RenderPath::Render(renderer);
         m_passArray.clear();
 
         SetLitMode(renderer, EditorLitMode::EditorLit);
@@ -130,7 +141,10 @@ namespace ToolKit
         m_passArray.push_back(m_billboardPass);
 
         // Post process.
-        m_passArray.push_back(m_tonemapPass);
+        if (gfx.TonemappingEnabled)
+        {
+          m_passArray.push_back(m_tonemapPass);
+        }
         if (gfx.FXAAEnabled)
         {
           if (m_params.Viewport->m_name != g_2dViewport)
@@ -138,12 +152,19 @@ namespace ToolKit
             m_passArray.push_back(m_fxaaPass);
           }
         }
-        m_passArray.push_back(m_gammaPass);
+        if (GetRenderSystem()->IsGammaCorrectionNeeded())
+        {
+          m_passArray.push_back(m_gammaPass);
+        }
 
-        Technique::Render(renderer);
+        RenderPath::Render(renderer);
       }
 
+      POP_CPU_MARKER();
+
+      PUSH_CPU_MARKER("EditorRender::PostRender");
       PostRender();
+      POP_CPU_MARKER();
     }
 
     void EditorRenderer::PreRender()
@@ -160,11 +181,11 @@ namespace ToolKit
       m_selecteds.clear();
       scene->GetSelectedEntities(m_selecteds);
 
-      for (Entity* ntt : m_selecteds)
+      for (EntityPtr ntt : m_selecteds)
       {
         EnvironmentComponentPtr envCom = ntt->GetComponent<EnvironmentComponent>();
 
-        if (envCom != nullptr && ntt->GetType() != EntityType::Entity_Sky)
+        if (envCom != nullptr && !ntt->IsA<Sky>())
         {
           app->m_perFrameDebugObjects.push_back(
               CreateBoundingBoxDebugObject(envCom->GetBBox(), g_environmentGizmoColor, 1.0f));
@@ -178,9 +199,9 @@ namespace ToolKit
         if (app->m_showDirectionalLightShadowFrustum)
         {
           // Directional light shadow map frustum
-          if (ntt->GetType() == EntityType::Entity_DirectionalLight)
+          if (ntt->IsA<DirectionalLight>())
           {
-            EditorDirectionalLight* light = static_cast<EditorDirectionalLight*>(ntt);
+            EditorDirectionalLight* light = static_cast<EditorDirectionalLight*>(ntt.get());
             if (light->GetCastShadowVal())
             {
               app->m_perFrameDebugObjects.push_back(light->GetDebugShadowFrustum());
@@ -190,7 +211,7 @@ namespace ToolKit
       }
 
       // Per frame objects.
-      EntityRawPtrArray editorEntities;
+      EntityPtrArray editorEntities;
       editorEntities.insert(editorEntities.end(),
                             app->m_perFrameDebugObjects.begin(),
                             app->m_perFrameDebugObjects.end());
@@ -202,55 +223,65 @@ namespace ToolKit
       m_billboardPass->m_params.Viewport = m_params.Viewport;
 
       // Grid.
-      Grid* grid = m_params.Viewport->GetType() == Window::Type::Viewport2d ? app->m_2dGrid : app->m_grid;
+      GridPtr grid = m_params.Viewport->GetType() == Window::Type::Viewport2d ? app->m_2dGrid : app->m_grid;
 
       grid->UpdateShaderParams();
       editorEntities.push_back(grid);
 
-      LightRawPtrArray lights =
+      LightPtrArray lights =
           m_params.LitMode == EditorLitMode::EditorLit ? m_lightSystem->m_lights : scene->GetLights();
 
       EditorViewport* viewport = static_cast<EditorViewport*>(m_params.Viewport);
 
-      RenderJobArray renderJobs;
-      RenderJobArray opaque;
-      RenderJobArray translucent;
-
-      RenderJobProcessor::CreateRenderJobs(editorEntities, renderJobs);
-      RenderJobProcessor::SeperateOpaqueTranslucent(renderJobs, opaque, translucent);
+      m_renderJobs.clear();
+      RenderJobProcessor::CreateRenderJobs(editorEntities, m_renderJobs);
+      m_opaque.clear();
+      m_translucent.clear();
+      RenderJobProcessor::SeperateOpaqueTranslucent(m_renderJobs, m_opaque, m_translucent);
 
       // Editor pass.
       m_editorPass->m_params.Cam              = m_camera;
       m_editorPass->m_params.FrameBuffer      = viewport->m_framebuffer;
-      m_editorPass->m_params.OpaqueJobs       = opaque;
-      m_editorPass->m_params.TranslucentJobs  = translucent;
+      m_editorPass->m_params.OpaqueJobs       = m_opaque;
+      m_editorPass->m_params.TranslucentJobs  = m_translucent;
       m_editorPass->m_params.ClearFrameBuffer = false;
 
-      // Scene pass.
-      m_scenePass->m_params.Cam               = m_camera;
-      m_scenePass->m_params.Lights            = lights;
-      m_scenePass->m_params.MainFramebuffer   = viewport->m_framebuffer;
-      m_scenePass->m_params.Scene             = scene;
+      if (m_params.UseMobileRenderPath)
+      {
+        // Mobile scene pass
+        m_mobileSceneRenderPath->m_params.Cam             = m_camera;
+        m_mobileSceneRenderPath->m_params.Lights          = lights;
+        m_mobileSceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
+        m_mobileSceneRenderPath->m_params.Scene           = scene;
+      }
+      else
+      {
+        // Scene pass.
+        m_sceneRenderPath->m_params.Cam             = m_camera;
+        m_sceneRenderPath->m_params.Lights          = lights;
+        m_sceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
+        m_sceneRenderPath->m_params.Scene           = scene;
+      }
 
       // Skip frame pass.
-      m_skipFramePass->m_params.FrameBuffer    = viewport->m_framebuffer;
-      m_skipFramePass->m_material              = m_blackMaterial;
+      m_skipFramePass->m_params.FrameBuffer = viewport->m_framebuffer;
+      m_skipFramePass->m_material           = m_blackMaterial;
 
       // UI pass.
       UILayerPtrArray layers;
-      RenderJobArray uiRenderJobs;
+      m_uiRenderJobs.clear();
       GetUIManager()->GetLayers(viewport->m_viewportId, layers);
 
       for (const UILayerPtr& layer : layers)
       {
-        EntityRawPtrArray& uiNtties = layer->m_scene->AccessEntityArray();
-        RenderJobProcessor::CreateRenderJobs(uiNtties, uiRenderJobs);
+        EntityPtrArray& uiNtties = layer->m_scene->AccessEntityArray();
+        RenderJobProcessor::CreateRenderJobs(uiNtties, m_uiRenderJobs);
       }
 
       m_uiPass->m_params.OpaqueJobs.clear();
       m_uiPass->m_params.TranslucentJobs.clear();
 
-      RenderJobProcessor::SeperateOpaqueTranslucent(uiRenderJobs,
+      RenderJobProcessor::SeperateOpaqueTranslucent(m_uiRenderJobs,
                                                     m_uiPass->m_params.OpaqueJobs,
                                                     m_uiPass->m_params.TranslucentJobs);
 
@@ -272,7 +303,7 @@ namespace ToolKit
       m_singleMatRenderer->m_params.ForwardParams.Lights           = lights;
       m_singleMatRenderer->m_params.ForwardParams.ClearFrameBuffer = true;
 
-      m_singleMatRenderer->m_params.ForwardParams.OpaqueJobs       = renderJobs;
+      m_singleMatRenderer->m_params.ForwardParams.OpaqueJobs       = m_renderJobs;
 
       m_singleMatRenderer->m_params.ForwardParams.FrameBuffer      = viewport->m_framebuffer;
 
@@ -290,23 +321,15 @@ namespace ToolKit
       // Gizmo Pass.
       m_gizmoPass->m_params.Viewport                               = viewport;
 
-      EditorBillboardBase* anchorGizmo                             = nullptr;
+      EditorBillboardPtr anchorGizmo                               = nullptr;
       if (viewport->GetType() == Window::Type::Viewport2d)
       {
-        anchorGizmo = (EditorBillboardBase*) app->m_anchor.get();
+        anchorGizmo = app->m_anchor;
       }
       m_gizmoPass->m_params.GizmoArray = {app->m_gizmo, anchorGizmo};
     }
 
-    void EditorRenderer::PostRender()
-    {
-      App* app = m_params.App;
-      for (Entity* dbgObj : app->m_perFrameDebugObjects)
-      {
-        SafeDel(dbgObj);
-      }
-      app->m_perFrameDebugObjects.clear();
-    }
+    void EditorRenderer::PostRender() { m_params.App->m_perFrameDebugObjects.clear(); }
 
     void EditorRenderer::SetLitMode(Renderer* renderer, EditorLitMode mode)
     {
@@ -335,7 +358,7 @@ namespace ToolKit
 
     void EditorRenderer::InitRenderer()
     {
-      m_lightSystem   = std::make_shared<ThreePointLightSystem>();
+      m_lightSystem   = MakeNewPtr<ThreePointLightSystem>();
 
       // Create render mode materials.
       m_unlitOverride = GetMaterialManager()->GetCopyOfUnlitMaterial();
@@ -343,19 +366,20 @@ namespace ToolKit
       m_unlitOverride->Init();
       m_blackMaterial->Init();
 
-      m_billboardPass     = std::make_shared<BillboardPass>();
-      m_scenePass         = std::make_shared<SceneRenderer>();
-      m_uiPass            = std::make_shared<ForwardRenderPass>();
-      m_editorPass        = std::make_shared<ForwardRenderPass>();
-      m_gizmoPass         = std::make_shared<GizmoPass>();
-      m_tonemapPass       = std::make_shared<TonemapPass>();
-      m_gammaPass         = std::make_shared<GammaPass>();
-      m_fxaaPass          = std::make_shared<FXAAPass>();
-      m_bloomPass         = std::make_shared<BloomPass>();
-      m_ssaoPass          = std::make_shared<SSAOPass>();
-      m_outlinePass       = std::make_shared<OutlinePass>();
-      m_singleMatRenderer = std::make_shared<SingleMatForwardRenderPass>();
-      m_skipFramePass     = std::make_shared<FullQuadPass>();
+      m_billboardPass         = MakeNewPtr<BillboardPass>();
+      m_sceneRenderPath       = MakeNewPtr<SceneRenderPath>();
+      m_mobileSceneRenderPath = MakeNewPtr<MobileSceneRenderPath>();
+      m_uiPass                = MakeNewPtr<ForwardRenderPass>();
+      m_editorPass            = MakeNewPtr<ForwardRenderPass>();
+      m_gizmoPass             = MakeNewPtr<GizmoPass>();
+      m_tonemapPass           = MakeNewPtr<TonemapPass>();
+      m_gammaPass             = MakeNewPtr<GammaPass>();
+      m_fxaaPass              = MakeNewPtr<FXAAPass>();
+      m_bloomPass             = MakeNewPtr<BloomPass>();
+      m_ssaoPass              = MakeNewPtr<SSAOPass>();
+      m_outlinePass           = MakeNewPtr<OutlinePass>();
+      m_singleMatRenderer     = MakeNewPtr<SingleMatForwardRenderPass>();
+      m_skipFramePass         = MakeNewPtr<FullQuadPass>();
     }
 
     void EditorRenderer::OutlineSelecteds(Renderer* renderer)
@@ -364,10 +388,10 @@ namespace ToolKit
       {
         return;
       }
-      EntityRawPtrArray selecteds = m_selecteds; // Copy
+      EntityPtrArray selecteds = m_selecteds; // Copy
 
-      Viewport* viewport          = m_params.Viewport;
-      auto RenderFn = [this, viewport, renderer](const EntityRawPtrArray& selection, const Vec4& color) -> void
+      Viewport* viewport       = m_params.Viewport;
+      auto RenderFn            = [this, viewport, renderer](const EntityPtrArray& selection, const Vec4& color) -> void
       {
         if (selection.empty())
         {
@@ -375,20 +399,20 @@ namespace ToolKit
         }
 
         RenderJobArray renderJobs;
-        for (Entity* entity : selection)
+        for (EntityPtr entity : selection)
         {
           // Disable light gizmos
-          if (entity->IsLightInstance())
+          if (Light* light = entity->As<Light>())
           {
-            EnableLightGizmo(static_cast<Light*>(entity), false);
+            EnableLightGizmo(light, false);
           }
 
           // Add billboards to draw list
-          Entity* billboard = m_params.App->GetCurrentScene()->GetBillboard(entity);
+          EntityPtr billboard = m_params.App->GetCurrentScene()->GetBillboard(entity);
 
           if (billboard)
           {
-            static_cast<Billboard*>(billboard)->LookAt(viewport->GetCamera(), viewport->GetBillboardScale());
+            static_cast<Billboard*>(billboard.get())->LookAt(viewport->GetCamera(), viewport->GetBillboardScale());
 
             RenderJobArray jobs;
             RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
@@ -406,19 +430,19 @@ namespace ToolKit
 
         m_passArray.clear();
         m_passArray.push_back(m_outlinePass);
-        Technique::Render(renderer);
+        RenderPath::Render(renderer);
 
         // Enable light gizmos back
-        for (Entity* entity : selection)
+        for (EntityPtr entity : selection)
         {
-          if (entity->IsLightInstance())
+          if (Light* light = entity->As<Light>())
           {
-            EnableLightGizmo(static_cast<Light*>(entity), true);
+            EnableLightGizmo(light, true);
           }
         }
       };
 
-      Entity* primary = selecteds.back();
+      EntityPtr primary = selecteds.back();
 
       selecteds.pop_back();
       RenderFn(selecteds, g_selectHighLightSecondaryColor);

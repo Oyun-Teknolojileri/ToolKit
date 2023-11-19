@@ -1,56 +1,71 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Grid.h"
 
 #include "Global.h"
-#include "Primative.h"
-#include "ToolKit.h"
 
-#include "DebugNew.h"
+#include <Material.h>
+#include <MathUtil.h>
+#include <Mesh.h>
+#include <Primative.h>
+#include <ToolKit.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
   namespace Editor
   {
 
-    Grid::Grid(UVec2 size, AxisLabel axis, float cellSize, float linePixelCount, bool is2d)
+    // GridFragmentShader
+    //////////////////////////////////////////////////////////////////////////
+
+    TKDefineClass(GridFragmentShader, Shader);
+
+    GridFragmentShader::GridFragmentShader()
     {
-      m_is2d                = is2d;
-      m_horizontalAxisColor = g_gridAxisRed;
-      m_verticalAxisColor   = g_gridAxisBlue;
+      SetFile(ShaderPath("gridFragment.shader", true));
 
+      // Set defaults.
+      m_sizeEachCell        = 0.1f;
+      m_maxLinePixelCount   = 2.0f;
+      m_axisColorHorizontal = X_AXIS;
+      m_axisColorVertical   = Z_AXIS;
+      m_is2DViewport        = false;
+    }
+
+    GridFragmentShader::~GridFragmentShader() {}
+
+    void GridFragmentShader::UpdateShaderParameters()
+    {
+      SetShaderParameter("GridData.cellSize", m_sizeEachCell);
+      SetShaderParameter("GridData.lineMaxPixelCount", m_maxLinePixelCount);
+      SetShaderParameter("GridData.horizontalAxisColor", m_axisColorHorizontal);
+      SetShaderParameter("GridData.verticalAxisColor", m_axisColorVertical);
+      SetShaderParameter("GridData.is2DViewport", m_is2DViewport);
+    }
+
+    // Grid
+    //////////////////////////////////////////////////////////////////////////
+
+    TKDefineClass(Grid, Entity);
+
+    Grid::Grid()
+    {
+      Vec3 m_horizontalAxisColor = g_gridAxisRed;
+      Vec3 m_verticalAxisColor   = g_gridAxisBlue;
+    }
+
+    void Grid::NativeConstruct()
+    {
+      Super::NativeConstruct();
       Init();
-
-      // Create grid mesh.
-      Resize(size, axis, cellSize);
-
       UpdateShaderParams();
-
-      m_initiated = true;
     }
 
     void Grid::Resize(UVec2 size, AxisLabel axis, float cellSize, float linePixelCount)
@@ -59,7 +74,7 @@ namespace ToolKit
       m_gridCellSize      = cellSize;
       m_maxLinePixelCount = linePixelCount;
 
-      if (VecAllEqual<UVec2>(size, m_size) && m_initiated)
+      if (VecAllEqual<UVec2>(size, m_size))
       {
         return;
       }
@@ -95,7 +110,7 @@ namespace ToolKit
       MeshPtr mainMesh = GetMeshComponent()->GetMeshVal();
       if (mainMesh == nullptr)
       {
-        mainMesh = std::make_shared<Mesh>();
+        mainMesh = MakeNewPtr<Mesh>();
       }
       mainMesh->UnInit();
 
@@ -107,8 +122,8 @@ namespace ToolKit
       UVec2 gridMeshCount(0);
       for (uint dimIndx = 0; dimIndx < 2; dimIndx++)
       {
-        gridMeshCount[dimIndx] = m_size[dimIndx] / maxGridSize[dimIndx];
-        bool isThereRemaining  = (m_size[dimIndx] % maxGridSize[dimIndx]);
+        gridMeshCount[dimIndx]  = m_size[dimIndx] / maxGridSize[dimIndx];
+        bool isThereRemaining   = (m_size[dimIndx] % maxGridSize[dimIndx]);
         gridMeshCount[dimIndx] += isThereRemaining ? 1 : 0;
       }
 
@@ -157,11 +172,11 @@ namespace ToolKit
           VertexArray currentQuad = quadVertexBuffer;
           for (int j = 0; j < 6; j++)
           {
-            Vertex& clientVertex = currentQuad[j];
-            clientVertex.pos     = (clientVertex.pos * Vec3(scale, 0.0f));
+            Vertex& clientVertex  = currentQuad[j];
+            clientVertex.pos      = (clientVertex.pos * Vec3(scale, 0.0f));
             clientVertex.pos.xy  -= Vec2(m_size / UVec2(2)) - Vec2(gridIndx * maxGridSize);
             // clientVertex.pos.xy += Vec2(maxGridSize / UVec2(2));
-            clientVertex.tex     = clientVertex.pos.xy * m_gridCellSize;
+            clientVertex.tex      = clientVertex.pos.xy * m_gridCellSize;
           }
 
           mainMesh->m_clientSideVertices.insert(mainMesh->m_clientSideVertices.end(),
@@ -190,22 +205,26 @@ namespace ToolKit
 
     void Grid::Init()
     {
-      AddComponent(new MeshComponent());
-      AddComponent(new MaterialComponent());
+      if (m_initiated)
+      {
+        return;
+      }
+
+      AddComponent<MeshComponent>();
+      AddComponent<MaterialComponent>();
 
       // Create grid material.
       if (!GetMaterialManager()->Exist(g_gridMaterialName))
       {
         MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+
         material->UnInit();
         material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-
         material->GetRenderState()->cullMode      = CullingType::TwoSided;
-
         material->m_vertexShader  = GetShaderManager()->Create<Shader>(ShaderPath("gridVertex.shader", true));
 
         // Custom creationg & shader management.
-        GridFragmentShaderPtr gfs = std::make_shared<GridFragmentShader>();
+        GridFragmentShaderPtr gfs = MakeNewPtr<GridFragmentShader>();
         gfs->Load();
         GetShaderManager()->Manage(gfs);
 
@@ -215,6 +234,8 @@ namespace ToolKit
 
       m_material = GetMaterialManager()->Create<Material>(g_gridMaterialName);
       GetMaterialComponent()->SetFirstMaterial(m_material);
+
+      m_initiated = true;
     }
 
     void Grid::UpdateShaderParams()
@@ -226,29 +247,6 @@ namespace ToolKit
       gfs->m_axisColorVertical   = m_verticalAxisColor;
       gfs->m_maxLinePixelCount   = m_maxLinePixelCount;
       gfs->m_is2DViewport        = m_is2d;
-    }
-
-    GridFragmentShader::GridFragmentShader()
-    {
-      SetFile(ShaderPath("gridFragment.shader", true));
-
-      // Set defaults.
-      m_sizeEachCell        = 0.1f;
-      m_maxLinePixelCount   = 2.0f;
-      m_axisColorHorizontal = X_AXIS;
-      m_axisColorVertical   = Z_AXIS;
-      m_is2DViewport        = false;
-    }
-
-    GridFragmentShader::~GridFragmentShader() {}
-
-    void GridFragmentShader::UpdateShaderParameters()
-    {
-      SetShaderParameter("GridData.cellSize", m_sizeEachCell);
-      SetShaderParameter("GridData.lineMaxPixelCount", m_maxLinePixelCount);
-      SetShaderParameter("GridData.horizontalAxisColor", m_axisColorHorizontal);
-      SetShaderParameter("GridData.verticalAxisColor", m_axisColorVertical);
-      SetShaderParameter("GridData.is2DViewport", m_is2DViewport);
     }
 
   } //  namespace Editor

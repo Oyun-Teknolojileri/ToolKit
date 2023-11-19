@@ -1,47 +1,29 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 - Present Cihan Bal - Oyun Teknolojileri ve Yazılım
- * https://github.com/Oyun-Teknolojileri
- * https://otyazilim.com/
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
 #include "Scene.h"
 
 #include "Component.h"
+#include "EngineSettings.h"
 #include "EnvironmentComponent.h"
+#include "FileManager.h"
+#include "Logger.h"
+#include "MathUtil.h"
 #include "Prefab.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
 #include "Util.h"
 
-#include <algorithm>
-#include <string>
-#include <utility>
-#include <vector>
-
 #include "DebugNew.h"
 
 namespace ToolKit
 {
+
+  TKDefineClass(Scene, Resource);
 
   Scene::Scene() { m_name = "New Scene"; }
 
@@ -51,35 +33,15 @@ namespace ToolKit
 
   void Scene::Load()
   {
-    if (m_loaded)
+    if (!m_loaded)
     {
-      return;
+      String path = GetFile();
+      m_isPrefab  = path.find("Prefabs") != String::npos;
+
+      ParseDocument(XmlSceneElement);
+
+      m_loaded = true;
     }
-
-    String path = GetFile();
-    NormalizePath(path);
-    XmlFilePtr sceneFile = GetFileManager()->GetXmlFile(path);
-    XmlDocument sceneDoc;
-    sceneDoc.parse<0>(sceneFile->data());
-    m_isPrefab = path.find("Prefabs") != String::npos;
-
-    DeSerialize(&sceneDoc, nullptr);
-    PostDeSerialize();
-
-    // Update parent - child relation for entities.
-    for (Entity* e : m_entities)
-    {
-      if (e->_parentId != 0)
-      {
-        Entity* parent = GetEntity(e->_parentId);
-        if (parent)
-        {
-          parent->m_node->AddChild(e->m_node);
-        }
-      }
-    }
-
-    m_loaded = true;
   }
 
   void Scene::Save(bool onlyIfDirty)
@@ -113,16 +75,16 @@ namespace ToolKit
       return;
     }
 
-    const EntityRawPtrArray& ntties = GetEntities();
-    for (Entity* ntt : ntties)
+    const EntityPtrArray& ntties = GetEntities();
+    for (EntityPtr ntt : ntties)
     {
-      if (ntt->GetType() == EntityType::Entity_Sky)
+      if (SkyBase* sky = ntt->As<SkyBase>())
       {
-        static_cast<Sky*>(ntt)->Init();
+        sky->Init();
       }
       else if (ntt->IsDrawable())
       {
-        // Mesh component
+        // Mesh component.
         MeshComponentPtrArray meshes;
         ntt->GetComponent<MeshComponent>(meshes);
         for (MeshComponentPtr& mesh : meshes)
@@ -130,9 +92,8 @@ namespace ToolKit
           mesh->Init(flushClientSideArray);
         }
 
-        // Environment component
-        EnvironmentComponentPtr envCom = ntt->GetComponent<EnvironmentComponent>();
-        if (envCom != nullptr)
+        // Environment component.
+        if (EnvironmentComponentPtr envCom = ntt->GetComponent<EnvironmentComponent>())
         {
           envCom->Init(true);
         }
@@ -148,28 +109,27 @@ namespace ToolKit
 
   void Scene::Merge(ScenePtr other)
   {
-    ULongID lastID = GetHandleManager()->GetNextHandle(), biggestID = 0;
-    const EntityRawPtrArray& entities = other->GetEntities();
-    for (Entity* ntt : entities)
+    HandleManager* handleMan = GetHandleManager();
+    for (EntityPtr otherNtt : other->GetEntities())
     {
-      AddEntity(ntt); // Insert into this scene.
+      otherNtt->SetIdVal(handleMan->GenerateHandle());
+      AddEntity(otherNtt);
     }
-    GetHandleManager()->SetMaxHandle(biggestID);
 
     other->RemoveAllEntities();
     GetSceneManager()->Remove(other->GetFile());
   }
 
-  Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList, const EntityRawPtrArray& extraList)
+  Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList, const EntityPtrArray& extraList)
   {
     PickData pd;
     pd.pickPos                  = ray.position + ray.direction * 5.0f;
 
     float closestPickedDistance = FLT_MAX;
 
-    auto pickFn = [&ignoreList, &ray, &pd, &closestPickedDistance](const EntityRawPtrArray& entities) -> void
+    auto pickFn = [&ignoreList, &ray, &pd, &closestPickedDistance](const EntityPtrArray& entities) -> void
     {
-      for (Entity* ntt : entities)
+      for (EntityPtr ntt : entities)
       {
         if (!ntt->IsDrawable())
         {
@@ -225,33 +185,32 @@ namespace ToolKit
   }
 
   void Scene::PickObject(const Frustum& frustum,
-                         std::vector<PickData>& pickedObjects,
+                         PickDataArray& pickedObjects,
                          const EntityIdArray& ignoreList,
-                         const EntityRawPtrArray& extraList,
+                         const EntityPtrArray& extraList,
                          bool pickPartiallyInside)
   {
-    auto pickFn =
-        [&frustum, &pickedObjects, &ignoreList, &pickPartiallyInside](const EntityRawPtrArray& entities) -> void
+    auto pickFn = [&frustum, &pickedObjects, &ignoreList, &pickPartiallyInside](const EntityPtrArray& entities) -> void
     {
-      for (Entity* e : entities)
+      for (EntityPtr ntt : entities)
       {
-        if (!e->IsDrawable())
+        if (!ntt->IsDrawable())
         {
           continue;
         }
 
-        if (contains(ignoreList, e->GetIdVal()))
+        if (contains(ignoreList, ntt->GetIdVal()))
         {
           continue;
         }
 
-        BoundingBox bb      = e->GetAABB(true);
+        BoundingBox bb      = ntt->GetAABB(true);
         IntersectResult res = FrustumBoxIntersection(frustum, bb);
         if (res != IntersectResult::Outside)
         {
           PickData pd;
           pd.pickPos = (bb.max + bb.min) * 0.5f;
-          pd.entity  = e;
+          pd.entity  = ntt;
 
           if (res == IntersectResult::Inside)
           {
@@ -269,20 +228,20 @@ namespace ToolKit
     pickFn(extraList);
   }
 
-  Entity* Scene::GetEntity(ULongID id) const
+  EntityPtr Scene::GetEntity(ULongID id) const
   {
-    for (Entity* e : m_entities)
+    for (EntityPtr ntt : m_entities)
     {
-      if (e->GetIdVal() == id)
+      if (ntt->GetIdVal() == id)
       {
-        return e;
+        return ntt;
       }
     }
 
     return nullptr;
   }
 
-  void Scene::AddEntity(Entity* entity)
+  void Scene::AddEntity(EntityPtr entity)
   {
     if (entity)
     {
@@ -295,11 +254,11 @@ namespace ToolKit
     }
   }
 
-  EntityRawPtrArray& Scene::AccessEntityArray() { return m_entities; }
+  EntityPtrArray& Scene::AccessEntityArray() { return m_entities; }
 
-  void Scene::RemoveChildren(Entity* removed)
+  void Scene::RemoveChildren(EntityPtr removed)
   {
-    NodePtrArray& children = removed->m_node->m_children;
+    NodeRawPtrArray& children = removed->m_node->m_children;
 
     // recursive remove children
     // (RemoveEntity function will call all children recursively).
@@ -307,13 +266,16 @@ namespace ToolKit
     {
       Node* child = children.back();
       children.pop_back();
-      RemoveEntity(child->m_entity->GetIdVal());
+      if (EntityPtr childNtt = child->OwnerEntity())
+      {
+        RemoveEntity(childNtt->GetIdVal());
+      }
     }
   }
 
-  Entity* Scene::RemoveEntity(ULongID id, bool deep)
+  EntityPtr Scene::RemoveEntity(ULongID id, bool deep)
   {
-    Entity* removed = nullptr;
+    EntityPtr removed = nullptr;
     for (size_t i = 0; i < m_entities.size(); i++)
     {
       if (m_entities[i]->GetIdVal() == id)
@@ -342,54 +304,54 @@ namespace ToolKit
     return removed;
   }
 
-  void Scene::RemoveEntity(const EntityRawPtrArray& entities)
+  void Scene::RemoveEntity(const EntityPtrArray& entities)
   {
-    erase_if(m_entities, [entities](Entity* ntt) -> bool { return FindIndex(entities, ntt) != -1; });
+    erase_if(m_entities, [entities](EntityPtr ntt) -> bool { return FindIndex(entities, ntt) != -1; });
   }
 
   void Scene::RemoveAllEntities() { m_entities.clear(); }
 
-  const EntityRawPtrArray& Scene::GetEntities() const { return m_entities; }
+  const EntityPtrArray& Scene::GetEntities() const { return m_entities; }
 
-  LightRawPtrArray Scene::GetLights() const
+  LightPtrArray Scene::GetLights() const
   {
-    LightRawPtrArray lights;
-    for (Entity* ntt : m_entities)
+    LightPtrArray lights;
+    for (EntityPtr ntt : m_entities)
     {
-      if (ntt->IsLightInstance())
+      if (ntt->IsA<Light>())
       {
-        lights.push_back(static_cast<Light*>(ntt));
+        lights.push_back(std::static_pointer_cast<Light>(ntt));
       }
     }
 
     return lights;
   }
 
-  Entity* Scene::GetFirstEntityByName(const String& name)
+  EntityPtr Scene::GetFirstByName(const String& name)
   {
-    for (Entity* e : m_entities)
+    for (EntityPtr ntt : m_entities)
     {
-      if (e->GetNameVal() == name)
+      if (ntt->GetNameVal() == name)
       {
-        return e;
+        return ntt;
       }
     }
     return nullptr;
   }
 
-  EntityRawPtrArray Scene::GetByTag(const String& tag)
+  EntityPtrArray Scene::GetByTag(const String& tag)
   {
-    EntityRawPtrArray arrayByTag;
-    for (Entity* e : m_entities)
+    EntityPtrArray arrayByTag;
+    for (EntityPtr ntt : m_entities)
     {
       StringArray tokens;
-      Split(e->GetTagVal(), ".", tokens);
+      Split(ntt->GetTagVal(), ".", tokens);
 
       for (const String& token : tokens)
       {
         if (token == tag)
         {
-          arrayByTag.push_back(e);
+          arrayByTag.push_back(ntt);
         }
       }
     }
@@ -397,27 +359,27 @@ namespace ToolKit
     return arrayByTag;
   }
 
-  Entity* Scene::GetFirstByTag(const String& tag)
+  EntityPtr Scene::GetFirstByTag(const String& tag)
   {
-    EntityRawPtrArray res = GetByTag(tag);
+    EntityPtrArray res = GetByTag(tag);
     return res.empty() ? nullptr : res.front();
   }
 
-  EntityRawPtrArray Scene::Filter(std::function<bool(Entity*)> filter)
+  EntityPtrArray Scene::Filter(std::function<bool(EntityPtr)> filter)
   {
-    EntityRawPtrArray filtered;
+    EntityPtrArray filtered;
     std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(filtered), filter);
     return filtered;
   }
 
   // Returns the last sky added
-  SkyBase* Scene::GetSky()
+  SkyBasePtr Scene::GetSky()
   {
-    for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; --i)
+    for (int i = (int) m_entities.size() - 1; i >= 0; --i)
     {
-      if (m_entities[i]->IsSkyInstance())
+      if (m_entities[i]->IsA<SkyBase>())
       {
-        return static_cast<SkyBase*>(m_entities[i]);
+        return std::static_pointer_cast<SkyBase>(m_entities[i]);
       }
     }
 
@@ -442,10 +404,8 @@ namespace ToolKit
         GetLogger()->WriteConsole(LogType::Error, "You can't use a prefab outside of Prefab folder!");
         return;
       }
-      String folderName = folder.substr(folder.find_last_of(GetPathSeparator()));
-      // if (folderName != GetResourcePath())
     }
-    Prefab* prefab = new Prefab();
+    PrefabPtr prefab = MakeNewPtr<Prefab>();
     prefab->SetPrefabPathVal(path);
     prefab->Init(this);
     prefab->Link();
@@ -456,7 +416,7 @@ namespace ToolKit
   {
     // Find entities which have environment component
     EnvironmentComponentPtrArray environments;
-    for (Entity* ntt : m_entities)
+    for (EntityPtr ntt : m_entities)
     {
       EnvironmentComponentPtr envCom = ntt->GetComponent<EnvironmentComponent>();
       if (envCom != nullptr && envCom->GetHdriVal() != nullptr && envCom->GetIlluminateVal())
@@ -471,18 +431,17 @@ namespace ToolKit
 
   void Scene::Destroy(bool removeResources)
   {
-    EntityRawPtrArray prefabs;
-    for (Entity* ntt : m_entities)
+    PrefabRawPtrArray prefabs;
+    for (EntityPtr ntt : m_entities)
     {
-      if (ntt->GetType() == EntityType::Entity_Prefab)
+      if (Prefab* prefab = ntt->As<Prefab>())
       {
-        prefabs.push_back(ntt);
+        prefabs.push_back(prefab);
       }
     }
 
-    for (Entity* ntt : prefabs)
+    for (Prefab* prefab : prefabs)
     {
-      Prefab* prefab = static_cast<Prefab*>(ntt);
       prefab->UnInit();
     }
 
@@ -490,12 +449,11 @@ namespace ToolKit
 
     for (int i = maxCnt; i >= 0; i--)
     {
-      Entity* ntt = m_entities[i];
+      EntityPtr ntt = m_entities[i];
       if (removeResources)
       {
         ntt->RemoveResources();
       }
-      SafeDel(m_entities[i]);
     }
 
     m_entities.clear();
@@ -504,7 +462,7 @@ namespace ToolKit
     m_initiated = false;
   }
 
-  void Scene::SavePrefab(Entity* entity)
+  void Scene::SavePrefab(EntityPtr entity)
   {
     // Assign a default node.
     Node* prevNode             = entity->m_node;
@@ -512,14 +470,14 @@ namespace ToolKit
     entity->m_node->m_children = prevNode->m_children;
 
     // Construct prefab.
-    Scene prefab;
-    prefab.AddEntity(entity);
-    GetChildren(entity, prefab.m_entities);
+    ScenePtr prefab            = MakeNewPtr<Scene>();
+    prefab->AddEntity(entity);
+    GetChildren(entity, prefab->m_entities);
     String name = entity->GetNameVal() + SCENE;
-    prefab.SetFile(PrefabPath(name));
-    prefab.m_name = name;
-    prefab.Save(false);
-    prefab.m_entities.clear();
+    prefab->SetFile(PrefabPath(name));
+    prefab->m_name = name;
+    prefab->Save(false);
+    prefab->m_entities.clear();
 
     // Restore the old node.
     entity->m_node->m_children.clear();
@@ -536,129 +494,193 @@ namespace ToolKit
     cpy->m_name = m_name + "_cpy";
 
     cpy->m_entities.reserve(m_entities.size());
-    EntityRawPtrArray roots;
+    EntityPtrArray roots;
     GetRootEntities(m_entities, roots);
 
-    for (Entity* ntt : roots)
+    for (EntityPtr ntt : roots)
     {
       DeepCopy(ntt, cpy->m_entities);
     }
   }
 
-  void Scene::Serialize(XmlDocument* doc, XmlNode* parent) const
+  XmlNode* Scene::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* scene = CreateXmlNode(doc, XmlSceneElement, parent);
 
     // Match scene name with saved file.
     String name;
     DecomposePath(GetFile(), nullptr, &name, nullptr);
+
     // Always write the current version.
     WriteAttr(scene, doc, "version", TKVersionStr);
     WriteAttr(scene, doc, "name", name.c_str());
 
     for (size_t listIndx = 0; listIndx < m_entities.size(); listIndx++)
     {
-      Entity* ntt = m_entities[listIndx];
+      EntityPtr ntt = m_entities[listIndx];
+
       // If entity isn't a prefab type but from a prefab, don't serialize it
-      if (ntt->GetType() != EntityType::Entity_Prefab && Prefab::GetPrefabRoot(ntt))
+      if (!ntt->IsA<Prefab>() && Prefab::GetPrefabRoot(ntt))
       {
         continue;
       }
-      ntt->Serialize(doc, scene);
 
-      NormalizeEntityID(doc, scene->last_node(XmlEntityElement.c_str()), listIndx);
+      ntt->Serialize(doc, scene);
     }
 
     if (!m_isPrefab)
     {
       GetEngineSettings().SerializePostProcessing(doc, nullptr);
     }
+
+    return scene;
   }
 
-  void Scene::NormalizeEntityID(XmlDocument* doc, XmlNode* parent, size_t listIndx) const
+  XmlNode* Scene::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    XmlAttribute* parentAttrib = parent->first_attribute(XmlParentEntityIdAttr.c_str());
-    XmlAttribute* baseAttrib   = parent->first_attribute(XmlBaseEntityIdAttr.c_str());
-    parent->remove_attribute(parent->first_attribute(XmlEntityIdAttr.c_str()));
-    WriteAttr(parent, doc, XmlEntityIdAttr, std::to_string(listIndx + 1));
-
-    Entity* ntt      = m_entities[listIndx];
-    Node* parentNode = ntt->m_node->m_parent;
-    // If parent is in scene, save its list index too
-    if (parentNode && parentNode->m_entity)
-    {
-      for (uint parentSrchIndx = 0; parentSrchIndx < m_entities.size(); parentSrchIndx++)
-      {
-        if (parentNode->m_entity == m_entities[parentSrchIndx])
-        {
-          parent->remove_attribute(parentAttrib);
-          WriteAttr(parent, doc, XmlParentEntityIdAttr, std::to_string(parentSrchIndx + 1));
-        }
-      }
-    }
-  }
-
-  void Scene::DeSerialize(XmlDocument* doc, XmlNode* parent)
-  {
-    XmlNode* root = nullptr;
-    if (parent != nullptr)
-    {
-      root = parent->first_node(XmlSceneElement.c_str());
-    }
-    else
-    {
-      root = doc->first_node(XmlSceneElement.c_str());
-    }
-
     // Match scene name with file name.
-    String path = GetFile();
-    NormalizePath(path);
-
+    String path = GetSerializeFile();
     DecomposePath(path, nullptr, &m_name, nullptr);
-    ReadAttr(root, "version", m_version);
 
-    ULongID lastID    = GetHandleManager()->GetNextHandle();
-    ULongID biggestID = 0;
-    XmlNode* node     = nullptr;
-
-    EntityRawPtrArray prefabList;
-
-    for (node = root->first_node(XmlEntityElement.c_str()); node; node = node->next_sibling(XmlEntityElement.c_str()))
+    if (m_version == TKV045)
     {
-      XmlAttribute* typeAttr = node->first_attribute(XmlEntityTypeAttr.c_str());
-      EntityType t           = (EntityType) std::atoi(typeAttr->value());
-      Entity* ntt            = GetEntityFactory()->CreateByType(t);
+      DeSerializeImpV045(info, parent);
+      return nullptr;
+    }
 
-      ntt->DeSerialize(doc, node);
-      ntt->PostDeSerialize();
+    // For old type of scenes, load the entities and find the parent-child relations
+    const char* xmlRootObject = XmlEntityElement.c_str();
+    const char* xmlObjectType = XmlEntityTypeAttr.c_str();
 
-      if (ntt->GetType() == EntityType::Entity_Prefab)
+    EntityPtrArray prefabList;
+    EntityPtrArray deserializedEntities;
+
+    for (XmlNode* node = parent->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
+    {
+      XmlAttribute* typeAttr      = node->first_attribute(xmlObjectType);
+      EntityFactory::EntityType t = (EntityFactory::EntityType) std::atoi(typeAttr->value());
+      EntityPtr ntt               = EntityFactory::CreateByType(t);
+      ntt->m_version              = m_version;
+
+      ntt->DeSerialize(info, node);
+
+      if (ntt->IsA<Prefab>())
       {
         prefabList.push_back(ntt);
       }
 
-      // Incrementing the incoming ntt ids with current max id value...
-      // to prevent id collisions.
-      ULongID listIndx = 0;
-      ReadAttr(node, XmlEntityIdAttr, listIndx);
-      ULongID currentID = listIndx + lastID;
-      biggestID         = glm::max(biggestID, currentID);
-      ntt->SetIdVal(currentID);
-      ntt->_parentId += lastID;
+      // Old file id trick.
+      ULongID id = 0;
+      ReadAttr(node, XmlEntityIdAttr, id);
 
+      // Temporary id. This will be regenerated later. Do not use this id until it is regenerated later.
+      ntt->SetIdVal(id);
+      deserializedEntities.push_back(ntt);
+    }
+
+    // Solve the parent-child relations
+    for (EntityPtr ntt : deserializedEntities)
+    {
+      for (EntityPtr parentCandidate : deserializedEntities)
+      {
+        if (parentCandidate->GetIdVal() == ntt->_parentId)
+        {
+          parentCandidate->m_node->AddChild(ntt->m_node);
+          break;
+        }
+      }
+    }
+
+    // Old file id trick.
+    // Regenerate ids and add to scene
+    // Solve the parent-child relations
+    for (EntityPtr ntt : deserializedEntities)
+    {
+      // Generate new handle for old version scene entities
+      ntt->SetIdVal(GetHandleManager()->GenerateHandle());
       AddEntity(ntt);
     }
-    GetHandleManager()->SetMaxHandle(biggestID);
 
     // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)
     {
-      GetEngineSettings().DeSerializePostProcessing(doc, parent);
+      GetEngineSettings().DeSerializePostProcessing(info.Document, parent);
     }
 
-    for (Entity* ntt : prefabList)
+    for (EntityPtr ntt : prefabList)
     {
-      Prefab* prefab = static_cast<Prefab*>(ntt);
+      Prefab* prefab = static_cast<Prefab*>(ntt.get());
+      prefab->Init(this);
+      prefab->Link();
+    }
+
+    return nullptr;
+  }
+
+  void Scene::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlNode* root = info.Document->first_node(XmlSceneElement.c_str());
+    XmlNode* node = nullptr;
+
+    EntityPtrArray prefabList;
+    EntityPtrArray deserializedEntities;
+
+    const char* xmlRootObject = Object::StaticClass()->Name.c_str();
+    const char* xmlObjectType = XmlObjectClassAttr.data();
+
+    for (node = root->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
+    {
+      XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
+      EntityPtr ntt          = MakeNewPtrCasted<Entity>(typeAttr->value());
+
+      ntt->DeSerialize(info, node);
+
+      if (ntt->IsA<Prefab>())
+      {
+        prefabList.push_back(ntt);
+      }
+
+      deserializedEntities.push_back(ntt);
+    }
+
+    // Solve the parent-child relations
+    m_entities.reserve(deserializedEntities.size());
+
+    for (EntityPtr ntt : deserializedEntities)
+    {
+      if (ntt->_parentId == NULL_HANDLE)
+      {
+        AddEntity(ntt);
+        continue;
+      }
+
+      for (EntityPtr parentCandidate : deserializedEntities)
+      {
+        ULongID id = parentCandidate->_idBeforeCollision;
+        if (id == NULL_HANDLE)
+        {
+          id = parentCandidate->GetIdVal();
+        }
+
+        if (ntt->_parentId == id)
+        {
+          parentCandidate->m_node->AddChild(ntt->m_node);
+          break;
+        }
+      }
+
+      AddEntity(ntt);
+    }
+
+    // Do not serialize post processing settings if this is prefab.
+    if (!m_isPrefab)
+    {
+      GetEngineSettings().DeSerializePostProcessing(info.Document, parent);
+    }
+
+    for (EntityPtr ntt : prefabList)
+    {
+      PrefabPtr prefab = std::static_pointer_cast<Prefab>(ntt);
       prefab->Init(this);
       prefab->Link();
     }
@@ -667,7 +689,7 @@ namespace ToolKit
   ULongID Scene::GetBiggestEntityId()
   {
     ULongID lastId = 0;
-    for (Entity* ntt : m_entities)
+    for (EntityPtr ntt : m_entities)
     {
       lastId = glm::max(lastId, ntt->GetIdVal());
     }
@@ -675,7 +697,7 @@ namespace ToolKit
     return lastId;
   }
 
-  SceneManager::SceneManager() { m_type = ResourceType::Scene; }
+  SceneManager::SceneManager() { m_baseType = Scene::StaticClass(); }
 
   SceneManager::~SceneManager() {}
 
@@ -691,11 +713,19 @@ namespace ToolKit
     ResourceManager::Uninit();
   }
 
-  bool SceneManager::CanStore(ResourceType t) { return t == ResourceType::Scene; }
+  bool SceneManager::CanStore(ClassMeta* Class) { return Class == Scene::StaticClass(); }
 
-  ResourcePtr SceneManager::CreateLocal(ResourceType type) { return ResourcePtr(new Scene()); }
+  ResourcePtr SceneManager::CreateLocal(ClassMeta* Class)
+  {
+    if (Class == Scene::StaticClass())
+    {
+      return MakeNewPtr<Scene>();
+    }
 
-  String SceneManager::GetDefaultResource(ResourceType type) { return ScenePath("Sample.scene", true); }
+    return nullptr;
+  }
+
+  String SceneManager::GetDefaultResource(ClassMeta* Class) { return ScenePath("Sample.scene", true); }
 
   ScenePtr SceneManager::GetCurrentScene() { return m_currentScene; }
 
