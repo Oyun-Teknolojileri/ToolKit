@@ -8,12 +8,12 @@
 #pragma once
 
 #include "Gizmo.h"
-#include "Light.h"
-#include "LightMeshGenerator.h"
-#include "Primative.h"
-#include "ResourceComponent.h"
-#include "ToolKit.h"
-#include "Types.h"
+
+#include <Light.h>
+#include <Primative.h>
+#include <ResourceComponent.h>
+#include <ToolKit.h>
+#include <Types.h>
 
 namespace ToolKit
 {
@@ -49,7 +49,7 @@ namespace ToolKit
       ValueUpdateFn m_gizmoUpdateFn;
 
      public:
-      LightMeshGenerator* m_gizmoGenerator = nullptr;
+      class LightMeshGenerator* m_gizmoGenerator = nullptr;
 
      protected:
       Light* m_light             = nullptr;

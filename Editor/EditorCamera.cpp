@@ -10,6 +10,7 @@
 #include "App.h"
 
 #include <Material.h>
+#include <Mesh.h>
 
 #include <DebugNew.h>
 

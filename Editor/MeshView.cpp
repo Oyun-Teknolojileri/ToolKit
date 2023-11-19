@@ -12,6 +12,7 @@
 #include <Camera.h>
 #include <DirectionComponent.h>
 #include <Material.h>
+#include <Mesh.h>
 
 namespace ToolKit
 {

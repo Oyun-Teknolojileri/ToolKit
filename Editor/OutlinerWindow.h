@@ -10,7 +10,6 @@
 #include "EditorScene.h"
 #include "UI.h"
 
-#include <unordered_set>
 
 namespace ToolKit
 {

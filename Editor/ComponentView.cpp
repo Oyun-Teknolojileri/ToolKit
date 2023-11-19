@@ -14,6 +14,7 @@
 #include <AnimationControllerComponent.h>
 #include <EnvironmentComponent.h>
 #include <Material.h>
+#include <Mesh.h>
 
 #include <DebugNew.h>
 

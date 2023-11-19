@@ -19,6 +19,7 @@
 #include <Common/Win32Utils.h>
 #include <FileManager.h>
 #include <GlErrorReporter.h>
+#include <ImGui/backends/imgui_impl_sdl2.h>
 #include <Meta.h>
 #include <PluginManager.h>
 #include <SDL.h>
@@ -137,22 +138,19 @@ namespace ToolKit
       }
       else
       {
-#ifdef TK_GL_CORE_3_2
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
-#elif defined(TK_GL_ES_3_0)
+#ifdef TK_GL_ES_3_0
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        // gpu performance markers are available on OpenGL ES 3.2 or OpenGL Core 4.3+
-  #ifdef TK_GPU_PROFILE
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-  #else
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-  #endif
-#endif // TK_GL_CORE_3_2
+#endif
+
+// Opengl debuging & profiling features requires es 3_2 context
+#ifdef TK_GL_ES_3_2
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#endif
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -211,8 +209,9 @@ namespace ToolKit
                                            if (g_app->m_showGraphicsApiErrors)
                                            {
                                              GetLogger()->WriteConsole(LogType::Error, msg.c_str());
-                                             GetLogger()->WritePlatformConsole(LogType::Error, msg.c_str());
                                            }
+
+                                           GetLogger()->WritePlatformConsole(LogType::Error, msg.c_str());
                                          });
 
             // Init Main.
@@ -365,15 +364,9 @@ namespace ToolKit
           g_app->Frame(timer->CurrentTime - timer->LastTime);
 
           POP_CPU_MARKER();
-          PUSH_CPU_MARKER("Update Imgui Windows");
-
-          // Update Present imgui windows.
-          ImGui::UpdatePlatformWindows();
-          ImGui::RenderPlatformWindowsDefault();
-
-          POP_CPU_MARKER();
           PUSH_CPU_MARKER("Swap Window");
 
+          SDL_GL_MakeCurrent(g_window, g_context);
           SDL_GL_SwapWindow(g_window);
 
           POP_CPU_MARKER();

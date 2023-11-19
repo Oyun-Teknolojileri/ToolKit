@@ -15,6 +15,7 @@
 
 #include <DirectionComponent.h>
 #include <FileManager.h>
+#include <Mesh.h>
 #include <PluginManager.h>
 #include <Resource.h>
 #include <UIManager.h>

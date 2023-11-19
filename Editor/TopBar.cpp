@@ -14,6 +14,7 @@
 
 #include <Drawable.h>
 #include <GradientSky.h>
+#include <Mesh.h>
 #include <Meta.h>
 #include <Surface.h>
 
@@ -183,7 +184,7 @@ namespace ToolKit
       ImVec2 overlaySize(360, 30);
 
       // Center the toolbar.
-      float width = ImGui::GetContentRegionAvail().x;
+      float width  = ImGui::GetContentRegionAvail().x;
       float offset = (width - overlaySize.x) * 0.5f;
       ImGui::SameLine(offset);
 
