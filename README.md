@@ -26,9 +26,15 @@ ToolKit can publish for:
 
 All the publishing can be achieved from within the editor via click of a button. However for publishing to given platforms there are required configurations steps and installments such as emscripten and android sdk.
 
+## Projects Using ToolKit
+
 <p align="center">
   <img width="600" src="https://github.com/Oyun-Teknolojileri/ToolKit/blob/Engine/tk_ed_21.gif?raw=true">
 </p>
+
+[Multiverse Go](https://store.steampowered.com/app/2346880/Multiverse_GO/)
+
+Multiverse GO is a turn-based puzzle adventure set in a group of multiple universes. You can explore the multiverse and face challenges. The game focuses on forward thinking to progress through levels. Check out the link for more visuals from the project.
 
 ## Compiling
 
@@ -36,7 +42,22 @@ Visual Studio 2022 with C++ tools is required to compile the engine and the edit
 
 There are cmake files all around the repository and .bat files in  BuildScripts folder. They are used to compile the engine and the projects for target environments Web, Android and PC. You don't need to directly call these cmake files. All outputs can be compiled and packed within the editor. However cmake files are well documented for more advanced usages and configurations.
 
-![Alt text](Images/vs_projects.png)
+![ToolKit visual studio solution](Images/vs_projects.png)
+
+## Setup
+
+After compling the ToolKit solution, it creates the editor.exe in the Bin folder. When running the editor first time it asks a folder to use as workspace directory. Its reasonable to give it a folder in the documents where you have full read & write access. All projects and related files get stored under the wrokspace / project folder. A sample path for workspace 
+> "C:/Users/**YourUserName**/Documents/TK-Workspace"
+
+![ToolKit setting a workspace](Images/tk_workspace.png)
+
+After setting the workspace directory, "%appdata%/ToolKit/Config" path is filled with initial settings and all the states for the editor is saved here. When you need to reset settings for trouble shooting purposes, feel free to remove the %appdata%/ToolKit directory. It will be created with default settings.
+
+## Creating A New Project
+
+You can use the Main menu bar in the editor to create a new project. The project and required files will all be created in the workspace automatically. The project name must be consist of ASCII alpha numeric characters without any whitespace. Publish name can be anything but the project name has this requirement.
+
+![ToolKit new project menu](Images/tk_newproject.png)
 
 ## Dependencies
 - stb_image - MIT 
