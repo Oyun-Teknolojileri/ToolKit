@@ -203,10 +203,10 @@ namespace ToolKit
         switch (params.axis)
         {
         case AxisLabel::X:
-          v.pos = v.pos.yxz;
+          v.pos = Vec3(v.pos.y, v.pos.x, v.pos.z);
           break;
         case AxisLabel::Z:
-          v.pos = v.pos.zxy;
+          v.pos = Vec3(v.pos.z, v.pos.x, v.pos.y);
           break;
         case AxisLabel::Y:
         default:
@@ -270,10 +270,10 @@ namespace ToolKit
         switch (params.axis)
         {
         case AxisLabel::X:
-          corners[i] = corners[i].zyx;
+          corners[i] = Vec3(corners[i].z, corners[i].y, corners[i].x);
           break;
         case AxisLabel::Y:
-          corners[i] = corners[i].xzy;
+          corners[i] = Vec3(corners[i].x, corners[i].z, corners[i].y);
           break;
         case AxisLabel::Z:
           break;
@@ -396,19 +396,19 @@ namespace ToolKit
         switch (params.axis)
         {
         case AxisLabel::XY:
-          v.pos    *= scale;
-          v.pos.x  += 0.75f * scale;
-          v.pos.xy += Vec2(offset * scale);
+          v.pos   *= scale;
+          v.pos.x += 0.75f * scale;
+          v.pos   += Vec3(Vec2(offset * scale), 0.0f);
           break;
         case AxisLabel::YZ:
-          v.pos     = v.pos.zyx * scale;
-          v.pos.z  += 0.75f * scale;
-          v.pos.yz += Vec2(offset * scale);
+          v.pos    = Vec3(v.pos.z, v.pos.y, v.pos.x) * scale;
+          v.pos.z += 0.75f * scale;
+          v.pos   += Vec3(0.0f, Vec2(offset * scale));
           break;
         case AxisLabel::ZX:
-          v.pos     = v.pos.xzy * scale;
-          v.pos.x  += 0.75f * scale;
-          v.pos.zx += Vec2(offset * scale);
+          v.pos    = Vec3(v.pos.x, v.pos.z, v.pos.y) * scale;
+          v.pos.x += 0.75f * scale;
+          v.pos   += Vec3(offset * scale) * Vec3(1.0f, 0.0f, 1.0f);
           break;
         default:
           break;
@@ -661,9 +661,9 @@ namespace ToolKit
       Mat4 ts      = m_node->GetTransform(TransformationSpace::TS_WORLD);
       DecomposeMatrix(ts, &p.translate, nullptr, &p.scale);
 
-      p.solidDim.xyz = Vec3(rad, 1.0f - tip, rad);
-      p.toeTip       = Vec3(toe, tip, 0.0f);
-      p.type         = GizmoHandle::SolidType::Cone;
+      p.solidDim = Vec3(rad, 1.0f - tip, rad);
+      p.toeTip   = Vec3(toe, tip, 0.0f);
+      p.type     = GizmoHandle::SolidType::Cone;
 
       return p;
     }

@@ -47,7 +47,7 @@ namespace ToolKit
 
     if (translation != nullptr)
     {
-      *translation = glm::column(transform, 3).xyz;
+      *translation = glm::column(transform, 3);
     }
   }
 
@@ -367,8 +367,7 @@ namespace ToolKit
       Mat4 bindPoseTransform = sBone->m_inverseWorldMatrix;
       ToolKit::Mat4 boneTransform =
           dynamicBoneMap->boneList.find(sBone->m_name)->second.node->GetTransform(TransformationSpace::TS_WORLD);
-      transformedPos +=
-          Vec3((boneTransform * bindPoseTransform * Vec4(vertex->pos, 1.0f) * vertex->weights[boneIndx]).xyz);
+      transformedPos += Vec3((boneTransform * bindPoseTransform * Vec4(vertex->pos, 1.0f) * vertex->weights[boneIndx]));
     }
     return transformedPos;
   }

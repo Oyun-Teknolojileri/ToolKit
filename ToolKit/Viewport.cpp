@@ -190,7 +190,7 @@ namespace ToolKit
     screenPos.x += m_contentAreaLocation.x;
     screenPos.y  = m_wndContentAreaSize.y + m_contentAreaLocation.y - screenPos.y;
 
-    return screenPos.xy;
+    return screenPos;
   }
 
   Vec2 Viewport::TransformScreenToViewportSpace(const Vec2& pnt)
