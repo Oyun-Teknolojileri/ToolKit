@@ -35,7 +35,7 @@ namespace ToolKit
 
 #ifdef TK_DEBUG
   #define TKCheckGL() glCheckError_(__FILE__, __LINE__)
-#elif
+#else
   #define TKCheckGL()
 #endif
 
