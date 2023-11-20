@@ -358,7 +358,7 @@ namespace ToolKit
   void AnimRecord::Construct(EntityPtr entity, const AnimationPtr& anim)
   {
     m_entity    = entity;
-    m_animation = m_animation;
+    m_animation = anim;
   }
 
   AnimRecord::~AnimRecord()

@@ -132,13 +132,15 @@ namespace ToolKit
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) m_textureSettings.MinFilter);
 
+    // android does not have support for this
+#ifndef __ANDROID__
     if constexpr (GL_EXT_texture_filter_anisotropic)
     {
       float aniso = 0.0f;
       glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
     }
-
+#endif
     if (flushClientSideArray)
     {
       Clear();
