@@ -20,6 +20,7 @@
 #include <ImGui/backends/imgui_impl_sdl2.h>
 #include <MathUtil.h>
 #include <Prefab.h>
+#include <SDL.h>
 #include <Sky.h>
 
 #include <DebugNew.h>

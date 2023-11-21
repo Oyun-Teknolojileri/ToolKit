@@ -22,6 +22,7 @@
 #include <Mesh.h>
 #include <MeshComponent.h>
 #include <Prefab.h>
+#include <SDL.h>
 
 #include <DebugNew.h>
 

@@ -10,6 +10,7 @@
 #include "App.h"
 
 #include <MathUtil.h>
+#include <SDL.h>
 
 #include <DebugNew.h>
 

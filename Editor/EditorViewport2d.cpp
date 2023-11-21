@@ -11,7 +11,9 @@
 #include "PopupWindows.h"
 #include "TopBar2d.h"
 
-#include "DebugNew.h"
+#include <SDL.h>
+
+#include <DebugNew.h>
 
 namespace ToolKit
 {
