@@ -20,10 +20,12 @@ namespace ToolKit
 
   void InitGLErrorReport(GlReportCallback callback)
   {
+#ifndef __ANDROID__
     if (glDebugMessageCallback != NULL)
     {
       glEnable(GL_DEBUG_OUTPUT);
       glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
       glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
 
       glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
@@ -31,7 +33,7 @@ namespace ToolKit
       glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM, 0, nullptr, GL_TRUE);
       glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH, 0, nullptr, GL_TRUE);
     }
-
+#endif
     if (callback)
     {
       GlErrorReporter::Report = callback;
