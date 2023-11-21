@@ -11,16 +11,28 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <filesystem>
+#include <functional>
+#include <limits>
+#include <memory>
 #include <random>
+#include <set>
+#include <string>
 #include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 // GLM
-#define GLM_FORCE_QUAT_DATA_XYZW
-#define GLM_FORCE_XYZW_ONLY
-#define GLM_FORCE_CTOR_INIT
-#define GLM_ENABLE_EXPERIMENTAL
-#define GLM_FORCE_ALIGNED_GENTYPES
-#define GLM_FORCE_INTRINSICS
+#ifndef TK_GLM
+  #define TK_GLM
+  #define GLM_FORCE_QUAT_DATA_XYZW
+  #define GLM_FORCE_XYZW_ONLY
+  #define GLM_FORCE_CTOR_INIT
+  #define GLM_ENABLE_EXPERIMENTAL
+  #define GLM_FORCE_ALIGNED_GENTYPES
+  #define GLM_FORCE_INTRINSICS
+#endif
 
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
@@ -31,7 +43,13 @@
 #include <RapidXml/rapidxml_utils.hpp>
 
 // ToolKit
+#include "Entity.h"
 #include "Events.h"
 #include "Logger.h"
+#include "Pass.h"
 #include "Serialize.h"
-#include "ToolKit.h"
+
+#ifdef TK_EDITOR
+  #include "App.h"
+  #include "EditorRenderer.h"
+#endif
