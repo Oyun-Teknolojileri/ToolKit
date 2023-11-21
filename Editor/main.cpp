@@ -31,14 +31,15 @@
 
 #include <DebugNew.h>
 
+SDL_Window* g_window    = nullptr;
+SDL_GLContext g_context = nullptr;
+
 namespace ToolKit
 {
   namespace Editor
   {
 
     bool g_running               = true;
-    SDL_Window* g_window         = nullptr;
-    SDL_GLContext g_context      = nullptr;
     App* g_app                   = nullptr;
     Main* g_proxy                = nullptr;
     SDLEventPool* g_sdlEventPool = nullptr;

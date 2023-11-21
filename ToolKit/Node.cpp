@@ -436,8 +436,8 @@ namespace ToolKit
       {
         for (int i = 0; i < 3; i++)
         {
-          Vec3 v    = ps[i];
-          ps[i].xyz = glm::normalize(v);
+          Vec3 v = ps[i];
+          ps[i]  = Vec4(glm::normalize(v), ps[i].w);
         }
       }
 

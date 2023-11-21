@@ -15,33 +15,20 @@
 #include <unordered_map>
 
 // GLM
+#define GLM_FORCE_QUAT_DATA_XYZW
 #define GLM_FORCE_XYZW_ONLY
 #define GLM_FORCE_CTOR_INIT
 #define GLM_ENABLE_EXPERIMENTAL
-#ifndef GLM_FORCE_SWIZZLE
-  #define GLM_FORCE_SWIZZLE
-#endif
+#define GLM_FORCE_ALIGNED_GENTYPES
+#define GLM_FORCE_INTRINSICS
 
-#include "glm/glm.hpp"
-#include "glm/gtc/epsilon.hpp"
-#include "glm/gtc/matrix_access.hpp"
-#include "glm/gtc/matrix_inverse.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/quaternion.hpp"
-#include "glm/gtc/random.hpp"
-#include "glm/gtx/closest_point.hpp"
-#include "glm/gtx/component_wise.hpp"
-#include "glm/gtx/euler_angles.hpp"
-#include "glm/gtx/matrix_operation.hpp"
-#include "glm/gtx/matrix_query.hpp"
-#include "glm/gtx/quaternion.hpp"
-#include "glm/gtx/scalar_relational.hpp"
-#include "glm/gtx/string_cast.hpp"
-#include "glm/gtx/vector_query.hpp"
+#include <glm/ext.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtx/scalar_relational.hpp>
 
 // RapidXml
-#include "RapidXml/rapidxml_ext.h"
-#include "RapidXml/rapidxml_utils.hpp"
+#include <RapidXml/rapidxml_ext.h>
+#include <RapidXml/rapidxml_utils.hpp>
 
 // ToolKit
 #include "Events.h"

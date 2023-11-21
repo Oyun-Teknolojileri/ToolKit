@@ -18,6 +18,7 @@
 #include <Mesh.h>
 #include <PluginManager.h>
 #include <Resource.h>
+#include <SDL.h>
 #include <UIManager.h>
 
 #include <sstream>

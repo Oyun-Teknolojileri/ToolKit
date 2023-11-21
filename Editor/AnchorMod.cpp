@@ -12,6 +12,7 @@
 #include <Camera.h>
 #include <Canvas.h>
 #include <MathUtil.h>
+#include <SDL.h>
 #include <Surface.h>
 
 #include <DebugNew.h>

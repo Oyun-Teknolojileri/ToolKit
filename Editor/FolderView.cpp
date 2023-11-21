@@ -59,7 +59,7 @@ namespace ToolKit
       {
         thumbnailZoom = m_thumbnailMaxZoom;
       }
-      m_iconSize.xy = Vec2(thumbnailZoom);
+      m_iconSize = Vec2(thumbnailZoom);
 
       ImGui::BeginTable("##FilterZoom", 5, ImGuiTableFlags_SizingFixedFit);
 

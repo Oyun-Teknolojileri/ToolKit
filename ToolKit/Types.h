@@ -38,13 +38,13 @@
   #include "glm/gtx/string_cast.hpp"
   #include "glm/gtx/vector_query.hpp"
 #else
-  #include "glm/glm.hpp"
-  #include "glm/gtc/quaternion.hpp"
+  #include <glm/ext.hpp>
+  #include <glm/glm.hpp>
 #endif
 
 // RapidXml
-#include "RapidXml/rapidxml_ext.h"
-#include "RapidXml/rapidxml_utils.hpp"
+#include <RapidXml/rapidxml_ext.h>
+#include <RapidXml/rapidxml_utils.hpp>
 
 #include <filesystem>
 #include <functional>

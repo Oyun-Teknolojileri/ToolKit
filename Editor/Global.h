@@ -7,8 +7,10 @@
 
 #pragma once
 
-#include "SDL.h"
 #include "Types.h"
+
+extern struct SDL_Window* g_window;
+extern void* g_context;
 
 namespace ToolKit
 {
@@ -16,8 +18,6 @@ namespace ToolKit
   {
 
     // Handles.
-    extern SDL_Window* g_window;
-    extern SDL_GLContext g_context;
     extern class App* g_app;
     extern bool g_running;
 
