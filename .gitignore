@@ -39,6 +39,7 @@ Resources/Engine/workspace.settings
 .editorconfig
 /build
 /Dependency/ImGui/CMakeFiles
+/Dependency/build
 /BuildScripts/build
 /BuildScripts/ninjaBuild
 
