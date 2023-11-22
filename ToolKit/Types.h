@@ -24,6 +24,7 @@
 
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
+#include <glm/gtx/scalar_relational.hpp>
 
 // RapidXml
 #include <RapidXml/rapidxml_ext.h>
