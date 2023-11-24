@@ -32,6 +32,7 @@ namespace ToolKit
     const Vec3 pos = m_node->GetTranslation();
     m_deltaXY.x    = mouseXY.x - pos.x;
     m_deltaXY.y    = mouseXY.y - pos.y;
+    m_deltaXY      /= m_activeDpadRadius;
 
     if (fabs(m_deltaXY.x) > m_activeDpadRadius || fabs(m_deltaXY.y) > m_activeDpadRadius)
     {
