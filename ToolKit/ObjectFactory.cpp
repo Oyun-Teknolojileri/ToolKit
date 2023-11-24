@@ -32,6 +32,7 @@
 #include "SpriteSheet.h"
 #include "SsaoPass.h"
 #include "Surface.h"
+#include "Dpad.h"
 #include "Texture.h"
 
 #include "DebugNew.h"
@@ -101,6 +102,7 @@ namespace ToolKit
     Register<Surface>();
     Register<Canvas>();
     Register<Button>();
+    Register<Dpad>();
     // Resources.
     Register<Animation>();
     Register<Audio>();

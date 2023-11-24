@@ -182,6 +182,7 @@ namespace ToolKit
   typedef std::shared_ptr<class Camera> CameraPtr;
   typedef std::shared_ptr<class Camera> CameraPtr;
   typedef std::shared_ptr<class Surface> SurfacePtr;
+  typedef std::shared_ptr<class Dpad> DpadPtr;
 
   // Xml types.
   typedef rapidxml::xml_node<char> XmlNode;

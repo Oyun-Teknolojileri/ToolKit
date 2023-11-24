@@ -12,6 +12,7 @@
 #include "MathUtil.h"
 #include "Scene.h"
 #include "ToolKit.h"
+#include "Dpad.h"
 
 #include "DebugNew.h"
 
@@ -130,6 +131,11 @@ namespace ToolKit
           MaterialPtr hoverMat  = button->GetHoverMaterialVal();
           MaterialPtr normalMat = button->GetButtonMaterialVal();
           button->SetMaterialVal(surface->m_mouseOver && hoverMat ? hoverMat : normalMat);
+        }
+        else if (ntt->IsA<Dpad>())
+        {
+          Dpad* dpad = ntt->As<Dpad>();
+          dpad->UpdateDpad(vp->TransformScreenToViewportSpace(vp->GetLastMousePosScreenSpace()));
         }
 
         if (surface->m_mouseOver && surface->m_onMouseOver)

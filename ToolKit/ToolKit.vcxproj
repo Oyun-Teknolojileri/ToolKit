@@ -27,6 +27,7 @@
     <ClCompile Include="DeferredPass.cpp" />
     <ClCompile Include="DirectionComponent.cpp" />
     <ClCompile Include="DofPass.cpp" />
+    <ClCompile Include="Dpad.cpp" />
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="EngineSettings.cpp" />
     <ClCompile Include="Entity.cpp" />
@@ -113,6 +114,7 @@
     <ClInclude Include="DeferredPass.h" />
     <ClInclude Include="DirectionComponent.h" />
     <ClInclude Include="DofPass.h" />
+    <ClInclude Include="Dpad.h" />
     <ClInclude Include="Drawable.h" />
     <ClInclude Include="EngineSettings.h" />
     <ClInclude Include="Entity.h" />

@@ -13,6 +13,7 @@
 
 #include <Canvas.h>
 #include <Surface.h>
+#include <Dpad.h>
 
 #include <DebugNew.h>
 
@@ -58,6 +59,14 @@ namespace ToolKit
           canvasPanel->SetPivotOffsetVal(Vec2(0.5f));
           canvasPanel->GetMeshComponent()->Init(false);
           currScene->AddEntity(canvasPanel);
+        }
+
+        if (ImGui::MenuItem("Dpad"))
+        {
+          DpadPtr dpad = MakeNewPtr<Dpad>();
+          dpad->Update(Vec2(100.0f, 100.0f), Vec2(0.5f, 0.5f));
+          dpad->GetMeshComponent()->Init(false);
+          currScene->AddEntity(dpad);
         }
 
         ImGui::Separator();

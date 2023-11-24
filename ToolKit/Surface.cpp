@@ -403,6 +403,8 @@ namespace ToolKit
 
   void Button::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     // Update surface params.
     ParamMaterial().m_exposed     = false;
     ParamSize().m_category        = ButtonCategory;
