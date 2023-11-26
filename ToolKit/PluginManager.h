@@ -27,7 +27,6 @@ namespace ToolKit
     void* m_context;
     Plugin* m_plugin;
     ModuleHandle m_module;
-    String m_lastWriteTime;
     String m_file;
     bool m_loaded;
   };
@@ -41,6 +40,7 @@ namespace ToolKit
     // Platform dependent functions.
     bool Load(const String& file); // Auto reloads if the dll is dirty.
     void Unload(const String& file);
+    bool Reload(const String& file);
 
     // No platform dependency.
     void Init();

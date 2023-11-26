@@ -82,7 +82,7 @@ namespace ToolKit
                    {
                      g_app->m_statusMsg = "Failed.";
 
-                     GetLogger()->WriteConsole(LogType::Warning, "You can't change mesh's default material.");
+                     TK_WRN("You can't change mesh's default material.");
                    });
           if (i < submeshes.size() - 1)
           {

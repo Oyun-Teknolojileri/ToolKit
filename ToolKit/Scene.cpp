@@ -390,7 +390,7 @@ namespace ToolKit
   {
     if (fullPath == GetFile())
     {
-      GetLogger()->WriteConsole(LogType::Error, "You can't prefab same scene!");
+      TK_ERR("You can't prefab same scene.");
       return;
     }
 
@@ -401,7 +401,7 @@ namespace ToolKit
       String prefabPath = PrefabPath("");
       if (folder != PrefabPath(""))
       {
-        GetLogger()->WriteConsole(LogType::Error, "You can't use a prefab outside of Prefab folder!");
+        TK_ERR("You can't use a prefab outside of Prefab folder.");
         return;
       }
     }

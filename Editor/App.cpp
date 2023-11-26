@@ -276,7 +276,7 @@ namespace ToolKit
         String relPath = GetRelativeResourcePath(cScene->GetFile(), &rootFolder);
         String msg     = "Saved to: " + ConcatPaths({rootFolder, relPath});
 
-        GetLogger()->WriteConsole(LogType::Memo, msg.c_str());
+        TK_LOG(msg.c_str());
         g_app->m_statusMsg                    = "Scene saved.";
 
         FolderWindowRawPtrArray folderWindows = g_app->GetAssetBrowsers();
@@ -518,42 +518,41 @@ namespace ToolKit
       m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
       m_isCompiling = true;
 
-      std::thread pipeThread(
-          RunPipe,
-          cmd,
-          [this, buildDir](int res) -> void
-          {
-            String cmd = "cmake --build " + buildDir + " --config " + buildConfig.data();
-            std::thread pip(RunPipe,
-                            cmd,
-                            [=](int res) -> void
-                            {
-                              if (res)
-                              {
-                                m_statusMsg = "Compile Failed.";
+      std::thread pipeThread(RunPipe,
+                             cmd,
+                             [this, buildDir](int res) -> void
+                             {
+                               String cmd = "cmake --build " + buildDir + " --config " + buildConfig.data();
+                               std::thread pip(RunPipe,
+                                               cmd,
+                                               [=](int res) -> void
+                                               {
+                                                 if (res)
+                                                 {
+                                                   m_statusMsg = "Compile Failed.";
 
-                                String detail;
-                                if (res == 1)
-                                {
-                                  detail = "CMake Build Failed.";
-                                }
+                                                   String detail;
+                                                   if (res == 1)
+                                                   {
+                                                     detail = "CMake Build Failed.";
+                                                   }
 
-                                if (res == -1)
-                                {
-                                  detail = "CMake Generate Failed.";
-                                }
+                                                   if (res == -1)
+                                                   {
+                                                     detail = "CMake Generate Failed.";
+                                                   }
 
-                                GetLogger()->WriteConsole(LogType::Error, "%s %s", m_statusMsg.c_str(), detail.c_str());
-                              }
-                              else
-                              {
-                                m_statusMsg = "Compiled.";
-                                GetLogger()->WriteConsole(LogType::Memo, "%s", m_statusMsg.c_str());
-                              }
-                              m_isCompiling = false;
-                            });
-            pip.detach();
-          });
+                                                   TK_ERR("%s %s", m_statusMsg.c_str(), detail.c_str());
+                                                 }
+                                                 else
+                                                 {
+                                                   m_statusMsg = "Compiled.";
+                                                   TK_LOG("%s", m_statusMsg.c_str());
+                                                 }
+                                                 m_isCompiling = false;
+                                               });
+                               pip.detach();
+                             });
 
       pipeThread.detach();
     }
@@ -882,7 +881,7 @@ namespace ToolKit
           result  = ExecSysCommand(cmd.c_str(), false, false);
           if (result != 0)
           {
-            GetLogger()->WriteConsole(LogType::Error, "Import failed!");
+            TK_ERR("Import failed!");
           }
         }
 
@@ -1065,8 +1064,7 @@ namespace ToolKit
           {
             const FolderWindowRawPtrArray& assetBrowsers = g_app->GetAssetBrowsers();
 
-            String log                                   = "File isn't imported because it's not dropped onto "
-                                                           "Asset Browser";
+            String log = "File isn't imported because it's not dropped into Asset Browser";
 
             for (FolderWindow* folderWindow : assetBrowsers)
             {
@@ -1075,9 +1073,7 @@ namespace ToolKit
                 FolderView* activeView = folderWindow->GetActiveView(true);
                 if (activeView == nullptr)
                 {
-                  log = "Activate a resource folder by selecting it from the "
-                        "Asset "
-                        "Browser.";
+                  log = "Activate a resource folder by selecting it from the Asset Browser.";
                 }
                 else
                 {
@@ -1091,7 +1087,7 @@ namespace ToolKit
             if (!UI::ImportData.ShowImportWindow)
             {
               g_app->m_statusMsg = "Drop discarded";
-              GetLogger()->WriteConsole(LogType::Warning, log.c_str());
+              TK_WRN(log.c_str());
             }
           });
     }
@@ -1176,7 +1172,7 @@ namespace ToolKit
       String projectName = m_workspace.GetActiveProject().name;
       if (projectName.empty())
       {
-        GetLogger()->WriteConsole(LogType::Error, "No project is loaded!");
+        TK_ERR("No project is loaded.");
         return;
       }
 

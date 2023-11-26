@@ -15,15 +15,15 @@ namespace ToolKit
 {
 
 #ifdef __clang__
-  #define TK_LOG(format, ...) ToolKit::GetLogger()->WriteConsole(ToolKit::LogType::Memo, format, ##__VA_ARGS__)
-  #define TK_WRN(format, ...) ToolKit::GetLogger()->WriteConsole(ToolKit::LogType::Warning, format, ##__VA_ARGS__)
-  #define TK_ERR(format, ...) ToolKit::GetLogger()->WriteConsole(ToolKit::LogType::Error, format, ##__VA_ARGS__)
-  #define TK_SUC(format, ...) ToolKit::GetLogger()->WriteConsole(ToolKit::LogType::Success, format, ##__VA_ARGS__)
+  #define TK_LOG(format, ...) ToolKit::GetLogger()->WriteTKConsole(ToolKit::LogType::Memo, format, ##__VA_ARGS__)
+  #define TK_WRN(format, ...) ToolKit::GetLogger()->WriteTKConsole(ToolKit::LogType::Warning, format, ##__VA_ARGS__)
+  #define TK_ERR(format, ...) ToolKit::GetLogger()->WriteTKConsole(ToolKit::LogType::Error, format, ##__VA_ARGS__)
+  #define TK_SUC(format, ...) ToolKit::GetLogger()->WriteTKConsole(ToolKit::LogType::Success, format, ##__VA_ARGS__)
 #elif _MSC_VER
-  #define TK_LOG(format, ...) ToolKit::GetLogger()->WriteConsole(ToolKit::LogType::Memo, format, __VA_ARGS__)
-  #define TK_WRN(format, ...) ToolKit::GetLogger()->WriteConsole(ToolKit::LogType::Warning, format, __VA_ARGS__)
-  #define TK_ERR(format, ...) ToolKit::GetLogger()->WriteConsole(ToolKit::LogType::Error, format, __VA_ARGS__)
-  #define TK_SUC(format, ...) ToolKit::GetLogger()->WriteConsole(ToolKit::LogType::Success, format, __VA_ARGS__)
+  #define TK_LOG(format, ...) ToolKit::GetLogger()->WriteTKConsole(ToolKit::LogType::Memo, format, __VA_ARGS__)
+  #define TK_WRN(format, ...) ToolKit::GetLogger()->WriteTKConsole(ToolKit::LogType::Warning, format, __VA_ARGS__)
+  #define TK_ERR(format, ...) ToolKit::GetLogger()->WriteTKConsole(ToolKit::LogType::Error, format, __VA_ARGS__)
+  #define TK_SUC(format, ...) ToolKit::GetLogger()->WriteTKConsole(ToolKit::LogType::Success, format, __VA_ARGS__)
 #endif
 
   enum class LogType
@@ -49,7 +49,7 @@ namespace ToolKit
     void SetClearConsoleFn(ClearConsoleFn fn);
     void SetPlatformConsoleFn(ConsoleOutputFn fn);
     void ClearConsole();
-    void WriteConsole(LogType logType, const char* msg, ...);
+    void WriteTKConsole(LogType logType, const char* msg, ...);
     void WritePlatformConsole(LogType logType, const char* msg, ...);
 
    private:

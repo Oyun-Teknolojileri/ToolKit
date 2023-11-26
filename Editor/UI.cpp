@@ -959,9 +959,7 @@ namespace ToolKit
             else
             {
               g_app->m_statusMsg = "Drop discarded.";
-              GetLogger()->WriteConsole(LogType::Warning,
-                                        "File isn't imported because it's not "
-                                        "dropped onto Textures folder.");
+              TK_ERR("File isn't imported because it's not dropped into Textures folder.");
             }
             ImportData.Files.erase(ImportData.Files.begin() + i);
           }

@@ -209,7 +209,7 @@ namespace ToolKit
 
                                            if (g_app->m_showGraphicsApiErrors)
                                            {
-                                             GetLogger()->WriteConsole(LogType::Error, msg.c_str());
+                                             TK_ERR(msg.c_str());
                                            }
 
                                            GetLogger()->WritePlatformConsole(LogType::Error, msg.c_str());
