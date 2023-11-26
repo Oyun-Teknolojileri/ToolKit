@@ -9,14 +9,6 @@
 
 #include "Types.h"
 
-#include <cr/cr.h>
-
-#ifdef _WIN32 // Windows.
-  #define TK_GAME_API __declspec(dllexport)
-#else // Other OS.
-  #define TK_GAME_API
-#endif
-
 namespace ToolKit
 {
 
@@ -80,6 +72,8 @@ namespace ToolKit
     virtual void SetViewport(Viewport* viewport) { m_viewport = viewport; };
 
     PluginType GetType() { return PluginType::Game; }
+
+    bool GetQuitFlag() { return m_quit; }
 
    protected:
     /**

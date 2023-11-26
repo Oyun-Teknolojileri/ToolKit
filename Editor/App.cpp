@@ -447,8 +447,9 @@ namespace ToolKit
           m_sceneLightingMode = EditorLitMode::Game;
         }
 
-        String pluginPath = m_workspace.GetPluginPath();
-        if (GetPluginManager()->Load(pluginPath))
+        String pluginPath      = m_workspace.GetPluginPath();
+        PluginManager* plugMan = GetPluginManager();
+        if (plugMan->Load(pluginPath))
         {
           m_statusMsg          = "Game is playing";
           m_gameMod            = mod;
@@ -459,6 +460,18 @@ namespace ToolKit
           if (m_simulatorSettings.Windowed)
           {
             m_simulationWindow->SetVisibility(true);
+
+            // Match views.
+            if (EditorViewport* viewport3d = GetViewport(g_3dViewport))
+            {
+              Mat4 view = viewport3d->GetCamera()->m_node->GetTransform();
+              m_simulationWindow->GetCamera()->m_node->SetTransform(view);
+            }
+          }
+
+          if (GamePlugin* gamePlugin = plugMan->GetGamePlugin())
+          {
+            gamePlugin->SetViewport(GetSimulationWindow());
           }
         }
         else
@@ -541,6 +554,7 @@ namespace ToolKit
                             });
             pip.detach();
           });
+
       pipeThread.detach();
     }
 
@@ -1290,11 +1304,24 @@ namespace ToolKit
       }
     }
 
+    EditorViewport* App::GetSimulationWindow()
+    {
+      if (m_simulatorSettings.Windowed)
+      {
+        return m_simulationWindow;
+      }
+
+      EditorViewport* simWnd = GetViewport(g_3dViewport);
+      assert(simWnd != nullptr && "3D Viewport must exist.");
+
+      return simWnd;
+    }
+
     void App::UpdateSimulation(float deltaTime)
     {
       if (GamePlugin* plugin = GetPluginManager()->GetGamePlugin())
       {
-        if (plugin->m_quit)
+        if (plugin->GetQuitFlag())
         {
           SetGameMod(GameMod::Stop);
         }
@@ -1302,19 +1329,7 @@ namespace ToolKit
         if (m_gameMod != GameMod::Stop)
         {
           m_simulationWindow->SetVisibility(m_simulatorSettings.Windowed);
-
-          EditorViewport* playWindow = GetWindow<EditorViewport>(g_3dViewport);
-          if (m_simulatorSettings.Windowed)
-          {
-            if (m_windowCamLoad)
-            {
-              Mat4 camTs = playWindow->GetCamera()->m_node->GetTransform(TransformationSpace::TS_WORLD);
-              m_simulationWindow->GetCamera()->m_node->SetTransform(camTs);
-              m_windowCamLoad = false;
-            }
-            playWindow = m_simulationWindow;
-          }
-          plugin->Frame(deltaTime, playWindow);
+          plugin->Frame(deltaTime);
         }
       }
     }

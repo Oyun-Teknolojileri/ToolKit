@@ -155,6 +155,8 @@ namespace ToolKit
       void HideGizmos();
       void ShowGizmos();
 
+      // Simulation
+      EditorViewport* GetSimulationWindow();
       void UpdateSimulation(float deltaTime);
       float GetDeltaTime();
 
@@ -224,7 +226,6 @@ namespace ToolKit
       float m_moveDelta    = 0.25f;
       float m_rotateDelta  = 15.0f;
       float m_scaleDelta   = 0.5f;
-      bool m_windowCamLoad = true;
 
      private:
       // Internal states.

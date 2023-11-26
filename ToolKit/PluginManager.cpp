@@ -10,6 +10,8 @@
 #include "Logger.h"
 #include "ToolKit.h"
 
+#include <cr/cr.h>
+
 #include "DebugNew.h"
 
 namespace ToolKit
