@@ -21,14 +21,28 @@ namespace ToolKit
      */
     void UpdateDpad(const Vec2& mouseXY);
 
+    inline void Start() { m_active = true; }
+
+    inline void Stop()
+    {
+      m_deltaXY = Vec2(0.0f);
+      m_active  = false;
+    }
+
     inline float GetDeltaX() { return m_deltaXY.x; }
+
     inline float GetDeltaY() { return m_deltaXY.y; }
+
     inline float GetRadius() { return m_activeDpadRadius; }
+
+   protected:
+    void ComponentConstructor() override;
 
    public:
     TKDeclareParam(float, DpadRadius);
 
    private:
+    bool m_active = false;
     Vec2 m_deltaXY;
 
     float m_activeDpadRadius = 100.0f;

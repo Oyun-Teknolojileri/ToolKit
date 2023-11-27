@@ -30,6 +30,10 @@ namespace ToolKit
       {
         m_gamepadEventPool.push_back(new GamepadEvent());
       }
+      for (uint64 i = 0; i < m_touchEventPoolSize; ++i)
+      {
+        m_touchEventPool.push_back(new TouchEvent());
+      }
     }
 
     ~SDLEventPool()
@@ -49,6 +53,11 @@ namespace ToolKit
         delete gpe;
       }
       m_gamepadEventPool.clear();
+      for (TouchEvent* te : m_touchEventPool)
+      {
+        delete te;
+      }
+      m_touchEventPool.clear();
     }
 
     // Utility functions for Pooling & Releaseing SDL events for ToolKit.
@@ -86,8 +95,42 @@ namespace ToolKit
           break;
         }
       }
+      else if (e.type == SDL_FINGERDOWN || e.type == SDL_FINGERUP)
+      {
+        if (m_touchEventPoolCurrentIndex >= m_touchEventPoolSize)
+        {
+          return;
+        }
 
-      if (e.type == SDL_MOUSEMOTION)
+        TouchEvent* te = m_touchEventPool[m_touchEventPoolCurrentIndex++];
+        Main::GetInstance()->m_eventPool.push_back(te);
+
+        if (e.type == SDL_FINGERDOWN)
+        {
+          te->m_release = false;
+        }
+        else
+        {
+          te->m_release = true;
+        }
+
+        te->m_action = EventAction::Touch;
+      }
+      else if (e.type == SDL_FINGERMOTION)
+      {
+        if (m_touchEventPoolCurrentIndex >= m_touchEventPoolSize)
+        {
+          return;
+        }
+
+        TouchEvent* te = m_touchEventPool[m_touchEventPoolCurrentIndex++];
+        Main::GetInstance()->m_eventPool.push_back(te);
+
+        te->m_action    = EventAction::Move;
+        te->absolute[0] = e.tfinger.x;
+        te->absolute[1] = e.tfinger.y;
+      }
+      else if (e.type == SDL_MOUSEMOTION)
       {
         if (m_mouseEventPoolCurrentIndex >= m_mouseEventPoolSize)
         {
@@ -103,8 +146,7 @@ namespace ToolKit
         me->relative[0] = e.motion.xrel;
         me->relative[1] = e.motion.yrel;
       }
-
-      if (e.type == SDL_MOUSEWHEEL)
+      else if (e.type == SDL_MOUSEWHEEL)
       {
         if (m_mouseEventPoolCurrentIndex >= m_mouseEventPoolSize)
         {
@@ -118,8 +160,7 @@ namespace ToolKit
         me->scroll[0] = e.wheel.x;
         me->scroll[1] = e.wheel.y;
       }
-
-      if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP)
+      else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP)
       {
         if (m_keyboardEventPoolCurrentIndex >= m_keyboardEventPoolSize)
         {
@@ -204,11 +245,14 @@ namespace ToolKit
     const uint64 m_mouseEventPoolSize      = 1024;
     const uint64 m_keyboardEventPoolSize   = 1024;
     const uint64 m_gamepadEventPoolSize    = 1024;
+    const uint64 m_touchEventPoolSize      = 1024;
     uint64 m_mouseEventPoolCurrentIndex    = 0;
     uint64 m_keyboardEventPoolCurrentIndex = 0;
     uint64 m_gamepadEventPoolCurrentIndex  = 0;
+    uint64 m_touchEventPoolCurrentIndex  = 0;
     std::vector<MouseEvent*> m_mouseEventPool;
     std::vector<KeyboardEvent*> m_keyboardEventPool;
     std::vector<GamepadEvent*> m_gamepadEventPool;
+    std::vector<TouchEvent*> m_touchEventPool;
   };
 } // namespace ToolKit

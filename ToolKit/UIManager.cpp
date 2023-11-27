@@ -8,11 +8,11 @@
 #include "UIManager.h"
 
 #include "Canvas.h"
+#include "Dpad.h"
 #include "Events.h"
 #include "MathUtil.h"
 #include "Scene.h"
 #include "ToolKit.h"
-#include "Dpad.h"
 
 #include "DebugNew.h"
 
@@ -135,6 +135,40 @@ namespace ToolKit
         else if (ntt->IsA<Dpad>())
         {
           Dpad* dpad = ntt->As<Dpad>();
+#ifdef __ANDROID__
+          if (e->m_type == Event::EventType::Touch)
+          {
+            if (e->m_action == EventAction::Touch)
+            {
+              TouchEvent* te = static_cast<TouchEvent*>(e);
+              if (te->m_release)
+              {
+                dpad->Stop();
+              }
+              else
+              {
+                dpad->Start();
+              }
+            }
+          }
+#else
+          if (e->m_type == Event::EventType::Mouse)
+          {
+            if (e->m_action == EventAction::LeftClick)
+            {
+              MouseEvent* me = static_cast<MouseEvent*>(e);
+              if (me->m_release)
+              {
+                dpad->Stop();
+              }
+              else
+              {
+                dpad->Start();
+              }
+            }
+          }
+#endif
+
           dpad->UpdateDpad(vp->TransformScreenToViewportSpace(vp->GetLastMousePosScreenSpace()));
         }
 

@@ -41,7 +41,7 @@ namespace ToolKit
     virtual void UpdateGeometry(bool byTexture);
 
    protected:
-    void ComponentConstructor();
+    virtual void ComponentConstructor();
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
     Entity* CopyTo(Entity* other) const override;
