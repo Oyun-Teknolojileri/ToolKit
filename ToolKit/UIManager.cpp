@@ -75,15 +75,24 @@ namespace ToolKit
   {
     if (CheckMouseOver(surface, e, vp))
     {
+#ifdef __ANDROID__
+      TouchEvent* te = static_cast<TouchEvent*>(e);
+      return te->m_action == EventAction::Touch;
+#else
       MouseEvent* me = static_cast<MouseEvent*>(e);
       return me->m_action == EventAction::LeftClick;
+#endif
     }
     return false;
   }
 
   bool UIManager::CheckMouseOver(Surface* surface, Event* e, Viewport* vp)
   {
+#ifdef __ANDROID__
+    if (e->m_type == Event::EventType::Touch)
+#else
     if (e->m_type == Event::EventType::Mouse)
+#endif
     {
       BoundingBox box = surface->GetAABB(true);
       Ray ray         = vp->RayFromMousePosition();
@@ -109,6 +118,32 @@ namespace ToolKit
       return;
     }
 
+    for (Event* e : events)
+    {
+#ifdef __ANDROID__
+      if (e->m_type == Event::EventType::Touch)
+      {
+        if (e->m_action == EventAction::Touch)
+        {
+          TouchEvent* te  = static_cast<TouchEvent*>(e);
+          m_mouseReleased = te->m_release;
+        }
+      }
+#else
+      if (e->m_type == Event::EventType::Mouse)
+        {
+          if (e->m_action == EventAction::LeftClick)
+          {
+            MouseEvent* me  = static_cast<MouseEvent*>(e);
+            m_mouseReleased = me->m_release;
+          }
+        }
+#endif
+    }
+
+      GetLogger()->WriteConsole(LogType::Warning, "A");
+    GetLogger()->WriteConsole(LogType::Warning, std::to_string(m_mouseReleased).c_str());
+
     const EntityPtrArray& entities = layer->m_scene->AccessEntityArray();
     for (EntityPtr ntt : entities)
     {
@@ -130,44 +165,24 @@ namespace ToolKit
           Button* button        = ntt->As<Button>();
           MaterialPtr hoverMat  = button->GetHoverMaterialVal();
           MaterialPtr normalMat = button->GetButtonMaterialVal();
-          button->SetMaterialVal(surface->m_mouseOver && hoverMat ? hoverMat : normalMat);
+
+          bool b                = !m_mouseReleased && (surface->m_mouseOver && hoverMat);
+          button->SetMaterialVal(b ? hoverMat : normalMat);
+
+            GetLogger()->WriteConsole(LogType::Warning, "B");
+          GetLogger()->WriteConsole(LogType::Warning, std::to_string(b).c_str());
         }
         else if (ntt->IsA<Dpad>())
         {
           Dpad* dpad = ntt->As<Dpad>();
-#ifdef __ANDROID__
-          if (e->m_type == Event::EventType::Touch)
+          if (m_mouseReleased)
           {
-            if (e->m_action == EventAction::Touch)
-            {
-              TouchEvent* te = static_cast<TouchEvent*>(e);
-              if (te->m_release)
-              {
-                dpad->Stop();
-              }
-              else
-              {
-                dpad->Start();
-              }
-            }
+            dpad->Stop();
           }
-#else
-          if (e->m_type == Event::EventType::Mouse)
+          else
           {
-            if (e->m_action == EventAction::LeftClick)
-            {
-              MouseEvent* me = static_cast<MouseEvent*>(e);
-              if (me->m_release)
-              {
-                dpad->Stop();
-              }
-              else
-              {
-                dpad->Start();
-              }
-            }
+            dpad->Start();
           }
-#endif
 
           dpad->UpdateDpad(vp->TransformScreenToViewportSpace(vp->GetLastMousePosScreenSpace()));
         }
