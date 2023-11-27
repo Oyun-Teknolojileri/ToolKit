@@ -55,16 +55,33 @@ namespace ToolKit
 
   void Dpad::ComponentConstructor()
   {
-    AddComponent<MeshComponent>();
-    AddComponent<MaterialComponent>();
-
-    MeshComponentPtr meshCom             = GetComponent<MeshComponent>();
-    meshCom->ParamMesh().m_exposed       = false;
-    meshCom->ParamCastShadow().m_exposed = false;
-    meshCom->SetCastShadowVal(false);
-
-    MaterialPtr material        = GetMaterialManager()->GetCopyOfDpadMaterial();
     MaterialComponentPtr matCom = GetComponent<MaterialComponent>();
-    matCom->SetFirstMaterial(material);
+    if (matCom == nullptr)
+    {
+      AddComponent<MaterialComponent>();
+      MaterialPtr material = GetMaterialManager()->GetCopyOfDpadMaterial();
+      matCom               = GetComponent<MaterialComponent>();
+      matCom->SetFirstMaterial(material);
+    }
+    MeshComponentPtr meshCom = GetComponent<MeshComponent>();
+    if (meshCom == nullptr)
+    {
+      AddComponent<MeshComponent>();
+      meshCom                              = GetComponent<MeshComponent>();
+      meshCom->ParamMesh().m_exposed       = false;
+      meshCom->ParamCastShadow().m_exposed = false;
+      meshCom->SetCastShadowVal(false);
+    }
+  }
+
+  void Dpad::SetDefaultMaterialIfMaterialIsNotOverriden()
+  {
+    // Re assign default material.
+    MaterialComponentPtr matCom = GetMaterialComponent();
+    MaterialPtr mat             = matCom->GetFirstMaterial();
+    if (mat->IsDynamic() || !mat->_missingFile.empty())
+    {
+      matCom->SetFirstMaterial(GetMaterialManager()->GetCopyOfDpadMaterial());
+    }
   }
 } // namespace ToolKit

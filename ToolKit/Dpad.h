@@ -37,6 +37,7 @@ namespace ToolKit
 
    protected:
     void ComponentConstructor() override;
+    void SetDefaultMaterialIfMaterialIsNotOverriden() override;
 
    public:
     TKDeclareParam(float, DpadRadius);
