@@ -141,9 +141,6 @@ namespace ToolKit
 #endif
     }
 
-      GetLogger()->WriteConsole(LogType::Warning, "A");
-    GetLogger()->WriteConsole(LogType::Warning, std::to_string(m_mouseReleased).c_str());
-
     const EntityPtrArray& entities = layer->m_scene->AccessEntityArray();
     for (EntityPtr ntt : entities)
     {
@@ -166,11 +163,7 @@ namespace ToolKit
           MaterialPtr hoverMat  = button->GetHoverMaterialVal();
           MaterialPtr normalMat = button->GetButtonMaterialVal();
 
-          bool b                = !m_mouseReleased && (surface->m_mouseOver && hoverMat);
-          button->SetMaterialVal(b ? hoverMat : normalMat);
-
-            GetLogger()->WriteConsole(LogType::Warning, "B");
-          GetLogger()->WriteConsole(LogType::Warning, std::to_string(b).c_str());
+          button->SetMaterialVal(surface->m_mouseOver && hoverMat ? hoverMat : normalMat);
         }
         else if (ntt->IsA<Dpad>())
         {

@@ -47,10 +47,6 @@ namespace ToolKit
     {
       m_deltaXY /= m_activeDpadRadius;
     }
-
-    GetLogger()->WriteConsole(LogType::Warning, "X: %f", mouseXY.x);
-    GetLogger()->WriteConsole(LogType::Warning, "Y: %f", mouseXY.y);
-
   }
 
   void Dpad::ComponentConstructor()

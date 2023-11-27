@@ -5,7 +5,7 @@
 #include "GlErrorReporter.h"
 #include "SDL.h"
 #include "Scene.h"
-#include "SceneRenderPath.h"
+#include "MobileSceneRenderPath.h"
 #include "ToolKit.h"
 #include "Types.h"
 #include "UIManager.h"
@@ -43,14 +43,14 @@ namespace ToolKit
   {
     if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
     {
-      static SceneRenderPath sceneRenderer;
+      static MobileSceneRenderPath sceneRenderer;
       sceneRenderer.m_params.Cam                        = viewport->GetCamera();
       sceneRenderer.m_params.ClearFramebuffer           = true;
-      sceneRenderer.m_params.Gfx.BloomEnabled           = true;
+      sceneRenderer.m_params.Gfx.BloomEnabled           = false;
       sceneRenderer.m_params.Gfx.DepthOfFieldEnabled    = false;
-      sceneRenderer.m_params.Gfx.FXAAEnabled            = true;
+      sceneRenderer.m_params.Gfx.FXAAEnabled            = false;
       sceneRenderer.m_params.Gfx.GammaCorrectionEnabled = false;
-      sceneRenderer.m_params.Gfx.SSAOEnabled            = true;
+      sceneRenderer.m_params.Gfx.SSAOEnabled            = false;
       sceneRenderer.m_params.Gfx.TonemappingEnabled     = true;
       sceneRenderer.m_params.Lights                     = scene->GetLights();
       sceneRenderer.m_params.MainFramebuffer            = viewport->m_framebuffer;
@@ -330,13 +330,13 @@ namespace ToolKit
 
       for (Event* e : Main::GetInstance()->m_eventPool)
       {
-        if (e->m_type == Event::EventType::Mouse)
+        if (e->m_type == Event::EventType::Touch)
         {
-          MouseEvent* me = static_cast<MouseEvent*>(e);
-          if (me->m_action == EventAction::Move)
+          TouchEvent* te = static_cast<TouchEvent*>(e);
+          if (te->m_action == EventAction::Move)
           {
-            m_lastMousePosRelContentArea.x = me->absolute[0];
-            m_lastMousePosRelContentArea.y = me->absolute[1];
+            m_lastMousePosRelContentArea.x = te->absolute[0] * m_wndContentAreaSize.x;
+            m_lastMousePosRelContentArea.y = te->absolute[1] * m_wndContentAreaSize.y;
             break;
           }
         }
@@ -377,6 +377,11 @@ namespace ToolKit
     Main::SetProxy(g_proxy);
 
     g_proxy->PreInit();
+    auto androidWriteConsoleFn = [](LogType logType, const String& msg)
+    {
+      ANDROID_LOG("%s", msg.c_str());
+    };
+    GetLogger()->SetWriteConsoleFn(androidWriteConsoleFn);
 
     g_proxy->m_engineSettings->Window.Height = 2400;
     g_proxy->m_engineSettings->Window.Width = 1080;
@@ -389,6 +394,8 @@ namespace ToolKit
 
   void Init()
   {
+    g_proxy->m_engineSettings->Window.Width = 2400;
+    g_proxy->m_engineSettings->Window.Height = 1080;
     g_engineSettings = g_proxy->m_engineSettings;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0)
@@ -435,11 +442,10 @@ namespace ToolKit
           SDL_GL_MakeCurrent(g_window, g_context);
 
           const char* error = SDL_GetError();
-          std::cout << error << std::endl;
-
+          ANDROID_LOG("%s", error);
           // Init OpenGl.
 
-          g_proxy->m_renderSys->InitGl((void*)SDL_GL_GetProcAddress, [](const String& msg) { std::cout << msg << std::endl; });
+          g_proxy->m_renderSys->InitGl((void*)SDL_GL_GetProcAddress, [](const String& msg) { ANDROID_LOG("%s", msg.c_str()); });
           //gladLoadGLES2((GLADloadfunc) SDL_GL_GetProcAddress);
           glEnable(GL_DEPTH_TEST);
 
@@ -518,6 +524,8 @@ namespace ToolKit
 
     while (g_running && !g_game->m_quit)
     {
+        //float frameStart = GetMilliSeconds();
+
       while (SDL_PollEvent(&sdlEvent))
       {
         g_sdlEventPool->PoolEvent(sdlEvent);
@@ -537,6 +545,7 @@ namespace ToolKit
         GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
 
         g_viewport->Update(deltaTime);
+
 
         g_game->Frame(deltaTime, g_viewport);
 
@@ -564,7 +573,12 @@ namespace ToolKit
         Render(g_viewport->m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0)->m_textureId);
 
         g_sdlEventPool->ClearPool(); // Clear after consumption.
+
+          float frameStart = GetMilliSeconds();
         SDL_GL_SwapWindow(g_window);
+
+          float frameEnd = GetMilliSeconds();
+          //ANDROID_LOG("%f", frameEnd - frameStart);
 
         timer.frameCount++;
         timer.timeAccum += deltaTime;
@@ -576,8 +590,8 @@ namespace ToolKit
 
         timer.lastTime = timer.currentTime;
 
-        // float frameEnd = GetMilliSeconds();
-        // std::cout << "Frame: " << frameEnd - frameStart << std::endl;
+        //float frameEnd = GetMilliSeconds();
+        //ANDROID_LOG("%f", frameEnd - frameStart);
       }
     }
   }
