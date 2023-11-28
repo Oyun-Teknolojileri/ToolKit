@@ -193,6 +193,7 @@ namespace ToolKit
      * Camera to render the UI and update the layers with.
      */
     CameraPtr m_uiCamera = nullptr;
+    bool m_mouseReleased = true;
   };
 
 } // namespace ToolKit
