@@ -41,11 +41,12 @@ namespace ToolKit
     bool Load(const String& file); // Auto reloads if the dll is dirty.
     void Unload(const String& file);
     bool Reload(const String& file);
+    void Update(float deltaTime);
 
     // No platform dependency.
     void Init();
     void UnInit();
-    PluginRegister* GetRegister(const String& file);
+    PluginRegister* GetRegister(const String& file, int* indx = nullptr);
 
     // Shorts for game plugin.
     GamePlugin* GetGamePlugin();

@@ -17,15 +17,15 @@ namespace ToolKit
   class Game : public GamePlugin
   {
    public:
-    virtual void Init(Main* master);
-    virtual void Destroy();
-    virtual void Frame(float deltaTime, Viewport* viewport);
-
-   private:
+    void Init(Main* master) override;
+    void Destroy() override;
+    void Frame(float deltaTime) override;
+    void OnLoad() override;
+    void OnUnload() override;
   };
 
   extern Game* g_game;
 
 } // namespace ToolKit
 
-extern "C" TK_GAME_API ToolKit::Game* TK_STDCAL CreateInstance();
+extern "C" TK_PLUGIN_API ToolKit::Game* TK_STDCAL CreateInstance();

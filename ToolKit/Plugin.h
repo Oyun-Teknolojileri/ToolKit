@@ -9,6 +9,15 @@
 
 #include "Types.h"
 
+/**
+ * Plugin functions that needs to be accessible by the editor needs to export their functionality using this macro.
+ */
+#ifdef _WIN32 // Windows.
+  #define TK_PLUGIN_API __declspec(dllexport)
+#else // Other OS.
+  #define TK_PLUGIN_API
+#endif
+
 namespace ToolKit
 {
 
@@ -48,18 +57,17 @@ namespace ToolKit
      */
     virtual void Frame(float deltaTime)   = 0;
 
-   protected:
     /**
      * Hot reload callback, this callback is get called after a reload. Gives you a chance to restore the state, if any
      * captured during an unload.
      */
-    PluginEventCallback m_load;
+    virtual void OnLoad()                 = 0;
 
     /**
      * Hot reload callback, this callback is get called before unload. Gives you a chance to store any state to restore
      * at reload.
      */
-    PluginEventCallback m_unload;
+    virtual void OnUnload()               = 0;
   };
 
   class TK_API GamePlugin : public Plugin

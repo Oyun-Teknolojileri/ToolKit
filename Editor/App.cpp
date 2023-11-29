@@ -153,6 +153,9 @@ namespace ToolKit
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
 
+      // Update Plugins.
+      GetPluginManager()->Update(deltaTime);
+
       POP_CPU_MARKER();
 
       PUSH_CPU_MARKER("Gather viewports & windows to dispatch signals");
@@ -1325,7 +1328,7 @@ namespace ToolKit
         if (m_gameMod != GameMod::Stop)
         {
           m_simulationWindow->SetVisibility(m_simulatorSettings.Windowed);
-          plugin->Frame(deltaTime);
+          //plugin->Frame(deltaTime);
         }
       }
     }
