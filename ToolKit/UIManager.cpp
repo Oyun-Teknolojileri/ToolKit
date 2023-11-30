@@ -75,24 +75,24 @@ namespace ToolKit
   {
     if (CheckMouseOver(surface, e, vp))
     {
-#ifdef __ANDROID__
-      TouchEvent* te = static_cast<TouchEvent*>(e);
-      return te->m_action == EventAction::Touch;
-#else
-      MouseEvent* me = static_cast<MouseEvent*>(e);
-      return me->m_action == EventAction::LeftClick;
-#endif
+      if (e->m_type == Event::EventType::Mouse)
+      {
+        MouseEvent* me = static_cast<MouseEvent*>(e);
+        return me->m_action == EventAction::LeftClick;
+      }
+      else if (e->m_type == Event::EventType::Touch)
+      {
+        TouchEvent* te = static_cast<TouchEvent*>(e);
+        return te->m_action == EventAction::Touch;
+      }
     }
     return false;
   }
 
   bool UIManager::CheckMouseOver(Surface* surface, Event* e, Viewport* vp)
   {
-#ifdef __ANDROID__
-    if (e->m_type == Event::EventType::Touch)
-#else
-    if (e->m_type == Event::EventType::Mouse)
-#endif
+    if (e->m_type == Event::EventType::Mouse || e->m_type == Event::EventType::Touch)
+
     {
       BoundingBox box = surface->GetAABB(true);
       Ray ray         = vp->RayFromMousePosition();
@@ -120,16 +120,6 @@ namespace ToolKit
 
     for (Event* e : events)
     {
-#ifdef __ANDROID__
-      if (e->m_type == Event::EventType::Touch)
-      {
-        if (e->m_action == EventAction::Touch)
-        {
-          TouchEvent* te  = static_cast<TouchEvent*>(e);
-          m_mouseReleased = te->m_release;
-        }
-      }
-#else
       if (e->m_type == Event::EventType::Mouse)
       {
         if (e->m_action == EventAction::LeftClick)
@@ -138,7 +128,14 @@ namespace ToolKit
           m_mouseReleased = me->m_release;
         }
       }
-#endif
+      else if (e->m_type == Event::EventType::Touch)
+      {
+        if (e->m_action == EventAction::Touch)
+        {
+          TouchEvent* te  = static_cast<TouchEvent*>(e);
+          m_mouseReleased = te->m_release;
+        }
+      }
     }
 
     const EntityPtrArray& entities = layer->m_scene->AccessEntityArray();
