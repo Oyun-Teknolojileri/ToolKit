@@ -328,12 +328,8 @@ namespace ToolKit
         if (e->m_type == Event::EventType::Mouse)
         {
           MouseEvent* me = static_cast<MouseEvent*>(e);
-          if (me->m_action == EventAction::Move)
-          {
-            m_lastMousePosRelContentArea.x = me->absolute[0];
-            m_lastMousePosRelContentArea.y = me->absolute[1];
-            break;
-          }
+          m_lastMousePosRelContentArea.x = me->absolute[0];
+          m_lastMousePosRelContentArea.y = me->absolute[1];
         }
       }
     }

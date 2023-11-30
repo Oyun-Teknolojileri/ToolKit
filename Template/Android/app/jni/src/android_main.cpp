@@ -333,12 +333,8 @@ namespace ToolKit
         if (e->m_type == Event::EventType::Touch)
         {
           TouchEvent* te = static_cast<TouchEvent*>(e);
-          if (te->m_action == EventAction::Move)
-          {
-            m_lastMousePosRelContentArea.x = te->absolute[0] * m_wndContentAreaSize.x;
-            m_lastMousePosRelContentArea.y = te->absolute[1] * m_wndContentAreaSize.y;
-            break;
-          }
+          m_lastMousePosRelContentArea.x = te->absolute[0] * m_wndContentAreaSize.x;
+          m_lastMousePosRelContentArea.y = te->absolute[1] * m_wndContentAreaSize.y;
         }
       }
     }
