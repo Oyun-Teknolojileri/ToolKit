@@ -41,10 +41,10 @@ Resources/Engine/workspace.settings
 /Dependency/ImGui/CMakeFiles
 /Dependency/build
 /Dependency/SDL2/build
-/Dependency/zlib-1.2.12/build
-/Dependency/zlib-1.2.12/contrib/minizip/build
 /Dependency/ImGui/build
 /Dependency/ImGui/lib
+/Dependency/zlib-1.2.12/build
+/Dependency/zlib-1.2.12/dist
 /Dependency/zlib-1.2.12/contrib/minizip/build
 /Dependency/zlib-1.2.12/contrib/minizip/webbuild
 /BuildScripts/build
