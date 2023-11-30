@@ -16,3 +16,8 @@ if not exist "Release" (
 cmake --build . --config Release
 cd Release
 copy "SDL2.dll" "../../../../Bin/SDL2.dll"
+if not exist "../../lib" (
+	mkdir "../../lib"
+)
+copy "SDL2main.lib" "../../lib/SDL2main.lib"
+copy "SDL2.lib" "../../lib/SDL2.lib"
