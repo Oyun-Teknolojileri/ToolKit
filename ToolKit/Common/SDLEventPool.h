@@ -95,10 +95,10 @@ namespace ToolKit
           me->m_action = EventAction::MiddleClick;
           break;
         }
-          me->absolute[0] = e.motion.x;
-          me->absolute[1] = e.motion.y;
-          me->relative[0] = e.motion.xrel;
-          me->relative[1] = e.motion.yrel;
+        me->absolute[0] = e.motion.x;
+        me->absolute[1] = e.motion.y;
+        me->relative[0] = e.motion.xrel;
+        me->relative[1] = e.motion.yrel;
       }
       else if (e.type == SDL_MOUSEMOTION)
       {
@@ -133,40 +133,40 @@ namespace ToolKit
 #else
       if (e.type == SDL_FINGERDOWN || e.type == SDL_FINGERUP)
       {
-          if (m_touchEventPoolCurrentIndex >= m_touchEventPoolSize)
-          {
-              return;
-          }
+        if (m_touchEventPoolCurrentIndex >= m_touchEventPoolSize)
+        {
+          return;
+        }
 
-          TouchEvent* te = m_touchEventPool[m_touchEventPoolCurrentIndex++];
-          Main::GetInstance()->m_eventPool.push_back(te);
+        TouchEvent* te = m_touchEventPool[m_touchEventPoolCurrentIndex++];
+        Main::GetInstance()->m_eventPool.push_back(te);
 
-          if (e.type == SDL_FINGERDOWN)
-          {
-              te->m_release = false;
-          }
-          else
-          {
-              te->m_release = true;
-          }
+        if (e.type == SDL_FINGERDOWN)
+        {
+          te->m_release = false;
+        }
+        else
+        {
+          te->m_release = true;
+        }
 
-          te->m_action = EventAction::Touch;
-          te->absolute[0] = e.tfinger.x;
-          te->absolute[1] = e.tfinger.y;
+        te->m_action    = EventAction::Touch;
+        te->absolute[0] = e.tfinger.x;
+        te->absolute[1] = e.tfinger.y;
       }
       else if (e.type == SDL_FINGERMOTION)
       {
-          if (m_touchEventPoolCurrentIndex >= m_touchEventPoolSize)
-          {
-              return;
-          }
+        if (m_touchEventPoolCurrentIndex >= m_touchEventPoolSize)
+        {
+          return;
+        }
 
-          TouchEvent* te = m_touchEventPool[m_touchEventPoolCurrentIndex++];
-          Main::GetInstance()->m_eventPool.push_back(te);
+        TouchEvent* te = m_touchEventPool[m_touchEventPoolCurrentIndex++];
+        Main::GetInstance()->m_eventPool.push_back(te);
 
-          te->m_action    = EventAction::Move;
-          te->absolute[0] = e.tfinger.x;
-          te->absolute[1] = e.tfinger.y;
+        te->m_action    = EventAction::Move;
+        te->absolute[0] = e.tfinger.x;
+        te->absolute[1] = e.tfinger.y;
       }
 #endif
       else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP)
@@ -258,7 +258,7 @@ namespace ToolKit
     uint64 m_mouseEventPoolCurrentIndex    = 0;
     uint64 m_keyboardEventPoolCurrentIndex = 0;
     uint64 m_gamepadEventPoolCurrentIndex  = 0;
-    uint64 m_touchEventPoolCurrentIndex  = 0;
+    uint64 m_touchEventPoolCurrentIndex    = 0;
     std::vector<MouseEvent*> m_mouseEventPool;
     std::vector<KeyboardEvent*> m_keyboardEventPool;
     std::vector<GamepadEvent*> m_gamepadEventPool;
