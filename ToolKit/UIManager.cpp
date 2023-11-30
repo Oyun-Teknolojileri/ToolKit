@@ -131,13 +131,13 @@ namespace ToolKit
       }
 #else
       if (e->m_type == Event::EventType::Mouse)
+      {
+        if (e->m_action == EventAction::LeftClick)
         {
-          if (e->m_action == EventAction::LeftClick)
-          {
-            MouseEvent* me  = static_cast<MouseEvent*>(e);
-            m_mouseReleased = me->m_release;
-          }
+          MouseEvent* me  = static_cast<MouseEvent*>(e);
+          m_mouseReleased = me->m_release;
         }
+      }
 #endif
     }
 

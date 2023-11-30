@@ -163,7 +163,6 @@ namespace ToolKit
   Vec2 Viewport::GetLastMousePosScreenSpace()
   {
     Vec2 screenPoint = GetLastMousePosViewportSpace();
-    screenPoint.y    = m_wndContentAreaSize.y - screenPoint.y;
 
     return m_contentAreaLocation + screenPoint;
   }
@@ -196,7 +195,6 @@ namespace ToolKit
   Vec2 Viewport::TransformScreenToViewportSpace(const Vec2& pnt)
   {
     Vec2 vp = pnt - m_contentAreaLocation;   // In window space.
-    vp.y    = m_wndContentAreaSize.y - vp.y; // In viewport space.
     return vp;
   }
 
