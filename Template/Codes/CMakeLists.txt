@@ -51,7 +51,7 @@ include_directories(
 	"${TOOLKIT_DIR}/ToolKit"
 	"${TOOLKIT_DIR}/Dependency"
 	"${TOOLKIT_DIR}/Dependency/glad"
-	"${TOOLKIT_DIR}/Dependency/PrebuildSDL2/include"
+	"${TOOLKIT_DIR}/Dependency/SDL2/include"
 	"${TOOLKIT_DIR}/Dependency/RapidXml"
 	"${TOOLKIT_DIR}/Dependency/stb"
 	"${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/include"
@@ -129,7 +129,7 @@ else()
 
   link_directories("${TOOLKIT_DIR}/Bin")
   link_directories("${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/lib")
-  link_directories("${TOOLKIT_DIR}/Dependency/PrebuildSDL2/lib/x64")
+  link_directories("${TOOLKIT_DIR}/Dependency/SDL2/lib")
 	
 if (${WIN_BUILD})
 	add_executable(${PROJECT_NAME} WIN32 ${SOURCE})
