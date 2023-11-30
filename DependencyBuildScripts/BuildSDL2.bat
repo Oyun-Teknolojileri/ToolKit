@@ -16,9 +16,3 @@ if not exist "Release" (
 cmake --build . --config Release
 cd Release
 copy "SDL2.dll" "../../../../Bin/SDL2.dll"
-
-set arg=%1 
-if "%arg" equ "NOPAUSE" (
-	exit
-)
-pause

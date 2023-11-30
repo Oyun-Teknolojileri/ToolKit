@@ -1,6 +1,13 @@
 
-call BuildSDL2.bat NOPAUSE
-call BuildImGui.bat NOPAUSE
-call BuildZLib.bat NOPAUSE
+set currentPath=%CD%
 
-pause
+cd "%currentPath%"
+call BuildSDL2.bat
+
+cd "%currentPath%"
+call BuildImGui.bat
+
+:: build zlip last because emscripten pauses and exits the program when building with emcmake
+
+cd "%currentPath%"
+call BuildZLib.bat

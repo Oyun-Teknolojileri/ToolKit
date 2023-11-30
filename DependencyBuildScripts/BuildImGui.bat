@@ -8,9 +8,3 @@ if not exist "lib" (
 
 cmake --build . --config Release
 cmake --build . --config Debug
-
-set arg=%1 
-if "%arg" equ "NOPAUSE" (
-	exit
-)
-pause

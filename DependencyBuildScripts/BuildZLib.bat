@@ -29,12 +29,4 @@ if not exist "webbuild" (
 	mkdir "webbuild"
 )
 cd webbuild
-emcmake cmake -DEMSCRIPTEN=TRUE -DTK_CXX_EXTRA:STRING="-O3" -S .. -G Ninja && ninja
-
-copy "libminizip.a" "../../../dist/libminizip.a"
-
-set arg=%1 
-if "%arg" equ "NOPAUSE" (
-	exit
-)
-pause
+emcmake cmake -DEMSCRIPTEN=TRUE -DTK_CXX_EXTRA:STRING="-O3" -S .. -G Ninja && ninja & copy "libminizip.a" "../../../dist/libminizip.a"
