@@ -10,9 +10,6 @@
 #include "Logger.h"
 #include "ToolKit.h"
 
-#define CR_HOST CR_UNSAFE
-#include <cr/cr.h>
-
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -28,69 +25,63 @@ namespace ToolKit
     fullPath += ".dll";
 #endif
 
-    // Check the loaded plugin.
+    if (!CheckSystemFile(file))
+    {
+      TK_ERR("Can not find plugin file %s", fullPath.c_str());
+      return false;
+    }
+
+    // Check if the dll is changed.
     if (PluginRegister* reg = GetRegister(fullPath))
     {
-      if (reg->m_loaded)
+      if (reg->m_loaded && reg->m_plugin)
       {
-        // hot reload.
-        assert(reg->m_context != nullptr);
-        cr_plugin* context = static_cast<cr_plugin*>(reg->m_context);
-        int res            = cr_plugin_update(*context);
-        return res >= 0;
+        String cTime = GetCreationTime(fullPath);
+        if (reg->m_lastWriteTime != cTime)
+        {
+          TK_LOG("A new version of the plugin has been found.");
+          Unload(fullPath);
+        }
+      }
+
+      if (reg->m_loaded && reg->m_plugin)
+      {
+        TK_LOG("Plugin has already loaded.");
+        return true;
       }
     }
 
-    cr_plugin* context = new cr_plugin();
-    if (!cr_plugin_open(*context, fullPath.c_str()))
-    {
-      SafeDel(context);
-
-      TK_ERR("Can not open plugin file %s", fullPath.c_str());
-      return false;
-    }
-
-    String pluginPath;
-    DecomposePath(file, &pluginPath, nullptr, nullptr);
-    String pluginTmp = ConcatPaths({pluginPath, "tmp", ""});
-
-    cr_set_temporary_path(*context, pluginTmp.c_str());
-
     // Load the plugin.
-    if (cr_plugin_update(*context, true) < 0)
-    {
-      SafeDel(context);
-
-      TK_ERR("Can not load plugin file %s", fullPath.c_str());
-      return false;
-    }
+    ModuleHandle handle = LoadModule(fullPath.c_str());
 
     // Initialize the plugin.
-    if (ModuleHandle handle = static_cast<cr_internal*>(context->p)->handle)
+    if (handle != nullptr)
     {
-      FunctionAdress ProcAddr = (FunctionAdress) GetFunction(handle, "CreateInstance");
+      FunctionAdress ProcAddr = (FunctionAdress) GetFunction(handle, "GetInstance");
 
       if (ProcAddr != nullptr)
       {
         PluginRegister reg;
-        reg.m_context = context;
-        reg.m_module  = handle;
-        reg.m_plugin  = (ProcAddr) ();
+        reg.m_module = handle;
+        reg.m_plugin = (ProcAddr) ();
         reg.m_plugin->Init(Main::GetInstance());
-        reg.m_loaded = true;
-        reg.m_file   = fullPath;
+        reg.m_loaded        = true;
+        reg.m_file          = fullPath;
+        reg.m_lastWriteTime = GetCreationTime(fullPath);
 
         m_storage.push_back(reg);
         return true;
       }
       else
       {
-        SafeDel(context);
-        TK_ERR("Can not find CreateInstance() in the plugin.");
+        TK_ERR("Can not find GetInstance() in the plugin.");
       }
     }
+    else
+    {
+      TK_ERR("Can not load the plugin.");
+    }
 
-    SafeDel(context);
     return false;
   }
 
@@ -111,17 +102,15 @@ namespace ToolKit
       return;
     }
 
+    reg->m_plugin->OnUnload();
     reg->m_plugin->Destroy();
     reg->m_plugin = nullptr;
 
-    if (cr_plugin* context = static_cast<cr_plugin*>(reg->m_context))
-    {
-      cr_plugin_close(*context);
-    }
+    FreeModule(reg->m_module);
+    reg->m_module = nullptr;
 
     m_storage.erase(m_storage.begin() + indx);
 
-    SafeDel(reg->m_context);
     reg->m_loaded = false;
   }
 
@@ -131,29 +120,9 @@ namespace ToolKit
   {
     for (PluginRegister& reg : m_storage)
     {
-      if (cr_plugin* context = static_cast<cr_plugin*>(reg.m_context))
+      if (reg.m_loaded && reg.m_plugin)
       {
-        bool needsUpdate = cr_plugin_changed(*context);
-        if (cr_plugin_update(*context) >= 0)
-        {
-          if (needsUpdate)
-          {
-            cr_internal* crInt      = static_cast<cr_internal*>(context->p);
-            reg.m_module            = crInt->handle;
-            FunctionAdress ProcAddr = (FunctionAdress) GetFunction(reg.m_module, "CreateInstance");
-            reg.m_plugin            = ProcAddr();
-
-            // Polymorphic acess will fail, because vtable is invalid.
-            //GamePlugin* gp          = (GamePlugin*) reg.m_plugin;
-            //gp->Frame(0);
-
-            TK_LOG("EDS %p", (void*) &*reg.m_plugin);
-          }
-        }
-        else
-        {
-          TK_ERR("CR Fatal");
-        }
+        reg.m_plugin->Frame(deltaTime);
       }
     }
   }

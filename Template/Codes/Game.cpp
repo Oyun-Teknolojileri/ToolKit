@@ -7,18 +7,14 @@
 
 #include "Game.h"
 
-#include <cr/cr.h>
+ToolKit::Game Self;
 
-ToolKit::Game CR_STATE Self;
-
-extern "C" TK_PLUGIN_API ToolKit::Game* TK_STDCAL CreateInstance() { return &Self; }
+extern "C" TK_PLUGIN_API ToolKit::Game* TK_STDCAL GetInstance() { return &Self; }
 
 namespace ToolKit
 {
 
-#ifndef GAME_BUILD
-  extern Game* ToolKit::g_game = &Self;
-#endif
+  Game* g_game = &Self;
 
   void Game::Init(Main* master) { Main::SetProxy(master); }
 
@@ -26,35 +22,8 @@ namespace ToolKit
 
   void Game::Frame(float deltaTime) {}
 
-  void Game::OnLoad() { ToolKit::g_game = this; }
+  void Game::OnLoad() {}
 
-  void Game::OnUnload() { ToolKit::g_game = this; }
+  void Game::OnUnload() {}
 
 } // namespace ToolKit
-
-CR_EXPORT int cr_main(struct cr_plugin* ctx, enum cr_op operation)
-{
-  if (operation == CR_STEP)
-  {
-    Self.Frame(0.0f);
-  }
-
-  if (operation == CR_CLOSE)
-  {
-    // Plugin closing.
-  }
-
-  if (operation == CR_LOAD)
-  {
-    TK_LOG("PLS %p", (void*) &Self);
-    Self.OnLoad();
-  }
-
-  if (operation == CR_UNLOAD)
-  {
-    TK_LOG("PUS %p", (void*) &Self);
-    Self.OnUnload();
-  }
-
-  return 0;
-}

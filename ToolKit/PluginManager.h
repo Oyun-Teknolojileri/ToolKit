@@ -24,9 +24,9 @@ namespace ToolKit
 
   struct PluginRegister
   {
-    void* m_context;
     Plugin* m_plugin;
     ModuleHandle m_module;
+    String m_lastWriteTime;
     String m_file;
     bool m_loaded;
   };

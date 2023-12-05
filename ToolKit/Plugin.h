@@ -29,8 +29,6 @@ namespace ToolKit
     Editor
   };
 
-  typedef std::function<void(void)> PluginEventCallback;
-
   class TK_API Plugin
   {
    public:
@@ -38,36 +36,36 @@ namespace ToolKit
 
     virtual ~Plugin() {}
 
-    virtual PluginType GetType()          = 0;
+    virtual PluginType GetType()                = 0;
 
     /**
      * This function get called right after the plugin loaded.
      * Provides the host application's Main instance.
      */
-    virtual void Init(class Main* master) = 0;
+    virtual void Init(class Main* master)       = 0;
 
     /**
      * This function get called before the plugin unloaded from the memory.
      */
-    virtual void Destroy()                = 0;
+    virtual void Destroy()                      = 0;
 
     /**
      * Update gets called every frame of the engine.
      * @param - deltaTime is the time elapsed between each frame in milliseconds.
      */
-    virtual void Frame(float deltaTime)   = 0;
+    virtual void Frame(float deltaTime)         = 0;
 
     /**
-     * Hot reload callback, this callback is get called after a reload. Gives you a chance to restore the state, if any
+     * This callback is get called after a reload. Gives you a chance to restore the state, if any
      * captured during an unload.
      */
-    virtual void OnLoad()                 = 0;
+    virtual void OnLoad(XmlDocumentPtr state)   = 0;
 
     /**
-     * Hot reload callback, this callback is get called before unload. Gives you a chance to store any state to restore
+     * This callback is get called before unload. Gives you a chance to store any state to restore
      * at reload.
      */
-    virtual void OnUnload()               = 0;
+    virtual void OnUnload(XmlDocumentPtr state) = 0;
   };
 
   class TK_API GamePlugin : public Plugin

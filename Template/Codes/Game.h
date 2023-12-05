@@ -9,7 +9,6 @@
 
 #include <Plugin.h>
 #include <ToolKit.h>
-#include <Viewport.h>
 
 namespace ToolKit
 {
@@ -28,4 +27,4 @@ namespace ToolKit
 
 } // namespace ToolKit
 
-extern "C" TK_PLUGIN_API ToolKit::Game* TK_STDCAL CreateInstance();
+extern "C" TK_PLUGIN_API ToolKit::Game* TK_STDCAL GetInstance();
