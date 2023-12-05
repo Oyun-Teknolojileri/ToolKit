@@ -13,6 +13,7 @@
 
 namespace ToolKit
 {
+  template <PLATFORM Platform>
   class SDLEventPool
   {
    public:
@@ -63,122 +64,126 @@ namespace ToolKit
     // Utility functions for Pooling & Releaseing SDL events for ToolKit.
     inline void PoolEvent(const SDL_Event& event)
     {
-#ifndef __ANDROID__
-      if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP)
+      if constexpr (Platform != PLATFORM::TKAndroid)
       {
-        if (m_mouseEventPoolCurrentIndex >= m_mouseEventPoolSize)
+        if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP)
         {
-          return;
-        }
+          if (m_mouseEventPoolCurrentIndex >= m_mouseEventPoolSize)
+          {
+            return;
+          }
 
-        MouseEvent* mouseEvent = m_mouseEventPool[m_mouseEventPoolCurrentIndex++];
-        Main::GetInstance()->m_eventPool.push_back(mouseEvent);
+          MouseEvent* mouseEvent = m_mouseEventPool[m_mouseEventPoolCurrentIndex++];
+          Main::GetInstance()->m_eventPool.push_back(mouseEvent);
 
-        if (event.type == SDL_MOUSEBUTTONDOWN)
-        {
-          mouseEvent->m_release = false;
-        }
-        else
-        {
-          mouseEvent->m_release = true;
-        }
+          if (event.type == SDL_MOUSEBUTTONDOWN)
+          {
+            mouseEvent->m_release = false;
+          }
+          else
+          {
+            mouseEvent->m_release = true;
+          }
 
-        switch (event.button.button)
-        {
-        case SDL_BUTTON_LEFT:
-          mouseEvent->m_action = EventAction::LeftClick;
-          break;
-        case SDL_BUTTON_RIGHT:
-          mouseEvent->m_action = EventAction::RightClick;
-          break;
-        case SDL_BUTTON_MIDDLE:
-          mouseEvent->m_action = EventAction::MiddleClick;
-          break;
+          switch (event.button.button)
+          {
+          case SDL_BUTTON_LEFT:
+            mouseEvent->m_action = EventAction::LeftClick;
+            break;
+          case SDL_BUTTON_RIGHT:
+            mouseEvent->m_action = EventAction::RightClick;
+            break;
+          case SDL_BUTTON_MIDDLE:
+            mouseEvent->m_action = EventAction::MiddleClick;
+            break;
+          }
+          mouseEvent->absolute[0] = event.motion.x;
+          mouseEvent->absolute[1] = event.motion.y;
+          mouseEvent->relative[0] = event.motion.xrel;
+          mouseEvent->relative[1] = event.motion.yrel;
         }
-        mouseEvent->absolute[0] = event.motion.x;
-        mouseEvent->absolute[1] = event.motion.y;
-        mouseEvent->relative[0] = event.motion.xrel;
-        mouseEvent->relative[1] = event.motion.yrel;
+        else if (event.type == SDL_MOUSEMOTION)
+        {
+          if (m_mouseEventPoolCurrentIndex >= m_mouseEventPoolSize)
+          {
+            return;
+          }
+
+          MouseEvent* mouseEvent = m_mouseEventPool[m_mouseEventPoolCurrentIndex++];
+          Main::GetInstance()->m_eventPool.push_back(mouseEvent);
+
+          mouseEvent->m_action    = EventAction::Move;
+          mouseEvent->absolute[0] = event.motion.x;
+          mouseEvent->absolute[1] = event.motion.y;
+          mouseEvent->relative[0] = event.motion.xrel;
+          mouseEvent->relative[1] = event.motion.yrel;
+        }
+        else if (event.type == SDL_MOUSEWHEEL)
+        {
+          if (m_mouseEventPoolCurrentIndex >= m_mouseEventPoolSize)
+          {
+            return;
+          }
+
+          MouseEvent* mouseEvent = m_mouseEventPool[m_mouseEventPoolCurrentIndex++];
+          Main::GetInstance()->m_eventPool.push_back(mouseEvent);
+
+          mouseEvent->m_action  = EventAction::Scroll;
+          mouseEvent->scroll[0] = event.wheel.x;
+          mouseEvent->scroll[1] = event.wheel.y;
+        }
       }
-      else if (event.type == SDL_MOUSEMOTION)
+      else
       {
-        if (m_mouseEventPoolCurrentIndex >= m_mouseEventPoolSize)
-        {
-          return;
-        }
+          if (event.type == SDL_FINGERDOWN || event.type == SDL_FINGERUP)
+          {
+            if (m_touchEventPoolCurrentIndex >= m_touchEventPoolSize)
+            {
+              return;
+            }
 
-        MouseEvent* mouseEvent = m_mouseEventPool[m_mouseEventPoolCurrentIndex++];
-        Main::GetInstance()->m_eventPool.push_back(mouseEvent);
+            TouchEvent* touchEvent = m_touchEventPool[m_touchEventPoolCurrentIndex++];
+            Main::GetInstance()->m_eventPool.push_back(touchEvent);
 
-        mouseEvent->m_action    = EventAction::Move;
-        mouseEvent->absolute[0] = event.motion.x;
-        mouseEvent->absolute[1] = event.motion.y;
-        mouseEvent->relative[0] = event.motion.xrel;
-        mouseEvent->relative[1] = event.motion.yrel;
+            if (event.type == SDL_FINGERDOWN)
+            {
+              touchEvent->m_release = false;
+            }
+            else
+            {
+              touchEvent->m_release = true;
+            }
+
+            touchEvent->m_action    = EventAction::Touch;
+            touchEvent->absolute[0] = event.tfinger.x;
+            touchEvent->absolute[1] = event.tfinger.y;
+          }
+          else if (event.type == SDL_FINGERMOTION)
+          {
+            if (m_touchEventPoolCurrentIndex >= m_touchEventPoolSize)
+            {
+              return;
+            }
+
+            TouchEvent* touchEvent = m_touchEventPool[m_touchEventPoolCurrentIndex++];
+            Main::GetInstance()->m_eventPool.push_back(touchEvent);
+
+            touchEvent->m_action    = EventAction::Move;
+            touchEvent->absolute[0] = event.tfinger.x;
+            touchEvent->absolute[1] = event.tfinger.y;
+          }
       }
-      else if (event.type == SDL_MOUSEWHEEL)
-      {
-        if (m_mouseEventPoolCurrentIndex >= m_mouseEventPoolSize)
-        {
-          return;
-        }
 
-        MouseEvent* mouseEvent = m_mouseEventPool[m_mouseEventPoolCurrentIndex++];
-        Main::GetInstance()->m_eventPool.push_back(mouseEvent);
-
-        mouseEvent->m_action  = EventAction::Scroll;
-        mouseEvent->scroll[0] = event.wheel.x;
-        mouseEvent->scroll[1] = event.wheel.y;
-      }
-#else
-      if (event.type == SDL_FINGERDOWN || event.type == SDL_FINGERUP)
-      {
-        if (m_touchEventPoolCurrentIndex >= m_touchEventPoolSize)
-        {
-          return;
-        }
-
-        TouchEvent* touchEvent = m_touchEventPool[m_touchEventPoolCurrentIndex++];
-        Main::GetInstance()->m_eventPool.push_back(touchEvent);
-
-        if (event.type == SDL_FINGERDOWN)
-        {
-          touchEvent->m_release = false;
-        }
-        else
-        {
-          touchEvent->m_release = true;
-        }
-
-        touchEvent->m_action    = EventAction::Touch;
-        touchEvent->absolute[0] = event.tfinger.x;
-        touchEvent->absolute[1] = event.tfinger.y;
-      }
-      else if (event.type == SDL_FINGERMOTION)
-      {
-        if (m_touchEventPoolCurrentIndex >= m_touchEventPoolSize)
-        {
-          return;
-        }
-
-        TouchEvent* touchEvent = m_touchEventPool[m_touchEventPoolCurrentIndex++];
-        Main::GetInstance()->m_eventPool.push_back(touchEvent);
-
-        touchEvent->m_action    = EventAction::Move;
-        touchEvent->absolute[0] = event.tfinger.x;
-        touchEvent->absolute[1] = event.tfinger.y;
-      }
-#endif
-      else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
+      if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
       {
         if (m_keyboardEventPoolCurrentIndex >= m_keyboardEventPoolSize)
         {
           return;
         }
 
-        SDL_Keymod modState = SDL_GetModState();
+        SDL_Keymod modState          = SDL_GetModState();
 
-        KeyboardEvent* keyboardEvent   = m_keyboardEventPool[m_keyboardEventPoolCurrentIndex++];
+        KeyboardEvent* keyboardEvent = m_keyboardEventPool[m_keyboardEventPoolCurrentIndex++];
         Main::GetInstance()->m_eventPool.push_back(keyboardEvent);
 
         if (event.type == SDL_KEYDOWN)
@@ -263,5 +268,7 @@ namespace ToolKit
     std::vector<KeyboardEvent*> m_keyboardEventPool;
     std::vector<GamepadEvent*> m_gamepadEventPool;
     std::vector<TouchEvent*> m_touchEventPool;
+
+    //T platformType;
   };
 } // namespace ToolKit

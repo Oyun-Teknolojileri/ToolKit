@@ -20,6 +20,12 @@
  */
 namespace ToolKit
 {
+  enum class PLATFORM
+  {
+    TKWindows,
+    TKWeb,
+    TKAndroid
+  };
 
   /**
    * A class that Provides a unique handle when needed.

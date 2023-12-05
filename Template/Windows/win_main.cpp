@@ -19,6 +19,8 @@
   #include "gles2.h"
 #endif
 
+#define TK_PLATFORM PLATFORM::TKWindows
+
 namespace ToolKit
 {
   Game* g_game                     = nullptr;
@@ -28,7 +30,7 @@ namespace ToolKit
   Main* g_proxy                    = nullptr;
   Viewport* g_viewport             = nullptr;
   EngineSettings* g_engineSettings = nullptr;
-  SDLEventPool* g_sdlEventPool     = nullptr;
+  SDLEventPool<TK_PLATFORM>* g_sdlEventPool     = nullptr;
 
   // Setup.
   const char* g_appName            = "ToolKit";
@@ -337,7 +339,7 @@ namespace ToolKit
 
   void PreInit()
   {
-    g_sdlEventPool = new SDLEventPool();
+    g_sdlEventPool = new SDLEventPool<TK_PLATFORM>();
 
     // PreInit Main
     g_proxy        = new Main();

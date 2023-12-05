@@ -22,6 +22,7 @@
 
 #define ANDROID_LOG(format, ...) __android_log_print(ANDROID_LOG_DEBUG, "TK_LOG", format, ##__VA_ARGS__)
 
+#define TK_PLATFORM PLATFORM::TKAndroid
 
 namespace ToolKit
 {
@@ -31,7 +32,7 @@ namespace ToolKit
   Main* g_proxy                    = nullptr;
   Viewport* g_viewport             = nullptr;
   EngineSettings* g_engineSettings = nullptr;
-  SDLEventPool* g_sdlEventPool     = nullptr;
+  SDLEventPool<TK_PLATFORM>* g_sdlEventPool     = nullptr;
   AAssetManager* assetManager = nullptr;
 
   // Setup.
@@ -371,7 +372,7 @@ namespace ToolKit
 
   void PreInit()
   {
-    g_sdlEventPool = new SDLEventPool();
+    g_sdlEventPool = new SDLEventPool<TK_PLATFORM>();
 
     // PreInit Main
     g_proxy        = new Main();
