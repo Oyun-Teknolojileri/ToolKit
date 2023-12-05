@@ -176,6 +176,7 @@
     <ClInclude Include="TKAssert.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="TKImage.h" />
+    <ClInclude Include="tkplatform.h" />
     <ClInclude Include="TKProfiler.h" />
     <ClInclude Include="ToneMapPass.h" />
     <ClInclude Include="AdditiveLightingPass.h" />
@@ -222,13 +223,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>..\Bin\</OutDir>
     <IncludePath>$(ProjectDir);$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\mini_audio\</IncludePath>
-    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\Glew\lib\Release\x64;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\Glew\lib\Release\x64;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\Bin\</OutDir>
     <IncludePath>$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\mini_audio\;$(SolutionDir)Dependency\NVTX-3.1.0\c\include\nvtx3</IncludePath>
-    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib</LibraryPath>
+    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib</LibraryPath>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

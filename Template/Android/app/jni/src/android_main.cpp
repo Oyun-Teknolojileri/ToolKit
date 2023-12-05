@@ -22,17 +22,15 @@
 
 #define ANDROID_LOG(format, ...) __android_log_print(ANDROID_LOG_DEBUG, "TK_LOG", format, ##__VA_ARGS__)
 
-
 namespace ToolKit
 {
   Game* g_game                     = nullptr;
   bool g_running                   = true;
   SDL_Window* g_window             = nullptr;
-  SDL_GLContext g_context          = nullptr;
   Main* g_proxy                    = nullptr;
   Viewport* g_viewport             = nullptr;
   EngineSettings* g_engineSettings = nullptr;
-  SDLEventPool* g_sdlEventPool     = nullptr;
+  SDLEventPool<TK_PLATFORM>* g_sdlEventPool     = nullptr;
   AAssetManager* assetManager = nullptr;
 
   // Setup.
@@ -51,7 +49,7 @@ namespace ToolKit
       sceneRenderer.m_params.Gfx.FXAAEnabled            = false;
       sceneRenderer.m_params.Gfx.GammaCorrectionEnabled = false;
       sceneRenderer.m_params.Gfx.SSAOEnabled            = false;
-      sceneRenderer.m_params.Gfx.TonemappingEnabled     = true;
+      sceneRenderer.m_params.Gfx.TonemappingEnabled     = false;
       sceneRenderer.m_params.Lights                     = scene->GetLights();
       sceneRenderer.m_params.MainFramebuffer            = viewport->m_framebuffer;
       sceneRenderer.m_params.Scene                      = scene;
@@ -372,7 +370,7 @@ namespace ToolKit
 
   void PreInit()
   {
-    g_sdlEventPool = new SDLEventPool();
+    g_sdlEventPool = new SDLEventPool<TK_PLATFORM>();
 
     // PreInit Main
     g_proxy        = new Main();
@@ -414,10 +412,8 @@ namespace ToolKit
       SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
       SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-      // EGL does not support sRGB framebuffers
-#ifndef __ANDROID__
-      SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
-#endif
+      // EGL does not support sRGB backbuffer. Need to use an extension
+      // https://stackoverflow.com/questions/20396523/android-egl-srgb-default-renderbuffer
 
       g_window =
           SDL_CreateWindow(g_appName,
@@ -429,29 +425,30 @@ namespace ToolKit
 
       if (g_window == nullptr)
       {
-        const char* woho = SDL_GetError();
+        const char* err = SDL_GetError();
         g_running = false;
       }
       else
       {
-        int w,h;
-        SDL_GetWindowSize(g_window,&w,&h);
-        g_engineSettings->Window.Width = w;
-        g_engineSettings->Window.Height = h;
+        SDL_Renderer* sdlRenderer = SDL_CreateRenderer(g_window, -1, SDL_RENDERER_ACCELERATED);
 
-        g_context = SDL_GL_CreateContext(g_window);
-        if (g_context == nullptr)
+        if (sdlRenderer == nullptr)
         {
+          const char* error = SDL_GetError();
+          ANDROID_LOG("%s", error);
           g_running = false;
         }
         else
         {
-          SDL_GL_MakeCurrent(g_window, g_context);
+          int rendererWidth,rendererHeight;
+          SDL_GetRendererOutputSize(sdlRenderer, &rendererWidth, &rendererHeight);
+          g_engineSettings->Window.Width = rendererWidth;
+          g_engineSettings->Window.Height = rendererHeight;
 
           const char* error = SDL_GetError();
           ANDROID_LOG("%s", error);
-          // Init OpenGl.
 
+          // Init OpenGl.
           g_proxy->m_renderSys->InitGl((void*)SDL_GL_GetProcAddress, [](const String& msg) { ANDROID_LOG("%s", msg.c_str()); });
           //gladLoadGLES2((GLADloadfunc) SDL_GL_GetProcAddress);
           glEnable(GL_DEPTH_TEST);
@@ -531,8 +528,6 @@ namespace ToolKit
 
     while (g_running && !g_game->m_quit)
     {
-        //float frameStart = GetMilliSeconds();
-
       while (SDL_PollEvent(&sdlEvent))
       {
         g_sdlEventPool->PoolEvent(sdlEvent);
@@ -552,7 +547,6 @@ namespace ToolKit
         GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
 
         g_viewport->Update(deltaTime);
-
 
         g_game->Frame(deltaTime, g_viewport);
 
@@ -581,11 +575,7 @@ namespace ToolKit
 
         g_sdlEventPool->ClearPool(); // Clear after consumption.
 
-          float frameStart = GetMilliSeconds();
         SDL_GL_SwapWindow(g_window);
-
-          float frameEnd = GetMilliSeconds();
-          //ANDROID_LOG("%f", frameEnd - frameStart);
 
         timer.frameCount++;
         timer.timeAccum += deltaTime;
@@ -596,9 +586,6 @@ namespace ToolKit
         }
 
         timer.lastTime = timer.currentTime;
-
-        //float frameEnd = GetMilliSeconds();
-        //ANDROID_LOG("%f", frameEnd - frameStart);
       }
     }
   }

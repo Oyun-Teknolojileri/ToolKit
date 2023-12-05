@@ -55,7 +55,7 @@ namespace ToolKit
     if (matCom == nullptr)
     {
       AddComponent<MaterialComponent>();
-      MaterialPtr material = GetMaterialManager()->GetCopyOfDpadMaterial();
+      MaterialPtr material = GetMaterialManager()->Create<Material>(MaterialPath("dpad.material", true));
       matCom               = GetComponent<MaterialComponent>();
       matCom->SetFirstMaterial(material);
     }
@@ -77,7 +77,7 @@ namespace ToolKit
     MaterialPtr mat             = matCom->GetFirstMaterial();
     if (mat->IsDynamic() || !mat->_missingFile.empty())
     {
-      matCom->SetFirstMaterial(GetMaterialManager()->GetCopyOfDpadMaterial());
+      matCom->SetFirstMaterial(GetMaterialManager()->Create<Material>(MaterialPath("dpad.material", true)));
     }
   }
 } // namespace ToolKit

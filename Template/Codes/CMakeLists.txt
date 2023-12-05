@@ -51,7 +51,7 @@ include_directories(
 	"${TOOLKIT_DIR}/ToolKit"
 	"${TOOLKIT_DIR}/Dependency"
 	"${TOOLKIT_DIR}/Dependency/glad"
-	"${TOOLKIT_DIR}/Dependency/PrebuildSDL2/include"
+	"${TOOLKIT_DIR}/Dependency/SDL2/include"
 	"${TOOLKIT_DIR}/Dependency/RapidXml"
 	"${TOOLKIT_DIR}/Dependency/stb"
 	"${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/include"
@@ -79,18 +79,16 @@ set(
 set(
   PCH
  "${TOOLKIT_DIR}/Dependency/glm/glm.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/gtc/epsilon.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/gtc/matrix_inverse.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/gtc/matrix_transform.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/gtx/matrix_operation.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/gtx/matrix_query.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/gtc/quaternion.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/gtx/closest_point.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/gtx/vector_query.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/gtx/string_cast.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/gtx/component_wise.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/gtx/euler_angles.hpp"
-)
+ "${TOOLKIT_DIR}/Dependency/glm/ext.hpp"
+ "${TOOLKIT_DIR}/Dependency/glm/gtx/scalar_relational.hpp"
+ )
+
+add_definitions(-DGLM_FORCE_QUAT_DATA_XYZW)
+add_definitions(-DGLM_FORCE_XYZW_ONLY)
+add_definitions(-DGLM_FORCE_CTOR_INIT)
+add_definitions(-DGLM_ENABLE_EXPERIMENTAL)
+add_definitions(-DGLM_FORCE_ALIGNED_GENTYPES)
+add_definitions(-DGLM_FORCE_INTRINSICS)
 
 set(OUTDIR "${CMAKE_SOURCE_DIR}/Bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${OUTDIR})
@@ -129,7 +127,7 @@ else()
 
   link_directories("${TOOLKIT_DIR}/Bin")
   link_directories("${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/lib")
-  link_directories("${TOOLKIT_DIR}/Dependency/PrebuildSDL2/lib/x64")
+  link_directories("${TOOLKIT_DIR}/Dependency/SDL2/lib")
 	
 if (${WIN_BUILD})
 	add_executable(${PROJECT_NAME} WIN32 ${SOURCE})

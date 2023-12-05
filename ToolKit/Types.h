@@ -96,6 +96,7 @@ namespace ToolKit
   typedef char byte;
   typedef unsigned char ubyte;
   typedef std::vector<byte> ByteArray;
+  typedef unsigned short uint16;
   typedef uint32_t uint;
   typedef uint8_t uint8;
   typedef uint64_t uint64;

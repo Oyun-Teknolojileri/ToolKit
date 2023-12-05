@@ -441,14 +441,6 @@ namespace ToolKit
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
     m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
-
-    material                                        = MakeNewPtr<Material>();
-    material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-    material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
-    material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("dpad.png", true));
-    material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-    material->Init();
-    m_storage[MaterialPath("dpad.material", true)] = MaterialPtr(material);
   }
 
   bool MaterialManager::CanStore(ClassMeta* Class) { return Class == Material::StaticClass(); }
@@ -497,11 +489,4 @@ namespace ToolKit
     ResourcePtr source = m_storage[MaterialPath("phongForward.material", true)];
     return Copy<Material>(source, storeInMaterialManager);
   }
-
-  MaterialPtr MaterialManager::GetCopyOfDpadMaterial(bool storeInMaterialManager)
-  {
-    ResourcePtr source = m_storage[MaterialPath("dpad.material", true)];
-    return Copy<Material>(source, storeInMaterialManager);
-  }
-
 } // namespace ToolKit
