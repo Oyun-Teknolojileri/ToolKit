@@ -256,10 +256,6 @@ namespace ToolKit
 
   void Packer::AndroidPrepareIcon()
   {
-    if (m_icon.empty())
-    {
-      return;
-    }
     String assetsPath  = NormalizePath("Android/app/src/main/res");
     String projectName = activeProjectName;
     String resLocation = ConcatPaths({workspacePath, projectName, assetsPath});
