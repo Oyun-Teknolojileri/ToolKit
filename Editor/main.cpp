@@ -34,8 +34,6 @@
 SDL_Window* g_window    = nullptr;
 SDL_GLContext g_context = nullptr;
 
-#define TK_PLATFORM PLATFORM::TKWindows
-
 namespace ToolKit
 {
   namespace Editor

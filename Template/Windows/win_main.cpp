@@ -19,8 +19,6 @@
   #include "gles2.h"
 #endif
 
-#define TK_PLATFORM PLATFORM::TKWindows
-
 namespace ToolKit
 {
   Game* g_game                     = nullptr;

@@ -15,8 +15,6 @@
 #include <chrono>
 #include <iostream>
 
-#define TK_PLATFORM PLATFORM::TKWeb
-
 namespace ToolKit
 {
   Game* g_game                     = nullptr;

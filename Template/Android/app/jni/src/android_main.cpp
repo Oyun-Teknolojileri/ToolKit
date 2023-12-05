@@ -22,8 +22,6 @@
 
 #define ANDROID_LOG(format, ...) __android_log_print(ANDROID_LOG_DEBUG, "TK_LOG", format, ##__VA_ARGS__)
 
-#define TK_PLATFORM PLATFORM::TKAndroid
-
 namespace ToolKit
 {
   Game* g_game                     = nullptr;
