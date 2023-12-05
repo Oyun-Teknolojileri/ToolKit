@@ -42,7 +42,7 @@ namespace ToolKit
     bool g_running               = true;
     App* g_app                   = nullptr;
     Main* g_proxy                = nullptr;
-    SDLEventPool* g_sdlEventPool = nullptr;
+    SDLEventPool<TK_PLATFORM>* g_sdlEventPool = nullptr;
 
     /*
      * Refactor as below.
@@ -113,7 +113,7 @@ namespace ToolKit
 
     void PreInit()
     {
-      g_sdlEventPool = new SDLEventPool();
+      g_sdlEventPool = new SDLEventPool<TK_PLATFORM>();
 
       // PreInit Main
       g_proxy        = new Main();

@@ -8,6 +8,7 @@
 #include "UIManager.h"
 
 #include "Canvas.h"
+#include "Dpad.h"
 #include "Events.h"
 #include "MathUtil.h"
 #include "Scene.h"
@@ -74,15 +75,24 @@ namespace ToolKit
   {
     if (CheckMouseOver(surface, e, vp))
     {
-      MouseEvent* me = static_cast<MouseEvent*>(e);
-      return me->m_action == EventAction::LeftClick;
+      if (e->m_type == Event::EventType::Mouse)
+      {
+        MouseEvent* me = static_cast<MouseEvent*>(e);
+        return me->m_action == EventAction::LeftClick;
+      }
+      else if (e->m_type == Event::EventType::Touch)
+      {
+        TouchEvent* te = static_cast<TouchEvent*>(e);
+        return te->m_action == EventAction::Touch;
+      }
     }
     return false;
   }
 
   bool UIManager::CheckMouseOver(Surface* surface, Event* e, Viewport* vp)
   {
-    if (e->m_type == Event::EventType::Mouse)
+    if (e->m_type == Event::EventType::Mouse || e->m_type == Event::EventType::Touch)
+
     {
       BoundingBox box = surface->GetAABB(true);
       Ray ray         = vp->RayFromMousePosition();
@@ -108,6 +118,26 @@ namespace ToolKit
       return;
     }
 
+    for (Event* e : events)
+    {
+      if (e->m_type == Event::EventType::Mouse)
+      {
+        if (e->m_action == EventAction::LeftClick)
+        {
+          MouseEvent* me  = static_cast<MouseEvent*>(e);
+          m_mouseReleased = me->m_release;
+        }
+      }
+      else if (e->m_type == Event::EventType::Touch)
+      {
+        if (e->m_action == EventAction::Touch)
+        {
+          TouchEvent* te  = static_cast<TouchEvent*>(e);
+          m_mouseReleased = te->m_release;
+        }
+      }
+    }
+
     const EntityPtrArray& entities = layer->m_scene->AccessEntityArray();
     for (EntityPtr ntt : entities)
     {
@@ -129,7 +159,22 @@ namespace ToolKit
           Button* button        = ntt->As<Button>();
           MaterialPtr hoverMat  = button->GetHoverMaterialVal();
           MaterialPtr normalMat = button->GetButtonMaterialVal();
+
           button->SetMaterialVal(surface->m_mouseOver && hoverMat ? hoverMat : normalMat);
+        }
+        else if (ntt->IsA<Dpad>())
+        {
+          Dpad* dpad = ntt->As<Dpad>();
+          if (m_mouseReleased)
+          {
+            dpad->Stop();
+          }
+          else
+          {
+            dpad->Start();
+          }
+
+          dpad->UpdateDpad(vp->TransformScreenToViewportSpace(vp->GetLastMousePosScreenSpace()));
         }
 
         if (surface->m_mouseOver && surface->m_onMouseOver)

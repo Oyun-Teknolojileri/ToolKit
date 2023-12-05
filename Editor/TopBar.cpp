@@ -17,6 +17,7 @@
 #include <Mesh.h>
 #include <Meta.h>
 #include <Surface.h>
+#include <Dpad.h>
 
 #include <DebugNew.h>
 
@@ -87,6 +88,15 @@ namespace ToolKit
           createdEntity = btn;
           createdEntity->GetMeshComponent()->Init(false);
         }
+
+        if (ImGui::MenuItem("Dpad"))
+        {
+          DpadPtr dpad = MakeNewPtr<Dpad>();
+          dpad->Update(Vec2(100.0f, 100.0f), Vec2(0.5f, 0.5f));
+          createdEntity = dpad;
+          createdEntity->GetMeshComponent()->Init(false);
+        }
+
         ImGui::EndMenu();
       }
 

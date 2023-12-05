@@ -41,7 +41,7 @@ namespace ToolKit
     virtual void UpdateGeometry(bool byTexture);
 
    protected:
-    void ComponentConstructor();
+    virtual void ComponentConstructor();
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
     Entity* CopyTo(Entity* other) const override;
@@ -49,6 +49,8 @@ namespace ToolKit
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
+
+    virtual void SetDefaultMaterialIfMaterialIsNotOverriden();
 
    private:
     void CreateQuat();
