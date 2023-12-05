@@ -18,19 +18,19 @@ namespace ToolKit
    public:
     SDLEventPool()
     {
-      for (uint64 i = 0; i < m_mouseEventPoolSize; ++i)
+      for (uint16 i = 0; i < m_mouseEventPoolSize; ++i)
       {
         m_mouseEventPool.push_back(new MouseEvent());
       }
-      for (uint64 i = 0; i < m_keyboardEventPoolSize; ++i)
+      for (uint16 i = 0; i < m_keyboardEventPoolSize; ++i)
       {
         m_keyboardEventPool.push_back(new KeyboardEvent());
       }
-      for (uint64 i = 0; i < m_gamepadEventPoolSize; ++i)
+      for (uint16 i = 0; i < m_gamepadEventPoolSize; ++i)
       {
         m_gamepadEventPool.push_back(new GamepadEvent());
       }
-      for (uint64 i = 0; i < m_touchEventPoolSize; ++i)
+      for (uint16 i = 0; i < m_touchEventPoolSize; ++i)
       {
         m_touchEventPool.push_back(new TouchEvent());
       }
@@ -38,138 +38,138 @@ namespace ToolKit
 
     ~SDLEventPool()
     {
-      for (MouseEvent* me : m_mouseEventPool)
+      for (MouseEvent* mouseEvent : m_mouseEventPool)
       {
-        delete me;
+        SafeDel(mouseEvent);
       }
       m_mouseEventPool.clear();
-      for (KeyboardEvent* ke : m_keyboardEventPool)
+      for (KeyboardEvent* keyboardEvent : m_keyboardEventPool)
       {
-        delete ke;
+        SafeDel(keyboardEvent);
       }
       m_keyboardEventPool.clear();
-      for (GamepadEvent* gpe : m_gamepadEventPool)
+      for (GamepadEvent* gamepadEvent : m_gamepadEventPool)
       {
-        delete gpe;
+        SafeDel(gamepadEvent);
       }
       m_gamepadEventPool.clear();
-      for (TouchEvent* te : m_touchEventPool)
+      for (TouchEvent* touchEvent : m_touchEventPool)
       {
-        delete te;
+        SafeDel(touchEvent);
       }
       m_touchEventPool.clear();
     }
 
     // Utility functions for Pooling & Releaseing SDL events for ToolKit.
-    inline void PoolEvent(const SDL_Event& e)
+    inline void PoolEvent(const SDL_Event& event)
     {
 #ifndef __ANDROID__
-      if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP)
+      if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP)
       {
         if (m_mouseEventPoolCurrentIndex >= m_mouseEventPoolSize)
         {
           return;
         }
 
-        MouseEvent* me = m_mouseEventPool[m_mouseEventPoolCurrentIndex++];
-        Main::GetInstance()->m_eventPool.push_back(me);
+        MouseEvent* mouseEvent = m_mouseEventPool[m_mouseEventPoolCurrentIndex++];
+        Main::GetInstance()->m_eventPool.push_back(mouseEvent);
 
-        if (e.type == SDL_MOUSEBUTTONDOWN)
+        if (event.type == SDL_MOUSEBUTTONDOWN)
         {
-          me->m_release = false;
+          mouseEvent->m_release = false;
         }
         else
         {
-          me->m_release = true;
+          mouseEvent->m_release = true;
         }
 
-        switch (e.button.button)
+        switch (event.button.button)
         {
         case SDL_BUTTON_LEFT:
-          me->m_action = EventAction::LeftClick;
+          mouseEvent->m_action = EventAction::LeftClick;
           break;
         case SDL_BUTTON_RIGHT:
-          me->m_action = EventAction::RightClick;
+          mouseEvent->m_action = EventAction::RightClick;
           break;
         case SDL_BUTTON_MIDDLE:
-          me->m_action = EventAction::MiddleClick;
+          mouseEvent->m_action = EventAction::MiddleClick;
           break;
         }
-        me->absolute[0] = e.motion.x;
-        me->absolute[1] = e.motion.y;
-        me->relative[0] = e.motion.xrel;
-        me->relative[1] = e.motion.yrel;
+        mouseEvent->absolute[0] = event.motion.x;
+        mouseEvent->absolute[1] = event.motion.y;
+        mouseEvent->relative[0] = event.motion.xrel;
+        mouseEvent->relative[1] = event.motion.yrel;
       }
-      else if (e.type == SDL_MOUSEMOTION)
+      else if (event.type == SDL_MOUSEMOTION)
       {
         if (m_mouseEventPoolCurrentIndex >= m_mouseEventPoolSize)
         {
           return;
         }
 
-        MouseEvent* me = m_mouseEventPool[m_mouseEventPoolCurrentIndex++];
-        Main::GetInstance()->m_eventPool.push_back(me);
+        MouseEvent* mouseEvent = m_mouseEventPool[m_mouseEventPoolCurrentIndex++];
+        Main::GetInstance()->m_eventPool.push_back(mouseEvent);
 
-        me->m_action    = EventAction::Move;
-        me->absolute[0] = e.motion.x;
-        me->absolute[1] = e.motion.y;
-        me->relative[0] = e.motion.xrel;
-        me->relative[1] = e.motion.yrel;
+        mouseEvent->m_action    = EventAction::Move;
+        mouseEvent->absolute[0] = event.motion.x;
+        mouseEvent->absolute[1] = event.motion.y;
+        mouseEvent->relative[0] = event.motion.xrel;
+        mouseEvent->relative[1] = event.motion.yrel;
       }
-      else if (e.type == SDL_MOUSEWHEEL)
+      else if (event.type == SDL_MOUSEWHEEL)
       {
         if (m_mouseEventPoolCurrentIndex >= m_mouseEventPoolSize)
         {
           return;
         }
 
-        MouseEvent* me = m_mouseEventPool[m_mouseEventPoolCurrentIndex++];
-        Main::GetInstance()->m_eventPool.push_back(me);
+        MouseEvent* mouseEvent = m_mouseEventPool[m_mouseEventPoolCurrentIndex++];
+        Main::GetInstance()->m_eventPool.push_back(mouseEvent);
 
-        me->m_action  = EventAction::Scroll;
-        me->scroll[0] = e.wheel.x;
-        me->scroll[1] = e.wheel.y;
+        mouseEvent->m_action  = EventAction::Scroll;
+        mouseEvent->scroll[0] = event.wheel.x;
+        mouseEvent->scroll[1] = event.wheel.y;
       }
 #else
-      if (e.type == SDL_FINGERDOWN || e.type == SDL_FINGERUP)
+      if (event.type == SDL_FINGERDOWN || event.type == SDL_FINGERUP)
       {
         if (m_touchEventPoolCurrentIndex >= m_touchEventPoolSize)
         {
           return;
         }
 
-        TouchEvent* te = m_touchEventPool[m_touchEventPoolCurrentIndex++];
-        Main::GetInstance()->m_eventPool.push_back(te);
+        TouchEvent* touchEvent = m_touchEventPool[m_touchEventPoolCurrentIndex++];
+        Main::GetInstance()->m_eventPool.push_back(touchEvent);
 
-        if (e.type == SDL_FINGERDOWN)
+        if (event.type == SDL_FINGERDOWN)
         {
-          te->m_release = false;
+          touchEvent->m_release = false;
         }
         else
         {
-          te->m_release = true;
+          touchEvent->m_release = true;
         }
 
-        te->m_action    = EventAction::Touch;
-        te->absolute[0] = e.tfinger.x;
-        te->absolute[1] = e.tfinger.y;
+        touchEvent->m_action    = EventAction::Touch;
+        touchEvent->absolute[0] = event.tfinger.x;
+        touchEvent->absolute[1] = event.tfinger.y;
       }
-      else if (e.type == SDL_FINGERMOTION)
+      else if (event.type == SDL_FINGERMOTION)
       {
         if (m_touchEventPoolCurrentIndex >= m_touchEventPoolSize)
         {
           return;
         }
 
-        TouchEvent* te = m_touchEventPool[m_touchEventPoolCurrentIndex++];
-        Main::GetInstance()->m_eventPool.push_back(te);
+        TouchEvent* touchEvent = m_touchEventPool[m_touchEventPoolCurrentIndex++];
+        Main::GetInstance()->m_eventPool.push_back(touchEvent);
 
-        te->m_action    = EventAction::Move;
-        te->absolute[0] = e.tfinger.x;
-        te->absolute[1] = e.tfinger.y;
+        touchEvent->m_action    = EventAction::Move;
+        touchEvent->absolute[0] = event.tfinger.x;
+        touchEvent->absolute[1] = event.tfinger.y;
       }
 #endif
-      else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP)
+      else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
       {
         if (m_keyboardEventPoolCurrentIndex >= m_keyboardEventPoolSize)
         {
@@ -178,20 +178,20 @@ namespace ToolKit
 
         SDL_Keymod modState = SDL_GetModState();
 
-        KeyboardEvent* ke   = m_keyboardEventPool[m_keyboardEventPoolCurrentIndex++];
-        Main::GetInstance()->m_eventPool.push_back(ke);
+        KeyboardEvent* keyboardEvent   = m_keyboardEventPool[m_keyboardEventPoolCurrentIndex++];
+        Main::GetInstance()->m_eventPool.push_back(keyboardEvent);
 
-        if (e.type == SDL_KEYDOWN)
+        if (event.type == SDL_KEYDOWN)
         {
-          ke->m_action = EventAction::KeyDown;
+          keyboardEvent->m_action = EventAction::KeyDown;
         }
         else
         {
-          ke->m_action = EventAction::KeyUp;
+          keyboardEvent->m_action = EventAction::KeyUp;
         }
 
-        ke->m_keyCode = e.key.keysym.sym;
-        ke->m_mode    = modState;
+        keyboardEvent->m_keyCode = event.key.keysym.sym;
+        keyboardEvent->m_mode    = modState;
       }
 
       if (m_gamepadEventPoolCurrentIndex >= m_gamepadEventPoolSize)
@@ -199,44 +199,44 @@ namespace ToolKit
         return;
       }
 
-      GamepadEvent* ge = nullptr;
+      GamepadEvent* gamepadEvent = nullptr;
 
-      switch (e.type)
+      switch (event.type)
       {
       case SDL_CONTROLLERAXISMOTION:
       case SDL_CONTROLLERBUTTONDOWN:
       case SDL_CONTROLLERBUTTONUP:
-        ge = m_gamepadEventPool[m_gamepadEventPoolCurrentIndex++];
+        gamepadEvent = m_gamepadEventPool[m_gamepadEventPoolCurrentIndex++];
       };
 
       // handle joystick events
-      switch (e.type)
+      switch (event.type)
       {
       case SDL_CONTROLLERAXISMOTION:
-        ge->m_action = EventAction::GamepadAxis;
-        ge->m_angle  = e.caxis.value / (float) (SDL_JOYSTICK_AXIS_MAX);
-        ge->m_axis   = (GamepadEvent::StickAxis) e.caxis.axis;
+        gamepadEvent->m_action = EventAction::GamepadAxis;
+        gamepadEvent->m_angle  = event.caxis.value / (float) (SDL_JOYSTICK_AXIS_MAX);
+        gamepadEvent->m_axis   = (GamepadEvent::StickAxis) event.caxis.axis;
         break;
       case SDL_CONTROLLERBUTTONDOWN:
-        ge->m_action = EventAction::GamepadButtonDown;
-        ge->m_button = (GamepadButton) (1 << e.cbutton.button);
+        gamepadEvent->m_action = EventAction::GamepadButtonDown;
+        gamepadEvent->m_button = (GamepadButton) (1 << event.cbutton.button);
         break;
       case SDL_CONTROLLERBUTTONUP:
-        ge->m_action = EventAction::GamepadButtonUp;
-        ge->m_button = (GamepadButton) (1 << e.cbutton.button);
+        gamepadEvent->m_action = EventAction::GamepadButtonUp;
+        gamepadEvent->m_button = (GamepadButton) (1 << event.cbutton.button);
         break;
       case SDL_CONTROLLERDEVICEADDED:
         GetLogger()->WriteConsole(LogType::Memo, "Gamepad connected!");
-        SDL_GameControllerOpen(e.cdevice.which);
+        SDL_GameControllerOpen(event.cdevice.which);
         break;
       case SDL_CONTROLLERDEVICEREMOVED:
         GetLogger()->WriteConsole(LogType::Memo, "Gamepad disconnected!");
         break;
       };
 
-      if (ge != nullptr)
+      if (gamepadEvent != nullptr)
       {
-        Main::GetInstance()->m_eventPool.push_back(ge);
+        Main::GetInstance()->m_eventPool.push_back(gamepadEvent);
       }
     } // void PoolEvent end
 
@@ -251,14 +251,14 @@ namespace ToolKit
     }
 
    private:
-    const uint64 m_mouseEventPoolSize      = 1024;
-    const uint64 m_keyboardEventPoolSize   = 1024;
-    const uint64 m_gamepadEventPoolSize    = 1024;
-    const uint64 m_touchEventPoolSize      = 1024;
-    uint64 m_mouseEventPoolCurrentIndex    = 0;
-    uint64 m_keyboardEventPoolCurrentIndex = 0;
-    uint64 m_gamepadEventPoolCurrentIndex  = 0;
-    uint64 m_touchEventPoolCurrentIndex    = 0;
+    const uint16 m_mouseEventPoolSize      = 1024;
+    const uint16 m_keyboardEventPoolSize   = 1024;
+    const uint16 m_gamepadEventPoolSize    = 1024;
+    const uint16 m_touchEventPoolSize      = 1024;
+    uint16 m_mouseEventPoolCurrentIndex    = 0;
+    uint16 m_keyboardEventPoolCurrentIndex = 0;
+    uint16 m_gamepadEventPoolCurrentIndex  = 0;
+    uint16 m_touchEventPoolCurrentIndex    = 0;
     std::vector<MouseEvent*> m_mouseEventPool;
     std::vector<KeyboardEvent*> m_keyboardEventPool;
     std::vector<GamepadEvent*> m_gamepadEventPool;
