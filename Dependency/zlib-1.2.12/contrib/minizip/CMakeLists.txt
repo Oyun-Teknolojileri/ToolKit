@@ -31,7 +31,9 @@ endif(WIN32)
 message(STATUS ${HEADERS})
 message(STATUS ${SOURCE})
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s USE_ZLIB=1")
+if (EMSCRIPTEN)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s USE_ZLIB=1")
+endif()
 
 add_library(minizip STATIC ${HEADERS} ${SOURCE})
 target_link_libraries (minizip LINK_PUBLIC zlibstatic.lib)
