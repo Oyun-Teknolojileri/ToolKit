@@ -1,7 +1,6 @@
 <shader>
 	<type name = "fragmentShader" />
 	<include name = "camera.shader" />
-	<uniform name = "LightData" />
 	<uniform name = "Model" />
 	<uniform name = "InverseTransModel" />
 	<source>
