@@ -725,7 +725,7 @@ namespace ToolKit
         {
         case Uniform::PROJECT_MODEL_VIEW:
         {
-          Mat4 mul  = m_project * m_view * m_model;
+          Mat4 mul = m_project * m_view * m_model;
           glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
         }
         break;
@@ -788,7 +788,7 @@ namespace ToolKit
           const Vec3 pos           = m_cam->m_node->GetTranslation();
           const Vec3 dir           = m_cam->GetComponent<DirectionComponent>()->GetDirection();
           String uniformStructName = GetUniformName(Uniform::CAM_DATA);
-          loc                = glGetUniformLocation(program->m_handle, (uniformStructName + ".pos").c_str());
+          loc                      = glGetUniformLocation(program->m_handle, (uniformStructName + ".pos").c_str());
           glUniform3fv(loc, 1, &pos.x);
           loc = glGetUniformLocation(program->m_handle, (uniformStructName + ".dir").c_str());
           glUniform3fv(loc, 1, &dir.x);
@@ -859,7 +859,7 @@ namespace ToolKit
         break;
         case Uniform::DIFFUSE_TEXTURE_IN_USE:
         {
-          int v     = (int) (m_mat->m_diffuseTexture != nullptr);
+          int v = (int) (m_mat->m_diffuseTexture != nullptr);
           if (m_renderOnlyLighting)
           {
             v = false;
@@ -897,7 +897,7 @@ namespace ToolKit
         break;
         case Uniform::EMISSIVE_TEXTURE_IN_USE:
         {
-          int v     = (int) (m_mat->m_emissiveTexture != nullptr);
+          int v = (int) (m_mat->m_emissiveTexture != nullptr);
           glUniform1i(loc, v);
         }
         break;
@@ -1002,7 +1002,7 @@ namespace ToolKit
     CPU_FUNC_RANGE();
 
     size_t lightSize = glm::min(m_lights.size(), (size_t) RHIConstants::MaxLightsPerObject);
-    for (size_t i = 0; i < lightSize; i++)
+    for (int i = 0; i < (int) lightSize; i++)
     {
       LightPtr currLight = m_lights[i];
 
@@ -1014,15 +1014,15 @@ namespace ToolKit
         Vec3 pos        = pLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         float radius    = pLight->GetRadiusVal();
 
-        GLuint loc      = glGetUniformLocation(program->m_handle, g_lightTypeStrCache[i].c_str());
-        glUniform1i(loc, static_cast<GLuint>(2));
-        loc = glGetUniformLocation(program->m_handle, g_lightColorStrCache[i].c_str());
+        GLint loc      = program->GetUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
+        glUniform1i(loc, static_cast<GLint>(2));
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
         glUniform3fv(loc, 1, &color.x);
-        loc = glGetUniformLocation(program->m_handle, g_lightIntensityStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_INTENSITY, i);
         glUniform1f(loc, intensity);
-        loc = glGetUniformLocation(program->m_handle, g_lightPosStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_POS, i);
         glUniform3fv(loc, 1, &pos.x);
-        loc = glGetUniformLocation(program->m_handle, g_lightRadiusStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_RADIUS, i);
         glUniform1f(loc, radius);
       }
       // Directional light uniforms
@@ -1032,13 +1032,13 @@ namespace ToolKit
         float intensity = dLight->GetIntensityVal();
         Vec3 dir        = dLight->GetComponent<DirectionComponent>()->GetDirection();
 
-        GLuint loc      = glGetUniformLocation(program->m_handle, g_lightTypeStrCache[i].c_str());
-        glUniform1i(loc, (GLuint) 1);
-        loc = glGetUniformLocation(program->m_handle, g_lightColorStrCache[i].c_str());
+        GLint loc       = program->GetUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
+        glUniform1i(loc, (GLint) 1);
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
         glUniform3fv(loc, 1, &color.x);
-        loc = glGetUniformLocation(program->m_handle, g_lightIntensityStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_INTENSITY, i);
         glUniform1f(loc, intensity);
-        loc = glGetUniformLocation(program->m_handle, g_lightDirStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_DIR, i);
         glUniform3fv(loc, 1, &dir.x);
       }
       // Spot light uniforms
@@ -1052,64 +1052,64 @@ namespace ToolKit
         float outAngle  = glm::cos(glm::radians(sLight->GetOuterAngleVal() / 2.0f));
         float innAngle  = glm::cos(glm::radians(sLight->GetInnerAngleVal() / 2.0f));
 
-        GLuint loc      = glGetUniformLocation(program->m_handle, g_lightTypeStrCache[i].c_str());
-        glUniform1i(loc, static_cast<GLuint>(3));
-        loc = glGetUniformLocation(program->m_handle, g_lightColorStrCache[i].c_str());
+        GLint loc       = program->GetUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
+        glUniform1i(loc, static_cast<GLint>(3));
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
         glUniform3fv(loc, 1, &color.x);
-        loc = glGetUniformLocation(program->m_handle, g_lightIntensityStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_INTENSITY, i);
         glUniform1f(loc, intensity);
-        loc = glGetUniformLocation(program->m_handle, g_lightPosStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_POS, i);
         glUniform3fv(loc, 1, &pos.x);
-        loc = glGetUniformLocation(program->m_handle, g_lightDirStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_DIR, i);
         glUniform3fv(loc, 1, &dir.x);
-        loc = glGetUniformLocation(program->m_handle, g_lightRadiusStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_RADIUS, i);
         glUniform1f(loc, radius);
-        loc = glGetUniformLocation(program->m_handle, g_lightOuterAngleStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_OUTANGLE, i);
         glUniform1f(loc, outAngle);
-        loc = glGetUniformLocation(program->m_handle, g_lightInnerAngleStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_INNANGLE, i);
         glUniform1f(loc, innAngle);
       }
 
       bool castShadow = currLight->GetCastShadowVal();
       if (castShadow)
       {
-        GLint loc = glGetUniformLocation(program->m_handle, g_lightprojectionViewMatrixStrCache[i].c_str());
+        GLint loc = program->GetUniformLocation(Uniform::LIGHT_DATA_PROJVIEWMATRIX, i);
         glUniformMatrix4fv(loc, 1, GL_FALSE, &(currLight->m_shadowMapCameraProjectionViewMatrix)[0][0]);
 
-        loc = glGetUniformLocation(program->m_handle, g_lightShadowMapCameraFarStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_SHADOWMAPCAMFAR, i);
         glUniform1f(loc, currLight->m_shadowMapCameraFar);
 
-        loc = glGetUniformLocation(program->m_handle, g_BleedingReductionStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_BLEEDREDUCTION, i);
         glUniform1f(loc, currLight->GetBleedingReductionVal());
 
-        loc = glGetUniformLocation(program->m_handle, g_lightPCFSamplesStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_PCFSAMPLES, i);
         glUniform1i(loc, currLight->GetPCFSamplesVal());
 
-        loc = glGetUniformLocation(program->m_handle, g_lightPCFRadiusStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_PCFRADIUS, i);
         glUniform1f(loc, currLight->GetPCFRadiusVal());
 
-        loc = glGetUniformLocation(program->m_handle, g_lightsoftShadowsStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_SOFTSHADOWS, i);
         glUniform1i(loc, (int) (currLight->GetPCFSamplesVal() > 1));
 
-        loc = glGetUniformLocation(program->m_handle, g_lightShadowAtlasLayerStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_SHADOWATLASLAYER, i);
         glUniform1f(loc, (GLfloat) currLight->m_shadowAtlasLayer);
 
         const Vec2 coord = currLight->m_shadowAtlasCoord / (float) Renderer::RHIConstants::ShadowAtlasTextureSize;
-        loc              = glGetUniformLocation(program->m_handle, g_lightShadowAtlasCoordStrCache[i].c_str());
+        loc              = program->GetUniformLocation(Uniform::LIGHT_DATA_SHADOWATLASCOORD, i);
         glUniform2fv(loc, 1, &coord.x);
 
-        loc = glGetUniformLocation(program->m_handle, g_lightShadowAtlasResRatioStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_SHADOWATLASRESRATIO, i);
         glUniform1f(loc, currLight->GetShadowResVal() / Renderer::RHIConstants::ShadowAtlasTextureSize);
 
-        loc = glGetUniformLocation(program->m_handle, g_lightShadowBiasStrCache[i].c_str());
+        loc = program->GetUniformLocation(Uniform::LIGHT_DATA_SHADOWBIAS, i);
         glUniform1f(loc, currLight->GetShadowBiasVal() * Renderer::RHIConstants::ShadowBiasMultiplier);
       }
 
-      GLuint loc = glGetUniformLocation(program->m_handle, g_lightCastShadowStrCache[i].c_str());
+      GLuint loc = program->GetUniformLocation(Uniform::LIGHT_DATA_CASTSHADOW, i);
       glUniform1i(loc, static_cast<int>(castShadow));
     }
 
-    GLint loc = glGetUniformLocation(program->m_handle, "LightData.activeCount");
+    GLint loc = program->GetUniformLocation(Uniform::LIGHT_DATA_ACTIVECOUNT);
     glUniform1i(loc, static_cast<int>(m_lights.size()));
 
     // Bind shadow map if activated

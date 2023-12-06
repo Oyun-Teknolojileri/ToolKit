@@ -57,6 +57,26 @@ namespace ToolKit
     CAM_DATA_POS,
     CAM_DATA_DIR,
     CAM_DATA_FAR,
+    LIGHT_DATA_TYPE,
+    LIGHT_DATA_POS,
+    LIGHT_DATA_DIR,
+    LIGHT_DATA_COLOR,
+    LIGHT_DATA_INTENSITY,
+    LIGHT_DATA_RADIUS,
+    LIGHT_DATA_OUTANGLE,
+    LIGHT_DATA_INNANGLE,
+    LIGHT_DATA_PROJVIEWMATRIX,
+    LIGHT_DATA_SHADOWMAPCAMFAR,
+    LIGHT_DATA_CASTSHADOW,
+    LIGHT_DATA_PCFSAMPLES,
+    LIGHT_DATA_PCFRADIUS,
+    LIGHT_DATA_BLEEDREDUCTION,
+    LIGHT_DATA_SOFTSHADOWS,
+    LIGHT_DATA_SHADOWATLASLAYER,
+    LIGHT_DATA_SHADOWATLASRESRATIO,
+    LIGHT_DATA_SHADOWATLASCOORD,
+    LIGHT_DATA_SHADOWBIAS,
+    LIGHT_DATA_ACTIVECOUNT,
     UNIFORM_MAX_INVALID
   };
 
@@ -98,6 +118,12 @@ namespace ToolKit
     void HandleShaderIncludes(const String& file);
 
    public:
+    struct ArrayUniform
+    {
+      Uniform uniform;
+      int size;
+    };
+
     /**
      * Container that holds custom shader parameters.
      */
@@ -121,9 +147,14 @@ namespace ToolKit
     uint m_shaderHandle     = 0;
 
     /**
-     * Built-in Uniform's that is required for the shader.
+     * Built-in Uniform's that are required for the shader.
      */
     std::vector<Uniform> m_uniforms;
+
+    /**
+     * Built-in Uniform's that are arrays and required for the shader.
+     */
+    std::vector<ArrayUniform> m_arrayUniforms;
 
     /**
      * Include files that this shader needs.

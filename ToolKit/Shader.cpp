@@ -203,6 +203,46 @@ namespace ToolKit
       return "CamData.dir";
     case Uniform::CAM_DATA_FAR:
       return "CamData.far";
+    case Uniform::LIGHT_DATA_TYPE:
+      return "LightData.type";
+    case Uniform::LIGHT_DATA_POS:
+      return "LightData.pos";
+    case Uniform::LIGHT_DATA_DIR:
+      return "LightData.dir";
+    case Uniform::LIGHT_DATA_COLOR:
+      return "LightData.color";
+    case Uniform::LIGHT_DATA_INTENSITY:
+      return "LightData.intensity";
+    case Uniform::LIGHT_DATA_RADIUS:
+      return "LightData.radius";
+    case Uniform::LIGHT_DATA_OUTANGLE:
+      return "LightData.outAngle";
+    case Uniform::LIGHT_DATA_INNANGLE:
+      return "LightData.innAngle";
+    case Uniform::LIGHT_DATA_PROJVIEWMATRIX:
+      return "LightData.projectionViewMatrix";
+    case Uniform::LIGHT_DATA_SHADOWMAPCAMFAR:
+      return "LightData.shadowMapCameraFar";
+    case Uniform::LIGHT_DATA_CASTSHADOW:
+      return "LightData.castShadow";
+    case Uniform::LIGHT_DATA_PCFSAMPLES:
+      return "LightData.PCFSamples";
+    case Uniform::LIGHT_DATA_PCFRADIUS:
+      return "LightData.PCFRadius";
+    case Uniform::LIGHT_DATA_BLEEDREDUCTION:
+      return "LightData.BleedingReduction";
+    case Uniform::LIGHT_DATA_SOFTSHADOWS:
+      return "LightData.softShadows";
+    case Uniform::LIGHT_DATA_SHADOWATLASLAYER:
+      return "LightData.shadowAtlasLayer";
+    case Uniform::LIGHT_DATA_SHADOWATLASRESRATIO:
+      return "LightData.shadowAtlasResRatio";
+    case Uniform::LIGHT_DATA_SHADOWATLASCOORD:
+      return "LightData.shadowAtlasCoord";
+    case Uniform::LIGHT_DATA_SHADOWBIAS:
+      return "LightData.shadowBias";
+    case Uniform::LIGHT_DATA_ACTIVECOUNT:
+      return "LightData.activeCount";
     case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";
@@ -283,7 +323,9 @@ namespace ToolKit
 
       if (strcmp("uniform", node->name()) == 0)
       {
-        XmlAttribute* attr  = node->first_attribute();
+        XmlAttribute* nameAttr  = node->first_attribute("name");
+        XmlAttribute* sizeAttr = node->first_attribute("size");
+
         bool isUniformFound = false;
         for (uint i = 0; i < (uint) Uniform::UNIFORM_MAX_INVALID; i++)
         {
@@ -298,10 +340,22 @@ namespace ToolKit
             continue;
           }
 
-          if (strcmp(GetUniformName((Uniform) i), attr->value()) == 0)
+          // Find uniform from name
+          if (strcmp(GetUniformName((Uniform) i), nameAttr->value()) == 0)
           {
-            m_uniforms.push_back((Uniform) i);
             isUniformFound = true;
+
+            if (sizeAttr != nullptr)
+            {
+              // Uniform is array
+              int size = std::atoi(sizeAttr->value());
+              m_arrayUniforms.push_back({(Uniform) i, size});
+            }
+            else
+            {
+              m_uniforms.push_back((Uniform) i);
+            }
+
             break;
           }
         }

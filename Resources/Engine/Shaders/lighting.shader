@@ -4,7 +4,26 @@
 	<include name = "shadow.shader" />
 	<include name = "lightDataTextureUtils.shader" />
 	<include name = "pbr.shader" />
-	<uniform name = "LightData"/>
+	<uniform name = "LightData.type" size = "16"/>
+	<uniform name = "LightData.pos" size = "16"/>
+	<uniform name = "LightData.dir" size = "16"/>
+	<uniform name = "LightData.color" size = "16"/>
+	<uniform name = "LightData.intensity" size = "16"/>
+	<uniform name = "LightData.radius" size = "16"/>
+	<uniform name = "LightData.outAngle" size = "16"/>
+	<uniform name = "LightData.innAngle" size = "16"/>
+	<uniform name = "LightData.projectionViewMatrix" size = "16"/>
+	<uniform name = "LightData.shadowMapCameraFar" size = "16"/>
+	<uniform name = "LightData.castShadow" size = "16"/>
+	<uniform name = "LightData.PCFSamples" size = "16"/>
+	<uniform name = "LightData.PCFRadius" size = "16"/>
+	<uniform name = "LightData.BleedingReduction" size = "16"/>
+	<uniform name = "LightData.softShadows" size = "16"/>
+	<uniform name = "LightData.shadowAtlasLayer" size = "16"/>
+	<uniform name = "LightData.shadowAtlasResRatio" size = "16"/>
+	<uniform name = "LightData.shadowAtlasCoord" size = "16"/>
+	<uniform name = "LightData.shadowBias" size = "16"/>
+	<uniform name = "LightData.activeCount"/>
 	<uniform name = "shadowDistance" />
 
 	<source>

@@ -104,11 +104,30 @@ namespace ToolKit
       for (Uniform uniform : shader->m_uniforms)
       {
         GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(uniform));
+        //TODO
         if (loc == -1)
         {
           volatile int y = 5;
         }
         program->m_uniformLocations[uniform] = loc;
+      }
+
+      // Array uniforms
+      for (Shader::ArrayUniform arrayUniform : shader->m_arrayUniforms)
+      {
+        program->m_arrayUniformLocations[arrayUniform.uniform].reserve(arrayUniform.size);
+        for (int i = 0; i < arrayUniform.size; ++i)
+        {
+          String uniformName = GetUniformName(arrayUniform.uniform);
+          uniformName        = uniformName + "[" + std::to_string(i) + "]";
+          GLint loc          = glGetUniformLocation(program->m_handle, uniformName.c_str());
+          // TODO
+          if (loc == -1)
+          {
+            volatile int y = 5;
+          }
+          program->m_arrayUniformLocations[arrayUniform.uniform].push_back(loc);
+        }
       }
     }
 
