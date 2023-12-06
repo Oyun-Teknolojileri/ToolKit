@@ -27,8 +27,8 @@ namespace ToolKit
     VIEW,
     MODEL,
     INV_TR_MODEL,
-    LIGHT_DATA, //TODO remove this
-    CAM_DATA, //TODO remove this
+    LIGHT_DATA, // TODO remove this
+    CAM_DATA,   // TODO remove this
     COLOR,
     FRAME_COUNT,
     ELAPSED_TIME,
@@ -122,6 +122,8 @@ namespace ToolKit
     {
       Uniform uniform;
       int size;
+
+      bool operator==(const ArrayUniform& other) const { return uniform == other.uniform && size == other.size; }
     };
 
     /**

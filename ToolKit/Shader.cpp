@@ -323,10 +323,10 @@ namespace ToolKit
 
       if (strcmp("uniform", node->name()) == 0)
       {
-        XmlAttribute* nameAttr  = node->first_attribute("name");
+        XmlAttribute* nameAttr = node->first_attribute("name");
         XmlAttribute* sizeAttr = node->first_attribute("size");
 
-        bool isUniformFound = false;
+        bool isUniformFound    = false;
         for (uint i = 0; i < (uint) Uniform::UNIFORM_MAX_INVALID; i++)
         {
           // Skipping unused variables.
@@ -456,11 +456,11 @@ namespace ToolKit
 
     // Handle uniforms
     std::unordered_set<Uniform> unis;
+
     for (Uniform uni : m_uniforms)
     {
       unis.insert(uni);
     }
-
     for (Uniform uni : includeShader->m_uniforms)
     {
       unis.insert(uni);
@@ -471,6 +471,18 @@ namespace ToolKit
     {
       m_uniforms.push_back(*i);
     }
+
+    for (ArrayUniform uni : includeShader->m_arrayUniforms)
+    {
+      m_arrayUniforms.push_back(uni);
+    }
+
+    auto arrayUniformCompareFn = [](ArrayUniform& uni1, ArrayUniform& uni2) { return uni1.uniform < uni2.uniform; };
+
+    // Remove duplicates
+    std::sort(m_arrayUniforms.begin(), m_arrayUniforms.end(), arrayUniformCompareFn);
+    auto uniqueEnd = std::unique(m_arrayUniforms.begin(), m_arrayUniforms.end());
+    m_arrayUniforms.erase(uniqueEnd, m_arrayUniforms.end());
   }
 
   // ShaderManager
