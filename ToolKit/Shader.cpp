@@ -280,6 +280,14 @@ namespace ToolKit
       WriteAttr(node, doc, "name", GetUniformName(ui));
     }
 
+    for (ArrayUniform ui : m_arrayUniforms)
+    {
+      XmlNode* node = CreateXmlNode(doc, "uniform", container);
+
+      WriteAttr(node, doc, "name", GetUniformName(ui.uniform));
+      WriteAttr(node, doc, "size", std::to_string(ui.size));
+    }
+
     XmlNode* src      = CreateXmlNode(doc, "source", container);
     XmlNode* srcInput = doc->allocate_node(rapidxml::node_type::node_comment);
     src->append_node(srcInput);
