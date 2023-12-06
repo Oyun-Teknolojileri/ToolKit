@@ -197,6 +197,12 @@ namespace ToolKit
       return "iblMaxReflectionLod";
     case Uniform::SHADOW_DISTANCE:
       return "shadowDistance";
+    case Uniform::CAM_DATA_POS:
+      return "CamData.pos";
+    case Uniform::CAM_DATA_DIR:
+      return "CamData.dir";
+    case Uniform::CAM_DATA_FAR:
+      return "CamData.far";
     case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";

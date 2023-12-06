@@ -4,7 +4,7 @@
 	<include name = "shadow.shader" />
 	<include name = "lightDataTextureUtils.shader" />
 	<include name = "pbr.shader" />
-	<uniform name = "LightData" />
+	<uniform name = "LightData"/>
 	<uniform name = "shadowDistance" />
 
 	<source>

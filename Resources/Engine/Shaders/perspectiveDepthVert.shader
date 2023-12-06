@@ -5,7 +5,6 @@
 	<uniform name = "ProjectViewModel" />
 	<uniform name = "View" />
 	<uniform name = "Model" />
-	<uniform name = "CamData" />
 	<source>
 	<!--
 		#version 300 es

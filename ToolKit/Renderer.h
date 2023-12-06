@@ -46,6 +46,10 @@ namespace ToolKit
   class TK_API Renderer
   {
    public:
+
+     //TODO
+    static double FEEDUNIFORMSDURATION;
+
     Renderer();
     ~Renderer();
 

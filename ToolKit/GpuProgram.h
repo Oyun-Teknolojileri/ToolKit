@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "Shader.h"
 #include "Types.h"
 
 namespace ToolKit
@@ -19,15 +20,33 @@ namespace ToolKit
    */
   class TK_API GpuProgram
   {
+    friend class GpuProgramManager;
+
    public:
     GpuProgram();
     GpuProgram(ShaderPtr vertex, ShaderPtr fragment);
     ~GpuProgram();
 
+    // Returns -1 if the uniform location is not registered
+    inline int GetUniformLocation(Uniform uniform)
+    {
+      if (m_uniformLocations.find(uniform) != m_uniformLocations.end())
+      {
+        return m_uniformLocations[uniform];
+      }
+      else
+      {
+        return -1;
+      }
+    }
+
    public:
     uint m_handle = 0;
     String m_tag;
     ShaderPtrArray m_shaders;
+
+   private:
+    std::unordered_map<Uniform, int> m_uniformLocations;
   };
 
   /**

@@ -70,10 +70,12 @@ namespace ToolKit
     vertexShader->Init();
     fragmentShader->Init();
 
+    GpuProgramPtr program = nullptr;
+
     String tag = GenerateTag((int) vertexShader->GetIdVal(), (int) fragmentShader->GetIdVal());
     if (m_programs.find(tag) == m_programs.end())
     {
-      GpuProgramPtr program = MakeNewPtr<GpuProgram>(vertexShader, fragmentShader);
+      program = MakeNewPtr<GpuProgram>(vertexShader, fragmentShader);
       program->m_tag        = tag;
       program->m_handle     = glCreateProgram();
 
@@ -90,8 +92,27 @@ namespace ToolKit
 
       m_programs[program->m_tag] = program;
     }
+    else
+    {
+      program = m_programs[tag];
+      glUseProgram(program->m_handle);
+    }
 
-    return m_programs[tag];
+    // Register uniform locations
+    for (ShaderPtr shader : m_programs[tag]->m_shaders)
+    {
+      for (Uniform uniform : shader->m_uniforms)
+      {
+        GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(uniform));
+        if (loc == -1)
+        {
+          volatile int y = 5;
+        }
+        program->m_uniformLocations[uniform] = loc;
+      }
+    }
+
+    return program;
   }
 
   void GpuProgramManager::FlushPrograms() { m_programs.clear(); }

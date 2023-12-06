@@ -28,7 +28,7 @@ namespace ToolKit
     MODEL,
     INV_TR_MODEL,
     LIGHT_DATA,
-    CAM_DATA,
+    CAM_DATA, //TODO remove this
     COLOR,
     FRAME_COUNT,
     ELAPSED_TIME,
@@ -54,6 +54,9 @@ namespace ToolKit
     NORMAL_MAP_IN_USE,
     IBL_MAX_REFLECTION_LOD,
     SHADOW_DISTANCE,
+    CAM_DATA_POS,
+    CAM_DATA_DIR,
+    CAM_DATA_FAR,
     UNIFORM_MAX_INVALID
   };
 

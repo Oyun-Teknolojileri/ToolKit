@@ -1,7 +1,7 @@
 <shader>
 	<type name = "fragmentShader" />
+	<include name = "camera.shader" />
 	<uniform name = "LightData" />
-	<uniform name = "CamData" />
 	<uniform name = "Model" />
 	<uniform name = "InverseTransModel" />
 	<source>
@@ -50,13 +50,6 @@
 			float cullDistance;	//!-< Not used for now, gridCullDistance constant above is used for now
 		};
 		uniform _GridData GridData;
-		
-		struct _CamData
-		{
-			vec3 pos;
-			vec3 dir;
-		};
-		uniform _CamData CamData;
 		
 		uniform mat4 ProjectViewModel;
 		uniform mat4 InverseTransModel;
