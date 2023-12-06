@@ -99,7 +99,7 @@ namespace ToolKit
     }
 
     // Register uniform locations
-    for (ShaderPtr shader : m_programs[tag]->m_shaders)
+    for (ShaderPtr shader : program->m_shaders)
     {
       for (Uniform uniform : shader->m_uniforms)
       {

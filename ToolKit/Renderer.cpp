@@ -710,6 +710,8 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
+    FeedLightUniforms(program);
+
     for (ShaderPtr shader : program->m_shaders)
     {
       shader->UpdateShaderParameters();
@@ -941,7 +943,6 @@ namespace ToolKit
         }
         break;
         default:
-          assert(false);
           break;
         }
       }
@@ -1014,7 +1015,7 @@ namespace ToolKit
         Vec3 pos        = pLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         float radius    = pLight->GetRadiusVal();
 
-        GLint loc      = program->GetUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
+        GLint loc       = program->GetUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
         glUniform1i(loc, static_cast<GLint>(2));
         loc = program->GetUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
         glUniform3fv(loc, 1, &color.x);

@@ -27,7 +27,7 @@ namespace ToolKit
     VIEW,
     MODEL,
     INV_TR_MODEL,
-    LIGHT_DATA,
+    LIGHT_DATA, //TODO remove this
     CAM_DATA, //TODO remove this
     COLOR,
     FRAME_COUNT,
