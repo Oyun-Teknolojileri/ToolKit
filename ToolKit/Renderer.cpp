@@ -949,11 +949,11 @@ namespace ToolKit
 
       POP_CPU_MARKER();
       PUSH_CPU_MARKER("Parameter Defined Shader Uniforms");
-
+  
       // Custom variables.
       for (auto& var : shader->m_shaderParams)
       {
-        GLint loc = shader->GetShaderParamUniformLoc(var.first.c_str(), var.second.m_id, program);
+        GLint loc = program->GetShaderParamUniformLoc(var.first);
 
         if (loc == -1)
         {

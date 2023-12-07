@@ -57,6 +57,8 @@ namespace ToolKit
       }
     }
 
+    int GetShaderParamUniformLoc(const String& uniformName);
+
    public:
     uint m_handle = 0;
     String m_tag;
@@ -65,6 +67,7 @@ namespace ToolKit
    private:
     std::unordered_map<Uniform, int> m_uniformLocations;
     std::unordered_map<Uniform, std::vector<int>> m_arrayUniformLocations;
+    std::unordered_map<String, int> m_shaderParamsUniformLocations;
   };
 
   /**

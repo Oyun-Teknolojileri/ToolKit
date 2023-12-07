@@ -31,6 +31,23 @@ namespace ToolKit
     m_handle = 0;
   }
 
+  int GpuProgram::GetShaderParamUniformLoc(const String& uniformName)
+  {
+    if (m_shaderParamsUniformLocations.find(uniformName) != m_shaderParamsUniformLocations.end())
+    {
+      return m_shaderParamsUniformLocations[uniformName];
+    }
+    else
+    {
+      // Note: Assuming the shader program is in use
+      GLint loc                                 = glGetUniformLocation(m_handle, uniformName.c_str());
+      m_shaderParamsUniformLocations[uniformName] = loc;
+      return loc;
+    }
+
+    return -1;
+  }
+
   // GpuProgramManager
   //////////////////////////////////////////////////////////////////////////
 
