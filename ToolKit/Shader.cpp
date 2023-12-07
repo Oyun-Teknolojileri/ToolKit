@@ -8,6 +8,7 @@
 #include "Shader.h"
 
 #include "FileManager.h"
+#include "GpuProgram.h"
 #include "Logger.h"
 #include "TKAssert.h"
 #include "TKOpenGL.h"
@@ -388,6 +389,23 @@ namespace ToolKit
   void Shader::SetShaderParameter(const String& param, const ParameterVariant& val) { m_shaderParams[param] = val; }
 
   void Shader::UpdateShaderParameters() {}
+
+  int Shader::GetShaderParamUniformLoc(const char* uniformName, ULongID variantID, GpuProgramPtr gpuProgram)
+  {
+    if (m_shaderParamsUniformLocations.find(variantID) != m_shaderParamsUniformLocations.end())
+    {
+      return m_shaderParamsUniformLocations[variantID];
+    }
+    else
+    {
+      // Note: Assuming the shader program is in use
+      GLint loc                                 = glGetUniformLocation(gpuProgram->m_handle, uniformName);
+      m_shaderParamsUniformLocations[variantID] = loc;
+      return loc;
+    }
+
+    return -1;
+  }
 
   void Shader::HandleShaderIncludes(const String& file)
   {

@@ -953,7 +953,8 @@ namespace ToolKit
       // Custom variables.
       for (auto& var : shader->m_shaderParams)
       {
-        GLint loc = glGetUniformLocation(program->m_handle, var.first.c_str());
+        GLint loc = shader->GetShaderParamUniformLoc(var.first.c_str(), var.second.m_id, program);
+
         if (loc == -1)
         {
           continue;

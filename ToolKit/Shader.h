@@ -114,6 +114,8 @@ namespace ToolKit
      */
     virtual void UpdateShaderParameters();
 
+    int GetShaderParamUniformLoc(const char* uniformName, ULongID variantID, GpuProgramPtr gpuProgram);
+
    private:
     void HandleShaderIncludes(const String& file);
 
@@ -130,6 +132,11 @@ namespace ToolKit
      * Container that holds custom shader parameters.
      */
     std::unordered_map<String, ParameterVariant> m_shaderParams;
+
+    /**
+     * Holds uniform locations of shader params
+     */
+    std::unordered_map<ULongID, int> m_shaderParamsUniformLocations;
 
     /**
      * Shader hash to look up. Any shader resolving to the same tag can be
