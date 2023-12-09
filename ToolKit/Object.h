@@ -91,8 +91,12 @@ namespace ToolKit
 #define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Object::NativeConstruct;
 
   /**
-   * Defines all the
+   * Defines macros for classes. This macro crates the functions and members for declared class.
    */
+#define TKDefineClassMeta(This, Base, Meta)                                                                            \
+  ClassMeta This::This##Cls = {Base::StaticClass(), #This, MurmurHash64A(#This, sizeof(#This), 41), Meta};             \
+  ClassMeta* const This::Class() const { return &This##Cls; }
+
 #define TKDefineClass(This, Base)                                                                                      \
   ClassMeta This::This##Cls = {Base::StaticClass(), #This, MurmurHash64A(#This, sizeof(#This), 41)};                   \
   ClassMeta* const This::Class() const { return &This##Cls; }

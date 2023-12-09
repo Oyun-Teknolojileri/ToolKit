@@ -25,7 +25,7 @@ namespace ToolKit
     fullPath += ".dll";
 #endif
 
-    if (!CheckSystemFile(file))
+    if (!CheckSystemFile(fullPath))
     {
       TK_ERR("Can not find plugin file %s", fullPath.c_str());
       return false;
@@ -90,9 +90,9 @@ namespace ToolKit
 
   void PluginManager::UnInit()
   {
-    for (auto itr = m_storage.rbegin(); itr != m_storage.rend(); itr++)
+    for (int i = (int) m_storage.size() - 1; i >= 0; i--)
     {
-      Unload(itr->m_file);
+      Unload(m_storage[i].m_file);
     }
   }
 

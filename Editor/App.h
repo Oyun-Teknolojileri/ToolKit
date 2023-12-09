@@ -50,6 +50,7 @@ namespace ToolKit
       void OnNewProject(const String& name);
       void SetGameMod(GameMod mod);
       void CompilePlugin();
+      void LoadProjectPlugin();
       bool IsCompiling();
       EditorScenePtr GetCurrentScene();
       void SetCurrentScene(const EditorScenePtr& scene);

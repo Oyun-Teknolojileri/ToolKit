@@ -551,6 +551,8 @@ namespace ToolKit
                                                  {
                                                    m_statusMsg = "Compiled.";
                                                    TK_LOG("%s", m_statusMsg.c_str());
+
+                                                   LoadProjectPlugin();
                                                  }
                                                  m_isCompiling = false;
                                                });
@@ -558,6 +560,16 @@ namespace ToolKit
                              });
 
       pipeThread.detach();
+    }
+
+    void App::LoadProjectPlugin() 
+    {
+      if (PluginManager* pluginMan = GetPluginManager())
+      {
+        String pluginPath = m_workspace.GetPluginPath();
+        pluginMan->Load(pluginPath);
+        ReconstructDynamicMenus();
+      }
     }
 
     EditorScenePtr App::GetCurrentScene()
@@ -1167,6 +1179,8 @@ namespace ToolKit
             m_workspace.Serialize(nullptr, nullptr);
             m_workspace.SerializeEngineSettings();
             OnNewScene("New Scene");
+            
+            LoadProjectPlugin();
           });
     }
 
@@ -1328,7 +1342,7 @@ namespace ToolKit
         if (m_gameMod != GameMod::Stop)
         {
           m_simulationWindow->SetVisibility(m_simulatorSettings.Windowed);
-          //plugin->Frame(deltaTime);
+          // plugin->Frame(deltaTime);
         }
       }
     }

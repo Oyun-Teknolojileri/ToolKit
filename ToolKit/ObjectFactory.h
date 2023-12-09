@@ -97,6 +97,7 @@ namespace ToolKit
     void Unregister()
     {
       m_constructorFnMap.erase(T::StaticClass()->Name);
+      m_allRegisteredClasses.erase(T::StaticClass()->HashId);
     }
 
     /**
