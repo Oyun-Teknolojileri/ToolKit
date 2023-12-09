@@ -43,6 +43,18 @@ namespace ToolKit
 
   ObjectFactory::~ObjectFactory() {}
 
+  void ObjectFactory::CallMetaProcessors(const MetaMap& metaKeys, const MetaProcessorMap& metaProcessorMap)
+  {
+    for (auto& meta : metaKeys)
+    {
+      auto metaProcessor = metaProcessorMap.find(meta.first);
+      if (metaProcessor != metaProcessorMap.end())
+      {
+        metaProcessor->second(meta.second);
+      }
+    }
+  }
+
   ObjectFactory::ObjectConstructorCallback& ObjectFactory::GetConstructorFn(const StringView Class)
   {
     auto constructorFnIt = m_constructorFnMap.find(Class);

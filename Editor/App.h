@@ -220,13 +220,13 @@ namespace ToolKit
       EditorViewport* m_lastActiveViewport     = nullptr;
       Workspace m_workspace;
       StringArray m_customObjectMetaValues;    //!< Add menu shows this additional classes.
-      DynamicMenuPtrArray m_customObjectsMenu; //!< Menu for custom objects to display in Add.
+      DynamicMenuPtrArray m_customObjectsMenu; //!< Constructed menus based on m_customObjectMetaValues.
 
       // Snap settings.
-      bool m_snapsEnabled  = false; // Delta transforms.
-      float m_moveDelta    = 0.25f;
-      float m_rotateDelta  = 15.0f;
-      float m_scaleDelta   = 0.5f;
+      bool m_snapsEnabled = false; // Delta transforms.
+      float m_moveDelta   = 0.25f;
+      float m_rotateDelta = 15.0f;
+      float m_scaleDelta  = 0.5f;
 
      private:
       // Internal states.

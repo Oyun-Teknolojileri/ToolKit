@@ -562,7 +562,7 @@ namespace ToolKit
       pipeThread.detach();
     }
 
-    void App::LoadProjectPlugin() 
+    void App::LoadProjectPlugin()
     {
       if (PluginManager* pluginMan = GetPluginManager())
       {
@@ -834,7 +834,11 @@ namespace ToolKit
       CreateSimulationWindow(m_simulatorSettings.Width, m_simulatorSettings.Height);
     }
 
-    void App::ReconstructDynamicMenus() { ConstructDynamicMenu(m_customObjectMetaValues, m_customObjectsMenu); }
+    void App::ReconstructDynamicMenus()
+    {
+      m_customObjectsMenu.clear();
+      ConstructDynamicMenu(m_customObjectMetaValues, m_customObjectsMenu);
+    }
 
     int App::Import(const String& fullPath, const String& subDir, bool overwrite)
     {
@@ -1179,7 +1183,7 @@ namespace ToolKit
             m_workspace.Serialize(nullptr, nullptr);
             m_workspace.SerializeEngineSettings();
             OnNewScene("New Scene");
-            
+
             LoadProjectPlugin();
           });
     }

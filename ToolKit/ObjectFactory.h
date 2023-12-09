@@ -43,6 +43,18 @@ namespace ToolKit
     typedef std::function<void(StringView val)> MetaProcessorCallback; //!< Type for MetaKey callbacks.
 
     /**
+     * Type for MetaKey, MetaProcessorCallback map.
+     */
+    typedef std::unordered_map<StringView, MetaProcessorCallback> MetaProcessorMap;
+
+    /**
+     * Calls the meta processor if there is a processor corresponding to metaKey.
+     * @param metaKeys is the key map to search metaProcessor for.
+     * @param metaProcessorMap is the map to look into for keys.
+     */
+    void CallMetaProcessors(const MetaMap& metaKeys, const MetaProcessorMap& metaProcessorMap);
+
+    /**
      * Registers or overrides the default constructor of given Object type.
      * @param constructorFn - This is the callback function that is responsible of creating the given object.
      */
@@ -82,22 +94,17 @@ namespace ToolKit
 
       m_constructorFnMap[objectClass->Name] = constructorFn;
 
-      // Iterate over all meta processors for each meta entry.
-      for (auto& meta : objectClass->MetaKeys)
-      {
-        auto metaProcessor = m_metaProcessorMap.find(meta.first);
-        if (metaProcessor != m_metaProcessorMap.end())
-        {
-          metaProcessor->second(meta.second);
-        }
-      }
+      CallMetaProcessors(objectClass->MetaKeys, m_metaProcessorRegisterMap);
     }
 
     template <typename T>
     void Unregister()
     {
-      m_constructorFnMap.erase(T::StaticClass()->Name);
-      m_allRegisteredClasses.erase(T::StaticClass()->HashId);
+      ClassMeta* objectClass = T::StaticClass();
+      m_constructorFnMap.erase(objectClass->Name);
+      m_allRegisteredClasses.erase(objectClass->HashId);
+
+      CallMetaProcessors(objectClass->MetaKeys, m_metaProcessorUnRegisterMap);
     }
 
     /**
@@ -119,7 +126,13 @@ namespace ToolKit
      * Each MetaKey has a corresponding meta processor. When a class registered and it has a MetaKey that corresponds to
      * one of MetaProcessor in the map, processor gets called with MetaKey's value.
      */
-    std::unordered_map<StringView, MetaProcessorCallback> m_metaProcessorMap;
+    MetaProcessorMap m_metaProcessorRegisterMap;
+
+    /**
+     * Each MetaKey has a corresponding meta processor. When a class unregistered and it has a MetaKey that corresponds
+     * to one of MetaProcessor in the map, processor gets called with MetaKey's value.
+     */
+    MetaProcessorMap m_metaProcessorUnRegisterMap;
 
     /**
      * Returns the Constructor for given class name.

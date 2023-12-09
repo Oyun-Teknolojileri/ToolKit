@@ -256,7 +256,7 @@ namespace ToolKit
                                               { ToolKit::PlatformHelpers::OutputLog((int) type, msg.c_str()); });
 
             // Allow classes with the MenuMetaKey to be created from the add menu.
-            of->m_metaProcessorMap[MenuMetaKey] = [](StringView val) -> void
+            of->m_metaProcessorRegisterMap[MenuMetaKey] = [](StringView val) -> void
             {
               bool exist = false;
               for (String& meta : g_app->m_customObjectMetaValues)
@@ -271,7 +271,17 @@ namespace ToolKit
               if (!exist)
               {
                 g_app->m_customObjectMetaValues.push_back(String(val));
-                g_app->ReconstructDynamicMenus();
+              }
+            };
+
+            of->m_metaProcessorUnRegisterMap[MenuMetaKey] = [](StringView val) -> void
+            {
+              for (int i = (int) g_app->m_customObjectMetaValues.size() - 1; i >= 0; i--)
+              {
+                if (g_app->m_customObjectMetaValues[i] == val)
+                {
+                  g_app->m_customObjectMetaValues.erase(g_app->m_customObjectMetaValues.begin() + i);
+                }
               }
             };
 
