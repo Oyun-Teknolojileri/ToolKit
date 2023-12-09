@@ -234,6 +234,7 @@ namespace ToolKit
       String m_newSceneName;
       float m_deltaTime  = 0.0f;
       bool m_isCompiling = false;
+      bool m_reloadPlugin = false;
     };
 
     extern void DebugMessage(const String& msg);

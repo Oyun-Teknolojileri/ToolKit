@@ -50,7 +50,10 @@ namespace ToolKit
       auto metaProcessor = metaProcessorMap.find(meta.first);
       if (metaProcessor != metaProcessorMap.end())
       {
-        metaProcessor->second(meta.second);
+        if (metaProcessor->second != nullptr)
+        {
+          metaProcessor->second(meta.second);
+        }
       }
     }
   }

@@ -16,6 +16,7 @@
 #include <DirectionComponent.h>
 #include <FileManager.h>
 #include <Mesh.h>
+#include <Meta.h>
 #include <PluginManager.h>
 #include <Resource.h>
 #include <SDL.h>
@@ -43,6 +44,39 @@ namespace ToolKit
 
     void App::Init()
     {
+      if (ObjectFactory* objFactory = GetObjectFactory())
+      {
+        // Allow classes with the MenuMetaKey to be created from the add menu.
+        objFactory->m_metaProcessorRegisterMap[MenuMetaKey] = [](StringView val) -> void
+        {
+          bool exist = false;
+          for (String& meta : g_app->m_customObjectMetaValues)
+          {
+            if (meta == val)
+            {
+              exist = true;
+              break;
+            }
+          }
+
+          if (!exist)
+          {
+            g_app->m_customObjectMetaValues.push_back(String(val));
+          }
+        };
+
+        objFactory->m_metaProcessorUnRegisterMap[MenuMetaKey] = [](StringView val) -> void
+        {
+          for (int i = (int) g_app->m_customObjectMetaValues.size() - 1; i >= 0; i--)
+          {
+            if (g_app->m_customObjectMetaValues[i] == val)
+            {
+              g_app->m_customObjectMetaValues.erase(g_app->m_customObjectMetaValues.begin() + i);
+            }
+          }
+        };
+      }
+
       AssignManagerReporters();
       CreateEditorEntities();
 
@@ -131,6 +165,12 @@ namespace ToolKit
 
       ModManager::GetInstance()->UnInit();
       ActionManager::GetInstance()->UnInit();
+
+      if (ObjectFactory* objFactory = GetObjectFactory())
+      {
+        objFactory->m_metaProcessorRegisterMap[MenuMetaKey]   = nullptr;
+        objFactory->m_metaProcessorUnRegisterMap[MenuMetaKey] = nullptr;
+      }
     }
 
     void App::Frame(float deltaTime)
@@ -243,6 +283,11 @@ namespace ToolKit
       POP_CPU_MARKER();
 
       GetRenderSystem()->SetFrameCount(m_totalFrameCount++);
+
+      if (m_reloadPlugin)
+      {
+        LoadProjectPlugin();
+      }
     }
 
     void App::OnResize(uint width, uint height)
@@ -551,10 +596,9 @@ namespace ToolKit
                                                  {
                                                    m_statusMsg = "Compiled.";
                                                    TK_LOG("%s", m_statusMsg.c_str());
-
-                                                   LoadProjectPlugin();
                                                  }
-                                                 m_isCompiling = false;
+                                                 m_isCompiling  = false;
+                                                 m_reloadPlugin = true;
                                                });
                                pip.detach();
                              });
@@ -564,12 +608,35 @@ namespace ToolKit
 
     void App::LoadProjectPlugin()
     {
+      ClearSession();
+
+      String currentScene;
+      EditorSceneManager* sm = static_cast<EditorSceneManager*>(GetSceneManager());
+      if (EditorScenePtr scene = GetCurrentScene())
+      {
+        scene->Save(false);
+        currentScene = scene->GetFile();
+        if (EditorScenePtr cs = Cast<EditorScene>(sm->Remove(currentScene)))
+        {
+          cs->Destroy(false);
+        }
+        sm->SetCurrentScene(nullptr);
+      }
+
       if (PluginManager* pluginMan = GetPluginManager())
       {
         String pluginPath = m_workspace.GetPluginPath();
         pluginMan->Load(pluginPath);
         ReconstructDynamicMenus();
       }
+
+      if (!currentScene.empty())
+      {
+        EditorScenePtr cs = sm->Create<EditorScene>(currentScene);
+        sm->SetCurrentScene(cs);
+      }
+
+      m_reloadPlugin = false;
     }
 
     EditorScenePtr App::GetCurrentScene()
@@ -1447,6 +1514,8 @@ namespace ToolKit
 
         CreateWindows(root);
       }
+
+      LoadProjectPlugin();
 
       String scene = m_workspace.GetActiveProject().scene;
       if (!scene.empty())

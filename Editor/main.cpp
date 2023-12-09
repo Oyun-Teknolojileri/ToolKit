@@ -255,43 +255,6 @@ namespace ToolKit
             GetLogger()->SetPlatformConsoleFn([](LogType type, const String& msg) -> void
                                               { ToolKit::PlatformHelpers::OutputLog((int) type, msg.c_str()); });
 
-            // Allow classes with the MenuMetaKey to be created from the add menu.
-            of->m_metaProcessorRegisterMap[MenuMetaKey] = [](StringView val) -> void
-            {
-              bool exist = false;
-              for (String& meta : g_app->m_customObjectMetaValues)
-              {
-                if (meta == val)
-                {
-                  exist = true;
-                  break;
-                }
-              }
-
-              if (!exist)
-              {
-                g_app->m_customObjectMetaValues.push_back(String(val));
-              }
-            };
-
-            of->m_metaProcessorUnRegisterMap[MenuMetaKey] = [](StringView val) -> void
-            {
-              for (int i = (int) g_app->m_customObjectMetaValues.size() - 1; i >= 0; i--)
-              {
-                if (g_app->m_customObjectMetaValues[i] == val)
-                {
-                  g_app->m_customObjectMetaValues.erase(g_app->m_customObjectMetaValues.begin() + i);
-                }
-              }
-            };
-
-            // This code just creates a dummy Primiatives menu to demonstrate the feature.
-            // Game plugins should extend the editor with their custom types this way.
-            g_app->m_customObjectMetaValues.push_back("Primatives/Helper/Arrow2d:Arrow");
-            g_app->m_customObjectMetaValues.push_back("Primatives/Geometry/Cube:Cube");
-            g_app->m_customObjectMetaValues.push_back("Primatives/Geometry/Sphere:Sphere");
-            g_app->ReconstructDynamicMenus();
-
             UI::Init();
             g_app->Init();
           }
