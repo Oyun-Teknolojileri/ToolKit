@@ -40,6 +40,7 @@ namespace ToolKit
         if (reg->m_lastWriteTime != cTime)
         {
           TK_LOG("A new version of the plugin has been found.");
+          reg->m_stateCache = MakeNewPtr<XmlDocument>();
           Unload(fullPath);
         }
       }
@@ -65,6 +66,8 @@ namespace ToolKit
         reg.m_module = handle;
         reg.m_plugin = (ProcAddr) ();
         reg.m_plugin->Init(Main::GetInstance());
+        reg.m_plugin->OnLoad(reg.m_stateCache);
+        reg.m_stateCache    = nullptr;
         reg.m_loaded        = true;
         reg.m_file          = fullPath;
         reg.m_lastWriteTime = GetCreationTime(fullPath);
@@ -102,7 +105,7 @@ namespace ToolKit
       return;
     }
 
-    reg->m_plugin->OnUnload();
+    reg->m_plugin->OnUnload(reg->m_stateCache);
     reg->m_plugin->Destroy();
     reg->m_plugin = nullptr;
 
@@ -113,8 +116,6 @@ namespace ToolKit
 
     reg->m_loaded = false;
   }
-
-  bool PluginManager::Reload(const String& file) { return false; }
 
   void PluginManager::Update(float deltaTime)
   {

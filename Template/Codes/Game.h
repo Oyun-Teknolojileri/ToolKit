@@ -19,8 +19,8 @@ namespace ToolKit
     void Init(Main* master) override;
     void Destroy() override;
     void Frame(float deltaTime) override;
-    void OnLoad() override;
-    void OnUnload() override;
+    void OnLoad(XmlDocumentPtr state) override;
+    void OnUnload(XmlDocumentPtr state) override;
   };
 
   extern Game* g_game;

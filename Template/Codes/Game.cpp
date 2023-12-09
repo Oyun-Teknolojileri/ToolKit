@@ -22,8 +22,8 @@ namespace ToolKit
 
   void Game::Frame(float deltaTime) {}
 
-  void Game::OnLoad() {}
+  void Game::OnLoad(XmlDocumentPtr state) {}
 
-  void Game::OnUnload() {}
+  void Game::OnUnload(XmlDocumentPtr state) {}
 
 } // namespace ToolKit
