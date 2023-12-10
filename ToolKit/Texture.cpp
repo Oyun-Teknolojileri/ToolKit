@@ -132,12 +132,15 @@ namespace ToolKit
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) m_textureSettings.MinFilter);
 
+// android does not have support for this
+#ifndef __ANDROID__
     if constexpr (GL_EXT_texture_filter_anisotropic)
     {
       float aniso = 0.0f;
       glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
     }
+#endif
 
     if (flushClientSideArray)
     {
@@ -573,7 +576,7 @@ namespace ToolKit
 
   TextureManager::~TextureManager() {}
 
-  bool TextureManager::CanStore(ClassMeta* Class)
+    bool TextureManager::CanStore(ClassMeta* Class)
   {
     if (Class->IsSublcassOf(Texture::StaticClass()))
     {
@@ -582,32 +585,6 @@ namespace ToolKit
 
     return false;
   }
-
-  ResourcePtr TextureManager::CreateLocal(ClassMeta* Class)
-  {
-    if (Class == Texture::StaticClass())
-    {
-      return MakeNewPtr<Texture>();
-    }
-
-    if (Class == CubeMap::StaticClass())
-    {
-      return MakeNewPtr<CubeMap>();
-    }
-
-    if (Class == RenderTarget::StaticClass())
-    {
-      return MakeNewPtr<RenderTarget>();
-    }
-
-    if (Class == Hdri::StaticClass())
-    {
-      return MakeNewPtr<Hdri>();
-    }
-
-    return nullptr;
-  }
-
   String TextureManager::GetDefaultResource(ClassMeta* Class)
   {
     if (Class == Hdri::StaticClass())

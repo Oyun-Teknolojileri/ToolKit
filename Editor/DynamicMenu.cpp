@@ -62,8 +62,7 @@ namespace ToolKit
       // Construct dynamic menu map.
       std::unordered_map<String, DynamicMenuPtr> menuMap;
 
-      auto errContinueFn = [](String& metaVal) -> void
-      { GetLogger()->WriteConsole(LogType::Warning, "%s value is wrong: %s", MenuMetaKey, metaVal); };
+      auto errContinueFn = [](String& metaVal) -> void { TK_WRN("%s value is wrong: %s", MenuMetaKey, metaVal); };
 
       for (String& customObjectMetaVal : menuDescriptors)
       {

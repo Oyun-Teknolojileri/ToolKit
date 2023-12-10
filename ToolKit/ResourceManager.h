@@ -80,7 +80,6 @@ namespace ToolKit
 
     bool Exist(const String& file);
     ResourcePtr Remove(const String& file);
-    virtual ResourcePtr CreateLocal(ClassMeta* Class) = 0;
 
    public:
     std::unordered_map<String, ResourcePtr> m_storage;

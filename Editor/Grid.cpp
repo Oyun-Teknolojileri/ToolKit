@@ -172,11 +172,10 @@ namespace ToolKit
           VertexArray currentQuad = quadVertexBuffer;
           for (int j = 0; j < 6; j++)
           {
-            Vertex& clientVertex  = currentQuad[j];
-            clientVertex.pos      = (clientVertex.pos * Vec3(scale, 0.0f));
-            clientVertex.pos.xy  -= Vec2(m_size / UVec2(2)) - Vec2(gridIndx * maxGridSize);
-            // clientVertex.pos.xy += Vec2(maxGridSize / UVec2(2));
-            clientVertex.tex      = clientVertex.pos.xy * m_gridCellSize;
+            Vertex& clientVertex = currentQuad[j];
+            clientVertex.pos     = (clientVertex.pos * Vec3(scale, 0.0f));
+            clientVertex.pos = clientVertex.pos - Vec3(Vec2(m_size / UVec2(2)) - Vec2(gridIndx * maxGridSize), 0.0f);
+            clientVertex.tex = clientVertex.pos * m_gridCellSize;
           }
 
           mainMesh->m_clientSideVertices.insert(mainMesh->m_clientSideVertices.end(),

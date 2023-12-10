@@ -133,7 +133,7 @@ namespace ToolKit
 
       if (a->m_node->m_parent != b->m_node->m_parent)
       {
-        GetLogger()->WriteConsole(LogType::Warning, "selected entities should have same parent!");
+        TK_WRN("Selected entities should have same parent.");
         return;
       }
 
@@ -396,7 +396,7 @@ namespace ToolKit
 
       if (contains(movedEntities, droppedBelowNtt))
       {
-        GetLogger()->WriteConsole(LogType::Memo, "cannot reorder if you drag below a selected entity");
+        TK_WRN("Can not reorder if you drag below a selected entity.");
         return false;
       }
 
@@ -410,7 +410,7 @@ namespace ToolKit
 
       if (!allSameParent)
       {
-        GetLogger()->WriteConsole(LogType::Memo, "all selected entities should have same parent");
+        TK_WRN("All selected entities should have same parent.");
         return false;
       }
 

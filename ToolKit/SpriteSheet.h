@@ -81,7 +81,6 @@ namespace ToolKit
     SpriteSheetManager();
     virtual ~SpriteSheetManager();
     bool CanStore(ClassMeta* Class) override;
-    ResourcePtr CreateLocal(ClassMeta* Class) override;
   };
 
 } // namespace ToolKit

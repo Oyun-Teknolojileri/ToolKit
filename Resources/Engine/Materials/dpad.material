@@ -1,0 +1,12 @@
+<material>
+	<diffuseTexture name="ToolKit\dpad.png"/>
+	<shader name="ToolKit\defaultVertex.shader"/>
+	<shader name="ToolKit\unlitFrag.shader"/>
+	<color x="1.000000" y="1.000000" z="1.000000"/>
+	<emissiveColor x="0.000000" y="0.000000" z="0.000000"/>
+	<alpha name="1.000000"/>
+	<metallic name="0.200000"/>
+	<roughness name="0.500000"/>
+	<renderState cullMode="2" depthTest="1" depthFunc="513" blendFunction="1" alphaMaskTreshold="0.001000" drawType="4"/>
+</material>
+

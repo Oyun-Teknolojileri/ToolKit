@@ -416,14 +416,4 @@ namespace ToolKit
     return false;
   }
 
-  ResourcePtr SkeletonManager::CreateLocal(ClassMeta* Class)
-  {
-    if (Class == Skeleton::StaticClass())
-    {
-      return MakeNewPtr<Skeleton>();
-    }
-
-    return nullptr;
-  }
-
 } // namespace ToolKit

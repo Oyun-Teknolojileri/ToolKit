@@ -392,13 +392,13 @@ namespace ToolKit
 
   void Renderer::ClearColorBuffer(const Vec4& color)
   {
-    glClearColor(color.r, color.g, color.b, color.a);
+    glClearColor(color.x, color.y, color.z, color.w);
     glClear((GLbitfield) GraphicBitFields::ColorBits);
   }
 
   void Renderer::ClearBuffer(GraphicBitFields fields, const Vec4& value)
   {
-    glClearColor(value.r, value.g, value.b, value.a);
+    glClearColor(value.x, value.y, value.z, value.w);
     glClear((GLbitfield) fields);
   }
 
@@ -774,13 +774,13 @@ namespace ToolKit
           Vec4 color = Vec4(m_mat->m_color, m_mat->GetAlpha());
           if (m_mat->GetRenderState()->blendFunction == BlendFunction::NONE)
           {
-            color.a = 1.0f;
+            color.w = 1.0f;
           }
 
           GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::COLOR));
           if (m_renderOnlyLighting)
           {
-            color = Vec4(1.0f, 1.0f, 1.0f, color.a);
+            color = Vec4(1.0f, 1.0f, 1.0f, color.w);
           }
           glUniform4fv(loc, 1, &color.x);
         }

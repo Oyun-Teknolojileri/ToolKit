@@ -17,73 +17,73 @@ namespace ToolKit
 
   bool PluginManager::Load(const String& file)
   {
-    String dllName = file;
+    String fullPath = file;
 
 #ifdef TK_DEBUG
-    dllName += "_d.dll";
+    fullPath += "_d.dll";
 #else
-    dllName += ".dll";
+    fullPath += ".dll";
 #endif
 
-    // Check the register.
-    bool newRegAdded    = false;
-    PluginRegister* reg = nullptr;
-    if (reg = GetRegister(dllName))
+    if (!CheckSystemFile(fullPath))
     {
-      // Unload if dirty
-      if (!reg->m_loaded)
+      TK_ERR("Can not find plugin file %s", fullPath.c_str());
+      return false;
+    }
+
+    // Check if the dll is changed.
+    if (PluginRegister* reg = GetRegister(fullPath))
+    {
+      if (reg->m_loaded && reg->m_plugin)
       {
-        // Get file creation time.
-        String cTime = GetCreationTime(dllName);
+        String cTime = GetCreationTime(fullPath);
         if (reg->m_lastWriteTime != cTime)
         {
           TK_LOG("A new version of the plugin has been found.");
-
-          // Reload.
-          Unload(reg->m_file);
-          if (reg->m_module)
-          {
-            FreeModule(reg->m_module);
-          }
+          reg->m_stateCache = MakeNewPtr<XmlDocument>();
+          Unload(fullPath);
         }
       }
-    }
-    else
-    {
-      // A new reg is needed.
-      newRegAdded = true;
-      m_storage.push_back(PluginRegister());
-      reg = &m_storage.back();
+
+      if (reg->m_loaded && reg->m_plugin)
+      {
+        TK_LOG("Plugin has already loaded.");
+        return true;
+      }
     }
 
-    ModuleHandle module = LoadModule(dllName.c_str());
-    if (module != nullptr)
+    // Load the plugin.
+    ModuleHandle handle = LoadModule(fullPath.c_str());
+
+    // Initialize the plugin.
+    if (handle != nullptr)
     {
-      reg->m_module           = module;
-      FunctionAdress ProcAddr = (FunctionAdress) GetFunction(module, "CreateInstance");
+      FunctionAdress ProcAddr = (FunctionAdress) GetFunction(handle, "GetInstance");
 
       if (ProcAddr != nullptr)
       {
-        reg->m_plugin = (ProcAddr) ();
-        reg->m_plugin->Init(Main::GetInstance());
-        reg->m_loaded        = true;
-        reg->m_file          = dllName;
-        reg->m_lastWriteTime = GetCreationTime(dllName);
+        PluginRegister reg;
+        reg.m_module = handle;
+        reg.m_plugin = (ProcAddr) ();
+        reg.m_plugin->Init(Main::GetInstance());
+        reg.m_initialized = true;
+        reg.m_plugin->OnLoad(reg.m_stateCache);
+        reg.m_loaded        = true;
+        reg.m_stateCache    = nullptr;
+        reg.m_file          = fullPath;
+        reg.m_lastWriteTime = GetCreationTime(fullPath);
+
+        m_storage.push_back(reg);
         return true;
       }
       else
       {
-        TK_ERR("Can not find CreateInstance() in the plugin.");
+        TK_ERR("Can not find GetInstance() in the plugin.");
       }
     }
     else
     {
-      TK_ERR("Can not load plugin %s", dllName.c_str());
-    }
-
-    if (newRegAdded)
-    {
-      m_storage.pop_back();
+      TK_ERR("Can not load the plugin.");
     }
 
     return false;
@@ -91,32 +91,68 @@ namespace ToolKit
 
   void PluginManager::UnInit()
   {
-    for (PluginRegister& reg : m_storage)
+    for (int i = (int) m_storage.size() - 1; i >= 0; i--)
     {
-      Unload(reg.m_file);
+      Unload(m_storage[i].m_file);
     }
-
-    m_storage.clear();
   }
 
   void PluginManager::Unload(const String& file)
   {
-    PluginRegister* reg = GetRegister(file);
+    int indx            = 0;
+    PluginRegister* reg = GetRegister(file, &indx);
     if (reg == nullptr || reg->m_plugin == nullptr || !reg->m_loaded)
     {
       return;
     }
 
+    reg->m_plugin->OnUnload(reg->m_stateCache);
     reg->m_plugin->Destroy();
-    reg->m_plugin = nullptr;
+    reg->m_initialized = false;
+    reg->m_plugin      = nullptr;
 
-    if (reg->m_module)
-    {
-      FreeModule(reg->m_module);
-      reg->m_module = nullptr;
-    }
-
+    FreeModule(reg->m_module);
+    reg->m_module = nullptr;
     reg->m_loaded = false;
+
+    m_storage.erase(m_storage.begin() + indx);
+  }
+
+  void PluginManager::Update(float deltaTime)
+  {
+    for (PluginRegister& reg : m_storage)
+    {
+      if (reg.m_plugin && reg.m_loaded)
+      {
+        if (reg.m_plugin->m_currentState == PluginState::Started)
+        {
+          if (!reg.m_initialized)
+          {
+            reg.m_plugin->Init(Main::GetInstance());
+            reg.m_initialized = true;
+          }
+        }
+        else if (reg.m_plugin->m_currentState == PluginState::Running)
+        {
+          if (!reg.m_initialized)
+          {
+            reg.m_plugin->Init(Main::GetInstance());
+            reg.m_initialized = true;
+          }
+
+          reg.m_plugin->Frame(deltaTime);
+        }
+        else if (reg.m_plugin->m_currentState == PluginState::Stop)
+        {
+          if (reg.m_initialized)
+          {
+            reg.m_plugin->Destroy();
+            reg.m_initialized = false;
+          }
+        }
+        // Else, paused. Do nothing.
+      }
+    }
   }
 
   GamePlugin* PluginManager::GetGamePlugin()
@@ -152,12 +188,17 @@ namespace ToolKit
 
   void PluginManager::Init() {}
 
-  PluginRegister* PluginManager::GetRegister(const String& file)
+  PluginRegister* PluginManager::GetRegister(const String& file, int* indx)
   {
     for (size_t i = 0; i < m_storage.size(); i++)
     {
       if (m_storage[i].m_file == file)
       {
+        if (indx != nullptr)
+        {
+          *indx = (int) i;
+        }
+
         return &m_storage[i];
       }
     }

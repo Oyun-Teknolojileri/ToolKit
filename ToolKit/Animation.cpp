@@ -358,7 +358,7 @@ namespace ToolKit
   void AnimRecord::Construct(EntityPtr entity, const AnimationPtr& anim)
   {
     m_entity    = entity;
-    m_animation = m_animation;
+    m_animation = anim;
   }
 
   AnimRecord::~AnimRecord()
@@ -466,7 +466,5 @@ namespace ToolKit
   AnimationManager::~AnimationManager() {}
 
   bool AnimationManager::CanStore(ClassMeta* Class) { return Class == Animation::StaticClass(); }
-
-  ResourcePtr AnimationManager::CreateLocal(ClassMeta* Class) { return MakeNewPtr<Animation>(); }
 
 } // namespace ToolKit

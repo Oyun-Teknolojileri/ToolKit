@@ -417,7 +417,7 @@ namespace ToolKit
     Vec3 sum(0.0f);
     for (int i = 0; i < n; i++)
     {
-      Vec3 pos  = rjVec[i].WorldTransform[3].xyz;
+      Vec3 pos  = rjVec[i].WorldTransform[3];
       sum      += pos;
     }
     mean      = sum / (float) n;
@@ -426,7 +426,7 @@ namespace ToolKit
     float ssd = 0.0f;
     for (int i = 0; i < n; i++)
     {
-      Vec3 pos   = rjVec[i].WorldTransform[3].xyz;
+      Vec3 pos   = rjVec[i].WorldTransform[3];
       Vec3 diff  = pos - mean;
       ssd       += glm::dot(diff, diff);
     }
@@ -435,7 +435,7 @@ namespace ToolKit
 
   bool RenderJobProcessor::IsOutlier(const RenderJob& rj, float sigma, const float stdev, const Vec3& mean)
   {
-    Vec3 pos   = rj.WorldTransform[3].xyz;
+    Vec3 pos   = rj.WorldTransform[3];
     Vec3 diff  = pos - mean;
     float dist = glm::length(diff) / stdev;
 

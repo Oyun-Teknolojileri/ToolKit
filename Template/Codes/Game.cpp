@@ -7,23 +7,23 @@
 
 #include "Game.h"
 
-extern "C" TK_GAME_API ToolKit::Game* TK_STDCAL CreateInstance() { return new ToolKit::Game(); }
+ToolKit::Game Self;
+
+extern "C" TK_PLUGIN_API ToolKit::Game* TK_STDCAL GetInstance() { return &Self; }
 
 namespace ToolKit
 {
 
-#ifndef GAME_BUILD
-  extern Game* ToolKit::g_game = nullptr;
-#endif
+  Game* g_game = &Self;
 
-  void Game::Init(Main* master)
-  {
-    Main::SetProxy(master);
+  void Game::Init(Main* master) { Main::SetProxy(master); }
 
-    g_game = this;
-  }
+  void Game::Destroy() {}
 
-  void Game::Destroy() { delete this; }
+  void Game::Frame(float deltaTime) {}
 
-  void Game::Frame(float deltaTime, Viewport* viewport) {}
+  void Game::OnLoad(XmlDocumentPtr state) {}
+
+  void Game::OnUnload(XmlDocumentPtr state) {}
+
 } // namespace ToolKit

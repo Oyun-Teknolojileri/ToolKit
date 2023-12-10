@@ -15,6 +15,7 @@
 #include <TKOpenGL.h>
 #include <Texture.h>
 #include <ToolKit.h>
+#include <Types.h>
 #include <Util.h>
 #include <assert.h>
 #include <stdio.h>
@@ -56,9 +57,11 @@ namespace ToolKit
     int WebPublish();
     int AndroidPublish();
 
+    void SetAndroidOptions();
     void AndroidPrepareIcon();
     void EditAndroidManifest();
-    void AndroidRunOnPhone();
+    void SetAndroidSDKVersion();
+    void AndroidRunOnPhone(bool isAPKUnsigned);
     int PackResources();
 
    public:
@@ -79,7 +82,7 @@ namespace ToolKit
     String projectName = activeProjectName;
     if (projectName.empty())
     {
-      GetLogger()->WriteConsole(LogType::Error, "No project is loaded!");
+      TK_ERR("No project is loaded.");
       return 0;
     }
 
@@ -243,10 +246,8 @@ namespace ToolKit
     }
 
     // Tell user about where the location of output files is
-    GetLogger()->WriteConsole(LogType::Success, "Building for WINDOWS has been completed successfully.\n");
-    GetLogger()->WriteConsole(LogType::Memo,
-                              "Output files location: %s\n",
-                              std::filesystem::absolute(publishDirectory).string().c_str());
+    TK_SUC("Building for WINDOWS has been completed successfully.\n");
+    TK_LOG("Output files location: %s\n", std::filesystem::absolute(publishDirectory).string().c_str());
 
     PlatformHelpers::OpenExplorer(publishDirectory);
     return 0;
@@ -254,17 +255,18 @@ namespace ToolKit
 
   void Packer::AndroidPrepareIcon()
   {
-    if (m_icon.empty() || m_icon == "default")
-    {
-      return;
-    }
     String assetsPath  = NormalizePath("Android/app/src/main/res");
     String projectName = activeProjectName;
     String resLocation = ConcatPaths({workspacePath, projectName, assetsPath});
 
-    TK_LOG("Preparing Icons");
+    TK_LOG("Preparing Icons\n");
     int refWidth, refHeight, refComp;
     unsigned char* refImage = ImageLoad(m_icon.c_str(), &refWidth, &refHeight, &refComp, 0);
+    if (refImage == nullptr)
+    {
+      TK_LOG("Can not load icon image!\n");
+      return;
+    }
 
     // search each folder in res folder and find icons, replace that icons with new ones
     for (const auto& entry : std::filesystem::directory_iterator(resLocation))
@@ -300,7 +302,7 @@ namespace ToolKit
     ImageFree(refImage);
   }
 
-  void Packer::AndroidRunOnPhone()
+  void Packer::AndroidRunOnPhone(bool isAPKUnsigned)
   {
     // adb path is in: 'android-sdk/platform-tools'
     String sdkPath = String(getenv("ANDROID_HOME"));
@@ -326,13 +328,18 @@ namespace ToolKit
       return false;
     };
 
-    String apkPath     = NormalizePath("Android/app/build/outputs/apk");
-    apkPath            = ConcatPaths({apkPath, m_isDebugBuild ? "debug" : "release"});
-    apkPath            = ConcatPaths({apkPath, m_isDebugBuild ? "app-debug.apk" : "app-release-unsigned.apk"});
+    String apkPath        = NormalizePath("Android/app/build/outputs/apk");
 
-    String projectName = activeProjectName;
-    String apkLocation = ConcatPaths({workspacePath, projectName, apkPath});
-    String packageName = "com.otyazilim.toolkit/com.otyazilim.toolkit.MainActivity"; // adb uses / forward slash
+    String buildType      = m_isDebugBuild ? "debug" : "release";
+    apkPath               = ConcatPaths({apkPath, buildType});
+
+    String releaseApkFile = isAPKUnsigned ? "app-release-unsigned.apk" : "app-release.apk";
+
+    apkPath               = ConcatPaths({apkPath, m_isDebugBuild ? "app-debug.apk" : releaseApkFile});
+
+    String projectName    = activeProjectName;
+    String apkLocation    = ConcatPaths({workspacePath, projectName, apkPath});
+    String packageName    = "org.libsdl.app/org.libsdl.app.SDLActivity"; // adb uses forward slash
 
     int execResult;
     execResult = PlatformHelpers::SysComExec("adb install " + apkLocation, false, true, nullptr);
@@ -349,6 +356,12 @@ namespace ToolKit
     std::filesystem::current_path(oldPath);
   }
 
+  void Packer::SetAndroidOptions()
+  {
+    SetAndroidSDKVersion();
+    EditAndroidManifest();
+  }
+
   void Packer::EditAndroidManifest()
   {
     TK_LOG("Editing Android Manifest\n");
@@ -362,22 +375,39 @@ namespace ToolKit
 
     // replace template values with our settings
     ReplaceFirstStringInPlace(androidManifest, "@string/app_name", applicationName);
-    ReplaceFirstStringInPlace(androidManifest,
-                              "minSdkVersion=\"26\"",
-                              "minSdkVersion=\"" + std::to_string(m_minSdk) + "\"");
-    ReplaceFirstStringInPlace(androidManifest,
-                              "maxSdkVersion=\"33\"",
-                              "maxSdkVersion=\"" + std::to_string(m_maxSdk) + "\"");
+
     // 0 undefined 1 landscape 2 Portrait
     String oriantationNames[3] {"fullSensor", "landscape", "portrait"};
     ReplaceFirstStringInPlace(androidManifest,
-                              "screenOrientation=\"portrait\"",
+                              "screenOrientation=\"landscape\"",
                               "screenOrientation=\"" + oriantationNames[(int) m_oriantation] + "\"");
 
     String mainLocation = ConcatPaths({workspacePath, projectName, mainPath});
     String manifestLoc  = ConcatPaths({mainLocation, "AndroidManifest.xml"});
 
     GetFileManager()->WriteAllText(manifestLoc, androidManifest);
+  }
+
+  void Packer::SetAndroidSDKVersion()
+  {
+    TK_LOG("Editing Build Gradle\n");
+    String projectName     = activeProjectName;
+    String applicationName = m_appName;
+    String mainPath        = NormalizePath("Android/app");
+
+    // get file from template
+    String gradleFileText  = GetFileManager()->ReadAllText(
+        std::filesystem::absolute(ConcatPaths({m_toolkitPath, "Template", mainPath, "build.gradle"})).string());
+
+    // replace template values with our settings
+    ReplaceFirstStringInPlace(gradleFileText, "minSdkVersion 19", "minSdkVersion " + std::to_string(m_minSdk));
+    ReplaceFirstStringInPlace(gradleFileText, "maxSdkVersion 34", "maxSdkVersion " + std::to_string(m_maxSdk));
+    ReplaceFirstStringInPlace(gradleFileText, "compileSdkVersion 33", "compileSdkVersion " + std::to_string(m_maxSdk));
+
+    String mainLocation = ConcatPaths({workspacePath, projectName, mainPath});
+    String gradleLoc    = ConcatPaths({mainLocation, "build.gradle"});
+
+    GetFileManager()->WriteAllText(gradleLoc, gradleFileText);
   }
 
   int Packer::AndroidPublish()
@@ -416,7 +446,7 @@ namespace ToolKit
 
     if (projectName.empty())
     {
-      GetLogger()->WriteConsole(LogType::Error, "No project is loaded!\n");
+      TK_ERR("No project is loaded.\n");
       return 1;
     }
 
@@ -433,7 +463,7 @@ namespace ToolKit
       return 1;
     }
 
-    EditAndroidManifest();
+    SetAndroidOptions();
 
     String androidPath = ConcatPaths({projectLocation, "Android"});
     std::filesystem::current_path(androidPath, ec);
@@ -446,21 +476,54 @@ namespace ToolKit
 
     TK_LOG("Building android apk, Gradle scripts running...\n");
 
+    String buildType     = m_isDebugBuild ? "debug" : "release";
+
+    // clean apk output directory
+    String buildLocation = NormalizePath(ConcatPaths({projectLocation, "Android/app/build/outputs/apk"}));
+    for (auto& folder : std::filesystem::directory_iterator(buildLocation))
+    {
+      if (!folder.is_directory())
+      {
+        continue;
+      }
+      if (folder.path().filename().string() != buildType)
+      {
+        continue;
+      }
+      for (auto& file : std::filesystem::directory_iterator(folder))
+      {
+        if (file.is_directory())
+        {
+          continue;
+        }
+        std::filesystem::remove(file);
+      }
+    }
+
     // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
     String command    = m_isDebugBuild ? "gradlew assembleDebug" : "gradlew assemble";
 
     int compileResult = RunPipe(command + " > AndroidPipeOut1.txt", nullptr);
     if (compileResult != 0)
     {
-      GetLogger()->WriteConsole(LogType::Error, "Android build failed.\n");
+      TK_ERR("Android build failed.\n");
       return 1;
     }
     TK_LOG(GetFileManager()->ReadAllText("AndroidPipeOut1.txt").c_str());
 
-    String buildLocation         = NormalizePath(ConcatPaths({projectLocation, "Android/app/build/outputs/apk"}));
-    buildLocation                = ConcatPaths({buildLocation, m_isDebugBuild ? "debug" : "release"});
+    buildLocation      = ConcatPaths({buildLocation, buildType});
+
+    bool apkIsUnsigned = false;
+    // See if the apk is unsigned or not
+    if (std::filesystem::exists(ConcatPaths({buildLocation, "app-release-unsigned.apk"})))
+    {
+      apkIsUnsigned = true;
+    }
+
     const String publishDirStr   = ConcatPaths({ResourcePath(), "..", "Publish", "Android"});
-    const String apkName         = m_isDebugBuild ? "app-debug.apk" : "app-release-unsigned.apk";
+    const String apkName         = m_isDebugBuild  ? "app-debug.apk"
+                                   : apkIsUnsigned ? "app-release-unsigned.apk"
+                                                   : "app-release.apk";
     const String apkPathStr      = ConcatPaths({buildLocation, apkName});
 
     projectName                  = m_appName;
@@ -481,10 +544,8 @@ namespace ToolKit
     }
 
     // Tell user about where the location of output files is
-    GetLogger()->WriteConsole(LogType::Success, "Building for ANDROID has been completed successfully.\n");
-    GetLogger()->WriteConsole(LogType::Memo,
-                              "Output files location: %s\n",
-                              std::filesystem::absolute(publishDirStr).string().c_str());
+    TK_SUC("Building for ANDROID has been completed successfully.\n");
+    TK_LOG("Output files location: %s\n", std::filesystem::absolute(publishDirStr).string().c_str());
 
     PlatformHelpers::OpenExplorer(publishDirStr);
 
@@ -503,7 +564,7 @@ namespace ToolKit
 
     if (m_deployAfterBuild)
     {
-      AndroidRunOnPhone();
+      AndroidRunOnPhone(apkIsUnsigned);
     }
 
     return 0;
@@ -612,10 +673,8 @@ namespace ToolKit
     }
 
     // Output user about where are the output files
-    GetLogger()->WriteConsole(LogType::Success, "Building for web has been completed successfully.\n");
-    GetLogger()->WriteConsole(LogType::Memo,
-                              "Output files location: %s\n",
-                              std::filesystem::absolute(publishDirectory).string().c_str());
+    TK_SUC("Building for web has been completed successfully.\n");
+    TK_LOG("Output files location: %s\n", std::filesystem::absolute(publishDirectory).string().c_str());
 
     PlatformHelpers::OpenExplorer(publishDirectory);
     return 0;
@@ -651,6 +710,7 @@ namespace ToolKit
     packer.m_oriantation      = (Oriantation) std::atoi(arguments[7].c_str());
     packer.m_platform         = (PublishPlatform) std::atoi(arguments[8].c_str());
     packer.m_icon             = arguments[9];
+    packer.m_icon             = std::filesystem::absolute(packer.m_icon).string();
 
     // in windows we are hiding the console because pipe works fine and we output to the toolkit console
     if (packer.m_platform == PublishPlatform::Windows)

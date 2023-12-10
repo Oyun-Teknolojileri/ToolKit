@@ -445,16 +445,6 @@ namespace ToolKit
 
   bool MaterialManager::CanStore(ClassMeta* Class) { return Class == Material::StaticClass(); }
 
-  ResourcePtr MaterialManager::CreateLocal(ClassMeta* Class)
-  {
-    if (Class == Material::StaticClass())
-    {
-      return MakeNewPtr<Material>();
-    }
-
-    return nullptr;
-  }
-
   String MaterialManager::GetDefaultResource(ClassMeta* Class) { return MaterialPath("missing.material", true); }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial(bool storeInMaterialManager)
@@ -489,5 +479,4 @@ namespace ToolKit
     ResourcePtr source = m_storage[MaterialPath("phongForward.material", true)];
     return Copy<Material>(source, storeInMaterialManager);
   }
-
 } // namespace ToolKit

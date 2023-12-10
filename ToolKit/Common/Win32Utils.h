@@ -14,9 +14,6 @@
   #include <shellapi.h>
   #include <strsafe.h>
 
-  // ToolKit collisions
-  #undef WriteConsole
-
   #include <chrono>
   #include <thread>
 
@@ -87,7 +84,7 @@ namespace ToolKit
       )
       {
         DWORD errCode = GetLastError();
-        GetLogger()->WriteConsole(LogType::Error, "CreateProcess failed (%d).\n", errCode);
+        TK_ERR("CreateProcess failed (%d).\n", errCode);
         return (int) errCode;
       }
 

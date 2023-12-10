@@ -43,7 +43,6 @@ namespace ToolKit
     void Start();
 
     bool CanStore(ClassMeta* Class) override;
-    ResourcePtr CreateLocal(ClassMeta* Class) override;
 
    public:
     void* m_engine = nullptr;

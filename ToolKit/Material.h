@@ -92,7 +92,6 @@ namespace ToolKit
     virtual ~MaterialManager();
     void Init() override;
     bool CanStore(ClassMeta* Class) override;
-    ResourcePtr CreateLocal(ClassMeta* Class) override;
     String GetDefaultResource(ClassMeta* Class) override;
 
     MaterialPtr GetCopyOfUnlitMaterial(bool storeInMaterialManager = true);
@@ -100,6 +99,7 @@ namespace ToolKit
     MaterialPtr GetCopyOfUnlitColorMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfDefaultMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfPhongMaterial(bool storeInMaterialManager = true);
+    MaterialPtr GetCopyOfDpadMaterial(bool storeInMaterialManager = true);
   };
 
 } // namespace ToolKit

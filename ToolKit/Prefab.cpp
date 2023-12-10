@@ -88,7 +88,7 @@ namespace ToolKit
     m_prefabScene  = GetSceneManager()->Create<Scene>(PrefabPath(GetPrefabPathVal()));
     if (m_prefabScene == nullptr)
     {
-      GetLogger()->WriteConsole(LogType::Warning, "Prefab scene isn't found!");
+      TK_ERR("Prefab scene isn't found.");
       return;
     }
 

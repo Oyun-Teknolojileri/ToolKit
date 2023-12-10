@@ -5,6 +5,13 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
+#define GLM_FORCE_QUAT_DATA_XYZW
+#define GLM_FORCE_XYZW_ONLY
+#define GLM_FORCE_CTOR_INIT
+#define GLM_ENABLE_EXPERIMENTAL
+#define GLM_FORCE_ALIGNED_GENTYPES
+#define GLM_FORCE_INTRINSICS
+
 #include <Animation.h>
 #include <Material.h>
 #include <MaterialComponent.h>
@@ -21,8 +28,8 @@
 #include <assimp/pbrmaterial.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include <glm/ext.hpp>
+#include <glm/glm.hpp>
 #include <rapidxml.hpp>
 #include <rapidxml_ext.h>
 

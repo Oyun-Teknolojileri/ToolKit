@@ -89,7 +89,7 @@ namespace ToolKit
 
       // Merge remaining.
       m_lowQueue.insert(m_lowQueue.begin(), tasks.begin(), tasks.end());
-      GetLogger()->WriteConsole(LogType::Warning, "Asnyc Render %d", m_lowQueue.size());
+      TK_LOG("Asnyc Render %d", m_lowQueue.size());
     }
   }
 

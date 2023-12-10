@@ -47,12 +47,12 @@
     <OutDir>..\Bin\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\ImGui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\ImGui\lib;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\ImGui\lib;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\ImGui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\NVTX-3.1.0\c\include\nvtx3;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\ImGui\lib;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\ImGui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\NVTX-3.1.0\c\include\nvtx3;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\ImGui\lib;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -61,7 +61,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_EDITOR;TK_GL_ES_3_0;TK_DEBUG;TK_DLL_IMPORT;GLM_FORCE_SIMD_AVX2;GLM_FORCE_DEFAULT_ALIGNED_GENTYPES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_EDITOR;TK_GL_ES_3_0;TK_DEBUG;TK_DLL_IMPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <IncludeInUnityFile>true</IncludeInUnityFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -81,7 +81,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_EDITOR;TK_GL_ES_3_0;NDEBUG;GLM_FORCE_SIMD_AVX2;GLM_FORCE_DEFAULT_ALIGNED_GENTYPES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_EDITOR;TK_GL_ES_3_0;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/FI "stdafx.h" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>

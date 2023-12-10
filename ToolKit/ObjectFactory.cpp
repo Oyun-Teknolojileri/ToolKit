@@ -32,6 +32,7 @@
 #include "SpriteSheet.h"
 #include "SsaoPass.h"
 #include "Surface.h"
+#include "Dpad.h"
 #include "Texture.h"
 
 #include "DebugNew.h"
@@ -42,6 +43,21 @@ namespace ToolKit
   ObjectFactory::ObjectFactory() {}
 
   ObjectFactory::~ObjectFactory() {}
+
+  void ObjectFactory::CallMetaProcessors(const MetaMap& metaKeys, const MetaProcessorMap& metaProcessorMap)
+  {
+    for (auto& meta : metaKeys)
+    {
+      auto metaProcessor = metaProcessorMap.find(meta.first);
+      if (metaProcessor != metaProcessorMap.end())
+      {
+        if (metaProcessor->second != nullptr)
+        {
+          metaProcessor->second(meta.second);
+        }
+      }
+    }
+  }
 
   ObjectFactory::ObjectConstructorCallback& ObjectFactory::GetConstructorFn(const StringView Class)
   {
@@ -59,7 +75,6 @@ namespace ToolKit
     if (auto constructorFn = GetConstructorFn(Class))
     {
       Object* object = constructorFn();
-      object->NativeConstruct();
       return object;
     }
 
@@ -101,6 +116,7 @@ namespace ToolKit
     Register<Surface>();
     Register<Canvas>();
     Register<Button>();
+    Register<Dpad>();
     // Resources.
     Register<Animation>();
     Register<Audio>();

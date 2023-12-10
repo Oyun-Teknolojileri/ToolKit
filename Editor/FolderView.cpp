@@ -59,7 +59,7 @@ namespace ToolKit
       {
         thumbnailZoom = m_thumbnailMaxZoom;
       }
-      m_iconSize.xy = Vec2(thumbnailZoom);
+      m_iconSize = Vec2(thumbnailZoom);
 
       ImGui::BeginTable("##FilterZoom", 5, ImGuiTableFlags_SizingFixedFit);
 
@@ -130,7 +130,7 @@ namespace ToolKit
           // move file to its new position
           if (std::rename(src.c_str(), dst.c_str()))
           {
-            GetLogger()->WriteConsole(LogType::Error, "file cut paste failed!");
+            TK_ERR("file cut paste failed!");
           }
         }
       }

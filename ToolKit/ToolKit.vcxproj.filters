@@ -196,6 +196,7 @@
     <ClCompile Include="GlErrorReporter.cpp">
       <Filter>Render</Filter>
     </ClCompile>
+    <ClCompile Include="Dpad.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Drawable.cpp">
@@ -629,6 +630,10 @@
     <ClInclude Include="TKOpenGL.h">
       <Filter>Render</Filter>
     </ClInclude>
+    <ClInclude Include="Dpad.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="tkplatform.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Component">

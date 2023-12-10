@@ -31,29 +31,18 @@
 
 #include <DebugNew.h>
 
+SDL_Window* g_window    = nullptr;
+SDL_GLContext g_context = nullptr;
+
 namespace ToolKit
 {
   namespace Editor
   {
 
-    bool g_running               = true;
-    SDL_Window* g_window         = nullptr;
-    SDL_GLContext g_context      = nullptr;
-    App* g_app                   = nullptr;
-    Main* g_proxy                = nullptr;
-    SDLEventPool* g_sdlEventPool = nullptr;
-
-    /*
-     * Refactor as below.
-     *
-     * PreInit Main
-     * InitSDL
-     * Init App
-     * Uninit App
-     * Uninit Main
-     * Uninit SDL
-     * PostUninit Main
-     */
+    bool g_running                            = true;
+    App* g_app                                = nullptr;
+    Main* g_proxy                             = nullptr;
+    SDLEventPool<TK_PLATFORM>* g_sdlEventPool = nullptr;
 
     // Windows util function for creating ToolKit Cfg files in AppData.
     void CreateAppData()
@@ -112,7 +101,7 @@ namespace ToolKit
 
     void PreInit()
     {
-      g_sdlEventPool = new SDLEventPool();
+      g_sdlEventPool = new SDLEventPool<TK_PLATFORM>();
 
       // PreInit Main
       g_proxy        = new Main();
@@ -157,11 +146,6 @@ namespace ToolKit
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
         SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
-
-        // SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 16);
-        // SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 16);
-        // SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 16);
-        // SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 16);
 
         if (settings.Graphics.MSAA > 0)
         {
@@ -208,7 +192,7 @@ namespace ToolKit
 
                                            if (g_app->m_showGraphicsApiErrors)
                                            {
-                                             GetLogger()->WriteConsole(LogType::Error, msg.c_str());
+                                             TK_ERR(msg.c_str());
                                            }
 
                                            GetLogger()->WritePlatformConsole(LogType::Error, msg.c_str());
@@ -223,25 +207,25 @@ namespace ToolKit
             GetFileManager()->m_ignorePakFile = true;
 
             // Register Custom Classes.
-            ObjectFactory* of                 = g_proxy->m_objectFactory;
-            of->Register<Grid>();
-            of->Register<Anchor>();
-            of->Register<Cursor>();
-            of->Register<Axis3d>();
-            of->Register<LinearGizmo>();
-            of->Register<MoveGizmo>();
-            of->Register<ScaleGizmo>();
-            of->Register<PolarGizmo>();
-            of->Register<SkyBillboard>();
-            of->Register<LightBillboard>();
-            of->Register<GridFragmentShader>();
+            ObjectFactory* objFactory         = g_proxy->m_objectFactory;
+            objFactory->Register<Grid>();
+            objFactory->Register<Anchor>();
+            objFactory->Register<Cursor>();
+            objFactory->Register<Axis3d>();
+            objFactory->Register<LinearGizmo>();
+            objFactory->Register<MoveGizmo>();
+            objFactory->Register<ScaleGizmo>();
+            objFactory->Register<PolarGizmo>();
+            objFactory->Register<SkyBillboard>();
+            objFactory->Register<LightBillboard>();
+            objFactory->Register<GridFragmentShader>();
 
             // Overrides.
-            of->Override<EditorDirectionalLight, DirectionalLight>();
-            of->Override<EditorPointLight, PointLight>();
-            of->Override<EditorSpotLight, SpotLight>();
-            of->Override<EditorScene, Scene>();
-            of->Override<EditorCamera, Camera>();
+            objFactory->Override<EditorDirectionalLight, DirectionalLight>();
+            objFactory->Override<EditorPointLight, PointLight>();
+            objFactory->Override<EditorSpotLight, SpotLight>();
+            objFactory->Override<EditorScene, Scene>();
+            objFactory->Override<EditorCamera, Camera>();
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);
@@ -253,33 +237,6 @@ namespace ToolKit
 
             GetLogger()->SetPlatformConsoleFn([](LogType type, const String& msg) -> void
                                               { ToolKit::PlatformHelpers::OutputLog((int) type, msg.c_str()); });
-
-            // Allow classes with the MenuMetaKey to be created from the add menu.
-            of->m_metaProcessorMap[MenuMetaKey] = [](StringView val) -> void
-            {
-              bool exist = false;
-              for (String& meta : g_app->m_customObjectMetaValues)
-              {
-                if (meta == val)
-                {
-                  exist = true;
-                  break;
-                }
-              }
-
-              if (!exist)
-              {
-                g_app->m_customObjectMetaValues.push_back(String(val));
-                g_app->ReconstructDynamicMenus();
-              }
-            };
-
-            // This code just creates a dummy Primiatives menu to demonstrate the feature.
-            // Game plugins should extend the editor with their custom types this way.
-            g_app->m_customObjectMetaValues.push_back("Primatives/Helper/Arrow2d:Arrow");
-            g_app->m_customObjectMetaValues.push_back("Primatives/Geometry/Cube:Cube");
-            g_app->m_customObjectMetaValues.push_back("Primatives/Geometry/Sphere:Sphere");
-            g_app->ReconstructDynamicMenus();
 
             UI::Init();
             g_app->Init();

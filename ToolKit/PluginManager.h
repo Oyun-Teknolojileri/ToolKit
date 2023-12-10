@@ -28,7 +28,9 @@ namespace ToolKit
     ModuleHandle m_module;
     String m_lastWriteTime;
     String m_file;
+    XmlDocumentPtr m_stateCache;
     bool m_loaded;
+    bool m_initialized;
   };
 
   class TK_API PluginManager
@@ -37,16 +39,45 @@ namespace ToolKit
     PluginManager();
     ~PluginManager();
 
-    // Platform dependent functions.
-    bool Load(const String& file); // Auto reloads if the dll is dirty.
+    /**
+     * Loads the plugin from the given path. If the plugin has already loaded, check if update is needed.
+     * Unloads the plugin with a provided state cache for plugin to cache its state. Than unloads the current plugin
+     * and loads the new one with the cached state to restore plugin's state.
+     * @param file is the path to the plugin.
+     * @return true if the plugin is loaded.
+     */
+    bool Load(const String& file);
+
+    /**
+     * Unloads the given plugin. Passes the state cache inside the PluginRegister structure. If a reload is needed just
+     * call the Load function.
+     * @param file is the path to the plugin.
+     */
     void Unload(const String& file);
 
-    // No platform dependency.
-    void Init();
-    void UnInit();
-    PluginRegister* GetRegister(const String& file);
+    /**
+     * Updates the plugins with given delta time.
+     * @param deltaTime is the elapsed seconds for the past frame.
+     */
+    void Update(float deltaTime);
 
-    // Shorts for game plugin.
+    /**
+     * Initialize plugin manager and loads all plugins for the current project.
+     */
+    void Init();
+
+    /**
+     * Uninitialize all plugins and the plugin manager.
+     */
+    void UnInit();
+
+    /**
+     * Returns the PluginRegister associated with the given file.
+     * @param file is used to find associated PluginRegister.
+     * @param indx is the index of the associated PluginRegister in the m_storage.
+     */
+    PluginRegister* GetRegister(const String& file, int* indx = nullptr);
+
     GamePlugin* GetGamePlugin();
     void UnloadGamePlugin();
 

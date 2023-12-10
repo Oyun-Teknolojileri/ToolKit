@@ -94,6 +94,8 @@ namespace ToolKit
     }
     ParameterEventConstructor();
 
+
+
     // Re assign default material.
     MaterialComponentPtr matCom = GetMaterialComponent();
     if (matCom->GetFirstMaterial()->IsDynamic())
@@ -121,16 +123,21 @@ namespace ToolKit
     }
     ParameterEventConstructor();
 
+    SetDefaultMaterialIfMaterialIsNotOverriden();
+
+    CreateQuat();
+
+    return surfaceNode;
+  }
+
+  void Surface::SetDefaultMaterialIfMaterialIsNotOverriden()
+  {
     // Re assign default material.
     MaterialComponentPtr matCom = GetMaterialComponent();
     if (matCom->GetFirstMaterial()->IsDynamic())
     {
       matCom->SetFirstMaterial(GetMaterialManager()->GetCopyOfUIMaterial());
     }
-
-    CreateQuat();
-
-    return surfaceNode;
   }
 
   void Surface::UpdateGeometry(bool byTexture)
@@ -403,6 +410,8 @@ namespace ToolKit
 
   void Button::ParameterConstructor()
   {
+    Super::ParameterConstructor();
+
     // Update surface params.
     ParamMaterial().m_exposed     = false;
     ParamSize().m_category        = ButtonCategory;

@@ -73,7 +73,7 @@ namespace ToolKit
 
   void Logger::ClearConsole() { m_clearConsoleFn(); }
 
-  void Logger::WriteConsole(LogType logType, const char* msg, ...)
+  void Logger::WriteTKConsole(LogType logType, const char* msg, ...)
   {
     if (strlen(msg) >= buffLen)
     {

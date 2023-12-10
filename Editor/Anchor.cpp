@@ -334,8 +334,8 @@ namespace ToolKit
       MeshPtr meshPtr;
       if (params.type == AnchorHandle::SolidType::Quad)
       {
-        Quad quad;
-        meshPtr = quad.GetMeshComponent()->GetMeshVal();
+        QuadPtr quad = MakeNewPtr<Quad>();
+        meshPtr = quad->GetMeshComponent()->GetMeshVal();
       }
       else if (params.type == AnchorHandle::SolidType::Circle)
       {
