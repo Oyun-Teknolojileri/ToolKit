@@ -83,7 +83,6 @@ namespace ToolKit
     SkeletonManager();
     virtual ~SkeletonManager();
     bool CanStore(ClassMeta* Class) override;
-    ResourcePtr CreateLocal(ClassMeta* Class) override;
   };
 
 } // namespace ToolKit

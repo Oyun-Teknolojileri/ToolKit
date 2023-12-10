@@ -110,7 +110,6 @@ namespace ToolKit
      public:
       EditorSceneManager();
       virtual ~EditorSceneManager();
-      ResourcePtr CreateLocal(ClassMeta* Class) override;
     };
 
   } // namespace Editor

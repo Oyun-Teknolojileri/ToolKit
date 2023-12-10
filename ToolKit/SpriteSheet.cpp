@@ -221,13 +221,4 @@ namespace ToolKit
 
   bool SpriteSheetManager::CanStore(ClassMeta* Class) { return Class == SpriteSheet::StaticClass(); }
 
-  ResourcePtr SpriteSheetManager::CreateLocal(ClassMeta* Class)
-  {
-    if (Class == SpriteSheet::StaticClass())
-    {
-      return MakeNewPtr<SpriteSheet>();
-    }
-    return nullptr;
-  }
-
 } // namespace ToolKit

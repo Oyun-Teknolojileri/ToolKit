@@ -92,7 +92,6 @@ namespace ToolKit
     virtual ~MaterialManager();
     void Init() override;
     bool CanStore(ClassMeta* Class) override;
-    ResourcePtr CreateLocal(ClassMeta* Class) override;
     String GetDefaultResource(ClassMeta* Class) override;
 
     MaterialPtr GetCopyOfUnlitMaterial(bool storeInMaterialManager = true);

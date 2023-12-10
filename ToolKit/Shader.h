@@ -140,7 +140,6 @@ namespace ToolKit
     virtual ~ShaderManager();
     void Init() override;
     bool CanStore(ClassMeta* Class) override;
-    ResourcePtr CreateLocal(ClassMeta* Class) override;
 
     ShaderPtr GetDefaultVertexShader();
     ShaderPtr GetPbrDefferedShader();

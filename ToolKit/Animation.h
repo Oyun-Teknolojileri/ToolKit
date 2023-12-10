@@ -142,7 +142,6 @@ namespace ToolKit
     AnimationManager();
     virtual ~AnimationManager();
     bool CanStore(ClassMeta* Class) override;
-    ResourcePtr CreateLocal(ClassMeta* Class) override;
   };
 
   /**

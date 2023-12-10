@@ -467,6 +467,4 @@ namespace ToolKit
 
   bool AnimationManager::CanStore(ClassMeta* Class) { return Class == Animation::StaticClass(); }
 
-  ResourcePtr AnimationManager::CreateLocal(ClassMeta* Class) { return MakeNewPtr<Animation>(); }
-
 } // namespace ToolKit

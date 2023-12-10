@@ -576,7 +576,7 @@ namespace ToolKit
 
   TextureManager::~TextureManager() {}
 
-  bool TextureManager::CanStore(ClassMeta* Class)
+    bool TextureManager::CanStore(ClassMeta* Class)
   {
     if (Class->IsSublcassOf(Texture::StaticClass()))
     {
@@ -585,32 +585,6 @@ namespace ToolKit
 
     return false;
   }
-
-  ResourcePtr TextureManager::CreateLocal(ClassMeta* Class)
-  {
-    if (Class == Texture::StaticClass())
-    {
-      return MakeNewPtr<Texture>();
-    }
-
-    if (Class == CubeMap::StaticClass())
-    {
-      return MakeNewPtr<CubeMap>();
-    }
-
-    if (Class == RenderTarget::StaticClass())
-    {
-      return MakeNewPtr<RenderTarget>();
-    }
-
-    if (Class == Hdri::StaticClass())
-    {
-      return MakeNewPtr<Hdri>();
-    }
-
-    return nullptr;
-  }
-
   String TextureManager::GetDefaultResource(ClassMeta* Class)
   {
     if (Class == Hdri::StaticClass())

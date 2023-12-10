@@ -715,16 +715,6 @@ namespace ToolKit
 
   bool SceneManager::CanStore(ClassMeta* Class) { return Class == Scene::StaticClass(); }
 
-  ResourcePtr SceneManager::CreateLocal(ClassMeta* Class)
-  {
-    if (Class == Scene::StaticClass())
-    {
-      return MakeNewPtr<Scene>();
-    }
-
-    return nullptr;
-  }
-
   String SceneManager::GetDefaultResource(ClassMeta* Class) { return ScenePath("Sample.scene", true); }
 
   ScenePtr SceneManager::GetCurrentScene() { return m_currentScene; }

@@ -137,7 +137,6 @@ namespace ToolKit
     MeshManager();
     virtual ~MeshManager();
     bool CanStore(ClassMeta* Class) override;
-    ResourcePtr CreateLocal(ClassMeta* Class) override;
     String GetDefaultResource(ClassMeta* Class) override;
   };
 

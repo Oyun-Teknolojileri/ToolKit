@@ -86,8 +86,6 @@ namespace ToolKit
 
   bool AudioManager::CanStore(ClassMeta* Class) { return Class == Audio::StaticClass(); }
 
-  ResourcePtr AudioManager::CreateLocal(ClassMeta* Class) { return MakeNewPtr<Audio>(); }
-
   // AudioSource
   //////////////////////////////////////////////////////////////////////////
 
