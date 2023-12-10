@@ -39,22 +39,10 @@ namespace ToolKit
   namespace Editor
   {
 
-    bool g_running               = true;
-    App* g_app                   = nullptr;
-    Main* g_proxy                = nullptr;
+    bool g_running                            = true;
+    App* g_app                                = nullptr;
+    Main* g_proxy                             = nullptr;
     SDLEventPool<TK_PLATFORM>* g_sdlEventPool = nullptr;
-
-    /*
-     * Refactor as below.
-     *
-     * PreInit Main
-     * InitSDL
-     * Init App
-     * Uninit App
-     * Uninit Main
-     * Uninit SDL
-     * PostUninit Main
-     */
 
     // Windows util function for creating ToolKit Cfg files in AppData.
     void CreateAppData()
@@ -159,11 +147,6 @@ namespace ToolKit
 
         SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 
-        // SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 16);
-        // SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 16);
-        // SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 16);
-        // SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 16);
-
         if (settings.Graphics.MSAA > 0)
         {
           SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
@@ -224,25 +207,25 @@ namespace ToolKit
             GetFileManager()->m_ignorePakFile = true;
 
             // Register Custom Classes.
-            ObjectFactory* of                 = g_proxy->m_objectFactory;
-            of->Register<Grid>();
-            of->Register<Anchor>();
-            of->Register<Cursor>();
-            of->Register<Axis3d>();
-            of->Register<LinearGizmo>();
-            of->Register<MoveGizmo>();
-            of->Register<ScaleGizmo>();
-            of->Register<PolarGizmo>();
-            of->Register<SkyBillboard>();
-            of->Register<LightBillboard>();
-            of->Register<GridFragmentShader>();
+            ObjectFactory* objFactory         = g_proxy->m_objectFactory;
+            objFactory->Register<Grid>();
+            objFactory->Register<Anchor>();
+            objFactory->Register<Cursor>();
+            objFactory->Register<Axis3d>();
+            objFactory->Register<LinearGizmo>();
+            objFactory->Register<MoveGizmo>();
+            objFactory->Register<ScaleGizmo>();
+            objFactory->Register<PolarGizmo>();
+            objFactory->Register<SkyBillboard>();
+            objFactory->Register<LightBillboard>();
+            objFactory->Register<GridFragmentShader>();
 
             // Overrides.
-            of->Override<EditorDirectionalLight, DirectionalLight>();
-            of->Override<EditorPointLight, PointLight>();
-            of->Override<EditorSpotLight, SpotLight>();
-            of->Override<EditorScene, Scene>();
-            of->Override<EditorCamera, Camera>();
+            objFactory->Override<EditorDirectionalLight, DirectionalLight>();
+            objFactory->Override<EditorPointLight, PointLight>();
+            objFactory->Override<EditorSpotLight, SpotLight>();
+            objFactory->Override<EditorScene, Scene>();
+            objFactory->Override<EditorCamera, Camera>();
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);

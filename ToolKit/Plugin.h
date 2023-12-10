@@ -21,14 +21,54 @@
 namespace ToolKit
 {
 
+  /**
+   * Enums for plugin types.
+   */
   enum class PluginType
   {
     Base,
+    /**
+     * Plugin type that is used to extend engine features.
+     */
     Engine,
+    /**
+     * Plugin type for games and simulations.
+     */
     Game,
+    /**
+     * Plugin type for extending the editor.
+     */
     Editor
   };
 
+  /**
+   * Enums for plugin states.
+   */
+  enum class PluginState
+  {
+    /**
+     * Plugin at this state gets its Init function called. Afterwards its OnLoad gets called.
+     */
+    Started,
+    /**
+     * Plugin at this state gets its Frame executed at every frame.
+     */
+    Running,
+    /**
+     * Plugin at this state stop receiving Frame updates. But it still alive and can continue from running exactly where
+     * it left. Basically, it doesn't get Frame updates. Scene and animation updates doesn't occur.
+     */
+    Paused,
+    /**
+     * Plugin at this state is stopped and its Destroy called. When started again its Init function gets called. Be
+     * wary, unless otherwise stated all plugins are loaded. So even its Destroy called its still loaded.
+     */
+    Stop
+  };
+
+  /**
+   * Base plugin interface.
+   */
   class TK_API Plugin
   {
    public:
@@ -66,8 +106,14 @@ namespace ToolKit
      * at reload.
      */
     virtual void OnUnload(XmlDocumentPtr state) = 0;
+
+   public:
+    PluginState m_currentState = PluginState::Stop;
   };
 
+  /**
+   * Plugin type that can be used for simulation, games and other interactive applications.
+   */
   class TK_API GamePlugin : public Plugin
   {
    public:
@@ -77,16 +123,13 @@ namespace ToolKit
      */
     virtual void SetViewport(Viewport* viewport) { m_viewport = viewport; };
 
+    /**
+     * Returns plugin type.
+     * @return PluginType::Game.
+     */
     PluginType GetType() { return PluginType::Game; }
 
-    bool GetQuitFlag() { return m_quit; }
-
    protected:
-    /**
-     * When set to true, game play stops, plugin gets unloaded. Can be used as a termination of PIE session.
-     */
-    bool m_quit          = false;
-
     /**
      * Viewport where the game played on.
      */

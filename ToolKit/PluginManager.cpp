@@ -66,9 +66,10 @@ namespace ToolKit
         reg.m_module = handle;
         reg.m_plugin = (ProcAddr) ();
         reg.m_plugin->Init(Main::GetInstance());
+        reg.m_initialized = true;
         reg.m_plugin->OnLoad(reg.m_stateCache);
-        reg.m_stateCache    = nullptr;
         reg.m_loaded        = true;
+        reg.m_stateCache    = nullptr;
         reg.m_file          = fullPath;
         reg.m_lastWriteTime = GetCreationTime(fullPath);
 
@@ -107,23 +108,49 @@ namespace ToolKit
 
     reg->m_plugin->OnUnload(reg->m_stateCache);
     reg->m_plugin->Destroy();
-    reg->m_plugin = nullptr;
+    reg->m_initialized = false;
+    reg->m_plugin      = nullptr;
 
     FreeModule(reg->m_module);
     reg->m_module = nullptr;
+    reg->m_loaded = false;
 
     m_storage.erase(m_storage.begin() + indx);
-
-    reg->m_loaded = false;
   }
 
   void PluginManager::Update(float deltaTime)
   {
     for (PluginRegister& reg : m_storage)
     {
-      if (reg.m_loaded && reg.m_plugin)
+      if (reg.m_plugin && reg.m_loaded)
       {
-        reg.m_plugin->Frame(deltaTime);
+        if (reg.m_plugin->m_currentState == PluginState::Started)
+        {
+          if (!reg.m_initialized)
+          {
+            reg.m_plugin->Init(Main::GetInstance());
+            reg.m_initialized = true;
+          }
+        }
+        else if (reg.m_plugin->m_currentState == PluginState::Running)
+        {
+          if (!reg.m_initialized)
+          {
+            reg.m_plugin->Init(Main::GetInstance());
+            reg.m_initialized = true;
+          }
+
+          reg.m_plugin->Frame(deltaTime);
+        }
+        else if (reg.m_plugin->m_currentState == PluginState::Stop)
+        {
+          if (reg.m_initialized)
+          {
+            reg.m_plugin->Destroy();
+            reg.m_initialized = false;
+          }
+        }
+        // Else, paused. Do nothing.
       }
     }
   }

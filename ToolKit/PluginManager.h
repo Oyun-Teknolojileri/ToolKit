@@ -30,6 +30,7 @@ namespace ToolKit
     String m_file;
     XmlDocumentPtr m_stateCache;
     bool m_loaded;
+    bool m_initialized;
   };
 
   class TK_API PluginManager

@@ -171,6 +171,9 @@ namespace ToolKit
         objFactory->m_metaProcessorRegisterMap[MenuMetaKey]   = nullptr;
         objFactory->m_metaProcessorUnRegisterMap[MenuMetaKey] = nullptr;
       }
+
+      GetLogger()->SetWriteConsoleFn(nullptr);
+      GetLogger()->SetClearConsoleFn(nullptr);
     }
 
     void App::Frame(float deltaTime)
@@ -192,9 +195,6 @@ namespace ToolKit
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
-
-      // Update Plugins.
-      GetPluginManager()->Update(deltaTime);
 
       POP_CPU_MARKER();
 
@@ -243,7 +243,9 @@ namespace ToolKit
       POP_CPU_MARKER();
       PUSH_CPU_MARKER("Update Scene");
 
-      UpdateSimulation(deltaTime);
+      // Update Plugins.
+      GetPluginManager()->Update(deltaTime);
+      UpdateSimulation();
 
       POP_CPU_MARKER();
       PUSH_CPU_MARKER("Update Viewports & Add render tasks");
@@ -479,30 +481,27 @@ namespace ToolKit
       OpenProject({name, ""});
     }
 
-    void App::SetGameMod(GameMod mod)
+    void App::SetGameMod(const GameMod mod)
     {
       if (mod == m_gameMod)
       {
         return;
       }
 
+      GamePlugin* gamePlugin = GetPluginManager()->GetGamePlugin();
+      if (gamePlugin == nullptr)
+      {
+        return;
+      }
+
       if (mod == GameMod::Playing)
       {
+        // Transitioning to play from stop.
         if (m_gameMod == GameMod::Stop)
         {
           // Save to catch any changes in the editor.
           GetCurrentScene()->Save(true);
-          m_sceneLightingMode = EditorLitMode::Game;
-        }
-
-        String pluginPath      = m_workspace.GetPluginPath();
-        PluginManager* plugMan = GetPluginManager();
-        if (plugMan->Load(pluginPath))
-        {
-          m_statusMsg          = "Game is playing";
-          m_gameMod            = mod;
-
-          // Set last active viewport
+          m_sceneLightingMode  = EditorLitMode::Game;
           m_lastActiveViewport = GetActiveViewport();
 
           if (m_simulatorSettings.Windowed)
@@ -516,29 +515,30 @@ namespace ToolKit
               m_simulationWindow->GetCamera()->m_node->SetTransform(view);
             }
           }
+        }
 
-          if (GamePlugin* gamePlugin = plugMan->GetGamePlugin())
-          {
-            gamePlugin->SetViewport(GetSimulationWindow());
-          }
-        }
-        else
-        {
-          GetConsole()->AddLog("Expecting a game plugin with the same name of the project.", LogType::Error);
-        }
+        gamePlugin->SetViewport(GetSimulationWindow());
+        gamePlugin->m_currentState = PluginState::Running;
+
+        m_statusMsg                = "Game is playing";
+        m_gameMod                  = mod;
       }
 
       if (mod == GameMod::Paused)
       {
-        m_statusMsg = "Game is paused";
-        m_gameMod   = mod;
+        gamePlugin->m_currentState = PluginState::Paused;
+
+        m_statusMsg                = "Game is paused";
+        m_gameMod                  = mod;
       }
 
       if (mod == GameMod::Stop)
       {
+        gamePlugin->m_currentState = PluginState::Stop;
 
-        m_statusMsg = "Game is stopped";
-        m_gameMod   = mod;
+        m_statusMsg                = "Game is stopped";
+        m_gameMod                  = mod;
+
         ClearPlayInEditorSession();
 
         m_simulationWindow->SetVisibility(false);
@@ -610,18 +610,9 @@ namespace ToolKit
     {
       ClearSession();
 
-      String currentScene;
-      EditorSceneManager* sm = static_cast<EditorSceneManager*>(GetSceneManager());
-      if (EditorScenePtr scene = GetCurrentScene())
-      {
-        scene->Save(false);
-        currentScene = scene->GetFile();
-        if (EditorScenePtr cs = Cast<EditorScene>(sm->Remove(currentScene)))
-        {
-          cs->Destroy(false);
-        }
-        sm->SetCurrentScene(nullptr);
-      }
+      EditorScenePtr currentScene = GetCurrentScene();
+      currentScene->Save(true);
+      currentScene->UnInit();
 
       if (PluginManager* pluginMan = GetPluginManager())
       {
@@ -630,20 +621,16 @@ namespace ToolKit
         ReconstructDynamicMenus();
       }
 
-      if (!currentScene.empty())
-      {
-        EditorScenePtr cs = sm->Create<EditorScene>(currentScene);
-        sm->SetCurrentScene(cs);
-      }
+      currentScene->Load();
+      currentScene->Init();
 
       m_reloadPlugin = false;
     }
 
     EditorScenePtr App::GetCurrentScene()
     {
-      EditorScenePtr eScn = std::static_pointer_cast<EditorScene>(GetSceneManager()->GetCurrentScene());
-
-      return eScn;
+      ScenePtr scene = GetSceneManager()->GetCurrentScene();
+      return std::static_pointer_cast<EditorScene>(scene);
     }
 
     void App::SetCurrentScene(const EditorScenePtr& scene) { GetSceneManager()->SetCurrentScene(scene); }
@@ -710,40 +697,27 @@ namespace ToolKit
     {
       ClearSession();
 
-      // Destroy pie scene.
-      String sceneFile;
-      EditorSceneManager* sceneManager = (EditorSceneManager*) GetSceneManager();
-      if (ScenePtr scene = sceneManager->GetCurrentScene())
+      if (EditorSceneManager* sceneMan = static_cast<EditorSceneManager*>(GetSceneManager()))
       {
-        sceneFile = scene->GetFile();
-
-        sceneManager->Remove(sceneFile);
-        scene->Destroy(false);
-        sceneManager->SetCurrentScene(nullptr);
-      }
-
-      // Kill the plugin. At this point if anything from the dll remains in the editor,
-      // it causes a crash.
-      GetPluginManager()->UnloadGamePlugin();
-
-      // Set the editor scene back.
-      if (!sceneFile.empty())
-      {
-        EditorScenePtr scene = sceneManager->Create<EditorScene>(sceneFile);
-        scene->Init();
-        sceneManager->SetCurrentScene(scene);
+        // Reload to retrieve the original scene, clears the game play modifications.
+        if (ScenePtr scene = sceneMan->GetCurrentScene())
+        {
+          scene->UnInit();
+          scene->Load();
+          scene->Init();
+        }
       }
 
       // Set back the viewport camera
-      EditorViewport* vp = GetActiveViewport();
-      if (vp == nullptr)
+      EditorViewport* viewport = GetActiveViewport();
+      if (viewport == nullptr)
       {
-        vp = GetViewport(g_3dViewport);
+        viewport = GetViewport(g_3dViewport);
       }
 
-      if (vp != nullptr)
+      if (viewport != nullptr)
       {
-        vp->AttachCamera(NULL_HANDLE);
+        viewport->AttachCamera(NULL_HANDLE);
       }
     }
 
@@ -1401,11 +1375,11 @@ namespace ToolKit
       return simWnd;
     }
 
-    void App::UpdateSimulation(float deltaTime)
+    void App::UpdateSimulation()
     {
       if (GamePlugin* plugin = GetPluginManager()->GetGamePlugin())
       {
-        if (plugin->GetQuitFlag())
+        if (plugin->m_currentState == PluginState::Stop)
         {
           SetGameMod(GameMod::Stop);
         }
@@ -1413,7 +1387,6 @@ namespace ToolKit
         if (m_gameMod != GameMod::Stop)
         {
           m_simulationWindow->SetVisibility(m_simulatorSettings.Windowed);
-          // plugin->Frame(deltaTime);
         }
       }
     }

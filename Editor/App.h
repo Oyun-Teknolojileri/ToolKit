@@ -48,7 +48,7 @@ namespace ToolKit
       void OnSaveAsScene();
       void OnQuit();
       void OnNewProject(const String& name);
-      void SetGameMod(GameMod mod);
+      void SetGameMod(const GameMod mod);
       void CompilePlugin();
       void LoadProjectPlugin();
       bool IsCompiling();
@@ -158,7 +158,7 @@ namespace ToolKit
 
       // Simulation
       EditorViewport* GetSimulationWindow();
-      void UpdateSimulation(float deltaTime);
+      void UpdateSimulation();
       float GetDeltaTime();
 
      protected:
@@ -232,8 +232,8 @@ namespace ToolKit
       // Internal states.
       bool m_onQuit = false;
       String m_newSceneName;
-      float m_deltaTime  = 0.0f;
-      bool m_isCompiling = false;
+      float m_deltaTime   = 0.0f;
+      bool m_isCompiling  = false;
       bool m_reloadPlugin = false;
     };
 
