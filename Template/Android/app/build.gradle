@@ -11,7 +11,7 @@ android {
     if (buildAsApplication) {
         namespace "org.libsdl.app"
     }
-    compileSdkVersion 34
+    compileSdkVersion 33
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 34

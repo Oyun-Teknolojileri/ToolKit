@@ -99,6 +99,7 @@ namespace ToolKit
     MaterialPtr GetCopyOfUnlitColorMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfDefaultMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfPhongMaterial(bool storeInMaterialManager = true);
+    MaterialPtr GetCopyOfDpadMaterial(bool storeInMaterialManager = true);
   };
 
 } // namespace ToolKit

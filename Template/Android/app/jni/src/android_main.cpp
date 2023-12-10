@@ -5,7 +5,7 @@
 #include "GlErrorReporter.h"
 #include "SDL.h"
 #include "Scene.h"
-#include "SceneRenderPath.h"
+#include "MobileSceneRenderPath.h"
 #include "ToolKit.h"
 #include "Types.h"
 #include "UIManager.h"
@@ -22,17 +22,15 @@
 
 #define ANDROID_LOG(format, ...) __android_log_print(ANDROID_LOG_DEBUG, "TK_LOG", format, ##__VA_ARGS__)
 
-
 namespace ToolKit
 {
   Game* g_game                     = nullptr;
   bool g_running                   = true;
   SDL_Window* g_window             = nullptr;
-  SDL_GLContext g_context          = nullptr;
   Main* g_proxy                    = nullptr;
   Viewport* g_viewport             = nullptr;
   EngineSettings* g_engineSettings = nullptr;
-  SDLEventPool* g_sdlEventPool     = nullptr;
+  SDLEventPool<TK_PLATFORM>* g_sdlEventPool     = nullptr;
   AAssetManager* assetManager = nullptr;
 
   // Setup.
@@ -43,15 +41,15 @@ namespace ToolKit
   {
     if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
     {
-      static SceneRenderPath sceneRenderer;
+      static MobileSceneRenderPath sceneRenderer;
       sceneRenderer.m_params.Cam                        = viewport->GetCamera();
       sceneRenderer.m_params.ClearFramebuffer           = true;
-      sceneRenderer.m_params.Gfx.BloomEnabled           = true;
+      sceneRenderer.m_params.Gfx.BloomEnabled           = false;
       sceneRenderer.m_params.Gfx.DepthOfFieldEnabled    = false;
-      sceneRenderer.m_params.Gfx.FXAAEnabled            = true;
+      sceneRenderer.m_params.Gfx.FXAAEnabled            = false;
       sceneRenderer.m_params.Gfx.GammaCorrectionEnabled = false;
-      sceneRenderer.m_params.Gfx.SSAOEnabled            = true;
-      sceneRenderer.m_params.Gfx.TonemappingEnabled     = true;
+      sceneRenderer.m_params.Gfx.SSAOEnabled            = false;
+      sceneRenderer.m_params.Gfx.TonemappingEnabled     = false;
       sceneRenderer.m_params.Lights                     = scene->GetLights();
       sceneRenderer.m_params.MainFramebuffer            = viewport->m_framebuffer;
       sceneRenderer.m_params.Scene                      = scene;
@@ -333,13 +331,15 @@ namespace ToolKit
         if (e->m_type == Event::EventType::Mouse)
         {
           MouseEvent* me = static_cast<MouseEvent*>(e);
-          if (me->m_action == EventAction::Move)
-          {
             m_lastMousePosRelContentArea.x = me->absolute[0];
             m_lastMousePosRelContentArea.y = me->absolute[1];
-            break;
-          }
         }
+          if (e->m_type == Event::EventType::Touch)
+          {
+              TouchEvent* te = static_cast<TouchEvent*>(e);
+              m_lastMousePosRelContentArea.x = te->absolute[0] * m_wndContentAreaSize.x;
+              m_lastMousePosRelContentArea.y = te->absolute[1] * m_wndContentAreaSize.y;
+          }
       }
     }
   };
@@ -370,13 +370,18 @@ namespace ToolKit
 
   void PreInit()
   {
-    g_sdlEventPool = new SDLEventPool();
+    g_sdlEventPool = new SDLEventPool<TK_PLATFORM>();
 
     // PreInit Main
     g_proxy        = new Main();
     Main::SetProxy(g_proxy);
 
     g_proxy->PreInit();
+    auto androidWriteConsoleFn = [](LogType logType, const String& msg)
+    {
+      ANDROID_LOG("%s", msg.c_str());
+    };
+    GetLogger()->SetWriteConsoleFn(androidWriteConsoleFn);
 
     g_proxy->m_engineSettings->Window.Height = 2400;
     g_proxy->m_engineSettings->Window.Width = 1080;
@@ -389,6 +394,8 @@ namespace ToolKit
 
   void Init()
   {
+    g_proxy->m_engineSettings->Window.Width = 2400;
+    g_proxy->m_engineSettings->Window.Height = 1080;
     g_engineSettings = g_proxy->m_engineSettings;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0)
@@ -405,10 +412,8 @@ namespace ToolKit
       SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
       SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-      // EGL does not support sRGB framebuffers
-#ifndef __ANDROID__
-      SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
-#endif
+      // EGL does not support sRGB backbuffer. Need to use an extension
+      // https://stackoverflow.com/questions/20396523/android-egl-srgb-default-renderbuffer
 
       g_window =
           SDL_CreateWindow(g_appName,
@@ -420,26 +425,31 @@ namespace ToolKit
 
       if (g_window == nullptr)
       {
-        const char* woho = SDL_GetError();
+        const char* err = SDL_GetError();
         g_running = false;
       }
       else
       {
-        g_context = SDL_GL_CreateContext(g_window);
-        if (g_context == nullptr)
+        SDL_Renderer* sdlRenderer = SDL_CreateRenderer(g_window, -1, SDL_RENDERER_ACCELERATED);
+
+        if (sdlRenderer == nullptr)
         {
+          const char* error = SDL_GetError();
+          ANDROID_LOG("%s", error);
           g_running = false;
         }
         else
         {
-          SDL_GL_MakeCurrent(g_window, g_context);
+          int rendererWidth,rendererHeight;
+          SDL_GetRendererOutputSize(sdlRenderer, &rendererWidth, &rendererHeight);
+          g_engineSettings->Window.Width = rendererWidth;
+          g_engineSettings->Window.Height = rendererHeight;
 
           const char* error = SDL_GetError();
-          std::cout << error << std::endl;
+          ANDROID_LOG("%s", error);
 
           // Init OpenGl.
-
-          g_proxy->m_renderSys->InitGl((void*)SDL_GL_GetProcAddress, [](const String& msg) { std::cout << msg << std::endl; });
+          g_proxy->m_renderSys->InitGl((void*)SDL_GL_GetProcAddress, [](const String& msg) { ANDROID_LOG("%s", msg.c_str()); });
           //gladLoadGLES2((GLADloadfunc) SDL_GL_GetProcAddress);
           glEnable(GL_DEPTH_TEST);
 
@@ -564,6 +574,7 @@ namespace ToolKit
         Render(g_viewport->m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0)->m_textureId);
 
         g_sdlEventPool->ClearPool(); // Clear after consumption.
+
         SDL_GL_SwapWindow(g_window);
 
         timer.frameCount++;
@@ -575,9 +586,6 @@ namespace ToolKit
         }
 
         timer.lastTime = timer.currentTime;
-
-        // float frameEnd = GetMilliSeconds();
-        // std::cout << "Frame: " << frameEnd - frameStart << std::endl;
       }
     }
   }

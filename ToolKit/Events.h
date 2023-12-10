@@ -25,6 +25,7 @@ namespace ToolKit
     GamepadAxis,
     GamepadButtonDown,
     GamepadButtonUp,
+    Touch
   };
 
   class TK_API Event
@@ -35,7 +36,8 @@ namespace ToolKit
       Null,
       Mouse,
       Keyboard,
-      Gamepad
+      Gamepad,
+      Touch
     };
 
     EventType m_type     = EventType::Null;
@@ -62,6 +64,16 @@ namespace ToolKit
     int absolute[2] = {0, 0}; // x, y.
     int relative[2] = {0, 0}; // x, y.
     int scroll[2]   = {0, 0}; // x, y.
+  };
+
+  class TK_API TouchEvent : public Event
+  {
+   public:
+    TouchEvent() { m_type = EventType::Touch; }
+
+   public:
+    bool m_release  = false;
+    float absolute[2] = {0.0f, 0.0f}; // x, y. Between 0-1
   };
 
   enum class GamepadButton : uint

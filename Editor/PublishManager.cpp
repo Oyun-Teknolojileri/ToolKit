@@ -40,7 +40,7 @@ namespace ToolKit
       publishArguments += std::to_string(m_maxSdk) + '\n';
       publishArguments += std::to_string(m_oriantation) + '\n';
       publishArguments += std::to_string((int) platform) + '\n';
-      publishArguments += m_icon == nullptr ? "default" : m_icon->GetFile();
+      publishArguments += m_icon == nullptr ? TexturePath(ConcatPaths({"Icons", "app.png"}), true) : m_icon->GetFile();
 
       GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
       g_app->m_statusMsg = "Packing...";

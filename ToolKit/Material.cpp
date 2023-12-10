@@ -479,5 +479,4 @@ namespace ToolKit
     ResourcePtr source = m_storage[MaterialPath("phongForward.material", true)];
     return Copy<Material>(source, storeInMaterialManager);
   }
-
 } // namespace ToolKit
