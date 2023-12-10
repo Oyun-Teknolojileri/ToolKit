@@ -74,7 +74,6 @@ namespace ToolKit
     if (auto constructorFn = GetConstructorFn(Class))
     {
       Object* object = constructorFn();
-      object->NativeConstruct();
       return object;
     }
 
