@@ -8,7 +8,6 @@
 #include "GammaPass.h"
 
 #include "Shader.h"
-#include "ShaderReflectionCache.h"
 #include "TKProfiler.h"
 #include "ToolKit.h"
 

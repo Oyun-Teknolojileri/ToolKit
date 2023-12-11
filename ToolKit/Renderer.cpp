@@ -22,7 +22,6 @@
 #include "ResourceComponent.h"
 #include "Scene.h"
 #include "Shader.h"
-#include "ShaderReflectionCache.h"
 #include "Skeleton.h"
 #include "Surface.h"
 #include "TKOpenGL.h"

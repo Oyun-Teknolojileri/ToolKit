@@ -16,7 +16,6 @@
 #include "Pass.h"
 #include "Renderer.h"
 #include "ResourceComponent.h"
-#include "ShaderReflectionCache.h"
 #include "TKProfiler.h"
 #include "Toolkit.h"
 #include "Viewport.h"

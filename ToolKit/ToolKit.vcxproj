@@ -142,7 +142,6 @@
     <ClInclude Include="RendererGlobals.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="SceneRenderPath.h" />
-    <ClInclude Include="ShaderReflectionCache.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Material.h" />

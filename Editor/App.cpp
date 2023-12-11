@@ -11,7 +11,6 @@
 #include "EditorViewport2d.h"
 #include "OverlayUI.h"
 #include "PopupWindows.h"
-#include "TKProfiler.h"
 
 #include <DirectionComponent.h>
 #include <FileManager.h>
@@ -26,6 +25,7 @@
 #include <thread>
 
 #include <DebugNew.h>
+#include "TKProfiler.h"
 
 namespace ToolKit
 {
