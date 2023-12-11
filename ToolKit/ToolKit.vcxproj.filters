@@ -408,9 +408,6 @@
     <ClInclude Include="Renderer.h">
       <Filter>Render</Filter>
     </ClInclude>
-    <ClInclude Include="RendererGlobals.h">
-      <Filter>Render</Filter>
-    </ClInclude>
     <ClInclude Include="RenderState.h">
       <Filter>Render</Filter>
     </ClInclude>

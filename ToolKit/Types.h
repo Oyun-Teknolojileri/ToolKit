@@ -356,10 +356,12 @@ namespace ToolKit
     Target2DArray              = 0x8C1A
   };
 
-  static const String TKResourcePak = "MinResources.pak";
+  static const String TKBrdfLutTexture = "GLOBAL_BRDF_LUT_TEXTURE";
 
-  static const char* TKVersionStr   = "v0.4.5";
-  static const String TKV044        = "v0.4.4";
-  static const String TKV045        = "v0.4.5";
+  static const String TKResourcePak    = "MinResources.pak";
+
+  static const char* TKVersionStr      = "v0.4.5";
+  static const String TKV044           = "v0.4.4";
+  static const String TKV045           = "v0.4.5";
 
 } // namespace ToolKit
