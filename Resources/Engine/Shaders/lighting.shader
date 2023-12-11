@@ -178,7 +178,7 @@ float CalculateDirectionalShadow(vec3 pos, vec3 viewCamPos, mat4 lightProjView, 
 	vec3 coord = vec3(startCoord + resRatio * projCoord.xy, shadowAtlasLayer);
 
 	float shadow = 1.0;
-	if (PCFSamples >= 1)
+	if (PCFSamples > 1)
 	{
 		shadow = PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + resRatio,
 		PCFSamples, PCFRadius * shadowAtlasResRatio,
@@ -212,7 +212,7 @@ float CalculateSpotShadow(vec3 pos, vec3 lightPos, mat4 lightProjView, float sha
 	vec2 startCoord = shadowAtlasCoord;
 	vec3 coord = vec3(startCoord + shadowAtlasResRatio * projCoord.xy, shadowAtlasLayer);
 
-	if (PCFSamples >= 1)
+	if (PCFSamples > 1)
 	{
 		return PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + shadowAtlasResRatio,
 		PCFSamples, PCFRadius * shadowAtlasResRatio, currFragDepth, lightBleedReduction, shadowBias);
@@ -240,7 +240,7 @@ float CalculatePointShadow(vec3 pos, vec3 lightPos, float shadowCameraFar, vec2 
 	coord.xy = startCoord + resRatio * coord.xy;
 	coord.z = shadowAtlasLayer + coord.z;
 
-	if (PCFSamples >= 1)
+	if (PCFSamples > 1)
 	{
 		return PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + resRatio,
 		PCFSamples, PCFRadius * resRatio, currFragDepth, lightBleedReduction, shadowBias);
