@@ -1,0 +1,522 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationControllerComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Canvas.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="BinPack2D.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Dpad.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectionComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Drawable.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineSettings.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="FileManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GradientSky.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="MathUtil.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Node.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Sky.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Primative.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Prefab.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectFactory.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Viewport.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Util.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UIManager.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="AdditiveLightingPass.cpp">
+      <Filter>Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="BillboardPass.cpp">
+      <Filter>Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="BloomPass.cpp">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="CubemapPass.cpp">
+      <Filter>Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="DofPass.cpp">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="ForwardPreProcessPass.cpp">
+      <Filter>Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="ForwardPass.cpp">
+      <Filter>Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="DeferredPass.cpp">
+      <Filter>Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="EnvironmentComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="DataTexture.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Framebuffer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="FullQuadPass.cpp">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="FxaaPass.cpp">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="GammaPass.cpp">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="GBufferPass.cpp">
+      <Filter>Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="GlErrorReporter.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GpuProgram.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="MobileSceneRenderPath.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="OutlinePass.cpp">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="Pass.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="ParameterBlock.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcessPass.cpp">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderState.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderSystem.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowPass.cpp">
+      <Filter>Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Skeleton.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletonComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneRenderPath.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="TKImage.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="TKOpenGL.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolKit.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ToneMapPass.cpp">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Surface.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="StencilPass.cpp">
+      <Filter>Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteSheet.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="SsaoPass.cpp">
+      <Filter>Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="StateMachine.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Camera.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationControllerComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Canvas.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="BinPack2D.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Class.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugNew.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Dpad.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectionComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Drawable.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineSettings.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Events.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="FileManager.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="GradientSky.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtil.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Node.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Sky.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Primative.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Prefab.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectFactory.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Meta.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Viewport.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Util.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="UIManager.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="AdditiveLightingPass.h">
+      <Filter>Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="BillboardPass.h">
+      <Filter>Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="BloomPass.h">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="CubemapPass.h">
+      <Filter>Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="DofPass.h">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="ForwardPreProcessPass.h">
+      <Filter>Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="ForwardPass.h">
+      <Filter>Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="DeferredPass.h">
+      <Filter>Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="EnvironmentComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTexture.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Framebuffer.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="FullQuadPass.h">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="FxaaPass.h">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="GammaPass.h">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="GBufferPass.h">
+      <Filter>Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="GlErrorReporter.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GpuProgram.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="MobileSceneRenderPath.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="OutlinePass.h">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="ParameterBlock.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Plugin.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="PluginManager.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="PostProcessPass.h">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererGlobals.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderState.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystem.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowPass.h">
+      <Filter>Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Skeleton.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneRenderPath.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="TKImage.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="TKOpenGL.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolKit.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="ToneMapPass.h">
+      <Filter>Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="TKProfiler.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="tkplatform.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="TKAssert.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Surface.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="StencilPass.h">
+      <Filter>Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Serialize.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteSheet.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="SsaoPass.h">
+      <Filter>Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="StateMachine.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Entities">
+      <UniqueIdentifier>{88024eb6-75f5-471e-b182-d3158e8e250b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{e23e27bf-def2-40e6-ac92-12cbbac41202}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{414e8f89-546c-443f-a741-da367e7827b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components">
+      <UniqueIdentifier>{879942a4-1dde-4924-9f65-4114aa48dfcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{d5e92dcb-281e-4f54-8fd3-20648b3bb7da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{6124dba0-8eaa-424a-9b70-0c3bd4ecee39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\RenderPass">
+      <UniqueIdentifier>{faa57ede-721a-4f59-bc07-29cf647403b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\PostProcessPass">
+      <UniqueIdentifier>{b7ee736e-cc29-484b-90ee-93de84685c95}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
