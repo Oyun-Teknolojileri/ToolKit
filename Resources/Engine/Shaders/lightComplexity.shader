@@ -1,6 +1,6 @@
 <shader>
 	<type name = "fragmentShader" />
-	<uniform name = "LightData" />
+	<include name = "lighting.shader" />
 	<uniform name = "UseIbl" />
 	<uniform name = "IblIntensity" />
 	<uniform name = "IBLIrradianceMap" />
@@ -8,42 +8,6 @@
 	<!--
 		#version 300 es
 		precision mediump float;
-
-		// Fixed Declaretions
-		struct _LightData
-		{
-			/*
-			Type
-				1 : Directional light
-				2 : Point light
-				3 : Spot light
-			*/
-			int type[12];
-			vec3 pos[12];
-			vec3 dir[12];
-			vec3 color[12];
-			float intensity[12];
-			float radius[12];
-			float outAngle[12];
-			float innAngle[12];
-			int activeCount;
-
-			mat4 projectionViewMatrix[12];
-			sampler2D dirAndSpotLightShadowMap[4];
-			samplerCube pointLightShadowMap[4];
-			int castShadow[12];
-			float normalBias[12];
-			float shadowFixedBias[12];
-			float shadowSlopedBias[12];
-			float shadowMapCamFarPlane[12];
-			float PCFSampleHalfSize[12];
-			float PCFSampleDistance[12];
-			float PCFUnitSampleDistance[12];
-			int PCFKernelSize[12];
-		};
-
-		uniform _LightData LightData;
-		uniform uint maxLightIterationCount;
 
 		in vec3 v_pos;
 

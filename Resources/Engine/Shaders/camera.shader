@@ -1,6 +1,8 @@
 <shader>
 	<type name = "includeShader" />
-	<uniform name = "CamData" />
+	<uniform name = "CamData.pos" />
+	<uniform name = "CamData.dir" />
+	<uniform name = "CamData.far" />
 	<source>
 	<!--
 		struct _CamData

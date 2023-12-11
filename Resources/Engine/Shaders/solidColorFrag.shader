@@ -4,7 +4,6 @@
 	<include name = "ibl.shader" />
 	<include name = "camera.shader" />
 	<include name = "AO.shader" />
-	<uniform name = "CamData" />
 	<uniform name = "Color" />
 	<uniform name = "DiffuseTextureInUse" />
 	<uniform name = "useAlphaMask" />

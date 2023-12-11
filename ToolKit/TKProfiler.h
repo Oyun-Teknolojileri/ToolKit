@@ -3,9 +3,8 @@
 // CPU profile
 #ifdef TK_CPU_PROFILE
   #define NOMINMAX
-  #include "nvtx3.hpp"
-  #undef WriteConsole
   #undef far
+  #include "nvtx3.hpp"
   #define PUSH_CPU_MARKER(msg) nvtxRangePushA(##msg)
   #define POP_CPU_MARKER()     nvtxRangePop()
   #define CPU_FUNC_RANGE()     NVTX3_FUNC_RANGE()

@@ -606,9 +606,6 @@
     <ClInclude Include="SpriteSheet.h">
       <Filter>Resource</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderReflectionCache.h">
-      <Filter>Render</Filter>
-    </ClInclude>
     <ClInclude Include="Texture.h">
       <Filter>Resource</Filter>
     </ClInclude>

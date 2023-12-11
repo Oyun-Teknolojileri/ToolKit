@@ -4,7 +4,26 @@
 	<include name = "shadow.shader" />
 	<include name = "lightDataTextureUtils.shader" />
 	<include name = "pbr.shader" />
-	<uniform name = "LightData" />
+	<uniform name = "LightData.type" size = "16"/>
+	<uniform name = "LightData.pos" size = "16"/>
+	<uniform name = "LightData.dir" size = "16"/>
+	<uniform name = "LightData.color" size = "16"/>
+	<uniform name = "LightData.intensity" size = "16"/>
+	<uniform name = "LightData.radius" size = "16"/>
+	<uniform name = "LightData.outAngle" size = "16"/>
+	<uniform name = "LightData.innAngle" size = "16"/>
+	<uniform name = "LightData.projectionViewMatrix" size = "16"/>
+	<uniform name = "LightData.shadowMapCameraFar" size = "16"/>
+	<uniform name = "LightData.castShadow" size = "16"/>
+	<uniform name = "LightData.PCFSamples" size = "16"/>
+	<uniform name = "LightData.PCFRadius" size = "16"/>
+	<uniform name = "LightData.BleedingReduction" size = "16"/>
+	<uniform name = "LightData.softShadows" size = "16"/>
+	<uniform name = "LightData.shadowAtlasLayer" size = "16"/>
+	<uniform name = "LightData.shadowAtlasResRatio" size = "16"/>
+	<uniform name = "LightData.shadowAtlasCoord" size = "16"/>
+	<uniform name = "LightData.shadowBias" size = "16"/>
+	<uniform name = "LightData.activeCount"/>
 	<uniform name = "shadowDistance" />
 
 	<source>
@@ -159,7 +178,7 @@ float CalculateDirectionalShadow(vec3 pos, vec3 viewCamPos, mat4 lightProjView, 
 	vec3 coord = vec3(startCoord + resRatio * projCoord.xy, shadowAtlasLayer);
 
 	float shadow = 1.0;
-	if (PCFSamples >= 1)
+	if (PCFSamples > 1)
 	{
 		shadow = PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + resRatio,
 		PCFSamples, PCFRadius * shadowAtlasResRatio,
@@ -193,7 +212,7 @@ float CalculateSpotShadow(vec3 pos, vec3 lightPos, mat4 lightProjView, float sha
 	vec2 startCoord = shadowAtlasCoord;
 	vec3 coord = vec3(startCoord + shadowAtlasResRatio * projCoord.xy, shadowAtlasLayer);
 
-	if (PCFSamples >= 1)
+	if (PCFSamples > 1)
 	{
 		return PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + shadowAtlasResRatio,
 		PCFSamples, PCFRadius * shadowAtlasResRatio, currFragDepth, lightBleedReduction, shadowBias);
@@ -221,7 +240,7 @@ float CalculatePointShadow(vec3 pos, vec3 lightPos, float shadowCameraFar, vec2 
 	coord.xy = startCoord + resRatio * coord.xy;
 	coord.z = shadowAtlasLayer + coord.z;
 
-	if (PCFSamples >= 1)
+	if (PCFSamples > 1)
 	{
 		return PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + resRatio,
 		PCFSamples, PCFRadius * resRatio, currFragDepth, lightBleedReduction, shadowBias);

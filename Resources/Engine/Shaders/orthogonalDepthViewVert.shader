@@ -24,8 +24,6 @@
 		out float v_depth;
 		out vec2 v_texture;
 
-		uniform uint isSkinned;
-
 		void main()
 		{
 			v_texture = vTexture;

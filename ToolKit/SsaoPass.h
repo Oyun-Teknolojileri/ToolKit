@@ -74,20 +74,23 @@ namespace ToolKit
     Vec3Array m_ssaoKernel;
     Vec2Array m_ssaoNoise;
 
-    FramebufferPtr m_ssaoFramebuffer   = nullptr;
-    SSAONoiseTexturePtr m_noiseTexture = nullptr;
-    RenderTargetPtr m_tempBlurRt       = nullptr;
+    FramebufferPtr m_ssaoFramebuffer        = nullptr;
+    SSAONoiseTexturePtr m_noiseTexture      = nullptr;
+    RenderTargetPtr m_tempBlurRt            = nullptr;
 
-    FullQuadPassPtr m_quadPass         = nullptr;
-    ShaderPtr m_ssaoShader             = nullptr;
+    FullQuadPassPtr m_quadPass              = nullptr;
+    ShaderPtr m_ssaoShader                  = nullptr;
 
-    int m_currentKernelSize            = 0;
+    int m_currentKernelSize                 = 0;
 
-    const int m_minimumKernelSize      = 8;
-    const int m_maximumKernelSize      = 128;
+    const int m_minimumKernelSize           = 8;
+    const int m_maximumKernelSize           = 128;
 
     // Used to detect if the spread has changed. If so, kernel updated.
-    float m_prevSpread                 = -1.0f;
+    float m_prevSpread                      = -1.0f;
+
+    static StringArray m_ssaoSamplesStrCache;
+    static constexpr int m_ssaoSamplesStrCacheSize = 128;
   };
 
   typedef std::shared_ptr<SSAOPass> SSAOPassPtr;

@@ -5,7 +5,6 @@
 	<uniform name = "ProjectViewModel" />
 	<uniform name = "View" />
 	<uniform name = "Model" />
-	<uniform name = "CamData" />
 	<source>
 	<!--
 		#version 300 es
@@ -26,7 +25,6 @@
 		uniform mat4 View;
 		uniform mat4 Model;
 		uniform float Far;
-		uniform uint isSkinned;
 
 		void main()
 		{

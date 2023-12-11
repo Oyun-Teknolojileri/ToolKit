@@ -12,7 +12,6 @@
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "Shader.h"
-#include "ShaderReflectionCache.h"
 #include "TKOpenGL.h"
 #include "TKProfiler.h"
 #include "ToolKit.h"
@@ -62,6 +61,8 @@ namespace ToolKit
   // SSAOPass
   //////////////////////////////////////////////////////////////////////////
 
+  StringArray SSAOPass::m_ssaoSamplesStrCache;
+
   SSAOPass::SSAOPass()
   {
     m_ssaoFramebuffer = MakeNewPtr<Framebuffer>();
@@ -69,6 +70,12 @@ namespace ToolKit
     m_tempBlurRt      = MakeNewPtr<RenderTarget>();
     m_noiseTexture    = MakeNewPtr<SSAONoiseTexture>(4, 4);
     m_quadPass        = MakeNewPtr<FullQuadPass>();
+
+    m_ssaoSamplesStrCache.reserve(128);
+    for (int i = 0; i < m_ssaoSamplesStrCacheSize; ++i)
+    {
+      m_ssaoSamplesStrCache.push_back("samples[" + std::to_string(i) + "]");
+    }
   }
 
   SSAOPass::SSAOPass(const SSAOPassParams& params) : SSAOPass() { m_params = params; }
@@ -162,7 +169,7 @@ namespace ToolKit
       // Update kernel
       for (int i = 0; i < m_params.KernelSize; ++i)
       {
-        m_ssaoShader->SetShaderParameter(g_ssaoSamplesStrCache[i], ParameterVariant(m_ssaoKernel[i]));
+        m_ssaoShader->SetShaderParameter(m_ssaoSamplesStrCache[i], ParameterVariant(m_ssaoKernel[i]));
       }
 
       m_prevSpread = m_params.spread;

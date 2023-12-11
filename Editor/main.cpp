@@ -12,7 +12,6 @@
 #include "Gizmo.h"
 #include "Grid.h"
 #include "Mod.h"
-#include "TKProfiler.h"
 #include "UI.h"
 
 #include <Common/SDLEventPool.h>
@@ -30,6 +29,7 @@
 #include <chrono>
 
 #include <DebugNew.h>
+#include <TKProfiler.h>
 
 SDL_Window* g_window    = nullptr;
 SDL_GLContext g_context = nullptr;

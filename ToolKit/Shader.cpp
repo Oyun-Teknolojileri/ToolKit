@@ -8,6 +8,7 @@
 #include "Shader.h"
 
 #include "FileManager.h"
+#include "GpuProgram.h"
 #include "Logger.h"
 #include "TKAssert.h"
 #include "TKOpenGL.h"
@@ -139,10 +140,12 @@ namespace ToolKit
       return "Model";
     case Uniform::INV_TR_MODEL:
       return "InverseTransModel";
-    case Uniform::LIGHT_DATA:
-      return "LightData";
-    case Uniform::CAM_DATA:
-      return "CamData";
+    case Uniform::UNUSEDSLOT_6:
+      TK_ASSERT_ONCE(false && "Old asset in use.");
+      return "UNUSEDSLOT_6";
+    case Uniform::UNUSEDSLOT_7:
+      TK_ASSERT_ONCE(false && "Old asset in use.");
+      return "UNUSEDSLOT_7";
     case Uniform::COLOR:
       return "Color";
     case Uniform::FRAME_COUNT:
@@ -197,50 +200,63 @@ namespace ToolKit
       return "iblMaxReflectionLod";
     case Uniform::SHADOW_DISTANCE:
       return "shadowDistance";
+    case Uniform::CAM_DATA_POS:
+      return "CamData.pos";
+    case Uniform::CAM_DATA_DIR:
+      return "CamData.dir";
+    case Uniform::CAM_DATA_FAR:
+      return "CamData.far";
+    case Uniform::LIGHT_DATA_TYPE:
+      return "LightData.type";
+    case Uniform::LIGHT_DATA_POS:
+      return "LightData.pos";
+    case Uniform::LIGHT_DATA_DIR:
+      return "LightData.dir";
+    case Uniform::LIGHT_DATA_COLOR:
+      return "LightData.color";
+    case Uniform::LIGHT_DATA_INTENSITY:
+      return "LightData.intensity";
+    case Uniform::LIGHT_DATA_RADIUS:
+      return "LightData.radius";
+    case Uniform::LIGHT_DATA_OUTANGLE:
+      return "LightData.outAngle";
+    case Uniform::LIGHT_DATA_INNANGLE:
+      return "LightData.innAngle";
+    case Uniform::LIGHT_DATA_PROJVIEWMATRIX:
+      return "LightData.projectionViewMatrix";
+    case Uniform::LIGHT_DATA_SHADOWMAPCAMFAR:
+      return "LightData.shadowMapCameraFar";
+    case Uniform::LIGHT_DATA_CASTSHADOW:
+      return "LightData.castShadow";
+    case Uniform::LIGHT_DATA_PCFSAMPLES:
+      return "LightData.PCFSamples";
+    case Uniform::LIGHT_DATA_PCFRADIUS:
+      return "LightData.PCFRadius";
+    case Uniform::LIGHT_DATA_BLEEDREDUCTION:
+      return "LightData.BleedingReduction";
+    case Uniform::LIGHT_DATA_SOFTSHADOWS:
+      return "LightData.softShadows";
+    case Uniform::LIGHT_DATA_SHADOWATLASLAYER:
+      return "LightData.shadowAtlasLayer";
+    case Uniform::LIGHT_DATA_SHADOWATLASRESRATIO:
+      return "LightData.shadowAtlasResRatio";
+    case Uniform::LIGHT_DATA_SHADOWATLASCOORD:
+      return "LightData.shadowAtlasCoord";
+    case Uniform::LIGHT_DATA_SHADOWBIAS:
+      return "LightData.shadowBias";
+    case Uniform::LIGHT_DATA_ACTIVECOUNT:
+      return "LightData.activeCount";
+    case Uniform::IS_SKINNED:
+      return "isSkinned";
+    case Uniform::NUM_BONES:
+      return "numBones";
     case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";
     }
   }
 
-  XmlNode* Shader::SerializeImp(XmlDocument* doc, XmlNode* parent) const
-  {
-    XmlNode* container = CreateXmlNode(doc, "shader", parent);
-    XmlNode* node      = CreateXmlNode(doc, "type", container);
-
-    if (m_shaderType == ShaderType::VertexShader)
-    {
-      WriteAttr(node, doc, "name", "fragmentShader");
-    }
-    else if (m_shaderType == ShaderType::FragmentShader)
-    {
-      WriteAttr(node, doc, "name", "vertexShader");
-    }
-    else if (m_shaderType == ShaderType::IncludeShader)
-    {
-      WriteAttr(node, doc, "name", "includeShader");
-    }
-
-    for (const String& file : m_includeFiles)
-    {
-      XmlNode* node = CreateXmlNode(doc, "include", container);
-      WriteAttr(node, doc, "name", file);
-    }
-
-    for (Uniform ui : m_uniforms)
-    {
-      XmlNode* node = CreateXmlNode(doc, "uniform", container);
-
-      WriteAttr(node, doc, "name", GetUniformName(ui));
-    }
-
-    XmlNode* src      = CreateXmlNode(doc, "source", container);
-    XmlNode* srcInput = doc->allocate_node(rapidxml::node_type::node_comment);
-    src->append_node(srcInput);
-    srcInput->value(doc->allocate_string(m_source.c_str()));
-
-    return container;
-  }
+  XmlNode* Shader::SerializeImp(XmlDocument* doc, XmlNode* parent) const { return nullptr; }
 
   XmlNode* Shader::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
@@ -277,8 +293,10 @@ namespace ToolKit
 
       if (strcmp("uniform", node->name()) == 0)
       {
-        XmlAttribute* attr  = node->first_attribute();
-        bool isUniformFound = false;
+        XmlAttribute* nameAttr = node->first_attribute("name");
+        XmlAttribute* sizeAttr = node->first_attribute("size");
+
+        bool isUniformFound    = false;
         for (uint i = 0; i < (uint) Uniform::UNIFORM_MAX_INVALID; i++)
         {
           // Skipping unused variables.
@@ -288,14 +306,28 @@ namespace ToolKit
           case Uniform::UNUSEDSLOT_3:
           case Uniform::UNUSEDSLOT_4:
           case Uniform::UNUSEDSLOT_5:
+          case Uniform::UNUSEDSLOT_6:
+          case Uniform::UNUSEDSLOT_7:
             isUniformFound = true;
             continue;
           }
 
-          if (strcmp(GetUniformName((Uniform) i), attr->value()) == 0)
+          // Find uniform from name
+          if (strcmp(GetUniformName((Uniform) i), nameAttr->value()) == 0)
           {
-            m_uniforms.push_back((Uniform) i);
             isUniformFound = true;
+
+            if (sizeAttr != nullptr)
+            {
+              // Uniform is array
+              int size = std::atoi(sizeAttr->value());
+              m_arrayUniforms.push_back({(Uniform) i, size});
+            }
+            else
+            {
+              m_uniforms.push_back((Uniform) i);
+            }
+
             break;
           }
         }
@@ -396,11 +428,11 @@ namespace ToolKit
 
     // Handle uniforms
     std::unordered_set<Uniform> unis;
+
     for (Uniform uni : m_uniforms)
     {
       unis.insert(uni);
     }
-
     for (Uniform uni : includeShader->m_uniforms)
     {
       unis.insert(uni);
@@ -411,6 +443,18 @@ namespace ToolKit
     {
       m_uniforms.push_back(*i);
     }
+
+    for (ArrayUniform uni : includeShader->m_arrayUniforms)
+    {
+      m_arrayUniforms.push_back(uni);
+    }
+
+    auto arrayUniformCompareFn = [](ArrayUniform& uni1, ArrayUniform& uni2) { return uni1.uniform < uni2.uniform; };
+
+    // Remove duplicates
+    std::sort(m_arrayUniforms.begin(), m_arrayUniforms.end(), arrayUniformCompareFn);
+    auto uniqueEnd = std::unique(m_arrayUniforms.begin(), m_arrayUniforms.end());
+    m_arrayUniforms.erase(uniqueEnd, m_arrayUniforms.end());
   }
 
   // ShaderManager

@@ -91,8 +91,7 @@ set(
  "${TOOLKIT_DIR}/Dependency/glm/glm.hpp"
  "${TOOLKIT_DIR}/Dependency/glm/ext.hpp"
  "${TOOLKIT_DIR}/Dependency/glm/gtx/scalar_relational.hpp"
-)
-# GLM end
+ )
 
 set(OUTDIR "${CMAKE_SOURCE_DIR}/Bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${OUTDIR})

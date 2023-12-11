@@ -1,7 +1,7 @@
 <shader>
 	<type name = "vertexShader" />
+	<include name = "camera.shader" />
 	<uniform name = "ProjectViewModel" />
-	<uniform name = "CamData" />
 	<uniform name = "Model" />
 	<uniform name = "InverseTransModel" />
 	<source>
@@ -12,13 +12,6 @@
 
 		// Fixed Attributes.
 		layout (location = 0) in vec3 vPosition;
-
-		struct _CamData
-		{
-			vec3 pos;
-			vec3 dir;
-		};
-		uniform _CamData CamData;
 
 		struct _GridData
 		{

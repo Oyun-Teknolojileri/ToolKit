@@ -31,6 +31,23 @@ namespace ToolKit
     m_handle = 0;
   }
 
+  int GpuProgram::GetShaderParamUniformLoc(const String& uniformName)
+  {
+    if (m_shaderParamsUniformLocations.find(uniformName) != m_shaderParamsUniformLocations.end())
+    {
+      return m_shaderParamsUniformLocations[uniformName];
+    }
+    else
+    {
+      // Note: Assuming the shader program is in use
+      GLint loc                                   = glGetUniformLocation(m_handle, uniformName.c_str());
+      m_shaderParamsUniformLocations[uniformName] = loc;
+      return loc;
+    }
+
+    return -1;
+  }
+
   // GpuProgramManager
   //////////////////////////////////////////////////////////////////////////
 
@@ -88,7 +105,34 @@ namespace ToolKit
         }
       }
 
+      // Register uniform locations
+      for (ShaderPtr shader : program->m_shaders)
+      {
+        for (Uniform uniform : shader->m_uniforms)
+        {
+          GLint loc                            = glGetUniformLocation(program->m_handle, GetUniformName(uniform));
+          program->m_uniformLocations[uniform] = loc;
+        }
+
+        // Array uniforms
+        for (Shader::ArrayUniform arrayUniform : shader->m_arrayUniforms)
+        {
+          program->m_arrayUniformLocations[arrayUniform.uniform].reserve(arrayUniform.size);
+          for (int i = 0; i < arrayUniform.size; ++i)
+          {
+            String uniformName = GetUniformName(arrayUniform.uniform);
+            uniformName        = uniformName + "[" + std::to_string(i) + "]";
+            GLint loc          = glGetUniformLocation(program->m_handle, uniformName.c_str());
+            program->m_arrayUniformLocations[arrayUniform.uniform].push_back(loc);
+          }
+        }
+      }
+
       m_programs[program->m_tag] = program;
+    }
+    else
+    {
+      glUseProgram(m_programs[tag]->m_handle);
     }
 
     return m_programs[tag];

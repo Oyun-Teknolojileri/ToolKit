@@ -1,11 +1,14 @@
 <shader>
 	<type name = "includeShader" />
+   <uniform name = "isSkinned" />
+   <uniform name = "numBones" />
 	<source>
 	<!--
       layout(location = 4) in vec4 vBones;
       layout(location = 5) in vec4 vWeights;
 
       uniform float numBones;
+      uniform uint isSkinned;
       uniform sampler2D s_texture2;  // This is static data, bindPose texture
       uniform sampler2D s_texture3; // This is dynamic data, boneTransform texture
 

@@ -19,7 +19,6 @@
       uniform mat4 InverseTransModel;
       uniform mat4 Model;
       uniform mat4 View;
-      uniform uint isSkinned;
       
       // out vec3 v_pos;
       out vec3 v_viewDepth;
