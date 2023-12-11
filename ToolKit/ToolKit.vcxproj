@@ -175,7 +175,7 @@
     <ClInclude Include="TKAssert.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="TKImage.h" />
-    <ClInclude Include="tkplatform.h" />
+    <ClInclude Include="TKPlatform.h" />
     <ClInclude Include="TKProfiler.h" />
     <ClInclude Include="ToneMapPass.h" />
     <ClInclude Include="AdditiveLightingPass.h" />

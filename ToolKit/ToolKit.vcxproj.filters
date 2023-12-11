@@ -462,7 +462,7 @@
     <ClInclude Include="TKProfiler.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="tkplatform.h">
+    <ClInclude Include="TKPlatform.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="TKAssert.h">
