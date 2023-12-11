@@ -93,13 +93,6 @@ set(
  "${TOOLKIT_DIR}/Dependency/glm/gtx/scalar_relational.hpp"
  )
 
-add_definitions(-DGLM_FORCE_QUAT_DATA_XYZW)
-add_definitions(-DGLM_FORCE_XYZW_ONLY)
-add_definitions(-DGLM_FORCE_CTOR_INIT)
-add_definitions(-DGLM_ENABLE_EXPERIMENTAL)
-add_definitions(-DGLM_FORCE_ALIGNED_GENTYPES)
-add_definitions(-DGLM_FORCE_INTRINSICS)
-
 set(OUTDIR "${CMAKE_SOURCE_DIR}/Bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${OUTDIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${OUTDIR})

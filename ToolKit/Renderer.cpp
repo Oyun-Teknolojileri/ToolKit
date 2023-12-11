@@ -30,6 +30,7 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
+#include "TKAssert.h"
 
 #include "DebugNew.h"
 
@@ -730,7 +731,6 @@ namespace ToolKit
         break;
         case Uniform::VIEW:
         {
-          loc = glGetUniformLocation(program->m_handle, GetUniformName(Uniform::VIEW));
           glUniformMatrix4fv(loc, 1, false, &m_view[0][0]);
         }
         break;
@@ -781,18 +781,7 @@ namespace ToolKit
         break;
         case Uniform::UNUSEDSLOT_7:
         {
-          if (m_cam == nullptr)
-            break;
-
-          const Vec3 pos           = m_cam->m_node->GetTranslation();
-          const Vec3 dir           = m_cam->GetComponent<DirectionComponent>()->GetDirection();
-          String uniformStructName = GetUniformName(Uniform::UNUSEDSLOT_7);
-          loc                      = glGetUniformLocation(program->m_handle, (uniformStructName + ".pos").c_str());
-          glUniform3fv(loc, 1, &pos.x);
-          loc = glGetUniformLocation(program->m_handle, (uniformStructName + ".dir").c_str());
-          glUniform3fv(loc, 1, &dir.x);
-          loc = glGetUniformLocation(program->m_handle, (uniformStructName + ".far").c_str());
-          glUniform1f(loc, m_cam->Far());
+          TK_ASSERT_ONCE(false && "Old asset in use.");
         }
         break;
         case Uniform::COLOR:

@@ -40,7 +40,7 @@ namespace ToolKit
     else
     {
       // Note: Assuming the shader program is in use
-      GLint loc                                 = glGetUniformLocation(m_handle, uniformName.c_str());
+      GLint loc                                   = glGetUniformLocation(m_handle, uniformName.c_str());
       m_shaderParamsUniformLocations[uniformName] = loc;
       return loc;
     }
@@ -110,7 +110,7 @@ namespace ToolKit
       {
         for (Uniform uniform : shader->m_uniforms)
         {
-          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(uniform));
+          GLint loc                            = glGetUniformLocation(program->m_handle, GetUniformName(uniform));
           program->m_uniformLocations[uniform] = loc;
         }
 

@@ -25,7 +25,7 @@
 #include <thread>
 
 #include <DebugNew.h>
-#include "TKProfiler.h"
+#include <TKProfiler.h>
 
 namespace ToolKit
 {

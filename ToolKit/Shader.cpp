@@ -252,52 +252,7 @@ namespace ToolKit
     }
   }
 
-  XmlNode* Shader::SerializeImp(XmlDocument* doc, XmlNode* parent) const
-  {
-    XmlNode* container = CreateXmlNode(doc, "shader", parent);
-    XmlNode* node      = CreateXmlNode(doc, "type", container);
-
-    if (m_shaderType == ShaderType::VertexShader)
-    {
-      WriteAttr(node, doc, "name", "fragmentShader");
-    }
-    else if (m_shaderType == ShaderType::FragmentShader)
-    {
-      WriteAttr(node, doc, "name", "vertexShader");
-    }
-    else if (m_shaderType == ShaderType::IncludeShader)
-    {
-      WriteAttr(node, doc, "name", "includeShader");
-    }
-
-    for (const String& file : m_includeFiles)
-    {
-      XmlNode* node = CreateXmlNode(doc, "include", container);
-      WriteAttr(node, doc, "name", file);
-    }
-
-    for (Uniform ui : m_uniforms)
-    {
-      XmlNode* node = CreateXmlNode(doc, "uniform", container);
-
-      WriteAttr(node, doc, "name", GetUniformName(ui));
-    }
-
-    for (ArrayUniform ui : m_arrayUniforms)
-    {
-      XmlNode* node = CreateXmlNode(doc, "uniform", container);
-
-      WriteAttr(node, doc, "name", GetUniformName(ui.uniform));
-      WriteAttr(node, doc, "size", std::to_string(ui.size));
-    }
-
-    XmlNode* src      = CreateXmlNode(doc, "source", container);
-    XmlNode* srcInput = doc->allocate_node(rapidxml::node_type::node_comment);
-    src->append_node(srcInput);
-    srcInput->value(doc->allocate_string(m_source.c_str()));
-
-    return container;
-  }
+  XmlNode* Shader::SerializeImp(XmlDocument* doc, XmlNode* parent) const { return nullptr;}
 
   XmlNode* Shader::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {

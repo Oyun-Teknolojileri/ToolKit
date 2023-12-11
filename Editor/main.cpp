@@ -29,7 +29,7 @@
 #include <chrono>
 
 #include <DebugNew.h>
-#include "TKProfiler.h"
+#include <TKProfiler.h>
 
 SDL_Window* g_window    = nullptr;
 SDL_GLContext g_context = nullptr;

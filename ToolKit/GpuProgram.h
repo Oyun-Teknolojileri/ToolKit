@@ -27,7 +27,11 @@ namespace ToolKit
     GpuProgram(ShaderPtr vertex, ShaderPtr fragment);
     ~GpuProgram();
 
-    // Returns -1 if the uniform location is not registered
+    /**
+     * If caller gives index (different than -1), this function tries to get uniform location as array.
+     * Returns -1 if the uniform location is not registered.
+     */
+    //
     inline int GetUniformLocation(Uniform uniform, int index = -1)
     {
       if (index == -1)
