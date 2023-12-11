@@ -12,6 +12,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     class RenderSettingsView : public Window
     {
      public:
@@ -20,5 +21,6 @@ namespace ToolKit
       virtual void Show();
       Type GetType() const override;
     };
+
   } // namespace Editor
 } // namespace ToolKit

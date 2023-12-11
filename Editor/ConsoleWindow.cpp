@@ -530,7 +530,7 @@ namespace ToolKit
 
           String en  = ntt->GetNameVal();
           ULongID id = ntt->GetIdVal();
-          GetLogger()->WriteConsole(LogType::Warning, msg.data(), en.c_str(), id);
+          TK_WRN(msg.data(), en.c_str(), id);
 
           if (fix)
           {
@@ -572,11 +572,11 @@ namespace ToolKit
 
         if (problemsFound == 0)
         {
-          GetLogger()->WriteConsole(LogType::Memo, "No problems found.");
+          TK_LOG("No problems found.");
         }
         else
         {
-          GetLogger()->WriteConsole(LogType::Memo, "%d problems found.", problemsFound);
+          TK_WRN("%d problems found.", problemsFound);
         }
       }
     }

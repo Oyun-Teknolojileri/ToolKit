@@ -50,6 +50,7 @@ set(CMAKE_DEBUG_POSTFIX _d)
 include_directories(
 	"${TOOLKIT_DIR}/ToolKit"
 	"${TOOLKIT_DIR}/Dependency"
+	"${TOOLKIT_DIR}/Dependency/glm"
 	"${TOOLKIT_DIR}/Dependency/glad"
 	"${TOOLKIT_DIR}/Dependency/SDL2/include"
 	"${TOOLKIT_DIR}/Dependency/RapidXml"
@@ -75,6 +76,15 @@ set(
 	HEADERS 
 	Game.h
 )
+
+# GLM begin
+add_definitions(-DTK_GLM)
+add_definitions(-DGLM_FORCE_QUAT_DATA_XYZW)
+add_definitions(-DGLM_FORCE_XYZW_ONLY)
+add_definitions(-DGLM_FORCE_CTOR_INIT)
+add_definitions(-DGLM_ENABLE_EXPERIMENTAL)
+add_definitions(-DGLM_FORCE_ALIGNED_GENTYPES)
+add_definitions(-DGLM_FORCE_INTRINSICS)
 
 set(
   PCH

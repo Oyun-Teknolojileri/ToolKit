@@ -659,7 +659,7 @@ namespace ToolKit
     {
       auto handleMultiWindowFn = [](Window::Type windowType) -> void
       {
-        for (int i = static_cast<int>(g_app->m_windows.size()) - 1; i >= 0; i--)
+        for (int i = (int) (g_app->m_windows.size()) - 1; i >= 0; i--)
         {
           Window* wnd = g_app->m_windows[i];
           if (wnd->GetType() != windowType)
@@ -682,8 +682,25 @@ namespace ToolKit
           ImGui::SameLine(width);
           if (ImGui::Button("x"))
           {
-            g_app->m_windows.erase(g_app->m_windows.begin() + i);
-            SafeDel(wnd);
+            bool canDelete = true;
+            if (wnd->m_name == g_3dViewport)
+            {
+              canDelete = false;
+            }
+            else if (wnd->m_name == g_2dViewport)
+            {
+              canDelete = false;
+            }
+            else if (wnd->m_name == g_IsoViewport)
+            {
+              canDelete = false;
+            }
+
+            if (canDelete)
+            {
+              g_app->m_windows.erase(g_app->m_windows.begin() + i);
+              SafeDel(wnd);
+            }
           }
           ImGui::EndGroup();
           ImGui::PopID();
@@ -942,9 +959,7 @@ namespace ToolKit
             else
             {
               g_app->m_statusMsg = "Drop discarded.";
-              GetLogger()->WriteConsole(LogType::Warning,
-                                        "File isn't imported because it's not "
-                                        "dropped onto Textures folder.");
+              TK_ERR("File isn't imported because it's not dropped into Textures folder.");
             }
             ImportData.Files.erase(ImportData.Files.begin() + i);
           }

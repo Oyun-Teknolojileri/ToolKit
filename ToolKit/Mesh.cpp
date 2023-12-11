@@ -766,20 +766,6 @@ namespace ToolKit
 
   bool MeshManager::CanStore(ClassMeta* Class) { return Class->IsSublcassOf(Mesh::StaticClass()); }
 
-  ResourcePtr MeshManager::CreateLocal(ClassMeta* Class)
-  {
-    if (Class == Mesh::StaticClass())
-    {
-      return MakeNewPtr<Mesh>();
-    }
-
-    if (Class == SkinMesh::StaticClass())
-    {
-      return MakeNewPtr<SkinMesh>();
-    }
-
-    return nullptr;
-  }
-
   String MeshManager::GetDefaultResource(ClassMeta* Class) { return MeshPath("Suzanne.mesh", true); }
+
 } // namespace ToolKit

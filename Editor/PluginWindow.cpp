@@ -56,7 +56,7 @@ namespace ToolKit
           return;
         }
       }
-      GetLogger()->WriteConsole(LogType::Warning, "resolution name is not exist!");
+      TK_WRN("Resolution name does not exist.");
     }
 
     void PluginWindow::Show()

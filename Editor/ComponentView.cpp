@@ -100,7 +100,7 @@ namespace ToolKit
       // If component isn't AnimationPlayerComponent, don't show variant.
       if (animPlayerComp == nullptr)
       {
-        GetLogger()->WriteConsole(LogType::Error, "AnimRecordPtrMap is for AnimationControllerComponent");
+        TK_ERR("AnimRecordPtrMap is for AnimationControllerComponent.");
         return;
       }
 
@@ -125,13 +125,9 @@ namespace ToolKit
       {
         float tableWdth = ImGui::GetItemRectSize().x;
         ImGui::TableSetupColumn("Animation", ImGuiTableColumnFlags_WidthStretch, tableWdth / 5.0f);
-
         ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, tableWdth / 2.5f);
-
         ImGui::TableSetupColumn("Preview", ImGuiTableColumnFlags_WidthStretch, tableWdth / 4.0f);
-
         ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, tableWdth / 20.0f);
-
         ImGui::TableHeadersRow();
 
         uint rowIndx                                       = 0;
@@ -160,7 +156,7 @@ namespace ToolKit
                      }
                      else
                      {
-                       GetLogger()->WriteConsole(LogType::Error, "Only animations are accepted.");
+                       TK_ERR("Only animations are accepted.");
                      }
                    });
         };
@@ -259,7 +255,7 @@ namespace ToolKit
         {
           if (mref.find(nameUpdated) != mref.end())
           {
-            GetLogger()->WriteConsole(LogType::Error, "SignalName exists");
+            TK_ERR("SignalName exists.");
           }
           else if (nameUpdatedPair.first == extraTrack.first)
           {
@@ -368,7 +364,7 @@ namespace ToolKit
           if (mesh != nullptr && mesh->GetMeshVal()->IsSkinned())
           {
             g_app->m_statusMsg = "Failed";
-            GetLogger()->WriteConsole(LogType::Warning, "Skeleton component is in use, it can't be removed");
+            TK_WRN("Skeleton component is in use, it can't be removed.");
             return false;
           }
         }

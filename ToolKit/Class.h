@@ -12,6 +12,8 @@
 namespace ToolKit
 {
 
+  typedef std::unordered_map<StringView, StringView> MetaMap;
+
   struct TK_API ClassMeta
   {
     ClassMeta* Super = nullptr;   //!< Compile time assigned base class for this class.
@@ -22,7 +24,7 @@ namespace ToolKit
      * Holds meta data, information such as if the class will be visible to editor, where it will store takes place
      * here.
      */
-    std::unordered_map<StringView, StringView> MetaKeys;
+    MetaMap MetaKeys;
 
     bool operator==(const ClassMeta& other) const
     {

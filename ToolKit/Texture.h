@@ -166,7 +166,6 @@ namespace ToolKit
     TextureManager();
     virtual ~TextureManager();
     bool CanStore(ClassMeta* Class) override;
-    ResourcePtr CreateLocal(ClassMeta* Class) override;
     String GetDefaultResource(ClassMeta*) override;
   };
 

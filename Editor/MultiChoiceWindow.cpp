@@ -19,7 +19,7 @@ namespace ToolKit::Editor
     if (m_variant.Choices.size() < 2ull)
     {
       g_app->m_statusMsg = "Failed!";
-      GetLogger()->WriteConsole(LogType::Warning, "You must define at least two parameter!");
+      TK_WRN("You must define at least two parameter.");
       return false;
     }
 
@@ -28,7 +28,7 @@ namespace ToolKit::Editor
       if (var.m_name.size() < 1)
       {
         g_app->m_statusMsg = "Failed!";
-        GetLogger()->WriteConsole(LogType::Warning, "name can't be empty!");
+        TK_WRN("Name can't be empty.");
         return false;
       }
     }

@@ -16,6 +16,7 @@
 #include <DirectionComponent.h>
 #include <FileManager.h>
 #include <Mesh.h>
+#include <Meta.h>
 #include <PluginManager.h>
 #include <Resource.h>
 #include <SDL.h>
@@ -43,6 +44,39 @@ namespace ToolKit
 
     void App::Init()
     {
+      if (ObjectFactory* objFactory = GetObjectFactory())
+      {
+        // Allow classes with the MenuMetaKey to be created from the add menu.
+        objFactory->m_metaProcessorRegisterMap[MenuMetaKey] = [](StringView val) -> void
+        {
+          bool exist = false;
+          for (String& meta : g_app->m_customObjectMetaValues)
+          {
+            if (meta == val)
+            {
+              exist = true;
+              break;
+            }
+          }
+
+          if (!exist)
+          {
+            g_app->m_customObjectMetaValues.push_back(String(val));
+          }
+        };
+
+        objFactory->m_metaProcessorUnRegisterMap[MenuMetaKey] = [](StringView val) -> void
+        {
+          for (int i = (int) g_app->m_customObjectMetaValues.size() - 1; i >= 0; i--)
+          {
+            if (g_app->m_customObjectMetaValues[i] == val)
+            {
+              g_app->m_customObjectMetaValues.erase(g_app->m_customObjectMetaValues.begin() + i);
+            }
+          }
+        };
+      }
+
       AssignManagerReporters();
       CreateEditorEntities();
 
@@ -131,6 +165,15 @@ namespace ToolKit
 
       ModManager::GetInstance()->UnInit();
       ActionManager::GetInstance()->UnInit();
+
+      if (ObjectFactory* objFactory = GetObjectFactory())
+      {
+        objFactory->m_metaProcessorRegisterMap[MenuMetaKey]   = nullptr;
+        objFactory->m_metaProcessorUnRegisterMap[MenuMetaKey] = nullptr;
+      }
+
+      GetLogger()->SetWriteConsoleFn(nullptr);
+      GetLogger()->SetClearConsoleFn(nullptr);
     }
 
     void App::Frame(float deltaTime)
@@ -200,7 +243,9 @@ namespace ToolKit
       POP_CPU_MARKER();
       PUSH_CPU_MARKER("Update Scene");
 
-      UpdateSimulation(deltaTime);
+      // Update Plugins.
+      GetPluginManager()->Update(deltaTime);
+      UpdateSimulation();
 
       POP_CPU_MARKER();
       PUSH_CPU_MARKER("Update Viewports & Add render tasks");
@@ -240,6 +285,11 @@ namespace ToolKit
       POP_CPU_MARKER();
 
       GetRenderSystem()->SetFrameCount(m_totalFrameCount++);
+
+      if (m_reloadPlugin)
+      {
+        LoadProjectPlugin();
+      }
     }
 
     void App::OnResize(uint width, uint height)
@@ -276,7 +326,7 @@ namespace ToolKit
         String relPath = GetRelativeResourcePath(cScene->GetFile(), &rootFolder);
         String msg     = "Saved to: " + ConcatPaths({rootFolder, relPath});
 
-        GetLogger()->WriteConsole(LogType::Memo, msg.c_str());
+        TK_LOG(msg.c_str());
         g_app->m_statusMsg                    = "Scene saved.";
 
         FolderWindowRawPtrArray folderWindows = g_app->GetAssetBrowsers();
@@ -431,53 +481,64 @@ namespace ToolKit
       OpenProject({name, ""});
     }
 
-    void App::SetGameMod(GameMod mod)
+    void App::SetGameMod(const GameMod mod)
     {
       if (mod == m_gameMod)
       {
         return;
       }
 
+      GamePlugin* gamePlugin = GetPluginManager()->GetGamePlugin();
+      if (gamePlugin == nullptr)
+      {
+        return;
+      }
+
       if (mod == GameMod::Playing)
       {
+        // Transitioning to play from stop.
         if (m_gameMod == GameMod::Stop)
         {
           // Save to catch any changes in the editor.
           GetCurrentScene()->Save(true);
-          m_sceneLightingMode = EditorLitMode::Game;
-        }
-
-        String pluginPath = m_workspace.GetPluginPath();
-        if (GetPluginManager()->Load(pluginPath))
-        {
-          m_statusMsg          = "Game is playing";
-          m_gameMod            = mod;
-
-          // Set last active viewport
+          m_sceneLightingMode  = EditorLitMode::Game;
           m_lastActiveViewport = GetActiveViewport();
 
           if (m_simulatorSettings.Windowed)
           {
             m_simulationWindow->SetVisibility(true);
+
+            // Match views.
+            if (EditorViewport* viewport3d = GetViewport(g_3dViewport))
+            {
+              Mat4 view = viewport3d->GetCamera()->m_node->GetTransform();
+              m_simulationWindow->GetCamera()->m_node->SetTransform(view);
+            }
           }
         }
-        else
-        {
-          GetConsole()->AddLog("Expecting a game plugin with the same name of the project.", LogType::Error);
-        }
+
+        gamePlugin->SetViewport(GetSimulationWindow());
+        gamePlugin->m_currentState = PluginState::Running;
+
+        m_statusMsg                = "Game is playing";
+        m_gameMod                  = mod;
       }
 
       if (mod == GameMod::Paused)
       {
-        m_statusMsg = "Game is paused";
-        m_gameMod   = mod;
+        gamePlugin->m_currentState = PluginState::Paused;
+
+        m_statusMsg                = "Game is paused";
+        m_gameMod                  = mod;
       }
 
       if (mod == GameMod::Stop)
       {
+        gamePlugin->m_currentState = PluginState::Stop;
 
-        m_statusMsg = "Game is stopped";
-        m_gameMod   = mod;
+        m_statusMsg                = "Game is stopped";
+        m_gameMod                  = mod;
+
         ClearPlayInEditorSession();
 
         m_simulationWindow->SetVisibility(false);
@@ -505,50 +566,71 @@ namespace ToolKit
       m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
       m_isCompiling = true;
 
-      std::thread pipeThread(
-          RunPipe,
-          cmd,
-          [this, buildDir](int res) -> void
-          {
-            String cmd = "cmake --build " + buildDir + " --config " + buildConfig.data();
-            std::thread pip(RunPipe,
-                            cmd,
-                            [=](int res) -> void
-                            {
-                              if (res)
-                              {
-                                m_statusMsg = "Compile Failed.";
+      std::thread pipeThread(RunPipe,
+                             cmd,
+                             [this, buildDir](int res) -> void
+                             {
+                               String cmd = "cmake --build " + buildDir + " --config " + buildConfig.data();
+                               std::thread pip(RunPipe,
+                                               cmd,
+                                               [=](int res) -> void
+                                               {
+                                                 if (res)
+                                                 {
+                                                   m_statusMsg = "Compile Failed.";
 
-                                String detail;
-                                if (res == 1)
-                                {
-                                  detail = "CMake Build Failed.";
-                                }
+                                                   String detail;
+                                                   if (res == 1)
+                                                   {
+                                                     detail = "CMake Build Failed.";
+                                                   }
 
-                                if (res == -1)
-                                {
-                                  detail = "CMake Generate Failed.";
-                                }
+                                                   if (res == -1)
+                                                   {
+                                                     detail = "CMake Generate Failed.";
+                                                   }
 
-                                GetLogger()->WriteConsole(LogType::Error, "%s %s", m_statusMsg.c_str(), detail.c_str());
-                              }
-                              else
-                              {
-                                m_statusMsg = "Compiled.";
-                                GetLogger()->WriteConsole(LogType::Memo, "%s", m_statusMsg.c_str());
-                              }
-                              m_isCompiling = false;
-                            });
-            pip.detach();
-          });
+                                                   TK_ERR("%s %s", m_statusMsg.c_str(), detail.c_str());
+                                                 }
+                                                 else
+                                                 {
+                                                   m_statusMsg = "Compiled.";
+                                                   TK_LOG("%s", m_statusMsg.c_str());
+                                                 }
+                                                 m_isCompiling  = false;
+                                                 m_reloadPlugin = true;
+                                               });
+                               pip.detach();
+                             });
+
       pipeThread.detach();
+    }
+
+    void App::LoadProjectPlugin()
+    {
+      ClearSession();
+
+      EditorScenePtr currentScene = GetCurrentScene();
+      currentScene->Save(true);
+      currentScene->UnInit();
+
+      if (PluginManager* pluginMan = GetPluginManager())
+      {
+        String pluginPath = m_workspace.GetPluginPath();
+        pluginMan->Load(pluginPath);
+        ReconstructDynamicMenus();
+      }
+
+      currentScene->Load();
+      currentScene->Init();
+
+      m_reloadPlugin = false;
     }
 
     EditorScenePtr App::GetCurrentScene()
     {
-      EditorScenePtr eScn = std::static_pointer_cast<EditorScene>(GetSceneManager()->GetCurrentScene());
-
-      return eScn;
+      ScenePtr scene = GetSceneManager()->GetCurrentScene();
+      return std::static_pointer_cast<EditorScene>(scene);
     }
 
     void App::SetCurrentScene(const EditorScenePtr& scene) { GetSceneManager()->SetCurrentScene(scene); }
@@ -615,40 +697,27 @@ namespace ToolKit
     {
       ClearSession();
 
-      // Destroy pie scene.
-      String sceneFile;
-      EditorSceneManager* sceneManager = (EditorSceneManager*) GetSceneManager();
-      if (ScenePtr scene = sceneManager->GetCurrentScene())
+      if (EditorSceneManager* sceneMan = static_cast<EditorSceneManager*>(GetSceneManager()))
       {
-        sceneFile = scene->GetFile();
-
-        sceneManager->Remove(sceneFile);
-        scene->Destroy(false);
-        sceneManager->SetCurrentScene(nullptr);
-      }
-
-      // Kill the plugin. At this point if anything from the dll remains in the editor,
-      // it causes a crash.
-      GetPluginManager()->UnloadGamePlugin();
-
-      // Set the editor scene back.
-      if (!sceneFile.empty())
-      {
-        EditorScenePtr scene = sceneManager->Create<EditorScene>(sceneFile);
-        scene->Init();
-        sceneManager->SetCurrentScene(scene);
+        // Reload to retrieve the original scene, clears the game play modifications.
+        if (ScenePtr scene = sceneMan->GetCurrentScene())
+        {
+          scene->UnInit();
+          scene->Load();
+          scene->Init();
+        }
       }
 
       // Set back the viewport camera
-      EditorViewport* vp = GetActiveViewport();
-      if (vp == nullptr)
+      EditorViewport* viewport = GetActiveViewport();
+      if (viewport == nullptr)
       {
-        vp = GetViewport(g_3dViewport);
+        viewport = GetViewport(g_3dViewport);
       }
 
-      if (vp != nullptr)
+      if (viewport != nullptr)
       {
-        vp->AttachCamera(NULL_HANDLE);
+        viewport->AttachCamera(NULL_HANDLE);
       }
     }
 
@@ -806,7 +875,11 @@ namespace ToolKit
       CreateSimulationWindow(m_simulatorSettings.Width, m_simulatorSettings.Height);
     }
 
-    void App::ReconstructDynamicMenus() { ConstructDynamicMenu(m_customObjectMetaValues, m_customObjectsMenu); }
+    void App::ReconstructDynamicMenus()
+    {
+      m_customObjectsMenu.clear();
+      ConstructDynamicMenu(m_customObjectMetaValues, m_customObjectsMenu);
+    }
 
     int App::Import(const String& fullPath, const String& subDir, bool overwrite)
     {
@@ -868,7 +941,7 @@ namespace ToolKit
           result  = ExecSysCommand(cmd.c_str(), false, false);
           if (result != 0)
           {
-            GetLogger()->WriteConsole(LogType::Error, "Import failed!");
+            TK_ERR("Import failed!");
           }
         }
 
@@ -1051,8 +1124,7 @@ namespace ToolKit
           {
             const FolderWindowRawPtrArray& assetBrowsers = g_app->GetAssetBrowsers();
 
-            String log                                   = "File isn't imported because it's not dropped onto "
-                                                           "Asset Browser";
+            String log = "File isn't imported because it's not dropped into Asset Browser";
 
             for (FolderWindow* folderWindow : assetBrowsers)
             {
@@ -1061,9 +1133,7 @@ namespace ToolKit
                 FolderView* activeView = folderWindow->GetActiveView(true);
                 if (activeView == nullptr)
                 {
-                  log = "Activate a resource folder by selecting it from the "
-                        "Asset "
-                        "Browser.";
+                  log = "Activate a resource folder by selecting it from the Asset Browser.";
                 }
                 else
                 {
@@ -1077,7 +1147,7 @@ namespace ToolKit
             if (!UI::ImportData.ShowImportWindow)
             {
               g_app->m_statusMsg = "Drop discarded";
-              GetLogger()->WriteConsole(LogType::Warning, log.c_str());
+              TK_WRN(log.c_str());
             }
           });
     }
@@ -1154,6 +1224,8 @@ namespace ToolKit
             m_workspace.Serialize(nullptr, nullptr);
             m_workspace.SerializeEngineSettings();
             OnNewScene("New Scene");
+
+            LoadProjectPlugin();
           });
     }
 
@@ -1162,7 +1234,7 @@ namespace ToolKit
       String projectName = m_workspace.GetActiveProject().name;
       if (projectName.empty())
       {
-        GetLogger()->WriteConsole(LogType::Error, "No project is loaded!");
+        TK_ERR("No project is loaded.");
         return;
       }
 
@@ -1290,11 +1362,24 @@ namespace ToolKit
       }
     }
 
-    void App::UpdateSimulation(float deltaTime)
+    EditorViewport* App::GetSimulationWindow()
+    {
+      if (m_simulatorSettings.Windowed)
+      {
+        return m_simulationWindow;
+      }
+
+      EditorViewport* simWnd = GetViewport(g_3dViewport);
+      assert(simWnd != nullptr && "3D Viewport must exist.");
+
+      return simWnd;
+    }
+
+    void App::UpdateSimulation()
     {
       if (GamePlugin* plugin = GetPluginManager()->GetGamePlugin())
       {
-        if (plugin->m_quit)
+        if (plugin->m_currentState == PluginState::Stop)
         {
           SetGameMod(GameMod::Stop);
         }
@@ -1302,19 +1387,6 @@ namespace ToolKit
         if (m_gameMod != GameMod::Stop)
         {
           m_simulationWindow->SetVisibility(m_simulatorSettings.Windowed);
-
-          EditorViewport* playWindow = GetWindow<EditorViewport>(g_3dViewport);
-          if (m_simulatorSettings.Windowed)
-          {
-            if (m_windowCamLoad)
-            {
-              Mat4 camTs = playWindow->GetCamera()->m_node->GetTransform(TransformationSpace::TS_WORLD);
-              m_simulationWindow->GetCamera()->m_node->SetTransform(camTs);
-              m_windowCamLoad = false;
-            }
-            playWindow = m_simulationWindow;
-          }
-          plugin->Frame(deltaTime, playWindow);
         }
       }
     }
@@ -1415,6 +1487,8 @@ namespace ToolKit
 
         CreateWindows(root);
       }
+
+      LoadProjectPlugin();
 
       String scene = m_workspace.GetActiveProject().scene;
       if (!scene.empty())

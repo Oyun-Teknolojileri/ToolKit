@@ -160,12 +160,12 @@ namespace ToolKit
     if (!ZipPack(zipName))
     {
       // Error
-      GetLogger()->WriteConsole(LogType::Error, "Error zipping.");
+      TK_ERR("Error zipping.");
       return 0;
     }
     else
     {
-      GetLogger()->WriteConsole(LogType::Memo, "Resources packed.\n");
+      TK_LOG("Resources packed.\n");
     }
     return 1;
   }
@@ -369,7 +369,7 @@ namespace ToolKit
     {
       if (!AddFileToZip(zFile, path.c_str()))
       {
-        GetLogger()->WriteConsole(LogType::Warning, "Failed to add this file to zip: %s\n", path.c_str());
+        TK_WRN("Failed to add this file to zip: %s\n", path.c_str());
       }
     }
 
@@ -415,7 +415,7 @@ namespace ToolKit
     }
     else
     {
-      GetLogger()->WriteConsole(LogType::Error, "Resource is not under resources path: %s", filename);
+      TK_ERR("Resource is not under resources path: %s", filename);
       return false;
     }
 
@@ -477,7 +477,7 @@ namespace ToolKit
     if (!CheckSystemFile(extrFilesPath))
     {
       GetLogger()->Log("'ExtraFiles.txt' is not found in resources path.");
-      GetLogger()->WriteConsole(LogType::Warning, "'ExtraFiles.txt' is not found in resources path.");
+      TK_WRN("'ExtraFiles.txt' is not found in resources path.");
       return;
     }
 
@@ -637,7 +637,7 @@ namespace ToolKit
     if (readBytes < 0)
     {
       GetLogger()->Log("Error reading compressed file: " + filename);
-      GetLogger()->WriteConsole(LogType::Error, "Error reading compressed file: %s", filename.c_str());
+      TK_ERR("Error reading compressed file: %s", filename.c_str());
     }
 
     // Create XmlFile object
@@ -655,7 +655,7 @@ namespace ToolKit
     if (readBytes < 0)
     {
       GetLogger()->Log("Error reading compressed file: " + fileInfo.filePath);
-      GetLogger()->WriteConsole(LogType::Error, "Error reading compressed file: %s", fileInfo.filePath.c_str());
+      TK_ERR("Error reading compressed file: %s", fileInfo.filePath.c_str());
     }
 
     // Load image
@@ -673,7 +673,7 @@ namespace ToolKit
     if (readBytes < 0)
     {
       GetLogger()->Log("Error reading compressed file: " + fileInfo.filePath);
-      GetLogger()->WriteConsole(LogType::Error, "Error reading compressed file: %s", fileInfo.filePath.c_str());
+      TK_ERR("Error reading compressed file: %s", fileInfo.filePath.c_str());
     }
 
     // Load image

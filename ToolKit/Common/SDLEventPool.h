@@ -13,6 +13,7 @@
 
 namespace ToolKit
 {
+
   template <PLATFORM Platform>
   class SDLEventPool
   {
@@ -231,11 +232,11 @@ namespace ToolKit
         gamepadEvent->m_button = (GamepadButton) (1 << event.cbutton.button);
         break;
       case SDL_CONTROLLERDEVICEADDED:
-        GetLogger()->WriteConsole(LogType::Memo, "Gamepad connected!");
+        TK_LOG("Gamepad connected.");
         SDL_GameControllerOpen(event.cdevice.which);
         break;
       case SDL_CONTROLLERDEVICEREMOVED:
-        GetLogger()->WriteConsole(LogType::Memo, "Gamepad disconnected!");
+        TK_LOG("Gamepad disconnected.");
         break;
       };
 
@@ -268,7 +269,6 @@ namespace ToolKit
     std::vector<KeyboardEvent*> m_keyboardEventPool;
     std::vector<GamepadEvent*> m_gamepadEventPool;
     std::vector<TouchEvent*> m_touchEventPool;
-
-    //T platformType;
   };
+
 } // namespace ToolKit

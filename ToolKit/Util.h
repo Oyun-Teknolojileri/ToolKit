@@ -43,8 +43,22 @@ namespace ToolKit
 
   // File path operations.
   ///////////////////////////////////////////////////////
+
+  /**
+   * Checks if a file exist in the host system.
+   * @param path is the full file path to check for.
+   * @return true if file exist in the given path.
+   */
   TK_API bool CheckSystemFile(StringView path);
+
+  /**
+   * Uses file manager to check if a file exist. First searches the file among resources, then in the system and finally
+   * in the pak file. This function is more suitable to check files inside the Resources.
+   * @param path is the full file path to check or path to relative Resource folder.
+   * @return true if the file exist in the given path.
+   */
   TK_API bool CheckFile(const String& path);
+
   TK_API String CreateCopyFileFullPath(const String& fullPath);
   TK_API void DecomposePath(const String& fullPath, String* path, String* name, String* ext);
 

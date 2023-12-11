@@ -42,7 +42,7 @@ namespace ToolKit
             }
             else
             {
-              GetLogger()->WriteConsole(LogType::Error, "Only Material Types are accepted.");
+              TK_ERR("Only Material is accepted.");
             }
           },
           isEditable);
@@ -62,7 +62,7 @@ namespace ToolKit
             }
             else
             {
-              GetLogger()->WriteConsole(LogType::Error, "Only Material Types are accepted.");
+              TK_ERR("Only Material is accepted.");
             }
           },
           var->m_editable);
@@ -643,7 +643,7 @@ namespace ToolKit
               }
               else
               {
-                GetLogger()->WriteConsole(LogType::Error, "Only meshes are accepted.");
+                TK_ERR("Only Mesh is accepted.");
               }
             },
             var->m_editable);
@@ -673,7 +673,7 @@ namespace ToolKit
               }
               else
               {
-                GetLogger()->WriteConsole(LogType::Error, "Only hdri's are accepted.");
+                TK_ERR("Only HDRI is accepted.");
               }
             },
             var->m_editable);
@@ -702,7 +702,7 @@ namespace ToolKit
           }
           else
           {
-            GetLogger()->WriteConsole(LogType::Error, "Only skeletons are accepted.");
+            TK_ERR("Only Skeleton is accepted.");
           }
         };
         ImGui::EndDisabled();

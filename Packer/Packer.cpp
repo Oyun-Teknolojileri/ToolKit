@@ -15,6 +15,7 @@
 #include <TKOpenGL.h>
 #include <Texture.h>
 #include <ToolKit.h>
+#include <Types.h>
 #include <Util.h>
 #include <assert.h>
 #include <stdio.h>
@@ -81,7 +82,7 @@ namespace ToolKit
     String projectName = activeProjectName;
     if (projectName.empty())
     {
-      GetLogger()->WriteConsole(LogType::Error, "No project is loaded!");
+      TK_ERR("No project is loaded.");
       return 0;
     }
 
@@ -245,10 +246,8 @@ namespace ToolKit
     }
 
     // Tell user about where the location of output files is
-    GetLogger()->WriteConsole(LogType::Success, "Building for WINDOWS has been completed successfully.\n");
-    GetLogger()->WriteConsole(LogType::Memo,
-                              "Output files location: %s\n",
-                              std::filesystem::absolute(publishDirectory).string().c_str());
+    TK_SUC("Building for WINDOWS has been completed successfully.\n");
+    TK_LOG("Output files location: %s\n", std::filesystem::absolute(publishDirectory).string().c_str());
 
     PlatformHelpers::OpenExplorer(publishDirectory);
     return 0;
@@ -447,7 +446,7 @@ namespace ToolKit
 
     if (projectName.empty())
     {
-      GetLogger()->WriteConsole(LogType::Error, "No project is loaded!\n");
+      TK_ERR("No project is loaded.\n");
       return 1;
     }
 
@@ -507,7 +506,7 @@ namespace ToolKit
     int compileResult = RunPipe(command + " > AndroidPipeOut1.txt", nullptr);
     if (compileResult != 0)
     {
-      GetLogger()->WriteConsole(LogType::Error, "Android build failed.\n");
+      TK_ERR("Android build failed.\n");
       return 1;
     }
     TK_LOG(GetFileManager()->ReadAllText("AndroidPipeOut1.txt").c_str());
@@ -545,10 +544,8 @@ namespace ToolKit
     }
 
     // Tell user about where the location of output files is
-    GetLogger()->WriteConsole(LogType::Success, "Building for ANDROID has been completed successfully.\n");
-    GetLogger()->WriteConsole(LogType::Memo,
-                              "Output files location: %s\n",
-                              std::filesystem::absolute(publishDirStr).string().c_str());
+    TK_SUC("Building for ANDROID has been completed successfully.\n");
+    TK_LOG("Output files location: %s\n", std::filesystem::absolute(publishDirStr).string().c_str());
 
     PlatformHelpers::OpenExplorer(publishDirStr);
 
@@ -676,10 +673,8 @@ namespace ToolKit
     }
 
     // Output user about where are the output files
-    GetLogger()->WriteConsole(LogType::Success, "Building for web has been completed successfully.\n");
-    GetLogger()->WriteConsole(LogType::Memo,
-                              "Output files location: %s\n",
-                              std::filesystem::absolute(publishDirectory).string().c_str());
+    TK_SUC("Building for web has been completed successfully.\n");
+    TK_LOG("Output files location: %s\n", std::filesystem::absolute(publishDirectory).string().c_str());
 
     PlatformHelpers::OpenExplorer(publishDirectory);
     return 0;
