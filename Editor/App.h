@@ -196,7 +196,6 @@ namespace ToolKit
       EntityPtrArray m_perFrameDebugObjects;
       Arrow2dPtr m_dbgArrow;
       LineBatchPtr m_dbgFrustum;
-      EditorRendererPtr m_editorRenderer;
 
       // Editor states.
       int m_fps                                = 0;
