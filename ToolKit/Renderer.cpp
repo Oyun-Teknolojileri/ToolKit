@@ -35,8 +35,6 @@
 
 namespace ToolKit
 {
-  double Renderer::FEEDUNIFORMSDURATION = 0.0;
-
   Renderer::Renderer() {}
 
   void Renderer::Init()
@@ -747,9 +745,9 @@ namespace ToolKit
           glUniformMatrix4fv(loc, 1, false, &invTrModel[0][0]);
         }
         break;
-        case Uniform::LIGHT_DATA:
+        case Uniform::UNUSEDSLOT_6:
         {
-          FeedLightUniforms(program);
+          assert(false);
         }
         break;
         case Uniform::CAM_DATA_POS:
@@ -781,14 +779,14 @@ namespace ToolKit
           glUniform1f(loc, m_cam->Far());
         }
         break;
-        case Uniform::CAM_DATA:
+        case Uniform::UNUSEDSLOT_7:
         {
           if (m_cam == nullptr)
             break;
 
           const Vec3 pos           = m_cam->m_node->GetTranslation();
           const Vec3 dir           = m_cam->GetComponent<DirectionComponent>()->GetDirection();
-          String uniformStructName = GetUniformName(Uniform::CAM_DATA);
+          String uniformStructName = GetUniformName(Uniform::UNUSEDSLOT_7);
           loc                      = glGetUniformLocation(program->m_handle, (uniformStructName + ".pos").c_str());
           glUniform3fv(loc, 1, &pos.x);
           loc = glGetUniformLocation(program->m_handle, (uniformStructName + ".dir").c_str());

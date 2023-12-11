@@ -140,10 +140,12 @@ namespace ToolKit
       return "Model";
     case Uniform::INV_TR_MODEL:
       return "InverseTransModel";
-    case Uniform::LIGHT_DATA:
-      return "LightData";
-    case Uniform::CAM_DATA:
-      return "CamData";
+    case Uniform::UNUSEDSLOT_6:
+      TK_ASSERT_ONCE(false && "Old asset in use.");
+      return "UNUSEDSLOT_6";
+    case Uniform::UNUSEDSLOT_7:
+      TK_ASSERT_ONCE(false && "Old asset in use.");
+      return "UNUSEDSLOT_7";
     case Uniform::COLOR:
       return "Color";
     case Uniform::FRAME_COUNT:
@@ -345,6 +347,8 @@ namespace ToolKit
           case Uniform::UNUSEDSLOT_3:
           case Uniform::UNUSEDSLOT_4:
           case Uniform::UNUSEDSLOT_5:
+          case Uniform::UNUSEDSLOT_6:
+          case Uniform::UNUSEDSLOT_7:
             isUniformFound = true;
             continue;
           }
