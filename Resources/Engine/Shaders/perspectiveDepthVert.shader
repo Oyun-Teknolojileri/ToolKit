@@ -25,7 +25,6 @@
 		uniform mat4 View;
 		uniform mat4 Model;
 		uniform float Far;
-		uniform uint isSkinned;
 
 		void main()
 		{

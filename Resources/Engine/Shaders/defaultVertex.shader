@@ -18,7 +18,6 @@
       uniform mat4 ProjectViewModel;
       uniform mat4 InverseTransModel;
       uniform mat4 Model;
-      uniform uint isSkinned;
 
       uniform int normalMapInUse;
 

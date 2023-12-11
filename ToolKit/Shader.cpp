@@ -246,13 +246,17 @@ namespace ToolKit
       return "LightData.shadowBias";
     case Uniform::LIGHT_DATA_ACTIVECOUNT:
       return "LightData.activeCount";
+    case Uniform::IS_SKINNED:
+      return "isSkinned";
+    case Uniform::NUM_BONES:
+      return "numBones";
     case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";
     }
   }
 
-  XmlNode* Shader::SerializeImp(XmlDocument* doc, XmlNode* parent) const { return nullptr;}
+  XmlNode* Shader::SerializeImp(XmlDocument* doc, XmlNode* parent) const { return nullptr; }
 
   XmlNode* Shader::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {

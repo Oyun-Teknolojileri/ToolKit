@@ -24,13 +24,13 @@
 #include "Shader.h"
 #include "Skeleton.h"
 #include "Surface.h"
+#include "TKAssert.h"
 #include "TKOpenGL.h"
 #include "TKProfiler.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
-#include "TKAssert.h"
 
 #include "DebugNew.h"
 
@@ -168,7 +168,7 @@ namespace ToolKit
 
     auto activateSkinning = [prg, &job](uint isSkinned)
     {
-      GLint isSkinnedLoc = glGetUniformLocation(prg->m_handle, "isSkinned");
+      GLint isSkinnedLoc = prg->GetUniformLocation(Uniform::IS_SKINNED);
       glUniform1ui(isSkinnedLoc, isSkinned);
 
       if (job.SkeletonCmp == nullptr)
@@ -178,7 +178,7 @@ namespace ToolKit
 
       if (isSkinned)
       {
-        GLint numBonesLoc = glGetUniformLocation(prg->m_handle, "numBones");
+        GLint numBonesLoc = prg->GetUniformLocation(Uniform::NUM_BONES);
         float boneCount   = (float) job.SkeletonCmp->GetSkeletonResourceVal()->m_bones.size();
 
         glUniform1fv(numBonesLoc, 1, &boneCount);
@@ -935,7 +935,7 @@ namespace ToolKit
 
       POP_CPU_MARKER();
       PUSH_CPU_MARKER("Parameter Defined Shader Uniforms");
-  
+
       // Custom variables.
       for (auto& var : shader->m_shaderParams)
       {
