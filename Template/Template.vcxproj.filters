@@ -6,13 +6,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Game.h">
-      <Filter>Source</Filter>
-    </ClInclude>
+    <ClInclude Include="Codes/Game.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Game.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
+    <ClCompile Include="Codes/Game.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Codes\CMakeLists.txt" />
   </ItemGroup>
 </Project>
