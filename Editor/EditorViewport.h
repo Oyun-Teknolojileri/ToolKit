@@ -97,6 +97,8 @@ namespace ToolKit
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;
 
+      EditorRendererPtr m_editorRenderer;
+
      protected:
       Vec2 m_contentAreaMin;
       Vec2 m_contentAreaMax;

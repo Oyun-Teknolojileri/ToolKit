@@ -13,7 +13,6 @@
 #include "Logger.h"
 #include "Material.h"
 #include "RenderSystem.h"
-#include "RendererGlobals.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
 #include "ToolKit.h"
@@ -576,7 +575,7 @@ namespace ToolKit
 
   TextureManager::~TextureManager() {}
 
-    bool TextureManager::CanStore(ClassMeta* Class)
+  bool TextureManager::CanStore(ClassMeta* Class)
   {
     if (Class->IsSublcassOf(Texture::StaticClass()))
     {
@@ -585,6 +584,7 @@ namespace ToolKit
 
     return false;
   }
+
   String TextureManager::GetDefaultResource(ClassMeta* Class)
   {
     if (Class == Hdri::StaticClass())

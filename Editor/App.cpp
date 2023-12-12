@@ -266,12 +266,12 @@ namespace ToolKit
                                                 GetUIManager()->UpdateLayers(deltaTime, viewport);
                                               }
 
-                                              m_editorRenderer->m_params.UseMobileRenderPath =
+                                              viewport->m_editorRenderer->m_params.UseMobileRenderPath =
                                                   GetEngineSettings().Graphics.RenderSpec == RenderingSpec::Mobile;
-                                              m_editorRenderer->m_params.App      = g_app;
-                                              m_editorRenderer->m_params.LitMode  = m_sceneLightingMode;
-                                              m_editorRenderer->m_params.Viewport = viewport;
-                                              m_editorRenderer->Render(renderer);
+                                              viewport->m_editorRenderer->m_params.App      = g_app;
+                                              viewport->m_editorRenderer->m_params.LitMode  = m_sceneLightingMode;
+                                              viewport->m_editorRenderer->m_params.Viewport = viewport;
+                                              viewport->m_editorRenderer->Render(renderer);
                                             }});
         }
       }
@@ -678,8 +678,13 @@ namespace ToolKit
         wnd->ClearOutliner();
       }
 
-      // Kill all the object references in the renderer.
-      m_editorRenderer = MakeNewPtr<EditorRenderer>();
+      for (Window* wnd : m_windows)
+      {
+        if (wnd->IsViewport())
+        {
+          static_cast<EditorViewport*>(wnd)->m_editorRenderer = MakeNewPtr<EditorRenderer>();
+        }
+      }
 
       // Clear all animations potentially added from game module.
       GetAnimationPlayer()->m_records.clear();
@@ -1544,7 +1549,6 @@ namespace ToolKit
     void App::CreateEditorEntities()
     {
       // Create editor objects.
-      m_editorRenderer = MakeNewPtr<EditorRenderer>();
       m_cursor         = MakeNewPtr<Cursor>();
       m_origin         = MakeNewPtr<Axis3d>();
 

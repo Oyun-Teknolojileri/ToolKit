@@ -63,6 +63,8 @@ namespace ToolKit
     {
       m_name = g_viewportStr + " " + std::to_string(m_id);
       Init({640.0f, 480.0f});
+
+      m_editorRenderer = MakeNewPtr<EditorRenderer>();
     }
 
     EditorViewport::~EditorViewport() {}

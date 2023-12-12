@@ -9,6 +9,8 @@
 
 #include "Logger.h"
 #include "ToolKit.h"
+#include "Util.h"
+#include "ObjectFactory.h"
 
 #include "DebugNew.h"
 

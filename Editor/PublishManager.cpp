@@ -25,6 +25,8 @@ namespace ToolKit
   {
     void PublishManager::Publish(PublishPlatform platform)
     {
+      g_app->PackResources();
+
       if (m_isBuilding)
       {
         TK_WRN("Toolkit already building an project");
