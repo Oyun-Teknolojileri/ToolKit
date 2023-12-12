@@ -11,7 +11,6 @@
 #include "GpuProgram.h"
 #include "Primative.h"
 #include "RenderState.h"
-#include "RendererGlobals.h"
 #include "Sky.h"
 #include "Types.h"
 #include "Viewport.h"

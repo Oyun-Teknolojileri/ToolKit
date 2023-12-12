@@ -14,7 +14,7 @@
 
 #include "Object.h"
 #include "Types.h"
-#include "tkplatform.h"
+#include "TKPlatform.h"
 
 /**
  * Base name space for all the ToolKit functionalities.

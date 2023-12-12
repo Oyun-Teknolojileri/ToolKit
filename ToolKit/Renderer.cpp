@@ -98,7 +98,7 @@ namespace ToolKit
       CubeMapPtr specularEnvMap  = hdriPtr->m_specularEnvMap;
 
       GenerateBRDFLutTexture();
-      RenderTargetPtr brdfLut = GetTextureManager()->Create<RenderTarget>(TK_BRDF_LUT_TEXTURE);
+      RenderTargetPtr brdfLut = GetTextureManager()->Create<RenderTarget>(TKBrdfLutTexture);
 
       if (diffuseEnvMap && specularEnvMap && brdfLut)
       {
@@ -641,7 +641,7 @@ namespace ToolKit
 
   void Renderer::GenerateBRDFLutTexture()
   {
-    if (!GetTextureManager()->Exist(TK_BRDF_LUT_TEXTURE))
+    if (!GetTextureManager()->Exist(TKBrdfLutTexture))
     {
       MaterialPtr prevOverrideMaterial = m_overrideMat;
       FramebufferPtr prevFrameBuffer   = GetFrameBuffer();
@@ -678,7 +678,7 @@ namespace ToolKit
       RenderJobProcessor::CreateRenderJobs(oneQuad, jobs);
       Render(jobs, camera, {});
 
-      brdfLut->SetFile(TK_BRDF_LUT_TEXTURE);
+      brdfLut->SetFile(TKBrdfLutTexture);
       GetTextureManager()->Manage(brdfLut);
 
       m_overrideMat = prevOverrideMaterial;

@@ -1,3 +1,0 @@
-#pragma once
-
-#define TK_BRDF_LUT_TEXTURE "GLOBAL_BRDF_LUT_TEXTURE"
