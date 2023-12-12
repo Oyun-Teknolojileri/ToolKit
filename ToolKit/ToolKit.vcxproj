@@ -139,7 +139,6 @@
     <ClInclude Include="OutlinePass.h" />
     <ClInclude Include="Pass.h" />
     <ClInclude Include="PostProcessPass.h" />
-    <ClInclude Include="RendererGlobals.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="SceneRenderPath.h" />
     <ClInclude Include="Light.h" />
@@ -175,7 +174,7 @@
     <ClInclude Include="TKAssert.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="TKImage.h" />
-    <ClInclude Include="tkplatform.h" />
+    <ClInclude Include="TKPlatform.h" />
     <ClInclude Include="TKProfiler.h" />
     <ClInclude Include="ToneMapPass.h" />
     <ClInclude Include="AdditiveLightingPass.h" />
