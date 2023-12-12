@@ -678,6 +678,14 @@ namespace ToolKit
         wnd->ClearOutliner();
       }
 
+      for (Window* wnd : m_windows)
+      {
+        if (wnd->IsViewport())
+        {
+          static_cast<EditorViewport*>(wnd)->m_editorRenderer = MakeNewPtr<EditorRenderer>();
+        }
+      }
+
       // Clear all animations potentially added from game module.
       GetAnimationPlayer()->m_records.clear();
 
