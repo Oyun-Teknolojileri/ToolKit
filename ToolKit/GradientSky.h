@@ -26,8 +26,8 @@ namespace ToolKit
    protected:
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
-    void GenerateGradientCubemap();
-    void GenerateIrradianceCubemap();
+    void GenerateGradientCubemap(Renderer* renderer);
+    void GenerateIrradianceCubemap(Renderer* renderer);
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
