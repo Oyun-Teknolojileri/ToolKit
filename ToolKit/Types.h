@@ -346,7 +346,6 @@ namespace ToolKit
     FormatRGBA32F              = 0x8814,
     FormatR16SNorm             = 0x8F98,
     FormatSRGB8_A8             = 0x8C43,
-    FormatDepthComponent       = 0x1902,
     ColorAttachment0           = 0x8CE0,
     DepthAttachment            = 0x8D00,
     TypeFloat                  = 0x1406,
@@ -355,6 +354,41 @@ namespace ToolKit
     TargetCubeMap              = 0x8513,
     Target2DArray              = 0x8C1A
   };
+
+  inline int BytesOfFormat(GraphicTypes type)
+  {
+    switch (type)
+    {
+    case GraphicTypes::FormatRed:
+    case GraphicTypes::FormatR8:
+      return 1;
+    case GraphicTypes::FormatRG:
+    case GraphicTypes::FormatRG8:
+    case GraphicTypes::FormatR16F:
+    case GraphicTypes::FormatR16SNorm:
+      return 2;
+    case GraphicTypes::FormatRGB:
+    case GraphicTypes::FormatRGB8:
+      return 3;
+    case GraphicTypes::FormatRGBA:
+    case GraphicTypes::FormatRGBA8:
+    case GraphicTypes::FormatR32F:
+    case GraphicTypes::FormatRG16F:
+    case GraphicTypes::FormatSRGB8_A8:
+      return 4;
+    case GraphicTypes::FormatRG32F:
+    case GraphicTypes::FormatRGBA16F:
+      return 8;
+    case GraphicTypes::FormatRGB16F:
+      return 6;
+    case GraphicTypes::FormatRGB32F:
+      return 12;
+    case GraphicTypes::FormatRGBA32F:
+      return 16;
+    default:
+      return 0;
+    }
+  }
 
   static const String TKBrdfLutTexture = "GLOBAL_BRDF_LUT_TEXTURE";
 

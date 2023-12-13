@@ -14,6 +14,7 @@
 #include "Shader.h"
 #include "TKOpenGL.h"
 #include "TKProfiler.h"
+#include "TKStats.h"
 #include "ToolKit.h"
 
 #include <random>
@@ -48,10 +49,16 @@ namespace ToolKit
 
     glBindTexture(GL_TEXTURE_2D, currId);
 
+    TKStats::AddVRAMUsageInBytes(m_width * m_height * m_formatSize);
+
     m_initiated = true;
   }
 
-  SSAONoiseTexture::SSAONoiseTexture() {}
+  SSAONoiseTexture::SSAONoiseTexture()
+  {
+    // RG32 is the format
+    m_formatSize = 8;
+  }
 
   void SSAONoiseTexture::Init(bool flushClientSideArray)
   {

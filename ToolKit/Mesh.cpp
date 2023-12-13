@@ -14,6 +14,7 @@
 #include "ResourceManager.h"
 #include "Skeleton.h"
 #include "TKOpenGL.h"
+#include "TKStats.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "Util.h"
@@ -136,6 +137,9 @@ namespace ToolKit
       GLuint buffers[2] = {m_vboIndexId, m_vboVertexId};
       glDeleteBuffers(2, buffers);
       glDeleteVertexArrays(1, &m_vaoId);
+
+      TKStats::RemoveVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
+      TKStats::RemoveVRAMUsageInBytes(sizeof(uint) * m_indexCount);
     }
     m_vboVertexId = 0;
     m_vboIndexId  = 0;
@@ -185,6 +189,8 @@ namespace ToolKit
       uint size = GetVertexSize() * m_vertexCount;
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
+
+      TKStats::AddVRAMUsageInBytes(size);
     }
 
     if (m_indexCount > 0)
@@ -195,6 +201,8 @@ namespace ToolKit
       uint size = sizeof(uint) * m_indexCount;
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
+
+      TKStats::AddVRAMUsageInBytes(size);
     }
 
     cpy->m_material = GetMaterialManager()->Copy<Material>(m_material);
@@ -566,6 +574,8 @@ namespace ToolKit
                    m_clientSideVertices.data(),
                    GL_STATIC_DRAW);
       m_vertexCount = (uint) m_clientSideVertices.size();
+
+      TKStats::AddVRAMUsageInBytes((uint)(GetVertexSize() * m_clientSideVertices.size()));
     }
 
     m_vertexCount = (uint) m_clientSideVertices.size();
@@ -588,6 +598,8 @@ namespace ToolKit
                    m_clientSideIndices.data(),
                    GL_STATIC_DRAW);
       m_indexCount = (uint) m_clientSideIndices.size();
+
+      TKStats::AddVRAMUsageInBytes((uint)(sizeof(uint) * m_clientSideIndices.size()));
     }
 
     m_indexCount = (uint) m_clientSideIndices.size();
@@ -628,7 +640,10 @@ namespace ToolKit
     Mesh::Init(false);
   }
 
-  void SkinMesh::UnInit() { m_initiated = false; }
+  void SkinMesh::UnInit()
+  {
+    Mesh::UnInit();
+  }
 
   void SkinMesh::Load()
   {
@@ -744,6 +759,8 @@ namespace ToolKit
                    m_clientSideVertices.data(),
                    GL_STATIC_DRAW);
       m_vertexCount = (uint) m_clientSideVertices.size();
+
+      TKStats::AddVRAMUsageInBytes((uint)(GetVertexSize() * m_clientSideVertices.size()));
     }
 
     if (flush)

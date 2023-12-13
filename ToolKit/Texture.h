@@ -20,6 +20,8 @@ namespace ToolKit
     GraphicTypes Type            = GraphicTypes::TypeUnsignedByte;
     GraphicTypes MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
     bool GenerateMipMap          = true;
+    GraphicTypes Target          = GraphicTypes::Target2D;
+    int Layers                   = -1;
   };
 
   class TK_API Texture : public Resource
@@ -80,7 +82,7 @@ namespace ToolKit
 
     CubeMap();
     CubeMap(const String& file);
-    ~CubeMap();
+    virtual ~CubeMap();
 
     using Texture::NativeConstruct;
 

@@ -11,6 +11,7 @@
 #include "Light.h"
 #include "Renderer.h"
 #include "TKOpenGL.h"
+#include "TKStats.h"
 
 #include "DebugNew.h"
 
@@ -21,7 +22,11 @@ namespace ToolKit
 
   TKDefineClass(DataTexture, Texture);
 
-  DataTexture::DataTexture() {}
+  DataTexture::DataTexture()
+  {
+// RGBA32 is the format
+    m_formatSize = 16;
+  }
 
   void DataTexture::Load() { assert(false); }
 
@@ -50,6 +55,8 @@ namespace ToolKit
     glBindTexture(GL_TEXTURE_2D, m_textureId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, nullptr);
 
+    TKStats::AddVRAMUsageInBytes(m_width * m_height * m_formatSize);
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
@@ -60,8 +67,14 @@ namespace ToolKit
 
   void DataTexture::UnInit()
   {
-    glDeleteTextures(1, &m_textureId);
-    m_initiated = false;
+    if (m_initiated)
+    {
+      glDeleteTextures(1, &m_textureId);
+
+      TKStats::RemoveVRAMUsageInBytes(m_width * m_height * m_formatSize);
+
+      m_initiated = false;
+    }
   }
 
   // LightDataTexture

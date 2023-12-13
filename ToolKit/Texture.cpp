@@ -16,6 +16,7 @@
 #include "Shader.h"
 #include "TKOpenGL.h"
 #include "ToolKit.h"
+#include "TKStats.h"
 
 #include "DebugNew.h"
 
@@ -109,6 +110,8 @@ namespace ToolKit
                    GL_RGBA,
                    GL_UNSIGNED_BYTE,
                    m_image);
+
+      TKStats::AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
     }
     else
     {
@@ -121,6 +124,8 @@ namespace ToolKit
                    GL_RGBA,
                    GL_FLOAT,
                    m_imagef);
+
+      TKStats::AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
     }
 
     if (m_textureSettings.GenerateMipMap)
@@ -155,6 +160,23 @@ namespace ToolKit
     glDeleteTextures(1, &m_textureId);
     m_textureId = 0;
     m_initiated = false;
+
+    if (m_textureSettings.Target == GraphicTypes::Target2D)
+    {
+      TKStats::RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
+    }
+    else if (m_textureSettings.Target == GraphicTypes::Target2DArray)
+    {
+      TKStats::RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) * m_textureSettings.Layers);
+    }
+    else if (m_textureSettings.Target == GraphicTypes::TargetCubeMap)
+    {
+      TKStats::RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) * 6);
+    }
+    else
+    {
+      assert(false);
+    }
   }
 
   const TextureSettings& Texture::GetTextureSettings() { return m_textureSettings; }
@@ -195,6 +217,8 @@ namespace ToolKit
     glBindRenderbuffer(GL_RENDERBUFFER, m_textureId);
     GLenum component = stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT24;
     glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
+
+    TKStats::AddVRAMUsageInBytes(m_width * m_height * 4);
   }
 
   void DepthTexture::UnInit()
@@ -293,6 +317,10 @@ namespace ToolKit
       return;
     }
 
+    // This will be used when deleting the texture
+    m_textureSettings.InternalFormat = GraphicTypes::FormatRGBA;
+    m_textureSettings.Target = GraphicTypes::TargetCubeMap;
+
     GLint currId;
     glGetIntegerv(GL_TEXTURE_CUBE_MAP, &currId);
 
@@ -310,6 +338,8 @@ namespace ToolKit
     {
       glTexImage2D(sides[i], 0, GL_RGBA, m_width, m_width, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_images[i]);
     }
+
+    TKStats::AddVRAMUsageInBytes(m_width * m_height * 4 * 6);
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
@@ -334,6 +364,7 @@ namespace ToolKit
   void CubeMap::UnInit()
   {
     Texture::UnInit();
+
     Clear();
     m_initiated = false;
   }
@@ -481,6 +512,11 @@ namespace ToolKit
       return;
     }
 
+    // This will be used when deleting the texture
+    m_textureSettings.InternalFormat = m_settings.InternalFormat;
+    m_textureSettings.Target         = m_settings.Target;
+    m_textureSettings.Layers         = m_settings.Layers;
+
     GLint currId = 0; // Don't override the current render target.
     if (m_settings.Target == GraphicTypes::Target2D)
     {
@@ -510,6 +546,8 @@ namespace ToolKit
                    (int) m_settings.Format,
                    (int) m_settings.Type,
                    0);
+
+      TKStats::AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
     }
     else if (m_settings.Target == GraphicTypes::TargetCubeMap)
     {
@@ -525,10 +563,14 @@ namespace ToolKit
                      (int) m_settings.Type,
                      0);
       }
+
+      TKStats::AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) * 6);
     }
     else if (m_settings.Target == GraphicTypes::Target2DArray)
     {
       glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, (int) m_settings.InternalFormat, m_width, m_height, m_settings.Layers);
+
+      TKStats::AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) * m_settings.Layers);
     }
 
     glTexParameteri((int) m_settings.Target, GL_TEXTURE_WRAP_S, (int) m_settings.WarpS);
