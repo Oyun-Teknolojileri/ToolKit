@@ -49,11 +49,18 @@ namespace ToolKit
     m_onInit = true;
     RenderTask task {[this](Renderer* renderer) -> void
                      {
+                       if (m_initialized)
+                       {
+                         return;
+                       }
+
                        // Render gradient to cubemap and store the output
                        GenerateGradientCubemap();
 
                        // Create irradiance map from cubemap and set
                        GenerateIrradianceCubemap();
+
+                       m_initialized = true;
                      }};
 
     GetRenderSystem()->AddRenderTask(task);
@@ -110,7 +117,6 @@ namespace ToolKit
                                            GraphicTypes::TypeUnsignedByte};
 
           RenderTargetPtr cubemap       = MakeNewPtr<RenderTarget>(m_size, m_size, set);
-
           cubemap->Init();
 
           // Create material
@@ -160,8 +166,24 @@ namespace ToolKit
           renderer->EnableDepthTest(true);
 
           // Take the ownership of render target.
-          GetHdri()->m_cubemap = MakeNewPtr<CubeMap>(cubemap->m_textureId);
+          CubeMapPtr hdriCubeMap = MakeNewPtr<CubeMap>();
+          GetHdri()->m_cubemap   = hdriCubeMap;
 
+          TextureSettings textureSettings;
+          textureSettings.GenerateMipMap  = false;
+          textureSettings.InternalFormat  = cubemap->m_settings.InternalFormat;
+          textureSettings.MinFilter       = cubemap->m_settings.MinFilter;
+          textureSettings.MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
+          textureSettings.Target          = GraphicTypes::TargetCubeMap;
+          textureSettings.Type            = GraphicTypes::TypeFloat;
+
+          hdriCubeMap->m_textureId        = cubemap->m_textureId;
+          hdriCubeMap->m_width            = cubemap->m_width;
+          hdriCubeMap->m_height           = cubemap->m_height;
+          hdriCubeMap->m_initiated        = true;
+          hdriCubeMap->SetTextureSettings(textureSettings);
+
+          cubemap->m_initiated = false;
           cubemap->m_textureId = 0;
           cubemap              = nullptr;
         }};

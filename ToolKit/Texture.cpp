@@ -15,8 +15,8 @@
 #include "RenderSystem.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
-#include "ToolKit.h"
 #include "TKStats.h"
+#include "ToolKit.h"
 
 #include "DebugNew.h"
 
@@ -172,7 +172,8 @@ namespace ToolKit
     }
     else if (m_textureSettings.Target == GraphicTypes::Target2DArray)
     {
-      TKStats::RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) * m_textureSettings.Layers);
+      TKStats::RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) *
+                                      m_textureSettings.Layers);
     }
     else if (m_textureSettings.Target == GraphicTypes::TargetCubeMap)
     {
@@ -248,7 +249,7 @@ namespace ToolKit
 
   CubeMap::CubeMap(const String& file) : Texture() { SetFile(file); }
 
-  CubeMap::~CubeMap() { UnInit(); }
+  CubeMap::~CubeMap() {}
 
   void CubeMap::Load()
   {
@@ -326,7 +327,7 @@ namespace ToolKit
 
     // This will be used when deleting the texture
     m_textureSettings.InternalFormat = GraphicTypes::FormatRGBA;
-    m_textureSettings.Target = GraphicTypes::TargetCubeMap;
+    m_textureSettings.Target         = GraphicTypes::TargetCubeMap;
 
     GLint currId;
     glGetIntegerv(GL_TEXTURE_CUBE_MAP, &currId);
@@ -442,6 +443,11 @@ namespace ToolKit
 
     RenderTask task = {[this, flushClientSideArray](Renderer* renderer) -> void
                        {
+                         if (m_initiated)
+                         {
+                           return;
+                         }
+
                          // Convert hdri image to cubemap images.
                          m_cubemap =
                              renderer->GenerateCubemapFrom2DTexture(GetTextureManager()->Create<Texture>(GetFile()),
@@ -524,7 +530,7 @@ namespace ToolKit
     m_textureSettings.Target         = m_settings.Target;
     m_textureSettings.Layers         = m_settings.Layers;
 
-    GLint currId = 0; // Don't override the current render target.
+    GLint currId                     = 0; // Don't override the current render target.
     if (m_settings.Target == GraphicTypes::Target2D)
     {
       glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
@@ -577,7 +583,8 @@ namespace ToolKit
     {
       glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, (int) m_settings.InternalFormat, m_width, m_height, m_settings.Layers);
 
-      TKStats::AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) * m_settings.Layers);
+      TKStats::AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) *
+                                   m_settings.Layers);
     }
 
     glTexParameteri((int) m_settings.Target, GL_TEXTURE_WRAP_S, (int) m_settings.WarpS);

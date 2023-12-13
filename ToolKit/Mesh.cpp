@@ -134,12 +134,19 @@ namespace ToolKit
     //  then GPU buffers may not be initialized, so don't need to call these
     if (m_initiated)
     {
+      if (m_vboVertexId)
+      {
+        TKStats::RemoveVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
+      }
+
+      if (m_vboIndexId)
+      {
+        TKStats::RemoveVRAMUsageInBytes(sizeof(uint) * m_indexCount);
+      }
+
       GLuint buffers[2] = {m_vboIndexId, m_vboVertexId};
       glDeleteBuffers(2, buffers);
       glDeleteVertexArrays(1, &m_vaoId);
-
-      TKStats::RemoveVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
-      TKStats::RemoveVRAMUsageInBytes(sizeof(uint) * m_indexCount);
     }
     m_vboVertexId = 0;
     m_vboIndexId  = 0;
@@ -559,6 +566,11 @@ namespace ToolKit
 
   void Mesh::InitVertices(bool flush)
   {
+    if (m_vboVertexId != 0)
+    {
+      TKStats::RemoveVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
+    }
+
     glDeleteBuffers(1, &m_vboVertexId);
     glDeleteVertexArrays(1, &m_vaoId);
 
@@ -587,6 +599,11 @@ namespace ToolKit
 
   void Mesh::InitIndices(bool flush)
   {
+    if (m_vboIndexId != 0)
+    {
+      TKStats::RemoveVRAMUsageInBytes(sizeof(uint) * m_indexCount);
+    }
+
     glDeleteBuffers(1, &m_vboIndexId);
 
     if (!m_clientSideIndices.empty())
@@ -640,10 +657,7 @@ namespace ToolKit
     Mesh::Init(false);
   }
 
-  void SkinMesh::UnInit()
-  {
-    Mesh::UnInit();
-  }
+  void SkinMesh::UnInit() { Mesh::UnInit(); }
 
   void SkinMesh::Load()
   {

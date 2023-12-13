@@ -1202,7 +1202,22 @@ namespace ToolKit
     SetFramebuffer(nullptr);
 
     // Take the ownership of render target.
-    CubeMapPtr cubeMap     = MakeNewPtr<CubeMap>(cubeMapRt->m_textureId);
+    TextureSettings textureSettings;
+    textureSettings.GenerateMipMap  = false;
+    textureSettings.InternalFormat  = cubeMapRt->m_settings.InternalFormat;
+    textureSettings.MinFilter       = cubeMapRt->m_settings.MinFilter;
+    textureSettings.MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
+    textureSettings.Target          = GraphicTypes::TargetCubeMap;
+    textureSettings.Type            = GraphicTypes::TypeFloat;
+
+    CubeMapPtr cubeMap              = MakeNewPtr<CubeMap>();
+    cubeMap->m_textureId            = cubeMapRt->m_textureId;
+    cubeMap->m_width                = cubeMapRt->m_width;
+    cubeMap->m_height               = cubeMapRt->m_height;
+    cubeMap->SetTextureSettings(textureSettings);
+    cubeMap->m_initiated   = true;
+
+    cubeMapRt->m_initiated = false;
     cubeMapRt->m_textureId = 0;
     cubeMapRt              = nullptr;
 
@@ -1272,7 +1287,22 @@ namespace ToolKit
     SetFramebuffer(nullptr);
 
     // Take the ownership of render target.
-    CubeMapPtr cubeMap     = MakeNewPtr<CubeMap>(cubeMapRt->m_textureId);
+    TextureSettings textureSettings;
+    textureSettings.GenerateMipMap  = false;
+    textureSettings.InternalFormat  = cubeMapRt->m_settings.InternalFormat;
+    textureSettings.MinFilter       = cubeMapRt->m_settings.MinFilter;
+    textureSettings.MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
+    textureSettings.Target          = GraphicTypes::TargetCubeMap;
+    textureSettings.Type            = GraphicTypes::TypeFloat;
+
+    CubeMapPtr cubeMap              = MakeNewPtr<CubeMap>();
+    cubeMap->m_textureId            = cubeMapRt->m_textureId;
+    cubeMap->m_width                = cubeMapRt->m_width;
+    cubeMap->m_height               = cubeMapRt->m_height;
+    cubeMap->SetTextureSettings(textureSettings);
+    cubeMap->m_initiated   = true;
+
+    cubeMapRt->m_initiated = false;
     cubeMapRt->m_textureId = 0;
     cubeMapRt              = nullptr;
 
@@ -1379,7 +1409,22 @@ namespace ToolKit
     SetViewportSize(lastViewportSize.x, lastViewportSize.y);
 
     // Take the ownership of render target.
-    CubeMapPtr cubeMap     = MakeNewPtr<CubeMap>(cubemapRt->m_textureId);
+    TextureSettings textureSettings;
+    textureSettings.GenerateMipMap  = false;
+    textureSettings.InternalFormat  = cubemapRt->m_settings.InternalFormat;
+    textureSettings.MinFilter       = cubemapRt->m_settings.MinFilter;
+    textureSettings.MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
+    textureSettings.Target          = GraphicTypes::TargetCubeMap;
+    textureSettings.Type            = GraphicTypes::TypeFloat;
+
+    CubeMapPtr cubeMap              = MakeNewPtr<CubeMap>();
+    cubeMap->m_textureId            = cubemapRt->m_textureId;
+    cubeMap->m_width                = cubemapRt->m_width;
+    cubeMap->m_height               = cubemapRt->m_height;
+    cubeMap->SetTextureSettings(textureSettings);
+    cubeMap->m_initiated   = true;
+
+    cubemapRt->m_initiated = false;
     cubemapRt->m_textureId = 0;
     cubemapRt              = nullptr;
 

@@ -146,6 +146,7 @@ namespace ToolKit
     TKDeclareClass(RenderTarget, Texture);
 
     RenderTarget();
+    virtual ~RenderTarget() {}
     virtual void NativeConstruct(uint widht, uint height, const RenderTargetSettigs& settings = RenderTargetSettigs());
     virtual void NativeConstruct(Texture* texture);
 
