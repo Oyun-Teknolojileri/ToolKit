@@ -162,10 +162,6 @@ namespace ToolKit
       return;
     }
 
-    glDeleteTextures(1, &m_textureId);
-    m_textureId = 0;
-    m_initiated = false;
-
     if (m_textureSettings.Target == GraphicTypes::Target2D)
     {
       TKStats::RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
@@ -183,6 +179,10 @@ namespace ToolKit
     {
       assert(false);
     }
+
+    glDeleteTextures(1, &m_textureId);
+    m_textureId = 0;
+    m_initiated = false;
   }
 
   const TextureSettings& Texture::GetTextureSettings() { return m_textureSettings; }
@@ -403,8 +403,8 @@ namespace ToolKit
 
     m_texToCubemapMat                 = MakeNewPtr<Material>();
     m_cubemapToDiffuseEnvMapMat       = MakeNewPtr<Material>();
-    m_diffuseEnvMap                   = MakeNewPtr<CubeMap>(0u);
-    m_equirectangularTexture          = MakeNewPtr<Texture>(0u);
+    m_diffuseEnvMap                   = MakeNewPtr<CubeMap>();
+    m_equirectangularTexture          = MakeNewPtr<Texture>();
   }
 
   Hdri::Hdri(const String& file) : Hdri() { SetFile(file); }

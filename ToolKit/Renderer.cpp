@@ -1295,18 +1295,18 @@ namespace ToolKit
     textureSettings.Target          = GraphicTypes::TargetCubeMap;
     textureSettings.Type            = GraphicTypes::TypeFloat;
 
-    CubeMapPtr cubeMap              = MakeNewPtr<CubeMap>();
-    cubeMap->m_textureId            = cubeMapRt->m_textureId;
-    cubeMap->m_width                = cubeMapRt->m_width;
-    cubeMap->m_height               = cubeMapRt->m_height;
-    cubeMap->SetTextureSettings(textureSettings);
-    cubeMap->m_initiated   = true;
+    CubeMapPtr newCubeMap           = MakeNewPtr<CubeMap>();
+    newCubeMap->m_textureId         = cubeMapRt->m_textureId;
+    newCubeMap->m_width             = cubeMapRt->m_width;
+    newCubeMap->m_height            = cubeMapRt->m_height;
+    newCubeMap->SetTextureSettings(textureSettings);
+    newCubeMap->m_initiated = true;
 
-    cubeMapRt->m_initiated = false;
-    cubeMapRt->m_textureId = 0;
-    cubeMapRt              = nullptr;
+    cubeMapRt->m_initiated  = false;
+    cubeMapRt->m_textureId  = 0;
+    cubeMapRt               = nullptr;
 
-    return cubeMap;
+    return newCubeMap;
   }
 
   CubeMapPtr Renderer::GenerateSpecularEnvMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps)
@@ -1417,18 +1417,18 @@ namespace ToolKit
     textureSettings.Target          = GraphicTypes::TargetCubeMap;
     textureSettings.Type            = GraphicTypes::TypeFloat;
 
-    CubeMapPtr cubeMap              = MakeNewPtr<CubeMap>();
-    cubeMap->m_textureId            = cubemapRt->m_textureId;
-    cubeMap->m_width                = cubemapRt->m_width;
-    cubeMap->m_height               = cubemapRt->m_height;
-    cubeMap->SetTextureSettings(textureSettings);
-    cubeMap->m_initiated   = true;
+    CubeMapPtr newCubeMap           = MakeNewPtr<CubeMap>();
+    newCubeMap->m_textureId         = cubemapRt->m_textureId;
+    newCubeMap->m_width             = cubemapRt->m_width;
+    newCubeMap->m_height            = cubemapRt->m_height;
+    newCubeMap->SetTextureSettings(textureSettings);
+    newCubeMap->m_initiated = true;
 
-    cubemapRt->m_initiated = false;
-    cubemapRt->m_textureId = 0;
-    cubemapRt              = nullptr;
+    cubemapRt->m_initiated  = false;
+    cubemapRt->m_textureId  = 0;
+    cubemapRt               = nullptr;
 
-    return cubeMap;
+    return newCubeMap;
   }
 
   void Renderer::ResetTextureSlots()
