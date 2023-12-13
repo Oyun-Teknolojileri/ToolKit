@@ -424,7 +424,7 @@ namespace ToolKit
 
   void Hdri::Init(bool flushClientSideArray)
   {
-    if (m_initiated)
+    if (m_initiated || m_waitingForInit)
     {
       return;
     }
@@ -440,6 +440,7 @@ namespace ToolKit
 
     // Only ready after cubemap constructed and irradiance calculated.
     m_initiated     = false;
+    m_waitingForInit = true;
 
     RenderTask task = {[this, flushClientSideArray](Renderer* renderer) -> void
                        {
@@ -466,6 +467,7 @@ namespace ToolKit
                          m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
 
                          m_initiated     = true;
+                         m_waitingForInit             = false;
                        }};
 
     GetRenderSystem()->AddRenderTask(task);
@@ -479,6 +481,8 @@ namespace ToolKit
       m_diffuseEnvMap->UnInit();
       m_specularEnvMap->UnInit();
     }
+
+    m_waitingForInit = false;
 
     Texture::UnInit();
   }

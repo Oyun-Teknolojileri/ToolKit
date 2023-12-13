@@ -91,11 +91,12 @@ namespace ToolKit
         [&](Value& oldVal, Value& newVal)
         {
           HdriPtr hdri           = GetHdriVal();
-          MultiChoiceVariant mcv = GetIBLTextureSizeVal();
+          int iblTexSize     = std::get<uint>(newVal);
+          int prevIblTexSize = std::get<uint>(oldVal);
 
-          if (hdri != nullptr)
+          if (hdri != nullptr && iblTexSize != prevIblTexSize)
           {
-            hdri->m_specularIBLTextureSize = mcv.GetValue<int>();
+            hdri->m_specularIBLTextureSize = (int)iblTexSize;
             ReInitHdri(hdri, GetExposureVal());
           }
          }

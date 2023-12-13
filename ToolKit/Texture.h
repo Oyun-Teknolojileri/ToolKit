@@ -123,6 +123,8 @@ namespace ToolKit
     MaterialPtr m_texToCubemapMat           = nullptr;
     MaterialPtr m_cubemapToDiffuseEnvMapMat = nullptr;
     TexturePtr m_equirectangularTexture     = nullptr;
+
+    bool m_waitingForInit                   = false;
   };
 
   struct RenderTargetSettigs
