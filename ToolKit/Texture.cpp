@@ -437,10 +437,7 @@ namespace ToolKit
 
     // Init 2D hdri texture
     Texture::Init(flushClientSideArray);
-
-    // Only ready after cubemap constructed and irradiance calculated.
     m_initiated     = false;
-    m_waitingForInit = true;
 
     RenderTask task = {[this, flushClientSideArray](Renderer* renderer) -> void
                        {
@@ -464,13 +461,14 @@ namespace ToolKit
                                                                              Renderer::RHIConstants::SpecularIBLLods);
 
                          // Generate diffuse irradience cubemap images
-                         m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
+                         m_diffuseEnvMap  = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
 
-                         m_initiated     = true;
-                         m_waitingForInit             = false;
+                         m_initiated      = true;
+                         m_waitingForInit = false;
                        }};
 
     GetRenderSystem()->AddRenderTask(task);
+    m_waitingForInit = true;
   }
 
   void Hdri::UnInit()

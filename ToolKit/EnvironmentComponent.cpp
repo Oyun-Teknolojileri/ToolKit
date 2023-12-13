@@ -116,9 +116,6 @@ namespace ToolKit
 
     ParamExposure().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
                                                  { ReInitHdri(GetHdriVal(), std::get<float>(newVal)); });
-
-    ParamHdri().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                             { ReInitHdri(std::get<HdriPtr>(newVal), GetExposureVal()); });
   }
 
   ComponentPtr EnvironmentComponent::Copy(EntityPtr ntt)

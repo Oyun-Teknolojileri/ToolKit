@@ -27,7 +27,7 @@ namespace ToolKit
 
   void GradientSky::Init()
   {
-    if (m_initialized)
+    if (m_initialized || m_waitingForInit)
     {
       return;
     }
@@ -41,12 +41,6 @@ namespace ToolKit
 
     ConstructSkyMaterial(vert, frag);
 
-    if (m_onInit)
-    {
-      return;
-    }
-
-    m_onInit = true;
     RenderTask task {[this](Renderer* renderer) -> void
                      {
                        if (m_initialized)
@@ -60,10 +54,12 @@ namespace ToolKit
                        // Create irradiance map from cubemap and set
                        GenerateIrradianceCubemap();
 
-                       m_initialized = true;
+                       m_initialized    = true;
+                       m_waitingForInit = false;
                      }};
 
     GetRenderSystem()->AddRenderTask(task);
+    m_waitingForInit = true;
   }
 
   MaterialPtr GradientSky::GetSkyboxMaterial()
@@ -203,12 +199,6 @@ namespace ToolKit
 
           hdr->m_specularEnvMap =
               renderer->GenerateSpecularEnvMap(hdr->m_cubemap, irRes, irRes, Renderer::RHIConstants::SpecularIBLLods);
-
-          if (m_onInit)
-          {
-            m_initialized = true;
-            m_onInit      = false;
-          }
         }};
 
     GetRenderSystem()->AddRenderTask(task);

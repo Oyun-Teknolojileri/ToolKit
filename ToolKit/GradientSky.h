@@ -39,7 +39,7 @@ namespace ToolKit
     uint m_size = 1024;
 
    private:
-    bool m_onInit = false;
+    bool m_waitingForInit = false;
   };
 
 } // namespace ToolKit
