@@ -4,23 +4,28 @@
 
 namespace ToolKit
 {
-  class TKStats
+  class TK_API TKStats
   {
    public:
-    static inline uint GetTotalVRAMUsageInBytes() { return m_totalVRAMUsageInBytes; }
+    static inline uint64 GetTotalVRAMUsageInBytes() { return m_totalVRAMUsageInBytes; }
 
-    static inline uint GetTotalVRAMUsageInKB() { return m_totalVRAMUsageInBytes / 1024; }
+    static inline uint64 GetTotalVRAMUsageInKB() { return m_totalVRAMUsageInBytes / 1024; }
 
-    static inline uint GetTotalVRAMUsageInMB() { return m_totalVRAMUsageInBytes / (1024 * 1024); }
+    static inline uint64 GetTotalVRAMUsageInMB() { return m_totalVRAMUsageInBytes / (1024 * 1024); }
 
-    static inline void AddVRAMUsageInBytes(uint bytes) { m_totalVRAMUsageInBytes += bytes; }
-
-    static inline void RemoveVRAMUsageInBytes(uint bytes)
+    static inline void AddVRAMUsageInBytes(uint64 bytes)
     {
+      volatile int yy           = 5;
+      m_totalVRAMUsageInBytes += bytes;
+      volatile int y           = 5;
+    }
+
+    static inline void RemoveVRAMUsageInBytes(uint64 bytes)
+    {
+      uint64 old               = m_totalVRAMUsageInBytes; 
       m_totalVRAMUsageInBytes -= bytes;
-      if (m_totalVRAMUsageInBytes < 0)
+      if (old < m_totalVRAMUsageInBytes)
       {
-        m_totalVRAMUsageInBytes = 0;
         TK_ASSERT_ONCE(false);
       }
     }
@@ -28,6 +33,6 @@ namespace ToolKit
     static inline void ResetVRAMUsage() { m_totalVRAMUsageInBytes = 0; }
 
    private:
-    static uint m_totalVRAMUsageInBytes;
+    static uint64 m_totalVRAMUsageInBytes;
   };
 } // namespace ToolKit

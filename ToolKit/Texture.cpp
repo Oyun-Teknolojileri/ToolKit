@@ -157,6 +157,11 @@ namespace ToolKit
 
   void Texture::UnInit()
   {
+    if (!m_initiated)
+    {
+      return;
+    }
+
     glDeleteTextures(1, &m_textureId);
     m_textureId = 0;
     m_initiated = false;
@@ -228,6 +233,8 @@ namespace ToolKit
       return;
     }
     glDeleteRenderbuffers(1, &m_textureId);
+
+    TKStats::RemoveVRAMUsageInBytes(m_width * m_height * 4);
 
     m_textureId = 0;
   }

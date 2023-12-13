@@ -2,5 +2,5 @@
 
 namespace ToolKit
 {
-  uint TKStats::m_totalVRAMUsageInBytes = 0;
+  uint64 TKStats::m_totalVRAMUsageInBytes = 0;
 }

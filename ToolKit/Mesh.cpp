@@ -575,7 +575,7 @@ namespace ToolKit
                    GL_STATIC_DRAW);
       m_vertexCount = (uint) m_clientSideVertices.size();
 
-      TKStats::AddVRAMUsageInBytes((uint)(GetVertexSize() * m_clientSideVertices.size()));
+      TKStats::AddVRAMUsageInBytes(GetVertexSize() * m_clientSideVertices.size());
     }
 
     m_vertexCount = (uint) m_clientSideVertices.size();
@@ -599,7 +599,7 @@ namespace ToolKit
                    GL_STATIC_DRAW);
       m_indexCount = (uint) m_clientSideIndices.size();
 
-      TKStats::AddVRAMUsageInBytes((uint)(sizeof(uint) * m_clientSideIndices.size()));
+      TKStats::AddVRAMUsageInBytes(sizeof(uint) * m_clientSideIndices.size());
     }
 
     m_indexCount = (uint) m_clientSideIndices.size();
@@ -760,7 +760,7 @@ namespace ToolKit
                    GL_STATIC_DRAW);
       m_vertexCount = (uint) m_clientSideVertices.size();
 
-      TKStats::AddVRAMUsageInBytes((uint)(GetVertexSize() * m_clientSideVertices.size()));
+      TKStats::AddVRAMUsageInBytes(GetVertexSize() * m_clientSideVertices.size());
     }
 
     if (flush)
