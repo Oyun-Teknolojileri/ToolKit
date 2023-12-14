@@ -99,7 +99,7 @@ namespace ToolKit
                                     &nttTransform,
                                     overrideBBoxExists,
                                     &overrideBBox,
-                                    castShadow](MeshPtr mesh)
+                                    castShadow](Mesh* mesh)
       {
         if (mesh)
         {
@@ -117,7 +117,7 @@ namespace ToolKit
           TransformAABB(job.BoundingBox, job.WorldTransform);
 
           job.ShadowCaster = castShadow;
-          job.Mesh         = mesh.get();
+          job.Mesh         = mesh;
           job.SkeletonCmp  = job.Mesh->IsSkinned() ? ntt->GetComponent<SkeletonComponent>() : nullptr;
 
           // Look material component first, if we can not find a corresponding material in there, look inside mesh. If
@@ -148,16 +148,11 @@ namespace ToolKit
         }
       };
 
-      static MeshPtrArray allMeshes;
-      allMeshes.push_back(parentMesh);
-      for (size_t i = 0; i < allMeshes.size(); ++i)
+      static MeshRawPtrArray allMeshes;
+      parentMesh->GetAllMeshes(allMeshes);
+      for (Mesh* mesh : allMeshes)
       {
-        MeshPtr currentMesh = allMeshes[i];
-        for (MeshPtr submesh : currentMesh->m_subMeshes)
-        {
-          allMeshes.push_back(submesh);
-        }
-        addRenderJobForMeshFn(currentMesh);
+        addRenderJobForMeshFn(mesh);
       }
       allMeshes.clear();
 
