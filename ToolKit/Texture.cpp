@@ -229,7 +229,7 @@ namespace ToolKit
 
   void DepthTexture::UnInit()
   {
-    if (m_textureId == 0)
+    if (m_textureId == 0 || !m_initiated)
     {
       return;
     }
@@ -238,6 +238,7 @@ namespace ToolKit
     TKStats::RemoveVRAMUsageInBytes(m_width * m_height * 4);
 
     m_textureId = 0;
+    m_initiated = false;
   }
 
   // CubeMap
