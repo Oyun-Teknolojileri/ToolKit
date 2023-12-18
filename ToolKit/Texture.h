@@ -148,7 +148,7 @@ namespace ToolKit
     TKDeclareClass(RenderTarget, Texture);
 
     RenderTarget();
-    virtual ~RenderTarget() {}
+    virtual ~RenderTarget();
     virtual void NativeConstruct(uint widht, uint height, const RenderTargetSettigs& settings = RenderTargetSettigs());
     virtual void NativeConstruct(Texture* texture);
 
@@ -160,9 +160,6 @@ namespace ToolKit
 
    public:
     RenderTargetSettigs m_settings;
-
-   private:
-    TextureSettings m_textureSettings;
   };
 
   class TK_API TextureManager : public ResourceManager

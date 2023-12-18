@@ -444,6 +444,7 @@ namespace ToolKit
                        {
                          if (m_initiated)
                          {
+                           m_waitingForInit = false;
                            return;
                          }
 
@@ -494,6 +495,16 @@ namespace ToolKit
   TKDefineClass(RenderTarget, Texture);
 
   RenderTarget::RenderTarget() : Texture() {}
+
+  RenderTarget::~RenderTarget()
+  {
+    m_textureSettings.GenerateMipMap = false;
+    m_textureSettings.InternalFormat = m_settings.InternalFormat;
+    m_textureSettings.Layers         = m_settings.Layers;
+    m_textureSettings.MinFilter      = m_settings.MinFilter;
+    m_textureSettings.Target         = m_settings.Target;
+    m_textureSettings.Type           = m_settings.Type;
+  }
 
   void RenderTarget::NativeConstruct(uint width, uint height, const RenderTargetSettigs& settings)
   {

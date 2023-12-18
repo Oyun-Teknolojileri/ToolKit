@@ -20,10 +20,15 @@ namespace ToolKit
 
   EnvironmentComponent::EnvironmentComponent() {}
 
-  EnvironmentComponent::~EnvironmentComponent() {}
+  EnvironmentComponent::~EnvironmentComponent() { UnInit(); }
 
   void EnvironmentComponent::Init(bool flushClientSideArray)
   {
+    if (m_initialized)
+    {
+      return;
+    }
+
     HdriPtr hdri = GetHdriVal();
     assert(hdri != nullptr && "Attempt to initialize hdri resource "
                               "that does not exist in environment component.");
@@ -36,6 +41,18 @@ namespace ToolKit
     hdri->m_specularIBLTextureSize = GetIBLTextureSizeVal().GetValue<int>();
     hdri->m_exposure               = GetExposureVal();
     hdri->Init(flushClientSideArray);
+
+    m_initialized = true;
+  }
+
+  void EnvironmentComponent::UnInit()
+  {
+    if (m_initialized)
+    {
+      HdriPtr hdri = GetHdriVal();
+      hdri->UnInit();
+      m_initialized = false;
+    }
   }
 
   void EnvironmentComponent::ParameterConstructor()
