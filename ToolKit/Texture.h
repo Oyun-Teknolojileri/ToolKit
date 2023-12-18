@@ -150,7 +150,6 @@ namespace ToolKit
     RenderTarget();
     virtual ~RenderTarget();
     virtual void NativeConstruct(uint widht, uint height, const RenderTargetSettigs& settings = RenderTargetSettigs());
-    virtual void NativeConstruct(Texture* texture);
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;

@@ -15,19 +15,19 @@ namespace ToolKit
 
     static inline void AddVRAMUsageInBytes(uint64 bytes)
     {
-      volatile int yy           = 5;
       m_totalVRAMUsageInBytes += bytes;
-      volatile int y           = 5;
     }
 
     static inline void RemoveVRAMUsageInBytes(uint64 bytes)
     {
       uint64 old               = m_totalVRAMUsageInBytes; 
-      m_totalVRAMUsageInBytes -= bytes;
-      if (old < m_totalVRAMUsageInBytes)
+
+      if (m_totalVRAMUsageInBytes < bytes)
       {
         TK_ASSERT_ONCE(false);
       }
+
+      m_totalVRAMUsageInBytes -= bytes;
     }
 
     static inline void ResetVRAMUsage() { m_totalVRAMUsageInBytes = 0; }

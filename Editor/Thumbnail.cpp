@@ -163,7 +163,11 @@ namespace ToolKit
 
     ThumbnailManager::ThumbnailManager() { m_defaultThumbnail = MakeNewPtr<RenderTarget>(10u, 10u); }
 
-    ThumbnailManager::~ThumbnailManager() { m_defaultThumbnail = nullptr; }
+    ThumbnailManager::~ThumbnailManager()
+    {
+      m_defaultThumbnail = nullptr;
+      m_thumbnailCache.clear();
+    }
 
     bool ThumbnailManager::IsDefaultThumbnail(RenderTargetPtr thumb) { return thumb == m_defaultThumbnail; }
 
