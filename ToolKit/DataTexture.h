@@ -29,7 +29,7 @@ namespace ToolKit
     void Load() override;
     void Clear() override;
 
-    int m_formatSize = 0;
+    int m_textureInternalFormatSize = 0;
   };
 
   typedef std::shared_ptr<DataTexture> DataTexturePtr;

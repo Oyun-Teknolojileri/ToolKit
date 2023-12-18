@@ -49,7 +49,7 @@ namespace ToolKit
 
     glBindTexture(GL_TEXTURE_2D, currId);
 
-    TKStats::AddVRAMUsageInBytes(m_width * m_height * m_formatSize);
+    TKStats::AddVRAMUsageInBytes(m_width * m_height * m_textureInternalFormatSize);
 
     m_initiated = true;
   }
@@ -57,7 +57,7 @@ namespace ToolKit
   SSAONoiseTexture::SSAONoiseTexture()
   {
     // RG32 is the format
-    m_formatSize = 8;
+    m_textureInternalFormatSize = 8;
   }
 
   void SSAONoiseTexture::Init(bool flushClientSideArray)

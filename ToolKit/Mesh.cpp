@@ -587,7 +587,7 @@ namespace ToolKit
                    GL_STATIC_DRAW);
       m_vertexCount = (uint) m_clientSideVertices.size();
 
-      TKStats::AddVRAMUsageInBytes(GetVertexSize() * m_clientSideVertices.size());
+      TKStats::AddVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
     }
 
     m_vertexCount = (uint) m_clientSideVertices.size();

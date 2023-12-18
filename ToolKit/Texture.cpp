@@ -224,7 +224,8 @@ namespace ToolKit
     GLenum component = stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT24;
     glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
 
-    TKStats::AddVRAMUsageInBytes(m_width * m_height * 4);
+    uint64 internalFormatSize = stencil ? 4 : 3;
+    TKStats::AddVRAMUsageInBytes(m_width * m_height * internalFormatSize);
   }
 
   void DepthTexture::UnInit()
@@ -235,7 +236,8 @@ namespace ToolKit
     }
     glDeleteRenderbuffers(1, &m_textureId);
 
-    TKStats::RemoveVRAMUsageInBytes(m_width * m_height * 4);
+    uint64 internalFormatSize = m_stencil ? 4 : 3;
+    TKStats::RemoveVRAMUsageInBytes(m_width * m_height * internalFormatSize);
 
     m_textureId = 0;
     m_initiated = false;
@@ -574,7 +576,7 @@ namespace ToolKit
                    (int) m_settings.Type,
                    0);
 
-      TKStats::AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
+      TKStats::AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
     }
     else if (m_settings.Target == GraphicTypes::TargetCubeMap)
     {
@@ -591,13 +593,13 @@ namespace ToolKit
                      0);
       }
 
-      TKStats::AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) * 6);
+      TKStats::AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * 6);
     }
     else if (m_settings.Target == GraphicTypes::Target2DArray)
     {
       glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, (int) m_settings.InternalFormat, m_width, m_height, m_settings.Layers);
 
-      TKStats::AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) *
+      TKStats::AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) *
                                    m_settings.Layers);
     }
 

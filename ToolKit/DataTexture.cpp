@@ -24,8 +24,8 @@ namespace ToolKit
 
   DataTexture::DataTexture()
   {
-// RGBA32 is the format
-    m_formatSize = 16;
+    // RGBA32 is the format
+    m_textureInternalFormatSize = 16;
   }
 
   void DataTexture::Load() { assert(false); }
@@ -55,7 +55,7 @@ namespace ToolKit
     glBindTexture(GL_TEXTURE_2D, m_textureId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, nullptr);
 
-    TKStats::AddVRAMUsageInBytes(m_width * m_height * m_formatSize);
+    TKStats::AddVRAMUsageInBytes(m_width * m_height * m_textureInternalFormatSize);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -71,7 +71,7 @@ namespace ToolKit
     {
       glDeleteTextures(1, &m_textureId);
 
-      TKStats::RemoveVRAMUsageInBytes(m_width * m_height * m_formatSize);
+      TKStats::RemoveVRAMUsageInBytes(m_width * m_height * m_textureInternalFormatSize);
 
       m_initiated = false;
     }
