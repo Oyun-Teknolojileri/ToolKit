@@ -19,6 +19,7 @@
 #include <PluginManager.h>
 #include <Resource.h>
 #include <SDL.h>
+#include <TKStats.h>
 #include <UIManager.h>
 
 #include <sstream>
@@ -179,6 +180,8 @@ namespace ToolKit
     void App::Frame(float deltaTime)
     {
       m_deltaTime = deltaTime;
+
+      TKStats::ResetDrawCallCounter();
 
       PUSH_CPU_MARKER("UI Begin & Show UI");
 
@@ -1549,10 +1552,10 @@ namespace ToolKit
     void App::CreateEditorEntities()
     {
       // Create editor objects.
-      m_cursor         = MakeNewPtr<Cursor>();
-      m_origin         = MakeNewPtr<Axis3d>();
+      m_cursor = MakeNewPtr<Cursor>();
+      m_origin = MakeNewPtr<Axis3d>();
 
-      m_grid           = MakeNewPtr<Grid>();
+      m_grid   = MakeNewPtr<Grid>();
       m_grid->Resize(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0);
 
       m_2dGrid         = MakeNewPtr<Grid>();

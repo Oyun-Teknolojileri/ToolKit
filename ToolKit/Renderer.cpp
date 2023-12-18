@@ -31,6 +31,7 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
+#include "TKStats.h"
 
 #include "DebugNew.h"
 
@@ -205,6 +206,8 @@ namespace ToolKit
     {
       glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
     }
+
+    TKStats::AddDrawCall();
   }
 
   void Renderer::Render(const RenderJobArray& jobArray, CameraPtr cam, const LightPtrArray& lights)
