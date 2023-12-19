@@ -22,6 +22,7 @@
 #include "Shader.h"
 #include "TKOpenGL.h"
 #include "UIManager.h"
+#include "TKStats.h"
 
 #include "DebugNew.h"
 
@@ -69,6 +70,9 @@ namespace ToolKit
 
     m_logger = new Logger();
     m_logger->Log("Main Constructed");
+
+    m_tkStats = new TKStats();
+    m_tkStats->ResetVRAMUsage();
   }
 
   Main::~Main()
@@ -76,8 +80,11 @@ namespace ToolKit
     assert(m_initiated == false && "Uninitiate before destruct");
     m_proxy = nullptr;
 
+    SafeDel(m_tkStats);
+
     m_logger->Log("Main Destructed");
     SafeDel(m_logger);
+
   }
 
   void Main::PreInit()
@@ -296,6 +303,18 @@ namespace ToolKit
   FileManager* GetFileManager() { return Main::GetInstance()->m_fileManager; }
 
   TK_API ObjectFactory* GetObjectFactory() { return Main::GetInstance()->m_objectFactory; }
+
+  TK_API TKStats* GetTKStats()
+  {
+    if (Main* main = Main::GetInstance_noexcep())
+    {
+      return main->m_tkStats;
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
 
   EngineSettings& GetEngineSettings() { return *Main::GetInstance()->m_engineSettings; }
 

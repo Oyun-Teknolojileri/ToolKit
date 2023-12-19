@@ -181,7 +181,10 @@ namespace ToolKit
     {
       m_deltaTime = deltaTime;
 
-      TKStats::ResetDrawCallCounter();
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->ResetDrawCallCounter();
+      }
 
       PUSH_CPU_MARKER("UI Begin & Show UI");
 

@@ -207,7 +207,10 @@ namespace ToolKit
       glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
     }
 
-    TKStats::AddDrawCall();
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->AddDrawCall();
+    }
   }
 
   void Renderer::Render(const RenderJobArray& jobArray, CameraPtr cam, const LightPtrArray& lights)
