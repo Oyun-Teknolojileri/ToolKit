@@ -133,6 +133,7 @@
     <ClCompile Include="PublishManager.cpp" />
     <ClCompile Include="RenderSettingsView.cpp" />
     <ClCompile Include="SingleMaterialPass.cpp" />
+    <ClCompile Include="StatsView.cpp" />
     <ClCompile Include="StatusBar.cpp" />
     <ClCompile Include="Thumbnail.cpp" />
     <ClCompile Include="TopBar.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="PublishManager.h" />
     <ClInclude Include="RenderSettingsView.h" />
     <ClInclude Include="SingleMaterialPass.h" />
+    <ClInclude Include="StatsView.h" />
     <ClInclude Include="StatusBar.h" />
     <ClInclude Include="Thumbnail.h" />
     <ClInclude Include="TopBar.h" />

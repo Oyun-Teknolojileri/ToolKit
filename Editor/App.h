@@ -21,6 +21,7 @@
 #include "PropInspector.h"
 #include "PublishManager.h"
 #include "RenderSettingsView.h"
+#include "StatsView.h"
 #include "Thumbnail.h"
 #include "Workspace.h"
 
@@ -114,7 +115,9 @@ namespace ToolKit
       OutlinerWindow* GetOutliner();
       PropInspector* GetPropInspector();
       RenderSettingsView* GetRenderSettingsView();
+      StatsView* GetStatsView();
       void AddRenderSettingsView();
+      void AddStatsView();
 
       template <typename T>
       T* GetWindow(const String& name)
@@ -160,6 +163,11 @@ namespace ToolKit
       EditorViewport* GetSimulationWindow();
       void UpdateSimulation();
       float GetDeltaTime();
+
+      // Last Frame Stats
+      inline uint64 GetLastFrameDrawCallCount() { return m_lastFrameDrawCallCount; }
+
+      inline uint64 GetLastFrameHWRenderPassCount() { return m_lastFrameHWRenderPassCount; }
 
      protected:
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
@@ -231,9 +239,13 @@ namespace ToolKit
       // Internal states.
       bool m_onQuit = false;
       String m_newSceneName;
-      float m_deltaTime   = 0.0f;
-      bool m_isCompiling  = false;
-      bool m_reloadPlugin = false;
+      float m_deltaTime                   = 0.0f;
+      bool m_isCompiling                  = false;
+      bool m_reloadPlugin                 = false;
+
+      // Last Frame Stats
+      uint64 m_lastFrameDrawCallCount     = 0;
+      uint64 m_lastFrameHWRenderPassCount = 0;
     };
 
     extern void DebugMessage(const String& msg);

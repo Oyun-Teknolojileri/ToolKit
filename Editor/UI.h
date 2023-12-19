@@ -44,7 +44,8 @@ namespace ToolKit
         UNUSEDSLOT_1   = 6,
         PluginWindow   = 7,
         Viewport2d     = 8,
-        RenderSettings = 9
+        RenderSettings = 9,
+        Stats          = 10
       };
 
      public:
