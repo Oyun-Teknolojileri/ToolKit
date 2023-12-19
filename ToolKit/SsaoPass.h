@@ -21,6 +21,8 @@ namespace ToolKit
     SSAONoiseTexture();
     using DataTexture::NativeConstruct;
 
+    virtual ~SSAONoiseTexture() {}
+
     void Init(void* data);
 
    private:

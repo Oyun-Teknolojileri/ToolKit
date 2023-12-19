@@ -14,6 +14,7 @@
 #include "ResourceManager.h"
 #include "Skeleton.h"
 #include "TKOpenGL.h"
+#include "TKStats.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "Util.h"
@@ -133,6 +134,22 @@ namespace ToolKit
     //  then GPU buffers may not be initialized, so don't need to call these
     if (m_initiated)
     {
+      if (m_vboVertexId)
+      {
+        if (TKStats* tkStats = GetTKStats())
+        {
+          tkStats->RemoveVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
+        }
+      }
+
+      if (m_vboIndexId)
+      {
+        if (TKStats* tkStats = GetTKStats())
+        {
+          tkStats->RemoveVRAMUsageInBytes(sizeof(uint) * m_indexCount);
+        }
+      }
+
       GLuint buffers[2] = {m_vboIndexId, m_vboVertexId};
       glDeleteBuffers(2, buffers);
       glDeleteVertexArrays(1, &m_vaoId);
@@ -185,6 +202,11 @@ namespace ToolKit
       uint size = GetVertexSize() * m_vertexCount;
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
+
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->AddVRAMUsageInBytes(size);
+      }
     }
 
     if (m_indexCount > 0)
@@ -195,6 +217,11 @@ namespace ToolKit
       uint size = sizeof(uint) * m_indexCount;
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
+
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->AddVRAMUsageInBytes(size);
+      }
     }
 
     cpy->m_material = GetMaterialManager()->Copy<Material>(m_material);
@@ -551,6 +578,14 @@ namespace ToolKit
 
   void Mesh::InitVertices(bool flush)
   {
+    if (m_vboVertexId != 0)
+    {
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->RemoveVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
+      }
+    }
+
     glDeleteBuffers(1, &m_vboVertexId);
     glDeleteVertexArrays(1, &m_vaoId);
 
@@ -566,6 +601,11 @@ namespace ToolKit
                    m_clientSideVertices.data(),
                    GL_STATIC_DRAW);
       m_vertexCount = (uint) m_clientSideVertices.size();
+
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->AddVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
+      }
     }
 
     m_vertexCount = (uint) m_clientSideVertices.size();
@@ -577,6 +617,14 @@ namespace ToolKit
 
   void Mesh::InitIndices(bool flush)
   {
+    if (m_vboIndexId != 0)
+    {
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->RemoveVRAMUsageInBytes(sizeof(uint) * m_indexCount);
+      }
+    }
+
     glDeleteBuffers(1, &m_vboIndexId);
 
     if (!m_clientSideIndices.empty())
@@ -588,6 +636,11 @@ namespace ToolKit
                    m_clientSideIndices.data(),
                    GL_STATIC_DRAW);
       m_indexCount = (uint) m_clientSideIndices.size();
+
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->AddVRAMUsageInBytes(sizeof(uint) * m_clientSideIndices.size());
+      }
     }
 
     m_indexCount = (uint) m_clientSideIndices.size();
@@ -628,7 +681,7 @@ namespace ToolKit
     Mesh::Init(false);
   }
 
-  void SkinMesh::UnInit() { m_initiated = false; }
+  void SkinMesh::UnInit() { Mesh::UnInit(); }
 
   void SkinMesh::Load()
   {
@@ -744,6 +797,11 @@ namespace ToolKit
                    m_clientSideVertices.data(),
                    GL_STATIC_DRAW);
       m_vertexCount = (uint) m_clientSideVertices.size();
+
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->AddVRAMUsageInBytes(GetVertexSize() * m_clientSideVertices.size());
+      }
     }
 
     if (flush)

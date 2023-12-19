@@ -57,7 +57,7 @@ namespace ToolKit
 
     Skeleton();
     explicit Skeleton(const String& file);
-    ~Skeleton();
+    virtual ~Skeleton();
 
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
@@ -74,7 +74,7 @@ namespace ToolKit
    public:
     std::vector<StaticBone*> m_bones;
     DynamicBoneMap m_Tpose;
-    TexturePtr m_bindPoseTexture;
+    TexturePtr m_bindPoseTexture = nullptr;
   };
 
   class TK_API SkeletonManager : public ResourceManager

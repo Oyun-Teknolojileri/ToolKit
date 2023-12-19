@@ -20,6 +20,8 @@ namespace ToolKit
     GraphicTypes Type            = GraphicTypes::TypeUnsignedByte;
     GraphicTypes MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
     bool GenerateMipMap          = true;
+    GraphicTypes Target          = GraphicTypes::Target2D;
+    int Layers                   = -1;
   };
 
   class TK_API Texture : public Resource
@@ -80,7 +82,7 @@ namespace ToolKit
 
     CubeMap();
     CubeMap(const String& file);
-    ~CubeMap();
+    virtual ~CubeMap();
 
     using Texture::NativeConstruct;
 
@@ -121,6 +123,8 @@ namespace ToolKit
     MaterialPtr m_texToCubemapMat           = nullptr;
     MaterialPtr m_cubemapToDiffuseEnvMapMat = nullptr;
     TexturePtr m_equirectangularTexture     = nullptr;
+
+    bool m_waitingForInit                   = false;
   };
 
   struct RenderTargetSettigs
@@ -144,8 +148,8 @@ namespace ToolKit
     TKDeclareClass(RenderTarget, Texture);
 
     RenderTarget();
+    virtual ~RenderTarget();
     virtual void NativeConstruct(uint widht, uint height, const RenderTargetSettigs& settings = RenderTargetSettigs());
-    virtual void NativeConstruct(Texture* texture);
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
@@ -155,9 +159,6 @@ namespace ToolKit
 
    public:
     RenderTargetSettigs m_settings;
-
-   private:
-    TextureSettings m_textureSettings;
   };
 
   class TK_API TextureManager : public ResourceManager

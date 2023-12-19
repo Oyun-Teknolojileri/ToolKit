@@ -107,7 +107,7 @@ namespace ToolKit
 
     SkinMesh();
     explicit SkinMesh(const String& file);
-    ~SkinMesh();
+    virtual ~SkinMesh();
 
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;

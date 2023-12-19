@@ -15,6 +15,7 @@
 #include "RenderSystem.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
+#include "TKStats.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -109,6 +110,11 @@ namespace ToolKit
                    GL_RGBA,
                    GL_UNSIGNED_BYTE,
                    m_image);
+
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
+      }
     }
     else
     {
@@ -121,6 +127,11 @@ namespace ToolKit
                    GL_RGBA,
                    GL_FLOAT,
                    m_imagef);
+
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
+      }
     }
 
     if (m_textureSettings.GenerateMipMap)
@@ -152,6 +163,38 @@ namespace ToolKit
 
   void Texture::UnInit()
   {
+    if (!m_initiated)
+    {
+      return;
+    }
+
+    if (m_textureSettings.Target == GraphicTypes::Target2D)
+    {
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
+      }
+    }
+    else if (m_textureSettings.Target == GraphicTypes::Target2DArray)
+    {
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) *
+                                        m_textureSettings.Layers);
+      }
+    }
+    else if (m_textureSettings.Target == GraphicTypes::TargetCubeMap)
+    {
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) * 6);
+      }
+    }
+    else
+    {
+      assert(false);
+    }
+
     glDeleteTextures(1, &m_textureId);
     m_textureId = 0;
     m_initiated = false;
@@ -195,17 +238,30 @@ namespace ToolKit
     glBindRenderbuffer(GL_RENDERBUFFER, m_textureId);
     GLenum component = stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT24;
     glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
+
+    uint64 internalFormatSize = stencil ? 4 : 3;
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->AddVRAMUsageInBytes(m_width * m_height * internalFormatSize);
+    }
   }
 
   void DepthTexture::UnInit()
   {
-    if (m_textureId == 0)
+    if (m_textureId == 0 || !m_initiated)
     {
       return;
     }
     glDeleteRenderbuffers(1, &m_textureId);
 
+    uint64 internalFormatSize = m_stencil ? 4 : 3;
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->RemoveVRAMUsageInBytes(m_width * m_height * internalFormatSize);
+    }
+
     m_textureId = 0;
+    m_initiated = false;
   }
 
   // CubeMap
@@ -217,7 +273,7 @@ namespace ToolKit
 
   CubeMap::CubeMap(const String& file) : Texture() { SetFile(file); }
 
-  CubeMap::~CubeMap() { UnInit(); }
+  CubeMap::~CubeMap() {}
 
   void CubeMap::Load()
   {
@@ -293,6 +349,10 @@ namespace ToolKit
       return;
     }
 
+    // This will be used when deleting the texture
+    m_textureSettings.InternalFormat = GraphicTypes::FormatRGBA;
+    m_textureSettings.Target         = GraphicTypes::TargetCubeMap;
+
     GLint currId;
     glGetIntegerv(GL_TEXTURE_CUBE_MAP, &currId);
 
@@ -309,6 +369,11 @@ namespace ToolKit
     for (int i = 0; i < 6; i++)
     {
       glTexImage2D(sides[i], 0, GL_RGBA, m_width, m_width, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_images[i]);
+    }
+
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->AddVRAMUsageInBytes(m_width * m_height * 4 * 6);
     }
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -334,6 +399,7 @@ namespace ToolKit
   void CubeMap::UnInit()
   {
     Texture::UnInit();
+
     Clear();
     m_initiated = false;
   }
@@ -364,8 +430,8 @@ namespace ToolKit
 
     m_texToCubemapMat                 = MakeNewPtr<Material>();
     m_cubemapToDiffuseEnvMapMat       = MakeNewPtr<Material>();
-    m_diffuseEnvMap                   = MakeNewPtr<CubeMap>(0u);
-    m_equirectangularTexture          = MakeNewPtr<Texture>(0u);
+    m_diffuseEnvMap                   = MakeNewPtr<CubeMap>();
+    m_equirectangularTexture          = MakeNewPtr<Texture>();
   }
 
   Hdri::Hdri(const String& file) : Hdri() { SetFile(file); }
@@ -385,7 +451,7 @@ namespace ToolKit
 
   void Hdri::Init(bool flushClientSideArray)
   {
-    if (m_initiated)
+    if (m_initiated || m_waitingForInit)
     {
       return;
     }
@@ -398,12 +464,16 @@ namespace ToolKit
 
     // Init 2D hdri texture
     Texture::Init(flushClientSideArray);
-
-    // Only ready after cubemap constructed and irradiance calculated.
     m_initiated     = false;
 
     RenderTask task = {[this, flushClientSideArray](Renderer* renderer) -> void
                        {
+                         if (m_initiated)
+                         {
+                           m_waitingForInit = false;
+                           return;
+                         }
+
                          // Convert hdri image to cubemap images.
                          m_cubemap =
                              renderer->GenerateCubemapFrom2DTexture(GetTextureManager()->Create<Texture>(GetFile()),
@@ -419,12 +489,14 @@ namespace ToolKit
                                                                              Renderer::RHIConstants::SpecularIBLLods);
 
                          // Generate diffuse irradience cubemap images
-                         m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
+                         m_diffuseEnvMap  = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
 
-                         m_initiated     = true;
+                         m_initiated      = true;
+                         m_waitingForInit = false;
                        }};
 
     GetRenderSystem()->AddRenderTask(task);
+    m_waitingForInit = true;
   }
 
   void Hdri::UnInit()
@@ -435,6 +507,8 @@ namespace ToolKit
       m_diffuseEnvMap->UnInit();
       m_specularEnvMap->UnInit();
     }
+
+    m_waitingForInit = false;
 
     Texture::UnInit();
   }
@@ -448,6 +522,16 @@ namespace ToolKit
 
   RenderTarget::RenderTarget() : Texture() {}
 
+  RenderTarget::~RenderTarget()
+  {
+    m_textureSettings.GenerateMipMap = false;
+    m_textureSettings.InternalFormat = m_settings.InternalFormat;
+    m_textureSettings.Layers         = m_settings.Layers;
+    m_textureSettings.MinFilter      = m_settings.MinFilter;
+    m_textureSettings.Target         = m_settings.Target;
+    m_textureSettings.Type           = m_settings.Type;
+  }
+
   void RenderTarget::NativeConstruct(uint width, uint height, const RenderTargetSettigs& settings)
   {
     Super::NativeConstruct();
@@ -455,16 +539,6 @@ namespace ToolKit
     m_width    = width;
     m_height   = height;
     m_settings = settings;
-  }
-
-  void RenderTarget::NativeConstruct(Texture* texture)
-  {
-    Super::NativeConstruct();
-
-    m_width     = texture->m_width;
-    m_height    = texture->m_height;
-    m_textureId = texture->m_textureId;
-    m_initiated = true;
   }
 
   void RenderTarget::Load() {}
@@ -481,7 +555,12 @@ namespace ToolKit
       return;
     }
 
-    GLint currId = 0; // Don't override the current render target.
+    // This will be used when deleting the texture
+    m_textureSettings.InternalFormat = m_settings.InternalFormat;
+    m_textureSettings.Target         = m_settings.Target;
+    m_textureSettings.Layers         = m_settings.Layers;
+
+    GLint currId                     = 0; // Don't override the current render target.
     if (m_settings.Target == GraphicTypes::Target2D)
     {
       glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
@@ -510,6 +589,11 @@ namespace ToolKit
                    (int) m_settings.Format,
                    (int) m_settings.Type,
                    0);
+
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
+      }
     }
     else if (m_settings.Target == GraphicTypes::TargetCubeMap)
     {
@@ -525,10 +609,20 @@ namespace ToolKit
                      (int) m_settings.Type,
                      0);
       }
+
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * 6);
+      }
     }
     else if (m_settings.Target == GraphicTypes::Target2DArray)
     {
       glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, (int) m_settings.InternalFormat, m_width, m_height, m_settings.Layers);
+
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * m_settings.Layers);
+      }
     }
 
     glTexParameteri((int) m_settings.Target, GL_TEXTURE_WRAP_S, (int) m_settings.WarpS);

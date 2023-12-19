@@ -29,6 +29,7 @@ namespace ToolKit
     BoundingBox GetBBox();
 
     void Init(bool flushClientSideArray);
+    void UnInit();
 
    protected:
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
@@ -47,6 +48,9 @@ namespace ToolKit
     TKDeclareParam(float, Intensity);
     TKDeclareParam(float, Exposure);
     TKDeclareParam(MultiChoiceVariant, IBLTextureSize);
+
+   private:
+    bool m_initialized = false;
   };
 
 } // namespace ToolKit

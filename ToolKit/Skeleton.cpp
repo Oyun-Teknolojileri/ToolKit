@@ -11,6 +11,7 @@
 #include "MathUtil.h"
 #include "Node.h"
 #include "TKOpenGL.h"
+#include "TKStats.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "Util.h"
@@ -30,13 +31,25 @@ namespace ToolKit
     TexturePtr ptr = MakeNewPtr<Texture>();
     ptr->m_height  = 1;
     ptr->m_width   = (int) (skeleton->m_bones.size()) * 4;
-    ptr->m_name    = skeleton->m_name + " BindPoseTexture";
+    TextureSettings set;
+    set.GenerateMipMap  = false;
+    set.InternalFormat  = GraphicTypes::FormatRGBA32F;
+    set.MinFilter       = GraphicTypes::SampleNearest;
+    set.MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
+    set.Type            = GraphicTypes::TypeFloat;
+    ptr->SetTextureSettings(set);
+    ptr->m_name = skeleton->m_name + " BindPoseTexture";
 
     glGenTextures(1, &ptr->m_textureId);
     glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, ptr->m_width, ptr->m_height, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->AddVRAMUsageInBytes(ptr->m_width * ptr->m_height * 16);
+    }
 
     ptr->m_initiated = true;
     ptr->m_loaded    = true;
@@ -127,6 +140,7 @@ namespace ToolKit
       SafeDel(dBoneIter.second.node);
       dBoneIter.second.node = nullptr;
     }
+
     boneList.clear();
   }
 
@@ -201,12 +215,18 @@ namespace ToolKit
 
   void Skeleton::UnInit()
   {
-    for (StaticBone* sBone : m_bones)
+    if (m_initiated)
     {
-      SafeDel(sBone);
+      for (StaticBone* sBone : m_bones)
+      {
+        SafeDel(sBone);
+      }
+      m_bones.clear();
+
+      m_bindPoseTexture = nullptr;
+
+      m_initiated = false;
     }
-    m_bones.clear();
-    m_initiated = false;
   }
 
   void Skeleton::Load()
@@ -365,6 +385,8 @@ namespace ToolKit
     {
       uploadBoneMatrix(m_bones[boneIndx]->m_inverseWorldMatrix, m_bindPoseTexture, static_cast<uint>(boneIndx));
     }
+
+    m_initiated = true;
 
     return nullptr;
   }

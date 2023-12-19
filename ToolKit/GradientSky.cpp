@@ -27,7 +27,7 @@ namespace ToolKit
 
   void GradientSky::Init()
   {
-    if (m_initialized)
+    if (m_initialized || m_waitingForInit)
     {
       return;
     }
@@ -41,22 +41,25 @@ namespace ToolKit
 
     ConstructSkyMaterial(vert, frag);
 
-    if (m_onInit)
-    {
-      return;
-    }
-
-    m_onInit = true;
     RenderTask task {[this](Renderer* renderer) -> void
                      {
+                       if (m_initialized)
+                       {
+                         return;
+                       }
+
                        // Render gradient to cubemap and store the output
-                       GenerateGradientCubemap();
+                       GenerateGradientCubemap(renderer);
 
                        // Create irradiance map from cubemap and set
-                       GenerateIrradianceCubemap();
+                       GenerateIrradianceCubemap(renderer);
+
+                       m_initialized    = true;
+                       m_waitingForInit = false;
                      }};
 
     GetRenderSystem()->AddRenderTask(task);
+    m_waitingForInit = true;
   }
 
   MaterialPtr GradientSky::GetSkyboxMaterial()
@@ -90,106 +93,99 @@ namespace ToolKit
 
   void GradientSky::ParameterEventConstructor() { Super::ParameterEventConstructor(); }
 
-  void GradientSky::GenerateGradientCubemap()
+  void GradientSky::GenerateGradientCubemap(Renderer* renderer)
   {
-    RenderTask task = {
-        [this](Renderer* renderer) -> void
-        {
-          FramebufferPtr fb = MakeNewPtr<Framebuffer>();
-          fb->Init({m_size, m_size, false, true});
+    FramebufferPtr fb = MakeNewPtr<Framebuffer>();
+    fb->Init({m_size, m_size, false, true});
 
-          const RenderTargetSettigs set = {0,
-                                           GraphicTypes::TargetCubeMap,
-                                           GraphicTypes::UVClampToEdge,
-                                           GraphicTypes::UVClampToEdge,
-                                           GraphicTypes::UVClampToEdge,
-                                           GraphicTypes::SampleLinear,
-                                           GraphicTypes::SampleLinear,
-                                           GraphicTypes::FormatRGB,
-                                           GraphicTypes::FormatRGB,
-                                           GraphicTypes::TypeUnsignedByte};
+    const RenderTargetSettigs set = {0,
+                                     GraphicTypes::TargetCubeMap,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::TypeUnsignedByte};
 
-          RenderTargetPtr cubemap       = MakeNewPtr<RenderTarget>(m_size, m_size, set);
+    RenderTargetPtr cubemap       = MakeNewPtr<RenderTarget>(m_size, m_size, set);
+    cubemap->Init();
 
-          cubemap->Init();
+    // Create material
+    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("topColor", ParameterVariant(GetTopColorVal()));
 
-          // Create material
-          m_skyboxMaterial->m_fragmentShader->SetShaderParameter("topColor", ParameterVariant(GetTopColorVal()));
+    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("middleColor", ParameterVariant(GetMiddleColorVal()));
 
-          m_skyboxMaterial->m_fragmentShader->SetShaderParameter("middleColor", ParameterVariant(GetMiddleColorVal()));
+    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("bottomColor", ParameterVariant(GetBottomColorVal()));
 
-          m_skyboxMaterial->m_fragmentShader->SetShaderParameter("bottomColor", ParameterVariant(GetBottomColorVal()));
+    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("exponent", ParameterVariant(GetGradientExponentVal()));
 
-          m_skyboxMaterial->m_fragmentShader->SetShaderParameter("exponent",
-                                                                 ParameterVariant(GetGradientExponentVal()));
+    renderer->EnableDepthTest(false);
 
-          renderer->EnableDepthTest(false);
+    // Views for 6 different angles
+    CameraPtr cam = MakeNewPtr<Camera>();
+    cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
 
-          // Views for 6 different angles
-          CameraPtr cam = MakeNewPtr<Camera>();
-          cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+    Mat4 views[] = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                    glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                    glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+                    glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+                    glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                    glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
 
-          Mat4 views[] = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                          glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                          glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
-                          glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
-                          glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                          glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+    for (int i = 0; i < 6; ++i)
+    {
+      Vec3 pos;
+      Quaternion rot;
+      Vec3 sca;
+      DecomposeMatrix(views[i], &pos, &rot, &sca);
 
-          for (int i = 0; i < 6; ++i)
-          {
-            Vec3 pos;
-            Quaternion rot;
-            Vec3 sca;
-            DecomposeMatrix(views[i], &pos, &rot, &sca);
+      cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
+      cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
+      cam->m_node->SetScale(sca);
 
-            cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
-            cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
-            cam->m_node->SetScale(sca);
+      fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, cubemap, 0, -1, (Framebuffer::CubemapFace) i);
 
-            fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                   cubemap,
-                                   0,
-                                   -1,
-                                   (Framebuffer::CubemapFace) i);
+      renderer->SetFramebuffer(fb, true, Vec4(0.0f));
+      renderer->DrawCube(cam, m_skyboxMaterial);
+    }
 
-            renderer->SetFramebuffer(fb, true, Vec4(0.0f));
-            renderer->DrawCube(cam, m_skyboxMaterial);
-          }
+    renderer->EnableDepthTest(true);
 
-          renderer->EnableDepthTest(true);
+    // Take the ownership of render target.
+    CubeMapPtr hdriCubeMap = MakeNewPtr<CubeMap>();
+    GetHdri()->m_cubemap   = hdriCubeMap;
 
-          // Take the ownership of render target.
-          GetHdri()->m_cubemap = MakeNewPtr<CubeMap>(cubemap->m_textureId);
+    TextureSettings textureSettings;
+    textureSettings.GenerateMipMap  = false;
+    textureSettings.InternalFormat  = cubemap->m_settings.InternalFormat;
+    textureSettings.MinFilter       = cubemap->m_settings.MinFilter;
+    textureSettings.MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
+    textureSettings.Target          = GraphicTypes::TargetCubeMap;
+    textureSettings.Type            = GraphicTypes::TypeFloat;
 
-          cubemap->m_textureId = 0;
-          cubemap              = nullptr;
-        }};
+    hdriCubeMap->m_textureId        = cubemap->m_textureId;
+    hdriCubeMap->m_width            = cubemap->m_width;
+    hdriCubeMap->m_height           = cubemap->m_height;
+    hdriCubeMap->m_initiated        = true;
+    hdriCubeMap->SetTextureSettings(textureSettings);
 
-    GetRenderSystem()->AddRenderTask(task);
+    cubemap->m_initiated = false;
+    cubemap->m_textureId = 0;
+    cubemap              = nullptr;
   }
 
-  void GradientSky::GenerateIrradianceCubemap()
+  void GradientSky::GenerateIrradianceCubemap(Renderer* renderer)
   {
-    RenderTask task = {
-        [this](Renderer* renderer) -> void
-        {
-          HdriPtr hdr          = GetHdri();
-          uint irRes           = (uint) GetIrradianceResolutionVal();
 
-          hdr->m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(hdr->m_cubemap, irRes, irRes);
+    HdriPtr hdr          = GetHdri();
+    uint irRes           = (uint) GetIrradianceResolutionVal();
 
-          hdr->m_specularEnvMap =
-              renderer->GenerateSpecularEnvMap(hdr->m_cubemap, irRes, irRes, Renderer::RHIConstants::SpecularIBLLods);
+    hdr->m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(hdr->m_cubemap, irRes, irRes);
 
-          if (m_onInit)
-          {
-            m_initialized = true;
-            m_onInit      = false;
-          }
-        }};
-
-    GetRenderSystem()->AddRenderTask(task);
+    hdr->m_specularEnvMap =
+        renderer->GenerateSpecularEnvMap(hdr->m_cubemap, irRes, irRes, Renderer::RHIConstants::SpecularIBLLods);
   }
 
   XmlNode* GradientSky::SerializeImp(XmlDocument* doc, XmlNode* parent) const

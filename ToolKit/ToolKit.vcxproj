@@ -91,6 +91,7 @@
     <ClCompile Include="TKOpenGL.cpp">
       <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">150</OrderInUnityFile>
     </ClCompile>
+    <ClCompile Include="TKStats.cpp" />
     <ClCompile Include="ToneMapPass.cpp" />
     <ClCompile Include="ToolKit.cpp" />
     <ClCompile Include="UIManager.cpp" />
@@ -176,6 +177,7 @@
     <ClInclude Include="TKImage.h" />
     <ClInclude Include="TKPlatform.h" />
     <ClInclude Include="TKProfiler.h" />
+    <ClInclude Include="TKStats.h" />
     <ClInclude Include="ToneMapPass.h" />
     <ClInclude Include="AdditiveLightingPass.h" />
     <ClInclude Include="ToolKit.h" />

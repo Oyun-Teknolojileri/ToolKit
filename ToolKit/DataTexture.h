@@ -20,12 +20,16 @@ namespace ToolKit
     DataTexture();
     virtual void NativeConstruct(int width, int height);
 
+    virtual ~DataTexture() {}
+
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
    protected:
     void Load() override;
     void Clear() override;
+
+    int m_textureInternalFormatSize = 0;
   };
 
   typedef std::shared_ptr<DataTexture> DataTexturePtr;
