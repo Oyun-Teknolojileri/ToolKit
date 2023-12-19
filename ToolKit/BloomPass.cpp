@@ -9,6 +9,7 @@
 
 #include "Shader.h"
 #include "TKProfiler.h"
+#include "TKStats.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -204,9 +205,19 @@ namespace ToolKit
         rt->ReconstructIfNeeded(curRes.x, curRes.y);
 
         FramebufferPtr& fb = m_tempFrameBuffers[i];
-        fb                 = MakeNewPtr<Framebuffer>();
+        if (fb == nullptr)
+        {
+          fb = MakeNewPtr<Framebuffer>();
+        }
         fb->ReconstructIfNeeded(curRes.x, curRes.y);
         fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
+        if (i > 0)
+        {
+          if (TKStats* tkStats = GetTKStats())
+          {
+            tkStats->AddHWRenderPass();
+          }
+        }
       }
 
       m_currentIterationCount = iterationCount;

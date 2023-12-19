@@ -13,6 +13,7 @@
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "TKProfiler.h"
+#include "TKStats.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -58,6 +59,15 @@ namespace ToolKit
       // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
 
       RenderShadowMaps(light, m_params.RendeJobs);
+    }
+
+    // The first set attachment did not call hw render pass while rendering shadow map
+    if (m_params.Lights.size() > 0)
+    {
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->RemoveHWRenderPass();
+      }
     }
 
     GetRenderer()->m_clearColor = lastClearColor;
@@ -159,6 +169,11 @@ namespace ToolKit
                                                 0,
                                                 light->m_shadowAtlasLayer + i);
 
+        if (TKStats* tkStats = GetTKStats())
+        {
+          tkStats->AddHWRenderPass();
+        }
+
         // Clear the layer if needed
         if (!m_clearedLayers[light->m_shadowAtlasLayer + i])
         {
@@ -187,6 +202,11 @@ namespace ToolKit
                                               m_shadowAtlas,
                                               0,
                                               light->m_shadowAtlasLayer);
+
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->AddHWRenderPass();
+      }
 
       // Clear the layer if needed
       if (!m_clearedLayers[light->m_shadowAtlasLayer])

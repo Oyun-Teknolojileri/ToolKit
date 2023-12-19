@@ -184,6 +184,7 @@ namespace ToolKit
       if (TKStats* tkStats = GetTKStats())
       {
         tkStats->ResetDrawCallCounter();
+        tkStats->ResetHWRenderPassCounter();
       }
 
       PUSH_CPU_MARKER("UI Begin & Show UI");
