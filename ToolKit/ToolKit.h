@@ -119,6 +119,7 @@ namespace ToolKit
     class ObjectFactory* m_objectFactory       = nullptr;
     class RenderSystem* m_renderSys            = nullptr;
     class EngineSettings* m_engineSettings     = nullptr;
+    class TKStats* m_tkStats                   = nullptr;
     HandleManager m_handleManager;
 
     bool m_preInitiated = false;
@@ -150,6 +151,7 @@ namespace ToolKit
   TK_API class FileManager* GetFileManager();
   TK_API class EngineSettings& GetEngineSettings();
   TK_API class ObjectFactory* GetObjectFactory();
+  TK_API class TKStats* GetTKStats();
 
   // Path.
   TK_API String DefaultPath();
