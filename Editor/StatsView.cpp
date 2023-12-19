@@ -16,20 +16,22 @@ namespace ToolKit
 
     void StatsView::Show()
     {
-      if (TKStats* tkStats = GetTKStats())
+      TKStats* tkStats = GetTKStats();
+      if (tkStats == nullptr)
       {
-        ImGui::SetNextWindowSize(ImVec2(270, 110), ImGuiCond_Once);
-        if (ImGui::Begin(m_name.c_str(), &m_visible))
-        {
-          ImGui::Text("Total Draw Call: %llu", g_app->GetLastFrameDrawCallCount());
-          ImGui::Text("Total Hardware Render Pass: %llu", g_app->GetLastFrameHWRenderPassCount());
-          ImGui::Text("Total VRAM Usage: %llu MB", tkStats->GetTotalVRAMUsageInMB());
-
-          ImGui::Spacing();
-          ImGui::Text("VRAM Usage might not be %%100 accurate.");
-        }
-        ImGui::End();
+        return;
       }
+
+      ImGui::SetNextWindowSize(ImVec2(270, 110), ImGuiCond_Once);
+      if (ImGui::Begin(m_name.c_str(), &m_visible))
+      {
+        ImGui::Text("FPS: %d", g_app->m_fps);
+        ImGui::Spacing();
+        ImGui::Text("Total Draw Call: %llu", g_app->GetLastFrameDrawCallCount());
+        ImGui::Text("Total Hardware Render Pass: %llu", g_app->GetLastFrameHWRenderPassCount());
+        ImGui::Text("Approximate Total VRAM Usage: %llu MB", tkStats->GetTotalVRAMUsageInMB());
+      }
+      ImGui::End();
     }
   } // namespace Editor
 } // namespace ToolKit
