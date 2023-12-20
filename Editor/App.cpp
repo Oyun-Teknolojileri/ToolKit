@@ -179,15 +179,12 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
-      m_deltaTime = deltaTime;
+      m_deltaTime                  = deltaTime;
 
-      if (TKStats* tkStats = GetTKStats())
-      {
-        m_lastFrameHWRenderPassCount = tkStats->GetHWRenderPassCount();
-        m_lastFrameDrawCallCount     = tkStats->GetDrawCallCount();
-        tkStats->ResetDrawCallCounter();
-        tkStats->ResetHWRenderPassCounter();
-      }
+      m_lastFrameHWRenderPassCount = GetHWRenderPassCount();
+      m_lastFrameDrawCallCount     = GetDrawCallCount();
+      ResetDrawCallCounter();
+      ResetHWRenderPassCounter();
 
       PUSH_CPU_MARKER("UI Begin & Show UI");
 

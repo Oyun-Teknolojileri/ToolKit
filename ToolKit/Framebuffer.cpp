@@ -123,10 +123,7 @@ namespace ToolKit
     GLint lastFBO;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddHWRenderPass();
-    }
+    AddHWRenderPass();
 
     GLenum attachment = dt->m_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
 
@@ -139,10 +136,7 @@ namespace ToolKit
       GetLogger()->Log("Error: Framebuffer incomplete!");
     }
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddHWRenderPass();
-    }
+    AddHWRenderPass();
   }
 
   DepthTexturePtr Framebuffer::GetDepthTexture() { return m_depthAtch; }
@@ -169,10 +163,7 @@ namespace ToolKit
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddHWRenderPass();
-    }
+    AddHWRenderPass();
 
     // Set attachment
     if (face != CubemapFace::NONE)
@@ -201,10 +192,7 @@ namespace ToolKit
     CheckFramebufferComplete();
 
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddHWRenderPass();
-    }
+    AddHWRenderPass();
 
     m_settings.width  = rt->m_width;
     m_settings.height = rt->m_height;
@@ -246,10 +234,7 @@ namespace ToolKit
     GLint lastFBO;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddHWRenderPass();
-    }
+    AddHWRenderPass();
 
     GLenum attachment = GL_COLOR_ATTACHMENT0 + (int) atc;
     glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0); // Detach
@@ -258,10 +243,7 @@ namespace ToolKit
     SetDrawBuffers();
 
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddHWRenderPass();
-    }
+    AddHWRenderPass();
 
     return rt;
   }
@@ -273,10 +255,7 @@ namespace ToolKit
     CPU_FUNC_RANGE();
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddHWRenderPass();
-    }
+    AddHWRenderPass();
 
     GLenum check = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     assert(check == GL_FRAMEBUFFER_COMPLETE && "Framebuffer incomplete");
@@ -293,10 +272,7 @@ namespace ToolKit
     GLint lastFBO;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddHWRenderPass();
-    }
+    AddHWRenderPass();
 
     GLenum attachment = m_settings.depthStencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
 
@@ -309,19 +285,13 @@ namespace ToolKit
     }
     m_depthAtch = nullptr;
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddHWRenderPass();
-    }
+    AddHWRenderPass();
   }
 
   void Framebuffer::SetDrawBuffers()
   {
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddHWRenderPass();
-    }
+    AddHWRenderPass();
 
     GLenum colorAttachments[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     int count                  = 0;

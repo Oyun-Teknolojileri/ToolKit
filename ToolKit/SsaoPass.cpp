@@ -49,10 +49,7 @@ namespace ToolKit
 
     glBindTexture(GL_TEXTURE_2D, currId);
 
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddVRAMUsageInBytes(m_width * m_height * m_textureInternalFormatSize);
-    }
+    AddVRAMUsageInBytes(m_width * m_height * m_textureInternalFormatSize);
 
     m_initiated = true;
   }

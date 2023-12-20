@@ -27,11 +27,11 @@
 #include "TKAssert.h"
 #include "TKOpenGL.h"
 #include "TKProfiler.h"
+#include "TKStats.h"
 #include "Texture.h"
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
-#include "TKStats.h"
 
 #include "DebugNew.h"
 
@@ -207,10 +207,7 @@ namespace ToolKit
       glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
     }
 
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddDrawCall();
-    }
+    AddDrawCall();
   }
 
   void Renderer::Render(const RenderJobArray& jobArray, CameraPtr cam, const LightPtrArray& lights)
@@ -356,10 +353,7 @@ namespace ToolKit
       if (fb != nullptr)
       {
         glBindFramebuffer(GL_FRAMEBUFFER, fb->GetFboId());
-        if (TKStats* tkStats = GetTKStats())
-        {
-          tkStats->AddHWRenderPass();
-        }
+        AddHWRenderPass();
 
         FramebufferSettings fbSet = fb->GetSettings();
         SetViewportSize(fbSet.width, fbSet.height);
@@ -368,10 +362,7 @@ namespace ToolKit
       {
         // Set backbuffer as draw area.
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        if (TKStats* tkStats = GetTKStats())
-        {
-          tkStats->AddHWRenderPass();
-        }
+        AddHWRenderPass();
 
         SetViewportSize(m_windowSize.x, m_windowSize.y);
       }
@@ -442,19 +433,13 @@ namespace ToolKit
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, srcId);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddHWRenderPass();
-    }
+    AddHWRenderPass();
 
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, (GLbitfield) fields, GL_NEAREST);
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, readFboId);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddHWRenderPass();
-    }
+    AddHWRenderPass();
   }
 
   void Renderer::SetViewport(Viewport* viewport) { SetFramebuffer(viewport->m_framebuffer); }
@@ -1222,10 +1207,7 @@ namespace ToolKit
                                                           (Framebuffer::CubemapFace) i);
       if (i > 0)
       {
-        if (TKStats* tkStats = GetTKStats())
-        {
-          tkStats->AddHWRenderPass();
-        }
+        AddHWRenderPass();
       }
 
       SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
@@ -1314,10 +1296,7 @@ namespace ToolKit
                                                           (Framebuffer::CubemapFace) i);
       if (i > 0)
       {
-        if (TKStats* tkStats = GetTKStats())
-        {
-          tkStats->AddHWRenderPass();
-        }
+        AddHWRenderPass();
       }
 
       SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
@@ -1421,10 +1400,7 @@ namespace ToolKit
                                                             (Framebuffer::CubemapFace) i);
         if (mip != 0 && i != 0)
         {
-          if (TKStats* tkStats = GetTKStats())
-          {
-            tkStats->AddHWRenderPass();
-          }
+          AddHWRenderPass();
         }
 
         frag->SetShaderParameter("roughness", ParameterVariant((float) mip / (float) mipMaps));

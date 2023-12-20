@@ -213,10 +213,7 @@ namespace ToolKit
         fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
         if (i > 0)
         {
-          if (TKStats* tkStats = GetTKStats())
-          {
-            tkStats->AddHWRenderPass();
-          }
+          AddHWRenderPass();
         }
       }
 

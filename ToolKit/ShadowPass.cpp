@@ -64,10 +64,7 @@ namespace ToolKit
     // The first set attachment did not call hw render pass while rendering shadow map
     if (m_params.Lights.size() > 0)
     {
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->RemoveHWRenderPass();
-      }
+      RemoveHWRenderPass();
     }
 
     GetRenderer()->m_clearColor = lastClearColor;
@@ -169,10 +166,7 @@ namespace ToolKit
                                                 0,
                                                 light->m_shadowAtlasLayer + i);
 
-        if (TKStats* tkStats = GetTKStats())
-        {
-          tkStats->AddHWRenderPass();
-        }
+        AddHWRenderPass();
 
         // Clear the layer if needed
         if (!m_clearedLayers[light->m_shadowAtlasLayer + i])
@@ -203,10 +197,7 @@ namespace ToolKit
                                               0,
                                               light->m_shadowAtlasLayer);
 
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->AddHWRenderPass();
-      }
+      AddHWRenderPass();
 
       // Clear the layer if needed
       if (!m_clearedLayers[light->m_shadowAtlasLayer])

@@ -29,7 +29,7 @@ namespace ToolKit
         ImGui::Spacing();
         ImGui::Text("Total Draw Call: %llu", g_app->GetLastFrameDrawCallCount());
         ImGui::Text("Total Hardware Render Pass: %llu", g_app->GetLastFrameHWRenderPassCount());
-        ImGui::Text("Approximate Total VRAM Usage: %llu MB", tkStats->GetTotalVRAMUsageInMB());
+        ImGui::Text("Approximate Total VRAM Usage: %llu MB", GetTotalVRAMUsageInMB());
       }
       ImGui::End();
     }

@@ -111,10 +111,7 @@ namespace ToolKit
                    GL_UNSIGNED_BYTE,
                    m_image);
 
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
-      }
+      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
     }
     else
     {
@@ -128,10 +125,7 @@ namespace ToolKit
                    GL_FLOAT,
                    m_imagef);
 
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
-      }
+      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
     }
 
     if (m_textureSettings.GenerateMipMap)
@@ -170,25 +164,16 @@ namespace ToolKit
 
     if (m_textureSettings.Target == GraphicTypes::Target2D)
     {
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
-      }
+      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
     }
     else if (m_textureSettings.Target == GraphicTypes::Target2DArray)
     {
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) *
-                                        m_textureSettings.Layers);
-      }
+      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) *
+                             m_textureSettings.Layers);
     }
     else if (m_textureSettings.Target == GraphicTypes::TargetCubeMap)
     {
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) * 6);
-      }
+      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) * 6);
     }
     else
     {
@@ -240,10 +225,7 @@ namespace ToolKit
     glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
 
     uint64 internalFormatSize = stencil ? 4 : 3;
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddVRAMUsageInBytes(m_width * m_height * internalFormatSize);
-    }
+    AddVRAMUsageInBytes(m_width * m_height * internalFormatSize);
   }
 
   void DepthTexture::UnInit()
@@ -255,10 +237,7 @@ namespace ToolKit
     glDeleteRenderbuffers(1, &m_textureId);
 
     uint64 internalFormatSize = m_stencil ? 4 : 3;
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->RemoveVRAMUsageInBytes(m_width * m_height * internalFormatSize);
-    }
+    RemoveVRAMUsageInBytes(m_width * m_height * internalFormatSize);
 
     m_textureId = 0;
     m_initiated = false;
@@ -371,10 +350,7 @@ namespace ToolKit
       glTexImage2D(sides[i], 0, GL_RGBA, m_width, m_width, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_images[i]);
     }
 
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddVRAMUsageInBytes(m_width * m_height * 4 * 6);
-    }
+    AddVRAMUsageInBytes(m_width * m_height * 4 * 6);
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
@@ -590,10 +566,7 @@ namespace ToolKit
                    (int) m_settings.Type,
                    0);
 
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
-      }
+      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
     }
     else if (m_settings.Target == GraphicTypes::TargetCubeMap)
     {
@@ -610,19 +583,13 @@ namespace ToolKit
                      0);
       }
 
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * 6);
-      }
+      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * 6);
     }
     else if (m_settings.Target == GraphicTypes::Target2DArray)
     {
       glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, (int) m_settings.InternalFormat, m_width, m_height, m_settings.Layers);
 
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * m_settings.Layers);
-      }
+      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * m_settings.Layers);
     }
 
     glTexParameteri((int) m_settings.Target, GL_TEXTURE_WRAP_S, (int) m_settings.WarpS);

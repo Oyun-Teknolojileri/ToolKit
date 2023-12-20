@@ -149,10 +149,7 @@ namespace ToolKit
       fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, cubemap, 0, -1, (Framebuffer::CubemapFace) i);
       if (i > 0)
       {
-        if (TKStats* tkStats = GetTKStats())
-        {
-          tkStats->AddHWRenderPass();
-        }
+        AddHWRenderPass();
       }
 
       renderer->SetFramebuffer(fb, true, Vec4(0.0f));

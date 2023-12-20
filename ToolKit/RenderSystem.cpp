@@ -175,10 +175,7 @@ namespace ToolKit
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddHWRenderPass();
-    }
+    AddHWRenderPass();
 
     glClearColor(0.5f, 0.2f, 0.8f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -187,10 +184,7 @@ namespace ToolKit
     m_backbufferFormatIsSRGB = (pixel[0] > 150);
 
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-    if (TKStats* tkStats = GetTKStats())
-    {
-      tkStats->AddHWRenderPass();
-    }
+    AddHWRenderPass();
   }
 
 } // namespace ToolKit

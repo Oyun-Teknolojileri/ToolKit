@@ -59,4 +59,128 @@ namespace ToolKit
     uint64 m_drawCallCount         = 0;
     uint64 m_renderPassCount       = 0;
   };
+
+  TK_API inline uint64 GetTotalVRAMUsageInBytes()
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      return tkStats->GetTotalVRAMUsageInBytes();
+    }
+    else
+    {
+      return 0;
+    }
+  }
+
+  TK_API inline uint64 GetTotalVRAMUsageInKB()
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      return tkStats->GetTotalVRAMUsageInKB();
+    }
+    else
+    {
+      return 0;
+    }
+  }
+
+  TK_API inline uint64 GetTotalVRAMUsageInMB()
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      return tkStats->GetTotalVRAMUsageInMB();
+    }
+    else
+    {
+      return 0;
+    }
+  }
+
+  TK_API inline void AddVRAMUsageInBytes(uint64 bytes)
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->AddVRAMUsageInBytes(bytes);
+    }
+  }
+
+  TK_API inline void RemoveVRAMUsageInBytes(uint64 bytes)
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->RemoveVRAMUsageInBytes(bytes);
+    }
+  }
+
+  TK_API inline void ResetVRAMUsage()
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->ResetVRAMUsage();
+    }
+  }
+
+  TK_API inline void AddDrawCall()
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->AddDrawCall();
+    }
+  }
+
+  TK_API inline void ResetDrawCallCounter()
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->ResetDrawCallCounter();
+    }
+  }
+
+  TK_API inline uint64 GetDrawCallCount()
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      return tkStats->GetDrawCallCount();
+    }
+    else
+    {
+      return 0;
+    }
+  }
+
+  TK_API inline void AddHWRenderPass()
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->AddHWRenderPass();
+    }
+  }
+
+  TK_API inline void RemoveHWRenderPass()
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->RemoveHWRenderPass();
+    }
+  }
+
+  TK_API inline void ResetHWRenderPassCounter()
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->ResetHWRenderPassCounter();
+    }
+  }
+
+  TK_API inline uint64 GetHWRenderPassCount()
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      return tkStats->GetHWRenderPassCount();
+    }
+    else
+    {
+      return 0;
+    }
+  }
 } // namespace ToolKit
