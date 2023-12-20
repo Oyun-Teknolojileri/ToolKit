@@ -26,4 +26,12 @@ namespace ToolKit
 
   void Game::OnUnload(XmlDocumentPtr state) {}
 
+  void Game::OnPlay() {}
+
+  void Game::OnPause() {}
+
+  void Game::OnResume() {}
+
+  void Game::OnStop() {}
+
 } // namespace ToolKit
