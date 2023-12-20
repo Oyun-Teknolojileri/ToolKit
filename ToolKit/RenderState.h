@@ -14,6 +14,7 @@ namespace ToolKit
 
   enum class GraphicBitFields
   {
+    None             = 0x00000000,
     ColorBits        = 0x00004000,
     DepthBits        = 0x00000100,
     StencilBits      = 0x00000400,
@@ -21,6 +22,13 @@ namespace ToolKit
     ColorStencilBits = ColorBits | StencilBits,
     DepthStencilBits = DepthBits | StencilBits,
     AllBits          = ColorBits | DepthBits | StencilBits
+  };
+
+  enum class GraphicFramebufferTypes
+  {
+    ReadFramebuffer = 0x8CA8,
+    DrawFramebuffer = 0x8CA9,
+    Framebuffer     = 0x8D40
   };
 
   enum class CompareFunctions

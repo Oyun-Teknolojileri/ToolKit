@@ -41,7 +41,15 @@ namespace ToolKit
     PUSH_CPU_MARKER("FullQuadPass::Render");
 
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer, {0.0f, 0.0f, 0.0f, 1.0f});
+
+    if (m_params.ClearFrameBuffer)
+    {
+      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::AllBits);
+    }
+    else
+    {
+      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::None);
+    }
 
     static RenderJobArray jobs;
     jobs.clear();

@@ -28,7 +28,7 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     Viewport* vp       = m_params.Viewport;
 
-    renderer->SetFramebuffer(vp->m_framebuffer, false);
+    renderer->SetFramebuffer(vp->m_framebuffer, GraphicBitFields::None);
     CameraPtr cam           = vp->GetCamera();
 
     auto renderBillboardsFn = [this, cam, renderer](EntityPtrArray& billboards) -> void

@@ -91,7 +91,7 @@ namespace ToolKit
 
     // Allow writing on to stencil before clear operation.
     renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
-    renderer->SetFramebuffer(m_frameBuffer, true, Vec4(0.0f));
+    renderer->SetFramebuffer(m_frameBuffer, GraphicBitFields::AllBits);
     renderer->SetCameraLens(m_params.Camera);
 
     POP_CPU_MARKER();

@@ -162,7 +162,9 @@ namespace ToolKit
 
     Renderer* renderer = GetRenderer();
     renderer->ResetTextureSlots();
-    renderer->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
+
+    renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
+
     renderer->SetCameraLens(m_params.Camera);
 
     POP_CPU_MARKER();

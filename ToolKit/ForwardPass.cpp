@@ -51,7 +51,16 @@ namespace ToolKit
     Pass::PreRender();
     // Set self data.
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer);
+
+    if (m_params.ClearFrameBuffer)
+    {
+      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::AllBits);
+    }
+    else
+    {
+      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::None);
+    }
+
     if (!m_params.ClearFrameBuffer && m_params.ClearDepthBuffer)
     {
       renderer->ClearBuffer(GraphicBitFields::DepthStencilBits, Vec4(1.0f));

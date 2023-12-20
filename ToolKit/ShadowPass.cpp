@@ -157,7 +157,7 @@ namespace ToolKit
 
     if (light->IsA<PointLight>())
     {
-      renderer->SetFramebuffer(m_shadowFramebuffer, false);
+      renderer->SetFramebuffer(m_shadowFramebuffer, GraphicBitFields::None);
 
       for (int i = 0; i < 6; ++i)
       {
@@ -191,7 +191,7 @@ namespace ToolKit
     }
     else if (light->IsA<DirectionalLight>() || light->IsA<SpotLight>())
     {
-      renderer->SetFramebuffer(m_shadowFramebuffer, false);
+      renderer->SetFramebuffer(m_shadowFramebuffer, GraphicBitFields::None);
       m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
                                               m_shadowAtlas,
                                               0,

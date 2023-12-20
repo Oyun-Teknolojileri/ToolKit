@@ -52,8 +52,11 @@ namespace ToolKit
     void SetRenderState(const RenderState* const state);
 
     void SetStencilOperation(StencilOperation op);
-    void SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color);
-    void SetFramebuffer(FramebufferPtr fb, bool clear = true);
+
+    void SetFramebuffer(FramebufferPtr fb,
+                        GraphicBitFields attachmentsToClear,
+                        const Vec4& clearColor         = Vec4(0.0f),
+                        GraphicFramebufferTypes fbType = GraphicFramebufferTypes::Framebuffer);
 
     FramebufferPtr GetFrameBuffer();
     void ClearColorBuffer(const Vec4& color);

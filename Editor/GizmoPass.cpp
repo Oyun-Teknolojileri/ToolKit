@@ -78,7 +78,7 @@ namespace ToolKit
 
       Renderer* renderer = GetRenderer();
       m_camera           = m_params.Viewport->GetCamera();
-      renderer->SetFramebuffer(m_params.Viewport->m_framebuffer, false);
+      renderer->SetFramebuffer(m_params.Viewport->m_framebuffer, GraphicBitFields::None);
       renderer->SetCameraLens(m_camera);
       renderer->ClearBuffer(GraphicBitFields::DepthBits, Vec4(1.0f));
 
