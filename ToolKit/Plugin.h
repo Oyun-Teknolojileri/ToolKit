@@ -129,6 +129,26 @@ namespace ToolKit
      */
     PluginType GetType() { return PluginType::Game; }
 
+    /**
+     * This callback gets called when the play session started for the first time.
+     */
+    virtual void OnPlay()   = 0;
+
+    /**
+     * This callback gets called when the play session stopped.
+     */
+    virtual void OnPause()  = 0;
+
+    /**
+     * This callback gets called play session continue after paused.
+     */
+    virtual void OnResume() = 0;
+
+    /**
+     * This callback gets called play session continue stopped.
+     */
+    virtual void OnStop()   = 0;
+
    protected:
     /**
      * Viewport where the game played on.

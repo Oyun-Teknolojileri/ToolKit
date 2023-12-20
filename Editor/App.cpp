@@ -186,6 +186,11 @@ namespace ToolKit
       ResetDrawCallCounter();
       ResetHWRenderPassCounter();
 
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->ResetDrawCallCounter();
+      }
+
       PUSH_CPU_MARKER("UI Begin & Show UI");
 
       UI::BeginUI();
@@ -526,24 +531,37 @@ namespace ToolKit
         gamePlugin->SetViewport(GetSimulationWindow());
         gamePlugin->m_currentState = PluginState::Running;
 
-        m_statusMsg                = "Game is playing";
-        m_gameMod                  = mod;
+        if (m_gameMod == GameMod::Stop)
+        {
+          gamePlugin->OnPlay();
+          m_statusMsg = "Game is playing";
+        }
+
+        if (m_gameMod == GameMod::Paused)
+        {
+          gamePlugin->OnResume();
+          m_statusMsg = "Game is resumed";
+        }
+
+        m_gameMod = mod;
       }
 
       if (mod == GameMod::Paused)
       {
         gamePlugin->m_currentState = PluginState::Paused;
+        gamePlugin->OnPause();
 
-        m_statusMsg                = "Game is paused";
-        m_gameMod                  = mod;
+        m_statusMsg = "Game is paused";
+        m_gameMod   = mod;
       }
 
       if (mod == GameMod::Stop)
       {
         gamePlugin->m_currentState = PluginState::Stop;
+        gamePlugin->OnStop();
 
-        m_statusMsg                = "Game is stopped";
-        m_gameMod                  = mod;
+        m_statusMsg = "Game is stopped";
+        m_gameMod   = mod;
 
         ClearPlayInEditorSession();
 
@@ -1231,16 +1249,12 @@ namespace ToolKit
     {
       ClearSession();
 
-      UI::m_postponedActions.push_back(
-          [this, project]() -> void
-          {
-            m_workspace.SetActiveProject(project);
-            m_workspace.Serialize(nullptr, nullptr);
-            m_workspace.SerializeEngineSettings();
-            OnNewScene("New Scene");
+      m_workspace.SetActiveProject(project);
+      m_workspace.Serialize(nullptr, nullptr);
+      m_workspace.SerializeEngineSettings();
+      OnNewScene("New Scene");
 
-            LoadProjectPlugin();
-          });
+      LoadProjectPlugin();
     }
 
     void App::PackResources()

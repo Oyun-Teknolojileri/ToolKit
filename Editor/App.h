@@ -59,7 +59,7 @@ namespace ToolKit
 
       /**
        * Clears all the data cached for current project / scene. Required to clear
-       * all referenced objects before switching projects or stoping the play session.
+       * all referenced objects before switching projects or stopping the play session.
        */
       void ClearSession();
 

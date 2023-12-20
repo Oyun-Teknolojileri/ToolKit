@@ -32,6 +32,7 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
+#include "TKStats.h"
 
 #include "DebugNew.h"
 
