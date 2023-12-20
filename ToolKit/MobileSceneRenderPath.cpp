@@ -51,11 +51,6 @@ namespace ToolKit
 
     renderer->SetShadowAtlas(std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
-    if (m_params.ClearFramebuffer)
-    {
-      renderer->ClearFrameBuffer(m_params.MainFramebuffer, {0.0f, 0.0f, 0.0f, 0.0f});
-    }
-
     // Shadow pass
     m_passArray.push_back(m_shadowPass);
 
@@ -155,45 +150,59 @@ namespace ToolKit
       }
     }
 
-    m_forwardRenderPass->m_params.Lights           = m_updatedLights;
-    m_forwardRenderPass->m_params.Cam              = m_params.Cam;
-    m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
-    m_forwardRenderPass->m_params.SSAOEnabled      = m_params.Gfx.SSAOEnabled;
-    m_forwardRenderPass->m_params.ClearFrameBuffer = false;
-    m_forwardRenderPass->m_params.OpaqueJobs       = opaque;
-    m_forwardRenderPass->m_params.TranslucentJobs  = translucent;
-    m_forwardRenderPass->m_params.SsaoTexture      = m_ssaoPass->m_ssaoTexture;
-
-    m_forwardPreProcessPass->m_params              = m_forwardRenderPass->m_params;
-
-    m_ssaoPass->m_params.GNormalBuffer             = m_forwardPreProcessPass->m_normalRt;
-    m_ssaoPass->m_params.GLinearDepthBuffer        = m_forwardPreProcessPass->m_linearDepthRt;
-    m_ssaoPass->m_params.Cam                       = m_params.Cam;
-    m_ssaoPass->m_params.Radius                    = m_params.Gfx.SSAORadius;
-    m_ssaoPass->m_params.spread                    = m_params.Gfx.SSAOSpread;
-    m_ssaoPass->m_params.Bias                      = m_params.Gfx.SSAOBias;
-    m_ssaoPass->m_params.KernelSize                = m_params.Gfx.SSAOKernelSize;
+    bool couldDrawSky = false;
 
     // Set CubeMapPass for sky.
-    m_drawSky                                      = false;
+    m_drawSky         = false;
     if (m_sky = m_params.Scene->GetSky())
     {
       if (m_drawSky = m_sky->GetDrawSkyVal())
       {
+        m_skyPass->m_params.ClearFramebuffer = m_params.ClearFramebuffer;
         m_skyPass->m_params.FrameBuffer = m_params.MainFramebuffer;
         m_skyPass->m_params.Cam         = m_params.Cam;
         m_skyPass->m_params.Transform   = m_sky->m_node->GetTransform();
         m_skyPass->m_params.Material    = m_sky->GetSkyboxMaterial();
+
+        couldDrawSky                    = true;
       }
     }
 
-    m_bloomPass->m_params.FrameBuffer    = m_params.MainFramebuffer;
-    m_bloomPass->m_params.intensity      = m_params.Gfx.BloomIntensity;
-    m_bloomPass->m_params.minThreshold   = m_params.Gfx.BloomThreshold;
-    m_bloomPass->m_params.iterationCount = m_params.Gfx.BloomIterationCount;
+    m_forwardRenderPass->m_params.Lights          = m_updatedLights;
+    m_forwardRenderPass->m_params.Cam             = m_params.Cam;
+    m_forwardRenderPass->m_params.FrameBuffer     = m_params.MainFramebuffer;
+    m_forwardRenderPass->m_params.SSAOEnabled     = m_params.Gfx.SSAOEnabled;
+    m_forwardRenderPass->m_params.OpaqueJobs      = opaque;
+    m_forwardRenderPass->m_params.TranslucentJobs = translucent;
+    m_forwardRenderPass->m_params.SsaoTexture     = m_ssaoPass->m_ssaoTexture;
 
-    m_tonemapPass->m_params.FrameBuffer  = m_params.MainFramebuffer;
-    m_tonemapPass->m_params.Method       = m_params.Gfx.TonemapperMode;
+    // If sky is being rendered, then clear the main framebuffer there. If sky pass is not rendered, clear the framebuffer here
+    if (!couldDrawSky)
+    {
+      m_forwardRenderPass->m_params.ClearFrameBuffer = m_params.ClearFramebuffer;
+    }
+    else
+    {
+      m_forwardRenderPass->m_params.ClearFrameBuffer = false;
+    }
+
+    m_forwardPreProcessPass->m_params       = m_forwardRenderPass->m_params;
+
+    m_ssaoPass->m_params.GNormalBuffer      = m_forwardPreProcessPass->m_normalRt;
+    m_ssaoPass->m_params.GLinearDepthBuffer = m_forwardPreProcessPass->m_linearDepthRt;
+    m_ssaoPass->m_params.Cam                = m_params.Cam;
+    m_ssaoPass->m_params.Radius             = m_params.Gfx.SSAORadius;
+    m_ssaoPass->m_params.spread             = m_params.Gfx.SSAOSpread;
+    m_ssaoPass->m_params.Bias               = m_params.Gfx.SSAOBias;
+    m_ssaoPass->m_params.KernelSize         = m_params.Gfx.SSAOKernelSize;
+
+    m_bloomPass->m_params.FrameBuffer       = m_params.MainFramebuffer;
+    m_bloomPass->m_params.intensity         = m_params.Gfx.BloomIntensity;
+    m_bloomPass->m_params.minThreshold      = m_params.Gfx.BloomThreshold;
+    m_bloomPass->m_params.iterationCount    = m_params.Gfx.BloomIterationCount;
+
+    m_tonemapPass->m_params.FrameBuffer     = m_params.MainFramebuffer;
+    m_tonemapPass->m_params.Method          = m_params.Gfx.TonemapperMode;
 
     m_dofPass->m_params.ColorRt    = m_params.MainFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
     m_dofPass->m_params.DepthRt    = m_forwardPreProcessPass->m_linearDepthRt;

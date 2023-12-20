@@ -380,23 +380,7 @@ namespace ToolKit
 
   void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear) { SetFramebuffer(fb, clear, m_clearColor); }
 
-  void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color)
-  {
-    FramebufferPtr& tmp1 = fb;
-    FramebufferPtr tmp2  = m_framebuffer;
-    SetFramebuffer(fb, clear, color);
-    tmp1.swap(tmp2);
-  }
-
-  void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear) { SwapFramebuffer(fb, clear, m_clearColor); }
-
   FramebufferPtr Renderer::GetFrameBuffer() { return m_framebuffer; }
-
-  void Renderer::ClearFrameBuffer(FramebufferPtr fb, const Vec4& color)
-  {
-    SwapFramebuffer(fb, true, color);
-    SwapFramebuffer(fb, false);
-  }
 
   void Renderer::ClearColorBuffer(const Vec4& color)
   {

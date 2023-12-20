@@ -54,11 +54,8 @@ namespace ToolKit
     void SetStencilOperation(StencilOperation op);
     void SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color);
     void SetFramebuffer(FramebufferPtr fb, bool clear = true);
-    void SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color);
-    void SwapFramebuffer(FramebufferPtr& fb, bool clear = true);
 
     FramebufferPtr GetFrameBuffer();
-    void ClearFrameBuffer(FramebufferPtr fb, const Vec4& value);
     void ClearColorBuffer(const Vec4& color);
     void ClearBuffer(GraphicBitFields fields, const Vec4& value);
     void ColorMask(bool r, bool g, bool b, bool a);
