@@ -31,6 +31,7 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
+#include "TKStats.h"
 
 #include "DebugNew.h"
 
@@ -204,6 +205,11 @@ namespace ToolKit
     else
     {
       glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
+    }
+
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->AddDrawCall();
     }
   }
 

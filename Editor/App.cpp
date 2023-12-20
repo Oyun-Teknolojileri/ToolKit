@@ -19,13 +19,14 @@
 #include <PluginManager.h>
 #include <Resource.h>
 #include <SDL.h>
-#include <TKProfiler.h>
+#include <TKStats.h>
 #include <UIManager.h>
 
 #include <sstream>
 #include <thread>
 
 #include <DebugNew.h>
+#include <TKProfiler.h>
 
 namespace ToolKit
 {
@@ -179,6 +180,11 @@ namespace ToolKit
     void App::Frame(float deltaTime)
     {
       m_deltaTime = deltaTime;
+
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->ResetDrawCallCounter();
+      }
 
       PUSH_CPU_MARKER("UI Begin & Show UI");
 

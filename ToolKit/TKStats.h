@@ -7,6 +7,10 @@ namespace ToolKit
   class TK_API TKStats
   {
    public:
+
+    // Vram Usage
+    ///////////////////////////////////////////////////////
+
     inline uint64 GetTotalVRAMUsageInBytes() { return m_totalVRAMUsageInBytes; }
 
     inline uint64 GetTotalVRAMUsageInKB() { return m_totalVRAMUsageInBytes / 1024; }
@@ -32,7 +36,18 @@ namespace ToolKit
 
     inline void ResetVRAMUsage() { m_totalVRAMUsageInBytes = 0; }
 
+    // Draw Call
+    ///////////////////////////////////////////////////////
+
+    inline void AddDrawCall() { ++m_drawCallCount; }
+
+    // NOTE: This function should be called regularly
+    inline void ResetDrawCallCounter() { m_drawCallCount = 0; }
+
+    inline uint64 GetDrawCallCount() { return m_drawCallCount; }
+
    private:
     uint64 m_totalVRAMUsageInBytes = 0;
+    uint64 m_drawCallCount = 0;
   };
 } // namespace ToolKit
