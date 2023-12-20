@@ -120,8 +120,6 @@ namespace ToolKit
 
     m_depthAtch = dt;
 
-    GLint lastFBO;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
     AddHWRenderPass();
 
@@ -135,8 +133,6 @@ namespace ToolKit
     {
       GetLogger()->Log("Error: Framebuffer incomplete!");
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-    AddHWRenderPass();
   }
 
   DepthTexturePtr Framebuffer::GetDepthTexture() { return m_depthAtch; }
@@ -158,9 +154,6 @@ namespace ToolKit
     }
 
     RenderTargetPtr oldRt = m_colorAtchs[(int) atc];
-
-    GLint lastFBO;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
     AddHWRenderPass();
@@ -190,9 +183,6 @@ namespace ToolKit
     m_colorAtchs[(int) atc] = rt;
     SetDrawBuffers();
     CheckFramebufferComplete();
-
-    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-    AddHWRenderPass();
 
     m_settings.width  = rt->m_width;
     m_settings.height = rt->m_height;
@@ -231,8 +221,6 @@ namespace ToolKit
       return nullptr;
     }
 
-    GLint lastFBO;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
     AddHWRenderPass();
 
@@ -241,9 +229,6 @@ namespace ToolKit
 
     m_colorAtchs[(int) atc] = nullptr;
     SetDrawBuffers();
-
-    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-    AddHWRenderPass();
 
     return rt;
   }
@@ -269,8 +254,7 @@ namespace ToolKit
     {
       return;
     }
-    GLint lastFBO;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
     AddHWRenderPass();
 
@@ -284,8 +268,6 @@ namespace ToolKit
       m_depthAtch->UnInit();
     }
     m_depthAtch = nullptr;
-    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-    AddHWRenderPass();
   }
 
   void Framebuffer::SetDrawBuffers()

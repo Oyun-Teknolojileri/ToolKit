@@ -411,19 +411,11 @@ namespace ToolKit
 
     dest->ReconstructIfNeeded(width, height);
 
-    GLint drawFboId = 0, readFboId = 0;
-    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFboId);
-    glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readFboId);
-
     glBindFramebuffer(GL_READ_FRAMEBUFFER, srcId);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
     AddHWRenderPass();
 
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, (GLbitfield) fields, GL_NEAREST);
-
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, readFboId);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
-    AddHWRenderPass();
   }
 
   void Renderer::SetViewport(Viewport* viewport) { SetFramebuffer(viewport->m_framebuffer, GraphicBitFields::AllBits); }

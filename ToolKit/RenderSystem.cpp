@@ -171,9 +171,6 @@ namespace ToolKit
 
   void RenderSystem::TestSRGBBackBuffer()
   {
-    GLint lastFBO;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
-
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     AddHWRenderPass();
 
@@ -182,9 +179,6 @@ namespace ToolKit
     GLubyte pixel[4];
     glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
     m_backbufferFormatIsSRGB = (pixel[0] > 150);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-    AddHWRenderPass();
   }
 
 } // namespace ToolKit
