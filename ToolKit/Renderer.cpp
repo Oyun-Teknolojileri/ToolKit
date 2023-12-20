@@ -19,6 +19,7 @@
 #include "Mesh.h"
 #include "Node.h"
 #include "Pass.h"
+#include "RHI.h"
 #include "ResourceComponent.h"
 #include "Scene.h"
 #include "Shader.h"
@@ -355,8 +356,7 @@ namespace ToolKit
     {
       if (fb != nullptr)
       {
-        glBindFramebuffer((GLenum) fbType, fb->GetFboId());
-        AddHWRenderPass();
+        RHI::SetFramebuffer((GLenum) fbType, fb->GetFboId());
 
         const FramebufferSettings& fbSet = fb->GetSettings();
         SetViewportSize(fbSet.width, fbSet.height);
@@ -364,8 +364,7 @@ namespace ToolKit
       else
       {
         // Backbuffer
-        glBindFramebuffer((GLenum) fbType, 0);
-        AddHWRenderPass();
+        RHI::SetFramebuffer((GLenum) fbType, 0);
 
         SetViewportSize(m_windowSize.x, m_windowSize.y);
       }
@@ -411,9 +410,8 @@ namespace ToolKit
 
     dest->ReconstructIfNeeded(width, height);
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, srcId);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
-    AddHWRenderPass();
+    RHI::SetFramebuffer(GL_READ_FRAMEBUFFER, srcId);
+    RHI::SetFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
 
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, (GLbitfield) fields, GL_NEAREST);
   }

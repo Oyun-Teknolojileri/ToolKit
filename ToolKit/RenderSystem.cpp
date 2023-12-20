@@ -9,6 +9,7 @@
 
 #include "GlErrorReporter.h"
 #include "Logger.h"
+#include "RHI.h"
 #include "TKOpenGL.h"
 #include "TKStats.h"
 #include "ToolKit.h"
@@ -171,8 +172,7 @@ namespace ToolKit
 
   void RenderSystem::TestSRGBBackBuffer()
   {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    AddHWRenderPass();
+    RHI::SetFramebuffer(GL_FRAMEBUFFER, 0);
 
     glClearColor(0.5f, 0.2f, 0.8f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
