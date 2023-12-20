@@ -19,13 +19,13 @@
 #include <PluginManager.h>
 #include <Resource.h>
 #include <SDL.h>
+#include <TKProfiler.h>
 #include <UIManager.h>
 
 #include <sstream>
 #include <thread>
 
 #include <DebugNew.h>
-#include <TKProfiler.h>
 
 namespace ToolKit
 {
@@ -520,24 +520,37 @@ namespace ToolKit
         gamePlugin->SetViewport(GetSimulationWindow());
         gamePlugin->m_currentState = PluginState::Running;
 
-        m_statusMsg                = "Game is playing";
-        m_gameMod                  = mod;
+        if (m_gameMod == GameMod::Stop)
+        {
+          gamePlugin->OnPlay();
+          m_statusMsg = "Game is playing";
+        }
+
+        if (m_gameMod == GameMod::Paused)
+        {
+          gamePlugin->OnResume();
+          m_statusMsg = "Game is resumed";
+        }
+
+        m_gameMod = mod;
       }
 
       if (mod == GameMod::Paused)
       {
         gamePlugin->m_currentState = PluginState::Paused;
+        gamePlugin->OnPause();
 
-        m_statusMsg                = "Game is paused";
-        m_gameMod                  = mod;
+        m_statusMsg = "Game is paused";
+        m_gameMod   = mod;
       }
 
       if (mod == GameMod::Stop)
       {
         gamePlugin->m_currentState = PluginState::Stop;
+        gamePlugin->OnStop();
 
-        m_statusMsg                = "Game is stopped";
-        m_gameMod                  = mod;
+        m_statusMsg = "Game is stopped";
+        m_gameMod   = mod;
 
         ClearPlayInEditorSession();
 
@@ -1222,16 +1235,12 @@ namespace ToolKit
     {
       ClearSession();
 
-      UI::m_postponedActions.push_back(
-          [this, project]() -> void
-          {
-            m_workspace.SetActiveProject(project);
-            m_workspace.Serialize(nullptr, nullptr);
-            m_workspace.SerializeEngineSettings();
-            OnNewScene("New Scene");
+      m_workspace.SetActiveProject(project);
+      m_workspace.Serialize(nullptr, nullptr);
+      m_workspace.SerializeEngineSettings();
+      OnNewScene("New Scene");
 
-            LoadProjectPlugin();
-          });
+      LoadProjectPlugin();
     }
 
     void App::PackResources()
@@ -1549,10 +1558,10 @@ namespace ToolKit
     void App::CreateEditorEntities()
     {
       // Create editor objects.
-      m_cursor         = MakeNewPtr<Cursor>();
-      m_origin         = MakeNewPtr<Axis3d>();
+      m_cursor = MakeNewPtr<Cursor>();
+      m_origin = MakeNewPtr<Axis3d>();
 
-      m_grid           = MakeNewPtr<Grid>();
+      m_grid   = MakeNewPtr<Grid>();
       m_grid->Resize(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0);
 
       m_2dGrid         = MakeNewPtr<Grid>();
