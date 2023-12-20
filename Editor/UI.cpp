@@ -778,6 +778,19 @@ namespace ToolKit
         g_app->GetRenderSettingsView()->SetVisibility(true);
       }
 
+      if (g_app->GetStatsView() == nullptr)
+      {
+        if (ImGui::MenuItem(g_statsView.c_str()))
+        {
+          g_app->AddStatsView();
+          g_app->GetStatsView()->SetVisibility(true);
+        }
+      }
+      else if (ImGui::MenuItem(g_statsView.c_str(), nullptr, nullptr, !g_app->GetStatsView()->IsVisible()))
+      {
+        g_app->GetStatsView()->SetVisibility(true);
+      }
+
       ImGui::Separator();
 
       if (ImGui::MenuItem("Reset Layout"))

@@ -136,18 +136,12 @@ namespace ToolKit
     {
       if (m_vboVertexId)
       {
-        if (TKStats* tkStats = GetTKStats())
-        {
-          tkStats->RemoveVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
-        }
+        RemoveVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
       }
 
       if (m_vboIndexId)
       {
-        if (TKStats* tkStats = GetTKStats())
-        {
-          tkStats->RemoveVRAMUsageInBytes(sizeof(uint) * m_indexCount);
-        }
+        RemoveVRAMUsageInBytes(sizeof(uint) * m_indexCount);
       }
 
       GLuint buffers[2] = {m_vboIndexId, m_vboVertexId};
@@ -203,10 +197,7 @@ namespace ToolKit
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
 
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->AddVRAMUsageInBytes(size);
-      }
+      AddVRAMUsageInBytes(size);
     }
 
     if (m_indexCount > 0)
@@ -218,10 +209,7 @@ namespace ToolKit
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
 
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->AddVRAMUsageInBytes(size);
-      }
+      AddVRAMUsageInBytes(size);
     }
 
     cpy->m_material = GetMaterialManager()->Copy<Material>(m_material);
@@ -580,10 +568,7 @@ namespace ToolKit
   {
     if (m_vboVertexId != 0)
     {
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->RemoveVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
-      }
+      RemoveVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
     }
 
     glDeleteBuffers(1, &m_vboVertexId);
@@ -602,10 +587,7 @@ namespace ToolKit
                    GL_STATIC_DRAW);
       m_vertexCount = (uint) m_clientSideVertices.size();
 
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->AddVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
-      }
+      AddVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
     }
 
     m_vertexCount = (uint) m_clientSideVertices.size();
@@ -619,10 +601,7 @@ namespace ToolKit
   {
     if (m_vboIndexId != 0)
     {
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->RemoveVRAMUsageInBytes(sizeof(uint) * m_indexCount);
-      }
+      RemoveVRAMUsageInBytes(sizeof(uint) * m_indexCount);
     }
 
     glDeleteBuffers(1, &m_vboIndexId);
@@ -637,10 +616,7 @@ namespace ToolKit
                    GL_STATIC_DRAW);
       m_indexCount = (uint) m_clientSideIndices.size();
 
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->AddVRAMUsageInBytes(sizeof(uint) * m_clientSideIndices.size());
-      }
+      AddVRAMUsageInBytes(sizeof(uint) * m_clientSideIndices.size());
     }
 
     m_indexCount = (uint) m_clientSideIndices.size();
@@ -798,10 +774,7 @@ namespace ToolKit
                    GL_STATIC_DRAW);
       m_vertexCount = (uint) m_clientSideVertices.size();
 
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->AddVRAMUsageInBytes(GetVertexSize() * m_clientSideVertices.size());
-      }
+      AddVRAMUsageInBytes(GetVertexSize() * m_clientSideVertices.size());
     }
 
     if (flush)

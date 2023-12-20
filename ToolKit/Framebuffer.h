@@ -25,11 +25,7 @@ namespace ToolKit
   class TK_API Framebuffer
   {
     // NOTE: This class does not handle renderbuffer attachments, multi-sampled
-    // cubemaps, stencil attachments(including depth_stencil).
-
-    // Initalized framebuffer carries either depth attachment or depth
-    // stencil attachment. In order to change, uninit and init the framebuffer
-    // with new settings.
+    // cubemaps.
 
    public:
     enum class Attachment
@@ -77,7 +73,6 @@ namespace ToolKit
     void ClearAttachments();
 
     uint GetFboId();
-    uint GetDefaultRboId();
 
     inline FramebufferSettings GetSettings() { return m_settings; }
 

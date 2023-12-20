@@ -179,7 +179,12 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
-      m_deltaTime = deltaTime;
+      m_deltaTime                  = deltaTime;
+
+      m_lastFrameHWRenderPassCount = GetHWRenderPassCount();
+      m_lastFrameDrawCallCount     = GetDrawCallCount();
+      ResetDrawCallCounter();
+      ResetHWRenderPassCounter();
 
       if (TKStats* tkStats = GetTKStats())
       {
@@ -885,6 +890,9 @@ namespace ToolKit
           case Window::Type::RenderSettings:
             wnd = new RenderSettingsView();
             break;
+          case Window::Type::Stats:
+            wnd = new StatsView();
+            break;
           }
 
           if (wnd)
@@ -1354,7 +1362,11 @@ namespace ToolKit
 
     RenderSettingsView* App::GetRenderSettingsView() { return GetWindow<RenderSettingsView>(g_renderSettings); }
 
+    StatsView* App::GetStatsView() { return GetWindow<StatsView>(g_statsView); }
+
     void App::AddRenderSettingsView() { m_windows.push_back(new RenderSettingsView()); }
+
+    void App::AddStatsView() { m_windows.push_back(new StatsView()); }
 
     void App::HideGizmos()
     {

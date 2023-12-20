@@ -13,6 +13,7 @@
 #include "MathUtil.h"
 #include "RenderSystem.h"
 #include "Shader.h"
+#include "TKStats.h"
 
 #include "DebugNew.h"
 
@@ -146,6 +147,10 @@ namespace ToolKit
       cam->m_node->SetScale(sca);
 
       fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, cubemap, 0, -1, (Framebuffer::CubemapFace) i);
+      if (i > 0)
+      {
+        AddHWRenderPass();
+      }
 
       renderer->SetFramebuffer(fb, true, Vec4(0.0f));
       renderer->DrawCube(cam, m_skyboxMaterial);

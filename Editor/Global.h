@@ -28,6 +28,7 @@ namespace ToolKit
     const String g_outlinerStr("Outliner");
     const String g_propInspector("Property Inspector");
     const String g_renderSettings("Render Settings");
+    const String g_statsView("Stats View");
     const String g_matInspector("Material Inspector");
     const String g_memoStr("Mem");
     const String g_errorStr("Err");

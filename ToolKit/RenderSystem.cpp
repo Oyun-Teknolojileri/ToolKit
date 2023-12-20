@@ -10,6 +10,7 @@
 #include "GlErrorReporter.h"
 #include "Logger.h"
 #include "TKOpenGL.h"
+#include "TKStats.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -174,6 +175,8 @@ namespace ToolKit
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    AddHWRenderPass();
+
     glClearColor(0.5f, 0.2f, 0.8f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     GLubyte pixel[4];
@@ -181,6 +184,7 @@ namespace ToolKit
     m_backbufferFormatIsSRGB = (pixel[0] > 150);
 
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+    AddHWRenderPass();
   }
 
 } // namespace ToolKit
