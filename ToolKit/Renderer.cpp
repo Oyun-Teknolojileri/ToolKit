@@ -416,6 +416,30 @@ namespace ToolKit
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, (GLbitfield) fields, GL_NEAREST);
   }
 
+  void Renderer::InvalidateFramebufferDepth(FramebufferPtr fb)
+  {
+    constexpr GLenum invalidAttachments[1] = {GL_DEPTH_ATTACHMENT};
+    
+    SetFramebuffer(fb, GraphicBitFields::None);
+    RHI::InvalidateFramebuffer(fb->GetFboId(), 1, invalidAttachments);
+  }
+
+  void Renderer::InvalidateFramebufferStencil(FramebufferPtr fb)
+  {
+    constexpr GLenum invalidAttachments[1] = {GL_STENCIL_ATTACHMENT};
+
+    SetFramebuffer(fb, GraphicBitFields::None);
+    RHI::InvalidateFramebuffer(fb->GetFboId(), 1, invalidAttachments);
+  }
+
+  void Renderer::InvalidateFramebufferDepthStencil(FramebufferPtr fb)
+  {
+    constexpr GLenum invalidAttachments[2] = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
+    
+    SetFramebuffer(fb, GraphicBitFields::None);
+    RHI::InvalidateFramebuffer(fb->GetFboId(), 2, invalidAttachments);
+  }
+
   void Renderer::SetViewport(Viewport* viewport) { SetFramebuffer(viewport->m_framebuffer, GraphicBitFields::AllBits); }
 
   void Renderer::SetViewportSize(uint width, uint height)

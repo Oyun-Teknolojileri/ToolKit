@@ -24,10 +24,15 @@ namespace ToolKit
       }
     }
 
+    TK_API static inline void InvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments)
+    {
+      glInvalidateFramebuffer(target, numAttachments, attachments);
+    }
+
    private:
     static GLuint m_currentFramebufferID;
 
-    // TODO hold the ids for draw & read framebuffer. If we try to set the same id twice for same slot, don't make api
-    // call
+    // TODO hold the framebuffer id's for draw & read framebuffer. If we try to set the same id twice for same slot,
+    // don't make api call
   };
 } // namespace ToolKit
