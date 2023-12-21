@@ -55,9 +55,9 @@ namespace ToolKit
     }
     else
     {
-      FramebufferSettings targetFbs = m_params.FrameBuffer->GetSettings();
-      fbs.width                     = targetFbs.width;
-      fbs.height                    = targetFbs.height;
+      const FramebufferSettings& targetFbs = m_params.FrameBuffer->GetSettings();
+      fbs.width                            = targetFbs.width;
+      fbs.height                           = targetFbs.height;
     }
 
     m_copyTexture->ReconstructIfNeeded(fbs.width, fbs.height);

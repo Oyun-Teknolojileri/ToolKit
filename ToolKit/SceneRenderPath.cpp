@@ -240,7 +240,7 @@ namespace ToolKit
 
     // FXAA Pass
     m_fxaaPass->m_params.FrameBuffer    = m_params.MainFramebuffer;
-    FramebufferSettings fbs             = m_params.MainFramebuffer->GetSettings();
+    const FramebufferSettings& fbs      = m_params.MainFramebuffer->GetSettings();
     m_fxaaPass->m_params.screen_size    = Vec2(fbs.width, fbs.height);
 
     // Gamma pass.

@@ -14,12 +14,10 @@ namespace ToolKit
 
   struct FullQuadPassParams
   {
-    FramebufferPtr FrameBuffer      = nullptr;
-    BlendFunction BlendFunc         = BlendFunction::NONE;
-    ShaderPtr FragmentShader        = nullptr;
-    bool ClearFrameBuffer           = true;
-    bool InvalideDepthBuffer        = true;
-    bool InvalideDepthStencilBuffer = true;
+    FramebufferPtr FrameBuffer = nullptr;
+    BlendFunction BlendFunc    = BlendFunction::NONE;
+    ShaderPtr FragmentShader   = nullptr;
+    bool ClearFrameBuffer      = true;
   };
 
   /**

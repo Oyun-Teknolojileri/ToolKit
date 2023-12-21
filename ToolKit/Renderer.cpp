@@ -402,10 +402,10 @@ namespace ToolKit
 
     if (src)
     {
-      FramebufferSettings fbs = src->GetSettings();
-      width                   = fbs.width;
-      height                  = fbs.height;
-      srcId                   = src->GetFboId();
+      const FramebufferSettings& fbs = src->GetSettings();
+      width                          = fbs.width;
+      height                         = fbs.height;
+      srcId                          = src->GetFboId();
     }
 
     dest->ReconstructIfNeeded(width, height);
@@ -419,7 +419,7 @@ namespace ToolKit
   void Renderer::InvalidateFramebufferDepth(FramebufferPtr fb)
   {
     constexpr GLenum invalidAttachments[1] = {GL_DEPTH_ATTACHMENT};
-    
+
     SetFramebuffer(fb, GraphicBitFields::None);
     RHI::InvalidateFramebuffer(fb->GetFboId(), 1, invalidAttachments);
   }
@@ -435,7 +435,7 @@ namespace ToolKit
   void Renderer::InvalidateFramebufferDepthStencil(FramebufferPtr fb)
   {
     constexpr GLenum invalidAttachments[2] = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
-    
+
     SetFramebuffer(fb, GraphicBitFields::None);
     RHI::InvalidateFramebuffer(fb->GetFboId(), 2, invalidAttachments);
   }

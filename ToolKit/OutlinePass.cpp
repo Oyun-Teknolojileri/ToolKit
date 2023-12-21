@@ -70,7 +70,7 @@ namespace ToolKit
     m_stencilPass->m_params.RenderJobs = m_params.RenderJobs;
 
     // Construct output target.
-    FramebufferSettings fbs            = m_params.FrameBuffer->GetSettings();
+    const FramebufferSettings& fbs     = m_params.FrameBuffer->GetSettings();
     m_stencilAsRt->ReconstructIfNeeded(fbs.width, fbs.height);
     m_stencilPass->m_params.OutputTarget = m_stencilAsRt;
 

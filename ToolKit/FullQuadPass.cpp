@@ -87,17 +87,6 @@ namespace ToolKit
 
   void FullQuadPass::PostRender()
   {
-    if (m_params.InvalideDepthStencilBuffer)
-    {
-      //TODO
-      //GetRenderer()->InvalidateFramebufferDepthStencil(m_params.FrameBuffer);
-    }
-    else if (m_params.InvalideDepthBuffer)
-    {
-      //TODO
-      //GetRenderer()->InvalidateFramebufferDepth(m_params.FrameBuffer);
-    }
-
     PUSH_GPU_MARKER("FullQuadPass::PostRender");
     PUSH_CPU_MARKER("FullQuadPass::PostRender");
 

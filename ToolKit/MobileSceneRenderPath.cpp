@@ -211,7 +211,7 @@ namespace ToolKit
     m_dofPass->m_params.blurQuality  = m_params.Gfx.DofQuality;
 
     m_fxaaPass->m_params.FrameBuffer = m_params.MainFramebuffer;
-    const FramebufferSettings fbs    = m_params.MainFramebuffer->GetSettings();
+    const FramebufferSettings& fbs    = m_params.MainFramebuffer->GetSettings();
     m_fxaaPass->m_params.screen_size = Vec2(fbs.width, fbs.height);
   }
 } // namespace ToolKit
