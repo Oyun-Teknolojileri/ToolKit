@@ -15,12 +15,67 @@ namespace ToolKit
    private:
     TK_API static inline void SetFramebuffer(GLenum target, GLuint framebufferID)
     {
-      glBindFramebuffer(target, framebufferID);
-      m_currentFramebufferID = framebufferID;
-
-      if (target != GL_READ_FRAMEBUFFER)
+      if (target == GL_READ_FRAMEBUFFER)
       {
-        AddHWRenderPass();
+        if (m_currentReadFramebufferID == framebufferID)
+        {
+          return;
+        }
+        else
+        {
+          m_currentReadFramebufferID = framebufferID;
+        }
+      }
+      else if (target == GL_DRAW_FRAMEBUFFER)
+      {
+        if (m_currentDrawFramebufferID == framebufferID)
+        {
+          return;
+        }
+        else
+        {
+          m_currentDrawFramebufferID = framebufferID;
+        }
+      }
+      else
+      {
+        if (m_currentFramebufferID == framebufferID && m_currentReadFramebufferID == framebufferID &&
+            m_currentDrawFramebufferID == framebufferID)
+        {
+          return;
+        }
+        else
+        {
+          m_currentFramebufferID     = framebufferID;
+          m_currentReadFramebufferID = framebufferID;
+          m_currentDrawFramebufferID = framebufferID;
+        }
+      }
+
+      glBindFramebuffer(target, framebufferID);
+      AddHWRenderPass();
+    }
+
+    TK_API static inline void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers)
+    {
+      glDeleteFramebuffers(n, framebuffers);
+
+      for (int i = 0; i < n; ++i)
+      {
+        if (framebuffers[i] == m_currentFramebufferID)
+        {
+          m_currentFramebufferID = -1;
+        }
+
+        if (framebuffers[i] == m_currentReadFramebufferID)
+        {
+          m_currentReadFramebufferID = -1;
+        }
+
+        if (framebuffers[i] == m_currentDrawFramebufferID)
+        {
+          m_currentDrawFramebufferID = -1;
+        }
       }
     }
 
@@ -30,9 +85,8 @@ namespace ToolKit
     }
 
    private:
+    static GLuint m_currentReadFramebufferID;
+    static GLuint m_currentDrawFramebufferID;
     static GLuint m_currentFramebufferID;
-
-    // TODO hold the framebuffer id's for draw & read framebuffer. If we try to set the same id twice for same slot,
-    // don't make api call
   };
 } // namespace ToolKit

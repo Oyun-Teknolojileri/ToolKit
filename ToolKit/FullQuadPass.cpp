@@ -89,11 +89,13 @@ namespace ToolKit
   {
     if (m_params.InvalideDepthStencilBuffer)
     {
-      GetRenderer()->InvalidateFramebufferDepthStencil(m_params.FrameBuffer);
+      //TODO
+      //GetRenderer()->InvalidateFramebufferDepthStencil(m_params.FrameBuffer);
     }
     else if (m_params.InvalideDepthBuffer)
     {
-      GetRenderer()->InvalidateFramebufferDepth(m_params.FrameBuffer);
+      //TODO
+      //GetRenderer()->InvalidateFramebufferDepth(m_params.FrameBuffer);
     }
 
     PUSH_GPU_MARKER("FullQuadPass::PostRender");

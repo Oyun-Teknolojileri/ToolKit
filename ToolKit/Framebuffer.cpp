@@ -95,7 +95,7 @@ namespace ToolKit
 
     ClearAttachments();
 
-    glDeleteFramebuffers(1, &m_fboId);
+    RHI::DeleteFramebuffers(1, &m_fboId);
     m_fboId       = 0;
     m_initialized = false;
   }
