@@ -1,8 +1,8 @@
 #pragma once
 
 #include "TKOpenGL.h"
-#include "Types.h"
 #include "TKStats.h"
+#include "Types.h"
 
 namespace ToolKit
 {
@@ -26,5 +26,8 @@ namespace ToolKit
 
    private:
     static GLuint m_currentFramebufferID;
+
+    // TODO hold the ids for draw & read framebuffer. If we try to set the same id twice for same slot, don't make api
+    // call
   };
 } // namespace ToolKit

@@ -60,7 +60,7 @@ namespace ToolKit
 
     FramebufferPtr GetFrameBuffer();
     void ClearColorBuffer(const Vec4& color);
-    void ClearBuffer(GraphicBitFields fields, const Vec4& value);
+    void ClearBuffer(GraphicBitFields fields, const Vec4& value = Vec4(0.0f));
     void ColorMask(bool r, bool g, bool b, bool a);
     void CopyFrameBuffer(FramebufferPtr src, FramebufferPtr dest, GraphicBitFields fields);
 

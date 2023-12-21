@@ -56,15 +56,15 @@ namespace ToolKit
     {
       renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::AllBits);
     }
+    else if (m_params.ClearDepthBuffer)
+    {
+      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::DepthStencilBits);
+    }
     else
     {
       renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::None);
     }
 
-    if (!m_params.ClearFrameBuffer && m_params.ClearDepthBuffer)
-    {
-      renderer->ClearBuffer(GraphicBitFields::DepthStencilBits, Vec4(1.0f));
-    }
     renderer->SetCameraLens(m_params.Cam);
     renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
 
