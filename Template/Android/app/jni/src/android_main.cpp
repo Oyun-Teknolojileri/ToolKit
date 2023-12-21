@@ -9,6 +9,7 @@
 #include "ToolKit.h"
 #include "Types.h"
 #include "UIManager.h"
+#include "TKStats.h"
 
 #include <stdio.h>
 
@@ -20,7 +21,11 @@
 #include <android/asset_manager_jni.h>
 #include <sys/stat.h>
 
+#include <unistd.h>
+
 #define ANDROID_LOG(format, ...) __android_log_print(ANDROID_LOG_DEBUG, "TK_LOG", format, ##__VA_ARGS__)
+
+#define TK_PLATFORM PLATFORM::TKAndroid
 
 namespace ToolKit
 {
@@ -465,7 +470,11 @@ namespace ToolKit
           g_game = new Game();
           g_game->Init(g_proxy);
 
+          g_game->m_currentState = PluginState::Running;
+
           InitRender();
+
+          g_game->OnPlay();
         }
       }
     }
@@ -526,8 +535,17 @@ namespace ToolKit
     static CustomTimer timer;
     SDL_Event sdlEvent;
 
-    while (g_running && !g_game->m_quit)
+    g_proxy->m_engineSettings->Graphics.ShadowDistance = 150.0f;
+
+    while (g_game->m_currentState != PluginState::Stop && g_running)
     {
+      GetTKStats()->ResetDrawCallCounter();
+      GetTKStats()->ResetHWRenderPassCounter();
+
+      g_game->SetViewport(g_viewport);
+
+      float frameStart = GetMilliSeconds();
+
       while (SDL_PollEvent(&sdlEvent))
       {
         g_sdlEventPool->PoolEvent(sdlEvent);
@@ -548,7 +566,7 @@ namespace ToolKit
 
         g_viewport->Update(deltaTime);
 
-        g_game->Frame(deltaTime, g_viewport);
+        g_game->Frame(deltaTime);
 
         SceneRender(g_viewport);
 
@@ -574,7 +592,6 @@ namespace ToolKit
         Render(g_viewport->m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0)->m_textureId);
 
         g_sdlEventPool->ClearPool(); // Clear after consumption.
-
         SDL_GL_SwapWindow(g_window);
 
         timer.frameCount++;
@@ -586,6 +603,8 @@ namespace ToolKit
         }
 
         timer.lastTime = timer.currentTime;
+
+        float frameEnd = GetMilliSeconds();
       }
     }
   }

@@ -13,9 +13,6 @@ extern "C" TK_PLUGIN_API ToolKit::Game* TK_STDCAL GetInstance() { return &Self; 
 
 namespace ToolKit
 {
-
-  Game* g_game = &Self;
-
   void Game::Init(Main* master) { Main::SetProxy(master); }
 
   void Game::Destroy() {}

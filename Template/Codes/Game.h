@@ -27,8 +27,6 @@ namespace ToolKit
     void OnStop() override;
   };
 
-  extern Game* g_game;
-
 } // namespace ToolKit
 
 extern "C" TK_PLUGIN_API ToolKit::Game* TK_STDCAL GetInstance();
