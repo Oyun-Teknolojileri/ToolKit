@@ -1,6 +1,8 @@
 #pragma once
 
 #include "TKAssert.h"
+#include "Types.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {

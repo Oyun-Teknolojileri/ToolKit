@@ -211,10 +211,6 @@ namespace ToolKit
         }
         fb->ReconstructIfNeeded(curRes.x, curRes.y);
         fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
-        if (i > 0)
-        {
-          AddHWRenderPass();
-        }
       }
 
       m_currentIterationCount = iterationCount;

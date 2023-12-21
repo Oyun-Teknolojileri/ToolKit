@@ -8,6 +8,7 @@
 #pragma once
 
 #include "Sky.h"
+#include "Renderer.h"
 
 namespace ToolKit
 {

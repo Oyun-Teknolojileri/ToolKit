@@ -6,14 +6,19 @@
 
 namespace ToolKit
 {
-  class RHI
+  class TK_API RHI
   {
     friend class Renderer;
     friend class Framebuffer;
     friend class RenderSystem;
 
+  private:
+      static GLuint m_currentReadFramebufferID;
+      static GLuint m_currentDrawFramebufferID;
+      static GLuint m_currentFramebufferID;
+
    private:
-    TK_API static inline void SetFramebuffer(GLenum target, GLuint framebufferID)
+    static inline void SetFramebuffer(GLenum target, GLuint framebufferID)
     {
       if (target == GL_READ_FRAMEBUFFER)
       {
@@ -56,7 +61,7 @@ namespace ToolKit
       AddHWRenderPass();
     }
 
-    TK_API static inline void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers)
+    static inline void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers)
     {
       glDeleteFramebuffers(n, framebuffers);
 
@@ -79,14 +84,9 @@ namespace ToolKit
       }
     }
 
-    TK_API static inline void InvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments)
+    static inline void InvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments)
     {
       glInvalidateFramebuffer(target, numAttachments, attachments);
     }
-
-   private:
-    static GLuint m_currentReadFramebufferID;
-    static GLuint m_currentDrawFramebufferID;
-    static GLuint m_currentFramebufferID;
   };
 } // namespace ToolKit
