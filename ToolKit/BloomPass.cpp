@@ -207,7 +207,13 @@ namespace ToolKit
         FramebufferPtr& fb = m_tempFrameBuffers[i];
         if (fb == nullptr)
         {
-          fb = MakeNewPtr<Framebuffer>();
+          FramebufferSettings fbSettings;
+          fbSettings.depthStencil    = false;
+          fbSettings.useDefaultDepth = false;
+          fbSettings.width           = curRes.x;
+          fbSettings.height          = curRes.y;
+          fb                         = MakeNewPtr<Framebuffer>();
+          fb->Init(fbSettings);
         }
         fb->ReconstructIfNeeded(curRes.x, curRes.y);
         fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
