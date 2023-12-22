@@ -480,6 +480,12 @@ namespace ToolKit
 
     // clean apk output directory
     String buildLocation = NormalizePath(ConcatPaths({projectLocation, "Android/app/build/outputs/apk"}));
+
+    if (!std::filesystem::exists(buildLocation))
+    {
+      std::filesystem::create_directories(buildLocation);
+    }
+
     for (auto& folder : std::filesystem::directory_iterator(buildLocation))
     {
       if (!folder.is_directory())

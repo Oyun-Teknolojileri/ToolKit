@@ -14,6 +14,8 @@
 #include <chrono>
 #include <iostream>
 
+#include <TKProfiler.h>
+
 #ifdef _DEBUG
   #define GLAD_GLES2_IMPLEMENTATION
   #include "gles2.h"
@@ -412,7 +414,11 @@ namespace ToolKit
           g_game = new Game();
           g_game->Init(g_proxy);
 
+          g_game->m_currentState = PluginState::Running;
+
           InitRender();
+
+          g_game->OnPlay();
         }
       }
     }
@@ -473,17 +479,28 @@ namespace ToolKit
     static CustomTimer timer;
     SDL_Event sdlEvent;
 
-    while (g_running && !g_game->m_quit)
+    while (g_game->m_currentState != PluginState::Stop && g_running)
     {
+      float frameStart = GetMilliSeconds();
+      PUSH_CPU_MARKER("Whole Frame");
+
+      g_game->SetViewport(g_viewport);
+
+      PUSH_CPU_MARKER("SDL Poll Event");
+
       while (SDL_PollEvent(&sdlEvent))
       {
         g_sdlEventPool->PoolEvent(sdlEvent);
         ProcessEvent(sdlEvent);
       }
 
+      POP_CPU_MARKER();
+
       timer.currentTime = GetMilliSeconds();
       if (timer.currentTime > timer.lastTime + timer.deltaTime)
       {
+        PUSH_CPU_MARKER("App Frame");
+
         float deltaTime = timer.currentTime - timer.lastTime;
 
         if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
@@ -495,7 +512,7 @@ namespace ToolKit
 
         g_viewport->Update(deltaTime);
 
-        g_game->Frame(deltaTime, g_viewport);
+        g_game->Frame(deltaTime);
 
         SceneRender(g_viewport);
 
@@ -520,8 +537,20 @@ namespace ToolKit
 
         Render(g_viewport->m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0)->m_textureId);
 
+        POP_CPU_MARKER();
+        PUSH_CPU_MARKER("Clear SDL Event Pool");
+
         g_sdlEventPool->ClearPool(); // Clear after consumption.
+
+        POP_CPU_MARKER();
+        
+        PUSH_CPU_MARKER("Swap Window");
+        PUSH_GPU_MARKER("Swap Window");
+
         SDL_GL_SwapWindow(g_window);
+
+        POP_GPU_MARKER();
+        POP_CPU_MARKER();
 
         timer.frameCount++;
         timer.timeAccum += deltaTime;
@@ -533,9 +562,13 @@ namespace ToolKit
 
         timer.lastTime = timer.currentTime;
 
-        // float frameEnd = GetMilliSeconds();
-        // std::cout << "Frame: " << frameEnd - frameStart << std::endl;
+        float frameEnd = GetMilliSeconds();
+        //GetLogger()->Log(LogType::Warning, "Frame: %f", frameEnd - frameStart);
+        //GetLogger()->Log(LogType::Warning, "Swap: %f", swapEnd - swapStart);
+        //std::cout << "Frame: " << frameEnd - frameStart << std::endl;
       }
+
+      POP_CPU_MARKER();
     }
   }
 

@@ -179,6 +179,7 @@ namespace ToolKit
       void CreateAndSetNewScene(const String& name);
       void CreateEditorEntities();
       void DestroyEditorEntities();
+      void CreateNewScene();
 
      public:
       // UI elements.
@@ -247,12 +248,6 @@ namespace ToolKit
       uint64 m_lastFrameDrawCallCount     = 0;
       uint64 m_lastFrameHWRenderPassCount = 0;
     };
-
-    extern void DebugMessage(const String& msg);
-    extern void DebugMessage(const Vec3& vec);
-    extern void DebugMessage(const char* msg, ...);
-    extern void DebugCube(const Vec3& p, float size = 0.01f);
-    extern void DebugLineStrip(const Vec3Array& pnts);
 
   } // namespace Editor
 } // namespace ToolKit

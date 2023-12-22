@@ -19,6 +19,7 @@
 #include <PluginManager.h>
 #include <Resource.h>
 #include <SDL.h>
+#include <TKProfiler.h>
 #include <TKStats.h>
 #include <UIManager.h>
 
@@ -26,7 +27,6 @@
 #include <thread>
 
 #include <DebugNew.h>
-#include <TKProfiler.h>
 
 namespace ToolKit
 {
@@ -86,18 +86,8 @@ namespace ToolKit
       ActionManager::GetInstance()->Init();
 
       m_workspace.Init();
-      String sceneName = "New Scene" + SCENE;
-      if (!m_newSceneName.empty())
-      {
-        sceneName = m_newSceneName;
-      }
+      CreateNewScene();
 
-      EditorScenePtr scene = MakeNewPtr<EditorScene>();
-      scene->SetFile(ScenePath(sceneName));
-
-      scene->m_name     = sceneName;
-      scene->m_newScene = true;
-      SetCurrentScene(scene);
       ApplyProjectSettings(false);
 
       if (!CheckFile(m_workspace.GetActiveWorkspace()))
@@ -149,6 +139,22 @@ namespace ToolKit
       }
 
       m_perFrameDebugObjects.clear();
+    }
+
+    void App::CreateNewScene()
+    {
+      String sceneName = "NewScene" + SCENE;
+      if (!m_newSceneName.empty())
+      {
+        sceneName = m_newSceneName;
+      }
+
+      EditorScenePtr scene = MakeNewPtr<EditorScene>();
+      scene->SetFile(ScenePath(sceneName));
+
+      scene->m_name     = sceneName;
+      scene->m_newScene = true;
+      SetCurrentScene(scene);
     }
 
     void App::Destroy()
@@ -311,9 +317,9 @@ namespace ToolKit
 
     void App::OnNewScene(const String& name)
     {
-      Destroy();
-      m_newSceneName = name;
-      Init();
+      ClearSession();
+      CreateNewScene();
+
       m_newSceneName.clear();
       m_workspace.SetScene(name);
     }
@@ -712,14 +718,19 @@ namespace ToolKit
 
       // Clear all animations potentially added from game module.
       GetAnimationPlayer()->m_records.clear();
+      GetUIManager()->DestroyLayers();
 
       m_perFrameDebugObjects.clear();
       UI::m_postponedActions.clear();
 
       ActionManager::GetInstance()->ClearAllActions();
 
-      ModManager::GetInstance()->UnInit();
-      ModManager::GetInstance()->Init();
+      if (ModManager* modMan = ModManager::GetInstance())
+      {
+        modMan->UnInit();
+        modMan->Init();
+        modMan->SetMod(true, ModId::Select);
+      }
     }
 
     void App::ClearPlayInEditorSession()
@@ -1248,13 +1259,19 @@ namespace ToolKit
     void App::OpenProject(const Project& project)
     {
       ClearSession();
-
+      GetPluginManager()->UnloadGamePlugin();
       m_workspace.SetActiveProject(project);
       m_workspace.Serialize(nullptr, nullptr);
       m_workspace.SerializeEngineSettings();
       OnNewScene("New Scene");
 
       LoadProjectPlugin();
+
+      FolderWindowRawPtrArray browsers = GetAssetBrowsers();
+      for (FolderWindow* browser : browsers)
+      {
+        browser->IterateFolders(true);
+      }
     }
 
     void App::PackResources()
@@ -1588,29 +1605,6 @@ namespace ToolKit
     }
 
     float App::GetDeltaTime() { return m_deltaTime; }
-
-    void DebugMessage(const String& msg) { g_app->GetConsole()->AddLog(msg, "Debug"); }
-
-    void DebugMessage(const Vec3& vec) { g_app->GetConsole()->AddLog(glm::to_string(vec), "Debug"); }
-
-    void DebugMessage(const char* msg, ...)
-    {
-      va_list args;
-      va_start(args, msg);
-
-      static char buff[2048];
-      vsprintf(buff, msg, args);
-      DebugMessage(String(buff));
-
-      va_end(args);
-    }
-
-    void DebugCube(const Vec3& p, float size)
-    {
-      g_app->m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject({p - Vec3(size), p + Vec3(size)}));
-    }
-
-    void DebugLineStrip(const Vec3Array& pnts) { g_app->m_perFrameDebugObjects.push_back(CreateLineDebugObject(pnts)); }
 
   } // namespace Editor
 } // namespace ToolKit
