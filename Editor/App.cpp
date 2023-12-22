@@ -1266,6 +1266,12 @@ namespace ToolKit
       OnNewScene("New Scene");
 
       LoadProjectPlugin();
+
+      FolderWindowRawPtrArray browsers = GetAssetBrowsers();
+      for (FolderWindow* browser : browsers)
+      {
+        browser->IterateFolders(true);
+      }
     }
 
     void App::PackResources()
