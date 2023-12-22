@@ -420,6 +420,8 @@ namespace ToolKit
           g_game->Init(g_proxy);
 
           InitRender();
+
+          g_game->OnPlay();
         }
       }
     }
@@ -471,6 +473,8 @@ namespace ToolKit
 
   void TK_Loop(void* args)
   {
+    g_game->SetViewport(g_viewport);
+
     CustomTimer* timer = static_cast<CustomTimer*>(args);
     {
       SDL_Event sdlEvent;
@@ -494,7 +498,7 @@ namespace ToolKit
 
         g_viewport->Update(deltaTime);
 
-        g_game->Frame(deltaTime, g_viewport);
+        g_game->Frame(deltaTime);
 
         SceneRender(g_viewport);
 
