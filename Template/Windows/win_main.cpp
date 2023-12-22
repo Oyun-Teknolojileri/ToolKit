@@ -497,7 +497,7 @@ namespace ToolKit
       POP_CPU_MARKER();
 
       timer.currentTime = GetMilliSeconds();
-      //if (timer.currentTime > timer.lastTime + timer.deltaTime)
+      if (timer.currentTime > timer.lastTime + timer.deltaTime)
       {
         PUSH_CPU_MARKER("App Frame");
 
