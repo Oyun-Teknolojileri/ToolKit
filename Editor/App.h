@@ -179,6 +179,7 @@ namespace ToolKit
       void CreateAndSetNewScene(const String& name);
       void CreateEditorEntities();
       void DestroyEditorEntities();
+      void CreateNewScene();
 
      public:
       // UI elements.
