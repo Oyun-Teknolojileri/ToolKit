@@ -29,7 +29,15 @@ namespace ToolKit
     m_cube->m_node->SetTransform(m_params.Transform);
 
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_params.FrameBuffer, false);
+
+    if (m_params.ClearFramebuffer)
+    {
+      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::AllBits);
+    }
+    else
+    {
+      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::None);
+    }
 
     static RenderJobArray jobs;
     jobs.clear();

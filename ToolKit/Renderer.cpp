@@ -19,6 +19,7 @@
 #include "Mesh.h"
 #include "Node.h"
 #include "Pass.h"
+#include "RHI.h"
 #include "ResourceComponent.h"
 #include "Scene.h"
 #include "Shader.h"
@@ -32,7 +33,6 @@
 #include "ToolKit.h"
 #include "UIManager.h"
 #include "Viewport.h"
-#include "TKStats.h"
 
 #include "DebugNew.h"
 
@@ -345,7 +345,10 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color)
+  void Renderer::SetFramebuffer(FramebufferPtr fb,
+                                GraphicBitFields attachmentsToClear,
+                                const Vec4& clearColor,
+                                GraphicFramebufferTypes fbType)
   {
     CPU_FUNC_RANGE();
 
@@ -353,50 +356,29 @@ namespace ToolKit
     {
       if (fb != nullptr)
       {
-        glBindFramebuffer(GL_FRAMEBUFFER, fb->GetFboId());
-        AddHWRenderPass();
+        RHI::SetFramebuffer((GLenum) fbType, fb->GetFboId());
 
-        FramebufferSettings fbSet = fb->GetSettings();
+        const FramebufferSettings& fbSet = fb->GetSettings();
         SetViewportSize(fbSet.width, fbSet.height);
       }
       else
       {
-        // Set backbuffer as draw area.
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        AddHWRenderPass();
+        // Backbuffer
+        RHI::SetFramebuffer((GLenum) fbType, 0);
 
         SetViewportSize(m_windowSize.x, m_windowSize.y);
       }
     }
 
-    if (clear)
+    if (attachmentsToClear != GraphicBitFields::None)
     {
-      ClearBuffer(GraphicBitFields::DepthStencilBits, Vec4(1.0f));
-      ClearColorBuffer(color);
+      ClearBuffer(attachmentsToClear, clearColor);
     }
 
     m_framebuffer = fb;
   }
 
-  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear) { SetFramebuffer(fb, clear, m_clearColor); }
-
-  void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color)
-  {
-    FramebufferPtr& tmp1 = fb;
-    FramebufferPtr tmp2  = m_framebuffer;
-    SetFramebuffer(fb, clear, color);
-    tmp1.swap(tmp2);
-  }
-
-  void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear) { SwapFramebuffer(fb, clear, m_clearColor); }
-
   FramebufferPtr Renderer::GetFrameBuffer() { return m_framebuffer; }
-
-  void Renderer::ClearFrameBuffer(FramebufferPtr fb, const Vec4& color)
-  {
-    SwapFramebuffer(fb, true, color);
-    SwapFramebuffer(fb, false);
-  }
 
   void Renderer::ClearColorBuffer(const Vec4& color)
   {
@@ -420,30 +402,45 @@ namespace ToolKit
 
     if (src)
     {
-      FramebufferSettings fbs = src->GetSettings();
-      width                   = fbs.width;
-      height                  = fbs.height;
-      srcId                   = src->GetFboId();
+      const FramebufferSettings& fbs = src->GetSettings();
+      width                          = fbs.width;
+      height                         = fbs.height;
+      srcId                          = src->GetFboId();
     }
 
     dest->ReconstructIfNeeded(width, height);
 
-    GLint drawFboId = 0, readFboId = 0;
-    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFboId);
-    glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readFboId);
-
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, srcId);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
-    AddHWRenderPass();
+    RHI::SetFramebuffer(GL_READ_FRAMEBUFFER, srcId);
+    RHI::SetFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
 
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, (GLbitfield) fields, GL_NEAREST);
-
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, readFboId);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
-    AddHWRenderPass();
   }
 
-  void Renderer::SetViewport(Viewport* viewport) { SetFramebuffer(viewport->m_framebuffer); }
+  void Renderer::InvalidateFramebufferDepth(FramebufferPtr fb)
+  {
+    constexpr GLenum invalidAttachments[1] = {GL_DEPTH_ATTACHMENT};
+
+    SetFramebuffer(fb, GraphicBitFields::None);
+    RHI::InvalidateFramebuffer(fb->GetFboId(), 1, invalidAttachments);
+  }
+
+  void Renderer::InvalidateFramebufferStencil(FramebufferPtr fb)
+  {
+    constexpr GLenum invalidAttachments[1] = {GL_STENCIL_ATTACHMENT};
+
+    SetFramebuffer(fb, GraphicBitFields::None);
+    RHI::InvalidateFramebuffer(fb->GetFboId(), 1, invalidAttachments);
+  }
+
+  void Renderer::InvalidateFramebufferDepthStencil(FramebufferPtr fb)
+  {
+    constexpr GLenum invalidAttachments[2] = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
+
+    SetFramebuffer(fb, GraphicBitFields::None);
+    RHI::InvalidateFramebuffer(fb->GetFboId(), 2, invalidAttachments);
+  }
+
+  void Renderer::SetViewport(Viewport* viewport) { SetFramebuffer(viewport->m_framebuffer, GraphicBitFields::AllBits); }
 
   void Renderer::SetViewportSize(uint width, uint height)
   {
@@ -525,7 +522,7 @@ namespace ToolKit
 
     // Set and clear fb
     FramebufferPtr lastFb = m_framebuffer;
-    SetFramebuffer(m_copyFb, false);
+    SetFramebuffer(m_copyFb, GraphicBitFields::None);
 
     // Render to texture
     if (m_copyMaterial == nullptr)
@@ -540,7 +537,7 @@ namespace ToolKit
     m_copyMaterial->Init();
 
     DrawFullQuad(m_copyMaterial);
-    SetFramebuffer(lastFb, false);
+    SetFramebuffer(lastFb, GraphicBitFields::None);
   }
 
   void Renderer::EnableBlending(bool enable)
@@ -611,10 +608,10 @@ namespace ToolKit
 
     m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
 
-    SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
+    SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
     DrawFullQuad(m_gaussianBlurMaterial);
 
-    SetFramebuffer(frmBackup, false);
+    SetFramebuffer(frmBackup, GraphicBitFields::None);
   }
 
   void Renderer::ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount)
@@ -644,10 +641,10 @@ namespace ToolKit
 
     m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
 
-    SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
+    SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
     DrawFullQuad(m_averageBlurMaterial);
 
-    SetFramebuffer(frmBackup, false);
+    SetFramebuffer(frmBackup, GraphicBitFields::None);
   }
 
   void Renderer::GenerateBRDFLutTexture()
@@ -680,7 +677,7 @@ namespace ToolKit
       mesh->m_material           = material;
       mesh->Init();
 
-      SetFramebuffer(utilFramebuffer, true, {0.0f, 0.0f, 0.0f, 1.0f});
+      SetFramebuffer(utilFramebuffer, GraphicBitFields::AllBits);
 
       CameraPtr camera = MakeNewPtr<Camera>();
 
@@ -693,7 +690,7 @@ namespace ToolKit
       GetTextureManager()->Manage(brdfLut);
 
       m_overrideMat = prevOverrideMaterial;
-      SetFramebuffer(prevFrameBuffer, false);
+      SetFramebuffer(prevFrameBuffer, GraphicBitFields::None);
     }
   }
 
@@ -1211,10 +1208,10 @@ namespace ToolKit
         AddHWRenderPass();
       }
 
-      SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
+      SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
       DrawCube(cam, mat);
     }
-    SetFramebuffer(nullptr);
+    SetFramebuffer(nullptr, GraphicBitFields::AllBits);
 
     // Take the ownership of render target.
     TextureSettings textureSettings;
@@ -1300,10 +1297,10 @@ namespace ToolKit
         AddHWRenderPass();
       }
 
-      SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
+      SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
       DrawCube(cam, mat);
     }
-    SetFramebuffer(nullptr);
+    SetFramebuffer(nullptr, GraphicBitFields::AllBits);
 
     // Take the ownership of render target.
     TextureSettings textureSettings;
@@ -1407,7 +1404,7 @@ namespace ToolKit
         frag->SetShaderParameter("roughness", ParameterVariant((float) mip / (float) mipMaps));
         frag->SetShaderParameter("resPerFace", ParameterVariant((float) w));
 
-        SetFramebuffer(m_oneColorAttachmentFramebuffer, false);
+        SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
         SetViewportSize(w, h);
 
         DrawCube(cam, mat);
@@ -1428,7 +1425,7 @@ namespace ToolKit
       }
     }
 
-    SetFramebuffer(nullptr);
+    SetFramebuffer(nullptr, GraphicBitFields::AllBits);
     SetViewportSize(lastViewportSize.x, lastViewportSize.y);
 
     // Take the ownership of render target.

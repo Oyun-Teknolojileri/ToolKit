@@ -152,7 +152,7 @@ namespace ToolKit
         AddHWRenderPass();
       }
 
-      renderer->SetFramebuffer(fb, true, Vec4(0.0f));
+      renderer->SetFramebuffer(fb, GraphicBitFields::AllBits);
       renderer->DrawCube(cam, m_skyboxMaterial);
     }
 

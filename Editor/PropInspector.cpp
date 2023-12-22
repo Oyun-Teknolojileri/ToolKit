@@ -212,8 +212,8 @@ namespace ToolKit
       GetRenderSystem()->AddRenderTask({[this](Renderer* r) -> void { m_previewRenderer->Render(r); }});
 
       // Render color attachment as rounded image
-      FramebufferSettings fbSettings = m_framebuffer->GetSettings();
-      Vec2 imageSize                 = Vec2(fbSettings.width, fbSettings.height);
+      const FramebufferSettings& fbSettings = m_framebuffer->GetSettings();
+      Vec2 imageSize                        = Vec2(fbSettings.width, fbSettings.height);
       Vec2 currentCursorPos =
           Vec2(ImGui::GetWindowContentRegionMin()) + Vec2(ImGui::GetCursorPos()) + Vec2(ImGui::GetWindowPos());
 

@@ -51,11 +51,20 @@ namespace ToolKit
     Pass::PreRender();
     // Set self data.
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer);
-    if (!m_params.ClearFrameBuffer && m_params.ClearDepthBuffer)
+
+    if (m_params.ClearFrameBuffer)
     {
-      renderer->ClearBuffer(GraphicBitFields::DepthStencilBits, Vec4(1.0f));
+      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::AllBits);
     }
+    else if (m_params.ClearDepthBuffer)
+    {
+      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::DepthStencilBits);
+    }
+    else
+    {
+      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::None);
+    }
+
     renderer->SetCameraLens(m_params.Cam);
     renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
 

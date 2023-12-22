@@ -46,7 +46,16 @@ namespace ToolKit
     PUSH_GPU_MARKER("ShadowPass::Render");
     PUSH_CPU_MARKER("ShadowPass::Render");
 
-    const Vec4 lastClearColor = GetRenderer()->m_clearColor;
+    Renderer* renderer        = GetRenderer();
+    const Vec4 lastClearColor = renderer->m_clearColor;
+
+    // Clear shadow atlas before any draw call
+    renderer->SetFramebuffer(m_shadowFramebuffer, GraphicBitFields::None);
+    for (int i = 0; i < m_layerCount; ++i)
+    {
+      m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, i);
+      renderer->ClearBuffer(GraphicBitFields::ColorBits, m_shadowClearColor);
+    }
 
     // Update shadow maps.
     for (LightPtr light : m_params.Lights)
@@ -67,7 +76,7 @@ namespace ToolKit
       RemoveHWRenderPass();
     }
 
-    GetRenderer()->m_clearColor = lastClearColor;
+    renderer->m_clearColor = lastClearColor;
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -89,17 +98,6 @@ namespace ToolKit
     erase_if(m_params.Lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
 
     InitShadowAtlas();
-
-    // Set all shadow atlas layers uncleared
-    if (m_layerCount != m_clearedLayers.size())
-    {
-      m_clearedLayers.resize(m_layerCount);
-    }
-
-    for (int i = 0; i < m_layerCount; i++)
-    {
-      m_clearedLayers[i] = false;
-    }
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -157,8 +155,6 @@ namespace ToolKit
 
     if (light->IsA<PointLight>())
     {
-      renderer->SetFramebuffer(m_shadowFramebuffer, false);
-
       for (int i = 0; i < 6; ++i)
       {
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
@@ -168,18 +164,14 @@ namespace ToolKit
 
         AddHWRenderPass();
 
-        // Clear the layer if needed
-        if (!m_clearedLayers[light->m_shadowAtlasLayer + i])
-        {
-          renderer->ClearBuffer(GraphicBitFields::ColorDepthBits, m_shadowClearColor);
-          m_clearedLayers[light->m_shadowAtlasLayer + i] = true;
-        }
-
         light->m_shadowCamera->m_node->SetTranslation(light->m_node->GetTranslation());
         light->m_shadowCamera->m_node->SetOrientation(m_cubeMapRotations[i]);
 
         // TODO: Scales are not needed. Remove.
         light->m_shadowCamera->m_node->SetScale(m_cubeMapScales[i]);
+
+        renderer->ClearBuffer(GraphicBitFields::DepthBits);
+        AddHWRenderPass();
 
         renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
                                   (uint) light->m_shadowAtlasCoord.y,
@@ -191,7 +183,6 @@ namespace ToolKit
     }
     else if (light->IsA<DirectionalLight>() || light->IsA<SpotLight>())
     {
-      renderer->SetFramebuffer(m_shadowFramebuffer, false);
       m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
                                               m_shadowAtlas,
                                               0,
@@ -199,12 +190,8 @@ namespace ToolKit
 
       AddHWRenderPass();
 
-      // Clear the layer if needed
-      if (!m_clearedLayers[light->m_shadowAtlasLayer])
-      {
-        renderer->ClearBuffer(GraphicBitFields::ColorDepthBits, m_shadowClearColor);
-        m_clearedLayers[light->m_shadowAtlasLayer] = true;
-      }
+      renderer->ClearBuffer(GraphicBitFields::DepthBits);
+      AddHWRenderPass();
 
       renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
                                 (uint) light->m_shadowAtlasCoord.y,

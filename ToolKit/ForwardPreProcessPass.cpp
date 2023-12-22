@@ -121,7 +121,8 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     if (m_params.gFrameBuffer)
     {
-      renderer->SetFramebuffer(m_framebuffer, false);
+      renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::None);
+
       // copy normal and linear depth from gbuffer to this
       renderer->CopyTexture(m_params.gNormalRt, m_normalRt);
       renderer->CopyTexture(m_params.gLinearRt, m_linearDepthRt);
@@ -129,7 +130,7 @@ namespace ToolKit
     else
     {
       // If no gbuffer, clear the current buffers to render onto
-      GetRenderer()->SetFramebuffer(m_framebuffer, true, {0.0f, 0.0f, 0.0f, 1.0f});
+      GetRenderer()->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
     }
 
     renderer->SetCameraLens(m_params.Cam);

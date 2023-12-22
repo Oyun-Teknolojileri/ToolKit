@@ -43,7 +43,7 @@ namespace ToolKit
   {
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = m_prevOverrideMaterial;
-    renderer->SetFramebuffer(m_prevFrameBuffer, false);
+    renderer->SetFramebuffer(m_prevFrameBuffer, GraphicBitFields::None);
   }
 
   void Pass::RenderSubPass(const PassPtr& pass)

@@ -64,7 +64,6 @@ namespace ToolKit
     RenderTargetPtr m_shadowAtlas      = nullptr;
     int m_layerCount                   = 0; // Number of textures in array texture (shadow atlas)
     EntityIdArray m_previousShadowCasters;
-    std::vector<bool> m_clearedLayers;
 
     Quaternion m_cubeMapRotations[6];
     Vec3 m_cubeMapScales[6];

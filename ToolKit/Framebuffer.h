@@ -74,7 +74,7 @@ namespace ToolKit
 
     uint GetFboId();
 
-    inline FramebufferSettings GetSettings() { return m_settings; }
+    inline const FramebufferSettings& GetSettings() { return m_settings; }
 
     void ReconstructIfNeeded(uint width, uint height);
 

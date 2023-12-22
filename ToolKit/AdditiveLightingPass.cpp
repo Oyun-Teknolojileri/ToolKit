@@ -155,7 +155,7 @@ namespace ToolKit
     PUSH_CPU_MARKER("AdditiveLightingPass::Render");
 
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_lightingFrameBuffer, true, Vec4(0.0f));
+    renderer->SetFramebuffer(m_lightingFrameBuffer, GraphicBitFields::AllBits);
     // Deferred render always uses PBR material
     m_fullQuadPass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE; // additive blending
     m_fullQuadPass->m_params.FrameBuffer      = m_lightingFrameBuffer;
