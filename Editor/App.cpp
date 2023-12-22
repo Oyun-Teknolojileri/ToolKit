@@ -1600,28 +1600,5 @@ namespace ToolKit
 
     float App::GetDeltaTime() { return m_deltaTime; }
 
-    void DebugMessage(const String& msg) { g_app->GetConsole()->AddLog(msg, "Debug"); }
-
-    void DebugMessage(const Vec3& vec) { g_app->GetConsole()->AddLog(glm::to_string(vec), "Debug"); }
-
-    void DebugMessage(const char* msg, ...)
-    {
-      va_list args;
-      va_start(args, msg);
-
-      static char buff[2048];
-      vsprintf(buff, msg, args);
-      DebugMessage(String(buff));
-
-      va_end(args);
-    }
-
-    void DebugCube(const Vec3& p, float size)
-    {
-      g_app->m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject({p - Vec3(size), p + Vec3(size)}));
-    }
-
-    void DebugLineStrip(const Vec3Array& pnts) { g_app->m_perFrameDebugObjects.push_back(CreateLineDebugObject(pnts)); }
-
   } // namespace Editor
 } // namespace ToolKit

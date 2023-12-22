@@ -249,11 +249,5 @@ namespace ToolKit
       uint64 m_lastFrameHWRenderPassCount = 0;
     };
 
-    extern void DebugMessage(const String& msg);
-    extern void DebugMessage(const Vec3& vec);
-    extern void DebugMessage(const char* msg, ...);
-    extern void DebugCube(const Vec3& p, float size = 0.01f);
-    extern void DebugLineStrip(const Vec3Array& pnts);
-
   } // namespace Editor
 } // namespace ToolKit
