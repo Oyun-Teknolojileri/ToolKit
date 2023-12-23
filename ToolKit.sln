@@ -33,25 +33,35 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
+		Profile|x64 = Profile|x64
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{85523A06-924E-4B9D-B95C-411CB388936B}.Debug|x64.ActiveCfg = Debug|x64
 		{85523A06-924E-4B9D-B95C-411CB388936B}.Debug|x64.Build.0 = Debug|x64
+		{85523A06-924E-4B9D-B95C-411CB388936B}.Profile|x64.ActiveCfg = Profile|x64
+		{85523A06-924E-4B9D-B95C-411CB388936B}.Profile|x64.Build.0 = Profile|x64
 		{85523A06-924E-4B9D-B95C-411CB388936B}.Release|x64.ActiveCfg = Release|x64
 		{85523A06-924E-4B9D-B95C-411CB388936B}.Release|x64.Build.0 = Release|x64
 		{7A30B3BF-4169-45D4-84EF-B00DC94D8B1C}.Debug|x64.ActiveCfg = Debug|x64
+		{7A30B3BF-4169-45D4-84EF-B00DC94D8B1C}.Profile|x64.ActiveCfg = Profile|x64
 		{7A30B3BF-4169-45D4-84EF-B00DC94D8B1C}.Release|x64.ActiveCfg = Release|x64
 		{4C9F2815-B688-431C-966C-F9AEDAC07A78}.Debug|x64.ActiveCfg = Debug|x64
 		{4C9F2815-B688-431C-966C-F9AEDAC07A78}.Debug|x64.Build.0 = Debug|x64
+		{4C9F2815-B688-431C-966C-F9AEDAC07A78}.Profile|x64.ActiveCfg = Profile|x64
+		{4C9F2815-B688-431C-966C-F9AEDAC07A78}.Profile|x64.Build.0 = Profile|x64
 		{4C9F2815-B688-431C-966C-F9AEDAC07A78}.Release|x64.ActiveCfg = Release|x64
 		{4C9F2815-B688-431C-966C-F9AEDAC07A78}.Release|x64.Build.0 = Release|x64
 		{99A34D14-680F-4931-9365-20CFD35B621D}.Debug|x64.ActiveCfg = Debug|x64
 		{99A34D14-680F-4931-9365-20CFD35B621D}.Debug|x64.Build.0 = Debug|x64
+		{99A34D14-680F-4931-9365-20CFD35B621D}.Profile|x64.ActiveCfg = Profile|x64
+		{99A34D14-680F-4931-9365-20CFD35B621D}.Profile|x64.Build.0 = Profile|x64
 		{99A34D14-680F-4931-9365-20CFD35B621D}.Release|x64.ActiveCfg = Release|x64
 		{99A34D14-680F-4931-9365-20CFD35B621D}.Release|x64.Build.0 = Release|x64
 		{ABACDDA8-3584-43BC-99EC-30896EFD1C63}.Debug|x64.ActiveCfg = Debug|x64
 		{ABACDDA8-3584-43BC-99EC-30896EFD1C63}.Debug|x64.Build.0 = Debug|x64
+		{ABACDDA8-3584-43BC-99EC-30896EFD1C63}.Profile|x64.ActiveCfg = Profile|x64
+		{ABACDDA8-3584-43BC-99EC-30896EFD1C63}.Profile|x64.Build.0 = Profile|x64
 		{ABACDDA8-3584-43BC-99EC-30896EFD1C63}.Release|x64.ActiveCfg = Release|x64
 		{ABACDDA8-3584-43BC-99EC-30896EFD1C63}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
