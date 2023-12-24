@@ -13,6 +13,7 @@
 #include "Pass.h"
 #include "ResourceComponent.h"
 #include "Skeleton.h"
+#include "TKAssert.h"
 #include "TKProfiler.h"
 
 #include <execution>
@@ -372,12 +373,24 @@ namespace ToolKit
     return transformedPos;
   }
 
-  bool RayMeshIntersection(const Mesh* const mesh, const Ray& ray, float& t, const SkeletonComponent* skelComp)
+  bool RayMeshIntersection(const Mesh* mesh, const Ray& ray, float& t, const SkeletonComponentPtr skelComp)
   {
-    float closestPickedDistance = FLT_MAX;
+    float closestPickedDistance = TK_FLT_MAX;
     bool hit                    = false;
 
-#ifndef __clang__
+    // Sanitize.
+    if (mesh->IsSkinned())
+    {
+      const SkinMesh* skinMesh = static_cast<const SkinMesh*>(mesh);
+      if (skinMesh->m_skeleton->GetFile() != skelComp->GetSkeletonResourceVal()->GetFile())
+      {
+        // Sometimes resources may introduce mismatching skeleton vs skinmeshes.
+        // In this case look up the ntt id and fix the corresponding resource.
+        TK_ERR("Mismatching skeleton in mesh and component. Ntt id: %llu", skelComp->OwnerEntity()->GetIdVal());
+        return false;
+      }
+    }
+
     std::mutex updateHit;
     std::for_each(std::execution::par_unseq,
                   mesh->m_faces.begin(),
@@ -395,7 +408,7 @@ namespace ToolKit
                                                             skelComp->m_map);
                       }
                     }
-                    float dist = FLT_MAX;
+                    float dist = TK_FLT_MAX;
                     if (RayTriangleIntersection(ray, positions[0], positions[1], positions[2], dist))
                     {
                       std::lock_guard<std::mutex> guard(updateHit);
@@ -407,29 +420,12 @@ namespace ToolKit
                       }
                     }
                   });
-#else
-    for (const Face& face : mesh->m_faces)
-    {
-      float dist = FLT_MAX;
-      if (RayTriangleIntersection(ray, face.vertices[0]->pos, face.vertices[1]->pos, face.vertices[2]->pos, dist))
-      {
-        if (dist < closestPickedDistance && t >= 0.0f)
-        {
-          t                     = dist;
-          closestPickedDistance = dist;
-          hit                   = true;
-        }
-      }
-    }
-#endif
 
     return hit;
   }
 
   uint FindMeshIntersection(const EntityPtr ntt, const Ray& rayInWorldSpace, float& t)
   {
-    SkeletonComponent* skel = ntt->GetComponent<SkeletonComponent>().get();
-
     MeshComponentPtrArray meshComps;
     ntt->GetComponent<MeshComponent>(meshComps);
 
@@ -439,24 +435,21 @@ namespace ToolKit
       meshComp->GetMeshVal()->GetAllMeshes(meshes);
     }
 
-    struct meshTrace
+    struct MeshTrace
     {
       float dist;
       uint indx;
     };
 
-    std::vector<meshTrace> meshTraces;
+    std::vector<MeshTrace> meshTraces;
     for (uint i = 0; i < meshes.size(); i++)
     {
-      // There is a special case for SkinMeshes, because
-      // m_clientSideVertices.size() here always accesses to Mesh's vertex
-      // array (Vertex*) but it should've access to SkinMesh's vertex
-      // array (SkinVertex*). That's why SkinMeshes checked with a cast
-      const Mesh* const mesh = meshes[i];
+      const Mesh* mesh = meshes[i];
       if (mesh->IsSkinned())
       {
-        SkinMesh* skinMesh = (SkinMesh*) mesh;
-        if (skinMesh->m_clientSideVertices.size() && skel)
+        // m_clientSideVertices is overridden, look it up from right class.
+        const SkinMesh* skinMesh = static_cast<const SkinMesh*>(mesh);
+        if (skinMesh->m_clientSideVertices.size())
         {
           meshTraces.push_back({TK_FLT_MAX, i});
         }
@@ -479,34 +472,24 @@ namespace ToolKit
     rayInObjectSpace.position  = its * Vec4(rayInWorldSpace.position, 1.0f);
     rayInObjectSpace.direction = its * Vec4(rayInWorldSpace.direction, 0.0f);
 
-#ifndef __clang__
+    SkeletonComponentPtr skel  = ntt->GetComponent<SkeletonComponent>();
+
     std::for_each(std::execution::par_unseq,
                   meshTraces.begin(),
                   meshTraces.end(),
-                  [rayInObjectSpace, skel, &meshes](meshTrace& trace)
+                  [rayInObjectSpace, skel, &meshes](MeshTrace& trace)
                   {
-                    float t = TK_FLT_MAX;
-
-                    if (RayMeshIntersection(meshes[trace.indx], rayInObjectSpace, t, skel))
+                    float t          = TK_FLT_MAX;
+                    const Mesh* mesh = meshes[trace.indx];
+                    if (RayMeshIntersection(mesh, rayInObjectSpace, t, skel))
                     {
                       trace.dist = t;
                     }
                   });
-#else
-    for (meshTrace& trace : meshTraces)
-    {
-      float t = FLT_MAX;
-
-      if (RayMeshIntersection(meshes[trace.indx], rayInObjectSpace, t, skel))
-      {
-        trace.dist = t;
-      }
-    }
-#endif
 
     t                = TK_FLT_MAX;
     uint closestIndx = TK_UINT_MAX;
-    for (const meshTrace& trace : meshTraces)
+    for (const MeshTrace& trace : meshTraces)
     {
       if (trace.dist < t)
       {
@@ -517,7 +500,7 @@ namespace ToolKit
     return closestIndx;
   }
 
-  /*
+  /**
    * When the plane equation is not normalized, the distance of a point to the
    * plane: If distance < 0 , then the point p lies in the negative halfspace.
    * If distance = 0 , then the point p lies in the plane.
