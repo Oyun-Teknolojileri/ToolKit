@@ -696,13 +696,12 @@ namespace ToolKit
     GetAllMeshes(meshes);
 
     std::vector<BoundingBox> AABBs(meshes.size());
-    std::vector<uint> indexes(meshes.size());
+    UIntArray indexes(meshes.size());
     for (uint i = 0; i < meshes.size(); i++)
     {
       indexes[i] = i;
     }
 
-#ifndef __clang__
     std::for_each(std::execution::par_unseq,
                   indexes.begin(),
                   indexes.end(),
@@ -726,23 +725,7 @@ namespace ToolKit
                                     meshAABB.UpdateBoundary(skinnedPos);
                                   });
                   });
-#else
-    for (uint index : indexes)
-    {
-      SkinMesh* m = (SkinMesh*) meshes[index];
-      if (m->m_clientSideVertices.empty())
-      {
-        continue;
-      }
-      BoundingBox& meshAABB = AABBs[index];
 
-      for (SkinVertex v : m->m_clientSideVertices)
-      {
-        const Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap);
-        meshAABB.UpdateBoundary(skinnedPos);
-      }
-    }
-#endif
     for (BoundingBox& aabb : AABBs)
     {
       finalAABB.UpdateBoundary(aabb.max);
