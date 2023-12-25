@@ -418,7 +418,6 @@ namespace ToolKit
 
           g_game = new Game();
           g_game->Init(g_proxy);
-          g_game->SetViewport(g_viewport);
 
           InitRender();
 
@@ -474,6 +473,8 @@ namespace ToolKit
 
   void TK_Loop(void* args)
   {
+    g_game->SetViewport(g_viewport);
+
     CustomTimer* timer = static_cast<CustomTimer*>(args);
     {
       SDL_Event sdlEvent;

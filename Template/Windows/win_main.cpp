@@ -413,7 +413,6 @@ namespace ToolKit
               new GameViewport((float) g_engineSettings->Window.Width, (float) g_engineSettings->Window.Height);
           g_game = new Game();
           g_game->Init(g_proxy);
-          g_game->SetViewport(g_viewport);
 
           g_game->m_currentState = PluginState::Running;
 
@@ -484,6 +483,8 @@ namespace ToolKit
     {
       float frameStart = GetMilliSeconds();
       PUSH_CPU_MARKER("Whole Frame");
+
+      g_game->SetViewport(g_viewport);
 
       PUSH_CPU_MARKER("SDL Poll Event");
 
