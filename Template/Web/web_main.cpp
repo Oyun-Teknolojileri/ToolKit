@@ -17,18 +17,18 @@
 
 namespace ToolKit
 {
-  Game* g_game                     = nullptr;
-  bool g_running                   = true;
-  SDL_Window* g_window             = nullptr;
-  SDL_GLContext g_context          = nullptr;
-  Main* g_proxy                    = nullptr;
-  Viewport* g_viewport             = nullptr;
-  EngineSettings* g_engineSettings = nullptr;
-  SDLEventPool<TK_PLATFORM>* g_sdlEventPool     = nullptr;
+  Game* g_game                              = nullptr;
+  bool g_running                            = true;
+  SDL_Window* g_window                      = nullptr;
+  SDL_GLContext g_context                   = nullptr;
+  Main* g_proxy                             = nullptr;
+  Viewport* g_viewport                      = nullptr;
+  EngineSettings* g_engineSettings          = nullptr;
+  SDLEventPool<TK_PLATFORM>* g_sdlEventPool = nullptr;
 
   // Setup.
-  const char* g_appName            = "ToolKit";
-  const uint g_targetFps           = 120;
+  const char* g_appName                     = "ToolKit";
+  const uint g_targetFps                    = 120;
 
   void SceneRender(Viewport* viewport)
   {
@@ -323,7 +323,7 @@ namespace ToolKit
       {
         if (e->m_type == Event::EventType::Mouse)
         {
-          MouseEvent* me = static_cast<MouseEvent*>(e);
+          MouseEvent* me                 = static_cast<MouseEvent*>(e);
           m_lastMousePosRelContentArea.x = me->absolute[0];
           m_lastMousePosRelContentArea.y = me->absolute[1];
         }
@@ -418,6 +418,7 @@ namespace ToolKit
 
           g_game = new Game();
           g_game->Init(g_proxy);
+          g_game->SetViewport(g_viewport);
 
           InitRender();
 
@@ -473,8 +474,6 @@ namespace ToolKit
 
   void TK_Loop(void* args)
   {
-    g_game->SetViewport(g_viewport);
-
     CustomTimer* timer = static_cast<CustomTimer*>(args);
     {
       SDL_Event sdlEvent;

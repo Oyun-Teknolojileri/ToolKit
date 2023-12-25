@@ -377,6 +377,19 @@ namespace ToolKit
     float closestPickedDistance = FLT_MAX;
     bool hit                    = false;
 
+    // Sanitize.
+    if (mesh->IsSkinned())
+    {
+      const SkinMesh* skinMesh = static_cast<const SkinMesh*>(mesh);
+      if (skinMesh->m_skeleton->GetFile() != skelComp->GetSkeletonResourceVal()->GetFile())
+      {
+        // Sometimes resources may introduce mismatching skeleton vs skinmeshes.
+        // In this case look up the ntt id and fix the corresponding resource.
+        TK_ERR("Mismatching skeleton in mesh and component. Ntt id: %llu", skelComp->OwnerEntity()->GetIdVal());
+        return false;
+      }
+    }
+
 #ifndef __clang__
     std::mutex updateHit;
     std::for_each(std::execution::par_unseq,

@@ -696,7 +696,7 @@ namespace ToolKit
     GetAllMeshes(meshes);
 
     std::vector<BoundingBox> AABBs(meshes.size());
-    std::vector<uint> indexes(meshes.size());
+    UIntArray indexes(meshes.size());
     for (uint i = 0; i < meshes.size(); i++)
     {
       indexes[i] = i;
