@@ -649,7 +649,7 @@ namespace ToolKit
                 MeshComponentPtrArray meshComps;
                 pd.entity->GetComponent<MeshComponent>(meshComps);
 
-                MeshRawCPtrArray meshes;
+                MeshRawPtrArray meshes;
                 for (MeshComponentPtr meshComp : meshComps)
                 {
                   meshComp->GetMeshVal()->GetAllMeshes(meshes);

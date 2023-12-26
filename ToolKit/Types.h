@@ -145,7 +145,6 @@ namespace ToolKit
   typedef std::shared_ptr<class Scene> ScenePtr;
   typedef std::vector<MeshPtr> MeshPtrArray;
   typedef std::vector<class Mesh*> MeshRawPtrArray;
-  typedef std::vector<const class Mesh*> MeshRawCPtrArray;
   typedef std::shared_ptr<class AnimRecord> AnimRecordPtr;
   typedef std::unordered_map<String, AnimRecordPtr> AnimRecordPtrMap;
   typedef class AnimRecord* AnimRecordRawPtr;

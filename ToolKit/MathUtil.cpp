@@ -446,7 +446,7 @@ namespace ToolKit
     MeshComponentPtrArray meshComps;
     ntt->GetComponent<MeshComponent>(meshComps);
 
-    MeshRawCPtrArray meshes;
+    MeshRawPtrArray meshes;
     for (MeshComponentPtr meshComp : meshComps)
     {
       meshComp->GetMeshVal()->GetAllMeshes(meshes);

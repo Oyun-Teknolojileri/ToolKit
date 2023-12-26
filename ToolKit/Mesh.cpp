@@ -229,33 +229,37 @@ namespace ToolKit
   void Mesh::CalculateAABB()
   {
     // Construct aabb of all submeshes.
-    TraverseAllMesh(
-        [this](Mesh* mesh) -> void
-        {
-          mesh->m_aabb = BoundingBox();
-          for (size_t j = 0; j < mesh->m_clientSideVertices.size(); j++)
-          {
-            Vertex& v = mesh->m_clientSideVertices[j];
-            mesh->m_aabb.UpdateBoundary(v.pos);
-          }
+    MeshRawPtrArray meshes;
+    GetAllMeshes(meshes);
 
-          // Update this aabb to contain submesh aabb.
-          if (!mesh->m_clientSideVertices.empty())
-          {
-            m_aabb.UpdateBoundary(mesh->m_aabb);
-          }
-        });
+    BoundingBox aabb;
+    for (Mesh* mesh : meshes)
+    {
+      for (size_t i = 0; i < mesh->m_clientSideVertices.size(); i++)
+      {
+        Vertex& v = mesh->m_clientSideVertices[i];
+        aabb.UpdateBoundary(v.pos);
+      }
+    }
+    m_aabb = aabb;
   }
 
-  void Mesh::GetAllMeshes(MeshRawPtrArray& meshes)
+  void GetAllMeshHelper(const Mesh* mesh, MeshRawPtrArray& meshes)
   {
-    TraverseAllMesh([&meshes](Mesh* mesh) -> void { meshes.push_back(mesh); });
+    if (mesh == nullptr)
+    {
+      return;
+    }
+
+    meshes.push_back(const_cast<Mesh*>(mesh));
+
+    for (MeshPtr subMesh : mesh->m_subMeshes)
+    {
+      GetAllMeshHelper(subMesh.get(), meshes);
+    }
   }
 
-  void Mesh::GetAllMeshes(MeshRawCPtrArray& meshes) const
-  {
-    TraverseAllMesh([&meshes](const Mesh* mesh) -> void { meshes.push_back(mesh); });
-  }
+  void Mesh::GetAllMeshes(MeshRawPtrArray& meshes) const { GetAllMeshHelper(this, meshes); }
 
   template <typename T>
   void ConstructFacesT(T* mesh)
@@ -514,9 +518,10 @@ namespace ToolKit
     XmlNode* container = CreateXmlNode(doc, "meshContainer", parent);
 
     // This approach will flatten the mesh on a single sibling level.
-    // To keep the depth hierarch, recursive save is needed.
-    MeshRawCPtrArray cMeshes;
+    // To keep the depth hierarchy, recursive save is needed.
+    MeshRawPtrArray cMeshes;
     GetAllMeshes(cMeshes);
+
     for (const Mesh* m : cMeshes)
     {
       if (m->IsSkinned())
@@ -536,32 +541,6 @@ namespace ToolKit
   {
     LoadMesh(info.Document, parent, this);
     return nullptr;
-  }
-
-  void TraverseMeshHelper(const Mesh* mesh, std::function<void(const Mesh*)> callback)
-  {
-    if (callback == nullptr)
-    {
-      return;
-    }
-
-    callback(mesh);
-
-    for (MeshPtr subMesh : mesh->m_subMeshes)
-    {
-      TraverseMeshHelper(subMesh.get(), callback);
-    }
-  }
-
-  void Mesh::TraverseAllMesh(std::function<void(Mesh*)> callback, Mesh* mesh)
-  {
-    TraverseMeshHelper(mesh == nullptr ? this : mesh,
-                       [callback](const Mesh* mesh) { callback(const_cast<Mesh*>(mesh)); });
-  }
-
-  void Mesh::TraverseAllMesh(std::function<void(const Mesh*)> callback, const Mesh* mesh) const
-  {
-    TraverseMeshHelper(mesh == nullptr ? this : mesh, callback);
   }
 
   void Mesh::InitVertices(bool flush)

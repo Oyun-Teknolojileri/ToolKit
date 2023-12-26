@@ -46,26 +46,11 @@ namespace ToolKit
     virtual int GetVertexSize() const;
     virtual bool IsSkinned() const;
     void CalculateAABB();
-    void GetAllMeshes(MeshRawPtrArray& meshes);
-    void GetAllMeshes(MeshRawCPtrArray& meshes) const;
+    void GetAllMeshes(MeshRawPtrArray& meshes) const;
     void ConstructFaces();
     void ApplyTransform(const Mat4& transform);
 
     void SetMaterial(MaterialPtr material);
-
-    /**
-     * Traverse all submeshes recursively.
-     * @param callback is the function to call on each mesh.
-     * @param mesh is this or submesh. Pass null to start iteration from this
-     * mesh.
-     */
-    void TraverseAllMesh(std::function<void(Mesh*)> callback, Mesh* mesh = nullptr);
-
-    /**
-     * Const traverse all submeshes recursively. Refer TraverseAllMesh for
-     * details.
-     */
-    void TraverseAllMesh(std::function<void(const Mesh*)> callback, const Mesh* mesh = nullptr) const;
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
