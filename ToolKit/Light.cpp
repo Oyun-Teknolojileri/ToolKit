@@ -317,6 +317,8 @@ namespace ToolKit
     Light::UpdateShadowCamera();
 
     UpdateShadowCameraTransform();
+
+    m_boundingSphereCache = {m_node->GetTranslation(), GetRadiusVal()};
   }
 
   float PointLight::AffectDistance() { return GetRadiusVal(); }
@@ -369,7 +371,7 @@ namespace ToolKit
 
     UpdateShadowCameraTransform();
 
-    n_frustumCache = ExtractFrustum(m_shadowMapCameraProjectionViewMatrix, false);
+    m_frustumCache = ExtractFrustum(m_shadowMapCameraProjectionViewMatrix, false);
   }
 
   float SpotLight::AffectDistance() { return GetRadiusVal(); }

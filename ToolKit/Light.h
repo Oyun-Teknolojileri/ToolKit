@@ -60,8 +60,7 @@ namespace ToolKit
     MeshPtr m_volumeMesh           = nullptr;
 
    protected:
-    bool m_shadowMapResolutionChanged = false;
-    MaterialPtr m_shadowMapMaterial   = nullptr;
+    MaterialPtr m_shadowMapMaterial = nullptr;
   };
 
   // DirectionalLight
@@ -116,6 +115,8 @@ namespace ToolKit
 
    public:
     TKDeclareParam(float, Radius);
+
+    BoundingSphere m_boundingSphereCache; //!< Bounding volume, updated after call to UpdateShadowCamera().
   };
 
   typedef std::shared_ptr<PointLight> PointLightLightPtr;
@@ -146,7 +147,7 @@ namespace ToolKit
     TKDeclareParam(float, OuterAngle);
     TKDeclareParam(float, InnerAngle);
 
-    Frustum n_frustumCache; //!< Updated after call to UpdateShadowCamera().
+    Frustum m_frustumCache; //!< Spot frustum, updated after call to UpdateShadowCamera().
   };
 
   typedef std::shared_ptr<SpotLight> SpotLightPtr;

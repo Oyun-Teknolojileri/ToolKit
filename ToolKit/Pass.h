@@ -41,16 +41,19 @@ namespace ToolKit
     Renderer* m_renderer = nullptr;
   };
 
+  /**
+   * This struct holds all the data required to make a drawcall.
+   */
   struct RenderJob
   {
-    EntityPtr Entity                          = nullptr;
-    Mesh* Mesh                                = nullptr;
-    SkeletonComponentPtr SkeletonCmp          = nullptr;
-    MaterialPtr Material                      = nullptr;
-    EnvironmentComponentPtr EnvironmentVolume = nullptr;
-    bool ShadowCaster                         = true;
-    BoundingBox BoundingBox;
-    Mat4 WorldTransform;
+    EntityPtr Entity                          = nullptr; //!< Entity that this job is created from.
+    Mesh* Mesh                                = nullptr; //!< Mesh to render.
+    SkeletonComponentPtr SkeletonCmp          = nullptr; //!< Skeleton component of entity, if any.
+    MaterialPtr Material                      = nullptr; //!< Material to render job with.
+    EnvironmentComponentPtr EnvironmentVolume = nullptr; //!< EnvironmentVolume effecting this entity, if any.
+    bool ShadowCaster                         = true;    //!< Account in shadow map construction.
+    BoundingBox BoundingBox;                             //!< World space bounding box.
+    Mat4 WorldTransform;                                 //!< World transform of the entity.
   };
 
   class TK_API RenderJobProcessor

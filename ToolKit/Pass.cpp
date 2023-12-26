@@ -242,28 +242,14 @@ namespace ToolKit
       }
     }
 
-    static std::vector<LightSortStruct> intersectCounts;
-    intersectCounts.clear();
+    std::vector<LightSortStruct> intersectCounts;
     intersectCounts.resize(lights.size() - directionalLightEndIndex);
-    BoundingBox aabb = job.Mesh->m_aabb;
-    TransformAABB(aabb, job.WorldTransform);
+    const BoundingBox& aabb = job.BoundingBox;
 
     for (uint lightIndx = directionalLightEndIndex; lightIndx < lights.size(); lightIndx++)
     {
-      float radius;
       LightPtr light = lights[lightIndx];
-      if (PointLight* pLight = light->As<PointLight>())
-      {
-        radius = pLight->GetRadiusVal();
-      }
-      else if (SpotLight* sLight = light->As<SpotLight>())
-      {
-        radius = sLight->GetRadiusVal();
-      }
-      else
-      {
-        continue;
-      }
+      assert(light->IsA<SpotLight>() || light->IsA<PointLight>());
 
       intersectCounts[lightIndx - directionalLightEndIndex].light = light;
       uint& curIntersectCount = intersectCounts[lightIndx - directionalLightEndIndex].intersectCount;
@@ -284,22 +270,18 @@ namespace ToolKit
         }
       }*/
 
-      if (light->IsA<SpotLight>())
+      if (SpotLight* spot = light->As<SpotLight>())
       {
-        // The shadow camera of light should be updated before calling this function
-        // RenderPath PreRender functions should do that
-
-        Frustum spotFrustum = ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
-
-        if (FrustumBoxIntersection(spotFrustum, aabb) != IntersectResult::Outside)
+        // The shadow camera of light should be updated before accessing the frustum.
+        // RenderPath PreRender functions should do that.
+        if (FrustumBoxIntersection(spot->m_frustumCache, aabb) != IntersectResult::Outside)
         {
           curIntersectCount++;
         }
       }
-      if (light->IsA<PointLight>())
+      else if (PointLight* point = light->As<PointLight>())
       {
-        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
-        if (SphereBoxIntersection(lightSphere, aabb))
+        if (SphereBoxIntersection(point->m_boundingSphereCache, aabb))
         {
           curIntersectCount++;
         }
@@ -309,7 +291,7 @@ namespace ToolKit
     // Sort point & spot lights
     std::sort(intersectCounts.begin(), intersectCounts.end(), CompareLightIntersects);
 
-    for (int i = 0; i < intersectCounts.size(); ++i)
+    for (size_t i = 0; i < intersectCounts.size(); i++)
     {
       lights[i + directionalLightEndIndex] = intersectCounts[i].light;
     }
