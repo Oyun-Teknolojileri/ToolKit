@@ -25,7 +25,7 @@ namespace ToolKit
     bool SSAOEnabled               = false;
     RenderJobArray OpaqueJobs      = {};
     RenderJobArray TranslucentJobs = {};
-    LightPtrArray Lights           = {};
+    LightPtrArray Lights           = {}; //!< Updated lights.
   };
 
   /**

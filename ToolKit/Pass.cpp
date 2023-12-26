@@ -148,13 +148,12 @@ namespace ToolKit
         }
       };
 
-      static MeshRawPtrArray allMeshes;
+      MeshRawPtrArray allMeshes;
       parentMesh->GetAllMeshes(allMeshes);
       for (Mesh* mesh : allMeshes)
       {
         addRenderJobForMeshFn(mesh);
       }
-      allMeshes.clear();
 
       if (materialMissing)
       {
@@ -223,36 +222,19 @@ namespace ToolKit
     return (i1.intersectCount > i2.intersectCount);
   }
 
-  void RenderJobProcessor::SortLights(const RenderJob& job, LightPtrArray& lights)
+  void RenderJobProcessor::SortLights(const RenderJob& job, LightPtrArray& lights, int startFromIndex)
   {
-    // Get all directional lights to beginning first
-    uint directionalLightEndIndex = 0;
-    for (size_t i = 0; i < lights.size(); ++i)
-    {
-      if (lights[i]->IsA<DirectionalLight>())
-      {
-        if (i == directionalLightEndIndex)
-        {
-          directionalLightEndIndex++;
-          continue;
-        }
-
-        std::iter_swap(lights.begin() + i, lights.begin() + directionalLightEndIndex);
-        directionalLightEndIndex++;
-      }
-    }
-
     std::vector<LightSortStruct> intersectCounts;
-    intersectCounts.resize(lights.size() - directionalLightEndIndex);
+    intersectCounts.resize(lights.size() - startFromIndex);
     const BoundingBox& aabb = job.BoundingBox;
 
-    for (uint lightIndx = directionalLightEndIndex; lightIndx < lights.size(); lightIndx++)
+    for (uint lightIndx = startFromIndex; lightIndx < lights.size(); lightIndx++)
     {
       LightPtr light = lights[lightIndx];
       assert(light->IsA<SpotLight>() || light->IsA<PointLight>());
 
-      intersectCounts[lightIndx - directionalLightEndIndex].light = light;
-      uint& curIntersectCount = intersectCounts[lightIndx - directionalLightEndIndex].intersectCount;
+      intersectCounts[lightIndx - startFromIndex].light = light;
+      uint& curIntersectCount                           = intersectCounts[lightIndx - startFromIndex].intersectCount;
 
       /* This algorithms can be used for better sorting
       for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
@@ -293,8 +275,30 @@ namespace ToolKit
 
     for (size_t i = 0; i < intersectCounts.size(); i++)
     {
-      lights[i + directionalLightEndIndex] = intersectCounts[i].light;
+      lights[i + startFromIndex] = intersectCounts[i].light;
     }
+  }
+
+  int RenderJobProcessor::PreSortLights(LightPtrArray& lights)
+  {
+    // Get all directional lights to beginning first
+    uint directionalLightEndIndex = 0;
+    for (size_t i = 0; i < lights.size(); ++i)
+    {
+      if (lights[i]->IsA<DirectionalLight>())
+      {
+        if (i == directionalLightEndIndex)
+        {
+          directionalLightEndIndex++;
+          continue;
+        }
+
+        std::iter_swap(lights.begin() + i, lights.begin() + directionalLightEndIndex);
+        directionalLightEndIndex++;
+      }
+    }
+
+    return directionalLightEndIndex;
   }
 
   LightPtrArray RenderJobProcessor::SortLights(EntityPtr entity, LightPtrArray& lights)
@@ -305,10 +309,12 @@ namespace ToolKit
     EntityPtrArray oneEntity = {entity};
     CreateRenderJobs(oneEntity, jobs);
 
+    int startIndex = PreSortLights(lights);
+
     LightPtrArray allLights;
     for (RenderJob& rj : jobs)
     {
-      SortLights(rj, lights);
+      SortLights(rj, lights, startIndex);
       allLights.insert(allLights.end(), lights.begin(), lights.end());
     }
 
@@ -319,20 +325,16 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    std::function<bool(const RenderJob&, const RenderJob&)> sortFn = [cam](const RenderJob& j1,
-                                                                           const RenderJob& j2) -> bool
+    Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+
+    std::function<bool(const RenderJob&, const RenderJob&)> sortFn = [&camLoc](const RenderJob& j1,
+                                                                               const RenderJob& j2) -> bool
     {
-      Vec3 camLoc     = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      const BoundingBox& bb1 = j1.BoundingBox;
+      const BoundingBox& bb2 = j2.BoundingBox;
 
-      // TODO: Cihan cache calculated world boxes.
-      BoundingBox bb1 = j1.Mesh->m_aabb;
-      TransformAABB(bb1, j1.WorldTransform);
-
-      BoundingBox bb2 = j2.Mesh->m_aabb;
-      TransformAABB(bb2, j2.WorldTransform);
-
-      float first  = glm::length2(bb1.GetCenter() - camLoc);
-      float second = glm::length2(bb2.GetCenter() - camLoc);
+      float first            = glm::length2(bb1.GetCenter() - camLoc);
+      float second           = glm::length2(bb2.GetCenter() - camLoc);
 
       return second < first;
     };

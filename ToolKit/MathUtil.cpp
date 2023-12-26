@@ -176,9 +176,9 @@ namespace ToolKit
    * model space
    */
   // http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
-  Frustum ExtractFrustum(const Mat4& _projectViewModel, bool normalize)
+  Frustum ExtractFrustum(const Mat4& projectViewModelMat, bool normalize)
   {
-    Mat4 projectViewModel = glm::transpose(_projectViewModel);
+    Mat4 projectViewModel = glm::transpose(projectViewModelMat);
 
     Frustum frus;
 

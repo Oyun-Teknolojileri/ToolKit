@@ -97,9 +97,11 @@ namespace ToolKit
       renderer->SetTexture(5, m_params.SsaoTexture->m_textureId);
     }
 
+    int dirLightEnd = RenderJobProcessor::PreSortLights(lights);
+
     for (const RenderJob& job : jobs)
     {
-      RenderJobProcessor::SortLights(job, lights);
+      RenderJobProcessor::SortLights(job, lights, dirLightEnd);
       job.Material->m_fragmentShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.SSAOEnabled));
       renderer->Render(job, m_params.Cam, lights);
     }
@@ -113,10 +115,12 @@ namespace ToolKit
 
     RenderJobProcessor::SortByDistanceToCamera(jobs, cam);
 
+    int dirLightEnd    = RenderJobProcessor::PreSortLights(lights);
+
     Renderer* renderer = GetRenderer();
-    auto renderFnc     = [cam, &lights, renderer](RenderJob& job)
+    auto renderFnc     = [cam, &lights, dirLightEnd, renderer](RenderJob& job)
     {
-      RenderJobProcessor::SortLights(job, lights);
+      RenderJobProcessor::SortLights(job, lights, dirLightEnd);
 
       MaterialPtr mat = job.Material;
       if (mat->GetRenderState()->cullMode == CullingType::TwoSided)

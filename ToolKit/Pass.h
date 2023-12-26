@@ -77,7 +77,14 @@ namespace ToolKit
      * best to worst. Make sure lights array has updated shadow camera. Shadow
      * camera is used in culling calculations.
      */
-    static void SortLights(const RenderJob& job, LightPtrArray& lights);
+    static void SortLights(const RenderJob& job, LightPtrArray& lights, int startFromIndex = 0);
+
+    /**
+     * Makes sure that first elements are directional lights.
+     * @param lights are the lights to sort.
+     * @returns The index where the non directional lights starts.
+     */
+    static int PreSortLights(LightPtrArray& lights);
 
     static LightPtrArray SortLights(EntityPtr entity, LightPtrArray& lights);
 
