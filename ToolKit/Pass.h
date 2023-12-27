@@ -76,8 +76,10 @@ namespace ToolKit
      * Utility function that sorts lights according to lit conditions from
      * best to worst. Make sure lights array has updated shadow camera. Shadow
      * camera is used in culling calculations.
+     * @returns Number of lights effecting the job. From index 0 to return number contains effective lights in the
+     * sorted array.
      */
-    static void SortLights(const RenderJob& job, LightPtrArray& lights, int startFromIndex = 0);
+    static int SortLights(const RenderJob& job, LightPtrArray& lights, int startFromIndex = 0);
 
     /**
      * Makes sure that first elements are directional lights.

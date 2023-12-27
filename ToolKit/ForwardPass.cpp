@@ -99,11 +99,17 @@ namespace ToolKit
 
     int dirLightEnd = RenderJobProcessor::PreSortLights(lights);
 
+    LightPtrArray activeLights;
+    activeLights.reserve(Renderer::RHIConstants::MaxLightsPerObject);
+
     for (const RenderJob& job : jobs)
     {
-      RenderJobProcessor::SortLights(job, lights, dirLightEnd);
+      int effectiveLights = RenderJobProcessor::SortLights(job, lights, dirLightEnd);
       job.Material->m_fragmentShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.SSAOEnabled));
-      renderer->Render(job, m_params.Cam, lights);
+
+      activeLights.insert(activeLights.begin(), lights.begin(), lights.begin() + effectiveLights);
+      renderer->Render(job, m_params.Cam, activeLights);
+      activeLights.clear();
     }
 
     POP_CPU_MARKER();

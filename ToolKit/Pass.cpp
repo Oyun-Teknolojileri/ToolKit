@@ -66,7 +66,11 @@ namespace ToolKit
     CPU_FUNC_RANGE();
 
     auto checkDrawableFn = [ignoreVisibility](EntityPtr ntt) -> bool
-    { return ntt->IsDrawable() && (ntt->IsVisible() || ignoreVisibility); };
+    {
+      bool isDrawable = ntt->IsDrawable();
+      bool isVisbile  = ntt->IsVisible();
+      return isDrawable && (isVisbile || ignoreVisibility);
+    };
 
     for (EntityPtr ntt : entities)
     {
@@ -222,7 +226,7 @@ namespace ToolKit
     return (i1.intersectCount > i2.intersectCount);
   }
 
-  void RenderJobProcessor::SortLights(const RenderJob& job, LightPtrArray& lights, int startFromIndex)
+  int RenderJobProcessor::SortLights(const RenderJob& job, LightPtrArray& lights, int startFromIndex)
   {
     std::vector<LightSortStruct> intersectCounts;
     intersectCounts.resize(lights.size() - startFromIndex);
@@ -273,10 +277,19 @@ namespace ToolKit
     // Sort point & spot lights
     std::sort(intersectCounts.begin(), intersectCounts.end(), CompareLightIntersects);
 
+    int effectingLights = 0;
     for (size_t i = 0; i < intersectCounts.size(); i++)
     {
-      lights[i + startFromIndex] = intersectCounts[i].light;
+      LightSortStruct& ls        = intersectCounts[i];
+      lights[i + startFromIndex] = ls.light;
+      if (ls.intersectCount > 0)
+      {
+        effectingLights++;
+      }
     }
+
+    // All directional lights plus lights that intersect with job.
+    return effectingLights + startFromIndex;
   }
 
   int RenderJobProcessor::PreSortLights(LightPtrArray& lights)
@@ -305,6 +318,11 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
+    for (LightPtr light : lights)
+    {
+      light->UpdateShadowCamera();
+    }
+
     RenderJobArray jobs;
     EntityPtrArray oneEntity = {entity};
     CreateRenderJobs(oneEntity, jobs);
@@ -314,8 +332,8 @@ namespace ToolKit
     LightPtrArray allLights;
     for (RenderJob& rj : jobs)
     {
-      SortLights(rj, lights, startIndex);
-      allLights.insert(allLights.end(), lights.begin(), lights.end());
+      int effectiveLights = SortLights(rj, lights, startIndex);
+      allLights.insert(allLights.end(), lights.begin(), lights.begin() + effectiveLights);
     }
 
     return allLights;
