@@ -274,7 +274,7 @@ namespace ToolKit
 
       for (const UILayerPtr& layer : layers)
       {
-        EntityPtrArray& uiNtties = layer->m_scene->AccessEntityArray();
+        const EntityPtrArray& uiNtties = layer->m_scene->GetEntities();
         RenderJobProcessor::CreateRenderJobs(uiNtties, m_uiRenderJobs);
       }
 

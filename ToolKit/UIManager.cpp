@@ -138,7 +138,7 @@ namespace ToolKit
       }
     }
 
-    const EntityPtrArray& entities = layer->m_scene->AccessEntityArray();
+    const EntityPtrArray& entities = layer->m_scene->GetEntities();
     for (EntityPtr ntt : entities)
     {
       // Process events.

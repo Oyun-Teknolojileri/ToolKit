@@ -158,7 +158,13 @@ namespace ToolKit
      * @param entity The entity to add.
      */
     virtual void AddEntity(EntityPtr entity);
-    EntityPtrArray& AccessEntityArray(); //!< Mutable Entity array access.
+
+    /**
+     * Allow access and modification to underlying entity array. Care must be taken when modifying the array.
+     * Its generally okay to reorder entities but for removing and adding new entities consider appropriate functions.
+     * @retruns Mutable entity array for the scene.
+     */
+    EntityPtrArray& AccessEntityArray();
 
     /**
      * Gets all the entities in the scene.
