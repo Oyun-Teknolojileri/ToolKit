@@ -240,11 +240,11 @@ namespace ToolKit
       RenderJobProcessor::SeperateOpaqueTranslucent(m_renderJobs, m_opaque, m_translucent);
 
       // Editor pass.
-      m_editorPass->m_params.Cam              = m_camera;
-      m_editorPass->m_params.FrameBuffer      = viewport->m_framebuffer;
-      m_editorPass->m_params.OpaqueJobs       = m_opaque;
-      m_editorPass->m_params.TranslucentJobs  = m_translucent;
-      m_editorPass->m_params.ClearFrameBuffer = false;
+      m_editorPass->m_params.Cam             = m_camera;
+      m_editorPass->m_params.FrameBuffer     = viewport->m_framebuffer;
+      m_editorPass->m_params.OpaqueJobs      = m_opaque;
+      m_editorPass->m_params.TranslucentJobs = m_translucent;
+      m_editorPass->m_params.clearBuffer     = GraphicBitFields::None;
 
       if (m_params.UseMobileRenderPath)
       {
@@ -285,43 +285,42 @@ namespace ToolKit
                                                     m_uiPass->m_params.OpaqueJobs,
                                                     m_uiPass->m_params.TranslucentJobs);
 
-      m_uiPass->m_params.Cam                                       = GetUIManager()->GetUICamera();
-      m_uiPass->m_params.FrameBuffer                               = viewport->m_framebuffer;
-      m_uiPass->m_params.ClearFrameBuffer                          = false;
-      m_uiPass->m_params.ClearDepthBuffer                          = true;
+      m_uiPass->m_params.Cam                                  = GetUIManager()->GetUICamera();
+      m_uiPass->m_params.FrameBuffer                          = viewport->m_framebuffer;
+      m_uiPass->m_params.clearBuffer                          = GraphicBitFields::DepthBits;
 
-      const EngineSettings::PostProcessingSettings& gfx            = GetEngineSettings().PostProcessing;
+      const EngineSettings::PostProcessingSettings& gfx       = GetEngineSettings().PostProcessing;
 
       // Bloom pass
-      m_bloomPass->m_params.FrameBuffer                            = viewport->m_framebuffer;
-      m_bloomPass->m_params.intensity                              = gfx.BloomIntensity;
-      m_bloomPass->m_params.minThreshold                           = gfx.BloomThreshold;
-      m_bloomPass->m_params.iterationCount                         = gfx.BloomIterationCount;
+      m_bloomPass->m_params.FrameBuffer                       = viewport->m_framebuffer;
+      m_bloomPass->m_params.intensity                         = gfx.BloomIntensity;
+      m_bloomPass->m_params.minThreshold                      = gfx.BloomThreshold;
+      m_bloomPass->m_params.iterationCount                    = gfx.BloomIterationCount;
 
       // Light Complexity pass
-      m_singleMatRenderer->m_params.ForwardParams.Cam              = m_camera;
-      m_singleMatRenderer->m_params.ForwardParams.Lights           = lights;
-      m_singleMatRenderer->m_params.ForwardParams.ClearFrameBuffer = true;
+      m_singleMatRenderer->m_params.ForwardParams.Cam         = m_camera;
+      m_singleMatRenderer->m_params.ForwardParams.Lights      = lights;
+      m_singleMatRenderer->m_params.ForwardParams.clearBuffer = GraphicBitFields::AllBits;
 
-      m_singleMatRenderer->m_params.ForwardParams.OpaqueJobs       = m_renderJobs;
+      m_singleMatRenderer->m_params.ForwardParams.OpaqueJobs  = m_renderJobs;
 
-      m_singleMatRenderer->m_params.ForwardParams.FrameBuffer      = viewport->m_framebuffer;
+      m_singleMatRenderer->m_params.ForwardParams.FrameBuffer = viewport->m_framebuffer;
 
-      m_tonemapPass->m_params.FrameBuffer                          = viewport->m_framebuffer;
-      m_tonemapPass->m_params.Method                               = gfx.TonemapperMode;
+      m_tonemapPass->m_params.FrameBuffer                     = viewport->m_framebuffer;
+      m_tonemapPass->m_params.Method                          = gfx.TonemapperMode;
 
       // Gamma Pass.
-      m_gammaPass->m_params.FrameBuffer                            = viewport->m_framebuffer;
-      m_gammaPass->m_params.Gamma                                  = gfx.Gamma;
+      m_gammaPass->m_params.FrameBuffer                       = viewport->m_framebuffer;
+      m_gammaPass->m_params.Gamma                             = gfx.Gamma;
 
       // FXAA Pass
-      m_fxaaPass->m_params.FrameBuffer                             = viewport->m_framebuffer;
-      m_fxaaPass->m_params.screen_size                             = viewport->m_size;
+      m_fxaaPass->m_params.FrameBuffer                        = viewport->m_framebuffer;
+      m_fxaaPass->m_params.screen_size                        = viewport->m_size;
 
       // Gizmo Pass.
-      m_gizmoPass->m_params.Viewport                               = viewport;
+      m_gizmoPass->m_params.Viewport                          = viewport;
 
-      EditorBillboardPtr anchorGizmo                               = nullptr;
+      EditorBillboardPtr anchorGizmo                          = nullptr;
       if (viewport->GetType() == Window::Type::Viewport2d)
       {
         anchorGizmo = app->m_anchor;

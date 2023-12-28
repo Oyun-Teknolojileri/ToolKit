@@ -62,14 +62,18 @@ namespace ToolKit
 
     m_framebuffer->SetColorAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
     m_framebuffer->SetColorAttachment(FAttachment::ColorAttachment1, m_normalRt);
+
     if (m_params.gFrameBuffer)
     {
       m_framebuffer->AttachDepthTexture(m_params.gFrameBuffer->GetDepthTexture());
     }
     else
     {
-      InitDefaultDepthTexture(width, height);
-      m_framebuffer->AttachDepthTexture(m_depthTexture);
+      assert(m_params.FrameBuffer->GetDepthTexture() != nullptr);
+      if (DepthTexturePtr depth = m_params.FrameBuffer->GetDepthTexture())
+      {
+        m_framebuffer->AttachDepthTexture(depth);
+      }
     }
 
     POP_CPU_MARKER();
@@ -87,18 +91,14 @@ namespace ToolKit
     {
       for (RenderJob& job : renderJobArray)
       {
-        MaterialPtr activeMaterial         = job.Material;
-        RenderState* renderstate           = activeMaterial->GetRenderState();
-        BlendFunction beforeBlendFunc      = renderstate->blendFunction;
+        MaterialPtr activeMaterial = job.Material;
+        RenderState* renderstate   = activeMaterial->GetRenderState();
+        m_linearMaterial->SetRenderState(renderstate);
         m_linearMaterial->m_diffuseTexture = activeMaterial->m_diffuseTexture;
         m_linearMaterial->m_color          = activeMaterial->m_color;
-        m_linearMaterial->SetAlpha(activeMaterial->GetAlpha());
-        m_linearMaterial->SetRenderState(renderstate);
-        m_linearMaterial->UnInit();
 
-        renderer->m_overrideMat = m_linearMaterial;
+        renderer->m_overrideMat            = m_linearMaterial;
         renderer->Render(job, m_params.Cam, {});
-        renderstate->blendFunction = beforeBlendFunc;
       }
     };
 

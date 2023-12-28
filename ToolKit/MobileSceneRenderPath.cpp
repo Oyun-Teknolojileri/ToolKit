@@ -49,10 +49,16 @@ namespace ToolKit
 
     renderer->m_sky = m_sky;
 
-    renderer->SetShadowAtlas(std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
+    renderer->SetShadowAtlas(Cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
     // Shadow pass
     m_passArray.push_back(m_shadowPass);
+
+    // Draw sky pass
+    if (m_drawSky)
+    {
+      m_passArray.push_back(m_skyPass);
+    }
 
     // Forward Pre Process Pass
     m_passArray.push_back(m_forwardPreProcessPass);
@@ -60,13 +66,7 @@ namespace ToolKit
     // SSAO pass
     if (m_params.Gfx.SSAOEnabled)
     {
-      m_passArray.push_back(m_ssaoPass);
-    }
-
-    // Draw sky pass
-    if (m_drawSky)
-    {
-      m_passArray.push_back(m_skyPass);
+      // m_passArray.push_back(m_ssaoPass);
     }
 
     // Forward pass
@@ -105,10 +105,10 @@ namespace ToolKit
 
   void MobileSceneRenderPath::PreRender(Renderer* renderer)
   {
+    SetPassParams();
+
     m_forwardPreProcessPass->InitBuffers(m_params.MainFramebuffer->GetSettings().width,
                                          m_params.MainFramebuffer->GetSettings().height);
-
-    SetPassParams();
   }
 
   void MobileSceneRenderPath::PostRender() { m_updatedLights.clear(); }
@@ -150,10 +150,9 @@ namespace ToolKit
       }
     }
 
-    bool couldDrawSky = false;
-
     // Set CubeMapPass for sky.
     m_drawSky         = false;
+    bool couldDrawSky = false;
     if (m_sky = m_params.Scene->GetSky())
     {
       if (m_drawSky = m_sky->GetDrawSkyVal())
@@ -180,11 +179,12 @@ namespace ToolKit
     // framebuffer here
     if (!couldDrawSky)
     {
-      m_forwardRenderPass->m_params.ClearFrameBuffer = m_params.ClearFramebuffer;
+      GraphicBitFields clearBuffer = m_params.ClearFramebuffer ? GraphicBitFields::AllBits : GraphicBitFields::None;
+      m_forwardRenderPass->m_params.clearBuffer = clearBuffer;
     }
     else
     {
-      m_forwardRenderPass->m_params.ClearFrameBuffer = false;
+      m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::None;
     }
 
     m_forwardPreProcessPass->m_params       = m_forwardRenderPass->m_params;

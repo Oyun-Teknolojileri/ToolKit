@@ -189,7 +189,11 @@ namespace ToolKit
     return oldRt;
   }
 
-  RenderTargetPtr Framebuffer::GetAttachment(Attachment atc) { return m_colorAtchs[(int) atc]; }
+  RenderTargetPtr Framebuffer::GetAttachment(Attachment atc)
+  {
+    assert(atc < Attachment::DepthAttachment);
+    return m_colorAtchs[(int) atc];
+  }
 
   void Framebuffer::ClearAttachments()
   {

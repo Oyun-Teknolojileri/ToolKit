@@ -20,8 +20,7 @@ namespace ToolKit
     RenderTargetPtr gNormalRt      = nullptr;
     RenderTargetPtr gLinearRt      = nullptr;
     RenderTargetPtr SsaoTexture    = nullptr;
-    bool ClearFrameBuffer          = true;  //!< Clears whole buffer
-    bool ClearDepthBuffer          = false; //!< Clears only depth buffer.
+    GraphicBitFields clearBuffer   = GraphicBitFields::AllBits;
     bool SSAOEnabled               = false;
     RenderJobArray OpaqueJobs      = {};
     RenderJobArray TranslucentJobs = {};

@@ -52,19 +52,7 @@ namespace ToolKit
     // Set self data.
     Renderer* renderer = GetRenderer();
 
-    if (m_params.ClearFrameBuffer)
-    {
-      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::AllBits);
-    }
-    else if (m_params.ClearDepthBuffer)
-    {
-      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::DepthStencilBits);
-    }
-    else
-    {
-      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::None);
-    }
-
+    renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
     renderer->SetCameraLens(m_params.Cam);
     renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
 
