@@ -85,7 +85,7 @@ namespace ToolKit
     }
 
     ReadAttr(node, "TonemappingEnabled", PostProcessing.TonemappingEnabled);
-    ReadAttr(node, "BloomEnabled", PostProcessing.BloomEnabled);
+    ReadAttr(node, "EnableBloom", PostProcessing.BloomEnabled);
     ReadAttr(node, "BloomIntensity", PostProcessing.BloomIntensity);
     ReadAttr(node, "BloomThreshold", PostProcessing.BloomThreshold);
     ReadAttr(node, "BloomIterationCount", PostProcessing.BloomIterationCount);
