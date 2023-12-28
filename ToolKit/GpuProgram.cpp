@@ -87,12 +87,13 @@ namespace ToolKit
     vertexShader->Init();
     fragmentShader->Init();
 
-    String tag = GenerateTag((int) vertexShader->GetIdVal(), (int) fragmentShader->GetIdVal());
-    if (m_programs.find(tag) == m_programs.end())
+    GpuProgramPtr program;
+    auto progIter = m_programs.find({vertexShader->GetIdVal(), fragmentShader->GetIdVal()});
+
+    if (progIter == m_programs.end())
     {
-      GpuProgramPtr program = MakeNewPtr<GpuProgram>(vertexShader, fragmentShader);
-      program->m_tag        = tag;
-      program->m_handle     = glCreateProgram();
+      program           = MakeNewPtr<GpuProgram>(vertexShader, fragmentShader);
+      program->m_handle = glCreateProgram();
 
       LinkProgram(program->m_handle, vertexShader->m_shaderHandle, fragmentShader->m_shaderHandle);
       glUseProgram(program->m_handle);
@@ -128,17 +129,16 @@ namespace ToolKit
         }
       }
 
-      m_programs[program->m_tag] = program;
+      m_programs[{vertexShader->GetIdVal(), fragmentShader->GetIdVal()}] = program;
+    }
+    else
+    {
+      program = progIter->second;
     }
 
-    return m_programs[tag];
+    return program;
   }
 
   void GpuProgramManager::FlushPrograms() { m_programs.clear(); }
-
-  String GpuProgramManager::GenerateTag(int vertexShaderId, int fragmentShaderId)
-  {
-    return std::to_string(vertexShaderId) + "|" + std::to_string(fragmentShaderId);
-  }
 
 } // namespace ToolKit

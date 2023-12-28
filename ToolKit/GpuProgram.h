@@ -49,7 +49,7 @@ namespace ToolKit
         // Uniform is an array
         if (m_arrayUniformLocations.find(uniform) != m_arrayUniformLocations.end())
         {
-          std::vector<int>& locs = m_arrayUniformLocations[uniform];
+          IntArray& locs = m_arrayUniformLocations[uniform];
           if (locs.size() > index)
           {
             return locs[index];
@@ -64,13 +64,33 @@ namespace ToolKit
 
    public:
     uint m_handle = 0;
-    String m_tag;
     ShaderPtrArray m_shaders;
 
    private:
     std::unordered_map<Uniform, int> m_uniformLocations;
-    std::unordered_map<Uniform, std::vector<int>> m_arrayUniformLocations;
+    std::unordered_map<Uniform, IntArray> m_arrayUniformLocations;
     std::unordered_map<String, int> m_shaderParamsUniformLocations;
+  };
+
+  /**
+   * Utility class that hash an array of ULongIDs. Purpose of this class is to provide a hash generator from the shader
+   * ids that is used in the program. This hash value will be identifying the program.
+   */
+  template <typename T>
+  struct ArrayHash
+  {
+    std::size_t operator()(const std::vector<T>& array) const
+    {
+      std::size_t hashValue = 0;
+
+      for (const auto& element : array)
+      {
+        // Combine the hash value with the hash of each element
+        hashValue ^= std::hash<T>()(element) + 0x9e3779b9 + (hashValue << 6) + (hashValue >> 2);
+      }
+
+      return hashValue;
+    }
   };
 
   /**
@@ -93,11 +113,6 @@ namespace ToolKit
      */
     void FlushPrograms();
 
-    /**
-     * Creates a tag for the given shaders. This can be used query existing programs for given shader combination.
-     */
-    String GenerateTag(int vertexShaderId, int fragmentShaderId);
-
    private:
     /**
      * Links the given shaders with the program.
@@ -106,9 +121,8 @@ namespace ToolKit
 
    private:
     /**
-     * Associative array that holds all the programs. Programs are constructed by concatanating their ids together.
-     * So this prevents creating same program for the given shaders if one already exist.
+     * Associative array that holds all the programs.
      */
-    std::unordered_map<String, GpuProgramPtr> m_programs;
+    std::unordered_map<EntityIdArray, GpuProgramPtr, ArrayHash<ULongID>> m_programs;
   };
 } // namespace ToolKit
