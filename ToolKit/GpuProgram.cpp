@@ -130,10 +130,6 @@ namespace ToolKit
 
       m_programs[program->m_tag] = program;
     }
-    else
-    {
-      glUseProgram(m_programs[tag]->m_handle);
-    }
 
     return m_programs[tag];
   }
