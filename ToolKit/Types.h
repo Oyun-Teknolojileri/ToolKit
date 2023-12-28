@@ -31,6 +31,7 @@
 #include <RapidXml/rapidxml_utils.hpp>
 
 // STL
+#include <array>
 #include <filesystem>
 #include <functional>
 #include <limits>

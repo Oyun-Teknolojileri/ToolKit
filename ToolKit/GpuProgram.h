@@ -72,32 +72,34 @@ namespace ToolKit
     std::unordered_map<String, int> m_shaderParamsUniformLocations;
   };
 
-  /**
-   * Utility class that hash an array of ULongIDs. Purpose of this class is to provide a hash generator from the shader
-   * ids that is used in the program. This hash value will be identifying the program.
-   */
-  template <typename T>
-  struct ArrayHash
-  {
-    std::size_t operator()(const std::vector<T>& array) const
-    {
-      std::size_t hashValue = 0;
-
-      for (const auto& element : array)
-      {
-        // Combine the hash value with the hash of each element
-        hashValue ^= std::hash<T>()(element) + 0x9e3779b9 + (hashValue << 6) + (hashValue >> 2);
-      }
-
-      return hashValue;
-    }
-  };
+  constexpr int TKGpuPipelineStages = 2; //!< Number of programmable pipeline stages.
 
   /**
    * Class that generates the programs from the given shaders and maintains the generated programs.
    */
   class TK_API GpuProgramManager
   {
+   private:
+    /**
+     * Utility class that hash an array of ULongIDs. Purpose of this class is to provide a hash generator from the
+     * shader ids that is used in the program. This hash value will be identifying the program.
+     */
+    struct IDArrayHash
+    {
+      std::size_t operator()(const std::array<ULongID, TKGpuPipelineStages>& data) const
+      {
+        std::size_t hashValue = 0;
+
+        for (const auto& element : data)
+        {
+          // Combine the hash value with the hash of each element
+          hashValue ^= std::hash<ULongID>()(element) + 0x9e3779b9 + (hashValue << 6) + (hashValue >> 2);
+        }
+
+        return hashValue;
+      }
+    };
+
    public:
     /**
      * Creates a gpu program that can be binded to renderer to render the objects with.
@@ -123,6 +125,7 @@ namespace ToolKit
     /**
      * Associative array that holds all the programs.
      */
-    std::unordered_map<EntityIdArray, GpuProgramPtr, ArrayHash<ULongID>> m_programs;
+    std::unordered_map<std::array<ULongID, TKGpuPipelineStages>, GpuProgramPtr, IDArrayHash> m_programs;
   };
+
 } // namespace ToolKit
