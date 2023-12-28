@@ -72,6 +72,9 @@ namespace ToolKit
     writeAttrFn("FocusScale", to_string(gfx.FocusScale));
     writeAttrFn("DofQuality", to_string((int) gfx.DofQuality));
     writeAttrFn("FXAAEnabled", to_string(gfx.FXAAEnabled));
+
+    // Additional graphics settings per scene.
+    writeAttrFn("ShadowDistance", to_string(Graphics.ShadowDistance));
   }
 
   void EngineSettings::DeSerializePostProcessing(XmlDocument* doc, XmlNode* parent)
@@ -101,6 +104,9 @@ namespace ToolKit
     ReadAttr(node, "FXAAEnabled", PostProcessing.FXAAEnabled);
     ReadAttr(node, "TonemapperMode", *(int*) &PostProcessing.TonemapperMode);
     ReadAttr(node, "DofQuality", *(int*) &PostProcessing.DofQuality);
+
+    // Additional graphics settings per scene.
+    ReadAttr(node, "ShadowDistance", Graphics.ShadowDistance);
   }
 
   void EngineSettings::SerializeGraphics(XmlDocument* doc, XmlNode* parent) const
