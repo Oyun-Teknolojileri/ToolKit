@@ -560,16 +560,16 @@ namespace ToolKit
 
       glGenBuffers(1, &m_vboVertexId);
       glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
+
       glBufferData(GL_ARRAY_BUFFER,
                    GetVertexSize() * m_clientSideVertices.size(),
                    m_clientSideVertices.data(),
                    GL_STATIC_DRAW);
-      m_vertexCount = (uint) m_clientSideVertices.size();
-
-      AddVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
     }
 
     m_vertexCount = (uint) m_clientSideVertices.size();
+    AddVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
+
     if (flush)
     {
       m_clientSideVertices.clear();
