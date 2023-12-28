@@ -42,7 +42,7 @@ namespace ToolKit
      private:
       EntityPtr m_ntt;
       ULongID m_parentId;
-      EntityIdArray m_children;
+      IDArray m_children;
       bool m_actionComitted;
     };
 
@@ -61,7 +61,7 @@ namespace ToolKit
      private:
       EntityPtr m_ntt;
       bool m_actionComitted;
-      EntityIdArray m_selecteds;
+      IDArray m_selecteds;
     };
 
     class DeleteComponentAction : public Action

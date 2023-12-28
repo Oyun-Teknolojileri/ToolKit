@@ -169,7 +169,7 @@ namespace ToolKit
       m_selectedEntities.push_back(id);
     }
 
-    void EditorScene::AddToSelection(const EntityIdArray& entities, bool additive)
+    void EditorScene::AddToSelection(const IDArray& entities, bool additive)
     {
       ULongID currentId = NULL_HANDLE;
       if (entities.size() > 1)
@@ -239,7 +239,7 @@ namespace ToolKit
 
     void EditorScene::AddToSelection(const EntityPtrArray& entities, bool additive)
     {
-      EntityIdArray ids;
+      IDArray ids;
       ToEntityIdArray(ids, entities);
       AddToSelection(ids, additive);
     }
@@ -258,7 +258,7 @@ namespace ToolKit
 
     void EditorScene::MakeCurrentSelection(ULongID id, bool ifExist)
     {
-      EntityIdArray::iterator itr = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
+      IDArray::iterator itr = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
       if (itr != m_selectedEntities.end())
       {
         std::iter_swap(itr, m_selectedEntities.end() - 1);
@@ -357,11 +357,11 @@ namespace ToolKit
       }
     }
 
-    void EditorScene::GetSelectedEntities(EntityIdArray& entities) const { entities = m_selectedEntities; }
+    void EditorScene::GetSelectedEntities(IDArray& entities) const { entities = m_selectedEntities; }
 
     void EditorScene::SelectByTag(const String& tag) { AddToSelection(GetByTag(tag), false); }
 
-    Scene::PickData EditorScene::PickObject(Ray ray, const EntityIdArray& ignoreList, const EntityPtrArray& extraList)
+    Scene::PickData EditorScene::PickObject(Ray ray, const IDArray& ignoreList, const EntityPtrArray& extraList)
     {
       // Add billboards to scene
       EntityPtrArray temp = extraList;
@@ -382,7 +382,7 @@ namespace ToolKit
 
     void EditorScene::PickObject(const Frustum& frustum,
                                  PickDataArray& pickedObjects,
-                                 const EntityIdArray& ignoreList,
+                                 const IDArray& ignoreList,
                                  const EntityPtrArray& extraList,
                                  bool pickPartiallyInside)
     {

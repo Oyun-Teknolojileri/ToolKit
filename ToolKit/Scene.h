@@ -121,7 +121,7 @@ namespace ToolKit
      *
      * @return A PickData struct containing the result of the picking operation.
      */
-    virtual PickData PickObject(Ray ray, const EntityIdArray& ignoreList = {}, const EntityPtrArray& extraList = {});
+    virtual PickData PickObject(Ray ray, const IDArray& ignoreList = {}, const EntityPtrArray& extraList = {});
 
     /**
      * Performs a frustum culling operation on the scene to find all objects
@@ -139,7 +139,7 @@ namespace ToolKit
      */
     virtual void PickObject(const Frustum& frustum,
                             PickDataArray& pickedObjects,
-                            const EntityIdArray& ignoreList = {},
+                            const IDArray& ignoreList = {},
                             const EntityPtrArray& extraList = {},
                             bool pickPartiallyInside        = true);
 

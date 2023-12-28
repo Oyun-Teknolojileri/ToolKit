@@ -799,7 +799,7 @@ namespace ToolKit
     return lineForm;
   }
 
-  void ToEntityIdArray(EntityIdArray& idArray, const EntityPtrArray& ptrArray)
+  void ToEntityIdArray(IDArray& idArray, const EntityPtrArray& ptrArray)
   {
     idArray.reserve(ptrArray.size());
     for (EntityPtr ntt : ptrArray)

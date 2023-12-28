@@ -120,7 +120,7 @@ namespace ToolKit
     GetSceneManager()->Remove(other->GetFile());
   }
 
-  Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList, const EntityPtrArray& extraList)
+  Scene::PickData Scene::PickObject(Ray ray, const IDArray& ignoreList, const EntityPtrArray& extraList)
   {
     PickData pd;
     pd.pickPos                  = ray.position + ray.direction * 5.0f;
@@ -186,7 +186,7 @@ namespace ToolKit
 
   void Scene::PickObject(const Frustum& frustum,
                          PickDataArray& pickedObjects,
-                         const EntityIdArray& ignoreList,
+                         const IDArray& ignoreList,
                          const EntityPtrArray& extraList,
                          bool pickPartiallyInside)
   {

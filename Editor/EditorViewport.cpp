@@ -821,7 +821,7 @@ namespace ToolKit
       Vec3 lastDragMeshPos = Vec3(0.0f);
       Ray ray              = RayFromMousePosition(); // Find the point of the cursor in 3D coordinates
 
-      EntityIdArray ignoreList;
+      IDArray ignoreList;
       if (meshLoaded)
       {
         ignoreList.push_back((*boundingBox)->GetIdVal());

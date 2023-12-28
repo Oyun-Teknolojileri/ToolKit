@@ -155,7 +155,7 @@ namespace ToolKit
                                                    const Mat4* transform = nullptr);
 
   // Entity operations.
-  TK_API void ToEntityIdArray(EntityIdArray& idArray, const EntityPtrArray& ptrArray);
+  TK_API void ToEntityIdArray(IDArray& idArray, const EntityPtrArray& ptrArray);
 
   TK_API bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   TK_API void GetRootEntities(const EntityPtrArray& entities, EntityPtrArray& roots);

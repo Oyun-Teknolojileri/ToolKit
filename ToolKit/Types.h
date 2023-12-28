@@ -102,6 +102,7 @@ namespace ToolKit
   typedef uint8_t uint8;
   typedef uint64_t uint64;
   typedef uint64_t ULongID;
+  typedef std::vector<ULongID> IDArray;
   typedef const int16_t SignalId;
   typedef std::string String;
   typedef std::string_view StringView;
@@ -163,7 +164,6 @@ namespace ToolKit
   typedef std::vector<class DirectionalLight*> DirectionalLightRawPtrArray;
   typedef std::vector<class SpotLight*> SpotLightRawPtrArray;
   typedef std::vector<class PointLight*> PointLightRawPtrArray;
-  typedef std::vector<ULongID> EntityIdArray;
   typedef std::vector<class Node*> NodeRawPtrArray;
   typedef std::vector<class Vertex> VertexArray;
   typedef std::vector<class Face> FaceArray;

@@ -234,7 +234,7 @@ namespace ToolKit
     std::sort(pointLights.begin(), pointLights.end(), sortByResFn);
 
     // Get dir and spot lights into the pack
-    std::vector<int> resolutions;
+    IntArray resolutions;
     resolutions.reserve(dirAndSpotLights.size());
     for (LightPtr light : dirAndSpotLights)
     {

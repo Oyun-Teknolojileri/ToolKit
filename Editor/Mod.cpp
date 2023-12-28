@@ -248,7 +248,7 @@ namespace ToolKit
 
     bool StatePickingBase::IsIgnored(ULongID id) { return contains(m_ignoreList, id); }
 
-    void StatePickingBase::PickDataToEntityId(EntityIdArray& ids)
+    void StatePickingBase::PickDataToEntityId(IDArray& ids)
     {
       for (EditorScene::PickData& pd : m_pickData)
       {
@@ -642,7 +642,7 @@ namespace ToolKit
       if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick)
       {
         StateEndPick* endPick = static_cast<StateEndPick*>(m_stateMachine->m_currentState);
-        EntityIdArray entities;
+        IDArray entities;
         endPick->PickDataToEntityId(entities);
         g_app->GetCurrentScene()->AddToSelection(entities, ImGui::GetIO().KeyShift);
 
