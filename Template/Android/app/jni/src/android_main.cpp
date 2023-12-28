@@ -49,12 +49,6 @@ namespace ToolKit
       static MobileSceneRenderPath sceneRenderer;
       sceneRenderer.m_params.Cam                        = viewport->GetCamera();
       sceneRenderer.m_params.ClearFramebuffer           = true;
-      sceneRenderer.m_params.Gfx.BloomEnabled           = false;
-      sceneRenderer.m_params.Gfx.DepthOfFieldEnabled    = false;
-      sceneRenderer.m_params.Gfx.FXAAEnabled            = false;
-      sceneRenderer.m_params.Gfx.GammaCorrectionEnabled = false;
-      sceneRenderer.m_params.Gfx.SSAOEnabled            = false;
-      sceneRenderer.m_params.Gfx.TonemappingEnabled     = false;
       sceneRenderer.m_params.Lights                     = scene->GetLights();
       sceneRenderer.m_params.MainFramebuffer            = viewport->m_framebuffer;
       sceneRenderer.m_params.Scene                      = scene;
