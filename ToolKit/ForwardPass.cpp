@@ -133,10 +133,12 @@ namespace ToolKit
       }
     };
 
+    renderer->EnableDepthWrite(false);
     for (RenderJob& job : jobs)
     {
       renderFnc(job);
     }
+    renderer->EnableDepthWrite(true);
 
     POP_CPU_MARKER();
   }
