@@ -66,7 +66,7 @@ namespace ToolKit
     // SSAO pass
     if (m_params.Gfx.SSAOEnabled)
     {
-      // m_passArray.push_back(m_ssaoPass);
+      m_passArray.push_back(m_ssaoPass);
     }
 
     // Forward pass
