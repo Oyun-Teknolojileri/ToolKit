@@ -90,10 +90,11 @@ namespace ToolKit
     LightPtrArray activeLights;
     activeLights.reserve(Renderer::RHIConstants::MaxLightsPerObject);
 
+    ParameterVariant ssaoVar(m_params.SSAOEnabled);
     for (const RenderJob& job : jobs)
     {
       int effectiveLights = RenderJobProcessor::SortLights(job, lights, dirLightEnd);
-      job.Material->m_fragmentShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.SSAOEnabled));
+      job.Material->m_fragmentShader->SetShaderParameter("aoEnabled", ssaoVar);
 
       activeLights.insert(activeLights.begin(), lights.begin(), lights.begin() + effectiveLights);
       renderer->Render(job, m_params.Cam, activeLights);
