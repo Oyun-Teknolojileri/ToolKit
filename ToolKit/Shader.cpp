@@ -132,7 +132,7 @@ namespace ToolKit
   {
     switch (u)
     {
-    case Uniform::PROJECT_MODEL_VIEW:
+    case Uniform::PROJECT_VIEW_MODEL:
       return "ProjectViewModel";
     case Uniform::VIEW:
       return "View";

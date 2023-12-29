@@ -23,7 +23,7 @@ namespace ToolKit
   enum class Uniform
   {
     // Order is important. Don't change for backward comparable resource files.
-    PROJECT_MODEL_VIEW,
+    PROJECT_VIEW_MODEL,
     VIEW,
     MODEL,
     INV_TR_MODEL,

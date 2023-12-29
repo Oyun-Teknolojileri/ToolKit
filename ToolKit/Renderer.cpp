@@ -72,19 +72,41 @@ namespace ToolKit
     return m_maxArrayTextureLayers;
   }
 
-  void Renderer::SetCameraLens(CameraPtr cam)
+  void Renderer::SetCamera(CameraPtr camera, bool setLens)
   {
-    float aspect = (float) m_viewportSize.x / (float) m_viewportSize.y;
-    if (!cam->IsOrtographic())
+    if (setLens)
     {
-      cam->SetLens(cam->Fov(), aspect, cam->Near(), cam->Far());
+      float aspect = (float) m_viewportSize.x / (float) m_viewportSize.y;
+      if (!camera->IsOrtographic())
+      {
+        camera->SetLens(camera->Fov(), aspect, camera->Near(), camera->Far());
+      }
+      else
+      {
+        float width  = m_viewportSize.x * 0.5f;
+        float height = m_viewportSize.y * 0.5f;
+        camera->SetLens(-width, width, -height, height, camera->Near(), camera->Far());
+      }
     }
-    else
-    {
-      float width  = m_viewportSize.x * 0.5f;
-      float height = m_viewportSize.y * 0.5f;
-      cam->SetLens(-width, width, -height, height, cam->Near(), cam->Far());
-    }
+
+    m_cam                    = camera;
+    m_project                = camera->GetProjectionMatrix();
+    m_view                   = camera->GetViewMatrix();
+    m_projectView            = m_project * m_view;
+
+    Mat4 viewNoTr            = m_view;
+    viewNoTr[0][3]           = 0.0f;
+    viewNoTr[1][3]           = 0.0f;
+    viewNoTr[2][3]           = 0.0f;
+    viewNoTr[3][3]           = 1.0f;
+    viewNoTr[3][0]           = 0.0f;
+    viewNoTr[3][1]           = 0.0f;
+    viewNoTr[3][2]           = 0.0f;
+
+    m_projectViewNoTranslate = m_project * viewNoTr;
+
+    m_camPos                 = m_cam->Position();
+    m_camDirection           = m_cam->Direction();
   }
 
   void Renderer::Render(const RenderJob& job, CameraPtr cam, const LightPtrArray& lights)
@@ -149,7 +171,7 @@ namespace ToolKit
 
     updateAndBindSkinningTextures();
 
-    SetProjectViewModel(job.WorldTransform, cam);
+    m_model  = job.WorldTransform;
     m_lights = lights;
     m_cam    = cam;
     job.Mesh->Init();
@@ -693,13 +715,6 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetProjectViewModel(const Mat4& model, CameraPtr cam)
-  {
-    m_view    = cam->GetViewMatrix();
-    m_project = cam->GetProjectionMatrix();
-    m_model   = model;
-  }
-
   void Renderer::BindProgram(GpuProgramPtr program)
   {
     if (m_currentProgram == program->m_handle)
@@ -730,9 +745,9 @@ namespace ToolKit
 
         switch (uni)
         {
-        case Uniform::PROJECT_MODEL_VIEW:
+        case Uniform::PROJECT_VIEW_MODEL:
         {
-          Mat4 mul = m_project * m_view * m_model;
+          Mat4 mul = m_projectView * m_model;
           glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
         }
         break;
@@ -759,22 +774,12 @@ namespace ToolKit
         break;
         case Uniform::CAM_DATA_POS:
         {
-          if (m_cam == nullptr)
-          {
-            break;
-          }
-          const Vec3 pos = m_cam->m_node->GetTranslation();
-          glUniform3fv(loc, 1, &pos.x);
+          glUniform3fv(loc, 1, &m_camPos.x);
         }
         break;
         case Uniform::CAM_DATA_DIR:
         {
-          if (m_cam == nullptr)
-          {
-            break;
-          }
-          const Vec3 dir = m_cam->GetComponent<DirectionComponent>()->GetDirection();
-          glUniform3fv(loc, 1, &dir.x);
+          glUniform3fv(loc, 1, &m_camDirection.x);
         }
         break;
         case Uniform::CAM_DATA_FAR:
@@ -783,6 +788,7 @@ namespace ToolKit
           {
             break;
           }
+
           glUniform1f(loc, m_cam->Far());
         }
         break;
@@ -821,18 +827,7 @@ namespace ToolKit
         break;
         case Uniform::PROJECT_VIEW_NO_TR:
         {
-          // Zero translate variables in model matrix
-          Mat4 view  = m_view;
-          view[0][3] = 0.0f;
-          view[1][3] = 0.0f;
-          view[2][3] = 0.0f;
-          view[3][3] = 1.0f;
-          view[3][0] = 0.0f;
-          view[3][1] = 0.0f;
-          view[3][2] = 0.0f;
-
-          Mat4 mul   = m_project * view;
-          glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
+          glUniformMatrix4fv(loc, 1, false, &m_projectViewNoTranslate[0][0]);
         }
         break;
         case Uniform::USE_IBL:

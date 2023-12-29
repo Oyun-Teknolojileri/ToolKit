@@ -133,7 +133,7 @@ namespace ToolKit
       GetRenderer()->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
     }
 
-    renderer->SetCameraLens(m_params.Cam);
+    renderer->SetCamera(m_params.Cam, true);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

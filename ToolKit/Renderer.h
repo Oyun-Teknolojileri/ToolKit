@@ -116,9 +116,11 @@ namespace ToolKit
     void GenerateBRDFLutTexture();
 
     /**
-     * Just before the render, set the lens to fit aspect ratio to frame buffer.
+     * Sets the camera to be used for rendering. Also calculates camera related parameters, such as view, transform,
+     * viewTransform etc...
+     * if setLense is true sets the lens to fit aspect ratio to frame buffer.
      */
-    void SetCameraLens(CameraPtr cam);
+    void SetCamera(CameraPtr camera, bool setLens);
     /////////////////////
 
     int GetMaxArrayTextureLayers();
@@ -126,7 +128,6 @@ namespace ToolKit
     void ResetTextureSlots();
 
    private:
-    void SetProjectViewModel(const Mat4& model, CameraPtr cam);
     void BindProgram(GpuProgramPtr program);
     void FeedUniforms(GpuProgramPtr program);
     void FeedLightUniforms(GpuProgramPtr program);
@@ -155,12 +156,19 @@ namespace ToolKit
 
    private:
     uint m_currentProgram = 0;
+
+    // Camera data.
+    CameraPtr m_cam       = nullptr;
     Mat4 m_project;
     Mat4 m_view;
+    Mat4 m_projectView;
+    Mat4 m_projectViewNoTranslate;
+    Vec3 m_camPos;
+    Vec3 m_camDirection;
+
     Mat4 m_model;
     Mat4 m_iblRotation;
     LightPtrArray m_lights;
-    CameraPtr m_cam              = nullptr;
     MaterialPtr m_mat            = nullptr;
     MaterialPtr m_aoMat          = nullptr;
     FramebufferPtr m_framebuffer = nullptr;

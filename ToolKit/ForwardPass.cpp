@@ -53,7 +53,7 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
 
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
-    renderer->SetCameraLens(m_params.Cam);
+    renderer->SetCamera(m_params.Cam, true);
     renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
 
     POP_CPU_MARKER();

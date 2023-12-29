@@ -132,6 +132,8 @@ namespace ToolKit
       const Frustum frustum   = ExtractFrustum(pr * v, false);
 
       renderer->m_overrideMat = light->GetShadowMaterial();
+      renderer->SetCamera(light->m_shadowCamera, false);
+
       for (const RenderJob& job : jobs)
       {
         // Frustum cull

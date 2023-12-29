@@ -165,7 +165,7 @@ namespace ToolKit
 
     renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
 
-    renderer->SetCameraLens(m_params.Camera);
+    renderer->SetCamera(m_params.Camera, true);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
