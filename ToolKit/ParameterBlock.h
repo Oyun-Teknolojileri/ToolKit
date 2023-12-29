@@ -228,6 +228,11 @@ namespace ToolKit
     ParameterVariant(const ParameterVariant& other);
 
     /**
+     * Default move constructor. Moves everything not like assignment.
+     */
+    ParameterVariant(ParameterVariant&& other) noexcept;
+
+    /**
      * Constructs bool type variant.
      */
     explicit ParameterVariant(bool var);

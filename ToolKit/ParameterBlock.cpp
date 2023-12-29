@@ -30,6 +30,17 @@ namespace ToolKit
 
   ParameterVariant::ParameterVariant(const ParameterVariant& other) { *this = other; }
 
+  ParameterVariant::ParameterVariant(ParameterVariant&& other) noexcept
+      : m_exposed(other.m_exposed), m_editable(other.m_editable), m_category(std::move(other.m_category)),
+        m_name(std::move(other.m_name)), m_hint(other.m_hint), m_onValueChangedFn(std::move(other.m_onValueChangedFn)),
+        m_var(std::move(other.m_var)), m_type(other.m_type)
+  {
+    // Reset the source object to a valid state
+    other.m_exposed  = false;
+    other.m_editable = false;
+    other.m_type     = VariantType::Int;
+  }
+
   ParameterVariant& ParameterVariant::operator=(const ParameterVariant& other)
   {
     m_category = other.m_category;

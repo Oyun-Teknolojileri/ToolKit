@@ -349,7 +349,10 @@ namespace ToolKit
     return nullptr;
   }
 
-  void Shader::SetShaderParameter(const String& param, const ParameterVariant& val) { m_shaderParams[param] = val; }
+  void Shader::SetShaderParameter(const String& param, const ParameterVariant& val)
+  {
+    m_shaderParams[param] = std::move(val);
+  }
 
   void Shader::UpdateShaderParameters() {}
 
