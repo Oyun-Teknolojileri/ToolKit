@@ -213,14 +213,12 @@ namespace ToolKit
     }
   }
 
-  // An interval has start time and end time
   struct LightSortStruct
   {
     LightPtr light      = nullptr;
     uint intersectCount = 0;
   };
 
-  // Compares two intervals according to starting times.
   bool CompareLightIntersects(const LightSortStruct& i1, const LightSortStruct& i2)
   {
     return (i1.intersectCount > i2.intersectCount);
@@ -232,29 +230,14 @@ namespace ToolKit
     intersectCounts.resize(lights.size() - startFromIndex);
     const BoundingBox& aabb = job.BoundingBox;
 
+    // CAVIATE
+    // This loop will move all light pointers to intersectCounts. Do not access lights afterwards.
     for (uint lightIndx = startFromIndex; lightIndx < lights.size(); lightIndx++)
     {
-      LightPtr light = lights[lightIndx];
+      LightPtr light = std::move(lights[lightIndx]);
       assert(light->IsA<SpotLight>() || light->IsA<PointLight>());
 
-      intersectCounts[lightIndx - startFromIndex].light = light;
-      uint& curIntersectCount                           = intersectCounts[lightIndx - startFromIndex].intersectCount;
-
-      /* This algorithms can be used for better sorting
-      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
-      {
-        for (uint isMin = 0; isMin < 2; isMin++)
-        {
-          Vec3 p     = aabb.min;
-          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
-          float dist = glm::length(
-              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
-          if (dist <= radius)
-          {
-            curIntersectCount++;
-          }
-        }
-      }*/
+      uint& curIntersectCount = intersectCounts[lightIndx - startFromIndex].intersectCount;
 
       if (SpotLight* spot = light->As<SpotLight>())
       {
@@ -272,16 +255,20 @@ namespace ToolKit
           curIntersectCount++;
         }
       }
+
+      intersectCounts[lightIndx - startFromIndex].light = std::move(light);
     }
 
     // Sort point & spot lights
     std::sort(intersectCounts.begin(), intersectCounts.end(), CompareLightIntersects);
 
+    // CAVIATE
+    // This loop will move all lights back to ligts array in a sorted way based on importance.
     int effectingLights = 0;
     for (size_t i = 0; i < intersectCounts.size(); i++)
     {
       LightSortStruct& ls        = intersectCounts[i];
-      lights[i + startFromIndex] = ls.light;
+      lights[i + startFromIndex] = std::move(ls.light);
       if (ls.intersectCount > 0)
       {
         effectingLights++;

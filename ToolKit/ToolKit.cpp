@@ -21,8 +21,8 @@
 #include "Scene.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
-#include "UIManager.h"
 #include "TKStats.h"
+#include "UIManager.h"
 
 #include "DebugNew.h"
 
@@ -30,7 +30,7 @@ namespace ToolKit
 {
   HandleManager::HandleManager()
   {
-    uint64 seed = time(nullptr) + ((uint64) (this) ^ m_randomXor[0]);
+    ULongID seed = time(nullptr) + ((ULongID) (this) ^ m_randomXor[0]);
     Xoroshiro128PlusSeed(m_randomXor, seed);
   }
 
@@ -84,7 +84,6 @@ namespace ToolKit
 
     m_logger->Log("Main Destructed");
     SafeDel(m_logger);
-
   }
 
   void Main::PreInit()

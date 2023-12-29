@@ -18,16 +18,6 @@
 namespace ToolKit
 {
 
-  ParameterVariantBase::ParameterVariantBase() { m_id = GetHandleManager()->GenerateHandle(); }
-
-  ParameterVariantBase::~ParameterVariantBase()
-  {
-    if (HandleManager* handleMan = GetHandleManager())
-    {
-      handleMan->ReleaseHandle(m_id);
-    }
-  }
-
   ParameterVariant::ParameterVariant() { *this = 0; }
 
   ParameterVariant::~ParameterVariant() {}
@@ -42,18 +32,14 @@ namespace ToolKit
 
   ParameterVariant& ParameterVariant::operator=(const ParameterVariant& other)
   {
-    if (m_id != other.m_id)
-    {
-      m_category = other.m_category;
-      m_editable = other.m_editable;
-      m_exposed  = other.m_exposed;
-      m_name     = other.m_name;
-      m_type     = other.m_type;
-      m_var      = other.m_var;
-      m_hint     = other.m_hint;
-
-      // Events m_onValueChangedFn intentionally not copied.
-    }
+    m_category = other.m_category;
+    m_editable = other.m_editable;
+    m_exposed  = other.m_exposed;
+    m_name     = other.m_name;
+    m_type     = other.m_type;
+    m_var      = other.m_var;
+    m_hint     = other.m_hint;
+    // Events m_onValueChangedFn intentionally not copied.
 
     return *this;
   }
@@ -739,17 +725,7 @@ namespace ToolKit
 
   void ParameterBlock::Add(const ParameterVariant& var) { m_variants.push_back(var); }
 
-  void ParameterBlock::Remove(ULongID id)
-  {
-    for (size_t i = 0; i < m_variants.size(); i++)
-    {
-      if (m_variants[i].m_id == id)
-      {
-        m_variants.erase(m_variants.begin() + i);
-        break;
-      }
-    }
-  }
+  void ParameterBlock::Remove(int index) { m_variants.erase(m_variants.begin() + index); }
 
   void ParameterBlock::GetCategories(VariantCategoryArray& categories, bool sortDesc, bool filterByExpose)
   {
@@ -796,6 +772,17 @@ namespace ToolKit
       if (var.m_category.Name == category)
       {
         variants.push_back(&var);
+      }
+    }
+  }
+
+  void ParameterBlock::GetByCategory(const String& category, IntArray& variants)
+  {
+    for (int i = 0; i < (int) m_variants.size(); i++)
+    {
+      if (m_variants[i].m_category.Name == category)
+      {
+        variants.push_back(i);
       }
     }
   }

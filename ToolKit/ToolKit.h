@@ -13,8 +13,8 @@
  */
 
 #include "Object.h"
-#include "Types.h"
 #include "TKPlatform.h"
+#include "Types.h"
 
 /**
  * Base name space for all the ToolKit functionalities.
@@ -36,14 +36,22 @@ namespace ToolKit
    public:
     HandleManager();
 
+    /**
+     * Random id that guarantees uniqueness on runtime. Collisions are resolved during deserialize, if any.
+     * These ids, freed when using of it completed. So ids are reused and do not overflow.
+     */
     ULongID GenerateHandle();
+
+    /**
+     * Add record for the random id. Prevent it from getting acquired multiple times.
+     */
     void AddHandle(ULongID val);
-    void ReleaseHandle(ULongID val);
-    bool IsHandleUnique(ULongID val);
+    void ReleaseHandle(ULongID val);  //!< Free the id for reuse.
+    bool IsHandleUnique(ULongID val); //!< Test if id acquired.
 
    private:
-    uint64 m_randomXor[2];
-    std::unordered_set<uint64> m_uniqueIDs;
+    ULongID m_randomXor[2];
+    std::unordered_set<ULongID> m_uniqueIDs;
   };
 
   /**

@@ -165,27 +165,6 @@ namespace ToolKit
   static VariantCategory CustomDataCategory = {"Custom Data", 0};
 
   /**
-   * Base class for ParameterVariant. This class is responsible for providing
-   * initial data to every ParameterVariant such as providing a unique id.
-   */
-  class TK_API ParameterVariantBase : public Serializable
-  {
-   public:
-    /**
-     * Base Constructor, creates a unique id for the ParameterVariant.
-     */
-    ParameterVariantBase();
-
-    /**
-     * Empty destructor.
-     */
-    virtual ~ParameterVariantBase();
-
-   public:
-    ULongID m_id; //!< Unique id for the current runtime.
-  };
-
-  /**
    * A multi type object that encapsulates std::variant. The purpose of this
    * class is to provide automated functionality such as serialization, auto
    * cloning etc... This type of parameters can be recognized and properly
@@ -193,7 +172,7 @@ namespace ToolKit
    * Property Inspector. Any exposed parameter variant will be displayed under
    * the right category automatically.
    */
-  class TK_API ParameterVariant : public ParameterVariantBase
+  class TK_API ParameterVariant : public Serializable
   {
     friend class ParameterBlock;
 
@@ -592,10 +571,10 @@ namespace ToolKit
     void Add(const ParameterVariant& var);
 
     /**
-     * Remove's the first variant with the id.
-     * @param id The id of the variant to remove.
+     * Remove's the variant at the given index.
+     * @param index of the variant to remove.
      */
-    void Remove(ULongID id);
+    void Remove(int index);
 
     /**
      * Collects all unique categories and sorts the categories in
@@ -614,6 +593,13 @@ namespace ToolKit
      * variants that falls under the requested category.
      */
     void GetByCategory(const String& category, ParameterVariantRawPtrArray& variants);
+
+    /**
+     * Collects every variant by the given category.
+     * @param category The category to search the variants in.
+     * @param variants Index list of variants that is under the requested category.
+     */
+    void GetByCategory(const String& category, IntArray& variants);
 
     /**
      * Search the variant with given category and name. Returns true if found
