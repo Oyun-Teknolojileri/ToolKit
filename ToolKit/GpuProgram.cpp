@@ -31,6 +31,35 @@ namespace ToolKit
     m_handle = 0;
   }
 
+  int GpuProgram::GetUniformLocation(Uniform uniform, int index)
+  {
+    if (index == -1)
+    {
+      if (m_uniformLocations.find(uniform) != m_uniformLocations.end())
+      {
+        return m_uniformLocations[uniform];
+      }
+      else
+      {
+        return -1;
+      }
+    }
+    else
+    {
+      // Uniform is an array
+      if (m_arrayUniformLocations.find(uniform) != m_arrayUniformLocations.end())
+      {
+        IntArray& locs = m_arrayUniformLocations[uniform];
+        if (locs.size() > index)
+        {
+          return locs[index];
+        }
+      }
+
+      return -1;
+    }
+  }
+
   int GpuProgram::GetShaderParamUniformLoc(const String& uniformName)
   {
     if (m_shaderParamsUniformLocations.find(uniformName) != m_shaderParamsUniformLocations.end())
