@@ -77,10 +77,6 @@ namespace ToolKit
     // Giving nullptr as argument means no shadows
     void SetShadowAtlas(TexturePtr shadowAtlas);
 
-    // TODO: Should be private or within a Pass.
-    /////////////////////
-    // Left public for thumbnail rendering. TODO: there must be techniques
-    // handling thumbnail render.
     void Render(const struct RenderJob& job, CameraPtr cam, const LightPtrArray& lights = {});
 
     void Render(const RenderJobArray& jobArray, CameraPtr cam, const LightPtrArray& lights = {});
@@ -97,7 +93,6 @@ namespace ToolKit
      * if setLense is true sets the lens to fit aspect ratio to frame buffer.
      */
     void SetCamera(CameraPtr camera, bool setLens);
-    /////////////////////
 
     int GetMaxArrayTextureLayers();
 
