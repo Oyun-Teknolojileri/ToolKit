@@ -235,6 +235,9 @@
     <ClCompile Include="RHI.cpp">
       <Filter>Render</Filter>
     </ClCompile>
+    <ClCompile Include="ShaderUniform.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -499,6 +502,9 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="RHI.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderUnifrom.h">
       <Filter>Render</Filter>
     </ClInclude>
   </ItemGroup>

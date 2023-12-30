@@ -10,79 +10,17 @@
 #include "ParameterBlock.h"
 #include "Resource.h"
 #include "ResourceManager.h"
+#include "ShaderUnifrom.h"
 
 namespace ToolKit
 {
+
   enum class ShaderType
   {
     VertexShader,
     FragmentShader,
     IncludeShader
   };
-
-  enum class Uniform
-  {
-    // Order is important. Don't change for backward comparable resource files.
-    PROJECT_VIEW_MODEL,
-    VIEW,
-    MODEL,
-    INV_TR_MODEL,
-    UNUSEDSLOT_6, // LIGHT_DATA
-    UNUSEDSLOT_7, // CAM_DATA
-    COLOR,
-    FRAME_COUNT,
-    ELAPSED_TIME,
-    EXPOSURE,
-    PROJECT_VIEW_NO_TR,
-    USE_IBL,
-    IBL_INTENSITY,
-    IBL_IRRADIANCE,
-    DIFFUSE_TEXTURE_IN_USE,
-    COLOR_ALPHA,
-    UNUSEDSLOT_4, // USE_AO
-    IBL_ROTATION,
-    UNUSEDSLOT_2, // Lighting Only
-    USE_ALPHA_MASK,
-    ALPHA_MASK_TRESHOLD,
-    UNUSEDSLOT_5, // USE_FORWARD_PATH
-    EMISSIVE_TEXTURE_IN_USE,
-    EMISSIVE_COLOR,
-    UNUSEDSLOT_3, // LIGHTING_TYPE Phong - PBR - Custom
-    METALLIC,
-    ROUGHNESS,
-    METALLIC_ROUGHNESS_TEXTURE_IN_USE,
-    NORMAL_MAP_IN_USE,
-    IBL_MAX_REFLECTION_LOD,
-    SHADOW_DISTANCE,
-    CAM_DATA_POS,
-    CAM_DATA_DIR,
-    CAM_DATA_FAR,
-    LIGHT_DATA_TYPE,
-    LIGHT_DATA_POS,
-    LIGHT_DATA_DIR,
-    LIGHT_DATA_COLOR,
-    LIGHT_DATA_INTENSITY,
-    LIGHT_DATA_RADIUS,
-    LIGHT_DATA_OUTANGLE,
-    LIGHT_DATA_INNANGLE,
-    LIGHT_DATA_PROJVIEWMATRIX,
-    LIGHT_DATA_SHADOWMAPCAMFAR,
-    LIGHT_DATA_CASTSHADOW,
-    LIGHT_DATA_PCFSAMPLES,
-    LIGHT_DATA_PCFRADIUS,
-    LIGHT_DATA_BLEEDREDUCTION,
-    LIGHT_DATA_SOFTSHADOWS,
-    LIGHT_DATA_SHADOWATLASLAYER,
-    LIGHT_DATA_SHADOWATLASRESRATIO,
-    LIGHT_DATA_SHADOWATLASCOORD,
-    LIGHT_DATA_SHADOWBIAS,
-    LIGHT_DATA_ACTIVECOUNT,
-    IS_SKINNED,
-    NUM_BONES,
-    UNIFORM_MAX_INVALID
-  };
-
-  const char* GetUniformName(Uniform u);
 
   class TK_API Shader : public Resource
   {

@@ -73,6 +73,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneRenderPath.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShaderUniform.cpp" />
     <ClCompile Include="ShadowPass.cpp" />
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="SkeletonComponent.cpp" />
@@ -163,6 +164,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Serialize.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShaderUnifrom.h" />
     <ClInclude Include="ShadowPass.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="SkeletonComponent.h" />
