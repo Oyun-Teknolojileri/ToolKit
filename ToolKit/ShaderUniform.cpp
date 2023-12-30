@@ -181,7 +181,6 @@ namespace ToolKit
       m_value                 = std::move(other.m_value);
       m_isDirty               = other.m_isDirty;
 
-      // Reset other to a default state if necessary
       other.m_updateFrequency = UpdateFrequency::PerDraw;
       other.m_isDirty         = false;
     }

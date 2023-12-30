@@ -89,6 +89,7 @@ namespace ToolKit
     {
       PerDraw,
       PerFrame,
+      PerMaterial,
       WhenDirty
     };
 
