@@ -18,30 +18,6 @@
 namespace ToolKit
 {
 
-  /**
-   * Simple binary stencil test operations.
-   */
-  enum class StencilOperation
-  {
-    /**
-     * Stencil write and operations are disabled.
-     */
-    None,
-    /**
-     * All pixels are drawn and stencil value of the corresponding pixel set
-     * to 1.
-     */
-    AllowAllPixels,
-    /**
-     * Pixels whose stencil value is 1 are drawn.
-     */
-    AllowPixelsPassingStencil,
-    /**
-     * Pixels whose stencil value is 0 are drawn.
-     */
-    AllowPixelsFailingStencil
-  };
-
   class TK_API Renderer
   {
    public:
