@@ -32,25 +32,51 @@ namespace ToolKit
 
   ParameterVariant::ParameterVariant(ParameterVariant&& other) noexcept
       : m_exposed(other.m_exposed), m_editable(other.m_editable), m_category(std::move(other.m_category)),
-        m_name(std::move(other.m_name)), m_hint(other.m_hint), m_onValueChangedFn(std::move(other.m_onValueChangedFn)),
-        m_var(std::move(other.m_var)), m_type(other.m_type)
+        m_name(std::move(other.m_name)), m_hint(other.m_hint), m_var(std::move(other.m_var)), m_type(other.m_type)
   {
+    // Events m_onValueChangedFn intentionally not moved.
+    // m_onValueChangedFn(std::move(other.m_onValueChangedFn))
+
     // Reset the source object to a valid state
     other.m_exposed  = false;
     other.m_editable = false;
     other.m_type     = VariantType::Int;
   }
 
-  ParameterVariant& ParameterVariant::operator=(const ParameterVariant& other)
+  ParameterVariant& ParameterVariant::operator=(ParameterVariant&& other) noexcept
   {
-    m_category = other.m_category;
-    m_editable = other.m_editable;
-    m_exposed  = other.m_exposed;
-    m_name     = other.m_name;
-    m_type     = other.m_type;
-    m_var      = other.m_var;
-    m_hint     = other.m_hint;
-    // Events m_onValueChangedFn intentionally not copied.
+    if (this != &other)
+    {
+      m_category       = std::move(other.m_category);
+      m_editable       = other.m_editable;
+      m_exposed        = other.m_exposed;
+      m_name           = std::move(other.m_name);
+      m_type           = other.m_type;
+      m_var            = std::move(other.m_var);
+      m_hint           = other.m_hint;
+      // Events m_onValueChangedFn intentionally not copied.
+
+      other.m_exposed  = false;
+      other.m_editable = false;
+      other.m_type     = VariantType::Int;
+    }
+
+    return *this;
+  }
+
+  ParameterVariant& ParameterVariant::operator=(const ParameterVariant& other) noexcept
+  {
+    if (this != &other)
+    {
+      m_category = other.m_category;
+      m_editable = other.m_editable;
+      m_exposed  = other.m_exposed;
+      m_name     = other.m_name;
+      m_type     = other.m_type;
+      m_var      = other.m_var;
+      m_hint     = other.m_hint;
+      // Events m_onValueChangedFn intentionally not copied.
+    }
 
     return *this;
   }

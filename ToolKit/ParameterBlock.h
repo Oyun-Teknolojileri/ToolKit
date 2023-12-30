@@ -376,12 +376,17 @@ namespace ToolKit
     }
 
     /**
-     * Default assignment operator, copies every member but event callbacks and
-     * the id. Events refer to objects to operate on. Consider coping or
+     * Default move operator, copies every member but event callbacks.
+     */
+    ParameterVariant& operator=(ParameterVariant&& other) noexcept;
+
+    /**
+     * Default assignment operator, copies every member but event callbacks.
+     * Events refer to objects to operate on. Consider coping or
      * rewiring event callbacks explicitly. Otherwise unintended objects gets
      * affected.
      */
-    ParameterVariant& operator=(const ParameterVariant& other);
+    ParameterVariant& operator=(const ParameterVariant& other) noexcept;
 
     /**
      * Assign a bool to the value of the variant.
