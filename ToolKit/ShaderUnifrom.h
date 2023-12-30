@@ -77,6 +77,9 @@ namespace ToolKit
 
   extern const char* GetUniformName(Uniform u);
 
+  // UniformData
+  //////////////////////////////////////////////////////////////////////////
+
   using UniformValue = std::variant<bool, byte, ubyte, float, int, uint, Vec2, Vec3, Vec4, Mat3, Mat4>;
 
   class UniformData
