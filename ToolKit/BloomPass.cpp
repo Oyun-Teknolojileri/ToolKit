@@ -20,10 +20,15 @@ namespace ToolKit
   BloomPass::BloomPass()
   {
     m_downsampleShader = GetShaderManager()->Create<Shader>(ShaderPath("bloomDownsample.shader", true));
+    m_downsampleShader->AddShaderUniform(ShaderUniform("passIndx", 0));
+    m_downsampleShader->AddShaderUniform(ShaderUniform("srcResolution", 0));
+    m_downsampleShader->AddShaderUniform(ShaderUniform("threshold", 0));
 
-    m_upsampleShader   = GetShaderManager()->Create<Shader>(ShaderPath("bloomUpsample.shader", true));
+    m_upsampleShader = GetShaderManager()->Create<Shader>(ShaderPath("bloomUpsample.shader", true));
+    m_upsampleShader->AddShaderUniform(ShaderUniform("filterRadius", 1.0f));
+    m_upsampleShader->AddShaderUniform(ShaderUniform("intensity", 1.0f));
 
-    m_pass             = MakeNewPtr<FullQuadPass>();
+    m_pass = MakeNewPtr<FullQuadPass>();
   }
 
   BloomPass::BloomPass(const BloomPassParams& params) : BloomPass() { m_params = params; }
@@ -55,11 +60,9 @@ namespace ToolKit
       m_pass->m_params.FragmentShader = m_downsampleShader;
       int passIndx                    = 0;
 
-      m_downsampleShader->SetShaderParameter("passIndx", ParameterVariant(passIndx));
-
-      m_downsampleShader->SetShaderParameter("srcResolution", ParameterVariant(mainRes));
-
-      m_downsampleShader->SetShaderParameter("threshold", ParameterVariant(m_params.minThreshold));
+      m_downsampleShader->UpdateShaderUniform("passIndx", passIndx);
+      m_downsampleShader->UpdateShaderUniform("srcResolution", mainRes);
+      m_downsampleShader->UpdateShaderUniform("threshold", m_params.minThreshold);
 
       TexturePtr prevRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
 
@@ -92,9 +95,8 @@ namespace ToolKit
         m_pass->m_params.FragmentShader = m_downsampleShader;
 
         int passIndx                    = i + 1;
-        m_downsampleShader->SetShaderParameter("passIndx", ParameterVariant(passIndx));
-
-        m_downsampleShader->SetShaderParameter("srcResolution", ParameterVariant(prevRes));
+        m_downsampleShader->UpdateShaderUniform("passIndx", passIndx);
+        m_downsampleShader->UpdateShaderUniform("srcResolution", prevRes);
 
         GetRenderer()->SetTexture(0, prevRt->m_textureId);
 
@@ -110,9 +112,8 @@ namespace ToolKit
     // Upsample Pass
     {
       const float filterRadius = 0.002f;
-      m_upsampleShader->SetShaderParameter("filterRadius", ParameterVariant(filterRadius));
-
-      m_upsampleShader->SetShaderParameter("intensity", ParameterVariant(1.0f));
+      m_upsampleShader->UpdateShaderUniform("filterRadius", filterRadius);
+      m_upsampleShader->UpdateShaderUniform("intensity", 1.0f);
 
       for (int i = m_currentIterationCount; i > 0; i--)
       {
@@ -142,7 +143,7 @@ namespace ToolKit
       m_pass->m_params.ClearFrameBuffer = false;
       m_pass->m_params.FrameBuffer      = m_params.FrameBuffer;
 
-      m_upsampleShader->SetShaderParameter("intensity", ParameterVariant(m_params.intensity));
+      m_upsampleShader->UpdateShaderUniform("intensity", m_params.intensity);
 
       RenderSubPass(m_pass);
     }

@@ -164,7 +164,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Serialize.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="ShaderUnifrom.h" />
+    <ClInclude Include="ShaderUniform.h" />
     <ClInclude Include="ShadowPass.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="SkeletonComponent.h" />

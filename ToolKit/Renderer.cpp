@@ -734,7 +734,7 @@ namespace ToolKit
 
     for (ShaderPtr shader : program->m_shaders)
     {
-      shader->UpdateShaderParameters();
+      shader->UpdateShaderUniforms();
 
       PUSH_CPU_MARKER("Defined Shader Uniforms");
 

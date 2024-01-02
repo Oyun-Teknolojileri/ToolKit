@@ -19,7 +19,28 @@
 namespace ToolKit
 {
 
-  DeferredRenderPass::DeferredRenderPass() { m_fullQuadPass = MakeNewPtr<FullQuadPass>(); }
+  DeferredRenderPass::DeferredRenderPass()
+  {
+    m_fullQuadPass         = MakeNewPtr<FullQuadPass>();
+    m_deferredRenderShader = GetShaderManager()->Create<Shader>(ShaderPath("deferredRenderFrag.shader", true));
+    InitLightDataTexture();
+
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("camPos", ZERO));
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("lightDataTextureWidth", 0.0f));
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("shadowDirLightsInterval", Vec2()));
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("shadowPointLightsInterval", Vec2()));
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("shadowSpotLightsInterval", Vec2()));
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("nonShadowDirLightsInterval", Vec2()));
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("nonShadowPointLightsInterval", Vec2()));
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("nonShadowSpotLightsInterval", Vec2()));
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("dirShadowLightDataSize", 0.0f));
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("pointShadowLightDataSize", 0.0f));
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("spotShadowLightDataSize", 0.0f));
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("dirNonShadowLightDataSize", 0.0f));
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("pointNonShadowLightDataSize", 0.0f));
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("spotNonShadowLightDataSize", 0.0f));
+    m_deferredRenderShader->AddShaderUniform(ShaderUniform("aoEnabled", false));
+  }
 
   DeferredRenderPass::DeferredRenderPass(const DeferredRenderPassParams& params) : DeferredRenderPass()
   {
@@ -39,17 +60,7 @@ namespace ToolKit
     PUSH_CPU_MARKER("DeferredRenderPas::PreRender");
 
     Pass::PreRender();
-
-    if (m_lightDataTexture == nullptr)
-    {
-      InitLightDataTexture();
-    }
-
-    if (m_deferredRenderShader == nullptr)
-    {
-      m_deferredRenderShader = GetShaderManager()->Create<Shader>(ShaderPath("deferredRenderFrag.shader", true));
-    }
-    m_deferredRenderShader->SetShaderParameter("camPos", ParameterVariant(m_params.Cam->m_node->GetTranslation()));
+    m_deferredRenderShader->UpdateShaderUniform("camPos", m_params.Cam->Position());
 
     m_fullQuadPass->m_params.ClearFrameBuffer = m_params.ClearFramebuffer;
     m_fullQuadPass->m_params.FragmentShader   = m_deferredRenderShader;
@@ -65,20 +76,19 @@ namespace ToolKit
         ->UpdateTextureData(m_params.lights, sd, sp, ss, nsd, nsp, nss, sizeD, sizeP, sizeS, sizeND, sizeNP, sizeNS);
 
     // Update light uniforms
-    m_deferredRenderShader->SetShaderParameter("lightDataTextureWidth",
-                                               ParameterVariant((float) m_lightDataTextureSize.x));
-    m_deferredRenderShader->SetShaderParameter("shadowDirLightsInterval", ParameterVariant(sd));
-    m_deferredRenderShader->SetShaderParameter("shadowPointLightsInterval", ParameterVariant(sp));
-    m_deferredRenderShader->SetShaderParameter("shadowSpotLightsInterval", ParameterVariant(ss));
-    m_deferredRenderShader->SetShaderParameter("nonShadowDirLightsInterval", ParameterVariant(nsd));
-    m_deferredRenderShader->SetShaderParameter("nonShadowPointLightsInterval", ParameterVariant(nsp));
-    m_deferredRenderShader->SetShaderParameter("nonShadowSpotLightsInterval", ParameterVariant(nss));
-    m_deferredRenderShader->SetShaderParameter("dirShadowLightDataSize", ParameterVariant(sizeD));
-    m_deferredRenderShader->SetShaderParameter("pointShadowLightDataSize", ParameterVariant(sizeP));
-    m_deferredRenderShader->SetShaderParameter("spotShadowLightDataSize", ParameterVariant(sizeS));
-    m_deferredRenderShader->SetShaderParameter("dirNonShadowLightDataSize", ParameterVariant(sizeND));
-    m_deferredRenderShader->SetShaderParameter("pointNonShadowLightDataSize", ParameterVariant(sizeNP));
-    m_deferredRenderShader->SetShaderParameter("spotNonShadowLightDataSize", ParameterVariant(sizeNS));
+    m_deferredRenderShader->UpdateShaderUniform("lightDataTextureWidth", (float) m_lightDataTextureSize.x);
+    m_deferredRenderShader->UpdateShaderUniform("shadowDirLightsInterval", sd);
+    m_deferredRenderShader->UpdateShaderUniform("shadowPointLightsInterval", sp);
+    m_deferredRenderShader->UpdateShaderUniform("nonShadowDirLightsInterval", nsd);
+    m_deferredRenderShader->UpdateShaderUniform("nonShadowPointLightsInterval", nsp);
+    m_deferredRenderShader->UpdateShaderUniform("nonShadowSpotLightsInterval", nss);
+    m_deferredRenderShader->UpdateShaderUniform("dirShadowLightDataSize", sizeD);
+    m_deferredRenderShader->UpdateShaderUniform("pointShadowLightDataSize", sizeP);
+    m_deferredRenderShader->UpdateShaderUniform("spotShadowLightDataSize", sizeS);
+    m_deferredRenderShader->UpdateShaderUniform("dirNonShadowLightDataSize", sizeND);
+    m_deferredRenderShader->UpdateShaderUniform("pointNonShadowLightDataSize", sizeNP);
+    m_deferredRenderShader->UpdateShaderUniform("shadowSpotLightsInterval", ss);
+    m_deferredRenderShader->UpdateShaderUniform("spotNonShadowLightDataSize", sizeNS);
 
     // Set gbuffer
     // 9: Position, 10: Normal, 11: Color, 12: emissive, 14: metallic-roughness,
@@ -95,7 +105,7 @@ namespace ToolKit
 
     renderer->SetTexture(13, m_lightDataTexture->m_textureId);
 
-    m_deferredRenderShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.AOTexture != nullptr));
+    m_deferredRenderShader->UpdateShaderUniform("aoEnabled", m_params.AOTexture != nullptr);
     renderer->SetTexture(5, m_params.AOTexture ? m_params.AOTexture->m_textureId : 0);
 
     POP_CPU_MARKER();

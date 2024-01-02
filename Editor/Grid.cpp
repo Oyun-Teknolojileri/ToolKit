@@ -41,7 +41,7 @@ namespace ToolKit
 
     GridFragmentShader::~GridFragmentShader() {}
 
-    void GridFragmentShader::UpdateShaderParameters()
+    void GridFragmentShader::UpdateShaderUniforms()
     {
       SetShaderParameter("GridData.cellSize", m_sizeEachCell);
       SetShaderParameter("GridData.lineMaxPixelCount", m_maxLinePixelCount);

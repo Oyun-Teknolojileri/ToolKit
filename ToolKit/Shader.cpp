@@ -218,9 +218,13 @@ namespace ToolKit
     return nullptr;
   }
 
-  void Shader::SetShaderParameter(const String& param, const ParameterVariant& val) { m_shaderParams[param] = val; }
+  void Shader::AddShaderUniform(const ShaderUniform& uniform) { m_shaderParams[uniform.m_name] = uniform; }
 
-  void Shader::UpdateShaderParameters() {}
+  void Shader::UpdateShaderUniform(const String& name, const UniformValue& val) {}
+
+  void Shader::UpdateShaderUniform(const String& name, UniformValue&& val) {}
+
+  void Shader::UpdateShaderUniforms() {}
 
   void Shader::HandleShaderIncludes(const String& file)
   {

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "Types.h"
+
 namespace ToolKit
 {
 
@@ -77,12 +79,12 @@ namespace ToolKit
 
   extern const char* GetUniformName(Uniform u);
 
-  // UniformData
+  // ShaderUniform
   //////////////////////////////////////////////////////////////////////////
 
   using UniformValue = std::variant<bool, byte, ubyte, float, int, uint, Vec2, Vec3, Vec4, Mat3, Mat4>;
 
-  class UniformData
+  class ShaderUniform
   {
    public:
     enum class UpdateFrequency
@@ -94,12 +96,13 @@ namespace ToolKit
     };
 
    public:
-    UniformData();
-    UniformData(const UniformData& other);
-    UniformData(UniformData&& other) noexcept;
+    ShaderUniform();
+    ShaderUniform(const String& name, UniformValue value, UpdateFrequency frequency = UpdateFrequency::WhenDirty);
+    ShaderUniform(const ShaderUniform& other);
+    ShaderUniform(ShaderUniform&& other) noexcept;
 
-    UniformData& operator=(const UniformData& other);
-    UniformData& operator=(UniformData&& other) noexcept;
+    ShaderUniform& operator=(const ShaderUniform& other);
+    ShaderUniform& operator=(ShaderUniform&& other) noexcept;
 
    public:
     String m_name;

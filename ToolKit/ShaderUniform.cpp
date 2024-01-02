@@ -5,7 +5,8 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#include "ShaderUnifrom.h"
+#include "ShaderUniform.h"
+
 #include "TKAssert.h"
 
 #include "DebugNew.h"
@@ -141,26 +142,32 @@ namespace ToolKit
     }
   }
 
-  // UniformData
+  // ShaderUniform
   //////////////////////////////////////////////////////////////////////////
 
-  UniformData::UniformData() : m_isDirty(false), m_updateFrequency(UpdateFrequency::WhenDirty) {}
+  ShaderUniform::ShaderUniform() : m_isDirty(true), m_updateFrequency(UpdateFrequency::WhenDirty) {}
 
-  UniformData::UniformData(const UniformData& other)
+  ShaderUniform::ShaderUniform(const String& name, UniformValue value, UpdateFrequency frequency)
+      : m_isDirty(true), m_updateFrequency(UpdateFrequency::WhenDirty)
+  {
+    m_name            = name;
+    m_value           = std::move(value);
+    m_updateFrequency = frequency;
+  }
+
+  ShaderUniform::ShaderUniform(const ShaderUniform& other)
       : m_name(other.m_name), m_updateFrequency(other.m_updateFrequency), m_value(other.m_value),
         m_isDirty(other.m_isDirty)
   {
   }
 
-  UniformData::UniformData(UniformData&& other) noexcept
+  ShaderUniform::ShaderUniform(ShaderUniform&& other) noexcept
       : m_name(std::move(other.m_name)), m_updateFrequency(other.m_updateFrequency), m_value(std::move(other.m_value)),
         m_isDirty(other.m_isDirty)
   {
-    other.m_updateFrequency = UpdateFrequency::PerDraw;
-    other.m_isDirty         = false;
   }
 
-  UniformData& UniformData::operator=(const UniformData& other)
+  ShaderUniform& ShaderUniform::operator=(const ShaderUniform& other)
   {
     if (this != &other)
     {
@@ -172,7 +179,7 @@ namespace ToolKit
     return *this;
   }
 
-  UniformData& UniformData::operator=(UniformData&& other) noexcept
+  ShaderUniform& ShaderUniform::operator=(ShaderUniform&& other) noexcept
   {
     if (this != &other)
     {

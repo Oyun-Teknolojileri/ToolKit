@@ -10,7 +10,7 @@
 #include "ParameterBlock.h"
 #include "Resource.h"
 #include "ResourceManager.h"
-#include "ShaderUnifrom.h"
+#include "ShaderUniform.h"
 
 namespace ToolKit
 {
@@ -45,14 +45,17 @@ namespace ToolKit
      * @param param is the name that the parameter is referred in the shader.
      * @param val is the value of the given parameter.
      */
-    void SetShaderParameter(const String& param, const ParameterVariant& val);
+    void AddShaderUniform(const ShaderUniform& uniform);
+
+    void UpdateShaderUniform(const String& name, const UniformValue& val);
+    void UpdateShaderUniform(const String& name, UniformValue&& val);
 
     /**
      * Renderer calls this function before feeding shader parameters to give
      * custom shaders a chance to update. Derived classes may
      * override this to update their custom parameters.
      */
-    virtual void UpdateShaderParameters();
+    virtual void UpdateShaderUniforms();
 
    private:
     void HandleShaderIncludes(const String& file);
@@ -69,7 +72,7 @@ namespace ToolKit
     /**
      * Container that holds custom shader parameters.
      */
-    std::unordered_map<String, ParameterVariant> m_shaderParams;
+    std::unordered_map<String, ShaderUniform> m_shaderParams;
 
     /**
      * Shader hash to look up. Any shader resolving to the same tag can be

@@ -22,6 +22,11 @@ namespace ToolKit
     m_quadPass->m_params.FrameBuffer = MakeNewPtr<Framebuffer>();
 
     m_dofShader                      = GetShaderManager()->Create<Shader>(ShaderPath("depthOfFieldFrag.shader", true));
+    m_dofShader->AddShaderUniform(ShaderUniform("focusPoint", 0.0f));
+    m_dofShader->AddShaderUniform(ShaderUniform("focusScale", 0.0f));
+    m_dofShader->AddShaderUniform(ShaderUniform("blurSize", 5.0f));
+    m_dofShader->AddShaderUniform(ShaderUniform("radiusScale", 0.0f));
+    m_dofShader->AddShaderUniform(ShaderUniform("uPixelSize", Vec2()));
   }
 
   DoFPass::DoFPass(const DoFPassParams& params) : DoFPass() { m_params = params; }
@@ -43,9 +48,9 @@ namespace ToolKit
       return;
     }
 
-    m_dofShader->SetShaderParameter("focusPoint", ParameterVariant(m_params.focusPoint));
-    m_dofShader->SetShaderParameter("focusScale", ParameterVariant(m_params.focusScale));
-    m_dofShader->SetShaderParameter("blurSize", ParameterVariant(5.0f));
+    m_dofShader->UpdateShaderUniform("focusPoint", m_params.focusPoint);
+    m_dofShader->UpdateShaderUniform("focusScale", m_params.focusScale);
+    m_dofShader->UpdateShaderUniform("blurSize", 5.0f);
 
     float blurRadiusScale = 0.5f;
     switch (m_params.blurQuality)
@@ -60,12 +65,12 @@ namespace ToolKit
       blurRadiusScale = 0.2f;
       break;
     }
-    m_dofShader->SetShaderParameter("radiusScale", ParameterVariant(blurRadiusScale));
+    m_dofShader->UpdateShaderUniform("radiusScale", blurRadiusScale);
 
     UVec2 size(m_params.ColorRt->m_width, m_params.ColorRt->m_height);
 
     m_quadPass->m_params.FrameBuffer->Init({size.x, size.y, false, false});
-    m_dofShader->SetShaderParameter("uPixelSize", ParameterVariant(Vec2(1.0f) / Vec2(size)));
+    m_dofShader->UpdateShaderUniform("uPixelSize", Vec2(1.0f) / Vec2(size));
     m_quadPass->m_params.FrameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.ColorRt);
     m_quadPass->m_params.BlendFunc        = BlendFunction::NONE;
     m_quadPass->m_params.ClearFrameBuffer = false;

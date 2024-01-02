@@ -41,6 +41,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #ifdef _WIN32 // Windows.
