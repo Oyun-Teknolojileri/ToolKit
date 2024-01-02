@@ -84,7 +84,7 @@ namespace ToolKit
 
   using UniformValue = std::variant<bool, float, int, uint, Vec2, Vec3, Vec4, Mat3, Mat4>;
 
-  class ShaderUniform
+  class TK_API ShaderUniform
   {
    public:
     enum class UpdateFrequency
