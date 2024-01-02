@@ -19,6 +19,7 @@ namespace ToolKit
   GammaPass::GammaPass() : PostProcessPass()
   {
     m_postProcessShader = GetShaderManager()->Create<Shader>(ShaderPath("gammaFrag.shader", true));
+    m_postProcessShader->AddShaderUniform(ShaderUniform("Gamma", 2.2f));
   }
 
   GammaPass::GammaPass(const GammaPassParams& params) : GammaPass() { m_params = params; }
@@ -33,7 +34,7 @@ namespace ToolKit
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
 
-    m_postProcessShader->SetShaderParameter("Gamma", ParameterVariant(m_params.Gamma));
+    m_postProcessShader->UpdateShaderUniform("Gamma", m_params.Gamma);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

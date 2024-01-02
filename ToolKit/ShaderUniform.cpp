@@ -167,6 +167,12 @@ namespace ToolKit
   {
   }
 
+  ShaderUniform& ShaderUniform::operator=(const UniformValue& value)
+  {
+    m_value = value;
+    return *this;
+  }
+
   ShaderUniform& ShaderUniform::operator=(const ShaderUniform& other)
   {
     if (this != &other)

@@ -83,6 +83,15 @@ namespace ToolKit
     {
       m_ssaoSamplesStrCache.push_back("samples[" + std::to_string(i) + "]");
     }
+
+    m_ssaoShader = GetShaderManager()->Create<Shader>(ShaderPath("ssaoCalcFrag.shader", true));
+    m_ssaoShader->AddShaderUniform(ShaderUniform("radius", 0.0f));
+    m_ssaoShader->AddShaderUniform(ShaderUniform("bias", 0.0f));
+    m_ssaoShader->AddShaderUniform(ShaderUniform("screenSize", Vec2()));
+    m_ssaoShader->AddShaderUniform(ShaderUniform("bias", 0.0f));
+    m_ssaoShader->AddShaderUniform(ShaderUniform("kernelSize", 0));
+    m_ssaoShader->AddShaderUniform(ShaderUniform("projection", Mat4()));
+    m_ssaoShader->AddShaderUniform(ShaderUniform("viewMatrix", Mat4()));
   }
 
   SSAOPass::SSAOPass(const SSAOPassParams& params) : SSAOPass() { m_params = params; }
@@ -108,8 +117,8 @@ namespace ToolKit
     renderer->SetTexture(2, m_noiseTexture->m_textureId);
     renderer->SetTexture(3, m_params.GLinearDepthBuffer->m_textureId);
 
-    m_ssaoShader->SetShaderParameter("radius", ParameterVariant(m_params.Radius));
-    m_ssaoShader->SetShaderParameter("bias", ParameterVariant(m_params.Bias));
+    m_ssaoShader->UpdateShaderUniform("radius", m_params.Radius);
+    m_ssaoShader->UpdateShaderUniform("bias", m_params.Bias);
 
     RenderSubPass(m_quadPass);
 
@@ -165,28 +174,22 @@ namespace ToolKit
     m_quadPass->m_params.FrameBuffer      = m_ssaoFramebuffer;
     m_quadPass->m_params.ClearFrameBuffer = false;
 
-    // SSAO fragment shader
-    if (!m_ssaoShader)
-    {
-      m_ssaoShader = GetShaderManager()->Create<Shader>(ShaderPath("ssaoCalcFrag.shader", true));
-    }
-
     if (m_params.KernelSize != m_currentKernelSize || m_prevSpread != m_params.spread)
     {
       // Update kernel
       for (int i = 0; i < m_params.KernelSize; ++i)
       {
-        m_ssaoShader->SetShaderParameter(m_ssaoSamplesStrCache[i], ParameterVariant(m_ssaoKernel[i]));
+        m_ssaoShader->UpdateShaderUniform(m_ssaoSamplesStrCache[i], m_ssaoKernel[i]);
       }
 
       m_prevSpread = m_params.spread;
     }
 
-    m_ssaoShader->SetShaderParameter("screenSize", ParameterVariant(Vec2(width, height)));
-    m_ssaoShader->SetShaderParameter("bias", ParameterVariant(m_params.Bias));
-    m_ssaoShader->SetShaderParameter("kernelSize", ParameterVariant(m_params.KernelSize));
-    m_ssaoShader->SetShaderParameter("projection", ParameterVariant(m_params.Cam->GetProjectionMatrix()));
-    m_ssaoShader->SetShaderParameter("viewMatrix", ParameterVariant(m_params.Cam->GetViewMatrix()));
+    m_ssaoShader->UpdateShaderUniform("screenSize", Vec2(width, height));
+    m_ssaoShader->UpdateShaderUniform("bias", m_params.Bias);
+    m_ssaoShader->UpdateShaderUniform("kernelSize", m_params.KernelSize);
+    m_ssaoShader->UpdateShaderUniform("projection", m_params.Cam->GetProjectionMatrix());
+    m_ssaoShader->UpdateShaderUniform("viewMatrix", m_params.Cam->GetViewMatrix());
 
     m_quadPass->m_params.FragmentShader = m_ssaoShader;
 

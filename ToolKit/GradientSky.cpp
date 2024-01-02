@@ -67,13 +67,10 @@ namespace ToolKit
   {
     Init();
 
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("topColor", ParameterVariant(GetTopColorVal()));
-
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("middleColor", ParameterVariant(GetMiddleColorVal()));
-
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("bottomColor", ParameterVariant(GetBottomColorVal()));
-
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("exponent", ParameterVariant(GetGradientExponentVal()));
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("topColor", GetTopColorVal());
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("middleColor", GetMiddleColorVal());
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("bottomColor", GetBottomColorVal());
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("exponent", GetGradientExponentVal());
 
     return m_skyboxMaterial;
   }
@@ -114,13 +111,10 @@ namespace ToolKit
     cubemap->Init();
 
     // Create material
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("topColor", ParameterVariant(GetTopColorVal()));
-
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("middleColor", ParameterVariant(GetMiddleColorVal()));
-
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("bottomColor", ParameterVariant(GetBottomColorVal()));
-
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("exponent", ParameterVariant(GetGradientExponentVal()));
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("topColor", GetTopColorVal());
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("middleColor", GetMiddleColorVal());
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("bottomColor", GetBottomColorVal());
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("exponent", GetGradientExponentVal());
 
     renderer->EnableDepthTest(false);
 

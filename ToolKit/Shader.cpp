@@ -220,7 +220,19 @@ namespace ToolKit
 
   void Shader::AddShaderUniform(const ShaderUniform& uniform) { m_shaderParams[uniform.m_name] = uniform; }
 
-  void Shader::UpdateShaderUniform(const String& name, const UniformValue& val) {}
+  void Shader::UpdateShaderUniform(const String& name, const UniformValue& val)
+  {
+    auto paramItr = m_shaderParams.find(name);
+    if (paramItr == m_shaderParams.end())
+    {
+      m_shaderParams[name] = ShaderUniform(name, val);
+    }
+    else
+    {
+      paramItr->second.m_value   = val;
+      paramItr->second.m_isDirty = true;
+    }
+  }
 
   void Shader::UpdateShaderUniform(const String& name, UniformValue&& val) {}
 

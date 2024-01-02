@@ -624,7 +624,7 @@ namespace ToolKit
 
     m_gaussianBlurMaterial->UnInit();
     m_gaussianBlurMaterial->m_diffuseTexture = source;
-    m_gaussianBlurMaterial->m_fragmentShader->SetShaderParameter("BlurScale", ParameterVariant(axis * amount));
+    m_gaussianBlurMaterial->m_fragmentShader->AddShaderUniform(ShaderUniform("BlurScale", axis * amount));
     m_gaussianBlurMaterial->Init();
 
     m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
@@ -656,7 +656,7 @@ namespace ToolKit
 
     m_averageBlurMaterial->UnInit();
     m_averageBlurMaterial->m_diffuseTexture = source;
-    m_averageBlurMaterial->m_fragmentShader->SetShaderParameter("BlurScale", ParameterVariant(axis * amount));
+    m_gaussianBlurMaterial->m_fragmentShader->AddShaderUniform(ShaderUniform("BlurScale", axis * amount));
 
     m_averageBlurMaterial->Init();
 

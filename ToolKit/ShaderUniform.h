@@ -101,6 +101,7 @@ namespace ToolKit
     ShaderUniform(const ShaderUniform& other);
     ShaderUniform(ShaderUniform&& other) noexcept;
 
+    ShaderUniform& operator=(const UniformValue& value);
     ShaderUniform& operator=(const ShaderUniform& other);
     ShaderUniform& operator=(ShaderUniform&& other) noexcept;
 

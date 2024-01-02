@@ -170,6 +170,11 @@ namespace ToolKit
     m_skyboxMaterial->m_fragmentShader           = fragPrg;
     m_skyboxMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
     m_skyboxMaterial->Init();
+
+    m_skyboxMaterial->m_fragmentShader->AddShaderUniform(ShaderUniform("topColor", ZERO));
+    m_skyboxMaterial->m_fragmentShader->AddShaderUniform(ShaderUniform("middleColor", ZERO));
+    m_skyboxMaterial->m_fragmentShader->AddShaderUniform(ShaderUniform("bottomColor", ZERO));
+    m_skyboxMaterial->m_fragmentShader->AddShaderUniform(ShaderUniform("exponent", ZERO));
   }
 
   XmlNode* SkyBase::SerializeImp(XmlDocument* doc, XmlNode* parent) const

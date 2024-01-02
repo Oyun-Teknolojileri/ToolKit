@@ -25,11 +25,11 @@ namespace ToolKit
       void UpdateShaderUniforms() override;
 
      public:
-      ParameterVariant m_sizeEachCell;
-      ParameterVariant m_maxLinePixelCount;
-      ParameterVariant m_axisColorHorizontal;
-      ParameterVariant m_axisColorVertical;
-      ParameterVariant m_is2DViewport;
+      float m_sizeEachCell;
+      float m_maxLinePixelCount;
+      Vec3 m_axisColorHorizontal;
+      Vec3 m_axisColorVertical;
+      bool m_is2DViewport;
     };
 
     typedef std::shared_ptr<GridFragmentShader> GridFragmentShaderPtr;
