@@ -822,7 +822,8 @@ namespace ToolKit
         break;
         case Uniform::EXPOSURE:
         {
-          glUniform1f(loc, shader->m_shaderParams["Exposure"].GetVar<float>());
+          float val = shader->m_shaderParams["Exposure"].GetVal<float>();
+          glUniform1f(loc, val);
         }
         break;
         case Uniform::PROJECT_VIEW_NO_TR:
@@ -950,32 +951,32 @@ namespace ToolKit
 
         switch (var.second.GetType())
         {
-        case ParameterVariant::VariantType::Bool:
-          glUniform1ui(loc, var.second.GetVar<bool>());
+        case ShaderUniform::UniformType::Bool:
+          glUniform1ui(loc, var.second.GetVal<bool>());
           break;
-        case ParameterVariant::VariantType::Float:
-          glUniform1f(loc, var.second.GetVar<float>());
+        case ShaderUniform::UniformType::Float:
+          glUniform1f(loc, var.second.GetVal<float>());
           break;
-        case ParameterVariant::VariantType::Int:
-          glUniform1i(loc, var.second.GetVar<int>());
+        case ShaderUniform::UniformType::Int:
+          glUniform1i(loc, var.second.GetVal<int>());
           break;
-        case ParameterVariant::VariantType::UInt:
-          glUniform1ui(loc, var.second.GetVar<uint>());
+        case ShaderUniform::UniformType::UInt:
+          glUniform1ui(loc, var.second.GetVal<uint>());
           break;
-        case ParameterVariant::VariantType::Vec2:
-          glUniform2fv(loc, 1, reinterpret_cast<float*>(&var.second.GetVar<Vec2>()));
+        case ShaderUniform::UniformType::Vec2:
+          glUniform2fv(loc, 1, reinterpret_cast<float*>(&var.second.GetVal<Vec2>()));
           break;
-        case ParameterVariant::VariantType::Vec3:
-          glUniform3fv(loc, 1, reinterpret_cast<float*>(&var.second.GetVar<Vec3>()));
+        case ShaderUniform::UniformType::Vec3:
+          glUniform3fv(loc, 1, reinterpret_cast<float*>(&var.second.GetVal<Vec3>()));
           break;
-        case ParameterVariant::VariantType::Vec4:
-          glUniform4fv(loc, 1, reinterpret_cast<float*>(&var.second.GetVar<Vec4>()));
+        case ShaderUniform::UniformType::Vec4:
+          glUniform4fv(loc, 1, reinterpret_cast<float*>(&var.second.GetVal<Vec4>()));
           break;
-        case ParameterVariant::VariantType::Mat3:
-          glUniformMatrix3fv(loc, 1, false, reinterpret_cast<float*>(&var.second.GetVar<Mat3>()));
+        case ShaderUniform::UniformType::Mat3:
+          glUniformMatrix3fv(loc, 1, false, reinterpret_cast<float*>(&var.second.GetVal<Mat3>()));
           break;
-        case ParameterVariant::VariantType::Mat4:
-          glUniformMatrix4fv(loc, 1, false, reinterpret_cast<float*>(&var.second.GetVar<Mat4>()));
+        case ShaderUniform::UniformType::Mat4:
+          glUniformMatrix4fv(loc, 1, false, reinterpret_cast<float*>(&var.second.GetVal<Mat4>()));
           break;
         default:
           assert(false && "Invalid type.");
@@ -1395,8 +1396,8 @@ namespace ToolKit
           AddHWRenderPass();
         }
 
-        frag->SetShaderParameter("roughness", ParameterVariant((float) mip / (float) mipMaps));
-        frag->SetShaderParameter("resPerFace", ParameterVariant((float) w));
+        frag->UpdateShaderUniform("roughness", (float) mip / (float) mipMaps);
+        frag->UpdateShaderUniform("resPerFace", (float) w);
 
         SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
         SetViewportSize(w, h);

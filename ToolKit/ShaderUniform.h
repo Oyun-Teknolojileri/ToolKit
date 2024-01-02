@@ -82,7 +82,7 @@ namespace ToolKit
   // ShaderUniform
   //////////////////////////////////////////////////////////////////////////
 
-  using UniformValue = std::variant<bool, byte, ubyte, float, int, uint, Vec2, Vec3, Vec4, Mat3, Mat4>;
+  using UniformValue = std::variant<bool, float, int, uint, Vec2, Vec3, Vec4, Mat3, Mat4>;
 
   class ShaderUniform
   {
@@ -95,11 +95,33 @@ namespace ToolKit
       WhenDirty
     };
 
+    enum class UniformType
+    {
+      Undefined,
+      Bool,
+      Float,
+      Int,
+      UInt,
+      Vec2,
+      Vec3,
+      Vec4,
+      Mat3,
+      Mat4
+    };
+
    public:
     ShaderUniform();
     ShaderUniform(const String& name, UniformValue value, UpdateFrequency frequency = UpdateFrequency::WhenDirty);
     ShaderUniform(const ShaderUniform& other);
     ShaderUniform(ShaderUniform&& other) noexcept;
+
+    template <typename T>
+    T& GetVal()
+    {
+      return std::get<T>(m_value);
+    }
+
+    UniformType GetType();
 
     ShaderUniform& operator=(const UniformValue& value);
     ShaderUniform& operator=(const ShaderUniform& other);

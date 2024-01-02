@@ -200,4 +200,6 @@ namespace ToolKit
     return *this;
   }
 
+  ShaderUniform::UniformType ShaderUniform::GetType() { return (UniformType) m_value.index(); }
+
 } // namespace ToolKit
