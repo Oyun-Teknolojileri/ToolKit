@@ -504,7 +504,7 @@
     <ClInclude Include="RHI.h">
       <Filter>Render</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderUnifrom.h">
+    <ClInclude Include="ShaderUniform.h">
       <Filter>Render</Filter>
     </ClInclude>
   </ItemGroup>

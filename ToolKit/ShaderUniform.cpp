@@ -5,7 +5,8 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#include "ShaderUnifrom.h"
+#include "ShaderUniform.h"
+
 #include "TKAssert.h"
 
 #include "DebugNew.h"

@@ -10,7 +10,7 @@
 #include "ParameterBlock.h"
 #include "Resource.h"
 #include "ResourceManager.h"
-#include "ShaderUnifrom.h"
+#include "ShaderUniform.h"
 
 namespace ToolKit
 {
