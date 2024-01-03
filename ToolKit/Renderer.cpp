@@ -730,6 +730,10 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
+    GLint prog = 0;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
+    assert(program->m_handle == prog);
+
     FeedLightUniforms(program);
 
     for (ShaderPtr shader : program->m_shaders)

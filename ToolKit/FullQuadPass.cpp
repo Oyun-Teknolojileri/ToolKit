@@ -51,8 +51,7 @@ namespace ToolKit
       renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::None);
     }
 
-    static RenderJobArray jobs;
-    jobs.clear();
+    RenderJobArray jobs;
     EntityPtrArray oneQuad = {m_quad};
     RenderJobProcessor::CreateRenderJobs(oneQuad, jobs);
     renderer->Render(jobs, m_camera, {});
