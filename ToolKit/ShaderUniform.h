@@ -97,7 +97,7 @@ namespace ToolKit
 
     enum class UniformType
     {
-      Undefined,
+      // Caveat, order must match the type declaration in IniformValue
       Bool,
       Float,
       Int,
@@ -106,7 +106,8 @@ namespace ToolKit
       Vec3,
       Vec4,
       Mat3,
-      Mat4
+      Mat4,
+      Undefined,
     };
 
    public:

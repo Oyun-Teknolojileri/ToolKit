@@ -169,7 +169,8 @@ namespace ToolKit
 
   ShaderUniform& ShaderUniform::operator=(const UniformValue& value)
   {
-    m_value = value;
+    m_value   = value;
+    m_isDirty = true;
     return *this;
   }
 
@@ -189,13 +190,10 @@ namespace ToolKit
   {
     if (this != &other)
     {
-      m_name                  = std::move(other.m_name);
-      m_updateFrequency       = other.m_updateFrequency;
-      m_value                 = std::move(other.m_value);
-      m_isDirty               = other.m_isDirty;
-
-      other.m_updateFrequency = UpdateFrequency::PerDraw;
-      other.m_isDirty         = false;
+      m_name            = std::move(other.m_name);
+      m_updateFrequency = other.m_updateFrequency;
+      m_value           = std::move(other.m_value);
+      m_isDirty         = other.m_isDirty;
     }
     return *this;
   }

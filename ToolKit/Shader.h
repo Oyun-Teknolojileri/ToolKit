@@ -70,6 +70,16 @@ namespace ToolKit
     };
 
     /**
+     * Built-in Uniform's that are required for the shader.
+     */
+    std::vector<Uniform> m_uniforms;
+
+    /**
+     * Built-in Uniform's that are arrays and required for the shader.
+     */
+    std::vector<ArrayUniform> m_arrayUniforms;
+
+    /**
      * Container that holds custom shader parameters.
      */
     std::unordered_map<String, ShaderUniform> m_shaderParams;
@@ -90,16 +100,6 @@ namespace ToolKit
      * Internal Id that is being used by graphics API.
      */
     uint m_shaderHandle     = 0;
-
-    /**
-     * Built-in Uniform's that are required for the shader.
-     */
-    std::vector<Uniform> m_uniforms;
-
-    /**
-     * Built-in Uniform's that are arrays and required for the shader.
-     */
-    std::vector<ArrayUniform> m_arrayUniforms;
 
     /**
      * Include files that this shader needs.
