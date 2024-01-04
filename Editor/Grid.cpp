@@ -49,11 +49,11 @@ namespace ToolKit
 
     void GridFragmentShader::UpdateShaderUniforms()
     {
-      UpdateShaderUniform("GridData.cellSize", m_sizeEachCell, true);
-      UpdateShaderUniform("GridData.lineMaxPixelCount", m_maxLinePixelCount, true);
-      UpdateShaderUniform("GridData.horizontalAxisColor", m_axisColorHorizontal, true);
-      UpdateShaderUniform("GridData.verticalAxisColor", m_axisColorVertical, true);
-      UpdateShaderUniform("GridData.is2DViewport", m_is2DViewport, true);
+      UpdateShaderUniform("GridData.cellSize", m_sizeEachCell);
+      UpdateShaderUniform("GridData.lineMaxPixelCount", m_maxLinePixelCount);
+      UpdateShaderUniform("GridData.horizontalAxisColor", m_axisColorHorizontal);
+      UpdateShaderUniform("GridData.verticalAxisColor", m_axisColorVertical);
+      UpdateShaderUniform("GridData.is2DViewport", m_is2DViewport);
     }
 
     // Grid

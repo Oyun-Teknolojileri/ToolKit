@@ -135,7 +135,6 @@ namespace ToolKit
     String m_name;
     UpdateFrequency m_updateFrequency;
     UniformValue m_value;
-    bool m_isDirty;
   };
 
 } // namespace ToolKit

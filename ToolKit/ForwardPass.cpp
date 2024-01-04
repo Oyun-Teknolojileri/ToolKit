@@ -93,7 +93,7 @@ namespace ToolKit
     for (const RenderJob& job : jobs)
     {
       int effectiveLights = RenderJobProcessor::SortLights(job, lights, dirLightEnd);
-      job.Material->m_fragmentShader->UpdateShaderUniform("aoEnabled", m_params.SSAOEnabled, true);
+      job.Material->m_fragmentShader->UpdateShaderUniform("aoEnabled", m_params.SSAOEnabled);
 
       activeLights.insert(activeLights.begin(), lights.begin(), lights.begin() + effectiveLights);
       renderer->Render(job, m_params.Cam, activeLights);

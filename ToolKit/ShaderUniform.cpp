@@ -145,10 +145,10 @@ namespace ToolKit
   // ShaderUniform
   //////////////////////////////////////////////////////////////////////////
 
-  ShaderUniform::ShaderUniform() : m_isDirty(true), m_updateFrequency(UpdateFrequency::WhenDirty) {}
+  ShaderUniform::ShaderUniform() : m_updateFrequency(UpdateFrequency::WhenDirty) {}
 
   ShaderUniform::ShaderUniform(const String& name, UniformValue value, UpdateFrequency frequency)
-      : m_isDirty(true), m_updateFrequency(UpdateFrequency::WhenDirty)
+      : m_updateFrequency(UpdateFrequency::WhenDirty)
   {
     m_name            = name;
     m_value           = std::move(value);
@@ -156,21 +156,18 @@ namespace ToolKit
   }
 
   ShaderUniform::ShaderUniform(const ShaderUniform& other)
-      : m_name(other.m_name), m_updateFrequency(other.m_updateFrequency), m_value(other.m_value),
-        m_isDirty(other.m_isDirty)
+      : m_name(other.m_name), m_updateFrequency(other.m_updateFrequency), m_value(other.m_value)
   {
   }
 
   ShaderUniform::ShaderUniform(ShaderUniform&& other) noexcept
-      : m_name(std::move(other.m_name)), m_updateFrequency(other.m_updateFrequency), m_value(std::move(other.m_value)),
-        m_isDirty(other.m_isDirty)
+      : m_name(std::move(other.m_name)), m_updateFrequency(other.m_updateFrequency), m_value(std::move(other.m_value))
   {
   }
 
   ShaderUniform& ShaderUniform::operator=(const UniformValue& other)
   {
-    m_value   = other;
-    m_isDirty = true;
+    m_value = other;
     return *this;
   }
 
@@ -181,7 +178,6 @@ namespace ToolKit
       m_name            = other.m_name;
       m_updateFrequency = other.m_updateFrequency;
       m_value           = other.m_value;
-      m_isDirty         = true;
     }
     return *this;
   }
@@ -193,7 +189,6 @@ namespace ToolKit
       m_name            = std::move(other.m_name);
       m_updateFrequency = other.m_updateFrequency;
       m_value           = std::move(other.m_value);
-      m_isDirty         = true;
     }
     return *this;
   }

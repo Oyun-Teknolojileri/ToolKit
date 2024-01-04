@@ -80,6 +80,21 @@ namespace ToolKit
     return -1;
   }
 
+  bool GpuProgram::UpdateUniform(const ShaderUniform& uniform)
+  {
+    const auto& itr = m_customUniforms.find(uniform.m_name);
+    if (itr != m_customUniforms.end())
+    {
+      if (itr->second.m_value == uniform.m_value)
+      {
+        return false;
+      }
+    }
+
+    m_customUniforms[uniform.m_name] = uniform;
+    return true;
+  }
+
   // GpuProgramManager
   //////////////////////////////////////////////////////////////////////////
 

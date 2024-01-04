@@ -1,5 +1,4 @@
 /*
-/*
  * Copyright (c) 2019-2024 OtSofware
  * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
  * For more information, including options for a more permissive commercial license,
@@ -17,7 +16,7 @@ namespace ToolKit
 
   /**
    * Class that holds programs for the gpu's programmable pipeline stages. A program consists of
-   * shaders for stages. Vertex and Fragmant stages are supported.
+   * shaders for stages. Vertex and Fragment stages are supported.
    */
   class TK_API GpuProgram
   {
@@ -42,6 +41,14 @@ namespace ToolKit
      */
     int GetShaderParamUniformLoc(const String& uniformName);
 
+    /**
+     * Compares the given uniform with the cached uniforms for this program. If the value needs update, function return
+     * true to indicate that value needs to be updated.
+     * @param uniform that needs to be checked for update.
+     * @return true if an update is needed.
+     */
+    bool UpdateUniform(const ShaderUniform& uniform);
+
    public:
     uint m_handle = 0;
     ShaderPtrArray m_shaders;
@@ -50,6 +57,7 @@ namespace ToolKit
     std::unordered_map<Uniform, int> m_uniformLocations;
     std::unordered_map<Uniform, IntArray> m_arrayUniformLocations;
     std::unordered_map<String, int> m_shaderParamsUniformLocations;
+    std::unordered_map<String, ShaderUniform> m_customUniforms;
   };
 
   constexpr int TKGpuPipelineStages = 2; //!< Number of programmable pipeline stages.
@@ -90,7 +98,7 @@ namespace ToolKit
 
     /**
      * Clears all the created programs, effectively forcing renderer to recreate the programs at next run.
-     * Intendent usage is to clear all the programs develop by additional modules to prevent memory issues
+     * Intended usage is to clear all the programs develop by additional modules to prevent memory issues
      * when the modules are destroyed but the editor still running.
      */
     void FlushPrograms();

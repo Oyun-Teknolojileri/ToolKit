@@ -220,7 +220,7 @@ namespace ToolKit
 
   void Shader::AddShaderUniform(const ShaderUniform& uniform) { m_shaderParams[uniform.m_name] = uniform; }
 
-  void Shader::UpdateShaderUniform(const String& name, const UniformValue& val, bool diffCheck)
+  void Shader::UpdateShaderUniform(const String& name, const UniformValue& val)
   {
     auto paramItr = m_shaderParams.find(name);
     if (paramItr == m_shaderParams.end())
@@ -229,16 +229,7 @@ namespace ToolKit
     }
     else
     {
-      if (diffCheck)
-      {
-        if (paramItr->second == val)
-        {
-          return;
-        }
-      }
-
-      paramItr->second           = val;
-      paramItr->second.m_isDirty = true;
+      paramItr->second = val;
     }
   }
 

@@ -61,8 +61,8 @@ namespace ToolKit
       int passIndx                    = 0;
 
       m_downsampleShader->UpdateShaderUniform("passIndx", passIndx);
-      m_downsampleShader->UpdateShaderUniform("srcResolution", mainRes, true);
-      m_downsampleShader->UpdateShaderUniform("threshold", m_params.minThreshold, true);
+      m_downsampleShader->UpdateShaderUniform("srcResolution", mainRes);
+      m_downsampleShader->UpdateShaderUniform("threshold", m_params.minThreshold);
 
       TexturePtr prevRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
 
@@ -112,8 +112,8 @@ namespace ToolKit
     // Upsample Pass
     {
       const float filterRadius = 0.002f;
-      m_upsampleShader->UpdateShaderUniform("filterRadius", filterRadius, true);
-      m_upsampleShader->UpdateShaderUniform("intensity", 1.0f, true);
+      m_upsampleShader->UpdateShaderUniform("filterRadius", filterRadius);
+      m_upsampleShader->UpdateShaderUniform("intensity", 1.0f);
 
       for (int i = m_currentIterationCount; i > 0; i--)
       {
@@ -143,7 +143,7 @@ namespace ToolKit
       m_pass->m_params.ClearFrameBuffer = false;
       m_pass->m_params.FrameBuffer      = m_params.FrameBuffer;
 
-      m_upsampleShader->UpdateShaderUniform("intensity", m_params.intensity, true);
+      m_upsampleShader->UpdateShaderUniform("intensity", m_params.intensity);
 
       RenderSubPass(m_pass);
     }

@@ -955,7 +955,8 @@ namespace ToolKit
           continue;
         }
 
-        if (!var.second.m_isDirty)
+        // check if an update required.
+        if (!program->UpdateUniform(var.second))
         {
           continue;
         }
@@ -993,8 +994,6 @@ namespace ToolKit
           assert(false && "Invalid type.");
           break;
         }
-
-        var.second.m_isDirty = false;
       }
 
       POP_CPU_MARKER();
