@@ -82,6 +82,9 @@ namespace ToolKit
 
   bool GpuProgram::UpdateUniform(const ShaderUniform& uniform)
   {
+    // TODO: Cihan - cost is high, only update if dirty don't check equality
+    return true;
+
     const auto& itr = m_customUniforms.find(uniform.m_name);
     if (itr != m_customUniforms.end())
     {

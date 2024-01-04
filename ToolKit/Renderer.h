@@ -91,8 +91,15 @@ namespace ToolKit
      * Sets the camera to be used for rendering. Also calculates camera related parameters, such as view, transform,
      * viewTransform etc...
      * if setLense is true sets the lens to fit aspect ratio to frame buffer.
+     * Invalidates gpu program's related caches.
      */
     void SetCamera(CameraPtr camera, bool setLens);
+
+    /**
+     * Sets the lights that will be used during rendering.
+     * Invalidates gpu program's related caches.
+     */
+    void SetLights(const LightPtrArray& lights);
 
     int GetMaxArrayTextureLayers();
 
@@ -145,7 +152,7 @@ namespace ToolKit
     FramebufferPtr m_framebuffer = nullptr;
     TexturePtr m_shadowAtlas     = nullptr;
 
-    uint m_textureSlots[RHIConstants::TextureSlotCount];
+    int m_textureSlots[RHIConstants::TextureSlotCount];
 
     RenderState m_renderState;
 

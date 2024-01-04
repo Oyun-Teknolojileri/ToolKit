@@ -45,6 +45,7 @@ namespace ToolKit
     m_uiCamera                      = MakeNewPtr<Camera>();
     m_oneColorAttachmentFramebuffer = MakeNewPtr<Framebuffer>();
     m_dummyDrawCube                 = MakeNewPtr<Cube>();
+    memset(m_textureSlots, -1, RHIConstants::TextureSlotCount * sizeof(int));
   }
 
   Renderer::~Renderer()
@@ -62,6 +63,8 @@ namespace ToolKit
 
     m_gpuProgramManager.FlushPrograms();
   }
+
+  void Renderer::SetLights(const LightPtrArray& lights) {}
 
   int Renderer::GetMaxArrayTextureLayers()
   {
@@ -1125,6 +1128,12 @@ namespace ToolKit
   void Renderer::SetTexture(ubyte slotIndx, uint textureId)
   {
     assert(slotIndx < 17 && "You exceed texture slot count");
+
+    if (m_textureSlots[slotIndx] == textureId)
+    {
+      return;
+    }
+
     m_textureSlots[slotIndx] = textureId;
     glActiveTexture(GL_TEXTURE0 + slotIndx);
 
@@ -1147,6 +1156,7 @@ namespace ToolKit
         GL_TEXTURE_CUBE_MAP, // 15 -> IBL Specular Pre-Filtered Map
         GL_TEXTURE_2D        // 16 -> IBL BRDF Lut
     };
+
     glBindTexture(textureTypeLut[slotIndx], m_textureSlots[slotIndx]);
   }
 
