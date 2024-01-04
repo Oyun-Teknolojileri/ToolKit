@@ -42,7 +42,7 @@ namespace ToolKit
     ~DynamicBoneMap();
     std::unordered_map<String, DynamicBone> boneList;
     TexturePtr boneTransformNodeTexture;
-    void UpdateGPUTexture();
+    void UpdateGPUTexture(std::vector<StaticBone*>& staticBones);
     // Find all child bones by recursively searching child bones
     // Then call childProcessFunc (should be recursive to traverse all childs)
     void ForEachRootBone(std::function<void(const DynamicBone*)> childProcessFunc) const;

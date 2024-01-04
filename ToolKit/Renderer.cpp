@@ -166,7 +166,7 @@ namespace ToolKit
       SetTexture(2, skel->m_bindPoseTexture->m_textureId);
       SetTexture(3, skCom->m_map->boneTransformNodeTexture->m_textureId);
 
-      skCom->m_map->UpdateGPUTexture();
+      skCom->m_map->UpdateGPUTexture(skel->m_bones);
     };
 
     updateAndBindSkinningTextures();
