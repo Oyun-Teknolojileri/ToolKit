@@ -237,7 +237,8 @@ namespace ToolKit
         }
       }
 
-      paramItr->second = val;
+      paramItr->second           = val;
+      paramItr->second.m_isDirty = true;
     }
   }
 

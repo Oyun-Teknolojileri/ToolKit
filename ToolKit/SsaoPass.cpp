@@ -117,8 +117,8 @@ namespace ToolKit
     renderer->SetTexture(2, m_noiseTexture->m_textureId);
     renderer->SetTexture(3, m_params.GLinearDepthBuffer->m_textureId);
 
-    m_ssaoShader->UpdateShaderUniform("radius", m_params.Radius);
-    m_ssaoShader->UpdateShaderUniform("bias", m_params.Bias);
+    m_ssaoShader->UpdateShaderUniform("radius", m_params.Radius, true);
+    m_ssaoShader->UpdateShaderUniform("bias", m_params.Bias, true);
 
     RenderSubPass(m_quadPass);
 
@@ -179,17 +179,17 @@ namespace ToolKit
       // Update kernel
       for (int i = 0; i < m_params.KernelSize; ++i)
       {
-        m_ssaoShader->UpdateShaderUniform(m_ssaoSamplesStrCache[i], m_ssaoKernel[i]);
+        m_ssaoShader->UpdateShaderUniform(m_ssaoSamplesStrCache[i], m_ssaoKernel[i], true);
       }
 
       m_prevSpread = m_params.spread;
     }
 
-    m_ssaoShader->UpdateShaderUniform("screenSize", Vec2(width, height));
-    m_ssaoShader->UpdateShaderUniform("bias", m_params.Bias);
-    m_ssaoShader->UpdateShaderUniform("kernelSize", m_params.KernelSize);
-    m_ssaoShader->UpdateShaderUniform("projection", m_params.Cam->GetProjectionMatrix());
-    m_ssaoShader->UpdateShaderUniform("viewMatrix", m_params.Cam->GetViewMatrix());
+    m_ssaoShader->UpdateShaderUniform("screenSize", Vec2(width, height), true);
+    m_ssaoShader->UpdateShaderUniform("bias", m_params.Bias, true);
+    m_ssaoShader->UpdateShaderUniform("kernelSize", m_params.KernelSize, true);
+    m_ssaoShader->UpdateShaderUniform("projection", m_params.Cam->GetProjectionMatrix(), true);
+    m_ssaoShader->UpdateShaderUniform("viewMatrix", m_params.Cam->GetViewMatrix(), true);
 
     m_quadPass->m_params.FragmentShader = m_ssaoShader;
 

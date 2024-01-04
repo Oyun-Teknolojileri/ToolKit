@@ -957,7 +957,7 @@ namespace ToolKit
 
         if (!var.second.m_isDirty)
         {
-          return;
+          continue;
         }
 
         switch (var.second.GetType())
