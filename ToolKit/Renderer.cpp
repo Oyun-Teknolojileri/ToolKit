@@ -203,9 +203,9 @@ namespace ToolKit
       if (isSkinned)
       {
         GLint numBonesLoc = prg->GetUniformLocation(Uniform::NUM_BONES);
-        float boneCount   = (float) job.SkeletonCmp->GetSkeletonResourceVal()->m_bones.size();
+        GLuint boneCount  = (GLuint) job.SkeletonCmp->GetSkeletonResourceVal()->m_bones.size();
 
-        glUniform1fv(numBonesLoc, 1, &boneCount);
+        glUniform1ui(numBonesLoc, boneCount);
       }
     };
 

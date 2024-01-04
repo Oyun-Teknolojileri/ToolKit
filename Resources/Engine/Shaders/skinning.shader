@@ -1,20 +1,21 @@
 <shader>
-	<type name = "includeShader" />
-   <uniform name = "isSkinned" />
-   <uniform name = "numBones" />
+    <type name = "includeShader" />
+    <uniform name = "isSkinned" />
+    <uniform name = "numBones" />
 	<source>
 	<!--
       layout(location = 4) in vec4 vBones;
       layout(location = 5) in vec4 vWeights;
 
-      uniform float numBones;
+      uniform uint numBones;
       uniform uint isSkinned;
       uniform sampler2D s_texture2;  // This is static data, bindPose texture
       uniform sampler2D s_texture3; // This is dynamic data, boneTransform texture
 
       mat4 getMatrixFromTexture(sampler2D boneText, float boneIndx) {
-         float v = boneIndx / numBones;
-         float step = 1.0f / (numBones * 4.0f);
+	     float numBonF = float(numBones);
+         float v = boneIndx / numBonF;
+         float step = 1.0f / (numBonF * 4.0f);
          return mat4
          (
             texture(boneText, vec2(v + (step / 2.0f), 0.0f)),

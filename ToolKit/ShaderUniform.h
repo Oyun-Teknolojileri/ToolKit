@@ -14,10 +14,13 @@ namespace ToolKit
 
   /**
    * Predefined uniforms. When used in shaders, engine feeds the values with the right frequency.
+   *
+   * DO NOT ADD HERE UNIFORMS UNLESS ONLY ENGINE CAN PROVIDE IT. SUCH AS FRAME COUNT.
+   * ANYTHING ELSE GOES TO CUSTOM UNIFORMS IN YOUR SHADER CLASS.
    */
   enum class Uniform
   {
-    // Order is important. Don't change for backward comparable resource files.
+    // Order is important. Don't change for backward compatible resource files.
     PROJECT_VIEW_MODEL,
     VIEW,
     MODEL,
