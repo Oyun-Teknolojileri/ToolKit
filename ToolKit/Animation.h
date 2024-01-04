@@ -15,6 +15,7 @@
 #include "Resource.h"
 #include "SkeletonComponent.h"
 #include "Types.h"
+#include "DataTexture.h"
 
 namespace ToolKit
 {
@@ -235,5 +236,9 @@ namespace ToolKit
    public:
     // Storage for the AnimRecord objects.
     AnimRecordRawPtrArray m_records;
+
+   private:
+    // Storage for animation data
+    std::unordered_map<std::pair<SkeletonPtr, AnimationPtr>, AnimationTexturePtr> m_bakedAnimations;
   };
 } // namespace ToolKit

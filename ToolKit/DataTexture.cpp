@@ -520,4 +520,38 @@ namespace ToolKit
     sizeNS                             = spotNonShadowSize;
   }
 
+  void AnimationDataTexture::Init(bool flushClientSideArray) { assert(false); }
+
+  void AnimationDataTexture::Init(void* data)
+  {
+    if (m_initiated)
+    {
+      return;
+    }
+
+    GLint currId;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
+
+    glGenTextures(1, &m_textureId);
+    glBindTexture(GL_TEXTURE_2D, m_textureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glBindTexture(GL_TEXTURE_2D, currId);
+
+    AddVRAMUsageInBytes(m_width * m_height * m_textureInternalFormatSize);
+
+    m_initiated = true;
+  }
+
+  void AnimationDataTexture::UnInit()
+  {
+    if (m_initiated)
+    {
+      glDeleteTextures(1, &m_textureId);
+      m_initiated = false;
+    }
+  }
+
 } // namespace ToolKit

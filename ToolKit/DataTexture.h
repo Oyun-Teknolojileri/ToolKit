@@ -64,4 +64,28 @@ namespace ToolKit
 
   typedef std::shared_ptr<LightDataTexture> LightDataTexturePtr;
 
+  /**
+   * The class responsible for holding baked animation data (on GPU memory) for a skeleton
+   */
+  class TK_API AnimationDataTexture : public DataTexture
+  {
+   public:
+    TKDeclareClass(AnimationDataTexture, DataTexture);
+
+    AnimationDataTexture() {}
+
+    virtual ~AnimationDataTexture() {}
+
+    using DataTexture::NativeConstruct;
+
+    void Init(void* data);
+    void UnInit() override;
+
+   private:
+    void Init(bool flushClientSideArray = false) override;
+
+   protected:
+    int m_textureInternalFormatSize = 16; // RGBA 32 bit floating point
+  };
+
 } // namespace ToolKit
