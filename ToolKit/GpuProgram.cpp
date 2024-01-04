@@ -31,13 +31,14 @@ namespace ToolKit
     m_handle = 0;
   }
 
-  int GpuProgram::GetUniformLocation(Uniform uniform, int index)
+  int GpuProgram::GetUniformLocation(Uniform uniform, int index) const
   {
     if (index == -1)
     {
-      if (m_uniformLocations.find(uniform) != m_uniformLocations.end())
+      const auto& itr = m_uniformLocations.find(uniform);
+      if (itr != m_uniformLocations.end())
       {
-        return m_uniformLocations[uniform];
+        return itr->second;
       }
       else
       {
@@ -47,9 +48,10 @@ namespace ToolKit
     else
     {
       // Uniform is an array
-      if (m_arrayUniformLocations.find(uniform) != m_arrayUniformLocations.end())
+      const auto& itr = m_arrayUniformLocations.find(uniform);
+      if (itr != m_arrayUniformLocations.end())
       {
-        IntArray& locs = m_arrayUniformLocations[uniform];
+        const IntArray& locs = itr->second;
         if (locs.size() > index)
         {
           return locs[index];
@@ -62,9 +64,10 @@ namespace ToolKit
 
   int GpuProgram::GetShaderParamUniformLoc(const String& uniformName)
   {
-    if (m_shaderParamsUniformLocations.find(uniformName) != m_shaderParamsUniformLocations.end())
+    const auto& itr = m_shaderParamsUniformLocations.find(uniformName);
+    if (itr != m_shaderParamsUniformLocations.end())
     {
-      return m_shaderParamsUniformLocations[uniformName];
+      return itr->second;
     }
     else
     {

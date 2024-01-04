@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Shader.h"
+#include "ShaderUniform.h"
 #include "Types.h"
 
 namespace ToolKit
@@ -31,8 +32,14 @@ namespace ToolKit
      * If caller gives index (different than -1), this function tries to get uniform location as array.
      * Returns -1 if the uniform location is not registered.
      */
-    int GetUniformLocation(Uniform uniform, int index = -1);
+    int GetUniformLocation(Uniform uniform, int index = -1) const;
 
+    /**
+     * Try to retrieve uniform location in the program. If its not in the cache, gets it via graphic api and cache its
+     * location.
+     * @param uniformName is the name that can be found in the shader.
+     * @return location of the uniform in the program.
+     */
     int GetShaderParamUniformLoc(const String& uniformName);
 
    public:
