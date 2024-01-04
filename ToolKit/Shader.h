@@ -47,8 +47,7 @@ namespace ToolKit
      */
     void AddShaderUniform(const ShaderUniform& uniform);
 
-    void UpdateShaderUniform(const String& name, const UniformValue& val);
-    void UpdateShaderUniform(const String& name, UniformValue&& val);
+    void UpdateShaderUniform(const String& name, const UniformValue& val, bool diffCheck = false);
 
     /**
      * Renderer calls this function before feeding shader parameters to give

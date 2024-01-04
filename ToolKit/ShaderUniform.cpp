@@ -167,9 +167,9 @@ namespace ToolKit
   {
   }
 
-  ShaderUniform& ShaderUniform::operator=(const UniformValue& value)
+  ShaderUniform& ShaderUniform::operator=(const UniformValue& other)
   {
-    m_value   = value;
+    m_value   = other;
     m_isDirty = true;
     return *this;
   }
@@ -181,7 +181,7 @@ namespace ToolKit
       m_name            = other.m_name;
       m_updateFrequency = other.m_updateFrequency;
       m_value           = other.m_value;
-      m_isDirty         = other.m_isDirty;
+      m_isDirty         = true;
     }
     return *this;
   }
@@ -193,11 +193,47 @@ namespace ToolKit
       m_name            = std::move(other.m_name);
       m_updateFrequency = other.m_updateFrequency;
       m_value           = std::move(other.m_value);
-      m_isDirty         = other.m_isDirty;
+      m_isDirty         = true;
     }
     return *this;
   }
 
   ShaderUniform::UniformType ShaderUniform::GetType() { return (UniformType) m_value.index(); }
+
+  bool ShaderUniform::operator==(const UniformValue& other) const
+  {
+    if (m_value.index() != other.index())
+    {
+      // Different variant types, not equal
+      return false;
+    }
+
+    switch (m_value.index())
+    {
+    case 0: // bool
+      return std::get<bool>(m_value) == std::get<bool>(other);
+    case 1: // float
+      return std::get<float>(m_value) == std::get<float>(other);
+    case 2: // int
+      return std::get<int>(m_value) == std::get<int>(other);
+    case 3: // uint
+      return std::get<uint>(m_value) == std::get<uint>(other);
+    case 4: // glm::vec2
+      return glm::all(glm::equal(std::get<glm::vec2>(m_value), std::get<glm::vec2>(other)));
+    case 5: // glm::vec3
+      return glm::all(glm::equal(std::get<glm::vec3>(m_value), std::get<glm::vec3>(other)));
+    case 6: // glm::vec4
+      return glm::all(glm::equal(std::get<glm::vec4>(m_value), std::get<glm::vec4>(other)));
+    case 7: // glm::mat3
+      return glm::all(glm::equal(std::get<glm::mat3>(m_value), std::get<glm::mat3>(other)));
+    case 8: // glm::mat4
+      return glm::all(glm::equal(std::get<glm::mat4>(m_value), std::get<glm::mat4>(other)));
+    default:
+      // Unsupported type, not equal
+      return false;
+    }
+  }
+
+  bool ShaderUniform::operator!=(const UniformValue& other) const { return !(*this == other); }
 
 } // namespace ToolKit

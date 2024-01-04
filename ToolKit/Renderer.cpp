@@ -804,7 +804,9 @@ namespace ToolKit
         case Uniform::COLOR:
         {
           if (m_mat == nullptr)
+          {
             break;
+          }
 
           Vec4 color = Vec4(m_mat->m_color, m_mat->GetAlpha());
           if (m_mat->GetRenderState()->blendFunction == BlendFunction::NONE)
@@ -953,6 +955,11 @@ namespace ToolKit
           continue;
         }
 
+        if (!var.second.m_isDirty)
+        {
+          return;
+        }
+
         switch (var.second.GetType())
         {
         case ShaderUniform::UniformType::Bool:
@@ -986,6 +993,8 @@ namespace ToolKit
           assert(false && "Invalid type.");
           break;
         }
+
+        var.second.m_isDirty = false;
       }
 
       POP_CPU_MARKER();

@@ -124,7 +124,10 @@ namespace ToolKit
 
     UniformType GetType();
 
-    ShaderUniform& operator=(const UniformValue& value);
+    bool operator==(const UniformValue& other) const;
+    bool operator!=(const UniformValue& other) const;
+
+    ShaderUniform& operator=(const UniformValue& other);
     ShaderUniform& operator=(const ShaderUniform& other);
     ShaderUniform& operator=(ShaderUniform&& other) noexcept;
 

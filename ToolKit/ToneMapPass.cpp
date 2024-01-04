@@ -19,7 +19,7 @@ namespace ToolKit
   TonemapPass::TonemapPass() : PostProcessPass()
   {
     m_postProcessShader = GetShaderManager()->Create<Shader>(ShaderPath("tonemapFrag.shader", true));
-    m_postProcessShader->AddShaderUniform(ShaderUniform("UseAcesTonemapper", 0));
+    m_postProcessShader->AddShaderUniform(ShaderUniform("UseAcesTonemapper", (uint) TonemapMethod::Aces));
   }
 
   TonemapPass::TonemapPass(const TonemapPassParams& params) : TonemapPass() { m_params = params; }
@@ -33,7 +33,8 @@ namespace ToolKit
 
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
-    m_postProcessShader->UpdateShaderUniform("UseAcesTonemapper", (uint) m_params.Method);
+
+    m_postProcessShader->UpdateShaderUniform("UseAcesTonemapper", (uint) m_params.Method, true);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
