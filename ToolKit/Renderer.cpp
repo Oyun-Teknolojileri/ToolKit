@@ -1299,7 +1299,8 @@ namespace ToolKit
       SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
       DrawCube(cam, mat);
     }
-    SetFramebuffer(nullptr, GraphicBitFields::AllBits);
+
+    SetFramebuffer(nullptr, GraphicBitFields::None);
 
     CubeMapPtr newCubeMap = MakeNewPtr<CubeMap>();
     newCubeMap->Consume(cubeMapRt);
@@ -1392,6 +1393,8 @@ namespace ToolKit
         SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
         SetViewportSize(mipSize, mipSize);
 
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId);
+
         DrawCube(cam, mat);
 
         // Copy color attachment to cubemap's correct mip level and face.
@@ -1403,8 +1406,7 @@ namespace ToolKit
       }
     }
 
-    SetFramebuffer(nullptr, GraphicBitFields::AllBits);
-    SetViewportSize(lastViewportSize.x, lastViewportSize.y);
+    SetFramebuffer(nullptr, GraphicBitFields::None);
 
     CubeMapPtr newCubeMap = MakeNewPtr<CubeMap>();
     newCubeMap->Consume(cubemapRt);
