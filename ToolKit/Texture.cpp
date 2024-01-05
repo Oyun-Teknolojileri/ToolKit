@@ -467,9 +467,14 @@ namespace ToolKit
                          }
 
                          // Convert hdri image to cubemap images.
-                         TexturePtr self  = GetTextureManager()->Create<Texture>(GetFile());
-                         uint size        = m_width / 4;
-                         m_cubemap        = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f);
+                         TexturePtr self = GetTextureManager()->Create<Texture>(GetFile());
+                         uint size       = m_width / 4;
+                         m_cubemap       = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f);
+
+                         if (m_specularIBLTextureSize < 128)
+                         {
+                           m_specularIBLTextureSize = 128;
+                         }
 
                          // Pre-filtered and mip mapped environment map
                          m_specularEnvMap = renderer->GenerateSpecularEnvMap(m_cubemap,
