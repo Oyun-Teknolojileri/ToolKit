@@ -147,39 +147,21 @@ namespace ToolKit
       renderer->DrawCube(cam, m_skyboxMaterial);
     }
 
-    // Take the ownership of render target.
-    CubeMapPtr hdriCubeMap = MakeNewPtr<CubeMap>();
-    GetHdri()->m_cubemap   = hdriCubeMap;
-
-    TextureSettings textureSettings;
-    textureSettings.GenerateMipMap  = false;
-    textureSettings.InternalFormat  = cubemap->m_settings.InternalFormat;
-    textureSettings.MinFilter       = cubemap->m_settings.MinFilter;
-    textureSettings.MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
-    textureSettings.Target          = GraphicTypes::TargetCubeMap;
-    textureSettings.Type            = GraphicTypes::TypeFloat;
-
-    hdriCubeMap->m_textureId        = cubemap->m_textureId;
-    hdriCubeMap->m_width            = cubemap->m_width;
-    hdriCubeMap->m_height           = cubemap->m_height;
-    hdriCubeMap->m_initiated        = true;
-    hdriCubeMap->SetTextureSettings(textureSettings);
-
-    cubemap->m_initiated = false;
-    cubemap->m_textureId = 0;
-    cubemap              = nullptr;
+    CubeMapPtr newCubemap = MakeNewPtr<CubeMap>();
+    newCubemap->Consume(cubemap);
+    GetHdri()->m_cubemap = newCubemap;
   }
 
   void GradientSky::GenerateIrradianceCubemap(Renderer* renderer)
   {
-
     HdriPtr hdr          = GetHdri();
-    uint irRes           = (uint) GetIBLTextureSizeVal().GetValue<int>();
+    uint size            = (uint) GetIBLTextureSizeVal().GetValue<int>();
 
-    hdr->m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(hdr->m_cubemap, irRes, irRes);
+    // hdr->m_diffuseEnvMap = hdr->m_cubemap;
+    hdr->m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(hdr->m_cubemap, size);
 
     hdr->m_specularEnvMap =
-        renderer->GenerateSpecularEnvMap(hdr->m_cubemap, irRes, irRes, Renderer::RHIConstants::SpecularIBLLods);
+        renderer->GenerateSpecularEnvMap(hdr->m_cubemap, size, Renderer::RHIConstants::SpecularIBLLods);
   }
 
   XmlNode* GradientSky::SerializeImp(XmlDocument* doc, XmlNode* parent) const

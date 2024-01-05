@@ -1162,7 +1162,7 @@ namespace ToolKit
 
   void Renderer::SetShadowAtlas(TexturePtr shadowAtlas) { m_shadowAtlas = shadowAtlas; }
 
-  CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture, uint width, uint height, float exposure)
+  CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture, uint size, float exposure)
   {
     CPU_FUNC_RANGE();
 
@@ -1177,7 +1177,7 @@ namespace ToolKit
                                      GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
 
-    RenderTargetPtr cubeMapRt     = MakeNewPtr<RenderTarget>(width, height, set);
+    RenderTargetPtr cubeMapRt     = MakeNewPtr<RenderTarget>(size, size, set);
     cubeMapRt->Init();
 
     // Create material
@@ -1228,32 +1228,14 @@ namespace ToolKit
       SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
       DrawCube(cam, mat);
     }
-    SetFramebuffer(nullptr, GraphicBitFields::AllBits);
 
-    // Take the ownership of render target.
-    TextureSettings textureSettings;
-    textureSettings.GenerateMipMap  = false;
-    textureSettings.InternalFormat  = cubeMapRt->m_settings.InternalFormat;
-    textureSettings.MinFilter       = cubeMapRt->m_settings.MinFilter;
-    textureSettings.MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
-    textureSettings.Target          = GraphicTypes::TargetCubeMap;
-    textureSettings.Type            = GraphicTypes::TypeFloat;
-
-    CubeMapPtr cubeMap              = MakeNewPtr<CubeMap>();
-    cubeMap->m_textureId            = cubeMapRt->m_textureId;
-    cubeMap->m_width                = cubeMapRt->m_width;
-    cubeMap->m_height               = cubeMapRt->m_height;
-    cubeMap->SetTextureSettings(textureSettings);
-    cubeMap->m_initiated   = true;
-
-    cubeMapRt->m_initiated = false;
-    cubeMapRt->m_textureId = 0;
-    cubeMapRt              = nullptr;
+    CubeMapPtr cubeMap = MakeNewPtr<CubeMap>();
+    cubeMap->Consume(cubeMapRt);
 
     return cubeMap;
   }
 
-  CubeMapPtr Renderer::GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint width, uint height)
+  CubeMapPtr Renderer::GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint size)
   {
     CPU_FUNC_RANGE();
 
@@ -1267,7 +1249,7 @@ namespace ToolKit
                                      GraphicTypes::FormatRGBA16F,
                                      GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
-    RenderTargetPtr cubeMapRt     = MakeNewPtr<RenderTarget>(width, height, set);
+    RenderTargetPtr cubeMapRt     = MakeNewPtr<RenderTarget>(size, size, set);
     cubeMapRt->Init();
 
     // Views for 6 different angles
@@ -1319,30 +1301,13 @@ namespace ToolKit
     }
     SetFramebuffer(nullptr, GraphicBitFields::AllBits);
 
-    // Take the ownership of render target.
-    TextureSettings textureSettings;
-    textureSettings.GenerateMipMap  = false;
-    textureSettings.InternalFormat  = cubeMapRt->m_settings.InternalFormat;
-    textureSettings.MinFilter       = cubeMapRt->m_settings.MinFilter;
-    textureSettings.MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
-    textureSettings.Target          = GraphicTypes::TargetCubeMap;
-    textureSettings.Type            = GraphicTypes::TypeFloat;
-
-    CubeMapPtr newCubeMap           = MakeNewPtr<CubeMap>();
-    newCubeMap->m_textureId         = cubeMapRt->m_textureId;
-    newCubeMap->m_width             = cubeMapRt->m_width;
-    newCubeMap->m_height            = cubeMapRt->m_height;
-    newCubeMap->SetTextureSettings(textureSettings);
-    newCubeMap->m_initiated = true;
-
-    cubeMapRt->m_initiated  = false;
-    cubeMapRt->m_textureId  = 0;
-    cubeMapRt               = nullptr;
+    CubeMapPtr newCubeMap = MakeNewPtr<CubeMap>();
+    newCubeMap->Consume(cubeMapRt);
 
     return newCubeMap;
   }
 
-  CubeMapPtr Renderer::GenerateSpecularEnvMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps)
+  CubeMapPtr Renderer::GenerateSpecularEnvMap(CubeMapPtr cubemap, uint size, int mipMaps)
   {
     CPU_FUNC_RANGE();
 
@@ -1356,7 +1321,8 @@ namespace ToolKit
                                      GraphicTypes::FormatRGBA16F,
                                      GraphicTypes::FormatRGBA,
                                      GraphicTypes::TypeFloat};
-    RenderTargetPtr cubemapRt     = MakeNewPtr<RenderTarget>(width, height, set);
+
+    RenderTargetPtr cubemapRt     = MakeNewPtr<RenderTarget>(size, size, set);
     cubemapRt->Init();
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
@@ -1388,13 +1354,13 @@ namespace ToolKit
 
     UVec2 lastViewportSize = m_viewportSize;
 
+    assert(size >= 128 && "Due to RHIConstants::SpecularIBLLods, it can't be lower than this resolution.");
     for (int mip = 0; mip < mipMaps; ++mip)
     {
-      uint w                        = (uint) (width * std::powf(0.5f, (float) mip));
-      uint h                        = (uint) (height * std::powf(0.5f, (float) mip));
+      uint mipSize                  = (uint) (size * std::powf(0.5f, (float) mip));
 
       // Create a temporary cubemap for each mipmap level
-      RenderTargetPtr copyCubemapRt = MakeNewPtr<RenderTarget>(w, h, set);
+      RenderTargetPtr copyCubemapRt = MakeNewPtr<RenderTarget>(mipSize, mipSize, set);
       copyCubemapRt->Init();
 
       for (int i = 0; i < 6; ++i)
@@ -1419,10 +1385,10 @@ namespace ToolKit
         }
 
         frag->UpdateShaderUniform("roughness", (float) mip / (float) mipMaps);
-        frag->UpdateShaderUniform("resPerFace", (float) w);
+        frag->UpdateShaderUniform("resPerFace", (float) mipSize);
 
         SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
-        SetViewportSize(w, h);
+        SetViewportSize(mipSize, mipSize);
 
         DrawCube(cam, mat);
 
@@ -1435,7 +1401,7 @@ namespace ToolKit
 
         glReadBuffer(GL_COLOR_ATTACHMENT0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
-        glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, 0, 0, 0, 0, w, h);
+        glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, 0, 0, 0, 0, mipSize, mipSize);
 
         glReadBuffer(lastread);
         glBindTexture(GL_TEXTURE_CUBE_MAP, lasttex);
@@ -1445,25 +1411,8 @@ namespace ToolKit
     SetFramebuffer(nullptr, GraphicBitFields::AllBits);
     SetViewportSize(lastViewportSize.x, lastViewportSize.y);
 
-    // Take the ownership of render target.
-    TextureSettings textureSettings;
-    textureSettings.GenerateMipMap  = false;
-    textureSettings.InternalFormat  = cubemapRt->m_settings.InternalFormat;
-    textureSettings.MinFilter       = cubemapRt->m_settings.MinFilter;
-    textureSettings.MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
-    textureSettings.Target          = GraphicTypes::TargetCubeMap;
-    textureSettings.Type            = GraphicTypes::TypeFloat;
-
-    CubeMapPtr newCubeMap           = MakeNewPtr<CubeMap>();
-    newCubeMap->m_textureId         = cubemapRt->m_textureId;
-    newCubeMap->m_width             = cubemapRt->m_width;
-    newCubeMap->m_height            = cubemapRt->m_height;
-    newCubeMap->SetTextureSettings(textureSettings);
-    newCubeMap->m_initiated = true;
-
-    cubemapRt->m_initiated  = false;
-    cubemapRt->m_textureId  = 0;
-    cubemapRt               = nullptr;
+    CubeMapPtr newCubeMap = MakeNewPtr<CubeMap>();
+    newCubeMap->Consume(cubemapRt);
 
     return newCubeMap;
   }

@@ -84,7 +84,11 @@ namespace ToolKit
     CubeMap(const String& file);
     virtual ~CubeMap();
 
-    using Texture::NativeConstruct;
+    /**
+     * Takes the ownership of a render target. Simply to use the render to cube map results as cube map.
+     * @param cubeMapTarget is the cube map render target to be consumed. It can be safely destroyed after consumed.
+     */
+    void Consume(RenderTargetPtr cubeMapTarget);
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
@@ -120,7 +124,7 @@ namespace ToolKit
     int m_specularIBLTextureSize = 256;
 
    private:
-    bool m_waitingForInit               = false;
+    bool m_waitingForInit = false;
   };
 
   struct RenderTargetSettigs

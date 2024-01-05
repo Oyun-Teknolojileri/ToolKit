@@ -53,11 +53,11 @@ namespace ToolKit
 
     void SetTexture(ubyte slotIndx, uint textureId);
 
-    CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture, uint width, uint height, float exposure = 1.0f);
+    CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture, uint size, float exposure = 1.0f);
 
-    CubeMapPtr GenerateSpecularEnvMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps);
+    CubeMapPtr GenerateSpecularEnvMap(CubeMapPtr cubemap, uint size, int mipMaps);
 
-    CubeMapPtr GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint width, uint height);
+    CubeMapPtr GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint size);
 
     void CopyTexture(TexturePtr source, TexturePtr dest);
 
@@ -127,7 +127,7 @@ namespace ToolKit
       static constexpr ubyte MaxLightsPerObject    = 16;
       static constexpr uint ShadowAtlasSlot        = 8;
       static constexpr uint ShadowAtlasTextureSize = 2048;
-      static constexpr uint SpecularIBLLods        = 5;
+      static constexpr uint SpecularIBLLods        = 7;
       static constexpr uint BrdfLutTextureSize     = 512;
       static constexpr float ShadowBiasMultiplier  = 0.0001f;
     };
