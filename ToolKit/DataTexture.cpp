@@ -520,6 +520,8 @@ namespace ToolKit
     sizeNS                             = spotNonShadowSize;
   }
 
+  TKDefineClass(AnimationDataTexture, DataTexture);
+
   void AnimationDataTexture::Init(bool flushClientSideArray) { assert(false); }
 
   void AnimationDataTexture::Init(void* data)
@@ -543,15 +545,6 @@ namespace ToolKit
     AddVRAMUsageInBytes(m_width * m_height * m_textureInternalFormatSize);
 
     m_initiated = true;
-  }
-
-  void AnimationDataTexture::UnInit()
-  {
-    if (m_initiated)
-    {
-      glDeleteTextures(1, &m_textureId);
-      m_initiated = false;
-    }
   }
 
 } // namespace ToolKit

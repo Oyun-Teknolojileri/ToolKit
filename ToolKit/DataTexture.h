@@ -79,7 +79,6 @@ namespace ToolKit
     using DataTexture::NativeConstruct;
 
     void Init(void* data);
-    void UnInit() override;
 
    private:
     void Init(bool flushClientSideArray = false) override;

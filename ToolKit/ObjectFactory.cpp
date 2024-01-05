@@ -13,6 +13,7 @@
 #include "Canvas.h"
 #include "DataTexture.h"
 #include "DirectionComponent.h"
+#include "Dpad.h"
 #include "Drawable.h"
 #include "Entity.h"
 #include "EnvironmentComponent.h"
@@ -32,7 +33,6 @@
 #include "SpriteSheet.h"
 #include "SsaoPass.h"
 #include "Surface.h"
-#include "Dpad.h"
 #include "Texture.h"
 
 #include "DebugNew.h"
@@ -132,6 +132,7 @@ namespace ToolKit
     Register<DataTexture>();
     Register<LightDataTexture>();
     Register<SSAONoiseTexture>();
+    Register<AnimationDataTexture>();
     Register<DepthTexture>();
     Register<Hdri>();
     Register<RenderTarget>();

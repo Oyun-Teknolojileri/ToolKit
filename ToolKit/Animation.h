@@ -12,10 +12,12 @@
  * and related structures.
  */
 
+#include "DataTexture.h"
 #include "Resource.h"
 #include "SkeletonComponent.h"
 #include "Types.h"
-#include "DataTexture.h"
+
+#include <map>
 
 namespace ToolKit
 {
@@ -200,6 +202,8 @@ namespace ToolKit
   class TK_API AnimationPlayer
   {
    public:
+    ~AnimationPlayer();
+
     /**
      * Adds a record to the player.
      * @param rec AnimRecord data.
@@ -233,12 +237,30 @@ namespace ToolKit
      */
     int Exist(ULongID id) const;
 
+   private:
+    /**
+     * Add data texture of animation for skeleton
+     */
+    void AddAnimationData(EntityWeakPtr ntt, AnimationPtr anim);
+    /**
+     * Removes the unnecessary data textures
+     */
+    void UpdateAnimationData();
+    /**
+     * Clears the animation data textures
+     */
+    void ClearAnimationData();
+    /**
+     * Creates and returns animation data texture for given skeleton and animation
+     */
+    AnimationDataTexturePtr CreateAnimationDataTexture(SkeletonPtr skeleton, AnimationPtr anim);
+
    public:
     // Storage for the AnimRecord objects.
     AnimRecordRawPtrArray m_records;
 
    private:
-    // Storage for animation data
-    std::unordered_map<std::pair<SkeletonPtr, AnimationPtr>, AnimationTexturePtr> m_bakedAnimations;
+    // Storage for animation data (skeleton id - animation id pair)
+    std::map<std::pair<ULongID, ULongID>, AnimationDataTexturePtr> m_animTextures;
   };
 } // namespace ToolKit

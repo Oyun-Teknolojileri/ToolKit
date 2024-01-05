@@ -340,8 +340,8 @@ namespace ToolKit
     // Rote interpolation ratio and nearest keys.
     for (int i = 1; i < keySize; i++)
     {
-      float keyTime2 = keys[i].m_frame * 1.0f / m_fps;
-      float keyTime1 = keys[i - 1].m_frame * 1.0f / m_fps;
+      float keyTime2 = keys[i].m_frame / m_fps;
+      float keyTime1 = keys[i - 1].m_frame / m_fps;
 
       if (t >= keyTime1 && keyTime2 >= t)
       {
@@ -369,6 +369,8 @@ namespace ToolKit
     }
   }
 
+  AnimationPlayer::~AnimationPlayer() { ClearAnimationData(); }
+
   void AnimationPlayer::AddRecord(AnimRecord* rec)
   {
     int indx = Exist(rec->m_id);
@@ -376,6 +378,9 @@ namespace ToolKit
     {
       return;
     }
+
+    // Generate animation frame data
+    AddAnimationData(rec->m_entity, rec->m_animation);
 
     m_records.push_back(rec);
   }
@@ -386,6 +391,8 @@ namespace ToolKit
     if (indx != -1)
     {
       m_records.erase(m_records.begin() + indx);
+
+      UpdateAnimationData();
     }
   }
 
@@ -445,7 +452,24 @@ namespace ToolKit
       return state == AnimRecord::State::Stop;
     };
 
-    erase_if(m_records, updateRecordsFn);
+    bool anyAnimRecordDeleted = false;
+    for (std::vector<AnimRecordRawPtr>::iterator it = m_records.begin(); it != m_records.end();)
+    {
+      if (updateRecordsFn(*it))
+      {
+        anyAnimRecordDeleted = true;
+        it                   = m_records.erase(it);
+      }
+      else
+      {
+        ++it;
+      }
+    }
+
+    if (anyAnimRecordDeleted)
+    {
+      UpdateAnimationData();
+    }
   }
 
   int AnimationPlayer::Exist(ULongID id) const
@@ -459,6 +483,117 @@ namespace ToolKit
     }
 
     return -1;
+  }
+
+  void AnimationPlayer::AddAnimationData(EntityWeakPtr ntt, AnimationPtr anim)
+  {
+    if (EntityPtr entity = ntt.lock())
+    {
+      if (SkeletonComponentPtr skelComp = entity->GetComponent<SkeletonComponent>())
+      {
+        if (SkeletonPtr skeleton = skelComp->GetSkeletonResourceVal())
+        {
+          AnimationDataTexturePtr texture = CreateAnimationDataTexture(skeleton, anim);
+          m_animTextures[std::make_pair(skeleton->GetIdVal(), anim->GetIdVal())] = texture;
+        }
+      }
+    }
+  }
+
+  void AnimationPlayer::UpdateAnimationData()
+  {
+    std::map<std::pair<ULongID, ULongID>, AnimationDataTexturePtr>::iterator it;
+    for (it = m_animTextures.begin(); it != m_animTextures.end();)
+    {
+      bool found = false;
+      for (AnimRecord* animRecord : m_records)
+      {
+        if (EntityPtr entity = animRecord->m_entity.lock())
+        {
+          if (SkeletonComponentPtr skelComp = entity->GetComponent<SkeletonComponent>())
+          {
+            if (SkeletonPtr skeleton = skelComp->GetSkeletonResourceVal())
+            {
+              const ULongID skeletonID = skeleton->GetIdVal();
+              const ULongID animID     = animRecord->m_animation->GetIdVal();
+
+              if (it->first.first == skeletonID && it->first.second == animID)
+              {
+                found = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      if (found)
+      {
+        ++it;
+      }
+      else
+      {
+        it = m_animTextures.erase(it);
+      }
+    }
+  }
+
+  void AnimationPlayer::ClearAnimationData() { m_animTextures.clear(); }
+
+  AnimationDataTexturePtr AnimationPlayer::CreateAnimationDataTexture(SkeletonPtr skeleton, AnimationPtr anim)
+  {
+    Node tempBoneNode;
+
+    if (anim->m_keys.empty())
+    {
+      return nullptr;
+    }
+
+    BoneKeyArrayMap::iterator firstElementIt = anim->m_keys.begin();
+    firstElementIt++;
+    int height        = (int) (firstElementIt)->second.size(); // number of frames
+    int width         = (int) skeleton->m_bones.size() * 4; // number of bones * 4 (each element holds a row of matrix)
+    int sizeOfElement = 16 * 4;                             // size of an element in bytes
+
+    float* buffer     = new float[height * width * sizeOfElement];
+
+    unsigned int boneIndex = 0;
+    for (auto& dBoneIter : skeleton->m_Tpose.boneList)
+    {
+      const String& name                 = dBoneIter.first;
+      DynamicBoneMap::DynamicBone& dBone = dBoneIter.second;
+
+      // Get static bone transform
+      const StaticBone* sBone            = skeleton->m_bones[dBone.boneIndx];
+      const Mat4& tPoseTransform         = sBone->m_inverseWorldMatrix;
+
+      if (anim->m_keys.find(name) == anim->m_keys.end())
+      {
+        continue;
+      }
+
+      std::vector<Key>& keys = anim->m_keys[name];
+      for (unsigned int frameIndex = 0; frameIndex < keys.size(); ++frameIndex)
+      {
+        tempBoneNode.SetTranslation(keys[frameIndex].m_position);
+        tempBoneNode.SetOrientation(keys[frameIndex].m_rotation);
+        tempBoneNode.SetScale(keys[frameIndex].m_scale);
+
+        const Mat4 boneTransform  = tempBoneNode.GetTransform(TransformationSpace::TS_WORLD);
+        const Mat4 totalTransform = boneTransform * tPoseTransform;
+
+        unsigned int loc          = ((frameIndex * width + boneIndex) * sizeOfElement);
+
+        memcpy(buffer + loc, &totalTransform, sizeOfElement);
+      }
+    }
+
+    AnimationDataTexturePtr animDataTexture = MakeNewPtr<AnimationDataTexture>(width, height);
+    animDataTexture->Init((void*) buffer);
+
+    SafeDelArray(buffer);
+
+    return animDataTexture;
   }
 
   AnimationManager::AnimationManager() { m_baseType = Animation::StaticClass(); }
