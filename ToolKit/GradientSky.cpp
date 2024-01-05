@@ -42,6 +42,9 @@ namespace ToolKit
 
     ConstructSkyMaterial(vert, frag);
 
+    m_frameBuffer = MakeNewPtr<Framebuffer>();
+    m_frameBuffer->Init({0, 0, false, false});
+
     RenderTask task {[this](Renderer* renderer) -> void
                      {
                        if (m_initialized)
@@ -54,6 +57,9 @@ namespace ToolKit
 
                        // Create irradiance map from cubemap and set
                        GenerateIrradianceCubemap(renderer);
+
+                       renderer->SetFramebuffer(nullptr, GraphicBitFields::None);
+                       m_frameBuffer    = nullptr;
 
                        m_initialized    = true;
                        m_waitingForInit = false;
@@ -91,9 +97,6 @@ namespace ToolKit
 
   void GradientSky::GenerateGradientCubemap(Renderer* renderer)
   {
-    FramebufferPtr fb = MakeNewPtr<Framebuffer>();
-    fb->Init({0, 0, false, false});
-
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
@@ -137,13 +140,17 @@ namespace ToolKit
       cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam->m_node->SetScale(sca);
 
-      fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, cubemap, 0, -1, (Framebuffer::CubemapFace) i);
+      m_frameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                        cubemap,
+                                        0,
+                                        -1,
+                                        (Framebuffer::CubemapFace) i);
       if (i > 0)
       {
         AddHWRenderPass();
       }
 
-      renderer->SetFramebuffer(fb, GraphicBitFields::None);
+      renderer->SetFramebuffer(m_frameBuffer, GraphicBitFields::None);
       renderer->DrawCube(cam, m_skyboxMaterial);
     }
 

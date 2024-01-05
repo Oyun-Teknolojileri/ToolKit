@@ -39,6 +39,7 @@ namespace ToolKit
 
    private:
     bool m_waitingForInit = false;
+    FramebufferPtr m_frameBuffer;
   };
 
 } // namespace ToolKit
