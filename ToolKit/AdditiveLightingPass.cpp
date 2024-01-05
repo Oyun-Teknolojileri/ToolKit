@@ -21,34 +21,27 @@ namespace ToolKit
 
   AdditiveLightingPass::AdditiveLightingPass()
   {
-    m_fullQuadPass           = MakeNewPtr<FullQuadPass>();
-    m_lightingFrameBuffer    = MakeNewPtr<Framebuffer>();
-    m_lightingRt             = MakeNewPtr<RenderTarget>();
-    ShaderManager* shaderMan = GetShaderManager();
-    m_mergeShader            = shaderMan->Create<Shader>(ShaderPath("lightMerge.shader", true));
-    m_mergeShader->AddShaderUniform(ShaderUniform("aoEnabled", true));
+    // Render target for light calc.
+    RenderTargetSettigs oneChannelSet = {};
+    oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
+    oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
+    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGBA16F;
+    oneChannelSet.Format              = GraphicTypes::FormatRGBA;
+    oneChannelSet.Type                = GraphicTypes::TypeFloat;
 
-    m_lightingShader = shaderMan->Create<Shader>(ShaderPath("additiveLighting.shader", true));
-    m_lightingShader->AddShaderUniform(ShaderUniform("aoEnabled", true));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightType", 0));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightPos", ZERO));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightIntensity", 0.0f));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightColor", ZERO));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightRadius", 1.0f));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightOutAngle", 30.0f));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightInnAngle", 10.0f));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightDir", Z_AXIS));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightShadowMapCameraFar", 100.0f));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightProjectionViewMatrix", glm::identity<Mat4>()));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightShadowAtlasCoord", Vec2(0.0f)));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightShadowAtlasResRatio", 1.0f));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightShadowAtlasLayer", 1));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightPCFSamples", 1));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightPCFRadius", 1.0f));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightBleedReduction", 1.0f));
-    m_lightingShader->AddShaderUniform(ShaderUniform("lightShadowBias", 1.0f));
-    m_lightingShader->AddShaderUniform(ShaderUniform("camPos", ZERO));
-    m_lightingShader->AddShaderUniform(ShaderUniform("isScreenSpace", false));
+    uint size                         = 1024;
+    m_lightingRt                      = MakeNewPtr<RenderTarget>(size, size, oneChannelSet);
+    m_lightingRt->Init();
+
+    // Frame buffer for light calc.
+    m_lightingFrameBuffer = MakeNewPtr<Framebuffer>();
+    m_lightingFrameBuffer->Init({size, size, false, false});
+
+    m_fullQuadPass                   = MakeNewPtr<FullQuadPass>();
+
+    ShaderManager* shaderMan         = GetShaderManager();
+    m_mergeShader                    = shaderMan->Create<Shader>(ShaderPath("lightMerge.shader", true));
+    m_lightingShader                 = shaderMan->Create<Shader>(ShaderPath("additiveLighting.shader", true));
 
     m_meshMaterial                   = MakeNewPtr<Material>();
     m_meshMaterial->m_fragmentShader = m_lightingShader;
@@ -57,6 +50,7 @@ namespace ToolKit
 
     RenderState* renderState   = m_meshMaterial->GetRenderState();
     renderState->blendFunction = BlendFunction::ONE_TO_ONE;
+
     m_sphereEntity             = MakeNewPtr<Sphere>();
     m_sphereEntity->SetNumRingVal(8);
     m_sphereEntity->SetNumSegVal(8);
@@ -72,24 +66,16 @@ namespace ToolKit
 
     Pass::PreRender();
 
-    int width  = m_params.MainFramebuffer->GetSettings().width;
-    int height = m_params.MainFramebuffer->GetSettings().height;
+    const FramebufferSettings& fbSet = m_params.MainFramebuffer->GetSettings();
+    uint width                       = fbSet.width;
+    uint height                      = fbSet.height;
 
-    m_lightingFrameBuffer->Init({(uint) width, (uint) height, false, false});
-    m_lightingFrameBuffer->ReconstructIfNeeded((uint) width, (uint) height);
-
-    RenderTargetSettigs oneChannelSet = {};
-    oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGBA16F;
-    oneChannelSet.Format              = GraphicTypes::FormatRGBA;
-    oneChannelSet.Type                = GraphicTypes::TypeFloat;
-
-    m_lightingRt->m_settings          = oneChannelSet;
-    m_lightingRt->ReconstructIfNeeded((uint) width, (uint) height);
+    m_lightingFrameBuffer->ReconstructIfNeeded(width, height);
+    m_lightingRt->ReconstructIfNeeded(width, height);
     m_lightingFrameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_lightingRt);
 
     Renderer* renderer          = GetRenderer();
+
     // Set gbuffer
     // 9: Position, 10: Normal, 11: Color, 14: metallic-roughness,
     FramebufferPtr gFrameBuffer = m_params.GBufferFramebuffer;
@@ -163,7 +149,7 @@ namespace ToolKit
     m_lightingShader->UpdateShaderUniform("lightProjectionViewMatrix", projView);
     m_lightingShader->UpdateShaderUniform("lightShadowAtlasCoord", light->m_shadowAtlasCoord / atlasTextureSize);
     m_lightingShader->UpdateShaderUniform("lightShadowAtlasResRatio", atlasResRatio);
-    m_lightingShader->UpdateShaderUniform("lightShadowAtlasLayer", light->m_shadowAtlasLayer);
+    m_lightingShader->UpdateShaderUniform("lightShadowAtlasLayer", (float) light->m_shadowAtlasLayer);
     m_lightingShader->UpdateShaderUniform("lightPCFSamples", light->GetPCFSamplesVal());
     m_lightingShader->UpdateShaderUniform("lightPCFRadius", light->GetPCFRadiusVal());
     m_lightingShader->UpdateShaderUniform("lightBleedReduction", light->GetBleedingReductionVal());
@@ -177,6 +163,7 @@ namespace ToolKit
 
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_lightingFrameBuffer, GraphicBitFields::AllBits);
+
     // Deferred render always uses PBR material
     m_fullQuadPass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE; // additive blending
     m_fullQuadPass->m_params.FrameBuffer      = m_lightingFrameBuffer;
@@ -191,10 +178,8 @@ namespace ToolKit
 
     struct LightAndType
     {
-      LightPtr light;
-      int type;
-
-      LightAndType() {}
+      LightPtr light = nullptr;
+      int type       = 0;
 
       LightAndType(LightPtr l, int t) : light(l), type(t) {}
     };
@@ -305,6 +290,7 @@ namespace ToolKit
 
     m_mergeShader->UpdateShaderUniform("aoEnabled", m_params.AOTexture != nullptr);
     renderer->SetTexture(5, m_params.AOTexture != nullptr ? m_params.AOTexture->m_textureId : 0);
+
     // merge lighting, ibl, ao, and emmisive
     RenderSubPass(m_fullQuadPass);
     renderer->EnableDepthWrite(true);

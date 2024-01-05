@@ -83,7 +83,7 @@ namespace ToolKit
     // Second stage of the render.
     m_passArray.clear();
 
-    renderer->SetShadowAtlas(std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
+    renderer->SetShadowAtlas(Cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
     // Render non-blended entities with deferred renderer
     m_passArray.push_back(m_lightingPass);
