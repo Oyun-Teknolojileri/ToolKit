@@ -1325,9 +1325,10 @@ namespace ToolKit
     RenderTargetPtr cubemapRt     = MakeNewPtr<RenderTarget>(size, size, set);
     cubemapRt->Init();
 
+    // Intentionally creating space to fill later. ( mip maps will be calculated for specular ibl )
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
-    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
     // Views for 6 different angles
     CameraPtr cam = MakeNewPtr<Camera>();
@@ -1357,11 +1358,11 @@ namespace ToolKit
     assert(size >= 128 && "Due to RHIConstants::SpecularIBLLods, it can't be lower than this resolution.");
     for (int mip = 0; mip < mipMaps; ++mip)
     {
-      uint mipSize                  = (uint) (size * std::powf(0.5f, (float) mip));
+      uint mipSize              = (uint) (size * std::powf(0.5f, (float) mip));
 
       // Create a temporary cubemap for each mipmap level
-      RenderTargetPtr copyCubemapRt = MakeNewPtr<RenderTarget>(mipSize, mipSize, set);
-      copyCubemapRt->Init();
+      RenderTargetPtr mipCubeRt = MakeNewPtr<RenderTarget>(mipSize, mipSize, set);
+      mipCubeRt->Init();
 
       for (int i = 0; i < 6; ++i)
       {
@@ -1375,10 +1376,11 @@ namespace ToolKit
         cam->m_node->SetScale(sca);
 
         m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                                            copyCubemapRt,
+                                                            mipCubeRt,
                                                             0,
                                                             -1,
                                                             (Framebuffer::CubemapFace) i);
+
         if (mip != 0 && i != 0)
         {
           AddHWRenderPass();
@@ -1392,19 +1394,12 @@ namespace ToolKit
 
         DrawCube(cam, mat);
 
-        // Copy temporary cubemap texture to the real cubemap mipmap level
-
-        GLint lastread;
-        glGetIntegerv(GL_READ_BUFFER, &lastread);
-        GLint lasttex;
-        glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &lasttex);
-
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
+        // Copy color attachment to cubemap's correct mip level and face.
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
         glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, 0, 0, 0, 0, mipSize, mipSize);
 
-        glReadBuffer(lastread);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, lasttex);
+        // Set the read cubemap back. When renderer hijacked like this, we need to restore its state manually.
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId);
       }
     }
 
