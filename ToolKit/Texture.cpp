@@ -403,11 +403,6 @@ namespace ToolKit
     m_textureSettings.MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
     m_textureSettings.GenerateMipMap  = false;
     m_exposure                        = 1.0f;
-
-    m_texToCubemapMat                 = MakeNewPtr<Material>();
-    m_cubemapToDiffuseEnvMapMat       = MakeNewPtr<Material>();
-    m_diffuseEnvMap                   = MakeNewPtr<CubeMap>();
-    m_equirectangularTexture          = MakeNewPtr<Texture>();
   }
 
   Hdri::Hdri(const String& file) : Hdri() { SetFile(file); }
@@ -442,7 +437,7 @@ namespace ToolKit
     Texture::Init(flushClientSideArray);
     m_initiated     = false;
 
-    RenderTask task = {[this, flushClientSideArray](Renderer* renderer) -> void
+    RenderTask task = {[this](Renderer* renderer) -> void
                        {
                          if (m_initiated)
                          {
@@ -451,24 +446,23 @@ namespace ToolKit
                          }
 
                          // Convert hdri image to cubemap images.
-                         m_cubemap =
-                             renderer->GenerateCubemapFrom2DTexture(GetTextureManager()->Create<Texture>(GetFile()),
-                                                                    m_width / 4,
-                                                                    m_width / 4,
-                                                                    1.0f);
+                         TexturePtr self              = GetTextureManager()->Create<Texture>(GetFile());
+                         uint minW                    = m_width / 4;
+                         m_cubemap                    = renderer->GenerateCubemapFrom2DTexture(self, minW, minW, 1.0f);
 
-                         const int specularEnvMapSize = m_specularIBLTextureSize;
                          // Pre-filtered and mip mapped environment map
+                         const int specularEnvMapSize = m_specularIBLTextureSize;
                          m_specularEnvMap             = renderer->GenerateSpecularEnvMap(m_cubemap,
                                                                              specularEnvMapSize,
                                                                              specularEnvMapSize,
                                                                              Renderer::RHIConstants::SpecularIBLLods);
 
                          // Generate diffuse irradience cubemap images
-                         m_diffuseEnvMap  = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
+                         minW                         = m_width / 32;
+                         m_diffuseEnvMap              = renderer->GenerateDiffuseEnvMap(m_cubemap, minW, minW);
 
-                         m_initiated      = true;
-                         m_waitingForInit = false;
+                         m_initiated                  = true;
+                         m_waitingForInit             = false;
                        }};
 
     GetRenderSystem()->AddRenderTask(task);

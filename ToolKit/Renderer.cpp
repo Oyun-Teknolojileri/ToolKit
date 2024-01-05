@@ -516,9 +516,9 @@ namespace ToolKit
   {
     m_dummyDrawCube->m_node->SetTransform(transform);
     m_dummyDrawCube->GetMaterialComponent()->SetFirstMaterial(mat);
+    SetCamera(cam, true);
 
-    static RenderJobArray jobs;
-    jobs.clear();
+    RenderJobArray jobs;
     EntityPtrArray oneDummyDrawCube = {m_dummyDrawCube};
     RenderJobProcessor::CreateRenderJobs(oneDummyDrawCube, jobs);
     Render(jobs, cam);

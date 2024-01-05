@@ -84,8 +84,6 @@ namespace ToolKit
     BottomColor_Define(Vec3(0.5f, 0.3f, 0.1f), "Sky", 90, true, true, {true});
     GradientExponent_Define(0.3f, "Sky", 90, true, true, {false, true, 0.0f, 10.0f, 0.02f});
 
-    IrradianceResolution_Define(64.0f, "Sky", 90, true, true, {false, true, 32.0f, 2048.0f, 2.0f});
-
     SetNameVal("Gradient Sky");
   }
 
@@ -94,7 +92,7 @@ namespace ToolKit
   void GradientSky::GenerateGradientCubemap(Renderer* renderer)
   {
     FramebufferPtr fb = MakeNewPtr<Framebuffer>();
-    fb->Init({m_size, m_size, false, true});
+    fb->Init({0, 0, false, false});
 
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
@@ -107,7 +105,8 @@ namespace ToolKit
                                      GraphicTypes::FormatRGB,
                                      GraphicTypes::TypeUnsignedByte};
 
-    RenderTargetPtr cubemap       = MakeNewPtr<RenderTarget>(m_size, m_size, set);
+    uint size                     = (uint) GetIBLTextureSizeVal().GetValue<int>();
+    RenderTargetPtr cubemap       = MakeNewPtr<RenderTarget>(size, size, set);
     cubemap->Init();
 
     // Create material
@@ -115,8 +114,6 @@ namespace ToolKit
     m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("middleColor", GetMiddleColorVal());
     m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("bottomColor", GetBottomColorVal());
     m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("exponent", GetGradientExponentVal());
-
-    renderer->EnableDepthTest(false);
 
     // Views for 6 different angles
     CameraPtr cam = MakeNewPtr<Camera>();
@@ -146,11 +143,9 @@ namespace ToolKit
         AddHWRenderPass();
       }
 
-      renderer->SetFramebuffer(fb, GraphicBitFields::AllBits);
+      renderer->SetFramebuffer(fb, GraphicBitFields::None);
       renderer->DrawCube(cam, m_skyboxMaterial);
     }
-
-    renderer->EnableDepthTest(true);
 
     // Take the ownership of render target.
     CubeMapPtr hdriCubeMap = MakeNewPtr<CubeMap>();
@@ -179,7 +174,7 @@ namespace ToolKit
   {
 
     HdriPtr hdr          = GetHdri();
-    uint irRes           = (uint) GetIrradianceResolutionVal();
+    uint irRes           = (uint) GetIBLTextureSizeVal().GetValue<int>();
 
     hdr->m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(hdr->m_cubemap, irRes, irRes);
 

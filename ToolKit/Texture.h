@@ -119,12 +119,8 @@ namespace ToolKit
     float m_exposure             = 1.0f;
     int m_specularIBLTextureSize = 256;
 
-   protected:
-    MaterialPtr m_texToCubemapMat           = nullptr;
-    MaterialPtr m_cubemapToDiffuseEnvMapMat = nullptr;
-    TexturePtr m_equirectangularTexture     = nullptr;
-
-    bool m_waitingForInit                   = false;
+   private:
+    bool m_waitingForInit               = false;
   };
 
   struct RenderTargetSettigs

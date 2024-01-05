@@ -110,7 +110,7 @@ namespace ToolKit
 
   struct MultiChoiceVariant
   {
-    std::vector<class ParameterVariant> Choices;
+    ParameterVariantArray Choices;
 
     template <typename T>
     const T& GetValue() const;
@@ -650,6 +650,10 @@ namespace ToolKit
     ParameterVariantArray m_variants;
   };
 
+  /**
+   * Returns the selected value of multichoice variant.
+   * Function is located here because it requires ParameterVariant to be declared before itself.
+   */
   template <typename T>
   const T& MultiChoiceVariant::GetValue() const
   {
