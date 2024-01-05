@@ -267,6 +267,8 @@ namespace ToolKit
     // we need to use gbuffers depth in this pass in order to make proper depth test
     renderer->CopyFrameBuffer(m_params.GBufferFramebuffer, m_lightingFrameBuffer, GraphicBitFields::DepthBits);
 
+    renderer->SetCamera(camera, true);
+
     m_lightingShader->UpdateShaderUniform("isScreenSpace", false);
     renderer->EnableDepthWrite(false);
     for (auto& [lightAndType, job] : meshLights)
