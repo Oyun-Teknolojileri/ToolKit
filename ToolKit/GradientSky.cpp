@@ -102,11 +102,11 @@ namespace ToolKit
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::SampleLinear,
-                                     GraphicTypes::SampleLinear,
-                                     GraphicTypes::FormatRGB,
-                                     GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte};
+                                     GraphicTypes::SampleNearest,
+                                     GraphicTypes::SampleNearest,
+                                     GraphicTypes::FormatRGBA16F,
+                                     GraphicTypes::FormatRGBA,
+                                     GraphicTypes::TypeFloat};
 
     uint size                     = (uint) GetIBLTextureSizeVal().GetValue<int>();
     RenderTargetPtr cubemap       = MakeNewPtr<RenderTarget>(size, size, set);
