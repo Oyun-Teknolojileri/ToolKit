@@ -166,10 +166,10 @@ namespace ToolKit
       // below (Renderer::TextureSlot system). But bone count can't be bound
       // here because its location changes every shader program.
 
+      skCom->m_map->UpdateGPUTexture();
+
       SetTexture(2, skel->m_bindPoseTexture->m_textureId);
       SetTexture(3, skCom->m_map->boneTransformNodeTexture->m_textureId);
-
-      skCom->m_map->UpdateGPUTexture();
     };
 
     updateAndBindSkinningTextures();
