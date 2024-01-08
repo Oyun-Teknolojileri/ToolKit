@@ -93,6 +93,19 @@ namespace ToolKit
         overrideBBoxExists = true;
         overrideBBox       = std::move(bbOverride->GetAABB());
       }
+      AnimationPtr anim                        = nullptr;
+      const AnimRecordRawPtrArray& animRecords = GetAnimationPlayer()->m_records;
+      for (AnimRecordRawPtr animRecord : animRecords)
+      {
+        if (EntityPtr animNtt = animRecord->m_entity.lock())
+        {
+          if (animNtt->GetIdVal() == ntt->GetIdVal())
+          {
+            anim = animRecord->m_animation;
+            break;
+          }
+        }
+      }
 
       auto addRenderJobForMeshFn = [&materialMissing,
                                     &matComp,
@@ -103,7 +116,8 @@ namespace ToolKit
                                     &nttTransform,
                                     overrideBBoxExists,
                                     &overrideBBox,
-                                    castShadow](Mesh* mesh)
+                                    castShadow,
+                                    &anim](Mesh* mesh)
       {
         if (mesh)
         {
@@ -147,6 +161,7 @@ namespace ToolKit
             materialMissing = true;
             job.Material    = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
           }
+          job.currentAnim = anim;
 
           jobArray.push_back(job);
         }

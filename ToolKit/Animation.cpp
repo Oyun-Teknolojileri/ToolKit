@@ -34,6 +34,8 @@ namespace ToolKit
 
   void Animation::GetPose(Node* node, float time)
   {
+    time = 0.0f;
+
     if (m_keys.empty())
     {
       return;
@@ -65,6 +67,8 @@ namespace ToolKit
 
   void Animation::GetPose(const SkeletonComponentPtr& skeleton, float time, BlendTarget* blendTarget)
   {
+    time = 0.0f;
+
     if (m_keys.empty())
     {
       return;
@@ -155,6 +159,9 @@ namespace ToolKit
       dBone.node->SetChildrenDirty();
     }
     skeleton->isDirty = true;
+
+    Mat4 mat          = skeleton->m_map->boneList["Ankle_L.44"].node->GetTransform();
+    int y             = 5;
   }
 
   void Animation::GetPose(Node* node, int frame) { GetPose(node, frame * 1.0f / m_fps); }
@@ -542,53 +549,84 @@ namespace ToolKit
 
   AnimationDataTexturePtr AnimationPlayer::CreateAnimationDataTexture(SkeletonPtr skeleton, AnimationPtr anim)
   {
-    Node tempBoneNode;
-
     if (anim->m_keys.empty())
     {
       return nullptr;
     }
 
-    BoneKeyArrayMap::iterator firstElementIt = anim->m_keys.begin();
-    firstElementIt++;
-    int height        = (int) (firstElementIt)->second.size(); // number of frames
-    int width         = (int) skeleton->m_bones.size() * 4; // number of bones * 4 (each element holds a row of matrix)
-    int sizeOfElement = 16 * 4;                             // size of an element in bytes
+    int height         = 1024;                               // max number of key frames
+    int width          = (int) skeleton->m_bones.size() * 4; // number of bones * 4 (each element holds a row of matrix)
+    int sizeOfElement  = 16 * 4;                             // size of an element in bytes
 
-    float* buffer     = new float[height * width * sizeOfElement];
+    char* buffer       = new char[height * width * sizeOfElement];
 
-    unsigned int boneIndex = 0;
-    for (auto& dBoneIter : skeleton->m_Tpose.boneList)
+    uint maxKeyCount   = 0;
+    uint keyframeIndex = 0;
+    while (true)
     {
-      const String& name                 = dBoneIter.first;
-      DynamicBoneMap::DynamicBone& dBone = dBoneIter.second;
+      bool keysframesLeft = false;
+      std::vector<std::pair<Node*, uint>> boneNodes;
 
-      // Get static bone transform
-      const StaticBone* sBone            = skeleton->m_bones[dBone.boneIndx];
-      const Mat4& tPoseTransform         = sBone->m_inverseWorldMatrix;
-
-      if (anim->m_keys.find(name) == anim->m_keys.end())
+      // Iterate all bones for the key frame and get node transformations
+      for (auto& dBoneIter : skeleton->m_Tpose.boneList)
       {
-        continue;
+        const String& name                 = dBoneIter.first;
+        DynamicBoneMap::DynamicBone& dBone = dBoneIter.second;
+
+        if (anim->m_keys.find(name) == anim->m_keys.end())
+        {
+          continue;
+        }
+
+        std::vector<Key>& keys = anim->m_keys[name];
+        if (keys.size() <= keyframeIndex)
+        {
+          continue;
+        }
+        else
+        {
+          if (maxKeyCount < keys.size())
+          {
+            maxKeyCount = (uint) keys.size();
+          }
+
+          keysframesLeft            = true;
+
+          Key& key                  = keys[keyframeIndex];
+          dBone.node->m_translation = key.m_position;
+          dBone.node->m_orientation = key.m_rotation;
+          dBone.node->m_scale       = key.m_scale;
+          dBone.node->SetChildrenDirty();
+
+          boneNodes.push_back(std::make_pair(dBone.node, dBone.boneIndx));
+        }
       }
 
-      std::vector<Key>& keys = anim->m_keys[name];
-      for (unsigned int frameIndex = 0; frameIndex < keys.size(); ++frameIndex)
+      if (!keysframesLeft)
       {
-        tempBoneNode.SetTranslation(keys[frameIndex].m_position);
-        tempBoneNode.SetOrientation(keys[frameIndex].m_rotation);
-        tempBoneNode.SetScale(keys[frameIndex].m_scale);
+        break;
+      }
 
-        const Mat4 boneTransform  = tempBoneNode.GetTransform(TransformationSpace::TS_WORLD);
-        const Mat4 totalTransform = boneTransform * tPoseTransform;
+      // After getting all node transformations re-calculate dirty nodes transformations
+      for (auto& node : boneNodes)
+      {
+        StaticBone* sBone         = skeleton->m_bones[node.second];
 
-        unsigned int loc          = ((frameIndex * width + boneIndex) * sizeOfElement);
+        const Mat4 boneTransform  = node.first->GetTransform(TransformationSpace::TS_WORLD);
+        const Mat4 totalTransform = boneTransform * sBone->m_inverseWorldMatrix;
 
+        unsigned int loc          = ((keyframeIndex * width + node.second) * sizeOfElement);
+        if (loc == 0 || loc == sizeOfElement)
+        {
+          volatile int y = 5;
+        }
         memcpy(buffer + loc, &totalTransform, sizeOfElement);
       }
+
+      ++keyframeIndex;
     }
 
-    AnimationDataTexturePtr animDataTexture = MakeNewPtr<AnimationDataTexture>(width, height);
+    AnimationDataTexturePtr animDataTexture = MakeNewPtr<AnimationDataTexture>(width, maxKeyCount);
     animDataTexture->Init((void*) buffer);
 
     SafeDelArray(buffer);

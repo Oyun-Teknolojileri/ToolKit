@@ -169,6 +169,9 @@ namespace ToolKit
   // {copies} First one is the copy root, fallowing are attached children.
   TK_API EntityPtr DeepCopy(EntityPtr root, EntityPtrArray& copies);
 
+  // Copies the node with children
+  TK_API Node* DeepNodeCopy(Node* node);
+
   // Memory operations.
   ///////////////////////////////////////////////////////
   // Useful to force plugin modules to allocate from main toolkit module.

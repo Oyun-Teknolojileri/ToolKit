@@ -9,6 +9,7 @@
 
 #include "Resource.h"
 #include "ResourceManager.h"
+#include <map>
 
 namespace ToolKit
 {
@@ -40,7 +41,7 @@ namespace ToolKit
     // Call after skeleton fills m_bones list
     void Init(const Skeleton* skeleton);
     ~DynamicBoneMap();
-    std::unordered_map<String, DynamicBone> boneList;
+    std::map<String, DynamicBone> boneList;
     TexturePtr boneTransformNodeTexture;
     void UpdateGPUTexture(std::vector<StaticBone*>& staticBones);
     // Find all child bones by recursively searching child bones

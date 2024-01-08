@@ -54,6 +54,7 @@ namespace ToolKit
     bool ShadowCaster                         = true;    //!< Account in shadow map construction.
     BoundingBox BoundingBox;                             //!< World space bounding box.
     Mat4 WorldTransform;                                 //!< World transform of the entity.
+    AnimationPtr currentAnim = nullptr;                  //!< Animation of the skeleton
   };
 
   class TK_API RenderJobProcessor

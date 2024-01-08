@@ -237,6 +237,19 @@ namespace ToolKit
      */
     int Exist(ULongID id) const;
 
+    inline AnimationDataTexturePtr GetAnimationDataTexture(ULongID skelID, ULongID animID)
+    {
+      const std::pair<ULongID, ULongID> p = std::make_pair(skelID, animID);
+      if (m_animTextures.find(p) != m_animTextures.end())
+      {
+        return m_animTextures[p];
+      }
+      else
+      {
+        return nullptr;
+      }
+    }
+
    private:
     /**
      * Add data texture of animation for skeleton
