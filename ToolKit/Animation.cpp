@@ -621,20 +621,14 @@ namespace ToolKit
         const Mat4 boneTransform  = node.first->GetTransform(TransformationSpace::TS_WORLD);
         const Mat4 totalTransform = boneTransform * sBone->m_inverseWorldMatrix;
 
-        unsigned int loc          = ((keyframeIndex * width + node.second) * sizeOfElement);
-        if (loc == 0 || loc == sizeOfElement)
-        {
-          volatile int y = 5;
-        }
+        unsigned int loc          = ((keyframeIndex * skeleton->m_bones.size() + node.second) * sizeOfElement);
         memcpy(buffer + loc, &totalTransform, sizeOfElement);
       }
 
       ++keyframeIndex;
-
-      break; // TODO
     }
 
-    AnimationDataTexturePtr animDataTexture = MakeNewPtr<AnimationDataTexture>(width, 1); //TODO maxKeyCount);
+    AnimationDataTexturePtr animDataTexture = MakeNewPtr<AnimationDataTexture>(width, maxKeyCount);
     animDataTexture->Init((void*) buffer);
 
     SafeDelArray(buffer);
