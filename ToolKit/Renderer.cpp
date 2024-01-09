@@ -141,7 +141,7 @@ namespace ToolKit
     // Skeleton Component is used by all meshes of an entity.
     const auto& updateAndBindSkinningTextures = [&job, this]()
     {
-      if (!job.Mesh->IsSkinned())
+      if (!job.Mesh->IsSkinned() || job.animData.anim == nullptr)
       {
         return;
       }
