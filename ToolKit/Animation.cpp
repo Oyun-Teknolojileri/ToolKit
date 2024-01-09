@@ -575,6 +575,12 @@ namespace ToolKit
 
         if (anim->m_keys.find(name) == anim->m_keys.end())
         {
+          dBone.node->m_translation = ZERO;
+          dBone.node->m_orientation = Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+          dBone.node->m_scale       = Vec3(1.0f, 1.0f, 1.0f);
+          dBone.node->SetChildrenDirty();
+
+          boneNodes.push_back(std::make_pair(dBone.node, dBone.boneIndx));
           continue;
         }
 
@@ -624,9 +630,11 @@ namespace ToolKit
       }
 
       ++keyframeIndex;
+
+      break; // TODO
     }
 
-    AnimationDataTexturePtr animDataTexture = MakeNewPtr<AnimationDataTexture>(width, maxKeyCount);
+    AnimationDataTexturePtr animDataTexture = MakeNewPtr<AnimationDataTexture>(width, 1); //TODO maxKeyCount);
     animDataTexture->Init((void*) buffer);
 
     SafeDelArray(buffer);

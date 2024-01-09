@@ -170,6 +170,7 @@ namespace ToolKit
           GetAnimationPlayer()->GetAnimationDataTexture(skel->GetIdVal(), job.currentAnim->GetIdVal())->m_textureId);
 
       //TODO
+      //SetTexture(3, 0);
       if (false)
         skCom->m_map->UpdateGPUTexture(skel->m_bones);
     };
