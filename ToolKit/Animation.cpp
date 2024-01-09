@@ -12,6 +12,7 @@
 #include "Entity.h"
 #include "FileManager.h"
 #include "MathUtil.h"
+#include "Mesh.h"
 #include "Node.h"
 #include "Skeleton.h"
 #include "ToolKit.h"
@@ -34,8 +35,6 @@ namespace ToolKit
 
   void Animation::GetPose(Node* node, float time)
   {
-    time = 0.0f;
-
     if (m_keys.empty())
     {
       return;
@@ -67,8 +66,6 @@ namespace ToolKit
 
   void Animation::GetPose(const SkeletonComponentPtr& skeleton, float time, BlendTarget* blendTarget)
   {
-    time = 0.0f;
-
     if (m_keys.empty())
     {
       return;
@@ -446,6 +443,24 @@ namespace ToolKit
 
       if (EntityPtr ntt = record->m_entity.lock())
       {
+        MeshComponentPtr meshComp   = ntt->GetMeshComponent();
+        SkeletonComponentPtr skComp = ntt->GetComponent<SkeletonComponent>();
+        if (meshComp->GetMeshVal()->IsSkinned() && skComp != nullptr)
+        {
+          uint keyFrames = (uint) record->m_animation->m_keys.size();
+          assert(keyFrames > 0);
+          KeyArray& keys = (*(record->m_animation->m_keys.begin())).second;
+          int key1, key2;
+          float ratio;
+          record->m_animation->GetNearestKeys(keys, key1, key2, ratio, record->m_currentTime);
+
+          skComp->m_animFirstKeyFrame             = key1;
+          skComp->m_animSecondKeyFrame            = key2;
+          skComp->m_animKeyFrameInterpolationTime = ratio;
+          skComp->m_animKeyFrameCount             = keyFrames;
+        }
+
+        // TODO remove this line but not the code
         ntt->SetPose(record->m_animation,
                      record->m_currentTime,
                      record->m_blendTarget.Blend ? &record->m_blendTarget : nullptr);
@@ -621,7 +636,7 @@ namespace ToolKit
         const Mat4 boneTransform  = node.first->GetTransform(TransformationSpace::TS_WORLD);
         const Mat4 totalTransform = boneTransform * sBone->m_inverseWorldMatrix;
 
-        unsigned int loc          = ((keyframeIndex * skeleton->m_bones.size() + node.second) * sizeOfElement);
+        uint loc                  = ((keyframeIndex * (uint) skeleton->m_bones.size() + node.second) * sizeOfElement);
         memcpy(buffer + loc, &totalTransform, sizeOfElement);
       }
 

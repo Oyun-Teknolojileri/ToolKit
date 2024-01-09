@@ -36,7 +36,7 @@
                vec3 B = normalize(vec3(Model * vec4(vBiTan, 0.0)));
                vec3 N = normalize(vec3(Model * vec4(vNormal, 0.0)));
 
-               skin(gl_Position, N, B);
+               skin(gl_Position, N, B, gl_Position, N, B);
 
                vec3 T = normalize(cross(B,N));
                TBN = mat3(T,B,N);
@@ -44,7 +44,7 @@
             else
             {
                v_normal = (InverseTransModel * vec4(vNormal, 1.0)).xyz;
-               gl_Position = skin(gl_Position, v_normal);
+               skin(gl_Position, v_normal, gl_Position, v_normal);
             }
          }
          else

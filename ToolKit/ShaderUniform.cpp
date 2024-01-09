@@ -136,6 +136,14 @@ namespace ToolKit
       return "isSkinned";
     case Uniform::NUM_BONES:
       return "numBones";
+    case Uniform::KEY_FRAME_1:
+      return "keyFrame1";
+    case Uniform::KEY_FRAME_2:
+      return "keyFrame2";
+    case Uniform::KEY_FRAME_INT_TIME:
+      return "keyFrameIntepolationTime";
+    case Uniform::KEY_FRAME_COUNT:
+      return "keyFrameCount";
     case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";

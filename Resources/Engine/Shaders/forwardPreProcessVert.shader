@@ -28,18 +28,13 @@
       void main()
       {
         gl_Position   = vec4(vPosition, 1.0f);
+        v_normal = (InverseTransModel * vec4(vNormal, 1.0)).xyz;
         if(isSkinned > 0u) {
-            gl_Position = skin(gl_Position);
+            skin(gl_Position, v_normal, gl_Position, v_normal);
         }
-
+ 
         vec3 v_pos    = (Model * gl_Position).xyz;
         v_viewDepth = (View * vec4(v_pos, 1.0)).xyz;
-        
-        v_normal = (InverseTransModel * vec4(vNormal, 1.0)).xyz;
-        if (isSkinned > 0u)
-        {
-          v_normal = skinNormal(v_normal);
-        }
         
         v_texture = vTexture;
 

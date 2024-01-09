@@ -158,19 +158,10 @@ namespace ToolKit
         return;
       }
 
-      // Bind bone textures
-      // This is valid because these slots will be used by every shader program
-      // below (Renderer::TextureSlot system). But bone count can't be bound
-      // here because its location changes every shader program.
+      AnimationPlayer* animPlayer = GetAnimationPlayer();
+      SetTexture(3, animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.anim->GetIdVal())->m_textureId);
 
-      //TODO SetTexture(2, skel->m_bindPoseTexture->m_textureId); // TODO no need this
-      //TODO SetTexture(3, skCom->m_map->boneTransformNodeTexture->m_textureId);
-      SetTexture(
-          3,
-          GetAnimationPlayer()->GetAnimationDataTexture(skel->GetIdVal(), job.currentAnim->GetIdVal())->m_textureId);
-
-      //TODO
-      //SetTexture(3, 0);
+      // TODO remove the update gpu texture function
       if (false)
         skCom->m_map->UpdateGPUTexture(skel->m_bones);
     };
@@ -220,7 +211,7 @@ namespace ToolKit
 
     RenderState* rs = m_mat->GetRenderState();
     SetRenderState(rs);
-    FeedUniforms(prg);
+    FeedUniforms(prg, job);
 
     glBindVertexArray(mesh->m_vaoId);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
@@ -732,7 +723,7 @@ namespace ToolKit
     glUseProgram(program->m_handle);
   }
 
-  void Renderer::FeedUniforms(GpuProgramPtr program)
+  void Renderer::FeedUniforms(GpuProgramPtr program, const RenderJob& renderJob)
   {
     CPU_FUNC_RANGE();
 
@@ -934,6 +925,26 @@ namespace ToolKit
         {
           EngineSettings& set = GetEngineSettings();
           glUniform1f(loc, set.Graphics.ShadowDistance);
+        }
+        break;
+        case Uniform::KEY_FRAME_1:
+        {
+          glUniform1f(loc, renderJob.animData.firstKeyFrame);
+        }
+        break;
+        case Uniform::KEY_FRAME_2:
+        {
+          glUniform1f(loc, renderJob.animData.secondKeyFrame);
+        }
+        break;
+        case Uniform::KEY_FRAME_INT_TIME:
+        {
+          glUniform1f(loc, renderJob.animData.keyFrameInterpolationTime);
+        }
+        break;
+        case Uniform::KEY_FRAME_COUNT:
+        {
+          glUniform1f(loc, renderJob.animData.keyFrameCount);
         }
         break;
         default:

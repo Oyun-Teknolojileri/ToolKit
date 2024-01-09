@@ -26,7 +26,7 @@
 			vec4 skinnedVPos = vec4(vPosition, 1.0);
 			
 			if(isSkinned > 0u){
-				skinnedVPos = skin(skinnedVPos);
+				skin(skinnedVPos, skinnedVPos);
 			}
 		  gl_Position = ProjectViewModel * skinnedVPos;
 		}
