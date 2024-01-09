@@ -447,8 +447,7 @@ namespace ToolKit
         SkeletonComponentPtr skComp = ntt->GetComponent<SkeletonComponent>();
         if (meshComp->GetMeshVal()->IsSkinned() && skComp != nullptr)
         {
-          uint keyFrames = (uint) record->m_animation->m_keys.size();
-          assert(keyFrames > 0);
+          assert(record->m_animation->m_keys.size() > 0);
           KeyArray& keys = (*(record->m_animation->m_keys.begin())).second;
           int key1, key2;
           float ratio;
@@ -457,7 +456,7 @@ namespace ToolKit
           skComp->m_animFirstKeyFrame             = key1;
           skComp->m_animSecondKeyFrame            = key2;
           skComp->m_animKeyFrameInterpolationTime = ratio;
-          skComp->m_animKeyFrameCount             = keyFrames;
+          skComp->m_animKeyFrameCount             = (uint) keys.size();
         }
 
         // TODO remove this line but not the code

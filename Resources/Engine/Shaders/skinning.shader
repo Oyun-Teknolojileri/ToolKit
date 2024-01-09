@@ -25,7 +25,7 @@
   {
     float matrixPos   = boneIndx / numBones;
     float stepX       = 1.0 / (numBones * 4.0);
-    vec2 moveToCenter = vec2(stepX / 2.0, 1.0 / keyFrameCount * 2.0));
+    vec2 moveToCenter = vec2(stepX / 2.0, 1.0 / keyFrameCount * 2.0);
 
     return mat4(texture(boneText, vec2(matrixPos, keyframe) + moveToCenter),
                 texture(boneText, vec2(matrixPos + stepX, keyframe) + moveToCenter),
