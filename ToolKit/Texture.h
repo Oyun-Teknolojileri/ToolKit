@@ -29,11 +29,10 @@ namespace ToolKit
    public:
     TKDeclareClass(Texture, Resource);
 
-    Texture(const TextureSettings& settings = {});
-    Texture(const String& file, const TextureSettings& settings = {});
+    Texture();
+    Texture(const String& file);
     virtual ~Texture();
-
-    virtual void NativeConstruct(uint textureId);
+    virtual void NativeConstruct();
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;

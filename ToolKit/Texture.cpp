@@ -28,21 +28,11 @@ namespace ToolKit
 
   TKDefineClass(Texture, Resource);
 
-  Texture::Texture(const TextureSettings& settings)
-  {
-    m_textureSettings = settings;
-    m_textureId       = 0;
-  }
+  Texture::Texture() { m_textureId = 0; }
 
-  Texture::Texture(const String& file, const TextureSettings& settings) : Texture(settings) { SetFile(file); }
+  Texture::Texture(const String& file) { SetFile(file); }
 
-  void Texture::NativeConstruct(uint textureId)
-  {
-    Super::NativeConstruct();
-
-    m_textureId = textureId;
-    m_initiated = true;
-  }
+  void Texture::NativeConstruct() { Super::NativeConstruct(); }
 
   Texture::~Texture()
   {
