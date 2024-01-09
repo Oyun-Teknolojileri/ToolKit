@@ -93,9 +93,6 @@ namespace ToolKit
       return;
     }
 
-    GLint currId;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
-
     glGenTextures(1, &m_textureId);
     glBindTexture(GL_TEXTURE_2D, m_textureId);
 
@@ -151,7 +148,6 @@ namespace ToolKit
       Clear();
     }
 
-    glBindTexture(GL_TEXTURE_2D, currId);
     m_initiated = true;
   }
 
@@ -353,9 +349,6 @@ namespace ToolKit
     m_textureSettings.InternalFormat = GraphicTypes::FormatRGBA;
     m_textureSettings.Target         = GraphicTypes::TargetCubeMap;
 
-    GLint currId;
-    glGetIntegerv(GL_TEXTURE_CUBE_MAP, &currId);
-
     glGenTextures(1, &m_textureId);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureId);
 
@@ -382,8 +375,6 @@ namespace ToolKit
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-    glBindTexture(GL_TEXTURE_CUBE_MAP, currId);
 
     if (flushClientSideArray)
     {
@@ -554,20 +545,6 @@ namespace ToolKit
     m_textureSettings.Target         = m_settings.Target;
     m_textureSettings.Layers         = m_settings.Layers;
 
-    GLint currId                     = 0; // Don't override the current render target.
-    if (m_settings.Target == GraphicTypes::Target2D)
-    {
-      glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
-    }
-    else if (m_settings.Target == GraphicTypes::TargetCubeMap)
-    {
-      glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &currId);
-    }
-    else if (m_settings.Target == GraphicTypes::Target2DArray)
-    {
-      glGetIntegerv(GL_TEXTURE_BINDING_2D_ARRAY, &currId);
-    }
-
     // Create frame buffer color texture
     glGenTextures(1, &m_textureId);
     glBindTexture((int) m_settings.Target, m_textureId);
@@ -623,9 +600,6 @@ namespace ToolKit
     glTexParameteri((int) m_settings.Target, GL_TEXTURE_MAG_FILTER, (int) m_settings.MagFilter);
 
     m_initiated = true;
-
-    // Restore previous render target.
-    glBindTexture((int) m_settings.Target, currId);
   }
 
   void RenderTarget::Reconstruct(uint width, uint height, const RenderTargetSettigs& settings)
