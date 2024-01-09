@@ -18,29 +18,26 @@ namespace ToolKit
 
   ForwardPreProcess::ForwardPreProcess()
   {
+    m_framebuffer            = MakeNewPtr<Framebuffer>();
+
+    m_linearMaterial         = MakeNewPtr<Material>();
     ShaderPtr vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcessVert.shader", true));
     ShaderPtr fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcess.shader", true));
-
-    m_framebuffer            = MakeNewPtr<Framebuffer>();
-    m_linearMaterial         = MakeNewPtr<Material>();
-    m_normalRt               = MakeNewPtr<RenderTarget>();
-    m_linearDepthRt          = MakeNewPtr<RenderTarget>();
-
     m_linearMaterial->m_vertexShader   = vertexShader;
     m_linearMaterial->m_fragmentShader = fragmentShader;
     m_linearMaterial->Init();
 
-    RenderTargetSettigs oneChannelSet = {};
-    oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGBA16F;
-    oneChannelSet.Format              = GraphicTypes::FormatRGBA;
-    oneChannelSet.Type                = GraphicTypes::TypeFloat;
+    TextureSettings oneChannelSet = {};
+    oneChannelSet.WarpS           = GraphicTypes::UVClampToEdge;
+    oneChannelSet.WarpT           = GraphicTypes::UVClampToEdge;
+    oneChannelSet.InternalFormat  = GraphicTypes::FormatRGBA16F;
+    oneChannelSet.Format          = GraphicTypes::FormatRGBA;
+    oneChannelSet.Type            = GraphicTypes::TypeFloat;
+    oneChannelSet.GenerateMipMap  = false;
+    m_normalRt                    = MakeNewPtr<RenderTarget>(128, 128, oneChannelSet);
 
-    m_normalRt->m_settings            = oneChannelSet;
-
-    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGBA32F;
-    m_linearDepthRt->m_settings       = oneChannelSet;
+    oneChannelSet.InternalFormat  = GraphicTypes::FormatRGBA32F;
+    m_linearDepthRt               = MakeNewPtr<RenderTarget>(128, 128, oneChannelSet);
   }
 
   ForwardPreProcess::~ForwardPreProcess() {}

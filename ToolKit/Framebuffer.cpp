@@ -170,7 +170,7 @@ namespace ToolKit
     {
       if (layer != -1)
       {
-        assert(layer < rt->m_settings.Layers);
+        assert(layer < rt->Settings().Layers);
         glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, rt->m_textureId, mip, layer);
       }
       else

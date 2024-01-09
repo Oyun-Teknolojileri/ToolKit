@@ -22,15 +22,16 @@ namespace ToolKit
   AdditiveLightingPass::AdditiveLightingPass()
   {
     // Render target for light calc.
-    RenderTargetSettigs oneChannelSet = {};
-    oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGBA16F;
-    oneChannelSet.Format              = GraphicTypes::FormatRGBA;
-    oneChannelSet.Type                = GraphicTypes::TypeFloat;
+    TextureSettings oneChannelSet = {};
+    oneChannelSet.WarpS           = GraphicTypes::UVClampToEdge;
+    oneChannelSet.WarpT           = GraphicTypes::UVClampToEdge;
+    oneChannelSet.InternalFormat  = GraphicTypes::FormatRGBA16F;
+    oneChannelSet.Format          = GraphicTypes::FormatRGBA;
+    oneChannelSet.Type            = GraphicTypes::TypeFloat;
+    oneChannelSet.GenerateMipMap  = false;
 
-    uint size                         = 1024;
-    m_lightingRt                      = MakeNewPtr<RenderTarget>(size, size, oneChannelSet);
+    uint size                     = 1024;
+    m_lightingRt                  = MakeNewPtr<RenderTarget>(size, size, oneChannelSet);
     m_lightingRt->Init();
 
     // Frame buffer for light calc.

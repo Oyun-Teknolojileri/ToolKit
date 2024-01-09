@@ -146,21 +146,22 @@ namespace ToolKit
     // the only render target is already being resized.
     m_ssaoFramebuffer->Init({(uint) width, (uint) height, false, false});
 
-    RenderTargetSettigs oneChannelSet = {};
-    oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.InternalFormat      = GraphicTypes::FormatR32F;
-    oneChannelSet.Format              = GraphicTypes::FormatRed;
-    oneChannelSet.Type                = GraphicTypes::TypeFloat;
+    TextureSettings oneChannelSet = {};
+    oneChannelSet.WarpS           = GraphicTypes::UVClampToEdge;
+    oneChannelSet.WarpT           = GraphicTypes::UVClampToEdge;
+    oneChannelSet.InternalFormat  = GraphicTypes::FormatR32F;
+    oneChannelSet.Format          = GraphicTypes::FormatRed;
+    oneChannelSet.Type            = GraphicTypes::TypeFloat;
+    oneChannelSet.GenerateMipMap  = false;
 
     // Init ssao texture
-    m_ssaoTexture->m_settings         = oneChannelSet;
+    m_ssaoTexture->Settings(oneChannelSet);
     m_ssaoTexture->ReconstructIfNeeded((uint) width, (uint) height);
 
     m_ssaoFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_ssaoTexture);
 
     // Init temporary blur render target
-    m_tempBlurRt->m_settings = oneChannelSet;
+    m_tempBlurRt->Settings(oneChannelSet);
     m_tempBlurRt->ReconstructIfNeeded((uint) width, (uint) height);
 
     // Init noise texture

@@ -32,12 +32,11 @@ namespace ToolKit
     ptr->m_height  = 1;
     ptr->m_width   = (int) (skeleton->m_bones.size()) * 4;
     TextureSettings set;
-    set.GenerateMipMap  = false;
-    set.InternalFormat  = GraphicTypes::FormatRGBA32F;
-    set.MinFilter       = GraphicTypes::SampleNearest;
-    set.MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
-    set.Type            = GraphicTypes::TypeFloat;
-    ptr->SetTextureSettings(set);
+    set.GenerateMipMap = false;
+    set.InternalFormat = GraphicTypes::FormatRGBA32F;
+    set.MinFilter      = GraphicTypes::SampleNearest;
+    set.Type           = GraphicTypes::TypeFloat;
+    ptr->Settings(set);
     ptr->m_name = skeleton->m_name + " BindPoseTexture";
 
     glGenTextures(1, &ptr->m_textureId);
@@ -222,7 +221,7 @@ namespace ToolKit
 
       m_bindPoseTexture = nullptr;
 
-      m_initiated = false;
+      m_initiated       = false;
     }
   }
 

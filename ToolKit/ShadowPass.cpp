@@ -339,17 +339,17 @@ namespace ToolKit
         GetLogger()->Log("ERROR: Max array texture layer size is reached: " + std::to_string(maxLayers) + " !");
       }
 
-      const RenderTargetSettigs set = {0,
-                                       GraphicTypes::Target2DArray,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::SampleNearest,
-                                       GraphicTypes::SampleNearest,
-                                       GraphicTypes::FormatRG32F,
-                                       GraphicTypes::FormatRG,
-                                       GraphicTypes::TypeFloat,
-                                       m_layerCount};
+      const TextureSettings set = {GraphicTypes::Target2DArray,
+                                   GraphicTypes::UVClampToEdge,
+                                   GraphicTypes::UVClampToEdge,
+                                   GraphicTypes::UVClampToEdge,
+                                   GraphicTypes::SampleNearest,
+                                   GraphicTypes::SampleNearest,
+                                   GraphicTypes::FormatRG32F,
+                                   GraphicTypes::FormatRG,
+                                   GraphicTypes::TypeFloat,
+                                   m_layerCount,
+                                   false};
 
       m_shadowAtlas->Reconstruct(Renderer::RHIConstants::ShadowAtlasTextureSize,
                                  Renderer::RHIConstants::ShadowAtlasTextureSize,

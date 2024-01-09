@@ -218,10 +218,9 @@ namespace ToolKit
       AdjustZoom(0.0f);
     }
 
-    RenderTargetSettigs EditorViewport::GetRenderTargetSettings()
+    TextureSettings EditorViewport::GetRenderTargetSettings()
     {
-      RenderTargetSettigs sets = Viewport::GetRenderTargetSettings();
-      sets.Msaa                = GetEngineSettings().Graphics.MSAA;
+      TextureSettings sets = Viewport::GetRenderTargetSettings();
       return sets;
     }
 

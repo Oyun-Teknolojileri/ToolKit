@@ -13,15 +13,20 @@
 
 namespace ToolKit
 {
+
   struct TextureSettings
   {
-    GraphicTypes MinFilter       = GraphicTypes::SampleLinear;
-    GraphicTypes InternalFormat  = GraphicTypes::FormatSRGB8_A8;
-    GraphicTypes Type            = GraphicTypes::TypeUnsignedByte;
-    GraphicTypes MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
-    bool GenerateMipMap          = true;
-    GraphicTypes Target          = GraphicTypes::Target2D;
-    int Layers                   = -1;
+    GraphicTypes Target         = GraphicTypes::Target2D;
+    GraphicTypes WarpS          = GraphicTypes::UVRepeat;
+    GraphicTypes WarpT          = GraphicTypes::UVRepeat;
+    GraphicTypes WarpR          = GraphicTypes::UVRepeat;
+    GraphicTypes MinFilter      = GraphicTypes::SampleNearest;
+    GraphicTypes MagFilter      = GraphicTypes::SampleNearest;
+    GraphicTypes InternalFormat = GraphicTypes::FormatRGBA16F;
+    GraphicTypes Format         = GraphicTypes::FormatRGBA;
+    GraphicTypes Type           = GraphicTypes::TypeFloat;
+    int Layers                  = 1;
+    bool GenerateMipMap         = false;
   };
 
   class TK_API Texture : public Resource
@@ -38,22 +43,22 @@ namespace ToolKit
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
-    const TextureSettings& GetTextureSettings();
-    void SetTextureSettings(const TextureSettings& settings);
+    const TextureSettings& Settings();
+    void Settings(const TextureSettings& settings);
 
    protected:
     virtual void Clear();
 
    public:
-    uint m_textureId = 0;
-    int m_width      = 0;
-    int m_height     = 0;
-    int m_bytePP     = 0;
-    uint8* m_image   = nullptr;
-    float* m_imagef  = nullptr;
+    uint m_textureId   = 0;
+    int m_width        = 0;
+    int m_height       = 0;
+    int m_bytePerPixel = 0;
+    uint8* m_image     = nullptr;
+    float* m_imagef    = nullptr;
 
    protected:
-    TextureSettings m_textureSettings;
+    TextureSettings m_settings;
   };
 
   class DepthTexture : public Texture
@@ -126,21 +131,6 @@ namespace ToolKit
     bool m_waitingForInit = false;
   };
 
-  struct RenderTargetSettigs
-  {
-    byte Msaa                   = 0;
-    GraphicTypes Target         = GraphicTypes::Target2D;
-    GraphicTypes WarpS          = GraphicTypes::UVRepeat;
-    GraphicTypes WarpT          = GraphicTypes::UVRepeat;
-    GraphicTypes WarpR          = GraphicTypes::UVRepeat;
-    GraphicTypes MinFilter      = GraphicTypes::SampleNearest;
-    GraphicTypes MagFilter      = GraphicTypes::SampleNearest;
-    GraphicTypes InternalFormat = GraphicTypes::FormatRGBA16F;
-    GraphicTypes Format         = GraphicTypes::FormatRGBA;
-    GraphicTypes Type           = GraphicTypes::TypeFloat;
-    int Layers                  = 1;
-  };
-
   class TK_API RenderTarget : public Texture
   {
    public:
@@ -148,16 +138,12 @@ namespace ToolKit
 
     RenderTarget();
     virtual ~RenderTarget();
-    virtual void NativeConstruct(uint widht, uint height, const RenderTargetSettigs& settings = RenderTargetSettigs());
+    virtual void NativeConstruct(uint widht, uint height, const TextureSettings& settings = TextureSettings());
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
-    void Reconstruct(uint width, uint height, const RenderTargetSettigs& settings);
+    void Reconstruct(uint width, uint height, const TextureSettings& settings);
     void ReconstructIfNeeded(uint width, uint height);
-    const RenderTargetSettigs& GetSettings() const;
-
-   public:
-    RenderTargetSettigs m_settings;
   };
 
   class TK_API TextureManager : public ResourceManager

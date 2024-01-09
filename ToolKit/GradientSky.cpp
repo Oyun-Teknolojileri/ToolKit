@@ -97,19 +97,20 @@ namespace ToolKit
 
   void GradientSky::GenerateGradientCubemap(Renderer* renderer)
   {
-    const RenderTargetSettigs set = {0,
-                                     GraphicTypes::TargetCubeMap,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::SampleNearest,
-                                     GraphicTypes::SampleNearest,
-                                     GraphicTypes::FormatRGBA16F,
-                                     GraphicTypes::FormatRGBA,
-                                     GraphicTypes::TypeFloat};
+    const TextureSettings set = {GraphicTypes::TargetCubeMap,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::SampleNearest,
+                                 GraphicTypes::SampleNearest,
+                                 GraphicTypes::FormatRGBA16F,
+                                 GraphicTypes::FormatRGBA,
+                                 GraphicTypes::TypeFloat,
+                                 1,
+                                 false};
 
-    uint size                     = (uint) GetIBLTextureSizeVal().GetValue<int>();
-    RenderTargetPtr cubemap       = MakeNewPtr<RenderTarget>(size, size, set);
+    uint size                 = (uint) GetIBLTextureSizeVal().GetValue<int>();
+    RenderTargetPtr cubemap   = MakeNewPtr<RenderTarget>(size, size, set);
     cubemap->Init();
 
     // Create material

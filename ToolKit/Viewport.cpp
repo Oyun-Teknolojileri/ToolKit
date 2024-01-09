@@ -103,9 +103,9 @@ namespace ToolKit
     }
   }
 
-  RenderTargetSettigs Viewport::GetRenderTargetSettings() { return RenderTargetSettigs(); }
+  TextureSettings Viewport::GetRenderTargetSettings() { return TextureSettings(); }
 
-  void Viewport::ResetViewportImage(const RenderTargetSettigs& settings)
+  void Viewport::ResetViewportImage(const TextureSettings& settings)
   {
     if (m_framebuffer == nullptr)
     {

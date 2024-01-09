@@ -685,10 +685,12 @@ namespace ToolKit
 
       m_overrideMat                    = nullptr;
 
-      RenderTargetSettigs set;
+      TextureSettings set;
       set.InternalFormat = GraphicTypes::FormatRG16F;
       set.Format         = GraphicTypes::FormatRG;
       set.Type           = GraphicTypes::TypeFloat;
+      set.GenerateMipMap = false;
+
       RenderTargetPtr brdfLut =
           MakeNewPtr<RenderTarget>(RHIConstants::BrdfLutTextureSize, RHIConstants::BrdfLutTextureSize, set);
       brdfLut->Init();
@@ -1171,18 +1173,19 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    const RenderTargetSettigs set = {0,
-                                     GraphicTypes::TargetCubeMap,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::SampleLinear,
-                                     GraphicTypes::SampleLinear,
-                                     GraphicTypes::FormatRGBA16F,
-                                     GraphicTypes::FormatRGBA,
-                                     GraphicTypes::TypeFloat};
+    const TextureSettings set = {GraphicTypes::TargetCubeMap,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::SampleLinear,
+                                 GraphicTypes::SampleLinear,
+                                 GraphicTypes::FormatRGBA16F,
+                                 GraphicTypes::FormatRGBA,
+                                 GraphicTypes::TypeFloat,
+                                 1,
+                                 false};
 
-    RenderTargetPtr cubeMapRt     = MakeNewPtr<RenderTarget>(size, size, set);
+    RenderTargetPtr cubeMapRt = MakeNewPtr<RenderTarget>(size, size, set);
     cubeMapRt->Init();
 
     // Create material
@@ -1244,17 +1247,19 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    const RenderTargetSettigs set = {0,
-                                     GraphicTypes::TargetCubeMap,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::SampleLinear,
-                                     GraphicTypes::SampleLinear,
-                                     GraphicTypes::FormatRGBA16F,
-                                     GraphicTypes::FormatRGBA,
-                                     GraphicTypes::TypeFloat};
-    RenderTargetPtr cubeMapRt     = MakeNewPtr<RenderTarget>(size, size, set);
+    const TextureSettings set = {GraphicTypes::TargetCubeMap,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::SampleLinear,
+                                 GraphicTypes::SampleLinear,
+                                 GraphicTypes::FormatRGBA16F,
+                                 GraphicTypes::FormatRGBA,
+                                 GraphicTypes::TypeFloat,
+                                 1,
+                                 false};
+
+    RenderTargetPtr cubeMapRt = MakeNewPtr<RenderTarget>(size, size, set);
     cubeMapRt->Init();
 
     // Views for 6 different angles
@@ -1317,18 +1322,19 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    const RenderTargetSettigs set = {0,
-                                     GraphicTypes::TargetCubeMap,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::SampleNearest,
-                                     GraphicTypes::SampleNearest,
-                                     GraphicTypes::FormatRGBA16F,
-                                     GraphicTypes::FormatRGBA,
-                                     GraphicTypes::TypeFloat};
+    const TextureSettings set = {GraphicTypes::TargetCubeMap,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::SampleNearest,
+                                 GraphicTypes::SampleNearest,
+                                 GraphicTypes::FormatRGBA16F,
+                                 GraphicTypes::FormatRGBA,
+                                 GraphicTypes::TypeFloat,
+                                 1,
+                                 false};
 
-    RenderTargetPtr cubemapRt     = MakeNewPtr<RenderTarget>(size, size, set);
+    RenderTargetPtr cubemapRt = MakeNewPtr<RenderTarget>(size, size, set);
     cubemapRt->Init();
 
     // Intentionally creating space to fill later. ( mip maps will be calculated for specular ibl )

@@ -193,17 +193,21 @@ namespace ToolKit
           return;
         }
 
-        RenderTargetPtr& rt           = m_tempTextures[i];
-        rt                            = MakeNewPtr<RenderTarget>();
-        rt->m_settings.InternalFormat = GraphicTypes::FormatRGBA16F;
-        rt->m_settings.Format         = GraphicTypes::FormatRGBA;
-        rt->m_settings.Type           = GraphicTypes::TypeFloat;
-        rt->m_settings.MagFilter      = GraphicTypes::SampleLinear;
-        rt->m_settings.MinFilter      = GraphicTypes::SampleLinear;
-        rt->m_settings.WarpR          = GraphicTypes::UVClampToEdge;
-        rt->m_settings.WarpS          = GraphicTypes::UVClampToEdge;
-        rt->m_settings.WarpT          = GraphicTypes::UVClampToEdge;
-        rt->ReconstructIfNeeded(curRes.x, curRes.y);
+        RenderTargetPtr& rt = m_tempTextures[i];
+
+        TextureSettings set;
+        set.InternalFormat = GraphicTypes::FormatRGBA16F;
+        set.Format         = GraphicTypes::FormatRGBA;
+        set.Type           = GraphicTypes::TypeFloat;
+        set.MagFilter      = GraphicTypes::SampleLinear;
+        set.MinFilter      = GraphicTypes::SampleLinear;
+        set.WarpR          = GraphicTypes::UVClampToEdge;
+        set.WarpS          = GraphicTypes::UVClampToEdge;
+        set.WarpT          = GraphicTypes::UVClampToEdge;
+        set.GenerateMipMap = false;
+
+        rt                 = MakeNewPtr<RenderTarget>(curRes.x, curRes.y, set);
+        rt->Init();
 
         FramebufferPtr& fb = m_tempFrameBuffers[i];
         if (fb == nullptr)
