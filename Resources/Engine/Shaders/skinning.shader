@@ -2,10 +2,10 @@
 	<type name = "includeShader" />
   <uniform name = "isSkinned" />
   <uniform name = "numBones" />
-  <uniform name = "framekey1" />
-  <uniform name = "framekey2" />
-  <uniform name = "framekeyIntepolationTime" />
-  <uniform name = "keyframeCount" />
+  <uniform name = "keyFrame1" />
+  <uniform name = "keyFrame2" />
+  <uniform name = "keyFrameIntepolationTime" />
+  <uniform name = "keyFrameCount" />
 	<source>
 	<!--
 
@@ -14,10 +14,10 @@
 
   uniform float numBones;
   uniform uint isSkinned;
-  uniform float framekey1; // normalized via key / keycount
-  uniform float framekey2; // normalized via key / keycount
-  uniform float framekeyIntepolationTime;
-  uniform uint keyframeCount;
+  uniform float keyFrame1; // normalized via key / keycount
+  uniform float keyFrame2; // normalized via key / keycount
+  uniform float keyFrameIntepolationTime;
+  uniform float keyFrameCount;
   uniform sampler2D s_texture2; // This is static data, bindPose texture
   uniform sampler2D s_texture3; // This is dynamic data, boneTransform texture
 
@@ -25,7 +25,7 @@
   {
     const float matrixPos   = boneIndx / numBones;
     const float stepX       = 1.0 / (numBones * 4.0);
-    const vec2 moveToCenter = vec2(step / 2.0, 1.0 / keyframeCount);
+    const vec2 moveToCenter = vec2(step / 2.0, 1.0 / keyFrameCount);
 
     return mat4(texture(boneText, vec2(matrixPos, keyframe) + moveToCenter),
                 texture(boneText, vec2(matrixPos + stepX, keyframe) + moveToCenter),
@@ -42,18 +42,18 @@
     {
       totalWeight       += vWeights[i];
 
-      Mat4 keyframe1Mat = getMatrixFromTexture(s_texture3, vBones[i], framekey1);
-      Mat4 keyframe2Mat = getMatrixFromTexture(s_texture3, vBones[i], framekey2);
-      Mat3 keyframe1Mat3 = mat3(keyframe1Mat);
-      Mat3 keyframe2Mat3 = mat3(keyframe2Mat);
+      Mat4 keyFrame1Mat = getMatrixFromTexture(s_texture3, vBones[i], keyFrame1);
+      Mat4 keyFrame2Mat = getMatrixFromTexture(s_texture3, vBones[i], keyFrame2);
+      Mat3 keyFrame1Mat3 = mat3(keyFrame1Mat);
+      Mat3 keyFrame2Mat3 = mat3(keyFrame2Mat);
 
-      vec4 keyframePos1 = keyframe1Mat * vertexPos * vWeights[i];
-      vec4 keyframePos2 = keyframe2Mat * vertexPos * vWeights[i];
-      vec3 keyframeNor1 = keyframe1Mat3 * vertexNormal * vWeights[i];
-      vec3 keyframeNor2 = keyframe2Mat3 * vertexNormal * vWeights[i];
+      vec4 keyFramePos1 = keyFrame1Mat * vertexPos * vWeights[i];
+      vec4 keyFramePos2 = keyFrame2Mat * vertexPos * vWeights[i];
+      vec3 keyFrameNor1 = keyFrame1Mat3 * vertexNormal * vWeights[i];
+      vec3 keyFrameNor2 = keyFrame2Mat3 * vertexNormal * vWeights[i];
 
-      skinned           += mix(keyframePos1, keyframePos2, framekeyIntepolationTime);
-      skinnedNormal     += mix(keyframeNor1, keyframeNor2, framekeyIntepolationTime);
+      skinned           += mix(keyFramePos1, keyFramePos2, keyFrameIntepolationTime);
+      skinnedNormal     += mix(keyFrameNor1, keyFrameNor2, keyFrameIntepolationTime);
     }
     vertexPos = skinned / totalWeight;
     vertexNormal = normalize(skinnedNormal);
@@ -69,35 +69,25 @@
     {
       totalWeight       += vWeights[i];
 
-      Mat4 keyframe1Mat = getMatrixFromTexture(s_texture3, vBones[i], framekey1);
-      Mat4 keyframe2Mat = getMatrixFromTexture(s_texture3, vBones[i], framekey2);
-      Mat3 keyframe1Mat3 = mat3(keyframe1Mat);
-      Mat3 keyframe2Mat3 = mat3(keyframe2Mat);
+      Mat4 keyFrame1Mat = getMatrixFromTexture(s_texture3, vBones[i], keyFrame1);
+      Mat4 keyFrame2Mat = getMatrixFromTexture(s_texture3, vBones[i], keyFrame2);
+      Mat3 keyFrame1Mat3 = mat3(keyFrame1Mat);
+      Mat3 keyFrame2Mat3 = mat3(keyFrame2Mat);
 
-      vec4 keyframePos1 = keyframe1Mat * vertexPos * vWeights[i];
-      vec4 keyframePos2 = keyframe2Mat * vertexPos * vWeights[i];
-      vec3 keyframeNor1 = keyframe1Mat3 * vertexNormal * vWeights[i];
-      vec3 keyframeNor2 = keyframe2Mat3 * vertexNormal * vWeights[i];
-      vec3 keyframeBit1 = keyframe1Mat3 * vertexBiTangent * vWeights[i];
-      vec3 keyframeBit2 = keyframe2Mat3 * vertexBiTangent * vWeights[i];
+      vec4 keyFramePos1 = keyFrame1Mat * vertexPos * vWeights[i];
+      vec4 keyFramePos2 = keyFrame2Mat * vertexPos * vWeights[i];
+      vec3 keyFrameNor1 = keyFrame1Mat3 * vertexNormal * vWeights[i];
+      vec3 keyFrameNor2 = keyFrame2Mat3 * vertexNormal * vWeights[i];
+      vec3 keyFrameBit1 = keyFrame1Mat3 * vertexBiTangent * vWeights[i];
+      vec3 keyFrameBit2 = keyFrame2Mat3 * vertexBiTangent * vWeights[i];
 
-      skinned           += mix(keyframePos1, keyframePos2, framekeyIntepolationTime);
-      skinnedNormal     += mix(keyframeNor1, keyframeNor2, framekeyIntepolationTime);
-      skinnedBiTangent  += mix(keyframeBit1, keyframeBit2, framekeyIntepolationTime);
+      skinned           += mix(keyFramePos1, keyFramePos2, keyFrameIntepolationTime);
+      skinnedNormal     += mix(keyFrameNor1, keyFrameNor2, keyFrameIntepolationTime);
+      skinnedBiTangent  += mix(keyFrameBit1, keyFrameBit2, keyFrameIntepolationTime);
     }
     vertexPos = skinned / totalWeight;
     vertexNormal = normalize(skinnedNormal);
     vertexBiTangent = normalize(skinnedBiTangent);
-  }
-
-  vec3 skinNormal(vec3 vertexNormal)
-  {
-    vec3 skinned = vec3(0);
-    for (int i = 0; i < 4; i++)
-    {
-      skinned += mat3(getMatrixFromTexture(s_texture3, vBones[i])) * vertexNormal * vWeights[i];
-    }
-    return normalize(skinned);
   }
 
 	-->
