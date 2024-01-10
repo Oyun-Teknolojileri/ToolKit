@@ -40,7 +40,7 @@ namespace ToolKit
                    GraphicTypes::FormatSRGB8_A8,
                    GraphicTypes::FormatRGBA,
                    GraphicTypes::TypeUnsignedByte,
-                   1,
+                   -1,
                    true};
 
     m_textureId = 0;

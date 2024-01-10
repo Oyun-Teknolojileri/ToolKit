@@ -25,7 +25,7 @@ namespace ToolKit
     GraphicTypes InternalFormat = GraphicTypes::FormatRGBA16F;
     GraphicTypes Format         = GraphicTypes::FormatRGBA;
     GraphicTypes Type           = GraphicTypes::TypeFloat;
-    int Layers                  = 1;
+    int Layers                  = -1;
     bool GenerateMipMap         = false;
   };
 
