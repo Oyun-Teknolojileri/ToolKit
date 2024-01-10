@@ -141,7 +141,7 @@ namespace ToolKit
     // Skeleton Component is used by all meshes of an entity.
     const auto& updateAndBindSkinningTextures = [&job, this]()
     {
-      if (!job.Mesh->IsSkinned() || job.animData.anim == nullptr)
+      if (!job.Mesh->IsSkinned())
       {
         return;
       }
@@ -158,8 +158,17 @@ namespace ToolKit
         return;
       }
 
-      AnimationPlayer* animPlayer = GetAnimationPlayer();
-      SetTexture(3, animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.anim->GetIdVal())->m_textureId);
+      if (job.animData.anim != nullptr)
+      {
+        // animation
+        AnimationPlayer* animPlayer = GetAnimationPlayer();
+        SetTexture(3,
+                   animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.anim->GetIdVal())->m_textureId);
+      }
+      else
+      {
+        SetTexture(3, skel->m_bindPoseTexture->m_textureId);
+      }
 
       // TODO remove the update gpu texture function
       if (false)
@@ -187,10 +196,17 @@ namespace ToolKit
     GpuProgramPtr prg = m_gpuProgramManager.CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
     BindProgram(prg);
 
-    auto activateSkinning = [prg, &job](uint isSkinned)
+    auto activateSkinning = [prg, &job](bool isSkinned)
     {
       GLint isSkinnedLoc = prg->GetUniformLocation(Uniform::IS_SKINNED);
-      glUniform1ui(isSkinnedLoc, isSkinned);
+      if (isSkinned)
+      {
+        glUniform1ui(isSkinnedLoc, 1);
+      }
+      else
+      {
+        glUniform1ui(isSkinnedLoc, 0);
+      }
 
       if (job.SkeletonCmp == nullptr)
       {
@@ -945,6 +961,11 @@ namespace ToolKit
         case Uniform::KEY_FRAME_COUNT:
         {
           glUniform1f(loc, renderJob.animData.keyFrameCount);
+        }
+        break;
+        case Uniform::IS_ANIMATED:
+        {
+          glUniform1ui(loc, renderJob.animData.anim != nullptr);
         }
         break;
         default:

@@ -76,6 +76,7 @@ namespace ToolKit
     KEY_FRAME_2,
     KEY_FRAME_INT_TIME,
     KEY_FRAME_COUNT,
+    IS_ANIMATED,
     UNIFORM_MAX_INVALID
   };
 

@@ -144,6 +144,8 @@ namespace ToolKit
       return "keyFrameIntepolationTime";
     case Uniform::KEY_FRAME_COUNT:
       return "keyFrameCount";
+    case Uniform::IS_ANIMATED:
+      return "isAnimated";
     case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";
