@@ -47,7 +47,14 @@ namespace ToolKit
 
   Texture::Texture(const String& file) : Texture() { SetFile(file); }
 
-  void Texture::NativeConstruct() { Super::NativeConstruct(); }
+  void Texture::NativeConstruct(int width, int height, const TextureSettings& settings)
+  {
+    Super::NativeConstruct();
+
+    m_width    = width;
+    m_height   = height;
+    m_settings = settings;
+  }
 
   Texture::~Texture()
   {
@@ -64,6 +71,7 @@ namespace ToolKit
 
     if (m_settings.Type == GraphicTypes::TypeFloat)
     {
+
       if ((m_imagef = GetFileManager()->GetHdriFile(GetFile(), &m_width, &m_height, &m_bytePerPixel, 4)))
       {
         m_loaded = true;
@@ -295,7 +303,6 @@ namespace ToolKit
     }
 
     String file = fullPath.substr(0, pos);
-
     for (int i = 0; i < 6; i++)
     {
       String postfix = "px.png";
@@ -513,15 +520,6 @@ namespace ToolKit
 
   RenderTarget::~RenderTarget() {}
 
-  void RenderTarget::NativeConstruct(uint width, uint height, const TextureSettings& settings)
-  {
-    Super::NativeConstruct();
-
-    m_width    = width;
-    m_height   = height;
-    m_settings = settings;
-  }
-
   void RenderTarget::Load() {}
 
   void RenderTarget::Init(bool flushClientSideArray)
@@ -596,16 +594,18 @@ namespace ToolKit
     m_initiated = true;
   }
 
-  void RenderTarget::Reconstruct(uint width, uint height, const TextureSettings& settings)
+  void RenderTarget::Reconstruct(int width, int height, const TextureSettings& settings)
   {
     UnInit();
+
     m_width    = width;
     m_height   = height;
     m_settings = settings;
+
     Init();
   }
 
-  void RenderTarget::ReconstructIfNeeded(uint width, uint height)
+  void RenderTarget::ReconstructIfNeeded(int width, int height)
   {
     if (!m_initiated || m_width != width || m_height != height)
     {

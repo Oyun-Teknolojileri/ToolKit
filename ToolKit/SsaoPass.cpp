@@ -144,7 +144,7 @@ namespace ToolKit
 
     // No need destroy and re init framebuffer when size is changed, because
     // the only render target is already being resized.
-    m_ssaoFramebuffer->Init({(uint) width, (uint) height, false, false});
+    m_ssaoFramebuffer->Init({width, height, false, false});
 
     TextureSettings oneChannelSet = {};
     oneChannelSet.WarpS           = GraphicTypes::UVClampToEdge;
@@ -156,7 +156,7 @@ namespace ToolKit
 
     // Init ssao texture
     m_ssaoTexture->Settings(oneChannelSet);
-    m_ssaoTexture->ReconstructIfNeeded((uint) width, (uint) height);
+    m_ssaoTexture->ReconstructIfNeeded(width, height);
 
     m_ssaoFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_ssaoTexture);
 

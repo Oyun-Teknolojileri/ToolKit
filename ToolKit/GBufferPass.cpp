@@ -88,7 +88,7 @@ namespace ToolKit
       m_height = height;
 
       // Gbuffers render targets
-      m_framebuffer->Init({(uint) width, (uint) height, false, true});
+      m_framebuffer->Init({width, height, false, true});
       m_gPosRt->m_width                = width;
       m_gPosRt->m_height               = height;
       m_gNormalRt->m_width             = width;

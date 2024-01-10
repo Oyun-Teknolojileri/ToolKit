@@ -37,7 +37,7 @@ namespace ToolKit
     Texture();
     Texture(const String& file);
     virtual ~Texture();
-    virtual void NativeConstruct();
+    virtual void NativeConstruct(int widht, int height, const TextureSettings& settings);
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
@@ -65,7 +65,9 @@ namespace ToolKit
   {
    public:
     TKDeclareClass(DepthTexture, Texture);
+    using Texture::NativeConstruct;
 
+   public:
     void Load() override;
     void Init(int width, int height, bool stencil);
     void UnInit() override;
@@ -83,7 +85,9 @@ namespace ToolKit
   {
    public:
     TKDeclareClass(CubeMap, Texture);
+    using Texture::NativeConstruct;
 
+   public:
     CubeMap();
     CubeMap(const String& file);
     virtual ~CubeMap();
@@ -109,7 +113,9 @@ namespace ToolKit
   {
    public:
     TKDeclareClass(Hdri, Texture);
+    using Texture::NativeConstruct;
 
+   public:
     Hdri();
     explicit Hdri(const String& file);
     virtual ~Hdri();
@@ -135,15 +141,16 @@ namespace ToolKit
   {
    public:
     TKDeclareClass(RenderTarget, Texture);
+    using Texture::NativeConstruct;
 
+   public:
     RenderTarget();
     virtual ~RenderTarget();
-    virtual void NativeConstruct(uint widht, uint height, const TextureSettings& settings = TextureSettings());
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
-    void Reconstruct(uint width, uint height, const TextureSettings& settings);
-    void ReconstructIfNeeded(uint width, uint height);
+    void Reconstruct(int width, int height, const TextureSettings& settings);
+    void ReconstructIfNeeded(int width, int height);
   };
 
   class TK_API TextureManager : public ResourceManager

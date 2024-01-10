@@ -67,7 +67,7 @@ namespace ToolKit
     }
     m_dofShader->UpdateShaderUniform("radiusScale", blurRadiusScale);
 
-    UVec2 size(m_params.ColorRt->m_width, m_params.ColorRt->m_height);
+    IVec2 size(m_params.ColorRt->m_width, m_params.ColorRt->m_height);
 
     m_quadPass->m_params.FrameBuffer->Init({size.x, size.y, false, false});
     m_dofShader->UpdateShaderUniform("uPixelSize", Vec2(1.0f) / Vec2(size));

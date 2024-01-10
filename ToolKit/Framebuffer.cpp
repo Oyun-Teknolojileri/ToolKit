@@ -102,15 +102,17 @@ namespace ToolKit
 
   bool Framebuffer::Initialized() { return m_initialized; }
 
-  void Framebuffer::ReconstructIfNeeded(uint width, uint height)
+  void Framebuffer::ReconstructIfNeeded(int width, int height)
   {
     CPU_FUNC_RANGE();
 
     if (!m_initialized || m_settings.width != width || m_settings.height != height)
     {
       UnInit();
+
       m_settings.width  = width;
       m_settings.height = height;
+
       Init(m_settings);
     }
   }

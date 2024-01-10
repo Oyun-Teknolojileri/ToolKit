@@ -30,7 +30,7 @@ namespace ToolKit
     oneChannelSet.Type            = GraphicTypes::TypeFloat;
     oneChannelSet.GenerateMipMap  = false;
 
-    uint size                     = 1024;
+    int size                      = 128;
     m_lightingRt                  = MakeNewPtr<RenderTarget>(size, size, oneChannelSet);
     m_lightingRt->Init();
 

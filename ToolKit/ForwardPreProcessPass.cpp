@@ -42,7 +42,7 @@ namespace ToolKit
 
   ForwardPreProcess::~ForwardPreProcess() {}
 
-  void ForwardPreProcess::InitBuffers(uint width, uint height)
+  void ForwardPreProcess::InitBuffers(int width, int height)
   {
     PUSH_GPU_MARKER("ForwardPreProcess::InitBuffers");
     PUSH_CPU_MARKER("ForwardPreProcess::InitBuffers");

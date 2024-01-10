@@ -543,7 +543,7 @@ namespace ToolKit
     if (m_copyFb == nullptr)
     {
       m_copyFb = MakeNewPtr<Framebuffer>();
-      m_copyFb->Init({(uint) source->m_width, (uint) source->m_height, false, false});
+      m_copyFb->Init({source->m_width, source->m_height, false, false});
     }
 
     RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dest);
