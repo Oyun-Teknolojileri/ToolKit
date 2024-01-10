@@ -416,7 +416,7 @@ namespace ToolKit
   {
     m_settings.InternalFormat = GraphicTypes::FormatRGBA16F;
     m_settings.Type           = GraphicTypes::TypeFloat;
-    m_settings.MinFilter      = GraphicTypes::SampleLinearMipmapLinear;
+    m_settings.MinFilter      = GraphicTypes::SampleLinear;
     m_settings.GenerateMipMap = false;
     m_exposure                = 1.0f;
   }
