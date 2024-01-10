@@ -546,9 +546,9 @@ namespace ToolKit
       return nullptr;
     }
 
-    int height         = 1024;                               // max number of key frames
-    int width          = (int) skeleton->m_bones.size() * 4; // number of bones * 4 (each element holds a row of matrix)
-    int sizeOfElement  = 16 * 4;                             // size of an element in bytes
+    uint height        = 1024;                               // max number of key frames
+    uint width         = (int) skeleton->m_bones.size() * 4; // number of bones * 4 (each element holds a row of matrix)
+    uint sizeOfElement = 16 * 4;                             // size of an element in bytes
 
     char* buffer       = new char[height * width * sizeOfElement];
 
@@ -556,6 +556,14 @@ namespace ToolKit
     uint keyframeIndex = 0;
     while (true)
     {
+      if (keyframeIndex >= height)
+      {
+        TK_ERR("The maximum number of key frames for animations is 1024!");
+        TK_ERR("Animation \"%s\" has more than 1024 key frames.", anim->GetFile().c_str());
+        SafeDelArray(buffer);
+        return nullptr;
+      }
+
       bool keysframesLeft = false;
       std::vector<std::pair<Node*, uint>> boneNodes;
 
