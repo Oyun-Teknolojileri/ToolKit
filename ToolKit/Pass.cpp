@@ -92,6 +92,20 @@ namespace ToolKit
         overrideBBoxExists = true;
         overrideBBox       = std::move(bbOverride->GetAABB());
       }
+      SkeletonComponentPtr skComp              = ntt->GetComponent<SkeletonComponent>();
+      AnimationPtr anim                        = nullptr;
+      const AnimRecordRawPtrArray& animRecords = GetAnimationPlayer()->m_records;
+      for (AnimRecordRawPtr animRecord : animRecords)
+      {
+        if (EntityPtr animNtt = animRecord->m_entity.lock())
+        {
+          if (animNtt->GetIdVal() == ntt->GetIdVal())
+          {
+            anim = animRecord->m_animation;
+            break;
+          }
+        }
+      }
 
       auto addRenderJobForMeshFn = [&materialMissing,
                                     &matComp,
@@ -102,7 +116,9 @@ namespace ToolKit
                                     &nttTransform,
                                     overrideBBoxExists,
                                     &overrideBBox,
-                                    castShadow](Mesh* mesh)
+                                    castShadow,
+                                    &skComp,
+                                    &anim](Mesh* mesh)
       {
         if (mesh)
         {
@@ -145,6 +161,15 @@ namespace ToolKit
             // Warn user that we use the default material for the mesh
             materialMissing = true;
             job.Material    = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
+          }
+          if (skComp != nullptr)
+          {
+            float frameKeyCount                    = (float) skComp->GetAnimKeyFrameCount();
+            job.animData.firstKeyFrame             = (float) skComp->GetAnimFirstKeyFrame() / frameKeyCount;
+            job.animData.secondKeyFrame            = (float) skComp->GetAnimSecondKeyFrame() / frameKeyCount;
+            job.animData.keyFrameCount             = frameKeyCount;
+            job.animData.keyFrameInterpolationTime = skComp->GetAnimKeyFrameInterpolateTime();
+            job.animData.anim                      = anim;
           }
 
           jobArray.push_back(job);

@@ -903,6 +903,18 @@ namespace ToolKit
     return cpy;
   }
 
+  TK_API Node* DeepNodeCopy(Node* node)
+  {
+    Node* newNode       = node->Copy();
+
+    for (Node* child : node->m_children)
+    {
+      newNode->AddChild(DeepNodeCopy(child));
+    }
+
+    return newNode;
+  }
+
   static void RecursiveCopyDirectoryWithSet(const String& source,
                                             const String& destination,
                                             const std::unordered_set<uint64>& ignoredExtSet)

@@ -161,20 +161,17 @@ namespace ToolKit
         return;
       }
 
-      // Bind bone textures
-      // This is valid because these slots will be used by every shader program
-      // below (Renderer::TextureSlot system). But bone count can't be bound
-      // here because its location changes every shader program.
-
-      // Reset purposefully.
-      SetTexture(2, 0);
-      SetTexture(3, 0);
-
-      // because this usage invalidates textures.
-      skCom->m_map->UpdateGPUTexture();
-
-      SetTexture(2, skel->m_bindPoseTexture->m_textureId);
-      SetTexture(3, skCom->m_map->boneTransformNodeTexture->m_textureId);
+      if (job.animData.anim != nullptr)
+      {
+        // animation
+        AnimationPlayer* animPlayer = GetAnimationPlayer();
+        SetTexture(3,
+                   animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.anim->GetIdVal())->m_textureId);
+      }
+      else
+      {
+        SetTexture(3, skel->m_bindPoseTexture->m_textureId);
+      }
     };
 
     updateAndBindSkinningTextures();
@@ -198,10 +195,17 @@ namespace ToolKit
     GpuProgramPtr prg = m_gpuProgramManager.CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
     BindProgram(prg);
 
-    auto activateSkinning = [prg, &job](uint isSkinned)
+    auto activateSkinning = [prg, &job](bool isSkinned)
     {
       GLint isSkinnedLoc = prg->GetUniformLocation(Uniform::IS_SKINNED);
-      glUniform1ui(isSkinnedLoc, isSkinned);
+      if (isSkinned)
+      {
+        glUniform1ui(isSkinnedLoc, 1);
+      }
+      else
+      {
+        glUniform1ui(isSkinnedLoc, 0);
+      }
 
       if (job.SkeletonCmp == nullptr)
       {
@@ -213,7 +217,7 @@ namespace ToolKit
         GLint numBonesLoc = prg->GetUniformLocation(Uniform::NUM_BONES);
         GLuint boneCount  = (GLuint) job.SkeletonCmp->GetSkeletonResourceVal()->m_bones.size();
 
-        glUniform1ui(numBonesLoc, boneCount);
+        glUniform1f(numBonesLoc, (float) boneCount);
       }
     };
 
@@ -222,7 +226,7 @@ namespace ToolKit
 
     RenderState* rs = m_mat->GetRenderState();
     SetRenderState(rs);
-    FeedUniforms(prg);
+    FeedUniforms(prg, job);
 
     glBindVertexArray(mesh->m_vaoId);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
@@ -736,7 +740,7 @@ namespace ToolKit
     glUseProgram(program->m_handle);
   }
 
-  void Renderer::FeedUniforms(GpuProgramPtr program)
+  void Renderer::FeedUniforms(GpuProgramPtr program, const RenderJob& renderJob)
   {
     CPU_FUNC_RANGE();
 
@@ -947,6 +951,31 @@ namespace ToolKit
           glUniform1f(loc, set.Graphics.ShadowDistance);
         }
         break;
+        case Uniform::KEY_FRAME_1:
+        {
+          glUniform1f(loc, renderJob.animData.firstKeyFrame);
+        }
+        break;
+        case Uniform::KEY_FRAME_2:
+        {
+          glUniform1f(loc, renderJob.animData.secondKeyFrame);
+        }
+        break;
+        case Uniform::KEY_FRAME_INT_TIME:
+        {
+          glUniform1f(loc, renderJob.animData.keyFrameInterpolationTime);
+        }
+        break;
+        case Uniform::KEY_FRAME_COUNT:
+        {
+          glUniform1f(loc, renderJob.animData.keyFrameCount);
+        }
+        break;
+        case Uniform::IS_ANIMATED:
+        {
+          glUniform1ui(loc, renderJob.animData.anim != nullptr);
+        }
+        break;
         default:
           break;
         }
@@ -1147,7 +1176,7 @@ namespace ToolKit
     static const GLenum textureTypeLut[17] = {
         GL_TEXTURE_2D,       // 0 -> Color Texture
         GL_TEXTURE_2D,       // 1 -> Emissive Texture
-        GL_TEXTURE_2D,       // 2 -> Skinning information
+        GL_TEXTURE_2D,       // 2 -> EMPTY
         GL_TEXTURE_2D,       // 3 -> Skinning information
         GL_TEXTURE_2D,       // 4 -> Metallic Roughness Texture
         GL_TEXTURE_2D,       // 5 -> AO Texture

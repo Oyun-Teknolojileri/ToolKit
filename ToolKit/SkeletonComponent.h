@@ -22,6 +22,9 @@ namespace ToolKit
    */
   class TK_API SkeletonComponent : public Component
   {
+    friend class AnimationPlayer;
+    friend class RenderJobProcessor;
+
    public:
     TKDeclareClass(SkeletonComponent, Component);
 
@@ -34,6 +37,14 @@ namespace ToolKit
     void Init();
     ComponentPtr Copy(EntityPtr ntt) override;
 
+    inline uint GetAnimFirstKeyFrame() const { return m_animFirstKeyFrame; }
+
+    inline uint GetAnimSecondKeyFrame() const { return m_animSecondKeyFrame; }
+
+    inline float GetAnimKeyFrameInterpolateTime() const { return m_animKeyFrameInterpolationTime; }
+
+    inline uint GetAnimKeyFrameCount() const { return m_animKeyFrameCount; }
+
    protected:
     void ParameterConstructor() override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
@@ -44,6 +55,13 @@ namespace ToolKit
 
     DynamicBoneMapPtr m_map = nullptr;
     bool isDirty            = true;
+
+   private:
+    // These are per-frame variables for animation
+    uint m_animFirstKeyFrame              = 0;
+    uint m_animSecondKeyFrame             = 0;
+    float m_animKeyFrameInterpolationTime = 0.0f;
+    uint m_animKeyFrameCount              = 1;
   };
 
 } // namespace ToolKit

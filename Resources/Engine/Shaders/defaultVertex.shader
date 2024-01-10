@@ -29,36 +29,32 @@
       void main()
       {
          gl_Position = vec4(vPosition, 1.0f);
-         if(isSkinned > 0u){
-            gl_Position = skin(gl_Position);
-         }
-         
-         v_pos = (Model * gl_Position).xyz;
-         gl_Position = ProjectViewModel * gl_Position;
-         v_texture = vTexture;
-
-         if (normalMapInUse == 1)
+         if(isSkinned > 0u)
          {
-            vec3 B = normalize(vec3(Model * vec4(vBiTan, 0.0)));
-            vec3 N = normalize(vec3(Model * vec4(vNormal, 0.0)));
-
-            if (isSkinned > 0u)
+            if (normalMapInUse == 1)
             {
-               B = skinNormal(B);
-               N = skinNormal(N);
-            }
+               vec3 B = normalize(vec3(Model * vec4(vBiTan, 0.0)));
+               vec3 N = normalize(vec3(Model * vec4(vNormal, 0.0)));
 
-            vec3 T = normalize(cross(B,N));
-            TBN = mat3(T,B,N);
+               skin(gl_Position, N, B, gl_Position, N, B);
+
+               vec3 T = normalize(cross(B,N));
+               TBN = mat3(T,B,N);
+            }
+            else
+            {
+               v_normal = (InverseTransModel * vec4(vNormal, 1.0)).xyz;
+               skin(gl_Position, v_normal, gl_Position, v_normal);
+            }
          }
          else
          {
             v_normal = (InverseTransModel * vec4(vNormal, 1.0)).xyz;
-            if (isSkinned > 0u)
-            {
-               v_normal = skinNormal(v_normal);
-            }
          }
+
+         v_pos = (Model * gl_Position).xyz;
+         gl_Position = ProjectViewModel * gl_Position;
+         v_texture = vTexture;
       }
 	-->
 	</source>

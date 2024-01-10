@@ -12,6 +12,7 @@
 #include "Entity.h"
 #include "FileManager.h"
 #include "MathUtil.h"
+#include "Mesh.h"
 #include "Node.h"
 #include "Skeleton.h"
 #include "ToolKit.h"
@@ -276,20 +277,6 @@ namespace ToolKit
     m_keys.clear();
   }
 
-  void Animation::Reverse()
-  {
-    for (auto& keys : m_keys)
-    {
-      int len = static_cast<int>(m_keys[keys.first].size()) - 1;
-      int lim = len / 2;
-      for (int i = 0; i < lim; i++)
-      {
-        std::swap(m_keys[keys.first][i], m_keys[keys.first][len - i]);
-        std::swap(m_keys[keys.first][i].m_frame, m_keys[keys.first][len - i].m_frame);
-      }
-    }
-  }
-
   void Animation::CopyTo(Resource* other)
   {
     Resource::CopyTo(other);
@@ -340,8 +327,8 @@ namespace ToolKit
     // Rote interpolation ratio and nearest keys.
     for (int i = 1; i < keySize; i++)
     {
-      float keyTime2 = keys[i].m_frame * 1.0f / m_fps;
-      float keyTime1 = keys[i - 1].m_frame * 1.0f / m_fps;
+      float keyTime2 = keys[i].m_frame / m_fps;
+      float keyTime1 = keys[i - 1].m_frame / m_fps;
 
       if (t >= keyTime1 && keyTime2 >= t)
       {
@@ -369,6 +356,8 @@ namespace ToolKit
     }
   }
 
+  AnimationPlayer::~AnimationPlayer() { ClearAnimationData(); }
+
   void AnimationPlayer::AddRecord(AnimRecord* rec)
   {
     int indx = Exist(rec->m_id);
@@ -376,6 +365,9 @@ namespace ToolKit
     {
       return;
     }
+
+    // Generate animation frame data
+    AddAnimationData(rec->m_entity, rec->m_animation);
 
     m_records.push_back(rec);
   }
@@ -386,6 +378,8 @@ namespace ToolKit
     if (indx != -1)
     {
       m_records.erase(m_records.begin() + indx);
+
+      UpdateAnimationData();
     }
   }
 
@@ -432,9 +426,21 @@ namespace ToolKit
 
       if (EntityPtr ntt = record->m_entity.lock())
       {
-        ntt->SetPose(record->m_animation,
-                     record->m_currentTime,
-                     record->m_blendTarget.Blend ? &record->m_blendTarget : nullptr);
+        MeshComponentPtr meshComp   = ntt->GetMeshComponent();
+        SkeletonComponentPtr skComp = ntt->GetComponent<SkeletonComponent>();
+        if (meshComp->GetMeshVal()->IsSkinned() && skComp != nullptr)
+        {
+          assert(record->m_animation->m_keys.size() > 0);
+          KeyArray& keys = (*(record->m_animation->m_keys.begin())).second;
+          int key1, key2;
+          float ratio;
+          record->m_animation->GetNearestKeys(keys, key1, key2, ratio, record->m_currentTime);
+
+          skComp->m_animFirstKeyFrame             = key1;
+          skComp->m_animSecondKeyFrame            = key2;
+          skComp->m_animKeyFrameInterpolationTime = ratio;
+          skComp->m_animKeyFrameCount             = (uint) keys.size();
+        }
       }
 
       if (state == AnimRecord::State::Rewind)
@@ -445,7 +451,24 @@ namespace ToolKit
       return state == AnimRecord::State::Stop;
     };
 
-    erase_if(m_records, updateRecordsFn);
+    bool anyAnimRecordDeleted = false;
+    for (std::vector<AnimRecordRawPtr>::iterator it = m_records.begin(); it != m_records.end();)
+    {
+      if (updateRecordsFn(*it))
+      {
+        anyAnimRecordDeleted = true;
+        it                   = m_records.erase(it);
+      }
+      else
+      {
+        ++it;
+      }
+    }
+
+    if (anyAnimRecordDeleted)
+    {
+      UpdateAnimationData();
+    }
   }
 
   int AnimationPlayer::Exist(ULongID id) const
@@ -459,6 +482,166 @@ namespace ToolKit
     }
 
     return -1;
+  }
+
+  void AnimationPlayer::AddAnimationData(EntityWeakPtr ntt, AnimationPtr anim)
+  {
+    if (EntityPtr entity = ntt.lock())
+    {
+      if (SkeletonComponentPtr skelComp = entity->GetComponent<SkeletonComponent>())
+      {
+        if (SkeletonPtr skeleton = skelComp->GetSkeletonResourceVal())
+        {
+          DataTexturePtr texture = CreateAnimationDataTexture(skeleton, anim);
+          m_animTextures[std::make_pair(skeleton->GetIdVal(), anim->GetIdVal())] = texture;
+        }
+      }
+    }
+  }
+
+  void AnimationPlayer::UpdateAnimationData()
+  {
+    std::map<std::pair<ULongID, ULongID>, DataTexturePtr>::iterator it;
+    for (it = m_animTextures.begin(); it != m_animTextures.end();)
+    {
+      bool found = false;
+      for (AnimRecord* animRecord : m_records)
+      {
+        if (EntityPtr entity = animRecord->m_entity.lock())
+        {
+          if (SkeletonComponentPtr skelComp = entity->GetComponent<SkeletonComponent>())
+          {
+            if (SkeletonPtr skeleton = skelComp->GetSkeletonResourceVal())
+            {
+              const ULongID skeletonID = skeleton->GetIdVal();
+              const ULongID animID     = animRecord->m_animation->GetIdVal();
+
+              if (it->first.first == skeletonID && it->first.second == animID)
+              {
+                found = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      if (found)
+      {
+        ++it;
+      }
+      else
+      {
+        it = m_animTextures.erase(it);
+      }
+    }
+  }
+
+  void AnimationPlayer::ClearAnimationData() { m_animTextures.clear(); }
+
+  DataTexturePtr AnimationPlayer::CreateAnimationDataTexture(SkeletonPtr skeleton, AnimationPtr anim)
+  {
+    if (anim->m_keys.empty())
+    {
+      return nullptr;
+    }
+
+    uint height        = 1024;                               // max number of key frames
+    uint width         = (int) skeleton->m_bones.size() * 4; // number of bones * 4 (each element holds a row of matrix)
+    uint sizeOfElement = 16 * 4;                             // size of an element in bytes
+
+    char* buffer       = new char[height * width * sizeOfElement];
+
+    uint maxKeyCount   = 0;
+    uint keyframeIndex = 0;
+    while (true)
+    {
+      if (keyframeIndex >= height)
+      {
+        TK_ERR("The maximum number of key frames for animations is 1024!");
+        TK_ERR("Animation \"%s\" has more than 1024 key frames.", anim->GetFile().c_str());
+        SafeDelArray(buffer);
+        return nullptr;
+      }
+
+      bool keysframesLeft = false;
+      std::vector<std::pair<Node*, uint>> boneNodes;
+
+      // Iterate all bones for the key frame and get node transformations
+      for (auto& dBoneIter : skeleton->m_Tpose.boneList)
+      {
+        const String& name                 = dBoneIter.first;
+        DynamicBoneMap::DynamicBone& dBone = dBoneIter.second;
+
+        if (anim->m_keys.find(name) == anim->m_keys.end())
+        {
+          dBone.node->m_translation = ZERO;
+          dBone.node->m_orientation = Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+          dBone.node->m_scale       = Vec3(1.0f, 1.0f, 1.0f);
+          dBone.node->SetChildrenDirty();
+
+          boneNodes.push_back(std::make_pair(dBone.node, dBone.boneIndx));
+          continue;
+        }
+
+        std::vector<Key>& keys = anim->m_keys[name];
+        if (keys.size() <= keyframeIndex)
+        {
+          continue;
+        }
+        else
+        {
+          if (maxKeyCount < keys.size())
+          {
+            maxKeyCount = (uint) keys.size();
+          }
+
+          keysframesLeft            = true;
+
+          Key& key                  = keys[keyframeIndex];
+          dBone.node->m_translation = key.m_position;
+          dBone.node->m_orientation = key.m_rotation;
+          dBone.node->m_scale       = key.m_scale;
+          dBone.node->SetChildrenDirty();
+
+          boneNodes.push_back(std::make_pair(dBone.node, dBone.boneIndx));
+        }
+      }
+
+      if (!keysframesLeft)
+      {
+        break;
+      }
+
+      // After getting all node transformations re-calculate dirty nodes transformations
+      for (auto& node : boneNodes)
+      {
+        StaticBone* sBone         = skeleton->m_bones[node.second];
+
+        const Mat4 boneTransform  = node.first->GetTransform(TransformationSpace::TS_WORLD);
+        const Mat4 totalTransform = boneTransform * sBone->m_inverseWorldMatrix;
+
+        uint loc                  = ((keyframeIndex * (uint) skeleton->m_bones.size() + node.second) * sizeOfElement);
+        memcpy(buffer + loc, &totalTransform, sizeOfElement);
+      }
+
+      ++keyframeIndex;
+    }
+
+    TextureSettings dataTextureSettings;
+    dataTextureSettings.Target         = GraphicTypes::Target2D;
+    dataTextureSettings.WarpS          = GraphicTypes::UVClampToEdge;
+    dataTextureSettings.WarpT          = GraphicTypes::UVClampToEdge;
+    dataTextureSettings.WarpR          = GraphicTypes::UVClampToEdge;
+    dataTextureSettings.InternalFormat = GraphicTypes::FormatRGBA32F;
+    dataTextureSettings.Format         = GraphicTypes::FormatRGBA;
+    dataTextureSettings.Type           = GraphicTypes::TypeFloat;
+    DataTexturePtr animDataTexture     = MakeNewPtr<DataTexture>(width, maxKeyCount, dataTextureSettings);
+    animDataTexture->Init((void*) buffer);
+
+    SafeDelArray(buffer);
+
+    return animDataTexture;
   }
 
   AnimationManager::AnimationManager() { m_baseType = Animation::StaticClass(); }

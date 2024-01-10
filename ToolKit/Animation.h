@@ -14,7 +14,10 @@
 
 #include "Resource.h"
 #include "SkeletonComponent.h"
+#include "Texture.h"
 #include "Types.h"
+
+#include <map>
 
 namespace ToolKit
 {
@@ -102,9 +105,6 @@ namespace ToolKit
      * Set the resource to uninitiated state and removes the keys.
      */
     void UnInit() override;
-
-    /** Reverses the animation. */
-    void Reverse();
 
     /**
      * Finds nearest keys and interpolation ratio for current time.
@@ -199,6 +199,8 @@ namespace ToolKit
   class TK_API AnimationPlayer
   {
    public:
+    ~AnimationPlayer();
+
     /**
      * Adds a record to the player.
      * @param rec AnimRecord data.
@@ -232,8 +234,43 @@ namespace ToolKit
      */
     int Exist(ULongID id) const;
 
+    inline DataTexturePtr GetAnimationDataTexture(ULongID skelID, ULongID animID)
+    {
+      const std::pair<ULongID, ULongID> p = std::make_pair(skelID, animID);
+      if (m_animTextures.find(p) != m_animTextures.end())
+      {
+        return m_animTextures[p];
+      }
+      else
+      {
+        return nullptr;
+      }
+    }
+
+   private:
+    /**
+     * Add data texture of animation for skeleton
+     */
+    void AddAnimationData(EntityWeakPtr ntt, AnimationPtr anim);
+    /**
+     * Removes the unnecessary data textures
+     */
+    void UpdateAnimationData();
+    /**
+     * Clears the animation data textures
+     */
+    void ClearAnimationData();
+    /**
+     * Creates and returns animation data texture for given skeleton and animation
+     */
+    DataTexturePtr CreateAnimationDataTexture(SkeletonPtr skeleton, AnimationPtr anim);
+
    public:
     // Storage for the AnimRecord objects.
     AnimRecordRawPtrArray m_records;
+
+   private:
+    // Storage for animation data (skeleton id - animation id pair)
+    std::map<std::pair<ULongID, ULongID>, DataTexturePtr> m_animTextures;
   };
 } // namespace ToolKit

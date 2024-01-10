@@ -107,7 +107,7 @@ namespace ToolKit
 
    private:
     void BindProgram(GpuProgramPtr program);
-    void FeedUniforms(GpuProgramPtr program);
+    void FeedUniforms(GpuProgramPtr program, const RenderJob& renderJob);
     void FeedLightUniforms(GpuProgramPtr program);
 
    public:
