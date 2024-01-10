@@ -112,24 +112,6 @@ namespace ToolKit
         }
       }
     }
-
-    boneTransformNodeTexture = CreateBoneTransformTexture(skeleton);
-  }
-
-  void DynamicBoneMap::UpdateGPUTexture(std::vector<StaticBone*>& staticBones)
-  {
-    for (auto& dBoneIter : boneList)
-    {
-      const String& name         = dBoneIter.first;
-      DynamicBone& dBone         = dBoneIter.second;
-
-      const StaticBone* sBone    = staticBones[dBone.boneIndx];
-      const Mat4& tPoseTransform = sBone->m_inverseWorldMatrix;
-      const Mat4 boneTransform   = dBone.node->GetTransform(TransformationSpace::TS_WORLD);
-      const Mat4 totalTransform  = boneTransform * tPoseTransform;
-
-      uploadBoneMatrix(totalTransform, boneTransformNodeTexture, dBone.boneIndx);
-    }
   }
 
   DynamicBoneMap::~DynamicBoneMap()

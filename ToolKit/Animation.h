@@ -106,9 +106,6 @@ namespace ToolKit
      */
     void UnInit() override;
 
-    /** Reverses the animation. */
-    void Reverse();
-
     /**
      * Finds nearest keys and interpolation ratio for current time.
      * @param keys animation key array.

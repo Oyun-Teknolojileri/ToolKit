@@ -169,10 +169,6 @@ namespace ToolKit
       {
         SetTexture(3, skel->m_bindPoseTexture->m_textureId);
       }
-
-      // TODO remove the update gpu texture function
-      if (false)
-        skCom->m_map->UpdateGPUTexture(skel->m_bones);
     };
 
     updateAndBindSkinningTextures();

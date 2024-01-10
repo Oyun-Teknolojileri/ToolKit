@@ -156,9 +156,6 @@ namespace ToolKit
       dBone.node->SetChildrenDirty();
     }
     skeleton->isDirty = true;
-
-    Mat4 mat          = skeleton->m_map->boneList["Ankle_L.44"].node->GetTransform();
-    int y             = 5;
   }
 
   void Animation::GetPose(Node* node, int frame) { GetPose(node, frame * 1.0f / m_fps); }
@@ -278,20 +275,6 @@ namespace ToolKit
   {
     m_initiated = false;
     m_keys.clear();
-  }
-
-  void Animation::Reverse()
-  {
-    for (auto& keys : m_keys)
-    {
-      int len = static_cast<int>(m_keys[keys.first].size()) - 1;
-      int lim = len / 2;
-      for (int i = 0; i < lim; i++)
-      {
-        std::swap(m_keys[keys.first][i], m_keys[keys.first][len - i]);
-        std::swap(m_keys[keys.first][i].m_frame, m_keys[keys.first][len - i].m_frame);
-      }
-    }
   }
 
   void Animation::CopyTo(Resource* other)
@@ -458,11 +441,6 @@ namespace ToolKit
           skComp->m_animKeyFrameInterpolationTime = ratio;
           skComp->m_animKeyFrameCount             = (uint) keys.size();
         }
-
-        // TODO remove this line but not the code
-        ntt->SetPose(record->m_animation,
-                     record->m_currentTime,
-                     record->m_blendTarget.Blend ? &record->m_blendTarget : nullptr);
       }
 
       if (state == AnimRecord::State::Rewind)
