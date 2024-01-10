@@ -23,8 +23,6 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CubemapPass.cpp" />
-    <ClCompile Include="DataTexture.cpp" />
-    <ClCompile Include="DeferredPass.cpp" />
     <ClCompile Include="DirectionComponent.cpp" />
     <ClCompile Include="DofPass.cpp" />
     <ClCompile Include="Dpad.cpp" />
@@ -111,10 +109,8 @@
     <ClInclude Include="Class.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="CubemapPass.h" />
-    <ClInclude Include="DataTexture.h" />
     <ClInclude Include="DebugNew.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="DeferredPass.h" />
     <ClInclude Include="DirectionComponent.h" />
     <ClInclude Include="DofPass.h" />
     <ClInclude Include="Dpad.h" />

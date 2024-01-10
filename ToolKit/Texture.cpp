@@ -14,6 +14,7 @@
 #include "Material.h"
 #include "RenderSystem.h"
 #include "Shader.h"
+#include "TKImage.h"
 #include "TKOpenGL.h"
 #include "TKStats.h"
 #include "ToolKit.h"
@@ -72,14 +73,14 @@ namespace ToolKit
     if (m_settings.Type == GraphicTypes::TypeFloat)
     {
 
-      if ((m_imagef = GetFileManager()->GetHdriFile(GetFile(), &m_width, &m_height, &m_bytePerPixel, 4)))
+      if ((m_imagef = GetFileManager()->GetHdriFile(GetFile(), &m_width, &m_height, &m_numChannels, 4)))
       {
         m_loaded = true;
       }
     }
     else
     {
-      if ((m_image = GetFileManager()->GetImageFile(GetFile(), &m_width, &m_height, &m_bytePerPixel, 4)))
+      if ((m_image = GetFileManager()->GetImageFile(GetFile(), &m_width, &m_height, &m_numChannels, 4)))
       {
         m_loaded = true;
       }
@@ -202,8 +203,9 @@ namespace ToolKit
 
   void Texture::Clear()
   {
-    free(m_image);
-    free(m_imagef);
+    ImageFree(m_image);
+    ImageFree(m_imagef);
+
     m_image  = nullptr;
     m_imagef = nullptr;
     m_loaded = false;
@@ -245,6 +247,7 @@ namespace ToolKit
     {
       return;
     }
+
     glDeleteRenderbuffers(1, &m_textureId);
 
     uint64 internalFormatSize = m_stencil ? 4 : 3;
@@ -253,6 +256,59 @@ namespace ToolKit
     m_textureId = 0;
     m_initiated = false;
   }
+
+  // DataTexture
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(DataTexture, Texture);
+
+  void DataTexture::Load() {}
+
+  void DataTexture::Init(void* data)
+  {
+    if (m_initiated)
+    {
+      return;
+    }
+
+    glGenTextures(1, &m_textureId);
+    glBindTexture((GLenum) m_settings.Target, m_textureId);
+
+    glTexImage2D((GLenum) m_settings.Target,
+                 0,
+                 (GLint) m_settings.InternalFormat,
+                 m_width,
+                 m_height,
+                 0,
+                 (GLenum) m_settings.Format,
+                 (GLenum) m_settings.Type,
+                 data);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) m_settings.MinFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint) m_settings.MagFilter);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint) m_settings.WarpS);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint) m_settings.WarpT);
+
+    m_loaded    = true;
+    m_initiated = true;
+  };
+
+  void DataTexture::UnInit()
+  {
+    if (m_textureId == 0 || !m_initiated)
+    {
+      return;
+    }
+
+    glDeleteTextures(1, &m_textureId);
+
+    RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
+
+    m_textureId = 0;
+    m_loaded    = false;
+    m_initiated = false;
+  };
 
   // CubeMap
   //////////////////////////////////////////////////////////////////////////
@@ -326,7 +382,7 @@ namespace ToolKit
       }
 
       String name = file + postfix;
-      if ((m_images[i] = GetFileManager()->GetImageFile(name, &m_width, &m_height, &m_bytePerPixel, 0)))
+      if ((m_images[i] = GetFileManager()->GetImageFile(name, &m_width, &m_height, &m_numChannels, 0)))
       {
         GetLogger()->Log("Missing file: " + name);
         GetLogger()->Log("Cube map loading requires additional 5 png files with postfix "

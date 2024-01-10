@@ -7,7 +7,6 @@
 
 #include "AdditiveLightingPass.h"
 
-#include "DataTexture.h"
 #include "DirectionComponent.h"
 #include "Material.h"
 #include "MathUtil.h"

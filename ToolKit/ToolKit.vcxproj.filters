@@ -109,14 +109,8 @@
     <ClCompile Include="ForwardPass.cpp">
       <Filter>Render\RenderPass</Filter>
     </ClCompile>
-    <ClCompile Include="DeferredPass.cpp">
-      <Filter>Render\RenderPass</Filter>
-    </ClCompile>
     <ClCompile Include="EnvironmentComponent.cpp">
       <Filter>Components</Filter>
-    </ClCompile>
-    <ClCompile Include="DataTexture.cpp">
-      <Filter>Render</Filter>
     </ClCompile>
     <ClCompile Include="Framebuffer.cpp">
       <Filter>Render</Filter>
@@ -238,7 +232,6 @@
     <ClCompile Include="ShaderUniform.cpp">
       <Filter>Render</Filter>
     </ClCompile>
-    <ClCompile Include="ShaderUniform.cpp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -361,14 +354,8 @@
     <ClInclude Include="ForwardPass.h">
       <Filter>Render\RenderPass</Filter>
     </ClInclude>
-    <ClInclude Include="DeferredPass.h">
-      <Filter>Render\RenderPass</Filter>
-    </ClInclude>
     <ClInclude Include="EnvironmentComponent.h">
       <Filter>Components</Filter>
-    </ClInclude>
-    <ClInclude Include="DataTexture.h">
-      <Filter>Render</Filter>
     </ClInclude>
     <ClInclude Include="Framebuffer.h">
       <Filter>Render</Filter>

@@ -24,42 +24,6 @@
 namespace ToolKit
 {
 
-  // SSAONoiseTexture
-  //////////////////////////////////////////////////////////////////////////
-
-  TKDefineClass(SSAONoiseTexture, DataTexture);
-
-  void SSAONoiseTexture::Init(void* data)
-  {
-    if (m_initiated)
-    {
-      return;
-    }
-
-    glGenTextures(1, &m_textureId);
-    glBindTexture(GL_TEXTURE_2D, m_textureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, m_width, m_height, 0, GL_RG, GL_FLOAT, data);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    AddVRAMUsageInBytes(m_width * m_height * m_textureInternalFormatSize);
-
-    m_initiated = true;
-  }
-
-  SSAONoiseTexture::SSAONoiseTexture()
-  {
-    // RG32 is the format
-    m_textureInternalFormatSize = 8;
-  }
-
-  void SSAONoiseTexture::Init(bool flushClientSideArray)
-  {
-    assert(false); // The code should never come here
-  }
-
   // SSAOPass
   //////////////////////////////////////////////////////////////////////////
 
@@ -70,8 +34,13 @@ namespace ToolKit
     m_ssaoFramebuffer = MakeNewPtr<Framebuffer>();
     m_ssaoTexture     = MakeNewPtr<RenderTarget>();
     m_tempBlurRt      = MakeNewPtr<RenderTarget>();
-    m_noiseTexture    = MakeNewPtr<SSAONoiseTexture>(4, 4);
-    m_quadPass        = MakeNewPtr<FullQuadPass>();
+
+    TextureSettings noiseSet;
+    noiseSet.InternalFormat = GraphicTypes::FormatRG32F;
+    noiseSet.Format         = GraphicTypes::FormatRG;
+    noiseSet.Type           = GraphicTypes::TypeFloat;
+    m_noiseTexture          = MakeNewPtr<DataTexture>(4, 4, noiseSet);
+    m_quadPass              = MakeNewPtr<FullQuadPass>();
 
     m_ssaoSamplesStrCache.reserve(128);
     for (int i = 0; i < m_ssaoSamplesStrCacheSize; ++i)
@@ -164,9 +133,6 @@ namespace ToolKit
     m_tempBlurRt->Settings(oneChannelSet);
     m_tempBlurRt->ReconstructIfNeeded((uint) width, (uint) height);
 
-    // Init noise texture
-    m_noiseTexture->Init(&m_ssaoNoise[0]);
-
     m_quadPass->m_params.FrameBuffer      = m_ssaoFramebuffer;
     m_quadPass->m_params.ClearFrameBuffer = false;
 
@@ -223,9 +189,13 @@ namespace ToolKit
 
       for (unsigned int i = 0; i < 16; i++)
       {
-        glm::vec2 noise(randomFloats(generator) * 2.0f - 1.0f, randomFloats(generator) * 2.0f - 1.0f);
+        Vec2 noise(randomFloats(generator) * 2.0f - 1.0f, randomFloats(generator) * 2.0f - 1.0f);
         m_ssaoNoise.push_back(noise);
       }
+
+      // Init noise texture.
+      m_noiseTexture->UnInit();
+      m_noiseTexture->Init(m_ssaoNoise.data());
     }
   }
 

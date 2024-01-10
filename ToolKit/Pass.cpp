@@ -8,7 +8,6 @@
 #include "Pass.h"
 
 #include "Camera.h"
-#include "DataTexture.h"
 #include "DirectionComponent.h"
 #include "Material.h"
 #include "MathUtil.h"

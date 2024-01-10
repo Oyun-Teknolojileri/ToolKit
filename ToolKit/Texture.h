@@ -29,6 +29,9 @@ namespace ToolKit
     bool GenerateMipMap         = false;
   };
 
+  // Texture
+  //////////////////////////////////////////////////////////////////////////
+
   class TK_API Texture : public Resource
   {
    public:
@@ -50,16 +53,19 @@ namespace ToolKit
     virtual void Clear();
 
    public:
-    uint m_textureId   = 0;
-    int m_width        = 0;
-    int m_height       = 0;
-    int m_bytePerPixel = 0;
-    uint8* m_image     = nullptr;
-    float* m_imagef    = nullptr;
+    uint m_textureId  = 0;
+    int m_width       = 0;
+    int m_height      = 0;
+    int m_numChannels = 0; //!< Number of channels (r, g, b, a) for loaded images.
+    uint8* m_image    = nullptr;
+    float* m_imagef   = nullptr;
 
    protected:
     TextureSettings m_settings;
   };
+
+  // DepthTexture
+  //////////////////////////////////////////////////////////////////////////
 
   class DepthTexture : public Texture
   {
@@ -79,7 +85,23 @@ namespace ToolKit
     bool m_stencil;
   };
 
-  typedef std::shared_ptr<DepthTexture> DepthTexturePtr;
+  // DataTexture
+  //////////////////////////////////////////////////////////////////////////
+
+  class DataTexture : public Texture
+  {
+   public:
+    TKDeclareClass(DataTexture, Texture);
+    using Texture::NativeConstruct;
+
+   public:
+    void Load() override;
+    void Init(void* data);
+    void UnInit() override;
+  };
+
+  // CubeMap
+  //////////////////////////////////////////////////////////////////////////
 
   class TK_API CubeMap : public Texture
   {
@@ -109,6 +131,9 @@ namespace ToolKit
     std::vector<uint8*> m_images;
   };
 
+  // Hdri
+  //////////////////////////////////////////////////////////////////////////
+
   class TK_API Hdri : public Texture
   {
    public:
@@ -137,6 +162,9 @@ namespace ToolKit
     bool m_waitingForInit = false;
   };
 
+  // RenderTarget
+  //////////////////////////////////////////////////////////////////////////
+
   class TK_API RenderTarget : public Texture
   {
    public:
@@ -152,6 +180,9 @@ namespace ToolKit
     void Reconstruct(int width, int height, const TextureSettings& settings);
     void ReconstructIfNeeded(int width, int height);
   };
+
+  // TextureManager
+  //////////////////////////////////////////////////////////////////////////
 
   class TK_API TextureManager : public ResourceManager
   {
