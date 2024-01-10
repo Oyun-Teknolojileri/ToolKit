@@ -13,6 +13,7 @@ namespace ToolKit
   GLuint RHI::m_currentReadFramebufferID = -1; // max unsigned integer
   GLuint RHI::m_currentDrawFramebufferID = -1; // max unsigned integer
   GLuint RHI::m_currentFramebufferID     = -1; // max unsigned integer
+  std::unordered_map<uint, uint> RHI::m_slotTextureIDmap;
 
   void RHI::SetFramebuffer(GLenum target, GLuint framebufferID)
   {
@@ -83,6 +84,25 @@ namespace ToolKit
   void RHI::InvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments)
   {
     glInvalidateFramebuffer(target, numAttachments, attachments);
+  }
+
+  void RHI::SetTexture(GLenum target, GLuint textureID, GLenum textureSlot)
+  {
+    assert(textureSlot >= 0 && textureSlot <= 31);
+
+    auto itr = m_slotTextureIDmap.find(textureSlot);
+    if (itr != m_slotTextureIDmap.end())
+    {
+      if (itr->second == textureID)
+      {
+        // Do not bind if already binded.
+        return;
+      }
+    }
+
+    m_slotTextureIDmap[textureSlot] = textureID;
+    glActiveTexture(GL_TEXTURE0 + textureSlot);
+    glBindTexture(target, textureID);
   }
 
 } // namespace ToolKit

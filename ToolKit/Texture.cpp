@@ -12,6 +12,7 @@
 #include "FullQuadPass.h"
 #include "Logger.h"
 #include "Material.h"
+#include "RHI.h"
 #include "RenderSystem.h"
 #include "Shader.h"
 #include "TKImage.h"
@@ -108,7 +109,7 @@ namespace ToolKit
     }
 
     glGenTextures(1, &m_textureId);
-    glBindTexture(GL_TEXTURE_2D, m_textureId);
+    RHI::SetTexture((GLenum) m_settings.Target, m_textureId);
 
     if (m_settings.Type != GraphicTypes::TypeFloat)
     {
@@ -272,7 +273,7 @@ namespace ToolKit
     }
 
     glGenTextures(1, &m_textureId);
-    glBindTexture((GLenum) m_settings.Target, m_textureId);
+    RHI::SetTexture((GLenum) m_settings.Target, m_textureId);
 
     glTexImage2D((GLenum) m_settings.Target,
                  0,
@@ -420,7 +421,7 @@ namespace ToolKit
     m_settings.Target         = GraphicTypes::TargetCubeMap;
 
     glGenTextures(1, &m_textureId);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureId);
+    RHI::SetTexture(GL_TEXTURE_CUBE_MAP, m_textureId);
 
     uint sides[6] = {GL_TEXTURE_CUBE_MAP_POSITIVE_X,
                      GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
@@ -597,7 +598,7 @@ namespace ToolKit
 
     // Create frame buffer color texture
     glGenTextures(1, &m_textureId);
-    glBindTexture((int) m_settings.Target, m_textureId);
+    RHI::SetTexture((GLenum) m_settings.Target, m_textureId);
 
     if (m_settings.Target == GraphicTypes::Target2D)
     {
