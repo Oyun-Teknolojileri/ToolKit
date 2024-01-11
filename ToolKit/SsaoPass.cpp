@@ -49,13 +49,6 @@ namespace ToolKit
     }
 
     m_ssaoShader = GetShaderManager()->Create<Shader>(ShaderPath("ssaoCalcFrag.shader", true));
-    m_ssaoShader->AddShaderUniform(ShaderUniform("radius", 0.0f));
-    m_ssaoShader->AddShaderUniform(ShaderUniform("bias", 0.0f));
-    m_ssaoShader->AddShaderUniform(ShaderUniform("screenSize", Vec2()));
-    m_ssaoShader->AddShaderUniform(ShaderUniform("bias", 0.0f));
-    m_ssaoShader->AddShaderUniform(ShaderUniform("kernelSize", 0));
-    m_ssaoShader->AddShaderUniform(ShaderUniform("projection", Mat4()));
-    m_ssaoShader->AddShaderUniform(ShaderUniform("viewMatrix", Mat4()));
   }
 
   SSAOPass::SSAOPass(const SSAOPassParams& params) : SSAOPass() { m_params = params; }

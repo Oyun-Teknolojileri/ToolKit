@@ -37,12 +37,6 @@ namespace ToolKit
       m_axisColorHorizontal = X_AXIS;
       m_axisColorVertical   = Z_AXIS;
       m_is2DViewport        = false;
-
-      AddShaderUniform(ShaderUniform("GridData.cellSize", m_sizeEachCell));
-      AddShaderUniform(ShaderUniform("GridData.lineMaxPixelCount", m_maxLinePixelCount));
-      AddShaderUniform(ShaderUniform("GridData.horizontalAxisColor", m_axisColorHorizontal));
-      AddShaderUniform(ShaderUniform("GridData.verticalAxisColor", m_axisColorVertical));
-      AddShaderUniform(ShaderUniform("GridData.is2DViewport", m_is2DViewport));
     }
 
     GridFragmentShader::~GridFragmentShader() {}

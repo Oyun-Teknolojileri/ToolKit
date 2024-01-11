@@ -23,7 +23,6 @@ namespace ToolKit
 
     m_outlinePass  = MakeNewPtr<FullQuadPass>();
     m_dilateShader = GetShaderManager()->Create<Shader>(ShaderPath("dilateFrag.shader", true));
-    m_dilateShader->AddShaderUniform(ShaderUniform("Color", Vec3()));
   }
 
   OutlinePass::OutlinePass(const OutlinePassParams& params) : OutlinePass() { m_params = params; }

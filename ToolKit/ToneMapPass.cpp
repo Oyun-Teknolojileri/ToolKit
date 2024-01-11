@@ -19,7 +19,6 @@ namespace ToolKit
   TonemapPass::TonemapPass() : PostProcessPass()
   {
     m_postProcessShader = GetShaderManager()->Create<Shader>(ShaderPath("tonemapFrag.shader", true));
-    m_postProcessShader->AddShaderUniform(ShaderUniform("UseAcesTonemapper", (uint) TonemapMethod::Aces));
   }
 
   TonemapPass::TonemapPass(const TonemapPassParams& params) : TonemapPass() { m_params = params; }
