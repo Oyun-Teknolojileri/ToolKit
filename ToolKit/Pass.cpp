@@ -93,7 +93,9 @@ namespace ToolKit
         overrideBBox       = std::move(bbOverride->GetAABB());
       }
       SkeletonComponentPtr skComp              = ntt->GetComponent<SkeletonComponent>();
-      AnimationPtr anim                        = nullptr;
+      AnimationPtr currentAnimation            = nullptr;
+      AnimationPtr blendAnimation              = nullptr;
+      float blendFactor                        = 0.0f;
       const AnimRecordRawPtrArray& animRecords = GetAnimationPlayer()->m_records;
       for (AnimRecordRawPtr animRecord : animRecords)
       {
@@ -101,24 +103,15 @@ namespace ToolKit
         {
           if (animNtt->GetIdVal() == ntt->GetIdVal())
           {
-            anim = animRecord->m_animation;
+            currentAnimation = animRecord->m_animation;
+            blendAnimation   = animRecord->m_blendAnimation;
+            blendFactor      = animRecord->m_blendFactor;
             break;
           }
         }
       }
 
-      auto addRenderJobForMeshFn = [&materialMissing,
-                                    &matComp,
-                                    &matIndex,
-                                    &mc,
-                                    &ntt,
-                                    &jobArray,
-                                    &nttTransform,
-                                    overrideBBoxExists,
-                                    &overrideBBox,
-                                    castShadow,
-                                    &skComp,
-                                    &anim](Mesh* mesh)
+      auto addRenderJobForMeshFn = [&](Mesh* mesh)
       {
         if (mesh)
         {
@@ -168,7 +161,9 @@ namespace ToolKit
             job.animData.secondKeyFrame            = (float) skComp->GetAnimSecondKeyFrame() / frameKeyCount;
             job.animData.keyFrameCount             = frameKeyCount;
             job.animData.keyFrameInterpolationTime = skComp->GetAnimKeyFrameInterpolateTime();
-            job.animData.currentAnimation          = anim;
+            job.animData.currentAnimation          = currentAnimation;
+            job.animData.blendAnimation            = blendAnimation;
+            job.animData.animationBlendFactor      = blendFactor;
           }
 
           jobArray.push_back(job);

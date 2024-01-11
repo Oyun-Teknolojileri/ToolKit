@@ -356,6 +356,13 @@ namespace ToolKit
     }
   }
 
+  void AnimRecord::AddBlendAnimation(AnimationPtr blendAnimation, float blendDurationInSec)
+  {
+    m_blendAnimation     = blendAnimation;
+    m_blendFactor        = 0.0f;
+    m_blendDurationInSec = blendDurationInSec;
+  }
+
   AnimationPlayer::~AnimationPlayer() { ClearAnimationData(); }
 
   void AnimationPlayer::AddRecord(AnimRecord* rec)
@@ -384,6 +391,16 @@ namespace ToolKit
   }
 
   void AnimationPlayer::RemoveRecord(const AnimRecord& rec) { RemoveRecord(rec.m_id); }
+
+  void AnimationPlayer::AddBlendAnimation(ULongID animRecordID, AnimationPtr animToBlend, float blendDurationInSec)
+  {
+    int animRecordIndex = Exist(animRecordID);
+    if (animRecordIndex != -1)
+    {
+      AddAnimationData(m_records[animRecordIndex]->m_entity, animToBlend);
+      m_records[animRecordIndex]->AddBlendAnimation(animToBlend, blendDurationInSec);
+    }
+  }
 
   void AnimationPlayer::Update(float deltaTimeSec)
   {
@@ -415,6 +432,7 @@ namespace ToolKit
           }
         }
       }
+
       if (state == AnimRecord::State::Rewind || state == AnimRecord::State::Stop)
       {
         record->m_currentTime = 0.0f;
@@ -422,6 +440,16 @@ namespace ToolKit
       else
       {
         record->m_currentTime += deltaTimeSec * record->m_timeMultiplier;
+      }
+
+      // Update blending factor if exists
+      if (record->m_blendAnimation != nullptr)
+      {
+        record->m_blendFactor += deltaTimeSec / record->m_blendDurationInSec;
+        if (record->m_blendFactor > 1.0f)
+        {
+          record->m_blendAnimation = nullptr; // Stop the blending if duration exceeds
+        }
       }
 
       if (EntityPtr ntt = record->m_entity.lock())
@@ -492,6 +520,12 @@ namespace ToolKit
       {
         if (SkeletonPtr skeleton = skelComp->GetSkeletonResourceVal())
         {
+          if (m_animTextures.find(std::make_pair(skeleton->GetIdVal(), anim->GetIdVal())) != m_animTextures.end())
+          {
+            // this animation data already exists
+            return;
+          }
+
           DataTexturePtr texture = CreateAnimationDataTexture(skeleton, anim);
           m_animTextures[std::make_pair(skeleton->GetIdVal(), anim->GetIdVal())] = texture;
         }

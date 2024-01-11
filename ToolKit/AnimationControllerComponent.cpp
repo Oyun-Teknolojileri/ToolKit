@@ -89,6 +89,17 @@ namespace ToolKit
     ParamRecords().GetVar<AnimRecordPtrMap>().erase(signalName);
   }
 
+  void AnimControllerComponent::AddAnimationToBlend(const String& animToBlendName, float blendDurationInSec)
+  {
+    if (activeRecord != nullptr)
+    {
+      AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
+      AnimRecordPtr& rec     = list[animToBlendName];
+
+      GetAnimationPlayer()->AddBlendAnimation(activeRecord->m_id, rec->m_animation, blendDurationInSec);
+    }
+  }
+
   void AnimControllerComponent::Play(const String& signalName)
   {
     AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();

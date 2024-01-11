@@ -49,8 +49,8 @@ namespace ToolKit
     float keyFrameCount             = 0.0f;
 
     AnimationPtr currentAnimation   = nullptr;
-    AnimationPtr nextAnimation      = nullptr;
-    float animationBlendingFactor   = 0.0f;
+    AnimationPtr blendAnimation     = nullptr;
+    float animationBlendFactor      = 0.0f; // between 0 - 1
   };
 
   /**
