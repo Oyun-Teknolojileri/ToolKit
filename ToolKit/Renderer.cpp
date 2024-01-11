@@ -155,18 +155,13 @@ namespace ToolKit
         return;
       }
 
-      SkeletonComponentPtr skCom = job.SkeletonCmp;
-      if (skCom == nullptr)
-      {
-        return;
-      }
-
-      if (job.animData.anim != nullptr)
+      if (job.animData.currentAnimation != nullptr)
       {
         // animation
         AnimationPlayer* animPlayer = GetAnimationPlayer();
         SetTexture(3,
-                   animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.anim->GetIdVal())->m_textureId);
+                   animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.currentAnimation->GetIdVal())
+                       ->m_textureId);
       }
       else
       {
@@ -195,34 +190,29 @@ namespace ToolKit
     GpuProgramPtr prg = m_gpuProgramManager.CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
     BindProgram(prg);
 
-    auto activateSkinning = [prg, &job](bool isSkinned)
+    auto activateSkinning = [prg, &job](const Mesh* mesh)
     {
       GLint isSkinnedLoc = prg->GetUniformLocation(Uniform::IS_SKINNED);
+      bool isSkinned     = mesh->IsSkinned();
       if (isSkinned)
       {
+        SkeletonPtr skel = static_cast<SkinMesh*>(job.Mesh)->m_skeleton;
+        assert(skel != nullptr);
+
+        GLint numBonesLoc = prg->GetUniformLocation(Uniform::NUM_BONES);
         glUniform1ui(isSkinnedLoc, 1);
+
+        GLuint boneCount = (GLuint) skel->m_bones.size();
+        glUniform1f(numBonesLoc, (float) boneCount);
       }
       else
       {
         glUniform1ui(isSkinnedLoc, 0);
       }
-
-      if (job.SkeletonCmp == nullptr)
-      {
-        return;
-      }
-
-      if (isSkinned)
-      {
-        GLint numBonesLoc = prg->GetUniformLocation(Uniform::NUM_BONES);
-        GLuint boneCount  = (GLuint) job.SkeletonCmp->GetSkeletonResourceVal()->m_bones.size();
-
-        glUniform1f(numBonesLoc, (float) boneCount);
-      }
     };
 
-    Mesh* mesh = job.Mesh;
-    activateSkinning(mesh->IsSkinned());
+    const Mesh* mesh = job.Mesh;
+    activateSkinning(mesh);
 
     RenderState* rs = m_mat->GetRenderState();
     SetRenderState(rs);
@@ -973,7 +963,7 @@ namespace ToolKit
         break;
         case Uniform::IS_ANIMATED:
         {
-          glUniform1ui(loc, renderJob.animData.anim != nullptr);
+          glUniform1ui(loc, renderJob.animData.currentAnimation != nullptr);
         }
         break;
         default:

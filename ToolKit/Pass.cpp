@@ -137,7 +137,6 @@ namespace ToolKit
 
           job.ShadowCaster = castShadow;
           job.Mesh         = mesh;
-          job.SkeletonCmp  = job.Mesh->IsSkinned() ? ntt->GetComponent<SkeletonComponent>() : nullptr;
 
           // Look material component first, if we can not find a corresponding material in there, look inside mesh. If
           // still there is no corresponding material, give a warning to the user and use default material
@@ -169,7 +168,7 @@ namespace ToolKit
             job.animData.secondKeyFrame            = (float) skComp->GetAnimSecondKeyFrame() / frameKeyCount;
             job.animData.keyFrameCount             = frameKeyCount;
             job.animData.keyFrameInterpolationTime = skComp->GetAnimKeyFrameInterpolateTime();
-            job.animData.anim                      = anim;
+            job.animData.currentAnimation          = anim;
           }
 
           jobArray.push_back(job);

@@ -43,11 +43,14 @@ namespace ToolKit
 
   struct RenderJobAnimData
   {
-    AnimationPtr anim               = nullptr;
     float firstKeyFrame             = 0.0f; // normalized via (firstKeyFrame / keyFrameCount)
     float secondKeyFrame            = 0.0f; // normalized via (firstKeyFrame / keyFrameCount)
     float keyFrameInterpolationTime = 0.0f;
     float keyFrameCount             = 0.0f;
+
+    AnimationPtr currentAnimation   = nullptr;
+    AnimationPtr nextAnimation      = nullptr;
+    float animationBlendingFactor   = 0.0f;
   };
 
   /**
@@ -57,7 +60,6 @@ namespace ToolKit
   {
     EntityPtr Entity                          = nullptr; //!< Entity that this job is created from.
     Mesh* Mesh                                = nullptr; //!< Mesh to render.
-    SkeletonComponentPtr SkeletonCmp          = nullptr; //!< Skeleton component of entity, if any.
     MaterialPtr Material                      = nullptr; //!< Material to render job with.
     EnvironmentComponentPtr EnvironmentVolume = nullptr; //!< EnvironmentVolume effecting this entity, if any.
     bool ShadowCaster                         = true;    //!< Account in shadow map construction.

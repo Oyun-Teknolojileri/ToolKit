@@ -109,7 +109,7 @@ namespace ToolKit
       scale                              = Interpolate(k1.m_scale, k2.m_scale, ratio);
 
       // Blending with next animation
-      if (blendTarget != nullptr)
+      if (blendTarget != nullptr && blendTarget->Blend)
       {
         // Calculate the current time of the target animation.
         float targetAnimTime = time - m_duration + blendTarget->OverlapTime;
@@ -417,7 +417,7 @@ namespace ToolKit
       }
       if (state == AnimRecord::State::Rewind || state == AnimRecord::State::Stop)
       {
-        record->m_currentTime = 0;
+        record->m_currentTime = 0.0f;
       }
       else
       {
