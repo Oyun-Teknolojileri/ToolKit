@@ -148,6 +148,7 @@ namespace ToolKit
         renderer->m_overrideMat->SetAlpha(material->GetAlpha());
         renderer->m_overrideMat->m_diffuseTexture                = material->m_diffuseTexture;
         renderer->m_overrideMat->GetRenderState()->blendFunction = BlendFunction::NONE;
+        renderer->m_overrideMat->GetRenderState()->cullMode      = CullingType::TwoSided;
         renderer->m_overrideMat->Init();
         renderer->Render(job, light->m_shadowCamera);
       }
