@@ -167,7 +167,7 @@ namespace ToolKit
         if (job.animData.blendAnimation != nullptr)
         {
           SetTexture(2,
-                     animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.currentAnimation->GetIdVal())
+                     animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.blendAnimation->GetIdVal())
                          ->m_textureId);
         }
       }
