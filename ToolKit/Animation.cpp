@@ -109,7 +109,7 @@ namespace ToolKit
       scale                              = Interpolate(k1.m_scale, k2.m_scale, ratio);
 
       // Blending with next animation
-      if (blendTarget != nullptr)
+      if (blendTarget != nullptr && blendTarget->Blend)
       {
         // Calculate the current time of the target animation.
         float targetAnimTime = time - m_duration + blendTarget->OverlapTime;
@@ -356,6 +356,13 @@ namespace ToolKit
     }
   }
 
+  void AnimRecord::AddBlendAnimation(AnimationPtr blendAnimation, float blendDurationInSec)
+  {
+    m_blendAnimation     = blendAnimation;
+    m_blendFactor        = 0.0f;
+    m_blendDurationInSec = blendDurationInSec;
+  }
+
   AnimationPlayer::~AnimationPlayer() { ClearAnimationData(); }
 
   void AnimationPlayer::AddRecord(AnimRecord* rec)
@@ -384,6 +391,20 @@ namespace ToolKit
   }
 
   void AnimationPlayer::RemoveRecord(const AnimRecord& rec) { RemoveRecord(rec.m_id); }
+
+  void AnimationPlayer::AddBlendAnimation(ULongID animRecordID, AnimationPtr animToBlend, float blendDurationInSec)
+  {
+    int animRecordIndex = Exist(animRecordID);
+    if (animRecordIndex != -1)
+    {
+      // check if they have same bones
+      assert(HaveSameKeys(m_records[animRecordIndex]->m_animation->m_keys, animToBlend->m_keys) &&
+             "Blend animation is for different skeleton than the animation to blend with!");
+
+      AddAnimationData(m_records[animRecordIndex]->m_entity, animToBlend);
+      m_records[animRecordIndex]->AddBlendAnimation(animToBlend, blendDurationInSec);
+    }
+  }
 
   void AnimationPlayer::Update(float deltaTimeSec)
   {
@@ -415,13 +436,24 @@ namespace ToolKit
           }
         }
       }
+
       if (state == AnimRecord::State::Rewind || state == AnimRecord::State::Stop)
       {
-        record->m_currentTime = 0;
+        record->m_currentTime = 0.0f;
       }
       else
       {
         record->m_currentTime += deltaTimeSec * record->m_timeMultiplier;
+      }
+
+      // Update blending factor if exists
+      if (record->m_blendAnimation != nullptr)
+      {
+        record->m_blendFactor += deltaTimeSec / record->m_blendDurationInSec;
+        if (record->m_blendFactor > 1.0f)
+        {
+          record->m_blendAnimation = nullptr; // Stop the blending if duration exceeds
+        }
       }
 
       if (EntityPtr ntt = record->m_entity.lock())
@@ -436,10 +468,27 @@ namespace ToolKit
           float ratio;
           record->m_animation->GetNearestKeys(keys, key1, key2, ratio, record->m_currentTime);
 
-          skComp->m_animFirstKeyFrame             = key1;
-          skComp->m_animSecondKeyFrame            = key2;
-          skComp->m_animKeyFrameInterpolationTime = ratio;
-          skComp->m_animKeyFrameCount             = (uint) keys.size();
+          skComp->m_animData.keyFrameCount             = (float) keys.size();
+          skComp->m_animData.firstKeyFrame             = (float) key1 / skComp->m_animData.keyFrameCount;
+          skComp->m_animData.secondKeyFrame            = (float) key2 / skComp->m_animData.keyFrameCount;
+          skComp->m_animData.keyFrameInterpolationTime = ratio;
+
+          if (record->m_blendAnimation != nullptr)
+          {
+            assert(record->m_blendAnimation->m_keys.size() > 0);
+            KeyArray& blendAnimKeys = (*(record->m_blendAnimation->m_keys.begin())).second;
+            record->m_blendAnimation->GetNearestKeys(blendAnimKeys,
+                                                     key1,
+                                                     key2,
+                                                     ratio,
+                                                     record->m_blendFactor * record->m_blendDurationInSec);
+
+            skComp->m_animData.blendKeyFrameCount             = (float) blendAnimKeys.size();
+            skComp->m_animData.animationBlendFactor           = record->m_blendFactor;
+            skComp->m_animData.blendFirstKeyFrame             = (float) key1 / skComp->m_animData.blendKeyFrameCount;
+            skComp->m_animData.blendSecondKeyFrame            = (float) key2 / skComp->m_animData.blendKeyFrameCount;
+            skComp->m_animData.blendKeyFrameInterpolationTime = ratio;
+          }
         }
       }
 
@@ -492,6 +541,12 @@ namespace ToolKit
       {
         if (SkeletonPtr skeleton = skelComp->GetSkeletonResourceVal())
         {
+          if (m_animTextures.find(std::make_pair(skeleton->GetIdVal(), anim->GetIdVal())) != m_animTextures.end())
+          {
+            // this animation data already exists
+            return;
+          }
+
           DataTexturePtr texture = CreateAnimationDataTexture(skeleton, anim);
           m_animTextures[std::make_pair(skeleton->GetIdVal(), anim->GetIdVal())] = texture;
         }

@@ -56,12 +56,12 @@ namespace ToolKit
 
   TK_API bool RayTriangleIntersection(const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t);
 
-  TK_API Vec3 CPUSkinning(const class SkinVertex* vertex, const Skeleton* skel, DynamicBoneMapPtr dynamicBoneMap);
+  TK_API Vec3 CPUSkinning(const class SkinVertex* vertex, const Skeleton* skel, DynamicBoneMapPtr dynamicBoneMap, bool isAnimated);
 
   TK_API bool RayMeshIntersection(const class Mesh* const mesh,
                                   const Ray& rayInWorldSpace,
                                   float& t,
-                                  const class SkeletonComponent* skelComp = nullptr);
+                                  const SkeletonComponentPtr skelComp = nullptr);
 
   // @return TK_UINT_MAX = no intersection, otherwise submesh index
   // If there is no tracing possible object, t set as 0.0

@@ -670,6 +670,11 @@ namespace ToolKit
 
   BoundingBox SkinMesh::CalculateAABB(const Skeleton* skel, DynamicBoneMapPtr boneMap)
   {
+    if (m_bindPoseAABBCalculated)
+    {
+      return m_bindPoseAABB;
+    }
+
     BoundingBox finalAABB;
     MeshRawPtrArray meshes;
     GetAllMeshes(meshes);
@@ -700,7 +705,7 @@ namespace ToolKit
                                   m->m_clientSideVertices.end(),
                                   [skel, boneMap, &meshAABBLocker, &meshAABB](SkinVertex& v)
                                   {
-                                    Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap);
+                                    Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap, false);
                                     std::lock_guard<std::mutex> guard(meshAABBLocker);
                                     meshAABB.UpdateBoundary(skinnedPos);
                                   });
@@ -727,6 +732,9 @@ namespace ToolKit
       finalAABB.UpdateBoundary(aabb.max);
       finalAABB.UpdateBoundary(aabb.min);
     }
+
+    m_bindPoseAABBCalculated = true;
+    m_bindPoseAABB           = finalAABB;
 
     return finalAABB;
   }

@@ -114,6 +114,8 @@ namespace ToolKit
    public:
     std::vector<SkinVertex> m_clientSideVertices;
     SkeletonPtr m_skeleton;
+    bool m_bindPoseAABBCalculated = false;
+    BoundingBox m_bindPoseAABB;
   };
 
   class TK_API MeshManager : public ResourceManager

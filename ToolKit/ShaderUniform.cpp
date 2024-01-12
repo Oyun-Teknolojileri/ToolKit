@@ -146,6 +146,18 @@ namespace ToolKit
       return "keyFrameCount";
     case Uniform::IS_ANIMATED:
       return "isAnimated";
+    case Uniform::BLEND_ANIMATION:
+      return "blendAnimation";
+    case Uniform::BLEND_FACTOR:
+      return "blendFactor";
+    case Uniform::BLEND_KEY_FRAME_1:
+      return "blendKeyFrame1";
+    case Uniform::BLEND_KEY_FRAME_2:
+      return "blendKeyFrame2";
+    case Uniform::BLEND_KEY_FRAME_INT_TIME:
+      return "blendKeyFrameIntepolationTime";
+    case Uniform::BLEND_KEY_FRAME_COUNT:
+      return "blendKeyFrameCount";
     case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";

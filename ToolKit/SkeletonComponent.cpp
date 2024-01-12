@@ -43,6 +43,8 @@ namespace ToolKit
     return dst;
   }
 
+  const AnimData& SkeletonComponent::GetAnimData() const { return m_animData; }
+
   void SkeletonComponent::ParameterConstructor()
   {
     Super::ParameterConstructor();

@@ -95,33 +95,28 @@ namespace ToolKit
         overrideBBox       = std::move(bbOverride->GetAABB());
       }
       SkeletonComponentPtr skComp              = ntt->GetComponent<SkeletonComponent>();
-      AnimationPtr anim                        = nullptr;
       const AnimRecordRawPtrArray& animRecords = GetAnimationPlayer()->m_records;
+      bool foundAnim                           = false;
       for (AnimRecordRawPtr animRecord : animRecords)
       {
         if (EntityPtr animNtt = animRecord->m_entity.lock())
         {
           if (animNtt->GetIdVal() == ntt->GetIdVal())
           {
-            anim = animRecord->m_animation;
+            skComp->m_animData.currentAnimation = animRecord->m_animation;
+            skComp->m_animData.blendAnimation   = animRecord->m_blendAnimation;
+            foundAnim                           = true;
             break;
           }
         }
       }
+      if (!foundAnim && skComp != nullptr)
+      {
+        skComp->m_animData.currentAnimation = nullptr;
+        skComp->m_animData.blendAnimation   = nullptr;
+      }
 
-      auto addRenderJobForMeshFn = [&boundingVolume,
-                                    &materialMissing,
-                                    &matComp,
-                                    &matIndex,
-                                    &mc,
-                                    &ntt,
-                                    &jobArray,
-                                    &nttTransform,
-                                    overrideBBoxExists,
-                                    &overrideBBox,
-                                    castShadow,
-                                    &skComp,
-                                    &anim](Mesh* mesh)
+      auto addRenderJobForMeshFn = [&](Mesh* mesh)
       {
         if (mesh)
         {
@@ -145,7 +140,6 @@ namespace ToolKit
 
           job.ShadowCaster = castShadow;
           job.Mesh         = mesh;
-          job.SkeletonCmp  = job.Mesh->IsSkinned() ? ntt->GetComponent<SkeletonComponent>() : nullptr;
 
           // Look material component first, if we can not find a corresponding material in there, look inside mesh. If
           // still there is no corresponding material, give a warning to the user and use default material
@@ -172,12 +166,8 @@ namespace ToolKit
           }
           if (skComp != nullptr)
           {
-            float frameKeyCount                    = (float) skComp->GetAnimKeyFrameCount();
-            job.animData.firstKeyFrame             = (float) skComp->GetAnimFirstKeyFrame() / frameKeyCount;
-            job.animData.secondKeyFrame            = (float) skComp->GetAnimSecondKeyFrame() / frameKeyCount;
-            job.animData.keyFrameCount             = frameKeyCount;
-            job.animData.keyFrameInterpolationTime = skComp->GetAnimKeyFrameInterpolateTime();
-            job.animData.anim                      = anim;
+            const AnimData& animData = skComp->GetAnimData();
+            job.animData             = animData; // copy
           }
 
           jobArray.push_back(job);
