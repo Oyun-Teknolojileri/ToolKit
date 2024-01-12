@@ -267,12 +267,10 @@ namespace ToolKit
     float width  = shadowVolume.GetWidth();
     float height = shadowVolume.GetHeight();
     float far    = glm::max(width, height);
-    far          = glm::max(lastCameraFar, far);
+    far          = glm::min(lastCameraFar, far);
 
-    // TODO: Hand crafted values. Must be calculated from scene boundary.
     lightCamera->m_node->SetTranslation(center + dir * far * -0.5f);
 
-    // TODO: Z Hand crafted values. Must be calculated from scene boundary.
     lightCamera->SetLens(tightShadowVolume.min.x,
                          tightShadowVolume.max.x,
                          tightShadowVolume.min.y,
