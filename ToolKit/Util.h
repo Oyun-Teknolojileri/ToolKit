@@ -259,4 +259,9 @@ namespace ToolKit
 
   TK_API uint64 Xoroshiro128Plus(uint64 s[2]);
 
+  // Container Utilities
+  ///////////////////////////////////////////////////////
+  template <typename Key, typename Value>
+  TK_API bool HaveSameKeys(const std::unordered_map<Key, Value>& map1, const std::unordered_map<Key, Value>& map2);
+
 } // namespace ToolKit

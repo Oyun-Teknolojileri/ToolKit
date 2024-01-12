@@ -397,6 +397,10 @@ namespace ToolKit
     int animRecordIndex = Exist(animRecordID);
     if (animRecordIndex != -1)
     {
+      // check if they have same bones
+      assert(HaveSameKeys(m_records[animRecordIndex]->m_animation->m_keys, animToBlend->m_keys) &&
+             "Blend animation is for different skeleton than the animation to blend with!");
+
       AddAnimationData(m_records[animRecordIndex]->m_entity, animToBlend);
       m_records[animRecordIndex]->AddBlendAnimation(animToBlend, blendDurationInSec);
     }
@@ -464,10 +468,29 @@ namespace ToolKit
           float ratio;
           record->m_animation->GetNearestKeys(keys, key1, key2, ratio, record->m_currentTime);
 
-          skComp->m_animFirstKeyFrame             = key1;
-          skComp->m_animSecondKeyFrame            = key2;
-          skComp->m_animKeyFrameInterpolationTime = ratio;
-          skComp->m_animKeyFrameCount             = (uint) keys.size();
+          skComp->m_animData.keyFrameCount             = (float) keys.size();
+          skComp->m_animData.currentAnimation          = record->m_animation;
+          skComp->m_animData.blendAnimation            = record->m_blendAnimation;
+          skComp->m_animData.firstKeyFrame             = (float) key1 / skComp->m_animData.keyFrameCount;
+          skComp->m_animData.secondKeyFrame            = (float) key2 / skComp->m_animData.keyFrameCount;
+          skComp->m_animData.keyFrameInterpolationTime = ratio;
+
+          if (record->m_blendAnimation != nullptr)
+          {
+            assert(record->m_blendAnimation->m_keys.size() > 0);
+            KeyArray& blendAnimKeys = (*(record->m_blendAnimation->m_keys.begin())).second;
+            record->m_blendAnimation->GetNearestKeys(blendAnimKeys,
+                                                     key1,
+                                                     key2,
+                                                     ratio,
+                                                     record->m_blendFactor * record->m_blendDurationInSec);
+
+            skComp->m_animData.blendKeyFrameCount             = (float) blendAnimKeys.size();
+            skComp->m_animData.animationBlendFactor           = record->m_blendFactor;
+            skComp->m_animData.blendFirstKeyFrame             = (float) key1 / skComp->m_animData.blendKeyFrameCount;
+            skComp->m_animData.blendSecondKeyFrame            = (float) key2 / skComp->m_animData.blendKeyFrameCount;
+            skComp->m_animData.blendKeyFrameInterpolationTime = ratio;
+          }
         }
       }
 

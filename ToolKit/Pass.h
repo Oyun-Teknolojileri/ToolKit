@@ -41,18 +41,6 @@ namespace ToolKit
     Renderer* m_renderer = nullptr;
   };
 
-  struct RenderJobAnimData
-  {
-    float firstKeyFrame             = 0.0f; // normalized via (firstKeyFrame / keyFrameCount)
-    float secondKeyFrame            = 0.0f; // normalized via (firstKeyFrame / keyFrameCount)
-    float keyFrameInterpolationTime = 0.0f;
-    float keyFrameCount             = 0.0f;
-
-    AnimationPtr currentAnimation   = nullptr;
-    AnimationPtr blendAnimation     = nullptr;
-    float animationBlendFactor      = 0.0f; // between 0 - 1
-  };
-
   /**
    * This struct holds all the data required to make a drawcall.
    */
@@ -65,7 +53,7 @@ namespace ToolKit
     bool ShadowCaster                         = true;    //!< Account in shadow map construction.
     BoundingBox BoundingBox;                             //!< World space bounding box.
     Mat4 WorldTransform;                                 //!< World transform of the entity.
-    RenderJobAnimData animData;                          //!< Animation data of render job
+    AnimData animData;                                   //!< Animation data of render job
   };
 
   class TK_API RenderJobProcessor

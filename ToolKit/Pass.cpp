@@ -156,14 +156,8 @@ namespace ToolKit
           }
           if (skComp != nullptr)
           {
-            float frameKeyCount                    = (float) skComp->GetAnimKeyFrameCount();
-            job.animData.firstKeyFrame             = (float) skComp->GetAnimFirstKeyFrame() / frameKeyCount;
-            job.animData.secondKeyFrame            = (float) skComp->GetAnimSecondKeyFrame() / frameKeyCount;
-            job.animData.keyFrameCount             = frameKeyCount;
-            job.animData.keyFrameInterpolationTime = skComp->GetAnimKeyFrameInterpolateTime();
-            job.animData.currentAnimation          = currentAnimation;
-            job.animData.blendAnimation            = blendAnimation;
-            job.animData.animationBlendFactor      = blendFactor;
+            const AnimData& animData                      = skComp->GetAnimData();
+            job.animData                                  = animData; // copy
           }
 
           jobArray.push_back(job);

@@ -12,6 +12,21 @@
 
 namespace ToolKit
 {
+  struct AnimData
+  {
+    float firstKeyFrame                  = 0.0f; // normalized via (firstKeyFrame / keyFrameCount)
+    float secondKeyFrame                 = 0.0f; // normalized via (firstKeyFrame / keyFrameCount)
+    float keyFrameInterpolationTime      = 0.0f;
+    float keyFrameCount                  = 1.0f; // default value is 1 to prevent division with 0
+
+    AnimationPtr currentAnimation        = nullptr;
+    AnimationPtr blendAnimation          = nullptr;
+    float animationBlendFactor           = 0.0f; // between 0 - 1
+    float blendFirstKeyFrame             = 0.0f; // normalized via (firstKeyFrame / keyFrameCount)
+    float blendSecondKeyFrame            = 0.0f; // normalized via (firstKeyFrame / keyFrameCount)
+    float blendKeyFrameInterpolationTime = 0.0f;
+    float blendKeyFrameCount             = 1.0f; // default value is 1 to prevent division with 0
+  };
 
   static VariantCategory SkeletonComponentCategory {"Skeleton Component", 90};
   typedef std::shared_ptr<class SkeletonComponent> SkeletonComponentPtr;
@@ -37,13 +52,7 @@ namespace ToolKit
     void Init();
     ComponentPtr Copy(EntityPtr ntt) override;
 
-    inline uint GetAnimFirstKeyFrame() const { return m_animFirstKeyFrame; }
-
-    inline uint GetAnimSecondKeyFrame() const { return m_animSecondKeyFrame; }
-
-    inline float GetAnimKeyFrameInterpolateTime() const { return m_animKeyFrameInterpolationTime; }
-
-    inline uint GetAnimKeyFrameCount() const { return m_animKeyFrameCount; }
+    const AnimData& GetAnimData() const;
 
    protected:
     void ParameterConstructor() override;
@@ -57,11 +66,7 @@ namespace ToolKit
     bool isDirty            = true;
 
    private:
-    // These are per-frame variables for animation
-    uint m_animFirstKeyFrame              = 0;
-    uint m_animSecondKeyFrame             = 0;
-    float m_animKeyFrameInterpolationTime = 0.0f;
-    uint m_animKeyFrameCount              = 1;
+    AnimData m_animData;
   };
 
 } // namespace ToolKit

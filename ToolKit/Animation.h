@@ -199,6 +199,7 @@ namespace ToolKit
     ULongID m_id;
 
    protected:
+    // The blend animation's duration is blend duration
     AnimationPtr m_blendAnimation = nullptr;
     float m_blendFactor           = 0.0f; // between 0 - 1
     float m_blendDurationInSec    = 0.0f;

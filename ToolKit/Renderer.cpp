@@ -974,6 +974,36 @@ namespace ToolKit
           glUniform1ui(loc, renderJob.animData.currentAnimation != nullptr);
         }
         break;
+        case Uniform::BLEND_ANIMATION:
+        {
+          glUniform1i(loc, renderJob.animData.blendAnimation != nullptr);
+        }
+        break;
+        case Uniform::BLEND_FACTOR:
+        {
+          glUniform1f(loc, renderJob.animData.animationBlendFactor);
+        }
+        break;
+        case Uniform::BLEND_KEY_FRAME_1:
+        {
+          glUniform1f(loc, renderJob.animData.blendFirstKeyFrame);
+        }
+        break;
+        case Uniform::BLEND_KEY_FRAME_2:
+        {
+          glUniform1f(loc, renderJob.animData.blendSecondKeyFrame);
+        }
+        break;
+        case Uniform::BLEND_KEY_FRAME_INT_TIME:
+        {
+          glUniform1f(loc, renderJob.animData.blendKeyFrameInterpolationTime);
+        }
+        break;
+        case Uniform::BLEND_KEY_FRAME_COUNT:
+        {
+          glUniform1f(loc, renderJob.animData.blendKeyFrameCount);
+        }
+        break;
         default:
           break;
         }
