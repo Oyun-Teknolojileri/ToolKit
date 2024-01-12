@@ -670,6 +670,11 @@ namespace ToolKit
 
   BoundingBox SkinMesh::CalculateAABB(const Skeleton* skel, DynamicBoneMapPtr boneMap)
   {
+    if (m_bindPoseAABBCalculated)
+    {
+      return m_bindPoseAABB;
+    }
+
     BoundingBox finalAABB;
     MeshRawPtrArray meshes;
     GetAllMeshes(meshes);
@@ -727,6 +732,9 @@ namespace ToolKit
       finalAABB.UpdateBoundary(aabb.max);
       finalAABB.UpdateBoundary(aabb.min);
     }
+
+    m_bindPoseAABBCalculated = true;
+    m_bindPoseAABB           = finalAABB;
 
     return finalAABB;
   }
