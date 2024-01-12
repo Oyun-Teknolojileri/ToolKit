@@ -20,15 +20,8 @@ namespace ToolKit
   BloomPass::BloomPass()
   {
     m_downsampleShader = GetShaderManager()->Create<Shader>(ShaderPath("bloomDownsample.shader", true));
-    m_downsampleShader->AddShaderUniform(ShaderUniform("passIndx", 0));
-    m_downsampleShader->AddShaderUniform(ShaderUniform("srcResolution", 0));
-    m_downsampleShader->AddShaderUniform(ShaderUniform("threshold", 0));
-
-    m_upsampleShader = GetShaderManager()->Create<Shader>(ShaderPath("bloomUpsample.shader", true));
-    m_upsampleShader->AddShaderUniform(ShaderUniform("filterRadius", 1.0f));
-    m_upsampleShader->AddShaderUniform(ShaderUniform("intensity", 1.0f));
-
-    m_pass = MakeNewPtr<FullQuadPass>();
+    m_upsampleShader   = GetShaderManager()->Create<Shader>(ShaderPath("bloomUpsample.shader", true));
+    m_pass             = MakeNewPtr<FullQuadPass>();
   }
 
   BloomPass::BloomPass(const BloomPassParams& params) : BloomPass() { m_params = params; }

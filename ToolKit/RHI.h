@@ -19,6 +19,13 @@ namespace ToolKit
     friend class Framebuffer;
     friend class RenderSystem;
 
+   public:
+    /**
+     * Sets the given texture to given slot.
+     * textureSlot can be between 0 & 31.
+     */
+    static void SetTexture(GLenum target, GLuint textureID, GLenum textureSlot = 31);
+
    private:
     static void SetFramebuffer(GLenum target, GLuint framebufferID);
     static void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers);
@@ -28,6 +35,11 @@ namespace ToolKit
     static GLuint m_currentReadFramebufferID;
     static GLuint m_currentDrawFramebufferID;
     static GLuint m_currentFramebufferID;
+
+    /**
+     * Holds which texture is binded to which texture unit.
+     */
+    static std::unordered_map<uint, uint> m_slotTextureIDmap;
   };
 
 } // namespace ToolKit

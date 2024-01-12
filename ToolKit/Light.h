@@ -75,9 +75,7 @@ namespace ToolKit
     virtual ~DirectionalLight();
 
     void NativeConstruct() override;
-
-    void UpdateShadowFrustum(const RenderJobArray& jobs, const CameraPtr cameraView);
-    Vec3Array GetShadowFrustumCorners();
+    void UpdateShadowFrustum(const RenderJobArray& jobs, const CameraPtr cameraView, const BoundingBox& shadowVolume);
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
@@ -89,7 +87,7 @@ namespace ToolKit
 
     // Fits view frustum of the camera into shadow map camera frustum. As the
     // view frustum gets bigger, the resolution gets lower.
-    void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera);
+    void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera, const BoundingBox& shadowVolume);
   };
 
   typedef std::shared_ptr<DirectionalLight> DirectionalLightPtr;

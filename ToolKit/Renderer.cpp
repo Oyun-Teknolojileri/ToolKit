@@ -45,7 +45,6 @@ namespace ToolKit
     m_uiCamera                      = MakeNewPtr<Camera>();
     m_oneColorAttachmentFramebuffer = MakeNewPtr<Framebuffer>();
     m_dummyDrawCube                 = MakeNewPtr<Cube>();
-    memset(m_textureSlots, -1, RHIConstants::TextureSlotCount * sizeof(int));
   }
 
   Renderer::~Renderer()
@@ -636,7 +635,7 @@ namespace ToolKit
 
     m_gaussianBlurMaterial->UnInit();
     m_gaussianBlurMaterial->m_diffuseTexture = source;
-    m_gaussianBlurMaterial->m_fragmentShader->AddShaderUniform(ShaderUniform("BlurScale", axis * amount));
+    m_gaussianBlurMaterial->m_fragmentShader->UpdateShaderUniform("BlurScale", axis * amount);
     m_gaussianBlurMaterial->Init();
 
     m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
@@ -668,7 +667,7 @@ namespace ToolKit
 
     m_averageBlurMaterial->UnInit();
     m_averageBlurMaterial->m_diffuseTexture = source;
-    m_gaussianBlurMaterial->m_fragmentShader->AddShaderUniform(ShaderUniform("BlurScale", axis * amount));
+    m_gaussianBlurMaterial->m_fragmentShader->UpdateShaderUniform("BlurScale", axis * amount);
 
     m_averageBlurMaterial->Init();
 
@@ -1165,19 +1164,11 @@ namespace ToolKit
   {
     assert(slotIndx < 17 && "You exceed texture slot count");
 
-    if (m_textureSlots[slotIndx] == textureId)
-    {
-      return;
-    }
-
-    m_textureSlots[slotIndx] = textureId;
-    glActiveTexture(GL_TEXTURE0 + slotIndx);
-
     static const GLenum textureTypeLut[17] = {
         GL_TEXTURE_2D,       // 0 -> Color Texture
         GL_TEXTURE_2D,       // 1 -> Emissive Texture
         GL_TEXTURE_2D,       // 2 -> EMPTY
-        GL_TEXTURE_2D,       // 3 -> Skinning information
+        GL_TEXTURE_2D,       // 3 -> Skinning informatison
         GL_TEXTURE_2D,       // 4 -> Metallic Roughness Texture
         GL_TEXTURE_2D,       // 5 -> AO Texture
         GL_TEXTURE_CUBE_MAP, // 6 -> Cubemap
@@ -1187,13 +1178,13 @@ namespace ToolKit
         GL_TEXTURE_2D,       // 10 -> gBuffer normal texture
         GL_TEXTURE_2D,       // 11 -> gBuffer color texture
         GL_TEXTURE_2D,       // 12 -> gBuffer emissive texture
-        GL_TEXTURE_2D,       // 13 -> Light Data Texture
+        GL_TEXTURE_2D,       // 13 -> EMPTY
         GL_TEXTURE_2D,       // 14 -> gBuffer metallic roughness texture
         GL_TEXTURE_CUBE_MAP, // 15 -> IBL Specular Pre-Filtered Map
         GL_TEXTURE_2D        // 16 -> IBL BRDF Lut
     };
 
-    glBindTexture(textureTypeLut[slotIndx], m_textureSlots[slotIndx]);
+    RHI::SetTexture(textureTypeLut[slotIndx], textureId, slotIndx);
   }
 
   void Renderer::SetShadowAtlas(TexturePtr shadowAtlas) { m_shadowAtlas = shadowAtlas; }

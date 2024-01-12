@@ -125,7 +125,11 @@ namespace ToolKit
     return 3;
   }
 
-  void Light::UpdateShadowCameraTransform() { m_shadowCamera->m_node->SetTransform(m_node->GetTransform()); }
+  void Light::UpdateShadowCameraTransform()
+  {
+    Mat4 lightTs = m_node->GetTransform();
+    m_shadowCamera->m_node->SetTransform(lightTs);
+  }
 
   XmlNode* Light::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
@@ -160,33 +164,14 @@ namespace ToolKit
     AddComponent<DirectionComponent>();
   }
 
-  void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs, const CameraPtr cameraView)
+  void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs,
+                                             const CameraPtr cameraView,
+                                             const BoundingBox& shadowVolume)
   {
     // FitEntitiesBBoxIntoShadowFrustum(m_shadowCamera, jobs);
-    FitViewFrustumIntoLightFrustum(m_shadowCamera, cameraView);
+    FitViewFrustumIntoLightFrustum(m_shadowCamera, cameraView, shadowVolume);
 
     UpdateShadowCamera();
-  }
-
-  // Returns 8 sized array
-  Vec3Array DirectionalLight::GetShadowFrustumCorners()
-  {
-    Vec3Array frustum             = {Vec3(-1.0f, -1.0f, -1.0f),
-                                     Vec3(1.0f, -1.0f, -1.0f),
-                                     Vec3(1.0f, -1.0f, 1.0f),
-                                     Vec3(-1.0f, -1.0f, 1.0f),
-                                     Vec3(-1.0f, 1.0f, -1.0f),
-                                     Vec3(1.0f, 1.0f, -1.0f),
-                                     Vec3(1.0f, 1.0f, 1.0f),
-                                     Vec3(-1.0f, 1.0f, 1.0f)};
-
-    const Mat4 inverseSpaceMatrix = glm::inverse(m_shadowMapCameraProjectionViewMatrix);
-    for (int i = 0; i < 8; ++i)
-    {
-      const Vec4 t = inverseSpaceMatrix * Vec4(frustum[i], 1.0f);
-      frustum[i]   = Vec3(t.x / t.w, t.y / t.w, t.z / t.w);
-    }
-    return frustum;
   }
 
   XmlNode* DirectionalLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -246,59 +231,52 @@ namespace ToolKit
                          shadowBBox.max.z);
   }
 
-  void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera)
+  void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
+                                                        CameraPtr viewCamera,
+                                                        const BoundingBox& shadowVolume)
   {
-    // Fit view frustum into light frustum
-    Vec3 frustum[8]      = {Vec3(-1.0f, -1.0f, -1.0f),
-                            Vec3(1.0f, -1.0f, -1.0f),
-                            Vec3(1.0f, -1.0f, 1.0f),
-                            Vec3(-1.0f, -1.0f, 1.0f),
-                            Vec3(-1.0f, 1.0f, -1.0f),
-                            Vec3(1.0f, 1.0f, -1.0f),
-                            Vec3(1.0f, 1.0f, 1.0f),
-                            Vec3(-1.0f, 1.0f, 1.0f)};
-
     // Set far for view frustum
     float lastCameraFar  = viewCamera->GetFarClipVal();
     float shadowDistance = GetEngineSettings().Graphics.ShadowDistance;
     viewCamera->SetFarClipVal(shadowDistance);
 
-    const Mat4 inverseViewProj = glm::inverse(viewCamera->GetProjectionMatrix() * viewCamera->GetViewMatrix());
-
+    Vec3Array frustum = viewCamera->ExtractFrustumCorner();
     viewCamera->SetFarClipVal(lastCameraFar);
-
-    for (int i = 0; i < 8; ++i)
-    {
-      const Vec4 t = inverseViewProj * Vec4(frustum[i], 1.0f);
-      frustum[i]   = Vec3(t.x / t.w, t.y / t.w, t.z / t.w);
-    }
 
     Vec3 center = ZERO;
     for (int i = 0; i < 8; ++i)
     {
       center += frustum[i];
     }
-    center                 /= 8.0f;
+    center /= 8.0f;
 
-    TransformationSpace ts  = TransformationSpace::TS_WORLD;
-    lightCamera->m_node->SetTranslation(center, ts);
-    lightCamera->m_node->SetOrientation(m_node->GetOrientation(ts), ts);
+    lightCamera->m_node->SetOrientation(m_node->GetOrientation());
+
     const Mat4 lightView = lightCamera->GetViewMatrix();
 
-    // Calculate bounding box
-    BoundingBox shadowBBox;
+    // Calculate tight shadow volume.
+    BoundingBox tightShadowVolume;
     for (int i = 0; i < 8; ++i)
     {
       const Vec4 vertex = lightView * Vec4(frustum[i], 1.0f);
-      shadowBBox.UpdateBoundary(vertex);
+      tightShadowVolume.UpdateBoundary(vertex);
     }
 
-    lightCamera->SetLens(shadowBBox.min.x,
-                         shadowBBox.max.x,
-                         shadowBBox.min.y,
-                         shadowBBox.max.y,
-                         shadowBBox.min.z,
-                         shadowBBox.max.z);
+    // Z
+    Vec3 dir     = lightCamera->Direction();
+    float width  = shadowVolume.GetWidth();
+    float height = shadowVolume.GetHeight();
+    float far    = glm::max(width, height);
+    far          = glm::min(lastCameraFar, far);
+
+    lightCamera->m_node->SetTranslation(center + dir * far * -0.5f);
+
+    lightCamera->SetLens(tightShadowVolume.min.x,
+                         tightShadowVolume.max.x,
+                         tightShadowVolume.min.y,
+                         tightShadowVolume.max.y,
+                         0.0f,
+                         far);
   }
 
   // PointLight

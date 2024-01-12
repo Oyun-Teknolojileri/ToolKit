@@ -10,6 +10,7 @@
 #include "FileManager.h"
 #include "MathUtil.h"
 #include "Node.h"
+#include "RHI.h"
 #include "TKOpenGL.h"
 #include "TKStats.h"
 #include "Texture.h"
@@ -40,7 +41,9 @@ namespace ToolKit
     ptr->m_name = skeleton->m_name + " BindPoseTexture";
 
     glGenTextures(1, &ptr->m_textureId);
-    glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
+
+    RHI::SetTexture(GL_TEXTURE_2D, ptr->m_textureId);
+
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, ptr->m_width, ptr->m_height, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -54,7 +57,7 @@ namespace ToolKit
 
   void uploadBoneMatrix(Mat4 mat, TexturePtr& ptr, uint boneIndx)
   {
-    glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
+    RHI::SetTexture(GL_TEXTURE_2D, ptr->m_textureId);
     glTexSubImage2D(GL_TEXTURE_2D, 0, boneIndx * 4, 0, 4, 1, GL_RGBA, GL_FLOAT, &mat);
   };
 

@@ -20,13 +20,7 @@ namespace ToolKit
   {
     m_quadPass                       = MakeNewPtr<FullQuadPass>();
     m_quadPass->m_params.FrameBuffer = MakeNewPtr<Framebuffer>();
-
     m_dofShader                      = GetShaderManager()->Create<Shader>(ShaderPath("depthOfFieldFrag.shader", true));
-    m_dofShader->AddShaderUniform(ShaderUniform("focusPoint", 0.0f));
-    m_dofShader->AddShaderUniform(ShaderUniform("focusScale", 0.0f));
-    m_dofShader->AddShaderUniform(ShaderUniform("blurSize", 5.0f));
-    m_dofShader->AddShaderUniform(ShaderUniform("radiusScale", 0.0f));
-    m_dofShader->AddShaderUniform(ShaderUniform("uPixelSize", Vec2()));
   }
 
   DoFPass::DoFPass(const DoFPassParams& params) : DoFPass() { m_params = params; }

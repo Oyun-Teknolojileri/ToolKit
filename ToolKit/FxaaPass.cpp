@@ -19,7 +19,6 @@ namespace ToolKit
   FXAAPass::FXAAPass() : PostProcessPass()
   {
     m_postProcessShader = GetShaderManager()->Create<Shader>(ShaderPath("fxaaFilterFrag.shader", true));
-    m_postProcessShader->AddShaderUniform(ShaderUniform("screen_size", m_params.screen_size));
   }
 
   FXAAPass::FXAAPass(const FXAAPassParams& params) : FXAAPass() { m_params = params; }

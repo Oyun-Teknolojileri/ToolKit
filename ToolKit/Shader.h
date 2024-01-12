@@ -39,14 +39,8 @@ namespace ToolKit
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     /**
-     * Adds a shader parameter to the parameter array with the given name and
-     * ParameterVariant. Shader is looked up with the parameter name "param" and
-     * its value set as "val".
-     * @param param is the name that the parameter is referred in the shader.
-     * @param val is the value of the given parameter.
+     * Updates or adds the given shader uniform to the uniform cache of the shader.
      */
-    void AddShaderUniform(const ShaderUniform& uniform);
-
     void UpdateShaderUniform(const String& name, const UniformValue& val);
 
     /**
