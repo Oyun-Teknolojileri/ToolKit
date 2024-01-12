@@ -127,11 +127,12 @@ namespace ToolKit
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
     m_jobs.clear();
-    RenderJobProcessor::CreateRenderJobs(allDrawList, m_jobs);
+    m_params.Scene->m_boundingBox       = RenderJobProcessor::CreateRenderJobs(allDrawList, m_jobs);
+    m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
 
-    m_shadowPass->m_params.RendeJobs  = m_jobs;
-    m_shadowPass->m_params.Lights     = m_updatedLights;
-    m_shadowPass->m_params.ViewCamera = m_params.Cam;
+    m_shadowPass->m_params.RendeJobs    = m_jobs;
+    m_shadowPass->m_params.Lights       = m_updatedLights;
+    m_shadowPass->m_params.ViewCamera   = m_params.Cam;
 
     RenderJobProcessor::CullRenderJobs(m_jobs, m_params.Cam);
 

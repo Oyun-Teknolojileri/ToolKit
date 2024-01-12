@@ -139,7 +139,7 @@ namespace ToolKit
      */
     virtual void PickObject(const Frustum& frustum,
                             PickDataArray& pickedObjects,
-                            const IDArray& ignoreList = {},
+                            const IDArray& ignoreList       = {},
                             const EntityPtrArray& extraList = {},
                             bool pickPartiallyInside        = true);
 
@@ -308,6 +308,13 @@ namespace ToolKit
      * @param removed The entity whose children will be removed.
      */
     void RemoveChildren(EntityPtr removed);
+
+   public:
+    /**
+     * A volume that covers all the entities in the scene.
+     * Its calculated during rendering. Its only valid after scene render.
+     */
+    BoundingBox m_boundingBox;
 
    protected:
     EntityPtrArray m_entities; //!< The entities in the scene.

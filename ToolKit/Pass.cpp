@@ -58,9 +58,9 @@ namespace ToolKit
 
   void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
 
-  void RenderJobProcessor::CreateRenderJobs(const EntityPtrArray& entities,
-                                            RenderJobArray& jobArray,
-                                            bool ignoreVisibility)
+  BoundingBox RenderJobProcessor::CreateRenderJobs(const EntityPtrArray& entities,
+                                                   RenderJobArray& jobArray,
+                                                   bool ignoreVisibility)
   {
     CPU_FUNC_RANGE();
 
@@ -70,6 +70,8 @@ namespace ToolKit
       bool isVisbile  = ntt->IsVisible();
       return isDrawable && (isVisbile || ignoreVisibility);
     };
+
+    BoundingBox boundingVolume;
 
     for (EntityPtr ntt : entities)
     {
@@ -107,7 +109,8 @@ namespace ToolKit
         }
       }
 
-      auto addRenderJobForMeshFn = [&materialMissing,
+      auto addRenderJobForMeshFn = [&boundingVolume,
+                                    &materialMissing,
                                     &matComp,
                                     &matIndex,
                                     &mc,
@@ -134,6 +137,11 @@ namespace ToolKit
             job.BoundingBox = mesh->m_aabb;
           }
           TransformAABB(job.BoundingBox, job.WorldTransform);
+
+          if (job.BoundingBox.IsValid())
+          {
+            boundingVolume.UpdateBoundary(job.BoundingBox);
+          }
 
           job.ShadowCaster = castShadow;
           job.Mesh         = mesh;
@@ -189,6 +197,8 @@ namespace ToolKit
                ntt->GetNameVal().c_str());
       }
     }
+
+    return boundingVolume;
   }
 
   void RenderJobProcessor::SeperateDeferredForward(const RenderJobArray& jobArray,

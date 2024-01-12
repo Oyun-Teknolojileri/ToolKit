@@ -164,10 +164,12 @@ namespace ToolKit
     AddComponent<DirectionComponent>();
   }
 
-  void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs, const CameraPtr cameraView)
+  void DirectionalLight::UpdateShadowFrustum(const RenderJobArray& jobs,
+                                             const CameraPtr cameraView,
+                                             const BoundingBox& shadowVolume)
   {
     // FitEntitiesBBoxIntoShadowFrustum(m_shadowCamera, jobs);
-    FitViewFrustumIntoLightFrustum(m_shadowCamera, cameraView);
+    FitViewFrustumIntoLightFrustum(m_shadowCamera, cameraView, shadowVolume);
 
     UpdateShadowCamera();
   }
@@ -229,7 +231,9 @@ namespace ToolKit
                          shadowBBox.max.z);
   }
 
-  void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera)
+  void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
+                                                        CameraPtr viewCamera,
+                                                        const BoundingBox& shadowVolume)
   {
     // Set far for view frustum
     float lastCameraFar  = viewCamera->GetFarClipVal();
@@ -247,23 +251,34 @@ namespace ToolKit
     center /= 8.0f;
 
     lightCamera->m_node->SetOrientation(m_node->GetOrientation());
-    Vec3 dir = lightCamera->Direction();
-
-    // TODO: Hand crafted values. Must be calculated from scene boundary.
-    lightCamera->m_node->SetTranslation(center + dir * -50.0f);
 
     const Mat4 lightView = lightCamera->GetViewMatrix();
 
-    // Calculate bounding box
-    BoundingBox shadowBBox;
+    // Calculate tight shadow volume.
+    BoundingBox tightShadowVolume;
     for (int i = 0; i < 8; ++i)
     {
       const Vec4 vertex = lightView * Vec4(frustum[i], 1.0f);
-      shadowBBox.UpdateBoundary(vertex);
+      tightShadowVolume.UpdateBoundary(vertex);
     }
 
+    // Z
+    Vec3 dir     = lightCamera->Direction();
+    float width  = shadowVolume.GetWidth();
+    float height = shadowVolume.GetHeight();
+    float far    = glm::max(width, height);
+    far          = glm::max(lastCameraFar, far);
+
+    // TODO: Hand crafted values. Must be calculated from scene boundary.
+    lightCamera->m_node->SetTranslation(center + dir * far * -0.5f);
+
     // TODO: Z Hand crafted values. Must be calculated from scene boundary.
-    lightCamera->SetLens(shadowBBox.min.x, shadowBBox.max.x, shadowBBox.min.y, shadowBBox.max.y, -100.0f, 100.0f);
+    lightCamera->SetLens(tightShadowVolume.min.x,
+                         tightShadowVolume.max.x,
+                         tightShadowVolume.min.y,
+                         tightShadowVolume.max.y,
+                         0.0f,
+                         far);
   }
 
   // PointLight

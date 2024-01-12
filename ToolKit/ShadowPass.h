@@ -15,9 +15,10 @@ namespace ToolKit
 
   struct ShadowPassParams
   {
-    LightPtrArray Lights     = {};
-    RenderJobArray RendeJobs = {};
-    CameraPtr ViewCamera     = nullptr;
+    LightPtrArray Lights;
+    RenderJobArray RendeJobs;
+    BoundingBox shadowVolume;
+    CameraPtr ViewCamera = nullptr;
   };
 
   /**

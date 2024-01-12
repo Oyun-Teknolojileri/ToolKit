@@ -69,9 +69,17 @@ namespace ToolKit
   class TK_API RenderJobProcessor
   {
    public:
-    static void CreateRenderJobs(const EntityPtrArray& entities,
-                                 RenderJobArray& jobArray,
-                                 bool ignoreVisibility = false);
+    /**
+     * Constructs all render jobs from entities. Also constructs the bounding volume that covers all entities.
+     * Good candidate to use as shadow boundary.
+     * @param entities are the entities to construct render jobs for.
+     * @param jobArray is the array of constructed jobs.
+     * @param ingnoreVisibility when set true, construct jobs for objects that has visibility set to false.
+     * @return BoundingBox for jobs.
+     */
+    static BoundingBox CreateRenderJobs(const EntityPtrArray& entities,
+                                        RenderJobArray& jobArray,
+                                        bool ignoreVisibility = false);
 
     static void SeperateDeferredForward(const RenderJobArray& jobArray,
                                         RenderJobArray& deferred,
