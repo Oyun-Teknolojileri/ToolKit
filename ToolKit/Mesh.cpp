@@ -700,7 +700,7 @@ namespace ToolKit
                                   m->m_clientSideVertices.end(),
                                   [skel, boneMap, &meshAABBLocker, &meshAABB](SkinVertex& v)
                                   {
-                                    Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap);
+                                    Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap, false);
                                     std::lock_guard<std::mutex> guard(meshAABBLocker);
                                     meshAABB.UpdateBoundary(skinnedPos);
                                   });

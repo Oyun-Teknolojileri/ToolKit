@@ -358,18 +358,29 @@ namespace ToolKit
       return false;
   }
 
-  Vec3 CPUSkinning(const SkinVertex* vertex, const Skeleton* skel, DynamicBoneMapPtr dynamicBoneMap)
+  Vec3 CPUSkinning(const SkinVertex* vertex, const Skeleton* skel, DynamicBoneMapPtr dynamicBoneMap, bool isAnimated)
   {
 
     Vec3 transformedPos = {};
     for (uint boneIndx = 0; boneIndx < 4; boneIndx++)
     {
-      uint currentBone       = (uint) vertex->bones[boneIndx];
-      StaticBone* sBone      = skel->m_bones[currentBone];
-      Mat4 bindPoseTransform = sBone->m_inverseWorldMatrix;
-      ToolKit::Mat4 boneTransform =
-          dynamicBoneMap->boneList.find(sBone->m_name)->second.node->GetTransform(TransformationSpace::TS_WORLD);
-      transformedPos += Vec3((boneTransform * bindPoseTransform * Vec4(vertex->pos, 1.0f) * vertex->weights[boneIndx]));
+      uint currentBone  = (uint) vertex->bones[boneIndx];
+      StaticBone* sBone = skel->m_bones[currentBone];
+      if (isAnimated)
+      {
+        // Get animated pose
+        ToolKit::Mat4 boneTransform =
+            dynamicBoneMap->boneList.find(sBone->m_name)->second.node->GetTransform(TransformationSpace::TS_WORLD);
+        transformedPos +=
+            Vec3((boneTransform * sBone->m_inverseWorldMatrix * Vec4(vertex->pos, 1.0f) * vertex->weights[boneIndx]));
+      }
+      else
+      {
+        // Get bind pose
+        Mat4 transform = skel->m_Tpose.boneList.find(sBone->m_name)->second.node->GetTransform();
+        transformedPos +=
+            Vec3((transform * sBone->m_inverseWorldMatrix * Vec4(vertex->pos, 1.0f) * vertex->weights[boneIndx]));
+      }
     }
     return transformedPos;
   }
@@ -378,6 +389,7 @@ namespace ToolKit
   {
     float closestPickedDistance = FLT_MAX;
     bool hit                    = false;
+    bool isAnimated             = true;
 
     // Sanitize.
     if (mesh->IsSkinned())
@@ -410,19 +422,20 @@ namespace ToolKit
           }
         }
       }
-
-      if (!found)
+      else
       {
-        return false;
+        isAnimated = false;
       }
     }
+
+    volatile int y = 5;
 
 #ifndef __clang__
     std::mutex updateHit;
     std::for_each(std::execution::par_unseq,
                   mesh->m_faces.begin(),
                   mesh->m_faces.end(),
-                  [&updateHit, &t, &closestPickedDistance, &ray, &hit, skelComp, mesh](const Face& face)
+                  [&updateHit, &t, &closestPickedDistance, &ray, &hit, skelComp, mesh, &isAnimated](const Face& face)
                   {
                     Vec3 positions[3] = {face.vertices[0]->pos, face.vertices[1]->pos, face.vertices[2]->pos};
                     if (skelComp != nullptr && mesh->IsSkinned())
@@ -432,7 +445,8 @@ namespace ToolKit
                       {
                         positions[vertexIndx] = CPUSkinning((SkinVertex*) face.vertices[vertexIndx],
                                                             skinMesh->m_skeleton.get(),
-                                                            skelComp->m_map);
+                                                            skelComp->m_map,
+                                                            isAnimated);
                       }
                     }
                     float dist = FLT_MAX;
