@@ -93,22 +93,25 @@ namespace ToolKit
         overrideBBox       = std::move(bbOverride->GetAABB());
       }
       SkeletonComponentPtr skComp              = ntt->GetComponent<SkeletonComponent>();
-      AnimationPtr currentAnimation            = nullptr;
-      AnimationPtr blendAnimation              = nullptr;
-      float blendFactor                        = 0.0f;
       const AnimRecordRawPtrArray& animRecords = GetAnimationPlayer()->m_records;
+      bool foundAnim                           = false;
       for (AnimRecordRawPtr animRecord : animRecords)
       {
         if (EntityPtr animNtt = animRecord->m_entity.lock())
         {
           if (animNtt->GetIdVal() == ntt->GetIdVal())
           {
-            currentAnimation = animRecord->m_animation;
-            blendAnimation   = animRecord->m_blendAnimation;
-            blendFactor      = animRecord->m_blendFactor;
+            skComp->m_animData.currentAnimation = animRecord->m_animation;
+            skComp->m_animData.blendAnimation   = animRecord->m_blendAnimation;
+            foundAnim                           = true;
             break;
           }
         }
+      }
+      if (!foundAnim && skComp != nullptr)
+      {
+        skComp->m_animData.currentAnimation = nullptr;
+        skComp->m_animData.blendAnimation   = nullptr;
       }
 
       auto addRenderJobForMeshFn = [&](Mesh* mesh)
@@ -156,8 +159,8 @@ namespace ToolKit
           }
           if (skComp != nullptr)
           {
-            const AnimData& animData                      = skComp->GetAnimData();
-            job.animData                                  = animData; // copy
+            const AnimData& animData = skComp->GetAnimData();
+            job.animData             = animData; // copy
           }
 
           jobArray.push_back(job);

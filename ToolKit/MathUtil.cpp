@@ -7,6 +7,7 @@
 
 #include "MathUtil.h"
 
+#include "Animation.h"
 #include "Camera.h"
 #include "Mesh.h"
 #include "Node.h"
@@ -359,6 +360,7 @@ namespace ToolKit
 
   Vec3 CPUSkinning(const SkinVertex* vertex, const Skeleton* skel, DynamicBoneMapPtr dynamicBoneMap)
   {
+
     Vec3 transformedPos = {};
     for (uint boneIndx = 0; boneIndx < 4; boneIndx++)
     {
@@ -372,7 +374,7 @@ namespace ToolKit
     return transformedPos;
   }
 
-  bool RayMeshIntersection(const Mesh* const mesh, const Ray& ray, float& t, const SkeletonComponent* skelComp)
+  bool RayMeshIntersection(const Mesh* const mesh, const Ray& ray, float& t, const SkeletonComponentPtr skelComp)
   {
     float closestPickedDistance = FLT_MAX;
     bool hit                    = false;
@@ -386,6 +388,31 @@ namespace ToolKit
         // Sometimes resources may introduce mismatching skeleton vs skinmeshes.
         // In this case look up the ntt id and fix the corresponding resource.
         TK_ERR("Mismatching skeleton in mesh and component. Ntt id: %llu", skelComp->OwnerEntity()->GetIdVal());
+        return false;
+      }
+
+      const AnimData& animData = skelComp->GetAnimData();
+      AnimationPtr anim        = animData.currentAnimation;
+      bool found               = false;
+      if (anim != nullptr)
+      {
+        EntityPtr ntt = skelComp->OwnerEntity();
+        for (AnimRecord* animRecord : GetAnimationPlayer()->m_records)
+        {
+          if (EntityPtr recordNtt = animRecord->m_entity.lock())
+          {
+            if (recordNtt->GetIdVal() == ntt->GetIdVal())
+            {
+              anim->GetPose(skelComp, animRecord->m_currentTime);
+              found = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!found)
+      {
         return false;
       }
     }
@@ -441,7 +468,7 @@ namespace ToolKit
 
   uint FindMeshIntersection(const EntityPtr ntt, const Ray& rayInWorldSpace, float& t)
   {
-    SkeletonComponent* skel = ntt->GetComponent<SkeletonComponent>().get();
+    SkeletonComponentPtr skel = ntt->GetComponent<SkeletonComponent>();
 
     MeshComponentPtrArray meshComps;
     ntt->GetComponent<MeshComponent>(meshComps);
@@ -469,7 +496,7 @@ namespace ToolKit
       if (mesh->IsSkinned())
       {
         SkinMesh* skinMesh = (SkinMesh*) mesh;
-        if (skinMesh->m_clientSideVertices.size() && skel)
+        if (skinMesh->m_clientSideVertices.size() && skel != nullptr)
         {
           meshTraces.push_back({TK_FLT_MAX, i});
         }

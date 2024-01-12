@@ -469,8 +469,6 @@ namespace ToolKit
           record->m_animation->GetNearestKeys(keys, key1, key2, ratio, record->m_currentTime);
 
           skComp->m_animData.keyFrameCount             = (float) keys.size();
-          skComp->m_animData.currentAnimation          = record->m_animation;
-          skComp->m_animData.blendAnimation            = record->m_blendAnimation;
           skComp->m_animData.firstKeyFrame             = (float) key1 / skComp->m_animData.keyFrameCount;
           skComp->m_animData.secondKeyFrame            = (float) key2 / skComp->m_animData.keyFrameCount;
           skComp->m_animData.keyFrameInterpolationTime = ratio;
