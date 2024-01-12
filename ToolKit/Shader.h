@@ -78,13 +78,6 @@ namespace ToolKit
     std::unordered_map<String, ShaderUniform> m_shaderParams;
 
     /**
-     * Shader hash to look up. Any shader resolving to the same tag can be
-     * accessed from the Shader Manager. It helps avoiding creating the same
-     * shader multiple times.
-     */
-    String m_tag;
-
-    /**
      * Type of the shader.
      */
     ShaderType m_shaderType = ShaderType::VertexShader;

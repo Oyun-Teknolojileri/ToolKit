@@ -119,6 +119,12 @@ namespace ToolKit
     SkyBasePtr m_sky          = nullptr;
     GpuProgramManager m_gpuProgramManager;
 
+    // The set contains gpuPrograms that has up to date camera uniforms.
+    std::unordered_set<uint> m_gpuProgramHasCameraUpdates;
+
+    // The set contains gpuPrograms that has up to date per frame uniforms.
+    std::unordered_set<uint> m_gpuProgramHasFrameUpdates;
+
     bool m_renderOnlyLighting = false;
 
     struct RHIConstants
@@ -143,6 +149,7 @@ namespace ToolKit
     Mat4 m_projectViewNoTranslate;
     Vec3 m_camPos;
     Vec3 m_camDirection;
+    float m_camFar = 0.1f;
 
     Mat4 m_model;
     Mat4 m_iblRotation;

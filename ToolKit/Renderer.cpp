@@ -76,6 +76,8 @@ namespace ToolKit
 
   void Renderer::SetCamera(CameraPtr camera, bool setLens)
   {
+    m_gpuProgramHasCameraUpdates.clear();
+
     if (setLens)
     {
       float aspect = (float) m_viewportSize.x / (float) m_viewportSize.y;
@@ -109,6 +111,7 @@ namespace ToolKit
 
     m_camPos                 = m_cam->Position();
     m_camDirection           = m_cam->Direction();
+    m_camFar                 = m_cam->Far();
   }
 
   void Renderer::Render(const RenderJob& job, CameraPtr cam, const LightPtrArray& lights)
@@ -228,7 +231,6 @@ namespace ToolKit
     FeedUniforms(prg, job);
 
     glBindVertexArray(mesh->m_vaoId);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
 
     if (mesh->m_indexCount != 0)
     {
@@ -237,6 +239,7 @@ namespace ToolKit
     }
     else
     {
+      glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
       glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
     }
 
@@ -318,7 +321,6 @@ namespace ToolKit
       glLineWidth(m_renderState.lineWidth);
     }
 
-    // TODO: Cihan move SetTexture to render path.
     if (m_mat)
     {
       if (m_mat->m_cubeMap)
@@ -730,22 +732,76 @@ namespace ToolKit
 
   void Renderer::BindProgram(GpuProgramPtr program)
   {
-    if (m_currentProgram == program->m_handle)
+    if (m_currentProgram != program->m_handle)
     {
-      return;
+      m_currentProgram = program->m_handle;
+      glUseProgram(program->m_handle);
     }
 
-    m_currentProgram = program->m_handle;
-    glUseProgram(program->m_handle);
+    // Update camera related uniforms.
+    if (m_gpuProgramHasCameraUpdates.find(program->m_handle) == m_gpuProgramHasCameraUpdates.end())
+    {
+      int uniformLoc = program->GetUniformLocation(Uniform::VIEW);
+      if (uniformLoc != -1)
+      {
+        glUniformMatrix4fv(uniformLoc, 1, false, &m_view[0][0]);
+      }
+
+      uniformLoc = program->GetUniformLocation(Uniform::PROJECT_VIEW_NO_TR);
+      if (uniformLoc != -1)
+      {
+        glUniformMatrix4fv(uniformLoc, 1, false, &m_projectViewNoTranslate[0][0]);
+      }
+
+      uniformLoc = program->GetUniformLocation(Uniform::CAM_DATA_POS);
+      if (uniformLoc != -1)
+      {
+        glUniform3fv(uniformLoc, 1, &m_camPos.x);
+      }
+
+      uniformLoc = program->GetUniformLocation(Uniform::CAM_DATA_DIR);
+      if (uniformLoc != -1)
+      {
+        glUniform3fv(uniformLoc, 1, &m_camDirection.x);
+      }
+
+      uniformLoc = program->GetUniformLocation(Uniform::CAM_DATA_FAR);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, m_camFar);
+      }
+
+      m_gpuProgramHasCameraUpdates.insert(program->m_handle);
+    }
+
+    // Update Per frame changing uniforms. ExecuteRenderTasks clears programs at the beginning of the call.
+    if (m_gpuProgramHasFrameUpdates.find(program->m_handle) == m_gpuProgramHasCameraUpdates.end())
+    {
+      int uniformLoc = program->GetUniformLocation(Uniform::FRAME_COUNT);
+      if (uniformLoc != -1)
+      {
+        glUniform1ui(uniformLoc, m_frameCount);
+      }
+
+      uniformLoc = program->GetUniformLocation(Uniform::ELAPSED_TIME);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, Main::GetInstance()->TimeSinceStartup() / 1000.0f);
+      }
+
+      m_gpuProgramHasFrameUpdates.insert(program->m_handle);
+    }
   }
 
   void Renderer::FeedUniforms(GpuProgramPtr program, const RenderJob& renderJob)
   {
     CPU_FUNC_RANGE();
 
+#if TK_DEBUG
     GLint prog = 0;
     glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
     assert(program->m_handle == prog);
+#endif
 
     FeedLightUniforms(program);
 
@@ -768,11 +824,6 @@ namespace ToolKit
           glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
         }
         break;
-        case Uniform::VIEW:
-        {
-          glUniformMatrix4fv(loc, 1, false, &m_view[0][0]);
-        }
-        break;
         case Uniform::MODEL:
         {
           glUniformMatrix4fv(loc, 1, false, &m_model[0][0]);
@@ -786,27 +837,7 @@ namespace ToolKit
         break;
         case Uniform::UNUSEDSLOT_6:
         {
-          assert(false);
-        }
-        break;
-        case Uniform::CAM_DATA_POS:
-        {
-          glUniform3fv(loc, 1, &m_camPos.x);
-        }
-        break;
-        case Uniform::CAM_DATA_DIR:
-        {
-          glUniform3fv(loc, 1, &m_camDirection.x);
-        }
-        break;
-        case Uniform::CAM_DATA_FAR:
-        {
-          if (m_cam == nullptr)
-          {
-            break;
-          }
-
-          glUniform1f(loc, m_cam->Far());
+          TK_ASSERT_ONCE(false && "Old asset in use.");
         }
         break;
         case Uniform::UNUSEDSLOT_7:
@@ -834,20 +865,11 @@ namespace ToolKit
           glUniform4fv(loc, 1, &color.x);
         }
         break;
-        case Uniform::FRAME_COUNT:
-        {
-          glUniform1ui(loc, m_frameCount);
-        }
-        break;
+
         case Uniform::EXPOSURE:
         {
           float val = shader->m_shaderParams["Exposure"].GetVal<float>();
           glUniform1f(loc, val);
-        }
-        break;
-        case Uniform::PROJECT_VIEW_NO_TR:
-        {
-          glUniformMatrix4fv(loc, 1, false, &m_projectViewNoTranslate[0][0]);
         }
         break;
         case Uniform::USE_IBL:
@@ -912,7 +934,7 @@ namespace ToolKit
         }
         break;
         case Uniform::UNUSEDSLOT_3:
-          assert(false);
+          TK_ASSERT_ONCE(false && "Old asset in use.");
           break;
         case Uniform::METALLIC:
         {
@@ -937,11 +959,6 @@ namespace ToolKit
         case Uniform::IBL_MAX_REFLECTION_LOD:
         {
           glUniform1i(loc, RHIConstants::SpecularIBLLods - 1);
-        }
-        break;
-        case Uniform::ELAPSED_TIME:
-        {
-          glUniform1f(loc, Main::GetInstance()->TimeSinceStartup() / 1000.0f);
         }
         break;
         case Uniform::SHADOW_DISTANCE:

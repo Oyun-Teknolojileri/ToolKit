@@ -64,6 +64,11 @@ namespace ToolKit
 
   void RenderSystem::ExecuteRenderTasks()
   {
+    if (m_renderer)
+    {
+      m_renderer->m_gpuProgramHasFrameUpdates.clear();
+    }
+
     // Immediate execution.
     RenderTaskArray tasks = std::move(m_highQueue);
     for (RenderTask& rt : tasks)
