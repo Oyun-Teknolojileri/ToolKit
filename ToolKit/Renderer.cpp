@@ -753,7 +753,7 @@ namespace ToolKit
     }
 
     // Update Per frame changing uniforms. ExecuteRenderTasks clears programs at the beginning of the call.
-    if (m_gpuProgramHasFrameUpdates.find(program->m_handle) == m_gpuProgramHasCameraUpdates.end())
+    if (m_gpuProgramHasFrameUpdates.find(program->m_handle) == m_gpuProgramHasFrameUpdates.end())
     {
       int uniformLoc = program->GetUniformLocation(Uniform::FRAME_COUNT);
       if (uniformLoc != -1)
@@ -771,11 +771,23 @@ namespace ToolKit
     }
 
     // Update per material uniforms.
+    bool updateMaterial = false;
     if (MaterialPtr mat = program->m_activeMaterial.lock())
     {
-      if (m_mat != nullptr && !mat->IsSame(m_mat))
+      updateMaterial = !mat->IsSame(m_mat);
+    }
+    else
+    {
+      updateMaterial = true;
+    }
+
+    if (updateMaterial)
+    {
+      if (m_mat != nullptr)
       {
-        int uniformLoc = program->GetUniformLocation(Uniform::COLOR);
+        program->m_activeMaterial = m_mat;
+
+        int uniformLoc            = program->GetUniformLocation(Uniform::COLOR);
         if (uniformLoc != -1)
         {
           Vec4 color = Vec4(m_mat->m_color, m_mat->GetAlpha());
