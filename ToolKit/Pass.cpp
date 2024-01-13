@@ -249,6 +249,9 @@ namespace ToolKit
       }
     }
 
+    // Reserve space for the opaque vector.
+    opaque.reserve(jobArray.size() - translucent.size());
+
     // flatten.
     for (auto& entry : groupByMaterial)
     {
