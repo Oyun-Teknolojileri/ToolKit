@@ -56,7 +56,6 @@ namespace ToolKit
     m_copyMaterial                  = nullptr;
 
     m_mat                           = nullptr;
-    m_aoMat                         = nullptr;
     m_framebuffer                   = nullptr;
     m_shadowAtlas                   = nullptr;
 
@@ -194,6 +193,9 @@ namespace ToolKit
     }
 
     m_mat->Init();
+    RenderState* rs = m_mat->GetRenderState();
+    SetRenderState(rs);
+
     GpuProgramPtr prg = m_gpuProgramManager.CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
     BindProgram(prg);
 
@@ -226,8 +228,6 @@ namespace ToolKit
     Mesh* mesh = job.Mesh;
     activateSkinning(mesh->IsSkinned());
 
-    RenderState* rs = m_mat->GetRenderState();
-    SetRenderState(rs);
     FeedUniforms(prg, job);
 
     glBindVertexArray(mesh->m_vaoId);
@@ -327,28 +327,6 @@ namespace ToolKit
       {
         SetTexture(6, m_mat->m_cubeMap->m_textureId);
       }
-
-      if (m_mat->m_diffuseTexture)
-      {
-        SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
-      }
-
-      if (m_mat->m_emissiveTexture)
-      {
-        SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
-      }
-
-      if (m_mat->m_metallicRoughnessTexture)
-      {
-        SetTexture(4, m_mat->m_metallicRoughnessTexture->m_textureId);
-      }
-
-      if (m_mat->m_normalMap)
-      {
-        SetTexture(9, m_mat->m_normalMap->m_textureId);
-      }
-
-      if (m_mat->GetRenderState()->IBLInUse) {}
     }
   }
 
@@ -791,17 +769,162 @@ namespace ToolKit
 
       m_gpuProgramHasFrameUpdates.insert(program->m_handle);
     }
+
+    // Update per material uniforms.
+    if (MaterialPtr mat = program->m_activeMaterial.lock())
+    {
+      if (m_mat != nullptr && !mat->IsSame(m_mat))
+      {
+        int uniformLoc = program->GetUniformLocation(Uniform::COLOR);
+        if (uniformLoc != -1)
+        {
+          Vec4 color = Vec4(m_mat->m_color, m_mat->GetAlpha());
+          if (m_mat->GetRenderState()->blendFunction == BlendFunction::NONE)
+          {
+            color.w = 1.0f;
+          }
+
+          if (m_renderOnlyLighting)
+          {
+            color = Vec4(1.0f, 1.0f, 1.0f, color.w);
+          }
+          glUniform4fv(uniformLoc, 1, &color.x);
+        }
+
+        uniformLoc = program->GetUniformLocation(Uniform::USE_IBL);
+        if (uniformLoc != -1)
+        {
+          glUniform1i(uniformLoc, (GLint) m_renderState.IBLInUse);
+
+          if (m_renderState.IBLInUse)
+          {
+            SetTexture(7, m_renderState.irradianceMap);
+            SetTexture(15, m_renderState.preFilteredSpecularMap);
+            SetTexture(16, m_renderState.brdfLut);
+          }
+        }
+
+        uniformLoc = program->GetUniformLocation(Uniform::IBL_INTENSITY);
+        if (uniformLoc != -1)
+        {
+          glUniform1f(uniformLoc, m_renderState.iblIntensity);
+        }
+
+        uniformLoc = program->GetUniformLocation(Uniform::IBL_ROTATION);
+        if (uniformLoc != -1)
+        {
+          glUniformMatrix4fv(uniformLoc, 1, false, &m_iblRotation[0][0]);
+        }
+
+        uniformLoc = program->GetUniformLocation(Uniform::IBL_MAX_REFLECTION_LOD);
+        if (uniformLoc != -1)
+        {
+          glUniform1i(uniformLoc, RHIConstants::SpecularIBLLods - 1);
+        }
+
+        uniformLoc = program->GetUniformLocation(Uniform::COLOR_ALPHA);
+        if (uniformLoc != -1)
+        {
+          glUniform1f(uniformLoc, m_mat->GetAlpha());
+        }
+
+        uniformLoc = program->GetUniformLocation(Uniform::USE_ALPHA_MASK);
+        if (uniformLoc != -1)
+        {
+          glUniform1i(uniformLoc, m_renderState.blendFunction == BlendFunction::ALPHA_MASK);
+        }
+
+        uniformLoc = program->GetUniformLocation(Uniform::ALPHA_MASK_TRESHOLD);
+        if (uniformLoc != -1)
+        {
+          glUniform1f(uniformLoc, m_renderState.alphaMaskTreshold);
+        }
+
+        uniformLoc = program->GetUniformLocation(Uniform::DIFFUSE_TEXTURE_IN_USE);
+        if (uniformLoc != -1)
+        {
+          int diffInUse = (int) (m_mat->m_diffuseTexture != nullptr);
+          if (m_renderOnlyLighting)
+          {
+            diffInUse = false;
+          }
+          glUniform1i(uniformLoc, diffInUse);
+
+          if (diffInUse)
+          {
+            if (m_mat->m_diffuseTexture)
+            {
+              SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
+            }
+          }
+        }
+
+        uniformLoc = program->GetUniformLocation(Uniform::EMISSIVE_TEXTURE_IN_USE);
+        if (uniformLoc != -1)
+        {
+          int emmInUse = (int) (m_mat->m_emissiveTexture != nullptr);
+          glUniform1i(uniformLoc, emmInUse);
+
+          if (emmInUse)
+          {
+            if (m_mat->m_emissiveTexture)
+            {
+              SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
+            }
+          }
+        }
+
+        uniformLoc = program->GetUniformLocation(Uniform::EMISSIVE_COLOR);
+        if (uniformLoc != -1)
+        {
+          glUniform3fv(uniformLoc, 1, &m_mat->m_emissiveColor.x);
+        }
+
+        uniformLoc = program->GetUniformLocation(Uniform::NORMAL_MAP_IN_USE);
+        if (uniformLoc != -1)
+        {
+          int normInUse = (int) (m_mat->m_normalMap != nullptr);
+          glUniform1i(uniformLoc, normInUse);
+
+          if (normInUse)
+          {
+            SetTexture(9, m_mat->m_normalMap->m_textureId);
+          }
+        }
+
+        uniformLoc = program->GetUniformLocation(Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE);
+        if (uniformLoc != -1)
+        {
+          int metRghInUse = (int) (m_mat->m_metallicRoughnessTexture != nullptr);
+          glUniform1i(uniformLoc, metRghInUse);
+
+          if (metRghInUse)
+          {
+            if (m_mat->m_metallicRoughnessTexture)
+            {
+              SetTexture(4, m_mat->m_metallicRoughnessTexture->m_textureId);
+            }
+          }
+        }
+
+        uniformLoc = program->GetUniformLocation(Uniform::METALLIC);
+        if (uniformLoc != -1)
+        {
+          glUniform1f(uniformLoc, (GLfloat) m_mat->m_metallic);
+        }
+
+        uniformLoc = program->GetUniformLocation(Uniform::ROUGHNESS);
+        if (uniformLoc != -1)
+        {
+          glUniform1f(uniformLoc, (GLfloat) m_mat->m_roughness);
+        }
+      }
+    }
   }
 
   void Renderer::FeedUniforms(GpuProgramPtr program, const RenderJob& renderJob)
   {
     CPU_FUNC_RANGE();
-
-#if TK_DEBUG
-    GLint prog = 0;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
-    assert(program->m_handle == prog);
-#endif
 
     FeedLightUniforms(program);
 
@@ -835,130 +958,10 @@ namespace ToolKit
           glUniformMatrix4fv(loc, 1, false, &invTrModel[0][0]);
         }
         break;
-        case Uniform::UNUSEDSLOT_6:
-        {
-          TK_ASSERT_ONCE(false && "Old asset in use.");
-        }
-        break;
-        case Uniform::UNUSEDSLOT_7:
-        {
-          TK_ASSERT_ONCE(false && "Old asset in use.");
-        }
-        break;
-        case Uniform::COLOR:
-        {
-          if (m_mat == nullptr)
-          {
-            break;
-          }
-
-          Vec4 color = Vec4(m_mat->m_color, m_mat->GetAlpha());
-          if (m_mat->GetRenderState()->blendFunction == BlendFunction::NONE)
-          {
-            color.w = 1.0f;
-          }
-
-          if (m_renderOnlyLighting)
-          {
-            color = Vec4(1.0f, 1.0f, 1.0f, color.w);
-          }
-          glUniform4fv(loc, 1, &color.x);
-        }
-        break;
-
         case Uniform::EXPOSURE:
         {
           float val = shader->m_shaderParams["Exposure"].GetVal<float>();
           glUniform1f(loc, val);
-        }
-        break;
-        case Uniform::USE_IBL:
-        {
-          glUniform1i(loc, (GLint) m_renderState.IBLInUse);
-        }
-        break;
-        case Uniform::IBL_INTENSITY:
-        {
-          glUniform1f(loc, m_renderState.iblIntensity);
-        }
-        break;
-        case Uniform::IBL_IRRADIANCE:
-        {
-          SetTexture(7, m_renderState.irradianceMap);
-          SetTexture(15, m_renderState.preFilteredSpecularMap);
-          SetTexture(16, m_renderState.brdfLut);
-        }
-        break;
-        case Uniform::DIFFUSE_TEXTURE_IN_USE:
-        {
-          int v = (int) (m_mat->m_diffuseTexture != nullptr);
-          if (m_renderOnlyLighting)
-          {
-            v = false;
-          }
-          glUniform1i(loc, v);
-        }
-        break;
-        case Uniform::COLOR_ALPHA:
-        {
-          if (m_mat == nullptr)
-            break;
-
-          glUniform1f(loc, m_mat->GetAlpha());
-        }
-        break;
-        case Uniform::IBL_ROTATION:
-        {
-          glUniformMatrix4fv(loc, 1, false, &m_iblRotation[0][0]);
-        }
-        break;
-        case Uniform::USE_ALPHA_MASK:
-        {
-          glUniform1i(loc, m_renderState.blendFunction == BlendFunction::ALPHA_MASK);
-        }
-        break;
-        case Uniform::ALPHA_MASK_TRESHOLD:
-        {
-          glUniform1f(loc, m_renderState.alphaMaskTreshold);
-        }
-        break;
-        case Uniform::EMISSIVE_COLOR:
-        {
-          glUniform3fv(loc, 1, &m_mat->m_emissiveColor.x);
-        }
-        break;
-        case Uniform::EMISSIVE_TEXTURE_IN_USE:
-        {
-          int v = (int) (m_mat->m_emissiveTexture != nullptr);
-          glUniform1i(loc, v);
-        }
-        break;
-        case Uniform::UNUSEDSLOT_3:
-          TK_ASSERT_ONCE(false && "Old asset in use.");
-          break;
-        case Uniform::METALLIC:
-        {
-          glUniform1f(loc, (GLfloat) m_mat->m_metallic);
-        }
-        break;
-        case Uniform::ROUGHNESS:
-        {
-          glUniform1f(loc, (GLfloat) m_mat->m_roughness);
-        }
-        break;
-        case Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE:
-        {
-          glUniform1i(loc, (int) (m_mat->m_metallicRoughnessTexture != nullptr));
-        }
-        break;
-        case Uniform::NORMAL_MAP_IN_USE:
-        {
-          glUniform1i(loc, (int) (m_mat->m_normalMap != nullptr));
-        }
-        break;
-        case Uniform::IBL_MAX_REFLECTION_LOD:
-        {
-          glUniform1i(loc, RHIConstants::SpecularIBLLods - 1);
         }
         break;
         case Uniform::SHADOW_DISTANCE:
@@ -990,6 +993,13 @@ namespace ToolKit
         case Uniform::IS_ANIMATED:
         {
           glUniform1ui(loc, renderJob.animData.anim != nullptr);
+        }
+        break;
+        case Uniform::UNUSEDSLOT_3:
+        case Uniform::UNUSEDSLOT_6:
+        case Uniform::UNUSEDSLOT_7:
+        {
+          TK_ASSERT_ONCE(false && "Old asset in use.");
         }
         break;
         default:

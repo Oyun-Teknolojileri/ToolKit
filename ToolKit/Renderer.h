@@ -155,7 +155,6 @@ namespace ToolKit
     Mat4 m_iblRotation;
     LightPtrArray m_lights;
     MaterialPtr m_mat            = nullptr;
-    MaterialPtr m_aoMat          = nullptr;
     FramebufferPtr m_framebuffer = nullptr;
     TexturePtr m_shadowAtlas     = nullptr;
 
