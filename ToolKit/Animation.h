@@ -150,6 +150,9 @@ namespace ToolKit
    */
   class TK_API AnimRecord
   {
+    friend class AnimationPlayer;
+    friend class RenderJobProcessor;
+
    public:
     /**
      * Empty constructor.
@@ -165,6 +168,10 @@ namespace ToolKit
 
     ~AnimRecord();
 
+   protected:
+    // Should be called from AnimationPlayer
+    void AddBlendAnimation(AnimationPtr blendAnimation, float blendDurationInSec);
+
    public:
     /**
      * Current time of the animation expressed in seconds.
@@ -174,7 +181,7 @@ namespace ToolKit
     float m_timeMultiplier = 1.0f;  //!< Speed multiplier for animation.
     AnimationPtr m_animation;       //!< Animation to play.
     EntityWeakPtr m_entity;
-    BlendTarget m_blendTarget;
+    BlendTarget m_blendTarget; // TODO: DEPRECATED
 
     /**
      * Enums that represent's the current state of the Animation in the
@@ -190,6 +197,12 @@ namespace ToolKit
 
     State m_state = State::Play; //!< Current state of the animation.
     ULongID m_id;
+
+   protected:
+    // The blend animation's duration is blend duration
+    AnimationPtr m_blendAnimation = nullptr;
+    float m_blendFactor           = 0.0f; // between 0 - 1
+    float m_blendDurationInSec    = 0.0f;
   };
 
   /**
@@ -218,6 +231,11 @@ namespace ToolKit
      * @param rec Record to remove.
      */
     void RemoveRecord(const AnimRecord& rec);
+
+    /**
+     * Adds an animation to blend to an anim record.
+     */
+    void AddBlendAnimation(ULongID animRecordID, AnimationPtr animToBlend, float blendDurationInSec);
 
     /**
      * Update all the records in the player and apply transforms
@@ -252,6 +270,7 @@ namespace ToolKit
      * Add data texture of animation for skeleton
      */
     void AddAnimationData(EntityWeakPtr ntt, AnimationPtr anim);
+
     /**
      * Removes the unnecessary data textures
      */

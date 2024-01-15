@@ -156,18 +156,21 @@ namespace ToolKit
         return;
       }
 
-      SkeletonComponentPtr skCom = job.SkeletonCmp;
-      if (skCom == nullptr)
-      {
-        return;
-      }
-
-      if (job.animData.anim != nullptr)
+      if (job.animData.currentAnimation != nullptr)
       {
         // animation
         AnimationPlayer* animPlayer = GetAnimationPlayer();
         SetTexture(3,
-                   animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.anim->GetIdVal())->m_textureId);
+                   animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.currentAnimation->GetIdVal())
+                       ->m_textureId);
+
+        // animation to blend
+        if (job.animData.blendAnimation != nullptr)
+        {
+          SetTexture(2,
+                     animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.blendAnimation->GetIdVal())
+                         ->m_textureId);
+        }
       }
       else
       {
@@ -199,34 +202,29 @@ namespace ToolKit
     GpuProgramPtr prg = m_gpuProgramManager.CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
     BindProgram(prg);
 
-    auto activateSkinning = [prg, &job](bool isSkinned)
+    auto activateSkinning = [prg, &job](const Mesh* mesh)
     {
       GLint isSkinnedLoc = prg->GetUniformLocation(Uniform::IS_SKINNED);
+      bool isSkinned     = mesh->IsSkinned();
       if (isSkinned)
       {
+        SkeletonPtr skel = static_cast<SkinMesh*>(job.Mesh)->m_skeleton;
+        assert(skel != nullptr);
+
+        GLint numBonesLoc = prg->GetUniformLocation(Uniform::NUM_BONES);
         glUniform1ui(isSkinnedLoc, 1);
+
+        GLuint boneCount = (GLuint) skel->m_bones.size();
+        glUniform1f(numBonesLoc, (float) boneCount);
       }
       else
       {
         glUniform1ui(isSkinnedLoc, 0);
       }
-
-      if (job.SkeletonCmp == nullptr)
-      {
-        return;
-      }
-
-      if (isSkinned)
-      {
-        GLint numBonesLoc = prg->GetUniformLocation(Uniform::NUM_BONES);
-        GLuint boneCount  = (GLuint) job.SkeletonCmp->GetSkeletonResourceVal()->m_bones.size();
-
-        glUniform1f(numBonesLoc, (float) boneCount);
-      }
     };
 
-    Mesh* mesh = job.Mesh;
-    activateSkinning(mesh->IsSkinned());
+    const Mesh* mesh = job.Mesh;
+    activateSkinning(mesh);
 
     FeedUniforms(prg, job);
 
@@ -1008,7 +1006,37 @@ namespace ToolKit
         break;
         case Uniform::IS_ANIMATED:
         {
-          glUniform1ui(loc, renderJob.animData.anim != nullptr);
+          glUniform1ui(loc, renderJob.animData.currentAnimation != nullptr);
+        }
+        break;
+        case Uniform::BLEND_ANIMATION:
+        {
+          glUniform1i(loc, renderJob.animData.blendAnimation != nullptr);
+        }
+        break;
+        case Uniform::BLEND_FACTOR:
+        {
+          glUniform1f(loc, renderJob.animData.animationBlendFactor);
+        }
+        break;
+        case Uniform::BLEND_KEY_FRAME_1:
+        {
+          glUniform1f(loc, renderJob.animData.blendFirstKeyFrame);
+        }
+        break;
+        case Uniform::BLEND_KEY_FRAME_2:
+        {
+          glUniform1f(loc, renderJob.animData.blendSecondKeyFrame);
+        }
+        break;
+        case Uniform::BLEND_KEY_FRAME_INT_TIME:
+        {
+          glUniform1f(loc, renderJob.animData.blendKeyFrameInterpolationTime);
+        }
+        break;
+        case Uniform::BLEND_KEY_FRAME_COUNT:
+        {
+          glUniform1f(loc, renderJob.animData.blendKeyFrameCount);
         }
         break;
         case Uniform::UNUSEDSLOT_3:

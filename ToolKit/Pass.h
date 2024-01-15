@@ -41,15 +41,6 @@ namespace ToolKit
     Renderer* m_renderer = nullptr;
   };
 
-  struct RenderJobAnimData
-  {
-    AnimationPtr anim               = nullptr;
-    float firstKeyFrame             = 0.0f; // normalized via (firstKeyFrame / keyFrameCount)
-    float secondKeyFrame            = 0.0f; // normalized via (firstKeyFrame / keyFrameCount)
-    float keyFrameInterpolationTime = 0.0f;
-    float keyFrameCount             = 0.0f;
-  };
-
   /**
    * This struct holds all the data required to make a drawcall.
    */
@@ -57,13 +48,12 @@ namespace ToolKit
   {
     EntityPtr Entity                          = nullptr; //!< Entity that this job is created from.
     Mesh* Mesh                                = nullptr; //!< Mesh to render.
-    SkeletonComponentPtr SkeletonCmp          = nullptr; //!< Skeleton component of entity, if any.
     MaterialPtr Material                      = nullptr; //!< Material to render job with.
     EnvironmentComponentPtr EnvironmentVolume = nullptr; //!< EnvironmentVolume effecting this entity, if any.
     bool ShadowCaster                         = true;    //!< Account in shadow map construction.
     BoundingBox BoundingBox;                             //!< World space bounding box.
     Mat4 WorldTransform;                                 //!< World transform of the entity.
-    RenderJobAnimData animData;                          //!< Animation data of render job
+    AnimData animData;                                   //!< Animation data of render job
   };
 
   class TK_API RenderJobProcessor
