@@ -125,5 +125,4 @@ namespace ToolKit
     String GetDefaultResource(ClassMeta* Class) override;
   };
 
-  void SetVertexLayout(VertexLayout layout);
 } // namespace ToolKit

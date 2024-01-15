@@ -236,7 +236,7 @@ namespace ToolKit
 
     std::unordered_map<ULongID, RenderJobArray> groupByMaterial;
 
-    // group by.
+    // group by material.
     for (const RenderJob& job : jobArray)
     {
       if (job.Material->IsTranslucent())
@@ -249,11 +249,23 @@ namespace ToolKit
       }
     }
 
+    std::unordered_map<ULongID, RenderJobArray> groupByMesh;
+
+    // group by mesh.
+    for (auto& entry : groupByMaterial)
+    {
+      RenderJobArray& jobArray = entry.second;
+      for (const RenderJob& job : jobArray)
+      {
+        groupByMesh[job.Mesh->GetIdVal()].push_back(job);
+      }
+    }
+
     // Reserve space for the opaque vector.
     opaque.reserve(jobArray.size() - translucent.size());
 
     // flatten.
-    for (auto& entry : groupByMaterial)
+    for (auto& entry : groupByMesh)
     {
       opaque.insert(opaque.end(),
                     std::make_move_iterator(entry.second.begin()),

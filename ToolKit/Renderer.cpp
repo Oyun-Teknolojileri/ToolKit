@@ -230,16 +230,20 @@ namespace ToolKit
 
     FeedUniforms(prg, job);
 
-    glBindVertexArray(mesh->m_vaoId);
+    RHI::BindVertexArray(mesh->m_vaoId);
+
+    if (mesh->m_vaoId == 1)
+    {
+      // TODO: Fix this. Sky box generation causes a crash.
+      return;
+    }
 
     if (mesh->m_indexCount != 0)
     {
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
       glDrawElements((GLenum) rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
     }
     else
     {
-      glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
       glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
     }
 
