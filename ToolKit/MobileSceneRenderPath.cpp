@@ -106,6 +106,7 @@ namespace ToolKit
   void MobileSceneRenderPath::PreRender(Renderer* renderer)
   {
     renderer->ResetTextureSlots();
+
     SetPassParams();
 
     m_forwardPreProcessPass->InitBuffers(m_params.MainFramebuffer->GetSettings().width,

@@ -115,7 +115,6 @@ namespace ToolKit
       m_source.clear();
     }
 
-    m_tag       = std::to_string(m_shaderHandle);
     m_initiated = true;
   }
 

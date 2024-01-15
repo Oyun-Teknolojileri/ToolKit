@@ -224,6 +224,9 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
+    std::unordered_map<ULongID, RenderJobArray> groupByMaterial;
+
+    // group by.
     for (const RenderJob& job : jobArray)
     {
       if (job.Material->IsTranslucent())
@@ -232,8 +235,19 @@ namespace ToolKit
       }
       else
       {
-        opaque.push_back(job);
+        groupByMaterial[job.Material->GetIdVal()].push_back(job);
       }
+    }
+
+    // Reserve space for the opaque vector.
+    opaque.reserve(jobArray.size() - translucent.size());
+
+    // flatten.
+    for (auto& entry : groupByMaterial)
+    {
+      opaque.insert(opaque.end(),
+                    std::make_move_iterator(entry.second.begin()),
+                    std::make_move_iterator(entry.second.end()));
     }
   }
 
