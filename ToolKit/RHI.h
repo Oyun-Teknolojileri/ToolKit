@@ -18,6 +18,7 @@ namespace ToolKit
     friend class Renderer;
     friend class Framebuffer;
     friend class RenderSystem;
+    friend class Mesh;
 
    public:
     /**

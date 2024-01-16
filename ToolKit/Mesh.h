@@ -44,6 +44,7 @@ namespace ToolKit
     void Load() override;
     void Save(bool onlyIfDirty) override;
     virtual int GetVertexSize() const;
+    virtual uint GetVertexCount() const;
     virtual bool IsSkinned() const;
     void CalculateAABB();
     void GetAllMeshes(MeshRawPtrArray& meshes) const;
@@ -98,6 +99,7 @@ namespace ToolKit
     void UnInit() override;
     void Load() override;
 
+    uint GetVertexCount() const override;
     int GetVertexSize() const override;
     bool IsSkinned() const override;
 

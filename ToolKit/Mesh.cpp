@@ -11,6 +11,7 @@
 #include "FileManager.h"
 #include "Material.h"
 #include "MathUtil.h"
+#include "RHI.h"
 #include "ResourceManager.h"
 #include "Skeleton.h"
 #include "TKOpenGL.h"
@@ -188,7 +189,7 @@ namespace ToolKit
     if (m_vertexCount > 0)
     {
       glGenVertexArrays(1, &cpy->m_vaoId);
-      glBindVertexArray(cpy->m_vaoId);
+      RHI::BindVertexArray(cpy->m_vaoId);
 
       glGenBuffers(1, &cpy->m_vboVertexId);
       glBindBuffer(GL_COPY_WRITE_BUFFER, cpy->m_vboVertexId);
@@ -223,6 +224,8 @@ namespace ToolKit
   }
 
   int Mesh::GetVertexSize() const { return sizeof(Vertex); }
+
+  uint Mesh::GetVertexCount() const { return (uint) m_clientSideVertices.size(); }
 
   bool Mesh::IsSkinned() const { return false; }
 
@@ -556,7 +559,7 @@ namespace ToolKit
     if (!m_clientSideVertices.empty())
     {
       glGenVertexArrays(1, &m_vaoId);
-      glBindVertexArray(m_vaoId);
+      RHI::BindVertexArray(m_vaoId);
 
       glGenBuffers(1, &m_vboVertexId);
       glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
@@ -739,6 +742,8 @@ namespace ToolKit
     return finalAABB;
   }
 
+  uint SkinMesh::GetVertexCount() const { return (uint) m_clientSideVertices.size(); }
+
   int SkinMesh::GetVertexSize() const { return sizeof(SkinVertex); }
 
   bool SkinMesh::IsSkinned() const { return true; }
@@ -751,7 +756,7 @@ namespace ToolKit
     if (!m_clientSideVertices.empty())
     {
       glGenVertexArrays(1, &m_vaoId);
-      glBindVertexArray(m_vaoId);
+      RHI::BindVertexArray(m_vaoId);
 
       glGenBuffers(1, &m_vboVertexId);
       glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);

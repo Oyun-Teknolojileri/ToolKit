@@ -226,11 +226,13 @@ namespace ToolKit
 
     if (mesh->m_indexCount != 0)
     {
+      glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
       glDrawElements((GLenum) rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
     }
     else
     {
+      glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
       glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
     }
 
@@ -1422,7 +1424,7 @@ namespace ToolKit
     cubemapRt->Init();
 
     // Intentionally creating space to fill later. ( mip maps will be calculated for specular ibl )
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
+    RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId, 0);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
@@ -1488,16 +1490,17 @@ namespace ToolKit
         SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
         SetViewportSize(mipSize, mipSize);
 
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId);
+        RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId, 0);
 
         DrawCube(cam, mat);
 
         // Copy color attachment to cubemap's correct mip level and face.
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
+        RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId, 0);
         glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, 0, 0, 0, 0, mipSize, mipSize);
 
         // Set the read cubemap back. When renderer hijacked like this, we need to restore its state manually.
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId);
+        RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId, 0);
       }
     }
 

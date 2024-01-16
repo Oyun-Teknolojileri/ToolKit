@@ -176,7 +176,14 @@ namespace ToolKit
       parentMesh->GetAllMeshes(allMeshes);
       for (Mesh* mesh : allMeshes)
       {
-        addRenderJobForMeshFn(mesh);
+        if (mesh->GetVertexCount() != 0)
+        {
+          addRenderJobForMeshFn(mesh);
+        }
+        else
+        {
+          volatile int y = 5;
+        }
       }
 
       if (materialMissing)

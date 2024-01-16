@@ -315,7 +315,6 @@ namespace ToolKit
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
-    mesh->Init();
   }
 
   TKDefineClass(Quad, Entity);
@@ -501,7 +500,6 @@ namespace ToolKit
     mesh->m_indexCount         = (uint) indices.size();
     mesh->m_clientSideIndices  = indices;
     mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
-    mesh->Init();
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
@@ -609,7 +607,6 @@ namespace ToolKit
     mesh->m_indexCount         = (uint) indices.size();
     mesh->m_clientSideIndices  = indices;
     mesh->m_material           = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
-    mesh->Init();
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
