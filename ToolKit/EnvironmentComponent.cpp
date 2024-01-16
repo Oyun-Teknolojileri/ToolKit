@@ -45,15 +45,7 @@ namespace ToolKit
     m_initialized = true;
   }
 
-  void EnvironmentComponent::UnInit()
-  {
-    if (m_initialized)
-    {
-      HdriPtr hdri = GetHdriVal();
-      hdri->UnInit();
-      m_initialized = false;
-    }
-  }
+  void EnvironmentComponent::UnInit() { m_initialized = false; }
 
   void EnvironmentComponent::ParameterConstructor()
   {

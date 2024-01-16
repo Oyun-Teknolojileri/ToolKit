@@ -210,6 +210,7 @@ namespace ToolKit
     Init();
 
     HdriPtr hdri                = GetHdri();
+    hdri->Init();
     m_skyboxMaterial->m_cubeMap = hdri->m_cubemap;
     return m_skyboxMaterial;
   }
