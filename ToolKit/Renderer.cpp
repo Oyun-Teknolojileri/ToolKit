@@ -188,14 +188,8 @@ namespace ToolKit
 
     // Set render material.
     m_mat = m_overrideMat != nullptr ? m_overrideMat : job.Material;
-
-    if (m_mat == nullptr)
-    {
-      assert(false);
-      m_mat = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
-    }
-
     m_mat->Init();
+
     RenderState* rs = m_mat->GetRenderState();
     SetRenderState(rs);
 
@@ -246,6 +240,8 @@ namespace ToolKit
     }
 
     AddDrawCall();
+
+    m_overrideMat = nullptr;
   }
 
   void Renderer::Render(const RenderJobArray& jobArray, CameraPtr cam, const LightPtrArray& lights)
@@ -774,7 +770,12 @@ namespace ToolKit
 
     // Update per material uniforms.
     bool updateMaterial = false;
-    if (MaterialPtr mat = program->m_activeMaterial.lock())
+
+    if (m_overrideMat != nullptr)
+    {
+      updateMaterial = true;
+    }
+    else if (MaterialPtr mat = program->m_activeMaterial.lock())
     {
       updateMaterial = !mat->IsSame(m_mat);
     }

@@ -33,15 +33,13 @@ namespace ToolKit
 
   void Pass::PreRender()
   {
-    Renderer* renderer     = GetRenderer();
-    m_prevOverrideMaterial = renderer->m_overrideMat;
-    m_prevFrameBuffer      = renderer->GetFrameBuffer();
+    Renderer* renderer = GetRenderer();
+    m_prevFrameBuffer  = renderer->GetFrameBuffer();
   }
 
   void Pass::PostRender()
   {
-    Renderer* renderer      = GetRenderer();
-    renderer->m_overrideMat = m_prevOverrideMaterial;
+    Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_prevFrameBuffer, GraphicBitFields::None);
   }
 

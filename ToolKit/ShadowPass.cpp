@@ -127,11 +127,11 @@ namespace ToolKit
     {
       PUSH_CPU_MARKER("Render Call");
 
-      const Mat4& pr          = light->m_shadowCamera->GetProjectionMatrix();
-      const Mat4 v            = light->m_shadowCamera->GetViewMatrix();
-      const Frustum frustum   = ExtractFrustum(pr * v, false);
+      const Mat4& pr             = light->m_shadowCamera->GetProjectionMatrix();
+      const Mat4 v               = light->m_shadowCamera->GetViewMatrix();
+      const Frustum frustum      = ExtractFrustum(pr * v, false);
 
-      renderer->m_overrideMat = light->GetShadowMaterial();
+      MaterialPtr shadowMaterial = light->GetShadowMaterial();
       renderer->SetCamera(light->m_shadowCamera, false);
 
       for (const RenderJob& job : jobs)
@@ -142,7 +142,8 @@ namespace ToolKit
           continue;
         }
 
-        MaterialPtr material = job.Material;
+        renderer->m_overrideMat = shadowMaterial;
+        MaterialPtr material    = job.Material;
         renderer->m_overrideMat->SetRenderState(material->GetRenderState());
         renderer->m_overrideMat->UnInit();
         renderer->m_overrideMat->SetAlpha(material->GetAlpha());

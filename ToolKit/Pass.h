@@ -34,8 +34,7 @@ namespace ToolKit
     void SetRenderer(Renderer* renderer);
 
    protected:
-    MaterialPtr m_prevOverrideMaterial = nullptr;
-    FramebufferPtr m_prevFrameBuffer   = nullptr;
+    FramebufferPtr m_prevFrameBuffer = nullptr;
 
    private:
     Renderer* m_renderer = nullptr;
