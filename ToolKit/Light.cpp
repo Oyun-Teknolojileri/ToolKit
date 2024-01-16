@@ -154,7 +154,7 @@ namespace ToolKit
 
   TKDefineClass(DirectionalLight, Light);
 
-  DirectionalLight::DirectionalLight() {}
+  DirectionalLight::DirectionalLight() { m_shadowCamera->SetOrthographicVal(true); }
 
   DirectionalLight::~DirectionalLight() {}
 
@@ -251,6 +251,7 @@ namespace ToolKit
     center /= 8.0f;
 
     lightCamera->m_node->SetOrientation(m_node->GetOrientation());
+    lightCamera->m_node->SetTranslation(center);
 
     const Mat4 lightView = lightCamera->GetViewMatrix();
 
@@ -262,21 +263,21 @@ namespace ToolKit
       tightShadowVolume.UpdateBoundary(vertex);
     }
 
-    // Z
-    Vec3 dir     = lightCamera->Direction();
-    float width  = shadowVolume.GetWidth();
-    float height = shadowVolume.GetHeight();
-    float far    = glm::max(width, height);
-    far          = glm::min(lastCameraFar, far);
+    // Fit the frustum into the scene only for far
+    float width       = shadowVolume.max.x - shadowVolume.min.x;
+    float height      = shadowVolume.max.y - shadowVolume.min.y;
+    float depth       = shadowVolume.max.z - shadowVolume.min.z;
+    float maxDistance = glm::fastSqrt(width * width + height * height + depth * depth);
 
-    lightCamera->m_node->SetTranslation(center + dir * far * -0.5f);
+    float tightFar    = tightShadowVolume.max.z - tightShadowVolume.min.z;
+    float far         = glm::max(tightFar, maxDistance);
 
     lightCamera->SetLens(tightShadowVolume.min.x,
                          tightShadowVolume.max.x,
                          tightShadowVolume.min.y,
                          tightShadowVolume.max.y,
-                         0.0f,
-                         far);
+                         -far * 0.5f,
+                         far * 0.5f);
   }
 
   // PointLight
