@@ -19,7 +19,7 @@ namespace ToolKit
 
   FullQuadPass::FullQuadPass()
   {
-    m_camera                   = MakeNewPtr<Camera>(); // Unused.
+    m_camera                   = MakeNewPtr<Camera>();
     m_quad                     = MakeNewPtr<Quad>();
 
     m_material                 = MakeNewPtr<Material>();
@@ -67,7 +67,6 @@ namespace ToolKit
 
     Pass::PreRender();
     Renderer* renderer      = GetRenderer();
-    renderer->m_overrideMat = nullptr;
     renderer->EnableDepthTest(false);
 
     m_material->m_fragmentShader = m_params.FragmentShader;

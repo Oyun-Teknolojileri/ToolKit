@@ -66,7 +66,6 @@ namespace ToolKit
     PUSH_CPU_MARKER("ForwardRenderPass::PostRender");
 
     Pass::PostRender();
-    GetRenderer()->m_overrideMat = nullptr;
     Renderer* renderer           = GetRenderer();
     renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
 

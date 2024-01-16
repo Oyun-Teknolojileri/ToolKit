@@ -224,14 +224,9 @@ namespace ToolKit
 
     RHI::BindVertexArray(mesh->m_vaoId);
 
-    if (mesh->m_vaoId == 1)
-    {
-      // TODO: Fix this. Sky box generation causes a crash.
-      return;
-    }
-
     if (mesh->m_indexCount != 0)
     {
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
       glDrawElements((GLenum) rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
     }
     else
@@ -321,6 +316,11 @@ namespace ToolKit
 
     if (m_mat)
     {
+      if (m_mat->m_diffuseTexture)
+      {
+        SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
+      }
+
       if (m_mat->m_cubeMap)
       {
         SetTexture(6, m_mat->m_cubeMap->m_textureId);
@@ -864,14 +864,6 @@ namespace ToolKit
             diffInUse = false;
           }
           glUniform1i(uniformLoc, diffInUse);
-
-          if (diffInUse)
-          {
-            if (m_mat->m_diffuseTexture)
-            {
-              SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
-            }
-          }
         }
 
         uniformLoc = program->GetUniformLocation(Uniform::EMISSIVE_TEXTURE_IN_USE);

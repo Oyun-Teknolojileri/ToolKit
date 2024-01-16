@@ -89,8 +89,6 @@ namespace ToolKit
 
     Pass::PreRender();
 
-    m_lastOverrideMat = GetRenderer()->m_overrideMat;
-
     // Dropout non shadow casters.
     erase_if(m_params.RendeJobs, [](RenderJob& job) -> bool { return !job.ShadowCaster; });
 
@@ -108,7 +106,6 @@ namespace ToolKit
     PUSH_GPU_MARKER("ShadowPas::PostRender");
     PUSH_CPU_MARKER("ShadowPas::PostRender");
 
-    GetRenderer()->m_overrideMat = m_lastOverrideMat;
     Pass::PostRender();
 
     POP_CPU_MARKER();
