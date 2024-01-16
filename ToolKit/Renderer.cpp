@@ -226,13 +226,10 @@ namespace ToolKit
 
     if (mesh->m_indexCount != 0)
     {
-      glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
       glDrawElements((GLenum) rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
     }
     else
     {
-      glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
       glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
     }
 

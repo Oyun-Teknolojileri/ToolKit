@@ -27,7 +27,7 @@ namespace ToolKit
      */
     static void SetTexture(GLenum target, GLuint textureID, GLenum textureSlot = 31);
 
-    static void BindVertexArray(GLuint vertexArrayID);
+    static void BindVertexArray(GLuint VAO);
 
    private:
     static void SetFramebuffer(GLenum target, GLuint framebufferID);
@@ -38,7 +38,8 @@ namespace ToolKit
     static GLuint m_currentReadFramebufferID;
     static GLuint m_currentDrawFramebufferID;
     static GLuint m_currentFramebufferID;
-    static GLuint m_currentVertexArray;
+    
+    static GLuint m_currentVAO;
 
     /**
      * Holds which texture is binded to which texture unit.

@@ -315,6 +315,8 @@ namespace ToolKit
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
+
+    mesh->Init();
   }
 
   TKDefineClass(Quad, Entity);
@@ -384,6 +386,8 @@ namespace ToolKit
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
+
+    mesh->Init();
   }
 
   TKDefineClass(Sphere, Entity);
@@ -503,6 +507,8 @@ namespace ToolKit
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
+
+    mesh->Init();
   }
 
   TKDefineClass(Cone, Entity);
@@ -610,6 +616,8 @@ namespace ToolKit
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
+
+    mesh->Init();
   }
 
   Entity* Cone::CopyTo(Entity* copyTo) const
@@ -753,6 +761,8 @@ namespace ToolKit
 
     mesh->GetMeshVal()->CalculateAABB();
     mesh->GetMeshVal()->ConstructFaces();
+
+    mesh->Init(false);
   }
 
   TKDefineClass(LineBatch, Entity);
@@ -796,6 +806,8 @@ namespace ToolKit
     mesh->m_material->GetRenderState()->lineWidth = lineWidth;
 
     mesh->CalculateAABB();
+
+    mesh->Init();
   }
 
   void MeshGenerator::GenerateCircleMesh(MeshPtr mesh, int numSegments, float radius)

@@ -13,7 +13,8 @@ namespace ToolKit
   GLuint RHI::m_currentReadFramebufferID = -1; // max unsigned integer
   GLuint RHI::m_currentDrawFramebufferID = -1; // max unsigned integer
   GLuint RHI::m_currentFramebufferID     = -1; // max unsigned integer
-  GLuint RHI::m_currentVertexArray       = -1; // max unsigned integer
+
+  GLuint RHI::m_currentVAO               = -1; // max unsigned integer
 
   std::unordered_map<uint, uint> RHI::m_slotTextureIDmap;
 
@@ -107,12 +108,13 @@ namespace ToolKit
     glBindTexture(target, textureID);
   }
 
-  void RHI::BindVertexArray(GLuint vertexArrayID)
+  void RHI::BindVertexArray(GLuint VAO)
   {
-    if (m_currentVertexArray != vertexArrayID)
+    if (m_currentVAO != VAO)
     {
-      glBindVertexArray(vertexArrayID);
-      m_currentVertexArray = vertexArrayID;
+      glBindVertexArray(VAO);
+
+      m_currentVAO = VAO;
     }
   }
 

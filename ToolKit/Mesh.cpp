@@ -148,6 +148,7 @@ namespace ToolKit
       GLuint buffers[2] = {m_vboIndexId, m_vboVertexId};
       glDeleteBuffers(2, buffers);
       glDeleteVertexArrays(1, &m_vaoId);
+      RHI::BindVertexArray(0); // Of the deleted vao is set, remove it from RHI cache
     }
     m_vboVertexId = 0;
     m_vboIndexId  = 0;
@@ -203,6 +204,10 @@ namespace ToolKit
 
     if (m_indexCount > 0)
     {
+      assert(m_vertexCount > 0 && "Mesh has no vertex but has indices.");
+
+      RHI::BindVertexArray(cpy->m_vaoId);
+
       glGenBuffers(1, &cpy->m_vboIndexId);
       glBindBuffer(GL_COPY_WRITE_BUFFER, cpy->m_vboIndexId);
       glBindBuffer(GL_COPY_READ_BUFFER, m_vboIndexId);
@@ -555,6 +560,7 @@ namespace ToolKit
 
     glDeleteBuffers(1, &m_vboVertexId);
     glDeleteVertexArrays(1, &m_vaoId);
+    RHI::BindVertexArray(0); // Of the deleted vao is set, remove it from RHI cache
 
     if (!m_clientSideVertices.empty())
     {
@@ -590,6 +596,10 @@ namespace ToolKit
 
     if (!m_clientSideIndices.empty())
     {
+      assert(m_vaoId != 0 && "Mesh has not yet created vertex array object!");
+
+      RHI::BindVertexArray(m_vaoId);
+
       glGenBuffers(1, &m_vboIndexId);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vboIndexId);
       glBufferData(GL_ELEMENT_ARRAY_BUFFER,
@@ -752,6 +762,7 @@ namespace ToolKit
   {
     glDeleteBuffers(1, &m_vboIndexId);
     glDeleteVertexArrays(1, &m_vaoId);
+    RHI::BindVertexArray(0); // Of the deleted vao is set, remove it from RHI cache
 
     if (!m_clientSideVertices.empty())
     {
