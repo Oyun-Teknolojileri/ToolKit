@@ -594,6 +594,16 @@ namespace ToolKit
             // Translate mesh to correct position
             dwMesh->m_node->SetTranslation(lastDragMeshPos, TransformationSpace::TS_WORLD);
 
+            if (entry.m_ext == SKINMESH)
+            {
+              if (dwMesh->GetComponent<AABBOverrideComponent>() == nullptr)
+              {
+                AABBOverrideComponentPtr aabbOverride = MakeNewPtr<AABBOverrideComponent>();
+                aabbOverride->SetAABB(dwMesh->GetAABB());
+                dwMesh->AddComponent(aabbOverride);
+              }
+            }
+
             // Add mesh to the scene
             currScene->AddEntity(dwMesh);
             currScene->AddToSelection(dwMesh->GetIdVal(), false);

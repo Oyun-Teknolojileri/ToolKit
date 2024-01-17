@@ -13,6 +13,7 @@
 #include "FileManager.h"
 #include "Logger.h"
 #include "MathUtil.h"
+#include "Mesh.h"
 #include "Prefab.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
@@ -87,9 +88,25 @@ namespace ToolKit
         // Mesh component.
         MeshComponentPtrArray meshes;
         ntt->GetComponent<MeshComponent>(meshes);
+
+        bool containsSkinMesh = false;
         for (MeshComponentPtr& mesh : meshes)
         {
           mesh->Init(flushClientSideArray);
+          if (mesh->GetMeshVal()->IsSkinned())
+          {
+            containsSkinMesh = true;
+          }
+        }
+
+        if (containsSkinMesh)
+        {
+          if (ntt->GetComponent<AABBOverrideComponent>() == nullptr)
+          {
+            AABBOverrideComponentPtr aabbOverride = MakeNewPtr<AABBOverrideComponent>();
+            ntt->AddComponent(aabbOverride);
+            aabbOverride->SetAABB(ntt->GetAABB());
+          }
         }
 
         // Environment component.
