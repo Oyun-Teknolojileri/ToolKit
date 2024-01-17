@@ -193,7 +193,7 @@ namespace ToolKit
       assert(false);
     }
 
-    glDeleteTextures(1, &m_textureId);
+    RHI::DeleteTextures(1, &m_textureId);
     m_textureId = 0;
     m_initiated = false;
   }
@@ -302,8 +302,7 @@ namespace ToolKit
       return;
     }
 
-    glDeleteTextures(1, &m_textureId);
-
+    RHI::DeleteTextures(1, &m_textureId);
     RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
 
     m_textureId = 0;

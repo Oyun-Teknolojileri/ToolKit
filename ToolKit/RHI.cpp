@@ -108,6 +108,19 @@ namespace ToolKit
     glBindTexture(target, textureID);
   }
 
+  void RHI::DeleteTextures(int textureCount, GLuint* textures)
+  {
+    for (int i = 0; i < textureCount; ++i)
+    {
+      if (m_slotTextureIDmap.find(textures[i]) != m_slotTextureIDmap.end())
+      {
+        m_slotTextureIDmap[textures[i]] = 0;
+      }
+    }
+
+    glDeleteTextures(textureCount, textures);
+  }
+
   void RHI::BindVertexArray(GLuint VAO)
   {
     if (m_currentVAO != VAO)

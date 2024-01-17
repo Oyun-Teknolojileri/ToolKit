@@ -26,6 +26,7 @@ namespace ToolKit
      * textureSlot can be between 0 & 31.
      */
     static void SetTexture(GLenum target, GLuint textureID, GLenum textureSlot = 31);
+    static void DeleteTextures(int textureCount, GLuint* textures);
 
     static void BindVertexArray(GLuint VAO);
 

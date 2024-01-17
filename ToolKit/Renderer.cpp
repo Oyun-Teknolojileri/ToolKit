@@ -1496,7 +1496,6 @@ namespace ToolKit
         glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, 0, 0, 0, 0, mipSize, mipSize);
 
         // Set the read cubemap back. When renderer hijacked like this, we need to restore its state manually.
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId);
         RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId, 0);
       }
     }
