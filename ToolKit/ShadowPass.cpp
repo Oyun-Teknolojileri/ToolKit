@@ -350,6 +350,7 @@ namespace ToolKit
                                    m_layerCount,
                                    false};
 
+      m_shadowFramebuffer->DetachColorAttachment(Framebuffer::Attachment::ColorAttachment0);
       m_shadowAtlas->Reconstruct(Renderer::RHIConstants::ShadowAtlasTextureSize,
                                  Renderer::RHIConstants::ShadowAtlasTextureSize,
                                  set);
