@@ -29,7 +29,6 @@ namespace ToolKit
   };
 
   static VariantCategory SkeletonComponentCategory {"Skeleton Component", 90};
-  typedef std::shared_ptr<class SkeletonComponent> SkeletonComponentPtr;
 
   /**
    * The component that stores skeleton resource reference and dynamic bone

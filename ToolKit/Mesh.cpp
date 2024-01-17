@@ -735,7 +735,7 @@ namespace ToolKit
 
       for (SkinVertex v : m->m_clientSideVertices)
       {
-        const Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap);
+        const Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap, false);
         meshAABB.UpdateBoundary(skinnedPos);
       }
     }
