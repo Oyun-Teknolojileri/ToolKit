@@ -10,6 +10,7 @@
 	<uniform name = "alphaMaskTreshold" />
 	<uniform name = "metallic" />
 	<uniform name = "roughness" />
+	<uniform name = "normalMapInUse" />
 	<source>
 	<!--
 		#version 300 es
@@ -25,12 +26,15 @@
 		uniform vec4 Color;
 		uniform int DiffuseTextureInUse;
 		uniform sampler2D s_texture0;
+		uniform sampler2D s_texture9; // normal
 		uniform float metallic;
 		uniform float roughness; 
+		uniform int normalMapInUse;
 
 		in vec3 v_pos;
 		in vec3 v_normal;
 		in vec2 v_texture;
+		in mat3 TBN;
 
 		out vec4 fragColor;
 
@@ -54,7 +58,19 @@
 				}
 			}
 
-			vec3 n = normalize(v_normal);
+			vec3 n;
+			if (normalMapInUse == 1)
+			{
+				n = texture(s_texture9, v_texture).xyz;
+				n = n * 2.0 - 1.0;
+				n = TBN * n;
+				n = normalize(n);
+			}
+			else
+			{
+				n = normalize(v_normal);
+			}
+
 			vec3 e = normalize(CamData.pos - v_pos);
 
 			vec3 irradiance = PBRLighting(v_pos, n, e, CamData.pos, color.rgb, metallic, roughness);

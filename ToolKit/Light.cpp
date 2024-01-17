@@ -235,6 +235,8 @@ namespace ToolKit
                                                         CameraPtr viewCamera,
                                                         const BoundingBox& shadowVolume)
   {
+    // NOTE: For cases when camera is bigger than scene bounding box, we should use scene bounding box
+
     // Set far for view frustum
     float lastCameraFar  = viewCamera->GetFarClipVal();
     float shadowDistance = GetEngineSettings().Graphics.ShadowDistance;
