@@ -23,6 +23,8 @@ namespace ToolKit
     Light();
     virtual ~Light();
 
+    void NativeConstruct() override;
+
     // Shadow
     MaterialPtr GetShadowMaterial();
     virtual void UpdateShadowCamera();

@@ -13,6 +13,7 @@
 #define GLM_FORCE_INTRINSICS
 
 #include <Animation.h>
+#include <DirectionComponent.h>
 #include <Material.h>
 #include <MaterialComponent.h>
 #include <Mesh.h>
@@ -791,6 +792,77 @@ namespace ToolKit
     }
   }
 
+  std::vector<LightPtr> sceneLights;
+
+  void ImportLights(string& filePath)
+  {
+    for (uint i = 0; i < g_scene->mNumLights; i++)
+    {
+      LightPtr tkLight  = nullptr;
+      aiLight* light    = g_scene->mLights[i];
+      float lightRadius = 1.0f;
+      {
+        // radius for attenuation = 0.01
+        float treshold = 0.01f;
+        float a        = light->mAttenuationQuadratic * treshold;
+        float b        = light->mAttenuationLinear * treshold;
+        float c        = light->mAttenuationConstant * treshold - 1.0f;
+        float disc     = (b * b) - (4.0f * a * c);
+        if (disc >= 0.0f)
+        {
+          float t1 = (-b - glm::sqrt(disc)) / (2.0f * a);
+          float t2 = (-b + glm::sqrt(disc)) / (2.0f * a);
+          float t  = glm::max(t1, t2);
+          if (t > 0.0f)
+          {
+            lightRadius = t;
+          }
+        }
+      }
+      if (light->mType == aiLightSource_DIRECTIONAL)
+      {
+        DirectionalLightPtr dirLight = MakeNewPtr<DirectionalLight>();
+        dirLight->SetNameVal(light->mName.C_Str());
+        dirLight->m_node->SetTranslation(Vec3(light->mPosition.x, light->mPosition.y, light->mPosition.z));
+        dirLight->GetComponent<DirectionComponent>()->LookAt(
+            Vec3(light->mDirection.x, light->mDirection.y, light->mDirection.z));
+        dirLight->SetColorVal(Vec3(light->mColorDiffuse.r, light->mColorDiffuse.g, light->mColorDiffuse.b));
+        tkLight = dirLight;
+      }
+      else if (light->mType == aiLightSource_POINT)
+      {
+        PointLightLightPtr pointLight = MakeNewPtr<PointLight>();
+        pointLight->SetNameVal(light->mName.C_Str());
+        pointLight->m_node->SetTranslation(Vec3(light->mPosition.x, light->mPosition.y, light->mPosition.z));
+        pointLight->SetRadiusVal(light->mAttenuationConstant);
+        pointLight->SetColorVal(Vec3(light->mColorDiffuse.r, light->mColorDiffuse.g, light->mColorDiffuse.b));
+        pointLight->SetRadiusVal(lightRadius);
+        tkLight = pointLight;
+      }
+      else if (light->mType == aiLightSource_SPOT)
+      {
+        SpotLightPtr spotLight = MakeNewPtr<SpotLight>();
+        spotLight->SetNameVal(light->mName.C_Str());
+        spotLight->m_node->SetTranslation(Vec3(light->mPosition.x, light->mPosition.y, light->mPosition.z));
+        spotLight->GetComponent<DirectionComponent>()->LookAt(
+            Vec3(light->mDirection.x, light->mDirection.y, light->mDirection.z));
+        spotLight->SetRadiusVal(light->mAttenuationConstant);
+        spotLight->SetColorVal(Vec3(light->mColorDiffuse.r, light->mColorDiffuse.g, light->mColorDiffuse.b));
+        spotLight->SetInnerAngleVal(glm::degrees(light->mAngleInnerCone));
+        spotLight->SetOuterAngleVal(glm::degrees(light->mAngleOuterCone));
+        spotLight->SetRadiusVal(lightRadius);
+        tkLight = spotLight;
+      }
+      else
+      {
+        // unknown light type
+        continue;
+      }
+
+      sceneLights.push_back(tkLight);
+    }
+  }
+
   EntityPtrArray deletedEntities;
 
   bool DeleteEmptyEntitiesRecursively(Scene* tScene, EntityPtr ntt)
@@ -824,7 +896,20 @@ namespace ToolKit
 
   void TraverseScene(Scene* tScene, const aiNode* node, EntityPtr parent)
   {
-    EntityPtr ntt               = MakeNewPtr<Entity>();
+    EntityPtr ntt = nullptr;
+    for (LightPtr light : sceneLights)
+    {
+      if (light->GetNameVal() == node->mName.C_Str())
+      {
+        ntt = light;
+        break;
+      }
+    }
+
+    if (ntt == nullptr)
+    {
+      ntt = MakeNewPtr<Entity>();
+    }
     ntt->m_node->m_inheritScale = true;
     Vec3 t, s;
     Quaternion rt;
@@ -1208,6 +1293,9 @@ namespace ToolKit
 
         // Add Meshes.
         ImportMeshes(destFile);
+
+        // Add lights
+        ImportLights(destFile);
 
         // Create Meshes & Scene
         ImportScene(destFile);
