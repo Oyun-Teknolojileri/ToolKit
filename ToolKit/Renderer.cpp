@@ -774,6 +774,10 @@ namespace ToolKit
     {
       updateMaterial = true;
     }
+    else if (m_mat->m_updateGPUUniforms)
+    {
+      updateMaterial = true;
+    }
     else if (MaterialPtr mat = program->m_activeMaterial.lock())
     {
       updateMaterial = !mat->IsSame(m_mat);
@@ -787,6 +791,7 @@ namespace ToolKit
     {
       if (m_mat != nullptr)
       {
+        m_mat->m_updateGPUUniforms = false;
         program->m_activeMaterial = m_mat;
 
         int uniformLoc            = program->GetUniformLocation(Uniform::COLOR);
