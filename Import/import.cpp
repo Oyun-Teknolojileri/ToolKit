@@ -798,8 +798,27 @@ namespace ToolKit
   {
     for (uint i = 0; i < g_scene->mNumLights; i++)
     {
-      LightPtr tkLight = nullptr;
-      aiLight* light   = g_scene->mLights[i];
+      LightPtr tkLight  = nullptr;
+      aiLight* light    = g_scene->mLights[i];
+      float lightRadius = 1.0f;
+      {
+        // radius for attenuation = 0.01
+        float treshold = 0.01f;
+        float a        = light->mAttenuationQuadratic * treshold;
+        float b        = light->mAttenuationLinear * treshold;
+        float c        = light->mAttenuationConstant * treshold - 1.0f;
+        float disc     = (b * b) - (4.0f * a * c);
+        if (disc >= 0.0f)
+        {
+          float t1 = (-b - glm::sqrt(disc)) / (2.0f * a);
+          float t2 = (-b + glm::sqrt(disc)) / (2.0f * a);
+          float t  = glm::max(t1, t2);
+          if (t > 0.0f)
+          {
+            lightRadius = t;
+          }
+        }
+      }
       if (light->mType == aiLightSource_DIRECTIONAL)
       {
         DirectionalLightPtr dirLight = MakeNewPtr<DirectionalLight>();
@@ -817,6 +836,7 @@ namespace ToolKit
         pointLight->m_node->SetTranslation(Vec3(light->mPosition.x, light->mPosition.y, light->mPosition.z));
         pointLight->SetRadiusVal(light->mAttenuationConstant);
         pointLight->SetColorVal(Vec3(light->mColorDiffuse.r, light->mColorDiffuse.g, light->mColorDiffuse.b));
+        pointLight->SetRadiusVal(lightRadius);
         tkLight = pointLight;
       }
       else if (light->mType == aiLightSource_SPOT)
@@ -830,6 +850,7 @@ namespace ToolKit
         spotLight->SetColorVal(Vec3(light->mColorDiffuse.r, light->mColorDiffuse.g, light->mColorDiffuse.b));
         spotLight->SetInnerAngleVal(glm::degrees(light->mAngleInnerCone));
         spotLight->SetOuterAngleVal(glm::degrees(light->mAngleOuterCone));
+        spotLight->SetRadiusVal(lightRadius);
         tkLight = spotLight;
       }
       else
@@ -875,11 +896,6 @@ namespace ToolKit
 
   void TraverseScene(Scene* tScene, const aiNode* node, EntityPtr parent)
   {
-    if (String(node->mName.C_Str()).find("Spot") != String::npos)
-    {
-      volatile int y = 5; //TODO
-    }
-
     EntityPtr ntt = nullptr;
     for (LightPtr light : sceneLights)
     {
