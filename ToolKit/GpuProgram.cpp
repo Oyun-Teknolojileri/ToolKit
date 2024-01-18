@@ -31,11 +31,43 @@ namespace ToolKit
     m_handle = 0;
   }
 
+  int GpuProgram::GetUniformLocation(Uniform uniform, int index) const
+  {
+    if (index == -1)
+    {
+      const auto& itr = m_uniformLocations.find(uniform);
+      if (itr != m_uniformLocations.end())
+      {
+        return itr->second;
+      }
+      else
+      {
+        return -1;
+      }
+    }
+    else
+    {
+      // Uniform is an array
+      const auto& itr = m_arrayUniformLocations.find(uniform);
+      if (itr != m_arrayUniformLocations.end())
+      {
+        const IntArray& locs = itr->second;
+        if (locs.size() > index)
+        {
+          return locs[index];
+        }
+      }
+
+      return -1;
+    }
+  }
+
   int GpuProgram::GetShaderParamUniformLoc(const String& uniformName)
   {
-    if (m_shaderParamsUniformLocations.find(uniformName) != m_shaderParamsUniformLocations.end())
+    const auto& itr = m_shaderParamsUniformLocations.find(uniformName);
+    if (itr != m_shaderParamsUniformLocations.end())
     {
-      return m_shaderParamsUniformLocations[uniformName];
+      return itr->second;
     }
     else
     {
@@ -46,6 +78,24 @@ namespace ToolKit
     }
 
     return -1;
+  }
+
+  bool GpuProgram::UpdateUniform(const ShaderUniform& uniform)
+  {
+    // TODO: Cihan - cost is high, only update if dirty don't check equality
+    return true;
+
+    const auto& itr = m_customUniforms.find(uniform.m_name);
+    if (itr != m_customUniforms.end())
+    {
+      if (itr->second.m_value == uniform.m_value)
+      {
+        return false;
+      }
+    }
+
+    m_customUniforms[uniform.m_name] = uniform;
+    return true;
   }
 
   // GpuProgramManager
@@ -87,12 +137,13 @@ namespace ToolKit
     vertexShader->Init();
     fragmentShader->Init();
 
-    String tag = GenerateTag((int) vertexShader->GetIdVal(), (int) fragmentShader->GetIdVal());
-    if (m_programs.find(tag) == m_programs.end())
+    GpuProgramPtr program;
+    auto progIter = m_programs.find({vertexShader->GetIdVal(), fragmentShader->GetIdVal()});
+
+    if (progIter == m_programs.end())
     {
-      GpuProgramPtr program = MakeNewPtr<GpuProgram>(vertexShader, fragmentShader);
-      program->m_tag        = tag;
-      program->m_handle     = glCreateProgram();
+      program           = MakeNewPtr<GpuProgram>(vertexShader, fragmentShader);
+      program->m_handle = glCreateProgram();
 
       LinkProgram(program->m_handle, vertexShader->m_shaderHandle, fragmentShader->m_shaderHandle);
       glUseProgram(program->m_handle);
@@ -128,21 +179,16 @@ namespace ToolKit
         }
       }
 
-      m_programs[program->m_tag] = program;
+      m_programs[{vertexShader->GetIdVal(), fragmentShader->GetIdVal()}] = program;
     }
     else
     {
-      glUseProgram(m_programs[tag]->m_handle);
+      program = progIter->second;
     }
 
-    return m_programs[tag];
+    return program;
   }
 
   void GpuProgramManager::FlushPrograms() { m_programs.clear(); }
-
-  String GpuProgramManager::GenerateTag(int vertexShaderId, int fragmentShaderId)
-  {
-    return std::to_string(vertexShaderId) + "|" + std::to_string(fragmentShaderId);
-  }
 
 } // namespace ToolKit

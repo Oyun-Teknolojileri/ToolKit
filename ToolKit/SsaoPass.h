@@ -7,29 +7,10 @@
 
 #pragma once
 
-#include "DataTexture.h"
 #include "PostProcessPass.h"
 
 namespace ToolKit
 {
-
-  class SSAONoiseTexture : public DataTexture
-  {
-   public:
-    TKDeclareClass(SSAONoiseTexture, DataTexture);
-
-    SSAONoiseTexture();
-    using DataTexture::NativeConstruct;
-
-    virtual ~SSAONoiseTexture() {}
-
-    void Init(void* data);
-
-   private:
-    void Init(bool flushClientSideArray = false) override;
-  };
-
-  typedef std::shared_ptr<SSAONoiseTexture> SSAONoiseTexturePtr;
 
   struct SSAOPassParams
   {
@@ -76,20 +57,20 @@ namespace ToolKit
     Vec3Array m_ssaoKernel;
     Vec2Array m_ssaoNoise;
 
-    FramebufferPtr m_ssaoFramebuffer        = nullptr;
-    SSAONoiseTexturePtr m_noiseTexture      = nullptr;
-    RenderTargetPtr m_tempBlurRt            = nullptr;
+    FramebufferPtr m_ssaoFramebuffer = nullptr;
+    DataTexturePtr m_noiseTexture    = nullptr;
+    RenderTargetPtr m_tempBlurRt     = nullptr;
 
-    FullQuadPassPtr m_quadPass              = nullptr;
-    ShaderPtr m_ssaoShader                  = nullptr;
+    FullQuadPassPtr m_quadPass       = nullptr;
+    ShaderPtr m_ssaoShader           = nullptr;
 
-    int m_currentKernelSize                 = 0;
+    int m_currentKernelSize          = 0;
 
-    const int m_minimumKernelSize           = 8;
-    const int m_maximumKernelSize           = 128;
+    const int m_minimumKernelSize    = 8;
+    const int m_maximumKernelSize    = 128;
 
     // Used to detect if the spread has changed. If so, kernel updated.
-    float m_prevSpread                      = -1.0f;
+    float m_prevSpread               = -1.0f;
 
     static StringArray m_ssaoSamplesStrCache;
     static constexpr int m_ssaoSamplesStrCacheSize = 128;

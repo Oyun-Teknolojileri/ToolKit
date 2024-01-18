@@ -39,20 +39,24 @@ namespace ToolKit::Editor
   void MultiChoiceCraeteWindow::ShowVariant()
   {
     CustomDataView::BeginShowVariants("New Variant");
-    ParameterVariant* remove = nullptr;
+    int removeIndex = -1;
+
     // draw&edit each parameter
-    for (size_t i = 0; i < m_variant.Choices.size(); ++i)
+    for (int i = 0; i < (int) m_variant.Choices.size(); i++)
     {
       ParameterVariant* var = &m_variant.Choices[i];
+
+      bool remove           = false;
       CustomDataView::ShowVariant(var, remove, i, true);
+      if (remove)
+      {
+        removeIndex = i;
+      }
     }
 
-    if (remove != nullptr)
+    if (removeIndex != -1)
     {
-      auto find = std::find_if(m_variant.Choices.begin(),
-                               m_variant.Choices.end(),
-                               [remove](const ParameterVariant& param) { return param.m_id == remove->m_id; });
-      m_variant.Choices.erase(find);
+      m_variant.Choices.erase(m_variant.Choices.begin() + removeIndex);
     }
 
     CustomDataView::EndShowVariants();

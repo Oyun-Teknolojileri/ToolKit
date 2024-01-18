@@ -14,8 +14,8 @@ namespace ToolKit
 
   struct FramebufferSettings
   {
-    uint width           = 1024;
-    uint height          = 1024;
+    int width            = 128;
+    int height           = 128;
     bool depthStencil    = false;
     bool useDefaultDepth = true;
 
@@ -76,7 +76,7 @@ namespace ToolKit
 
     inline const FramebufferSettings& GetSettings() { return m_settings; }
 
-    void ReconstructIfNeeded(uint width, uint height);
+    void ReconstructIfNeeded(int width, int height);
 
     RenderTargetPtr DetachColorAttachment(Attachment atc);
     void RemoveDepthAttachment();

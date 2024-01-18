@@ -259,7 +259,7 @@ namespace ToolKit
         MeshPtr mesh = ntt->GetComponent<MeshComponent>()->GetMeshVal();
 
         StringArray missingData;
-        MeshRawCPtrArray meshes;
+        MeshRawPtrArray meshes;
         mesh->GetAllMeshes(meshes);
 
         for (const Mesh* subMesh : meshes)

@@ -13,6 +13,7 @@
 #include "FileManager.h"
 #include "Logger.h"
 #include "MathUtil.h"
+#include "Mesh.h"
 #include "Prefab.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
@@ -87,9 +88,25 @@ namespace ToolKit
         // Mesh component.
         MeshComponentPtrArray meshes;
         ntt->GetComponent<MeshComponent>(meshes);
+
+        bool containsSkinMesh = false;
         for (MeshComponentPtr& mesh : meshes)
         {
           mesh->Init(flushClientSideArray);
+          if (mesh->GetMeshVal()->IsSkinned())
+          {
+            containsSkinMesh = true;
+          }
+        }
+
+        if (containsSkinMesh)
+        {
+          if (ntt->GetComponent<AABBOverrideComponent>() == nullptr)
+          {
+            AABBOverrideComponentPtr aabbOverride = MakeNewPtr<AABBOverrideComponent>();
+            ntt->AddComponent(aabbOverride);
+            aabbOverride->SetAABB(ntt->GetAABB());
+          }
         }
 
         // Environment component.
@@ -120,7 +137,7 @@ namespace ToolKit
     GetSceneManager()->Remove(other->GetFile());
   }
 
-  Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList, const EntityPtrArray& extraList)
+  Scene::PickData Scene::PickObject(Ray ray, const IDArray& ignoreList, const EntityPtrArray& extraList)
   {
     PickData pd;
     pd.pickPos                  = ray.position + ray.direction * 5.0f;
@@ -186,7 +203,7 @@ namespace ToolKit
 
   void Scene::PickObject(const Frustum& frustum,
                          PickDataArray& pickedObjects,
-                         const EntityIdArray& ignoreList,
+                         const IDArray& ignoreList,
                          const EntityPtrArray& extraList,
                          bool pickPartiallyInside)
   {

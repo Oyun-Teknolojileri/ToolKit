@@ -41,13 +41,13 @@ namespace ToolKit
 
     GridFragmentShader::~GridFragmentShader() {}
 
-    void GridFragmentShader::UpdateShaderParameters()
+    void GridFragmentShader::UpdateShaderUniforms()
     {
-      SetShaderParameter("GridData.cellSize", m_sizeEachCell);
-      SetShaderParameter("GridData.lineMaxPixelCount", m_maxLinePixelCount);
-      SetShaderParameter("GridData.horizontalAxisColor", m_axisColorHorizontal);
-      SetShaderParameter("GridData.verticalAxisColor", m_axisColorVertical);
-      SetShaderParameter("GridData.is2DViewport", m_is2DViewport);
+      UpdateShaderUniform("GridData.cellSize", m_sizeEachCell);
+      UpdateShaderUniform("GridData.lineMaxPixelCount", m_maxLinePixelCount);
+      UpdateShaderUniform("GridData.horizontalAxisColor", m_axisColorHorizontal);
+      UpdateShaderUniform("GridData.verticalAxisColor", m_axisColorVertical);
+      UpdateShaderUniform("GridData.is2DViewport", m_is2DViewport);
     }
 
     // Grid
@@ -222,7 +222,7 @@ namespace ToolKit
         material->GetRenderState()->cullMode      = CullingType::TwoSided;
         material->m_vertexShader  = GetShaderManager()->Create<Shader>(ShaderPath("gridVertex.shader", true));
 
-        // Custom creationg & shader management.
+        // Custom creation & shader management.
         GridFragmentShaderPtr gfs = MakeNewPtr<GridFragmentShader>();
         gfs->Load();
         GetShaderManager()->Manage(gfs);

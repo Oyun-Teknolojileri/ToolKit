@@ -10,6 +10,7 @@
 #include "FileManager.h"
 #include "MathUtil.h"
 #include "Node.h"
+#include "RHI.h"
 #include "TKOpenGL.h"
 #include "TKStats.h"
 #include "Texture.h"
@@ -32,16 +33,17 @@ namespace ToolKit
     ptr->m_height  = 1;
     ptr->m_width   = (int) (skeleton->m_bones.size()) * 4;
     TextureSettings set;
-    set.GenerateMipMap  = false;
-    set.InternalFormat  = GraphicTypes::FormatRGBA32F;
-    set.MinFilter       = GraphicTypes::SampleNearest;
-    set.MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
-    set.Type            = GraphicTypes::TypeFloat;
-    ptr->SetTextureSettings(set);
+    set.GenerateMipMap = false;
+    set.InternalFormat = GraphicTypes::FormatRGBA32F;
+    set.MinFilter      = GraphicTypes::SampleNearest;
+    set.Type           = GraphicTypes::TypeFloat;
+    ptr->Settings(set);
     ptr->m_name = skeleton->m_name + " BindPoseTexture";
 
     glGenTextures(1, &ptr->m_textureId);
-    glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
+
+    RHI::SetTexture(GL_TEXTURE_2D, ptr->m_textureId);
+
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, ptr->m_width, ptr->m_height, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -55,7 +57,7 @@ namespace ToolKit
 
   void uploadBoneMatrix(Mat4 mat, TexturePtr& ptr, uint boneIndx)
   {
-    glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
+    RHI::SetTexture(GL_TEXTURE_2D, ptr->m_textureId);
     glTexSubImage2D(GL_TEXTURE_2D, 0, boneIndx * 4, 0, 4, 1, GL_RGBA, GL_FLOAT, &mat);
   };
 
@@ -111,20 +113,6 @@ namespace ToolKit
           }
         }
       }
-    }
-
-    boneTransformNodeTexture = CreateBoneTransformTexture(skeleton);
-  }
-
-  void DynamicBoneMap::UpdateGPUTexture()
-  {
-    for (auto& dBoneIter : boneList)
-    {
-      const String& name = dBoneIter.first;
-      DynamicBone& dBone = dBoneIter.second;
-      uploadBoneMatrix(dBone.node->GetTransform(TransformationSpace::TS_WORLD),
-                       boneTransformNodeTexture,
-                       dBone.boneIndx);
     }
   }
 
@@ -222,7 +210,7 @@ namespace ToolKit
 
       m_bindPoseTexture = nullptr;
 
-      m_initiated = false;
+      m_initiated       = false;
     }
   }
 
@@ -380,7 +368,10 @@ namespace ToolKit
     m_bindPoseTexture = CreateBoneTransformTexture(this);
     for (uint64_t boneIndx = 0; boneIndx < m_bones.size(); boneIndx++)
     {
-      uploadBoneMatrix(m_bones[boneIndx]->m_inverseWorldMatrix, m_bindPoseTexture, static_cast<uint>(boneIndx));
+      Mat4 transform = m_Tpose.boneList[m_bones[boneIndx]->m_name].node->GetTransform();
+      uploadBoneMatrix(transform * m_bones[boneIndx]->m_inverseWorldMatrix,
+                       m_bindPoseTexture,
+                       static_cast<uint>(boneIndx));
     }
 
     m_initiated = true;

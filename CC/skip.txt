@@ -8,3 +8,4 @@
 ../Template/
 ../Samples/
 ../ToolKit/Common/UtfConv.h
+../BuildScripts/

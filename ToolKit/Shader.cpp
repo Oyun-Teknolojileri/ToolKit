@@ -27,9 +27,6 @@ namespace ToolKit
 #define TK_DEFAULT_VERTEX_SHADER         "defaultVertex.shader"
 #define TK_PHONG_FORWARD_FRAGMENT_SHADER "phongForwardFragment.shader"
 
-  // Shader
-  //////////////////////////////////////////////////////////////////////////
-
   TKDefineClass(Shader, Resource);
 
   Shader::Shader() {}
@@ -118,7 +115,6 @@ namespace ToolKit
       m_source.clear();
     }
 
-    m_tag       = std::to_string(m_shaderHandle);
     m_initiated = true;
   }
 
@@ -126,134 +122,6 @@ namespace ToolKit
   {
     glDeleteShader(m_shaderHandle);
     m_initiated = false;
-  }
-
-  const char* GetUniformName(Uniform u)
-  {
-    switch (u)
-    {
-    case Uniform::PROJECT_MODEL_VIEW:
-      return "ProjectViewModel";
-    case Uniform::VIEW:
-      return "View";
-    case Uniform::MODEL:
-      return "Model";
-    case Uniform::INV_TR_MODEL:
-      return "InverseTransModel";
-    case Uniform::UNUSEDSLOT_6:
-      TK_ASSERT_ONCE(false && "Old asset in use.");
-      return "UNUSEDSLOT_6";
-    case Uniform::UNUSEDSLOT_7:
-      TK_ASSERT_ONCE(false && "Old asset in use.");
-      return "UNUSEDSLOT_7";
-    case Uniform::COLOR:
-      return "Color";
-    case Uniform::FRAME_COUNT:
-      return "FrameCount";
-    case Uniform::ELAPSED_TIME:
-      return "ElapsedTime";
-    case Uniform::EXPOSURE:
-      return "Exposure";
-    case Uniform::PROJECT_VIEW_NO_TR:
-      return "ProjectViewNoTr";
-    case Uniform::USE_IBL:
-      return "UseIbl";
-    case Uniform::IBL_INTENSITY:
-      return "IblIntensity";
-    case Uniform::IBL_IRRADIANCE:
-      return "IBLIrradianceMap";
-    case Uniform::DIFFUSE_TEXTURE_IN_USE:
-      return "DiffuseTextureInUse";
-    case Uniform::COLOR_ALPHA:
-      return "ColorAlpha";
-    case Uniform::UNUSEDSLOT_4:
-      TK_ASSERT_ONCE(false && "Old asset in use.");
-      return "UNUSEDSLOT_4";
-    case Uniform::IBL_ROTATION:
-      return "IblRotation";
-    case Uniform::UNUSEDSLOT_2:
-      TK_ASSERT_ONCE(false);
-      return "UNUSEDSLOT_2";
-    case Uniform::USE_ALPHA_MASK:
-      return "useAlphaMask";
-    case Uniform::ALPHA_MASK_TRESHOLD:
-      return "alphaMaskTreshold";
-    case Uniform::UNUSEDSLOT_5:
-      TK_ASSERT_ONCE(false && "Old asset in use.");
-      return "UNUSEDSLOT_5";
-    case Uniform::EMISSIVE_TEXTURE_IN_USE:
-      return "emissiveTextureInUse";
-    case Uniform::EMISSIVE_COLOR:
-      return "emissiveColor";
-    case Uniform::UNUSEDSLOT_3:
-      TK_ASSERT_ONCE(false && "Old asset in use.");
-      return "UNUSEDSLOT_3";
-    case Uniform::METALLIC:
-      return "metallic";
-    case Uniform::ROUGHNESS:
-      return "roughness";
-    case Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE:
-      return "metallicRoughnessTextureInUse";
-    case Uniform::NORMAL_MAP_IN_USE:
-      return "normalMapInUse";
-    case Uniform::IBL_MAX_REFLECTION_LOD:
-      return "iblMaxReflectionLod";
-    case Uniform::SHADOW_DISTANCE:
-      return "shadowDistance";
-    case Uniform::CAM_DATA_POS:
-      return "CamData.pos";
-    case Uniform::CAM_DATA_DIR:
-      return "CamData.dir";
-    case Uniform::CAM_DATA_FAR:
-      return "CamData.far";
-    case Uniform::LIGHT_DATA_TYPE:
-      return "LightData.type";
-    case Uniform::LIGHT_DATA_POS:
-      return "LightData.pos";
-    case Uniform::LIGHT_DATA_DIR:
-      return "LightData.dir";
-    case Uniform::LIGHT_DATA_COLOR:
-      return "LightData.color";
-    case Uniform::LIGHT_DATA_INTENSITY:
-      return "LightData.intensity";
-    case Uniform::LIGHT_DATA_RADIUS:
-      return "LightData.radius";
-    case Uniform::LIGHT_DATA_OUTANGLE:
-      return "LightData.outAngle";
-    case Uniform::LIGHT_DATA_INNANGLE:
-      return "LightData.innAngle";
-    case Uniform::LIGHT_DATA_PROJVIEWMATRIX:
-      return "LightData.projectionViewMatrix";
-    case Uniform::LIGHT_DATA_SHADOWMAPCAMFAR:
-      return "LightData.shadowMapCameraFar";
-    case Uniform::LIGHT_DATA_CASTSHADOW:
-      return "LightData.castShadow";
-    case Uniform::LIGHT_DATA_PCFSAMPLES:
-      return "LightData.PCFSamples";
-    case Uniform::LIGHT_DATA_PCFRADIUS:
-      return "LightData.PCFRadius";
-    case Uniform::LIGHT_DATA_BLEEDREDUCTION:
-      return "LightData.BleedingReduction";
-    case Uniform::LIGHT_DATA_SOFTSHADOWS:
-      return "LightData.softShadows";
-    case Uniform::LIGHT_DATA_SHADOWATLASLAYER:
-      return "LightData.shadowAtlasLayer";
-    case Uniform::LIGHT_DATA_SHADOWATLASRESRATIO:
-      return "LightData.shadowAtlasResRatio";
-    case Uniform::LIGHT_DATA_SHADOWATLASCOORD:
-      return "LightData.shadowAtlasCoord";
-    case Uniform::LIGHT_DATA_SHADOWBIAS:
-      return "LightData.shadowBias";
-    case Uniform::LIGHT_DATA_ACTIVECOUNT:
-      return "LightData.activeCount";
-    case Uniform::IS_SKINNED:
-      return "isSkinned";
-    case Uniform::NUM_BONES:
-      return "numBones";
-    case Uniform::UNIFORM_MAX_INVALID:
-    default:
-      return "";
-    }
   }
 
   XmlNode* Shader::SerializeImp(XmlDocument* doc, XmlNode* parent) const { return nullptr; }
@@ -349,9 +217,20 @@ namespace ToolKit
     return nullptr;
   }
 
-  void Shader::SetShaderParameter(const String& param, const ParameterVariant& val) { m_shaderParams[param] = val; }
+  void Shader::UpdateShaderUniform(const String& name, const UniformValue& val)
+  {
+    auto paramItr = m_shaderParams.find(name);
+    if (paramItr == m_shaderParams.end())
+    {
+      m_shaderParams[name] = ShaderUniform(name, val);
+    }
+    else
+    {
+      paramItr->second = val;
+    }
+  }
 
-  void Shader::UpdateShaderParameters() {}
+  void Shader::UpdateShaderUniforms() {}
 
   void Shader::HandleShaderIncludes(const String& file)
   {

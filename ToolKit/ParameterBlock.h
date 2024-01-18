@@ -110,7 +110,7 @@ namespace ToolKit
 
   struct MultiChoiceVariant
   {
-    std::vector<class ParameterVariant> Choices;
+    ParameterVariantArray Choices;
 
     template <typename T>
     const T& GetValue() const;
@@ -165,27 +165,6 @@ namespace ToolKit
   static VariantCategory CustomDataCategory = {"Custom Data", 0};
 
   /**
-   * Base class for ParameterVariant. This class is responsible for providing
-   * initial data to every ParameterVariant such as providing a unique id.
-   */
-  class TK_API ParameterVariantBase : public Serializable
-  {
-   public:
-    /**
-     * Base Constructor, creates a unique id for the ParameterVariant.
-     */
-    ParameterVariantBase();
-
-    /**
-     * Empty destructor.
-     */
-    virtual ~ParameterVariantBase();
-
-   public:
-    ULongID m_id; //!< Unique id for the current runtime.
-  };
-
-  /**
    * A multi type object that encapsulates std::variant. The purpose of this
    * class is to provide automated functionality such as serialization, auto
    * cloning etc... This type of parameters can be recognized and properly
@@ -193,7 +172,7 @@ namespace ToolKit
    * Property Inspector. Any exposed parameter variant will be displayed under
    * the right category automatically.
    */
-  class TK_API ParameterVariant : public ParameterVariantBase
+  class TK_API ParameterVariant : public Serializable
   {
     friend class ParameterBlock;
 
@@ -247,6 +226,11 @@ namespace ToolKit
      * Default copy constructor makes a call to default assignment operator.
      */
     ParameterVariant(const ParameterVariant& other);
+
+    /**
+     * Default move constructor. Moves everything not like assignment.
+     */
+    ParameterVariant(ParameterVariant&& other) noexcept;
 
     /**
      * Constructs bool type variant.
@@ -392,12 +376,17 @@ namespace ToolKit
     }
 
     /**
-     * Default assignment operator, copies every member but event callbacks and
-     * the id. Events refer to objects to operate on. Consider coping or
+     * Default move operator, copies every member but event callbacks.
+     */
+    ParameterVariant& operator=(ParameterVariant&& other) noexcept;
+
+    /**
+     * Default assignment operator, copies every member but event callbacks.
+     * Events refer to objects to operate on. Consider coping or
      * rewiring event callbacks explicitly. Otherwise unintended objects gets
      * affected.
      */
-    ParameterVariant& operator=(const ParameterVariant& other);
+    ParameterVariant& operator=(const ParameterVariant& other) noexcept;
 
     /**
      * Assign a bool to the value of the variant.
@@ -592,10 +581,10 @@ namespace ToolKit
     void Add(const ParameterVariant& var);
 
     /**
-     * Remove's the first variant with the id.
-     * @param id The id of the variant to remove.
+     * Remove's the variant at the given index.
+     * @param index of the variant to remove.
      */
-    void Remove(ULongID id);
+    void Remove(int index);
 
     /**
      * Collects all unique categories and sorts the categories in
@@ -614,6 +603,13 @@ namespace ToolKit
      * variants that falls under the requested category.
      */
     void GetByCategory(const String& category, ParameterVariantRawPtrArray& variants);
+
+    /**
+     * Collects every variant by the given category.
+     * @param category The category to search the variants in.
+     * @param variants Index list of variants that is under the requested category.
+     */
+    void GetByCategory(const String& category, IntArray& variants);
 
     /**
      * Search the variant with given category and name. Returns true if found
@@ -654,6 +650,10 @@ namespace ToolKit
     ParameterVariantArray m_variants;
   };
 
+  /**
+   * Returns the selected value of multichoice variant.
+   * Function is located here because it requires ParameterVariant to be declared before itself.
+   */
   template <typename T>
   const T& MultiChoiceVariant::GetValue() const
   {

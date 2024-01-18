@@ -52,20 +52,8 @@ namespace ToolKit
     // Set self data.
     Renderer* renderer = GetRenderer();
 
-    if (m_params.ClearFrameBuffer)
-    {
-      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::AllBits);
-    }
-    else if (m_params.ClearDepthBuffer)
-    {
-      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::DepthStencilBits);
-    }
-    else
-    {
-      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::None);
-    }
-
-    renderer->SetCameraLens(m_params.Cam);
+    renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
+    renderer->SetCamera(m_params.Cam, true);
     renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
 
     POP_CPU_MARKER();
@@ -78,7 +66,6 @@ namespace ToolKit
     PUSH_CPU_MARKER("ForwardRenderPass::PostRender");
 
     Pass::PostRender();
-    GetRenderer()->m_overrideMat = nullptr;
     Renderer* renderer           = GetRenderer();
     renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
 
@@ -97,11 +84,19 @@ namespace ToolKit
       renderer->SetTexture(5, m_params.SsaoTexture->m_textureId);
     }
 
+    int dirLightEnd = RenderJobProcessor::PreSortLights(lights);
+
+    LightPtrArray activeLights;
+    activeLights.reserve(Renderer::RHIConstants::MaxLightsPerObject);
+
     for (const RenderJob& job : jobs)
     {
-      RenderJobProcessor::SortLights(job, lights);
-      job.Material->m_fragmentShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.SSAOEnabled));
-      renderer->Render(job, m_params.Cam, lights);
+      int effectiveLights = RenderJobProcessor::SortLights(job, lights, dirLightEnd);
+      job.Material->m_fragmentShader->UpdateShaderUniform("aoEnabled", m_params.SSAOEnabled);
+
+      activeLights.insert(activeLights.begin(), lights.begin(), lights.begin() + effectiveLights);
+      renderer->Render(job, m_params.Cam, activeLights);
+      activeLights.clear();
     }
 
     POP_CPU_MARKER();
@@ -113,10 +108,12 @@ namespace ToolKit
 
     RenderJobProcessor::SortByDistanceToCamera(jobs, cam);
 
+    int dirLightEnd    = RenderJobProcessor::PreSortLights(lights);
+
     Renderer* renderer = GetRenderer();
-    auto renderFnc     = [cam, &lights, renderer](RenderJob& job)
+    auto renderFnc     = [cam, &lights, dirLightEnd, renderer](RenderJob& job)
     {
-      RenderJobProcessor::SortLights(job, lights);
+      RenderJobProcessor::SortLights(job, lights, dirLightEnd);
 
       MaterialPtr mat = job.Material;
       if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
@@ -135,10 +132,12 @@ namespace ToolKit
       }
     };
 
+    renderer->EnableDepthWrite(false);
     for (RenderJob& job : jobs)
     {
       renderFnc(job);
     }
+    renderer->EnableDepthWrite(true);
 
     POP_CPU_MARKER();
   }

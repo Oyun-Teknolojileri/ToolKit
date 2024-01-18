@@ -121,7 +121,7 @@ namespace ToolKit
         shownEntity = m_activeChildEntity;
       }
 
-      ParameterVariantRawPtrArray inheritedParams;
+      IntArray inheritedParams;
       shownEntity->m_localData.GetByCategory(CustomDataCategory.Name, inheritedParams);
       CustomDataView::ShowCustomData(shownEntity, "Custom Data##1", inheritedParams, false);
 

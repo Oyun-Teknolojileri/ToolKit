@@ -66,7 +66,7 @@ namespace ToolKit
 
       if (ImGui::CollapsingHeader("Mesh Info", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        MeshRawCPtrArray submeshes;
+        MeshRawPtrArray submeshes;
         m_mesh->GetAllMeshes(submeshes);
         for (uint i = 0; i < submeshes.size(); i++)
         {

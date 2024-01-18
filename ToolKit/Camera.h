@@ -40,6 +40,8 @@ namespace ToolKit
     // Tight fit camera frustum to a bounding box with a margin
     void FocusToBoundingBox(const BoundingBox& bb, float margin);
 
+    Vec3Array ExtractFrustumCorner();
+
     inline float Fov() const { return m_fov; }
 
     inline float Aspect() const { return m_aspect; }

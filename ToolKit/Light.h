@@ -60,8 +60,7 @@ namespace ToolKit
     MeshPtr m_volumeMesh           = nullptr;
 
    protected:
-    bool m_shadowMapResolutionChanged = false;
-    MaterialPtr m_shadowMapMaterial   = nullptr;
+    MaterialPtr m_shadowMapMaterial = nullptr;
   };
 
   // DirectionalLight
@@ -76,9 +75,7 @@ namespace ToolKit
     virtual ~DirectionalLight();
 
     void NativeConstruct() override;
-
-    void UpdateShadowFrustum(const RenderJobArray& jobs, const CameraPtr cameraView);
-    Vec3Array GetShadowFrustumCorners();
+    void UpdateShadowFrustum(const RenderJobArray& jobs, const CameraPtr cameraView, const BoundingBox& shadowVolume);
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
@@ -90,7 +87,7 @@ namespace ToolKit
 
     // Fits view frustum of the camera into shadow map camera frustum. As the
     // view frustum gets bigger, the resolution gets lower.
-    void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera);
+    void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera, const BoundingBox& shadowVolume);
   };
 
   typedef std::shared_ptr<DirectionalLight> DirectionalLightPtr;
@@ -116,6 +113,8 @@ namespace ToolKit
 
    public:
     TKDeclareParam(float, Radius);
+
+    BoundingSphere m_boundingSphereCache; //!< Bounding volume, updated after call to UpdateShadowCamera().
   };
 
   typedef std::shared_ptr<PointLight> PointLightLightPtr;
@@ -146,7 +145,7 @@ namespace ToolKit
     TKDeclareParam(float, OuterAngle);
     TKDeclareParam(float, InnerAngle);
 
-    Frustum n_frustumCache; //!< Updated after call to UpdateShadowCamera().
+    Frustum m_frustumCache; //!< Spot frustum, updated after call to UpdateShadowCamera().
   };
 
   typedef std::shared_ptr<SpotLight> SpotLightPtr;

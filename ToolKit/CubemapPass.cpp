@@ -57,7 +57,10 @@ namespace ToolKit
     Pass::PreRender();
     MaterialComponentPtr matCom = m_cube->GetMaterialComponent();
     matCom->SetFirstMaterial(m_params.Material);
-    GetRenderer()->SetDepthTestFunc(m_params.DepthFn);
+
+    Renderer* renderer = GetRenderer();
+    renderer->SetDepthTestFunc(m_params.DepthFn);
+    renderer->SetCamera(m_params.Cam, false);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

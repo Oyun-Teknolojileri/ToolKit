@@ -64,6 +64,6 @@ namespace ToolKit
       void CreateShelf(int size, int atlasSize);
     };
 
-    std::vector<PackedRect> Pack(const std::vector<int>& squares, int atlasSize);
+    std::vector<PackedRect> Pack(const IntArray& squares, int atlasSize);
   };
 } // namespace ToolKit

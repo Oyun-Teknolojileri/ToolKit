@@ -136,7 +136,7 @@ namespace ToolKit
 
     void CreateAction::SwapSelection()
     {
-      EntityIdArray selection;
+      IDArray selection;
       EditorScenePtr currScene = g_app->GetCurrentScene();
       currScene->GetSelectedEntities(selection);
       currScene->AddToSelection(m_selecteds, false);

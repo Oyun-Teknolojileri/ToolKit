@@ -52,7 +52,7 @@ namespace ToolKit
       }
 
       envComp->SetHdriVal(hdri);
-    }
+    };
 
     Vec3 mp = Vec3(TK_FLT_MAX);
     envComp->SetSizeVal(mp);
@@ -210,6 +210,7 @@ namespace ToolKit
     Init();
 
     HdriPtr hdri                = GetHdri();
+    hdri->Init();
     m_skyboxMaterial->m_cubeMap = hdri->m_cubemap;
     return m_skyboxMaterial;
   }

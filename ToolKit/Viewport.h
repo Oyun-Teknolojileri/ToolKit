@@ -202,13 +202,13 @@ namespace ToolKit
      * Returns RenderTargetSetting of the Viewport.
      * @return RenderTargetSetting of the Viewport.
      */
-    virtual RenderTargetSettigs GetRenderTargetSettings();
+    virtual TextureSettings GetRenderTargetSettings();
 
     /**
      * Resets the RenderTarget image of Viewport. If the RenderTarget image is
      * not initialized, creates a new one.
      */
-    void ResetViewportImage(const RenderTargetSettigs& settings);
+    void ResetViewportImage(const TextureSettings& settings);
 
    public:
     RenderTargetPtr m_renderTarget = nullptr; //!< Render target of viewport

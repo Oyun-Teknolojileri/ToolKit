@@ -11,6 +11,7 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <functional>
 #include <limits>

@@ -20,9 +20,7 @@ namespace ToolKit
   BloomPass::BloomPass()
   {
     m_downsampleShader = GetShaderManager()->Create<Shader>(ShaderPath("bloomDownsample.shader", true));
-
     m_upsampleShader   = GetShaderManager()->Create<Shader>(ShaderPath("bloomUpsample.shader", true));
-
     m_pass             = MakeNewPtr<FullQuadPass>();
   }
 
@@ -55,11 +53,9 @@ namespace ToolKit
       m_pass->m_params.FragmentShader = m_downsampleShader;
       int passIndx                    = 0;
 
-      m_downsampleShader->SetShaderParameter("passIndx", ParameterVariant(passIndx));
-
-      m_downsampleShader->SetShaderParameter("srcResolution", ParameterVariant(mainRes));
-
-      m_downsampleShader->SetShaderParameter("threshold", ParameterVariant(m_params.minThreshold));
+      m_downsampleShader->UpdateShaderUniform("passIndx", passIndx);
+      m_downsampleShader->UpdateShaderUniform("srcResolution", mainRes);
+      m_downsampleShader->UpdateShaderUniform("threshold", m_params.minThreshold);
 
       TexturePtr prevRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
 
@@ -92,9 +88,8 @@ namespace ToolKit
         m_pass->m_params.FragmentShader = m_downsampleShader;
 
         int passIndx                    = i + 1;
-        m_downsampleShader->SetShaderParameter("passIndx", ParameterVariant(passIndx));
-
-        m_downsampleShader->SetShaderParameter("srcResolution", ParameterVariant(prevRes));
+        m_downsampleShader->UpdateShaderUniform("passIndx", passIndx);
+        m_downsampleShader->UpdateShaderUniform("srcResolution", prevRes);
 
         GetRenderer()->SetTexture(0, prevRt->m_textureId);
 
@@ -110,9 +105,8 @@ namespace ToolKit
     // Upsample Pass
     {
       const float filterRadius = 0.002f;
-      m_upsampleShader->SetShaderParameter("filterRadius", ParameterVariant(filterRadius));
-
-      m_upsampleShader->SetShaderParameter("intensity", ParameterVariant(1.0f));
+      m_upsampleShader->UpdateShaderUniform("filterRadius", filterRadius);
+      m_upsampleShader->UpdateShaderUniform("intensity", 1.0f);
 
       for (int i = m_currentIterationCount; i > 0; i--)
       {
@@ -142,7 +136,7 @@ namespace ToolKit
       m_pass->m_params.ClearFrameBuffer = false;
       m_pass->m_params.FrameBuffer      = m_params.FrameBuffer;
 
-      m_upsampleShader->SetShaderParameter("intensity", ParameterVariant(m_params.intensity));
+      m_upsampleShader->UpdateShaderUniform("intensity", m_params.intensity);
 
       RenderSubPass(m_pass);
     }
@@ -192,17 +186,21 @@ namespace ToolKit
           return;
         }
 
-        RenderTargetPtr& rt           = m_tempTextures[i];
-        rt                            = MakeNewPtr<RenderTarget>();
-        rt->m_settings.InternalFormat = GraphicTypes::FormatRGBA16F;
-        rt->m_settings.Format         = GraphicTypes::FormatRGBA;
-        rt->m_settings.Type           = GraphicTypes::TypeFloat;
-        rt->m_settings.MagFilter      = GraphicTypes::SampleLinear;
-        rt->m_settings.MinFilter      = GraphicTypes::SampleLinear;
-        rt->m_settings.WarpR          = GraphicTypes::UVClampToEdge;
-        rt->m_settings.WarpS          = GraphicTypes::UVClampToEdge;
-        rt->m_settings.WarpT          = GraphicTypes::UVClampToEdge;
-        rt->ReconstructIfNeeded(curRes.x, curRes.y);
+        RenderTargetPtr& rt = m_tempTextures[i];
+
+        TextureSettings set;
+        set.InternalFormat = GraphicTypes::FormatRGBA16F;
+        set.Format         = GraphicTypes::FormatRGBA;
+        set.Type           = GraphicTypes::TypeFloat;
+        set.MagFilter      = GraphicTypes::SampleLinear;
+        set.MinFilter      = GraphicTypes::SampleLinear;
+        set.WarpR          = GraphicTypes::UVClampToEdge;
+        set.WarpS          = GraphicTypes::UVClampToEdge;
+        set.WarpT          = GraphicTypes::UVClampToEdge;
+        set.GenerateMipMap = false;
+
+        rt                 = MakeNewPtr<RenderTarget>(curRes.x, curRes.y, set);
+        rt->Init();
 
         FramebufferPtr& fb = m_tempFrameBuffers[i];
         if (fb == nullptr)

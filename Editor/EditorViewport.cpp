@@ -218,10 +218,9 @@ namespace ToolKit
       AdjustZoom(0.0f);
     }
 
-    RenderTargetSettigs EditorViewport::GetRenderTargetSettings()
+    TextureSettings EditorViewport::GetRenderTargetSettings()
     {
-      RenderTargetSettigs sets = Viewport::GetRenderTargetSettings();
-      sets.Msaa                = GetEngineSettings().Graphics.MSAA;
+      TextureSettings sets = Viewport::GetRenderTargetSettings();
       return sets;
     }
 
@@ -595,6 +594,16 @@ namespace ToolKit
             // Translate mesh to correct position
             dwMesh->m_node->SetTranslation(lastDragMeshPos, TransformationSpace::TS_WORLD);
 
+            if (entry.m_ext == SKINMESH)
+            {
+              if (dwMesh->GetComponent<AABBOverrideComponent>() == nullptr)
+              {
+                AABBOverrideComponentPtr aabbOverride = MakeNewPtr<AABBOverrideComponent>();
+                aabbOverride->SetAABB(dwMesh->GetAABB());
+                dwMesh->AddComponent(aabbOverride);
+              }
+            }
+
             // Add mesh to the scene
             currScene->AddEntity(dwMesh);
             currScene->AddToSelection(dwMesh->GetIdVal(), false);
@@ -649,7 +658,7 @@ namespace ToolKit
                 MeshComponentPtrArray meshComps;
                 pd.entity->GetComponent<MeshComponent>(meshComps);
 
-                MeshRawCPtrArray meshes;
+                MeshRawPtrArray meshes;
                 for (MeshComponentPtr meshComp : meshComps)
                 {
                   meshComp->GetMeshVal()->GetAllMeshes(meshes);
@@ -821,7 +830,7 @@ namespace ToolKit
       Vec3 lastDragMeshPos = Vec3(0.0f);
       Ray ray              = RayFromMousePosition(); // Find the point of the cursor in 3D coordinates
 
-      EntityIdArray ignoreList;
+      IDArray ignoreList;
       if (meshLoaded)
       {
         ignoreList.push_back((*boundingBox)->GetIdVal());

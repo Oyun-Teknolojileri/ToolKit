@@ -45,7 +45,7 @@ namespace ToolKit
 
     // Use stencil output as input to the dilation.
     GetRenderer()->SetTexture(0, m_stencilAsRt->m_textureId);
-    m_dilateShader->SetShaderParameter("Color", ParameterVariant(m_params.OutlineColor));
+    m_dilateShader->UpdateShaderUniform("Color", m_params.OutlineColor);
 
     // Draw outline to the viewport.
     m_outlinePass->m_params.FragmentShader   = m_dilateShader;

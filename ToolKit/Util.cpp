@@ -310,7 +310,7 @@ namespace ToolKit
 #ifdef _WIN32
     int res = _pclose(fp);
 #else
-    int res = pclose(fp);
+    int res  = pclose(fp);
 #endif
     if (afterFn)
     {
@@ -799,7 +799,7 @@ namespace ToolKit
     return lineForm;
   }
 
-  void ToEntityIdArray(EntityIdArray& idArray, const EntityPtrArray& ptrArray)
+  void ToEntityIdArray(IDArray& idArray, const EntityPtrArray& ptrArray)
   {
     idArray.reserve(ptrArray.size());
     for (EntityPtr ntt : ptrArray)
@@ -901,6 +901,18 @@ namespace ToolKit
     }
 
     return cpy;
+  }
+
+  TK_API Node* DeepNodeCopy(Node* node)
+  {
+    Node* newNode = node->Copy();
+
+    for (Node* child : node->m_children)
+    {
+      newNode->AddChild(DeepNodeCopy(child));
+    }
+
+    return newNode;
   }
 
   static void RecursiveCopyDirectoryWithSet(const String& source,
@@ -1021,6 +1033,25 @@ namespace ToolKit
     s[0]           = ((s0 << 55) | (s0 >> 9)) ^ s1 ^ (s1 << 14);
     s[1]           = (s1 << 36) | (s1 >> 28);
     return result;
+  }
+
+  template <typename Key, typename Value>
+  bool HaveSameKeys(const std::unordered_map<Key, Value>& map1, const std::unordered_map<Key, Value>& map2)
+  {
+    if (map1.size() != map2.size())
+    {
+      return false; // If the sizes are different, they can't have the same keys
+    }
+
+    for (const auto& pair : map1)
+    {
+      if (map2.find(pair.first) == map2.end())
+      {
+        return false; // Key not found in map2
+      }
+    }
+
+    return true; // All keys in map1 are found in map2
   }
 
 } //  namespace ToolKit

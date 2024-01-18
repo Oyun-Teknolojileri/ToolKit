@@ -524,7 +524,7 @@ namespace ToolKit
       int problemsFound = 0;
       if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
       {
-        auto fixProblemFn = [&problemsFound, scene, fix](EntityPtr ntt, StringView msg) -> void
+        auto fixProblemFn = [&problemsFound, fix](EntityPtr ntt, StringView msg) -> void
         {
           problemsFound++;
 
@@ -540,7 +540,7 @@ namespace ToolKit
 
         // Checks for invalid bb & outlier.
         RenderJobArray jobs;
-        RenderJobProcessor::CreateRenderJobs(scene->AccessEntityArray(), jobs);
+        RenderJobProcessor::CreateRenderJobs(scene->GetEntities(), jobs);
 
         float stdev;
         Vec3 mean;

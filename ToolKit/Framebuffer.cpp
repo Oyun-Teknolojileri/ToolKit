@@ -102,15 +102,17 @@ namespace ToolKit
 
   bool Framebuffer::Initialized() { return m_initialized; }
 
-  void Framebuffer::ReconstructIfNeeded(uint width, uint height)
+  void Framebuffer::ReconstructIfNeeded(int width, int height)
   {
     CPU_FUNC_RANGE();
 
     if (!m_initialized || m_settings.width != width || m_settings.height != height)
     {
       UnInit();
+
       m_settings.width  = width;
       m_settings.height = height;
+
       Init(m_settings);
     }
   }
@@ -170,7 +172,7 @@ namespace ToolKit
     {
       if (layer != -1)
       {
-        assert(layer < rt->m_settings.Layers);
+        assert(layer < rt->Settings().Layers);
         glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, rt->m_textureId, mip, layer);
       }
       else
@@ -189,7 +191,11 @@ namespace ToolKit
     return oldRt;
   }
 
-  RenderTargetPtr Framebuffer::GetAttachment(Attachment atc) { return m_colorAtchs[(int) atc]; }
+  RenderTargetPtr Framebuffer::GetAttachment(Attachment atc)
+  {
+    assert(atc < Attachment::DepthAttachment);
+    return m_colorAtchs[(int) atc];
+  }
 
   void Framebuffer::ClearAttachments()
   {

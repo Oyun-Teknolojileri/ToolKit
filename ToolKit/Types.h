@@ -31,6 +31,7 @@
 #include <RapidXml/rapidxml_utils.hpp>
 
 // STL
+#include <array>
 #include <filesystem>
 #include <functional>
 #include <limits>
@@ -40,6 +41,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #ifdef _WIN32 // Windows.
@@ -101,6 +103,7 @@ namespace ToolKit
   typedef uint8_t uint8;
   typedef uint64_t uint64;
   typedef uint64_t ULongID;
+  typedef std::vector<ULongID> IDArray;
   typedef const int16_t SignalId;
   typedef std::string String;
   typedef std::string_view StringView;
@@ -126,17 +129,19 @@ namespace ToolKit
   // Resource types.
   typedef std::shared_ptr<class Animation> AnimationPtr;
   typedef std::shared_ptr<class Material> MaterialPtr;
+  typedef std::weak_ptr<class Material> MaterialWeakPtr;
   typedef std::vector<MaterialPtr> MaterialPtrArray;
   typedef std::shared_ptr<class CubeMap> CubeMapPtr;
   typedef std::shared_ptr<class Texture> TexturePtr;
   typedef std::shared_ptr<class DataTexture> DataTexturePtr;
-  typedef std::shared_ptr<class LightDataTexture> LightDataTexturePtr;
+  typedef std::shared_ptr<class DepthTexture> DepthTexturePtr;
   typedef std::shared_ptr<class Hdri> HdriPtr;
   typedef std::shared_ptr<class RenderTarget> RenderTargetPtr;
   typedef std::shared_ptr<class Framebuffer> FramebufferPtr;
   typedef std::shared_ptr<class SpriteSheet> SpriteSheetPtr;
   typedef std::shared_ptr<class Mesh> MeshPtr;
   typedef std::shared_ptr<class Skeleton> SkeletonPtr;
+  typedef std::shared_ptr<class SkeletonComponent> SkeletonComponentPtr;
   typedef std::shared_ptr<class DynamicBoneMap> DynamicBoneMapPtr;
   typedef std::shared_ptr<class Shader> ShaderPtr;
   typedef std::vector<ShaderPtr> ShaderPtrArray;
@@ -145,7 +150,6 @@ namespace ToolKit
   typedef std::shared_ptr<class Scene> ScenePtr;
   typedef std::vector<MeshPtr> MeshPtrArray;
   typedef std::vector<class Mesh*> MeshRawPtrArray;
-  typedef std::vector<const class Mesh*> MeshRawCPtrArray;
   typedef std::shared_ptr<class AnimRecord> AnimRecordPtr;
   typedef std::unordered_map<String, AnimRecordPtr> AnimRecordPtrMap;
   typedef class AnimRecord* AnimRecordRawPtr;
@@ -163,7 +167,6 @@ namespace ToolKit
   typedef std::vector<class DirectionalLight*> DirectionalLightRawPtrArray;
   typedef std::vector<class SpotLight*> SpotLightRawPtrArray;
   typedef std::vector<class PointLight*> PointLightRawPtrArray;
-  typedef std::vector<ULongID> EntityIdArray;
   typedef std::vector<class Node*> NodeRawPtrArray;
   typedef std::vector<class Vertex> VertexArray;
   typedef std::vector<class Face> FaceArray;

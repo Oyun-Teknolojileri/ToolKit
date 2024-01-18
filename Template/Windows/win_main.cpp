@@ -95,8 +95,7 @@ namespace ToolKit
 
       m_uiPass->m_params.Cam              = GetUIManager()->GetUICamera();
       m_uiPass->m_params.FrameBuffer      = m_params.viewport->m_framebuffer;
-      m_uiPass->m_params.ClearFrameBuffer = false;
-      m_uiPass->m_params.ClearDepthBuffer = true;
+      m_uiPass->m_params.clearBuffer      = GraphicBitFields::DepthBits;
 
       m_passArray.push_back(m_uiPass);
 

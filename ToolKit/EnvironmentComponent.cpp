@@ -45,15 +45,7 @@ namespace ToolKit
     m_initialized = true;
   }
 
-  void EnvironmentComponent::UnInit()
-  {
-    if (m_initialized)
-    {
-      HdriPtr hdri = GetHdriVal();
-      hdri->UnInit();
-      m_initialized = false;
-    }
-  }
+  void EnvironmentComponent::UnInit() { m_initialized = false; }
 
   void EnvironmentComponent::ParameterConstructor()
   {
@@ -107,13 +99,14 @@ namespace ToolKit
         1,
         [&](Value& oldVal, Value& newVal)
         {
-          HdriPtr hdri           = GetHdriVal();
+          HdriPtr hdri       = GetHdriVal();
           int iblTexSize     = std::get<uint>(newVal);
           int prevIblTexSize = std::get<uint>(oldVal);
 
           if (hdri != nullptr && iblTexSize != prevIblTexSize)
           {
-            hdri->m_specularIBLTextureSize = (int)iblTexSize;
+            MultiChoiceVariant& self       = ParamIBLTextureSize().GetVar<MultiChoiceVariant>();
+            hdri->m_specularIBLTextureSize = self.GetValue<int>();
             ReInitHdri(hdri, GetExposureVal());
           }
          }
@@ -131,6 +124,7 @@ namespace ToolKit
   {
     Super::ParameterEventConstructor();
 
+    ParamExposure().m_onValueChangedFn.clear();
     ParamExposure().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
                                                  { ReInitHdri(GetHdriVal(), std::get<float>(newVal)); });
   }

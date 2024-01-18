@@ -32,10 +32,10 @@ namespace ToolKit
     {
       PUSH_CPU_MARKER("SingleMatForwardRenderPass::Render");
 
-      Renderer* renderer      = GetRenderer();
-      renderer->m_overrideMat = m_overrideMat;
+      Renderer* renderer = GetRenderer();
       for (RenderJob& job : m_params.ForwardParams.OpaqueJobs)
       {
+        renderer->m_overrideMat = m_overrideMat;
         RenderJobProcessor::SortLights(job, m_params.ForwardParams.Lights);
 
         MaterialPtr mat = job.Material;

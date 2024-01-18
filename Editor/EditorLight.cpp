@@ -189,8 +189,9 @@ namespace ToolKit
 
     LineBatchPtr EditorDirectionalLight::GetDebugShadowFrustum()
     {
-      Vec3Array corners = GetShadowFrustumCorners();
-      static Vec3Array vertices;
+      Vec3Array corners = m_shadowCamera->ExtractFrustumCorner();
+      Vec3Array vertices;
+
       vertices.resize(24);
       vertices[0]     = corners[3];
       vertices[1]     = corners[2];

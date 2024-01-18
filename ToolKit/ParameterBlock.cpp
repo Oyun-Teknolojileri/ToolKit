@@ -18,16 +18,6 @@
 namespace ToolKit
 {
 
-  ParameterVariantBase::ParameterVariantBase() { m_id = GetHandleManager()->GenerateHandle(); }
-
-  ParameterVariantBase::~ParameterVariantBase()
-  {
-    if (HandleManager* handleMan = GetHandleManager())
-    {
-      handleMan->ReleaseHandle(m_id);
-    }
-  }
-
   ParameterVariant::ParameterVariant() { *this = 0; }
 
   ParameterVariant::~ParameterVariant() {}
@@ -40,9 +30,43 @@ namespace ToolKit
 
   ParameterVariant::ParameterVariant(const ParameterVariant& other) { *this = other; }
 
-  ParameterVariant& ParameterVariant::operator=(const ParameterVariant& other)
+  ParameterVariant::ParameterVariant(ParameterVariant&& other) noexcept
+      : m_exposed(other.m_exposed), m_editable(other.m_editable), m_category(std::move(other.m_category)),
+        m_name(std::move(other.m_name)), m_hint(other.m_hint), m_var(std::move(other.m_var)), m_type(other.m_type)
   {
-    if (m_id != other.m_id)
+    // Events m_onValueChangedFn intentionally not moved.
+    // m_onValueChangedFn(std::move(other.m_onValueChangedFn))
+
+    // Reset the source object to a valid state
+    other.m_exposed  = false;
+    other.m_editable = false;
+    other.m_type     = VariantType::Int;
+  }
+
+  ParameterVariant& ParameterVariant::operator=(ParameterVariant&& other) noexcept
+  {
+    if (this != &other)
+    {
+      m_category       = std::move(other.m_category);
+      m_editable       = other.m_editable;
+      m_exposed        = other.m_exposed;
+      m_name           = std::move(other.m_name);
+      m_type           = other.m_type;
+      m_var            = std::move(other.m_var);
+      m_hint           = other.m_hint;
+      // Events m_onValueChangedFn intentionally not copied.
+
+      other.m_exposed  = false;
+      other.m_editable = false;
+      other.m_type     = VariantType::Int;
+    }
+
+    return *this;
+  }
+
+  ParameterVariant& ParameterVariant::operator=(const ParameterVariant& other) noexcept
+  {
+    if (this != &other)
     {
       m_category = other.m_category;
       m_editable = other.m_editable;
@@ -51,7 +75,6 @@ namespace ToolKit
       m_type     = other.m_type;
       m_var      = other.m_var;
       m_hint     = other.m_hint;
-
       // Events m_onValueChangedFn intentionally not copied.
     }
 
@@ -739,17 +762,7 @@ namespace ToolKit
 
   void ParameterBlock::Add(const ParameterVariant& var) { m_variants.push_back(var); }
 
-  void ParameterBlock::Remove(ULongID id)
-  {
-    for (size_t i = 0; i < m_variants.size(); i++)
-    {
-      if (m_variants[i].m_id == id)
-      {
-        m_variants.erase(m_variants.begin() + i);
-        break;
-      }
-    }
-  }
+  void ParameterBlock::Remove(int index) { m_variants.erase(m_variants.begin() + index); }
 
   void ParameterBlock::GetCategories(VariantCategoryArray& categories, bool sortDesc, bool filterByExpose)
   {
@@ -796,6 +809,17 @@ namespace ToolKit
       if (var.m_category.Name == category)
       {
         variants.push_back(&var);
+      }
+    }
+  }
+
+  void ParameterBlock::GetByCategory(const String& category, IntArray& variants)
+  {
+    for (int i = 0; i < (int) m_variants.size(); i++)
+    {
+      if (m_variants[i].m_category.Name == category)
+      {
+        variants.push_back(i);
       }
     }
   }

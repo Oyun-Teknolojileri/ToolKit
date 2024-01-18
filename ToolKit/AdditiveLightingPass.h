@@ -29,7 +29,6 @@ namespace ToolKit
     AdditiveLightingPass();
     ~AdditiveLightingPass();
 
-    void Init(const LightingPassParams& params);
     void PreRender() override;
     void PostRender() override;
     void Render() override;
@@ -50,4 +49,5 @@ namespace ToolKit
   };
 
   typedef std::shared_ptr<AdditiveLightingPass> LightingPassPtr;
+
 } // namespace ToolKit

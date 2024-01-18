@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "Sky.h"
 #include "Renderer.h"
+#include "Sky.h"
 
 namespace ToolKit
 {
@@ -36,11 +36,10 @@ namespace ToolKit
     TKDeclareParam(Vec3, MiddleColor);
     TKDeclareParam(Vec3, BottomColor);
     TKDeclareParam(float, GradientExponent);
-    TKDeclareParam(float, IrradianceResolution);
-    uint m_size = 1024;
 
    private:
     bool m_waitingForInit = false;
+    FramebufferPtr m_frameBuffer;
   };
 
 } // namespace ToolKit

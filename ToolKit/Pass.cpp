@@ -8,7 +8,6 @@
 #include "Pass.h"
 
 #include "Camera.h"
-#include "DataTexture.h"
 #include "DirectionComponent.h"
 #include "Material.h"
 #include "MathUtil.h"
@@ -34,15 +33,13 @@ namespace ToolKit
 
   void Pass::PreRender()
   {
-    Renderer* renderer     = GetRenderer();
-    m_prevOverrideMaterial = renderer->m_overrideMat;
-    m_prevFrameBuffer      = renderer->GetFrameBuffer();
+    Renderer* renderer = GetRenderer();
+    m_prevFrameBuffer  = renderer->GetFrameBuffer();
   }
 
   void Pass::PostRender()
   {
-    Renderer* renderer      = GetRenderer();
-    renderer->m_overrideMat = m_prevOverrideMaterial;
+    Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_prevFrameBuffer, GraphicBitFields::None);
   }
 
@@ -59,14 +56,20 @@ namespace ToolKit
 
   void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
 
-  void RenderJobProcessor::CreateRenderJobs(const EntityPtrArray& entities,
-                                            RenderJobArray& jobArray,
-                                            bool ignoreVisibility)
+  BoundingBox RenderJobProcessor::CreateRenderJobs(const EntityPtrArray& entities,
+                                                   RenderJobArray& jobArray,
+                                                   bool ignoreVisibility)
   {
     CPU_FUNC_RANGE();
 
     auto checkDrawableFn = [ignoreVisibility](EntityPtr ntt) -> bool
-    { return ntt->IsDrawable() && (ntt->IsVisible() || ignoreVisibility); };
+    {
+      bool isDrawable = ntt->IsDrawable();
+      bool isVisbile  = ntt->IsVisible();
+      return isDrawable && (isVisbile || ignoreVisibility);
+    };
+
+    BoundingBox boundingVolume;
 
     for (EntityPtr ntt : entities)
     {
@@ -89,17 +92,29 @@ namespace ToolKit
         overrideBBoxExists = true;
         overrideBBox       = std::move(bbOverride->GetAABB());
       }
+      SkeletonComponentPtr skComp              = ntt->GetComponent<SkeletonComponent>();
+      const AnimRecordRawPtrArray& animRecords = GetAnimationPlayer()->m_records;
+      bool foundAnim                           = false;
+      for (AnimRecordRawPtr animRecord : animRecords)
+      {
+        if (EntityPtr animNtt = animRecord->m_entity.lock())
+        {
+          if (animNtt->GetIdVal() == ntt->GetIdVal())
+          {
+            skComp->m_animData.currentAnimation = animRecord->m_animation;
+            skComp->m_animData.blendAnimation   = animRecord->m_blendAnimation;
+            foundAnim                           = true;
+            break;
+          }
+        }
+      }
+      if (!foundAnim && skComp != nullptr)
+      {
+        skComp->m_animData.currentAnimation = nullptr;
+        skComp->m_animData.blendAnimation   = nullptr;
+      }
 
-      auto addRenderJobForMeshFn = [&materialMissing,
-                                    &matComp,
-                                    &matIndex,
-                                    &mc,
-                                    &ntt,
-                                    &jobArray,
-                                    &nttTransform,
-                                    overrideBBoxExists,
-                                    &overrideBBox,
-                                    castShadow](Mesh* mesh)
+      auto addRenderJobForMeshFn = [&](Mesh* mesh)
       {
         if (mesh)
         {
@@ -116,9 +131,13 @@ namespace ToolKit
           }
           TransformAABB(job.BoundingBox, job.WorldTransform);
 
+          if (job.BoundingBox.IsValid())
+          {
+            boundingVolume.UpdateBoundary(job.BoundingBox);
+          }
+
           job.ShadowCaster = castShadow;
           job.Mesh         = mesh;
-          job.SkeletonCmp  = job.Mesh->IsSkinned() ? ntt->GetComponent<SkeletonComponent>() : nullptr;
 
           // Look material component first, if we can not find a corresponding material in there, look inside mesh. If
           // still there is no corresponding material, give a warning to the user and use default material
@@ -143,18 +162,29 @@ namespace ToolKit
             materialMissing = true;
             job.Material    = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
           }
+          if (skComp != nullptr)
+          {
+            const AnimData& animData = skComp->GetAnimData();
+            job.animData             = animData; // copy
+          }
 
           jobArray.push_back(job);
         }
       };
 
-      static MeshRawPtrArray allMeshes;
+      MeshRawPtrArray allMeshes;
       parentMesh->GetAllMeshes(allMeshes);
       for (Mesh* mesh : allMeshes)
       {
-        addRenderJobForMeshFn(mesh);
+        if (mesh->GetVertexCount() != 0)
+        {
+          addRenderJobForMeshFn(mesh);
+        }
+        else
+        {
+          volatile int y = 5;
+        }
       }
-      allMeshes.clear();
 
       if (materialMissing)
       {
@@ -162,6 +192,8 @@ namespace ToolKit
                ntt->GetNameVal().c_str());
       }
     }
+
+    return boundingVolume;
   }
 
   void RenderJobProcessor::SeperateDeferredForward(const RenderJobArray& jobArray,
@@ -197,6 +229,9 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
+    std::unordered_map<ULongID, RenderJobArray> groupByMaterial;
+
+    // group by material.
     for (const RenderJob& job : jobArray)
     {
       if (job.Material->IsTranslucent())
@@ -205,25 +240,101 @@ namespace ToolKit
       }
       else
       {
-        opaque.push_back(job);
+        groupByMaterial[job.Material->GetIdVal()].push_back(job);
       }
+    }
+
+    std::unordered_map<ULongID, RenderJobArray> groupByMesh;
+
+    // group by mesh.
+    for (auto& entry : groupByMaterial)
+    {
+      RenderJobArray& jobArray = entry.second;
+      for (const RenderJob& job : jobArray)
+      {
+        groupByMesh[job.Mesh->GetIdVal()].push_back(job);
+      }
+    }
+
+    // Reserve space for the opaque vector.
+    opaque.reserve(jobArray.size() - translucent.size());
+
+    // flatten.
+    for (auto& entry : groupByMesh)
+    {
+      opaque.insert(opaque.end(),
+                    std::make_move_iterator(entry.second.begin()),
+                    std::make_move_iterator(entry.second.end()));
     }
   }
 
-  // An interval has start time and end time
   struct LightSortStruct
   {
     LightPtr light      = nullptr;
     uint intersectCount = 0;
   };
 
-  // Compares two intervals according to starting times.
   bool CompareLightIntersects(const LightSortStruct& i1, const LightSortStruct& i2)
   {
     return (i1.intersectCount > i2.intersectCount);
   }
 
-  void RenderJobProcessor::SortLights(const RenderJob& job, LightPtrArray& lights)
+  int RenderJobProcessor::SortLights(const RenderJob& job, LightPtrArray& lights, int startFromIndex)
+  {
+    std::vector<LightSortStruct> intersectCounts;
+    intersectCounts.resize(lights.size() - startFromIndex);
+    const BoundingBox& aabb = job.BoundingBox;
+
+    // CAVIATE
+    // This loop will move all light pointers to intersectCounts. Do not access lights afterwards.
+    for (uint lightIndx = startFromIndex; lightIndx < lights.size(); lightIndx++)
+    {
+      LightPtr light = std::move(lights[lightIndx]);
+      assert(light->IsA<SpotLight>() || light->IsA<PointLight>());
+
+      uint& curIntersectCount = intersectCounts[lightIndx - startFromIndex].intersectCount;
+
+      if (SpotLight* spot = light->As<SpotLight>())
+      {
+        // The shadow camera of light should be updated before accessing the frustum.
+        // RenderPath PreRender functions should do that.
+        if (FrustumBoxIntersection(spot->m_frustumCache, aabb) != IntersectResult::Outside)
+        {
+          curIntersectCount++;
+        }
+      }
+      else if (PointLight* point = light->As<PointLight>())
+      {
+        if (SphereBoxIntersection(point->m_boundingSphereCache, aabb))
+        {
+          curIntersectCount++;
+        }
+      }
+
+      intersectCounts[lightIndx - startFromIndex].light = std::move(light);
+    }
+
+    // Sort point & spot lights
+    std::sort(intersectCounts.begin(), intersectCounts.end(), CompareLightIntersects);
+
+    // CAVIATE
+    // This loop will move all lights back to ligts array in a sorted way based on importance.
+    int effectingLights = 0;
+    for (size_t i = 0; i < intersectCounts.size(); i++)
+    {
+      LightSortStruct& ls        = intersectCounts[i];
+      lights[i + startFromIndex] = std::move(ls.light);
+      if (ls.intersectCount > 0)
+      {
+        effectingLights++;
+      }
+    }
+
+    // All directional lights plus lights that intersect with job.
+    return effectingLights + startFromIndex;
+  }
+
+  int RenderJobProcessor::PreSortLights(LightPtrArray& lights)
   {
     // Get all directional lights to beginning first
     uint directionalLightEndIndex = 0;
@@ -242,92 +353,29 @@ namespace ToolKit
       }
     }
 
-    static std::vector<LightSortStruct> intersectCounts;
-    intersectCounts.clear();
-    intersectCounts.resize(lights.size() - directionalLightEndIndex);
-    BoundingBox aabb = job.Mesh->m_aabb;
-    TransformAABB(aabb, job.WorldTransform);
-
-    for (uint lightIndx = directionalLightEndIndex; lightIndx < lights.size(); lightIndx++)
-    {
-      float radius;
-      LightPtr light = lights[lightIndx];
-      if (PointLight* pLight = light->As<PointLight>())
-      {
-        radius = pLight->GetRadiusVal();
-      }
-      else if (SpotLight* sLight = light->As<SpotLight>())
-      {
-        radius = sLight->GetRadiusVal();
-      }
-      else
-      {
-        continue;
-      }
-
-      intersectCounts[lightIndx - directionalLightEndIndex].light = light;
-      uint& curIntersectCount = intersectCounts[lightIndx - directionalLightEndIndex].intersectCount;
-
-      /* This algorithms can be used for better sorting
-      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
-      {
-        for (uint isMin = 0; isMin < 2; isMin++)
-        {
-          Vec3 p     = aabb.min;
-          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
-          float dist = glm::length(
-              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
-          if (dist <= radius)
-          {
-            curIntersectCount++;
-          }
-        }
-      }*/
-
-      if (light->IsA<SpotLight>())
-      {
-        // The shadow camera of light should be updated before calling this function
-        // RenderPath PreRender functions should do that
-
-        Frustum spotFrustum = ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
-
-        if (FrustumBoxIntersection(spotFrustum, aabb) != IntersectResult::Outside)
-        {
-          curIntersectCount++;
-        }
-      }
-      if (light->IsA<PointLight>())
-      {
-        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
-        if (SphereBoxIntersection(lightSphere, aabb))
-        {
-          curIntersectCount++;
-        }
-      }
-    }
-
-    // Sort point & spot lights
-    std::sort(intersectCounts.begin(), intersectCounts.end(), CompareLightIntersects);
-
-    for (int i = 0; i < intersectCounts.size(); ++i)
-    {
-      lights[i + directionalLightEndIndex] = intersectCounts[i].light;
-    }
+    return directionalLightEndIndex;
   }
 
   LightPtrArray RenderJobProcessor::SortLights(EntityPtr entity, LightPtrArray& lights)
   {
     CPU_FUNC_RANGE();
 
+    for (LightPtr light : lights)
+    {
+      light->UpdateShadowCamera();
+    }
+
     RenderJobArray jobs;
     EntityPtrArray oneEntity = {entity};
     CreateRenderJobs(oneEntity, jobs);
 
+    int startIndex = PreSortLights(lights);
+
     LightPtrArray allLights;
     for (RenderJob& rj : jobs)
     {
-      SortLights(rj, lights);
-      allLights.insert(allLights.end(), lights.begin(), lights.end());
+      int effectiveLights = SortLights(rj, lights, startIndex);
+      allLights.insert(allLights.end(), lights.begin(), lights.begin() + effectiveLights);
     }
 
     return allLights;
@@ -337,20 +385,16 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    std::function<bool(const RenderJob&, const RenderJob&)> sortFn = [cam](const RenderJob& j1,
-                                                                           const RenderJob& j2) -> bool
+    Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+
+    std::function<bool(const RenderJob&, const RenderJob&)> sortFn = [&camLoc](const RenderJob& j1,
+                                                                               const RenderJob& j2) -> bool
     {
-      Vec3 camLoc     = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      const BoundingBox& bb1 = j1.BoundingBox;
+      const BoundingBox& bb2 = j2.BoundingBox;
 
-      // TODO: Cihan cache calculated world boxes.
-      BoundingBox bb1 = j1.Mesh->m_aabb;
-      TransformAABB(bb1, j1.WorldTransform);
-
-      BoundingBox bb2 = j2.Mesh->m_aabb;
-      TransformAABB(bb2, j2.WorldTransform);
-
-      float first  = glm::length2(bb1.GetCenter() - camLoc);
-      float second = glm::length2(bb2.GetCenter() - camLoc);
+      float first            = glm::length2(bb1.GetCenter() - camLoc);
+      float second           = glm::length2(bb2.GetCenter() - camLoc);
 
       return second < first;
     };

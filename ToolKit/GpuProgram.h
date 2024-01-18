@@ -1,5 +1,4 @@
 /*
-/*
  * Copyright (c) 2019-2024 OtSofware
  * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
  * For more information, including options for a more permissive commercial license,
@@ -9,6 +8,7 @@
 #pragma once
 
 #include "Shader.h"
+#include "ShaderUniform.h"
 #include "Types.h"
 
 namespace ToolKit
@@ -16,7 +16,7 @@ namespace ToolKit
 
   /**
    * Class that holds programs for the gpu's programmable pipeline stages. A program consists of
-   * shaders for stages. Vertex and Fragmant stages are supported.
+   * shaders for stages. Vertex and Fragment stages are supported.
    */
   class TK_API GpuProgram
   {
@@ -31,53 +31,64 @@ namespace ToolKit
      * If caller gives index (different than -1), this function tries to get uniform location as array.
      * Returns -1 if the uniform location is not registered.
      */
-    inline int GetUniformLocation(Uniform uniform, int index = -1)
-    {
-      if (index == -1)
-      {
-        if (m_uniformLocations.find(uniform) != m_uniformLocations.end())
-        {
-          return m_uniformLocations[uniform];
-        }
-        else
-        {
-          return -1;
-        }
-      }
-      else
-      {
-        // Uniform is an array
-        if (m_arrayUniformLocations.find(uniform) != m_arrayUniformLocations.end())
-        {
-          std::vector<int>& locs = m_arrayUniformLocations[uniform];
-          if (locs.size() > index)
-          {
-            return locs[index];
-          }
-        }
+    int GetUniformLocation(Uniform uniform, int index = -1) const;
 
-        return -1;
-      }
-    }
-
+    /**
+     * Try to retrieve uniform location in the program. If its not in the cache, gets it via graphic api and cache its
+     * location.
+     * @param uniformName is the name that can be found in the shader.
+     * @return location of the uniform in the program.
+     */
     int GetShaderParamUniformLoc(const String& uniformName);
+
+    /**
+     * Compares the given uniform with the cached uniforms for this program. If the value needs update, function return
+     * true to indicate that value needs to be updated.
+     * @param uniform that needs to be checked for update.
+     * @return true if an update is needed.
+     */
+    bool UpdateUniform(const ShaderUniform& uniform);
 
    public:
     uint m_handle = 0;
-    String m_tag;
     ShaderPtrArray m_shaders;
+    MaterialWeakPtr m_activeMaterial;
 
    private:
     std::unordered_map<Uniform, int> m_uniformLocations;
-    std::unordered_map<Uniform, std::vector<int>> m_arrayUniformLocations;
+    std::unordered_map<Uniform, IntArray> m_arrayUniformLocations;
     std::unordered_map<String, int> m_shaderParamsUniformLocations;
+    std::unordered_map<String, ShaderUniform> m_customUniforms;
   };
+
+  constexpr int TKGpuPipelineStages = 2; //!< Number of programmable pipeline stages.
 
   /**
    * Class that generates the programs from the given shaders and maintains the generated programs.
    */
   class TK_API GpuProgramManager
   {
+   private:
+    /**
+     * Utility class that hash an array of ULongIDs. Purpose of this class is to provide a hash generator from the
+     * shader ids that is used in the program. This hash value will be identifying the program.
+     */
+    struct IDArrayHash
+    {
+      std::size_t operator()(const std::array<ULongID, TKGpuPipelineStages>& data) const
+      {
+        std::size_t hashValue = 0;
+
+        for (const auto& element : data)
+        {
+          // Combine the hash value with the hash of each element
+          hashValue ^= std::hash<ULongID>()(element) + 0x9e3779b9 + (hashValue << 6) + (hashValue >> 2);
+        }
+
+        return hashValue;
+      }
+    };
+
    public:
     /**
      * Creates a gpu program that can be binded to renderer to render the objects with.
@@ -88,15 +99,10 @@ namespace ToolKit
 
     /**
      * Clears all the created programs, effectively forcing renderer to recreate the programs at next run.
-     * Intendent usage is to clear all the programs develop by additional modules to prevent memory issues
+     * Intended usage is to clear all the programs develop by additional modules to prevent memory issues
      * when the modules are destroyed but the editor still running.
      */
     void FlushPrograms();
-
-    /**
-     * Creates a tag for the given shaders. This can be used query existing programs for given shader combination.
-     */
-    String GenerateTag(int vertexShaderId, int fragmentShaderId);
 
    private:
     /**
@@ -106,9 +112,9 @@ namespace ToolKit
 
    private:
     /**
-     * Associative array that holds all the programs. Programs are constructed by concatanating their ids together.
-     * So this prevents creating same program for the given shaders if one already exist.
+     * Associative array that holds all the programs.
      */
-    std::unordered_map<String, GpuProgramPtr> m_programs;
+    std::unordered_map<std::array<ULongID, TKGpuPipelineStages>, GpuProgramPtr, IDArrayHash> m_programs;
   };
+
 } // namespace ToolKit

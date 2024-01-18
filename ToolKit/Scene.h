@@ -121,7 +121,7 @@ namespace ToolKit
      *
      * @return A PickData struct containing the result of the picking operation.
      */
-    virtual PickData PickObject(Ray ray, const EntityIdArray& ignoreList = {}, const EntityPtrArray& extraList = {});
+    virtual PickData PickObject(Ray ray, const IDArray& ignoreList = {}, const EntityPtrArray& extraList = {});
 
     /**
      * Performs a frustum culling operation on the scene to find all objects
@@ -139,7 +139,7 @@ namespace ToolKit
      */
     virtual void PickObject(const Frustum& frustum,
                             PickDataArray& pickedObjects,
-                            const EntityIdArray& ignoreList = {},
+                            const IDArray& ignoreList       = {},
                             const EntityPtrArray& extraList = {},
                             bool pickPartiallyInside        = true);
 
@@ -158,7 +158,13 @@ namespace ToolKit
      * @param entity The entity to add.
      */
     virtual void AddEntity(EntityPtr entity);
-    EntityPtrArray& AccessEntityArray(); //!< Mutable Entity array access.
+
+    /**
+     * Allow access and modification to underlying entity array. Care must be taken when modifying the array.
+     * Its generally okay to reorder entities but for removing and adding new entities consider appropriate functions.
+     * @retruns Mutable entity array for the scene.
+     */
+    EntityPtrArray& AccessEntityArray();
 
     /**
      * Gets all the entities in the scene.
@@ -302,6 +308,13 @@ namespace ToolKit
      * @param removed The entity whose children will be removed.
      */
     void RemoveChildren(EntityPtr removed);
+
+   public:
+    /**
+     * A volume that covers all the entities in the scene.
+     * Its calculated during rendering. Its only valid after scene render.
+     */
+    BoundingBox m_boundingBox;
 
    protected:
     EntityPtrArray m_entities; //!< The entities in the scene.

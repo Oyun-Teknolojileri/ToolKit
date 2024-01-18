@@ -72,7 +72,7 @@ namespace ToolKit
 
     if (m_metallicRoughnessTexture)
     {
-      if (m_metallicRoughnessTexture->GetTextureSettings().MinFilter != GraphicTypes::SampleNearest)
+      if (m_metallicRoughnessTexture->Settings().MinFilter != GraphicTypes::SampleNearest)
       {
         m_metallicRoughnessTexture->UnInit();
         m_metallicRoughnessTexture->Load();
@@ -82,7 +82,7 @@ namespace ToolKit
         set.MinFilter      = GraphicTypes::SampleNearest;
         set.Type           = GraphicTypes::TypeUnsignedByte;
         set.GenerateMipMap = false;
-        m_metallicRoughnessTexture->SetTextureSettings(set);
+        m_metallicRoughnessTexture->Settings(set);
       }
 
       m_metallicRoughnessTexture->Init(flushClientSideArray);
@@ -90,7 +90,7 @@ namespace ToolKit
 
     if (m_normalMap)
     {
-      if (m_normalMap->GetTextureSettings().MinFilter != GraphicTypes::SampleNearest)
+      if (m_normalMap->Settings().MinFilter != GraphicTypes::SampleNearest)
       {
         m_normalMap->UnInit();
         m_normalMap->Load();
@@ -100,7 +100,7 @@ namespace ToolKit
         set.MinFilter      = GraphicTypes::SampleNearest;
         set.Type           = GraphicTypes::TypeUnsignedByte;
         set.GenerateMipMap = false;
-        m_normalMap->SetTextureSettings(set);
+        m_normalMap->Settings(set);
       }
 
       m_normalMap->Init(flushClientSideArray);

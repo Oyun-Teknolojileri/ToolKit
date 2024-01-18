@@ -11,6 +11,7 @@
 #include "FileManager.h"
 #include "Material.h"
 #include "MathUtil.h"
+#include "RHI.h"
 #include "ResourceManager.h"
 #include "Skeleton.h"
 #include "TKOpenGL.h"
@@ -147,6 +148,7 @@ namespace ToolKit
       GLuint buffers[2] = {m_vboIndexId, m_vboVertexId};
       glDeleteBuffers(2, buffers);
       glDeleteVertexArrays(1, &m_vaoId);
+      RHI::BindVertexArray(0); // Of the deleted vao is set, remove it from RHI cache
     }
     m_vboVertexId = 0;
     m_vboIndexId  = 0;
@@ -188,7 +190,7 @@ namespace ToolKit
     if (m_vertexCount > 0)
     {
       glGenVertexArrays(1, &cpy->m_vaoId);
-      glBindVertexArray(cpy->m_vaoId);
+      RHI::BindVertexArray(cpy->m_vaoId);
 
       glGenBuffers(1, &cpy->m_vboVertexId);
       glBindBuffer(GL_COPY_WRITE_BUFFER, cpy->m_vboVertexId);
@@ -202,6 +204,10 @@ namespace ToolKit
 
     if (m_indexCount > 0)
     {
+      assert(m_vertexCount > 0 && "Mesh has no vertex but has indices.");
+
+      RHI::BindVertexArray(cpy->m_vaoId);
+
       glGenBuffers(1, &cpy->m_vboIndexId);
       glBindBuffer(GL_COPY_WRITE_BUFFER, cpy->m_vboIndexId);
       glBindBuffer(GL_COPY_READ_BUFFER, m_vboIndexId);
@@ -224,38 +230,44 @@ namespace ToolKit
 
   int Mesh::GetVertexSize() const { return sizeof(Vertex); }
 
+  uint Mesh::GetVertexCount() const { return (uint) m_clientSideVertices.size(); }
+
   bool Mesh::IsSkinned() const { return false; }
 
   void Mesh::CalculateAABB()
   {
     // Construct aabb of all submeshes.
-    TraverseAllMesh(
-        [this](Mesh* mesh) -> void
-        {
-          mesh->m_aabb = BoundingBox();
-          for (size_t j = 0; j < mesh->m_clientSideVertices.size(); j++)
-          {
-            Vertex& v = mesh->m_clientSideVertices[j];
-            mesh->m_aabb.UpdateBoundary(v.pos);
-          }
+    MeshRawPtrArray meshes;
+    GetAllMeshes(meshes);
 
-          // Update this aabb to contain submesh aabb.
-          if (!mesh->m_clientSideVertices.empty())
-          {
-            m_aabb.UpdateBoundary(mesh->m_aabb);
-          }
-        });
+    BoundingBox aabb;
+    for (Mesh* mesh : meshes)
+    {
+      for (size_t i = 0; i < mesh->m_clientSideVertices.size(); i++)
+      {
+        Vertex& v = mesh->m_clientSideVertices[i];
+        aabb.UpdateBoundary(v.pos);
+      }
+    }
+    m_aabb = aabb;
   }
 
-  void Mesh::GetAllMeshes(MeshRawPtrArray& meshes)
+  void GetAllMeshHelper(const Mesh* mesh, MeshRawPtrArray& meshes)
   {
-    TraverseAllMesh([&meshes](Mesh* mesh) -> void { meshes.push_back(mesh); });
+    if (mesh == nullptr)
+    {
+      return;
+    }
+
+    meshes.push_back(const_cast<Mesh*>(mesh));
+
+    for (MeshPtr subMesh : mesh->m_subMeshes)
+    {
+      GetAllMeshHelper(subMesh.get(), meshes);
+    }
   }
 
-  void Mesh::GetAllMeshes(MeshRawCPtrArray& meshes) const
-  {
-    TraverseAllMesh([&meshes](const Mesh* mesh) -> void { meshes.push_back(mesh); });
-  }
+  void Mesh::GetAllMeshes(MeshRawPtrArray& meshes) const { GetAllMeshHelper(this, meshes); }
 
   template <typename T>
   void ConstructFacesT(T* mesh)
@@ -514,9 +526,10 @@ namespace ToolKit
     XmlNode* container = CreateXmlNode(doc, "meshContainer", parent);
 
     // This approach will flatten the mesh on a single sibling level.
-    // To keep the depth hierarch, recursive save is needed.
-    MeshRawCPtrArray cMeshes;
+    // To keep the depth hierarchy, recursive save is needed.
+    MeshRawPtrArray cMeshes;
     GetAllMeshes(cMeshes);
+
     for (const Mesh* m : cMeshes)
     {
       if (m->IsSkinned())
@@ -538,32 +551,6 @@ namespace ToolKit
     return nullptr;
   }
 
-  void TraverseMeshHelper(const Mesh* mesh, std::function<void(const Mesh*)> callback)
-  {
-    if (callback == nullptr)
-    {
-      return;
-    }
-
-    callback(mesh);
-
-    for (MeshPtr subMesh : mesh->m_subMeshes)
-    {
-      TraverseMeshHelper(subMesh.get(), callback);
-    }
-  }
-
-  void Mesh::TraverseAllMesh(std::function<void(Mesh*)> callback, Mesh* mesh)
-  {
-    TraverseMeshHelper(mesh == nullptr ? this : mesh,
-                       [callback](const Mesh* mesh) { callback(const_cast<Mesh*>(mesh)); });
-  }
-
-  void Mesh::TraverseAllMesh(std::function<void(const Mesh*)> callback, const Mesh* mesh) const
-  {
-    TraverseMeshHelper(mesh == nullptr ? this : mesh, callback);
-  }
-
   void Mesh::InitVertices(bool flush)
   {
     if (m_vboVertexId != 0)
@@ -573,24 +560,25 @@ namespace ToolKit
 
     glDeleteBuffers(1, &m_vboVertexId);
     glDeleteVertexArrays(1, &m_vaoId);
+    RHI::BindVertexArray(0); // Of the deleted vao is set, remove it from RHI cache
 
     if (!m_clientSideVertices.empty())
     {
       glGenVertexArrays(1, &m_vaoId);
-      glBindVertexArray(m_vaoId);
+      RHI::BindVertexArray(m_vaoId);
 
       glGenBuffers(1, &m_vboVertexId);
       glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
+
       glBufferData(GL_ARRAY_BUFFER,
                    GetVertexSize() * m_clientSideVertices.size(),
                    m_clientSideVertices.data(),
                    GL_STATIC_DRAW);
-      m_vertexCount = (uint) m_clientSideVertices.size();
-
-      AddVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
     }
 
     m_vertexCount = (uint) m_clientSideVertices.size();
+    AddVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
+
     if (flush)
     {
       m_clientSideVertices.clear();
@@ -608,6 +596,10 @@ namespace ToolKit
 
     if (!m_clientSideIndices.empty())
     {
+      assert(m_vaoId != 0 && "Mesh has not yet created vertex array object!");
+
+      RHI::BindVertexArray(m_vaoId);
+
       glGenBuffers(1, &m_vboIndexId);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vboIndexId);
       glBufferData(GL_ELEMENT_ARRAY_BUFFER,
@@ -691,6 +683,11 @@ namespace ToolKit
 
   BoundingBox SkinMesh::CalculateAABB(const Skeleton* skel, DynamicBoneMapPtr boneMap)
   {
+    if (m_bindPoseAABBCalculated)
+    {
+      return m_bindPoseAABB;
+    }
+
     BoundingBox finalAABB;
     MeshRawPtrArray meshes;
     GetAllMeshes(meshes);
@@ -721,7 +718,7 @@ namespace ToolKit
                                   m->m_clientSideVertices.end(),
                                   [skel, boneMap, &meshAABBLocker, &meshAABB](SkinVertex& v)
                                   {
-                                    Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap);
+                                    Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap, false);
                                     std::lock_guard<std::mutex> guard(meshAABBLocker);
                                     meshAABB.UpdateBoundary(skinnedPos);
                                   });
@@ -738,7 +735,7 @@ namespace ToolKit
 
       for (SkinVertex v : m->m_clientSideVertices)
       {
-        const Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap);
+        const Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap, false);
         meshAABB.UpdateBoundary(skinnedPos);
       }
     }
@@ -749,8 +746,13 @@ namespace ToolKit
       finalAABB.UpdateBoundary(aabb.min);
     }
 
+    m_bindPoseAABBCalculated = true;
+    m_bindPoseAABB           = finalAABB;
+
     return finalAABB;
   }
+
+  uint SkinMesh::GetVertexCount() const { return (uint) m_clientSideVertices.size(); }
 
   int SkinMesh::GetVertexSize() const { return sizeof(SkinVertex); }
 
@@ -760,11 +762,12 @@ namespace ToolKit
   {
     glDeleteBuffers(1, &m_vboIndexId);
     glDeleteVertexArrays(1, &m_vaoId);
+    RHI::BindVertexArray(0); // Of the deleted vao is set, remove it from RHI cache
 
     if (!m_clientSideVertices.empty())
     {
       glGenVertexArrays(1, &m_vaoId);
-      glBindVertexArray(m_vaoId);
+      RHI::BindVertexArray(m_vaoId);
 
       glGenBuffers(1, &m_vboVertexId);
       glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);

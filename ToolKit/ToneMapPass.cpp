@@ -32,7 +32,8 @@ namespace ToolKit
 
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
-    m_postProcessShader->SetShaderParameter("UseAcesTonemapper", ParameterVariant((uint) m_params.Method));
+
+    m_postProcessShader->UpdateShaderUniform("UseAcesTonemapper", (uint) m_params.Method);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

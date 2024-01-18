@@ -59,9 +59,14 @@ namespace ToolKit
       drawList->AddLine(ImVec2(rectMin.x, bottom), ImVec2(rectMin.x + 5.0f, bottom), color);
     }
 
-    // returns total drawed nodes
+    // returns total drawn nodes
     int OutlinerWindow::ShowNode(EntityPtr ntt, int depth)
     {
+      if (ntt == nullptr)
+      {
+        return 1;
+      }
+
       // if searching mode is on and entity or its parents are not shown return.
       if (m_stringSearchMode == true)
       {

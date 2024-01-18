@@ -34,31 +34,41 @@ namespace ToolKit
     void SetRenderer(Renderer* renderer);
 
    protected:
-    MaterialPtr m_prevOverrideMaterial = nullptr;
-    FramebufferPtr m_prevFrameBuffer   = nullptr;
+    FramebufferPtr m_prevFrameBuffer = nullptr;
 
    private:
     Renderer* m_renderer = nullptr;
   };
 
+  /**
+   * This struct holds all the data required to make a drawcall.
+   */
   struct RenderJob
   {
-    EntityPtr Entity                          = nullptr;
-    Mesh* Mesh                                = nullptr;
-    SkeletonComponentPtr SkeletonCmp          = nullptr;
-    MaterialPtr Material                      = nullptr;
-    EnvironmentComponentPtr EnvironmentVolume = nullptr;
-    bool ShadowCaster                         = true;
-    BoundingBox BoundingBox;
-    Mat4 WorldTransform;
+    EntityPtr Entity                          = nullptr; //!< Entity that this job is created from.
+    Mesh* Mesh                                = nullptr; //!< Mesh to render.
+    MaterialPtr Material                      = nullptr; //!< Material to render job with.
+    EnvironmentComponentPtr EnvironmentVolume = nullptr; //!< EnvironmentVolume effecting this entity, if any.
+    bool ShadowCaster                         = true;    //!< Account in shadow map construction.
+    BoundingBox BoundingBox;                             //!< World space bounding box.
+    Mat4 WorldTransform;                                 //!< World transform of the entity.
+    AnimData animData;                                   //!< Animation data of render job
   };
 
   class TK_API RenderJobProcessor
   {
    public:
-    static void CreateRenderJobs(const EntityPtrArray& entities,
-                                 RenderJobArray& jobArray,
-                                 bool ignoreVisibility = false);
+    /**
+     * Constructs all render jobs from entities. Also constructs the bounding volume that covers all entities.
+     * Good candidate to use as shadow boundary.
+     * @param entities are the entities to construct render jobs for.
+     * @param jobArray is the array of constructed jobs.
+     * @param ingnoreVisibility when set true, construct jobs for objects that has visibility set to false.
+     * @return BoundingBox for jobs.
+     */
+    static BoundingBox CreateRenderJobs(const EntityPtrArray& entities,
+                                        RenderJobArray& jobArray,
+                                        bool ignoreVisibility = false);
 
     static void SeperateDeferredForward(const RenderJobArray& jobArray,
                                         RenderJobArray& deferred,
@@ -73,8 +83,17 @@ namespace ToolKit
      * Utility function that sorts lights according to lit conditions from
      * best to worst. Make sure lights array has updated shadow camera. Shadow
      * camera is used in culling calculations.
+     * @returns Number of lights effecting the job. From index 0 to return number contains effective lights in the
+     * sorted array.
      */
-    static void SortLights(const RenderJob& job, LightPtrArray& lights);
+    static int SortLights(const RenderJob& job, LightPtrArray& lights, int startFromIndex = 0);
+
+    /**
+     * Makes sure that first elements are directional lights.
+     * @param lights are the lights to sort.
+     * @returns The index where the non directional lights starts.
+     */
+    static int PreSortLights(LightPtrArray& lights);
 
     static LightPtrArray SortLights(EntityPtr entity, LightPtrArray& lights);
 

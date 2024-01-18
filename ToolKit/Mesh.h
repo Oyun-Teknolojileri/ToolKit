@@ -44,28 +44,14 @@ namespace ToolKit
     void Load() override;
     void Save(bool onlyIfDirty) override;
     virtual int GetVertexSize() const;
+    virtual uint GetVertexCount() const;
     virtual bool IsSkinned() const;
     void CalculateAABB();
-    void GetAllMeshes(MeshRawPtrArray& meshes);
-    void GetAllMeshes(MeshRawCPtrArray& meshes) const;
+    void GetAllMeshes(MeshRawPtrArray& meshes) const;
     void ConstructFaces();
     void ApplyTransform(const Mat4& transform);
 
     void SetMaterial(MaterialPtr material);
-
-    /**
-     * Traverse all submeshes recursively.
-     * @param callback is the function to call on each mesh.
-     * @param mesh is this or submesh. Pass null to start iteration from this
-     * mesh.
-     */
-    void TraverseAllMesh(std::function<void(Mesh*)> callback, Mesh* mesh = nullptr);
-
-    /**
-     * Const traverse all submeshes recursively. Refer TraverseAllMesh for
-     * details.
-     */
-    void TraverseAllMesh(std::function<void(const Mesh*)> callback, const Mesh* mesh = nullptr) const;
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
@@ -113,6 +99,7 @@ namespace ToolKit
     void UnInit() override;
     void Load() override;
 
+    uint GetVertexCount() const override;
     int GetVertexSize() const override;
     bool IsSkinned() const override;
 
@@ -129,6 +116,8 @@ namespace ToolKit
    public:
     std::vector<SkinVertex> m_clientSideVertices;
     SkeletonPtr m_skeleton;
+    bool m_bindPoseAABBCalculated = false;
+    BoundingBox m_bindPoseAABB;
   };
 
   class TK_API MeshManager : public ResourceManager
@@ -140,5 +129,4 @@ namespace ToolKit
     String GetDefaultResource(ClassMeta* Class) override;
   };
 
-  void SetVertexLayout(VertexLayout layout);
 } // namespace ToolKit

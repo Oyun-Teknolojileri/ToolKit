@@ -18,30 +18,6 @@
 namespace ToolKit
 {
 
-  /**
-   * Simple binary stencil test operations.
-   */
-  enum class StencilOperation
-  {
-    /**
-     * Stencil write and operations are disabled.
-     */
-    None,
-    /**
-     * All pixels are drawn and stencil value of the corresponding pixel set
-     * to 1.
-     */
-    AllowAllPixels,
-    /**
-     * Pixels whose stencil value is 1 are drawn.
-     */
-    AllowPixelsPassingStencil,
-    /**
-     * Pixels whose stencil value is 0 are drawn.
-     */
-    AllowPixelsFailingStencil
-  };
-
   class TK_API Renderer
   {
    public:
@@ -77,11 +53,11 @@ namespace ToolKit
 
     void SetTexture(ubyte slotIndx, uint textureId);
 
-    CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture, uint width, uint height, float exposure = 1.0f);
+    CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture, uint size, float exposure = 1.0f);
 
-    CubeMapPtr GenerateSpecularEnvMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps);
+    CubeMapPtr GenerateSpecularEnvMap(CubeMapPtr cubemap, uint size, int mipMaps);
 
-    CubeMapPtr GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint width, uint height);
+    CubeMapPtr GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint size);
 
     void CopyTexture(TexturePtr source, TexturePtr dest);
 
@@ -101,10 +77,6 @@ namespace ToolKit
     // Giving nullptr as argument means no shadows
     void SetShadowAtlas(TexturePtr shadowAtlas);
 
-    // TODO: Should be private or within a Pass.
-    /////////////////////
-    // Left public for thumbnail rendering. TODO: there must be techniques
-    // handling thumbnail render.
     void Render(const struct RenderJob& job, CameraPtr cam, const LightPtrArray& lights = {});
 
     void Render(const RenderJobArray& jobArray, CameraPtr cam, const LightPtrArray& lights = {});
@@ -116,19 +88,26 @@ namespace ToolKit
     void GenerateBRDFLutTexture();
 
     /**
-     * Just before the render, set the lens to fit aspect ratio to frame buffer.
+     * Sets the camera to be used for rendering. Also calculates camera related parameters, such as view, transform,
+     * viewTransform etc...
+     * if setLense is true sets the lens to fit aspect ratio to frame buffer.
+     * Invalidates gpu program's related caches.
      */
-    void SetCameraLens(CameraPtr cam);
-    /////////////////////
+    void SetCamera(CameraPtr camera, bool setLens);
+
+    /**
+     * Sets the lights that will be used during rendering.
+     * Invalidates gpu program's related caches.
+     */
+    void SetLights(const LightPtrArray& lights);
 
     int GetMaxArrayTextureLayers();
 
     void ResetTextureSlots();
 
    private:
-    void SetProjectViewModel(const Mat4& model, CameraPtr cam);
     void BindProgram(GpuProgramPtr program);
-    void FeedUniforms(GpuProgramPtr program);
+    void FeedUniforms(GpuProgramPtr program, const RenderJob& renderJob);
     void FeedLightUniforms(GpuProgramPtr program);
 
    public:
@@ -140,6 +119,12 @@ namespace ToolKit
     SkyBasePtr m_sky          = nullptr;
     GpuProgramManager m_gpuProgramManager;
 
+    // The set contains gpuPrograms that has up to date camera uniforms.
+    std::unordered_set<uint> m_gpuProgramHasCameraUpdates;
+
+    // The set contains gpuPrograms that has up to date per frame uniforms.
+    std::unordered_set<uint> m_gpuProgramHasFrameUpdates;
+
     bool m_renderOnlyLighting = false;
 
     struct RHIConstants
@@ -148,25 +133,32 @@ namespace ToolKit
       static constexpr ubyte MaxLightsPerObject    = 16;
       static constexpr uint ShadowAtlasSlot        = 8;
       static constexpr uint ShadowAtlasTextureSize = 2048;
-      static constexpr uint SpecularIBLLods        = 5;
+      static constexpr uint SpecularIBLLods        = 7;
       static constexpr uint BrdfLutTextureSize     = 512;
       static constexpr float ShadowBiasMultiplier  = 0.0001f;
     };
 
    private:
     uint m_currentProgram = 0;
+
+    // Camera data.
+    CameraPtr m_cam       = nullptr;
     Mat4 m_project;
     Mat4 m_view;
+    Mat4 m_projectView;
+    Mat4 m_projectViewNoTranslate;
+    Vec3 m_camPos;
+    Vec3 m_camDirection;
+    float m_camFar = 0.1f;
+
     Mat4 m_model;
     Mat4 m_iblRotation;
     LightPtrArray m_lights;
-    CameraPtr m_cam              = nullptr;
     MaterialPtr m_mat            = nullptr;
-    MaterialPtr m_aoMat          = nullptr;
     FramebufferPtr m_framebuffer = nullptr;
     TexturePtr m_shadowAtlas     = nullptr;
 
-    uint m_textureSlots[RHIConstants::TextureSlotCount];
+    int m_textureSlots[RHIConstants::TextureSlotCount];
 
     RenderState m_renderState;
 

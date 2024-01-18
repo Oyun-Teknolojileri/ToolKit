@@ -42,6 +42,9 @@ namespace ToolKit
 
     ConstructSkyMaterial(vert, frag);
 
+    m_frameBuffer = MakeNewPtr<Framebuffer>();
+    m_frameBuffer->Init({0, 0, false, false});
+
     RenderTask task {[this](Renderer* renderer) -> void
                      {
                        if (m_initialized)
@@ -55,6 +58,9 @@ namespace ToolKit
                        // Create irradiance map from cubemap and set
                        GenerateIrradianceCubemap(renderer);
 
+                       renderer->SetFramebuffer(nullptr, GraphicBitFields::None);
+                       m_frameBuffer    = nullptr;
+
                        m_initialized    = true;
                        m_waitingForInit = false;
                      }};
@@ -67,13 +73,10 @@ namespace ToolKit
   {
     Init();
 
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("topColor", ParameterVariant(GetTopColorVal()));
-
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("middleColor", ParameterVariant(GetMiddleColorVal()));
-
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("bottomColor", ParameterVariant(GetBottomColorVal()));
-
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("exponent", ParameterVariant(GetGradientExponentVal()));
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("topColor", GetTopColorVal());
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("middleColor", GetMiddleColorVal());
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("bottomColor", GetBottomColorVal());
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("exponent", GetGradientExponentVal());
 
     return m_skyboxMaterial;
   }
@@ -87,8 +90,6 @@ namespace ToolKit
     BottomColor_Define(Vec3(0.5f, 0.3f, 0.1f), "Sky", 90, true, true, {true});
     GradientExponent_Define(0.3f, "Sky", 90, true, true, {false, true, 0.0f, 10.0f, 0.02f});
 
-    IrradianceResolution_Define(64.0f, "Sky", 90, true, true, {false, true, 32.0f, 2048.0f, 2.0f});
-
     SetNameVal("Gradient Sky");
   }
 
@@ -96,33 +97,27 @@ namespace ToolKit
 
   void GradientSky::GenerateGradientCubemap(Renderer* renderer)
   {
-    FramebufferPtr fb = MakeNewPtr<Framebuffer>();
-    fb->Init({m_size, m_size, false, true});
+    const TextureSettings set = {GraphicTypes::TargetCubeMap,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::UVClampToEdge,
+                                 GraphicTypes::SampleNearest,
+                                 GraphicTypes::SampleNearest,
+                                 GraphicTypes::FormatRGBA16F,
+                                 GraphicTypes::FormatRGBA,
+                                 GraphicTypes::TypeFloat,
+                                 1,
+                                 false};
 
-    const RenderTargetSettigs set = {0,
-                                     GraphicTypes::TargetCubeMap,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::SampleLinear,
-                                     GraphicTypes::SampleLinear,
-                                     GraphicTypes::FormatRGB,
-                                     GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte};
-
-    RenderTargetPtr cubemap       = MakeNewPtr<RenderTarget>(m_size, m_size, set);
+    uint size                 = (uint) GetIBLTextureSizeVal().GetValue<int>();
+    RenderTargetPtr cubemap   = MakeNewPtr<RenderTarget>(size, size, set);
     cubemap->Init();
 
     // Create material
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("topColor", ParameterVariant(GetTopColorVal()));
-
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("middleColor", ParameterVariant(GetMiddleColorVal()));
-
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("bottomColor", ParameterVariant(GetBottomColorVal()));
-
-    m_skyboxMaterial->m_fragmentShader->SetShaderParameter("exponent", ParameterVariant(GetGradientExponentVal()));
-
-    renderer->EnableDepthTest(false);
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("topColor", GetTopColorVal());
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("middleColor", GetMiddleColorVal());
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("bottomColor", GetBottomColorVal());
+    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("exponent", GetGradientExponentVal());
 
     // Views for 6 different angles
     CameraPtr cam = MakeNewPtr<Camera>();
@@ -146,51 +141,35 @@ namespace ToolKit
       cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam->m_node->SetScale(sca);
 
-      fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, cubemap, 0, -1, (Framebuffer::CubemapFace) i);
+      m_frameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                        cubemap,
+                                        0,
+                                        -1,
+                                        (Framebuffer::CubemapFace) i);
       if (i > 0)
       {
         AddHWRenderPass();
       }
 
-      renderer->SetFramebuffer(fb, GraphicBitFields::AllBits);
+      renderer->SetFramebuffer(m_frameBuffer, GraphicBitFields::None);
       renderer->DrawCube(cam, m_skyboxMaterial);
     }
 
-    renderer->EnableDepthTest(true);
-
-    // Take the ownership of render target.
-    CubeMapPtr hdriCubeMap = MakeNewPtr<CubeMap>();
-    GetHdri()->m_cubemap   = hdriCubeMap;
-
-    TextureSettings textureSettings;
-    textureSettings.GenerateMipMap  = false;
-    textureSettings.InternalFormat  = cubemap->m_settings.InternalFormat;
-    textureSettings.MinFilter       = cubemap->m_settings.MinFilter;
-    textureSettings.MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
-    textureSettings.Target          = GraphicTypes::TargetCubeMap;
-    textureSettings.Type            = GraphicTypes::TypeFloat;
-
-    hdriCubeMap->m_textureId        = cubemap->m_textureId;
-    hdriCubeMap->m_width            = cubemap->m_width;
-    hdriCubeMap->m_height           = cubemap->m_height;
-    hdriCubeMap->m_initiated        = true;
-    hdriCubeMap->SetTextureSettings(textureSettings);
-
-    cubemap->m_initiated = false;
-    cubemap->m_textureId = 0;
-    cubemap              = nullptr;
+    CubeMapPtr newCubemap = MakeNewPtr<CubeMap>();
+    newCubemap->Consume(cubemap);
+    GetHdri()->m_cubemap = newCubemap;
   }
 
   void GradientSky::GenerateIrradianceCubemap(Renderer* renderer)
   {
-
     HdriPtr hdr          = GetHdri();
-    uint irRes           = (uint) GetIrradianceResolutionVal();
+    uint size            = (uint) GetIBLTextureSizeVal().GetValue<int>();
 
-    hdr->m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(hdr->m_cubemap, irRes, irRes);
+    // hdr->m_diffuseEnvMap = hdr->m_cubemap;
+    hdr->m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(hdr->m_cubemap, size);
 
     hdr->m_specularEnvMap =
-        renderer->GenerateSpecularEnvMap(hdr->m_cubemap, irRes, irRes, Renderer::RHIConstants::SpecularIBLLods);
+        renderer->GenerateSpecularEnvMap(hdr->m_cubemap, size, Renderer::RHIConstants::SpecularIBLLods);
   }
 
   XmlNode* GradientSky::SerializeImp(XmlDocument* doc, XmlNode* parent) const

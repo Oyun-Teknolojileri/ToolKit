@@ -12,8 +12,10 @@
 #include "FullQuadPass.h"
 #include "Logger.h"
 #include "Material.h"
+#include "RHI.h"
 #include "RenderSystem.h"
 #include "Shader.h"
+#include "TKImage.h"
 #include "TKOpenGL.h"
 #include "TKStats.h"
 #include "ToolKit.h"
@@ -28,20 +30,32 @@ namespace ToolKit
 
   TKDefineClass(Texture, Resource);
 
-  Texture::Texture(const TextureSettings& settings)
+  Texture::Texture()
   {
-    m_textureSettings = settings;
-    m_textureId       = 0;
+    m_settings  = {GraphicTypes::Target2D,
+                   GraphicTypes::UVRepeat,
+                   GraphicTypes::UVRepeat,
+                   GraphicTypes::UVRepeat,
+                   GraphicTypes::SampleLinearMipmapLinear,
+                   GraphicTypes::SampleLinear,
+                   GraphicTypes::FormatSRGB8_A8,
+                   GraphicTypes::FormatRGBA,
+                   GraphicTypes::TypeUnsignedByte,
+                   -1,
+                   true};
+
+    m_textureId = 0;
   }
 
-  Texture::Texture(const String& file, const TextureSettings& settings) : Texture(settings) { SetFile(file); }
+  Texture::Texture(const String& file) : Texture() { SetFile(file); }
 
-  void Texture::NativeConstruct(uint textureId)
+  void Texture::NativeConstruct(int width, int height, const TextureSettings& settings)
   {
     Super::NativeConstruct();
 
-    m_textureId = textureId;
-    m_initiated = true;
+    m_width    = width;
+    m_height   = height;
+    m_settings = settings;
   }
 
   Texture::~Texture()
@@ -57,16 +71,17 @@ namespace ToolKit
       return;
     }
 
-    if (m_textureSettings.Type == GraphicTypes::TypeFloat)
+    if (m_settings.Type == GraphicTypes::TypeFloat)
     {
-      if ((m_imagef = GetFileManager()->GetHdriFile(GetFile(), &m_width, &m_height, &m_bytePP, 4)))
+
+      if ((m_imagef = GetFileManager()->GetHdriFile(GetFile(), &m_width, &m_height, &m_numChannels, 4)))
       {
         m_loaded = true;
       }
     }
     else
     {
-      if ((m_image = GetFileManager()->GetImageFile(GetFile(), &m_width, &m_height, &m_bytePP, 4)))
+      if ((m_image = GetFileManager()->GetImageFile(GetFile(), &m_width, &m_height, &m_numChannels, 4)))
       {
         m_loaded = true;
       }
@@ -93,17 +108,14 @@ namespace ToolKit
       return;
     }
 
-    GLint currId;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
-
     glGenTextures(1, &m_textureId);
-    glBindTexture(GL_TEXTURE_2D, m_textureId);
+    RHI::SetTexture((GLenum) m_settings.Target, m_textureId);
 
-    if (m_textureSettings.Type != GraphicTypes::TypeFloat)
+    if (m_settings.Type != GraphicTypes::TypeFloat)
     {
       glTexImage2D(GL_TEXTURE_2D,
                    0,
-                   (GLint) m_textureSettings.InternalFormat,
+                   (GLint) m_settings.InternalFormat,
                    m_width,
                    m_height,
                    0,
@@ -111,13 +123,13 @@ namespace ToolKit
                    GL_UNSIGNED_BYTE,
                    m_image);
 
-      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
+      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
     }
     else
     {
       glTexImage2D(GL_TEXTURE_2D,
                    0,
-                   (GLint) m_textureSettings.InternalFormat,
+                   (GLint) m_settings.InternalFormat,
                    m_width,
                    m_height,
                    0,
@@ -125,16 +137,19 @@ namespace ToolKit
                    GL_FLOAT,
                    m_imagef);
 
-      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
+      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
     }
 
-    if (m_textureSettings.GenerateMipMap)
+    if (m_settings.GenerateMipMap)
     {
       glGenerateMipmap(GL_TEXTURE_2D);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) m_textureSettings.MipMapMinFilter);
     }
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) m_textureSettings.MinFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) m_settings.MinFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint) m_settings.MagFilter);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint) m_settings.WarpS);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint) m_settings.WarpT);
 
 // android does not have support for this
 #ifndef __ANDROID__
@@ -151,7 +166,6 @@ namespace ToolKit
       Clear();
     }
 
-    glBindTexture(GL_TEXTURE_2D, currId);
     m_initiated = true;
   }
 
@@ -162,37 +176,37 @@ namespace ToolKit
       return;
     }
 
-    if (m_textureSettings.Target == GraphicTypes::Target2D)
+    if (m_settings.Target == GraphicTypes::Target2D)
     {
-      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat));
+      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
     }
-    else if (m_textureSettings.Target == GraphicTypes::Target2DArray)
+    else if (m_settings.Target == GraphicTypes::Target2DArray)
     {
-      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) *
-                             m_textureSettings.Layers);
+      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * m_settings.Layers);
     }
-    else if (m_textureSettings.Target == GraphicTypes::TargetCubeMap)
+    else if (m_settings.Target == GraphicTypes::TargetCubeMap)
     {
-      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_textureSettings.InternalFormat) * 6);
+      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * 6);
     }
     else
     {
       assert(false);
     }
 
-    glDeleteTextures(1, &m_textureId);
+    RHI::DeleteTextures(1, &m_textureId);
     m_textureId = 0;
     m_initiated = false;
   }
 
-  const TextureSettings& Texture::GetTextureSettings() { return m_textureSettings; }
+  const TextureSettings& Texture::Settings() { return m_settings; }
 
-  void Texture::SetTextureSettings(const TextureSettings& settings) { m_textureSettings = settings; }
+  void Texture::Settings(const TextureSettings& settings) { m_settings = settings; }
 
   void Texture::Clear()
   {
-    free(m_image);
-    free(m_imagef);
+    ImageFree(m_image);
+    ImageFree(m_imagef);
+
     m_image  = nullptr;
     m_imagef = nullptr;
     m_loaded = false;
@@ -234,6 +248,7 @@ namespace ToolKit
     {
       return;
     }
+
     glDeleteRenderbuffers(1, &m_textureId);
 
     uint64 internalFormatSize = m_stencil ? 4 : 3;
@@ -242,6 +257,58 @@ namespace ToolKit
     m_textureId = 0;
     m_initiated = false;
   }
+
+  // DataTexture
+  //////////////////////////////////////////////////////////////////////////
+
+  TKDefineClass(DataTexture, Texture);
+
+  void DataTexture::Load() {}
+
+  void DataTexture::Init(void* data)
+  {
+    if (m_initiated)
+    {
+      return;
+    }
+
+    glGenTextures(1, &m_textureId);
+    RHI::SetTexture((GLenum) m_settings.Target, m_textureId);
+
+    glTexImage2D((GLenum) m_settings.Target,
+                 0,
+                 (GLint) m_settings.InternalFormat,
+                 m_width,
+                 m_height,
+                 0,
+                 (GLenum) m_settings.Format,
+                 (GLenum) m_settings.Type,
+                 data);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) m_settings.MinFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint) m_settings.MagFilter);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint) m_settings.WarpS);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint) m_settings.WarpT);
+
+    m_loaded    = true;
+    m_initiated = true;
+  };
+
+  void DataTexture::UnInit()
+  {
+    if (m_textureId == 0 || !m_initiated)
+    {
+      return;
+    }
+
+    RHI::DeleteTextures(1, &m_textureId);
+    RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
+
+    m_textureId = 0;
+    m_loaded    = false;
+    m_initiated = false;
+  };
 
   // CubeMap
   //////////////////////////////////////////////////////////////////////////
@@ -253,6 +320,27 @@ namespace ToolKit
   CubeMap::CubeMap(const String& file) : Texture() { SetFile(file); }
 
   CubeMap::~CubeMap() {}
+
+  void CubeMap::Consume(RenderTargetPtr cubeMapTarget)
+  {
+    TextureSettings textureSettings;
+    textureSettings.GenerateMipMap = false;
+    textureSettings.InternalFormat = cubeMapTarget->Settings().InternalFormat;
+    textureSettings.MinFilter      = cubeMapTarget->Settings().MinFilter;
+    textureSettings.Target         = GraphicTypes::TargetCubeMap;
+    textureSettings.Type           = GraphicTypes::TypeFloat;
+
+    m_textureId                    = cubeMapTarget->m_textureId;
+    m_width                        = cubeMapTarget->m_width;
+    m_height                       = cubeMapTarget->m_height;
+
+    m_settings                     = textureSettings;
+    m_initiated                    = true;
+
+    cubeMapTarget->m_initiated     = false;
+    cubeMapTarget->m_textureId     = 0;
+    cubeMapTarget                  = nullptr;
+  }
 
   void CubeMap::Load()
   {
@@ -271,7 +359,6 @@ namespace ToolKit
     }
 
     String file = fullPath.substr(0, pos);
-
     for (int i = 0; i < 6; i++)
     {
       String postfix = "px.png";
@@ -295,7 +382,7 @@ namespace ToolKit
       }
 
       String name = file + postfix;
-      if ((m_images[i] = GetFileManager()->GetImageFile(name, &m_width, &m_height, &m_bytePP, 0)))
+      if ((m_images[i] = GetFileManager()->GetImageFile(name, &m_width, &m_height, &m_numChannels, 0)))
       {
         GetLogger()->Log("Missing file: " + name);
         GetLogger()->Log("Cube map loading requires additional 5 png files with postfix "
@@ -329,14 +416,11 @@ namespace ToolKit
     }
 
     // This will be used when deleting the texture
-    m_textureSettings.InternalFormat = GraphicTypes::FormatRGBA;
-    m_textureSettings.Target         = GraphicTypes::TargetCubeMap;
-
-    GLint currId;
-    glGetIntegerv(GL_TEXTURE_CUBE_MAP, &currId);
+    m_settings.InternalFormat = GraphicTypes::FormatRGBA;
+    m_settings.Target         = GraphicTypes::TargetCubeMap;
 
     glGenTextures(1, &m_textureId);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureId);
+    RHI::SetTexture(GL_TEXTURE_CUBE_MAP, m_textureId);
 
     uint sides[6] = {GL_TEXTURE_CUBE_MAP_POSITIVE_X,
                      GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
@@ -353,16 +437,12 @@ namespace ToolKit
     AddVRAMUsageInBytes(m_width * m_height * 4 * 6);
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-    glBindTexture(GL_TEXTURE_CUBE_MAP, currId);
 
     if (flushClientSideArray)
     {
@@ -397,17 +477,11 @@ namespace ToolKit
 
   Hdri::Hdri()
   {
-    m_textureSettings.InternalFormat  = GraphicTypes::FormatRGBA16F;
-    m_textureSettings.Type            = GraphicTypes::TypeFloat;
-    m_textureSettings.MinFilter       = GraphicTypes::SampleLinear;
-    m_textureSettings.MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
-    m_textureSettings.GenerateMipMap  = false;
-    m_exposure                        = 1.0f;
-
-    m_texToCubemapMat                 = MakeNewPtr<Material>();
-    m_cubemapToDiffuseEnvMapMat       = MakeNewPtr<Material>();
-    m_diffuseEnvMap                   = MakeNewPtr<CubeMap>();
-    m_equirectangularTexture          = MakeNewPtr<Texture>();
+    m_settings.InternalFormat = GraphicTypes::FormatRGBA16F;
+    m_settings.Type           = GraphicTypes::TypeFloat;
+    m_settings.MinFilter      = GraphicTypes::SampleLinear;
+    m_settings.GenerateMipMap = false;
+    m_exposure                = 1.0f;
   }
 
   Hdri::Hdri(const String& file) : Hdri() { SetFile(file); }
@@ -442,7 +516,7 @@ namespace ToolKit
     Texture::Init(flushClientSideArray);
     m_initiated     = false;
 
-    RenderTask task = {[this, flushClientSideArray](Renderer* renderer) -> void
+    RenderTask task = {[this](Renderer* renderer) -> void
                        {
                          if (m_initiated)
                          {
@@ -451,21 +525,23 @@ namespace ToolKit
                          }
 
                          // Convert hdri image to cubemap images.
-                         m_cubemap =
-                             renderer->GenerateCubemapFrom2DTexture(GetTextureManager()->Create<Texture>(GetFile()),
-                                                                    m_width / 4,
-                                                                    m_width / 4,
-                                                                    1.0f);
+                         TexturePtr self = GetTextureManager()->Create<Texture>(GetFile());
+                         uint size       = m_width / 4;
+                         m_cubemap       = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f);
 
-                         const int specularEnvMapSize = m_specularIBLTextureSize;
+                         if (m_specularIBLTextureSize < 128)
+                         {
+                           m_specularIBLTextureSize = 128;
+                         }
+
                          // Pre-filtered and mip mapped environment map
-                         m_specularEnvMap             = renderer->GenerateSpecularEnvMap(m_cubemap,
-                                                                             specularEnvMapSize,
-                                                                             specularEnvMapSize,
+                         m_specularEnvMap = renderer->GenerateSpecularEnvMap(m_cubemap,
+                                                                             m_specularIBLTextureSize,
                                                                              Renderer::RHIConstants::SpecularIBLLods);
 
                          // Generate diffuse irradience cubemap images
-                         m_diffuseEnvMap  = renderer->GenerateDiffuseEnvMap(m_cubemap, m_width / 32, m_width / 32);
+                         size             = m_width / 32;
+                         m_diffuseEnvMap  = renderer->GenerateDiffuseEnvMap(m_cubemap, size);
 
                          m_initiated      = true;
                          m_waitingForInit = false;
@@ -496,26 +572,9 @@ namespace ToolKit
 
   TKDefineClass(RenderTarget, Texture);
 
-  RenderTarget::RenderTarget() : Texture() {}
+  RenderTarget::RenderTarget() { m_settings = {}; }
 
-  RenderTarget::~RenderTarget()
-  {
-    m_textureSettings.GenerateMipMap = false;
-    m_textureSettings.InternalFormat = m_settings.InternalFormat;
-    m_textureSettings.Layers         = m_settings.Layers;
-    m_textureSettings.MinFilter      = m_settings.MinFilter;
-    m_textureSettings.Target         = m_settings.Target;
-    m_textureSettings.Type           = m_settings.Type;
-  }
-
-  void RenderTarget::NativeConstruct(uint width, uint height, const RenderTargetSettigs& settings)
-  {
-    Super::NativeConstruct();
-
-    m_width    = width;
-    m_height   = height;
-    m_settings = settings;
-  }
+  RenderTarget::~RenderTarget() {}
 
   void RenderTarget::Load() {}
 
@@ -532,27 +591,13 @@ namespace ToolKit
     }
 
     // This will be used when deleting the texture
-    m_textureSettings.InternalFormat = m_settings.InternalFormat;
-    m_textureSettings.Target         = m_settings.Target;
-    m_textureSettings.Layers         = m_settings.Layers;
-
-    GLint currId                     = 0; // Don't override the current render target.
-    if (m_settings.Target == GraphicTypes::Target2D)
-    {
-      glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
-    }
-    else if (m_settings.Target == GraphicTypes::TargetCubeMap)
-    {
-      glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &currId);
-    }
-    else if (m_settings.Target == GraphicTypes::Target2DArray)
-    {
-      glGetIntegerv(GL_TEXTURE_BINDING_2D_ARRAY, &currId);
-    }
+    m_settings.InternalFormat = m_settings.InternalFormat;
+    m_settings.Target         = m_settings.Target;
+    m_settings.Layers         = m_settings.Layers;
 
     // Create frame buffer color texture
     glGenTextures(1, &m_textureId);
-    glBindTexture((int) m_settings.Target, m_textureId);
+    RHI::SetTexture((GLenum) m_settings.Target, m_textureId);
 
     if (m_settings.Target == GraphicTypes::Target2D)
     {
@@ -588,46 +633,41 @@ namespace ToolKit
     else if (m_settings.Target == GraphicTypes::Target2DArray)
     {
       glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, (int) m_settings.InternalFormat, m_width, m_height, m_settings.Layers);
-
       AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * m_settings.Layers);
     }
 
     glTexParameteri((int) m_settings.Target, GL_TEXTURE_WRAP_S, (int) m_settings.WarpS);
-
     glTexParameteri((int) m_settings.Target, GL_TEXTURE_WRAP_T, (int) m_settings.WarpT);
 
     if (m_settings.Target == GraphicTypes::TargetCubeMap)
     {
       glTexParameteri((int) m_settings.Target, GL_TEXTURE_WRAP_R, (int) m_settings.WarpR);
     }
-    glTexParameteri((int) m_settings.Target, GL_TEXTURE_MIN_FILTER, (int) m_settings.MinFilter);
 
+    glTexParameteri((int) m_settings.Target, GL_TEXTURE_MIN_FILTER, (int) m_settings.MinFilter);
     glTexParameteri((int) m_settings.Target, GL_TEXTURE_MAG_FILTER, (int) m_settings.MagFilter);
 
     m_initiated = true;
-
-    // Restore previous render target.
-    glBindTexture((int) m_settings.Target, currId);
   }
 
-  void RenderTarget::Reconstruct(uint width, uint height, const RenderTargetSettigs& settings)
+  void RenderTarget::Reconstruct(int width, int height, const TextureSettings& settings)
   {
     UnInit();
+
     m_width    = width;
     m_height   = height;
     m_settings = settings;
+
     Init();
   }
 
-  void RenderTarget::ReconstructIfNeeded(uint width, uint height)
+  void RenderTarget::ReconstructIfNeeded(int width, int height)
   {
     if (!m_initiated || m_width != width || m_height != height)
     {
       Reconstruct(width, height, m_settings);
     }
   }
-
-  const RenderTargetSettigs& RenderTarget::GetSettings() const { return m_settings; }
 
   // TextureManager
   //////////////////////////////////////////////////////////////////////////

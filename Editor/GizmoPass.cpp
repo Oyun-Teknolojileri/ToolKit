@@ -79,7 +79,7 @@ namespace ToolKit
       Renderer* renderer = GetRenderer();
       m_camera           = m_params.Viewport->GetCamera();
       renderer->SetFramebuffer(m_params.Viewport->m_framebuffer, GraphicBitFields::DepthBits);
-      renderer->SetCameraLens(m_camera);
+      renderer->SetCamera(m_camera, true);
 
       // Update.
       BillboardPtrArray& gizmoArray = m_params.GizmoArray;

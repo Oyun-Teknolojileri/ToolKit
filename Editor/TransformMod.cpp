@@ -837,7 +837,7 @@ namespace ToolKit
       {
         StateEndPick* endPick = static_cast<StateEndPick*>(m_stateMachine->m_currentState);
 
-        EntityIdArray entities;
+        IDArray entities;
         endPick->PickDataToEntityId(entities);
         g_app->GetCurrentScene()->AddToSelection(entities, ImGui::GetIO().KeyShift);
 

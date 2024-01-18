@@ -25,7 +25,7 @@ namespace ToolKit
       RenderTargetPtr RenderThumbnail(Renderer* renderer, const DirectoryEntry& dirEnt);
 
      private:
-      uint m_maxThumbSize;
+      int m_maxThumbSize;
       FramebufferPtr m_thumbnailBuffer       = nullptr;
       RenderTargetPtr m_thumbnailRT          = nullptr;
       ScenePtr m_thumbnailScene              = nullptr;

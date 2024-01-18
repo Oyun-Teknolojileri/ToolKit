@@ -49,12 +49,6 @@ namespace ToolKit
       static MobileSceneRenderPath sceneRenderer;
       sceneRenderer.m_params.Cam                        = viewport->GetCamera();
       sceneRenderer.m_params.ClearFramebuffer           = true;
-      sceneRenderer.m_params.Gfx.BloomEnabled           = false;
-      sceneRenderer.m_params.Gfx.DepthOfFieldEnabled    = false;
-      sceneRenderer.m_params.Gfx.FXAAEnabled            = false;
-      sceneRenderer.m_params.Gfx.GammaCorrectionEnabled = false;
-      sceneRenderer.m_params.Gfx.SSAOEnabled            = false;
-      sceneRenderer.m_params.Gfx.TonemappingEnabled     = false;
       sceneRenderer.m_params.Lights                     = scene->GetLights();
       sceneRenderer.m_params.MainFramebuffer            = viewport->m_framebuffer;
       sceneRenderer.m_params.Scene                      = scene;
@@ -101,8 +95,7 @@ namespace ToolKit
 
       m_uiPass->m_params.Cam              = GetUIManager()->GetUICamera();
       m_uiPass->m_params.FrameBuffer      = m_params.viewport->m_framebuffer;
-      m_uiPass->m_params.ClearFrameBuffer = false;
-      m_uiPass->m_params.ClearDepthBuffer = true;
+      m_uiPass->m_params.clearBuffer      = GraphicBitFields::DepthBits;
 
       m_passArray.push_back(m_uiPass);
 
@@ -535,8 +528,6 @@ namespace ToolKit
   {
     static CustomTimer timer;
     SDL_Event sdlEvent;
-
-    g_proxy->m_engineSettings->Graphics.ShadowDistance = 150.0f;
 
     while (g_game->m_currentState != PluginState::Stop && g_running)
     {

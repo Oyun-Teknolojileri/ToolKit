@@ -68,6 +68,8 @@ namespace ToolKit
     void CopyTo(Resource* other) override;
 
    public:
+    bool m_updateGPUUniforms = true;
+
     CubeMapPtr m_cubeMap;
     TexturePtr m_diffuseTexture;
     TexturePtr m_emissiveTexture;

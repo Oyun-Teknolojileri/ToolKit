@@ -13,55 +13,67 @@
 
 namespace ToolKit
 {
+
   struct TextureSettings
   {
-    GraphicTypes MinFilter       = GraphicTypes::SampleLinear;
-    GraphicTypes InternalFormat  = GraphicTypes::FormatSRGB8_A8;
-    GraphicTypes Type            = GraphicTypes::TypeUnsignedByte;
-    GraphicTypes MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
-    bool GenerateMipMap          = true;
-    GraphicTypes Target          = GraphicTypes::Target2D;
-    int Layers                   = -1;
+    GraphicTypes Target         = GraphicTypes::Target2D;
+    GraphicTypes WarpS          = GraphicTypes::UVRepeat;
+    GraphicTypes WarpT          = GraphicTypes::UVRepeat;
+    GraphicTypes WarpR          = GraphicTypes::UVRepeat;
+    GraphicTypes MinFilter      = GraphicTypes::SampleNearest;
+    GraphicTypes MagFilter      = GraphicTypes::SampleNearest;
+    GraphicTypes InternalFormat = GraphicTypes::FormatRGBA16F;
+    GraphicTypes Format         = GraphicTypes::FormatRGBA;
+    GraphicTypes Type           = GraphicTypes::TypeFloat;
+    int Layers                  = -1;
+    bool GenerateMipMap         = false;
   };
+
+  // Texture
+  //////////////////////////////////////////////////////////////////////////
 
   class TK_API Texture : public Resource
   {
    public:
     TKDeclareClass(Texture, Resource);
 
-    Texture(const TextureSettings& settings = {});
-    Texture(const String& file, const TextureSettings& settings = {});
+    Texture();
+    Texture(const String& file);
     virtual ~Texture();
-
-    virtual void NativeConstruct(uint textureId);
+    virtual void NativeConstruct(int widht, int height, const TextureSettings& settings);
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
-    const TextureSettings& GetTextureSettings();
-    void SetTextureSettings(const TextureSettings& settings);
+    const TextureSettings& Settings();
+    void Settings(const TextureSettings& settings);
 
    protected:
     virtual void Clear();
 
    public:
-    uint m_textureId = 0;
-    int m_width      = 0;
-    int m_height     = 0;
-    int m_bytePP     = 0;
-    uint8* m_image   = nullptr;
-    float* m_imagef  = nullptr;
+    uint m_textureId  = 0;
+    int m_width       = 0;
+    int m_height      = 0;
+    int m_numChannels = 0; //!< Number of channels (r, g, b, a) for loaded images.
+    uint8* m_image    = nullptr;
+    float* m_imagef   = nullptr;
 
    protected:
-    TextureSettings m_textureSettings;
+    TextureSettings m_settings;
   };
+
+  // DepthTexture
+  //////////////////////////////////////////////////////////////////////////
 
   class DepthTexture : public Texture
   {
    public:
     TKDeclareClass(DepthTexture, Texture);
+    using Texture::NativeConstruct;
 
+   public:
     void Load() override;
     void Init(int width, int height, bool stencil);
     void UnInit() override;
@@ -73,18 +85,40 @@ namespace ToolKit
     bool m_stencil;
   };
 
-  typedef std::shared_ptr<DepthTexture> DepthTexturePtr;
+  // DataTexture
+  //////////////////////////////////////////////////////////////////////////
+
+  class DataTexture : public Texture
+  {
+   public:
+    TKDeclareClass(DataTexture, Texture);
+    using Texture::NativeConstruct;
+
+   public:
+    void Load() override;
+    void Init(void* data);
+    void UnInit() override;
+  };
+
+  // CubeMap
+  //////////////////////////////////////////////////////////////////////////
 
   class TK_API CubeMap : public Texture
   {
    public:
     TKDeclareClass(CubeMap, Texture);
+    using Texture::NativeConstruct;
 
+   public:
     CubeMap();
     CubeMap(const String& file);
     virtual ~CubeMap();
 
-    using Texture::NativeConstruct;
+    /**
+     * Takes the ownership of a render target. Simply to use the render to cube map results as cube map.
+     * @param cubeMapTarget is the cube map render target to be consumed. It can be safely destroyed after consumed.
+     */
+    void Consume(RenderTargetPtr cubeMapTarget);
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
@@ -97,11 +131,16 @@ namespace ToolKit
     std::vector<uint8*> m_images;
   };
 
+  // Hdri
+  //////////////////////////////////////////////////////////////////////////
+
   class TK_API Hdri : public Texture
   {
    public:
     TKDeclareClass(Hdri, Texture);
+    using Texture::NativeConstruct;
 
+   public:
     Hdri();
     explicit Hdri(const String& file);
     virtual ~Hdri();
@@ -119,47 +158,31 @@ namespace ToolKit
     float m_exposure             = 1.0f;
     int m_specularIBLTextureSize = 256;
 
-   protected:
-    MaterialPtr m_texToCubemapMat           = nullptr;
-    MaterialPtr m_cubemapToDiffuseEnvMapMat = nullptr;
-    TexturePtr m_equirectangularTexture     = nullptr;
-
-    bool m_waitingForInit                   = false;
+   private:
+    bool m_waitingForInit = false;
   };
 
-  struct RenderTargetSettigs
-  {
-    byte Msaa                   = 0;
-    GraphicTypes Target         = GraphicTypes::Target2D;
-    GraphicTypes WarpS          = GraphicTypes::UVRepeat;
-    GraphicTypes WarpT          = GraphicTypes::UVRepeat;
-    GraphicTypes WarpR          = GraphicTypes::UVRepeat;
-    GraphicTypes MinFilter      = GraphicTypes::SampleNearest;
-    GraphicTypes MagFilter      = GraphicTypes::SampleNearest;
-    GraphicTypes InternalFormat = GraphicTypes::FormatRGBA16F;
-    GraphicTypes Format         = GraphicTypes::FormatRGBA;
-    GraphicTypes Type           = GraphicTypes::TypeFloat;
-    int Layers                  = 1;
-  };
+  // RenderTarget
+  //////////////////////////////////////////////////////////////////////////
 
   class TK_API RenderTarget : public Texture
   {
    public:
     TKDeclareClass(RenderTarget, Texture);
+    using Texture::NativeConstruct;
 
+   public:
     RenderTarget();
     virtual ~RenderTarget();
-    virtual void NativeConstruct(uint widht, uint height, const RenderTargetSettigs& settings = RenderTargetSettigs());
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
-    void Reconstruct(uint width, uint height, const RenderTargetSettigs& settings);
-    void ReconstructIfNeeded(uint width, uint height);
-    const RenderTargetSettigs& GetSettings() const;
-
-   public:
-    RenderTargetSettigs m_settings;
+    void Reconstruct(int width, int height, const TextureSettings& settings);
+    void ReconstructIfNeeded(int width, int height);
   };
+
+  // TextureManager
+  //////////////////////////////////////////////////////////////////////////
 
   class TK_API TextureManager : public ResourceManager
   {

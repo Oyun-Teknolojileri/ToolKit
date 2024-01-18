@@ -154,7 +154,7 @@ namespace ToolKit
     transform.Decompose(aiS, aiR, aiT);
 
     *t = Vec3(aiT.x, aiT.y, aiT.z);
-    *r = Quaternion(aiR.w, aiR.x, aiR.y, aiR.z);
+    *r = Quaternion(aiR.x, aiR.y, aiR.z, aiR.w);
     *s = Vec3(aiS.x, aiS.y, aiS.z);
   }
 
@@ -463,7 +463,7 @@ namespace ToolKit
           Key tKey;
           tKey.m_frame    = frame;
           tKey.m_position = Vec3(t.x, t.y, t.z);
-          tKey.m_rotation = Quaternion(r.w, r.x, r.y, r.z);
+          tKey.m_rotation = Quaternion(r.x, r.y, r.z, r.w);
           tKey.m_scale    = Vec3(s.x, s.y, s.z);
           keys.push_back(tKey);
         }

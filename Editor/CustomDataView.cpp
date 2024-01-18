@@ -123,16 +123,16 @@ namespace ToolKit
       return true;
     }
 
-    void CustomDataView::ShowVariant(ParameterVariant* var, ParameterVariant*& remove, size_t i, bool isListEditable)
+    void CustomDataView::ShowVariant(ParameterVariant* var, bool& remove, int uiId, bool isListEditable)
     {
       ImGui::TableNextRow();
       ImGui::TableSetColumnIndex(0);
 
-      ImGui::PushID((int) i);
+      ImGui::PushID((int) uiId);
       static char buff[1024];
       strcpy_s(buff, sizeof(buff), var->m_name.c_str());
 
-      String pNameId = "##Name" + std::to_string(i);
+      String pNameId = "##Name" + std::to_string(uiId);
       if (isListEditable)
       {
         ImGui::InputText(pNameId.c_str(), buff, sizeof(buff));
@@ -145,7 +145,7 @@ namespace ToolKit
 
       ImGui::TableSetColumnIndex(1);
 
-      String pId = "##" + std::to_string(i);
+      String pId = "##" + std::to_string(uiId);
       switch (var->GetType())
       {
       case ParameterVariant::VariantType::String:
@@ -230,11 +230,8 @@ namespace ToolKit
       }
 
       ImGui::TableSetColumnIndex(2);
-      if (isListEditable && ImGui::Button(ICON_FA_MINUS))
-      {
-        remove             = var;
-        g_app->m_statusMsg = Format("Parameter %d: %s removed.", i + 1, var->m_name.c_str());
-      }
+
+      remove = isListEditable && ImGui::Button(ICON_FA_MINUS);
 
       ImGui::PopID();
     }
@@ -245,9 +242,9 @@ namespace ToolKit
       ImGui::Separator();
     }
 
-    void CustomDataView::ShowCustomData(EntityPtr m_entity,
-                                        String headerName,
-                                        ParameterVariantRawPtrArray& vars,
+    void CustomDataView::ShowCustomData(EntityPtr entity,
+                                        const String& headerName,
+                                        const IntArray& vars,
                                         bool isListEditable)
     {
       if (headerName.length() && !ImGui::CollapsingHeader(headerName.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
@@ -257,19 +254,31 @@ namespace ToolKit
 
       if (BeginShowVariants(headerName))
       {
-        ParameterVariant* remove = nullptr;
-        for (size_t i = 0; i < vars.size(); i++)
+        int removeIndex  = -1;
+        int displayIndex = -1;
+        for (int i = 0; i < (int) vars.size(); i++)
         {
-          ParameterVariant* var       = vars[i];
+          int index                   = vars[i];
+          ParameterVariant* var       = &entity->m_localData[index];
           ValueUpdateFn multiUpdateFn = MultiUpdate(var);
           var->m_onValueChangedFn.push_back(multiUpdateFn);
+
+          bool remove = false;
           ShowVariant(var, remove, i, isListEditable);
+          if (remove)
+          {
+            removeIndex  = index;
+            displayIndex = i;
+          }
+
           var->m_onValueChangedFn.pop_back();
         }
 
-        if (remove != nullptr)
+        if (removeIndex != -1)
         {
-          m_entity->m_localData.Remove(remove->m_id);
+          ParameterVariant* var = &entity->m_localData[removeIndex];
+          g_app->m_statusMsg    = Format("Parameter %d: %s removed.", displayIndex + 1, var->m_name.c_str());
+          entity->m_localData.Remove(removeIndex);
         }
       }
       EndShowVariants();
@@ -324,7 +333,7 @@ namespace ToolKit
             customVar = Mat4();
             break;
           case 10:
-            m_multiChoiceParamWindow.OpenCreateWindow(&m_entity->m_localData);
+            m_multiChoiceParamWindow.OpenCreateWindow(&entity->m_localData);
             added       = false;
             addInAction = false;
             break;
@@ -335,7 +344,7 @@ namespace ToolKit
 
           if (added)
           {
-            m_entity->m_localData.Add(customVar);
+            entity->m_localData.Add(customVar);
             addInAction = false;
           }
         }
@@ -768,7 +777,7 @@ namespace ToolKit
         return;
       }
 
-      ParameterVariantRawPtrArray customParams;
+      IntArray customParams;
       ntt->m_localData.GetByCategory(CustomDataCategory.Name, customParams);
       ShowCustomData(ntt, "Custom Data", customParams, true);
     }

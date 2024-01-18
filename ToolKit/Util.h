@@ -155,7 +155,7 @@ namespace ToolKit
                                                    const Mat4* transform = nullptr);
 
   // Entity operations.
-  TK_API void ToEntityIdArray(EntityIdArray& idArray, const EntityPtrArray& ptrArray);
+  TK_API void ToEntityIdArray(IDArray& idArray, const EntityPtrArray& ptrArray);
 
   TK_API bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   TK_API void GetRootEntities(const EntityPtrArray& entities, EntityPtrArray& roots);
@@ -168,6 +168,9 @@ namespace ToolKit
 
   // {copies} First one is the copy root, fallowing are attached children.
   TK_API EntityPtr DeepCopy(EntityPtr root, EntityPtrArray& copies);
+
+  // Copies the node with children
+  TK_API Node* DeepNodeCopy(Node* node);
 
   // Memory operations.
   ///////////////////////////////////////////////////////
@@ -255,5 +258,10 @@ namespace ToolKit
   TK_API void Xoroshiro128PlusSeed(uint64 s[2], uint64 seed);
 
   TK_API uint64 Xoroshiro128Plus(uint64 s[2]);
+
+  // Container Utilities
+  ///////////////////////////////////////////////////////
+  template <typename Key, typename Value>
+  TK_API bool HaveSameKeys(const std::unordered_map<Key, Value>& map1, const std::unordered_map<Key, Value>& map2);
 
 } // namespace ToolKit

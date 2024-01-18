@@ -23,8 +23,6 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CubemapPass.cpp" />
-    <ClCompile Include="DataTexture.cpp" />
-    <ClCompile Include="DeferredPass.cpp" />
     <ClCompile Include="DirectionComponent.cpp" />
     <ClCompile Include="DofPass.cpp" />
     <ClCompile Include="Dpad.cpp" />
@@ -73,6 +71,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneRenderPath.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShaderUniform.cpp" />
     <ClCompile Include="ShadowPass.cpp" />
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="SkeletonComponent.cpp" />
@@ -110,10 +109,8 @@
     <ClInclude Include="Class.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="CubemapPass.h" />
-    <ClInclude Include="DataTexture.h" />
     <ClInclude Include="DebugNew.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="DeferredPass.h" />
     <ClInclude Include="DirectionComponent.h" />
     <ClInclude Include="DofPass.h" />
     <ClInclude Include="Dpad.h" />
@@ -163,6 +160,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Serialize.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShaderUniform.h" />
     <ClInclude Include="ShadowPass.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="SkeletonComponent.h" />

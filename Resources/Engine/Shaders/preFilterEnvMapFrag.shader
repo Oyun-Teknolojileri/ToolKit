@@ -23,7 +23,7 @@
 
 			vec3 N = normalize(v_pos);
 			
-			// Make the simplyfying assumption that V equals R equals the normal 
+			// Make the simplifying assumption that V equals R equals the normal 
 			vec3 R = N;
 			vec3 V = R;
 

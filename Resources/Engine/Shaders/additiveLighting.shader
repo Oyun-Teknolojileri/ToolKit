@@ -23,7 +23,7 @@
 		// ibl buffer
 		// uniform sampler2D s_texture16;
 
-		uniform int isScreenSpace;
+		uniform bool isScreenSpace;
 		uniform vec3 camPos;
 
 		in vec2 v_texture;
@@ -32,7 +32,7 @@
 		void main()
 		{
 			vec2 texCoord;
-			if (isScreenSpace == 1)
+			if (isScreenSpace)
 			{
 				texCoord = vec2(v_texture.x, 1.0 - v_texture.y);
 			}

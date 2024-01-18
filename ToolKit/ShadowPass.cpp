@@ -63,7 +63,7 @@ namespace ToolKit
       light->InitShadowMapDepthMaterial();
       if (DirectionalLight* dLight = light->As<DirectionalLight>())
       {
-        dLight->UpdateShadowFrustum(m_params.RendeJobs, m_params.ViewCamera);
+        dLight->UpdateShadowFrustum(m_params.RendeJobs, m_params.ViewCamera, m_params.shadowVolume);
       }
       // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
 
@@ -89,8 +89,6 @@ namespace ToolKit
 
     Pass::PreRender();
 
-    m_lastOverrideMat = GetRenderer()->m_overrideMat;
-
     // Dropout non shadow casters.
     erase_if(m_params.RendeJobs, [](RenderJob& job) -> bool { return !job.ShadowCaster; });
 
@@ -108,7 +106,6 @@ namespace ToolKit
     PUSH_GPU_MARKER("ShadowPas::PostRender");
     PUSH_CPU_MARKER("ShadowPas::PostRender");
 
-    GetRenderer()->m_overrideMat = m_lastOverrideMat;
     Pass::PostRender();
 
     POP_CPU_MARKER();
@@ -127,11 +124,13 @@ namespace ToolKit
     {
       PUSH_CPU_MARKER("Render Call");
 
-      const Mat4& pr          = light->m_shadowCamera->GetProjectionMatrix();
-      const Mat4 v            = light->m_shadowCamera->GetViewMatrix();
-      const Frustum frustum   = ExtractFrustum(pr * v, false);
+      const Mat4& pr             = light->m_shadowCamera->GetProjectionMatrix();
+      const Mat4 v               = light->m_shadowCamera->GetViewMatrix();
+      const Frustum frustum      = ExtractFrustum(pr * v, false);
 
-      renderer->m_overrideMat = light->GetShadowMaterial();
+      MaterialPtr shadowMaterial = light->GetShadowMaterial();
+      renderer->SetCamera(light->m_shadowCamera, false);
+
       for (const RenderJob& job : jobs)
       {
         // Frustum cull
@@ -140,12 +139,14 @@ namespace ToolKit
           continue;
         }
 
-        MaterialPtr material = job.Material;
+        renderer->m_overrideMat = shadowMaterial;
+        MaterialPtr material    = job.Material;
         renderer->m_overrideMat->SetRenderState(material->GetRenderState());
         renderer->m_overrideMat->UnInit();
         renderer->m_overrideMat->SetAlpha(material->GetAlpha());
         renderer->m_overrideMat->m_diffuseTexture                = material->m_diffuseTexture;
         renderer->m_overrideMat->GetRenderState()->blendFunction = BlendFunction::NONE;
+        renderer->m_overrideMat->GetRenderState()->cullMode      = CullingType::TwoSided;
         renderer->m_overrideMat->Init();
         renderer->Render(job, light->m_shadowCamera);
       }
@@ -234,7 +235,7 @@ namespace ToolKit
     std::sort(pointLights.begin(), pointLights.end(), sortByResFn);
 
     // Get dir and spot lights into the pack
-    std::vector<int> resolutions;
+    IntArray resolutions;
     resolutions.reserve(dirAndSpotLights.size());
     for (LightPtr light : dirAndSpotLights)
     {
@@ -295,7 +296,7 @@ namespace ToolKit
     // Check if the shadow atlas needs to be updated
     bool needChange = false;
 
-    // After this loop lastShadowLights is set with lights with shadows
+    // After this loop m_previousShadowCasters is set with lights with shadows
     int nextId      = 0;
     for (int i = 0; i < m_params.Lights.size(); ++i)
     {
@@ -337,18 +338,19 @@ namespace ToolKit
         GetLogger()->Log("ERROR: Max array texture layer size is reached: " + std::to_string(maxLayers) + " !");
       }
 
-      const RenderTargetSettigs set = {0,
-                                       GraphicTypes::Target2DArray,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::SampleNearest,
-                                       GraphicTypes::SampleNearest,
-                                       GraphicTypes::FormatRG32F,
-                                       GraphicTypes::FormatRG,
-                                       GraphicTypes::TypeFloat,
-                                       m_layerCount};
+      const TextureSettings set = {GraphicTypes::Target2DArray,
+                                   GraphicTypes::UVClampToEdge,
+                                   GraphicTypes::UVClampToEdge,
+                                   GraphicTypes::UVClampToEdge,
+                                   GraphicTypes::SampleNearest,
+                                   GraphicTypes::SampleNearest,
+                                   GraphicTypes::FormatRG32F,
+                                   GraphicTypes::FormatRG,
+                                   GraphicTypes::TypeFloat,
+                                   m_layerCount,
+                                   false};
 
+      m_shadowFramebuffer->DetachColorAttachment(Framebuffer::Attachment::ColorAttachment0);
       m_shadowAtlas->Reconstruct(Renderer::RHIConstants::ShadowAtlasTextureSize,
                                  Renderer::RHIConstants::ShadowAtlasTextureSize,
                                  set);
@@ -360,6 +362,8 @@ namespace ToolKit
                                    false,
                                    true});
       }
+
+      m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, 0);
     }
   }
 

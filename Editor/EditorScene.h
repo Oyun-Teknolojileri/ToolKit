@@ -30,7 +30,7 @@ namespace ToolKit
       // Selection operations.
       bool IsSelected(ULongID id) const;
       void RemoveFromSelection(ULongID id);
-      void AddToSelection(const EntityIdArray& entities, bool additive);
+      void AddToSelection(const IDArray& entities, bool additive);
       void AddToSelection(const EntityPtrArray& entities, bool additive);
       void AddToSelection(ULongID id, bool additive);
       void ClearSelection();
@@ -61,15 +61,15 @@ namespace ToolKit
       EntityPtr RemoveEntity(ULongID id, bool deep = true) override;
       void Destroy(bool removeResources) override;
       void GetSelectedEntities(EntityPtrArray& entities) const;
-      void GetSelectedEntities(EntityIdArray& entities) const;
+      void GetSelectedEntities(IDArray& entities) const;
       void SelectByTag(const String& tag);
 
       // Pick operations
-      PickData PickObject(Ray ray, const EntityIdArray& ignoreList = {}, const EntityPtrArray& extraList = {}) override;
+      PickData PickObject(Ray ray, const IDArray& ignoreList = {}, const EntityPtrArray& extraList = {}) override;
 
       void PickObject(const Frustum& frustum,
                       PickDataArray& pickedObjects,
-                      const EntityIdArray& ignoreList = {},
+                      const IDArray& ignoreList = {},
                       const EntityPtrArray& extraList = {},
                       bool pickPartiallyInside        = true) override;
 
@@ -96,7 +96,7 @@ namespace ToolKit
       bool m_newScene;
 
      private:
-      EntityIdArray m_selectedEntities;
+      IDArray m_selectedEntities;
 
       // Billboard gizmos
       std::unordered_map<EntityPtr, EditorBillboardPtr> m_entityBillboardMap;

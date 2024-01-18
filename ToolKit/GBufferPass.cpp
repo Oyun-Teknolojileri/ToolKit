@@ -21,36 +21,36 @@ namespace ToolKit
 
   GBufferPass::GBufferPass()
   {
-    RenderTargetSettigs gBufferRenderTargetSettings = {0,
-                                                       GraphicTypes::Target2D,
-                                                       GraphicTypes::UVClampToEdge,
-                                                       GraphicTypes::UVClampToEdge,
-                                                       GraphicTypes::UVClampToEdge,
-                                                       GraphicTypes::SampleNearest,
-                                                       GraphicTypes::SampleNearest,
-                                                       GraphicTypes::FormatRGBA16F,
-                                                       GraphicTypes::FormatRGBA,
-                                                       GraphicTypes::TypeFloat,
-                                                       1};
+    TextureSettings gBufferRenderTargetSettings = {GraphicTypes::Target2D,
+                                                   GraphicTypes::UVClampToEdge,
+                                                   GraphicTypes::UVClampToEdge,
+                                                   GraphicTypes::UVClampToEdge,
+                                                   GraphicTypes::SampleNearest,
+                                                   GraphicTypes::SampleNearest,
+                                                   GraphicTypes::FormatRGBA16F,
+                                                   GraphicTypes::FormatRGBA,
+                                                   GraphicTypes::TypeFloat,
+                                                   1,
+                                                   false};
 
-    m_gPosRt                                        = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-    m_gNormalRt                                     = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-    m_gColorRt                                      = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-    m_gEmissiveRt                                   = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-    m_gIblRt                                        = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gPosRt                                    = MakeNewPtr<RenderTarget>(128, 128, gBufferRenderTargetSettings);
+    m_gNormalRt                                 = MakeNewPtr<RenderTarget>(128, 128, gBufferRenderTargetSettings);
+    m_gColorRt                                  = MakeNewPtr<RenderTarget>(128, 128, gBufferRenderTargetSettings);
+    m_gEmissiveRt                               = MakeNewPtr<RenderTarget>(128, 128, gBufferRenderTargetSettings);
+    m_gIblRt                                    = MakeNewPtr<RenderTarget>(128, 128, gBufferRenderTargetSettings);
 
-    gBufferRenderTargetSettings.InternalFormat      = GraphicTypes::FormatRGBA32F;
-    gBufferRenderTargetSettings.Format              = GraphicTypes::FormatRGBA;
+    gBufferRenderTargetSettings.InternalFormat  = GraphicTypes::FormatRGBA32F;
+    gBufferRenderTargetSettings.Format          = GraphicTypes::FormatRGBA;
     // Note: A32 is not used, it didn't work on Android devices when we bind it to frame buffer
-    m_gLinearDepthRt                                = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gLinearDepthRt                            = MakeNewPtr<RenderTarget>(128, 128, gBufferRenderTargetSettings);
 
-    gBufferRenderTargetSettings.InternalFormat      = GraphicTypes::FormatRG16F;
-    gBufferRenderTargetSettings.Format              = GraphicTypes::FormatRG;
+    gBufferRenderTargetSettings.InternalFormat  = GraphicTypes::FormatRG16F;
+    gBufferRenderTargetSettings.Format          = GraphicTypes::FormatRG;
 
-    m_gMetallicRoughnessRt                          = MakeNewPtr<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gMetallicRoughnessRt                      = MakeNewPtr<RenderTarget>(128, 128, gBufferRenderTargetSettings);
 
-    m_framebuffer                                   = MakeNewPtr<Framebuffer>();
-    m_gBufferMaterial                               = MakeNewPtr<Material>();
+    m_framebuffer                               = MakeNewPtr<Framebuffer>();
+    m_gBufferMaterial                           = MakeNewPtr<Material>();
   }
 
   GBufferPass::GBufferPass(const GBufferPassParams& params) : GBufferPass() { m_params = params; }
@@ -88,7 +88,7 @@ namespace ToolKit
       m_height = height;
 
       // Gbuffers render targets
-      m_framebuffer->Init({(uint) width, (uint) height, false, true});
+      m_framebuffer->Init({width, height, false, true});
       m_gPosRt->m_width                = width;
       m_gPosRt->m_height               = height;
       m_gNormalRt->m_width             = width;
@@ -165,7 +165,7 @@ namespace ToolKit
 
     renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
 
-    renderer->SetCameraLens(m_params.Camera);
+    renderer->SetCamera(m_params.Camera, true);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
