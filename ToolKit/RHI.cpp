@@ -110,11 +110,14 @@ namespace ToolKit
 
   void RHI::DeleteTextures(int textureCount, GLuint* textures)
   {
-    for (int i = 0; i < textureCount; ++i)
+    for (int i = 0; i < 32; ++i)
     {
-      if (m_slotTextureIDmap.find(textures[i]) != m_slotTextureIDmap.end())
+      for (int ii = 0; ii < textureCount; ++ii)
       {
-        m_slotTextureIDmap[textures[i]] = 0;
+        if (m_slotTextureIDmap[i] == textures[ii])
+        {
+          m_slotTextureIDmap[i] = 0;
+        }
       }
     }
 

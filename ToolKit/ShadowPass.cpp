@@ -296,7 +296,7 @@ namespace ToolKit
     // Check if the shadow atlas needs to be updated
     bool needChange = false;
 
-    // After this loop lastShadowLights is set with lights with shadows
+    // After this loop m_previousShadowCasters is set with lights with shadows
     int nextId      = 0;
     for (int i = 0; i < m_params.Lights.size(); ++i)
     {
@@ -362,6 +362,8 @@ namespace ToolKit
                                    false,
                                    true});
       }
+
+      m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, 0);
     }
   }
 
