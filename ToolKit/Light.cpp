@@ -38,6 +38,8 @@ namespace ToolKit
 
   Light::~Light() {}
 
+  void Light::NativeConstruct() { Super::NativeConstruct(); }
+
   void Light::ParameterConstructor()
   {
     Super::ParameterConstructor();
