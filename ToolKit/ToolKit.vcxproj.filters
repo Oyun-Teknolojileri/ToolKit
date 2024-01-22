@@ -495,6 +495,9 @@
     <ClInclude Include="ShaderUniform.h">
       <Filter>Render</Filter>
     </ClInclude>
+    <ClInclude Include="Threads.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Entities">

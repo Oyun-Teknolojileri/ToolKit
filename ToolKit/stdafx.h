@@ -49,6 +49,7 @@
 #include "Logger.h"
 #include "Pass.h"
 #include "Serialize.h"
+#include "Threads.h"
 
 #ifdef TK_EDITOR
   #include "App.h"
