@@ -1035,23 +1035,4 @@ namespace ToolKit
     return result;
   }
 
-  template <typename Key, typename Value>
-  bool HaveSameKeys(const std::unordered_map<Key, Value>& map1, const std::unordered_map<Key, Value>& map2)
-  {
-    if (map1.size() != map2.size())
-    {
-      return false; // If the sizes are different, they can't have the same keys
-    }
-
-    for (const auto& pair : map1)
-    {
-      if (map2.find(pair.first) == map2.end())
-      {
-        return false; // Key not found in map2
-      }
-    }
-
-    return true; // All keys in map1 are found in map2
-  }
-
 } //  namespace ToolKit

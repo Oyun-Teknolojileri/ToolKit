@@ -15,9 +15,8 @@
 #include "ResourceComponent.h"
 #include "Skeleton.h"
 #include "TKProfiler.h"
+#include "Threads.h"
 
-#include <execution>
-#include <mutex>
 #include <random>
 
 #include "DebugNew.h"
@@ -428,9 +427,6 @@ namespace ToolKit
       }
     }
 
-    volatile int y = 5;
-
-#ifndef __clang__
     std::mutex updateHit;
     std::for_each(std::execution::par_unseq,
                   mesh->m_faces.begin(),
@@ -461,21 +457,6 @@ namespace ToolKit
                       }
                     }
                   });
-#else
-    for (const Face& face : mesh->m_faces)
-    {
-      float dist = FLT_MAX;
-      if (RayTriangleIntersection(ray, face.vertices[0]->pos, face.vertices[1]->pos, face.vertices[2]->pos, dist))
-      {
-        if (dist < closestPickedDistance && t >= 0.0f)
-        {
-          t                     = dist;
-          closestPickedDistance = dist;
-          hit                   = true;
-        }
-      }
-    }
-#endif
 
     return hit;
   }
@@ -493,13 +474,13 @@ namespace ToolKit
       meshComp->GetMeshVal()->GetAllMeshes(meshes);
     }
 
-    struct meshTrace
+    struct MeshTrace
     {
       float dist;
       uint indx;
     };
 
-    std::vector<meshTrace> meshTraces;
+    std::vector<MeshTrace> meshTraces;
     for (uint i = 0; i < meshes.size(); i++)
     {
       // There is a special case for SkinMeshes, because
@@ -533,11 +514,10 @@ namespace ToolKit
     rayInObjectSpace.position  = its * Vec4(rayInWorldSpace.position, 1.0f);
     rayInObjectSpace.direction = its * Vec4(rayInWorldSpace.direction, 0.0f);
 
-#ifndef __clang__
     std::for_each(std::execution::par_unseq,
                   meshTraces.begin(),
                   meshTraces.end(),
-                  [rayInObjectSpace, skel, &meshes](meshTrace& trace)
+                  [rayInObjectSpace, skel, &meshes](MeshTrace& trace)
                   {
                     float t = TK_FLT_MAX;
 
@@ -546,21 +526,10 @@ namespace ToolKit
                       trace.dist = t;
                     }
                   });
-#else
-    for (meshTrace& trace : meshTraces)
-    {
-      float t = FLT_MAX;
-
-      if (RayMeshIntersection(meshes[trace.indx], rayInObjectSpace, t, skel))
-      {
-        trace.dist = t;
-      }
-    }
-#endif
 
     t                = TK_FLT_MAX;
     uint closestIndx = TK_UINT_MAX;
-    for (const meshTrace& trace : meshTraces)
+    for (const MeshTrace& trace : meshTraces)
     {
       if (trace.dist < t)
       {

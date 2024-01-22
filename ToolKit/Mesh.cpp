@@ -17,10 +17,9 @@
 #include "TKOpenGL.h"
 #include "TKStats.h"
 #include "Texture.h"
+#include "Threads.h"
 #include "ToolKit.h"
 #include "Util.h"
-
-#include <execution>
 
 #include "DebugNew.h"
 
@@ -699,7 +698,6 @@ namespace ToolKit
       indexes[i] = i;
     }
 
-#ifndef __clang__
     std::for_each(std::execution::par_unseq,
                   indexes.begin(),
                   indexes.end(),
@@ -723,23 +721,7 @@ namespace ToolKit
                                     meshAABB.UpdateBoundary(skinnedPos);
                                   });
                   });
-#else
-    for (uint index : indexes)
-    {
-      SkinMesh* m = (SkinMesh*) meshes[index];
-      if (m->m_clientSideVertices.empty())
-      {
-        continue;
-      }
-      BoundingBox& meshAABB = AABBs[index];
 
-      for (SkinVertex v : m->m_clientSideVertices)
-      {
-        const Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap, false);
-        meshAABB.UpdateBoundary(skinnedPos);
-      }
-    }
-#endif
     for (BoundingBox& aabb : AABBs)
     {
       finalAABB.UpdateBoundary(aabb.max);

@@ -179,8 +179,9 @@ namespace ToolKit
   //  Use in combination with TKMalloc to free from main toolkit module.
   TK_API void TKFree(void* m);
 
-  // Vector operations.
+  // Container operations.
   ///////////////////////////////////////////////////////
+
   TK_API int IndexOf(EntityPtr ntt, const EntityPtrArray& entities);
   TK_API bool Exist(const IntArray& vec, int val);
 
@@ -244,24 +245,40 @@ namespace ToolKit
     return N;
   }
 
+  template <typename Key, typename Value>
+  bool HaveSameKeys(const std::unordered_map<Key, Value>& map1, const std::unordered_map<Key, Value>& map2)
+  {
+    if (map1.size() != map2.size())
+    {
+      return false; // If the sizes are different, they can't have the same keys
+    }
+
+    for (const auto& pair : map1)
+    {
+      if (map2.find(pair.first) == map2.end())
+      {
+        return false; // Key not found in map2
+      }
+    }
+
+    return true; // All keys in map1 are found in map2
+  }
+
   //  Time.
   ///////////////////////////////////////////////////////
   TK_API float MillisecToSec(float ms);
-  //  Returns elapsed time from the ToolKit Init.
+
+  /**
+   * @return Elapsed time from the ToolKit initialization.
+   */
   TK_API float GetElapsedMilliSeconds();
 
-  // Random.
+  // Hash.
   ///////////////////////////////////////////////////////
-
   TK_API uint64 MurmurHash(uint64 x);
 
   TK_API void Xoroshiro128PlusSeed(uint64 s[2], uint64 seed);
 
   TK_API uint64 Xoroshiro128Plus(uint64 s[2]);
-
-  // Container Utilities
-  ///////////////////////////////////////////////////////
-  template <typename Key, typename Value>
-  TK_API bool HaveSameKeys(const std::unordered_map<Key, Value>& map1, const std::unordered_map<Key, Value>& map2);
 
 } // namespace ToolKit
