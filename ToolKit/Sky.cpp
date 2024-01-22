@@ -54,6 +54,8 @@ namespace ToolKit
       envComp->SetHdriVal(hdri);
     };
 
+    envComp->GetHdriVal()->UnInit();
+    envComp->UnInit();
     Vec3 mp = Vec3(TK_FLT_MAX);
     envComp->SetSizeVal(mp);
     envComp->OwnerEntity(Self<Entity>());
