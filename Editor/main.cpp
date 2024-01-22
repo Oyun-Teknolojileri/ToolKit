@@ -22,6 +22,7 @@
 #include <Meta.h>
 #include <PluginManager.h>
 #include <SDL.h>
+#include <TKProfiler.h>
 #include <Types.h>
 #include <locale.h>
 
@@ -29,7 +30,6 @@
 #include <chrono>
 
 #include <DebugNew.h>
-#include <TKProfiler.h>
 
 SDL_Window* g_window    = nullptr;
 SDL_GLContext g_context = nullptr;
