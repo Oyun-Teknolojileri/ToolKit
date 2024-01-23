@@ -64,7 +64,7 @@ namespace ToolKit
      * @param space the space to apply transform in.
      * @param noScale exclude the scale value from matrix.
      */
-    void Transform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_WORLD, bool noScale = true);
+    void Transform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_WORLD);
 
     /**
      * Sets given transform matrix in given space to the node.
@@ -72,7 +72,7 @@ namespace ToolKit
      * @param space the space to set transform in.
      * @param noScale exclude the scale value from matrix.
      */
-    void SetTransform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_WORLD, bool noScale = true);
+    void SetTransform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_WORLD);
 
     /**
      * Retrieves the transform matrix in given space.
@@ -229,7 +229,7 @@ namespace ToolKit
                          Quaternion* orientation,
                          Vec3* scale);
 
-    Mat4 GetLocalTransform() const;
+    void UpdateLocalTransform();
     Mat4 GetParentTransform();
     void SetChildrenDirty();
 
@@ -245,7 +245,8 @@ namespace ToolKit
     Quaternion m_orientation; //!< Local orientation value.
     Vec3 m_scale;             //!< Local scale value.
     Mat4 m_parentCache;       //!< Cached transformation of the parent hierarchy.
-    bool m_dirty;             //!< Hint for child to update its parent cache.
+    Mat4 m_localCache;
+    bool m_dirty; //!< Hint for child to update its parent cache.
   };
 
 } // namespace ToolKit

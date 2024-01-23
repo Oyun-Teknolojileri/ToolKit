@@ -123,7 +123,7 @@ namespace ToolKit
 
             Mat4 scaleMat;
             scaleMat = glm::scale(scaleMat, surfaceScale);
-            childNode->Transform(scaleMat, TransformationSpace::TS_WORLD, false);
+            childNode->Transform(scaleMat, TransformationSpace::TS_WORLD);
           }
 
           // Translate operation
