@@ -203,6 +203,11 @@ namespace ToolKit
      */
     void OwnerEntity(EntityPtr owner) { m_entity = owner; }
 
+    /**
+    * Sets the local transforms of the node.
+    */
+    void SetLocalTransforms(Vec3 translation, Quaternion rotation, Vec3 scale);
+
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent);
 

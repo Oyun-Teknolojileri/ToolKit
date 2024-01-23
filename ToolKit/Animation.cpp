@@ -56,11 +56,14 @@ namespace ToolKit
       return;
     }
 
-    Key k1 = keys[key1];
-    Key k2 = keys[key2];
-    node->SetTranslation(Interpolate(k1.m_position, k2.m_position, ratio), TransformationSpace::TS_LOCAL);
-    node->SetOrientation(glm::slerp(k1.m_rotation, k2.m_rotation, ratio), TransformationSpace::TS_LOCAL);
-    node->SetScale(Interpolate(k1.m_scale, k2.m_scale, ratio));
+    Key k1              = keys[key1];
+    Key k2              = keys[key2];
+
+    Vec3 positon        = Interpolate(k1.m_position, k2.m_position, ratio);
+    Quaternion rotation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
+    Vec3 scale          = Interpolate(k1.m_scale, k2.m_scale, ratio);
+
+    node->SetLocalTransforms(positon, rotation, scale);
   }
 
   void Animation::GetPose(const SkeletonComponentPtr& skeleton, float time, BlendTarget* blendTarget)
@@ -148,9 +151,7 @@ namespace ToolKit
         }
       }
 
-      dBone.node->SetTranslation(translation, TransformationSpace::TS_LOCAL);
-      dBone.node->SetOrientation(orientation, TransformationSpace::TS_LOCAL);
-      dBone.node->SetScale(scale);
+      dBone.node->SetLocalTransforms(translation, orientation, scale);
     }
     skeleton->isDirty = true;
   }
@@ -627,10 +628,7 @@ namespace ToolKit
 
         if (anim->m_keys.find(name) == anim->m_keys.end())
         {
-          dBone.node->SetTranslation(ZERO);
-          dBone.node->SetOrientation(Quaternion(0.0f, 0.0f, 0.0f, 1.0f), TransformationSpace::TS_LOCAL);
-          dBone.node->SetScale(Vec3(1.0f, 1.0f, 1.0f));
-
+          dBone.node->SetLocalTransforms(Vec3(), Quaternion(), Vec3(1.0f));
           boneNodes.push_back(std::make_pair(dBone.node, dBone.boneIndx));
           continue;
         }
@@ -650,10 +648,7 @@ namespace ToolKit
           keysframesLeft = true;
 
           Key& key       = keys[keyframeIndex];
-          dBone.node->SetTranslation(key.m_position, TransformationSpace::TS_LOCAL);
-          dBone.node->SetOrientation(key.m_rotation, TransformationSpace::TS_LOCAL);
-          dBone.node->SetScale(key.m_scale);
-
+          dBone.node->SetLocalTransforms(key.m_position, key.m_rotation, key.m_scale);
           boneNodes.push_back(std::make_pair(dBone.node, dBone.boneIndx));
         }
       }

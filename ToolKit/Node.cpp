@@ -101,9 +101,8 @@ namespace ToolKit
 
   void Node::SetScale(const Vec3& val)
   {
-    m_scale = val;
-    UpdateLocalTransform();
-    SetChildrenDirty();
+    Mat4 ts = glm::scale(val);
+    SetTransformImp(ts, TransformationSpace::TS_LOCAL, nullptr, nullptr, &m_scale);
   }
 
   Vec3 Node::GetScale() { return m_scale; }
@@ -247,6 +246,15 @@ namespace ToolKit
     return nullptr;
   }
 
+  void Node::SetLocalTransforms(Vec3 translation, Quaternion rotation, Vec3 scale)
+  {
+    m_translation = translation;
+    m_orientation = rotation;
+    m_scale       = scale;
+
+    UpdateLocalTransform();
+  }
+
   XmlNode* Node::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = CreateXmlNode(doc, XmlNodeElement, parent);
@@ -323,7 +331,6 @@ namespace ToolKit
 
     DecomposeMatrix(ts, translation, orientation, scale);
     UpdateLocalTransform();
-    SetChildrenDirty();
   }
 
   void Node::SetTransformImp(const Mat4& val,
@@ -348,7 +355,6 @@ namespace ToolKit
 
     DecomposeMatrix(ts, translation, orientation, scale);
     UpdateLocalTransform();
-    SetChildrenDirty();
   }
 
   void Node::GetTransformImp(TransformationSpace space,
@@ -401,6 +407,7 @@ namespace ToolKit
     rt           = glm::toMat4(m_orientation);
     ts           = glm::translate(ts, m_translation);
     m_localCache = ts * rt * scl;
+    SetChildrenDirty();
   }
 
   Mat4 Node::GetParentTransform()
