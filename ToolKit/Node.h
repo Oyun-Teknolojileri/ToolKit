@@ -30,10 +30,6 @@ namespace ToolKit
    */
   class TK_API Node : public Serializable
   {
-    friend class Animation;
-    friend class AnimationPlayer;
-    friend class Skeleton;
-
    public:
     Node();
     ~Node();
