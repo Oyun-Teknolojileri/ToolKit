@@ -127,9 +127,14 @@ namespace ToolKit
       return;
     }
     Mat4 ts;
+    Vec3 scale;
     if (preserveTransform)
     {
       ts = child->GetTransform(TransformationSpace::TS_WORLD);
+    }
+    else if (child->m_inheritScale)
+    {
+      scale = child->GetScale();
     }
 
     m_children.insert(m_children.begin() + index, child);
@@ -140,6 +145,10 @@ namespace ToolKit
     if (preserveTransform)
     {
       child->SetTransform(ts, TransformationSpace::TS_WORLD);
+    }
+    else if (child->m_inheritScale)
+    {
+      child->SetScale(scale);
     }
   }
 
