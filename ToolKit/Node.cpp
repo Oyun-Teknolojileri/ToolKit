@@ -52,9 +52,8 @@ namespace ToolKit
 
   void Node::Scale(const Vec3& val)
   {
-    m_scale *= val;
-    UpdateLocalTransform();
-    SetChildrenDirty();
+    Mat4 ts = glm::scale(val);
+    TransformImp(ts, TransformationSpace::TS_LOCAL, nullptr, &m_orientation, nullptr);
   }
 
   void Node::Transform(const Mat4& val, TransformationSpace space)
@@ -315,7 +314,6 @@ namespace ToolKit
 
     DecomposeMatrix(ts, translation, orientation, scale);
     UpdateLocalTransform();
-
     SetChildrenDirty();
   }
 
@@ -341,7 +339,6 @@ namespace ToolKit
 
     DecomposeMatrix(ts, translation, orientation, scale);
     UpdateLocalTransform();
-
     SetChildrenDirty();
   }
 

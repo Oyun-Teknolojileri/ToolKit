@@ -61,6 +61,7 @@ namespace ToolKit
     node->m_translation = Interpolate(k1.m_position, k2.m_position, ratio);
     node->m_orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
     node->m_scale       = Interpolate(k1.m_scale, k2.m_scale, ratio);
+    node->UpdateLocalTransform();
     node->SetChildrenDirty();
   }
 
@@ -152,7 +153,7 @@ namespace ToolKit
       dBone.node->m_translation = translation;
       dBone.node->m_orientation = orientation;
       dBone.node->m_scale       = scale;
-
+      dBone.node->UpdateLocalTransform();
       dBone.node->SetChildrenDirty();
     }
     skeleton->isDirty = true;
@@ -633,6 +634,7 @@ namespace ToolKit
           dBone.node->m_translation = ZERO;
           dBone.node->m_orientation = Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
           dBone.node->m_scale       = Vec3(1.0f, 1.0f, 1.0f);
+          dBone.node->UpdateLocalTransform();
           dBone.node->SetChildrenDirty();
 
           boneNodes.push_back(std::make_pair(dBone.node, dBone.boneIndx));
@@ -657,6 +659,7 @@ namespace ToolKit
           dBone.node->m_translation = key.m_position;
           dBone.node->m_orientation = key.m_rotation;
           dBone.node->m_scale       = key.m_scale;
+          dBone.node->UpdateLocalTransform();
           dBone.node->SetChildrenDirty();
 
           boneNodes.push_back(std::make_pair(dBone.node, dBone.boneIndx));
