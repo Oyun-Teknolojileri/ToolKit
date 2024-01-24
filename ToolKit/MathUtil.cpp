@@ -770,8 +770,27 @@ namespace ToolKit
     Mat4 v          = camera->GetViewMatrix();
     Frustum frustum = ExtractFrustum(pr * v, false);
 
-    auto delFn      = [frustum](RenderJob& job) -> bool { return FrustumTest(frustum, job.BoundingBox); };
-    erase_if(jobs, delFn);
+    bool* culled    = new bool[jobs.size()];
+
+    using poolstl::iota_iter;
+    std::for_each(TKExecByConditional(jobs.size() > 100, WorkerManager::FramePool),
+                  iota_iter<size_t>(0),
+                  iota_iter<size_t>(jobs.size()),
+                  [&](size_t i) -> void { culled[i] = FrustumTest(frustum, jobs[i].BoundingBox); });
+
+    int removed = 0;
+    for (int i = 0; i < (int) jobs.size(); i++)
+    {
+      if (culled[i])
+      {
+        removed++;
+        std::iter_swap(jobs.begin() + i, jobs.end() - removed);
+      }
+    }
+
+    jobs.erase(jobs.end() - removed, jobs.end());
+
+    SafeDelArray(culled);
   }
 
   void TransformAABB(BoundingBox& box, const Mat4& transform)
