@@ -370,6 +370,11 @@ namespace ToolKit
                              Quaternion* orientation,
                              Vec3* scale)
   {
+    if (m_dirty)
+    {
+      UpdateTransformCaches();
+    }
+
     switch (space)
     {
     case TransformationSpace::TS_WORLD:
