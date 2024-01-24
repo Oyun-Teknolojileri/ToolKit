@@ -770,7 +770,12 @@ namespace ToolKit
     Mat4 v          = camera->GetViewMatrix();
     Frustum frustum = ExtractFrustum(pr * v, false);
 
-    bool* culled    = new bool[jobs.size()];
+    if (jobs.empty())
+    {
+      return;
+    }
+
+    bool* culled = new bool[jobs.size()];
 
     using poolstl::iota_iter;
     std::for_each(TKExecByConditional(jobs.size() > 100, WorkerManager::FramePool),
@@ -779,7 +784,7 @@ namespace ToolKit
                   [&](size_t i) -> void { culled[i] = FrustumTest(frustum, jobs[i].BoundingBox); });
 
     int removed = 0;
-    for (int i = 0; i < (int) jobs.size(); i++)
+    for (int i = (int) jobs.size() - 1; i >= 0; i--)
     {
       if (culled[i])
       {
