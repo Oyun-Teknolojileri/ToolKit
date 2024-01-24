@@ -792,9 +792,9 @@ namespace ToolKit
       if (m_mat != nullptr)
       {
         m_mat->m_updateGPUUniforms = false;
-        program->m_activeMaterial = m_mat;
+        program->m_activeMaterial  = m_mat;
 
-        int uniformLoc            = program->GetUniformLocation(Uniform::COLOR);
+        int uniformLoc             = program->GetUniformLocation(Uniform::COLOR);
         if (uniformLoc != -1)
         {
           Vec4 color = Vec4(m_mat->m_color, m_mat->GetAlpha());
@@ -814,13 +814,6 @@ namespace ToolKit
         if (uniformLoc != -1)
         {
           glUniform1i(uniformLoc, (GLint) m_renderState.IBLInUse);
-
-          if (m_renderState.IBLInUse)
-          {
-            SetTexture(7, m_renderState.irradianceMap);
-            SetTexture(15, m_renderState.preFilteredSpecularMap);
-            SetTexture(16, m_renderState.brdfLut);
-          }
         }
 
         uniformLoc = program->GetUniformLocation(Uniform::IBL_INTENSITY);
@@ -875,14 +868,6 @@ namespace ToolKit
         {
           int emmInUse = (int) (m_mat->m_emissiveTexture != nullptr);
           glUniform1i(uniformLoc, emmInUse);
-
-          if (emmInUse)
-          {
-            if (m_mat->m_emissiveTexture)
-            {
-              SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
-            }
-          }
         }
 
         uniformLoc = program->GetUniformLocation(Uniform::EMISSIVE_COLOR);
@@ -896,11 +881,6 @@ namespace ToolKit
         {
           int normInUse = (int) (m_mat->m_normalMap != nullptr);
           glUniform1i(uniformLoc, normInUse);
-
-          if (normInUse)
-          {
-            SetTexture(9, m_mat->m_normalMap->m_textureId);
-          }
         }
 
         uniformLoc = program->GetUniformLocation(Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE);
@@ -908,14 +888,6 @@ namespace ToolKit
         {
           int metRghInUse = (int) (m_mat->m_metallicRoughnessTexture != nullptr);
           glUniform1i(uniformLoc, metRghInUse);
-
-          if (metRghInUse)
-          {
-            if (m_mat->m_metallicRoughnessTexture)
-            {
-              SetTexture(4, m_mat->m_metallicRoughnessTexture->m_textureId);
-            }
-          }
         }
 
         uniformLoc = program->GetUniformLocation(Uniform::METALLIC);
@@ -979,6 +951,43 @@ namespace ToolKit
         {
           EngineSettings& set = GetEngineSettings();
           glUniform1f(loc, set.Graphics.ShadowDistance);
+        }
+        break;
+        case Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE:
+        {
+          if (m_mat->m_metallicRoughnessTexture != nullptr)
+          {
+            if (m_mat->m_metallicRoughnessTexture)
+            {
+              SetTexture(4, m_mat->m_metallicRoughnessTexture->m_textureId);
+            }
+          }
+        }
+        break;
+        case Uniform::NORMAL_MAP_IN_USE:
+        {
+          if (m_mat->m_normalMap != nullptr)
+          {
+            SetTexture(9, m_mat->m_normalMap->m_textureId);
+          }
+        }
+        break;
+        case Uniform::USE_IBL:
+        {
+          if (m_renderState.IBLInUse)
+          {
+            SetTexture(7, m_renderState.irradianceMap);
+            SetTexture(15, m_renderState.preFilteredSpecularMap);
+            SetTexture(16, m_renderState.brdfLut);
+          }
+        }
+        break;
+        case Uniform::EMISSIVE_TEXTURE_IN_USE:
+        {
+          if (m_mat->m_emissiveTexture != nullptr)
+          {
+            SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
+          }
         }
         break;
         case Uniform::KEY_FRAME_1:
