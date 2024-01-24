@@ -56,7 +56,10 @@ namespace ToolKit
 
   TK_API bool RayTriangleIntersection(const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t);
 
-  TK_API Vec3 CPUSkinning(const class SkinVertex* vertex, const Skeleton* skel, DynamicBoneMapPtr dynamicBoneMap, bool isAnimated);
+  TK_API Vec3 CPUSkinning(const class SkinVertex* vertex,
+                          const Skeleton* skel,
+                          DynamicBoneMapPtr dynamicBoneMap,
+                          bool isAnimated);
 
   TK_API bool RayMeshIntersection(const class Mesh* const mesh,
                                   const Ray& rayInWorldSpace,
@@ -67,6 +70,8 @@ namespace ToolKit
   // If there is no tracing possible object, t set as 0.0
   // Tracing possible object: Vertex positions should be in memory
   TK_API uint FindMeshIntersection(const EntityPtr ntt, const Ray& ray, float& t);
+
+  TK_API bool FrustumBoxIntersectionFast(const Frustum& frustum, const BoundingBox& box);
 
   TK_API IntersectResult FrustumBoxIntersection(const Frustum& frustum,
                                                 const BoundingBox& box); // 0 outside, 1 inside, 2 intersect

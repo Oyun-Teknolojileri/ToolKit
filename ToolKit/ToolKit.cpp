@@ -29,6 +29,8 @@
 
 namespace ToolKit
 {
+  float Main::Shadow = 0.0f;
+
   HandleManager::HandleManager()
   {
     ULongID seed = time(nullptr) + ((ULongID) (this) ^ m_randomXor[0]);

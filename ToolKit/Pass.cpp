@@ -318,7 +318,7 @@ namespace ToolKit
       {
         // The shadow camera of light should be updated before accessing the frustum.
         // RenderPath PreRender functions should do that.
-        if (FrustumBoxIntersection(spot->m_frustumCache, aabb) != IntersectResult::Outside)
+        if (FrustumBoxIntersectionFast(spot->m_frustumCache, aabb))
         {
           curIntersectCount++;
         }

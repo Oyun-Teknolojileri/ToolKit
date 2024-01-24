@@ -540,6 +540,40 @@ namespace ToolKit
     return closestIndx;
   }
 
+  // Returns false if outside
+  bool FrustumBoxIntersectionFast(const Frustum& frustum, const BoundingBox& box)
+  {
+    const Vec3 v1 = {box.min.x, box.min.y, box.min.z};
+    const Vec3 v2 = {box.min.x, box.min.y, box.max.z};
+    const Vec3 v3 = {box.min.x, box.max.y, box.min.z};
+    const Vec3 v4 = {box.min.x, box.max.y, box.max.z};
+    const Vec3 v5 = {box.max.x, box.min.y, box.min.z};
+    const Vec3 v6 = {box.max.x, box.min.y, box.max.z};
+    const Vec3 v7 = {box.max.x, box.max.y, box.min.z};
+    const Vec3 v8 = {box.max.x, box.max.y, box.max.z};
+
+    for (const PlaneEquation& plane : frustum.planes)
+    {
+      float v1distance = glm::dot(plane.normal, v1) + plane.d;
+      float v2distance = glm::dot(plane.normal, v2) + plane.d;
+      float v3distance = glm::dot(plane.normal, v3) + plane.d;
+      float v4distance = glm::dot(plane.normal, v4) + plane.d;
+      float v5distance = glm::dot(plane.normal, v5) + plane.d;
+      float v6distance = glm::dot(plane.normal, v6) + plane.d;
+      float v7distance = glm::dot(plane.normal, v7) + plane.d;
+      float v8distance = glm::dot(plane.normal, v8) + plane.d;
+
+      // Check for separation
+      if (v1distance < 0.0f && v2distance < 0.0f && v3distance < 0.0f && v4distance < 0.0f && v5distance < 0.0f &&
+          v6distance < 0.0f && v7distance < 0.0f && v8distance < 0.0f)
+      {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   /*
    * When the plane equation is not normalized, the distance of a point to the
    * plane: If distance < 0 , then the point p lies in the negative halfspace.
@@ -761,9 +795,13 @@ namespace ToolKit
     erase_if(entities, delFn);
   }
 
+  std::vector<bool> culled;
+
   void FrustumCull(RenderJobArray& jobs, CameraPtr camera)
   {
     CPU_FUNC_RANGE();
+
+    auto t_start    = std::chrono::high_resolution_clock::now();
 
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();
@@ -775,13 +813,14 @@ namespace ToolKit
       return;
     }
 
-    bool* culled = new bool[jobs.size()];
+    culled.clear();
+    culled.resize(jobs.size());
 
     using poolstl::iota_iter;
     std::for_each(TKExecByConditional(jobs.size() > 100, WorkerManager::FramePool),
                   iota_iter<size_t>(0),
                   iota_iter<size_t>(jobs.size()),
-                  [&](size_t i) -> void { culled[i] = FrustumTest(frustum, jobs[i].BoundingBox); });
+                  [&](size_t i) -> void { culled[i] = !FrustumBoxIntersectionFast(frustum, jobs[i].BoundingBox); });
 
     int removed = 0;
     for (int i = (int) jobs.size() - 1; i >= 0; i--)
@@ -795,7 +834,10 @@ namespace ToolKit
 
     jobs.erase(jobs.end() - removed, jobs.end());
 
-    SafeDelArray(culled);
+    auto t_end                   = std::chrono::high_resolution_clock::now();
+
+    float elapsed_time_ms        = std::chrono::duration<float, std::milli>(t_end - t_start).count();
+    Main::GetInstance()->Shadow += elapsed_time_ms;
   }
 
   void TransformAABB(BoundingBox& box, const Mat4& transform)

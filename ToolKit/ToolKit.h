@@ -109,6 +109,9 @@ namespace ToolKit
     static void SetProxy(Main* proxy);
 
    public:
+     //TODO
+    static float Shadow;
+
     Timing m_timing;
     class AnimationManager* m_animationMan     = nullptr;
     class AnimationPlayer* m_animationPlayer   = nullptr;

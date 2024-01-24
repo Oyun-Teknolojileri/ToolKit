@@ -16,6 +16,8 @@
 #include "TKStats.h"
 #include "ToolKit.h"
 
+#include <chrono>
+
 namespace ToolKit
 {
 
@@ -118,6 +120,8 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
+    auto t_start              = std::chrono::high_resolution_clock::now();
+
     Renderer* renderer        = GetRenderer();
 
     auto renderForShadowMapFn = [this, &renderer](LightPtr light, const RenderJobArray& jobs) -> void
@@ -131,14 +135,13 @@ namespace ToolKit
       MaterialPtr shadowMaterial = light->GetShadowMaterial();
       renderer->SetCamera(light->m_shadowCamera, false);
 
-      for (const RenderJob& job : jobs)
-      {
-        // Frustum cull
-        if (FrustumTest(frustum, job.BoundingBox))
-        {
-          continue;
-        }
+      static RenderJobArray culled;
+      culled.clear();
+      culled.insert(culled.end(), jobs.begin(), jobs.end());
+      FrustumCull(culled, light->m_shadowCamera);
 
+      for (const RenderJob& job : culled)
+      {
         renderer->m_overrideMat = shadowMaterial;
         MaterialPtr material    = job.Material;
         renderer->m_overrideMat->SetRenderState(material->GetRenderState());
