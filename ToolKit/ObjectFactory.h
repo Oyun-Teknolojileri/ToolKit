@@ -94,6 +94,9 @@ namespace ToolKit
 
       m_constructorFnMap[objectClass->Name] = constructorFn;
 
+      objectClass->SuperClassLookUp.clear();
+      ClassLookUpBuilder(objectClass, objectClass);
+
       CallMetaProcessors(objectClass->MetaKeys, m_metaProcessorRegisterMap);
     }
 
@@ -179,6 +182,11 @@ namespace ToolKit
      * Registers all the known Object constructors.
      */
     void Init();
+
+    /**
+     * For the given class fills the class look up table.
+     */
+    void ClassLookUpBuilder(ClassMeta* Class, ClassMeta* FirstClass);
 
    private:
     std::unordered_map<StringView, ObjectConstructorCallback> m_constructorFnMap;

@@ -465,11 +465,8 @@ namespace ToolKit
   {
     SkeletonComponentPtr skel = ntt->GetComponent<SkeletonComponent>();
 
-    MeshComponentPtrArray meshComps;
-    ntt->GetComponent<MeshComponent>(meshComps);
-
     MeshRawPtrArray meshes;
-    for (MeshComponentPtr meshComp : meshComps)
+    if (MeshComponentPtr meshComp = ntt->GetComponent<MeshComponent>())
     {
       meshComp->GetMeshVal()->GetAllMeshes(meshes);
     }

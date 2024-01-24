@@ -232,6 +232,7 @@
     <ClCompile Include="ShaderUniform.cpp">
       <Filter>Render</Filter>
     </ClCompile>
+    <ClCompile Include="Threads.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">

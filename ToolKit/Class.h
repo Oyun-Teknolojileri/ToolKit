@@ -26,6 +26,12 @@ namespace ToolKit
      */
     MetaMap MetaKeys;
 
+    /**
+     * Constructed when the class is registered. Provides fast look up for inheritance table.
+     * First entry is the Super Class name, second entry is the Hash id of the corresponding class.
+     */
+    std::vector<std::pair<StringView, ULongID>> SuperClassLookUp;
+
     bool operator==(const ClassMeta& other) const
     {
       assert(HashId != NULL_HANDLE && "Class is not registered.");
@@ -45,23 +51,15 @@ namespace ToolKit
      */
     bool IsSublcassOf(ClassMeta* base)
     {
-      if (*base == *Super)
+      for (int i = 0; i < SuperClassLookUp.size(); i++)
       {
-        return true;
+        if (base->HashId == SuperClassLookUp[i].second)
+        {
+          return true;
+        }
       }
 
-      if (*this == *base)
-      {
-        return true;
-      }
-
-      // This specific condition is only valid for Object, marking this point as the end.
-      if (*this == *Super)
-      {
-        return false; // No match found.
-      }
-
-      return Super->IsSublcassOf(base);
+      return false;
     }
   };
 

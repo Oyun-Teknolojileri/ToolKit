@@ -24,6 +24,8 @@ namespace ToolKit
 
   static VariantCategory EntityCategory {"Meta", 100};
 
+  typedef std::unordered_map<ULongID, ComponentPtr> ComponentPtrMap;
+
   /**
    * Fundamental object that all the ToolKit utilities can interacted with.
    * Entity is the base class for all the objects that can be inserted in any
@@ -60,7 +62,7 @@ namespace ToolKit
     {
       std::shared_ptr<T> component = MakeNewPtr<T>();
       component->OwnerEntity(Self<Entity>());
-      m_components.push_back(component);
+      m_components[T::StaticClass()->HashId] = component;
       return component;
     }
 
@@ -83,61 +85,59 @@ namespace ToolKit
      * @param componentId Id of the component to be removed.
      * @return Removed ComponentPtr. If nothing gets removed, returns nullptr.
      */
-    ComponentPtr RemoveComponent(ULongID componentId);
-
-    /**
-     * Mutable component array accessors.
-     * @return ComponentPtrArray for this Entity.
-     */
-    ComponentPtrArray& GetComponentPtrArray();
-
-    /**
-     * Immutable component array accessors.
-     * @return ComponentPtrArray for this Entity.
-     */
-    const ComponentPtrArray& GetComponentPtrArray() const;
-
-    /**
-     * Used to return first encountered component of type T.
-     * @return First Component of type T if any exist, otherwise empty pointer.
-     */
     template <typename T>
-    std::shared_ptr<T> GetComponent() const
+    ComponentPtr RemoveComponent()
     {
-      for (const ComponentPtr& com : GetComponentPtrArray())
+      const auto& comp = m_components.find(T::StaticClass()->HashId);
+      if (comp != m_components.end())
       {
-        if (com->IsA<T>())
-        {
-          return tk_reinterpret_pointer_cast<T>(com);
-        }
+        m_components.erase(comp);
+        return comp->second;
       }
 
       return nullptr;
     }
 
     /**
-     * Used to return all components of type T.
-     * @param components ComponentPtrArray that will contain all encountered
-     * components of type T.
+     * Remove the given component from the components of the Entity.
+     * @param Class is the class of the component to be removed.
+     * @return Removed ComponentPtr. If nothing gets removed, returns nullptr.
+     */
+    ComponentPtr RemoveComponent(ClassMeta* Class);
+
+    /**
+     * Mutable component array accessors.
+     * @return ComponentPtrArray for this Entity.
+     */
+    ComponentPtrMap& GetComponentPtrArray();
+
+    /**
+     * Immutable component array accessors.
+     * @return ComponentPtrArray for this Entity.
+     */
+    const ComponentPtrMap& GetComponentPtrArray() const;
+
+    /**
+     * Used to return component of type T.
+     * @return Component of type T if exist, otherwise nullptr.
      */
     template <typename T>
-    void GetComponent(std::vector<std::shared_ptr<T>>& components) const
+    std::shared_ptr<T> GetComponent() const
     {
-      for (const ComponentPtr& com : GetComponentPtrArray())
+      const auto& comp = m_components.find(T::StaticClass()->HashId);
+      if (comp != m_components.cend())
       {
-        if (com->IsA<T>())
-        {
-          components.push_back(std::static_pointer_cast<T>(com));
-        }
+        return tk_reinterpret_pointer_cast<T>(comp->second);
       }
+
+      return nullptr;
     }
 
     /**
-     * Used to return ComponentPtr with given id.
-     * @param id Id of the Component that will be returned.
-     * @return ComponentPtr with the given id.
+     * Returns the component with the given class.
+     * @return Component of type T if exist, otherwise empty pointer.
      */
-    ComponentPtr GetComponent(ULongID id) const;
+    ComponentPtr GetComponent(ClassMeta* Class) const;
 
     /**
      * Removes all components from the entity.
@@ -186,10 +186,11 @@ namespace ToolKit
     Entity* _prefabRootEntity;
 
    private:
-    // This should be private, because instantiated entities don't use this list
-    // NOTE: Entity's own functions shouldn't access this either.
-    // They should use GetComponentPtrArray instead.
-    ComponentPtrArray m_components;
+    /**
+     * Component map that may contains only one component per type.
+     * It holds Class HashId - ComponentPtr
+     */
+    ComponentPtrMap m_components;
   };
 
   class TK_API EntityNode : public Entity

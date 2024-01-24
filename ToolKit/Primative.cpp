@@ -129,7 +129,12 @@ namespace ToolKit
     Generate();
   }
 
-  void Cube::Generate() { Generate(GetMeshComponent(), GetCubeScaleVal()); }
+  void Cube::Generate()
+  {
+    MeshComponentPtr meshCmp = GetMeshComponent();
+    Vec3 scl                 = GetCubeScaleVal();
+    Generate(meshCmp, scl);
+  }
 
   void Cube::ParameterConstructor()
   {

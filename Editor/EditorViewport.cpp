@@ -655,13 +655,13 @@ namespace ToolKit
               }
               else
               {
-                MeshComponentPtrArray meshComps;
-                pd.entity->GetComponent<MeshComponent>(meshComps);
-
                 MeshRawPtrArray meshes;
-                for (MeshComponentPtr meshComp : meshComps)
+                if (MeshComponentPtr meshComp = pd.entity->GetComponent<MeshComponent>())
                 {
-                  meshComp->GetMeshVal()->GetAllMeshes(meshes);
+                  if (MeshPtr mesh = meshComp->GetMeshVal())
+                  {
+                    mesh->GetAllMeshes(meshes);
+                  }
                 }
 
                 if (meshes.empty())

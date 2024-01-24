@@ -14,4 +14,33 @@
   #include <execution>
 #endif
 
-#include <mutex>
+namespace ToolKit
+{
+
+  typedef task_thread_pool::task_thread_pool ThreadPool;
+
+  /**
+   * This is the class that keeps the thread pools and manages async tasks.
+   */
+  class WorkerManager
+  {
+   public:
+    enum Executor
+    {
+      FramePool
+    };
+
+   public:
+    WorkerManager();
+    ThreadPool& GetExecutor(Executor executor);
+
+   public:
+    ThreadPool m_frameWorkers; //!< Task that suppose to complete in a frame should be using this pool.
+  };
+
+#define TKExecByConditional(Condition, Target)                                                                         \
+  poolstl::par_if((Condition) && Main::GetInstance()->m_threaded, GetWorkerManager()->GetExecutor(Target))
+
+#define TKExecBy(Target) poolstl::par_if(Main::GetInstance()->m_threaded, GetWorkerManager()->GetExecutor(Target))
+
+} // namespace ToolKit
