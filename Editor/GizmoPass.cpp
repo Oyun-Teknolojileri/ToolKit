@@ -43,7 +43,7 @@ namespace ToolKit
         if (billboard->GetBillboardType() == EditorBillboardBase::BillboardType::Rotate)
         {
           Mat4 ts = billboard->m_node->GetTransform();
-          m_depthMaskSphere->m_node->SetTransform(ts, TransformationSpace::TS_WORLD, false);
+          m_depthMaskSphere->m_node->SetTransform(ts, TransformationSpace::TS_WORLD);
 
           renderer->ColorMask(false, false, false, false);
 
