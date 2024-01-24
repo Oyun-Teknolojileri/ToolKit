@@ -149,6 +149,8 @@ namespace ToolKit
     {
       child->SetScale(scale);
     }
+
+    child->UpdateTransformCaches();
   }
 
   void Node::AddChild(Node* child, bool preserveTransform)
@@ -179,6 +181,8 @@ namespace ToolKit
     {
       child->SetTransform(ts, TransformationSpace::TS_WORLD);
     }
+
+    child->UpdateTransformCaches();
   }
 
   void Node::OrphanAllChildren(bool preserveTransform)
@@ -224,12 +228,16 @@ namespace ToolKit
   {
     // Does not preserve parent / child relation
     // Look at Util/DeepCopy for preserving hierarchy.
-    Node* node           = new Node();
+    Node* node                    = new Node();
 
-    node->m_inheritScale = m_inheritScale;
-    node->m_translation  = m_translation;
-    node->m_orientation  = m_orientation;
-    node->m_scale        = m_scale;
+    node->m_inheritScale          = m_inheritScale;
+    node->m_translation           = m_translation;
+    node->m_orientation           = m_orientation;
+    node->m_scale                 = m_scale;
+    node->m_localCache            = m_localCache;
+    node->m_worldCache            = m_worldCache;
+    node->m_worldTranslationCache = m_worldTranslationCache;
+    node->m_worldOrientationCache = m_worldOrientationCache;
 
     return node;
   }
@@ -252,7 +260,7 @@ namespace ToolKit
     m_orientation = rotation;
     m_scale       = scale;
 
-    UpdateLocalTransform();
+    UpdateTransformCaches();
   }
 
   XmlNode* Node::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -296,8 +304,7 @@ namespace ToolKit
       ReadVec(n, m_scale);
     }
 
-    GetParentTransform();
-    UpdateLocalTransform();
+    UpdateTransformCaches();
 
     return nullptr;
   }
@@ -330,7 +337,7 @@ namespace ToolKit
     };
 
     DecomposeMatrix(ts, translation, orientation, scale);
-    UpdateLocalTransform();
+    UpdateTransformCaches();
   }
 
   void Node::SetTransformImp(const Mat4& val,
@@ -354,7 +361,7 @@ namespace ToolKit
     }
 
     DecomposeMatrix(ts, translation, orientation, scale);
-    UpdateLocalTransform();
+    UpdateTransformCaches();
   }
 
   void Node::GetTransformImp(TransformationSpace space,
@@ -363,19 +370,28 @@ namespace ToolKit
                              Quaternion* orientation,
                              Vec3* scale)
   {
+    if (m_dirty)
+    {
+      UpdateTransformCaches();
+    }
+
     switch (space)
     {
     case TransformationSpace::TS_WORLD:
       if (m_parent != nullptr)
       {
-        Mat4 ts = m_localCache;
-        Mat4 ps = GetParentTransform();
-        ts      = ps * ts;
         if (transform != nullptr)
         {
-          *transform = ts;
+          *transform = m_worldCache;
         }
-        DecomposeMatrix(ts, translation, orientation, scale);
+        if (translation != nullptr)
+        {
+          *translation = m_worldTranslationCache;
+        }
+        if (orientation != nullptr)
+        {
+          *orientation = m_worldOrientationCache;
+        }
         break;
       } // Fall trough
     case TransformationSpace::TS_LOCAL:
@@ -392,15 +408,16 @@ namespace ToolKit
       {
         *orientation = m_orientation;
       }
-      if (scale != nullptr)
-      {
-        *scale = m_scale;
-      }
       break;
+    }
+
+    if (scale != nullptr)
+    {
+      *scale = m_scale;
     }
   }
 
-  void Node::UpdateLocalTransform()
+  void Node::UpdateTransformCaches()
   {
     Mat4 ts, rt, scl;
     scl          = glm::scale(scl, m_scale);
@@ -408,6 +425,8 @@ namespace ToolKit
     ts           = glm::translate(ts, m_translation);
     m_localCache = ts * rt * scl;
     SetChildrenDirty();
+    m_worldCache = GetParentTransform() * m_localCache;
+    DecomposeMatrix(m_worldCache, &m_worldTranslationCache, &m_worldOrientationCache, nullptr);
   }
 
   Mat4 Node::GetParentTransform()

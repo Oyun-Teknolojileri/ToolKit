@@ -204,8 +204,8 @@ namespace ToolKit
     void OwnerEntity(EntityPtr owner) { m_entity = owner; }
 
     /**
-    * Sets the local transforms of the node.
-    */
+     * Sets the local transforms of the node.
+     */
     void SetLocalTransforms(Vec3 translation, Quaternion rotation, Vec3 scale);
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
@@ -230,7 +230,7 @@ namespace ToolKit
                          Quaternion* orientation,
                          Vec3* scale);
 
-    void UpdateLocalTransform();
+    void UpdateTransformCaches();
     Mat4 GetParentTransform();
     void SetChildrenDirty();
 
@@ -247,6 +247,9 @@ namespace ToolKit
     Vec3 m_scale;             //!< Local scale value.
     Mat4 m_parentCache;       //!< Cached transformation of the parent hierarchy.
     Mat4 m_localCache;
+    Mat4 m_worldCache;
+    Vec3 m_worldTranslationCache;
+    Quaternion m_worldOrientationCache;
     bool m_dirty; //!< Hint for child to update its parent cache.
   };
 
