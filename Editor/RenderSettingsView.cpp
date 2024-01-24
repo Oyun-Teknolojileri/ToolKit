@@ -130,6 +130,19 @@ namespace ToolKit
           }
         }
 
+        static bool multiThreaded = true;
+        if (ImGui::Checkbox("MultiThread##1", &multiThreaded))
+        {
+          if (multiThreaded)
+          {
+            Main::GetInstance()->m_threaded = true;
+          }
+          else
+          {
+            Main::GetInstance()->m_threaded = false;
+          }
+        }
+
         const char* renderSpecNames[] = {"High", "Low"};
         const int currentRenderSpec   = (int) engineSettings.Graphics.RenderSpec;
         const int specCount           = 2;

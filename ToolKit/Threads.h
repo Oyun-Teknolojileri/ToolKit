@@ -21,7 +21,30 @@ namespace ToolKit
   class WorkerManager
   {
    public:
+    enum Executor
+    {
+      FramePool
+    };
+
+   public:
+    ThreadPool& GetExecutor(Executor executor)
+    {
+      switch (executor)
+      {
+      case WorkerManager::Executor::FramePool:
+      default:
+        return m_frameWorkers;
+        break;
+      }
+    }
+
+   public:
     ThreadPool m_frameWorkers; //!< Task that suppose to complete in a frame should be using this pool.
   };
+
+#define TKExecByConditional(Condition, Target)                                                                         \
+  poolstl::par_if((Condition) && Main::GetInstance()->m_threaded, GetWorkerManager()->GetExecutor(Target))
+
+#define TKExecBy(Target) poolstl::par_if(Main::GetInstance()->m_threaded, GetWorkerManager()->GetExecutor(Target))
 
 } // namespace ToolKit
