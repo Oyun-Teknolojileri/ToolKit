@@ -191,6 +191,7 @@ namespace ToolKit
     SafeDel(m_fileManager);
     SafeDel(m_objectFactory);
     SafeDel(m_engineSettings);
+    SafeDel(m_workerManager);
   }
 
   void Main::SetConfigPath(StringView cfgPath) { m_cfgPath = cfgPath; }
