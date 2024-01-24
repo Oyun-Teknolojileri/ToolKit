@@ -7,12 +7,22 @@
 
 #pragma once
 
-#define POOLSTL_STD_SUPPLEMENT 1
 #include <poolSTL/poolstl.hpp>
+#include <poolSTL/task_thread_pool.hpp>
 
-#ifdef _WIN32
-  #include <execution>
-#endif
+namespace ToolKit
+{
+
+  typedef task_thread_pool::task_thread_pool ThreadPool;
+
+  /**
+   * This is the class that keeps the thread pools and manages async tasks.
+   */
+  class WorkerManager
+  {
+   public:
+    ThreadPool m_frameWorkers; //!< Task that suppose to complete in a frame should be using this pool.
+  };
 
 namespace ToolKit
 {

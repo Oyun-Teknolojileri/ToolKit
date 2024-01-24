@@ -22,6 +22,7 @@
 #include "Shader.h"
 #include "TKOpenGL.h"
 #include "TKStats.h"
+#include "Threads.h"
 #include "UIManager.h"
 
 #include "DebugNew.h"
@@ -97,6 +98,7 @@ namespace ToolKit
 
     m_logger->Log("Main PreInit");
 
+    m_workerManager  = new WorkerManager();
     m_engineSettings = new EngineSettings();
     m_objectFactory  = new ObjectFactory();
     m_objectFactory->Init();
@@ -301,9 +303,9 @@ namespace ToolKit
 
   FileManager* GetFileManager() { return Main::GetInstance()->m_fileManager; }
 
-  TK_API ObjectFactory* GetObjectFactory() { return Main::GetInstance()->m_objectFactory; }
+  ObjectFactory* GetObjectFactory() { return Main::GetInstance()->m_objectFactory; }
 
-  TK_API TKStats* GetTKStats()
+  TKStats* GetTKStats()
   {
     if (Main* main = Main::GetInstance_noexcep())
     {
@@ -314,6 +316,8 @@ namespace ToolKit
       return nullptr;
     }
   }
+
+  WorkerManager* GetWorkerManager() { return Main::GetInstance()->m_workerManager; }
 
   EngineSettings& GetEngineSettings() { return *Main::GetInstance()->m_engineSettings; }
 
