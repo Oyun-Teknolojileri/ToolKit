@@ -56,36 +56,6 @@ namespace ToolKit
 
   void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
 
-  template <typename T>
-  class LockFreeVector
-  {
-   private:
-    std::atomic<size_t> index;
-
-   public:
-    LockFreeVector(size_t totalSize) : data(totalSize), index(0) {}
-
-    void Push(const T& value)
-    {
-      size_t current_index = index.fetch_add(1, std::memory_order_relaxed);
-
-      if (current_index < data.size())
-      {
-        data[current_index] = value;
-      }
-      else
-      {
-        TK_ERR("Vector is full.");
-      }
-    }
-
-    size_t Size() const { return index.load(std::memory_order_relaxed); }
-
-    const T& operator[](size_t i) const { return data[i]; }
-
-    std::vector<T> data;
-  };
-
   BoundingBox RenderJobProcessor::CreateRenderJobs(const EntityPtrArray& entities,
                                                    RenderJobArray& jobArray,
                                                    bool ignoreVisibility)
@@ -100,9 +70,12 @@ namespace ToolKit
     };
 
     BoundingBox boundingVolume;
-    LockFreeVector<RenderJobArray> jobPerEntity(entities.size());
-    auto jobConstructorFn = [&](EntityPtr ntt)
+    std::vector<RenderJobArray> jobPerEntity;
+    jobPerEntity.resize(entities.size());
+
+    auto jobConstructorFn = [&](size_t i)
     {
+      const EntityPtr& ntt = entities[i];
       if (!checkDrawableFn(ntt))
       {
         return;
@@ -217,7 +190,7 @@ namespace ToolKit
         }
       }
 
-      jobPerEntity.Push(nttJobs);
+      jobPerEntity[i] = std::move(nttJobs);
 
       if (materialMissing)
       {
@@ -226,9 +199,10 @@ namespace ToolKit
       }
     };
 
+    using poolstl::iota_iter;
     std::for_each(TKExecByConditional(entities.size() > 100, WorkerManager::FramePool),
-                  entities.begin(),
-                  entities.end(),
+                  iota_iter<size_t>(0),
+                  iota_iter<size_t>(entities.size()),
                   jobConstructorFn);
 
     // Flatten jobs.
@@ -236,10 +210,7 @@ namespace ToolKit
     jobArray.reserve(s);
     for (int i = 0; i < s; i++)
     {
-      // jobArray.push_back(jobPerEntity[i].begin)
       std::move(jobPerEntity[i].begin(), jobPerEntity[i].end(), std::back_inserter(jobArray));
-      // std::move(jobPerEntity.data.begin(), jobPerEntity.data.end(), std::back_inserter(jobArray));
-      // std::copy(jobPerEntity.data.begin(), jobPerEntity.data.end(), std::back_inserter(jobArray));
     }
 
     return boundingVolume;
