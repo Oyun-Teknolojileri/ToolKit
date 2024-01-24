@@ -428,7 +428,7 @@ namespace ToolKit
     }
 
     std::mutex updateHit;
-    std::for_each(std::execution::par_unseq,
+    std::for_each(poolstl::par_if(mesh->m_faces.size() > 100, GetWorkerManager()->m_frameWorkers),
                   mesh->m_faces.begin(),
                   mesh->m_faces.end(),
                   [&updateHit, &t, &closestPickedDistance, &ray, &hit, skelComp, mesh, &isAnimated](const Face& face)
@@ -514,7 +514,7 @@ namespace ToolKit
     rayInObjectSpace.position  = its * Vec4(rayInWorldSpace.position, 1.0f);
     rayInObjectSpace.direction = its * Vec4(rayInWorldSpace.direction, 0.0f);
 
-    std::for_each(std::execution::par_unseq,
+    std::for_each(poolstl::par_if(meshTraces.size() > 100, GetWorkerManager()->m_frameWorkers),
                   meshTraces.begin(),
                   meshTraces.end(),
                   [rayInObjectSpace, skel, &meshes](MeshTrace& trace)
