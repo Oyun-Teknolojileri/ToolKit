@@ -320,23 +320,6 @@ namespace ToolKit
 
           g_app->Frame(timer->CurrentTime - timer->LastTime);
 
-          static float t[10];
-          static int index = 0;
-          t[index]         = g_proxy->Shadow;
-          g_proxy->Shadow  = 0.0f;
-          index++;
-          if (index > 9)
-          {
-            index = 0;
-            float total = 0.0f;
-            for (int v = 0; v < 10; ++v)
-            {
-              total += t[v];
-            }
-            total /= 10.0f;
-            TK_LOG("Shadow: %f", total);
-          }
-
           POP_CPU_MARKER();
           PUSH_CPU_MARKER("Swap Window");
 

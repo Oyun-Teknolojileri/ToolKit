@@ -801,8 +801,6 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    auto t_start    = std::chrono::high_resolution_clock::now();
-
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();
     Mat4 v          = camera->GetViewMatrix();
@@ -833,11 +831,6 @@ namespace ToolKit
     }
 
     jobs.erase(jobs.end() - removed, jobs.end());
-
-    auto t_end                   = std::chrono::high_resolution_clock::now();
-
-    float elapsed_time_ms        = std::chrono::duration<float, std::milli>(t_end - t_start).count();
-    Main::GetInstance()->Shadow += elapsed_time_ms;
   }
 
   void TransformAABB(BoundingBox& box, const Mat4& transform)
