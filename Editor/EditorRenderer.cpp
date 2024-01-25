@@ -235,6 +235,7 @@ namespace ToolKit
 
       m_renderJobs.clear();
       RenderJobProcessor::CreateRenderJobs(editorEntities, m_renderJobs);
+
       m_opaque.clear();
       m_translucent.clear();
       RenderJobProcessor::SeperateOpaqueTranslucent(m_renderJobs, m_opaque, m_translucent);
@@ -242,8 +243,8 @@ namespace ToolKit
       // Editor pass.
       m_editorPass->m_params.Cam             = m_camera;
       m_editorPass->m_params.FrameBuffer     = viewport->m_framebuffer;
-      m_editorPass->m_params.OpaqueJobs      = m_opaque;
-      m_editorPass->m_params.TranslucentJobs = m_translucent;
+      m_editorPass->m_params.OpaqueJobs      = &m_opaque;
+      m_editorPass->m_params.TranslucentJobs = &m_translucent;
       m_editorPass->m_params.clearBuffer     = GraphicBitFields::None;
 
       if (m_params.UseMobileRenderPath)
@@ -278,13 +279,12 @@ namespace ToolKit
         RenderJobProcessor::CreateRenderJobs(uiNtties, m_uiRenderJobs);
       }
 
-      m_uiPass->m_params.OpaqueJobs.clear();
-      m_uiPass->m_params.TranslucentJobs.clear();
+      m_uiOpaque.clear();
+      m_uiTranslucent.clear();
+      RenderJobProcessor::SeperateOpaqueTranslucent(m_uiRenderJobs, m_uiOpaque, m_uiTranslucent);
 
-      RenderJobProcessor::SeperateOpaqueTranslucent(m_uiRenderJobs,
-                                                    m_uiPass->m_params.OpaqueJobs,
-                                                    m_uiPass->m_params.TranslucentJobs);
-
+      m_uiPass->m_params.OpaqueJobs                           = &m_uiOpaque;
+      m_uiPass->m_params.TranslucentJobs                      = &m_uiTranslucent;
       m_uiPass->m_params.Cam                                  = GetUIManager()->GetUICamera();
       m_uiPass->m_params.FrameBuffer                          = viewport->m_framebuffer;
       m_uiPass->m_params.clearBuffer                          = GraphicBitFields::DepthBits;
@@ -302,7 +302,7 @@ namespace ToolKit
       m_singleMatRenderer->m_params.ForwardParams.Lights      = lights;
       m_singleMatRenderer->m_params.ForwardParams.clearBuffer = GraphicBitFields::AllBits;
 
-      m_singleMatRenderer->m_params.ForwardParams.OpaqueJobs  = m_renderJobs;
+      m_singleMatRenderer->m_params.ForwardParams.OpaqueJobs  = &m_renderJobs;
 
       m_singleMatRenderer->m_params.ForwardParams.FrameBuffer = viewport->m_framebuffer;
 

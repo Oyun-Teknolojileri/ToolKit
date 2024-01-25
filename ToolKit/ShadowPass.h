@@ -16,7 +16,7 @@ namespace ToolKit
   struct ShadowPassParams
   {
     LightPtrArray Lights;
-    RenderJobArray RendeJobs;
+    RenderJobArray* RendeJobs;
     BoundingBox shadowVolume;
     CameraPtr ViewCamera = nullptr;
   };
@@ -38,7 +38,7 @@ namespace ToolKit
     RenderTargetPtr GetShadowAtlas();
 
    private:
-    void RenderShadowMaps(LightPtr light, const RenderJobArray& jobs);
+    void RenderShadowMaps(LightPtr light, RenderJobArray* jobs);
 
     /**
      * Sets layer and coordinates of the shadow maps in shadow atlas.

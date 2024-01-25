@@ -50,9 +50,10 @@ namespace ToolKit
     MaterialPtr Material                      = nullptr; //!< Material to render job with.
     EnvironmentComponentPtr EnvironmentVolume = nullptr; //!< EnvironmentVolume effecting this entity, if any.
     bool ShadowCaster                         = true;    //!< Account in shadow map construction.
-    BoundingBox BoundingBox;                             //!< World space bounding box.
-    Mat4 WorldTransform;                                 //!< World transform of the entity.
-    AnimData animData;                                   //!< Animation data of render job
+    bool frustumCulled                        = false;
+    BoundingBox BoundingBox; //!< World space bounding box.
+    Mat4 WorldTransform;     //!< World transform of the entity.
+    AnimData animData;       //!< Animation data of render job
   };
 
   class TK_API RenderJobProcessor

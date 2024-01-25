@@ -767,8 +767,11 @@ namespace ToolKit
     Mat4 v          = camera->GetViewMatrix();
     Frustum frustum = ExtractFrustum(pr * v, false);
 
-    auto delFn      = [frustum](RenderJob& job) -> bool { return FrustumTest(frustum, job.BoundingBox); };
-    erase_if(jobs, delFn);
+    for (int i = 0; i < (int) jobs.size(); i++)
+    {
+      RenderJob& job    = jobs[i];
+      job.frustumCulled = FrustumTest(frustum, job.BoundingBox);
+    }
   }
 
   void TransformAABB(BoundingBox& box, const Mat4& transform)

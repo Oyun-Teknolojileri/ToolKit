@@ -34,8 +34,8 @@ namespace ToolKit
     PUSH_GPU_MARKER("ForwardRenderPass::Render");
     PUSH_CPU_MARKER("ForwardRenderPass::Render");
 
-    RenderOpaque(m_params.OpaqueJobs, m_params.Cam, m_params.Lights);
-    RenderTranslucent(m_params.TranslucentJobs, m_params.Cam, m_params.Lights);
+    RenderOpaque(*m_params.OpaqueJobs, m_params.Cam, m_params.Lights);
+    RenderTranslucent(*m_params.TranslucentJobs, m_params.Cam, m_params.Lights);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -66,7 +66,7 @@ namespace ToolKit
     PUSH_CPU_MARKER("ForwardRenderPass::PostRender");
 
     Pass::PostRender();
-    Renderer* renderer           = GetRenderer();
+    Renderer* renderer = GetRenderer();
     renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
 
     POP_CPU_MARKER();
@@ -91,6 +91,11 @@ namespace ToolKit
 
     for (const RenderJob& job : jobs)
     {
+      if (job.frustumCulled)
+      {
+        continue;
+      }
+
       int effectiveLights = RenderJobProcessor::SortLights(job, lights, dirLightEnd);
       job.Material->m_fragmentShader->UpdateShaderUniform("aoEnabled", m_params.SSAOEnabled);
 
@@ -135,6 +140,11 @@ namespace ToolKit
     renderer->EnableDepthWrite(false);
     for (RenderJob& job : jobs)
     {
+      if (job.frustumCulled)
+      {
+        continue;
+      }
+
       renderFnc(job);
     }
     renderer->EnableDepthWrite(true);

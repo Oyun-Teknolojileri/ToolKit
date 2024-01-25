@@ -115,6 +115,8 @@ namespace ToolKit
 
   void Renderer::Render(const RenderJob& job, CameraPtr cam, const LightPtrArray& lights)
   {
+    assert(!job.frustumCulled && "Rendering culled object.");
+
     // Make ibl assignments.
     m_renderState.IBLInUse = false;
     if (EnvironmentComponentPtr envCom = job.EnvironmentVolume)
@@ -480,8 +482,8 @@ namespace ToolKit
 
   void Renderer::DrawFullQuad(MaterialPtr mat)
   {
-    CameraPtr quadCam                           = MakeNewPtr<Camera>();
-    QuadPtr quad                                = MakeNewPtr<Quad>();
+    CameraPtr quadCam                                  = MakeNewPtr<Camera>();
+    QuadPtr quad                                       = MakeNewPtr<Quad>();
     quad->GetMeshComponent()->GetMeshVal()->m_material = mat;
 
     RenderJobArray jobs;

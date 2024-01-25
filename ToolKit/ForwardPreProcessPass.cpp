@@ -84,10 +84,15 @@ namespace ToolKit
 
     Renderer* renderer                      = GetRenderer();
 
-    const auto renderLinearDepthAndNormalFn = [this, renderer](RenderJobArray& renderJobArray)
+    const auto renderLinearDepthAndNormalFn = [this, renderer](RenderJobArray* renderJobArray)
     {
-      for (RenderJob& job : renderJobArray)
+      for (RenderJob& job : *renderJobArray)
       {
+        if (job.frustumCulled)
+        {
+          continue;
+        }
+
         MaterialPtr activeMaterial = job.Material;
         RenderState* renderstate   = activeMaterial->GetRenderState();
         m_linearMaterial->SetRenderState(renderstate);

@@ -33,7 +33,7 @@ namespace ToolKit
       PUSH_CPU_MARKER("SingleMatForwardRenderPass::Render");
 
       Renderer* renderer = GetRenderer();
-      for (RenderJob& job : m_params.ForwardParams.OpaqueJobs)
+      for (RenderJob& job : *m_params.ForwardParams.OpaqueJobs)
       {
         renderer->m_overrideMat = m_overrideMat;
         RenderJobProcessor::SortLights(job, m_params.ForwardParams.Lights);
@@ -53,7 +53,7 @@ namespace ToolKit
         renderer->Render(job, m_params.ForwardParams.Cam, m_params.ForwardParams.Lights);
       }
 
-      RenderTranslucent(m_params.ForwardParams.TranslucentJobs,
+      RenderTranslucent(*m_params.ForwardParams.TranslucentJobs,
                         m_params.ForwardParams.Cam,
                         m_params.ForwardParams.Lights);
 

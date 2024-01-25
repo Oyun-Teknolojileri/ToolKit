@@ -190,6 +190,11 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     for (RenderJob& job : m_params.RendeJobs)
     {
+      if (job.frustumCulled)
+      {
+        continue;
+      }
+
       MaterialPtr activeMaterial = job.Material;
       m_gBufferMaterial->SetRenderState(activeMaterial->GetRenderState());
       m_gBufferMaterial->UnInit();

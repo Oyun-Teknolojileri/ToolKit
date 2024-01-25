@@ -89,9 +89,6 @@ namespace ToolKit
 
     Pass::PreRender();
 
-    // Dropout non shadow casters.
-    erase_if(m_params.RendeJobs, [](RenderJob& job) -> bool { return !job.ShadowCaster; });
-
     // Dropout non shadow casting lights.
     erase_if(m_params.Lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
 
@@ -114,27 +111,24 @@ namespace ToolKit
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
-  void ShadowPass::RenderShadowMaps(LightPtr light, const RenderJobArray& jobs)
+  void ShadowPass::RenderShadowMaps(LightPtr light, RenderJobArray* jobs)
   {
     CPU_FUNC_RANGE();
 
     Renderer* renderer        = GetRenderer();
 
-    auto renderForShadowMapFn = [this, &renderer](LightPtr light, const RenderJobArray& jobs) -> void
+    auto renderForShadowMapFn = [this, &renderer](LightPtr light, RenderJobArray* jobs) -> void
     {
       PUSH_CPU_MARKER("Render Call");
-
-      const Mat4& pr             = light->m_shadowCamera->GetProjectionMatrix();
-      const Mat4 v               = light->m_shadowCamera->GetViewMatrix();
-      const Frustum frustum      = ExtractFrustum(pr * v, false);
 
       MaterialPtr shadowMaterial = light->GetShadowMaterial();
       renderer->SetCamera(light->m_shadowCamera, false);
 
-      for (const RenderJob& job : jobs)
+      RenderJobProcessor::CullRenderJobs(*jobs, light->m_shadowCamera);
+
+      for (const RenderJob& job : *jobs)
       {
-        // Frustum cull
-        if (FrustumTest(frustum, job.BoundingBox))
+        if (job.frustumCulled)
         {
           continue;
         }
@@ -146,7 +140,6 @@ namespace ToolKit
         renderer->m_overrideMat->SetAlpha(material->GetAlpha());
         renderer->m_overrideMat->m_diffuseTexture                = material->m_diffuseTexture;
         renderer->m_overrideMat->GetRenderState()->blendFunction = BlendFunction::NONE;
-        renderer->m_overrideMat->GetRenderState()->cullMode      = CullingType::TwoSided;
         renderer->m_overrideMat->Init();
         renderer->Render(job, light->m_shadowCamera);
       }

@@ -77,7 +77,7 @@ namespace ToolKit
     virtual ~DirectionalLight();
 
     void NativeConstruct() override;
-    void UpdateShadowFrustum(const RenderJobArray& jobs, const CameraPtr cameraView, const BoundingBox& shadowVolume);
+    void UpdateShadowFrustum(RenderJobArray* jobs, const CameraPtr cameraView, const BoundingBox& shadowVolume);
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;

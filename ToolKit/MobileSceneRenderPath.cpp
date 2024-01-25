@@ -131,7 +131,7 @@ namespace ToolKit
     m_params.Scene->m_boundingBox       = RenderJobProcessor::CreateRenderJobs(allDrawList, m_jobs);
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
 
-    m_shadowPass->m_params.RendeJobs    = m_jobs;
+    m_shadowPass->m_params.RendeJobs    = &m_jobs;
     m_shadowPass->m_params.Lights       = m_updatedLights;
     m_shadowPass->m_params.ViewCamera   = m_params.Cam;
 
@@ -139,13 +139,14 @@ namespace ToolKit
 
     RenderJobProcessor::AssignEnvironment(m_jobs, m_params.Scene->GetEnvironmentVolumes());
 
-    RenderJobArray opaque, translucent;
-    RenderJobProcessor::SeperateOpaqueTranslucent(m_jobs, opaque, translucent);
+    m_opaqueJobs.clear();
+    m_translucentJobs.clear();
+    RenderJobProcessor::SeperateOpaqueTranslucent(m_jobs, m_opaqueJobs, m_translucentJobs);
 
     // Set all shaders as forward shader
     // Translucent has already forward shader
     ShaderManager* shaderMan = GetShaderManager();
-    for (RenderJob& job : opaque)
+    for (RenderJob& job : m_opaqueJobs)
     {
       if (job.Material->m_fragmentShader->GetFile() == shaderMan->PbrDefferedShaderFile())
       {
@@ -174,8 +175,8 @@ namespace ToolKit
     m_forwardRenderPass->m_params.Cam             = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer     = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.SSAOEnabled     = m_params.Gfx.SSAOEnabled;
-    m_forwardRenderPass->m_params.OpaqueJobs      = opaque;
-    m_forwardRenderPass->m_params.TranslucentJobs = translucent;
+    m_forwardRenderPass->m_params.OpaqueJobs      = &m_opaqueJobs;
+    m_forwardRenderPass->m_params.TranslucentJobs = &m_translucentJobs;
     m_forwardRenderPass->m_params.SsaoTexture     = m_ssaoPass->m_ssaoTexture;
 
     // If sky is being rendered, then clear the main framebuffer there. If sky pass is not rendered, clear the

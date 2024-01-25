@@ -41,6 +41,8 @@ namespace ToolKit
 
    protected:
     RenderJobArray m_jobs;
+    RenderJobArray m_opaqueJobs;
+    RenderJobArray m_translucentJobs;
   };
 
   typedef std::shared_ptr<MobileSceneRenderPath> MobileSceneRenderPathPtr;

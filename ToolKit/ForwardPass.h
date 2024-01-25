@@ -14,17 +14,17 @@ namespace ToolKit
 
   struct ForwardRenderPassParams
   {
-    CameraPtr Cam                  = nullptr;
-    FramebufferPtr FrameBuffer     = nullptr;
-    FramebufferPtr gFrameBuffer    = nullptr;
-    RenderTargetPtr gNormalRt      = nullptr;
-    RenderTargetPtr gLinearRt      = nullptr;
-    RenderTargetPtr SsaoTexture    = nullptr;
-    GraphicBitFields clearBuffer   = GraphicBitFields::AllBits;
-    bool SSAOEnabled               = false;
-    RenderJobArray OpaqueJobs      = {};
-    RenderJobArray TranslucentJobs = {};
-    LightPtrArray Lights           = {}; //!< Updated lights.
+    CameraPtr Cam                   = nullptr;
+    FramebufferPtr FrameBuffer      = nullptr;
+    FramebufferPtr gFrameBuffer     = nullptr;
+    RenderTargetPtr gNormalRt       = nullptr;
+    RenderTargetPtr gLinearRt       = nullptr;
+    RenderTargetPtr SsaoTexture     = nullptr;
+    GraphicBitFields clearBuffer    = GraphicBitFields::AllBits;
+    bool SSAOEnabled                = false;
+    RenderJobArray* OpaqueJobs      = nullptr;
+    RenderJobArray* TranslucentJobs = nullptr;
+    LightPtrArray Lights            = {}; //!< Updated lights.
   };
 
   /**
