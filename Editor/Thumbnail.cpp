@@ -33,8 +33,7 @@ namespace ToolKit
       m_entity         = MakeNewPtr<Entity>();
       m_entity->AddComponent<MeshComponent>();
 
-      m_sphere = MakeNewPtr<Sphere>();
-      m_sphere->AddComponent<MaterialComponent>();
+      m_sphere      = MakeNewPtr<Sphere>();
 
       m_lightSystem = MakeNewPtr<ThreePointLightSystem>();
       m_cam         = MakeNewPtr<Camera>();
