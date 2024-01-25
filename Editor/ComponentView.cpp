@@ -410,9 +410,9 @@ namespace ToolKit
         for (auto& com : ntt->GetComponentPtrArray())
         {
           ImGui::Spacing();
-          if (ShowComponentBlock(com.second, true))
+          if (ShowComponentBlock(com, true))
           {
-            compRemove.push_back(com.second->Class());
+            compRemove.push_back(com->Class());
           }
         }
 

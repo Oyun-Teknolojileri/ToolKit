@@ -126,9 +126,9 @@ namespace ToolKit
     WeakCopy(other);
 
     other->ClearComponents();
-    for (const auto& com : m_components)
+    for (int i = 0; i < (int) m_components.size(); i++)
     {
-      other->m_components[com.first] = com.second->Copy(other->Self<Entity>());
+      other->m_components[i] = m_components[i]->Copy(other->Self<Entity>());
     }
 
     return other;
@@ -168,7 +168,7 @@ namespace ToolKit
   {
     assert(GetComponent(component->Class()) == nullptr && "Component has already been added.");
     component->OwnerEntity(Self<Entity>());
-    m_components[component->Class()->HashId] = component;
+    m_components.push_back(component);
   }
 
   MeshComponentPtr Entity::GetMeshComponent() const { return GetComponent<MeshComponent>(); }
@@ -177,26 +177,31 @@ namespace ToolKit
 
   ComponentPtr Entity::RemoveComponent(ClassMeta* Class)
   {
-    const auto& comp = m_components.find(Class->HashId);
-    if (comp != m_components.end())
+    for (int i = 0; i < (int) m_components.size(); i++)
     {
-      m_components.erase(comp);
-      return comp->second;
+      if (m_components[i]->Class() == Class)
+      {
+        ComponentPtr cmp = m_components[i];
+        m_components.erase(m_components.begin() + i);
+        return cmp;
+      }
     }
 
     return nullptr;
   }
 
-  ComponentPtrMap& Entity::GetComponentPtrArray() { return m_components; }
+  ComponentPtrArray& Entity::GetComponentPtrArray() { return m_components; }
 
-  const ComponentPtrMap& Entity::GetComponentPtrArray() const { return m_components; }
+  const ComponentPtrArray& Entity::GetComponentPtrArray() const { return m_components; }
 
   ComponentPtr Entity::GetComponent(ClassMeta* Class) const
   {
-    const auto& comp = m_components.find(Class->HashId);
-    if (comp != m_components.cend())
+    for (int i = 0; i < (int) m_components.size(); i++)
     {
-      return comp->second;
+      if (m_components[i]->Class() == Class)
+      {
+        return m_components[i];
+      }
     }
 
     return nullptr;
@@ -217,7 +222,7 @@ namespace ToolKit
     XmlNode* compNode = CreateXmlNode(doc, XmlComponentArrayElement, node);
     for (auto& cmp : GetComponentPtrArray())
     {
-      cmp.second->Serialize(doc, compNode);
+      cmp->Serialize(doc, compNode);
     }
 
     return node;

@@ -130,7 +130,7 @@ namespace ToolKit
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
         for (auto& com : shownEntity->GetComponentPtrArray())
         {
-          ComponentView::ShowComponentBlock(com.second, false);
+          ComponentView::ShowComponentBlock(com, false);
         }
 
         ImGui::PopStyleVar();
