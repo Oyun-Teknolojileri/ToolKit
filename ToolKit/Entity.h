@@ -24,8 +24,6 @@ namespace ToolKit
 
   static VariantCategory EntityCategory {"Meta", 100};
 
-  typedef std::unordered_map<ULongID, ComponentPtr> ComponentPtrMap;
-
   /**
    * Fundamental object that all the ToolKit utilities can interacted with.
    * Entity is the base class for all the objects that can be inserted in any
@@ -60,9 +58,11 @@ namespace ToolKit
     template <typename T>
     std::shared_ptr<T> AddComponent()
     {
+      assert(GetComponent(T::StaticClass()) == nullptr && "Component has already been added.");
+
       std::shared_ptr<T> component = MakeNewPtr<T>();
       component->OwnerEntity(Self<Entity>());
-      m_components[T::StaticClass()->HashId] = component;
+      m_components.push_back(component);
       return component;
     }
 
@@ -88,11 +88,14 @@ namespace ToolKit
     template <typename T>
     ComponentPtr RemoveComponent()
     {
-      const auto& comp = m_components.find(T::StaticClass()->HashId);
-      if (comp != m_components.end())
+      for (int i = 0; i < (int) m_components.size(); i++)
       {
-        m_components.erase(comp);
-        return comp->second;
+        if (m_components[i]->IsA<T>())
+        {
+          ComponentPtr cmp = m_components[i];
+          m_components.erase(m_components.begin() + i);
+          return cmp;
+        }
       }
 
       return nullptr;
@@ -109,13 +112,13 @@ namespace ToolKit
      * Mutable component array accessors.
      * @return ComponentPtrArray for this Entity.
      */
-    ComponentPtrMap& GetComponentPtrArray();
+    ComponentPtrArray& GetComponentPtrArray();
 
     /**
      * Immutable component array accessors.
      * @return ComponentPtrArray for this Entity.
      */
-    const ComponentPtrMap& GetComponentPtrArray() const;
+    const ComponentPtrArray& GetComponentPtrArray() const;
 
     /**
      * Used to return component of type T.
@@ -124,10 +127,12 @@ namespace ToolKit
     template <typename T>
     std::shared_ptr<T> GetComponent() const
     {
-      const auto& comp = m_components.find(T::StaticClass()->HashId);
-      if (comp != m_components.cend())
+      for (int i = 0; i < (int) m_components.size(); i++)
       {
-        return tk_reinterpret_pointer_cast<T>(comp->second);
+        if (m_components[i]->IsA<T>())
+        {
+          return Cast<T>(m_components[i]);
+        }
       }
 
       return nullptr;
@@ -190,7 +195,7 @@ namespace ToolKit
      * Component map that may contains only one component per type.
      * It holds Class HashId - ComponentPtr
      */
-    ComponentPtrMap m_components;
+    ComponentPtrArray m_components;
   };
 
   class TK_API EntityNode : public Entity
