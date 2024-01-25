@@ -128,9 +128,9 @@ namespace ToolKit
       if (ImGui::CollapsingHeader("Components##1", ImGuiTreeNodeFlags_DefaultOpen))
       {
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
-        for (ComponentPtr& com : shownEntity->GetComponentPtrArray())
+        for (auto& com : shownEntity->GetComponentPtrArray())
         {
-          ComponentView::ShowComponentBlock(com, false);
+          ComponentView::ShowComponentBlock(com.second, false);
         }
 
         ImGui::PopStyleVar();

@@ -84,8 +84,10 @@ namespace ToolKit
     {
       return;
     }
-    m_currentScene = curScene;
-    m_prefabScene  = GetSceneManager()->Create<Scene>(PrefabPath(GetPrefabPathVal()));
+    m_currentScene    = curScene;
+    String prefabPath = GetPrefabPathVal();
+    prefabPath        = PrefabPath(prefabPath);
+    m_prefabScene     = GetSceneManager()->Create<Scene>(prefabPath);
     if (m_prefabScene == nullptr)
     {
       TK_ERR("Prefab scene isn't found.");
@@ -157,11 +159,9 @@ namespace ToolKit
       }
 
       // Save material changes
-      MaterialComponentPtrArray mmComps;
-      child->GetComponent<MaterialComponent>(mmComps);
-      for (MaterialComponentPtr mmComp : mmComps)
+      if (MaterialComponentPtr matComp = child->GetComponent<MaterialComponent>())
       {
-        for (MaterialPtr mat : mmComp->GetMaterialList())
+        for (MaterialPtr mat : matComp->GetMaterialList())
         {
           mat->Save(true);
         }

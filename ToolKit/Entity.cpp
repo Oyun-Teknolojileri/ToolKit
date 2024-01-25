@@ -95,24 +95,9 @@ namespace ToolKit
     }
     else
     {
-      MeshComponentPtrArray meshCmps;
-      GetComponent<MeshComponent>(meshCmps);
-
-      if (meshCmps.empty())
+      if (MeshComponentPtr meshComp = GetComponent<MeshComponent>())
       {
-        // Unit aabb.
-        aabb.max = Vec3(0.5f, 0.5f, 0.5f);
-        aabb.min = Vec3(-0.5f, -0.5f, -0.5f);
-      }
-      else
-      {
-        BoundingBox cmpAABB;
-        for (MeshComponentPtr& cmp : meshCmps)
-        {
-          cmpAABB = cmp->GetAABB();
-          aabb.UpdateBoundary(cmpAABB.max);
-          aabb.UpdateBoundary(cmpAABB.min);
-        }
+        aabb = meshComp->GetAABB();
       }
     }
 
@@ -132,12 +117,7 @@ namespace ToolKit
     return cpy;
   }
 
-  void Entity::ClearComponents()
-  {
-    // Probably base entity will call this too, so there is no problem to use
-    //  like that
-    m_components.clear();
-  }
+  void Entity::ClearComponents() { m_components.clear(); }
 
   Entity* Entity::GetPrefabRoot() const { return _prefabRootEntity; }
 
@@ -146,9 +126,9 @@ namespace ToolKit
     WeakCopy(other);
 
     other->ClearComponents();
-    for (const ComponentPtr& com : m_components)
+    for (const auto& com : m_components)
     {
-      other->m_components.push_back(com->Copy(other->Self<Entity>()));
+      other->m_components[com.first] = com.second->Copy(other->Self<Entity>());
     }
 
     return other;
@@ -186,42 +166,37 @@ namespace ToolKit
 
   void Entity::AddComponent(const ComponentPtr& component)
   {
-    assert(GetComponent(component->GetIdVal()) == nullptr && "Component has already been added.");
+    assert(GetComponent(component->Class()) == nullptr && "Component has already been added.");
     component->OwnerEntity(Self<Entity>());
-    m_components.push_back(component);
+    m_components[component->Class()->HashId] = component;
   }
 
   MeshComponentPtr Entity::GetMeshComponent() const { return GetComponent<MeshComponent>(); }
 
   MaterialComponentPtr Entity::GetMaterialComponent() const { return GetComponent<MaterialComponent>(); }
 
-  ComponentPtr Entity::RemoveComponent(ULongID componentId)
+  ComponentPtr Entity::RemoveComponent(ClassMeta* Class)
   {
-    for (size_t i = 0; i < m_components.size(); i++)
+    const auto& comp = m_components.find(Class->HashId);
+    if (comp != m_components.end())
     {
-      ComponentPtr com = m_components[i];
-      if (com->GetIdVal() == componentId)
-      {
-        m_components.erase(m_components.begin() + i);
-        return com;
-      }
+      m_components.erase(comp);
+      return comp->second;
     }
 
     return nullptr;
   }
 
-  ComponentPtrArray& Entity::GetComponentPtrArray() { return m_components; }
+  ComponentPtrMap& Entity::GetComponentPtrArray() { return m_components; }
 
-  const ComponentPtrArray& Entity::GetComponentPtrArray() const { return m_components; }
+  const ComponentPtrMap& Entity::GetComponentPtrArray() const { return m_components; }
 
-  ComponentPtr Entity::GetComponent(ULongID id) const
+  ComponentPtr Entity::GetComponent(ClassMeta* Class) const
   {
-    for (const ComponentPtr& com : GetComponentPtrArray())
+    const auto& comp = m_components.find(Class->HashId);
+    if (comp != m_components.cend())
     {
-      if (com->GetIdVal() == id)
-      {
-        return com;
-      }
+      return comp->second;
     }
 
     return nullptr;
@@ -240,9 +215,9 @@ namespace ToolKit
     m_node->Serialize(doc, node);
 
     XmlNode* compNode = CreateXmlNode(doc, XmlComponentArrayElement, node);
-    for (const ComponentPtr& cmp : GetComponentPtrArray())
+    for (auto& cmp : GetComponentPtrArray())
     {
-      cmp->Serialize(doc, compNode);
+      cmp.second->Serialize(doc, compNode);
     }
 
     return node;

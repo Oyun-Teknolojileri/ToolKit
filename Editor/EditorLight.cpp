@@ -117,7 +117,7 @@ namespace ToolKit
         {
           if (MeshComponentPtr mc = m_light->GetMeshComponent())
           {
-            m_light->RemoveComponent(mc->GetIdVal());
+            m_light->RemoveComponent(mc->Class());
           }
         };
 

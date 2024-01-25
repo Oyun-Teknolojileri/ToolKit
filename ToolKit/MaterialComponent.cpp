@@ -128,25 +128,20 @@ namespace ToolKit
   void MaterialComponent::UpdateMaterialList()
   {
     m_materialList.clear();
-    MeshComponentPtrArray meshComps;
 
+    MeshComponentPtr meshComp;
     if (EntityPtr owner = OwnerEntity())
     {
-      owner->GetComponent<MeshComponent>(meshComps);
-    }
-
-    for (MeshComponentPtr meshComp : meshComps)
-    {
+      meshComp = owner->GetComponent<MeshComponent>();
       if (meshComp == nullptr || meshComp->GetMeshVal() == nullptr)
       {
-        continue;
-      }
-      MeshRawPtrArray meshCollector;
-      meshComp->GetMeshVal()->GetAllMeshes(meshCollector);
+        MeshRawPtrArray meshCollector;
+        meshComp->GetMeshVal()->GetAllMeshes(meshCollector);
 
-      for (uint i = 0; i < meshCollector.size(); i++)
-      {
-        m_materialList.push_back(meshCollector[i]->m_material);
+        for (uint i = 0; i < meshCollector.size(); i++)
+        {
+          m_materialList.push_back(meshCollector[i]->m_material);
+        }
       }
     }
   }
