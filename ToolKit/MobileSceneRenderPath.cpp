@@ -126,6 +126,7 @@ namespace ToolKit
     }
 
     const EntityPtrArray& allDrawList   = m_params.Scene->GetEntities();
+    m_renderData.jobs.clear();
     m_params.Scene->m_boundingBox       = RenderJobProcessor::CreateRenderJobs(allDrawList, m_renderData.jobs);
 
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
