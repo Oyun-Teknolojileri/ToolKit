@@ -137,22 +137,22 @@ namespace ToolKit
 
     RenderJobProcessor::AssignEnvironment(m_renderData.jobs, m_params.Scene->GetEnvironmentVolumes());
 
-    RenderJobProcessor::SeperateRenderData(m_renderData);
-
     // Set all shaders as forward shader
     // Translucent has already forward shader
     ShaderManager* shaderMan = GetShaderManager();
 
-    RenderJobItr begin       = m_renderData.GetForwardOpaqueBegin();
+    RenderJobItr begin       = m_renderData.jobs.begin();
     RenderJobItr end         = m_renderData.jobs.end();
 
-    for (RenderJobArray::iterator job = begin; begin != end; job++)
+    for (RenderJobItr job = begin; job != end; job++)
     {
       if (job->Material->m_fragmentShader->GetFile() == shaderMan->PbrDefferedShaderFile())
       {
         job->Material->m_fragmentShader = shaderMan->GetPbrForwardShader();
       }
     }
+
+    RenderJobProcessor::SeperateRenderData(m_renderData);
 
     // Set CubeMapPass for sky.
     m_drawSky         = false;

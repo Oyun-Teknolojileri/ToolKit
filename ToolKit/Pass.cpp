@@ -234,7 +234,7 @@ namespace ToolKit
     // Group opaque to deferred.
     auto translucentItr                      = std::partition(forwardItr,
                                          renderData.jobs.end(),
-                                         [](const RenderJob& job) { return job.Material->IsDeferred(); });
+                                         [](const RenderJob& job) { return job.Material->IsTranslucent(); });
 
     renderData.forwardOpaqueStartIndex       = (int) std::distance(renderData.jobs.begin(), forwardItr);
     renderData.forwardTranslucentStartIndex  = (int) std::distance(translucentItr, renderData.jobs.end());
