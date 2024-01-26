@@ -82,7 +82,8 @@ namespace ToolKit
     PUSH_GPU_MARKER("ForwardPreProcess::Render");
     PUSH_CPU_MARKER("ForwardPreProcess::Render");
 
-    Renderer* renderer                      = GetRenderer();
+    Renderer* renderer = GetRenderer();
+    renderer->SetLights(m_params.Lights);
 
     const auto renderLinearDepthAndNormalFn = [&](RenderJobItr begin, RenderJobItr end)
     {
@@ -100,7 +101,7 @@ namespace ToolKit
         m_linearMaterial->m_color          = activeMaterial->m_color;
 
         renderer->m_overrideMat            = m_linearMaterial;
-        renderer->Render(*job, m_params.Cam, {});
+        renderer->Render(*job);
       }
     };
 

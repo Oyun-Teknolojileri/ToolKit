@@ -164,7 +164,6 @@ namespace ToolKit
     renderer->ResetTextureSlots();
 
     renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
-
     renderer->SetCamera(m_params.Camera, true);
 
     POP_CPU_MARKER();
@@ -215,7 +214,7 @@ namespace ToolKit
       m_gBufferMaterial->Init();
 
       renderer->m_overrideMat = m_gBufferMaterial;
-      renderer->Render(*job, m_params.Camera, {});
+      renderer->Render(*job);
     }
 
     POP_CPU_MARKER();

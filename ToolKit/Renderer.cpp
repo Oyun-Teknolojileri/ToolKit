@@ -62,7 +62,7 @@ namespace ToolKit
     m_gpuProgramManager.FlushPrograms();
   }
 
-  void Renderer::SetLights(const LightPtrArray& lights) {}
+  void Renderer::SetLights(const LightPtrArray& lights) { m_lights = lights; }
 
   int Renderer::GetMaxArrayTextureLayers()
   {
@@ -113,7 +113,7 @@ namespace ToolKit
     m_camFar                 = m_cam->Far();
   }
 
-  void Renderer::Render(const RenderJob& job, CameraPtr cam, const LightPtrArray& lights)
+  void Renderer::Render(const RenderJob& job)
   {
     assert(m_ignoreRenderingCulledObjectWarning || !job.frustumCulled && "Rendering culled object.");
 
@@ -182,9 +182,7 @@ namespace ToolKit
 
     updateAndBindSkinningTextures();
 
-    m_model  = job.WorldTransform;
-    m_lights = lights;
-    m_cam    = cam;
+    m_model = job.WorldTransform;
     job.Mesh->Init();
     job.Material->Init();
 
@@ -240,11 +238,11 @@ namespace ToolKit
     m_overrideMat = nullptr;
   }
 
-  void Renderer::Render(const RenderJobArray& jobArray, CameraPtr cam, const LightPtrArray& lights)
+  void Renderer::Render(const RenderJobArray& jobs)
   {
-    for (const RenderJob& rj : jobArray)
+    for (const RenderJob& job : jobs)
     {
-      Render(rj, cam, lights);
+      Render(job);
     }
   }
 
@@ -482,19 +480,19 @@ namespace ToolKit
 
   void Renderer::DrawFullQuad(MaterialPtr mat)
   {
-    CameraPtr quadCam                                  = MakeNewPtr<Camera>();
     QuadPtr quad                                       = MakeNewPtr<Quad>();
     quad->GetMeshComponent()->GetMeshVal()->m_material = mat;
 
+    CameraPtr quadCam                                  = MakeNewPtr<Camera>();
+    SetCamera(quadCam, true);
+
     RenderJobArray jobs;
-    jobs.clear();
-    EntityPtrArray oneQuad = {quad};
-    RenderJobProcessor::CreateRenderJobs(oneQuad, jobs);
+    RenderJobProcessor::CreateRenderJobs({quad}, jobs);
 
     bool lastDepthTestState = m_renderState.depthTestEnabled;
     EnableDepthTest(false);
 
-    Render(jobs, quadCam);
+    Render(jobs);
 
     EnableDepthTest(lastDepthTestState);
   }
@@ -508,7 +506,7 @@ namespace ToolKit
     RenderJobArray jobs;
     EntityPtrArray oneDummyDrawCube = {m_dummyDrawCube};
     RenderJobProcessor::CreateRenderJobs(oneDummyDrawCube, jobs);
-    Render(jobs, cam);
+    Render(jobs);
   }
 
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
@@ -693,11 +691,11 @@ namespace ToolKit
       SetFramebuffer(utilFramebuffer, GraphicBitFields::AllBits);
 
       CameraPtr camera = MakeNewPtr<Camera>();
+      SetCamera(camera, true);
 
       RenderJobArray jobs;
-      EntityPtrArray oneQuad = {quad};
-      RenderJobProcessor::CreateRenderJobs(oneQuad, jobs);
-      Render(jobs, camera, {});
+      RenderJobProcessor::CreateRenderJobs({quad}, jobs);
+      Render(jobs);
 
       brdfLut->SetFile(TKBrdfLutTexture);
       GetTextureManager()->Manage(brdfLut);
@@ -911,7 +909,7 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    FeedLightUniforms(program);
+    FeedLightUniforms(program, renderJob);
 
     for (ShaderPtr shader : program->m_shaders)
     {
@@ -1117,24 +1115,25 @@ namespace ToolKit
     }
   }
 
-  void Renderer::FeedLightUniforms(GpuProgramPtr program)
+  void Renderer::FeedLightUniforms(GpuProgramPtr program, const RenderJob& job)
   {
     CPU_FUNC_RANGE();
 
-    size_t lightSize = glm::min(m_lights.size(), (size_t) RHIConstants::MaxLightsPerObject);
-    for (int i = 0; i < (int) lightSize; i++)
+    for (int i = 0; i < (int) job.activeLightCount; i++)
     {
-      LightPtr currLight = m_lights[i];
+      LightPtr currLight = m_lights[job.lights[i]];
 
       // Point light uniforms
-      if (PointLight* pLight = currLight->As<PointLight>())
+      if (currLight->GetLightType() == Light::Point)
       {
-        Vec3 color      = pLight->GetColorVal();
-        float intensity = pLight->GetIntensityVal();
-        Vec3 pos        = pLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        float radius    = pLight->GetRadiusVal();
+        PointLight* pLight = static_cast<PointLight*>(currLight.get());
 
-        GLint loc       = program->GetUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
+        Vec3 color         = pLight->GetColorVal();
+        float intensity    = pLight->GetIntensityVal();
+        Vec3 pos           = pLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        float radius       = pLight->GetRadiusVal();
+
+        GLint loc          = program->GetUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
         glUniform1i(loc, static_cast<GLint>(2));
         loc = program->GetUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
         glUniform3fv(loc, 1, &color.x);
@@ -1146,13 +1145,14 @@ namespace ToolKit
         glUniform1f(loc, radius);
       }
       // Directional light uniforms
-      else if (DirectionalLight* dLight = currLight->As<DirectionalLight>())
+      else if (currLight->GetLightType() == Light::Directional)
       {
-        Vec3 color      = dLight->GetColorVal();
-        float intensity = dLight->GetIntensityVal();
-        Vec3 dir        = dLight->GetComponent<DirectionComponent>()->GetDirection();
+        DirectionalLight* dLight = static_cast<DirectionalLight*>(currLight.get());
+        Vec3 color               = dLight->GetColorVal();
+        float intensity          = dLight->GetIntensityVal();
+        Vec3 dir                 = dLight->GetComponent<DirectionComponent>()->GetDirection();
 
-        GLint loc       = program->GetUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
+        GLint loc                = program->GetUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
         glUniform1i(loc, (GLint) 1);
         loc = program->GetUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
         glUniform3fv(loc, 1, &color.x);
@@ -1162,17 +1162,18 @@ namespace ToolKit
         glUniform3fv(loc, 1, &dir.x);
       }
       // Spot light uniforms
-      else if (SpotLight* sLight = currLight->As<SpotLight>())
+      else if (currLight->GetLightType() == Light::Spot)
       {
-        Vec3 color      = sLight->GetColorVal();
-        float intensity = sLight->GetIntensityVal();
-        Vec3 pos        = sLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        Vec3 dir        = sLight->GetComponent<DirectionComponent>()->GetDirection();
-        float radius    = sLight->GetRadiusVal();
-        float outAngle  = glm::cos(glm::radians(sLight->GetOuterAngleVal() / 2.0f));
-        float innAngle  = glm::cos(glm::radians(sLight->GetInnerAngleVal() / 2.0f));
+        SpotLight* sLight = static_cast<SpotLight*>(currLight.get());
+        Vec3 color        = sLight->GetColorVal();
+        float intensity   = sLight->GetIntensityVal();
+        Vec3 pos          = sLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        Vec3 dir          = sLight->GetComponent<DirectionComponent>()->GetDirection();
+        float radius      = sLight->GetRadiusVal();
+        float outAngle    = glm::cos(glm::radians(sLight->GetOuterAngleVal() / 2.0f));
+        float innAngle    = glm::cos(glm::radians(sLight->GetInnerAngleVal() / 2.0f));
 
-        GLint loc       = program->GetUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
+        GLint loc         = program->GetUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
         glUniform1i(loc, static_cast<GLint>(3));
         loc = program->GetUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
         glUniform3fv(loc, 1, &color.x);

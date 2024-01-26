@@ -29,7 +29,8 @@ namespace ToolKit
     Viewport* vp       = m_params.Viewport;
 
     renderer->SetFramebuffer(vp->m_framebuffer, GraphicBitFields::None);
-    CameraPtr cam           = vp->GetCamera();
+    CameraPtr cam = vp->GetCamera();
+    renderer->SetCamera(cam, true);
 
     auto renderBillboardsFn = [this, cam, renderer](EntityPtrArray& billboards) -> void
     {
@@ -40,16 +41,8 @@ namespace ToolKit
       m_translucent.clear();
       RenderJobProcessor::SeperateOpaqueTranslucent(m_jobs, m_opaque, m_translucent);
 
-      auto renderArrayFn = [cam, renderer](RenderJobArray& jobs) -> void
-      {
-        for (RenderJob& rj : jobs)
-        {
-          renderer->Render(rj, cam);
-        }
-      };
-
-      renderArrayFn(m_opaque);
-      renderArrayFn(m_translucent);
+      renderer->Render(m_opaque);
+      renderer->Render(m_translucent);
     };
 
     renderer->EnableDepthTest(false);

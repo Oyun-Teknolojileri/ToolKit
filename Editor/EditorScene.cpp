@@ -139,7 +139,7 @@ namespace ToolKit
       EntityPtr ntt = GetEntity(id);
 
       // If selected entity belongs to a prefab
-      //  select all children of the prefab entity too
+      // select all children of the prefab entity too
       if (PrefabPtr mainPrefab = Prefab::GetPrefabRoot(ntt))
       {
         auto addToSelectionFn = [this](Node* node)
@@ -154,14 +154,28 @@ namespace ToolKit
 
       if (g_app->m_selectEffectingLights && !ntt->IsA<Light>())
       {
-        LightPtrArray lights          = GetLights();
-        LightPtrArray effectingLights = RenderJobProcessor::SortLights(ntt, lights);
-
-        for (LightPtr light : effectingLights)
+        LightPtrArray lights = GetLights();
+        for (LightPtr& light : lights)
         {
-          if (!IsSelected(light->GetIdVal()))
+          light->UpdateShadowCamera();
+        }
+
+        RenderJobArray jobs;
+        RenderJobProcessor::CreateRenderJobs({ntt}, jobs);
+        if (!jobs.empty())
+        {
+          RenderJobProcessor::AssignLight(jobs.begin(), jobs.end(), lights);
+
+          RenderJob& job = jobs.front();
+          int size       = job.activeLightCount;
+
+          for (int i = 0; i < size; i++)
           {
-            AddToSelection(light->GetIdVal(), true);
+            LightPtr& light = lights[job.lights[i]];
+            if (!IsSelected(light->GetIdVal()))
+            {
+              AddToSelection(light->GetIdVal(), true);
+            }
           }
         }
       }

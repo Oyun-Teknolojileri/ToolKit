@@ -41,23 +41,8 @@ namespace ToolKit
     void PostRender() override;
 
    protected:
-    /**
-     * Renders the entities immediately. No sorting applied.
-     * @param entities All entities to render.
-     * @param cam Camera for rendering.
-     * @param zoom Zoom amount of camera.
-     * @param lights All lights.
-     */
-    void RenderOpaque(RenderData* renderData, CameraPtr cam, LightPtrArray& lights);
-
-    /**
-     * Sorts and renders translucent entities. For double-sided blended entities
-     * first render back, than renders front.
-     * @param entities All entities to render.
-     * @param cam Camera for rendering.
-     * @param lights ights All lights.
-     */
-    void RenderTranslucent(RenderData* renderData, CameraPtr cam, LightPtrArray& lights);
+    void RenderOpaque(RenderData* renderData);
+    void RenderTranslucent(RenderData* renderData);
 
    public:
     ForwardRenderPassParams m_params;

@@ -89,6 +89,9 @@ namespace ToolKit
 
     Pass::PreRender();
 
+    Renderer* renderer = GetRenderer();
+    renderer->SetLights(m_params.Lights);
+
     // Dropout non shadow casting lights.
     erase_if(m_params.Lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
 
@@ -145,7 +148,7 @@ namespace ToolKit
         renderer->m_overrideMat->m_diffuseTexture                = material->m_diffuseTexture;
         renderer->m_overrideMat->GetRenderState()->blendFunction = BlendFunction::NONE;
         renderer->m_overrideMat->Init();
-        renderer->Render(job, light->m_shadowCamera);
+        renderer->Render(job);
       }
       renderer->m_ignoreRenderingCulledObjectWarning = false;
 

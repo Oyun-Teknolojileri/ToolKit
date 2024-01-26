@@ -58,7 +58,7 @@ namespace ToolKit
     AnimData animData;       //!< Animation data of render job.
 
     short activeLightCount = 0; //!< Number of lights that is active in the list.
-    std::array<Light*, Renderer::RHIConstants::MaxLightsPerObject> lights {}; //!< Lights that affects the job.
+    std::array<int, Renderer::RHIConstants::MaxLightsPerObject> lights {}; //!< Light indexes that affects the job.
   };
 
   typedef RenderJobArray::iterator RenderJobItr;
@@ -115,22 +115,11 @@ namespace ToolKit
     static void AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights);
 
     /**
-     * Utility function that sorts lights according to lit conditions from
-     * best to worst. Make sure lights array has updated shadow camera. Shadow
-     * camera is used in culling calculations.
-     * @returns Number of lights effecting the job. From index 0 to return number contains effective lights in the
-     * sorted array.
-     */
-    static int SortLights(const RenderJob& job, LightPtrArray& lights, int startFromIndex = 0);
-
-    /**
      * Makes sure that first elements are directional lights.
      * @param lights are the lights to sort.
      * @returns The index where the non directional lights starts.
      */
     static int PreSortLights(LightPtrArray& lights);
-
-    static LightPtrArray SortLights(EntityPtr entity, LightPtrArray& lights);
 
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.

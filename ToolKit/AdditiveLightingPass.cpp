@@ -274,7 +274,7 @@ namespace ToolKit
     for (auto& [lightAndType, job] : meshLights)
     {
       SetLightUniforms(lightAndType.light, lightAndType.type);
-      renderer->Render(job, m_params.Cam, {});
+      renderer->Render(job);
     }
 
     // prepare to write main frame buffer

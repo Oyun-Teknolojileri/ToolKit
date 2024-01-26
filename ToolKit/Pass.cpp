@@ -332,7 +332,7 @@ namespace ToolKit
 
     auto assignmentFn      = [](RenderJobItr job, Light* light, int i) -> void
     {
-      job->lights[job->activeLightCount] = light;
+      job->lights[job->activeLightCount] = i;
       job->activeLightCount++;
     };
 
@@ -393,61 +393,6 @@ namespace ToolKit
     return (i1.intersectCount > i2.intersectCount);
   }
 
-  int RenderJobProcessor::SortLights(const RenderJob& job, LightPtrArray& lights, int startFromIndex)
-  {
-    std::vector<LightSortStruct> intersectCounts;
-    intersectCounts.resize(lights.size() - startFromIndex);
-    const BoundingBox& aabb = job.BoundingBox;
-
-    // CAVIATE
-    // This loop will move all light pointers to intersectCounts. Do not access lights afterwards.
-    for (uint lightIndx = startFromIndex; lightIndx < lights.size(); lightIndx++)
-    {
-      LightPtr light = std::move(lights[lightIndx]);
-      assert(light->IsA<SpotLight>() || light->IsA<PointLight>());
-
-      uint& curIntersectCount = intersectCounts[lightIndx - startFromIndex].intersectCount;
-
-      if (SpotLight* spot = light->As<SpotLight>())
-      {
-        // The shadow camera of light should be updated before accessing the frustum.
-        // RenderPath PreRender functions should do that.
-        if (FrustumBoxIntersection(spot->m_frustumCache, aabb) != IntersectResult::Outside)
-        {
-          curIntersectCount++;
-        }
-      }
-      else if (PointLight* point = light->As<PointLight>())
-      {
-        if (SphereBoxIntersection(point->m_boundingSphereCache, aabb))
-        {
-          curIntersectCount++;
-        }
-      }
-
-      intersectCounts[lightIndx - startFromIndex].light = std::move(light);
-    }
-
-    // Sort point & spot lights
-    std::sort(intersectCounts.begin(), intersectCounts.end(), CompareLightIntersects);
-
-    // CAVIATE
-    // This loop will move all lights back to ligts array in a sorted way based on importance.
-    int effectingLights = 0;
-    for (size_t i = 0; i < intersectCounts.size(); i++)
-    {
-      LightSortStruct& ls        = intersectCounts[i];
-      lights[i + startFromIndex] = std::move(ls.light);
-      if (ls.intersectCount > 0)
-      {
-        effectingLights++;
-      }
-    }
-
-    // All directional lights plus lights that intersect with job.
-    return effectingLights + startFromIndex;
-  }
-
   int RenderJobProcessor::PreSortLights(LightPtrArray& lights)
   {
     // Get all directional lights to beginning first
@@ -468,31 +413,6 @@ namespace ToolKit
     }
 
     return directionalLightEndIndex;
-  }
-
-  LightPtrArray RenderJobProcessor::SortLights(EntityPtr entity, LightPtrArray& lights)
-  {
-    CPU_FUNC_RANGE();
-
-    for (LightPtr light : lights)
-    {
-      light->UpdateShadowCamera();
-    }
-
-    RenderJobArray jobs;
-    EntityPtrArray oneEntity = {entity};
-    CreateRenderJobs(oneEntity, jobs);
-
-    int startIndex = PreSortLights(lights);
-
-    LightPtrArray allLights;
-    for (RenderJob& rj : jobs)
-    {
-      int effectiveLights = SortLights(rj, lights, startIndex);
-      allLights.insert(allLights.end(), lights.begin(), lights.begin() + effectiveLights);
-    }
-
-    return allLights;
   }
 
   void RenderJobProcessor::SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam)

@@ -34,8 +34,8 @@ namespace ToolKit
     PUSH_GPU_MARKER("ForwardRenderPass::Render");
     PUSH_CPU_MARKER("ForwardRenderPass::Render");
 
-    RenderOpaque(m_params.renderData, m_params.Cam, m_params.Lights);
-    RenderTranslucent(m_params.renderData, m_params.Cam, m_params.Lights);
+    RenderOpaque(m_params.renderData);
+    RenderTranslucent(m_params.renderData);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -53,8 +53,9 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
 
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
-    renderer->SetCamera(m_params.Cam, true);
     renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
+    renderer->SetCamera(m_params.Cam, true);
+    renderer->SetLights(m_params.Lights);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -73,7 +74,7 @@ namespace ToolKit
     POP_GPU_MARKER();
   }
 
-  void ForwardRenderPass::RenderOpaque(RenderData* renderData, CameraPtr cam, LightPtrArray& lights)
+  void ForwardRenderPass::RenderOpaque(RenderData* renderData)
   {
     PUSH_CPU_MARKER("ForwardRenderPass::RenderOpaque");
 
@@ -83,11 +84,6 @@ namespace ToolKit
     {
       renderer->SetTexture(5, m_params.SsaoTexture->m_textureId);
     }
-
-    int dirLightEnd = RenderJobProcessor::PreSortLights(lights);
-
-    LightPtrArray activeLights;
-    activeLights.reserve(Renderer::RHIConstants::MaxLightsPerObject);
 
     RenderJobItr begin = renderData->GetForwardOpaqueBegin();
     RenderJobItr end   = renderData->GetForwardTranslucentBegin();
@@ -99,47 +95,40 @@ namespace ToolKit
         continue;
       }
 
-      int effectiveLights = RenderJobProcessor::SortLights(*job, lights, dirLightEnd);
       job->Material->m_fragmentShader->UpdateShaderUniform("aoEnabled", m_params.SSAOEnabled);
 
-      activeLights.insert(activeLights.begin(), lights.begin(), lights.begin() + effectiveLights);
-      renderer->Render(*job, m_params.Cam, activeLights);
-      activeLights.clear();
+      renderer->Render(*job);
     }
 
     POP_CPU_MARKER();
   }
 
-  void ForwardRenderPass::RenderTranslucent(RenderData* renderData, CameraPtr cam, LightPtrArray& lights)
+  void ForwardRenderPass::RenderTranslucent(RenderData* renderData)
   {
     PUSH_CPU_MARKER("ForwardRenderPass::RenderTranslucent");
 
     RenderJobItr begin = renderData->GetForwardTranslucentBegin();
     RenderJobItr end   = renderData->jobs.end();
 
-    RenderJobProcessor::SortByDistanceToCamera(begin, end, cam);
-
-    int dirLightEnd    = RenderJobProcessor::PreSortLights(lights);
+    RenderJobProcessor::SortByDistanceToCamera(begin, end, m_params.Cam);
 
     Renderer* renderer = GetRenderer();
     auto renderFnc     = [&](RenderJob& job)
     {
-      RenderJobProcessor::SortLights(job, lights, dirLightEnd);
-
       MaterialPtr mat = job.Material;
       if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
       {
         mat->GetRenderState()->cullMode = CullingType::Front;
-        renderer->Render(job, cam, lights);
+        renderer->Render(job);
 
         mat->GetRenderState()->cullMode = CullingType::Back;
-        renderer->Render(job, cam, lights);
+        renderer->Render(job);
 
         mat->GetRenderState()->cullMode = CullingType::TwoSided;
       }
       else
       {
-        renderer->Render(job, cam, lights);
+        renderer->Render(job);
       }
     };
 
