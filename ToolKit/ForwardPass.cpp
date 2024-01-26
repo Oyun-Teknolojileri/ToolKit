@@ -89,10 +89,10 @@ namespace ToolKit
     LightPtrArray activeLights;
     activeLights.reserve(Renderer::RHIConstants::MaxLightsPerObject);
 
-    RenderJobArray::iterator begin = renderData->jobs.begin() + renderData->forwardOpaqueStartIndex;
-    RenderJobArray::iterator end   = begin + renderData->forwardTranslucentStartIndex;
+    RenderJobItr begin = renderData->GetForwardOpaqueBegin();
+    RenderJobItr end   = renderData->GetForwardTranslucentBegin();
 
-    for (RenderJobArray::iterator job = begin; job != end; job++)
+    for (RenderJobItr job = begin; job != end; job++)
     {
       if (job->frustumCulled)
       {
@@ -114,8 +114,8 @@ namespace ToolKit
   {
     PUSH_CPU_MARKER("ForwardRenderPass::RenderTranslucent");
 
-    RenderJobArray::iterator begin = renderData->jobs.begin() + renderData->forwardTranslucentStartIndex;
-    RenderJobArray::iterator end   = renderData->jobs.end();
+    RenderJobItr begin = renderData->GetForwardTranslucentBegin();
+    RenderJobItr end   = renderData->jobs.end();
 
     RenderJobProcessor::SortByDistanceToCamera(begin, end, cam);
 

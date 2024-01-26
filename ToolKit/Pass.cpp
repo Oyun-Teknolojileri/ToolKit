@@ -227,17 +227,18 @@ namespace ToolKit
   void RenderJobProcessor::SeperateRenderData(RenderData& renderData)
   {
     // Group deferred to forward.
-    auto forwardItr                         = std::partition(renderData.jobs.begin(),
+    auto forwardItr                          = std::partition(renderData.jobs.begin(),
                                      renderData.jobs.end(),
                                      [](const RenderJob& job) { return job.Material->IsDeferred(); });
 
     // Group opaque to deferred.
-    auto translucentItr                     = std::partition(forwardItr,
+    auto translucentItr                      = std::partition(forwardItr,
                                          renderData.jobs.end(),
                                          [](const RenderJob& job) { return job.Material->IsDeferred(); });
 
-    renderData.forwardOpaqueStartIndex      = (int) std::distance(renderData.jobs.begin(), forwardItr);
-    renderData.forwardTranslucentStartIndex = (int) std::distance(translucentItr, renderData.jobs.end());
+    renderData.forwardOpaqueStartIndex       = (int) std::distance(renderData.jobs.begin(), forwardItr);
+    renderData.forwardTranslucentStartIndex  = (int) std::distance(translucentItr, renderData.jobs.end());
+    renderData.forwardTranslucentStartIndex += renderData.forwardOpaqueStartIndex;
   }
 
   void RenderJobProcessor::SeperateOpaqueTranslucent(const RenderJobArray& jobArray,
@@ -398,9 +399,7 @@ namespace ToolKit
     return allLights;
   }
 
-  void RenderJobProcessor::SortByDistanceToCamera(RenderJobArray::iterator& begin,
-                                                  RenderJobArray::iterator& end,
-                                                  const CameraPtr cam)
+  void RenderJobProcessor::SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr cam)
   {
     CPU_FUNC_RANGE();
 

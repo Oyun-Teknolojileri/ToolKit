@@ -56,6 +56,8 @@ namespace ToolKit
     AnimData animData;       //!< Animation data of render job
   };
 
+  typedef RenderJobArray::iterator RenderJobItr;
+
   /**
    * Singular render data that contains all the rendering information for a frame.
    */
@@ -65,6 +67,10 @@ namespace ToolKit
     const int deferredJobsStartIndex = 0; // Job array always start with deferred.
     int forwardOpaqueStartIndex      = 0;
     int forwardTranslucentStartIndex = 0;
+
+    RenderJobItr GetForwardOpaqueBegin() { return jobs.begin() + forwardOpaqueStartIndex; }
+
+    RenderJobItr GetForwardTranslucentBegin() { return GetForwardOpaqueBegin() + forwardTranslucentStartIndex; }
   };
 
   class TK_API RenderJobProcessor
@@ -113,9 +119,7 @@ namespace ToolKit
 
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
-    static void SortByDistanceToCamera(RenderJobArray::iterator& begin,
-                                       RenderJobArray::iterator& end,
-                                       const CameraPtr cam);
+    static void SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr cam);
 
     static void CullRenderJobs(RenderJobArray& jobArray, CameraPtr camera);
 

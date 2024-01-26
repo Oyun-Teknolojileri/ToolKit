@@ -84,9 +84,9 @@ namespace ToolKit
 
     Renderer* renderer                      = GetRenderer();
 
-    const auto renderLinearDepthAndNormalFn = [&](RenderJobArray::iterator begin, RenderJobArray::iterator end)
+    const auto renderLinearDepthAndNormalFn = [&](RenderJobItr begin, RenderJobItr end)
     {
-      for (RenderJobArray::iterator job = begin; job != end; job++)
+      for (RenderJobItr job = begin; job != end; job++)
       {
         if (job->frustumCulled)
         {
@@ -104,8 +104,8 @@ namespace ToolKit
       }
     };
 
-    RenderJobArray::iterator begin = m_params.renderData->jobs.begin() + m_params.renderData->forwardOpaqueStartIndex;
-    RenderJobArray::iterator end   = begin + m_params.renderData->forwardTranslucentStartIndex;
+    RenderJobItr begin = m_params.renderData->GetForwardOpaqueBegin();
+    RenderJobItr end   = m_params.renderData->GetForwardTranslucentBegin();
 
     // currently transparent objects are not rendered to export screen space normals or linear depth
     // we want SSAO and DOF to effect on opaque objects only

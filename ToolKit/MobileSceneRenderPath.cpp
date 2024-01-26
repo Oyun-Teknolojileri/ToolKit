@@ -141,10 +141,10 @@ namespace ToolKit
 
     // Set all shaders as forward shader
     // Translucent has already forward shader
-    ShaderManager* shaderMan       = GetShaderManager();
+    ShaderManager* shaderMan = GetShaderManager();
 
-    RenderJobArray::iterator begin = m_renderData.jobs.begin() + m_renderData.forwardOpaqueStartIndex;
-    RenderJobArray::iterator end   = m_renderData.jobs.end();
+    RenderJobItr begin       = m_renderData.GetForwardOpaqueBegin();
+    RenderJobItr end         = m_renderData.jobs.end();
 
     for (RenderJobArray::iterator job = begin; begin != end; job++)
     {
