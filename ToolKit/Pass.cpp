@@ -233,7 +233,8 @@ namespace ToolKit
                                     assert(false && "Unknown light type.");
                                     return true;
                                   }
-                                }));
+                                }),
+                 lights.end());
   }
 
   void RenderJobProcessor::SeperateDeferredForward(const RenderJobArray& jobArray,
@@ -331,9 +332,12 @@ namespace ToolKit
 
     auto assignmentFn      = [](RenderJobItr job, Light* light, int i) -> void
     {
-      job->lights[i] = light;
+      job->lights[job->activeLightCount] = light;
       job->activeLightCount++;
     };
+
+    auto checkBreakFn = [](int activeLightCount) -> bool
+    { return activeLightCount >= Renderer::RHIConstants::MaxLightsPerObject; };
 
     for (RenderJobItr job = begin; job != end; job++)
     {
@@ -341,11 +345,21 @@ namespace ToolKit
       for (int i = 0; i < directionalEndIndx; i++)
       {
         assignmentFn(job, lights[i].get(), i);
+
+        if (checkBreakFn(job->activeLightCount))
+        {
+          break;
+        }
       }
 
       const BoundingBox& jobBox = job->BoundingBox;
       for (int i = directionalEndIndx; i < (int) lights.size(); i++)
       {
+        if (checkBreakFn(job->activeLightCount))
+        {
+          break;
+        }
+
         LightPtr& light = lights[i];
         if (light->GetLightType() == Light::Spot)
         {

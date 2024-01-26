@@ -139,10 +139,6 @@ namespace ToolKit
 
     RenderJobProcessor::CullRenderJobs(m_renderData.jobs, m_params.Cam);
 
-    RenderJobProcessor::AssignEnvironment(m_renderData.jobs, m_params.Scene->GetEnvironmentVolumes());
-
-    RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_updatedLights);
-
     // Set all shaders as forward shader
     // Translucent has already forward shader
     ShaderManager* shaderMan = GetShaderManager();
@@ -159,6 +155,8 @@ namespace ToolKit
     }
 
     RenderJobProcessor::SeperateRenderData(m_renderData);
+    RenderJobProcessor::AssignEnvironment(m_renderData.jobs, m_params.Scene->GetEnvironmentVolumes());
+    RenderJobProcessor::AssignLight(m_renderData.jobs.begin(), m_renderData.jobs.end(), m_updatedLights);
     RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
 
     // Set CubeMapPass for sky.

@@ -115,7 +115,7 @@ namespace ToolKit
 
   void Renderer::Render(const RenderJob& job, CameraPtr cam, const LightPtrArray& lights)
   {
-    assert(!job.frustumCulled && "Rendering culled object.");
+    assert(m_ignoreRenderingCulledObjectWarning || !job.frustumCulled && "Rendering culled object.");
 
     // Make ibl assignments.
     m_renderState.IBLInUse = false;

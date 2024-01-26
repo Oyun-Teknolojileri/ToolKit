@@ -127,6 +127,8 @@ namespace ToolKit
       BoolArray culled;
       RenderJobProcessor::CullRenderJobs(jobs, light->m_shadowCamera, culled);
 
+      // We may draw view culled objects. Because they are visible from shadow camera.
+      renderer->m_ignoreRenderingCulledObjectWarning = true;
       for (int i = 0; i < jobs.size(); i++)
       {
         RenderJob& job = jobs[i];
@@ -145,6 +147,7 @@ namespace ToolKit
         renderer->m_overrideMat->Init();
         renderer->Render(job, light->m_shadowCamera);
       }
+      renderer->m_ignoreRenderingCulledObjectWarning = false;
 
       POP_CPU_MARKER();
     };

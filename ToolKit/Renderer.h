@@ -125,7 +125,13 @@ namespace ToolKit
     // The set contains gpuPrograms that has up to date per frame uniforms.
     std::unordered_set<uint> m_gpuProgramHasFrameUpdates;
 
-    bool m_renderOnlyLighting = false;
+    bool m_renderOnlyLighting                 = false;
+
+    /**
+     * Some passes may draw culled objects from view frustum.
+     * To prevent debug message, set this to true.
+     */
+    bool m_ignoreRenderingCulledObjectWarning = false;
 
     struct RHIConstants
     {
