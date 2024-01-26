@@ -1132,7 +1132,7 @@ namespace ToolKit
         float radius       = pLight->GetRadiusVal();
 
         GLint loc          = program->GetUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
-        glUniform1i(loc, static_cast<GLint>(2));
+        glUniform1i(loc, (int) 2);
         loc = program->GetUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
         glUniform3fv(loc, 1, &color.x);
         loc = program->GetUniformLocation(Uniform::LIGHT_DATA_INTENSITY, i);
@@ -1172,7 +1172,7 @@ namespace ToolKit
         float innAngle    = glm::cos(glm::radians(sLight->GetInnerAngleVal() / 2.0f));
 
         GLint loc         = program->GetUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
-        glUniform1i(loc, static_cast<GLint>(3));
+        glUniform1i(loc, (GLint) 3);
         loc = program->GetUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
         glUniform3fv(loc, 1, &color.x);
         loc = program->GetUniformLocation(Uniform::LIGHT_DATA_INTENSITY, i);
@@ -1225,11 +1225,11 @@ namespace ToolKit
       }
 
       GLuint loc = program->GetUniformLocation(Uniform::LIGHT_DATA_CASTSHADOW, i);
-      glUniform1i(loc, static_cast<int>(castShadow));
+      glUniform1i(loc, (int) castShadow);
     }
 
     GLint loc = program->GetUniformLocation(Uniform::LIGHT_DATA_ACTIVECOUNT);
-    glUniform1i(loc, static_cast<int>(m_lights.size()));
+    glUniform1i(loc, (int) job.activeLightCount);
 
     // Bind shadow map if activated
     if (m_shadowAtlas != nullptr)
