@@ -239,6 +239,7 @@ namespace ToolKit
       RenderJobProcessor::SeperateRenderData(m_renderData);
 
       // Editor pass.
+      m_editorPass->m_params.renderData  = &m_renderData;
       m_editorPass->m_params.Cam         = m_camera;
       m_editorPass->m_params.FrameBuffer = viewport->m_framebuffer;
       m_editorPass->m_params.clearBuffer = GraphicBitFields::None;
@@ -291,11 +292,10 @@ namespace ToolKit
       m_bloomPass->m_params.iterationCount                    = gfx.BloomIterationCount;
 
       // Light Complexity pass
+      m_singleMatRenderer->m_params.ForwardParams.renderData  = &m_renderData;
       m_singleMatRenderer->m_params.ForwardParams.Cam         = m_camera;
       m_singleMatRenderer->m_params.ForwardParams.Lights      = lights;
       m_singleMatRenderer->m_params.ForwardParams.clearBuffer = GraphicBitFields::AllBits;
-
-      m_singleMatRenderer->m_params.ForwardParams.renderData  = &m_renderData;
 
       m_singleMatRenderer->m_params.ForwardParams.FrameBuffer = viewport->m_framebuffer;
 

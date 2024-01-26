@@ -171,6 +171,7 @@ namespace ToolKit
       }
     }
 
+    m_forwardRenderPass->m_params.renderData  = &m_renderData;
     m_forwardRenderPass->m_params.Lights      = m_updatedLights;
     m_forwardRenderPass->m_params.Cam         = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer = m_params.MainFramebuffer;
