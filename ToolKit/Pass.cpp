@@ -240,33 +240,6 @@ namespace ToolKit
                  lights.end());
   }
 
-  void RenderJobProcessor::SeperateDeferredForward(const RenderJobArray& jobArray,
-                                                   RenderJobArray& deferred,
-                                                   RenderJobArray& forward,
-                                                   RenderJobArray& translucent)
-  {
-    CPU_FUNC_RANGE();
-
-    for (const RenderJob& job : jobArray)
-    {
-      if (job.Material->IsTranslucent())
-      {
-        translucent.push_back(job);
-      }
-      else if (job.Material->IsDeferred())
-      {
-        deferred.push_back(job);
-      }
-      else
-      {
-        forward.push_back(job);
-      }
-
-      // Sanitize shaders.
-      job.Material->SetDefaultMaterialTypeShaders();
-    }
-  }
-
   void RenderJobProcessor::SeperateRenderData(RenderData& renderData)
   {
     // Group deferred to forward.
@@ -282,51 +255,6 @@ namespace ToolKit
     renderData.forwardOpaqueStartIndex       = (int) std::distance(renderData.jobs.begin(), forwardItr);
     renderData.forwardTranslucentStartIndex  = (int) std::distance(translucentItr, renderData.jobs.end());
     renderData.forwardTranslucentStartIndex += renderData.forwardOpaqueStartIndex;
-  }
-
-  void RenderJobProcessor::SeperateOpaqueTranslucent(const RenderJobArray& jobArray,
-                                                     RenderJobArray& opaque,
-                                                     RenderJobArray& translucent)
-  {
-    CPU_FUNC_RANGE();
-
-    std::unordered_map<ULongID, RenderJobArray> groupByMaterial;
-
-    // group by material.
-    for (const RenderJob& job : jobArray)
-    {
-      if (job.Material->IsTranslucent())
-      {
-        translucent.push_back(job);
-      }
-      else
-      {
-        groupByMaterial[job.Material->GetIdVal()].push_back(job);
-      }
-    }
-
-    std::unordered_map<ULongID, RenderJobArray> groupByMesh;
-
-    // group by mesh.
-    for (auto& entry : groupByMaterial)
-    {
-      RenderJobArray& jobArray = entry.second;
-      for (const RenderJob& job : jobArray)
-      {
-        groupByMesh[job.Mesh->GetIdVal()].push_back(job);
-      }
-    }
-
-    // Reserve space for the opaque vector.
-    opaque.reserve(jobArray.size() - translucent.size());
-
-    // flatten.
-    for (auto& entry : groupByMesh)
-    {
-      opaque.insert(opaque.end(),
-                    std::make_move_iterator(entry.second.begin()),
-                    std::make_move_iterator(entry.second.end()));
-    }
   }
 
   void RenderJobProcessor::AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights)

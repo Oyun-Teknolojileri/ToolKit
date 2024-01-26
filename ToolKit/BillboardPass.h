@@ -33,7 +33,7 @@ namespace ToolKit
     EntityPtrArray m_noDepthBillboards;
 
    private:
-    RenderJobArray m_jobs, m_opaque, m_translucent;
+    RenderData m_renderData;
   };
 
   typedef std::shared_ptr<BillboardPass> BillboardPassPtr;

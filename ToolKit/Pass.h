@@ -98,16 +98,7 @@ namespace ToolKit
      */
     static void CullLights(LightPtrArray& lights, const CameraPtr& camera);
 
-    static void SeperateDeferredForward(const RenderJobArray& jobArray,
-                                        RenderJobArray& deferred,
-                                        RenderJobArray& forward,
-                                        RenderJobArray& translucent);
-
     static void SeperateRenderData(RenderData& renderData);
-
-    static void SeperateOpaqueTranslucent(const RenderJobArray& jobArray,
-                                          RenderJobArray& opaque,
-                                          RenderJobArray& translucent);
 
     /**
      * Assign all lights affecting the job.
