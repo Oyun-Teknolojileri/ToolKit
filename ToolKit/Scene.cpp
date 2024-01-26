@@ -431,7 +431,7 @@ namespace ToolKit
   {
     // Find entities which have environment component
     EnvironmentComponentPtrArray environments;
-    for (EntityPtr ntt : m_entities)
+    for (const EntityPtr& ntt : m_entities)
     {
       EnvironmentComponentPtr envCom = ntt->GetComponent<EnvironmentComponent>();
       if (envCom != nullptr && envCom->GetHdriVal() != nullptr && envCom->GetIlluminateVal())

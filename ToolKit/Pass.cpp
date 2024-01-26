@@ -72,33 +72,35 @@ namespace ToolKit
     jobArray.reserve(entities.size()); // at least.
     BoundingBox boundingVolume;
 
-    for (EntityPtr ntt : entities)
+    for (const EntityPtr& ntt : entities)
     {
       if (!checkDrawableFn(ntt))
       {
         continue;
       }
 
-      bool materialMissing         = false;
-      MaterialComponentPtr matComp = ntt->GetMaterialComponent();
-      uint matIndex                = 0;
-      MeshComponentPtr mc          = ntt->GetMeshComponent();
-      bool castShadow              = mc->GetCastShadowVal();
-      MeshPtr parentMesh           = mc->GetMeshVal();
-      Mat4 nttTransform            = ntt->m_node->GetTransform();
-      bool overrideBBoxExists      = false;
+      bool materialMissing       = false;
+      MaterialComponent* matComp = ntt->GetComponentFast<MaterialComponent>();
+      uint matIndex              = 0;
+      MeshComponent* mc          = ntt->GetComponentFast<MeshComponent>();
+      bool castShadow            = mc->GetCastShadowVal();
+      const MeshPtr& parentMesh  = mc->GetMeshVal();
+      Mat4 nttTransform          = ntt->m_node->GetTransform();
+      bool overrideBBoxExists    = false;
+
       BoundingBox overrideBBox;
-      if (AABBOverrideComponentPtr bbOverride = ntt->GetComponent<AABBOverrideComponent>())
+      if (AABBOverrideComponent* bbOverride = ntt->GetComponentFast<AABBOverrideComponent>())
       {
         overrideBBoxExists = true;
         overrideBBox       = std::move(bbOverride->GetAABB());
       }
-      SkeletonComponentPtr skComp              = ntt->GetComponent<SkeletonComponent>();
+
+      SkeletonComponent* skComp                = ntt->GetComponentFast<SkeletonComponent>();
       const AnimRecordRawPtrArray& animRecords = GetAnimationPlayer()->m_records;
       bool foundAnim                           = false;
-      for (AnimRecordRawPtr animRecord : animRecords)
+      for (const AnimRecordRawPtr& animRecord : animRecords)
       {
-        if (EntityPtr animNtt = animRecord->m_entity.lock())
+        if (const EntityPtr& animNtt = animRecord->m_entity.lock())
         {
           if (animNtt->GetIdVal() == ntt->GetIdVal())
           {
@@ -109,6 +111,7 @@ namespace ToolKit
           }
         }
       }
+
       if (!foundAnim && skComp != nullptr)
       {
         skComp->m_animData.currentAnimation = nullptr;
@@ -130,6 +133,7 @@ namespace ToolKit
           {
             job.BoundingBox = mesh->m_aabb;
           }
+
           TransformAABB(job.BoundingBox, job.WorldTransform);
 
           if (job.BoundingBox.IsValid())
@@ -150,6 +154,7 @@ namespace ToolKit
               job.Material = mats[matIndex++];
             }
           }
+
           if (job.Material == nullptr)
           {
             if (mesh->m_material)
@@ -157,12 +162,14 @@ namespace ToolKit
               job.Material = mesh->m_material;
             }
           }
+
           if (job.Material == nullptr)
           {
             // Warn user that we use the default material for the mesh
             materialMissing = true;
             job.Material    = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
           }
+
           if (skComp != nullptr)
           {
             const AnimData& animData = skComp->GetAnimData();
@@ -180,10 +187,6 @@ namespace ToolKit
         if (mesh->GetVertexCount() != 0)
         {
           addRenderJobForMeshFn(mesh);
-        }
-        else
-        {
-          volatile int y = 5;
         }
       }
 

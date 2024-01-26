@@ -66,7 +66,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  bool Entity::IsDrawable() const { return GetComponent<MeshComponent>() != nullptr; }
+  bool Entity::IsDrawable() const { return GetComponentFast<MeshComponent>() != nullptr; }
 
   void Entity::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
   {
@@ -87,15 +87,14 @@ namespace ToolKit
   BoundingBox Entity::GetAABB(bool inWorld) const
   {
     BoundingBox aabb;
-
-    AABBOverrideComponentPtr overrideComp = GetComponent<AABBOverrideComponent>();
+    AABBOverrideComponent* overrideComp = GetComponentFast<AABBOverrideComponent>();
     if (overrideComp)
     {
       aabb = overrideComp->GetAABB();
     }
     else
     {
-      if (MeshComponentPtr meshComp = GetComponent<MeshComponent>())
+      if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
       {
         aabb = meshComp->GetAABB();
       }

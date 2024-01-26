@@ -139,6 +139,23 @@ namespace ToolKit
     }
 
     /**
+     * Faster version of the get component, if raw pointer is applicable.
+     */
+    template <typename T>
+    T* GetComponentFast() const
+    {
+      for (int i = 0; i < (int) m_components.size(); i++)
+      {
+        if (m_components[i]->IsA<T>())
+        {
+          return static_cast<T*>(m_components[i].get());
+        }
+      }
+
+      return nullptr;
+    }
+
+    /**
      * Returns the component with the given class.
      * @return Component of type T if exist, otherwise empty pointer.
      */

@@ -1148,7 +1148,7 @@ namespace ToolKit
         DirectionalLight* dLight = static_cast<DirectionalLight*>(currLight.get());
         Vec3 color               = dLight->GetColorVal();
         float intensity          = dLight->GetIntensityVal();
-        Vec3 dir                 = dLight->GetComponent<DirectionComponent>()->GetDirection();
+        Vec3 dir                 = dLight->GetComponentFast<DirectionComponent>()->GetDirection();
 
         GLint loc                = program->GetUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
         glUniform1i(loc, (GLint) 1);
@@ -1166,7 +1166,7 @@ namespace ToolKit
         Vec3 color        = sLight->GetColorVal();
         float intensity   = sLight->GetIntensityVal();
         Vec3 pos          = sLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        Vec3 dir          = sLight->GetComponent<DirectionComponent>()->GetDirection();
+        Vec3 dir          = sLight->GetComponentFast<DirectionComponent>()->GetDirection();
         float radius      = sLight->GetRadiusVal();
         float outAngle    = glm::cos(glm::radians(sLight->GetOuterAngleVal() / 2.0f));
         float innAngle    = glm::cos(glm::radians(sLight->GetInnerAngleVal() / 2.0f));

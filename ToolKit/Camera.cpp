@@ -190,11 +190,7 @@ namespace ToolKit
     return frustum;
   }
 
-  Vec3 Camera::Direction() const
-  {
-    DirectionComponentPtr dcp = GetComponent<DirectionComponent>();
-    return dcp->GetDirection();
-  }
+  Vec3 Camera::Direction() const { return GetComponentFast<DirectionComponent>()->GetDirection(); }
 
   Entity* Camera::CopyTo(Entity* copyTo) const
   {

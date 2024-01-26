@@ -107,7 +107,7 @@ namespace ToolKit
     {
     case 0: // is directional
     case 3:
-      dir = static_cast<DirectionalLight*>(light.get())->GetComponent<DirectionComponent>()->GetDirection();
+      dir = static_cast<DirectionalLight*>(light.get())->GetComponentFast<DirectionComponent>()->GetDirection();
       break;
     case 1: // is point
     case 4:
@@ -120,7 +120,7 @@ namespace ToolKit
     case 5:
     {
       SpotLight* spotLight = static_cast<SpotLight*>(light.get());
-      dir                  = spotLight->GetComponent<DirectionComponent>()->GetDirection();
+      dir                  = spotLight->GetComponentFast<DirectionComponent>()->GetDirection();
       float outAngle       = glm::cos(glm::radians(spotLight->GetOuterAngleVal() * 0.5f));
       float innAngle       = glm::cos(glm::radians(spotLight->GetInnerAngleVal() * 0.5f));
       m_lightingShader->UpdateShaderUniform("lightRadius", spotLight->GetRadiusVal());
@@ -225,7 +225,7 @@ namespace ToolKit
       else if (lightType == 2 || lightType == 5) // is spot light
       {
         SpotLight* spotLight = static_cast<SpotLight*>(light.get());
-        Vec3 dir             = spotLight->GetComponent<DirectionComponent>()->GetDirection();
+        Vec3 dir             = spotLight->GetComponentFast<DirectionComponent>()->GetDirection();
         Vec3 pos             = spotLight->m_node->GetTranslation();
         float height         = spotLight->GetRadiusVal();
         float outerAngle     = spotLight->GetOuterAngleVal();
