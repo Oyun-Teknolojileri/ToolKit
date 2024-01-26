@@ -125,7 +125,7 @@ namespace ToolKit
       light->UpdateShadowCamera();
     }
 
-    const EntityPtrArray& allDrawList   = m_params.Scene->GetEntities();
+    const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
     m_renderData.jobs.clear();
     m_params.Scene->m_boundingBox       = RenderJobProcessor::CreateRenderJobs(allDrawList, m_renderData.jobs);
 
@@ -154,6 +154,7 @@ namespace ToolKit
     }
 
     RenderJobProcessor::SeperateRenderData(m_renderData);
+    RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
 
     // Set CubeMapPass for sky.
     m_drawSky         = false;

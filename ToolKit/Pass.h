@@ -123,6 +123,8 @@ namespace ToolKit
 
     static void CullRenderJobs(RenderJobArray& jobArray, CameraPtr camera);
 
+    static void StableSortByMeshThanMaterail(RenderData& renderData);
+
     static void AssignEnvironment(RenderJobArray& jobArray, const EnvironmentComponentPtrArray& environments);
 
     /**

@@ -432,6 +432,37 @@ namespace ToolKit
 
   void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, CameraPtr camera) { FrustumCull(jobArray, camera); }
 
+  void RenderJobProcessor::StableSortByMeshThanMaterail(RenderData& renderData)
+  {
+    auto sortRangeFn = [](RenderJobItr begin, RenderJobItr end) -> void
+    {
+      std::stable_sort(begin,
+                       end,
+                       [](const RenderJob& a, const RenderJob& b) -> bool
+                       { return a.Mesh->GetIdVal() < b.Mesh->GetIdVal(); });
+
+      std::stable_sort(begin,
+                       end,
+                       [](const RenderJob& a, const RenderJob& b) -> bool
+                       { return a.Material->GetIdVal() < b.Material->GetIdVal(); });
+    };
+
+    // Deferred partition.
+    RenderJobItr begin = renderData.jobs.begin();
+    RenderJobItr end   = renderData.GetForwardOpaqueBegin();
+    sortRangeFn(begin, end);
+
+    // Forward Opaque
+    begin = renderData.GetForwardOpaqueBegin();
+    end   = renderData.GetForwardTranslucentBegin();
+    sortRangeFn(begin, end);
+
+    // Forward Translucent
+    begin = renderData.GetForwardTranslucentBegin();
+    end   = renderData.jobs.end();
+    sortRangeFn(begin, end);
+  }
+
   void RenderJobProcessor::AssignEnvironment(RenderJobArray& jobArray, const EnvironmentComponentPtrArray& environments)
   {
     CPU_FUNC_RANGE();
