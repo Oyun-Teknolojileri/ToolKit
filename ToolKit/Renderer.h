@@ -106,9 +106,9 @@ namespace ToolKit
     void ResetTextureSlots();
 
    private:
-    void BindProgram(GpuProgramPtr program);
-    void FeedUniforms(GpuProgramPtr program, const RenderJob& renderJob);
-    void FeedLightUniforms(GpuProgramPtr program, const RenderJob& job);
+    void BindProgram(GpuProgramPtr& program);
+    void FeedUniforms(GpuProgramPtr& program, const RenderJob& job);
+    void FeedLightUniforms(GpuProgramPtr& program, const RenderJob& job);
 
    public:
     uint m_frameCount = 0;

@@ -220,6 +220,7 @@ namespace ToolKit
     const Mesh* mesh = job.Mesh;
     activateSkinning(mesh);
 
+    FeedLightUniforms(prg, job);
     FeedUniforms(prg, job);
 
     RHI::BindVertexArray(mesh->m_vaoId);
@@ -705,7 +706,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::BindProgram(GpuProgramPtr program)
+  void Renderer::BindProgram(GpuProgramPtr& program)
   {
     if (m_currentProgram != program->m_handle)
     {
@@ -905,13 +906,11 @@ namespace ToolKit
     }
   }
 
-  void Renderer::FeedUniforms(GpuProgramPtr program, const RenderJob& renderJob)
+  void Renderer::FeedUniforms(GpuProgramPtr& program, const RenderJob& job)
   {
     CPU_FUNC_RANGE();
 
-    FeedLightUniforms(program, renderJob);
-
-    for (ShaderPtr shader : program->m_shaders)
+    for (ShaderPtr& shader : program->m_shaders)
     {
       shader->UpdateShaderUniforms();
 
@@ -992,57 +991,57 @@ namespace ToolKit
         break;
         case Uniform::KEY_FRAME_1:
         {
-          glUniform1f(loc, renderJob.animData.firstKeyFrame);
+          glUniform1f(loc, job.animData.firstKeyFrame);
         }
         break;
         case Uniform::KEY_FRAME_2:
         {
-          glUniform1f(loc, renderJob.animData.secondKeyFrame);
+          glUniform1f(loc, job.animData.secondKeyFrame);
         }
         break;
         case Uniform::KEY_FRAME_INT_TIME:
         {
-          glUniform1f(loc, renderJob.animData.keyFrameInterpolationTime);
+          glUniform1f(loc, job.animData.keyFrameInterpolationTime);
         }
         break;
         case Uniform::KEY_FRAME_COUNT:
         {
-          glUniform1f(loc, renderJob.animData.keyFrameCount);
+          glUniform1f(loc, job.animData.keyFrameCount);
         }
         break;
         case Uniform::IS_ANIMATED:
         {
-          glUniform1ui(loc, renderJob.animData.currentAnimation != nullptr);
+          glUniform1ui(loc, job.animData.currentAnimation != nullptr);
         }
         break;
         case Uniform::BLEND_ANIMATION:
         {
-          glUniform1i(loc, renderJob.animData.blendAnimation != nullptr);
+          glUniform1i(loc, job.animData.blendAnimation != nullptr);
         }
         break;
         case Uniform::BLEND_FACTOR:
         {
-          glUniform1f(loc, renderJob.animData.animationBlendFactor);
+          glUniform1f(loc, job.animData.animationBlendFactor);
         }
         break;
         case Uniform::BLEND_KEY_FRAME_1:
         {
-          glUniform1f(loc, renderJob.animData.blendFirstKeyFrame);
+          glUniform1f(loc, job.animData.blendFirstKeyFrame);
         }
         break;
         case Uniform::BLEND_KEY_FRAME_2:
         {
-          glUniform1f(loc, renderJob.animData.blendSecondKeyFrame);
+          glUniform1f(loc, job.animData.blendSecondKeyFrame);
         }
         break;
         case Uniform::BLEND_KEY_FRAME_INT_TIME:
         {
-          glUniform1f(loc, renderJob.animData.blendKeyFrameInterpolationTime);
+          glUniform1f(loc, job.animData.blendKeyFrameInterpolationTime);
         }
         break;
         case Uniform::BLEND_KEY_FRAME_COUNT:
         {
-          glUniform1f(loc, renderJob.animData.blendKeyFrameCount);
+          glUniform1f(loc, job.animData.blendKeyFrameCount);
         }
         break;
         case Uniform::UNUSEDSLOT_3:
@@ -1115,7 +1114,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::FeedLightUniforms(GpuProgramPtr program, const RenderJob& job)
+  void Renderer::FeedLightUniforms(GpuProgramPtr& program, const RenderJob& job)
   {
     CPU_FUNC_RANGE();
 
