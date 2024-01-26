@@ -107,25 +107,25 @@ namespace ToolKit
     m_shadowMapMaterial->Init();
   }
 
-  int Light::ComparableType()
-  {
-    if (IsA<DirectionalLight>())
-    {
-      return 0;
-    }
+  // int Light::ComparableType()
+  //{
+  //   if (IsA<DirectionalLight>())
+  //   {
+  //     return 0;
+  //   }
 
-    if (IsA<PointLight>())
-    {
-      return 1;
-    }
+  //  if (IsA<PointLight>())
+  //  {
+  //    return 1;
+  //  }
 
-    if (IsA<SpotLight>())
-    {
-      return 2;
-    }
+  //  if (IsA<SpotLight>())
+  //  {
+  //    return 2;
+  //  }
 
-    return 3;
-  }
+  //  return 3;
+  //}
 
   void Light::UpdateShadowCameraTransform()
   {
@@ -257,13 +257,13 @@ namespace ToolKit
     lightCamera->m_node->SetOrientation(m_node->GetOrientation());
     lightCamera->m_node->SetTranslation(center);
 
-    const Mat4 lightView = lightCamera->GetViewMatrix();
+    Mat4 lightView = lightCamera->GetViewMatrix();
 
     // Calculate tight shadow volume.
     BoundingBox tightShadowVolume;
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < 8; i++)
     {
-      const Vec4 vertex = lightView * Vec4(frustum[i], 1.0f);
+      Vec4 vertex = lightView * Vec4(frustum[i], 1.0f);
       tightShadowVolume.UpdateBoundary(vertex);
     }
 
@@ -354,7 +354,16 @@ namespace ToolKit
 
     UpdateShadowCameraTransform();
 
-    m_frustumCache = ExtractFrustum(m_shadowMapCameraProjectionViewMatrix, false);
+    // Calculate frustum.
+    m_frustumCache           = ExtractFrustum(m_shadowMapCameraProjectionViewMatrix, false);
+
+    // Calculate bounding box for the frustum.
+    Vec3Array frustumCorners = m_shadowCamera->ExtractFrustumCorner();
+    m_boundingBoxCache       = BoundingBox();
+    for (int i = 0; i < 8; i++)
+    {
+      m_boundingBoxCache.UpdateBoundary(frustumCorners[i]);
+    }
   }
 
   float SpotLight::AffectDistance() { return GetRadiusVal(); }

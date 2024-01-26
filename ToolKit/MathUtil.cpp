@@ -221,13 +221,18 @@ namespace ToolKit
     // Normalize the plane equations, if requested
     if (normalize)
     {
-      for (int i = 0; i < 6; i++)
-      {
-        NormalizePlaneEquation(frus.planes[i]);
-      }
+      NormalizeFrustum(frus);
     }
 
     return frus;
+  }
+
+  void NormalizeFrustum(Frustum& frustum)
+  {
+    for (int i = 0; i < 6; i++)
+    {
+      NormalizePlaneEquation(frustum.planes[i]);
+    }
   }
 
   float SquareDistancePointToAABB(const Vec3& p, const BoundingBox& b)
@@ -635,6 +640,11 @@ namespace ToolKit
       }
     }
     return true;
+  }
+
+  bool FrustumSphereIntersection(const Frustum& frustum, const BoundingSphere& sphere)
+  {
+    return FrustumSphereIntersection(frustum, sphere.pos, sphere.radius);
   }
 
   bool ConePointIntersection(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, Vec3 point)

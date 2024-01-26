@@ -125,6 +125,9 @@ namespace ToolKit
       light->UpdateShadowCamera();
     }
 
+    // Cull lights out side of view. Not even their shadows are needed.
+    RenderJobProcessor::CullLights(m_updatedLights, m_params.Cam);
+
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
     m_renderData.jobs.clear();
     m_params.Scene->m_boundingBox       = RenderJobProcessor::CreateRenderJobs(allDrawList, m_renderData.jobs);
@@ -137,6 +140,8 @@ namespace ToolKit
     RenderJobProcessor::CullRenderJobs(m_renderData.jobs, m_params.Cam);
 
     RenderJobProcessor::AssignEnvironment(m_renderData.jobs, m_params.Scene->GetEnvironmentVolumes());
+
+    RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_updatedLights);
 
     // Set all shaders as forward shader
     // Translucent has already forward shader

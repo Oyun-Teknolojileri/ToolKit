@@ -25,6 +25,8 @@ namespace ToolKit
 
   TK_API Frustum ExtractFrustum(const Mat4& projectViewModel, bool normalize);
 
+  TK_API void NormalizeFrustum(Frustum& frustum);
+
   // Intersections
   //////////////////////////////////////////
 
@@ -56,7 +58,10 @@ namespace ToolKit
 
   TK_API bool RayTriangleIntersection(const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t);
 
-  TK_API Vec3 CPUSkinning(const class SkinVertex* vertex, const Skeleton* skel, DynamicBoneMapPtr dynamicBoneMap, bool isAnimated);
+  TK_API Vec3 CPUSkinning(const class SkinVertex* vertex,
+                          const Skeleton* skel,
+                          DynamicBoneMapPtr dynamicBoneMap,
+                          bool isAnimated);
 
   TK_API bool RayMeshIntersection(const class Mesh* const mesh,
                                   const Ray& rayInWorldSpace,
@@ -81,9 +86,12 @@ namespace ToolKit
 
   TK_API Quaternion QuaternionLookAt(Vec3 direction);
 
+  /**
+   * Tests normalized frustum with a sphere.
+   */
   TK_API bool FrustumSphereIntersection(const Frustum& frustum, const Vec3& pos, float radius);
 
-  // TK_API bool FrustumSphereIntersection(const Frustum& frustum, Vec3 pos, float radius);
+  TK_API bool FrustumSphereIntersection(const Frustum& frustum, const BoundingSphere& sphere);
 
   TK_API bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t);
 

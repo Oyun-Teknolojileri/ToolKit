@@ -197,6 +197,45 @@ namespace ToolKit
     return boundingVolume;
   }
 
+  void RenderJobProcessor::CullLights(LightPtrArray& lights, const CameraPtr& camera)
+  {
+    Mat4 pr               = camera->GetProjectionMatrix();
+    Mat4 v                = camera->GetViewMatrix();
+    Mat4 prv              = pr * v;
+
+    Frustum frustum       = ExtractFrustum(prv, false);
+
+    Frustum normalFrustum = frustum;
+    NormalizeFrustum(normalFrustum);
+
+    lights.erase(std::remove_if(lights.begin(),
+                                lights.end(),
+                                [&](const LightPtr& light) -> bool
+                                {
+                                  switch (light->GetLightType())
+                                  {
+                                  case Light::Directional:
+                                    return false;
+                                  case Light::Spot:
+                                  {
+                                    SpotLight* spot = static_cast<SpotLight*>(light.get());
+                                    return FrustumBoxIntersection(frustum, spot->m_boundingBoxCache) ==
+                                           IntersectResult::Outside;
+                                  }
+                                  break;
+                                  case Light::Point:
+                                  {
+                                    PointLight* point = static_cast<PointLight*>(light.get());
+                                    return !FrustumSphereIntersection(normalFrustum, point->m_boundingSphereCache);
+                                  }
+                                  break;
+                                  default:
+                                    assert(false && "Unknown light type.");
+                                    return true;
+                                  }
+                                }));
+  }
+
   void RenderJobProcessor::SeperateDeferredForward(const RenderJobArray& jobArray,
                                                    RenderJobArray& deferred,
                                                    RenderJobArray& forward,
@@ -231,7 +270,7 @@ namespace ToolKit
                                      renderData.jobs.end(),
                                      [](const RenderJob& job) { return job.Material->IsDeferred(); });
 
-    // Group opaque to deferred.
+    // Group opaque to translucent.
     auto translucentItr                      = std::partition(forwardItr,
                                          renderData.jobs.end(),
                                          [](const RenderJob& job) { return job.Material->IsTranslucent(); });
@@ -283,6 +322,49 @@ namespace ToolKit
       opaque.insert(opaque.end(),
                     std::make_move_iterator(entry.second.begin()),
                     std::make_move_iterator(entry.second.end()));
+    }
+  }
+
+  void RenderJobProcessor::AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights)
+  {
+    int directionalEndIndx = PreSortLights(lights);
+
+    auto assignmentFn      = [](RenderJobItr job, Light* light, int i) -> void
+    {
+      job->lights[i] = light;
+      job->activeLightCount++;
+    };
+
+    for (RenderJobItr job = begin; job != end; job++)
+    {
+      job->activeLightCount = 0;
+      for (int i = 0; i < directionalEndIndx; i++)
+      {
+        assignmentFn(job, lights[i].get(), i);
+      }
+
+      const BoundingBox& jobBox = job->BoundingBox;
+      for (int i = directionalEndIndx; i < (int) lights.size(); i++)
+      {
+        LightPtr& light = lights[i];
+        if (light->GetLightType() == Light::Spot)
+        {
+          SpotLight* spot = static_cast<SpotLight*>(light.get());
+          if (FrustumBoxIntersection(spot->m_frustumCache, jobBox) != IntersectResult::Outside)
+          {
+            assignmentFn(job, lights[i].get(), i);
+          }
+        }
+        else
+        {
+          assert(light->GetLightType() == Light::Point && "Unknown light type.");
+          PointLight* point = static_cast<PointLight*>(light.get());
+          if (SphereBoxIntersection(point->m_boundingSphereCache, jobBox))
+          {
+            assignmentFn(job, lights[i].get(), i);
+          }
+        }
+      }
     }
   }
 

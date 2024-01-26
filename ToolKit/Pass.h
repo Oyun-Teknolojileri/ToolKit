@@ -1,4 +1,5 @@
 /*
+/*
  * Copyright (c) 2019-2024 OtSofware
  * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
  * For more information, including options for a more permissive commercial license,
@@ -50,10 +51,14 @@ namespace ToolKit
     MaterialPtr Material                      = nullptr; //!< Material to render job with.
     EnvironmentComponentPtr EnvironmentVolume = nullptr; //!< EnvironmentVolume effecting this entity, if any.
     bool ShadowCaster                         = true;    //!< Account in shadow map construction.
-    bool frustumCulled                        = false;
+    bool frustumCulled                        = false;   //!< States that the job is culled by a camera.
+
     BoundingBox BoundingBox; //!< World space bounding box.
     Mat4 WorldTransform;     //!< World transform of the entity.
-    AnimData animData;       //!< Animation data of render job
+    AnimData animData;       //!< Animation data of render job.
+
+    short activeLightCount = 0; //!< Number of lights that is active in the list.
+    std::array<Light*, Renderer::RHIConstants::MaxLightsPerObject> lights {}; //!< Lights that affects the job.
   };
 
   typedef RenderJobArray::iterator RenderJobItr;
@@ -88,6 +93,11 @@ namespace ToolKit
                                         RenderJobArray& jobArray,
                                         bool ignoreVisibility = false);
 
+    /**
+     * This will drop the lights whose bounding volume does not intersect with camera.
+     */
+    static void CullLights(LightPtrArray& lights, const CameraPtr& camera);
+
     static void SeperateDeferredForward(const RenderJobArray& jobArray,
                                         RenderJobArray& deferred,
                                         RenderJobArray& forward,
@@ -98,6 +108,11 @@ namespace ToolKit
     static void SeperateOpaqueTranslucent(const RenderJobArray& jobArray,
                                           RenderJobArray& opaque,
                                           RenderJobArray& translucent);
+
+    /**
+     * Assign all lights affecting the job.
+     */
+    static void AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights);
 
     /**
      * Utility function that sorts lights according to lit conditions from

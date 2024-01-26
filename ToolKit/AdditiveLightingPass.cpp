@@ -191,7 +191,7 @@ namespace ToolKit
     {
       LightPtr light = m_params.lights[i];
       int hasShadow  = light->GetCastShadowVal() * 3; // if light has shadow index will start from 3
-      int lightType  = light->ComparableType() + hasShadow;
+      int lightType  = light->GetLightType() + hasShadow;
       assert(lightType < 6 && lightType >= 0 && "light type invalid");
 
       if (lightType == 1 || lightType == 4) // point light
