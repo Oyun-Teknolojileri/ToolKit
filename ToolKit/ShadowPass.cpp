@@ -124,11 +124,13 @@ namespace ToolKit
       MaterialPtr shadowMaterial = light->GetShadowMaterial();
       renderer->SetCamera(light->m_shadowCamera, false);
 
-      RenderJobProcessor::CullRenderJobs(jobs, light->m_shadowCamera);
+      BoolArray culled;
+      RenderJobProcessor::CullRenderJobs(jobs, light->m_shadowCamera, culled);
 
-      for (const RenderJob& job : jobs)
+      for (int i = 0; i < jobs.size(); i++)
       {
-        if (job.frustumCulled)
+        RenderJob& job = jobs[i];
+        if (culled[i])
         {
           continue;
         }

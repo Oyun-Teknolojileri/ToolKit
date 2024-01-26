@@ -123,6 +123,7 @@ namespace ToolKit
   typedef glm::quat Quaternion;
   typedef std::vector<int> IntArray;
   typedef std::vector<uint> UIntArray;
+  typedef std::vector<bool> BoolArray;
   typedef std::vector<struct VariantCategory> VariantCategoryArray;
   typedef std::vector<struct RenderJob> RenderJobArray;
 

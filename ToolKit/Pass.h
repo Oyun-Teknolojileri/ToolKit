@@ -119,9 +119,17 @@ namespace ToolKit
 
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
-    static void SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr cam);
+    static void SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam);
 
-    static void CullRenderJobs(RenderJobArray& jobArray, CameraPtr camera);
+    /**
+     * Cull objects based on the sent camera. Update Job's frustumCulled state.
+     */
+    static void CullRenderJobs(RenderJobArray& jobArray, const CameraPtr& camera);
+
+    /**
+     * Doesn't alter render job, but puts results into cullResults array. Useful for not to alter RenderData.
+     */
+    static void CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, BoolArray& results);
 
     static void StableSortByMeshThanMaterail(RenderData& renderData);
 

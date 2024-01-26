@@ -399,7 +399,7 @@ namespace ToolKit
     return allLights;
   }
 
-  void RenderJobProcessor::SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr cam)
+  void RenderJobProcessor::SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam)
   {
     CPU_FUNC_RANGE();
 
@@ -430,7 +430,15 @@ namespace ToolKit
     std::sort(begin, end, sortFn);
   }
 
-  void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, CameraPtr camera) { FrustumCull(jobArray, camera); }
+  void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, const CameraPtr& camera)
+  {
+    FrustumCull(jobArray, camera);
+  }
+
+  void RenderJobProcessor::CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, BoolArray& results)
+  {
+    FrustumCull(jobArray, camera, results);
+  }
 
   void RenderJobProcessor::StableSortByMeshThanMaterail(RenderData& renderData)
   {

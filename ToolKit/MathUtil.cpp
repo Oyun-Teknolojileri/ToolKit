@@ -747,7 +747,7 @@ namespace ToolKit
     return res == IntersectResult::Outside;
   }
 
-  void FrustumCull(EntityRawPtrArray& entities, CameraPtr camera)
+  void FrustumCull(EntityRawPtrArray& entities, const CameraPtr& camera)
   {
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();
@@ -758,7 +758,7 @@ namespace ToolKit
     erase_if(entities, delFn);
   }
 
-  void FrustumCull(RenderJobArray& jobs, CameraPtr camera)
+  void FrustumCull(RenderJobArray& jobs, const CameraPtr& camera)
   {
     CPU_FUNC_RANGE();
 
@@ -771,6 +771,23 @@ namespace ToolKit
     {
       RenderJob& job    = jobs[i];
       job.frustumCulled = FrustumTest(frustum, job.BoundingBox);
+    }
+  }
+
+  void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, BoolArray& results)
+  {
+    CPU_FUNC_RANGE();
+
+    // Frustum cull
+    Mat4 pr         = camera->GetProjectionMatrix();
+    Mat4 v          = camera->GetViewMatrix();
+    Frustum frustum = ExtractFrustum(pr * v, false);
+
+    results.resize(jobs.size());
+
+    for (int i = 0; i < (int) jobs.size(); i++)
+    {
+      results[i] = FrustumTest(frustum, jobs[i].BoundingBox);
     }
   }
 
