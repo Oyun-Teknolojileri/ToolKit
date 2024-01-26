@@ -119,25 +119,23 @@ namespace ToolKit
 
     // Make ibl assignments.
     m_renderState.IBLInUse = false;
-    if (EnvironmentComponentPtr envCom = job.EnvironmentVolume)
+    if (job.EnvironmentVolume)
     {
-      m_renderState.iblIntensity = envCom->GetIntensityVal();
+      const EnvironmentComponentPtr& envCom = job.EnvironmentVolume;
+      m_renderState.iblIntensity            = envCom->GetIntensityVal();
 
-      HdriPtr hdriPtr            = envCom->GetHdriVal();
-      CubeMapPtr diffuseEnvMap   = hdriPtr->m_diffuseEnvMap;
-      CubeMapPtr specularEnvMap  = hdriPtr->m_specularEnvMap;
+      const HdriPtr& hdriPtr                = envCom->GetHdriVal();
+      CubeMapPtr& diffuseEnvMap             = hdriPtr->m_diffuseEnvMap;
+      CubeMapPtr& specularEnvMap            = hdriPtr->m_specularEnvMap;
 
-      GenerateBRDFLutTexture();
-      RenderTargetPtr brdfLut = GetTextureManager()->Create<RenderTarget>(TKBrdfLutTexture);
-
-      if (diffuseEnvMap && specularEnvMap && brdfLut)
+      if (diffuseEnvMap && specularEnvMap && m_brdfLut)
       {
         m_renderState.irradianceMap          = diffuseEnvMap->m_textureId;
         m_renderState.preFilteredSpecularMap = specularEnvMap->m_textureId;
-        m_renderState.brdfLut                = brdfLut->m_textureId;
+        m_renderState.brdfLut                = m_brdfLut->m_textureId;
 
         m_renderState.IBLInUse               = true;
-        if (EntityPtr env = envCom->OwnerEntity())
+        if (const EntityPtr& env = envCom->OwnerEntity())
         {
           m_iblRotation = Mat4(env->m_node->GetOrientation());
         }
@@ -145,14 +143,14 @@ namespace ToolKit
     }
 
     // Skeleton Component is used by all meshes of an entity.
-    const auto& updateAndBindSkinningTextures = [&job, this]()
+    const auto& updateAndBindSkinningTextures = [&]()
     {
       if (!job.Mesh->IsSkinned())
       {
         return;
       }
 
-      SkeletonPtr skel = static_cast<SkinMesh*>(job.Mesh)->m_skeleton;
+      const SkeletonPtr& skel = static_cast<SkinMesh*>(job.Mesh)->m_skeleton;
       if (skel == nullptr)
       {
         return;
@@ -193,10 +191,10 @@ namespace ToolKit
     RenderState* rs = m_mat->GetRenderState();
     SetRenderState(rs);
 
-    GpuProgramPtr prg = m_gpuProgramManager.CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
+    const GpuProgramPtr& prg = m_gpuProgramManager.CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
     BindProgram(prg);
 
-    auto activateSkinning = [prg, &job](const Mesh* mesh)
+    auto activateSkinning = [&](const Mesh* mesh)
     {
       GLint isSkinnedLoc = prg->GetUniformLocation(Uniform::IS_SKINNED);
       bool isSkinned     = mesh->IsSkinned();
@@ -700,13 +698,14 @@ namespace ToolKit
 
       brdfLut->SetFile(TKBrdfLutTexture);
       GetTextureManager()->Manage(brdfLut);
+      m_brdfLut     = brdfLut;
 
       m_overrideMat = prevOverrideMaterial;
       SetFramebuffer(prevFrameBuffer, GraphicBitFields::None);
     }
   }
 
-  void Renderer::BindProgram(GpuProgramPtr& program)
+  void Renderer::BindProgram(const GpuProgramPtr& program)
   {
     if (m_currentProgram != program->m_handle)
     {
@@ -906,7 +905,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::FeedUniforms(GpuProgramPtr& program, const RenderJob& job)
+  void Renderer::FeedUniforms(const GpuProgramPtr& program, const RenderJob& job)
   {
     CPU_FUNC_RANGE();
 
@@ -1114,7 +1113,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::FeedLightUniforms(GpuProgramPtr& program, const RenderJob& job)
+  void Renderer::FeedLightUniforms(const GpuProgramPtr& program, const RenderJob& job)
   {
     CPU_FUNC_RANGE();
 

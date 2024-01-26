@@ -129,7 +129,7 @@ namespace ToolKit
     }
   }
 
-  GpuProgramPtr GpuProgramManager::CreateProgram(ShaderPtr vertexShader, ShaderPtr fragmentShader)
+  const GpuProgramPtr& GpuProgramManager::CreateProgram(const ShaderPtr& vertexShader, const ShaderPtr& fragmentShader)
   {
     assert(vertexShader);
     assert(fragmentShader);
@@ -137,13 +137,11 @@ namespace ToolKit
     vertexShader->Init();
     fragmentShader->Init();
 
-    GpuProgramPtr program;
-    auto progIter = m_programs.find({vertexShader->GetIdVal(), fragmentShader->GetIdVal()});
-
+    const auto& progIter = m_programs.find({vertexShader->GetIdVal(), fragmentShader->GetIdVal()});
     if (progIter == m_programs.end())
     {
-      program           = MakeNewPtr<GpuProgram>(vertexShader, fragmentShader);
-      program->m_handle = glCreateProgram();
+      GpuProgramPtr program = MakeNewPtr<GpuProgram>(vertexShader, fragmentShader);
+      program->m_handle     = glCreateProgram();
 
       LinkProgram(program->m_handle, vertexShader->m_shaderHandle, fragmentShader->m_shaderHandle);
       glUseProgram(program->m_handle);
@@ -180,13 +178,11 @@ namespace ToolKit
       }
 
       m_programs[{vertexShader->GetIdVal(), fragmentShader->GetIdVal()}] = program;
-    }
-    else
-    {
-      program = progIter->second;
+
+      return m_programs[{vertexShader->GetIdVal(), fragmentShader->GetIdVal()}];
     }
 
-    return program;
+    return progIter->second;
   }
 
   void GpuProgramManager::FlushPrograms() { m_programs.clear(); }

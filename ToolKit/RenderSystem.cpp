@@ -37,7 +37,11 @@ namespace ToolKit
 
   RenderSystem::~RenderSystem() { SafeDel(m_renderer); }
 
-  void RenderSystem::Init() { m_renderer->Init(); }
+  void RenderSystem::Init()
+  {
+    m_renderer->Init();
+    AddRenderTask({[](Renderer* renderer) -> void { renderer->GenerateBRDFLutTexture(); }});
+  }
 
   void RenderSystem::AddRenderTask(RenderPath* technique)
   {

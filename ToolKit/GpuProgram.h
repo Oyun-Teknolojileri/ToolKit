@@ -95,7 +95,7 @@ namespace ToolKit
      * @param vertexShader - is the vertex shader to use in pipeline.
      * @param fragmentShader - is the fragment program to use in pipeline.
      */
-    GpuProgramPtr CreateProgram(ShaderPtr vertexShader, ShaderPtr fragmentShader);
+    const GpuProgramPtr& CreateProgram(const ShaderPtr& vertexShader, const ShaderPtr& fragmentShader);
 
     /**
      * Clears all the created programs, effectively forcing renderer to recreate the programs at next run.

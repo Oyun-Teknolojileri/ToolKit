@@ -106,9 +106,9 @@ namespace ToolKit
     void ResetTextureSlots();
 
    private:
-    void BindProgram(GpuProgramPtr& program);
-    void FeedUniforms(GpuProgramPtr& program, const RenderJob& job);
-    void FeedLightUniforms(GpuProgramPtr& program, const RenderJob& job);
+    void BindProgram(const GpuProgramPtr& program);
+    void FeedUniforms(const GpuProgramPtr& program, const RenderJob& job);
+    void FeedLightUniforms(const GpuProgramPtr& program, const RenderJob& job);
 
    public:
     uint m_frameCount = 0;
@@ -162,6 +162,7 @@ namespace ToolKit
     MaterialPtr m_mat            = nullptr;
     FramebufferPtr m_framebuffer = nullptr;
     TexturePtr m_shadowAtlas     = nullptr;
+    RenderTargetPtr m_brdfLut    = nullptr;
 
     int m_textureSlots[RHIConstants::TextureSlotCount];
 
