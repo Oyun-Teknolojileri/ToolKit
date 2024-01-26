@@ -128,7 +128,8 @@ namespace ToolKit
     other->ClearComponents();
     for (int i = 0; i < (int) m_components.size(); i++)
     {
-      other->m_components[i] = m_components[i]->Copy(other->Self<Entity>());
+      ComponentPtr copy = m_components[i]->Copy(other->Self<Entity>());
+      other->m_components.push_back(copy);
     }
 
     return other;

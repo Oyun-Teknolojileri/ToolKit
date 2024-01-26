@@ -33,12 +33,22 @@ namespace ToolKit
       PUSH_CPU_MARKER("SingleMatForwardRenderPass::Render");
 
       Renderer* renderer = GetRenderer();
-      for (RenderJob& job : *m_params.ForwardParams.OpaqueJobs)
-      {
-        renderer->m_overrideMat = m_overrideMat;
-        RenderJobProcessor::SortLights(job, m_params.ForwardParams.Lights);
 
-        MaterialPtr mat = job.Material;
+      RenderJobArray::iterator begin =
+          m_params.ForwardParams.renderData->jobs.begin() + m_params.ForwardParams.renderData->forwardOpaqueStartIndex;
+      RenderJobArray::iterator end = begin + m_params.ForwardParams.renderData->forwardTranslucentStartIndex;
+
+      for (RenderJobArray::iterator job = begin; begin != end; begin++)
+      {
+        if (job->frustumCulled)
+        {
+          continue;
+        }
+
+        renderer->m_overrideMat = m_overrideMat;
+        RenderJobProcessor::SortLights(*job, m_params.ForwardParams.Lights);
+
+        MaterialPtr mat = job->Material;
         renderer->m_overrideMat->SetRenderState(mat->GetRenderState());
         renderer->m_overrideMat->m_vertexShader    = mat->m_vertexShader;
         renderer->m_overrideMat->m_fragmentShader  = m_params.OverrideFragmentShader;
@@ -50,12 +60,10 @@ namespace ToolKit
         renderer->m_overrideMat->SetAlpha(mat->GetAlpha());
         renderer->m_overrideMat->Init();
 
-        renderer->Render(job, m_params.ForwardParams.Cam, m_params.ForwardParams.Lights);
+        renderer->Render(*job, m_params.ForwardParams.Cam, m_params.ForwardParams.Lights);
       }
 
-      RenderTranslucent(*m_params.ForwardParams.TranslucentJobs,
-                        m_params.ForwardParams.Cam,
-                        m_params.ForwardParams.Lights);
+      RenderTranslucent(m_params.ForwardParams.renderData, m_params.ForwardParams.Cam, m_params.ForwardParams.Lights);
 
       POP_CPU_MARKER();
     }

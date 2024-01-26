@@ -14,17 +14,16 @@ namespace ToolKit
 
   struct ForwardRenderPassParams
   {
-    CameraPtr Cam                   = nullptr;
-    FramebufferPtr FrameBuffer      = nullptr;
-    FramebufferPtr gFrameBuffer     = nullptr;
-    RenderTargetPtr gNormalRt       = nullptr;
-    RenderTargetPtr gLinearRt       = nullptr;
-    RenderTargetPtr SsaoTexture     = nullptr;
-    GraphicBitFields clearBuffer    = GraphicBitFields::AllBits;
-    bool SSAOEnabled                = false;
-    RenderJobArray* OpaqueJobs      = nullptr;
-    RenderJobArray* TranslucentJobs = nullptr;
-    LightPtrArray Lights            = {}; //!< Updated lights.
+    RenderData* renderData       = nullptr;
+    CameraPtr Cam                = nullptr;
+    FramebufferPtr FrameBuffer   = nullptr;
+    FramebufferPtr gFrameBuffer  = nullptr;
+    RenderTargetPtr gNormalRt    = nullptr;
+    RenderTargetPtr gLinearRt    = nullptr;
+    RenderTargetPtr SsaoTexture  = nullptr;
+    GraphicBitFields clearBuffer = GraphicBitFields::AllBits;
+    bool SSAOEnabled             = false;
+    LightPtrArray Lights         = {}; //!< Updated lights.
   };
 
   /**
@@ -49,7 +48,7 @@ namespace ToolKit
      * @param zoom Zoom amount of camera.
      * @param lights All lights.
      */
-    void RenderOpaque(RenderJobArray& jobs, CameraPtr cam, LightPtrArray& lights);
+    void RenderOpaque(RenderData* renderData, CameraPtr cam, LightPtrArray& lights);
 
     /**
      * Sorts and renders translucent entities. For double-sided blended entities
@@ -58,7 +57,7 @@ namespace ToolKit
      * @param cam Camera for rendering.
      * @param lights ights All lights.
      */
-    void RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, LightPtrArray& lights);
+    void RenderTranslucent(RenderData* renderData, CameraPtr cam, LightPtrArray& lights);
 
    public:
     ForwardRenderPassParams m_params;

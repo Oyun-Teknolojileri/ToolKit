@@ -166,7 +166,7 @@ namespace ToolKit
     AddComponent<DirectionComponent>();
   }
 
-  void DirectionalLight::UpdateShadowFrustum(RenderJobArray* jobs,
+  void DirectionalLight::UpdateShadowFrustum(RenderJobArray& jobs,
                                              const CameraPtr cameraView,
                                              const BoundingBox& shadowVolume)
   {

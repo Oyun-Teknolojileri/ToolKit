@@ -187,15 +187,19 @@ namespace ToolKit
     PUSH_GPU_MARKER("GBufferPass::Render");
     PUSH_CPU_MARKER("GBufferPass::Render");
 
-    Renderer* renderer = GetRenderer();
-    for (RenderJob& job : m_params.RendeJobs)
+    Renderer* renderer             = GetRenderer();
+
+    RenderJobArray::iterator begin = m_params.renderData->jobs.begin();
+    RenderJobArray::iterator end   = begin + m_params.renderData->forwardOpaqueStartIndex;
+
+    for (RenderJobArray::iterator job = begin; job != end; job++)
     {
-      if (job.frustumCulled)
+      if (job->frustumCulled)
       {
         continue;
       }
 
-      MaterialPtr activeMaterial = job.Material;
+      MaterialPtr activeMaterial = job->Material;
       m_gBufferMaterial->SetRenderState(activeMaterial->GetRenderState());
       m_gBufferMaterial->UnInit();
       m_gBufferMaterial->m_diffuseTexture           = activeMaterial->m_diffuseTexture;
@@ -211,7 +215,7 @@ namespace ToolKit
       m_gBufferMaterial->Init();
 
       renderer->m_overrideMat = m_gBufferMaterial;
-      renderer->Render(job, m_params.Camera, {});
+      renderer->Render(*job, m_params.Camera, {});
     }
 
     POP_CPU_MARKER();

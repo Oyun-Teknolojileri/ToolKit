@@ -56,6 +56,17 @@ namespace ToolKit
     AnimData animData;       //!< Animation data of render job
   };
 
+  /**
+   * Singular render data that contains all the rendering information for a frame.
+   */
+  struct RenderData
+  {
+    RenderJobArray jobs;
+    const int deferredJobsStartIndex = 0; // Job array always start with deferred.
+    int forwardOpaqueStartIndex      = 0;
+    int forwardTranslucentStartIndex = 0;
+  };
+
   class TK_API RenderJobProcessor
   {
    public:
@@ -75,6 +86,8 @@ namespace ToolKit
                                         RenderJobArray& deferred,
                                         RenderJobArray& forward,
                                         RenderJobArray& translucent);
+
+    static void SeperateRenderData(RenderData& renderData);
 
     static void SeperateOpaqueTranslucent(const RenderJobArray& jobArray,
                                           RenderJobArray& opaque,
@@ -100,7 +113,9 @@ namespace ToolKit
 
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
-    static void SortByDistanceToCamera(RenderJobArray& jobArray, const CameraPtr cam);
+    static void SortByDistanceToCamera(RenderJobArray::iterator& begin,
+                                       RenderJobArray::iterator& end,
+                                       const CameraPtr cam);
 
     static void CullRenderJobs(RenderJobArray& jobArray, CameraPtr camera);
 

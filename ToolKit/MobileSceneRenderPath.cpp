@@ -125,32 +125,32 @@ namespace ToolKit
       light->UpdateShadowCamera();
     }
 
-    const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
+    const EntityPtrArray& allDrawList   = m_params.Scene->GetEntities();
+    m_params.Scene->m_boundingBox       = RenderJobProcessor::CreateRenderJobs(allDrawList, m_renderData.jobs);
 
-    m_jobs.clear();
-    m_params.Scene->m_boundingBox       = RenderJobProcessor::CreateRenderJobs(allDrawList, m_jobs);
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
-
-    m_shadowPass->m_params.RendeJobs    = &m_jobs;
+    m_shadowPass->m_params.renderData   = &m_renderData;
     m_shadowPass->m_params.Lights       = m_updatedLights;
     m_shadowPass->m_params.ViewCamera   = m_params.Cam;
 
-    RenderJobProcessor::CullRenderJobs(m_jobs, m_params.Cam);
+    RenderJobProcessor::CullRenderJobs(m_renderData.jobs, m_params.Cam);
 
-    RenderJobProcessor::AssignEnvironment(m_jobs, m_params.Scene->GetEnvironmentVolumes());
+    RenderJobProcessor::AssignEnvironment(m_renderData.jobs, m_params.Scene->GetEnvironmentVolumes());
 
-    m_opaqueJobs.clear();
-    m_translucentJobs.clear();
-    RenderJobProcessor::SeperateOpaqueTranslucent(m_jobs, m_opaqueJobs, m_translucentJobs);
+    RenderJobProcessor::SeperateRenderData(m_renderData);
 
     // Set all shaders as forward shader
     // Translucent has already forward shader
-    ShaderManager* shaderMan = GetShaderManager();
-    for (RenderJob& job : m_opaqueJobs)
+    ShaderManager* shaderMan       = GetShaderManager();
+
+    RenderJobArray::iterator begin = m_renderData.jobs.begin() + m_renderData.forwardOpaqueStartIndex;
+    RenderJobArray::iterator end   = m_renderData.jobs.end();
+
+    for (RenderJobArray::iterator job = begin; begin != end; job++)
     {
-      if (job.Material->m_fragmentShader->GetFile() == shaderMan->PbrDefferedShaderFile())
+      if (job->Material->m_fragmentShader->GetFile() == shaderMan->PbrDefferedShaderFile())
       {
-        job.Material->m_fragmentShader = shaderMan->GetPbrForwardShader();
+        job->Material->m_fragmentShader = shaderMan->GetPbrForwardShader();
       }
     }
 
@@ -171,13 +171,11 @@ namespace ToolKit
       }
     }
 
-    m_forwardRenderPass->m_params.Lights          = m_updatedLights;
-    m_forwardRenderPass->m_params.Cam             = m_params.Cam;
-    m_forwardRenderPass->m_params.FrameBuffer     = m_params.MainFramebuffer;
-    m_forwardRenderPass->m_params.SSAOEnabled     = m_params.Gfx.SSAOEnabled;
-    m_forwardRenderPass->m_params.OpaqueJobs      = &m_opaqueJobs;
-    m_forwardRenderPass->m_params.TranslucentJobs = &m_translucentJobs;
-    m_forwardRenderPass->m_params.SsaoTexture     = m_ssaoPass->m_ssaoTexture;
+    m_forwardRenderPass->m_params.Lights      = m_updatedLights;
+    m_forwardRenderPass->m_params.Cam         = m_params.Cam;
+    m_forwardRenderPass->m_params.FrameBuffer = m_params.MainFramebuffer;
+    m_forwardRenderPass->m_params.SSAOEnabled = m_params.Gfx.SSAOEnabled;
+    m_forwardRenderPass->m_params.SsaoTexture = m_ssaoPass->m_ssaoTexture;
 
     // If sky is being rendered, then clear the main framebuffer there. If sky pass is not rendered, clear the
     // framebuffer here

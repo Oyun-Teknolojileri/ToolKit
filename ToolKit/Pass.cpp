@@ -69,6 +69,7 @@ namespace ToolKit
       return isDrawable && (isVisbile || ignoreVisibility);
     };
 
+    jobArray.reserve(entities.size()); // at least.
     BoundingBox boundingVolume;
 
     for (EntityPtr ntt : entities)
@@ -221,6 +222,22 @@ namespace ToolKit
       // Sanitize shaders.
       job.Material->SetDefaultMaterialTypeShaders();
     }
+  }
+
+  void RenderJobProcessor::SeperateRenderData(RenderData& renderData)
+  {
+    // Group deferred to forward.
+    auto forwardItr                         = std::partition(renderData.jobs.begin(),
+                                     renderData.jobs.end(),
+                                     [](const RenderJob& job) { return job.Material->IsDeferred(); });
+
+    // Group opaque to deferred.
+    auto translucentItr                     = std::partition(forwardItr,
+                                         renderData.jobs.end(),
+                                         [](const RenderJob& job) { return job.Material->IsDeferred(); });
+
+    renderData.forwardOpaqueStartIndex      = (int) std::distance(renderData.jobs.begin(), forwardItr);
+    renderData.forwardTranslucentStartIndex = (int) std::distance(translucentItr, renderData.jobs.end());
   }
 
   void RenderJobProcessor::SeperateOpaqueTranslucent(const RenderJobArray& jobArray,
@@ -381,7 +398,9 @@ namespace ToolKit
     return allLights;
   }
 
-  void RenderJobProcessor::SortByDistanceToCamera(RenderJobArray& jobArray, const CameraPtr cam)
+  void RenderJobProcessor::SortByDistanceToCamera(RenderJobArray::iterator& begin,
+                                                  RenderJobArray::iterator& end,
+                                                  const CameraPtr cam)
   {
     CPU_FUNC_RANGE();
 
@@ -409,7 +428,7 @@ namespace ToolKit
       };
     }
 
-    std::sort(jobArray.begin(), jobArray.end(), sortFn);
+    std::sort(begin, end, sortFn);
   }
 
   void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, CameraPtr camera) { FrustumCull(jobArray, camera); }

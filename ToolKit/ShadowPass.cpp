@@ -63,11 +63,11 @@ namespace ToolKit
       light->InitShadowMapDepthMaterial();
       if (DirectionalLight* dLight = light->As<DirectionalLight>())
       {
-        dLight->UpdateShadowFrustum(m_params.RendeJobs, m_params.ViewCamera, m_params.shadowVolume);
+        dLight->UpdateShadowFrustum(m_params.renderData->jobs, m_params.ViewCamera, m_params.shadowVolume);
       }
       // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
 
-      RenderShadowMaps(light, m_params.RendeJobs);
+      RenderShadowMaps(light, m_params.renderData->jobs);
     }
 
     // The first set attachment did not call hw render pass while rendering shadow map
@@ -111,22 +111,22 @@ namespace ToolKit
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
-  void ShadowPass::RenderShadowMaps(LightPtr light, RenderJobArray* jobs)
+  void ShadowPass::RenderShadowMaps(LightPtr light, RenderJobArray& jobs)
   {
     CPU_FUNC_RANGE();
 
     Renderer* renderer        = GetRenderer();
 
-    auto renderForShadowMapFn = [this, &renderer](LightPtr light, RenderJobArray* jobs) -> void
+    auto renderForShadowMapFn = [this, &renderer](LightPtr light, RenderJobArray& jobs) -> void
     {
       PUSH_CPU_MARKER("Render Call");
 
       MaterialPtr shadowMaterial = light->GetShadowMaterial();
       renderer->SetCamera(light->m_shadowCamera, false);
 
-      RenderJobProcessor::CullRenderJobs(*jobs, light->m_shadowCamera);
+      RenderJobProcessor::CullRenderJobs(jobs, light->m_shadowCamera);
 
-      for (const RenderJob& job : *jobs)
+      for (const RenderJob& job : jobs)
       {
         if (job.frustumCulled)
         {
