@@ -89,11 +89,6 @@ namespace ToolKit
     {
       for (RenderJobItr job = begin; job != end; job++)
       {
-        if (job->frustumCulled)
-        {
-          continue;
-        }
-
         MaterialPtr activeMaterial = job->Material;
         RenderState* renderstate   = activeMaterial->GetRenderState();
         m_linearMaterial->SetRenderState(renderstate);

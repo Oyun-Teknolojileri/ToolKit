@@ -188,15 +188,11 @@ namespace ToolKit
 
     Renderer* renderer = GetRenderer();
 
-    RenderJobItr begin = m_params.renderData->jobs.begin();
+    RenderJobItr begin = m_params.renderData->GetDefferedBegin();
     RenderJobItr end   = m_params.renderData->GetForwardOpaqueBegin();
 
     for (RenderJobItr job = begin; job != end; job++)
     {
-      if (job->frustumCulled)
-      {
-        continue;
-      }
 
       MaterialPtr activeMaterial = job->Material;
       m_gBufferMaterial->SetRenderState(activeMaterial->GetRenderState());

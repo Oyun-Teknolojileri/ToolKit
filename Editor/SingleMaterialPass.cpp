@@ -39,11 +39,6 @@ namespace ToolKit
 
       for (RenderJobArray::iterator job = begin; begin != end; begin++)
       {
-        if (job->frustumCulled)
-        {
-          continue;
-        }
-
         renderer->m_overrideMat = m_overrideMat;
 
         MaterialPtr mat         = job->Material;

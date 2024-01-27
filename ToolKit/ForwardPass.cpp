@@ -90,13 +90,7 @@ namespace ToolKit
 
     for (RenderJobItr job = begin; job != end; job++)
     {
-      if (job->frustumCulled)
-      {
-        continue;
-      }
-
       job->Material->m_fragmentShader->UpdateShaderUniform("aoEnabled", m_params.SSAOEnabled);
-
       renderer->Render(*job);
     }
 
@@ -135,11 +129,6 @@ namespace ToolKit
     renderer->EnableDepthWrite(false);
     for (RenderJobArray::iterator job = begin; job != end; job++)
     {
-      if (job->frustumCulled)
-      {
-        continue;
-      }
-
       renderFnc(*job);
     }
     renderer->EnableDepthWrite(true);

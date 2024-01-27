@@ -54,10 +54,7 @@ namespace ToolKit
       envComp->SetHdriVal(hdri);
     };
 
-    envComp->GetHdriVal()->UnInit();
-    envComp->UnInit();
-    Vec3 mp = Vec3(TK_FLT_MAX);
-    envComp->SetSizeVal(mp);
+    envComp->SetSizeVal(Vec3(TK_FLT_MAX));
     envComp->OwnerEntity(Self<Entity>());
     envComp->Init(false);
 
@@ -116,6 +113,7 @@ namespace ToolKit
       param.m_name = name;
       return param;
     };
+
     MultiChoiceVariant mcv = {
         {createParameterVariantFn("256", 256),
          createParameterVariantFn("512", 512),

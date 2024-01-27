@@ -34,20 +34,20 @@ namespace ToolKit
     {
       Scene::Load();
 
-      for (EntityPtr ntt : m_entities)
+      for (EntityPtr& ntt : m_entities)
       {
         // Create gizmos
         if (ntt->IsA<DirectionalLight>())
         {
-          static_cast<EditorDirectionalLight*>(ntt.get())->InitController();
+          ntt->As<EditorDirectionalLight>()->InitController();
         }
         else if (ntt->IsA<PointLight>())
         {
-          static_cast<EditorPointLight*>(ntt.get())->InitController();
+          ntt->As<EditorPointLight>()->InitController();
         }
         else if (ntt->IsA<SpotLight>())
         {
-          static_cast<EditorSpotLight*>(ntt.get())->InitController();
+          ntt->As<EditorSpotLight>()->InitController();
         }
       }
     }

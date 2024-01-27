@@ -234,8 +234,13 @@ namespace ToolKit
 
   void RenderJobProcessor::SeperateRenderData(RenderData& renderData)
   {
+    // Group culled.
+    auto culledItr                           = std::partition(renderData.jobs.begin(),
+                                    renderData.jobs.end(),
+                                    [](const RenderJob& job) { return job.frustumCulled; });
+
     // Group deferred to forward.
-    auto forwardItr                          = std::partition(renderData.jobs.begin(),
+    auto forwardItr                          = std::partition(culledItr,
                                      renderData.jobs.end(),
                                      [](const RenderJob& job) { return job.Material->IsDeferred(); });
 
@@ -244,7 +249,10 @@ namespace ToolKit
                                          renderData.jobs.end(),
                                          [](const RenderJob& job) { return job.Material->IsTranslucent(); });
 
-    renderData.forwardOpaqueStartIndex       = (int) std::distance(renderData.jobs.begin(), forwardItr);
+    renderData.deferredJobsStartIndex        = (int) std::distance(renderData.jobs.begin(), culledItr);
+    renderData.forwardOpaqueStartIndex       = (int) std::distance(culledItr, forwardItr);
+    renderData.forwardOpaqueStartIndex      += renderData.deferredJobsStartIndex;
+
     renderData.forwardTranslucentStartIndex  = (int) std::distance(translucentItr, renderData.jobs.end());
     renderData.forwardTranslucentStartIndex += renderData.forwardOpaqueStartIndex;
   }
@@ -395,7 +403,7 @@ namespace ToolKit
     };
 
     // Deferred partition.
-    RenderJobItr begin = renderData.jobs.begin();
+    RenderJobItr begin = renderData.GetDefferedBegin();
     RenderJobItr end   = renderData.GetForwardOpaqueBegin();
     sortRangeFn(begin, end);
 

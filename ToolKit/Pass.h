@@ -65,17 +65,26 @@ namespace ToolKit
 
   /**
    * Singular render data that contains all the rendering information for a frame.
+   * When first culled than separated by a render job processor, the indexes become valid.
+   * Partition structure
+   * 0 Culled               : jobs.begin to deferredJobsStartIndex
+   * 1 Deferred             : deferredJobsStartIndex to forwardOpaqueStartIndex
+   * 2 Forward Opaque       : forwardOpaqueStartIndex to forwardTranslucentStartIndex
+   * 3 Forward Translucent  : forwardTranslucentStartIndex to jobs.end
    */
   struct RenderData
   {
     RenderJobArray jobs;
-    const int deferredJobsStartIndex = 0; // Job array always start with deferred.
-    int forwardOpaqueStartIndex      = 0;
-    int forwardTranslucentStartIndex = 0;
+
+    int deferredJobsStartIndex       = 0; //!< Beginning of deferred jobs. Before this, culled jobs resides.
+    int forwardOpaqueStartIndex      = 0; //!< Beginning of forward opaque jobs.
+    int forwardTranslucentStartIndex = 0; //!< Beginning of forward translucent jobs.
+
+    RenderJobItr GetDefferedBegin() { return jobs.begin() + deferredJobsStartIndex; }
 
     RenderJobItr GetForwardOpaqueBegin() { return jobs.begin() + forwardOpaqueStartIndex; }
 
-    RenderJobItr GetForwardTranslucentBegin() { return GetForwardOpaqueBegin() + forwardTranslucentStartIndex; }
+    RenderJobItr GetForwardTranslucentBegin() { return jobs.begin() + forwardTranslucentStartIndex; }
   };
 
   class TK_API RenderJobProcessor
@@ -98,6 +107,12 @@ namespace ToolKit
      */
     static void CullLights(LightPtrArray& lights, const CameraPtr& camera);
 
+    /**
+     * Separate jobs such that job array starts with culled jobs, than deferred jobs, than forward opaque and
+     * translucent jobs.
+     * For example, all jobs between these iterators are the deferred jobs.
+     * RenderData::GetDefferedBegin() and RenderData::GetForwardOpaqueBegin()
+     */
     static void SeperateRenderData(RenderData& renderData);
 
     /**
