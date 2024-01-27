@@ -120,17 +120,12 @@ namespace ToolKit
     // Update all lights before using them.
     m_updatedLights = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
 
-    for (LightPtr light : m_updatedLights)
-    {
-      light->UpdateShadowCamera();
-    }
-
     // Cull lights out side of view. Not even their shadows are needed.
     RenderJobProcessor::CullLights(m_updatedLights, m_params.Cam);
 
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
     m_renderData.jobs.clear();
-    m_params.Scene->m_boundingBox       = RenderJobProcessor::CreateRenderJobs(allDrawList, m_renderData.jobs);
+    RenderJobProcessor::CreateRenderJobs(allDrawList, m_renderData.jobs);
 
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
     m_shadowPass->m_params.renderData   = &m_renderData;

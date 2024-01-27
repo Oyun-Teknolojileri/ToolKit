@@ -56,9 +56,9 @@ namespace ToolKit
 
   void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
 
-  BoundingBox RenderJobProcessor::CreateRenderJobs(const EntityPtrArray& entities,
-                                                   RenderJobArray& jobArray,
-                                                   bool ignoreVisibility)
+  void RenderJobProcessor::CreateRenderJobs(const EntityPtrArray& entities,
+                                            RenderJobArray& jobArray,
+                                            bool ignoreVisibility)
   {
     CPU_FUNC_RANGE();
 
@@ -70,7 +70,6 @@ namespace ToolKit
     };
 
     jobArray.reserve(entities.size()); // at least.
-    BoundingBox boundingVolume;
 
     for (const EntityPtr& ntt : entities)
     {
@@ -136,11 +135,6 @@ namespace ToolKit
 
           TransformAABB(job.BoundingBox, job.WorldTransform);
 
-          if (job.BoundingBox.IsValid())
-          {
-            boundingVolume.UpdateBoundary(job.BoundingBox);
-          }
-
           job.ShadowCaster = castShadow;
           job.Mesh         = mesh;
 
@@ -196,8 +190,6 @@ namespace ToolKit
                ntt->GetNameVal().c_str());
       }
     }
-
-    return boundingVolume;
   }
 
   void RenderJobProcessor::CullLights(LightPtrArray& lights, const CameraPtr& camera)

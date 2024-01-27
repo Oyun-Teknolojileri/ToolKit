@@ -54,6 +54,8 @@ namespace ToolKit
 
     void EditorScene::Update(float deltaTime)
     {
+      Super::Update(deltaTime);
+
       // Update animations.
       GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
 

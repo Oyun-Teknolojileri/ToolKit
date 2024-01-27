@@ -89,9 +89,9 @@ namespace ToolKit
      * @param ingnoreVisibility when set true, construct jobs for objects that has visibility set to false.
      * @return BoundingBox for jobs.
      */
-    static BoundingBox CreateRenderJobs(const EntityPtrArray& entities,
-                                        RenderJobArray& jobArray,
-                                        bool ignoreVisibility = false);
+    static void CreateRenderJobs(const EntityPtrArray& entities,
+                                 RenderJobArray& jobArray,
+                                 bool ignoreVisibility = false);
 
     /**
      * This will drop the lights whose bounding volume does not intersect with camera.

@@ -162,7 +162,7 @@ namespace ToolKit
 
     m_renderData.jobs.clear();
 
-    m_params.Scene->m_boundingBox       = RenderJobProcessor::CreateRenderJobs(allDrawList, m_renderData.jobs);
+    RenderJobProcessor::CreateRenderJobs(allDrawList, m_renderData.jobs);
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
 
     m_shadowPass->m_params.renderData   = &m_renderData;

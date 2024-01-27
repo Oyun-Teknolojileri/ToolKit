@@ -185,7 +185,7 @@ namespace ToolKit
   typedef std::shared_ptr<class Canvas> CanvasPtr;
   typedef std::shared_ptr<class Billboard> BillboardPtr;
   typedef std::shared_ptr<class Camera> CameraPtr;
-  typedef std::shared_ptr<class Camera> CameraPtr;
+  typedef std::vector<CameraPtr> CameraPtrArray;
   typedef std::shared_ptr<class Surface> SurfacePtr;
   typedef std::shared_ptr<class Dpad> DpadPtr;
 
