@@ -433,7 +433,9 @@ namespace ToolKit
     sortRangeFn(begin, end);
   }
 
-  void RenderJobProcessor::AssignEnvironment(RenderJobArray& jobArray, const EnvironmentComponentPtrArray& environments)
+  void RenderJobProcessor::AssignEnvironment(RenderJobItr begin,
+                                             RenderJobItr end,
+                                             const EnvironmentComponentPtrArray& environments)
   {
     CPU_FUNC_RANGE();
 
@@ -442,7 +444,7 @@ namespace ToolKit
       return;
     }
 
-    for (RenderJob& job : jobArray)
+    for (RenderJobItr job = begin; job != end; job++)
     {
       BoundingBox bestBox;
       for (const EnvironmentComponentPtr& volume : environments)
@@ -454,12 +456,12 @@ namespace ToolKit
 
         // Pick the smallest volume intersecting with job.
         BoundingBox vbb = std::move(volume->GetBBox());
-        if (BoxBoxIntersection(vbb, job.BoundingBox))
+        if (BoxBoxIntersection(vbb, job->BoundingBox))
         {
-          if (bestBox.Volume() > vbb.Volume() || job.EnvironmentVolume == nullptr)
+          if (bestBox.Volume() > vbb.Volume() || job->EnvironmentVolume == nullptr)
           {
-            bestBox               = vbb;
-            job.EnvironmentVolume = volume;
+            bestBox                = vbb;
+            job->EnvironmentVolume = volume;
           }
         }
       }

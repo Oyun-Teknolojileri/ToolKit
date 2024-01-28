@@ -165,39 +165,42 @@ namespace ToolKit
     m_shadowPass->m_params.ViewCamera   = m_params.Cam;
 
     RenderJobProcessor::CullRenderJobs(m_renderData.jobs, m_params.Cam);
-    RenderJobProcessor::AssignEnvironment(m_renderData.jobs, m_params.Scene->GetEnvironmentVolumes());
+    RenderJobProcessor::AssignEnvironment(m_renderData.GetDefferedBegin(),
+                                          m_renderData.jobs.end(),
+                                          m_params.Scene->GetEnvironmentVolumes());
+
     RenderJobProcessor::SeperateRenderData(m_renderData, false);
     RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
 
-    TK_LOG("Culled");
-    int i = 0;
-    for (RenderJobItr beg = m_renderData.jobs.begin(); beg != m_renderData.GetDefferedBegin(); beg++)
-    {
-      i++;
-      TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    }
+    // TK_LOG("Culled");
+    // int i = 0;
+    // for (RenderJobItr beg = m_renderData.jobs.begin(); beg != m_renderData.GetDefferedBegin(); beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
 
-    TK_LOG("Deferred Opaque");
-    for (RenderJobItr beg = m_renderData.GetDefferedBegin(); beg != m_renderData.GetForwardOpaqueBegin(); beg++)
-    {
-      i++;
-      TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    }
+    // TK_LOG("Deferred Opaque");
+    // for (RenderJobItr beg = m_renderData.GetDefferedBegin(); beg != m_renderData.GetForwardOpaqueBegin(); beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
 
-    TK_LOG("Forward Opaque");
-    for (RenderJobItr beg = m_renderData.GetForwardOpaqueBegin(); beg != m_renderData.GetForwardTranslucentBegin();
-         beg++)
-    {
-      i++;
-      TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    }
+    // TK_LOG("Forward Opaque");
+    // for (RenderJobItr beg = m_renderData.GetForwardOpaqueBegin(); beg != m_renderData.GetForwardTranslucentBegin();
+    //      beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
 
-    TK_LOG("Forward Translucent");
-    for (RenderJobItr beg = m_renderData.GetForwardTranslucentBegin(); beg != m_renderData.jobs.end(); beg++)
-    {
-      i++;
-      TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    }
+    // TK_LOG("Forward Translucent");
+    // for (RenderJobItr beg = m_renderData.GetForwardTranslucentBegin(); beg != m_renderData.jobs.end(); beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
 
     m_gBufferPass->m_params.renderData          = &m_renderData;
     m_gBufferPass->m_params.Camera              = m_params.Cam;

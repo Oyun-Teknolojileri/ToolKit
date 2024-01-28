@@ -147,7 +147,9 @@ namespace ToolKit
 
     static void StableSortByMeshThanMaterail(RenderData& renderData);
 
-    static void AssignEnvironment(RenderJobArray& jobArray, const EnvironmentComponentPtrArray& environments);
+    static void AssignEnvironment(RenderJobItr begin,
+                                  RenderJobItr end,
+                                  const EnvironmentComponentPtrArray& environments);
 
     /**
      * Calculates the standard deviation and mean of the given RenderJobArray
