@@ -16,6 +16,7 @@
 #include "Renderer.h"
 #include "ResourceComponent.h"
 #include "TKProfiler.h"
+#include "Threads.h"
 #include "Toolkit.h"
 #include "Viewport.h"
 
@@ -94,12 +95,13 @@ namespace ToolKit
     };
 
     jobArray.reserve(entities.size()); // at least.
+    std::mutex jobArrayMutex;
 
-    for (const EntityPtr& ntt : entities)
+    auto createJobFn = [&](const EntityPtr& ntt) -> void
     {
       if (!checkDrawableFn(ntt))
       {
-        continue;
+        return;
       }
 
       bool materialMissing       = false;
@@ -207,7 +209,11 @@ namespace ToolKit
             }
           }
 
-          jobArray.push_back(job);
+          // Insert safe.
+          {
+            std::lock_guard<std::mutex> lock(jobArrayMutex);
+            jobArray.push_back(job);
+          }
         }
       };
 
@@ -226,7 +232,12 @@ namespace ToolKit
         TK_WRN("Entity \"%s\" have less material than mesh count! ToolKit uses default material for now.",
                ntt->GetNameVal().c_str());
       }
-    }
+    };
+
+    std::for_each(TKExecByConditional(entities.size() > 100, WorkerManager::FramePool),
+                  entities.begin(),
+                  entities.end(),
+                  createJobFn);
   }
 
   void RenderJobProcessor::CullLights(LightPtrArray& lights, const CameraPtr& camera)
