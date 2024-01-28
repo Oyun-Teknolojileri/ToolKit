@@ -120,27 +120,32 @@ namespace ToolKit
         overrideBBox       = std::move(bbOverride->GetAABB());
       }
 
-      SkeletonComponent* skComp                = ntt->GetComponentFast<SkeletonComponent>();
-      const AnimRecordRawPtrArray& animRecords = GetAnimationPlayer()->m_records;
-      bool foundAnim                           = false;
-      for (const AnimRecordRawPtr& animRecord : animRecords)
+      // Assign skeletal animations.
+      SkeletonComponent* skComp = nullptr;
+      if (skComp = ntt->GetComponentFast<SkeletonComponent>())
       {
-        if (const EntityPtr& animNtt = animRecord->m_entity.lock())
+        bool foundAnim                           = false;
+        const AnimRecordRawPtrArray& animRecords = GetAnimationPlayer()->m_records;
+
+        for (const AnimRecordRawPtr& animRecord : animRecords)
         {
-          if (animNtt->GetIdVal() == ntt->GetIdVal())
+          if (const EntityPtr& animNtt = animRecord->m_entity.lock())
           {
-            skComp->m_animData.currentAnimation = animRecord->m_animation;
-            skComp->m_animData.blendAnimation   = animRecord->m_blendAnimation;
-            foundAnim                           = true;
-            break;
+            if (animNtt->IsSame(ntt))
+            {
+              skComp->m_animData.currentAnimation = animRecord->m_animation;
+              skComp->m_animData.blendAnimation   = animRecord->m_blendAnimation;
+              foundAnim                           = true;
+              break;
+            }
           }
         }
-      }
 
-      if (!foundAnim && skComp != nullptr)
-      {
-        skComp->m_animData.currentAnimation = nullptr;
-        skComp->m_animData.blendAnimation   = nullptr;
+        if (!foundAnim && skComp != nullptr)
+        {
+          skComp->m_animData.currentAnimation = nullptr;
+          skComp->m_animData.blendAnimation   = nullptr;
+        }
       }
 
       auto addRenderJobForMeshFn = [&](Mesh* mesh)
