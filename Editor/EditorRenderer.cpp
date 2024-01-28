@@ -176,11 +176,37 @@ namespace ToolKit
       m_lightSystem->m_parentNode->OrphanSelf();
       m_camera->m_node->AddChild(m_lightSystem->m_parentNode);
 
-      // Generate Selection boundary and Environment component boundary.
       EditorScenePtr scene = app->GetCurrentScene();
+
+      LightPtrArray lights =
+          m_params.LitMode == EditorLitMode::EditorLit ? m_lightSystem->m_lights : scene->GetLights();
+
+      EditorViewport* viewport = static_cast<EditorViewport*>(m_params.Viewport);
+
+      // Scene renderer will render the given scene independent of editor.
+      // Editor objects will be drawn on top of scene.
+      if (m_params.UseMobileRenderPath)
+      {
+        // Mobile scene pass
+        m_mobileSceneRenderPath->m_params.Cam             = m_camera;
+        m_mobileSceneRenderPath->m_params.Lights          = lights;
+        m_mobileSceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
+        m_mobileSceneRenderPath->m_params.Scene           = scene;
+      }
+      else
+      {
+        // Scene pass.
+        m_sceneRenderPath->m_params.Cam             = m_camera;
+        m_sceneRenderPath->m_params.Lights          = lights;
+        m_sceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
+        m_sceneRenderPath->m_params.Scene           = scene;
+      }
+
+      // Generate Selection boundary and Environment component boundary.
       m_selecteds.clear();
       scene->GetSelectedEntities(m_selecteds);
 
+      // Construct gizmo objects.
       for (EntityPtr ntt : m_selecteds)
       {
         EnvironmentComponentPtr envCom = ntt->GetComponent<EnvironmentComponent>();
@@ -228,38 +254,15 @@ namespace ToolKit
       grid->UpdateShaderParams();
       editorEntities.push_back(grid);
 
-      LightPtrArray lights =
-          m_params.LitMode == EditorLitMode::EditorLit ? m_lightSystem->m_lights : scene->GetLights();
-
-      EditorViewport* viewport = static_cast<EditorViewport*>(m_params.Viewport);
-
+      // Editor pass.
       m_renderData.jobs.clear();
       RenderJobProcessor::CreateRenderJobs(editorEntities, m_renderData.jobs);
+      RenderJobProcessor::SeperateRenderData(m_renderData, true);
 
-      RenderJobProcessor::SeperateRenderData(m_renderData);
-
-      // Editor pass.
-      m_editorPass->m_params.renderData  = &m_renderData;
-      m_editorPass->m_params.Cam         = m_camera;
-      m_editorPass->m_params.FrameBuffer = viewport->m_framebuffer;
-      m_editorPass->m_params.clearBuffer = GraphicBitFields::None;
-
-      if (m_params.UseMobileRenderPath)
-      {
-        // Mobile scene pass
-        m_mobileSceneRenderPath->m_params.Cam             = m_camera;
-        m_mobileSceneRenderPath->m_params.Lights          = lights;
-        m_mobileSceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
-        m_mobileSceneRenderPath->m_params.Scene           = scene;
-      }
-      else
-      {
-        // Scene pass.
-        m_sceneRenderPath->m_params.Cam             = m_camera;
-        m_sceneRenderPath->m_params.Lights          = lights;
-        m_sceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
-        m_sceneRenderPath->m_params.Scene           = scene;
-      }
+      m_editorPass->m_params.renderData     = &m_renderData;
+      m_editorPass->m_params.Cam            = m_camera;
+      m_editorPass->m_params.FrameBuffer    = viewport->m_framebuffer;
+      m_editorPass->m_params.clearBuffer    = GraphicBitFields::None;
 
       // Skip frame pass.
       m_skipFramePass->m_params.FrameBuffer = viewport->m_framebuffer;
@@ -276,7 +279,7 @@ namespace ToolKit
         RenderJobProcessor::CreateRenderJobs(uiNtties, m_uiRenderData.jobs);
       }
 
-      RenderJobProcessor::SeperateRenderData(m_uiRenderData);
+      RenderJobProcessor::SeperateRenderData(m_uiRenderData, true);
 
       m_uiPass->m_params.renderData                           = &m_uiRenderData;
       m_uiPass->m_params.Cam                                  = GetUIManager()->GetUICamera();

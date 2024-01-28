@@ -80,7 +80,11 @@ namespace ToolKit
     int forwardOpaqueStartIndex      = 0; //!< Beginning of forward opaque jobs.
     int forwardTranslucentStartIndex = 0; //!< Beginning of forward translucent jobs.
 
-    RenderJobItr GetDefferedBegin() { return jobs.begin() + deferredJobsStartIndex; }
+    RenderJobItr GetDefferedBegin()
+    {
+      assert(deferredJobsStartIndex != -1 && "Accessing forward only data.");
+      return jobs.begin() + deferredJobsStartIndex;
+    }
 
     RenderJobItr GetForwardOpaqueBegin() { return jobs.begin() + forwardOpaqueStartIndex; }
 
@@ -113,7 +117,7 @@ namespace ToolKit
      * For example, all jobs between these iterators are the deferred jobs.
      * RenderData::GetDefferedBegin() and RenderData::GetForwardOpaqueBegin()
      */
-    static void SeperateRenderData(RenderData& renderData);
+    static void SeperateRenderData(RenderData& renderData, bool forwardOnly);
 
     /**
      * Assign all lights affecting the job.

@@ -36,7 +36,7 @@ namespace ToolKit
     {
       m_renderData.jobs.clear();
       RenderJobProcessor::CreateRenderJobs(billboards, m_renderData.jobs);
-      RenderJobProcessor::SeperateRenderData(m_renderData);
+      RenderJobProcessor::SeperateRenderData(m_renderData, true);
 
       RenderJobItr begin = m_renderData.jobs.begin();
       RenderJobItr end   = m_renderData.jobs.end();

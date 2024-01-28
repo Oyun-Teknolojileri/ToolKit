@@ -195,14 +195,10 @@ namespace ToolKit
 
   float& Material::GetAlpha() { return m_alpha; }
 
-  bool Material::IsDeferred()
+  bool Material::IsCustom()
   {
-    if (IsTranslucent())
-    {
-      return false;
-    }
-
-    return m_fragmentShader->GetFile() == GetShaderManager()->PbrDefferedShaderFile();
+    static String defaultShader = GetShaderManager()->PbrForwardShaderFile();
+    return m_fragmentShader->GetFile() != defaultShader;
   }
 
   bool Material::IsTranslucent() { return m_renderState.blendFunction == BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA; }
@@ -375,36 +371,19 @@ namespace ToolKit
       }
     }
 
-    // Update old materials than v0.4.0
-
     // If no shader provided, assign a proper default.
     if (m_fragmentShader == nullptr)
     {
-      if (IsTranslucent())
-      {
-        m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
-      }
-      else
-      {
-        m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
-      }
+      m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
     }
-    else
+    else if (m_fragmentShader->GetFile() == GetShaderManager()->PbrDefferedShaderFile())
     {
-      // Can this be draw in deferred path ?
-      if (!IsDeferred())
-      {
-        // If not using a custom shader.
-        if (m_fragmentShader->GetFile() == GetShaderManager()->PbrForwardShaderFile())
-        {
-          // And not translucent.
-          if (!IsTranslucent())
-          {
-            // Draw in deferred.
-            m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
-          }
-        }
-      }
+      m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
+    }
+
+    if (m_fragmentShader == nullptr)
+    {
+      m_vertexShader = GetShaderManager()->GetDefaultVertexShader();
     }
 
     return nullptr;

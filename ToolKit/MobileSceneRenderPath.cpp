@@ -141,18 +141,17 @@ namespace ToolKit
     RenderJobItr begin       = m_renderData.jobs.begin();
     RenderJobItr end         = m_renderData.jobs.end();
 
-    for (RenderJobItr job = begin; job != end; job++)
+    RenderJobProcessor::SeperateRenderData(m_renderData, true);
+    RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
+
+    for (int i = 0; i < (int) m_renderData.jobs.size(); i++)
     {
-      if (job->Material->m_fragmentShader->GetFile() == shaderMan->PbrDefferedShaderFile())
-      {
-        job->Material->m_fragmentShader = shaderMan->GetPbrForwardShader();
-      }
+      RenderJob& j = m_renderData.jobs[i];
+      TK_LOG("i: %d %s", i, j.Entity->GetNameVal().c_str());
     }
 
-    RenderJobProcessor::SeperateRenderData(m_renderData);
     RenderJobProcessor::AssignEnvironment(m_renderData.jobs, m_params.Scene->GetEnvironmentVolumes());
-    RenderJobProcessor::AssignLight(m_renderData.jobs.begin(), m_renderData.jobs.end(), m_updatedLights);
-    RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
+    RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_updatedLights);
 
     // Set CubeMapPass for sky.
     m_drawSky         = false;

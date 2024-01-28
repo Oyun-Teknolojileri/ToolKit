@@ -151,12 +151,7 @@ namespace ToolKit
     CPU_FUNC_RANGE();
 
     // Update all lights before using them.
-    m_updatedLights = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
-
-    for (LightPtr light : m_updatedLights)
-    {
-      light->UpdateShadowCamera();
-    }
+    m_updatedLights                   = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
 
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
@@ -173,7 +168,7 @@ namespace ToolKit
 
     RenderJobProcessor::AssignEnvironment(m_renderData.jobs, m_params.Scene->GetEnvironmentVolumes());
 
-    RenderJobProcessor::SeperateRenderData(m_renderData);
+    RenderJobProcessor::SeperateRenderData(m_renderData, false);
 
     m_gBufferPass->m_params.renderData          = &m_renderData;
     m_gBufferPass->m_params.Camera              = m_params.Cam;

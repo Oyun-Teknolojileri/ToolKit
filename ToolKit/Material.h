@@ -46,7 +46,7 @@ namespace ToolKit
      * States if the material will use deferred render path.
      * @returns True if the material will be rendered in deferred path.
      */
-    bool IsDeferred();
+    bool IsCustom();
 
     /**
      * States if the material has transparency.
