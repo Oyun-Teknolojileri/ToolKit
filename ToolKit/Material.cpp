@@ -201,7 +201,20 @@ namespace ToolKit
     return m_fragmentShader->GetFile() != defaultShader;
   }
 
-  bool Material::IsTranslucent() { return m_renderState.blendFunction == BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA; }
+  bool Material::IsTranslucent()
+  {
+    switch (m_renderState.blendFunction)
+    {
+    case BlendFunction::NONE:
+    case BlendFunction::ALPHA_MASK:
+      return false;
+    case BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA:
+    case BlendFunction::ONE_TO_ONE:
+      return true;
+    default:
+      return false;
+    }
+  }
 
   bool Material::IsPBR()
   {

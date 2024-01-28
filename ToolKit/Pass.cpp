@@ -246,13 +246,13 @@ namespace ToolKit
       // Group opaque deferred - forward.
       forwardItr = std::partition(culledItr,
                                   renderData.jobs.end(),
-                                  [](const RenderJob& job) { return job.Material->IsCustom(); });
+                                  [](const RenderJob& job) { return !job.Material->IsCustom(); });
     }
 
     // Group translucent.
     RenderJobItr translucentItr = std::partition(forwardItr,
                                                  renderData.jobs.end(),
-                                                 [](const RenderJob& job) { return job.Material->IsTranslucent(); });
+                                                 [](const RenderJob& job) { return !job.Material->IsTranslucent(); });
 
     if (forwardOnly)
     {
@@ -261,13 +261,11 @@ namespace ToolKit
     }
     else
     {
-      renderData.deferredJobsStartIndex   = (int) std::distance(renderData.jobs.begin(), culledItr);
-      renderData.forwardOpaqueStartIndex  = (int) std::distance(culledItr, forwardItr);
-      renderData.forwardOpaqueStartIndex  += renderData.deferredJobsStartIndex;
+      renderData.deferredJobsStartIndex  = (int) std::distance(renderData.jobs.begin(), culledItr);
+      renderData.forwardOpaqueStartIndex = (int) std::distance(renderData.jobs.begin(), forwardItr);
     }
 
-    renderData.forwardTranslucentStartIndex  = (int) std::distance(translucentItr, renderData.jobs.end());
-    renderData.forwardTranslucentStartIndex += renderData.forwardOpaqueStartIndex;
+    renderData.forwardTranslucentStartIndex = (int) std::distance(renderData.jobs.begin(), translucentItr);
   }
 
   void RenderJobProcessor::AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights)

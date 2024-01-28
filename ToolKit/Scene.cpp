@@ -126,6 +126,7 @@ namespace ToolKit
     m_lightCache.clear();
     m_cameraCache.clear();
     m_environmentVolumeCache.clear();
+    m_skyCache = nullptr;
     m_boundingBox = BoundingBox();
 
     for (int i = 0; i < m_entities.size(); i++)

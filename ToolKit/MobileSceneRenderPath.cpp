@@ -142,12 +142,30 @@ namespace ToolKit
     RenderJobItr end         = m_renderData.jobs.end();
 
     RenderJobProcessor::SeperateRenderData(m_renderData, true);
-    RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
+    // RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
 
-    for (int i = 0; i < (int) m_renderData.jobs.size(); i++)
+    TK_LOG("Culled");
+    int i = 0;
+    for (RenderJobItr beg = m_renderData.jobs.begin(); beg != m_renderData.GetForwardOpaqueBegin();
+         beg++)
     {
-      RenderJob& j = m_renderData.jobs[i];
-      TK_LOG("i: %d %s", i, j.Entity->GetNameVal().c_str());
+      i++;
+      TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    }
+
+    TK_LOG("Forward Opaque");
+    for (RenderJobItr beg = m_renderData.GetForwardOpaqueBegin(); beg != m_renderData.GetForwardTranslucentBegin();
+         beg++)
+    {
+      i++;
+      TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    }
+
+    TK_LOG("Forward Translucent");
+    for (RenderJobItr beg = m_renderData.GetForwardTranslucentBegin(); beg != m_renderData.jobs.end(); beg++)
+    {
+      i++;
+      TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
     }
 
     RenderJobProcessor::AssignEnvironment(m_renderData.jobs, m_params.Scene->GetEnvironmentVolumes());
