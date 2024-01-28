@@ -246,7 +246,8 @@ namespace ToolKit
       // Group opaque deferred - forward.
       forwardItr = std::partition(culledItr,
                                   renderData.jobs.end(),
-                                  [](const RenderJob& job) { return !job.Material->IsCustom(); });
+                                  [](const RenderJob& job)
+                                  { return !job.Material->IsCustom() && !job.Material->IsTranslucent(); });
     }
 
     // Group translucent.

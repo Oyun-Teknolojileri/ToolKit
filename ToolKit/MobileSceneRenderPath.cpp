@@ -133,16 +133,8 @@ namespace ToolKit
     m_shadowPass->m_params.ViewCamera   = m_params.Cam;
 
     RenderJobProcessor::CullRenderJobs(m_renderData.jobs, m_params.Cam);
-
-    // Set all shaders as forward shader
-    // Translucent has already forward shader
-    ShaderManager* shaderMan = GetShaderManager();
-
-    RenderJobItr begin       = m_renderData.jobs.begin();
-    RenderJobItr end         = m_renderData.jobs.end();
-
     RenderJobProcessor::SeperateRenderData(m_renderData, true);
-    // RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
+    RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
 
     TK_LOG("Culled");
     int i = 0;
