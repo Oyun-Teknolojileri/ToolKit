@@ -124,15 +124,20 @@ namespace ToolKit
     RenderJobProcessor::CullLights(m_updatedLights, m_params.Cam);
 
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
+
     m_renderData.jobs.clear();
-    RenderJobProcessor::CreateRenderJobs(allDrawList, m_renderData.jobs);
+    RenderJobProcessor::CreateRenderJobs(allDrawList,
+                                         m_renderData.jobs,
+                                         m_updatedLights,
+                                         m_params.Cam,
+                                         m_params.Scene->GetEnvironmentVolumes());
 
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
     m_shadowPass->m_params.renderData   = &m_renderData;
     m_shadowPass->m_params.Lights       = m_updatedLights;
     m_shadowPass->m_params.ViewCamera   = m_params.Cam;
 
-    RenderJobProcessor::CullRenderJobs(m_renderData.jobs, m_params.Cam);
+    // RenderJobProcessor::CullRenderJobs(m_renderData.jobs, m_params.Cam);
     RenderJobProcessor::SeperateRenderData(m_renderData, true);
     RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
 
@@ -160,10 +165,11 @@ namespace ToolKit
     //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
     // }
 
-    RenderJobProcessor::AssignEnvironment(m_renderData.GetForwardOpaqueBegin(),
-                                          m_renderData.jobs.end(),
-                                          m_params.Scene->GetEnvironmentVolumes());
-    RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_updatedLights);
+    // RenderJobProcessor::AssignEnvironment(m_renderData.GetForwardOpaqueBegin(),
+    //                                       m_renderData.jobs.end(),
+    //                                       m_params.Scene->GetEnvironmentVolumes());
+
+    // RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_updatedLights);
 
     // Set CubeMapPass for sky.
     m_drawSky         = false;

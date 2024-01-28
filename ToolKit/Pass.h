@@ -106,6 +106,13 @@ namespace ToolKit
                                  RenderJobArray& jobArray,
                                  bool ignoreVisibility = false);
 
+    static void CreateRenderJobs(const EntityPtrArray& entities,
+                                 RenderJobArray& jobArray,
+                                 LightPtrArray& lights,
+                                 const CameraPtr& camera,
+                                 const EnvironmentComponentPtrArray& environments,
+                                 bool ignoreVisibility = false);
+
     /**
      * This will drop the lights whose bounding volume does not intersect with camera.
      */
@@ -118,6 +125,8 @@ namespace ToolKit
      * RenderData::GetDefferedBegin() and RenderData::GetForwardOpaqueBegin()
      */
     static void SeperateRenderData(RenderData& renderData, bool forwardOnly);
+
+    static void AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex);
 
     /**
      * Assign all lights affecting the job.
@@ -150,6 +159,8 @@ namespace ToolKit
     static void AssignEnvironment(RenderJobItr begin,
                                   RenderJobItr end,
                                   const EnvironmentComponentPtrArray& environments);
+
+    static void AssignEnvironment(RenderJob& job, const EnvironmentComponentPtrArray& environments);
 
     /**
      * Calculates the standard deviation and mean of the given RenderJobArray

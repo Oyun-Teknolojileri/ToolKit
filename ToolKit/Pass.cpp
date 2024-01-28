@@ -60,9 +60,33 @@ namespace ToolKit
                                             RenderJobArray& jobArray,
                                             bool ignoreVisibility)
   {
+    LightPtrArray nullLights;
+    EnvironmentComponentPtrArray nullEnvironments;
+    CreateRenderJobs(entities, jobArray, nullLights, nullptr, nullEnvironments, ignoreVisibility);
+  }
+
+  void RenderJobProcessor::CreateRenderJobs(const EntityPtrArray& entities,
+                                            RenderJobArray& jobArray,
+                                            LightPtrArray& lights,
+                                            const CameraPtr& camera,
+                                            const EnvironmentComponentPtrArray& environments,
+                                            bool ignoreVisibility)
+  {
     CPU_FUNC_RANGE();
 
-    auto checkDrawableFn = [ignoreVisibility](EntityPtr ntt) -> bool
+    // Create frustum for culling.
+    Frustum frustum;
+    if (camera != nullptr)
+    {
+      Mat4 pr = camera->GetProjectionMatrix();
+      Mat4 v  = camera->GetViewMatrix();
+      frustum = ExtractFrustum(pr * v, false);
+    }
+
+    // Sort lights for disc.
+    int directionalEndIndx = PreSortLights(lights);
+
+    auto checkDrawableFn   = [ignoreVisibility](EntityPtr ntt) -> bool
     {
       bool isDrawable = ntt->IsDrawable();
       bool isVisbile  = ntt->IsVisible();
@@ -170,6 +194,19 @@ namespace ToolKit
             job.animData             = animData; // copy
           }
 
+          if (camera)
+          {
+            // Cull.
+            job.frustumCulled = FrustumTest(frustum, job.BoundingBox);
+
+            // Light assignment.
+            if (!job.frustumCulled)
+            {
+              AssignLight(job, lights, directionalEndIndx);
+              AssignEnvironment(job, environments);
+            }
+          }
+
           jobArray.push_back(job);
         }
       };
@@ -267,6 +304,57 @@ namespace ToolKit
     }
 
     renderData.forwardTranslucentStartIndex = (int) std::distance(renderData.jobs.begin(), translucentItr);
+  }
+
+  void RenderJobProcessor::AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex)
+  {
+    auto assignmentFn = [](RenderJob& job, Light* light, int i) -> void
+    {
+      job.lights[job.activeLightCount] = i;
+      job.activeLightCount++;
+    };
+
+    auto checkBreakFn = [](int activeLightCount) -> bool
+    { return activeLightCount >= Renderer::RHIConstants::MaxLightsPerObject; };
+
+    job.activeLightCount = 0;
+    for (int i = 0; i < startIndex; i++)
+    {
+      assignmentFn(job, lights[i].get(), i);
+
+      if (checkBreakFn(job.activeLightCount))
+      {
+        break;
+      }
+    }
+
+    const BoundingBox& jobBox = job.BoundingBox;
+    for (int i = startIndex; i < (int) lights.size(); i++)
+    {
+      if (checkBreakFn(job.activeLightCount))
+      {
+        break;
+      }
+
+      LightPtr& light = lights[i];
+      if (light->GetLightType() == Light::Spot)
+      {
+        SpotLight* spot = static_cast<SpotLight*>(light.get());
+        if (FrustumBoxIntersection(spot->m_frustumCache, jobBox) != IntersectResult::Outside)
+        {
+          assignmentFn(job, lights[i].get(), i);
+        }
+      }
+      else
+      {
+        assert(light->GetLightType() == Light::Point && "Unknown light type.");
+        PointLight* point = static_cast<PointLight*>(light.get());
+        if (SphereBoxIntersection(point->m_boundingSphereCache, jobBox))
+        {
+          assignmentFn(job, lights[i].get(), i);
+        }
+      }
+    }
   }
 
   void RenderJobProcessor::AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights)
@@ -446,23 +534,28 @@ namespace ToolKit
 
     for (RenderJobItr job = begin; job != end; job++)
     {
-      BoundingBox bestBox;
-      for (const EnvironmentComponentPtr& volume : environments)
-      {
-        if (volume->GetIlluminateVal() == false)
-        {
-          continue;
-        }
+      AssignEnvironment(*job, environments);
+    }
+  }
 
-        // Pick the smallest volume intersecting with job.
-        BoundingBox vbb = std::move(volume->GetBBox());
-        if (BoxBoxIntersection(vbb, job->BoundingBox))
+  void RenderJobProcessor::AssignEnvironment(RenderJob& job, const EnvironmentComponentPtrArray& environments)
+  {
+    BoundingBox bestBox;
+    for (const EnvironmentComponentPtr& volume : environments)
+    {
+      if (volume->GetIlluminateVal() == false)
+      {
+        continue;
+      }
+
+      // Pick the smallest volume intersecting with job.
+      BoundingBox vbb = std::move(volume->GetBBox());
+      if (BoxBoxIntersection(vbb, job.BoundingBox))
+      {
+        if (bestBox.Volume() > vbb.Volume() || job.EnvironmentVolume == nullptr)
         {
-          if (bestBox.Volume() > vbb.Volume() || job->EnvironmentVolume == nullptr)
-          {
-            bestBox                = vbb;
-            job->EnvironmentVolume = volume;
-          }
+          bestBox               = vbb;
+          job.EnvironmentVolume = volume;
         }
       }
     }
