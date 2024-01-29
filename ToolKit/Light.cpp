@@ -107,25 +107,21 @@ namespace ToolKit
     m_shadowMapMaterial->Init();
   }
 
-  // int Light::ComparableType()
-  //{
-  //   if (IsA<DirectionalLight>())
-  //   {
-  //     return 0;
-  //   }
+  BoundingBox Light::GetAABB(bool inWorld) const
+  {
+    if (m_volumeMesh != nullptr)
+    {
+      BoundingBox lightVolume = m_volumeMesh->m_aabb;
+      if (inWorld)
+      {
+        TransformAABB(lightVolume, m_node->GetTransform());
+      }
 
-  //  if (IsA<PointLight>())
-  //  {
-  //    return 1;
-  //  }
+      return lightVolume;
+    }
 
-  //  if (IsA<SpotLight>())
-  //  {
-  //    return 2;
-  //  }
-
-  //  return 3;
-  //}
+    return Super::GetAABB();
+  }
 
   void Light::UpdateShadowCameraTransform()
   {
@@ -292,6 +288,19 @@ namespace ToolKit
   PointLight::PointLight() {}
 
   PointLight::~PointLight() {}
+
+  BoundingBox PointLight::GetAABB(bool inWorld) const
+  {
+    BoundingBox bb = m_boundingSphereCache.GetBoundingBox();
+    if (!inWorld)
+    {
+      // If not requested in world, cache is stored in world, so subtract the position.
+      bb.min -= m_boundingSphereCache.pos;
+      bb.max -= m_boundingSphereCache.pos;
+    }
+
+    return bb;
+  }
 
   void PointLight::UpdateShadowCamera()
   {

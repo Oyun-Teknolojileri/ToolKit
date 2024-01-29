@@ -137,6 +137,8 @@ namespace ToolKit
   {
     Vec3 pos;     ///< The position of the center of the sphere.
     float radius; ///< The radius of the sphere.
+
+    BoundingBox GetBoundingBox() const { return BoundingBox(pos - Vec3(radius), pos + Vec3(radius)); }
   };
 
 } // namespace ToolKit

@@ -900,6 +900,7 @@ namespace ToolKit
 
     mesh->m_vertexCount = (uint) mesh->m_clientSideVertices.size();
     mesh->m_indexCount  = (uint) mesh->m_clientSideIndices.size();
+    mesh->CalculateAABB();
   }
 
 } // namespace ToolKit

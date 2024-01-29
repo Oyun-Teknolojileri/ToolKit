@@ -44,6 +44,11 @@ namespace ToolKit
 
     virtual LightType GetLightType() = 0;
 
+    /**
+     * Returns the bounding box of VolumeMesh of the light if its not null, otherwise calls Super::GetAABB().
+     */
+    BoundingBox GetAABB(bool inWorld = false) const override;
+
    protected:
     void UpdateShadowCameraTransform();
     void ParameterConstructor() override;
@@ -116,6 +121,8 @@ namespace ToolKit
     virtual ~PointLight();
 
     LightType GetLightType() override { return LightType::Point; }
+
+    BoundingBox GetAABB(bool inWorld = false) const override;
 
     void UpdateShadowCamera() override;
     float AffectDistance() override;
