@@ -52,7 +52,7 @@ namespace ToolKit
    public:
     uint m_handle = 0;
     ShaderPtrArray m_shaders;
-    MaterialWeakPtr m_activeMaterial;
+    Material* m_activeMaterial;
 
    private:
     std::unordered_map<Uniform, int> m_uniformLocations;

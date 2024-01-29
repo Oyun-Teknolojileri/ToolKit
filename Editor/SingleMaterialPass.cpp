@@ -41,7 +41,7 @@ namespace ToolKit
       {
         renderer->m_overrideMat = m_overrideMat;
 
-        MaterialPtr mat         = job->Material;
+        Material* mat           = job->Material;
         renderer->m_overrideMat->SetRenderState(mat->GetRenderState());
         renderer->m_overrideMat->m_vertexShader    = mat->m_vertexShader;
         renderer->m_overrideMat->m_fragmentShader  = m_params.OverrideFragmentShader;

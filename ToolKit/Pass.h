@@ -46,9 +46,16 @@ namespace ToolKit
    */
   struct RenderJob
   {
+    RenderJob() {}
+
+    RenderJob(const EntityPtr& ntt, Mesh* mesh, Material* material, bool castShadow)
+        : Entity(ntt), Mesh(mesh), Material(material), ShadowCaster(castShadow)
+    {
+    }
+
     EntityPtr Entity                          = nullptr; //!< Entity that this job is created from.
     Mesh* Mesh                                = nullptr; //!< Mesh to render.
-    MaterialPtr Material                      = nullptr; //!< Material to render job with.
+    Material* Material                        = nullptr; //!< Material to render job with.
     EnvironmentComponentPtr EnvironmentVolume = nullptr; //!< EnvironmentVolume effecting this entity, if any.
     bool ShadowCaster                         = true;    //!< Account in shadow map construction.
     bool frustumCulled                        = false;   //!< States that the job is culled by a camera.
@@ -116,7 +123,7 @@ namespace ToolKit
     /**
      * This will drop the lights whose bounding volume does not intersect with camera.
      */
-    static void CullLights(LightPtrArray& lights, const CameraPtr& camera);
+    static void CullLights(LightPtrArray& lights, const CameraPtr& camera, float maxDistance = TK_FLT_MAX);
 
     /**
      * Separate jobs such that job array starts with culled jobs, than deferred jobs, than forward opaque and

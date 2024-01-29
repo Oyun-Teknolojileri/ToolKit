@@ -61,7 +61,11 @@ namespace ToolKit
     }
 
     // Forward Pre Process Pass
-    m_passArray.push_back(m_forwardPreProcessPass);
+
+    if (m_params.Gfx.SSAOEnabled || m_params.Gfx.DepthOfFieldEnabled)
+    {
+      m_passArray.push_back(m_forwardPreProcessPass);
+    }
 
     // SSAO pass
     if (m_params.Gfx.SSAOEnabled)

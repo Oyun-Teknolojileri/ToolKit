@@ -87,42 +87,89 @@ namespace ToolKit
     // Sort lights for disc.
     int directionalEndIndx = PreSortLights(lights);
 
-    auto checkDrawableFn   = [ignoreVisibility](EntityPtr ntt) -> bool
-    {
-      bool isDrawable = ntt->IsDrawable();
-      bool isVisbile  = ntt->IsVisible();
-      return isDrawable && (isVisbile || ignoreVisibility);
-    };
-
     jobArray.reserve(entities.size()); // at least.
-    std::mutex jobArrayMutex;
 
-    auto createJobFn = [&](const EntityPtr& ntt) -> void
+    // Pre construct jobs.
+    for (int nttIndex = 0; nttIndex < (int) entities.size(); nttIndex++)
     {
-      if (!checkDrawableFn(ntt))
+      const EntityPtr& ntt = entities[nttIndex];
+
+      bool isDrawable      = ntt->IsDrawable();
+      bool isVisbile       = ntt->IsVisible();
+      if (isDrawable && (isVisbile || ignoreVisibility))
       {
-        return;
+        MaterialPtrArray* materialList = nullptr;
+        if (MaterialComponent* matComp = ntt->GetComponentFast<MaterialComponent>())
+        {
+          materialList = &matComp->GetMaterialList();
+        }
+
+        MeshComponent* mc         = ntt->GetComponentFast<MeshComponent>();
+        const MeshPtr& parentMesh = mc->GetMeshVal();
+
+        MeshRawPtrArray allMeshes;
+        parentMesh->GetAllMeshes(allMeshes);
+
+        for (int subMeshIndx = 0; subMeshIndx < (int) allMeshes.size(); subMeshIndx++)
+        {
+          Mesh* mesh           = allMeshes[subMeshIndx];
+          MaterialPtr material = nullptr;
+
+          if (mesh->GetVertexCount() != 0)
+          {
+            // Pick the material for submesh.
+            if (materialList != nullptr)
+            {
+              if (subMeshIndx < materialList->size())
+              {
+                material = (*materialList)[subMeshIndx];
+              }
+            }
+
+            // if material is still null, pick from mesh.
+            if (material == nullptr)
+            {
+              if (mesh->m_material)
+              {
+                material = mesh->m_material;
+              }
+            }
+
+            // Worst case, no material found pick a copy of default.
+            if (material == nullptr)
+            {
+              material = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
+              TK_WRN("Entity \"%s\" have less material than mesh count! ToolKit uses default material for now.",
+                     ntt->GetNameVal().c_str());
+            }
+
+            jobArray.emplace_back(RenderJob(ntt, mesh, material.get(), mc->GetCastShadowVal()));
+          }
+        }
       }
+    }
 
-      bool materialMissing       = false;
-      MaterialComponent* matComp = ntt->GetComponentFast<MaterialComponent>();
-      uint matIndex              = 0;
-      MeshComponent* mc          = ntt->GetComponentFast<MeshComponent>();
-      bool castShadow            = mc->GetCastShadowVal();
-      const MeshPtr& parentMesh  = mc->GetMeshVal();
-      Mat4 nttTransform          = ntt->m_node->GetTransform();
-      bool overrideBBoxExists    = false;
+    // Constructor Lambda
 
-      BoundingBox overrideBBox;
+    auto createJobFn = [&](RenderJob& job) -> void
+    {
+      Entity* ntt        = job.Entity.get();
+
+      // Calculate bounding box.
+      job.WorldTransform = ntt->m_node->GetTransform();
       if (AABBOverrideComponent* bbOverride = ntt->GetComponentFast<AABBOverrideComponent>())
       {
-        overrideBBoxExists = true;
-        overrideBBox       = std::move(bbOverride->GetAABB());
+        job.BoundingBox = std::move(bbOverride->GetAABB());
+      }
+      else
+      {
+        job.BoundingBox = job.Mesh->m_aabb;
       }
 
+      TransformAABB(job.BoundingBox, job.WorldTransform);
+
       // Assign skeletal animations.
-      SkeletonComponent* skComp = nullptr;
-      if (skComp = ntt->GetComponentFast<SkeletonComponent>())
+      if (SkeletonComponent* skComp = ntt->GetComponentFast<SkeletonComponent>())
       {
         bool foundAnim                           = false;
         const AnimRecordRawPtrArray& animRecords = GetAnimationPlayer()->m_records;
@@ -146,110 +193,36 @@ namespace ToolKit
           skComp->m_animData.currentAnimation = nullptr;
           skComp->m_animData.blendAnimation   = nullptr;
         }
+
+        job.animData = skComp->GetAnimData(); // copy
       }
 
-      auto addRenderJobForMeshFn = [&](Mesh* mesh)
+      if (camera)
       {
-        if (mesh)
+        // Cull.
+        job.frustumCulled = FrustumTest(frustum, job.BoundingBox);
+
+        // Light assignment.
+        if (!job.frustumCulled)
         {
-          RenderJob job;
-          job.Entity         = ntt;
-          job.WorldTransform = nttTransform;
-          if (overrideBBoxExists)
-          {
-            job.BoundingBox = overrideBBox;
-          }
-          else
-          {
-            job.BoundingBox = mesh->m_aabb;
-          }
-
-          TransformAABB(job.BoundingBox, job.WorldTransform);
-
-          job.ShadowCaster = castShadow;
-          job.Mesh         = mesh;
-
-          // Look material component first, if we can not find a corresponding material in there, look inside mesh. If
-          // still there is no corresponding material, give a warning to the user and use default material
-          if (matComp)
-          {
-            const MaterialPtrArray& mats = matComp->GetMaterialList();
-            if (matIndex < mats.size())
-            {
-              job.Material = mats[matIndex++];
-            }
-          }
-
-          if (job.Material == nullptr)
-          {
-            if (mesh->m_material)
-            {
-              job.Material = mesh->m_material;
-            }
-          }
-
-          if (job.Material == nullptr)
-          {
-            // Warn user that we use the default material for the mesh
-            materialMissing = true;
-            job.Material    = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
-          }
-
-          if (skComp != nullptr)
-          {
-            const AnimData& animData = skComp->GetAnimData();
-            job.animData             = animData; // copy
-          }
-
-          if (camera)
-          {
-            // Cull.
-            job.frustumCulled = FrustumTest(frustum, job.BoundingBox);
-
-            // Light assignment.
-            if (!job.frustumCulled)
-            {
-              AssignLight(job, lights, directionalEndIndx);
-              AssignEnvironment(job, environments);
-            }
-          }
-
-          // Insert safe.
-          {
-            std::lock_guard<std::mutex> lock(jobArrayMutex);
-            jobArray.push_back(job);
-          }
+          AssignLight(job, lights, directionalEndIndx);
+          AssignEnvironment(job, environments);
         }
-      };
-
-      MeshRawPtrArray allMeshes;
-      parentMesh->GetAllMeshes(allMeshes);
-      for (Mesh* mesh : allMeshes)
-      {
-        if (mesh->GetVertexCount() != 0)
-        {
-          addRenderJobForMeshFn(mesh);
-        }
-      }
-
-      if (materialMissing)
-      {
-        TK_WRN("Entity \"%s\" have less material than mesh count! ToolKit uses default material for now.",
-               ntt->GetNameVal().c_str());
       }
     };
 
-    std::for_each(TKExecByConditional(entities.size() > 100, WorkerManager::FramePool),
-                  entities.begin(),
-                  entities.end(),
+    std::for_each(TKExecByConditional(jobArray.size() > 100, WorkerManager::FramePool),
+                  jobArray.begin(),
+                  jobArray.end(),
                   createJobFn);
   }
 
-  void RenderJobProcessor::CullLights(LightPtrArray& lights, const CameraPtr& camera)
+  void RenderJobProcessor::CullLights(LightPtrArray& lights, const CameraPtr& camera, float maxDistance)
   {
     Mat4 pr               = camera->GetProjectionMatrix();
     Mat4 v                = camera->GetViewMatrix();
     Mat4 prv              = pr * v;
+    Vec3 camPos           = camera->m_node->GetTranslation();
 
     Frustum frustum       = ExtractFrustum(prv, false);
 
@@ -260,6 +233,7 @@ namespace ToolKit
                                 lights.end(),
                                 [&](const LightPtr& light) -> bool
                                 {
+                                  bool culled = false;
                                   switch (light->GetLightType())
                                   {
                                   case Light::Directional:
@@ -267,20 +241,28 @@ namespace ToolKit
                                   case Light::Spot:
                                   {
                                     SpotLight* spot = static_cast<SpotLight*>(light.get());
-                                    return FrustumBoxIntersection(frustum, spot->m_boundingBoxCache) ==
-                                           IntersectResult::Outside;
+                                    culled          = FrustumBoxIntersection(frustum, spot->m_boundingBoxCache) ==
+                                             IntersectResult::Outside;
                                   }
                                   break;
                                   case Light::Point:
                                   {
                                     PointLight* point = static_cast<PointLight*>(light.get());
-                                    return !FrustumSphereIntersection(normalFrustum, point->m_boundingSphereCache);
+                                    culled = !FrustumSphereIntersection(normalFrustum, point->m_boundingSphereCache);
                                   }
                                   break;
                                   default:
                                     assert(false && "Unknown light type.");
                                     return true;
                                   }
+
+                                  if (culled)
+                                  {
+                                    return true;
+                                  }
+
+                                  float dist = glm::distance(light->m_node->GetTranslation(), camPos);
+                                  return dist > maxDistance;
                                 }),
                  lights.end());
   }

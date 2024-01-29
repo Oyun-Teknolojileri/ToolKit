@@ -159,7 +159,7 @@ namespace ToolKit
 
     Mat4 m_model;
     Mat4 m_iblRotation;
-    MaterialPtr m_mat            = nullptr;
+    Material* m_mat              = nullptr;
     FramebufferPtr m_framebuffer = nullptr;
     TexturePtr m_shadowAtlas     = nullptr;
     RenderTargetPtr m_brdfLut    = nullptr;

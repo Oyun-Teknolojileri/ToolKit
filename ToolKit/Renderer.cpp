@@ -185,7 +185,7 @@ namespace ToolKit
     job.Material->Init();
 
     // Set render material.
-    m_mat = m_overrideMat != nullptr ? m_overrideMat : job.Material;
+    m_mat = m_overrideMat != nullptr ? m_overrideMat.get() : job.Material;
     m_mat->Init();
 
     RenderState* rs = m_mat->GetRenderState();
@@ -778,7 +778,7 @@ namespace ToolKit
     {
       updateMaterial = true;
     }
-    else if (MaterialPtr mat = program->m_activeMaterial.lock())
+    else if (Material* mat = program->m_activeMaterial)
     {
       updateMaterial = !mat->IsSame(m_mat);
     }

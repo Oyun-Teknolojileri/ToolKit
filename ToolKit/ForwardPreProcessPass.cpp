@@ -89,8 +89,8 @@ namespace ToolKit
     {
       for (RenderJobItr job = begin; job != end; job++)
       {
-        MaterialPtr activeMaterial = job->Material;
-        RenderState* renderstate   = activeMaterial->GetRenderState();
+        Material* activeMaterial = job->Material;
+        RenderState* renderstate = activeMaterial->GetRenderState();
         m_linearMaterial->SetRenderState(renderstate);
         m_linearMaterial->m_diffuseTexture = activeMaterial->m_diffuseTexture;
         m_linearMaterial->m_color          = activeMaterial->m_color;

@@ -216,7 +216,7 @@ namespace ToolKit
         }
 
         job.Mesh           = m_sphereEntity->GetMeshComponent()->GetMeshVal().get();
-        job.Material       = m_meshMaterial;
+        job.Material       = m_meshMaterial.get();
         job.BoundingBox    = BoundingBox(Vec3(-radius), Vec3(radius));
         job.ShadowCaster   = false;
         job.WorldTransform = glm::translate(Mat4(), pos) * glm::scale(Mat4(), Vec3(radius * 1.05f));
@@ -244,7 +244,7 @@ namespace ToolKit
 
         RenderJob job {};
         job.Mesh           = spotLight->m_volumeMesh.get();
-        job.Material       = m_meshMaterial;
+        job.Material       = m_meshMaterial.get();
         job.ShadowCaster   = false;
         job.WorldTransform = light->m_node->GetTransform();
         meshLights.push_back(std::make_pair(LightAndType(light, lightType), job));

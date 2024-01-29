@@ -109,7 +109,7 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     auto renderFnc     = [&](RenderJob& job)
     {
-      MaterialPtr mat = job.Material;
+      Material* mat = job.Material;
       if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
       {
         mat->GetRenderState()->cullMode = CullingType::Front;

@@ -141,7 +141,7 @@ namespace ToolKit
         }
 
         renderer->m_overrideMat = shadowMaterial;
-        MaterialPtr material    = job.Material;
+        Material* material      = job.Material;
         renderer->m_overrideMat->SetRenderState(material->GetRenderState());
         renderer->m_overrideMat->UnInit();
         renderer->m_overrideMat->SetAlpha(material->GetAlpha());

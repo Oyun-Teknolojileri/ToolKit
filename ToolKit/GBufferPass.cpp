@@ -194,7 +194,7 @@ namespace ToolKit
     for (RenderJobItr job = begin; job != end; job++)
     {
 
-      MaterialPtr activeMaterial = job->Material;
+      Material* activeMaterial = job->Material;
       m_gBufferMaterial->SetRenderState(activeMaterial->GetRenderState());
       m_gBufferMaterial->UnInit();
       m_gBufferMaterial->m_diffuseTexture           = activeMaterial->m_diffuseTexture;
