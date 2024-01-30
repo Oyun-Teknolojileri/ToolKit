@@ -96,17 +96,27 @@ namespace ToolKit
 
     // Calculate the array size.
     int size = 0;
+    IntArray subMeshStartIndex;
+    subMeshStartIndex.reserve(entities.size());
+
+    IntArray visibleNttIndex;
+    visibleNttIndex.reserve(entities.size());
+
+    int currIndex = 0;
     for (int nttIndex = 0; nttIndex < (int) entities.size(); nttIndex++)
     {
       const EntityPtr& ntt = entities[nttIndex];
 
       if (!isDrawableFn(ntt))
       {
+        visibleNttIndex.push_back(-1); // Invisible.
         continue;
       }
 
       if (MeshComponent* meshComp = ntt->GetComponentFast<MeshComponent>())
       {
+        visibleNttIndex.push_back(currIndex++);
+        subMeshStartIndex.push_back(size);
         size += meshComp->GetMeshVal()->GetMeshCount();
       }
     }
@@ -114,16 +124,15 @@ namespace ToolKit
     jobArray.resize(size); // at least.
 
     // Pre construct jobs.
-    int currIndex = 0;
     for (int nttIndex = 0; nttIndex < entities.size(); nttIndex++)
     {
-      const EntityPtr& ntt = entities[nttIndex];
-
-      if (!isDrawableFn(ntt))
+      int nextNtt = visibleNttIndex[nttIndex];
+      if (nextNtt == -1)
       {
         continue;
       }
 
+      const EntityPtr& ntt           = entities[nttIndex];
       MaterialPtrArray* materialList = nullptr;
       if (MaterialComponent* matComp = ntt->GetComponentFast<MaterialComponent>())
       {
@@ -169,7 +178,7 @@ namespace ToolKit
                    ntt->GetNameVal().c_str());
           }
 
-          RenderJob& job     = jobArray[currIndex++];
+          RenderJob& job     = jobArray[subMeshStartIndex[visibleNttIndex[nttIndex]] + subMeshIndx];
           job.Entity         = ntt;
           job.Mesh           = mesh;
           job.Material       = material.get();

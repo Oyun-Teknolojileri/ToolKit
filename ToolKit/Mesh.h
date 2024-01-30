@@ -59,6 +59,8 @@ namespace ToolKit
      */
     void GetAllMeshes(MeshRawPtrArray& meshes, bool updateCache = false) const;
 
+    const MeshRawPtrArray& GetAllMeshes() const { return m_allMeshes; }
+
     /**
      * Return the number of meshes and sub meshes in this class.
      */
