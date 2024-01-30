@@ -269,6 +269,17 @@ namespace ToolKit
       }
     }
 
+    void ResetCameraExec(TagArgArray tagArgs)
+    {
+      if (EditorViewport* vp = g_app->GetActiveViewport())
+      {
+        if (CameraPtr cam = vp->GetCamera())
+        {
+          cam->m_node->SetTransform(Mat4());
+        }
+      }
+    }
+
     void GetTransformExec(TagArgArray tagArgs)
     {
       EntityPtr e = g_app->GetCurrentScene()->GetCurrentSelection();
@@ -623,6 +634,7 @@ namespace ToolKit
       CreateCommand(g_showModTransitionsCmd, ShowModTransitionsExec);
       CreateCommand(g_setTransformCmd, SetTransformExec);
       CreateCommand(g_setCameraTransformCmd, SetCameraTransformExec);
+      CreateCommand(g_resetCameraCmd, ResetCameraExec);
       CreateCommand(g_transformCmd, TransformExec);
       CreateCommand(g_getTransformCmd, GetTransformExec);
       CreateCommand(g_setTransformOrientationCmd, SetTransformOrientationExec);
