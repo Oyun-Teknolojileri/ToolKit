@@ -751,6 +751,11 @@ namespace ToolKit
         Vec2 windowStyleArea = size - m_wndContentAreaSize;
         Vec2 contentAreaSize = size - windowStyleArea;
 
+        if (VecAllEqual(contentAreaSize, Vec2(0.0f)))
+        {
+          contentAreaSize = size;
+        }
+
         OnResizeContentArea(contentAreaSize.x, contentAreaSize.y);
       }
 

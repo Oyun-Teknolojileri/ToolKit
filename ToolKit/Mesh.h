@@ -46,11 +46,39 @@ namespace ToolKit
     virtual int GetVertexSize() const;
     virtual uint GetVertexCount() const;
     virtual bool IsSkinned() const;
+
+    /**
+     * Calculates a bounding box for vertices in client side array for all meshes and submeshes. m_aabb becomes
+     * valid after call to this.
+     */
     void CalculateAABB();
-    void GetAllMeshes(MeshRawPtrArray& meshes) const;
+
+    /**
+     * Accumulate all meshes and sub meshes recursively and returns the flattened array.
+     * If class is modified consider sending updateCache, which will re accumulate the mesh array before sending it.
+     */
+    void GetAllMeshes(MeshRawPtrArray& meshes, bool updateCache = false) const;
+
+    /**
+     * Return the number of meshes and sub meshes in this class.
+     */
+    int GetMeshCount() const;
+
+    int TotalVertexCount() const;
+
+    /**
+     * Construct faces from index and vertex data.
+     */
     void ConstructFaces();
+
+    /**
+     * Applies the given transform to the vertices at the client side array.
+     */
     void ApplyTransform(const Mat4& transform);
 
+    /**
+     * Sets the material assigned to this mesh initially. Material component overrides this if present.
+     */
     void SetMaterial(MaterialPtr material);
 
    protected:
@@ -76,7 +104,7 @@ namespace ToolKit
     VertexLayout m_vertexLayout;
 
    private:
-    MeshRawPtrArray m_allMeshes;
+    mutable MeshRawPtrArray m_allMeshes;
   };
 
   class SkinVertex : public Vertex

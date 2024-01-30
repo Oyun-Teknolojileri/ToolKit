@@ -121,8 +121,8 @@ namespace ToolKit
 
       if (ImGui::CollapsingHeader("Material Preview", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        static const ImVec2 iconSize = ImVec2(16.0f, 16.0f);
-        const ImVec2 spacing         = ImGui::GetStyle().ItemSpacing;
+        const ImVec2 iconSize = ImVec2(16.0f, 16.0f);
+        const ImVec2 spacing  = ImGui::GetStyle().ItemSpacing;
         UpdatePreviewScene();
         if (UI::ImageButtonDecorless(UI::m_cameraIcon->m_textureId, iconSize, false))
         {
@@ -134,13 +134,13 @@ namespace ToolKit
         {
           ImGui::SameLine();
           m_viewport->m_isTempView = m_isTempView;
-          m_viewport->ResizeWindow((uint) viewportSize.x, (uint) viewportSize.y);
+          m_viewport->SetViewportSize((uint) viewportSize.x, (uint) viewportSize.y);
           m_viewport->Update(g_app->GetDeltaTime());
           m_viewport->Show();
           ImGui::SameLine();
           ImGui::BeginGroup();
 
-          auto setIconFn = [this](TexturePtr icon, uint id) -> void
+          auto setIconFn = [&](TexturePtr icon, uint id) -> void
           {
             if (ImGui::ImageButton(Convert2ImGuiTexture(icon), iconSize))
             {
@@ -161,7 +161,7 @@ namespace ToolKit
       {
         DirectoryEntry dirEnt(mat->GetFile());
         g_app->m_thumbnailManager.UpdateThumbnail(dirEnt);
-        mat->m_dirty = true;
+        mat->m_dirty             = true;
         mat->m_updateGPUUniforms = true;
       };
 

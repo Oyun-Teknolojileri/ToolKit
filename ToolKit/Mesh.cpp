@@ -120,10 +120,12 @@ namespace ToolKit
 
     m_material->Init(flushClientSideArray);
 
-    for (MeshPtr mesh : m_subMeshes)
+    for (const MeshPtr& mesh : m_subMeshes)
     {
       mesh->Init(flushClientSideArray);
     }
+
+    GetAllMeshes(m_allMeshes, true);
 
     m_initiated = true;
   }
@@ -237,7 +239,7 @@ namespace ToolKit
   {
     // Construct aabb of all submeshes.
     MeshRawPtrArray meshes;
-    GetAllMeshes(meshes);
+    GetAllMeshes(meshes, true);
 
     BoundingBox aabb;
     for (Mesh* mesh : meshes)
@@ -266,7 +268,29 @@ namespace ToolKit
     }
   }
 
-  void Mesh::GetAllMeshes(MeshRawPtrArray& meshes) const { GetAllMeshHelper(this, meshes); }
+  void Mesh::GetAllMeshes(MeshRawPtrArray& meshes, bool updateCache) const
+  {
+    if (updateCache)
+    {
+      m_allMeshes.clear();
+      GetAllMeshHelper(this, m_allMeshes);
+    }
+
+    meshes = m_allMeshes;
+  }
+
+  int Mesh::GetMeshCount() const { return (int) m_allMeshes.size(); }
+
+  int Mesh::TotalVertexCount() const
+  {
+    int total = 0;
+    for (Mesh* mesh : m_allMeshes)
+    {
+      total += mesh->m_vertexCount;
+    }
+
+    return total;
+  }
 
   template <typename T>
   void ConstructFacesT(T* mesh)

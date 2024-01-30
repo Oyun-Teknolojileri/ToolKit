@@ -66,7 +66,18 @@ namespace ToolKit
     return nullptr;
   }
 
-  bool Entity::IsDrawable() const { return GetComponentFast<MeshComponent>() != nullptr; }
+  bool Entity::IsDrawable() const
+  {
+    if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
+    {
+      if (const MeshPtr& mesh = meshComp->GetMeshVal())
+      {
+        return mesh->TotalVertexCount() > 0;
+      }
+    }
+
+    return false;
+  }
 
   void Entity::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
   {

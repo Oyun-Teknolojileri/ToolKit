@@ -200,11 +200,6 @@ namespace ToolKit
 
     void PreviewViewport::Show()
     {
-      if (m_needsResize)
-      {
-        OnResizeContentArea((float) m_size.x, (float) m_size.y);
-      }
-
       HandleStates();
       DrawCommands();
 
@@ -245,11 +240,12 @@ namespace ToolKit
       cam->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f, 1.1f, 0.0f));
     }
 
-    void PreviewViewport::ResizeWindow(uint width, uint height)
+    void PreviewViewport::SetViewportSize(uint width, uint height)
     {
       if (width != m_size.x || height != m_size.y)
       {
-        EditorViewport::ResizeWindow(width, height);
+        m_size               = UVec2(width, height);
+        OnResizeContentArea((float) width, (float) height);
       }
     }
 
