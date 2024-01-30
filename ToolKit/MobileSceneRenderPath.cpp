@@ -125,11 +125,11 @@ namespace ToolKit
     m_updatedLights = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
 
     // Cull lights out side of view. Not even their shadows are needed.
-    RenderJobProcessor::CullLights(m_updatedLights, m_params.Cam, 100.0f);
+    RenderJobProcessor::CullLights(m_updatedLights, m_params.Cam);
 
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
-    m_renderData.jobs.clear();
+    m_renderData.jobs;
     RenderJobProcessor::CreateRenderJobs(allDrawList,
                                          m_renderData.jobs,
                                          m_updatedLights,
