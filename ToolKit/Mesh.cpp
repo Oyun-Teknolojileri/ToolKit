@@ -698,8 +698,7 @@ namespace ToolKit
       indexes[i] = i;
     }
 
-    std::for_each(std::execution::par_unseq,
-                  indexes.begin(),
+    std::for_each(indexes.begin(),
                   indexes.end(),
                   [skel, boneMap, &AABBs, &meshes](uint index)
                   {
@@ -711,7 +710,7 @@ namespace ToolKit
                     BoundingBox& meshAABB = AABBs[index];
                     std::mutex meshAABBLocker;
 
-                    std::for_each(std::execution::par_unseq,
+                    std::for_each(TKExecBy(WorkerManager::FramePool),
                                   m->m_clientSideVertices.begin(),
                                   m->m_clientSideVertices.end(),
                                   [skel, boneMap, &meshAABBLocker, &meshAABB](SkinVertex& v)

@@ -467,8 +467,8 @@ namespace ToolKit
 
   void Renderer::DrawFullQuad(ShaderPtr fragmentShader)
   {
-    static ShaderPtr fullQuadVert = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
-    static MaterialPtr material   = MakeNewPtr<Material>();
+    ShaderPtr fullQuadVert = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
+    MaterialPtr material   = MakeNewPtr<Material>();
     material->UnInit();
 
     material->m_vertexShader   = fullQuadVert;
@@ -480,11 +480,11 @@ namespace ToolKit
 
   void Renderer::DrawFullQuad(MaterialPtr mat)
   {
-    static CameraPtr quadCam                           = MakeNewPtr<Camera>();
-    static QuadPtr quad                                = MakeNewPtr<Quad>();
+    CameraPtr quadCam                           = MakeNewPtr<Camera>();
+    QuadPtr quad                                = MakeNewPtr<Quad>();
     quad->GetMeshComponent()->GetMeshVal()->m_material = mat;
 
-    static RenderJobArray jobs;
+    RenderJobArray jobs;
     jobs.clear();
     EntityPtrArray oneQuad = {quad};
     RenderJobProcessor::CreateRenderJobs(oneQuad, jobs);

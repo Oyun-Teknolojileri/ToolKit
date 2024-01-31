@@ -406,19 +406,19 @@ namespace ToolKit
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
         ImGui::Indent();
 
-        std::vector<ULongID> compRemove;
-        for (ComponentPtr& com : ntt->GetComponentPtrArray())
+        std::vector<ClassMeta*> compRemove;
+        for (auto& com : ntt->GetComponentPtrArray())
         {
           ImGui::Spacing();
           if (ShowComponentBlock(com, true))
           {
-            compRemove.push_back(com->GetIdVal());
+            compRemove.push_back(com->Class());
           }
         }
 
-        for (ULongID id : compRemove)
+        for (ClassMeta* Class : compRemove)
         {
-          ActionManager::GetInstance()->AddAction(new DeleteComponentAction(ntt->GetComponent(id)));
+          ActionManager::GetInstance()->AddAction(new DeleteComponentAction(ntt->GetComponent(Class)));
         }
 
         // Remove billboards if necessary.

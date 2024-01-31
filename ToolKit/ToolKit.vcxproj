@@ -87,6 +87,7 @@
     <ClCompile Include="Surface.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Object.cpp" />
+    <ClCompile Include="Threads.cpp" />
     <ClCompile Include="TKImage.cpp" />
     <ClCompile Include="TKOpenGL.cpp">
       <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">150</OrderInUnityFile>

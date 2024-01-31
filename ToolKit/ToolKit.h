@@ -128,10 +128,12 @@ namespace ToolKit
     class RenderSystem* m_renderSys            = nullptr;
     class EngineSettings* m_engineSettings     = nullptr;
     class TKStats* m_tkStats                   = nullptr;
+    class WorkerManager* m_workerManager       = nullptr;
     HandleManager m_handleManager;
 
     bool m_preInitiated = false;
     bool m_initiated    = false;
+    bool m_threaded     = true;
     String m_resourceRoot;
     String m_cfgPath;
     EventPool m_eventPool;
@@ -160,6 +162,7 @@ namespace ToolKit
   TK_API class EngineSettings& GetEngineSettings();
   TK_API class ObjectFactory* GetObjectFactory();
   TK_API class TKStats* GetTKStats();
+  TK_API class WorkerManager* GetWorkerManager();
 
   // Path.
   TK_API String DefaultPath();

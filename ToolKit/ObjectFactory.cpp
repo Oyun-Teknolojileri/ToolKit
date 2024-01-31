@@ -58,6 +58,25 @@ namespace ToolKit
     }
   }
 
+  void ObjectFactory::ClassLookUpBuilder(ClassMeta* Class, ClassMeta* FirstClass)
+  {
+    if (Class->Super)
+    {
+      if (Class->Super == Object::StaticClass())
+      {
+        FirstClass->SuperClassLookUp.push_back({Class->Name, Class->HashId});
+
+        ClassMeta* objCls = Object::StaticClass();
+        FirstClass->SuperClassLookUp.push_back({objCls->Name, objCls->HashId});
+      }
+      else
+      {
+        FirstClass->SuperClassLookUp.push_back({Class->Name, Class->HashId});
+        ClassLookUpBuilder(Class->Super, FirstClass);
+      }
+    }
+  }
+
   ObjectFactory::ObjectConstructorCallback& ObjectFactory::GetConstructorFn(const StringView Class)
   {
     auto constructorFnIt = m_constructorFnMap.find(Class);

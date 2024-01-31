@@ -86,14 +86,12 @@ namespace ToolKit
       else if (ntt->IsDrawable())
       {
         // Mesh component.
-        MeshComponentPtrArray meshes;
-        ntt->GetComponent<MeshComponent>(meshes);
-
         bool containsSkinMesh = false;
-        for (MeshComponentPtr& mesh : meshes)
+        MeshComponentPtrArray meshes;
+        if (MeshComponentPtr meshComp = ntt->GetComponent<MeshComponent>())
         {
-          mesh->Init(flushClientSideArray);
-          if (mesh->GetMeshVal()->IsSkinned())
+          meshComp->Init(flushClientSideArray);
+          if (meshComp->GetMeshVal()->IsSkinned())
           {
             containsSkinMesh = true;
           }
