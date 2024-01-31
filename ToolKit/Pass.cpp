@@ -198,7 +198,7 @@ namespace ToolKit
                         int jobIndex        = submeshIndexLookup[visibleNttIndex] + subMeshIndx;
 
                         RenderJob& job      = jobArray[jobIndex];
-                        job.Entity          = ntt;
+                        job.Entity          = ntt.get();
                         job.Mesh            = mesh;
                         job.Material        = material.get();
                         job.ShadowCaster    = meshComp->GetCastShadowVal();

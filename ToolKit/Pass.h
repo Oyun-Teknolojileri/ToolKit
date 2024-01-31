@@ -46,14 +46,7 @@ namespace ToolKit
    */
   struct RenderJob
   {
-    RenderJob() {}
-
-    RenderJob(const EntityPtr& ntt, Mesh* mesh, Material* material, bool castShadow)
-        : Entity(ntt), Mesh(mesh), Material(material), ShadowCaster(castShadow)
-    {
-    }
-
-    EntityPtr Entity                          = nullptr; //!< Entity that this job is created from.
+    Entity* Entity                            = nullptr; //!< Entity that this job is created from.
     Mesh* Mesh                                = nullptr; //!< Mesh to render.
     Material* Material                        = nullptr; //!< Material to render job with.
     EnvironmentComponentPtr EnvironmentVolume = nullptr; //!< EnvironmentVolume effecting this entity, if any.

@@ -535,7 +535,7 @@ namespace ToolKit
       int problemsFound = 0;
       if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
       {
-        auto fixProblemFn = [&problemsFound, fix](EntityPtr ntt, StringView msg) -> void
+        auto fixProblemFn = [&problemsFound, fix, &scene](Entity* ntt, StringView msg) -> void
         {
           problemsFound++;
 
@@ -545,7 +545,8 @@ namespace ToolKit
 
           if (fix)
           {
-            ActionManager::GetInstance()->AddAction(new DeleteAction(ntt));
+            EntityPtr deletedNtt = scene->GetEntity(ntt->GetIdVal());
+            ActionManager::GetInstance()->AddAction(new DeleteAction(deletedNtt));
           }
         };
 
