@@ -46,12 +46,12 @@ namespace ToolKit
    */
   struct RenderJob
   {
-    Entity* Entity                            = nullptr; //!< Entity that this job is created from.
-    Mesh* Mesh                                = nullptr; //!< Mesh to render.
-    Material* Material                        = nullptr; //!< Material to render job with.
-    EnvironmentComponentPtr EnvironmentVolume = nullptr; //!< EnvironmentVolume effecting this entity, if any.
-    bool ShadowCaster                         = true;    //!< Account in shadow map construction.
-    bool frustumCulled                        = false;   //!< States that the job is culled by a camera.
+    Entity* Entity                          = nullptr; //!< Entity that this job is created from.
+    Mesh* Mesh                              = nullptr; //!< Mesh to render.
+    Material* Material                      = nullptr; //!< Material to render job with.
+    EnvironmentComponent* EnvironmentVolume = nullptr; //!< EnvironmentVolume effecting this entity, if any.
+    bool ShadowCaster                       = true;    //!< Account in shadow map construction.
+    bool frustumCulled                      = false;   //!< States that the job is culled by a camera.
 
     BoundingBox BoundingBox; //!< World space bounding box.
     Mat4 WorldTransform;     //!< World transform of the entity.

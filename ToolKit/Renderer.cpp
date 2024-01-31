@@ -121,12 +121,12 @@ namespace ToolKit
     m_renderState.IBLInUse = false;
     if (job.EnvironmentVolume)
     {
-      const EnvironmentComponentPtr& envCom = job.EnvironmentVolume;
-      m_renderState.iblIntensity            = envCom->GetIntensityVal();
+      const EnvironmentComponent* envCom = job.EnvironmentVolume;
+      m_renderState.iblIntensity         = envCom->GetIntensityVal();
 
-      const HdriPtr& hdriPtr                = envCom->GetHdriVal();
-      CubeMapPtr& diffuseEnvMap             = hdriPtr->m_diffuseEnvMap;
-      CubeMapPtr& specularEnvMap            = hdriPtr->m_specularEnvMap;
+      const HdriPtr& hdriPtr             = envCom->GetHdriVal();
+      CubeMapPtr& diffuseEnvMap          = hdriPtr->m_diffuseEnvMap;
+      CubeMapPtr& specularEnvMap         = hdriPtr->m_specularEnvMap;
 
       if (diffuseEnvMap && specularEnvMap && m_brdfLut)
       {

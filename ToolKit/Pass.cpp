@@ -598,7 +598,7 @@ namespace ToolKit
         if (bestBox.Volume() > vbb.Volume() || job.EnvironmentVolume == nullptr)
         {
           bestBox               = vbb;
-          job.EnvironmentVolume = volume;
+          job.EnvironmentVolume = volume.get();
         }
       }
     }
