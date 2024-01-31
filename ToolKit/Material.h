@@ -95,12 +95,15 @@ namespace ToolKit
     void Init() override;
     bool CanStore(ClassMeta* Class) override;
     String GetDefaultResource(ClassMeta* Class) override;
-
+    MaterialPtr GetDefaultMaterial();
     MaterialPtr GetCopyOfUnlitMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfUIMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfUnlitColorMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfDefaultMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfPhongMaterial(bool storeInMaterialManager = true);
+
+   private:
+    MaterialPtr m_defaultMaterial = nullptr;
   };
 
 } // namespace ToolKit

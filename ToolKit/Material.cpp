@@ -416,7 +416,8 @@ namespace ToolKit
     material->m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
-    m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
+    m_defaultMaterial                                 = material;
+    m_storage[MaterialPath("default.material", true)] = material;
 
     // Phong material
     material                                          = MakeNewPtr<Material>();
@@ -424,7 +425,7 @@ namespace ToolKit
     material->m_fragmentShader = GetShaderManager()->GetPhongForwardShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
-    m_storage[MaterialPath("phongForward.material", true)] = MaterialPtr(material);
+    m_storage[MaterialPath("phongForward.material", true)] = material;
 
     // Unlit material
     material                                               = MakeNewPtr<Material>();
@@ -432,12 +433,14 @@ namespace ToolKit
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
-    m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
+    m_storage[MaterialPath("unlit.material", true)] = material;
   }
 
   bool MaterialManager::CanStore(ClassMeta* Class) { return Class == Material::StaticClass(); }
 
   String MaterialManager::GetDefaultResource(ClassMeta* Class) { return MaterialPath("missing.material", true); }
+
+  MaterialPtr MaterialManager::GetDefaultMaterial() { return m_defaultMaterial; }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial(bool storeInMaterialManager)
   {

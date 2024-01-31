@@ -87,165 +87,179 @@ namespace ToolKit
     // Sort lights for disc.
     int directionalEndIndx = PreSortLights(lights);
 
-    auto isDrawableFn      = [ignoreVisibility](const EntityPtr& ntt) -> bool
+    auto isRenderableFn    = [ignoreVisibility](const EntityPtr& ntt) -> bool
     {
       bool isDrawable = ntt->IsDrawable();
       bool isVisbile  = ntt->IsVisible();
       return isDrawable && (isVisbile || ignoreVisibility);
     };
 
+    // Each entity can contain several meshes. This submeshIndexLookup array will be used
+    // to find the index of the submehs for a given entity index.
+    // Ex: Entity index is 4 and it has 3 submesh,
+    // its submesh indexes would be = {4, 5, 6}
+    // to look them up: {nttIndex + 0, nttIndex + 1, nttIndex + 3} formula is used.
+    IntArray submeshIndexLookup;
+    submeshIndexLookup.reserve(entities.size());
+
+    // Not all entities are renderable, this index look up table
+    // puts -1 for entities that are not renderable and for renderable ones,
+    // it contains entity's corresponding index to entities array.
+    // if there are 2 invisible and 1 visible entity in the entities array
+    // visibleNttLookup content would be like {-1, -1, 2}
+    IntArray visibleNttLookup;
+    visibleNttLookup.reserve(entities.size());
+
     // Calculate the array size.
-    int size = 0;
-    IntArray subMeshStartIndex;
-    subMeshStartIndex.reserve(entities.size());
-
-    IntArray visibleNttIndex;
-    visibleNttIndex.reserve(entities.size());
-
+    int size      = 0;
     int currIndex = 0;
     for (int nttIndex = 0; nttIndex < (int) entities.size(); nttIndex++)
     {
       const EntityPtr& ntt = entities[nttIndex];
 
-      if (!isDrawableFn(ntt))
+      if (!isRenderableFn(ntt))
       {
-        visibleNttIndex.push_back(-1); // Invisible.
+        visibleNttLookup.push_back(-1); // Invisible.
         continue;
       }
 
       if (MeshComponent* meshComp = ntt->GetComponentFast<MeshComponent>())
       {
-        visibleNttIndex.push_back(currIndex++);
-        subMeshStartIndex.push_back(size);
+        visibleNttLookup.push_back(currIndex++);
+        submeshIndexLookup.push_back(size);
         size += meshComp->GetMeshVal()->GetMeshCount();
       }
     }
 
     jobArray.resize(size); // at least.
 
-    // Pre construct jobs.
+    // Construct jobs.
     using poolstl::iota_iter;
-    std::for_each(
-        TKExecByConditional(entities.size() > 1000, WorkerManager::FramePool),
-        iota_iter<size_t>(0),
-        iota_iter<size_t>(entities.size()),
-        [&](size_t nttIndex)
-        {
-          int nextNtt = visibleNttIndex[nttIndex];
-          if (nextNtt == -1)
-          {
-            return;
-          }
-
-          const EntityPtr& ntt           = entities[nttIndex];
-          MaterialPtrArray* materialList = nullptr;
-          if (MaterialComponent* matComp = ntt->GetComponentFast<MaterialComponent>())
-          {
-            materialList = &matComp->GetMaterialList();
-          }
-
-          MeshComponent* mc         = ntt->GetComponentFast<MeshComponent>();
-          const MeshPtr& parentMesh = mc->GetMeshVal();
-
-          MeshRawPtrArray allMeshes;
-          parentMesh->GetAllMeshes(allMeshes);
-
-          for (int subMeshIndx = 0; subMeshIndx < (int) allMeshes.size(); subMeshIndx++)
-          {
-            Mesh* mesh           = allMeshes[subMeshIndx];
-            MaterialPtr material = nullptr;
-
-            if (mesh->GetVertexCount() != 0)
-            {
-              // Pick the material for submesh.
-              if (materialList != nullptr)
-              {
-                if (subMeshIndx < materialList->size())
-                {
-                  material = (*materialList)[subMeshIndx];
-                }
-              }
-
-              // if material is still null, pick from mesh.
-              if (material == nullptr)
-              {
-                if (mesh->m_material)
-                {
-                  material = mesh->m_material;
-                }
-              }
-
-              // Worst case, no material found pick a copy of default.
-              if (material == nullptr)
-              {
-                material = GetMaterialManager()->GetCopyOfDefaultMaterial(false);
-                TK_WRN("Entity \"%s\" have less material than mesh count! ToolKit uses default material for now.",
-                       ntt->GetNameVal().c_str());
-              }
-
-              RenderJob& job     = jobArray[subMeshStartIndex[visibleNttIndex[nttIndex]] + subMeshIndx];
-              job.Entity         = ntt;
-              job.Mesh           = mesh;
-              job.Material       = material.get();
-              job.ShadowCaster   = mc->GetCastShadowVal();
-
-              // Calculate bounding box.
-              job.WorldTransform = ntt->m_node->GetTransform();
-              if (AABBOverrideComponent* bbOverride = ntt->GetComponentFast<AABBOverrideComponent>())
-              {
-                job.BoundingBox = std::move(bbOverride->GetAABB());
-              }
-              else
-              {
-                job.BoundingBox = job.Mesh->m_aabb;
-              }
-
-              TransformAABB(job.BoundingBox, job.WorldTransform);
-
-              // Assign skeletal animations.
-              if (SkeletonComponent* skComp = ntt->GetComponentFast<SkeletonComponent>())
-              {
-                bool foundAnim                           = false;
-                const AnimRecordRawPtrArray& animRecords = GetAnimationPlayer()->m_records;
-
-                for (const AnimRecordRawPtr& animRecord : animRecords)
-                {
-                  if (const EntityPtr& animNtt = animRecord->m_entity.lock())
+    std::for_each(TKExecByConditional(entities.size() > 1000, WorkerManager::FramePool),
+                  iota_iter<size_t>(0),
+                  iota_iter<size_t>(entities.size()),
+                  [&](size_t nttIndex)
                   {
-                    if (animNtt->IsSame(ntt))
+                    int nextNtt = visibleNttLookup[nttIndex];
+                    if (nextNtt == -1)
                     {
-                      skComp->m_animData.currentAnimation = animRecord->m_animation;
-                      skComp->m_animData.blendAnimation   = animRecord->m_blendAnimation;
-                      foundAnim                           = true;
-                      break;
+                      return;
                     }
-                  }
-                }
 
-                if (!foundAnim && skComp != nullptr)
-                {
-                  skComp->m_animData.currentAnimation = nullptr;
-                  skComp->m_animData.blendAnimation   = nullptr;
-                }
+                    const EntityPtr& ntt           = entities[nttIndex];
+                    MaterialPtrArray* materialList = nullptr;
+                    if (MaterialComponent* matComp = ntt->GetComponentFast<MaterialComponent>())
+                    {
+                      materialList = &matComp->GetMaterialList();
+                    }
 
-                job.animData = skComp->GetAnimData(); // copy
-              }
+                    MeshComponent* meshComp   = ntt->GetComponentFast<MeshComponent>();
+                    const MeshPtr& parentMesh = meshComp->GetMeshVal();
 
-              if (camera)
-              {
-                // Cull.
-                job.frustumCulled = FrustumTest(frustum, job.BoundingBox);
+                    MeshRawPtrArray allMeshes;
+                    parentMesh->GetAllMeshes(allMeshes);
 
-                // Light assignment.
-                if (!job.frustumCulled)
-                {
-                  AssignLight(job, lights, directionalEndIndx);
-                  AssignEnvironment(job, environments);
-                }
-              }
-            }
-          }
-        });
+                    for (int subMeshIndx = 0; subMeshIndx < (int) allMeshes.size(); subMeshIndx++)
+                    {
+                      Mesh* mesh           = allMeshes[subMeshIndx];
+                      MaterialPtr material = nullptr;
+
+                      if (mesh->GetVertexCount() != 0)
+                      {
+                        // Pick the material for submesh.
+                        if (materialList != nullptr)
+                        {
+                          if (subMeshIndx < materialList->size())
+                          {
+                            material = (*materialList)[subMeshIndx];
+                          }
+                        }
+
+                        // if material is still null, pick from mesh.
+                        if (material == nullptr)
+                        {
+                          if (mesh->m_material)
+                          {
+                            material = mesh->m_material;
+                          }
+                        }
+
+                        // Worst case, no material found pick a copy of default.
+                        if (material == nullptr)
+                        {
+                          material = GetMaterialManager()->GetDefaultMaterial();
+                          TK_WRN("Material component for entity: \"%s\" has less material than mesh count. Default "
+                                 "material used for meshes with missing material.",
+                                 ntt->GetNameVal().c_str());
+                        }
+
+                        // Translate nttIndex to corresponding job index.
+                        int visibleNttIndex = visibleNttLookup[nttIndex];
+                        int jobIndex        = submeshIndexLookup[visibleNttIndex] + subMeshIndx;
+
+                        RenderJob& job      = jobArray[jobIndex];
+                        job.Entity          = ntt;
+                        job.Mesh            = mesh;
+                        job.Material        = material.get();
+                        job.ShadowCaster    = meshComp->GetCastShadowVal();
+
+                        // Calculate bounding box.
+                        job.WorldTransform  = ntt->m_node->GetTransform();
+                        if (AABBOverrideComponent* bbOverride = ntt->GetComponentFast<AABBOverrideComponent>())
+                        {
+                          job.BoundingBox = std::move(bbOverride->GetAABB());
+                        }
+                        else
+                        {
+                          job.BoundingBox = job.Mesh->m_aabb;
+                        }
+
+                        TransformAABB(job.BoundingBox, job.WorldTransform);
+
+                        // Assign skeletal animations.
+                        if (SkeletonComponent* skComp = ntt->GetComponentFast<SkeletonComponent>())
+                        {
+                          bool foundAnim                           = false;
+                          const AnimRecordRawPtrArray& animRecords = GetAnimationPlayer()->m_records;
+
+                          for (const AnimRecordRawPtr& animRecord : animRecords)
+                          {
+                            if (const EntityPtr& animNtt = animRecord->m_entity.lock())
+                            {
+                              if (animNtt->IsSame(ntt))
+                              {
+                                skComp->m_animData.currentAnimation = animRecord->m_animation;
+                                skComp->m_animData.blendAnimation   = animRecord->m_blendAnimation;
+                                foundAnim                           = true;
+                                break;
+                              }
+                            }
+                          }
+
+                          if (!foundAnim && skComp != nullptr)
+                          {
+                            skComp->m_animData.currentAnimation = nullptr;
+                            skComp->m_animData.blendAnimation   = nullptr;
+                          }
+
+                          job.animData = skComp->GetAnimData(); // copy
+                        }
+
+                        if (camera)
+                        {
+                          // Cull.
+                          job.frustumCulled = FrustumTest(frustum, job.BoundingBox);
+
+                          // Light assignment.
+                          if (!job.frustumCulled)
+                          {
+                            AssignLight(job, lights, directionalEndIndx);
+                            AssignEnvironment(job, environments);
+                          }
+                        }
+                      }
+                    }
+                  });
   }
 
   void RenderJobProcessor::CullLights(LightPtrArray& lights, const CameraPtr& camera, float maxDistance)
