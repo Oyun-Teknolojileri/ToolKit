@@ -52,7 +52,7 @@ namespace ToolKit
    public:
     uint m_handle = 0;
     ShaderPtrArray m_shaders;
-    Material* m_activeMaterial;
+    ULongID m_activeMaterialID = 0;
 
    private:
     std::unordered_map<Uniform, int> m_uniformLocations;
