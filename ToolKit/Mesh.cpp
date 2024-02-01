@@ -109,6 +109,8 @@ namespace ToolKit
       return;
     }
 
+    assert(!m_clientSideVertices.empty() && "A mesh can not have 0 vertex!");
+
     InitVertices(flushClientSideArray);
     SetVertexLayout(m_vertexLayout);
     InitIndices(flushClientSideArray);

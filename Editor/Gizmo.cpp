@@ -44,8 +44,7 @@ namespace ToolKit
       matPtr->m_diffuseTexture                    = m_iconImage;
       matPtr->GetRenderState()->blendFunction     = BlendFunction::ALPHA_MASK;
       matPtr->GetRenderState()->alphaMaskTreshold = 0.1f;
-      matPtr->Init();
-      meshPtr->m_material = matPtr;
+      meshPtr->m_material                         = matPtr;
       mCom->SetMeshVal(meshPtr);
     }
 
@@ -161,12 +160,12 @@ namespace ToolKit
       Vec3 dir          = AXIS[(int) params.axis % 3];
       Vec3Array pnts    = {dir * params.toeTip.x, dir * params.toeTip.y};
 
-      m_mesh            = MakeNewPtr<Mesh>();
+      m_mesh            = nullptr;
 
       LineBatchPtr line = MakeNewPtr<LineBatch>();
       line->Generate(pnts, params.color, DrawType::Line, 2.0f);
       MeshPtr lnMesh = line->GetComponent<MeshComponent>()->GetMeshVal();
-      m_mesh->m_subMeshes.push_back(lnMesh);
+      m_mesh = lnMesh;
 
       MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial(false);
       material->m_color    = params.color;
@@ -594,6 +593,11 @@ namespace ToolKit
 
     void LinearGizmo::Update(float deltaTime)
     {
+      if (m_handles.empty())
+      {
+        return;
+      }
+
       GizmoHandle::Params p = GetParam();
 
       for (size_t i = 0; i < m_handles.size(); i++)
@@ -640,8 +644,8 @@ namespace ToolKit
         handle->Generate(p);
       }
 
-      MeshPtr mesh = MakeNewPtr<Mesh>();
-      for (int i = 0; i < m_handles.size(); i++)
+      MeshPtr mesh = m_handles[0]->m_mesh;
+      for (int i = 1; i < m_handles.size(); i++)
       {
         mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
@@ -735,6 +739,11 @@ namespace ToolKit
 
     void PolarGizmo::Update(float deltaTime)
     {
+      if (m_handles.empty())
+      {
+        return;
+      }
+
       GizmoHandle::Params p = GetParam();
 
       // Clear all meshes
@@ -783,12 +792,19 @@ namespace ToolKit
         m_handles[i]->Generate(p);
       }
 
-      MeshPtr mesh = MakeNewPtr<Mesh>();
+      MeshPtr mesh = nullptr;
       for (int i = 0; i < m_handles.size(); i++)
       {
         if (m_handles[i]->m_mesh)
         {
-          mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
+          if (mesh == nullptr)
+          {
+            mesh = m_handles[i]->m_mesh;
+          }
+          else
+          {
+            mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
+          }
         }
       }
 
