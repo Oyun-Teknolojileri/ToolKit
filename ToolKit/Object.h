@@ -141,7 +141,7 @@ namespace ToolKit
       return nullptr;
     }
 
-    bool IsSame(const ObjectPtr other) { return other->GetIdVal() == GetIdVal(); }
+    bool IsSame(const ObjectPtr& other) { return other->GetIdVal() == GetIdVal(); }
 
     bool IsSame(const Object* other) { return other->GetIdVal() == GetIdVal(); }
 
