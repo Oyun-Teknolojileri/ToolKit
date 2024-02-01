@@ -413,7 +413,7 @@ namespace ToolKit
     // PBR material
     MaterialPtr material       = MakeNewPtr<Material>();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-    material->m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
+    material->m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
     m_defaultMaterial                                 = material;
