@@ -132,6 +132,7 @@ namespace ToolKit
       }
     }
 
+    jobArray.clear();
     jobArray.resize(size); // at least.
 
     // Construct jobs.

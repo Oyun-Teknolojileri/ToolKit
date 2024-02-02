@@ -129,7 +129,6 @@ namespace ToolKit
 
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
-    m_renderData.jobs;
     RenderJobProcessor::CreateRenderJobs(allDrawList,
                                          m_renderData.jobs,
                                          m_updatedLights,
