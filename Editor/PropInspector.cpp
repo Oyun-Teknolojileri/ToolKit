@@ -231,7 +231,11 @@ namespace ToolKit
 
     ScenePtr PreviewViewport::GetScene() { return m_previewRenderer->m_params.Scene; }
 
-    void PreviewViewport::SetScene(ScenePtr scene) { m_previewRenderer->m_params.Scene = scene; }
+    void PreviewViewport::SetScene(ScenePtr scene)
+    {
+      scene->Update(0.0f);
+      m_previewRenderer->m_params.Scene = scene;
+    }
 
     void PreviewViewport::ResetCamera()
     {
@@ -244,7 +248,7 @@ namespace ToolKit
     {
       if (width != m_size.x || height != m_size.y)
       {
-        m_size               = UVec2(width, height);
+        m_size = UVec2(width, height);
         OnResizeContentArea((float) width, (float) height);
       }
     }
