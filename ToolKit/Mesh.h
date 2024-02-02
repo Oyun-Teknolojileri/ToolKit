@@ -66,7 +66,7 @@ namespace ToolKit
      */
     int GetMeshCount() const;
 
-    int TotalVertexCount() const;
+    virtual uint TotalVertexCount() const;
 
     /**
      * Construct faces from index and vertex data.
@@ -105,7 +105,7 @@ namespace ToolKit
     FaceArray m_faces;
     VertexLayout m_vertexLayout;
 
-   private:
+   protected:
     mutable MeshRawPtrArray m_allMeshes;
   };
 
@@ -129,6 +129,7 @@ namespace ToolKit
     void UnInit() override;
     void Load() override;
 
+    virtual uint TotalVertexCount() const override;
     uint GetVertexCount() const override;
     int GetVertexSize() const override;
     bool IsSkinned() const override;
