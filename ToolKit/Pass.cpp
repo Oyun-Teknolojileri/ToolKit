@@ -192,7 +192,6 @@ namespace ToolKit
                                "material used for meshes with missing material.",
                                ntt->GetNameVal().c_str());
                       }
-                      material->Init();
 
                       // Translate nttIndex to corresponding job index.
                       int visibleNttIndex = visibleNttLookup[nttIndex];
