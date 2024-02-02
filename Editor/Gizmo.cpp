@@ -160,12 +160,12 @@ namespace ToolKit
       Vec3 dir          = AXIS[(int) params.axis % 3];
       Vec3Array pnts    = {dir * params.toeTip.x, dir * params.toeTip.y};
 
-      m_mesh            = nullptr;
+      m_mesh            = MakeNewPtr<Mesh>();
 
       LineBatchPtr line = MakeNewPtr<LineBatch>();
       line->Generate(pnts, params.color, DrawType::Line, 2.0f);
       MeshPtr lnMesh = line->GetComponent<MeshComponent>()->GetMeshVal();
-      m_mesh = lnMesh;
+      m_mesh->m_subMeshes.push_back(lnMesh);
 
       MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial(false);
       material->m_color    = params.color;
@@ -644,8 +644,8 @@ namespace ToolKit
         handle->Generate(p);
       }
 
-      MeshPtr mesh = m_handles[0]->m_mesh;
-      for (int i = 1; i < m_handles.size(); i++)
+      MeshPtr mesh = MakeNewPtr<Mesh>();
+      for (int i = 0; i < m_handles.size(); i++)
       {
         mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
@@ -792,20 +792,10 @@ namespace ToolKit
         m_handles[i]->Generate(p);
       }
 
-      MeshPtr mesh = nullptr;
+      MeshPtr mesh = MakeNewPtr<Mesh>();
       for (int i = 0; i < m_handles.size(); i++)
       {
-        if (m_handles[i]->m_mesh)
-        {
-          if (mesh == nullptr)
-          {
-            mesh = m_handles[i]->m_mesh;
-          }
-          else
-          {
-            mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
-          }
-        }
+        mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
 
       GetComponent<MeshComponent>()->SetMeshVal(mesh);

@@ -14,6 +14,7 @@
 #include "RHI.h"
 #include "ResourceManager.h"
 #include "Skeleton.h"
+#include "TKAssert.h"
 #include "TKOpenGL.h"
 #include "TKStats.h"
 #include "Texture.h"
@@ -109,8 +110,7 @@ namespace ToolKit
       return;
     }
 
-    assert(!m_clientSideVertices.empty() ||
-           m_vertexLayout == VertexLayout::SkinMesh && "A mesh can not have 0 vertex!");
+    TK_ASSERT_ONCE(!m_clientSideVertices.empty() || m_vertexLayout == VertexLayout::SkinMesh);
 
     InitVertices(flushClientSideArray);
     SetVertexLayout(m_vertexLayout);
