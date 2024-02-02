@@ -157,17 +157,18 @@ namespace ToolKit
 
     m_renderData.jobs.clear();
 
-    RenderJobProcessor::CreateRenderJobs(allDrawList, m_renderData.jobs);
+    LightPtrArray nullLights;
+    RenderJobProcessor::CreateRenderJobs(allDrawList,
+                                         m_renderData.jobs,
+                                         nullLights,
+                                         m_params.Cam,
+                                         m_params.Scene->GetEnvironmentVolumes(),
+                                         false);
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
 
     m_shadowPass->m_params.renderData   = &m_renderData;
     m_shadowPass->m_params.Lights       = m_updatedLights;
     m_shadowPass->m_params.ViewCamera   = m_params.Cam;
-
-    RenderJobProcessor::CullRenderJobs(m_renderData.jobs, m_params.Cam);
-    RenderJobProcessor::AssignEnvironment(m_renderData.GetDefferedBegin(),
-                                          m_renderData.jobs.end(),
-                                          m_params.Scene->GetEnvironmentVolumes());
 
     RenderJobProcessor::SeperateRenderData(m_renderData, false);
     RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
