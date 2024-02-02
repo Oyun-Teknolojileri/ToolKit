@@ -109,7 +109,8 @@ namespace ToolKit
       return;
     }
 
-    assert(!m_clientSideVertices.empty() && "A mesh can not have 0 vertex!");
+    assert(!m_clientSideVertices.empty() ||
+           m_vertexLayout == VertexLayout::SkinMesh && "A mesh can not have 0 vertex!");
 
     InitVertices(flushClientSideArray);
     SetVertexLayout(m_vertexLayout);
@@ -283,9 +284,9 @@ namespace ToolKit
 
   int Mesh::GetMeshCount() const { return (int) m_allMeshes.size(); }
 
-  int Mesh::TotalVertexCount() const
+  uint Mesh::TotalVertexCount() const
   {
-    int total = 0;
+    uint total = 0;
     for (Mesh* mesh : m_allMeshes)
     {
       total += mesh->m_vertexCount;
@@ -757,6 +758,19 @@ namespace ToolKit
     m_bindPoseAABB           = finalAABB;
 
     return finalAABB;
+  }
+
+  uint SkinMesh::TotalVertexCount() const
+  {
+    uint total = 0;
+    for (Mesh* mesh : m_allMeshes)
+    {
+      total += mesh->m_vertexCount;
+    }
+
+    total += (uint) m_clientSideVertices.size();
+
+    return total;
   }
 
   uint SkinMesh::GetVertexCount() const { return (uint) m_clientSideVertices.size(); }
