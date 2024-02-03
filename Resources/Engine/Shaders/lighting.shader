@@ -82,7 +82,7 @@ uniform float dirNonShadowLightDataSize;
 uniform float pointNonShadowLightDataSize;
 uniform float spotNonShadowLightDataSize;
 
-const float shadowFadeOutDistanceNorm = 0.75;
+const float shadowFadeOutDistanceNorm = 0.9;
 
 // Returns uv coordinates and layers such as: vec3(u,v,layer)
 // https://kosmonautblog.wordpress.com/2017/03/25/shadow-filtering-for-pointlights/
@@ -192,8 +192,8 @@ float CalculateDirectionalShadow(vec3 pos, vec3 viewCamPos, mat4 lightProjView, 
 	}
 
 	// Fade shadow out after min shadow fade out distance
-	float currentDistance = length(pos - viewCamPos);
-	float fade = (currentDistance - shadowDistance * shadowFadeOutDistanceNorm) / (shadowDistance * (1.0 - shadowFadeOutDistanceNorm));
+	vec3 camToPos = pos - viewCamPos;
+	float fade = (length(camToPos) - (shadowDistance * shadowFadeOutDistanceNorm)) / (shadowDistance * (1.0 - shadowFadeOutDistanceNorm));
 	fade = clamp(fade, 0.0, 1.0);
 	fade = fade * fade;
 	return clamp(shadow + fade, 0.0, 1.0);

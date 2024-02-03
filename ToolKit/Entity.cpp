@@ -66,7 +66,19 @@ namespace ToolKit
     return nullptr;
   }
 
-  bool Entity::IsDrawable() const { return GetComponent<MeshComponent>() != nullptr; }
+  bool Entity::IsDrawable() const
+  {
+    if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
+    {
+      meshComp->Init(false);
+      if (const MeshPtr& mesh = meshComp->GetMeshVal())
+      {
+        return mesh->TotalVertexCount() > 0;
+      }
+    }
+
+    return false;
+  }
 
   void Entity::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
   {
@@ -87,15 +99,14 @@ namespace ToolKit
   BoundingBox Entity::GetAABB(bool inWorld) const
   {
     BoundingBox aabb;
-
-    AABBOverrideComponentPtr overrideComp = GetComponent<AABBOverrideComponent>();
+    AABBOverrideComponent* overrideComp = GetComponentFast<AABBOverrideComponent>();
     if (overrideComp)
     {
       aabb = overrideComp->GetAABB();
     }
     else
     {
-      if (MeshComponentPtr meshComp = GetComponent<MeshComponent>())
+      if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
       {
         aabb = meshComp->GetAABB();
       }
@@ -128,7 +139,8 @@ namespace ToolKit
     other->ClearComponents();
     for (int i = 0; i < (int) m_components.size(); i++)
     {
-      other->m_components[i] = m_components[i]->Copy(other->Self<Entity>());
+      ComponentPtr copy = m_components[i]->Copy(other->Self<Entity>());
+      other->m_components.push_back(copy);
     }
 
     return other;

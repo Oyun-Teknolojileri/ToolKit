@@ -151,37 +151,62 @@ namespace ToolKit
     CPU_FUNC_RANGE();
 
     // Update all lights before using them.
-    m_updatedLights = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
-
-    for (LightPtr light : m_updatedLights)
-    {
-      light->UpdateShadowCamera();
-    }
+    m_updatedLights                   = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
 
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
-    m_jobs.clear();
-    m_params.Scene->m_boundingBox       = RenderJobProcessor::CreateRenderJobs(allDrawList, m_jobs);
+    m_renderData.jobs.clear();
+
+    LightPtrArray nullLights;
+    RenderJobProcessor::CreateRenderJobs(allDrawList,
+                                         m_renderData.jobs,
+                                         nullLights,
+                                         m_params.Cam,
+                                         m_params.Scene->GetEnvironmentVolumes(),
+                                         false);
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
 
-    m_shadowPass->m_params.RendeJobs    = m_jobs; // Copy
+    m_shadowPass->m_params.renderData   = &m_renderData;
     m_shadowPass->m_params.Lights       = m_updatedLights;
     m_shadowPass->m_params.ViewCamera   = m_params.Cam;
 
-    RenderJobProcessor::CullRenderJobs(m_jobs, m_params.Cam);
+    RenderJobProcessor::SeperateRenderData(m_renderData, false);
+    RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
 
-    RenderJobProcessor::AssignEnvironment(m_jobs, m_params.Scene->GetEnvironmentVolumes());
+    // TK_LOG("Culled");
+    // int i = 0;
+    // for (RenderJobItr beg = m_renderData.jobs.begin(); beg != m_renderData.GetDefferedBegin(); beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
 
-    m_gBufferPass->m_params.RendeJobs.clear();
-    m_forwardRenderPass->m_params.OpaqueJobs.clear();
-    m_forwardRenderPass->m_params.TranslucentJobs.clear();
-    RenderJobProcessor::SeperateDeferredForward(m_jobs,
-                                                m_gBufferPass->m_params.RendeJobs,
-                                                m_forwardRenderPass->m_params.OpaqueJobs,
-                                                m_forwardRenderPass->m_params.TranslucentJobs);
+    // TK_LOG("Deferred Opaque");
+    // for (RenderJobItr beg = m_renderData.GetDefferedBegin(); beg != m_renderData.GetForwardOpaqueBegin(); beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
 
+    // TK_LOG("Forward Opaque");
+    // for (RenderJobItr beg = m_renderData.GetForwardOpaqueBegin(); beg != m_renderData.GetForwardTranslucentBegin();
+    //      beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
+
+    // TK_LOG("Forward Translucent");
+    // for (RenderJobItr beg = m_renderData.GetForwardTranslucentBegin(); beg != m_renderData.jobs.end(); beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
+
+    m_gBufferPass->m_params.renderData          = &m_renderData;
     m_gBufferPass->m_params.Camera              = m_params.Cam;
 
+    m_forwardRenderPass->m_params.renderData    = &m_renderData;
     m_forwardRenderPass->m_params.Lights        = m_updatedLights;
     m_forwardRenderPass->m_params.Cam           = m_params.Cam;
     m_forwardRenderPass->m_params.gNormalRt     = m_gBufferPass->m_gNormalRt;

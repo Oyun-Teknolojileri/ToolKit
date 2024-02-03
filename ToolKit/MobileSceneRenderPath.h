@@ -38,9 +38,6 @@ namespace ToolKit
 
    protected:
     void SetPassParams() override;
-
-   protected:
-    RenderJobArray m_jobs;
   };
 
   typedef std::shared_ptr<MobileSceneRenderPath> MobileSceneRenderPathPtr;

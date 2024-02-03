@@ -55,13 +55,22 @@ namespace ToolKit
 
       if (ImGui::CollapsingHeader("Mesh Preview", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        if (UI::ImageButtonDecorless(UI::m_cameraIcon->m_textureId, Vec2(16.0f), false))
+        const ImVec2 iconSize = ImVec2(16.0f, 16.0f);
+        const ImVec2 spacing         = ImGui::GetStyle().ItemSpacing;
+
+        if (UI::ImageButtonDecorless(UI::m_cameraIcon->m_textureId, iconSize, false))
         {
           ResetCamera();
         }
-        ImGui::SameLine();
-        m_viewport->Update(g_app->GetDeltaTime());
-        m_viewport->Show();
+
+        const ImVec2 viewportSize = ImVec2(ImGui::GetContentRegionAvail().x - iconSize.x - 6.0f * spacing.x, 300.0f);
+        if (viewportSize.x > 1 && viewportSize.y > 1)
+        {
+          ImGui::SameLine();
+          m_viewport->SetViewportSize((uint) viewportSize.x, (uint) viewportSize.y);
+          m_viewport->Update(g_app->GetDeltaTime());
+          m_viewport->Show();
+        }
       }
 
       if (ImGui::CollapsingHeader("Mesh Info", ImGuiTreeNodeFlags_DefaultOpen))

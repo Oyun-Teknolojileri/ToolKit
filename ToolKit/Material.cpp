@@ -195,17 +195,26 @@ namespace ToolKit
 
   float& Material::GetAlpha() { return m_alpha; }
 
-  bool Material::IsDeferred()
+  bool Material::IsCustom()
   {
-    if (IsTranslucent())
-    {
-      return false;
-    }
-
-    return m_fragmentShader->GetFile() == GetShaderManager()->PbrDefferedShaderFile();
+    static String defaultShader = GetShaderManager()->PbrForwardShaderFile();
+    return m_fragmentShader->GetFile() != defaultShader;
   }
 
-  bool Material::IsTranslucent() { return m_renderState.blendFunction == BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA; }
+  bool Material::IsTranslucent()
+  {
+    switch (m_renderState.blendFunction)
+    {
+    case BlendFunction::NONE:
+    case BlendFunction::ALPHA_MASK:
+      return false;
+    case BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA:
+    case BlendFunction::ONE_TO_ONE:
+      return true;
+    default:
+      return false;
+    }
+  }
 
   bool Material::IsPBR()
   {
@@ -375,36 +384,19 @@ namespace ToolKit
       }
     }
 
-    // Update old materials than v0.4.0
-
     // If no shader provided, assign a proper default.
     if (m_fragmentShader == nullptr)
     {
-      if (IsTranslucent())
-      {
-        m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
-      }
-      else
-      {
-        m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
-      }
+      m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
     }
-    else
+    else if (m_fragmentShader->GetFile() == GetShaderManager()->PbrDefferedShaderFile())
     {
-      // Can this be draw in deferred path ?
-      if (!IsDeferred())
-      {
-        // If not using a custom shader.
-        if (m_fragmentShader->GetFile() == GetShaderManager()->PbrForwardShaderFile())
-        {
-          // And not translucent.
-          if (!IsTranslucent())
-          {
-            // Draw in deferred.
-            m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
-          }
-        }
-      }
+      m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
+    }
+
+    if (m_fragmentShader == nullptr)
+    {
+      m_vertexShader = GetShaderManager()->GetDefaultVertexShader();
     }
 
     return nullptr;
@@ -421,10 +413,11 @@ namespace ToolKit
     // PBR material
     MaterialPtr material       = MakeNewPtr<Material>();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-    material->m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
+    material->m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
-    m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
+    m_defaultMaterial                                 = material;
+    m_storage[MaterialPath("default.material", true)] = material;
 
     // Phong material
     material                                          = MakeNewPtr<Material>();
@@ -432,7 +425,7 @@ namespace ToolKit
     material->m_fragmentShader = GetShaderManager()->GetPhongForwardShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
-    m_storage[MaterialPath("phongForward.material", true)] = MaterialPtr(material);
+    m_storage[MaterialPath("phongForward.material", true)] = material;
 
     // Unlit material
     material                                               = MakeNewPtr<Material>();
@@ -440,12 +433,14 @@ namespace ToolKit
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
-    m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
+    m_storage[MaterialPath("unlit.material", true)] = material;
   }
 
   bool MaterialManager::CanStore(ClassMeta* Class) { return Class == Material::StaticClass(); }
 
   String MaterialManager::GetDefaultResource(ClassMeta* Class) { return MaterialPath("missing.material", true); }
+
+  MaterialPtr MaterialManager::GetDefaultMaterial() { return m_defaultMaterial; }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial(bool storeInMaterialManager)
   {

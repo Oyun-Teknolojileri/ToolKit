@@ -14,6 +14,7 @@
 #include "RHI.h"
 #include "ResourceManager.h"
 #include "Skeleton.h"
+#include "TKAssert.h"
 #include "TKOpenGL.h"
 #include "TKStats.h"
 #include "Texture.h"
@@ -109,6 +110,8 @@ namespace ToolKit
       return;
     }
 
+    TK_ASSERT_ONCE(!m_clientSideVertices.empty() || m_vertexLayout == VertexLayout::SkinMesh);
+
     InitVertices(flushClientSideArray);
     SetVertexLayout(m_vertexLayout);
     InitIndices(flushClientSideArray);
@@ -120,10 +123,12 @@ namespace ToolKit
 
     m_material->Init(flushClientSideArray);
 
-    for (MeshPtr mesh : m_subMeshes)
+    for (const MeshPtr& mesh : m_subMeshes)
     {
       mesh->Init(flushClientSideArray);
     }
+
+    GetAllMeshes(m_allMeshes, true);
 
     m_initiated = true;
   }
@@ -237,7 +242,7 @@ namespace ToolKit
   {
     // Construct aabb of all submeshes.
     MeshRawPtrArray meshes;
-    GetAllMeshes(meshes);
+    GetAllMeshes(meshes, true);
 
     BoundingBox aabb;
     for (Mesh* mesh : meshes)
@@ -266,7 +271,29 @@ namespace ToolKit
     }
   }
 
-  void Mesh::GetAllMeshes(MeshRawPtrArray& meshes) const { GetAllMeshHelper(this, meshes); }
+  void Mesh::GetAllMeshes(MeshRawPtrArray& meshes, bool updateCache) const
+  {
+    if (updateCache)
+    {
+      m_allMeshes.clear();
+      GetAllMeshHelper(this, m_allMeshes);
+    }
+
+    meshes = m_allMeshes;
+  }
+
+  int Mesh::GetMeshCount() const { return (int) m_allMeshes.size(); }
+
+  uint Mesh::TotalVertexCount() const
+  {
+    uint total = 0;
+    for (Mesh* mesh : m_allMeshes)
+    {
+      total += mesh->m_vertexCount;
+    }
+
+    return total;
+  }
 
   template <typename T>
   void ConstructFacesT(T* mesh)
@@ -731,6 +758,19 @@ namespace ToolKit
     m_bindPoseAABB           = finalAABB;
 
     return finalAABB;
+  }
+
+  uint SkinMesh::TotalVertexCount() const
+  {
+    uint total = 0;
+    for (Mesh* mesh : m_allMeshes)
+    {
+      total += mesh->m_vertexCount;
+    }
+
+    total += (uint) m_clientSideVertices.size();
+
+    return total;
   }
 
   uint SkinMesh::GetVertexCount() const { return (uint) m_clientSideVertices.size(); }

@@ -125,7 +125,8 @@ namespace ToolKit
        */
       EntityPtrArray m_selecteds;
 
-      RenderJobArray m_renderJobs, m_opaque, m_translucent, m_uiRenderJobs;
+      RenderData m_renderData;
+      RenderData m_uiRenderData;
     };
 
     typedef std::shared_ptr<EditorRenderer> EditorRendererPtr;

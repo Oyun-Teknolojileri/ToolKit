@@ -107,7 +107,7 @@ namespace ToolKit
     {
     case 0: // is directional
     case 3:
-      dir = static_cast<DirectionalLight*>(light.get())->GetComponent<DirectionComponent>()->GetDirection();
+      dir = static_cast<DirectionalLight*>(light.get())->GetComponentFast<DirectionComponent>()->GetDirection();
       break;
     case 1: // is point
     case 4:
@@ -120,7 +120,7 @@ namespace ToolKit
     case 5:
     {
       SpotLight* spotLight = static_cast<SpotLight*>(light.get());
-      dir                  = spotLight->GetComponent<DirectionComponent>()->GetDirection();
+      dir                  = spotLight->GetComponentFast<DirectionComponent>()->GetDirection();
       float outAngle       = glm::cos(glm::radians(spotLight->GetOuterAngleVal() * 0.5f));
       float innAngle       = glm::cos(glm::radians(spotLight->GetInnerAngleVal() * 0.5f));
       m_lightingShader->UpdateShaderUniform("lightRadius", spotLight->GetRadiusVal());
@@ -191,7 +191,7 @@ namespace ToolKit
     {
       LightPtr light = m_params.lights[i];
       int hasShadow  = light->GetCastShadowVal() * 3; // if light has shadow index will start from 3
-      int lightType  = light->ComparableType() + hasShadow;
+      int lightType  = light->GetLightType() + hasShadow;
       assert(lightType < 6 && lightType >= 0 && "light type invalid");
 
       if (lightType == 1 || lightType == 4) // point light
@@ -216,7 +216,7 @@ namespace ToolKit
         }
 
         job.Mesh           = m_sphereEntity->GetMeshComponent()->GetMeshVal().get();
-        job.Material       = m_meshMaterial;
+        job.Material       = m_meshMaterial.get();
         job.BoundingBox    = BoundingBox(Vec3(-radius), Vec3(radius));
         job.ShadowCaster   = false;
         job.WorldTransform = glm::translate(Mat4(), pos) * glm::scale(Mat4(), Vec3(radius * 1.05f));
@@ -225,7 +225,7 @@ namespace ToolKit
       else if (lightType == 2 || lightType == 5) // is spot light
       {
         SpotLight* spotLight = static_cast<SpotLight*>(light.get());
-        Vec3 dir             = spotLight->GetComponent<DirectionComponent>()->GetDirection();
+        Vec3 dir             = spotLight->GetComponentFast<DirectionComponent>()->GetDirection();
         Vec3 pos             = spotLight->m_node->GetTranslation();
         float height         = spotLight->GetRadiusVal();
         float outerAngle     = spotLight->GetOuterAngleVal();
@@ -244,7 +244,7 @@ namespace ToolKit
 
         RenderJob job {};
         job.Mesh           = spotLight->m_volumeMesh.get();
-        job.Material       = m_meshMaterial;
+        job.Material       = m_meshMaterial.get();
         job.ShadowCaster   = false;
         job.WorldTransform = light->m_node->GetTransform();
         meshLights.push_back(std::make_pair(LightAndType(light, lightType), job));
@@ -274,7 +274,7 @@ namespace ToolKit
     for (auto& [lightAndType, job] : meshLights)
     {
       SetLightUniforms(lightAndType.light, lightAndType.type);
-      renderer->Render(job, m_params.Cam, {});
+      renderer->Render(job);
     }
 
     // prepare to write main frame buffer

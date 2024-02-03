@@ -164,7 +164,6 @@ namespace ToolKit
     renderer->ResetTextureSlots();
 
     renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
-
     renderer->SetCamera(m_params.Camera, true);
 
     POP_CPU_MARKER();
@@ -188,9 +187,14 @@ namespace ToolKit
     PUSH_CPU_MARKER("GBufferPass::Render");
 
     Renderer* renderer = GetRenderer();
-    for (RenderJob& job : m_params.RendeJobs)
+
+    RenderJobItr begin = m_params.renderData->GetDefferedBegin();
+    RenderJobItr end   = m_params.renderData->GetForwardOpaqueBegin();
+
+    for (RenderJobItr job = begin; job != end; job++)
     {
-      MaterialPtr activeMaterial = job.Material;
+
+      Material* activeMaterial = job->Material;
       m_gBufferMaterial->SetRenderState(activeMaterial->GetRenderState());
       m_gBufferMaterial->UnInit();
       m_gBufferMaterial->m_diffuseTexture           = activeMaterial->m_diffuseTexture;
@@ -206,7 +210,7 @@ namespace ToolKit
       m_gBufferMaterial->Init();
 
       renderer->m_overrideMat = m_gBufferMaterial;
-      renderer->Render(job, m_params.Camera, {});
+      renderer->Render(*job);
     }
 
     POP_CPU_MARKER();

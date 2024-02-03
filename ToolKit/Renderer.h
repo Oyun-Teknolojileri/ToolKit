@@ -77,9 +77,9 @@ namespace ToolKit
     // Giving nullptr as argument means no shadows
     void SetShadowAtlas(TexturePtr shadowAtlas);
 
-    void Render(const struct RenderJob& job, CameraPtr cam, const LightPtrArray& lights = {});
+    void Render(const struct RenderJob& job);
 
-    void Render(const RenderJobArray& jobArray, CameraPtr cam, const LightPtrArray& lights = {});
+    void Render(const RenderJobArray& jobs);
 
     void Apply7x1GaussianBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
 
@@ -106,9 +106,9 @@ namespace ToolKit
     void ResetTextureSlots();
 
    private:
-    void BindProgram(GpuProgramPtr program);
-    void FeedUniforms(GpuProgramPtr program, const RenderJob& renderJob);
-    void FeedLightUniforms(GpuProgramPtr program);
+    void BindProgram(const GpuProgramPtr& program);
+    void FeedUniforms(const GpuProgramPtr& program, const RenderJob& job);
+    void FeedLightUniforms(const GpuProgramPtr& program, const RenderJob& job);
 
    public:
     uint m_frameCount = 0;
@@ -125,7 +125,13 @@ namespace ToolKit
     // The set contains gpuPrograms that has up to date per frame uniforms.
     std::unordered_set<uint> m_gpuProgramHasFrameUpdates;
 
-    bool m_renderOnlyLighting = false;
+    bool m_renderOnlyLighting                 = false;
+
+    /**
+     * Some passes may draw culled objects from view frustum.
+     * To prevent debug message, set this to true.
+     */
+    bool m_ignoreRenderingCulledObjectWarning = false;
 
     struct RHIConstants
     {
@@ -153,16 +159,23 @@ namespace ToolKit
 
     Mat4 m_model;
     Mat4 m_iblRotation;
-    LightPtrArray m_lights;
-    MaterialPtr m_mat            = nullptr;
+    Material* m_mat              = nullptr;
     FramebufferPtr m_framebuffer = nullptr;
     TexturePtr m_shadowAtlas     = nullptr;
+    RenderTargetPtr m_brdfLut    = nullptr;
 
     int m_textureSlots[RHIConstants::TextureSlotCount];
 
     RenderState m_renderState;
 
     UVec2 m_viewportSize; //!< Current viewport size.
+
+    /**
+     * Light array that will be used by the renderer.
+     * Usually, render paths sets the light array after culling visible lights.
+     * Jobs maintains indexes to the light list.
+     */
+    LightPtrArray m_lights;
 
     /*
      * This framebuffer can ONLY have 1 color attachment and no other attachments.
