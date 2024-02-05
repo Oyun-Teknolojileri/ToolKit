@@ -222,8 +222,8 @@ namespace ToolKit
       AddVRAMUsageInBytes(size);
     }
 
-    cpy->m_material = GetMaterialManager()->Copy<Material>(m_material);
-    cpy->m_boundingBox     = m_boundingBox;
+    cpy->m_material    = GetMaterialManager()->Copy<Material>(m_material);
+    cpy->m_boundingBox = m_boundingBox;
 
     for (MeshPtr child : m_subMeshes)
     {
@@ -447,8 +447,8 @@ namespace ToolKit
   {
     mainMesh->m_boundingBox = BoundingBox();
 
-    T* mesh          = mainMesh;
-    XmlNode* node    = parent;
+    T* mesh                 = mainMesh;
+    XmlNode* node           = parent;
 
     String typeString;
     if constexpr (std::is_same<T, Mesh>())
@@ -554,7 +554,7 @@ namespace ToolKit
     // This approach will flatten the mesh on a single sibling level.
     // To keep the depth hierarchy, recursive save is needed.
     MeshRawPtrArray cMeshes;
-    GetAllMeshes(cMeshes);
+    GetAllMeshes(cMeshes, true);
 
     for (const Mesh* m : cMeshes)
     {
