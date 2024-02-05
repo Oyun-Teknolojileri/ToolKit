@@ -315,8 +315,8 @@ namespace ToolKit
 
    public:
     /**
-     * A volume that covers all the entities in the scene.
-     * Its calculated during rendering. Its only valid after scene render.
+     * A world space volume that covers all the entities in the scene.
+     * Its calculated during rendering and Initialization. Its only valid after Init or scene render.
      */
     BoundingBox m_boundingBox;
 

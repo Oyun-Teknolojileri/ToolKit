@@ -50,6 +50,7 @@ namespace ToolKit
 
     static PrefabPtr GetPrefabRoot(const EntityPtr ntt);
     Entity* CopyTo(Entity* other) const override;
+    BoundingBox GetAABB(bool inWorld = false) const override;
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;

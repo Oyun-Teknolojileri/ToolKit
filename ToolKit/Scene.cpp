@@ -76,6 +76,7 @@ namespace ToolKit
       return;
     }
 
+    m_boundingBox                = BoundingBox();
     const EntityPtrArray& ntties = GetEntities();
     for (EntityPtr ntt : ntties)
     {
@@ -113,6 +114,9 @@ namespace ToolKit
           envCom->Init(true);
         }
       }
+
+      BoundingBox worldBox = ntt->GetAABB(true);
+      m_boundingBox.UpdateBoundary(worldBox);
     }
 
     m_initiated = true;
@@ -126,7 +130,7 @@ namespace ToolKit
     m_lightCache.clear();
     m_cameraCache.clear();
     m_environmentVolumeCache.clear();
-    m_skyCache = nullptr;
+    m_skyCache    = nullptr;
     m_boundingBox = BoundingBox();
 
     for (int i = 0; i < m_entities.size(); i++)

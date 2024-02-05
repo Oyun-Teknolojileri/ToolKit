@@ -112,9 +112,14 @@ namespace ToolKit
       }
     }
 
-    if (inWorld)
+    if (!aabb.IsValid())
     {
-      TransformAABB(aabb, m_node->GetTransform(TransformationSpace::TS_WORLD));
+      // In case of an uninitialized bounding box, provide a very small box.
+      aabb = BoundingBox(Vec3(-TK_FLT_MIN), Vec3(TK_FLT_MIN));
+    }
+    else if (inWorld)
+    {
+      TransformAABB(aabb, m_node->GetTransform());
     }
 
     return aabb;
