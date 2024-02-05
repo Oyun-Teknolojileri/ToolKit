@@ -8,6 +8,7 @@
 #include "Prefab.h"
 
 #include "Material.h"
+#include "MathUtil.h"
 #include "Scene.h"
 #include "ToolKit.h"
 
@@ -78,12 +79,28 @@ namespace ToolKit
     return other;
   }
 
+  BoundingBox Prefab::GetBoundingBox(bool inWorld) const
+  {
+    BoundingBox boundingBox;
+    if (m_prefabScene)
+    {
+      boundingBox = m_prefabScene->m_boundingBox;
+      if (inWorld)
+      {
+        TransformAABB(boundingBox, m_node->GetTransform());
+      }
+    }
+
+    return boundingBox;
+  }
+
   void Prefab::Init(Scene* curScene)
   {
     if (m_initiated)
     {
       return;
     }
+
     m_currentScene    = curScene;
     String prefabPath = GetPrefabPathVal();
     prefabPath        = PrefabPath(prefabPath);

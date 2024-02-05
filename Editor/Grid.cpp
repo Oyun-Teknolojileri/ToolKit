@@ -193,7 +193,7 @@ namespace ToolKit
     bool Grid::HitTest(const Ray& ray, Vec3& pos)
     {
       float dist = 0.0f;
-      if (RayBoxIntersection(ray, GetAABB(true), dist))
+      if (RayBoxIntersection(ray, GetBoundingBox(true), dist))
       {
         pos = PointOnRay(ray, dist);
         return true;

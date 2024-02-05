@@ -28,7 +28,7 @@ namespace ToolKit
     virtual MaterialPtr GetSkyboxMaterial();
     virtual CubeMapPtr GetIrradianceMap();
     HdriPtr GetHdri();
-    BoundingBox GetAABB(bool inWorld = false) const override;
+    BoundingBox GetBoundingBox(bool inWorld = false) const override;
 
    protected:
     void ParameterConstructor() override;

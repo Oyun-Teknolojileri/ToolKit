@@ -684,7 +684,7 @@ namespace ToolKit
 
       if (!GetCurrentScene()->GetBillboard(entity))
       {
-        cam->FocusToBoundingBox(entity->GetAABB(true), 1.1f);
+        cam->FocusToBoundingBox(entity->GetBoundingBox(true), 1.1f);
       }
       else
       {
@@ -1593,10 +1593,12 @@ namespace ToolKit
     void App::CreateEditorEntities()
     {
       // Create editor objects.
-      m_cursor = MakeNewPtr<Cursor>();
-      m_origin = MakeNewPtr<Axis3d>();
+      m_cursor   = MakeNewPtr<Cursor>();
+      m_origin   = MakeNewPtr<Axis3d>();
+      m_dbgArrow = MakeNewPtr<Arrow2d>();
+      m_dbgArrow->Generate(AxisLabel::X);
 
-      m_grid   = MakeNewPtr<Grid>();
+      m_grid = MakeNewPtr<Grid>();
       m_grid->Resize(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0);
 
       m_2dGrid         = MakeNewPtr<Grid>();

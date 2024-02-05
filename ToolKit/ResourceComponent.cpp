@@ -35,7 +35,7 @@ namespace ToolKit
 
   void AABBOverrideComponent::Init(bool flushClientSideArray) {}
 
-  BoundingBox AABBOverrideComponent::GetAABB()
+  BoundingBox AABBOverrideComponent::GetBoundingBox()
   {
     BoundingBox aabb = {};
     aabb.min         = GetPositionOffsetVal();
@@ -43,7 +43,7 @@ namespace ToolKit
     return aabb;
   }
 
-  void AABBOverrideComponent::SetAABB(BoundingBox aabb)
+  void AABBOverrideComponent::SetBoundingBox(BoundingBox aabb)
   {
     SetPositionOffsetVal(aabb.min);
     SetSizeVal(aabb.max - aabb.min);

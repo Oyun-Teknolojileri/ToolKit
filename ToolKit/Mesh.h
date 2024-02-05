@@ -48,7 +48,7 @@ namespace ToolKit
     virtual bool IsSkinned() const;
 
     /**
-     * Calculates a bounding box for vertices in client side array for all meshes and submeshes. m_aabb becomes
+     * Calculates a bounding box for vertices in client side array for all meshes and submeshes. m_boundingBox becomes
      * valid after call to this.
      */
     void CalculateAABB();
@@ -101,7 +101,7 @@ namespace ToolKit
     uint m_indexCount  = 0;
     MaterialPtr m_material;
     MeshPtrArray m_subMeshes;
-    BoundingBox m_aabb;
+    BoundingBox m_boundingBox;
     FaceArray m_faces;
     VertexLayout m_vertexLayout;
 
@@ -135,7 +135,7 @@ namespace ToolKit
     bool IsSkinned() const override;
 
     // Because AABB is all dependent on active animation, just return AABB
-    // (doesn't change m_aabb)
+    // (doesn't change m_boundingBox)
     BoundingBox CalculateAABB(const Skeleton* skel, DynamicBoneMapPtr boneMap);
 
    protected:

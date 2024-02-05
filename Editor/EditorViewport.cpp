@@ -599,7 +599,7 @@ namespace ToolKit
               if (dwMesh->GetComponent<AABBOverrideComponent>() == nullptr)
               {
                 AABBOverrideComponentPtr aabbOverride = MakeNewPtr<AABBOverrideComponent>();
-                aabbOverride->SetAABB(dwMesh->GetAABB());
+                aabbOverride->SetBoundingBox(dwMesh->GetBoundingBox());
                 dwMesh->AddComponent(aabbOverride);
               }
             }
@@ -818,7 +818,7 @@ namespace ToolKit
         matComp->UpdateMaterialList();
 
         // Load bounding box once
-        *boundingBox = CreateBoundingBoxDebugObject((*dwMesh)->GetAABB(true));
+        *boundingBox = CreateBoundingBoxDebugObject((*dwMesh)->GetBoundingBox(true));
 
         // Add bounding box to the scene
         currScene->AddEntity(*boundingBox);
@@ -865,7 +865,7 @@ namespace ToolKit
       if (meshFound && boxMode)
       {
         float firstY       = lastDragMeshPos.y;
-        lastDragMeshPos.y -= dwMesh->GetAABB(false).min.y;
+        lastDragMeshPos.y -= dwMesh->GetBoundingBox(false).min.y;
 
         if (firstY > lastDragMeshPos.y)
         {

@@ -96,25 +96,30 @@ namespace ToolKit
     anim->GetPose(m_node, time);
   }
 
-  BoundingBox Entity::GetAABB(bool inWorld) const
+  BoundingBox Entity::GetBoundingBox(bool inWorld) const
   {
     BoundingBox aabb;
     AABBOverrideComponent* overrideComp = GetComponentFast<AABBOverrideComponent>();
     if (overrideComp)
     {
-      aabb = overrideComp->GetAABB();
+      aabb = overrideComp->GetBoundingBox();
     }
     else
     {
       if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
       {
-        aabb = meshComp->GetAABB();
+        aabb = meshComp->GetBoundingBox();
       }
     }
 
-    if (inWorld)
+    if (!aabb.IsValid())
     {
-      TransformAABB(aabb, m_node->GetTransform(TransformationSpace::TS_WORLD));
+      // In case of an uninitialized bounding box, provide a very small box.
+      aabb = BoundingBox(Vec3(-TK_FLT_MIN), Vec3(TK_FLT_MIN));
+    }
+    else if (inWorld)
+    {
+      TransformAABB(aabb, m_node->GetTransform());
     }
 
     return aabb;

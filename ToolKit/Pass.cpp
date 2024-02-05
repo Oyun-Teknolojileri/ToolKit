@@ -207,11 +207,11 @@ namespace ToolKit
                       job.WorldTransform  = ntt->m_node->GetTransform();
                       if (AABBOverrideComponent* bbOverride = ntt->GetComponentFast<AABBOverrideComponent>())
                       {
-                        job.BoundingBox = std::move(bbOverride->GetAABB());
+                        job.BoundingBox = std::move(bbOverride->GetBoundingBox());
                       }
                       else
                       {
-                        job.BoundingBox = job.Mesh->m_aabb;
+                        job.BoundingBox = job.Mesh->m_boundingBox;
                       }
 
                       TransformAABB(job.BoundingBox, job.WorldTransform);

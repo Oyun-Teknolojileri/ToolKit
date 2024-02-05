@@ -219,7 +219,7 @@ namespace ToolKit
 
         if (app->m_showSelectionBoundary && ntt->IsDrawable())
         {
-          app->m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(ntt->GetAABB(true)));
+          app->m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(ntt->GetBoundingBox(true)));
         }
 
         if (app->m_showDirectionalLightShadowFrustum)

@@ -239,7 +239,7 @@ namespace ToolKit
       rayInObj.direction = its * Vec4(ray.direction, 0.0f);
 
       m_mesh->CalculateAABB();
-      return RayBoxIntersection(rayInObj, m_mesh->m_aabb, t);
+      return RayBoxIntersection(rayInObj, m_mesh->m_boundingBox, t);
     }
 
     Mat4 GizmoHandle::GetTransform() const
@@ -466,7 +466,7 @@ namespace ToolKit
       rayInObj.direction = its * Vec4(ray.direction, 0.0f);
 
       m_mesh->CalculateAABB();
-      return RayBoxIntersection(rayInObj, m_mesh->m_aabb, t);
+      return RayBoxIntersection(rayInObj, m_mesh->m_boundingBox, t);
     }
 
     // Gizmo

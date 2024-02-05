@@ -314,14 +314,14 @@ namespace ToolKit
           {
             g_app->m_cursor->m_worldLocation = pd.pickPos;
 
-            if (g_app->m_dbgArrow == nullptr)
+            if (g_app->m_dbgArrow != nullptr)
             {
               m_ignoreList.push_back(g_app->m_dbgArrow->GetIdVal());
               currScene->AddEntity(g_app->m_dbgArrow);
-            }
 
-            g_app->m_dbgArrow->m_node->SetTranslation(ray.position);
-            g_app->m_dbgArrow->m_node->SetOrientation(RotationTo(X_AXIS, ray.direction));
+              g_app->m_dbgArrow->m_node->SetTranslation(pd.pickPos + (ray.position - pd.pickPos) * 0.1f);
+              g_app->m_dbgArrow->m_node->SetOrientation(RotationTo(X_AXIS, ray.direction));
+            }
           }
 
           return StateType::StateEndPick;

@@ -76,6 +76,7 @@ namespace ToolKit
       return;
     }
 
+    m_boundingBox                = BoundingBox();
     const EntityPtrArray& ntties = GetEntities();
     for (EntityPtr ntt : ntties)
     {
@@ -103,7 +104,7 @@ namespace ToolKit
           {
             AABBOverrideComponentPtr aabbOverride = MakeNewPtr<AABBOverrideComponent>();
             ntt->AddComponent(aabbOverride);
-            aabbOverride->SetAABB(ntt->GetAABB());
+            aabbOverride->SetBoundingBox(ntt->GetBoundingBox());
           }
         }
 
@@ -113,6 +114,9 @@ namespace ToolKit
           envCom->Init(true);
         }
       }
+
+      BoundingBox worldBox = ntt->GetBoundingBox(true);
+      m_boundingBox.UpdateBoundary(worldBox);
     }
 
     m_initiated = true;
@@ -126,7 +130,7 @@ namespace ToolKit
     m_lightCache.clear();
     m_cameraCache.clear();
     m_environmentVolumeCache.clear();
-    m_skyCache = nullptr;
+    m_skyCache    = nullptr;
     m_boundingBox = BoundingBox();
 
     for (int i = 0; i < m_entities.size(); i++)
@@ -134,7 +138,7 @@ namespace ToolKit
       EntityPtr& ntt        = m_entities[i];
 
       // update bounding box.
-      const BoundingBox& bb = ntt->GetAABB(true);
+      const BoundingBox& bb = ntt->GetBoundingBox(true);
       if (bb.IsValid())
       {
         m_boundingBox.UpdateBoundary(bb);
@@ -206,7 +210,7 @@ namespace ToolKit
         rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);
 
         float dist                 = 0;
-        if (RayBoxIntersection(rayInObjectSpace, ntt->GetAABB(), dist))
+        if (RayBoxIntersection(rayInObjectSpace, ntt->GetBoundingBox(), dist))
         {
           bool hit         = false;
 
@@ -262,7 +266,7 @@ namespace ToolKit
           continue;
         }
 
-        BoundingBox bb      = ntt->GetAABB(true);
+        BoundingBox bb      = ntt->GetBoundingBox(true);
         IntersectResult res = FrustumBoxIntersection(frustum, bb);
         if (res != IntersectResult::Outside)
         {

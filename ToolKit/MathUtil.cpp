@@ -764,7 +764,7 @@ namespace ToolKit
     Mat4 v          = camera->GetViewMatrix();
     Frustum frustum = ExtractFrustum(pr * v, false);
 
-    auto delFn      = [frustum](Entity* ntt) -> bool { return FrustumTest(frustum, ntt->GetAABB(true)); };
+    auto delFn      = [frustum](Entity* ntt) -> bool { return FrustumTest(frustum, ntt->GetBoundingBox(true)); };
     erase_if(entities, delFn);
   }
 

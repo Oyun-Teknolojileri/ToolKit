@@ -335,7 +335,7 @@ namespace ToolKit
       return;
     }
 
-    const BoundingBox bb = canvasPanel->GetAABB(true);
+    const BoundingBox bb = canvasPanel->GetBoundingBox(true);
     const float w        = bb.GetWidth();
     const float h        = bb.GetHeight();
 
@@ -369,7 +369,7 @@ namespace ToolKit
     canvas[3]                   += axis[0] * ((1.f - m_anchorParams.m_anchorRatios[1]) * w);
     canvas[3].z                  = 0.f;
 
-    const BoundingBox surfaceBB  = GetAABB(true);
+    const BoundingBox surfaceBB  = GetBoundingBox(true);
     surface[0]                   = Vec3(surfaceBB.min.x, surfaceBB.max.y, 0.f);
     surface[1]                   = Vec3(surfaceBB.max.x, surfaceBB.max.y, 0.f);
     surface[2]                   = Vec3(surfaceBB.min.x, surfaceBB.min.y, 0.f);

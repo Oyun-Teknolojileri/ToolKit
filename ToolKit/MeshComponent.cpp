@@ -30,7 +30,7 @@ namespace ToolKit
     return mc;
   }
 
-  BoundingBox MeshComponent::GetAABB()
+  BoundingBox MeshComponent::GetBoundingBox()
   {
     SkeletonComponent* skelComp = OwnerEntity()->GetComponentFast<SkeletonComponent>();
     if (skelComp && GetMeshVal()->IsSkinned())
@@ -38,12 +38,12 @@ namespace ToolKit
       SkinMesh* skinMesh = (SkinMesh*) GetMeshVal().get();
       if (skelComp->isDirty)
       {
-        m_aabb            = skinMesh->CalculateAABB(skelComp->GetSkeletonResourceVal().get(), skelComp->m_map);
+        m_boundingBox            = skinMesh->CalculateAABB(skelComp->GetSkeletonResourceVal().get(), skelComp->m_map);
         skelComp->isDirty = false;
       }
-      return m_aabb;
+      return m_boundingBox;
     }
-    return GetMeshVal()->m_aabb;
+    return GetMeshVal()->m_boundingBox;
   }
 
   void MeshComponent::Init(bool flushClientSideArray) { GetMeshVal()->Init(flushClientSideArray); }
