@@ -94,7 +94,7 @@ namespace ToolKit
     if (e->m_type == Event::EventType::Mouse || e->m_type == Event::EventType::Touch)
 
     {
-      BoundingBox box = surface->GetAABB(true);
+      BoundingBox box = surface->GetBoundingBox(true);
       Ray ray         = vp->RayFromMousePosition();
 
       float t         = 0.0f;

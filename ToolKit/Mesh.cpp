@@ -223,7 +223,7 @@ namespace ToolKit
     }
 
     cpy->m_material = GetMaterialManager()->Copy<Material>(m_material);
-    cpy->m_aabb     = m_aabb;
+    cpy->m_boundingBox     = m_boundingBox;
 
     for (MeshPtr child : m_subMeshes)
     {
@@ -253,7 +253,7 @@ namespace ToolKit
         aabb.UpdateBoundary(v.pos);
       }
     }
-    m_aabb = aabb;
+    m_boundingBox = aabb;
   }
 
   void GetAllMeshHelper(const Mesh* mesh, MeshRawPtrArray& meshes)
@@ -445,7 +445,7 @@ namespace ToolKit
   template <typename T>
   void LoadMesh(XmlDocument* doc, XmlNode* parent, T* mainMesh)
   {
-    mainMesh->m_aabb = BoundingBox();
+    mainMesh->m_boundingBox = BoundingBox();
 
     T* mesh          = mainMesh;
     XmlNode* node    = parent;
@@ -504,7 +504,7 @@ namespace ToolKit
         {
           SkinVertex vd;
           ReadVec(v->first_node("p"), vd.pos);
-          mainMesh->m_aabb.UpdateBoundary(vd.pos);
+          mainMesh->m_boundingBox.UpdateBoundary(vd.pos);
 
           ReadVec(v->first_node("n"), vd.norm);
           ReadVec(v->first_node("t"), vd.tex);

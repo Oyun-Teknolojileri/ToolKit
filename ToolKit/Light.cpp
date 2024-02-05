@@ -107,11 +107,11 @@ namespace ToolKit
     m_shadowMapMaterial->Init();
   }
 
-  BoundingBox Light::GetAABB(bool inWorld) const
+  BoundingBox Light::GetBoundingBox(bool inWorld) const
   {
     if (m_volumeMesh != nullptr)
     {
-      BoundingBox lightVolume = m_volumeMesh->m_aabb;
+      BoundingBox lightVolume = m_volumeMesh->m_boundingBox;
       if (inWorld)
       {
         TransformAABB(lightVolume, m_node->GetTransform());
@@ -120,7 +120,7 @@ namespace ToolKit
       return lightVolume;
     }
 
-    return Super::GetAABB();
+    return Super::GetBoundingBox();
   }
 
   void Light::UpdateShadowCameraTransform()
@@ -289,7 +289,7 @@ namespace ToolKit
 
   PointLight::~PointLight() {}
 
-  BoundingBox PointLight::GetAABB(bool inWorld) const
+  BoundingBox PointLight::GetBoundingBox(bool inWorld) const
   {
     BoundingBox bb = m_boundingSphereCache.GetBoundingBox();
     if (!inWorld)

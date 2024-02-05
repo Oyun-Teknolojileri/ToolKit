@@ -722,8 +722,8 @@ namespace ToolKit
     tMesh->m_material    = tMaterials[mesh->mMaterialIndex];
     for (ubyte i = 0; i < 3; i++)
     {
-      tMesh->m_aabb.min[i] = mesh->mAABB.mMin[i];
-      tMesh->m_aabb.max[i] = mesh->mAABB.mMax[i];
+      tMesh->m_boundingBox.min[i] = mesh->mAABB.mMin[i];
+      tMesh->m_boundingBox.max[i] = mesh->mAABB.mMax[i];
     }
   }
 

@@ -119,8 +119,8 @@ namespace ToolKit
       EntityPtrArray entities = m_viewport->GetScene()->GetEntities();
       for (EntityPtr ntt : entities)
       {
-        aabb.UpdateBoundary(ntt->GetAABB(true).min);
-        aabb.UpdateBoundary(ntt->GetAABB(true).max);
+        aabb.UpdateBoundary(ntt->GetBoundingBox(true).min);
+        aabb.UpdateBoundary(ntt->GetBoundingBox(true).max);
       }
 
       m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.0f);

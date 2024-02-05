@@ -96,19 +96,19 @@ namespace ToolKit
     anim->GetPose(m_node, time);
   }
 
-  BoundingBox Entity::GetAABB(bool inWorld) const
+  BoundingBox Entity::GetBoundingBox(bool inWorld) const
   {
     BoundingBox aabb;
     AABBOverrideComponent* overrideComp = GetComponentFast<AABBOverrideComponent>();
     if (overrideComp)
     {
-      aabb = overrideComp->GetAABB();
+      aabb = overrideComp->GetBoundingBox();
     }
     else
     {
       if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
       {
-        aabb = meshComp->GetAABB();
+        aabb = meshComp->GetBoundingBox();
       }
     }
 

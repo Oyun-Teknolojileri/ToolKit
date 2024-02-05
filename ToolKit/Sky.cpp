@@ -90,7 +90,7 @@ namespace ToolKit
     return hdri;
   }
 
-  BoundingBox SkyBase::GetAABB(bool inWorld) const
+  BoundingBox SkyBase::GetBoundingBox(bool inWorld) const
   {
     // Return a unit boundary.
     return {

@@ -79,7 +79,7 @@ namespace ToolKit
     return other;
   }
 
-  BoundingBox Prefab::GetAABB(bool inWorld) const
+  BoundingBox Prefab::GetBoundingBox(bool inWorld) const
   {
     BoundingBox boundingBox;
     if (m_prefabScene)

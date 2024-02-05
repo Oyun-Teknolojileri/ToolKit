@@ -817,7 +817,7 @@ namespace ToolKit
         Vec2(0.5f, 0.5f),        // tex coord
         Vec3(0.0f, 1.0f, 0.0f)   // btan
     };
-    mesh->m_aabb = BoundingBox(Vec3(-radius), Vec3(radius));
+    mesh->m_boundingBox = BoundingBox(Vec3(-radius), Vec3(radius));
 
     // create vertices
     for (int i = 0; i < numSegments; i++)
