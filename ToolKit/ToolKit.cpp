@@ -17,6 +17,7 @@
 #include "Object.h"
 #include "ObjectFactory.h"
 #include "PluginManager.h"
+#include "RHI.h"
 #include "RenderSystem.h"
 #include "Scene.h"
 #include "Shader.h"
@@ -133,6 +134,7 @@ namespace ToolKit
 
     m_logger->Log("Main Init");
 
+    RHI::m_initialized = true;
     m_pluginManager->Init();
     m_animationMan->Init();
     m_textureMan->Init();
@@ -153,6 +155,7 @@ namespace ToolKit
   {
     m_logger->Log("Main Uninit");
 
+    RHI::m_initialized = false;
     m_animationPlayer->m_records.clear();
     m_animationMan->Uninit();
     m_textureMan->Uninit();
