@@ -476,10 +476,10 @@ namespace ToolKit
               GetMouseRect(min, max);
 
               ImU32 col = ImColor(g_selectBoxWindowColor);
-              drawList->AddRectFilled(min, max, col, 5.0f);
+              drawList->AddRectFilled(min, max, col, 5.0f, ImDrawFlags_RoundCornersAll);
 
               col = ImColor(g_selectBoxBorderColor);
-              drawList->AddRect(min, max, col, 5.0f, 15, 2.0f);
+              drawList->AddRect(min, max, col, 5.0f, ImDrawFlags_RoundCornersAll);
             };
 
             vp->m_drawCommands.push_back(drawSelectionRectangleFn);
