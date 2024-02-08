@@ -152,7 +152,7 @@ namespace ToolKit
     /**
      * Doesn't alter render job, but puts results into cullResults array. Useful for not to alter RenderData.
      */
-    static void CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, BoolArray& results);
+    static void CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, UIntArray& resultIndices);
 
     static void StableSortByMeshThanMaterail(RenderData& renderData);
 

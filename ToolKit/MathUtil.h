@@ -115,6 +115,9 @@ namespace ToolKit
   TK_API Vec3 ProjectPointOntoPlane(const PlaneEquation& plane, const Vec3& pt);
   TK_API Vec3 ProjectPointOntoLine(const Ray& ray, const Vec3& pnt);
 
+  /**
+   * Returns True if box is outside of the frustum
+   */
   TK_API bool FrustumTest(const Frustum& frustum, const BoundingBox& box);
   /**
    * Removes the entities that are outside of the camera.
@@ -123,7 +126,7 @@ namespace ToolKit
    */
   TK_API void FrustumCull(EntityRawPtrArray& entities, const CameraPtr& camera);
   TK_API void FrustumCull(RenderJobArray& jobs, const CameraPtr& camera);
-  TK_API void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, BoolArray& results);
+  TK_API void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, UIntArray& resultIndices);
 
   // Conversions and Interpolation
   //////////////////////////////////////////

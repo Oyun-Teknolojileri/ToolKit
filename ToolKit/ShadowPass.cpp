@@ -127,18 +127,14 @@ namespace ToolKit
       MaterialPtr shadowMaterial = light->GetShadowMaterial();
       renderer->SetCamera(light->m_shadowCamera, false);
 
-      BoolArray culled;
-      RenderJobProcessor::CullRenderJobs(jobs, light->m_shadowCamera, culled);
+      UIntArray nonCulled;
+      RenderJobProcessor::CullRenderJobs(jobs, light->m_shadowCamera, nonCulled);
 
       // We may draw view culled objects. Because they are visible from shadow camera.
       renderer->m_ignoreRenderingCulledObjectWarning = true;
-      for (int i = 0; i < jobs.size(); i++)
+      for (int i = 0; i < nonCulled.size(); i++)
       {
-        RenderJob& job = jobs[i];
-        if (culled[i])
-        {
-          continue;
-        }
+        RenderJob& job = jobs[nonCulled[i]];
 
         renderer->m_overrideMat = shadowMaterial;
         Material* material      = job.Material;

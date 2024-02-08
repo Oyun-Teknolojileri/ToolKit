@@ -524,9 +524,9 @@ namespace ToolKit
     FrustumCull(jobArray, camera);
   }
 
-  void RenderJobProcessor::CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, BoolArray& results)
+  void RenderJobProcessor::CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, UIntArray& resultIndices)
   {
-    FrustumCull(jobArray, camera, results);
+    FrustumCull(jobArray, camera, resultIndices);
   }
 
   void RenderJobProcessor::StableSortByMeshThanMaterail(RenderData& renderData)
