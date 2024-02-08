@@ -1523,12 +1523,4 @@ namespace ToolKit
     return newCubeMap;
   }
 
-  void Renderer::ResetTextureSlots()
-  {
-    for (int i = 0; i < 17; i++)
-    {
-      SetTexture(i, 0);
-    }
-  }
-
 } // namespace ToolKit

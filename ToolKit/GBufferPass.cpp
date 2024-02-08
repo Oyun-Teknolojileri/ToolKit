@@ -161,7 +161,6 @@ namespace ToolKit
     Pass::PreRender();
 
     Renderer* renderer = GetRenderer();
-    renderer->ResetTextureSlots();
 
     renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
     renderer->SetCamera(m_params.Camera, true);
