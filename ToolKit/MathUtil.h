@@ -127,6 +127,7 @@ namespace ToolKit
   TK_API void FrustumCull(EntityRawPtrArray& entities, const CameraPtr& camera);
   TK_API void FrustumCull(RenderJobArray& jobs, const CameraPtr& camera);
   TK_API void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, UIntArray& resultIndices);
+  TK_API void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, RenderJobArray& unCulledJobs);
 
   // Conversions and Interpolation
   //////////////////////////////////////////

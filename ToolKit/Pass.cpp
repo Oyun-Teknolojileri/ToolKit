@@ -163,7 +163,7 @@ namespace ToolKit
 
                     for (int subMeshIndx = 0; subMeshIndx < (int) allMeshes.size(); subMeshIndx++)
                     {
-                      Mesh* mesh = allMeshes[subMeshIndx];
+                      Mesh* mesh           = allMeshes[subMeshIndx];
                       MaterialPtr material = nullptr;
 
                       // Pick the material for submesh.
@@ -524,9 +524,18 @@ namespace ToolKit
     FrustumCull(jobArray, camera);
   }
 
-  void RenderJobProcessor::CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, UIntArray& resultIndices)
+  void RenderJobProcessor::CullRenderJobs(const RenderJobArray& jobArray,
+                                          const CameraPtr& camera,
+                                          UIntArray& resultIndices)
   {
     FrustumCull(jobArray, camera, resultIndices);
+  }
+
+  void RenderJobProcessor::CullRenderJobs(const RenderJobArray& jobArray,
+                                          const CameraPtr& camera,
+                                          RenderJobArray& unCulledJobs)
+  {
+    FrustumCull(jobArray, camera, unCulledJobs);
   }
 
   void RenderJobProcessor::StableSortByMeshThanMaterail(RenderData& renderData)

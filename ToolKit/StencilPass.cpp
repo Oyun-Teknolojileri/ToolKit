@@ -52,7 +52,14 @@ namespace ToolKit
     renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
     renderer->ColorMask(false, false, false, false);
 
-    renderer->Render(m_params.RenderJobs);
+    for (uint i = 0; i < m_params.RenderJobs.size(); ++i)
+    {
+      const RenderJob& job = m_params.RenderJobs[i];
+      if (!job.frustumCulled)
+      {
+        renderer->Render(job);
+      }
+    }
 
     // Copy pass.
     renderer->ColorMask(true, true, true, true);

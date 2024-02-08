@@ -386,7 +386,9 @@ namespace ToolKit
       EntityPtrArray selecteds = m_selecteds; // Copy
 
       Viewport* viewport       = m_params.Viewport;
-      auto RenderFn            = [this, viewport, renderer](const EntityPtrArray& selection, const Vec4& color) -> void
+      CameraPtr viewportCamera = viewport->GetCamera();
+      auto RenderFn            = [this, viewport, renderer, &viewportCamera](const EntityPtrArray& selection,
+                                                                  const Vec4& color) -> void
       {
         if (selection.empty())
         {
@@ -394,6 +396,7 @@ namespace ToolKit
         }
 
         RenderJobArray renderJobs;
+        RenderJobArray billboardJobs;
         for (EntityPtr entity : selection)
         {
           // Disable light gizmos
@@ -407,21 +410,22 @@ namespace ToolKit
 
           if (billboard)
           {
-            static_cast<Billboard*>(billboard.get())->LookAt(viewport->GetCamera(), viewport->GetBillboardScale());
+            static_cast<Billboard*>(billboard.get())->LookAt(viewportCamera, viewport->GetBillboardScale());
 
-            RenderJobArray jobs;
-            RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
-            renderJobs.insert(renderJobs.end(), jobs.begin(), jobs.end());
+            RenderJobProcessor::CreateRenderJobs({billboard}, billboardJobs);
           }
         }
 
         RenderJobProcessor::CreateRenderJobs(selection, renderJobs, true);
+        renderJobs.insert(renderJobs.end(), billboardJobs.begin(), billboardJobs.end());
+
+        RenderJobProcessor::CullRenderJobs(renderJobs, viewportCamera, m_unCulledRenderJobs);
 
         // Set parameters of pass
-        m_outlinePass->m_params.Camera       = viewport->GetCamera();
+        m_outlinePass->m_params.Camera       = viewportCamera;
         m_outlinePass->m_params.FrameBuffer  = viewport->m_framebuffer;
         m_outlinePass->m_params.OutlineColor = color;
-        m_outlinePass->m_params.RenderJobs   = renderJobs;
+        m_outlinePass->m_params.RenderJobs   = m_unCulledRenderJobs;
 
         m_passArray.clear();
         m_passArray.push_back(m_outlinePass);

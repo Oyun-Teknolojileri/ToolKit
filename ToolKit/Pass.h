@@ -154,6 +154,8 @@ namespace ToolKit
      */
     static void CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, UIntArray& resultIndices);
 
+    static void CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, RenderJobArray& unCulledJobs);
+
     static void StableSortByMeshThanMaterail(RenderData& renderData);
 
     static void AssignEnvironment(RenderJobItr begin,

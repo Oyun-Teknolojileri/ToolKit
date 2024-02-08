@@ -793,6 +793,7 @@ namespace ToolKit
     Mat4 v          = camera->GetViewMatrix();
     Frustum frustum = ExtractFrustum(pr * v, false);
 
+    resultIndices.clear();
     resultIndices.reserve(jobs.size());
 
     for (int i = 0; i < (int) jobs.size(); i++)
@@ -800,6 +801,27 @@ namespace ToolKit
       if (!FrustumTest(frustum, jobs[i].BoundingBox))
       {
         resultIndices.push_back(i);
+      }
+    }
+  }
+
+  void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, RenderJobArray& unCulledJobs)
+  {
+    CPU_FUNC_RANGE();
+
+    // Frustum cull
+    Mat4 pr         = camera->GetProjectionMatrix();
+    Mat4 v          = camera->GetViewMatrix();
+    Frustum frustum = ExtractFrustum(pr * v, false);
+
+    unCulledJobs.clear();
+    unCulledJobs.reserve(jobs.size());
+
+    for (int i = 0; i < (int) jobs.size(); i++)
+    {
+      if (!FrustumTest(frustum, jobs[i].BoundingBox))
+      {
+        unCulledJobs.push_back(jobs[i]);
       }
     }
   }
