@@ -45,6 +45,8 @@ namespace ToolKit
     PUSH_GPU_MARKER("StencilRenderPass::Render");
     PUSH_CPU_MARKER("StencilRenderPass::Render");
 
+    assert(m_params.RenderJobs != nullptr && "Stencil Render Pass Render Jobs Are Not Given!");
+
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = m_solidOverrideMaterial;
 
@@ -52,7 +54,7 @@ namespace ToolKit
     renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
     renderer->ColorMask(false, false, false, false);
 
-    renderer->Render(m_params.RenderJobs);
+    renderer->Render(*m_params.RenderJobs);
 
     // Copy pass.
     renderer->ColorMask(true, true, true, true);

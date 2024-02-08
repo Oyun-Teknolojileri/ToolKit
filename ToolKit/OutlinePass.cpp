@@ -37,6 +37,8 @@ namespace ToolKit
 
   void OutlinePass::Render()
   {
+    assert(m_params.RenderJobs != nullptr && "Outline Pass Render Jobs Are Not Given!");
+
     PUSH_GPU_MARKER("OutlinePass::Render");
     PUSH_CPU_MARKER("OutlinePass::Render");
 

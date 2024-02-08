@@ -127,6 +127,9 @@ namespace ToolKit
 
       RenderData m_renderData;
       RenderData m_uiRenderData;
+
+      // Internal render job array for rendering selected entities
+      RenderJobArray m_unCulledRenderJobs;
     };
 
     typedef std::shared_ptr<EditorRenderer> EditorRendererPtr;

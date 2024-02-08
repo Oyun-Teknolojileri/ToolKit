@@ -69,6 +69,8 @@ namespace ToolKit
     Quaternion m_cubeMapRotations[6];
     Vec3 m_cubeMapScales[6];
 
+    UIntArray m_unCulledRenderJobIndices;
+
     BinPack2D m_packer;
   };
 

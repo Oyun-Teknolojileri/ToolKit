@@ -103,8 +103,6 @@ namespace ToolKit
 
     int GetMaxArrayTextureLayers();
 
-    void ResetTextureSlots();
-
    private:
     void BindProgram(const GpuProgramPtr& program);
     void FeedUniforms(const GpuProgramPtr& program, const RenderJob& job);
