@@ -66,7 +66,19 @@ namespace ToolKit
     return nullptr;
   }
 
-  bool Entity::IsDrawable() const { return GetComponent<MeshComponent>() != nullptr; }
+  bool Entity::IsDrawable() const
+  {
+    if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
+    {
+      meshComp->Init(false);
+      if (const MeshPtr& mesh = meshComp->GetMeshVal())
+      {
+        return mesh->TotalVertexCount() > 0;
+      }
+    }
+
+    return false;
+  }
 
   void Entity::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
   {
@@ -84,26 +96,30 @@ namespace ToolKit
     anim->GetPose(m_node, time);
   }
 
-  BoundingBox Entity::GetAABB(bool inWorld) const
+  BoundingBox Entity::GetBoundingBox(bool inWorld) const
   {
     BoundingBox aabb;
-
-    AABBOverrideComponentPtr overrideComp = GetComponent<AABBOverrideComponent>();
+    AABBOverrideComponent* overrideComp = GetComponentFast<AABBOverrideComponent>();
     if (overrideComp)
     {
-      aabb = overrideComp->GetAABB();
+      aabb = overrideComp->GetBoundingBox();
     }
     else
     {
-      if (MeshComponentPtr meshComp = GetComponent<MeshComponent>())
+      if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
       {
-        aabb = meshComp->GetAABB();
+        aabb = meshComp->GetBoundingBox();
       }
     }
 
-    if (inWorld)
+    if (!aabb.IsValid())
     {
-      TransformAABB(aabb, m_node->GetTransform(TransformationSpace::TS_WORLD));
+      // In case of an uninitialized bounding box, provide a very small box.
+      aabb = BoundingBox(Vec3(-TK_FLT_MIN), Vec3(TK_FLT_MIN));
+    }
+    else if (inWorld)
+    {
+      TransformAABB(aabb, m_node->GetTransform());
     }
 
     return aabb;
@@ -128,7 +144,8 @@ namespace ToolKit
     other->ClearComponents();
     for (int i = 0; i < (int) m_components.size(); i++)
     {
-      other->m_components[i] = m_components[i]->Copy(other->Self<Entity>());
+      ComponentPtr copy = m_components[i]->Copy(other->Self<Entity>());
+      other->m_components.push_back(copy);
     }
 
     return other;

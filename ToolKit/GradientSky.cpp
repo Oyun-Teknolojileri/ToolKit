@@ -37,7 +37,6 @@ namespace ToolKit
 
     // Skybox material
     ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("skyboxVert.shader", true));
-
     ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("gradientSkyboxFrag.shader", true));
 
     ConstructSkyMaterial(vert, frag);

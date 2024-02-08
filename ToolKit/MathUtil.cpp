@@ -221,13 +221,18 @@ namespace ToolKit
     // Normalize the plane equations, if requested
     if (normalize)
     {
-      for (int i = 0; i < 6; i++)
-      {
-        NormalizePlaneEquation(frus.planes[i]);
-      }
+      NormalizeFrustum(frus);
     }
 
     return frus;
+  }
+
+  void NormalizeFrustum(Frustum& frustum)
+  {
+    for (int i = 0; i < 6; i++)
+    {
+      NormalizePlaneEquation(frustum.planes[i]);
+    }
   }
 
   float SquareDistancePointToAABB(const Vec3& p, const BoundingBox& b)
@@ -637,6 +642,11 @@ namespace ToolKit
     return true;
   }
 
+  bool FrustumSphereIntersection(const Frustum& frustum, const BoundingSphere& sphere)
+  {
+    return FrustumSphereIntersection(frustum, sphere.pos, sphere.radius);
+  }
+
   bool ConePointIntersection(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, Vec3 point)
   {
     // move cone to backwards
@@ -747,18 +757,18 @@ namespace ToolKit
     return res == IntersectResult::Outside;
   }
 
-  void FrustumCull(EntityRawPtrArray& entities, CameraPtr camera)
+  void FrustumCull(EntityRawPtrArray& entities, const CameraPtr& camera)
   {
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();
     Mat4 v          = camera->GetViewMatrix();
     Frustum frustum = ExtractFrustum(pr * v, false);
 
-    auto delFn      = [frustum](Entity* ntt) -> bool { return FrustumTest(frustum, ntt->GetAABB(true)); };
+    auto delFn      = [frustum](Entity* ntt) -> bool { return FrustumTest(frustum, ntt->GetBoundingBox(true)); };
     erase_if(entities, delFn);
   }
 
-  void FrustumCull(RenderJobArray& jobs, CameraPtr camera)
+  void FrustumCull(RenderJobArray& jobs, const CameraPtr& camera)
   {
     CPU_FUNC_RANGE();
 
@@ -767,8 +777,28 @@ namespace ToolKit
     Mat4 v          = camera->GetViewMatrix();
     Frustum frustum = ExtractFrustum(pr * v, false);
 
-    auto delFn      = [frustum](RenderJob& job) -> bool { return FrustumTest(frustum, job.BoundingBox); };
-    erase_if(jobs, delFn);
+    for (int i = 0; i < (int) jobs.size(); i++)
+    {
+      RenderJob& job    = jobs[i];
+      job.frustumCulled = FrustumTest(frustum, job.BoundingBox);
+    }
+  }
+
+  void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, BoolArray& results)
+  {
+    CPU_FUNC_RANGE();
+
+    // Frustum cull
+    Mat4 pr         = camera->GetProjectionMatrix();
+    Mat4 v          = camera->GetViewMatrix();
+    Frustum frustum = ExtractFrustum(pr * v, false);
+
+    results.resize(jobs.size());
+
+    for (int i = 0; i < (int) jobs.size(); i++)
+    {
+      results[i] = FrustumTest(frustum, jobs[i].BoundingBox);
+    }
   }
 
   void TransformAABB(BoundingBox& box, const Mat4& transform)

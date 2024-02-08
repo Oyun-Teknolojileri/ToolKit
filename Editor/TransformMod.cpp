@@ -637,7 +637,7 @@ namespace ToolKit
       scaleAxes[(int) AxisLabel::ZX]   = ZX_AXIS;
       scaleAxes[(int) AxisLabel::XYZ]  = Vec3(1.0f);
 
-      BoundingBox bb                   = ntt->GetAABB();
+      BoundingBox bb                   = ntt->GetBoundingBox();
       Vec3 aabbSize                    = bb.max - bb.min;
 
       int axisIndex                    = int(m_gizmo->GetGrabbedAxis());

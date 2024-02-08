@@ -33,8 +33,21 @@ namespace ToolKit
 
     /**
      * Returns  0 to 3 number that helps to sort lights by type. DirectionalLight: 0, PointLight: 1, SpotLight: 3.
+     * Required for fast iterations. IsA still valid option to use but slower if it will be called 10k or more times.
      */
-    int ComparableType();
+    enum LightType
+    {
+      Directional,
+      Point,
+      Spot
+    };
+
+    virtual LightType GetLightType() = 0;
+
+    /**
+     * Returns the bounding box of VolumeMesh of the light if its not null, otherwise calls Super::GetBoundingBox().
+     */
+    BoundingBox GetBoundingBox(bool inWorld = false) const override;
 
    protected:
     void UpdateShadowCameraTransform();
@@ -77,7 +90,9 @@ namespace ToolKit
     virtual ~DirectionalLight();
 
     void NativeConstruct() override;
-    void UpdateShadowFrustum(const RenderJobArray& jobs, const CameraPtr cameraView, const BoundingBox& shadowVolume);
+    void UpdateShadowFrustum(RenderJobArray& jobs, const CameraPtr cameraView, const BoundingBox& shadowVolume);
+
+    LightType GetLightType() override { return LightType::Directional; }
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
@@ -104,6 +119,10 @@ namespace ToolKit
 
     PointLight();
     virtual ~PointLight();
+
+    LightType GetLightType() override { return LightType::Point; }
+
+    BoundingBox GetBoundingBox(bool inWorld = false) const override;
 
     void UpdateShadowCamera() override;
     float AffectDistance() override;
@@ -132,10 +151,13 @@ namespace ToolKit
     SpotLight();
     virtual ~SpotLight();
 
+    void NativeConstruct() override;
+
+    LightType GetLightType() override { return LightType::Spot; }
+
     void UpdateShadowCamera() override;
     float AffectDistance() override;
     void InitShadowMapDepthMaterial() override;
-    void NativeConstruct() override;
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
@@ -148,6 +170,13 @@ namespace ToolKit
     TKDeclareParam(float, InnerAngle);
 
     Frustum m_frustumCache; //!< Spot frustum, updated after call to UpdateShadowCamera().
+
+    /**
+     * Stores world space bounding box that encapsulates the spot frustum.
+     * Used to cull against camera frustum.  Frustum vs Frustum would yield more prices results thus more
+     * culled lights.
+     */
+    BoundingBox m_boundingBoxCache;
   };
 
   typedef std::shared_ptr<SpotLight> SpotLightPtr;

@@ -33,10 +33,10 @@ namespace ToolKit
     ComponentPtr Copy(EntityPtr ntt) override;
 
     void Init(bool flushClientSideArray);
-    BoundingBox GetAABB();
+    BoundingBox GetBoundingBox();
 
     // AABB should be in entity space (not world space)
-    void SetAABB(BoundingBox aabb);
+    void SetBoundingBox(BoundingBox aabb);
 
    protected:
     void ParameterConstructor() override;

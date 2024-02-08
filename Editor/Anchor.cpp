@@ -101,7 +101,7 @@ namespace ToolKit
       Vec3 pos;
       float w = 0, h = 0;
       {
-        const BoundingBox bb = canvasPanel->GetAABB(true);
+        const BoundingBox bb = canvasPanel->GetBoundingBox(true);
         w                    = bb.GetWidth();
         h                    = bb.GetHeight();
         pos                  = Vec3(bb.min.x, bb.max.y, pos.z);
@@ -379,7 +379,7 @@ namespace ToolKit
       rayInObj.direction = Vec4(ray.direction, 0.0f);
 
       m_mesh->CalculateAABB();
-      return RayBoxIntersection(rayInObj, m_mesh->m_aabb, t);
+      return RayBoxIntersection(rayInObj, m_mesh->m_boundingBox, t);
     }
 
     Mat4 AnchorHandle::GetTransform() const

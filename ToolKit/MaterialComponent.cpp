@@ -133,10 +133,10 @@ namespace ToolKit
     if (EntityPtr owner = OwnerEntity())
     {
       meshComp = owner->GetComponent<MeshComponent>();
-      if (meshComp == nullptr || meshComp->GetMeshVal() == nullptr)
+      if (meshComp != nullptr && meshComp->GetMeshVal() != nullptr)
       {
         MeshRawPtrArray meshCollector;
-        meshComp->GetMeshVal()->GetAllMeshes(meshCollector);
+        meshComp->GetMeshVal()->GetAllMeshes(meshCollector, true);
 
         for (uint i = 0; i < meshCollector.size(); i++)
         {

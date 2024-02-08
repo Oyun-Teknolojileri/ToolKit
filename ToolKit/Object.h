@@ -141,9 +141,9 @@ namespace ToolKit
       return nullptr;
     }
 
-    bool IsSame(ObjectPtr other) { return other->GetIdVal() == GetIdVal(); }
+    bool IsSame(const ObjectPtr& other) { return other->GetIdVal() == GetIdVal(); }
 
-    bool IsSame(Object* other) { return other->GetIdVal() == GetIdVal(); }
+    bool IsSame(const Object* other) { return other->GetIdVal() == GetIdVal(); }
 
     template <typename T>
     std::shared_ptr<T> Self() const

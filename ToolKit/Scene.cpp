@@ -76,6 +76,7 @@ namespace ToolKit
       return;
     }
 
+    m_boundingBox                = BoundingBox();
     const EntityPtrArray& ntties = GetEntities();
     for (EntityPtr ntt : ntties)
     {
@@ -103,7 +104,7 @@ namespace ToolKit
           {
             AABBOverrideComponentPtr aabbOverride = MakeNewPtr<AABBOverrideComponent>();
             ntt->AddComponent(aabbOverride);
-            aabbOverride->SetAABB(ntt->GetAABB());
+            aabbOverride->SetBoundingBox(ntt->GetBoundingBox());
           }
         }
 
@@ -113,6 +114,9 @@ namespace ToolKit
           envCom->Init(true);
         }
       }
+
+      BoundingBox worldBox = ntt->GetBoundingBox(true);
+      m_boundingBox.UpdateBoundary(worldBox);
     }
 
     m_initiated = true;
@@ -120,7 +124,50 @@ namespace ToolKit
 
   void Scene::UnInit() { Destroy(false); }
 
-  void Scene::Update(float deltaTime) {}
+  void Scene::Update(float deltaTime)
+  {
+    // Update caches.
+    m_lightCache.clear();
+    m_cameraCache.clear();
+    m_environmentVolumeCache.clear();
+    m_skyCache    = nullptr;
+    m_boundingBox = BoundingBox();
+
+    for (int i = 0; i < m_entities.size(); i++)
+    {
+      EntityPtr& ntt        = m_entities[i];
+
+      // update bounding box.
+      const BoundingBox& bb = ntt->GetBoundingBox(true);
+      if (bb.IsValid())
+      {
+        m_boundingBox.UpdateBoundary(bb);
+      }
+
+      if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
+      {
+        if (envComp->GetHdriVal() != nullptr && envComp->GetIlluminateVal())
+        {
+          envComp->Init(true);
+          m_environmentVolumeCache.push_back(envComp);
+        }
+      }
+
+      if (const LightPtr& light = SafeCast<Light>(ntt))
+      {
+        light->UpdateShadowCamera();
+        m_lightCache.push_back(light);
+      }
+      else if (const CameraPtr& cam = SafeCast<Camera>(ntt))
+      {
+        m_cameraCache.push_back(cam);
+      }
+      else if (const SkyBasePtr& sky = SafeCast<SkyBase>(ntt))
+      {
+        m_skyCache = sky;
+      }
+    }
+  }
 
   void Scene::Merge(ScenePtr other)
   {
@@ -163,7 +210,7 @@ namespace ToolKit
         rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);
 
         float dist                 = 0;
-        if (RayBoxIntersection(rayInObjectSpace, ntt->GetAABB(), dist))
+        if (RayBoxIntersection(rayInObjectSpace, ntt->GetBoundingBox(), dist))
         {
           bool hit         = false;
 
@@ -219,7 +266,7 @@ namespace ToolKit
           continue;
         }
 
-        BoundingBox bb      = ntt->GetAABB(true);
+        BoundingBox bb      = ntt->GetBoundingBox(true);
         IntersectResult res = FrustumBoxIntersection(frustum, bb);
         if (res != IntersectResult::Outside)
         {
@@ -328,19 +375,13 @@ namespace ToolKit
 
   const EntityPtrArray& Scene::GetEntities() const { return m_entities; }
 
-  LightPtrArray Scene::GetLights() const
-  {
-    LightPtrArray lights;
-    for (EntityPtr ntt : m_entities)
-    {
-      if (ntt->IsA<Light>())
-      {
-        lights.push_back(std::static_pointer_cast<Light>(ntt));
-      }
-    }
+  LightPtrArray& Scene::GetLights() const { return m_lightCache; }
 
-    return lights;
-  }
+  CameraPtrArray& Scene::GetCameras() const { return m_cameraCache; }
+
+  SkyBasePtr& Scene::GetSky() { return m_skyCache; }
+
+  EnvironmentComponentPtrArray& Scene::GetEnvironmentVolumes() const { return m_environmentVolumeCache; }
 
   EntityPtr Scene::GetFirstByName(const String& name)
   {
@@ -387,20 +428,6 @@ namespace ToolKit
     return filtered;
   }
 
-  // Returns the last sky added
-  SkyBasePtr Scene::GetSky()
-  {
-    for (int i = (int) m_entities.size() - 1; i >= 0; --i)
-    {
-      if (m_entities[i]->IsA<SkyBase>())
-      {
-        return std::static_pointer_cast<SkyBase>(m_entities[i]);
-      }
-    }
-
-    return nullptr;
-  }
-
   void Scene::LinkPrefab(const String& fullPath)
   {
     if (fullPath == GetFile())
@@ -425,23 +452,6 @@ namespace ToolKit
     prefab->Init(this);
     prefab->Link();
     AddEntity(prefab);
-  }
-
-  EnvironmentComponentPtrArray Scene::GetEnvironmentVolumes()
-  {
-    // Find entities which have environment component
-    EnvironmentComponentPtrArray environments;
-    for (EntityPtr ntt : m_entities)
-    {
-      EnvironmentComponentPtr envCom = ntt->GetComponent<EnvironmentComponent>();
-      if (envCom != nullptr && envCom->GetHdriVal() != nullptr && envCom->GetIlluminateVal())
-      {
-        envCom->Init(true);
-        environments.push_back(envCom);
-      }
-    }
-
-    return environments;
   }
 
   void Scene::Destroy(bool removeResources)

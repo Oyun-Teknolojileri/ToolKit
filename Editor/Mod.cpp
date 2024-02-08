@@ -314,14 +314,14 @@ namespace ToolKit
           {
             g_app->m_cursor->m_worldLocation = pd.pickPos;
 
-            if (g_app->m_dbgArrow == nullptr)
+            if (g_app->m_dbgArrow != nullptr)
             {
               m_ignoreList.push_back(g_app->m_dbgArrow->GetIdVal());
               currScene->AddEntity(g_app->m_dbgArrow);
-            }
 
-            g_app->m_dbgArrow->m_node->SetTranslation(ray.position);
-            g_app->m_dbgArrow->m_node->SetOrientation(RotationTo(X_AXIS, ray.direction));
+              g_app->m_dbgArrow->m_node->SetTranslation(pd.pickPos + (ray.position - pd.pickPos) * 0.1f);
+              g_app->m_dbgArrow->m_node->SetOrientation(RotationTo(X_AXIS, ray.direction));
+            }
           }
 
           return StateType::StateEndPick;
@@ -476,10 +476,10 @@ namespace ToolKit
               GetMouseRect(min, max);
 
               ImU32 col = ImColor(g_selectBoxWindowColor);
-              drawList->AddRectFilled(min, max, col, 5.0f);
+              drawList->AddRectFilled(min, max, col, 5.0f, ImDrawFlags_RoundCornersAll);
 
               col = ImColor(g_selectBoxBorderColor);
-              drawList->AddRect(min, max, col, 5.0f, 15, 2.0f);
+              drawList->AddRect(min, max, col, 5.0f, ImDrawFlags_RoundCornersAll);
             };
 
             vp->m_drawCommands.push_back(drawSelectionRectangleFn);

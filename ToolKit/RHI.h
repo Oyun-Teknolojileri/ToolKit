@@ -19,6 +19,7 @@ namespace ToolKit
     friend class Framebuffer;
     friend class RenderSystem;
     friend class Mesh;
+    friend class Main;
 
    public:
     /**
@@ -27,7 +28,6 @@ namespace ToolKit
      */
     static void SetTexture(GLenum target, GLuint textureID, GLenum textureSlot = 31);
     static void DeleteTextures(int textureCount, GLuint* textures);
-
     static void BindVertexArray(GLuint VAO);
 
    private:
@@ -36,10 +36,10 @@ namespace ToolKit
     static void InvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments);
 
    private:
+    static bool m_initialized;
     static GLuint m_currentReadFramebufferID;
     static GLuint m_currentDrawFramebufferID;
     static GLuint m_currentFramebufferID;
-    
     static GLuint m_currentVAO;
 
     /**

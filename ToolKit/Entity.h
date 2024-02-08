@@ -42,7 +42,7 @@ namespace ToolKit
     EntityPtr Parent() const;
     virtual bool IsDrawable() const;
     virtual void SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget = nullptr);
-    virtual BoundingBox GetAABB(bool inWorld = false) const;
+    virtual BoundingBox GetBoundingBox(bool inWorld = false) const;
     ObjectPtr Copy() const override;
     virtual void RemoveResources();
 
@@ -132,6 +132,23 @@ namespace ToolKit
         if (m_components[i]->IsA<T>())
         {
           return Cast<T>(m_components[i]);
+        }
+      }
+
+      return nullptr;
+    }
+
+    /**
+     * Faster version of the get component, if raw pointer is applicable.
+     */
+    template <typename T>
+    T* GetComponentFast() const
+    {
+      for (int i = 0; i < (int) m_components.size(); i++)
+      {
+        if (m_components[i]->IsA<T>())
+        {
+          return static_cast<T*>(m_components[i].get());
         }
       }
 

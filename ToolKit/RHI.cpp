@@ -13,8 +13,8 @@ namespace ToolKit
   GLuint RHI::m_currentReadFramebufferID = -1; // max unsigned integer
   GLuint RHI::m_currentDrawFramebufferID = -1; // max unsigned integer
   GLuint RHI::m_currentFramebufferID     = -1; // max unsigned integer
-
   GLuint RHI::m_currentVAO               = -1; // max unsigned integer
+  bool RHI::m_initialized                = false;
 
   std::unordered_map<uint, uint> RHI::m_slotTextureIDmap;
 
@@ -110,13 +110,16 @@ namespace ToolKit
 
   void RHI::DeleteTextures(int textureCount, GLuint* textures)
   {
-    for (int i = 0; i < 32; ++i)
+    if (m_initialized)
     {
-      for (int ii = 0; ii < textureCount; ++ii)
+      for (int i = 0; i < 32; ++i)
       {
-        if (m_slotTextureIDmap[i] == textures[ii])
+        for (int ii = 0; ii < textureCount; ++ii)
         {
-          m_slotTextureIDmap[i] = 0;
+          if (m_slotTextureIDmap[i] == textures[ii])
+          {
+            m_slotTextureIDmap[i] = 0;
+          }
         }
       }
     }

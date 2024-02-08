@@ -46,7 +46,7 @@ namespace ToolKit
      * States if the material will use deferred render path.
      * @returns True if the material will be rendered in deferred path.
      */
-    bool IsDeferred();
+    bool IsCustom();
 
     /**
      * States if the material has transparency.
@@ -95,12 +95,15 @@ namespace ToolKit
     void Init() override;
     bool CanStore(ClassMeta* Class) override;
     String GetDefaultResource(ClassMeta* Class) override;
-
+    MaterialPtr GetDefaultMaterial();
     MaterialPtr GetCopyOfUnlitMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfUIMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfUnlitColorMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfDefaultMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfPhongMaterial(bool storeInMaterialManager = true);
+
+   private:
+    MaterialPtr m_defaultMaterial = nullptr;
   };
 
 } // namespace ToolKit

@@ -51,10 +51,11 @@ namespace ToolKit
       renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::None);
     }
 
+    renderer->SetCamera(m_camera, true);
+
     RenderJobArray jobs;
-    EntityPtrArray oneQuad = {m_quad};
-    RenderJobProcessor::CreateRenderJobs(oneQuad, jobs);
-    renderer->Render(jobs, m_camera, {});
+    RenderJobProcessor::CreateRenderJobs({m_quad}, jobs);
+    renderer->Render(jobs);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -66,7 +67,7 @@ namespace ToolKit
     PUSH_CPU_MARKER("FullQuadPass::PreRender");
 
     Pass::PreRender();
-    Renderer* renderer      = GetRenderer();
+    Renderer* renderer = GetRenderer();
     renderer->EnableDepthTest(false);
 
     m_material->m_fragmentShader = m_params.FragmentShader;

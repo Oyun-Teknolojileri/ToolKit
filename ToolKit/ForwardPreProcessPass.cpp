@@ -82,27 +82,31 @@ namespace ToolKit
     PUSH_GPU_MARKER("ForwardPreProcess::Render");
     PUSH_CPU_MARKER("ForwardPreProcess::Render");
 
-    Renderer* renderer                      = GetRenderer();
+    Renderer* renderer = GetRenderer();
+    renderer->SetLights(m_params.Lights);
 
-    const auto renderLinearDepthAndNormalFn = [this, renderer](RenderJobArray& renderJobArray)
+    const auto renderLinearDepthAndNormalFn = [&](RenderJobItr begin, RenderJobItr end)
     {
-      for (RenderJob& job : renderJobArray)
+      for (RenderJobItr job = begin; job != end; job++)
       {
-        MaterialPtr activeMaterial = job.Material;
-        RenderState* renderstate   = activeMaterial->GetRenderState();
+        Material* activeMaterial = job->Material;
+        RenderState* renderstate = activeMaterial->GetRenderState();
         m_linearMaterial->SetRenderState(renderstate);
         m_linearMaterial->m_diffuseTexture = activeMaterial->m_diffuseTexture;
         m_linearMaterial->m_color          = activeMaterial->m_color;
 
         renderer->m_overrideMat            = m_linearMaterial;
-        renderer->Render(job, m_params.Cam, {});
+        renderer->Render(*job);
       }
     };
 
-    renderLinearDepthAndNormalFn(m_params.OpaqueJobs);
+    RenderJobItr begin = m_params.renderData->GetForwardOpaqueBegin();
+    RenderJobItr end   = m_params.renderData->GetForwardTranslucentBegin();
+
     // currently transparent objects are not rendered to export screen space normals or linear depth
     // we want SSAO and DOF to effect on opaque objects only
     // renderLinearDepthAndNormalFn(m_params.TranslucentJobs);
+    renderLinearDepthAndNormalFn(begin, end);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

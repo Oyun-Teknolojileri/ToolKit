@@ -61,7 +61,11 @@ namespace ToolKit
     }
 
     // Forward Pre Process Pass
-    m_passArray.push_back(m_forwardPreProcessPass);
+
+    if (m_params.Gfx.SSAOEnabled || m_params.Gfx.DepthOfFieldEnabled)
+    {
+      m_passArray.push_back(m_forwardPreProcessPass);
+    }
 
     // SSAO pass
     if (m_params.Gfx.SSAOEnabled)
@@ -120,38 +124,55 @@ namespace ToolKit
     // Update all lights before using them.
     m_updatedLights = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
 
-    for (LightPtr light : m_updatedLights)
-    {
-      light->UpdateShadowCamera();
-    }
+    // Cull lights out side of view. Not even their shadows are needed.
+    RenderJobProcessor::CullLights(m_updatedLights, m_params.Cam);
 
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
-    m_jobs.clear();
-    m_params.Scene->m_boundingBox       = RenderJobProcessor::CreateRenderJobs(allDrawList, m_jobs);
-    m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
+    RenderJobProcessor::CreateRenderJobs(allDrawList,
+                                         m_renderData.jobs,
+                                         m_updatedLights,
+                                         m_params.Cam,
+                                         m_params.Scene->GetEnvironmentVolumes());
 
-    m_shadowPass->m_params.RendeJobs    = m_jobs;
+    m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
+    m_shadowPass->m_params.renderData   = &m_renderData;
     m_shadowPass->m_params.Lights       = m_updatedLights;
     m_shadowPass->m_params.ViewCamera   = m_params.Cam;
 
-    RenderJobProcessor::CullRenderJobs(m_jobs, m_params.Cam);
+    // RenderJobProcessor::CullRenderJobs(m_renderData.jobs, m_params.Cam);
+    RenderJobProcessor::SeperateRenderData(m_renderData, true);
+    RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
 
-    RenderJobProcessor::AssignEnvironment(m_jobs, m_params.Scene->GetEnvironmentVolumes());
+    // TK_LOG("Culled");
+    // int i = 0;
+    // for (RenderJobItr beg = m_renderData.jobs.begin(); beg != m_renderData.GetForwardOpaqueBegin();
+    //      beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
 
-    RenderJobArray opaque, translucent;
-    RenderJobProcessor::SeperateOpaqueTranslucent(m_jobs, opaque, translucent);
+    // TK_LOG("Forward Opaque");
+    // for (RenderJobItr beg = m_renderData.GetForwardOpaqueBegin(); beg != m_renderData.GetForwardTranslucentBegin();
+    //      beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
 
-    // Set all shaders as forward shader
-    // Translucent has already forward shader
-    ShaderManager* shaderMan = GetShaderManager();
-    for (RenderJob& job : opaque)
-    {
-      if (job.Material->m_fragmentShader->GetFile() == shaderMan->PbrDefferedShaderFile())
-      {
-        job.Material->m_fragmentShader = shaderMan->GetPbrForwardShader();
-      }
-    }
+    // TK_LOG("Forward Translucent");
+    // for (RenderJobItr beg = m_renderData.GetForwardTranslucentBegin(); beg != m_renderData.jobs.end(); beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
+
+    // RenderJobProcessor::AssignEnvironment(m_renderData.GetForwardOpaqueBegin(),
+    //                                       m_renderData.jobs.end(),
+    //                                       m_params.Scene->GetEnvironmentVolumes());
+
+    // RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_updatedLights);
 
     // Set CubeMapPass for sky.
     m_drawSky         = false;
@@ -170,13 +191,12 @@ namespace ToolKit
       }
     }
 
-    m_forwardRenderPass->m_params.Lights          = m_updatedLights;
-    m_forwardRenderPass->m_params.Cam             = m_params.Cam;
-    m_forwardRenderPass->m_params.FrameBuffer     = m_params.MainFramebuffer;
-    m_forwardRenderPass->m_params.SSAOEnabled     = m_params.Gfx.SSAOEnabled;
-    m_forwardRenderPass->m_params.OpaqueJobs      = opaque;
-    m_forwardRenderPass->m_params.TranslucentJobs = translucent;
-    m_forwardRenderPass->m_params.SsaoTexture     = m_ssaoPass->m_ssaoTexture;
+    m_forwardRenderPass->m_params.renderData  = &m_renderData;
+    m_forwardRenderPass->m_params.Lights      = m_updatedLights;
+    m_forwardRenderPass->m_params.Cam         = m_params.Cam;
+    m_forwardRenderPass->m_params.FrameBuffer = m_params.MainFramebuffer;
+    m_forwardRenderPass->m_params.SSAOEnabled = m_params.Gfx.SSAOEnabled;
+    m_forwardRenderPass->m_params.SsaoTexture = m_ssaoPass->m_ssaoTexture;
 
     // If sky is being rendered, then clear the main framebuffer there. If sky pass is not rendered, clear the
     // framebuffer here

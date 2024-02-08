@@ -34,8 +34,8 @@ namespace ToolKit
     PUSH_GPU_MARKER("ForwardRenderPass::Render");
     PUSH_CPU_MARKER("ForwardRenderPass::Render");
 
-    RenderOpaque(m_params.OpaqueJobs, m_params.Cam, m_params.Lights);
-    RenderTranslucent(m_params.TranslucentJobs, m_params.Cam, m_params.Lights);
+    RenderOpaque(m_params.renderData);
+    RenderTranslucent(m_params.renderData);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -53,8 +53,9 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
 
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
-    renderer->SetCamera(m_params.Cam, true);
     renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
+    renderer->SetCamera(m_params.Cam, true);
+    renderer->SetLights(m_params.Lights);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -66,14 +67,14 @@ namespace ToolKit
     PUSH_CPU_MARKER("ForwardRenderPass::PostRender");
 
     Pass::PostRender();
-    Renderer* renderer           = GetRenderer();
+    Renderer* renderer = GetRenderer();
     renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
-  void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, CameraPtr cam, LightPtrArray& lights)
+  void ForwardRenderPass::RenderOpaque(RenderData* renderData)
   {
     PUSH_CPU_MARKER("ForwardRenderPass::RenderOpaque");
 
@@ -84,58 +85,51 @@ namespace ToolKit
       renderer->SetTexture(5, m_params.SsaoTexture->m_textureId);
     }
 
-    int dirLightEnd = RenderJobProcessor::PreSortLights(lights);
+    RenderJobItr begin = renderData->GetForwardOpaqueBegin();
+    RenderJobItr end   = renderData->GetForwardTranslucentBegin();
 
-    LightPtrArray activeLights;
-    activeLights.reserve(Renderer::RHIConstants::MaxLightsPerObject);
-
-    for (const RenderJob& job : jobs)
+    for (RenderJobItr job = begin; job != end; job++)
     {
-      int effectiveLights = RenderJobProcessor::SortLights(job, lights, dirLightEnd);
-      job.Material->m_fragmentShader->UpdateShaderUniform("aoEnabled", m_params.SSAOEnabled);
-
-      activeLights.insert(activeLights.begin(), lights.begin(), lights.begin() + effectiveLights);
-      renderer->Render(job, m_params.Cam, activeLights);
-      activeLights.clear();
+      job->Material->m_fragmentShader->UpdateShaderUniform("aoEnabled", m_params.SSAOEnabled);
+      renderer->Render(*job);
     }
 
     POP_CPU_MARKER();
   }
 
-  void ForwardRenderPass::RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, LightPtrArray& lights)
+  void ForwardRenderPass::RenderTranslucent(RenderData* renderData)
   {
     PUSH_CPU_MARKER("ForwardRenderPass::RenderTranslucent");
 
-    RenderJobProcessor::SortByDistanceToCamera(jobs, cam);
+    RenderJobItr begin = renderData->GetForwardTranslucentBegin();
+    RenderJobItr end   = renderData->jobs.end();
 
-    int dirLightEnd    = RenderJobProcessor::PreSortLights(lights);
+    RenderJobProcessor::SortByDistanceToCamera(begin, end, m_params.Cam);
 
     Renderer* renderer = GetRenderer();
-    auto renderFnc     = [cam, &lights, dirLightEnd, renderer](RenderJob& job)
+    auto renderFnc     = [&](RenderJob& job)
     {
-      RenderJobProcessor::SortLights(job, lights, dirLightEnd);
-
-      MaterialPtr mat = job.Material;
+      Material* mat = job.Material;
       if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
       {
         mat->GetRenderState()->cullMode = CullingType::Front;
-        renderer->Render(job, cam, lights);
+        renderer->Render(job);
 
         mat->GetRenderState()->cullMode = CullingType::Back;
-        renderer->Render(job, cam, lights);
+        renderer->Render(job);
 
         mat->GetRenderState()->cullMode = CullingType::TwoSided;
       }
       else
       {
-        renderer->Render(job, cam, lights);
+        renderer->Render(job);
       }
     };
 
     renderer->EnableDepthWrite(false);
-    for (RenderJob& job : jobs)
+    for (RenderJobArray::iterator job = begin; job != end; job++)
     {
-      renderFnc(job);
+      renderFnc(*job);
     }
     renderer->EnableDepthWrite(true);
 

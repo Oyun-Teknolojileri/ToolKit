@@ -34,26 +34,28 @@ namespace ToolKit
     {
       Scene::Load();
 
-      for (EntityPtr ntt : m_entities)
+      for (EntityPtr& ntt : m_entities)
       {
         // Create gizmos
         if (ntt->IsA<DirectionalLight>())
         {
-          static_cast<EditorDirectionalLight*>(ntt.get())->InitController();
+          ntt->As<EditorDirectionalLight>()->InitController();
         }
         else if (ntt->IsA<PointLight>())
         {
-          static_cast<EditorPointLight*>(ntt.get())->InitController();
+          ntt->As<EditorPointLight>()->InitController();
         }
         else if (ntt->IsA<SpotLight>())
         {
-          static_cast<EditorSpotLight*>(ntt.get())->InitController();
+          ntt->As<EditorSpotLight>()->InitController();
         }
       }
     }
 
     void EditorScene::Update(float deltaTime)
     {
+      Super::Update(deltaTime);
+
       // Update animations.
       GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
 
@@ -139,7 +141,7 @@ namespace ToolKit
       EntityPtr ntt = GetEntity(id);
 
       // If selected entity belongs to a prefab
-      //  select all children of the prefab entity too
+      // select all children of the prefab entity too
       if (PrefabPtr mainPrefab = Prefab::GetPrefabRoot(ntt))
       {
         auto addToSelectionFn = [this](Node* node)
@@ -154,14 +156,28 @@ namespace ToolKit
 
       if (g_app->m_selectEffectingLights && !ntt->IsA<Light>())
       {
-        LightPtrArray lights          = GetLights();
-        LightPtrArray effectingLights = RenderJobProcessor::SortLights(ntt, lights);
-
-        for (LightPtr light : effectingLights)
+        LightPtrArray lights = GetLights();
+        for (LightPtr& light : lights)
         {
-          if (!IsSelected(light->GetIdVal()))
+          light->UpdateShadowCamera();
+        }
+
+        RenderJobArray jobs;
+        RenderJobProcessor::CreateRenderJobs({ntt}, jobs);
+        if (!jobs.empty())
+        {
+          RenderJobProcessor::AssignLight(jobs.begin(), jobs.end(), lights);
+
+          RenderJob& job = jobs.front();
+          int size       = job.activeLightCount;
+
+          for (int i = 0; i < size; i++)
           {
-            AddToSelection(light->GetIdVal(), true);
+            LightPtr& light = lights[job.lights[i]];
+            if (!IsSelected(light->GetIdVal()))
+            {
+              AddToSelection(light->GetIdVal(), true);
+            }
           }
         }
       }

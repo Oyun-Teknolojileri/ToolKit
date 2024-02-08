@@ -240,10 +240,27 @@ namespace ToolKit
     return nullptr;
   }
 
+  /**
+   * Static cast, fast but does not validate convertibility at runtime.
+   */
   template <typename T>
   inline std::shared_ptr<T> Cast(ObjectPtr tkObj)
   {
     return std::static_pointer_cast<T>(tkObj);
+  }
+
+  /**
+   * Dynamic cast, slower but checks convertibility at runtime. If not convertible returns nullptr.
+   */
+  template <typename T>
+  inline std::shared_ptr<T> SafeCast(ObjectPtr tkObj)
+  {
+    if (tkObj->IsA<T>())
+    {
+      return std::static_pointer_cast<T>(tkObj);
+    }
+
+    return nullptr;
   }
 
 } // namespace ToolKit

@@ -119,7 +119,7 @@ namespace ToolKit
     Register<Drawable>();
     Register<Entity>();
     Register<EntityNode>();
-    Register<Light>();
+    //Register<Light>();
     Register<DirectionalLight>();
     Register<PointLight>();
     Register<SpotLight>();

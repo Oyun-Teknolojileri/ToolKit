@@ -85,7 +85,7 @@ namespace ToolKit
       MeshComponentPtr meshComp = overrideComp->OwnerEntity()->GetComponent<MeshComponent>();
       if (meshComp && ImGui::Button("Update from MeshComponent"))
       {
-        overrideComp->SetAABB(meshComp->GetAABB());
+        overrideComp->SetBoundingBox(meshComp->GetBoundingBox());
       }
       ImGui::EndDisabled();
     }

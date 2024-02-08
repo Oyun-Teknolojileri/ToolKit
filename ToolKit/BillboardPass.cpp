@@ -29,27 +29,22 @@ namespace ToolKit
     Viewport* vp       = m_params.Viewport;
 
     renderer->SetFramebuffer(vp->m_framebuffer, GraphicBitFields::None);
-    CameraPtr cam           = vp->GetCamera();
+    CameraPtr cam = vp->GetCamera();
+    renderer->SetCamera(cam, true);
 
     auto renderBillboardsFn = [this, cam, renderer](EntityPtrArray& billboards) -> void
     {
-      m_jobs.clear();
-      RenderJobProcessor::CreateRenderJobs(billboards, m_jobs);
+      m_renderData.jobs.clear();
+      RenderJobProcessor::CreateRenderJobs(billboards, m_renderData.jobs);
+      RenderJobProcessor::SeperateRenderData(m_renderData, true);
 
-      m_opaque.clear();
-      m_translucent.clear();
-      RenderJobProcessor::SeperateOpaqueTranslucent(m_jobs, m_opaque, m_translucent);
+      RenderJobItr begin = m_renderData.jobs.begin();
+      RenderJobItr end   = m_renderData.jobs.end();
 
-      auto renderArrayFn = [cam, renderer](RenderJobArray& jobs) -> void
+      for (RenderJobItr& job = begin; job != end; job++)
       {
-        for (RenderJob& rj : jobs)
-        {
-          renderer->Render(rj, cam);
-        }
-      };
-
-      renderArrayFn(m_opaque);
-      renderArrayFn(m_translucent);
+        renderer->Render(*job);
+      }
     };
 
     renderer->EnableDepthTest(false);

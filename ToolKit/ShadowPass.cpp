@@ -63,11 +63,11 @@ namespace ToolKit
       light->InitShadowMapDepthMaterial();
       if (DirectionalLight* dLight = light->As<DirectionalLight>())
       {
-        dLight->UpdateShadowFrustum(m_params.RendeJobs, m_params.ViewCamera, m_params.shadowVolume);
+        dLight->UpdateShadowFrustum(m_params.renderData->jobs, m_params.ViewCamera, m_params.shadowVolume);
       }
       // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
 
-      RenderShadowMaps(light, m_params.RendeJobs);
+      RenderShadowMaps(light, m_params.renderData->jobs);
     }
 
     // The first set attachment did not call hw render pass while rendering shadow map
@@ -89,8 +89,8 @@ namespace ToolKit
 
     Pass::PreRender();
 
-    // Dropout non shadow casters.
-    erase_if(m_params.RendeJobs, [](RenderJob& job) -> bool { return !job.ShadowCaster; });
+    Renderer* renderer = GetRenderer();
+    renderer->SetLights(m_params.Lights);
 
     // Dropout non shadow casting lights.
     erase_if(m_params.Lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
@@ -114,42 +114,43 @@ namespace ToolKit
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
-  void ShadowPass::RenderShadowMaps(LightPtr light, const RenderJobArray& jobs)
+  void ShadowPass::RenderShadowMaps(LightPtr light, RenderJobArray& jobs)
   {
     CPU_FUNC_RANGE();
 
     Renderer* renderer        = GetRenderer();
 
-    auto renderForShadowMapFn = [this, &renderer](LightPtr light, const RenderJobArray& jobs) -> void
+    auto renderForShadowMapFn = [this, &renderer](LightPtr light, RenderJobArray& jobs) -> void
     {
       PUSH_CPU_MARKER("Render Call");
-
-      const Mat4& pr             = light->m_shadowCamera->GetProjectionMatrix();
-      const Mat4 v               = light->m_shadowCamera->GetViewMatrix();
-      const Frustum frustum      = ExtractFrustum(pr * v, false);
 
       MaterialPtr shadowMaterial = light->GetShadowMaterial();
       renderer->SetCamera(light->m_shadowCamera, false);
 
-      for (const RenderJob& job : jobs)
+      BoolArray culled;
+      RenderJobProcessor::CullRenderJobs(jobs, light->m_shadowCamera, culled);
+
+      // We may draw view culled objects. Because they are visible from shadow camera.
+      renderer->m_ignoreRenderingCulledObjectWarning = true;
+      for (int i = 0; i < jobs.size(); i++)
       {
-        // Frustum cull
-        if (FrustumTest(frustum, job.BoundingBox))
+        RenderJob& job = jobs[i];
+        if (culled[i])
         {
           continue;
         }
 
         renderer->m_overrideMat = shadowMaterial;
-        MaterialPtr material    = job.Material;
+        Material* material      = job.Material;
         renderer->m_overrideMat->SetRenderState(material->GetRenderState());
         renderer->m_overrideMat->UnInit();
         renderer->m_overrideMat->SetAlpha(material->GetAlpha());
         renderer->m_overrideMat->m_diffuseTexture                = material->m_diffuseTexture;
         renderer->m_overrideMat->GetRenderState()->blendFunction = BlendFunction::NONE;
-        renderer->m_overrideMat->GetRenderState()->cullMode      = CullingType::TwoSided;
         renderer->m_overrideMat->Init();
-        renderer->Render(job, light->m_shadowCamera);
+        renderer->Render(job);
       }
+      renderer->m_ignoreRenderingCulledObjectWarning = false;
 
       POP_CPU_MARKER();
     };
