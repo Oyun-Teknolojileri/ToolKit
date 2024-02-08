@@ -15,7 +15,7 @@ namespace ToolKit
 
   struct OutlinePassParams
   {
-    RenderJobArray RenderJobs  = {};
+    RenderJobArray* RenderJobs = nullptr;
     FramebufferPtr FrameBuffer = nullptr;
     CameraPtr Camera           = nullptr;
     Vec4 OutlineColor          = Vec4(1.0f);

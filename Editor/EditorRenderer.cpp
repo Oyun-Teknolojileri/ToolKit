@@ -425,7 +425,7 @@ namespace ToolKit
         m_outlinePass->m_params.Camera       = viewportCamera;
         m_outlinePass->m_params.FrameBuffer  = viewport->m_framebuffer;
         m_outlinePass->m_params.OutlineColor = color;
-        m_outlinePass->m_params.RenderJobs   = m_unCulledRenderJobs;
+        m_outlinePass->m_params.RenderJobs   = &m_unCulledRenderJobs;
 
         m_passArray.clear();
         m_passArray.push_back(m_outlinePass);
