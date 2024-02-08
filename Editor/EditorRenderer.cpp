@@ -386,7 +386,10 @@ namespace ToolKit
       EntityPtrArray selecteds = m_selecteds; // Copy
 
       Viewport* viewport       = m_params.Viewport;
-      auto RenderFn            = [this, viewport, renderer](const EntityPtrArray& selection, const Vec4& color) -> void
+      CameraPtr viewportCam    = viewport->GetCamera();
+
+      auto RenderFn            = [this, viewport, renderer, &viewportCam](const EntityPtrArray& selection,
+                                                               const Vec4& color) -> void
       {
         if (selection.empty())
         {
@@ -394,6 +397,7 @@ namespace ToolKit
         }
 
         RenderJobArray renderJobs;
+        LightPtrArray nullLights;
         for (EntityPtr entity : selection)
         {
           // Disable light gizmos
@@ -407,18 +411,27 @@ namespace ToolKit
 
           if (billboard)
           {
-            static_cast<Billboard*>(billboard.get())->LookAt(viewport->GetCamera(), viewport->GetBillboardScale());
+            static_cast<Billboard*>(billboard.get())->LookAt(viewportCam, viewport->GetBillboardScale());
 
             RenderJobArray jobs;
-            RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
+            RenderJobProcessor::CreateRenderJobs({billboard},
+                                                 jobs,
+                                                 nullLights,
+                                                 nullptr,
+                                                 m_params.App->GetCurrentScene()->GetEnvironmentVolumes());
+
             renderJobs.insert(renderJobs.end(), jobs.begin(), jobs.end());
           }
         }
 
-        RenderJobProcessor::CreateRenderJobs(selection, renderJobs, true);
+        RenderJobProcessor::CreateRenderJobs(selection,
+                                             renderJobs,
+                                             nullLights,
+                                             viewportCam,
+                                             m_params.App->GetCurrentScene()->GetEnvironmentVolumes());
 
         // Set parameters of pass
-        m_outlinePass->m_params.Camera       = viewport->GetCamera();
+        m_outlinePass->m_params.Camera       = viewportCam;
         m_outlinePass->m_params.FrameBuffer  = viewport->m_framebuffer;
         m_outlinePass->m_params.OutlineColor = color;
         m_outlinePass->m_params.RenderJobs   = renderJobs;
