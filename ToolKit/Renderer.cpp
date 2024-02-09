@@ -239,8 +239,15 @@ namespace ToolKit
 
   void Renderer::Render(const RenderJobArray& jobs)
   {
+    MaterialPtr overrideMaterial = m_overrideMat;
+
     for (const RenderJob& job : jobs)
     {
+      if (overrideMaterial != nullptr)
+      {
+        m_overrideMat = overrideMaterial;
+      }
+
       Render(job);
     }
   }
