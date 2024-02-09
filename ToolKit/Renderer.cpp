@@ -753,6 +753,13 @@ namespace ToolKit
         glUniform1f(uniformLoc, m_camFar);
       }
 
+      uniformLoc = program->GetUniformLocation(Uniform::SHADOW_DISTANCE);
+      if (uniformLoc != -1)
+      {
+        EngineSettings& set = GetEngineSettings();
+        glUniform1f(uniformLoc, set.Graphics.ShadowDistance);
+      }
+
       m_gpuProgramHasCameraUpdates.insert(program->m_handle);
     }
 
@@ -798,10 +805,10 @@ namespace ToolKit
     {
       if (m_mat != nullptr)
       {
-        m_mat->m_updateGPUUniforms = false;
-        program->m_activeMaterialID  = m_mat->GetIdVal();
+        m_mat->m_updateGPUUniforms  = false;
+        program->m_activeMaterialID = m_mat->GetIdVal();
 
-        int uniformLoc             = program->GetUniformLocation(Uniform::COLOR);
+        int uniformLoc              = program->GetUniformLocation(Uniform::COLOR);
         if (uniformLoc != -1)
         {
           Vec4 color = Vec4(m_mat->m_color, m_mat->GetAlpha());
@@ -944,18 +951,6 @@ namespace ToolKit
         {
           Mat4 invTrModel = glm::transpose(glm::inverse(m_model));
           glUniformMatrix4fv(loc, 1, false, &invTrModel[0][0]);
-        }
-        break;
-        case Uniform::EXPOSURE:
-        {
-          float val = shader->m_shaderParams["Exposure"].GetVal<float>();
-          glUniform1f(loc, val);
-        }
-        break;
-        case Uniform::SHADOW_DISTANCE:
-        {
-          EngineSettings& set = GetEngineSettings();
-          glUniform1f(loc, set.Graphics.ShadowDistance);
         }
         break;
         case Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE:
