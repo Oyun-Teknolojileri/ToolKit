@@ -824,12 +824,6 @@ namespace ToolKit
           glUniform4fv(uniformLoc, 1, &color.x);
         }
 
-        uniformLoc = program->GetUniformLocation(Uniform::USE_IBL);
-        if (uniformLoc != -1)
-        {
-          glUniform1i(uniformLoc, (GLint) m_renderState.IBLInUse);
-        }
-
         uniformLoc = program->GetUniformLocation(Uniform::IBL_INTENSITY);
         if (uniformLoc != -1)
         {
@@ -987,6 +981,7 @@ namespace ToolKit
             SetTexture(15, m_renderState.preFilteredSpecularMap);
             SetTexture(16, m_renderState.brdfLut);
           }
+          glUniform1i(loc, (GLint) m_renderState.IBLInUse);
         }
         break;
         case Uniform::IBL_ROTATION:
