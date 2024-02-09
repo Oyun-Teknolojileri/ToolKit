@@ -239,8 +239,15 @@ namespace ToolKit
 
   void Renderer::Render(const RenderJobArray& jobs)
   {
+    MaterialPtr overrideMaterial = m_overrideMat;
+
     for (const RenderJob& job : jobs)
     {
+      if (overrideMaterial != nullptr)
+      {
+        m_overrideMat = overrideMaterial;
+      }
+
       Render(job);
     }
   }
@@ -746,6 +753,13 @@ namespace ToolKit
         glUniform1f(uniformLoc, m_camFar);
       }
 
+      uniformLoc = program->GetUniformLocation(Uniform::SHADOW_DISTANCE);
+      if (uniformLoc != -1)
+      {
+        EngineSettings& set = GetEngineSettings();
+        glUniform1f(uniformLoc, set.Graphics.ShadowDistance);
+      }
+
       m_gpuProgramHasCameraUpdates.insert(program->m_handle);
     }
 
@@ -791,10 +805,10 @@ namespace ToolKit
     {
       if (m_mat != nullptr)
       {
-        m_mat->m_updateGPUUniforms = false;
-        program->m_activeMaterialID  = m_mat->GetIdVal();
+        m_mat->m_updateGPUUniforms  = false;
+        program->m_activeMaterialID = m_mat->GetIdVal();
 
-        int uniformLoc             = program->GetUniformLocation(Uniform::COLOR);
+        int uniformLoc              = program->GetUniformLocation(Uniform::COLOR);
         if (uniformLoc != -1)
         {
           Vec4 color = Vec4(m_mat->m_color, m_mat->GetAlpha());
@@ -810,22 +824,10 @@ namespace ToolKit
           glUniform4fv(uniformLoc, 1, &color.x);
         }
 
-        uniformLoc = program->GetUniformLocation(Uniform::USE_IBL);
-        if (uniformLoc != -1)
-        {
-          glUniform1i(uniformLoc, (GLint) m_renderState.IBLInUse);
-        }
-
         uniformLoc = program->GetUniformLocation(Uniform::IBL_INTENSITY);
         if (uniformLoc != -1)
         {
           glUniform1f(uniformLoc, m_renderState.iblIntensity);
-        }
-
-        uniformLoc = program->GetUniformLocation(Uniform::IBL_ROTATION);
-        if (uniformLoc != -1)
-        {
-          glUniformMatrix4fv(uniformLoc, 1, false, &m_iblRotation[0][0]);
         }
 
         uniformLoc = program->GetUniformLocation(Uniform::IBL_MAX_REFLECTION_LOD);
@@ -933,22 +935,23 @@ namespace ToolKit
           glUniformMatrix4fv(loc, 1, false, &m_model[0][0]);
         }
         break;
+        case Uniform::MODEL_NO_TR:
+        {
+          Mat4 modelNoTr  = m_model;
+          modelNoTr[0][3] = 0.0f;
+          modelNoTr[1][3] = 0.0f;
+          modelNoTr[2][3] = 0.0f;
+          modelNoTr[3][3] = 1.0f;
+          modelNoTr[3][0] = 0.0f;
+          modelNoTr[3][1] = 0.0f;
+          modelNoTr[3][2] = 0.0f;
+          glUniformMatrix4fv(loc, 1, false, &modelNoTr[0][0]);
+        }
+        break;
         case Uniform::INV_TR_MODEL:
         {
           Mat4 invTrModel = glm::transpose(glm::inverse(m_model));
           glUniformMatrix4fv(loc, 1, false, &invTrModel[0][0]);
-        }
-        break;
-        case Uniform::EXPOSURE:
-        {
-          float val = shader->m_shaderParams["Exposure"].GetVal<float>();
-          glUniform1f(loc, val);
-        }
-        break;
-        case Uniform::SHADOW_DISTANCE:
-        {
-          EngineSettings& set = GetEngineSettings();
-          glUniform1f(loc, set.Graphics.ShadowDistance);
         }
         break;
         case Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE:
@@ -977,6 +980,15 @@ namespace ToolKit
             SetTexture(7, m_renderState.irradianceMap);
             SetTexture(15, m_renderState.preFilteredSpecularMap);
             SetTexture(16, m_renderState.brdfLut);
+          }
+          glUniform1i(loc, (GLint) m_renderState.IBLInUse);
+        }
+        break;
+        case Uniform::IBL_ROTATION:
+        {
+          if (m_renderState.IBLInUse)
+          {
+            glUniformMatrix4fv(loc, 1, false, &m_iblRotation[0][0]);
           }
         }
         break;

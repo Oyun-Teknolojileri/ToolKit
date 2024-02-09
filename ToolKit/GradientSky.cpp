@@ -80,6 +80,8 @@ namespace ToolKit
     return m_skyboxMaterial;
   }
 
+  bool GradientSky::ReadyToRender() { return m_skyboxMaterial != nullptr; }
+
   void GradientSky::ParameterConstructor()
   {
     Super::ParameterConstructor();
