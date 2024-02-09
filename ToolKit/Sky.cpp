@@ -99,6 +99,19 @@ namespace ToolKit
     };
   }
 
+  bool SkyBase::ReadyToRender()
+  {
+    if (EnvironmentComponentPtr envComp = GetComponent<EnvironmentComponent>())
+    {
+      if (HdriPtr hdri = envComp->GetHdriVal())
+      {
+        return hdri->m_initiated;
+      }
+    }
+
+    return false;
+  }
+
   void SkyBase::ParameterConstructor()
   {
     Super::ParameterConstructor();

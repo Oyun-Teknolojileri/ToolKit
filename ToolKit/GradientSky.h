@@ -24,6 +24,8 @@ namespace ToolKit
     void Init() override;
     MaterialPtr GetSkyboxMaterial() override;
 
+    bool ReadyToRender() override;
+
    protected:
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;

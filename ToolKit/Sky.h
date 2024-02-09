@@ -30,6 +30,8 @@ namespace ToolKit
     HdriPtr GetHdri();
     BoundingBox GetBoundingBox(bool inWorld = false) const override;
 
+    virtual bool ReadyToRender();
+
    protected:
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
