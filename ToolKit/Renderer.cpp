@@ -836,12 +836,6 @@ namespace ToolKit
           glUniform1f(uniformLoc, m_renderState.iblIntensity);
         }
 
-        uniformLoc = program->GetUniformLocation(Uniform::IBL_ROTATION);
-        if (uniformLoc != -1)
-        {
-          glUniformMatrix4fv(uniformLoc, 1, false, &m_iblRotation[0][0]);
-        }
-
         uniformLoc = program->GetUniformLocation(Uniform::IBL_MAX_REFLECTION_LOD);
         if (uniformLoc != -1)
         {
@@ -947,6 +941,19 @@ namespace ToolKit
           glUniformMatrix4fv(loc, 1, false, &m_model[0][0]);
         }
         break;
+        case Uniform::MODEL_NO_TR:
+        {
+          Mat4 modelNoTr  = m_model;
+          modelNoTr[0][3] = 0.0f;
+          modelNoTr[1][3] = 0.0f;
+          modelNoTr[2][3] = 0.0f;
+          modelNoTr[3][3] = 1.0f;
+          modelNoTr[3][0] = 0.0f;
+          modelNoTr[3][1] = 0.0f;
+          modelNoTr[3][2] = 0.0f;
+          glUniformMatrix4fv(loc, 1, false, &modelNoTr[0][0]);
+        }
+        break;
         case Uniform::INV_TR_MODEL:
         {
           Mat4 invTrModel = glm::transpose(glm::inverse(m_model));
@@ -979,6 +986,14 @@ namespace ToolKit
             SetTexture(7, m_renderState.irradianceMap);
             SetTexture(15, m_renderState.preFilteredSpecularMap);
             SetTexture(16, m_renderState.brdfLut);
+          }
+        }
+        break;
+        case Uniform::IBL_ROTATION:
+        {
+          if (m_renderState.IBLInUse)
+          {
+            glUniformMatrix4fv(loc, 1, false, &m_iblRotation[0][0]);
           }
         }
         break;
