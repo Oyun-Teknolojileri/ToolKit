@@ -45,11 +45,20 @@ namespace ToolKit
     {
       hdri = MakeNewPtr<Hdri>();
     }
-    else // Use default hdri image.
+    else
     {
-      TextureManager* tman = GetTextureManager();
-      hdri                 = tman->Create<Hdri>(tman->GetDefaultResource(Hdri::StaticClass()));
-      hdri->Init();
+      hdri = envComp->GetHdriVal();
+      if (hdri != nullptr)
+      {
+        hdri->Init();
+      }
+      else
+      {
+        // Use default hdri image.
+        TextureManager* tman = GetTextureManager();
+        hdri                 = tman->Create<Hdri>(tman->GetDefaultResource(Hdri::StaticClass()));
+        hdri->Init();
+      }
     }
 
     envComp->SetHdriVal(hdri);
