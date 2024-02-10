@@ -38,7 +38,7 @@ namespace ToolKit
       SkinMesh* skinMesh = (SkinMesh*) GetMeshVal().get();
       if (skelComp->isDirty)
       {
-        m_boundingBox            = skinMesh->CalculateAABB(skelComp->GetSkeletonResourceVal().get(), skelComp->m_map);
+        m_boundingBox     = skinMesh->CalculateAABB(skelComp->GetSkeletonResourceVal().get(), skelComp->m_map);
         skelComp->isDirty = false;
       }
       return m_boundingBox;
@@ -51,6 +51,11 @@ namespace ToolKit
   XmlNode* MeshComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* root = Super::SerializeImp(doc, parent);
+    if (root == nullptr)
+    {
+      return nullptr;
+    }
+
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
     return node;

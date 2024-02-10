@@ -25,6 +25,8 @@ namespace ToolKit
     EnvironmentComponent();
     virtual ~EnvironmentComponent();
 
+    using Component::NativeConstruct;
+
     ComponentPtr Copy(EntityPtr ntt) override;
     BoundingBox GetBBox();
 

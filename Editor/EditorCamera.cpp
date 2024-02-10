@@ -113,7 +113,7 @@ namespace ToolKit
       // Recreate frustum.
       if (GetComponent<MeshComponent>() == nullptr)
       {
-        MeshComponentPtr meshCom = AddComponent<MeshComponent>();
+        MeshComponentPtr meshCom = AddComponent<MeshComponent>(false);
         meshCom->SetCastShadowVal(false);
       }
 

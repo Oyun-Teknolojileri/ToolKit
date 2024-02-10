@@ -56,17 +56,17 @@ namespace ToolKit
     void SetTransformLock(bool vis, bool deep);
 
     template <typename T>
-    std::shared_ptr<T> AddComponent()
+    std::shared_ptr<T> AddComponent(bool componentSerializable = true)
     {
       assert(GetComponent(T::StaticClass()) == nullptr && "Component has already been added.");
 
-      std::shared_ptr<T> component = MakeNewPtr<T>();
+      std::shared_ptr<T> component = MakeNewPtr<T>(componentSerializable);
       component->OwnerEntity(Self<Entity>());
       m_components.push_back(component);
       return component;
     }
 
-    void AddComponent(const ComponentPtr& componet);
+    void AddComponent(const ComponentPtr& component);
 
     /**
      * Used to easily access first MeshComponentPtr.

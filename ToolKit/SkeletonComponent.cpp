@@ -62,6 +62,11 @@ namespace ToolKit
   XmlNode* SkeletonComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* root = Super::SerializeImp(doc, parent);
+    if (root == nullptr)
+    {
+      return nullptr;
+    }
+
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
     return node;

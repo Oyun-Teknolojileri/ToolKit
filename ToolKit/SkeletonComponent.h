@@ -48,6 +48,8 @@ namespace ToolKit
     SkeletonComponent();
     virtual ~SkeletonComponent();
 
+    using Component::NativeConstruct;
+
     void Init();
     ComponentPtr Copy(EntityPtr ntt) override;
 

@@ -43,7 +43,12 @@ namespace ToolKit
   XmlNode* MaterialComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* compNode = Super::SerializeImp(doc, parent);
-    XmlNode* matNode  = CreateXmlNode(doc, StaticClass()->Name, compNode);
+    if (compNode == nullptr)
+    {
+      return nullptr;
+    }
+
+    XmlNode* matNode = CreateXmlNode(doc, StaticClass()->Name, compNode);
 
     WriteAttr(matNode, doc, XmlMatCountAttrib, std::to_string(m_materialList.size()));
     for (size_t i = 0; i < m_materialList.size(); i++)
