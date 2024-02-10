@@ -25,8 +25,6 @@ namespace ToolKit
     AABBOverrideComponent();
     virtual ~AABBOverrideComponent();
 
-    using Component::NativeConstruct;
-
     /**
      * Creates a copy of the AABB Override Component.
      * @param ntt Parent Entity of the component.

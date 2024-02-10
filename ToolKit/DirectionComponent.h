@@ -24,8 +24,6 @@ namespace ToolKit
     DirectionComponent();
     virtual ~DirectionComponent();
 
-    using Component::NativeConstruct;
-
     ComponentPtr Copy(EntityPtr ntt) override;
 
     // Directional functions

@@ -25,8 +25,6 @@ namespace ToolKit
     MaterialComponent();
     virtual ~MaterialComponent();
 
-    using Component::NativeConstruct;
-
     /**
      * Creates a copy of the MaterialComponent.
      * @param ntt Parent Entity of the component.

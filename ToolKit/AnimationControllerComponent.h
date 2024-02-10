@@ -29,8 +29,6 @@ namespace ToolKit
     AnimControllerComponent();
     virtual ~AnimControllerComponent();
 
-    using Component::NativeConstruct;
-
     ComponentPtr Copy(EntityPtr ntt) override;
 
     void Play(const String& recordName);

@@ -33,8 +33,6 @@ namespace ToolKit
      */
     virtual ~MeshComponent();
 
-    using Component::NativeConstruct;
-
     /**
      * Creates a copy of the MeshComponent. Contained Mesh does not get
      * copied but referenced. However Material is copied and will be serialized

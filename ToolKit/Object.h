@@ -88,7 +88,7 @@ namespace ToolKit
   virtual ClassMeta* const Class() const;                                                                              \
   static ClassMeta* const StaticClass() { return &This##Cls; }
 
-#define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Object::NativeConstruct;
+#define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Base::NativeConstruct;
 
   /**
    * Defines macros for classes. This macro crates the functions and members for declared class.

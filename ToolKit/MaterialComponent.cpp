@@ -43,9 +43,9 @@ namespace ToolKit
   XmlNode* MaterialComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* compNode = Super::SerializeImp(doc, parent);
-    if (compNode == nullptr)
+    if (!m_serializableComponent)
     {
-      return nullptr;
+      return compNode;
     }
 
     XmlNode* matNode = CreateXmlNode(doc, StaticClass()->Name, compNode);
