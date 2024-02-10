@@ -27,7 +27,7 @@ namespace ToolKit
     {
       m_targetLight = light;
 
-      m_lightMesh   = MakeNewPtr<MeshComponent>();
+      m_lightMesh   = MakeNewPtr<MeshComponent>(false);
       m_lightMesh->SetCastShadowVal(false);
       m_lightMesh->ParamMesh().m_exposed       = false;
       m_lightMesh->ParamCastShadow().m_exposed = false;

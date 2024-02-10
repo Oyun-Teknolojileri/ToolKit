@@ -71,7 +71,6 @@ namespace ToolKit
   {
    public:
     TKDeclareClass(DepthTexture, Texture);
-    using Texture::NativeConstruct;
 
    public:
     void Load() override;
@@ -92,7 +91,6 @@ namespace ToolKit
   {
    public:
     TKDeclareClass(DataTexture, Texture);
-    using Texture::NativeConstruct;
 
    public:
     void Load() override;
@@ -107,7 +105,6 @@ namespace ToolKit
   {
    public:
     TKDeclareClass(CubeMap, Texture);
-    using Texture::NativeConstruct;
 
    public:
     CubeMap();
@@ -138,7 +135,6 @@ namespace ToolKit
   {
    public:
     TKDeclareClass(Hdri, Texture);
-    using Texture::NativeConstruct;
 
    public:
     Hdri();
@@ -169,7 +165,6 @@ namespace ToolKit
   {
    public:
     TKDeclareClass(RenderTarget, Texture);
-    using Texture::NativeConstruct;
 
    public:
     RenderTarget();
