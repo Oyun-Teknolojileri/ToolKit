@@ -590,7 +590,7 @@ namespace ToolKit
 #ifdef TK_DEBUG
       static const StringView buildConfig = "Debug";
 #else
-      static const StringView buildConfig = "Release";
+      static const StringView buildConfig = "RelWithDebInfo";
 #endif
       String cmd    = "cmake -S " + codePath + " -B " + buildDir;
       m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
