@@ -36,23 +36,32 @@ namespace ToolKit
     if (envComp == nullptr)
     {
       // Create a default environment component.
-      envComp      = AddComponent<EnvironmentComponent>();
-      HdriPtr hdri = nullptr;
+      envComp = AddComponent<EnvironmentComponent>();
+    }
 
-      // Provide an empty hdri to construct gradient sky.
-      if (IsA<GradientSky>())
+    HdriPtr hdri = nullptr;
+    // Provide an empty hdri to construct gradient sky.
+    if (IsA<GradientSky>())
+    {
+      hdri = MakeNewPtr<Hdri>();
+    }
+    else
+    {
+      hdri = envComp->GetHdriVal();
+      if (hdri != nullptr)
       {
-        hdri = MakeNewPtr<Hdri>();
+        hdri->Init();
       }
-      else // Use default hdri image.
+      else
       {
+        // Use default hdri image.
         TextureManager* tman = GetTextureManager();
         hdri                 = tman->Create<Hdri>(tman->GetDefaultResource(Hdri::StaticClass()));
         hdri->Init();
       }
+    }
 
-      envComp->SetHdriVal(hdri);
-    };
+    envComp->SetHdriVal(hdri);
 
     envComp->SetSizeVal(Vec3(TK_FLT_MAX));
     envComp->OwnerEntity(Self<Entity>());
@@ -97,6 +106,19 @@ namespace ToolKit
         {-0.5f, -0.5f, -0.5f},
         {0.5f,  0.5f,  0.5f }
     };
+  }
+
+  bool SkyBase::ReadyToRender()
+  {
+    if (EnvironmentComponentPtr envComp = GetComponent<EnvironmentComponent>())
+    {
+      if (HdriPtr hdri = envComp->GetHdriVal())
+      {
+        return hdri->m_initiated;
+      }
+    }
+
+    return false;
   }
 
   void SkyBase::ParameterConstructor()
@@ -209,7 +231,7 @@ namespace ToolKit
   {
     Init();
 
-    HdriPtr hdri                = GetHdri();
+    HdriPtr hdri = GetHdri();
     hdri->Init();
     m_skyboxMaterial->m_cubeMap = hdri->m_cubemap;
     return m_skyboxMaterial;

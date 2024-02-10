@@ -37,7 +37,8 @@
 			{
 				vec3 kS = fresnel;
 				vec3 kD = 1.0 - kS;
-				vec3 iblIrradiance = texture(s_texture7, normal).rgb;
+				vec3 iblSamplerVec = (IblRotation * vec4(normal, 1.0)).xyz;
+				vec3 iblIrradiance = texture(s_texture7, iblSamplerVec).rgb;
 				vec3 diffuse    = iblIrradiance * albedo;
 				irradiance    = kD * diffuse;
 			}
@@ -51,9 +52,10 @@
 			if (UseIbl == 1)
 			{
 				vec3 R = reflect(-fragToEye, normal);
+				vec3 iblSamplerVec = (IblRotation * vec4(R, 1.0)).xyz;
 				float normalDotFragToEye = max(dot(normal, fragToEye), 0.0);
 
-				vec3 preFilteredColor = textureLod(s_texture15, R, roughness * float(iblMaxReflectionLod)).rgb;
+				vec3 preFilteredColor = textureLod(s_texture15, iblSamplerVec, roughness * float(iblMaxReflectionLod)).rgb;
 				vec2 brdfFactor = texture(s_texture16, vec2(normalDotFragToEye, roughness)).rg;
 				specular = preFilteredColor * (fresnel * brdfFactor.x + brdfFactor.y);
 			}

@@ -158,6 +158,8 @@ namespace ToolKit
       return "blendKeyFrameIntepolationTime";
     case Uniform::BLEND_KEY_FRAME_COUNT:
       return "blendKeyFrameCount";
+    case Uniform::MODEL_NO_TR:
+      return "modelNoTr";
     case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";

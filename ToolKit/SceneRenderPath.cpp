@@ -238,12 +238,20 @@ namespace ToolKit
     m_drawSky                                   = false;
     if (m_sky = m_params.Scene->GetSky())
     {
+      m_sky->Init();
       if (m_drawSky = m_sky->GetDrawSkyVal())
       {
-        m_skyPass->m_params.FrameBuffer = m_params.MainFramebuffer;
-        m_skyPass->m_params.Cam         = m_params.Cam;
-        m_skyPass->m_params.Transform   = m_sky->m_node->GetTransform();
-        m_skyPass->m_params.Material    = m_sky->GetSkyboxMaterial();
+        if (m_sky->ReadyToRender())
+        {
+          m_skyPass->m_params.FrameBuffer = m_params.MainFramebuffer;
+          m_skyPass->m_params.Cam         = m_params.Cam;
+          m_skyPass->m_params.Transform   = m_sky->m_node->GetTransform();
+          m_skyPass->m_params.Material    = m_sky->GetSkyboxMaterial();
+        }
+        else
+        {
+          m_drawSky = false;
+        }
       }
     }
 
