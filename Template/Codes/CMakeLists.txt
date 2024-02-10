@@ -11,12 +11,12 @@ endif()
 
 #if not a path is provided, try fetching it from the path file.
 if("${TOOLKIT_DIR}" STREQUAL "__tkdir__")
-	if(DEFINED ENV{APPDATA})
-		cmake_path(SET CFG_FILE_PATH "$ENV{APPDATA}/ToolKit/Config/Path.txt")
+		if(DEFINED ENV{APPDATA})
+			cmake_path(SET CFG_FILE_PATH "$ENV{APPDATA}/ToolKit/Config/Path.txt")
 		if(NOT EXISTS ${CFG_FILE_PATH})
-		  message(SEND_ERROR "Set TOOLKIT_DIR or provide ${CFG_FILE_PATH} containing path to ToolKit.")
+			message(SEND_ERROR "Set TOOLKIT_DIR or provide ${CFG_FILE_PATH} containing path to ToolKit.")
 		else()
-			  file(STRINGS ${CFG_FILE_PATH} TOOLKIT_DIR)
+			file(STRINGS ${CFG_FILE_PATH} TOOLKIT_DIR)
 		endif()
 	endif()
 endif()
@@ -28,23 +28,22 @@ message("Compiling with ${TK_COMPILER}")
 
 # Check if the compiler is Clang
 if (${TK_COMPILER} STREQUAL "clang")
-    set(CLANG_COMPILER TRUE)
+	set(CLANG_COMPILER TRUE)
 else()
-    set(CLANG_COMPILER FALSE)
+	set(CLANG_COMPILER FALSE)
 endif()
 
 # Check if the compiler is MSVC
 if (${TK_COMPILER} STREQUAL "msvc")
-    set(MSVC_COMPILER TRUE)
+	set(MSVC_COMPILER TRUE)
 else()
-    set(MSVC_COMPILER FALSE)
+	set(MSVC_COMPILER FALSE)
 endif()
 
 if(NOT EXISTS ${TOOLKIT_DIR}/ToolKit/ToolKit.h)
 	message(SEND_ERROR "Can't find ToolKit.h in ${TOOLKIT_DIR}")
 endif()
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${TOOLKIT_DIR}/Bin")
 set(CMAKE_DEBUG_POSTFIX _d)
 
 include_directories(
@@ -65,7 +64,7 @@ set(
 )
 
 if (${WEB_BUILD})
-  set(SOURCE ${SOURCE} ../Web/web_main.cpp)
+	set(SOURCE ${SOURCE} ../Web/web_main.cpp)
 	add_definitions(-DGAME_BUILD=1)
 elseif (${WIN_BUILD})
 	set(SOURCE ${SOURCE} ../Windows/win_main.cpp)
@@ -100,55 +99,56 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${OUTDIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${OUTDIR})
 
 if (CLANG_COMPILER)
-	SET(TK_CXX_FLAGS " -std=c++17 -w")
+	set(TK_CXX_FLAGS " -std=c++17 -w")
 endif ()
 
 if (MSVC_COMPILER)
 	set(CMAKE_CXX_STANDARD 17)
 endif ()
 
-if (NOT TK_CXX_EXTRA STREQUAL "")
-	SET(TK_CXX_FLAGS "${TK_CXX_FLAGS} ${TK_CXX_EXTRA}")
+if (not TK_CXX_EXTRA strequal "")
+	set(TK_CXX_FLAGS "${TK_CXX_FLAGS} ${TK_CXX_EXTRA}")
 endif()
 
 if (${WEB_BUILD})
-  set(CMAKE_EXECUTABLE_SUFFIX ".html")
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Bin")
+	set(CMAKE_EXECUTABLE_SUFFIX ".html")
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Bin")
 
-  add_executable(${PROJECT_NAME} ${SOURCE} ${HEADERS})
-  target_link_libraries(${PROJECT_NAME} "${TOOLKIT_DIR}/Bin/ToolKit.a")
-  target_link_libraries(${PROJECT_NAME} "${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/libminizip.a")
+	add_executable(${PROJECT_NAME} ${SOURCE} ${HEADERS})
+	target_link_libraries(${PROJECT_NAME} debug "${TOOLKIT_DIR}/Bin/ToolKit_d.a")
+	target_link_libraries(${PROJECT_NAME} optimized "${TOOLKIT_DIR}/Bin/ToolKit.a")
+	target_link_libraries(${PROJECT_NAME} "${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/libminizip.a")
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TK_CXX_FLAGS} -s USE_SDL=2")
 
 	if (EXISTS "../MinResources.pak")
-	  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -o ${PROJECT_NAME}.html --shell-file ../Codes/Bin/shell_minimal.html --preload-file ../MinResources.pak@/../MinResources.pak --preload-file ../Config@/../Config -sALLOW_MEMORY_GROWTH=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -s USE_ZLIB=1 -sUSE_SDL=2")
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -o ${PROJECT_NAME}.html --shell-file ../Codes/Bin/shell_minimal.html --preload-file ../MinResources.pak@/../MinResources.pak --preload-file ../Config@/../Config -sALLOW_MEMORY_GROWTH=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -s USE_ZLIB=1 -sUSE_SDL=2")
 	else()
-	  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -o ${PROJECT_NAME}.html --shell-file ../Codes/Bin/shell_minimal.html --preload-file ../Resources@/../Resources --preload-file ../Config@/../Config -sALLOW_MEMORY_GROWTH=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -s USE_ZLIB=1 -s USE_SDL=2")
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -o ${PROJECT_NAME}.html --shell-file ../Codes/Bin/shell_minimal.html --preload-file ../Resources@/../Resources --preload-file ../Config@/../Config -sALLOW_MEMORY_GROWTH=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -s USE_ZLIB=1 -s USE_SDL=2")
 	endif()
-else()
+else() # Windows & Editor builds.
 
-  link_directories("${TOOLKIT_DIR}/Bin")
-  link_directories("${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/lib")
-  link_directories("${TOOLKIT_DIR}/Dependency/SDL2/lib")
+	link_directories("${TOOLKIT_DIR}/Bin")
+	link_directories("${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/lib")
+	link_directories("${TOOLKIT_DIR}/Dependency/SDL2/lib")
 	
-if (${WIN_BUILD})
-	add_executable(${PROJECT_NAME} WIN32 ${SOURCE})
-else()
-	add_library(${PROJECT_NAME} SHARED ${SOURCE} ${HEADERS})
-endif()
+	if (${WIN_BUILD})
+		add_executable(${PROJECT_NAME} WIN32 ${SOURCE})
+	else() # Editor
+		add_library(${PROJECT_NAME} SHARED ${SOURCE} ${HEADERS})
+	endif()
 
-  target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:TK_DLL_IMPORT>)
-  target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:TK_DEBUG>)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:TK_DLL_IMPORT>)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:TK_DEBUG>)
 
-  if (MSVC)
+	if (MSVC)
 		target_link_options(${PROJECT_NAME} PRIVATE $<$<NOT:$<CONFIG:DEBUG>>:/INCREMENTAL:NO> $<$<NOT:$<CONFIG:DEBUG>>:/LTCG>)
-  endif()
+	endif()
 
-  target_link_libraries(${PROJECT_NAME} debug ToolKit_d)
-  target_link_libraries(${PROJECT_NAME} optimized ToolKit)
-  target_link_libraries(${PROJECT_NAME} zlibstatic minizip)
-  target_link_libraries(${PROJECT_NAME} SDL2 SDL2main)
+	target_link_libraries(${PROJECT_NAME} debug ToolKit_d)
+	target_link_libraries(${PROJECT_NAME} optimized ToolKit)
+	target_link_libraries(${PROJECT_NAME} zlibstatic minizip)
+	target_link_libraries(${PROJECT_NAME} SDL2 SDL2main)
 endif()
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH})
@@ -157,8 +157,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>)
 
 #For hot reload rename the previous output
 if (NOT ${WEB_BUILD} OR NOT ${WIN_BUILD})
-  set(DLL $<SHELL_PATH:$<TARGET_FILE:${PROJECT_NAME}>>)
-  set(PDB $<SHELL_PATH:$<TARGET_PDB_FILE:${PROJECT_NAME}>>)
+	set(DLL $<SHELL_PATH:$<TARGET_FILE:${PROJECT_NAME}>>)
+	set(PDB $<SHELL_PATH:$<TARGET_PDB_FILE:${PROJECT_NAME}>>)
 
-  add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -Ddll=${DLL} -Dpdb=${PDB} -Dtmp="${OUTDIR}/tmp" -P "${CMAKE_SOURCE_DIR}/CMakeHotReload.cmake")
+	add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -Ddll=${DLL} -Dpdb=${PDB} -Dtmp="${OUTDIR}/tmp" -P "${CMAKE_SOURCE_DIR}/CMakeHotReload.cmake")
 endif()

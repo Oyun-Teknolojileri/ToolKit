@@ -8,7 +8,6 @@
 #pragma once
 
 #include <poolSTL/poolstl.hpp>
-#include <poolSTL/task_thread_pool.hpp>
 
 namespace ToolKit
 {
@@ -18,7 +17,7 @@ namespace ToolKit
   /**
    * This is the class that keeps the thread pools and manages async tasks.
    */
-  class WorkerManager
+  class TK_API WorkerManager
   {
    public:
     enum Executor

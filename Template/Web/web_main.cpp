@@ -77,16 +77,12 @@ namespace ToolKit
       for (const UILayerPtr& layer : layers)
       {
         EntityPtrArray& uiNtties = layer->m_scene->AccessEntityArray();
-        RenderJobProcessor::CreateRenderJobs(uiNtties, m_uiRenderJobs);
+        RenderJobProcessor::CreateRenderJobs(uiNtties, m_uiRenderData.jobs);
       }
 
-      m_uiPass->m_params.OpaqueJobs.clear();
-      m_uiPass->m_params.TranslucentJobs.clear();
+      RenderJobProcessor::SeperateRenderData(m_uiRenderData, true);
 
-      RenderJobProcessor::SeperateOpaqueTranslucent(m_uiRenderJobs,
-                                                    m_uiPass->m_params.OpaqueJobs,
-                                                    m_uiPass->m_params.TranslucentJobs);
-
+      m_uiPass->m_params.renderData       = &m_uiRenderData;
       m_uiPass->m_params.Cam              = GetUIManager()->GetUICamera();
       m_uiPass->m_params.FrameBuffer      = m_params.viewport->m_framebuffer;
       m_uiPass->m_params.clearBuffer      = GraphicBitFields::DepthBits;
@@ -100,6 +96,7 @@ namespace ToolKit
 
    private:
     ForwardRenderPassPtr m_uiPass = nullptr;
+    RenderData m_uiRenderData;
     RenderJobArray m_uiRenderJobs;
   };
 
