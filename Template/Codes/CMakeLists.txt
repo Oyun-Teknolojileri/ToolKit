@@ -106,7 +106,7 @@ if (MSVC_COMPILER)
 	set(CMAKE_CXX_STANDARD 17)
 endif ()
 
-if (not TK_CXX_EXTRA strequal "")
+if (NOT TK_CXX_EXTRA STREQUAL "")
 	set(TK_CXX_FLAGS "${TK_CXX_FLAGS} ${TK_CXX_EXTRA}")
 endif()
 
