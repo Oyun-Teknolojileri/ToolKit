@@ -136,6 +136,10 @@ namespace ToolKit
 
     renderer->SetCamera(m_params.Cam, true);
 
+    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+    m_program = gpuProgramManager->CreateProgram(m_linearMaterial->m_vertexShader, m_linearMaterial->m_fragmentShader);
+    renderer->BindProgram(m_program);
+
     POP_CPU_MARKER();
     POP_GPU_MARKER();
   }

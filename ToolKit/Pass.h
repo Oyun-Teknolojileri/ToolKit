@@ -36,6 +36,7 @@ namespace ToolKit
 
    protected:
     FramebufferPtr m_prevFrameBuffer = nullptr;
+    GpuProgramPtr m_program          = nullptr;
 
    private:
     Renderer* m_renderer = nullptr;

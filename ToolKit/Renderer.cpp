@@ -45,6 +45,8 @@ namespace ToolKit
     m_uiCamera                      = MakeNewPtr<Camera>();
     m_oneColorAttachmentFramebuffer = MakeNewPtr<Framebuffer>();
     m_dummyDrawCube                 = MakeNewPtr<Cube>();
+
+    m_gpuProgramManager             = GetGpuProgramManager();
   }
 
   Renderer::~Renderer()
@@ -58,8 +60,6 @@ namespace ToolKit
     m_mat                           = nullptr;
     m_framebuffer                   = nullptr;
     m_shadowAtlas                   = nullptr;
-
-    m_gpuProgramManager.FlushPrograms();
   }
 
   void Renderer::SetLights(const LightPtrArray& lights) { m_lights = lights; }
@@ -191,19 +191,16 @@ namespace ToolKit
     RenderState* rs = m_mat->GetRenderState();
     SetRenderState(rs);
 
-    const GpuProgramPtr& prg = m_gpuProgramManager.CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
-    BindProgram(prg);
-
     auto activateSkinning = [&](const Mesh* mesh)
     {
-      GLint isSkinnedLoc = prg->GetUniformLocation(Uniform::IS_SKINNED);
+      GLint isSkinnedLoc = m_currentProgram->GetUniformLocation(Uniform::IS_SKINNED);
       bool isSkinned     = mesh->IsSkinned();
       if (isSkinned)
       {
         SkeletonPtr skel = static_cast<SkinMesh*>(job.Mesh)->m_skeleton;
         assert(skel != nullptr);
 
-        GLint numBonesLoc = prg->GetUniformLocation(Uniform::NUM_BONES);
+        GLint numBonesLoc = m_currentProgram->GetUniformLocation(Uniform::NUM_BONES);
         glUniform1ui(isSkinnedLoc, 1);
 
         GLuint boneCount = (GLuint) skel->m_bones.size();
@@ -218,8 +215,8 @@ namespace ToolKit
     const Mesh* mesh = job.Mesh;
     activateSkinning(mesh);
 
-    FeedLightUniforms(prg, job);
-    FeedUniforms(prg, job);
+    FeedLightUniforms(m_currentProgram, job);
+    FeedUniforms(m_currentProgram, job);
 
     RHI::BindVertexArray(mesh->m_vaoId);
 
@@ -235,6 +232,23 @@ namespace ToolKit
     AddDrawCall();
 
     m_overrideMat = nullptr;
+  }
+
+  void Renderer::RenderWithProgramFromMaterial(const RenderJobArray& jobs)
+  {
+    for (int i = 0; i < jobs.size(); ++i)
+    {
+      RenderWithProgramFromMaterial(jobs[i]);
+    }
+  }
+
+  void Renderer::RenderWithProgramFromMaterial(const RenderJob& job)
+  {
+    job.Material->Init();
+    GpuProgramPtr program =
+        m_gpuProgramManager->CreateProgram(job.Material->m_vertexShader, job.Material->m_fragmentShader);
+    BindProgram(program);
+    Render(job);
   }
 
   void Renderer::Render(const RenderJobArray& jobs)
@@ -498,7 +512,7 @@ namespace ToolKit
     bool lastDepthTestState = m_renderState.depthTestEnabled;
     EnableDepthTest(false);
 
-    Render(jobs);
+    RenderWithProgramFromMaterial(jobs);
 
     EnableDepthTest(lastDepthTestState);
   }
@@ -512,7 +526,7 @@ namespace ToolKit
     RenderJobArray jobs;
     EntityPtrArray oneDummyDrawCube = {m_dummyDrawCube};
     RenderJobProcessor::CreateRenderJobs(oneDummyDrawCube, jobs);
-    Render(jobs);
+    RenderWithProgramFromMaterial(jobs);
   }
 
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
@@ -701,7 +715,7 @@ namespace ToolKit
 
       RenderJobArray jobs;
       RenderJobProcessor::CreateRenderJobs({quad}, jobs);
-      Render(jobs);
+      RenderWithProgramFromMaterial(jobs);
 
       brdfLut->SetFile(TKBrdfLutTexture);
       GetTextureManager()->Manage(brdfLut);
@@ -714,11 +728,16 @@ namespace ToolKit
 
   void Renderer::BindProgram(const GpuProgramPtr& program)
   {
-    if (m_currentProgram != program->m_handle)
+    if (m_currentProgram == nullptr || m_currentProgram->m_handle != program->m_handle)
     {
-      m_currentProgram = program->m_handle;
+      m_currentProgram = program;
       glUseProgram(program->m_handle);
     }
+  }
+
+  void Renderer::FeedUniforms(const GpuProgramPtr& program, const RenderJob& job)
+  {
+    CPU_FUNC_RANGE();
 
     // Update camera related uniforms.
     if (m_gpuProgramHasCameraUpdates.find(program->m_handle) == m_gpuProgramHasCameraUpdates.end())
@@ -905,11 +924,6 @@ namespace ToolKit
         }
       }
     }
-  }
-
-  void Renderer::FeedUniforms(const GpuProgramPtr& program, const RenderJob& job)
-  {
-    CPU_FUNC_RANGE();
 
     for (ShaderPtr& shader : program->m_shaders)
     {

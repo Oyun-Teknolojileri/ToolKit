@@ -124,7 +124,11 @@ namespace ToolKit
     {
       PUSH_CPU_MARKER("Render Call");
 
-      MaterialPtr shadowMaterial = light->GetShadowMaterial();
+      MaterialPtr shadowMaterial           = light->GetShadowMaterial();
+      GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+      m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
+      renderer->BindProgram(m_program);
+
       renderer->SetCamera(light->m_shadowCamera, false);
 
       RenderJobProcessor::CullRenderJobs(jobs, light->m_shadowCamera, m_unCulledRenderJobIndices);

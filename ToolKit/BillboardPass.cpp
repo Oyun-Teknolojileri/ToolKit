@@ -8,6 +8,7 @@
 #include "BillboardPass.h"
 
 #include "Entity.h"
+#include "Material.h"
 #include "TKProfiler.h"
 
 #include "DebugNew.h"
@@ -32,19 +33,15 @@ namespace ToolKit
     CameraPtr cam = vp->GetCamera();
     renderer->SetCamera(cam, true);
 
-    auto renderBillboardsFn = [this, cam, renderer](EntityPtrArray& billboards) -> void
+    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+
+    auto renderBillboardsFn              = [this, cam, renderer, gpuProgramManager](EntityPtrArray& billboards) -> void
     {
       m_renderData.jobs.clear();
       RenderJobProcessor::CreateRenderJobs(billboards, m_renderData.jobs);
       RenderJobProcessor::SeperateRenderData(m_renderData, true);
 
-      RenderJobItr begin = m_renderData.jobs.begin();
-      RenderJobItr end   = m_renderData.jobs.end();
-
-      for (RenderJobItr& job = begin; job != end; job++)
-      {
-        renderer->Render(*job);
-      }
+      renderer->RenderWithProgramFromMaterial(m_renderData.jobs);
     };
 
     renderer->EnableDepthTest(false);

@@ -75,9 +75,12 @@ namespace ToolKit
     m_material->Init();
     m_material->GetRenderState()->blendFunction = m_params.BlendFunc;
 
-    MeshComponentPtr mc                         = m_quad->GetMeshComponent();
-    MeshPtr mesh                                = mc->GetMeshVal();
-    mesh->m_material                            = m_material;
+    m_program = GetGpuProgramManager()->CreateProgram(m_material->m_vertexShader, m_material->m_fragmentShader);
+    renderer->BindProgram(m_program);
+
+    MeshComponentPtr mc = m_quad->GetMeshComponent();
+    MeshPtr mesh        = mc->GetMeshVal();
+    mesh->m_material    = m_material;
     mesh->Init();
 
     POP_CPU_MARKER();

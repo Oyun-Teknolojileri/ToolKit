@@ -101,6 +101,8 @@ namespace ToolKit
   // GpuProgramManager
   //////////////////////////////////////////////////////////////////////////
 
+  GpuProgramManager::~GpuProgramManager() { FlushPrograms(); }
+
   void GpuProgramManager::LinkProgram(uint program, uint vertexShaderId, uint fragmentShaderId)
   {
     glAttachShader(program, vertexShaderId);

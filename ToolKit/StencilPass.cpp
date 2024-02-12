@@ -74,7 +74,12 @@ namespace ToolKit
     PUSH_CPU_MARKER("StencilRenderPass::PreRender");
 
     Pass::PreRender();
-    Renderer* renderer = GetRenderer();
+    Renderer* renderer                   = GetRenderer();
+
+    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+    m_program                            = gpuProgramManager->CreateProgram(m_solidOverrideMaterial->m_vertexShader,
+                                                 m_solidOverrideMaterial->m_fragmentShader);
+    renderer->BindProgram(m_program);
 
     FramebufferSettings settings;
     settings.depthStencil    = true;

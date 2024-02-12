@@ -72,6 +72,9 @@ namespace ToolKit
       m_overrideMat->m_fragmentShader = m_params.OverrideFragmentShader;
       m_overrideMat->Init();
 
+      m_program = GetGpuProgramManager()->CreateProgram(m_overrideMat->m_vertexShader, m_overrideMat->m_fragmentShader);
+      GetRenderer()->BindProgram(m_program);
+
       POP_CPU_MARKER();
     };
 

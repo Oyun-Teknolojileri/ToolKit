@@ -126,7 +126,7 @@ namespace ToolKit
     m_renderer->m_sky = nullptr;
   }
 
-  void RenderSystem::FlushGpuPrograms() { m_renderer->m_gpuProgramManager.FlushPrograms(); }
+  void RenderSystem::FlushGpuPrograms() { GetGpuProgramManager()->FlushPrograms(); }
 
   void RenderSystem::SetAppWindowSize(uint width, uint height) { m_renderer->m_windowSize = UVec2(width, height); }
 

@@ -68,6 +68,9 @@ namespace ToolKit
    */
   class TK_API GpuProgramManager
   {
+   public:
+    ~GpuProgramManager();
+
    private:
     /**
      * Utility class that hash an array of ULongIDs. Purpose of this class is to provide a hash generator from the

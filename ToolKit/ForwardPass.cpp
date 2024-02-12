@@ -91,7 +91,7 @@ namespace ToolKit
     for (RenderJobItr job = begin; job != end; job++)
     {
       job->Material->m_fragmentShader->UpdateShaderUniform("aoEnabled", m_params.SSAOEnabled);
-      renderer->Render(*job);
+      renderer->RenderWithProgramFromMaterial(*job);
     }
 
     POP_CPU_MARKER();
@@ -113,16 +113,16 @@ namespace ToolKit
       if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
       {
         mat->GetRenderState()->cullMode = CullingType::Front;
-        renderer->Render(job);
+        renderer->RenderWithProgramFromMaterial(job);
 
         mat->GetRenderState()->cullMode = CullingType::Back;
-        renderer->Render(job);
+        renderer->RenderWithProgramFromMaterial(job);
 
         mat->GetRenderState()->cullMode = CullingType::TwoSided;
       }
       else
       {
-        renderer->Render(job);
+        renderer->RenderWithProgramFromMaterial(job);
       }
     };
 

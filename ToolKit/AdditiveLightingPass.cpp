@@ -271,9 +271,15 @@ namespace ToolKit
 
     m_lightingShader->UpdateShaderUniform("isScreenSpace", false);
     renderer->EnableDepthWrite(false);
+
+    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
     for (auto& [lightAndType, job] : meshLights)
     {
       SetLightUniforms(lightAndType.light, lightAndType.type);
+
+      m_program = gpuProgramManager->CreateProgram(job.Material->m_vertexShader, job.Material->m_fragmentShader);
+      renderer->BindProgram(m_program);
+
       renderer->Render(job);
     }
 

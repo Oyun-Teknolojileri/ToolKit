@@ -165,6 +165,11 @@ namespace ToolKit
     renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
     renderer->SetCamera(m_params.Camera, true);
 
+    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+    m_program =
+        gpuProgramManager->CreateProgram(m_gBufferMaterial->m_vertexShader, m_gBufferMaterial->m_fragmentShader);
+    renderer->BindProgram(m_program);
+
     POP_CPU_MARKER();
     POP_GPU_MARKER();
   }

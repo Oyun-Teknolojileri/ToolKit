@@ -81,6 +81,9 @@ namespace ToolKit
 
     void Render(const RenderJobArray& jobs);
 
+    void RenderWithProgramFromMaterial(const RenderJobArray& jobs);
+    void RenderWithProgramFromMaterial(const RenderJob& job);
+
     void Apply7x1GaussianBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
 
     void ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
@@ -103,8 +106,9 @@ namespace ToolKit
 
     int GetMaxArrayTextureLayers();
 
-   private:
     void BindProgram(const GpuProgramPtr& program);
+
+   private:
     void FeedUniforms(const GpuProgramPtr& program, const RenderJob& job);
     void FeedLightUniforms(const GpuProgramPtr& program, const RenderJob& job);
 
@@ -115,7 +119,6 @@ namespace ToolKit
     MaterialPtr m_overrideMat = nullptr;
     CameraPtr m_uiCamera      = nullptr;
     SkyBasePtr m_sky          = nullptr;
-    GpuProgramManager m_gpuProgramManager;
 
     // The set contains gpuPrograms that has up to date camera uniforms.
     std::unordered_set<uint> m_gpuProgramHasCameraUpdates;
@@ -143,10 +146,10 @@ namespace ToolKit
     };
 
    private:
-    uint m_currentProgram = 0;
+    GpuProgramPtr m_currentProgram = nullptr;
 
     // Camera data.
-    CameraPtr m_cam       = nullptr;
+    CameraPtr m_cam                = nullptr;
     Mat4 m_project;
     Mat4 m_view;
     Mat4 m_projectView;
@@ -190,6 +193,8 @@ namespace ToolKit
 
     // Dummy objects for draw commands.
     CubePtr m_dummyDrawCube                        = nullptr;
+
+    GpuProgramManager* m_gpuProgramManager         = nullptr;
   };
 
 } // namespace ToolKit

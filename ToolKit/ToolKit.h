@@ -110,25 +110,26 @@ namespace ToolKit
 
    public:
     Timing m_timing;
-    class AnimationManager* m_animationMan     = nullptr;
-    class AnimationPlayer* m_animationPlayer   = nullptr;
-    class AudioManager* m_audioMan             = nullptr;
-    class MaterialManager* m_materialManager   = nullptr;
-    class MeshManager* m_meshMan               = nullptr;
-    class ShaderManager* m_shaderMan           = nullptr;
-    class SpriteSheetManager* m_spriteSheetMan = nullptr;
-    class TextureManager* m_textureMan         = nullptr;
-    class SceneManager* m_sceneManager         = nullptr;
-    class PluginManager* m_pluginManager       = nullptr;
-    class Logger* m_logger                     = nullptr;
-    class UIManager* m_uiManager               = nullptr;
-    class SkeletonManager* m_skeletonManager   = nullptr;
-    class FileManager* m_fileManager           = nullptr;
-    class ObjectFactory* m_objectFactory       = nullptr;
-    class RenderSystem* m_renderSys            = nullptr;
-    class EngineSettings* m_engineSettings     = nullptr;
-    class TKStats* m_tkStats                   = nullptr;
-    class WorkerManager* m_workerManager       = nullptr;
+    class AnimationManager* m_animationMan       = nullptr;
+    class AnimationPlayer* m_animationPlayer     = nullptr;
+    class AudioManager* m_audioMan               = nullptr;
+    class MaterialManager* m_materialManager     = nullptr;
+    class MeshManager* m_meshMan                 = nullptr;
+    class ShaderManager* m_shaderMan             = nullptr;
+    class SpriteSheetManager* m_spriteSheetMan   = nullptr;
+    class TextureManager* m_textureMan           = nullptr;
+    class SceneManager* m_sceneManager           = nullptr;
+    class PluginManager* m_pluginManager         = nullptr;
+    class Logger* m_logger                       = nullptr;
+    class UIManager* m_uiManager                 = nullptr;
+    class SkeletonManager* m_skeletonManager     = nullptr;
+    class FileManager* m_fileManager             = nullptr;
+    class ObjectFactory* m_objectFactory         = nullptr;
+    class RenderSystem* m_renderSys              = nullptr;
+    class EngineSettings* m_engineSettings       = nullptr;
+    class TKStats* m_tkStats                     = nullptr;
+    class WorkerManager* m_workerManager         = nullptr;
+    class GpuProgramManager* m_gpuProgramManager = nullptr;
     HandleManager m_handleManager;
 
     bool m_preInitiated = false;
@@ -163,6 +164,7 @@ namespace ToolKit
   TK_API class ObjectFactory* GetObjectFactory();
   TK_API class TKStats* GetTKStats();
   TK_API class WorkerManager* GetWorkerManager();
+  TK_API class GpuProgramManager* GetGpuProgramManager();
 
   // Path.
   TK_API String DefaultPath();

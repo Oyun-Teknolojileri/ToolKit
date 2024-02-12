@@ -36,7 +36,8 @@ namespace ToolKit
     {
       PUSH_CPU_MARKER("GizmoPass::Render");
 
-      Renderer* renderer = GetRenderer();
+      Renderer* renderer                   = GetRenderer();
+      GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
 
       for (EditorBillboardPtr billboard : m_params.GizmoArray)
       {
@@ -49,19 +50,19 @@ namespace ToolKit
 
           RenderJobArray jobs;
           RenderJobProcessor::CreateRenderJobs({m_depthMaskSphere}, jobs);
-          renderer->Render(jobs);
+          renderer->RenderWithProgramFromMaterial(jobs);
 
           renderer->ColorMask(true, true, true, true);
 
           jobs.clear();
           RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
-          renderer->Render(jobs);
+          renderer->RenderWithProgramFromMaterial(jobs);
         }
         else
         {
           RenderJobArray jobs;
           RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
-          renderer->Render(jobs);
+          renderer->RenderWithProgramFromMaterial(jobs);
         }
       }
 
@@ -73,8 +74,8 @@ namespace ToolKit
       PUSH_CPU_MARKER("GizmoPass::PreRender");
 
       Pass::PreRender();
-
       Renderer* renderer = GetRenderer();
+
       m_camera           = m_params.Viewport->GetCamera();
       renderer->SetFramebuffer(m_params.Viewport->m_framebuffer, GraphicBitFields::DepthBits);
       renderer->SetCamera(m_camera, true);
