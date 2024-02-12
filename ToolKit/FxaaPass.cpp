@@ -31,7 +31,8 @@ namespace ToolKit
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
 
-    m_postProcessShader->UpdateShaderUniform("screen_size", m_params.screen_size);
+    m_postProcessPass->m_params.shaderUniforms.clear();
+    m_postProcessPass->m_params.shaderUniforms.push_back(ShaderUniform("screen_size", m_params.screen_size));
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

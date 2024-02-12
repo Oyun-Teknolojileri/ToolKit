@@ -38,44 +38,27 @@ namespace ToolKit
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
-    /**
-     * Updates or adds the given shader uniform to the uniform cache of the shader.
-     */
-    void UpdateShaderUniform(const String& name, const UniformValue& val);
-
-    /**
-     * Renderer calls this function before feeding shader parameters to give
-     * custom shaders a chance to update. Derived classes may
-     * override this to update their custom parameters.
-     */
-    virtual void UpdateShaderUniforms();
-
    private:
     void HandleShaderIncludes(const String& file);
 
    public:
     struct ArrayUniform
     {
-      Uniform uniform;
+      String name;
       int size;
 
-      bool operator==(const ArrayUniform& other) const { return uniform == other.uniform && size == other.size; }
+      bool operator==(const ArrayUniform& other) const { return name == other.name && size == other.size; }
     };
 
     /**
      * Built-in Uniform's that are required for the shader.
      */
-    std::vector<Uniform> m_uniforms;
+    std::vector<String> m_uniforms;
 
     /**
      * Built-in Uniform's that are arrays and required for the shader.
      */
     std::vector<ArrayUniform> m_arrayUniforms;
-
-    /**
-     * Container that holds custom shader parameters.
-     */
-    std::unordered_map<String, ShaderUniform> m_shaderParams;
 
     /**
      * Type of the shader.

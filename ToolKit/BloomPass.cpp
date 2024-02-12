@@ -53,9 +53,10 @@ namespace ToolKit
       m_pass->m_params.FragmentShader = m_downsampleShader;
       int passIndx                    = 0;
 
-      m_downsampleShader->UpdateShaderUniform("passIndx", passIndx);
-      m_downsampleShader->UpdateShaderUniform("srcResolution", mainRes);
-      m_downsampleShader->UpdateShaderUniform("threshold", m_params.minThreshold);
+      m_pass->m_params.shaderUniforms.clear();
+      m_pass->m_params.shaderUniforms.push_back(ShaderUniform("passIndx", passIndx));
+      m_pass->m_params.shaderUniforms.push_back(ShaderUniform("srcResolution", mainRes));
+      m_pass->m_params.shaderUniforms.push_back(ShaderUniform("threshold", m_params.minThreshold));
 
       TexturePtr prevRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
 
@@ -88,8 +89,10 @@ namespace ToolKit
         m_pass->m_params.FragmentShader = m_downsampleShader;
 
         int passIndx                    = i + 1;
-        m_downsampleShader->UpdateShaderUniform("passIndx", passIndx);
-        m_downsampleShader->UpdateShaderUniform("srcResolution", prevRes);
+
+        m_pass->m_params.shaderUniforms.clear();
+        m_pass->m_params.shaderUniforms.push_back(ShaderUniform("passIndx", passIndx));
+        m_pass->m_params.shaderUniforms.push_back(ShaderUniform("srcResolution", prevRes));
 
         GetRenderer()->SetTexture(0, prevRt->m_textureId);
 
@@ -105,8 +108,9 @@ namespace ToolKit
     // Upsample Pass
     {
       const float filterRadius = 0.002f;
-      m_upsampleShader->UpdateShaderUniform("filterRadius", filterRadius);
-      m_upsampleShader->UpdateShaderUniform("intensity", 1.0f);
+      m_pass->m_params.shaderUniforms.clear();
+      m_pass->m_params.shaderUniforms.push_back(ShaderUniform("filterRadius", filterRadius));
+      m_pass->m_params.shaderUniforms.push_back(ShaderUniform("intensity", 1.0f));
 
       for (int i = m_currentIterationCount; i > 0; i--)
       {
@@ -136,7 +140,8 @@ namespace ToolKit
       m_pass->m_params.ClearFrameBuffer = false;
       m_pass->m_params.FrameBuffer      = m_params.FrameBuffer;
 
-      m_upsampleShader->UpdateShaderUniform("intensity", m_params.intensity);
+      m_pass->m_params.shaderUniforms.clear();
+      m_pass->m_params.shaderUniforms.push_back(ShaderUniform("intensity", m_params.intensity));
 
       RenderSubPass(m_pass);
     }

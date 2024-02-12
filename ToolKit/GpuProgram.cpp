@@ -31,25 +31,26 @@ namespace ToolKit
     m_handle = 0;
   }
 
-  int GpuProgram::GetUniformLocation(Uniform uniform, int index) const
+  int GpuProgram::GetUniformLocation(const String& uniformName, int index)
   {
     if (index == -1)
     {
-      const auto& itr = m_uniformLocations.find(uniform);
-      if (itr != m_uniformLocations.end())
+      const auto& itr = m_uniformLocationsNEW.find(uniformName);
+      if (itr != m_uniformLocationsNEW.end())
       {
         return itr->second;
       }
       else
       {
-        return -1;
+        // assuming that this program is in use
+        m_uniformLocationsNEW[uniformName] = glGetUniformLocation(m_handle, uniformName.c_str());
       }
     }
     else
     {
       // Uniform is an array
-      const auto& itr = m_arrayUniformLocations.find(uniform);
-      if (itr != m_arrayUniformLocations.end())
+      const auto& itr = m_arrayUniformLocationsNEW.find(uniformName);
+      if (itr != m_arrayUniformLocationsNEW.end())
       {
         const IntArray& locs = itr->second;
         if (locs.size() > index)
@@ -57,45 +58,35 @@ namespace ToolKit
           return locs[index];
         }
       }
-
-      return -1;
-    }
-  }
-
-  int GpuProgram::GetShaderParamUniformLoc(const String& uniformName)
-  {
-    const auto& itr = m_shaderParamsUniformLocations.find(uniformName);
-    if (itr != m_shaderParamsUniformLocations.end())
-    {
-      return itr->second;
-    }
-    else
-    {
-      // Note: Assuming the shader program is in use
-      GLint loc                                   = glGetUniformLocation(m_handle, uniformName.c_str());
-      m_shaderParamsUniformLocations[uniformName] = loc;
-      return loc;
     }
 
     return -1;
   }
 
-  bool GpuProgram::UpdateUniform(const ShaderUniform& uniform)
+  void GpuProgram::UpdateUniform(const String& uniformName, const UniformValue& val)
   {
-    // TODO: Cihan - cost is high, only update if dirty don't check equality
-    return true;
-
-    const auto& itr = m_customUniforms.find(uniform.m_name);
-    if (itr != m_customUniforms.end())
+    auto paramItr = m_uniformsNEW.find(uniformName);
+    if (paramItr == m_uniformsNEW.end())
     {
-      if (itr->second.m_value == uniform.m_value)
-      {
-        return false;
-      }
+      m_uniformsNEW[uniformName] = ShaderUniform(uniformName, val);
     }
+    else
+    {
+      paramItr->second = val;
+    }
+  }
 
-    m_customUniforms[uniform.m_name] = uniform;
-    return true;
+  void GpuProgram::UpdateUniform(const ShaderUniform& uniform)
+  {
+    auto paramItr = m_uniformsNEW.find(uniform.m_name);
+    if (paramItr == m_uniformsNEW.end())
+    {
+      m_uniformsNEW[uniform.m_name] = uniform;
+    }
+    else
+    {
+      paramItr->second = uniform.m_value;
+    }
   }
 
   // GpuProgramManager
@@ -159,22 +150,22 @@ namespace ToolKit
       // Register uniform locations
       for (ShaderPtr shader : program->m_shaders)
       {
-        for (Uniform uniform : shader->m_uniforms)
+        for (const String& uniformName : shader->m_uniforms)
         {
-          GLint loc                            = glGetUniformLocation(program->m_handle, GetUniformName(uniform));
-          program->m_uniformLocations[uniform] = loc;
+          GLint loc                                   = glGetUniformLocation(program->m_handle, uniformName.c_str());
+          program->m_uniformLocationsNEW[uniformName] = loc;
         }
 
         // Array uniforms
         for (Shader::ArrayUniform arrayUniform : shader->m_arrayUniforms)
         {
-          program->m_arrayUniformLocations[arrayUniform.uniform].reserve(arrayUniform.size);
+          program->m_arrayUniformLocationsNEW[arrayUniform.name].reserve(arrayUniform.size);
           for (int i = 0; i < arrayUniform.size; ++i)
           {
-            String uniformName = GetUniformName(arrayUniform.uniform);
+            String uniformName = arrayUniform.name;
             uniformName        = uniformName + "[" + std::to_string(i) + "]";
             GLint loc          = glGetUniformLocation(program->m_handle, uniformName.c_str());
-            program->m_arrayUniformLocations[arrayUniform.uniform].push_back(loc);
+            program->m_arrayUniformLocationsNEW[arrayUniform.name].push_back(loc);
           }
         }
       }

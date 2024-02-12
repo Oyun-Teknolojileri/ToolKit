@@ -85,7 +85,6 @@ namespace ToolKit
     renderer->SetTexture(11, gFrameBuffer->GetAttachment(FAttachment::ColorAttachment2)->m_textureId);
     renderer->SetTexture(14, gFrameBuffer->GetAttachment(FAttachment::ColorAttachment5)->m_textureId);
 
-    m_lightingShader->UpdateShaderUniform("aoEnabled", m_params.AOTexture != nullptr);
     renderer->SetTexture(5, m_params.AOTexture ? m_params.AOTexture->m_textureId : 0);
 
     POP_CPU_MARKER();
@@ -97,10 +96,10 @@ namespace ToolKit
     CPU_FUNC_RANGE();
 
     Vec3 pos = light->m_node->GetTranslation();
-    m_lightingShader->UpdateShaderUniform("lightType", lightType);
-    m_lightingShader->UpdateShaderUniform("lightPos", pos);
-    m_lightingShader->UpdateShaderUniform("lightIntensity", light->GetIntensityVal());
-    m_lightingShader->UpdateShaderUniform("lightColor", light->GetColorVal());
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightType", lightType));
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightPos", pos));
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightIntensity", light->GetIntensityVal()));
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightColor", light->GetColorVal()));
 
     Vec3 dir;
     switch (lightType)
@@ -113,7 +112,7 @@ namespace ToolKit
     case 4:
     {
       PointLight* pointLight = static_cast<PointLight*>(light.get());
-      m_lightingShader->UpdateShaderUniform("lightRadius", pointLight->GetRadiusVal());
+      m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightRadius", pointLight->GetRadiusVal()));
     }
     break;
     case 2: // is spot
@@ -123,9 +122,9 @@ namespace ToolKit
       dir                  = spotLight->GetComponentFast<DirectionComponent>()->GetDirection();
       float outAngle       = glm::cos(glm::radians(spotLight->GetOuterAngleVal() * 0.5f));
       float innAngle       = glm::cos(glm::radians(spotLight->GetInnerAngleVal() * 0.5f));
-      m_lightingShader->UpdateShaderUniform("lightRadius", spotLight->GetRadiusVal());
-      m_lightingShader->UpdateShaderUniform("lightOutAngle", outAngle);
-      m_lightingShader->UpdateShaderUniform("lightInnAngle", innAngle);
+      m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightRadius", spotLight->GetRadiusVal()));
+      m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightOutAngle", outAngle));
+      m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightInnAngle", innAngle));
     }
     break;
     default:
@@ -133,7 +132,7 @@ namespace ToolKit
       break;
     }
 
-    m_lightingShader->UpdateShaderUniform("lightDir", dir);
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightDir", dir));
 
     if (lightType < 3) // does not have shadow
     {
@@ -145,15 +144,15 @@ namespace ToolKit
     const Mat4& projView   = light->m_shadowMapCameraProjectionViewMatrix;
     float atlasResRatio    = light->GetShadowResVal() / atlasTextureSize;
 
-    m_lightingShader->UpdateShaderUniform("lightShadowMapCameraFar", light->m_shadowMapCameraFar);
-    m_lightingShader->UpdateShaderUniform("lightProjectionViewMatrix", projView);
-    m_lightingShader->UpdateShaderUniform("lightShadowAtlasCoord", light->m_shadowAtlasCoord / atlasTextureSize);
-    m_lightingShader->UpdateShaderUniform("lightShadowAtlasResRatio", atlasResRatio);
-    m_lightingShader->UpdateShaderUniform("lightShadowAtlasLayer", (float) light->m_shadowAtlasLayer);
-    m_lightingShader->UpdateShaderUniform("lightPCFSamples", light->GetPCFSamplesVal());
-    m_lightingShader->UpdateShaderUniform("lightPCFRadius", light->GetPCFRadiusVal());
-    m_lightingShader->UpdateShaderUniform("lightBleedReduction", light->GetBleedingReductionVal());
-    m_lightingShader->UpdateShaderUniform("lightShadowBias", bias);
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightShadowMapCameraFar", light->m_shadowMapCameraFar));
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightProjectionViewMatrix", projView));
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightShadowAtlasCoord", light->m_shadowAtlasCoord / atlasTextureSize));
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightShadowAtlasResRatio", atlasResRatio));
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightShadowAtlasLayer", (float) light->m_shadowAtlasLayer));
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightPCFSamples", light->GetPCFSamplesVal()));
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightPCFRadius", light->GetPCFRadiusVal()));
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightBleedReduction", light->GetBleedingReductionVal()));
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("lightShadowBias", bias));
   }
 
   void AdditiveLightingPass::Render()
@@ -170,7 +169,9 @@ namespace ToolKit
     m_fullQuadPass->m_params.FragmentShader   = m_lightingShader;
     m_fullQuadPass->m_params.ClearFrameBuffer = false;
 
-    m_lightingShader->UpdateShaderUniform("camPos", m_params.Cam->Position());
+    m_fullQuadPass->m_params.shaderUniforms.clear();
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("aoEnabled", m_params.AOTexture != nullptr));
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("camPos", m_params.Cam->Position()));
 
     renderer->EnableDepthTest(true);
     CameraPtr camera = m_params.Cam;
@@ -255,7 +256,7 @@ namespace ToolKit
       }
     }
 
-    m_lightingShader->UpdateShaderUniform("isScreenSpace", true);
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("isScreenSpace", true));
     for (auto& [light, lightType] : screenSpaceLights)
     {
       SetLightUniforms(light, lightType);
@@ -269,14 +270,11 @@ namespace ToolKit
 
     renderer->SetCamera(camera, true);
 
-    m_lightingShader->UpdateShaderUniform("isScreenSpace", false);
     renderer->EnableDepthWrite(false);
 
     GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
     for (auto& [lightAndType, job] : meshLights)
     {
-      SetLightUniforms(lightAndType.light, lightAndType.type);
-
       m_program = gpuProgramManager->CreateProgram(job.Material->m_vertexShader, job.Material->m_fragmentShader);
       renderer->BindProgram(m_program);
 
@@ -296,7 +294,8 @@ namespace ToolKit
     renderer->SetTexture(1, emmisiveRt->m_textureId);
     renderer->SetTexture(2, iblRt->m_textureId);
 
-    m_mergeShader->UpdateShaderUniform("aoEnabled", m_params.AOTexture != nullptr);
+    m_fullQuadPass->m_params.shaderUniforms.clear();
+    m_fullQuadPass->m_params.shaderUniforms.push_back(ShaderUniform("aoEnabled", m_params.AOTexture != nullptr));
     renderer->SetTexture(5, m_params.AOTexture != nullptr ? m_params.AOTexture->m_textureId : 0);
 
     // merge lighting, ibl, ao, and emmisive

@@ -90,7 +90,7 @@ namespace ToolKit
 
     for (RenderJobItr job = begin; job != end; job++)
     {
-      job->Material->m_fragmentShader->UpdateShaderUniform("aoEnabled", m_params.SSAOEnabled);
+      job->Material->UpdateUniformOfThisMaterialsProgram("aoEnabled", m_params.SSAOEnabled);
       renderer->RenderWithProgramFromMaterial(*job);
     }
 

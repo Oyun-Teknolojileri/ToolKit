@@ -92,7 +92,7 @@ namespace ToolKit
     UNIFORM_MAX_INVALID
   };
 
-  extern const char* GetUniformName(Uniform u);
+  constexpr extern const char* GetUniformName(Uniform u);
 
   // ShaderUniform
   //////////////////////////////////////////////////////////////////////////
@@ -101,13 +101,13 @@ namespace ToolKit
 
   class TK_API ShaderUniform
   {
+    friend class Renderer;
+
    public:
     enum class UpdateFrequency
     {
       PerDraw,
-      PerFrame,
-      PerMaterial,
-      WhenDirty
+      PerFrame
     };
 
     enum class UniformType
@@ -127,7 +127,7 @@ namespace ToolKit
 
    public:
     ShaderUniform();
-    ShaderUniform(const String& name, UniformValue value, UpdateFrequency frequency = UpdateFrequency::WhenDirty);
+    ShaderUniform(const String& name, UniformValue value, UpdateFrequency frequency = UpdateFrequency::PerDraw);
     ShaderUniform(const ShaderUniform& other);
     ShaderUniform(ShaderUniform&& other) noexcept;
 
@@ -150,6 +150,7 @@ namespace ToolKit
     String m_name;
     UpdateFrequency m_updateFrequency;
     UniformValue m_value;
+    int m_uniformLocationAtGpuProgram = -1;
   };
 
 } // namespace ToolKit

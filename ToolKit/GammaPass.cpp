@@ -33,7 +33,8 @@ namespace ToolKit
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
 
-    m_postProcessShader->UpdateShaderUniform("Gamma", m_params.Gamma);
+    m_postProcessPass->m_params.shaderUniforms.clear();
+    m_postProcessPass->m_params.shaderUniforms.push_back(ShaderUniform("Gamma", m_params.Gamma));
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

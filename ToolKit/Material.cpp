@@ -222,6 +222,17 @@ namespace ToolKit
     return file == GetShaderManager()->PbrDefferedShaderFile() || file == GetShaderManager()->PbrForwardShaderFile();
   }
 
+  void Material::UpdateUniformOfThisMaterialsProgram(const String& uniformName, const UniformValue& val)
+  {
+    m_vertexShader->Init();
+    m_fragmentShader->Init();
+
+    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+    GpuProgramPtr gpuProgram = gpuProgramManager->CreateProgram(m_vertexShader, m_fragmentShader);
+
+    gpuProgram->UpdateUniform(uniformName, val);
+  }
+
   XmlNode* Material::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "material", parent);

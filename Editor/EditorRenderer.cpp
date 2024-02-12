@@ -252,7 +252,7 @@ namespace ToolKit
       GridPtr grid = m_params.Viewport->GetType() == Window::Type::Viewport2d ? app->m_2dGrid : app->m_grid;
 
       grid->UpdateShaderParams();
-      editorEntities.push_back(grid);
+      // TODO editorEntities.push_back(grid);
 
       // Editor pass.
       m_renderData.jobs.clear();

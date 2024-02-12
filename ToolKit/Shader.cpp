@@ -164,42 +164,16 @@ namespace ToolKit
         XmlAttribute* nameAttr = node->first_attribute("name");
         XmlAttribute* sizeAttr = node->first_attribute("size");
 
-        bool isUniformFound    = false;
-        for (uint i = 0; i < (uint) Uniform::UNIFORM_MAX_INVALID; i++)
+        if (sizeAttr != nullptr)
         {
-          // Skipping unused variables.
-          switch ((Uniform) i)
-          {
-          case Uniform::UNUSEDSLOT_2:
-          case Uniform::UNUSEDSLOT_3:
-          case Uniform::UNUSEDSLOT_4:
-          case Uniform::UNUSEDSLOT_5:
-          case Uniform::UNUSEDSLOT_6:
-          case Uniform::UNUSEDSLOT_7:
-            isUniformFound = true;
-            continue;
-          }
-
-          // Find uniform from name
-          if (strcmp(GetUniformName((Uniform) i), nameAttr->value()) == 0)
-          {
-            isUniformFound = true;
-
-            if (sizeAttr != nullptr)
-            {
-              // Uniform is array
-              int size = std::atoi(sizeAttr->value());
-              m_arrayUniforms.push_back({(Uniform) i, size});
-            }
-            else
-            {
-              m_uniforms.push_back((Uniform) i);
-            }
-
-            break;
-          }
+          // Uniform is array
+          int size = std::atoi(sizeAttr->value());
+          m_arrayUniforms.push_back({nameAttr->value(), size});
         }
-        assert(isUniformFound);
+        else
+        {
+          m_uniforms.push_back(nameAttr->value());
+        }
       }
 
       if (strcmp("source", node->name()) == 0)
@@ -216,21 +190,6 @@ namespace ToolKit
 
     return nullptr;
   }
-
-  void Shader::UpdateShaderUniform(const String& name, const UniformValue& val)
-  {
-    auto paramItr = m_shaderParams.find(name);
-    if (paramItr == m_shaderParams.end())
-    {
-      m_shaderParams[name] = ShaderUniform(name, val);
-    }
-    else
-    {
-      paramItr->second = val;
-    }
-  }
-
-  void Shader::UpdateShaderUniforms() {}
 
   void Shader::HandleShaderIncludes(const String& file)
   {
@@ -306,13 +265,13 @@ namespace ToolKit
     m_source.replace(includeLoc, 0, includeSource);
 
     // Handle uniforms
-    std::unordered_set<Uniform> unis;
+    std::unordered_set<String> unis;
 
-    for (Uniform uni : m_uniforms)
+    for (String& uni : m_uniforms)
     {
       unis.insert(uni);
     }
-    for (Uniform uni : includeShader->m_uniforms)
+    for (String& uni : includeShader->m_uniforms)
     {
       unis.insert(uni);
     }
@@ -328,7 +287,7 @@ namespace ToolKit
       m_arrayUniforms.push_back(uni);
     }
 
-    auto arrayUniformCompareFn = [](ArrayUniform& uni1, ArrayUniform& uni2) { return uni1.uniform < uni2.uniform; };
+    auto arrayUniformCompareFn = [](ArrayUniform& uni1, ArrayUniform& uni2) { return uni1.name < uni2.name; };
 
     // Remove duplicates
     std::sort(m_arrayUniforms.begin(), m_arrayUniforms.end(), arrayUniformCompareFn);

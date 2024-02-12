@@ -10,6 +10,7 @@
 #include "RenderState.h"
 #include "Resource.h"
 #include "ResourceManager.h"
+#include "ShaderUniform.h"
 #include "Texture.h"
 
 namespace ToolKit
@@ -60,6 +61,8 @@ namespace ToolKit
      */
     bool IsPBR();
 
+    void UpdateUniformOfThisMaterialsProgram(const String& uniformName, const UniformValue& val);
+
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
@@ -68,8 +71,6 @@ namespace ToolKit
     void CopyTo(Resource* other) override;
 
    public:
-    bool m_updateGPUUniforms = true;
-
     CubeMapPtr m_cubeMap;
     TexturePtr m_diffuseTexture;
     TexturePtr m_emissiveTexture;

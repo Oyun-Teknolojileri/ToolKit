@@ -41,6 +41,7 @@ namespace ToolKit
 
     GridFragmentShader::~GridFragmentShader() {}
 
+    /*
     void GridFragmentShader::UpdateShaderUniforms()
     {
       UpdateShaderUniform("GridData.cellSize", m_sizeEachCell);
@@ -49,6 +50,7 @@ namespace ToolKit
       UpdateShaderUniform("GridData.verticalAxisColor", m_axisColorVertical);
       UpdateShaderUniform("GridData.is2DViewport", m_is2DViewport);
     }
+    */
 
     // Grid
     //////////////////////////////////////////////////////////////////////////

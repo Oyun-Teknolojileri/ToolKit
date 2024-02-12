@@ -76,6 +76,12 @@ namespace ToolKit
     m_material->GetRenderState()->blendFunction = m_params.BlendFunc;
 
     m_program = GetGpuProgramManager()->CreateProgram(m_material->m_vertexShader, m_material->m_fragmentShader);
+
+    for (int i = 0; i < m_params.shaderUniforms.size(); ++i)
+    {
+      m_program->UpdateUniform(m_params.shaderUniforms[i]);
+    }
+
     renderer->BindProgram(m_program);
 
     MeshComponentPtr mc = m_quad->GetMeshComponent();

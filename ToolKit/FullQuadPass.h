@@ -18,6 +18,7 @@ namespace ToolKit
     BlendFunction BlendFunc    = BlendFunction::NONE;
     ShaderPtr FragmentShader   = nullptr;
     bool ClearFrameBuffer      = true;
+    std::vector<ShaderUniform> shaderUniforms;
   };
 
   /**

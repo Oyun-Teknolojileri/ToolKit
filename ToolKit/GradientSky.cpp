@@ -72,10 +72,10 @@ namespace ToolKit
   {
     Init();
 
-    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("topColor", GetTopColorVal());
-    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("middleColor", GetMiddleColorVal());
-    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("bottomColor", GetBottomColorVal());
-    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("exponent", GetGradientExponentVal());
+    m_skyboxMaterial->UpdateUniformOfThisMaterialsProgram("topColor", GetTopColorVal());
+    m_skyboxMaterial->UpdateUniformOfThisMaterialsProgram("middleColor", GetMiddleColorVal());
+    m_skyboxMaterial->UpdateUniformOfThisMaterialsProgram("bottomColor", GetBottomColorVal());
+    m_skyboxMaterial->UpdateUniformOfThisMaterialsProgram("exponent", GetGradientExponentVal());
 
     return m_skyboxMaterial;
   }
@@ -115,10 +115,10 @@ namespace ToolKit
     cubemap->Init();
 
     // Create material
-    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("topColor", GetTopColorVal());
-    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("middleColor", GetMiddleColorVal());
-    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("bottomColor", GetBottomColorVal());
-    m_skyboxMaterial->m_fragmentShader->UpdateShaderUniform("exponent", GetGradientExponentVal());
+    m_skyboxMaterial->UpdateUniformOfThisMaterialsProgram("topColor", GetTopColorVal());
+    m_skyboxMaterial->UpdateUniformOfThisMaterialsProgram("middleColor", GetMiddleColorVal());
+    m_skyboxMaterial->UpdateUniformOfThisMaterialsProgram("bottomColor", GetBottomColorVal());
+    m_skyboxMaterial->UpdateUniformOfThisMaterialsProgram("exponent", GetGradientExponentVal());
 
     // Views for 6 different angles
     CameraPtr cam = MakeNewPtr<Camera>();

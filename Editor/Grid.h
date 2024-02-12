@@ -22,7 +22,7 @@ namespace ToolKit
 
       GridFragmentShader();
       virtual ~GridFragmentShader();
-      void UpdateShaderUniforms() override;
+      // TODO fix this void UpdateShaderUniforms() override;
 
      public:
       float m_sizeEachCell;

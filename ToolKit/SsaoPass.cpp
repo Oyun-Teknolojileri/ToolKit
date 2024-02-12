@@ -74,9 +74,6 @@ namespace ToolKit
     renderer->SetTexture(2, m_noiseTexture->m_textureId);
     renderer->SetTexture(3, m_params.GLinearDepthBuffer->m_textureId);
 
-    m_ssaoShader->UpdateShaderUniform("radius", m_params.Radius);
-    m_ssaoShader->UpdateShaderUniform("bias", m_params.Bias);
-
     RenderSubPass(m_quadPass);
 
     // Horizontal blur
@@ -129,22 +126,26 @@ namespace ToolKit
     m_quadPass->m_params.FrameBuffer      = m_ssaoFramebuffer;
     m_quadPass->m_params.ClearFrameBuffer = false;
 
+    m_quadPass->m_params.shaderUniforms.clear();
+
     if (m_params.KernelSize != m_currentKernelSize || m_prevSpread != m_params.spread)
     {
       // Update kernel
       for (int i = 0; i < m_params.KernelSize; ++i)
       {
-        m_ssaoShader->UpdateShaderUniform(m_ssaoSamplesStrCache[i], m_ssaoKernel[i]);
+        m_quadPass->m_params.shaderUniforms.push_back(ShaderUniform(m_ssaoSamplesStrCache[i], m_ssaoKernel[i]));
       }
 
       m_prevSpread = m_params.spread;
     }
 
-    m_ssaoShader->UpdateShaderUniform("screenSize", Vec2(width, height));
-    m_ssaoShader->UpdateShaderUniform("bias", m_params.Bias);
-    m_ssaoShader->UpdateShaderUniform("kernelSize", m_params.KernelSize);
-    m_ssaoShader->UpdateShaderUniform("projection", m_params.Cam->GetProjectionMatrix());
-    m_ssaoShader->UpdateShaderUniform("viewMatrix", m_params.Cam->GetViewMatrix());
+    m_quadPass->m_params.shaderUniforms.push_back(ShaderUniform("screenSize", Vec2(width, height)));
+    m_quadPass->m_params.shaderUniforms.push_back(ShaderUniform("bias", m_params.Bias));
+    m_quadPass->m_params.shaderUniforms.push_back(ShaderUniform("kernelSize", m_params.KernelSize));
+    m_quadPass->m_params.shaderUniforms.push_back(ShaderUniform("projection", m_params.Cam->GetProjectionMatrix()));
+    m_quadPass->m_params.shaderUniforms.push_back(ShaderUniform("viewMatrix", m_params.Cam->GetViewMatrix()));
+    m_quadPass->m_params.shaderUniforms.push_back(ShaderUniform("radius", m_params.Radius));
+    m_quadPass->m_params.shaderUniforms.push_back(ShaderUniform("bias", m_params.Bias));
 
     m_quadPass->m_params.FragmentShader = m_ssaoShader;
 
