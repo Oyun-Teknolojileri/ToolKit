@@ -22,14 +22,6 @@ namespace ToolKit
 
       GridFragmentShader();
       virtual ~GridFragmentShader();
-      // TODO fix this void UpdateShaderUniforms() override;
-
-     public:
-      float m_sizeEachCell;
-      float m_maxLinePixelCount;
-      Vec3 m_axisColorHorizontal;
-      Vec3 m_axisColorVertical;
-      bool m_is2DViewport;
     };
 
     typedef std::shared_ptr<GridFragmentShader> GridFragmentShaderPtr;

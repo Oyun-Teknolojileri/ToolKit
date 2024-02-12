@@ -27,30 +27,9 @@ namespace ToolKit
 
     TKDefineClass(GridFragmentShader, Shader);
 
-    GridFragmentShader::GridFragmentShader()
-    {
-      SetFile(ShaderPath("gridFragment.shader", true));
-
-      // Set defaults.
-      m_sizeEachCell        = 0.1f;
-      m_maxLinePixelCount   = 2.0f;
-      m_axisColorHorizontal = X_AXIS;
-      m_axisColorVertical   = Z_AXIS;
-      m_is2DViewport        = false;
-    }
+    GridFragmentShader::GridFragmentShader() { SetFile(ShaderPath("gridFragment.shader", true)); }
 
     GridFragmentShader::~GridFragmentShader() {}
-
-    /*
-    void GridFragmentShader::UpdateShaderUniforms()
-    {
-      UpdateShaderUniform("GridData.cellSize", m_sizeEachCell);
-      UpdateShaderUniform("GridData.lineMaxPixelCount", m_maxLinePixelCount);
-      UpdateShaderUniform("GridData.horizontalAxisColor", m_axisColorHorizontal);
-      UpdateShaderUniform("GridData.verticalAxisColor", m_axisColorVertical);
-      UpdateShaderUniform("GridData.is2DViewport", m_is2DViewport);
-    }
-    */
 
     // Grid
     //////////////////////////////////////////////////////////////////////////
@@ -66,6 +45,13 @@ namespace ToolKit
     void Grid::NativeConstruct()
     {
       Super::NativeConstruct();
+
+      m_gridCellSize        = 0.1f;
+      m_maxLinePixelCount   = 2.0f;
+      m_horizontalAxisColor = X_AXIS;
+      m_verticalAxisColor   = Z_AXIS;
+      m_is2d                = false;
+
       Init();
       UpdateShaderParams();
     }
@@ -241,13 +227,13 @@ namespace ToolKit
 
     void Grid::UpdateShaderParams()
     {
-      GridFragmentShader* gfs    = static_cast<GridFragmentShader*>(m_material->m_fragmentShader.get());
+      GridFragmentShader* gfs = static_cast<GridFragmentShader*>(m_material->m_fragmentShader.get());
 
-      gfs->m_sizeEachCell        = m_gridCellSize;
-      gfs->m_axisColorHorizontal = m_horizontalAxisColor;
-      gfs->m_axisColorVertical   = m_verticalAxisColor;
-      gfs->m_maxLinePixelCount   = m_maxLinePixelCount;
-      gfs->m_is2DViewport        = m_is2d;
+      m_material->UpdateUniformOfThisMaterialsProgram("GridData.cellSize", m_gridCellSize);
+      m_material->UpdateUniformOfThisMaterialsProgram("GridData.lineMaxPixelCount", m_maxLinePixelCount);
+      m_material->UpdateUniformOfThisMaterialsProgram("GridData.horizontalAxisColor", m_horizontalAxisColor);
+      m_material->UpdateUniformOfThisMaterialsProgram("GridData.verticalAxisColor", m_verticalAxisColor);
+      m_material->UpdateUniformOfThisMaterialsProgram("GridData.is2DViewport", m_is2d);
     }
 
   } //  namespace Editor
