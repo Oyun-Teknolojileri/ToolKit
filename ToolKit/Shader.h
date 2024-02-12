@@ -53,7 +53,7 @@ namespace ToolKit
     /**
      * Built-in Uniform's that are required for the shader.
      */
-    std::vector<String> m_uniforms;
+    StringArray m_uniforms;
 
     /**
      * Built-in Uniform's that are arrays and required for the shader.

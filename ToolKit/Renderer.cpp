@@ -800,7 +800,6 @@ namespace ToolKit
       m_gpuProgramHasFrameUpdates.insert(program->m_handle);
     }
 
-    assert(m_mat != nullptr);
     int uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::COLOR));
     if (uniformLoc != -1)
     {

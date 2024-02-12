@@ -150,7 +150,6 @@ namespace ToolKit
     String m_name;
     UpdateFrequency m_updateFrequency;
     UniformValue m_value;
-    int m_uniformLocationAtGpuProgram = -1;
   };
 
 } // namespace ToolKit
