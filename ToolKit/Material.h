@@ -24,8 +24,6 @@ namespace ToolKit
     explicit Material(const String& file);
     virtual ~Material();
 
-    void NativeConstruct();
-
     void Load() override;
     void Save(bool onlyIfDirty) override;
     void Init(bool flushClientSideArray = false) override;
@@ -65,6 +63,11 @@ namespace ToolKit
 
     void UpdateUniformOfThisMaterialsProgram(const String& uniformName, const UniformValue& val);
 
+    // This should be called when this material parameter changed except for Textures, Shaders and RenderState
+    void UpdateRuntimeVersion();
+
+    inline uint64 GetRuntimeVersion() { return m_runtimeVersion; }
+
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
@@ -88,6 +91,8 @@ namespace ToolKit
    private:
     float m_alpha = 1.0f;
     RenderState m_renderState;
+
+    uint64 m_runtimeVersion = 1;
   };
 
   class TK_API MaterialManager : public ResourceManager

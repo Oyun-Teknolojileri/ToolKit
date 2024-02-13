@@ -126,9 +126,6 @@ namespace ToolKit
     // The set contains gpuPrograms that has up to date per frame uniforms.
     std::unordered_set<uint> m_gpuProgramHasFrameUpdates;
 
-    // Materials that are updated, so the uniform buffers of these also should be updated
-    std::unordered_set<ULongID> m_materialsShouldBeUpdatedOnGPU;
-
     bool m_renderOnlyLighting                 = false;
 
     /**

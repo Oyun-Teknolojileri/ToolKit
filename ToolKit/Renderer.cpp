@@ -805,13 +805,13 @@ namespace ToolKit
     {
       updateMaterial = true;
     }
-    else if (m_materialsShouldBeUpdatedOnGPU.find(m_mat->GetIdVal()) != m_materialsShouldBeUpdatedOnGPU.end())
-    {
-      updateMaterial = true;
-    }
     else if (ULongID matID = program->m_activeMaterialID)
     {
       updateMaterial = matID != m_mat->GetIdVal();
+      if (!updateMaterial)
+      {
+        updateMaterial = program->m_activeMaterialVersion != m_mat->GetRuntimeVersion();
+      }
     }
     else
     {

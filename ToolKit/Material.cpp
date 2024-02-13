@@ -31,12 +31,6 @@ namespace ToolKit
 
   Material::~Material() { UnInit(); }
 
-  void Material::NativeConstruct()
-  {
-    Super::NativeConstruct();
-    GetRenderSystem()->UpdateMaterialOnGPU(GetIdVal());
-  }
-
   void Material::Load()
   {
     if (!m_loaded)
@@ -237,6 +231,15 @@ namespace ToolKit
     GpuProgramPtr gpuProgram             = gpuProgramManager->CreateProgram(m_vertexShader, m_fragmentShader);
 
     gpuProgram->UpdateCustomUniform(uniformName, val);
+  }
+
+  void Material::UpdateRuntimeVersion()
+  {
+    m_runtimeVersion++;
+    if (m_runtimeVersion == 0) // avoid 0 since that is the default value of programs active material version
+    {
+      m_runtimeVersion++;
+    }
   }
 
   XmlNode* Material::SerializeImp(XmlDocument* doc, XmlNode* parent) const

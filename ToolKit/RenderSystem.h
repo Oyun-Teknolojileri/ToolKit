@@ -113,8 +113,6 @@ namespace ToolKit
 
     void TestSRGBBackBuffer();
 
-    void UpdateMaterialOnGPU(ULongID materialID);
-
    private:
     void ExecuteTaskImp(RenderTask& task);
 

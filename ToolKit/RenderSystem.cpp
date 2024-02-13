@@ -185,8 +185,6 @@ namespace ToolKit
   {
     m_frameCount++;
     m_renderer->m_frameCount = m_frameCount;
-
-    m_renderer->m_materialsShouldBeUpdatedOnGPU.clear();
   }
 
   void RenderSystem::TestSRGBBackBuffer()
@@ -198,11 +196,6 @@ namespace ToolKit
     GLubyte pixel[4];
     glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
     m_backbufferFormatIsSRGB = (pixel[0] > 150);
-  }
-
-  void RenderSystem::UpdateMaterialOnGPU(ULongID materialID)
-  {
-    m_renderer->m_materialsShouldBeUpdatedOnGPU.insert(materialID);
   }
 
 } // namespace ToolKit
