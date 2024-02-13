@@ -48,10 +48,10 @@ namespace ToolKit
     ULongID m_activeMaterialVersion = 0;
 
    private:
-    std::unordered_map<Uniform, int> m_defaultUniformLocationsNEW;           // TODO remove "NEW"
-    std::unordered_map<Uniform, IntArray> m_defaultArrayUniformLocationsNEW; // TODO remove "NEW"
+    std::unordered_map<Uniform, int> m_defaultUniformLocation;
+    std::unordered_map<Uniform, IntArray> m_defaultArrayUniformLocations;
 
-    std::unordered_map<String, ShaderUniform> m_customUniformsNEW; // TODO remove "NEW"
+    std::unordered_map<String, ShaderUniform> m_customUniforms;
   };
 
   constexpr int TKGpuPipelineStages = 2; //!< Number of programmable pipeline stages.

@@ -1049,7 +1049,7 @@ namespace ToolKit
       }
     }
 
-    for (auto& uniform : program->m_customUniformsNEW)
+    for (auto& uniform : program->m_customUniforms)
     {
       GLint loc = program->GetCustomUniformLocation(uniform.second);
 

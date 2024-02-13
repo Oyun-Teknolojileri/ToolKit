@@ -35,8 +35,8 @@ namespace ToolKit
   {
     if (index == -1)
     {
-      const auto& itr = m_defaultUniformLocationsNEW.find(uniform);
-      if (itr != m_defaultUniformLocationsNEW.end())
+      const auto& itr = m_defaultUniformLocation.find(uniform);
+      if (itr != m_defaultUniformLocation.end())
       {
         return itr->second;
       }
@@ -44,8 +44,8 @@ namespace ToolKit
     else
     {
       // Uniform is an array
-      const auto& itr = m_defaultArrayUniformLocationsNEW.find(uniform);
-      if (itr != m_defaultArrayUniformLocationsNEW.end())
+      const auto& itr = m_defaultArrayUniformLocations.find(uniform);
+      if (itr != m_defaultArrayUniformLocations.end())
       {
         const IntArray& locs = itr->second;
         if (locs.size() > index)
@@ -78,10 +78,10 @@ namespace ToolKit
 
   void GpuProgram::UpdateCustomUniform(const String& uniformName, const UniformValue& val)
   {
-    auto paramItr = m_customUniformsNEW.find(uniformName);
-    if (paramItr == m_customUniformsNEW.end())
+    auto paramItr = m_customUniforms.find(uniformName);
+    if (paramItr == m_customUniforms.end())
     {
-      m_customUniformsNEW[uniformName] = ShaderUniform(uniformName, val);
+      m_customUniforms[uniformName] = ShaderUniform(uniformName, val);
     }
     else
     {
@@ -91,10 +91,10 @@ namespace ToolKit
 
   void GpuProgram::UpdateCustomUniform(const ShaderUniform& uniform)
   {
-    auto paramItr = m_customUniformsNEW.find(uniform.m_name);
-    if (paramItr == m_customUniformsNEW.end())
+    auto paramItr = m_customUniforms.find(uniform.m_name);
+    if (paramItr == m_customUniforms.end())
     {
-      m_customUniformsNEW[uniform.m_name] = uniform;
+      m_customUniforms[uniform.m_name] = uniform;
     }
     else
     {
@@ -166,19 +166,19 @@ namespace ToolKit
         for (const Uniform& uniform : shader->m_uniforms)
         {
           GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(uniform));
-          program->m_defaultUniformLocationsNEW[uniform] = loc;
+          program->m_defaultUniformLocation[uniform] = loc;
         }
 
         // Array uniforms
         for (Shader::ArrayUniform arrayUniform : shader->m_arrayUniforms)
         {
-          program->m_defaultArrayUniformLocationsNEW[arrayUniform.uniform].reserve(arrayUniform.size);
+          program->m_defaultArrayUniformLocations[arrayUniform.uniform].reserve(arrayUniform.size);
           for (int i = 0; i < arrayUniform.size; ++i)
           {
             String uniformName = GetUniformName(arrayUniform.uniform);
             uniformName        = uniformName + "[" + std::to_string(i) + "]";
             GLint loc          = glGetUniformLocation(program->m_handle, uniformName.c_str());
-            program->m_defaultArrayUniformLocationsNEW[arrayUniform.uniform].push_back(loc);
+            program->m_defaultArrayUniformLocations[arrayUniform.uniform].push_back(loc);
           }
         }
       }
