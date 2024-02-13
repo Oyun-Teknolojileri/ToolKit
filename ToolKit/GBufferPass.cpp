@@ -197,23 +197,6 @@ namespace ToolKit
 
     for (RenderJobItr job = begin; job != end; job++)
     {
-
-      Material* activeMaterial = job->Material;
-      m_gBufferMaterial->SetRenderState(activeMaterial->GetRenderState());
-      m_gBufferMaterial->UnInit();
-      m_gBufferMaterial->m_diffuseTexture           = activeMaterial->m_diffuseTexture;
-      m_gBufferMaterial->m_emissiveTexture          = activeMaterial->m_emissiveTexture;
-      m_gBufferMaterial->m_emissiveColor            = activeMaterial->m_emissiveColor;
-      m_gBufferMaterial->m_metallicRoughnessTexture = activeMaterial->m_metallicRoughnessTexture;
-      m_gBufferMaterial->m_normalMap                = activeMaterial->m_normalMap;
-      m_gBufferMaterial->m_cubeMap                  = activeMaterial->m_cubeMap;
-      m_gBufferMaterial->m_color                    = activeMaterial->m_color;
-      m_gBufferMaterial->m_metallic                 = activeMaterial->m_metallic;
-      m_gBufferMaterial->m_roughness                = activeMaterial->m_roughness;
-      m_gBufferMaterial->SetAlpha(activeMaterial->GetAlpha());
-      m_gBufferMaterial->Init();
-
-      renderer->m_overrideMat = m_gBufferMaterial;
       renderer->Render(*job);
     }
 

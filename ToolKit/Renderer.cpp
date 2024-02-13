@@ -185,7 +185,7 @@ namespace ToolKit
     job.Material->Init();
 
     // Set render material.
-    m_mat = m_overrideMat != nullptr ? m_overrideMat.get() : job.Material;
+    m_mat = job.Material;
     m_mat->Init();
 
     RenderState* rs = m_mat->GetRenderState();
@@ -230,8 +230,6 @@ namespace ToolKit
     }
 
     AddDrawCall();
-
-    m_overrideMat = nullptr;
   }
 
   void Renderer::RenderWithProgramFromMaterial(const RenderJobArray& jobs)
@@ -253,15 +251,8 @@ namespace ToolKit
 
   void Renderer::Render(const RenderJobArray& jobs)
   {
-    MaterialPtr overrideMaterial = m_overrideMat;
-
     for (const RenderJob& job : jobs)
     {
-      if (overrideMaterial != nullptr)
-      {
-        m_overrideMat = overrideMaterial;
-      }
-
       Render(job);
     }
   }
@@ -680,10 +671,7 @@ namespace ToolKit
   {
     if (!GetTextureManager()->Exist(TKBrdfLutTexture))
     {
-      MaterialPtr prevOverrideMaterial = m_overrideMat;
-      FramebufferPtr prevFrameBuffer   = GetFrameBuffer();
-
-      m_overrideMat                    = nullptr;
+      FramebufferPtr prevFrameBuffer = GetFrameBuffer();
 
       TextureSettings set;
       set.InternalFormat = GraphicTypes::FormatRG16F;
@@ -719,9 +707,8 @@ namespace ToolKit
 
       brdfLut->SetFile(TKBrdfLutTexture);
       GetTextureManager()->Manage(brdfLut);
-      m_brdfLut     = brdfLut;
+      m_brdfLut = brdfLut;
 
-      m_overrideMat = prevOverrideMaterial;
       SetFramebuffer(prevFrameBuffer, GraphicBitFields::None);
     }
   }
@@ -801,11 +788,7 @@ namespace ToolKit
     }
 
     bool updateMaterial = false;
-    if (m_overrideMat)
-    {
-      updateMaterial = true;
-    }
-    else if (ULongID matID = program->m_activeMaterialID)
+    if (ULongID matID = program->m_activeMaterialID)
     {
       updateMaterial = matID != m_mat->GetIdVal();
       if (!updateMaterial)

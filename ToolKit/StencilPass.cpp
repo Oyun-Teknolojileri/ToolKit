@@ -48,7 +48,6 @@ namespace ToolKit
     assert(m_params.RenderJobs != nullptr && "Stencil Render Pass Render Jobs Are Not Given!");
 
     Renderer* renderer      = GetRenderer();
-    renderer->m_overrideMat = m_solidOverrideMaterial;
 
     // Stencil pass.
     renderer->SetStencilOperation(StencilOperation::AllowAllPixels);

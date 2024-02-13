@@ -115,10 +115,9 @@ namespace ToolKit
    public:
     uint m_frameCount = 0;
     UVec2 m_windowSize; //!< Application window size.
-    Vec4 m_clearColor         = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    MaterialPtr m_overrideMat = nullptr;
-    CameraPtr m_uiCamera      = nullptr;
-    SkyBasePtr m_sky          = nullptr;
+    Vec4 m_clearColor    = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    CameraPtr m_uiCamera = nullptr;
+    SkyBasePtr m_sky     = nullptr;
 
     // The set contains gpuPrograms that has up to date camera uniforms.
     std::unordered_set<uint> m_gpuProgramHasCameraUpdates;
