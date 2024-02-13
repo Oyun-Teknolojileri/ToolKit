@@ -134,8 +134,6 @@ namespace ToolKit
 
   void RenderSystem::SetClearColor(const Vec4& clearColor) { m_renderer->m_clearColor = clearColor; }
 
-  void RenderSystem::SetFrameCount(uint count) { m_renderer->m_frameCount = count; }
-
   void RenderSystem::EnableBlending(bool enable) { m_renderer->EnableBlending(enable); }
 
   void RenderSystem::DecrementSkipFrame()
@@ -148,6 +146,10 @@ namespace ToolKit
   }
 
   bool RenderSystem::IsSkipFrame() const { return m_skipFrames != 0; }
+
+  uint RenderSystem::GetFrameCount() { return m_frameCount; }
+
+  void RenderSystem::ResetFrameCount() { m_frameCount = 0; }
 
   void RenderSystem::SkipSceneFrames(int numFrames) { m_skipFrames = numFrames; }
 
@@ -179,6 +181,14 @@ namespace ToolKit
     }
   }
 
+  void RenderSystem::EndFrame()
+  {
+    m_frameCount++;
+    m_renderer->m_frameCount = m_frameCount;
+
+    m_renderer->m_materialsShouldBeUpdatedOnGPU.clear();
+  }
+
   void RenderSystem::TestSRGBBackBuffer()
   {
     RHI::SetFramebuffer(GL_FRAMEBUFFER, 0);
@@ -188,6 +198,11 @@ namespace ToolKit
     GLubyte pixel[4];
     glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
     m_backbufferFormatIsSRGB = (pixel[0] > 150);
+  }
+
+  void RenderSystem::UpdateMaterialOnGPU(ULongID materialID)
+  {
+    m_renderer->m_materialsShouldBeUpdatedOnGPU.insert(materialID);
   }
 
 } // namespace ToolKit

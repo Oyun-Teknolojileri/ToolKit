@@ -816,84 +816,107 @@ namespace ToolKit
       glUniform4fv(uniformLoc, 1, &color.x);
     }
 
-    uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::IBL_INTENSITY));
-    if (uniformLoc != -1)
+    bool updateMaterial = false;
+    if (m_overrideMat)
     {
-      glUniform1f(uniformLoc, m_renderState.iblIntensity);
+      updateMaterial = true;
+    }
+    else if (m_materialsShouldBeUpdatedOnGPU.find(m_mat->GetIdVal()) != m_materialsShouldBeUpdatedOnGPU.end())
+    {
+      updateMaterial = true;
+    }
+    else if (ULongID matID = program->m_activeMaterialID)
+    {
+      updateMaterial = matID != m_mat->GetIdVal();
+    }
+    else
+    {
+      updateMaterial = true;
     }
 
-    uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::IBL_MAX_REFLECTION_LOD));
-    if (uniformLoc != -1)
+    if (updateMaterial)
     {
-      glUniform1i(uniformLoc, RHIConstants::SpecularIBLLods - 1);
-    }
+      program->m_activeMaterialID = m_mat->GetIdVal();
 
-    uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::COLOR_ALPHA));
-    if (uniformLoc != -1)
-    {
-      glUniform1f(uniformLoc, m_mat->GetAlpha());
-    }
-
-    uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::USE_ALPHA_MASK));
-    if (uniformLoc != -1)
-    {
-      glUniform1i(uniformLoc, m_renderState.blendFunction == BlendFunction::ALPHA_MASK);
-    }
-
-    uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::ALPHA_MASK_TRESHOLD));
-    if (uniformLoc != -1)
-    {
-      glUniform1f(uniformLoc, m_renderState.alphaMaskTreshold);
-    }
-
-    uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::DIFFUSE_TEXTURE_IN_USE));
-    if (uniformLoc != -1)
-    {
-      int diffInUse = (int) (m_mat->m_diffuseTexture != nullptr);
-      if (m_renderOnlyLighting)
+      uniformLoc                  = program->GetUniformLocation(GetUniformName(Uniform::IBL_INTENSITY));
+      if (uniformLoc != -1)
       {
-        diffInUse = false;
+        glUniform1f(uniformLoc, m_renderState.iblIntensity);
       }
-      glUniform1i(uniformLoc, diffInUse);
-    }
 
-    uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::EMISSIVE_TEXTURE_IN_USE));
-    if (uniformLoc != -1)
-    {
-      int emmInUse = (int) (m_mat->m_emissiveTexture != nullptr);
-      glUniform1i(uniformLoc, emmInUse);
-    }
+      uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::IBL_MAX_REFLECTION_LOD));
+      if (uniformLoc != -1)
+      {
+        glUniform1i(uniformLoc, RHIConstants::SpecularIBLLods - 1);
+      }
 
-    uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::EMISSIVE_COLOR));
-    if (uniformLoc != -1)
-    {
-      glUniform3fv(uniformLoc, 1, &m_mat->m_emissiveColor.x);
-    }
+      uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::COLOR_ALPHA));
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, m_mat->GetAlpha());
+      }
 
-    uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::NORMAL_MAP_IN_USE));
-    if (uniformLoc != -1)
-    {
-      int normInUse = (int) (m_mat->m_normalMap != nullptr);
-      glUniform1i(uniformLoc, normInUse);
-    }
+      uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::USE_ALPHA_MASK));
+      if (uniformLoc != -1)
+      {
+        glUniform1i(uniformLoc, m_renderState.blendFunction == BlendFunction::ALPHA_MASK);
+      }
 
-    uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE));
-    if (uniformLoc != -1)
-    {
-      int metRghInUse = (int) (m_mat->m_metallicRoughnessTexture != nullptr);
-      glUniform1i(uniformLoc, metRghInUse);
-    }
+      uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::ALPHA_MASK_TRESHOLD));
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, m_renderState.alphaMaskTreshold);
+      }
 
-    uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::METALLIC));
-    if (uniformLoc != -1)
-    {
-      glUniform1f(uniformLoc, (GLfloat) m_mat->m_metallic);
-    }
+      uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::DIFFUSE_TEXTURE_IN_USE));
+      if (uniformLoc != -1)
+      {
+        int diffInUse = (int) (m_mat->m_diffuseTexture != nullptr);
+        if (m_renderOnlyLighting)
+        {
+          diffInUse = false;
+        }
+        glUniform1i(uniformLoc, diffInUse);
+      }
 
-    uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::ROUGHNESS));
-    if (uniformLoc != -1)
-    {
-      glUniform1f(uniformLoc, (GLfloat) m_mat->m_roughness);
+      uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::EMISSIVE_TEXTURE_IN_USE));
+      if (uniformLoc != -1)
+      {
+        int emmInUse = (int) (m_mat->m_emissiveTexture != nullptr);
+        glUniform1i(uniformLoc, emmInUse);
+      }
+
+      uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::EMISSIVE_COLOR));
+      if (uniformLoc != -1)
+      {
+        glUniform3fv(uniformLoc, 1, &m_mat->m_emissiveColor.x);
+      }
+
+      uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::NORMAL_MAP_IN_USE));
+      if (uniformLoc != -1)
+      {
+        int normInUse = (int) (m_mat->m_normalMap != nullptr);
+        glUniform1i(uniformLoc, normInUse);
+      }
+
+      uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE));
+      if (uniformLoc != -1)
+      {
+        int metRghInUse = (int) (m_mat->m_metallicRoughnessTexture != nullptr);
+        glUniform1i(uniformLoc, metRghInUse);
+      }
+
+      uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::METALLIC));
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, (GLfloat) m_mat->m_metallic);
+      }
+
+      uniformLoc = program->GetUniformLocation(GetUniformName(Uniform::ROUGHNESS));
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, (GLfloat) m_mat->m_roughness);
+      }
     }
 
     for (auto& uniform : program->m_uniformLocationsNEW)

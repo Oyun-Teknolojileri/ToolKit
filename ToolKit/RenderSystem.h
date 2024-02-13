@@ -85,10 +85,8 @@ namespace ToolKit
      */
     void SetClearColor(const Vec4& clearColor);
 
-    /**
-     * Sets frame count to be that will be used as uniform in shaders.
-     */
-    void SetFrameCount(uint count);
+    uint GetFrameCount();
+    void ResetFrameCount();
 
     void EnableBlending(bool enable);
 
@@ -106,11 +104,16 @@ namespace ToolKit
      */
     void InitGl(void* glGetProcAddres, GlReportCallback callback = nullptr);
 
-
+    /**
+     * This function should be called by the end of the frame
+     */
+    void EndFrame();
 
     inline bool IsGammaCorrectionNeeded() { return !m_backbufferFormatIsSRGB; }
 
     void TestSRGBBackBuffer();
+
+    void UpdateMaterialOnGPU(ULongID materialID);
 
    private:
     void ExecuteTaskImp(RenderTask& task);
@@ -121,6 +124,7 @@ namespace ToolKit
     Renderer* m_renderer          = nullptr;
     int m_skipFrames              = 0;
     bool m_backbufferFormatIsSRGB = true;
+    uint m_frameCount             = 0;
   };
 
 } // namespace ToolKit

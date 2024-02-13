@@ -161,6 +161,7 @@ namespace ToolKit
       {
         DirectoryEntry dirEnt(mat->GetFile());
         g_app->m_thumbnailManager.UpdateThumbnail(dirEnt);
+        GetRenderSystem()->UpdateMaterialOnGPU(mat->GetIdVal());
         mat->m_dirty = true;
       };
 

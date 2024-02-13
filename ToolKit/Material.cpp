@@ -9,6 +9,7 @@
 
 #include "FileManager.h"
 #include "Logger.h"
+#include "RenderSystem.h"
 #include "Shader.h"
 #include "ToolKit.h"
 #include "Util.h"
@@ -29,6 +30,12 @@ namespace ToolKit
   Material::Material(const String& file) : Material() { SetFile(file); }
 
   Material::~Material() { UnInit(); }
+
+  void Material::NativeConstruct()
+  {
+    Super::NativeConstruct();
+    GetRenderSystem()->UpdateMaterialOnGPU(GetIdVal());
+  }
 
   void Material::Load()
   {
@@ -224,11 +231,10 @@ namespace ToolKit
 
   void Material::UpdateUniformOfThisMaterialsProgram(const String& uniformName, const UniformValue& val)
   {
-    m_vertexShader->Init();
-    m_fragmentShader->Init();
+    Init();
 
     GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
-    GpuProgramPtr gpuProgram = gpuProgramManager->CreateProgram(m_vertexShader, m_fragmentShader);
+    GpuProgramPtr gpuProgram             = gpuProgramManager->CreateProgram(m_vertexShader, m_fragmentShader);
 
     gpuProgram->UpdateUniform(uniformName, val);
   }

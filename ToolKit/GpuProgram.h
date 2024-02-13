@@ -44,6 +44,7 @@ namespace ToolKit
    public:
     uint m_handle = 0;
     ShaderPtrArray m_shaders;
+    ULongID m_activeMaterialID = 0;
 
    private:
     std::unordered_map<String, ShaderUniform> m_uniformsNEW;         // TODO remove "NEW"

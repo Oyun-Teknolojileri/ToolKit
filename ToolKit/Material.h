@@ -24,6 +24,8 @@ namespace ToolKit
     explicit Material(const String& file);
     virtual ~Material();
 
+    void NativeConstruct();
+
     void Load() override;
     void Save(bool onlyIfDirty) override;
     void Init(bool flushClientSideArray = false) override;
