@@ -479,26 +479,35 @@ namespace ToolKit
   void Renderer::DrawFullQuad(ShaderPtr fragmentShader)
   {
     ShaderPtr fullQuadVert = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
-    MaterialPtr material   = MakeNewPtr<Material>();
-    material->UnInit();
+    if (m_tempQuadMaterial == nullptr)
+    {
+      m_tempQuadMaterial = MakeNewPtr<Material>();
+    }
+    m_tempQuadMaterial->UnInit();
 
-    material->m_vertexShader   = fullQuadVert;
-    material->m_fragmentShader = fragmentShader;
-    material->Init();
+    m_tempQuadMaterial->m_vertexShader   = fullQuadVert;
+    m_tempQuadMaterial->m_fragmentShader = fragmentShader;
+    m_tempQuadMaterial->Init();
 
-    DrawFullQuad(material);
+    DrawFullQuad(m_tempQuadMaterial);
   }
 
   void Renderer::DrawFullQuad(MaterialPtr mat)
   {
-    QuadPtr quad                                       = MakeNewPtr<Quad>();
-    quad->GetMeshComponent()->GetMeshVal()->m_material = mat;
-
-    CameraPtr quadCam                                  = MakeNewPtr<Camera>();
-    SetCamera(quadCam, true);
+    if (m_tempQuad == nullptr)
+    {
+      m_tempQuad = MakeNewPtr<Quad>();
+    }
+    m_tempQuad->GetMeshComponent()->GetMeshVal()->m_material = mat;
+    
+    if (m_tempQuadCam == nullptr)
+    {
+      m_tempQuadCam                                        = MakeNewPtr<Camera>();
+    }
+    SetCamera(m_tempQuadCam, true);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({quad}, jobs);
+    RenderJobProcessor::CreateRenderJobs({m_tempQuad}, jobs);
 
     bool lastDepthTestState = m_renderState.depthTestEnabled;
     EnableDepthTest(false);

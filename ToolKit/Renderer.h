@@ -184,6 +184,9 @@ namespace ToolKit
     FramebufferPtr m_oneColorAttachmentFramebuffer = nullptr;
     MaterialPtr m_gaussianBlurMaterial             = nullptr;
     MaterialPtr m_averageBlurMaterial              = nullptr;
+    QuadPtr m_tempQuad                             = nullptr;
+    MaterialPtr m_tempQuadMaterial                 = nullptr;
+    CameraPtr m_tempQuadCam                        = nullptr;
 
     FramebufferPtr m_copyFb                        = nullptr;
     MaterialPtr m_copyMaterial                     = nullptr;
