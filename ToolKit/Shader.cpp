@@ -164,16 +164,42 @@ namespace ToolKit
         XmlAttribute* nameAttr = node->first_attribute("name");
         XmlAttribute* sizeAttr = node->first_attribute("size");
 
-        if (sizeAttr != nullptr)
+        bool isUniformFound    = false;
+        for (uint i = 0; i < (uint) Uniform::UNIFORM_MAX_INVALID; i++)
         {
-          // Uniform is array
-          int size = std::atoi(sizeAttr->value());
-          m_arrayUniforms.push_back({nameAttr->value(), size});
+          // Skipping unused variables.
+          switch ((Uniform) i)
+          {
+          case Uniform::UNUSEDSLOT_2:
+          case Uniform::UNUSEDSLOT_3:
+          case Uniform::UNUSEDSLOT_4:
+          case Uniform::UNUSEDSLOT_5:
+          case Uniform::UNUSEDSLOT_6:
+          case Uniform::UNUSEDSLOT_7:
+            isUniformFound = true;
+            continue;
+          }
+
+          // Find uniform from name
+          if (strcmp(GetUniformName((Uniform) i), nameAttr->value()) == 0)
+          {
+            isUniformFound = true;
+
+            if (sizeAttr != nullptr)
+            {
+              // Uniform is array
+              int size = std::atoi(sizeAttr->value());
+              m_arrayUniforms.push_back({(Uniform) i, size});
+            }
+            else
+            {
+              m_uniforms.push_back((Uniform) i);
+            }
+
+            break;
+          }
         }
-        else
-        {
-          m_uniforms.push_back(nameAttr->value());
-        }
+        assert(isUniformFound);
       }
 
       if (strcmp("source", node->name()) == 0)
@@ -265,13 +291,13 @@ namespace ToolKit
     m_source.replace(includeLoc, 0, includeSource);
 
     // Handle uniforms
-    std::unordered_set<String> unis;
+    std::unordered_set<Uniform> unis;
 
-    for (String& uni : m_uniforms)
+    for (Uniform& uni : m_uniforms)
     {
       unis.insert(uni);
     }
-    for (String& uni : includeShader->m_uniforms)
+    for (Uniform& uni : includeShader->m_uniforms)
     {
       unis.insert(uni);
     }
@@ -287,7 +313,7 @@ namespace ToolKit
       m_arrayUniforms.push_back(uni);
     }
 
-    auto arrayUniformCompareFn = [](ArrayUniform& uni1, ArrayUniform& uni2) { return uni1.name < uni2.name; };
+    auto arrayUniformCompareFn = [](ArrayUniform& uni1, ArrayUniform& uni2) { return uni1.uniform < uni2.uniform; };
 
     // Remove duplicates
     std::sort(m_arrayUniforms.begin(), m_arrayUniforms.end(), arrayUniformCompareFn);

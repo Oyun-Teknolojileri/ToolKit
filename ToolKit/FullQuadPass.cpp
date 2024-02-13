@@ -79,7 +79,7 @@ namespace ToolKit
 
     for (int i = 0; i < m_params.shaderUniforms.size(); ++i)
     {
-      m_program->UpdateUniform(m_params.shaderUniforms[i]);
+      m_program->UpdateCustomUniform(m_params.shaderUniforms[i]);
     }
 
     renderer->BindProgram(m_program);

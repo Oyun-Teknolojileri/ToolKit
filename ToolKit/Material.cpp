@@ -236,7 +236,7 @@ namespace ToolKit
     GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
     GpuProgramPtr gpuProgram             = gpuProgramManager->CreateProgram(m_vertexShader, m_fragmentShader);
 
-    gpuProgram->UpdateUniform(uniformName, val);
+    gpuProgram->UpdateCustomUniform(uniformName, val);
   }
 
   XmlNode* Material::SerializeImp(XmlDocument* doc, XmlNode* parent) const

@@ -44,16 +44,16 @@ namespace ToolKit
    public:
     struct ArrayUniform
     {
-      String name;
+      Uniform uniform;
       int size;
 
-      bool operator==(const ArrayUniform& other) const { return name == other.name && size == other.size; }
+      bool operator==(const ArrayUniform& other) const { return uniform == other.uniform && size == other.size; }
     };
 
     /**
      * Built-in Uniform's that are required for the shader.
      */
-    StringArray m_uniforms;
+    std::vector<Uniform> m_uniforms;
 
     /**
      * Built-in Uniform's that are arrays and required for the shader.

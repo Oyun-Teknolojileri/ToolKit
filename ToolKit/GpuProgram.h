@@ -30,16 +30,16 @@ namespace ToolKit
 
     /**
      * If caller gives index (different than -1), this function tries to get uniform location as array.
-     * Returns -1 if the uniform is not in the program.
-     * If the uniform is not registered but is in the program, this function generates the location of the uniform
      */
-    int GetUniformLocation(const String& uniformName, int index = -1);
+    int GetDefaultUniformLocation(Uniform uniform, int index = -1);
+
+    int GetCustomUniformLocation(ShaderUniform& shaderUniform);
 
     /**
      * Updates or adds the given uniform to the uniform cache of the program.
      */
-    void UpdateUniform(const String& name, const UniformValue& val);
-    void UpdateUniform(const ShaderUniform& uniform);
+    void UpdateCustomUniform(const String& name, const UniformValue& val);
+    void UpdateCustomUniform(const ShaderUniform& uniform);
 
    public:
     uint m_handle = 0;
@@ -47,9 +47,10 @@ namespace ToolKit
     ULongID m_activeMaterialID = 0;
 
    private:
-    std::unordered_map<String, ShaderUniform> m_uniformsNEW;         // TODO remove "NEW"
-    std::unordered_map<String, int> m_uniformLocationsNEW;           // TODO remove "NEW"
-    std::unordered_map<String, IntArray> m_arrayUniformLocationsNEW; // TODO remove "NEW"
+    std::unordered_map<Uniform, int> m_defaultUniformLocationsNEW;           // TODO remove "NEW"
+    std::unordered_map<Uniform, IntArray> m_defaultArrayUniformLocationsNEW; // TODO remove "NEW"
+
+    std::unordered_map<String, ShaderUniform> m_customUniformsNEW; // TODO remove "NEW"
   };
 
   constexpr int TKGpuPipelineStages = 2; //!< Number of programmable pipeline stages.

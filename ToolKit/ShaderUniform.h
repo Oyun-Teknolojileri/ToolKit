@@ -102,6 +102,7 @@ namespace ToolKit
   class TK_API ShaderUniform
   {
     friend class Renderer;
+    friend class GpuProgram;
 
    public:
     enum class UpdateFrequency
@@ -150,6 +151,10 @@ namespace ToolKit
     String m_name;
     UpdateFrequency m_updateFrequency;
     UniformValue m_value;
+
+   private:
+    int m_locInGPUProgram                    = -1;
+    bool m_thisUniformIsSearchedInGPUProgram = false;
   };
 
 } // namespace ToolKit
