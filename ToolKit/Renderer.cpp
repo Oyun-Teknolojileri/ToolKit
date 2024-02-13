@@ -821,9 +821,10 @@ namespace ToolKit
     int uniformLoc = -1;
     if (updateMaterial)
     {
-      program->m_activeMaterialID = m_mat->GetIdVal();
+      program->m_activeMaterialID      = m_mat->GetIdVal();
+      program->m_activeMaterialVersion = m_mat->GetRuntimeVersion();
 
-      uniformLoc                  = program->GetDefaultUniformLocation(Uniform::COLOR);
+      uniformLoc                       = program->GetDefaultUniformLocation(Uniform::COLOR);
       if (uniformLoc != -1)
       {
         Vec4 color = Vec4(m_mat->m_color, m_mat->GetAlpha());
