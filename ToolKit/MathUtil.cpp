@@ -17,6 +17,8 @@
 #include "TKProfiler.h"
 #include "Threads.h"
 
+#include <glm/gtx/matrix_decompose.hpp>
+
 #include <random>
 
 #include "DebugNew.h"
@@ -28,11 +30,28 @@ namespace ToolKit
   {
     // assert(IsAffine(transform));
 
-    if (scale != nullptr || orientation != nullptr)
+    if (scale != nullptr || orientation != nullptr || translation != nullptr)
     {
       Mat3 matQ;
-      Vec3 s, vecU;
-      QDUDecomposition(transform, matQ, s, vecU);
+      Vec3 s, vecU, tr;
+      Quaternion quat;
+      // QDUDecomposition(transform, matQ, s, vecU);
+
+      Vec3 scaleSign;
+      float det   = glm::sign(glm::determinant(transform));
+      scaleSign.x = glm::sign(transform[0][0]);
+      scaleSign.y = glm::sign(transform[1][1]);
+      scaleSign.z = glm::sign(transform[2][2]);
+
+      Vec4 perspective;
+      glm::decompose(transform, s, quat, tr, vecU, perspective);
+
+      if (det < 0.0f)
+      {
+        s.x *= scaleSign.x * det;
+        s.y *= scaleSign.y * det;
+        s.z *= scaleSign.z * det;
+      }
 
       if (scale != nullptr)
       {
@@ -41,13 +60,15 @@ namespace ToolKit
 
       if (orientation != nullptr)
       {
-        *orientation = glm::toQuat(matQ);
+        *orientation = quat;
+        //*orientation = glm::toQuat(matQ);
       }
-    }
 
-    if (translation != nullptr)
-    {
-      *translation = glm::column(transform, 3);
+      if (translation != nullptr)
+      {
+        *translation = tr;
+        //*translation = glm::column(transform, 3);
+      }
     }
   }
 
