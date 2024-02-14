@@ -24,29 +24,103 @@
 namespace ToolKit
 {
 
+  float Determinant(const Mat4& mat)
+  {
+    return mat[0][0] * (mat[1][1] * mat[2][2] - mat[2][1] * mat[1][2]) -
+           mat[1][0] * (mat[0][1] * mat[2][2] - mat[2][1] * mat[0][2]) +
+           mat[2][0] * (mat[0][1] * mat[1][2] - mat[1][1] * mat[0][2]);
+  }
+
+  Vec3 GetScaleAbs(const Mat3& mat)
+  {
+    Vec3 r1 = Vec3(mat[0][0], mat[1][0], mat[2][0]);
+    Vec3 r2 = Vec3(mat[0][1], mat[1][1], mat[2][1]);
+    Vec3 r3 = Vec3(mat[0][2], mat[1][2], mat[2][2]);
+
+    return Vec3(glm::length(r1), glm::length2(r2), glm::length(r3));
+  }
+
+  Quaternion GetQuaternion(const Mat3& mat)
+  {
+    Mat3 m      = mat;
+    float trace = m[0][0] + m[1][1] + m[2][2];
+    float temp[4];
+
+    if (trace > 0.0f)
+    {
+      float s = glm::sqrt(trace + 1.0f);
+      temp[3] = (s * 0.5f);
+      s       = 0.5f / s;
+
+      temp[0] = ((m[2][1] - m[1][2]) * s);
+      temp[1] = ((m[0][2] - m[2][0]) * s);
+      temp[2] = ((m[1][0] - m[0][1]) * s);
+    }
+    else
+    {
+      int i   = m[0][0] < m[1][1] ? (m[1][1] < m[2][2] ? 2 : 1) : (m[0][0] < m[2][2] ? 2 : 0);
+      int j   = (i + 1) % 3;
+      int k   = (i + 2) % 3;
+
+      float s = glm::sqrt(m[i][i] - m[j][j] - m[k][k] + 1.0f);
+      temp[i] = s * 0.5f;
+      s       = 0.5f / s;
+
+      temp[3] = (m[k][j] - m[j][k]) * s;
+      temp[j] = (m[j][i] + m[i][j]) * s;
+      temp[k] = (m[k][i] + m[i][k]) * s;
+    }
+
+    return Quaternion(temp[0], temp[1], temp[2], temp[3]);
+  }
+
   void DecomposeMatrix(const Mat4& transform, Vec3* translation, Quaternion* orientation, Vec3* scale)
   {
     // assert(IsAffine(transform));
 
+    Quaternion _quaternion;
+    Vec3 _scale;
+
+    if (scale != nullptr)
+    {
+      float detSign = glm::sign(Determinant(transform));
+      _scale        = GetScaleAbs(transform);
+
+      *scale        = _scale * detSign;
+    }
+
+    if (orientation != nullptr)
+    {
+      Mat3 m    = glm::orthonormalize(Mat3(transform));
+      float det = glm::determinant(m);
+      if (det < 0.0f)
+      {
+        //m *= -1.0f;
+      }
+
+      *orientation = glm::toQuat(m);
+    }
+
+    if (translation != nullptr)
+    {
+      *translation = glm::column(transform, 3);
+    }
+
+    /*
     if (scale != nullptr || orientation != nullptr)
     {
       Mat3 matQ;
       Vec3 s, vecU;
       Quaternion quat;
 
-      Vec3 scaleSign;
-      float det   = glm::sign(glm::determinant(transform));
-      scaleSign.x = glm::sign(transform[0][0]);
-      scaleSign.y = glm::sign(transform[1][1]);
-      scaleSign.z = glm::sign(transform[2][2]);
+      float det      = glm::sign(glm::determinant(transform));
+      Vec3 scaleSign = glm::sign(Vec3(transform[0][0], transform[1][1], transform[2][2]));
 
       QDUDecomposition(transform, matQ, s, vecU);
 
       if (det < 0.0f)
       {
-        s.x *= scaleSign.x * det;
-        s.y *= scaleSign.y * det;
-        s.z *= scaleSign.z * det;
+        s *= scaleSign * (-1.0f);
       }
 
       if (scale != nullptr)
@@ -64,6 +138,7 @@ namespace ToolKit
     {
       *translation = glm::column(transform, 3);
     }
+    */
   }
 
   bool IsAffine(const Mat4& transform)
