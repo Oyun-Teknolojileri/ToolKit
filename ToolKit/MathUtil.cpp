@@ -17,8 +17,6 @@
 #include "TKProfiler.h"
 #include "Threads.h"
 
-#include <glm/gtx/matrix_decompose.hpp>
-
 #include <random>
 
 #include "DebugNew.h"
