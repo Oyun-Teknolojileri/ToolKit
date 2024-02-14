@@ -30,12 +30,11 @@ namespace ToolKit
   {
     // assert(IsAffine(transform));
 
-    if (scale != nullptr || orientation != nullptr || translation != nullptr)
+    if (scale != nullptr || orientation != nullptr)
     {
       Mat3 matQ;
-      Vec3 s, vecU, tr;
+      Vec3 s, vecU;
       Quaternion quat;
-      // QDUDecomposition(transform, matQ, s, vecU);
 
       Vec3 scaleSign;
       float det   = glm::sign(glm::determinant(transform));
@@ -43,8 +42,7 @@ namespace ToolKit
       scaleSign.y = glm::sign(transform[1][1]);
       scaleSign.z = glm::sign(transform[2][2]);
 
-      Vec4 perspective;
-      glm::decompose(transform, s, quat, tr, vecU, perspective);
+      QDUDecomposition(transform, matQ, s, vecU);
 
       if (det < 0.0f)
       {
@@ -60,15 +58,13 @@ namespace ToolKit
 
       if (orientation != nullptr)
       {
-        *orientation = quat;
-        //*orientation = glm::toQuat(matQ);
+        *orientation = glm::toQuat(matQ);
       }
+    }
 
-      if (translation != nullptr)
-      {
-        *translation = tr;
-        //*translation = glm::column(transform, 3);
-      }
+    if (translation != nullptr)
+    {
+      *translation = glm::column(transform, 3);
     }
   }
 
