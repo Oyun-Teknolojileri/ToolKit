@@ -919,6 +919,7 @@ namespace ToolKit
     {
       parent->m_node->AddChild(ntt->m_node);
     }
+
     for (uint meshIndx = 0; meshIndx < node->mNumMeshes; meshIndx++)
     {
       aiMesh* aMesh = g_scene->mMeshes[node->mMeshes[meshIndx]];
@@ -927,7 +928,14 @@ namespace ToolKit
         continue;
       }
 
-      MeshComponentPtr meshComp = ntt->AddComponent<MeshComponent>();
+      bool firstMesh            = false;
+      MeshComponentPtr meshComp = ntt->GetComponent<MeshComponent>();
+      if (meshComp == nullptr)
+      {
+        firstMesh = true;
+        meshComp = ntt->AddComponent<MeshComponent>();
+      }
+
       if (aMesh->HasBones())
       {
         meshComp->SetMeshVal(mainSkinMesh);
@@ -939,10 +947,21 @@ namespace ToolKit
       }
       else
       {
-        meshComp->SetMeshVal(g_meshes[aMesh]);
+        if (firstMesh)
+        {
+          meshComp->SetMeshVal(g_meshes[aMesh]);
+        }
+        else
+        {
+          meshComp->GetMeshVal()->m_subMeshes.push_back(g_meshes[aMesh]);
+        }
       }
 
-      MaterialComponentPtr matComp = ntt->AddComponent<MaterialComponent>();
+      MaterialComponentPtr matComp = ntt->GetComponent<MaterialComponent>();
+      if (matComp == nullptr)
+      {
+        matComp = ntt->AddComponent<MaterialComponent>();
+      }
       matComp->UpdateMaterialList();
     }
 
