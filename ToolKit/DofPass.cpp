@@ -42,10 +42,11 @@ namespace ToolKit
       return;
     }
 
-    m_quadPass->m_params.shaderUniforms.clear();
-    m_quadPass->m_params.shaderUniforms.push_back(ShaderUniform("focusPoint", m_params.focusPoint));
-    m_quadPass->m_params.shaderUniforms.push_back(ShaderUniform("focusScale", m_params.focusScale));
-    m_quadPass->m_params.shaderUniforms.push_back(ShaderUniform("blurSize", 5.0f));
+    m_quadPass->SetFragmentShader(m_dofShader, GetRenderer());
+
+    m_quadPass->UpdateCustomUniform(ShaderUniform("focusPoint", m_params.focusPoint));
+    m_quadPass->UpdateCustomUniform(ShaderUniform("focusScale", m_params.focusScale));
+    m_quadPass->UpdateCustomUniform(ShaderUniform("blurSize", 5.0f));
 
     float blurRadiusScale = 0.5f;
     switch (m_params.blurQuality)
@@ -60,16 +61,15 @@ namespace ToolKit
       blurRadiusScale = 0.2f;
       break;
     }
-    m_quadPass->m_params.shaderUniforms.push_back(ShaderUniform("radiusScale", blurRadiusScale));
+    m_quadPass->UpdateCustomUniform(ShaderUniform("radiusScale", blurRadiusScale));
 
     IVec2 size(m_params.ColorRt->m_width, m_params.ColorRt->m_height);
 
     m_quadPass->m_params.FrameBuffer->Init({size.x, size.y, false, false});
-    m_quadPass->m_params.shaderUniforms.push_back(ShaderUniform("uPixelSize", Vec2(1.0f) / Vec2(size)));
+    m_quadPass->UpdateCustomUniform(ShaderUniform("uPixelSize", Vec2(1.0f) / Vec2(size)));
     m_quadPass->m_params.FrameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.ColorRt);
     m_quadPass->m_params.BlendFunc        = BlendFunction::NONE;
     m_quadPass->m_params.ClearFrameBuffer = false;
-    m_quadPass->m_params.FragmentShader   = m_dofShader;
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

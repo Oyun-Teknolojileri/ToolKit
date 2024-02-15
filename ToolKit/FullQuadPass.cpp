@@ -66,23 +66,11 @@ namespace ToolKit
     PUSH_GPU_MARKER("FullQuadPass::PreRender");
     PUSH_CPU_MARKER("FullQuadPass::PreRender");
 
+    // Gpu Program should be bound before calling FulQuadPass Render
+
     Pass::PreRender();
     Renderer* renderer = GetRenderer();
     renderer->EnableDepthTest(false);
-
-    m_material->m_fragmentShader = m_params.FragmentShader;
-    m_material->UnInit(); // Reinit in case, shader change.
-    m_material->Init();
-    m_material->GetRenderState()->blendFunction = m_params.BlendFunc;
-
-    m_program = GetGpuProgramManager()->CreateProgram(m_material->m_vertexShader, m_material->m_fragmentShader);
-
-    for (int i = 0; i < m_params.shaderUniforms.size(); ++i)
-    {
-      m_program->UpdateCustomUniform(m_params.shaderUniforms[i]);
-    }
-
-    renderer->BindProgram(m_program);
 
     MeshComponentPtr mc = m_quad->GetMeshComponent();
     MeshPtr mesh        = mc->GetMeshVal();
@@ -103,6 +91,21 @@ namespace ToolKit
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
+  }
+
+  void FullQuadPass::SetFragmentShader(ShaderPtr fragmentShader, Renderer* renderer)
+  {
+    m_material->m_fragmentShader                = fragmentShader;
+    m_material->GetRenderState()->blendFunction = m_params.BlendFunc;
+
+    m_program = GetGpuProgramManager()->CreateProgram(m_material->m_vertexShader, m_material->m_fragmentShader);
+
+    renderer->BindProgram(m_program);
+  }
+
+  void FullQuadPass::UpdateCustomUniform(const ShaderUniform& shaderUniform)
+  {
+    m_program->UpdateCustomUniform(shaderUniform);
   }
 
 } // namespace ToolKit
