@@ -55,9 +55,9 @@ namespace ToolKit
       m_pass->SetFragmentShader(m_downsampleShader, renderer);
       int passIndx = 0;
 
-      m_pass->UpdateCustomUniform(ShaderUniform("passIndx", passIndx));
-      m_pass->UpdateCustomUniform(ShaderUniform("srcResolution", mainRes));
-      m_pass->UpdateCustomUniform(ShaderUniform("threshold", m_params.minThreshold));
+      m_pass->UpdateUniform(ShaderUniform("passIndx", passIndx));
+      m_pass->UpdateUniform(ShaderUniform("srcResolution", mainRes));
+      m_pass->UpdateUniform(ShaderUniform("threshold", m_params.minThreshold));
 
       TexturePtr prevRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
 
@@ -92,8 +92,8 @@ namespace ToolKit
 
         int passIndx                   = i + 1;
 
-        m_pass->UpdateCustomUniform(ShaderUniform("passIndx", passIndx));
-        m_pass->UpdateCustomUniform(ShaderUniform("srcResolution", prevRes));
+        m_pass->UpdateUniform(ShaderUniform("passIndx", passIndx));
+        m_pass->UpdateUniform(ShaderUniform("srcResolution", prevRes));
 
         renderer->SetTexture(0, prevRt->m_textureId);
 
@@ -111,8 +111,8 @@ namespace ToolKit
       m_pass->SetFragmentShader(m_upsampleShader, renderer);
 
       const float filterRadius = 0.002f;
-      m_pass->UpdateCustomUniform(ShaderUniform("filterRadius", filterRadius));
-      m_pass->UpdateCustomUniform(ShaderUniform("intensity", 1.0f));
+      m_pass->UpdateUniform(ShaderUniform("filterRadius", filterRadius));
+      m_pass->UpdateUniform(ShaderUniform("intensity", 1.0f));
 
       for (int i = m_currentIterationCount; i > 0; i--)
       {
@@ -141,7 +141,7 @@ namespace ToolKit
       m_pass->m_params.ClearFrameBuffer = false;
       m_pass->m_params.FrameBuffer      = m_params.FrameBuffer;
 
-      m_pass->UpdateCustomUniform(ShaderUniform("intensity", m_params.intensity));
+      m_pass->UpdateUniform(ShaderUniform("intensity", m_params.intensity));
 
       RenderSubPass(m_pass);
     }

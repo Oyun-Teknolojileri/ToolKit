@@ -49,7 +49,7 @@ namespace ToolKit
     GetRenderer()->SetTexture(0, m_stencilAsRt->m_textureId);
 
     m_outlinePass->SetFragmentShader(m_dilateShader, GetRenderer());
-    m_outlinePass->UpdateCustomUniform(ShaderUniform("Color", m_params.OutlineColor));
+    m_outlinePass->UpdateUniform(ShaderUniform("Color", m_params.OutlineColor));
 
     // Draw outline to the viewport.
     m_outlinePass->m_params.FrameBuffer      = m_params.FrameBuffer;

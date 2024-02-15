@@ -34,11 +34,15 @@ namespace ToolKit
     void PreRender() override;
     void PostRender() override;
 
-    // This function should be called in order to create material and program of quad render
+    /**
+     * This function should be called in order to create material and program of quad render
+     */
     void SetFragmentShader(ShaderPtr fragmentShader, Renderer* renderer);
 
-    // This function is used to pass custom uniforms to this pass
-    void UpdateCustomUniform(const ShaderUniform& shaderUniform);
+    /**
+     * This function is used to pass custom uniforms to this pass
+     */
+    void UpdateUniform(const ShaderUniform& shaderUniform);
 
    public:
     FullQuadPassParams m_params;

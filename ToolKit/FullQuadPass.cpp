@@ -103,7 +103,7 @@ namespace ToolKit
     renderer->BindProgram(m_program);
   }
 
-  void FullQuadPass::UpdateCustomUniform(const ShaderUniform& shaderUniform)
+  void FullQuadPass::UpdateUniform(const ShaderUniform& shaderUniform)
   {
     m_program->UpdateCustomUniform(shaderUniform);
   }

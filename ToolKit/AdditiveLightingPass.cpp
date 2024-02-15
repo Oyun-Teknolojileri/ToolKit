@@ -96,10 +96,10 @@ namespace ToolKit
     CPU_FUNC_RANGE();
 
     Vec3 pos = light->m_node->GetTranslation();
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightType", lightType));
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightPos", pos));
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightIntensity", light->GetIntensityVal()));
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightColor", light->GetColorVal()));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightType", lightType));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightPos", pos));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightIntensity", light->GetIntensityVal()));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightColor", light->GetColorVal()));
 
     Vec3 dir;
     switch (lightType)
@@ -112,7 +112,7 @@ namespace ToolKit
     case 4:
     {
       PointLight* pointLight = static_cast<PointLight*>(light.get());
-      m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightRadius", pointLight->GetRadiusVal()));
+      m_fullQuadPass->UpdateUniform(ShaderUniform("lightRadius", pointLight->GetRadiusVal()));
     }
     break;
     case 2: // is spot
@@ -122,9 +122,9 @@ namespace ToolKit
       dir                  = spotLight->GetComponentFast<DirectionComponent>()->GetDirection();
       float outAngle       = glm::cos(glm::radians(spotLight->GetOuterAngleVal() * 0.5f));
       float innAngle       = glm::cos(glm::radians(spotLight->GetInnerAngleVal() * 0.5f));
-      m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightRadius", spotLight->GetRadiusVal()));
-      m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightOutAngle", outAngle));
-      m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightInnAngle", innAngle));
+      m_fullQuadPass->UpdateUniform(ShaderUniform("lightRadius", spotLight->GetRadiusVal()));
+      m_fullQuadPass->UpdateUniform(ShaderUniform("lightOutAngle", outAngle));
+      m_fullQuadPass->UpdateUniform(ShaderUniform("lightInnAngle", innAngle));
     }
     break;
     default:
@@ -132,7 +132,7 @@ namespace ToolKit
       break;
     }
 
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightDir", dir));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightDir", dir));
 
     if (lightType < 3) // does not have shadow
     {
@@ -144,16 +144,15 @@ namespace ToolKit
     const Mat4& projView   = light->m_shadowMapCameraProjectionViewMatrix;
     float atlasResRatio    = light->GetShadowResVal() / atlasTextureSize;
 
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightShadowMapCameraFar", light->m_shadowMapCameraFar));
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightProjectionViewMatrix", projView));
-    m_fullQuadPass->UpdateCustomUniform(
-        ShaderUniform("lightShadowAtlasCoord", light->m_shadowAtlasCoord / atlasTextureSize));
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightShadowAtlasResRatio", atlasResRatio));
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightShadowAtlasLayer", (float) light->m_shadowAtlasLayer));
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightPCFSamples", light->GetPCFSamplesVal()));
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightPCFRadius", light->GetPCFRadiusVal()));
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightBleedReduction", light->GetBleedingReductionVal()));
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("lightShadowBias", bias));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowMapCameraFar", light->m_shadowMapCameraFar));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightProjectionViewMatrix", projView));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowAtlasCoord", light->m_shadowAtlasCoord / atlasTextureSize));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowAtlasResRatio", atlasResRatio));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowAtlasLayer", (float) light->m_shadowAtlasLayer));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightPCFSamples", light->GetPCFSamplesVal()));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightPCFRadius", light->GetPCFRadiusVal()));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightBleedReduction", light->GetBleedingReductionVal()));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowBias", bias));
   }
 
   void AdditiveLightingPass::Render()
@@ -171,8 +170,8 @@ namespace ToolKit
 
     m_fullQuadPass->SetFragmentShader(m_lightingShader, renderer);
 
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("aoEnabled", m_params.AOTexture != nullptr));
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("camPos", m_params.Cam->Position()));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("aoEnabled", m_params.AOTexture != nullptr));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("camPos", m_params.Cam->Position()));
 
     renderer->EnableDepthTest(true);
     CameraPtr camera = m_params.Cam;
@@ -257,7 +256,7 @@ namespace ToolKit
       }
     }
 
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("isScreenSpace", true));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("isScreenSpace", true));
     for (auto& [light, lightType] : screenSpaceLights)
     {
       SetLightUniforms(light, lightType);
@@ -296,7 +295,7 @@ namespace ToolKit
     renderer->SetTexture(1, emmisiveRt->m_textureId);
     renderer->SetTexture(2, iblRt->m_textureId);
 
-    m_fullQuadPass->UpdateCustomUniform(ShaderUniform("aoEnabled", m_params.AOTexture != nullptr));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("aoEnabled", m_params.AOTexture != nullptr));
     renderer->SetTexture(5, m_params.AOTexture != nullptr ? m_params.AOTexture->m_textureId : 0);
 
     // merge lighting, ibl, ao, and emmisive

@@ -133,19 +133,19 @@ namespace ToolKit
       // Update kernel
       for (int i = 0; i < m_params.KernelSize; ++i)
       {
-        m_quadPass->UpdateCustomUniform(ShaderUniform(m_ssaoSamplesStrCache[i], m_ssaoKernel[i]));
+        m_quadPass->UpdateUniform(ShaderUniform(m_ssaoSamplesStrCache[i], m_ssaoKernel[i]));
       }
 
       m_prevSpread = m_params.spread;
     }
 
-    m_quadPass->UpdateCustomUniform(ShaderUniform("screenSize", Vec2(width, height)));
-    m_quadPass->UpdateCustomUniform(ShaderUniform("bias", m_params.Bias));
-    m_quadPass->UpdateCustomUniform(ShaderUniform("kernelSize", m_params.KernelSize));
-    m_quadPass->UpdateCustomUniform(ShaderUniform("projection", m_params.Cam->GetProjectionMatrix()));
-    m_quadPass->UpdateCustomUniform(ShaderUniform("viewMatrix", m_params.Cam->GetViewMatrix()));
-    m_quadPass->UpdateCustomUniform(ShaderUniform("radius", m_params.Radius));
-    m_quadPass->UpdateCustomUniform(ShaderUniform("bias", m_params.Bias));
+    m_quadPass->UpdateUniform(ShaderUniform("screenSize", Vec2(width, height)));
+    m_quadPass->UpdateUniform(ShaderUniform("bias", m_params.Bias));
+    m_quadPass->UpdateUniform(ShaderUniform("kernelSize", m_params.KernelSize));
+    m_quadPass->UpdateUniform(ShaderUniform("projection", m_params.Cam->GetProjectionMatrix()));
+    m_quadPass->UpdateUniform(ShaderUniform("viewMatrix", m_params.Cam->GetViewMatrix()));
+    m_quadPass->UpdateUniform(ShaderUniform("radius", m_params.Radius));
+    m_quadPass->UpdateUniform(ShaderUniform("bias", m_params.Bias));
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
