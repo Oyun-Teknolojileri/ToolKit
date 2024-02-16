@@ -182,8 +182,8 @@ namespace ToolKit
      * This way, we can use without needing to resize or reInit.
      */
     FramebufferPtr m_oneColorAttachmentFramebuffer = nullptr;
-    MaterialPtr m_gaussianBlurMaterial             = nullptr;
-    MaterialPtr m_averageBlurMaterial              = nullptr;
+    ShaderMaterialPtr m_gaussianBlurMaterial       = nullptr;
+    ShaderMaterialPtr m_averageBlurMaterial        = nullptr;
     QuadPtr m_tempQuad                             = nullptr;
     MaterialPtr m_tempQuadMaterial                 = nullptr;
     CameraPtr m_tempQuadCam                        = nullptr;

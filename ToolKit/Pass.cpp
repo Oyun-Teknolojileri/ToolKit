@@ -326,7 +326,7 @@ namespace ToolKit
       forwardItr = std::partition(culledItr,
                                   renderData.jobs.end(),
                                   [](const RenderJob& job)
-                                  { return !job.Material->IsCustom() && !job.Material->IsTranslucent(); });
+                                  { return !job.Material->IsA<ShaderMaterial>() && !job.Material->IsTranslucent(); });
     }
 
     // Group translucent.
@@ -346,6 +346,21 @@ namespace ToolKit
     }
 
     renderData.forwardTranslucentStartIndex = (int) std::distance(renderData.jobs.begin(), translucentItr);
+
+    // Group default pipeline forward materials with custom shader materials
+    RenderJobItr customShaderItr =
+        std::partition(forwardItr,
+                       renderData.jobs.end(),
+                       [](const RenderJob& job) -> bool { return !job.Material->IsA<ShaderMaterial>(); });
+
+    RenderJobItr customShaderTranslucentItr =
+        std::partition(customShaderItr,
+                       renderData.jobs.end(),
+                       [](const RenderJob& job) -> bool { return !job.Material->IsTranslucent(); });
+
+    renderData.customShaderOpaqueStartIndex = (int) std::distance(renderData.jobs.begin(), customShaderItr);
+    renderData.customShaderTranslucentStartIndex =
+        (int) std::distance(renderData.jobs.begin(), customShaderTranslucentItr);
   }
 
   void RenderJobProcessor::AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex)

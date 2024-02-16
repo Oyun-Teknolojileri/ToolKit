@@ -130,6 +130,7 @@ namespace ToolKit
   // Resource types.
   typedef std::shared_ptr<class Animation> AnimationPtr;
   typedef std::shared_ptr<class Material> MaterialPtr;
+  typedef std::shared_ptr<class ShaderMaterial> ShaderMaterialPtr;
   typedef std::weak_ptr<class Material> MaterialWeakPtr;
   typedef std::vector<MaterialPtr> MaterialPtrArray;
   typedef std::shared_ptr<class CubeMap> CubeMapPtr;

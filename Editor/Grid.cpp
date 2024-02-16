@@ -219,7 +219,7 @@ namespace ToolKit
         GetMaterialManager()->m_storage[g_gridMaterialName] = material;
       }
 
-      m_material = GetMaterialManager()->Create<Material>(g_gridMaterialName);
+      m_material = GetMaterialManager()->Create<ShaderMaterial>(g_gridMaterialName);
       GetMaterialComponent()->SetFirstMaterial(m_material);
 
       m_initiated = true;

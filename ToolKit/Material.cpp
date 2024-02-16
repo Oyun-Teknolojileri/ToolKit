@@ -196,12 +196,6 @@ namespace ToolKit
 
   float& Material::GetAlpha() { return m_alpha; }
 
-  bool Material::IsCustom()
-  {
-    static String defaultShader = GetShaderManager()->PbrForwardShaderFile();
-    return m_fragmentShader->GetFile() != defaultShader;
-  }
-
   bool Material::IsTranslucent()
   {
     switch (m_renderState.blendFunction)
@@ -221,16 +215,6 @@ namespace ToolKit
   {
     const String& file = m_fragmentShader->GetFile();
     return file == GetShaderManager()->PbrDefferedShaderFile() || file == GetShaderManager()->PbrForwardShaderFile();
-  }
-
-  void Material::UpdateUniformOfThisMaterialsProgram(const String& uniformName, const UniformValue& val)
-  {
-    Init();
-
-    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
-    GpuProgramPtr gpuProgram             = gpuProgramManager->CreateProgram(m_vertexShader, m_fragmentShader);
-
-    gpuProgram->UpdateCustomUniform(uniformName, val);
   }
 
   void Material::UpdateRuntimeVersion()
@@ -422,6 +406,18 @@ namespace ToolKit
     }
 
     return nullptr;
+  }
+
+  TKDefineClass(ShaderMaterial, Material);
+
+  void ShaderMaterial::UpdateUniformOfThisMaterialsProgram(const String& uniformName, const UniformValue& val)
+  {
+    Init();
+
+    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+    GpuProgramPtr gpuProgram             = gpuProgramManager->CreateProgram(m_vertexShader, m_fragmentShader);
+
+    gpuProgram->UpdateCustomUniform(uniformName, val);
   }
 
   MaterialManager::MaterialManager() { m_baseType = Material::StaticClass(); }

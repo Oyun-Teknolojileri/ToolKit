@@ -77,9 +77,11 @@ namespace ToolKit
   {
     RenderJobArray jobs;
 
-    int deferredJobsStartIndex       = 0; //!< Beginning of deferred jobs. Before this, culled jobs resides.
-    int forwardOpaqueStartIndex      = 0; //!< Beginning of forward opaque jobs.
-    int forwardTranslucentStartIndex = 0; //!< Beginning of forward translucent jobs.
+    int deferredJobsStartIndex            = 0; //!< Beginning of deferred jobs. Before this, culled jobs resides.
+    int forwardOpaqueStartIndex           = 0; //!< Beginning of forward opaque jobs.
+    int forwardTranslucentStartIndex      = 0; //!< Beginning of forward translucent jobs.
+    int customShaderOpaqueStartIndex      = 0; //!< Beginning of opaque custom shader jobs.
+    int customShaderTranslucentStartIndex = 0; //!< Beginning of translucent custom shader jobs.
 
     RenderJobItr GetDefferedBegin()
     {
@@ -90,6 +92,10 @@ namespace ToolKit
     RenderJobItr GetForwardOpaqueBegin() { return jobs.begin() + forwardOpaqueStartIndex; }
 
     RenderJobItr GetForwardTranslucentBegin() { return jobs.begin() + forwardTranslucentStartIndex; }
+
+    RenderJobItr GetOpaqueCustomShaderBegin() { return jobs.begin() + customShaderOpaqueStartIndex; }
+
+    RenderJobItr GetTranslucentCustomShaderBegin() { return jobs.begin() + customShaderTranslucentStartIndex; }
   };
 
   class TK_API RenderJobProcessor

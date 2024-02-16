@@ -44,12 +44,6 @@ namespace ToolKit
     void SetAlpha(float val);
 
     /**
-     * States if the material will use deferred render path.
-     * @returns True if the material will be rendered in deferred path.
-     */
-    bool IsCustom();
-
-    /**
      * States if the material has transparency.
      * @returns True if the blend state is SRC_ALPHA_ONE_MINUS_SRC_ALPHA.
      */
@@ -60,8 +54,6 @@ namespace ToolKit
      * @returns True if the fragmet shader is default PBR shader.
      */
     bool IsPBR();
-
-    void UpdateUniformOfThisMaterialsProgram(const String& uniformName, const UniformValue& val);
 
     // This should be called when this material parameter changed except for Textures, Shaders and RenderState
     void UpdateRuntimeVersion();
@@ -93,6 +85,14 @@ namespace ToolKit
     RenderState m_renderState;
 
     uint64 m_runtimeVersion = 1;
+  };
+
+  class TK_API ShaderMaterial : public Material
+  {
+    TKDeclareClass(ShaderMaterial, Material);
+
+   public:
+    void UpdateUniformOfThisMaterialsProgram(const String& uniformName, const UniformValue& val);
   };
 
   class TK_API MaterialManager : public ResourceManager

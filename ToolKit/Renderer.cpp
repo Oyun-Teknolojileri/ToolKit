@@ -624,7 +624,7 @@ namespace ToolKit
       ShaderPtr vert         = GetShaderManager()->Create<Shader>(ShaderPath("gausBlur7x1Vert.shader", true));
       ShaderPtr frag         = GetShaderManager()->Create<Shader>(ShaderPath("gausBlur7x1Frag.shader", true));
 
-      m_gaussianBlurMaterial = MakeNewPtr<Material>();
+      m_gaussianBlurMaterial = MakeNewPtr<ShaderMaterial>();
       m_gaussianBlurMaterial->m_vertexShader   = vert;
       m_gaussianBlurMaterial->m_fragmentShader = frag;
       m_gaussianBlurMaterial->m_diffuseTexture = nullptr;
@@ -656,7 +656,7 @@ namespace ToolKit
       ShaderPtr vert        = GetShaderManager()->Create<Shader>(ShaderPath("avgBlurVert.shader", true));
       ShaderPtr frag        = GetShaderManager()->Create<Shader>(ShaderPath("avgBlurFrag.shader", true));
 
-      m_averageBlurMaterial = MakeNewPtr<Material>();
+      m_averageBlurMaterial = MakeNewPtr<ShaderMaterial>();
       m_averageBlurMaterial->m_vertexShader   = vert;
       m_averageBlurMaterial->m_fragmentShader = frag;
       m_averageBlurMaterial->m_diffuseTexture = nullptr;
@@ -1267,7 +1267,7 @@ namespace ToolKit
     cubeMapRt->Init();
 
     // Create material
-    MaterialPtr mat                 = MakeNewPtr<Material>();
+    ShaderMaterialPtr mat           = MakeNewPtr<ShaderMaterial>();
     ShaderPtr vert                  = GetShaderManager()->Create<Shader>(ShaderPath("equirectToCubeVert.shader", true));
     ShaderPtr frag                  = GetShaderManager()->Create<Shader>(ShaderPath("equirectToCubeFrag.shader", true));
 
@@ -1432,7 +1432,7 @@ namespace ToolKit
                              glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
 
     // Create material
-    MaterialPtr mat       = MakeNewPtr<Material>();
+    ShaderMaterialPtr mat = MakeNewPtr<ShaderMaterial>();
     ShaderPtr vert        = GetShaderManager()->Create<Shader>(ShaderPath("positionVert.shader", true));
     ShaderPtr frag        = GetShaderManager()->Create<Shader>(ShaderPath("preFilterEnvMapFrag.shader", true));
 
