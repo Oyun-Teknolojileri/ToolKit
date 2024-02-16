@@ -14,7 +14,7 @@
 namespace ToolKit
 {
 
-  constexpr const char* GetUniformName(Uniform u)
+  const char* GetUniformName(Uniform u)
   {
     switch (u)
     {
@@ -160,6 +160,8 @@ namespace ToolKit
       return "blendKeyFrameCount";
     case Uniform::MODEL_NO_TR:
       return "modelNoTr";
+    case Uniform::AO_ENABLED:
+      return "aoEnabled";
     case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";

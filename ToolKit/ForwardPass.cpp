@@ -90,7 +90,6 @@ namespace ToolKit
 
     for (RenderJobItr job = begin; job != end; job++)
     {
-      job->Material->UpdateUniformOfThisMaterialsProgram("aoEnabled", m_params.SSAOEnabled);
       renderer->RenderWithProgramFromMaterial(*job);
     }
 

@@ -89,10 +89,11 @@ namespace ToolKit
     BLEND_KEY_FRAME_INT_TIME,
     BLEND_KEY_FRAME_COUNT,
     MODEL_NO_TR,
+    AO_ENABLED,
     UNIFORM_MAX_INVALID
   };
 
-  constexpr extern const char* GetUniformName(Uniform u);
+  extern const char* GetUniformName(Uniform u);
 
   // ShaderUniform
   //////////////////////////////////////////////////////////////////////////

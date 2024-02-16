@@ -170,7 +170,6 @@ namespace ToolKit
 
     m_fullQuadPass->SetFragmentShader(m_lightingShader, renderer);
 
-    m_fullQuadPass->UpdateUniform(ShaderUniform("aoEnabled", m_params.AOTexture != nullptr));
     m_fullQuadPass->UpdateUniform(ShaderUniform("camPos", m_params.Cam->Position()));
 
     renderer->EnableDepthTest(true);
@@ -294,7 +293,6 @@ namespace ToolKit
     renderer->SetTexture(1, emmisiveRt->m_textureId);
     renderer->SetTexture(2, iblRt->m_textureId);
 
-    m_fullQuadPass->UpdateUniform(ShaderUniform("aoEnabled", m_params.AOTexture != nullptr));
     renderer->SetTexture(5, m_params.AOTexture != nullptr ? m_params.AOTexture->m_textureId : 0);
 
     // merge lighting, ibl, ao, and emmisive

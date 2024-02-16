@@ -793,6 +793,13 @@ namespace ToolKit
         glUniform1f(uniformLoc, Main::GetInstance()->TimeSinceStartup() / 1000.0f);
       }
 
+      const EngineSettings& engineSettings = GetEngineSettings();
+      uniformLoc                           = program->GetDefaultUniformLocation(Uniform::AO_ENABLED);
+      if (uniformLoc != -1)
+      {
+        glUniform1i(uniformLoc, engineSettings.PostProcessing.SSAOEnabled);
+      }
+
       m_gpuProgramHasFrameUpdates.insert(program->m_handle);
     }
 
