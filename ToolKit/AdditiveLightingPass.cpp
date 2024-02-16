@@ -284,7 +284,7 @@ namespace ToolKit
 
     // prepare to write main frame buffer
     m_fullQuadPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
-    m_fullQuadPass->m_params.ClearFrameBuffer = false;
+    m_fullQuadPass->m_params.ClearFrameBuffer = true;
     m_fullQuadPass->m_params.BlendFunc        = BlendFunction::NONE;
 
     RenderTargetPtr emmisiveRt = m_params.GBufferFramebuffer->GetAttachment(FAttachment::ColorAttachment3);
