@@ -40,17 +40,17 @@ namespace ToolKit
     {
       Vec3 m_horizontalAxisColor = g_gridAxisRed;
       Vec3 m_verticalAxisColor   = g_gridAxisBlue;
+
+      m_gridCellSize             = 0.1f;
+      m_maxLinePixelCount        = 2.0f;
+      m_horizontalAxisColor      = X_AXIS;
+      m_verticalAxisColor        = Z_AXIS;
+      m_is2d                     = false;
     }
 
     void Grid::NativeConstruct()
     {
       Super::NativeConstruct();
-
-      m_gridCellSize        = 0.1f;
-      m_maxLinePixelCount   = 2.0f;
-      m_horizontalAxisColor = X_AXIS;
-      m_verticalAxisColor   = Z_AXIS;
-      m_is2d                = false;
 
       Init();
       UpdateShaderParams();

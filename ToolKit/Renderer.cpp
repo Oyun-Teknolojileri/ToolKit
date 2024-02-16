@@ -499,10 +499,10 @@ namespace ToolKit
       m_tempQuad = MakeNewPtr<Quad>();
     }
     m_tempQuad->GetMeshComponent()->GetMeshVal()->m_material = mat;
-    
+
     if (m_tempQuadCam == nullptr)
     {
-      m_tempQuadCam                                        = MakeNewPtr<Camera>();
+      m_tempQuadCam = MakeNewPtr<Camera>();
     }
     SetCamera(m_tempQuadCam, true);
 
@@ -797,13 +797,9 @@ namespace ToolKit
     }
 
     bool updateMaterial = false;
-    if (ULongID matID = program->m_activeMaterialID)
+    if (program->m_activeMaterialID == m_mat->GetIdVal())
     {
-      updateMaterial = matID != m_mat->GetIdVal();
-      if (!updateMaterial)
-      {
-        updateMaterial = program->m_activeMaterialVersion != m_mat->GetRuntimeVersion();
-      }
+      updateMaterial = program->m_activeMaterialVersion != m_mat->GetRuntimeVersion();
     }
     else
     {

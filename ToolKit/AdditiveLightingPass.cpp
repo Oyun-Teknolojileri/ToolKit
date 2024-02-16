@@ -272,12 +272,11 @@ namespace ToolKit
 
     renderer->EnableDepthWrite(false);
 
-    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+    m_program = GetGpuProgramManager()->CreateProgram(m_meshMaterial->m_vertexShader, m_meshMaterial->m_fragmentShader);
+    renderer->BindProgram(m_program);
+
     for (auto& [lightAndType, job] : meshLights)
     {
-      m_program = gpuProgramManager->CreateProgram(job.Material->m_vertexShader, job.Material->m_fragmentShader);
-      renderer->BindProgram(m_program);
-
       renderer->Render(job);
     }
 

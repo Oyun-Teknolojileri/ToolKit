@@ -235,6 +235,8 @@ namespace ToolKit
 
   void Material::UpdateRuntimeVersion()
   {
+    m_dirty = true;
+
     m_runtimeVersion++;
     if (m_runtimeVersion == 0) // avoid 0 since that is the default value of programs active material version
     {
