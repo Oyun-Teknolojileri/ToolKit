@@ -410,7 +410,7 @@ namespace ToolKit
 
   TKDefineClass(ShaderMaterial, Material);
 
-  void ShaderMaterial::UpdateUniformOfThisMaterialsProgram(const String& uniformName, const UniformValue& val)
+  void ShaderMaterial::UpdateProgramUniform(const String& uniformName, const UniformValue& val)
   {
     Init();
 

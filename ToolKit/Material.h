@@ -85,7 +85,7 @@ namespace ToolKit
     RenderState m_renderState;
 
     /**
-     * Represents the GPU uniform state. GpuPrograms updates their uniforms if their uniform version is different than
+     * Represents the GPU uniform state. GpuPrograms update their uniforms if their uniform version is different than
      * current material uniform version.
      */
     uint64 m_uniformVersion = 1;

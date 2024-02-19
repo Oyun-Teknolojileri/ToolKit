@@ -229,11 +229,11 @@ namespace ToolKit
     {
       GridFragmentShader* gfs = static_cast<GridFragmentShader*>(m_material->m_fragmentShader.get());
 
-      m_material->UpdateUniformOfThisMaterialsProgram("GridData.cellSize", m_gridCellSize);
-      m_material->UpdateUniformOfThisMaterialsProgram("GridData.lineMaxPixelCount", m_maxLinePixelCount);
-      m_material->UpdateUniformOfThisMaterialsProgram("GridData.horizontalAxisColor", m_horizontalAxisColor);
-      m_material->UpdateUniformOfThisMaterialsProgram("GridData.verticalAxisColor", m_verticalAxisColor);
-      m_material->UpdateUniformOfThisMaterialsProgram("GridData.is2DViewport", m_is2d);
+      m_material->UpdateProgramUniform("GridData.cellSize", m_gridCellSize);
+      m_material->UpdateProgramUniform("GridData.lineMaxPixelCount", m_maxLinePixelCount);
+      m_material->UpdateProgramUniform("GridData.horizontalAxisColor", m_horizontalAxisColor);
+      m_material->UpdateProgramUniform("GridData.verticalAxisColor", m_verticalAxisColor);
+      m_material->UpdateProgramUniform("GridData.is2DViewport", m_is2d);
     }
 
   } //  namespace Editor

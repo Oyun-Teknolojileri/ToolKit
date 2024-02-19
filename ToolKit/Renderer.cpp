@@ -633,7 +633,7 @@ namespace ToolKit
     m_gaussianBlurMaterial->UnInit();
     m_gaussianBlurMaterial->m_diffuseTexture = source;
     m_gaussianBlurMaterial->Init();
-    m_gaussianBlurMaterial->UpdateUniformOfThisMaterialsProgram("BlurScale", axis * amount);
+    m_gaussianBlurMaterial->UpdateProgramUniform("BlurScale", axis * amount);
 
     m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
 
@@ -666,7 +666,7 @@ namespace ToolKit
     m_averageBlurMaterial->m_diffuseTexture = source;
     m_averageBlurMaterial->Init();
 
-    m_averageBlurMaterial->UpdateUniformOfThisMaterialsProgram("BlurScale", axis * amount);
+    m_averageBlurMaterial->UpdateProgramUniform("BlurScale", axis * amount);
 
     m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
 
@@ -1277,7 +1277,7 @@ namespace ToolKit
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
-    mat->UpdateUniformOfThisMaterialsProgram("Exposure", exposure);
+    mat->UpdateProgramUniform("Exposure", exposure);
 
     m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
 
@@ -1477,8 +1477,8 @@ namespace ToolKit
           AddHWRenderPass();
         }
 
-        mat->UpdateUniformOfThisMaterialsProgram("roughness", (float) mip / (float) mipMaps);
-        mat->UpdateUniformOfThisMaterialsProgram("resPerFace", (float) mipSize);
+        mat->UpdateProgramUniform("roughness", (float) mip / (float) mipMaps);
+        mat->UpdateProgramUniform("resPerFace", (float) mipSize);
 
         SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
         SetViewportSize(mipSize, mipSize);
