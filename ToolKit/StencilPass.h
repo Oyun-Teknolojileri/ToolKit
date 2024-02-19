@@ -42,6 +42,7 @@ namespace ToolKit
     FramebufferPtr m_frameBuffer         = nullptr;
     MaterialPtr m_solidOverrideMaterial  = nullptr;
     FullQuadPassPtr m_copyStencilSubPass = nullptr;
+    ShaderPtr m_unlitFragShader          = nullptr;
   };
 
   typedef std::shared_ptr<StencilRenderPass> StencilRenderPassPtr;

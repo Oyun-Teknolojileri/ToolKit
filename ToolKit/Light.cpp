@@ -102,8 +102,9 @@ namespace ToolKit
       m_shadowMapMaterial = MakeNewPtr<Material>();
     }
     m_shadowMapMaterial->UnInit();
-    m_shadowMapMaterial->m_vertexShader   = vert;
-    m_shadowMapMaterial->m_fragmentShader = frag;
+    m_shadowMapMaterial->m_vertexShader                  = vert;
+    m_shadowMapMaterial->m_fragmentShader                = frag;
+    m_shadowMapMaterial->GetRenderState()->blendFunction = BlendFunction::NONE;
     m_shadowMapMaterial->Init();
   }
 
@@ -326,8 +327,9 @@ namespace ToolKit
       m_shadowMapMaterial = MakeNewPtr<Material>();
     }
     m_shadowMapMaterial->UnInit();
-    m_shadowMapMaterial->m_vertexShader   = vert;
-    m_shadowMapMaterial->m_fragmentShader = frag;
+    m_shadowMapMaterial->m_vertexShader                  = vert;
+    m_shadowMapMaterial->m_fragmentShader                = frag;
+    m_shadowMapMaterial->GetRenderState()->blendFunction = BlendFunction::NONE;
     m_shadowMapMaterial->Init();
   }
 
@@ -388,8 +390,9 @@ namespace ToolKit
       m_shadowMapMaterial = MakeNewPtr<Material>();
     }
     m_shadowMapMaterial->UnInit();
-    m_shadowMapMaterial->m_vertexShader   = vert;
-    m_shadowMapMaterial->m_fragmentShader = frag;
+    m_shadowMapMaterial->m_vertexShader                  = vert;
+    m_shadowMapMaterial->m_fragmentShader                = frag;
+    m_shadowMapMaterial->GetRenderState()->blendFunction = BlendFunction::NONE;
     m_shadowMapMaterial->Init();
   }
 

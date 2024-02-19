@@ -9,6 +9,7 @@
 
 #include "FileManager.h"
 #include "Logger.h"
+#include "RenderSystem.h"
 #include "Shader.h"
 #include "ToolKit.h"
 #include "Util.h"
@@ -195,12 +196,6 @@ namespace ToolKit
 
   float& Material::GetAlpha() { return m_alpha; }
 
-  bool Material::IsCustom()
-  {
-    static String defaultShader = GetShaderManager()->PbrForwardShaderFile();
-    return m_fragmentShader->GetFile() != defaultShader;
-  }
-
   bool Material::IsTranslucent()
   {
     switch (m_renderState.blendFunction)
@@ -220,6 +215,17 @@ namespace ToolKit
   {
     const String& file = m_fragmentShader->GetFile();
     return file == GetShaderManager()->PbrDefferedShaderFile() || file == GetShaderManager()->PbrForwardShaderFile();
+  }
+
+  void Material::UpdateRuntimeVersion()
+  {
+    m_dirty = true;
+
+    m_uniformVersion++;
+    if (m_uniformVersion == 0) // avoid 0 since that is the default value of programs active material version
+    {
+      m_uniformVersion++;
+    }
   }
 
   XmlNode* Material::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -402,6 +408,18 @@ namespace ToolKit
     return nullptr;
   }
 
+  TKDefineClass(ShaderMaterial, Material);
+
+  void ShaderMaterial::UpdateProgramUniform(const String& uniformName, const UniformValue& val)
+  {
+    Init();
+
+    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+    GpuProgramPtr gpuProgram             = gpuProgramManager->CreateProgram(m_vertexShader, m_fragmentShader);
+
+    gpuProgram->UpdateCustomUniform(uniformName, val);
+  }
+
   MaterialManager::MaterialManager() { m_baseType = Material::StaticClass(); }
 
   MaterialManager::~MaterialManager() {}
@@ -474,4 +492,5 @@ namespace ToolKit
     ResourcePtr source = m_storage[MaterialPath("phongForward.material", true)];
     return Copy<Material>(source, storeInMaterialManager);
   }
+
 } // namespace ToolKit

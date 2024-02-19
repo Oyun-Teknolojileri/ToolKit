@@ -89,13 +89,6 @@ namespace ToolKit
     {
       for (RenderJobItr job = begin; job != end; job++)
       {
-        Material* activeMaterial = job->Material;
-        RenderState* renderstate = activeMaterial->GetRenderState();
-        m_linearMaterial->SetRenderState(renderstate);
-        m_linearMaterial->m_diffuseTexture = activeMaterial->m_diffuseTexture;
-        m_linearMaterial->m_color          = activeMaterial->m_color;
-
-        renderer->m_overrideMat            = m_linearMaterial;
         renderer->Render(*job);
       }
     };
@@ -135,6 +128,10 @@ namespace ToolKit
     }
 
     renderer->SetCamera(m_params.Cam, true);
+
+    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+    m_program = gpuProgramManager->CreateProgram(m_linearMaterial->m_vertexShader, m_linearMaterial->m_fragmentShader);
+    renderer->BindProgram(m_program);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

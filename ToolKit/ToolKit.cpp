@@ -10,6 +10,7 @@
 #include "Audio.h"
 #include "EngineSettings.h"
 #include "FileManager.h"
+#include "GpuProgram.h"
 #include "Logger.h"
 #include "Material.h"
 #include "Mesh.h"
@@ -104,22 +105,23 @@ namespace ToolKit
     m_objectFactory  = new ObjectFactory();
     m_objectFactory->Init();
 
-    m_renderSys       = new RenderSystem();
-    m_pluginManager   = new PluginManager();
-    m_animationMan    = new AnimationManager();
-    m_animationPlayer = new AnimationPlayer();
-    m_textureMan      = new TextureManager();
-    m_meshMan         = new MeshManager();
-    m_spriteSheetMan  = new SpriteSheetManager();
-    m_audioMan        = new AudioManager();
-    m_shaderMan       = new ShaderManager();
-    m_materialManager = new MaterialManager();
-    m_sceneManager    = new SceneManager();
-    m_uiManager       = new UIManager();
-    m_skeletonManager = new SkeletonManager();
-    m_fileManager     = new FileManager();
+    m_renderSys         = new RenderSystem();
+    m_gpuProgramManager = new GpuProgramManager();
+    m_pluginManager     = new PluginManager();
+    m_animationMan      = new AnimationManager();
+    m_animationPlayer   = new AnimationPlayer();
+    m_textureMan        = new TextureManager();
+    m_meshMan           = new MeshManager();
+    m_spriteSheetMan    = new SpriteSheetManager();
+    m_audioMan          = new AudioManager();
+    m_shaderMan         = new ShaderManager();
+    m_materialManager   = new MaterialManager();
+    m_sceneManager      = new SceneManager();
+    m_uiManager         = new UIManager();
+    m_skeletonManager   = new SkeletonManager();
+    m_fileManager       = new FileManager();
 
-    m_preInitiated    = true;
+    m_preInitiated      = true;
   }
 
   void Main::Init()
@@ -178,6 +180,7 @@ namespace ToolKit
     // After all the resources, we can safely free modules.
     m_pluginManager->UnInit();
 
+    SafeDel(m_gpuProgramManager);
     SafeDel(m_renderSys);
     SafeDel(m_pluginManager);
     SafeDel(m_animationMan);
@@ -322,6 +325,8 @@ namespace ToolKit
   }
 
   WorkerManager* GetWorkerManager() { return Main::GetInstance()->m_workerManager; }
+
+  GpuProgramManager* GetGpuProgramManager() { return Main::GetInstance()->m_gpuProgramManager; }
 
   EngineSettings& GetEngineSettings() { return *Main::GetInstance()->m_engineSettings; }
 

@@ -164,6 +164,7 @@ namespace ToolKit
                                          m_params.Cam,
                                          m_params.Scene->GetEnvironmentVolumes(),
                                          false);
+
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
 
     m_shadowPass->m_params.renderData   = &m_renderData;
@@ -172,6 +173,11 @@ namespace ToolKit
 
     RenderJobProcessor::SeperateRenderData(m_renderData, false);
     RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
+
+    // Assign lights for forward pass
+    RenderJobProcessor::AssignLight(m_renderData.GetForwardTranslucentBegin(),
+                                    m_renderData.jobs.end(),
+                                    m_updatedLights);
 
     // TK_LOG("Culled");
     // int i = 0;

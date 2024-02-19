@@ -1,5 +1,6 @@
 <shader>
 	<type name = "includeShader" />
+	<uniform name = "aoEnabled" />
 	<source>
 	<!--
 		uniform sampler2D s_texture5; // ambient occlusion.

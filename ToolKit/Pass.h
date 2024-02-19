@@ -36,6 +36,7 @@ namespace ToolKit
 
    protected:
     FramebufferPtr m_prevFrameBuffer = nullptr;
+    GpuProgramPtr m_program          = nullptr;
 
    private:
     Renderer* m_renderer = nullptr;
@@ -76,9 +77,9 @@ namespace ToolKit
   {
     RenderJobArray jobs;
 
-    int deferredJobsStartIndex       = 0; //!< Beginning of deferred jobs. Before this, culled jobs resides.
-    int forwardOpaqueStartIndex      = 0; //!< Beginning of forward opaque jobs.
-    int forwardTranslucentStartIndex = 0; //!< Beginning of forward translucent jobs.
+    int deferredJobsStartIndex            = 0; //!< Beginning of deferred jobs. Before this, culled jobs resides.
+    int forwardOpaqueStartIndex           = 0; //!< Beginning of forward opaque jobs.
+    int forwardTranslucentStartIndex      = 0; //!< Beginning of forward translucent jobs.
 
     RenderJobItr GetDefferedBegin()
     {

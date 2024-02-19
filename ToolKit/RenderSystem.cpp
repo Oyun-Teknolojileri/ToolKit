@@ -126,15 +126,13 @@ namespace ToolKit
     m_renderer->m_sky = nullptr;
   }
 
-  void RenderSystem::FlushGpuPrograms() { m_renderer->m_gpuProgramManager.FlushPrograms(); }
+  void RenderSystem::FlushGpuPrograms() { GetGpuProgramManager()->FlushPrograms(); }
 
   void RenderSystem::SetAppWindowSize(uint width, uint height) { m_renderer->m_windowSize = UVec2(width, height); }
 
   UVec2 RenderSystem::GetAppWindowSize() { return m_renderer->m_windowSize; }
 
   void RenderSystem::SetClearColor(const Vec4& clearColor) { m_renderer->m_clearColor = clearColor; }
-
-  void RenderSystem::SetFrameCount(uint count) { m_renderer->m_frameCount = count; }
 
   void RenderSystem::EnableBlending(bool enable) { m_renderer->EnableBlending(enable); }
 
@@ -148,6 +146,10 @@ namespace ToolKit
   }
 
   bool RenderSystem::IsSkipFrame() const { return m_skipFrames != 0; }
+
+  uint RenderSystem::GetFrameCount() { return m_frameCount; }
+
+  void RenderSystem::ResetFrameCount() { m_frameCount = 0; }
 
   void RenderSystem::SkipSceneFrames(int numFrames) { m_skipFrames = numFrames; }
 
@@ -177,6 +179,12 @@ namespace ToolKit
         task.Callback();
       }
     }
+  }
+
+  void RenderSystem::EndFrame()
+  {
+    m_frameCount++;
+    m_renderer->m_frameCount = m_frameCount;
   }
 
   void RenderSystem::TestSRGBBackBuffer()

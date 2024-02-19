@@ -27,28 +27,9 @@ namespace ToolKit
 
     TKDefineClass(GridFragmentShader, Shader);
 
-    GridFragmentShader::GridFragmentShader()
-    {
-      SetFile(ShaderPath("gridFragment.shader", true));
-
-      // Set defaults.
-      m_sizeEachCell        = 0.1f;
-      m_maxLinePixelCount   = 2.0f;
-      m_axisColorHorizontal = X_AXIS;
-      m_axisColorVertical   = Z_AXIS;
-      m_is2DViewport        = false;
-    }
+    GridFragmentShader::GridFragmentShader() { SetFile(ShaderPath("gridFragment.shader", true)); }
 
     GridFragmentShader::~GridFragmentShader() {}
-
-    void GridFragmentShader::UpdateShaderUniforms()
-    {
-      UpdateShaderUniform("GridData.cellSize", m_sizeEachCell);
-      UpdateShaderUniform("GridData.lineMaxPixelCount", m_maxLinePixelCount);
-      UpdateShaderUniform("GridData.horizontalAxisColor", m_axisColorHorizontal);
-      UpdateShaderUniform("GridData.verticalAxisColor", m_axisColorVertical);
-      UpdateShaderUniform("GridData.is2DViewport", m_is2DViewport);
-    }
 
     // Grid
     //////////////////////////////////////////////////////////////////////////
@@ -59,11 +40,18 @@ namespace ToolKit
     {
       Vec3 m_horizontalAxisColor = g_gridAxisRed;
       Vec3 m_verticalAxisColor   = g_gridAxisBlue;
+
+      m_gridCellSize             = 0.1f;
+      m_maxLinePixelCount        = 2.0f;
+      m_horizontalAxisColor      = X_AXIS;
+      m_verticalAxisColor        = Z_AXIS;
+      m_is2d                     = false;
     }
 
     void Grid::NativeConstruct()
     {
       Super::NativeConstruct();
+
       Init();
       UpdateShaderParams();
     }
@@ -215,23 +203,26 @@ namespace ToolKit
       // Create grid material.
       if (!GetMaterialManager()->Exist(g_gridMaterialName))
       {
-        MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+        MaterialPtr unlitMaterial        = GetMaterialManager()->GetCopyOfUnlitMaterial();
 
-        material->UnInit();
-        material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-        material->GetRenderState()->cullMode      = CullingType::TwoSided;
-        material->m_vertexShader  = GetShaderManager()->Create<Shader>(ShaderPath("gridVertex.shader", true));
+        ShaderMaterialPtr shaderMaterial = MakeNewPtr<ShaderMaterial>();
+        shaderMaterial->SetRenderState(unlitMaterial->GetRenderState());
+
+        shaderMaterial->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+        shaderMaterial->GetRenderState()->cullMode      = CullingType::TwoSided;
+        shaderMaterial->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("gridVertex.shader", true));
 
         // Custom creation & shader management.
-        GridFragmentShaderPtr gfs = MakeNewPtr<GridFragmentShader>();
+        GridFragmentShaderPtr gfs      = MakeNewPtr<GridFragmentShader>();
         gfs->Load();
         GetShaderManager()->Manage(gfs);
 
-        material->m_fragmentShader                          = gfs;
-        GetMaterialManager()->m_storage[g_gridMaterialName] = material;
+        shaderMaterial->m_fragmentShader = gfs;
+        shaderMaterial->Init();
+        GetMaterialManager()->m_storage[g_gridMaterialName] = shaderMaterial;
       }
 
-      m_material = GetMaterialManager()->Create<Material>(g_gridMaterialName);
+      m_material = GetMaterialManager()->Create<ShaderMaterial>(g_gridMaterialName);
       GetMaterialComponent()->SetFirstMaterial(m_material);
 
       m_initiated = true;
@@ -239,13 +230,13 @@ namespace ToolKit
 
     void Grid::UpdateShaderParams()
     {
-      GridFragmentShader* gfs    = static_cast<GridFragmentShader*>(m_material->m_fragmentShader.get());
+      GridFragmentShader* gfs = static_cast<GridFragmentShader*>(m_material->m_fragmentShader.get());
 
-      gfs->m_sizeEachCell        = m_gridCellSize;
-      gfs->m_axisColorHorizontal = m_horizontalAxisColor;
-      gfs->m_axisColorVertical   = m_verticalAxisColor;
-      gfs->m_maxLinePixelCount   = m_maxLinePixelCount;
-      gfs->m_is2DViewport        = m_is2d;
+      m_material->UpdateProgramUniform("GridData.cellSize", m_gridCellSize);
+      m_material->UpdateProgramUniform("GridData.lineMaxPixelCount", m_maxLinePixelCount);
+      m_material->UpdateProgramUniform("GridData.horizontalAxisColor", m_horizontalAxisColor);
+      m_material->UpdateProgramUniform("GridData.verticalAxisColor", m_verticalAxisColor);
+      m_material->UpdateProgramUniform("GridData.is2DViewport", m_is2d);
     }
 
   } //  namespace Editor

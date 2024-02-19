@@ -21,6 +21,7 @@ namespace ToolKit
   class TK_API GpuProgram
   {
     friend class GpuProgramManager;
+    friend class Renderer;
 
    public:
     GpuProgram();
@@ -29,35 +30,27 @@ namespace ToolKit
 
     /**
      * If caller gives index (different than -1), this function tries to get uniform location as array.
-     * Returns -1 if the uniform location is not registered.
      */
-    int GetUniformLocation(Uniform uniform, int index = -1) const;
+    int GetDefaultUniformLocation(Uniform uniform, int index = -1);
+
+    int GetCustomUniformLocation(ShaderUniform& shaderUniform);
 
     /**
-     * Try to retrieve uniform location in the program. If its not in the cache, gets it via graphic api and cache its
-     * location.
-     * @param uniformName is the name that can be found in the shader.
-     * @return location of the uniform in the program.
+     * Updates or adds the given uniform to the uniform cache of the program.
      */
-    int GetShaderParamUniformLoc(const String& uniformName);
-
-    /**
-     * Compares the given uniform with the cached uniforms for this program. If the value needs update, function return
-     * true to indicate that value needs to be updated.
-     * @param uniform that needs to be checked for update.
-     * @return true if an update is needed.
-     */
-    bool UpdateUniform(const ShaderUniform& uniform);
+    void UpdateCustomUniform(const String& name, const UniformValue& val);
+    void UpdateCustomUniform(const ShaderUniform& uniform);
 
    public:
     uint m_handle = 0;
     ShaderPtrArray m_shaders;
-    ULongID m_activeMaterialID = 0;
+    ULongID m_activeMaterialID      = 0;
+    ULongID m_activeMaterialVersion = 0;
 
    private:
-    std::unordered_map<Uniform, int> m_uniformLocations;
-    std::unordered_map<Uniform, IntArray> m_arrayUniformLocations;
-    std::unordered_map<String, int> m_shaderParamsUniformLocations;
+    std::unordered_map<Uniform, int> m_defaultUniformLocation;
+    std::unordered_map<Uniform, IntArray> m_defaultArrayUniformLocations;
+
     std::unordered_map<String, ShaderUniform> m_customUniforms;
   };
 
@@ -68,6 +61,9 @@ namespace ToolKit
    */
   class TK_API GpuProgramManager
   {
+   public:
+    ~GpuProgramManager();
+
    private:
     /**
      * Utility class that hash an array of ULongIDs. Purpose of this class is to provide a hash generator from the
