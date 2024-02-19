@@ -221,10 +221,10 @@ namespace ToolKit
   {
     m_dirty = true;
 
-    m_runtimeVersion++;
-    if (m_runtimeVersion == 0) // avoid 0 since that is the default value of programs active material version
+    m_uniformVersion++;
+    if (m_uniformVersion == 0) // avoid 0 since that is the default value of programs active material version
     {
-      m_runtimeVersion++;
+      m_uniformVersion++;
     }
   }
 
@@ -492,4 +492,5 @@ namespace ToolKit
     ResourcePtr source = m_storage[MaterialPath("phongForward.material", true)];
     return Copy<Material>(source, storeInMaterialManager);
   }
+
 } // namespace ToolKit

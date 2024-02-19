@@ -95,6 +95,7 @@ namespace ToolKit
 
     for (RenderJobItr job = begin; job != end; job++)
     {
+
       renderer->Render(*job);
     }
 

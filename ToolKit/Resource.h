@@ -82,9 +82,9 @@ namespace ToolKit
 
    public:
     String m_name;
-    bool m_dirty     = false;
-    bool m_loaded    = false;
-    bool m_initiated = false;
+    bool m_dirty     = false; //!< Sets true if any serialized resource state changes.
+    bool m_loaded    = false; //!< States if resources are loaded to CPU memory from the source.
+    bool m_initiated = false; //!< States if the resources are initialized.
 
     /**
      * Internal usage.

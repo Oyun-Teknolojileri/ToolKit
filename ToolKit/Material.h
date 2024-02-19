@@ -58,7 +58,7 @@ namespace ToolKit
     // This should be called when this material parameter changed except for Textures, Shaders and RenderState
     void UpdateRuntimeVersion();
 
-    inline uint64 GetRuntimeVersion() { return m_runtimeVersion; }
+    inline uint64 GetRuntimeVersion() { return m_uniformVersion; }
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
@@ -84,7 +84,11 @@ namespace ToolKit
     float m_alpha = 1.0f;
     RenderState m_renderState;
 
-    uint64 m_runtimeVersion = 1;
+    /**
+     * Represents the GPU uniform state. GpuPrograms updates their uniforms if their uniform version is different than
+     * current material uniform version.
+     */
+    uint64 m_uniformVersion = 1;
   };
 
   class TK_API ShaderMaterial : public Material
@@ -92,7 +96,7 @@ namespace ToolKit
     TKDeclareClass(ShaderMaterial, Material);
 
    public:
-    void UpdateUniformOfThisMaterialsProgram(const String& uniformName, const UniformValue& val);
+    void UpdateProgramUniform(const String& uniformName, const UniformValue& val);
   };
 
   class TK_API MaterialManager : public ResourceManager
