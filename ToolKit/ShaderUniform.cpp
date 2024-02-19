@@ -160,6 +160,8 @@ namespace ToolKit
       return "blendKeyFrameCount";
     case Uniform::MODEL_NO_TR:
       return "modelNoTr";
+    case Uniform::AO_ENABLED:
+      return "aoEnabled";
     case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";
@@ -169,13 +171,13 @@ namespace ToolKit
   // ShaderUniform
   //////////////////////////////////////////////////////////////////////////
 
-  ShaderUniform::ShaderUniform() : m_updateFrequency(UpdateFrequency::WhenDirty) {}
+  ShaderUniform::ShaderUniform() : m_updateFrequency(UpdateFrequency::PerDraw) {}
 
   ShaderUniform::ShaderUniform(const String& name, UniformValue value, UpdateFrequency frequency)
-      : m_updateFrequency(UpdateFrequency::WhenDirty)
+      : m_updateFrequency(UpdateFrequency::PerDraw)
   {
     m_name            = name;
-    m_value           = std::move(value);
+    m_value           = value;
     m_updateFrequency = frequency;
   }
 
@@ -210,9 +212,9 @@ namespace ToolKit
   {
     if (this != &other)
     {
-      m_name            = std::move(other.m_name);
+      m_name            = other.m_name;
       m_updateFrequency = other.m_updateFrequency;
-      m_value           = std::move(other.m_value);
+      m_value           = other.m_value;
     }
     return *this;
   }

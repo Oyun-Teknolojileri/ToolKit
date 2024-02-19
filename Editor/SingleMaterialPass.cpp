@@ -39,20 +39,6 @@ namespace ToolKit
 
       for (RenderJobArray::iterator job = begin; begin != end; begin++)
       {
-        renderer->m_overrideMat = m_overrideMat;
-
-        Material* mat           = job->Material;
-        renderer->m_overrideMat->SetRenderState(mat->GetRenderState());
-        renderer->m_overrideMat->m_vertexShader    = mat->m_vertexShader;
-        renderer->m_overrideMat->m_fragmentShader  = m_params.OverrideFragmentShader;
-        renderer->m_overrideMat->m_diffuseTexture  = mat->m_diffuseTexture;
-        renderer->m_overrideMat->m_emissiveTexture = mat->m_emissiveTexture;
-        renderer->m_overrideMat->m_emissiveColor   = mat->m_emissiveColor;
-        renderer->m_overrideMat->m_cubeMap         = mat->m_cubeMap;
-        renderer->m_overrideMat->m_color           = mat->m_color;
-        renderer->m_overrideMat->SetAlpha(mat->GetAlpha());
-        renderer->m_overrideMat->Init();
-
         renderer->Render(*job);
       }
 
@@ -71,6 +57,9 @@ namespace ToolKit
       m_overrideMat->UnInit();
       m_overrideMat->m_fragmentShader = m_params.OverrideFragmentShader;
       m_overrideMat->Init();
+
+      m_program = GetGpuProgramManager()->CreateProgram(m_overrideMat->m_vertexShader, m_overrideMat->m_fragmentShader);
+      GetRenderer()->BindProgram(m_program);
 
       POP_CPU_MARKER();
     };

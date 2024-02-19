@@ -70,7 +70,7 @@ namespace ToolKit
     // Set given buffer as a texture to be read in gamma pass.
     renderer->SetTexture(0, m_copyTexture->m_textureId);
 
-    m_postProcessPass->m_params.FragmentShader   = m_postProcessShader;
+    m_postProcessPass->SetFragmentShader(m_postProcessShader, renderer);
     m_postProcessPass->m_params.FrameBuffer      = m_params.FrameBuffer;
     m_postProcessPass->m_params.ClearFrameBuffer = false;
 

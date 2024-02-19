@@ -217,21 +217,6 @@ namespace ToolKit
     return nullptr;
   }
 
-  void Shader::UpdateShaderUniform(const String& name, const UniformValue& val)
-  {
-    auto paramItr = m_shaderParams.find(name);
-    if (paramItr == m_shaderParams.end())
-    {
-      m_shaderParams[name] = ShaderUniform(name, val);
-    }
-    else
-    {
-      paramItr->second = val;
-    }
-  }
-
-  void Shader::UpdateShaderUniforms() {}
-
   void Shader::HandleShaderIncludes(const String& file)
   {
     // Handle source of shader
@@ -308,11 +293,11 @@ namespace ToolKit
     // Handle uniforms
     std::unordered_set<Uniform> unis;
 
-    for (Uniform uni : m_uniforms)
+    for (Uniform& uni : m_uniforms)
     {
       unis.insert(uni);
     }
-    for (Uniform uni : includeShader->m_uniforms)
+    for (Uniform& uni : includeShader->m_uniforms)
     {
       unis.insert(uni);
     }

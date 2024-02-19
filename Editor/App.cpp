@@ -301,7 +301,9 @@ namespace ToolKit
 
       POP_CPU_MARKER();
 
-      GetRenderSystem()->SetFrameCount(m_totalFrameCount++);
+      m_totalFrameCount = GetRenderSystem()->GetFrameCount();
+
+      GetRenderSystem()->EndFrame();
 
       if (m_reloadPlugin)
       {

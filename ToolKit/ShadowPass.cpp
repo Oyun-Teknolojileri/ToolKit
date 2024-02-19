@@ -124,7 +124,11 @@ namespace ToolKit
     {
       PUSH_CPU_MARKER("Render Call");
 
-      MaterialPtr shadowMaterial = light->GetShadowMaterial();
+      MaterialPtr shadowMaterial           = light->GetShadowMaterial();
+      GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+      m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
+      renderer->BindProgram(m_program);
+
       renderer->SetCamera(light->m_shadowCamera, false);
 
       RenderJobProcessor::CullRenderJobs(jobs, light->m_shadowCamera, m_unCulledRenderJobIndices);
@@ -134,15 +138,6 @@ namespace ToolKit
       for (int i = 0; i < m_unCulledRenderJobIndices.size(); i++)
       {
         RenderJob& job          = jobs[m_unCulledRenderJobIndices[i]];
-
-        renderer->m_overrideMat = shadowMaterial;
-        Material* material      = job.Material;
-        renderer->m_overrideMat->SetRenderState(material->GetRenderState());
-        renderer->m_overrideMat->UnInit();
-        renderer->m_overrideMat->SetAlpha(material->GetAlpha());
-        renderer->m_overrideMat->m_diffuseTexture                = material->m_diffuseTexture;
-        renderer->m_overrideMat->GetRenderState()->blendFunction = BlendFunction::NONE;
-        renderer->m_overrideMat->Init();
         renderer->Render(job);
       }
       renderer->m_ignoreRenderingCulledObjectWarning = false;

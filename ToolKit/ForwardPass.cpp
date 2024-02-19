@@ -85,13 +85,23 @@ namespace ToolKit
       renderer->SetTexture(5, m_params.SsaoTexture->m_textureId);
     }
 
-    RenderJobItr begin = renderData->GetForwardOpaqueBegin();
-    RenderJobItr end   = renderData->GetForwardTranslucentBegin();
+    RenderJobItr begin       = renderData->GetForwardOpaqueBegin();
+    RenderJobItr end         = renderData->GetForwardTranslucentBegin();
+
+    const MaterialPtr mat    = GetMaterialManager()->GetDefaultMaterial();
+    GpuProgramPtr gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
 
     for (RenderJobItr job = begin; job != end; job++)
     {
-      job->Material->m_fragmentShader->UpdateShaderUniform("aoEnabled", m_params.SSAOEnabled);
-      renderer->Render(*job);
+      if (job->Material->IsA<ShaderMaterial>())
+      {
+        renderer->RenderWithProgramFromMaterial(*job);
+      }
+      else
+      {
+        renderer->BindProgram(gpuProgram);
+        renderer->Render(*job);
+      }
     }
 
     POP_CPU_MARKER();
@@ -126,9 +136,21 @@ namespace ToolKit
       }
     };
 
+    const MaterialPtr defualtMat = GetMaterialManager()->GetDefaultMaterial();
+    GpuProgramPtr defaultProgram =
+        GetGpuProgramManager()->CreateProgram(defualtMat->m_vertexShader, defualtMat->m_fragmentShader);
+
     renderer->EnableDepthWrite(false);
     for (RenderJobArray::iterator job = begin; job != end; job++)
     {
+      if (job->Material->IsA<ShaderMaterial>())
+      {
+        renderer->BindProgramOfMaterial(job->Material);
+      }
+      else
+      {
+        renderer->BindProgram(defaultProgram);
+      }
       renderFnc(*job);
     }
     renderer->EnableDepthWrite(true);

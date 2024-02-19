@@ -20,9 +20,8 @@ namespace ToolKit
   StencilRenderPass::StencilRenderPass()
   {
     // Init sub pass.
-    m_copyStencilSubPass = MakeNewPtr<FullQuadPass>();
-    m_copyStencilSubPass->m_params.FragmentShader =
-        GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
+    m_copyStencilSubPass    = MakeNewPtr<FullQuadPass>();
+    m_unlitFragShader       = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     m_frameBuffer           = MakeNewPtr<Framebuffer>();
 
     m_solidOverrideMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
@@ -47,8 +46,7 @@ namespace ToolKit
 
     assert(m_params.RenderJobs != nullptr && "Stencil Render Pass Render Jobs Are Not Given!");
 
-    Renderer* renderer      = GetRenderer();
-    renderer->m_overrideMat = m_solidOverrideMaterial;
+    Renderer* renderer = GetRenderer();
 
     // Stencil pass.
     renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
@@ -59,6 +57,8 @@ namespace ToolKit
     // Copy pass.
     renderer->ColorMask(true, true, true, true);
     renderer->SetStencilOperation(StencilOperation::AllowPixelsFailingStencil);
+
+    m_copyStencilSubPass->SetFragmentShader(m_unlitFragShader, renderer);
 
     RenderSubPass(m_copyStencilSubPass);
 
@@ -74,7 +74,12 @@ namespace ToolKit
     PUSH_CPU_MARKER("StencilRenderPass::PreRender");
 
     Pass::PreRender();
-    Renderer* renderer = GetRenderer();
+    Renderer* renderer                   = GetRenderer();
+
+    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+    m_program                            = gpuProgramManager->CreateProgram(m_solidOverrideMaterial->m_vertexShader,
+                                                 m_solidOverrideMaterial->m_fragmentShader);
+    renderer->BindProgram(m_program);
 
     FramebufferSettings settings;
     settings.depthStencil    = true;

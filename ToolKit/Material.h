@@ -10,6 +10,7 @@
 #include "RenderState.h"
 #include "Resource.h"
 #include "ResourceManager.h"
+#include "ShaderUniform.h"
 #include "Texture.h"
 
 namespace ToolKit
@@ -43,12 +44,6 @@ namespace ToolKit
     void SetAlpha(float val);
 
     /**
-     * States if the material will use deferred render path.
-     * @returns True if the material will be rendered in deferred path.
-     */
-    bool IsCustom();
-
-    /**
      * States if the material has transparency.
      * @returns True if the blend state is SRC_ALPHA_ONE_MINUS_SRC_ALPHA.
      */
@@ -60,6 +55,11 @@ namespace ToolKit
      */
     bool IsPBR();
 
+    // This should be called when this material parameter changed except for Textures, Shaders and RenderState
+    void UpdateRuntimeVersion();
+
+    inline uint64 GetRuntimeVersion() { return m_uniformVersion; }
+
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
@@ -68,8 +68,6 @@ namespace ToolKit
     void CopyTo(Resource* other) override;
 
    public:
-    bool m_updateGPUUniforms = true;
-
     CubeMapPtr m_cubeMap;
     TexturePtr m_diffuseTexture;
     TexturePtr m_emissiveTexture;
@@ -85,6 +83,20 @@ namespace ToolKit
    private:
     float m_alpha = 1.0f;
     RenderState m_renderState;
+
+    /**
+     * Represents the GPU uniform state. GpuPrograms update their uniforms if their uniform version is different than
+     * current material uniform version.
+     */
+    uint64 m_uniformVersion = 1;
+  };
+
+  class TK_API ShaderMaterial : public Material
+  {
+    TKDeclareClass(ShaderMaterial, Material);
+
+   public:
+    void UpdateProgramUniform(const String& uniformName, const UniformValue& val);
   };
 
   class TK_API MaterialManager : public ResourceManager
