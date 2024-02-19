@@ -36,7 +36,6 @@ namespace ToolKit
 
     RenderOpaque(m_params.renderData);
     RenderTranslucent(m_params.renderData);
-    RenderCustomShaders(m_params.renderData);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -91,12 +90,18 @@ namespace ToolKit
 
     const MaterialPtr mat    = GetMaterialManager()->GetDefaultMaterial();
     GpuProgramPtr gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
-    renderer->BindProgram(gpuProgram);
 
     for (RenderJobItr job = begin; job != end; job++)
     {
-
-      renderer->Render(*job);
+      if (job->Material->IsA<ShaderMaterial>())
+      {
+        renderer->RenderWithProgramFromMaterial(*job);
+      }
+      else
+      {
+        renderer->BindProgram(gpuProgram);
+        renderer->Render(*job);
+      }
     }
 
     POP_CPU_MARKER();
@@ -107,7 +112,7 @@ namespace ToolKit
     PUSH_CPU_MARKER("ForwardRenderPass::RenderTranslucent");
 
     RenderJobItr begin = renderData->GetForwardTranslucentBegin();
-    RenderJobItr end   = renderData->GetOpaqueCustomShaderBegin();
+    RenderJobItr end   = renderData->jobs.end();
 
     RenderJobProcessor::SortByDistanceToCamera(begin, end, m_params.Cam);
 
@@ -118,60 +123,37 @@ namespace ToolKit
       if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
       {
         mat->GetRenderState()->cullMode = CullingType::Front;
-        renderer->RenderWithProgramFromMaterial(job);
+        renderer->Render(job);
 
         mat->GetRenderState()->cullMode = CullingType::Back;
-        renderer->RenderWithProgramFromMaterial(job);
+        renderer->Render(job);
 
         mat->GetRenderState()->cullMode = CullingType::TwoSided;
       }
       else
       {
-        renderer->RenderWithProgramFromMaterial(job);
+        renderer->Render(job);
       }
     };
 
-    const MaterialPtr mat    = GetMaterialManager()->GetDefaultMaterial();
-    GpuProgramPtr gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
-    renderer->BindProgram(gpuProgram);
+    const MaterialPtr defualtMat = GetMaterialManager()->GetDefaultMaterial();
+    GpuProgramPtr defaultProgram =
+        GetGpuProgramManager()->CreateProgram(defualtMat->m_vertexShader, defualtMat->m_fragmentShader);
 
     renderer->EnableDepthWrite(false);
     for (RenderJobArray::iterator job = begin; job != end; job++)
     {
+      if (job->Material->IsA<ShaderMaterial>())
+      {
+        renderer->BindProgramOfMaterial(job->Material);
+      }
+      else
+      {
+        renderer->BindProgram(defaultProgram);
+      }
       renderFnc(*job);
     }
     renderer->EnableDepthWrite(true);
-
-    POP_CPU_MARKER();
-  }
-
-  void ForwardRenderPass::RenderCustomShaders(RenderData* renderData)
-  {
-    PUSH_CPU_MARKER("ForwardRenderPass::RenderCustomShaders");
-
-    Renderer* renderer = GetRenderer();
-
-    // Opaque
-
-    RenderJobItr begin = renderData->GetOpaqueCustomShaderBegin();
-    RenderJobItr end   = renderData->GetTranslucentCustomShaderBegin();
-
-    for (RenderJobItr job = begin; job != end; job++)
-    {
-      renderer->RenderWithProgramFromMaterial(*job);
-    }
-
-    // Translucent
-
-    begin = renderData->GetTranslucentCustomShaderBegin();
-    end   = renderData->jobs.end();
-
-    RenderJobProcessor::SortByDistanceToCamera(begin, end, m_params.Cam);
-
-    for (RenderJobItr job = begin; job != end; job++)
-    {
-      renderer->RenderWithProgramFromMaterial(*job);
-    }
 
     POP_CPU_MARKER();
   }

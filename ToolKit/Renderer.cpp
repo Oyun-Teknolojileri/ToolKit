@@ -722,6 +722,13 @@ namespace ToolKit
     }
   }
 
+  void Renderer::BindProgramOfMaterial(Material* material)
+  {
+    material->Init();
+    GpuProgramPtr program = m_gpuProgramManager->CreateProgram(material->m_vertexShader, material->m_fragmentShader);
+    BindProgram(program);
+  }
+
   void Renderer::BindProgram(const GpuProgramPtr& program)
   {
     if (m_currentProgram == nullptr || m_currentProgram->m_handle != program->m_handle)

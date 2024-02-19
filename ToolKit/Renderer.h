@@ -106,6 +106,8 @@ namespace ToolKit
 
     int GetMaxArrayTextureLayers();
 
+    void BindProgramOfMaterial(Material* material);
+
     void BindProgram(const GpuProgramPtr& program);
 
    private:

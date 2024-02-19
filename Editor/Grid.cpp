@@ -203,20 +203,23 @@ namespace ToolKit
       // Create grid material.
       if (!GetMaterialManager()->Exist(g_gridMaterialName))
       {
-        MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+        MaterialPtr unlitMaterial        = GetMaterialManager()->GetCopyOfUnlitMaterial();
 
-        material->UnInit();
-        material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-        material->GetRenderState()->cullMode      = CullingType::TwoSided;
-        material->m_vertexShader  = GetShaderManager()->Create<Shader>(ShaderPath("gridVertex.shader", true));
+        ShaderMaterialPtr shaderMaterial = MakeNewPtr<ShaderMaterial>();
+        shaderMaterial->SetRenderState(unlitMaterial->GetRenderState());
+
+        shaderMaterial->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+        shaderMaterial->GetRenderState()->cullMode      = CullingType::TwoSided;
+        shaderMaterial->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("gridVertex.shader", true));
 
         // Custom creation & shader management.
-        GridFragmentShaderPtr gfs = MakeNewPtr<GridFragmentShader>();
+        GridFragmentShaderPtr gfs      = MakeNewPtr<GridFragmentShader>();
         gfs->Load();
         GetShaderManager()->Manage(gfs);
 
-        material->m_fragmentShader                          = gfs;
-        GetMaterialManager()->m_storage[g_gridMaterialName] = material;
+        shaderMaterial->m_fragmentShader = gfs;
+        shaderMaterial->Init();
+        GetMaterialManager()->m_storage[g_gridMaterialName] = shaderMaterial;
       }
 
       m_material = GetMaterialManager()->Create<ShaderMaterial>(g_gridMaterialName);

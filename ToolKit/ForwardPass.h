@@ -43,7 +43,6 @@ namespace ToolKit
    protected:
     void RenderOpaque(RenderData* renderData);
     void RenderTranslucent(RenderData* renderData);
-    void RenderCustomShaders(RenderData* renderData);
 
    public:
     ForwardRenderPassParams m_params;
