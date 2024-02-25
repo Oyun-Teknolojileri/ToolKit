@@ -49,10 +49,8 @@ namespace ToolKit
       GetRenderSystem()->AddRenderTask(&sceneRenderer);
     }
 
-    static uint totalFrameCount = 0;
-    GetRenderSystem()->SetFrameCount(totalFrameCount++);
-
     GetRenderSystem()->ExecuteRenderTasks();
+	GetRenderSystem()->EndFrame();
   }
 
   struct UIRenderTechniqueParams
