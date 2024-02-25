@@ -138,7 +138,7 @@ else() # Windows & Editor builds.
 		add_library(${PROJECT_NAME} SHARED ${SOURCE} ${HEADERS})
 	endif()
 
-	target_compile_definitions(${PROJECT_NAME} PRIVATE TK_DLL_IMPORT>)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE TK_DLL_IMPORT)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:TK_DEBUG>)
 
 	if (MSVC)
