@@ -156,11 +156,12 @@ namespace ToolKit
   void RenderSystem::InitGl(void* glGetProcAddres, GlReportCallback callback)
   {
     // Initialize opengl functions.
+
 #ifdef _WIN32
     gladLoadGLES2((GLADloadfunc) glGetProcAddres);
 #endif
-    InitGLErrorReport(callback);
 
+    InitGLErrorReport(callback);
     TestSRGBBackBuffer();
 
     // Default states.
