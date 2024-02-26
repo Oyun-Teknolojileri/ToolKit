@@ -444,6 +444,7 @@ namespace ToolKit
 
     // Phong material
     material                                          = MakeNewPtr<Material>();
+    material->m_isShaderMaterial                      = true;
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->GetPhongForwardShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
