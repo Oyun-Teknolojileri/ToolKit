@@ -7,12 +7,21 @@
 
 #include "Threads.h"
 
+#include "TKPlatform.h"
+
 #include "DebugNew.h"
 
 namespace ToolKit
 {
 
-  WorkerManager::WorkerManager() { m_frameWorkers.set_num_threads(8); }
+  WorkerManager::WorkerManager()
+  {
+    // TODO: Setting the thread count kills the browser.
+    if constexpr (TK_PLATFORM != PLATFORM::TKWeb)
+    {
+      m_frameWorkers.set_num_threads(8);
+    }
+  }
 
   ThreadPool& WorkerManager::GetExecutor(Executor executor)
   {

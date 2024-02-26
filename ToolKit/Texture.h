@@ -67,7 +67,7 @@ namespace ToolKit
   // DepthTexture
   //////////////////////////////////////////////////////////////////////////
 
-  class DepthTexture : public Texture
+  class TK_API DepthTexture : public Texture
   {
    public:
     TKDeclareClass(DepthTexture, Texture);
@@ -87,7 +87,7 @@ namespace ToolKit
   // DataTexture
   //////////////////////////////////////////////////////////////////////////
 
-  class DataTexture : public Texture
+  class TK_API DataTexture : public Texture
   {
    public:
     TKDeclareClass(DataTexture, Texture);
