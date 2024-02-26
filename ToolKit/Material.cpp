@@ -296,6 +296,9 @@ namespace ToolKit
     node = CreateXmlNode(doc, "roughness", container);
     WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_roughness));
 
+    node = CreateXmlNode(doc, "isShaderMaterial", container);
+    WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_isShaderMaterial));
+
     m_renderState.Serialize(doc, container);
     return container;
   }
@@ -384,6 +387,10 @@ namespace ToolKit
         ReadAttr(node, XmlNodeName.data(), m_roughness);
       }
       else if (strcmp("materialType", node->name()) == 0) {}
+      else if (strcmp("isShaderMaterial", node->name()) == 0)
+      {
+        ReadAttr(node, XmlNodeName.data(), m_isShaderMaterial);
+      }
       else
       {
         assert(false);
@@ -408,9 +415,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  TKDefineClass(ShaderMaterial, Material);
-
-  void ShaderMaterial::UpdateProgramUniform(const String& uniformName, const UniformValue& val)
+  void Material::UpdateProgramUniform(const String& uniformName, const UniformValue& val)
   {
     Init();
 

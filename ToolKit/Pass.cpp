@@ -326,7 +326,7 @@ namespace ToolKit
       forwardItr = std::partition(culledItr,
                                   renderData.jobs.end(),
                                   [](const RenderJob& job)
-                                  { return !job.Material->IsA<ShaderMaterial>() && !job.Material->IsTranslucent(); });
+                                  { return !job.Material->m_isShaderMaterial && !job.Material->IsTranslucent(); });
     }
 
     // Group translucent.
