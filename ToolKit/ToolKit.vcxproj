@@ -225,7 +225,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>..\Bin\</OutDir>
     <IncludePath>$(ProjectDir);$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\mini_audio\</IncludePath>
-    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib</LibraryPath>
+    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
