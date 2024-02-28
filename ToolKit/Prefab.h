@@ -52,6 +52,17 @@ namespace ToolKit
     Entity* CopyTo(Entity* other) const override;
     BoundingBox GetBoundingBox(bool inWorld = false) const override;
 
+    /**
+     * This function will look for the first entity with given name in LINKED scene.
+     * @return First entity with given name. Null pointer if the entity is not found or the prefab is not linked.
+     */
+    EntityPtr GetFirstByName(const String& name);
+    /**
+     * This function will look for the first entity with given tag in LINKED scene.
+     * @return First entity with given tag. Null pointer if the entity is not found or the prefab is not linked.
+     */
+    EntityPtr GetFirstByTag(const String& tag);
+
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
@@ -63,12 +74,11 @@ namespace ToolKit
    public:
     TKDeclareParam(String, PrefabPath);
 
+   private:
     ScenePtr m_prefabScene;
     Scene* m_currentScene;
     bool m_initiated = false;
-
-   private:
-    bool m_linked = false;
+    bool m_linked    = false;
 
     // Used only in deserialization
     std::unordered_map<String, ParameterVariantArray> m_childCustomDatas;
