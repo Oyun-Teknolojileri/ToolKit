@@ -94,7 +94,7 @@ namespace ToolKit
     return boundingBox;
   }
 
-  EntityPtr Prefab::GetFirstByNameInMergedScene(const String& name)
+  EntityPtr Prefab::GetFirstByName(const String& name)
   {
     if (!m_initiated || !m_linked || m_currentScene == nullptr)
     {
@@ -113,7 +113,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  EntityPtr Prefab::GetFirstByTagInMergedScene(const String& tag)
+  EntityPtr Prefab::GetFirstByTag(const String& tag)
   {
     if (!m_initiated || !m_linked || m_currentScene == nullptr)
     {

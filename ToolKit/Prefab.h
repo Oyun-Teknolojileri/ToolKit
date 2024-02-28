@@ -52,8 +52,12 @@ namespace ToolKit
     Entity* CopyTo(Entity* other) const override;
     BoundingBox GetBoundingBox(bool inWorld = false) const override;
 
-    EntityPtr GetFirstByNameInMergedScene(const String& name);
-    EntityPtr GetFirstByTagInMergedScene(const String& tag);
+    /**
+     * These functions will look for the entity in LINKED scene.
+     * Returns null pointer if the entity is not found or the prefab is not linked.
+     */
+    EntityPtr GetFirstByName(const String& name);
+    EntityPtr GetFirstByTag(const String& tag);
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
