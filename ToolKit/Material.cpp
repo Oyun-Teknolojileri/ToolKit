@@ -155,7 +155,7 @@ namespace ToolKit
     cpy->m_emissiveColor            = m_emissiveColor;
     cpy->m_metallicRoughnessTexture = m_metallicRoughnessTexture;
     cpy->m_normalMap                = m_normalMap;
-    cpy->m_normalMap                = m_normalMap;
+    cpy->m_isShaderMaterial         = m_isShaderMaterial;
   }
 
   RenderState* Material::GetRenderState() { return &m_renderState; }
