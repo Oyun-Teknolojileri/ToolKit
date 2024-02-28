@@ -94,6 +94,44 @@ namespace ToolKit
     return boundingBox;
   }
 
+  EntityPtr Prefab::GetFirstByNameInMergedScene(const String& name)
+  {
+    if (!m_initiated || !m_linked || m_currentScene == nullptr)
+    {
+      return nullptr;
+    }
+
+    for (uint i = 0; i < m_instanceEntities.size(); ++i)
+    {
+      EntityPtr instanceEntity = m_instanceEntities[i];
+      if (instanceEntity->GetNameVal() == name)
+      {
+        return instanceEntity;
+      }
+    }
+
+    return nullptr;
+  }
+
+  EntityPtr Prefab::GetFirstByTagInMergedScene(const String& tag)
+  {
+    if (!m_initiated || !m_linked || m_currentScene == nullptr)
+    {
+      return nullptr;
+    }
+
+    for (uint i = 0; i < m_instanceEntities.size(); ++i)
+    {
+      EntityPtr instanceEntity = m_instanceEntities[i];
+      if (instanceEntity->GetTagVal() == tag)
+      {
+        return instanceEntity;
+      }
+    }
+
+    return nullptr;
+  }
+
   void Prefab::Init(Scene* curScene)
   {
     if (m_initiated)

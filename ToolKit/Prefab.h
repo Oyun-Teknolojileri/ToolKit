@@ -52,6 +52,9 @@ namespace ToolKit
     Entity* CopyTo(Entity* other) const override;
     BoundingBox GetBoundingBox(bool inWorld = false) const override;
 
+    EntityPtr GetFirstByNameInMergedScene(const String& name);
+    EntityPtr GetFirstByTagInMergedScene(const String& tag);
+
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
