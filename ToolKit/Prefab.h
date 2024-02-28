@@ -53,10 +53,14 @@ namespace ToolKit
     BoundingBox GetBoundingBox(bool inWorld = false) const override;
 
     /**
-     * These functions will look for the entity in LINKED scene.
-     * Returns null pointer if the entity is not found or the prefab is not linked.
+     * This function will look for the first entity with given name in LINKED scene.
+     * @return First entity with given name. Null pointer if the entity is not found or the prefab is not linked.
      */
     EntityPtr GetFirstByName(const String& name);
+    /**
+     * This function will look for the first entity with given tag in LINKED scene.
+     * @return First entity with given tag. Null pointer if the entity is not found or the prefab is not linked.
+     */
     EntityPtr GetFirstByTag(const String& tag);
 
    protected:
