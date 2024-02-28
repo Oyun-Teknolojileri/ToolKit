@@ -46,7 +46,7 @@ namespace ToolKit
 
    protected:
     bool m_initialized           = false;
-    ShaderMaterialPtr m_skyboxMaterial = nullptr;
+    MaterialPtr m_skyboxMaterial = nullptr;
   };
 
   class TK_API Sky : public SkyBase

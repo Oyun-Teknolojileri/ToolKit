@@ -139,7 +139,6 @@ namespace ToolKit
     Register<Animation>();
     Register<Audio>();
     Register<Material>();
-    Register<ShaderMaterial>();
     Register<Mesh>();
     Register<SkinMesh>();
     Register<Scene>();

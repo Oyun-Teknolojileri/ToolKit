@@ -203,9 +203,10 @@ namespace ToolKit
       // Create grid material.
       if (!GetMaterialManager()->Exist(g_gridMaterialName))
       {
-        MaterialPtr unlitMaterial        = GetMaterialManager()->GetCopyOfUnlitMaterial();
+        MaterialPtr unlitMaterial          = GetMaterialManager()->GetCopyOfUnlitMaterial();
 
-        ShaderMaterialPtr shaderMaterial = MakeNewPtr<ShaderMaterial>();
+        MaterialPtr shaderMaterial         = MakeNewPtr<Material>();
+        shaderMaterial->m_isShaderMaterial = true;
         shaderMaterial->SetRenderState(unlitMaterial->GetRenderState());
 
         shaderMaterial->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
@@ -222,7 +223,7 @@ namespace ToolKit
         GetMaterialManager()->m_storage[g_gridMaterialName] = shaderMaterial;
       }
 
-      m_material = GetMaterialManager()->Create<ShaderMaterial>(g_gridMaterialName);
+      m_material = GetMaterialManager()->Create<Material>(g_gridMaterialName);
       GetMaterialComponent()->SetFirstMaterial(m_material);
 
       m_initiated = true;

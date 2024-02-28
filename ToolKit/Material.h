@@ -60,6 +60,8 @@ namespace ToolKit
 
     inline uint64 GetRuntimeVersion() { return m_uniformVersion; }
 
+    void UpdateProgramUniform(const String& uniformName, const UniformValue& val);
+
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
@@ -77,8 +79,9 @@ namespace ToolKit
     ShaderPtr m_fragmentShader;
     Vec3 m_color;
     Vec3 m_emissiveColor;
-    float m_metallic  = 0.2f;
-    float m_roughness = 0.5f;
+    float m_metallic        = 0.2f;
+    float m_roughness       = 0.5f;
+    bool m_isShaderMaterial = false;
 
    private:
     float m_alpha = 1.0f;
@@ -89,14 +92,6 @@ namespace ToolKit
      * current material uniform version.
      */
     uint64 m_uniformVersion = 1;
-  };
-
-  class TK_API ShaderMaterial : public Material
-  {
-    TKDeclareClass(ShaderMaterial, Material);
-
-   public:
-    void UpdateProgramUniform(const String& uniformName, const UniformValue& val);
   };
 
   class TK_API MaterialManager : public ResourceManager

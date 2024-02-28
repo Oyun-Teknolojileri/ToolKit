@@ -175,9 +175,7 @@ namespace ToolKit
     RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
 
     // Assign lights for forward pass
-    RenderJobProcessor::AssignLight(m_renderData.GetForwardTranslucentBegin(),
-                                    m_renderData.jobs.end(),
-                                    m_updatedLights);
+    RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_updatedLights);
 
     // TK_LOG("Culled");
     // int i = 0;

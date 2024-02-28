@@ -47,11 +47,11 @@ namespace ToolKit
       Vec3 m_horizontalAxisColor;
       Vec3 m_verticalAxisColor;
 
-      UVec2 m_size;                        // m^2 size of the grid.
-      float m_gridCellSize         = 1.0f; // m^2 size of each cell
-      float m_maxLinePixelCount    = 2.0f;
-      bool m_initiated             = false;
-      ShaderMaterialPtr m_material = nullptr;
+      UVec2 m_size;                     // m^2 size of the grid.
+      float m_gridCellSize      = 1.0f; // m^2 size of each cell
+      float m_maxLinePixelCount = 2.0f;
+      bool m_initiated          = false;
+      MaterialPtr m_material    = nullptr;
     };
 
     typedef std::shared_ptr<Grid> GridPtr;
