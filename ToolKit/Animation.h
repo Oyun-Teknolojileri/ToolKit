@@ -169,9 +169,6 @@ namespace ToolKit
     ~AnimRecord();
 
    protected:
-    // Should be called from AnimationPlayer
-    void AddBlendAnimation(AnimationPtr blendAnimation, float blendDurationInSec);
-
    public:
     /**
      * Current time of the animation expressed in seconds.
@@ -199,10 +196,10 @@ namespace ToolKit
     ULongID m_id;
 
    protected:
-    // The blend animation's duration is blend duration
-    AnimationPtr m_blendAnimation = nullptr;
-    float m_blendFactor           = 0.0f; // between 0 - 1
-    float m_blendDurationInSec    = 0.0f;
+    // TODO these variables should go somewhere else
+    bool m_blendingActive             = false;
+    float m_blendTotalDurationInSec   = -1.0f;
+    float m_blendCurrentDurationInSec = -1.0f;
   };
 
   /**
@@ -218,7 +215,7 @@ namespace ToolKit
      * Adds a record to the player.
      * @param rec AnimRecord data.
      */
-    void AddRecord(AnimRecord* rec);
+    void AddRecord(AnimRecordPtr rec);
 
     /**
      * Removes the AnimRecord with the given id.
@@ -232,10 +229,7 @@ namespace ToolKit
      */
     void RemoveRecord(const AnimRecord& rec);
 
-    /**
-     * Adds an animation to blend to an anim record.
-     */
-    void AddBlendAnimation(ULongID animRecordID, AnimationPtr animToBlend, float blendDurationInSec);
+    void BlendAnimation(AnimRecordPtr recordToBeBlended, AnimRecordPtr recordToBlend, float blendDurationInSec);
 
     /**
      * Update all the records in the player and apply transforms
@@ -286,10 +280,14 @@ namespace ToolKit
 
    public:
     // Storage for the AnimRecord objects.
-    AnimRecordRawPtrArray m_records;
+    AnimRecordPtrArray m_records;
 
    private:
     // Storage for animation data (skeleton id - animation id pair)
-    std::map<std::pair<ULongID, ULongID>, DataTexturePtr> m_animTextures;
+    std::map<std::pair<ULongID, ULongID>, DataTexturePtr> m_animTextures; // TODO why map instead of underdered_map ?
+
+    // TODO refactor. On blending, we are looking for animation to be blended in keys
+    // First: record to blend, Second: record that is blended
+    std::unordered_map<AnimRecordPtr, AnimRecordPtr> m_blendingRecords;
   };
 } // namespace ToolKit

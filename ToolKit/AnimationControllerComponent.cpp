@@ -94,14 +94,20 @@ namespace ToolKit
     ParamRecords().GetVar<AnimRecordPtrMap>().erase(signalName);
   }
 
-  void AnimControllerComponent::AddAnimationToBlend(const String& animToBlendName, float blendDurationInSec)
+  void AnimControllerComponent::SmoothTransitionToNextAnim(const String& nextAnimName, float transitionDuration)
   {
-    if (activeRecord != nullptr)
-    {
-      AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
-      AnimRecordPtr& rec     = list[animToBlendName];
+    AnimRecordPtr lastActiveRecord = activeRecord;
 
-      GetAnimationPlayer()->AddBlendAnimation(activeRecord->m_id, rec->m_animation, blendDurationInSec);
+    Play(nextAnimName);
+
+    if (activeRecord != nullptr && lastActiveRecord != nullptr)
+    {
+      // TODO if lastActiveRecord anim left duration is less than transitionDuration and anim is not looped, or
+      // currentAnimDuration is less than transition duration and anim is not looped, clamp the transition duration to
+      // minimum duration
+
+      AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
+      GetAnimationPlayer()->BlendAnimation(activeRecord, lastActiveRecord, transitionDuration);
     }
   }
 
@@ -122,7 +128,7 @@ namespace ToolKit
     rec->m_loop   = true;
     rec->m_entity = OwnerEntity();
     activeRecord  = rec;
-    GetAnimationPlayer()->AddRecord(rec.get());
+    GetAnimationPlayer()->AddRecord(rec);
   }
 
   void AnimControllerComponent::Stop()

@@ -413,7 +413,7 @@ namespace ToolKit
       if (anim != nullptr)
       {
         EntityPtr ntt = skelComp->OwnerEntity();
-        for (AnimRecord* animRecord : GetAnimationPlayer()->m_records)
+        for (AnimRecordPtr animRecord : GetAnimationPlayer()->m_records)
         {
           if (EntityPtr recordNtt = animRecord->m_entity.lock())
           {
