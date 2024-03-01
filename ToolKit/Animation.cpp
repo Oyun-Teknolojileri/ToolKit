@@ -391,11 +391,12 @@ namespace ToolKit
     assert(HaveSameKeys(recordToBeBlended->m_animation->m_keys, recordToBlend->m_animation->m_keys) &&
            "Blend animation is for different skeleton than the animation to blend with!");
 
-    m_blendingRecords[recordToBlend]           = recordToBeBlended;
+    m_blendingRecords[recordToBeBlended]    = recordToBlend;
 
     recordToBlend->m_blendCurrentDurationInSec = blendDurationInSec;
     recordToBlend->m_blendTotalDurationInSec   = blendDurationInSec;
     recordToBlend->m_blendingActive            = true;
+    recordToBlend->m_animRecordToBeBlended     = recordToBeBlended;
   }
 
   void AnimationPlayer::Update(float deltaTimeSec)
@@ -460,11 +461,16 @@ namespace ToolKit
       {
         // remove record from both blending map and records array
 
-        anyAnimRecordDeleted   = true;
-        auto blendingAnimMapIt = m_blendingRecords.find(*it);
-        if (blendingAnimMapIt != m_blendingRecords.end())
+        anyAnimRecordDeleted        = true;
+
+        AnimRecordPtr animRecordPtr = (*it)->m_animRecordToBeBlended;
+        if (animRecordPtr != nullptr)
         {
-          m_blendingRecords.erase(blendingAnimMapIt);
+          auto blendingAnimMapIt = m_blendingRecords.find(animRecordPtr);
+          if (blendingAnimMapIt != m_blendingRecords.end())
+          {
+            m_blendingRecords.erase(blendingAnimMapIt);
+          }
         }
 
         if (EntityPtr ntt = (*it)->m_entity.lock())
@@ -482,12 +488,6 @@ namespace ToolKit
       {
         ++it;
       }
-    }
-
-    // TODO
-    if (m_records.size() == 4)
-    {
-      TK_LOG("Record Count: %d", m_records.size());
     }
 
     // remove unused animation data textures
@@ -520,13 +520,10 @@ namespace ToolKit
           skComp->m_animData.currentAnimation          = record->m_animation;
 
           AnimRecordPtr recordToBlend                  = nullptr;
-          for (auto it : m_blendingRecords)
+          auto it                                      = m_blendingRecords.find(record);
+          if (it != m_blendingRecords.end())
           {
-            if (it.second == record)
-            {
-              recordToBlend = it.first;
-              break;
-            }
+            recordToBlend = it->second;
           }
           if (recordToBlend != nullptr)
           {

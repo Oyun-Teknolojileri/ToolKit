@@ -178,7 +178,6 @@ namespace ToolKit
     float m_timeMultiplier = 1.0f;  //!< Speed multiplier for animation.
     AnimationPtr m_animation;       //!< Animation to play.
     EntityWeakPtr m_entity;
-    BlendTarget m_blendTarget; // TODO: DEPRECATED
 
     /**
      * Enums that represent's the current state of the Animation in the
@@ -197,9 +196,10 @@ namespace ToolKit
 
    protected:
     // TODO these variables should go somewhere else
-    bool m_blendingActive             = false;
-    float m_blendTotalDurationInSec   = -1.0f;
-    float m_blendCurrentDurationInSec = -1.0f;
+    bool m_blendingActive                 = false;
+    float m_blendTotalDurationInSec       = -1.0f;
+    float m_blendCurrentDurationInSec     = -1.0f;
+    AnimRecordPtr m_animRecordToBeBlended = nullptr;
   };
 
   /**
@@ -286,8 +286,8 @@ namespace ToolKit
     // Storage for animation data (skeleton id - animation id pair)
     std::map<std::pair<ULongID, ULongID>, DataTexturePtr> m_animTextures; // TODO why map instead of underdered_map ?
 
-    // TODO refactor. On blending, we are looking for animation to be blended in keys
-    // First: record to blend, Second: record that is blended
+    // First: record that is blended, Second: record to blend
     std::unordered_map<AnimRecordPtr, AnimRecordPtr> m_blendingRecords;
   };
+
 } // namespace ToolKit

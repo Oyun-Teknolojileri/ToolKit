@@ -102,10 +102,6 @@ namespace ToolKit
 
     if (activeRecord != nullptr && lastActiveRecord != nullptr)
     {
-      // TODO if lastActiveRecord anim left duration is less than transitionDuration and anim is not looped, or
-      // currentAnimDuration is less than transition duration and anim is not looped, clamp the transition duration to
-      // minimum duration
-
       AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
       GetAnimationPlayer()->BlendAnimation(activeRecord, lastActiveRecord, transitionDuration);
     }
