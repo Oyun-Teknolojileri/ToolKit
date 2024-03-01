@@ -34,6 +34,14 @@ namespace ToolKit
     bool Blend = false;              //!< States if the blending is active for the track.
   };
 
+  struct BlendingData
+  {
+    AnimRecordPtr recordToBeBlended = nullptr;
+    AnimRecordPtr recordToBlend     = nullptr;
+    float blendTotalDurationInSec   = -1.0f;
+    float blendCurrentDurationInSec = -1.0f;
+  };
+
   /**
    * A transformation key that is part of an Animation resource.
    */
@@ -196,10 +204,7 @@ namespace ToolKit
     ULongID m_id;
 
    protected:
-    bool m_blendingActive                 = false;
-    float m_blendTotalDurationInSec       = -1.0f;
-    float m_blendCurrentDurationInSec     = -1.0f;
-    AnimRecordPtr m_animRecordToBeBlended = nullptr;
+    BlendingData m_blendingData;
   };
 
   /**
@@ -228,8 +233,6 @@ namespace ToolKit
      * @param rec Record to remove.
      */
     void RemoveRecord(const AnimRecord& rec);
-
-    void BlendAnimation(AnimRecordPtr recordToBeBlended, AnimRecordPtr recordToBlend, float blendDurationInSec);
 
     /**
      * Update all the records in the player and apply transforms
@@ -281,9 +284,6 @@ namespace ToolKit
    public:
     // Storage for the AnimRecord objects.
     AnimRecordPtrArray m_records;
-
-    // First: record that is blended, Second: record to blend
-    std::unordered_map<AnimRecordPtr, AnimRecordPtr> m_blendingRecords;
 
    private:
     // Storage for animation data (skeleton id - animation id pair)

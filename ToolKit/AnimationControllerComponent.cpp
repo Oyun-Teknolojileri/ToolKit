@@ -102,7 +102,17 @@ namespace ToolKit
 
     if (activeRecord != nullptr && lastActiveRecord != nullptr)
     {
-      GetAnimationPlayer()->BlendAnimation(activeRecord, lastActiveRecord, transitionDuration);
+      // set blending data
+
+      // check if they have same bones
+      assert(HaveSameKeys(activeRecord->m_animation->m_keys, lastActiveRecord->m_animation->m_keys) &&
+             "Blend animation is for different skeleton than the animation to blend with!");
+
+      activeRecord->m_blendingData.recordToBeBlended         = nullptr;
+      activeRecord->m_blendingData.recordToBlend             = lastActiveRecord;
+      activeRecord->m_blendingData.blendCurrentDurationInSec = transitionDuration;
+      activeRecord->m_blendingData.blendTotalDurationInSec   = transitionDuration;
+      lastActiveRecord->m_blendingData.recordToBeBlended     = activeRecord;
     }
   }
 
@@ -119,12 +129,13 @@ namespace ToolKit
     {
       activeRecord->m_state = AnimRecord::State::Stop;
     }
-    rec->m_currentTime    = 0.0f;
-    rec->m_state          = AnimRecord::State::Play;
-    rec->m_loop           = true;
-    rec->m_blendingActive = false;
-    rec->m_entity         = OwnerEntity();
-    activeRecord          = rec;
+    rec->m_currentTime                    = 0.0f;
+    rec->m_state                          = AnimRecord::State::Play;
+    rec->m_loop                           = true;
+    rec->m_blendingData.recordToBlend     = nullptr;
+    rec->m_blendingData.recordToBeBlended = nullptr;
+    rec->m_entity                         = OwnerEntity();
+    activeRecord                          = rec;
     GetAnimationPlayer()->AddRecord(rec);
   }
 
