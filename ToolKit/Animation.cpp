@@ -364,6 +364,20 @@ namespace ToolKit
       return;
     }
 
+    if (m_blendingRecords.find(rec) != m_blendingRecords.end())
+    {
+      m_blendingRecords.erase(rec);
+    }
+
+    for (auto animRecIt = m_records.begin(); animRecIt != m_records.end(); ++animRecIt)
+    {
+      if (*animRecIt == rec)
+      {
+        m_records.erase(animRecIt);
+        break;
+      }
+    }
+
     // Generate animation frame data
     AddAnimationData(rec->m_entity, rec->m_animation);
 
@@ -375,7 +389,13 @@ namespace ToolKit
     int indx = Exist(id);
     if (indx != -1)
     {
-      m_records.erase(m_records.begin() + indx);
+      auto it = m_records.begin() + indx;
+      m_records.erase(it);
+
+      if (m_blendingRecords.find(*it) != m_blendingRecords.end())
+      {
+        m_blendingRecords.erase(*it);
+      }
 
       UpdateAnimationData();
     }
@@ -391,7 +411,7 @@ namespace ToolKit
     assert(HaveSameKeys(recordToBeBlended->m_animation->m_keys, recordToBlend->m_animation->m_keys) &&
            "Blend animation is for different skeleton than the animation to blend with!");
 
-    m_blendingRecords[recordToBeBlended]    = recordToBlend;
+    m_blendingRecords[recordToBeBlended]       = recordToBlend;
 
     recordToBlend->m_blendCurrentDurationInSec = blendDurationInSec;
     recordToBlend->m_blendTotalDurationInSec   = blendDurationInSec;

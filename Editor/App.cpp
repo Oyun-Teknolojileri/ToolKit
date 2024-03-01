@@ -720,6 +720,7 @@ namespace ToolKit
 
       // Clear all animations potentially added from game module.
       GetAnimationPlayer()->m_records.clear();
+      GetAnimationPlayer()->m_blendingRecords.clear();
       GetUIManager()->DestroyLayers();
 
       m_perFrameDebugObjects.clear();

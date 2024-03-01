@@ -151,6 +151,7 @@ namespace ToolKit
   class TK_API AnimRecord
   {
     friend class AnimationPlayer;
+    friend class AnimControllerComponent;
     friend class RenderJobProcessor;
 
    public:
@@ -195,7 +196,6 @@ namespace ToolKit
     ULongID m_id;
 
    protected:
-    // TODO these variables should go somewhere else
     bool m_blendingActive                 = false;
     float m_blendTotalDurationInSec       = -1.0f;
     float m_blendCurrentDurationInSec     = -1.0f;
@@ -282,12 +282,12 @@ namespace ToolKit
     // Storage for the AnimRecord objects.
     AnimRecordPtrArray m_records;
 
+    // First: record that is blended, Second: record to blend
+    std::unordered_map<AnimRecordPtr, AnimRecordPtr> m_blendingRecords;
+
    private:
     // Storage for animation data (skeleton id - animation id pair)
     std::map<std::pair<ULongID, ULongID>, DataTexturePtr> m_animTextures; // TODO why map instead of underdered_map ?
-
-    // First: record that is blended, Second: record to blend
-    std::unordered_map<AnimRecordPtr, AnimRecordPtr> m_blendingRecords;
   };
 
 } // namespace ToolKit

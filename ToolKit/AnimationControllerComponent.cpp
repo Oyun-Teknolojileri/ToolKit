@@ -102,7 +102,6 @@ namespace ToolKit
 
     if (activeRecord != nullptr && lastActiveRecord != nullptr)
     {
-      AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
       GetAnimationPlayer()->BlendAnimation(activeRecord, lastActiveRecord, transitionDuration);
     }
   }
@@ -120,10 +119,12 @@ namespace ToolKit
     {
       activeRecord->m_state = AnimRecord::State::Stop;
     }
-    rec->m_state  = AnimRecord::State::Play;
-    rec->m_loop   = true;
-    rec->m_entity = OwnerEntity();
-    activeRecord  = rec;
+    rec->m_currentTime    = 0.0f;
+    rec->m_state          = AnimRecord::State::Play;
+    rec->m_loop           = true;
+    rec->m_blendingActive = false;
+    rec->m_entity         = OwnerEntity();
+    activeRecord          = rec;
     GetAnimationPlayer()->AddRecord(rec);
   }
 
