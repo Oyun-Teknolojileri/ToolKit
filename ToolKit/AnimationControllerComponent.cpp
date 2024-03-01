@@ -94,7 +94,7 @@ namespace ToolKit
     ParamRecords().GetVar<AnimRecordPtrMap>().erase(signalName);
   }
 
-  void AnimControllerComponent::SmoothTransitionToNextAnim(const String& nextAnimName, float transitionDuration)
+  void AnimControllerComponent::SmoothTransition(const String& nextAnimName, float transitionDuration)
   {
     AnimRecordPtr lastActiveRecord = activeRecord;
 
