@@ -108,11 +108,11 @@ namespace ToolKit
       assert(HaveSameKeys(activeRecord->m_animation->m_keys, lastActiveRecord->m_animation->m_keys) &&
              "Blend animation is for different skeleton than the animation to blend with!");
 
-      activeRecord->m_blendingData.recordToBeBlended         = nullptr;
-      activeRecord->m_blendingData.recordToBlend             = lastActiveRecord;
-      activeRecord->m_blendingData.blendCurrentDurationInSec = transitionDuration;
-      activeRecord->m_blendingData.blendTotalDurationInSec   = transitionDuration;
-      lastActiveRecord->m_blendingData.recordToBeBlended     = activeRecord;
+      activeRecord->m_blendingData.recordToBlend                 = lastActiveRecord;
+      lastActiveRecord->m_blendingData.recordToBlend             = nullptr;
+      lastActiveRecord->m_blendingData.blendCurrentDurationInSec = transitionDuration;
+      lastActiveRecord->m_blendingData.blendTotalDurationInSec   = transitionDuration;
+      lastActiveRecord->m_blendingData.recordToBeBlended         = activeRecord;
     }
   }
 

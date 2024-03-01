@@ -21,27 +21,6 @@
 
 namespace ToolKit
 {
-  /*
-   * Blending to next Animation configration for AnimRecord class.
-   */
-  struct BlendTarget
-  {
-    Animation* TargetAnim = nullptr; //!< Animation to Blend.
-    float OverlapTime     = 1.0f;    //!< How early animation will start blending.
-    String RootBone;                 //!< Root bone of animation nodes for offsetting.
-    Vec3 TranslationOffset;          //!< Transform offset of target animation.
-    Quaternion OrientationOffset;    //!< Orientation offset of target animation.
-    bool Blend = false;              //!< States if the blending is active for the track.
-  };
-
-  struct BlendingData
-  {
-    AnimRecordPtr recordToBeBlended = nullptr;
-    AnimRecordPtr recordToBlend     = nullptr;
-    float blendTotalDurationInSec   = -1.0f;
-    float blendCurrentDurationInSec = -1.0f;
-  };
-
   /**
    * A transformation key that is part of an Animation resource.
    */
@@ -178,6 +157,14 @@ namespace ToolKit
     ~AnimRecord();
 
    protected:
+    struct BlendingData
+    {
+      AnimRecordPtr recordToBeBlended = nullptr; //!< AnimRecord that is being blended by another record
+      AnimRecordPtr recordToBlend     = nullptr; //!< AnimRecord that is blending the current record
+      float blendTotalDurationInSec   = -1.0f;   //!< Total duration of blending
+      float blendCurrentDurationInSec = -1.0f;   //!< Current time of blending (Decreasing from total duration to zero)
+    };
+
    public:
     /**
      * Current time of the animation expressed in seconds.

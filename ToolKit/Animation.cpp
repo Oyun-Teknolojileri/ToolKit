@@ -110,46 +110,7 @@ namespace ToolKit
       orientation                        = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
       scale                              = Interpolate(k1.m_scale, k2.m_scale, ratio);
 
-      // Blending with next animation
-      if (blendTarget != nullptr && blendTarget->Blend)
-      {
-        // Calculate the current time of the target animation.
-        float targetAnimTime = time - m_duration + blendTarget->OverlapTime;
-        if (targetAnimTime >= 0.0f) // Start blending.
-        {
-          // Calculate blend ratio between source - target.
-          float blendRatio = targetAnimTime / blendTarget->OverlapTime;
-          // Find the corresponding bone's transforms on target anim.
-          auto targetEntry = blendTarget->TargetAnim->m_keys.find(dBoneIter.first);
-          int targetKey1, targetKey2;
-          float targetRatio;
-          blendTarget->TargetAnim->GetNearestKeys(targetEntry->second,
-                                                  targetKey1,
-                                                  targetKey2,
-                                                  targetRatio,
-                                                  targetAnimTime);
-          Key targetK1            = targetEntry->second[targetKey1];
-          Key targetK2            = targetEntry->second[targetKey2];
-
-          Vec3 translationT       = Interpolate(targetK1.m_position, targetK2.m_position, targetRatio);
-          Quaternion orientationT = glm::slerp(targetK1.m_rotation, targetK2.m_rotation, targetRatio);
-          Vec3 scaleT             = Interpolate(targetK1.m_scale, targetK2.m_scale, targetRatio);
-
-          // For the source anims with root motion or rotation,
-          // Target anim is offseted from it's root bone.
-          if (dBoneIter.first == blendTarget->RootBone)
-          {
-            Vec3 entityScale       = owner->m_node->GetScale();
-            float translationCoeff = (1 / entityScale.x);
-            translationT           = translationT + (blendTarget->TranslationOffset * translationCoeff);
-            orientationT           = orientationT * blendTarget->OrientationOffset;
-          }
-          // Blend animations.
-          translation = Interpolate(translation, translationT, blendRatio);
-          orientation = glm::slerp(orientation, orientationT, blendRatio);
-          scale       = Interpolate(scale, scaleT, blendRatio);
-        }
-      }
+      // TODO CPU skinning for blended animations
 
       dBone.node->SetLocalTransforms(translation, orientation, scale);
     }
