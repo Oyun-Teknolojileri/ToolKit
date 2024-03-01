@@ -393,7 +393,7 @@ namespace ToolKit
 
     m_blendingRecords[recordToBlend]           = recordToBeBlended;
 
-    recordToBlend->m_blendCurrentDurationInSec = 0.0f;
+    recordToBlend->m_blendCurrentDurationInSec = blendDurationInSec;
     recordToBlend->m_blendTotalDurationInSec   = blendDurationInSec;
     recordToBlend->m_blendingActive            = true;
   }
@@ -431,10 +431,10 @@ namespace ToolKit
 
         if (record->m_blendingActive)
         {
-          record->m_blendCurrentDurationInSec += deltaTimeSec * record->m_timeMultiplier;
-          if (record->m_blendCurrentDurationInSec > record->m_blendTotalDurationInSec)
+          record->m_blendCurrentDurationInSec -= deltaTimeSec * record->m_timeMultiplier;
+          if (record->m_blendCurrentDurationInSec < 0.0)
           {
-            return false;
+            return true;
           }
         }
       }
@@ -482,6 +482,12 @@ namespace ToolKit
       {
         ++it;
       }
+    }
+
+    // TODO
+    if (m_records.size() == 4)
+    {
+      TK_LOG("Record Count: %d", m_records.size());
     }
 
     // remove unused animation data textures

@@ -98,7 +98,7 @@ namespace ToolKit
   {
     AnimRecordPtr lastActiveRecord = activeRecord;
 
-    Play(nextAnimName);
+    Play(nextAnimName, false);
 
     if (activeRecord != nullptr && lastActiveRecord != nullptr)
     {
@@ -111,7 +111,7 @@ namespace ToolKit
     }
   }
 
-  void AnimControllerComponent::Play(const String& signalName)
+  void AnimControllerComponent::Play(const String& signalName, bool stopPrevAnim)
   {
     AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
     AnimRecordPtr& rec     = list[signalName];
@@ -120,7 +120,7 @@ namespace ToolKit
       return;
     }
 
-    if (activeRecord)
+    if (activeRecord && stopPrevAnim)
     {
       activeRecord->m_state = AnimRecord::State::Stop;
     }

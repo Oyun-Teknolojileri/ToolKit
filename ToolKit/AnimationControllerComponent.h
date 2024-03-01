@@ -31,7 +31,7 @@ namespace ToolKit
 
     ComponentPtr Copy(EntityPtr ntt) override;
 
-    void Play(const String& recordName);
+    void Play(const String& recordName, bool stopPrevAnim = true);
     void Stop();
     void Pause();
     AnimRecordPtr GetActiveRecord();
