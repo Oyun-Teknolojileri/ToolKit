@@ -29,9 +29,9 @@ namespace ToolKit
 
   Drawable::~Drawable() {}
 
-  void Drawable::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
+  void Drawable::SetPose(const AnimationPtr& anim, float time)
   {
-    Entity::SetPose(anim, time, blendTarget);
+    Entity::SetPose(anim, time);
   }
 
   Entity* Drawable::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }

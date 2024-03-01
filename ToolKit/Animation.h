@@ -72,7 +72,7 @@ namespace ToolKit
      * Sets the Skeleton's transform from the animation based on time.
      * @param skeleton SkeletonPtr to be transformed.
      */
-    void GetPose(const SkeletonComponentPtr& skeleton, float time, BlendTarget* blendTarget = nullptr);
+    void GetPose(const SkeletonComponentPtr& skeleton, float time);
 
     /**
      * Sets the Node's transform from the animation based on frame.
@@ -203,6 +203,10 @@ namespace ToolKit
    public:
     ~AnimationPlayer();
 
+    void Destroy();
+
+    const std::vector<AnimRecordPtr> GetRecords();
+
     /**
      * Adds a record to the player.
      * @param rec AnimRecord data.
@@ -250,6 +254,8 @@ namespace ToolKit
     }
 
    private:
+    void ClearAnimRecords();
+
     /**
      * Add data texture of animation for skeleton
      */
@@ -268,13 +274,12 @@ namespace ToolKit
      */
     DataTexturePtr CreateAnimationDataTexture(SkeletonPtr skeleton, AnimationPtr anim);
 
-   public:
+   private:
     // Storage for the AnimRecord objects.
     AnimRecordPtrArray m_records;
 
-   private:
     // Storage for animation data (skeleton id - animation id pair)
-    std::map<std::pair<ULongID, ULongID>, DataTexturePtr> m_animTextures; // TODO why map instead of underdered_map ?
+    std::map<std::pair<ULongID, ULongID>, DataTexturePtr> m_animTextures;
   };
 
 } // namespace ToolKit

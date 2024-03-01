@@ -23,7 +23,7 @@ namespace ToolKit
     Drawable();
     virtual ~Drawable();
 
-    void SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget = nullptr) override;
+    void SetPose(const AnimationPtr& anim, float time) override;
     void RemoveResources() override;
 
     MeshPtr GetMesh() const;

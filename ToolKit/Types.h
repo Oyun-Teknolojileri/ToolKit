@@ -156,7 +156,6 @@ namespace ToolKit
   typedef class AnimRecord* AnimRecordRawPtr;
   typedef std::vector<AnimRecordRawPtr> AnimRecordRawPtrArray;
   typedef std::vector<AnimRecordPtr> AnimRecordPtrArray;
-  struct BlendTarget;
 
   // Entity types.
   typedef std::shared_ptr<class Entity> EntityPtr;

@@ -66,7 +66,7 @@ namespace ToolKit
     node->SetLocalTransforms(positon, rotation, scale);
   }
 
-  void Animation::GetPose(const SkeletonComponentPtr& skeleton, float time, BlendTarget* blendTarget)
+  void Animation::GetPose(const SkeletonComponentPtr& skeleton, float time)
   {
     if (m_keys.empty())
     {
@@ -315,7 +315,15 @@ namespace ToolKit
     }
   }
 
-  AnimationPlayer::~AnimationPlayer()
+  AnimationPlayer::~AnimationPlayer() { Destroy(); }
+
+  void AnimationPlayer::Destroy()
+  {
+    ClearAnimRecords();
+    ClearAnimationData();
+  }
+
+  void AnimationPlayer::ClearAnimRecords()
   {
     // Remove circular dependency
     for (AnimRecordPtr animRecord : m_records)
@@ -324,9 +332,9 @@ namespace ToolKit
       animRecord->m_blendingData.recordToBeBlended = nullptr;
     }
     m_records.clear();
-
-    ClearAnimationData();
   }
+
+  const std::vector<AnimRecordPtr> AnimationPlayer::GetRecords() { return m_records; }
 
   void AnimationPlayer::AddRecord(AnimRecordPtr rec)
   {

@@ -158,7 +158,7 @@ namespace ToolKit
     m_logger->Log("Main Uninit");
 
     RHI::m_initialized = false;
-    m_animationPlayer->m_records.clear();
+    m_animationPlayer->Destroy();
     m_animationMan->Uninit();
     m_textureMan->Uninit();
     m_meshMan->Uninit();
