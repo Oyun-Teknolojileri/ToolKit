@@ -142,21 +142,20 @@ namespace ToolKit
     friend class RenderJobProcessor;
 
    public:
-    /**
-     * Empty constructor.
-     */
-    AnimRecord();
+    AnimRecord();  //!< Default constructor, only assigns a unique id.
+    ~AnimRecord(); //!< Default destructor, releases the id.
 
     /**
-     * Construct an animation record for the enitiy with given animation.
+     * Construct an animation record for the entity with given animation.
      * @param entity Is the entity to play the animation on.
      * @param anim Is the animation to play for the record.
      */
-    void Construct(EntityPtr entity, const AnimationPtr& anim);
-
-    ~AnimRecord();
+    void Construct(EntityPtr entity, AnimationPtr anim);
 
    protected:
+    /**
+     * Data block holding necessary information for blending.
+     */
     struct BlendingData
     {
       AnimRecordPtr recordToBeBlended = nullptr; //!< AnimRecord that is being blended by another record
@@ -188,7 +187,7 @@ namespace ToolKit
     };
 
     State m_state = State::Play; //!< Current state of the animation.
-    ULongID m_id;
+    ULongID m_id;                //!< Unique id for the animation.
 
    protected:
     BlendingData m_blendingData;
@@ -201,11 +200,15 @@ namespace ToolKit
   class TK_API AnimationPlayer
   {
    public:
-    ~AnimationPlayer();
+    AnimationPlayer();  //!< Default constructor empty.
+    ~AnimationPlayer(); //!< Default destructor that destroy all stored data.
 
+    /**
+     * Clears all record data stored.
+     */
     void Destroy();
 
-    const std::vector<AnimRecordPtr> GetRecords();
+    AnimRecordPtrArray GetRecords();
 
     /**
      * Adds a record to the player.
@@ -240,20 +243,19 @@ namespace ToolKit
      */
     int Exist(ULongID id) const;
 
-    inline DataTexturePtr GetAnimationDataTexture(ULongID skelID, ULongID animID)
-    {
-      const std::pair<ULongID, ULongID> p = std::make_pair(skelID, animID);
-      if (m_animTextures.find(p) != m_animTextures.end())
-      {
-        return m_animTextures[p];
-      }
-      else
-      {
-        return nullptr;
-      }
-    }
+    /**
+     * Returns animation data texture for given skeleton and animation.
+     * Data is hold as skeleton - animation pair.
+     * @param skelID is the skeleton to look for.
+     * @param animID is the animation to look for.
+     * @return Found data texture for the pair or nullptr.
+     */
+    DataTexturePtr GetAnimationDataTexture(ULongID skelID, ULongID animID);
 
    private:
+    /**
+     * Clears all animation records.
+     */
     void ClearAnimRecords();
 
     /**
@@ -265,10 +267,12 @@ namespace ToolKit
      * Removes the unnecessary data textures
      */
     void UpdateAnimationData();
+
     /**
      * Clears the animation data textures
      */
     void ClearAnimationData();
+
     /**
      * Creates and returns animation data texture for given skeleton and animation
      */

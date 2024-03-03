@@ -301,7 +301,7 @@ namespace ToolKit
 
   AnimRecord::AnimRecord() { m_id = GetHandleManager()->GenerateHandle(); }
 
-  void AnimRecord::Construct(EntityPtr entity, const AnimationPtr& anim)
+  void AnimRecord::Construct(EntityPtr entity, AnimationPtr anim)
   {
     m_entity    = entity;
     m_animation = anim;
@@ -314,6 +314,8 @@ namespace ToolKit
       handleMan->ReleaseHandle(m_id);
     }
   }
+
+  AnimationPlayer::AnimationPlayer() {}
 
   AnimationPlayer::~AnimationPlayer() { Destroy(); }
 
@@ -334,7 +336,7 @@ namespace ToolKit
     m_records.clear();
   }
 
-  const std::vector<AnimRecordPtr> AnimationPlayer::GetRecords() { return m_records; }
+  AnimRecordPtrArray AnimationPlayer::GetRecords() { return m_records; }
 
   void AnimationPlayer::AddRecord(AnimRecordPtr rec)
   {
@@ -434,7 +436,7 @@ namespace ToolKit
 
     // Update all active animation records
     bool anyAnimRecordDeleted = false;
-    for (std::vector<AnimRecordPtr>::iterator it = m_records.begin(); it != m_records.end();)
+    for (AnimRecordPtrArray::iterator it = m_records.begin(); it != m_records.end();)
     {
       if (updateRecordsFn(*it))
       {
@@ -528,6 +530,17 @@ namespace ToolKit
     }
 
     return -1;
+  }
+
+  DataTexturePtr AnimationPlayer::GetAnimationDataTexture(ULongID skelID, ULongID animID)
+  {
+    const std::pair<ULongID, ULongID> p = std::make_pair(skelID, animID);
+    if (m_animTextures.find(p) != m_animTextures.end())
+    {
+      return m_animTextures[p];
+    }
+
+    return nullptr;
   }
 
   void AnimationPlayer::AddAnimationData(EntityWeakPtr ntt, AnimationPtr anim)
