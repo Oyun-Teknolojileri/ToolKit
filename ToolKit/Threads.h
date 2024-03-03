@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "Types.h"
+
 #include <poolSTL/poolstl.hpp>
 
 namespace ToolKit
