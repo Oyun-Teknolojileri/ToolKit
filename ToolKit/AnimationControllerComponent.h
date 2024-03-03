@@ -31,7 +31,7 @@ namespace ToolKit
 
     ComponentPtr Copy(EntityPtr ntt) override;
 
-    void Play(const String& recordName);
+    void Play(const String& recordName, bool stopPrevAnim = true);
     void Stop();
     void Pause();
     AnimRecordPtr GetActiveRecord();
@@ -39,7 +39,7 @@ namespace ToolKit
     void AddSignal(const String& signalName, AnimRecordPtr record);
     void RemoveSignal(const String& signalName);
 
-    void AddAnimationToBlend(const String& animToBlendName, float blendDurationInSec);
+    void SmoothTransition(const String& nextAnimName, float transitionDuration);
 
    protected:
     void ParameterConstructor() override;

@@ -94,18 +94,29 @@ namespace ToolKit
     ParamRecords().GetVar<AnimRecordPtrMap>().erase(signalName);
   }
 
-  void AnimControllerComponent::AddAnimationToBlend(const String& animToBlendName, float blendDurationInSec)
+  void AnimControllerComponent::SmoothTransition(const String& nextAnimName, float transitionDuration)
   {
-    if (activeRecord != nullptr)
-    {
-      AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
-      AnimRecordPtr& rec     = list[animToBlendName];
+    AnimRecordPtr lastActiveRecord = activeRecord;
 
-      GetAnimationPlayer()->AddBlendAnimation(activeRecord->m_id, rec->m_animation, blendDurationInSec);
+    Play(nextAnimName, false);
+
+    if (activeRecord != nullptr && lastActiveRecord != nullptr)
+    {
+      // set blending data
+
+      // check if they have same bones
+      assert(HaveSameKeys(activeRecord->m_animation->m_keys, lastActiveRecord->m_animation->m_keys) &&
+             "Blend animation is for different skeleton than the animation to blend with!");
+
+      activeRecord->m_blendingData.recordToBlend                 = lastActiveRecord;
+      lastActiveRecord->m_blendingData.recordToBlend             = nullptr;
+      lastActiveRecord->m_blendingData.blendCurrentDurationInSec = transitionDuration;
+      lastActiveRecord->m_blendingData.blendTotalDurationInSec   = transitionDuration;
+      lastActiveRecord->m_blendingData.recordToBeBlended         = activeRecord;
     }
   }
 
-  void AnimControllerComponent::Play(const String& signalName)
+  void AnimControllerComponent::Play(const String& signalName, bool stopPrevAnim)
   {
     AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
     AnimRecordPtr& rec     = list[signalName];
@@ -114,15 +125,18 @@ namespace ToolKit
       return;
     }
 
-    if (activeRecord)
+    if (activeRecord && stopPrevAnim)
     {
       activeRecord->m_state = AnimRecord::State::Stop;
     }
-    rec->m_state  = AnimRecord::State::Play;
-    rec->m_loop   = true;
-    rec->m_entity = OwnerEntity();
-    activeRecord  = rec;
-    GetAnimationPlayer()->AddRecord(rec.get());
+    rec->m_currentTime                    = 0.0f;
+    rec->m_state                          = AnimRecord::State::Play;
+    rec->m_loop                           = true;
+    rec->m_blendingData.recordToBlend     = nullptr;
+    rec->m_blendingData.recordToBeBlended = nullptr;
+    rec->m_entity                         = OwnerEntity();
+    activeRecord                          = rec;
+    GetAnimationPlayer()->AddRecord(rec);
   }
 
   void AnimControllerComponent::Stop()

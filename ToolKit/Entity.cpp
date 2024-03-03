@@ -80,7 +80,7 @@ namespace ToolKit
     return false;
   }
 
-  void Entity::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
+  void Entity::SetPose(const AnimationPtr& anim, float time)
   {
     MeshComponentPtr meshComp = GetMeshComponent();
     if (meshComp)
@@ -89,7 +89,7 @@ namespace ToolKit
       SkeletonComponentPtr skelComp = GetComponent<SkeletonComponent>();
       if (mesh->IsSkinned() && skelComp)
       {
-        anim->GetPose(skelComp, time, blendTarget);
+        anim->GetPose(skelComp, time);
         return;
       }
     }

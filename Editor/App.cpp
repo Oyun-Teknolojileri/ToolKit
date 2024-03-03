@@ -166,7 +166,7 @@ namespace ToolKit
 
       GetCurrentScene()->Destroy(false);
 
-      GetAnimationPlayer()->m_records.clear();
+      GetAnimationPlayer()->Destroy();
 
       GetUIManager()->DestroyLayers();
 
@@ -719,7 +719,7 @@ namespace ToolKit
       }
 
       // Clear all animations potentially added from game module.
-      GetAnimationPlayer()->m_records.clear();
+      GetAnimationPlayer()->Destroy();
       GetUIManager()->DestroyLayers();
 
       m_perFrameDebugObjects.clear();

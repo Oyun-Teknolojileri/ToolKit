@@ -219,29 +219,6 @@ namespace ToolKit
                       // Assign skeletal animations.
                       if (SkeletonComponent* skComp = ntt->GetComponentFast<SkeletonComponent>())
                       {
-                        bool foundAnim                           = false;
-                        const AnimRecordRawPtrArray& animRecords = GetAnimationPlayer()->m_records;
-
-                        for (const AnimRecordRawPtr& animRecord : animRecords)
-                        {
-                          if (const EntityPtr& animNtt = animRecord->m_entity.lock())
-                          {
-                            if (animNtt->IsSame(ntt))
-                            {
-                              skComp->m_animData.currentAnimation = animRecord->m_animation;
-                              skComp->m_animData.blendAnimation   = animRecord->m_blendAnimation;
-                              foundAnim                           = true;
-                              break;
-                            }
-                          }
-                        }
-
-                        if (!foundAnim && skComp != nullptr)
-                        {
-                          skComp->m_animData.currentAnimation = nullptr;
-                          skComp->m_animData.blendAnimation   = nullptr;
-                        }
-
                         job.animData = skComp->GetAnimData(); // copy
                       }
 

@@ -66,7 +66,7 @@ namespace ToolKit
     node->SetLocalTransforms(positon, rotation, scale);
   }
 
-  void Animation::GetPose(const SkeletonComponentPtr& skeleton, float time, BlendTarget* blendTarget)
+  void Animation::GetPose(const SkeletonComponentPtr& skeleton, float time)
   {
     if (m_keys.empty())
     {
@@ -110,46 +110,7 @@ namespace ToolKit
       orientation                        = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
       scale                              = Interpolate(k1.m_scale, k2.m_scale, ratio);
 
-      // Blending with next animation
-      if (blendTarget != nullptr && blendTarget->Blend)
-      {
-        // Calculate the current time of the target animation.
-        float targetAnimTime = time - m_duration + blendTarget->OverlapTime;
-        if (targetAnimTime >= 0.0f) // Start blending.
-        {
-          // Calculate blend ratio between source - target.
-          float blendRatio = targetAnimTime / blendTarget->OverlapTime;
-          // Find the corresponding bone's transforms on target anim.
-          auto targetEntry = blendTarget->TargetAnim->m_keys.find(dBoneIter.first);
-          int targetKey1, targetKey2;
-          float targetRatio;
-          blendTarget->TargetAnim->GetNearestKeys(targetEntry->second,
-                                                  targetKey1,
-                                                  targetKey2,
-                                                  targetRatio,
-                                                  targetAnimTime);
-          Key targetK1            = targetEntry->second[targetKey1];
-          Key targetK2            = targetEntry->second[targetKey2];
-
-          Vec3 translationT       = Interpolate(targetK1.m_position, targetK2.m_position, targetRatio);
-          Quaternion orientationT = glm::slerp(targetK1.m_rotation, targetK2.m_rotation, targetRatio);
-          Vec3 scaleT             = Interpolate(targetK1.m_scale, targetK2.m_scale, targetRatio);
-
-          // For the source anims with root motion or rotation,
-          // Target anim is offseted from it's root bone.
-          if (dBoneIter.first == blendTarget->RootBone)
-          {
-            Vec3 entityScale       = owner->m_node->GetScale();
-            float translationCoeff = (1 / entityScale.x);
-            translationT           = translationT + (blendTarget->TranslationOffset * translationCoeff);
-            orientationT           = orientationT * blendTarget->OrientationOffset;
-          }
-          // Blend animations.
-          translation = Interpolate(translation, translationT, blendRatio);
-          orientation = glm::slerp(orientation, orientationT, blendRatio);
-          scale       = Interpolate(scale, scaleT, blendRatio);
-        }
-      }
+      // TODO CPU skinning for blended animations
 
       dBone.node->SetLocalTransforms(translation, orientation, scale);
     }
@@ -340,7 +301,7 @@ namespace ToolKit
 
   AnimRecord::AnimRecord() { m_id = GetHandleManager()->GenerateHandle(); }
 
-  void AnimRecord::Construct(EntityPtr entity, const AnimationPtr& anim)
+  void AnimRecord::Construct(EntityPtr entity, AnimationPtr anim)
   {
     m_entity    = entity;
     m_animation = anim;
@@ -354,16 +315,30 @@ namespace ToolKit
     }
   }
 
-  void AnimRecord::AddBlendAnimation(AnimationPtr blendAnimation, float blendDurationInSec)
+  AnimationPlayer::AnimationPlayer() {}
+
+  AnimationPlayer::~AnimationPlayer() { Destroy(); }
+
+  void AnimationPlayer::Destroy()
   {
-    m_blendAnimation     = blendAnimation;
-    m_blendFactor        = 0.0f;
-    m_blendDurationInSec = blendDurationInSec;
+    ClearAnimRecords();
+    ClearAnimationData();
   }
 
-  AnimationPlayer::~AnimationPlayer() { ClearAnimationData(); }
+  void AnimationPlayer::ClearAnimRecords()
+  {
+    // Remove circular dependency
+    for (AnimRecordPtr animRecord : m_records)
+    {
+      animRecord->m_blendingData.recordToBlend     = nullptr;
+      animRecord->m_blendingData.recordToBeBlended = nullptr;
+    }
+    m_records.clear();
+  }
 
-  void AnimationPlayer::AddRecord(AnimRecord* rec)
+  AnimRecordPtrArray AnimationPlayer::GetRecords() { return m_records; }
+
+  void AnimationPlayer::AddRecord(AnimRecordPtr rec)
   {
     int indx = Exist(rec->m_id);
     if (indx != -1)
@@ -371,10 +346,24 @@ namespace ToolKit
       return;
     }
 
+    // If recoding already exists, do not add it again
+    bool exist = false;
+    for (AnimRecordPtr animRecord : m_records)
+    {
+      if (animRecord == rec)
+      {
+        exist = true;
+        break;
+      }
+    }
+
     // Generate animation frame data
     AddAnimationData(rec->m_entity, rec->m_animation);
 
-    m_records.push_back(rec);
+    if (!exist)
+    {
+      m_records.push_back(rec);
+    }
   }
 
   void AnimationPlayer::RemoveRecord(ULongID id)
@@ -382,7 +371,8 @@ namespace ToolKit
     int indx = Exist(id);
     if (indx != -1)
     {
-      m_records.erase(m_records.begin() + indx);
+      auto it = m_records.begin() + indx;
+      m_records.erase(it);
 
       UpdateAnimationData();
     }
@@ -390,24 +380,10 @@ namespace ToolKit
 
   void AnimationPlayer::RemoveRecord(const AnimRecord& rec) { RemoveRecord(rec.m_id); }
 
-  void AnimationPlayer::AddBlendAnimation(ULongID animRecordID, AnimationPtr animToBlend, float blendDurationInSec)
-  {
-    int animRecordIndex = Exist(animRecordID);
-    if (animRecordIndex != -1)
-    {
-      // check if they have same bones
-      assert(HaveSameKeys(m_records[animRecordIndex]->m_animation->m_keys, animToBlend->m_keys) &&
-             "Blend animation is for different skeleton than the animation to blend with!");
-
-      AddAnimationData(m_records[animRecordIndex]->m_entity, animToBlend);
-      m_records[animRecordIndex]->AddBlendAnimation(animToBlend, blendDurationInSec);
-    }
-  }
-
   void AnimationPlayer::Update(float deltaTimeSec)
   {
     // Updates all the records in the player and returns true if record needs to be removed.
-    auto updateRecordsFn = [&](AnimRecord* record) -> bool
+    auto updateRecordsFn = [&](AnimRecordPtr record) -> bool
     {
       if (record->m_state == AnimRecord::State::Pause)
       {
@@ -417,42 +393,90 @@ namespace ToolKit
       AnimRecord::State state = record->m_state;
       if (state == AnimRecord::State::Play)
       {
-        float thisTime = record->m_currentTime + (deltaTimeSec * record->m_timeMultiplier);
-        float duration = record->m_animation->m_duration;
+        record->m_currentTime += (deltaTimeSec * record->m_timeMultiplier);
+        float duration         = record->m_animation->m_duration;
         if (record->m_loop)
         {
-          if (thisTime > duration)
+          float leftOver = record->m_currentTime - duration;
+          if (leftOver > 0.0)
           {
-            record->m_currentTime = 0.0f;
+            record->m_currentTime = leftOver;
           }
         }
         else
         {
-          if (thisTime > duration)
+          if (record->m_currentTime > duration)
           {
             record->m_state = AnimRecord::State::Stop;
           }
         }
+
+        if (record->m_blendingData.recordToBeBlended != nullptr)
+        {
+          record->m_blendingData.blendCurrentDurationInSec -= deltaTimeSec * record->m_timeMultiplier;
+          if (record->m_blendingData.blendCurrentDurationInSec < 0.0)
+          {
+            return true;
+          }
+        }
       }
 
-      if (state == AnimRecord::State::Rewind || state == AnimRecord::State::Stop)
+      if (state == AnimRecord::State::Rewind)
       {
         record->m_currentTime = 0.0f;
       }
-      else
+
+      if (state == AnimRecord::State::Rewind)
       {
-        record->m_currentTime += deltaTimeSec * record->m_timeMultiplier;
+        record->m_state = AnimRecord::State::Play;
       }
 
-      // Update blending factor if exists
-      if (record->m_blendAnimation != nullptr)
+      return state == AnimRecord::State::Stop;
+    };
+
+    // Update all active animation records
+    bool anyAnimRecordDeleted = false;
+    for (AnimRecordPtrArray::iterator it = m_records.begin(); it != m_records.end();)
+    {
+      if (updateRecordsFn(*it))
       {
-        record->m_blendFactor += deltaTimeSec / record->m_blendDurationInSec;
-        if (record->m_blendFactor > 1.0f)
+        // remove record from both blending map and records array
+
+        anyAnimRecordDeleted = true;
+
+        if (EntityPtr ntt = (*it)->m_entity.lock())
         {
-          record->m_blendAnimation = nullptr; // Stop the blending if duration exceeds
+          if (SkeletonComponentPtr skComp = ntt->GetComponent<SkeletonComponent>())
+          {
+            skComp->m_animData.currentAnimation = nullptr;
+            skComp->m_animData.blendAnimation   = nullptr;
+          }
         }
+
+        // Remove blending record from record to be blended
+        if ((*it)->m_blendingData.recordToBeBlended != nullptr)
+        {
+          (*it)->m_blendingData.recordToBeBlended->m_blendingData.recordToBlend = nullptr;
+        }
+
+        it = m_records.erase(it);
       }
+      else
+      {
+        ++it;
+      }
+    }
+
+    // remove unused animation data textures
+    if (anyAnimRecordDeleted)
+    {
+      UpdateAnimationData();
+    }
+
+    // Fill skeleton components with anim data
+    for (auto it = m_records.begin(); it != m_records.end(); it++)
+    {
+      AnimRecordPtr record = *it;
 
       if (EntityPtr ntt = record->m_entity.lock())
       {
@@ -470,51 +494,28 @@ namespace ToolKit
           skComp->m_animData.firstKeyFrame             = (float) key1 / skComp->m_animData.keyFrameCount;
           skComp->m_animData.secondKeyFrame            = (float) key2 / skComp->m_animData.keyFrameCount;
           skComp->m_animData.keyFrameInterpolationTime = ratio;
+          skComp->m_animData.currentAnimation          = record->m_animation;
 
-          if (record->m_blendAnimation != nullptr)
+          AnimRecordPtr recordToBlend                  = record->m_blendingData.recordToBlend;
+          if (recordToBlend != nullptr)
           {
-            assert(record->m_blendAnimation->m_keys.size() > 0);
-            KeyArray& blendAnimKeys = (*(record->m_blendAnimation->m_keys.begin())).second;
-            record->m_blendAnimation->GetNearestKeys(blendAnimKeys,
-                                                     key1,
-                                                     key2,
-                                                     ratio,
-                                                     record->m_blendFactor * record->m_blendDurationInSec);
+            KeyArray& blendAnimKeys = (*(recordToBlend->m_animation->m_keys.begin())).second;
+            recordToBlend->m_animation->GetNearestKeys(blendAnimKeys, key1, key2, ratio, recordToBlend->m_currentTime);
 
-            skComp->m_animData.blendKeyFrameCount             = (float) blendAnimKeys.size();
-            skComp->m_animData.animationBlendFactor           = record->m_blendFactor;
+            skComp->m_animData.blendKeyFrameCount   = (float) blendAnimKeys.size();
+            skComp->m_animData.animationBlendFactor = recordToBlend->m_blendingData.blendCurrentDurationInSec /
+                                                      recordToBlend->m_blendingData.blendTotalDurationInSec;
             skComp->m_animData.blendFirstKeyFrame             = (float) key1 / skComp->m_animData.blendKeyFrameCount;
             skComp->m_animData.blendSecondKeyFrame            = (float) key2 / skComp->m_animData.blendKeyFrameCount;
             skComp->m_animData.blendKeyFrameInterpolationTime = ratio;
+            skComp->m_animData.blendAnimation                 = recordToBlend->m_animation;
+          }
+          else
+          {
+            skComp->m_animData.blendAnimation = nullptr;
           }
         }
       }
-
-      if (state == AnimRecord::State::Rewind)
-      {
-        record->m_state = AnimRecord::State::Play;
-      }
-
-      return state == AnimRecord::State::Stop;
-    };
-
-    bool anyAnimRecordDeleted = false;
-    for (std::vector<AnimRecordRawPtr>::iterator it = m_records.begin(); it != m_records.end();)
-    {
-      if (updateRecordsFn(*it))
-      {
-        anyAnimRecordDeleted = true;
-        it                   = m_records.erase(it);
-      }
-      else
-      {
-        ++it;
-      }
-    }
-
-    if (anyAnimRecordDeleted)
-    {
-      UpdateAnimationData();
     }
   }
 
@@ -529,6 +530,17 @@ namespace ToolKit
     }
 
     return -1;
+  }
+
+  DataTexturePtr AnimationPlayer::GetAnimationDataTexture(ULongID skelID, ULongID animID)
+  {
+    const std::pair<ULongID, ULongID> p = std::make_pair(skelID, animID);
+    if (m_animTextures.find(p) != m_animTextures.end())
+    {
+      return m_animTextures[p];
+    }
+
+    return nullptr;
   }
 
   void AnimationPlayer::AddAnimationData(EntityWeakPtr ntt, AnimationPtr anim)
@@ -558,7 +570,7 @@ namespace ToolKit
     for (it = m_animTextures.begin(); it != m_animTextures.end();)
     {
       bool found = false;
-      for (AnimRecord* animRecord : m_records)
+      for (AnimRecordPtr animRecord : m_records)
       {
         if (EntityPtr entity = animRecord->m_entity.lock())
         {

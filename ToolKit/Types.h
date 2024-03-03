@@ -155,7 +155,7 @@ namespace ToolKit
   typedef std::unordered_map<String, AnimRecordPtr> AnimRecordPtrMap;
   typedef class AnimRecord* AnimRecordRawPtr;
   typedef std::vector<AnimRecordRawPtr> AnimRecordRawPtrArray;
-  struct BlendTarget;
+  typedef std::vector<AnimRecordPtr> AnimRecordPtrArray;
 
   // Entity types.
   typedef std::shared_ptr<class Entity> EntityPtr;
