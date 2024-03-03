@@ -56,7 +56,7 @@ namespace ToolKit
       if (ImGui::CollapsingHeader("Mesh Preview", ImGuiTreeNodeFlags_DefaultOpen))
       {
         const ImVec2 iconSize = ImVec2(16.0f, 16.0f);
-        const ImVec2 spacing         = ImGui::GetStyle().ItemSpacing;
+        const ImVec2 spacing  = ImGui::GetStyle().ItemSpacing;
 
         if (UI::ImageButtonDecorless(UI::m_cameraIcon->m_textureId, iconSize, false))
         {
@@ -105,7 +105,10 @@ namespace ToolKit
     void MeshView::SetMesh(MeshPtr mesh)
     {
       m_mesh = mesh;
-      m_previewEntity->GetMeshComponent()->SetMeshVal(m_mesh);
+      if (MeshComponentPtr meshCom = m_previewEntity->GetMeshComponent())
+      {
+        meshCom->SetMeshVal(m_mesh);
+      }
 
       if (m_mesh->IsSkinned())
       {

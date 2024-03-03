@@ -1,5 +1,15 @@
 #pragma once
 
+namespace ToolKit
+{
+
+  enum class PLATFORM
+  {
+    TKWindows,
+    TKWeb,
+    TKAndroid
+  };
+
 #ifdef _WIN32
   #define TK_PLATFORM PLATFORM::TKWindows
 #elif __ANDROID__
@@ -7,3 +17,5 @@
 #elif __EMSCRIPTEN__
   #define TK_PLATFORM PLATFORM::TKWeb
 #endif
+
+} // namespace ToolKit

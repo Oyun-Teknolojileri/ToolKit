@@ -1,64 +1,60 @@
-#include "Game.h"
 #include "Common/SDLEventPool.h"
-#include <android/asset_manager.h>
 #include "EngineSettings.h"
+#include "Game.h"
 #include "GlErrorReporter.h"
+#include "MobileSceneRenderPath.h"
 #include "SDL.h"
 #include "Scene.h"
-#include "MobileSceneRenderPath.h"
+#include "TKStats.h"
 #include "ToolKit.h"
 #include "Types.h"
 #include "UIManager.h"
-#include "TKStats.h"
 
+#include <GLES3/gl32.h>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
+#include <android/log.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include <chrono>
 #include <iostream>
-#include <GLES3/gl32.h>
-#include <android/log.h>
-#include <android/asset_manager.h>
-#include <android/asset_manager_jni.h>
-#include <sys/stat.h>
-
-#include <unistd.h>
 
 #define ANDROID_LOG(format, ...) __android_log_print(ANDROID_LOG_DEBUG, "TK_LOG", format, ##__VA_ARGS__)
 
-#define TK_PLATFORM PLATFORM::TKAndroid
+#define TK_PLATFORM              PLATFORM::TKAndroid
 
 namespace ToolKit
 {
-  Game* g_game                     = nullptr;
-  bool g_running                   = true;
-  SDL_Window* g_window             = nullptr;
-  Main* g_proxy                    = nullptr;
-  Viewport* g_viewport             = nullptr;
-  EngineSettings* g_engineSettings = nullptr;
-  SDLEventPool<TK_PLATFORM>* g_sdlEventPool     = nullptr;
-  AAssetManager* assetManager = nullptr;
+  Game* g_game                              = nullptr;
+  bool g_running                            = true;
+  SDL_Window* g_window                      = nullptr;
+  Main* g_proxy                             = nullptr;
+  Viewport* g_viewport                      = nullptr;
+  EngineSettings* g_engineSettings          = nullptr;
+  SDLEventPool<TK_PLATFORM>* g_sdlEventPool = nullptr;
+  AAssetManager* assetManager               = nullptr;
 
   // Setup.
-  const char* g_appName            = "ToolKit";
-  const uint g_targetFps           = 120;
+  const char* g_appName                     = "ToolKit";
+  const uint g_targetFps                    = 120;
 
   void SceneRender(Viewport* viewport)
   {
     if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
     {
       static MobileSceneRenderPath sceneRenderer;
-      sceneRenderer.m_params.Cam                        = viewport->GetCamera();
-      sceneRenderer.m_params.ClearFramebuffer           = true;
-      sceneRenderer.m_params.Lights                     = scene->GetLights();
-      sceneRenderer.m_params.MainFramebuffer            = viewport->m_framebuffer;
-      sceneRenderer.m_params.Scene                      = scene;
+      sceneRenderer.m_params.Cam              = viewport->GetCamera();
+      sceneRenderer.m_params.ClearFramebuffer = true;
+      sceneRenderer.m_params.Lights           = scene->GetLights();
+      sceneRenderer.m_params.MainFramebuffer  = viewport->m_framebuffer;
+      sceneRenderer.m_params.Scene            = scene;
       GetRenderSystem()->AddRenderTask(&sceneRenderer);
     }
 
-    static uint totalFrameCount = 0;
-    GetRenderSystem()->SetFrameCount(totalFrameCount++);
-
     GetRenderSystem()->ExecuteRenderTasks();
+    GetRenderSystem()->EndFrame();
   }
 
   struct UIRenderTechniqueParams
@@ -83,19 +79,15 @@ namespace ToolKit
       for (const UILayerPtr& layer : layers)
       {
         EntityPtrArray& uiNtties = layer->m_scene->AccessEntityArray();
-        RenderJobProcessor::CreateRenderJobs(uiNtties, m_uiRenderJobs);
+        RenderJobProcessor::CreateRenderJobs(uiNtties, m_uiRenderData.jobs);
       }
 
-      m_uiPass->m_params.OpaqueJobs.clear();
-      m_uiPass->m_params.TranslucentJobs.clear();
+      RenderJobProcessor::SeperateRenderData(m_uiRenderData, true);
 
-      RenderJobProcessor::SeperateOpaqueTranslucent(m_uiRenderJobs,
-                                                    m_uiPass->m_params.OpaqueJobs,
-                                                    m_uiPass->m_params.TranslucentJobs);
-
-      m_uiPass->m_params.Cam              = GetUIManager()->GetUICamera();
-      m_uiPass->m_params.FrameBuffer      = m_params.viewport->m_framebuffer;
-      m_uiPass->m_params.clearBuffer      = GraphicBitFields::DepthBits;
+      m_uiPass->m_params.renderData  = &m_uiRenderData;
+      m_uiPass->m_params.Cam         = GetUIManager()->GetUICamera();
+      m_uiPass->m_params.FrameBuffer = m_params.viewport->m_framebuffer;
+      m_uiPass->m_params.clearBuffer = GraphicBitFields::DepthBits;
 
       m_passArray.push_back(m_uiPass);
 
@@ -106,6 +98,7 @@ namespace ToolKit
 
    private:
     ForwardRenderPassPtr m_uiPass = nullptr;
+    RenderData m_uiRenderData;
     RenderJobArray m_uiRenderJobs;
   };
 
@@ -328,16 +321,16 @@ namespace ToolKit
       {
         if (e->m_type == Event::EventType::Mouse)
         {
-          MouseEvent* me = static_cast<MouseEvent*>(e);
-            m_lastMousePosRelContentArea.x = me->absolute[0];
-            m_lastMousePosRelContentArea.y = me->absolute[1];
+          MouseEvent* me                 = static_cast<MouseEvent*>(e);
+          m_lastMousePosRelContentArea.x = me->absolute[0];
+          m_lastMousePosRelContentArea.y = me->absolute[1];
         }
-          if (e->m_type == Event::EventType::Touch)
-          {
-              TouchEvent* te = static_cast<TouchEvent*>(e);
-              m_lastMousePosRelContentArea.x = te->absolute[0] * m_wndContentAreaSize.x;
-              m_lastMousePosRelContentArea.y = te->absolute[1] * m_wndContentAreaSize.y;
-          }
+        if (e->m_type == Event::EventType::Touch)
+        {
+          TouchEvent* te                 = static_cast<TouchEvent*>(e);
+          m_lastMousePosRelContentArea.x = te->absolute[0] * m_wndContentAreaSize.x;
+          m_lastMousePosRelContentArea.y = te->absolute[1] * m_wndContentAreaSize.y;
+        }
       }
     }
   };
@@ -346,15 +339,15 @@ namespace ToolKit
   void CopyAllAssetsToDataPath(String& internalDataPath)
   {
     const char* MinResourcesPak = "MinResources.pak";
-    AAsset* asset = AAssetManager_open(assetManager, MinResourcesPak, 0);
+    AAsset* asset               = AAssetManager_open(assetManager, MinResourcesPak, 0);
 
     if (!asset)
     {
       ANDROID_LOG("cannot open MinResources.pak!\n");
       return;
     }
-    FILE* fileHandle = fopen(ConcatPaths({ internalDataPath, MinResourcesPak }).c_str(), "wb");
-    mkdir(ConcatPaths({ internalDataPath, "Resources" }).c_str(), 0777);
+    FILE* fileHandle = fopen(ConcatPaths({internalDataPath, MinResourcesPak}).c_str(), "wb");
+    mkdir(ConcatPaths({internalDataPath, "Resources"}).c_str(), 0777);
 
     off_t size = AAsset_getLength(asset);
     std::vector<char> buffer;
@@ -375,26 +368,23 @@ namespace ToolKit
     Main::SetProxy(g_proxy);
 
     g_proxy->PreInit();
-    auto androidWriteConsoleFn = [](LogType logType, const String& msg)
-    {
-      ANDROID_LOG("%s", msg.c_str());
-    };
+    auto androidWriteConsoleFn = [](LogType logType, const String& msg) { ANDROID_LOG("%s", msg.c_str()); };
     GetLogger()->SetWriteConsoleFn(androidWriteConsoleFn);
 
     g_proxy->m_engineSettings->Window.Height = 2400;
-    g_proxy->m_engineSettings->Window.Width = 1080;
+    g_proxy->m_engineSettings->Window.Width  = 1080;
 
-    String internalPath = SDL_AndroidGetInternalStoragePath();
-    g_proxy->m_resourceRoot = ConcatPaths({internalPath, "Resources"});
-    g_proxy->m_cfgPath      = ConcatPaths({internalPath, "Config"});
+    String internalPath                      = SDL_AndroidGetInternalStoragePath();
+    g_proxy->m_resourceRoot                  = ConcatPaths({internalPath, "Resources"});
+    g_proxy->m_cfgPath                       = ConcatPaths({internalPath, "Config"});
     CopyAllAssetsToDataPath(internalPath);
   }
 
   void Init()
   {
-    g_proxy->m_engineSettings->Window.Width = 2400;
+    g_proxy->m_engineSettings->Window.Width  = 2400;
     g_proxy->m_engineSettings->Window.Height = 1080;
-    g_engineSettings = g_proxy->m_engineSettings;
+    g_engineSettings                         = g_proxy->m_engineSettings;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0)
     {
@@ -424,7 +414,7 @@ namespace ToolKit
       if (g_window == nullptr)
       {
         const char* err = SDL_GetError();
-        g_running = false;
+        g_running       = false;
       }
       else
       {
@@ -438,17 +428,18 @@ namespace ToolKit
         }
         else
         {
-          int rendererWidth,rendererHeight;
+          int rendererWidth, rendererHeight;
           SDL_GetRendererOutputSize(sdlRenderer, &rendererWidth, &rendererHeight);
-          g_engineSettings->Window.Width = rendererWidth;
+          g_engineSettings->Window.Width  = rendererWidth;
           g_engineSettings->Window.Height = rendererHeight;
 
-          const char* error = SDL_GetError();
+          const char* error               = SDL_GetError();
           ANDROID_LOG("%s", error);
 
           // Init OpenGl.
-          g_proxy->m_renderSys->InitGl((void*)SDL_GL_GetProcAddress, [](const String& msg) { ANDROID_LOG("%s", msg.c_str()); });
-          //gladLoadGLES2((GLADloadfunc) SDL_GL_GetProcAddress);
+          g_proxy->m_renderSys->InitGl((void*) SDL_GL_GetProcAddress,
+                                       [](const String& msg) { ANDROID_LOG("%s", msg.c_str()); });
+          // gladLoadGLES2((GLADloadfunc) SDL_GL_GetProcAddress);
           glEnable(GL_DEPTH_TEST);
 
           // Set defaults
@@ -615,12 +606,15 @@ int main(int argc, char* argv[]) { return ToolKit::ToolKit_Main(argc, argv); }
 
 extern "C"
 {
-  JNIEXPORT void JNICALL
-  Java_com_otyazilim_toolkit_ToolKitAndroid_load(JNIEnv *env, jclass clazz, jobject mgr) {
+  JNIEXPORT void JNICALL Java_com_otyazilim_toolkit_ToolKitAndroid_load(JNIEnv* env, jclass clazz, jobject mgr)
+  {
     ToolKit::assetManager = AAssetManager_fromJava(env, mgr);
-    if (ToolKit::assetManager == nullptr) {
+    if (ToolKit::assetManager == nullptr)
+    {
       __android_log_print(ANDROID_LOG_ERROR, "ToolKit_Android", "error loading asset manager");
-    } else {
+    }
+    else
+    {
       __android_log_print(ANDROID_LOG_VERBOSE, "ToolKit_Android", "Asset manager loaded successfully");
     }
   }

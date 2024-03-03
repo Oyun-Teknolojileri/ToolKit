@@ -50,7 +50,7 @@ namespace ToolKit
     }
 
     GetRenderSystem()->ExecuteRenderTasks();
-	GetRenderSystem()->EndFrame();
+    GetRenderSystem()->EndFrame();
   }
 
   struct UIRenderTechniqueParams
@@ -80,10 +80,10 @@ namespace ToolKit
 
       RenderJobProcessor::SeperateRenderData(m_uiRenderData, true);
 
-      m_uiPass->m_params.renderData       = &m_uiRenderData;
-      m_uiPass->m_params.Cam              = GetUIManager()->GetUICamera();
-      m_uiPass->m_params.FrameBuffer      = m_params.viewport->m_framebuffer;
-      m_uiPass->m_params.clearBuffer      = GraphicBitFields::DepthBits;
+      m_uiPass->m_params.renderData  = &m_uiRenderData;
+      m_uiPass->m_params.Cam         = GetUIManager()->GetUICamera();
+      m_uiPass->m_params.FrameBuffer = m_params.viewport->m_framebuffer;
+      m_uiPass->m_params.clearBuffer = GraphicBitFields::DepthBits;
 
       m_passArray.push_back(m_uiPass);
 
@@ -386,9 +386,6 @@ namespace ToolKit
           const char* error = SDL_GetError();
           std::cout << error << std::endl;
 
-          EM_ASM(
-
-          );
           glEnable(GL_CULL_FACE);
           glEnable(GL_DEPTH_TEST);
 
