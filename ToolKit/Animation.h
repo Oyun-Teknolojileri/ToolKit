@@ -203,12 +203,8 @@ namespace ToolKit
     AnimationPlayer();  //!< Default constructor empty.
     ~AnimationPlayer(); //!< Default destructor that destroy all stored data.
 
-    /**
-     * Clears all record data stored.
-     */
-    void Destroy();
-
-    AnimRecordPtrArray GetRecords();
+    void Destroy();                  //!< Clears all record data stored.
+    AnimRecordPtrArray GetRecords(); //!< Access to copy of animation records.
 
     /**
      * Adds a record to the player.
