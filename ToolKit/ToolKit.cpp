@@ -237,7 +237,7 @@ namespace ToolKit
     float deltaTime = m_timing.CurrentTime - m_timing.LastTime;
 
     // Call pre update callbacks
-    for (TKUpdateFn updateFn : m_preUpdateFunctions)
+    for (const TKUpdateFn& updateFn : m_preUpdateFunctions)
     {
       updateFn(deltaTime);
     }
@@ -245,7 +245,7 @@ namespace ToolKit
     Frame(deltaTime);
 
     // Call post update callbacks
-    for (TKUpdateFn updateFn : m_postUpdateFunctions)
+    for (const TKUpdateFn& updateFn : m_postUpdateFunctions)
     {
       updateFn(deltaTime);
     }
