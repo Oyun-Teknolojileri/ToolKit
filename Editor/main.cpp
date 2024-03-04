@@ -346,11 +346,9 @@ namespace ToolKit
         {
           g_proxy->FrameBegin();
           g_proxy->FrameUpdate();
-          int fps = g_proxy->FrameEnd();
-          if (fps != -1)
-          {
-            g_app->m_fps = fps;
-          }
+          g_proxy->FrameEnd();
+
+          g_app->m_fps = g_proxy->GetCurrentFPS();
         }
 
         POP_CPU_MARKER();

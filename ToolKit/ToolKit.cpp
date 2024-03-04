@@ -242,7 +242,6 @@ namespace ToolKit
       updateFn(deltaTime);
     }
 
-    // TODO tk update
     Frame(deltaTime);
 
     // Call post update callbacks
@@ -252,22 +251,18 @@ namespace ToolKit
     }
   }
 
-  int Main::FrameEnd()
+  void Main::FrameEnd()
   {
-    int fps = -1;
-
     m_timing.FrameCount++;
     m_timing.TimeAccum += m_timing.GetDeltaTime();
     if (m_timing.TimeAccum >= 1000.0f)
     {
-      fps                 = m_timing.FrameCount;
+      m_currentFPS        = m_timing.FrameCount;
       m_timing.TimeAccum  = 0;
       m_timing.FrameCount = 0;
     }
 
     m_timing.LastTime = m_timing.CurrentTime;
-
-    return fps;
   }
 
   void Main::Frame(float deltaTime)
@@ -293,6 +288,8 @@ namespace ToolKit
   void Main::ClearPreUpdateFunctions() { m_preUpdateFunctions.clear(); }
 
   void Main::ClearPostUpdateFunctions() { m_postUpdateFunctions.clear(); }
+
+  int Main::GetCurrentFPS() { return m_currentFPS; }
 
   Logger* GetLogger() { return Main::GetInstance()->m_logger; }
 
