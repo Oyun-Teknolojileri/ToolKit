@@ -457,6 +457,7 @@ namespace ToolKit
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
+    material->m_isShaderMaterial                    = true;
     m_storage[MaterialPath("unlit.material", true)] = material;
   }
 
