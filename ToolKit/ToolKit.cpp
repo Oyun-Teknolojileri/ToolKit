@@ -23,6 +23,7 @@
 #include "Scene.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
+#include "TKProfiler.h"
 #include "TKStats.h"
 #include "Threads.h"
 #include "UIManager.h"
@@ -238,15 +239,16 @@ namespace ToolKit
     // Call pre update callbacks
     for (TKUpdateFn updateFn : m_preUpdateFunctions)
     {
-      updateFn(m_timing.CurrentTime);
+      updateFn(deltaTime);
     }
 
     // TODO tk update
+    Frame(deltaTime);
 
     // Call post update callbacks
     for (TKUpdateFn updateFn : m_postUpdateFunctions)
     {
-      updateFn(m_timing.CurrentTime);
+      updateFn(deltaTime);
     }
   }
 
@@ -266,6 +268,22 @@ namespace ToolKit
     m_timing.LastTime = m_timing.CurrentTime;
 
     return fps;
+  }
+
+  void Main::Frame(float deltaTime)
+  {
+    ResetDrawCallCounter();
+    ResetHWRenderPassCounter();
+
+    PUSH_CPU_MARKER("Exec Render Tasks");
+    GetRenderSystem()->ExecuteRenderTasks();
+    POP_CPU_MARKER();
+
+    PUSH_CPU_MARKER("Update Scene");
+    GetSceneManager()->GetCurrentScene()->Update(deltaTime);
+    POP_CPU_MARKER();
+
+    GetRenderSystem()->EndFrame();
   }
 
   void Main::RegisterPreUpdateFunction(TKUpdateFn preUpdateFn) { m_preUpdateFunctions.push_back(preUpdateFn); }

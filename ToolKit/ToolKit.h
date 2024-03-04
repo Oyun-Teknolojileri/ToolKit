@@ -108,6 +108,7 @@ namespace ToolKit
     void FrameBegin();
     void FrameUpdate();
     int FrameEnd();
+    void Frame(float deltaTime);
 
     void RegisterPreUpdateFunction(TKUpdateFn preUpdateFn);
     void RegisterPostUpdateFunction(TKUpdateFn postUpdateFn);

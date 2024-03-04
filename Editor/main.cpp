@@ -12,6 +12,7 @@
 #include "Gizmo.h"
 #include "Grid.h"
 #include "Mod.h"
+#include "TKStats.h"
 #include "UI.h"
 
 #include <Common/SDLEventPool.h>
@@ -287,6 +288,9 @@ namespace ToolKit
                 ProcessEvent(sdlEvent);
               }
 
+              g_app->m_lastFrameHWRenderPassCount = GetHWRenderPassCount();
+              g_app->m_lastFrameDrawCallCount     = GetDrawCallCount();
+
               POP_CPU_MARKER();
             };
             g_proxy->RegisterPreUpdateFunction(preUpdateFn);
@@ -295,7 +299,7 @@ namespace ToolKit
             {
               PUSH_CPU_MARKER("App Frame");
 
-              g_app->Frame(g_proxy->m_timing.GetDeltaTime());
+              g_app->Frame(deltaTime);
 
               POP_CPU_MARKER();
               PUSH_CPU_MARKER("Swap Window");

@@ -187,27 +187,13 @@ namespace ToolKit
     {
       m_deltaTime                  = deltaTime;
 
-      m_lastFrameHWRenderPassCount = GetHWRenderPassCount();
-      m_lastFrameDrawCallCount     = GetDrawCallCount();
-      ResetDrawCallCounter();
-      ResetHWRenderPassCounter();
-
-      if (TKStats* tkStats = GetTKStats())
-      {
-        tkStats->ResetDrawCallCounter();
-      }
-
       PUSH_CPU_MARKER("UI Begin & Show UI");
 
       UI::BeginUI();
       UI::ShowUI();
 
       POP_CPU_MARKER();
-      PUSH_CPU_MARKER("Exec Render Tasks");
 
-      GetRenderSystem()->ExecuteRenderTasks();
-
-      POP_CPU_MARKER();
       PUSH_CPU_MARKER("Mod Manager Update");
 
       // Update Mods.
@@ -252,13 +238,8 @@ namespace ToolKit
       }
 
       POP_CPU_MARKER();
-      PUSH_CPU_MARKER("Update Scene");
 
-      EditorScenePtr scene = GetCurrentScene();
-      scene->Update(deltaTime);
-
-      POP_CPU_MARKER();
-      PUSH_CPU_MARKER("Update Scene");
+      PUSH_CPU_MARKER("Update Plugin & Simulation");
 
       // Update Plugins.
       GetPluginManager()->Update(deltaTime);
@@ -302,8 +283,6 @@ namespace ToolKit
       POP_CPU_MARKER();
 
       m_totalFrameCount = GetRenderSystem()->GetFrameCount();
-
-      GetRenderSystem()->EndFrame();
 
       if (m_reloadPlugin)
       {
