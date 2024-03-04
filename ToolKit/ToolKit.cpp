@@ -80,6 +80,9 @@ namespace ToolKit
 
   Main::~Main()
   {
+    ClearPreUpdateFunctions();
+    ClearPostUpdateFunctions();
+
     assert(m_initiated == false && "Uninitiate before destruct");
     m_proxy = nullptr;
 
@@ -219,6 +222,59 @@ namespace ToolKit
       m_proxy = proxy;
     }
   }
+
+  bool Main::SyncFrameTime()
+  {
+    m_timing.CurrentTime = GetElapsedMilliSeconds();
+    return m_timing.CurrentTime > m_timing.LastTime + m_timing.TargetDeltaTime;
+  }
+
+  void Main::FrameBegin() {}
+
+  void Main::FrameUpdate()
+  {
+    float deltaTime = m_timing.CurrentTime - m_timing.LastTime;
+
+    // Call pre update callbacks
+    for (TKUpdateFn updateFn : m_preUpdateFunctions)
+    {
+      updateFn(m_timing.CurrentTime);
+    }
+
+    // TODO tk update
+
+    // Call post update callbacks
+    for (TKUpdateFn updateFn : m_postUpdateFunctions)
+    {
+      updateFn(m_timing.CurrentTime);
+    }
+  }
+
+  int Main::FrameEnd()
+  {
+    int fps = -1;
+
+    m_timing.FrameCount++;
+    m_timing.TimeAccum += m_timing.GetDeltaTime();
+    if (m_timing.TimeAccum >= 1000.0f)
+    {
+      fps                 = m_timing.FrameCount;
+      m_timing.TimeAccum  = 0;
+      m_timing.FrameCount = 0;
+    }
+
+    m_timing.LastTime = m_timing.CurrentTime;
+
+    return fps;
+  }
+
+  void Main::RegisterPreUpdateFunction(TKUpdateFn preUpdateFn) { m_preUpdateFunctions.push_back(preUpdateFn); }
+
+  void Main::RegisterPostUpdateFunction(TKUpdateFn postUpdateFn) { m_postUpdateFunctions.push_back(postUpdateFn); }
+
+  void Main::ClearPreUpdateFunctions() { m_preUpdateFunctions.clear(); }
+
+  void Main::ClearPostUpdateFunctions() { m_postUpdateFunctions.clear(); }
 
   Logger* GetLogger() { return Main::GetInstance()->m_logger; }
 
@@ -415,11 +471,13 @@ namespace ToolKit
 
   void Timing::Init(uint fps)
   {
-    LastTime    = GetElapsedMilliSeconds();
-    CurrentTime = 0.0f;
-    DeltaTime   = 1000.0f / float(fps);
-    FrameCount  = 0;
-    TimeAccum   = 0.0f;
+    LastTime        = GetElapsedMilliSeconds();
+    CurrentTime     = 0.0f;
+    TargetDeltaTime = 1000.0f / float(fps);
+    FrameCount      = 0;
+    TimeAccum       = 0.0f;
   }
+
+  float Timing::GetDeltaTime() { return CurrentTime - LastTime; }
 
 } //  namespace ToolKit

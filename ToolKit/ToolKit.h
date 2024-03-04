@@ -21,6 +21,7 @@
  */
 namespace ToolKit
 {
+  typedef std::function<void(float deltaTime)> TKUpdateFn;
 
   /**
    * A class that Provides a unique handle when needed.
@@ -55,12 +56,13 @@ namespace ToolKit
   struct TK_API Timing
   {
     void Init(uint fps);
+    float GetDeltaTime();
 
-    float LastTime    = 0.0f;
-    float CurrentTime = 0.0f;
-    float DeltaTime   = 0.0f;
-    float TimeAccum   = 0.0f;
-    int FrameCount    = 0;
+    float LastTime        = 0.0f;
+    float CurrentTime     = 0.0f;
+    float TargetDeltaTime = 0.0f;
+    float TimeAccum       = 0.0f;
+    int FrameCount        = 0;
   };
 
   /**
@@ -102,6 +104,16 @@ namespace ToolKit
 
     static void SetProxy(Main* proxy);
 
+    bool SyncFrameTime();
+    void FrameBegin();
+    void FrameUpdate();
+    int FrameEnd();
+
+    void RegisterPreUpdateFunction(TKUpdateFn preUpdateFn);
+    void RegisterPostUpdateFunction(TKUpdateFn postUpdateFn);
+    void ClearPreUpdateFunctions();
+    void ClearPostUpdateFunctions();
+
    public:
     Timing m_timing;
     class AnimationManager* m_animationMan       = nullptr;
@@ -135,6 +147,9 @@ namespace ToolKit
 
    private:
     static Main* m_proxy;
+
+    std::vector<TKUpdateFn> m_preUpdateFunctions;
+    std::vector<TKUpdateFn> m_postUpdateFunctions;
   };
 
   // Accessors.
