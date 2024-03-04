@@ -12,6 +12,7 @@
 #include "Gizmo.h"
 #include "Grid.h"
 #include "Mod.h"
+#include "TKStats.h"
 #include "UI.h"
 
 #include <Common/SDLEventPool.h>
@@ -97,6 +98,39 @@ namespace ToolKit
       }
 
       Main::GetInstance()->SetConfigPath(cfgPath);
+    }
+
+    void ProcessEvent(const SDL_Event& e)
+    {
+      if (e.type == SDL_WINDOWEVENT)
+      {
+        if (e.window.event == SDL_WINDOWEVENT_RESIZED)
+        {
+          g_app->OnResize(e.window.data1, e.window.data2);
+        }
+
+        if (e.window.event == SDL_WINDOWEVENT_MAXIMIZED)
+        {
+          g_app->m_windowMaximized = true;
+        }
+
+        if (e.window.event == SDL_WINDOWEVENT_RESTORED)
+        {
+          g_app->m_windowMaximized = false;
+        }
+      }
+
+      if (e.type == SDL_DROPFILE)
+      {
+        g_app->ManageDropfile(e.drop.file);
+      }
+
+      if (e.type == SDL_QUIT)
+      {
+        g_app->OnQuit();
+      }
+
+      ImGui_ImplSDL2_ProcessEvent(&e);
     }
 
     void PreInit()
@@ -240,6 +274,47 @@ namespace ToolKit
 
             UI::Init();
             g_app->Init();
+
+            // Register update functions
+
+            TKUpdateFn preUpdateFn = [](float deltaTime)
+            {
+              PUSH_CPU_MARKER("SDL Poll Event");
+
+              SDL_Event sdlEvent;
+              while (SDL_PollEvent(&sdlEvent))
+              {
+                g_sdlEventPool->PoolEvent(sdlEvent);
+                ProcessEvent(sdlEvent);
+              }
+
+              g_app->m_lastFrameHWRenderPassCount = GetHWRenderPassCount();
+              g_app->m_lastFrameDrawCallCount     = GetDrawCallCount();
+
+              POP_CPU_MARKER();
+            };
+            g_proxy->RegisterPreUpdateFunction(preUpdateFn);
+
+            TKUpdateFn postUpdateFn = [](float deltaTime)
+            {
+              PUSH_CPU_MARKER("App Frame");
+
+              g_app->Frame(deltaTime);
+
+              POP_CPU_MARKER();
+              PUSH_CPU_MARKER("Swap Window");
+
+              SDL_GL_MakeCurrent(g_window, g_context);
+              SDL_GL_SwapWindow(g_window);
+
+              POP_CPU_MARKER();
+              PUSH_CPU_MARKER("Clear SDL Event Pool");
+
+              g_sdlEventPool->ClearPool(); // Clear after consumption.
+
+              POP_CPU_MARKER();
+            };
+            g_proxy->RegisterPostUpdateFunction(postUpdateFn);
           }
         }
       }
@@ -261,88 +336,19 @@ namespace ToolKit
       g_running = false;
     }
 
-    void ProcessEvent(const SDL_Event& e)
-    {
-      if (e.type == SDL_WINDOWEVENT)
-      {
-        if (e.window.event == SDL_WINDOWEVENT_RESIZED)
-        {
-          g_app->OnResize(e.window.data1, e.window.data2);
-        }
-
-        if (e.window.event == SDL_WINDOWEVENT_MAXIMIZED)
-        {
-          g_app->m_windowMaximized = true;
-        }
-
-        if (e.window.event == SDL_WINDOWEVENT_RESTORED)
-        {
-          g_app->m_windowMaximized = false;
-        }
-      }
-
-      if (e.type == SDL_DROPFILE)
-      {
-        g_app->ManageDropfile(e.drop.file);
-      }
-
-      if (e.type == SDL_QUIT)
-      {
-        g_app->OnQuit();
-      }
-
-      ImGui_ImplSDL2_ProcessEvent(&e);
-    }
-
     void TK_Loop()
     {
-      Timing* timer = &Main::GetInstance()->m_timing;
-
       while (g_running)
       {
         PUSH_CPU_MARKER("Whole Frame");
 
-        PUSH_CPU_MARKER("SDL Poll Event");
-
-        SDL_Event sdlEvent;
-        while (SDL_PollEvent(&sdlEvent))
+        if (g_proxy->SyncFrameTime())
         {
-          g_sdlEventPool->PoolEvent(sdlEvent);
-          ProcessEvent(sdlEvent);
-        }
+          g_proxy->FrameBegin();
+          g_proxy->FrameUpdate();
+          g_proxy->FrameEnd();
 
-        POP_CPU_MARKER();
-
-        timer->CurrentTime = GetElapsedMilliSeconds();
-        if (timer->CurrentTime > timer->LastTime + timer->DeltaTime)
-        {
-          PUSH_CPU_MARKER("App Frame");
-
-          g_app->Frame(timer->CurrentTime - timer->LastTime);
-
-          POP_CPU_MARKER();
-          PUSH_CPU_MARKER("Swap Window");
-
-          SDL_GL_MakeCurrent(g_window, g_context);
-          SDL_GL_SwapWindow(g_window);
-
-          POP_CPU_MARKER();
-          PUSH_CPU_MARKER("Clear SDL Event Pool");
-
-          g_sdlEventPool->ClearPool(); // Clear after consumption.
-
-          POP_CPU_MARKER();
-
-          timer->FrameCount++;
-          timer->TimeAccum += timer->CurrentTime - timer->LastTime;
-          if (timer->TimeAccum >= 1000.0f)
-          {
-            g_app->m_fps      = timer->FrameCount;
-            timer->TimeAccum  = 0;
-            timer->FrameCount = 0;
-          }
-
-          timer->LastTime = timer->CurrentTime;
+          g_app->m_fps = g_proxy->GetCurrentFPS();
         }
 
         POP_CPU_MARKER();

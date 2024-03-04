@@ -21,6 +21,7 @@
  */
 namespace ToolKit
 {
+  typedef std::function<void(float deltaTime)> TKUpdateFn;
 
   /**
    * A class that Provides a unique handle when needed.
@@ -55,12 +56,13 @@ namespace ToolKit
   struct TK_API Timing
   {
     void Init(uint fps);
+    float GetDeltaTime();
 
-    float LastTime    = 0.0f;
-    float CurrentTime = 0.0f;
-    float DeltaTime   = 0.0f;
-    float TimeAccum   = 0.0f;
-    int FrameCount    = 0;
+    float LastTime        = 0.0f;
+    float CurrentTime     = 0.0f;
+    float TargetDeltaTime = 0.0f;
+    float TimeAccum       = 0.0f;
+    int FrameCount        = 0;
   };
 
   /**
@@ -102,6 +104,58 @@ namespace ToolKit
 
     static void SetProxy(Main* proxy);
 
+    /**
+     * @return true if enough time have passed from previous frame
+     */
+    bool SyncFrameTime();
+
+    /**
+     * This function should be called at the beginning of frame.
+     */
+    void FrameBegin();
+
+    /**
+     * This function updates data that ToolKit handles.
+     * This function also calls registered PreUpdate and PostUpdate functions.
+     */
+    void FrameUpdate();
+
+    /**
+     * This function should be called at the end of frame.
+     */
+    void FrameEnd();
+
+    /**
+     * This function registers function that should be called before ToolKit update every frame.
+     */
+    void RegisterPreUpdateFunction(TKUpdateFn preUpdateFn);
+
+    /**
+     * This function registers function that should be called after ToolKit update every frame.
+     */
+    void RegisterPostUpdateFunction(TKUpdateFn postUpdateFn);
+
+    /**
+     * This function clears registered pre-update functions.
+     */
+    void ClearPreUpdateFunctions();
+
+    /**
+     * This function clears registered post-update functions.
+     */
+    void ClearPostUpdateFunctions();
+
+    /**
+     * @return Current FPS.
+     */
+    int GetCurrentFPS();
+
+   private:
+    /**
+     * This function handles ToolKit updates.
+     */
+    void Frame(float deltaTime);
+
    public:
     Timing m_timing;
     class AnimationManager* m_animationMan       = nullptr;
@@ -135,6 +189,11 @@ namespace ToolKit
 
    private:
     static Main* m_proxy;
+
+    std::vector<TKUpdateFn> m_preUpdateFunctions;
+    std::vector<TKUpdateFn> m_postUpdateFunctions;
+
+    int m_currentFPS = -1;
   };
 
   // Accessors.

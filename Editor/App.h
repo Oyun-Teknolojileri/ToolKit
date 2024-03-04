@@ -231,22 +231,22 @@ namespace ToolKit
       DynamicMenuPtrArray m_customObjectsMenu; //!< Constructed menus based on m_customObjectMetaValues.
 
       // Snap settings.
-      bool m_snapsEnabled = false; // Delta transforms.
-      float m_moveDelta   = 0.25f;
-      float m_rotateDelta = 15.0f;
-      float m_scaleDelta  = 0.5f;
+      bool m_snapsEnabled                 = false; // Delta transforms.
+      float m_moveDelta                   = 0.25f;
+      float m_rotateDelta                 = 15.0f;
+      float m_scaleDelta                  = 0.5f;
+
+      // Last Frame Stats
+      uint64 m_lastFrameDrawCallCount     = 0;
+      uint64 m_lastFrameHWRenderPassCount = 0;
 
      private:
       // Internal states.
       bool m_onQuit = false;
       String m_newSceneName;
-      float m_deltaTime                   = 0.0f;
-      bool m_isCompiling                  = false;
-      bool m_reloadPlugin                 = false;
-
-      // Last Frame Stats
-      uint64 m_lastFrameDrawCallCount     = 0;
-      uint64 m_lastFrameHWRenderPassCount = 0;
+      float m_deltaTime   = 0.0f;
+      bool m_isCompiling  = false;
+      bool m_reloadPlugin = false;
     };
 
   } // namespace Editor
