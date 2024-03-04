@@ -274,8 +274,16 @@ namespace ToolKit
     GetRenderSystem()->ExecuteRenderTasks();
     POP_CPU_MARKER();
 
+    PUSH_CPU_MARKER("Animation Update");
+    // Update animations.
+    GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
+    POP_CPU_MARKER();
+
     PUSH_CPU_MARKER("Update Scene");
-    GetSceneManager()->GetCurrentScene()->Update(deltaTime);
+    if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
+    {
+      scene->Update(deltaTime);
+    }
     POP_CPU_MARKER();
 
     GetRenderSystem()->EndFrame();

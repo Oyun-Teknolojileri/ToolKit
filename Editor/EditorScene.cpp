@@ -56,9 +56,6 @@ namespace ToolKit
     {
       Super::Update(deltaTime);
 
-      // Update animations.
-      GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
-
       // Show selected light gizmos.
       EntityPtrArray selecteds;
       GetSelectedEntities(selecteds);
