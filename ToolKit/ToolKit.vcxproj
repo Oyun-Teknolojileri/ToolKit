@@ -36,6 +36,7 @@
     <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="FullQuadPass.cpp" />
     <ClCompile Include="FxaaPass.cpp" />
+    <ClCompile Include="GameRenderer.cpp" />
     <ClCompile Include="GammaPass.cpp" />
     <ClCompile Include="GBufferPass.cpp" />
     <ClCompile Include="GlErrorReporter.cpp" />
@@ -126,6 +127,7 @@
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="FullQuadPass.h" />
     <ClInclude Include="FxaaPass.h" />
+    <ClInclude Include="GameRenderer.h" />
     <ClInclude Include="GammaPass.h" />
     <ClInclude Include="GBufferPass.h" />
     <ClInclude Include="GlErrorReporter.h" />

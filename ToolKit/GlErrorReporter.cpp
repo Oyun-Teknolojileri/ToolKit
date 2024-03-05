@@ -20,7 +20,7 @@ namespace ToolKit
 
   void InitGLErrorReport(GlReportCallback callback)
   {
-#ifndef __ANDROID__
+#ifdef _WIN32
     if (glDebugMessageCallback != NULL)
     {
       glEnable(GL_DEBUG_OUTPUT);

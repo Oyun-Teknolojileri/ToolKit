@@ -267,12 +267,12 @@ namespace ToolKit
 
   void Main::Frame(float deltaTime)
   {
-    ResetDrawCallCounter();
-    ResetHWRenderPassCounter();
-
     PUSH_CPU_MARKER("Exec Render Tasks");
     GetRenderSystem()->ExecuteRenderTasks();
     POP_CPU_MARKER();
+
+    ResetDrawCallCounter();
+    ResetHWRenderPassCounter();
 
     PUSH_CPU_MARKER("Animation Update");
     // Update animations.

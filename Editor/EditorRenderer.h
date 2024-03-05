@@ -112,7 +112,6 @@ namespace ToolKit
       GizmoPassPtr m_gizmoPass                          = nullptr;
       TonemapPassPtr m_tonemapPass                      = nullptr;
       GammaPassPtr m_gammaPass                          = nullptr;
-      BloomPassPtr m_bloomPass                          = nullptr;
       SSAOPassPtr m_ssaoPass                            = nullptr;
       OutlinePassPtr m_outlinePass                      = nullptr;
       FXAAPassPtr m_fxaaPass                            = nullptr;

@@ -44,8 +44,6 @@ namespace ToolKit
       m_tonemapPass           = nullptr;
       m_gammaPass             = nullptr;
       m_fxaaPass              = nullptr;
-      m_bloomPass             = nullptr;
-      m_ssaoPass              = nullptr;
       m_outlinePass           = nullptr;
       m_singleMatRenderer     = nullptr;
     }
@@ -288,12 +286,6 @@ namespace ToolKit
 
       const EngineSettings::PostProcessingSettings& gfx       = GetEngineSettings().PostProcessing;
 
-      // Bloom pass
-      m_bloomPass->m_params.FrameBuffer                       = viewport->m_framebuffer;
-      m_bloomPass->m_params.intensity                         = gfx.BloomIntensity;
-      m_bloomPass->m_params.minThreshold                      = gfx.BloomThreshold;
-      m_bloomPass->m_params.iterationCount                    = gfx.BloomIterationCount;
-
       // Light Complexity pass
       m_singleMatRenderer->m_params.ForwardParams.renderData  = &m_renderData;
       m_singleMatRenderer->m_params.ForwardParams.Cam         = m_camera;
@@ -370,8 +362,6 @@ namespace ToolKit
       m_tonemapPass           = MakeNewPtr<TonemapPass>();
       m_gammaPass             = MakeNewPtr<GammaPass>();
       m_fxaaPass              = MakeNewPtr<FXAAPass>();
-      m_bloomPass             = MakeNewPtr<BloomPass>();
-      m_ssaoPass              = MakeNewPtr<SSAOPass>();
       m_outlinePass           = MakeNewPtr<OutlinePass>();
       m_singleMatRenderer     = MakeNewPtr<SingleMatForwardRenderPass>();
       m_skipFramePass         = MakeNewPtr<FullQuadPass>();
