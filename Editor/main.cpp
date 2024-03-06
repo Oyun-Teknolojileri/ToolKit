@@ -304,6 +304,7 @@ namespace ToolKit
               POP_CPU_MARKER();
               PUSH_CPU_MARKER("Swap Window");
 
+              SDL_GL_MakeCurrent(g_window, g_context);
               SDL_GL_SwapWindow(g_window);
 
               POP_CPU_MARKER();
