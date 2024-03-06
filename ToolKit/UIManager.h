@@ -86,6 +86,26 @@ namespace ToolKit
     virtual ~UIManager();
 
     /**
+    * Updates viewport that are registered
+    */
+    void Update(float deltaTime);
+
+    /**
+     * Register a viewport to update layers
+     */
+    void RegisterViewportToUpdateLayers(Viewport* viewport);
+
+    /**
+     * Unregister a viewport to update layers
+     */
+    void UnRegisterViewportToUpdateLayers(Viewport* viewport);
+
+    /**
+    * Clears viewports to that updates layers
+    */
+    void ClearViewportsToUpdateLayers();
+
+    /**
      * Updates all of the layers and activates Surface callbacks based on
      * events.
      * @param deltaTime is the time past since the previous frame.
@@ -194,6 +214,8 @@ namespace ToolKit
      */
     CameraPtr m_uiCamera = nullptr;
     bool m_mouseReleased = true;
+
+    std::vector<Viewport*> m_viewportsToUpdateLayers;
   };
 
 } // namespace ToolKit

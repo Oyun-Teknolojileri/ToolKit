@@ -235,6 +235,12 @@
     <ClCompile Include="Threads.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="GameRenderer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GameViewport.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -499,6 +505,12 @@
       <Filter>Render</Filter>
     </ClInclude>
     <ClInclude Include="Threads.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="GameRenderer.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameViewport.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

@@ -207,7 +207,31 @@ namespace ToolKit
     m_uiCamera->m_orthographicScale = 1.0f;
   }
 
-  UIManager::~UIManager() {}
+  UIManager::~UIManager() { ClearViewportsToUpdateLayers(); }
+
+  void UIManager::Update(float deltaTime)
+  {
+    for (Viewport* viewport : m_viewportsToUpdateLayers)
+    {
+      GetUIManager()->UpdateLayers(deltaTime, viewport);
+    }
+  }
+
+  void UIManager::RegisterViewportToUpdateLayers(Viewport* viewport) { m_viewportsToUpdateLayers.push_back(viewport); }
+
+  void UIManager::UnRegisterViewportToUpdateLayers(Viewport* viewport)
+  {
+    for (auto it = m_viewportsToUpdateLayers.begin(); it != m_viewportsToUpdateLayers.end(); ++it)
+    {
+      if (*it == viewport)
+      {
+        m_viewportsToUpdateLayers.erase(it);
+        break;
+      }
+    }
+  }
+
+  void UIManager::ClearViewportsToUpdateLayers() { m_viewportsToUpdateLayers.clear(); }
 
   void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)
   {

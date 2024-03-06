@@ -169,6 +169,7 @@ namespace ToolKit
       GetAnimationPlayer()->Destroy();
 
       GetUIManager()->DestroyLayers();
+      GetUIManager()->ClearViewportsToUpdateLayers();
 
       ModManager::GetInstance()->UnInit();
       ActionManager::GetInstance()->UnInit();
@@ -185,7 +186,7 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
-      m_deltaTime                  = deltaTime;
+      m_deltaTime = deltaTime;
 
       PUSH_CPU_MARKER("UI Begin & Show UI");
 
@@ -257,13 +258,6 @@ namespace ToolKit
 
           GetRenderSystem()->AddRenderTask({[this, viewport, deltaTime](Renderer* renderer) -> void
                                             {
-                                              // 2d Viewport should not be updated as it may break the
-                                              // designers work.
-                                              if (viewport->m_name != g_2dViewport)
-                                              {
-                                                GetUIManager()->UpdateLayers(deltaTime, viewport);
-                                              }
-
                                               viewport->m_editorRenderer->m_params.UseMobileRenderPath =
                                                   GetEngineSettings().Graphics.RenderSpec == RenderingSpec::Mobile;
                                               viewport->m_editorRenderer->m_params.App      = g_app;
@@ -700,6 +694,7 @@ namespace ToolKit
       // Clear all animations potentially added from game module.
       GetAnimationPlayer()->Destroy();
       GetUIManager()->DestroyLayers();
+      GetUIManager()->ClearViewportsToUpdateLayers();
 
       m_perFrameDebugObjects.clear();
       UI::m_postponedActions.clear();
@@ -785,6 +780,7 @@ namespace ToolKit
         vp->GetCamera()->m_node->SetTranslation({5.0f, 3.0f, 5.0f});
         vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f));
         m_windows.push_back(vp);
+        GetUIManager()->RegisterViewportToUpdateLayers(vp);
 
         // 2d viewport.
         vp = new EditorViewport2d();

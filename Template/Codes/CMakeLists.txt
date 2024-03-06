@@ -56,6 +56,8 @@ include_directories(
 	"${TOOLKIT_DIR}/Dependency/stb"
 	"${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/include"
 	"${CMAKE_SOURCE_DIR}"
+	"${CMAKE_SOURCE_DIR}/../Windows"
+	"${CMAKE_SOURCE_DIR}/../Web"
 )
 
 set(
@@ -64,10 +66,10 @@ set(
 )
 
 if (${WEB_BUILD})
-	set(SOURCE ${SOURCE} ../Web/web_main.cpp)
+	set(SOURCE ${SOURCE} ../Codes/Main.cpp)
 	add_definitions(-DGAME_BUILD=1)
 elseif (${WIN_BUILD})
-	set(SOURCE ${SOURCE} ../Windows/win_main.cpp)
+	set(SOURCE ${SOURCE} ../Codes/Main.cpp)
 	add_definitions(-DGAME_BUILD=1)
 endif()
 

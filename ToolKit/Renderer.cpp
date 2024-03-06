@@ -372,22 +372,19 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    if (fb != m_framebuffer)
+    if (fb != nullptr)
     {
-      if (fb != nullptr)
-      {
-        RHI::SetFramebuffer((GLenum) fbType, fb->GetFboId());
+      RHI::SetFramebuffer((GLenum) fbType, fb->GetFboId());
 
-        const FramebufferSettings& fbSet = fb->GetSettings();
-        SetViewportSize(fbSet.width, fbSet.height);
-      }
-      else
-      {
-        // Backbuffer
-        RHI::SetFramebuffer((GLenum) fbType, 0);
+      const FramebufferSettings& fbSet = fb->GetSettings();
+      SetViewportSize(fbSet.width, fbSet.height);
+    }
+    else
+    {
+      // Backbuffer
+      RHI::SetFramebuffer((GLenum) fbType, 0);
 
-        SetViewportSize(m_windowSize.x, m_windowSize.y);
-      }
+      SetViewportSize(m_windowSize.x, m_windowSize.y);
     }
 
     if (attachmentsToClear != GraphicBitFields::None)
@@ -464,6 +461,11 @@ namespace ToolKit
 
   void Renderer::SetViewportSize(uint width, uint height)
   {
+    if (width == m_viewportSize.x && height == m_viewportSize.y)
+    {
+      return;
+    }
+
     m_viewportSize.x = width;
     m_viewportSize.y = height;
     glViewport(0, 0, width, height);
