@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21.0)
 
-set(PROJECT_NAME "__projectname__" CACHE STRING "What is the project name ?")
+set(PROJECT_NAME "AnimationBlending" CACHE STRING "What is the project name ?")
 set(TOOLKIT_DIR "__tkdir__" CACHE FILEPATH "Where is the ToolKit source directory ?")
 
 if (EMSCRIPTEN)
@@ -68,7 +68,7 @@ set(
 if (${WEB_BUILD})
 	set(SOURCE ${SOURCE} ../Codes/Main.cpp)
 	add_definitions(-DGAME_BUILD=1)
-elseif (${WIN_BUILD})
+elseif (DEFINED WIN_BUILD)
 	set(SOURCE ${SOURCE} ../Codes/Main.cpp)
 	add_definitions(-DGAME_BUILD=1)
 endif()
@@ -134,23 +134,25 @@ else() # Windows & Editor builds.
 	link_directories("${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/lib")
 	link_directories("${TOOLKIT_DIR}/Dependency/SDL2/lib")
 	
-	if (${WIN_BUILD})
+	if (DEFINED WIN_BUILD)
 		add_executable(${PROJECT_NAME} WIN32 ${SOURCE})
 	else() # Editor
 		add_library(${PROJECT_NAME} SHARED ${SOURCE} ${HEADERS})
 	endif()
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	target_compile_definitions(${PROJECT_NAME} PRIVATE TK_DLL_IMPORT)
+endif()
 	target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:TK_DEBUG>)
 
 	if (MSVC)
 		target_link_options(${PROJECT_NAME} PRIVATE $<$<NOT:$<CONFIG:DEBUG>>:/INCREMENTAL:NO> $<$<NOT:$<CONFIG:DEBUG>>:/LTCG>)
 	endif()
 
-	target_link_libraries(${PROJECT_NAME} debug ToolKit_d)
-	target_link_libraries(${PROJECT_NAME} optimized ToolKit)
-	target_link_libraries(${PROJECT_NAME} zlibstatic minizip)
-	target_link_libraries(${PROJECT_NAME} SDL2 SDL2main)
+	target_link_libraries(${PROJECT_NAME} PRIVATE debug ToolKit_d)
+	target_link_libraries(${PROJECT_NAME} PRIVATE optimized ToolKit)
+	target_link_libraries(${PROJECT_NAME} PRIVATE zlibstatic minizip)
+	target_link_libraries(${PROJECT_NAME} PRIVATE SDL2 SDL2main)
 endif()
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH})
@@ -158,7 +160,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>)
 
 #For hot reload rename the previous output
-if (NOT ${WEB_BUILD} OR NOT ${WIN_BUILD})
+if (NOT ${WEB_BUILD} AND NOT DEFINED WIN_BUILD)
 	set(DLL $<SHELL_PATH:$<TARGET_FILE:${PROJECT_NAME}>>)
 	set(PDB $<SHELL_PATH:$<TARGET_PDB_FILE:${PROJECT_NAME}>>)
 
