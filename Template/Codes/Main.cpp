@@ -133,6 +133,7 @@ namespace ToolKit
           // Init viewport and window size
           g_viewport =
             new GameViewport((float)g_engineSettings->Window.Width, (float)g_engineSettings->Window.Height);
+          GetUIManager()->RegisterViewportToUpdateLayers(g_viewport);
           GetRenderSystem()->SetAppWindowSize(g_engineSettings->Window.Width, g_engineSettings->Window.Height);
 
           // Init game
@@ -161,7 +162,6 @@ namespace ToolKit
           TKUpdateFn postUpdateFn = [](float deltaTime)
             {
               g_viewport->Update(deltaTime);
-              GetUIManager()->UpdateLayers(deltaTime, g_viewport);
               g_game->Frame(deltaTime);
 
               GameRendererParams params;

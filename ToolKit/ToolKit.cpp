@@ -280,6 +280,8 @@ namespace ToolKit
     GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
     POP_CPU_MARKER();
 
+    GetUIManager()->Update(deltaTime);
+
     PUSH_CPU_MARKER("Update Scene");
     if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
     {
