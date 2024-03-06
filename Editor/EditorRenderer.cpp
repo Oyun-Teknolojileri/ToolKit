@@ -83,7 +83,6 @@ namespace ToolKit
         m_passArray.push_back(m_skipFramePass);
         RenderPath::Render(renderer);
 
-        GetRenderSystem()->DecrementSkipFrame();
         PostRender();
         return;
       }

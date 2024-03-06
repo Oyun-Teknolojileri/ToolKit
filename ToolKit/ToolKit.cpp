@@ -268,6 +268,7 @@ namespace ToolKit
   void Main::Frame(float deltaTime)
   {
     PUSH_CPU_MARKER("Exec Render Tasks");
+    GetRenderSystem()->DecrementSkipFrame();
     GetRenderSystem()->ExecuteRenderTasks();
     POP_CPU_MARKER();
 
