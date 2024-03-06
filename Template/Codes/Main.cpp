@@ -26,29 +26,6 @@ namespace ToolKit
   const char* g_appName = "ToolKit";
   const uint g_targetFps = 120;
 
-  class GameViewport : public Viewport
-  {
-  public:
-    GameViewport() { m_contentAreaLocation = Vec2(0.0f); }
-
-    GameViewport(float width, float height) : Viewport(width, height) {}
-
-    void Update(float dt) override
-    {
-      m_mouseOverContentArea = true;
-
-      for (Event* e : Main::GetInstance()->m_eventPool)
-      {
-        if (e->m_type == Event::EventType::Mouse)
-        {
-          MouseEvent* me = static_cast<MouseEvent*>(e);
-          m_lastMousePosRelContentArea.x = me->absolute[0];
-          m_lastMousePosRelContentArea.y = me->absolute[1];
-        }
-      }
-    }
-  };
-
   void ProcessEvent(const SDL_Event& e)
   {
     if (e.type == SDL_QUIT)

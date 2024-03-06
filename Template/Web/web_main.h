@@ -8,6 +8,7 @@
 #include "UIManager.h"
 #include "GameRenderer.h"
 #include "Plugin.h"
+#include "GameViewport.h"
 
 #include "emscripten.h"
 

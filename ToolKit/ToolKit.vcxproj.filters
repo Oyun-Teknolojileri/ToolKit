@@ -238,6 +238,9 @@
     <ClCompile Include="GameRenderer.cpp">
       <Filter>Render</Filter>
     </ClCompile>
+    <ClCompile Include="GameViewport.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -506,6 +509,9 @@
     </ClInclude>
     <ClInclude Include="GameRenderer.h">
       <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameViewport.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
