@@ -15,8 +15,13 @@ namespace ToolKit
     m_fullQuadPass          = MakeNewPtr<FullQuadPass>();
   }
 
-  void GameRenderer::PreRender()
+  bool GameRenderer::PreRender()
   {
+    if (m_params.scene == nullptr || m_params.viewport == nullptr)
+    {
+      return false;
+    }
+
     if (m_params.useMobileRenderPath)
     {
       // Mobile pass params
@@ -94,13 +99,19 @@ namespace ToolKit
     m_unlitMaterial->m_diffuseTexture =
         Cast<Texture>(m_params.viewport->m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0));
     m_fullQuadPass->m_material = m_unlitMaterial;
+
+    return true;
   }
 
   void GameRenderer::SetParams(const GameRendererParams& gameRendererParams) { m_params = gameRendererParams; }
 
   void GameRenderer::Render(Renderer* renderer)
   {
-    PreRender();
+    if (!PreRender())
+    {
+      return;
+    }
+
     m_passArray.clear();
 
     // Scene renderer
