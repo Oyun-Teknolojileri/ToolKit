@@ -140,7 +140,7 @@ else() # Windows & Editor builds.
 		add_library(${PROJECT_NAME} SHARED ${SOURCE} ${HEADERS})
 	endif()
 
-if (NOT DEFINED WIN_BUILD)
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	target_compile_definitions(${PROJECT_NAME} PRIVATE TK_DLL_IMPORT)
 endif()
 	target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:TK_DEBUG>)
