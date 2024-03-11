@@ -78,12 +78,12 @@ namespace ToolKit
     int m_minSdk            = 27;
     int m_maxSdk            = 32;
     bool m_deployAfterBuild = false;
-    bool m_isDebugBuild     = false;
     PublishConfig m_publishConfig;
-
+    PublishPlatform m_platform = PublishPlatform::Android;
     String m_toolkitPath;
     Oriantation m_oriantation;
-    PublishPlatform m_platform = PublishPlatform::Android;
+
+    bool m_isDebugBuild = false;
   };
 
   int Packer::PackResources()
@@ -184,7 +184,15 @@ namespace ToolKit
     TK_LOG("Run toolkit compile script\n");
     Path newWorkDir(ConcatPaths({m_toolkitPath, "BuildScripts"}));
     std::filesystem::current_path(newWorkDir);
-    int toolKitCompileResult = RunPipe("WinBuildRelease.bat", nullptr);
+    int toolKitCompileResult = -1;
+    if (m_isDebugBuild)
+    {
+      toolKitCompileResult = RunPipe("WinBuildDebug.bat", nullptr);
+    }
+    else
+    {
+      toolKitCompileResult = RunPipe("WinBuildRelease.bat", nullptr);
+    }
     if (toolKitCompileResult != 0)
     {
       returnLoggingError("WinBuildRelease", true);
@@ -219,7 +227,8 @@ namespace ToolKit
         ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".exe";
 
     const String pakFile                = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
-    const String sdlDllPath             = ConcatPaths({workDir.string(), "SDL2.dll"});
+    const String sdlDllPath             = ConcatPaths({m_toolkitPath, "Bin", "SDL2.dll"});
+    const String tkDllPath              = ConcatPaths({m_toolkitPath, "Bin", "ToolKit_d.dll"});
     const String configDirectory        = ConcatPaths({ResourcePath(), "..", "Config"});
     const String engineSettingsPath     = ConcatPaths({ConfigPath(), "Engine.settings"});
     const String destEngineSettingsPath = ConcatPaths({publishConfigDir, "Engine.settings"});
@@ -238,6 +247,12 @@ namespace ToolKit
     if (returnLoggingError(publishBinDir))
     {
       return 1;
+    }
+
+    // Copy ToolKit_d.dll from ToolKit bin folder to publish bin folder
+    if (m_isDebugBuild)
+    {
+      std::filesystem::copy(tkDllPath, publishBinDir, std::filesystem::copy_options::overwrite_existing, ec);
     }
 
     // Copy pak
