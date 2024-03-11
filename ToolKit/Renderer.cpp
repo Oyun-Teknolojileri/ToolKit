@@ -511,12 +511,12 @@ namespace ToolKit
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs({m_tempQuad}, jobs);
 
-    bool lastDepthTestState = m_renderState.depthTestEnabled;
-    EnableDepthTest(false);
+    CompareFunctions lastDepthFunc = m_renderState.depthFunction;
+    SetDepthTestFunc(CompareFunctions::FuncAlways);
 
     RenderWithProgramFromMaterial(jobs);
 
-    EnableDepthTest(lastDepthTestState);
+    SetDepthTestFunc(lastDepthFunc);
   }
 
   void Renderer::DrawCube(CameraPtr cam, MaterialPtr mat, const Mat4& transform)
@@ -528,6 +528,9 @@ namespace ToolKit
     RenderJobArray jobs;
     EntityPtrArray oneDummyDrawCube = {m_dummyDrawCube};
     RenderJobProcessor::CreateRenderJobs(oneDummyDrawCube, jobs);
+
+    CompareFunctions lastDepthFunc = m_renderState.depthFunction;
+
     RenderWithProgramFromMaterial(jobs);
   }
 
@@ -619,7 +622,7 @@ namespace ToolKit
 
     FramebufferPtr frmBackup = m_framebuffer;
 
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->Init({0, 0, false, true});
 
     if (m_gaussianBlurMaterial == nullptr)
     {
@@ -652,7 +655,7 @@ namespace ToolKit
 
     FramebufferPtr frmBackup = m_framebuffer;
 
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->Init({0, 0, false, true});
 
     if (m_averageBlurMaterial == nullptr)
     {
@@ -1291,7 +1294,7 @@ namespace ToolKit
 
     mat->UpdateProgramUniform("Exposure", exposure);
 
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->Init({0, 0, false, true});
 
     // Views for 6 different angles
     CameraPtr cam = MakeNewPtr<Camera>();
@@ -1374,7 +1377,7 @@ namespace ToolKit
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->Init({0, 0, false, true});
 
     for (int i = 0; i < 6; ++i)
     {
