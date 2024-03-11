@@ -29,6 +29,14 @@
 
 namespace ToolKit
 {
+  // Same enum that is inside Editor::PublisManager
+  enum class PublishConfig
+  {
+    Debug   = 0, // Debug build
+    Develop = 1, // Release build
+    Deploy  = 2  // Release build with calling packer
+  };
+
   static String activeProjectName;
   static String workspacePath;
 
@@ -71,6 +79,7 @@ namespace ToolKit
     int m_maxSdk            = 32;
     bool m_deployAfterBuild = false;
     bool m_isDebugBuild     = false;
+    PublishConfig m_publishConfig;
 
     String m_toolkitPath;
     Oriantation m_oriantation;
@@ -93,9 +102,12 @@ namespace ToolKit
 
   int Packer::Publish()
   {
-    if (!PackResources())
+    if (m_publishConfig == PublishConfig::Deploy)
     {
-      return 1;
+      if (!PackResources())
+      {
+        return 1;
+      }
     }
 
     switch (m_platform)
@@ -714,13 +726,14 @@ namespace ToolKit
     workspacePath             = NormalizePath(arguments[1]);
     packer.m_appName          = NormalizePath(arguments[2]);
     packer.m_deployAfterBuild = std::atoi(arguments[3].c_str());
-    packer.m_isDebugBuild     = std::atoi(arguments[4].c_str());
-    packer.m_minSdk           = std::atoi(arguments[5].c_str());
-    packer.m_maxSdk           = std::atoi(arguments[6].c_str());
-    packer.m_oriantation      = (Oriantation) std::atoi(arguments[7].c_str());
-    packer.m_platform         = (PublishPlatform) std::atoi(arguments[8].c_str());
-    packer.m_icon             = arguments[9];
+    packer.m_minSdk           = std::atoi(arguments[4].c_str());
+    packer.m_maxSdk           = std::atoi(arguments[5].c_str());
+    packer.m_oriantation      = (Oriantation) std::atoi(arguments[6].c_str());
+    packer.m_platform         = (PublishPlatform) std::atoi(arguments[7].c_str());
+    packer.m_icon             = arguments[8];
     packer.m_icon             = std::filesystem::absolute(packer.m_icon).string();
+    packer.m_publishConfig    = (PublishConfig) std::atoi(arguments[9].c_str());
+    packer.m_isDebugBuild     = packer.m_publishConfig == PublishConfig::Debug;
 
     // in windows we are hiding the console because pipe works fine and we output to the toolkit console
     if (packer.m_platform == PublishPlatform::Windows)
