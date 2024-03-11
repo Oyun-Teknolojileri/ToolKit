@@ -571,6 +571,7 @@ namespace ToolKit
     m_copyMaterial->Init();
 
     DrawFullQuad(m_copyMaterial);
+    InvalidateFramebufferDepth(m_copyFb);
     SetFramebuffer(lastFb, GraphicBitFields::None);
   }
 
@@ -645,6 +646,7 @@ namespace ToolKit
 
     SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
     DrawFullQuad(m_gaussianBlurMaterial);
+    InvalidateFramebufferDepth(m_oneColorAttachmentFramebuffer);
 
     SetFramebuffer(frmBackup, GraphicBitFields::None);
   }
@@ -679,6 +681,7 @@ namespace ToolKit
 
     SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
     DrawFullQuad(m_averageBlurMaterial);
+    InvalidateFramebufferDepth(m_oneColorAttachmentFramebuffer);
 
     SetFramebuffer(frmBackup, GraphicBitFields::None);
   }
