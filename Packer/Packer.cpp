@@ -635,8 +635,18 @@ namespace ToolKit
       return ret;
     };
 
+    String buildScriptName;
+    if (m_isDebugBuild)
+    {
+      buildScriptName = "WebBuildDebug.bat";
+    }
+    else
+    {
+      buildScriptName = "WebBuildRelease.bat";
+    }
+
     TK_LOG("Run toolkit compile script");
-    String tkBuildPath       = ConcatPaths({m_toolkitPath, "BuildScripts", "WebBuildRelease.bat"});
+    String tkBuildPath       = ConcatPaths({m_toolkitPath, "BuildScripts", buildScriptName});
     int toolKitCompileResult = RunPipe(tkBuildPath + " > WebPipeOut1.txt", nullptr);
 
     if (toolKitCompileResult != 0)
@@ -647,7 +657,7 @@ namespace ToolKit
     }
     TK_LOG(GetFileManager()->ReadAllText("WebPipeOut1.txt").c_str());
     Path newWorkDir                          = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
-    const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Web", "WebBuildRelease.bat"});
+    const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Web", buildScriptName});
 
     // Run scripts
     std::filesystem::current_path(newWorkDir, ec);
