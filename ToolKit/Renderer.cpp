@@ -529,9 +529,12 @@ namespace ToolKit
     EntityPtrArray oneDummyDrawCube = {m_dummyDrawCube};
     RenderJobProcessor::CreateRenderJobs(oneDummyDrawCube, jobs);
 
-    CompareFunctions lastDepthFunc = m_renderState.depthFunction;
+    CompareFunctions lastCompareFunc = m_renderState.depthFunction;
+    SetDepthTestFunc(CompareFunctions::FuncAlways);
 
     RenderWithProgramFromMaterial(jobs);
+
+    SetDepthTestFunc(lastCompareFunc);
   }
 
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
@@ -623,7 +626,7 @@ namespace ToolKit
 
     FramebufferPtr frmBackup = m_framebuffer;
 
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, true});
+    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
 
     if (m_gaussianBlurMaterial == nullptr)
     {
@@ -646,7 +649,6 @@ namespace ToolKit
 
     SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
     DrawFullQuad(m_gaussianBlurMaterial);
-    InvalidateFramebufferDepth(m_oneColorAttachmentFramebuffer);
 
     SetFramebuffer(frmBackup, GraphicBitFields::None);
   }
@@ -657,7 +659,7 @@ namespace ToolKit
 
     FramebufferPtr frmBackup = m_framebuffer;
 
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, true});
+    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
 
     if (m_averageBlurMaterial == nullptr)
     {
@@ -681,7 +683,6 @@ namespace ToolKit
 
     SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
     DrawFullQuad(m_averageBlurMaterial);
-    InvalidateFramebufferDepth(m_oneColorAttachmentFramebuffer);
 
     SetFramebuffer(frmBackup, GraphicBitFields::None);
   }
@@ -1297,7 +1298,7 @@ namespace ToolKit
 
     mat->UpdateProgramUniform("Exposure", exposure);
 
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, true});
+    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
 
     // Views for 6 different angles
     CameraPtr cam = MakeNewPtr<Camera>();
@@ -1380,7 +1381,7 @@ namespace ToolKit
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, true});
+    m_oneColorAttachmentFramebuffer->Init({(int) size, (int) size, false, false});
 
     for (int i = 0; i < 6; ++i)
     {
@@ -1499,7 +1500,7 @@ namespace ToolKit
         mat->UpdateProgramUniform("roughness", (float) mip / (float) mipMaps);
         mat->UpdateProgramUniform("resPerFace", (float) mipSize);
 
-        SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
+        SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::DepthBits);
         SetViewportSize(mipSize, mipSize);
 
         RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId, 0);
