@@ -92,12 +92,18 @@ namespace ToolKit
     if (projectName.empty())
     {
       TK_ERR("No project is loaded.");
-      return 0;
+      return -1;
     }
 
     String sceneResourcesPath = ConcatPaths({ResourcePath(), "Scenes"});
 
-    return GetFileManager()->PackResources(sceneResourcesPath);
+    int packResult = GetFileManager()->PackResources(sceneResourcesPath);
+    if (packResult != 0)
+    {
+      return packResult;
+    }
+
+    return 0;
   }
 
   int Packer::Publish()
