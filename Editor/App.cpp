@@ -567,7 +567,7 @@ namespace ToolKit
 #else
       static const StringView buildConfig = "RelWithDebInfo";
 #endif
-      String cmd    = "cmake -S " + codePath + " -B " + buildDir + " -DCMAKE_BUILD_TYPE=Debug";
+      String cmd    = "cmake -S " + codePath + " -B " + buildDir + " -DCMAKE_BUILD_TYPE=" + buildConfig.data();
       m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
       m_isCompiling = true;
 

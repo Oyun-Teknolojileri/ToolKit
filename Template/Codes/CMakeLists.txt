@@ -9,6 +9,20 @@ else()
 	set(WEB_BUILD FALSE)
 endif()
 
+if (NOT ${WEB_BUILD} AND NOT DEFINED WIN_BUILD)
+	set(EDITOR_BUILD TRUE)
+else()
+	set(EDITOR_BUILD FALSE)
+endif()
+
+if (${EDITOR_BUILD})
+	set(TKLibName ToolKit)
+	set(TKDebugLibName ToolKit_d)
+else ()
+	set(TKLibName TKLib)
+	set(TKDebugLibName TKLib_d)
+endif ()
+
 #if not a path is provided, try fetching it from the path file.
 if("${TOOLKIT_DIR}" STREQUAL "__tkdir__")
 		if(DEFINED ENV{APPDATA})
@@ -65,10 +79,7 @@ set(
 	Game.cpp
 )
 
-if (${WEB_BUILD})
-	set(SOURCE ${SOURCE} ../Codes/Main.cpp)
-	add_definitions(-DGAME_BUILD=1)
-elseif (DEFINED WIN_BUILD)
+if (${WEB_BUILD} OR DEFINED WIN_BUILD)
 	set(SOURCE ${SOURCE} ../Codes/Main.cpp)
 	add_definitions(-DGAME_BUILD=1)
 endif()
@@ -117,8 +128,8 @@ if (${WEB_BUILD})
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Bin")
 
 	add_executable(${PROJECT_NAME} ${SOURCE} ${HEADERS})
-	target_link_libraries(${PROJECT_NAME} debug "${TOOLKIT_DIR}/Bin/ToolKit_d.a")
-	target_link_libraries(${PROJECT_NAME} optimized "${TOOLKIT_DIR}/Bin/ToolKit.a")
+	target_link_libraries(${PROJECT_NAME} debug "${TOOLKIT_DIR}/Bin/TKLib_d.a")
+	target_link_libraries(${PROJECT_NAME} optimized "${TOOLKIT_DIR}/Bin/TKLib.a")
 	target_link_libraries(${PROJECT_NAME} "${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/libminizip.a")
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TK_CXX_FLAGS} -s USE_SDL=2")
@@ -136,7 +147,7 @@ else() # Windows & Editor builds.
 	
 	if (DEFINED WIN_BUILD)
 		add_executable(${PROJECT_NAME} WIN32 ${SOURCE})
-	else() # Editor
+	else() # Editor or game build
 		add_library(${PROJECT_NAME} SHARED ${SOURCE} ${HEADERS})
 	endif()
 
@@ -149,8 +160,8 @@ endif()
 		target_link_options(${PROJECT_NAME} PRIVATE $<$<NOT:$<CONFIG:DEBUG>>:/INCREMENTAL:NO> $<$<NOT:$<CONFIG:DEBUG>>:/LTCG>)
 	endif()
 
-	target_link_libraries(${PROJECT_NAME} PRIVATE debug ToolKit_d)
-	target_link_libraries(${PROJECT_NAME} PRIVATE optimized ToolKit)
+	target_link_libraries(${PROJECT_NAME} PRIVATE debug ${TKDebugLibName})
+	target_link_libraries(${PROJECT_NAME} PRIVATE optimized ${TKLibName})
 	target_link_libraries(${PROJECT_NAME} PRIVATE zlibstatic minizip)
 	target_link_libraries(${PROJECT_NAME} PRIVATE SDL2 SDL2main)
 endif()
@@ -160,7 +171,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>)
 
 #For hot reload rename the previous output
-if (NOT ${WEB_BUILD} AND NOT DEFINED WIN_BUILD)
+if (${EDITOR_BUILD})
 	set(DLL $<SHELL_PATH:$<TARGET_FILE:${PROJECT_NAME}>>)
 	set(PDB $<SHELL_PATH:$<TARGET_PDB_FILE:${PROJECT_NAME}>>)
 

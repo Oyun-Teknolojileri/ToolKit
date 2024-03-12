@@ -64,15 +64,21 @@ if (${WEB_BUILD})
 	set(TK_LIB_TYPE STATIC)
 endif()
 
-add_library(ToolKit ${TK_LIB_TYPE} ${SOURCES})
-target_link_libraries(ToolKit PRIVATE ${TK_LINK_LIB})
+if (DEFINED WIN_BUILD OR ${WEB_BUILD})
+	set(TKLibName TKLib)
+else ()
+	set(TKLibName ToolKit)
+endif()
 
-set_target_properties(ToolKit PROPERTIES
+add_library(${TKLibName} ${TK_LIB_TYPE} ${SOURCES})
+target_link_libraries(${TKLibName} PRIVATE ${TK_LINK_LIB})
+
+set_target_properties(${TKLibName} PROPERTIES
 		ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
 		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
 )
 
 if (MSVC_COMPILER)
-    target_precompile_headers(ToolKit PRIVATE ${PCH_HEADER})
+    target_precompile_headers(${TKLibName} PRIVATE ${PCH_HEADER})
 endif()
