@@ -49,10 +49,6 @@ namespace ToolKit
 
   void Init()
   {
-    g_proxy->m_engineSettings->Window.Width = 800;
-    g_proxy->m_engineSettings->Window.Height = 600;
-    g_engineSettings = g_proxy->m_engineSettings;
-
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0)
     {
       g_running = false;
@@ -69,6 +65,12 @@ namespace ToolKit
 
       // EGL does not support sRGB backbuffer. Need to use an extension
       // https://stackoverflow.com/questions/20396523/android-egl-srgb-default-renderbuffer
+
+      SDL_DisplayMode DM;
+      SDL_GetCurrentDisplayMode(0, &DM);
+      g_proxy->m_engineSettings->Window.Width = DM.w;
+      g_proxy->m_engineSettings->Window.Height = DM.h;
+      g_engineSettings = g_proxy->m_engineSettings;
 
       g_window =
         SDL_CreateWindow(g_appName,
