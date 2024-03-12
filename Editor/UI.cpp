@@ -861,15 +861,23 @@ namespace ToolKit
           callPublisherForPlatformFn(publishPlatform, PublishConfig::Debug);
         }
 
+        AddTooltipToLastItem("Builds the project in Debug config with debug info.\nDoes not pack the resources if "
+                             "there is a pack already.");
+
         if (ImGui::MenuItem("Develop"))
         {
           callPublisherForPlatformFn(publishPlatform, PublishConfig::Develop);
         }
 
+        AddTooltipToLastItem("Builds the project in Release config with debug info.\nDoes not pack the resources if "
+                             "there is a pack already.");
+
         if (ImGui::MenuItem("Deploy"))
         {
           callPublisherForPlatformFn(publishPlatform, PublishConfig::Deploy);
         }
+
+        AddTooltipToLastItem("Builds the project in Release config without debug info.\nPacks the resources.");
 
         ImGui::EndMenu();
       };
@@ -1436,6 +1444,14 @@ namespace ToolKit
     }
 
     bool UI::IsKeyboardCaptured() { return ImGui::GetIO().WantCaptureKeyboard; }
+
+    void UI::AddTooltipToLastItem(const char* tip)
+    {
+      if (ImGui::IsItemHovered())
+      {
+        ImGui::SetItemTooltip(tip);
+      }
+    }
 
     Window::Window()
     {
