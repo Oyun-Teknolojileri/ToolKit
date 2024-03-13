@@ -69,6 +69,9 @@ namespace ToolKit
     void DeSerializePostProcessing(XmlDocument* doc, XmlNode* parent);
     void SerializeGraphics(XmlDocument* doc, XmlNode* parent) const;
     void DeSerializeGraphics(XmlDocument* doc, XmlNode* parent);
+
+    void SerializeEngineSettings(const String& engineSettingsFilePath);
+    void DeSerializeEngineSettings(const String& engineSettingsFilePath);
   };
 
 } // namespace ToolKit

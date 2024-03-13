@@ -296,32 +296,8 @@ namespace ToolKit
 
     void Workspace::SerializeEngineSettings() const
     {
-      std::ofstream file;
       String path = ConcatPaths({GetProjectConfigPath(), "Engine.settings"});
-
-      file.open(path.c_str(), std::ios::out | std::ios::trunc);
-      assert(file.is_open());
-      if (file.is_open())
-      {
-        XmlDocument* lclDoc = new XmlDocument();
-
-        // Always write the current version.
-        XmlNode* version    = lclDoc->allocate_node(rapidxml::node_element, "Version");
-        lclDoc->append_node(version);
-        WriteAttr(version, lclDoc, "version", TKVersionStr);
-
-        GetEngineSettings().SerializeWindow(lclDoc, nullptr);
-        GetEngineSettings().SerializeGraphics(lclDoc, nullptr);
-        SerializeSimulationWindow(lclDoc);
-
-        std::string xml;
-        rapidxml::print(std::back_inserter(xml), *lclDoc);
-        file << xml;
-        file.close();
-        lclDoc->clear();
-
-        SafeDel(lclDoc);
-      }
+      GetEngineSettings().SerializeEngineSettings(path);
     }
 
     void Workspace::DeSerializeEngineSettings()
@@ -335,17 +311,7 @@ namespace ToolKit
         settingsFile = ConcatPaths({ConfigPath(), "Engine.settings"});
       }
 
-      XmlFile* lclFile    = new XmlFile(settingsFile.c_str());
-      XmlDocument* lclDoc = new XmlDocument();
-      lclDoc->parse<0>(lclFile->data());
-
-      GetEngineSettings().DeSerializeWindow(lclDoc, nullptr);
-      GetEngineSettings().DeSerializeGraphics(lclDoc, nullptr);
-
-      DeSerializeSimulationWindow(lclDoc);
-
-      SafeDel(lclFile);
-      SafeDel(lclDoc);
+      GetEngineSettings().DeSerializeEngineSettings(settingsFile);
     }
 
     XmlNode* Workspace::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)

@@ -240,8 +240,7 @@ namespace ToolKit
     const String pakFile                = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
     const String sdlDllPath             = ConcatPaths({m_toolkitPath, "Bin", "SDL2.dll"});
     const String tkDllPath              = ConcatPaths({m_toolkitPath, "Bin", "TKLib_d.dll"});
-    const String configDirectory        = ConcatPaths({ResourcePath(), "..", "Config"});
-    const String engineSettingsPath     = ConcatPaths({ConfigPath(), "Engine.settings"});
+    const String engineSettingsPath     = ConcatPaths({ResourcePath(), "..", "Config", "Windows", "Engine.settings"});
     const String destEngineSettingsPath = ConcatPaths({publishConfigDir, "Engine.settings"});
 
     TK_LOG("Windows build done, moving files\n");

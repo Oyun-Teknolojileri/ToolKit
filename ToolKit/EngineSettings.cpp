@@ -160,4 +160,52 @@ namespace ToolKit
     return nullptr;
   }
 
+    void EngineSettings::SerializeEngineSettings(const String& engineSettingsFilePath)
+  {
+    std::ofstream file;
+    const String& path = engineSettingsFilePath;
+
+    file.open(path.c_str(), std::ios::out | std::ios::trunc);
+    assert(file.is_open());
+    if (file.is_open())
+    {
+      XmlDocument* lclDoc = new XmlDocument();
+
+      // Always write the current version.
+      XmlNode* version    = lclDoc->allocate_node(rapidxml::node_element, "Version");
+      lclDoc->append_node(version);
+      WriteAttr(version, lclDoc, "version", TKVersionStr);
+
+      SerializeWindow(lclDoc, nullptr);
+      SerializeGraphics(lclDoc, nullptr);
+      // TODO move this data to editor settings
+      // SerializeSimulationWindow(lclDoc);
+
+      std::string xml;
+      rapidxml::print(std::back_inserter(xml), *lclDoc);
+      file << xml;
+      file.close();
+      lclDoc->clear();
+
+      SafeDel(lclDoc);
+    }
+  }
+
+  void EngineSettings::DeSerializeEngineSettings(const String& engineSettingsFilePath)
+  {
+    const String& settingsFile = engineSettingsFilePath;
+    XmlFile* lclFile           = new XmlFile(settingsFile.c_str());
+    XmlDocument* lclDoc        = new XmlDocument();
+    lclDoc->parse<0>(lclFile->data());
+
+    DeSerializeWindow(lclDoc, nullptr);
+    DeSerializeGraphics(lclDoc, nullptr);
+
+    // TODO move this data to editor settings
+    // DeSerializeSimulationWindow(lclDoc);
+
+    SafeDel(lclFile);
+    SafeDel(lclDoc);
+  }
+
 } // namespace ToolKit
