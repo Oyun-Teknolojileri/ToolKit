@@ -29,6 +29,14 @@
 
 namespace ToolKit
 {
+  // Same enum that is inside Editor::PublisManager
+  enum class PublishConfig
+  {
+    Debug   = 0, // Debug build
+    Develop = 1, // Release build
+    Deploy  = 2  // Release build with calling packer
+  };
+
   static String activeProjectName;
   static String workspacePath;
 
@@ -70,11 +78,10 @@ namespace ToolKit
     int m_minSdk            = 27;
     int m_maxSdk            = 32;
     bool m_deployAfterBuild = false;
-    bool m_isDebugBuild     = false;
-
+    PublishConfig m_publishConfig;
+    PublishPlatform m_platform = PublishPlatform::Android;
     String m_toolkitPath;
     Oriantation m_oriantation;
-    PublishPlatform m_platform = PublishPlatform::Android;
   };
 
   int Packer::PackResources()
@@ -83,19 +90,31 @@ namespace ToolKit
     if (projectName.empty())
     {
       TK_ERR("No project is loaded.");
-      return 0;
+      return -1;
     }
 
     String sceneResourcesPath = ConcatPaths({ResourcePath(), "Scenes"});
 
-    return GetFileManager()->PackResources(sceneResourcesPath);
+    int packResult            = GetFileManager()->PackResources(sceneResourcesPath);
+    if (packResult != 0)
+    {
+      return packResult;
+    }
+
+    return 0;
   }
 
   int Packer::Publish()
   {
-    if (!PackResources())
+    String packPath = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
+
+    if (m_publishConfig == PublishConfig::Deploy || !std::filesystem::exists(packPath))
     {
-      return 1;
+      int packResult = PackResources();
+      if (packResult != 0)
+      {
+        return packResult;
+      }
     }
 
     switch (m_platform)
@@ -172,7 +191,19 @@ namespace ToolKit
     TK_LOG("Run toolkit compile script\n");
     Path newWorkDir(ConcatPaths({m_toolkitPath, "BuildScripts"}));
     std::filesystem::current_path(newWorkDir);
-    int toolKitCompileResult = RunPipe("WinBuildRelease.bat", nullptr);
+    int toolKitCompileResult = -1;
+    if (m_publishConfig == PublishConfig::Debug)
+    {
+      toolKitCompileResult = RunPipe("WinBuildDebug.bat", nullptr);
+    }
+    else if (m_publishConfig == PublishConfig::Develop)
+    {
+      toolKitCompileResult = RunPipe("WinBuildRelWithDebugInfo.bat", nullptr);
+    }
+    else // if (m_publishConfig == PublishConfig::Deploy)
+    {
+      toolKitCompileResult = RunPipe("WinBuildRelease.bat", nullptr);
+    }
     if (toolKitCompileResult != 0)
     {
       returnLoggingError("WinBuildRelease", true);
@@ -207,7 +238,8 @@ namespace ToolKit
         ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}) + GetPathSeparatorAsStr() + projectName + ".exe";
 
     const String pakFile                = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
-    const String sdlDllPath             = ConcatPaths({workDir.string(), "SDL2.dll"});
+    const String sdlDllPath             = ConcatPaths({m_toolkitPath, "Bin", "SDL2.dll"});
+    const String tkDllPath              = ConcatPaths({m_toolkitPath, "Bin", "TKLib_d.dll"});
     const String configDirectory        = ConcatPaths({ResourcePath(), "..", "Config"});
     const String engineSettingsPath     = ConcatPaths({ConfigPath(), "Engine.settings"});
     const String destEngineSettingsPath = ConcatPaths({publishConfigDir, "Engine.settings"});
@@ -226,6 +258,12 @@ namespace ToolKit
     if (returnLoggingError(publishBinDir))
     {
       return 1;
+    }
+
+    // Copy TKLib_d.dll from ToolKit bin folder to publish bin folder
+    if (m_publishConfig == PublishConfig::Debug)
+    {
+      std::filesystem::copy(tkDllPath, publishBinDir, std::filesystem::copy_options::overwrite_existing, ec);
     }
 
     // Copy pak
@@ -330,16 +368,16 @@ namespace ToolKit
 
     String apkPath        = NormalizePath("Android/app/build/outputs/apk");
 
-    String buildType      = m_isDebugBuild ? "debug" : "release";
+    String buildType      = m_publishConfig == PublishConfig::Debug ? "debug" : "release";
     apkPath               = ConcatPaths({apkPath, buildType});
 
     String releaseApkFile = isAPKUnsigned ? "app-release-unsigned.apk" : "app-release.apk";
 
-    apkPath               = ConcatPaths({apkPath, m_isDebugBuild ? "app-debug.apk" : releaseApkFile});
+    apkPath = ConcatPaths({apkPath, m_publishConfig == PublishConfig::Debug ? "app-debug.apk" : releaseApkFile});
 
-    String projectName    = activeProjectName;
-    String apkLocation    = ConcatPaths({workspacePath, projectName, apkPath});
-    String packageName    = "org.libsdl.app/org.libsdl.app.SDLActivity"; // adb uses forward slash
+    String projectName = activeProjectName;
+    String apkLocation = ConcatPaths({workspacePath, projectName, apkPath});
+    String packageName = "org.libsdl.app/org.libsdl.app.SDLActivity"; // adb uses forward slash
 
     int execResult;
     execResult = PlatformHelpers::SysComExec("adb install " + apkLocation, false, true, nullptr);
@@ -476,7 +514,7 @@ namespace ToolKit
 
     TK_LOG("Building android apk, Gradle scripts running...\n");
 
-    String buildType     = m_isDebugBuild ? "debug" : "release";
+    String buildType     = m_publishConfig == PublishConfig::Debug ? "debug" : "release";
 
     // clean apk output directory
     String buildLocation = NormalizePath(ConcatPaths({projectLocation, "Android/app/build/outputs/apk"}));
@@ -507,7 +545,7 @@ namespace ToolKit
     }
 
     // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
-    String command    = m_isDebugBuild ? "gradlew assembleDebug" : "gradlew assemble";
+    String command    = m_publishConfig == PublishConfig::Debug ? "gradlew assembleDebug" : "gradlew assemble";
 
     int compileResult = RunPipe(command + " > AndroidPipeOut1.txt", nullptr);
     if (compileResult != 0)
@@ -527,13 +565,13 @@ namespace ToolKit
     }
 
     const String publishDirStr   = ConcatPaths({ResourcePath(), "..", "Publish", "Android"});
-    const String apkName         = m_isDebugBuild  ? "app-debug.apk"
-                                   : apkIsUnsigned ? "app-release-unsigned.apk"
-                                                   : "app-release.apk";
+    const String apkName         = m_publishConfig == PublishConfig::Debug ? "app-debug.apk"
+                                   : apkIsUnsigned                         ? "app-release-unsigned.apk"
+                                                                           : "app-release.apk";
     const String apkPathStr      = ConcatPaths({buildLocation, apkName});
 
     projectName                  = m_appName;
-    projectName                 += m_isDebugBuild ? "_debug.apk" : "_release.apk";
+    projectName                 += m_publishConfig == PublishConfig::Debug ? "_debug.apk" : "_release.apk";
     const String publishApkPath  = ConcatPaths({publishDirStr, projectName});
 
     // Create directories
@@ -608,8 +646,22 @@ namespace ToolKit
       return ret;
     };
 
+    String buildScriptName;
+    if (m_publishConfig == PublishConfig::Debug)
+    {
+      buildScriptName = "WebBuildDebug.bat";
+    }
+    else if (m_publishConfig == PublishConfig::Develop)
+    {
+      buildScriptName = "WebBuildRelWithDebugInfo.bat";
+    }
+    else // if (m_publishConfig == PublishConfig::Deploy)
+    {
+      buildScriptName = "WebBuildRelease.bat";
+    }
+
     TK_LOG("Run toolkit compile script");
-    String tkBuildPath       = ConcatPaths({m_toolkitPath, "BuildScripts", "WebBuildRelease.bat"});
+    String tkBuildPath       = ConcatPaths({m_toolkitPath, "BuildScripts", buildScriptName});
     int toolKitCompileResult = RunPipe(tkBuildPath + " > WebPipeOut1.txt", nullptr);
 
     if (toolKitCompileResult != 0)
@@ -620,7 +672,7 @@ namespace ToolKit
     }
     TK_LOG(GetFileManager()->ReadAllText("WebPipeOut1.txt").c_str());
     Path newWorkDir                          = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
-    const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Web", "WebBuildRelease.bat"});
+    const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Web", buildScriptName});
 
     // Run scripts
     std::filesystem::current_path(newWorkDir, ec);
@@ -714,13 +766,13 @@ namespace ToolKit
     workspacePath             = NormalizePath(arguments[1]);
     packer.m_appName          = NormalizePath(arguments[2]);
     packer.m_deployAfterBuild = std::atoi(arguments[3].c_str());
-    packer.m_isDebugBuild     = std::atoi(arguments[4].c_str());
-    packer.m_minSdk           = std::atoi(arguments[5].c_str());
-    packer.m_maxSdk           = std::atoi(arguments[6].c_str());
-    packer.m_oriantation      = (Oriantation) std::atoi(arguments[7].c_str());
-    packer.m_platform         = (PublishPlatform) std::atoi(arguments[8].c_str());
-    packer.m_icon             = arguments[9];
+    packer.m_minSdk           = std::atoi(arguments[4].c_str());
+    packer.m_maxSdk           = std::atoi(arguments[5].c_str());
+    packer.m_oriantation      = (Oriantation) std::atoi(arguments[6].c_str());
+    packer.m_platform         = (PublishPlatform) std::atoi(arguments[7].c_str());
+    packer.m_icon             = arguments[8];
     packer.m_icon             = std::filesystem::absolute(packer.m_icon).string();
+    packer.m_publishConfig    = (PublishConfig) std::atoi(arguments[9].c_str());
 
     // in windows we are hiding the console because pipe works fine and we output to the toolkit console
     if (packer.m_platform == PublishPlatform::Windows)

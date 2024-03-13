@@ -21,6 +21,10 @@
  */
 namespace ToolKit
 {
+  /**
+   * Callback for registering to frame updates.
+   * Use Main::RegisterPreUpdateFunction and Main::RegisterPostUpdateFunction for receiving updates.
+   */
   typedef std::function<void(float deltaTime)> TKUpdateFn;
 
   /**
@@ -29,7 +33,7 @@ namespace ToolKit
   class TK_API HandleManager
   {
    public:
-    HandleManager();
+    HandleManager(); //!< Default constructor, initializes the handle manager with a random seed.
 
     /**
      * Random id that guarantees uniqueness on runtime. Collisions are resolved during deserialize, if any.
@@ -37,16 +41,13 @@ namespace ToolKit
      */
     ULongID GenerateHandle();
 
-    /**
-     * Add record for the random id. Prevent it from getting acquired multiple times.
-     */
-    void AddHandle(ULongID val);
-    void ReleaseHandle(ULongID val);  //!< Free the id for reuse.
+    void AddHandle(ULongID val);     //!< Add record for the random id. Prevent it from getting acquired multiple times.
+    void ReleaseHandle(ULongID val); //!< Free the id for reuse.
     bool IsHandleUnique(ULongID val); //!< Test if id acquired.
 
    private:
-    ULongID m_randomXor[2];
-    std::unordered_set<ULongID> m_uniqueIDs;
+    ULongID m_randomXor[2];                  //!< Random seed.
+    std::unordered_set<ULongID> m_uniqueIDs; //!< Container for all acquired handles.
   };
 
   /**
@@ -58,11 +59,12 @@ namespace ToolKit
     void Init(uint fps);
     float GetDeltaTime();
 
-    float LastTime        = 0.0f;
-    float CurrentTime     = 0.0f;
-    float TargetDeltaTime = 0.0f;
-    float TimeAccum       = 0.0f;
-    int FrameCount        = 0;
+    float CurrentTime     = 0.0f; //!< Total elapsed time in milliseconds. Updated after every frame.
+    float TargetDeltaTime = 0.0f; //!< Target delta time in milliseconds calculated as (1000 / Target Fps)
+    int FramesPerSecond   = 0;    //!< Number of frames drawn within 1 second.
+    int FrameCount        = 0;    //!< Internally used to count number of frames per second.
+    float LastTime        = 0.0f; //!< Internally used to determine if enough time has passed for a new frame.
+    float TimeAccum       = 0.0f; //!< Internally used to determine if enough time has passed for a new frame.
   };
 
   /**
@@ -71,43 +73,39 @@ namespace ToolKit
   class TK_API Main
   {
    public:
+    /**
+     * Default constructor. Does not initialize the Main.
+     */
     Main();
+
+    /**
+     * Default destructor. Does not uninitialie the main.
+     */
     virtual ~Main();
 
     Main(const Main&)           = delete;
     void operator=(const Main&) = delete;
 
-    virtual void PreInit();
-    virtual void Init();
-    virtual void Uninit();
-    virtual void PostUninit();
-
-    float TimeSinceStartup() { return m_timing.CurrentTime; }
+    virtual void PreInit();    //!< Creates all the managers and systems for the engine.
+    virtual void Init();       //!< Initialize all the managers and systems. Engine fully functions at this point.
+    virtual void Uninit();     //!< Uninitialize all the managers and systems.
+    virtual void PostUninit(); //!< Destroy all the engine allocated resources. Nothing is accessible from this on.
 
     /**
-     * Overrides the default configPath, if not changed relative to editor.exe.
-     * ../Config
-     * @param cfgPath is the new path for default config files. For windows it
-     * could be %appdata%ToolKit.
+     * Overrides the default configPath, if not changed, its relative to editor.exe. Default: ../Config
+     * @param cfgPath is the new path for default config files. For windows it could be %appdata%/ToolKit.
      */
     void SetConfigPath(StringView cfgPath);
 
     /**
      * Returns config path if set. It won't return any default path in case if
-     * nothing is set. To access the proper configpath see ConfigPath().
+     * nothing is set. To access the proper config path see ConfigPath().
      */
     StringView GetConfigPath();
 
-    static Main* GetInstance();
-
-    static Main* GetInstance_noexcep() { return m_proxy; };
-
-    static void SetProxy(Main* proxy);
-
-    /**
-     * @return true if enough time have passed from previous frame
-     */
-    bool SyncFrameTime();
+    static Main* GetInstance();         //!< Access function for the instance of Main.
+    static Main* GetInstance_noexcep(); //!< Access function for the instance of Main. Does not perform debug checks.
+    static void SetProxy(Main* proxy);  //!< Sets the instance of Main that will be used afterwards.
 
     /**
      * This function should be called at the beginning of frame.
@@ -146,18 +144,25 @@ namespace ToolKit
     void ClearPostUpdateFunctions();
 
     /**
-     * @return Current FPS.
+     * @return Current frame count per second.
      */
-    int GetCurrentFPS();
+    int GetCurrentFPS() const;
+
+    /**
+     * @return Total elapsed time in millisecond since the initialization.
+     */
+    float TimeSinceStartup() const;
+
+    /**
+     * @return true if enough time have passed from previous frame
+     */
+    bool SyncFrameTime();
 
    private:
-    /**
-     * This function handles ToolKit updates.
-     */
-    void Frame(float deltaTime);
+    void Frame(float deltaTime); //!< Performs an update for all engine components.
 
    public:
-    Timing m_timing;
+    Timing m_timing; //!< Timer that keeps time related data since the Initialization.
     class AnimationManager* m_animationMan       = nullptr;
     class AnimationPlayer* m_animationPlayer     = nullptr;
     class AudioManager* m_audioMan               = nullptr;
@@ -192,8 +197,6 @@ namespace ToolKit
 
     std::vector<TKUpdateFn> m_preUpdateFunctions;
     std::vector<TKUpdateFn> m_postUpdateFunctions;
-
-    int m_currentFPS = -1;
   };
 
   // Accessors.

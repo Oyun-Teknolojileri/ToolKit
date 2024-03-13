@@ -214,6 +214,8 @@ namespace ToolKit
     return m_proxy;
   }
 
+  Main* Main::GetInstance_noexcep() { return m_proxy; }
+
   void Main::SetProxy(Main* proxy)
   {
     bool singular = m_proxy == nullptr || m_proxy == proxy;
@@ -257,9 +259,9 @@ namespace ToolKit
     m_timing.TimeAccum += m_timing.GetDeltaTime();
     if (m_timing.TimeAccum >= 1000.0f)
     {
-      m_currentFPS        = m_timing.FrameCount;
-      m_timing.TimeAccum  = 0;
-      m_timing.FrameCount = 0;
+      m_timing.TimeAccum       = 0;
+      m_timing.FramesPerSecond = m_timing.FrameCount;
+      m_timing.FrameCount      = 0;
     }
 
     m_timing.LastTime = m_timing.CurrentTime;
@@ -267,13 +269,13 @@ namespace ToolKit
 
   void Main::Frame(float deltaTime)
   {
+    ResetDrawCallCounter();
+    ResetHWRenderPassCounter();
+
     PUSH_CPU_MARKER("Exec Render Tasks");
     GetRenderSystem()->DecrementSkipFrame();
     GetRenderSystem()->ExecuteRenderTasks();
     POP_CPU_MARKER();
-
-    ResetDrawCallCounter();
-    ResetHWRenderPassCounter();
 
     PUSH_CPU_MARKER("Animation Update");
     // Update animations.
@@ -300,7 +302,9 @@ namespace ToolKit
 
   void Main::ClearPostUpdateFunctions() { m_postUpdateFunctions.clear(); }
 
-  int Main::GetCurrentFPS() { return m_currentFPS; }
+  int Main::GetCurrentFPS() const { return m_timing.FramesPerSecond; }
+
+  float Main::TimeSinceStartup() const { return m_timing.CurrentTime; }
 
   Logger* GetLogger() { return Main::GetInstance()->m_logger; }
 
@@ -500,6 +504,7 @@ namespace ToolKit
     LastTime        = GetElapsedMilliSeconds();
     CurrentTime     = 0.0f;
     TargetDeltaTime = 1000.0f / float(fps);
+    FramesPerSecond = fps;
     FrameCount      = 0;
     TimeAccum       = 0.0f;
   }

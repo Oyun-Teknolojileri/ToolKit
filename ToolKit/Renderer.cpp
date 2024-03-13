@@ -511,12 +511,12 @@ namespace ToolKit
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs({m_tempQuad}, jobs);
 
-    bool lastDepthTestState = m_renderState.depthTestEnabled;
-    EnableDepthTest(false);
+    CompareFunctions lastDepthFunc = m_renderState.depthFunction;
+    SetDepthTestFunc(CompareFunctions::FuncAlways);
 
     RenderWithProgramFromMaterial(jobs);
 
-    EnableDepthTest(lastDepthTestState);
+    SetDepthTestFunc(lastDepthFunc);
   }
 
   void Renderer::DrawCube(CameraPtr cam, MaterialPtr mat, const Mat4& transform)
@@ -528,7 +528,13 @@ namespace ToolKit
     RenderJobArray jobs;
     EntityPtrArray oneDummyDrawCube = {m_dummyDrawCube};
     RenderJobProcessor::CreateRenderJobs(oneDummyDrawCube, jobs);
+
+    CompareFunctions lastCompareFunc = m_renderState.depthFunction;
+    SetDepthTestFunc(CompareFunctions::FuncAlways);
+
     RenderWithProgramFromMaterial(jobs);
+
+    SetDepthTestFunc(lastCompareFunc);
   }
 
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
@@ -1374,7 +1380,7 @@ namespace ToolKit
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->Init({(int) size, (int) size, false, false});
 
     for (int i = 0; i < 6; ++i)
     {

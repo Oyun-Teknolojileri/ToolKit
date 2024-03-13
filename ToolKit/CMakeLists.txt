@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.21.0)
 
+if (EMSCRIPTEN)
+	set(WEB_BUILD TRUE)
+else()
+	set(WEB_BUILD FALSE)
+endif()
+
 if (CLANG_COMPILER)
 	add_definitions(-include stdafx.h)
 
@@ -44,26 +50,35 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	message("Debug configuration")
 	set(TK_LIB_TYPE SHARED)
 	if (NOT ${WEB_BUILD})
-		set(TK_LINK_LIB zlibstatic minizip OpenGL32)
 		add_definitions(-DTK_DLL_EXPORT)
 	endif()
 	add_definitions(-DTK_DEBUG)
 endif ()
+
+if (NOT ${WEB_BUILD})
+	set(TK_LINK_LIB zlibstatic minizip OpenGL32)
+endif()
 
 if (${WEB_BUILD})
 	message("Building for web")
 	set(TK_LIB_TYPE STATIC)
 endif()
 
-add_library(ToolKit ${SOURCES})
-target_link_libraries(ToolKit ${TK_LINK_LIB})
+if (DEFINED WIN_BUILD OR ${WEB_BUILD})
+	set(TKLibName TKLib)
+else ()
+	set(TKLibName ToolKit)
+endif()
 
-set_target_properties(ToolKit PROPERTIES
+add_library(${TKLibName} ${TK_LIB_TYPE} ${SOURCES})
+target_link_libraries(${TKLibName} PRIVATE ${TK_LINK_LIB})
+
+set_target_properties(${TKLibName} PROPERTIES
 		ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
 		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
 )
 
 if (MSVC_COMPILER)
-    target_precompile_headers(ToolKit PRIVATE ${PCH_HEADER})
+    target_precompile_headers(${TKLibName} PRIVATE ${PCH_HEADER})
 endif()

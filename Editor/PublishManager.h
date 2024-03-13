@@ -13,6 +13,13 @@ namespace ToolKit
 {
   namespace Editor
   {
+    enum class PublishConfig
+    {
+      Debug   = 0, // Debug build
+      Develop = 1, // Release build
+      Deploy  = 2  // Release build with calling packer
+    };
+
     enum class PublishPlatform
     {
       Web,
@@ -24,13 +31,12 @@ namespace ToolKit
     class PublishManager
     {
      public:
-      void Publish(PublishPlatform platform);
+      void Publish(PublishPlatform platform, PublishConfig publishType);
 
      public:
       TexturePtr m_icon = nullptr;
       String m_appName {};
       bool m_deployAfterBuild = false;
-      bool m_isDebugBuild     = false;
       int m_minSdk            = 27;
       int m_maxSdk            = 32;
 

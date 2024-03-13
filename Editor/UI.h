@@ -150,6 +150,8 @@ namespace ToolKit
        */
       static bool IsKeyboardCaptured();
 
+      static void AddTooltipToLastItem(const char* tip);
+
      public:
       static bool m_showNewSceneWindow;
       static bool m_imguiSampleWindow;

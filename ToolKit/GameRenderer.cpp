@@ -100,7 +100,13 @@ namespace ToolKit
 
   void GameRenderer::Render(Renderer* renderer)
   {
+    if (m_params.scene == nullptr || m_params.viewport == nullptr)
+    {
+      return;
+    }
+
     PreRender();
+
     m_passArray.clear();
 
     // Scene renderer

@@ -35,17 +35,17 @@ namespace ToolKit
     {
      public:
       void Show() override;
-      void OpenBuildWindow();
+      void OpenBuildWindow(PublishConfig publishType);
 
-      String m_appName{};
-      int m_minSdk              = 27;
-      int m_maxSdk              = 32;
-      int m_selectedOriantation = 0; // 0 undefined 1 landscape 2 Portrait
-      TexturePtr m_icon         = nullptr;
-      TexturePtr m_defaultIcon  = nullptr;
-      bool m_menuOpen = false;
-      bool m_deployAfterBuild = false;
-      bool m_isDebugBuild = false;
+      String m_appName {};
+      int m_minSdk                = 27;
+      int m_maxSdk                = 34;
+      int m_selectedOriantation   = 0; // 0 undefined 1 landscape 2 Portrait
+      TexturePtr m_icon           = nullptr;
+      TexturePtr m_defaultIcon    = nullptr;
+      bool m_menuOpen             = false;
+      bool m_deployAfterBuild     = false;
+      PublishConfig m_publishType = PublishConfig::Develop;
     };
   } // namespace Editor
 } // namespace ToolKit

@@ -323,18 +323,15 @@ namespace ToolKit
 
   void CubeMap::Consume(RenderTargetPtr cubeMapTarget)
   {
-    TextureSettings textureSettings;
-    textureSettings.GenerateMipMap = false;
-    textureSettings.InternalFormat = cubeMapTarget->Settings().InternalFormat;
-    textureSettings.MinFilter      = cubeMapTarget->Settings().MinFilter;
-    textureSettings.Target         = GraphicTypes::TargetCubeMap;
-    textureSettings.Type           = GraphicTypes::TypeFloat;
+    const TextureSettings& targetTextureSettings = cubeMapTarget->Settings();
+
+    assert(targetTextureSettings.Target == GraphicTypes::TargetCubeMap);
 
     m_textureId                    = cubeMapTarget->m_textureId;
     m_width                        = cubeMapTarget->m_width;
     m_height                       = cubeMapTarget->m_height;
 
-    m_settings                     = textureSettings;
+    m_settings                     = targetTextureSettings;
     m_initiated                    = true;
 
     cubeMapTarget->m_initiated     = false;

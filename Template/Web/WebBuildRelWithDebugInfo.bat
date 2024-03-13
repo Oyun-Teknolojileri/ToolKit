@@ -1,0 +1,1 @@
+emcmake cmake -DTK_CXX_EXTRA:STRING="-O3 -g -pthread -sPTHREAD_POOL_SIZE=navigator.hardwareConcurrency" -DCMAKE_BUILD_TYPE=RelWithDebInfo -S ../Codes -G Ninja && ninja & set exit_code = %errorlevel% & exit exit_code

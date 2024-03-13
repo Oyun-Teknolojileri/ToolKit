@@ -144,7 +144,7 @@ namespace ToolKit
       if (!std::filesystem::remove(zipName, err))
       {
         TK_LOG("cannot remove MinResources.pak! message: %s\n", err.message().c_str());
-        return 0;
+        return -1;
       }
     }
 
@@ -161,13 +161,26 @@ namespace ToolKit
     {
       // Error
       TK_ERR("Error zipping.");
-      return 0;
+      return -1;
     }
     else
     {
       TK_LOG("Resources packed.\n");
     }
-    return 1;
+
+    // Copy assets under android assets if exists
+    String androidAssetFolder = ConcatPaths({ResourcePath(), "..", "Android", "app", "src", "main", "assets"});
+    String minResourcesPath   = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
+    if (std::filesystem::exists(androidAssetFolder) && std::filesystem::exists(minResourcesPath))
+    {
+      std::error_code ec;
+      std::filesystem::copy(minResourcesPath,
+                            androidAssetFolder,
+                            std::filesystem::copy_options::overwrite_existing,
+                            ec);
+    }
+
+    return 0;
   }
 
   bool FileManager::CheckFileFromResources(const String& path)

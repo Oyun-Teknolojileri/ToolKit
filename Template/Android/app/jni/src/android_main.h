@@ -1,29 +1,28 @@
+/*
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
+ */
+
 #include "Game.h"
-#include "Common/SDLEventPool.h"
-#include "EngineSettings.h"
-#include "GlErrorReporter.h"
+#include "Logger.h"
 #include "SDL.h"
-#include "Scene.h"
-#include "ToolKit.h"
-#include "Types.h"
-#include "UIManager.h"
-#include "GameRenderer.h"
-#include "Plugin.h"
-#include "GameViewport.h"
+#include "Util.h"
 
-#include <stdio.h>
-#include <chrono>
-#include <iostream>
-
-#include <android/log.h>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
+#include <android/log.h>
+#include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <chrono>
+#include <iostream>
+
 #define ANDROID_LOG(format, ...) __android_log_print(ANDROID_LOG_DEBUG, "TK_LOG", format, ##__VA_ARGS__)
 
-#define TK_PLATFORM PLATFORM::TKAndroid
+#define TK_PLATFORM              PLATFORM::TKAndroid
 
 namespace ToolKit
 {
@@ -33,15 +32,15 @@ namespace ToolKit
   inline void CopyAllAssetsToDataPath(String& internalDataPath)
   {
     const char* MinResourcesPak = "MinResources.pak";
-    AAsset* asset = AAssetManager_open(assetManager, MinResourcesPak, 0);
+    AAsset* asset               = AAssetManager_open(assetManager, MinResourcesPak, 0);
 
     if (!asset)
     {
       ANDROID_LOG("cannot open MinResources.pak!\n");
       return;
     }
-    FILE* fileHandle = fopen(ConcatPaths({ internalDataPath, MinResourcesPak }).c_str(), "wb");
-    mkdir(ConcatPaths({ internalDataPath, "Resources" }).c_str(), 0777);
+    FILE* fileHandle = fopen(ConcatPaths({internalDataPath, MinResourcesPak}).c_str(), "wb");
+    mkdir(ConcatPaths({internalDataPath, "Resources"}).c_str(), 0777);
 
     off_t size = AAsset_getLength(asset);
     std::vector<char> buffer;
@@ -55,10 +54,10 @@ namespace ToolKit
 
   inline void PlatformPreInit(Main* g_proxy)
   {
-    String internalPath = SDL_AndroidGetInternalStoragePath();
+    String internalPath     = SDL_AndroidGetInternalStoragePath();
 
-    g_proxy->m_resourceRoot = ConcatPaths({ internalPath, "Resources" });
-    g_proxy->m_cfgPath = ConcatPaths({ internalPath, "Config" });
+    g_proxy->m_resourceRoot = ConcatPaths({internalPath, "Resources"});
+    g_proxy->m_cfgPath      = ConcatPaths({internalPath, "Config"});
 
     // Set log function
     GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { ANDROID_LOG("%s", ms.c_str()); });
@@ -73,17 +72,19 @@ namespace ToolKit
       TK_Loop();
     }
   }
-}
+} // namespace ToolKit
 
 extern "C"
 {
-  JNIEXPORT void JNICALL
-    Java_com_otyazilim_toolkit_ToolKitAndroid_load(JNIEnv* env, jclass clazz, jobject mgr) {
+  JNIEXPORT void JNICALL Java_com_otyazilim_toolkit_ToolKitAndroid_load(JNIEnv* env, jclass clazz, jobject mgr)
+  {
     ToolKit::assetManager = AAssetManager_fromJava(env, mgr);
-    if (ToolKit::assetManager == nullptr) {
+    if (ToolKit::assetManager == nullptr)
+    {
       __android_log_print(ANDROID_LOG_ERROR, "ToolKit_Android", "error loading asset manager");
     }
-    else {
+    else
+    {
       __android_log_print(ANDROID_LOG_VERBOSE, "ToolKit_Android", "Asset manager loaded successfully");
     }
   }
