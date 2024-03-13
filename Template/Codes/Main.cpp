@@ -1,30 +1,49 @@
+/*
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
+ */
+
 #include "TKPlatform.h"
 
 #ifdef TK_WIN
-#include "windows_main.h"
+  #include "windows_main.h"
 #endif
 #ifdef TK_WEB
-#include "web_main.h"
+  #include "web_main.h"
 #endif
 #ifdef TK_ANDROID
-#include "android_main.h"
+  #include "android_main.h"
 #endif
+
+#include "Common/SDLEventPool.h"
+#include "EngineSettings.h"
+#include "GameRenderer.h"
+#include "GameViewport.h"
+#include "GlErrorReporter.h"
+#include "Plugin.h"
+#include "SDL.h"
+#include "Scene.h"
+#include "ToolKit.h"
+#include "Types.h"
+#include "UIManager.h"
 
 namespace ToolKit
 {
-  Game* g_game = nullptr;
-  bool g_running = true;
-  SDL_Window* g_window = nullptr;
-  SDL_GLContext g_context = nullptr;
-  Main* g_proxy = nullptr;
-  Viewport* g_viewport = nullptr;
-  EngineSettings* g_engineSettings = nullptr;
+  Game* g_game                              = nullptr;
+  bool g_running                            = true;
+  SDL_Window* g_window                      = nullptr;
+  SDL_GLContext g_context                   = nullptr;
+  Main* g_proxy                             = nullptr;
+  Viewport* g_viewport                      = nullptr;
+  EngineSettings* g_engineSettings          = nullptr;
   SDLEventPool<TK_PLATFORM>* g_sdlEventPool = nullptr;
-  GameRenderer* g_gameRenderer = nullptr;
+  GameRenderer* g_gameRenderer              = nullptr;
 
   // Setup.
-  const char* g_appName = "ToolKit";
-  const uint g_targetFps = 120;
+  const char* g_appName                     = "ToolKit";
+  const uint g_targetFps                    = 120;
 
   void ProcessEvent(const SDL_Event& e)
   {
@@ -39,7 +58,7 @@ namespace ToolKit
     g_sdlEventPool = new SDLEventPool<TK_PLATFORM>();
 
     // PreInit Main
-    g_proxy = new Main();
+    g_proxy        = new Main();
     Main::SetProxy(g_proxy);
 
     g_proxy->PreInit();
@@ -68,17 +87,17 @@ namespace ToolKit
 
       SDL_DisplayMode DM;
       SDL_GetCurrentDisplayMode(0, &DM);
-      g_proxy->m_engineSettings->Window.Width = DM.w;
+      g_proxy->m_engineSettings->Window.Width  = DM.w;
       g_proxy->m_engineSettings->Window.Height = DM.h;
-      g_engineSettings = g_proxy->m_engineSettings;
+      g_engineSettings                         = g_proxy->m_engineSettings;
 
       g_window =
-        SDL_CreateWindow(g_appName,
-          SDL_WINDOWPOS_UNDEFINED,
-          SDL_WINDOWPOS_UNDEFINED,
-          g_engineSettings->Window.Width,
-          g_engineSettings->Window.Height,
-          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+          SDL_CreateWindow(g_appName,
+                           SDL_WINDOWPOS_UNDEFINED,
+                           SDL_WINDOWPOS_UNDEFINED,
+                           g_engineSettings->Window.Width,
+                           g_engineSettings->Window.Height,
+                           SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 
       if (g_window == nullptr)
       {
@@ -101,7 +120,8 @@ namespace ToolKit
           TK_LOG("%s", error);
 
           // Init OpenGl.
-          g_proxy->m_renderSys->InitGl((void*)SDL_GL_GetProcAddress, [](const String& msg) { TK_LOG("%s", msg.c_str()); });
+          g_proxy->m_renderSys->InitGl((void*) SDL_GL_GetProcAddress,
+                                       [](const String& msg) { TK_LOG("%s", msg.c_str()); });
 
           // Set defaults
           SDL_GL_SetSwapInterval(0);
@@ -110,10 +130,11 @@ namespace ToolKit
           g_proxy->Init();
 
           // Init viewport and window size
-          g_viewport =
-            new GameViewport((float)g_engineSettings->Window.Width, (float)g_engineSettings->Window.Height);
+          uint width  = g_engineSettings->Window.Width;
+          uint height = g_engineSettings->Window.Height;
+          g_viewport  = new GameViewport((float) width, (float) height);
           GetUIManager()->RegisterViewportToUpdateLayers(g_viewport);
-          GetRenderSystem()->SetAppWindowSize(g_engineSettings->Window.Width, g_engineSettings->Window.Height);
+          GetRenderSystem()->SetAppWindowSize(width, height);
 
           // Init game
           g_game = new Game();
@@ -121,57 +142,46 @@ namespace ToolKit
           g_game->SetViewport(g_viewport);
           g_game->m_currentState = PluginState::Running;
 
-          g_gameRenderer = new GameRenderer();
+          g_gameRenderer         = new GameRenderer();
 
           g_game->OnPlay();
 
           // Register update functions
 
           TKUpdateFn preUpdateFn = [](float deltaTime)
+          {
+            SDL_Event sdlEvent;
+            while (SDL_PollEvent(&sdlEvent))
             {
-              SDL_Event sdlEvent;
-              while (SDL_PollEvent(&sdlEvent))
-              {
-                g_sdlEventPool->PoolEvent(sdlEvent);
-                ProcessEvent(sdlEvent);
-              }
-            };
+              g_sdlEventPool->PoolEvent(sdlEvent);
+              ProcessEvent(sdlEvent);
+            }
+          };
           g_proxy->RegisterPreUpdateFunction(preUpdateFn);
 
           TKUpdateFn postUpdateFn = [](float deltaTime)
-            {
-              g_viewport->Update(deltaTime);
-              g_game->Frame(deltaTime);
+          {
+            g_viewport->Update(deltaTime);
+            g_game->Frame(deltaTime);
 
-              GameRendererParams params;
-              params.gfx = g_engineSettings->PostProcessing;
-              params.scene = GetSceneManager()->GetCurrentScene();
-              params.useMobileRenderPath = true;
-              params.viewport = g_viewport;
-              g_gameRenderer->SetParams(params);
+            GameRendererParams params;
+            params.gfx                 = g_engineSettings->PostProcessing;
+            params.scene               = GetSceneManager()->GetCurrentScene();
+            params.useMobileRenderPath = true;
+            params.viewport            = g_viewport;
+            g_gameRenderer->SetParams(params);
 
-              GetRenderSystem()->AddRenderTask({ [deltaTime](Renderer* renderer) -> void
-                                                {
-                  g_gameRenderer->Render(renderer);
-                } });
+            GetRenderSystem()->AddRenderTask(
+                {[deltaTime](Renderer* renderer) -> void { g_gameRenderer->Render(renderer); }});
 
-              SDL_GL_SwapWindow(g_window);
+            SDL_GL_SwapWindow(g_window);
 
-              g_sdlEventPool->ClearPool(); // Clear after consumption.
-            };
+            g_sdlEventPool->ClearPool(); // Clear after consumption.
+          };
           g_proxy->RegisterPostUpdateFunction(postUpdateFn);
         }
       }
     }
-  }
-
-  float GetMilliSeconds()
-  {
-    static std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-    std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
-
-    return (float)time_span.count() * 1000.0f;
   }
 
   void Exit()

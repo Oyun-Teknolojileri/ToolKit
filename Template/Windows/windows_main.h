@@ -1,28 +1,25 @@
+/*
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
+ */
+
 #include "../Codes/Game.h"
-#include "Common/SDLEventPool.h"
-#include "EngineSettings.h"
-#include "GlErrorReporter.h"
-#include "SDL.h"
-#include "Scene.h"
-#include "ToolKit.h"
-#include "Types.h"
-#include "UIManager.h"
-#include "GameRenderer.h"
-#include "Plugin.h"
-#include "GameViewport.h"
+#include "Logger.h"
+#include "Util.h"
 
 #include <stdio.h>
+
 #include <chrono>
 #include <iostream>
-
-#define TK_PLATFORM PLATFORM::TKWeb
 
 namespace ToolKit
 {
   inline void PlatformPreInit(Main* g_proxy)
   {
-    g_proxy->m_resourceRoot = ConcatPaths({ ".", "..", "Resources" });
-    g_proxy->m_cfgPath = ConcatPaths({ ".", "..", "Config" });
+    g_proxy->m_resourceRoot = ConcatPaths({".", "..", "Resources"});
+    g_proxy->m_cfgPath      = ConcatPaths({".", "..", "Config"});
 
     GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { std::cout << ms << std::endl; });
   }
@@ -34,4 +31,4 @@ namespace ToolKit
       TK_Loop();
     }
   }
-}
+} // namespace ToolKit
