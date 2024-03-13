@@ -1459,6 +1459,8 @@ namespace ToolKit
           wnd->Serialize(lclDoc.get(), app);
         }
 
+        m_workspace.SerializeSimulationWindow(lclDoc);
+
         std::string xml;
         rapidxml::print(std::back_inserter(xml), *lclDoc, 0);
 
@@ -1512,6 +1514,8 @@ namespace ToolKit
         }
 
         CreateWindows(root);
+
+        m_workspace.DeSerializeSimulationWindow(lclDoc);
       }
 
       LoadProjectPlugin();
