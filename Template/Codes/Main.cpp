@@ -89,7 +89,13 @@ namespace ToolKit
       SDL_GetCurrentDisplayMode(0, &DM);
       g_proxy->m_engineSettings->Window.Width  = DM.w;
       g_proxy->m_engineSettings->Window.Height = DM.h;
-      g_engineSettings                         = g_proxy->m_engineSettings;
+
+      String s = std::filesystem::current_path().string();
+      String settingsFile = ConcatPaths({ ConfigPath(), "Engine.settings" });
+      g_proxy->m_engineSettings->DeSerializeEngineSettings(settingsFile);
+      g_engineSettings = g_proxy->m_engineSettings;
+
+      PlatformAdjustEngineSettings(DM.w, DM.h, g_engineSettings);
 
       g_window =
           SDL_CreateWindow(g_appName,
