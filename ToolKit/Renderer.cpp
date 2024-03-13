@@ -574,7 +574,6 @@ namespace ToolKit
     m_copyMaterial->Init();
 
     DrawFullQuad(m_copyMaterial);
-    InvalidateFramebufferDepth(m_copyFb);
     SetFramebuffer(lastFb, GraphicBitFields::None);
   }
 
