@@ -1499,7 +1499,7 @@ namespace ToolKit
         mat->UpdateProgramUniform("roughness", (float) mip / (float) mipMaps);
         mat->UpdateProgramUniform("resPerFace", (float) mipSize);
 
-        SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::DepthBits);
+        SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
         SetViewportSize(mipSize, mipSize);
 
         RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId, 0);

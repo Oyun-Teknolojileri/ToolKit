@@ -43,7 +43,7 @@ namespace ToolKit
     void Render(Renderer* renderer) override;
 
    private:
-    bool PreRender();
+    void PreRender();
 
     GameRendererParams m_params;
 
