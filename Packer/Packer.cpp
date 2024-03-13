@@ -487,15 +487,23 @@ namespace ToolKit
       return 1;
     }
 
-    String assetsPath                              = NormalizePath("Android/app/src/main/assets");
-    String projectLocation                         = ConcatPaths({workspacePath, projectName});
-    String sceneResourcesPath                      = ConcatPaths({projectLocation, "MinResources.pak"});
-    String androidResourcesPath                    = ConcatPaths({projectLocation, assetsPath, "MinResources.pak"});
+    const String assetsPath             = NormalizePath("Android/app/src/main/assets");
+    const String projectLocation        = ConcatPaths({workspacePath, projectName});
+    const String sceneResourcesPath     = ConcatPaths({projectLocation, "MinResources.pak"});
+    const String androidResourcesPath   = ConcatPaths({projectLocation, assetsPath, "MinResources.pak"});
+    const String engineSettingsPath     = ConcatPaths({ResourcePath(), "..", "Config", "Android", "Engine.settings"});
+    const String destEngineSettingsPath = ConcatPaths({projectLocation, assetsPath, "Config", "Engine.settings"});
 
     const std::filesystem::copy_options copyOption = std::filesystem::copy_options::overwrite_existing;
 
     std::filesystem::copy(sceneResourcesPath, androidResourcesPath, copyOption, ec);
     if (returnLoggingError("Copy: " + sceneResourcesPath + " and " + androidResourcesPath))
+    {
+      return 1;
+    }
+
+    std::filesystem::copy(engineSettingsPath, destEngineSettingsPath, copyOption, ec);
+    if (returnLoggingError("Copy: " + engineSettingsPath + " and " + destEngineSettingsPath))
     {
       return 1;
     }
