@@ -119,6 +119,7 @@ namespace ToolKit
     WriteAttr(settings, doc, "FPS", std::to_string(gfx.FPS));
     WriteAttr(settings, doc, "RenderSpec", std::to_string((int) gfx.RenderSpec));
     WriteAttr(settings, doc, "ShadowDistance", std::to_string(gfx.ShadowDistance));
+    WriteAttr(settings, doc, "RenderResolutionScale", std::to_string(gfx.renderResolutionScale));
   }
 
   void EngineSettings::DeSerializeGraphics(XmlDocument* doc, XmlNode* parent)
@@ -135,6 +136,12 @@ namespace ToolKit
     {
       // Set the value to the default value if the variable is not deserialized
       Graphics.ShadowDistance = 100.0f;
+    }
+    ReadAttr(node, "RenderResolutionScale", Graphics.renderResolutionScale);
+    if (glm::abs(Graphics.renderResolutionScale) < 0.01f)
+    {
+      // Set the value to the default value if the variable is not deserialized
+      Graphics.renderResolutionScale = 1.0f;
     }
 
     int renderSpec;
@@ -160,7 +167,7 @@ namespace ToolKit
     return nullptr;
   }
 
-    void EngineSettings::SerializeEngineSettings(const String& engineSettingsFilePath)
+  void EngineSettings::SerializeEngineSettings(const String& engineSettingsFilePath)
   {
     std::ofstream file;
     const String& path = engineSettingsFilePath;

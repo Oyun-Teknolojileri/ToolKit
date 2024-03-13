@@ -138,7 +138,9 @@ namespace ToolKit
           // Init viewport and window size
           uint width  = g_engineSettings->Window.Width;
           uint height = g_engineSettings->Window.Height;
-          g_viewport  = new GameViewport((float) width, (float) height);
+          g_viewport  = new GameViewport(
+            (float) width * g_engineSettings.Graphics.renderResolutionScale,
+            (float) height * g_engineSettings.Graphics.renderResolutionScale);
           GetUIManager()->RegisterViewportToUpdateLayers(g_viewport);
           GetRenderSystem()->SetAppWindowSize(width, height);
 

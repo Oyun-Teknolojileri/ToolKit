@@ -32,10 +32,11 @@ namespace ToolKit
 
     struct GraphicSettings
     {
-      int MSAA                 = 2;
-      int FPS                  = 60;
-      RenderingSpec RenderSpec = RenderingSpec::Default;
-      float ShadowDistance     = 100.0f;
+      int MSAA                    = 2;
+      int FPS                     = 60;
+      RenderingSpec RenderSpec    = RenderingSpec::Default;
+      float ShadowDistance        = 100.0f;
+      float renderResolutionScale = 1.0f;
     } Graphics;
 
     struct PostProcessingSettings
