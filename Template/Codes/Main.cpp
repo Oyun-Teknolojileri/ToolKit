@@ -87,13 +87,15 @@ namespace ToolKit
 
       SDL_DisplayMode DM;
       SDL_GetCurrentDisplayMode(0, &DM);
-      g_proxy->m_engineSettings->Window.Width  = DM.w;
-      g_proxy->m_engineSettings->Window.Height = DM.h;
 
-      String s = std::filesystem::current_path().string();
       String settingsFile = ConcatPaths({ ConfigPath(), "Engine.settings" });
       g_proxy->m_engineSettings->DeSerializeEngineSettings(settingsFile);
       g_engineSettings = g_proxy->m_engineSettings;
+      if (g_engineSettings->Window.FullScreen)
+      {
+        g_proxy->m_engineSettings->Window.Width = DM.w;
+        g_proxy->m_engineSettings->Window.Height = DM.h;
+      }
 
       PlatformAdjustEngineSettings(DM.w, DM.h, g_engineSettings);
 
@@ -139,8 +141,8 @@ namespace ToolKit
           uint width  = g_engineSettings->Window.Width;
           uint height = g_engineSettings->Window.Height;
           g_viewport  = new GameViewport(
-            (float) width * g_engineSettings.Graphics.renderResolutionScale,
-            (float) height * g_engineSettings.Graphics.renderResolutionScale);
+            (float) width * g_engineSettings->Graphics.renderResolutionScale,
+            (float) height * g_engineSettings->Graphics.renderResolutionScale);
           GetUIManager()->RegisterViewportToUpdateLayers(g_viewport);
           GetRenderSystem()->SetAppWindowSize(width, height);
 
