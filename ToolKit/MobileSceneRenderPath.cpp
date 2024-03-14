@@ -82,16 +82,16 @@ namespace ToolKit
       m_passArray.push_back(m_bloomPass);
     }
 
-    // Bloom pass
-    if (m_params.Gfx.TonemappingEnabled)
-    {
-      m_passArray.push_back(m_tonemapPass);
-    }
-
     // Depth of field pass
     if (m_params.Gfx.DepthOfFieldEnabled)
     {
       m_passArray.push_back(m_dofPass);
+    }
+
+    // Bloom pass
+    if (m_params.Gfx.TonemappingEnabled)
+    {
+      m_passArray.push_back(m_tonemapPass);
     }
 
     // Fxaa pass

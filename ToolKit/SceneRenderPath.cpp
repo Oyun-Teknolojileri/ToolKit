@@ -96,15 +96,15 @@ namespace ToolKit
     // Forward render blended entities
     m_passArray.push_back(m_forwardRenderPass);
 
+    if (m_params.Gfx.DepthOfFieldEnabled)
+    {
+      m_passArray.push_back(m_dofPass);
+    }
+
     // Post processes.
     if (m_params.Gfx.BloomEnabled)
     {
       m_passArray.push_back(m_bloomPass);
-    }
-
-    if (m_params.Gfx.DepthOfFieldEnabled)
-    {
-      m_passArray.push_back(m_dofPass);
     }
 
     if (m_params.Gfx.TonemappingEnabled)
