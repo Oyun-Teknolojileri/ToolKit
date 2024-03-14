@@ -750,8 +750,6 @@ namespace ToolKit
 
   void Renderer::ResetUsedTextureSlots()
   {
-    // TODO optimize this as this function only resets the texture slots that are used
-
     for (int i = 0; i < 17; i++)
     {
       SetTexture(i, 0);
