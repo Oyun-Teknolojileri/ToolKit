@@ -96,6 +96,9 @@ namespace ToolKit
     m_fullQuadPass->m_material = m_unlitMaterial;
   }
 
+  void GameRenderer::PostRender(Renderer* renderer) { renderer->ResetUsedTextureSlots();
+  }
+
   void GameRenderer::SetParams(const GameRendererParams& gameRendererParams) { m_params = gameRendererParams; }
 
   void GameRenderer::Render(Renderer* renderer)
@@ -154,5 +157,7 @@ namespace ToolKit
 
     m_passArray.push_back(m_fullQuadPass);
     RenderPath::Render(renderer);
+
+    PostRender(renderer);
   }
 } // namespace ToolKit
