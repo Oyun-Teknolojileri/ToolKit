@@ -11,6 +11,7 @@
  * @file Scene.h Header file for the Scene class.
  */
 
+#include "EngineSettings.h"
 #include "EnvironmentComponent.h"
 #include "Resource.h"
 #include "Sky.h"
@@ -319,6 +320,7 @@ namespace ToolKit
      * Its calculated during rendering and Initialization. Its only valid after Init or scene render.
      */
     BoundingBox m_boundingBox;
+    EngineSettings::PostProcessingSettings m_postProcessSettings; //!< Post process settings that this scene uses
 
    protected:
     EntityPtrArray m_entities; //!< The entities in the scene.

@@ -174,12 +174,15 @@ namespace ToolKit
             g_viewport->Update(deltaTime);
             g_game->Frame(deltaTime);
 
-            GameRendererParams params;
-            params.gfx                 = g_engineSettings->PostProcessing;
-            params.scene               = GetSceneManager()->GetCurrentScene();
-            params.useMobileRenderPath = true;
-            params.viewport            = g_viewport;
-            g_gameRenderer->SetParams(params);
+            if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
+            {
+              GameRendererParams params;
+              params.gfx = scene->m_postProcessSettings;
+              params.scene = scene;
+              params.viewport = g_viewport;
+              params.useMobileRenderPath = g_engineSettings->Graphics.RenderSpec == RenderingSpec::Mobile;
+              g_gameRenderer->SetParams(params);
+            }
 
             GetRenderSystem()->AddRenderTask(
                 {[deltaTime](Renderer* renderer) -> void { g_gameRenderer->Render(renderer); }});
