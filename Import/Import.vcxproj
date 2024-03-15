@@ -81,9 +81,7 @@
     <PostBuildEvent>
       <Command>copy /Y "$(SolutionDir)Bin\ToolKit_d.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
-    <PreBuildEvent>
-      <Command>$(SolutionDir)BuildScripts\WinBuildDebug.bat</Command>
-    </PreBuildEvent>
+    <PreBuildEvent />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -107,9 +105,7 @@
     <PostBuildEvent>
       <Command>copy /Y "$(SolutionDir)Bin\ToolKit.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
-    <PreBuildEvent>
-      <Command>$(SolutionDir)BuildScripts\WinBuildRelease.bat</Command>
-    </PreBuildEvent>
+    <PreBuildEvent />
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
