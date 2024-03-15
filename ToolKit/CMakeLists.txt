@@ -45,23 +45,13 @@ set(CMAKE_DEBUG_POSTFIX _d)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
 	message("Release configuration")
-	set(TK_LIB_TYPE STATIC)
 elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	message("Debug configuration")
-	set(TK_LIB_TYPE SHARED)
-	if (NOT ${WEB_BUILD})
-		add_definitions(-DTK_DLL_EXPORT)
-	endif()
 	add_definitions(-DTK_DEBUG)
 endif ()
 
 if (NOT ${WEB_BUILD})
 	set(TK_LINK_LIB zlibstatic minizip OpenGL32)
-endif()
-
-if (${WEB_BUILD})
-	message("Building for web")
-	set(TK_LIB_TYPE STATIC)
 endif()
 
 if (DEFINED WIN_BUILD OR ${WEB_BUILD})
@@ -70,7 +60,7 @@ else ()
 	set(TKLibName ToolKit)
 endif()
 
-add_library(${TKLibName} ${TK_LIB_TYPE} ${SOURCES})
+add_library(${TKLibName} STATIC ${SOURCES})
 target_link_libraries(${TKLibName} PRIVATE ${TK_LINK_LIB})
 
 set_target_properties(${TKLibName} PROPERTIES

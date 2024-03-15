@@ -239,7 +239,6 @@ namespace ToolKit
 
     const String pakFile                = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
     const String sdlDllPath             = ConcatPaths({m_toolkitPath, "Bin", "SDL2.dll"});
-    const String tkDllPath              = ConcatPaths({m_toolkitPath, "Bin", "TKLib_d.dll"});
     const String engineSettingsPath     = ConcatPaths({ResourcePath(), "..", "Config", "Windows", "Engine.settings"});
     const String destEngineSettingsPath = ConcatPaths({publishConfigDir, "Engine.settings"});
 
@@ -257,12 +256,6 @@ namespace ToolKit
     if (returnLoggingError(publishBinDir))
     {
       return 1;
-    }
-
-    // Copy TKLib_d.dll from ToolKit bin folder to publish bin folder
-    if (m_publishConfig == PublishConfig::Debug)
-    {
-      std::filesystem::copy(tkDllPath, publishBinDir, std::filesystem::copy_options::overwrite_existing, ec);
     }
 
     // Copy pak

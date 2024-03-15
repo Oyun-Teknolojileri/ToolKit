@@ -145,15 +145,16 @@ else() # Windows & Editor builds.
 	link_directories("${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/lib")
 	link_directories("${TOOLKIT_DIR}/Dependency/SDL2/lib")
 	
-	if (DEFINED WIN_BUILD)
-		add_executable(${PROJECT_NAME} WIN32 ${SOURCE})
-	else() # Editor or game build
+	if (${EDITOR_BUILD})
 		add_library(${PROJECT_NAME} SHARED ${SOURCE} ${HEADERS})
+	elseif(DEFINED WIN_BUILD)
+		add_executable(${PROJECT_NAME} WIN32 ${SOURCE})
 	endif()
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-	target_compile_definitions(${PROJECT_NAME} PRIVATE TK_DLL_IMPORT)
-endif()
+	if (${EDITOR_BUILD})
+		target_compile_definitions(${PROJECT_NAME} PRIVATE TK_DLL_IMPORT)
+	endif()
+
 	target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:TK_DEBUG>)
 
 	if (MSVC)
