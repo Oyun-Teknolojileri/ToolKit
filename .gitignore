@@ -68,7 +68,9 @@ Template/Android/app/src/main/assets
 Template/Windows/build/CMakeFiles
 
 Packer/x64
-Packer/build
 /Utils/Packer
+
+Packer/build
+Import/build
 
 *.user
