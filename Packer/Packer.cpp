@@ -192,21 +192,23 @@ namespace ToolKit
     Path newWorkDir(ConcatPaths({m_toolkitPath, "BuildScripts"}));
     std::filesystem::current_path(newWorkDir);
     int toolKitCompileResult = -1;
+    const char* scriptName   = nullptr;
     if (m_publishConfig == PublishConfig::Debug)
     {
-      toolKitCompileResult = RunPipe("WinBuildDebug.bat", nullptr);
+      scriptName = "WinBuildDebug.bat";
     }
     else if (m_publishConfig == PublishConfig::Develop)
     {
-      toolKitCompileResult = RunPipe("WinBuildRelWithDebugInfo.bat", nullptr);
+      scriptName = "WinBuildRelWithDebugInfo.bat";
     }
     else // if (m_publishConfig == PublishConfig::Deploy)
     {
-      toolKitCompileResult = RunPipe("WinBuildRelease.bat", nullptr);
+      scriptName = "WinBuildRelease.bat";
     }
+    toolKitCompileResult = std::system(scriptName);
     if (toolKitCompileResult != 0)
     {
-      returnLoggingError("WinBuildRelease", true);
+      returnLoggingError(scriptName, true);
       TK_ERR("ToolKit could not be compiled\n");
       return -1;
     }
@@ -219,10 +221,11 @@ namespace ToolKit
       return -1;
     }
 
-    int pluginCompileResult = RunPipe("WinBuildRelease.bat", nullptr);
+    int pluginCompileResult = -1;
+    pluginCompileResult     = std::system(scriptName);
     if (pluginCompileResult != 0)
     {
-      returnLoggingError("WinBuildRelease.bat", true);
+      returnLoggingError(scriptName, true);
       TK_ERR("Windows build has failed!\n");
       return -1;
     }
@@ -547,13 +550,12 @@ namespace ToolKit
     // use "gradlew bundle" command to build .aab project or use "gradlew assemble" to release build
     String command    = m_publishConfig == PublishConfig::Debug ? "gradlew assembleDebug" : "gradlew assemble";
 
-    int compileResult = RunPipe(command + " > AndroidPipeOut1.txt", nullptr);
+    int compileResult = std::system(command.c_str());
     if (compileResult != 0)
     {
       TK_ERR("Android build failed.\n");
       return -1;
     }
-    TK_LOG(GetFileManager()->ReadAllText("AndroidPipeOut1.txt").c_str());
 
     buildLocation      = ConcatPaths({buildLocation, buildType});
 
@@ -662,15 +664,14 @@ namespace ToolKit
 
     TK_LOG("Run toolkit compile script");
     String tkBuildPath       = ConcatPaths({m_toolkitPath, "BuildScripts", buildScriptName});
-    int toolKitCompileResult = RunPipe(tkBuildPath + " > WebPipeOut1.txt", nullptr);
+    int toolKitCompileResult = std::system(tkBuildPath.c_str());
 
     if (toolKitCompileResult != 0)
     {
-      returnLoggingError("bat failed", true, __LINE__);
+      returnLoggingError(buildScriptName, true, __LINE__);
       TK_ERR("ToolKit could not be compiled!\n");
       return -1;
     }
-    TK_LOG(GetFileManager()->ReadAllText("WebPipeOut1.txt").c_str());
     Path newWorkDir                          = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
     const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Web", buildScriptName});
 
@@ -682,7 +683,7 @@ namespace ToolKit
     }
 
     TK_LOG("Plugin web build\n");
-    int pluginCompileResult = RunPipe(pluginWebBuildScriptsFolder + " > WebPipeOut2.txt", nullptr);
+    int pluginCompileResult = std::system(pluginWebBuildScriptsFolder.c_str());
 
     if (pluginCompileResult != 0)
     {
@@ -690,7 +691,6 @@ namespace ToolKit
       TK_ERR("Web build has failed!\n");
       return -1;
     }
-    TK_LOG(GetFileManager()->ReadAllText("WebPipeOut2.txt").c_str());
 
     std::filesystem::current_path(workDir, ec);
     if (returnLoggingError(workDir.string(), false, __LINE__))
