@@ -129,7 +129,7 @@ namespace ToolKit
       return AndroidPublish();
     default:
       TK_ERR("unknown publish platform: %i\n", (int) m_platform);
-      return 1;
+      return -1;
     }
   }
 
@@ -175,17 +175,17 @@ namespace ToolKit
     std::filesystem::create_directories(publishDirectory, ec);
     if (returnLoggingError(publishDirectory))
     {
-      return 1;
+      return -1;
     }
     std::filesystem::create_directories(publishBinDir, ec);
     if (returnLoggingError(publishBinDir))
     {
-      return 1;
+      return -1;
     }
     std::filesystem::create_directories(publishConfigDir, ec);
     if (returnLoggingError(publishConfigDir))
     {
-      return 1;
+      return -1;
     }
 
     TK_LOG("Run toolkit compile script\n");
@@ -208,7 +208,7 @@ namespace ToolKit
     {
       returnLoggingError("WinBuildRelease", true);
       TK_ERR("ToolKit could not be compiled\n");
-      return 1;
+      return -1;
     }
 
     // Run plugin compile script
@@ -216,7 +216,7 @@ namespace ToolKit
     std::filesystem::current_path(newWorkDir, ec);
     if (returnLoggingError(newWorkDir.string()))
     {
-      return 1;
+      return -1;
     }
 
     int pluginCompileResult = RunPipe("WinBuildRelease.bat", nullptr);
@@ -224,12 +224,12 @@ namespace ToolKit
     {
       returnLoggingError("WinBuildRelease.bat", true);
       TK_ERR("Windows build has failed!\n");
-      return 1;
+      return -1;
     }
     std::filesystem::current_path(workDir, ec);
     if (returnLoggingError(workDir.string()))
     {
-      return 1;
+      return -1;
     }
 
     std::filesystem::create_directories(ConcatPaths({ResourcePath(), "..", "Codes", "Bin"}));
@@ -248,21 +248,21 @@ namespace ToolKit
     std::filesystem::copy(exeFile, publishBinDir, std::filesystem::copy_options::overwrite_existing, ec);
     if (returnLoggingError(publishBinDir))
     {
-      return 1;
+      return -1;
     }
 
     // Copy SDL2.dll from ToolKit bin folder to publish bin folder
     std::filesystem::copy(sdlDllPath, publishBinDir, std::filesystem::copy_options::overwrite_existing, ec);
     if (returnLoggingError(publishBinDir))
     {
-      return 1;
+      return -1;
     }
 
     // Copy pak
     std::filesystem::copy(pakFile, publishDirectory, std::filesystem::copy_options::overwrite_existing, ec);
     if (returnLoggingError(publishDirectory))
     {
-      return 1;
+      return -1;
     }
 
     // Copy engine settings to config folder
@@ -272,7 +272,7 @@ namespace ToolKit
                           ec);
     if (returnLoggingError(engineSettingsPath))
     {
-      return 1;
+      return -1;
     }
 
     // Tell user about where the location of output files is
@@ -477,7 +477,7 @@ namespace ToolKit
     if (projectName.empty())
     {
       TK_ERR("No project is loaded.\n");
-      return 1;
+      return -1;
     }
 
     const String assetsPath             = NormalizePath("Android/app/src/main/assets");
@@ -492,13 +492,13 @@ namespace ToolKit
     std::filesystem::copy(sceneResourcesPath, androidResourcesPath, copyOption, ec);
     if (returnLoggingError("Copy: " + sceneResourcesPath + " and " + androidResourcesPath))
     {
-      return 1;
+      return -1;
     }
 
     std::filesystem::copy(engineSettingsPath, destEngineSettingsPath, copyOption, ec);
     if (returnLoggingError("Copy: " + engineSettingsPath + " and " + destEngineSettingsPath))
     {
-      return 1;
+      return -1;
     }
 
     SetAndroidOptions();
@@ -507,7 +507,7 @@ namespace ToolKit
     std::filesystem::current_path(androidPath, ec);
     if (returnLoggingError(androidPath))
     {
-      return 1;
+      return -1;
     }
 
     AndroidPrepareIcon();
@@ -551,7 +551,7 @@ namespace ToolKit
     if (compileResult != 0)
     {
       TK_ERR("Android build failed.\n");
-      return 1;
+      return -1;
     }
     TK_LOG(GetFileManager()->ReadAllText("AndroidPipeOut1.txt").c_str());
 
@@ -578,13 +578,13 @@ namespace ToolKit
     std::filesystem::create_directories(publishDirStr, ec);
     if (returnLoggingError("Trying Create Dir:" + publishDirStr))
     {
-      return 1;
+      return -1;
     }
 
     std::filesystem::copy(apkPathStr, publishApkPath, std::filesystem::copy_options::overwrite_existing, ec);
     if (returnLoggingError("Trying Copy: " + apkPathStr + " and " + publishApkPath))
     {
-      return 1;
+      return -1;
     }
 
     // Tell user about where the location of output files is
@@ -597,13 +597,13 @@ namespace ToolKit
     {
       returnLoggingError("Compiling Fail", true);
       TK_ERR("Compiling failed.\n");
-      return 1;
+      return -1;
     }
 
     std::filesystem::current_path(workDir, ec); // set work directory back
     if (returnLoggingError("Set Work Directory: " + workDir.string()))
     {
-      return 1;
+      return -1;
     }
 
     if (m_deployAfterBuild)
@@ -668,7 +668,7 @@ namespace ToolKit
     {
       returnLoggingError("bat failed", true, __LINE__);
       TK_ERR("ToolKit could not be compiled!\n");
-      return 1;
+      return -1;
     }
     TK_LOG(GetFileManager()->ReadAllText("WebPipeOut1.txt").c_str());
     Path newWorkDir                          = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
@@ -678,7 +678,7 @@ namespace ToolKit
     std::filesystem::current_path(newWorkDir, ec);
     if (returnLoggingError(newWorkDir.string(), false, __LINE__))
     {
-      return 1;
+      return -1;
     }
 
     TK_LOG("Plugin web build\n");
@@ -688,14 +688,14 @@ namespace ToolKit
     {
       returnLoggingError(pluginWebBuildScriptsFolder, true, __LINE__);
       TK_ERR("Web build has failed!\n");
-      return 1;
+      return -1;
     }
     TK_LOG(GetFileManager()->ReadAllText("WebPipeOut2.txt").c_str());
 
     std::filesystem::current_path(workDir, ec);
     if (returnLoggingError(workDir.string(), false, __LINE__))
     {
-      return 1;
+      return -1;
     }
 
     // Move files to a directory
@@ -711,7 +711,7 @@ namespace ToolKit
     std::filesystem::create_directories(publishDirectory, ec);
     if (returnLoggingError(publishDirectory, false, __LINE__))
     {
-      return 1;
+      return -1;
     }
 
     for (int i = 0; i < ArraySize(files); i++)
@@ -719,7 +719,7 @@ namespace ToolKit
       std::filesystem::copy(files[i].c_str(), publishDirectory, std::filesystem::copy_options::overwrite_existing, ec);
       if (returnLoggingError("Copy: " + files[i] + " to " + publishDirectory, false, __LINE__))
       {
-        return 1;
+        return -1;
       }
     }
 
@@ -731,7 +731,7 @@ namespace ToolKit
     std::filesystem::current_path(workDir, ec);
     if (returnLoggingError(workDir.string(), false, __LINE__))
     {
-      return 1;
+      return -1;
     }
 
     // Output user about where are the output files
@@ -788,21 +788,7 @@ namespace ToolKit
     packer.m_toolkitPath = toolkitPath;
     g_proxy->SetConfigPath(ConcatPaths({toolkitPath, "Config"}));
 
-    String packerOutput;
-
-    if (packer.m_platform == PublishPlatform::Web || packer.m_platform == PublishPlatform::Android)
-    {
-      GetLogger()->SetWriteConsoleFn(
-          [&packerOutput](LogType lt, String ms) -> void
-          {
-            printf("%s", ms.c_str());
-            packerOutput += ms;
-          });
-    }
-    else
-    {
-      GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { printf("%s", ms.c_str()); });
-    }
+    GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { printf("%s", ms.c_str()); });
 
     // Init SDL
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER);
@@ -823,15 +809,21 @@ namespace ToolKit
 
     g_proxy->Init();
 
+    TK_LOG("TEST");
+    TK_LOG("TEST");
+    TK_LOG("TEST");
+    TK_LOG("TEST");
+    TK_LOG("TEST");
+    TK_LOG("TEST");
+    TK_LOG("TEST");
+    TK_LOG("TEST");
+    TK_LOG("TEST");
+    TK_LOG("TEST");
+
     int result = packer.Publish();
 
     SDL_GL_DeleteContext(g_context);
     SDL_DestroyWindow(g_window);
-
-    if (packer.m_platform == PublishPlatform::Web || packer.m_platform == PublishPlatform::Android)
-    {
-      GetFileManager()->WriteAllText("PackerOutput.txt", packerOutput);
-    }
 
     return result;
   }
