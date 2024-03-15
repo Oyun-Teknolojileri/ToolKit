@@ -16,12 +16,18 @@ namespace ToolKit
 
   WorkerManager::WorkerManager()
   {
-    // TODO: Setting the thread count kills the browser.
-    if constexpr (TK_PLATFORM != PLATFORM::TKWeb)
+    uint coreCount = std::thread::hardware_concurrency();
+    if constexpr (TK_PLATFORM == PLATFORM::TKWeb)
     {
-      m_frameWorkers.set_num_threads(8);
+      m_frameWorkers = new ThreadPool(glm::min(coreCount, 4u));
+    }
+    else
+    {
+      m_frameWorkers = new ThreadPool(glm::min(coreCount, 8u));
     }
   }
+
+  WorkerManager::~WorkerManager() { SafeDel(m_frameWorkers); }
 
   ThreadPool& WorkerManager::GetExecutor(Executor executor)
   {
@@ -29,7 +35,7 @@ namespace ToolKit
     {
     case WorkerManager::Executor::FramePool:
     default:
-      return m_frameWorkers;
+      return *m_frameWorkers;
       break;
     }
   }
