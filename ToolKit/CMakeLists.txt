@@ -1,11 +1,5 @@
 cmake_minimum_required(VERSION 3.21.0)
 
-if (EMSCRIPTEN)
-	set(WEB_BUILD TRUE)
-else()
-	set(WEB_BUILD FALSE)
-endif()
-
 if (CLANG_COMPILER)
 	add_definitions(-include stdafx.h)
 
@@ -50,11 +44,11 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DTK_DEBUG)
 endif ()
 
-if (NOT ${WEB_BUILD})
+if (NOT WEB_BUILD)
 	set(TK_LINK_LIB zlibstatic minizip OpenGL32)
 endif()
 
-if (DEFINED WIN_BUILD OR ${WEB_BUILD})
+if (DEFINED WIN_BUILD OR WEB_BUILD)
 	set(TKLibName TKLib)
 else ()
 	set(TKLibName ToolKit)

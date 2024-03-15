@@ -3,13 +3,7 @@ cmake_minimum_required(VERSION 3.21.0)
 set(PROJECT_NAME "__projectname__" CACHE STRING "What is the project name ?")
 set(TOOLKIT_DIR "__tkdir__" CACHE FILEPATH "Where is the ToolKit source directory ?")
 
-if (EMSCRIPTEN)
-	set(WEB_BUILD TRUE)
-else()
-	set(WEB_BUILD FALSE)
-endif()
-
-if (NOT ${WEB_BUILD} AND NOT DEFINED WIN_BUILD)
+if (NOT WEB_BUILD AND NOT DEFINED WIN_BUILD)
 	set(EDITOR_BUILD TRUE)
 else()
 	set(EDITOR_BUILD FALSE)
@@ -79,7 +73,7 @@ set(
 	Game.cpp
 )
 
-if (${WEB_BUILD} OR DEFINED WIN_BUILD)
+if (WEB_BUILD OR DEFINED WIN_BUILD)
 	set(SOURCE ${SOURCE} ../Codes/Main.cpp)
 	add_definitions(-DGAME_BUILD=1)
 endif()
@@ -123,7 +117,7 @@ if (NOT TK_CXX_EXTRA STREQUAL "")
 	set(TK_CXX_FLAGS "${TK_CXX_FLAGS} ${TK_CXX_EXTRA}")
 endif()
 
-if (${WEB_BUILD})
+if (WEB_BUILD)
 	set(CMAKE_EXECUTABLE_SUFFIX ".html")
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Bin")
 
