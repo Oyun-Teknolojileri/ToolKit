@@ -743,9 +743,6 @@ namespace ToolKit
 
   int ToolKitMain(int argc, char* argv[])
   {
-    // TODO remove
-    std::filesystem::current_path("D:\\Dev\\ToolKit\\ToolKit\\Utils\\Packer");
-
     // https://stackoverflow.com/questions/59828628/read-on-a-pipe-blocks-until-program-running-at-end-of-pipe-terminates-windows
     // enables writing to toolkit asynchronusly. life saver posix code:
     setvbuf(stdout, NULL, _IONBF, 0); // Disable buffering on stdout.
