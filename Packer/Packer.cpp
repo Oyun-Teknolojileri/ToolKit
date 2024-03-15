@@ -662,8 +662,12 @@ namespace ToolKit
       buildScriptName = "WebBuildRelease.bat";
     }
 
-    TK_LOG("Run toolkit compile script");
-    String tkBuildPath       = ConcatPaths({m_toolkitPath, "BuildScripts", buildScriptName});
+    // Compile ToolKit
+    TK_LOG("Running Toolkit compile script");
+    String tkBuildDir  = ConcatPaths({m_toolkitPath, "BuildScripts"});
+    String tkBuildPath = ConcatPaths({tkBuildDir, buildScriptName});
+
+    std::filesystem::current_path(tkBuildDir);
     int toolKitCompileResult = std::system(tkBuildPath.c_str());
 
     if (toolKitCompileResult != 0)
@@ -672,22 +676,17 @@ namespace ToolKit
       TK_ERR("ToolKit could not be compiled!\n");
       return -1;
     }
-    Path newWorkDir                          = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
-    const String pluginWebBuildScriptsFolder = ConcatPaths({ResourcePath(), "..", "Web", buildScriptName});
+    Path gameBuildDir          = Path(ConcatPaths({ResourcePath(), "..", "Web"}));
+    const String gameBuildPath = ConcatPaths({ResourcePath(), "..", "Web", buildScriptName});
 
-    // Run scripts
-    std::filesystem::current_path(newWorkDir, ec);
-    if (returnLoggingError(newWorkDir.string(), false, __LINE__))
-    {
-      return -1;
-    }
-
+    // Compile game
+    std::filesystem::current_path(gameBuildDir, ec);
     TK_LOG("Plugin web build\n");
-    int pluginCompileResult = std::system(pluginWebBuildScriptsFolder.c_str());
+    int pluginCompileResult = std::system(gameBuildPath.c_str());
 
     if (pluginCompileResult != 0)
     {
-      returnLoggingError(pluginWebBuildScriptsFolder, true, __LINE__);
+      returnLoggingError(gameBuildPath, true, __LINE__);
       TK_ERR("Web build has failed!\n");
       return -1;
     }
@@ -744,6 +743,9 @@ namespace ToolKit
 
   int ToolKitMain(int argc, char* argv[])
   {
+    // TODO remove
+    std::filesystem::current_path("D:\\Dev\\ToolKit\\ToolKit\\Utils\\Packer");
+
     // https://stackoverflow.com/questions/59828628/read-on-a-pipe-blocks-until-program-running-at-end-of-pipe-terminates-windows
     // enables writing to toolkit asynchronusly. life saver posix code:
     setvbuf(stdout, NULL, _IONBF, 0); // Disable buffering on stdout.
