@@ -809,17 +809,6 @@ namespace ToolKit
 
     g_proxy->Init();
 
-    TK_LOG("TEST");
-    TK_LOG("TEST");
-    TK_LOG("TEST");
-    TK_LOG("TEST");
-    TK_LOG("TEST");
-    TK_LOG("TEST");
-    TK_LOG("TEST");
-    TK_LOG("TEST");
-    TK_LOG("TEST");
-    TK_LOG("TEST");
-
     int result = packer.Publish();
 
     SDL_GL_DeleteContext(g_context);
