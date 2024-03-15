@@ -110,11 +110,6 @@ namespace ToolKit
       m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager               = new PublishManager();
       GetRenderSystem()->SetClearColor(g_wndBgColor);
-
-      if (GetFileManager()->CheckPakFile())
-      {
-        TK_LOG("Project uses MinResources.pak for resource gather.");
-      }
     }
 
     void App::DestroyEditorEntities()
@@ -505,6 +500,16 @@ namespace ToolKit
             {
               Mat4 view = viewport3d->GetCamera()->m_node->GetTransform();
               m_simulationWindow->GetCamera()->m_node->SetTransform(view);
+            }
+          }
+
+          // Check if there is a new plugin.
+          if (PluginManager* plugMan = GetPluginManager())
+          {
+            if (Plugin* plg = static_cast<Plugin*>(gamePlugin))
+            {
+              plg        = plugMan->Reload(plg);
+              gamePlugin = static_cast<GamePlugin*>(plg);
             }
           }
         }

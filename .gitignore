@@ -74,3 +74,4 @@ Packer/build
 Import/build
 
 *.user
+/ToolKit/ninjaBuild/build
