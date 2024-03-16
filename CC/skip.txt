@@ -9,3 +9,5 @@
 ../Samples/
 ../ToolKit/Common/UtfConv.h
 ../BuildScripts/
+../.vs/
+../ToolKit/ninjaBuild/
