@@ -37,13 +37,13 @@ Multiverse GO is a turn-based puzzle adventure set in a group of multiple univer
 ## Compiling
 
 #### Requirements
-    Visual Studio 2022 or newer.
-    Visual Studio Code
-    Visual Studio Code C/C++ Extension Pack
-    Ninja build system
-    Git SCM
+* Visual Studio 2022 or newer.
+* Visual Studio Code
+* Visual Studio Code C/C++ Extension Pack
+* Ninja build system
+* Git SCM
 
-    Its important to set environment path such that git, cmake and ninja commands are recognized from consoles as in the screenshot below.
+Its important to set environment path such that git, cmake and ninja commands are recognized from consoles as in the screen shot below.
 
 ![Console check](Images/tk_cmd.png)
 
