@@ -80,8 +80,7 @@ namespace ToolKit
       else // windows build
       {
         TK_LOG("Packing to Windows...");
-        std::thread thread = std::thread(RunPipe, packerPath, afterPackFn);
-        thread.detach();
+        g_app->ExecSysCommand(packerPath, true, true, afterPackFn);
       }
     }
   } // namespace Editor

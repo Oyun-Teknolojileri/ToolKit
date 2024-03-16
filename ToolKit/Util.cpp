@@ -295,6 +295,7 @@ namespace ToolKit
 #else
     FILE* fp = popen(command.c_str(), "r");
 #endif
+
     if (fp == nullptr)
     {
       TK_ERR("pipe run failed! command: %s", command.c_str());
@@ -312,6 +313,7 @@ namespace ToolKit
 #else
     int res  = pclose(fp);
 #endif
+
     if (afterFn)
     {
       afterFn(res);

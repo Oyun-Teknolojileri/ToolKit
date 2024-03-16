@@ -743,10 +743,6 @@ namespace ToolKit
 
   int ToolKitMain(int argc, char* argv[])
   {
-    // https://stackoverflow.com/questions/59828628/read-on-a-pipe-blocks-until-program-running-at-end-of-pipe-terminates-windows
-    // enables writing to toolkit asynchronusly. life saver posix code:
-    setvbuf(stdout, NULL, _IONBF, 0); // Disable buffering on stdout.
-
     // Initialize ToolKit to serialize resources
     Main* g_proxy = new Main();
     Main::SetProxy(g_proxy);
@@ -773,11 +769,6 @@ namespace ToolKit
     packer.m_icon             = std::filesystem::absolute(packer.m_icon).string();
     packer.m_publishConfig    = (PublishConfig) std::atoi(arguments[9].c_str());
 
-    // in windows we are hiding the console because pipe works fine and we output to the toolkit console
-    if (packer.m_platform == PublishPlatform::Windows)
-    {
-      PlatformHelpers::HideConsoleWindow();
-    }
     // Set resource root to project's Resources folder
     g_proxy->m_resourceRoot = ConcatPaths({workspacePath, activeProjectName, "Resources"});
 

@@ -1,1 +1,1 @@
-emcmake cmake -DTK_CXX_EXTRA:STRING="-O3 -pthread" -DCMAKE_BUILD_TYPE=Release -DWEB_BUILD:BOOL=1 -S ../Codes -G Ninja && ninja & set exit_code = %errorlevel% & exit exit_code
+emcmake cmake -DTK_CXX_EXTRA:STRING="-O3 -pthread" -DCMAKE_BUILD_TYPE=Release -DWEB_BUILD:BOOL=1 -S ../Codes -G Ninja && ninja || (pause & exit /b 1)
