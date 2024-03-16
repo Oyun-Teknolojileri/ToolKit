@@ -56,11 +56,14 @@ namespace ToolKit
 
       const auto afterPackFn = [&](int res) -> void
       {
-        if (res != 1 && std::filesystem::exists("PackerOutput.txt"))
+        if (res != 0)
         {
-          TK_LOG(GetFileManager()->ReadAllText("PackerOutput.txt").c_str());
+          TK_WRN("Build Failed");
         }
-        TK_LOG("Build Ended.");
+        else
+        {
+          TK_LOG("Build Ended.");
+        }
         m_isBuilding = false;
       };
 
@@ -77,8 +80,7 @@ namespace ToolKit
       else // windows build
       {
         TK_LOG("Packing to Windows...");
-        std::thread thread = std::thread(RunPipe, packerPath, afterPackFn);
-        thread.detach();
+        g_app->ExecSysCommand(packerPath, true, true, afterPackFn);
       }
     }
   } // namespace Editor

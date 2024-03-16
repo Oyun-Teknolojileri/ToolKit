@@ -44,6 +44,7 @@ namespace ToolKit
 
    private:
     void PreRender();
+    void PostRender(Renderer* renderer);
 
     GameRendererParams m_params;
 

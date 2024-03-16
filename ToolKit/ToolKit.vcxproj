@@ -255,6 +255,12 @@
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>OpenGL32.lib;zlibstatic.lib;minizip.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)BuildScripts\WinBuildDebug.bat</Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>$(SolutionDir)BuildScripts\WinBuildDebug.bat</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -277,6 +283,9 @@
       <AdditionalDependencies>OpenGL32.lib;zlibstatic.lib;minizip.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib />
+    <PostBuildEvent>
+      <Command>$(SolutionDir)BuildScripts\WinBuildRelease.bat</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

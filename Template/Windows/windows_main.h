@@ -31,4 +31,8 @@ namespace ToolKit
       TK_Loop();
     }
   }
+
+  inline void PlatformAdjustEngineSettings(int availableWidth, int availableHeight, EngineSettings* engineSettings)
+  {
+  }
 } // namespace ToolKit

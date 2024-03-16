@@ -110,11 +110,6 @@ namespace ToolKit
       m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager               = new PublishManager();
       GetRenderSystem()->SetClearColor(g_wndBgColor);
-
-      if (GetFileManager()->CheckPakFile())
-      {
-        TK_LOG("Project uses MinResources.pak for resource gather.");
-      }
     }
 
     void App::DestroyEditorEntities()
@@ -507,6 +502,16 @@ namespace ToolKit
               m_simulationWindow->GetCamera()->m_node->SetTransform(view);
             }
           }
+
+          // Check if there is a new plugin.
+          if (PluginManager* plugMan = GetPluginManager())
+          {
+            if (Plugin* plg = static_cast<Plugin*>(gamePlugin))
+            {
+              plg        = plugMan->Reload(plg);
+              gamePlugin = static_cast<GamePlugin*>(plg);
+            }
+          }
         }
 
         gamePlugin->SetViewport(GetSimulationWindow());
@@ -567,6 +572,7 @@ namespace ToolKit
 #else
       static const StringView buildConfig = "RelWithDebInfo";
 #endif
+
       String cmd    = "cmake -S " + codePath + " -B " + buildDir + " -DCMAKE_BUILD_TYPE=" + buildConfig.data();
       m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
       m_isCompiling = true;
@@ -1459,6 +1465,8 @@ namespace ToolKit
           wnd->Serialize(lclDoc.get(), app);
         }
 
+        m_workspace.SerializeSimulationWindow(lclDoc);
+
         std::string xml;
         rapidxml::print(std::back_inserter(xml), *lclDoc, 0);
 
@@ -1512,6 +1520,8 @@ namespace ToolKit
         }
 
         CreateWindows(root);
+
+        m_workspace.DeSerializeSimulationWindow(lclDoc);
       }
 
       LoadProjectPlugin();

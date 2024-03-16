@@ -70,4 +70,8 @@ Template/Windows/build/CMakeFiles
 Packer/x64
 /Utils/Packer
 
+Packer/build
+Import/build
+
 *.user
+/ToolKit/ninjaBuild/build

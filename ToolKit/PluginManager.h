@@ -56,6 +56,12 @@ namespace ToolKit
     void Unload(const String& file);
 
     /**
+     * Reloads the given plugin if it is dirty.
+     * @return Reloaded plugin. The one sent as argument becomes invalid after reload.
+     */
+    Plugin* Reload(Plugin* plugin);
+
+    /**
      * Updates the plugins with given delta time.
      * @param deltaTime is the elapsed seconds for the past frame.
      */
@@ -78,6 +84,13 @@ namespace ToolKit
      */
     PluginRegister* GetRegister(const String& file, int* indx = nullptr);
 
+    /**
+     * Find and returns the PluginRegister that is associated with given plugin.
+     * @param plugin is the given plugin to find associated register.
+     * @return PluginRegister associated with given plugin if found or nullptr.
+     */
+    PluginRegister* GetRegister(const Plugin* plugin);
+
     GamePlugin* GetGamePlugin();
     void UnloadGamePlugin();
 
@@ -91,6 +104,9 @@ namespace ToolKit
 
    public:
     std::vector<PluginRegister> m_storage;
+
+   private:
+    String m_pluginExtention; //!< System specific library extension.
   };
 
 } // namespace ToolKit

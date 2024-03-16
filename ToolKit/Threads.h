@@ -22,22 +22,33 @@ namespace ToolKit
   class TK_API WorkerManager
   {
    public:
+    /**
+     * Predefined thread pools for specific jobs.
+     */
     enum Executor
     {
-      FramePool
+      FramePool //!< Tasks that need to be completed within the frame should use this pool.
     };
 
    public:
-    WorkerManager();
-    ThreadPool& GetExecutor(Executor executor);
+    WorkerManager();                            //!< Default constructor, initializes thread pools.
+    virtual ~WorkerManager();                   //!< Default destructor, destroy thread pools.
+    ThreadPool& GetExecutor(Executor executor); //!< Returns the thread pool corresponding to the executor.
 
    public:
-    ThreadPool m_frameWorkers; //!< Task that suppose to complete in a frame should be using this pool.
+    ThreadPool* m_frameWorkers = nullptr; //!< Task that suppose to complete in a frame should be using this pool.
   };
 
+  /**
+   * Parallel loop execution target which lets the programmer to choose the thread pool to execute for loop on. Allows
+   * to decide to run for loop sequential or parallel based on the given condition.
+   */
 #define TKExecByConditional(Condition, Target)                                                                         \
   poolstl::par_if((Condition) && Main::GetInstance()->m_threaded, GetWorkerManager()->GetExecutor(Target))
 
+  /**
+   * Parallel loop execution target which lets the programmer to choose the thread pool to execute for loop on.
+   */
 #define TKExecBy(Target) poolstl::par_if(Main::GetInstance()->m_threaded, GetWorkerManager()->GetExecutor(Target))
 
 } // namespace ToolKit

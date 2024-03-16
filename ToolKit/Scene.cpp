@@ -23,7 +23,6 @@
 
 namespace ToolKit
 {
-
   TKDefineClass(Scene, Resource);
 
   Scene::Scene() { m_name = "New Scene"; }
@@ -47,7 +46,10 @@ namespace ToolKit
 
   void Scene::Save(bool onlyIfDirty)
   {
-    String fullPath = GetFile();
+    // get post processing settings
+    m_postProcessSettings = GetEngineSettings().PostProcessing;
+
+    String fullPath       = GetFile();
     if (fullPath.empty())
     {
       fullPath = ScenePath(m_name + SCENE);
@@ -555,7 +557,7 @@ namespace ToolKit
 
     if (!m_isPrefab)
     {
-      GetEngineSettings().SerializePostProcessing(doc, nullptr);
+      m_postProcessSettings.Serialize(doc, nullptr);
     }
 
     return scene;
@@ -629,7 +631,7 @@ namespace ToolKit
     // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)
     {
-      GetEngineSettings().DeSerializePostProcessing(info.Document, parent);
+      m_postProcessSettings.DeSerialize(info.Document, parent);
     }
 
     for (EntityPtr ntt : prefabList)
@@ -700,7 +702,8 @@ namespace ToolKit
     // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)
     {
-      GetEngineSettings().DeSerializePostProcessing(info.Document, parent);
+
+      m_postProcessSettings.DeSerialize(info.Document, parent);
     }
 
     for (EntityPtr ntt : prefabList)
@@ -744,6 +747,12 @@ namespace ToolKit
 
   ScenePtr SceneManager::GetCurrentScene() { return m_currentScene; }
 
-  void SceneManager::SetCurrentScene(const ScenePtr& scene) { m_currentScene = scene; }
+  void SceneManager::SetCurrentScene(const ScenePtr& scene)
+  {
+    m_currentScene                     = scene;
+
+    // apply scene post processing effects
+    GetEngineSettings().PostProcessing = m_currentScene->m_postProcessSettings;
+  }
 
 } // namespace ToolKit

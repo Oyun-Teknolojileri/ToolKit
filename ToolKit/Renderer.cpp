@@ -748,6 +748,14 @@ namespace ToolKit
     }
   }
 
+  void Renderer::ResetUsedTextureSlots()
+  {
+    for (int i = 0; i < 17; i++)
+    {
+      SetTexture(i, 0);
+    }
+  }
+
   void Renderer::FeedUniforms(const GpuProgramPtr& program, const RenderJob& job)
   {
     CPU_FUNC_RANGE();

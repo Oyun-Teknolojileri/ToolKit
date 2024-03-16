@@ -94,6 +94,10 @@ namespace ToolKit
 
     typedef std::vector<Window*> WindowRawPtrArray;
 
+    /**
+     * Deprecated, use volatile windows.
+     * UI::m_volatileWindows
+     */
     class TempWindow
     {
      public:

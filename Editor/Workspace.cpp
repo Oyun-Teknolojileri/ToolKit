@@ -244,29 +244,31 @@ namespace ToolKit
       return nullptr;
     }
 
-    void Workspace::SerializeSimulationWindow(XmlDocument* doc) const
+    void Workspace::SerializeSimulationWindow(XmlDocumentPtr doc) const
     {
+      XmlDocument* pDoc          = doc.get();
+
       PluginWindow* pluginWindow = g_app->GetWindow<PluginWindow>("Plugin");
-      XmlNode* settings          = CreateXmlNode(doc, "Simulation", nullptr);
+      XmlNode* settings          = CreateXmlNode(pDoc, "Simulation", nullptr);
 
       int numCustomRes           = (int) pluginWindow->m_screenResolutions.size() - pluginWindow->m_numDefaultResNames;
 
-      WriteAttr(settings, doc, "NumCustom", std::to_string(numCustomRes));
+      WriteAttr(settings, pDoc, "NumCustom", std::to_string(numCustomRes));
 
       for (int i = 0; i < numCustomRes; i++)
       {
         String istr = std::to_string(i);
         int index   = i + pluginWindow->m_numDefaultResNames;
 
-        WriteAttr(settings, doc, "name" + istr, pluginWindow->m_emulatorResolutionNames[index]);
+        WriteAttr(settings, pDoc, "name" + istr, pluginWindow->m_emulatorResolutionNames[index]);
 
-        WriteAttr(settings, doc, "sizeX" + istr, std::to_string(pluginWindow->m_screenResolutions[index].x));
+        WriteAttr(settings, pDoc, "sizeX" + istr, std::to_string(pluginWindow->m_screenResolutions[index].x));
 
-        WriteAttr(settings, doc, "sizeY" + istr, std::to_string(pluginWindow->m_screenResolutions[index].y));
+        WriteAttr(settings, pDoc, "sizeY" + istr, std::to_string(pluginWindow->m_screenResolutions[index].y));
       }
     }
 
-    void Workspace::DeSerializeSimulationWindow(XmlDocument* doc)
+    void Workspace::DeSerializeSimulationWindow(XmlDocumentPtr doc)
     {
       XmlNode* node              = doc->first_node("Simulation");
       PluginWindow* pluginWindow = g_app->GetWindow<PluginWindow>("Plugin");
@@ -296,32 +298,8 @@ namespace ToolKit
 
     void Workspace::SerializeEngineSettings() const
     {
-      std::ofstream file;
       String path = ConcatPaths({GetProjectConfigPath(), "Engine.settings"});
-
-      file.open(path.c_str(), std::ios::out | std::ios::trunc);
-      assert(file.is_open());
-      if (file.is_open())
-      {
-        XmlDocument* lclDoc = new XmlDocument();
-
-        // Always write the current version.
-        XmlNode* version    = lclDoc->allocate_node(rapidxml::node_element, "Version");
-        lclDoc->append_node(version);
-        WriteAttr(version, lclDoc, "version", TKVersionStr);
-
-        GetEngineSettings().SerializeWindow(lclDoc, nullptr);
-        GetEngineSettings().SerializeGraphics(lclDoc, nullptr);
-        SerializeSimulationWindow(lclDoc);
-
-        std::string xml;
-        rapidxml::print(std::back_inserter(xml), *lclDoc);
-        file << xml;
-        file.close();
-        lclDoc->clear();
-
-        SafeDel(lclDoc);
-      }
+      GetEngineSettings().SerializeEngineSettings(path);
     }
 
     void Workspace::DeSerializeEngineSettings()
@@ -335,17 +313,7 @@ namespace ToolKit
         settingsFile = ConcatPaths({ConfigPath(), "Engine.settings"});
       }
 
-      XmlFile* lclFile    = new XmlFile(settingsFile.c_str());
-      XmlDocument* lclDoc = new XmlDocument();
-      lclDoc->parse<0>(lclFile->data());
-
-      GetEngineSettings().DeSerializeWindow(lclDoc, nullptr);
-      GetEngineSettings().DeSerializeGraphics(lclDoc, nullptr);
-
-      DeSerializeSimulationWindow(lclDoc);
-
-      SafeDel(lclFile);
-      SafeDel(lclDoc);
+      GetEngineSettings().DeSerializeEngineSettings(settingsFile);
     }
 
     XmlNode* Workspace::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)

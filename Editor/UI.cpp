@@ -854,7 +854,7 @@ namespace ToolKit
         }
       };
 
-      auto choosePublishPlatformFn = [&](PublishPlatform publishPlatform)
+      auto choosePublishPlatformFn = [&](PublishPlatform publishPlatform, bool developBuild = true)
       {
         if (ImGui::MenuItem("Debug"))
         {
@@ -864,13 +864,16 @@ namespace ToolKit
         AddTooltipToLastItem("Builds the project in Debug config with debug info.\nDoes not pack the resources if "
                              "there is a pack already.");
 
-        if (ImGui::MenuItem("Develop"))
+        if (developBuild)
         {
-          callPublisherForPlatformFn(publishPlatform, PublishConfig::Develop);
-        }
+          if (ImGui::MenuItem("Develop"))
+          {
+            callPublisherForPlatformFn(publishPlatform, PublishConfig::Develop);
+          }
 
-        AddTooltipToLastItem("Builds the project in Release config with debug info.\nDoes not pack the resources if "
-                             "there is a pack already.");
+          AddTooltipToLastItem("Builds the project in Release config with debug info.\nDoes not pack the resources if "
+                               "there is a pack already.");
+        }
 
         if (ImGui::MenuItem("Deploy"))
         {
@@ -896,7 +899,7 @@ namespace ToolKit
 
         if (ImGui::BeginMenu("Android"))
         {
-          choosePublishPlatformFn(PublishPlatform::Android);
+          choosePublishPlatformFn(PublishPlatform::Android, false);
         }
 
         if (ImGui::BeginMenu("Windows"))

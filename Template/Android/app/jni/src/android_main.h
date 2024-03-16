@@ -9,6 +9,7 @@
 #include "Logger.h"
 #include "SDL.h"
 #include "Util.h"
+#include "EngineSettings.h"
 
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
@@ -28,20 +29,16 @@ namespace ToolKit
 {
   AAssetManager* assetManager = nullptr;
 
-  // copies all of the engine assets to internal data folder if already not copied
-  inline void CopyAllAssetsToDataPath(String& internalDataPath)
+  inline void CopyFileToDataPath(String& internalDataPath, const char* file)
   {
-    const char* MinResourcesPak = "MinResources.pak";
-    AAsset* asset               = AAssetManager_open(assetManager, MinResourcesPak, 0);
+    AAsset* asset = AAssetManager_open(assetManager, file, 0);
 
     if (!asset)
     {
       ANDROID_LOG("cannot open MinResources.pak!\n");
       return;
     }
-    FILE* fileHandle = fopen(ConcatPaths({internalDataPath, MinResourcesPak}).c_str(), "wb");
-    mkdir(ConcatPaths({internalDataPath, "Resources"}).c_str(), 0777);
-
+    FILE* fileHandle = fopen(ConcatPaths({ internalDataPath, file }).c_str(), "wb");
     off_t size = AAsset_getLength(asset);
     std::vector<char> buffer;
     buffer.resize(size + 1, '\0');
@@ -52,12 +49,22 @@ namespace ToolKit
     AAsset_close(asset);
   }
 
+  // copies all of the engine assets to internal data folder if already not copied
+  inline void CopyAllAssetsToDataPath(String& internalDataPath)
+  {
+    mkdir(ConcatPaths({ internalDataPath, "Resources" }).c_str(), 0777);
+    mkdir(ConcatPaths({ internalDataPath, "Config" }).c_str(), 0777);
+
+    CopyFileToDataPath(internalDataPath, "MinResources.pak");
+    CopyFileToDataPath(internalDataPath, ConcatPaths({"Config", "Engine.settings"}).c_str());
+  }
+
   inline void PlatformPreInit(Main* g_proxy)
   {
-    String internalPath     = SDL_AndroidGetInternalStoragePath();
+    String internalPath = SDL_AndroidGetInternalStoragePath();
 
-    g_proxy->m_resourceRoot = ConcatPaths({internalPath, "Resources"});
-    g_proxy->m_cfgPath      = ConcatPaths({internalPath, "Config"});
+    g_proxy->m_resourceRoot = ConcatPaths({ internalPath, "Resources" });
+    g_proxy->m_cfgPath = ConcatPaths({ internalPath, "Config"});
 
     // Set log function
     GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { ANDROID_LOG("%s", ms.c_str()); });
@@ -71,6 +78,12 @@ namespace ToolKit
     {
       TK_Loop();
     }
+  }
+
+  inline void PlatformAdjustEngineSettings(int availableWidth, int availableHeight, EngineSettings* engineSettings)
+  {
+    engineSettings->Window.Width = (uint)availableWidth;
+    engineSettings->Window.Height = (uint)availableHeight;
   }
 } // namespace ToolKit
 

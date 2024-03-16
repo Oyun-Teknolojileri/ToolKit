@@ -110,6 +110,8 @@ namespace ToolKit
 
     void BindProgram(const GpuProgramPtr& program);
 
+    void ResetUsedTextureSlots();
+
    private:
     void FeedUniforms(const GpuProgramPtr& program, const RenderJob& job);
     void FeedLightUniforms(const GpuProgramPtr& program, const RenderJob& job);
