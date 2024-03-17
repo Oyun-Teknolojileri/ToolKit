@@ -7,7 +7,6 @@
 
 #include "AdditiveLightingPass.h"
 
-#include "DataTexture.h"
 #include "DirectionComponent.h"
 #include "Material.h"
 #include "MathUtil.h"
@@ -21,18 +20,37 @@ namespace ToolKit
 
   AdditiveLightingPass::AdditiveLightingPass()
   {
-    m_fullQuadPass                   = MakeNewPtr<FullQuadPass>();
-    m_lightingFrameBuffer            = MakeNewPtr<Framebuffer>();
-    m_lightingRt                     = MakeNewPtr<RenderTarget>();
-    m_lightingShader                 = GetShaderManager()->Create<Shader>(ShaderPath("additiveLighting.shader", true));
-    m_mergeShader                    = GetShaderManager()->Create<Shader>(ShaderPath("lightMerge.shader", true));
-    m_meshMaterial                   = MakeNewPtr<Material>();
+    // Render target for light calc.
+    TextureSettings oneChannelSet = {};
+    oneChannelSet.WarpS           = GraphicTypes::UVClampToEdge;
+    oneChannelSet.WarpT           = GraphicTypes::UVClampToEdge;
+    oneChannelSet.InternalFormat  = GraphicTypes::FormatRGBA16F;
+    oneChannelSet.Format          = GraphicTypes::FormatRGBA;
+    oneChannelSet.Type            = GraphicTypes::TypeFloat;
+    oneChannelSet.GenerateMipMap  = false;
 
+    int size                      = 128;
+    m_lightingRt                  = MakeNewPtr<RenderTarget>(size, size, oneChannelSet);
+    m_lightingRt->Init();
+
+    // Frame buffer for light calc.
+    m_lightingFrameBuffer = MakeNewPtr<Framebuffer>();
+    m_lightingFrameBuffer->Init({size, size, false, false});
+
+    m_fullQuadPass                   = MakeNewPtr<FullQuadPass>();
+
+    ShaderManager* shaderMan         = GetShaderManager();
+    m_mergeShader                    = shaderMan->Create<Shader>(ShaderPath("lightMerge.shader", true));
+    m_lightingShader                 = shaderMan->Create<Shader>(ShaderPath("additiveLighting.shader", true));
+
+    m_meshMaterial                   = MakeNewPtr<Material>();
     m_meshMaterial->m_fragmentShader = m_lightingShader;
-    m_meshMaterial->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("additiveVertex.shader", true));
+    m_meshMaterial->m_vertexShader   = shaderMan->Create<Shader>(ShaderPath("additiveVertex.shader", true));
     m_meshMaterial->Init();
+
     RenderState* renderState   = m_meshMaterial->GetRenderState();
     renderState->blendFunction = BlendFunction::ONE_TO_ONE;
+
     m_sphereEntity             = MakeNewPtr<Sphere>();
     m_sphereEntity->SetNumRingVal(8);
     m_sphereEntity->SetNumSegVal(8);
@@ -41,8 +59,6 @@ namespace ToolKit
 
   AdditiveLightingPass::~AdditiveLightingPass() {}
 
-  void AdditiveLightingPass::Init(const LightingPassParams& params) {}
-
   void AdditiveLightingPass::PreRender()
   {
     PUSH_GPU_MARKER("AdditiveLightingPass::PreRender");
@@ -50,24 +66,16 @@ namespace ToolKit
 
     Pass::PreRender();
 
-    int width  = m_params.MainFramebuffer->GetSettings().width;
-    int height = m_params.MainFramebuffer->GetSettings().height;
+    const FramebufferSettings& fbSet = m_params.MainFramebuffer->GetSettings();
+    uint width                       = fbSet.width;
+    uint height                      = fbSet.height;
 
-    m_lightingFrameBuffer->Init({(uint) width, (uint) height, false, false});
-    m_lightingFrameBuffer->ReconstructIfNeeded((uint) width, (uint) height);
-
-    RenderTargetSettigs oneChannelSet = {};
-    oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.InternalFormat      = GraphicTypes::FormatRGBA16F;
-    oneChannelSet.Format              = GraphicTypes::FormatRGBA;
-    oneChannelSet.Type                = GraphicTypes::TypeFloat;
-
-    m_lightingRt->m_settings          = oneChannelSet;
-    m_lightingRt->ReconstructIfNeeded((uint) width, (uint) height);
+    m_lightingFrameBuffer->ReconstructIfNeeded(width, height);
+    m_lightingRt->ReconstructIfNeeded(width, height);
     m_lightingFrameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_lightingRt);
 
     Renderer* renderer          = GetRenderer();
+
     // Set gbuffer
     // 9: Position, 10: Normal, 11: Color, 14: metallic-roughness,
     FramebufferPtr gFrameBuffer = m_params.GBufferFramebuffer;
@@ -77,7 +85,6 @@ namespace ToolKit
     renderer->SetTexture(11, gFrameBuffer->GetAttachment(FAttachment::ColorAttachment2)->m_textureId);
     renderer->SetTexture(14, gFrameBuffer->GetAttachment(FAttachment::ColorAttachment5)->m_textureId);
 
-    m_lightingShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.AOTexture != nullptr));
     renderer->SetTexture(5, m_params.AOTexture ? m_params.AOTexture->m_textureId : 0);
 
     POP_CPU_MARKER();
@@ -89,35 +96,35 @@ namespace ToolKit
     CPU_FUNC_RANGE();
 
     Vec3 pos = light->m_node->GetTranslation();
-    m_lightingShader->SetShaderParameter("lightType", ParameterVariant(lightType));
-    m_lightingShader->SetShaderParameter("lightPos", ParameterVariant(pos));
-    m_lightingShader->SetShaderParameter("lightIntensity", ParameterVariant(light->GetIntensityVal()));
-    m_lightingShader->SetShaderParameter("lightColor", ParameterVariant(light->GetColorVal()));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightType", lightType));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightPos", pos));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightIntensity", light->GetIntensityVal()));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightColor", light->GetColorVal()));
 
     Vec3 dir;
     switch (lightType)
     {
     case 0: // is directional
     case 3:
-      dir = static_cast<DirectionalLight*>(light.get())->GetComponent<DirectionComponent>()->GetDirection();
+      dir = static_cast<DirectionalLight*>(light.get())->GetComponentFast<DirectionComponent>()->GetDirection();
       break;
     case 1: // is point
     case 4:
     {
       PointLight* pointLight = static_cast<PointLight*>(light.get());
-      m_lightingShader->SetShaderParameter("lightRadius", ParameterVariant(pointLight->GetRadiusVal()));
+      m_fullQuadPass->UpdateUniform(ShaderUniform("lightRadius", pointLight->GetRadiusVal()));
     }
     break;
     case 2: // is spot
     case 5:
     {
       SpotLight* spotLight = static_cast<SpotLight*>(light.get());
-      dir                  = spotLight->GetComponent<DirectionComponent>()->GetDirection();
+      dir                  = spotLight->GetComponentFast<DirectionComponent>()->GetDirection();
       float outAngle       = glm::cos(glm::radians(spotLight->GetOuterAngleVal() * 0.5f));
       float innAngle       = glm::cos(glm::radians(spotLight->GetInnerAngleVal() * 0.5f));
-      m_lightingShader->SetShaderParameter("lightRadius", ParameterVariant(spotLight->GetRadiusVal()));
-      m_lightingShader->SetShaderParameter("lightOutAngle", ParameterVariant(outAngle));
-      m_lightingShader->SetShaderParameter("lightInnAngle", ParameterVariant(innAngle));
+      m_fullQuadPass->UpdateUniform(ShaderUniform("lightRadius", spotLight->GetRadiusVal()));
+      m_fullQuadPass->UpdateUniform(ShaderUniform("lightOutAngle", outAngle));
+      m_fullQuadPass->UpdateUniform(ShaderUniform("lightInnAngle", innAngle));
     }
     break;
     default:
@@ -125,7 +132,7 @@ namespace ToolKit
       break;
     }
 
-    m_lightingShader->SetShaderParameter("lightDir", ParameterVariant(dir));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightDir", dir));
 
     if (lightType < 3) // does not have shadow
     {
@@ -137,16 +144,15 @@ namespace ToolKit
     const Mat4& projView   = light->m_shadowMapCameraProjectionViewMatrix;
     float atlasResRatio    = light->GetShadowResVal() / atlasTextureSize;
 
-    m_lightingShader->SetShaderParameter("lightShadowMapCameraFar", ParameterVariant(light->m_shadowMapCameraFar));
-    m_lightingShader->SetShaderParameter("lightProjectionViewMatrix", ParameterVariant(projView));
-    m_lightingShader->SetShaderParameter("lightShadowAtlasCoord",
-                                         ParameterVariant(light->m_shadowAtlasCoord / atlasTextureSize));
-    m_lightingShader->SetShaderParameter("lightShadowAtlasResRatio", ParameterVariant(atlasResRatio));
-    m_lightingShader->SetShaderParameter("lightShadowAtlasLayer", ParameterVariant((float) light->m_shadowAtlasLayer));
-    m_lightingShader->SetShaderParameter("lightPCFSamples", ParameterVariant(light->GetPCFSamplesVal()));
-    m_lightingShader->SetShaderParameter("lightPCFRadius", ParameterVariant(light->GetPCFRadiusVal()));
-    m_lightingShader->SetShaderParameter("lightBleedReduction", ParameterVariant(light->GetBleedingReductionVal()));
-    m_lightingShader->SetShaderParameter("lightShadowBias", ParameterVariant(bias));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowMapCameraFar", light->m_shadowMapCameraFar));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightProjectionViewMatrix", projView));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowAtlasCoord", light->m_shadowAtlasCoord / atlasTextureSize));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowAtlasResRatio", atlasResRatio));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowAtlasLayer", (float) light->m_shadowAtlasLayer));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightPCFSamples", light->GetPCFSamplesVal()));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightPCFRadius", light->GetPCFRadiusVal()));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightBleedReduction", light->GetBleedingReductionVal()));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowBias", bias));
   }
 
   void AdditiveLightingPass::Render()
@@ -155,14 +161,16 @@ namespace ToolKit
     PUSH_CPU_MARKER("AdditiveLightingPass::Render");
 
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_lightingFrameBuffer, true, Vec4(0.0f));
+    renderer->SetFramebuffer(m_lightingFrameBuffer, GraphicBitFields::AllBits);
+
     // Deferred render always uses PBR material
     m_fullQuadPass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE; // additive blending
     m_fullQuadPass->m_params.FrameBuffer      = m_lightingFrameBuffer;
-    m_fullQuadPass->m_params.FragmentShader   = m_lightingShader;
     m_fullQuadPass->m_params.ClearFrameBuffer = false;
 
-    m_lightingShader->SetShaderParameter("camPos", ParameterVariant(m_params.Cam->m_node->GetTranslation()));
+    m_fullQuadPass->SetFragmentShader(m_lightingShader, renderer);
+
+    m_fullQuadPass->UpdateUniform(ShaderUniform("camPos", m_params.Cam->Position()));
 
     renderer->EnableDepthTest(true);
     CameraPtr camera = m_params.Cam;
@@ -170,10 +178,8 @@ namespace ToolKit
 
     struct LightAndType
     {
-      LightPtr light;
-      int type;
-
-      LightAndType() {}
+      LightPtr light = nullptr;
+      int type       = 0;
 
       LightAndType(LightPtr l, int t) : light(l), type(t) {}
     };
@@ -185,7 +191,7 @@ namespace ToolKit
     {
       LightPtr light = m_params.lights[i];
       int hasShadow  = light->GetCastShadowVal() * 3; // if light has shadow index will start from 3
-      int lightType  = light->ComparableType() + hasShadow;
+      int lightType  = light->GetLightType() + hasShadow;
       assert(lightType < 6 && lightType >= 0 && "light type invalid");
 
       if (lightType == 1 || lightType == 4) // point light
@@ -210,7 +216,7 @@ namespace ToolKit
         }
 
         job.Mesh           = m_sphereEntity->GetMeshComponent()->GetMeshVal().get();
-        job.Material       = m_meshMaterial;
+        job.Material       = m_meshMaterial.get();
         job.BoundingBox    = BoundingBox(Vec3(-radius), Vec3(radius));
         job.ShadowCaster   = false;
         job.WorldTransform = glm::translate(Mat4(), pos) * glm::scale(Mat4(), Vec3(radius * 1.05f));
@@ -219,7 +225,7 @@ namespace ToolKit
       else if (lightType == 2 || lightType == 5) // is spot light
       {
         SpotLight* spotLight = static_cast<SpotLight*>(light.get());
-        Vec3 dir             = spotLight->GetComponent<DirectionComponent>()->GetDirection();
+        Vec3 dir             = spotLight->GetComponentFast<DirectionComponent>()->GetDirection();
         Vec3 pos             = spotLight->m_node->GetTranslation();
         float height         = spotLight->GetRadiusVal();
         float outerAngle     = spotLight->GetOuterAngleVal();
@@ -238,7 +244,7 @@ namespace ToolKit
 
         RenderJob job {};
         job.Mesh           = spotLight->m_volumeMesh.get();
-        job.Material       = m_meshMaterial;
+        job.Material       = m_meshMaterial.get();
         job.ShadowCaster   = false;
         job.WorldTransform = light->m_node->GetTransform();
         meshLights.push_back(std::make_pair(LightAndType(light, lightType), job));
@@ -249,7 +255,7 @@ namespace ToolKit
       }
     }
 
-    m_lightingShader->SetShaderParameter("isScreenSpace", ParameterVariant(1));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("isScreenSpace", true));
     for (auto& [light, lightType] : screenSpaceLights)
     {
       SetLightUniforms(light, lightType);
@@ -261,18 +267,23 @@ namespace ToolKit
     // we need to use gbuffers depth in this pass in order to make proper depth test
     renderer->CopyFrameBuffer(m_params.GBufferFramebuffer, m_lightingFrameBuffer, GraphicBitFields::DepthBits);
 
-    m_lightingShader->SetShaderParameter("isScreenSpace", ParameterVariant(0));
+    renderer->SetCamera(camera, true);
+
     renderer->EnableDepthWrite(false);
+
+    m_program = GetGpuProgramManager()->CreateProgram(m_meshMaterial->m_vertexShader, m_meshMaterial->m_fragmentShader);
+    renderer->BindProgram(m_program);
+
     for (auto& [lightAndType, job] : meshLights)
     {
-      SetLightUniforms(lightAndType.light, lightAndType.type);
-      renderer->Render(job, m_params.Cam, {});
+      renderer->Render(job);
     }
 
+    m_fullQuadPass->SetFragmentShader(m_mergeShader, renderer);
+
     // prepare to write main frame buffer
-    m_fullQuadPass->m_params.FragmentShader   = m_mergeShader;
     m_fullQuadPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
-    m_fullQuadPass->m_params.ClearFrameBuffer = false;
+    m_fullQuadPass->m_params.ClearFrameBuffer = true;
     m_fullQuadPass->m_params.BlendFunc        = BlendFunction::NONE;
 
     RenderTargetPtr emmisiveRt = m_params.GBufferFramebuffer->GetAttachment(FAttachment::ColorAttachment3);
@@ -282,8 +293,8 @@ namespace ToolKit
     renderer->SetTexture(1, emmisiveRt->m_textureId);
     renderer->SetTexture(2, iblRt->m_textureId);
 
-    m_mergeShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.AOTexture != nullptr));
     renderer->SetTexture(5, m_params.AOTexture != nullptr ? m_params.AOTexture->m_textureId : 0);
+
     // merge lighting, ibl, ao, and emmisive
     RenderSubPass(m_fullQuadPass);
     renderer->EnableDepthWrite(true);

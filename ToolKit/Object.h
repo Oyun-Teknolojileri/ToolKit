@@ -88,7 +88,7 @@ namespace ToolKit
   virtual ClassMeta* const Class() const;                                                                              \
   static ClassMeta* const StaticClass() { return &This##Cls; }
 
-#define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Object::NativeConstruct;
+#define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Base::NativeConstruct;
 
   /**
    * Defines macros for classes. This macro crates the functions and members for declared class.
@@ -141,9 +141,9 @@ namespace ToolKit
       return nullptr;
     }
 
-    bool IsSame(ObjectPtr other) { return other->GetIdVal() == GetIdVal(); }
+    bool IsSame(const ObjectPtr& other) { return other->GetIdVal() == GetIdVal(); }
 
-    bool IsSame(Object* other) { return other->GetIdVal() == GetIdVal(); }
+    bool IsSame(const Object* other) { return other->GetIdVal() == GetIdVal(); }
 
     template <typename T>
     std::shared_ptr<T> Self() const

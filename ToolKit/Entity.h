@@ -41,8 +41,8 @@ namespace ToolKit
 
     EntityPtr Parent() const;
     virtual bool IsDrawable() const;
-    virtual void SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget = nullptr);
-    virtual BoundingBox GetAABB(bool inWorld = false) const;
+    virtual void SetPose(const AnimationPtr& anim, float time);
+    virtual BoundingBox GetBoundingBox(bool inWorld = false) const;
     ObjectPtr Copy() const override;
     virtual void RemoveResources();
 
@@ -56,15 +56,17 @@ namespace ToolKit
     void SetTransformLock(bool vis, bool deep);
 
     template <typename T>
-    std::shared_ptr<T> AddComponent()
+    std::shared_ptr<T> AddComponent(bool componentSerializable = true)
     {
-      std::shared_ptr<T> component = MakeNewPtr<T>();
+      assert(GetComponent(T::StaticClass()) == nullptr && "Component has already been added.");
+
+      std::shared_ptr<T> component = MakeNewPtr<T>(componentSerializable);
       component->OwnerEntity(Self<Entity>());
       m_components.push_back(component);
       return component;
     }
 
-    void AddComponent(const ComponentPtr& componet);
+    void AddComponent(const ComponentPtr& component);
 
     /**
      * Used to easily access first MeshComponentPtr.
@@ -83,7 +85,28 @@ namespace ToolKit
      * @param componentId Id of the component to be removed.
      * @return Removed ComponentPtr. If nothing gets removed, returns nullptr.
      */
-    ComponentPtr RemoveComponent(ULongID componentId);
+    template <typename T>
+    ComponentPtr RemoveComponent()
+    {
+      for (int i = 0; i < (int) m_components.size(); i++)
+      {
+        if (m_components[i]->IsA<T>())
+        {
+          ComponentPtr cmp = m_components[i];
+          m_components.erase(m_components.begin() + i);
+          return cmp;
+        }
+      }
+
+      return nullptr;
+    }
+
+    /**
+     * Remove the given component from the components of the Entity.
+     * @param Class is the class of the component to be removed.
+     * @return Removed ComponentPtr. If nothing gets removed, returns nullptr.
+     */
+    ComponentPtr RemoveComponent(ClassMeta* Class);
 
     /**
      * Mutable component array accessors.
@@ -98,17 +121,17 @@ namespace ToolKit
     const ComponentPtrArray& GetComponentPtrArray() const;
 
     /**
-     * Used to return first encountered component of type T.
-     * @return First Component of type T if any exist, otherwise empty pointer.
+     * Used to return component of type T.
+     * @return Component of type T if exist, otherwise nullptr.
      */
     template <typename T>
     std::shared_ptr<T> GetComponent() const
     {
-      for (const ComponentPtr& com : GetComponentPtrArray())
+      for (int i = 0; i < (int) m_components.size(); i++)
       {
-        if (com->IsA<T>())
+        if (m_components[i]->IsA<T>())
         {
-          return tk_reinterpret_pointer_cast<T>(com);
+          return Cast<T>(m_components[i]);
         }
       }
 
@@ -116,28 +139,27 @@ namespace ToolKit
     }
 
     /**
-     * Used to return all components of type T.
-     * @param components ComponentPtrArray that will contain all encountered
-     * components of type T.
+     * Faster version of the get component, if raw pointer is applicable.
      */
     template <typename T>
-    void GetComponent(std::vector<std::shared_ptr<T>>& components) const
+    T* GetComponentFast() const
     {
-      for (const ComponentPtr& com : GetComponentPtrArray())
+      for (int i = 0; i < (int) m_components.size(); i++)
       {
-        if (com->IsA<T>())
+        if (m_components[i]->IsA<T>())
         {
-          components.push_back(std::static_pointer_cast<T>(com));
+          return static_cast<T*>(m_components[i].get());
         }
       }
+
+      return nullptr;
     }
 
     /**
-     * Used to return ComponentPtr with given id.
-     * @param id Id of the Component that will be returned.
-     * @return ComponentPtr with the given id.
+     * Returns the component with the given class.
+     * @return Component of type T if exist, otherwise empty pointer.
      */
-    ComponentPtr GetComponent(ULongID id) const;
+    ComponentPtr GetComponent(ClassMeta* Class) const;
 
     /**
      * Removes all components from the entity.
@@ -186,9 +208,10 @@ namespace ToolKit
     Entity* _prefabRootEntity;
 
    private:
-    // This should be private, because instantiated entities don't use this list
-    // NOTE: Entity's own functions shouldn't access this either.
-    // They should use GetComponentPtrArray instead.
+    /**
+     * Component map that may contains only one component per type.
+     * It holds Class HashId - ComponentPtr
+     */
     ComponentPtrArray m_components;
   };
 

@@ -1,9 +1,10 @@
 <shader>
 	<type name = "includeShader" />
+	<uniform name = "aoEnabled" />
 	<source>
 	<!--
-		uniform sampler2D s_texture5;
-    uniform bool aoEnabled;
+		uniform sampler2D s_texture5; // ambient occlusion.
+		uniform bool aoEnabled;
 
 		float AmbientOcclusion()
 		{

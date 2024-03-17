@@ -40,6 +40,14 @@ namespace ToolKit
     // Tight fit camera frustum to a bounding box with a margin
     void FocusToBoundingBox(const BoundingBox& bb, float margin);
 
+    /**
+     * Calculates world space frustum corners.
+     * First 4 points belongs to near plane from bottom left to top left.
+     * Rest belongs to far plane in the same order.
+     * @returns Calculated world space corners.
+     */
+    Vec3Array ExtractFrustumCorner();
+
     inline float Fov() const { return m_fov; }
 
     inline float Aspect() const { return m_aspect; }

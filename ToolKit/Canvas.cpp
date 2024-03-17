@@ -106,7 +106,7 @@ namespace ToolKit
           // Scale operation
           {
             const Vec4 surfaceCurrentSize(surface->GetSizeVal(), 0.f, 1.f);
-            const BoundingBox surfaceBB       = surface->GetAABB(true);
+            const BoundingBox surfaceBB       = surface->GetBoundingBox(true);
 
             const float surfaceAbsoluteWidth  = surfaceBB.GetWidth();
             const float surfaceAbsoluteHeight = surfaceBB.GetHeight();
@@ -123,7 +123,7 @@ namespace ToolKit
 
             Mat4 scaleMat;
             scaleMat = glm::scale(scaleMat, surfaceScale);
-            childNode->Transform(scaleMat, TransformationSpace::TS_WORLD, false);
+            childNode->Transform(scaleMat, TransformationSpace::TS_WORLD);
           }
 
           // Translate operation
@@ -164,7 +164,7 @@ namespace ToolKit
           if (surface->IsA<Canvas>())
           {
             Canvas* canvasPanel  = static_cast<Canvas*>(surface);
-            const BoundingBox bb = canvasPanel->GetAABB(true);
+            const BoundingBox bb = canvasPanel->GetBoundingBox(true);
             canvasPanel->ApplyRecursiveResizePolicy(bb.GetWidth(), bb.GetHeight());
           }
         }

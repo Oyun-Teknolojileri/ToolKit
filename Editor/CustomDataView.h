@@ -6,6 +6,7 @@
  */
 
 #pragma once
+
 #include "MultiChoiceWindow.h"
 #include "PropInspector.h"
 
@@ -19,13 +20,22 @@ namespace ToolKit
      public:
       static void ShowMaterialPtr(const String& uniqueName, const String& file, MaterialPtr& var, bool isEditable);
       static void ShowMaterialVariant(const String& uniqueName, const String& file, ParameterVariant* var);
-      static void ShowCustomData(EntityPtr m_entity,
-                                 String headerName,
-                                 ParameterVariantRawPtrArray& vars,
-                                 bool isListEditable);
+
+      /**
+       * Shows the parameters with given indexes.
+       * @param entity is the subject which will show its data block.
+       * @param headerName is the Name / Category that will appear in object inspector.
+       * @param vars is the index list that points to data block that identifies the parameters to show.
+       * @param isListEditable allows altering the shown variants.
+       */
+      static void ShowCustomData(EntityPtr entity, const String& headerName, const IntArray& vars, bool isListEditable);
 
       static bool BeginShowVariants(StringView header);
-      static void ShowVariant(ParameterVariant* var, ParameterVariant*& remove, size_t i, bool isEditable);
+
+      /**
+       * Shows the variant, sets remove to true if user choose to delete it.
+       */
+      static void ShowVariant(ParameterVariant* var, bool& remove, int uiId, bool isEditable);
       static void EndShowVariants();
 
       static void ShowVariant(ParameterVariant* var, ComponentPtr comp);

@@ -55,8 +55,6 @@ namespace ToolKit::Editor
                    "ToolKit will try to run the application on your android device.",
                    2.0f);
 
-    ImGui::Checkbox("Debug", &m_isDebugBuild);
-
     if (ImGui::Button("Cancel"))
     {
       UI::RemoveTempWindow(this);
@@ -74,9 +72,8 @@ namespace ToolKit::Editor
       publisher->m_icon             = m_icon;
       publisher->m_oriantation      = (PublishManager::Oriantation) m_selectedOriantation;
       publisher->m_deployAfterBuild = m_deployAfterBuild;
-      publisher->m_isDebugBuild     = m_isDebugBuild;
 
-      g_app->m_publishManager->Publish(PublishPlatform::Android);
+      g_app->m_publishManager->Publish(PublishPlatform::Android, m_publishType);
       UI::RemoveTempWindow(this);
       m_menuOpen = false;
     }
@@ -84,7 +81,7 @@ namespace ToolKit::Editor
     ImGui::End();
   }
 
-  void AndroidBuildWindow::OpenBuildWindow()
+  void AndroidBuildWindow::OpenBuildWindow(PublishConfig publishType)
   {
     if (m_menuOpen)
     {
@@ -101,6 +98,8 @@ namespace ToolKit::Editor
       m_defaultIcon = GetTextureManager()->Create<Texture>(TexturePath(ConcatPaths({"ToolKit", "Icons", "app.png"})));
       m_defaultIcon->Init(false);
     }
+
+    m_publishType = publishType;
 
     UI::AddTempWindow(this);
     m_menuOpen = true;

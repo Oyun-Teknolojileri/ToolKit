@@ -35,7 +35,7 @@ namespace ToolKit
 
   void AABBOverrideComponent::Init(bool flushClientSideArray) {}
 
-  BoundingBox AABBOverrideComponent::GetAABB()
+  BoundingBox AABBOverrideComponent::GetBoundingBox()
   {
     BoundingBox aabb = {};
     aabb.min         = GetPositionOffsetVal();
@@ -43,7 +43,7 @@ namespace ToolKit
     return aabb;
   }
 
-  void AABBOverrideComponent::SetAABB(BoundingBox aabb)
+  void AABBOverrideComponent::SetBoundingBox(BoundingBox aabb)
   {
     SetPositionOffsetVal(aabb.min);
     SetSizeVal(aabb.max - aabb.min);
@@ -60,6 +60,11 @@ namespace ToolKit
   XmlNode* AABBOverrideComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* root = Super::SerializeImp(doc, parent);
+    if (!m_serializableComponent)
+    {
+      return root;
+    }
+
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
     return node;

@@ -160,7 +160,7 @@ namespace ToolKit
       {
         String path = "undefined";
         String name = "undefined";
-        std::vector<int> childs;
+        IntArray childs;
         int index   = -1;
         bool active = false;
 

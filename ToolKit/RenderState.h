@@ -14,6 +14,7 @@ namespace ToolKit
 
   enum class GraphicBitFields
   {
+    None             = 0x00000000,
     ColorBits        = 0x00004000,
     DepthBits        = 0x00000100,
     StencilBits      = 0x00000400,
@@ -21,6 +22,13 @@ namespace ToolKit
     ColorStencilBits = ColorBits | StencilBits,
     DepthStencilBits = DepthBits | StencilBits,
     AllBits          = ColorBits | DepthBits | StencilBits
+  };
+
+  enum class GraphicFramebufferTypes
+  {
+    ReadFramebuffer = 0x8CA8,
+    DrawFramebuffer = 0x8CA9,
+    Framebuffer     = 0x8D40
   };
 
   enum class CompareFunctions
@@ -64,6 +72,30 @@ namespace ToolKit
     None,
     Mesh,
     SkinMesh
+  };
+
+  /**
+   * Simple binary stencil test operations.
+   */
+  enum class StencilOperation
+  {
+    /**
+     * Stencil write and operations are disabled.
+     */
+    None,
+    /**
+     * All pixels are drawn and stencil value of the corresponding pixel set
+     * to 1.
+     */
+    AllowAllPixels,
+    /**
+     * Pixels whose stencil value is 1 are drawn.
+     */
+    AllowPixelsPassingStencil,
+    /**
+     * Pixels whose stencil value is 0 are drawn.
+     */
+    AllowPixelsFailingStencil
   };
 
   class TK_API RenderState : public Serializable

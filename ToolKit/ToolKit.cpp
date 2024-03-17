@@ -10,6 +10,7 @@
 #include "Audio.h"
 #include "EngineSettings.h"
 #include "FileManager.h"
+#include "GpuProgram.h"
 #include "Logger.h"
 #include "Material.h"
 #include "Mesh.h"
@@ -17,10 +18,14 @@
 #include "Object.h"
 #include "ObjectFactory.h"
 #include "PluginManager.h"
+#include "RHI.h"
 #include "RenderSystem.h"
 #include "Scene.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
+#include "TKProfiler.h"
+#include "TKStats.h"
+#include "Threads.h"
 #include "UIManager.h"
 
 #include "DebugNew.h"
@@ -29,7 +34,7 @@ namespace ToolKit
 {
   HandleManager::HandleManager()
   {
-    uint64 seed = time(nullptr) + ((uint64) (this) ^ m_randomXor[0]);
+    ULongID seed = time(nullptr) + ((ULongID) (this) ^ m_randomXor[0]);
     Xoroshiro128PlusSeed(m_randomXor, seed);
   }
 
@@ -69,12 +74,20 @@ namespace ToolKit
 
     m_logger = new Logger();
     m_logger->Log("Main Constructed");
+
+    m_tkStats = new TKStats();
+    m_tkStats->ResetVRAMUsage();
   }
 
   Main::~Main()
   {
+    ClearPreUpdateFunctions();
+    ClearPostUpdateFunctions();
+
     assert(m_initiated == false && "Uninitiate before destruct");
     m_proxy = nullptr;
+
+    SafeDel(m_tkStats);
 
     m_logger->Log("Main Destructed");
     SafeDel(m_logger);
@@ -91,26 +104,28 @@ namespace ToolKit
 
     m_logger->Log("Main PreInit");
 
+    m_workerManager  = new WorkerManager();
     m_engineSettings = new EngineSettings();
     m_objectFactory  = new ObjectFactory();
     m_objectFactory->Init();
 
-    m_renderSys       = new RenderSystem();
-    m_pluginManager   = new PluginManager();
-    m_animationMan    = new AnimationManager();
-    m_animationPlayer = new AnimationPlayer();
-    m_textureMan      = new TextureManager();
-    m_meshMan         = new MeshManager();
-    m_spriteSheetMan  = new SpriteSheetManager();
-    m_audioMan        = new AudioManager();
-    m_shaderMan       = new ShaderManager();
-    m_materialManager = new MaterialManager();
-    m_sceneManager    = new SceneManager();
-    m_uiManager       = new UIManager();
-    m_skeletonManager = new SkeletonManager();
-    m_fileManager     = new FileManager();
+    m_renderSys         = new RenderSystem();
+    m_gpuProgramManager = new GpuProgramManager();
+    m_pluginManager     = new PluginManager();
+    m_animationMan      = new AnimationManager();
+    m_animationPlayer   = new AnimationPlayer();
+    m_textureMan        = new TextureManager();
+    m_meshMan           = new MeshManager();
+    m_spriteSheetMan    = new SpriteSheetManager();
+    m_audioMan          = new AudioManager();
+    m_shaderMan         = new ShaderManager();
+    m_materialManager   = new MaterialManager();
+    m_sceneManager      = new SceneManager();
+    m_uiManager         = new UIManager();
+    m_skeletonManager   = new SkeletonManager();
+    m_fileManager       = new FileManager();
 
-    m_preInitiated    = true;
+    m_preInitiated      = true;
   }
 
   void Main::Init()
@@ -125,6 +140,7 @@ namespace ToolKit
 
     m_logger->Log("Main Init");
 
+    RHI::m_initialized = true;
     m_pluginManager->Init();
     m_animationMan->Init();
     m_textureMan->Init();
@@ -145,7 +161,8 @@ namespace ToolKit
   {
     m_logger->Log("Main Uninit");
 
-    m_animationPlayer->m_records.clear();
+    RHI::m_initialized = false;
+    m_animationPlayer->Destroy();
     m_animationMan->Uninit();
     m_textureMan->Uninit();
     m_meshMan->Uninit();
@@ -167,6 +184,7 @@ namespace ToolKit
     // After all the resources, we can safely free modules.
     m_pluginManager->UnInit();
 
+    SafeDel(m_gpuProgramManager);
     SafeDel(m_renderSys);
     SafeDel(m_pluginManager);
     SafeDel(m_animationMan);
@@ -183,6 +201,7 @@ namespace ToolKit
     SafeDel(m_fileManager);
     SafeDel(m_objectFactory);
     SafeDel(m_engineSettings);
+    SafeDel(m_workerManager);
   }
 
   void Main::SetConfigPath(StringView cfgPath) { m_cfgPath = cfgPath; }
@@ -195,6 +214,8 @@ namespace ToolKit
     return m_proxy;
   }
 
+  Main* Main::GetInstance_noexcep() { return m_proxy; }
+
   void Main::SetProxy(Main* proxy)
   {
     bool singular = m_proxy == nullptr || m_proxy == proxy;
@@ -204,6 +225,86 @@ namespace ToolKit
       m_proxy = proxy;
     }
   }
+
+  bool Main::SyncFrameTime()
+  {
+    m_timing.CurrentTime = GetElapsedMilliSeconds();
+    return m_timing.CurrentTime > m_timing.LastTime + m_timing.TargetDeltaTime;
+  }
+
+  void Main::FrameBegin() {}
+
+  void Main::FrameUpdate()
+  {
+    float deltaTime = m_timing.CurrentTime - m_timing.LastTime;
+
+    // Call pre update callbacks
+    for (const TKUpdateFn& updateFn : m_preUpdateFunctions)
+    {
+      updateFn(deltaTime);
+    }
+
+    Frame(deltaTime);
+
+    // Call post update callbacks
+    for (const TKUpdateFn& updateFn : m_postUpdateFunctions)
+    {
+      updateFn(deltaTime);
+    }
+  }
+
+  void Main::FrameEnd()
+  {
+    m_timing.FrameCount++;
+    m_timing.TimeAccum += m_timing.GetDeltaTime();
+    if (m_timing.TimeAccum >= 1000.0f)
+    {
+      m_timing.TimeAccum       = 0;
+      m_timing.FramesPerSecond = m_timing.FrameCount;
+      m_timing.FrameCount      = 0;
+    }
+
+    m_timing.LastTime = m_timing.CurrentTime;
+  }
+
+  void Main::Frame(float deltaTime)
+  {
+    ResetDrawCallCounter();
+    ResetHWRenderPassCounter();
+
+    PUSH_CPU_MARKER("Exec Render Tasks");
+    GetRenderSystem()->DecrementSkipFrame();
+    GetRenderSystem()->ExecuteRenderTasks();
+    POP_CPU_MARKER();
+
+    PUSH_CPU_MARKER("Animation Update");
+    // Update animations.
+    GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
+    POP_CPU_MARKER();
+
+    GetUIManager()->Update(deltaTime);
+
+    PUSH_CPU_MARKER("Update Scene");
+    if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
+    {
+      scene->Update(deltaTime);
+    }
+    POP_CPU_MARKER();
+
+    GetRenderSystem()->EndFrame();
+  }
+
+  void Main::RegisterPreUpdateFunction(TKUpdateFn preUpdateFn) { m_preUpdateFunctions.push_back(preUpdateFn); }
+
+  void Main::RegisterPostUpdateFunction(TKUpdateFn postUpdateFn) { m_postUpdateFunctions.push_back(postUpdateFn); }
+
+  void Main::ClearPreUpdateFunctions() { m_preUpdateFunctions.clear(); }
+
+  void Main::ClearPostUpdateFunctions() { m_postUpdateFunctions.clear(); }
+
+  int Main::GetCurrentFPS() const { return m_timing.FramesPerSecond; }
+
+  float Main::TimeSinceStartup() const { return m_timing.CurrentTime; }
 
   Logger* GetLogger() { return Main::GetInstance()->m_logger; }
 
@@ -295,7 +396,23 @@ namespace ToolKit
 
   FileManager* GetFileManager() { return Main::GetInstance()->m_fileManager; }
 
-  TK_API ObjectFactory* GetObjectFactory() { return Main::GetInstance()->m_objectFactory; }
+  ObjectFactory* GetObjectFactory() { return Main::GetInstance()->m_objectFactory; }
+
+  TKStats* GetTKStats()
+  {
+    if (Main* main = Main::GetInstance_noexcep())
+    {
+      return main->m_tkStats;
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+
+  WorkerManager* GetWorkerManager() { return Main::GetInstance()->m_workerManager; }
+
+  GpuProgramManager* GetGpuProgramManager() { return Main::GetInstance()->m_gpuProgramManager; }
 
   EngineSettings& GetEngineSettings() { return *Main::GetInstance()->m_engineSettings; }
 
@@ -384,11 +501,14 @@ namespace ToolKit
 
   void Timing::Init(uint fps)
   {
-    LastTime    = GetElapsedMilliSeconds();
-    CurrentTime = 0.0f;
-    DeltaTime   = 1000.0f / float(fps);
-    FrameCount  = 0;
-    TimeAccum   = 0.0f;
+    LastTime        = GetElapsedMilliSeconds();
+    CurrentTime     = 0.0f;
+    TargetDeltaTime = 1000.0f / float(fps);
+    FramesPerSecond = fps;
+    FrameCount      = 0;
+    TimeAccum       = 0.0f;
   }
+
+  float Timing::GetDeltaTime() { return CurrentTime - LastTime; }
 
 } //  namespace ToolKit

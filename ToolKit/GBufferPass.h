@@ -14,8 +14,8 @@ namespace ToolKit
 
   struct GBufferPassParams
   {
-    RenderJobArray RendeJobs = {};
-    CameraPtr Camera         = nullptr;
+    RenderData* renderData = nullptr;
+    CameraPtr Camera       = nullptr;
   };
 
   class TK_API GBufferPass : public RenderPass

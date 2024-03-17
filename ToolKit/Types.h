@@ -31,6 +31,7 @@
 #include <RapidXml/rapidxml_utils.hpp>
 
 // STL
+#include <array>
 #include <filesystem>
 #include <functional>
 #include <limits>
@@ -40,6 +41,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #ifdef _WIN32 // Windows.
@@ -101,6 +103,7 @@ namespace ToolKit
   typedef uint8_t uint8;
   typedef uint64_t uint64;
   typedef uint64_t ULongID;
+  typedef std::vector<ULongID> IDArray;
   typedef const int16_t SignalId;
   typedef std::string String;
   typedef std::string_view StringView;
@@ -120,23 +123,26 @@ namespace ToolKit
   typedef glm::quat Quaternion;
   typedef std::vector<int> IntArray;
   typedef std::vector<uint> UIntArray;
+  typedef std::vector<bool> BoolArray;
   typedef std::vector<struct VariantCategory> VariantCategoryArray;
   typedef std::vector<struct RenderJob> RenderJobArray;
 
   // Resource types.
   typedef std::shared_ptr<class Animation> AnimationPtr;
   typedef std::shared_ptr<class Material> MaterialPtr;
+  typedef std::weak_ptr<class Material> MaterialWeakPtr;
   typedef std::vector<MaterialPtr> MaterialPtrArray;
   typedef std::shared_ptr<class CubeMap> CubeMapPtr;
   typedef std::shared_ptr<class Texture> TexturePtr;
   typedef std::shared_ptr<class DataTexture> DataTexturePtr;
-  typedef std::shared_ptr<class LightDataTexture> LightDataTexturePtr;
+  typedef std::shared_ptr<class DepthTexture> DepthTexturePtr;
   typedef std::shared_ptr<class Hdri> HdriPtr;
   typedef std::shared_ptr<class RenderTarget> RenderTargetPtr;
   typedef std::shared_ptr<class Framebuffer> FramebufferPtr;
   typedef std::shared_ptr<class SpriteSheet> SpriteSheetPtr;
   typedef std::shared_ptr<class Mesh> MeshPtr;
   typedef std::shared_ptr<class Skeleton> SkeletonPtr;
+  typedef std::shared_ptr<class SkeletonComponent> SkeletonComponentPtr;
   typedef std::shared_ptr<class DynamicBoneMap> DynamicBoneMapPtr;
   typedef std::shared_ptr<class Shader> ShaderPtr;
   typedef std::vector<ShaderPtr> ShaderPtrArray;
@@ -145,12 +151,11 @@ namespace ToolKit
   typedef std::shared_ptr<class Scene> ScenePtr;
   typedef std::vector<MeshPtr> MeshPtrArray;
   typedef std::vector<class Mesh*> MeshRawPtrArray;
-  typedef std::vector<const class Mesh*> MeshRawCPtrArray;
   typedef std::shared_ptr<class AnimRecord> AnimRecordPtr;
   typedef std::unordered_map<String, AnimRecordPtr> AnimRecordPtrMap;
   typedef class AnimRecord* AnimRecordRawPtr;
   typedef std::vector<AnimRecordRawPtr> AnimRecordRawPtrArray;
-  struct BlendTarget;
+  typedef std::vector<AnimRecordPtr> AnimRecordPtrArray;
 
   // Entity types.
   typedef std::shared_ptr<class Entity> EntityPtr;
@@ -163,7 +168,6 @@ namespace ToolKit
   typedef std::vector<class DirectionalLight*> DirectionalLightRawPtrArray;
   typedef std::vector<class SpotLight*> SpotLightRawPtrArray;
   typedef std::vector<class PointLight*> PointLightRawPtrArray;
-  typedef std::vector<ULongID> EntityIdArray;
   typedef std::vector<class Node*> NodeRawPtrArray;
   typedef std::vector<class Vertex> VertexArray;
   typedef std::vector<class Face> FaceArray;
@@ -181,7 +185,7 @@ namespace ToolKit
   typedef std::shared_ptr<class Canvas> CanvasPtr;
   typedef std::shared_ptr<class Billboard> BillboardPtr;
   typedef std::shared_ptr<class Camera> CameraPtr;
-  typedef std::shared_ptr<class Camera> CameraPtr;
+  typedef std::vector<CameraPtr> CameraPtrArray;
   typedef std::shared_ptr<class Surface> SurfacePtr;
   typedef std::shared_ptr<class Dpad> DpadPtr;
 
@@ -346,7 +350,6 @@ namespace ToolKit
     FormatRGBA32F              = 0x8814,
     FormatR16SNorm             = 0x8F98,
     FormatSRGB8_A8             = 0x8C43,
-    FormatDepthComponent       = 0x1902,
     ColorAttachment0           = 0x8CE0,
     DepthAttachment            = 0x8D00,
     TypeFloat                  = 0x1406,
@@ -356,10 +359,48 @@ namespace ToolKit
     Target2DArray              = 0x8C1A
   };
 
-  static const String TKResourcePak = "MinResources.pak";
+  inline int BytesOfFormat(GraphicTypes type)
+  {
+    switch (type)
+    {
+    case GraphicTypes::FormatRed:
+    case GraphicTypes::FormatR8:
+      return 1;
+    case GraphicTypes::FormatRG:
+    case GraphicTypes::FormatRG8:
+    case GraphicTypes::FormatR16F:
+    case GraphicTypes::FormatR16SNorm:
+      return 2;
+    case GraphicTypes::FormatRGB:
+    case GraphicTypes::FormatRGB8:
+      return 3;
+    case GraphicTypes::FormatRGBA:
+    case GraphicTypes::FormatRGBA8:
+    case GraphicTypes::FormatR32F:
+    case GraphicTypes::FormatRG16F:
+    case GraphicTypes::FormatSRGB8_A8:
+      return 4;
+    case GraphicTypes::FormatRG32F:
+    case GraphicTypes::FormatRGBA16F:
+      return 8;
+    case GraphicTypes::FormatRGB16F:
+      return 6;
+    case GraphicTypes::FormatRGB32F:
+      return 12;
+    case GraphicTypes::FormatRGBA32F:
+      return 16;
+    default:
+      return 0;
+    }
+  }
 
-  static const char* TKVersionStr   = "v0.4.5";
-  static const String TKV044        = "v0.4.4";
-  static const String TKV045        = "v0.4.5";
+  static const String TKBrdfLutTexture = "GLOBAL_BRDF_LUT_TEXTURE";
+
+  static const String TKResourcePak    = "MinResources.pak";
+
+  static const char* TKVersionStr      = "v0.4.6";
+  static const String TKV044           = "v0.4.4";
+  static const String TKV045           = "v0.4.5";
+  static const String TKV046           = "v0.4.6";
 
 } // namespace ToolKit

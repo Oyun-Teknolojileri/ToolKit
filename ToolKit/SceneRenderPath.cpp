@@ -83,7 +83,7 @@ namespace ToolKit
     // Second stage of the render.
     m_passArray.clear();
 
-    renderer->SetShadowAtlas(std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
+    renderer->SetShadowAtlas(Cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
     // Render non-blended entities with deferred renderer
     m_passArray.push_back(m_lightingPass);
@@ -96,15 +96,15 @@ namespace ToolKit
     // Forward render blended entities
     m_passArray.push_back(m_forwardRenderPass);
 
+    if (m_params.Gfx.DepthOfFieldEnabled)
+    {
+      m_passArray.push_back(m_dofPass);
+    }
+
     // Post processes.
     if (m_params.Gfx.BloomEnabled)
     {
       m_passArray.push_back(m_bloomPass);
-    }
-
-    if (m_params.Gfx.DepthOfFieldEnabled)
-    {
-      m_passArray.push_back(m_dofPass);
     }
 
     if (m_params.Gfx.TonemappingEnabled)
@@ -151,73 +151,111 @@ namespace ToolKit
     CPU_FUNC_RANGE();
 
     // Update all lights before using them.
-    m_updatedLights = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
-
-    for (LightPtr light : m_updatedLights)
-    {
-      light->UpdateShadowCamera();
-    }
+    m_updatedLights                   = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
 
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
-    m_jobs.clear();
-    RenderJobProcessor::CreateRenderJobs(allDrawList, m_jobs);
+    m_renderData.jobs.clear();
 
-    m_shadowPass->m_params.RendeJobs  = m_jobs; // Copy
-    m_shadowPass->m_params.Lights     = m_updatedLights;
-    m_shadowPass->m_params.ViewCamera = m_params.Cam;
+    LightPtrArray nullLights;
+    RenderJobProcessor::CreateRenderJobs(allDrawList,
+                                         m_renderData.jobs,
+                                         nullLights,
+                                         m_params.Cam,
+                                         m_params.Scene->GetEnvironmentVolumes(),
+                                         false);
 
-    RenderJobProcessor::CullRenderJobs(m_jobs, m_params.Cam);
+    m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
 
-    RenderJobProcessor::AssignEnvironment(m_jobs, m_params.Scene->GetEnvironmentVolumes());
+    m_shadowPass->m_params.renderData   = &m_renderData;
+    m_shadowPass->m_params.Lights       = m_updatedLights;
+    m_shadowPass->m_params.ViewCamera   = m_params.Cam;
 
-    m_gBufferPass->m_params.RendeJobs.clear();
-    m_forwardRenderPass->m_params.OpaqueJobs.clear();
-    m_forwardRenderPass->m_params.TranslucentJobs.clear();
-    RenderJobProcessor::SeperateDeferredForward(m_jobs,
-                                                m_gBufferPass->m_params.RendeJobs,
-                                                m_forwardRenderPass->m_params.OpaqueJobs,
-                                                m_forwardRenderPass->m_params.TranslucentJobs);
+    RenderJobProcessor::SeperateRenderData(m_renderData, false);
+    RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
 
-    m_gBufferPass->m_params.Camera                 = m_params.Cam;
+    // Assign lights for forward pass
+    RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_updatedLights);
 
-    m_forwardRenderPass->m_params.Lights           = m_updatedLights;
-    m_forwardRenderPass->m_params.Cam              = m_params.Cam;
-    m_forwardRenderPass->m_params.gNormalRt        = m_gBufferPass->m_gNormalRt;
-    m_forwardRenderPass->m_params.gLinearRt        = m_gBufferPass->m_gLinearDepthRt;
-    m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
-    m_forwardRenderPass->m_params.gFrameBuffer     = m_gBufferPass->m_framebuffer;
-    m_forwardRenderPass->m_params.SSAOEnabled      = m_params.Gfx.SSAOEnabled;
-    m_forwardRenderPass->m_params.SsaoTexture      = m_ssaoPass->m_ssaoTexture;
-    m_forwardRenderPass->m_params.ClearFrameBuffer = false;
+    // TK_LOG("Culled");
+    // int i = 0;
+    // for (RenderJobItr beg = m_renderData.jobs.begin(); beg != m_renderData.GetDefferedBegin(); beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
 
-    m_forwardPreProcessPass->m_params              = m_forwardRenderPass->m_params;
+    // TK_LOG("Deferred Opaque");
+    // for (RenderJobItr beg = m_renderData.GetDefferedBegin(); beg != m_renderData.GetForwardOpaqueBegin(); beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
 
-    m_lightingPass->m_params.ClearFramebuffer      = false;
-    m_lightingPass->m_params.GBufferFramebuffer    = m_gBufferPass->m_framebuffer;
-    m_lightingPass->m_params.lights                = m_updatedLights;
-    m_lightingPass->m_params.MainFramebuffer       = m_params.MainFramebuffer;
-    m_lightingPass->m_params.Cam                   = m_params.Cam;
-    m_lightingPass->m_params.AOTexture             = m_params.Gfx.SSAOEnabled ? m_ssaoPass->m_ssaoTexture : nullptr;
+    // TK_LOG("Forward Opaque");
+    // for (RenderJobItr beg = m_renderData.GetForwardOpaqueBegin(); beg != m_renderData.GetForwardTranslucentBegin();
+    //      beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
 
-    m_ssaoPass->m_params.GNormalBuffer             = m_forwardPreProcessPass->m_normalRt;
-    m_ssaoPass->m_params.GLinearDepthBuffer        = m_forwardPreProcessPass->m_linearDepthRt;
-    m_ssaoPass->m_params.Cam                       = m_params.Cam;
-    m_ssaoPass->m_params.Radius                    = m_params.Gfx.SSAORadius;
-    m_ssaoPass->m_params.spread                    = m_params.Gfx.SSAOSpread;
-    m_ssaoPass->m_params.Bias                      = m_params.Gfx.SSAOBias;
-    m_ssaoPass->m_params.KernelSize                = m_params.Gfx.SSAOKernelSize;
+    // TK_LOG("Forward Translucent");
+    // for (RenderJobItr beg = m_renderData.GetForwardTranslucentBegin(); beg != m_renderData.jobs.end(); beg++)
+    //{
+    //   i++;
+    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
+    // }
+
+    m_gBufferPass->m_params.renderData          = &m_renderData;
+    m_gBufferPass->m_params.Camera              = m_params.Cam;
+
+    m_forwardRenderPass->m_params.renderData    = &m_renderData;
+    m_forwardRenderPass->m_params.Lights        = m_updatedLights;
+    m_forwardRenderPass->m_params.Cam           = m_params.Cam;
+    m_forwardRenderPass->m_params.gNormalRt     = m_gBufferPass->m_gNormalRt;
+    m_forwardRenderPass->m_params.gLinearRt     = m_gBufferPass->m_gLinearDepthRt;
+    m_forwardRenderPass->m_params.FrameBuffer   = m_params.MainFramebuffer;
+    m_forwardRenderPass->m_params.gFrameBuffer  = m_gBufferPass->m_framebuffer;
+    m_forwardRenderPass->m_params.SSAOEnabled   = m_params.Gfx.SSAOEnabled;
+    m_forwardRenderPass->m_params.SsaoTexture   = m_ssaoPass->m_ssaoTexture;
+    m_forwardRenderPass->m_params.clearBuffer   = GraphicBitFields::None;
+
+    m_forwardPreProcessPass->m_params           = m_forwardRenderPass->m_params;
+
+    m_lightingPass->m_params.ClearFramebuffer   = false;
+    m_lightingPass->m_params.GBufferFramebuffer = m_gBufferPass->m_framebuffer;
+    m_lightingPass->m_params.lights             = m_updatedLights;
+    m_lightingPass->m_params.MainFramebuffer    = m_params.MainFramebuffer;
+    m_lightingPass->m_params.Cam                = m_params.Cam;
+    m_lightingPass->m_params.AOTexture          = m_params.Gfx.SSAOEnabled ? m_ssaoPass->m_ssaoTexture : nullptr;
+
+    m_ssaoPass->m_params.GNormalBuffer          = m_forwardPreProcessPass->m_normalRt;
+    m_ssaoPass->m_params.GLinearDepthBuffer     = m_forwardPreProcessPass->m_linearDepthRt;
+    m_ssaoPass->m_params.Cam                    = m_params.Cam;
+    m_ssaoPass->m_params.Radius                 = m_params.Gfx.SSAORadius;
+    m_ssaoPass->m_params.spread                 = m_params.Gfx.SSAOSpread;
+    m_ssaoPass->m_params.Bias                   = m_params.Gfx.SSAOBias;
+    m_ssaoPass->m_params.KernelSize             = m_params.Gfx.SSAOKernelSize;
 
     // Set CubeMapPass for sky.
-    m_drawSky                                      = false;
+    m_drawSky                                   = false;
     if (m_sky = m_params.Scene->GetSky())
     {
+      m_sky->Init();
       if (m_drawSky = m_sky->GetDrawSkyVal())
       {
-        m_skyPass->m_params.FrameBuffer = m_params.MainFramebuffer;
-        m_skyPass->m_params.Cam         = m_params.Cam;
-        m_skyPass->m_params.Transform   = m_sky->m_node->GetTransform();
-        m_skyPass->m_params.Material    = m_sky->GetSkyboxMaterial();
+        if (m_sky->ReadyToRender())
+        {
+          m_skyPass->m_params.FrameBuffer = m_params.MainFramebuffer;
+          m_skyPass->m_params.Cam         = m_params.Cam;
+          m_skyPass->m_params.Transform   = m_sky->m_node->GetTransform();
+          m_skyPass->m_params.Material    = m_sky->GetSkyboxMaterial();
+        }
+        else
+        {
+          m_drawSky = false;
+        }
       }
     }
 
@@ -240,7 +278,7 @@ namespace ToolKit
 
     // FXAA Pass
     m_fxaaPass->m_params.FrameBuffer    = m_params.MainFramebuffer;
-    FramebufferSettings fbs             = m_params.MainFramebuffer->GetSettings();
+    const FramebufferSettings& fbs      = m_params.MainFramebuffer->GetSettings();
     m_fxaaPass->m_params.screen_size    = Vec2(fbs.width, fbs.height);
 
     // Gamma pass.

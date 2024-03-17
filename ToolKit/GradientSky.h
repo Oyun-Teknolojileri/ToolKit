@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "Renderer.h"
 #include "Sky.h"
 
 namespace ToolKit
@@ -23,11 +24,13 @@ namespace ToolKit
     void Init() override;
     MaterialPtr GetSkyboxMaterial() override;
 
+    bool ReadyToRender() override;
+
    protected:
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
-    void GenerateGradientCubemap();
-    void GenerateIrradianceCubemap();
+    void GenerateGradientCubemap(Renderer* renderer);
+    void GenerateIrradianceCubemap(Renderer* renderer);
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    public:
@@ -35,11 +38,10 @@ namespace ToolKit
     TKDeclareParam(Vec3, MiddleColor);
     TKDeclareParam(Vec3, BottomColor);
     TKDeclareParam(float, GradientExponent);
-    TKDeclareParam(float, IrradianceResolution);
-    uint m_size = 1024;
 
    private:
-    bool m_onInit = false;
+    bool m_waitingForInit = false;
+    FramebufferPtr m_frameBuffer;
   };
 
 } // namespace ToolKit

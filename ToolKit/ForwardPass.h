@@ -14,18 +14,16 @@ namespace ToolKit
 
   struct ForwardRenderPassParams
   {
-    CameraPtr Cam                  = nullptr;
-    FramebufferPtr FrameBuffer     = nullptr;
-    FramebufferPtr gFrameBuffer    = nullptr;
-    RenderTargetPtr gNormalRt      = nullptr;
-    RenderTargetPtr gLinearRt      = nullptr;
-    RenderTargetPtr SsaoTexture    = nullptr;
-    bool ClearFrameBuffer          = true;  //!< Clears whole buffer
-    bool ClearDepthBuffer          = false; //!< Clears only depth buffer.
-    bool SSAOEnabled               = false;
-    RenderJobArray OpaqueJobs      = {};
-    RenderJobArray TranslucentJobs = {};
-    LightPtrArray Lights           = {};
+    RenderData* renderData       = nullptr;
+    CameraPtr Cam                = nullptr;
+    FramebufferPtr FrameBuffer   = nullptr;
+    FramebufferPtr gFrameBuffer  = nullptr;
+    RenderTargetPtr gNormalRt    = nullptr;
+    RenderTargetPtr gLinearRt    = nullptr;
+    RenderTargetPtr SsaoTexture  = nullptr;
+    GraphicBitFields clearBuffer = GraphicBitFields::AllBits;
+    bool SSAOEnabled             = false;
+    LightPtrArray Lights         = {}; //!< Updated lights.
   };
 
   /**
@@ -43,23 +41,8 @@ namespace ToolKit
     void PostRender() override;
 
    protected:
-    /**
-     * Renders the entities immediately. No sorting applied.
-     * @param entities All entities to render.
-     * @param cam Camera for rendering.
-     * @param zoom Zoom amount of camera.
-     * @param lights All lights.
-     */
-    void RenderOpaque(RenderJobArray& jobs, CameraPtr cam, LightPtrArray& lights);
-
-    /**
-     * Sorts and renders translucent entities. For double-sided blended entities
-     * first render back, than renders front.
-     * @param entities All entities to render.
-     * @param cam Camera for rendering.
-     * @param lights ights All lights.
-     */
-    void RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, LightPtrArray& lights);
+    void RenderOpaque(RenderData* renderData);
+    void RenderTranslucent(RenderData* renderData);
 
    public:
     ForwardRenderPassParams m_params;

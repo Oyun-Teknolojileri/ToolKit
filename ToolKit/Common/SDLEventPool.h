@@ -10,6 +10,7 @@
 #include "Events.h"
 #include "SDL.h"
 #include "ToolKit.h"
+#include "Logger.h"
 
 namespace ToolKit
 {

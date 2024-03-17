@@ -32,9 +32,7 @@ namespace ToolKit
       {
         EngineSettings::PostProcessingSettings& gfx = engineSettings.PostProcessing;
 
-        ImGui::DragFloat("Shadow Distance", &engineSettings.Graphics.ShadowDistance, 1.0f, 0.01f, 100000.0f);
-
-        ImGui::Separator();
+        ImGui::SeparatorText("Post Process");
 
         if (ImGui::CollapsingHeader("Tonemapping"))
         {
@@ -117,7 +115,33 @@ namespace ToolKit
           ImGui::Checkbox("FXAA##1", &gfx.FXAAEnabled);
         }
 
-        ImGui::Separator();
+        ImGui::SeparatorText("General");
+
+        static bool lockFps = true;
+        if (ImGui::Checkbox("FPS Lock##1", &lockFps))
+        {
+          if (lockFps)
+          {
+            Main::GetInstance()->m_timing.Init(engineSettings.Graphics.FPS);
+          }
+          else
+          {
+            Main::GetInstance()->m_timing.Init(9999);
+          }
+        }
+
+        static bool multiThreaded = true;
+        if (ImGui::Checkbox("MultiThread##1", &multiThreaded))
+        {
+          if (multiThreaded)
+          {
+            Main::GetInstance()->m_threaded = true;
+          }
+          else
+          {
+            Main::GetInstance()->m_threaded = false;
+          }
+        }
 
         const char* renderSpecNames[] = {"High", "Low"};
         const int currentRenderSpec   = (int) engineSettings.Graphics.RenderSpec;
@@ -136,6 +160,8 @@ namespace ToolKit
           }
           ImGui::EndCombo();
         }
+
+        ImGui::DragFloat("Shadow Distance", &engineSettings.Graphics.ShadowDistance, 1.0f, 0.01f, 100000.0f);
 
       } // Imgui::Begin
       ImGui::End();

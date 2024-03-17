@@ -36,26 +36,34 @@ namespace ToolKit
     if (envComp == nullptr)
     {
       // Create a default environment component.
-      envComp      = AddComponent<EnvironmentComponent>();
-      HdriPtr hdri = nullptr;
+      envComp = AddComponent<EnvironmentComponent>();
+    }
 
-      // Provide an empty hdri to construct gradient sky.
-      if (IsA<GradientSky>())
+    HdriPtr hdri = nullptr;
+    // Provide an empty hdri to construct gradient sky.
+    if (IsA<GradientSky>())
+    {
+      hdri = MakeNewPtr<Hdri>();
+    }
+    else
+    {
+      hdri = envComp->GetHdriVal();
+      if (hdri != nullptr)
       {
-        hdri = MakeNewPtr<Hdri>();
+        hdri->Init();
       }
-      else // Use default hdri image.
+      else
       {
+        // Use default hdri image.
         TextureManager* tman = GetTextureManager();
         hdri                 = tman->Create<Hdri>(tman->GetDefaultResource(Hdri::StaticClass()));
         hdri->Init();
       }
-
-      envComp->SetHdriVal(hdri);
     }
 
-    Vec3 mp = Vec3(TK_FLT_MAX);
-    envComp->SetSizeVal(mp);
+    envComp->SetHdriVal(hdri);
+
+    envComp->SetSizeVal(Vec3(TK_FLT_MAX));
     envComp->OwnerEntity(Self<Entity>());
     envComp->Init(false);
 
@@ -91,13 +99,26 @@ namespace ToolKit
     return hdri;
   }
 
-  BoundingBox SkyBase::GetAABB(bool inWorld) const
+  BoundingBox SkyBase::GetBoundingBox(bool inWorld) const
   {
     // Return a unit boundary.
     return {
         {-0.5f, -0.5f, -0.5f},
         {0.5f,  0.5f,  0.5f }
     };
+  }
+
+  bool SkyBase::ReadyToRender()
+  {
+    if (EnvironmentComponentPtr envComp = GetComponent<EnvironmentComponent>())
+    {
+      if (HdriPtr hdri = envComp->GetHdriVal())
+      {
+        return hdri->m_initiated;
+      }
+    }
+
+    return false;
   }
 
   void SkyBase::ParameterConstructor()
@@ -114,6 +135,7 @@ namespace ToolKit
       param.m_name = name;
       return param;
     };
+
     MultiChoiceVariant mcv = {
         {createParameterVariantFn("256", 256),
          createParameterVariantFn("512", 512),
@@ -165,6 +187,7 @@ namespace ToolKit
   void SkyBase::ConstructSkyMaterial(ShaderPtr vertexPrg, ShaderPtr fragPrg)
   {
     m_skyboxMaterial                             = MakeNewPtr<Material>();
+    m_skyboxMaterial->m_isShaderMaterial         = true;
     m_skyboxMaterial->m_cubeMap                  = GetHdri()->m_cubemap;
     m_skyboxMaterial->m_vertexShader             = vertexPrg;
     m_skyboxMaterial->m_fragmentShader           = fragPrg;
@@ -209,7 +232,8 @@ namespace ToolKit
   {
     Init();
 
-    HdriPtr hdri                = GetHdri();
+    HdriPtr hdri = GetHdri();
+    hdri->Init();
     m_skyboxMaterial->m_cubeMap = hdri->m_cubemap;
     return m_skyboxMaterial;
   }

@@ -121,14 +121,14 @@ namespace ToolKit
         shownEntity = m_activeChildEntity;
       }
 
-      ParameterVariantRawPtrArray inheritedParams;
+      IntArray inheritedParams;
       shownEntity->m_localData.GetByCategory(CustomDataCategory.Name, inheritedParams);
       CustomDataView::ShowCustomData(shownEntity, "Custom Data##1", inheritedParams, false);
 
       if (ImGui::CollapsingHeader("Components##1", ImGuiTreeNodeFlags_DefaultOpen))
       {
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
-        for (ComponentPtr& com : shownEntity->GetComponentPtrArray())
+        for (auto& com : shownEntity->GetComponentPtrArray())
         {
           ComponentView::ShowComponentBlock(com, false);
         }

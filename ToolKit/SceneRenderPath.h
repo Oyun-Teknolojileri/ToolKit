@@ -73,7 +73,7 @@ namespace ToolKit
     SkyBasePtr m_sky = nullptr;
 
     // Cached variables
-    RenderJobArray m_jobs;
+    RenderData m_renderData;
   };
 
   typedef std::shared_ptr<SceneRenderPath> SceneRenderPathPtr;

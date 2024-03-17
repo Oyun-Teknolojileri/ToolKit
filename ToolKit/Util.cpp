@@ -295,6 +295,7 @@ namespace ToolKit
 #else
     FILE* fp = popen(command.c_str(), "r");
 #endif
+
     if (fp == nullptr)
     {
       TK_ERR("pipe run failed! command: %s", command.c_str());
@@ -310,8 +311,9 @@ namespace ToolKit
 #ifdef _WIN32
     int res = _pclose(fp);
 #else
-    int res = pclose(fp);
+    int res  = pclose(fp);
 #endif
+
     if (afterFn)
     {
       afterFn(res);
@@ -799,7 +801,7 @@ namespace ToolKit
     return lineForm;
   }
 
-  void ToEntityIdArray(EntityIdArray& idArray, const EntityPtrArray& ptrArray)
+  void ToEntityIdArray(IDArray& idArray, const EntityPtrArray& ptrArray)
   {
     idArray.reserve(ptrArray.size());
     for (EntityPtr ntt : ptrArray)
@@ -901,6 +903,18 @@ namespace ToolKit
     }
 
     return cpy;
+  }
+
+  TK_API Node* DeepNodeCopy(Node* node)
+  {
+    Node* newNode = node->Copy();
+
+    for (Node* child : node->m_children)
+    {
+      newNode->AddChild(DeepNodeCopy(child));
+    }
+
+    return newNode;
   }
 
   static void RecursiveCopyDirectoryWithSet(const String& source,

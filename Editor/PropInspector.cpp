@@ -200,11 +200,6 @@ namespace ToolKit
 
     void PreviewViewport::Show()
     {
-      if (m_needsResize)
-      {
-        OnResizeContentArea((float) m_size.x, (float) m_size.y);
-      }
-
       HandleStates();
       DrawCommands();
 
@@ -212,8 +207,8 @@ namespace ToolKit
       GetRenderSystem()->AddRenderTask({[this](Renderer* r) -> void { m_previewRenderer->Render(r); }});
 
       // Render color attachment as rounded image
-      FramebufferSettings fbSettings = m_framebuffer->GetSettings();
-      Vec2 imageSize                 = Vec2(fbSettings.width, fbSettings.height);
+      const FramebufferSettings& fbSettings = m_framebuffer->GetSettings();
+      Vec2 imageSize                        = Vec2(fbSettings.width, fbSettings.height);
       Vec2 currentCursorPos =
           Vec2(ImGui::GetWindowContentRegionMin()) + Vec2(ImGui::GetCursorPos()) + Vec2(ImGui::GetWindowPos());
 
@@ -236,7 +231,11 @@ namespace ToolKit
 
     ScenePtr PreviewViewport::GetScene() { return m_previewRenderer->m_params.Scene; }
 
-    void PreviewViewport::SetScene(ScenePtr scene) { m_previewRenderer->m_params.Scene = scene; }
+    void PreviewViewport::SetScene(ScenePtr scene)
+    {
+      scene->Update(0.0f);
+      m_previewRenderer->m_params.Scene = scene;
+    }
 
     void PreviewViewport::ResetCamera()
     {
@@ -245,11 +244,12 @@ namespace ToolKit
       cam->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f, 1.1f, 0.0f));
     }
 
-    void PreviewViewport::ResizeWindow(uint width, uint height)
+    void PreviewViewport::SetViewportSize(uint width, uint height)
     {
       if (width != m_size.x || height != m_size.y)
       {
-        EditorViewport::ResizeWindow(width, height);
+        m_size = UVec2(width, height);
+        OnResizeContentArea((float) width, (float) height);
       }
     }
 

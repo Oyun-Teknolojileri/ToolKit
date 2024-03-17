@@ -22,14 +22,6 @@ namespace ToolKit
 
       GridFragmentShader();
       virtual ~GridFragmentShader();
-      void UpdateShaderParameters() override;
-
-     public:
-      ParameterVariant m_sizeEachCell;
-      ParameterVariant m_maxLinePixelCount;
-      ParameterVariant m_axisColorHorizontal;
-      ParameterVariant m_axisColorVertical;
-      ParameterVariant m_is2DViewport;
     };
 
     typedef std::shared_ptr<GridFragmentShader> GridFragmentShaderPtr;

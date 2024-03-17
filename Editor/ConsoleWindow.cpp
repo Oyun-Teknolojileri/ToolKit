@@ -269,6 +269,17 @@ namespace ToolKit
       }
     }
 
+    void ResetCameraExec(TagArgArray tagArgs)
+    {
+      if (EditorViewport* vp = g_app->GetActiveViewport())
+      {
+        if (CameraPtr cam = vp->GetCamera())
+        {
+          cam->m_node->SetTransform(Mat4());
+        }
+      }
+    }
+
     void GetTransformExec(TagArgArray tagArgs)
     {
       EntityPtr e = g_app->GetCurrentScene()->GetCurrentSelection();
@@ -524,7 +535,7 @@ namespace ToolKit
       int problemsFound = 0;
       if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
       {
-        auto fixProblemFn = [&problemsFound, scene, fix](EntityPtr ntt, StringView msg) -> void
+        auto fixProblemFn = [&problemsFound, fix, &scene](Entity* ntt, StringView msg) -> void
         {
           problemsFound++;
 
@@ -534,13 +545,14 @@ namespace ToolKit
 
           if (fix)
           {
-            ActionManager::GetInstance()->AddAction(new DeleteAction(ntt));
+            EntityPtr deletedNtt = scene->GetEntity(ntt->GetIdVal());
+            ActionManager::GetInstance()->AddAction(new DeleteAction(deletedNtt));
           }
         };
 
         // Checks for invalid bb & outlier.
         RenderJobArray jobs;
-        RenderJobProcessor::CreateRenderJobs(scene->AccessEntityArray(), jobs);
+        RenderJobProcessor::CreateRenderJobs(scene->GetEntities(), jobs);
 
         float stdev;
         Vec3 mean;
@@ -623,6 +635,7 @@ namespace ToolKit
       CreateCommand(g_showModTransitionsCmd, ShowModTransitionsExec);
       CreateCommand(g_setTransformCmd, SetTransformExec);
       CreateCommand(g_setCameraTransformCmd, SetCameraTransformExec);
+      CreateCommand(g_resetCameraCmd, ResetCameraExec);
       CreateCommand(g_transformCmd, TransformExec);
       CreateCommand(g_getTransformCmd, GetTransformExec);
       CreateCommand(g_setTransformOrientationCmd, SetTransformOrientationExec);

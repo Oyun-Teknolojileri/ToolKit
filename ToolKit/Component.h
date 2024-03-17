@@ -42,6 +42,11 @@ namespace ToolKit
     virtual ~Component();
 
     /**
+     * Constructor takes flag that shows if this component should be serialized
+     */
+    virtual void NativeConstruct(bool serializable);
+
+    /**
      * Creates a copy of the component. Derived classes should perform
      * appropriate cloning functionality that creates actual memory copy of
      * the component. It should not be an instance.
@@ -79,7 +84,8 @@ namespace ToolKit
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    protected:
-    EntityWeakPtr m_entity; //!< Parent Entity of the component.
+    EntityWeakPtr m_entity;              //!< Parent Entity of the component.
+    bool m_serializableComponent = true; //!< Should component be serialized
   };
 
   /**

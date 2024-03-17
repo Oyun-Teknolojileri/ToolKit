@@ -248,7 +248,7 @@ namespace ToolKit
 
     bool StatePickingBase::IsIgnored(ULongID id) { return contains(m_ignoreList, id); }
 
-    void StatePickingBase::PickDataToEntityId(EntityIdArray& ids)
+    void StatePickingBase::PickDataToEntityId(IDArray& ids)
     {
       for (EditorScene::PickData& pd : m_pickData)
       {
@@ -314,14 +314,14 @@ namespace ToolKit
           {
             g_app->m_cursor->m_worldLocation = pd.pickPos;
 
-            if (g_app->m_dbgArrow == nullptr)
+            if (g_app->m_dbgArrow != nullptr)
             {
               m_ignoreList.push_back(g_app->m_dbgArrow->GetIdVal());
               currScene->AddEntity(g_app->m_dbgArrow);
-            }
 
-            g_app->m_dbgArrow->m_node->SetTranslation(ray.position);
-            g_app->m_dbgArrow->m_node->SetOrientation(RotationTo(X_AXIS, ray.direction));
+              g_app->m_dbgArrow->m_node->SetTranslation(pd.pickPos + (ray.position - pd.pickPos) * 0.1f);
+              g_app->m_dbgArrow->m_node->SetOrientation(RotationTo(X_AXIS, ray.direction));
+            }
           }
 
           return StateType::StateEndPick;
@@ -476,10 +476,10 @@ namespace ToolKit
               GetMouseRect(min, max);
 
               ImU32 col = ImColor(g_selectBoxWindowColor);
-              drawList->AddRectFilled(min, max, col, 5.0f);
+              drawList->AddRectFilled(min, max, col, 5.0f, ImDrawFlags_RoundCornersAll);
 
               col = ImColor(g_selectBoxBorderColor);
-              drawList->AddRect(min, max, col, 5.0f, 15, 2.0f);
+              drawList->AddRect(min, max, col, 5.0f, ImDrawFlags_RoundCornersAll);
             };
 
             vp->m_drawCommands.push_back(drawSelectionRectangleFn);
@@ -590,7 +590,7 @@ namespace ToolKit
             {
               DeepCopy(ntt, copies);
             }
-            copies[0]->m_node->SetTransform(ntt->m_node->GetTransform(), TransformationSpace::TS_WORLD, false);
+            copies[0]->m_node->SetTransform(ntt->m_node->GetTransform(), TransformationSpace::TS_WORLD);
 
             for (EntityPtr cpy : copies)
             {
@@ -642,7 +642,7 @@ namespace ToolKit
       if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick)
       {
         StateEndPick* endPick = static_cast<StateEndPick*>(m_stateMachine->m_currentState);
-        EntityIdArray entities;
+        IDArray entities;
         endPick->PickDataToEntityId(entities);
         g_app->GetCurrentScene()->AddToSelection(entities, ImGui::GetIO().KeyShift);
 

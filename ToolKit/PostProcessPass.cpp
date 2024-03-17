@@ -55,9 +55,9 @@ namespace ToolKit
     }
     else
     {
-      FramebufferSettings targetFbs = m_params.FrameBuffer->GetSettings();
-      fbs.width                     = targetFbs.width;
-      fbs.height                    = targetFbs.height;
+      const FramebufferSettings& targetFbs = m_params.FrameBuffer->GetSettings();
+      fbs.width                            = targetFbs.width;
+      fbs.height                           = targetFbs.height;
     }
 
     m_copyTexture->ReconstructIfNeeded(fbs.width, fbs.height);
@@ -70,7 +70,7 @@ namespace ToolKit
     // Set given buffer as a texture to be read in gamma pass.
     renderer->SetTexture(0, m_copyTexture->m_textureId);
 
-    m_postProcessPass->m_params.FragmentShader   = m_postProcessShader;
+    m_postProcessPass->SetFragmentShader(m_postProcessShader, renderer);
     m_postProcessPass->m_params.FrameBuffer      = m_params.FrameBuffer;
     m_postProcessPass->m_params.ClearFrameBuffer = false;
 

@@ -12,9 +12,23 @@
 
 namespace ToolKit
 {
+  struct AnimData
+  {
+    float firstKeyFrame                  = 0.0f; // normalized via (firstKeyFrame / keyFrameCount)
+    float secondKeyFrame                 = 0.0f; // normalized via (firstKeyFrame / keyFrameCount)
+    float keyFrameInterpolationTime      = 0.0f;
+    float keyFrameCount                  = 1.0f; // default value is 1 to prevent division with 0
+
+    AnimationPtr currentAnimation        = nullptr;
+    AnimationPtr blendAnimation          = nullptr;
+    float animationBlendFactor           = 0.0f; // between 0 - 1
+    float blendFirstKeyFrame             = 0.0f; // normalized via (firstKeyFrame / keyFrameCount)
+    float blendSecondKeyFrame            = 0.0f; // normalized via (firstKeyFrame / keyFrameCount)
+    float blendKeyFrameInterpolationTime = 0.0f;
+    float blendKeyFrameCount             = 1.0f; // default value is 1 to prevent division with 0
+  };
 
   static VariantCategory SkeletonComponentCategory {"Skeleton Component", 90};
-  typedef std::shared_ptr<class SkeletonComponent> SkeletonComponentPtr;
 
   /**
    * The component that stores skeleton resource reference and dynamic bone
@@ -22,6 +36,9 @@ namespace ToolKit
    */
   class TK_API SkeletonComponent : public Component
   {
+    friend class AnimationPlayer;
+    friend class RenderJobProcessor;
+
    public:
     TKDeclareClass(SkeletonComponent, Component);
 
@@ -34,6 +51,8 @@ namespace ToolKit
     void Init();
     ComponentPtr Copy(EntityPtr ntt) override;
 
+    const AnimData& GetAnimData() const;
+
    protected:
     void ParameterConstructor() override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
@@ -44,6 +63,9 @@ namespace ToolKit
 
     DynamicBoneMapPtr m_map = nullptr;
     bool isDirty            = true;
+
+   private:
+    AnimData m_animData;
   };
 
 } // namespace ToolKit

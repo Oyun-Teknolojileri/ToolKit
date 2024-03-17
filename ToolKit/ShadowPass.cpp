@@ -13,6 +13,7 @@
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "TKProfiler.h"
+#include "TKStats.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -45,7 +46,16 @@ namespace ToolKit
     PUSH_GPU_MARKER("ShadowPass::Render");
     PUSH_CPU_MARKER("ShadowPass::Render");
 
-    const Vec4 lastClearColor = GetRenderer()->m_clearColor;
+    Renderer* renderer        = GetRenderer();
+    const Vec4 lastClearColor = renderer->m_clearColor;
+
+    // Clear shadow atlas before any draw call
+    renderer->SetFramebuffer(m_shadowFramebuffer, GraphicBitFields::None);
+    for (int i = 0; i < m_layerCount; ++i)
+    {
+      m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, i);
+      renderer->ClearBuffer(GraphicBitFields::ColorBits, m_shadowClearColor);
+    }
 
     // Update shadow maps.
     for (LightPtr light : m_params.Lights)
@@ -53,14 +63,20 @@ namespace ToolKit
       light->InitShadowMapDepthMaterial();
       if (DirectionalLight* dLight = light->As<DirectionalLight>())
       {
-        dLight->UpdateShadowFrustum(m_params.RendeJobs, m_params.ViewCamera);
+        dLight->UpdateShadowFrustum(m_params.renderData->jobs, m_params.ViewCamera, m_params.shadowVolume);
       }
       // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
 
-      RenderShadowMaps(light, m_params.RendeJobs);
+      RenderShadowMaps(light, m_params.renderData->jobs);
     }
 
-    GetRenderer()->m_clearColor = lastClearColor;
+    // The first set attachment did not call hw render pass while rendering shadow map
+    if (m_params.Lights.size() > 0)
+    {
+      RemoveHWRenderPass();
+    }
+
+    renderer->m_clearColor = lastClearColor;
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -73,26 +89,13 @@ namespace ToolKit
 
     Pass::PreRender();
 
-    m_lastOverrideMat = GetRenderer()->m_overrideMat;
-
-    // Dropout non shadow casters.
-    erase_if(m_params.RendeJobs, [](RenderJob& job) -> bool { return !job.ShadowCaster; });
+    Renderer* renderer = GetRenderer();
+    renderer->SetLights(m_params.Lights);
 
     // Dropout non shadow casting lights.
     erase_if(m_params.Lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
 
     InitShadowAtlas();
-
-    // Set all shadow atlas layers uncleared
-    if (m_layerCount != m_clearedLayers.size())
-    {
-      m_clearedLayers.resize(m_layerCount);
-    }
-
-    for (int i = 0; i < m_layerCount; i++)
-    {
-      m_clearedLayers[i] = false;
-    }
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -103,7 +106,6 @@ namespace ToolKit
     PUSH_GPU_MARKER("ShadowPas::PostRender");
     PUSH_CPU_MARKER("ShadowPas::PostRender");
 
-    GetRenderer()->m_overrideMat = m_lastOverrideMat;
     Pass::PostRender();
 
     POP_CPU_MARKER();
@@ -112,46 +114,39 @@ namespace ToolKit
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
-  void ShadowPass::RenderShadowMaps(LightPtr light, const RenderJobArray& jobs)
+  void ShadowPass::RenderShadowMaps(LightPtr light, RenderJobArray& jobs)
   {
     CPU_FUNC_RANGE();
 
     Renderer* renderer        = GetRenderer();
 
-    auto renderForShadowMapFn = [this, &renderer](LightPtr light, const RenderJobArray& jobs) -> void
+    auto renderForShadowMapFn = [this, &renderer](LightPtr light, RenderJobArray& jobs) -> void
     {
       PUSH_CPU_MARKER("Render Call");
 
-      const Mat4& pr          = light->m_shadowCamera->GetProjectionMatrix();
-      const Mat4 v            = light->m_shadowCamera->GetViewMatrix();
-      const Frustum frustum   = ExtractFrustum(pr * v, false);
+      MaterialPtr shadowMaterial           = light->GetShadowMaterial();
+      GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+      m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
+      renderer->BindProgram(m_program);
 
-      renderer->m_overrideMat = light->GetShadowMaterial();
-      for (const RenderJob& job : jobs)
+      renderer->SetCamera(light->m_shadowCamera, false);
+
+      RenderJobProcessor::CullRenderJobs(jobs, light->m_shadowCamera, m_unCulledRenderJobIndices);
+
+      // We may draw view culled objects. Because they are visible from shadow camera.
+      renderer->m_ignoreRenderingCulledObjectWarning = true;
+      for (int i = 0; i < m_unCulledRenderJobIndices.size(); i++)
       {
-        // Frustum cull
-        if (FrustumTest(frustum, job.BoundingBox))
-        {
-          continue;
-        }
-
-        MaterialPtr material = job.Material;
-        renderer->m_overrideMat->SetRenderState(material->GetRenderState());
-        renderer->m_overrideMat->UnInit();
-        renderer->m_overrideMat->SetAlpha(material->GetAlpha());
-        renderer->m_overrideMat->m_diffuseTexture                = material->m_diffuseTexture;
-        renderer->m_overrideMat->GetRenderState()->blendFunction = BlendFunction::NONE;
-        renderer->m_overrideMat->Init();
-        renderer->Render(job, light->m_shadowCamera);
+        RenderJob& job          = jobs[m_unCulledRenderJobIndices[i]];
+        renderer->Render(job);
       }
+      renderer->m_ignoreRenderingCulledObjectWarning = false;
 
       POP_CPU_MARKER();
     };
 
     if (light->IsA<PointLight>())
     {
-      renderer->SetFramebuffer(m_shadowFramebuffer, false);
-
       for (int i = 0; i < 6; ++i)
       {
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
@@ -159,18 +154,16 @@ namespace ToolKit
                                                 0,
                                                 light->m_shadowAtlasLayer + i);
 
-        // Clear the layer if needed
-        if (!m_clearedLayers[light->m_shadowAtlasLayer + i])
-        {
-          renderer->ClearBuffer(GraphicBitFields::ColorDepthBits, m_shadowClearColor);
-          m_clearedLayers[light->m_shadowAtlasLayer + i] = true;
-        }
+        AddHWRenderPass();
 
         light->m_shadowCamera->m_node->SetTranslation(light->m_node->GetTranslation());
         light->m_shadowCamera->m_node->SetOrientation(m_cubeMapRotations[i]);
 
         // TODO: Scales are not needed. Remove.
         light->m_shadowCamera->m_node->SetScale(m_cubeMapScales[i]);
+
+        renderer->ClearBuffer(GraphicBitFields::DepthBits);
+        AddHWRenderPass();
 
         renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
                                   (uint) light->m_shadowAtlasCoord.y,
@@ -182,18 +175,15 @@ namespace ToolKit
     }
     else if (light->IsA<DirectionalLight>() || light->IsA<SpotLight>())
     {
-      renderer->SetFramebuffer(m_shadowFramebuffer, false);
       m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
                                               m_shadowAtlas,
                                               0,
                                               light->m_shadowAtlasLayer);
 
-      // Clear the layer if needed
-      if (!m_clearedLayers[light->m_shadowAtlasLayer])
-      {
-        renderer->ClearBuffer(GraphicBitFields::ColorDepthBits, m_shadowClearColor);
-        m_clearedLayers[light->m_shadowAtlasLayer] = true;
-      }
+      AddHWRenderPass();
+
+      renderer->ClearBuffer(GraphicBitFields::DepthBits);
+      AddHWRenderPass();
 
       renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
                                 (uint) light->m_shadowAtlasCoord.y,
@@ -236,7 +226,7 @@ namespace ToolKit
     std::sort(pointLights.begin(), pointLights.end(), sortByResFn);
 
     // Get dir and spot lights into the pack
-    std::vector<int> resolutions;
+    IntArray resolutions;
     resolutions.reserve(dirAndSpotLights.size());
     for (LightPtr light : dirAndSpotLights)
     {
@@ -297,7 +287,7 @@ namespace ToolKit
     // Check if the shadow atlas needs to be updated
     bool needChange = false;
 
-    // After this loop lastShadowLights is set with lights with shadows
+    // After this loop m_previousShadowCasters is set with lights with shadows
     int nextId      = 0;
     for (int i = 0; i < m_params.Lights.size(); ++i)
     {
@@ -339,18 +329,19 @@ namespace ToolKit
         GetLogger()->Log("ERROR: Max array texture layer size is reached: " + std::to_string(maxLayers) + " !");
       }
 
-      const RenderTargetSettigs set = {0,
-                                       GraphicTypes::Target2DArray,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::SampleNearest,
-                                       GraphicTypes::SampleNearest,
-                                       GraphicTypes::FormatRG32F,
-                                       GraphicTypes::FormatRG,
-                                       GraphicTypes::TypeFloat,
-                                       m_layerCount};
+      const TextureSettings set = {GraphicTypes::Target2DArray,
+                                   GraphicTypes::UVClampToEdge,
+                                   GraphicTypes::UVClampToEdge,
+                                   GraphicTypes::UVClampToEdge,
+                                   GraphicTypes::SampleNearest,
+                                   GraphicTypes::SampleNearest,
+                                   GraphicTypes::FormatRG32F,
+                                   GraphicTypes::FormatRG,
+                                   GraphicTypes::TypeFloat,
+                                   m_layerCount,
+                                   false};
 
+      m_shadowFramebuffer->DetachColorAttachment(Framebuffer::Attachment::ColorAttachment0);
       m_shadowAtlas->Reconstruct(Renderer::RHIConstants::ShadowAtlasTextureSize,
                                  Renderer::RHIConstants::ShadowAtlasTextureSize,
                                  set);
@@ -362,6 +353,8 @@ namespace ToolKit
                                    false,
                                    true});
       }
+
+      m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, 0);
     }
   }
 

@@ -29,6 +29,12 @@ namespace ToolKit
 
   Component::~Component() {}
 
+  void Component::NativeConstruct(bool serializable)
+  {
+    Super::NativeConstruct();
+    m_serializableComponent = serializable;
+  }
+
   void Component::ParameterConstructor()
   {
     Super::ParameterConstructor();
@@ -37,6 +43,11 @@ namespace ToolKit
 
   XmlNode* Component::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
+    if (!m_serializableComponent)
+    {
+      return nullptr;
+    }
+
     XmlNode* objNode       = Super::SerializeImp(doc, parent);
     XmlNode* componentNode = CreateXmlNode(doc, StaticClass()->Name, objNode);
 

@@ -112,7 +112,6 @@ namespace ToolKit
       GizmoPassPtr m_gizmoPass                          = nullptr;
       TonemapPassPtr m_tonemapPass                      = nullptr;
       GammaPassPtr m_gammaPass                          = nullptr;
-      BloomPassPtr m_bloomPass                          = nullptr;
       SSAOPassPtr m_ssaoPass                            = nullptr;
       OutlinePassPtr m_outlinePass                      = nullptr;
       FXAAPassPtr m_fxaaPass                            = nullptr;
@@ -125,7 +124,11 @@ namespace ToolKit
        */
       EntityPtrArray m_selecteds;
 
-      RenderJobArray m_renderJobs, m_opaque, m_translucent, m_uiRenderJobs;
+      RenderData m_renderData;
+      RenderData m_uiRenderData;
+
+      // Internal render job array for rendering selected entities
+      RenderJobArray m_unCulledRenderJobs;
     };
 
     typedef std::shared_ptr<EditorRenderer> EditorRendererPtr;

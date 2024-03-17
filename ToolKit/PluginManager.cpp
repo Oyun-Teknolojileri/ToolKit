@@ -8,7 +8,9 @@
 #include "PluginManager.h"
 
 #include "Logger.h"
+#include "ObjectFactory.h"
 #include "ToolKit.h"
+#include "Util.h"
 
 #include "DebugNew.h"
 
@@ -17,13 +19,7 @@ namespace ToolKit
 
   bool PluginManager::Load(const String& file)
   {
-    String fullPath = file;
-
-#ifdef TK_DEBUG
-    fullPath += "_d.dll";
-#else
-    fullPath += ".dll";
-#endif
+    String fullPath = file + m_pluginExtention;
 
     if (!CheckSystemFile(fullPath))
     {
@@ -118,6 +114,27 @@ namespace ToolKit
     m_storage.erase(m_storage.begin() + indx);
   }
 
+  Plugin* PluginManager::Reload(Plugin* plugin)
+  {
+    if (PluginRegister* reg = GetRegister(plugin))
+    {
+      String lastTime = GetCreationTime(reg->m_file);
+      if (lastTime != reg->m_lastWriteTime)
+      {
+        String file = reg->m_file.substr(0, reg->m_file.rfind(m_pluginExtention));
+        if (Load(file))
+        {
+          if (reg = GetRegister(file + m_pluginExtention))
+          {
+            plugin = reg->m_plugin;
+          }
+        }
+      }
+    }
+
+    return plugin;
+  }
+
   void PluginManager::Update(float deltaTime)
   {
     for (PluginRegister& reg : m_storage)
@@ -153,6 +170,19 @@ namespace ToolKit
         // Else, paused. Do nothing.
       }
     }
+  }
+
+  PluginRegister* PluginManager::GetRegister(const Plugin* plugin)
+  {
+    for (PluginRegister& reg : m_storage)
+    {
+      if (reg.m_plugin == plugin)
+      {
+        return &reg;
+      }
+    }
+
+    return nullptr;
   }
 
   GamePlugin* PluginManager::GetGamePlugin()
@@ -206,7 +236,14 @@ namespace ToolKit
     return nullptr;
   }
 
-  PluginManager::PluginManager() {}
+  PluginManager::PluginManager()
+  {
+#ifdef TK_DEBUG
+    m_pluginExtention = "_d.dll";
+#else
+    m_pluginExtention = ".dll";
+#endif
+  }
 
   PluginManager::~PluginManager() {}
 

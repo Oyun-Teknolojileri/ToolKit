@@ -37,6 +37,8 @@ namespace ToolKit
 
   void OutlinePass::Render()
   {
+    assert(m_params.RenderJobs != nullptr && "Outline Pass Render Jobs Are Not Given!");
+
     PUSH_GPU_MARKER("OutlinePass::Render");
     PUSH_CPU_MARKER("OutlinePass::Render");
 
@@ -45,10 +47,11 @@ namespace ToolKit
 
     // Use stencil output as input to the dilation.
     GetRenderer()->SetTexture(0, m_stencilAsRt->m_textureId);
-    m_dilateShader->SetShaderParameter("Color", ParameterVariant(m_params.OutlineColor));
+
+    m_outlinePass->SetFragmentShader(m_dilateShader, GetRenderer());
+    m_outlinePass->UpdateUniform(ShaderUniform("Color", m_params.OutlineColor));
 
     // Draw outline to the viewport.
-    m_outlinePass->m_params.FragmentShader   = m_dilateShader;
     m_outlinePass->m_params.FrameBuffer      = m_params.FrameBuffer;
     m_outlinePass->m_params.ClearFrameBuffer = false;
 
@@ -70,7 +73,7 @@ namespace ToolKit
     m_stencilPass->m_params.RenderJobs = m_params.RenderJobs;
 
     // Construct output target.
-    FramebufferSettings fbs            = m_params.FrameBuffer->GetSettings();
+    const FramebufferSettings& fbs     = m_params.FrameBuffer->GetSettings();
     m_stencilAsRt->ReconstructIfNeeded(fbs.width, fbs.height);
     m_stencilPass->m_params.OutputTarget = m_stencilAsRt;
 

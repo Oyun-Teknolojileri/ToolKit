@@ -23,6 +23,8 @@ namespace ToolKit
 
     class Workspace : public Serializable
     {
+      friend class App;
+
      public:
       Workspace();
       void Init();
@@ -52,8 +54,8 @@ namespace ToolKit
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
      private:
-      void SerializeSimulationWindow(XmlDocument* doc) const;
-      void DeSerializeSimulationWindow(XmlDocument* doc);
+      void SerializeSimulationWindow(XmlDocumentPtr doc) const;
+      void DeSerializeSimulationWindow(XmlDocumentPtr doc);
 
      public:
       std::vector<Project> m_projects;

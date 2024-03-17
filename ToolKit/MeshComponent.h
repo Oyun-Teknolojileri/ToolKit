@@ -46,7 +46,7 @@ namespace ToolKit
      * Gets the bounding box of the contained Mesh.
      * @return BoundingBox of the contained Mesh.
      */
-    BoundingBox GetAABB();
+    BoundingBox GetBoundingBox();
 
     /**
      * Initiates the MeshComponent and underlying Mesh and Material resources.
@@ -62,7 +62,7 @@ namespace ToolKit
     TKDeclareParam(bool, CastShadow);
 
    private:
-    BoundingBox m_aabb = {};
+    BoundingBox m_boundingBox = {};
   };
 
 } // namespace ToolKit

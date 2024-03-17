@@ -33,8 +33,7 @@ namespace ToolKit
       m_entity         = MakeNewPtr<Entity>();
       m_entity->AddComponent<MeshComponent>();
 
-      m_sphere = MakeNewPtr<Sphere>();
-      m_sphere->AddComponent<MaterialComponent>();
+      m_sphere      = MakeNewPtr<Sphere>();
 
       m_lightSystem = MakeNewPtr<ThreePointLightSystem>();
       m_cam         = MakeNewPtr<Camera>();
@@ -91,7 +90,7 @@ namespace ToolKit
         m_thumbnailScene->AddEntity(m_entity);
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
-        m_cam->FocusToBoundingBox(m_entity->GetAABB(true), 1.5f);
+        m_cam->FocusToBoundingBox(m_entity->GetBoundingBox(true), 1.5f);
       }
       else if (dirEnt.m_ext == MATERIAL)
       {
@@ -143,7 +142,7 @@ namespace ToolKit
         return g_app->m_thumbnailManager.GetDefaultThumbnail();
       }
 
-      m_thumbnailRT = MakeNewPtr<RenderTarget>(m_maxThumbSize, m_maxThumbSize);
+      m_thumbnailRT = MakeNewPtr<RenderTarget>(m_maxThumbSize, m_maxThumbSize, TextureSettings());
       m_thumbnailRT->Init();
 
       m_thumbnailBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_thumbnailRT);
@@ -161,9 +160,13 @@ namespace ToolKit
       return m_thumbnailRT;
     }
 
-    ThumbnailManager::ThumbnailManager() { m_defaultThumbnail = MakeNewPtr<RenderTarget>(10u, 10u); }
+    ThumbnailManager::ThumbnailManager() { m_defaultThumbnail = MakeNewPtr<RenderTarget>(10u, 10u, TextureSettings()); }
 
-    ThumbnailManager::~ThumbnailManager() { m_defaultThumbnail = nullptr; }
+    ThumbnailManager::~ThumbnailManager()
+    {
+      m_defaultThumbnail = nullptr;
+      m_thumbnailCache.clear();
+    }
 
     bool ThumbnailManager::IsDefaultThumbnail(RenderTargetPtr thumb) { return thumb == m_defaultThumbnail; }
 

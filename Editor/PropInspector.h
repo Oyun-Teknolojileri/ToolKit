@@ -67,7 +67,7 @@ namespace ToolKit
       ScenePtr GetScene();
       void SetScene(ScenePtr scene);
       void ResetCamera();
-      void ResizeWindow(uint width, uint height) override;
+      void SetViewportSize(uint width, uint height);
 
      private:
       SceneRenderPathPtr m_previewRenderer = nullptr;

@@ -20,9 +20,8 @@ namespace ToolKit
   StencilRenderPass::StencilRenderPass()
   {
     // Init sub pass.
-    m_copyStencilSubPass = MakeNewPtr<FullQuadPass>();
-    m_copyStencilSubPass->m_params.FragmentShader =
-        GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
+    m_copyStencilSubPass    = MakeNewPtr<FullQuadPass>();
+    m_unlitFragShader       = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     m_frameBuffer           = MakeNewPtr<Framebuffer>();
 
     m_solidOverrideMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
@@ -45,21 +44,21 @@ namespace ToolKit
     PUSH_GPU_MARKER("StencilRenderPass::Render");
     PUSH_CPU_MARKER("StencilRenderPass::Render");
 
-    Renderer* renderer      = GetRenderer();
-    renderer->m_overrideMat = m_solidOverrideMaterial;
+    assert(m_params.RenderJobs != nullptr && "Stencil Render Pass Render Jobs Are Not Given!");
+
+    Renderer* renderer = GetRenderer();
 
     // Stencil pass.
     renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
     renderer->ColorMask(false, false, false, false);
 
-    for (RenderJob& job : m_params.RenderJobs)
-    {
-      renderer->Render(job, m_params.Camera);
-    }
+    renderer->Render(*m_params.RenderJobs);
 
     // Copy pass.
     renderer->ColorMask(true, true, true, true);
     renderer->SetStencilOperation(StencilOperation::AllowPixelsFailingStencil);
+
+    m_copyStencilSubPass->SetFragmentShader(m_unlitFragShader, renderer);
 
     RenderSubPass(m_copyStencilSubPass);
 
@@ -75,7 +74,12 @@ namespace ToolKit
     PUSH_CPU_MARKER("StencilRenderPass::PreRender");
 
     Pass::PreRender();
-    Renderer* renderer = GetRenderer();
+    Renderer* renderer                   = GetRenderer();
+
+    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+    m_program                            = gpuProgramManager->CreateProgram(m_solidOverrideMaterial->m_vertexShader,
+                                                 m_solidOverrideMaterial->m_fragmentShader);
+    renderer->BindProgram(m_program);
 
     FramebufferSettings settings;
     settings.depthStencil    = true;
@@ -91,8 +95,8 @@ namespace ToolKit
 
     // Allow writing on to stencil before clear operation.
     renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
-    renderer->SetFramebuffer(m_frameBuffer, true, Vec4(0.0f));
-    renderer->SetCameraLens(m_params.Camera);
+    renderer->SetFramebuffer(m_frameBuffer, GraphicBitFields::AllBits);
+    renderer->SetCamera(m_params.Camera, true);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

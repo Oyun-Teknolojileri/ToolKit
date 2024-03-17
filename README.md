@@ -36,6 +36,34 @@ Multiverse GO is a turn-based puzzle adventure set in a group of multiple univer
 
 ## Compiling
 
+#### Requirements
+* Visual Studio 2022 or newer.
+* Visual Studio Code
+* Visual Studio Code C/C++ Extension Pack
+* Ninja build system
+* Git SCM
+
+Its important to set environment path such that git, cmake and ninja commands are recognized from consoles as in the screen shot below.
+
+![Console check](Images/tk_cmd.png)
+
+#### Compile Steps
+
+* Clone the repo recursively.
+```bash
+git clone --recursive https://github.com/Oyun-Teknolojileri/ToolKit.git
+```
+* Run build dependency script.
+```bash
+cd .\ToolKit\
+cd .\DependencyBuildScripts\
+.\BuildAllDependencies.bat
+```
+
+After this point ToolKit/ToolKit.sln file can be open and build.
+
+#### Visual Studio Project Overview
+
 Visual Studio 2022 with C++ tools is required to compile the engine and the editor. The solution is in the main directory of the ToolKit repository called ToolKit.sln. The Solution contains two main filters, Engine and Projects. Within the Engine filter, game engine, editor and related tools are residing. Before running the Editor, make sure that you have set it as the startup project. All required dependencies are residing in the Dependencies folder in a precompiled form.
 
 There are cmake files all around the repository and .bat files in the BuildScripts folder. They are used to compile the engine and the projects for target environments Web, Android and PC. You don't need to directly call these cmake files. All outputs can be compiled and packed within the editor. However cmake files are well documented for more advanced usages and configurations.
@@ -44,7 +72,7 @@ There are cmake files all around the repository and .bat files in the BuildScrip
 
 ## Setup
 
-After compling the ToolKit solution, it creates the editor.exe in the Bin folder. When running the editor for the first time it asks a folder to use as a workspace directory. Its reasonable to give it a folder in the documents where you have full read & write access. All projects and related files get stored under the workspace / project folder. A sample path for workspace 
+After compiling the ToolKit solution, it creates the editor.exe in the Bin folder. When running the editor for the first time it asks a folder to use as a workspace directory. Its reasonable to give it a folder in the documents where you have full read & write access. All projects and related files get stored under the workspace / project folder. A sample path for workspace 
 > "C:/Users/**YourUserName**/Documents/TK-Workspace"
 
 ![ToolKit setting a workspace](Images/tk_workspace.png)

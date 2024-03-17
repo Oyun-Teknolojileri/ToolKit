@@ -11,7 +11,6 @@
 #include "Audio.h"
 #include "Camera.h"
 #include "Canvas.h"
-#include "DataTexture.h"
 #include "DirectionComponent.h"
 #include "Drawable.h"
 #include "Entity.h"

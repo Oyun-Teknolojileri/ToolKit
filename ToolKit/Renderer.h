@@ -11,37 +11,12 @@
 #include "GpuProgram.h"
 #include "Primative.h"
 #include "RenderState.h"
-#include "RendererGlobals.h"
 #include "Sky.h"
 #include "Types.h"
 #include "Viewport.h"
 
 namespace ToolKit
 {
-
-  /**
-   * Simple binary stencil test operations.
-   */
-  enum class StencilOperation
-  {
-    /**
-     * Stencil write and operations are disabled.
-     */
-    None,
-    /**
-     * All pixels are drawn and stencil value of the corresponding pixel set
-     * to 1.
-     */
-    AllowAllPixels,
-    /**
-     * Pixels whose stencil value is 1 are drawn.
-     */
-    AllowPixelsPassingStencil,
-    /**
-     * Pixels whose stencil value is 0 are drawn.
-     */
-    AllowPixelsFailingStencil
-  };
 
   class TK_API Renderer
   {
@@ -53,17 +28,20 @@ namespace ToolKit
     void SetRenderState(const RenderState* const state);
 
     void SetStencilOperation(StencilOperation op);
-    void SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color);
-    void SetFramebuffer(FramebufferPtr fb, bool clear = true);
-    void SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color);
-    void SwapFramebuffer(FramebufferPtr& fb, bool clear = true);
+
+    void SetFramebuffer(FramebufferPtr fb,
+                        GraphicBitFields attachmentsToClear,
+                        const Vec4& clearColor         = Vec4(0.0f),
+                        GraphicFramebufferTypes fbType = GraphicFramebufferTypes::Framebuffer);
 
     FramebufferPtr GetFrameBuffer();
-    void ClearFrameBuffer(FramebufferPtr fb, const Vec4& value);
     void ClearColorBuffer(const Vec4& color);
-    void ClearBuffer(GraphicBitFields fields, const Vec4& value);
+    void ClearBuffer(GraphicBitFields fields, const Vec4& value = Vec4(0.0f));
     void ColorMask(bool r, bool g, bool b, bool a);
     void CopyFrameBuffer(FramebufferPtr src, FramebufferPtr dest, GraphicBitFields fields);
+    void InvalidateFramebufferDepth(FramebufferPtr fb);
+    void InvalidateFramebufferStencil(FramebufferPtr fb);
+    void InvalidateFramebufferDepthStencil(FramebufferPtr fb);
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);
@@ -75,11 +53,11 @@ namespace ToolKit
 
     void SetTexture(ubyte slotIndx, uint textureId);
 
-    CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture, uint width, uint height, float exposure = 1.0f);
+    CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture, uint size, float exposure = 1.0f);
 
-    CubeMapPtr GenerateSpecularEnvMap(CubeMapPtr cubemap, uint width, uint height, int mipMaps);
+    CubeMapPtr GenerateSpecularEnvMap(CubeMapPtr cubemap, uint size, int mipMaps);
 
-    CubeMapPtr GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint width, uint height);
+    CubeMapPtr GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint size);
 
     void CopyTexture(TexturePtr source, TexturePtr dest);
 
@@ -99,13 +77,12 @@ namespace ToolKit
     // Giving nullptr as argument means no shadows
     void SetShadowAtlas(TexturePtr shadowAtlas);
 
-    // TODO: Should be private or within a Pass.
-    /////////////////////
-    // Left public for thumbnail rendering. TODO: there must be techniques
-    // handling thumbnail render.
-    void Render(const struct RenderJob& job, CameraPtr cam, const LightPtrArray& lights = {});
+    void Render(const struct RenderJob& job);
 
-    void Render(const RenderJobArray& jobArray, CameraPtr cam, const LightPtrArray& lights = {});
+    void Render(const RenderJobArray& jobs);
+
+    void RenderWithProgramFromMaterial(const RenderJobArray& jobs);
+    void RenderWithProgramFromMaterial(const RenderJob& job);
 
     void Apply7x1GaussianBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
 
@@ -114,31 +91,51 @@ namespace ToolKit
     void GenerateBRDFLutTexture();
 
     /**
-     * Just before the render, set the lens to fit aspect ratio to frame buffer.
+     * Sets the camera to be used for rendering. Also calculates camera related parameters, such as view, transform,
+     * viewTransform etc...
+     * if setLense is true sets the lens to fit aspect ratio to frame buffer.
+     * Invalidates gpu program's related caches.
      */
-    void SetCameraLens(CameraPtr cam);
-    /////////////////////
+    void SetCamera(CameraPtr camera, bool setLens);
+
+    /**
+     * Sets the lights that will be used during rendering.
+     * Invalidates gpu program's related caches.
+     */
+    void SetLights(const LightPtrArray& lights);
 
     int GetMaxArrayTextureLayers();
 
-    void ResetTextureSlots();
+    void BindProgramOfMaterial(Material* material);
+
+    void BindProgram(const GpuProgramPtr& program);
+
+    void ResetUsedTextureSlots();
 
    private:
-    void SetProjectViewModel(const Mat4& model, CameraPtr cam);
-    void BindProgram(GpuProgramPtr program);
-    void FeedUniforms(GpuProgramPtr program);
-    void FeedLightUniforms(GpuProgramPtr program);
+    void FeedUniforms(const GpuProgramPtr& program, const RenderJob& job);
+    void FeedLightUniforms(const GpuProgramPtr& program, const RenderJob& job);
 
    public:
     uint m_frameCount = 0;
     UVec2 m_windowSize; //!< Application window size.
-    Vec4 m_clearColor         = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    MaterialPtr m_overrideMat = nullptr;
-    CameraPtr m_uiCamera      = nullptr;
-    SkyBasePtr m_sky          = nullptr;
-    GpuProgramManager m_gpuProgramManager;
+    Vec4 m_clearColor    = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    CameraPtr m_uiCamera = nullptr;
+    SkyBasePtr m_sky     = nullptr;
 
-    bool m_renderOnlyLighting = false;
+    // The set contains gpuPrograms that has up to date camera uniforms.
+    std::unordered_set<uint> m_gpuProgramHasCameraUpdates;
+
+    // The set contains gpuPrograms that has up to date per frame uniforms.
+    std::unordered_set<uint> m_gpuProgramHasFrameUpdates;
+
+    bool m_renderOnlyLighting                 = false;
+
+    /**
+     * Some passes may draw culled objects from view frustum.
+     * To prevent debug message, set this to true.
+     */
+    bool m_ignoreRenderingCulledObjectWarning = false;
 
     struct RHIConstants
     {
@@ -146,29 +143,43 @@ namespace ToolKit
       static constexpr ubyte MaxLightsPerObject    = 16;
       static constexpr uint ShadowAtlasSlot        = 8;
       static constexpr uint ShadowAtlasTextureSize = 2048;
-      static constexpr uint SpecularIBLLods        = 5;
+      static constexpr uint SpecularIBLLods        = 7;
       static constexpr uint BrdfLutTextureSize     = 512;
       static constexpr float ShadowBiasMultiplier  = 0.0001f;
     };
 
    private:
-    uint m_currentProgram = 0;
+    GpuProgramPtr m_currentProgram = nullptr;
+
+    // Camera data.
+    CameraPtr m_cam                = nullptr;
     Mat4 m_project;
     Mat4 m_view;
+    Mat4 m_projectView;
+    Mat4 m_projectViewNoTranslate;
+    Vec3 m_camPos;
+    Vec3 m_camDirection;
+    float m_camFar = 0.1f;
+
     Mat4 m_model;
     Mat4 m_iblRotation;
-    LightPtrArray m_lights;
-    CameraPtr m_cam              = nullptr;
-    MaterialPtr m_mat            = nullptr;
-    MaterialPtr m_aoMat          = nullptr;
+    Material* m_mat              = nullptr;
     FramebufferPtr m_framebuffer = nullptr;
     TexturePtr m_shadowAtlas     = nullptr;
+    RenderTargetPtr m_brdfLut    = nullptr;
 
-    uint m_textureSlots[RHIConstants::TextureSlotCount];
+    int m_textureSlots[RHIConstants::TextureSlotCount];
 
     RenderState m_renderState;
 
     UVec2 m_viewportSize; //!< Current viewport size.
+
+    /**
+     * Light array that will be used by the renderer.
+     * Usually, render paths sets the light array after culling visible lights.
+     * Jobs maintains indexes to the light list.
+     */
+    LightPtrArray m_lights;
 
     /*
      * This framebuffer can ONLY have 1 color attachment and no other attachments.
@@ -177,6 +188,9 @@ namespace ToolKit
     FramebufferPtr m_oneColorAttachmentFramebuffer = nullptr;
     MaterialPtr m_gaussianBlurMaterial             = nullptr;
     MaterialPtr m_averageBlurMaterial              = nullptr;
+    QuadPtr m_tempQuad                             = nullptr;
+    MaterialPtr m_tempQuadMaterial                 = nullptr;
+    CameraPtr m_tempQuadCam                        = nullptr;
 
     FramebufferPtr m_copyFb                        = nullptr;
     MaterialPtr m_copyMaterial                     = nullptr;
@@ -185,6 +199,8 @@ namespace ToolKit
 
     // Dummy objects for draw commands.
     CubePtr m_dummyDrawCube                        = nullptr;
+
+    GpuProgramManager* m_gpuProgramManager         = nullptr;
   };
 
 } // namespace ToolKit

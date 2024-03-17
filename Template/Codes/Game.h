@@ -21,9 +21,11 @@ namespace ToolKit
     void Frame(float deltaTime) override;
     void OnLoad(XmlDocumentPtr state) override;
     void OnUnload(XmlDocumentPtr state) override;
+    void OnPlay() override;
+    void OnPause() override;
+    void OnResume() override;
+    void OnStop() override;
   };
-
-  extern Game* g_game;
 
 } // namespace ToolKit
 

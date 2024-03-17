@@ -9,6 +9,7 @@
 
 #include "Shader.h"
 #include "TKProfiler.h"
+#include "TKStats.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -19,9 +20,7 @@ namespace ToolKit
   BloomPass::BloomPass()
   {
     m_downsampleShader = GetShaderManager()->Create<Shader>(ShaderPath("bloomDownsample.shader", true));
-
     m_upsampleShader   = GetShaderManager()->Create<Shader>(ShaderPath("bloomUpsample.shader", true));
-
     m_pass             = MakeNewPtr<FullQuadPass>();
   }
 
@@ -47,22 +46,22 @@ namespace ToolKit
       return;
     }
 
-    UVec2 mainRes = UVec2(mainRt->m_width, mainRt->m_height);
+    UVec2 mainRes      = UVec2(mainRt->m_width, mainRt->m_height);
+
+    Renderer* renderer = GetRenderer();
 
     // Filter pass
     {
-      m_pass->m_params.FragmentShader = m_downsampleShader;
-      int passIndx                    = 0;
+      m_pass->SetFragmentShader(m_downsampleShader, renderer);
+      int passIndx = 0;
 
-      m_downsampleShader->SetShaderParameter("passIndx", ParameterVariant(passIndx));
-
-      m_downsampleShader->SetShaderParameter("srcResolution", ParameterVariant(mainRes));
-
-      m_downsampleShader->SetShaderParameter("threshold", ParameterVariant(m_params.minThreshold));
+      m_pass->UpdateUniform(ShaderUniform("passIndx", passIndx));
+      m_pass->UpdateUniform(ShaderUniform("srcResolution", mainRes));
+      m_pass->UpdateUniform(ShaderUniform("threshold", m_params.minThreshold));
 
       TexturePtr prevRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
 
-      GetRenderer()->SetTexture(0, prevRt->m_textureId);
+      renderer->SetTexture(0, prevRt->m_textureId);
       m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[0];
       m_pass->m_params.BlendFunc        = BlendFunction::NONE;
       m_pass->m_params.ClearFrameBuffer = true;
@@ -72,30 +71,31 @@ namespace ToolKit
 
     // Downsample Pass
     {
+      m_pass->SetFragmentShader(m_downsampleShader, renderer);
+
       for (int i = 0; i < m_currentIterationCount; i++)
       {
         // Calculate current and previous resolutions
 
         float powVal = glm::pow(2.0f, float(i + 1));
         const Vec2 factor(1.0f / powVal);
-        const UVec2 curRes              = Vec2(mainRes) * factor;
+        const UVec2 curRes             = Vec2(mainRes) * factor;
 
-        powVal                          = glm::pow(2.0f, float(i));
-        const Vec2 prevRes              = Vec2(mainRes) * Vec2((1.0f / powVal));
+        powVal                         = glm::pow(2.0f, float(i));
+        const Vec2 prevRes             = Vec2(mainRes) * Vec2((1.0f / powVal));
 
         // Find previous framebuffer & RT
-        FramebufferPtr prevFramebuffer  = m_tempFrameBuffers[i];
-        TexturePtr prevRt               = prevFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+        FramebufferPtr prevFramebuffer = m_tempFrameBuffers[i];
+        TexturePtr prevRt              = prevFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
 
         // Set pass' shader and parameters
-        m_pass->m_params.FragmentShader = m_downsampleShader;
 
-        int passIndx                    = i + 1;
-        m_downsampleShader->SetShaderParameter("passIndx", ParameterVariant(passIndx));
+        int passIndx                   = i + 1;
 
-        m_downsampleShader->SetShaderParameter("srcResolution", ParameterVariant(prevRes));
+        m_pass->UpdateUniform(ShaderUniform("passIndx", passIndx));
+        m_pass->UpdateUniform(ShaderUniform("srcResolution", prevRes));
 
-        GetRenderer()->SetTexture(0, prevRt->m_textureId);
+        renderer->SetTexture(0, prevRt->m_textureId);
 
         // Set pass parameters
         m_pass->m_params.ClearFrameBuffer = true;
@@ -108,18 +108,18 @@ namespace ToolKit
 
     // Upsample Pass
     {
-      const float filterRadius = 0.002f;
-      m_upsampleShader->SetShaderParameter("filterRadius", ParameterVariant(filterRadius));
+      m_pass->SetFragmentShader(m_upsampleShader, renderer);
 
-      m_upsampleShader->SetShaderParameter("intensity", ParameterVariant(1.0f));
+      const float filterRadius = 0.002f;
+      m_pass->UpdateUniform(ShaderUniform("filterRadius", filterRadius));
+      m_pass->UpdateUniform(ShaderUniform("intensity", 1.0f));
 
       for (int i = m_currentIterationCount; i > 0; i--)
       {
-        m_pass->m_params.FragmentShader = m_upsampleShader;
 
-        FramebufferPtr prevFramebuffer  = m_tempFrameBuffers[i];
-        TexturePtr prevRt               = prevFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
-        GetRenderer()->SetTexture(0, prevRt->m_textureId);
+        FramebufferPtr prevFramebuffer = m_tempFrameBuffers[i];
+        TexturePtr prevRt              = prevFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+        renderer->SetTexture(0, prevRt->m_textureId);
 
         m_pass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE;
         m_pass->m_params.ClearFrameBuffer = false;
@@ -131,17 +131,17 @@ namespace ToolKit
 
     // Merge Pass
     {
-      m_pass->m_params.FragmentShader = m_upsampleShader;
+      m_pass->SetFragmentShader(m_upsampleShader, renderer);
 
-      FramebufferPtr prevFramebuffer  = m_tempFrameBuffers[0];
-      TexturePtr prevRt               = prevFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
-      GetRenderer()->SetTexture(0, prevRt->m_textureId);
+      FramebufferPtr prevFramebuffer = m_tempFrameBuffers[0];
+      TexturePtr prevRt              = prevFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+      renderer->SetTexture(0, prevRt->m_textureId);
 
       m_pass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE;
       m_pass->m_params.ClearFrameBuffer = false;
       m_pass->m_params.FrameBuffer      = m_params.FrameBuffer;
 
-      m_upsampleShader->SetShaderParameter("intensity", ParameterVariant(m_params.intensity));
+      m_pass->UpdateUniform(ShaderUniform("intensity", m_params.intensity));
 
       RenderSubPass(m_pass);
     }
@@ -191,20 +191,33 @@ namespace ToolKit
           return;
         }
 
-        RenderTargetPtr& rt           = m_tempTextures[i];
-        rt                            = MakeNewPtr<RenderTarget>();
-        rt->m_settings.InternalFormat = GraphicTypes::FormatRGBA16F;
-        rt->m_settings.Format         = GraphicTypes::FormatRGBA;
-        rt->m_settings.Type           = GraphicTypes::TypeFloat;
-        rt->m_settings.MagFilter      = GraphicTypes::SampleLinear;
-        rt->m_settings.MinFilter      = GraphicTypes::SampleLinear;
-        rt->m_settings.WarpR          = GraphicTypes::UVClampToEdge;
-        rt->m_settings.WarpS          = GraphicTypes::UVClampToEdge;
-        rt->m_settings.WarpT          = GraphicTypes::UVClampToEdge;
-        rt->ReconstructIfNeeded(curRes.x, curRes.y);
+        RenderTargetPtr& rt = m_tempTextures[i];
+
+        TextureSettings set;
+        set.InternalFormat = GraphicTypes::FormatRGBA16F;
+        set.Format         = GraphicTypes::FormatRGBA;
+        set.Type           = GraphicTypes::TypeFloat;
+        set.MagFilter      = GraphicTypes::SampleLinear;
+        set.MinFilter      = GraphicTypes::SampleLinear;
+        set.WarpR          = GraphicTypes::UVClampToEdge;
+        set.WarpS          = GraphicTypes::UVClampToEdge;
+        set.WarpT          = GraphicTypes::UVClampToEdge;
+        set.GenerateMipMap = false;
+
+        rt                 = MakeNewPtr<RenderTarget>(curRes.x, curRes.y, set);
+        rt->Init();
 
         FramebufferPtr& fb = m_tempFrameBuffers[i];
-        fb                 = MakeNewPtr<Framebuffer>();
+        if (fb == nullptr)
+        {
+          FramebufferSettings fbSettings;
+          fbSettings.depthStencil    = false;
+          fbSettings.useDefaultDepth = false;
+          fbSettings.width           = curRes.x;
+          fbSettings.height          = curRes.y;
+          fb                         = MakeNewPtr<Framebuffer>();
+          fb->Init(fbSettings);
+        }
         fb->ReconstructIfNeeded(curRes.x, curRes.y);
         fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
       }

@@ -94,6 +94,9 @@ namespace ToolKit
 
       m_constructorFnMap[objectClass->Name] = constructorFn;
 
+      objectClass->SuperClassLookUp.clear();
+      ClassLookUpBuilder(objectClass, objectClass);
+
       CallMetaProcessors(objectClass->MetaKeys, m_metaProcessorRegisterMap);
     }
 
@@ -180,6 +183,11 @@ namespace ToolKit
      */
     void Init();
 
+    /**
+     * For the given class fills the class look up table.
+     */
+    void ClassLookUpBuilder(ClassMeta* Class, ClassMeta* FirstClass);
+
    private:
     std::unordered_map<StringView, ObjectConstructorCallback> m_constructorFnMap;
     ObjectConstructorCallback m_nullFn = nullptr;
@@ -232,10 +240,27 @@ namespace ToolKit
     return nullptr;
   }
 
+  /**
+   * Static cast, fast but does not validate convertibility at runtime.
+   */
   template <typename T>
   inline std::shared_ptr<T> Cast(ObjectPtr tkObj)
   {
     return std::static_pointer_cast<T>(tkObj);
+  }
+
+  /**
+   * Dynamic cast, slower but checks convertibility at runtime. If not convertible returns nullptr.
+   */
+  template <typename T>
+  inline std::shared_ptr<T> SafeCast(ObjectPtr tkObj)
+  {
+    if (tkObj->IsA<T>())
+    {
+      return std::static_pointer_cast<T>(tkObj);
+    }
+
+    return nullptr;
   }
 
 } // namespace ToolKit

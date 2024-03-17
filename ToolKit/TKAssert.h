@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include <atomic>
+#include <cassert>
+
 namespace ToolKit
 {
 

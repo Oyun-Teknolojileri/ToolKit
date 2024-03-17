@@ -11,8 +11,8 @@
 #include "Audio.h"
 #include "Camera.h"
 #include "Canvas.h"
-#include "DataTexture.h"
 #include "DirectionComponent.h"
+#include "Dpad.h"
 #include "Drawable.h"
 #include "Entity.h"
 #include "EnvironmentComponent.h"
@@ -32,7 +32,6 @@
 #include "SpriteSheet.h"
 #include "SsaoPass.h"
 #include "Surface.h"
-#include "Dpad.h"
 #include "Texture.h"
 
 #include "DebugNew.h"
@@ -55,6 +54,25 @@ namespace ToolKit
         {
           metaProcessor->second(meta.second);
         }
+      }
+    }
+  }
+
+  void ObjectFactory::ClassLookUpBuilder(ClassMeta* Class, ClassMeta* FirstClass)
+  {
+    if (Class->Super)
+    {
+      if (Class->Super == Object::StaticClass())
+      {
+        FirstClass->SuperClassLookUp.push_back({Class->Name, Class->HashId});
+
+        ClassMeta* objCls = Object::StaticClass();
+        FirstClass->SuperClassLookUp.push_back({objCls->Name, objCls->HashId});
+      }
+      else
+      {
+        FirstClass->SuperClassLookUp.push_back({Class->Name, Class->HashId});
+        ClassLookUpBuilder(Class->Super, FirstClass);
       }
     }
   }
@@ -101,7 +119,7 @@ namespace ToolKit
     Register<Drawable>();
     Register<Entity>();
     Register<EntityNode>();
-    Register<Light>();
+    // Register<Light>();
     Register<DirectionalLight>();
     Register<PointLight>();
     Register<SpotLight>();
@@ -130,8 +148,6 @@ namespace ToolKit
     Register<Texture>();
     Register<CubeMap>();
     Register<DataTexture>();
-    Register<LightDataTexture>();
-    Register<SSAONoiseTexture>();
     Register<DepthTexture>();
     Register<Hdri>();
     Register<RenderTarget>();

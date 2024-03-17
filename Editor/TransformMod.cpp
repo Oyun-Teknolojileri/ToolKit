@@ -351,7 +351,7 @@ namespace ToolKit
     void TransformAction::Swap()
     {
       Mat4 backUp = m_entity->m_node->GetTransform();
-      m_entity->m_node->SetTransform(m_transform, TransformationSpace::TS_WORLD, false);
+      m_entity->m_node->SetTransform(m_transform, TransformationSpace::TS_WORLD);
       m_transform = backUp;
     }
 
@@ -637,7 +637,7 @@ namespace ToolKit
       scaleAxes[(int) AxisLabel::ZX]   = ZX_AXIS;
       scaleAxes[(int) AxisLabel::XYZ]  = Vec3(1.0f);
 
-      BoundingBox bb                   = ntt->GetAABB();
+      BoundingBox bb                   = ntt->GetBoundingBox();
       Vec3 aabbSize                    = bb.max - bb.min;
 
       int axisIndex                    = int(m_gizmo->GetGrabbedAxis());
@@ -837,7 +837,7 @@ namespace ToolKit
       {
         StateEndPick* endPick = static_cast<StateEndPick*>(m_stateMachine->m_currentState);
 
-        EntityIdArray entities;
+        IDArray entities;
         endPick->PickDataToEntityId(entities);
         g_app->GetCurrentScene()->AddToSelection(entities, ImGui::GetIO().KeyShift);
 

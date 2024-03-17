@@ -15,9 +15,10 @@ namespace ToolKit
 
   struct ShadowPassParams
   {
-    LightPtrArray Lights     = {};
-    RenderJobArray RendeJobs = {};
-    CameraPtr ViewCamera     = nullptr;
+    RenderData* renderData;
+    LightPtrArray Lights;
+    BoundingBox shadowVolume;
+    CameraPtr ViewCamera = nullptr;
   };
 
   /**
@@ -37,7 +38,7 @@ namespace ToolKit
     RenderTargetPtr GetShadowAtlas();
 
    private:
-    void RenderShadowMaps(LightPtr light, const RenderJobArray& jobs);
+    void RenderShadowMaps(LightPtr light, RenderJobArray& jobs);
 
     /**
      * Sets layer and coordinates of the shadow maps in shadow atlas.
@@ -63,11 +64,12 @@ namespace ToolKit
     FramebufferPtr m_shadowFramebuffer = nullptr;
     RenderTargetPtr m_shadowAtlas      = nullptr;
     int m_layerCount                   = 0; // Number of textures in array texture (shadow atlas)
-    EntityIdArray m_previousShadowCasters;
-    std::vector<bool> m_clearedLayers;
+    IDArray m_previousShadowCasters;
 
     Quaternion m_cubeMapRotations[6];
     Vec3 m_cubeMapScales[6];
+
+    UIntArray m_unCulledRenderJobIndices;
 
     BinPack2D m_packer;
   };

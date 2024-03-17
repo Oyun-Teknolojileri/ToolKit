@@ -21,6 +21,7 @@
 #include "PropInspector.h"
 #include "PublishManager.h"
 #include "RenderSettingsView.h"
+#include "StatsView.h"
 #include "Thumbnail.h"
 #include "Workspace.h"
 
@@ -58,7 +59,7 @@ namespace ToolKit
 
       /**
        * Clears all the data cached for current project / scene. Required to clear
-       * all referenced objects before switching projects or stoping the play session.
+       * all referenced objects before switching projects or stopping the play session.
        */
       void ClearSession();
 
@@ -114,7 +115,9 @@ namespace ToolKit
       OutlinerWindow* GetOutliner();
       PropInspector* GetPropInspector();
       RenderSettingsView* GetRenderSettingsView();
+      StatsView* GetStatsView();
       void AddRenderSettingsView();
+      void AddStatsView();
 
       template <typename T>
       T* GetWindow(const String& name)
@@ -161,6 +164,11 @@ namespace ToolKit
       void UpdateSimulation();
       float GetDeltaTime();
 
+      // Last Frame Stats
+      inline uint64 GetLastFrameDrawCallCount() { return m_lastFrameDrawCallCount; }
+
+      inline uint64 GetLastFrameHWRenderPassCount() { return m_lastFrameHWRenderPassCount; }
+
      protected:
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
@@ -171,6 +179,7 @@ namespace ToolKit
       void CreateAndSetNewScene(const String& name);
       void CreateEditorEntities();
       void DestroyEditorEntities();
+      void CreateNewScene();
 
      public:
       // UI elements.
@@ -196,7 +205,6 @@ namespace ToolKit
       EntityPtrArray m_perFrameDebugObjects;
       Arrow2dPtr m_dbgArrow;
       LineBatchPtr m_dbgFrustum;
-      EditorRendererPtr m_editorRenderer;
 
       // Editor states.
       int m_fps                                = 0;
@@ -223,10 +231,14 @@ namespace ToolKit
       DynamicMenuPtrArray m_customObjectsMenu; //!< Constructed menus based on m_customObjectMetaValues.
 
       // Snap settings.
-      bool m_snapsEnabled = false; // Delta transforms.
-      float m_moveDelta   = 0.25f;
-      float m_rotateDelta = 15.0f;
-      float m_scaleDelta  = 0.5f;
+      bool m_snapsEnabled                 = false; // Delta transforms.
+      float m_moveDelta                   = 0.25f;
+      float m_rotateDelta                 = 15.0f;
+      float m_scaleDelta                  = 0.5f;
+
+      // Last Frame Stats
+      uint64 m_lastFrameDrawCallCount     = 0;
+      uint64 m_lastFrameHWRenderPassCount = 0;
 
      private:
       // Internal states.
@@ -236,12 +248,6 @@ namespace ToolKit
       bool m_isCompiling  = false;
       bool m_reloadPlugin = false;
     };
-
-    extern void DebugMessage(const String& msg);
-    extern void DebugMessage(const Vec3& vec);
-    extern void DebugMessage(const char* msg, ...);
-    extern void DebugCube(const Vec3& p, float size = 0.01f);
-    extern void DebugLineStrip(const Vec3Array& pnts);
 
   } // namespace Editor
 } // namespace ToolKit

@@ -44,7 +44,8 @@ namespace ToolKit
         UNUSEDSLOT_1   = 6,
         PluginWindow   = 7,
         Viewport2d     = 8,
-        RenderSettings = 9
+        RenderSettings = 9,
+        Stats          = 10
       };
 
      public:
@@ -93,6 +94,10 @@ namespace ToolKit
 
     typedef std::vector<Window*> WindowRawPtrArray;
 
+    /**
+     * Deprecated, use volatile windows.
+     * UI::m_volatileWindows
+     */
     class TempWindow
     {
      public:
@@ -148,6 +153,8 @@ namespace ToolKit
        * usage is to check if user typing text to an input field.
        */
       static bool IsKeyboardCaptured();
+
+      static void AddTooltipToLastItem(const char* tip);
 
      public:
       static bool m_showNewSceneWindow;

@@ -50,7 +50,7 @@ namespace ToolKit
       void SetCamera(CameraPtr cam) override;
 
      protected:
-      RenderTargetSettigs GetRenderTargetSettings() override;
+      TextureSettings GetRenderTargetSettings() override;
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
@@ -96,6 +96,8 @@ namespace ToolKit
 
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;
+
+      EditorRendererPtr m_editorRenderer;
 
      protected:
       Vec2 m_contentAreaMin;

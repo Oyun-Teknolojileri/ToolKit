@@ -19,7 +19,7 @@ namespace ToolKit
 
   FullQuadPass::FullQuadPass()
   {
-    m_camera                   = MakeNewPtr<Camera>(); // Unused.
+    m_camera                   = MakeNewPtr<Camera>();
     m_quad                     = MakeNewPtr<Quad>();
 
     m_material                 = MakeNewPtr<Material>();
@@ -41,13 +41,21 @@ namespace ToolKit
     PUSH_CPU_MARKER("FullQuadPass::Render");
 
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer, {0.0f, 0.0f, 0.0f, 1.0f});
 
-    static RenderJobArray jobs;
-    jobs.clear();
-    EntityPtrArray oneQuad = {m_quad};
-    RenderJobProcessor::CreateRenderJobs(oneQuad, jobs);
-    renderer->Render(jobs, m_camera, {});
+    if (m_params.ClearFrameBuffer)
+    {
+      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::AllBits);
+    }
+    else
+    {
+      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::None);
+    }
+
+    renderer->SetCamera(m_camera, true);
+
+    RenderJobArray jobs;
+    RenderJobProcessor::CreateRenderJobs({m_quad}, jobs);
+    renderer->Render(jobs);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -58,19 +66,15 @@ namespace ToolKit
     PUSH_GPU_MARKER("FullQuadPass::PreRender");
     PUSH_CPU_MARKER("FullQuadPass::PreRender");
 
+    // Gpu Program should be bound before calling FulQuadPass Render
+
     Pass::PreRender();
-    Renderer* renderer      = GetRenderer();
-    renderer->m_overrideMat = nullptr;
+    Renderer* renderer = GetRenderer();
     renderer->EnableDepthTest(false);
 
-    m_material->m_fragmentShader = m_params.FragmentShader;
-    m_material->UnInit(); // Reinit in case, shader change.
-    m_material->Init();
-    m_material->GetRenderState()->blendFunction = m_params.BlendFunc;
-
-    MeshComponentPtr mc                         = m_quad->GetMeshComponent();
-    MeshPtr mesh                                = mc->GetMeshVal();
-    mesh->m_material                            = m_material;
+    MeshComponentPtr mc = m_quad->GetMeshComponent();
+    MeshPtr mesh        = mc->GetMeshVal();
+    mesh->m_material    = m_material;
     mesh->Init();
 
     POP_CPU_MARKER();
@@ -87,6 +91,21 @@ namespace ToolKit
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
+  }
+
+  void FullQuadPass::SetFragmentShader(ShaderPtr fragmentShader, Renderer* renderer)
+  {
+    m_material->m_fragmentShader                = fragmentShader;
+    m_material->GetRenderState()->blendFunction = m_params.BlendFunc;
+
+    m_program = GetGpuProgramManager()->CreateProgram(m_material->m_vertexShader, m_material->m_fragmentShader);
+
+    renderer->BindProgram(m_program);
+  }
+
+  void FullQuadPass::UpdateUniform(const ShaderUniform& shaderUniform)
+  {
+    m_program->UpdateCustomUniform(shaderUniform);
   }
 
 } // namespace ToolKit

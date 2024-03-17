@@ -166,11 +166,31 @@ namespace ToolKit
     GetComponent<DirectionComponent>()->LookAt(geoCenter);
   }
 
-  Vec3 Camera::Direction() const
+  Vec3Array Camera::ExtractFrustumCorner()
   {
-    DirectionComponentPtr dcp = GetComponent<DirectionComponent>();
-    return dcp->GetDirection();
+    Vec3Array frustum             = {Vec3(-1.0f, -1.0f, -1.0f),
+                                     Vec3(1.0f, -1.0f, -1.0f),
+                                     Vec3(1.0f, -1.0f, 1.0f),
+                                     Vec3(-1.0f, -1.0f, 1.0f),
+                                     Vec3(-1.0f, 1.0f, -1.0f),
+                                     Vec3(1.0f, 1.0f, -1.0f),
+                                     Vec3(1.0f, 1.0f, 1.0f),
+                                     Vec3(-1.0f, 1.0f, 1.0f)};
+
+    Mat4 view                     = GetViewMatrix();
+    Mat4 project                  = GetProjectionMatrix();
+    const Mat4 inverseSpaceMatrix = glm::inverse(project * view);
+
+    for (int i = 0; i < 8; ++i)
+    {
+      const Vec4 t = inverseSpaceMatrix * Vec4(frustum[i], 1.0f);
+      frustum[i]   = Vec3(t.x / t.w, t.y / t.w, t.z / t.w);
+    }
+
+    return frustum;
   }
+
+  Vec3 Camera::Direction() const { return GetComponentFast<DirectionComponent>()->GetDirection(); }
 
   Entity* Camera::CopyTo(Entity* copyTo) const
   {

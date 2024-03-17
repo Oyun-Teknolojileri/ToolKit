@@ -19,13 +19,14 @@
 #include <PluginManager.h>
 #include <Resource.h>
 #include <SDL.h>
+#include <TKProfiler.h>
+#include <TKStats.h>
 #include <UIManager.h>
 
 #include <sstream>
 #include <thread>
 
 #include <DebugNew.h>
-#include <TKProfiler.h>
 
 namespace ToolKit
 {
@@ -85,18 +86,8 @@ namespace ToolKit
       ActionManager::GetInstance()->Init();
 
       m_workspace.Init();
-      String sceneName = "New Scene" + SCENE;
-      if (!m_newSceneName.empty())
-      {
-        sceneName = m_newSceneName;
-      }
+      CreateNewScene();
 
-      EditorScenePtr scene = MakeNewPtr<EditorScene>();
-      scene->SetFile(ScenePath(sceneName));
-
-      scene->m_name     = sceneName;
-      scene->m_newScene = true;
-      SetCurrentScene(scene);
       ApplyProjectSettings(false);
 
       if (!CheckFile(m_workspace.GetActiveWorkspace()))
@@ -119,11 +110,6 @@ namespace ToolKit
       m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager               = new PublishManager();
       GetRenderSystem()->SetClearColor(g_wndBgColor);
-
-      if (GetFileManager()->CheckPakFile())
-      {
-        TK_LOG("Project uses MinResources.pak for resource gather.");
-      }
     }
 
     void App::DestroyEditorEntities()
@@ -150,6 +136,22 @@ namespace ToolKit
       m_perFrameDebugObjects.clear();
     }
 
+    void App::CreateNewScene()
+    {
+      String sceneName = "NewScene" + SCENE;
+      if (!m_newSceneName.empty())
+      {
+        sceneName = m_newSceneName;
+      }
+
+      EditorScenePtr scene = MakeNewPtr<EditorScene>();
+      scene->SetFile(ScenePath(sceneName));
+
+      scene->m_name     = sceneName;
+      scene->m_newScene = true;
+      SetCurrentScene(scene);
+    }
+
     void App::Destroy()
     {
       // UI.
@@ -159,9 +161,10 @@ namespace ToolKit
 
       GetCurrentScene()->Destroy(false);
 
-      GetAnimationPlayer()->m_records.clear();
+      GetAnimationPlayer()->Destroy();
 
       GetUIManager()->DestroyLayers();
+      GetUIManager()->ClearViewportsToUpdateLayers();
 
       ModManager::GetInstance()->UnInit();
       ActionManager::GetInstance()->UnInit();
@@ -186,11 +189,7 @@ namespace ToolKit
       UI::ShowUI();
 
       POP_CPU_MARKER();
-      PUSH_CPU_MARKER("Exec Render Tasks");
 
-      GetRenderSystem()->ExecuteRenderTasks();
-
-      POP_CPU_MARKER();
       PUSH_CPU_MARKER("Mod Manager Update");
 
       // Update Mods.
@@ -235,13 +234,8 @@ namespace ToolKit
       }
 
       POP_CPU_MARKER();
-      PUSH_CPU_MARKER("Update Scene");
 
-      EditorScenePtr scene = GetCurrentScene();
-      scene->Update(deltaTime);
-
-      POP_CPU_MARKER();
-      PUSH_CPU_MARKER("Update Scene");
+      PUSH_CPU_MARKER("Update Plugin & Simulation");
 
       // Update Plugins.
       GetPluginManager()->Update(deltaTime);
@@ -259,19 +253,12 @@ namespace ToolKit
 
           GetRenderSystem()->AddRenderTask({[this, viewport, deltaTime](Renderer* renderer) -> void
                                             {
-                                              // 2d Viewport should not be updated as it may break the
-                                              // designers work.
-                                              if (viewport->m_name != g_2dViewport)
-                                              {
-                                                GetUIManager()->UpdateLayers(deltaTime, viewport);
-                                              }
-
-                                              m_editorRenderer->m_params.UseMobileRenderPath =
+                                              viewport->m_editorRenderer->m_params.UseMobileRenderPath =
                                                   GetEngineSettings().Graphics.RenderSpec == RenderingSpec::Mobile;
-                                              m_editorRenderer->m_params.App      = g_app;
-                                              m_editorRenderer->m_params.LitMode  = m_sceneLightingMode;
-                                              m_editorRenderer->m_params.Viewport = viewport;
-                                              m_editorRenderer->Render(renderer);
+                                              viewport->m_editorRenderer->m_params.App      = g_app;
+                                              viewport->m_editorRenderer->m_params.LitMode  = m_sceneLightingMode;
+                                              viewport->m_editorRenderer->m_params.Viewport = viewport;
+                                              viewport->m_editorRenderer->Render(renderer);
                                             }});
         }
       }
@@ -284,7 +271,7 @@ namespace ToolKit
 
       POP_CPU_MARKER();
 
-      GetRenderSystem()->SetFrameCount(m_totalFrameCount++);
+      m_totalFrameCount = GetRenderSystem()->GetFrameCount();
 
       if (m_reloadPlugin)
       {
@@ -300,9 +287,9 @@ namespace ToolKit
 
     void App::OnNewScene(const String& name)
     {
-      Destroy();
-      m_newSceneName = name;
-      Init();
+      ClearSession();
+      CreateNewScene();
+
       m_newSceneName.clear();
       m_workspace.SetScene(name);
     }
@@ -515,29 +502,52 @@ namespace ToolKit
               m_simulationWindow->GetCamera()->m_node->SetTransform(view);
             }
           }
+
+          // Check if there is a new plugin.
+          if (PluginManager* plugMan = GetPluginManager())
+          {
+            if (Plugin* plg = static_cast<Plugin*>(gamePlugin))
+            {
+              plg        = plugMan->Reload(plg);
+              gamePlugin = static_cast<GamePlugin*>(plg);
+            }
+          }
         }
 
         gamePlugin->SetViewport(GetSimulationWindow());
         gamePlugin->m_currentState = PluginState::Running;
 
-        m_statusMsg                = "Game is playing";
-        m_gameMod                  = mod;
+        if (m_gameMod == GameMod::Stop)
+        {
+          gamePlugin->OnPlay();
+          m_statusMsg = "Game is playing";
+        }
+
+        if (m_gameMod == GameMod::Paused)
+        {
+          gamePlugin->OnResume();
+          m_statusMsg = "Game is resumed";
+        }
+
+        m_gameMod = mod;
       }
 
       if (mod == GameMod::Paused)
       {
         gamePlugin->m_currentState = PluginState::Paused;
+        gamePlugin->OnPause();
 
-        m_statusMsg                = "Game is paused";
-        m_gameMod                  = mod;
+        m_statusMsg = "Game is paused";
+        m_gameMod   = mod;
       }
 
       if (mod == GameMod::Stop)
       {
         gamePlugin->m_currentState = PluginState::Stop;
+        gamePlugin->OnStop();
 
-        m_statusMsg                = "Game is stopped";
-        m_gameMod                  = mod;
+        m_statusMsg = "Game is stopped";
+        m_gameMod   = mod;
 
         ClearPlayInEditorSession();
 
@@ -560,9 +570,10 @@ namespace ToolKit
 #ifdef TK_DEBUG
       static const StringView buildConfig = "Debug";
 #else
-      static const StringView buildConfig = "Release";
+      static const StringView buildConfig = "RelWithDebInfo";
 #endif
-      String cmd    = "cmake -S " + codePath + " -B " + buildDir;
+
+      String cmd    = "cmake -S " + codePath + " -B " + buildDir + " -DCMAKE_BUILD_TYPE=" + buildConfig.data();
       m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
       m_isCompiling = true;
 
@@ -654,7 +665,7 @@ namespace ToolKit
 
       if (!GetCurrentScene()->GetBillboard(entity))
       {
-        cam->FocusToBoundingBox(entity->GetAABB(true), 1.1f);
+        cam->FocusToBoundingBox(entity->GetBoundingBox(true), 1.1f);
       }
       else
       {
@@ -678,19 +689,30 @@ namespace ToolKit
         wnd->ClearOutliner();
       }
 
-      // Kill all the object references in the renderer.
-      m_editorRenderer = MakeNewPtr<EditorRenderer>();
+      for (Window* wnd : m_windows)
+      {
+        if (wnd->IsViewport())
+        {
+          static_cast<EditorViewport*>(wnd)->m_editorRenderer = MakeNewPtr<EditorRenderer>();
+        }
+      }
 
       // Clear all animations potentially added from game module.
-      GetAnimationPlayer()->m_records.clear();
+      GetAnimationPlayer()->Destroy();
+      GetUIManager()->DestroyLayers();
+      GetUIManager()->ClearViewportsToUpdateLayers();
 
       m_perFrameDebugObjects.clear();
       UI::m_postponedActions.clear();
 
       ActionManager::GetInstance()->ClearAllActions();
 
-      ModManager::GetInstance()->UnInit();
-      ModManager::GetInstance()->Init();
+      if (ModManager* modMan = ModManager::GetInstance())
+      {
+        modMan->UnInit();
+        modMan->Init();
+        modMan->SetMod(true, ModId::Select);
+      }
     }
 
     void App::ClearPlayInEditorSession()
@@ -764,6 +786,7 @@ namespace ToolKit
         vp->GetCamera()->m_node->SetTranslation({5.0f, 3.0f, 5.0f});
         vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f));
         m_windows.push_back(vp);
+        GetUIManager()->RegisterViewportToUpdateLayers(vp);
 
         // 2d viewport.
         vp = new EditorViewport2d();
@@ -860,6 +883,9 @@ namespace ToolKit
             break;
           case Window::Type::RenderSettings:
             wnd = new RenderSettingsView();
+            break;
+          case Window::Type::Stats:
+            wnd = new StatsView();
             break;
           }
 
@@ -1216,17 +1242,19 @@ namespace ToolKit
     void App::OpenProject(const Project& project)
     {
       ClearSession();
+      GetPluginManager()->UnloadGamePlugin();
+      m_workspace.SetActiveProject(project);
+      m_workspace.Serialize(nullptr, nullptr);
+      m_workspace.SerializeEngineSettings();
+      OnNewScene("New Scene");
 
-      UI::m_postponedActions.push_back(
-          [this, project]() -> void
-          {
-            m_workspace.SetActiveProject(project);
-            m_workspace.Serialize(nullptr, nullptr);
-            m_workspace.SerializeEngineSettings();
-            OnNewScene("New Scene");
+      LoadProjectPlugin();
 
-            LoadProjectPlugin();
-          });
+      FolderWindowRawPtrArray browsers = GetAssetBrowsers();
+      for (FolderWindow* browser : browsers)
+      {
+        browser->IterateFolders(true);
+      }
     }
 
     void App::PackResources()
@@ -1334,7 +1362,11 @@ namespace ToolKit
 
     RenderSettingsView* App::GetRenderSettingsView() { return GetWindow<RenderSettingsView>(g_renderSettings); }
 
+    StatsView* App::GetStatsView() { return GetWindow<StatsView>(g_statsView); }
+
     void App::AddRenderSettingsView() { m_windows.push_back(new RenderSettingsView()); }
+
+    void App::AddStatsView() { m_windows.push_back(new StatsView()); }
 
     void App::HideGizmos()
     {
@@ -1433,6 +1465,8 @@ namespace ToolKit
           wnd->Serialize(lclDoc.get(), app);
         }
 
+        m_workspace.SerializeSimulationWindow(lclDoc);
+
         std::string xml;
         rapidxml::print(std::back_inserter(xml), *lclDoc, 0);
 
@@ -1486,6 +1520,8 @@ namespace ToolKit
         }
 
         CreateWindows(root);
+
+        m_workspace.DeSerializeSimulationWindow(lclDoc);
       }
 
       LoadProjectPlugin();
@@ -1544,11 +1580,12 @@ namespace ToolKit
     void App::CreateEditorEntities()
     {
       // Create editor objects.
-      m_editorRenderer = MakeNewPtr<EditorRenderer>();
-      m_cursor         = MakeNewPtr<Cursor>();
-      m_origin         = MakeNewPtr<Axis3d>();
+      m_cursor   = MakeNewPtr<Cursor>();
+      m_origin   = MakeNewPtr<Axis3d>();
+      m_dbgArrow = MakeNewPtr<Arrow2d>();
+      m_dbgArrow->Generate(AxisLabel::X);
 
-      m_grid           = MakeNewPtr<Grid>();
+      m_grid = MakeNewPtr<Grid>();
       m_grid->Resize(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0);
 
       m_2dGrid         = MakeNewPtr<Grid>();
@@ -1557,29 +1594,6 @@ namespace ToolKit
     }
 
     float App::GetDeltaTime() { return m_deltaTime; }
-
-    void DebugMessage(const String& msg) { g_app->GetConsole()->AddLog(msg, "Debug"); }
-
-    void DebugMessage(const Vec3& vec) { g_app->GetConsole()->AddLog(glm::to_string(vec), "Debug"); }
-
-    void DebugMessage(const char* msg, ...)
-    {
-      va_list args;
-      va_start(args, msg);
-
-      static char buff[2048];
-      vsprintf(buff, msg, args);
-      DebugMessage(String(buff));
-
-      va_end(args);
-    }
-
-    void DebugCube(const Vec3& p, float size)
-    {
-      g_app->m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject({p - Vec3(size), p + Vec3(size)}));
-    }
-
-    void DebugLineStrip(const Vec3Array& pnts) { g_app->m_perFrameDebugObjects.push_back(CreateLineDebugObject(pnts)); }
 
   } // namespace Editor
 } // namespace ToolKit

@@ -32,30 +32,17 @@ namespace ToolKit
     {
       PUSH_CPU_MARKER("SingleMatForwardRenderPass::Render");
 
-      Renderer* renderer      = GetRenderer();
-      renderer->m_overrideMat = m_overrideMat;
-      for (RenderJob& job : m_params.ForwardParams.OpaqueJobs)
+      Renderer* renderer = GetRenderer();
+
+      RenderJobItr begin = m_params.ForwardParams.renderData->GetForwardOpaqueBegin();
+      RenderJobItr end   = m_params.ForwardParams.renderData->GetForwardTranslucentBegin();
+
+      for (RenderJobArray::iterator job = begin; begin != end; begin++)
       {
-        RenderJobProcessor::SortLights(job, m_params.ForwardParams.Lights);
-
-        MaterialPtr mat = job.Material;
-        renderer->m_overrideMat->SetRenderState(mat->GetRenderState());
-        renderer->m_overrideMat->m_vertexShader    = mat->m_vertexShader;
-        renderer->m_overrideMat->m_fragmentShader  = m_params.OverrideFragmentShader;
-        renderer->m_overrideMat->m_diffuseTexture  = mat->m_diffuseTexture;
-        renderer->m_overrideMat->m_emissiveTexture = mat->m_emissiveTexture;
-        renderer->m_overrideMat->m_emissiveColor   = mat->m_emissiveColor;
-        renderer->m_overrideMat->m_cubeMap         = mat->m_cubeMap;
-        renderer->m_overrideMat->m_color           = mat->m_color;
-        renderer->m_overrideMat->SetAlpha(mat->GetAlpha());
-        renderer->m_overrideMat->Init();
-
-        renderer->Render(job, m_params.ForwardParams.Cam, m_params.ForwardParams.Lights);
+        renderer->Render(*job);
       }
 
-      RenderTranslucent(m_params.ForwardParams.TranslucentJobs,
-                        m_params.ForwardParams.Cam,
-                        m_params.ForwardParams.Lights);
+      RenderTranslucent(m_params.ForwardParams.renderData);
 
       POP_CPU_MARKER();
     }
@@ -70,6 +57,9 @@ namespace ToolKit
       m_overrideMat->UnInit();
       m_overrideMat->m_fragmentShader = m_params.OverrideFragmentShader;
       m_overrideMat->Init();
+
+      m_program = GetGpuProgramManager()->CreateProgram(m_overrideMat->m_vertexShader, m_overrideMat->m_fragmentShader);
+      GetRenderer()->BindProgram(m_program);
 
       POP_CPU_MARKER();
     };

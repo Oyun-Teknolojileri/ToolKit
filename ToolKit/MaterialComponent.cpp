@@ -43,7 +43,12 @@ namespace ToolKit
   XmlNode* MaterialComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* compNode = Super::SerializeImp(doc, parent);
-    XmlNode* matNode  = CreateXmlNode(doc, StaticClass()->Name, compNode);
+    if (!m_serializableComponent)
+    {
+      return compNode;
+    }
+
+    XmlNode* matNode = CreateXmlNode(doc, StaticClass()->Name, compNode);
 
     WriteAttr(matNode, doc, XmlMatCountAttrib, std::to_string(m_materialList.size()));
     for (size_t i = 0; i < m_materialList.size(); i++)
@@ -128,25 +133,20 @@ namespace ToolKit
   void MaterialComponent::UpdateMaterialList()
   {
     m_materialList.clear();
-    MeshComponentPtrArray meshComps;
 
+    MeshComponentPtr meshComp;
     if (EntityPtr owner = OwnerEntity())
     {
-      owner->GetComponent<MeshComponent>(meshComps);
-    }
-
-    for (MeshComponentPtr meshComp : meshComps)
-    {
-      if (meshComp == nullptr || meshComp->GetMeshVal() == nullptr)
+      meshComp = owner->GetComponent<MeshComponent>();
+      if (meshComp != nullptr && meshComp->GetMeshVal() != nullptr)
       {
-        continue;
-      }
-      MeshRawPtrArray meshCollector;
-      meshComp->GetMeshVal()->GetAllMeshes(meshCollector);
+        MeshRawPtrArray meshCollector;
+        meshComp->GetMeshVal()->GetAllMeshes(meshCollector, true);
 
-      for (uint i = 0; i < meshCollector.size(); i++)
-      {
-        m_materialList.push_back(meshCollector[i]->m_material);
+        for (uint i = 0; i < meshCollector.size(); i++)
+        {
+          m_materialList.push_back(meshCollector[i]->m_material);
+        }
       }
     }
   }

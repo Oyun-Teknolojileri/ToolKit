@@ -66,9 +66,21 @@ namespace ToolKit
     return nullptr;
   }
 
-  bool Entity::IsDrawable() const { return GetComponent<MeshComponent>() != nullptr; }
+  bool Entity::IsDrawable() const
+  {
+    if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
+    {
+      meshComp->Init(false);
+      if (const MeshPtr& mesh = meshComp->GetMeshVal())
+      {
+        return mesh->TotalVertexCount() > 0;
+      }
+    }
 
-  void Entity::SetPose(const AnimationPtr& anim, float time, BlendTarget* blendTarget)
+    return false;
+  }
+
+  void Entity::SetPose(const AnimationPtr& anim, float time)
   {
     MeshComponentPtr meshComp = GetMeshComponent();
     if (meshComp)
@@ -77,48 +89,37 @@ namespace ToolKit
       SkeletonComponentPtr skelComp = GetComponent<SkeletonComponent>();
       if (mesh->IsSkinned() && skelComp)
       {
-        anim->GetPose(skelComp, time, blendTarget);
+        anim->GetPose(skelComp, time);
         return;
       }
     }
     anim->GetPose(m_node, time);
   }
 
-  BoundingBox Entity::GetAABB(bool inWorld) const
+  BoundingBox Entity::GetBoundingBox(bool inWorld) const
   {
     BoundingBox aabb;
-
-    AABBOverrideComponentPtr overrideComp = GetComponent<AABBOverrideComponent>();
+    AABBOverrideComponent* overrideComp = GetComponentFast<AABBOverrideComponent>();
     if (overrideComp)
     {
-      aabb = overrideComp->GetAABB();
+      aabb = overrideComp->GetBoundingBox();
     }
     else
     {
-      MeshComponentPtrArray meshCmps;
-      GetComponent<MeshComponent>(meshCmps);
-
-      if (meshCmps.empty())
+      if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
       {
-        // Unit aabb.
-        aabb.max = Vec3(0.5f, 0.5f, 0.5f);
-        aabb.min = Vec3(-0.5f, -0.5f, -0.5f);
-      }
-      else
-      {
-        BoundingBox cmpAABB;
-        for (MeshComponentPtr& cmp : meshCmps)
-        {
-          cmpAABB = cmp->GetAABB();
-          aabb.UpdateBoundary(cmpAABB.max);
-          aabb.UpdateBoundary(cmpAABB.min);
-        }
+        aabb = meshComp->GetBoundingBox();
       }
     }
 
-    if (inWorld)
+    if (!aabb.IsValid())
     {
-      TransformAABB(aabb, m_node->GetTransform(TransformationSpace::TS_WORLD));
+      // In case of an uninitialized bounding box, provide a very small box.
+      aabb = BoundingBox(Vec3(-TK_FLT_MIN), Vec3(TK_FLT_MIN));
+    }
+    else if (inWorld)
+    {
+      TransformAABB(aabb, m_node->GetTransform());
     }
 
     return aabb;
@@ -132,12 +133,7 @@ namespace ToolKit
     return cpy;
   }
 
-  void Entity::ClearComponents()
-  {
-    // Probably base entity will call this too, so there is no problem to use
-    //  like that
-    m_components.clear();
-  }
+  void Entity::ClearComponents() { m_components.clear(); }
 
   Entity* Entity::GetPrefabRoot() const { return _prefabRootEntity; }
 
@@ -146,9 +142,10 @@ namespace ToolKit
     WeakCopy(other);
 
     other->ClearComponents();
-    for (const ComponentPtr& com : m_components)
+    for (int i = 0; i < (int) m_components.size(); i++)
     {
-      other->m_components.push_back(com->Copy(other->Self<Entity>()));
+      ComponentPtr copy = m_components[i]->Copy(other->Self<Entity>());
+      other->m_components.push_back(copy);
     }
 
     return other;
@@ -186,7 +183,7 @@ namespace ToolKit
 
   void Entity::AddComponent(const ComponentPtr& component)
   {
-    assert(GetComponent(component->GetIdVal()) == nullptr && "Component has already been added.");
+    assert(GetComponent(component->Class()) == nullptr && "Component has already been added.");
     component->OwnerEntity(Self<Entity>());
     m_components.push_back(component);
   }
@@ -195,15 +192,15 @@ namespace ToolKit
 
   MaterialComponentPtr Entity::GetMaterialComponent() const { return GetComponent<MaterialComponent>(); }
 
-  ComponentPtr Entity::RemoveComponent(ULongID componentId)
+  ComponentPtr Entity::RemoveComponent(ClassMeta* Class)
   {
-    for (size_t i = 0; i < m_components.size(); i++)
+    for (int i = 0; i < (int) m_components.size(); i++)
     {
-      ComponentPtr com = m_components[i];
-      if (com->GetIdVal() == componentId)
+      if (m_components[i]->Class() == Class)
       {
+        ComponentPtr cmp = m_components[i];
         m_components.erase(m_components.begin() + i);
-        return com;
+        return cmp;
       }
     }
 
@@ -214,13 +211,13 @@ namespace ToolKit
 
   const ComponentPtrArray& Entity::GetComponentPtrArray() const { return m_components; }
 
-  ComponentPtr Entity::GetComponent(ULongID id) const
+  ComponentPtr Entity::GetComponent(ClassMeta* Class) const
   {
-    for (const ComponentPtr& com : GetComponentPtrArray())
+    for (int i = 0; i < (int) m_components.size(); i++)
     {
-      if (com->GetIdVal() == id)
+      if (m_components[i]->Class() == Class)
       {
-        return com;
+        return m_components[i];
       }
     }
 
@@ -240,7 +237,7 @@ namespace ToolKit
     m_node->Serialize(doc, node);
 
     XmlNode* compNode = CreateXmlNode(doc, XmlComponentArrayElement, node);
-    for (const ComponentPtr& cmp : GetComponentPtrArray())
+    for (auto& cmp : GetComponentPtrArray())
     {
       cmp->Serialize(doc, compNode);
     }

@@ -28,14 +28,21 @@ namespace ToolKit
       uint Width      = 1024;
       uint Height     = 768;
       bool FullScreen = false;
+
+      void Serialize(XmlDocument* doc, XmlNode* parent) const;
+      void DeSerialize(XmlDocument* doc, XmlNode* parent);
     } Window;
 
     struct GraphicSettings
     {
-      int MSAA                 = 2;
-      int FPS                  = 60;
-      RenderingSpec RenderSpec = RenderingSpec::Default;
-      float ShadowDistance     = 100.0f;
+      int MSAA                    = 2;
+      int FPS                     = 60;
+      RenderingSpec RenderSpec    = RenderingSpec::Default;
+      float ShadowDistance        = 100.0f;
+      float renderResolutionScale = 1.0f;
+
+      void Serialize(XmlDocument* doc, XmlNode* parent) const;
+      void DeSerialize(XmlDocument* doc, XmlNode* parent);
     } Graphics;
 
     struct PostProcessingSettings
@@ -58,17 +65,16 @@ namespace ToolKit
       float FocusScale             = 5.0f;
       DoFQuality DofQuality        = DoFQuality::Normal;
       bool FXAAEnabled             = false;
+
+      void Serialize(XmlDocument* doc, XmlNode* parent) const;
+      void DeSerialize(XmlDocument* doc, XmlNode* parent);
     } PostProcessing;
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
-    void SerializeWindow(XmlDocument* doc, XmlNode* parent) const;
-    void DeSerializeWindow(XmlDocument* doc, XmlNode* parent);
-    void SerializePostProcessing(XmlDocument* doc, XmlNode* parent) const;
-    void DeSerializePostProcessing(XmlDocument* doc, XmlNode* parent);
-    void SerializeGraphics(XmlDocument* doc, XmlNode* parent) const;
-    void DeSerializeGraphics(XmlDocument* doc, XmlNode* parent);
+    void SerializeEngineSettings(const String& engineSettingsFilePath);
+    void DeSerializeEngineSettings(const String& engineSettingsFilePath);
   };
 
 } // namespace ToolKit

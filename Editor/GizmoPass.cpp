@@ -36,34 +36,33 @@ namespace ToolKit
     {
       PUSH_CPU_MARKER("GizmoPass::Render");
 
-      Renderer* renderer = GetRenderer();
+      Renderer* renderer                   = GetRenderer();
+      GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
 
       for (EditorBillboardPtr billboard : m_params.GizmoArray)
       {
         if (billboard->GetBillboardType() == EditorBillboardBase::BillboardType::Rotate)
         {
           Mat4 ts = billboard->m_node->GetTransform();
-          m_depthMaskSphere->m_node->SetTransform(ts, TransformationSpace::TS_WORLD, false);
+          m_depthMaskSphere->m_node->SetTransform(ts, TransformationSpace::TS_WORLD);
 
           renderer->ColorMask(false, false, false, false);
 
-          static RenderJobArray jobs;
-          jobs.clear();
+          RenderJobArray jobs;
           RenderJobProcessor::CreateRenderJobs({m_depthMaskSphere}, jobs);
-          renderer->Render(jobs, m_camera);
+          renderer->RenderWithProgramFromMaterial(jobs);
 
           renderer->ColorMask(true, true, true, true);
 
           jobs.clear();
           RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
-          renderer->Render(jobs, m_camera);
+          renderer->RenderWithProgramFromMaterial(jobs);
         }
         else
         {
-          static RenderJobArray jobs;
-          jobs.clear();
+          RenderJobArray jobs;
           RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
-          renderer->Render(jobs, m_camera);
+          renderer->RenderWithProgramFromMaterial(jobs);
         }
       }
 
@@ -75,12 +74,11 @@ namespace ToolKit
       PUSH_CPU_MARKER("GizmoPass::PreRender");
 
       Pass::PreRender();
-
       Renderer* renderer = GetRenderer();
+
       m_camera           = m_params.Viewport->GetCamera();
-      renderer->SetFramebuffer(m_params.Viewport->m_framebuffer, false);
-      renderer->SetCameraLens(m_camera);
-      renderer->ClearBuffer(GraphicBitFields::DepthBits, Vec4(1.0f));
+      renderer->SetFramebuffer(m_params.Viewport->m_framebuffer, GraphicBitFields::DepthBits);
+      renderer->SetCamera(m_camera, true);
 
       // Update.
       BillboardPtrArray& gizmoArray = m_params.GizmoArray;

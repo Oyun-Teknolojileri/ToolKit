@@ -7,6 +7,7 @@
 
 #include "MathUtil.h"
 
+#include "Animation.h"
 #include "Camera.h"
 #include "Mesh.h"
 #include "Node.h"
@@ -14,9 +15,8 @@
 #include "ResourceComponent.h"
 #include "Skeleton.h"
 #include "TKProfiler.h"
+#include "Threads.h"
 
-#include <execution>
-#include <mutex>
 #include <random>
 
 #include "DebugNew.h"
@@ -176,9 +176,9 @@ namespace ToolKit
    * model space
    */
   // http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
-  Frustum ExtractFrustum(const Mat4& _projectViewModel, bool normalize)
+  Frustum ExtractFrustum(const Mat4& projectViewModelMat, bool normalize)
   {
-    Mat4 projectViewModel = glm::transpose(_projectViewModel);
+    Mat4 projectViewModel = glm::transpose(projectViewModelMat);
 
     Frustum frus;
 
@@ -221,13 +221,18 @@ namespace ToolKit
     // Normalize the plane equations, if requested
     if (normalize)
     {
-      for (int i = 0; i < 6; i++)
-      {
-        NormalizePlaneEquation(frus.planes[i]);
-      }
+      NormalizeFrustum(frus);
     }
 
     return frus;
+  }
+
+  void NormalizeFrustum(Frustum& frustum)
+  {
+    for (int i = 0; i < 6; i++)
+    {
+      NormalizePlaneEquation(frustum.planes[i]);
+    }
   }
 
   float SquareDistancePointToAABB(const Vec3& p, const BoundingBox& b)
@@ -357,32 +362,81 @@ namespace ToolKit
       return false;
   }
 
-  Vec3 CPUSkinning(const SkinVertex* vertex, const Skeleton* skel, DynamicBoneMapPtr dynamicBoneMap)
+  Vec3 CPUSkinning(const SkinVertex* vertex, const Skeleton* skel, DynamicBoneMapPtr dynamicBoneMap, bool isAnimated)
   {
+
     Vec3 transformedPos = {};
     for (uint boneIndx = 0; boneIndx < 4; boneIndx++)
     {
-      uint currentBone       = (uint) vertex->bones[boneIndx];
-      StaticBone* sBone      = skel->m_bones[currentBone];
-      Mat4 bindPoseTransform = sBone->m_inverseWorldMatrix;
-      ToolKit::Mat4 boneTransform =
-          dynamicBoneMap->boneList.find(sBone->m_name)->second.node->GetTransform(TransformationSpace::TS_WORLD);
-      transformedPos += Vec3((boneTransform * bindPoseTransform * Vec4(vertex->pos, 1.0f) * vertex->weights[boneIndx]));
+      uint currentBone  = (uint) vertex->bones[boneIndx];
+      StaticBone* sBone = skel->m_bones[currentBone];
+      if (isAnimated)
+      {
+        // Get animated pose
+        ToolKit::Mat4 boneTransform =
+            dynamicBoneMap->boneList.find(sBone->m_name)->second.node->GetTransform(TransformationSpace::TS_WORLD);
+        transformedPos +=
+            Vec3((boneTransform * sBone->m_inverseWorldMatrix * Vec4(vertex->pos, 1.0f) * vertex->weights[boneIndx]));
+      }
+      else
+      {
+        // Get bind pose
+        Mat4 transform = skel->m_Tpose.boneList.find(sBone->m_name)->second.node->GetTransform();
+        transformedPos +=
+            Vec3((transform * sBone->m_inverseWorldMatrix * Vec4(vertex->pos, 1.0f) * vertex->weights[boneIndx]));
+      }
     }
     return transformedPos;
   }
 
-  bool RayMeshIntersection(const Mesh* const mesh, const Ray& ray, float& t, const SkeletonComponent* skelComp)
+  bool RayMeshIntersection(const Mesh* const mesh, const Ray& ray, float& t, const SkeletonComponentPtr skelComp)
   {
     float closestPickedDistance = FLT_MAX;
     bool hit                    = false;
+    bool isAnimated             = true;
 
-#ifndef __clang__
+    // Sanitize.
+    if (mesh->IsSkinned())
+    {
+      const SkinMesh* skinMesh = static_cast<const SkinMesh*>(mesh);
+      if (skinMesh->m_skeleton->GetFile() != skelComp->GetSkeletonResourceVal()->GetFile())
+      {
+        // Sometimes resources may introduce mismatching skeleton vs skinmeshes.
+        // In this case look up the ntt id and fix the corresponding resource.
+        TK_ERR("Mismatching skeleton in mesh and component. Ntt id: %llu", skelComp->OwnerEntity()->GetIdVal());
+        return false;
+      }
+
+      const AnimData& animData = skelComp->GetAnimData();
+      AnimationPtr anim        = animData.currentAnimation;
+      bool found               = false;
+      if (anim != nullptr)
+      {
+        EntityPtr ntt = skelComp->OwnerEntity();
+        for (AnimRecordPtr animRecord : GetAnimationPlayer()->GetRecords())
+        {
+          if (EntityPtr recordNtt = animRecord->m_entity.lock())
+          {
+            if (recordNtt->GetIdVal() == ntt->GetIdVal())
+            {
+              anim->GetPose(skelComp, animRecord->m_currentTime);
+              found = true;
+              break;
+            }
+          }
+        }
+      }
+      else
+      {
+        isAnimated = false;
+      }
+    }
+
     std::mutex updateHit;
-    std::for_each(std::execution::par_unseq,
+    std::for_each(TKExecByConditional(mesh->m_faces.size() > 100, WorkerManager::FramePool),
                   mesh->m_faces.begin(),
                   mesh->m_faces.end(),
-                  [&updateHit, &t, &closestPickedDistance, &ray, &hit, skelComp, mesh](const Face& face)
+                  [&updateHit, &t, &closestPickedDistance, &ray, &hit, skelComp, mesh, &isAnimated](const Face& face)
                   {
                     Vec3 positions[3] = {face.vertices[0]->pos, face.vertices[1]->pos, face.vertices[2]->pos};
                     if (skelComp != nullptr && mesh->IsSkinned())
@@ -392,7 +446,8 @@ namespace ToolKit
                       {
                         positions[vertexIndx] = CPUSkinning((SkinVertex*) face.vertices[vertexIndx],
                                                             skinMesh->m_skeleton.get(),
-                                                            skelComp->m_map);
+                                                            skelComp->m_map,
+                                                            isAnimated);
                       }
                     }
                     float dist = FLT_MAX;
@@ -407,45 +462,27 @@ namespace ToolKit
                       }
                     }
                   });
-#else
-    for (const Face& face : mesh->m_faces)
-    {
-      float dist = FLT_MAX;
-      if (RayTriangleIntersection(ray, face.vertices[0]->pos, face.vertices[1]->pos, face.vertices[2]->pos, dist))
-      {
-        if (dist < closestPickedDistance && t >= 0.0f)
-        {
-          t                     = dist;
-          closestPickedDistance = dist;
-          hit                   = true;
-        }
-      }
-    }
-#endif
 
     return hit;
   }
 
   uint FindMeshIntersection(const EntityPtr ntt, const Ray& rayInWorldSpace, float& t)
   {
-    SkeletonComponent* skel = ntt->GetComponent<SkeletonComponent>().get();
+    SkeletonComponentPtr skel = ntt->GetComponent<SkeletonComponent>();
 
-    MeshComponentPtrArray meshComps;
-    ntt->GetComponent<MeshComponent>(meshComps);
-
-    MeshRawCPtrArray meshes;
-    for (MeshComponentPtr meshComp : meshComps)
+    MeshRawPtrArray meshes;
+    if (MeshComponentPtr meshComp = ntt->GetComponent<MeshComponent>())
     {
       meshComp->GetMeshVal()->GetAllMeshes(meshes);
     }
 
-    struct meshTrace
+    struct MeshTrace
     {
       float dist;
       uint indx;
     };
 
-    std::vector<meshTrace> meshTraces;
+    std::vector<MeshTrace> meshTraces;
     for (uint i = 0; i < meshes.size(); i++)
     {
       // There is a special case for SkinMeshes, because
@@ -456,7 +493,7 @@ namespace ToolKit
       if (mesh->IsSkinned())
       {
         SkinMesh* skinMesh = (SkinMesh*) mesh;
-        if (skinMesh->m_clientSideVertices.size() && skel)
+        if (skinMesh->m_clientSideVertices.size() && skel != nullptr)
         {
           meshTraces.push_back({TK_FLT_MAX, i});
         }
@@ -479,11 +516,10 @@ namespace ToolKit
     rayInObjectSpace.position  = its * Vec4(rayInWorldSpace.position, 1.0f);
     rayInObjectSpace.direction = its * Vec4(rayInWorldSpace.direction, 0.0f);
 
-#ifndef __clang__
-    std::for_each(std::execution::par_unseq,
+    std::for_each(TKExecByConditional(meshTraces.size(), WorkerManager::FramePool),
                   meshTraces.begin(),
                   meshTraces.end(),
-                  [rayInObjectSpace, skel, &meshes](meshTrace& trace)
+                  [rayInObjectSpace, skel, &meshes](MeshTrace& trace)
                   {
                     float t = TK_FLT_MAX;
 
@@ -492,21 +528,10 @@ namespace ToolKit
                       trace.dist = t;
                     }
                   });
-#else
-    for (meshTrace& trace : meshTraces)
-    {
-      float t = FLT_MAX;
-
-      if (RayMeshIntersection(meshes[trace.indx], rayInObjectSpace, t, skel))
-      {
-        trace.dist = t;
-      }
-    }
-#endif
 
     t                = TK_FLT_MAX;
     uint closestIndx = TK_UINT_MAX;
-    for (const meshTrace& trace : meshTraces)
+    for (const MeshTrace& trace : meshTraces)
     {
       if (trace.dist < t)
       {
@@ -615,6 +640,11 @@ namespace ToolKit
       }
     }
     return true;
+  }
+
+  bool FrustumSphereIntersection(const Frustum& frustum, const BoundingSphere& sphere)
+  {
+    return FrustumSphereIntersection(frustum, sphere.pos, sphere.radius);
   }
 
   bool ConePointIntersection(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, Vec3 point)
@@ -727,18 +757,18 @@ namespace ToolKit
     return res == IntersectResult::Outside;
   }
 
-  void FrustumCull(EntityRawPtrArray& entities, CameraPtr camera)
+  void FrustumCull(EntityRawPtrArray& entities, const CameraPtr& camera)
   {
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();
     Mat4 v          = camera->GetViewMatrix();
     Frustum frustum = ExtractFrustum(pr * v, false);
 
-    auto delFn      = [frustum](Entity* ntt) -> bool { return FrustumTest(frustum, ntt->GetAABB(true)); };
+    auto delFn      = [frustum](Entity* ntt) -> bool { return FrustumTest(frustum, ntt->GetBoundingBox(true)); };
     erase_if(entities, delFn);
   }
 
-  void FrustumCull(RenderJobArray& jobs, CameraPtr camera)
+  void FrustumCull(RenderJobArray& jobs, const CameraPtr& camera)
   {
     CPU_FUNC_RANGE();
 
@@ -747,8 +777,53 @@ namespace ToolKit
     Mat4 v          = camera->GetViewMatrix();
     Frustum frustum = ExtractFrustum(pr * v, false);
 
-    auto delFn      = [frustum](RenderJob& job) -> bool { return FrustumTest(frustum, job.BoundingBox); };
-    erase_if(jobs, delFn);
+    for (int i = 0; i < (int) jobs.size(); i++)
+    {
+      RenderJob& job    = jobs[i];
+      job.frustumCulled = FrustumTest(frustum, job.BoundingBox);
+    }
+  }
+
+  void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, UIntArray& resultIndices)
+  {
+    CPU_FUNC_RANGE();
+
+    // Frustum cull
+    Mat4 pr         = camera->GetProjectionMatrix();
+    Mat4 v          = camera->GetViewMatrix();
+    Frustum frustum = ExtractFrustum(pr * v, false);
+
+    resultIndices.clear();
+    resultIndices.reserve(jobs.size());
+
+    for (int i = 0; i < (int) jobs.size(); i++)
+    {
+      if (!FrustumTest(frustum, jobs[i].BoundingBox))
+      {
+        resultIndices.push_back(i);
+      }
+    }
+  }
+
+  void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, RenderJobArray& unCulledJobs)
+  {
+    CPU_FUNC_RANGE();
+
+    // Frustum cull
+    Mat4 pr         = camera->GetProjectionMatrix();
+    Mat4 v          = camera->GetViewMatrix();
+    Frustum frustum = ExtractFrustum(pr * v, false);
+
+    unCulledJobs.clear();
+    unCulledJobs.reserve(jobs.size());
+
+    for (int i = 0; i < (int) jobs.size(); i++)
+    {
+      if (!FrustumTest(frustum, jobs[i].BoundingBox))
+      {
+        unCulledJobs.push_back(jobs[i]);
+      }
+    }
   }
 
   void TransformAABB(BoundingBox& box, const Mat4& transform)

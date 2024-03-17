@@ -9,6 +9,7 @@
 
 #include "Resource.h"
 #include "ResourceManager.h"
+#include <map>
 
 namespace ToolKit
 {
@@ -40,9 +41,7 @@ namespace ToolKit
     // Call after skeleton fills m_bones list
     void Init(const Skeleton* skeleton);
     ~DynamicBoneMap();
-    std::unordered_map<String, DynamicBone> boneList;
-    TexturePtr boneTransformNodeTexture;
-    void UpdateGPUTexture();
+    std::map<String, DynamicBone> boneList;
     // Find all child bones by recursively searching child bones
     // Then call childProcessFunc (should be recursive to traverse all childs)
     void ForEachRootBone(std::function<void(const DynamicBone*)> childProcessFunc) const;
@@ -57,7 +56,7 @@ namespace ToolKit
 
     Skeleton();
     explicit Skeleton(const String& file);
-    ~Skeleton();
+    virtual ~Skeleton();
 
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
@@ -74,7 +73,7 @@ namespace ToolKit
    public:
     std::vector<StaticBone*> m_bones;
     DynamicBoneMap m_Tpose;
-    TexturePtr m_bindPoseTexture;
+    TexturePtr m_bindPoseTexture = nullptr;
   };
 
   class TK_API SkeletonManager : public ResourceManager

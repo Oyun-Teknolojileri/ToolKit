@@ -213,7 +213,7 @@ namespace ToolKit
     void AnchorAction::Swap()
     {
       const Mat4 backUp = m_entity->m_node->GetTransform();
-      m_entity->m_node->SetTransform(m_transform, TransformationSpace::TS_WORLD, false);
+      m_entity->m_node->SetTransform(m_transform, TransformationSpace::TS_WORLD);
       m_transform = backUp;
     }
 
@@ -408,7 +408,7 @@ namespace ToolKit
         if (parent->IsA<Canvas>())
         {
           Canvas* canvasPanel  = parent->As<Canvas>();
-          const BoundingBox bb = canvasPanel->GetAABB(true);
+          const BoundingBox bb = canvasPanel->GetBoundingBox(true);
           w                    = bb.GetWidth();
           h                    = bb.GetHeight();
         }

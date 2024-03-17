@@ -14,23 +14,13 @@
 
 #include "Resource.h"
 #include "SkeletonComponent.h"
+#include "Texture.h"
 #include "Types.h"
+
+#include <map>
 
 namespace ToolKit
 {
-  /*
-   * Blending to next Animation configration for AnimRecord class.
-   */
-  struct BlendTarget
-  {
-    Animation* TargetAnim = nullptr; //!< Animation to Blend.
-    float OverlapTime     = 1.0f;    //!< How early animation will start blending.
-    String RootBone;                 //!< Root bone of animation nodes for offsetting.
-    Vec3 TranslationOffset;          //!< Transform offset of target animation.
-    Quaternion OrientationOffset;    //!< Orientation offset of target animation.
-    bool Blend = false;              //!< States if the blending is active for the track.
-  };
-
   /**
    * A transformation key that is part of an Animation resource.
    */
@@ -82,7 +72,7 @@ namespace ToolKit
      * Sets the Skeleton's transform from the animation based on time.
      * @param skeleton SkeletonPtr to be transformed.
      */
-    void GetPose(const SkeletonComponentPtr& skeleton, float time, BlendTarget* blendTarget = nullptr);
+    void GetPose(const SkeletonComponentPtr& skeleton, float time);
 
     /**
      * Sets the Node's transform from the animation based on frame.
@@ -102,9 +92,6 @@ namespace ToolKit
      * Set the resource to uninitiated state and removes the keys.
      */
     void UnInit() override;
-
-    /** Reverses the animation. */
-    void Reverse();
 
     /**
      * Finds nearest keys and interpolation ratio for current time.
@@ -150,20 +137,32 @@ namespace ToolKit
    */
   class TK_API AnimRecord
   {
+    friend class AnimationPlayer;
+    friend class AnimControllerComponent;
+    friend class RenderJobProcessor;
+
    public:
-    /**
-     * Empty constructor.
-     */
-    AnimRecord();
+    AnimRecord();  //!< Default constructor, only assigns a unique id.
+    ~AnimRecord(); //!< Default destructor, releases the id.
 
     /**
-     * Construct an animation record for the enitiy with given animation.
+     * Construct an animation record for the entity with given animation.
      * @param entity Is the entity to play the animation on.
      * @param anim Is the animation to play for the record.
      */
-    void Construct(EntityPtr entity, const AnimationPtr& anim);
+    void Construct(EntityPtr entity, AnimationPtr anim);
 
-    ~AnimRecord();
+   protected:
+    /**
+     * Data block holding necessary information for blending.
+     */
+    struct BlendingData
+    {
+      AnimRecordPtr recordToBeBlended = nullptr; //!< AnimRecord that is being blended by another record
+      AnimRecordPtr recordToBlend     = nullptr; //!< AnimRecord that is blending the current record
+      float blendTotalDurationInSec   = -1.0f;   //!< Total duration of blending
+      float blendCurrentDurationInSec = -1.0f;   //!< Current time of blending (Decreasing from total duration to zero)
+    };
 
    public:
     /**
@@ -174,7 +173,6 @@ namespace ToolKit
     float m_timeMultiplier = 1.0f;  //!< Speed multiplier for animation.
     AnimationPtr m_animation;       //!< Animation to play.
     EntityWeakPtr m_entity;
-    BlendTarget m_blendTarget;
 
     /**
      * Enums that represent's the current state of the Animation in the
@@ -189,7 +187,10 @@ namespace ToolKit
     };
 
     State m_state = State::Play; //!< Current state of the animation.
-    ULongID m_id;
+    ULongID m_id;                //!< Unique id for the animation.
+
+   protected:
+    BlendingData m_blendingData;
   };
 
   /**
@@ -199,11 +200,17 @@ namespace ToolKit
   class TK_API AnimationPlayer
   {
    public:
+    AnimationPlayer();  //!< Default constructor empty.
+    ~AnimationPlayer(); //!< Default destructor that destroy all stored data.
+
+    void Destroy();                  //!< Clears all record data stored.
+    AnimRecordPtrArray GetRecords(); //!< Access to copy of animation records.
+
     /**
      * Adds a record to the player.
      * @param rec AnimRecord data.
      */
-    void AddRecord(AnimRecord* rec);
+    void AddRecord(AnimRecordPtr rec);
 
     /**
      * Removes the AnimRecord with the given id.
@@ -232,8 +239,47 @@ namespace ToolKit
      */
     int Exist(ULongID id) const;
 
-   public:
+    /**
+     * Returns animation data texture for given skeleton and animation.
+     * Data is hold as skeleton - animation pair.
+     * @param skelID is the skeleton to look for.
+     * @param animID is the animation to look for.
+     * @return Found data texture for the pair or nullptr.
+     */
+    DataTexturePtr GetAnimationDataTexture(ULongID skelID, ULongID animID);
+
+   private:
+    /**
+     * Clears all animation records.
+     */
+    void ClearAnimRecords();
+
+    /**
+     * Add data texture of animation for skeleton
+     */
+    void AddAnimationData(EntityWeakPtr ntt, AnimationPtr anim);
+
+    /**
+     * Removes the unnecessary data textures
+     */
+    void UpdateAnimationData();
+
+    /**
+     * Clears the animation data textures
+     */
+    void ClearAnimationData();
+
+    /**
+     * Creates and returns animation data texture for given skeleton and animation
+     */
+    DataTexturePtr CreateAnimationDataTexture(SkeletonPtr skeleton, AnimationPtr anim);
+
+   private:
     // Storage for the AnimRecord objects.
-    AnimRecordRawPtrArray m_records;
+    AnimRecordPtrArray m_records;
+
+    // Storage for animation data (skeleton id - animation id pair)
+    std::map<std::pair<ULongID, ULongID>, DataTexturePtr> m_animTextures;
   };
+
 } // namespace ToolKit

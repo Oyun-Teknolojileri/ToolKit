@@ -18,7 +18,8 @@ add_definitions(-DTK_DLL_EXPORT)
 include_directories(${TOOLKIT_DIR}/ToolKit
         ${TOOLKIT_DIR}/Dependency
         ${CMAKE_SOURCE_DIR}/SDL2/include
-        ${CMAKE_SOURCE_DIR}/../../../Codes) # user headers for game
+        ${CMAKE_SOURCE_DIR}/../../../Codes # user headers for game
+        ${CMAKE_SOURCE_DIR}/src)
 
 find_library(SDL2 SDL2)
 find_library(SDL2main SDL2main)
@@ -28,7 +29,6 @@ set(CMAKE_CXX_STANDARD 17)
 # Creates your game shared library. The name must be the same as the
 # one used for loading in your Kotlin/Java or AndroidManifest.txt files.
 add_library(main SHARED
-        android_main.cpp
         ${GAME_SOURCES}
         ${UNZIP_SOURCES}
         ${TOOLKIT_SOURCES}) # Include the list of Toolkit sources here

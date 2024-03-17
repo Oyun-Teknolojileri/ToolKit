@@ -32,7 +32,7 @@
 			vec4 skinnedVPos = vec4(vPosition, 1.0);
 			
 			if(isSkinned > 0u){
-				skinnedVPos = skin(skinnedVPos);
+				skin(skinnedVPos, skinnedVPos);
 			}
 			v_pos = (View * Model * skinnedVPos) / CamData.far;
 		  gl_Position = ProjectViewModel * skinnedVPos;

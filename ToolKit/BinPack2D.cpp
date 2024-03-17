@@ -11,7 +11,7 @@
 
 namespace ToolKit
 {
-  std::vector<BinPack2D::PackedRect> BinPack2D::Pack(const std::vector<int>& squares, int atlasSize)
+  std::vector<BinPack2D::PackedRect> BinPack2D::Pack(const IntArray& squares, int atlasSize)
   {
     std::vector<PackedRect> packed;
     packed.resize(squares.size());

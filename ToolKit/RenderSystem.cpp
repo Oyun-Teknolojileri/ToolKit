@@ -9,7 +9,9 @@
 
 #include "GlErrorReporter.h"
 #include "Logger.h"
+#include "RHI.h"
 #include "TKOpenGL.h"
+#include "TKStats.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -35,7 +37,11 @@ namespace ToolKit
 
   RenderSystem::~RenderSystem() { SafeDel(m_renderer); }
 
-  void RenderSystem::Init() { m_renderer->Init(); }
+  void RenderSystem::Init()
+  {
+    m_renderer->Init();
+    AddRenderTask({[](Renderer* renderer) -> void { renderer->GenerateBRDFLutTexture(); }});
+  }
 
   void RenderSystem::AddRenderTask(RenderPath* technique)
   {
@@ -62,6 +68,11 @@ namespace ToolKit
 
   void RenderSystem::ExecuteRenderTasks()
   {
+    if (m_renderer)
+    {
+      m_renderer->m_gpuProgramHasFrameUpdates.clear();
+    }
+
     // Immediate execution.
     RenderTaskArray tasks = std::move(m_highQueue);
     for (RenderTask& rt : tasks)
@@ -115,15 +126,13 @@ namespace ToolKit
     m_renderer->m_sky = nullptr;
   }
 
-  void RenderSystem::FlushGpuPrograms() { m_renderer->m_gpuProgramManager.FlushPrograms(); }
+  void RenderSystem::FlushGpuPrograms() { GetGpuProgramManager()->FlushPrograms(); }
 
   void RenderSystem::SetAppWindowSize(uint width, uint height) { m_renderer->m_windowSize = UVec2(width, height); }
 
   UVec2 RenderSystem::GetAppWindowSize() { return m_renderer->m_windowSize; }
 
   void RenderSystem::SetClearColor(const Vec4& clearColor) { m_renderer->m_clearColor = clearColor; }
-
-  void RenderSystem::SetFrameCount(uint count) { m_renderer->m_frameCount = count; }
 
   void RenderSystem::EnableBlending(bool enable) { m_renderer->EnableBlending(enable); }
 
@@ -138,16 +147,21 @@ namespace ToolKit
 
   bool RenderSystem::IsSkipFrame() const { return m_skipFrames != 0; }
 
+  uint RenderSystem::GetFrameCount() { return m_frameCount; }
+
+  void RenderSystem::ResetFrameCount() { m_frameCount = 0; }
+
   void RenderSystem::SkipSceneFrames(int numFrames) { m_skipFrames = numFrames; }
 
   void RenderSystem::InitGl(void* glGetProcAddres, GlReportCallback callback)
   {
     // Initialize opengl functions.
+
 #ifdef _WIN32
     gladLoadGLES2((GLADloadfunc) glGetProcAddres);
 #endif
-    InitGLErrorReport(callback);
 
+    InitGLErrorReport(callback);
     TestSRGBBackBuffer();
 
     // Default states.
@@ -168,19 +182,21 @@ namespace ToolKit
     }
   }
 
+  void RenderSystem::EndFrame()
+  {
+    m_frameCount++;
+    m_renderer->m_frameCount = m_frameCount;
+  }
+
   void RenderSystem::TestSRGBBackBuffer()
   {
-    GLint lastFBO;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+    RHI::SetFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.5f, 0.2f, 0.8f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     GLubyte pixel[4];
     glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
     m_backbufferFormatIsSRGB = (pixel[0] > 150);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 
 } // namespace ToolKit

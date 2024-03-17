@@ -13,6 +13,7 @@
 #include "FileManager.h"
 #include "Logger.h"
 #include "MathUtil.h"
+#include "Mesh.h"
 #include "Prefab.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
@@ -22,7 +23,6 @@
 
 namespace ToolKit
 {
-
   TKDefineClass(Scene, Resource);
 
   Scene::Scene() { m_name = "New Scene"; }
@@ -46,7 +46,10 @@ namespace ToolKit
 
   void Scene::Save(bool onlyIfDirty)
   {
-    String fullPath = GetFile();
+    // get post processing settings
+    m_postProcessSettings = GetEngineSettings().PostProcessing;
+
+    String fullPath       = GetFile();
     if (fullPath.empty())
     {
       fullPath = ScenePath(m_name + SCENE);
@@ -75,6 +78,7 @@ namespace ToolKit
       return;
     }
 
+    m_boundingBox                = BoundingBox();
     const EntityPtrArray& ntties = GetEntities();
     for (EntityPtr ntt : ntties)
     {
@@ -85,11 +89,25 @@ namespace ToolKit
       else if (ntt->IsDrawable())
       {
         // Mesh component.
+        bool containsSkinMesh = false;
         MeshComponentPtrArray meshes;
-        ntt->GetComponent<MeshComponent>(meshes);
-        for (MeshComponentPtr& mesh : meshes)
+        if (MeshComponentPtr meshComp = ntt->GetComponent<MeshComponent>())
         {
-          mesh->Init(flushClientSideArray);
+          meshComp->Init(flushClientSideArray);
+          if (meshComp->GetMeshVal()->IsSkinned())
+          {
+            containsSkinMesh = true;
+          }
+        }
+
+        if (containsSkinMesh)
+        {
+          if (ntt->GetComponent<AABBOverrideComponent>() == nullptr)
+          {
+            AABBOverrideComponentPtr aabbOverride = MakeNewPtr<AABBOverrideComponent>();
+            ntt->AddComponent(aabbOverride);
+            aabbOverride->SetBoundingBox(ntt->GetBoundingBox());
+          }
         }
 
         // Environment component.
@@ -98,6 +116,9 @@ namespace ToolKit
           envCom->Init(true);
         }
       }
+
+      BoundingBox worldBox = ntt->GetBoundingBox(true);
+      m_boundingBox.UpdateBoundary(worldBox);
     }
 
     m_initiated = true;
@@ -105,7 +126,50 @@ namespace ToolKit
 
   void Scene::UnInit() { Destroy(false); }
 
-  void Scene::Update(float deltaTime) {}
+  void Scene::Update(float deltaTime)
+  {
+    // Update caches.
+    m_lightCache.clear();
+    m_cameraCache.clear();
+    m_environmentVolumeCache.clear();
+    m_skyCache    = nullptr;
+    m_boundingBox = BoundingBox();
+
+    for (int i = 0; i < m_entities.size(); i++)
+    {
+      EntityPtr& ntt        = m_entities[i];
+
+      // update bounding box.
+      const BoundingBox& bb = ntt->GetBoundingBox(true);
+      if (bb.IsValid())
+      {
+        m_boundingBox.UpdateBoundary(bb);
+      }
+
+      if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
+      {
+        if (envComp->GetHdriVal() != nullptr && envComp->GetIlluminateVal())
+        {
+          envComp->Init(true);
+          m_environmentVolumeCache.push_back(envComp);
+        }
+      }
+
+      if (const LightPtr& light = SafeCast<Light>(ntt))
+      {
+        light->UpdateShadowCamera();
+        m_lightCache.push_back(light);
+      }
+      else if (const CameraPtr& cam = SafeCast<Camera>(ntt))
+      {
+        m_cameraCache.push_back(cam);
+      }
+      else if (const SkyBasePtr& sky = SafeCast<SkyBase>(ntt))
+      {
+        m_skyCache = sky;
+      }
+    }
+  }
 
   void Scene::Merge(ScenePtr other)
   {
@@ -120,7 +184,7 @@ namespace ToolKit
     GetSceneManager()->Remove(other->GetFile());
   }
 
-  Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList, const EntityPtrArray& extraList)
+  Scene::PickData Scene::PickObject(Ray ray, const IDArray& ignoreList, const EntityPtrArray& extraList)
   {
     PickData pd;
     pd.pickPos                  = ray.position + ray.direction * 5.0f;
@@ -148,7 +212,7 @@ namespace ToolKit
         rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);
 
         float dist                 = 0;
-        if (RayBoxIntersection(rayInObjectSpace, ntt->GetAABB(), dist))
+        if (RayBoxIntersection(rayInObjectSpace, ntt->GetBoundingBox(), dist))
         {
           bool hit         = false;
 
@@ -186,7 +250,7 @@ namespace ToolKit
 
   void Scene::PickObject(const Frustum& frustum,
                          PickDataArray& pickedObjects,
-                         const EntityIdArray& ignoreList,
+                         const IDArray& ignoreList,
                          const EntityPtrArray& extraList,
                          bool pickPartiallyInside)
   {
@@ -204,7 +268,7 @@ namespace ToolKit
           continue;
         }
 
-        BoundingBox bb      = ntt->GetAABB(true);
+        BoundingBox bb      = ntt->GetBoundingBox(true);
         IntersectResult res = FrustumBoxIntersection(frustum, bb);
         if (res != IntersectResult::Outside)
         {
@@ -313,19 +377,13 @@ namespace ToolKit
 
   const EntityPtrArray& Scene::GetEntities() const { return m_entities; }
 
-  LightPtrArray Scene::GetLights() const
-  {
-    LightPtrArray lights;
-    for (EntityPtr ntt : m_entities)
-    {
-      if (ntt->IsA<Light>())
-      {
-        lights.push_back(std::static_pointer_cast<Light>(ntt));
-      }
-    }
+  LightPtrArray& Scene::GetLights() const { return m_lightCache; }
 
-    return lights;
-  }
+  CameraPtrArray& Scene::GetCameras() const { return m_cameraCache; }
+
+  SkyBasePtr& Scene::GetSky() { return m_skyCache; }
+
+  EnvironmentComponentPtrArray& Scene::GetEnvironmentVolumes() const { return m_environmentVolumeCache; }
 
   EntityPtr Scene::GetFirstByName(const String& name)
   {
@@ -372,20 +430,6 @@ namespace ToolKit
     return filtered;
   }
 
-  // Returns the last sky added
-  SkyBasePtr Scene::GetSky()
-  {
-    for (int i = (int) m_entities.size() - 1; i >= 0; --i)
-    {
-      if (m_entities[i]->IsA<SkyBase>())
-      {
-        return std::static_pointer_cast<SkyBase>(m_entities[i]);
-      }
-    }
-
-    return nullptr;
-  }
-
   void Scene::LinkPrefab(const String& fullPath)
   {
     if (fullPath == GetFile())
@@ -410,23 +454,6 @@ namespace ToolKit
     prefab->Init(this);
     prefab->Link();
     AddEntity(prefab);
-  }
-
-  EnvironmentComponentPtrArray Scene::GetEnvironmentVolumes()
-  {
-    // Find entities which have environment component
-    EnvironmentComponentPtrArray environments;
-    for (EntityPtr ntt : m_entities)
-    {
-      EnvironmentComponentPtr envCom = ntt->GetComponent<EnvironmentComponent>();
-      if (envCom != nullptr && envCom->GetHdriVal() != nullptr && envCom->GetIlluminateVal())
-      {
-        envCom->Init(true);
-        environments.push_back(envCom);
-      }
-    }
-
-    return environments;
   }
 
   void Scene::Destroy(bool removeResources)
@@ -530,7 +557,7 @@ namespace ToolKit
 
     if (!m_isPrefab)
     {
-      GetEngineSettings().SerializePostProcessing(doc, nullptr);
+      m_postProcessSettings.Serialize(doc, nullptr);
     }
 
     return scene;
@@ -604,7 +631,7 @@ namespace ToolKit
     // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)
     {
-      GetEngineSettings().DeSerializePostProcessing(info.Document, parent);
+      m_postProcessSettings.DeSerialize(info.Document, parent);
     }
 
     for (EntityPtr ntt : prefabList)
@@ -675,7 +702,8 @@ namespace ToolKit
     // Do not serialize post processing settings if this is prefab.
     if (!m_isPrefab)
     {
-      GetEngineSettings().DeSerializePostProcessing(info.Document, parent);
+
+      m_postProcessSettings.DeSerialize(info.Document, parent);
     }
 
     for (EntityPtr ntt : prefabList)
@@ -719,6 +747,12 @@ namespace ToolKit
 
   ScenePtr SceneManager::GetCurrentScene() { return m_currentScene; }
 
-  void SceneManager::SetCurrentScene(const ScenePtr& scene) { m_currentScene = scene; }
+  void SceneManager::SetCurrentScene(const ScenePtr& scene)
+  {
+    m_currentScene                     = scene;
+
+    // apply scene post processing effects
+    GetEngineSettings().PostProcessing = m_currentScene->m_postProcessSettings;
+  }
 
 } // namespace ToolKit

@@ -30,9 +30,6 @@ namespace ToolKit
    */
   class TK_API Node : public Serializable
   {
-    friend class Animation;
-    friend class Skeleton;
-
    public:
     Node();
     ~Node();
@@ -63,7 +60,7 @@ namespace ToolKit
      * @param space the space to apply transform in.
      * @param noScale exclude the scale value from matrix.
      */
-    void Transform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_WORLD, bool noScale = true);
+    void Transform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_WORLD);
 
     /**
      * Sets given transform matrix in given space to the node.
@@ -71,7 +68,7 @@ namespace ToolKit
      * @param space the space to set transform in.
      * @param noScale exclude the scale value from matrix.
      */
-    void SetTransform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_WORLD, bool noScale = true);
+    void SetTransform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_WORLD);
 
     /**
      * Retrieves the transform matrix in given space.
@@ -206,6 +203,11 @@ namespace ToolKit
      */
     void OwnerEntity(EntityPtr owner) { m_entity = owner; }
 
+    /**
+     * Sets the local transforms of the node.
+     */
+    void SetLocalTransforms(Vec3 translation, Quaternion rotation, Vec3 scale);
+
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent);
 
@@ -228,7 +230,7 @@ namespace ToolKit
                          Quaternion* orientation,
                          Vec3* scale);
 
-    Mat4 GetLocalTransform() const;
+    void UpdateTransformCaches();
     Mat4 GetParentTransform();
     void SetChildrenDirty();
 
@@ -244,7 +246,11 @@ namespace ToolKit
     Quaternion m_orientation; //!< Local orientation value.
     Vec3 m_scale;             //!< Local scale value.
     Mat4 m_parentCache;       //!< Cached transformation of the parent hierarchy.
-    bool m_dirty;             //!< Hint for child to update its parent cache.
+    Mat4 m_localCache;
+    Mat4 m_worldCache;
+    Vec3 m_worldTranslationCache;
+    Quaternion m_worldOrientationCache;
+    bool m_dirty; //!< Hint for child to update its parent cache.
   };
 
 } // namespace ToolKit

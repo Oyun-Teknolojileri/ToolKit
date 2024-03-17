@@ -34,28 +34,27 @@ namespace ToolKit
     {
       Scene::Load();
 
-      for (EntityPtr ntt : m_entities)
+      for (EntityPtr& ntt : m_entities)
       {
         // Create gizmos
         if (ntt->IsA<DirectionalLight>())
         {
-          static_cast<EditorDirectionalLight*>(ntt.get())->InitController();
+          ntt->As<EditorDirectionalLight>()->InitController();
         }
         else if (ntt->IsA<PointLight>())
         {
-          static_cast<EditorPointLight*>(ntt.get())->InitController();
+          ntt->As<EditorPointLight>()->InitController();
         }
         else if (ntt->IsA<SpotLight>())
         {
-          static_cast<EditorSpotLight*>(ntt.get())->InitController();
+          ntt->As<EditorSpotLight>()->InitController();
         }
       }
     }
 
     void EditorScene::Update(float deltaTime)
     {
-      // Update animations.
-      GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
+      Super::Update(deltaTime);
 
       // Show selected light gizmos.
       EntityPtrArray selecteds;
@@ -139,7 +138,7 @@ namespace ToolKit
       EntityPtr ntt = GetEntity(id);
 
       // If selected entity belongs to a prefab
-      //  select all children of the prefab entity too
+      // select all children of the prefab entity too
       if (PrefabPtr mainPrefab = Prefab::GetPrefabRoot(ntt))
       {
         auto addToSelectionFn = [this](Node* node)
@@ -154,14 +153,28 @@ namespace ToolKit
 
       if (g_app->m_selectEffectingLights && !ntt->IsA<Light>())
       {
-        LightPtrArray lights          = GetLights();
-        LightPtrArray effectingLights = RenderJobProcessor::SortLights(ntt, lights);
-
-        for (LightPtr light : effectingLights)
+        LightPtrArray lights = GetLights();
+        for (LightPtr& light : lights)
         {
-          if (!IsSelected(light->GetIdVal()))
+          light->UpdateShadowCamera();
+        }
+
+        RenderJobArray jobs;
+        RenderJobProcessor::CreateRenderJobs({ntt}, jobs);
+        if (!jobs.empty())
+        {
+          RenderJobProcessor::AssignLight(jobs.begin(), jobs.end(), lights);
+
+          RenderJob& job = jobs.front();
+          int size       = job.activeLightCount;
+
+          for (int i = 0; i < size; i++)
           {
-            AddToSelection(light->GetIdVal(), true);
+            LightPtr& light = lights[job.lights[i]];
+            if (!IsSelected(light->GetIdVal()))
+            {
+              AddToSelection(light->GetIdVal(), true);
+            }
           }
         }
       }
@@ -169,7 +182,7 @@ namespace ToolKit
       m_selectedEntities.push_back(id);
     }
 
-    void EditorScene::AddToSelection(const EntityIdArray& entities, bool additive)
+    void EditorScene::AddToSelection(const IDArray& entities, bool additive)
     {
       ULongID currentId = NULL_HANDLE;
       if (entities.size() > 1)
@@ -239,7 +252,7 @@ namespace ToolKit
 
     void EditorScene::AddToSelection(const EntityPtrArray& entities, bool additive)
     {
-      EntityIdArray ids;
+      IDArray ids;
       ToEntityIdArray(ids, entities);
       AddToSelection(ids, additive);
     }
@@ -258,7 +271,7 @@ namespace ToolKit
 
     void EditorScene::MakeCurrentSelection(ULongID id, bool ifExist)
     {
-      EntityIdArray::iterator itr = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
+      IDArray::iterator itr = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
       if (itr != m_selectedEntities.end())
       {
         std::iter_swap(itr, m_selectedEntities.end() - 1);
@@ -357,11 +370,11 @@ namespace ToolKit
       }
     }
 
-    void EditorScene::GetSelectedEntities(EntityIdArray& entities) const { entities = m_selectedEntities; }
+    void EditorScene::GetSelectedEntities(IDArray& entities) const { entities = m_selectedEntities; }
 
     void EditorScene::SelectByTag(const String& tag) { AddToSelection(GetByTag(tag), false); }
 
-    Scene::PickData EditorScene::PickObject(Ray ray, const EntityIdArray& ignoreList, const EntityPtrArray& extraList)
+    Scene::PickData EditorScene::PickObject(Ray ray, const IDArray& ignoreList, const EntityPtrArray& extraList)
     {
       // Add billboards to scene
       EntityPtrArray temp = extraList;
@@ -382,7 +395,7 @@ namespace ToolKit
 
     void EditorScene::PickObject(const Frustum& frustum,
                                  PickDataArray& pickedObjects,
-                                 const EntityIdArray& ignoreList,
+                                 const IDArray& ignoreList,
                                  const EntityPtrArray& extraList,
                                  bool pickPartiallyInside)
     {

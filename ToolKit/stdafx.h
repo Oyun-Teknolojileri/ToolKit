@@ -11,6 +11,7 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <functional>
 #include <limits>
@@ -48,6 +49,7 @@
 #include "Logger.h"
 #include "Pass.h"
 #include "Serialize.h"
+#include "Threads.h"
 
 #ifdef TK_EDITOR
   #include "App.h"

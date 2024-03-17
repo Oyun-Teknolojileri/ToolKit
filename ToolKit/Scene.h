@@ -11,6 +11,7 @@
  * @file Scene.h Header file for the Scene class.
  */
 
+#include "EngineSettings.h"
 #include "EnvironmentComponent.h"
 #include "Resource.h"
 #include "Sky.h"
@@ -121,7 +122,7 @@ namespace ToolKit
      *
      * @return A PickData struct containing the result of the picking operation.
      */
-    virtual PickData PickObject(Ray ray, const EntityIdArray& ignoreList = {}, const EntityPtrArray& extraList = {});
+    virtual PickData PickObject(Ray ray, const IDArray& ignoreList = {}, const EntityPtrArray& extraList = {});
 
     /**
      * Performs a frustum culling operation on the scene to find all objects
@@ -139,7 +140,7 @@ namespace ToolKit
      */
     virtual void PickObject(const Frustum& frustum,
                             PickDataArray& pickedObjects,
-                            const EntityIdArray& ignoreList = {},
+                            const IDArray& ignoreList       = {},
                             const EntityPtrArray& extraList = {},
                             bool pickPartiallyInside        = true);
 
@@ -158,7 +159,13 @@ namespace ToolKit
      * @param entity The entity to add.
      */
     virtual void AddEntity(EntityPtr entity);
-    EntityPtrArray& AccessEntityArray(); //!< Mutable Entity array access.
+
+    /**
+     * Allow access and modification to underlying entity array. Care must be taken when modifying the array.
+     * Its generally okay to reorder entities but for removing and adding new entities consider appropriate functions.
+     * @retruns Mutable entity array for the scene.
+     */
+    EntityPtrArray& AccessEntityArray();
 
     /**
      * Gets all the entities in the scene.
@@ -170,7 +177,25 @@ namespace ToolKit
      * Gets an array of all the lights in the scene.
      * @returns An array containing pointers to all the lights in the scene.
      */
-    LightPtrArray GetLights() const;
+    LightPtrArray& GetLights() const;
+
+    /**
+     * @return All the cameras in the scene.
+     */
+    CameraPtrArray& GetCameras() const;
+
+    /**
+     * Gets the sky object associated with the scene. If multiple exist, returns the last one.
+     * @returns Last added sky entity or null if not exist.
+     */
+    SkyBasePtr& GetSky();
+
+    /**
+     * Returns an array of pointers to all environment volume components in the
+     * scene.
+     * @returns The array of pointers to environment volume components.
+     */
+    EnvironmentComponentPtrArray& GetEnvironmentVolumes() const;
 
     /**
      * Gets the first entity in the scene with the given name.
@@ -207,24 +232,10 @@ namespace ToolKit
     EntityPtrArray Filter(std::function<bool(EntityPtr)> filter);
 
     /**
-     * Gets the sky object associated with the scene.
-     * @returns A pointer to the SkyBase object associated with the scene, or
-     * nullptr if no sky object is associated with the scene.
-     */
-    SkyBasePtr GetSky();
-
-    /**
      * Links a prefab to the scene.
      * @param fullPath The full path to the prefab file.
      */
     void LinkPrefab(const String& fullPath);
-
-    /**
-     * Returns an array of pointers to all environment volume components in the
-     * scene.
-     * @returns The array of pointers to environment volume components.
-     */
-    EnvironmentComponentPtrArray GetEnvironmentVolumes();
 
     /**
      * Removes the entity with the given id from the scene.
@@ -303,9 +314,26 @@ namespace ToolKit
      */
     void RemoveChildren(EntityPtr removed);
 
+   public:
+    /**
+     * A world space volume that covers all the entities in the scene.
+     * Its calculated during rendering and Initialization. Its only valid after Init or scene render.
+     */
+    BoundingBox m_boundingBox;
+    EngineSettings::PostProcessingSettings m_postProcessSettings; //!< Post process settings that this scene uses
+
    protected:
     EntityPtrArray m_entities; //!< The entities in the scene.
     bool m_isPrefab;           //!< Whether or not the scene is a prefab.
+
+    /**
+     * Each frame cached objects are updated and stay valid until the end of the frame.
+     * cache provides type based fast access.
+     */
+    mutable CameraPtrArray m_cameraCache;
+    mutable LightPtrArray m_lightCache;
+    mutable EnvironmentComponentPtrArray m_environmentVolumeCache;
+    mutable SkyBasePtr m_skyCache;
   };
 
   /**

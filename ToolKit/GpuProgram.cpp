@@ -31,25 +31,81 @@ namespace ToolKit
     m_handle = 0;
   }
 
-  int GpuProgram::GetShaderParamUniformLoc(const String& uniformName)
+  int GpuProgram::GetDefaultUniformLocation(Uniform uniform, int index)
   {
-    if (m_shaderParamsUniformLocations.find(uniformName) != m_shaderParamsUniformLocations.end())
+    if (index == -1)
     {
-      return m_shaderParamsUniformLocations[uniformName];
+      const auto& itr = m_defaultUniformLocation.find(uniform);
+      if (itr != m_defaultUniformLocation.end())
+      {
+        return itr->second;
+      }
     }
     else
     {
-      // Note: Assuming the shader program is in use
-      GLint loc                                   = glGetUniformLocation(m_handle, uniformName.c_str());
-      m_shaderParamsUniformLocations[uniformName] = loc;
-      return loc;
+      // Uniform is an array
+      const auto& itr = m_defaultArrayUniformLocations.find(uniform);
+      if (itr != m_defaultArrayUniformLocations.end())
+      {
+        const IntArray& locs = itr->second;
+        if (locs.size() > index)
+        {
+          return locs[index];
+        }
+      }
     }
 
     return -1;
   }
 
+  int GpuProgram::GetCustomUniformLocation(ShaderUniform& shaderUniform)
+  {
+    if (!shaderUniform.m_thisUniformIsSearchedInGPUProgram)
+    {
+      shaderUniform.m_thisUniformIsSearchedInGPUProgram = true;
+
+      GLint loc                                         = glGetUniformLocation(m_handle, shaderUniform.m_name.c_str());
+      if (loc == -1)
+      {
+        TK_WRN("Uniform: \"%s\" does not exist in program!", shaderUniform.m_name.c_str());
+      }
+
+      shaderUniform.m_locInGPUProgram = loc;
+    }
+
+    return shaderUniform.m_locInGPUProgram;
+  }
+
+  void GpuProgram::UpdateCustomUniform(const String& uniformName, const UniformValue& val)
+  {
+    auto paramItr = m_customUniforms.find(uniformName);
+    if (paramItr == m_customUniforms.end())
+    {
+      m_customUniforms[uniformName] = ShaderUniform(uniformName, val);
+    }
+    else
+    {
+      paramItr->second = val;
+    }
+  }
+
+  void GpuProgram::UpdateCustomUniform(const ShaderUniform& uniform)
+  {
+    auto paramItr = m_customUniforms.find(uniform.m_name);
+    if (paramItr == m_customUniforms.end())
+    {
+      m_customUniforms[uniform.m_name] = uniform;
+    }
+    else
+    {
+      paramItr->second = uniform.m_value;
+    }
+  }
+
   // GpuProgramManager
   //////////////////////////////////////////////////////////////////////////
+
+  GpuProgramManager::~GpuProgramManager() { FlushPrograms(); }
 
   void GpuProgramManager::LinkProgram(uint program, uint vertexShaderId, uint fragmentShaderId)
   {
@@ -79,7 +135,7 @@ namespace ToolKit
     }
   }
 
-  GpuProgramPtr GpuProgramManager::CreateProgram(ShaderPtr vertexShader, ShaderPtr fragmentShader)
+  const GpuProgramPtr& GpuProgramManager::CreateProgram(const ShaderPtr& vertexShader, const ShaderPtr& fragmentShader)
   {
     assert(vertexShader);
     assert(fragmentShader);
@@ -87,11 +143,10 @@ namespace ToolKit
     vertexShader->Init();
     fragmentShader->Init();
 
-    String tag = GenerateTag((int) vertexShader->GetIdVal(), (int) fragmentShader->GetIdVal());
-    if (m_programs.find(tag) == m_programs.end())
+    const auto& progIter = m_programs.find({vertexShader->GetIdVal(), fragmentShader->GetIdVal()});
+    if (progIter == m_programs.end())
     {
       GpuProgramPtr program = MakeNewPtr<GpuProgram>(vertexShader, fragmentShader);
-      program->m_tag        = tag;
       program->m_handle     = glCreateProgram();
 
       LinkProgram(program->m_handle, vertexShader->m_shaderHandle, fragmentShader->m_shaderHandle);
@@ -105,44 +160,37 @@ namespace ToolKit
         }
       }
 
-      // Register uniform locations
+      // Register default uniform locations
       for (ShaderPtr shader : program->m_shaders)
       {
-        for (Uniform uniform : shader->m_uniforms)
+        for (const Uniform& uniform : shader->m_uniforms)
         {
-          GLint loc                            = glGetUniformLocation(program->m_handle, GetUniformName(uniform));
-          program->m_uniformLocations[uniform] = loc;
+          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(uniform));
+          program->m_defaultUniformLocation[uniform] = loc;
         }
 
         // Array uniforms
         for (Shader::ArrayUniform arrayUniform : shader->m_arrayUniforms)
         {
-          program->m_arrayUniformLocations[arrayUniform.uniform].reserve(arrayUniform.size);
+          program->m_defaultArrayUniformLocations[arrayUniform.uniform].reserve(arrayUniform.size);
           for (int i = 0; i < arrayUniform.size; ++i)
           {
             String uniformName = GetUniformName(arrayUniform.uniform);
             uniformName        = uniformName + "[" + std::to_string(i) + "]";
             GLint loc          = glGetUniformLocation(program->m_handle, uniformName.c_str());
-            program->m_arrayUniformLocations[arrayUniform.uniform].push_back(loc);
+            program->m_defaultArrayUniformLocations[arrayUniform.uniform].push_back(loc);
           }
         }
       }
 
-      m_programs[program->m_tag] = program;
-    }
-    else
-    {
-      glUseProgram(m_programs[tag]->m_handle);
+      m_programs[{vertexShader->GetIdVal(), fragmentShader->GetIdVal()}] = program;
+
+      return m_programs[{vertexShader->GetIdVal(), fragmentShader->GetIdVal()}];
     }
 
-    return m_programs[tag];
+    return progIter->second;
   }
 
   void GpuProgramManager::FlushPrograms() { m_programs.clear(); }
-
-  String GpuProgramManager::GenerateTag(int vertexShaderId, int fragmentShaderId)
-  {
-    return std::to_string(vertexShaderId) + "|" + std::to_string(fragmentShaderId);
-  }
 
 } // namespace ToolKit

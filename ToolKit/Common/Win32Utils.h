@@ -88,7 +88,7 @@ namespace ToolKit
         return (int) errCode;
       }
 
-      SetForegroundWindow((HWND) pi.hProcess);
+      SetWindowPos((HWND) pi.hProcess, HWND_TOPMOST, 0, 0, 0, 0, 0);
 
       auto finalizeFn = [pi, callback](DWORD stat) -> int
       {

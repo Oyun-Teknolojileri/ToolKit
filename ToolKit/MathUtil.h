@@ -25,6 +25,8 @@ namespace ToolKit
 
   TK_API Frustum ExtractFrustum(const Mat4& projectViewModel, bool normalize);
 
+  TK_API void NormalizeFrustum(Frustum& frustum);
+
   // Intersections
   //////////////////////////////////////////
 
@@ -56,12 +58,15 @@ namespace ToolKit
 
   TK_API bool RayTriangleIntersection(const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t);
 
-  TK_API Vec3 CPUSkinning(const class SkinVertex* vertex, const Skeleton* skel, DynamicBoneMapPtr dynamicBoneMap);
+  TK_API Vec3 CPUSkinning(const class SkinVertex* vertex,
+                          const Skeleton* skel,
+                          DynamicBoneMapPtr dynamicBoneMap,
+                          bool isAnimated);
 
   TK_API bool RayMeshIntersection(const class Mesh* const mesh,
                                   const Ray& rayInWorldSpace,
                                   float& t,
-                                  const class SkeletonComponent* skelComp = nullptr);
+                                  const SkeletonComponentPtr skelComp = nullptr);
 
   // @return TK_UINT_MAX = no intersection, otherwise submesh index
   // If there is no tracing possible object, t set as 0.0
@@ -81,9 +86,12 @@ namespace ToolKit
 
   TK_API Quaternion QuaternionLookAt(Vec3 direction);
 
+  /**
+   * Tests normalized frustum with a sphere.
+   */
   TK_API bool FrustumSphereIntersection(const Frustum& frustum, const Vec3& pos, float radius);
 
-  // TK_API bool FrustumSphereIntersection(const Frustum& frustum, Vec3 pos, float radius);
+  TK_API bool FrustumSphereIntersection(const Frustum& frustum, const BoundingSphere& sphere);
 
   TK_API bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t);
 
@@ -107,14 +115,19 @@ namespace ToolKit
   TK_API Vec3 ProjectPointOntoPlane(const PlaneEquation& plane, const Vec3& pt);
   TK_API Vec3 ProjectPointOntoLine(const Ray& ray, const Vec3& pnt);
 
+  /**
+   * Returns True if box is outside of the frustum
+   */
   TK_API bool FrustumTest(const Frustum& frustum, const BoundingBox& box);
   /**
    * Removes the entities that are outside of the camera.
    * @param entities All entities.
    * @param camera Camera that is being used for generating frustum.
    */
-  TK_API void FrustumCull(EntityRawPtrArray& entities, CameraPtr camera);
-  TK_API void FrustumCull(RenderJobArray& jobs, CameraPtr camera);
+  TK_API void FrustumCull(EntityRawPtrArray& entities, const CameraPtr& camera);
+  TK_API void FrustumCull(RenderJobArray& jobs, const CameraPtr& camera);
+  TK_API void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, UIntArray& resultIndices);
+  TK_API void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, RenderJobArray& unCulledJobs);
 
   // Conversions and Interpolation
   //////////////////////////////////////////

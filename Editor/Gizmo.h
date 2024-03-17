@@ -160,6 +160,11 @@ namespace ToolKit
      protected:
       virtual GizmoHandle::Params GetParam() const;
 
+      /**
+       * Collects all the handles under a non empty root mesh for drawing.
+       */
+      void Consume();
+
      public:
       Vec3 m_grabPoint;
       Vec3 m_initialPoint;

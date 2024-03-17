@@ -8,6 +8,7 @@
 #include "Prefab.h"
 
 #include "Material.h"
+#include "MathUtil.h"
 #include "Scene.h"
 #include "ToolKit.h"
 
@@ -78,14 +79,70 @@ namespace ToolKit
     return other;
   }
 
+  BoundingBox Prefab::GetBoundingBox(bool inWorld) const
+  {
+    BoundingBox boundingBox;
+    if (m_prefabScene)
+    {
+      boundingBox = m_prefabScene->m_boundingBox;
+      if (inWorld)
+      {
+        TransformAABB(boundingBox, m_node->GetTransform());
+      }
+    }
+
+    return boundingBox;
+  }
+
+  EntityPtr Prefab::GetFirstByName(const String& name)
+  {
+    if (!m_initiated || !m_linked || m_currentScene == nullptr)
+    {
+      return nullptr;
+    }
+
+    for (uint i = 0; i < m_instanceEntities.size(); ++i)
+    {
+      EntityPtr instanceEntity = m_instanceEntities[i];
+      if (instanceEntity->GetNameVal() == name)
+      {
+        return instanceEntity;
+      }
+    }
+
+    return nullptr;
+  }
+
+  EntityPtr Prefab::GetFirstByTag(const String& tag)
+  {
+    if (!m_initiated || !m_linked || m_currentScene == nullptr)
+    {
+      return nullptr;
+    }
+
+    for (uint i = 0; i < m_instanceEntities.size(); ++i)
+    {
+      EntityPtr instanceEntity = m_instanceEntities[i];
+      if (instanceEntity->GetTagVal() == tag)
+      {
+        return instanceEntity;
+      }
+    }
+
+    return nullptr;
+  }
+
   void Prefab::Init(Scene* curScene)
   {
     if (m_initiated)
     {
       return;
     }
-    m_currentScene = curScene;
-    m_prefabScene  = GetSceneManager()->Create<Scene>(PrefabPath(GetPrefabPathVal()));
+
+    m_currentScene    = curScene;
+    String prefabPath = GetPrefabPathVal();
+    prefabPath        = PrefabPath(prefabPath);
+    m_prefabScene     = GetSceneManager()->Create<Scene>(prefabPath);
     if (m_prefabScene == nullptr)
     {
       TK_ERR("Prefab scene isn't found.");
@@ -157,11 +214,9 @@ namespace ToolKit
       }
 
       // Save material changes
-      MaterialComponentPtrArray mmComps;
-      child->GetComponent<MaterialComponent>(mmComps);
-      for (MaterialComponentPtr mmComp : mmComps)
+      if (MaterialComponentPtr matComp = child->GetComponent<MaterialComponent>())
       {
-        for (MaterialPtr mat : mmComp->GetMaterialList())
+        for (MaterialPtr mat : matComp->GetMaterialList())
         {
           mat->Save(true);
         }

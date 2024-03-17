@@ -20,10 +20,15 @@ namespace ToolKit
 
   EnvironmentComponent::EnvironmentComponent() {}
 
-  EnvironmentComponent::~EnvironmentComponent() {}
+  EnvironmentComponent::~EnvironmentComponent() { UnInit(); }
 
   void EnvironmentComponent::Init(bool flushClientSideArray)
   {
+    if (m_initialized)
+    {
+      return;
+    }
+
     HdriPtr hdri = GetHdriVal();
     assert(hdri != nullptr && "Attempt to initialize hdri resource "
                               "that does not exist in environment component.");
@@ -36,7 +41,11 @@ namespace ToolKit
     hdri->m_specularIBLTextureSize = GetIBLTextureSizeVal().GetValue<int>();
     hdri->m_exposure               = GetExposureVal();
     hdri->Init(flushClientSideArray);
+
+    m_initialized = true;
   }
+
+  void EnvironmentComponent::UnInit() { m_initialized = false; }
 
   void EnvironmentComponent::ParameterConstructor()
   {
@@ -90,12 +99,14 @@ namespace ToolKit
         1,
         [&](Value& oldVal, Value& newVal)
         {
-          HdriPtr hdri           = GetHdriVal();
-          MultiChoiceVariant mcv = GetIBLTextureSizeVal();
+          HdriPtr hdri       = GetHdriVal();
+          int iblTexSize     = std::get<uint>(newVal);
+          int prevIblTexSize = std::get<uint>(oldVal);
 
-          if (hdri != nullptr)
+          if (hdri != nullptr && iblTexSize != prevIblTexSize)
           {
-            hdri->m_specularIBLTextureSize = mcv.GetValue<int>();
+            MultiChoiceVariant& self       = ParamIBLTextureSize().GetVar<MultiChoiceVariant>();
+            hdri->m_specularIBLTextureSize = self.GetValue<int>();
             ReInitHdri(hdri, GetExposureVal());
           }
          }
@@ -113,11 +124,9 @@ namespace ToolKit
   {
     Super::ParameterEventConstructor();
 
+    ParamExposure().m_onValueChangedFn.clear();
     ParamExposure().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
                                                  { ReInitHdri(GetHdriVal(), std::get<float>(newVal)); });
-
-    ParamHdri().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                             { ReInitHdri(std::get<HdriPtr>(newVal), GetExposureVal()); });
   }
 
   ComponentPtr EnvironmentComponent::Copy(EntityPtr ntt)
@@ -140,6 +149,11 @@ namespace ToolKit
   XmlNode* EnvironmentComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* root = Super::SerializeImp(doc, parent);
+    if (!m_serializableComponent)
+    {
+      return root;
+    }
+
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
     return node;

@@ -63,6 +63,8 @@ namespace ToolKit
     {
       m_name = g_viewportStr + " " + std::to_string(m_id);
       Init({640.0f, 480.0f});
+
+      m_editorRenderer = MakeNewPtr<EditorRenderer>();
     }
 
     EditorViewport::~EditorViewport() {}
@@ -216,10 +218,9 @@ namespace ToolKit
       AdjustZoom(0.0f);
     }
 
-    RenderTargetSettigs EditorViewport::GetRenderTargetSettings()
+    TextureSettings EditorViewport::GetRenderTargetSettings()
     {
-      RenderTargetSettigs sets = Viewport::GetRenderTargetSettings();
-      sets.Msaa                = GetEngineSettings().Graphics.MSAA;
+      TextureSettings sets = Viewport::GetRenderTargetSettings();
       return sets;
     }
 
@@ -593,6 +594,16 @@ namespace ToolKit
             // Translate mesh to correct position
             dwMesh->m_node->SetTranslation(lastDragMeshPos, TransformationSpace::TS_WORLD);
 
+            if (entry.m_ext == SKINMESH)
+            {
+              if (dwMesh->GetComponent<AABBOverrideComponent>() == nullptr)
+              {
+                AABBOverrideComponentPtr aabbOverride = MakeNewPtr<AABBOverrideComponent>();
+                aabbOverride->SetBoundingBox(dwMesh->GetBoundingBox());
+                dwMesh->AddComponent(aabbOverride);
+              }
+            }
+
             // Add mesh to the scene
             currScene->AddEntity(dwMesh);
             currScene->AddToSelection(dwMesh->GetIdVal(), false);
@@ -644,13 +655,13 @@ namespace ToolKit
               }
               else
               {
-                MeshComponentPtrArray meshComps;
-                pd.entity->GetComponent<MeshComponent>(meshComps);
-
-                MeshRawCPtrArray meshes;
-                for (MeshComponentPtr meshComp : meshComps)
+                MeshRawPtrArray meshes;
+                if (MeshComponentPtr meshComp = pd.entity->GetComponent<MeshComponent>())
                 {
-                  meshComp->GetMeshVal()->GetAllMeshes(meshes);
+                  if (MeshPtr mesh = meshComp->GetMeshVal())
+                  {
+                    mesh->GetAllMeshes(meshes);
+                  }
                 }
 
                 if (meshes.empty())
@@ -740,6 +751,11 @@ namespace ToolKit
         Vec2 windowStyleArea = size - m_wndContentAreaSize;
         Vec2 contentAreaSize = size - windowStyleArea;
 
+        if (VecAllEqual(contentAreaSize, Vec2(0.0f)))
+        {
+          contentAreaSize = size;
+        }
+
         OnResizeContentArea(contentAreaSize.x, contentAreaSize.y);
       }
 
@@ -802,7 +818,7 @@ namespace ToolKit
         matComp->UpdateMaterialList();
 
         // Load bounding box once
-        *boundingBox = CreateBoundingBoxDebugObject((*dwMesh)->GetAABB(true));
+        *boundingBox = CreateBoundingBoxDebugObject((*dwMesh)->GetBoundingBox(true));
 
         // Add bounding box to the scene
         currScene->AddEntity(*boundingBox);
@@ -819,7 +835,7 @@ namespace ToolKit
       Vec3 lastDragMeshPos = Vec3(0.0f);
       Ray ray              = RayFromMousePosition(); // Find the point of the cursor in 3D coordinates
 
-      EntityIdArray ignoreList;
+      IDArray ignoreList;
       if (meshLoaded)
       {
         ignoreList.push_back((*boundingBox)->GetIdVal());
@@ -849,7 +865,7 @@ namespace ToolKit
       if (meshFound && boxMode)
       {
         float firstY       = lastDragMeshPos.y;
-        lastDragMeshPos.y -= dwMesh->GetAABB(false).min.y;
+        lastDragMeshPos.y -= dwMesh->GetBoundingBox(false).min.y;
 
         if (firstY > lastDragMeshPos.y)
         {

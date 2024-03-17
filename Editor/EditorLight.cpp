@@ -24,15 +24,15 @@ namespace ToolKit
 
     void EnableLightGizmo(Light* light, bool enable)
     {
-      switch (light->ComparableType())
+      switch (light->GetLightType())
       {
-      case 0:
+      case Light::Directional:
         static_cast<EditorDirectionalLight*>(light)->EnableGizmo(enable);
         break;
-      case 1:
+      case Light::Point:
         static_cast<EditorPointLight*>(light)->EnableGizmo(enable);
         break;
-      case 2:
+      case Light::Spot:
         static_cast<EditorSpotLight*>(light)->EnableGizmo(enable);
         break;
       default:
@@ -82,15 +82,15 @@ namespace ToolKit
 
     LightGizmoController::LightGizmoController(Light* light) : m_light(light)
     {
-      switch (light->ComparableType())
+      switch (light->GetLightType())
       {
-      case 0:
+      case Light::Directional:
         m_gizmoGenerator = new DirectionalLightMeshGenerator(static_cast<DirectionalLight*>(light));
         break;
-      case 1:
+      case Light::Point:
         m_gizmoGenerator = new PointLightMeshGenerator(static_cast<PointLight*>(light));
         break;
-      case 2:
+      case Light::Spot:
         m_gizmoGenerator = new SpotLightMeshGenerator(static_cast<SpotLight*>(light));
         break;
       default:
@@ -117,7 +117,7 @@ namespace ToolKit
         {
           if (MeshComponentPtr mc = m_light->GetMeshComponent())
           {
-            m_light->RemoveComponent(mc->GetIdVal());
+            m_light->RemoveComponent(mc->Class());
           }
         };
 
@@ -189,8 +189,9 @@ namespace ToolKit
 
     LineBatchPtr EditorDirectionalLight::GetDebugShadowFrustum()
     {
-      Vec3Array corners = GetShadowFrustumCorners();
-      static Vec3Array vertices;
+      Vec3Array corners = m_shadowCamera->ExtractFrustumCorner();
+      Vec3Array vertices;
+
       vertices.resize(24);
       vertices[0]     = corners[3];
       vertices[1]     = corners[2];

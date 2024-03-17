@@ -34,8 +34,8 @@ namespace ToolKit
     PUSH_GPU_MARKER("ForwardRenderPass::Render");
     PUSH_CPU_MARKER("ForwardRenderPass::Render");
 
-    RenderOpaque(m_params.OpaqueJobs, m_params.Cam, m_params.Lights);
-    RenderTranslucent(m_params.TranslucentJobs, m_params.Cam, m_params.Lights);
+    RenderOpaque(m_params.renderData);
+    RenderTranslucent(m_params.renderData);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -51,13 +51,11 @@ namespace ToolKit
     Pass::PreRender();
     // Set self data.
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer);
-    if (!m_params.ClearFrameBuffer && m_params.ClearDepthBuffer)
-    {
-      renderer->ClearBuffer(GraphicBitFields::DepthStencilBits, Vec4(1.0f));
-    }
-    renderer->SetCameraLens(m_params.Cam);
+
+    renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
     renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
+    renderer->SetCamera(m_params.Cam, true);
+    renderer->SetLights(m_params.Lights);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -69,15 +67,14 @@ namespace ToolKit
     PUSH_CPU_MARKER("ForwardRenderPass::PostRender");
 
     Pass::PostRender();
-    GetRenderer()->m_overrideMat = nullptr;
-    Renderer* renderer           = GetRenderer();
+    Renderer* renderer = GetRenderer();
     renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
-  void ForwardRenderPass::RenderOpaque(RenderJobArray& jobs, CameraPtr cam, LightPtrArray& lights)
+  void ForwardRenderPass::RenderOpaque(RenderData* renderData)
   {
     PUSH_CPU_MARKER("ForwardRenderPass::RenderOpaque");
 
@@ -88,48 +85,75 @@ namespace ToolKit
       renderer->SetTexture(5, m_params.SsaoTexture->m_textureId);
     }
 
-    for (const RenderJob& job : jobs)
+    RenderJobItr begin       = renderData->GetForwardOpaqueBegin();
+    RenderJobItr end         = renderData->GetForwardTranslucentBegin();
+
+    const MaterialPtr mat    = GetMaterialManager()->GetDefaultMaterial();
+    GpuProgramPtr gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
+
+    for (RenderJobItr job = begin; job != end; job++)
     {
-      RenderJobProcessor::SortLights(job, lights);
-      job.Material->m_fragmentShader->SetShaderParameter("aoEnabled", ParameterVariant(m_params.SSAOEnabled));
-      renderer->Render(job, m_params.Cam, lights);
+      if (job->Material->m_isShaderMaterial)
+      {
+        renderer->RenderWithProgramFromMaterial(*job);
+      }
+      else
+      {
+        renderer->BindProgram(gpuProgram);
+        renderer->Render(*job);
+      }
     }
 
     POP_CPU_MARKER();
   }
 
-  void ForwardRenderPass::RenderTranslucent(RenderJobArray& jobs, CameraPtr cam, LightPtrArray& lights)
+  void ForwardRenderPass::RenderTranslucent(RenderData* renderData)
   {
     PUSH_CPU_MARKER("ForwardRenderPass::RenderTranslucent");
 
-    RenderJobProcessor::SortByDistanceToCamera(jobs, cam);
+    RenderJobItr begin = renderData->GetForwardTranslucentBegin();
+    RenderJobItr end   = renderData->jobs.end();
+
+    RenderJobProcessor::SortByDistanceToCamera(begin, end, m_params.Cam);
 
     Renderer* renderer = GetRenderer();
-    auto renderFnc     = [cam, &lights, renderer](RenderJob& job)
+    auto renderFnc     = [&](RenderJob& job)
     {
-      RenderJobProcessor::SortLights(job, lights);
-
-      MaterialPtr mat = job.Material;
+      Material* mat = job.Material;
       if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
       {
         mat->GetRenderState()->cullMode = CullingType::Front;
-        renderer->Render(job, cam, lights);
+        renderer->Render(job);
 
         mat->GetRenderState()->cullMode = CullingType::Back;
-        renderer->Render(job, cam, lights);
+        renderer->Render(job);
 
         mat->GetRenderState()->cullMode = CullingType::TwoSided;
       }
       else
       {
-        renderer->Render(job, cam, lights);
+        renderer->Render(job);
       }
     };
 
-    for (RenderJob& job : jobs)
+    const MaterialPtr defualtMat = GetMaterialManager()->GetDefaultMaterial();
+    GpuProgramPtr defaultProgram =
+        GetGpuProgramManager()->CreateProgram(defualtMat->m_vertexShader, defualtMat->m_fragmentShader);
+
+    renderer->EnableDepthWrite(false);
+    for (RenderJobArray::iterator job = begin; job != end; job++)
     {
-      renderFnc(job);
+      if (job->Material->m_isShaderMaterial)
+      {
+        renderer->BindProgramOfMaterial(job->Material);
+      }
+      else
+      {
+        renderer->BindProgram(defaultProgram);
+      }
+      renderFnc(*job);
     }
+    renderer->EnableDepthWrite(true);
 
     POP_CPU_MARKER();
   }

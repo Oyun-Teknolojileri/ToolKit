@@ -29,13 +29,19 @@ namespace ToolKit
     m_cube->m_node->SetTransform(m_params.Transform);
 
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_params.FrameBuffer, false);
 
-    static RenderJobArray jobs;
-    jobs.clear();
-    EntityPtrArray oneCube = {m_cube};
-    RenderJobProcessor::CreateRenderJobs(oneCube, jobs);
-    renderer->Render(jobs, m_params.Cam);
+    if (m_params.ClearFramebuffer)
+    {
+      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::AllBits);
+    }
+    else
+    {
+      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::None);
+    }
+
+    RenderJobArray jobs;
+    RenderJobProcessor::CreateRenderJobs({m_cube}, jobs);
+    renderer->RenderWithProgramFromMaterial(jobs);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -49,7 +55,10 @@ namespace ToolKit
     Pass::PreRender();
     MaterialComponentPtr matCom = m_cube->GetMaterialComponent();
     matCom->SetFirstMaterial(m_params.Material);
-    GetRenderer()->SetDepthTestFunc(m_params.DepthFn);
+
+    Renderer* renderer = GetRenderer();
+    renderer->SetDepthTestFunc(m_params.DepthFn);
+    renderer->SetCamera(m_params.Cam, false);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

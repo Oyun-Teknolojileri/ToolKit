@@ -20,7 +20,7 @@
 		{
 			vec2 texCoord   = vec2(v_texture.x, 1.0 - v_texture.y);
 			vec3 irradiance = texture(s_texture0, texCoord).rgb;
-      vec3 emmisive   = texture(s_texture1, texCoord).rgb;
+			vec3 emmisive   = texture(s_texture1, texCoord).rgb;
 			vec3 ibl        = texture(s_texture2, texCoord).rgb;
 			vec3 color      = (irradiance + ibl) * AmbientOcclusion(); 
 			fragColor = vec4(color, 1.0) + vec4(emmisive, 0.0f);

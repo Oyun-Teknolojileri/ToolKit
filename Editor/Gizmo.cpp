@@ -44,8 +44,7 @@ namespace ToolKit
       matPtr->m_diffuseTexture                    = m_iconImage;
       matPtr->GetRenderState()->blendFunction     = BlendFunction::ALPHA_MASK;
       matPtr->GetRenderState()->alphaMaskTreshold = 0.1f;
-      matPtr->Init();
-      meshPtr->m_material = matPtr;
+      meshPtr->m_material                         = matPtr;
       mCom->SetMeshVal(meshPtr);
     }
 
@@ -240,7 +239,7 @@ namespace ToolKit
       rayInObj.direction = its * Vec4(ray.direction, 0.0f);
 
       m_mesh->CalculateAABB();
-      return RayBoxIntersection(rayInObj, m_mesh->m_aabb, t);
+      return RayBoxIntersection(rayInObj, m_mesh->m_boundingBox, t);
     }
 
     Mat4 GizmoHandle::GetTransform() const
@@ -467,7 +466,7 @@ namespace ToolKit
       rayInObj.direction = its * Vec4(ray.direction, 0.0f);
 
       m_mesh->CalculateAABB();
-      return RayBoxIntersection(rayInObj, m_mesh->m_aabb, t);
+      return RayBoxIntersection(rayInObj, m_mesh->m_boundingBox, t);
     }
 
     // Gizmo
@@ -573,6 +572,34 @@ namespace ToolKit
       return p;
     }
 
+    void Gizmo::Consume()
+    {
+      // Create a non empty root for drawing.
+      MeshPtr root = MakeNewPtr<Mesh>();
+      MeshGenerator::GenerateCube(root, Vec3(0.001f));
+
+      // Accumulate non empty meshes for drawing.
+      MeshPtr mesh = MakeNewPtr<Mesh>();
+      for (int i = 0; i < m_handles.size(); i++)
+      {
+        mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
+      }
+
+      MeshPtrArray subs;
+      mesh->GetAllSubMeshes(subs);
+      for (MeshPtr m : subs)
+      {
+        if (m->m_vertexCount > 0)
+        {
+          root->m_subMeshes.push_back(m);
+        }
+      }
+
+      root->Init(false);
+      root->CalculateAABB();
+      GetComponent<MeshComponent>()->SetMeshVal(root);
+    }
+
     // LinearGizmo
     //////////////////////////////////////////////////////////////////////////
 
@@ -594,6 +621,11 @@ namespace ToolKit
 
     void LinearGizmo::Update(float deltaTime)
     {
+      if (m_handles.empty())
+      {
+        return;
+      }
+
       GizmoHandle::Params p = GetParam();
 
       for (size_t i = 0; i < m_handles.size(); i++)
@@ -640,14 +672,7 @@ namespace ToolKit
         handle->Generate(p);
       }
 
-      MeshPtr mesh = MakeNewPtr<Mesh>();
-      for (int i = 0; i < m_handles.size(); i++)
-      {
-        mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
-      }
-      mesh->Init(false);
-      mesh->CalculateAABB();
-      GetComponent<MeshComponent>()->SetMeshVal(mesh);
+      Consume();
     }
 
     GizmoHandle::Params LinearGizmo::GetParam() const
@@ -735,6 +760,11 @@ namespace ToolKit
 
     void PolarGizmo::Update(float deltaTime)
     {
+      if (m_handles.empty())
+      {
+        return;
+      }
+
       GizmoHandle::Params p = GetParam();
 
       // Clear all meshes
@@ -783,16 +813,7 @@ namespace ToolKit
         m_handles[i]->Generate(p);
       }
 
-      MeshPtr mesh = MakeNewPtr<Mesh>();
-      for (int i = 0; i < m_handles.size(); i++)
-      {
-        if (m_handles[i]->m_mesh)
-        {
-          mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
-        }
-      }
-
-      GetComponent<MeshComponent>()->SetMeshVal(mesh);
+      Consume();
     }
 
     TKDefineClass(SkyBillboard, EditorBillboardBase);

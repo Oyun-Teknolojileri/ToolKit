@@ -20,8 +20,8 @@ namespace ToolKit
   {
     m_quadPass                       = MakeNewPtr<FullQuadPass>();
     m_quadPass->m_params.FrameBuffer = MakeNewPtr<Framebuffer>();
-
     m_dofShader                      = GetShaderManager()->Create<Shader>(ShaderPath("depthOfFieldFrag.shader", true));
+    m_copyTexture                    = MakeNewPtr<RenderTarget>();
   }
 
   DoFPass::DoFPass(const DoFPassParams& params) : DoFPass() { m_params = params; }
@@ -43,9 +43,22 @@ namespace ToolKit
       return;
     }
 
-    m_dofShader->SetShaderParameter("focusPoint", ParameterVariant(m_params.focusPoint));
-    m_dofShader->SetShaderParameter("focusScale", ParameterVariant(m_params.focusScale));
-    m_dofShader->SetShaderParameter("blurSize", ParameterVariant(5.0f));
+    if (!m_copyTexture->m_initiated || m_copyTexture->m_width != m_params.ColorRt->m_width ||
+        m_copyTexture->m_height != m_params.ColorRt->m_height)
+    {
+      m_copyTexture->UnInit();
+      m_copyTexture->m_width  = m_params.ColorRt->m_width;
+      m_copyTexture->m_height = m_params.ColorRt->m_height;
+      m_copyTexture->Settings(m_params.ColorRt->Settings());
+      m_copyTexture->Init();
+    }
+    GetRenderer()->CopyTexture(m_params.ColorRt, m_copyTexture);
+
+    m_quadPass->SetFragmentShader(m_dofShader, GetRenderer());
+
+    m_quadPass->UpdateUniform(ShaderUniform("focusPoint", m_params.focusPoint));
+    m_quadPass->UpdateUniform(ShaderUniform("focusScale", m_params.focusScale));
+    m_quadPass->UpdateUniform(ShaderUniform("blurSize", 5.0f));
 
     float blurRadiusScale = 0.5f;
     switch (m_params.blurQuality)
@@ -60,16 +73,14 @@ namespace ToolKit
       blurRadiusScale = 0.2f;
       break;
     }
-    m_dofShader->SetShaderParameter("radiusScale", ParameterVariant(blurRadiusScale));
+    m_quadPass->UpdateUniform(ShaderUniform("radiusScale", blurRadiusScale));
 
-    UVec2 size(m_params.ColorRt->m_width, m_params.ColorRt->m_height);
-
+    IVec2 size(m_params.ColorRt->m_width, m_params.ColorRt->m_height);
     m_quadPass->m_params.FrameBuffer->Init({size.x, size.y, false, false});
-    m_dofShader->SetShaderParameter("uPixelSize", ParameterVariant(Vec2(1.0f) / Vec2(size)));
-    m_quadPass->m_params.FrameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.ColorRt);
+    m_quadPass->UpdateUniform(ShaderUniform("uPixelSize", Vec2(1.0f) / Vec2(size)));
     m_quadPass->m_params.BlendFunc        = BlendFunction::NONE;
     m_quadPass->m_params.ClearFrameBuffer = false;
-    m_quadPass->m_params.FragmentShader   = m_dofShader;
+    m_quadPass->m_params.FrameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.ColorRt);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -86,7 +97,7 @@ namespace ToolKit
       return;
     }
 
-    renderer->SetTexture(0, m_params.ColorRt->m_textureId);
+    renderer->SetTexture(0, m_copyTexture->m_textureId);
     renderer->SetTexture(1, m_params.DepthRt->m_textureId);
 
     RenderSubPass(m_quadPass);

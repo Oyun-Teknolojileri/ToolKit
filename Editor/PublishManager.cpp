@@ -23,7 +23,7 @@ namespace ToolKit
 {
   namespace Editor
   {
-    void PublishManager::Publish(PublishPlatform platform)
+    void PublishManager::Publish(PublishPlatform platform, PublishConfig publishConfig)
     {
       if (m_isBuilding)
       {
@@ -35,12 +35,13 @@ namespace ToolKit
       publishArguments        += g_app->m_workspace.GetActiveWorkspace() + '\n';
       publishArguments += m_appName.empty() ? g_app->m_workspace.GetActiveProject().name + '\n' : m_appName + '\n';
       publishArguments += std::to_string((int) m_deployAfterBuild) + '\n';
-      publishArguments += std::to_string((int) m_isDebugBuild) + '\n';
       publishArguments += std::to_string(m_minSdk) + '\n';
       publishArguments += std::to_string(m_maxSdk) + '\n';
       publishArguments += std::to_string(m_oriantation) + '\n';
       publishArguments += std::to_string((int) platform) + '\n';
       publishArguments += m_icon == nullptr ? TexturePath(ConcatPaths({"Icons", "app.png"}), true) : m_icon->GetFile();
+      publishArguments += '\n';
+      publishArguments += std::to_string((int) publishConfig) + '\n';
 
       GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
       g_app->m_statusMsg = "Packing...";
@@ -55,11 +56,14 @@ namespace ToolKit
 
       const auto afterPackFn = [&](int res) -> void
       {
-        if (res != 1 && std::filesystem::exists("PackerOutput.txt"))
+        if (res != 0)
         {
-          TK_LOG(GetFileManager()->ReadAllText("PackerOutput.txt").c_str());
+          TK_WRN("Build Failed");
         }
-        TK_LOG("Build Ended.");
+        else
+        {
+          TK_LOG("Build Ended.");
+        }
         m_isBuilding = false;
       };
 
@@ -76,8 +80,7 @@ namespace ToolKit
       else // windows build
       {
         TK_LOG("Packing to Windows...");
-        std::thread thread = std::thread(RunPipe, packerPath, afterPackFn);
-        thread.detach();
+        g_app->ExecSysCommand(packerPath, true, true, afterPackFn);
       }
     }
   } // namespace Editor

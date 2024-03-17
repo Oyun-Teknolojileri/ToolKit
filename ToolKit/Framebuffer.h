@@ -14,8 +14,8 @@ namespace ToolKit
 
   struct FramebufferSettings
   {
-    uint width           = 1024;
-    uint height          = 1024;
+    int width            = 128;
+    int height           = 128;
     bool depthStencil    = false;
     bool useDefaultDepth = true;
 
@@ -25,11 +25,7 @@ namespace ToolKit
   class TK_API Framebuffer
   {
     // NOTE: This class does not handle renderbuffer attachments, multi-sampled
-    // cubemaps, stencil attachments(including depth_stencil).
-
-    // Initalized framebuffer carries either depth attachment or depth
-    // stencil attachment. In order to change, uninit and init the framebuffer
-    // with new settings.
+    // cubemaps.
 
    public:
     enum class Attachment
@@ -77,11 +73,10 @@ namespace ToolKit
     void ClearAttachments();
 
     uint GetFboId();
-    uint GetDefaultRboId();
 
-    inline FramebufferSettings GetSettings() { return m_settings; }
+    inline const FramebufferSettings& GetSettings() { return m_settings; }
 
-    void ReconstructIfNeeded(uint width, uint height);
+    void ReconstructIfNeeded(int width, int height);
 
     RenderTargetPtr DetachColorAttachment(Attachment atc);
     void RemoveDepthAttachment();

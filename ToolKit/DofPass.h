@@ -44,8 +44,9 @@ namespace ToolKit
     DoFPassParams m_params;
 
    private:
-    FullQuadPassPtr m_quadPass = nullptr;
-    ShaderPtr m_dofShader      = nullptr;
+    FullQuadPassPtr m_quadPass    = nullptr;
+    ShaderPtr m_dofShader         = nullptr;
+    RenderTargetPtr m_copyTexture = nullptr;
   };
 
   typedef std::shared_ptr<DoFPass> DoFPassPtr;

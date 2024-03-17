@@ -9,6 +9,7 @@
 
 #include "FileManager.h"
 #include "Logger.h"
+#include "RenderSystem.h"
 #include "Shader.h"
 #include "ToolKit.h"
 #include "Util.h"
@@ -72,7 +73,7 @@ namespace ToolKit
 
     if (m_metallicRoughnessTexture)
     {
-      if (m_metallicRoughnessTexture->GetTextureSettings().MinFilter != GraphicTypes::SampleNearest)
+      if (m_metallicRoughnessTexture->Settings().MinFilter != GraphicTypes::SampleNearest)
       {
         m_metallicRoughnessTexture->UnInit();
         m_metallicRoughnessTexture->Load();
@@ -82,7 +83,7 @@ namespace ToolKit
         set.MinFilter      = GraphicTypes::SampleNearest;
         set.Type           = GraphicTypes::TypeUnsignedByte;
         set.GenerateMipMap = false;
-        m_metallicRoughnessTexture->SetTextureSettings(set);
+        m_metallicRoughnessTexture->Settings(set);
       }
 
       m_metallicRoughnessTexture->Init(flushClientSideArray);
@@ -90,7 +91,7 @@ namespace ToolKit
 
     if (m_normalMap)
     {
-      if (m_normalMap->GetTextureSettings().MinFilter != GraphicTypes::SampleNearest)
+      if (m_normalMap->Settings().MinFilter != GraphicTypes::SampleNearest)
       {
         m_normalMap->UnInit();
         m_normalMap->Load();
@@ -100,7 +101,7 @@ namespace ToolKit
         set.MinFilter      = GraphicTypes::SampleNearest;
         set.Type           = GraphicTypes::TypeUnsignedByte;
         set.GenerateMipMap = false;
-        m_normalMap->SetTextureSettings(set);
+        m_normalMap->Settings(set);
       }
 
       m_normalMap->Init(flushClientSideArray);
@@ -154,7 +155,7 @@ namespace ToolKit
     cpy->m_emissiveColor            = m_emissiveColor;
     cpy->m_metallicRoughnessTexture = m_metallicRoughnessTexture;
     cpy->m_normalMap                = m_normalMap;
-    cpy->m_normalMap                = m_normalMap;
+    cpy->m_isShaderMaterial         = m_isShaderMaterial;
   }
 
   RenderState* Material::GetRenderState() { return &m_renderState; }
@@ -195,22 +196,36 @@ namespace ToolKit
 
   float& Material::GetAlpha() { return m_alpha; }
 
-  bool Material::IsDeferred()
+  bool Material::IsTranslucent()
   {
-    if (IsTranslucent())
+    switch (m_renderState.blendFunction)
     {
+    case BlendFunction::NONE:
+    case BlendFunction::ALPHA_MASK:
+      return false;
+    case BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA:
+    case BlendFunction::ONE_TO_ONE:
+      return true;
+    default:
       return false;
     }
-
-    return m_fragmentShader->GetFile() == GetShaderManager()->PbrDefferedShaderFile();
   }
-
-  bool Material::IsTranslucent() { return m_renderState.blendFunction == BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA; }
 
   bool Material::IsPBR()
   {
     const String& file = m_fragmentShader->GetFile();
     return file == GetShaderManager()->PbrDefferedShaderFile() || file == GetShaderManager()->PbrForwardShaderFile();
+  }
+
+  void Material::UpdateRuntimeVersion()
+  {
+    m_dirty = true;
+
+    m_uniformVersion++;
+    if (m_uniformVersion == 0) // avoid 0 since that is the default value of programs active material version
+    {
+      m_uniformVersion++;
+    }
   }
 
   XmlNode* Material::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -280,6 +295,9 @@ namespace ToolKit
 
     node = CreateXmlNode(doc, "roughness", container);
     WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_roughness));
+
+    node = CreateXmlNode(doc, "isShaderMaterial", container);
+    WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_isShaderMaterial));
 
     m_renderState.Serialize(doc, container);
     return container;
@@ -369,45 +387,42 @@ namespace ToolKit
         ReadAttr(node, XmlNodeName.data(), m_roughness);
       }
       else if (strcmp("materialType", node->name()) == 0) {}
+      else if (strcmp("isShaderMaterial", node->name()) == 0)
+      {
+        ReadAttr(node, XmlNodeName.data(), m_isShaderMaterial);
+      }
       else
       {
         assert(false);
       }
     }
 
-    // Update old materials than v0.4.0
-
     // If no shader provided, assign a proper default.
     if (m_fragmentShader == nullptr)
     {
-      if (IsTranslucent())
-      {
-        m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
-      }
-      else
-      {
-        m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
-      }
+      m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
     }
-    else
+    else if (m_fragmentShader->GetFile() == GetShaderManager()->PbrDefferedShaderFile())
     {
-      // Can this be draw in deferred path ?
-      if (!IsDeferred())
-      {
-        // If not using a custom shader.
-        if (m_fragmentShader->GetFile() == GetShaderManager()->PbrForwardShaderFile())
-        {
-          // And not translucent.
-          if (!IsTranslucent())
-          {
-            // Draw in deferred.
-            m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
-          }
-        }
-      }
+      m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
+    }
+
+    if (m_fragmentShader == nullptr)
+    {
+      m_vertexShader = GetShaderManager()->GetDefaultVertexShader();
     }
 
     return nullptr;
+  }
+
+  void Material::UpdateProgramUniform(const String& uniformName, const UniformValue& val)
+  {
+    Init();
+
+    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+    GpuProgramPtr gpuProgram             = gpuProgramManager->CreateProgram(m_vertexShader, m_fragmentShader);
+
+    gpuProgram->UpdateCustomUniform(uniformName, val);
   }
 
   MaterialManager::MaterialManager() { m_baseType = Material::StaticClass(); }
@@ -421,18 +436,20 @@ namespace ToolKit
     // PBR material
     MaterialPtr material       = MakeNewPtr<Material>();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-    material->m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
+    material->m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
-    m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
+    m_defaultMaterial                                 = material;
+    m_storage[MaterialPath("default.material", true)] = material;
 
     // Phong material
     material                                          = MakeNewPtr<Material>();
+    material->m_isShaderMaterial                      = true;
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->GetPhongForwardShader();
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
-    m_storage[MaterialPath("phongForward.material", true)] = MaterialPtr(material);
+    m_storage[MaterialPath("phongForward.material", true)] = material;
 
     // Unlit material
     material                                               = MakeNewPtr<Material>();
@@ -440,12 +457,15 @@ namespace ToolKit
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
-    m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
+    material->m_isShaderMaterial                    = true;
+    m_storage[MaterialPath("unlit.material", true)] = material;
   }
 
   bool MaterialManager::CanStore(ClassMeta* Class) { return Class == Material::StaticClass(); }
 
   String MaterialManager::GetDefaultResource(ClassMeta* Class) { return MaterialPath("missing.material", true); }
+
+  MaterialPtr MaterialManager::GetDefaultMaterial() { return m_defaultMaterial; }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial(bool storeInMaterialManager)
   {
@@ -479,4 +499,5 @@ namespace ToolKit
     ResourcePtr source = m_storage[MaterialPath("phongForward.material", true)];
     return Copy<Material>(source, storeInMaterialManager);
   }
+
 } // namespace ToolKit

@@ -778,6 +778,19 @@ namespace ToolKit
         g_app->GetRenderSettingsView()->SetVisibility(true);
       }
 
+      if (g_app->GetStatsView() == nullptr)
+      {
+        if (ImGui::MenuItem(g_statsView.c_str()))
+        {
+          g_app->AddStatsView();
+          g_app->GetStatsView()->SetVisibility(true);
+        }
+      }
+      else if (ImGui::MenuItem(g_statsView.c_str(), nullptr, nullptr, !g_app->GetStatsView()->IsVisible()))
+      {
+        g_app->GetStatsView()->SetVisibility(true);
+      }
+
       ImGui::Separator();
 
       if (ImGui::MenuItem("Reset Layout"))
@@ -829,21 +842,69 @@ namespace ToolKit
         ImGui::EndMenu();
       }
 
+      auto callPublisherForPlatformFn = [&](PublishPlatform publishPlatform, PublishConfig publishType)
+      {
+        if (publishPlatform == PublishPlatform::Android)
+        {
+          m_androidBuildWindow->OpenBuildWindow(publishType);
+        }
+        else
+        {
+          g_app->m_publishManager->Publish(publishPlatform, publishType);
+        }
+      };
+
+      auto choosePublishPlatformFn = [&](PublishPlatform publishPlatform, bool developBuild = true)
+      {
+        if (ImGui::MenuItem("Debug"))
+        {
+          callPublisherForPlatformFn(publishPlatform, PublishConfig::Debug);
+        }
+
+        AddTooltipToLastItem("Builds the project in Debug config with debug info.\nDoes not pack the resources if "
+                             "there is a pack already.");
+
+        if (developBuild)
+        {
+          if (ImGui::MenuItem("Develop"))
+          {
+            callPublisherForPlatformFn(publishPlatform, PublishConfig::Develop);
+          }
+
+          AddTooltipToLastItem("Builds the project in Release config with debug info.\nDoes not pack the resources if "
+                               "there is a pack already.");
+        }
+
+        if (ImGui::MenuItem("Deploy"))
+        {
+          callPublisherForPlatformFn(publishPlatform, PublishConfig::Deploy);
+        }
+
+        AddTooltipToLastItem("Builds the project in Release config without debug info.\nPacks the resources.");
+
+        ImGui::EndMenu();
+      };
+
       if (ImGui::BeginMenu("Publish"))
       {
-        if (ImGui::MenuItem("Web"))
+        if (ImGui::MenuItem("Pack"))
         {
-          g_app->m_publishManager->Publish(PublishPlatform::Web);
+          g_app->PackResources();
         }
 
-        if (ImGui::MenuItem("Android"))
+        if (ImGui::BeginMenu("Web"))
         {
-          m_androidBuildWindow->OpenBuildWindow();
+          choosePublishPlatformFn(PublishPlatform::Web);
         }
 
-        if (ImGui::MenuItem("Windows"))
+        if (ImGui::BeginMenu("Android"))
         {
-          g_app->m_publishManager->Publish(PublishPlatform::Windows);
+          choosePublishPlatformFn(PublishPlatform::Android, false);
+        }
+
+        if (ImGui::BeginMenu("Windows"))
+        {
+          choosePublishPlatformFn(PublishPlatform::Windows);
         }
 
         ImGui::EndMenu();
@@ -1386,6 +1447,14 @@ namespace ToolKit
     }
 
     bool UI::IsKeyboardCaptured() { return ImGui::GetIO().WantCaptureKeyboard; }
+
+    void UI::AddTooltipToLastItem(const char* tip)
+    {
+      if (ImGui::IsItemHovered())
+      {
+        ImGui::SetItemTooltip(tip);
+      }
+    }
 
     Window::Window()
     {

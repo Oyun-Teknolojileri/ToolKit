@@ -1,0 +1,4 @@
+<Version version="v0.4.5"/>
+<Window width="1200" height="800" name="ToolKit" fullscreen="0"/>
+<Graphics MSAA="2" FPS="60" RenderSpec="1" ShadowDistance="64.000000" RenderResolutionScale="0.5"/>
+

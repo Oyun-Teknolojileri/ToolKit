@@ -176,7 +176,7 @@ namespace ToolKit
           ImGui::EndPopup();
         }
 
-        const Vec2 size = {canvasPanel->GetAABB(true).GetWidth(), canvasPanel->GetAABB(true).GetHeight()};
+        const Vec2 size = {canvasPanel->GetBoundingBox(true).GetWidth(), canvasPanel->GetBoundingBox(true).GetHeight()};
         float res[]     = {size.x, size.y};
         if (ImGui::InputFloat2("New resolution:", res))
         {
@@ -259,7 +259,7 @@ namespace ToolKit
         MeshPtr mesh = ntt->GetComponent<MeshComponent>()->GetMeshVal();
 
         StringArray missingData;
-        MeshRawCPtrArray meshes;
+        MeshRawPtrArray meshes;
         mesh->GetAllMeshes(meshes);
 
         for (const Mesh* subMesh : meshes)
@@ -424,7 +424,7 @@ namespace ToolKit
 
         ImGui::Separator();
 
-        BoundingBox bb = ntt->GetAABB(true);
+        BoundingBox bb = ntt->GetBoundingBox(true);
         Vec3 dim       = bb.max - bb.min;
         ImGui::Text("Bounding box dimensions:");
         ImGui::Text("x: %.2f", dim.x);

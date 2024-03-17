@@ -1,0 +1,1 @@
+emcmake cmake -DTK_CXX_EXTRA:STRING="-O3 -g -pthread" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DWEB_BUILD:BOOL=1 -S ../Codes -G Ninja && ninja || (pause & exit /b 1)
