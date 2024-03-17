@@ -197,5 +197,6 @@ namespace ToolKit
    public:
     static void GenerateCircleMesh(MeshPtr mesh, int numSegments, float radius);
     static void GenerateConeMesh(MeshPtr mesh, float radius, int vertexCount, float outerAngle);
+    static void GenerateCube(MeshPtr mesh, Vec3 dimention);
   };
 } // namespace ToolKit

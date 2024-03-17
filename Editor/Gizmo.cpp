@@ -572,6 +572,34 @@ namespace ToolKit
       return p;
     }
 
+    void Gizmo::Consume()
+    {
+      // Create a non empty root for drawing.
+      MeshPtr root = MakeNewPtr<Mesh>();
+      MeshGenerator::GenerateCube(root, Vec3(0.001f));
+
+      // Accumulate non empty meshes for drawing.
+      MeshPtr mesh = MakeNewPtr<Mesh>();
+      for (int i = 0; i < m_handles.size(); i++)
+      {
+        mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
+      }
+
+      MeshPtrArray subs;
+      mesh->GetAllSubMeshes(subs);
+      for (MeshPtr m : subs)
+      {
+        if (m->m_vertexCount > 0)
+        {
+          root->m_subMeshes.push_back(m);
+        }
+      }
+
+      root->Init(false);
+      root->CalculateAABB();
+      GetComponent<MeshComponent>()->SetMeshVal(root);
+    }
+
     // LinearGizmo
     //////////////////////////////////////////////////////////////////////////
 
@@ -644,14 +672,7 @@ namespace ToolKit
         handle->Generate(p);
       }
 
-      MeshPtr mesh = MakeNewPtr<Mesh>();
-      for (int i = 0; i < m_handles.size(); i++)
-      {
-        mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
-      }
-      mesh->Init(false);
-      mesh->CalculateAABB();
-      GetComponent<MeshComponent>()->SetMeshVal(mesh);
+      Consume();
     }
 
     GizmoHandle::Params LinearGizmo::GetParam() const
@@ -792,13 +813,7 @@ namespace ToolKit
         m_handles[i]->Generate(p);
       }
 
-      MeshPtr mesh = MakeNewPtr<Mesh>();
-      for (int i = 0; i < m_handles.size(); i++)
-      {
-        mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
-      }
-
-      GetComponent<MeshComponent>()->SetMeshVal(mesh);
+      Consume();
     }
 
     TKDefineClass(SkyBillboard, EditorBillboardBase);

@@ -271,6 +271,21 @@ namespace ToolKit
     }
   }
 
+  void GetAllMeshHelper(MeshPtr mesh, MeshPtrArray& meshes)
+  {
+    if (mesh == nullptr)
+    {
+      return;
+    }
+
+    meshes.push_back(mesh);
+
+    for (MeshPtr subMesh : mesh->m_subMeshes)
+    {
+      GetAllMeshHelper(subMesh, meshes);
+    }
+  }
+
   void Mesh::GetAllMeshes(MeshRawPtrArray& meshes, bool updateCache) const
   {
     if (updateCache)
@@ -281,6 +296,17 @@ namespace ToolKit
 
     meshes = m_allMeshes;
   }
+
+  void Mesh::GetAllSubMeshes(MeshPtrArray& meshes) const
+  {
+    for (MeshPtr mesh : m_subMeshes)
+    {
+      meshes.push_back(mesh);
+      GetAllMeshHelper(mesh, meshes);
+    }
+  }
+
+  const MeshRawPtrArray& Mesh::GetAllMeshes() const { return m_allMeshes; }
 
   int Mesh::GetMeshCount() const { return (int) m_allMeshes.size(); }
 
