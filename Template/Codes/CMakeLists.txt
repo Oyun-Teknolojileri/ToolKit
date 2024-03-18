@@ -55,6 +55,7 @@ endif()
 set(CMAKE_DEBUG_POSTFIX _d)
 
 include_directories(
+	"${TOOLKIT_DIR}"
 	"${TOOLKIT_DIR}/ToolKit"
 	"${TOOLKIT_DIR}/Dependency"
 	"${TOOLKIT_DIR}/Dependency/glm"
@@ -141,6 +142,9 @@ else() # Windows & Editor builds.
 	
 	if (${EDITOR_BUILD})
 		add_library(${PROJECT_NAME} SHARED ${SOURCE} ${HEADERS})
+		target_link_libraries(${PROJECT_NAME} PRIVATE debug Editor_d)
+		target_link_libraries(${PROJECT_NAME} PRIVATE optimized Editor)
+		target_compile_definitions(${PROJECT_NAME} PRIVATE TK_WITH_EDITOR)
 	elseif(DEFINED WIN_BUILD)
 		add_executable(${PROJECT_NAME} WIN32 ${SOURCE})
 	endif()

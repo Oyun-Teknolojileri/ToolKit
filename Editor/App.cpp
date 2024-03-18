@@ -452,12 +452,13 @@ namespace ToolKit
         String content = buffer.str();
 
         String tkRoot  = std::filesystem::absolute(currentPath).u8string();
-        String tkPath  = ConcatPaths({tkRoot, "ToolKit"});
+        UnixifyPath(tkRoot);
+        String tkPath = ConcatPaths({tkRoot, "ToolKit"});
         UnixifyPath(tkPath);
         String depPath = ConcatPaths({tkRoot, "Dependency"});
         UnixifyPath(depPath);
 
-        String replacement = "\"" + tkPath + "\",\n" + "\t\t\t\t\"" + depPath + "\"";
+        String replacement = "\"" + tkRoot + "\",\n" + "\t\t\t\t\"" + tkPath + "\",\n" + "\t\t\t\t\"" + depPath + "\"";
 
         ReplaceFirstStringInPlace(content, "__tk_includes__", replacement);
         fileEditStream.close();
