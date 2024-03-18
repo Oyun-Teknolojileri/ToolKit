@@ -392,6 +392,7 @@ namespace ToolKit
 
   void Packer::SetAndroidOptions()
   {
+    SetAndroidGameName();
     SetAndroidSDKVersion();
     EditAndroidManifest();
   }
@@ -522,8 +523,6 @@ namespace ToolKit
     {
       return -1;
     }
-
-    SetAndroidGameName();
 
     SetAndroidOptions();
 
