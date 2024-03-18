@@ -69,6 +69,7 @@ namespace ToolKit
     void AndroidPrepareIcon();
     void EditAndroidManifest();
     void SetAndroidSDKVersion();
+    void SetAndroidGameName();
     void AndroidRunOnPhone(bool isAPKUnsigned);
     int PackResources();
 
@@ -443,6 +444,24 @@ namespace ToolKit
     GetFileManager()->WriteAllText(gradleLoc, gradleFileText);
   }
 
+  void Packer::SetAndroidGameName()
+  {
+    TK_LOG("Setting Game Name\n");
+    const String mainPath =
+        NormalizePath(ConcatPaths({"Android", "app", "src", "main", "res", "values", "strings.xml"}));
+
+    // get file from template
+    String stringsFileText = GetFileManager()->ReadAllText(
+        std::filesystem::absolute(ConcatPaths({m_toolkitPath, "Template", mainPath})).string());
+
+    // replace template values with our settings
+    ReplaceFirstStringInPlace(stringsFileText, "__GAME_NAME__", m_appName);
+
+    String mainLocInProject = ConcatPaths({workspacePath, activeProjectName, mainPath});
+
+    GetFileManager()->WriteAllText(mainLocInProject, stringsFileText);
+  }
+
   int Packer::AndroidPublish()
   {
     TK_LOG("Building for android\n");
@@ -503,6 +522,8 @@ namespace ToolKit
     {
       return -1;
     }
+
+    SetAndroidGameName();
 
     SetAndroidOptions();
 
