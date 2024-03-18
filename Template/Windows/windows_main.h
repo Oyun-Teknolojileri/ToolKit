@@ -14,6 +14,8 @@
 #include <chrono>
 #include <iostream>
 
+#define PLATFORM_SDL_FLAGS (SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI)
+
 namespace ToolKit
 {
   inline void PlatformPreInit(Main* g_proxy)

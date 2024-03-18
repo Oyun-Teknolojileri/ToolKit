@@ -23,6 +23,8 @@
 
 #define ANDROID_LOG(format, ...) __android_log_print(ANDROID_LOG_DEBUG, "TK_LOG", format, ##__VA_ARGS__)
 
+#define PLATFORM_SDL_FLAGS (SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI)
+
 #define TK_PLATFORM              PLATFORM::TKAndroid
 
 namespace ToolKit

@@ -105,7 +105,8 @@ namespace ToolKit
                            SDL_WINDOWPOS_UNDEFINED,
                            g_engineSettings->Window.Width,
                            g_engineSettings->Window.Height,
-                           SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+                           PLATFORM_SDL_FLAGS
+                           );
 
       if (g_window == nullptr)
       {
