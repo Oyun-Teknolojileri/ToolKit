@@ -82,7 +82,7 @@ namespace ToolKit
 
   XmlNode* Camera::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
-    if (m_version == TKV045)
+    if (m_version >= TKV045)
     {
       return DeSerializeImpV045(info, parent);
     }

@@ -569,7 +569,7 @@ namespace ToolKit
     String path = GetSerializeFile();
     DecomposePath(path, nullptr, &m_name, nullptr);
 
-    if (m_version == TKV045)
+    if (m_version >= TKV045)
     {
       DeSerializeImpV045(info, parent);
       return nullptr;
