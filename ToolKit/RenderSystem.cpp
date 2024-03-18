@@ -33,9 +33,17 @@ namespace ToolKit
     }
   }
 
-  RenderSystem::RenderSystem() { m_renderer = new Renderer(); }
+  RenderSystem::RenderSystem()
+  {
+    m_renderer    = new Renderer();
+    m_renderUtils = new RenderUtils(m_renderer);
+  }
 
-  RenderSystem::~RenderSystem() { SafeDel(m_renderer); }
+  RenderSystem::~RenderSystem()
+  {
+    SafeDel(m_renderer);
+    SafeDel(m_renderUtils);
+  }
 
   void RenderSystem::Init()
   {
@@ -198,5 +206,7 @@ namespace ToolKit
     glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
     m_backbufferFormatIsSRGB = (pixel[0] > 150);
   }
+
+  RenderUtils* RenderSystem::GetRenderUtils() { return m_renderUtils; }
 
 } // namespace ToolKit

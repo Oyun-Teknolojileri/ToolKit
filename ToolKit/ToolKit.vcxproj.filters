@@ -241,6 +241,9 @@
     <ClCompile Include="GameViewport.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="RenderUtils.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -512,6 +515,9 @@
     </ClInclude>
     <ClInclude Include="GameViewport.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderUtils.h">
+      <Filter>Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

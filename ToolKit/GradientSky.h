@@ -12,7 +12,6 @@
 
 namespace ToolKit
 {
-
   class TK_API GradientSky : public SkyBase
   {
    public:
@@ -25,6 +24,13 @@ namespace ToolKit
     MaterialPtr GetSkyboxMaterial() override;
 
     bool ReadyToRender() override;
+
+    /**
+     * This functions sets scene name of gradient sky.
+     * This function is being called while the Scene is initializing.
+     */
+    void SetSceneName(const String& sceneName);
+    void SaveIBLTexturesToFile();
 
    protected:
     void ParameterConstructor() override;
@@ -42,6 +48,8 @@ namespace ToolKit
    private:
     bool m_waitingForInit = false;
     FramebufferPtr m_frameBuffer;
+
+    String m_sceneName = "tempName"; //!< This variable is set when a scene inits gradient sky
   };
 
 } // namespace ToolKit

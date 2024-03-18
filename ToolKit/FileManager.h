@@ -39,6 +39,7 @@ namespace ToolKit
     bool CheckPakFile(); //!< Returns true if workspace contains pak file.
     String ReadAllText(const String& file);
     void WriteAllText(const String& file, const String& text);
+    void CreateDirectory(const String& dirPath);
 
    private:
     typedef std::variant<XmlFilePtr, uint8*, float*> FileDataType;

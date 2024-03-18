@@ -68,6 +68,11 @@ namespace ToolKit
     return stbi_write_png(filename, x, y, comp, data, stride_bytes);
   }
 
+  int WriteHDR(const char* filename, int x, int y, int comp, const float* data)
+  {
+    return stbi_write_hdr(filename, x, y, comp, data);
+  }
+
   void ImageSetVerticalOnLoad(bool val) { stbi_set_flip_vertically_on_load(val); }
 
   void ImageFree(void* img) { stbi_image_free(img); }

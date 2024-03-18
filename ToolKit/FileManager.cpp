@@ -755,4 +755,12 @@ namespace ToolKit
 
     return true;
   }
+
+  void FileManager::CreateDirectory(const String& dirPath)
+  {
+    if (!std::filesystem::exists(dirPath))
+    {
+      std::filesystem::create_directory(dirPath);
+    }
+  }
 } // namespace ToolKit

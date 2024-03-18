@@ -66,6 +66,7 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RenderState.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
+    <ClCompile Include="RenderUtils.cpp" />
     <ClCompile Include="Resource.cpp" />
     <ClCompile Include="ResourceComponent.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="Pass.h" />
     <ClInclude Include="PostProcessPass.h" />
     <ClInclude Include="RenderSystem.h" />
+    <ClInclude Include="RenderUtils.h" />
     <ClInclude Include="RHI.h" />
     <ClInclude Include="SceneRenderPath.h" />
     <ClInclude Include="Light.h" />

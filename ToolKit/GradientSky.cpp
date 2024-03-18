@@ -82,6 +82,25 @@ namespace ToolKit
 
   bool GradientSky::ReadyToRender() { return m_skyboxMaterial != nullptr; }
 
+  void GradientSky::SetSceneName(const String& sceneName) { m_sceneName = sceneName; }
+
+  void GradientSky::SaveIBLTexturesToFile()
+  {
+    // TODO make this directory global variable (as Textures, Meshes, etc.)
+    String cacheDirPath  = ConcatPaths({ResourcePath(), "IBLTexturesCache"});
+    String cacheFilePath = ConcatPaths({cacheDirPath, m_sceneName});
+
+    if (!m_initialized)
+    {
+      return;
+    }
+
+    // Diffuse texture
+    GetRenderSystem()->GetRenderUtils()->SaveCubemapToFileRGBAFloat(cacheFilePath, GetHdri()->m_diffuseEnvMap, 0);
+
+    // Specular textures
+  }
+
   void GradientSky::ParameterConstructor()
   {
     Super::ParameterConstructor();

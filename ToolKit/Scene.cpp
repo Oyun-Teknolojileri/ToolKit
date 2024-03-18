@@ -11,6 +11,7 @@
 #include "EngineSettings.h"
 #include "EnvironmentComponent.h"
 #include "FileManager.h"
+#include "GradientSky.h"
 #include "Logger.h"
 #include "MathUtil.h"
 #include "Mesh.h"
@@ -85,6 +86,11 @@ namespace ToolKit
       if (SkyBase* sky = ntt->As<SkyBase>())
       {
         sky->Init();
+
+        if (GradientSky* gradientSky = sky->As<GradientSky>())
+        {
+          gradientSky->SetSceneName(m_name);
+        }
       }
       else if (ntt->IsDrawable())
       {

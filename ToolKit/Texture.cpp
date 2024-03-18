@@ -327,16 +327,16 @@ namespace ToolKit
 
     assert(targetTextureSettings.Target == GraphicTypes::TargetCubeMap);
 
-    m_textureId                    = cubeMapTarget->m_textureId;
-    m_width                        = cubeMapTarget->m_width;
-    m_height                       = cubeMapTarget->m_height;
+    m_textureId                = cubeMapTarget->m_textureId;
+    m_width                    = cubeMapTarget->m_width;
+    m_height                   = cubeMapTarget->m_height;
 
-    m_settings                     = targetTextureSettings;
-    m_initiated                    = true;
+    m_settings                 = targetTextureSettings;
+    m_initiated                = true;
 
-    cubeMapTarget->m_initiated     = false;
-    cubeMapTarget->m_textureId     = 0;
-    cubeMapTarget                  = nullptr;
+    cubeMapTarget->m_initiated = false;
+    cubeMapTarget->m_textureId = 0;
+    cubeMapTarget              = nullptr;
   }
 
   void CubeMap::Load()
