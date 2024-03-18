@@ -177,7 +177,9 @@
     <ClCompile Include="StatsView.cpp">
       <Filter>UI\View</Filter>
     </ClCompile>
-    <ClCompile Include="EditorApi.cpp" />
+    <ClCompile Include="EditorApi.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mod.h">
