@@ -10,6 +10,7 @@
 #include "App.h"
 #include "EditorScene.h"
 #include "EditorViewport.h"
+#include "EditorViewport2d.h"
 #include "Gizmo.h"
 
 #include <Camera.h>
@@ -246,7 +247,7 @@ namespace ToolKit
       m_billboardPass->m_params.Viewport = m_params.Viewport;
 
       // Grid.
-      GridPtr grid = m_params.Viewport->GetType() == Window::Type::Viewport2d ? app->m_2dGrid : app->m_grid;
+      GridPtr grid                       = m_params.Viewport->IsA<EditorViewport2d>() ? app->m_2dGrid : app->m_grid;
 
       grid->UpdateShaderParams();
       editorEntities.push_back(grid);
@@ -308,7 +309,7 @@ namespace ToolKit
       m_gizmoPass->m_params.Viewport                          = viewport;
 
       EditorBillboardPtr anchorGizmo                          = nullptr;
-      if (viewport->GetType() == Window::Type::Viewport2d)
+      if (viewport->IsA<EditorViewport2d>())
       {
         anchorGizmo = app->m_anchor;
       }

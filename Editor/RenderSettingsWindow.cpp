@@ -5,7 +5,7 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#include "RenderSettingsView.h"
+#include "RenderSettingsWindow.h"
 
 #include "App.h"
 
@@ -17,13 +17,14 @@ namespace ToolKit
 {
   namespace Editor
   {
-    RenderSettingsView::RenderSettingsView() { m_name = g_renderSettings; }
 
-    RenderSettingsView::~RenderSettingsView() {}
+    TKDefineClass(RenderSettingsWindow, Window);
 
-    Window::Type RenderSettingsView::GetType() const { return Window::Type::RenderSettings; }
+    RenderSettingsWindow::RenderSettingsWindow() { m_name = g_renderSettings; }
 
-    void RenderSettingsView::Show()
+    RenderSettingsWindow::~RenderSettingsWindow() {}
+
+    void RenderSettingsWindow::Show()
     {
       EngineSettings& engineSettings = GetEngineSettings();
 

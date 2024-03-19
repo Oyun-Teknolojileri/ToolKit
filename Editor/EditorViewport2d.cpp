@@ -19,7 +19,10 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     Overlay2DTopBar* m_2dViewOptions = nullptr;
+
+    TKDefineClass(EditorViewport2d, EditorViewport);
 
     EditorViewport2d::EditorViewport2d() { Init({640.0f, 480.0f}); }
 
@@ -58,8 +61,6 @@ namespace ToolKit
 
       m_snapDeltas = Vec3(10.0f, 45.0f, 0.25f);
     }
-
-    Window::Type EditorViewport2d::GetType() const { return Type::Viewport2d; }
 
     void EditorViewport2d::Update(float deltaTime)
     {

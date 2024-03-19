@@ -8,12 +8,15 @@
 #include "Window.h"
 
 #include "Action.h"
+#include "MathUtil.h"
 #include "Mod.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
+
+    TKDefineClass(Window, Object);
 
     Window::Window()
     {
@@ -34,12 +37,6 @@ namespace ToolKit
     bool Window::MouseHovers() const { return m_mouseHover; }
 
     bool Window::CanDispatchSignals() const { return m_active && m_visible && m_mouseHover; }
-
-    bool Window::IsViewport() const
-    {
-      Type t = GetType();
-      return t == Type::Viewport || t == Type::Viewport2d;
-    }
 
     void Window::DispatchSignals() const {}
 
@@ -163,7 +160,7 @@ namespace ToolKit
       m_active = true;
       ImGui::SetWindowFocus();
 
-      if (IsViewport())
+      if (IsA<EditorViewport>())
       {
         g_app->m_lastActiveViewport = static_cast<EditorViewport*>(this);
       }

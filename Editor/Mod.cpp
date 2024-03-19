@@ -9,6 +9,7 @@
 
 #include "AnchorMod.h"
 #include "App.h"
+#include "EditorViewport2d.h"
 #include "TransformMod.h"
 
 #include <Camera.h>
@@ -270,14 +271,13 @@ namespace ToolKit
       EntityPtrArray ignores;
       if (EditorViewport* vp = g_app->GetActiveViewport())
       {
-        if (vp->GetType() == Window::Type::Viewport)
-        {
-          ignores = g_app->GetCurrentScene()->Filter([](EntityPtr ntt) -> bool { return ntt->IsA<Surface>(); });
-        }
-
-        if (vp->GetType() == Window::Type::Viewport2d)
+        if (vp->IsA<EditorViewport2d>())
         {
           ignores = g_app->GetCurrentScene()->Filter([](EntityPtr ntt) -> bool { return !ntt->IsA<Surface>(); });
+        }
+        else if (vp->IsA<EditorViewport>())
+        {
+          ignores = g_app->GetCurrentScene()->Filter([](EntityPtr ntt) -> bool { return ntt->IsA<Surface>(); });
         }
       }
 
@@ -508,10 +508,12 @@ namespace ToolKit
 
     SignalId StateDeletePick::Update(float deltaTime)
     {
-      Window::Type activeType = g_app->GetActiveWindow()->GetType();
-      if // Stop text edit deletes to remove entities.
-          (activeType != Window::Type::Viewport && activeType != Window::Type::Viewport2d &&
-           activeType != Window::Type::Outliner)
+      Window* activeWnd = g_app->GetActiveWindow();
+
+      // Delete in the text edit, deletes the entities.
+      // Make sure delete is pressed only the given windows.
+      // TODO: Add Window a function that returns true if editing text. Window::IsEditingText()
+      if (!activeWnd->IsA<EditorViewport>() && !activeWnd->IsA<OutlinerWindow>())
       {
         return NullSignal;
       }

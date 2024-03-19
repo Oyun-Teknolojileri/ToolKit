@@ -29,7 +29,7 @@ namespace ToolKit
       void ShowMaterial(MaterialPtr m_mat);
 
      private:
-      PreviewViewport* m_viewport = nullptr;
+      class PreviewViewport* m_viewport = nullptr;
       MaterialPtrArray m_materials;
       uint m_activeObjectIndx    = 0;
       int m_currentMaterialIndex = 0;

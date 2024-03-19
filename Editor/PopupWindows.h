@@ -14,13 +14,16 @@ namespace ToolKit
   namespace Editor
   {
 
+    // StringInputWindow
+    //////////////////////////////////////////////////////////////////////////
+
     class StringInputWindow : public Window
     {
      public:
+      TKDeclareClass(StringInputWindow, Window);
+
       StringInputWindow(const String& name, bool showCancel);
       void Show() override;
-
-      Type GetType() const override { return Window::Type::InputPopup; }
 
      public:
       std::function<void(const String& val)> m_taskFn;
@@ -34,18 +37,21 @@ namespace ToolKit
       bool m_showCancel;
     };
 
+    // YesNoWindow
+    //////////////////////////////////////////////////////////////////////////
+
     class YesNoWindow : public Window
     {
      public:
-      explicit YesNoWindow(const String& name, const String& msg = "");
+      TKDeclareClass(YesNoWindow, Window);
+
+      YesNoWindow(const String& name, const String& msg = "");
       YesNoWindow(const String& name,
                   const String& yesBtnText,
                   const String& noBtnText,
                   const String& msg,
                   bool showCancel);
       void Show() override;
-
-      Type GetType() const override { return Window::Type::InputPopup; }
 
      public:
       std::function<void()> m_yesCallback;
@@ -56,9 +62,14 @@ namespace ToolKit
       bool m_showCancel = false;
     };
 
+    // MultiChoiceWindow
+    //////////////////////////////////////////////////////////////////////////
+
     class MultiChoiceWindow : public Window
     {
      public:
+      TKDeclareClass(MultiChoiceWindow, Window);
+
       struct ButtonInfo
       {
         String m_name;
@@ -68,8 +79,6 @@ namespace ToolKit
       explicit MultiChoiceWindow(const String& name, const String& msg = "");
       MultiChoiceWindow(const String& name, const std::vector<ButtonInfo>& buttons, const String& msg, bool showCancel);
       void Show() override;
-
-      Type GetType() const override { return Window::Type::InputPopup; }
 
      public:
       std::vector<ButtonInfo> m_buttons;

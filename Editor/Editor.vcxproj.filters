@@ -99,9 +99,6 @@
     <ClCompile Include="MeshView.cpp">
       <Filter>UI\View</Filter>
     </ClCompile>
-    <ClCompile Include="RenderSettingsView.cpp">
-      <Filter>UI\View</Filter>
-    </ClCompile>
     <ClCompile Include="Thumbnail.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -183,6 +180,15 @@
     <ClCompile Include="Window.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="View.cpp">
+      <Filter>UI\View</Filter>
+    </ClCompile>
+    <ClCompile Include="PreviewViewport.cpp">
+      <Filter>UI\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderSettingsWindow.cpp">
+      <Filter>UI\Window</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mod.h">
@@ -243,9 +249,6 @@
       <Filter>UI\View</Filter>
     </ClInclude>
     <ClInclude Include="MeshView.h">
-      <Filter>UI\View</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderSettingsView.h">
       <Filter>UI\View</Filter>
     </ClInclude>
     <ClInclude Include="Thumbnail.h">
@@ -328,6 +331,15 @@
     </ClInclude>
     <ClInclude Include="Window.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="View.h">
+      <Filter>UI\View</Filter>
+    </ClInclude>
+    <ClInclude Include="PreviewViewport.h">
+      <Filter>UI\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSettingsWindow.h">
+      <Filter>UI\Window</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

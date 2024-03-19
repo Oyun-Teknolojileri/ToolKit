@@ -29,6 +29,8 @@ namespace ToolKit
     class EditorViewport : public Viewport, public Window
     {
      public:
+      TKDeclareClass(EditorViewport, Window);
+
       EditorViewport();
       virtual ~EditorViewport();
 
@@ -36,7 +38,6 @@ namespace ToolKit
 
       // Window Overrides.
       void Show() override;
-      Type GetType() const override;
       void Update(float deltaTime) override;
       bool IsViewportQueriable() const;
       void DispatchSignals() const override;
@@ -103,7 +104,7 @@ namespace ToolKit
       Vec2 m_contentAreaMin;
       Vec2 m_contentAreaMax;
       IVec2 m_mousePosBegin;
-      bool m_needsResize = false;
+      bool m_needsResize          = false;
       bool m_mouseOverContentArea = false;
 
      private:

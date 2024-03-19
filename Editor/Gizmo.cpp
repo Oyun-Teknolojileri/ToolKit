@@ -773,7 +773,7 @@ namespace ToolKit
         m_handles[i]->m_mesh = nullptr;
       }
 
-      EditorViewport2d* viewport2D = dynamic_cast<EditorViewport2d*>(g_app->GetActiveViewport());
+      EditorViewport2d* viewport2D = g_app->GetActiveViewport()->As<EditorViewport2d>();
       for (int i = 0; i < 3; i++)
       {
         // If gizmo is in 2D view, just generate Z axis
@@ -781,6 +781,7 @@ namespace ToolKit
         {
           continue;
         }
+
         if (m_grabbedAxis == static_cast<AxisLabel>(i))
         {
           p.color = g_selectHighLightPrimaryColor;

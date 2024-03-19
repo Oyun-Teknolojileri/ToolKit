@@ -99,6 +99,8 @@ namespace ToolKit
 
     RenderTargetPtr DirectoryEntry::GetThumbnail() const { return g_app->m_thumbnailManager.GetThumbnail(*this); }
 
+    TKDefineClass(FolderWindow, Window);
+
     FolderWindow::FolderWindow() {}
 
     FolderWindow::~FolderWindow() {}
@@ -362,8 +364,6 @@ namespace ToolKit
 
       ImGui::End();
     }
-
-    Window::Type FolderWindow::GetType() const { return Window::Type::Browser; }
 
     void FolderWindow::Iterate(const String& path, bool clear, bool addEngine)
     {

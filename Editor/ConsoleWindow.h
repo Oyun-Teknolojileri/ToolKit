@@ -93,10 +93,11 @@ namespace ToolKit
     class ConsoleWindow : public Window
     {
      public:
+      TKDeclareClass(ConsoleWindow, Window);
+
       ConsoleWindow();
       virtual ~ConsoleWindow();
       void Show() override;
-      Type GetType() const override;
 
       void AddLog(const String& log, LogType type = LogType::Memo);
       void AddLog(const String& log, const String& tag);

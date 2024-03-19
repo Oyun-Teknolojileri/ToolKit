@@ -15,10 +15,11 @@ namespace ToolKit
     class StatsView : public Window
     {
      public:
+      TKDeclareClass(StatsView, Window);
+
       StatsView();
       virtual ~StatsView();
       virtual void Show();
-      Type GetType() const override;
     };
 
   } // namespace Editor

@@ -31,6 +31,8 @@ namespace ToolKit
   namespace Editor
   {
 
+    TKDefineClass(EditorViewport, Window);
+
     std::vector<OverlayUI*> EditorViewport::m_overlays = {nullptr, nullptr, nullptr, nullptr};
 
     void InitOverlays(EditorViewport* viewport)
@@ -105,8 +107,6 @@ namespace ToolKit
       FpsNavigationMod(deltaTime);
       OrbitPanMod(deltaTime);
     }
-
-    Window::Type EditorViewport::GetType() const { return Type::Viewport; }
 
     bool EditorViewport::IsViewportQueriable() const
     {

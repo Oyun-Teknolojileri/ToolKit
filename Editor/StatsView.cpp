@@ -15,9 +15,10 @@ namespace ToolKit
 {
   namespace Editor
   {
-    StatsView::StatsView() { m_name = g_statsView; }
 
-    Window::Type StatsView::GetType() const { return Type::Stats; }
+    TKDefineClass(StatsView, Window);
+
+    StatsView::StatsView() { m_name = g_statsView; }
 
     StatsView::~StatsView() {}
 
@@ -40,5 +41,6 @@ namespace ToolKit
       }
       ImGui::End();
     }
+
   } // namespace Editor
 } // namespace ToolKit

@@ -9,6 +9,7 @@
 
 #include "AndroidBuildWindow.h"
 #include "App.h"
+#include "EditorViewport2d.h"
 #include "PopupWindows.h"
 
 #include <Audio.h>
@@ -655,12 +656,12 @@ namespace ToolKit
 
     void UI::ShowMenuWindows()
     {
-      auto handleMultiWindowFn = [](Window::Type windowType) -> void
+      auto handleMultiWindowFn = [](ClassMeta* Class) -> void
       {
         for (int i = (int) (g_app->m_windows.size()) - 1; i >= 0; i--)
         {
           Window* wnd = g_app->m_windows[i];
-          if (wnd->GetType() != windowType)
+          if (wnd->Class() != Class)
           {
             continue;
           }
@@ -707,8 +708,8 @@ namespace ToolKit
 
       if (ImGui::BeginMenu("Viewport"))
       {
-        handleMultiWindowFn(Window::Type::Viewport);
-        handleMultiWindowFn(Window::Type::Viewport2d);
+        handleMultiWindowFn(EditorViewport::StaticClass());
+        handleMultiWindowFn(EditorViewport2d::StaticClass());
 
         if (ImGui::MenuItem("Add Viewport", "Alt+V"))
         {
@@ -722,7 +723,7 @@ namespace ToolKit
 
       if (ImGui::BeginMenu("Resource Window"))
       {
-        handleMultiWindowFn(Window::Type::Browser);
+        handleMultiWindowFn(FolderWindow::StaticClass());
 
         if (ImGui::MenuItem("Add Browser", "Alt+B"))
         {
@@ -760,20 +761,20 @@ namespace ToolKit
         }
       }
 
-      if (g_app->GetRenderSettingsView() == nullptr)
+      if (g_app->GetRenderSettingsWindow() == nullptr)
       {
         if (ImGui::MenuItem(g_renderSettings.c_str()))
         {
           g_app->AddRenderSettingsView();
-          g_app->GetRenderSettingsView()->SetVisibility(true);
+          g_app->GetRenderSettingsWindow()->SetVisibility(true);
         }
       }
       else if (ImGui::MenuItem(g_renderSettings.c_str(),
                                nullptr,
                                nullptr,
-                               !g_app->GetRenderSettingsView()->IsVisible()))
+                               !g_app->GetRenderSettingsWindow()->IsVisible()))
       {
-        g_app->GetRenderSettingsView()->SetVisibility(true);
+        g_app->GetRenderSettingsWindow()->SetVisibility(true);
       }
 
       if (g_app->GetStatsView() == nullptr)

@@ -13,13 +13,14 @@ namespace ToolKit
   namespace Editor
   {
 
-    class RenderSettingsView : public Window
+    class RenderSettingsWindow : public Window
     {
      public:
-      RenderSettingsView();
-      virtual ~RenderSettingsView();
-      virtual void Show();
-      Type GetType() const override;
+      TKDeclareClass(RenderSettingsWindow, Window);
+
+      RenderSettingsWindow();
+      virtual ~RenderSettingsWindow();
+      void Show() override;
     };
 
   } // namespace Editor

@@ -7,14 +7,19 @@
 
 #pragma once
 
+#include <Object.h>
+#include <Types.h>
+
 namespace ToolKit
 {
   namespace Editor
   {
 
-    class Window : public Serializable
+    class Window : public Object
     {
      public:
+      TKDeclareClass(Window, Object);
+
       enum class Type
       {
         Viewport       = 0,
@@ -33,8 +38,7 @@ namespace ToolKit
      public:
       Window();
       virtual ~Window();
-      virtual void Show()          = 0;
-      virtual Type GetType() const = 0;
+      virtual void Show() = 0;
       void SetVisibility(bool visible);
 
       // Window queries.
@@ -43,7 +47,6 @@ namespace ToolKit
       bool IsMoving() const;
       bool MouseHovers() const;
       bool CanDispatchSignals() const; // If active & visible & mouse hovers.
-      bool IsViewport() const;
 
       // System calls.
       virtual void DispatchSignals() const;

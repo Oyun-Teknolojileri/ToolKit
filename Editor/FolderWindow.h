@@ -82,7 +82,7 @@ namespace ToolKit
       // Indicates this is a root folder (one level under Resources)
       bool m_root            = false;
       // States if the tab is visible.
-      // Doesnt necesserly mean active, its just a tab in the FolderView.
+      // Doesn't necessarily mean active, its just a tab in the FolderView.
       bool m_visible         = false;
       bool m_active          = false; // Active tab, whose content is being displayed.
       // Always false. When set to true,
@@ -117,10 +117,11 @@ namespace ToolKit
     class FolderWindow : public Window
     {
      public:
+      TKDeclareClass(FolderWindow, Window);
+
       FolderWindow();
       virtual ~FolderWindow();
       void Show() override;
-      Type GetType() const override;
       void UpdateContent();
       FolderView& GetView(int indx);
       // Returns root level active view, if deep is true,

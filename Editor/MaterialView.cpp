@@ -9,6 +9,7 @@
 
 #include "App.h"
 #include "EditorViewport.h"
+#include "PreviewViewport.h"
 
 #include <DirectionComponent.h>
 #include <FileManager.h>

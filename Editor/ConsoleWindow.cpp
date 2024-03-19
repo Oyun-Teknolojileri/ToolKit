@@ -23,6 +23,8 @@ namespace ToolKit
   namespace Editor
   {
 
+    TKDefineClass(ConsoleWindow, Window);
+
     TagArgCIt GetTag(const String& tag, const TagArgArray& tagArgs)
     {
       for (TagArgArray::const_iterator ta = tagArgs.cbegin(); ta != tagArgs.cend(); ta++)
@@ -796,8 +798,6 @@ namespace ToolKit
       }
       ImGui::End();
     }
-
-    Window::Type ConsoleWindow::GetType() const { return Type::Console; }
 
     void ConsoleWindow::AddLog(const String& log, LogType type)
     {

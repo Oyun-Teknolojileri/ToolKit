@@ -15,6 +15,12 @@ namespace ToolKit
 {
   namespace Editor
   {
+
+    // StringInputWindow
+    //////////////////////////////////////////////////////////////////////////
+
+    TKDefineClass(StringInputWindow, Window);
+
     StringInputWindow::StringInputWindow(const String& name, bool showCancel)
     {
       m_name       = name;
@@ -99,6 +105,11 @@ namespace ToolKit
       }
       return 0;
     }
+
+    // YesNoWindow
+    //////////////////////////////////////////////////////////////////////////
+
+    TKDefineClass(YesNoWindow, Window);
 
     YesNoWindow::YesNoWindow(const String& name, const String& msg)
     {
@@ -185,6 +196,11 @@ namespace ToolKit
         ImGui::EndPopup();
       }
     }
+
+    // MultiChoiceWindow
+    //////////////////////////////////////////////////////////////////////////
+
+    TKDefineClass(MultiChoiceWindow, Window);
 
     MultiChoiceWindow::MultiChoiceWindow(const String& name, const String& msg)
     {

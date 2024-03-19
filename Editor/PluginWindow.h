@@ -54,11 +54,12 @@ namespace ToolKit
     class PluginWindow : public Window
     {
      public:
+      TKDeclareClass(PluginWindow, Window);
+
       PluginWindow();
       virtual ~PluginWindow();
 
       void Show() override;
-      Type GetType() const override;
 
      private:
       void UpdateSimulationWndSize();

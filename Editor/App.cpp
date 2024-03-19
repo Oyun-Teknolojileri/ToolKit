@@ -202,9 +202,9 @@ namespace ToolKit
       EditorViewportRawPtrArray viewports;
       for (Window* wnd : m_windows)
       {
-        if (wnd->IsViewport())
+        if (EditorViewport* edView = wnd->As<EditorViewport>())
         {
-          viewports.push_back(static_cast<EditorViewport*>(wnd));
+          viewports.push_back(edView);
         }
 
         bool skipDispatch = false;
@@ -692,9 +692,9 @@ namespace ToolKit
 
       for (Window* wnd : m_windows)
       {
-        if (wnd->IsViewport())
+        if (EditorViewport* edView = wnd->As<EditorViewport>())
         {
-          static_cast<EditorViewport*>(wnd)->m_editorRenderer = MakeNewPtr<EditorRenderer>();
+          edView->m_editorRenderer = MakeNewPtr<EditorRenderer>();
         }
       }
 
@@ -826,7 +826,7 @@ namespace ToolKit
 
         m_windows.push_back(new PluginWindow());
 
-        m_windows.push_back(new RenderSettingsView());
+        m_windows.push_back(new RenderSettingsWindow());
 
         CreateSimulationWindow(m_simulatorSettings.Width, m_simulatorSettings.Height);
       }
@@ -883,7 +883,7 @@ namespace ToolKit
             wnd = new EditorViewport2d();
             break;
           case Window::Type::RenderSettings:
-            wnd = new RenderSettingsView();
+            wnd = new RenderSettingsWindow();
             break;
           case Window::Type::Stats:
             wnd = new StatsView();
@@ -1313,9 +1313,7 @@ namespace ToolKit
     {
       for (Window* wnd : m_windows)
       {
-        Window::Type type = wnd->GetType();
-
-        if (type != Window::Type::Viewport && type != Window::Type::Viewport2d)
+        if (!wnd->IsA<EditorViewport>())
         {
           continue;
         }
@@ -1335,7 +1333,7 @@ namespace ToolKit
       {
         if (wnd->m_name == name)
         {
-          return dynamic_cast<EditorViewport*>(wnd);
+          return wnd->As<EditorViewport>();
         }
       }
 
@@ -1346,9 +1344,9 @@ namespace ToolKit
     {
       for (Window* wnd : m_windows)
       {
-        if (wnd->GetType() == Window::Type::Console)
+        if (ConsoleWindow* consoleWnd = wnd->As<ConsoleWindow>())
         {
-          return static_cast<ConsoleWindow*>(wnd);
+          return consoleWnd;
         }
       }
 
@@ -1361,11 +1359,11 @@ namespace ToolKit
 
     PropInspector* App::GetPropInspector() { return GetWindow<PropInspector>(g_propInspector); }
 
-    RenderSettingsView* App::GetRenderSettingsView() { return GetWindow<RenderSettingsView>(g_renderSettings); }
+    RenderSettingsWindow* App::GetRenderSettingsWindow() { return GetWindow<RenderSettingsWindow>(g_renderSettings); }
 
     StatsView* App::GetStatsView() { return GetWindow<StatsView>(g_statsView); }
 
-    void App::AddRenderSettingsView() { m_windows.push_back(new RenderSettingsView()); }
+    void App::AddRenderSettingsView() { m_windows.push_back(new RenderSettingsWindow()); }
 
     void App::AddStatsView() { m_windows.push_back(new StatsView()); }
 

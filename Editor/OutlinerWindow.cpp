@@ -24,6 +24,8 @@ namespace ToolKit
   namespace Editor
   {
 
+    TKDefineClass(OutlinerWindow, Window);
+
     OutlinerWindow::OutlinerWindow() {}
 
     OutlinerWindow::~OutlinerWindow() {}
@@ -599,8 +601,6 @@ namespace ToolKit
 
       ImGui::End();
     }
-
-    Window::Type OutlinerWindow::GetType() const { return Window::Type::Outliner; }
 
     void OutlinerWindow::DispatchSignals() const { ModShortCutSignals(); }
 

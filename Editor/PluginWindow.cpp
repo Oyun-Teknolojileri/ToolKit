@@ -18,6 +18,9 @@ namespace ToolKit
 {
   namespace Editor
   {
+
+    TKDefineClass(PluginWindow, Window);
+
     PluginWindow::PluginWindow()
     {
       m_name               = "Plugin";
@@ -76,8 +79,6 @@ namespace ToolKit
       ImGui::End();
       ImGui::PopStyleVar();
     }
-
-    Window::Type PluginWindow::GetType() const { return Type::PluginWindow; }
 
     void PluginWindow::UpdateSimulationWndSize()
     {

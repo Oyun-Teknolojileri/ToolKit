@@ -20,7 +20,7 @@
 #include "PluginWindow.h"
 #include "PropInspector.h"
 #include "PublishManager.h"
-#include "RenderSettingsView.h"
+#include "RenderSettingsWindow.h"
 #include "StatsView.h"
 #include "Thumbnail.h"
 #include "Workspace.h"
@@ -114,7 +114,7 @@ namespace ToolKit
       FolderWindowRawPtrArray GetAssetBrowsers();
       OutlinerWindow* GetOutliner();
       PropInspector* GetPropInspector();
-      RenderSettingsView* GetRenderSettingsView();
+      RenderSettingsWindow* GetRenderSettingsWindow();
       StatsView* GetStatsView();
       void AddRenderSettingsView();
       void AddStatsView();
@@ -124,8 +124,7 @@ namespace ToolKit
       {
         for (Window* wnd : m_windows)
         {
-          T* casted = dynamic_cast<T*>(wnd);
-          if (casted)
+          if (T* casted = wnd->As<T>())
           {
             if (casted->m_name == name)
             {
@@ -143,8 +142,7 @@ namespace ToolKit
         std::vector<T*> list;
         for (Window* wnd : m_windows)
         {
-          T* casted = dynamic_cast<T*>(wnd);
-          if (casted)
+          if (T* casted = wnd->As<T>())
           {
             String nameWithoutId = casted->m_name.substr(0, casted->m_name.find_first_of('#'));
             if (nameWithoutId == name)
