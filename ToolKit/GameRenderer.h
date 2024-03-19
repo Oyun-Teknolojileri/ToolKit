@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GammaPass.h"
 #include "MobileSceneRenderPath.h"
 #include "Scene.h"
 #include "SceneRenderPath.h"
@@ -43,7 +44,7 @@ namespace ToolKit
     void Render(Renderer* renderer) override;
 
    private:
-    void PreRender();
+    void PreRender(Renderer* renderer);
     void PostRender(Renderer* renderer);
 
     GameRendererParams m_params;
