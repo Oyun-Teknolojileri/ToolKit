@@ -27,8 +27,6 @@ namespace ToolKit
     PassPtrArray m_passArray;
   };
 
-  typedef std::shared_ptr<RenderPath> TechniquePtr;
-
   typedef std::function<void(Renderer*)> RenderTaskFn;
   typedef std::function<void()> RenderTaskOnComplatedFn;
 
@@ -58,7 +56,6 @@ namespace ToolKit
 
     void Init();
     void AddRenderTask(RenderPath* technique);
-    void AddRenderTask(TechniquePtr technique);
     void AddRenderTask(RenderTask task);
     void ExecuteRenderTasks();
     void FlushRenderTasks();
