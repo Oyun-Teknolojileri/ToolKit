@@ -48,11 +48,6 @@ namespace ToolKit
     AddRenderTask({[technique](Renderer* renderer) -> void { technique->Render(renderer); }});
   }
 
-  void RenderSystem::AddRenderTask(TechniquePtr technique)
-  {
-    AddRenderTask({[technique](Renderer* renderer) -> void { technique->Render(renderer); }});
-  }
-
   void RenderSystem::AddRenderTask(RenderTask task)
   {
     switch (task.Priority)

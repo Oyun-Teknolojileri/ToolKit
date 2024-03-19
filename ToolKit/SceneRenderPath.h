@@ -15,7 +15,6 @@
 #include "ForwardPreProcessPass.h"
 #include "FxaaPass.h"
 #include "GBufferPass.h"
-#include "GammaPass.h"
 #include "Pass.h"
 #include "RenderSystem.h"
 #include "ShadowPass.h"
@@ -62,7 +61,6 @@ namespace ToolKit
     GBufferPassPtr m_gBufferPass                     = nullptr;
     SSAOPassPtr m_ssaoPass                           = nullptr;
     FXAAPassPtr m_fxaaPass                           = nullptr;
-    GammaPassPtr m_gammaPass                         = nullptr;
     BloomPassPtr m_bloomPass                         = nullptr;
     TonemapPassPtr m_tonemapPass                     = nullptr;
     DoFPassPtr m_dofPass                             = nullptr;
