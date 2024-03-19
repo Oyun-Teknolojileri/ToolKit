@@ -30,7 +30,7 @@ namespace ToolKit
 
     XmlFilePtr GetXmlFile(const String& filePath);
     uint8* GetImageFile(const String& filePath, int* x, int* y, int* comp, int reqComp);
-    float* GetHdriFile(const String& filePath, int* x, int* y, int* comp, int reqComp);
+    float* GetHdriFile(const String& filePath, int* x, int* y, int* comp, int reqComp, bool flipOnLoad = true);
 
     int PackResources(const String& path);
     void CloseZipFile();
@@ -39,6 +39,10 @@ namespace ToolKit
     bool CheckPakFile(); //!< Returns true if workspace contains pak file.
     String ReadAllText(const String& file);
     void WriteAllText(const String& file, const String& text);
+
+    /**
+     * Creates the given directory.
+     */
     void CreateDirectory(const String& dirPath);
 
    private:
@@ -85,6 +89,8 @@ namespace ToolKit
     std::unordered_map<String, std::pair<ZPOS64_T, uint32_t>> m_zipFilesOffsetTable;
     bool m_offsetTableCreated = false;
     zipFile m_zfile           = nullptr;
+
+    bool m_flipHdriOnLoad     = true;
 
    public:
     bool m_ignorePakFile = false;

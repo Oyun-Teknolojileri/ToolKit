@@ -54,11 +54,16 @@ namespace ToolKit
     return std::get<uint8*>(data);
   }
 
-  float* FileManager::GetHdriFile(const String& filePath, int* x, int* y, int* comp, int reqComp)
+  float* FileManager::GetHdriFile(const String& filePath, int* x, int* y, int* comp, int reqComp, bool flipOnLoad)
   {
+    m_flipHdriOnLoad       = flipOnLoad;
+
     String path            = filePath;
     ImageFileInfo fileInfo = {path, x, y, comp, reqComp};
     FileDataType data      = GetFile(FileType::ImageFloat, fileInfo);
+
+    m_flipHdriOnLoad       = true;
+
     return std::get<float*>(data);
   }
 
@@ -89,7 +94,10 @@ namespace ToolKit
       }
       else if (fileType == FileType::ImageFloat)
       {
-        ImageSetVerticalOnLoad(true);
+        if (m_flipHdriOnLoad)
+        {
+          ImageSetVerticalOnLoad(true);
+        }
         float* img = ReadHdriFileFromZip(m_zfile, relativePath, fileInfo);
         ImageSetVerticalOnLoad(false);
         return img;
@@ -112,7 +120,10 @@ namespace ToolKit
       }
       else if (fileType == FileType::ImageFloat)
       {
-        ImageSetVerticalOnLoad(true);
+        if (m_flipHdriOnLoad)
+        {
+          ImageSetVerticalOnLoad(true);
+        }
         float* img = ImageLoadF(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
         ImageSetVerticalOnLoad(false);
         return img;

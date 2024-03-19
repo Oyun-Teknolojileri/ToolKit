@@ -35,6 +35,7 @@ namespace ToolKit
    protected:
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
+    bool GetIBLTexturesFromCache();
     void GenerateGradientCubemap(Renderer* renderer);
     void GenerateIrradianceCubemap(Renderer* renderer);
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
@@ -44,6 +45,7 @@ namespace ToolKit
     TKDeclareParam(Vec3, MiddleColor);
     TKDeclareParam(Vec3, BottomColor);
     TKDeclareParam(float, GradientExponent);
+    TKDeclareParam(bool, UseCachedEnvLight);
 
    private:
     bool m_waitingForInit = false;

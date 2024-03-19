@@ -143,6 +143,12 @@ namespace ToolKit
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
+
+    /**
+     * @return true if hdri could be initalized, false otherwise
+     * Initializes the hdri from ibl cache
+     */
+    bool InitFromCache(const String& fileName);
     void UnInit() override;
 
     bool IsTextureAssigned();

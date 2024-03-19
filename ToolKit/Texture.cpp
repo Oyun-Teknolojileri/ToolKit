@@ -548,6 +548,117 @@ namespace ToolKit
     m_waitingForInit = true;
   }
 
+  bool Hdri::InitFromCache(const String& fileName)
+  {
+    if (m_initiated)
+    {
+      // TODO check if comes here (it should not)
+      UnInit();
+    }
+
+    // TODO make this path a global variable
+    String filePath                      = ConcatPaths({ResourcePath(), "IBLTexturesCache", fileName});
+
+    // check if all files exist
+    const StringArray directionPostFixes = {"_px", "_nx", "_py", "_ny", "_pz", "_nz"};
+    StringArray files;
+
+    // sky cubemap
+    files.push_back(filePath + "_c_");
+
+    // diffuse cubemap
+    files.push_back(filePath + "_d_");
+
+    // specular cubemaps
+    files.push_back(filePath + "_s_");
+
+    // Create textures
+    m_width                    = 512; // why?
+    m_height                   = 512; // why?
+    m_cubemap                  = MakeNewPtr<CubeMap>();
+    m_diffuseEnvMap            = MakeNewPtr<CubeMap>();
+    m_specularEnvMap           = MakeNewPtr<CubeMap>();
+    m_cubemap->m_width         = m_width;
+    m_cubemap->m_height        = m_height;
+    m_diffuseEnvMap->m_width   = m_width;
+    m_diffuseEnvMap->m_height  = m_height;
+    m_specularEnvMap->m_width  = m_width;
+    m_specularEnvMap->m_height = m_height;
+
+    m_initiated                = true;
+
+    const TextureSettings set  = {GraphicTypes::TargetCubeMap,
+                                  GraphicTypes::UVClampToEdge,
+                                  GraphicTypes::UVClampToEdge,
+                                  GraphicTypes::UVClampToEdge,
+                                  GraphicTypes::SampleLinear,
+                                  GraphicTypes::SampleLinear,
+                                  GraphicTypes::FormatRGBA16F,
+                                  GraphicTypes::FormatRGBA,
+                                  GraphicTypes::TypeFloat,
+                                  1,
+                                  false};
+    RenderTargetPtr cubeMapRt  = MakeNewPtr<RenderTarget>(m_width, m_height, set);
+    cubeMapRt->Init();
+    m_cubemap->Consume(cubeMapRt);
+
+    cubeMapRt = MakeNewPtr<RenderTarget>(m_width, m_height, set);
+    cubeMapRt->Init();
+    m_diffuseEnvMap->Consume(cubeMapRt);
+
+    cubeMapRt = MakeNewPtr<RenderTarget>(m_width, m_height, set);
+    cubeMapRt->Init();
+    RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubeMapRt->m_textureId, 0);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+    glGenerateMipmap(cubeMapRt->m_textureId);
+    m_specularEnvMap->Consume(cubeMapRt);
+
+    // read cubemap texture
+    if (!GetRenderSystem()->GetRenderUtils()->ReadCubemapFromFileRGBAFloat(files[0], m_cubemap, 0))
+    {
+      TK_LOG("******************************1********************************");
+      TK_LOG("******************************1********************************");
+      TK_LOG("******************************1********************************");
+      TK_LOG("******************************1********************************");
+      TK_LOG("******************************1********************************");
+      TK_LOG("******************************1********************************");
+      UnInit();
+      return false;
+    }
+
+    // read diffuse ibl texture
+    if (!GetRenderSystem()->GetRenderUtils()->ReadCubemapFromFileRGBAFloat(files[1], m_diffuseEnvMap, 0))
+    {
+      TK_LOG("******************************2********************************");
+      TK_LOG("******************************2********************************");
+      TK_LOG("******************************2********************************");
+      TK_LOG("******************************2********************************");
+      TK_LOG("******************************2********************************");
+      TK_LOG("******************************2********************************");
+      UnInit();
+      return false;
+    }
+
+    // read specular ibl textures
+    for (int mip = 0; mip < 5; ++mip)
+    {
+      if (!GetRenderSystem()->GetRenderUtils()->ReadCubemapFromFileRGBAFloat(files[2], m_specularEnvMap, mip))
+      {
+        TK_LOG("******************************3********************************");
+        TK_LOG("******************************3********************************");
+        TK_LOG("******************************3********************************");
+        TK_LOG("******************************3********************************");
+        TK_LOG("******************************3********************************");
+        TK_LOG("******************************3********************************");
+        UnInit();
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   void Hdri::UnInit()
   {
     if (m_initiated)
