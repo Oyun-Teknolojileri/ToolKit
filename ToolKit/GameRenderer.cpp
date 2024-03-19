@@ -15,7 +15,7 @@ namespace ToolKit
     m_fullQuadPass          = MakeNewPtr<FullQuadPass>();
   }
 
-  void GameRenderer::PreRender()
+  void GameRenderer::PreRender(Renderer* renderer)
   {
     if (m_params.useMobileRenderPath)
     {
@@ -93,7 +93,7 @@ namespace ToolKit
     }
     m_unlitMaterial->m_diffuseTexture =
         Cast<Texture>(m_params.viewport->m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0));
-    m_fullQuadPass->m_material = m_unlitMaterial;
+    m_fullQuadPass->SetFragmentShader(m_unlitMaterial->m_fragmentShader, renderer);
   }
 
   void GameRenderer::PostRender(Renderer* renderer) { renderer->ResetUsedTextureSlots(); }
@@ -107,7 +107,7 @@ namespace ToolKit
       return;
     }
 
-    PreRender();
+    PreRender(renderer);
 
     m_passArray.clear();
 

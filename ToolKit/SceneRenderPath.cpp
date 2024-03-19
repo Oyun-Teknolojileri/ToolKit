@@ -28,7 +28,6 @@ namespace ToolKit
     m_ssaoPass              = MakeNewPtr<SSAOPass>();
     m_tonemapPass           = MakeNewPtr<TonemapPass>();
     m_fxaaPass              = MakeNewPtr<FXAAPass>();
-    m_gammaPass             = MakeNewPtr<GammaPass>();
     m_bloomPass             = MakeNewPtr<BloomPass>();
     m_dofPass               = MakeNewPtr<DoFPass>();
   }
@@ -45,7 +44,6 @@ namespace ToolKit
     m_ssaoPass          = nullptr;
     m_tonemapPass       = nullptr;
     m_fxaaPass          = nullptr;
-    m_gammaPass         = nullptr;
     m_bloomPass         = nullptr;
     m_dofPass           = nullptr;
   }
@@ -115,11 +113,6 @@ namespace ToolKit
     if (m_params.Gfx.FXAAEnabled)
     {
       m_passArray.push_back(m_fxaaPass);
-    }
-
-    if (m_params.Gfx.GammaCorrectionEnabled)
-    {
-      m_passArray.push_back(m_gammaPass);
     }
 
     RenderPath::Render(renderer);
@@ -280,10 +273,6 @@ namespace ToolKit
     m_fxaaPass->m_params.FrameBuffer    = m_params.MainFramebuffer;
     const FramebufferSettings& fbs      = m_params.MainFramebuffer->GetSettings();
     m_fxaaPass->m_params.screen_size    = Vec2(fbs.width, fbs.height);
-
-    // Gamma pass.
-    m_gammaPass->m_params.FrameBuffer   = m_params.MainFramebuffer;
-    m_gammaPass->m_params.Gamma         = m_params.Gfx.Gamma;
   }
 
 } // namespace ToolKit
