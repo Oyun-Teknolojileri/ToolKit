@@ -35,6 +35,8 @@ namespace ToolKit
 
   TK_API int WritePNG(const char* filename, int x, int y, int comp, const void* data, int stride_bytes);
 
+  TK_API int WriteHDR(const char* filename, int x, int y, int comp, const float* data);
+
   TK_API void ImageSetVerticalOnLoad(bool val);
 
   TK_API void ImageFree(void* img);

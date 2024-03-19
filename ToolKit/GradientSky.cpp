@@ -51,11 +51,17 @@ namespace ToolKit
                          return;
                        }
 
-                       // Render gradient to cubemap and store the output
-                       GenerateGradientCubemap(renderer);
+                       if (!GetIBLTexturesFromCache())
+                       {
+                         GetHdri()->UnInit();
+                         GetHdri()->SetFile("");
 
-                       // Create irradiance map from cubemap and set
-                       GenerateIrradianceCubemap(renderer);
+                         // Render gradient to cubemap and store the output
+                         GenerateGradientCubemap(renderer);
+
+                         // Create irradiance map from cubemap and set
+                         GenerateIrradianceCubemap(renderer);
+                       }
 
                        renderer->SetFramebuffer(nullptr, GraphicBitFields::None);
                        m_frameBuffer    = nullptr;
@@ -82,6 +88,40 @@ namespace ToolKit
 
   bool GradientSky::ReadyToRender() { return m_skyboxMaterial != nullptr; }
 
+  void GradientSky::SetSceneName(const String& sceneName) { m_sceneName = sceneName; }
+
+  void GradientSky::SaveIBLTexturesToFile()
+  {
+    // TODO make this directory global variable (as Textures, Meshes, etc.)
+    String cacheDirPath            = ConcatPaths({ResourcePath(), "IBLTexturesCache"});
+    String cacheSkyCubemapFilePath = ConcatPaths({cacheDirPath, m_sceneName + "_c_"});
+    String cacheDiffuseFilePath    = ConcatPaths({cacheDirPath, m_sceneName + "_d_"});
+    String cacheSpecularFilePath   = ConcatPaths({cacheDirPath, m_sceneName + "_s_"});
+
+    if (!m_initialized)
+    {
+      return;
+    }
+
+    // TODO open rendering task here
+
+    // Sky cube map
+    GetRenderSystem()->GetRenderUtils()->SaveCubemapToFileRGBAFloat(cacheSkyCubemapFilePath, GetHdri()->m_cubemap, 0);
+
+    // Diffuse texture
+    GetRenderSystem()->GetRenderUtils()->SaveCubemapToFileRGBAFloat(cacheDiffuseFilePath,
+                                                                      GetHdri()->m_diffuseEnvMap,
+                                                                      0);
+
+    // Specular textures
+    for (int mip = 0; mip < 5; ++mip)
+    {
+      GetRenderSystem()->GetRenderUtils()->SaveCubemapToFileRGBAFloat(cacheSpecularFilePath,
+                                                                        GetHdri()->m_specularEnvMap,
+                                                                        mip);
+    }
+  }
+
   void GradientSky::ParameterConstructor()
   {
     Super::ParameterConstructor();
@@ -95,6 +135,8 @@ namespace ToolKit
   }
 
   void GradientSky::ParameterEventConstructor() { Super::ParameterEventConstructor(); }
+
+  bool GradientSky::GetIBLTexturesFromCache() { return GetHdri()->InitFromCache(m_sceneName); }
 
   void GradientSky::GenerateGradientCubemap(Renderer* renderer)
   {

@@ -12,7 +12,6 @@
 
 namespace ToolKit
 {
-
   class TK_API GradientSky : public SkyBase
   {
    public:
@@ -26,9 +25,17 @@ namespace ToolKit
 
     bool ReadyToRender() override;
 
+    /**
+     * This functions sets scene name of gradient sky.
+     * This function is being called while the Scene is initializing.
+     */
+    void SetSceneName(const String& sceneName);
+    void SaveIBLTexturesToFile();
+
    protected:
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
+    bool GetIBLTexturesFromCache();
     void GenerateGradientCubemap(Renderer* renderer);
     void GenerateIrradianceCubemap(Renderer* renderer);
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
@@ -38,10 +45,13 @@ namespace ToolKit
     TKDeclareParam(Vec3, MiddleColor);
     TKDeclareParam(Vec3, BottomColor);
     TKDeclareParam(float, GradientExponent);
+    TKDeclareParam(bool, UseCachedEnvLight);
 
    private:
     bool m_waitingForInit = false;
     FramebufferPtr m_frameBuffer;
+
+    String m_sceneName = "tempName"; //!< This variable is set when a scene inits gradient sky
   };
 
 } // namespace ToolKit

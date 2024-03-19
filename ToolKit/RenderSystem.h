@@ -9,6 +9,7 @@
 
 #include "GpuProgram.h"
 #include "Pass.h"
+#include "RenderUtils.h"
 
 namespace ToolKit
 {
@@ -113,6 +114,8 @@ namespace ToolKit
 
     void TestSRGBBackBuffer();
 
+    RenderUtils* GetRenderUtils();
+
    private:
     void ExecuteTaskImp(RenderTask& task);
 
@@ -123,6 +126,8 @@ namespace ToolKit
     int m_skipFrames              = 0;
     bool m_backbufferFormatIsSRGB = true;
     uint m_frameCount             = 0;
+
+    RenderUtils* m_renderUtils    = nullptr;
   };
 
 } // namespace ToolKit
