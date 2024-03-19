@@ -8,6 +8,7 @@
 #include "MeshView.h"
 
 #include "App.h"
+#include "PreviewViewport.h"
 
 #include <Camera.h>
 #include <DirectionComponent.h>

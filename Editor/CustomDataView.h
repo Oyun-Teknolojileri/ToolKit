@@ -8,7 +8,7 @@
 #pragma once
 
 #include "MultiChoiceWindow.h"
-#include "PropInspector.h"
+#include "View.h"
 
 namespace ToolKit
 {

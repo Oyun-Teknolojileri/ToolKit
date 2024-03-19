@@ -794,7 +794,7 @@ namespace ToolKit
 
       if (ImGui::MenuItem("Reset Layout"))
       {
-        m_postponedActions.push_back([]() -> void { g_app->ResetUI(); });
+        m_postponedActions.push_back([]() -> void { g_app->ResetUI(false); });
       }
 
 #ifdef TK_DEBUG

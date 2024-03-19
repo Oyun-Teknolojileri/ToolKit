@@ -42,12 +42,13 @@ namespace ToolKit
 
     XmlNode* Window::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
+      Super::SerializeImp(doc, parent);
+
       XmlNode* node = CreateXmlNode(doc, "Window", parent);
       WriteAttr(node, doc, XmlVersion, TKVersionStr);
 
       WriteAttr(node, doc, XmlNodeName.data(), m_name);
       WriteAttr(node, doc, "id", std::to_string(m_id));
-      WriteAttr(node, doc, "type", std::to_string((int) GetType()));
       WriteAttr(node, doc, "visible", std::to_string((int) m_visible));
 
       XmlNode* childNode = CreateXmlNode(doc, "Size", node);
@@ -61,6 +62,8 @@ namespace ToolKit
 
     XmlNode* Window::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
+      Super::DeSerializeImp(info, parent);
+
       XmlNode* wndNode = parent;
       if (wndNode == nullptr)
       {
@@ -77,7 +80,7 @@ namespace ToolKit
       }
 
       // if not present, version must be v0.4.4
-      ReadAttr(wndNode, XmlVersion.data(), m_version, "v0.4.4");
+      ReadAttr(wndNode, XmlVersion.data(), m_version, TKV044);
       ReadAttr(wndNode, XmlNodeName.data(), m_name);
       ReadAttr(wndNode, "id", m_id);
 
@@ -127,6 +130,7 @@ namespace ToolKit
 
       m_mouseHover =
           ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByPopup);
+
       bool rightClick  = ImGui::IsMouseDown(ImGuiMouseButton_Right);
       bool leftClick   = ImGui::IsMouseDown(ImGuiMouseButton_Left);
       bool middleClick = ImGui::IsMouseDown(ImGuiMouseButton_Middle);

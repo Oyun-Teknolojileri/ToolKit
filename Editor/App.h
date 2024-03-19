@@ -18,10 +18,10 @@
 #include "Light.h"
 #include "OutlinerWindow.h"
 #include "PluginWindow.h"
-#include "PropInspector.h"
+#include "PropInspectorWindow.h"
 #include "PublishManager.h"
 #include "RenderSettingsWindow.h"
-#include "StatsView.h"
+#include "StatsWindow.h"
 #include "Thumbnail.h"
 #include "Workspace.h"
 
@@ -87,7 +87,7 @@ namespace ToolKit
                          SysCommandDoneCallback callback = nullptr);
 
       // UI.
-      void ResetUI();
+      void ResetUI(bool skipSettings);
       void DeleteWindows();
       void CreateWindows(XmlNode* parent);
       void ReconstructDynamicMenus();
@@ -113,9 +113,9 @@ namespace ToolKit
       ConsoleWindow* GetConsole();
       FolderWindowRawPtrArray GetAssetBrowsers();
       OutlinerWindow* GetOutliner();
-      PropInspector* GetPropInspector();
+      PropInspectorWindow* GetPropInspector();
       RenderSettingsWindow* GetRenderSettingsWindow();
-      StatsView* GetStatsView();
+      StatsWindow* GetStatsView();
       void AddRenderSettingsView();
       void AddStatsView();
 
@@ -190,7 +190,7 @@ namespace ToolKit
       ThumbnailManager m_thumbnailManager;
 
       // Simulator settings.
-      EditorViewport* m_simulationWindow = nullptr;
+      EditorViewportPtr m_simulationWindow = nullptr;
       SimulationSettings m_simulatorSettings;
 
       // Editor objects.

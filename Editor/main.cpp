@@ -9,9 +9,11 @@
 #include "App.h"
 #include "ConsoleWindow.h"
 #include "EditorCamera.h"
+#include "EditorViewport2d.h"
 #include "Gizmo.h"
 #include "Grid.h"
 #include "Mod.h"
+#include "PopupWindows.h"
 #include "TKStats.h"
 #include "UI.h"
 
@@ -253,6 +255,19 @@ namespace ToolKit
             objFactory->Register<SkyBillboard>();
             objFactory->Register<LightBillboard>();
             objFactory->Register<GridFragmentShader>();
+
+            // Windows.
+            objFactory->Register<ConsoleWindow>();
+            objFactory->Register<EditorViewport>();
+            objFactory->Register<EditorViewport2d>();
+            objFactory->Register<MultiChoiceWindow>();
+            objFactory->Register<OutlinerWindow>();
+            objFactory->Register<PluginWindow>();
+            objFactory->Register<PropInspectorWindow>();
+            objFactory->Register<RenderSettingsWindow>();
+            objFactory->Register<StatsWindow>();
+            objFactory->Register<StringInputWindow>();
+            objFactory->Register<YesNoWindow>();
 
             // Overrides.
             objFactory->Override<EditorDirectionalLight, DirectionalLight>();

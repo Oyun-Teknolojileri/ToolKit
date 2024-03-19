@@ -5,7 +5,7 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#include "PropInspector.h"
+#include "PropInspectorWindow.h"
 
 #include "App.h"
 #include "ComponentView.h"
@@ -30,7 +30,9 @@ namespace ToolKit
   namespace Editor
   {
 
-    PropInspector::PropInspector()
+    TKDefineClass(PropInspectorWindow, Window);
+
+    PropInspectorWindow::PropInspectorWindow()
     {
       // order is important, depends on enum viewType
       m_views.resize((uint) ViewType::ViewCount);
@@ -55,9 +57,9 @@ namespace ToolKit
       m_prefabViews.push_back((uint) ViewType::Mesh);
     }
 
-    PropInspector::PropInspector(XmlNode* node) : PropInspector() { DeSerialize(SerializationFileInfo(), node); }
+    PropInspectorWindow::PropInspectorWindow(XmlNode* node) : PropInspectorWindow() { DeSerialize(SerializationFileInfo(), node); }
 
-    PropInspector::~PropInspector()
+    PropInspectorWindow::~PropInspectorWindow()
     {
       for (ViewRawPtr& view : m_views)
       {
@@ -65,14 +67,14 @@ namespace ToolKit
       }
     }
 
-    void PropInspector::SetActiveView(ViewType viewType) { m_activeView = viewType; }
+    void PropInspectorWindow::SetActiveView(ViewType viewType) { m_activeView = viewType; }
 
-    MaterialView* PropInspector::GetMaterialView()
+    MaterialView* PropInspectorWindow::GetMaterialView()
     {
       return static_cast<MaterialView*>(m_views[(uint) ViewType::Material]);
     }
 
-    void PropInspector::DeterminateSelectedMaterial(EntityPtr curEntity)
+    void PropInspectorWindow::DeterminateSelectedMaterial(EntityPtr curEntity)
     {
       // if material view is active. determinate selected material
       MaterialView* matView = dynamic_cast<MaterialView*>(m_views[(uint) m_activeView]);
@@ -108,7 +110,7 @@ namespace ToolKit
       }
     }
 
-    void PropInspector::Show()
+    void PropInspectorWindow::Show()
     {
       ImVec4 windowBg  = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
       ImVec4 childBg   = ImGui::GetStyleColorVec4(ImGuiCol_ChildBg);
@@ -177,9 +179,9 @@ namespace ToolKit
       ImGui::PopStyleVar(2);
     }
 
-    void PropInspector::DispatchSignals() const { ModShortCutSignals(); }
+    void PropInspectorWindow::DispatchSignals() const { ModShortCutSignals(); }
 
-    void PropInspector::SetMaterials(const MaterialPtrArray& mat)
+    void PropInspectorWindow::SetMaterials(const MaterialPtrArray& mat)
     {
       m_activeView          = ViewType::Material;
       uint matViewIndx      = (uint) ViewType::Material;
@@ -187,7 +189,7 @@ namespace ToolKit
       matView->SetMaterials(mat);
     }
 
-    void PropInspector::SetMeshView(MeshPtr mesh)
+    void PropInspectorWindow::SetMeshView(MeshPtr mesh)
     {
       m_activeView       = ViewType::Mesh;
       uint meshViewIndx  = (uint) ViewType::Mesh;

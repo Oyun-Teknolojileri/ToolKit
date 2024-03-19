@@ -22,6 +22,7 @@ namespace ToolKit
      public:
       TKDeclareClass(StringInputWindow, Window);
 
+      StringInputWindow();
       StringInputWindow(const String& name, bool showCancel);
       void Show() override;
 
@@ -45,6 +46,7 @@ namespace ToolKit
      public:
       TKDeclareClass(YesNoWindow, Window);
 
+      YesNoWindow();
       YesNoWindow(const String& name, const String& msg = "");
       YesNoWindow(const String& name,
                   const String& yesBtnText,
@@ -76,7 +78,8 @@ namespace ToolKit
         std::function<void()> m_callback;
       };
 
-      explicit MultiChoiceWindow(const String& name, const String& msg = "");
+      MultiChoiceWindow();
+      MultiChoiceWindow(const String& name, const String& msg = "");
       MultiChoiceWindow(const String& name, const std::vector<ButtonInfo>& buttons, const String& msg, bool showCancel);
       void Show() override;
 

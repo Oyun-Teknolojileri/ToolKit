@@ -105,7 +105,7 @@ namespace ToolKit
     info.Document = doc.get();
     if (XmlNode* rootNode = doc->first_node(firstNode.data()))
     {
-      ReadAttr(rootNode, XmlVersion.data(), info.Version, "v0.4.4");
+      ReadAttr(rootNode, XmlVersion.data(), info.Version, TKV044);
       m_version = info.Version;
 
       DeSerialize(info, rootNode);

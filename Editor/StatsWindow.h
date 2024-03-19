@@ -12,13 +12,13 @@ namespace ToolKit
 {
   namespace Editor
   {
-    class StatsView : public Window
+    class StatsWindow : public Window
     {
      public:
-      TKDeclareClass(StatsView, Window);
+      TKDeclareClass(StatsWindow, Window);
 
-      StatsView();
-      virtual ~StatsView();
+      StatsWindow();
+      virtual ~StatsWindow();
       virtual void Show();
     };
 

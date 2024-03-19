@@ -18,14 +18,14 @@ namespace ToolKit
   namespace Editor
   {
 
-    class PropInspector : public Window
+    class PropInspectorWindow : public Window
     {
      public:
-      TKDeclareClass(PropInspector, Window);
+      TKDeclareClass(PropInspectorWindow, Window);
 
-      PropInspector();
-      explicit PropInspector(XmlNode* node);
-      virtual ~PropInspector();
+      PropInspectorWindow();
+      explicit PropInspectorWindow(XmlNode* node);
+      virtual ~PropInspectorWindow();
       void SetActiveView(ViewType viewType);
       class MaterialView* GetMaterialView();
 

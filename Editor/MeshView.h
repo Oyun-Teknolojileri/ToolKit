@@ -6,7 +6,8 @@
  */
 
 #pragma once
-#include "PropInspector.h"
+
+#include "View.h"
 
 namespace ToolKit
 {
@@ -24,9 +25,9 @@ namespace ToolKit
       void ResetCamera();
 
      private:
-      PreviewViewport* m_viewport = nullptr;
-      EntityPtr m_previewEntity   = nullptr;
-      MeshPtr m_mesh              = nullptr;
+      class PreviewViewport* m_viewport = nullptr;
+      EntityPtr m_previewEntity         = nullptr;
+      MeshPtr m_mesh                    = nullptr;
     };
 
   } // namespace Editor

@@ -145,6 +145,8 @@ namespace ToolKit
 
     XmlNode* EditorViewport::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
+      Super::SerializeImp(doc, parent);
+
       XmlNode* wndNode = Window::SerializeImp(doc, parent);
       XmlNode* node    = CreateXmlNode(doc, "Viewport", wndNode);
 
@@ -157,6 +159,8 @@ namespace ToolKit
 
     XmlNode* EditorViewport::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
+      Super::DeSerializeImp(info, parent);
+
       XmlNode* wndNode      = Window::DeSerializeImp(info, parent);
       XmlNode* viewportNode = wndNode->first_node("Viewport");
       m_wndContentAreaSize  = m_size;
@@ -170,7 +174,7 @@ namespace ToolKit
         viewCam->m_version = m_version;
         ULongID id         = viewCam->GetIdVal();
 
-        if (m_version > String("v0.4.4"))
+        if (m_version > TKV044)
         {
           XmlNode* objNode = viewportNode->first_node(Object::StaticClass()->Name.c_str());
           viewCam->DeSerialize(info, objNode);

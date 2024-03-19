@@ -8,7 +8,6 @@
 #include "View.h"
 
 #include "MaterialView.h"
-#include "PropInspector.h"
 
 #include <FileManager.h>
 #include <Mesh.h>
@@ -116,7 +115,7 @@ namespace ToolKit
             MaterialPtr mr = man->Create<Material>(file);
             if (clicked)
             {
-              PropInspector* propInspector = g_app->GetPropInspector();
+              PropInspectorWindow* propInspector = g_app->GetPropInspector();
               propInspector->GetMaterialView()->SetSelectedMaterial(mr);
               propInspector->SetActiveView(ViewType::Material);
             }

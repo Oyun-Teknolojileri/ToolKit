@@ -230,7 +230,7 @@ namespace ToolKit
 
       if (playOnSimulationWnd)
       {
-        viewports.push_back(m_simulationWindow);
+        viewports.push_back(m_simulationWindow.get());
       }
 
       POP_CPU_MARKER();
@@ -754,12 +754,12 @@ namespace ToolKit
       return -1;
     }
 
-    void App::ResetUI()
+    void App::ResetUI(bool skipSettings)
     {
       DeleteWindows();
 
       String defaultEditorSettings = ConcatPaths({ConfigPath(), g_editorSettingsFile});
-      if (CheckFile(defaultEditorSettings) && CheckFile(m_workspace.GetActiveWorkspace()))
+      if (CheckFile(defaultEditorSettings) && CheckFile(m_workspace.GetActiveWorkspace()) && !skipSettings)
       {
         // Try reading defaults.
         SerializationFileInfo serializeInfo;
@@ -820,12 +820,11 @@ namespace ToolKit
         outliner->m_name         = g_outlinerStr;
         m_windows.push_back(outliner);
 
-        PropInspector* inspector = new PropInspector();
+        PropInspectorWindow* inspector = new PropInspectorWindow();
         inspector->m_name        = g_propInspector;
         m_windows.push_back(inspector);
 
         m_windows.push_back(new PluginWindow());
-
         m_windows.push_back(new RenderSettingsWindow());
 
         CreateSimulationWindow(m_simulatorSettings.Width, m_simulatorSettings.Height);
@@ -846,60 +845,34 @@ namespace ToolKit
       {
         SafeDel(EditorViewport::m_overlays[i]);
       }
-      SafeDel(m_simulationWindow);
+
+      m_simulationWindow = nullptr;
     }
 
     void App::CreateWindows(XmlNode* parent)
     {
-      if (XmlNode* wndNode = parent->first_node("Window"))
+      if (XmlNode* windowsNode = parent->first_node("Windows"))
       {
-        do
+        const char* xmlRootObject = Object::StaticClass()->Name.c_str();
+        const char* xmlObjectType = XmlObjectClassAttr.data();
+        ObjectFactory* factory    = GetObjectFactory();
+
+        for (XmlNode* node = parent->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
         {
-          int type;
-          ReadAttr(wndNode, "type", type);
-
-          Window* wnd = nullptr;
-          switch ((Window::Type) type)
-          {
-          case Window::Type::Viewport:
-            wnd = new EditorViewport();
-            break;
-          case Window::Type::Console:
-            wnd = new ConsoleWindow();
-            break;
-          case Window::Type::Outliner:
-            wnd = new OutlinerWindow();
-            break;
-          case Window::Type::Browser:
-            wnd = new FolderWindow();
-            break;
-          case Window::Type::Inspector:
-            wnd = new PropInspector();
-            break;
-          case Window::Type::PluginWindow:
-            wnd = new PluginWindow();
-            break;
-          case Window::Type::Viewport2d:
-            wnd = new EditorViewport2d();
-            break;
-          case Window::Type::RenderSettings:
-            wnd = new RenderSettingsWindow();
-            break;
-          case Window::Type::Stats:
-            wnd = new StatsView();
-            break;
-          }
-
-          if (wnd)
+          XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
+          if (Window* wnd = static_cast<Window*>(factory->MakeNew(typeAttr->value())))
           {
             wnd->m_version = m_version;
-            wnd->DeSerialize(SerializationFileInfo(), wndNode);
+            wnd->DeSerialize(SerializationFileInfo(), node);
             m_windows.push_back(wnd);
           }
-        } while ((wndNode = wndNode->next_sibling("Window")));
+        }
       }
 
+      // TODO: Cihan Move Serialize / Deserialize of the Simulation window to its own class.
+      // Make sure it gets serialized - deserialized with app.
       CreateSimulationWindow(m_simulatorSettings.Width, m_simulatorSettings.Height);
+      // m_workspace.DeSerializeSimulationWindow(lclDoc);
     }
 
     void App::ReconstructDynamicMenus()
@@ -1224,7 +1197,7 @@ namespace ToolKit
       }
       else
       {
-        ResetUI();
+        ResetUI(false);
       }
 
       // Restore app window.
@@ -1357,15 +1330,15 @@ namespace ToolKit
 
     OutlinerWindow* App::GetOutliner() { return GetWindow<OutlinerWindow>(g_outlinerStr); }
 
-    PropInspector* App::GetPropInspector() { return GetWindow<PropInspector>(g_propInspector); }
+    PropInspectorWindow* App::GetPropInspector() { return GetWindow<PropInspectorWindow>(g_propInspector); }
 
     RenderSettingsWindow* App::GetRenderSettingsWindow() { return GetWindow<RenderSettingsWindow>(g_renderSettings); }
 
-    StatsView* App::GetStatsView() { return GetWindow<StatsView>(g_statsView); }
+    StatsWindow* App::GetStatsView() { return GetWindow<StatsWindow>(g_statsView); }
 
     void App::AddRenderSettingsView() { m_windows.push_back(new RenderSettingsWindow()); }
 
-    void App::AddStatsView() { m_windows.push_back(new StatsView()); }
+    void App::AddStatsView() { m_windows.push_back(new StatsWindow()); }
 
     void App::HideGizmos()
     {
@@ -1397,7 +1370,7 @@ namespace ToolKit
     {
       if (m_simulatorSettings.Windowed)
       {
-        return m_simulationWindow;
+        return m_simulationWindow.get();
       }
 
       EditorViewport* simWnd = GetViewport(g_3dViewport);
@@ -1442,26 +1415,23 @@ namespace ToolKit
       if (file.is_open())
       {
         XmlDocumentPtr lclDoc = MakeNewPtr<XmlDocument>();
-        XmlNode* app          = lclDoc->allocate_node(rapidxml::node_element, "App");
+        XmlDocument* docPtr   = lclDoc.get();
+
+        XmlNode* app          = CreateXmlNode(docPtr, "App");
         WriteAttr(app, lclDoc.get(), "version", TKVersionStr);
-        lclDoc->append_node(app);
 
-        XmlNode* settings = lclDoc->allocate_node(rapidxml::node_element, "Settings");
-        app->append_node(settings);
+        XmlNode* settings = CreateXmlNode(docPtr, "Settings", app);
+        XmlNode* setNode  = CreateXmlNode(docPtr, "Size", settings);
 
-        XmlNode* setNode = lclDoc->allocate_node(rapidxml::node_element, "Size");
+        UVec2 size        = GetRenderSystem()->GetAppWindowSize();
+        WriteAttr(setNode, docPtr, "width", std::to_string(size.x));
+        WriteAttr(setNode, docPtr, "height", std::to_string(size.y));
+        WriteAttr(setNode, docPtr, "maximized", std::to_string(m_windowMaximized));
 
-        UVec2 size       = GetRenderSystem()->GetAppWindowSize();
-        WriteAttr(setNode, lclDoc.get(), "width", std::to_string(size.x));
-        WriteAttr(setNode, lclDoc.get(), "height", std::to_string(size.y));
-
-        WriteAttr(setNode, lclDoc.get(), "maximized", std::to_string(m_windowMaximized));
-
-        settings->append_node(setNode);
-
+        XmlNode* windowsNode = CreateXmlNode(lclDoc.get(), "Windows", app);
         for (Window* wnd : m_windows)
         {
-          wnd->Serialize(lclDoc.get(), app);
+          wnd->Serialize(docPtr, windowsNode);
         }
 
         m_workspace.SerializeSimulationWindow(lclDoc);
@@ -1488,7 +1458,6 @@ namespace ToolKit
       if (!CheckFile(settingsFile))
       {
         settingsFile = ConcatPaths({ConfigPath(), g_editorSettingsFile});
-
         assert(CheckFile(settingsFile) && "ToolKit/Config/Editor.settings must exist.");
       }
 
@@ -1499,7 +1468,7 @@ namespace ToolKit
 
       if (XmlNode* root = doc->first_node("App"))
       {
-        ReadAttr(root, "version", m_version, "v0.4.4");
+        ReadAttr(root, "version", m_version, TKV044);
 
         if (XmlNode* settings = root->first_node("Settings"))
         {
@@ -1507,6 +1476,7 @@ namespace ToolKit
           {
             uint width = 0;
             ReadAttr(setNode, "width", width);
+
             uint height = 0;
             ReadAttr(setNode, "height", height);
             ReadAttr(setNode, "maximized", m_windowMaximized);
@@ -1519,8 +1489,10 @@ namespace ToolKit
         }
 
         CreateWindows(root);
-
-        m_workspace.DeSerializeSimulationWindow(lclDoc);
+        if (m_windows.empty())
+        {
+          ResetUI(true);
+        }
       }
 
       LoadProjectPlugin();
@@ -1537,8 +1509,7 @@ namespace ToolKit
 
     void App::CreateSimulationWindow(float width, float height)
     {
-      SafeDel(m_simulationWindow);
-      m_simulationWindow = new EditorViewport();
+      m_simulationWindow = MakeNewPtr<EditorViewport>();
       m_simulationWindow->Init({m_simulatorSettings.Width, m_simulatorSettings.Height});
 
       m_simulationWindow->m_name = g_simulationViewport;

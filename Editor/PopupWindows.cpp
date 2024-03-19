@@ -21,6 +21,8 @@ namespace ToolKit
 
     TKDefineClass(StringInputWindow, Window);
 
+    StringInputWindow::StringInputWindow() {}
+
     StringInputWindow::StringInputWindow(const String& name, bool showCancel)
     {
       m_name       = name;
@@ -110,6 +112,8 @@ namespace ToolKit
     //////////////////////////////////////////////////////////////////////////
 
     TKDefineClass(YesNoWindow, Window);
+
+    YesNoWindow::YesNoWindow() {}
 
     YesNoWindow::YesNoWindow(const String& name, const String& msg)
     {
@@ -201,6 +205,8 @@ namespace ToolKit
     //////////////////////////////////////////////////////////////////////////
 
     TKDefineClass(MultiChoiceWindow, Window);
+
+    MultiChoiceWindow::MultiChoiceWindow() {}
 
     MultiChoiceWindow::MultiChoiceWindow(const String& name, const String& msg)
     {

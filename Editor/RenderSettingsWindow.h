@@ -6,7 +6,8 @@
  */
 
 #pragma once
-#include "PropInspector.h"
+
+#include "Window.h"
 
 namespace ToolKit
 {

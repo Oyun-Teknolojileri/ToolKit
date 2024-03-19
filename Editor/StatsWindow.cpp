@@ -5,7 +5,7 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#include "StatsView.h"
+#include "StatsWindow.h"
 
 #include "Global.h"
 
@@ -16,13 +16,13 @@ namespace ToolKit
   namespace Editor
   {
 
-    TKDefineClass(StatsView, Window);
+    TKDefineClass(StatsWindow, Window);
 
-    StatsView::StatsView() { m_name = g_statsView; }
+    StatsWindow::StatsWindow() { m_name = g_statsView; }
 
-    StatsView::~StatsView() {}
+    StatsWindow::~StatsWindow() {}
 
-    void StatsView::Show()
+    void StatsWindow::Show()
     {
       TKStats* tkStats = GetTKStats();
       if (tkStats == nullptr)

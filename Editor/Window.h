@@ -20,21 +20,6 @@ namespace ToolKit
      public:
       TKDeclareClass(Window, Object);
 
-      enum class Type
-      {
-        Viewport       = 0,
-        Console        = 1,
-        InputPopup     = 2,
-        Browser        = 3,
-        Outliner       = 4,
-        Inspector      = 5,
-        UNUSEDSLOT_1   = 6,
-        PluginWindow   = 7,
-        Viewport2d     = 8,
-        RenderSettings = 9,
-        Stats          = 10
-      };
-
      public:
       Window();
       virtual ~Window();
@@ -77,6 +62,8 @@ namespace ToolKit
       static uint m_baseId;
     };
 
+    typedef std::shared_ptr<Window> WindowPtr;
+    typedef std::vector<WindowPtr> WindowPtrArray;
     typedef std::vector<Window*> WindowRawPtrArray;
 
   } // namespace Editor

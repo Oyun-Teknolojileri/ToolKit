@@ -131,11 +131,11 @@
     <ClCompile Include="PopupWindows.cpp" />
     <ClCompile Include="PrefabView.cpp" />
     <ClCompile Include="PreviewViewport.cpp" />
-    <ClCompile Include="PropInspector.cpp" />
+    <ClCompile Include="PropInspectorWindow.cpp" />
     <ClCompile Include="PublishManager.cpp" />
     <ClCompile Include="RenderSettingsWindow.cpp" />
     <ClCompile Include="SingleMaterialPass.cpp" />
-    <ClCompile Include="StatsView.cpp" />
+    <ClCompile Include="StatsWindow.cpp" />
     <ClCompile Include="StatusBar.cpp" />
     <ClCompile Include="Thumbnail.cpp" />
     <ClCompile Include="TopBar.cpp" />
@@ -194,7 +194,7 @@
     <ClInclude Include="PublishManager.h" />
     <ClInclude Include="RenderSettingsWindow.h" />
     <ClInclude Include="SingleMaterialPass.h" />
-    <ClInclude Include="StatsView.h" />
+    <ClInclude Include="StatsWindow.h" />
     <ClInclude Include="StatusBar.h" />
     <ClInclude Include="Thumbnail.h" />
     <ClInclude Include="TopBar.h" />
@@ -203,7 +203,7 @@
     <ClInclude Include="Window.h" />
     <ClInclude Include="Workspace.h" />
     <ClInclude Include="OutlinerWindow.h" />
-    <ClInclude Include="PropInspector.h" />
+    <ClInclude Include="PropInspectorWindow.h" />
     <ClInclude Include="TransformMod.h" />
     <ClInclude Include="EditorScene.h" />
     <ClInclude Include="UI.h" />
