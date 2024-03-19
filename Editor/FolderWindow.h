@@ -9,8 +9,6 @@
 
 #include "UI.h"
 
-#include <Resource.h>
-
 namespace ToolKit
 {
   namespace Editor
