@@ -154,6 +154,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="EditorViewport.cpp" />
+    <ClCompile Include="Window.cpp" />
     <ClCompile Include="Workspace.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +196,7 @@
     <ClInclude Include="Thumbnail.h" />
     <ClInclude Include="TopBar.h" />
     <ClInclude Include="TopBar2d.h" />
+    <ClInclude Include="Window.h" />
     <ClInclude Include="Workspace.h" />
     <ClInclude Include="OutlinerWindow.h" />
     <ClInclude Include="PropInspector.h" />

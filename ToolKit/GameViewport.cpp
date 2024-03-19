@@ -9,8 +9,6 @@ namespace ToolKit
 
   void GameViewport::Update(float dt)
   {
-    m_mouseOverContentArea = true;
-
     for (Event* e : Main::GetInstance()->m_eventPool)
     {
       if (e->m_type == Event::EventType::Mouse)

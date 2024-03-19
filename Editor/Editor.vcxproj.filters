@@ -180,6 +180,9 @@
     <ClCompile Include="EditorApi.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mod.h">
@@ -322,6 +325,9 @@
     </ClInclude>
     <ClInclude Include="EditorApi.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

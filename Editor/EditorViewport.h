@@ -104,6 +104,7 @@ namespace ToolKit
       Vec2 m_contentAreaMax;
       IVec2 m_mousePosBegin;
       bool m_needsResize = false;
+      bool m_mouseOverContentArea = false;
 
      private:
       // States.
