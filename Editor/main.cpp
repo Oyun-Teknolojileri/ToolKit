@@ -262,7 +262,7 @@ namespace ToolKit
             objFactory->Register<EditorViewport2d>();
             objFactory->Register<MultiChoiceWindow>();
             objFactory->Register<OutlinerWindow>();
-            objFactory->Register<PluginWindow>();
+            objFactory->Register<SimulationWindow>();
             objFactory->Register<PropInspectorWindow>();
             objFactory->Register<RenderSettingsWindow>();
             objFactory->Register<StatsWindow>();

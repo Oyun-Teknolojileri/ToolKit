@@ -5,7 +5,7 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#include "PluginWindow.h"
+#include "SimulationWindow.h"
 
 #include "App.h"
 #include "EditorViewport2d.h"
@@ -19,24 +19,24 @@ namespace ToolKit
   namespace Editor
   {
 
-    TKDefineClass(PluginWindow, Window);
+    TKDefineClass(SimulationWindow, Window);
 
-    PluginWindow::PluginWindow()
+    SimulationWindow::SimulationWindow()
     {
       m_name               = "Plugin";
       m_settings           = &g_app->m_simulatorSettings;
       m_numDefaultResNames = (int) m_emulatorResolutionNames.size();
     }
 
-    PluginWindow::~PluginWindow() {}
+    SimulationWindow::~SimulationWindow() {}
 
-    void PluginWindow::AddResolutionName(const String& name)
+    void SimulationWindow::AddResolutionName(const String& name)
     {
       m_emulatorResolutionNames.push_back(name);
       m_screenResolutions.push_back(Vec2(500.0f, 500.0f));
     }
 
-    void PluginWindow::RemoveResolutionName(size_t index)
+    void SimulationWindow::RemoveResolutionName(size_t index)
     {
       bool canRemove = index > 0 || index < m_screenResolutions.size();
 
@@ -49,7 +49,7 @@ namespace ToolKit
       }
     }
 
-    void PluginWindow::RemoveResolutionName(const String& name)
+    void SimulationWindow::RemoveResolutionName(const String& name)
     {
       for (int i = 0; i < m_emulatorResolutionNames.size(); ++i)
       {
@@ -62,7 +62,7 @@ namespace ToolKit
       TK_WRN("Resolution name does not exist.");
     }
 
-    void PluginWindow::Show()
+    void SimulationWindow::Show()
     {
       ImGui::SetNextWindowSize(ImVec2(350, 150), ImGuiCond_Once);
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {5, 5});
@@ -80,7 +80,7 @@ namespace ToolKit
       ImGui::PopStyleVar();
     }
 
-    void PluginWindow::UpdateSimulationWndSize()
+    void SimulationWindow::UpdateSimulationWndSize()
     {
       if (g_app->m_simulationWindow)
       {
@@ -96,7 +96,7 @@ namespace ToolKit
       }
     }
 
-    void PluginWindow::ShowHeader()
+    void SimulationWindow::ShowHeader()
     {
       if (m_simulationModeDisabled)
       {
@@ -129,7 +129,7 @@ namespace ToolKit
       ImGui::PushStyleColor(ImGuiCol_ButtonActive, g_redTintButtonActiveColor);
     }
 
-    void PluginWindow::ShowActionButtons()
+    void SimulationWindow::ShowActionButtons()
     {
       // Draw play - pause - stop buttons.
       ImVec2 btnSize = ImVec2(20.0f, 20.0f);
@@ -210,9 +210,12 @@ namespace ToolKit
       ImGui::SameLine();
     }
 
-    String PluginWindow::EmuResToString(EmulatorResolution emuRes) { return m_emulatorResolutionNames[(uint) emuRes]; }
+    String SimulationWindow::EmuResToString(EmulatorResolution emuRes)
+    {
+      return m_emulatorResolutionNames[(uint) emuRes];
+    }
 
-    void PluginWindow::ShowSettings()
+    void SimulationWindow::ShowSettings()
     {
       if (!m_settings->Windowed)
       {
@@ -328,7 +331,7 @@ namespace ToolKit
       }
     }
 
-    void PluginWindow::UpdateCanvas(uint width, uint height)
+    void SimulationWindow::UpdateCanvas(uint width, uint height)
     {
       EditorViewport2d* viewport = g_app->GetWindow<EditorViewport2d>(g_2dViewport);
 

@@ -17,10 +17,10 @@
 #include "Grid.h"
 #include "Light.h"
 #include "OutlinerWindow.h"
-#include "PluginWindow.h"
 #include "PropInspectorWindow.h"
 #include "PublishManager.h"
 #include "RenderSettingsWindow.h"
+#include "SimulationWindow.h"
 #include "StatsWindow.h"
 #include "Thumbnail.h"
 #include "Workspace.h"
@@ -115,9 +115,7 @@ namespace ToolKit
       OutlinerWindow* GetOutliner();
       PropInspectorWindow* GetPropInspector();
       RenderSettingsWindow* GetRenderSettingsWindow();
-      StatsWindow* GetStatsView();
-      void AddRenderSettingsView();
-      void AddStatsView();
+      StatsWindow* GetStatsWindow();
 
       template <typename T>
       T* GetWindow(const String& name)
@@ -154,6 +152,32 @@ namespace ToolKit
         return list;
       }
 
+      template <typename T>
+      T* CreateOrRetrieveWindow(const String& name = String())
+      {
+        if (T::StaticClass()->IsSublcassOf(Window::StaticClass()))
+        {
+          for (Window* wnd : m_windows)
+          {
+            if (T* wndCasted = wnd->As<T>())
+            {
+              if (wnd->m_name == name)
+              {
+                return wndCasted;
+              }
+            }
+          }
+
+          T* wnd      = new T();
+          wnd->m_name = name;
+          wnd->SetVisibility(false);
+          m_windows.push_back(wnd);
+          return wnd;
+        }
+
+        return nullptr;
+      }
+
       void HideGizmos();
       void ShowGizmos();
 
@@ -163,16 +187,16 @@ namespace ToolKit
       float GetDeltaTime();
 
       // Last Frame Stats
-      inline uint64 GetLastFrameDrawCallCount() { return m_lastFrameDrawCallCount; }
+      uint64 GetLastFrameDrawCallCount() { return m_lastFrameDrawCallCount; }
 
-      inline uint64 GetLastFrameHWRenderPassCount() { return m_lastFrameHWRenderPassCount; }
+      uint64 GetLastFrameHWRenderPassCount() { return m_lastFrameHWRenderPassCount; }
 
      protected:
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
      private:
-      void CreateSimulationWindow(float width, float height);
+      void CreateSimulationViewport();
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
       void CreateEditorEntities();

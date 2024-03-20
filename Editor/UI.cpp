@@ -40,6 +40,7 @@ namespace ToolKit
     UI::Blocker UI::BlockerData;
     UI::Import UI::ImportData;
     UI::SearchFile UI::SearchFileData;
+    AndroidBuildWindow* UI::m_androidBuildWindow;
     WindowRawPtrArray UI::m_volatileWindows;
     std::vector<TempWindow*> UI::m_tempWindows;
     std::vector<TempWindow*> UI::m_removedTempWindows;
@@ -96,7 +97,6 @@ namespace ToolKit
     TexturePtr UI::m_packageIcon;
     TexturePtr UI::m_objectDataIcon;
     TexturePtr UI::m_sceneIcon;
-    AndroidBuildWindow* UI::m_androidBuildWindow;
 
     UI::AnchorPresetImages UI::m_anchorPresetIcons;
 
@@ -523,7 +523,7 @@ namespace ToolKit
       ShowBlocker();
 
       // Show & Destroy if not visible.
-      for (int i = static_cast<int>(m_volatileWindows.size()) - 1; i > -1; i--)
+      for (int i = (int) (m_volatileWindows.size()) - 1; i > -1; i--)
       {
         Window* wnd = m_volatileWindows[i];
         if (wnd->IsVisible())
@@ -654,6 +654,18 @@ namespace ToolKit
       ImGui::Text("%s", TKVersionStr);
     }
 
+    template <typename T>
+    void ShowPersistentWindow(const String& name)
+    {
+      if (T* wnd = g_app->CreateOrRetrieveWindow<T>(name))
+      {
+        if (ImGui::MenuItem(name.c_str(), nullptr, nullptr, !wnd->IsVisible()))
+        {
+          wnd->SetVisibility(true);
+        }
+      }
+    }
+
     void UI::ShowMenuWindows()
     {
       auto handleMultiWindowFn = [](ClassMeta* Class) -> void
@@ -711,7 +723,7 @@ namespace ToolKit
         handleMultiWindowFn(EditorViewport::StaticClass());
         handleMultiWindowFn(EditorViewport2d::StaticClass());
 
-        if (ImGui::MenuItem("Add Viewport", "Alt+V"))
+        if (ImGui::MenuItem("Add Viewport"))
         {
           EditorViewport* vp = new EditorViewport();
           vp->Init({640.0f, 480.0f});
@@ -721,11 +733,11 @@ namespace ToolKit
         ImGui::EndMenu();
       }
 
-      if (ImGui::BeginMenu("Resource Window"))
+      if (ImGui::BeginMenu("Asset Browser"))
       {
         handleMultiWindowFn(FolderWindow::StaticClass());
 
-        if (ImGui::MenuItem("Add Browser", "Alt+B"))
+        if (ImGui::MenuItem("Add Browser"))
         {
           FolderWindow* wnd = new FolderWindow();
           wnd->m_name       = g_assetBrowserStr + "##" + std::to_string(wnd->m_id);
@@ -738,57 +750,12 @@ namespace ToolKit
 
       ImGui::Separator();
 
-      if (ImGui::MenuItem("Console Window", "Alt+C", nullptr, !g_app->GetConsole()->IsVisible()))
-      {
-        g_app->GetConsole()->SetVisibility(true);
-      }
-
-      if (ImGui::MenuItem("Outliner Window", "Alt+O", nullptr, !g_app->GetOutliner()->IsVisible()))
-      {
-        g_app->GetOutliner()->SetVisibility(true);
-      }
-
-      if (ImGui::MenuItem("Property Inspector", "Alt+P", nullptr, !g_app->GetPropInspector()->IsVisible()))
-      {
-        g_app->GetPropInspector()->SetVisibility(true);
-      }
-
-      if (PluginWindow* wnd = g_app->GetWindow<PluginWindow>("Plugin"))
-      {
-        if (ImGui::MenuItem("Simulation Window", "", nullptr, !wnd->IsVisible()))
-        {
-          wnd->SetVisibility(true);
-        }
-      }
-
-      if (g_app->GetRenderSettingsWindow() == nullptr)
-      {
-        if (ImGui::MenuItem(g_renderSettings.c_str()))
-        {
-          g_app->AddRenderSettingsView();
-          g_app->GetRenderSettingsWindow()->SetVisibility(true);
-        }
-      }
-      else if (ImGui::MenuItem(g_renderSettings.c_str(),
-                               nullptr,
-                               nullptr,
-                               !g_app->GetRenderSettingsWindow()->IsVisible()))
-      {
-        g_app->GetRenderSettingsWindow()->SetVisibility(true);
-      }
-
-      if (g_app->GetStatsView() == nullptr)
-      {
-        if (ImGui::MenuItem(g_statsView.c_str()))
-        {
-          g_app->AddStatsView();
-          g_app->GetStatsView()->SetVisibility(true);
-        }
-      }
-      else if (ImGui::MenuItem(g_statsView.c_str(), nullptr, nullptr, !g_app->GetStatsView()->IsVisible()))
-      {
-        g_app->GetStatsView()->SetVisibility(true);
-      }
+      ShowPersistentWindow<ConsoleWindow>(g_consoleStr);
+      ShowPersistentWindow<OutlinerWindow>(g_outlinerStr);
+      ShowPersistentWindow<PropInspectorWindow>(g_propInspector);
+      ShowPersistentWindow<SimulationWindow>(g_simulationStr);
+      ShowPersistentWindow<RenderSettingsWindow>(g_renderSettings);
+      ShowPersistentWindow<StatsWindow>(g_statsView);
 
       ImGui::Separator();
 
@@ -802,7 +769,7 @@ namespace ToolKit
 
       if (!m_windowMenushowMetrics)
       {
-        if (ImGui::MenuItem("Show Metrics", "Alt+M"))
+        if (ImGui::MenuItem("Show Metrics"))
         {
           m_windowMenushowMetrics = true;
         }
@@ -810,7 +777,7 @@ namespace ToolKit
 
       if (!m_imguiSampleWindow)
       {
-        if (ImGui::MenuItem("Imgui Sample", "Alt+S"))
+        if (ImGui::MenuItem("Imgui Sample"))
         {
           m_imguiSampleWindow = true;
         }

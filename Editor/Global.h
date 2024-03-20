@@ -28,8 +28,9 @@ namespace ToolKit
     const String g_outlinerStr("Outliner");
     const String g_propInspector("Property Inspector");
     const String g_renderSettings("Render Settings");
-    const String g_statsView("Stats View");
+    const String g_statsView("Statistics");
     const String g_matInspector("Material Inspector");
+    const String g_simulationStr("Simulation");
     const String g_memoStr("Mem");
     const String g_errorStr("Err");
     const String g_warningStr("Wrn");
@@ -39,8 +40,6 @@ namespace ToolKit
     const String g_2dViewport("2D View");
     const String g_3dViewport("3D View");
     const String g_IsoViewport("ISO View");
-    const String g_simulationViewport("Simulation");
-    const String g_pluginWindow("Plugin");
     const String g_workspaceFile("Workspace.settings");
     const String g_uiLayoutFile("UILayout.ini");
     const String g_editorSettingsFile("Editor.settings");

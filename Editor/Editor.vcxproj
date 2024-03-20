@@ -127,7 +127,7 @@
     </ClCompile>
     <ClCompile Include="OutlinerWindow.cpp" />
     <ClCompile Include="OverlayLighting.cpp" />
-    <ClCompile Include="PluginWindow.cpp" />
+    <ClCompile Include="SimulationWindow.cpp" />
     <ClCompile Include="PopupWindows.cpp" />
     <ClCompile Include="PrefabView.cpp" />
     <ClCompile Include="PreviewViewport.cpp" />
@@ -187,7 +187,7 @@
     <ClInclude Include="MeshView.h" />
     <ClInclude Include="MultiChoiceWindow.h" />
     <ClInclude Include="OverlayLighting.h" />
-    <ClInclude Include="PluginWindow.h" />
+    <ClInclude Include="SimulationWindow.h" />
     <ClInclude Include="PopupWindows.h" />
     <ClInclude Include="PrefabView.h" />
     <ClInclude Include="PreviewViewport.h" />

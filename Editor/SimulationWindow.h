@@ -51,13 +51,13 @@ namespace ToolKit
       EmulatorResolution Resolution = EmulatorResolution::Custom;
     };
 
-    class PluginWindow : public Window
+    class SimulationWindow : public Window
     {
      public:
-      TKDeclareClass(PluginWindow, Window);
+      TKDeclareClass(SimulationWindow, Window);
 
-      PluginWindow();
-      virtual ~PluginWindow();
+      SimulationWindow();
+      virtual ~SimulationWindow();
 
       void Show() override;
 

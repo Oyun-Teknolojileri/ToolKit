@@ -151,10 +151,10 @@ namespace ToolKit
   void RenderSystem::InitGl(void* glGetProcAddres, GlReportCallback callback)
   {
     // Initialize opengl functions.
-
-#ifdef _WIN32
-    gladLoadGLES2((GLADloadfunc) glGetProcAddres);
-#endif
+    if constexpr (TK_PLATFORM == PLATFORM::TKWindows)
+    {
+      gladLoadGLES2((GLADloadfunc) glGetProcAddres);
+    }
 
     InitGLErrorReport(callback);
     TestSRGBBackBuffer();

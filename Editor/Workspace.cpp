@@ -248,7 +248,7 @@ namespace ToolKit
     {
       XmlDocument* pDoc          = doc.get();
 
-      PluginWindow* pluginWindow = g_app->GetWindow<PluginWindow>("Plugin");
+      SimulationWindow* pluginWindow = g_app->GetWindow<SimulationWindow>("Plugin");
       XmlNode* settings          = CreateXmlNode(pDoc, "Simulation", nullptr);
 
       int numCustomRes           = (int) pluginWindow->m_screenResolutions.size() - pluginWindow->m_numDefaultResNames;
@@ -271,7 +271,7 @@ namespace ToolKit
     void Workspace::DeSerializeSimulationWindow(XmlDocumentPtr doc)
     {
       XmlNode* node              = doc->first_node("Simulation");
-      PluginWindow* pluginWindow = g_app->GetWindow<PluginWindow>("Plugin");
+      SimulationWindow* pluginWindow = g_app->GetWindow<SimulationWindow>("Plugin");
       if (node == nullptr || pluginWindow == nullptr)
       {
         return;

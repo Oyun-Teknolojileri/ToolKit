@@ -147,7 +147,7 @@
     <ClCompile Include="OutlinerWindow.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
-    <ClCompile Include="PluginWindow.cpp">
+    <ClCompile Include="SimulationWindow.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
     <ClCompile Include="PopupWindows.cpp">
@@ -299,7 +299,7 @@
     <ClInclude Include="OutlinerWindow.h">
       <Filter>UI\Window</Filter>
     </ClInclude>
-    <ClInclude Include="PluginWindow.h">
+    <ClInclude Include="SimulationWindow.h">
       <Filter>UI\Window</Filter>
     </ClInclude>
     <ClInclude Include="PopupWindows.h">

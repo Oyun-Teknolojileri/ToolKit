@@ -821,13 +821,13 @@ namespace ToolKit
         m_windows.push_back(outliner);
 
         PropInspectorWindow* inspector = new PropInspectorWindow();
-        inspector->m_name        = g_propInspector;
+        inspector->m_name              = g_propInspector;
         m_windows.push_back(inspector);
 
-        m_windows.push_back(new PluginWindow());
+        m_windows.push_back(new SimulationWindow());
         m_windows.push_back(new RenderSettingsWindow());
 
-        CreateSimulationWindow(m_simulatorSettings.Width, m_simulatorSettings.Height);
+        CreateSimulationViewport();
       }
     }
 
@@ -871,7 +871,7 @@ namespace ToolKit
 
       // TODO: Cihan Move Serialize / Deserialize of the Simulation window to its own class.
       // Make sure it gets serialized - deserialized with app.
-      CreateSimulationWindow(m_simulatorSettings.Width, m_simulatorSettings.Height);
+      CreateSimulationViewport();
       // m_workspace.DeSerializeSimulationWindow(lclDoc);
     }
 
@@ -1334,11 +1334,7 @@ namespace ToolKit
 
     RenderSettingsWindow* App::GetRenderSettingsWindow() { return GetWindow<RenderSettingsWindow>(g_renderSettings); }
 
-    StatsWindow* App::GetStatsView() { return GetWindow<StatsWindow>(g_statsView); }
-
-    void App::AddRenderSettingsView() { m_windows.push_back(new RenderSettingsWindow()); }
-
-    void App::AddStatsView() { m_windows.push_back(new StatsWindow()); }
+    StatsWindow* App::GetStatsWindow() { return GetWindow<StatsWindow>(g_statsView); }
 
     void App::HideGizmos()
     {
@@ -1507,12 +1503,12 @@ namespace ToolKit
       return nullptr;
     }
 
-    void App::CreateSimulationWindow(float width, float height)
+    void App::CreateSimulationViewport()
     {
       m_simulationWindow = MakeNewPtr<EditorViewport>();
       m_simulationWindow->Init({m_simulatorSettings.Width, m_simulatorSettings.Height});
 
-      m_simulationWindow->m_name = g_simulationViewport;
+      m_simulationWindow->m_name = g_simulationStr;
       m_simulationWindow->m_additionalWindowFlags =
           ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse;
 
