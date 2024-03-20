@@ -98,11 +98,15 @@ namespace ToolKit
 
     PUSH_CPU_MARKER("ForwardRenderPass::RenderAlphaMasked");
 
+    const MaterialPtr matAlphaMasked = GetMaterialManager()->GetDefaultAlphaMaskedMaterial();
+    GpuProgramPtr gpuProgramAlphaMasked =
+        GetGpuProgramManager()->CreateProgram(matAlphaMasked->m_vertexShader, matAlphaMasked->m_fragmentShader);
+
     begin = renderData->GetForwardOpaqueBegin();
     end   = renderData->GetForwardTranslucentBegin();
 
     // TODO create another default program for alpha masked objects
-    RenderOpaqueHelper(renderData, begin, end, gpuProgram);
+    RenderOpaqueHelper(renderData, begin, end, gpuProgramAlphaMasked);
 
     POP_CPU_MARKER();
   }

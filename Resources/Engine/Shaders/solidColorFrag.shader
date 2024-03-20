@@ -50,6 +50,7 @@
 				color = Color;
 			}
 
+#ifdef ENABLE_DISCARD_PIXEL
 			if (useAlphaMask == 1)
 			{
 				if (color.a < alphaMaskTreshold)
@@ -57,6 +58,7 @@
 					discard;
 				}
 			}
+#endif
 
 			vec3 n;
 			if (normalMapInUse == 1)
