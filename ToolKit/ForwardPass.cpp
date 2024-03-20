@@ -82,16 +82,7 @@ namespace ToolKit
     GpuProgramPtr gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
 
     RenderJobItr begin       = renderData->GetForwardOpaqueBegin();
-    RenderJobItr end;
-    if (renderData->deferredJobsStartIndex != -1)
-    {
-      end = renderData->GetForwardTranslucentBegin();
-    }
-    else
-    {
-      end = renderData->GetAlphaMaskedBegin();
-    }
-
+    RenderJobItr end         = renderData->GetForwardAlphaMaskedBegin();
     RenderOpaqueHelper(renderData, begin, end, gpuProgram);
 
     POP_CPU_MARKER();
@@ -102,10 +93,8 @@ namespace ToolKit
     GpuProgramPtr gpuProgramAlphaMasked =
         GetGpuProgramManager()->CreateProgram(matAlphaMasked->m_vertexShader, matAlphaMasked->m_fragmentShader);
 
-    begin = renderData->GetForwardOpaqueBegin();
+    begin = renderData->GetForwardAlphaMaskedBegin();
     end   = renderData->GetForwardTranslucentBegin();
-
-    // TODO create another default program for alpha masked objects
     RenderOpaqueHelper(renderData, begin, end, gpuProgramAlphaMasked);
 
     POP_CPU_MARKER();
