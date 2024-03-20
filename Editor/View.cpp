@@ -115,7 +115,7 @@ namespace ToolKit
             MaterialPtr mr = man->Create<Material>(file);
             if (clicked)
             {
-              PropInspectorWindow* propInspector = g_app->GetPropInspector();
+              PropInspectorWindowPtr propInspector = g_app->GetPropInspector();
               propInspector->GetMaterialView()->SetSelectedMaterial(mr);
               propInspector->SetActiveView(ViewType::Material);
             }

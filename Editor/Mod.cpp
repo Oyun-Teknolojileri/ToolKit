@@ -110,8 +110,7 @@ namespace ToolKit
           // #ConsoleDebug_Mod
           if (g_app->m_showStateTransitionsDebug)
           {
-            ConsoleWindow* console = g_app->GetConsole();
-            if (console != nullptr)
+            if (ConsoleWindowPtr console = g_app->GetConsole())
             {
               console->AddLog(modNameDbg, "ModDbg");
             }
@@ -122,12 +121,10 @@ namespace ToolKit
         // used (in StateTransitionTo state), delete the last function
         // pointers from the array, since the function
         // parameters are not valid anymore.
-        EditorViewport* vp = g_app->GetActiveViewport();
-        if (vp == nullptr)
+        if (EditorViewportPtr vp = g_app->GetActiveViewport())
         {
-          return;
+          vp->m_drawCommands.clear();
         }
-        vp->m_drawCommands.clear();
       }
     }
 
@@ -195,7 +192,7 @@ namespace ToolKit
         {
           if (prevStateDbg && nextState)
           {
-            if (ConsoleWindow* consol = g_app->GetConsole())
+            if (ConsoleWindowPtr consol = g_app->GetConsole())
             {
               String log = "\t" + prevStateDbg->GetType() + " -> " + nextState->GetType();
               consol->AddLog(log, "ModDbg");
@@ -269,7 +266,7 @@ namespace ToolKit
       // Construct the ignore list.
       m_ignoreList.clear();
       EntityPtrArray ignores;
-      if (EditorViewport* vp = g_app->GetActiveViewport())
+      if (EditorViewportPtr vp = g_app->GetActiveViewport())
       {
         if (vp->IsA<EditorViewport2d>())
         {
@@ -291,8 +288,7 @@ namespace ToolKit
     {
       if (signal == BaseMod::m_leftMouseBtnDownSgnl)
       {
-        EditorViewport* vp = g_app->GetActiveViewport();
-        if (vp != nullptr)
+        if (EditorViewportPtr vp = g_app->GetActiveViewport())
         {
           m_mouseData[0] = vp->GetLastMousePosScreenSpace();
         }
@@ -300,8 +296,7 @@ namespace ToolKit
 
       if (signal == BaseMod::m_leftMouseBtnUpSgnl)
       {
-        EditorViewport* vp = g_app->GetActiveViewport();
-        if (vp != nullptr)
+        if (EditorViewportPtr vp = g_app->GetActiveViewport())
         {
           m_mouseData[0]           = vp->GetLastMousePosScreenSpace();
 
@@ -348,8 +343,7 @@ namespace ToolKit
       if (signal == BaseMod::m_leftMouseBtnUpSgnl)
       {
         // Frustum - AABB test.
-        EditorViewport* vp = g_app->GetActiveViewport();
-        if (vp != nullptr)
+        if (EditorViewportPtr vp = g_app->GetActiveViewport())
         {
           CameraPtr cam = vp->GetCamera();
 
@@ -463,8 +457,7 @@ namespace ToolKit
 
       if (signal == BaseMod::m_leftMouseBtnDragSgnl)
       {
-        EditorViewport* vp = g_app->GetActiveViewport();
-        if (vp != nullptr)
+        if (EditorViewportPtr vp = g_app->GetActiveViewport())
         {
           m_mouseData[1] = vp->GetLastMousePosScreenSpace();
 
@@ -508,7 +501,7 @@ namespace ToolKit
 
     SignalId StateDeletePick::Update(float deltaTime)
     {
-      Window* activeWnd = g_app->GetActiveWindow();
+      WindowPtr activeWnd = g_app->GetActiveWindow();
 
       // Delete in the text edit, deletes the entities.
       // Make sure delete is pressed only the given windows.

@@ -14,6 +14,7 @@
 #include "Grid.h"
 #include "Mod.h"
 #include "PopupWindows.h"
+#include "PreviewViewport.h"
 #include "TKStats.h"
 #include "UI.h"
 
@@ -260,6 +261,8 @@ namespace ToolKit
             objFactory->Register<ConsoleWindow>();
             objFactory->Register<EditorViewport>();
             objFactory->Register<EditorViewport2d>();
+            objFactory->Register<PreviewViewport>();
+            objFactory->Register<FolderWindow>();
             objFactory->Register<MultiChoiceWindow>();
             objFactory->Register<OutlinerWindow>();
             objFactory->Register<SimulationWindow>();

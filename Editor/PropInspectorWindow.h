@@ -45,5 +45,7 @@ namespace ToolKit
       ViewType m_activeView = ViewType::Entity;
     };
 
+    typedef std::shared_ptr<PropInspectorWindow> PropInspectorWindowPtr;
+
   } // namespace Editor
 } // namespace ToolKit

@@ -22,5 +22,7 @@ namespace ToolKit
       virtual void Show();
     };
 
+    typedef std::shared_ptr<StatsWindow> StatsWindowPtr;
+
   } // namespace Editor
 } // namespace ToolKit

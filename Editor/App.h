@@ -107,26 +107,26 @@ namespace ToolKit
       void SaveAllResources();
 
       // UI
-      Window* GetActiveWindow();
-      EditorViewport* GetActiveViewport();
-      EditorViewport* GetViewport(const String& name);
-      ConsoleWindow* GetConsole();
+      WindowPtr GetActiveWindow();
+      EditorViewportPtr GetActiveViewport();
+      EditorViewportPtr GetViewport(const String& name);
+      ConsoleWindowPtr GetConsole();
       FolderWindowRawPtrArray GetAssetBrowsers();
-      OutlinerWindow* GetOutliner();
-      PropInspectorWindow* GetPropInspector();
-      RenderSettingsWindow* GetRenderSettingsWindow();
-      StatsWindow* GetStatsWindow();
+      OutlinerWindowPtr GetOutliner();
+      PropInspectorWindowPtr GetPropInspector();
+      RenderSettingsWindowPtr GetRenderSettingsWindow();
+      StatsWindowPtr GetStatsWindow();
 
       template <typename T>
-      T* GetWindow(const String& name)
+      std::shared_ptr<T> GetWindow(const String& name)
       {
-        for (Window* wnd : m_windows)
+        for (WindowPtr wnd : m_windows)
         {
           if (T* casted = wnd->As<T>())
           {
             if (casted->m_name == name)
             {
-              return casted;
+              return Cast<T>(wnd);
             }
           }
         }
@@ -138,7 +138,7 @@ namespace ToolKit
       std::vector<T*> GetAllWindows(const String& name)
       {
         std::vector<T*> list;
-        for (Window* wnd : m_windows)
+        for (WindowPtr wnd : m_windows)
         {
           if (T* casted = wnd->As<T>())
           {
@@ -153,23 +153,23 @@ namespace ToolKit
       }
 
       template <typename T>
-      T* CreateOrRetrieveWindow(const String& name = String())
+      std::shared_ptr<T> CreateOrRetrieveWindow(const String& name = String())
       {
         if (T::StaticClass()->IsSublcassOf(Window::StaticClass()))
         {
-          for (Window* wnd : m_windows)
+          for (WindowPtr wnd : m_windows)
           {
             if (T* wndCasted = wnd->As<T>())
             {
               if (wnd->m_name == name)
               {
-                return wndCasted;
+                return Cast<T>(wnd);
               }
             }
           }
 
-          T* wnd      = new T();
-          wnd->m_name = name;
+          std::shared_ptr<T> wnd = MakeNewPtr<T>();
+          wnd->m_name            = name;
           wnd->SetVisibility(false);
           m_windows.push_back(wnd);
           return wnd;
@@ -182,7 +182,7 @@ namespace ToolKit
       void ShowGizmos();
 
       // Simulation
-      EditorViewport* GetSimulationWindow();
+      EditorViewportPtr GetSimulationWindow();
       void UpdateSimulation();
       float GetDeltaTime();
 
@@ -205,7 +205,7 @@ namespace ToolKit
 
      public:
       // UI elements.
-      WindowRawPtrArray m_windows;
+      WindowPtrArray m_windows;
       String m_statusMsg;
 
       // Editor variables.
@@ -247,7 +247,7 @@ namespace ToolKit
       SysCommandExecutionFn m_sysComExecFn     = nullptr;
       ShellOpenDirFn m_shellOpenDirFn          = nullptr;
       EditorLitMode m_sceneLightingMode        = EditorLitMode::EditorLit;
-      EditorViewport* m_lastActiveViewport     = nullptr;
+      EditorViewportPtr m_lastActiveViewport   = nullptr;
       Workspace m_workspace;
       StringArray m_customObjectMetaValues;    //!< Add menu shows this additional classes.
       DynamicMenuPtrArray m_customObjectsMenu; //!< Constructed menus based on m_customObjectMetaValues.

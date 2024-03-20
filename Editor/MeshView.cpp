@@ -23,7 +23,7 @@ namespace ToolKit
     {
       m_viewID   = 3;
       m_viewIcn  = UI::m_meshIcon;
-      m_viewport = new PreviewViewport();
+      m_viewport = MakeNewPtr<PreviewViewport>();
       m_viewport->Init({300.0f, 300.0f});
 
       ScenePtr scene  = GetSceneManager()->Create<Scene>(ScenePath("mesh-view.scene", true));
@@ -32,7 +32,7 @@ namespace ToolKit
       m_viewport->SetScene(scene);
     }
 
-    MeshView::~MeshView() { SafeDel(m_viewport); }
+    MeshView::~MeshView() { m_viewport = nullptr; }
 
     void MeshView::ResetCamera()
     {

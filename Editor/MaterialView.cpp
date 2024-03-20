@@ -29,7 +29,7 @@ namespace ToolKit
       m_viewID   = 3;
       m_viewIcn  = UI::m_materialIcon;
 
-      m_viewport = new PreviewViewport();
+      m_viewport = MakeNewPtr<PreviewViewport>();
       m_viewport->Init({300.0f, 150.0f});
 
       SceneManager* scnMan = GetSceneManager();
@@ -42,7 +42,7 @@ namespace ToolKit
       ResetCamera();
     }
 
-    MaterialView::~MaterialView() { SafeDel(m_viewport); }
+    MaterialView::~MaterialView() { m_viewport = nullptr; }
 
     void MaterialView::SetSelectedMaterial(MaterialPtr mat)
     {

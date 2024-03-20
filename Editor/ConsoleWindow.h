@@ -129,5 +129,7 @@ namespace ToolKit
       int m_historyPos = -1;
     };
 
+    typedef std::shared_ptr<ConsoleWindow> ConsoleWindowPtr;
+
   } // namespace Editor
 } // namespace ToolKit

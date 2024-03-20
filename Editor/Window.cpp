@@ -166,7 +166,14 @@ namespace ToolKit
 
       if (IsA<EditorViewport>())
       {
-        g_app->m_lastActiveViewport = static_cast<EditorViewport*>(this);
+        // get the self ref.
+        for (WindowPtr wnd : g_app->m_windows)
+        {
+          if (wnd->GetIdVal() == GetIdVal())
+          {
+            g_app->m_lastActiveViewport = Cast<EditorViewport>(wnd);
+          }
+        }
       }
     }
 
@@ -222,9 +229,8 @@ namespace ToolKit
       {
         if (EntityPtr ntt = currSecne->GetCurrentSelection())
         {
-          if (Window* wnd = g_app->GetOutliner())
+          if (OutlinerWindowPtr outliner = g_app->GetOutliner())
           {
-            OutlinerWindow* outliner = static_cast<OutlinerWindow*>(wnd);
             outliner->Focus(ntt);
           }
           // Focus the object in the scene

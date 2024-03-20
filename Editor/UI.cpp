@@ -155,10 +155,7 @@ namespace ToolKit
     void UI::UnInit()
     {
       delete m_androidBuildWindow;
-      for (size_t i = 0; i < m_volatileWindows.size(); i++)
-      {
-        SafeDel(m_volatileWindows[i]);
-      }
+      m_volatileWindows.clear();
       assert(m_volatileWindows.size() < 10 && "Overflowing danger.");
       m_volatileWindows.clear();
 
@@ -486,7 +483,7 @@ namespace ToolKit
       ShowDock();
       ShowAppMainMenuBar();
 
-      for (Window* wnd : g_app->m_windows)
+      for (WindowPtr wnd : g_app->m_windows)
       {
         if (wnd->IsVisible())
         {
@@ -657,7 +654,7 @@ namespace ToolKit
     template <typename T>
     void ShowPersistentWindow(const String& name)
     {
-      if (T* wnd = g_app->CreateOrRetrieveWindow<T>(name))
+      if (std::shared_ptr<T> wnd = g_app->CreateOrRetrieveWindow<T>(name))
       {
         if (ImGui::MenuItem(name.c_str(), nullptr, nullptr, !wnd->IsVisible()))
         {
@@ -672,7 +669,7 @@ namespace ToolKit
       {
         for (int i = (int) (g_app->m_windows.size()) - 1; i >= 0; i--)
         {
-          Window* wnd = g_app->m_windows[i];
+          WindowPtr wnd = g_app->m_windows[i];
           if (wnd->Class() != Class)
           {
             continue;
@@ -710,7 +707,6 @@ namespace ToolKit
             if (canDelete)
             {
               g_app->m_windows.erase(g_app->m_windows.begin() + i);
-              SafeDel(wnd);
             }
           }
           ImGui::EndGroup();
@@ -725,7 +721,7 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Add Viewport"))
         {
-          EditorViewport* vp = new EditorViewport();
+          EditorViewportPtr vp = MakeNewPtr<EditorViewport>();
           vp->Init({640.0f, 480.0f});
           g_app->m_windows.push_back(vp);
         }
@@ -739,8 +735,8 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Add Browser"))
         {
-          FolderWindow* wnd = new FolderWindow();
-          wnd->m_name       = g_assetBrowserStr + "##" + std::to_string(wnd->m_id);
+          FolderWindowPtr wnd = MakeNewPtr<FolderWindow>();
+          wnd->m_name         = g_assetBrowserStr + "##" + std::to_string(wnd->m_id);
           wnd->IterateFolders(true);
           g_app->m_windows.push_back(wnd);
         }
@@ -789,6 +785,8 @@ namespace ToolKit
     {
       if (ImGui::MenuItem("New Project"))
       {
+        // TODO Cihan Volitile window desstroys itself ( check the constructor )
+        // yesnowindow causes a leak.
         StringInputWindow* inputWnd = new StringInputWindow("NewProject", true);
         inputWnd->m_inputVal        = "New Project";
         inputWnd->m_inputLabel      = "Name";

@@ -45,5 +45,7 @@ namespace ToolKit
       uint m_gridCellSizeByPixel = 10;
     };
 
+    typedef std::shared_ptr<EditorViewport2d> EditorViewport2dPtr;
+
   } // namespace Editor
 } // namespace ToolKit

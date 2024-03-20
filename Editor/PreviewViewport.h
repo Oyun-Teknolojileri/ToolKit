@@ -32,5 +32,7 @@ namespace ToolKit
       bool m_isTempView = false;
     };
 
+    typedef std::shared_ptr<PreviewViewport> PreviewViewportPtr;
+
   } // namespace Editor
 } // namespace ToolKit

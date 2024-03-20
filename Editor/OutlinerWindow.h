@@ -81,5 +81,7 @@ namespace ToolKit
       int m_searchStringSize    = 0;
     };
 
+    typedef std::shared_ptr<OutlinerWindow> OutlinerWindowPtr;
+
   } // namespace Editor
 } // namespace ToolKit

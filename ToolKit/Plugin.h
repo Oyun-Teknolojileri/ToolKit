@@ -121,7 +121,7 @@ namespace ToolKit
      * This function sets the viewport where the game will be played on. Promise in PIE session is that, it will be set
      * once before the game play begin and never gets changed during the PIE session.
      */
-    virtual void SetViewport(Viewport* viewport) { m_viewport = viewport; };
+    virtual void SetViewport(ViewportPtr viewport) { m_viewport = viewport; };
 
     /**
      * Returns plugin type.
@@ -153,7 +153,7 @@ namespace ToolKit
     /**
      * Viewport where the game played on.
      */
-    Viewport* m_viewport = nullptr;
+    ViewportPtr m_viewport = nullptr;
   };
 
 } // namespace ToolKit

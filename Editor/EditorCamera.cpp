@@ -125,7 +125,7 @@ namespace ToolKit
       Poses_Define(
           [this]() -> void
           {
-            if (Viewport* av = g_app->GetActiveViewport())
+            if (EditorViewportPtr av = g_app->GetActiveViewport())
             {
               if (m_posessed)
               {

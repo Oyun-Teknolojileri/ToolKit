@@ -333,9 +333,7 @@ namespace ToolKit
 
     void SimulationWindow::UpdateCanvas(uint width, uint height)
     {
-      EditorViewport2d* viewport = g_app->GetWindow<EditorViewport2d>(g_2dViewport);
-
-      if (viewport != nullptr)
+      if (EditorViewport2dPtr viewport = g_app->GetWindow<EditorViewport2d>(g_2dViewport))
       {
         UILayerPtrArray layers;
         GetUIManager()->GetLayers(viewport->m_viewportId, layers);

@@ -86,23 +86,23 @@ namespace ToolKit
     virtual ~UIManager();
 
     /**
-    * Updates viewport that are registered
-    */
+     * Updates viewport that are registered
+     */
     void Update(float deltaTime);
 
     /**
      * Register a viewport to update layers
      */
-    void RegisterViewportToUpdateLayers(Viewport* viewport);
+    void RegisterViewport(ViewportPtr viewport);
 
     /**
-     * Unregister a viewport to update layers
+     * Unregister a viewport to stop update layers
      */
-    void UnRegisterViewportToUpdateLayers(Viewport* viewport);
+    void UnRegisterViewport(ViewportPtr viewport);
 
     /**
-    * Clears viewports to that updates layers
-    */
+     * Clears viewports to that updates layers
+     */
     void ClearViewportsToUpdateLayers();
 
     /**
@@ -111,14 +111,14 @@ namespace ToolKit
      * @param deltaTime is the time past since the previous frame.
      * @param viewport is the Viewport to update layers of.
      */
-    void UpdateLayers(float deltaTime, Viewport* viewport);
+    void UpdateLayers(float deltaTime, ViewportPtr viewport);
 
     /**
      * Resizes all the layers of the Viewport, based on the Viewport's size.
      * Only applies if layer needs resizing.
      * @param Viewport is the Viewport whose layers will be resized.
      */
-    void ResizeLayers(Viewport* viewport);
+    void ResizeLayers(ViewportPtr viewport);
 
     /**
      * Returns associated layers of the given viewport.
@@ -133,7 +133,7 @@ namespace ToolKit
      * @param viewport to add the layer to.
      * @param layer to be inserted.
      */
-    void AddLayer(ULongID viewportId, const UILayerPtr& layer);
+    void AddLayer(ULongID viewportId, const UILayerPtr layer);
 
     /**
      * Removes the given layer from the m_viewportLayerMap. This function does
@@ -179,7 +179,7 @@ namespace ToolKit
      * @param vp is the Viewport to check updates with.
      * @param layer is the Layer to check.
      */
-    void UpdateSurfaces(Viewport* vp, const UILayerPtr& layer);
+    void UpdateSurfaces(ViewportPtr vp, const UILayerPtr layer);
 
     /**
      * Checks if there is a mouse click event on the given surface in given
@@ -215,7 +215,7 @@ namespace ToolKit
     CameraPtr m_uiCamera = nullptr;
     bool m_mouseReleased = true;
 
-    std::vector<Viewport*> m_viewportsToUpdateLayers;
+    ViewportPtrArray m_viewportsToUpdateLayers; //!< UIManager only updates the layers in these viewports.
   };
 
 } // namespace ToolKit

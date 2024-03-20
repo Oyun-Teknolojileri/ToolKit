@@ -24,5 +24,7 @@ namespace ToolKit
       void Show() override;
     };
 
+    typedef std::shared_ptr<RenderSettingsWindow> RenderSettingsWindowPtr;
+
   } // namespace Editor
 } // namespace ToolKit

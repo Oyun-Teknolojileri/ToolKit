@@ -179,5 +179,7 @@ namespace ToolKit
       int m_lastSelectedTreeNode = -1;
     };
 
+    typedef std::shared_ptr<FolderWindow> FolderWindowPtr;
+
   } // namespace Editor
 } // namespace ToolKit

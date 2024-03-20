@@ -117,5 +117,7 @@ namespace ToolKit
       ;
     };
 
+    typedef std::shared_ptr<SimulationWindow> SimulationWindowPtr;
+
   } // namespace Editor
 } // namespace ToolKit

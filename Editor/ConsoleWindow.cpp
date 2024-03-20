@@ -217,7 +217,7 @@ namespace ToolKit
           return;
         }
 
-        if (EditorViewport* vp = g_app->GetViewport(viewportTag->second[0]))
+        if (EditorViewportPtr vp = g_app->GetViewport(viewportTag->second[0]))
         {
           if (CameraPtr c = vp->GetCamera())
           {
@@ -273,7 +273,7 @@ namespace ToolKit
 
     void ResetCameraExec(TagArgArray tagArgs)
     {
-      if (EditorViewport* vp = g_app->GetActiveViewport())
+      if (EditorViewportPtr vp = g_app->GetActiveViewport())
       {
         if (CameraPtr cam = vp->GetCamera())
         {
@@ -293,7 +293,7 @@ namespace ToolKit
           Vec3 t       = e->m_node->GetTranslation(ts);
           Vec3 s       = e->m_node->GetScale();
 
-          if (ConsoleWindow* cwnd = g_app->GetConsole())
+          if (ConsoleWindowPtr cwnd = g_app->GetConsole())
           {
             String str = "T: " + glm::to_string(t);
             cwnd->AddLog(str);
@@ -390,8 +390,7 @@ namespace ToolKit
 
         Vec3 target;
         ParseVec(target, targetTag);
-        EditorViewport* vp = g_app->GetViewport(g_3dViewport);
-        if (vp)
+        if (EditorViewportPtr vp = g_app->GetViewport(g_3dViewport))
         {
           vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt(target);
         }

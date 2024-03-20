@@ -246,12 +246,12 @@ namespace ToolKit
 
     void Workspace::SerializeSimulationWindow(XmlDocumentPtr doc) const
     {
-      XmlDocument* pDoc          = doc.get();
+      XmlDocument* pDoc                = doc.get();
 
-      SimulationWindow* pluginWindow = g_app->GetWindow<SimulationWindow>("Plugin");
-      XmlNode* settings          = CreateXmlNode(pDoc, "Simulation", nullptr);
+      SimulationWindowPtr pluginWindow = g_app->GetWindow<SimulationWindow>("Plugin");
+      XmlNode* settings                = CreateXmlNode(pDoc, "Simulation", nullptr);
 
-      int numCustomRes           = (int) pluginWindow->m_screenResolutions.size() - pluginWindow->m_numDefaultResNames;
+      int numCustomRes = (int) pluginWindow->m_screenResolutions.size() - pluginWindow->m_numDefaultResNames;
 
       WriteAttr(settings, pDoc, "NumCustom", std::to_string(numCustomRes));
 
@@ -270,8 +270,8 @@ namespace ToolKit
 
     void Workspace::DeSerializeSimulationWindow(XmlDocumentPtr doc)
     {
-      XmlNode* node              = doc->first_node("Simulation");
-      SimulationWindow* pluginWindow = g_app->GetWindow<SimulationWindow>("Plugin");
+      XmlNode* node                    = doc->first_node("Simulation");
+      SimulationWindowPtr pluginWindow = g_app->GetWindow<SimulationWindow>("Plugin");
       if (node == nullptr || pluginWindow == nullptr)
       {
         return;

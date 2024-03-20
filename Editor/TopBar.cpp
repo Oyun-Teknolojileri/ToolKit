@@ -12,12 +12,12 @@
 #include "IconsFontAwesome.h"
 #include "OutlinerWindow.h"
 
+#include <Dpad.h>
 #include <Drawable.h>
 #include <GradientSky.h>
 #include <Mesh.h>
 #include <Meta.h>
 #include <Surface.h>
-#include <Dpad.h>
 
 #include <DebugNew.h>
 
@@ -169,12 +169,13 @@ namespace ToolKit
         createdEntity->SetNameVal(typeName + suffix);
         currScene->AddEntity(createdEntity);
 
-        if (OutlinerWindow* outliner = g_app->GetOutliner())
+        if (OutlinerWindowPtr outliner = g_app->GetOutliner())
         {
           if (outliner->IsInsertingAtTheEndOfEntities())
           {
             outliner->Focus(createdEntity);
           }
+
           // if right clicked this will try to insert to where we clicked
           // otherwise(top bar add) this will spawn at the end of the list.
           outliner->TryReorderEntites({createdEntity});
@@ -416,7 +417,7 @@ namespace ToolKit
           {
             if (cam->IsA<Camera>())
             {
-              if (EditorViewport* vp = g_app->GetActiveViewport())
+              if (EditorViewportPtr vp = g_app->GetActiveViewport())
               {
                 vp->AttachCamera(cam->GetIdVal());
                 noCamera = false;
@@ -433,7 +434,7 @@ namespace ToolKit
         }
         else
         {
-          if (EditorViewport* vp = g_app->GetActiveViewport())
+          if (EditorViewportPtr vp = g_app->GetActiveViewport())
           {
             vp->AttachCamera(NULL_HANDLE);
           }
