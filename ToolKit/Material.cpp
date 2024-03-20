@@ -211,6 +211,8 @@ namespace ToolKit
     }
   }
 
+  bool Material::IsAlphaMasked() { return m_renderState.blendFunction == BlendFunction::ALPHA_MASK; }
+
   bool Material::IsPBR()
   {
     const String& file = m_fragmentShader->GetFile();

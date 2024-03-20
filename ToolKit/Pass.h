@@ -69,7 +69,8 @@ namespace ToolKit
    * When first culled than separated by a render job processor, the indexes become valid.
    * Partition structure
    * 0 Culled               : jobs.begin to deferredJobsStartIndex
-   * 1 Deferred             : deferredJobsStartIndex to forwardOpaqueStartIndex
+   * 1 Deferred             : deferredJobsStartIndex to alphaMaskedJobsStartIndex
+   * 2 Alpha Masked         : alphaMaskedJobsStartIndex to forwardOpaqueStartIndex
    * 2 Forward Opaque       : forwardOpaqueStartIndex to forwardTranslucentStartIndex
    * 3 Forward Translucent  : forwardTranslucentStartIndex to jobs.end
    */
@@ -77,9 +78,10 @@ namespace ToolKit
   {
     RenderJobArray jobs;
 
-    int deferredJobsStartIndex            = 0; //!< Beginning of deferred jobs. Before this, culled jobs resides.
-    int forwardOpaqueStartIndex           = 0; //!< Beginning of forward opaque jobs.
-    int forwardTranslucentStartIndex      = 0; //!< Beginning of forward translucent jobs.
+    int deferredJobsStartIndex       = 0; //!< Beginning of deferred jobs. Before this, culled jobs resides.
+    int alphaMaskedJobsStartIndex    = 0; //<! Beginning of alpha masked jobs.
+    int forwardOpaqueStartIndex      = 0; //!< Beginning of forward opaque jobs.
+    int forwardTranslucentStartIndex = 0; //!< Beginning of forward translucent jobs.
 
     RenderJobItr GetDefferedBegin()
     {
@@ -90,6 +92,8 @@ namespace ToolKit
     RenderJobItr GetForwardOpaqueBegin() { return jobs.begin() + forwardOpaqueStartIndex; }
 
     RenderJobItr GetForwardTranslucentBegin() { return jobs.begin() + forwardTranslucentStartIndex; }
+
+    RenderJobItr GetAlphaMaskedBegin() { return jobs.begin() + alphaMaskedJobsStartIndex; }
   };
 
   class TK_API RenderJobProcessor
@@ -144,6 +148,8 @@ namespace ToolKit
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
     static void SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam);
+
+    static void SortByDistToCamWithoutBreakingPartition();
 
     /**
      * Cull objects based on the sent camera. Update Job's frustumCulled state.

@@ -50,6 +50,11 @@ namespace ToolKit
     bool IsTranslucent();
 
     /**
+     * @returns True if the material is alpha masked.
+     */
+    bool IsAlphaMasked();
+
+    /**
      * States if the material is using PBR shaders.
      * @returns True if the fragmet shader is default PBR shader.
      */

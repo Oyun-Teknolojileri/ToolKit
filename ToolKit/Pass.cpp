@@ -296,6 +296,8 @@ namespace ToolKit
                                             [](const RenderJob& job) { return job.frustumCulled; });
 
     RenderJobItr forwardItr = culledItr;
+    RenderJobItr translucentItr;
+    RenderJobItr alphaMaskedItr;
 
     if (!forwardOnly)
     {
@@ -304,24 +306,35 @@ namespace ToolKit
                                   renderData.jobs.end(),
                                   [](const RenderJob& job)
                                   { return !job.Material->m_isShaderMaterial && !job.Material->IsTranslucent(); });
-    }
 
-    // Group translucent.
-    RenderJobItr translucentItr = std::partition(forwardItr,
-                                                 renderData.jobs.end(),
-                                                 [](const RenderJob& job) { return !job.Material->IsTranslucent(); });
+      alphaMaskedItr =
+          std::partition(culledItr, forwardItr, [](const RenderJob& job) { return !job.Material->IsAlphaMasked(); });
 
-    if (forwardOnly)
-    {
-      renderData.deferredJobsStartIndex  = -1;
-      renderData.forwardOpaqueStartIndex = (int) std::distance(renderData.jobs.begin(), culledItr);
+      translucentItr = forwardItr;
     }
     else
     {
-      renderData.deferredJobsStartIndex  = (int) std::distance(renderData.jobs.begin(), culledItr);
-      renderData.forwardOpaqueStartIndex = (int) std::distance(renderData.jobs.begin(), forwardItr);
+      // Group translucent.
+      translucentItr = std::partition(culledItr,
+                                      renderData.jobs.end(),
+                                      [](const RenderJob& job) { return !job.Material->IsTranslucent(); });
+
+      alphaMaskedItr = std::partition(culledItr,
+                                      translucentItr,
+                                      [](const RenderJob& job) { return !job.Material->IsAlphaMasked(); });
     }
 
+    if (forwardOnly)
+    {
+      renderData.deferredJobsStartIndex = -1;
+    }
+    else
+    {
+      renderData.deferredJobsStartIndex = (int) std::distance(renderData.jobs.begin(), culledItr);
+    }
+
+    renderData.forwardOpaqueStartIndex      = (int) std::distance(renderData.jobs.begin(), forwardItr);
+    renderData.alphaMaskedJobsStartIndex    = (int) std::distance(renderData.jobs.begin(), alphaMaskedItr);
     renderData.forwardTranslucentStartIndex = (int) std::distance(renderData.jobs.begin(), translucentItr);
   }
 
@@ -496,6 +509,8 @@ namespace ToolKit
     std::sort(begin, end, sortFn);
   }
 
+  void RenderJobProcessor::SortByDistToCamWithoutBreakingPartition() {}
+
   void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, const CameraPtr& camera)
   {
     FrustumCull(jobArray, camera);
@@ -530,20 +545,25 @@ namespace ToolKit
                        { return a.Material->GetIdVal() < b.Material->GetIdVal(); });
     };
 
-    // Deferred partition.
+    RenderJobItr begin, end;
+
     if (renderData.deferredJobsStartIndex != -1)
     {
-      RenderJobItr begin = renderData.GetDefferedBegin();
-      RenderJobItr end   = renderData.GetForwardOpaqueBegin();
+      begin = renderData.GetDefferedBegin();
+      end   = renderData.GetAlphaMaskedBegin();
+      sortRangeFn(begin, end);
+
+      begin = renderData.GetAlphaMaskedBegin();
+      end   = renderData.GetForwardTranslucentBegin();
+      sortRangeFn(begin, end);
+    }
+    else
+    {
+      begin = renderData.GetForwardOpaqueBegin();
+      end   = renderData.GetAlphaMaskedBegin();
       sortRangeFn(begin, end);
     }
 
-    // Forward Opaque
-    RenderJobItr begin = renderData.GetForwardOpaqueBegin();
-    RenderJobItr end   = renderData.GetForwardTranslucentBegin();
-    sortRangeFn(begin, end);
-
-    // Forward Translucent
     begin = renderData.GetForwardTranslucentBegin();
     end   = renderData.jobs.end();
     sortRangeFn(begin, end);
