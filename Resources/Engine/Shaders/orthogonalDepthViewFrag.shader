@@ -28,12 +28,10 @@
 				alpha = ColorAlpha;
 			}
 
-#ifdef ENABLE_DISCARD_PIXEL
 			if (alpha < 0.1)
 			{
 				discard;
 			}
-#endif
 
 			fragColor = vec4(v_depth, v_depth, v_depth, 1.0);
 		}

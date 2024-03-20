@@ -328,6 +328,8 @@ namespace ToolKit
     else
     {
       renderData.deferredJobsStartIndex = (int) std::distance(renderData.jobs.begin(), culledItr);
+      renderData.deferredAlphaMaskedJobsStartIndex =
+          (int) std::distance(renderData.jobs.begin(), deferredAlphaMaskedItr);
     }
 
     renderData.forwardOpaqueStartIndex          = (int) std::distance(renderData.jobs.begin(), forwardItr);

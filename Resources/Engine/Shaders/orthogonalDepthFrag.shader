@@ -28,12 +28,10 @@
 				alpha = ColorAlpha;
 			}
 
-#ifdef ENABLE_DISCARD_PIXEL
 			if (alpha < 0.1)
 			{
 				discard;
 			}
-#endif
 
 			fragColor = vec4(ComputeMoments(gl_FragCoord.z), 0.0, 0.0);
 		}

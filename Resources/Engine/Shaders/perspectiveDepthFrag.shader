@@ -29,12 +29,10 @@
 				alpha = ColorAlpha;
 			}
 
-#ifdef ENABLE_DISCARD_PIXEL
 			if (alpha < 0.1)
 			{
 				discard;
 			}
-#endif
 
 	    vec2 lightDistance = ComputeMoments(length(v_pos.xyz));
 	    fragColor = vec4(lightDistance, 0.0, 0.0);

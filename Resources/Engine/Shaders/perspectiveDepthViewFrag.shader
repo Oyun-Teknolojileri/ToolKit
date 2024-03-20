@@ -30,12 +30,10 @@
 				alpha = ColorAlpha;
 			}
 
-#ifdef ENABLE_DISCARD_PIXEL
 			if (alpha < 0.1)
 			{
 				discard;
 			}
-#endif
 
 			float depth = length(lightPos - v_pos) / far;
 			fragColor = vec4(depth, depth, depth, 1.0);

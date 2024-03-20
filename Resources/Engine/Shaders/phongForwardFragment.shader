@@ -61,14 +61,12 @@
 				emissive = emissiveColor;
 			}
 
-#ifdef ENABLE_DISCARD_PIXEL
 			if (useAlphaMask == 1)
 			{
 				if(color.a < alphaMaskTreshold){
 					discard;
 				}
 			}
-#endif
 
 			if (LightingOnly == 1)
 			{
