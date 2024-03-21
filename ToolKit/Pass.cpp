@@ -508,8 +508,6 @@ namespace ToolKit
     std::sort(begin, end, sortFn);
   }
 
-  void RenderJobProcessor::SortByDistToCamWithoutBreakingPartition() {}
-
   void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, const CameraPtr& camera)
   {
     FrustumCull(jobArray, camera);

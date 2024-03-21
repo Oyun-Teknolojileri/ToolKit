@@ -152,8 +152,6 @@ namespace ToolKit
     // in ascending order to camera. Accounts for isometric camera.
     static void SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam);
 
-    static void SortByDistToCamWithoutBreakingPartition();
-
     /**
      * Cull objects based on the sent camera. Update Job's frustumCulled state.
      */
