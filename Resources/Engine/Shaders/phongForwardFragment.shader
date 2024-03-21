@@ -67,6 +67,7 @@
 					discard;
 				}
 			}
+
 			if (LightingOnly == 1)
 			{
 				color.xyz = vec3(1.0);
