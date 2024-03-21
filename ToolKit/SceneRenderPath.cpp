@@ -166,6 +166,7 @@ namespace ToolKit
 
     RenderJobProcessor::SeperateRenderData(m_renderData, false);
     RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
+    RenderJobProcessor::StableSortByCameraWithPartition(m_renderData, m_params.Cam);
 
     // Assign lights for forward pass
     RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_updatedLights);

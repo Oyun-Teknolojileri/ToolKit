@@ -32,6 +32,7 @@ namespace ToolKit
    public:
     ForwardRenderPassParams m_params;
     MaterialPtr m_linearMaterial    = nullptr;
+    MaterialPtr m_linearAlphaMaskMaterial    = nullptr;
     FramebufferPtr m_framebuffer    = nullptr;
 
     DepthTexturePtr m_depthTexture  = nullptr; // This is used in case there is no gbuffer

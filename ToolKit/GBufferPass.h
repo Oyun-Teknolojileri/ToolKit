@@ -47,8 +47,9 @@ namespace ToolKit
     GBufferPassParams m_params;
 
    private:
-    bool m_initialized            = false;
-    MaterialPtr m_gBufferMaterial = nullptr;
+    bool m_initialized                       = false;
+    MaterialPtr m_gBufferMaterial            = nullptr;
+    MaterialPtr m_gBufferAlphaMaskedMaterial = nullptr;
   };
 
   typedef std::shared_ptr<GBufferPass> GBufferPassPtr;

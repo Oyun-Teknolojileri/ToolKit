@@ -296,6 +296,9 @@ namespace ToolKit
                                             [](const RenderJob& job) { return job.frustumCulled; });
 
     RenderJobItr forwardItr = culledItr;
+    RenderJobItr translucentItr;
+    RenderJobItr deferredAlphaMaskedItr;
+    RenderJobItr forwardAlphaMaskedItr;
 
     if (!forwardOnly)
     {
@@ -304,25 +307,34 @@ namespace ToolKit
                                   renderData.jobs.end(),
                                   [](const RenderJob& job)
                                   { return !job.Material->m_isShaderMaterial && !job.Material->IsTranslucent(); });
+
+      deferredAlphaMaskedItr =
+          std::partition(culledItr, forwardItr, [](const RenderJob& job) { return !job.Material->IsAlphaMasked(); });
     }
 
     // Group translucent.
-    RenderJobItr translucentItr = std::partition(forwardItr,
-                                                 renderData.jobs.end(),
-                                                 [](const RenderJob& job) { return !job.Material->IsTranslucent(); });
+    translucentItr = std::partition(forwardItr,
+                                    renderData.jobs.end(),
+                                    [](const RenderJob& job) { return !job.Material->IsTranslucent(); });
+
+    forwardAlphaMaskedItr =
+        std::partition(forwardItr, translucentItr, [](const RenderJob& job) { return !job.Material->IsAlphaMasked(); });
 
     if (forwardOnly)
     {
-      renderData.deferredJobsStartIndex  = -1;
-      renderData.forwardOpaqueStartIndex = (int) std::distance(renderData.jobs.begin(), culledItr);
+      renderData.deferredJobsStartIndex            = -1;
+      renderData.deferredAlphaMaskedJobsStartIndex = -1;
     }
     else
     {
-      renderData.deferredJobsStartIndex  = (int) std::distance(renderData.jobs.begin(), culledItr);
-      renderData.forwardOpaqueStartIndex = (int) std::distance(renderData.jobs.begin(), forwardItr);
+      renderData.deferredJobsStartIndex = (int) std::distance(renderData.jobs.begin(), culledItr);
+      renderData.deferredAlphaMaskedJobsStartIndex =
+          (int) std::distance(renderData.jobs.begin(), deferredAlphaMaskedItr);
     }
 
-    renderData.forwardTranslucentStartIndex = (int) std::distance(renderData.jobs.begin(), translucentItr);
+    renderData.forwardOpaqueStartIndex          = (int) std::distance(renderData.jobs.begin(), forwardItr);
+    renderData.forwardAlphaMaskedJobsStartIndex = (int) std::distance(renderData.jobs.begin(), forwardAlphaMaskedItr);
+    renderData.forwardTranslucentStartIndex     = (int) std::distance(renderData.jobs.begin(), translucentItr);
   }
 
   void RenderJobProcessor::AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex)
@@ -465,14 +477,17 @@ namespace ToolKit
     return directionalLightEndIndex;
   }
 
-  void RenderJobProcessor::SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam)
+  void RenderJobProcessor::StableSortByDistanceToCamera(RenderJobItr begin,
+                                                        RenderJobItr end,
+                                                        const CameraPtr& cam,
+                                                        bool frontToBack)
   {
     CPU_FUNC_RANGE();
 
     Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
-    std::function<bool(const RenderJob&, const RenderJob&)> sortFn = [&camLoc](const RenderJob& j1,
-                                                                               const RenderJob& j2) -> bool
+    std::function<bool(const RenderJob&, const RenderJob&)> sortFn = [&camLoc, frontToBack](const RenderJob& j1,
+                                                                                            const RenderJob& j2) -> bool
     {
       const BoundingBox& bb1 = j1.BoundingBox;
       const BoundingBox& bb2 = j2.BoundingBox;
@@ -480,7 +495,14 @@ namespace ToolKit
       float first            = glm::length2(bb1.GetCenter() - camLoc);
       float second           = glm::length2(bb2.GetCenter() - camLoc);
 
-      return second < first;
+      if (frontToBack)
+      {
+        return second > first;
+      }
+      else
+      {
+        return second < first;
+      }
     };
 
     if (cam->IsOrtographic())
@@ -493,7 +515,39 @@ namespace ToolKit
       };
     }
 
-    std::sort(begin, end, sortFn);
+    std::stable_sort(begin, end, sortFn);
+  }
+
+  void RenderJobProcessor::StableSortByCameraWithPartition(RenderData& renderData, const CameraPtr& cam)
+  {
+    RenderJobItr begin, end;
+
+    if (renderData.deferredJobsStartIndex != -1)
+    {
+      begin = renderData.GetDefferedBegin();
+      end   = renderData.GetDeferredAlphaMaskedBegin();
+      StableSortByDistanceToCamera(begin, end, cam, true);
+
+      begin = renderData.GetDeferredAlphaMaskedBegin();
+      end   = renderData.GetForwardOpaqueBegin();
+      StableSortByDistanceToCamera(begin, end, cam, true);
+    }
+
+    begin = renderData.GetForwardOpaqueBegin();
+    end   = renderData.GetForwardAlphaMaskedBegin();
+    StableSortByDistanceToCamera(begin, end, cam, true);
+
+    begin = renderData.GetForwardAlphaMaskedBegin();
+    end   = renderData.GetForwardTranslucentBegin();
+    StableSortByDistanceToCamera(begin, end, cam, true);
+
+    begin = renderData.GetForwardAlphaMaskedBegin();
+    end   = renderData.GetForwardTranslucentBegin();
+    StableSortByDistanceToCamera(begin, end, cam, true);
+
+    begin = renderData.GetForwardAlphaMaskedBegin();
+    end   = renderData.GetForwardTranslucentBegin();
+    StableSortByDistanceToCamera(begin, end, cam, false);
   }
 
   void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, const CameraPtr& camera)
@@ -530,20 +584,27 @@ namespace ToolKit
                        { return a.Material->GetIdVal() < b.Material->GetIdVal(); });
     };
 
-    // Deferred partition.
+    RenderJobItr begin, end;
+
     if (renderData.deferredJobsStartIndex != -1)
     {
-      RenderJobItr begin = renderData.GetDefferedBegin();
-      RenderJobItr end   = renderData.GetForwardOpaqueBegin();
+      begin = renderData.GetDefferedBegin();
+      end   = renderData.GetDeferredAlphaMaskedBegin();
+      sortRangeFn(begin, end);
+
+      begin = renderData.GetDeferredAlphaMaskedBegin();
+      end   = renderData.GetForwardOpaqueBegin();
       sortRangeFn(begin, end);
     }
 
-    // Forward Opaque
-    RenderJobItr begin = renderData.GetForwardOpaqueBegin();
-    RenderJobItr end   = renderData.GetForwardTranslucentBegin();
+    begin = renderData.GetForwardOpaqueBegin();
+    end   = renderData.GetForwardAlphaMaskedBegin();
     sortRangeFn(begin, end);
 
-    // Forward Translucent
+    begin = renderData.GetForwardAlphaMaskedBegin();
+    end   = renderData.GetForwardTranslucentBegin();
+    sortRangeFn(begin, end);
+
     begin = renderData.GetForwardTranslucentBegin();
     end   = renderData.jobs.end();
     sortRangeFn(begin, end);

@@ -51,20 +51,22 @@ namespace ToolKit
 
     m_framebuffer                               = MakeNewPtr<Framebuffer>();
     m_gBufferMaterial                           = MakeNewPtr<Material>();
+    m_gBufferAlphaMaskedMaterial                = MakeNewPtr<Material>();
   }
 
   GBufferPass::GBufferPass(const GBufferPassParams& params) : GBufferPass() { m_params = params; }
 
   GBufferPass::~GBufferPass()
   {
-    m_framebuffer     = nullptr;
-    m_gPosRt          = nullptr;
-    m_gNormalRt       = nullptr;
-    m_gColorRt        = nullptr;
-    m_gEmissiveRt     = nullptr;
-    m_gIblRt          = nullptr;
-    m_gLinearDepthRt  = nullptr;
-    m_gBufferMaterial = nullptr;
+    m_framebuffer                = nullptr;
+    m_gPosRt                     = nullptr;
+    m_gNormalRt                  = nullptr;
+    m_gColorRt                   = nullptr;
+    m_gEmissiveRt                = nullptr;
+    m_gIblRt                     = nullptr;
+    m_gLinearDepthRt             = nullptr;
+    m_gBufferMaterial            = nullptr;
+    m_gBufferAlphaMaskedMaterial = nullptr;
   }
 
   void GBufferPass::InitGBuffers(int width, int height)
@@ -123,11 +125,17 @@ namespace ToolKit
     // Gbuffer material
     ShaderPtr vertexShader              = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     ShaderPtr fragmentShader            = GetShaderManager()->Create<Shader>(ShaderPath("gBufferFrag.shader", true));
-
     m_gBufferMaterial->m_vertexShader   = vertexShader;
     m_gBufferMaterial->m_fragmentShader = fragmentShader;
+    m_gBufferMaterial->Init();
 
-    m_initialized                       = true;
+    fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("gBufferFrag_alphamask.shader", true));
+    vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
+    m_gBufferAlphaMaskedMaterial->m_vertexShader   = vertexShader;
+    m_gBufferAlphaMaskedMaterial->m_fragmentShader = fragmentShader;
+    m_gBufferAlphaMaskedMaterial->Init();
+
+    m_initialized = true;
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
@@ -165,11 +173,6 @@ namespace ToolKit
     renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
     renderer->SetCamera(m_params.Camera, true);
 
-    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
-    m_program =
-        gpuProgramManager->CreateProgram(m_gBufferMaterial->m_vertexShader, m_gBufferMaterial->m_fragmentShader);
-    renderer->BindProgram(m_program);
-
     POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
@@ -190,10 +193,30 @@ namespace ToolKit
     PUSH_GPU_MARKER("GBufferPass::Render");
     PUSH_CPU_MARKER("GBufferPass::Render");
 
-    Renderer* renderer = GetRenderer();
+    Renderer* renderer                   = GetRenderer();
+
+    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+
+    // render opaque
+    m_program =
+        gpuProgramManager->CreateProgram(m_gBufferMaterial->m_vertexShader, m_gBufferMaterial->m_fragmentShader);
+    renderer->BindProgram(m_program);
 
     RenderJobItr begin = m_params.renderData->GetDefferedBegin();
-    RenderJobItr end   = m_params.renderData->GetForwardOpaqueBegin();
+    RenderJobItr end   = m_params.renderData->GetDeferredAlphaMaskedBegin();
+
+    for (RenderJobItr job = begin; job != end; job++)
+    {
+      renderer->Render(*job);
+    }
+
+    // render alpha masked
+    m_program = gpuProgramManager->CreateProgram(m_gBufferAlphaMaskedMaterial->m_vertexShader,
+                                                 m_gBufferAlphaMaskedMaterial->m_fragmentShader);
+    renderer->BindProgram(m_program);
+
+    begin = m_params.renderData->GetDeferredAlphaMaskedBegin();
+    end   = m_params.renderData->GetForwardOpaqueBegin();
 
     for (RenderJobItr job = begin; job != end; job++)
     {

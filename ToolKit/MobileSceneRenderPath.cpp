@@ -141,6 +141,7 @@ namespace ToolKit
     // RenderJobProcessor::CullRenderJobs(m_renderData.jobs, m_params.Cam);
     RenderJobProcessor::SeperateRenderData(m_renderData, true);
     RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
+    RenderJobProcessor::StableSortByCameraWithPartition(m_renderData, m_params.Cam);
 
     // TK_LOG("Culled");
     // int i = 0;
