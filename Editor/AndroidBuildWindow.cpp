@@ -11,6 +11,8 @@
 
 namespace ToolKit::Editor
 {
+  TKDefineClass(AndroidBuildWindow, Window);
+
   void AndroidBuildWindow::Show()
   {
     ImGuiIO io = ImGui::GetIO();
@@ -46,6 +48,7 @@ namespace ToolKit::Editor
     ImGui::InputInt("Max SDK", &m_maxSdk);
 
     ImGui::Text("Select Orientation:");
+
     const char* orientations[] = {"Automatic", "Landscape", "Portrait"};
     ImGui::Combo("##OrientationCombo", (int*) &m_selectedOriantation, orientations, 3);
 
@@ -57,7 +60,7 @@ namespace ToolKit::Editor
 
     if (ImGui::Button("Cancel"))
     {
-      UI::RemoveTempWindow(this);
+      RemoveFromUI();
       m_menuOpen = false;
     }
 
@@ -74,7 +77,7 @@ namespace ToolKit::Editor
       publisher->m_deployAfterBuild = m_deployAfterBuild;
 
       g_app->m_publishManager->Publish(PublishPlatform::Android, m_publishType);
-      UI::RemoveTempWindow(this);
+      RemoveFromUI();
       m_menuOpen = false;
     }
 
@@ -101,7 +104,7 @@ namespace ToolKit::Editor
 
     m_publishType = publishType;
 
-    UI::AddTempWindow(this);
+    AddToUI();
     m_menuOpen = true;
   }
 } // namespace ToolKit::Editor

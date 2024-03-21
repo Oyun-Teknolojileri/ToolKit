@@ -189,6 +189,9 @@
     <ClCompile Include="StatsWindow.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
+    <ClCompile Include="DirectoryEntry.cpp">
+      <Filter>UI\Window</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mod.h">
@@ -339,6 +342,9 @@
       <Filter>UI\Window</Filter>
     </ClInclude>
     <ClInclude Include="StatsWindow.h">
+      <Filter>UI\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectoryEntry.h">
       <Filter>UI\Window</Filter>
     </ClInclude>
   </ItemGroup>

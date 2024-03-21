@@ -23,11 +23,12 @@ namespace ToolKit
 
     StringInputWindow::StringInputWindow() {}
 
-    StringInputWindow::StringInputWindow(const String& name, bool showCancel)
+    void StringInputWindow::NativeConstruct(const String& name, bool showCancel)
     {
+      Super::NativeConstruct();
+
       m_name       = name;
       m_showCancel = showCancel;
-      UI::m_volatileWindows.push_back(this);
     }
 
     void StringInputWindow::Show()
@@ -76,10 +77,11 @@ namespace ToolKit
 
         if (ImGui::Button("OK", ImVec2(120, 0)))
         {
-          m_visible = false;
           m_taskFn(m_inputVal);
+          m_visible = false;
           m_inputVal.clear();
           ImGui::CloseCurrentPopup();
+          RemoveFromUI();
         }
 
         if (m_showCancel)
@@ -90,6 +92,7 @@ namespace ToolKit
             m_visible = false;
             m_inputVal.clear();
             ImGui::CloseCurrentPopup();
+            RemoveFromUI();
           }
         }
 
@@ -115,17 +118,17 @@ namespace ToolKit
 
     YesNoWindow::YesNoWindow() {}
 
-    YesNoWindow::YesNoWindow(const String& name, const String& msg)
+    void YesNoWindow::NativeConstruct(const String& name, const String& msg)
     {
       m_name = name;
       m_msg  = msg;
     }
 
-    YesNoWindow::YesNoWindow(const String& name,
-                             const String& yesBtnText,
-                             const String& noBtnText,
-                             const String& msg,
-                             bool showCancel)
+    void YesNoWindow::NativeConstruct(const String& name,
+                                      const String& yesBtnText,
+                                      const String& noBtnText,
+                                      const String& msg,
+                                      bool showCancel)
     {
       m_name       = name;
       m_yesText    = yesBtnText;
@@ -208,8 +211,10 @@ namespace ToolKit
 
     MultiChoiceWindow::MultiChoiceWindow() {}
 
-    MultiChoiceWindow::MultiChoiceWindow(const String& name, const String& msg)
+    void MultiChoiceWindow::NativeConstruct(const String& name, const String& msg)
     {
+      Super::NativeConstruct();
+
       m_name = name;
       m_msg  = msg;
       m_buttons.resize(2);
@@ -217,11 +222,13 @@ namespace ToolKit
       m_buttons[1].m_name = "No";
     }
 
-    MultiChoiceWindow::MultiChoiceWindow(const String& name,
-                                         const std::vector<ButtonInfo>& buttons,
-                                         const String& msg,
-                                         bool showCancel)
+    void MultiChoiceWindow::NativeConstruct(const String& name,
+                                            const std::vector<ButtonInfo>& buttons,
+                                            const String& msg,
+                                            bool showCancel)
     {
+      Super::NativeConstruct();
+
       m_name       = name;
       m_buttons    = buttons;
       m_msg        = msg;

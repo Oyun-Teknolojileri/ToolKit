@@ -23,7 +23,7 @@ namespace ToolKit
       TKDeclareClass(StringInputWindow, Window);
 
       StringInputWindow();
-      StringInputWindow(const String& name, bool showCancel);
+      virtual void NativeConstruct(const String& name, bool showCancel);
       void Show() override;
 
      public:
@@ -38,6 +38,8 @@ namespace ToolKit
       bool m_showCancel;
     };
 
+    typedef std::shared_ptr<StringInputWindow> StringInputWindowPtr;
+
     // YesNoWindow
     //////////////////////////////////////////////////////////////////////////
 
@@ -47,12 +49,12 @@ namespace ToolKit
       TKDeclareClass(YesNoWindow, Window);
 
       YesNoWindow();
-      YesNoWindow(const String& name, const String& msg = "");
-      YesNoWindow(const String& name,
-                  const String& yesBtnText,
-                  const String& noBtnText,
-                  const String& msg,
-                  bool showCancel);
+      virtual void NativeConstruct(const String& name, const String& msg = "");
+      virtual void NativeConstruct(const String& name,
+                                   const String& yesBtnText,
+                                   const String& noBtnText,
+                                   const String& msg,
+                                   bool showCancel);
       void Show() override;
 
      public:
@@ -63,6 +65,8 @@ namespace ToolKit
       String m_noText;
       bool m_showCancel = false;
     };
+
+    typedef std::shared_ptr<YesNoWindow> YesNoWindowPtr;
 
     // MultiChoiceWindow
     //////////////////////////////////////////////////////////////////////////
@@ -79,8 +83,14 @@ namespace ToolKit
       };
 
       MultiChoiceWindow();
-      MultiChoiceWindow(const String& name, const String& msg = "");
-      MultiChoiceWindow(const String& name, const std::vector<ButtonInfo>& buttons, const String& msg, bool showCancel);
+
+      // TODO Create derived types.
+      virtual void NativeConstruct(const String& name, const String& msg = "");
+
+      virtual void NativeConstruct(const String& name,
+                                   const std::vector<ButtonInfo>& buttons,
+                                   const String& msg,
+                                   bool showCancel);
       void Show() override;
 
      public:
@@ -88,6 +98,8 @@ namespace ToolKit
       String m_msg;
       bool m_showCancel = false;
     };
+
+    typedef std::shared_ptr<MultiChoiceWindow> MultiChoiceWindowPtr;
 
   } // namespace Editor
 } // namespace ToolKit

@@ -21,7 +21,7 @@ namespace ToolKit
 
     FolderView::FolderView() { CreateItemActions(); }
 
-    FolderView::~FolderView() { SafeDel(m_tempMaterialWindow); }
+    FolderView::~FolderView() {}
 
     FolderView::FolderView(class FolderWindow* parent) : FolderView() { m_parent = parent; }
 
@@ -407,23 +407,19 @@ namespace ToolKit
             {
               if (rm->m_baseType == Material::StaticClass())
               {
-                MaterialPtr mat = rm->Create<Material>(dirEnt.GetFullPath());
-                if (m_tempMaterialWindow == nullptr)
-                {
-                  m_tempMaterialWindow = new TempMaterialWindow();
-                }
-                m_tempMaterialWindow->SetMaterial(mat);
-                m_tempMaterialWindow->OpenWindow();
+                MaterialPtr mat                   = rm->Create<Material>(dirEnt.GetFullPath());
+                TempMaterialWindowPtr materialWnd = MakeNewPtr<TempMaterialWindow>();
+                materialWnd->SetMaterial(mat);
+                materialWnd->AddToUI();
+                materialWnd->OpenWindow();
               }
               else if (rm->m_baseType == Material::StaticClass())
               {
-                MaterialPtr mat = rm->Create<Material>(dirEnt.GetFullPath());
-                if (m_tempMaterialWindow == nullptr)
-                {
-                  m_tempMaterialWindow = new TempMaterialWindow();
-                }
-                m_tempMaterialWindow->SetMaterial(mat);
-                m_tempMaterialWindow->OpenWindow();
+                MaterialPtr mat                   = rm->Create<Material>(dirEnt.GetFullPath());
+                TempMaterialWindowPtr materialWnd = MakeNewPtr<TempMaterialWindow>();
+                materialWnd->SetMaterial(mat);
+                materialWnd->AddToUI();
+                materialWnd->OpenWindow();
               }
               else if (rm->m_baseType == Mesh::StaticClass())
               {
@@ -527,6 +523,8 @@ namespace ToolKit
         ImGui::EndTabItem();
       }
     }
+
+    void FolderView::SetDirty() { m_dirty = true; }
 
     void FolderView::SetPath(const String& path)
     {
@@ -762,12 +760,12 @@ namespace ToolKit
 
         if (ImGui::MenuItem("MakeDir"))
         {
-          StringInputWindow* inputWnd = new StringInputWindow("New Directory##NwDirName", true);
-          inputWnd->m_inputLabel      = "Name";
-          inputWnd->m_hint            = "Directory name...";
-          inputWnd->m_illegalChars    = {'/', ':', '*', '?', '"', '<', '>', '|', '\\'};
+          StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("New Directory##NwDirName", true);
+          inputWnd->m_inputLabel        = "Name";
+          inputWnd->m_hint              = "Directory name...";
+          inputWnd->m_illegalChars      = {'/', ':', '*', '?', '"', '<', '>', '|', '\\'};
 
-          inputWnd->m_taskFn          = [views, inputWnd](const String& val)
+          inputWnd->m_taskFn            = [views, inputWnd](const String& val)
           {
             String file = ConcatPaths({views[0]->m_path, val});
             std::filesystem::create_directories(file);
@@ -776,6 +774,8 @@ namespace ToolKit
               view->m_dirty = true;
             }
           };
+          inputWnd->AddToUI();
+
           thisView->m_parent->ReconstructFolderTree();
           ImGui::CloseCurrentPopup();
         }
@@ -798,12 +798,13 @@ namespace ToolKit
             String oldFile = entry->GetFullPath();
             DecomposePath(oldFile, nullptr, &oldName, nullptr);
 
-            StringInputWindow* inputWnd = new StringInputWindow("New Name##NwName", true);
-            inputWnd->m_inputVal        = oldName;
-            inputWnd->m_inputLabel      = "New Name";
-            inputWnd->m_hint            = "New name...";
+            StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("New Name##NwName", true);
+            inputWnd->m_inputVal          = oldName;
+            inputWnd->m_inputLabel        = "New Name";
+            inputWnd->m_hint              = "New name...";
+            inputWnd->AddToUI();
 
-            inputWnd->m_taskFn          = [views, oldFile](const String& val)
+            inputWnd->m_taskFn = [views, oldFile](const String& val)
             {
               String path, ext;
               DecomposePath(oldFile, &path, nullptr, &ext);
@@ -934,11 +935,13 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Create"))
         {
-          StringInputWindow* inputWnd = new StringInputWindow("Scene Name##ScnMat", true);
-          inputWnd->m_inputVal        = "New Scene";
-          inputWnd->m_inputLabel      = "Name";
-          inputWnd->m_hint            = "New scene name...";
-          inputWnd->m_taskFn          = [views, extention](const String& val)
+          StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("Scene Name##ScnMat", true);
+          inputWnd->m_inputVal          = "New Scene";
+          inputWnd->m_inputLabel        = "Name";
+          inputWnd->m_hint              = "New scene name...";
+          inputWnd->AddToUI();
+
+          inputWnd->m_taskFn = [views, extention](const String& val)
           {
             String file = ConcatPaths({views[0]->m_path, val + extention});
             if (CheckFile(file))
@@ -982,11 +985,13 @@ namespace ToolKit
         {
           auto inputWindowFn = [&views, &thisView](bool isPbr)
           {
-            StringInputWindow* inputWnd = new StringInputWindow("Material Name##NwMat", true);
-            inputWnd->m_inputVal        = "New Material";
-            inputWnd->m_inputLabel      = "Name";
-            inputWnd->m_hint            = "New material name";
-            inputWnd->m_taskFn          = [views, isPbr](const String& val)
+            StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("Material Name##NwMat", true);
+            inputWnd->m_inputVal          = "New Material";
+            inputWnd->m_inputLabel        = "Name";
+            inputWnd->m_hint              = "New material name";
+            inputWnd->AddToUI();
+
+            inputWnd->m_taskFn = [views, isPbr](const String& val)
             {
               String file = ConcatPaths({views[0]->m_path, val + MATERIAL});
               if (CheckFile(file))

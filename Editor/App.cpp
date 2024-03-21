@@ -92,11 +92,13 @@ namespace ToolKit
 
       if (!CheckFile(m_workspace.GetActiveWorkspace()))
       {
-        StringInputWindow* wsDir = new StringInputWindow("Set Workspace Directory##SetWsdir", false);
-        wsDir->m_hint            = "User/Documents/ToolKit";
-        wsDir->m_inputLabel      = "Workspace Directory";
-        wsDir->m_name            = "Set Workspace Directory";
-        wsDir->m_taskFn          = [](const String& val) -> void
+        StringInputWindowPtr wsDir = MakeNewPtr<StringInputWindow>("Set Workspace Directory##SetWsdir", false);
+        wsDir->m_hint              = "User/Documents/ToolKit";
+        wsDir->m_inputLabel        = "Workspace Directory";
+        wsDir->m_name              = "Set Workspace Directory";
+        wsDir->AddToUI();
+
+        wsDir->m_taskFn = [](const String& val) -> void
         {
           String cmd = "SetWorkspaceDir --path \"" + val + "\"";
           g_app->GetConsole()->ExecCommand(cmd);
@@ -328,17 +330,16 @@ namespace ToolKit
       if (currScene->m_newScene && CheckFile(fullPath))
       {
         String msg                   = "Scene " + fullPath + " exist on the disk.\nOverride the existing scene ?";
-        YesNoWindow* overrideScene   = new YesNoWindow("Override existing file##OvrdScn", msg);
-        overrideScene->m_yesCallback = [&saveFn]() { saveFn(); };
+        YesNoWindowPtr overrideScene = MakeNewPtr<YesNoWindow>("Override existing file##OvrdScn", msg);
+        overrideScene->AddToUI();
 
+        overrideScene->m_yesCallback = [&saveFn]() { saveFn(); };
         overrideScene->m_noCallback  = []()
         {
           g_app->GetConsole()->AddLog("Scene has not been saved.\n"
                                       "A scene with the same name exist. Use File->SaveAs.",
                                       LogType::Error);
         };
-
-        UI::m_volatileWindows.push_back(overrideScene);
       }
       else
       {
@@ -348,10 +349,12 @@ namespace ToolKit
 
     void App::OnSaveAsScene()
     {
-      StringInputWindow* inputWnd = new StringInputWindow("SaveScene##SvScn1", true);
-      inputWnd->m_inputLabel      = "Name";
-      inputWnd->m_hint            = "Scene name";
-      inputWnd->m_taskFn          = [](const String& val)
+      StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("SaveScene##SvScn1", true);
+      inputWnd->m_inputLabel        = "Name";
+      inputWnd->m_hint              = "Scene name";
+      inputWnd->AddToUI();
+
+      inputWnd->m_taskFn = [](const String& val)
       {
         String path;
         EditorScenePtr currScene = g_app->GetCurrentScene();
@@ -375,7 +378,7 @@ namespace ToolKit
 
       if (!m_onQuit)
       {
-        YesNoWindow* reallyQuit   = new YesNoWindow("Quiting... Are you sure?##ClsApp");
+        YesNoWindowPtr reallyQuit = MakeNewPtr<YesNoWindow>("Quiting... Are you sure?##ClsApp");
 
         reallyQuit->m_yesCallback = [this]()
         {
@@ -386,8 +389,8 @@ namespace ToolKit
         };
 
         reallyQuit->m_noCallback = [this]() { m_onQuit = false; };
+        reallyQuit->AddToUI();
 
-        UI::m_volatileWindows.push_back(reallyQuit);
         m_onQuit = true;
       }
     }

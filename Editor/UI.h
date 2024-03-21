@@ -31,16 +31,6 @@ namespace ToolKit
       Grey  = 3
     };
 
-    /**
-     * Deprecated, use volatile windows.
-     * UI::m_volatileWindows
-     */
-    class TempWindow
-    {
-     public:
-      virtual void Show() = 0;
-    };
-
     class UI
     {
      public:
@@ -62,8 +52,6 @@ namespace ToolKit
       static void ShowMenuProjects();
       static void ShowImportWindow();
       static void ShowSearchForFilesWindow();
-      static void AddTempWindow(TempWindow* window);
-      static void RemoveTempWindow(TempWindow* window);
       static void HelpMarker(const String& key, const char* desc, float wait = m_hoverTimeForHelp);
       static void ShowNewSceneWindow();
       static void ShowBlocker();
@@ -99,9 +87,6 @@ namespace ToolKit
       static bool m_windowMenushowMetrics;
       static float m_hoverTimeForHelp;
 
-      // Volatile windows. (Pop-ups etc.)
-      static WindowRawPtrArray m_volatileWindows;
-
       static struct Blocker
       {
         bool Show               = false;
@@ -129,10 +114,6 @@ namespace ToolKit
 
       // Some actions needed to be run after ui rendered.
       static std::vector<std::function<void()>> m_postponedActions;
-
-      // TODO: Volatile window serves this purpose. This one is not needed, merge them.
-      static std::vector<TempWindow*> m_tempWindows;
-      static std::vector<TempWindow*> m_removedTempWindows;
 
       // Toolbar Icons.
       static TexturePtr m_selectIcn;

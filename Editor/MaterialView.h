@@ -14,6 +14,10 @@ namespace ToolKit
 {
   namespace Editor
   {
+
+    // MaterialView
+    //////////////////////////////////////////////////////////////////////////
+
     class MaterialView : public View
     {
      public:
@@ -42,11 +46,17 @@ namespace ToolKit
 
     typedef std::shared_ptr<MaterialView> MaterialViewPtr;
 
-    class TempMaterialWindow : public TempWindow
+    // TempMaterialWindow
+    //////////////////////////////////////////////////////////////////////////
+
+    class TempMaterialWindow : public Window
     {
      public:
+      TKDeclareClass(TempMaterialWindow, Window);
+
       TempMaterialWindow();
       ~TempMaterialWindow();
+
       void SetMaterial(MaterialPtr mat);
       void OpenWindow();
       void Show() override;

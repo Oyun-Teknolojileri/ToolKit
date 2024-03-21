@@ -24,43 +24,6 @@ namespace ToolKit
 {
   namespace Editor
   {
-    DirectoryEntry::DirectoryEntry() {}
-
-    DirectoryEntry::DirectoryEntry(const String& fullPath)
-    {
-      DecomposePath(fullPath, &m_rootPath, &m_fileName, &m_ext);
-    }
-
-    String DirectoryEntry::GetFullPath() const { return ConcatPaths({m_rootPath, m_fileName + m_ext}); }
-
-    ResourceManager* DirectoryEntry::GetManager() const
-    {
-      using GetterFunction = std::function<ResourceManager*()>;
-
-      static std::unordered_map<String, GetterFunction> extToResource {
-          {ANIM,     GetAnimationManager},
-          {AUDIO,    GetAudioManager    },
-          {MATERIAL, GetMaterialManager },
-          {MESH,     GetMeshManager     },
-          {SKINMESH, GetMeshManager     },
-          {SHADER,   GetShaderManager   },
-          {HDR,      GetTextureManager  },
-          {SCENE,    GetSceneManager    }
-      };
-
-      auto resourceManager = extToResource.find(m_ext);
-      if (resourceManager != extToResource.end())
-      {
-        return resourceManager->second(); // call get function
-      }
-
-      if (SupportedImageFormat(m_ext))
-      {
-        return GetTextureManager();
-      }
-
-      return nullptr;
-    }
 
     String GetRootPath(const String& folder)
     {
@@ -96,8 +59,6 @@ namespace ToolKit
       }
       return DefaultPath();
     }
-
-    RenderTargetPtr DirectoryEntry::GetThumbnail() const { return g_app->m_thumbnailManager.GetThumbnail(*this); }
 
     TKDefineClass(FolderWindow, Window);
 

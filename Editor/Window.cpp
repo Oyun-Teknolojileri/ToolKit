@@ -18,6 +18,8 @@ namespace ToolKit
 
     TKDefineClass(Window, Object);
 
+    uint Window::m_baseId = 0;
+
     Window::Window()
     {
       m_size = UVec2(640, 480);
@@ -39,6 +41,25 @@ namespace ToolKit
     bool Window::CanDispatchSignals() const { return m_active && m_visible && m_mouseHover; }
 
     void Window::DispatchSignals() const {}
+
+    void Window::AddToUI()
+    {
+      if (g_app != nullptr)
+      {
+        g_app->m_windows.push_back(Self<Window>());
+      }
+    }
+
+    void Window::RemoveFromUI()
+    {
+      if (g_app != nullptr)
+      {
+        Object* self = this;
+        UI::m_postponedActions.push_back(
+            [self]() -> void
+            { erase_if(g_app->m_windows, [self](WindowPtr wnd) -> bool { return wnd->IsSame(self); }); });
+      }
+    }
 
     XmlNode* Window::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {

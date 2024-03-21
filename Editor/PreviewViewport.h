@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "EditorViewport.h"
+
 namespace ToolKit
 {
   namespace Editor

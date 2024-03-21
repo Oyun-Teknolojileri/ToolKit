@@ -14,6 +14,8 @@
 
 namespace ToolKit::Editor
 {
+  TKDefineClass(MultiChoiceCraeteWindow, Window);
+
   bool MultiChoiceCraeteWindow::IsVariantValid()
   {
     if (m_variant.Choices.size() < 2ull)
@@ -133,14 +135,15 @@ namespace ToolKit::Editor
 
       m_parameter->Add(customVar);
       m_menuOpen = false;
-      UI::RemoveTempWindow(this);
+
+      AddToUI();
     }
 
     ImGui::SameLine();
     if (ImGui::Button("Cancel"))
     {
       m_menuOpen = false;
-      UI::RemoveTempWindow(this);
+      RemoveFromUI();
     }
 
     ImGui::End();
@@ -149,9 +152,12 @@ namespace ToolKit::Editor
   void MultiChoiceCraeteWindow::OpenCreateWindow(ParameterBlock* parameter)
   {
     if (m_menuOpen)
+    {
       return;
+    }
 
-    UI::AddTempWindow(this);
+    AddToUI();
+
     m_variant   = MultiChoiceVariant();
     m_menuOpen  = true;
     m_parameter = parameter;

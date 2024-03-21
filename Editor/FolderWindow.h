@@ -7,34 +7,14 @@
 
 #pragma once
 
+#include "DirectoryEntry.h"
+#include "MaterialView.h"
 #include "UI.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
-    class DirectoryEntry
-    {
-     public:
-      DirectoryEntry();
-      explicit DirectoryEntry(const String& fullPath);
-      String GetFullPath() const;
-      ResourceManager* GetManager() const;
-      RenderTargetPtr GetThumbnail() const;
-
-     public:
-      String m_ext;
-      String m_fileName;
-      String m_rootPath;
-      bool m_isDirectory = false;
-      bool m_cutting     = false;
-
-     private:
-      MaterialPtr m_tempThumbnailMaterial = nullptr;
-    };
-
-    class FolderWindow;
-    typedef std::vector<FolderWindow*> FolderWindowRawPtrArray;
 
     struct FileDragData
     {
@@ -42,17 +22,17 @@ namespace ToolKit
       DirectoryEntry** Entries = nullptr;
     };
 
+    class FolderWindow;
+
     class FolderView
     {
      public:
       FolderView();
       ~FolderView();
-      explicit FolderView(FolderWindow* parent);
+      FolderView(FolderWindow* parent);
 
       void Show();
-
-      void SetDirty() { m_dirty = true; }
-
+      void SetDirty();
       void SetPath(const String& path);
       const String& GetPath() const;
       void Iterate();
@@ -61,7 +41,6 @@ namespace ToolKit
       void Refresh();
       float GetThumbnailZoomPercent(float thumbnailZoom);
       int SelectFolder(FolderWindow* window, const String& path);
-
       void DropFiles(const String& dst); //!< drop selectedFiles
 
       static const FileDragData& GetFileDragData();
@@ -108,8 +87,7 @@ namespace ToolKit
       std::unordered_map<String, std::function<void(DirectoryEntry*, FolderView*)>> m_itemActions;
 
       // If you change this value, change the calculaton of thumbnail zoom
-      const float m_thumbnailMaxZoom                 = 300.f;
-      class TempMaterialWindow* m_tempMaterialWindow = nullptr;
+      const float m_thumbnailMaxZoom = 300.f;
     };
 
     class FolderWindow : public Window
@@ -180,6 +158,7 @@ namespace ToolKit
     };
 
     typedef std::shared_ptr<FolderWindow> FolderWindowPtr;
+    typedef std::vector<FolderWindow*> FolderWindowRawPtrArray;
 
   } // namespace Editor
 } // namespace ToolKit

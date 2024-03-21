@@ -399,18 +399,21 @@ namespace ToolKit
       }
     }
 
-    // ######   TempMaterialWindow   ######
+    // TempMaterialWindow
+    //////////////////////////////////////////////////////////////////////////
+
+    TKDefineClass(TempMaterialWindow, Window);
 
     TempMaterialWindow::TempMaterialWindow()
     {
       m_view               = MakeNewPtr<MaterialView>();
       m_view->m_isTempView = true;
-      UI::AddTempWindow(this);
+      AddToUI();
     }
 
     TempMaterialWindow::~TempMaterialWindow()
     {
-      UI::RemoveTempWindow(this);
+      RemoveFromUI();
       m_view = nullptr;
     }
 
@@ -425,9 +428,7 @@ namespace ToolKit
         return;
       }
 
-      ImGuiIO io       = ImGui::GetIO();
-
-      ImGuiStyle style = ImGui::GetStyle();
+      ImGuiIO io = ImGui::GetIO();
       ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_Once);
       ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
                               ImGuiCond_Once,
@@ -439,5 +440,6 @@ namespace ToolKit
 
       ImGui::End();
     }
+
   } // namespace Editor
 } // namespace ToolKit

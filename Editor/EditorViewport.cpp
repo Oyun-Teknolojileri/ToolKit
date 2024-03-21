@@ -624,6 +624,7 @@ namespace ToolKit
               String fullPath = entry.GetFullPath();
               g_app->OpenScene(fullPath);
             };
+
             MultiChoiceWindow::ButtonInfo linkButton;
             linkButton.m_name     = "Link";
             linkButton.m_callback = [entry]() -> void
@@ -631,6 +632,7 @@ namespace ToolKit
               String fullPath = entry.GetFullPath();
               g_app->LinkScene(fullPath);
             };
+
             MultiChoiceWindow::ButtonInfo mergeButton;
             mergeButton.m_name     = "Merge";
             mergeButton.m_callback = [entry]() -> void
@@ -638,12 +640,13 @@ namespace ToolKit
               String fullPath = entry.GetFullPath();
               g_app->MergeScene(fullPath);
             };
-            MultiChoiceWindow* importOptionWnd = new MultiChoiceWindow("Open Scene",
-                                                                       {openButton, linkButton, mergeButton},
-                                                                       "Open or Link the scene ?",
-                                                                       true);
 
-            UI::m_volatileWindows.push_back(importOptionWnd);
+            // TODO Create fixed window for this, it has been copy pasted.
+            std::vector<MultiChoiceWindow::ButtonInfo> buttons = {openButton, linkButton, mergeButton};
+            MultiChoiceWindowPtr importOptionWnd =
+                MakeNewPtr<MultiChoiceWindow>("Open Scene", buttons, "Open, link or merge the scene?", true);
+
+            importOptionWnd->AddToUI();
           }
           else if (entry.m_ext == MATERIAL)
           {

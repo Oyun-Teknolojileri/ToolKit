@@ -36,6 +36,18 @@ namespace ToolKit
       // System calls.
       virtual void DispatchSignals() const;
 
+      /**
+       * Adds this window to UI, only after that it processed by the UI system.
+       * Otherwise nothing appears on the editor window.
+       */
+      void AddToUI();
+
+      /**
+       * UI system removes its reference and UI stops processing the window.
+       * Object does not gets destroyed and can be re added.
+       */
+      void RemoveFromUI();
+
      protected:
       // Internal window handling.
       void HandleStates();

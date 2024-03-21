@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include "DirectoryEntry.h"
+#include "Types.h"
+
 namespace ToolKit
 {
   namespace Editor
@@ -43,6 +46,7 @@ namespace ToolKit
                               const String& file,
                               std::function<void(const DirectoryEntry& entry)> dropAction,
                               bool isEditable = true);
+
       static bool IsTextInputFinalized();
 
      public:

@@ -40,11 +40,8 @@ namespace ToolKit
     UI::Blocker UI::BlockerData;
     UI::Import UI::ImportData;
     UI::SearchFile UI::SearchFileData;
-    AndroidBuildWindow* UI::m_androidBuildWindow;
-    WindowRawPtrArray UI::m_volatileWindows;
-    std::vector<TempWindow*> UI::m_tempWindows;
-    std::vector<TempWindow*> UI::m_removedTempWindows;
-    uint Window::m_baseId = 0; // unused id.
+
+    AndroidBuildWindow* UI::m_androidBuildWindow; // TODO Move to publish manager.
     std::vector<std::function<void()>> UI::m_postponedActions;
 
     // Icons
@@ -155,9 +152,6 @@ namespace ToolKit
     void UI::UnInit()
     {
       delete m_androidBuildWindow;
-      m_volatileWindows.clear();
-      assert(m_volatileWindows.size() < 10 && "Overflowing danger.");
-      m_volatileWindows.clear();
 
       ImGui_ImplOpenGL3_Shutdown();
       ImGui_ImplSDL2_Shutdown();
@@ -474,10 +468,6 @@ namespace ToolKit
       }
     }
 
-    void UI::AddTempWindow(TempWindow* window) { m_tempWindows.push_back(window); }
-
-    void UI::RemoveTempWindow(TempWindow* window) { m_removedTempWindows.push_back(window); }
-
     void UI::ShowUI()
     {
       ShowDock();
@@ -490,14 +480,6 @@ namespace ToolKit
           wnd->Show();
         }
       }
-
-      for (auto wnd : m_tempWindows)
-      {
-        wnd->Show();
-      }
-
-      erase_if(m_tempWindows, [&](TempWindow* window) -> bool { return contains(m_removedTempWindows, window); });
-      m_removedTempWindows.clear();
 
       if (g_app->m_simulationWindow->IsVisible())
       {
@@ -518,25 +500,6 @@ namespace ToolKit
       ShowSearchForFilesWindow();
       ShowNewSceneWindow();
       ShowBlocker();
-
-      // Show & Destroy if not visible.
-      for (int i = (int) (m_volatileWindows.size()) - 1; i > -1; i--)
-      {
-        Window* wnd = m_volatileWindows[i];
-        if (wnd->IsVisible())
-        {
-          wnd->Show();
-        }
-        else
-        {
-          SafeDel(wnd);
-          m_volatileWindows.erase(m_volatileWindows.begin() + i);
-        }
-
-        // Always serve the last popup. Imgui popups are modal.
-        // This break gives us the ability to serve last arriving modal.
-        break;
-      }
     }
 
     void UI::BeginUI()
@@ -617,11 +580,12 @@ namespace ToolKit
       {
         if (ImGui::MenuItem("New"))
         {
-          StringInputWindow* inputWnd = new StringInputWindow("NewScene##NwScn1", true);
-          inputWnd->m_inputVal        = g_newSceneStr;
-          inputWnd->m_inputLabel      = "Name";
-          inputWnd->m_hint            = "Scene name";
-          inputWnd->m_taskFn          = [](const String& val) { g_app->OnNewScene(val); };
+          StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("NewScene##NwScn1", true);
+          inputWnd->m_inputVal          = g_newSceneStr;
+          inputWnd->m_inputLabel        = "Name";
+          inputWnd->m_hint              = "Scene name";
+          inputWnd->m_taskFn            = [](const String& val) { g_app->OnNewScene(val); };
+          inputWnd->AddToUI();
         }
 
         ImGui::Separator();
@@ -785,13 +749,12 @@ namespace ToolKit
     {
       if (ImGui::MenuItem("New Project"))
       {
-        // TODO Cihan Volitile window desstroys itself ( check the constructor )
-        // yesnowindow causes a leak.
-        StringInputWindow* inputWnd = new StringInputWindow("NewProject", true);
-        inputWnd->m_inputVal        = "New Project";
-        inputWnd->m_inputLabel      = "Name";
-        inputWnd->m_hint            = "Project name";
-        inputWnd->m_taskFn          = [](const String& val) { g_app->OnNewProject(val); };
+        StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("NewProject", true);
+        inputWnd->m_inputVal          = "New Project";
+        inputWnd->m_inputLabel        = "Name";
+        inputWnd->m_hint              = "Project name";
+        inputWnd->m_taskFn            = [](const String& val) { g_app->OnNewProject(val); };
+        inputWnd->AddToUI();
       }
 
       if (ImGui::BeginMenu("Open Project"))
