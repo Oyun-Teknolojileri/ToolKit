@@ -68,11 +68,12 @@ namespace ToolKit
    * Singular render data that contains all the rendering information for a frame.
    * When first culled than separated by a render job processor, the indexes become valid.
    * Partition structure
-   * 0 Culled               : jobs.begin to deferredJobsStartIndex
-   * 1 Deferred             : deferredJobsStartIndex to alphaMaskedJobsStartIndex
-   * 2 Alpha Masked         : alphaMaskedJobsStartIndex to forwardOpaqueStartIndex
-   * 2 Forward Opaque       : forwardOpaqueStartIndex to forwardTranslucentStartIndex
-   * 3 Forward Translucent  : forwardTranslucentStartIndex to jobs.end
+   * 0 Culled                 : jobs.begin to deferredJobsStartIndex
+   * 1 Deferred Opaque        : deferredJobsStartIndex to deferredAlphaMaskedJobsStartIndex
+   * 2 Deferred Alpha Masked  : deferredAlphaMaskedJobsStartIndex to forwardOpaqueStartIndex
+   * 3 Forward Opaque         : forwardOpaqueStartIndex to forwardAlphaMaskedJobsStartIndex
+   * 4 Forward Alpha Masked   : forwardAlphaMaskedJobsStartIndex to forwardTranslucentStartIndex
+   * 5 Forward Translucent    : forwardTranslucentStartIndex to jobs.end
    */
   struct RenderData
   {
