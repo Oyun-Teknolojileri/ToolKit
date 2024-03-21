@@ -150,9 +150,12 @@ namespace ToolKit
 
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
-    static void SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam);
+    static void StableSortByDistanceToCamera(RenderJobItr begin,
+                                       RenderJobItr end,
+                                       const CameraPtr& cam,
+                                       bool frontToBack = false);
 
-    static void SortByDistToCamWithoutBreakingPartition();
+    static void StableSortByCameraWithPartition(RenderData& renderData, const CameraPtr& cam);
 
     /**
      * Cull objects based on the sent camera. Update Job's frustumCulled state.

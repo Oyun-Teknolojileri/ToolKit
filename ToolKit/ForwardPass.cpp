@@ -107,8 +107,6 @@ namespace ToolKit
     RenderJobItr begin = renderData->GetForwardTranslucentBegin();
     RenderJobItr end   = renderData->jobs.end();
 
-    RenderJobProcessor::SortByDistanceToCamera(begin, end, m_params.Cam);
-
     Renderer* renderer = GetRenderer();
     auto renderFnc     = [&](RenderJob& job)
     {

@@ -477,14 +477,17 @@ namespace ToolKit
     return directionalLightEndIndex;
   }
 
-  void RenderJobProcessor::SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam)
+  void RenderJobProcessor::StableSortByDistanceToCamera(RenderJobItr begin,
+                                                        RenderJobItr end,
+                                                        const CameraPtr& cam,
+                                                        bool frontToBack)
   {
     CPU_FUNC_RANGE();
 
     Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
-    std::function<bool(const RenderJob&, const RenderJob&)> sortFn = [&camLoc](const RenderJob& j1,
-                                                                               const RenderJob& j2) -> bool
+    std::function<bool(const RenderJob&, const RenderJob&)> sortFn = [&camLoc, frontToBack](const RenderJob& j1,
+                                                                                            const RenderJob& j2) -> bool
     {
       const BoundingBox& bb1 = j1.BoundingBox;
       const BoundingBox& bb2 = j2.BoundingBox;
@@ -492,7 +495,14 @@ namespace ToolKit
       float first            = glm::length2(bb1.GetCenter() - camLoc);
       float second           = glm::length2(bb2.GetCenter() - camLoc);
 
-      return second < first;
+      if (frontToBack)
+      {
+        return second > first;
+      }
+      else
+      {
+        return second < first;
+      }
     };
 
     if (cam->IsOrtographic())
@@ -505,10 +515,40 @@ namespace ToolKit
       };
     }
 
-    std::sort(begin, end, sortFn);
+    std::stable_sort(begin, end, sortFn);
   }
 
-  void RenderJobProcessor::SortByDistToCamWithoutBreakingPartition() {}
+  void RenderJobProcessor::StableSortByCameraWithPartition(RenderData& renderData, const CameraPtr& cam)
+  {
+    RenderJobItr begin, end;
+
+    if (renderData.deferredJobsStartIndex != -1)
+    {
+      begin = renderData.GetDefferedBegin();
+      end   = renderData.GetDeferredAlphaMaskedBegin();
+      StableSortByDistanceToCamera(begin, end, cam, true);
+
+      begin = renderData.GetDeferredAlphaMaskedBegin();
+      end   = renderData.GetForwardOpaqueBegin();
+      StableSortByDistanceToCamera(begin, end, cam, true);
+    }
+
+    begin = renderData.GetForwardOpaqueBegin();
+    end   = renderData.GetForwardAlphaMaskedBegin();
+    StableSortByDistanceToCamera(begin, end, cam, true);
+
+    begin = renderData.GetForwardAlphaMaskedBegin();
+    end   = renderData.GetForwardTranslucentBegin();
+    StableSortByDistanceToCamera(begin, end, cam, true);
+
+    begin = renderData.GetForwardAlphaMaskedBegin();
+    end   = renderData.GetForwardTranslucentBegin();
+    StableSortByDistanceToCamera(begin, end, cam, true);
+
+    begin = renderData.GetForwardAlphaMaskedBegin();
+    end   = renderData.GetForwardTranslucentBegin();
+    StableSortByDistanceToCamera(begin, end, cam, false);
+  }
 
   void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, const CameraPtr& camera)
   {
