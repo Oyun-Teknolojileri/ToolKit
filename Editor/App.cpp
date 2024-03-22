@@ -1369,6 +1369,18 @@ namespace ToolKit
 
     void App::AddStatsView() { m_windows.push_back(new StatsView()); }
 
+    void App::ReInitViewports()
+    {
+      EditorViewportRawPtrArray viewports;
+      for (Window* wnd : m_windows)
+      {
+        if (wnd->IsViewport())
+        {
+          static_cast<EditorViewport*>(wnd)->ReInitViewport();
+        }
+      }
+    }
+
     void App::HideGizmos()
     {
       const EntityPtrArray& entities = GetCurrentScene()->GetEntities();

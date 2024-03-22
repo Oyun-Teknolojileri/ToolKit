@@ -37,7 +37,7 @@ namespace ToolKit
     {
       int MSAA                    = 2;
       int FPS                     = 60;
-      bool HDRRender              = true;
+      bool HDRPipeline            = true;
       RenderingSpec RenderSpec    = RenderingSpec::Default;
       float renderResolutionScale = 1.0f;
 

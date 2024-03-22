@@ -108,7 +108,7 @@ namespace ToolKit
 
     WriteAttr(settings, doc, "MSAA", std::to_string(MSAA));
     WriteAttr(settings, doc, "FPS", std::to_string(FPS));
-    WriteAttr(settings, doc, "HDRRender", std::to_string(HDRRender));
+    WriteAttr(settings, doc, "HDRPipeline", std::to_string(HDRPipeline));
     WriteAttr(settings, doc, "RenderSpec", std::to_string((int) RenderSpec));
     WriteAttr(settings, doc, "RenderResolutionScale", std::to_string(renderResolutionScale));
   }
@@ -122,7 +122,7 @@ namespace ToolKit
     }
     ReadAttr(node, "MSAA", MSAA);
     ReadAttr(node, "FPS", FPS);
-    ReadAttr(node, "HDRRender", HDRRender);
+    ReadAttr(node, "HDRPipeline", HDRPipeline);
     ReadAttr(node, "RenderResolutionScale", renderResolutionScale);
     if (renderResolutionScale < 0.01f)
     {

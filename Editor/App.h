@@ -156,6 +156,8 @@ namespace ToolKit
         return list;
       }
 
+      void ReInitViewports();
+
       void HideGizmos();
       void ShowGizmos();
 

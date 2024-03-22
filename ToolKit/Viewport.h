@@ -181,6 +181,8 @@ namespace ToolKit
      */
     float GetBillboardScale();
 
+    void ReInitViewport();
+
    protected:
     // Internal window handling.
 
