@@ -124,6 +124,10 @@ namespace ToolKit
     ReadAttr(node, "FPS", FPS);
     ReadAttr(node, "HDRRender", HDRRender);
     ReadAttr(node, "RenderResolutionScale", renderResolutionScale);
+    if (renderResolutionScale < 0.01f)
+    {
+      renderResolutionScale = 1.0f;
+    }
 
     int renderSpec;
     ReadAttr(node, "RenderSpec", renderSpec);

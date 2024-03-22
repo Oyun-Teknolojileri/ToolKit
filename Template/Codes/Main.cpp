@@ -78,7 +78,7 @@ namespace ToolKit
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
-      SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+      SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
       SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
       SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
@@ -89,7 +89,7 @@ namespace ToolKit
       SDL_GetCurrentDisplayMode(0, &DM);
 
       String settingsFile = ConcatPaths({ ConfigPath(), "Engine.settings" });
-      g_proxy->m_engineSettings->DeSerializeEngineSettings(settingsFile);
+      g_proxy->m_engineSettings->Load(settingsFile);
       g_engineSettings = g_proxy->m_engineSettings;
       if (g_engineSettings->Window.FullScreen)
       {
