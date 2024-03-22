@@ -41,11 +41,9 @@ namespace ToolKit
       m_uiPass                = nullptr;
       m_editorPass            = nullptr;
       m_gizmoPass             = nullptr;
-      m_tonemapPass           = nullptr;
-      m_gammaPass             = nullptr;
-      m_fxaaPass              = nullptr;
       m_outlinePass           = nullptr;
       m_singleMatRenderer     = nullptr;
+      m_gammaTonemapFxaaPass  = nullptr;
     }
 
     void EditorRenderer::Render(Renderer* renderer)
@@ -60,9 +58,8 @@ namespace ToolKit
       SetLitMode(renderer, m_params.LitMode);
 
       m_passArray.clear();
-      const EngineSettings::PostProcessingSettings& gfx = GetEngineSettings().PostProcessing;
 
-      SceneRenderPathPtr sceneRenderer                  = nullptr;
+      SceneRenderPathPtr sceneRenderer = nullptr;
       if (m_params.UseMobileRenderPath)
       {
         sceneRenderer = m_mobileSceneRenderPath;
@@ -74,10 +71,6 @@ namespace ToolKit
 
       if (GetRenderSystem()->IsSkipFrame())
       {
-        sceneRenderer->m_params.Gfx                        = gfx;
-        sceneRenderer->m_params.Gfx.GammaCorrectionEnabled = false;
-        sceneRenderer->m_params.Gfx.TonemappingEnabled     = false;
-        sceneRenderer->m_params.Gfx.FXAAEnabled            = false;
         sceneRenderer->Render(renderer);
 
         m_passArray.push_back(m_skipFramePass);
@@ -95,22 +88,13 @@ namespace ToolKit
         break;
       case EditorLitMode::Game:
         m_params.App->HideGizmos();
-        sceneRenderer->m_params.Gfx                        = gfx;
-        sceneRenderer->m_params.Gfx.GammaCorrectionEnabled = false;
         sceneRenderer->Render(renderer);
         m_passArray.push_back(m_uiPass);
-        if (GetRenderSystem()->IsGammaCorrectionNeeded())
-        {
-          m_passArray.push_back(m_gammaPass);
-        }
+        m_passArray.push_back(m_gammaTonemapFxaaPass);
         RenderPath::Render(renderer);
         m_params.App->ShowGizmos();
         break;
       default:
-        sceneRenderer->m_params.Gfx                        = gfx;
-        sceneRenderer->m_params.Gfx.GammaCorrectionEnabled = false;
-        sceneRenderer->m_params.Gfx.TonemappingEnabled     = false;
-        sceneRenderer->m_params.Gfx.FXAAEnabled            = false;
         sceneRenderer->Render(renderer);
         break;
       }
@@ -138,21 +122,7 @@ namespace ToolKit
         m_passArray.push_back(m_billboardPass);
 
         // Post process.
-        if (gfx.TonemappingEnabled)
-        {
-          m_passArray.push_back(m_tonemapPass);
-        }
-        if (gfx.FXAAEnabled)
-        {
-          if (m_params.Viewport->m_name != g_2dViewport)
-          {
-            m_passArray.push_back(m_fxaaPass);
-          }
-        }
-        if (GetRenderSystem()->IsGammaCorrectionNeeded())
-        {
-          m_passArray.push_back(m_gammaPass);
-        }
+        m_passArray.push_back(m_gammaTonemapFxaaPass);
 
         RenderPath::Render(renderer);
       }
@@ -166,8 +136,10 @@ namespace ToolKit
 
     void EditorRenderer::PreRender()
     {
-      App* app = m_params.App;
-      m_camera = m_params.Viewport->GetCamera();
+      App* app                                          = m_params.App;
+      m_camera                                          = m_params.Viewport->GetCamera();
+
+      const EngineSettings::PostProcessingSettings& gfx = GetEngineSettings().PostProcessing;
 
       // Adjust scene lights.
       m_lightSystem->m_parentNode->OrphanSelf();
@@ -185,6 +157,7 @@ namespace ToolKit
       if (m_params.UseMobileRenderPath)
       {
         // Mobile scene pass
+        m_mobileSceneRenderPath->m_params.Gfx             = gfx;
         m_mobileSceneRenderPath->m_params.Cam             = m_camera;
         m_mobileSceneRenderPath->m_params.Lights          = lights;
         m_mobileSceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
@@ -193,6 +166,7 @@ namespace ToolKit
       else
       {
         // Scene pass.
+        m_sceneRenderPath->m_params.Gfx             = gfx;
         m_sceneRenderPath->m_params.Cam             = m_camera;
         m_sceneRenderPath->m_params.Lights          = lights;
         m_sceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
@@ -283,7 +257,15 @@ namespace ToolKit
       m_uiPass->m_params.FrameBuffer                          = viewport->m_framebuffer;
       m_uiPass->m_params.clearBuffer                          = GraphicBitFields::DepthBits;
 
-      const EngineSettings::PostProcessingSettings& gfx       = GetEngineSettings().PostProcessing;
+      // Post process pass
+
+      m_gammaTonemapFxaaPass->m_params.frameBuffer            = viewport->m_framebuffer;
+      m_gammaTonemapFxaaPass->m_params.enableGammaCorrection  = GetRenderSystem()->IsGammaCorrectionNeeded();
+      m_gammaTonemapFxaaPass->m_params.enableFxaa             = gfx.FXAAEnabled;
+      m_gammaTonemapFxaaPass->m_params.enableTonemapping      = gfx.TonemappingEnabled;
+      m_gammaTonemapFxaaPass->m_params.gamma                  = gfx.Gamma;
+      m_gammaTonemapFxaaPass->m_params.screenSize             = viewport->m_size;
+      m_gammaTonemapFxaaPass->m_params.tonemapMethod          = gfx.TonemapperMode;
 
       // Light Complexity pass
       m_singleMatRenderer->m_params.ForwardParams.renderData  = &m_renderData;
@@ -292,17 +274,6 @@ namespace ToolKit
       m_singleMatRenderer->m_params.ForwardParams.clearBuffer = GraphicBitFields::AllBits;
 
       m_singleMatRenderer->m_params.ForwardParams.FrameBuffer = viewport->m_framebuffer;
-
-      m_tonemapPass->m_params.FrameBuffer                     = viewport->m_framebuffer;
-      m_tonemapPass->m_params.Method                          = gfx.TonemapperMode;
-
-      // Gamma Pass.
-      m_gammaPass->m_params.FrameBuffer                       = viewport->m_framebuffer;
-      m_gammaPass->m_params.Gamma                             = gfx.Gamma;
-
-      // FXAA Pass
-      m_fxaaPass->m_params.FrameBuffer                        = viewport->m_framebuffer;
-      m_fxaaPass->m_params.screen_size                        = viewport->m_size;
 
       // Gizmo Pass.
       m_gizmoPass->m_params.Viewport                          = viewport;
@@ -358,12 +329,10 @@ namespace ToolKit
       m_uiPass                = MakeNewPtr<ForwardRenderPass>();
       m_editorPass            = MakeNewPtr<ForwardRenderPass>();
       m_gizmoPass             = MakeNewPtr<GizmoPass>();
-      m_tonemapPass           = MakeNewPtr<TonemapPass>();
-      m_gammaPass             = MakeNewPtr<GammaPass>();
-      m_fxaaPass              = MakeNewPtr<FXAAPass>();
       m_outlinePass           = MakeNewPtr<OutlinePass>();
       m_singleMatRenderer     = MakeNewPtr<SingleMatForwardRenderPass>();
       m_skipFramePass         = MakeNewPtr<FullQuadPass>();
+      m_gammaTonemapFxaaPass  = MakeNewPtr<GammaTonemapFxaaPass>();
     }
 
     void EditorRenderer::OutlineSelecteds(Renderer* renderer)

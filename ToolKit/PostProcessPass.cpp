@@ -60,8 +60,18 @@ namespace ToolKit
       fbs.height                           = targetFbs.height;
     }
 
-    m_copyTexture->ReconstructIfNeeded(fbs.width, fbs.height);
-    m_copyBuffer->ReconstructIfNeeded(fbs.width, fbs.height);
+    if (Viewport::GetRenderTargetSettings() != m_copyTexture->Settings())
+    {
+      m_copyTexture->Settings(Viewport::GetRenderTargetSettings());
+      m_copyTexture->UnInit();
+      m_copyTexture->m_width  = fbs.width;
+      m_copyTexture->m_height = fbs.height;
+      m_copyTexture->Init();
+    }
+    else
+    {
+      m_copyTexture->ReconstructIfNeeded(fbs.width, fbs.height);
+    }
     m_copyBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_copyTexture);
 
     // Copy given buffer.

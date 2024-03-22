@@ -12,13 +12,11 @@
 #include "EngineSettings.h"
 #include "ForwardPass.h"
 #include "ForwardPreProcessPass.h"
-#include "FxaaPass.h"
 #include "Pass.h"
 #include "RenderSystem.h"
 #include "SceneRenderPath.h"
 #include "ShadowPass.h"
 #include "SsaoPass.h"
-#include "ToneMapPass.h"
 
 namespace ToolKit
 {

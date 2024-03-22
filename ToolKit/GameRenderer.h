@@ -1,10 +1,11 @@
 #pragma once
 
+#include "FxaaPass.h"
 #include "GammaPass.h"
+#include "GammaTonemapFxaaPass.h"
 #include "MobileSceneRenderPath.h"
 #include "Scene.h"
 #include "SceneRenderPath.h"
-#include "ToneMapPass.h"
 #include "UIManager.h"
 #include "Viewport.h"
 
@@ -31,9 +32,7 @@ namespace ToolKit
       m_sceneRenderPath       = nullptr;
       m_mobileSceneRenderPath = nullptr;
       m_uiPass                = nullptr;
-      m_tonemapPass           = nullptr;
-      m_gammaPass             = nullptr;
-      m_fxaaPass              = nullptr;
+      m_gammaTonemapFxaaPass  = nullptr;
       m_fullQuadPass          = nullptr;
 
       m_unlitMaterial         = nullptr;
@@ -52,9 +51,7 @@ namespace ToolKit
     SceneRenderPathPtr m_sceneRenderPath             = nullptr;
     MobileSceneRenderPathPtr m_mobileSceneRenderPath = nullptr;
     ForwardRenderPassPtr m_uiPass                    = nullptr;
-    TonemapPassPtr m_tonemapPass                     = nullptr;
-    GammaPassPtr m_gammaPass                         = nullptr;
-    FXAAPassPtr m_fxaaPass                           = nullptr;
+    GammaTonemapFxaaPassPtr m_gammaTonemapFxaaPass   = nullptr;
     FullQuadPassPtr m_fullQuadPass                   = nullptr;
 
     RenderJobArray m_uiRenderJobs;

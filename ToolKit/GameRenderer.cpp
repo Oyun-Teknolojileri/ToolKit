@@ -9,9 +9,7 @@ namespace ToolKit
     m_mobileSceneRenderPath = MakeNewPtr<MobileSceneRenderPath>();
     m_sceneRenderPath       = MakeNewPtr<SceneRenderPath>();
     m_uiPass                = MakeNewPtr<ForwardRenderPass>();
-    m_tonemapPass           = MakeNewPtr<TonemapPass>();
-    m_gammaPass             = MakeNewPtr<GammaPass>();
-    m_fxaaPass              = MakeNewPtr<FXAAPass>();
+    m_gammaTonemapFxaaPass  = MakeNewPtr<GammaTonemapFxaaPass>();
     m_fullQuadPass          = MakeNewPtr<FullQuadPass>();
   }
 
@@ -63,30 +61,26 @@ namespace ToolKit
 
     RenderJobProcessor::SeperateRenderData(m_uiRenderData, true);
 
-    m_uiPass->m_params.renderData             = &m_uiRenderData;
-    m_uiPass->m_params.Cam                    = GetUIManager()->GetUICamera();
-    m_uiPass->m_params.FrameBuffer            = m_params.viewport->m_framebuffer;
-    m_uiPass->m_params.clearBuffer            = GraphicBitFields::DepthBits;
+    m_uiPass->m_params.renderData  = &m_uiRenderData;
+    m_uiPass->m_params.Cam         = GetUIManager()->GetUICamera();
+    m_uiPass->m_params.FrameBuffer = m_params.viewport->m_framebuffer;
+    m_uiPass->m_params.clearBuffer = GraphicBitFields::DepthBits;
 
-    // Tonemap Pass
+    // Post Process Pass
 
-    m_tonemapPass->m_params.FrameBuffer       = m_params.viewport->m_framebuffer;
-    m_tonemapPass->m_params.Method            = m_params.gfx.TonemapperMode;
-
-    // Gamma Pass
-
-    m_gammaPass->m_params.FrameBuffer         = m_params.viewport->m_framebuffer;
-    m_gammaPass->m_params.Gamma               = m_params.gfx.Gamma;
-
-    // FXAA Pass
-
-    m_fxaaPass->m_params.FrameBuffer          = m_params.viewport->m_framebuffer;
-    m_fxaaPass->m_params.screen_size          = m_params.viewport->m_wndContentAreaSize;
+    m_gammaTonemapFxaaPass->m_params.enableGammaCorrection =
+        m_params.gfx.GammaCorrectionEnabled && GetRenderSystem()->IsGammaCorrectionNeeded();
+    m_gammaTonemapFxaaPass->m_params.enableFxaa        = m_params.gfx.FXAAEnabled;
+    m_gammaTonemapFxaaPass->m_params.enableTonemapping = m_params.gfx.TonemappingEnabled;
+    m_gammaTonemapFxaaPass->m_params.frameBuffer       = m_params.viewport->m_framebuffer;
+    m_gammaTonemapFxaaPass->m_params.tonemapMethod     = m_params.gfx.TonemapperMode;
+    m_gammaTonemapFxaaPass->m_params.gamma             = m_params.gfx.Gamma;
+    m_gammaTonemapFxaaPass->m_params.screenSize        = m_params.viewport->m_wndContentAreaSize;
 
     // Full quad pass
 
-    m_fullQuadPass->m_params.FrameBuffer      = nullptr; // backbuffer
-    m_fullQuadPass->m_params.ClearFrameBuffer = true;
+    m_fullQuadPass->m_params.FrameBuffer               = nullptr; // backbuffer
+    m_fullQuadPass->m_params.ClearFrameBuffer          = true;
     if (m_unlitMaterial == nullptr)
     {
       m_unlitMaterial = GetMaterialManager()->GetCopyOfUnlitMaterial(false);
@@ -130,26 +124,7 @@ namespace ToolKit
     m_passArray.clear();
 
     // Post processings
-    if (m_params.gfx.TonemappingEnabled)
-    {
-      m_passArray.push_back(m_tonemapPass);
-    }
-
-    RenderPath::Render(renderer);
-    m_passArray.clear();
-
-    if (m_params.gfx.FXAAEnabled)
-    {
-      m_passArray.push_back(m_fxaaPass);
-    }
-
-    RenderPath::Render(renderer);
-    m_passArray.clear();
-
-    if (m_params.gfx.GammaCorrectionEnabled && GetRenderSystem()->IsGammaCorrectionNeeded())
-    {
-      m_passArray.push_back(m_gammaPass);
-    }
+    m_passArray.push_back(m_gammaTonemapFxaaPass);
 
     RenderPath::Render(renderer);
     m_passArray.clear();
