@@ -103,7 +103,17 @@ namespace ToolKit
     }
   }
 
-  TextureSettings Viewport::GetRenderTargetSettings() { return TextureSettings(); }
+  TextureSettings Viewport::GetRenderTargetSettings()
+  {
+    TextureSettings texureSet;
+    if (!GetEngineSettings().Graphics.HDRRender)
+    {
+      texureSet.InternalFormat = GraphicTypes::FormatRGBA8;
+      texureSet.Type           = GraphicTypes::TypeUnsignedByte;
+    }
+
+    return texureSet;
+  }
 
   void Viewport::ResetViewportImage(const TextureSettings& settings)
   {

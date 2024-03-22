@@ -3,7 +3,8 @@
 	<source>
 	<!--
 		#version 300 es
-		precision highp float;
+		precision lowp float;
+		precision lowp sampler2D;
 
 		out vec4 fragColor;
 		in vec3 v_pos;

@@ -4,9 +4,11 @@
 	<!--
 		#version 300 es
 		precision highp float;
+		precision mediump sampler2D;
+		precision lowp int;
 
 		in vec2 v_texture;
-
+		
 		uniform vec3 BlurScale;
 		uniform sampler2D s_texture0;
 

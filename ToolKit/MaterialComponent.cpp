@@ -80,12 +80,16 @@ namespace ToolKit
     for (size_t i = 0; i < m_materialList.size(); i++)
     {
       XmlNode* resourceNode = parent->first_node(std::to_string(i).c_str());
-      if (!resourceNode)
+      if (resourceNode == nullptr)
       {
         m_materialList[i] = GetMaterialManager()->GetCopyOfDefaultMaterial();
-        continue;
       }
-      m_materialList[i] = GetMaterialManager()->Create<Material>(MaterialPath(Resource::DeserializeRef(resourceNode)));
+      else
+      {
+        String matRef     = Resource::DeserializeRef(resourceNode);
+        String path       = MaterialPath(matRef);
+        m_materialList[i] = GetMaterialManager()->Create<Material>(path);
+      }
     }
 
     return compNode->first_node(StaticClass()->Name.c_str());

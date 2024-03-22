@@ -37,6 +37,7 @@ namespace ToolKit
     {
       int MSAA                    = 2;
       int FPS                     = 60;
+      bool HDRRender              = true;
       RenderingSpec RenderSpec    = RenderingSpec::Default;
       float ShadowDistance        = 100.0f;
       float renderResolutionScale = 1.0f;
@@ -73,8 +74,8 @@ namespace ToolKit
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
-    void SerializeEngineSettings(const String& engineSettingsFilePath);
-    void DeSerializeEngineSettings(const String& engineSettingsFilePath);
+    void Save(const String& path);
+    void Load(const String& path);
   };
 
 } // namespace ToolKit

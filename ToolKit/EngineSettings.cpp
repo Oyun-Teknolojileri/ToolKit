@@ -106,6 +106,7 @@ namespace ToolKit
 
     WriteAttr(settings, doc, "MSAA", std::to_string(MSAA));
     WriteAttr(settings, doc, "FPS", std::to_string(FPS));
+    WriteAttr(settings, doc, "HDRRender", std::to_string(HDRRender));
     WriteAttr(settings, doc, "RenderSpec", std::to_string((int) RenderSpec));
     WriteAttr(settings, doc, "ShadowDistance", std::to_string(ShadowDistance));
     WriteAttr(settings, doc, "RenderResolutionScale", std::to_string(renderResolutionScale));
@@ -120,18 +121,9 @@ namespace ToolKit
     }
     ReadAttr(node, "MSAA", MSAA);
     ReadAttr(node, "FPS", FPS);
+    ReadAttr(node, "HDRRender", HDRRender);
     ReadAttr(node, "ShadowDistance", ShadowDistance);
-    if (!glm::epsilonNotEqual(ShadowDistance, 0.0f, 0.001f))
-    {
-      // Set the value to the default value if the variable is not deserialized
-      ShadowDistance = 100.0f;
-    }
     ReadAttr(node, "RenderResolutionScale", renderResolutionScale);
-    if (glm::abs(renderResolutionScale) < 0.01f)
-    {
-      // Set the value to the default value if the variable is not deserialized
-      renderResolutionScale = 1.0f;
-    }
 
     int renderSpec;
     ReadAttr(node, "RenderSpec", renderSpec);
@@ -156,47 +148,39 @@ namespace ToolKit
     return nullptr;
   }
 
-  void EngineSettings::SerializeEngineSettings(const String& engineSettingsFilePath)
+  void EngineSettings::Save(const String& path)
   {
     std::ofstream file;
-    const String& path = engineSettingsFilePath;
-
     file.open(path.c_str(), std::ios::out | std::ios::trunc);
     assert(file.is_open());
     if (file.is_open())
     {
-      XmlDocument* lclDoc = new XmlDocument();
+      XmlDocumentPtr lclDoc = MakeNewPtr<XmlDocument>();
+      XmlDocument* doc      = lclDoc.get();
 
       // Always write the current version.
-      XmlNode* version    = lclDoc->allocate_node(rapidxml::node_element, "Version");
-      lclDoc->append_node(version);
-      WriteAttr(version, lclDoc, "version", TKVersionStr);
+      XmlNode* version      = CreateXmlNode(doc, "Version");
+      WriteAttr(version, doc, "version", m_version);
 
-      Window.Serialize(lclDoc, nullptr);
-      Graphics.Serialize(lclDoc, nullptr);
+      Window.Serialize(doc, nullptr);
+      Graphics.Serialize(doc, nullptr);
 
       std::string xml;
       rapidxml::print(std::back_inserter(xml), *lclDoc);
       file << xml;
       file.close();
       lclDoc->clear();
-
-      SafeDel(lclDoc);
     }
   }
 
-  void EngineSettings::DeSerializeEngineSettings(const String& engineSettingsFilePath)
+  void EngineSettings::Load(const String& path)
   {
-    const String& settingsFile = engineSettingsFilePath;
-    XmlFile* lclFile           = new XmlFile(settingsFile.c_str());
-    XmlDocument* lclDoc        = new XmlDocument();
+    XmlFilePtr lclFile    = MakeNewPtr<XmlFile>(path.c_str());
+    XmlDocumentPtr lclDoc = MakeNewPtr<XmlDocument>();
     lclDoc->parse<0>(lclFile->data());
 
-    Window.DeSerialize(lclDoc, nullptr);
-    Graphics.DeSerialize(lclDoc, nullptr);
-
-    SafeDel(lclFile);
-    SafeDel(lclDoc);
+    Window.DeSerialize(lclDoc.get(), nullptr);
+    Graphics.DeSerialize(lclDoc.get(), nullptr);
   }
 
 } // namespace ToolKit
