@@ -69,6 +69,7 @@ namespace ToolKit
     writeAttrFn("FocusScale", to_string(FocusScale));
     writeAttrFn("DofQuality", to_string((int) DofQuality));
     writeAttrFn("FXAAEnabled", to_string(FXAAEnabled));
+    writeAttrFn("ShadowDistance", to_string(ShadowDistance));
   }
 
   void EngineSettings::PostProcessingSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -97,6 +98,7 @@ namespace ToolKit
     ReadAttr(node, "FXAAEnabled", FXAAEnabled);
     ReadAttr(node, "TonemapperMode", *(int*) &TonemapperMode);
     ReadAttr(node, "DofQuality", *(int*) &DofQuality);
+    ReadAttr(node, "ShadowDistance", ShadowDistance);
   }
 
   void EngineSettings::GraphicSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -108,7 +110,6 @@ namespace ToolKit
     WriteAttr(settings, doc, "FPS", std::to_string(FPS));
     WriteAttr(settings, doc, "HDRRender", std::to_string(HDRRender));
     WriteAttr(settings, doc, "RenderSpec", std::to_string((int) RenderSpec));
-    WriteAttr(settings, doc, "ShadowDistance", std::to_string(ShadowDistance));
     WriteAttr(settings, doc, "RenderResolutionScale", std::to_string(renderResolutionScale));
   }
 
@@ -122,7 +123,6 @@ namespace ToolKit
     ReadAttr(node, "MSAA", MSAA);
     ReadAttr(node, "FPS", FPS);
     ReadAttr(node, "HDRRender", HDRRender);
-    ReadAttr(node, "ShadowDistance", ShadowDistance);
     ReadAttr(node, "RenderResolutionScale", renderResolutionScale);
 
     int renderSpec;

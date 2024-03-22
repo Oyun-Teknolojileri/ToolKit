@@ -161,7 +161,7 @@ namespace ToolKit
           ImGui::EndCombo();
         }
 
-        ImGui::DragFloat("Shadow Distance", &engineSettings.Graphics.ShadowDistance, 1.0f, 0.01f, 100000.0f);
+        ImGui::DragFloat("Shadow Distance", &engineSettings.PostProcessing.ShadowDistance, 1.0f, 0.01f, 100000.0f);
 
       } // Imgui::Begin
       ImGui::End();

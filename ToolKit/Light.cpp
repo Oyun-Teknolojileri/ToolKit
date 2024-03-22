@@ -238,7 +238,7 @@ namespace ToolKit
 
     // Set far for view frustum
     float lastCameraFar  = viewCamera->GetFarClipVal();
-    float shadowDistance = GetEngineSettings().Graphics.ShadowDistance;
+    float shadowDistance = GetEngineSettings().PostProcessing.ShadowDistance;
     viewCamera->SetFarClipVal(shadowDistance);
 
     Vec3Array frustum = viewCamera->ExtractFrustumCorner();
