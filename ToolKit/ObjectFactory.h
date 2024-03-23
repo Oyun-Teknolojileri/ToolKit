@@ -96,8 +96,6 @@ namespace ToolKit
 
       objectClass->SuperClassLookUp.clear();
       ClassLookUpBuilder(objectClass, objectClass);
-
-      CallMetaProcessors(objectClass->MetaKeys, m_metaProcessorRegisterMap);
     }
 
     template <typename T>
@@ -106,8 +104,6 @@ namespace ToolKit
       ClassMeta* objectClass = T::StaticClass();
       m_constructorFnMap.erase(objectClass->Name);
       m_allRegisteredClasses.erase(objectClass->HashId);
-
-      CallMetaProcessors(objectClass->MetaKeys, m_metaProcessorUnRegisterMap);
     }
 
     /**
@@ -124,18 +120,6 @@ namespace ToolKit
       Register<DerivedCls>(constructorFn, true);
       Register<BaseCls>(constructorFn, true);
     }
-
-    /**
-     * Each MetaKey has a corresponding meta processor. When a class registered and it has a MetaKey that corresponds to
-     * one of MetaProcessor in the map, processor gets called with MetaKey's value.
-     */
-    MetaProcessorMap m_metaProcessorRegisterMap;
-
-    /**
-     * Each MetaKey has a corresponding meta processor. When a class unregistered and it has a MetaKey that corresponds
-     * to one of MetaProcessor in the map, processor gets called with MetaKey's value.
-     */
-    MetaProcessorMap m_metaProcessorUnRegisterMap;
 
     /**
      * Returns the Constructor for given class name.

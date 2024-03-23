@@ -15,7 +15,6 @@
 #include <DirectionComponent.h>
 #include <FileManager.h>
 #include <Mesh.h>
-#include <Meta.h>
 #include <PluginManager.h>
 #include <Resource.h>
 #include <SDL.h>
@@ -45,39 +44,6 @@ namespace ToolKit
 
     void App::Init()
     {
-      if (ObjectFactory* objFactory = GetObjectFactory())
-      {
-        // Allow classes with the MenuMetaKey to be created from the add menu.
-        objFactory->m_metaProcessorRegisterMap[MenuMetaKey] = [](StringView val) -> void
-        {
-          bool exist = false;
-          for (String& meta : g_app->m_customObjectMetaValues)
-          {
-            if (meta == val)
-            {
-              exist = true;
-              break;
-            }
-          }
-
-          if (!exist)
-          {
-            g_app->m_customObjectMetaValues.push_back(String(val));
-          }
-        };
-
-        objFactory->m_metaProcessorUnRegisterMap[MenuMetaKey] = [](StringView val) -> void
-        {
-          for (int i = (int) g_app->m_customObjectMetaValues.size() - 1; i >= 0; i--)
-          {
-            if (g_app->m_customObjectMetaValues[i] == val)
-            {
-              g_app->m_customObjectMetaValues.erase(g_app->m_customObjectMetaValues.begin() + i);
-            }
-          }
-        };
-      }
-
       AssignManagerReporters();
       CreateEditorEntities();
 
@@ -170,12 +136,6 @@ namespace ToolKit
 
       ModManager::GetInstance()->UnInit();
       ActionManager::GetInstance()->UnInit();
-
-      if (ObjectFactory* objFactory = GetObjectFactory())
-      {
-        objFactory->m_metaProcessorRegisterMap[MenuMetaKey]   = nullptr;
-        objFactory->m_metaProcessorUnRegisterMap[MenuMetaKey] = nullptr;
-      }
 
       GetLogger()->SetWriteConsoleFn(nullptr);
       GetLogger()->SetClearConsoleFn(nullptr);

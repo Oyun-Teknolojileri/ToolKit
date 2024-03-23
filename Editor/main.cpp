@@ -24,7 +24,6 @@
 #include <FileManager.h>
 #include <GlErrorReporter.h>
 #include <ImGui/backends/imgui_impl_sdl2.h>
-#include <Meta.h>
 #include <PluginManager.h>
 #include <SDL.h>
 #include <TKProfiler.h>

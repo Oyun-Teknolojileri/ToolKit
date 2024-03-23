@@ -16,7 +16,6 @@
 #include <Drawable.h>
 #include <GradientSky.h>
 #include <Mesh.h>
-#include <Meta.h>
 #include <Surface.h>
 
 #include <DebugNew.h>

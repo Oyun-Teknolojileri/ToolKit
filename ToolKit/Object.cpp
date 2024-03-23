@@ -7,32 +7,6 @@
 
 #include "Object.h"
 
-#include "AnimationControllerComponent.h"
-#include "Audio.h"
-#include "Camera.h"
-#include "Canvas.h"
-#include "DirectionComponent.h"
-#include "Drawable.h"
-#include "Entity.h"
-#include "EnvironmentComponent.h"
-#include "GradientSky.h"
-#include "Light.h"
-#include "Material.h"
-#include "MaterialComponent.h"
-#include "Mesh.h"
-#include "MeshComponent.h"
-#include "Prefab.h"
-#include "Primative.h"
-#include "ResourceComponent.h"
-#include "Scene.h"
-#include "Shader.h"
-#include "SkeletonComponent.h"
-#include "Sky.h"
-#include "SpriteSheet.h"
-#include "SsaoPass.h"
-#include "Surface.h"
-#include "Texture.h"
-
 #include "DebugNew.h"
 
 namespace ToolKit

@@ -137,7 +137,6 @@
     <ClInclude Include="GradientSky.h" />
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
-    <ClInclude Include="Meta.h" />
     <ClInclude Include="MobileSceneRenderPath.h" />
     <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="OutlinePass.h" />

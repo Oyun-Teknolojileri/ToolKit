@@ -324,9 +324,6 @@
     <ClInclude Include="ObjectFactory.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Meta.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>Resources</Filter>
     </ClInclude>
