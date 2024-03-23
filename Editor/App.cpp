@@ -1485,7 +1485,7 @@ namespace ToolKit
         const char* xmlObjectType = XmlObjectClassAttr.data();
         ObjectFactory* factory    = GetObjectFactory();
 
-        for (XmlNode* node = parent->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
+        for (XmlNode* node = windowsNode->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
         {
           XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
           if (WindowPtr wnd = MakeNewPtrCasted<Window>(typeAttr->value()))

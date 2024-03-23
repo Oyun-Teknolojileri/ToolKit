@@ -63,9 +63,9 @@ namespace ToolKit
 
     XmlNode* Window::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
-      Super::SerializeImp(doc, parent);
+      XmlNode* wndNode = Super::SerializeImp(doc, parent);
 
-      XmlNode* node = CreateXmlNode(doc, "Window", parent);
+      XmlNode* node    = CreateXmlNode(doc, "Window", wndNode);
       WriteAttr(node, doc, XmlVersion, TKVersionStr);
 
       WriteAttr(node, doc, XmlNodeName.data(), m_name);
@@ -83,16 +83,8 @@ namespace ToolKit
 
     XmlNode* Window::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      Super::DeSerializeImp(info, parent);
-
-      XmlNode* wndNode = parent;
-      if (wndNode == nullptr)
-      {
-        if (info.Document != nullptr)
-        {
-          wndNode = info.Document->first_node("Window");
-        }
-      }
+      parent           = Super::DeSerializeImp(info, parent);
+      XmlNode* wndNode = parent->first_node("Window");
 
       if (wndNode == nullptr)
       {

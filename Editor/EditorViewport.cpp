@@ -145,9 +145,7 @@ namespace ToolKit
 
     XmlNode* EditorViewport::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
-      Super::SerializeImp(doc, parent);
-
-      XmlNode* wndNode = Window::SerializeImp(doc, parent);
+      XmlNode* wndNode = Super::SerializeImp(doc, parent);
       XmlNode* node    = CreateXmlNode(doc, "Viewport", wndNode);
 
       WriteAttr(node, doc, "alignment", std::to_string((int) m_cameraAlignment));
@@ -159,9 +157,7 @@ namespace ToolKit
 
     XmlNode* EditorViewport::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      Super::DeSerializeImp(info, parent);
-
-      XmlNode* wndNode      = Window::DeSerializeImp(info, parent);
+      XmlNode* wndNode      = Super::DeSerializeImp(info, parent);
       XmlNode* viewportNode = wndNode->first_node("Viewport");
       m_wndContentAreaSize  = m_size;
 
