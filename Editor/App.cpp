@@ -232,7 +232,7 @@ namespace ToolKit
 
       if (playOnSimulationWnd)
       {
-        viewports.push_back(m_simulationWindow.get());
+        viewports.push_back(m_simulationViewport.get());
       }
 
       POP_CPU_MARKER();
@@ -497,13 +497,13 @@ namespace ToolKit
 
           if (m_simulatorSettings.Windowed)
           {
-            m_simulationWindow->SetVisibility(true);
+            m_simulationViewport->SetVisibility(true);
 
             // Match views.
             if (EditorViewportPtr viewport3d = GetViewport(g_3dViewport))
             {
               Mat4 view = viewport3d->GetCamera()->m_node->GetTransform();
-              m_simulationWindow->GetCamera()->m_node->SetTransform(view);
+              m_simulationViewport->GetCamera()->m_node->SetTransform(view);
             }
           }
 
@@ -518,7 +518,7 @@ namespace ToolKit
           }
         }
 
-        gamePlugin->SetViewport(GetSimulationWindow());
+        gamePlugin->SetViewport(GetSimulationViewport());
         gamePlugin->m_currentState = PluginState::Running;
 
         if (m_gameMod == GameMod::Stop)
@@ -555,7 +555,7 @@ namespace ToolKit
 
         ClearPlayInEditorSession();
 
-        m_simulationWindow->SetVisibility(false);
+        m_simulationViewport->SetVisibility(false);
         m_sceneLightingMode = EditorLitMode::EditorLit;
       }
     }
@@ -757,12 +757,12 @@ namespace ToolKit
       return -1;
     }
 
-    void App::ResetUI(bool skipSettings)
+    void App::ResetUI()
     {
       DeleteWindows();
 
       String defaultEditorSettings = ConcatPaths({ConfigPath(), g_editorSettingsFile});
-      if (CheckFile(defaultEditorSettings) && CheckFile(m_workspace.GetActiveWorkspace()) && !skipSettings)
+      if (CheckFile(defaultEditorSettings) && CheckFile(m_workspace.GetActiveWorkspace()))
       {
         // Try reading defaults.
         SerializationFileInfo serializeInfo;
@@ -828,7 +828,6 @@ namespace ToolKit
         m_windows.push_back(inspector);
 
         m_windows.push_back(MakeNewPtr<SimulationWindow>());
-        m_windows.push_back(MakeNewPtr<RenderSettingsWindow>());
 
         CreateSimulationViewport();
       }
@@ -844,35 +843,7 @@ namespace ToolKit
         SafeDel(EditorViewport::m_overlays[i]);
       }
 
-      m_simulationWindow = nullptr;
-    }
-
-    void App::CreateWindows(XmlNode* parent)
-    {
-      if (XmlNode* windowsNode = parent->first_node("Windows"))
-      {
-        const char* xmlRootObject = Object::StaticClass()->Name.c_str();
-        const char* xmlObjectType = XmlObjectClassAttr.data();
-        ObjectFactory* factory    = GetObjectFactory();
-
-        for (XmlNode* node = parent->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
-        {
-          XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
-          if (WindowPtr wnd = MakeNewPtrCasted<Window>(typeAttr->value()))
-          {
-            wnd->m_version = m_version;
-            wnd->DeSerialize(SerializationFileInfo(), node);
-            m_windows.push_back(wnd);
-          }
-        }
-      }
-
-      m_androidBuildWindow = CreateOrRetrieveWindow<AndroidBuildWindow>();
-
-      // TODO: Cihan Move Serialize / Deserialize of the Simulation window to its own class.
-      // Make sure it gets serialized - deserialized with app.
-      CreateSimulationViewport();
-      // m_workspace.DeSerializeSimulationWindow(lclDoc);
+      m_simulationViewport = nullptr;
     }
 
     void App::ReconstructDynamicMenus()
@@ -1198,7 +1169,7 @@ namespace ToolKit
       }
       else
       {
-        ResetUI(false);
+        ResetUI();
       }
 
       // Restore app window.
@@ -1366,11 +1337,11 @@ namespace ToolKit
       }
     }
 
-    EditorViewportPtr App::GetSimulationWindow()
+    EditorViewportPtr App::GetSimulationViewport()
     {
       if (m_simulatorSettings.Windowed)
       {
-        return m_simulationWindow;
+        return m_simulationViewport;
       }
 
       EditorViewportPtr simWnd = GetViewport(g_3dViewport);
@@ -1390,7 +1361,7 @@ namespace ToolKit
 
         if (m_gameMod != GameMod::Stop)
         {
-          m_simulationWindow->SetVisibility(m_simulatorSettings.Windowed);
+          m_simulationViewport->SetVisibility(m_simulatorSettings.Windowed);
         }
       }
     }
@@ -1418,7 +1389,7 @@ namespace ToolKit
         XmlDocument* docPtr   = lclDoc.get();
 
         XmlNode* app          = CreateXmlNode(docPtr, "App");
-        WriteAttr(app, lclDoc.get(), "version", TKVersionStr);
+        WriteAttr(app, docPtr, "version", TKVersionStr);
 
         XmlNode* settings = CreateXmlNode(docPtr, "Settings", app);
         XmlNode* setNode  = CreateXmlNode(docPtr, "Size", settings);
@@ -1428,13 +1399,16 @@ namespace ToolKit
         WriteAttr(setNode, docPtr, "height", std::to_string(size.y));
         WriteAttr(setNode, docPtr, "maximized", std::to_string(m_windowMaximized));
 
-        XmlNode* windowsNode = CreateXmlNode(lclDoc.get(), "Windows", app);
+        XmlNode* windowsNode = CreateXmlNode(docPtr, "Windows", app);
         for (WindowPtr wnd : m_windows)
         {
           wnd->Serialize(docPtr, windowsNode);
         }
 
-        m_workspace.SerializeSimulationWindow(lclDoc);
+        if (m_simulationViewport)
+        {
+          m_simulationViewport->Serialize(docPtr, windowsNode);
+        }
 
         std::string xml;
         rapidxml::print(std::back_inserter(xml), *lclDoc, 0);
@@ -1488,11 +1462,7 @@ namespace ToolKit
           }
         }
 
-        CreateWindows(root);
-        if (m_windows.empty())
-        {
-          ResetUI(true);
-        }
+        DeserializeWindows(root);
       }
 
       LoadProjectPlugin();
@@ -1507,16 +1477,40 @@ namespace ToolKit
       return nullptr;
     }
 
+    void App::DeserializeWindows(XmlNode* parent)
+    {
+      if (XmlNode* windowsNode = parent->first_node("Windows"))
+      {
+        const char* xmlRootObject = Object::StaticClass()->Name.c_str();
+        const char* xmlObjectType = XmlObjectClassAttr.data();
+        ObjectFactory* factory    = GetObjectFactory();
+
+        for (XmlNode* node = parent->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
+        {
+          XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
+          if (WindowPtr wnd = MakeNewPtrCasted<Window>(typeAttr->value()))
+          {
+            wnd->m_version = m_version;
+            wnd->DeSerialize(SerializationFileInfo(), node);
+            m_windows.push_back(wnd);
+          }
+        }
+      }
+
+      CreateSimulationViewport();
+      m_androidBuildWindow = CreateOrRetrieveWindow<AndroidBuildWindow>();
+    }
+
     void App::CreateSimulationViewport()
     {
-      m_simulationWindow = MakeNewPtr<EditorViewport>();
-      m_simulationWindow->Init({m_simulatorSettings.Width, m_simulatorSettings.Height});
+      m_simulationViewport = MakeNewPtr<EditorViewport>();
+      m_simulationViewport->Init({m_simulatorSettings.Width, m_simulatorSettings.Height});
 
-      m_simulationWindow->m_name = g_simulationStr;
-      m_simulationWindow->m_additionalWindowFlags =
+      m_simulationViewport->m_name = g_simulationStr;
+      m_simulationViewport->m_additionalWindowFlags =
           ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse;
 
-      m_simulationWindow->SetVisibility(false);
+      m_simulationViewport->SetVisibility(false);
     }
 
     void App::AssignManagerReporters()
@@ -1564,6 +1558,10 @@ namespace ToolKit
     }
 
     float App::GetDeltaTime() { return m_deltaTime; }
+
+    uint64 App::GetLastFrameDrawCallCount() { return m_lastFrameDrawCallCount; }
+
+    uint64 App::GetLastFrameHWRenderPassCount() { return m_lastFrameHWRenderPassCount; }
 
   } // namespace Editor
 } // namespace ToolKit

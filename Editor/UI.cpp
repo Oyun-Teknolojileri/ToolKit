@@ -476,9 +476,9 @@ namespace ToolKit
         }
       }
 
-      if (g_app->m_simulationWindow->IsVisible())
+      if (g_app->m_simulationViewport->IsVisible())
       {
-        g_app->m_simulationWindow->Show();
+        g_app->m_simulationViewport->Show();
       }
 
       if (m_imguiSampleWindow)
@@ -716,7 +716,7 @@ namespace ToolKit
 
       if (ImGui::MenuItem("Reset Layout"))
       {
-        m_postponedActions.push_back([]() -> void { g_app->ResetUI(false); });
+        m_postponedActions.push_back([]() -> void { g_app->ResetUI(); });
       }
 
 #ifdef TK_DEBUG

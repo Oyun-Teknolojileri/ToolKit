@@ -61,6 +61,10 @@ namespace ToolKit
 
       void Show() override;
 
+     protected:
+      XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+      XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+
      private:
       void UpdateSimulationWndSize();
       void ShowHeader();
@@ -114,7 +118,6 @@ namespace ToolKit
       SimulationSettings* m_settings         = nullptr;
       bool m_simulationModeDisabled          = false;
       bool m_resolutionSettingsWindowEnabled = false;
-      ;
     };
 
     typedef std::shared_ptr<SimulationWindow> SimulationWindowPtr;

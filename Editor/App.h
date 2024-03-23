@@ -87,9 +87,8 @@ namespace ToolKit
                          SysCommandDoneCallback callback = nullptr);
 
       // UI.
-      void ResetUI(bool skipSettings);
+      void ResetUI();
       void DeleteWindows();
-      void CreateWindows(XmlNode* parent);
       void ReconstructDynamicMenus();
 
       // Import facilities.
@@ -182,18 +181,18 @@ namespace ToolKit
       void ShowGizmos();
 
       // Simulation
-      EditorViewportPtr GetSimulationWindow();
+      EditorViewportPtr GetSimulationViewport();
       void UpdateSimulation();
-      float GetDeltaTime();
 
       // Last Frame Stats
-      uint64 GetLastFrameDrawCallCount() { return m_lastFrameDrawCallCount; }
-
-      uint64 GetLastFrameHWRenderPassCount() { return m_lastFrameHWRenderPassCount; }
+      float GetDeltaTime();
+      uint64 GetLastFrameDrawCallCount();
+      uint64 GetLastFrameHWRenderPassCount();
 
      protected:
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+      void DeserializeWindows(XmlNode* parent);
 
      private:
       void CreateSimulationViewport();
@@ -214,8 +213,12 @@ namespace ToolKit
       ThumbnailManager m_thumbnailManager;
 
       // Simulator settings.
-      EditorViewportPtr m_simulationWindow = nullptr;
+      EditorViewportPtr m_simulationViewport;
       SimulationSettings m_simulatorSettings;
+
+      // Publisher.
+      PublishManager* m_publishManager = nullptr;
+      AndroidBuildWindowPtr m_androidBuildWindow;
 
       // Editor objects.
       GridPtr m_grid;
@@ -250,10 +253,6 @@ namespace ToolKit
       Workspace m_workspace;
       StringArray m_customObjectMetaValues;    //!< Add menu shows this additional classes.
       DynamicMenuPtrArray m_customObjectsMenu; //!< Constructed menus based on m_customObjectMetaValues.
-
-      // Publisher.
-      PublishManager* m_publishManager = nullptr;
-      AndroidBuildWindowPtr m_androidBuildWindow;
 
       // Snap settings.
       bool m_snapsEnabled                 = false; // Delta transforms.

@@ -120,6 +120,8 @@ namespace ToolKit
 
     void YesNoWindow::NativeConstruct(const String& name, const String& msg)
     {
+      Super::NativeConstruct();
+
       m_name = name;
       m_msg  = msg;
     }
@@ -130,6 +132,8 @@ namespace ToolKit
                                       const String& msg,
                                       bool showCancel)
     {
+      Super::NativeConstruct();
+
       m_name       = name;
       m_yesText    = yesBtnText;
       m_noText     = noBtnText;

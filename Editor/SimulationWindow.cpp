@@ -23,7 +23,7 @@ namespace ToolKit
 
     SimulationWindow::SimulationWindow()
     {
-      m_name               = "Plugin";
+      m_name               = "Simulation";
       m_settings           = &g_app->m_simulatorSettings;
       m_numDefaultResNames = (int) m_emulatorResolutionNames.size();
     }
@@ -39,7 +39,6 @@ namespace ToolKit
     void SimulationWindow::RemoveResolutionName(size_t index)
     {
       bool canRemove = index > 0 || index < m_screenResolutions.size();
-
       assert(canRemove && "resolution index invalid");
 
       if (canRemove)
@@ -76,13 +75,63 @@ namespace ToolKit
         ShowHeader();
         ShowSettings();
       }
+
       ImGui::End();
       ImGui::PopStyleVar();
     }
 
+    XmlNode* SimulationWindow::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+    {
+      XmlNode* simNode = CreateXmlNode(doc, "Simulation", parent);
+      int numCustomRes = (int) m_screenResolutions.size() - m_numDefaultResNames;
+
+      WriteAttr(simNode, doc, "NumCustom", std::to_string(numCustomRes));
+
+      for (int i = 0; i < numCustomRes; i++)
+      {
+        String istr = std::to_string(i);
+        int index   = i + m_numDefaultResNames;
+
+        WriteAttr(simNode, doc, "name" + istr, m_emulatorResolutionNames[index]);
+        WriteAttr(simNode, doc, "sizeX" + istr, std::to_string(m_screenResolutions[index].x));
+        WriteAttr(simNode, doc, "sizeY" + istr, std::to_string(m_screenResolutions[index].y));
+      }
+
+      return simNode;
+    }
+
+    XmlNode* SimulationWindow::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+    {
+      XmlNode* node = info.Document->first_node("Simulation");
+      if (node == nullptr)
+      {
+        return nullptr;
+      }
+
+      int defaultCnt = m_numDefaultResNames;
+      m_screenResolutions.resize(defaultCnt);
+      m_emulatorResolutionNames.resize(defaultCnt);
+
+      int numCustomRes = 0;
+      ReadAttr(node, "NumCustom", numCustomRes);
+      m_screenResolutions.resize(numCustomRes + defaultCnt);
+      m_emulatorResolutionNames.resize(numCustomRes + defaultCnt);
+
+      for (int i = 0; i < numCustomRes; i++)
+      {
+        String istr = std::to_string(i);
+        int idx     = i + defaultCnt;
+        ReadAttr(node, "name" + istr, m_emulatorResolutionNames[idx]);
+        ReadAttr(node, "sizeX" + istr, m_screenResolutions[idx].x);
+        ReadAttr(node, "sizeY" + istr, m_screenResolutions[idx].y);
+      }
+
+      return node;
+    }
+
     void SimulationWindow::UpdateSimulationWndSize()
     {
-      if (g_app->m_simulationWindow)
+      if (g_app->m_simulationViewport)
       {
         uint width  = uint(m_settings->Width * m_settings->Scale);
         uint height = uint(m_settings->Height * m_settings->Scale);
@@ -91,7 +140,7 @@ namespace ToolKit
           std::swap(width, height);
         }
 
-        g_app->m_simulationWindow->ResizeWindow(width, height);
+        g_app->m_simulationViewport->ResizeWindow(width, height);
         UpdateCanvas(width, height);
       }
     }

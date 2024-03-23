@@ -75,9 +75,11 @@ namespace ToolKit
           String targetFile = ConcatPaths({cfgPath, files[i]});
           if (!CheckSystemFile(targetFile))
           {
-            std::filesystem::copy(ConcatPaths({ConfigPath(), files[i]}),
-                                  ConcatPaths({cfgPath, files[i]}),
-                                  std::filesystem::copy_options::overwrite_existing);
+            String sourceFile = ConcatPaths({ConfigPath(), files[i]});
+            if (CheckSystemFile(sourceFile))
+            {
+              std::filesystem::copy(sourceFile, targetFile, std::filesystem::copy_options::overwrite_existing);
+            }
           }
         }
       }
