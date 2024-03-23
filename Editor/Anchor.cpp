@@ -9,7 +9,7 @@
 
 #include "App.h"
 #include "EditorViewport.h"
-#include "Global.h"
+#include "EditorTypes.h"
 
 #include <Canvas.h>
 #include <Material.h>

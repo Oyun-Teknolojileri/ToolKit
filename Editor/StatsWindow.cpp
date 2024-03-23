@@ -7,7 +7,7 @@
 
 #include "StatsWindow.h"
 
-#include "Global.h"
+#include "EditorTypes.h"
 
 #include <TKStats.h>
 

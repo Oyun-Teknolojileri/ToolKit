@@ -12,8 +12,8 @@
 #include "DynamicMenu.h"
 #include "EditorRenderer.h"
 #include "EditorScene.h"
+#include "EditorTypes.h"
 #include "FolderWindow.h"
-#include "Global.h"
 #include "Grid.h"
 #include "Light.h"
 #include "OutlinerWindow.h"
@@ -242,7 +242,6 @@ namespace ToolKit
       bool m_windowMaximized                   = false;
       byte m_showGraphicsApiErrors             = 0;
       TransformationSpace m_transformSpace     = TransformationSpace::TS_WORLD;
-      PublishManager* m_publishManager         = nullptr;
       GameMod m_gameMod                        = GameMod::Stop;
       SysCommandExecutionFn m_sysComExecFn     = nullptr;
       ShellOpenDirFn m_shellOpenDirFn          = nullptr;
@@ -251,6 +250,10 @@ namespace ToolKit
       Workspace m_workspace;
       StringArray m_customObjectMetaValues;    //!< Add menu shows this additional classes.
       DynamicMenuPtrArray m_customObjectsMenu; //!< Constructed menus based on m_customObjectMetaValues.
+
+      // Publisher.
+      PublishManager* m_publishManager = nullptr;
+      AndroidBuildWindowPtr m_androidBuildWindow;
 
       // Snap settings.
       bool m_snapsEnabled                 = false; // Delta transforms.

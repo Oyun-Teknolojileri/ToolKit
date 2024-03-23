@@ -7,7 +7,7 @@
 
 #include "Grid.h"
 
-#include "Global.h"
+#include "EditorTypes.h"
 
 #include <Material.h>
 #include <MathUtil.h>

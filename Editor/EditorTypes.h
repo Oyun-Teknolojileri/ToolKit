@@ -17,6 +17,8 @@ namespace ToolKit
   namespace Editor
   {
 
+    typedef std::shared_ptr<class AndroidBuildWindow> AndroidBuildWindowPtr;
+
     // Handles.
     extern class App* g_app;
     extern bool g_running;

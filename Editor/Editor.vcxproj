@@ -180,7 +180,7 @@
     <ClInclude Include="FolderWindow.h" />
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="GizmoPass.h" />
-    <ClInclude Include="Global.h" />
+    <ClInclude Include="EditorTypes.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="IconsFontAwesome.h" />
     <ClInclude Include="LeftBar.h" />

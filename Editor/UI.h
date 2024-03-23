@@ -189,8 +189,6 @@ namespace ToolKit
       };
 
       static AnchorPresetImages m_anchorPresetIcons;
-
-      static class AndroidBuildWindow* m_androidBuildWindow;
     };
   } // namespace Editor
 } // namespace ToolKit

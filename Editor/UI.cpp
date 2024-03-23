@@ -41,7 +41,6 @@ namespace ToolKit
     UI::Import UI::ImportData;
     UI::SearchFile UI::SearchFileData;
 
-    AndroidBuildWindow* UI::m_androidBuildWindow; // TODO Move to publish manager.
     std::vector<std::function<void()>> UI::m_postponedActions;
 
     // Icons
@@ -134,8 +133,6 @@ namespace ToolKit
 
       InitIcons();
       InitTheme();
-
-      m_androidBuildWindow = new AndroidBuildWindow();
     }
 
     void UI::HeaderText(const char* text)
@@ -151,8 +148,6 @@ namespace ToolKit
 
     void UI::UnInit()
     {
-      delete m_androidBuildWindow;
-
       ImGui_ImplOpenGL3_Shutdown();
       ImGui_ImplSDL2_Shutdown();
       ImGui::DestroyContext();
@@ -773,7 +768,7 @@ namespace ToolKit
       {
         if (publishPlatform == PublishPlatform::Android)
         {
-          m_androidBuildWindow->OpenBuildWindow(publishType);
+          g_app->m_androidBuildWindow->OpenBuildWindow(publishType);
         }
         else
         {
@@ -1350,7 +1345,7 @@ namespace ToolKit
         icon          = ntt->GetVisibleVal() ? ICON_FA_EYE : ICON_FA_EYE_SLASH;
         float cursorY = ImGui::GetCursorPosY();
         ImGui::SetCursorPosY(cursorY - 2.5f);
-        ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
+        ImGui::PushID((int) (ntt->GetIdVal()));
         if (UI::ButtonDecorless(icon, ImVec2(18.0f, 15.0f), false))
         {
           ntt->SetVisibility(!ntt->GetVisibleVal(), true);
@@ -1364,7 +1359,7 @@ namespace ToolKit
         icon          = ntt->GetTransformLockVal() ? ICON_FA_LOCK : ICON_FA_UNLOCK;
         float cursorY = ImGui::GetCursorPosY();
         ImGui::SetCursorPosY(cursorY - 2.5f);
-        ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
+        ImGui::PushID((int) (ntt->GetIdVal()));
         if (UI::ButtonDecorless(icon, ImVec2(18.0f, 15.0f), false))
         {
           ntt->SetTransformLock(!ntt->GetTransformLockVal(), true);

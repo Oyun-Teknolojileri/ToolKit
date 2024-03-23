@@ -206,7 +206,7 @@
     <ClInclude Include="Gizmo.h">
       <Filter>Entities</Filter>
     </ClInclude>
-    <ClInclude Include="Global.h">
+    <ClInclude Include="EditorTypes.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="App.h">

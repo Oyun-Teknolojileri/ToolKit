@@ -867,6 +867,8 @@ namespace ToolKit
         }
       }
 
+      m_androidBuildWindow = CreateOrRetrieveWindow<AndroidBuildWindow>();
+
       // TODO: Cihan Move Serialize / Deserialize of the Simulation window to its own class.
       // Make sure it gets serialized - deserialized with app.
       CreateSimulationViewport();
