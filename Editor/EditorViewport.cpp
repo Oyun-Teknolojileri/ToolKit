@@ -613,7 +613,7 @@ namespace ToolKit
           }
           else if (entry.m_ext == SCENE || entry.m_ext == LAYER)
           {
-            MultiChoiceWindow::ButtonInfo openButton;
+            MultiChoiceButtonInfo openButton;
             openButton.m_name     = "Open";
             openButton.m_callback = [entry]() -> void
             {
@@ -621,7 +621,7 @@ namespace ToolKit
               g_app->OpenScene(fullPath);
             };
 
-            MultiChoiceWindow::ButtonInfo linkButton;
+            MultiChoiceButtonInfo linkButton;
             linkButton.m_name     = "Link";
             linkButton.m_callback = [entry]() -> void
             {
@@ -629,7 +629,7 @@ namespace ToolKit
               g_app->LinkScene(fullPath);
             };
 
-            MultiChoiceWindow::ButtonInfo mergeButton;
+            MultiChoiceButtonInfo mergeButton;
             mergeButton.m_name     = "Merge";
             mergeButton.m_callback = [entry]() -> void
             {
@@ -637,8 +637,7 @@ namespace ToolKit
               g_app->MergeScene(fullPath);
             };
 
-            // TODO Create fixed window for this, it has been copy pasted.
-            std::vector<MultiChoiceWindow::ButtonInfo> buttons = {openButton, linkButton, mergeButton};
+            MultiChoiceButtonArray buttons = {openButton, linkButton, mergeButton};
             MultiChoiceWindowPtr importOptionWnd =
                 MakeNewPtr<MultiChoiceWindow>("Open Scene", buttons, "Open, link or merge the scene?", true);
 

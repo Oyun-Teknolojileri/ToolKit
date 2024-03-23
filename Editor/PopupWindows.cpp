@@ -181,6 +181,7 @@ namespace ToolKit
         {
           m_visible = false;
           m_yesCallback();
+          RemoveFromUI();
           ImGui::CloseCurrentPopup();
         }
         ImGui::SetItemDefaultFocus();
@@ -190,6 +191,7 @@ namespace ToolKit
         {
           m_visible = false;
           m_noCallback();
+          RemoveFromUI();
           ImGui::CloseCurrentPopup();
         }
 
@@ -199,6 +201,7 @@ namespace ToolKit
           if (ImGui::Button("Cancel", ImVec2(120, 0)))
           {
             m_visible = false;
+            RemoveFromUI();
             ImGui::CloseCurrentPopup();
           }
         }
@@ -227,7 +230,7 @@ namespace ToolKit
     }
 
     void MultiChoiceWindow::NativeConstruct(const String& name,
-                                            const std::vector<ButtonInfo>& buttons,
+                                            const MultiChoiceButtonArray& buttons,
                                             const String& msg,
                                             bool showCancel)
     {
@@ -277,12 +280,13 @@ namespace ToolKit
         ImGui::TableNextColumn();
         ImGui::TableNextColumn();
 
-        for (ButtonInfo& button : m_buttons)
+        for (MultiChoiceButtonInfo& button : m_buttons)
         {
           if (ImGui::Button(button.m_name.c_str(), ImVec2(120, 0)))
           {
             m_visible = false;
             button.m_callback();
+            RemoveFromUI();
             ImGui::CloseCurrentPopup();
           }
           ImGui::TableNextColumn();
@@ -294,6 +298,7 @@ namespace ToolKit
           if (ImGui::Button("Cancel", ImVec2(120, 0)))
           {
             m_visible = false;
+            RemoveFromUI();
             ImGui::CloseCurrentPopup();
           }
         }

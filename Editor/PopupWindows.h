@@ -71,32 +71,33 @@ namespace ToolKit
     // MultiChoiceWindow
     //////////////////////////////////////////////////////////////////////////
 
+    struct MultiChoiceButtonInfo
+    {
+      String m_name;
+      std::function<void()> m_callback;
+    };
+
+    typedef std::vector<MultiChoiceButtonInfo> MultiChoiceButtonArray;
+
     class MultiChoiceWindow : public Window
     {
      public:
       TKDeclareClass(MultiChoiceWindow, Window);
 
-      struct ButtonInfo
-      {
-        String m_name;
-        std::function<void()> m_callback;
-      };
-
       MultiChoiceWindow();
 
-      // TODO Create derived types.
       virtual void NativeConstruct(const String& name, const String& msg = "");
 
       virtual void NativeConstruct(const String& name,
-                                   const std::vector<ButtonInfo>& buttons,
+                                   const MultiChoiceButtonArray& buttons,
                                    const String& msg,
                                    bool showCancel);
       void Show() override;
 
      public:
-      std::vector<ButtonInfo> m_buttons;
       String m_msg;
       bool m_showCancel = false;
+      MultiChoiceButtonArray m_buttons;
     };
 
     typedef std::shared_ptr<MultiChoiceWindow> MultiChoiceWindowPtr;
