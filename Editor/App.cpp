@@ -1365,11 +1365,6 @@ namespace ToolKit
           wnd->Serialize(docPtr, windowsNode);
         }
 
-        if (m_simulationViewport)
-        {
-          m_simulationViewport->Serialize(docPtr, windowsNode);
-        }
-
         std::string xml;
         rapidxml::print(std::back_inserter(xml), *lclDoc, 0);
 

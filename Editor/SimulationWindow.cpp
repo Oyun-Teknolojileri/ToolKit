@@ -21,11 +21,10 @@ namespace ToolKit
 
     TKDefineClass(SimulationWindow, Window);
 
-    SimulationWindow::SimulationWindow()
+    SimulationWindow::SimulationWindow() : m_numDefaultResNames((int) m_emulatorResolutionNames.size())
     {
-      m_name               = "Simulation";
-      m_settings           = &g_app->m_simulatorSettings;
-      m_numDefaultResNames = (int) m_emulatorResolutionNames.size();
+      m_name     = "Simulation";
+      m_settings = &g_app->m_simulatorSettings;
     }
 
     SimulationWindow::~SimulationWindow() {}
@@ -82,19 +81,19 @@ namespace ToolKit
 
     XmlNode* SimulationWindow::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
+      parent           = Super::SerializeImp(doc, parent);
       XmlNode* simNode = CreateXmlNode(doc, "Simulation", parent);
+      XmlNode* resNode = CreateXmlNode(doc, "Resolution", simNode);
+
       int numCustomRes = (int) m_screenResolutions.size() - m_numDefaultResNames;
-
-      WriteAttr(simNode, doc, "NumCustom", std::to_string(numCustomRes));
-
       for (int i = 0; i < numCustomRes; i++)
       {
         String istr = std::to_string(i);
         int index   = i + m_numDefaultResNames;
 
-        WriteAttr(simNode, doc, "name" + istr, m_emulatorResolutionNames[index]);
-        WriteAttr(simNode, doc, "sizeX" + istr, std::to_string(m_screenResolutions[index].x));
-        WriteAttr(simNode, doc, "sizeY" + istr, std::to_string(m_screenResolutions[index].y));
+        WriteAttr(resNode, doc, "name", m_emulatorResolutionNames[index]);
+        WriteAttr(resNode, doc, "sizeX", std::to_string(m_screenResolutions[index].x));
+        WriteAttr(resNode, doc, "sizeY", std::to_string(m_screenResolutions[index].y));
       }
 
       return simNode;
@@ -102,31 +101,33 @@ namespace ToolKit
 
     XmlNode* SimulationWindow::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      XmlNode* node = info.Document->first_node("Simulation");
-      if (node == nullptr)
+      XmlNode* simNode = Super::DeSerializeImp(info, parent);
+      simNode          = simNode->first_node("Simulation");
+      if (simNode == nullptr)
       {
         return nullptr;
       }
 
-      int defaultCnt = m_numDefaultResNames;
-      m_screenResolutions.resize(defaultCnt);
-      m_emulatorResolutionNames.resize(defaultCnt);
+      m_screenResolutions.erase(m_screenResolutions.begin() + m_numDefaultResNames, m_screenResolutions.end());
+      m_emulatorResolutionNames.erase(m_emulatorResolutionNames.begin() + m_numDefaultResNames,
+                                      m_emulatorResolutionNames.end());
 
-      int numCustomRes = 0;
-      ReadAttr(node, "NumCustom", numCustomRes);
-      m_screenResolutions.resize(numCustomRes + defaultCnt);
-      m_emulatorResolutionNames.resize(numCustomRes + defaultCnt);
-
-      for (int i = 0; i < numCustomRes; i++)
+      XmlNode* resNode = simNode->first_node("Resolution");
+      while (resNode != nullptr)
       {
-        String istr = std::to_string(i);
-        int idx     = i + defaultCnt;
-        ReadAttr(node, "name" + istr, m_emulatorResolutionNames[idx]);
-        ReadAttr(node, "sizeX" + istr, m_screenResolutions[idx].x);
-        ReadAttr(node, "sizeY" + istr, m_screenResolutions[idx].y);
+        String name;
+        ReadAttr(resNode, "name", name);
+
+        IVec2 res;
+        ReadAttr(resNode, "sizeX", res.x);
+        ReadAttr(resNode, "sizeX", res.y);
+
+        m_screenResolutions.push_back(res);
+        m_emulatorResolutionNames.push_back(name);
+        resNode = resNode->next_sibling();
       }
 
-      return node;
+      return simNode;
     }
 
     void SimulationWindow::UpdateSimulationWndSize()

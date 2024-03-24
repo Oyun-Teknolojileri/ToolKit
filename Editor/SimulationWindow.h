@@ -78,8 +78,6 @@ namespace ToolKit
       void RemoveResolutionName(size_t index);
 
      public:
-      int m_numDefaultResNames               = 0;
-
       std::vector<IVec2> m_screenResolutions = {
           IVec2(480, 667),   // default
           IVec2(1920, 1080), // FullHD
@@ -118,6 +116,7 @@ namespace ToolKit
       SimulationSettings* m_settings         = nullptr;
       bool m_simulationModeDisabled          = false;
       bool m_resolutionSettingsWindowEnabled = false;
+      const int m_numDefaultResNames;
     };
 
     typedef std::shared_ptr<SimulationWindow> SimulationWindowPtr;
