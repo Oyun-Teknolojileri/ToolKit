@@ -725,7 +725,7 @@ namespace ToolKit
             }
           }
 
-          if (m_name == g_simulationStr)
+          if (m_name == g_simulationViewStr)
           {
             onPlugin = true;
           }

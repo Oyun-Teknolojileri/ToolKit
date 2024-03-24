@@ -42,6 +42,7 @@ namespace ToolKit
     UI::SearchFile UI::SearchFileData;
 
     std::vector<std::function<void()>> UI::m_postponedActions;
+    WindowPtrArray UI::m_volatileWindows;
 
     // Icons
     TexturePtr UI::m_selectIcn;
@@ -468,7 +469,17 @@ namespace ToolKit
       ShowDock();
       ShowAppMainMenuBar();
 
+      // Show persistent windows.
       for (WindowPtr wnd : g_app->m_windows)
+      {
+        if (wnd->IsVisible())
+        {
+          wnd->Show();
+        }
+      }
+
+      // Show volatile windows.
+      for (WindowPtr wnd : m_volatileWindows)
       {
         if (wnd->IsVisible())
         {
@@ -708,7 +719,7 @@ namespace ToolKit
       ShowPersistentWindow<ConsoleWindow>(g_consoleStr);
       ShowPersistentWindow<OutlinerWindow>(g_outlinerStr);
       ShowPersistentWindow<PropInspectorWindow>(g_propInspector);
-      ShowPersistentWindow<SimulationWindow>(g_simulationStr);
+      ShowPersistentWindow<SimulationWindow>(g_simulationWindowStr);
       ShowPersistentWindow<RenderSettingsWindow>(g_renderSettings);
       ShowPersistentWindow<StatsWindow>(g_statsView);
 

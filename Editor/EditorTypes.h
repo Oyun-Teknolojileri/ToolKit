@@ -25,23 +25,24 @@ namespace ToolKit
 
     // UI Strings
     const String g_consoleStr("Console");
-    const String g_viewportStr("Viewport");
-    const String g_assetBrowserStr("Asset Browser");
+    const String g_assetBrowserStr("Content Browser");
     const String g_outlinerStr("Outliner");
     const String g_propInspector("Property Inspector");
     const String g_renderSettings("Render Settings");
     const String g_statsView("Statistics");
     const String g_matInspector("Material Inspector");
-    const String g_simulationStr("Simulation");
+    const String g_simulationWindowStr("Simulation");
     const String g_memoStr("Mem");
     const String g_errorStr("Err");
     const String g_warningStr("Wrn");
     const String g_successStr("Suc");
     const String g_commandStr("#");
     const String g_newSceneStr("New Scene");
-    const String g_2dViewport("2D View");
-    const String g_3dViewport("3D View");
-    const String g_IsoViewport("ISO View");
+    const String g_viewportStr("Viewport");
+    const String g_2dViewport("2D Viewport");
+    const String g_3dViewport("3D Viewport");
+    const String g_IsoViewport("ISO Viewport");
+    const String g_simulationViewStr("Simulation Viewport");
     const String g_workspaceFile("Workspace.settings");
     const String g_uiLayoutFile("UILayout.ini");
     const String g_editorSettingsFile("Editor.settings");

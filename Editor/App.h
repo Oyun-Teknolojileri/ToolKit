@@ -204,7 +204,7 @@ namespace ToolKit
 
      public:
       // UI elements.
-      WindowPtrArray m_windows;
+      WindowPtrArray m_windows; //!< Persistent windows that get serialized with editor.
       String m_statusMsg;
 
       // Editor variables.

@@ -1463,10 +1463,10 @@ namespace ToolKit
 
     void App::CreateSimulationViewport()
     {
-      m_simulationViewport = MakeNewPtr<EditorViewport>();
+      m_simulationViewport         = CreateOrRetrieveWindow<EditorViewport>(g_simulationViewStr);
+      m_simulationViewport->m_name = g_simulationViewStr;
       m_simulationViewport->Init({m_simulatorSettings.Width, m_simulatorSettings.Height});
 
-      m_simulationViewport->m_name = g_simulationStr;
       m_simulationViewport->m_additionalWindowFlags =
           ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse;
 

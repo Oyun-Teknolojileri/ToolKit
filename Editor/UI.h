@@ -87,6 +87,12 @@ namespace ToolKit
       static bool m_windowMenushowMetrics;
       static float m_hoverTimeForHelp;
 
+      /**
+       * Storage for windows that does not serialized with editor.
+       * When Window::AddToUI & RemoveFromUI is used, the corresponding windows get stored in m_volatileWindows array.
+       */
+      static WindowPtrArray m_volatileWindows;
+
       static struct Blocker
       {
         bool Show               = false;
