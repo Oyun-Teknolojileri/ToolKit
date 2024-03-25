@@ -7,3 +7,14 @@
 
 #define GLAD_GLES2_IMPLEMENTATION
 #include "TKOpenGL.h"
+
+namespace ToolKit
+{
+  void LoadGlFunctions(void* glGetProcAddres)
+  {
+#ifdef _WIN32
+    gladLoadGLES2((GLADloadfunc) glGetProcAddres);
+#endif
+  }
+
+} // namespace ToolKit

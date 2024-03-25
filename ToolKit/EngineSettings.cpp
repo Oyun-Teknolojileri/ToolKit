@@ -16,17 +16,11 @@ namespace ToolKit
 
   void EngineSettings::WindowSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* window = doc->allocate_node(rapidxml::node_element, "Window");
-    doc->append_node(window);
-
-    using namespace std;
-
-    const auto writeAttr1 = [&](StringView name, StringView val) { WriteAttr(window, doc, name.data(), val.data()); };
-    // serialize window.
-    writeAttr1("width", to_string(Width));
-    writeAttr1("height", to_string(Height));
-    writeAttr1(XmlNodeName, Name);
-    writeAttr1("fullscreen", to_string(FullScreen));
+    XmlNode* window = CreateXmlNode(doc, "Window", parent);
+    WriteAttr(window, doc, XmlNodeName, Name);
+    WriteAttr(window, doc, "width", std::to_string(Width));
+    WriteAttr(window, doc, "height", std::to_string(Height));
+    WriteAttr(window, doc, "fullscreen", std::to_string(FullScreen));
   }
 
   void EngineSettings::WindowSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -36,9 +30,10 @@ namespace ToolKit
     {
       return;
     }
+
+    ReadAttr(node, XmlNodeName.data(), Name);
     ReadAttr(node, "width", Width);
     ReadAttr(node, "height", Height);
-    ReadAttr(node, "name", Name);
     ReadAttr(node, "fullscreen", FullScreen);
   }
 
@@ -103,9 +98,7 @@ namespace ToolKit
 
   void EngineSettings::GraphicSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* settings = doc->allocate_node(rapidxml::node_element, "Graphics");
-    doc->append_node(settings);
-
+    XmlNode* settings = CreateXmlNode(doc, "Graphics", parent);
     WriteAttr(settings, doc, "MSAA", std::to_string(MSAA));
     WriteAttr(settings, doc, "FPS", std::to_string(FPS));
     WriteAttr(settings, doc, "HDRPipeline", std::to_string(HDRPipeline));
@@ -120,6 +113,7 @@ namespace ToolKit
     {
       return;
     }
+
     ReadAttr(node, "MSAA", MSAA);
     ReadAttr(node, "FPS", FPS);
     ReadAttr(node, "HDRPipeline", HDRPipeline);
@@ -134,40 +128,20 @@ namespace ToolKit
     RenderSpec = (RenderingSpec) renderSpec;
   }
 
-  XmlNode* EngineSettings::SerializeImp(XmlDocument* doc, XmlNode* parent) const
-  {
-    Graphics.Serialize(doc, parent);
-    PostProcessing.Serialize(doc, parent);
-    Window.Serialize(doc, parent);
-
-    return nullptr;
-  }
-
-  XmlNode* EngineSettings::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
-  {
-    Window.DeSerialize(info.Document, parent);
-    Graphics.DeSerialize(info.Document, parent);
-    PostProcessing.DeSerialize(info.Document, parent);
-
-    return nullptr;
-  }
-
   void EngineSettings::Save(const String& path)
   {
     std::ofstream file;
     file.open(path.c_str(), std::ios::out | std::ios::trunc);
     assert(file.is_open());
+
     if (file.is_open())
     {
-      XmlDocumentPtr lclDoc = MakeNewPtr<XmlDocument>();
-      XmlDocument* doc      = lclDoc.get();
+      XmlDocument* lclDoc   = new XmlDocument();
+      XmlNode* settingsNode = CreateXmlNode(lclDoc, "Settings", nullptr);
+      WriteAttr(settingsNode, lclDoc, "version", TKVersionStr);
 
-      // Always write the current version.
-      XmlNode* version      = CreateXmlNode(doc, "Version");
-      WriteAttr(version, doc, "version", m_version);
-
-      Window.Serialize(doc, nullptr);
-      Graphics.Serialize(doc, nullptr);
+      Window.Serialize(lclDoc, settingsNode);
+      Graphics.Serialize(lclDoc, settingsNode);
 
       std::string xml;
       rapidxml::print(std::back_inserter(xml), *lclDoc);
@@ -179,12 +153,12 @@ namespace ToolKit
 
   void EngineSettings::Load(const String& path)
   {
-    XmlFilePtr lclFile    = MakeNewPtr<XmlFile>(path.c_str());
-    XmlDocumentPtr lclDoc = MakeNewPtr<XmlDocument>();
+    XmlFile* lclFile    = new XmlFile(path.c_str());
+    XmlDocument* lclDoc = new XmlDocument();
     lclDoc->parse<0>(lclFile->data());
 
-    Window.DeSerialize(lclDoc.get(), nullptr);
-    Graphics.DeSerialize(lclDoc.get(), nullptr);
+    Window.DeSerialize(lclDoc, nullptr);
+    Graphics.DeSerialize(lclDoc, nullptr);
   }
 
 } // namespace ToolKit

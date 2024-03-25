@@ -7,36 +7,14 @@
 
 #pragma once
 
+#include "DirectoryEntry.h"
+#include "MaterialView.h"
 #include "UI.h"
-
-#include <Resource.h>
 
 namespace ToolKit
 {
   namespace Editor
   {
-    class DirectoryEntry
-    {
-     public:
-      DirectoryEntry();
-      explicit DirectoryEntry(const String& fullPath);
-      String GetFullPath() const;
-      ResourceManager* GetManager() const;
-      RenderTargetPtr GetThumbnail() const;
-
-     public:
-      String m_ext;
-      String m_fileName;
-      String m_rootPath;
-      bool m_isDirectory = false;
-      bool m_cutting     = false;
-
-     private:
-      MaterialPtr m_tempThumbnailMaterial = nullptr;
-    };
-
-    class FolderWindow;
-    typedef std::vector<FolderWindow*> FolderWindowRawPtrArray;
 
     struct FileDragData
     {
@@ -44,17 +22,17 @@ namespace ToolKit
       DirectoryEntry** Entries = nullptr;
     };
 
+    class FolderWindow;
+
     class FolderView
     {
      public:
       FolderView();
       ~FolderView();
-      explicit FolderView(FolderWindow* parent);
+      FolderView(FolderWindow* parent);
 
       void Show();
-
-      void SetDirty() { m_dirty = true; }
-
+      void SetDirty();
       void SetPath(const String& path);
       const String& GetPath() const;
       void Iterate();
@@ -63,7 +41,6 @@ namespace ToolKit
       void Refresh();
       float GetThumbnailZoomPercent(float thumbnailZoom);
       int SelectFolder(FolderWindow* window, const String& path);
-
       void DropFiles(const String& dst); //!< drop selectedFiles
 
       static const FileDragData& GetFileDragData();
@@ -82,7 +59,7 @@ namespace ToolKit
       // Indicates this is a root folder (one level under Resources)
       bool m_root            = false;
       // States if the tab is visible.
-      // Doesnt necesserly mean active, its just a tab in the FolderView.
+      // Doesn't necessarily mean active, its just a tab in the FolderView.
       bool m_visible         = false;
       bool m_active          = false; // Active tab, whose content is being displayed.
       // Always false. When set to true,
@@ -110,17 +87,17 @@ namespace ToolKit
       std::unordered_map<String, std::function<void(DirectoryEntry*, FolderView*)>> m_itemActions;
 
       // If you change this value, change the calculaton of thumbnail zoom
-      const float m_thumbnailMaxZoom                 = 300.f;
-      class TempMaterialWindow* m_tempMaterialWindow = nullptr;
+      const float m_thumbnailMaxZoom = 300.f;
     };
 
     class FolderWindow : public Window
     {
      public:
+      TKDeclareClass(FolderWindow, Window);
+
       FolderWindow();
       virtual ~FolderWindow();
       void Show() override;
-      Type GetType() const override;
       void UpdateContent();
       FolderView& GetView(int indx);
       // Returns root level active view, if deep is true,
@@ -179,6 +156,9 @@ namespace ToolKit
       int m_resourcesTreeIndex   = 0;
       int m_lastSelectedTreeNode = -1;
     };
+
+    typedef std::shared_ptr<FolderWindow> FolderWindowPtr;
+    typedef std::vector<FolderWindow*> FolderWindowRawPtrArray;
 
   } // namespace Editor
 } // namespace ToolKit

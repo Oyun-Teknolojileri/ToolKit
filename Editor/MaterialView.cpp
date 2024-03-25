@@ -9,6 +9,7 @@
 
 #include "App.h"
 #include "EditorViewport.h"
+#include "PreviewViewport.h"
 
 #include <DirectionComponent.h>
 #include <FileManager.h>
@@ -28,7 +29,7 @@ namespace ToolKit
       m_viewID   = 3;
       m_viewIcn  = UI::m_materialIcon;
 
-      m_viewport = new PreviewViewport();
+      m_viewport = MakeNewPtr<PreviewViewport>();
       m_viewport->Init({300.0f, 150.0f});
 
       SceneManager* scnMan = GetSceneManager();
@@ -41,7 +42,7 @@ namespace ToolKit
       ResetCamera();
     }
 
-    MaterialView::~MaterialView() { SafeDel(m_viewport); }
+    MaterialView::~MaterialView() { m_viewport = nullptr; }
 
     void MaterialView::SetSelectedMaterial(MaterialPtr mat)
     {
@@ -398,18 +399,21 @@ namespace ToolKit
       }
     }
 
-    // ######   TempMaterialWindow   ######
+    // TempMaterialWindow
+    //////////////////////////////////////////////////////////////////////////
+
+    TKDefineClass(TempMaterialWindow, Window);
 
     TempMaterialWindow::TempMaterialWindow()
     {
       m_view               = MakeNewPtr<MaterialView>();
       m_view->m_isTempView = true;
-      UI::AddTempWindow(this);
+      AddToUI();
     }
 
     TempMaterialWindow::~TempMaterialWindow()
     {
-      UI::RemoveTempWindow(this);
+      RemoveFromUI();
       m_view = nullptr;
     }
 
@@ -424,9 +428,7 @@ namespace ToolKit
         return;
       }
 
-      ImGuiIO io       = ImGui::GetIO();
-
-      ImGuiStyle style = ImGui::GetStyle();
+      ImGuiIO io = ImGui::GetIO();
       ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_Once);
       ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
                               ImGuiCond_Once,
@@ -438,5 +440,6 @@ namespace ToolKit
 
       ImGui::End();
     }
+
   } // namespace Editor
 } // namespace ToolKit

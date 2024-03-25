@@ -12,16 +12,16 @@
 #include "DynamicMenu.h"
 #include "EditorRenderer.h"
 #include "EditorScene.h"
+#include "EditorTypes.h"
 #include "FolderWindow.h"
-#include "Global.h"
 #include "Grid.h"
 #include "Light.h"
 #include "OutlinerWindow.h"
-#include "PluginWindow.h"
-#include "PropInspector.h"
+#include "PropInspectorWindow.h"
 #include "PublishManager.h"
-#include "RenderSettingsView.h"
-#include "StatsView.h"
+#include "RenderSettingsWindow.h"
+#include "SimulationWindow.h"
+#include "StatsWindow.h"
 #include "Thumbnail.h"
 #include "Workspace.h"
 
@@ -89,7 +89,6 @@ namespace ToolKit
       // UI.
       void ResetUI();
       void DeleteWindows();
-      void CreateWindows(XmlNode* parent);
       void ReconstructDynamicMenus();
 
       // Import facilities.
@@ -107,29 +106,26 @@ namespace ToolKit
       void SaveAllResources();
 
       // UI
-      Window* GetActiveWindow();
-      EditorViewport* GetActiveViewport();
-      EditorViewport* GetViewport(const String& name);
-      ConsoleWindow* GetConsole();
+      WindowPtr GetActiveWindow();
+      EditorViewportPtr GetActiveViewport();
+      EditorViewportPtr GetViewport(const String& name);
+      ConsoleWindowPtr GetConsole();
       FolderWindowRawPtrArray GetAssetBrowsers();
-      OutlinerWindow* GetOutliner();
-      PropInspector* GetPropInspector();
-      RenderSettingsView* GetRenderSettingsView();
-      StatsView* GetStatsView();
-      void AddRenderSettingsView();
-      void AddStatsView();
+      OutlinerWindowPtr GetOutliner();
+      PropInspectorWindowPtr GetPropInspector();
+      RenderSettingsWindowPtr GetRenderSettingsWindow();
+      StatsWindowPtr GetStatsWindow();
 
       template <typename T>
-      T* GetWindow(const String& name)
+      std::shared_ptr<T> GetWindow(const String& name)
       {
-        for (Window* wnd : m_windows)
+        for (WindowPtr wnd : m_windows)
         {
-          T* casted = dynamic_cast<T*>(wnd);
-          if (casted)
+          if (T* casted = wnd->As<T>())
           {
             if (casted->m_name == name)
             {
-              return casted;
+              return Cast<T>(wnd);
             }
           }
         }
@@ -141,10 +137,9 @@ namespace ToolKit
       std::vector<T*> GetAllWindows(const String& name)
       {
         std::vector<T*> list;
-        for (Window* wnd : m_windows)
+        for (WindowPtr wnd : m_windows)
         {
-          T* casted = dynamic_cast<T*>(wnd);
-          if (casted)
+          if (T* casted = wnd->As<T>())
           {
             String nameWithoutId = casted->m_name.substr(0, casted->m_name.find_first_of('#'));
             if (nameWithoutId == name)
@@ -156,27 +151,53 @@ namespace ToolKit
         return list;
       }
 
+      template <typename T>
+      std::shared_ptr<T> CreateOrRetrieveWindow(const String& name = String())
+      {
+        if (T::StaticClass()->IsSublcassOf(Window::StaticClass()))
+        {
+          for (WindowPtr wnd : m_windows)
+          {
+            if (T* wndCasted = wnd->As<T>())
+            {
+              if (wnd->m_name == name)
+              {
+                return Cast<T>(wnd);
+              }
+            }
+          }
+
+          std::shared_ptr<T> wnd = MakeNewPtr<T>();
+          wnd->m_name            = name;
+          wnd->SetVisibility(false);
+          m_windows.push_back(wnd);
+          return wnd;
+        }
+
+        return nullptr;
+      }
+
       void ReInitViewports();
 
       void HideGizmos();
       void ShowGizmos();
 
       // Simulation
-      EditorViewport* GetSimulationWindow();
+      EditorViewportPtr GetSimulationViewport();
       void UpdateSimulation();
-      float GetDeltaTime();
 
       // Last Frame Stats
-      inline uint64 GetLastFrameDrawCallCount() { return m_lastFrameDrawCallCount; }
-
-      inline uint64 GetLastFrameHWRenderPassCount() { return m_lastFrameHWRenderPassCount; }
+      float GetDeltaTime();
+      uint64 GetLastFrameDrawCallCount();
+      uint64 GetLastFrameHWRenderPassCount();
 
      protected:
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+      void DeserializeWindows(XmlNode* parent);
 
      private:
-      void CreateSimulationWindow(float width, float height);
+      void CreateSimulationViewport();
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
       void CreateEditorEntities();
@@ -185,7 +206,7 @@ namespace ToolKit
 
      public:
       // UI elements.
-      WindowRawPtrArray m_windows;
+      WindowPtrArray m_windows; //!< Persistent windows that get serialized with editor.
       String m_statusMsg;
 
       // Editor variables.
@@ -194,8 +215,12 @@ namespace ToolKit
       ThumbnailManager m_thumbnailManager;
 
       // Simulator settings.
-      EditorViewport* m_simulationWindow = nullptr;
+      EditorViewportPtr m_simulationViewport;
       SimulationSettings m_simulatorSettings;
+
+      // Publisher.
+      PublishManager* m_publishManager = nullptr;
+      AndroidBuildWindowPtr m_androidBuildWindow;
 
       // Editor objects.
       GridPtr m_grid;
@@ -222,12 +247,11 @@ namespace ToolKit
       bool m_windowMaximized                   = false;
       byte m_showGraphicsApiErrors             = 0;
       TransformationSpace m_transformSpace     = TransformationSpace::TS_WORLD;
-      PublishManager* m_publishManager         = nullptr;
       GameMod m_gameMod                        = GameMod::Stop;
       SysCommandExecutionFn m_sysComExecFn     = nullptr;
       ShellOpenDirFn m_shellOpenDirFn          = nullptr;
       EditorLitMode m_sceneLightingMode        = EditorLitMode::EditorLit;
-      EditorViewport* m_lastActiveViewport     = nullptr;
+      EditorViewportPtr m_lastActiveViewport   = nullptr;
       Workspace m_workspace;
       StringArray m_customObjectMetaValues;    //!< Add menu shows this additional classes.
       DynamicMenuPtrArray m_customObjectsMenu; //!< Constructed menus based on m_customObjectMetaValues.

@@ -7,10 +7,9 @@
 
 #include "UI.h"
 
-#include "Action.h"
 #include "AndroidBuildWindow.h"
 #include "App.h"
-#include "Mod.h"
+#include "EditorViewport2d.h"
 #include "PopupWindows.h"
 
 #include <Audio.h>
@@ -41,11 +40,9 @@ namespace ToolKit
     UI::Blocker UI::BlockerData;
     UI::Import UI::ImportData;
     UI::SearchFile UI::SearchFileData;
-    WindowRawPtrArray UI::m_volatileWindows;
-    std::vector<TempWindow*> UI::m_tempWindows;
-    std::vector<TempWindow*> UI::m_removedTempWindows;
-    uint Window::m_baseId = 0; // unused id.
+
     std::vector<std::function<void()>> UI::m_postponedActions;
+    WindowPtrArray UI::m_volatileWindows;
 
     // Icons
     TexturePtr UI::m_selectIcn;
@@ -97,7 +94,6 @@ namespace ToolKit
     TexturePtr UI::m_packageIcon;
     TexturePtr UI::m_objectDataIcon;
     TexturePtr UI::m_sceneIcon;
-    AndroidBuildWindow* UI::m_androidBuildWindow;
 
     UI::AnchorPresetImages UI::m_anchorPresetIcons;
 
@@ -138,8 +134,6 @@ namespace ToolKit
 
       InitIcons();
       InitTheme();
-
-      m_androidBuildWindow = new AndroidBuildWindow();
     }
 
     void UI::HeaderText(const char* text)
@@ -155,14 +149,6 @@ namespace ToolKit
 
     void UI::UnInit()
     {
-      delete m_androidBuildWindow;
-      for (size_t i = 0; i < m_volatileWindows.size(); i++)
-      {
-        SafeDel(m_volatileWindows[i]);
-      }
-      assert(m_volatileWindows.size() < 10 && "Overflowing danger.");
-      m_volatileWindows.clear();
-
       ImGui_ImplOpenGL3_Shutdown();
       ImGui_ImplSDL2_Shutdown();
       ImGui::DestroyContext();
@@ -478,16 +464,13 @@ namespace ToolKit
       }
     }
 
-    void UI::AddTempWindow(TempWindow* window) { m_tempWindows.push_back(window); }
-
-    void UI::RemoveTempWindow(TempWindow* window) { m_removedTempWindows.push_back(window); }
-
     void UI::ShowUI()
     {
       ShowDock();
       ShowAppMainMenuBar();
 
-      for (Window* wnd : g_app->m_windows)
+      // Show persistent windows.
+      for (WindowPtr wnd : g_app->m_windows)
       {
         if (wnd->IsVisible())
         {
@@ -495,17 +478,18 @@ namespace ToolKit
         }
       }
 
-      for (auto wnd : m_tempWindows)
+      // Show volatile windows.
+      for (WindowPtr wnd : m_volatileWindows)
       {
-        wnd->Show();
+        if (wnd->IsVisible())
+        {
+          wnd->Show();
+        }
       }
 
-      erase_if(m_tempWindows, [&](TempWindow* window) -> bool { return contains(m_removedTempWindows, window); });
-      m_removedTempWindows.clear();
-
-      if (g_app->m_simulationWindow->IsVisible())
+      if (g_app->m_simulationViewport->IsVisible())
       {
-        g_app->m_simulationWindow->Show();
+        g_app->m_simulationViewport->Show();
       }
 
       if (m_imguiSampleWindow)
@@ -522,25 +506,6 @@ namespace ToolKit
       ShowSearchForFilesWindow();
       ShowNewSceneWindow();
       ShowBlocker();
-
-      // Show & Destroy if not visible.
-      for (int i = static_cast<int>(m_volatileWindows.size()) - 1; i > -1; i--)
-      {
-        Window* wnd = m_volatileWindows[i];
-        if (wnd->IsVisible())
-        {
-          wnd->Show();
-        }
-        else
-        {
-          SafeDel(wnd);
-          m_volatileWindows.erase(m_volatileWindows.begin() + i);
-        }
-
-        // Always serve the last popup. Imgui popups are modal.
-        // This break gives us the ability to serve last arriving modal.
-        break;
-      }
     }
 
     void UI::BeginUI()
@@ -621,11 +586,12 @@ namespace ToolKit
       {
         if (ImGui::MenuItem("New"))
         {
-          StringInputWindow* inputWnd = new StringInputWindow("NewScene##NwScn1", true);
-          inputWnd->m_inputVal        = g_newSceneStr;
-          inputWnd->m_inputLabel      = "Name";
-          inputWnd->m_hint            = "Scene name";
-          inputWnd->m_taskFn          = [](const String& val) { g_app->OnNewScene(val); };
+          StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("NewScene##NwScn1", true);
+          inputWnd->m_inputVal          = g_newSceneStr;
+          inputWnd->m_inputLabel        = "Name";
+          inputWnd->m_hint              = "Scene name";
+          inputWnd->m_taskFn            = [](const String& val) { g_app->OnNewScene(val); };
+          inputWnd->AddToUI();
         }
 
         ImGui::Separator();
@@ -655,14 +621,26 @@ namespace ToolKit
       ImGui::Text("%s", TKVersionStr);
     }
 
+    template <typename T>
+    void ShowPersistentWindow(const String& name)
+    {
+      if (std::shared_ptr<T> wnd = g_app->CreateOrRetrieveWindow<T>(name))
+      {
+        if (ImGui::MenuItem(name.c_str(), nullptr, nullptr, !wnd->IsVisible()))
+        {
+          wnd->SetVisibility(true);
+        }
+      }
+    }
+
     void UI::ShowMenuWindows()
     {
-      auto handleMultiWindowFn = [](Window::Type windowType) -> void
+      auto handleMultiWindowFn = [](ClassMeta* Class) -> void
       {
         for (int i = (int) (g_app->m_windows.size()) - 1; i >= 0; i--)
         {
-          Window* wnd = g_app->m_windows[i];
-          if (wnd->GetType() != windowType)
+          WindowPtr wnd = g_app->m_windows[i];
+          if (wnd->Class() != Class)
           {
             continue;
           }
@@ -699,7 +677,6 @@ namespace ToolKit
             if (canDelete)
             {
               g_app->m_windows.erase(g_app->m_windows.begin() + i);
-              SafeDel(wnd);
             }
           }
           ImGui::EndGroup();
@@ -709,12 +686,12 @@ namespace ToolKit
 
       if (ImGui::BeginMenu("Viewport"))
       {
-        handleMultiWindowFn(Window::Type::Viewport);
-        handleMultiWindowFn(Window::Type::Viewport2d);
+        handleMultiWindowFn(EditorViewport::StaticClass());
+        handleMultiWindowFn(EditorViewport2d::StaticClass());
 
-        if (ImGui::MenuItem("Add Viewport", "Alt+V"))
+        if (ImGui::MenuItem("Add Viewport"))
         {
-          EditorViewport* vp = new EditorViewport();
+          EditorViewportPtr vp = MakeNewPtr<EditorViewport>();
           vp->Init({640.0f, 480.0f});
           g_app->m_windows.push_back(vp);
         }
@@ -722,14 +699,14 @@ namespace ToolKit
         ImGui::EndMenu();
       }
 
-      if (ImGui::BeginMenu("Resource Window"))
+      if (ImGui::BeginMenu("Asset Browser"))
       {
-        handleMultiWindowFn(Window::Type::Browser);
+        handleMultiWindowFn(FolderWindow::StaticClass());
 
-        if (ImGui::MenuItem("Add Browser", "Alt+B"))
+        if (ImGui::MenuItem("Add Browser"))
         {
-          FolderWindow* wnd = new FolderWindow();
-          wnd->m_name       = g_assetBrowserStr + "##" + std::to_string(wnd->m_id);
+          FolderWindowPtr wnd = MakeNewPtr<FolderWindow>();
+          wnd->m_name         = g_assetBrowserStr + "##" + std::to_string(wnd->m_id);
           wnd->IterateFolders(true);
           g_app->m_windows.push_back(wnd);
         }
@@ -739,57 +716,12 @@ namespace ToolKit
 
       ImGui::Separator();
 
-      if (ImGui::MenuItem("Console Window", "Alt+C", nullptr, !g_app->GetConsole()->IsVisible()))
-      {
-        g_app->GetConsole()->SetVisibility(true);
-      }
-
-      if (ImGui::MenuItem("Outliner Window", "Alt+O", nullptr, !g_app->GetOutliner()->IsVisible()))
-      {
-        g_app->GetOutliner()->SetVisibility(true);
-      }
-
-      if (ImGui::MenuItem("Property Inspector", "Alt+P", nullptr, !g_app->GetPropInspector()->IsVisible()))
-      {
-        g_app->GetPropInspector()->SetVisibility(true);
-      }
-
-      if (PluginWindow* wnd = g_app->GetWindow<PluginWindow>("Plugin"))
-      {
-        if (ImGui::MenuItem("Simulation Window", "", nullptr, !wnd->IsVisible()))
-        {
-          wnd->SetVisibility(true);
-        }
-      }
-
-      if (g_app->GetRenderSettingsView() == nullptr)
-      {
-        if (ImGui::MenuItem(g_renderSettings.c_str()))
-        {
-          g_app->AddRenderSettingsView();
-          g_app->GetRenderSettingsView()->SetVisibility(true);
-        }
-      }
-      else if (ImGui::MenuItem(g_renderSettings.c_str(),
-                               nullptr,
-                               nullptr,
-                               !g_app->GetRenderSettingsView()->IsVisible()))
-      {
-        g_app->GetRenderSettingsView()->SetVisibility(true);
-      }
-
-      if (g_app->GetStatsView() == nullptr)
-      {
-        if (ImGui::MenuItem(g_statsView.c_str()))
-        {
-          g_app->AddStatsView();
-          g_app->GetStatsView()->SetVisibility(true);
-        }
-      }
-      else if (ImGui::MenuItem(g_statsView.c_str(), nullptr, nullptr, !g_app->GetStatsView()->IsVisible()))
-      {
-        g_app->GetStatsView()->SetVisibility(true);
-      }
+      ShowPersistentWindow<ConsoleWindow>(g_consoleStr);
+      ShowPersistentWindow<OutlinerWindow>(g_outlinerStr);
+      ShowPersistentWindow<PropInspectorWindow>(g_propInspector);
+      ShowPersistentWindow<SimulationWindow>(g_simulationWindowStr);
+      ShowPersistentWindow<RenderSettingsWindow>(g_renderSettings);
+      ShowPersistentWindow<StatsWindow>(g_statsView);
 
       ImGui::Separator();
 
@@ -803,7 +735,7 @@ namespace ToolKit
 
       if (!m_windowMenushowMetrics)
       {
-        if (ImGui::MenuItem("Show Metrics", "Alt+M"))
+        if (ImGui::MenuItem("Show Metrics"))
         {
           m_windowMenushowMetrics = true;
         }
@@ -811,7 +743,7 @@ namespace ToolKit
 
       if (!m_imguiSampleWindow)
       {
-        if (ImGui::MenuItem("Imgui Sample", "Alt+S"))
+        if (ImGui::MenuItem("Imgui Sample"))
         {
           m_imguiSampleWindow = true;
         }
@@ -823,11 +755,12 @@ namespace ToolKit
     {
       if (ImGui::MenuItem("New Project"))
       {
-        StringInputWindow* inputWnd = new StringInputWindow("NewProject", true);
-        inputWnd->m_inputVal        = "New Project";
-        inputWnd->m_inputLabel      = "Name";
-        inputWnd->m_hint            = "Project name";
-        inputWnd->m_taskFn          = [](const String& val) { g_app->OnNewProject(val); };
+        StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("NewProject", true);
+        inputWnd->m_inputVal          = "New Project";
+        inputWnd->m_inputLabel        = "Name";
+        inputWnd->m_hint              = "Project name";
+        inputWnd->m_taskFn            = [](const String& val) { g_app->OnNewProject(val); };
+        inputWnd->AddToUI();
       }
 
       if (ImGui::BeginMenu("Open Project"))
@@ -846,7 +779,7 @@ namespace ToolKit
       {
         if (publishPlatform == PublishPlatform::Android)
         {
-          m_androidBuildWindow->OpenBuildWindow(publishType);
+          g_app->m_androidBuildWindow->OpenBuildWindow(publishType);
         }
         else
         {
@@ -1423,7 +1356,7 @@ namespace ToolKit
         icon          = ntt->GetVisibleVal() ? ICON_FA_EYE : ICON_FA_EYE_SLASH;
         float cursorY = ImGui::GetCursorPosY();
         ImGui::SetCursorPosY(cursorY - 2.5f);
-        ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
+        ImGui::PushID((int) (ntt->GetIdVal()));
         if (UI::ButtonDecorless(icon, ImVec2(18.0f, 15.0f), false))
         {
           ntt->SetVisibility(!ntt->GetVisibleVal(), true);
@@ -1437,7 +1370,7 @@ namespace ToolKit
         icon          = ntt->GetTransformLockVal() ? ICON_FA_LOCK : ICON_FA_UNLOCK;
         float cursorY = ImGui::GetCursorPosY();
         ImGui::SetCursorPosY(cursorY - 2.5f);
-        ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
+        ImGui::PushID((int) (ntt->GetIdVal()));
         if (UI::ButtonDecorless(icon, ImVec2(18.0f, 15.0f), false))
         {
           ntt->SetTransformLock(!ntt->GetTransformLockVal(), true);
@@ -1456,260 +1389,5 @@ namespace ToolKit
       }
     }
 
-    Window::Window()
-    {
-      m_size = UVec2(640, 480);
-      m_id   = ++m_baseId;
-    }
-
-    Window::~Window() {}
-
-    void Window::SetVisibility(bool visible) { m_visible = visible; }
-
-    bool Window::IsActive() const { return m_active; }
-
-    bool Window::IsVisible() const { return m_visible; }
-
-    bool Window::IsMoving() const { return m_moving; }
-
-    bool Window::MouseHovers() const { return m_mouseHover; }
-
-    bool Window::CanDispatchSignals() const { return m_active && m_visible && m_mouseHover; }
-
-    bool Window::IsViewport() const
-    {
-      Type t = GetType();
-      return t == Type::Viewport || t == Type::Viewport2d;
-    }
-
-    void Window::DispatchSignals() const {}
-
-    XmlNode* Window::SerializeImp(XmlDocument* doc, XmlNode* parent) const
-    {
-      XmlNode* node = CreateXmlNode(doc, "Window", parent);
-      WriteAttr(node, doc, XmlVersion, TKVersionStr);
-
-      WriteAttr(node, doc, XmlNodeName.data(), m_name);
-      WriteAttr(node, doc, "id", std::to_string(m_id));
-      WriteAttr(node, doc, "type", std::to_string((int) GetType()));
-      WriteAttr(node, doc, "visible", std::to_string((int) m_visible));
-
-      XmlNode* childNode = CreateXmlNode(doc, "Size", node);
-      WriteVec(childNode, doc, m_size);
-
-      childNode = CreateXmlNode(doc, "Location", node);
-      WriteVec(childNode, doc, m_location);
-
-      return node;
-    }
-
-    XmlNode* Window::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
-    {
-      XmlNode* wndNode = parent;
-      if (wndNode == nullptr)
-      {
-        if (info.Document != nullptr)
-        {
-          wndNode = info.Document->first_node("Window");
-        }
-      }
-
-      if (wndNode == nullptr)
-      {
-        assert(wndNode && "Can't find Window node in document.");
-        return nullptr;
-      }
-
-      // if not present, version must be v0.4.4
-      ReadAttr(wndNode, XmlVersion.data(), m_version, "v0.4.4");
-      ReadAttr(wndNode, XmlNodeName.data(), m_name);
-      ReadAttr(wndNode, "id", m_id);
-
-      // Type is determined by the corresponding constructor.
-      ReadAttr(wndNode, "visible", m_visible);
-
-      if (XmlNode* childNode = wndNode->first_node("Size"))
-      {
-        ReadVec(childNode, m_size);
-      }
-
-      if (XmlNode* childNode = wndNode->first_node("Location"))
-      {
-        ReadVec(childNode, m_location);
-      }
-
-      return wndNode;
-    }
-
-    void Window::HandleStates()
-    {
-      ImGui::GetIO().WantCaptureMouse = true;
-
-      Vec2 loc                        = ImGui::GetWindowPos();
-      IVec2 iLoc(loc);
-
-      if (m_moving)
-      {
-        if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-        {
-          m_moving = false;
-        }
-      }
-      else
-      {
-        if (VecAllEqual(iLoc, m_location))
-        {
-          m_moving = false;
-        }
-        else
-        {
-          m_moving = true;
-        }
-      }
-
-      m_location = iLoc;
-
-      m_mouseHover =
-          ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByPopup);
-      bool rightClick  = ImGui::IsMouseDown(ImGuiMouseButton_Right);
-      bool leftClick   = ImGui::IsMouseDown(ImGuiMouseButton_Left);
-      bool middleClick = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
-
-      // Activate with any click.
-      if ((rightClick || leftClick || middleClick) && m_mouseHover)
-      {
-        if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) || ImGui::IsMouseDragging(ImGuiMouseButton_Right) ||
-            ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
-        {
-          return;
-        }
-
-        if (!m_active)
-        {
-          SetActive();
-        }
-      }
-
-      if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
-      {
-        if (m_active)
-        {
-          m_active = false;
-        }
-      }
-    }
-
-    void Window::SetActive()
-    {
-      m_active = true;
-      ImGui::SetWindowFocus();
-
-      if (IsViewport())
-      {
-        g_app->m_lastActiveViewport = static_cast<EditorViewport*>(this);
-      }
-    }
-
-    void Window::ModShortCutSignals(const IntArray& mask) const
-    {
-      if (!CanDispatchSignals() || UI::IsKeyboardCaptured())
-      {
-        return;
-      }
-
-      if (ImGui::IsKeyPressed(ImGuiKey_Delete, false) && !Exist(mask, ImGuiKey_Delete))
-      {
-        ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
-      }
-
-      if ((ImGui::IsKeyDown(ImGuiKey_ModCtrl) || ImGui::IsKeyDown(ImGuiKey_ModShift)) &&
-          ImGui::IsKeyPressed(ImGuiKey_D, false) && !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-          !Exist(mask, ImGuiKey_D))
-      {
-        ModManager::GetInstance()->DispatchSignal(BaseMod::m_duplicate);
-      }
-
-      if (ImGui::IsKeyPressed(ImGuiKey_B, false) && !Exist(mask, ImGuiKey_B))
-      {
-        ModManager::GetInstance()->SetMod(true, ModId::Select);
-      }
-
-      if (ImGui::IsKeyPressed(ImGuiKey_S, false) && !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-          !Exist(mask, ImGuiKey_S))
-      {
-        ModManager::GetInstance()->SetMod(true, ModId::Scale);
-      }
-
-      if (ImGui::IsKeyPressed(ImGuiKey_R, false) && !Exist(mask, ImGuiKey_R))
-      {
-        ModManager::GetInstance()->SetMod(true, ModId::Rotate);
-      }
-
-      if (ImGui::IsKeyPressed(ImGuiKey_G, false) && !Exist(mask, ImGuiKey_G))
-      {
-        ModManager::GetInstance()->SetMod(true, ModId::Move);
-      }
-
-      EditorScenePtr currSecne = g_app->GetCurrentScene();
-      if (ImGui::IsKeyDown(ImGuiKey_ModCtrl) && ImGui::IsKeyPressed(ImGuiKey_S, false) && !Exist(mask, ImGuiKey_S))
-      {
-        XmlDocument* doc = new XmlDocument();
-        currSecne->Serialize(doc, nullptr);
-        SafeDel(doc);
-      }
-
-      if (ImGui::IsKeyPressed(ImGuiKey_F, false) && !Exist(mask, ImGuiKey_F))
-      {
-        if (EntityPtr ntt = currSecne->GetCurrentSelection())
-        {
-          if (Window* wnd = g_app->GetOutliner())
-          {
-            OutlinerWindow* outliner = static_cast<OutlinerWindow*>(wnd);
-            outliner->Focus(ntt);
-          }
-          // Focus the object in the scene
-          g_app->FocusEntity(ntt);
-        }
-      }
-
-      // Undo - Redo.
-      if (ImGui::IsKeyPressed(ImGuiKey_Z, false) && !Exist(mask, ImGuiKey_Z))
-      {
-        if (ImGui::IsKeyDown(ImGuiKey_ModCtrl))
-        {
-          if (ImGui::IsKeyDown(ImGuiKey_ModShift))
-          {
-            ActionManager::GetInstance()->Redo();
-          }
-          else
-          {
-            ActionManager::GetInstance()->Undo();
-          }
-        }
-      }
-
-      if (ImGui::IsKeyPressed(ImGuiKey_Escape, false))
-      {
-        g_app->GetCurrentScene()->ClearSelection();
-      }
-
-      if (ImGui::IsKeyDown(ImGuiKey_ModCtrl) && ImGui::IsKeyPressed(ImGuiKey_S, false))
-      {
-        g_app->GetCurrentScene()->ClearSelection();
-        g_app->OnSaveScene();
-      }
-
-      if (ImGui::IsKeyPressed(ImGuiKey_F5, false))
-      {
-        if (g_app->m_gameMod == GameMod::Playing || g_app->m_gameMod == GameMod::Paused)
-        {
-          g_app->SetGameMod(GameMod::Stop);
-        }
-        else
-        {
-          g_app->SetGameMod(GameMod::Playing);
-        }
-      }
-    }
   } // namespace Editor
 } // namespace ToolKit

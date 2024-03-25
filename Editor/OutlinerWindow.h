@@ -10,7 +10,6 @@
 #include "EditorScene.h"
 #include "UI.h"
 
-
 namespace ToolKit
 {
   namespace Editor
@@ -18,10 +17,11 @@ namespace ToolKit
     class OutlinerWindow : public Window
     {
      public:
+      TKDeclareClass(OutlinerWindow, Window);
+
       OutlinerWindow();
       virtual ~OutlinerWindow();
       void Show() override;
-      Type GetType() const override;
       void DispatchSignals() const override;
       void Focus(EntityPtr ntt);
       void ClearOutliner();
@@ -80,6 +80,8 @@ namespace ToolKit
       float m_treeStartY        = 0.0;
       int m_searchStringSize    = 0;
     };
+
+    typedef std::shared_ptr<OutlinerWindow> OutlinerWindowPtr;
 
   } // namespace Editor
 } // namespace ToolKit

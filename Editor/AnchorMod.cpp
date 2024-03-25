@@ -112,7 +112,7 @@ namespace ToolKit
 
       if (g_app->GetCurrentScene()->GetCurrentSelection() != nullptr)
       {
-        if (EditorViewport* vp = g_app->GetActiveViewport())
+        if (EditorViewportPtr vp = g_app->GetActiveViewport())
         {
           const DirectionLabel axis = m_anchor->HitTest(vp->RayFromMousePosition());
           if (axis != DirectionLabel::None)
@@ -131,7 +131,7 @@ namespace ToolKit
     {
       if (signal == BaseMod::m_leftMouseBtnDownSgnl)
       {
-        if (EditorViewport* vp = g_app->GetActiveViewport())
+        if (EditorViewportPtr vp = g_app->GetActiveViewport())
         {
           m_mouseData[0]      = vp->GetLastMousePosScreenSpace();
           DirectionLabel axis = m_anchor->HitTest(vp->RayFromMousePosition());
@@ -171,12 +171,12 @@ namespace ToolKit
 
     void StateAnchorBegin::CalculateIntersectionPlane()
     {
-      if (EditorViewport* vp = g_app->GetActiveViewport())
+      if (EditorViewportPtr vp = g_app->GetActiveViewport())
       {
-        const Vec3 camOrg    = vp->GetCamera()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        const Vec3 anchorOrg = m_anchor->m_worldLocation;
-        const Vec3 dir       = glm::normalize(camOrg - anchorOrg);
-        m_intersectionPlane  = PlaneFrom(anchorOrg, Vec3 {0, 0, 1});
+        Vec3 camOrg         = vp->GetCamera()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        Vec3 anchorOrg      = m_anchor->m_worldLocation;
+        Vec3 dir            = glm::normalize(camOrg - anchorOrg);
+        m_intersectionPlane = PlaneFrom(anchorOrg, Vec3 {0, 0, 1});
       }
     }
 
@@ -184,7 +184,7 @@ namespace ToolKit
     {
       m_anchor->m_grabPoint = ZERO;
 
-      if (EditorViewport* vp = g_app->GetActiveViewport())
+      if (EditorViewportPtr vp = g_app->GetActiveViewport())
       {
         float t;
         Ray ray = vp->RayFromMousePosition();
@@ -269,7 +269,7 @@ namespace ToolKit
       Transform(m_anchorDeltaTransform);
       StateAnchorBase::Update(deltaTime);
       ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-      if (EditorViewport* vp = g_app->GetActiveViewport())
+      if (EditorViewportPtr vp = g_app->GetActiveViewport())
       {
         Vec2 contentMin, contentMax;
         vp->GetContentAreaScreenCoordinates(&contentMin, &contentMax);
@@ -315,21 +315,23 @@ namespace ToolKit
 
       SDL_WarpMouseGlobal(m_mouseInitialLoc.x, m_mouseInitialLoc.y);
 
-      float t;
-      EditorViewport* vp = g_app->GetActiveViewport();
-      Ray ray            = vp->RayFromScreenSpacePoint(m_mouseData[1]);
-      if (LinePlaneIntersection(ray, m_intersectionPlane, t))
+      if (EditorViewportPtr vp = g_app->GetActiveViewport())
       {
-        Vec3 p = PointOnRay(ray, t);
-        ray    = vp->RayFromScreenSpacePoint(m_mouseData[0]);
-        LinePlaneIntersection(ray, m_intersectionPlane, t);
-        Vec3 p0                = PointOnRay(ray, t);
-        m_anchorDeltaTransform = p - p0;
-      }
-      else
-      {
-        assert(false && "Intersection expected.");
-        m_anchorDeltaTransform = ZERO;
+        float t;
+        Ray ray = vp->RayFromScreenSpacePoint(m_mouseData[1]);
+        if (LinePlaneIntersection(ray, m_intersectionPlane, t))
+        {
+          Vec3 p = PointOnRay(ray, t);
+          ray    = vp->RayFromScreenSpacePoint(m_mouseData[0]);
+          LinePlaneIntersection(ray, m_intersectionPlane, t);
+          Vec3 p0                = PointOnRay(ray, t);
+          m_anchorDeltaTransform = p - p0;
+        }
+        else
+        {
+          assert(false && "Intersection expected.");
+          m_anchorDeltaTransform = ZERO;
+        }
       }
 
       std::swap(m_mouseData[0], m_mouseData[1]);

@@ -7,8 +7,7 @@
 
 #pragma once
 
-#include "MultiChoiceWindow.h"
-#include "PropInspector.h"
+#include "View.h"
 
 namespace ToolKit
 {
@@ -18,6 +17,10 @@ namespace ToolKit
     class CustomDataView : public View
     {
      public:
+      CustomDataView();
+      virtual ~CustomDataView();
+      virtual void Show();
+
       static void ShowMaterialPtr(const String& uniqueName, const String& file, MaterialPtr& var, bool isEditable);
       static void ShowMaterialVariant(const String& uniqueName, const String& file, ParameterVariant* var);
 
@@ -40,12 +43,6 @@ namespace ToolKit
 
       static void ShowVariant(ParameterVariant* var, ComponentPtr comp);
       static ValueUpdateFn MultiUpdate(ParameterVariant* var);
-      CustomDataView();
-      virtual ~CustomDataView();
-      virtual void Show();
-
-     private:
-      static MultiChoiceCraeteWindow m_multiChoiceParamWindow;
     };
 
   } // namespace Editor

@@ -8,7 +8,7 @@
 #include "LightMeshGenerator.h"
 
 #include "EditorLight.h"
-#include "Global.h"
+#include "EditorTypes.h"
 
 #include <Primative.h>
 #include <Types.h>

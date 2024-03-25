@@ -6,15 +6,18 @@
  */
 
 #pragma once
+
 #include "UI.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
-    class AndroidBuildWindow : public TempWindow
+    class AndroidBuildWindow : public Window
     {
      public:
+      TKDeclareClass(AndroidBuildWindow, Window);
+
       void Show() override;
       void OpenBuildWindow(PublishConfig publishType);
 

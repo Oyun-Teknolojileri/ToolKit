@@ -53,10 +53,6 @@ namespace ToolKit
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
-     private:
-      void SerializeSimulationWindow(XmlDocumentPtr doc) const;
-      void DeSerializeSimulationWindow(XmlDocumentPtr doc);
-
      public:
       std::vector<Project> m_projects;
 

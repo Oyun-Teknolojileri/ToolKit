@@ -9,7 +9,7 @@
 
 #include "App.h"
 #include "EditorViewport.h"
-#include "Global.h"
+#include "EditorTypes.h"
 
 #include <Canvas.h>
 #include <Material.h>
@@ -275,7 +275,7 @@ namespace ToolKit
           p.scale     = Vec3(0.5f, 1.1f, 1.f);
         }
 
-        if (EditorViewport* vp = g_app->GetViewport(g_2dViewport))
+        if (EditorViewportPtr vp = g_app->GetViewport(g_2dViewport))
         {
           if (vp->IsVisible())
           {
@@ -335,7 +335,7 @@ namespace ToolKit
       if (params.type == AnchorHandle::SolidType::Quad)
       {
         QuadPtr quad = MakeNewPtr<Quad>();
-        meshPtr = quad->GetMeshComponent()->GetMeshVal();
+        meshPtr      = quad->GetMeshComponent()->GetMeshVal();
       }
       else if (params.type == AnchorHandle::SolidType::Circle)
       {

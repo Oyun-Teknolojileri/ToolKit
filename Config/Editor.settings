@@ -1,87 +1,270 @@
-<App>
+<App version="v0.4.6">
 	<Settings>
-		<Size width="1280" height="800" maximized="0"/>
+		<Size width="3072" height="1657" maximized="1"/>
 	</Settings>
-	<Window name="3D View" id="1" type="0" visible="1">
-		<Viewport width="505.000000" height="778.000000" alignment="0" lock="0">
-			<E i="1343" t="13">
-				<N i="1354" is="0" ito="0">
-					<T x="5.000000" y="3.000000" z="5.000000"/>
-					<R x="-0.184111" y="0.375008" z="0.076261" w="0.905349"/>
-					<S x="1.000000" y="1.000000" z="1.000000"/>
-				</N>
-				<PB>
-					<P t="11" name="Id" category="Meta" priority="100" exposed="1" editable="0" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1343"/>
-					<P t="9" name="Name" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="Entity_1343"/>
-					<P t="9" name="Tag" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v=""/>
-					<P t="10" name="Visible" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1"/>
-					<P t="10" name="TransformLock" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="0"/>
-				</PB>
-				<Components>
-					<Component t="2">
-						<PB/>
-					</Component>
-				</Components>
-				<Camera fov="0.785398" aspect="0.649100" near="0.500000" far="1000.000000" height="778.000000" ortographic="0" left="10.000000" right="10.000000" top="10.000000" bottom="10.000000"/>
-			</E>
-		</Viewport>
-	</Window>
-	<Window name="2D View" id="2" type="8" visible="0">
-		<Viewport width="713.000000" height="778.000000" alignment="0" lock="0">
-			<E i="1357" t="13">
-				<N i="1368" is="0" ito="0">
-					<T x="0.000000" y="0.000000" z="1.000000"/>
-					<R x="0.000000" y="0.000000" z="0.000000" w="1.000000"/>
-					<S x="1.000000" y="1.000000" z="1.000000"/>
-				</N>
-				<PB>
-					<P t="11" name="Id" category="Meta" priority="100" exposed="1" editable="0" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1357"/>
-					<P t="9" name="Name" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="Entity_1357"/>
-					<P t="9" name="Tag" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v=""/>
-					<P t="10" name="Visible" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1"/>
-					<P t="10" name="TransformLock" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="0"/>
-				</PB>
-				<Components>
-					<Component t="2">
-						<PB/>
-					</Component>
-				</Components>
-				<Camera fov="0.000000" aspect="1.000000" near="0.010000" far="1000.000000" height="296.000000" ortographic="1" left="-139.400009" right="139.400009" top="148.000000" bottom="-148.000000"/>
-			</E>
-		</Viewport>
-	</Window>
-	<Window name="ISO View" id="3" type="0" visible="1">
-		<Viewport width="462.000000" height="346.000000" alignment="1" lock="1">
-			<E i="1371" t="13">
-				<N i="1382" is="0" ito="0">
-					<T x="0.080730" y="8.000000" z="0.059584"/>
-					<R x="-0.707107" y="0.000000" z="0.000000" w="0.707107"/>
-					<S x="1.000000" y="1.000000" z="1.000000"/>
-				</N>
-				<PB>
-					<P t="11" name="Id" category="Meta" priority="100" exposed="1" editable="0" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1371"/>
-					<P t="9" name="Name" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="Entity_1371"/>
-					<P t="9" name="Tag" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v=""/>
-					<P t="10" name="Visible" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1"/>
-					<P t="10" name="TransformLock" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="0"/>
-				</PB>
-				<Components>
-					<Component t="2">
-						<PB/>
-					</Component>
-				</Components>
-				<Camera fov="0.000000" aspect="1.000000" near="0.500000" far="1000.000000" height="4.613696" ortographic="1" left="-3.080242" right="3.080242" top="2.306848" bottom="-2.306848"/>
-			</E>
-		</Viewport>
-	</Window>
-	<Window name="Console" id="4" type="1" visible="1"/>
-	<Window name="Asset Browser" id="5" type="3" visible="1">
-		<FolderWindow activeFolder="-1" showStructure="1">
-		</FolderWindow>
-	</Window>
-	<Window name="Outliner" id="6" type="4" visible="1"/>
-	<Window name="Property Inspector" id="7" type="5" visible="1"/>
-	<Window name="Material Inspector" id="8" type="6" visible="1"/>
-	<Window name="Plugin" id="9" type="7" visible="1"/>
+	<Windows>
+		<Object Cl="EditorViewport">
+			<PB>
+				<P t="11" name="Id" v="5066036208500106767"/>
+			</PB>
+			<Window version="v0.4.6" name="3D Viewport" id="16" visible="1">
+				<Size x="2132" y="1399"/>
+				<Location x="539" y="103"/>
+				<Viewport alignment="0" lock="0">
+					<Object Cl="Camera">
+						<PB>
+							<P t="11" name="Id" v="13668539895047963246"/>
+							<P t="9" name="Name" v="Entity"/>
+							<P t="9" name="Tag" v=""/>
+							<P t="10" name="Visible" v="1"/>
+							<P t="10" name="TransformLock" v="0"/>
+							<P t="2" name="Fov" v="90.000000"/>
+							<P t="2" name="NearClip" v="0.010000"/>
+							<P t="2" name="FarClip" v="1000.000000"/>
+							<P t="10" name="Orthographic" v="0"/>
+							<P t="2" name="OrthographicScale" v="0.001000"/>
+							<P t="18" name="Poses"/>
+						</PB>
+						<Entity>
+							<N is="0">
+								<T x="5.000000" y="3.000000" z="5.000000"/>
+								<R x="-0.184111" y="0.375008" z="0.076261" w="0.905349"/>
+								<S x="1.000000" y="1.000000" z="1.000000"/>
+							</N>
+							<Ca>
+								<Object Cl="DirectionComponent">
+									<PB>
+										<P t="11" name="Id" v="3924378435300965411"/>
+									</PB>
+									<Component>
+										<DirectionComponent/>
+									</Component>
+								</Object>
+							</Ca>
+							<Camera fov="0.785398" aspect="1.552458" near="0.500000" far="1000.000000" ortographic="0" left="10.000000" right="10.000000" top="10.000000" bottom="10.000000" scale="0.001000"/>
+						</Entity>
+					</Object>
+				</Viewport>
+			</Window>
+		</Object>
+		<Object Cl="EditorViewport2d">
+			<PB>
+				<P t="11" name="Id" v="12274268932586889139"/>
+			</PB>
+			<Window version="v0.4.6" name="2D Viewport" id="17" visible="0">
+				<Size x="2132" y="1399"/>
+				<Location x="539" y="103"/>
+				<Viewport alignment="0" lock="0">
+					<Object Cl="Camera">
+						<PB>
+							<P t="11" name="Id" v="1977619002030183418"/>
+							<P t="9" name="Name" v="Entity"/>
+							<P t="9" name="Tag" v=""/>
+							<P t="10" name="Visible" v="1"/>
+							<P t="10" name="TransformLock" v="0"/>
+							<P t="2" name="Fov" v="90.000000"/>
+							<P t="2" name="NearClip" v="0.010000"/>
+							<P t="2" name="FarClip" v="1000.000000"/>
+							<P t="10" name="Orthographic" v="0"/>
+							<P t="2" name="OrthographicScale" v="0.001000"/>
+							<P t="18" name="Poses"/>
+						</PB>
+						<Entity>
+							<N is="0">
+								<T x="0.000000" y="0.000000" z="1.000000"/>
+								<R x="0.000000" y="0.000000" z="0.000000" w="1.000000"/>
+								<S x="1.000000" y="1.000000" z="1.000000"/>
+							</N>
+							<Ca>
+								<Object Cl="DirectionComponent">
+									<PB>
+										<P t="11" name="Id" v="7183325842782405368"/>
+									</PB>
+									<Component>
+										<DirectionComponent/>
+									</Component>
+								</Object>
+							</Ca>
+							<Camera fov="0.785398" aspect="1.552458" near="0.500000" far="1000.000000" ortographic="0" left="10.000000" right="10.000000" top="10.000000" bottom="10.000000" scale="1.000000"/>
+						</Entity>
+					</Object>
+				</Viewport>
+			</Window>
+		</Object>
+		<Object Cl="EditorViewport">
+			<PB>
+				<P t="11" name="Id" v="15878264026129043252"/>
+			</PB>
+			<Window version="v0.4.6" name="ISO Viewport" id="18" visible="0">
+				<Size x="2132" y="1399"/>
+				<Location x="539" y="103"/>
+				<Viewport alignment="1" lock="1">
+					<Object Cl="Camera">
+						<PB>
+							<P t="11" name="Id" v="11184900173705814719"/>
+							<P t="9" name="Name" v="Entity"/>
+							<P t="9" name="Tag" v=""/>
+							<P t="10" name="Visible" v="1"/>
+							<P t="10" name="TransformLock" v="0"/>
+							<P t="2" name="Fov" v="90.000000"/>
+							<P t="2" name="NearClip" v="0.010000"/>
+							<P t="2" name="FarClip" v="1000.000000"/>
+							<P t="10" name="Orthographic" v="0"/>
+							<P t="2" name="OrthographicScale" v="0.001000"/>
+							<P t="18" name="Poses"/>
+						</PB>
+						<Entity>
+							<N is="0">
+								<T x="0.000000" y="10.000000" z="0.000000"/>
+								<R x="-0.707107" y="0.000000" z="0.000000" w="0.707107"/>
+								<S x="1.000000" y="1.000000" z="1.000000"/>
+							</N>
+							<Ca>
+								<Object Cl="DirectionComponent">
+									<PB>
+										<P t="11" name="Id" v="11695281560391041230"/>
+									</PB>
+									<Component>
+										<DirectionComponent/>
+									</Component>
+								</Object>
+							</Ca>
+							<Camera fov="1.570796" aspect="1.552458" near="0.010000" far="1000.000000" ortographic="1" left="-1058.000000" right="1058.000000" top="681.500000" bottom="-681.500000" scale="0.016667"/>
+						</Entity>
+					</Object>
+				</Viewport>
+			</Window>
+		</Object>
+		<Object Cl="ConsoleWindow">
+			<PB>
+				<P t="11" name="Id" v="18317783216435165466"/>
+			</PB>
+			<Window version="v0.4.6" name="Console" id="19" visible="1">
+				<Size x="640" y="480"/>
+				<Location x="539" y="1504"/>
+			</Window>
+		</Object>
+		<Object Cl="FolderWindow">
+			<PB>
+				<P t="11" name="Id" v="10026226395933315708"/>
+			</PB>
+			<Window version="v0.4.6" name="Asset Browser" id="20" visible="1">
+				<Size x="640" y="480"/>
+				<Location x="0" y="229"/>
+				<FolderWindow activeFolder="0" showStructure="1">
+				</FolderWindow>
+			</Window>
+		</Object>
+		<Object Cl="OutlinerWindow">
+			<PB>
+				<P t="11" name="Id" v="17319311379118796939"/>
+			</PB>
+			<Window version="v0.4.6" name="Outliner" id="21" visible="1">
+				<Size x="640" y="480"/>
+				<Location x="2673" y="43"/>
+			</Window>
+		</Object>
+		<Object Cl="PropInspectorWindow">
+			<PB>
+				<P t="11" name="Id" v="6075912388077321414"/>
+			</PB>
+			<Window version="v0.4.6" name="Property Inspector" id="22" visible="1">
+				<Size x="640" y="480"/>
+				<Location x="2673" y="865"/>
+			</Window>
+		</Object>
+		<Object Cl="SimulationWindow">
+			<PB>
+				<P t="11" name="Id" v="7185809461268004669"/>
+			</PB>
+			<Window version="v0.4.6" name="Simulation" id="25" visible="1">
+				<Size x="640" y="480"/>
+				<Location x="539" y="43"/>
+				<Simulation>
+					<Resolution name="" sizeX="0" sizeY="0"/>
+				</Simulation>
+			</Window>
+		</Object>
+		<Object Cl="EditorViewport">
+			<PB>
+				<P t="11" name="Id" v="9705247917507384620"/>
+			</PB>
+			<Window version="v0.4.6" name="Simulation Viewport" id="26" visible="0">
+				<Size x="640" y="480"/>
+				<Location x="0" y="0"/>
+				<Viewport alignment="0" lock="0">
+					<Object Cl="Camera">
+						<PB>
+							<P t="11" name="Id" v="11442423897171218883"/>
+							<P t="9" name="Name" v="Entity"/>
+							<P t="9" name="Tag" v=""/>
+							<P t="10" name="Visible" v="1"/>
+							<P t="10" name="TransformLock" v="0"/>
+							<P t="2" name="Fov" v="90.000000"/>
+							<P t="2" name="NearClip" v="0.010000"/>
+							<P t="2" name="FarClip" v="1000.000000"/>
+							<P t="10" name="Orthographic" v="0"/>
+							<P t="2" name="OrthographicScale" v="0.001000"/>
+							<P t="18" name="Poses"/>
+						</PB>
+						<Entity>
+							<N is="0">
+								<T x="0.000000" y="0.000000" z="0.000000"/>
+								<R x="0.000000" y="0.000000" z="0.000000" w="1.000000"/>
+								<S x="1.000000" y="1.000000" z="1.000000"/>
+							</N>
+							<Ca>
+								<Object Cl="DirectionComponent">
+									<PB>
+										<P t="11" name="Id" v="3116914225308879563"/>
+									</PB>
+									<Component>
+										<DirectionComponent/>
+									</Component>
+								</Object>
+							</Ca>
+							<Camera fov="0.785398" aspect="1.333333" near="0.500000" far="1000.000000" ortographic="0" left="10.000000" right="10.000000" top="10.000000" bottom="10.000000" scale="0.001000"/>
+						</Entity>
+					</Object>
+				</Viewport>
+			</Window>
+		</Object>
+		<Object Cl="ConsoleWindow">
+			<PB>
+				<P t="11" name="Id" v="5323469557637076074"/>
+			</PB>
+			<Window version="v0.4.6" name="Console" id="27" visible="0">
+				<Size x="640" y="480"/>
+				<Location x="0" y="0"/>
+			</Window>
+		</Object>
+		<Object Cl="RenderSettingsWindow">
+			<PB>
+				<P t="11" name="Id" v="13625752535987616505"/>
+			</PB>
+			<Window version="v0.4.6" name="Render Settings" id="28" visible="1">
+				<Size x="640" y="480"/>
+				<Location x="0" y="0"/>
+			</Window>
+		</Object>
+		<Object Cl="StatsWindow">
+			<PB>
+				<P t="11" name="Id" v="5262911893389350573"/>
+			</PB>
+			<Window version="v0.4.6" name="Statistics" id="29" visible="1">
+				<Size x="640" y="480"/>
+				<Location x="0" y="0"/>
+			</Window>
+		</Object>
+		<Object Cl="AndroidBuildWindow">
+			<PB>
+				<P t="11" name="Id" v="17839278664422754741"/>
+			</PB>
+			<Window version="v0.4.6" name="" id="15" visible="0">
+				<Size x="640" y="480"/>
+				<Location x="0" y="0"/>
+			</Window>
+		</Object>
+	</Windows>
 </App>
 

@@ -7,12 +7,17 @@
 
 #pragma once
 
-#include "PropInspector.h"
+#include "PreviewViewport.h"
+#include "View.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
+
+    // MaterialView
+    //////////////////////////////////////////////////////////////////////////
+
     class MaterialView : public View
     {
      public:
@@ -29,7 +34,7 @@ namespace ToolKit
       void ShowMaterial(MaterialPtr m_mat);
 
      private:
-      PreviewViewport* m_viewport = nullptr;
+      PreviewViewportPtr m_viewport = nullptr;
       MaterialPtrArray m_materials;
       uint m_activeObjectIndx    = 0;
       int m_currentMaterialIndex = 0;
@@ -41,11 +46,17 @@ namespace ToolKit
 
     typedef std::shared_ptr<MaterialView> MaterialViewPtr;
 
-    class TempMaterialWindow : public TempWindow
+    // TempMaterialWindow
+    //////////////////////////////////////////////////////////////////////////
+
+    class TempMaterialWindow : public Window
     {
      public:
+      TKDeclareClass(TempMaterialWindow, Window);
+
       TempMaterialWindow();
       ~TempMaterialWindow();
+
       void SetMaterial(MaterialPtr mat);
       void OpenWindow();
       void Show() override;

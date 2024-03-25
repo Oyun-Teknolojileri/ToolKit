@@ -10,7 +10,7 @@
 #include "App.h"
 #include "ComponentView.h"
 #include "CustomDataView.h"
-#include "Global.h"
+#include "EditorTypes.h"
 #include "IconsFontAwesome.h"
 #include "Prefab.h"
 

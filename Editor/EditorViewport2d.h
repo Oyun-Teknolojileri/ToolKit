@@ -17,13 +17,14 @@ namespace ToolKit
     class EditorViewport2d : public EditorViewport
     {
      public:
+      TKDeclareClass(EditorViewport2d, EditorViewport);
+
       EditorViewport2d();
       virtual ~EditorViewport2d();
 
       void Init(Vec2 size) override;
 
       // Window Overrides.
-      Type GetType() const override;
       void Update(float deltaTime) override;
       void OnResizeContentArea(float width, float height) override;
       void DispatchSignals() const override;
@@ -43,6 +44,8 @@ namespace ToolKit
       float m_zoomPercentage     = 100.0f;
       uint m_gridCellSizeByPixel = 10;
     };
+
+    typedef std::shared_ptr<EditorViewport2d> EditorViewport2dPtr;
 
   } // namespace Editor
 } // namespace ToolKit

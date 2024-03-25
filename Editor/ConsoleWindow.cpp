@@ -23,6 +23,8 @@ namespace ToolKit
   namespace Editor
   {
 
+    TKDefineClass(ConsoleWindow, Window);
+
     TagArgCIt GetTag(const String& tag, const TagArgArray& tagArgs)
     {
       for (TagArgArray::const_iterator ta = tagArgs.cbegin(); ta != tagArgs.cend(); ta++)
@@ -215,7 +217,7 @@ namespace ToolKit
           return;
         }
 
-        if (EditorViewport* vp = g_app->GetViewport(viewportTag->second[0]))
+        if (EditorViewportPtr vp = g_app->GetViewport(viewportTag->second[0]))
         {
           if (CameraPtr c = vp->GetCamera())
           {
@@ -271,7 +273,7 @@ namespace ToolKit
 
     void ResetCameraExec(TagArgArray tagArgs)
     {
-      if (EditorViewport* vp = g_app->GetActiveViewport())
+      if (EditorViewportPtr vp = g_app->GetActiveViewport())
       {
         if (CameraPtr cam = vp->GetCamera())
         {
@@ -291,7 +293,7 @@ namespace ToolKit
           Vec3 t       = e->m_node->GetTranslation(ts);
           Vec3 s       = e->m_node->GetScale();
 
-          if (ConsoleWindow* cwnd = g_app->GetConsole())
+          if (ConsoleWindowPtr cwnd = g_app->GetConsole())
           {
             String str = "T: " + glm::to_string(t);
             cwnd->AddLog(str);
@@ -388,8 +390,7 @@ namespace ToolKit
 
         Vec3 target;
         ParseVec(target, targetTag);
-        EditorViewport* vp = g_app->GetViewport(g_3dViewport);
-        if (vp)
+        if (EditorViewportPtr vp = g_app->GetViewport(g_3dViewport))
         {
           vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt(target);
         }
@@ -629,6 +630,8 @@ namespace ToolKit
 
     ConsoleWindow::ConsoleWindow()
     {
+      m_name = g_consoleStr;
+
       CreateCommand(g_showPickDebugCmd, ShowPickDebugExec);
       CreateCommand(g_showOverlayUICmd, ShowOverlayExec);
       CreateCommand(g_showOverlayUIAlwaysCmd, ShowOverlayAlwaysExec);
@@ -796,8 +799,6 @@ namespace ToolKit
       }
       ImGui::End();
     }
-
-    Window::Type ConsoleWindow::GetType() const { return Type::Console; }
 
     void ConsoleWindow::AddLog(const String& log, LogType type)
     {

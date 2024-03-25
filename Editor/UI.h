@@ -8,6 +8,7 @@
 #pragma once
 
 #include "IconsFontAwesome.h"
+#include "Window.h"
 
 #include <ImGui/imgui.h>
 #include <ImGui/misc/cpp/imgui_stdlib.h>
@@ -28,80 +29,6 @@ namespace ToolKit
       Light = 1,
       Dark  = 2,
       Grey  = 3
-    };
-
-    class Window : public Serializable
-    {
-     public:
-      enum class Type
-      {
-        Viewport       = 0,
-        Console        = 1,
-        InputPopup     = 2,
-        Browser        = 3,
-        Outliner       = 4,
-        Inspector      = 5,
-        UNUSEDSLOT_1   = 6,
-        PluginWindow   = 7,
-        Viewport2d     = 8,
-        RenderSettings = 9,
-        Stats          = 10
-      };
-
-     public:
-      Window();
-      virtual ~Window();
-      virtual void Show()          = 0;
-      virtual Type GetType() const = 0;
-      void SetVisibility(bool visible);
-
-      // Window queries.
-      bool IsActive() const;
-      bool IsVisible() const;
-      bool IsMoving() const;
-      bool MouseHovers() const;
-      bool CanDispatchSignals() const; // If active & visible & mouse hovers.
-      bool IsViewport() const;
-
-      // System calls.
-      virtual void DispatchSignals() const;
-
-     protected:
-      // Internal window handling.
-      void HandleStates();
-      void SetActive();
-      void ModShortCutSignals(const IntArray& mask = {}) const;
-      XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-      XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
-
-     protected:
-      // States.
-      bool m_visible    = true;
-      bool m_active     = false;
-      bool m_mouseHover = false;
-      bool m_moving     = false; //!< States if window is moving.
-
-     public:
-      String m_name;
-      uint m_id;
-      UVec2 m_size;
-      IVec2 m_location;
-
-     private:
-      // Internal unique id generator.
-      static uint m_baseId;
-    };
-
-    typedef std::vector<Window*> WindowRawPtrArray;
-
-    /**
-     * Deprecated, use volatile windows.
-     * UI::m_volatileWindows
-     */
-    class TempWindow
-    {
-     public:
-      virtual void Show() = 0;
     };
 
     class UI
@@ -125,8 +52,6 @@ namespace ToolKit
       static void ShowMenuProjects();
       static void ShowImportWindow();
       static void ShowSearchForFilesWindow();
-      static void AddTempWindow(TempWindow* window);
-      static void RemoveTempWindow(TempWindow* window);
       static void HelpMarker(const String& key, const char* desc, float wait = m_hoverTimeForHelp);
       static void ShowNewSceneWindow();
       static void ShowBlocker();
@@ -162,8 +87,11 @@ namespace ToolKit
       static bool m_windowMenushowMetrics;
       static float m_hoverTimeForHelp;
 
-      // Volatile windows. (Pop-ups etc.)
-      static WindowRawPtrArray m_volatileWindows;
+      /**
+       * Storage for windows that does not serialized with editor.
+       * When Window::AddToUI & RemoveFromUI is used, the corresponding windows get stored in m_volatileWindows array.
+       */
+      static WindowPtrArray m_volatileWindows;
 
       static struct Blocker
       {
@@ -192,10 +120,6 @@ namespace ToolKit
 
       // Some actions needed to be run after ui rendered.
       static std::vector<std::function<void()>> m_postponedActions;
-
-      // TODO: Volatile window serves this purpose. This one is not needed, merge them.
-      static std::vector<TempWindow*> m_tempWindows;
-      static std::vector<TempWindow*> m_removedTempWindows;
 
       // Toolbar Icons.
       static TexturePtr m_selectIcn;
@@ -271,8 +195,6 @@ namespace ToolKit
       };
 
       static AnchorPresetImages m_anchorPresetIcons;
-
-      static class AndroidBuildWindow* m_androidBuildWindow;
     };
   } // namespace Editor
 } // namespace ToolKit

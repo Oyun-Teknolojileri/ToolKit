@@ -343,7 +343,7 @@ namespace ToolKit
       {
         if (curr->IsSame(this))
         {
-          if (OutlinerWindow* wnd = g_app->GetOutliner())
+          if (OutlinerWindowPtr wnd = g_app->GetOutliner())
           {
             wnd->ClearOutliner();
           }
@@ -574,7 +574,7 @@ namespace ToolKit
 
     void EditorScene::UpdateBillboardsForPicking()
     {
-      if (Viewport* vp = g_app->GetActiveViewport())
+      if (EditorViewportPtr vp = g_app->GetActiveViewport())
       {
         if (CameraPtr cam = vp->GetCamera())
         {

@@ -12,3 +12,8 @@
 #else
   #include <glad/gles2.h>
 #endif
+
+namespace ToolKit
+{
+  void LoadGlFunctions(void* glGetProcAddres);
+}

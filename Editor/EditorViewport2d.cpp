@@ -19,7 +19,10 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     Overlay2DTopBar* m_2dViewOptions = nullptr;
+
+    TKDefineClass(EditorViewport2d, EditorViewport);
 
     EditorViewport2d::EditorViewport2d() { Init({640.0f, 480.0f}); }
 
@@ -58,8 +61,6 @@ namespace ToolKit
 
       m_snapDeltas = Vec3(10.0f, 45.0f, 0.25f);
     }
-
-    Window::Type EditorViewport2d::GetType() const { return Type::Viewport2d; }
 
     void EditorViewport2d::Update(float deltaTime)
     {
@@ -134,33 +135,35 @@ namespace ToolKit
 
           if (entry->m_ext == LAYER)
           {
-            MultiChoiceWindow::ButtonInfo openButton;
+            MultiChoiceButtonInfo openButton;
             openButton.m_name     = "Open";
             openButton.m_callback = [entry]() -> void
             {
               String fullPath = entry->GetFullPath();
               g_app->OpenScene(fullPath);
             };
-            MultiChoiceWindow::ButtonInfo linkButton;
+
+            MultiChoiceButtonInfo linkButton;
             linkButton.m_name     = "Link";
             linkButton.m_callback = [entry]() -> void
             {
               String fullPath = entry->GetFullPath();
               GetSceneManager()->GetCurrentScene()->LinkPrefab(fullPath);
             };
-            MultiChoiceWindow::ButtonInfo mergeButton;
+
+            MultiChoiceButtonInfo mergeButton;
             mergeButton.m_name     = "Merge";
             mergeButton.m_callback = [entry]() -> void
             {
               String fullPath = entry->GetFullPath();
               g_app->MergeScene(fullPath);
             };
-            MultiChoiceWindow* importOptionWnd = new MultiChoiceWindow("Open Scene",
-                                                                       {openButton, linkButton, mergeButton},
-                                                                       "Open, link or merge the scene?",
-                                                                       true);
 
-            UI::m_volatileWindows.push_back(importOptionWnd);
+            MultiChoiceButtonArray buttons = {openButton, linkButton, mergeButton};
+            MultiChoiceWindowPtr importOptionWnd =
+                MakeNewPtr<MultiChoiceWindow>("Open Scene", buttons, "Open, link or merge the scene?", true);
+
+            importOptionWnd->AddToUI();
           }
         }
         ImGui::EndDragDropTarget();

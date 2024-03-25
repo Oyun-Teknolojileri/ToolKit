@@ -46,12 +46,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>..\Bin\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\ImGui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\ImGui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\ImGui\lib;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\ImGui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\NVTX-3.1.0\c\include\nvtx3;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\ImGui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\NVTX-3.1.0\c\include\nvtx3;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\ImGui\lib;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -102,6 +102,7 @@
     <ClCompile Include="ComponentView.cpp" />
     <ClCompile Include="ConsoleWindow.cpp" />
     <ClCompile Include="CustomDataView.cpp" />
+    <ClCompile Include="DirectoryEntry.cpp" />
     <ClCompile Include="DynamicMenu.cpp" />
     <ClCompile Include="EditorApi.cpp" />
     <ClCompile Include="EditorCamera.cpp" />
@@ -127,14 +128,15 @@
     </ClCompile>
     <ClCompile Include="OutlinerWindow.cpp" />
     <ClCompile Include="OverlayLighting.cpp" />
-    <ClCompile Include="PluginWindow.cpp" />
+    <ClCompile Include="SimulationWindow.cpp" />
     <ClCompile Include="PopupWindows.cpp" />
     <ClCompile Include="PrefabView.cpp" />
-    <ClCompile Include="PropInspector.cpp" />
+    <ClCompile Include="PreviewViewport.cpp" />
+    <ClCompile Include="PropInspectorWindow.cpp" />
     <ClCompile Include="PublishManager.cpp" />
-    <ClCompile Include="RenderSettingsView.cpp" />
+    <ClCompile Include="RenderSettingsWindow.cpp" />
     <ClCompile Include="SingleMaterialPass.cpp" />
-    <ClCompile Include="StatsView.cpp" />
+    <ClCompile Include="StatsWindow.cpp" />
     <ClCompile Include="StatusBar.cpp" />
     <ClCompile Include="Thumbnail.cpp" />
     <ClCompile Include="TopBar.cpp" />
@@ -154,6 +156,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="EditorViewport.cpp" />
+    <ClCompile Include="View.cpp" />
+    <ClCompile Include="Window.cpp" />
     <ClCompile Include="Workspace.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -165,6 +169,7 @@
     <ClInclude Include="ComponentView.h" />
     <ClInclude Include="ConsoleWindow.h" />
     <ClInclude Include="CustomDataView.h" />
+    <ClInclude Include="DirectoryEntry.h" />
     <ClInclude Include="DynamicMenu.h" />
     <ClInclude Include="EditorApi.h" />
     <ClInclude Include="EditorCamera.h" />
@@ -175,7 +180,7 @@
     <ClInclude Include="FolderWindow.h" />
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="GizmoPass.h" />
-    <ClInclude Include="Global.h" />
+    <ClInclude Include="EditorTypes.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="IconsFontAwesome.h" />
     <ClInclude Include="LeftBar.h" />
@@ -184,20 +189,23 @@
     <ClInclude Include="MeshView.h" />
     <ClInclude Include="MultiChoiceWindow.h" />
     <ClInclude Include="OverlayLighting.h" />
-    <ClInclude Include="PluginWindow.h" />
+    <ClInclude Include="SimulationWindow.h" />
     <ClInclude Include="PopupWindows.h" />
     <ClInclude Include="PrefabView.h" />
+    <ClInclude Include="PreviewViewport.h" />
     <ClInclude Include="PublishManager.h" />
-    <ClInclude Include="RenderSettingsView.h" />
+    <ClInclude Include="RenderSettingsWindow.h" />
     <ClInclude Include="SingleMaterialPass.h" />
-    <ClInclude Include="StatsView.h" />
+    <ClInclude Include="StatsWindow.h" />
     <ClInclude Include="StatusBar.h" />
     <ClInclude Include="Thumbnail.h" />
     <ClInclude Include="TopBar.h" />
     <ClInclude Include="TopBar2d.h" />
+    <ClInclude Include="View.h" />
+    <ClInclude Include="Window.h" />
     <ClInclude Include="Workspace.h" />
     <ClInclude Include="OutlinerWindow.h" />
-    <ClInclude Include="PropInspector.h" />
+    <ClInclude Include="PropInspectorWindow.h" />
     <ClInclude Include="TransformMod.h" />
     <ClInclude Include="EditorScene.h" />
     <ClInclude Include="UI.h" />

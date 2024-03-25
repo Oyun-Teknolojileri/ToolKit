@@ -224,7 +224,6 @@ namespace ToolKit
     Vec2 m_contentAreaLocation; //!< Position of content area in screen space.
 
     // States.
-    bool m_mouseOverContentArea = false;
     Vec2 m_wndContentAreaSize;
     IVec2 m_lastMousePosRelContentArea;
   };
