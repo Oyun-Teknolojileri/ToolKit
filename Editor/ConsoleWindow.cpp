@@ -630,6 +630,8 @@ namespace ToolKit
 
     ConsoleWindow::ConsoleWindow()
     {
+      m_name = g_consoleStr;
+
       CreateCommand(g_showPickDebugCmd, ShowPickDebugExec);
       CreateCommand(g_showOverlayUICmd, ShowOverlayExec);
       CreateCommand(g_showOverlayUIAlwaysCmd, ShowOverlayAlwaysExec);

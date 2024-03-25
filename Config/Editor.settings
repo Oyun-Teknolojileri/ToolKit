@@ -139,7 +139,7 @@
 			<PB>
 				<P t="11" name="Id" v="18317783216435165466"/>
 			</PB>
-			<Window version="v0.4.6" name="" id="19" visible="1">
+			<Window version="v0.4.6" name="Console" id="19" visible="1">
 				<Size x="640" y="480"/>
 				<Location x="539" y="1504"/>
 			</Window>
