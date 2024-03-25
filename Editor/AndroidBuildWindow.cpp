@@ -104,7 +104,7 @@ namespace ToolKit::Editor
 
     m_publishType = publishType;
 
-    AddToUI();
-    m_menuOpen = true;
+    m_menuOpen    = true;
+    m_visible     = true;
   }
 } // namespace ToolKit::Editor

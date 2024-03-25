@@ -44,6 +44,7 @@ namespace ToolKit
 
     void Window::AddToUI()
     {
+      m_visible = true;
       if (g_app != nullptr)
       {
         UI::m_volatileWindows.push_back(Self<Window>());
@@ -52,6 +53,7 @@ namespace ToolKit
 
     void Window::RemoveFromUI()
     {
+      m_visible = false;
       if (g_app != nullptr)
       {
         Object* self = this;
