@@ -151,10 +151,7 @@ namespace ToolKit
   void RenderSystem::InitGl(void* glGetProcAddres, GlReportCallback callback)
   {
     // Initialize opengl functions.
-    if constexpr (TK_PLATFORM == PLATFORM::TKWindows)
-    {
-      gladLoadGLES2((GLADloadfunc) glGetProcAddres);
-    }
+    LoadGlFunctions(glGetProcAddres);
 
     InitGLErrorReport(callback);
     TestSRGBBackBuffer();
@@ -188,7 +185,10 @@ namespace ToolKit
     RHI::SetFramebuffer(GL_FRAMEBUFFER, 0);
 
     GLint encoding = 0;
-    glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_FRONT, GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING, &encoding);
+    glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER,
+                                          GL_FRONT,
+                                          GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING,
+                                          &encoding);
 
     if (encoding == GL_LINEAR)
     {
