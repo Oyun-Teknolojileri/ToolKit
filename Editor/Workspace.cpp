@@ -247,7 +247,7 @@ namespace ToolKit
     void Workspace::SerializeEngineSettings() const
     {
       String path = ConcatPaths({GetProjectConfigPath(), "Engine.settings"});
-      GetEngineSettings().SerializeEngineSettings(path);
+      GetEngineSettings().Save(path);
     }
 
     void Workspace::DeSerializeEngineSettings()
@@ -261,7 +261,7 @@ namespace ToolKit
         settingsFile = ConcatPaths({ConfigPath(), "Engine.settings"});
       }
 
-      GetEngineSettings().DeSerializeEngineSettings(settingsFile);
+      GetEngineSettings().Load(settingsFile);
     }
 
     XmlNode* Workspace::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)

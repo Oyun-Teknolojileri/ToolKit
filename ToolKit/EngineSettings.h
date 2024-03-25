@@ -19,7 +19,7 @@ namespace ToolKit
     Mobile  = 1
   };
 
-  class TK_API EngineSettings : public Serializable
+  class TK_API EngineSettings
   {
    public:
     struct WindowSettings
@@ -70,11 +70,8 @@ namespace ToolKit
       void DeSerialize(XmlDocument* doc, XmlNode* parent);
     } PostProcessing;
 
-    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
-    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
-
-    void SerializeEngineSettings(const String& engineSettingsFilePath);
-    void DeSerializeEngineSettings(const String& engineSettingsFilePath);
+    void Save(const String& path);
+    void Load(const String& path);
   };
 
 } // namespace ToolKit
