@@ -12,7 +12,7 @@ namespace ToolKit
 {
   struct GameRendererParams
   {
-    Viewport* viewport       = nullptr;
+    ViewportPtr viewport     = nullptr;
     ScenePtr scene           = nullptr;
     bool useMobileRenderPath = false;
     EngineSettings::PostProcessingSettings gfx;
