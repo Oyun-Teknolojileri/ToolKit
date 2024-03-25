@@ -220,7 +220,6 @@ namespace ToolKit
 
       // Publisher.
       PublishManager* m_publishManager = nullptr;
-      AndroidBuildWindowPtr m_androidBuildWindow;
 
       // Editor objects.
       GridPtr m_grid;

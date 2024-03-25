@@ -256,15 +256,6 @@
 				<Location x="0" y="0"/>
 			</Window>
 		</Object>
-		<Object Cl="AndroidBuildWindow">
-			<PB>
-				<P t="11" name="Id" v="17839278664422754741"/>
-			</PB>
-			<Window version="v0.4.6" name="" id="15" visible="0">
-				<Size x="640" y="480"/>
-				<Location x="0" y="0"/>
-			</Window>
-		</Object>
 	</Windows>
 </App>
 

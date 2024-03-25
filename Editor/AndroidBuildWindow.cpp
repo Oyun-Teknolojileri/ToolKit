@@ -61,7 +61,6 @@ namespace ToolKit::Editor
     if (ImGui::Button("Cancel"))
     {
       RemoveFromUI();
-      m_menuOpen = false;
     }
 
     ImGui::SameLine();
@@ -78,7 +77,6 @@ namespace ToolKit::Editor
 
       g_app->m_publishManager->Publish(PublishPlatform::Android, m_publishType);
       RemoveFromUI();
-      m_menuOpen = false;
     }
 
     ImGui::End();
@@ -86,11 +84,6 @@ namespace ToolKit::Editor
 
   void AndroidBuildWindow::OpenBuildWindow(PublishConfig publishType)
   {
-    if (m_menuOpen)
-    {
-      return;
-    }
-
     if (m_appName.empty())
     {
       m_appName = g_app->m_workspace.GetActiveProject().name;
@@ -104,7 +97,6 @@ namespace ToolKit::Editor
 
     m_publishType = publishType;
 
-    m_menuOpen    = true;
-    m_visible     = true;
+    AddToUI();
   }
 } // namespace ToolKit::Editor

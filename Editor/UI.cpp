@@ -779,7 +779,8 @@ namespace ToolKit
       {
         if (publishPlatform == PublishPlatform::Android)
         {
-          g_app->m_androidBuildWindow->OpenBuildWindow(publishType);
+          AndroidBuildWindowPtr androidBuildWindow = MakeNewPtr<AndroidBuildWindow>();
+          androidBuildWindow->OpenBuildWindow(publishType);
         }
         else
         {

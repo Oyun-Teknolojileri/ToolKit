@@ -1466,7 +1466,6 @@ namespace ToolKit
       }
 
       CreateSimulationViewport();
-      m_androidBuildWindow = CreateOrRetrieveWindow<AndroidBuildWindow>();
     }
 
     void App::CreateSimulationViewport()
