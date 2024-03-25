@@ -2,3 +2,6 @@
 	path = Dependency/SDL2
 	url = https://github.com/libsdl-org/SDL.git
 	branch = release-2.28.x
+[submodule "Dependency/glm"]
+	path = Dependency/glm
+	url = https://github.com/g-truc/glm.git
