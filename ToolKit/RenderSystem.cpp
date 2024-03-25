@@ -187,11 +187,22 @@ namespace ToolKit
   {
     RHI::SetFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glClearColor(0.5f, 0.2f, 0.8f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    GLubyte pixel[4];
-    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
-    m_backbufferFormatIsSRGB = (pixel[0] > 150);
+    GLint encoding = 0;
+    glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_BACK, GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING, &encoding);
+
+    if (encoding == GL_LINEAR)
+    {
+      m_backbufferFormatIsSRGB = false;
+    }
+    else if (encoding == GL_SRGB)
+    {
+      m_backbufferFormatIsSRGB = true;
+    }
+    else
+    {
+      TK_ERR("Backbuffer color space can't be deceted. Assuming linear.");
+      m_backbufferFormatIsSRGB = false;
+    }
   }
 
 } // namespace ToolKit
