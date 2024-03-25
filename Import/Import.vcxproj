@@ -78,9 +78,7 @@
       <AdditionalDependencies>assimp-vc143-mt.lib;TKLib_d.lib;zlibstatic.lib;minizip.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)Bin\ToolKit_d.dll" "$(TargetDir)"</Command>
-    </PostBuildEvent>
+    <PostBuildEvent />
     <PreBuildEvent />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -102,9 +100,7 @@
       <AdditionalDependencies>assimp-vc143-mt.lib;TKLib.lib;zlibstatic.lib;minizip.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)Bin\ToolKit.dll" "$(TargetDir)"</Command>
-    </PostBuildEvent>
+    <PostBuildEvent />
     <PreBuildEvent />
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
