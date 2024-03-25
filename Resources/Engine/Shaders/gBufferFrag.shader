@@ -64,6 +64,7 @@
 				color = Color;
 			}
 
+#ifdef ENABLE_DISCARD_PIXEL
 			if (useAlphaMask == 1)
 			{
 				if (color.a < alphaMaskTreshold)
@@ -71,6 +72,7 @@
 					discard;
 				}
 			}
+#endif
 
 			if(emissiveTextureInUse == 1){
 				fragEmissive = texture(s_texture1, v_texture).rgb;

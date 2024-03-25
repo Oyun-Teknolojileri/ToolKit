@@ -78,31 +78,24 @@ namespace ToolKit
   {
     PUSH_CPU_MARKER("ForwardRenderPass::RenderOpaque");
 
-    Renderer* renderer = GetRenderer();
-
-    if (m_params.SsaoTexture)
-    {
-      renderer->SetTexture(5, m_params.SsaoTexture->m_textureId);
-    }
-
-    RenderJobItr begin       = renderData->GetForwardOpaqueBegin();
-    RenderJobItr end         = renderData->GetForwardTranslucentBegin();
-
     const MaterialPtr mat    = GetMaterialManager()->GetDefaultMaterial();
     GpuProgramPtr gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
 
-    for (RenderJobItr job = begin; job != end; job++)
-    {
-      if (job->Material->m_isShaderMaterial)
-      {
-        renderer->RenderWithProgramFromMaterial(*job);
-      }
-      else
-      {
-        renderer->BindProgram(gpuProgram);
-        renderer->Render(*job);
-      }
-    }
+    RenderJobItr begin       = renderData->GetForwardOpaqueBegin();
+    RenderJobItr end         = renderData->GetForwardAlphaMaskedBegin();
+    RenderOpaqueHelper(renderData, begin, end, gpuProgram);
+
+    POP_CPU_MARKER();
+
+    PUSH_CPU_MARKER("ForwardRenderPass::RenderAlphaMasked");
+
+    const MaterialPtr matAlphaMasked = GetMaterialManager()->GetDefaultAlphaMaskedMaterial();
+    GpuProgramPtr gpuProgramAlphaMasked =
+        GetGpuProgramManager()->CreateProgram(matAlphaMasked->m_vertexShader, matAlphaMasked->m_fragmentShader);
+
+    begin = renderData->GetForwardAlphaMaskedBegin();
+    end   = renderData->GetForwardTranslucentBegin();
+    RenderOpaqueHelper(renderData, begin, end, gpuProgramAlphaMasked);
 
     POP_CPU_MARKER();
   }
@@ -156,6 +149,32 @@ namespace ToolKit
     renderer->EnableDepthWrite(true);
 
     POP_CPU_MARKER();
+  }
+
+  void ForwardRenderPass::RenderOpaqueHelper(RenderData* renderData,
+                                             RenderJobItr begin,
+                                             RenderJobItr end,
+                                             GpuProgramPtr defaultGpuProgram)
+  {
+    Renderer* renderer = GetRenderer();
+
+    if (m_params.SsaoTexture)
+    {
+      renderer->SetTexture(5, m_params.SsaoTexture->m_textureId);
+    }
+
+    for (RenderJobItr job = begin; job != end; job++)
+    {
+      if (job->Material->m_isShaderMaterial)
+      {
+        renderer->RenderWithProgramFromMaterial(*job);
+      }
+      else
+      {
+        renderer->BindProgram(defaultGpuProgram);
+        renderer->Render(*job);
+      }
+    }
   }
 
 } // namespace ToolKit

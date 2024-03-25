@@ -68,17 +68,21 @@ namespace ToolKit
    * Singular render data that contains all the rendering information for a frame.
    * When first culled than separated by a render job processor, the indexes become valid.
    * Partition structure
-   * 0 Culled               : jobs.begin to deferredJobsStartIndex
-   * 1 Deferred             : deferredJobsStartIndex to forwardOpaqueStartIndex
-   * 2 Forward Opaque       : forwardOpaqueStartIndex to forwardTranslucentStartIndex
-   * 3 Forward Translucent  : forwardTranslucentStartIndex to jobs.end
+   * 0 Culled                 : jobs.begin to deferredJobsStartIndex
+   * 1 Deferred Opaque        : deferredJobsStartIndex to deferredAlphaMaskedJobsStartIndex
+   * 2 Deferred Alpha Masked  : deferredAlphaMaskedJobsStartIndex to forwardOpaqueStartIndex
+   * 3 Forward Opaque         : forwardOpaqueStartIndex to forwardAlphaMaskedJobsStartIndex
+   * 4 Forward Alpha Masked   : forwardAlphaMaskedJobsStartIndex to forwardTranslucentStartIndex
+   * 5 Forward Translucent    : forwardTranslucentStartIndex to jobs.end
    */
   struct RenderData
   {
     RenderJobArray jobs;
 
     int deferredJobsStartIndex            = 0; //!< Beginning of deferred jobs. Before this, culled jobs resides.
+    int deferredAlphaMaskedJobsStartIndex = 0; //<! Beginning of deferred render alpha masked jobs.
     int forwardOpaqueStartIndex           = 0; //!< Beginning of forward opaque jobs.
+    int forwardAlphaMaskedJobsStartIndex  = 0; //!< Beginning of forward render alpha masked jobs.
     int forwardTranslucentStartIndex      = 0; //!< Beginning of forward translucent jobs.
 
     RenderJobItr GetDefferedBegin()
@@ -90,6 +94,10 @@ namespace ToolKit
     RenderJobItr GetForwardOpaqueBegin() { return jobs.begin() + forwardOpaqueStartIndex; }
 
     RenderJobItr GetForwardTranslucentBegin() { return jobs.begin() + forwardTranslucentStartIndex; }
+
+    RenderJobItr GetDeferredAlphaMaskedBegin() { return jobs.begin() + deferredAlphaMaskedJobsStartIndex; }
+
+    RenderJobItr GetForwardAlphaMaskedBegin() { return jobs.begin() + forwardAlphaMaskedJobsStartIndex; }
   };
 
   class TK_API RenderJobProcessor

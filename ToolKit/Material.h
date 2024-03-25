@@ -50,6 +50,11 @@ namespace ToolKit
     bool IsTranslucent();
 
     /**
+     * @returns True if the material is alpha masked.
+     */
+    bool IsAlphaMasked();
+
+    /**
      * States if the material is using PBR shaders.
      * @returns True if the fragmet shader is default PBR shader.
      */
@@ -103,6 +108,7 @@ namespace ToolKit
     bool CanStore(ClassMeta* Class) override;
     String GetDefaultResource(ClassMeta* Class) override;
     MaterialPtr GetDefaultMaterial();
+    MaterialPtr GetDefaultAlphaMaskedMaterial();
     MaterialPtr GetCopyOfUnlitMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfUIMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfUnlitColorMaterial(bool storeInMaterialManager = true);
@@ -111,6 +117,7 @@ namespace ToolKit
 
    private:
     MaterialPtr m_defaultMaterial = nullptr;
+    MaterialPtr m_defaultAlphaMaskedMaterial = nullptr;
   };
 
 } // namespace ToolKit

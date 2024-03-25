@@ -27,6 +27,13 @@ namespace ToolKit
     m_linearMaterial->m_fragmentShader = fragmentShader;
     m_linearMaterial->Init();
 
+    m_linearAlphaMaskMaterial = MakeNewPtr<Material>();
+    vertexShader              = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcessVert.shader", true));
+    fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcess_alphamask.shader", true));
+    m_linearAlphaMaskMaterial->m_vertexShader   = vertexShader;
+    m_linearAlphaMaskMaterial->m_fragmentShader = fragmentShader;
+    m_linearAlphaMaskMaterial->Init();
+
     TextureSettings oneChannelSet = {};
     oneChannelSet.WarpS           = GraphicTypes::UVClampToEdge;
     oneChannelSet.WarpT           = GraphicTypes::UVClampToEdge;
@@ -79,6 +86,10 @@ namespace ToolKit
 
   void ForwardPreProcess::Render()
   {
+    // currently transparent objects are not rendered to export screen space normals or linear depth
+    // we want SSAO and DOF to effect on opaque objects only
+    // renderLinearDepthAndNormalFn(m_params.TranslucentJobs);
+
     PUSH_GPU_MARKER("ForwardPreProcess::Render");
     PUSH_CPU_MARKER("ForwardPreProcess::Render");
 
@@ -93,12 +104,19 @@ namespace ToolKit
       }
     };
 
-    RenderJobItr begin = m_params.renderData->GetForwardOpaqueBegin();
-    RenderJobItr end   = m_params.renderData->GetForwardTranslucentBegin();
+    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
 
-    // currently transparent objects are not rendered to export screen space normals or linear depth
-    // we want SSAO and DOF to effect on opaque objects only
-    // renderLinearDepthAndNormalFn(m_params.TranslucentJobs);
+    RenderJobItr begin                   = m_params.renderData->GetForwardOpaqueBegin();
+    RenderJobItr end                     = m_params.renderData->GetForwardAlphaMaskedBegin();
+    m_program = gpuProgramManager->CreateProgram(m_linearMaterial->m_vertexShader, m_linearMaterial->m_fragmentShader);
+    renderer->BindProgram(m_program);
+    renderLinearDepthAndNormalFn(begin, end);
+
+    begin     = m_params.renderData->GetForwardAlphaMaskedBegin();
+    end       = m_params.renderData->GetForwardTranslucentBegin();
+    m_program = gpuProgramManager->CreateProgram(m_linearAlphaMaskMaterial->m_vertexShader,
+                                                 m_linearAlphaMaskMaterial->m_fragmentShader);
+    renderer->BindProgram(m_program);
     renderLinearDepthAndNormalFn(begin, end);
 
     POP_CPU_MARKER();
@@ -128,10 +146,6 @@ namespace ToolKit
     }
 
     renderer->SetCamera(m_params.Cam, true);
-
-    GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
-    m_program = gpuProgramManager->CreateProgram(m_linearMaterial->m_vertexShader, m_linearMaterial->m_fragmentShader);
-    renderer->BindProgram(m_program);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

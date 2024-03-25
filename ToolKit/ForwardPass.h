@@ -44,6 +44,11 @@ namespace ToolKit
     void RenderOpaque(RenderData* renderData);
     void RenderTranslucent(RenderData* renderData);
 
+    void RenderOpaqueHelper(RenderData* renderData,
+                            RenderJobItr begin,
+                            RenderJobItr end,
+                            GpuProgramPtr defaultGpuProgram);
+
    public:
     ForwardRenderPassParams m_params;
   };

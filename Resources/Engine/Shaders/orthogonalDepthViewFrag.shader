@@ -27,6 +27,7 @@
 			{
 				alpha = ColorAlpha;
 			}
+
 			if (alpha < 0.1)
 			{
 				discard;
