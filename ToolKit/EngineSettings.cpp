@@ -148,6 +148,8 @@ namespace ToolKit
       file << xml;
       file.close();
       lclDoc->clear();
+
+      SafeDel(lclDoc);
     }
   }
 
@@ -159,6 +161,9 @@ namespace ToolKit
 
     Window.DeSerialize(lclDoc, nullptr);
     Graphics.DeSerialize(lclDoc, nullptr);
+
+    SafeDel(lclFile);
+    SafeDel(lclDoc);
   }
 
 } // namespace ToolKit
