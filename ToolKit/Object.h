@@ -165,12 +165,12 @@ namespace ToolKit
      */
     void PreventIdCollision();
 
-   protected:
-    ObjectWeakPtr m_self;
-
    public:
     TKDeclareParam(ULongID, Id);
 
+    /**
+     * Storage for all ParameterVariants declared for this object and its derivatives.
+     */
     ParameterBlock m_localData;
 
     /**
@@ -178,6 +178,9 @@ namespace ToolKit
      * If a collision occurs, the original value is stored here to be used in parent - child matching.
      */
     ULongID _idBeforeCollision;
+
+   private:
+    ObjectWeakPtr m_self;
   };
 
 } // namespace ToolKit

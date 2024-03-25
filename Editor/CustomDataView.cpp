@@ -21,9 +21,6 @@ namespace ToolKit
 {
   namespace Editor
   {
-    // CustomDataView
-    //////////////////////////////////////////////////////////////////////////
-    MultiChoiceCraeteWindow CustomDataView::m_multiChoiceParamWindow;
 
     void CustomDataView::ShowMaterialPtr(const String& uniqueName,
                                          const String& file,
@@ -333,10 +330,15 @@ namespace ToolKit
             customVar = Mat4();
             break;
           case 10:
-            m_multiChoiceParamWindow.OpenCreateWindow(&entity->m_localData);
+          {
+            MultiChoiceCraeteWindowPtr multiParamWnd = MakeNewPtr<MultiChoiceCraeteWindow>();
+            multiParamWnd->OpenCreateWindow(&entity->m_localData);
+            multiParamWnd->AddToUI();
+
             added       = false;
             addInAction = false;
-            break;
+          }
+          break;
           default:
             assert(false && "invalid data type");
             break;

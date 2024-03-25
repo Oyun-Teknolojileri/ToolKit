@@ -7,6 +7,7 @@
 
 #include "App.h"
 
+#include "AndroidBuildWindow.h"
 #include "EditorCamera.h"
 #include "EditorViewport2d.h"
 #include "OverlayUI.h"
@@ -15,7 +16,6 @@
 #include <DirectionComponent.h>
 #include <FileManager.h>
 #include <Mesh.h>
-#include <Meta.h>
 #include <PluginManager.h>
 #include <Resource.h>
 #include <SDL.h>
@@ -45,39 +45,6 @@ namespace ToolKit
 
     void App::Init()
     {
-      if (ObjectFactory* objFactory = GetObjectFactory())
-      {
-        // Allow classes with the MenuMetaKey to be created from the add menu.
-        objFactory->m_metaProcessorRegisterMap[MenuMetaKey] = [](StringView val) -> void
-        {
-          bool exist = false;
-          for (String& meta : g_app->m_customObjectMetaValues)
-          {
-            if (meta == val)
-            {
-              exist = true;
-              break;
-            }
-          }
-
-          if (!exist)
-          {
-            g_app->m_customObjectMetaValues.push_back(String(val));
-          }
-        };
-
-        objFactory->m_metaProcessorUnRegisterMap[MenuMetaKey] = [](StringView val) -> void
-        {
-          for (int i = (int) g_app->m_customObjectMetaValues.size() - 1; i >= 0; i--)
-          {
-            if (g_app->m_customObjectMetaValues[i] == val)
-            {
-              g_app->m_customObjectMetaValues.erase(g_app->m_customObjectMetaValues.begin() + i);
-            }
-          }
-        };
-      }
-
       AssignManagerReporters();
       CreateEditorEntities();
 
@@ -92,11 +59,13 @@ namespace ToolKit
 
       if (!CheckFile(m_workspace.GetActiveWorkspace()))
       {
-        StringInputWindow* wsDir = new StringInputWindow("Set Workspace Directory##SetWsdir", false);
-        wsDir->m_hint            = "User/Documents/ToolKit";
-        wsDir->m_inputLabel      = "Workspace Directory";
-        wsDir->m_name            = "Set Workspace Directory";
-        wsDir->m_taskFn          = [](const String& val) -> void
+        StringInputWindowPtr wsDir = MakeNewPtr<StringInputWindow>("Set Workspace Directory##SetWsdir", false);
+        wsDir->m_hint              = "User/Documents/ToolKit";
+        wsDir->m_inputLabel        = "Workspace Directory";
+        wsDir->m_name              = "Set Workspace Directory";
+        wsDir->AddToUI();
+
+        wsDir->m_taskFn = [](const String& val) -> void
         {
           String cmd = "SetWorkspaceDir --path \"" + val + "\"";
           g_app->GetConsole()->ExecCommand(cmd);
@@ -169,12 +138,6 @@ namespace ToolKit
       ModManager::GetInstance()->UnInit();
       ActionManager::GetInstance()->UnInit();
 
-      if (ObjectFactory* objFactory = GetObjectFactory())
-      {
-        objFactory->m_metaProcessorRegisterMap[MenuMetaKey]   = nullptr;
-        objFactory->m_metaProcessorUnRegisterMap[MenuMetaKey] = nullptr;
-      }
-
       GetLogger()->SetWriteConsoleFn(nullptr);
       GetLogger()->SetClearConsoleFn(nullptr);
     }
@@ -200,11 +163,11 @@ namespace ToolKit
       PUSH_CPU_MARKER("Gather viewports & windows to dispatch signals");
 
       EditorViewportRawPtrArray viewports;
-      for (Window* wnd : m_windows)
+      for (WindowPtr wnd : m_windows)
       {
-        if (wnd->IsViewport())
+        if (EditorViewport* edView = wnd->As<EditorViewport>())
         {
-          viewports.push_back(static_cast<EditorViewport*>(wnd));
+          viewports.push_back(edView);
         }
 
         bool skipDispatch = false;
@@ -230,7 +193,7 @@ namespace ToolKit
 
       if (playOnSimulationWnd)
       {
-        viewports.push_back(m_simulationWindow);
+        viewports.push_back(m_simulationViewport.get());
       }
 
       POP_CPU_MARKER();
@@ -328,17 +291,16 @@ namespace ToolKit
       if (currScene->m_newScene && CheckFile(fullPath))
       {
         String msg                   = "Scene " + fullPath + " exist on the disk.\nOverride the existing scene ?";
-        YesNoWindow* overrideScene   = new YesNoWindow("Override existing file##OvrdScn", msg);
-        overrideScene->m_yesCallback = [&saveFn]() { saveFn(); };
+        YesNoWindowPtr overrideScene = MakeNewPtr<YesNoWindow>("Override existing file##OvrdScn", msg);
+        overrideScene->AddToUI();
 
+        overrideScene->m_yesCallback = [&saveFn]() { saveFn(); };
         overrideScene->m_noCallback  = []()
         {
           g_app->GetConsole()->AddLog("Scene has not been saved.\n"
                                       "A scene with the same name exist. Use File->SaveAs.",
                                       LogType::Error);
         };
-
-        UI::m_volatileWindows.push_back(overrideScene);
       }
       else
       {
@@ -348,10 +310,12 @@ namespace ToolKit
 
     void App::OnSaveAsScene()
     {
-      StringInputWindow* inputWnd = new StringInputWindow("SaveScene##SvScn1", true);
-      inputWnd->m_inputLabel      = "Name";
-      inputWnd->m_hint            = "Scene name";
-      inputWnd->m_taskFn          = [](const String& val)
+      StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("SaveScene##SvScn1", true);
+      inputWnd->m_inputLabel        = "Name";
+      inputWnd->m_hint              = "Scene name";
+      inputWnd->AddToUI();
+
+      inputWnd->m_taskFn = [](const String& val)
       {
         String path;
         EditorScenePtr currScene = g_app->GetCurrentScene();
@@ -375,7 +339,7 @@ namespace ToolKit
 
       if (!m_onQuit)
       {
-        YesNoWindow* reallyQuit   = new YesNoWindow("Quiting... Are you sure?##ClsApp");
+        YesNoWindowPtr reallyQuit = MakeNewPtr<YesNoWindow>("Quiting... Are you sure?##ClsApp");
 
         reallyQuit->m_yesCallback = [this]()
         {
@@ -386,8 +350,8 @@ namespace ToolKit
         };
 
         reallyQuit->m_noCallback = [this]() { m_onQuit = false; };
+        reallyQuit->AddToUI();
 
-        UI::m_volatileWindows.push_back(reallyQuit);
         m_onQuit = true;
       }
     }
@@ -494,13 +458,13 @@ namespace ToolKit
 
           if (m_simulatorSettings.Windowed)
           {
-            m_simulationWindow->SetVisibility(true);
+            m_simulationViewport->SetVisibility(true);
 
             // Match views.
-            if (EditorViewport* viewport3d = GetViewport(g_3dViewport))
+            if (EditorViewportPtr viewport3d = GetViewport(g_3dViewport))
             {
               Mat4 view = viewport3d->GetCamera()->m_node->GetTransform();
-              m_simulationWindow->GetCamera()->m_node->SetTransform(view);
+              m_simulationViewport->GetCamera()->m_node->SetTransform(view);
             }
           }
 
@@ -515,7 +479,7 @@ namespace ToolKit
           }
         }
 
-        gamePlugin->SetViewport(GetSimulationWindow());
+        gamePlugin->SetViewport(GetSimulationViewport());
         gamePlugin->m_currentState = PluginState::Running;
 
         if (m_gameMod == GameMod::Stop)
@@ -552,7 +516,7 @@ namespace ToolKit
 
         ClearPlayInEditorSession();
 
-        m_simulationWindow->SetVisibility(false);
+        m_simulationViewport->SetVisibility(false);
         m_sceneLightingMode = EditorLitMode::EditorLit;
       }
     }
@@ -650,11 +614,11 @@ namespace ToolKit
     void App::FocusEntity(EntityPtr entity)
     {
       CameraPtr cam = nullptr;
-      if (Viewport* viewport = GetActiveViewport())
+      if (EditorViewportPtr viewport = GetActiveViewport())
       {
         cam = viewport->GetCamera();
       }
-      else if (Viewport* viewport = GetViewport(g_3dViewport))
+      else if (EditorViewportPtr viewport = GetViewport(g_3dViewport))
       {
         cam = viewport->GetCamera();
       }
@@ -685,16 +649,16 @@ namespace ToolKit
       GetRenderSystem()->FlushGpuPrograms();
 
       // Clear all the object references from the scene about to be destroyed.
-      if (OutlinerWindow* wnd = GetOutliner())
+      if (OutlinerWindowPtr wnd = GetOutliner())
       {
         wnd->ClearOutliner();
       }
 
-      for (Window* wnd : m_windows)
+      for (WindowPtr wnd : m_windows)
       {
-        if (wnd->IsViewport())
+        if (EditorViewport* edView = wnd->As<EditorViewport>())
         {
-          static_cast<EditorViewport*>(wnd)->m_editorRenderer = MakeNewPtr<EditorRenderer>();
+          edView->m_editorRenderer = MakeNewPtr<EditorRenderer>();
         }
       }
 
@@ -732,7 +696,7 @@ namespace ToolKit
       }
 
       // Set back the viewport camera
-      EditorViewport* viewport = GetActiveViewport();
+      EditorViewportPtr viewport = GetActiveViewport();
       if (viewport == nullptr)
       {
         viewport = GetViewport(g_3dViewport);
@@ -778,26 +742,26 @@ namespace ToolKit
       else
       {
         // 3d viewport.
-        float w            = (float) GetEngineSettings().Window.Width;
-        float h            = (float) GetEngineSettings().Window.Height;
-        Vec2 vpSize        = Vec2(w, h) * 0.8f;
-        EditorViewport* vp = new EditorViewport();
+        float w              = (float) GetEngineSettings().Window.Width;
+        float h              = (float) GetEngineSettings().Window.Height;
+        Vec2 vpSize          = Vec2(w, h) * 0.8f;
+        EditorViewportPtr vp = MakeNewPtr<EditorViewport>();
         vp->Init(vpSize);
         vp->m_name = g_3dViewport;
         vp->GetCamera()->m_node->SetTranslation({5.0f, 3.0f, 5.0f});
         vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f));
         m_windows.push_back(vp);
-        GetUIManager()->RegisterViewportToUpdateLayers(vp);
+        GetUIManager()->RegisterViewport(vp);
 
         // 2d viewport.
-        vp = new EditorViewport2d();
+        vp = MakeNewPtr<EditorViewport2d>();
         vp->Init(vpSize);
         vp->m_name = g_2dViewport;
         vp->GetCamera()->m_node->SetTranslation(Z_AXIS);
         m_windows.push_back(vp);
 
         // Isometric viewport.
-        vp = new EditorViewport();
+        vp = MakeNewPtr<EditorViewport>();
         vp->Init(vpSize);
         vp->m_name = g_IsoViewport;
         vp->GetCamera()->m_node->SetTranslation({0.0f, 10.0f, 0.0f});
@@ -808,98 +772,39 @@ namespace ToolKit
         vp->m_orbitLock       = true;
         m_windows.push_back(vp);
 
-        ConsoleWindow* console = new ConsoleWindow();
+        ConsoleWindowPtr console = MakeNewPtr<ConsoleWindow>();
         m_windows.push_back(console);
 
-        FolderWindow* assetBrowser = new FolderWindow();
+        FolderWindowPtr assetBrowser = MakeNewPtr<FolderWindow>();
         assetBrowser->IterateFolders(true);
         assetBrowser->m_name = g_assetBrowserStr;
         m_windows.push_back(assetBrowser);
 
-        OutlinerWindow* outliner = new OutlinerWindow();
-        outliner->m_name         = g_outlinerStr;
+        OutlinerWindowPtr outliner = MakeNewPtr<OutlinerWindow>();
+        outliner->m_name           = g_outlinerStr;
         m_windows.push_back(outliner);
 
-        PropInspector* inspector = new PropInspector();
-        inspector->m_name        = g_propInspector;
+        PropInspectorWindowPtr inspector = MakeNewPtr<PropInspectorWindow>();
+        inspector->m_name                = g_propInspector;
         m_windows.push_back(inspector);
 
-        m_windows.push_back(new PluginWindow());
+        m_windows.push_back(MakeNewPtr<SimulationWindow>());
 
-        m_windows.push_back(new RenderSettingsView());
-
-        CreateSimulationWindow(m_simulatorSettings.Width, m_simulatorSettings.Height);
+        CreateSimulationViewport();
       }
     }
 
     void App::DeleteWindows()
     {
       GetRenderSystem()->FlushRenderTasks();
-
-      for (Window* wnd : m_windows)
-      {
-        SafeDel(wnd);
-      }
       m_windows.clear();
 
       for (size_t i = 0; i < EditorViewport::m_overlays.size(); i++)
       {
         SafeDel(EditorViewport::m_overlays[i]);
       }
-      SafeDel(m_simulationWindow);
-    }
 
-    void App::CreateWindows(XmlNode* parent)
-    {
-      if (XmlNode* wndNode = parent->first_node("Window"))
-      {
-        do
-        {
-          int type;
-          ReadAttr(wndNode, "type", type);
-
-          Window* wnd = nullptr;
-          switch ((Window::Type) type)
-          {
-          case Window::Type::Viewport:
-            wnd = new EditorViewport();
-            break;
-          case Window::Type::Console:
-            wnd = new ConsoleWindow();
-            break;
-          case Window::Type::Outliner:
-            wnd = new OutlinerWindow();
-            break;
-          case Window::Type::Browser:
-            wnd = new FolderWindow();
-            break;
-          case Window::Type::Inspector:
-            wnd = new PropInspector();
-            break;
-          case Window::Type::PluginWindow:
-            wnd = new PluginWindow();
-            break;
-          case Window::Type::Viewport2d:
-            wnd = new EditorViewport2d();
-            break;
-          case Window::Type::RenderSettings:
-            wnd = new RenderSettingsView();
-            break;
-          case Window::Type::Stats:
-            wnd = new StatsView();
-            break;
-          }
-
-          if (wnd)
-          {
-            wnd->m_version = m_version;
-            wnd->DeSerialize(SerializationFileInfo(), wndNode);
-            m_windows.push_back(wnd);
-          }
-        } while ((wndNode = wndNode->next_sibling("Window")));
-      }
-
-      CreateSimulationWindow(m_simulatorSettings.Width, m_simulatorSettings.Height);
+      m_simulationViewport = nullptr;
     }
 
     void App::ReconstructDynamicMenus()
@@ -913,12 +818,12 @@ namespace ToolKit
       bool doSearch = !UI::SearchFileData.missingFiles.empty();
       if (!CanImport(fullPath) && !doSearch)
       {
-        if (ConsoleWindow* con = GetConsole())
+        if (ConsoleWindowPtr console = GetConsole())
         {
-          con->AddLog("Import failed: " + fullPath, LogType::Error);
-          con->AddLog("File format is not supported.\n"
-                      "Suported formats are fbx, glb, gltf, obj.",
-                      LogType::Error);
+          console->AddLog("Import failed: " + fullPath, LogType::Error);
+          console->AddLog("File format is not supported.\n"
+                          "Suported formats are fbx, glb, gltf, obj.",
+                          LogType::Error);
         }
         return -1;
       }
@@ -1186,9 +1091,10 @@ namespace ToolKit
       GetCurrentScene()->Destroy(false);
       GetSceneManager()->Remove(GetCurrentScene()->GetFile());
       EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
+
       if (IsLayer(fullPath))
       {
-        if (EditorViewport2d* viewport = GetWindow<EditorViewport2d>(g_2dViewport))
+        if (EditorViewport2dPtr viewport = GetWindow<EditorViewport2d>(g_2dViewport))
         {
           UILayerPtr layer = MakeNewPtr<UILayer>(scene);
           GetUIManager()->AddLayer(viewport->m_viewportId, layer);
@@ -1296,9 +1202,9 @@ namespace ToolKit
       }
     }
 
-    Window* App::GetActiveWindow()
+    WindowPtr App::GetActiveWindow()
     {
-      for (Window* wnd : m_windows)
+      for (WindowPtr wnd : m_windows)
       {
         if (wnd->IsActive() && wnd->IsVisible())
         {
@@ -1309,46 +1215,47 @@ namespace ToolKit
       return nullptr;
     }
 
-    EditorViewport* App::GetActiveViewport()
+    EditorViewportPtr App::GetActiveViewport()
     {
-      for (Window* wnd : m_windows)
+      for (WindowPtr wnd : m_windows)
       {
-        Window::Type type = wnd->GetType();
-
-        if (type != Window::Type::Viewport && type != Window::Type::Viewport2d)
+        if (!wnd->IsA<EditorViewport>())
         {
           continue;
         }
 
         if (wnd->IsActive() && wnd->IsVisible())
         {
-          return static_cast<EditorViewport*>(wnd);
+          return Cast<EditorViewport>(wnd);
         }
       }
 
       return m_lastActiveViewport;
     }
 
-    EditorViewport* App::GetViewport(const String& name)
+    EditorViewportPtr App::GetViewport(const String& name)
     {
-      for (Window* wnd : m_windows)
+      for (WindowPtr wnd : m_windows)
       {
-        if (wnd->m_name == name)
+        if (wnd->IsA<EditorViewport>())
         {
-          return dynamic_cast<EditorViewport*>(wnd);
+          if (wnd->m_name == name)
+          {
+            return Cast<EditorViewport>(wnd);
+          }
         }
       }
 
       return nullptr;
     }
 
-    ConsoleWindow* App::GetConsole()
+    ConsoleWindowPtr App::GetConsole()
     {
-      for (Window* wnd : m_windows)
+      for (WindowPtr wnd : m_windows)
       {
-        if (wnd->GetType() == Window::Type::Console)
+        if (wnd->IsA<ConsoleWindow>())
         {
-          return static_cast<ConsoleWindow*>(wnd);
+          return Cast<ConsoleWindow>(wnd);
         }
       }
 
@@ -1357,17 +1264,13 @@ namespace ToolKit
 
     FolderWindowRawPtrArray App::GetAssetBrowsers() { return GetAllWindows<FolderWindow>(g_assetBrowserStr); }
 
-    OutlinerWindow* App::GetOutliner() { return GetWindow<OutlinerWindow>(g_outlinerStr); }
+    OutlinerWindowPtr App::GetOutliner() { return GetWindow<OutlinerWindow>(g_outlinerStr); }
 
-    PropInspector* App::GetPropInspector() { return GetWindow<PropInspector>(g_propInspector); }
+    PropInspectorWindowPtr App::GetPropInspector() { return GetWindow<PropInspectorWindow>(g_propInspector); }
 
-    RenderSettingsView* App::GetRenderSettingsView() { return GetWindow<RenderSettingsView>(g_renderSettings); }
+    RenderSettingsWindowPtr App::GetRenderSettingsWindow() { return GetWindow<RenderSettingsWindow>(g_renderSettings); }
 
-    StatsView* App::GetStatsView() { return GetWindow<StatsView>(g_statsView); }
-
-    void App::AddRenderSettingsView() { m_windows.push_back(new RenderSettingsView()); }
-
-    void App::AddStatsView() { m_windows.push_back(new StatsView()); }
+    StatsWindowPtr App::GetStatsWindow() { return GetWindow<StatsWindow>(g_statsView); }
 
     void App::HideGizmos()
     {
@@ -1395,14 +1298,14 @@ namespace ToolKit
       }
     }
 
-    EditorViewport* App::GetSimulationWindow()
+    EditorViewportPtr App::GetSimulationViewport()
     {
       if (m_simulatorSettings.Windowed)
       {
-        return m_simulationWindow;
+        return m_simulationViewport;
       }
 
-      EditorViewport* simWnd = GetViewport(g_3dViewport);
+      EditorViewportPtr simWnd = GetViewport(g_3dViewport);
       assert(simWnd != nullptr && "3D Viewport must exist.");
 
       return simWnd;
@@ -1419,7 +1322,7 @@ namespace ToolKit
 
         if (m_gameMod != GameMod::Stop)
         {
-          m_simulationWindow->SetVisibility(m_simulatorSettings.Windowed);
+          m_simulationViewport->SetVisibility(m_simulatorSettings.Windowed);
         }
       }
     }
@@ -1444,29 +1347,24 @@ namespace ToolKit
       if (file.is_open())
       {
         XmlDocumentPtr lclDoc = MakeNewPtr<XmlDocument>();
-        XmlNode* app          = lclDoc->allocate_node(rapidxml::node_element, "App");
-        WriteAttr(app, lclDoc.get(), "version", TKVersionStr);
-        lclDoc->append_node(app);
+        XmlDocument* docPtr   = lclDoc.get();
 
-        XmlNode* settings = lclDoc->allocate_node(rapidxml::node_element, "Settings");
-        app->append_node(settings);
+        XmlNode* app          = CreateXmlNode(docPtr, "App");
+        WriteAttr(app, docPtr, "version", TKVersionStr);
 
-        XmlNode* setNode = lclDoc->allocate_node(rapidxml::node_element, "Size");
+        XmlNode* settings = CreateXmlNode(docPtr, "Settings", app);
+        XmlNode* setNode  = CreateXmlNode(docPtr, "Size", settings);
 
-        UVec2 size       = GetRenderSystem()->GetAppWindowSize();
-        WriteAttr(setNode, lclDoc.get(), "width", std::to_string(size.x));
-        WriteAttr(setNode, lclDoc.get(), "height", std::to_string(size.y));
+        UVec2 size        = GetRenderSystem()->GetAppWindowSize();
+        WriteAttr(setNode, docPtr, "width", std::to_string(size.x));
+        WriteAttr(setNode, docPtr, "height", std::to_string(size.y));
+        WriteAttr(setNode, docPtr, "maximized", std::to_string(m_windowMaximized));
 
-        WriteAttr(setNode, lclDoc.get(), "maximized", std::to_string(m_windowMaximized));
-
-        settings->append_node(setNode);
-
-        for (Window* wnd : m_windows)
+        XmlNode* windowsNode = CreateXmlNode(docPtr, "Windows", app);
+        for (WindowPtr wnd : m_windows)
         {
-          wnd->Serialize(lclDoc.get(), app);
+          wnd->Serialize(docPtr, windowsNode);
         }
-
-        m_workspace.SerializeSimulationWindow(lclDoc);
 
         std::string xml;
         rapidxml::print(std::back_inserter(xml), *lclDoc, 0);
@@ -1490,7 +1388,6 @@ namespace ToolKit
       if (!CheckFile(settingsFile))
       {
         settingsFile = ConcatPaths({ConfigPath(), g_editorSettingsFile});
-
         assert(CheckFile(settingsFile) && "ToolKit/Config/Editor.settings must exist.");
       }
 
@@ -1501,7 +1398,7 @@ namespace ToolKit
 
       if (XmlNode* root = doc->first_node("App"))
       {
-        ReadAttr(root, "version", m_version, "v0.4.4");
+        ReadAttr(root, "version", m_version, TKV044);
 
         if (XmlNode* settings = root->first_node("Settings"))
         {
@@ -1509,6 +1406,7 @@ namespace ToolKit
           {
             uint width = 0;
             ReadAttr(setNode, "width", width);
+
             uint height = 0;
             ReadAttr(setNode, "height", height);
             ReadAttr(setNode, "maximized", m_windowMaximized);
@@ -1520,9 +1418,7 @@ namespace ToolKit
           }
         }
 
-        CreateWindows(root);
-
-        m_workspace.DeSerializeSimulationWindow(lclDoc);
+        DeserializeWindows(root);
       }
 
       LoadProjectPlugin();
@@ -1537,17 +1433,40 @@ namespace ToolKit
       return nullptr;
     }
 
-    void App::CreateSimulationWindow(float width, float height)
+    void App::DeserializeWindows(XmlNode* parent)
     {
-      SafeDel(m_simulationWindow);
-      m_simulationWindow = new EditorViewport();
-      m_simulationWindow->Init({m_simulatorSettings.Width, m_simulatorSettings.Height});
+      if (XmlNode* windowsNode = parent->first_node("Windows"))
+      {
+        const char* xmlRootObject = Object::StaticClass()->Name.c_str();
+        const char* xmlObjectType = XmlObjectClassAttr.data();
+        ObjectFactory* factory    = GetObjectFactory();
 
-      m_simulationWindow->m_name = g_simulationViewport;
-      m_simulationWindow->m_additionalWindowFlags =
+        for (XmlNode* node = windowsNode->first_node(xmlRootObject); node; node = node->next_sibling(xmlRootObject))
+        {
+          XmlAttribute* typeAttr = node->first_attribute(xmlObjectType);
+          if (WindowPtr wnd = MakeNewPtrCasted<Window>(typeAttr->value()))
+          {
+            wnd->m_version = m_version;
+            wnd->DeSerialize(SerializationFileInfo(), node);
+            m_windows.push_back(wnd);
+          }
+        }
+      }
+
+      CreateSimulationViewport();
+      m_androidBuildWindow = CreateOrRetrieveWindow<AndroidBuildWindow>();
+    }
+
+    void App::CreateSimulationViewport()
+    {
+      m_simulationViewport         = CreateOrRetrieveWindow<EditorViewport>(g_simulationViewStr);
+      m_simulationViewport->m_name = g_simulationViewStr;
+      m_simulationViewport->Init({m_simulatorSettings.Width, m_simulatorSettings.Height});
+
+      m_simulationViewport->m_additionalWindowFlags =
           ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse;
 
-      m_simulationWindow->SetVisibility(false);
+      m_simulationViewport->SetVisibility(false);
     }
 
     void App::AssignManagerReporters()
@@ -1555,7 +1474,7 @@ namespace ToolKit
       // Register manager reporters
       auto genericReporterFn = [](LogType logType, String msg) -> void
       {
-        if (ConsoleWindow* console = g_app->GetConsole())
+        if (ConsoleWindowPtr console = g_app->GetConsole())
         {
           console->AddLog(msg, logType);
         }
@@ -1595,6 +1514,10 @@ namespace ToolKit
     }
 
     float App::GetDeltaTime() { return m_deltaTime; }
+
+    uint64 App::GetLastFrameDrawCallCount() { return m_lastFrameDrawCallCount; }
+
+    uint64 App::GetLastFrameHWRenderPassCount() { return m_lastFrameHWRenderPassCount; }
 
   } // namespace Editor
 } // namespace ToolKit

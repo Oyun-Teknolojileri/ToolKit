@@ -14,7 +14,6 @@
 #include "Logger.h"
 #include "Material.h"
 #include "Mesh.h"
-#include "Meta.h"
 #include "Object.h"
 #include "ObjectFactory.h"
 #include "PluginManager.h"

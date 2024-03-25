@@ -99,9 +99,6 @@
     <ClCompile Include="MeshView.cpp">
       <Filter>UI\View</Filter>
     </ClCompile>
-    <ClCompile Include="RenderSettingsView.cpp">
-      <Filter>UI\View</Filter>
-    </ClCompile>
     <ClCompile Include="Thumbnail.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -150,13 +147,13 @@
     <ClCompile Include="OutlinerWindow.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
-    <ClCompile Include="PluginWindow.cpp">
+    <ClCompile Include="SimulationWindow.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
     <ClCompile Include="PopupWindows.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
-    <ClCompile Include="PropInspector.cpp">
+    <ClCompile Include="PropInspectorWindow.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
     <ClCompile Include="FolderView.cpp">
@@ -174,11 +171,26 @@
     <ClCompile Include="AndroidBuildWindow.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
-    <ClCompile Include="StatsView.cpp">
-      <Filter>UI\View</Filter>
-    </ClCompile>
     <ClCompile Include="EditorApi.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="View.cpp">
+      <Filter>UI\View</Filter>
+    </ClCompile>
+    <ClCompile Include="PreviewViewport.cpp">
+      <Filter>UI\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderSettingsWindow.cpp">
+      <Filter>UI\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="StatsWindow.cpp">
+      <Filter>UI\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectoryEntry.cpp">
+      <Filter>UI\Window</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -194,7 +206,7 @@
     <ClInclude Include="Gizmo.h">
       <Filter>Entities</Filter>
     </ClInclude>
-    <ClInclude Include="Global.h">
+    <ClInclude Include="EditorTypes.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="App.h">
@@ -240,9 +252,6 @@
       <Filter>UI\View</Filter>
     </ClInclude>
     <ClInclude Include="MeshView.h">
-      <Filter>UI\View</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderSettingsView.h">
       <Filter>UI\View</Filter>
     </ClInclude>
     <ClInclude Include="Thumbnail.h">
@@ -293,13 +302,13 @@
     <ClInclude Include="OutlinerWindow.h">
       <Filter>UI\Window</Filter>
     </ClInclude>
-    <ClInclude Include="PluginWindow.h">
+    <ClInclude Include="SimulationWindow.h">
       <Filter>UI\Window</Filter>
     </ClInclude>
     <ClInclude Include="PopupWindows.h">
       <Filter>UI\Window</Filter>
     </ClInclude>
-    <ClInclude Include="PropInspector.h">
+    <ClInclude Include="PropInspectorWindow.h">
       <Filter>UI\Window</Filter>
     </ClInclude>
     <ClInclude Include="IconsFontAwesome.h">
@@ -317,11 +326,26 @@
     <ClInclude Include="AndroidBuildWindow.h">
       <Filter>UI\Window</Filter>
     </ClInclude>
-    <ClInclude Include="StatsView.h">
-      <Filter>UI\View</Filter>
-    </ClInclude>
     <ClInclude Include="EditorApi.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="View.h">
+      <Filter>UI\View</Filter>
+    </ClInclude>
+    <ClInclude Include="PreviewViewport.h">
+      <Filter>UI\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSettingsWindow.h">
+      <Filter>UI\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="StatsWindow.h">
+      <Filter>UI\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectoryEntry.h">
+      <Filter>UI\Window</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

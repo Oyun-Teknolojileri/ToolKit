@@ -15,11 +15,20 @@ namespace ToolKit
 {
   namespace Editor
   {
-    StringInputWindow::StringInputWindow(const String& name, bool showCancel)
+
+    // StringInputWindow
+    //////////////////////////////////////////////////////////////////////////
+
+    TKDefineClass(StringInputWindow, Window);
+
+    StringInputWindow::StringInputWindow() {}
+
+    void StringInputWindow::NativeConstruct(const String& name, bool showCancel)
     {
+      Super::NativeConstruct();
+
       m_name       = name;
       m_showCancel = showCancel;
-      UI::m_volatileWindows.push_back(this);
     }
 
     void StringInputWindow::Show()
@@ -68,10 +77,11 @@ namespace ToolKit
 
         if (ImGui::Button("OK", ImVec2(120, 0)))
         {
-          m_visible = false;
           m_taskFn(m_inputVal);
+          m_visible = false;
           m_inputVal.clear();
           ImGui::CloseCurrentPopup();
+          RemoveFromUI();
         }
 
         if (m_showCancel)
@@ -82,6 +92,7 @@ namespace ToolKit
             m_visible = false;
             m_inputVal.clear();
             ImGui::CloseCurrentPopup();
+            RemoveFromUI();
           }
         }
 
@@ -100,18 +111,29 @@ namespace ToolKit
       return 0;
     }
 
-    YesNoWindow::YesNoWindow(const String& name, const String& msg)
+    // YesNoWindow
+    //////////////////////////////////////////////////////////////////////////
+
+    TKDefineClass(YesNoWindow, Window);
+
+    YesNoWindow::YesNoWindow() {}
+
+    void YesNoWindow::NativeConstruct(const String& name, const String& msg)
     {
+      Super::NativeConstruct();
+
       m_name = name;
       m_msg  = msg;
     }
 
-    YesNoWindow::YesNoWindow(const String& name,
-                             const String& yesBtnText,
-                             const String& noBtnText,
-                             const String& msg,
-                             bool showCancel)
+    void YesNoWindow::NativeConstruct(const String& name,
+                                      const String& yesBtnText,
+                                      const String& noBtnText,
+                                      const String& msg,
+                                      bool showCancel)
     {
+      Super::NativeConstruct();
+
       m_name       = name;
       m_yesText    = yesBtnText;
       m_noText     = noBtnText;
@@ -159,6 +181,7 @@ namespace ToolKit
         {
           m_visible = false;
           m_yesCallback();
+          RemoveFromUI();
           ImGui::CloseCurrentPopup();
         }
         ImGui::SetItemDefaultFocus();
@@ -168,6 +191,7 @@ namespace ToolKit
         {
           m_visible = false;
           m_noCallback();
+          RemoveFromUI();
           ImGui::CloseCurrentPopup();
         }
 
@@ -177,6 +201,7 @@ namespace ToolKit
           if (ImGui::Button("Cancel", ImVec2(120, 0)))
           {
             m_visible = false;
+            RemoveFromUI();
             ImGui::CloseCurrentPopup();
           }
         }
@@ -186,8 +211,17 @@ namespace ToolKit
       }
     }
 
-    MultiChoiceWindow::MultiChoiceWindow(const String& name, const String& msg)
+    // MultiChoiceWindow
+    //////////////////////////////////////////////////////////////////////////
+
+    TKDefineClass(MultiChoiceWindow, Window);
+
+    MultiChoiceWindow::MultiChoiceWindow() {}
+
+    void MultiChoiceWindow::NativeConstruct(const String& name, const String& msg)
     {
+      Super::NativeConstruct();
+
       m_name = name;
       m_msg  = msg;
       m_buttons.resize(2);
@@ -195,11 +229,13 @@ namespace ToolKit
       m_buttons[1].m_name = "No";
     }
 
-    MultiChoiceWindow::MultiChoiceWindow(const String& name,
-                                         const std::vector<ButtonInfo>& buttons,
-                                         const String& msg,
-                                         bool showCancel)
+    void MultiChoiceWindow::NativeConstruct(const String& name,
+                                            const MultiChoiceButtonArray& buttons,
+                                            const String& msg,
+                                            bool showCancel)
     {
+      Super::NativeConstruct();
+
       m_name       = name;
       m_buttons    = buttons;
       m_msg        = msg;
@@ -244,12 +280,13 @@ namespace ToolKit
         ImGui::TableNextColumn();
         ImGui::TableNextColumn();
 
-        for (ButtonInfo& button : m_buttons)
+        for (MultiChoiceButtonInfo& button : m_buttons)
         {
           if (ImGui::Button(button.m_name.c_str(), ImVec2(120, 0)))
           {
             m_visible = false;
             button.m_callback();
+            RemoveFromUI();
             ImGui::CloseCurrentPopup();
           }
           ImGui::TableNextColumn();
@@ -261,6 +298,7 @@ namespace ToolKit
           if (ImGui::Button("Cancel", ImVec2(120, 0)))
           {
             m_visible = false;
+            RemoveFromUI();
             ImGui::CloseCurrentPopup();
           }
         }

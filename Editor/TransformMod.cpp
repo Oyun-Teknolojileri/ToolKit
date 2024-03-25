@@ -133,7 +133,7 @@ namespace ToolKit
       EntityPtr ntt = g_app->GetCurrentScene()->GetCurrentSelection();
       if (ntt != nullptr)
       {
-        EditorViewport* vp = g_app->GetActiveViewport();
+        EditorViewportPtr vp = g_app->GetActiveViewport();
         if (vp == nullptr)
         {
           // Console commands may put the process here whit out active viewport.
@@ -185,8 +185,7 @@ namespace ToolKit
     {
       if (signal == BaseMod::m_leftMouseBtnDownSgnl)
       {
-        EditorViewport* vp = g_app->GetActiveViewport();
-        if (vp != nullptr)
+        if (EditorViewportPtr vp = g_app->GetActiveViewport())
         {
           m_mouseData[0] = vp->GetLastMousePosScreenSpace();
           AxisLabel axis = m_gizmo->HitTest(vp->RayFromMousePosition());
@@ -255,7 +254,7 @@ namespace ToolKit
           Vec3 p    = m_gizmo->m_worldLocation;
           Vec3 axis = GetGrabbedAxis(0);
 
-          if (EditorViewport* vp = g_app->GetActiveViewport())
+          if (EditorViewportPtr vp = g_app->GetActiveViewport())
           {
             float t;
             PlaneEquation axisPlane = PlaneFrom(p, axis);
@@ -274,10 +273,14 @@ namespace ToolKit
       else
       {
         // Linear intersection plane.
-        EditorViewport* vp = g_app->GetActiveViewport();
-        Vec3 camOrg        = vp->GetCamera()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        Vec3 gizmOrg       = m_gizmo->m_worldLocation;
-        Vec3 dir           = glm::normalize(camOrg - gizmOrg);
+        Vec3 camOrg;
+        if (EditorViewportPtr vp = g_app->GetActiveViewport())
+        {
+          vp->GetCamera()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        }
+
+        Vec3 gizmOrg = m_gizmo->m_worldLocation;
+        Vec3 dir     = glm::normalize(camOrg - gizmOrg);
 
         Vec3 x, px, y, py, z, pz;
         ExtractAxes(m_gizmo->m_normalVectors, x, y, z);
@@ -322,7 +325,7 @@ namespace ToolKit
       assert(m_gizmo->GetGrabbedAxis() != AxisLabel::None);
       m_gizmo->m_grabPoint = ZERO;
 
-      if (EditorViewport* vp = g_app->GetActiveViewport())
+      if (EditorViewportPtr vp = g_app->GetActiveViewport())
       {
         float t;
         Ray ray = vp->RayFromMousePosition();
@@ -407,7 +410,7 @@ namespace ToolKit
       Transform(m_delta);
       StateTransformBase::Update(deltaTime);
       ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-      if (EditorViewport* vp = g_app->GetActiveViewport())
+      if (EditorViewportPtr vp = g_app->GetActiveViewport())
       {
         Vec2 contentMin, contentMax;
         vp->GetContentAreaScreenCoordinates(&contentMin, &contentMax);
@@ -456,23 +459,25 @@ namespace ToolKit
       SDL_WarpMouseGlobal(m_mouseInitialLoc.x, m_mouseInitialLoc.y);
 
       float t;
-      EditorViewport* vp = g_app->GetActiveViewport();
-      Ray ray            = vp->RayFromScreenSpacePoint(m_mouseData[1]);
-      if (LinePlaneIntersection(ray, m_intersectionPlane, t))
+      if (EditorViewportPtr vp = g_app->GetActiveViewport())
       {
-        // This point.
-        Vec3 p = PointOnRay(ray, t);
+        Ray ray = vp->RayFromScreenSpacePoint(m_mouseData[1]);
+        if (LinePlaneIntersection(ray, m_intersectionPlane, t))
+        {
+          // This point.
+          Vec3 p = PointOnRay(ray, t);
 
-        // Previous. point.
-        ray    = vp->RayFromScreenSpacePoint(m_mouseData[0]);
-        LinePlaneIntersection(ray, m_intersectionPlane, t);
-        Vec3 p0 = PointOnRay(ray, t);
-        m_delta = p - p0;
-      }
-      else
-      {
-        assert(false && "Intersection expected.");
-        m_delta = ZERO;
+          // Previous. point.
+          ray    = vp->RayFromScreenSpacePoint(m_mouseData[0]);
+          LinePlaneIntersection(ray, m_intersectionPlane, t);
+          Vec3 p0 = PointOnRay(ray, t);
+          m_delta = p - p0;
+        }
+        else
+        {
+          assert(false && "Intersection expected.");
+          m_delta = ZERO;
+        }
       }
 
       std::swap(m_mouseData[0], m_mouseData[1]);
@@ -591,16 +596,16 @@ namespace ToolKit
 
     void StateTransformTo::Rotate(EntityPtr ntt)
     {
-      EditorViewport* viewport  = g_app->GetActiveViewport();
-      PolarGizmo* pg            = static_cast<PolarGizmo*>(m_gizmo.get());
-      int axisInd               = static_cast<int>(m_gizmo->GetGrabbedAxis());
-      Vec3 projAxis             = pg->m_handles[axisInd]->m_tangentDir;
-      Vec3 mouseDelta           = m_delta;
+      EditorViewportPtr viewport  = g_app->GetActiveViewport();
+      PolarGizmo* pg              = static_cast<PolarGizmo*>(m_gizmo.get());
+      int axisInd                 = (int) (m_gizmo->GetGrabbedAxis());
+      Vec3 projAxis               = pg->m_handles[axisInd]->m_tangentDir;
+      Vec3 mouseDelta             = m_delta;
 
-      float delta               = glm::dot(projAxis, mouseDelta);
-      Vec3 deltaInWS            = Vec3(delta, 0.0f, 0.0f);
-      Vec2 deltaInSS            = viewport->TransformWorldSpaceToScreenSpace(deltaInWS);
-      deltaInSS                -= viewport->TransformWorldSpaceToScreenSpace(Vec3(0));
+      float delta                 = glm::dot(projAxis, mouseDelta);
+      Vec3 deltaInWS              = Vec3(delta, 0.0f, 0.0f);
+      Vec2 deltaInSS              = viewport->TransformWorldSpaceToScreenSpace(deltaInWS);
+      deltaInSS                  -= viewport->TransformWorldSpaceToScreenSpace(Vec3(0));
       deltaInSS = Vec2(deltaInSS.x / viewport->m_wndContentAreaSize.x, deltaInSS.y / viewport->m_wndContentAreaSize.y);
       delta     = glm::length(deltaInSS) * ((delta > 0.0f) ? 1 : -1);
       delta     = glm::degrees(delta) / 9.0f;
@@ -825,7 +830,7 @@ namespace ToolKit
       // Important for proper picking.
       if (m_gizmo != nullptr)
       {
-        if (EditorViewport* vp = g_app->GetActiveViewport())
+        if (EditorViewportPtr vp = g_app->GetActiveViewport())
         {
           m_gizmo->LookAt(vp->GetCamera(), vp->GetBillboardScale());
         }

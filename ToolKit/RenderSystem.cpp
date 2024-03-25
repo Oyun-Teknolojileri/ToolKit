@@ -151,10 +151,7 @@ namespace ToolKit
   void RenderSystem::InitGl(void* glGetProcAddres, GlReportCallback callback)
   {
     // Initialize opengl functions.
-
-#ifdef _WIN32
-    gladLoadGLES2((GLADloadfunc) glGetProcAddres);
-#endif
+    LoadGlFunctions(glGetProcAddres);
 
     InitGLErrorReport(callback);
     TestSRGBBackBuffer();
@@ -187,11 +184,25 @@ namespace ToolKit
   {
     RHI::SetFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glClearColor(0.5f, 0.2f, 0.8f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    GLubyte pixel[4];
-    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
-    m_backbufferFormatIsSRGB = (pixel[0] > 150);
+    GLint encoding = 0;
+    glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER,
+                                          GL_FRONT,
+                                          GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING,
+                                          &encoding);
+
+    if (encoding == GL_LINEAR)
+    {
+      m_backbufferFormatIsSRGB = false;
+    }
+    else if (encoding == GL_SRGB)
+    {
+      m_backbufferFormatIsSRGB = true;
+    }
+    else
+    {
+      TK_ERR("Backbuffer color space can't be deceted. Assuming linear.");
+      m_backbufferFormatIsSRGB = false;
+    }
   }
 
 } // namespace ToolKit

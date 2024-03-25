@@ -6,12 +6,16 @@
  */
 
 #include "Anchor.h"
+#include "AndroidBuildWindow.h"
 #include "App.h"
 #include "ConsoleWindow.h"
 #include "EditorCamera.h"
+#include "EditorViewport2d.h"
 #include "Gizmo.h"
 #include "Grid.h"
 #include "Mod.h"
+#include "PopupWindows.h"
+#include "PreviewViewport.h"
 #include "TKStats.h"
 #include "UI.h"
 
@@ -20,7 +24,6 @@
 #include <FileManager.h>
 #include <GlErrorReporter.h>
 #include <ImGui/backends/imgui_impl_sdl2.h>
-#include <Meta.h>
 #include <PluginManager.h>
 #include <SDL.h>
 #include <TKProfiler.h>
@@ -71,9 +74,11 @@ namespace ToolKit
           String targetFile = ConcatPaths({cfgPath, files[i]});
           if (!CheckSystemFile(targetFile))
           {
-            std::filesystem::copy(ConcatPaths({ConfigPath(), files[i]}),
-                                  ConcatPaths({cfgPath, files[i]}),
-                                  std::filesystem::copy_options::overwrite_existing);
+            String sourceFile = ConcatPaths({ConfigPath(), files[i]});
+            if (CheckSystemFile(sourceFile))
+            {
+              std::filesystem::copy(sourceFile, targetFile, std::filesystem::copy_options::overwrite_existing);
+            }
           }
         }
       }
@@ -253,6 +258,23 @@ namespace ToolKit
             objFactory->Register<SkyBillboard>();
             objFactory->Register<LightBillboard>();
             objFactory->Register<GridFragmentShader>();
+
+            // Windows.
+            objFactory->Register<ConsoleWindow>();
+            objFactory->Register<EditorViewport>();
+            objFactory->Register<EditorViewport2d>();
+            objFactory->Register<PreviewViewport>();
+            objFactory->Register<FolderWindow>();
+            objFactory->Register<MultiChoiceWindow>();
+            objFactory->Register<OutlinerWindow>();
+            objFactory->Register<SimulationWindow>();
+            objFactory->Register<PropInspectorWindow>();
+            objFactory->Register<RenderSettingsWindow>();
+            objFactory->Register<StatsWindow>();
+            objFactory->Register<StringInputWindow>();
+            objFactory->Register<YesNoWindow>();
+            objFactory->Register<TempMaterialWindow>();
+            objFactory->Register<AndroidBuildWindow>();
 
             // Overrides.
             objFactory->Override<EditorDirectionalLight, DirectionalLight>();

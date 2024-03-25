@@ -110,7 +110,7 @@ namespace ToolKit
 
   void UIManager::SetUICamera(CameraPtr cam) { m_uiCamera = cam; }
 
-  void UIManager::UpdateSurfaces(Viewport* vp, const UILayerPtr& layer)
+  void UIManager::UpdateSurfaces(ViewportPtr vp, const UILayerPtr layer)
   {
     EventPool& events = Main::GetInstance()->m_eventPool;
     if (events.empty())
@@ -151,8 +151,8 @@ namespace ToolKit
         Surface* surface        = ntt->As<Surface>();
         bool mouseOverPrev      = surface->m_mouseOver;
 
-        surface->m_mouseOver    = CheckMouseOver(surface, e, vp);
-        surface->m_mouseClicked = CheckMouseClick(surface, e, vp);
+        surface->m_mouseOver    = CheckMouseOver(surface, e, vp.get());
+        surface->m_mouseClicked = CheckMouseClick(surface, e, vp.get());
 
         if (ntt->IsA<Button>())
         {
@@ -211,15 +211,15 @@ namespace ToolKit
 
   void UIManager::Update(float deltaTime)
   {
-    for (Viewport* viewport : m_viewportsToUpdateLayers)
+    for (ViewportPtr viewport : m_viewportsToUpdateLayers)
     {
       GetUIManager()->UpdateLayers(deltaTime, viewport);
     }
   }
 
-  void UIManager::RegisterViewportToUpdateLayers(Viewport* viewport) { m_viewportsToUpdateLayers.push_back(viewport); }
+  void UIManager::RegisterViewport(ViewportPtr viewport) { m_viewportsToUpdateLayers.push_back(viewport); }
 
-  void UIManager::UnRegisterViewportToUpdateLayers(Viewport* viewport)
+  void UIManager::UnRegisterViewport(ViewportPtr viewport)
   {
     for (auto it = m_viewportsToUpdateLayers.begin(); it != m_viewportsToUpdateLayers.end(); ++it)
     {
@@ -233,7 +233,7 @@ namespace ToolKit
 
   void UIManager::ClearViewportsToUpdateLayers() { m_viewportsToUpdateLayers.clear(); }
 
-  void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)
+  void UIManager::UpdateLayers(float deltaTime, ViewportPtr viewport)
   {
     GetUIManager()->ResizeLayers(viewport);
 
@@ -258,7 +258,7 @@ namespace ToolKit
     viewport->SwapCamera(m_uiCamera, attachmentSwap);
   }
 
-  void UIManager::ResizeLayers(Viewport* viewport)
+  void UIManager::ResizeLayers(ViewportPtr viewport)
   {
     // Make sure camera covers the whole viewport.
     Vec2 vpSize                     = viewport->m_wndContentAreaSize;
@@ -291,7 +291,7 @@ namespace ToolKit
     }
   }
 
-  void UIManager::AddLayer(ULongID viewportId, const UILayerPtr& layer)
+  void UIManager::AddLayer(ULongID viewportId, const UILayerPtr layer)
   {
     if (Exist(viewportId, layer->m_id) == -1)
     {

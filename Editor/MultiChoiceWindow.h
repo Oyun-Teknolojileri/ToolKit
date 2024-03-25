@@ -13,9 +13,12 @@ namespace ToolKit
 {
   namespace Editor
   {
-    class MultiChoiceCraeteWindow : public TempWindow
+
+    class MultiChoiceCraeteWindow : public Window
     {
      public:
+      TKDeclareClass(MultiChoiceCraeteWindow, Window);
+
       void OpenCreateWindow(ParameterBlock* parameter);
       void Show() override;
 
@@ -28,6 +31,8 @@ namespace ToolKit
       ParameterBlock* m_parameter;
       bool m_menuOpen = false;
     };
+
+    typedef std::shared_ptr<MultiChoiceCraeteWindow> MultiChoiceCraeteWindowPtr;
 
   } // namespace Editor
 } // namespace ToolKit

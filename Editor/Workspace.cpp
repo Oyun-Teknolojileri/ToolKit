@@ -244,58 +244,6 @@ namespace ToolKit
       return nullptr;
     }
 
-    void Workspace::SerializeSimulationWindow(XmlDocumentPtr doc) const
-    {
-      XmlDocument* pDoc          = doc.get();
-
-      PluginWindow* pluginWindow = g_app->GetWindow<PluginWindow>("Plugin");
-      XmlNode* settings          = CreateXmlNode(pDoc, "Simulation", nullptr);
-
-      int numCustomRes           = (int) pluginWindow->m_screenResolutions.size() - pluginWindow->m_numDefaultResNames;
-
-      WriteAttr(settings, pDoc, "NumCustom", std::to_string(numCustomRes));
-
-      for (int i = 0; i < numCustomRes; i++)
-      {
-        String istr = std::to_string(i);
-        int index   = i + pluginWindow->m_numDefaultResNames;
-
-        WriteAttr(settings, pDoc, "name" + istr, pluginWindow->m_emulatorResolutionNames[index]);
-
-        WriteAttr(settings, pDoc, "sizeX" + istr, std::to_string(pluginWindow->m_screenResolutions[index].x));
-
-        WriteAttr(settings, pDoc, "sizeY" + istr, std::to_string(pluginWindow->m_screenResolutions[index].y));
-      }
-    }
-
-    void Workspace::DeSerializeSimulationWindow(XmlDocumentPtr doc)
-    {
-      XmlNode* node              = doc->first_node("Simulation");
-      PluginWindow* pluginWindow = g_app->GetWindow<PluginWindow>("Plugin");
-      if (node == nullptr || pluginWindow == nullptr)
-      {
-        return;
-      }
-
-      const int defaultCnt = pluginWindow->m_numDefaultResNames;
-      pluginWindow->m_screenResolutions.resize(defaultCnt);
-      pluginWindow->m_emulatorResolutionNames.resize(defaultCnt);
-
-      int numCustomRes = 0;
-      ReadAttr(node, "NumCustom", numCustomRes);
-      pluginWindow->m_screenResolutions.resize(numCustomRes + defaultCnt);
-      pluginWindow->m_emulatorResolutionNames.resize(numCustomRes + defaultCnt);
-
-      for (int i = 0; i < numCustomRes; i++)
-      {
-        String istr   = std::to_string(i);
-        const int idx = i + defaultCnt;
-        ReadAttr(node, "name" + istr, pluginWindow->m_emulatorResolutionNames[idx]);
-        ReadAttr(node, "sizeX" + istr, pluginWindow->m_screenResolutions[idx].x);
-        ReadAttr(node, "sizeY" + istr, pluginWindow->m_screenResolutions[idx].y);
-      }
-    }
-
     void Workspace::SerializeEngineSettings() const
     {
       String path = ConcatPaths({GetProjectConfigPath(), "Engine.settings"});

@@ -31,6 +31,8 @@ namespace ToolKit
   namespace Editor
   {
 
+    TKDefineClass(EditorViewport, Window);
+
     std::vector<OverlayUI*> EditorViewport::m_overlays = {nullptr, nullptr, nullptr, nullptr};
 
     void InitOverlays(EditorViewport* viewport)
@@ -106,8 +108,6 @@ namespace ToolKit
       OrbitPanMod(deltaTime);
     }
 
-    Window::Type EditorViewport::GetType() const { return Type::Viewport; }
-
     bool EditorViewport::IsViewportQueriable() const
     {
       return m_mouseOverContentArea && m_mouseHover && m_active && m_visible && m_relMouseModBegin;
@@ -145,7 +145,7 @@ namespace ToolKit
 
     XmlNode* EditorViewport::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
-      XmlNode* wndNode = Window::SerializeImp(doc, parent);
+      XmlNode* wndNode = Super::SerializeImp(doc, parent);
       XmlNode* node    = CreateXmlNode(doc, "Viewport", wndNode);
 
       WriteAttr(node, doc, "alignment", std::to_string((int) m_cameraAlignment));
@@ -157,7 +157,7 @@ namespace ToolKit
 
     XmlNode* EditorViewport::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
     {
-      XmlNode* wndNode      = Window::DeSerializeImp(info, parent);
+      XmlNode* wndNode      = Super::DeSerializeImp(info, parent);
       XmlNode* viewportNode = wndNode->first_node("Viewport");
       m_wndContentAreaSize  = m_size;
 
@@ -170,7 +170,7 @@ namespace ToolKit
         viewCam->m_version = m_version;
         ULongID id         = viewCam->GetIdVal();
 
-        if (m_version > String("v0.4.4"))
+        if (m_version > TKV044)
         {
           XmlNode* objNode = viewportNode->first_node(Object::StaticClass()->Name.c_str());
           viewCam->DeSerialize(info, objNode);
@@ -613,33 +613,35 @@ namespace ToolKit
           }
           else if (entry.m_ext == SCENE || entry.m_ext == LAYER)
           {
-            MultiChoiceWindow::ButtonInfo openButton;
+            MultiChoiceButtonInfo openButton;
             openButton.m_name     = "Open";
             openButton.m_callback = [entry]() -> void
             {
               String fullPath = entry.GetFullPath();
               g_app->OpenScene(fullPath);
             };
-            MultiChoiceWindow::ButtonInfo linkButton;
+
+            MultiChoiceButtonInfo linkButton;
             linkButton.m_name     = "Link";
             linkButton.m_callback = [entry]() -> void
             {
               String fullPath = entry.GetFullPath();
               g_app->LinkScene(fullPath);
             };
-            MultiChoiceWindow::ButtonInfo mergeButton;
+
+            MultiChoiceButtonInfo mergeButton;
             mergeButton.m_name     = "Merge";
             mergeButton.m_callback = [entry]() -> void
             {
               String fullPath = entry.GetFullPath();
               g_app->MergeScene(fullPath);
             };
-            MultiChoiceWindow* importOptionWnd = new MultiChoiceWindow("Open Scene",
-                                                                       {openButton, linkButton, mergeButton},
-                                                                       "Open or Link the scene ?",
-                                                                       true);
 
-            UI::m_volatileWindows.push_back(importOptionWnd);
+            MultiChoiceButtonArray buttons = {openButton, linkButton, mergeButton};
+            MultiChoiceWindowPtr importOptionWnd =
+                MakeNewPtr<MultiChoiceWindow>("Open Scene", buttons, "Open, link or merge the scene?", true);
+
+            importOptionWnd->AddToUI();
           }
           else if (entry.m_ext == MATERIAL)
           {
@@ -723,7 +725,7 @@ namespace ToolKit
             }
           }
 
-          if (m_name == g_simulationViewport)
+          if (m_name == g_simulationViewStr)
           {
             onPlugin = true;
           }

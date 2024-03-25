@@ -9,7 +9,6 @@
 
 #include "App.h"
 
-#include <Meta.h>
 #include <ObjectFactory.h>
 
 #include <DebugNew.h>
@@ -62,16 +61,16 @@ namespace ToolKit
       // Construct dynamic menu map.
       std::unordered_map<String, DynamicMenuPtr> menuMap;
 
-      auto errContinueFn = [](String& metaVal) -> void { TK_WRN("%s value is wrong: %s", MenuMetaKey, metaVal); };
+      auto errContinueFn = [](String& metaVal) -> void { TK_WRN("Wrong menu descriptor format: %s", metaVal); };
 
-      for (String& customObjectMetaVal : menuDescriptors)
+      for (String& descriptor : menuDescriptors)
       {
         StringArray parts;
-        Split(customObjectMetaVal, "/", parts);
+        Split(descriptor, "/", parts);
 
         if (parts.size() < 2)
         {
-          errContinueFn(customObjectMetaVal);
+          errContinueFn(descriptor);
           continue;
         }
 
@@ -80,7 +79,7 @@ namespace ToolKit
 
         if (classNamePair.size() != 2)
         {
-          errContinueFn(customObjectMetaVal);
+          errContinueFn(descriptor);
           continue;
         }
 

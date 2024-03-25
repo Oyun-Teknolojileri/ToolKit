@@ -55,12 +55,12 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Utils\Packer\</OutDir>
     <LibraryPath>$(SolutionDir)Bin;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\SDL2\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Utils\Packer\</OutDir>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Bin;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\SDL2\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -78,9 +78,7 @@
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;TKLib_d.lib;zlibstatic.lib;minizip.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)Bin\ToolKit_d.dll" "$(TargetDir)"</Command>
-    </PostBuildEvent>
+    <PostBuildEvent />
     <PreBuildEvent />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -102,9 +100,7 @@
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;TKLib.lib;zlibstatic.lib;minizip.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)Bin\ToolKit.dll" "$(TargetDir)"</Command>
-    </PostBuildEvent>
+    <PostBuildEvent />
     <PreBuildEvent />
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

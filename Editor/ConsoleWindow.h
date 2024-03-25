@@ -93,10 +93,11 @@ namespace ToolKit
     class ConsoleWindow : public Window
     {
      public:
+      TKDeclareClass(ConsoleWindow, Window);
+
       ConsoleWindow();
       virtual ~ConsoleWindow();
       void Show() override;
-      Type GetType() const override;
 
       void AddLog(const String& log, LogType type = LogType::Memo);
       void AddLog(const String& log, const String& tag);
@@ -127,6 +128,8 @@ namespace ToolKit
       // -1: new line, 0..History.Size-1 browsing history.
       int m_historyPos = -1;
     };
+
+    typedef std::shared_ptr<ConsoleWindow> ConsoleWindowPtr;
 
   } // namespace Editor
 } // namespace ToolKit
