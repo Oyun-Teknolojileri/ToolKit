@@ -157,7 +157,9 @@ namespace ToolKit
 
     void Init()
     {
-      EngineSettings& settings = GetEngineSettings();
+      EngineSettings& settings  = GetEngineSettings();
+      const String settingsFile = ConcatPaths({ConfigPath(), "Engine.settings"});
+      settings.Load(settingsFile);
 
       // Init SDL
       if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0)
