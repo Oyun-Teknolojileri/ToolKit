@@ -81,13 +81,13 @@ namespace ToolKit
 
     m_fullQuadPass->m_params.FrameBuffer               = nullptr; // backbuffer
     m_fullQuadPass->m_params.ClearFrameBuffer          = true;
-    if (m_unlitMaterial == nullptr)
+    if (m_quadUnlitMaterial == nullptr)
     {
-      m_unlitMaterial = GetMaterialManager()->GetCopyOfUnlitMaterial(false);
+      m_quadUnlitMaterial                 = GetMaterialManager()->GetCopyOfUnlitMaterial(false);
+      m_quadUnlitMaterial->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
     }
-    m_unlitMaterial->m_diffuseTexture =
+    m_quadUnlitMaterial->m_diffuseTexture =
         Cast<Texture>(m_params.viewport->m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0));
-    m_fullQuadPass->SetFragmentShader(m_unlitMaterial->m_fragmentShader, renderer);
   }
 
   void GameRenderer::PostRender(Renderer* renderer) { renderer->ResetUsedTextureSlots(); }
@@ -124,11 +124,15 @@ namespace ToolKit
     m_passArray.clear();
 
     // Post processings
-    m_passArray.push_back(m_gammaTonemapFxaaPass);
+    if (m_params.gfx.FXAAEnabled || m_params.gfx.GammaCorrectionEnabled || m_params.gfx.TonemappingEnabled)
+    {
+      m_passArray.push_back(m_gammaTonemapFxaaPass);
+      RenderPath::Render(renderer);
+      m_passArray.clear();
+    }
 
-    RenderPath::Render(renderer);
-    m_passArray.clear();
-
+    m_fullQuadPass->m_material = m_quadUnlitMaterial;
+    m_fullQuadPass->SetFragmentShader(m_quadUnlitMaterial->m_fragmentShader, renderer);
     m_passArray.push_back(m_fullQuadPass);
     RenderPath::Render(renderer);
 

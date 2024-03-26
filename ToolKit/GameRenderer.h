@@ -35,7 +35,7 @@ namespace ToolKit
       m_gammaTonemapFxaaPass  = nullptr;
       m_fullQuadPass          = nullptr;
 
-      m_unlitMaterial         = nullptr;
+      m_quadUnlitMaterial     = nullptr;
     }
 
     void SetParams(const GameRendererParams& gameRendererParams);
@@ -57,6 +57,6 @@ namespace ToolKit
     RenderJobArray m_uiRenderJobs;
     RenderData m_uiRenderData;
 
-    MaterialPtr m_unlitMaterial = nullptr;
+    MaterialPtr m_quadUnlitMaterial = nullptr;
   };
 } // namespace ToolKit

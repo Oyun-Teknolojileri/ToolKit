@@ -23,7 +23,9 @@
 			vec4 color;
 			if (DiffuseTextureInUse == 1)
 			{
-				color = texture(s_texture0, v_texture);
+				vec2 texCoord = v_texture;
+				texCoord.y = 1.0 - texCoord.y;
+				color = texture(s_texture0, texCoord);
 			}
 			else
 			{

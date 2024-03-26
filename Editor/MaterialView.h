@@ -58,12 +58,10 @@ namespace ToolKit
       ~TempMaterialWindow();
 
       void SetMaterial(MaterialPtr mat);
-      void OpenWindow();
       void Show() override;
 
      private:
       MaterialViewPtr m_view;
-      bool m_isOpen = true;
     };
 
     typedef std::shared_ptr<TempMaterialWindow> TempMaterialWindowPtr;

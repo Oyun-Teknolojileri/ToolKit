@@ -408,7 +408,6 @@ namespace ToolKit
     {
       m_view               = MakeNewPtr<MaterialView>();
       m_view->m_isTempView = true;
-      AddToUI();
     }
 
     TempMaterialWindow::~TempMaterialWindow()
@@ -419,22 +418,15 @@ namespace ToolKit
 
     void TempMaterialWindow::SetMaterial(MaterialPtr mat) { m_view->SetMaterials({mat}); }
 
-    void TempMaterialWindow::OpenWindow() { m_isOpen = true; }
-
     void TempMaterialWindow::Show()
     {
-      if (!m_isOpen)
-      {
-        return;
-      }
-
       ImGuiIO io = ImGui::GetIO();
       ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_Once);
       ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
                               ImGuiCond_Once,
                               ImVec2(0.5f, 0.5f));
 
-      ImGui::Begin("Material View", &m_isOpen);
+      ImGui::Begin("Material View", &m_visible);
 
       m_view->Show();
 

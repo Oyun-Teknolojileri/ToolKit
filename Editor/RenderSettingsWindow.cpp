@@ -144,6 +144,13 @@ namespace ToolKit
           }
         }
 
+        bool hdrPipeline = engineSettings.Graphics.HDRPipeline;
+        if (ImGui::Checkbox("HDR Pipeline##1", &hdrPipeline))
+        {
+          engineSettings.Graphics.HDRPipeline = hdrPipeline;
+          g_app->ReInitViewports();
+        }
+
         const char* renderSpecNames[] = {"High", "Low"};
         const int currentRenderSpec   = (int) engineSettings.Graphics.RenderSpec;
         const int specCount           = 2;
@@ -160,13 +167,6 @@ namespace ToolKit
             }
           }
           ImGui::EndCombo();
-        }
-
-        bool hdrPipeline = engineSettings.Graphics.HDRPipeline;
-        if (ImGui::Checkbox("HDR Pipeline##1", &hdrPipeline))
-        {
-          engineSettings.Graphics.HDRPipeline = hdrPipeline;
-          g_app->ReInitViewports();
         }
 
         ImGui::DragFloat("Shadow Distance", &engineSettings.PostProcessing.ShadowDistance, 1.0f, 0.01f, 100000.0f);

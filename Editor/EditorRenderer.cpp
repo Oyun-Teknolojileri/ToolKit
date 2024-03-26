@@ -91,7 +91,11 @@ namespace ToolKit
         m_params.App->HideGizmos();
         sceneRenderer->Render(renderer);
         m_passArray.push_back(m_uiPass);
-        m_passArray.push_back(m_gammaTonemapFxaaPass);
+        if (m_gammaTonemapFxaaPass->m_params.enableFxaa || m_gammaTonemapFxaaPass->m_params.enableGammaCorrection ||
+            m_gammaTonemapFxaaPass->m_params.enableTonemapping)
+        {
+          m_passArray.push_back(m_gammaTonemapFxaaPass);
+        }
         RenderPath::Render(renderer);
         m_params.App->ShowGizmos();
         break;
@@ -123,7 +127,11 @@ namespace ToolKit
         m_passArray.push_back(m_billboardPass);
 
         // Post process.
-        m_passArray.push_back(m_gammaTonemapFxaaPass);
+        if (m_gammaTonemapFxaaPass->m_params.enableFxaa || m_gammaTonemapFxaaPass->m_params.enableGammaCorrection ||
+            m_gammaTonemapFxaaPass->m_params.enableTonemapping)
+        {
+          m_passArray.push_back(m_gammaTonemapFxaaPass);
+        }
 
         RenderPath::Render(renderer);
       }
@@ -261,7 +269,7 @@ namespace ToolKit
       // Post process pass
 
       m_gammaTonemapFxaaPass->m_params.frameBuffer            = viewport->m_framebuffer;
-      m_gammaTonemapFxaaPass->m_params.enableGammaCorrection  = GetRenderSystem()->IsGammaCorrectionNeeded();
+      m_gammaTonemapFxaaPass->m_params.enableGammaCorrection  = false; //TODO GetRenderSystem()->IsGammaCorrectionNeeded();
       m_gammaTonemapFxaaPass->m_params.enableFxaa             = gfx.FXAAEnabled;
       m_gammaTonemapFxaaPass->m_params.enableTonemapping      = gfx.TonemappingEnabled;
       m_gammaTonemapFxaaPass->m_params.gamma                  = gfx.Gamma;
