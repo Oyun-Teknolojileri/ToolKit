@@ -439,6 +439,8 @@ namespace ToolKit
     return ConcatPaths({".", "..", "Config"});
   }
 
+  TK_API String EngineSettingsPath() { return ConcatPaths({ConfigPath(), "Engine.settings"}); }
+
   String DefaultPath()
   {
     static const String res = ConcatPaths({"..", "Resources", "Engine"});

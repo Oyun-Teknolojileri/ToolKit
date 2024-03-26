@@ -158,7 +158,7 @@ namespace ToolKit
     void Init()
     {
       EngineSettings& settings  = GetEngineSettings();
-      const String settingsFile = ConcatPaths({ConfigPath(), "Engine.settings"});
+      const String settingsFile = EngineSettingsPath();
       settings.Load(settingsFile);
 
       // Init SDL
