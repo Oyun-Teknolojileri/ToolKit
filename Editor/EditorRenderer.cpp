@@ -269,7 +269,7 @@ namespace ToolKit
       // Post process pass
 
       m_gammaTonemapFxaaPass->m_params.frameBuffer            = viewport->m_framebuffer;
-      m_gammaTonemapFxaaPass->m_params.enableGammaCorrection  = false; //TODO GetRenderSystem()->IsGammaCorrectionNeeded();
+      m_gammaTonemapFxaaPass->m_params.enableGammaCorrection  = GetRenderSystem()->IsGammaCorrectionNeeded();
       m_gammaTonemapFxaaPass->m_params.enableFxaa             = gfx.FXAAEnabled;
       m_gammaTonemapFxaaPass->m_params.enableTonemapping      = gfx.TonemappingEnabled;
       m_gammaTonemapFxaaPass->m_params.gamma                  = gfx.Gamma;
