@@ -181,6 +181,14 @@ namespace ToolKit
      */
     float GetBillboardScale();
 
+    void ReInitViewport();
+
+    /**
+     * Returns RenderTargetSetting of the Viewport.
+     * @return RenderTargetSetting of the Viewport.
+     */
+    static TextureSettings GetRenderTargetSettings();
+
    protected:
     // Internal window handling.
 
@@ -197,12 +205,6 @@ namespace ToolKit
      * @param delta Zoom amount.
      */
     virtual void AdjustZoom(float delta);
-
-    /**
-     * Returns RenderTargetSetting of the Viewport.
-     * @return RenderTargetSetting of the Viewport.
-     */
-    virtual TextureSettings GetRenderTargetSettings();
 
     /**
      * Resets the RenderTarget image of Viewport. If the RenderTarget image is

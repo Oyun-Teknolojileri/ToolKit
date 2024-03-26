@@ -218,12 +218,6 @@ namespace ToolKit
       AdjustZoom(0.0f);
     }
 
-    TextureSettings EditorViewport::GetRenderTargetSettings()
-    {
-      TextureSettings sets = Viewport::GetRenderTargetSettings();
-      return sets;
-    }
-
     void EditorViewport::UpdateContentArea()
     {
       // Content area size

@@ -37,8 +37,8 @@ namespace ToolKit
     {
       int MSAA                    = 2;
       int FPS                     = 60;
+      bool HDRPipeline            = true;
       RenderingSpec RenderSpec    = RenderingSpec::Default;
-      float ShadowDistance        = 100.0f;
       float renderResolutionScale = 1.0f;
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const;
@@ -65,6 +65,7 @@ namespace ToolKit
       float FocusScale             = 5.0f;
       DoFQuality DofQuality        = DoFQuality::Normal;
       bool FXAAEnabled             = false;
+      float ShadowDistance         = 100.0f;
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const;
       void DeSerialize(XmlDocument* doc, XmlNode* parent);

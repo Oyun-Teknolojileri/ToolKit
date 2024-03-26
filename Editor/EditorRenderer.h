@@ -11,8 +11,7 @@
 #include "BloomPass.h"
 #include "EditorLight.h"
 #include "EditorTypes.h"
-#include "FxaaPass.h"
-#include "GammaPass.h"
+#include "GammaTonemapFxaaPass.h"
 #include "Gizmo.h"
 #include "GizmoPass.h"
 #include "MobileSceneRenderPath.h"
@@ -110,13 +109,11 @@ namespace ToolKit
       ForwardRenderPassPtr m_uiPass                     = nullptr;
       ForwardRenderPassPtr m_editorPass                 = nullptr;
       GizmoPassPtr m_gizmoPass                          = nullptr;
-      TonemapPassPtr m_tonemapPass                      = nullptr;
-      GammaPassPtr m_gammaPass                          = nullptr;
       SSAOPassPtr m_ssaoPass                            = nullptr;
       OutlinePassPtr m_outlinePass                      = nullptr;
-      FXAAPassPtr m_fxaaPass                            = nullptr;
       FullQuadPassPtr m_skipFramePass                   = nullptr;
       SingleMatForwardRenderPassPtr m_singleMatRenderer = nullptr;
+      GammaTonemapFxaaPassPtr m_gammaTonemapFxaaPass    = nullptr;
       CameraPtr m_camera                                = nullptr;
 
       /**

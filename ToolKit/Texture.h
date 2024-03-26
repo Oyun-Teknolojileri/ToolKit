@@ -27,6 +27,15 @@ namespace ToolKit
     GraphicTypes Type           = GraphicTypes::TypeFloat;
     int Layers                  = -1;
     bool GenerateMipMap         = false;
+
+    bool operator==(const TextureSettings& other) const
+    {
+      return Target == other.Target && WarpS == other.WarpS && WarpT == other.WarpT && WarpR == other.WarpR &&
+             MinFilter == other.MinFilter && MagFilter == other.MagFilter && InternalFormat == other.InternalFormat &&
+             Format == other.Format && Type == other.Type && Layers == other.Layers;
+    }
+
+    bool operator!=(const TextureSettings& other) const { return !(*this == other); }
   };
 
   // Texture

@@ -26,8 +26,6 @@ namespace ToolKit
     m_skyPass               = MakeNewPtr<CubeMapPass>();
     m_gBufferPass           = MakeNewPtr<GBufferPass>();
     m_ssaoPass              = MakeNewPtr<SSAOPass>();
-    m_tonemapPass           = MakeNewPtr<TonemapPass>();
-    m_fxaaPass              = MakeNewPtr<FXAAPass>();
     m_bloomPass             = MakeNewPtr<BloomPass>();
     m_dofPass               = MakeNewPtr<DoFPass>();
   }
@@ -42,8 +40,6 @@ namespace ToolKit
     m_skyPass           = nullptr;
     m_gBufferPass       = nullptr;
     m_ssaoPass          = nullptr;
-    m_tonemapPass       = nullptr;
-    m_fxaaPass          = nullptr;
     m_bloomPass         = nullptr;
     m_dofPass           = nullptr;
   }
@@ -103,16 +99,6 @@ namespace ToolKit
     if (m_params.Gfx.BloomEnabled)
     {
       m_passArray.push_back(m_bloomPass);
-    }
-
-    if (m_params.Gfx.TonemappingEnabled)
-    {
-      m_passArray.push_back(m_tonemapPass);
-    }
-
-    if (m_params.Gfx.FXAAEnabled)
-    {
-      m_passArray.push_back(m_fxaaPass);
     }
 
     RenderPath::Render(renderer);
@@ -263,16 +249,7 @@ namespace ToolKit
     m_dofPass->m_params.DepthRt    = m_forwardPreProcessPass->m_linearDepthRt;
     m_dofPass->m_params.focusPoint = m_params.Gfx.FocusPoint;
     m_dofPass->m_params.focusScale = m_params.Gfx.FocusScale;
-    m_dofPass->m_params.blurQuality     = m_params.Gfx.DofQuality;
-
-    // Tonemap pass.
-    m_tonemapPass->m_params.FrameBuffer = m_params.MainFramebuffer;
-    m_tonemapPass->m_params.Method      = m_params.Gfx.TonemapperMode;
-
-    // FXAA Pass
-    m_fxaaPass->m_params.FrameBuffer    = m_params.MainFramebuffer;
-    const FramebufferSettings& fbs      = m_params.MainFramebuffer->GetSettings();
-    m_fxaaPass->m_params.screen_size    = Vec2(fbs.width, fbs.height);
+    m_dofPass->m_params.blurQuality = m_params.Gfx.DofQuality;
   }
 
 } // namespace ToolKit

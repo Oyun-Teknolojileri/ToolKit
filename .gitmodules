@@ -4,4 +4,4 @@
 	branch = release-2.28.x
 [submodule "Dependency/glm"]
 	path = Dependency/glm
-	url = git@github.com:g-truc/glm.git
+	url = https://github.com/g-truc/glm.git

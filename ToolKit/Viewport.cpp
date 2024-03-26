@@ -79,7 +79,7 @@ namespace ToolKit
   Viewport::Viewport(float width, float height) : m_wndContentAreaSize(width, height)
   {
     GetCamera()->SetLens(glm::quarter_pi<float>(), width / height);
-    ResetViewportImage(GetRenderTargetSettings());
+    ReInitViewport();
   }
 
   Viewport::~Viewport() {}
@@ -88,7 +88,7 @@ namespace ToolKit
   {
     m_wndContentAreaSize.x = width;
     m_wndContentAreaSize.y = height;
-    ResetViewportImage(GetRenderTargetSettings());
+    ReInitViewport();
   }
 
   void Viewport::AdjustZoom(float delta)
@@ -103,7 +103,17 @@ namespace ToolKit
     }
   }
 
-  TextureSettings Viewport::GetRenderTargetSettings() { return TextureSettings(); }
+  TextureSettings Viewport::GetRenderTargetSettings()
+  {
+    TextureSettings texureSet;
+    if (!GetEngineSettings().Graphics.HDRPipeline)
+    {
+      texureSet.InternalFormat = GraphicTypes::FormatRGBA8;
+      texureSet.Type           = GraphicTypes::TypeUnsignedByte;
+    }
+
+    return texureSet;
+  }
 
   void Viewport::ResetViewportImage(const TextureSettings& settings)
   {
@@ -220,5 +230,7 @@ namespace ToolKit
 
     return m_wndContentAreaSize.y;
   }
+
+  void Viewport::ReInitViewport() { ResetViewportImage(GetRenderTargetSettings()); }
 
 } // namespace ToolKit

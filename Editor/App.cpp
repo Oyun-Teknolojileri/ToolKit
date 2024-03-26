@@ -1272,6 +1272,18 @@ namespace ToolKit
 
     StatsWindowPtr App::GetStatsWindow() { return GetWindow<StatsWindow>(g_statsView); }
 
+    void App::ReInitViewports()
+    {
+      EditorViewportRawPtrArray viewports;
+      for (WindowPtr wnd : m_windows)
+      {
+        if (EditorViewport* edView = wnd->As<EditorViewport>())
+        {
+          edView->ReInitViewport();
+        }
+      }
+    }
+
     void App::HideGizmos()
     {
       const EntityPtrArray& entities = GetCurrentScene()->GetEntities();
@@ -1454,7 +1466,6 @@ namespace ToolKit
       }
 
       CreateSimulationViewport();
-      m_androidBuildWindow = CreateOrRetrieveWindow<AndroidBuildWindow>();
     }
 
     void App::CreateSimulationViewport()

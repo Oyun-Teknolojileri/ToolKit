@@ -411,15 +411,6 @@ namespace ToolKit
                 TempMaterialWindowPtr materialWnd = MakeNewPtr<TempMaterialWindow>();
                 materialWnd->SetMaterial(mat);
                 materialWnd->AddToUI();
-                materialWnd->OpenWindow();
-              }
-              else if (rm->m_baseType == Material::StaticClass())
-              {
-                MaterialPtr mat                   = rm->Create<Material>(dirEnt.GetFullPath());
-                TempMaterialWindowPtr materialWnd = MakeNewPtr<TempMaterialWindow>();
-                materialWnd->SetMaterial(mat);
-                materialWnd->AddToUI();
-                materialWnd->OpenWindow();
               }
               else if (rm->m_baseType == Mesh::StaticClass())
               {

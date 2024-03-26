@@ -188,6 +188,7 @@ namespace ToolKit
   typedef std::vector<CameraPtr> CameraPtrArray;
   typedef std::shared_ptr<class Surface> SurfacePtr;
   typedef std::shared_ptr<class Dpad> DpadPtr;
+  typedef std::shared_ptr<class GammaTonemapFxaaPass> GammaTonemapFxaaPassPtr;
 
   // Xml types.
   typedef rapidxml::xml_node<char> XmlNode;

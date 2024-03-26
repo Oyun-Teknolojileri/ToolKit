@@ -177,6 +177,8 @@ namespace ToolKit
         return nullptr;
       }
 
+      void ReInitViewports();
+
       void HideGizmos();
       void ShowGizmos();
 
@@ -218,7 +220,6 @@ namespace ToolKit
 
       // Publisher.
       PublishManager* m_publishManager = nullptr;
-      AndroidBuildWindowPtr m_androidBuildWindow;
 
       // Editor objects.
       GridPtr m_grid;

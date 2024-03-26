@@ -13,7 +13,6 @@
 #include "EngineSettings.h"
 #include "ForwardPass.h"
 #include "ForwardPreProcessPass.h"
-#include "FxaaPass.h"
 #include "GBufferPass.h"
 #include "Pass.h"
 #include "RenderSystem.h"
@@ -60,9 +59,7 @@ namespace ToolKit
     CubeMapPassPtr m_skyPass                         = nullptr;
     GBufferPassPtr m_gBufferPass                     = nullptr;
     SSAOPassPtr m_ssaoPass                           = nullptr;
-    FXAAPassPtr m_fxaaPass                           = nullptr;
     BloomPassPtr m_bloomPass                         = nullptr;
-    TonemapPassPtr m_tonemapPass                     = nullptr;
     DoFPassPtr m_dofPass                             = nullptr;
     LightPtrArray m_updatedLights;
 

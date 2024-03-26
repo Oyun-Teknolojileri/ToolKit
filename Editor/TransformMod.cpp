@@ -276,7 +276,7 @@ namespace ToolKit
         Vec3 camOrg;
         if (EditorViewportPtr vp = g_app->GetActiveViewport())
         {
-          vp->GetCamera()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+          camOrg = vp->GetCamera()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         }
 
         Vec3 gizmOrg = m_gizmo->m_worldLocation;
