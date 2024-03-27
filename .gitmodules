@@ -8,3 +8,4 @@
 [submodule "Dependency/imgui"]
 	path = Dependency/imgui
 	url = https://github.com/ocornut/imgui.git
+	branch = tk-imgui
