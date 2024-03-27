@@ -10,6 +10,7 @@
 #include "IconsFontAwesome.h"
 #include "Window.h"
 
+#define IMGUI_USER_CONFIG "tk_imconfig.h"
 #include <ImGui/imgui.h>
 #include <ImGui/misc/cpp/imgui_stdlib.h>
 #include <Object.h>
