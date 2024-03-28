@@ -373,7 +373,7 @@ namespace ToolKit
       }
 
       // copy template folder to new workspace
-      RecursiveCopyDirectory(ConcatPaths({"..", "Template"}), fullPath, {".filters", ".vcxproj", ".user", ".cxx"});
+      RecursiveCopyDirectory(ConcatPaths({"..", "Templates", "Game"}), fullPath, {".filters", ".vcxproj", ".user", ".cxx"});
 
       // Update cmake.
       String currentPath = std::filesystem::current_path().parent_path().u8string();

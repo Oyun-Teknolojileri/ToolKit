@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="Codes/Game.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Codes/Game.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="Codes\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Codes\PluginMain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Codes\PluginMain.h" />
   </ItemGroup>
 </Project>
