@@ -1,6 +1,6 @@
-cmake -B "../Dependency/ImGui/build" -DCMAKE_BUILD_TYPE=Release -S "../Dependency/ImGui" -G "Visual Studio 17 2022"
+cmake -B "../Dependency/tkimgui/build" -S "../Dependency/tkimgui" -G "Visual Studio 17 2022"
 
-cd "../Dependency/ImGui/build"
+cd "../Dependency/tkimgui/build"
 
 if not exist "lib" (
 	mkdir "lib"
@@ -8,3 +8,7 @@ if not exist "lib" (
 
 cmake --build . --config Release
 cmake --build . --config Debug
+
+cd "../lib"
+copy "imgui.dll" "../../../Bin/imgui.dll"
+copy "imgui_d.dll" "../../../Bin/imgui_d.dll"
