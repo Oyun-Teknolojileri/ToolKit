@@ -15,12 +15,12 @@
 #include <Audio.h>
 #include <GlErrorReporter.h>
 #include <GradientSky.h>
-#include <ImGui/backends/imgui_impl_opengl3.h>
-#include <ImGui/backends/imgui_impl_sdl2.h>
 #include <MathUtil.h>
 #include <Prefab.h>
 #include <SDL.h>
 #include <Sky.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
+#include <imgui/backends/imgui_impl_sdl2.h>
 
 #include <DebugNew.h>
 

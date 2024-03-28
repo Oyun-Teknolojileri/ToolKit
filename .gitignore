@@ -75,3 +75,5 @@ Import/build
 
 *.user
 /ToolKit/ninjaBuild/build
+/Dependency/tkimgui/build
+/Dependency/tkimgui/lib
