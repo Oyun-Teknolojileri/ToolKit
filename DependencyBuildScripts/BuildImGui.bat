@@ -8,7 +8,3 @@ if not exist "lib" (
 
 cmake --build . --config Release
 cmake --build . --config Debug
-
-cd "../lib"
-copy "imgui.dll" "../../../Bin/imgui.dll"
-copy "imgui_d.dll" "../../../Bin/imgui_d.dll"

@@ -5,7 +5,3 @@
 [submodule "Dependency/glm"]
 	path = Dependency/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "Dependency/imgui"]
-	path = Dependency/imgui
-	url = https://github.com/ocornut/imgui.git
-	branch = tk-imgui

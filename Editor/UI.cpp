@@ -511,7 +511,7 @@ namespace ToolKit
     void UI::BeginUI()
     {
       ImGui_ImplOpenGL3_NewFrame();
-      ImGui_ImplSDL2_NewFrame();
+      ImGui_ImplSDL2_NewFrame(g_window);
       ImGui::NewFrame();
     }
 
