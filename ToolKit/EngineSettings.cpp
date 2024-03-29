@@ -25,22 +25,23 @@ namespace ToolKit
 
   void EngineSettings::WindowSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
-    XmlNode* node = doc->first_node("Window");
-    if (node == nullptr)
+    if (parent == nullptr)
     {
       return;
     }
 
-    ReadAttr(node, XmlNodeName.data(), Name);
-    ReadAttr(node, "width", Width);
-    ReadAttr(node, "height", Height);
-    ReadAttr(node, "fullscreen", FullScreen);
+    if (XmlNode* node = parent->first_node("Window"))
+    {
+      ReadAttr(node, XmlNodeName.data(), Name);
+      ReadAttr(node, "width", Width);
+      ReadAttr(node, "height", Height);
+      ReadAttr(node, "fullscreen", FullScreen);
+    }
   }
 
   void EngineSettings::PostProcessingSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* settings = doc->allocate_node(rapidxml::node_element, "PostProcessing");
-    doc->append_node(settings);
+    XmlNode* settings      = CreateXmlNode(doc, "PostProcessing", parent);
 
     const auto writeAttrFn = [&](StringView name, StringView val) -> void
     { WriteAttr(settings, doc, name.data(), val.data()); };
@@ -69,31 +70,37 @@ namespace ToolKit
 
   void EngineSettings::PostProcessingSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
-    XmlNode* node = doc->first_node("PostProcessing");
     // if post processing settings is not exist use default settings
-    if (node == nullptr)
+    if (parent == nullptr)
     {
       return;
     }
 
-    ReadAttr(node, "TonemappingEnabled", TonemappingEnabled);
-    ReadAttr(node, "EnableBloom", BloomEnabled);
-    ReadAttr(node, "BloomIntensity", BloomIntensity);
-    ReadAttr(node, "BloomThreshold", BloomThreshold);
-    ReadAttr(node, "BloomIterationCount", BloomIterationCount);
-    ReadAttr(node, "GammaCorrectionEnabled", GammaCorrectionEnabled);
-    ReadAttr(node, "Gamma", Gamma);
-    ReadAttr(node, "SSAOEnabled", SSAOEnabled);
-    ReadAttr(node, "SSAORadius", SSAORadius);
-    ReadAttr(node, "SSAOBias", SSAOBias);
-    ReadAttr(node, "SSAOKernelSize", SSAOKernelSize);
-    ReadAttr(node, "DepthOfFieldEnabled", DepthOfFieldEnabled);
-    ReadAttr(node, "FocusPoint", FocusPoint);
-    ReadAttr(node, "FocusScale", FocusScale);
-    ReadAttr(node, "FXAAEnabled", FXAAEnabled);
-    ReadAttr(node, "TonemapperMode", *(int*) &TonemapperMode);
-    ReadAttr(node, "DofQuality", *(int*) &DofQuality);
-    ReadAttr(node, "ShadowDistance", ShadowDistance);
+    if (XmlNode* node = parent->first_node("PostProcessing"))
+    {
+      ReadAttr(node, "TonemappingEnabled", TonemappingEnabled);
+      ReadAttr(node, "EnableBloom", BloomEnabled);
+      ReadAttr(node, "BloomIntensity", BloomIntensity);
+      ReadAttr(node, "BloomThreshold", BloomThreshold);
+      ReadAttr(node, "BloomIterationCount", BloomIterationCount);
+      ReadAttr(node, "GammaCorrectionEnabled", GammaCorrectionEnabled);
+      ReadAttr(node, "Gamma", Gamma);
+      ReadAttr(node, "SSAOEnabled", SSAOEnabled);
+      ReadAttr(node, "SSAORadius", SSAORadius);
+      ReadAttr(node, "SSAOBias", SSAOBias);
+      ReadAttr(node, "SSAOKernelSize", SSAOKernelSize);
+      ReadAttr(node, "DepthOfFieldEnabled", DepthOfFieldEnabled);
+      ReadAttr(node, "FocusPoint", FocusPoint);
+      ReadAttr(node, "FocusScale", FocusScale);
+      ReadAttr(node, "FXAAEnabled", FXAAEnabled);
+      ReadAttr(node, "TonemapperMode", *(int*) &TonemapperMode);
+      ReadAttr(node, "DofQuality", *(int*) &DofQuality);
+      ReadAttr(node, "ShadowDistance", ShadowDistance);
+      if (ShadowDistance < 0.01f)
+      {
+        ShadowDistance = 100.0f;
+      }
+    }
   }
 
   void EngineSettings::GraphicSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -108,24 +115,92 @@ namespace ToolKit
 
   void EngineSettings::GraphicSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
-    XmlNode* node = doc->first_node("Graphics");
-    if (node == nullptr)
+    if (parent == nullptr)
     {
       return;
     }
 
-    ReadAttr(node, "MSAA", MSAA);
-    ReadAttr(node, "FPS", FPS);
-    ReadAttr(node, "HDRPipeline", HDRPipeline);
-    ReadAttr(node, "RenderResolutionScale", renderResolutionScale);
-    if (renderResolutionScale < 0.01f)
+    if (XmlNode* node = parent->first_node("Graphics"))
     {
-      renderResolutionScale = 1.0f;
+      ReadAttr(node, "MSAA", MSAA);
+      ReadAttr(node, "FPS", FPS);
+      ReadAttr(node, "HDRPipeline", HDRPipeline);
+      ReadAttr(node, "RenderResolutionScale", renderResolutionScale);
+      if (renderResolutionScale < 0.01f)
+      {
+        renderResolutionScale = 1.0f;
+      }
+
+      int renderSpec;
+      ReadAttr(node, "RenderSpec", renderSpec);
+      RenderSpec = (RenderingSpec) renderSpec;
+    }
+  }
+
+  void EngineSettings::PluginSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* pluginNode = CreateXmlNode(doc, "Plugins", parent);
+    for (const PluginDecleration& plugDec : pluginArray)
+    {
+      XmlNode* node = CreateXmlNode(doc, "Plugin", pluginNode);
+      WriteAttr(node, doc, "name", plugDec.name);
+      WriteAttr(node, doc, "version", plugDec.version);
+      WriteAttr(node, doc, "engine", plugDec.engine);
+    }
+  }
+
+  void EngineSettings::PluginSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    if (parent == nullptr)
+    {
+      return;
     }
 
-    int renderSpec;
-    ReadAttr(node, "RenderSpec", renderSpec);
-    RenderSpec = (RenderingSpec) renderSpec;
+    pluginArray.clear();
+
+    if (XmlNode* plugins = parent->first_node("Plugins"))
+    {
+      XmlNode* node = plugins->first_node("Plugin");
+      while (node)
+      {
+        PluginDecleration plugDec;
+        ReadAttr(node, "name", plugDec.name);
+        ReadAttr(node, "version", plugDec.version);
+        ReadAttr(node, "engine", plugDec.engine);
+        pluginArray.emplace_back(std::move(plugDec));
+
+        node = node->next_sibling();
+      }
+    }
+  }
+
+  XmlNode* EngineSettings::SerializeImp(XmlDocument* doc, XmlNode* parent) const
+  {
+    if (doc == nullptr)
+    {
+      return parent;
+    }
+
+    XmlNode* settingsNode = CreateXmlNode(doc, "Settings", nullptr);
+    WriteAttr(settingsNode, doc, "version", TKVersionStr);
+
+    Window.Serialize(doc, settingsNode);
+    Graphics.Serialize(doc, settingsNode);
+    Plugins.Serialize(doc, settingsNode);
+
+    return settingsNode;
+  }
+
+  XmlNode* EngineSettings::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    XmlDocument* doc      = info.Document;
+    XmlNode* settingsNode = doc->first_node("Settings");
+
+    Window.DeSerialize(doc, settingsNode);
+    Graphics.DeSerialize(doc, settingsNode);
+    Plugins.DeSerialize(doc, settingsNode);
+
+    return settingsNode;
   }
 
   void EngineSettings::Save(const String& path)
@@ -136,12 +211,8 @@ namespace ToolKit
 
     if (file.is_open())
     {
-      XmlDocument* lclDoc   = new XmlDocument();
-      XmlNode* settingsNode = CreateXmlNode(lclDoc, "Settings", nullptr);
-      WriteAttr(settingsNode, lclDoc, "version", TKVersionStr);
-
-      Window.Serialize(lclDoc, settingsNode);
-      Graphics.Serialize(lclDoc, settingsNode);
+      XmlDocument* lclDoc = new XmlDocument();
+      SerializeImp(lclDoc, nullptr);
 
       std::string xml;
       rapidxml::print(std::back_inserter(xml), *lclDoc);
@@ -159,8 +230,11 @@ namespace ToolKit
     XmlDocument* lclDoc = new XmlDocument();
     lclDoc->parse<0>(lclFile->data());
 
-    Window.DeSerialize(lclDoc, nullptr);
-    Graphics.DeSerialize(lclDoc, nullptr);
+    SerializationFileInfo info;
+    info.File     = path;
+    info.Document = lclDoc;
+
+    DeSerializeImp(info, nullptr);
 
     SafeDel(lclFile);
     SafeDel(lclDoc);

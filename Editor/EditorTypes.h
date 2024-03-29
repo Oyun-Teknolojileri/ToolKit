@@ -12,6 +12,14 @@
 extern struct SDL_Window* g_window;
 extern void* g_context;
 
+#ifdef _WIN32
+  #if defined(TK_EDITOR_DLL_EXPORT)
+    #define TK_EDITOR_API __declspec(dllexport)
+  #else
+    #define TK_EDITOR_API __declspec(dllimport)
+  #endif
+#endif
+
 namespace ToolKit
 {
   namespace Editor

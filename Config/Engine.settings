@@ -1,4 +1,4 @@
 <Settings>
 	<Window name="ToolKit" width="1280" height="800" fullscreen="0" />
-	<Graphics msaa="0" fps="30" />
+	<Graphics MSAA="0" FPS="30" RenderResolutionScale = "1.0" />
 </Settings>
