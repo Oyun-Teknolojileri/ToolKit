@@ -81,7 +81,7 @@ namespace ToolKit
   }
 
   template <typename T>
-  T ReadVal(XmlNode* node, const String& name)
+  T ReadVal(XmlNode* node, const String& name, T defaultVal)
   {
     if (XmlAttribute* attr = node->first_attribute(name.c_str()))
     {
@@ -102,27 +102,22 @@ namespace ToolKit
       }
     }
 
-    if constexpr (std::is_same_v<T, bool>)
-    {
-      return 1;
-    }
-
-    return 0;
+    return defaultVal;
   }
 
-  void ReadAttr(XmlNode* node, const String& name, bool& val) { val = ReadVal<bool>(node, name); }
+  void ReadAttr(XmlNode* node, const String& name, bool& val) { val = ReadVal<bool>(node, name, val); }
 
-  void ReadAttr(XmlNode* node, const String& name, float& val) { val = ReadVal<float>(node, name); }
+  void ReadAttr(XmlNode* node, const String& name, float& val) { val = ReadVal<float>(node, name, val); }
 
-  void ReadAttr(XmlNode* node, const String& name, int& val) { val = ReadVal<int>(node, name); }
+  void ReadAttr(XmlNode* node, const String& name, int& val) { val = ReadVal<int>(node, name, val); }
 
-  void ReadAttr(XmlNode* node, const String& name, uint& val) { val = ReadVal<uint>(node, name); }
+  void ReadAttr(XmlNode* node, const String& name, uint& val) { val = ReadVal<uint>(node, name, val); }
 
-  void ReadAttr(XmlNode* node, const String& name, ULongID& val) { val = ReadVal<ULongID>(node, name); }
+  void ReadAttr(XmlNode* node, const String& name, ULongID& val) { val = ReadVal<ULongID>(node, name, val); }
 
-  void ReadAttr(XmlNode* node, const String& name, byte& val) { val = ReadVal<byte>(node, name); }
+  void ReadAttr(XmlNode* node, const String& name, byte& val) { val = ReadVal<byte>(node, name, val); }
 
-  void ReadAttr(XmlNode* node, const String& name, ubyte& val) { val = ReadVal<ubyte>(node, name); }
+  void ReadAttr(XmlNode* node, const String& name, ubyte& val) { val = ReadVal<ubyte>(node, name, val); }
 
   void ReadAttr(XmlNode* node, const String& name, String& val, StringView defaultVal)
   {

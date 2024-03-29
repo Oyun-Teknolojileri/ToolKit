@@ -96,10 +96,6 @@ namespace ToolKit
       ReadAttr(node, "TonemapperMode", *(int*) &TonemapperMode);
       ReadAttr(node, "DofQuality", *(int*) &DofQuality);
       ReadAttr(node, "ShadowDistance", ShadowDistance);
-      if (ShadowDistance < 0.01f)
-      {
-        ShadowDistance = 100.0f;
-      }
     }
   }
 
@@ -126,10 +122,6 @@ namespace ToolKit
       ReadAttr(node, "FPS", FPS);
       ReadAttr(node, "HDRPipeline", HDRPipeline);
       ReadAttr(node, "RenderResolutionScale", renderResolutionScale);
-      if (renderResolutionScale < 0.01f)
-      {
-        renderResolutionScale = 1.0f;
-      }
 
       int renderSpec;
       ReadAttr(node, "RenderSpec", renderSpec);
