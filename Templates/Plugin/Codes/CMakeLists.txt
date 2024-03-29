@@ -104,25 +104,27 @@ set(TKDebugLibName ToolKit_d)
 set(TKEditorLibName Editor)
 set(TKDebugEditorLibName Editor_d)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE debug ${TKDebugLibName})
-target_link_libraries(${PROJECT_NAME} PRIVATE optimized ${TKLibName})
 link_directories("${TOOLKIT_DIR}/Bin")
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE} ${HEADERS})
+
+target_link_libraries(${PROJECT_NAME} PRIVATE debug ${TKDebugLibName})
+target_link_libraries(${PROJECT_NAME} PRIVATE optimized ${TKLibName})
 target_link_libraries(${PROJECT_NAME} PRIVATE debug ${TKDebugEditorLibName})
 target_link_libraries(${PROJECT_NAME} PRIVATE optimized ${TKEditorLibName})
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE TK_WITH_EDITOR)
 target_compile_definitions(${PROJECT_NAME} PRIVATE TK_DLL_IMPORT)
 target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:TK_DEBUG>)
 
-if (MSVC)
+if (MSVC_COMPILER)
 	target_link_options(${PROJECT_NAME} PRIVATE $<$<NOT:$<CONFIG:DEBUG>>:/INCREMENTAL:NO> $<$<NOT:$<CONFIG:DEBUG>>:/LTCG>)
 endif()
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH})
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>)
-# Plugin includes end defines end
+# Plugin includes and defines end
 
 #For hot reload rename the previous output
 if (${EDITOR_BUILD})

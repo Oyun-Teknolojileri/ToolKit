@@ -16,6 +16,8 @@ namespace ToolKit
   class PluginMain : public Plugin
   {
    public:
+    PluginType GetType() override { return PluginType::Editor; }
+
     void Init(Main* master) override;
     void Destroy() override;
     void Frame(float deltaTime) override;
