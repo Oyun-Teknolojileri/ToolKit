@@ -44,6 +44,7 @@ include_directories(
 	"${TOOLKIT_DIR}"
 	"${TOOLKIT_DIR}/ToolKit"
 	"${TOOLKIT_DIR}/Dependency"
+	"${TOOLKIT_DIR}/Dependency/tkimgui"
 	"${TOOLKIT_DIR}/Dependency/glm"
 	"${TOOLKIT_DIR}/Dependency/glad"
 	"${TOOLKIT_DIR}/Dependency/RapidXml"
@@ -99,19 +100,17 @@ if (NOT TK_CXX_EXTRA STREQUAL "")
 endif()
 
 # Plugin includes end defines begin
-set(TKLibName ToolKit)
-set(TKDebugLibName ToolKit_d)
-set(TKEditorLibName Editor)
-set(TKDebugEditorLibName Editor_d)
-
 link_directories("${TOOLKIT_DIR}/Bin")
+link_directories("${TOOLKIT_DIR}/Dependency/tkimgui/lib")
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE} ${HEADERS})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE debug ${TKDebugLibName})
-target_link_libraries(${PROJECT_NAME} PRIVATE optimized ${TKLibName})
-target_link_libraries(${PROJECT_NAME} PRIVATE debug ${TKDebugEditorLibName})
-target_link_libraries(${PROJECT_NAME} PRIVATE optimized ${TKEditorLibName})
+target_link_libraries(${PROJECT_NAME} PRIVATE debug ToolKit_d)
+target_link_libraries(${PROJECT_NAME} PRIVATE optimized ToolKit)
+target_link_libraries(${PROJECT_NAME} PRIVATE debug Editor_d)
+target_link_libraries(${PROJECT_NAME} PRIVATE optimized Editor)
+target_link_libraries(${PROJECT_NAME} PRIVATE debug imgui_d)
+target_link_libraries(${PROJECT_NAME} PRIVATE optimized imgui)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE TK_WITH_EDITOR)
 target_compile_definitions(${PROJECT_NAME} PRIVATE TK_DLL_IMPORT)
