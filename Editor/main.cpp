@@ -349,6 +349,8 @@ namespace ToolKit
 
     void Exit()
     {
+      g_proxy->PreUninit();
+
       UI::UnInit();
       SafeDel(g_app);
 

@@ -155,13 +155,9 @@ namespace ToolKit
     m_initiated = true;
   }
 
-  void Main::PostInit()
-  {
-    if (m_pluginManager != nullptr)
-    {
-      m_pluginManager->Init();
-    }
-  }
+  void Main::PostInit() { m_pluginManager->Init(); }
+
+  void Main::PreUninit() { m_pluginManager->UnInit(); }
 
   void Main::Uninit()
   {
