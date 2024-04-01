@@ -339,6 +339,9 @@ namespace ToolKit
               POP_CPU_MARKER();
             };
             g_proxy->RegisterPostUpdateFunction(postUpdateFn);
+
+            // Post init the engine after editor is up.
+            g_proxy->PostInit();
           }
         }
       }

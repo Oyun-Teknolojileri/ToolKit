@@ -135,6 +135,14 @@ namespace ToolKit
   TK_API int CountChar(const String& str, const char chr);
 
   /**
+   * Removes the first occurrence of the specified substring "toRemove" from the given string "str".
+   * @param str The string from which the substring will be removed.
+   * @param toRemove The substring to be removed from "str".
+   * @return true if the substring was found and removed; otherwise, false.
+   */
+  TK_API bool RemoveString(String& str, const String& toRemove);
+
+  /**
    * Transform ascii chars to lower. Intended usage is extension comparison.
    */
   TK_API String ToLower(const String& str);

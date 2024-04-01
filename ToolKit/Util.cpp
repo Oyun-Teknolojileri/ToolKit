@@ -675,6 +675,18 @@ namespace ToolKit
     return cnt;
   }
 
+  bool RemoveString(String& str, const String& toRemove)
+  {
+    size_t pos = str.find(toRemove);
+    if (pos != String::npos)
+    {
+      str.erase(pos, toRemove.length());
+      return true;
+    }
+
+    return false;
+  }
+
   String ToLower(const String& str)
   {
     String lwr = str;

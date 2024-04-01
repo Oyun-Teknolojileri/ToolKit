@@ -140,7 +140,6 @@ namespace ToolKit
     m_logger->Log("Main Init");
 
     RHI::m_initialized = true;
-    m_pluginManager->Init();
     m_animationMan->Init();
     m_textureMan->Init();
     m_meshMan->Init();
@@ -154,6 +153,14 @@ namespace ToolKit
     m_timing.Init(m_engineSettings->Graphics.FPS);
 
     m_initiated = true;
+  }
+
+  void Main::PostInit()
+  {
+    if (m_pluginManager != nullptr)
+    {
+      m_pluginManager->Init();
+    }
   }
 
   void Main::Uninit()
@@ -499,6 +506,17 @@ namespace ToolKit
   String PrefabPath(const String& file, bool def) { return ProcessPath(file, "Prefabs", def); }
 
   String LayerPath(const String& file, bool def) { return ProcessPath(file, "Layers", def); }
+
+  TK_API String PluginPath(const String& file, bool def)
+  {
+    String path        = ConcatPaths({"Plugins", file, "Codes", "Bin"});
+    path               = ProcessPath(file, path, def);
+
+    String resourceStr = "Resources" + GetPathSeparatorAsStr();
+    RemoveString(path, resourceStr);
+
+    return path;
+  }
 
   void Timing::Init(uint fps)
   {
