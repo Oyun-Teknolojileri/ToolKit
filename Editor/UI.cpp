@@ -10,6 +10,7 @@
 #include "AndroidBuildWindow.h"
 #include "App.h"
 #include "EditorViewport2d.h"
+#include "PluginWindow.h"
 #include "PopupWindows.h"
 
 #include <Audio.h>
@@ -722,6 +723,7 @@ namespace ToolKit
       ShowPersistentWindow<SimulationWindow>(g_simulationWindowStr);
       ShowPersistentWindow<RenderSettingsWindow>(g_renderSettings);
       ShowPersistentWindow<StatsWindow>(g_statsView);
+      ShowPersistentWindow<PluginWindow>(g_pluginWindow);
 
       ImGui::Separator();
 

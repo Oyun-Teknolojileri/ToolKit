@@ -17,6 +17,7 @@
 #include "Grid.h"
 #include "Light.h"
 #include "OutlinerWindow.h"
+#include "PluginWindow.h"
 #include "PropInspectorWindow.h"
 #include "PublishManager.h"
 #include "RenderSettingsWindow.h"
@@ -116,6 +117,7 @@ namespace ToolKit
       PropInspectorWindowPtr GetPropInspector();
       RenderSettingsWindowPtr GetRenderSettingsWindow();
       StatsWindowPtr GetStatsWindow();
+      PluginWindowPtr GetPluginWindow();
 
       template <typename T>
       std::shared_ptr<T> GetWindow(const String& name)

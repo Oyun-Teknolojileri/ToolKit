@@ -1306,6 +1306,8 @@ namespace ToolKit
 
     StatsWindowPtr App::GetStatsWindow() { return GetWindow<StatsWindow>(g_statsView); }
 
+    PluginWindowPtr App::GetPluginWindow() { return GetWindow<PluginWindow>(g_pluginWindow); }
+
     void App::ReInitViewports()
     {
       EditorViewportRawPtrArray viewports;

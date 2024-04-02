@@ -40,6 +40,7 @@ namespace ToolKit
     const String g_statsView("Statistics");
     const String g_matInspector("Material Inspector");
     const String g_simulationWindowStr("Simulation");
+    const String g_pluginWindow("Plugins");
     const String g_memoStr("Mem");
     const String g_errorStr("Err");
     const String g_warningStr("Wrn");

@@ -94,4 +94,6 @@ namespace ToolKit
     void Load(const String& path);
   };
 
+  typedef std::vector<EngineSettings::PluginSettings::PluginDecleration> PluginDeclerationArray;
+
 } // namespace ToolKit
