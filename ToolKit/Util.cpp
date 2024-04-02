@@ -275,45 +275,16 @@ namespace ToolKit
 
   String NormalizePath(String path)
   {
-#ifndef _WIN32
-    UnixifyPath(path);
-#else
-    DosifyPath(path);
-#endif
+    if constexpr (TK_PLATFORM == PLATFORM::TKWindows)
+    {
+      DosifyPath(path);
+    }
+    else
+    {
+      UnixifyPath(path);
+    }
+
     return path;
-  }
-
-  int RunPipe(const String& command, RunPipeCallback afterFn)
-  {
-#ifdef _WIN32
-    FILE* fp = _popen(command.c_str(), "r");
-#else
-    FILE* fp = popen(command.c_str(), "r");
-#endif
-
-    if (fp == nullptr)
-    {
-      TK_ERR("pipe run failed! command: %s", command.c_str());
-      afterFn(1);
-      return 0;
-    }
-    char path[512] {};
-    while (fgets(path, sizeof(path), fp) != NULL)
-    {
-      TK_LOG("%s", path);
-    }
-
-#ifdef _WIN32
-    int res = _pclose(fp);
-#else
-    int res  = pclose(fp);
-#endif
-
-    if (afterFn)
-    {
-      afterFn(res);
-    }
-    return res;
   }
 
   void UnixifyPath(String& path) { ReplaceCharInPlace(path, '\\', '/'); }

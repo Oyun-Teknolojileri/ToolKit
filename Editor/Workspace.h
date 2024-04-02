@@ -35,10 +35,11 @@ namespace ToolKit
       bool SetDefaultWorkspace(const String& path);
 
       // Accessors to workspace
-      String GetCodePath() const;
-      String GetProjectConfigPath() const;
-      String GetPluginPath() const;
-      String GetResourceRoot() const;
+      String GetCodeDirectory() const;   //!< Returns absolute path to the projects' code files.
+      String GetConfigDirectory() const; //!< Returns absolute path to project's config files.
+      String GetBinPath() const;         //!< Returns absolute path to the compiled binary file for the project.
+      String GetPluginDirectory() const; //!< Returns absolute path to projects' plugin directory.
+      String GetResourceRoot() const;    //!< Returns absolute path to projects' Resources directory.
       String GetActiveWorkspace() const;
       Project GetActiveProject() const;
       void SetActiveProject(const Project& project);

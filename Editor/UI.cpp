@@ -763,6 +763,16 @@ namespace ToolKit
         inputWnd->AddToUI();
       }
 
+      if (ImGui::MenuItem("New Plugin"))
+      {
+        StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("NewPlugin", true);
+        inputWnd->m_inputVal          = "New Plugin";
+        inputWnd->m_inputLabel        = "Name";
+        inputWnd->m_hint              = "Plugin name";
+        inputWnd->m_taskFn            = [](const String& val) { g_app->OnNewPlugin(val); };
+        inputWnd->AddToUI();
+      }
+
       if (ImGui::BeginMenu("Open Project"))
       {
         for (const Project& project : g_app->m_workspace.m_projects)

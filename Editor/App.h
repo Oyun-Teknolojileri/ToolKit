@@ -49,6 +49,7 @@ namespace ToolKit
       void OnSaveAsScene();
       void OnQuit();
       void OnNewProject(const String& name);
+      void OnNewPlugin(const String& name);
       void SetGameMod(const GameMod mod);
       void CompilePlugin();
       void LoadProjectPlugin();

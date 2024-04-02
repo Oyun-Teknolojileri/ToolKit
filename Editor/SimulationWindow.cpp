@@ -230,21 +230,19 @@ namespace ToolKit
       // VS Code.
       if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_vsCodeIcon), btnSize))
       {
-        String codePath = g_app->m_workspace.GetCodePath();
+        String codePath = g_app->m_workspace.GetCodeDirectory();
         if (CheckFile(codePath))
         {
           String cmd = "code \"" + codePath + "\"";
           int result = g_app->ExecSysCommand(cmd, true, false);
           if (result != 0)
           {
-            g_app->GetConsole()->AddLog("Visual Studio Code can't be started. "
-                                        "Make sure it is installed.",
-                                        LogType::Error);
+            TK_ERR("Visual Studio Code can't be started. Make sure it is installed.", );
           }
         }
         else
         {
-          g_app->GetConsole()->AddLog("There is not a vaild code folder.", LogType::Error);
+          TK_ERR("There is not a vaild code folder.");
         }
       }
 
