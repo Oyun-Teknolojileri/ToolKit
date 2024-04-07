@@ -30,19 +30,8 @@ namespace ToolKit
       m_frameWorkers = new ThreadPool(glm::min(coreCount, 8u));
     }
 
-    Main::GetInstance()->RegisterPostUpdateFunction(
-        [this](float deltaTime) -> void
-        {
-          for (int i = 0; i < (int) m_mainThreadTasks.size(); i++)
-          {
-            m_mainTaskMutex.lock();
-            std::packaged_task<void()> task {std::move(m_mainThreadTasks.front())};
-            m_mainThreadTasks.pop();
-            m_mainTaskMutex.unlock();
-
-            task();
-          }
-        });
+    Main::GetInstance()->RegisterPostUpdateFunction([this](float deltaTime) -> void
+                                                    { ExecuteTasks(m_mainThreadTasks, m_mainTaskMutex); });
   }
 
   void WorkerManager::UnInit() { SafeDel(m_frameWorkers); }
@@ -55,6 +44,27 @@ namespace ToolKit
     default:
       return *m_frameWorkers;
       break;
+    }
+  }
+
+  void WorkerManager::Flush()
+  {
+    m_frameWorkers->pause();
+    m_frameWorkers->wait_for_tasks();
+
+    ExecuteTasks(m_mainThreadTasks, m_mainTaskMutex);
+  }
+
+  void WorkerManager::ExecuteTasks(TaskQueue& queue, std::mutex& mex)
+  {
+    for (int i = 0; i < (int) queue.size(); i++)
+    {
+      mex.lock();
+      std::packaged_task<void()> task {std::move(queue.front())};
+      m_mainThreadTasks.pop();
+      mex.unlock();
+
+      task();
     }
   }
 

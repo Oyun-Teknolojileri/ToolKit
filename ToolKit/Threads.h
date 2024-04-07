@@ -21,6 +21,8 @@ namespace ToolKit
 
   typedef std::function<void()> Task;
 
+  typedef std::queue<std::packaged_task<void()>> TaskQueue;
+
   /**
    * This is the class that keeps the thread pools and manages async tasks.
    */
@@ -45,6 +47,8 @@ namespace ToolKit
 
     ThreadPool& GetPool(Executor executor); //!< Returns the thread pool corresponding to the executor.
 
+    void Flush(); //!< Stops waiting tasks and complates ongoing tasks on all pools and threads.
+
     template <typename F, typename... A, typename R = std::invoke_result_t<std::decay_t<F>, std::decay_t<A>...>>
     std::future<R> AsyncTask(Executor exec, F&& func, A&&... args)
     {
@@ -66,13 +70,16 @@ namespace ToolKit
       return std::future<void>();
     };
 
+   private:
+    void ExecuteTasks(TaskQueue& queue, std::mutex& mex);
+
    public:
     ThreadPool* m_frameWorkers = nullptr; //!< Task that suppose to complete in a frame should be using this pool.
 
     /**
      * Tasks that will be executed at the main thread frame end is stored here.
      */
-    std::queue<std::packaged_task<void()>> m_mainThreadTasks;
+    TaskQueue m_mainThreadTasks;
 
    private:
     std::mutex m_mainTaskMutex; //!< Lock for main thread tasks.

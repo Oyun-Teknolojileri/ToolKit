@@ -705,7 +705,7 @@ namespace ToolKit
       GetUIManager()->ClearViewportsToUpdateLayers();
 
       m_perFrameDebugObjects.clear();
-      UI::m_postponedActions.clear();
+      GetWorkerManager()->Flush();
 
       ActionManager::GetInstance()->ClearAllActions();
 
@@ -1088,37 +1088,37 @@ namespace ToolKit
 
     void App::ManageDropfile(const StringView& fileName)
     {
-      UI::m_postponedActions.push_back(
-          [fileName]() -> void
-          {
-            const FolderWindowRawPtrArray& assetBrowsers = g_app->GetAssetBrowsers();
+      TKAsyncTask(WorkerManager::MainThread,
+                  [fileName]() -> void
+                  {
+                    const FolderWindowRawPtrArray& assetBrowsers = g_app->GetAssetBrowsers();
 
-            String log = "File isn't imported because it's not dropped into Asset Browser";
+                    String log = "File isn't imported because it's not dropped into Asset Browser";
 
-            for (FolderWindow* folderWindow : assetBrowsers)
-            {
-              if (folderWindow->MouseHovers())
-              {
-                FolderView* activeView = folderWindow->GetActiveView(true);
-                if (activeView == nullptr)
-                {
-                  log = "Activate a resource folder by selecting it from the Asset Browser.";
-                }
-                else
-                {
-                  UI::ImportData.ActiveView = activeView;
-                  UI::ImportData.Files.push_back(fileName.data());
-                  UI::ImportData.ShowImportWindow = true;
-                }
-              }
-            }
+                    for (FolderWindow* folderWindow : assetBrowsers)
+                    {
+                      if (folderWindow->MouseHovers())
+                      {
+                        FolderView* activeView = folderWindow->GetActiveView(true);
+                        if (activeView == nullptr)
+                        {
+                          log = "Activate a resource folder by selecting it from the Asset Browser.";
+                        }
+                        else
+                        {
+                          UI::ImportData.ActiveView = activeView;
+                          UI::ImportData.Files.push_back(fileName.data());
+                          UI::ImportData.ShowImportWindow = true;
+                        }
+                      }
+                    }
 
-            if (!UI::ImportData.ShowImportWindow)
-            {
-              g_app->m_statusMsg = "Drop discarded";
-              TK_WRN(log.c_str());
-            }
-          });
+                    if (!UI::ImportData.ShowImportWindow)
+                    {
+                      g_app->m_statusMsg = "Drop discarded";
+                      TK_WRN(log.c_str());
+                    }
+                  });
     }
 
     void App::OpenScene(const String& fullPath)

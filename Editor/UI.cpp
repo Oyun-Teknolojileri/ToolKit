@@ -41,8 +41,6 @@ namespace ToolKit
     UI::Blocker UI::BlockerData;
     UI::Import UI::ImportData;
     UI::SearchFile UI::SearchFileData;
-
-    std::vector<std::function<void()>> UI::m_postponedActions;
     WindowPtrArray UI::m_volatileWindows;
 
     // Icons
@@ -526,13 +524,6 @@ namespace ToolKit
 
       ImGui::UpdatePlatformWindows();
       ImGui::RenderPlatformWindowsDefault();
-
-      // UI deferred functions.
-      for (auto& action : m_postponedActions)
-      {
-        action();
-      }
-      m_postponedActions.clear();
     }
 
     void UI::ShowAppMainMenuBar()
@@ -729,7 +720,7 @@ namespace ToolKit
 
       if (ImGui::MenuItem("Reset Layout"))
       {
-        m_postponedActions.push_back([]() -> void { g_app->ResetUI(); });
+        TKAsyncTask(WorkerManager::MainThread, []() -> void { g_app->ResetUI(); });
       }
 
 #ifdef TK_DEBUG
