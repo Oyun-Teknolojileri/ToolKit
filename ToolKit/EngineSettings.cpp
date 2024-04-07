@@ -124,10 +124,7 @@ namespace ToolKit
       ReadAttr(node, "FPS", FPS);
       ReadAttr(node, "HDRPipeline", HDRPipeline);
       ReadAttr(node, "RenderResolutionScale", renderResolutionScale);
-
-      int renderSpec;
-      ReadAttr(node, "RenderSpec", renderSpec);
-      RenderSpec = (RenderingSpec) renderSpec;
+      ReadAttr(node, "RenderSpec", *(int*)&RenderSpec);
     }
   }
 
@@ -152,8 +149,11 @@ namespace ToolKit
       {
         if (reg.m_loaded)
         {
-          XmlNode* plugin = CreateXmlNode(doc, "Plugin", pluginNode);
-          WriteAttr(plugin, doc, "name", reg.m_name);
+          if (reg.m_plugin->GetType() != PluginType::Game)
+          {
+            XmlNode* plugin = CreateXmlNode(doc, "Plugin", pluginNode);
+            WriteAttr(plugin, doc, "name", reg.m_name);
+          }
         }
       }
     }

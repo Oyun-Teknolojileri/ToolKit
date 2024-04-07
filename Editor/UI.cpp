@@ -1396,7 +1396,7 @@ namespace ToolKit
 
     void UI::AddTooltipToLastItem(const char* tip)
     {
-      if (ImGui::IsItemHovered())
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
       {
         ImGui::SetItemTooltip(tip);
       }

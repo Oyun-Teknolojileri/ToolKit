@@ -366,6 +366,22 @@ namespace ToolKit
       }
     }
 
+    void TemplateUpdate(const String& file, const String& replaceSoruce, const String& replaceTarget)
+    {
+      std::fstream fileEditStream;
+      fileEditStream.open(file, std::ios::in);
+      if (fileEditStream.is_open())
+      {
+        std::stringstream buffer;
+        buffer << fileEditStream.rdbuf();
+        String content = buffer.str();
+        ReplaceFirstStringInPlace(content, replaceSoruce.data(), replaceTarget);
+        fileEditStream.close();
+
+        AlterTextContent(fileEditStream, file, content);
+      }
+    }
+
     // note: only copy template folder
     void App::OnNewProject(const String& name)
     {
@@ -391,45 +407,21 @@ namespace ToolKit
       String currentPath = std::filesystem::current_path().parent_path().u8string();
       String cmakePath   = ConcatPaths({fullPath, "Codes", "CMakeLists.txt"});
       UnixifyPath(cmakePath);
+      TemplateUpdate(cmakePath, "__projectname__", name);
 
-      std::fstream fileEditStream;
-      fileEditStream.open(cmakePath, std::ios::in);
-      if (fileEditStream.is_open())
-      {
-        std::stringstream buffer;
-        buffer << fileEditStream.rdbuf();
-        String content = buffer.str();
-        ReplaceFirstStringInPlace(content, "__projectname__", name);
-        fileEditStream.close();
-
-        AlterTextContent(fileEditStream, cmakePath, content);
-      }
-
-      // update vs code includes.
+      // update vscode includes.
       String cppPropertiesPath = ConcatPaths({fullPath, "Codes", ".vscode", "c_cpp_properties.json"});
       UnixifyPath(cppPropertiesPath);
 
-      fileEditStream.open(cppPropertiesPath, std::ios::in);
-      if (fileEditStream.is_open())
-      {
-        std::stringstream buffer;
-        buffer << fileEditStream.rdbuf();
-        String content = buffer.str();
+      String tkRoot = std::filesystem::absolute(currentPath).u8string();
+      UnixifyPath(tkRoot);
+      String tkPath = ConcatPaths({tkRoot, "ToolKit"});
+      UnixifyPath(tkPath);
+      String depPath = ConcatPaths({tkRoot, "Dependency"});
+      UnixifyPath(depPath);
 
-        String tkRoot  = std::filesystem::absolute(currentPath).u8string();
-        UnixifyPath(tkRoot);
-        String tkPath = ConcatPaths({tkRoot, "ToolKit"});
-        UnixifyPath(tkPath);
-        String depPath = ConcatPaths({tkRoot, "Dependency"});
-        UnixifyPath(depPath);
-
-        String replacement = "\"" + tkRoot + "\",\n" + "\t\t\t\t\"" + tkPath + "\",\n" + "\t\t\t\t\"" + depPath + "\"";
-
-        ReplaceFirstStringInPlace(content, "__tk_includes__", replacement);
-        fileEditStream.close();
-
-        AlterTextContent(fileEditStream, cppPropertiesPath, content);
-      }
+      String replacement = "\"" + tkRoot + "\",\n" + "\t\t\t\t\"" + tkPath + "\",\n" + "\t\t\t\t\"" + depPath + "\"";
+      TemplateUpdate(cppPropertiesPath, "__tk_includes__", replacement);
 
       OpenProject({name, ""});
     }
@@ -458,21 +450,18 @@ namespace ToolKit
       String currentPath = std::filesystem::current_path().parent_path().u8string();
       String cmakePath   = ConcatPaths({fullPath, "Codes", "CMakeLists.txt"});
       UnixifyPath(cmakePath);
+      TemplateUpdate(cmakePath, "__projectname__", name);
 
-      std::fstream fileEditStream;
-      fileEditStream.open(cmakePath, std::ios::in);
-      if (fileEditStream.is_open())
-      {
-        std::stringstream buffer;
-        buffer << fileEditStream.rdbuf();
-        String content = buffer.str();
-        ReplaceFirstStringInPlace(content, "__projectname__", name);
-        fileEditStream.close();
-
-        AlterTextContent(fileEditStream, cmakePath, content);
-      }
+      String pluginSettingsPath = ConcatPaths({fullPath, "Config", "Plugin.settings"});
+      UnixifyPath(pluginSettingsPath);
+      TemplateUpdate(pluginSettingsPath, "PluginTemplate", name);
 
       m_shellOpenDirFn(ConcatPaths({fullPath, "Codes"}));
+
+      if (PluginWindowPtr wnd = GetWindow<PluginWindow>(g_pluginWindow)) 
+      {
+        wnd->LoadPluginSettings();
+      }
     }
 
     void App::SetGameMod(const GameMod mod)

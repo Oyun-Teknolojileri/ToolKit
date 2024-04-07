@@ -28,7 +28,7 @@ namespace ToolKit
       PluginWindow();
 
       void Show() override;
-      void ParsePluginDeclerations();
+      void LoadPluginSettings();
 
      private:
       std::vector<PluginSettings> m_plugins;

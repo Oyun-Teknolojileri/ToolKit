@@ -24,7 +24,7 @@ namespace ToolKit
     PluginWindow::PluginWindow()
     {
       m_name = g_pluginWindow;
-      ParsePluginDeclerations();
+      LoadPluginSettings();
     }
 
     void PluginWindow::Show()
@@ -34,7 +34,7 @@ namespace ToolKit
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         if (ImGui::BeginTable("table1",
-                              4,
+                              5,
                               ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInnerH |
                                   ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_BordersOuterH |
                                   ImGuiTableFlags_BordersOuterV,
@@ -44,13 +44,17 @@ namespace ToolKit
           ImGui::TableSetupColumn("Brief", ImGuiTableColumnFlags_None, 0);
           ImGui::TableSetupColumn("Load", ImGuiTableColumnFlags_None, 0);
           ImGui::TableSetupColumn("Compile", ImGuiTableColumnFlags_None, 0);
+          ImGui::TableSetupColumn("Folder", ImGuiTableColumnFlags_None, 0);
           ImGui::TableHeadersRow();
           ImGui::TableNextRow(0, 0);
           ImGui::TableSetColumnIndex(0);
 
+          Vec2 btnSize   = Vec2(20.0f);
           int imPluginId = 0;
           for (PluginSettings& plugin : m_plugins)
           {
+            ImGui::PushID(imPluginId++);
+
             ImGui::TableNextRow();
 
             ImGui::TableSetColumnIndex(0);
@@ -65,8 +69,6 @@ namespace ToolKit
 
             ImGui::TableSetColumnIndex(2);
             ImGui::AlignTextToFramePadding();
-
-            ImGui::PushID(imPluginId++);
 
             PluginManager* plugMan = GetPluginManager();
             String fullPath        = plugin.file + GetPluginExtention();
@@ -84,23 +86,32 @@ namespace ToolKit
                 plugMan->Load(plugin.file);
               }
             }
-            UI::HelpMarker(TKLoc,
-                           "Loads or unloads the plugin.\n"
-                           "State is stored in engine settings and preserved on next editor run.\n"
-                           "This may cause crash, save the work before.");
-            ImGui::PopID();
+            UI::AddTooltipToLastItem("Loads or unloads the plugin.\n"
+                                     "State is stored in engine settings and preserved on next editor run.\n"
+                                     "This may cause crash, save the work before.");
 
             ImGui::TableSetColumnIndex(3);
             ImGui::AlignTextToFramePadding();
-            if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_buildIcn), Vec2(20.0f)))
+            if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_buildIcn), btnSize))
             {
               String pluginDir = g_app->m_workspace.GetPluginDirectory();
               String buildBat  = ConcatPaths({pluginDir, plugin.name, "Codes"});
               g_app->CompilePlugin(buildBat);
             }
-            UI::HelpMarker(TKLoc,
-                           "If a change is detected, compiles and reloads the plugin.\n"
-                           "This may cause crash, save the work before.");
+            UI::AddTooltipToLastItem("If a change is detected, compiles and reloads the plugin.\n"
+                                     "This may cause crash, save the work before.");
+
+            ImGui::TableSetColumnIndex(4);
+            ImGui::AlignTextToFramePadding();
+            if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_folderIcon), btnSize))
+            {
+              String pluginDir = g_app->m_workspace.GetPluginDirectory();
+              String dir       = ConcatPaths({pluginDir, plugin.name, "Codes"});
+              g_app->m_shellOpenDirFn(dir);
+            }
+            UI::AddTooltipToLastItem("Show plugin folder in file explorerer.");
+
+            ImGui::PopID();
           }
         }
 
@@ -109,7 +120,7 @@ namespace ToolKit
       ImGui::End();
     }
 
-    void PluginWindow::ParsePluginDeclerations()
+    void PluginWindow::LoadPluginSettings()
     {
       m_plugins.clear();
       String plugDir = g_app->m_workspace.GetPluginDirectory();
