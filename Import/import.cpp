@@ -5,12 +5,6 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#define GLM_FORCE_QUAT_DATA_XYZW
-#define GLM_FORCE_XYZW_ONLY
-#define GLM_FORCE_CTOR_INIT
-#define GLM_ENABLE_EXPERIMENTAL
-#define GLM_FORCE_ALIGNED_GENTYPES
-#define GLM_FORCE_INTRINSICS
 
 #include <Animation.h>
 #include <DirectionComponent.h>
@@ -22,6 +16,7 @@
 #include <TKImage.h>
 #include <Texture.h>
 #include <ToolKit.h>
+#include <Types.h>
 #include <Util.h>
 #include <assert.h>
 #include <assimp/DefaultLogger.hpp>
@@ -29,10 +24,6 @@
 #include <assimp/pbrmaterial.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include <glm/ext.hpp>
-#include <glm/glm.hpp>
-#include <rapidxml.hpp>
-#include <rapidxml_ext.h>
 
 #include <algorithm>
 #include <filesystem>
@@ -155,7 +146,8 @@ namespace ToolKit
     transform.Decompose(aiS, aiR, aiT);
 
     *t = Vec3(aiT.x, aiT.y, aiT.z);
-    *r = Quaternion(aiR.x, aiR.y, aiR.z, aiR.w);
+    // TODO GLM QUAT_XYZW is broken. Update and check glm.
+    *r = Quaternion(aiR.w, aiR.x, aiR.y, aiR.z);
     *s = Vec3(aiS.x, aiS.y, aiS.z);
   }
 
@@ -464,7 +456,8 @@ namespace ToolKit
           Key tKey;
           tKey.m_frame    = frame;
           tKey.m_position = Vec3(t.x, t.y, t.z);
-          tKey.m_rotation = Quaternion(r.x, r.y, r.z, r.w);
+          // TODO GLM QUAT_XYZW is broken. Update and check glm.
+          tKey.m_rotation = Quaternion(r.w, r.x, r.y, r.z);
           tKey.m_scale    = Vec3(s.x, s.y, s.z);
           keys.push_back(tKey);
         }
@@ -910,7 +903,10 @@ namespace ToolKit
     {
       ntt = MakeNewPtr<Entity>();
     }
+
     ntt->m_node->m_inheritScale = true;
+    ntt->SetNameVal(node->mName.C_Str());
+
     Vec3 t, s;
     Quaternion rt;
     DecomposeAssimpMatrix(node->mTransformation, &t, &rt, &s);
@@ -919,6 +915,10 @@ namespace ToolKit
     {
       parent->m_node->AddChild(ntt->m_node);
     }
+
+    ntt->m_node->Translate(t, TransformationSpace::TS_LOCAL);
+    ntt->m_node->Rotate(rt, TransformationSpace::TS_LOCAL);
+    ntt->m_node->Scale(s);
 
     for (uint meshIndx = 0; meshIndx < node->mNumMeshes; meshIndx++)
     {
@@ -933,7 +933,7 @@ namespace ToolKit
       if (meshComp == nullptr)
       {
         firstMesh = true;
-        meshComp = ntt->AddComponent<MeshComponent>();
+        meshComp  = ntt->AddComponent<MeshComponent>();
       }
 
       if (aMesh->HasBones())
@@ -970,9 +970,6 @@ namespace ToolKit
       TraverseScene(tScene, node->mChildren[childIndx], ntt);
     }
 
-    ntt->m_node->Translate(t);
-    ntt->m_node->Rotate(rt);
-    ntt->m_node->Scale(s);
     tScene->AddEntity(ntt);
   }
 
