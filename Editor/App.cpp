@@ -602,11 +602,18 @@ namespace ToolKit
                                        String plugDir  = path.substr(0, path.find("Codes") - 1);
                                        String name     = plugDir.substr(plugDir.find_last_of(GetPathSeparator()) + 1);
                                        String fullPath = ConcatPaths({path, "Bin", name});
-
+                                       String binFile  = fullPath + GetPluginExtention();
                                        if (PluginManager* plugMan = GetPluginManager())
                                        {
-                                         PluginRegister* reg           = plugMan->Load(fullPath);
-                                         reg->m_plugin->m_currentState = PluginState::Running;
+                                         if (fullPath.find("Plugins") != String::npos) // Deal with plugins
+                                         {
+                                           PluginRegister* reg           = plugMan->Load(fullPath);
+                                           reg->m_plugin->m_currentState = PluginState::Running;
+                                         }
+                                         else // or game.
+                                         {
+                                           LoadGamePlugin();
+                                         }
                                        }
                                      });
                        }
