@@ -86,8 +86,23 @@ namespace ToolKit
     Main(const Main&)           = delete;
     void operator=(const Main&) = delete;
 
-    virtual void PreInit();    //!< Creates all the managers and systems for the engine.
-    virtual void Init();       //!< Initialize all the managers and systems. Engine fully functions at this point.
+    virtual void PreInit(); //!< Creates all the managers and systems for the engine.
+    virtual void Init();    //!< Initialize all the managers and systems. Engine fully functions at this point.
+
+    /**
+     * Systems that requires engine will be initialized at this stage.
+     * Expected run time order is:
+     * Main::PreInit, Main::Init, App::Init, Main::PostInit
+     */
+    virtual void PostInit();
+
+    /**
+     * Systems that requires engine and the application will be uninitialized at this stage.
+     * Expected run time order is:
+     * Main::PreUninit, App::Uninit, Main::Uninit, Main::PostUninit.
+     */
+    virtual void PreUninit();
+
     virtual void Uninit();     //!< Uninitialize all the managers and systems.
     virtual void PostUninit(); //!< Destroy all the engine allocated resources. Nothing is accessible from this on.
 
@@ -240,5 +255,7 @@ namespace ToolKit
   TK_API String ScenePath(const String& file, bool def = false);
   TK_API String PrefabPath(const String& file, bool def = false);
   TK_API String LayerPath(const String& file, bool def = false);
+  TK_API String PluginPath(const String& file, bool def = false);
+  TK_API String PluginConfigPath(const String& file, bool def = false);
 
 } // namespace ToolKit

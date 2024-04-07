@@ -101,14 +101,14 @@ namespace ToolKit
       return false;
     }
 
-    String Workspace::GetCodePath() const
+    String Workspace::GetCodeDirectory() const
     {
       String codePath = ConcatPaths({GetActiveWorkspace(), m_activeProject.name, "Codes"});
 
       return codePath;
     }
 
-    String Workspace::GetProjectConfigPath() const
+    String Workspace::GetConfigDirectory() const
     {
       if (m_activeProject.name.empty())
       {
@@ -118,12 +118,17 @@ namespace ToolKit
       return ConcatPaths({m_activeWorkspace, m_activeProject.name, "Config"});
     }
 
-    String Workspace::GetPluginPath() const
+    String Workspace::GetBinPath() const
     {
-      String codePath   = GetCodePath();
+      String codePath   = GetCodeDirectory();
       String pluginPath = ConcatPaths({codePath, "Bin", m_activeProject.name});
 
       return pluginPath;
+    }
+
+    String Workspace::GetPluginDirectory() const
+    {
+      return ConcatPaths({m_activeWorkspace, m_activeProject.name, "Plugins"});
     }
 
     String Workspace::GetResourceRoot() const
@@ -246,13 +251,13 @@ namespace ToolKit
 
     void Workspace::SerializeEngineSettings() const
     {
-      String path = ConcatPaths({GetProjectConfigPath(), "Engine.settings"});
+      String path = ConcatPaths({GetConfigDirectory(), "Engine.settings"});
       GetEngineSettings().Save(path);
     }
 
     void Workspace::DeSerializeEngineSettings()
     {
-      String settingsFile = ConcatPaths({GetProjectConfigPath(), "Engine.settings"});
+      String settingsFile = ConcatPaths({GetConfigDirectory(), "Engine.settings"});
 
       // search for project/Engine.settings file,
       // if its not exist pull default Engine.settings file from appdata

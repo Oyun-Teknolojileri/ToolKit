@@ -17,6 +17,7 @@
 #include "Grid.h"
 #include "Light.h"
 #include "OutlinerWindow.h"
+#include "PluginWindow.h"
 #include "PropInspectorWindow.h"
 #include "PublishManager.h"
 #include "RenderSettingsWindow.h"
@@ -49,9 +50,10 @@ namespace ToolKit
       void OnSaveAsScene();
       void OnQuit();
       void OnNewProject(const String& name);
+      void OnNewPlugin(const String& name);
       void SetGameMod(const GameMod mod);
-      void CompilePlugin();
-      void LoadProjectPlugin();
+      void CompilePlugin(const String& path); // Calls the bat file to compile target.
+      void LoadGamePlugin();
       bool IsCompiling();
       EditorScenePtr GetCurrentScene();
       void SetCurrentScene(const EditorScenePtr& scene);
@@ -115,6 +117,7 @@ namespace ToolKit
       PropInspectorWindowPtr GetPropInspector();
       RenderSettingsWindowPtr GetRenderSettingsWindow();
       StatsWindowPtr GetStatsWindow();
+      PluginWindowPtr GetPluginWindow();
 
       template <typename T>
       std::shared_ptr<T> GetWindow(const String& name)
@@ -269,9 +272,8 @@ namespace ToolKit
       // Internal states.
       bool m_onQuit = false;
       String m_newSceneName;
-      float m_deltaTime   = 0.0f;
-      bool m_isCompiling  = false;
-      bool m_reloadPlugin = false;
+      float m_deltaTime  = 0.0f;
+      bool m_isCompiling = false;
     };
 
   } // namespace Editor

@@ -557,7 +557,7 @@ namespace ToolKit
 
     if (!m_isPrefab)
     {
-      m_postProcessSettings.Serialize(doc, nullptr);
+      m_postProcessSettings.Serialize(doc, scene);
     }
 
     return scene;

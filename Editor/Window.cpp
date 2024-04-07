@@ -57,9 +57,7 @@ namespace ToolKit
       if (g_app != nullptr)
       {
         Object* self = this;
-        UI::m_postponedActions.push_back(
-            [self]() -> void
-            { erase_if(UI::m_volatileWindows, [self](WindowPtr wnd) -> bool { return wnd->IsSame(self); }); });
+        erase_if(UI::m_volatileWindows, [self](WindowPtr wnd) -> bool { return wnd->IsSame(self); });
       }
     }
 

@@ -7,6 +7,7 @@
 
 #include "PluginManager.h"
 
+#include "EngineSettings.h"
 #include "Logger.h"
 #include "ObjectFactory.h"
 #include "ToolKit.h"
@@ -17,14 +18,14 @@
 namespace ToolKit
 {
 
-  bool PluginManager::Load(const String& file)
+  PluginRegister* PluginManager::Load(const String& file)
   {
     String fullPath = file + m_pluginExtention;
 
     if (!CheckSystemFile(fullPath))
     {
       TK_ERR("Can not find plugin file %s", fullPath.c_str());
-      return false;
+      return nullptr;
     }
 
     // Check if the dll is changed.
@@ -44,7 +45,7 @@ namespace ToolKit
       if (reg->m_loaded && reg->m_plugin)
       {
         TK_LOG("Plugin has already loaded.");
-        return true;
+        return reg;
       }
     }
 
@@ -69,8 +70,13 @@ namespace ToolKit
         reg.m_file          = fullPath;
         reg.m_lastWriteTime = GetCreationTime(fullPath);
 
+        UnixifyPath(fullPath);
+        size_t beg = fullPath.find_last_of("/") + 1;
+        size_t end = fullPath.find(m_pluginExtention);
+        reg.m_name = fullPath.substr(beg, end - beg);
+
         m_storage.push_back(reg);
-        return true;
+        return &m_storage.back();
       }
       else
       {
@@ -82,7 +88,7 @@ namespace ToolKit
       TK_ERR("Can not load the plugin.");
     }
 
-    return false;
+    return nullptr;
   }
 
   void PluginManager::UnInit()
@@ -216,7 +222,33 @@ namespace ToolKit
     return nullptr;
   }
 
-  void PluginManager::Init() {}
+  void PluginManager::Init()
+  {
+    const EngineSettings& settings = GetEngineSettings();
+    for (const String& plugin : settings.LoadedPlugins)
+    {
+      String file = PluginConfigPath(plugin);
+
+      PluginSettings pluginSet;
+      pluginSet.Load(file);
+
+      if (pluginSet.engine == TKVersionStr)
+      {
+        file = PluginPath(plugin);
+        if (PluginRegister* reg = Load(file))
+        {
+          reg->m_plugin->m_currentState = PluginState::Running;
+        }
+      }
+      else
+      {
+        TK_WRN("Plugin %s can't be loaded because its engine version %s mismatches with current engine version %s",
+               pluginSet.name.c_str(),
+               pluginSet.engine.c_str(),
+               TKVersionStr);
+      }
+    }
+  }
 
   PluginRegister* PluginManager::GetRegister(const String& file, int* indx)
   {
@@ -236,14 +268,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  PluginManager::PluginManager()
-  {
-#ifdef TK_DEBUG
-    m_pluginExtention = "_d.dll";
-#else
-    m_pluginExtention = ".dll";
-#endif
-  }
+  PluginManager::PluginManager() { m_pluginExtention = GetPluginExtention(); }
 
   PluginManager::~PluginManager() {}
 

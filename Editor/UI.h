@@ -120,9 +120,6 @@ namespace ToolKit
         StringArray searchPaths;
       } SearchFileData;
 
-      // Some actions needed to be run after ui rendered.
-      static std::vector<std::function<void()>> m_postponedActions;
-
       // Toolbar Icons.
       static TexturePtr m_selectIcn;
       static TexturePtr m_cursorIcn;

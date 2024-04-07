@@ -81,7 +81,7 @@ namespace ToolKit
   }
 
   template <typename T>
-  T ReadVal(XmlNode* node, const String& name)
+  T ReadVal(XmlNode* node, const String& name, T defaultVal)
   {
     if (XmlAttribute* attr = node->first_attribute(name.c_str()))
     {
@@ -102,27 +102,22 @@ namespace ToolKit
       }
     }
 
-    if constexpr (std::is_same_v<T, bool>)
-    {
-      return 1;
-    }
-
-    return 0;
+    return defaultVal;
   }
 
-  void ReadAttr(XmlNode* node, const String& name, bool& val) { val = ReadVal<bool>(node, name); }
+  void ReadAttr(XmlNode* node, const String& name, bool& val) { val = ReadVal<bool>(node, name, val); }
 
-  void ReadAttr(XmlNode* node, const String& name, float& val) { val = ReadVal<float>(node, name); }
+  void ReadAttr(XmlNode* node, const String& name, float& val) { val = ReadVal<float>(node, name, val); }
 
-  void ReadAttr(XmlNode* node, const String& name, int& val) { val = ReadVal<int>(node, name); }
+  void ReadAttr(XmlNode* node, const String& name, int& val) { val = ReadVal<int>(node, name, val); }
 
-  void ReadAttr(XmlNode* node, const String& name, uint& val) { val = ReadVal<uint>(node, name); }
+  void ReadAttr(XmlNode* node, const String& name, uint& val) { val = ReadVal<uint>(node, name, val); }
 
-  void ReadAttr(XmlNode* node, const String& name, ULongID& val) { val = ReadVal<ULongID>(node, name); }
+  void ReadAttr(XmlNode* node, const String& name, ULongID& val) { val = ReadVal<ULongID>(node, name, val); }
 
-  void ReadAttr(XmlNode* node, const String& name, byte& val) { val = ReadVal<byte>(node, name); }
+  void ReadAttr(XmlNode* node, const String& name, byte& val) { val = ReadVal<byte>(node, name, val); }
 
-  void ReadAttr(XmlNode* node, const String& name, ubyte& val) { val = ReadVal<ubyte>(node, name); }
+  void ReadAttr(XmlNode* node, const String& name, ubyte& val) { val = ReadVal<ubyte>(node, name, val); }
 
   void ReadAttr(XmlNode* node, const String& name, String& val, StringView defaultVal)
   {
@@ -280,45 +275,16 @@ namespace ToolKit
 
   String NormalizePath(String path)
   {
-#ifndef _WIN32
-    UnixifyPath(path);
-#else
-    DosifyPath(path);
-#endif
+    if constexpr (TK_PLATFORM == PLATFORM::TKWindows)
+    {
+      DosifyPath(path);
+    }
+    else
+    {
+      UnixifyPath(path);
+    }
+
     return path;
-  }
-
-  int RunPipe(const String& command, RunPipeCallback afterFn)
-  {
-#ifdef _WIN32
-    FILE* fp = _popen(command.c_str(), "r");
-#else
-    FILE* fp = popen(command.c_str(), "r");
-#endif
-
-    if (fp == nullptr)
-    {
-      TK_ERR("pipe run failed! command: %s", command.c_str());
-      afterFn(1);
-      return 0;
-    }
-    char path[512] {};
-    while (fgets(path, sizeof(path), fp) != NULL)
-    {
-      TK_LOG("%s", path);
-    }
-
-#ifdef _WIN32
-    int res = _pclose(fp);
-#else
-    int res  = pclose(fp);
-#endif
-
-    if (afterFn)
-    {
-      afterFn(res);
-    }
-    return res;
   }
 
   void UnixifyPath(String& path) { ReplaceCharInPlace(path, '\\', '/'); }
@@ -593,6 +559,15 @@ namespace ToolKit
 
   bool IsLayer(const String& file) { return file.find(ToLower(LAYER)) != String::npos; }
 
+  String GetPluginExtention()
+  {
+#ifdef TK_DEBUG
+    return "_d.dll";
+#else
+    return = ".dll";
+#endif
+  }
+
   // split a string into multiple sub strings, based on a separator string
   // for example, if separator="::",
   // s = "abc::def xy::st:" -> "abc", "def xy" and "st:",
@@ -678,6 +653,18 @@ namespace ToolKit
     }
 
     return cnt;
+  }
+
+  bool RemoveString(String& str, const String& toRemove)
+  {
+    size_t pos = str.find(toRemove);
+    if (pos != String::npos)
+    {
+      str.erase(pos, toRemove.length());
+      return true;
+    }
+
+    return false;
   }
 
   String ToLower(const String& str)

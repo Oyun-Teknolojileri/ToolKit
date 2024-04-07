@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "EditorTypes.h"
+
 #include <Object.h>
 #include <Types.h>
 
@@ -15,7 +17,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    class Window : public Object
+    class TK_EDITOR_API Window : public Object
     {
      public:
       TKDeclareClass(Window, Object);

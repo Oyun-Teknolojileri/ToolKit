@@ -140,7 +140,8 @@ namespace ToolKit
     m_logger->Log("Main Init");
 
     RHI::m_initialized = true;
-    m_pluginManager->Init();
+
+    m_workerManager->Init();
     m_animationMan->Init();
     m_textureMan->Init();
     m_meshMan->Init();
@@ -155,6 +156,10 @@ namespace ToolKit
 
     m_initiated = true;
   }
+
+  void Main::PostInit() { m_pluginManager->Init(); }
+
+  void Main::PreUninit() { m_pluginManager->UnInit(); }
 
   void Main::Uninit()
   {
@@ -499,6 +504,28 @@ namespace ToolKit
   String PrefabPath(const String& file, bool def) { return ProcessPath(file, "Prefabs", def); }
 
   String LayerPath(const String& file, bool def) { return ProcessPath(file, "Layers", def); }
+
+  TK_API String PluginPath(const String& file, bool def)
+  {
+    String path        = ConcatPaths({"Plugins", file, "Codes", "Bin"});
+    path               = ProcessPath(file, path, def);
+
+    String resourceStr = "Resources" + GetPathSeparatorAsStr();
+    RemoveString(path, resourceStr);
+
+    return path;
+  }
+
+  TK_API String PluginConfigPath(const String& file, bool def)
+  {
+    String path        = ConcatPaths({"Plugins", file, "Config"});
+    path               = ProcessPath("Plugin.settings", path, def);
+
+    String resourceStr = "Resources" + GetPathSeparatorAsStr();
+    RemoveString(path, resourceStr);
+
+    return path;
+  }
 
   void Timing::Init(uint fps)
   {

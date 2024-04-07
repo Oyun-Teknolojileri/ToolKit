@@ -235,11 +235,6 @@ namespace ToolKit
       POP_CPU_MARKER();
 
       m_totalFrameCount = GetRenderSystem()->GetFrameCount();
-
-      if (m_reloadPlugin)
-      {
-        LoadProjectPlugin();
-      }
     }
 
     void App::OnResize(uint width, uint height)
@@ -356,81 +351,112 @@ namespace ToolKit
       }
     }
 
+    void AlterTextContent(std::fstream& fileEditStream, const String& filePath, const String content)
+    {
+      fileEditStream.open(filePath, std::ios::out | std::ios::trunc);
+      if (fileEditStream.is_open())
+      {
+        fileEditStream << content;
+        fileEditStream.close();
+      }
+    }
+
+    void TemplateUpdate(const String& file, const String& replaceSoruce, const String& replaceTarget)
+    {
+      std::fstream fileEditStream;
+      fileEditStream.open(file, std::ios::in);
+      if (fileEditStream.is_open())
+      {
+        std::stringstream buffer;
+        buffer << fileEditStream.rdbuf();
+        String content = buffer.str();
+        ReplaceFirstStringInPlace(content, replaceSoruce.data(), replaceTarget);
+        fileEditStream.close();
+
+        AlterTextContent(fileEditStream, file, content);
+      }
+    }
+
     // note: only copy template folder
     void App::OnNewProject(const String& name)
     {
       if (m_workspace.GetActiveWorkspace().empty())
       {
-        GetConsole()->AddLog("No workspace. Project can't be created.", LogType::Error);
+        TK_ERR("No workspace. Project can't be created.");
         return;
       }
 
       String fullPath = ConcatPaths({m_workspace.GetActiveWorkspace(), name});
       if (CheckFile(fullPath))
       {
-        GetConsole()->AddLog("Project already exist.", LogType::Error);
+        TK_ERR("Project already exist.");
         return;
       }
 
       // copy template folder to new workspace
-      RecursiveCopyDirectory(ConcatPaths({"..", "Template"}), fullPath, {".filters", ".vcxproj", ".user", ".cxx"});
+      RecursiveCopyDirectory(ConcatPaths({"..", "Templates", "Game"}),
+                             fullPath,
+                             {".filters", ".vcxproj", ".user", ".cxx"});
 
       // Update cmake.
       String currentPath = std::filesystem::current_path().parent_path().u8string();
       String cmakePath   = ConcatPaths({fullPath, "Codes", "CMakeLists.txt"});
       UnixifyPath(cmakePath);
+      TemplateUpdate(cmakePath, "__projectname__", name);
 
-      std::fstream fileEditStream;
-      auto overrideContentFn = [&fileEditStream](const String& filePath, const String& content) -> void
-      {
-        // Override the content.
-        fileEditStream.open(filePath, std::ios::out | std::ios::trunc);
-        if (fileEditStream.is_open())
-        {
-          fileEditStream << content;
-          fileEditStream.close();
-        }
-      };
-
-      fileEditStream.open(cmakePath, std::ios::in);
-      if (fileEditStream.is_open())
-      {
-        std::stringstream buffer;
-        buffer << fileEditStream.rdbuf();
-        String content = buffer.str();
-        ReplaceFirstStringInPlace(content, "__projectname__", name);
-        fileEditStream.close();
-
-        overrideContentFn(cmakePath, content);
-      }
-
-      // update vs code includes.
+      // update vscode includes.
       String cppPropertiesPath = ConcatPaths({fullPath, "Codes", ".vscode", "c_cpp_properties.json"});
       UnixifyPath(cppPropertiesPath);
 
-      fileEditStream.open(cppPropertiesPath, std::ios::in);
-      if (fileEditStream.is_open())
-      {
-        std::stringstream buffer;
-        buffer << fileEditStream.rdbuf();
-        String content = buffer.str();
+      String tkRoot = std::filesystem::absolute(currentPath).u8string();
+      UnixifyPath(tkRoot);
+      String tkPath = ConcatPaths({tkRoot, "ToolKit"});
+      UnixifyPath(tkPath);
+      String depPath = ConcatPaths({tkRoot, "Dependency"});
+      UnixifyPath(depPath);
 
-        String tkRoot  = std::filesystem::absolute(currentPath).u8string();
-        UnixifyPath(tkRoot);
-        String tkPath = ConcatPaths({tkRoot, "ToolKit"});
-        UnixifyPath(tkPath);
-        String depPath = ConcatPaths({tkRoot, "Dependency"});
-        UnixifyPath(depPath);
-
-        String replacement = "\"" + tkRoot + "\",\n" + "\t\t\t\t\"" + tkPath + "\",\n" + "\t\t\t\t\"" + depPath + "\"";
-
-        ReplaceFirstStringInPlace(content, "__tk_includes__", replacement);
-        fileEditStream.close();
-
-        overrideContentFn(cppPropertiesPath, content);
-      }
+      String replacement = "\"" + tkRoot + "\",\n" + "\t\t\t\t\"" + tkPath + "\",\n" + "\t\t\t\t\"" + depPath + "\"";
+      TemplateUpdate(cppPropertiesPath, "__tk_includes__", replacement);
 
       OpenProject({name, ""});
+    }
+
+    void App::OnNewPlugin(const String& name)
+    {
+      if (m_workspace.GetActiveWorkspace().empty())
+      {
+        TK_ERR("No project. There must be an open project to create plugin for.");
+        return;
+      }
+
+      String fullPath = ConcatPaths({m_workspace.GetPluginDirectory(), name});
+      if (CheckSystemFile(fullPath))
+      {
+        TK_ERR("A plugin with the same name already exist in the project.");
+        return;
+      }
+
+      // Copy template folder to new project.
+      RecursiveCopyDirectory(ConcatPaths({"..", "Templates", "Plugin"}),
+                             fullPath,
+                             {".filters", ".vcxproj", ".user", ".cxx"});
+
+      // Update cmake.
+      String currentPath = std::filesystem::current_path().parent_path().u8string();
+      String cmakePath   = ConcatPaths({fullPath, "Codes", "CMakeLists.txt"});
+      UnixifyPath(cmakePath);
+      TemplateUpdate(cmakePath, "__projectname__", name);
+
+      String pluginSettingsPath = ConcatPaths({fullPath, "Config", "Plugin.settings"});
+      UnixifyPath(pluginSettingsPath);
+      TemplateUpdate(pluginSettingsPath, "PluginTemplate", name);
+
+      m_shellOpenDirFn(ConcatPaths({fullPath, "Codes"}));
+
+      if (PluginWindowPtr wnd = GetWindow<PluginWindow>(g_pluginWindow))
+      {
+        wnd->LoadPluginSettings();
+      }
     }
 
     void App::SetGameMod(const GameMod mod)
@@ -523,10 +549,9 @@ namespace ToolKit
 
     bool App::IsCompiling() { return m_isCompiling; }
 
-    void App::CompilePlugin()
+    void App::CompilePlugin(const String& path)
     {
-      String codePath = m_workspace.GetCodePath();
-      String buildDir = ConcatPaths({codePath, "build"});
+      String buildDir = ConcatPaths({path, "build"});
 
       // create a build dir if not exist.
       std::filesystem::create_directories(buildDir);
@@ -538,51 +563,65 @@ namespace ToolKit
       static const StringView buildConfig = "RelWithDebInfo";
 #endif
 
-      String cmd    = "cmake -S " + codePath + " -B " + buildDir + " -DCMAKE_BUILD_TYPE=" + buildConfig.data();
+      String cmd    = "call " + ConcatPaths({path, "Build.bat "}) + "\"" + buildConfig.data() + "\"";
       m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
       m_isCompiling = true;
 
-      std::thread pipeThread(RunPipe,
-                             cmd,
-                             [this, buildDir](int res) -> void
-                             {
-                               String cmd = "cmake --build " + buildDir + " --config " + buildConfig.data();
-                               std::thread pip(RunPipe,
-                                               cmd,
-                                               [=](int res) -> void
-                                               {
-                                                 if (res)
-                                                 {
-                                                   m_statusMsg = "Compile Failed.";
+      ExecSysCommand(cmd,
+                     true,
+                     true,
+                     [=](int res) -> void
+                     {
+                       if (res)
+                       {
+                         m_statusMsg = "Compile Failed.";
 
-                                                   String detail;
-                                                   if (res == 1)
-                                                   {
-                                                     detail = "CMake Build Failed.";
-                                                   }
+                         String detail;
+                         if (res == 1)
+                         {
+                           detail = "CMake Build Failed.";
+                         }
 
-                                                   if (res == -1)
-                                                   {
-                                                     detail = "CMake Generate Failed.";
-                                                   }
+                         if (res == -1)
+                         {
+                           detail = "CMake Generate Failed.";
+                         }
 
-                                                   TK_ERR("%s %s", m_statusMsg.c_str(), detail.c_str());
-                                                 }
-                                                 else
-                                                 {
-                                                   m_statusMsg = "Compiled.";
-                                                   TK_LOG("%s", m_statusMsg.c_str());
-                                                 }
-                                                 m_isCompiling  = false;
-                                                 m_reloadPlugin = true;
-                                               });
-                               pip.detach();
-                             });
+                         TK_ERR("%s %s", m_statusMsg.c_str(), detail.c_str());
+                       }
+                       else
+                       {
+                         m_statusMsg = "Compiled.";
+                         TK_LOG("%s", m_statusMsg.c_str());
 
-      pipeThread.detach();
+                         // Reload at the end of frame.
+                         TKAsyncTask(WorkerManager::MainThread,
+                                     [=]() -> void
+                                     {
+                                       // Extract the plugin name.
+                                       String plugDir  = path.substr(0, path.find("Codes") - 1);
+                                       String name     = plugDir.substr(plugDir.find_last_of(GetPathSeparator()) + 1);
+                                       String fullPath = ConcatPaths({path, "Bin", name});
+                                       String binFile  = fullPath + GetPluginExtention();
+                                       if (PluginManager* plugMan = GetPluginManager())
+                                       {
+                                         if (fullPath.find("Plugins") != String::npos) // Deal with plugins
+                                         {
+                                           PluginRegister* reg           = plugMan->Load(fullPath);
+                                           reg->m_plugin->m_currentState = PluginState::Running;
+                                         }
+                                         else // or game.
+                                         {
+                                           LoadGamePlugin();
+                                         }
+                                       }
+                                     });
+                       }
+                       m_isCompiling = false;
+                     });
     }
 
-    void App::LoadProjectPlugin()
+    void App::LoadGamePlugin()
     {
       ClearSession();
 
@@ -592,15 +631,13 @@ namespace ToolKit
 
       if (PluginManager* pluginMan = GetPluginManager())
       {
-        String pluginPath = m_workspace.GetPluginPath();
+        String pluginPath = m_workspace.GetBinPath();
         pluginMan->Load(pluginPath);
         ReconstructDynamicMenus();
       }
 
       currentScene->Load();
       currentScene->Init();
-
-      m_reloadPlugin = false;
     }
 
     EditorScenePtr App::GetCurrentScene()
@@ -668,7 +705,7 @@ namespace ToolKit
       GetUIManager()->ClearViewportsToUpdateLayers();
 
       m_perFrameDebugObjects.clear();
-      UI::m_postponedActions.clear();
+      GetWorkerManager()->Flush();
 
       ActionManager::GetInstance()->ClearAllActions();
 
@@ -1051,37 +1088,37 @@ namespace ToolKit
 
     void App::ManageDropfile(const StringView& fileName)
     {
-      UI::m_postponedActions.push_back(
-          [fileName]() -> void
-          {
-            const FolderWindowRawPtrArray& assetBrowsers = g_app->GetAssetBrowsers();
+      TKAsyncTask(WorkerManager::MainThread,
+                  [fileName]() -> void
+                  {
+                    const FolderWindowRawPtrArray& assetBrowsers = g_app->GetAssetBrowsers();
 
-            String log = "File isn't imported because it's not dropped into Asset Browser";
+                    String log = "File isn't imported because it's not dropped into Asset Browser";
 
-            for (FolderWindow* folderWindow : assetBrowsers)
-            {
-              if (folderWindow->MouseHovers())
-              {
-                FolderView* activeView = folderWindow->GetActiveView(true);
-                if (activeView == nullptr)
-                {
-                  log = "Activate a resource folder by selecting it from the Asset Browser.";
-                }
-                else
-                {
-                  UI::ImportData.ActiveView = activeView;
-                  UI::ImportData.Files.push_back(fileName.data());
-                  UI::ImportData.ShowImportWindow = true;
-                }
-              }
-            }
+                    for (FolderWindow* folderWindow : assetBrowsers)
+                    {
+                      if (folderWindow->MouseHovers())
+                      {
+                        FolderView* activeView = folderWindow->GetActiveView(true);
+                        if (activeView == nullptr)
+                        {
+                          log = "Activate a resource folder by selecting it from the Asset Browser.";
+                        }
+                        else
+                        {
+                          UI::ImportData.ActiveView = activeView;
+                          UI::ImportData.Files.push_back(fileName.data());
+                          UI::ImportData.ShowImportWindow = true;
+                        }
+                      }
+                    }
 
-            if (!UI::ImportData.ShowImportWindow)
-            {
-              g_app->m_statusMsg = "Drop discarded";
-              TK_WRN(log.c_str());
-            }
-          });
+                    if (!UI::ImportData.ShowImportWindow)
+                    {
+                      g_app->m_statusMsg = "Drop discarded";
+                      TK_WRN(log.c_str());
+                    }
+                  });
     }
 
     void App::OpenScene(const String& fullPath)
@@ -1122,7 +1159,7 @@ namespace ToolKit
 
     void App::ApplyProjectSettings(bool setDefaults)
     {
-      if (CheckFile(ConcatPaths({m_workspace.GetProjectConfigPath(), g_editorSettingsFile})) && !setDefaults)
+      if (CheckFile(ConcatPaths({m_workspace.GetConfigDirectory(), g_editorSettingsFile})) && !setDefaults)
       {
         DeSerialize(SerializationFileInfo(), nullptr);
         m_workspace.DeSerializeEngineSettings();
@@ -1155,7 +1192,7 @@ namespace ToolKit
       m_workspace.SerializeEngineSettings();
       OnNewScene("New Scene");
 
-      LoadProjectPlugin();
+      LoadGamePlugin();
 
       FolderWindowRawPtrArray browsers = GetAssetBrowsers();
       for (FolderWindow* browser : browsers)
@@ -1272,6 +1309,8 @@ namespace ToolKit
 
     StatsWindowPtr App::GetStatsWindow() { return GetWindow<StatsWindow>(g_statsView); }
 
+    PluginWindowPtr App::GetPluginWindow() { return GetWindow<PluginWindow>(g_pluginWindow); }
+
     void App::ReInitViewports()
     {
       EditorViewportRawPtrArray viewports;
@@ -1344,7 +1383,7 @@ namespace ToolKit
       m_workspace.Serialize(nullptr, nullptr);
 
       std::ofstream file;
-      String cfgPath              = m_workspace.GetProjectConfigPath();
+      String cfgPath              = m_workspace.GetConfigDirectory();
       String fileName             = ConcatPaths({cfgPath, g_editorSettingsFile});
 
       // File or Config folder is missing.
@@ -1394,7 +1433,7 @@ namespace ToolKit
       String settingsFile = info.File;
       if (settingsFile.empty())
       {
-        settingsFile = ConcatPaths({m_workspace.GetProjectConfigPath(), g_editorSettingsFile});
+        settingsFile = ConcatPaths({m_workspace.GetConfigDirectory(), g_editorSettingsFile});
       }
 
       if (!CheckFile(settingsFile))
@@ -1433,7 +1472,7 @@ namespace ToolKit
         DeserializeWindows(root);
       }
 
-      LoadProjectPlugin();
+      LoadGamePlugin();
 
       String scene = m_workspace.GetActiveProject().scene;
       if (!scene.empty())

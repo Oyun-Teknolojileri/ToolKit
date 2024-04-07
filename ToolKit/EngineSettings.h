@@ -8,6 +8,7 @@
 #pragma once
 
 #include "DofPass.h"
+#include "Serialize.h"
 #include "ToneMapPass.h"
 
 namespace ToolKit
@@ -19,7 +20,7 @@ namespace ToolKit
     Mobile  = 1
   };
 
-  class TK_API EngineSettings
+  class TK_API EngineSettings : public Serializable
   {
    public:
     struct WindowSettings
@@ -70,6 +71,11 @@ namespace ToolKit
       void Serialize(XmlDocument* doc, XmlNode* parent) const;
       void DeSerialize(XmlDocument* doc, XmlNode* parent);
     } PostProcessing;
+
+    StringArray LoadedPlugins;
+
+    XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+    XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     void Save(const String& path);
     void Load(const String& path);

@@ -14,7 +14,11 @@
 namespace ToolKit
 {
 
-  WorkerManager::WorkerManager()
+  WorkerManager::WorkerManager() {}
+
+  WorkerManager::~WorkerManager() { UnInit(); }
+
+  void WorkerManager::Init()
   {
     uint coreCount = std::thread::hardware_concurrency();
     if constexpr (TK_PLATFORM == PLATFORM::TKWeb)
@@ -25,11 +29,14 @@ namespace ToolKit
     {
       m_frameWorkers = new ThreadPool(glm::min(coreCount, 8u));
     }
+
+    Main::GetInstance()->RegisterPostUpdateFunction([this](float deltaTime) -> void
+                                                    { ExecuteTasks(m_mainThreadTasks, m_mainTaskMutex); });
   }
 
-  WorkerManager::~WorkerManager() { SafeDel(m_frameWorkers); }
+  void WorkerManager::UnInit() { SafeDel(m_frameWorkers); }
 
-  ThreadPool& WorkerManager::GetExecutor(Executor executor)
+  ThreadPool& WorkerManager::GetPool(Executor executor)
   {
     switch (executor)
     {
@@ -37,6 +44,28 @@ namespace ToolKit
     default:
       return *m_frameWorkers;
       break;
+    }
+  }
+
+  void WorkerManager::Flush()
+  {
+    m_frameWorkers->pause();
+    m_frameWorkers->wait_for_tasks();
+    m_frameWorkers->unpause();
+
+    ExecuteTasks(m_mainThreadTasks, m_mainTaskMutex);
+  }
+
+  void WorkerManager::ExecuteTasks(TaskQueue& queue, std::mutex& mex)
+  {
+    for (int i = 0; i < (int) queue.size(); i++)
+    {
+      mex.lock();
+      std::packaged_task<void()> task {std::move(queue.front())};
+      m_mainThreadTasks.pop();
+      mex.unlock();
+
+      task();
     }
   }
 

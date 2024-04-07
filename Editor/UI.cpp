@@ -10,6 +10,7 @@
 #include "AndroidBuildWindow.h"
 #include "App.h"
 #include "EditorViewport2d.h"
+#include "PluginWindow.h"
 #include "PopupWindows.h"
 
 #include <Audio.h>
@@ -40,8 +41,6 @@ namespace ToolKit
     UI::Blocker UI::BlockerData;
     UI::Import UI::ImportData;
     UI::SearchFile UI::SearchFileData;
-
-    std::vector<std::function<void()>> UI::m_postponedActions;
     WindowPtrArray UI::m_volatileWindows;
 
     // Icons
@@ -525,13 +524,6 @@ namespace ToolKit
 
       ImGui::UpdatePlatformWindows();
       ImGui::RenderPlatformWindowsDefault();
-
-      // UI deferred functions.
-      for (auto& action : m_postponedActions)
-      {
-        action();
-      }
-      m_postponedActions.clear();
     }
 
     void UI::ShowAppMainMenuBar()
@@ -722,12 +714,13 @@ namespace ToolKit
       ShowPersistentWindow<SimulationWindow>(g_simulationWindowStr);
       ShowPersistentWindow<RenderSettingsWindow>(g_renderSettings);
       ShowPersistentWindow<StatsWindow>(g_statsView);
+      ShowPersistentWindow<PluginWindow>(g_pluginWindow);
 
       ImGui::Separator();
 
       if (ImGui::MenuItem("Reset Layout"))
       {
-        m_postponedActions.push_back([]() -> void { g_app->ResetUI(); });
+        TKAsyncTask(WorkerManager::MainThread, []() -> void { g_app->ResetUI(); });
       }
 
 #ifdef TK_DEBUG
@@ -760,6 +753,16 @@ namespace ToolKit
         inputWnd->m_inputLabel        = "Name";
         inputWnd->m_hint              = "Project name";
         inputWnd->m_taskFn            = [](const String& val) { g_app->OnNewProject(val); };
+        inputWnd->AddToUI();
+      }
+
+      if (ImGui::MenuItem("New Plugin"))
+      {
+        StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("NewPlugin", true);
+        inputWnd->m_inputVal          = "New Plugin";
+        inputWnd->m_inputLabel        = "Name";
+        inputWnd->m_hint              = "Plugin name";
+        inputWnd->m_taskFn            = [](const String& val) { g_app->OnNewPlugin(val); };
         inputWnd->AddToUI();
       }
 
@@ -1384,7 +1387,7 @@ namespace ToolKit
 
     void UI::AddTooltipToLastItem(const char* tip)
     {
-      if (ImGui::IsItemHovered())
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
       {
         ImGui::SetItemTooltip(tip);
       }

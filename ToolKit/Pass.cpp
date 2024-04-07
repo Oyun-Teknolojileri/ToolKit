@@ -87,13 +87,6 @@ namespace ToolKit
     // Sort lights for disc.
     int directionalEndIndx = PreSortLights(lights);
 
-    auto isRenderableFn    = [ignoreVisibility](const EntityPtr& ntt) -> bool
-    {
-      bool isDrawable = ntt->IsDrawable();
-      bool isVisbile  = ntt->IsVisible();
-      return isDrawable && (isVisbile || ignoreVisibility);
-    };
-
     // Each entity can contain several meshes. This submeshIndexLookup array will be used
     // to find the index of the submehs for a given entity index.
     // Ex: Entity index is 4 and it has 3 submesh,
@@ -101,34 +94,22 @@ namespace ToolKit
     // to look them up: {nttIndex + 0, nttIndex + 1, nttIndex + 3} formula is used.
     IntArray submeshIndexLookup;
     submeshIndexLookup.reserve(entities.size());
+    int size = 0;
 
-    // Not all entities are renderable, this index look up table
-    // puts -1 for entities that are not renderable and for renderable ones,
-    // it contains entity's corresponding index to entities array.
-    // if there are 2 invisible and 1 visible entity in the entities array
-    // visibleNttLookup content would be like {-1, -1, 2}
-    IntArray visibleNttLookup;
-    visibleNttLookup.reserve(entities.size());
+    EntityRawPtrArray rawNtties;
+    rawNtties.reserve(entities.size());
 
-    // Calculate the array size.
-    int size      = 0;
-    int currIndex = 0;
-    for (int nttIndex = 0; nttIndex < (int) entities.size(); nttIndex++)
+    for (const EntityPtr& ntt : entities)
     {
-      const EntityPtr& ntt = entities[nttIndex];
-
-      if (!isRenderableFn(ntt))
+      if (ntt->IsVisible() || ignoreVisibility)
       {
-        visibleNttLookup.push_back(-1); // Invisible.
-        continue;
-      }
-
-      if (MeshComponent* meshComp = ntt->GetComponentFast<MeshComponent>())
-      {
-        meshComp->Init(false);
-        visibleNttLookup.push_back(currIndex++);
-        submeshIndexLookup.push_back(size);
-        size += meshComp->GetMeshVal()->GetMeshCount();
+        if (MeshComponent* meshComp = ntt->GetComponentFast<MeshComponent>())
+        {
+          meshComp->Init(false);
+          submeshIndexLookup.push_back(size);
+          size += meshComp->GetMeshVal()->GetMeshCount();
+          rawNtties.push_back(ntt.get());
+        }
       }
     }
 
@@ -137,18 +118,12 @@ namespace ToolKit
 
     // Construct jobs.
     using poolstl::iota_iter;
-    std::for_each(TKExecByConditional(entities.size() > 100, WorkerManager::FramePool),
+    std::for_each(TKExecByConditional(rawNtties.size() > 100, WorkerManager::FramePool),
                   iota_iter<size_t>(0),
-                  iota_iter<size_t>(entities.size()),
+                  iota_iter<size_t>(rawNtties.size()),
                   [&](size_t nttIndex)
                   {
-                    int nextNtt = visibleNttLookup[nttIndex];
-                    if (nextNtt == -1)
-                    {
-                      return;
-                    }
-
-                    const EntityPtr& ntt           = entities[nttIndex];
+                    Entity* ntt                    = rawNtties[nttIndex];
                     MaterialPtrArray* materialList = nullptr;
                     if (MaterialComponent* matComp = ntt->GetComponentFast<MaterialComponent>())
                     {
@@ -194,17 +169,16 @@ namespace ToolKit
                       }
 
                       // Translate nttIndex to corresponding job index.
-                      int visibleNttIndex = visibleNttLookup[nttIndex];
-                      int jobIndex        = submeshIndexLookup[visibleNttIndex] + subMeshIndx;
+                      int jobIndex       = submeshIndexLookup[nttIndex] + subMeshIndx;
 
-                      RenderJob& job      = jobArray[jobIndex];
-                      job.Entity          = ntt.get();
-                      job.Mesh            = mesh;
-                      job.Material        = material.get();
-                      job.ShadowCaster    = meshComp->GetCastShadowVal();
+                      RenderJob& job     = jobArray[jobIndex];
+                      job.Entity         = ntt;
+                      job.Mesh           = mesh;
+                      job.Material       = material.get();
+                      job.ShadowCaster   = meshComp->GetCastShadowVal();
 
                       // Calculate bounding box.
-                      job.WorldTransform  = ntt->m_node->GetTransform();
+                      job.WorldTransform = ntt->m_node->GetTransform();
                       if (AABBOverrideComponent* bbOverride = ntt->GetComponentFast<AABBOverrideComponent>())
                       {
                         job.BoundingBox = std::move(bbOverride->GetBoundingBox());

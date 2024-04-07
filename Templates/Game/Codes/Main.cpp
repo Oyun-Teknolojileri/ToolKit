@@ -88,7 +88,7 @@ namespace ToolKit
       SDL_GetCurrentDisplayMode(0, &DM);
 
       String settingsFile = ConcatPaths({ConfigPath(), "Engine.settings"});
-      g_proxy->m_engineSettings->DeSerializeEngineSettings(settingsFile);
+      g_proxy->m_engineSettings->Load(settingsFile);
       g_engineSettings = g_proxy->m_engineSettings;
       if (g_engineSettings->Window.FullScreen)
       {

@@ -64,11 +64,6 @@ namespace ToolKit
 
   TK_API String NormalizePath(String path);
   TK_API void NormalizePathInplace(String& path);
-
-  typedef std::function<void(int)> RunPipeCallback;
-
-  TK_API int RunPipe(const String& command, RunPipeCallback afterFn);
-
   TK_API void UnixifyPath(String& path);
   TK_API void DosifyPath(String& path);
   TK_API String ConcatPaths(const StringArray& entries);
@@ -119,6 +114,7 @@ namespace ToolKit
   TK_API bool SupportedImageFormat(const String& ext);
   TK_API bool SupportedMeshFormat(const String& ext);
   TK_API bool IsLayer(const String& file);
+  TK_API String GetPluginExtention();
 
   // String operations.
   ///////////////////////////////////////////////////////
@@ -133,6 +129,14 @@ namespace ToolKit
   TK_API void ReplaceCharInPlace(String& subject, const char search, const char replace);
 
   TK_API int CountChar(const String& str, const char chr);
+
+  /**
+   * Removes the first occurrence of the specified substring "toRemove" from the given string "str".
+   * @param str The string from which the substring will be removed.
+   * @param toRemove The substring to be removed from "str".
+   * @return true if the substring was found and removed; otherwise, false.
+   */
+  TK_API bool RemoveString(String& str, const String& toRemove);
 
   /**
    * Transform ascii chars to lower. Intended usage is extension comparison.

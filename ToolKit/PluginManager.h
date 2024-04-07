@@ -1,4 +1,5 @@
 /*
+/*
  * Copyright (c) 2019-2024 OtSofware
  * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
  * For more information, including options for a more permissive commercial license,
@@ -28,6 +29,7 @@ namespace ToolKit
     ModuleHandle m_module;
     String m_lastWriteTime;
     String m_file;
+    String m_name;
     XmlDocumentPtr m_stateCache;
     bool m_loaded;
     bool m_initialized;
@@ -40,13 +42,13 @@ namespace ToolKit
     ~PluginManager();
 
     /**
-     * Loads the plugin from the given path. If the plugin has already loaded, check if update is needed.
-     * Unloads the plugin with a provided state cache for plugin to cache its state. Than unloads the current plugin
-     * and loads the new one with the cached state to restore plugin's state.
-     * @param file is the path to the plugin.
-     * @return true if the plugin is loaded.
+     * Attempts to load a plugin from the specified path. If the plugin is already loaded, it determines whether an
+     * update is necessary. In case of an update, it first caches the plugin's state, then unloads the current plugin.
+     * Subsequently, it loads the updated plugin and restores its state using the cached information.
+     * @param file The path to the plugin's file.
+     * @return A pointer to the PluginRegister of the loaded plugin; returns nullptr if the plugin cannot be loaded.
      */
-    bool Load(const String& file);
+    PluginRegister* Load(const String& file);
 
     /**
      * Unloads the given plugin. Passes the state cache inside the PluginRegister structure. If a reload is needed just

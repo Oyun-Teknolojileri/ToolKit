@@ -277,6 +277,8 @@ namespace ToolKit
             objFactory->Register<YesNoWindow>();
             objFactory->Register<TempMaterialWindow>();
             objFactory->Register<AndroidBuildWindow>();
+            objFactory->Register<PluginWindow>();
+            objFactory->Register<PluginSettingsWindow>();
 
             // Overrides.
             objFactory->Override<EditorDirectionalLight, DirectionalLight>();
@@ -339,6 +341,9 @@ namespace ToolKit
               POP_CPU_MARKER();
             };
             g_proxy->RegisterPostUpdateFunction(postUpdateFn);
+
+            // Post init the engine after editor is up.
+            g_proxy->PostInit();
           }
         }
       }
@@ -346,6 +351,8 @@ namespace ToolKit
 
     void Exit()
     {
+      g_proxy->PreUninit();
+
       UI::UnInit();
       SafeDel(g_app);
 
