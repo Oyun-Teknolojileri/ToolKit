@@ -24,7 +24,7 @@ mkdir ninjaBuild
 cd ninjaBuild
 
 :: Call the cmake to generate project files for ninja.
-cmake -B build -DCMAKE_BUILD_TYPE=%~1 -DWIN_BUILD:INT=1 -S ../ -G Ninja
+cmake -B build -DCMAKE_BUILD_TYPE=%~1 -S ../ -G Ninja
 if %errorlevel% neq 0 (
     echo Failed to generate Ninja build files.
     pause

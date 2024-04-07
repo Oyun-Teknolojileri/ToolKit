@@ -243,8 +243,8 @@ namespace ToolKit
       else
       {
         TK_WRN("Plugin %s can't be loaded because its engine version %s mismatches with current engine version %s",
-               pluginSet.name,
-               pluginSet.engine,
+               pluginSet.name.c_str(),
+               pluginSet.engine.c_str(),
                TKVersionStr);
       }
     }
