@@ -153,7 +153,7 @@ namespace ToolKit
         if (reg.m_loaded)
         {
           XmlNode* plugin = CreateXmlNode(doc, "Plugin", pluginNode);
-          WriteAttr(plugin, doc, "name", reg.m_file);
+          WriteAttr(plugin, doc, "name", reg.m_name);
         }
       }
     }

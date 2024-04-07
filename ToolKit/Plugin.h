@@ -35,6 +35,8 @@ namespace ToolKit
     String web;
     String email;
 
+    String file;
+
     void Serialize(XmlDocument* doc, XmlNode* parent) const;
     void DeSerialize(XmlDocument* doc, XmlNode* parent);
     void Load(const String& file);

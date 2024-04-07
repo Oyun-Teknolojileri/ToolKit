@@ -256,5 +256,6 @@ namespace ToolKit
   TK_API String PrefabPath(const String& file, bool def = false);
   TK_API String LayerPath(const String& file, bool def = false);
   TK_API String PluginPath(const String& file, bool def = false);
+  TK_API String PluginConfigPath(const String& file, bool def = false);
 
 } // namespace ToolKit

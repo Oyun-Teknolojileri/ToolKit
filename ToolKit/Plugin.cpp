@@ -53,6 +53,8 @@ namespace ToolKit
       {
         ReadAttr(desc, "name", name);
         ReadAttr(desc, "brief", brief);
+
+        file = PluginPath(name);
       }
 
       if (XmlNode* dev = settings->first_node("Developer"))

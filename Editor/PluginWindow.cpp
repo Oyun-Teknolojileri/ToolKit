@@ -9,6 +9,9 @@
 
 #include "Workspace.h"
 
+#include <Plugin.h>
+#include <PluginManager.h>
+
 #include <filesystem>
 
 namespace ToolKit
@@ -24,19 +27,86 @@ namespace ToolKit
       ParsePluginDeclerations();
     }
 
-    void PluginWindow::Show() 
+    void PluginWindow::Show()
     {
-      ImGui::SetNextWindowSize(ImVec2(270, 110), ImGuiCond_Once);
+
+      ImGui::SetNextWindowSize(ImVec2(470, 110), ImGuiCond_Once);
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        for (const PluginSettings& plugin : m_plugins)
+        if (ImGui::BeginTable("table1",
+                              4,
+                              ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInnerH |
+                                  ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_BordersOuterH |
+                                  ImGuiTableFlags_BordersOuterV,
+                              {0, 0}))
         {
-          ImGui::Text(plugin.name.c_str());
-          ImGui::Spacing();
+          ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_None, 0);
+          ImGui::TableSetupColumn("Brief", ImGuiTableColumnFlags_None, 0);
+          ImGui::TableSetupColumn("Load", ImGuiTableColumnFlags_None, 0);
+          ImGui::TableSetupColumn("Compile", ImGuiTableColumnFlags_None, 0);
+          ImGui::TableHeadersRow();
+          ImGui::TableNextRow(0, 0);
+          ImGui::TableSetColumnIndex(0);
+
+          int imPluginId = 0;
+          for (PluginSettings& plugin : m_plugins)
+          {
+            ImGui::TableNextRow();
+
+            ImGui::TableSetColumnIndex(0);
+            ImGui::AlignTextToFramePadding();
+            ImGui::Text(plugin.name.c_str());
+
+            ImGui::TableSetColumnIndex(1);
+            ImGui::AlignTextToFramePadding();
+            ImGui::PushTextWrapPos(0);
+            ImGui::TextUnformatted(plugin.brief.c_str());
+            ImGui::PopTextWrapPos();
+
+            ImGui::TableSetColumnIndex(2);
+            ImGui::AlignTextToFramePadding();
+
+            ImGui::PushID(imPluginId++);
+
+            PluginManager* plugMan = GetPluginManager();
+            String fullPath        = plugin.file + GetPluginExtention();
+            PluginRegister* reg    = plugMan->GetRegister(fullPath);
+            bool isLoaded          = reg != nullptr && reg->m_loaded;
+
+            if (ImGui::Checkbox("##Load", &isLoaded))
+            {
+              if (!isLoaded)
+              {
+                plugMan->Unload(fullPath);
+              }
+              else
+              {
+                plugMan->Load(plugin.file);
+              }
+            }
+            UI::HelpMarker(TKLoc,
+                           "Loads or unloads the plugin.\n"
+                           "State is stored in engine settings and preserved on next editor run.\n"
+                           "This may cause crash, save the work before.");
+            ImGui::PopID();
+
+            ImGui::TableSetColumnIndex(3);
+            ImGui::AlignTextToFramePadding();
+            if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_buildIcn), Vec2(20.0f)))
+            {
+              String pluginDir = g_app->m_workspace.GetPluginDirectory();
+              String buildBat  = ConcatPaths({pluginDir, plugin.name, "Codes"});
+              g_app->CompilePlugin(buildBat);
+            }
+            UI::HelpMarker(TKLoc,
+                           "If a change is detected, compiles and reloads the plugin.\n"
+                           "This may cause crash, save the work before.");
+          }
         }
+
+        ImGui::EndTable();
       }
       ImGui::End();
-
     }
 
     void PluginWindow::ParsePluginDeclerations()

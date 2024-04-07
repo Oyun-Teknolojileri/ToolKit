@@ -52,7 +52,7 @@ namespace ToolKit
       void OnNewProject(const String& name);
       void OnNewPlugin(const String& name);
       void SetGameMod(const GameMod mod);
-      void CompilePlugin();
+      void CompilePlugin(const String& path); // Calls the bat file to compile target.
       void LoadProjectPlugin();
       bool IsCompiling();
       EditorScenePtr GetCurrentScene();

@@ -514,6 +514,17 @@ namespace ToolKit
     return path;
   }
 
+  TK_API String PluginConfigPath(const String& file, bool def)
+  {
+    String path        = ConcatPaths({"Plugins", file, "Config"});
+    path               = ProcessPath("Plugin.settings", path, def);
+
+    String resourceStr = "Resources" + GetPathSeparatorAsStr();
+    RemoveString(path, resourceStr);
+
+    return path;
+  }
+
   void Timing::Init(uint fps)
   {
     LastTime        = GetElapsedMilliSeconds();

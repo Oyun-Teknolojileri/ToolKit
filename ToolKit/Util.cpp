@@ -559,6 +559,15 @@ namespace ToolKit
 
   bool IsLayer(const String& file) { return file.find(ToLower(LAYER)) != String::npos; }
 
+  String GetPluginExtention()
+  {
+#ifdef TK_DEBUG
+    return "_d.dll";
+#else
+    return = ".dll";
+#endif
+  }
+
   // split a string into multiple sub strings, based on a separator string
   // for example, if separator="::",
   // s = "abc::def xy::st:" -> "abc", "def xy" and "st:",

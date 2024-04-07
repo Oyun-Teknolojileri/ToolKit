@@ -251,7 +251,8 @@ namespace ToolKit
 
       if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_buildIcn), btnSize))
       {
-        g_app->CompilePlugin();
+        String buildBat = g_app->m_workspace.GetCodeDirectory();
+        g_app->CompilePlugin(buildBat);
       }
 
       UI::HelpMarker(TKLoc, "Build\nBuilds the projects code files.");

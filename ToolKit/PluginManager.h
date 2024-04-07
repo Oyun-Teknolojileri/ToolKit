@@ -1,4 +1,5 @@
 /*
+/*
  * Copyright (c) 2019-2024 OtSofware
  * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
  * For more information, including options for a more permissive commercial license,
@@ -28,6 +29,7 @@ namespace ToolKit
     ModuleHandle m_module;
     String m_lastWriteTime;
     String m_file;
+    String m_name;
     XmlDocumentPtr m_stateCache;
     bool m_loaded;
     bool m_initialized;

@@ -565,10 +565,9 @@ namespace ToolKit
 
     bool App::IsCompiling() { return m_isCompiling; }
 
-    void App::CompilePlugin()
+    void App::CompilePlugin(const String& path)
     {
-      String codePath = m_workspace.GetCodeDirectory();
-      String buildDir = ConcatPaths({codePath, "build"});
+      String buildDir = ConcatPaths({path, "build"});
 
       // create a build dir if not exist.
       std::filesystem::create_directories(buildDir);
@@ -580,7 +579,7 @@ namespace ToolKit
       static const StringView buildConfig = "RelWithDebInfo";
 #endif
 
-      String cmd    = "call " + ConcatPaths({codePath, "Build.bat "}) + "\"" + buildConfig.data() + "\"";
+      String cmd    = "call " + ConcatPaths({path, "Build.bat "}) + "\"" + buildConfig.data() + "\"";
       m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
       m_isCompiling = true;
 

@@ -70,6 +70,11 @@ namespace ToolKit
         reg.m_file          = fullPath;
         reg.m_lastWriteTime = GetCreationTime(fullPath);
 
+        UnixifyPath(fullPath);
+        size_t beg = fullPath.find_last_of("/") + 1;
+        size_t end = fullPath.find(m_pluginExtention);
+        reg.m_name = fullPath.substr(beg, end - beg);
+
         m_storage.push_back(reg);
         return &m_storage.back();
       }
@@ -222,12 +227,15 @@ namespace ToolKit
     const EngineSettings& settings = GetEngineSettings();
     for (const String& plugin : settings.LoadedPlugins)
     {
+      String file = PluginConfigPath(plugin);
+
       PluginSettings pluginSet;
-      pluginSet.Load(plugin);
+      pluginSet.Load(file);
 
       if (pluginSet.engine == TKVersionStr)
       {
-        if (PluginRegister* reg = Load(plugin))
+        file = PluginPath(plugin);
+        if (PluginRegister* reg = Load(file))
         {
           reg->m_plugin->m_currentState = PluginState::Running;
         }
@@ -260,14 +268,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  PluginManager::PluginManager()
-  {
-#ifdef TK_DEBUG
-    m_pluginExtention = "_d.dll";
-#else
-    m_pluginExtention = ".dll";
-#endif
-  }
+  PluginManager::PluginManager() { m_pluginExtention = GetPluginExtention(); }
 
   PluginManager::~PluginManager() {}
 
