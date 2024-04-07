@@ -83,7 +83,8 @@ namespace ToolKit
               }
               else
               {
-                plugMan->Load(plugin.file);
+                reg                           = plugMan->Load(plugin.file);
+                reg->m_plugin->m_currentState = PluginState::Running;
               }
             }
             UI::AddTooltipToLastItem("Loads or unloads the plugin.\n"

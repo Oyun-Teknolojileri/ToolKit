@@ -140,6 +140,8 @@ namespace ToolKit
     m_logger->Log("Main Init");
 
     RHI::m_initialized = true;
+
+    m_workerManager->Init();
     m_animationMan->Init();
     m_textureMan->Init();
     m_meshMan->Init();

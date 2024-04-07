@@ -235,11 +235,6 @@ namespace ToolKit
       POP_CPU_MARKER();
 
       m_totalFrameCount = GetRenderSystem()->GetFrameCount();
-
-      if (m_reloadPlugin)
-      {
-        LoadProjectPlugin();
-      }
     }
 
     void App::OnResize(uint width, uint height)
@@ -458,7 +453,7 @@ namespace ToolKit
 
       m_shellOpenDirFn(ConcatPaths({fullPath, "Codes"}));
 
-      if (PluginWindowPtr wnd = GetWindow<PluginWindow>(g_pluginWindow)) 
+      if (PluginWindowPtr wnd = GetWindow<PluginWindow>(g_pluginWindow))
       {
         wnd->LoadPluginSettings();
       }
@@ -598,13 +593,28 @@ namespace ToolKit
                        {
                          m_statusMsg = "Compiled.";
                          TK_LOG("%s", m_statusMsg.c_str());
-                         m_reloadPlugin = true;
+
+                         // Reload at the end of frame.
+                         TKAsyncTask(WorkerManager::MainThread,
+                                     [=]() -> void
+                                     {
+                                       // Extract the plugin name.
+                                       String plugDir  = path.substr(0, path.find("Codes") - 1);
+                                       String name     = plugDir.substr(plugDir.find_last_of(GetPathSeparator()) + 1);
+                                       String fullPath = ConcatPaths({path, "Bin", name});
+
+                                       if (PluginManager* plugMan = GetPluginManager())
+                                       {
+                                         PluginRegister* reg           = plugMan->Load(fullPath);
+                                         reg->m_plugin->m_currentState = PluginState::Running;
+                                       }
+                                     });
                        }
                        m_isCompiling = false;
                      });
     }
 
-    void App::LoadProjectPlugin()
+    void App::LoadGamePlugin()
     {
       ClearSession();
 
@@ -621,8 +631,6 @@ namespace ToolKit
 
       currentScene->Load();
       currentScene->Init();
-
-      m_reloadPlugin = false;
     }
 
     EditorScenePtr App::GetCurrentScene()
@@ -1177,7 +1185,7 @@ namespace ToolKit
       m_workspace.SerializeEngineSettings();
       OnNewScene("New Scene");
 
-      LoadProjectPlugin();
+      LoadGamePlugin();
 
       FolderWindowRawPtrArray browsers = GetAssetBrowsers();
       for (FolderWindow* browser : browsers)
@@ -1457,7 +1465,7 @@ namespace ToolKit
         DeserializeWindows(root);
       }
 
-      LoadProjectPlugin();
+      LoadGamePlugin();
 
       String scene = m_workspace.GetActiveProject().scene;
       if (!scene.empty())

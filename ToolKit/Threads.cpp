@@ -14,7 +14,11 @@
 namespace ToolKit
 {
 
-  WorkerManager::WorkerManager()
+  WorkerManager::WorkerManager() {}
+
+  WorkerManager::~WorkerManager() { UnInit(); }
+
+  void WorkerManager::Init()
   {
     uint coreCount = std::thread::hardware_concurrency();
     if constexpr (TK_PLATFORM == PLATFORM::TKWeb)
@@ -25,11 +29,25 @@ namespace ToolKit
     {
       m_frameWorkers = new ThreadPool(glm::min(coreCount, 8u));
     }
+
+    Main::GetInstance()->RegisterPostUpdateFunction(
+        [this](float deltaTime) -> void
+        {
+          for (int i = 0; i < (int) m_mainThreadTasks.size(); i++)
+          {
+            m_mainTaskMutex.lock();
+            std::packaged_task<void()> task {std::move(m_mainThreadTasks.front())};
+            m_mainThreadTasks.pop();
+            m_mainTaskMutex.unlock();
+
+            task();
+          }
+        });
   }
 
-  WorkerManager::~WorkerManager() { SafeDel(m_frameWorkers); }
+  void WorkerManager::UnInit() { SafeDel(m_frameWorkers); }
 
-  ThreadPool& WorkerManager::GetExecutor(Executor executor)
+  ThreadPool& WorkerManager::GetPool(Executor executor)
   {
     switch (executor)
     {

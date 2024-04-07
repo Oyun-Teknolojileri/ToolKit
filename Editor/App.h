@@ -53,7 +53,7 @@ namespace ToolKit
       void OnNewPlugin(const String& name);
       void SetGameMod(const GameMod mod);
       void CompilePlugin(const String& path); // Calls the bat file to compile target.
-      void LoadProjectPlugin();
+      void LoadGamePlugin();
       bool IsCompiling();
       EditorScenePtr GetCurrentScene();
       void SetCurrentScene(const EditorScenePtr& scene);
@@ -272,9 +272,8 @@ namespace ToolKit
       // Internal states.
       bool m_onQuit = false;
       String m_newSceneName;
-      float m_deltaTime   = 0.0f;
-      bool m_isCompiling  = false;
-      bool m_reloadPlugin = false;
+      float m_deltaTime  = 0.0f;
+      bool m_isCompiling = false;
     };
 
   } // namespace Editor
