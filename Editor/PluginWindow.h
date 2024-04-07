@@ -16,6 +16,28 @@ namespace ToolKit
   namespace Editor
   {
 
+    // PluginSettingsWindow
+    //////////////////////////////////////////////////////////////////////////
+
+    class PluginSettingsWindow : public Window
+    {
+     public:
+      TKDeclareClass(PluginSettingsWindow, Window);
+
+      PluginSettingsWindow();
+      void Show() override;
+      void SetPluginSettings(PluginSettings* settings);
+
+     private:
+      PluginSettings* m_settings;
+      PluginSettings m_bckup;
+    };
+
+    typedef std::shared_ptr<PluginSettingsWindow> PluginSettingsWindowPtr;
+
+    // PluginWindow
+    //////////////////////////////////////////////////////////////////////////
+
     /**
      * Window that shows all the plugins in the project and their status.
      * Also allows load, unload and reload the plugins.

@@ -12,7 +12,7 @@ namespace ToolKit
 
   void PluginSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    if (doc == nullptr || parent == nullptr)
+    if (doc == nullptr)
     {
       return;
     }
@@ -66,9 +66,9 @@ namespace ToolKit
     }
   }
 
-  void PluginSettings::Load(const String& file)
+  void PluginSettings::Load(const String& path)
   {
-    XmlFile* lclFile    = new XmlFile(file.c_str());
+    XmlFile* lclFile    = new XmlFile(path.c_str());
     XmlDocument* lclDoc = new XmlDocument();
     lclDoc->parse<0>(lclFile->data());
 
@@ -76,6 +76,27 @@ namespace ToolKit
 
     SafeDel(lclFile);
     SafeDel(lclDoc);
+  }
+
+  void PluginSettings::Save(const String& path)
+  {
+    std::ofstream file;
+    file.open(path.c_str(), std::ios::out | std::ios::trunc);
+    assert(file.is_open());
+
+    if (file.is_open())
+    {
+      XmlDocument* lclDoc = new XmlDocument();
+      Serialize(lclDoc, nullptr);
+
+      std::string xml;
+      rapidxml::print(std::back_inserter(xml), *lclDoc);
+      file << xml;
+      file.close();
+      lclDoc->clear();
+
+      SafeDel(lclDoc);
+    }
   }
 
 } // namespace ToolKit

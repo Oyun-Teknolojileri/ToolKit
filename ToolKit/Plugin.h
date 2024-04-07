@@ -39,7 +39,8 @@ namespace ToolKit
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const;
     void DeSerialize(XmlDocument* doc, XmlNode* parent);
-    void Load(const String& file);
+    void Load(const String& path);
+    void Save(const String& path);
   };
 
   /**

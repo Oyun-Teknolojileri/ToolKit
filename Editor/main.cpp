@@ -278,6 +278,7 @@ namespace ToolKit
             objFactory->Register<TempMaterialWindow>();
             objFactory->Register<AndroidBuildWindow>();
             objFactory->Register<PluginWindow>();
+            objFactory->Register<PluginSettingsWindow>();
 
             // Overrides.
             objFactory->Override<EditorDirectionalLight, DirectionalLight>();

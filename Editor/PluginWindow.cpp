@@ -19,6 +19,92 @@ namespace ToolKit
   namespace Editor
   {
 
+    // PluginSettingsWindow
+    //////////////////////////////////////////////////////////////////////////
+
+    TKDefineClass(PluginSettingsWindow, Window);
+
+    PluginSettingsWindow::PluginSettingsWindow() { m_name = "PluginSettings"; }
+
+    void PluginSettingsWindow::Show()
+    {
+      ImGui::SetNextWindowSize(ImVec2(400, 375), ImGuiCond_Once);
+
+      ImGui::Begin("Plugin Settings", &m_visible);
+
+      // Editable fields for PluginSettings
+      static char buffer[2048];
+
+      // Plugin data
+      ImGui::SeparatorText("Plugin");
+
+      ImGui::BeginDisabled();
+      strncpy(buffer, m_bckup.name.c_str(), IM_ARRAYSIZE(buffer));
+      ImGui::InputText("Name", buffer, IM_ARRAYSIZE(buffer));
+      m_bckup.name = buffer;
+      ImGui::EndDisabled();
+
+      strncpy(buffer, m_bckup.brief.c_str(), IM_ARRAYSIZE(buffer));
+      ImGui::InputTextMultiline("Brief",
+                                buffer,
+                                IM_ARRAYSIZE(buffer),
+                                ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 4));
+      m_bckup.brief = buffer;
+
+      strncpy(buffer, m_bckup.version.c_str(), IM_ARRAYSIZE(buffer));
+      ImGui::InputText("Version", buffer, IM_ARRAYSIZE(buffer));
+      m_bckup.version = buffer;
+
+      strncpy(buffer, m_bckup.engine.c_str(), IM_ARRAYSIZE(buffer));
+      ImGui::InputText("Engine", buffer, IM_ARRAYSIZE(buffer));
+      m_bckup.engine = buffer;
+
+      ImGui::Checkbox("Auto Load", &m_bckup.autoLoad);
+
+      // Developer data
+      ImGui::SeparatorText("Developer");
+
+      strncpy(buffer, m_bckup.developer.c_str(), IM_ARRAYSIZE(buffer));
+      ImGui::InputText("Developer", buffer, IM_ARRAYSIZE(buffer));
+      m_bckup.developer = buffer;
+
+      strncpy(buffer, m_bckup.web.c_str(), IM_ARRAYSIZE(buffer));
+      ImGui::InputText("Web", buffer, IM_ARRAYSIZE(buffer));
+      m_bckup.web = buffer;
+
+      strncpy(buffer, m_bckup.email.c_str(), IM_ARRAYSIZE(buffer));
+      ImGui::InputText("Email", buffer, IM_ARRAYSIZE(buffer));
+      m_bckup.email = buffer;
+
+      ImGui::SeparatorText("File");
+
+      if (ImGui::Button("Save"))
+      {
+        String file = PluginConfigPath(m_bckup.name);
+        m_bckup.Save(file);
+        *m_settings = m_bckup;
+        RemoveFromUI();
+      }
+
+      ImGui::SameLine();
+
+      if (ImGui::Button("Cancel"))
+      {
+        RemoveFromUI();
+      }
+
+      ImGui::End();
+    }
+
+    void PluginSettingsWindow::SetPluginSettings(PluginSettings* settings)
+    {
+      m_bckup    = *settings;
+      m_settings = settings;
+    }
+
+    // PluginWindow
+    //////////////////////////////////////////////////////////////////////////
+
     TKDefineClass(PluginWindow, Window);
 
     PluginWindow::PluginWindow()
@@ -29,12 +115,11 @@ namespace ToolKit
 
     void PluginWindow::Show()
     {
-
       ImGui::SetNextWindowSize(ImVec2(470, 110), ImGuiCond_Once);
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         if (ImGui::BeginTable("table1",
-                              5,
+                              6,
                               ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInnerH |
                                   ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_BordersOuterH |
                                   ImGuiTableFlags_BordersOuterV,
@@ -45,6 +130,7 @@ namespace ToolKit
           ImGui::TableSetupColumn("Load", ImGuiTableColumnFlags_None, 0);
           ImGui::TableSetupColumn("Compile", ImGuiTableColumnFlags_None, 0);
           ImGui::TableSetupColumn("Folder", ImGuiTableColumnFlags_None, 0);
+          ImGui::TableSetupColumn("Settings", ImGuiTableColumnFlags_None, 0);
           ImGui::TableHeadersRow();
           ImGui::TableNextRow(0, 0);
           ImGui::TableSetColumnIndex(0);
@@ -111,6 +197,16 @@ namespace ToolKit
               g_app->m_shellOpenDirFn(dir);
             }
             UI::AddTooltipToLastItem("Show plugin folder in file explorerer.");
+
+            ImGui::TableSetColumnIndex(5);
+            ImGui::AlignTextToFramePadding();
+            if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_codeIcon), btnSize))
+            {
+              PluginSettingsWindowPtr settingsWnd = MakeNewPtr<PluginSettingsWindow>();
+              settingsWnd->SetPluginSettings(&plugin);
+              settingsWnd->AddToUI();
+            }
+            UI::AddTooltipToLastItem("Show plugin settings.");
 
             ImGui::PopID();
           }
