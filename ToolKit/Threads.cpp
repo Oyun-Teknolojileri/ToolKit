@@ -51,6 +51,7 @@ namespace ToolKit
   {
     m_frameWorkers->pause();
     m_frameWorkers->wait_for_tasks();
+    m_frameWorkers->unpause();
 
     ExecuteTasks(m_mainThreadTasks, m_mainTaskMutex);
   }

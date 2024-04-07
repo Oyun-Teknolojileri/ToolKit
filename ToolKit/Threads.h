@@ -47,7 +47,7 @@ namespace ToolKit
 
     ThreadPool& GetPool(Executor executor); //!< Returns the thread pool corresponding to the executor.
 
-    void Flush(); //!< Stops waiting tasks and complates ongoing tasks on all pools and threads.
+    void Flush(); //!< Stops waiting tasks and completes ongoing tasks on all pools and threads.
 
     template <typename F, typename... A, typename R = std::invoke_result_t<std::decay_t<F>, std::decay_t<A>...>>
     std::future<R> AsyncTask(Executor exec, F&& func, A&&... args)

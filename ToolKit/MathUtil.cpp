@@ -516,8 +516,7 @@ namespace ToolKit
     rayInObjectSpace.position  = its * Vec4(rayInWorldSpace.position, 1.0f);
     rayInObjectSpace.direction = its * Vec4(rayInWorldSpace.direction, 0.0f);
 
-    std::for_each(TKExecByConditional(meshTraces.size(), WorkerManager::FramePool),
-                  meshTraces.begin(),
+    std::for_each(meshTraces.begin(),
                   meshTraces.end(),
                   [rayInObjectSpace, skel, &meshes](MeshTrace& trace)
                   {
