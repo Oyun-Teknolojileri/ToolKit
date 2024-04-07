@@ -9,7 +9,7 @@
 
 #include "Window.h"
 
-#include <EngineSettings.h>
+#include <Plugin.h>
 
 namespace ToolKit
 {
@@ -31,7 +31,7 @@ namespace ToolKit
       void ParsePluginDeclerations();
 
      private:
-      PluginDeclerationArray m_plugins;
+      std::vector<PluginSettings> m_plugins;
     };
 
     typedef std::shared_ptr<PluginWindow> PluginWindowPtr;

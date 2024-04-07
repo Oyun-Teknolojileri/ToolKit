@@ -58,6 +58,7 @@
     <ClCompile Include="ParameterBlock.cpp" />
     <ClCompile Include="Pass.cpp" />
     <ClCompile Include="AdditiveLightingPass.cpp" />
+    <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="PluginManager.cpp">
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
     </ClCompile>

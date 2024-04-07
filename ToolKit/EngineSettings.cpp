@@ -8,6 +8,8 @@
 #include "EngineSettings.h"
 
 #include "MathUtil.h"
+#include "PluginManager.h"
+#include "ToolKit.h"
 
 #include "DebugNew.h"
 
@@ -129,43 +131,6 @@ namespace ToolKit
     }
   }
 
-  void EngineSettings::PluginSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
-  {
-    XmlNode* pluginNode = CreateXmlNode(doc, "Plugins", parent);
-    for (const PluginDecleration& plugDec : pluginArray)
-    {
-      XmlNode* node = CreateXmlNode(doc, "Plugin", pluginNode);
-      WriteAttr(node, doc, "name", plugDec.name);
-      WriteAttr(node, doc, "version", plugDec.version);
-      WriteAttr(node, doc, "engine", plugDec.engine);
-    }
-  }
-
-  void EngineSettings::PluginSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
-  {
-    if (parent == nullptr)
-    {
-      return;
-    }
-
-    pluginArray.clear();
-
-    if (XmlNode* plugins = parent->first_node("Plugins"))
-    {
-      XmlNode* node = plugins->first_node("Plugin");
-      while (node)
-      {
-        PluginDecleration plugDec;
-        ReadAttr(node, "name", plugDec.name);
-        ReadAttr(node, "version", plugDec.version);
-        ReadAttr(node, "engine", plugDec.engine);
-        pluginArray.emplace_back(std::move(plugDec));
-
-        node = node->next_sibling();
-      }
-    }
-  }
-
   XmlNode* EngineSettings::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     if (doc == nullptr)
@@ -178,7 +143,20 @@ namespace ToolKit
 
     Window.Serialize(doc, settingsNode);
     Graphics.Serialize(doc, settingsNode);
-    Plugins.Serialize(doc, settingsNode);
+
+    XmlNode* pluginNode = CreateXmlNode(doc, "Plugins", settingsNode);
+
+    if (PluginManager* plugMan = GetPluginManager())
+    {
+      for (const PluginRegister& reg : plugMan->m_storage)
+      {
+        if (reg.m_loaded)
+        {
+          XmlNode* plugin = CreateXmlNode(doc, "Plugin", pluginNode);
+          WriteAttr(plugin, doc, "name", reg.m_file);
+        }
+      }
+    }
 
     return settingsNode;
   }
@@ -190,7 +168,19 @@ namespace ToolKit
 
     Window.DeSerialize(doc, settingsNode);
     Graphics.DeSerialize(doc, settingsNode);
-    Plugins.DeSerialize(doc, settingsNode);
+
+    if (XmlNode* pluginNode = settingsNode->first_node("Plugins"))
+    {
+      XmlNode* plugin = pluginNode->first_node();
+      while (plugin)
+      {
+        String pluginName;
+        ReadAttr(plugin, "name", pluginName);
+        LoadedPlugins.push_back(pluginName);
+
+        plugin = plugin->next_sibling();
+      }
+    }
 
     return settingsNode;
   }

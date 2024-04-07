@@ -1,5 +1,5 @@
 <Settings version="v0.4.6">
-	<Developer name="OtSoftware" web="otyazilim.com" email="info@otyazilim.com"/>
-	<Description name="Plugin Template" brief="Template plugin project."/>
 	<Plugin version="v1.0.0" autoload="0"/>
+	<Description name="Plugin Template" brief="Template plugin project."/>
+	<Developer name="OtSoftware" web="otyazilim.com" email="info@otyazilim.com"/>
 </Settings>

@@ -21,6 +21,25 @@
 namespace ToolKit
 {
 
+  struct TK_API PluginSettings
+  {
+    // Plugin data.
+    String version;
+    String engine;
+    bool autoLoad = false;
+    // Description data.
+    String name;
+    String brief;
+    // Developer data.
+    String developer;
+    String web;
+    String email;
+
+    void Serialize(XmlDocument* doc, XmlNode* parent) const;
+    void DeSerialize(XmlDocument* doc, XmlNode* parent);
+    void Load(const String& file);
+  };
+
   /**
    * Enums for plugin types.
    */

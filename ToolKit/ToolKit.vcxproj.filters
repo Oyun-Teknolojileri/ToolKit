@@ -244,6 +244,9 @@
     <ClCompile Include="GammaTonemapFxaaPass.cpp">
       <Filter>Render\PostProcessPass</Filter>
     </ClCompile>
+    <ClCompile Include="Plugin.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">

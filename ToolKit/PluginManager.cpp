@@ -220,12 +220,14 @@ namespace ToolKit
   void PluginManager::Init()
   {
     const EngineSettings& settings = GetEngineSettings();
-    for (auto& plugin : settings.Plugins.pluginArray)
+    for (const String& plugin : settings.LoadedPlugins)
     {
-      if (plugin.engine == TKVersionStr)
+      PluginSettings pluginSet;
+      pluginSet.Load(plugin);
+
+      if (pluginSet.engine == TKVersionStr)
       {
-        String path = PluginPath(plugin.name);
-        if (PluginRegister* reg = Load(path))
+        if (PluginRegister* reg = Load(plugin))
         {
           reg->m_plugin->m_currentState = PluginState::Running;
         }
@@ -233,8 +235,8 @@ namespace ToolKit
       else
       {
         TK_WRN("Plugin %s can't be loaded because its engine version %s mismatches with current engine version %s",
-               plugin.name,
-               plugin.engine,
+               pluginSet.name,
+               pluginSet.engine,
                TKVersionStr);
       }
     }

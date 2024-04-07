@@ -72,20 +72,7 @@ namespace ToolKit
       void DeSerialize(XmlDocument* doc, XmlNode* parent);
     } PostProcessing;
 
-    struct PluginSettings
-    {
-      struct PluginDecleration
-      {
-        String name;
-        String version;
-        String engine;
-      };
-
-      std::vector<PluginDecleration> pluginArray;
-
-      void Serialize(XmlDocument* doc, XmlNode* parent) const;
-      void DeSerialize(XmlDocument* doc, XmlNode* parent);
-    } Plugins;
+    StringArray LoadedPlugins;
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
@@ -93,7 +80,5 @@ namespace ToolKit
     void Save(const String& path);
     void Load(const String& path);
   };
-
-  typedef std::vector<EngineSettings::PluginSettings::PluginDecleration> PluginDeclerationArray;
 
 } // namespace ToolKit

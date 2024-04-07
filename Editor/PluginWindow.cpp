@@ -24,7 +24,20 @@ namespace ToolKit
       ParsePluginDeclerations();
     }
 
-    void PluginWindow::Show() {}
+    void PluginWindow::Show() 
+    {
+      ImGui::SetNextWindowSize(ImVec2(270, 110), ImGuiCond_Once);
+      if (ImGui::Begin(m_name.c_str(), &m_visible))
+      {
+        for (const PluginSettings& plugin : m_plugins)
+        {
+          ImGui::Text(plugin.name.c_str());
+          ImGui::Spacing();
+        }
+      }
+      ImGui::End();
+
+    }
 
     void PluginWindow::ParsePluginDeclerations()
     {
@@ -40,13 +53,16 @@ namespace ToolKit
           String cfgFile = ConcatPaths({path, "Config", "Plugin.settings"});
           if (CheckSystemFile(cfgFile))
           {
-            TK_LOG("Plugin: %s", cfgFile.c_str());
+            PluginSettings pluginSet;
+            pluginSet.Load(cfgFile);
+
+            m_plugins.emplace_back(pluginSet);
           }
         }
       }
       else
       {
-        TK_ERR("Can not traverse plugins directory.");
+        TK_ERR("Can not traverse Plugins directory.");
       }
     }
 
