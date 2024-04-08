@@ -119,7 +119,9 @@ namespace ToolKit
                                  LightPtrArray& lights,
                                  const CameraPtr& camera,
                                  const EnvironmentComponentPtrArray& environments,
-                                 bool ignoreVisibility = false);
+                                 bool assignLights,
+                                 bool useSceneLights,
+                                 bool ignoreVisibility);
 
     /**
      * This will drop the lights whose bounding volume does not intersect with camera.
@@ -134,12 +136,12 @@ namespace ToolKit
      */
     static void SeperateRenderData(RenderData& renderData, bool forwardOnly);
 
-    static void AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex);
+    static void AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex, bool useSceneLights);
 
     /**
      * Assign all lights affecting the job.
      */
-    static void AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights);
+    static void AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights, bool useSceneLights);
 
     /**
      * Makes sure that first elements are directional lights.

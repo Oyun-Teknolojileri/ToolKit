@@ -104,7 +104,16 @@ namespace ToolKit
   void MobileSceneRenderPath::SetPassParams()
   {
     // Update all lights before using them.
-    m_updatedLights = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
+    bool useSceneLights = false;
+    if (m_params.Lights.empty())
+    {
+      m_updatedLights = m_params.Scene->GetLights();
+      useSceneLights  = true;
+    }
+    else
+    {
+      m_updatedLights = m_params.Lights;
+    }
 
     // Cull lights out side of view. Not even their shadows are needed.
     RenderJobProcessor::CullLights(m_updatedLights, m_params.Cam);
@@ -115,7 +124,10 @@ namespace ToolKit
                                          m_renderData.jobs,
                                          m_updatedLights,
                                          m_params.Cam,
-                                         m_params.Scene->GetEnvironmentVolumes());
+                                         m_params.Scene->GetEnvironmentVolumes(),
+                                         true,
+                                         useSceneLights,
+                                         false);
 
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
     m_shadowPass->m_params.renderData   = &m_renderData;

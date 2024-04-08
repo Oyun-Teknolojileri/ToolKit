@@ -130,7 +130,16 @@ namespace ToolKit
     CPU_FUNC_RANGE();
 
     // Update all lights before using them.
-    m_updatedLights                   = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
+    bool useSceneLights = false;
+    if (m_params.Lights.empty())
+    {
+      m_updatedLights = m_params.Scene->GetLights();
+      useSceneLights  = true;
+    }
+    else
+    {
+      m_updatedLights = m_params.Lights;
+    }
 
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
@@ -142,6 +151,8 @@ namespace ToolKit
                                          nullLights,
                                          m_params.Cam,
                                          m_params.Scene->GetEnvironmentVolumes(),
+                                         false,
+                                         false,
                                          false);
 
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
@@ -154,7 +165,10 @@ namespace ToolKit
     RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
 
     // Assign lights for forward pass
-    RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_updatedLights);
+    RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(),
+                                    m_renderData.jobs.end(),
+                                    m_updatedLights,
+                                    useSceneLights);
 
     // TK_LOG("Culled");
     // int i = 0;

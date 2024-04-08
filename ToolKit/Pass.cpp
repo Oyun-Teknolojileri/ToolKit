@@ -64,7 +64,7 @@ namespace ToolKit
   {
     LightPtrArray nullLights;
     EnvironmentComponentPtrArray nullEnvironments;
-    CreateRenderJobs(entities, jobArray, nullLights, nullptr, nullEnvironments, ignoreVisibility);
+    CreateRenderJobs(entities, jobArray, nullLights, nullptr, nullEnvironments, false, false, ignoreVisibility);
   }
 
   void RenderJobProcessor::CreateRenderJobs(const EntityPtrArray& entities,
@@ -72,6 +72,8 @@ namespace ToolKit
                                             LightPtrArray& lights,
                                             const CameraPtr& camera,
                                             const EnvironmentComponentPtrArray& environments,
+                                            bool assignLights,
+                                            bool useSceneLights,
                                             bool ignoreVisibility)
   {
     CPU_FUNC_RANGE();
@@ -205,7 +207,10 @@ namespace ToolKit
                         // Light assignment.
                         if (!job.frustumCulled)
                         {
-                          AssignLight(job, lights, directionalEndIndx);
+                          if (assignLights)
+                          {
+                            AssignLight(job, lights, directionalEndIndx, useSceneLights);
+                          }
                           AssignEnvironment(job, environments);
                         }
                       }
@@ -312,7 +317,7 @@ namespace ToolKit
     renderData.forwardTranslucentStartIndex     = (int) std::distance(renderData.jobs.begin(), translucentItr);
   }
 
-  void RenderJobProcessor::AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex)
+  void RenderJobProcessor::AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex, bool useSceneLights)
   {
     job.lights.clear();
 
@@ -330,41 +335,72 @@ namespace ToolKit
       }
     }
 
-    // Iterate lights that are inside of bvh nodes same with the job entity
-    for (BVHNode* bvhNode : job.Entity->m_bvhNodes)
+    if (useSceneLights)
     {
-      bool breakLoop = false;
-      for (EntityPtr lightEntity : bvhNode->m_lights)
+      // Iterate lights that are inside of bvh nodes same with the job entity
+      for (BVHNode* bvhNode : job.Entity->m_bvhNodes)
+      {
+        bool breakLoop = false;
+        for (EntityPtr lightEntity : bvhNode->m_lights)
+        {
+          if (job.lights.size() >= Renderer::RHIConstants::MaxLightsPerObject)
+          {
+            breakLoop = true;
+            break;
+          }
+
+          if (SpotLight* spot = lightEntity->As<SpotLight>())
+          {
+            if (FrustumBoxIntersection(spot->m_frustumCache, job.BoundingBox) != IntersectResult::Outside)
+            {
+              job.lights.push_back(spot);
+            }
+          }
+          else if (PointLight* point = lightEntity->As<PointLight>())
+          {
+            if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))
+            {
+              job.lights.push_back(point);
+            }
+          }
+        }
+        if (breakLoop)
+        {
+          break;
+        }
+      }
+    }
+    else
+    {
+      for (int i = startIndex; i < (int) lights.size(); i++)
       {
         if (job.lights.size() >= Renderer::RHIConstants::MaxLightsPerObject)
         {
-          breakLoop = true;
           break;
         }
 
-        if (SpotLight* spot = lightEntity->As<SpotLight>())
+        LightPtr& light = lights[i];
+        if (light->GetLightType() == Light::Spot)
         {
+          SpotLight* spot = static_cast<SpotLight*>(light.get());
           if (FrustumBoxIntersection(spot->m_frustumCache, job.BoundingBox) != IntersectResult::Outside)
           {
-            job.lights.push_back(spot);
+            job.lights.push_back(lights[i].get());
           }
         }
-        else if (PointLight* point = lightEntity->As<PointLight>())
+        else
         {
+          PointLight* point = static_cast<PointLight*>(light.get());
           if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))
           {
-            job.lights.push_back(point);
+            job.lights.push_back(lights[i].get());
           }
         }
-      }
-      if (breakLoop)
-      {
-        break;
       }
     }
   }
 
-  void RenderJobProcessor::AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights)
+  void RenderJobProcessor::AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights, bool useSceneLights)
   {
     int directionalEndIndx = PreSortLights(lights);
 
@@ -381,30 +417,59 @@ namespace ToolKit
         }
       }
 
-      const BoundingBox& jobBox = job->BoundingBox;
-      for (int i = directionalEndIndx; i < (int) lights.size(); i++)
+      if (useSceneLights)
       {
-        if (job->lights.size() >= Renderer::RHIConstants::MaxLightsPerObject)
+        for (int i = directionalEndIndx; i < (int) lights.size(); i++)
         {
-          break;
-        }
-
-        LightPtr& light = lights[i];
-        if (light->GetLightType() == Light::Spot)
-        {
-          SpotLight* spot = static_cast<SpotLight*>(light.get());
-          if (FrustumBoxIntersection(spot->m_frustumCache, jobBox) != IntersectResult::Outside)
+          if (job->lights.size() >= Renderer::RHIConstants::MaxLightsPerObject)
           {
-            job->lights.push_back(lights[i].get());
+            break;
+          }
+
+          LightPtr& light = lights[i];
+          if (light->GetLightType() == Light::Spot)
+          {
+            SpotLight* spot = static_cast<SpotLight*>(light.get());
+            if (FrustumBoxIntersection(spot->m_frustumCache, job->BoundingBox) != IntersectResult::Outside)
+            {
+              job->lights.push_back(lights[i].get());
+            }
+          }
+          else
+          {
+            PointLight* point = static_cast<PointLight*>(light.get());
+            if (SphereBoxIntersection(point->m_boundingSphereCache, job->BoundingBox))
+            {
+              job->lights.push_back(lights[i].get());
+            }
           }
         }
-        else
+      }
+      else
+      {
+        for (int i = directionalEndIndx; i < (int) lights.size(); i++)
         {
-          assert(light->GetLightType() == Light::Point && "Unknown light type.");
-          PointLight* point = static_cast<PointLight*>(light.get());
-          if (SphereBoxIntersection(point->m_boundingSphereCache, jobBox))
+          if (job->lights.size() >= Renderer::RHIConstants::MaxLightsPerObject)
           {
-            job->lights.push_back(lights[i].get());
+            break;
+          }
+
+          LightPtr& light = lights[i];
+          if (light->GetLightType() == Light::Spot)
+          {
+            SpotLight* spot = static_cast<SpotLight*>(light.get());
+            if (FrustumBoxIntersection(spot->m_frustumCache, job->BoundingBox) != IntersectResult::Outside)
+            {
+              job->lights.push_back(lights[i].get());
+            }
+          }
+          else
+          {
+            PointLight* point = static_cast<PointLight*>(light.get());
+            if (SphereBoxIntersection(point->m_boundingSphereCache, job->BoundingBox))
+            {
+              job->lights.push_back(lights[i].get());
+            }
           }
         }
       }
