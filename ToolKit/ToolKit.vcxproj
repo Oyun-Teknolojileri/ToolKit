@@ -19,6 +19,7 @@
     <ClCompile Include="BillboardPass.cpp" />
     <ClCompile Include="BinPack2D.cpp" />
     <ClCompile Include="BloomPass.cpp" />
+    <ClCompile Include="BVH.cpp" />
     <ClCompile Include="Canvas.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -110,6 +111,7 @@
     <ClInclude Include="BillboardPass.h" />
     <ClInclude Include="BinPack2D.h" />
     <ClInclude Include="BloomPass.h" />
+    <ClInclude Include="BVH.h" />
     <ClInclude Include="Canvas.h" />
     <ClInclude Include="Class.h" />
     <ClInclude Include="Component.h" />

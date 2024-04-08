@@ -19,6 +19,7 @@
 
 namespace ToolKit
 {
+  class BVH;
 
   /**
    * The Scene class represents a collection of entities in a 3D environment. It
@@ -321,6 +322,8 @@ namespace ToolKit
      */
     BoundingBox m_boundingBox;
     EngineSettings::PostProcessingSettings m_postProcessSettings; //!< Post process settings that this scene uses
+
+    BVHPtr m_bvh = nullptr;
 
    protected:
     EntityPtrArray m_entities; //!< The entities in the scene.

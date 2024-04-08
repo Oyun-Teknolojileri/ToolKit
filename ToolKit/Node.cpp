@@ -7,7 +7,9 @@
 
 #include "Node.h"
 
+#include "BVH.h"
 #include "MathUtil.h"
+#include "Scene.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -325,6 +327,8 @@ namespace ToolKit
                           Quaternion* orientation,
                           Vec3* scale)
   {
+    SetBVHDirty();
+
     Mat4 ts;
     switch (space)
     {
@@ -346,6 +350,8 @@ namespace ToolKit
                              Quaternion* orientation,
                              Vec3* scale)
   {
+    SetBVHDirty();
+
     Mat4 ts;
     switch (space)
     {
@@ -463,6 +469,22 @@ namespace ToolKit
     {
       c->m_dirty = true;
       c->SetChildrenDirty();
+    }
+  }
+
+  void Node::SetBVHDirty()
+  {
+    if (EntityPtr ntt = m_entity.lock())
+    {
+      if (ntt->m_scene != nullptr)
+      {
+        ntt->m_scene->m_bvh->UpdateEntity(ntt);
+      }
+
+      for (Node* node : m_children)
+      {
+        node->SetBVHDirty();
+      }
     }
   }
 

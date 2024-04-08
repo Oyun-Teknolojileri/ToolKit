@@ -7,6 +7,7 @@
 
 #include "Scene.h"
 
+#include "BVH.h"
 #include "Component.h"
 #include "EngineSettings.h"
 #include "EnvironmentComponent.h"
@@ -25,7 +26,11 @@ namespace ToolKit
 {
   TKDefineClass(Scene, Resource);
 
-  Scene::Scene() { m_name = "New Scene"; }
+  Scene::Scene()
+  {
+    m_name = "New Scene";
+    m_bvh  = std::make_shared<BVH>(this);
+  }
 
   Scene::Scene(const String& file) : Scene() { SetFile(file); }
 
@@ -169,6 +174,8 @@ namespace ToolKit
         m_skyCache = sky;
       }
     }
+
+    m_bvh->Update();
   }
 
   void Scene::Merge(ScenePtr other)
@@ -205,45 +212,25 @@ namespace ToolKit
           continue;
         }
 
-        Ray rayInObjectSpace       = ray;
-        Mat4 ts                    = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
-        Mat4 its                   = glm::inverse(ts);
-        rayInObjectSpace.position  = its * Vec4(ray.position, 1.0f);
-        rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);
-
-        float dist                 = 0;
-        if (RayBoxIntersection(rayInObjectSpace, ntt->GetBoundingBox(), dist))
+        float dist = TK_FLT_MAX;
+        if (RayEntityIntersection(ray, ntt, dist))
         {
-          bool hit         = false;
-
-          float t          = TK_FLT_MAX;
-          uint submeshIndx = FindMeshIntersection(ntt, ray, t);
-
-          // There was no tracing possible object, so hit should be true
-          if (t == 0.0f && submeshIndx == TK_UINT_MAX)
+          if (dist < closestPickedDistance && dist > 0.0f)
           {
-            hit = true;
-          }
-          else if (t != TK_FLT_MAX && submeshIndx != TK_UINT_MAX)
-          {
-            hit = true;
-          }
-
-          if (hit)
-          {
-            if (dist < closestPickedDistance && dist > 0.0f)
-            {
-              pd.entity             = ntt;
-              pd.pickPos            = ray.position + ray.direction * dist;
-              closestPickedDistance = dist;
-            }
+            pd.entity             = ntt;
+            pd.pickPos            = ray.position + ray.direction * dist;
+            closestPickedDistance = dist;
           }
         }
       }
     };
 
-    pickFn(m_entities);
     pickFn(extraList);
+    if (pd.entity == nullptr)
+    {
+      m_bvh->PickObject(ray, pd, ignoreList, closestPickedDistance);
+      // pickFn(m_entities);
+    }
 
     return pd;
   }
@@ -288,8 +275,10 @@ namespace ToolKit
       }
     };
 
-    pickFn(m_entities);
     pickFn(extraList);
+
+    m_bvh->PickObject(frustum, pickedObjects, ignoreList, extraList, pickPartiallyInside);
+    // pickFn(m_entities);
   }
 
   EntityPtr Scene::GetEntity(ULongID id) const
@@ -314,6 +303,8 @@ namespace ToolKit
       if (isUnique)
       {
         m_entities.push_back(entity);
+        entity->m_scene = this;
+        m_bvh->AddEntity(entity);
       }
     }
   }
@@ -346,6 +337,8 @@ namespace ToolKit
       {
         removed = m_entities[i];
         m_entities.erase(m_entities.begin() + i);
+        m_bvh->RemoveEntity(removed);
+        removed->m_scene = nullptr;
 
         // Keep hierarchy if its prefab.
         if (removed->GetPrefabRoot() == nullptr)

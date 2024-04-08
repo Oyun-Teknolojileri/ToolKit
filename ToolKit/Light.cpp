@@ -7,6 +7,7 @@
 
 #include "Light.h"
 
+#include "BVH.h"
 #include "Camera.h"
 #include "Component.h"
 #include "DirectionComponent.h"
@@ -16,6 +17,7 @@
 #include "Mesh.h"
 #include "Pass.h"
 #include "Renderer.h"
+#include "Scene.h"
 #include "Shader.h"
 #include "TKProfiler.h"
 #include "ToolKit.h"
@@ -344,8 +346,18 @@ namespace ToolKit
   void PointLight::ParameterConstructor()
   {
     Super::ParameterConstructor();
-    Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.3f});
     ParamPCFRadius().m_hint.increment = 0.02f;
+    Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.3f});
+    ParamRadius().m_onValueChangedFn.clear();
+    ParamRadius().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void
+        {
+          if (m_scene != nullptr)
+          {
+            EntityPtr temp((Entity*) this);
+            m_scene->m_bvh->UpdateEntity(temp);
+          }
+        });
   }
 
   // SpotLight
@@ -434,6 +446,11 @@ namespace ToolKit
         {
           const float radius = std::get<float>(newVal);
           MeshGenerator::GenerateConeMesh(m_volumeMesh, radius, 32, GetOuterAngleVal());
+          if (m_scene != nullptr)
+          {
+            EntityPtr temp((Entity*) this);
+            m_scene->m_bvh->UpdateEntity(temp);
+          }
         });
 
     ParamOuterAngle().m_onValueChangedFn.clear();
@@ -442,6 +459,11 @@ namespace ToolKit
         {
           const float outerAngle = std::get<float>(newVal);
           MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, outerAngle);
+          if (m_scene != nullptr)
+          {
+            EntityPtr temp((Entity*) this);
+            m_scene->m_bvh->UpdateEntity(temp);
+          }
         });
   }
 } // namespace ToolKit

@@ -8,6 +8,7 @@
 #include "App.h"
 
 #include "AndroidBuildWindow.h"
+#include "BVH.h"
 #include "EditorCamera.h"
 #include "EditorViewport2d.h"
 #include "OverlayUI.h"
@@ -161,6 +162,20 @@ namespace ToolKit
       POP_CPU_MARKER();
 
       PUSH_CPU_MARKER("Gather viewports & windows to dispatch signals");
+
+#if 1
+      static uint a = 0;
+      a++;
+      static EntityPtrArray ar;
+      if (a == 250)
+      {
+        ar.clear();
+        GetCurrentScene()->m_bvh->GetDebugBVHBoxes(ar);
+        GetCurrentScene()->m_bvh->SanityCheck();
+        a = 0;
+      }
+      m_perFrameDebugObjects = ar;
+#endif
 
       EditorViewportRawPtrArray viewports;
       for (WindowPtr wnd : m_windows)

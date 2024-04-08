@@ -8,9 +8,11 @@
 #include "ResourceComponent.h"
 
 #include "Animation.h"
+#include "BVH.h"
 #include "Entity.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Scene.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"
@@ -33,7 +35,16 @@ namespace ToolKit
     return dst;
   }
 
-  void AABBOverrideComponent::Init(bool flushClientSideArray) {}
+  void AABBOverrideComponent::Init(bool flushClientSideArray)
+  {
+    if (EntityPtr ntt = m_entity.lock())
+    {
+      if (ntt->m_scene != nullptr)
+      {
+        ntt->m_scene->m_bvh->UpdateEntity(ntt);
+      }
+    }
+  }
 
   BoundingBox AABBOverrideComponent::GetBoundingBox()
   {

@@ -233,6 +233,7 @@ namespace ToolKit
     void UpdateTransformCaches();
     Mat4 GetParentTransform();
     void SetChildrenDirty();
+    void SetBVHDirty();
 
    public:
     ULongID m_id;

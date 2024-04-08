@@ -21,6 +21,7 @@
 
 namespace ToolKit
 {
+  class BVHNode;
 
   static VariantCategory EntityCategory {"Meta", 100};
 
@@ -206,6 +207,9 @@ namespace ToolKit
      * Prefab Entity during Prefab::Init.
      */
     Entity* _prefabRootEntity;
+
+    std::vector<BVHNode*> m_bvhNodes;
+    Scene* m_scene = nullptr;
 
    private:
     /**
