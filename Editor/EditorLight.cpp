@@ -234,7 +234,7 @@ namespace ToolKit
     {
       Super::ParameterEventConstructor();
 
-      ParamRadius().m_onValueChangedFn.clear();
+      // ParamRadius().m_onValueChangedFn.clear();
       ParamRadius().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
     }
 

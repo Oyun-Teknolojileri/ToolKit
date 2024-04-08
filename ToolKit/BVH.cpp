@@ -4,8 +4,6 @@
 #include "Renderer.h"
 #include "Scene.h"
 
-#include <mutex>
-
 namespace ToolKit
 {
   static inline bool IsBVHEntity(EntityPtr ntt) { return ntt->IsDrawable() && !ntt->IsA<Sky>(); }
@@ -56,7 +54,7 @@ namespace ToolKit
 
   void BVH::AddEntity(EntityPtr& entity)
   {
-    if (IsBVHEntity(entity) || entity->IsA<Light>())
+    if (IsBVHEntity(entity) || entity->IsA<SpotLight>() || entity->IsA<PointLight>())
     {
       m_entitiesToAdd.push_back(entity);
     }
@@ -64,7 +62,7 @@ namespace ToolKit
 
   void BVH::RemoveEntity(EntityPtr& entity)
   {
-    if (IsBVHEntity(entity) || entity->IsA<Light>())
+    if (IsBVHEntity(entity) || entity->IsA<SpotLight>() || entity->IsA<PointLight>())
     {
       m_entitiesToRemove.push_back(entity);
     }
@@ -72,7 +70,7 @@ namespace ToolKit
 
   void BVH::UpdateEntity(EntityPtr& entity)
   {
-    if (IsBVHEntity(entity) || entity->IsA<Light>())
+    if (IsBVHEntity(entity) || entity->IsA<SpotLight>() || entity->IsA<PointLight>())
     {
       m_entitiesToUpdate.push_back(entity);
     }
@@ -309,7 +307,7 @@ namespace ToolKit
   {
     BoundingBox entityAABB;
     BoundingSphere lightSphere;
-    Frustum lightFrustum;
+    BoundingBox lightBBox;
 
     /*
      * 0 : entity
@@ -329,9 +327,9 @@ namespace ToolKit
         entityType = 1;
 
         spot->UpdateShadowCamera();
-        lightFrustum = spot->m_frustumCache;
+        lightBBox = spot->m_boundingBoxCache;
 
-        if (IntersectResult::Outside == FrustumBoxIntersection(lightFrustum, m_root->m_aabb))
+        if (!BoxBoxIntersection(lightBBox, m_root->m_aabb))
         {
           m_root->m_aabb.UpdateBoundary(entity->m_node->GetTranslation());
           return true;
@@ -382,11 +380,11 @@ namespace ToolKit
 
         if (entityType == 1) // spot light
         {
-          if (IntersectResult::Outside != FrustumBoxIntersection(lightFrustum, node->m_left->m_aabb))
+          if (BoxBoxIntersection(lightBBox, node->m_left->m_aabb))
           {
             nextNodes.push(node->m_left);
           }
-          if (IntersectResult::Outside != FrustumBoxIntersection(lightFrustum, node->m_right->m_aabb))
+          if (BoxBoxIntersection(lightBBox, node->m_right->m_aabb))
           {
             nextNodes.push(node->m_right);
           }

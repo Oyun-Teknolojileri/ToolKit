@@ -274,6 +274,11 @@ namespace ToolKit
      */
     virtual void ClearEntities();
 
+    /**
+     * Entites who should be updated in BVH should call this function
+     */
+    void UpdateBVHEntity(ULongID id);
+
    protected:
     /**
      * Serializes the scene to an XML document.
@@ -328,6 +333,7 @@ namespace ToolKit
    protected:
     EntityPtrArray m_entities; //!< The entities in the scene.
     bool m_isPrefab;           //!< Whether or not the scene is a prefab.
+    std::vector<ULongID> m_entitesToBVHUpdate;
 
     /**
      * Each frame cached objects are updated and stay valid until the end of the frame.

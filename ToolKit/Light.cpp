@@ -354,8 +354,7 @@ namespace ToolKit
         {
           if (m_scene != nullptr)
           {
-            EntityPtr temp((Entity*) this);
-            //m_scene->m_bvh->UpdateEntity(temp);
+            m_scene->UpdateBVHEntity(GetIdVal());
           }
         });
   }
@@ -448,8 +447,7 @@ namespace ToolKit
           MeshGenerator::GenerateConeMesh(m_volumeMesh, radius, 32, GetOuterAngleVal());
           if (m_scene != nullptr)
           {
-            EntityPtr temp((Entity*) this);
-            //m_scene->m_bvh->UpdateEntity(temp);
+            m_scene->UpdateBVHEntity(GetIdVal());
           }
         });
 
@@ -461,8 +459,7 @@ namespace ToolKit
           MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, outerAngle);
           if (m_scene != nullptr)
           {
-            EntityPtr temp((Entity*) this);
-            //m_scene->m_bvh->UpdateEntity(temp);
+            m_scene->UpdateBVHEntity(GetIdVal());
           }
         });
   }
