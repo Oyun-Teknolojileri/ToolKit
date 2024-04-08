@@ -156,8 +156,17 @@ namespace ToolKit
 
       EditorScenePtr scene = app->GetCurrentScene();
 
-      LightPtrArray lights =
-          m_params.LitMode == EditorLitMode::EditorLit ? m_lightSystem->m_lights : scene->GetLights();
+      LightPtrArray lights;
+      bool useSceneLights = true;
+      if (m_params.LitMode == EditorLitMode::EditorLit)
+      {
+        lights         = m_lightSystem->m_lights;
+        useSceneLights = false;
+      }
+      else
+      {
+        lights = scene->GetLights();
+      }
 
       EditorViewport* viewport = static_cast<EditorViewport*>(m_params.Viewport);
 
@@ -171,6 +180,7 @@ namespace ToolKit
         m_mobileSceneRenderPath->m_params.Lights          = lights;
         m_mobileSceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
         m_mobileSceneRenderPath->m_params.Scene           = scene;
+        m_mobileSceneRenderPath->m_params.useSceneLights  = useSceneLights;
       }
       else
       {
@@ -180,6 +190,7 @@ namespace ToolKit
         m_sceneRenderPath->m_params.Lights          = lights;
         m_sceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
         m_sceneRenderPath->m_params.Scene           = scene;
+        m_sceneRenderPath->m_params.useSceneLights  = useSceneLights;
       }
 
       // Generate Selection boundary and Environment component boundary.

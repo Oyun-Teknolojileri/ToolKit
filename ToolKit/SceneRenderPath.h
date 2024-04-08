@@ -24,6 +24,7 @@ namespace ToolKit
   struct SceneRenderPathParams
   {
     LightPtrArray Lights;
+    bool useSceneLights            = true;
     ScenePtr Scene                 = nullptr;
     CameraPtr Cam                  = nullptr;
     FramebufferPtr MainFramebuffer = nullptr;
@@ -61,7 +62,6 @@ namespace ToolKit
     SSAOPassPtr m_ssaoPass                           = nullptr;
     BloomPassPtr m_bloomPass                         = nullptr;
     DoFPassPtr m_dofPass                             = nullptr;
-    LightPtrArray m_updatedLights;
 
    protected:
     bool m_drawSky   = false;

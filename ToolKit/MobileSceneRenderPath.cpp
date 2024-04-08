@@ -99,39 +99,46 @@ namespace ToolKit
                                          m_params.MainFramebuffer->GetSettings().height);
   }
 
-  void MobileSceneRenderPath::PostRender() { m_updatedLights.clear(); }
+  void MobileSceneRenderPath::PostRender() {}
 
   void MobileSceneRenderPath::SetPassParams()
   {
-    // Update all lights before using them.
-    bool useSceneLights = false;
-    if (m_params.Lights.empty())
-    {
-      m_updatedLights = m_params.Scene->GetLights();
-      useSceneLights  = true;
-    }
-    else
-    {
-      m_updatedLights = m_params.Lights;
-    }
-
     // Cull lights out side of view. Not even their shadows are needed.
-    RenderJobProcessor::CullLights(m_updatedLights, m_params.Cam);
+    RenderJobProcessor::CullLights(m_params.Lights, m_params.Cam);
 
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
+    float start                       = GetElapsedMilliSeconds();
+
     RenderJobProcessor::CreateRenderJobs(allDrawList,
                                          m_renderData.jobs,
-                                         m_updatedLights,
+                                         m_params.Lights,
                                          m_params.Cam,
                                          m_params.Scene->GetEnvironmentVolumes(),
                                          true,
-                                         useSceneLights,
+                                         m_params.useSceneLights,
                                          false);
+
+    float end = GetElapsedMilliSeconds();
+    static float a[80];
+    static int i = 0;
+    a[i]         = end - start;
+    if (i == 79)
+    {
+      float total = 0.0f;
+      for (int ii = 0; ii < 80; ++ii)
+      {
+        total += a[ii];
+      }
+      total /= 80.0f;
+      TK_LOG("dur: %f", total);
+      i = -1;
+    }
+    ++i;
 
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
     m_shadowPass->m_params.renderData   = &m_renderData;
-    m_shadowPass->m_params.Lights       = m_updatedLights;
+    m_shadowPass->m_params.Lights       = m_params.Lights;
     m_shadowPass->m_params.ViewCamera   = m_params.Cam;
 
     // RenderJobProcessor::CullRenderJobs(m_renderData.jobs, m_params.Cam);
@@ -194,7 +201,7 @@ namespace ToolKit
     }
 
     m_forwardRenderPass->m_params.renderData  = &m_renderData;
-    m_forwardRenderPass->m_params.Lights      = m_updatedLights;
+    m_forwardRenderPass->m_params.Lights      = m_params.Lights;
     m_forwardRenderPass->m_params.Cam         = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.SSAOEnabled = m_params.Gfx.SSAOEnabled;
