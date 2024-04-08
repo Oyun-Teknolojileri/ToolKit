@@ -90,7 +90,6 @@ namespace ToolKit
     Pass::PreRender();
 
     Renderer* renderer = GetRenderer();
-    renderer->SetLights(m_params.Lights);
 
     // Dropout non shadow casting lights.
     erase_if(m_params.Lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
@@ -137,7 +136,7 @@ namespace ToolKit
       renderer->m_ignoreRenderingCulledObjectWarning = true;
       for (int i = 0; i < m_unCulledRenderJobIndices.size(); i++)
       {
-        RenderJob& job          = jobs[m_unCulledRenderJobIndices[i]];
+        RenderJob& job = jobs[m_unCulledRenderJobIndices[i]];
         renderer->Render(job);
       }
       renderer->m_ignoreRenderingCulledObjectWarning = false;

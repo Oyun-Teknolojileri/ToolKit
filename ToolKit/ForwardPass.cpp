@@ -55,7 +55,6 @@ namespace ToolKit
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
     renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
     renderer->SetCamera(m_params.Cam, true);
-    renderer->SetLights(m_params.Lights);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

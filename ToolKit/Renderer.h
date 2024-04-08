@@ -175,13 +175,6 @@ namespace ToolKit
 
     UVec2 m_viewportSize; //!< Current viewport size.
 
-    /**
-     * Light array that will be used by the renderer.
-     * Usually, render paths sets the light array after culling visible lights.
-     * Jobs maintains indexes to the light list.
-     */
-    LightPtrArray m_lights;
-
     /*
      * This framebuffer can ONLY have 1 color attachment and no other attachments.
      * This way, we can use without needing to resize or reInit.

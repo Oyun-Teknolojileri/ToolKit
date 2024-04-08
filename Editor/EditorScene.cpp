@@ -164,13 +164,11 @@ namespace ToolKit
         if (!jobs.empty())
         {
           RenderJobProcessor::AssignLight(jobs.begin(), jobs.end(), lights);
-
           RenderJob& job = jobs.front();
-          int size       = job.activeLightCount;
 
-          for (int i = 0; i < size; i++)
+          for (int i = 0; i < job.lights.size(); i++)
           {
-            LightPtr& light = lights[job.lights[i]];
+            Light* light = job.lights[i];
             if (!IsSelected(light->GetIdVal()))
             {
               AddToSelection(light->GetIdVal(), true);

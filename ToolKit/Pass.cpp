@@ -7,6 +7,7 @@
 
 #include "Pass.h"
 
+#include "BVH.h"
 #include "Camera.h"
 #include "DirectionComponent.h"
 #include "Material.h"
@@ -313,51 +314,52 @@ namespace ToolKit
 
   void RenderJobProcessor::AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex)
   {
-    auto assignmentFn = [](RenderJob& job, Light* light, int i) -> void
+    job.lights.clear();
+
+    if (job.Entity == nullptr)
     {
-      job.lights[job.activeLightCount] = i;
-      job.activeLightCount++;
-    };
+      return;
+    }
 
-    auto checkBreakFn = [](int activeLightCount) -> bool
-    { return activeLightCount >= Renderer::RHIConstants::MaxLightsPerObject; };
-
-    job.activeLightCount = 0;
     for (int i = 0; i < startIndex; i++)
     {
-      assignmentFn(job, lights[i].get(), i);
-
-      if (checkBreakFn(job.activeLightCount))
+      job.lights.push_back(lights[i].get());
+      if (i >= Renderer::RHIConstants::MaxLightsPerObject)
       {
         break;
       }
     }
 
-    const BoundingBox& jobBox = job.BoundingBox;
-    for (int i = startIndex; i < (int) lights.size(); i++)
+    // Iterate lights that are inside of bvh nodes same with the job entity
+    for (BVHNode* bvhNode : job.Entity->m_bvhNodes)
     {
-      if (checkBreakFn(job.activeLightCount))
+      bool breakLoop = false;
+      for (EntityPtr lightEntity : bvhNode->m_lights)
+      {
+        if (job.lights.size() >= Renderer::RHIConstants::MaxLightsPerObject)
+        {
+          breakLoop = true;
+          break;
+        }
+
+        if (SpotLight* spot = lightEntity->As<SpotLight>())
+        {
+          if (FrustumBoxIntersection(spot->m_frustumCache, job.BoundingBox) != IntersectResult::Outside)
+          {
+            job.lights.push_back(spot);
+          }
+        }
+        else if (PointLight* point = lightEntity->As<PointLight>())
+        {
+          if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))
+          {
+            job.lights.push_back(point);
+          }
+        }
+      }
+      if (breakLoop)
       {
         break;
-      }
-
-      LightPtr& light = lights[i];
-      if (light->GetLightType() == Light::Spot)
-      {
-        SpotLight* spot = static_cast<SpotLight*>(light.get());
-        if (FrustumBoxIntersection(spot->m_frustumCache, jobBox) != IntersectResult::Outside)
-        {
-          assignmentFn(job, lights[i].get(), i);
-        }
-      }
-      else
-      {
-        assert(light->GetLightType() == Light::Point && "Unknown light type.");
-        PointLight* point = static_cast<PointLight*>(light.get());
-        if (SphereBoxIntersection(point->m_boundingSphereCache, jobBox))
-        {
-          assignmentFn(job, lights[i].get(), i);
-        }
       }
     }
   }
@@ -366,23 +368,14 @@ namespace ToolKit
   {
     int directionalEndIndx = PreSortLights(lights);
 
-    auto assignmentFn      = [](RenderJobItr job, Light* light, int i) -> void
-    {
-      job->lights[job->activeLightCount] = i;
-      job->activeLightCount++;
-    };
-
-    auto checkBreakFn = [](int activeLightCount) -> bool
-    { return activeLightCount >= Renderer::RHIConstants::MaxLightsPerObject; };
-
     for (RenderJobItr job = begin; job != end; job++)
     {
-      job->activeLightCount = 0;
+      job->lights.clear();
       for (int i = 0; i < directionalEndIndx; i++)
       {
-        assignmentFn(job, lights[i].get(), i);
+        job->lights.push_back(lights[i].get());
 
-        if (checkBreakFn(job->activeLightCount))
+        if (job->lights.size() >= Renderer::RHIConstants::MaxLightsPerObject)
         {
           break;
         }
@@ -391,7 +384,7 @@ namespace ToolKit
       const BoundingBox& jobBox = job->BoundingBox;
       for (int i = directionalEndIndx; i < (int) lights.size(); i++)
       {
-        if (checkBreakFn(job->activeLightCount))
+        if (job->lights.size() >= Renderer::RHIConstants::MaxLightsPerObject)
         {
           break;
         }
@@ -402,7 +395,7 @@ namespace ToolKit
           SpotLight* spot = static_cast<SpotLight*>(light.get());
           if (FrustumBoxIntersection(spot->m_frustumCache, jobBox) != IntersectResult::Outside)
           {
-            assignmentFn(job, lights[i].get(), i);
+            job->lights.push_back(lights[i].get());
           }
         }
         else
@@ -411,7 +404,7 @@ namespace ToolKit
           PointLight* point = static_cast<PointLight*>(light.get());
           if (SphereBoxIntersection(point->m_boundingSphereCache, jobBox))
           {
-            assignmentFn(job, lights[i].get(), i);
+            job->lights.push_back(lights[i].get());
           }
         }
       }

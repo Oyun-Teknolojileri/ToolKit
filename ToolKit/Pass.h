@@ -58,8 +58,7 @@ namespace ToolKit
     Mat4 WorldTransform;     //!< World transform of the entity.
     AnimData animData;       //!< Animation data of render job.
 
-    short activeLightCount = 0; //!< Number of lights that is active in the list.
-    std::array<int, Renderer::RHIConstants::MaxLightsPerObject> lights {}; //!< Light indexes that affects the job.
+    std::vector<Light*> lights;
   };
 
   typedef RenderJobArray::iterator RenderJobItr;
