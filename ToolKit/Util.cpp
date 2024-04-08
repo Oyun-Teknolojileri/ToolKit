@@ -564,7 +564,7 @@ namespace ToolKit
 #ifdef TK_DEBUG
     return "_d.dll";
 #else
-    return = ".dll";
+    return ".dll";
 #endif
   }
 
