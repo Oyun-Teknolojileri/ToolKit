@@ -34,7 +34,11 @@ namespace ToolKit
 
   Scene::Scene(const String& file) : Scene() { SetFile(file); }
 
-  Scene::~Scene() { Destroy(false); }
+  Scene::~Scene()
+  {
+    Destroy(false);
+    m_bvh = nullptr;
+  }
 
   void Scene::Load()
   {
@@ -470,6 +474,7 @@ namespace ToolKit
     for (int i = maxCnt; i >= 0; i--)
     {
       EntityPtr ntt = m_entities[i];
+      ntt->m_scene  = nullptr;
       if (removeResources)
       {
         ntt->RemoveResources();
@@ -520,6 +525,11 @@ namespace ToolKit
     for (EntityPtr ntt : roots)
     {
       DeepCopy(ntt, cpy->m_entities);
+    }
+
+    for (EntityPtr ntt : cpy->m_entities)
+    {
+      ntt->m_scene = static_cast<Scene*>(other);
     }
   }
 

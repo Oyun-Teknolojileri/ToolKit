@@ -809,6 +809,7 @@ namespace ToolKit
         i++;
       }
     }
+    m_entites.clear();
     for (EntityPtr ntt : m_lights)
     {
       uint i = 0;
@@ -822,5 +823,6 @@ namespace ToolKit
         i++;
       }
     }
+    m_lights.clear();
   }
 } // namespace ToolKit

@@ -70,7 +70,7 @@ namespace ToolKit
   {
     if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
     {
-      //meshComp->Init(false);
+      // meshComp->Init(false);
       if (const MeshPtr& mesh = meshComp->GetMeshVal())
       {
         return mesh->TotalVertexCount() > 0;
@@ -147,6 +147,8 @@ namespace ToolKit
       ComponentPtr copy = m_components[i]->Copy(other->Self<Entity>());
       other->m_components.push_back(copy);
     }
+
+    other->m_scene = m_scene;
 
     return other;
   }

@@ -355,7 +355,7 @@ namespace ToolKit
           if (m_scene != nullptr)
           {
             EntityPtr temp((Entity*) this);
-            m_scene->m_bvh->UpdateEntity(temp);
+            //m_scene->m_bvh->UpdateEntity(temp);
           }
         });
   }
@@ -449,7 +449,7 @@ namespace ToolKit
           if (m_scene != nullptr)
           {
             EntityPtr temp((Entity*) this);
-            m_scene->m_bvh->UpdateEntity(temp);
+            //m_scene->m_bvh->UpdateEntity(temp);
           }
         });
 
@@ -462,7 +462,7 @@ namespace ToolKit
           if (m_scene != nullptr)
           {
             EntityPtr temp((Entity*) this);
-            m_scene->m_bvh->UpdateEntity(temp);
+            //m_scene->m_bvh->UpdateEntity(temp);
           }
         });
   }

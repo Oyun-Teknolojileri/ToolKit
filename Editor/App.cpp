@@ -163,7 +163,7 @@ namespace ToolKit
 
       PUSH_CPU_MARKER("Gather viewports & windows to dispatch signals");
 
-#if 1
+#if 0
       static uint a = 0;
       a++;
       static EntityPtrArray ar;

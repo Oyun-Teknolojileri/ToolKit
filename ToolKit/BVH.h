@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 
 #include "GeometryTypes.h"
 #include "Scene.h"
@@ -89,9 +88,6 @@ namespace ToolKit
                     const IDArray& ignoreList,
                     const EntityPtrArray& extraList,
                     bool pickPartiallyInside);
-    void FrustumCull(const Frustum& frustum, EntityPtrArray& out);
-    void SetPointLight(int lightIndex, const BoundingSphere& sphere);
-    void SetSpotLight(int lightIndex, const Frustum& frustum);
 
     // Debug functions
     void GetDebugBVHBoxes(EntityPtrArray& boxes);
