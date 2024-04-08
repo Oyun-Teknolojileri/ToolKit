@@ -163,20 +163,6 @@ namespace ToolKit
 
       PUSH_CPU_MARKER("Gather viewports & windows to dispatch signals");
 
-#if 0
-      static uint a = 0;
-      a++;
-      static EntityPtrArray ar;
-      if (a == 250)
-      {
-        ar.clear();
-        GetCurrentScene()->m_bvh->GetDebugBVHBoxes(ar);
-        GetCurrentScene()->m_bvh->SanityCheck();
-        a = 0;
-      }
-      m_perFrameDebugObjects = ar;
-#endif
-
       EditorViewportRawPtrArray viewports;
       for (WindowPtr wnd : m_windows)
       {

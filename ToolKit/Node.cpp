@@ -478,7 +478,7 @@ namespace ToolKit
     {
       if (ntt->m_scene != nullptr)
       {
-        ntt->m_scene->m_bvh->UpdateEntity(ntt);
+        ntt->m_scene->UpdateBVHEntity(ntt->GetIdVal());
       }
 
       for (Node* node : m_children)
