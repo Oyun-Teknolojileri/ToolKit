@@ -108,8 +108,6 @@ namespace ToolKit
 
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
-    float start                       = GetElapsedMilliSeconds();
-
     RenderJobProcessor::CreateRenderJobs(allDrawList,
                                          m_renderData.jobs,
                                          m_params.Lights,
@@ -118,23 +116,6 @@ namespace ToolKit
                                          true,
                                          m_params.useSceneLights,
                                          false);
-
-    float end = GetElapsedMilliSeconds();
-    static float a[80];
-    static int i = 0;
-    a[i]         = end - start;
-    if (i == 79)
-    {
-      float total = 0.0f;
-      for (int ii = 0; ii < 80; ++ii)
-      {
-        total += a[ii];
-      }
-      total /= 80.0f;
-      TK_LOG("dur: %f", total);
-      i = -1;
-    }
-    ++i;
 
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
     m_shadowPass->m_params.renderData   = &m_renderData;
