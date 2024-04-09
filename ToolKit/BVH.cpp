@@ -59,8 +59,9 @@ namespace ToolKit
 
   void BVH::AddEntity(EntityPtr& entity)
   {
-    if (IsBVHEntity(entity) || entity->IsA<SpotLight>() || entity->IsA<PointLight>())
+    if (!entity->m_addingToBVH && IsBVHEntity(entity) || entity->IsA<SpotLight>() || entity->IsA<PointLight>())
     {
+      entity->m_addingToBVH = true;
       m_entitiesToAdd.push_back(entity);
     }
   }
@@ -83,10 +84,6 @@ namespace ToolKit
 
   void BVH::Update()
   {
-
-    // TODO traversing the whole scene entities is not optimized, register the entites that should be updated and update
-    // those only
-
     // Removed entities
     for (EntityPtr& entity : m_entitiesToRemove)
     {
@@ -310,6 +307,8 @@ namespace ToolKit
 
   bool BVHTree::Add(EntityPtr& entity)
   {
+    entity->m_addingToBVH = false;
+
     BoundingBox entityAABB;
     BoundingSphere lightSphere;
     BoundingBox lightBBox;
@@ -669,12 +668,12 @@ namespace ToolKit
         {
           if (SpotLight* spot = lightEntity->As<SpotLight>())
           {
-            if (IntersectResult::Outside != FrustumBoxIntersection(spot->m_frustumCache, node->m_left->m_aabb))
+            if (IntersectResult::Outside != FrustumBoxIntersection(spot->m_frustumCache, left->m_aabb))
             {
               lightEntity->m_bvhNodes.push_back(left);
               left->m_lights.push_back(lightEntity);
             }
-            if (IntersectResult::Outside != FrustumBoxIntersection(spot->m_frustumCache, node->m_right->m_aabb))
+            if (IntersectResult::Outside != FrustumBoxIntersection(spot->m_frustumCache, right->m_aabb))
             {
               lightEntity->m_bvhNodes.push_back(right);
               right->m_lights.push_back(lightEntity);
@@ -682,12 +681,12 @@ namespace ToolKit
           }
           else if (PointLight* point = lightEntity->As<PointLight>())
           {
-            if (SphereBoxIntersection(point->m_boundingSphereCache, node->m_left->m_aabb))
+            if (SphereBoxIntersection(point->m_boundingSphereCache, left->m_aabb))
             {
               lightEntity->m_bvhNodes.push_back(left);
               left->m_lights.push_back(lightEntity);
             }
-            if (SphereBoxIntersection(point->m_boundingSphereCache, node->m_right->m_aabb))
+            if (SphereBoxIntersection(point->m_boundingSphereCache, right->m_aabb))
             {
               lightEntity->m_bvhNodes.push_back(right);
               right->m_lights.push_back(lightEntity);

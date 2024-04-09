@@ -209,7 +209,8 @@ namespace ToolKit
     Entity* _prefabRootEntity;
 
     std::vector<BVHNode*> m_bvhNodes;
-    Scene* m_scene = nullptr;
+    Scene* m_scene     = nullptr;
+    bool m_addingToBVH = false; //!< Internal value used by BVH
 
    private:
     /**
