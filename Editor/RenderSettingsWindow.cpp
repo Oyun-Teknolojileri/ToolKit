@@ -171,6 +171,14 @@ namespace ToolKit
 
         ImGui::DragFloat("Shadow Distance", &engineSettings.PostProcessing.ShadowDistance, 1.0f, 0.01f, 100000.0f);
 
+        ImGui::SeparatorText("BVH");
+        ImGui::DragInt("Node Max Entity", &engineSettings.PostProcessing.maxEntityPerBVHNode, 1, 1, 1000000);
+        ImGui::DragFloat("Node Min Size", &engineSettings.PostProcessing.minBVHNodeSize, 1.0f, 0.01f, 100000.0f);
+        if (ImGui::Button("ReBuild BVH"))
+        {
+          GetSceneManager()->GetCurrentScene()->RebuildBVH();
+        }
+
       } // Imgui::Begin
       ImGui::End();
     }

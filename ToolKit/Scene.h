@@ -279,6 +279,11 @@ namespace ToolKit
      */
     void UpdateBVHEntity(ULongID id);
 
+    /**
+     * Rebuilds the BVH
+     */
+    void RebuildBVH();
+
    protected:
     /**
      * Serializes the scene to an XML document.

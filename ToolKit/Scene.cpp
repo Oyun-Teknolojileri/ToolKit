@@ -533,6 +533,8 @@ namespace ToolKit
 
   void Scene::UpdateBVHEntity(ULongID id) { m_entitesToBVHUpdate.push_back(id); }
 
+  void Scene::RebuildBVH() { m_bvh->ReBuild(); }
+
   void Scene::CopyTo(Resource* other)
   {
     Resource::CopyTo(other);
@@ -777,6 +779,7 @@ namespace ToolKit
 
     // apply scene post processing effects
     GetEngineSettings().PostProcessing = m_currentScene->m_postProcessSettings;
+    m_currentScene->RebuildBVH(); // Rebuild BVH with new parameters
   }
 
 } // namespace ToolKit

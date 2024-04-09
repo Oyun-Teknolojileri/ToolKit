@@ -59,12 +59,11 @@ namespace ToolKit
     // Utility queue that used to iterate nodes
     std::deque<BVHNode*> m_nextNodes;
 
-    int maxDepth = 0;
-
-   private:
-    class BVH* m_bvh               = nullptr;
     int m_maxEntityCountPerBVHNode = 10;
     float m_minBBSize              = 2.0f;
+
+   private:
+    class BVH* m_bvh = nullptr;
   };
 
   class TK_API BVH

@@ -18,6 +18,11 @@ namespace ToolKit
 
   bool BVH::ReBuild()
   {
+    // Get new parameters
+    const EngineSettings& engineSettings  = GetEngineSettings();
+    m_bvhTree->m_maxEntityCountPerBVHNode = engineSettings.PostProcessing.maxEntityPerBVHNode;
+    m_bvhTree->m_minBBSize                = engineSettings.PostProcessing.minBVHNodeSize;
+
     // Clean scene entities
     for (EntityPtr ntt : m_scene->GetEntities())
     {
@@ -645,8 +650,6 @@ namespace ToolKit
       }
       else
       {
-        maxDepth = left->depth;
-
         // divide entities into leaf nodes
         for (EntityPtr& entity : node->m_entites)
         {

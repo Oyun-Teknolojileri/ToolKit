@@ -68,6 +68,8 @@ namespace ToolKit
     writeAttrFn("DofQuality", to_string((int) DofQuality));
     writeAttrFn("FXAAEnabled", to_string(FXAAEnabled));
     writeAttrFn("ShadowDistance", to_string(ShadowDistance));
+    writeAttrFn("MaxEntityPerBVHNode", to_string(maxEntityPerBVHNode));
+    writeAttrFn("MinBVHNodeSize", to_string(minBVHNodeSize));
   }
 
   void EngineSettings::PostProcessingSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -98,6 +100,8 @@ namespace ToolKit
       ReadAttr(node, "TonemapperMode", *(int*) &TonemapperMode);
       ReadAttr(node, "DofQuality", *(int*) &DofQuality);
       ReadAttr(node, "ShadowDistance", ShadowDistance);
+      ReadAttr(node, "MaxEntityPerBVHNode", maxEntityPerBVHNode);
+      ReadAttr(node, "MinBVHNodeSize", minBVHNodeSize);
     }
   }
 
@@ -124,7 +128,7 @@ namespace ToolKit
       ReadAttr(node, "FPS", FPS);
       ReadAttr(node, "HDRPipeline", HDRPipeline);
       ReadAttr(node, "RenderResolutionScale", renderResolutionScale);
-      ReadAttr(node, "RenderSpec", *(int*)&RenderSpec);
+      ReadAttr(node, "RenderSpec", *(int*) &RenderSpec);
     }
   }
 
