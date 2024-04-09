@@ -93,7 +93,6 @@ namespace ToolKit
     void SanityCheck();
 
    public:
-    // TODO make it private
     BVHTree* m_bvhTree = nullptr;
 
    private:

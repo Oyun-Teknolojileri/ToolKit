@@ -599,24 +599,6 @@ namespace ToolKit
     }
   }
 
-  bool HaveSameElements(EntityPtrArray& vec1, EntityPtrArray& vec2)
-  {
-    // Check if sizes are equal
-    if (vec1.size() != vec2.size())
-    {
-      return false;
-    }
-
-    auto comp = [](const EntityPtr& ptr1, const EntityPtr& ptr2) { return ptr1.get() < ptr2.get(); };
-
-    // Sort the vectors
-    std::sort(vec1.begin(), vec1.end(), comp);
-    std::sort(vec2.begin(), vec2.end(), comp);
-
-    // Compare sorted vectors element-wise
-    return vec1 == vec2;
-  }
-
   void BVHTree::UpdateLeaf(BVHNode* node)
   {
     // this is going to be called after populating entites inside a node. Num of entites can be any number including

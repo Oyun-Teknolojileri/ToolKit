@@ -29,7 +29,7 @@ namespace ToolKit
   Scene::Scene()
   {
     m_name = "New Scene";
-    m_bvh  = std::make_shared<BVH>(this);
+    m_bvh  = MakeNewPtr<BVH>(this);
   }
 
   Scene::Scene(const String& file) : Scene() { SetFile(file); }

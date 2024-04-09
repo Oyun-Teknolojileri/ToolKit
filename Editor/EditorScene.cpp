@@ -160,7 +160,6 @@ namespace ToolKit
         }
 
         RenderJobArray jobs;
-        LightPtrArray nullLights;
         RenderJobProcessor::CreateRenderJobs({ntt}, jobs, false);
         if (!jobs.empty())
         {
