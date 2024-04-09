@@ -19,8 +19,6 @@
 
 namespace ToolKit
 {
-  class BVH;
-
   /**
    * The Scene class represents a collection of entities in a 3D environment. It
    * provides functionality for loading and saving scenes, updating and querying
@@ -275,11 +273,6 @@ namespace ToolKit
     virtual void ClearEntities();
 
     /**
-     * Entites who should be updated in BVH should call this function
-     */
-    void UpdateBVHEntity(ULongID id);
-
-    /**
      * Rebuilds the BVH
      */
     void RebuildBVH();
@@ -338,7 +331,6 @@ namespace ToolKit
    protected:
     EntityPtrArray m_entities; //!< The entities in the scene.
     bool m_isPrefab;           //!< Whether or not the scene is a prefab.
-    std::vector<ULongID> m_entitesToBVHUpdate;
 
     /**
      * Each frame cached objects are updated and stay valid until the end of the frame.

@@ -177,16 +177,7 @@ namespace ToolKit
       {
         m_skyCache = sky;
       }
-
-      const ULongID id = ntt->GetIdVal();
-      auto it          = std::find(m_entitesToBVHUpdate.begin(), m_entitesToBVHUpdate.end(), id);
-      if (it != m_entitesToBVHUpdate.end())
-      {
-        m_bvh->UpdateEntity(ntt);
-      }
     }
-
-    m_entitesToBVHUpdate.clear();
 
     m_bvh->Update();
   }
@@ -379,11 +370,7 @@ namespace ToolKit
     erase_if(m_entities, [entities](EntityPtr ntt) -> bool { return FindIndex(entities, ntt) != -1; });
   }
 
-  void Scene::RemoveAllEntities()
-  {
-    m_entities.clear();
-    m_entitesToBVHUpdate.clear();
-  }
+  void Scene::RemoveAllEntities() { m_entities.clear(); }
 
   const EntityPtrArray& Scene::GetEntities() const { return m_entities; }
 
@@ -495,7 +482,6 @@ namespace ToolKit
     }
 
     m_entities.clear();
-    m_entitesToBVHUpdate.clear();
 
     m_loaded    = false;
     m_initiated = false;
@@ -517,7 +503,6 @@ namespace ToolKit
     prefab->m_name = name;
     prefab->Save(false);
     prefab->m_entities.clear();
-    prefab->m_entitesToBVHUpdate.clear();
 
     // Restore the old node.
     entity->m_node->m_children.clear();
@@ -525,13 +510,7 @@ namespace ToolKit
     entity->m_node = prevNode;
   }
 
-  void Scene::ClearEntities()
-  {
-    m_entities.clear();
-    m_entitesToBVHUpdate.clear();
-  }
-
-  void Scene::UpdateBVHEntity(ULongID id) { m_entitesToBVHUpdate.push_back(id); }
+  void Scene::ClearEntities() { m_entities.clear(); }
 
   void Scene::RebuildBVH() { m_bvh->ReBuild(); }
 

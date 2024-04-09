@@ -41,7 +41,7 @@ namespace ToolKit
     {
       if (ntt->m_scene != nullptr)
       {
-        ntt->m_scene->UpdateBVHEntity(ntt->GetIdVal());
+        ntt->m_scene->m_bvh->UpdateEntity(ntt);
       }
     }
   }
