@@ -180,7 +180,6 @@ namespace ToolKit
         m_mobileSceneRenderPath->m_params.Lights          = lights;
         m_mobileSceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
         m_mobileSceneRenderPath->m_params.Scene           = scene;
-        m_mobileSceneRenderPath->m_params.useSceneLights  = useSceneLights;
       }
       else
       {
@@ -190,7 +189,6 @@ namespace ToolKit
         m_sceneRenderPath->m_params.Lights          = lights;
         m_sceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
         m_sceneRenderPath->m_params.Scene           = scene;
-        m_sceneRenderPath->m_params.useSceneLights  = useSceneLights;
       }
 
       // Generate Selection boundary and Environment component boundary.

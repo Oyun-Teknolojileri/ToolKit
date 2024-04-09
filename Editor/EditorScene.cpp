@@ -163,7 +163,7 @@ namespace ToolKit
         RenderJobProcessor::CreateRenderJobs({ntt}, jobs, false);
         if (!jobs.empty())
         {
-          RenderJobProcessor::AssignLight(jobs.begin(), jobs.end(), lights, true);
+          RenderJobProcessor::AssignLight(jobs.begin(), jobs.end(), lights);
           RenderJob& job = jobs.front();
 
           for (int i = 0; i < job.lights.size(); i++)

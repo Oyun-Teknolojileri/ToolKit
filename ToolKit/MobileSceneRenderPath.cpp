@@ -114,7 +114,6 @@ namespace ToolKit
                                          m_params.Cam,
                                          m_params.Scene->GetEnvironmentVolumes(),
                                          true,
-                                         m_params.useSceneLights,
                                          false);
 
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;

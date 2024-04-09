@@ -140,7 +140,6 @@ namespace ToolKit
                                          m_params.Cam,
                                          m_params.Scene->GetEnvironmentVolumes(),
                                          false,
-                                         false,
                                          false);
 
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
@@ -153,40 +152,7 @@ namespace ToolKit
     RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
 
     // Assign lights for forward pass
-    RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(),
-                                    m_renderData.jobs.end(),
-                                    m_params.Lights,
-                                    m_params.useSceneLights);
-
-    // TK_LOG("Culled");
-    // int i = 0;
-    // for (RenderJobItr beg = m_renderData.jobs.begin(); beg != m_renderData.GetDefferedBegin(); beg++)
-    //{
-    //   i++;
-    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    // }
-
-    // TK_LOG("Deferred Opaque");
-    // for (RenderJobItr beg = m_renderData.GetDefferedBegin(); beg != m_renderData.GetForwardOpaqueBegin(); beg++)
-    //{
-    //   i++;
-    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    // }
-
-    // TK_LOG("Forward Opaque");
-    // for (RenderJobItr beg = m_renderData.GetForwardOpaqueBegin(); beg != m_renderData.GetForwardTranslucentBegin();
-    //      beg++)
-    //{
-    //   i++;
-    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    // }
-
-    // TK_LOG("Forward Translucent");
-    // for (RenderJobItr beg = m_renderData.GetForwardTranslucentBegin(); beg != m_renderData.jobs.end(); beg++)
-    //{
-    //   i++;
-    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    // }
+    RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_params.Lights);
 
     m_gBufferPass->m_params.renderData          = &m_renderData;
     m_gBufferPass->m_params.Camera              = m_params.Cam;

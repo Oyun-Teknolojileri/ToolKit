@@ -120,7 +120,6 @@ namespace ToolKit
                                  const CameraPtr& camera,
                                  const EnvironmentComponentPtrArray& environments,
                                  bool assignLights,
-                                 bool useSceneLights,
                                  bool ignoreVisibility);
 
     /**
@@ -136,12 +135,12 @@ namespace ToolKit
      */
     static void SeperateRenderData(RenderData& renderData, bool forwardOnly);
 
-    static void AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex, bool useSceneLights);
+    static void AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex);
 
     /**
      * Assign all lights affecting the job.
      */
-    static void AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights, bool useSceneLights);
+    static void AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights);
 
     /**
      * Makes sure that first elements are directional lights.

@@ -24,7 +24,6 @@ namespace ToolKit
   struct SceneRenderPathParams
   {
     LightPtrArray Lights;
-    bool useSceneLights            = true;
     ScenePtr Scene                 = nullptr;
     CameraPtr Cam                  = nullptr;
     FramebufferPtr MainFramebuffer = nullptr;
