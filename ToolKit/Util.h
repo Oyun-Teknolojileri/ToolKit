@@ -268,6 +268,13 @@ namespace ToolKit
     return true; // All keys in map1 are found in map2
   }
 
+  template <typename T>
+  void RemoveDuplicates(std::vector<T>& vec)
+  {
+    std::sort(vec.begin(), vec.end());
+    vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
+  }
+
   //  Time.
   ///////////////////////////////////////////////////////
   TK_API float MillisecToSec(float ms);

@@ -6,7 +6,10 @@
 
 namespace ToolKit
 {
-  static inline bool IsBVHEntity(EntityPtr ntt) { return ntt->IsDrawable() && !ntt->IsA<Sky>(); }
+  static inline bool IsBVHEntity(const EntityPtr& ntt)
+  {
+    return (ntt->IsDrawable() && !ntt->IsA<Sky>()) || ntt->IsA<SpotLight>() || ntt->IsA<PointLight>();
+  }
 
   BVH::BVH(Scene* scene)
   {
@@ -16,12 +19,16 @@ namespace ToolKit
 
   BVH::~BVH() { SafeDel(m_bvhTree); }
 
+  void BVH::SetParameters(const EngineSettings::PostProcessingSettings& settings)
+  {
+    m_bvhTree->m_maxEntityCountPerBVHNode = settings.maxEntityPerBVHNode;
+    m_bvhTree->m_minBBSize                = settings.minBVHNodeSize;
+  }
+
   bool BVH::ReBuild()
   {
     // Get new parameters
-    const EngineSettings& engineSettings  = GetEngineSettings();
-    m_bvhTree->m_maxEntityCountPerBVHNode = engineSettings.PostProcessing.maxEntityPerBVHNode;
-    m_bvhTree->m_minBBSize                = engineSettings.PostProcessing.minBVHNodeSize;
+    SetParameters(GetEngineSettings().PostProcessing);
 
     // Clean scene entities
     for (EntityPtr ntt : m_scene->GetEntities())
@@ -59,7 +66,7 @@ namespace ToolKit
 
   void BVH::AddEntity(EntityPtr& entity)
   {
-    if (!entity->m_addingToBVH && IsBVHEntity(entity) || entity->IsA<SpotLight>() || entity->IsA<PointLight>())
+    if (!entity->m_addingToBVH && IsBVHEntity(entity))
     {
       entity->m_addingToBVH = true;
       m_entitiesToAdd.push_back(entity);
@@ -68,7 +75,7 @@ namespace ToolKit
 
   void BVH::RemoveEntity(EntityPtr& entity)
   {
-    if (IsBVHEntity(entity) || entity->IsA<SpotLight>() || entity->IsA<PointLight>())
+    if (IsBVHEntity(entity))
     {
       m_entitiesToRemove.push_back(entity);
     }
@@ -76,7 +83,7 @@ namespace ToolKit
 
   void BVH::UpdateEntity(EntityPtr& entity)
   {
-    if (IsBVHEntity(entity) || entity->IsA<SpotLight>() || entity->IsA<PointLight>())
+    if (IsBVHEntity(entity))
     {
       m_entitiesToUpdate.push_back(entity);
     }
@@ -601,9 +608,6 @@ namespace ToolKit
 
   void BVHTree::UpdateLeaf(BVHNode* node)
   {
-    // this is going to be called after populating entites inside a node. Num of entites can be any number including
-    // zero.
-
     if (!node->Leaf())
     {
       assert(false && "Calling UpdateLeaf() on a non-leaf bvh node. Needs to be fixed!");
@@ -754,6 +758,10 @@ namespace ToolKit
         parentNode->m_lights.insert(parentNode->m_lights.end(), leftNode->m_lights.begin(), leftNode->m_lights.end());
         parentNode->m_lights.insert(parentNode->m_lights.end(), rightNode->m_lights.begin(), rightNode->m_lights.end());
 
+        // remove duplicate entities
+        RemoveDuplicates(parentNode->m_entites);
+        RemoveDuplicates(parentNode->m_lights);
+
         rightNode->m_waitingForDeletion = true;
         leftNode->m_waitingForDeletion  = true;
         m_nodesToDelete.push_back(rightNode);
@@ -792,6 +800,7 @@ namespace ToolKit
       }
     }
     m_entites.clear();
+
     for (EntityPtr ntt : m_lights)
     {
       uint i = 0;
