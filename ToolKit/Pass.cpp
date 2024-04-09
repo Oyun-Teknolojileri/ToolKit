@@ -343,33 +343,31 @@ namespace ToolKit
     // Iterate lights that are inside of bvh nodes same with the job entity
     for (BVHNode* bvhNode : job.Entity->m_bvhNodes)
     {
-      bool breakLoop = false;
-      for (EntityPtr lightEntity : bvhNode->m_lights)
+      for (const EntityPtr& lightEntity : bvhNode->m_lights)
       {
         if (job.lights.size() >= Renderer::RHIConstants::MaxLightsPerObject)
         {
-          breakLoop = true;
-          break;
+          return;
         }
 
-        if (SpotLight* spot = lightEntity->As<SpotLight>())
+        Light* light = static_cast<Light*>(lightEntity.get());
+        if (light->GetLightType() == Light::LightType::Spot)
         {
+          SpotLight* spot = static_cast<SpotLight*>(light);
           if (FrustumBoxIntersection(spot->m_frustumCache, job.BoundingBox) != IntersectResult::Outside)
           {
             job.lights.push_back(spot);
           }
         }
-        else if (PointLight* point = lightEntity->As<PointLight>())
+        else
         {
+          assert(light->IsA<PointLight>());
+          PointLight* point = static_cast<PointLight*>(light);
           if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))
           {
             job.lights.push_back(point);
           }
         }
-      }
-      if (breakLoop)
-      {
-        break;
       }
     }
   }
