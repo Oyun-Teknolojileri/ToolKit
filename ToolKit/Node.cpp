@@ -327,8 +327,6 @@ namespace ToolKit
                           Quaternion* orientation,
                           Vec3* scale)
   {
-    SetBVHDirty();
-
     Mat4 ts;
     switch (space)
     {
@@ -350,8 +348,6 @@ namespace ToolKit
                              Quaternion* orientation,
                              Vec3* scale)
   {
-    SetBVHDirty();
-
     Mat4 ts;
     switch (space)
     {
@@ -433,6 +429,8 @@ namespace ToolKit
     SetChildrenDirty();
     m_worldCache = GetParentTransform() * m_localCache;
     DecomposeMatrix(m_worldCache, &m_worldTranslationCache, &m_worldOrientationCache, nullptr);
+
+    SetBVHDirty();
   }
 
   Mat4 Node::GetParentTransform()
@@ -476,9 +474,9 @@ namespace ToolKit
   {
     if (EntityPtr ntt = m_entity.lock())
     {
-      if (ntt->m_scene != nullptr)
+      if (BVH* bvh = ntt->m_bvh.get())
       {
-        ntt->m_scene->m_bvh->UpdateEntity(ntt);
+        bvh->UpdateEntity(ntt);
       }
 
       for (Node* node : m_children)

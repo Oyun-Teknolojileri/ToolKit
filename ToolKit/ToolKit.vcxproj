@@ -70,7 +70,7 @@
     <ClCompile Include="RenderState.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="Resource.cpp" />
-    <ClCompile Include="ResourceComponent.cpp" />
+    <ClCompile Include="AABBOverrideComponent.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="RHI.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -164,7 +164,7 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderState.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="ResourceComponent.h" />
+    <ClInclude Include="AABBOverrideComponent.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Serialize.h" />
@@ -196,6 +196,9 @@
     <ClInclude Include="UIManager.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="Viewport.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".editorconfig" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

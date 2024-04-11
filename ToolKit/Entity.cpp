@@ -7,6 +7,7 @@
 
 #include "Entity.h"
 
+#include "AABBOverrideComponent.h"
 #include "Audio.h"
 #include "Camera.h"
 #include "Canvas.h"
@@ -18,7 +19,6 @@
 #include "Node.h"
 #include "Prefab.h"
 #include "Primative.h"
-#include "ResourceComponent.h"
 #include "Skeleton.h"
 #include "Sky.h"
 #include "Surface.h"
@@ -148,7 +148,7 @@ namespace ToolKit
       other->m_components.push_back(copy);
     }
 
-    other->m_scene = m_scene;
+    other->m_bvh = m_bvh;
 
     return other;
   }

@@ -6,10 +6,7 @@
 
 namespace ToolKit
 {
-  static inline bool IsBVHEntity(const EntityPtr& ntt)
-  {
-    return (ntt->IsDrawable() && !ntt->IsA<Sky>()) || ntt->IsA<SpotLight>() || ntt->IsA<PointLight>();
-  }
+  inline bool IsBVHEntity(const EntityPtr& ntt) { return !ntt->IsA<Sky>(); }
 
   BVH::BVH(Scene* scene)
   {
@@ -66,9 +63,9 @@ namespace ToolKit
 
   void BVH::AddEntity(EntityPtr& entity)
   {
-    if (!entity->m_addingToBVH && IsBVHEntity(entity))
+    if (!entity->_addingToBVH && IsBVHEntity(entity))
     {
-      entity->m_addingToBVH = true;
+      entity->_addingToBVH = true;
       m_entitiesToAdd.push_back(entity);
     }
   }
@@ -314,7 +311,7 @@ namespace ToolKit
 
   bool BVHTree::Add(EntityPtr& entity)
   {
-    entity->m_addingToBVH = false;
+    entity->_addingToBVH = false;
 
     BoundingBox entityAABB;
     BoundingSphere lightSphere;

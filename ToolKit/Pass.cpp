@@ -7,6 +7,7 @@
 
 #include "Pass.h"
 
+#include "AABBOverrideComponent.h"
 #include "BVH.h"
 #include "Camera.h"
 #include "DirectionComponent.h"
@@ -15,7 +16,6 @@
 #include "Mesh.h"
 #include "Pass.h"
 #include "Renderer.h"
-#include "ResourceComponent.h"
 #include "TKProfiler.h"
 #include "Threads.h"
 #include "Toolkit.h"

@@ -7,6 +7,7 @@
 
 #include "Renderer.h"
 
+#include "AABBOverrideComponent.h"
 #include "Camera.h"
 #include "DirectionComponent.h"
 #include "Drawable.h"
@@ -20,7 +21,6 @@
 #include "Node.h"
 #include "Pass.h"
 #include "RHI.h"
-#include "ResourceComponent.h"
 #include "Scene.h"
 #include "Shader.h"
 #include "Skeleton.h"

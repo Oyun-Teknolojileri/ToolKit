@@ -7,12 +7,12 @@
 
 #include "MathUtil.h"
 
+#include "AABBOverrideComponent.h"
 #include "Animation.h"
 #include "Camera.h"
 #include "Mesh.h"
 #include "Node.h"
 #include "Pass.h"
-#include "ResourceComponent.h"
 #include "Skeleton.h"
 #include "TKProfiler.h"
 #include "Threads.h"

@@ -7,6 +7,7 @@
 
 #include "Scene.h"
 
+#include "AABBOverrideComponent.h"
 #include "BVH.h"
 #include "Component.h"
 #include "EngineSettings.h"
@@ -16,7 +17,6 @@
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "Prefab.h"
-#include "ResourceComponent.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -307,7 +307,7 @@ namespace ToolKit
       if (isUnique)
       {
         m_entities.push_back(entity);
-        entity->m_scene = this;
+        entity->m_bvh = m_bvh;
         m_bvh->AddEntity(entity);
       }
     }
@@ -342,7 +342,7 @@ namespace ToolKit
         removed = m_entities[i];
         m_entities.erase(m_entities.begin() + i);
         m_bvh->RemoveEntity(removed);
-        removed->m_scene = nullptr;
+        removed->m_bvh = nullptr;
 
         // Keep hierarchy if its prefab.
         if (removed->GetPrefabRoot() == nullptr)
@@ -474,7 +474,7 @@ namespace ToolKit
     for (int i = maxCnt; i >= 0; i--)
     {
       EntityPtr ntt = m_entities[i];
-      ntt->m_scene  = nullptr;
+      ntt->m_bvh    = nullptr;
       if (removeResources)
       {
         ntt->RemoveResources();
@@ -531,7 +531,7 @@ namespace ToolKit
 
     for (EntityPtr ntt : cpy->m_entities)
     {
-      ntt->m_scene = static_cast<Scene*>(other);
+      ntt->m_bvh = m_bvh;
     }
   }
 

@@ -7,7 +7,6 @@
 
 namespace ToolKit
 {
-  class Entity;
 
   class TK_API BVHNode
   {

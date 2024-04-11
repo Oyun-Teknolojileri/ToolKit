@@ -7,6 +7,7 @@
 
 #include "ObjectFactory.h"
 
+#include "AABBOverrideComponent.h"
 #include "AnimationControllerComponent.h"
 #include "Audio.h"
 #include "Camera.h"
@@ -24,7 +25,6 @@
 #include "MeshComponent.h"
 #include "Prefab.h"
 #include "Primative.h"
-#include "ResourceComponent.h"
 #include "Scene.h"
 #include "Shader.h"
 #include "SkeletonComponent.h"
