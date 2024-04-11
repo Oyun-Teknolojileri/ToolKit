@@ -113,7 +113,6 @@ namespace ToolKit
                                          m_params.Lights,
                                          m_params.Cam,
                                          m_params.Scene->GetEnvironmentVolumes(),
-                                         true,
                                          false);
 
     m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;

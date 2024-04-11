@@ -119,7 +119,6 @@ namespace ToolKit
                                  LightPtrArray& lights,
                                  const CameraPtr& camera,
                                  const EnvironmentComponentPtrArray& environments,
-                                 bool assignLights,
                                  bool ignoreVisibility);
 
     /**

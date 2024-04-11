@@ -79,23 +79,15 @@ namespace ToolKit
    * Base Macro that declares required fields and functions for each class that will be part of
    * ToolKit framework.
    */
-#define TKDeclareClassBase(This, Base)                                                                                 \
+#define TKDeclareClass(This, Base)                                                                                     \
  private:                                                                                                              \
   static ClassMeta This##Cls;                                                                                          \
   typedef Base Super;                                                                                                  \
                                                                                                                        \
  public:                                                                                                               \
-  virtual ClassMeta* const Class() const;                                                                              \
-  static ClassMeta* const StaticClass() { return &This##Cls; }
-
-#define TKDeclareClass(This, Base) TKDeclareClassBase(This, Base) using Base::NativeConstruct;
-
-  /**
-   * Defines macros for classes. This macro crates the functions and members for declared class.
-   */
-#define TKDefineClassMeta(This, Base, Meta)                                                                            \
-  ClassMeta This::This##Cls = {Base::StaticClass(), #This, MurmurHash64A(#This, sizeof(#This), 41), Meta};             \
-  ClassMeta* const This::Class() const { return &This##Cls; }
+  ClassMeta* const Class() const override;                                                                             \
+  static ClassMeta* const StaticClass() { return &This##Cls; }                                                         \
+  using Base::NativeConstruct;
 
 #define TKDefineClass(This, Base)                                                                                      \
   ClassMeta This::This##Cls = {Base::StaticClass(), #This, MurmurHash64A(#This, sizeof(#This), 41)};                   \
@@ -109,7 +101,14 @@ namespace ToolKit
    */
   class TK_API Object : public Serializable
   {
-    TKDeclareClassBase(Object, Object);
+   private:
+    static ClassMeta ObjectCls;
+    typedef Object Super;
+
+   public:
+    virtual ClassMeta* const Class() const;
+
+    static ClassMeta* const StaticClass() { return &ObjectCls; }
 
     template <typename T, typename... Args>
     friend std::shared_ptr<T> MakeNewPtrCasted(const StringView Class, Args&&... args); //!< Friend constructor.

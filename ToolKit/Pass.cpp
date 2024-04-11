@@ -64,7 +64,7 @@ namespace ToolKit
   {
     LightPtrArray nullLights;
     EnvironmentComponentPtrArray nullEnvironments;
-    CreateRenderJobs(entities, jobArray, nullLights, nullptr, nullEnvironments, false, ignoreVisibility);
+    CreateRenderJobs(entities, jobArray, nullLights, nullptr, nullEnvironments, ignoreVisibility);
   }
 
   void RenderJobProcessor::CreateRenderJobs(const EntityPtrArray& entities,
@@ -72,7 +72,6 @@ namespace ToolKit
                                             LightPtrArray& lights,
                                             const CameraPtr& camera,
                                             const EnvironmentComponentPtrArray& environments,
-                                            bool assignLights,
                                             bool ignoreVisibility)
   {
     CPU_FUNC_RANGE();
@@ -206,10 +205,7 @@ namespace ToolKit
                         // Light assignment.
                         if (!job.frustumCulled)
                         {
-                          if (assignLights)
-                          {
-                            AssignLight(job, lights, directionalEndIndx);
-                          }
+                          AssignLight(job, lights, directionalEndIndx);
                           AssignEnvironment(job, environments);
                         }
                       }
