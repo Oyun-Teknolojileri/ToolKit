@@ -133,37 +133,9 @@ namespace ToolKit
 
   void Scene::Update(float deltaTime)
   {
-    // Update caches.
-    m_lightCache.clear();
-    m_cameraCache.clear();
-    m_environmentVolumeCache.clear();
-    m_skyCache = nullptr;
-
-    for (int i = 0; i < m_entities.size(); i++)
+    for (LightPtr& light : m_lightCache)
     {
-      EntityPtr& ntt = m_entities[i];
-      if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
-      {
-        if (envComp->GetHdriVal() != nullptr && envComp->GetIlluminateVal())
-        {
-          envComp->Init(true);
-          m_environmentVolumeCache.push_back(envComp);
-        }
-      }
-
-      if (const LightPtr& light = SafeCast<Light>(ntt))
-      {
-        light->UpdateShadowCamera();
-        m_lightCache.push_back(light);
-      }
-      else if (const CameraPtr& cam = SafeCast<Camera>(ntt))
-      {
-        m_cameraCache.push_back(cam);
-      }
-      else if (const SkyBasePtr& sky = SafeCast<SkyBase>(ntt))
-      {
-        m_skyCache = sky;
-      }
+      light->UpdateShadowCamera();
     }
 
     m_bvh->Update();
@@ -292,6 +264,7 @@ namespace ToolKit
       assert(isUnique);
       if (isUnique)
       {
+        UpdateEntityCaches(entity, true);
         m_entities.push_back(entity);
         entity->m_bvh = m_bvh;
         m_bvh->AddEntity(entity);
@@ -326,6 +299,7 @@ namespace ToolKit
       if (m_entities[i]->GetIdVal() == id)
       {
         removed = m_entities[i];
+        UpdateEntityCaches(removed, false);
         m_entities.erase(m_entities.begin() + i);
         m_bvh->RemoveEntity(removed);
         removed->m_bvh = nullptr;
@@ -344,6 +318,7 @@ namespace ToolKit
         {
           removed->m_node->OrphanAllChildren(true);
         }
+
         break;
       }
     }
@@ -520,6 +495,52 @@ namespace ToolKit
     for (EntityPtr ntt : cpy->m_entities)
     {
       ntt->m_bvh = m_bvh;
+    }
+  }
+
+  void Scene::UpdateEntityCaches(const EntityPtr& ntt, bool add)
+  {
+    if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
+    {
+      if (envComp->GetHdriVal() != nullptr && envComp->GetIlluminateVal())
+      {
+        if (add)
+        {
+          envComp->Init(true);
+          m_environmentVolumeCache.push_back(envComp);
+        }
+        else
+        {
+          remove(m_environmentVolumeCache, envComp);
+        }
+      }
+    }
+
+    if (const LightPtr& light = SafeCast<Light>(ntt))
+    {
+      if (add)
+      {
+        m_lightCache.push_back(light);
+      }
+      else
+      {
+        remove(m_lightCache, light);
+      }
+    }
+    else if (const CameraPtr& cam = SafeCast<Camera>(ntt))
+    {
+      if (add)
+      {
+        m_cameraCache.push_back(cam);
+      }
+      else
+      {
+        remove(m_cameraCache, cam);
+      }
+    }
+    else if (const SkyBasePtr& sky = SafeCast<SkyBase>(ntt))
+    {
+      m_skyCache = sky;
     }
   }
 

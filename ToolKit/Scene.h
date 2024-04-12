@@ -313,6 +313,12 @@ namespace ToolKit
      */
     void CopyTo(Resource* other) override;
 
+    /**
+     * Updates all entity caches based on the entity type and components.
+     * Adds or removes the ntt from the caches.
+     */
+    void UpdateEntityCaches(const EntityPtr& ntt, bool add);
+
    private:
     /**
      * Removes all children of the given entity.
