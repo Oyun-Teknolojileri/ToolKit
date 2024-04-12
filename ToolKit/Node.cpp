@@ -55,7 +55,7 @@ namespace ToolKit
   void Node::Scale(const Vec3& val)
   {
     Mat4 ts = glm::scale(val);
-    TransformImp(ts, TransformationSpace::TS_LOCAL, nullptr, &m_orientation, nullptr);
+    TransformImp(ts, TransformationSpace::TS_LOCAL, nullptr, nullptr, &m_scale);
   }
 
   void Node::Transform(const Mat4& val, TransformationSpace space)
