@@ -403,12 +403,12 @@ namespace ToolKit
     }
   }
 
-  int BVH::NumberOfNttiesInAllNodes()
+  void BVH::DistributionQuality(int& totalNtties, int& assignedNtties, float& assignmentPerNtt)
   {
     m_bvhTree->m_nextNodes.clear();
     m_bvhTree->m_nextNodes.push_front(m_bvhTree->m_root);
 
-    int sum = 0;
+    assignedNtties = 0;
     while (!m_bvhTree->m_nextNodes.empty())
     {
       BVHNode* currentNode = m_bvhTree->m_nextNodes.front();
@@ -417,7 +417,7 @@ namespace ToolKit
       {
         if (currentNode->Leaf())
         {
-          sum += (int) currentNode->m_entites.size();
+          assignedNtties += (int) currentNode->m_entites.size();
         }
 
         m_bvhTree->m_nextNodes.push_front(currentNode->m_left);
@@ -425,14 +425,8 @@ namespace ToolKit
       }
     }
 
-    int nttNumInScene = glm::max(1, (int) m_scene->AccessEntityArray().size());
-    float ratio       = (float) sum / (float) nttNumInScene;
-    TK_LOG("Total number of entities: %d, Entities in bvh: %d, Distribution: %f",
-           m_scene->AccessEntityArray().size(),
-           sum,
-           ratio);
-
-    return sum;
+    totalNtties      = glm::max(1, (int) m_scene->AccessEntityArray().size());
+    assignmentPerNtt = (float) assignedNtties / (float) totalNtties;
   }
 
   BVHTree::BVHTree(BVH* owner)

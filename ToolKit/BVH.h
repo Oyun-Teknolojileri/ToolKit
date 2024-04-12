@@ -99,7 +99,12 @@ namespace ToolKit
     // Debug functions.
     void GetDebugBVHBoxes(EntityPtrArray& boxes); //!< Creates a debug box for each leaf node in the bvh.
     void SanityCheck();                           //!< // Checks if any entity holds a node that is not leaf.
-    int NumberOfNttiesInAllNodes(); //!< Checks all the entities in leaf nodes. Indicator of even distribution.
+
+    /**
+     * A quality measurement function for bvh settings. assignmentPerNtt must be close to 1. Higher ratio means the same
+     * ntt is being assigned to multiple bvh leafs.
+     */
+    void DistributionQuality(int& totalNtties, int& assignedNtties, float& assignmentPerNtt);
 
    private:
     void UpdateBoundary(); // Update the bounding box via traversing each leaf.
