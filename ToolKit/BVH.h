@@ -1,9 +1,8 @@
 #pragma once
 
 #include "GeometryTypes.h"
+#include "MathUtil.h"
 #include "Scene.h"
-
-#include <deque>
 
 namespace ToolKit
 {
@@ -26,7 +25,7 @@ namespace ToolKit
     EntityPtrArray m_lights;
 
     bool m_waitingForDeletion = false; //<! Internal variable. True if this node is going to be deleted by conjunction.
-    bool m_insideFrustum      = false;
+    IntersectResult m_frustumTestResult = IntersectResult::Outside;
 
     /**
      * It is guaranteed that if left node is there, there will be right node too
@@ -90,9 +89,17 @@ namespace ToolKit
                     const EntityPtrArray& extraList,
                     bool pickPartiallyInside);
 
-    // Debug functions
-    void GetDebugBVHBoxes(EntityPtrArray& boxes);
-    void SanityCheck();
+    /**
+     * Test bvh with a frustum and assign test results to BVHNodes.
+     * Results are valid as long as another test or call to any query functions has not been done. In short, results
+     * should be used after query performed.
+     */
+    void FrustumTest(const Frustum& frustum, EntityRawPtrArray& entities);
+
+    // Debug functions.
+    void GetDebugBVHBoxes(EntityPtrArray& boxes); //!< Creates a debug box for each leaf node in the bvh.
+    void SanityCheck();                           //!< // Checks if any entity holds a node that is not leaf.
+    int NumberOfNttiesInAllNodes(); //!< Checks all the entities in leaf nodes. Indicator of even distribution.
 
    private:
     void UpdateBoundary(); // Update the bounding box via traversing each leaf.

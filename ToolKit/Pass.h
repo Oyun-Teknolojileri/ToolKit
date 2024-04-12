@@ -121,6 +121,12 @@ namespace ToolKit
                                  const EnvironmentComponentPtrArray& environments,
                                  bool ignoreVisibility);
 
+    static void CreateRenderJobs(RenderJobArray& jobArray,
+                                 BVHPtr bvh,
+                                 LightPtrArray& lights,
+                                 CameraPtr camera,
+                                 const EnvironmentComponentPtrArray& environments);
+
     /**
      * This will drop the lights whose bounding volume does not intersect with camera.
      */

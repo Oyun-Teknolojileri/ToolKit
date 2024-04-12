@@ -167,6 +167,8 @@ namespace ToolKit
     }
 
     m_bvh->Update();
+
+    m_bvh->NumberOfNttiesInAllNodes();
   }
 
   void Scene::Merge(ScenePtr other)

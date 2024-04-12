@@ -194,39 +194,46 @@ namespace ToolKit
   {
     m_bvhTree->m_nextNodes.clear();
     m_bvhTree->m_nextNodes.push_front(m_bvhTree->m_root);
+
+    auto entityTestFn = [&](EntityPtr ntt) -> void
+    {
+      if (contains(ignoreList, ntt->GetIdVal()))
+      {
+        return;
+      }
+
+      const BoundingBox box = ntt->GetBoundingBox(true);
+      Scene::PickData pd;
+      pd.pickPos = (box.max + box.min) * 0.5f;
+      pd.entity  = ntt;
+      pickedObjects.push_back(pd);
+    };
+
     while (!m_bvhTree->m_nextNodes.empty())
     {
       BVHNode* currentNode = m_bvhTree->m_nextNodes.front();
       m_bvhTree->m_nextNodes.pop_front();
 
       // If the nodes parent already is inside of the frustum, no need to check intersection
-      if (currentNode->m_insideFrustum)
+      if (currentNode->m_frustumTestResult == IntersectResult::Inside)
       {
         if (currentNode->Leaf())
         {
           for (EntityPtr ntt : currentNode->m_entites)
           {
-            if (contains(ignoreList, ntt->GetIdVal()))
-            {
-              continue;
-            }
-
-            const BoundingBox box = ntt->GetBoundingBox(true);
-            Scene::PickData pd;
-            pd.pickPos = (box.max + box.min) * 0.5f;
-            pd.entity  = ntt;
-            pickedObjects.push_back(pd);
+            entityTestFn(ntt);
           }
         }
         else
         {
-          currentNode->m_left->m_insideFrustum  = true;
-          currentNode->m_right->m_insideFrustum = true;
+          currentNode->m_left->m_frustumTestResult  = IntersectResult::Inside;
+          currentNode->m_right->m_frustumTestResult = IntersectResult::Inside;
+
           m_bvhTree->m_nextNodes.push_back(currentNode->m_left);
           m_bvhTree->m_nextNodes.push_back(currentNode->m_right);
         }
 
-        currentNode->m_insideFrustum = false;
+        currentNode->m_frustumTestResult = IntersectResult::Outside; // Reset for reuse later ?
         continue;
       }
 
@@ -234,7 +241,7 @@ namespace ToolKit
       if (res == IntersectResult::Inside)
       {
         // This node and all children nodes of this node do not need to check intersection again
-        currentNode->m_insideFrustum = true;
+        currentNode->m_frustumTestResult = IntersectResult::Inside;
         m_bvhTree->m_nextNodes.push_back(currentNode);
       }
       else if (res == IntersectResult::Intersect)
@@ -274,6 +281,70 @@ namespace ToolKit
           m_bvhTree->m_nextNodes.push_front(currentNode->m_right);
         }
       }
+    }
+  }
+
+  void BVH::FrustumTest(const Frustum& frustum, EntityRawPtrArray& entities)
+  {
+    m_bvhTree->m_nextNodes.clear();
+    m_bvhTree->m_nextNodes.push_front(m_bvhTree->m_root);
+
+    EntityRawPtrArray nttPool;
+    while (!m_bvhTree->m_nextNodes.empty())
+    {
+      BVHNode* currentNode = m_bvhTree->m_nextNodes.front();
+      m_bvhTree->m_nextNodes.pop_front();
+      if (currentNode != nullptr)
+      {
+        IntersectResult res = FrustumBoxIntersection(frustum, currentNode->m_aabb);
+        if (res == IntersectResult::Outside)
+        {
+          continue;
+        }
+
+        if (currentNode->Leaf())
+        {
+          if (res == IntersectResult::Intersect)
+          {
+            for (EntityPtr ntt : currentNode->m_entites)
+            {
+              if (ntt->_addingToBVH)
+              {
+                continue;
+              }
+
+              if (FrustumBoxIntersection(frustum, ntt->GetBoundingBox(true)) != IntersectResult::Outside)
+              {
+                ntt->_addingToBVH = true;
+                nttPool.push_back(ntt.get());
+              }
+            }
+          }
+          else if (res == IntersectResult::Inside)
+          {
+            for (EntityPtr ntt : currentNode->m_entites)
+            {
+              if (ntt->_addingToBVH)
+              {
+                continue;
+              }
+
+              ntt->_addingToBVH = true;
+              nttPool.push_back(ntt.get());
+            }
+          }
+        }
+
+        m_bvhTree->m_nextNodes.push_front(currentNode->m_left);
+        m_bvhTree->m_nextNodes.push_front(currentNode->m_right);
+      }
+    }
+
+    entities.reserve(nttPool.size());
+    for (Entity* ntt : nttPool)
+    {
+      ntt->_addingToBVH = false;
+      entities.push_back(ntt);
     }
   }
 
@@ -323,7 +394,6 @@ namespace ToolKit
 
   void BVH::SanityCheck()
   {
-    // check if any entity holds a node that is not leaf
     for (EntityPtr ntt : m_scene->GetEntities())
     {
       for (BVHNode* node : ntt->m_bvhNodes)
@@ -331,6 +401,38 @@ namespace ToolKit
         assert(node->Leaf() && "Entities should not hold non-leaf bvh nodes");
       }
     }
+  }
+
+  int BVH::NumberOfNttiesInAllNodes()
+  {
+    m_bvhTree->m_nextNodes.clear();
+    m_bvhTree->m_nextNodes.push_front(m_bvhTree->m_root);
+
+    int sum = 0;
+    while (!m_bvhTree->m_nextNodes.empty())
+    {
+      BVHNode* currentNode = m_bvhTree->m_nextNodes.front();
+      m_bvhTree->m_nextNodes.pop_front();
+      if (currentNode != nullptr)
+      {
+        if (currentNode->Leaf())
+        {
+          sum += (int) currentNode->m_entites.size();
+        }
+
+        m_bvhTree->m_nextNodes.push_front(currentNode->m_left);
+        m_bvhTree->m_nextNodes.push_front(currentNode->m_right);
+      }
+    }
+
+    int nttNumInScene = glm::max(1, (int) m_scene->AccessEntityArray().size());
+    float ratio       = (float) sum / (float) nttNumInScene;
+    TK_LOG("Total number of entities: %d, Entities in bvh: %d, Distribution: %f",
+           m_scene->AccessEntityArray().size(),
+           sum,
+           ratio);
+
+    return sum;
   }
 
   BVHTree::BVHTree(BVH* owner)

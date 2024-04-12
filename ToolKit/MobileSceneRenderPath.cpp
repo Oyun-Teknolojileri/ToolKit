@@ -106,21 +106,17 @@ namespace ToolKit
     // Cull lights out side of view. Not even their shadows are needed.
     RenderJobProcessor::CullLights(m_params.Lights, m_params.Cam);
 
-    const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
-
-    RenderJobProcessor::CreateRenderJobs(allDrawList,
-                                         m_renderData.jobs,
+    RenderJobProcessor::CreateRenderJobs(m_renderData.jobs,
+                                         m_params.Scene->m_bvh,
                                          m_params.Lights,
                                          m_params.Cam,
-                                         m_params.Scene->GetEnvironmentVolumes(),
-                                         false);
+                                         m_params.Scene->GetEnvironmentVolumes());
 
     m_shadowPass->m_params.shadowVolume = m_params.Scene->GetSceneBoundary();
     m_shadowPass->m_params.renderData   = &m_renderData;
     m_shadowPass->m_params.Lights       = m_params.Lights;
     m_shadowPass->m_params.ViewCamera   = m_params.Cam;
 
-    // RenderJobProcessor::CullRenderJobs(m_renderData.jobs, m_params.Cam);
     RenderJobProcessor::SeperateRenderData(m_renderData, true);
     RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
 

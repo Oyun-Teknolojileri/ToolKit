@@ -32,6 +32,7 @@
 
 // STL
 #include <array>
+#include <deque>
 #include <filesystem>
 #include <functional>
 #include <limits>
