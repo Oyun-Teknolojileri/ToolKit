@@ -197,9 +197,6 @@
     <ClInclude Include="Util.h" />
     <ClInclude Include="Viewport.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include=".editorconfig" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{85523A06-924E-4B9D-B95C-411CB388936B}</ProjectGuid>

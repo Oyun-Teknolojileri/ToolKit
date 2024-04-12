@@ -277,6 +277,8 @@ namespace ToolKit
      */
     void RebuildBVH();
 
+    const BoundingBox& GetSceneBoundary(); //!< Returns scene boundary from the BVH.
+
    protected:
     /**
      * Serializes the scene to an XML document.
@@ -319,13 +321,7 @@ namespace ToolKit
     void RemoveChildren(EntityPtr removed);
 
    public:
-    /**
-     * A world space volume that covers all the entities in the scene.
-     * Its calculated during rendering and Initialization. Its only valid after Init or scene render.
-     */
-    BoundingBox m_boundingBox;
     EngineSettings::PostProcessingSettings m_postProcessSettings; //!< Post process settings that this scene uses
-
     BVHPtr m_bvh = nullptr;
 
    protected:

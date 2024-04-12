@@ -139,7 +139,10 @@ namespace ToolKit
   void Entity::InvalidateSpatialCaches()
   {
     m_boundingBoxCachaInvalidated = true;
-    m_bvh->UpdateEntity(Self<Entity>());
+    if (m_bvh)
+    {
+      m_bvh->UpdateEntity(Self<Entity>());
+    }
   }
 
   Entity* Entity::CopyTo(Entity* other) const

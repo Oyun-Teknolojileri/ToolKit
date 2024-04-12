@@ -26,7 +26,6 @@ namespace ToolKit
     EntityPtrArray m_lights;
 
     bool m_waitingForDeletion = false; //<! Internal variable. True if this node is going to be deleted by conjunction.
-
     bool m_insideFrustum      = false;
 
     /**
@@ -95,8 +94,12 @@ namespace ToolKit
     void GetDebugBVHBoxes(EntityPtrArray& boxes);
     void SanityCheck();
 
+   private:
+    void UpdateBoundary(); // Update the bounding box via traversing each leaf.
+
    public:
     BVHTree* m_bvhTree = nullptr;
+    BoundingBox m_boundingBox; // Boundingbox that covers bvh nodes.
 
    private:
     BVH()          = delete;

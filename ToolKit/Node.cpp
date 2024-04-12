@@ -474,6 +474,8 @@ namespace ToolKit
   {
     if (EntityPtr ntt = m_entity.lock())
     {
+      ntt->InvalidateSpatialCaches();
+
       for (Node* node : m_children)
       {
         node->SetEntityDirty();

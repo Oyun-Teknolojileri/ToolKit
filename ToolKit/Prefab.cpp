@@ -267,7 +267,7 @@ namespace ToolKit
   {
     if (m_prefabScene)
     {
-      m_localBoundingBoxCache = m_prefabScene->m_boundingBox;
+      m_localBoundingBoxCache = m_prefabScene->GetSceneBoundary();
     }
     else
     {

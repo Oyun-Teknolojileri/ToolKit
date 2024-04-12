@@ -88,10 +88,13 @@ namespace ToolKit
 
   void BVH::Update()
   {
+    bool updateBoundary = false;
+
     // Removed entities
     for (EntityPtr& entity : m_entitiesToRemove)
     {
       m_bvhTree->Remove(entity);
+      updateBoundary = true;
     }
     m_entitiesToRemove.clear();
 
@@ -100,6 +103,8 @@ namespace ToolKit
     {
       BVHNode* node = m_bvhTree->m_nodesToDelete[i];
       SafeDel(node);
+
+      updateBoundary = true;
     }
     m_bvhTree->m_nodesToDelete.clear();
 
@@ -107,6 +112,8 @@ namespace ToolKit
     {
       m_bvhTree->Remove(entity);
       AddEntity(entity);
+
+      updateBoundary = true;
     }
     m_entitiesToUpdate.clear();
 
@@ -114,6 +121,8 @@ namespace ToolKit
     {
       BVHNode* node = m_bvhTree->m_nodesToDelete[i];
       SafeDel(node);
+
+      updateBoundary = true;
     }
     m_bvhTree->m_nodesToDelete.clear();
 
@@ -124,8 +133,15 @@ namespace ToolKit
         while (ReBuild()) {}
         break;
       }
+
+      updateBoundary = true;
     }
     m_entitiesToAdd.clear();
+
+    if (updateBoundary)
+    {
+      UpdateBoundary();
+    }
   }
 
   void BVH::PickObject(const Ray& ray, Scene::PickData& pickData, const IDArray& ignoreList, float& closestDistance)
@@ -278,6 +294,29 @@ namespace ToolKit
       else
       {
         boxes.push_back(Cast<Entity>(CreateBoundingBoxDebugObject(bvhNode->m_aabb, Vec3(1.0f, 0.4f, 0.1f), 0.75f)));
+      }
+    }
+  }
+
+  void BVH::UpdateBoundary()
+  {
+    m_bvhTree->m_nextNodes.clear();
+    m_bvhTree->m_nextNodes.push_front(m_bvhTree->m_root);
+
+    m_boundingBox = BoundingBox();
+    while (!m_bvhTree->m_nextNodes.empty())
+    {
+      BVHNode* currentNode = m_bvhTree->m_nextNodes.front();
+      m_bvhTree->m_nextNodes.pop_front();
+      if (currentNode != nullptr)
+      {
+        if (currentNode->Leaf())
+        {
+          m_boundingBox.UpdateBoundary(currentNode->m_aabb);
+        }
+
+        m_bvhTree->m_nextNodes.push_front(currentNode->m_left);
+        m_bvhTree->m_nextNodes.push_front(currentNode->m_right);
       }
     }
   }

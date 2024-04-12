@@ -13,6 +13,7 @@
 #include "EditorViewport2d.h"
 #include "Gizmo.h"
 
+#include <BVH.h>
 #include <Camera.h>
 #include <DirectionComponent.h>
 #include <EnvironmentComponent.h>
@@ -189,6 +190,16 @@ namespace ToolKit
         m_sceneRenderPath->m_params.Lights          = lights;
         m_sceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
         m_sceneRenderPath->m_params.Scene           = scene;
+      }
+
+      if (app->m_showSceneBoundary)
+      {
+        app->m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(scene->GetSceneBoundary()));
+      }
+
+      if (app->m_showBVHNodes)
+      {
+        scene->m_bvh->GetDebugBVHBoxes(app->m_perFrameDebugObjects);
       }
 
       // Generate Selection boundary and Environment component boundary.

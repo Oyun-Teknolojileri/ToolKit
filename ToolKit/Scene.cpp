@@ -87,7 +87,6 @@ namespace ToolKit
       return;
     }
 
-    m_boundingBox                = BoundingBox();
     const EntityPtrArray& ntties = GetEntities();
     for (EntityPtr ntt : ntties)
     {
@@ -125,9 +124,6 @@ namespace ToolKit
           envCom->Init(true);
         }
       }
-
-      BoundingBox worldBox = ntt->GetBoundingBox(true);
-      m_boundingBox.UpdateBoundary(worldBox);
     }
 
     m_initiated = true;
@@ -141,17 +137,11 @@ namespace ToolKit
     m_lightCache.clear();
     m_cameraCache.clear();
     m_environmentVolumeCache.clear();
-    m_skyCache    = nullptr;
-    m_boundingBox = BoundingBox();
+    m_skyCache = nullptr;
 
     for (int i = 0; i < m_entities.size(); i++)
     {
-      EntityPtr& ntt        = m_entities[i];
-
-      // update bounding box.
-      const BoundingBox& bb = ntt->GetBoundingBox(true);
-      m_boundingBox.UpdateBoundary(bb);
-
+      EntityPtr& ntt = m_entities[i];
       if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
       {
         if (envComp->GetHdriVal() != nullptr && envComp->GetIlluminateVal())
@@ -227,10 +217,10 @@ namespace ToolKit
     };
 
     pickFn(extraList);
+
     if (pd.entity == nullptr)
     {
       m_bvh->PickObject(ray, pd, ignoreList, closestPickedDistance);
-      // pickFn(m_entities);
     }
 
     return pd;
@@ -279,7 +269,6 @@ namespace ToolKit
     pickFn(extraList);
 
     m_bvh->PickObject(frustum, pickedObjects, ignoreList, extraList, pickPartiallyInside);
-    // pickFn(m_entities);
   }
 
   EntityPtr Scene::GetEntity(ULongID id) const
@@ -511,6 +500,8 @@ namespace ToolKit
 
   void Scene::RebuildBVH() { m_bvh->ReBuild(); }
 
+  const BoundingBox& Scene::GetSceneBoundary() { return m_bvh->m_boundingBox; }
+
   void Scene::CopyTo(Resource* other)
   {
     Resource::CopyTo(other);
@@ -706,6 +697,11 @@ namespace ToolKit
     {
 
       m_postProcessSettings.DeSerialize(info.Document, parent);
+    }
+    else
+    {
+      // Rebuild bvh for prefabs. It won't get update, this is the only chance.
+      m_bvh->ReBuild();
     }
 
     for (EntityPtr ntt : prefabList)

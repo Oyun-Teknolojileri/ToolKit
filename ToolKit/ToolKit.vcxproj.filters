@@ -552,7 +552,4 @@
       <UniqueIdentifier>{b7ee736e-cc29-484b-90ee-93de84685c95}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
-  <ItemGroup>
-    <None Include=".editorconfig" />
-  </ItemGroup>
 </Project>
