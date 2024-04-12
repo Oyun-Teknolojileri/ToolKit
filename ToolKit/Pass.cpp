@@ -419,11 +419,6 @@ namespace ToolKit
   {
     job.lights.clear();
 
-    if (job.Entity == nullptr)
-    {
-      return;
-    }
-
     for (int i = 0; i < startIndex; i++)
     {
       job.lights.push_back(lights[i].get());

@@ -103,9 +103,6 @@ namespace ToolKit
 
   void MobileSceneRenderPath::SetPassParams()
   {
-    // Cull lights out side of view. Not even their shadows are needed.
-    RenderJobProcessor::CullLights(m_params.Lights, m_params.Cam);
-
     RenderJobProcessor::CreateRenderJobs(m_renderData.jobs,
                                          m_params.Scene->m_bvh,
                                          m_params.Lights,
