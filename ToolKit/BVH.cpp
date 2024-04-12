@@ -296,7 +296,9 @@ namespace ToolKit
       m_bvhTree->m_nextNodes.pop_front();
       if (currentNode != nullptr)
       {
-        IntersectResult res = FrustumBoxIntersection(frustum, currentNode->m_aabb);
+        IntersectResult res              = FrustumBoxIntersection(frustum, currentNode->m_aabb);
+        currentNode->m_frustumTestResult = res;
+
         if (res == IntersectResult::Outside)
         {
           continue;
