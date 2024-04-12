@@ -233,7 +233,7 @@ namespace ToolKit
     void UpdateTransformCaches();
     Mat4 GetParentTransform();
     void SetChildrenDirty();
-    void SetBVHDirty();
+    void SetEntityDirty();
 
    public:
     ULongID m_id;
@@ -252,11 +252,6 @@ namespace ToolKit
     Vec3 m_worldTranslationCache;       //!< World translation cache.
     Quaternion m_worldOrientationCache; //!< World orientation cache.
     bool m_dirty;                       //!< Hint for child to update its parent cache.
-
-    // Next frame values.
-    Vec3 m_nextTranslation;
-    Quaternion m_nextRotation;
-    Vec3 m_nextScale;
   };
 
 } // namespace ToolKit

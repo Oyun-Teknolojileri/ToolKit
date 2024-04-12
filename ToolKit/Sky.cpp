@@ -99,14 +99,7 @@ namespace ToolKit
     return hdri;
   }
 
-  BoundingBox SkyBase::GetBoundingBox(bool inWorld) const
-  {
-    // Return a unit boundary.
-    return {
-        {-0.5f, -0.5f, -0.5f},
-        {0.5f,  0.5f,  0.5f }
-    };
-  }
+  BoundingBox SkyBase::GetBoundingBox(bool inWorld) { return unitBox; }
 
   bool SkyBase::ReadyToRender()
   {

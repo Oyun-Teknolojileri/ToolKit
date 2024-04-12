@@ -9,6 +9,7 @@
 
 #include "AABBOverrideComponent.h"
 #include "Audio.h"
+#include "BVH.h"
 #include "Camera.h"
 #include "Canvas.h"
 #include "Drawable.h"
@@ -96,33 +97,31 @@ namespace ToolKit
     anim->GetPose(m_node, time);
   }
 
-  BoundingBox Entity::GetBoundingBox(bool inWorld) const
+  BoundingBox Entity::GetBoundingBox(bool inWorld)
   {
-    BoundingBox aabb;
-    AABBOverrideComponent* overrideComp = GetComponentFast<AABBOverrideComponent>();
-    if (overrideComp)
+    if (!m_boundingBoxCachaInvalidated)
     {
-      aabb = overrideComp->GetBoundingBox();
-    }
-    else
-    {
-      if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
-      {
-        aabb = meshComp->GetBoundingBox();
-      }
+      return inWorld ? m_worldBoundingBoxCache : m_localBoundingBoxCache;
     }
 
-    if (!aabb.IsValid())
+    UpdateLocalBoundingBox();
+
+    if (AABBOverrideComponent* overrideComp = GetComponentFast<AABBOverrideComponent>())
+    {
+      m_localBoundingBoxCache = overrideComp->GetBoundingBox();
+    }
+
+    if (!m_localBoundingBoxCache.IsValid())
     {
       // In case of an uninitialized bounding box, provide a very small box.
-      aabb = BoundingBox(Vec3(-TK_FLT_MIN), Vec3(TK_FLT_MIN));
-    }
-    else if (inWorld)
-    {
-      TransformAABB(aabb, m_node->GetTransform());
+      m_localBoundingBoxCache = infinitesimalBox;
     }
 
-    return aabb;
+    m_worldBoundingBoxCache = m_localBoundingBoxCache;
+    TransformAABB(m_worldBoundingBoxCache, m_node->GetTransform());
+
+    m_boundingBoxCachaInvalidated = false;
+    return inWorld ? m_worldBoundingBoxCache : m_localBoundingBoxCache;
   }
 
   ObjectPtr Entity::Copy() const
@@ -136,6 +135,12 @@ namespace ToolKit
   void Entity::ClearComponents() { m_components.clear(); }
 
   Entity* Entity::GetPrefabRoot() const { return _prefabRootEntity; }
+
+  void Entity::InvalidateSpatialCaches()
+  {
+    m_boundingBoxCachaInvalidated = true;
+    m_bvh->UpdateEntity(Self<Entity>());
+  }
 
   Entity* Entity::CopyTo(Entity* other) const
   {
@@ -337,6 +342,18 @@ namespace ToolKit
     }
 
     return nttNode;
+  }
+
+  void Entity::UpdateLocalBoundingBox()
+  {
+    if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
+    {
+      m_localBoundingBoxCache = meshComp->GetBoundingBox();
+    }
+    else
+    {
+      m_localBoundingBoxCache = infinitesimalBox;
+    }
   }
 
   void Entity::RemoveResources() { assert(false && "Not implemented"); }

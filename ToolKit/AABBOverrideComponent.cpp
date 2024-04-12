@@ -24,7 +24,7 @@ namespace ToolKit
 
   AABBOverrideComponent::AABBOverrideComponent() {}
 
-  AABBOverrideComponent::~AABBOverrideComponent() {}
+  AABBOverrideComponent::~AABBOverrideComponent() { InvalidateSpatialCaches(); }
 
   ComponentPtr AABBOverrideComponent::Copy(EntityPtr ntt)
   {
@@ -35,7 +35,7 @@ namespace ToolKit
     return dst;
   }
 
-  void AABBOverrideComponent::Init(bool flushClientSideArray) { InvalidateBVH(); }
+  void AABBOverrideComponent::Init(bool flushClientSideArray) { InvalidateSpatialCaches(); }
 
   BoundingBox AABBOverrideComponent::GetBoundingBox()
   {
@@ -63,7 +63,7 @@ namespace ToolKit
   {
     Super::ParameterEventConstructor();
 
-    auto invalidatefn = [this](Value& oldVal, Value& newVal) -> void { InvalidateBVH(); };
+    auto invalidatefn = [this](Value& oldVal, Value& newVal) -> void { InvalidateSpatialCaches(); };
     ParamSize().m_onValueChangedFn.push_back(invalidatefn);
     ParamPositionOffset().m_onValueChangedFn.push_back(invalidatefn);
   }
@@ -81,14 +81,11 @@ namespace ToolKit
     return node;
   }
 
-  void AABBOverrideComponent::InvalidateBVH()
+  void AABBOverrideComponent::InvalidateSpatialCaches()
   {
     if (EntityPtr ntt = m_entity.lock())
     {
-      if (ntt->m_bvh != nullptr)
-      {
-        ntt->m_bvh->UpdateEntity(ntt);
-      }
+      ntt->InvalidateSpatialCaches();
     }
   }
 

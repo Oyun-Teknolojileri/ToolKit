@@ -430,7 +430,7 @@ namespace ToolKit
     m_worldCache = GetParentTransform() * m_localCache;
     DecomposeMatrix(m_worldCache, &m_worldTranslationCache, &m_worldOrientationCache, nullptr);
 
-    SetBVHDirty();
+    SetEntityDirty();
   }
 
   Mat4 Node::GetParentTransform()
@@ -470,18 +470,13 @@ namespace ToolKit
     }
   }
 
-  void Node::SetBVHDirty()
+  void Node::SetEntityDirty()
   {
     if (EntityPtr ntt = m_entity.lock())
     {
-      if (BVH* bvh = ntt->m_bvh.get())
-      {
-        bvh->UpdateEntity(ntt);
-      }
-
       for (Node* node : m_children)
       {
-        node->SetBVHDirty();
+        node->SetEntityDirty();
       }
     }
   }

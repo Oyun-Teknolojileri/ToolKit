@@ -78,9 +78,9 @@ namespace ToolKit
     bool ReBuild();
     void Clean();
 
-    void AddEntity(EntityPtr& entity);
-    void RemoveEntity(EntityPtr& entity);
-    void UpdateEntity(EntityPtr& entity);
+    void AddEntity(const EntityPtr& entity);
+    void RemoveEntity(const EntityPtr& entity);
+    void UpdateEntity(const EntityPtr& entity);
     void Update();
 
     // Query functions

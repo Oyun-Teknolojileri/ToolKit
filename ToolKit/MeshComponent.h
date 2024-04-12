@@ -62,7 +62,7 @@ namespace ToolKit
     TKDeclareParam(bool, CastShadow);
 
    private:
-    BoundingBox m_boundingBox = {};
+    BoundingBox m_boundingBox;
   };
 
 } // namespace ToolKit

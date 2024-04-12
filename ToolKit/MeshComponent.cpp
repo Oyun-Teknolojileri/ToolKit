@@ -18,7 +18,7 @@ namespace ToolKit
 
   TKDefineClass(MeshComponent, Component);
 
-  MeshComponent::MeshComponent() {}
+  MeshComponent::MeshComponent() { m_boundingBox = infinitesimalBox; }
 
   MeshComponent::~MeshComponent() {}
 
@@ -33,9 +33,10 @@ namespace ToolKit
   BoundingBox MeshComponent::GetBoundingBox()
   {
     SkeletonComponent* skelComp = OwnerEntity()->GetComponentFast<SkeletonComponent>();
-    if (skelComp && GetMeshVal()->IsSkinned())
+    MeshPtr mesh                = GetMeshVal();
+    if (skelComp && mesh->IsSkinned())
     {
-      SkinMesh* skinMesh = (SkinMesh*) GetMeshVal().get();
+      SkinMesh* skinMesh = (SkinMesh*) mesh.get();
       if (skelComp->isDirty)
       {
         m_boundingBox     = skinMesh->CalculateAABB(skelComp->GetSkeletonResourceVal().get(), skelComp->m_map);
@@ -43,6 +44,7 @@ namespace ToolKit
       }
       return m_boundingBox;
     }
+
     return GetMeshVal()->m_boundingBox;
   }
 

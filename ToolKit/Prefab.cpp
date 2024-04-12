@@ -79,21 +79,6 @@ namespace ToolKit
     return other;
   }
 
-  BoundingBox Prefab::GetBoundingBox(bool inWorld) const
-  {
-    BoundingBox boundingBox;
-    if (m_prefabScene)
-    {
-      boundingBox = m_prefabScene->m_boundingBox;
-      if (inWorld)
-      {
-        TransformAABB(boundingBox, m_node->GetTransform());
-      }
-    }
-
-    return boundingBox;
-  }
-
   EntityPtr Prefab::GetFirstByName(const String& name)
   {
     if (!m_initiated || !m_linked || m_currentScene == nullptr)
@@ -276,6 +261,18 @@ namespace ToolKit
     }
 
     return prefabNode;
+  }
+
+  void Prefab::UpdateLocalBoundingBox()
+  {
+    if (m_prefabScene)
+    {
+      m_localBoundingBoxCache = m_prefabScene->m_boundingBox;
+    }
+    else
+    {
+      m_localBoundingBoxCache = infinitesimalBox;
+    }
   }
 
   void Prefab::ParameterConstructor()

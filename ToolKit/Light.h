@@ -44,17 +44,14 @@ namespace ToolKit
 
     virtual LightType GetLightType() = 0;
 
-    /**
-     * Returns the bounding box of VolumeMesh of the light if its not null, otherwise calls Super::GetBoundingBox().
-     */
-    BoundingBox GetBoundingBox(bool inWorld = false) const override;
-
    protected:
     void UpdateShadowCameraTransform();
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+
+    void UpdateLocalBoundingBox() override; //!< Sets volume meshes boundary as local bounding box.
 
    public:
     TKDeclareParam(Vec3, Color);
@@ -122,8 +119,6 @@ namespace ToolKit
 
     LightType GetLightType() override { return LightType::Point; }
 
-    BoundingBox GetBoundingBox(bool inWorld = false) const override;
-
     void UpdateShadowCamera() override;
     float AffectDistance() override;
     void InitShadowMapDepthMaterial() override;
@@ -131,11 +126,12 @@ namespace ToolKit
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     void ParameterConstructor() override;
+    void UpdateLocalBoundingBox() override;
 
    public:
     TKDeclareParam(float, Radius);
 
-    BoundingSphere m_boundingSphereCache; //!< Bounding volume, updated after call to UpdateShadowCamera().
+    BoundingSphere m_boundingSphereCache; //!< World space Bounding volume, updated after call to UpdateShadowCamera().
   };
 
   typedef std::shared_ptr<PointLight> PointLightLightPtr;

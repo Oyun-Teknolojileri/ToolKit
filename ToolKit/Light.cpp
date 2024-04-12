@@ -7,6 +7,7 @@
 
 #include "Light.h"
 
+#include "AABBOverrideComponent.h"
 #include "BVH.h"
 #include "Camera.h"
 #include "Component.h"
@@ -110,22 +111,6 @@ namespace ToolKit
     m_shadowMapMaterial->Init();
   }
 
-  BoundingBox Light::GetBoundingBox(bool inWorld) const
-  {
-    if (m_volumeMesh != nullptr)
-    {
-      BoundingBox lightVolume = m_volumeMesh->m_boundingBox;
-      if (inWorld)
-      {
-        TransformAABB(lightVolume, m_node->GetTransform());
-      }
-
-      return lightVolume;
-    }
-
-    return Super::GetBoundingBox();
-  }
-
   void Light::UpdateShadowCameraTransform()
   {
     Mat4 lightTs = m_node->GetTransform();
@@ -148,6 +133,18 @@ namespace ToolKit
     ParameterEventConstructor();
 
     return nttNode->first_node(StaticClass()->Name.c_str());
+  }
+
+  void Light::UpdateLocalBoundingBox()
+  {
+    if (m_volumeMesh != nullptr)
+    {
+      m_localBoundingBoxCache = m_volumeMesh->m_boundingBox;
+    }
+    else
+    {
+      m_localBoundingBoxCache = infinitesimalBox;
+    }
   }
 
   // DirectionalLight
@@ -292,19 +289,6 @@ namespace ToolKit
 
   PointLight::~PointLight() {}
 
-  BoundingBox PointLight::GetBoundingBox(bool inWorld) const
-  {
-    BoundingBox bb = m_boundingSphereCache.GetBoundingBox();
-    if (!inWorld)
-    {
-      // If not requested in world, cache is stored in world, so subtract the position.
-      bb.min -= m_boundingSphereCache.pos;
-      bb.max -= m_boundingSphereCache.pos;
-    }
-
-    return bb;
-  }
-
   void PointLight::UpdateShadowCamera()
   {
     m_shadowCamera->SetLens(glm::half_pi<float>(), 1.0f, 0.01f, AffectDistance());
@@ -358,6 +342,12 @@ namespace ToolKit
             m_bvh->UpdateEntity(self);
           }
         });
+  }
+
+  void PointLight::UpdateLocalBoundingBox()
+  {
+    float radius            = GetRadiusVal();
+    m_localBoundingBoxCache = BoundingBox(Vec3(radius), Vec3(radius));
   }
 
   // SpotLight

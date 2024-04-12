@@ -44,7 +44,7 @@ namespace ToolKit
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
     private:
-    void InvalidateBVH();
+    void InvalidateSpatialCaches();
 
    private:
     TKDeclareParam(Vec3, PositionOffset);

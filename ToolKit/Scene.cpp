@@ -150,10 +150,7 @@ namespace ToolKit
 
       // update bounding box.
       const BoundingBox& bb = ntt->GetBoundingBox(true);
-      if (bb.IsValid())
-      {
-        m_boundingBox.UpdateBoundary(bb);
-      }
+      m_boundingBox.UpdateBoundary(bb);
 
       if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
       {

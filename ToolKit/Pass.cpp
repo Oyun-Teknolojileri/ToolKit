@@ -177,19 +177,8 @@ namespace ToolKit
                       job.Mesh           = mesh;
                       job.Material       = material.get();
                       job.ShadowCaster   = meshComp->GetCastShadowVal();
-
-                      // Calculate bounding box.
                       job.WorldTransform = ntt->m_node->GetTransform();
-                      if (AABBOverrideComponent* bbOverride = ntt->GetComponentFast<AABBOverrideComponent>())
-                      {
-                        job.BoundingBox = std::move(bbOverride->GetBoundingBox());
-                      }
-                      else
-                      {
-                        job.BoundingBox = job.Mesh->m_boundingBox;
-                      }
-
-                      TransformAABB(job.BoundingBox, job.WorldTransform);
+                      job.BoundingBox    = ntt->GetBoundingBox(true);
 
                       // Assign skeletal animations.
                       if (SkeletonComponent* skComp = ntt->GetComponentFast<SkeletonComponent>())

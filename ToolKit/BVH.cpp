@@ -61,7 +61,7 @@ namespace ToolKit
     m_bvhTree->Clean();
   }
 
-  void BVH::AddEntity(EntityPtr& entity)
+  void BVH::AddEntity(const EntityPtr& entity)
   {
     if (!entity->_addingToBVH && IsBVHEntity(entity))
     {
@@ -70,7 +70,7 @@ namespace ToolKit
     }
   }
 
-  void BVH::RemoveEntity(EntityPtr& entity)
+  void BVH::RemoveEntity(const EntityPtr& entity)
   {
     if (IsBVHEntity(entity))
     {
@@ -78,7 +78,7 @@ namespace ToolKit
     }
   }
 
-  void BVH::UpdateEntity(EntityPtr& entity)
+  void BVH::UpdateEntity(const EntityPtr& entity)
   {
     if (IsBVHEntity(entity))
     {

@@ -50,7 +50,6 @@ namespace ToolKit
 
     static PrefabPtr GetPrefabRoot(const EntityPtr ntt);
     Entity* CopyTo(Entity* other) const override;
-    BoundingBox GetBoundingBox(bool inWorld = false) const override;
 
     /**
      * This function will look for the first entity with given name in LINKED scene.
@@ -67,6 +66,7 @@ namespace ToolKit
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
+    void UpdateLocalBoundingBox() override;
 
    private:
     void ParameterConstructor() override;
