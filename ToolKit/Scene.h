@@ -179,11 +179,6 @@ namespace ToolKit
     LightPtrArray& GetLights() const;
 
     /**
-     * @return All the cameras in the scene.
-     */
-    CameraPtrArray& GetCameras() const;
-
-    /**
      * Gets the sky object associated with the scene. If multiple exist, returns the last one.
      * @returns Last added sky entity or null if not exist.
      */
@@ -315,7 +310,7 @@ namespace ToolKit
 
     /**
      * Updates all entity caches based on the entity type and components.
-     * Adds or removes the ntt from the caches.
+     * Adds or removes the entity / component to the caches.
      */
     void UpdateEntityCaches(const EntityPtr& ntt, bool add);
 
@@ -334,14 +329,9 @@ namespace ToolKit
     EntityPtrArray m_entities; //!< The entities in the scene.
     bool m_isPrefab;           //!< Whether or not the scene is a prefab.
 
-    /**
-     * Each frame cached objects are updated and stay valid until the end of the frame.
-     * cache provides type based fast access.
-     */
-    mutable CameraPtrArray m_cameraCache;
-    mutable LightPtrArray m_lightCache;
-    mutable EnvironmentComponentPtrArray m_environmentVolumeCache;
-    mutable SkyBasePtr m_skyCache;
+    mutable LightPtrArray m_lightCache;                            //!< Cached light entities which is added to scene.
+    mutable EnvironmentComponentPtrArray m_environmentVolumeCache; //!< Environment volumes in the scene.
+    mutable SkyBasePtr m_skyCache;                                 //!< Last added sky.
   };
 
   /**

@@ -341,8 +341,6 @@ namespace ToolKit
 
   LightPtrArray& Scene::GetLights() const { return m_lightCache; }
 
-  CameraPtrArray& Scene::GetCameras() const { return m_cameraCache; }
-
   SkyBasePtr& Scene::GetSky() { return m_skyCache; }
 
   EnvironmentComponentPtrArray& Scene::GetEnvironmentVolumes() const { return m_environmentVolumeCache; }
@@ -526,17 +524,6 @@ namespace ToolKit
       else
       {
         remove(m_lightCache, light);
-      }
-    }
-    else if (const CameraPtr& cam = SafeCast<Camera>(ntt))
-    {
-      if (add)
-      {
-        m_cameraCache.push_back(cam);
-      }
-      else
-      {
-        remove(m_cameraCache, cam);
       }
     }
 
