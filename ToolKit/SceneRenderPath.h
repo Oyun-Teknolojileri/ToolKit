@@ -43,7 +43,7 @@ namespace ToolKit
 
     virtual void Render(Renderer* renderer) override;
     virtual void PreRender(Renderer* renderer);
-    virtual void PostRender();
+    virtual void PostRender(Renderer* renderer);
 
    private:
     virtual void SetPassParams();

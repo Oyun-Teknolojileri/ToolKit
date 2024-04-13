@@ -34,6 +34,10 @@ namespace ToolKit
                         const Vec4& clearColor         = Vec4(0.0f),
                         GraphicFramebufferTypes fbType = GraphicFramebufferTypes::Framebuffer);
 
+    void StartTimerQuery();
+    void EndTimerQuery();
+    double GetElapsedTime(); //!< Returns elapsed time between start - end time query in milliseconds.
+
     FramebufferPtr GetFrameBuffer();
     void ClearColorBuffer(const Vec4& color);
     void ClearBuffer(GraphicBitFields fields, const Vec4& value = Vec4(0.0f));
@@ -194,6 +198,8 @@ namespace ToolKit
     CubePtr m_dummyDrawCube                        = nullptr;
 
     GpuProgramManager* m_gpuProgramManager         = nullptr;
+
+    uint m_gpuTimerQuery                           = 0;
   };
 
 } // namespace ToolKit

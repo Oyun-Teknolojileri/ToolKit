@@ -314,9 +314,6 @@ namespace ToolKit
                 ProcessEvent(sdlEvent);
               }
 
-              g_app->m_lastFrameHWRenderPassCount = GetHWRenderPassCount();
-              g_app->m_lastFrameDrawCallCount     = GetDrawCallCount();
-
               POP_CPU_MARKER();
             };
             g_proxy->RegisterPreUpdateFunction(preUpdateFn);
@@ -337,6 +334,9 @@ namespace ToolKit
               PUSH_CPU_MARKER("Clear SDL Event Pool");
 
               g_sdlEventPool->ClearPool(); // Clear after consumption.
+
+              g_app->m_lastFrameHWRenderPassCount = GetHWRenderPassCount();
+              g_app->m_lastFrameDrawCallCount     = GetDrawCallCount();
 
               POP_CPU_MARKER();
             };

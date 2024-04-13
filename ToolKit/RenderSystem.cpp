@@ -177,7 +177,10 @@ namespace ToolKit
   void RenderSystem::EndFrame()
   {
     m_frameCount++;
-    m_renderer->m_frameCount = m_frameCount;
+    m_renderer->m_frameCount          = m_frameCount;
+
+    double elapsedRenderTime          = m_renderer->GetElapsedTime();
+    GetTKStats()->m_elapsedRenderTime = elapsedRenderTime;
   }
 
   void RenderSystem::TestSRGBBackBuffer()

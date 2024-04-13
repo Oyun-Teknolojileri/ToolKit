@@ -63,6 +63,9 @@ namespace ToolKit
 
     inline uint64 GetHWRenderPassCount() { return m_renderPassCount; }
 
+   public:
+    double m_elapsedRenderTime = 0.0;
+
    private:
     uint64 m_totalVRAMUsageInBytes = 0;
     uint64 m_drawCallCount         = 0;
@@ -190,6 +193,18 @@ namespace ToolKit
     else
     {
       return 0;
+    }
+  }
+
+  TK_API inline double GetRenderTime()
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      return tkStats->m_elapsedRenderTime;
+    }
+    else
+    {
+      return 1.0;
     }
   }
 } // namespace ToolKit

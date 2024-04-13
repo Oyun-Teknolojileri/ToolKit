@@ -108,12 +108,14 @@ namespace ToolKit
     POP_CPU_MARKER();
 
     PUSH_CPU_MARKER("SceneRenderer::PostRender");
-    PostRender();
+    PostRender(renderer);
     POP_CPU_MARKER();
   }
 
   void SceneRenderPath::PreRender(Renderer* renderer)
   {
+    renderer->StartTimerQuery();
+
     SetPassParams();
 
     m_gBufferPass->InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
@@ -123,7 +125,7 @@ namespace ToolKit
                                          m_params.MainFramebuffer->GetSettings().height);
   }
 
-  void SceneRenderPath::PostRender() {}
+  void SceneRenderPath::PostRender(Renderer* renderer) { renderer->EndTimerQuery(); }
 
   void SceneRenderPath::SetPassParams()
   {

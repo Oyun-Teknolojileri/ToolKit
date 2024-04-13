@@ -33,7 +33,9 @@ namespace ToolKit
       ImGui::SetNextWindowSize(ImVec2(270, 110), ImGuiCond_Once);
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        ImGui::Text("FPS: %d", g_app->m_fps);
+        double renderTime = GetRenderTime();
+        ImGui::Text("Render Time (ms): %.2f, FPS: %.2f", renderTime, 1000.0 / renderTime);
+        ImGui::Text("Editor FPS: %d", g_app->m_fps);
         ImGui::Spacing();
         ImGui::Text("Total Draw Call: %llu", g_app->GetLastFrameDrawCallCount());
         ImGui::Text("Total Hardware Render Pass: %llu", g_app->GetLastFrameHWRenderPassCount());

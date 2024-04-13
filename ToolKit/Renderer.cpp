@@ -47,6 +47,8 @@ namespace ToolKit
     m_dummyDrawCube                 = MakeNewPtr<Cube>();
 
     m_gpuProgramManager             = GetGpuProgramManager();
+
+    glGenQueries(1, &m_gpuTimerQuery);
   }
 
   Renderer::~Renderer()
@@ -391,6 +393,17 @@ namespace ToolKit
     }
 
     m_framebuffer = fb;
+  }
+
+  void Renderer::StartTimerQuery() { glBeginQuery(GL_TIME_ELAPSED_EXT, m_gpuTimerQuery); }
+
+  void Renderer::EndTimerQuery() { glEndQuery(GL_TIME_ELAPSED_EXT); }
+
+  double Renderer::GetElapsedTime()
+  {
+    GLuint elapsedTime;
+    glGetQueryObjectuiv(m_gpuTimerQuery, GL_QUERY_RESULT, &elapsedTime);
+    return glm::max(1.0, (double) (elapsedTime) / 1000000.0);
   }
 
   FramebufferPtr Renderer::GetFrameBuffer() { return m_framebuffer; }

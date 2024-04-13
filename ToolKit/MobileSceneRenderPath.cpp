@@ -88,18 +88,20 @@ namespace ToolKit
 
     renderer->SetShadowAtlas(nullptr);
 
-    PostRender();
+    PostRender(renderer);
   }
 
   void MobileSceneRenderPath::PreRender(Renderer* renderer)
   {
+    renderer->StartTimerQuery();
+
     SetPassParams();
 
     m_forwardPreProcessPass->InitBuffers(m_params.MainFramebuffer->GetSettings().width,
                                          m_params.MainFramebuffer->GetSettings().height);
   }
 
-  void MobileSceneRenderPath::PostRender() {}
+  void MobileSceneRenderPath::PostRender(Renderer* renderer) { renderer->EndTimerQuery(); }
 
   void MobileSceneRenderPath::SetPassParams()
   {
