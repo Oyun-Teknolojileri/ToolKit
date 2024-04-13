@@ -329,10 +329,10 @@ namespace ToolKit
     ParamRadius().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         {
-          if (m_bvh != nullptr)
+          if (BVHPtr bvh = m_bvh.lock())
           {
             EntityPtr self = Self<PointLight>();
-            m_bvh->UpdateEntity(self);
+            bvh->UpdateEntity(self);
           }
         });
   }
@@ -429,10 +429,10 @@ namespace ToolKit
         {
           const float radius = std::get<float>(newVal);
           MeshGenerator::GenerateConeMesh(m_volumeMesh, radius, 32, GetOuterAngleVal());
-          if (m_bvh != nullptr)
+          if (BVHPtr bvh = m_bvh.lock())
           {
             EntityPtr self = Self<PointLight>();
-            m_bvh->UpdateEntity(self);
+            bvh->UpdateEntity(self);
           }
         });
 
@@ -442,10 +442,10 @@ namespace ToolKit
         {
           const float outerAngle = std::get<float>(newVal);
           MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, outerAngle);
-          if (m_bvh != nullptr)
+          if (BVHPtr bvh = m_bvh.lock())
           {
             EntityPtr self = Self<PointLight>();
-            m_bvh->UpdateEntity(self);
+            bvh->UpdateEntity(self);
           }
         });
   }

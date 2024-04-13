@@ -139,9 +139,9 @@ namespace ToolKit
   void Entity::InvalidateSpatialCaches()
   {
     m_boundingBoxCachaInvalidated = true;
-    if (m_bvh)
+    if (BVHPtr bvh = m_bvh.lock())
     {
-      m_bvh->UpdateEntity(Self<Entity>());
+      bvh->UpdateEntity(Self<Entity>());
     }
   }
 

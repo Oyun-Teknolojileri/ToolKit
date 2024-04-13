@@ -35,7 +35,7 @@ namespace ToolKit
 
     inline const Mat4& GetProjectionMatrix() const { return m_projection; }
 
-    inline const Mat4& GetProjectViewMatrix() { return m_projection * GetViewMatrix(); }
+    inline Mat4 GetProjectViewMatrix() { return m_projection * GetViewMatrix(); }
 
     bool IsOrtographic() const;
 

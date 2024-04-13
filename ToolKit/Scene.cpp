@@ -305,7 +305,7 @@ namespace ToolKit
         UpdateEntityCaches(removed, false);
         m_entities.erase(m_entities.begin() + i);
         m_bvh->RemoveEntity(removed);
-        removed->m_bvh = nullptr;
+        removed->m_bvh.reset();
 
         // Keep hierarchy if its prefab.
         if (removed->GetPrefabRoot() == nullptr)
@@ -438,7 +438,8 @@ namespace ToolKit
     for (int i = maxCnt; i >= 0; i--)
     {
       EntityPtr ntt = m_entities[i];
-      ntt->m_bvh    = nullptr;
+      ntt->m_bvh.reset();
+
       if (removeResources)
       {
         ntt->RemoveResources();

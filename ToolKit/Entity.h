@@ -209,7 +209,7 @@ namespace ToolKit
      */
     Entity* _prefabRootEntity;
 
-    BVHPtr m_bvh;                     //!< BVH the entity belongs to.
+    BVHWeakPtr m_bvh;                 //!< BVH the entity belongs to.
     std::vector<BVHNode*> m_bvhNodes; //!< BVHNodes that the entity is assigned.
     bool _addingToBVH = false;        //!< Internal value used by BVH
 
