@@ -620,6 +620,7 @@ namespace ToolKit
   void RenderJobProcessor::AssignEnvironment(RenderJob& job, const EnvironmentComponentPtrArray& environments)
   {
     BoundingBox bestBox;
+    job.EnvironmentVolume = nullptr;
     for (const EnvironmentComponentPtr& volume : environments)
     {
       if (volume->GetIlluminateVal() == false)

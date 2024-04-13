@@ -505,23 +505,19 @@ namespace ToolKit
 
   void Scene::UpdateEntityCaches(const EntityPtr& ntt, bool add)
   {
-    if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
+    if (SkyBasePtr sky = SafeCast<SkyBase>(ntt))
     {
-      if (envComp->GetHdriVal() != nullptr && envComp->GetIlluminateVal())
+      if (add)
       {
-        if (add)
-        {
-          envComp->Init(true);
-          m_environmentVolumeCache.push_back(envComp);
-        }
-        else
-        {
-          remove(m_environmentVolumeCache, envComp);
-        }
+        sky->Init();
+        m_skyCache = sky;
+      }
+      else
+      {
+        m_skyCache = nullptr;
       }
     }
-
-    if (const LightPtr& light = SafeCast<Light>(ntt))
+    else if (const LightPtr& light = SafeCast<Light>(ntt))
     {
       if (add)
       {
@@ -543,9 +539,21 @@ namespace ToolKit
         remove(m_cameraCache, cam);
       }
     }
-    else if (const SkyBasePtr& sky = SafeCast<SkyBase>(ntt))
+
+    if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
     {
-      m_skyCache = sky;
+      if (envComp->GetHdriVal() != nullptr && envComp->GetIlluminateVal())
+      {
+        if (add)
+        {
+          envComp->Init(true);
+          m_environmentVolumeCache.push_back(envComp);
+        }
+        else
+        {
+          remove(m_environmentVolumeCache, envComp);
+        }
+      }
     }
   }
 
