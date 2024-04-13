@@ -141,11 +141,8 @@ namespace ToolKit
                                          m_params.Scene->GetEnvironmentVolumes(),
                                          false);
 
-    m_shadowPass->m_params.shadowVolume = m_params.Scene->GetSceneBoundary();
-
-    m_shadowPass->m_params.renderData   = &m_renderData;
-    m_shadowPass->m_params.Lights       = m_params.Lights;
-    m_shadowPass->m_params.ViewCamera   = m_params.Cam;
+    m_shadowPass->m_params.scene      = m_params.Scene;
+    m_shadowPass->m_params.viewCamera = m_params.Cam;
 
     RenderJobProcessor::SeperateRenderData(m_renderData, false);
     RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);

@@ -87,7 +87,7 @@ namespace ToolKit
     virtual ~DirectionalLight();
 
     void NativeConstruct() override;
-    void UpdateShadowFrustum(RenderJobArray& jobs, const CameraPtr cameraView, const BoundingBox& shadowVolume);
+    void UpdateShadowFrustum(const CameraPtr cameraView, const BoundingBox& shadowVolume);
 
     LightType GetLightType() override { return LightType::Directional; }
 

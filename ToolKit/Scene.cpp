@@ -135,7 +135,10 @@ namespace ToolKit
   {
     for (LightPtr& light : m_lightCache)
     {
-      light->UpdateShadowCamera();
+      if (light->GetCastShadowVal())
+      {
+        light->UpdateShadowCamera();
+      }
     }
 
     m_bvh->Update();

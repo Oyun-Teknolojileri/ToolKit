@@ -7,11 +7,13 @@
 
 #include "ShadowPass.h"
 
+#include "BVH.h"
 #include "Camera.h"
 #include "Logger.h"
 #include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
+#include "Scene.h"
 #include "TKProfiler.h"
 #include "TKStats.h"
 #include "ToolKit.h"
@@ -58,20 +60,20 @@ namespace ToolKit
     }
 
     // Update shadow maps.
-    for (LightPtr light : m_params.Lights)
+    for (LightPtr& light : m_lights)
     {
       light->InitShadowMapDepthMaterial();
       if (DirectionalLight* dLight = light->As<DirectionalLight>())
       {
-        dLight->UpdateShadowFrustum(m_params.renderData->jobs, m_params.ViewCamera, m_params.shadowVolume);
+        dLight->UpdateShadowFrustum(m_params.viewCamera, m_params.scene->GetSceneBoundary());
       }
-      // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
 
-      RenderShadowMaps(light, m_params.renderData->jobs);
+      // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
+      RenderShadowMaps(light);
     }
 
     // The first set attachment did not call hw render pass while rendering shadow map
-    if (m_params.Lights.size() > 0)
+    if (m_lights.size() > 0)
     {
       RemoveHWRenderPass();
     }
@@ -92,7 +94,8 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
 
     // Dropout non shadow casting lights.
-    erase_if(m_params.Lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
+    m_lights           = m_params.scene->GetLights();
+    erase_if(m_lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
 
     InitShadowAtlas();
 
@@ -113,13 +116,13 @@ namespace ToolKit
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
-  void ShadowPass::RenderShadowMaps(LightPtr light, RenderJobArray& jobs)
+  void ShadowPass::RenderShadowMaps(LightPtr light)
   {
     CPU_FUNC_RANGE();
 
     Renderer* renderer        = GetRenderer();
 
-    auto renderForShadowMapFn = [this, &renderer](LightPtr light, RenderJobArray& jobs) -> void
+    auto renderForShadowMapFn = [this, &renderer](LightPtr light) -> void
     {
       PUSH_CPU_MARKER("Render Call");
 
@@ -129,17 +132,30 @@ namespace ToolKit
       renderer->BindProgram(m_program);
 
       renderer->SetCamera(light->m_shadowCamera, false);
+      Frustum frustum = ExtractFrustum(light->m_shadowCamera->GetProjectViewMatrix(), false);
 
-      RenderJobProcessor::CullRenderJobs(jobs, light->m_shadowCamera, m_unCulledRenderJobIndices);
+      EntityRawPtrArray ntties;
+      m_params.scene->m_bvh->FrustumTest(frustum, ntties);
 
-      // We may draw view culled objects. Because they are visible from shadow camera.
-      renderer->m_ignoreRenderingCulledObjectWarning = true;
-      for (int i = 0; i < m_unCulledRenderJobIndices.size(); i++)
+      RenderJob job;
+      job.Material = shadowMaterial.get();
+
+      for (Entity* ntt : ntties)
       {
-        RenderJob& job = jobs[m_unCulledRenderJobIndices[i]];
-        renderer->Render(job);
+        job.WorldTransform = ntt->m_node->GetTransform();
+        if (MeshComponentPtr meshCmp = ntt->GetMeshComponent())
+        {
+          if (meshCmp->GetCastShadowVal())
+          {
+            const MeshRawPtrArray& meshes = meshCmp->GetMeshVal()->GetAllMeshes();
+            for (Mesh* mesh : meshes)
+            {
+              job.Mesh = mesh;
+              renderer->Render(job);
+            }
+          }
+        }
       }
-      renderer->m_ignoreRenderingCulledObjectWarning = false;
 
       POP_CPU_MARKER();
     };
@@ -169,7 +185,7 @@ namespace ToolKit
                                   (uint) light->GetShadowResVal(),
                                   (uint) light->GetShadowResVal());
 
-        renderForShadowMapFn(light, jobs);
+        renderForShadowMapFn(light);
       }
     }
     else if (light->IsA<DirectionalLight>() || light->IsA<SpotLight>())
@@ -189,7 +205,7 @@ namespace ToolKit
                                 (uint) light->GetShadowResVal(),
                                 (uint) light->GetShadowResVal());
 
-      renderForShadowMapFn(light, jobs);
+      renderForShadowMapFn(light);
     }
   }
 
@@ -288,9 +304,9 @@ namespace ToolKit
 
     // After this loop m_previousShadowCasters is set with lights with shadows
     int nextId      = 0;
-    for (int i = 0; i < m_params.Lights.size(); ++i)
+    for (int i = 0; i < m_lights.size(); ++i)
     {
-      LightPtr light = m_params.Lights[i];
+      Light* light = m_lights[i].get();
       if (light->m_shadowResolutionUpdated)
       {
         light->m_shadowResolutionUpdated = false;
@@ -319,7 +335,7 @@ namespace ToolKit
       m_previousShadowCasters.resize(nextId);
 
       // Place shadow textures to atlas
-      m_layerCount        = PlaceShadowMapsToShadowAtlas(m_params.Lights);
+      m_layerCount        = PlaceShadowMapsToShadowAtlas(m_lights);
 
       const int maxLayers = GetRenderer()->GetMaxArrayTextureLayers();
       if (maxLayers < m_layerCount)

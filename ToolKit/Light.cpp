@@ -85,10 +85,7 @@ namespace ToolKit
 
   void Light::UpdateShadowCamera()
   {
-    const Mat4& proj                      = m_shadowCamera->GetProjectionMatrix();
-    Mat4 view                             = m_shadowCamera->GetViewMatrix();
-
-    m_shadowMapCameraProjectionViewMatrix = proj * view;
+    m_shadowMapCameraProjectionViewMatrix = m_shadowCamera->GetProjectViewMatrix();
     m_shadowMapCameraFar                  = m_shadowCamera->Far();
   }
 
@@ -162,13 +159,9 @@ namespace ToolKit
     AddComponent<DirectionComponent>();
   }
 
-  void DirectionalLight::UpdateShadowFrustum(RenderJobArray& jobs,
-                                             const CameraPtr cameraView,
-                                             const BoundingBox& shadowVolume)
+  void DirectionalLight::UpdateShadowFrustum(const CameraPtr cameraView, const BoundingBox& shadowVolume)
   {
-    // FitEntitiesBBoxIntoShadowFrustum(m_shadowCamera, jobs);
     FitViewFrustumIntoLightFrustum(m_shadowCamera, cameraView, shadowVolume);
-
     UpdateShadowCamera();
   }
 
