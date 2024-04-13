@@ -126,6 +126,7 @@ namespace ToolKit
       }
     }
 
+    m_bvh->ReBuild();
     m_initiated = true;
   }
 
@@ -717,17 +718,7 @@ namespace ToolKit
       AddEntity(ntt);
     }
 
-    // Do not serialize post processing settings if this is prefab.
-    if (!m_isPrefab)
-    {
-
-      m_postProcessSettings.DeSerialize(info.Document, parent);
-    }
-    else
-    {
-      // Rebuild bvh for prefabs. It won't get update, this is the only chance.
-      m_bvh->ReBuild();
-    }
+    m_postProcessSettings.DeSerialize(info.Document, parent);
 
     for (EntityPtr ntt : prefabList)
     {
