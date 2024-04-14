@@ -42,6 +42,7 @@ namespace ToolKit
     hdri->m_exposure               = GetExposureVal();
     hdri->Init(flushClientSideArray);
 
+    UpdateBoundingBoxCache();
     m_initialized = true;
   }
 
@@ -127,6 +128,12 @@ namespace ToolKit
     ParamExposure().m_onValueChangedFn.clear();
     ParamExposure().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
                                                  { ReInitHdri(GetHdriVal(), std::get<float>(newVal)); });
+
+    ParamPositionOffset().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
+                                                       { m_boundingBoxCacheInvalidated = true; });
+
+    ParamSize().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
+                                             { m_boundingBoxCacheInvalidated = true; });
   }
 
   ComponentPtr EnvironmentComponent::Copy(EntityPtr ntt)
@@ -159,19 +166,14 @@ namespace ToolKit
     return node;
   }
 
-  BoundingBox EnvironmentComponent::GetBBox()
+  BoundingBox EnvironmentComponent::GetBoundingBox()
   {
-    Vec3 pos;
-    BoundingBox aabb;
-
-    if (EntityPtr owner = OwnerEntity())
+    if (m_boundingBoxCacheInvalidated)
     {
-      pos += owner->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      UpdateBoundingBoxCache();
     }
 
-    aabb.min = GetPositionOffsetVal() + pos - GetSizeVal() * 0.5f;
-    aabb.max = GetPositionOffsetVal() + pos + GetSizeVal() * 0.5f;
-    return aabb;
+    return m_boundingBoxCache;
   }
 
   void EnvironmentComponent::ReInitHdri(HdriPtr hdri, float exposure)
@@ -180,6 +182,19 @@ namespace ToolKit
     hdri->Load();
     hdri->m_exposure = exposure;
     hdri->Init(true);
+  }
+
+  void EnvironmentComponent::UpdateBoundingBoxCache()
+  {
+    Vec3 pos;
+    if (EntityPtr owner = OwnerEntity())
+    {
+      pos += owner->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+    }
+
+    m_boundingBoxCache.min        = GetPositionOffsetVal() + pos - GetSizeVal() * 0.5f;
+    m_boundingBoxCache.max        = GetPositionOffsetVal() + pos + GetSizeVal() * 0.5f;
+    m_boundingBoxCacheInvalidated = false;
   };
 
 } // namespace ToolKit

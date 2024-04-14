@@ -628,7 +628,7 @@ namespace ToolKit
       }
 
       // Pick the smallest volume intersecting with job.
-      BoundingBox vbb = std::move(volume->GetBBox());
+      BoundingBox vbb = std::move(volume->GetBoundingBox());
       if (BoxBoxIntersection(vbb, job.BoundingBox))
       {
         if (bestBox.Volume() > vbb.Volume() || job.EnvironmentVolume == nullptr)

@@ -124,6 +124,12 @@ namespace ToolKit
   void Entity::InvalidateSpatialCaches()
   {
     m_boundingBoxCacheInvalidated = true;
+
+    if (EnvironmentComponent* envComp = GetComponentFast<EnvironmentComponent>())
+    {
+      envComp->m_boundingBoxCacheInvalidated = true;
+    }
+
     if (BVHPtr bvh = m_bvh.lock())
     {
       bvh->UpdateEntity(Self<Entity>());

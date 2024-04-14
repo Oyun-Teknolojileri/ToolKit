@@ -219,7 +219,7 @@ namespace ToolKit
    protected:
     BoundingBox m_localBoundingBoxCache;
     BoundingBox m_worldBoundingBoxCache;
-    bool m_boundingBoxCacheInvalidated = true; //!< If true, bbox caches are updated upon access.
+    bool m_boundingBoxCacheInvalidated = true; //!< If true, bounding box caches are updated upon access.
 
    private:
     /**
