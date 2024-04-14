@@ -7,13 +7,13 @@
 
 #include "Primative.h"
 
+#include "AABBOverrideComponent.h"
 #include "Camera.h"
 #include "DirectionComponent.h"
 #include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "Node.h"
-#include "ResourceComponent.h"
 #include "ToolKit.h"
 
 #include "DebugNew.h"

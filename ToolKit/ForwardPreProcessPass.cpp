@@ -93,8 +93,7 @@ namespace ToolKit
     PUSH_GPU_MARKER("ForwardPreProcess::Render");
     PUSH_CPU_MARKER("ForwardPreProcess::Render");
 
-    Renderer* renderer = GetRenderer();
-    renderer->SetLights(m_params.Lights);
+    Renderer* renderer                      = GetRenderer();
 
     const auto renderLinearDepthAndNormalFn = [&](RenderJobItr begin, RenderJobItr end)
     {

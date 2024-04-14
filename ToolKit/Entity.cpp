@@ -7,7 +7,9 @@
 
 #include "Entity.h"
 
+#include "AABBOverrideComponent.h"
 #include "Audio.h"
+#include "BVH.h"
 #include "Camera.h"
 #include "Canvas.h"
 #include "Drawable.h"
@@ -18,7 +20,6 @@
 #include "Node.h"
 #include "Prefab.h"
 #include "Primative.h"
-#include "ResourceComponent.h"
 #include "Skeleton.h"
 #include "Sky.h"
 #include "Surface.h"
@@ -70,7 +71,7 @@ namespace ToolKit
   {
     if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
     {
-      //meshComp->Init(false);
+      // meshComp->Init(false);
       if (const MeshPtr& mesh = meshComp->GetMeshVal())
       {
         return mesh->TotalVertexCount() > 0;
@@ -96,33 +97,16 @@ namespace ToolKit
     anim->GetPose(m_node, time);
   }
 
-  BoundingBox Entity::GetBoundingBox(bool inWorld) const
+  BoundingBox Entity::GetBoundingBox(bool inWorld)
   {
-    BoundingBox aabb;
-    AABBOverrideComponent* overrideComp = GetComponentFast<AABBOverrideComponent>();
-    if (overrideComp)
+    if (!m_boundingBoxCacheInvalidated)
     {
-      aabb = overrideComp->GetBoundingBox();
-    }
-    else
-    {
-      if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
-      {
-        aabb = meshComp->GetBoundingBox();
-      }
+      return inWorld ? m_worldBoundingBoxCache : m_localBoundingBoxCache;
     }
 
-    if (!aabb.IsValid())
-    {
-      // In case of an uninitialized bounding box, provide a very small box.
-      aabb = BoundingBox(Vec3(-TK_FLT_MIN), Vec3(TK_FLT_MIN));
-    }
-    else if (inWorld)
-    {
-      TransformAABB(aabb, m_node->GetTransform());
-    }
+    UpdateBoundingBoxCaches();
 
-    return aabb;
+    return inWorld ? m_worldBoundingBoxCache : m_localBoundingBoxCache;
   }
 
   ObjectPtr Entity::Copy() const
@@ -137,6 +121,15 @@ namespace ToolKit
 
   Entity* Entity::GetPrefabRoot() const { return _prefabRootEntity; }
 
+  void Entity::InvalidateSpatialCaches()
+  {
+    m_boundingBoxCacheInvalidated = true;
+    if (BVHPtr bvh = m_bvh.lock())
+    {
+      bvh->UpdateEntity(Self<Entity>());
+    }
+  }
+
   Entity* Entity::CopyTo(Entity* other) const
   {
     WeakCopy(other);
@@ -147,6 +140,8 @@ namespace ToolKit
       ComponentPtr copy = m_components[i]->Copy(other->Self<Entity>());
       other->m_components.push_back(copy);
     }
+
+    other->m_bvh = m_bvh;
 
     return other;
   }
@@ -335,6 +330,39 @@ namespace ToolKit
     }
 
     return nttNode;
+  }
+
+  void Entity::UpdateLocalBoundingBox()
+  {
+    if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
+    {
+      m_localBoundingBoxCache = meshComp->GetBoundingBox();
+    }
+    else
+    {
+      m_localBoundingBoxCache = infinitesimalBox;
+    }
+  }
+
+  void Entity::UpdateBoundingBoxCaches()
+  {
+    UpdateLocalBoundingBox();
+
+    if (AABBOverrideComponent* overrideComp = GetComponentFast<AABBOverrideComponent>())
+    {
+      m_localBoundingBoxCache = overrideComp->GetBoundingBox();
+    }
+
+    if (!m_localBoundingBoxCache.IsValid())
+    {
+      // In case of an uninitialized bounding box, provide a very small box.
+      m_localBoundingBoxCache = infinitesimalBox;
+    }
+
+    m_worldBoundingBoxCache = m_localBoundingBoxCache;
+    TransformAABB(m_worldBoundingBoxCache, m_node->GetTransform());
+
+    m_boundingBoxCacheInvalidated = false;
   }
 
   void Entity::RemoveResources() { assert(false && "Not implemented"); }

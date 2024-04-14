@@ -195,6 +195,9 @@
     <ClCompile Include="PluginWindow.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
+    <ClCompile Include="EditorBillboard.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mod.h">
@@ -352,6 +355,9 @@
     </ClInclude>
     <ClInclude Include="PluginWindow.h">
       <Filter>UI\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorBillboard.h">
+      <Filter>Entities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -21,6 +21,7 @@
 
 namespace ToolKit
 {
+  class BVHNode;
 
   static VariantCategory EntityCategory {"Meta", 100};
 
@@ -42,7 +43,7 @@ namespace ToolKit
     EntityPtr Parent() const;
     virtual bool IsDrawable() const;
     virtual void SetPose(const AnimationPtr& anim, float time);
-    virtual BoundingBox GetBoundingBox(bool inWorld = false) const;
+    virtual BoundingBox GetBoundingBox(bool inWorld = false);
     ObjectPtr Copy() const override;
     virtual void RemoveResources();
 
@@ -161,10 +162,7 @@ namespace ToolKit
      */
     ComponentPtr GetComponent(ClassMeta* Class) const;
 
-    /**
-     * Removes all components from the entity.
-     */
-    void ClearComponents();
+    void ClearComponents(); //!< Removes all components from the entity.
 
     /**
      * Used to identify if this Entity is a prefab, and if so, returns the
@@ -174,6 +172,8 @@ namespace ToolKit
      */
     Entity* GetPrefabRoot() const;
 
+    void InvalidateSpatialCaches(); //!< BVH & Bounding boxes are invalidated.
+
    protected:
     virtual Entity* CopyTo(Entity* other) const;
     void ParameterConstructor() override;
@@ -182,6 +182,9 @@ namespace ToolKit
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
+
+    virtual void UpdateLocalBoundingBox();
+    void UpdateBoundingBoxCaches();
 
    public:
     TKDeclareParam(String, Name);
@@ -206,6 +209,17 @@ namespace ToolKit
      * Prefab Entity during Prefab::Init.
      */
     Entity* _prefabRootEntity;
+
+    BVHWeakPtr m_bvh;                 //!< BVH the entity belongs to.
+    std::vector<BVHNode*> m_bvhNodes; //!< BVHNodes that the entity is assigned.
+
+    /** Internally used to mark the entity as being processed by bvh traverse algorithms. */
+    bool m_isInBVHProcess = false;
+
+   protected:
+    BoundingBox m_localBoundingBoxCache;
+    BoundingBox m_worldBoundingBoxCache;
+    bool m_boundingBoxCacheInvalidated = true; //!< If true, bbox caches are updated upon access.
 
    private:
     /**

@@ -104,6 +104,9 @@ namespace ToolKit
     float GetHeight() const { return max.y - min.y; }
   };
 
+  static const BoundingBox infinitesimalBox(Vec3(-TK_FLT_MIN), Vec3(TK_FLT_MIN));
+  static const BoundingBox unitBox({-0.5f, -0.5f, -0.5f}, {0.5f, 0.5f, 0.5f});
+
   /**
    * A struct representing a ray in 3D space.
    */

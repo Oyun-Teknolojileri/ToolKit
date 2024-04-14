@@ -32,7 +32,7 @@ namespace ToolKit
 
     void Render(Renderer* renderer) override;
     void PreRender(Renderer* renderer) override;
-    void PostRender() override;
+    void PostRender(Renderer* renderer) override;
 
    protected:
     void SetPassParams() override;

@@ -19,7 +19,6 @@
 
 namespace ToolKit
 {
-
   /**
    * The Scene class represents a collection of entities in a 3D environment. It
    * provides functionality for loading and saving scenes, updating and querying
@@ -180,11 +179,6 @@ namespace ToolKit
     LightPtrArray& GetLights() const;
 
     /**
-     * @return All the cameras in the scene.
-     */
-    CameraPtrArray& GetCameras() const;
-
-    /**
      * Gets the sky object associated with the scene. If multiple exist, returns the last one.
      * @returns Last added sky entity or null if not exist.
      */
@@ -273,6 +267,13 @@ namespace ToolKit
      */
     virtual void ClearEntities();
 
+    /**
+     * Rebuilds the BVH
+     */
+    void RebuildBVH();
+
+    const BoundingBox& GetSceneBoundary(); //!< Returns scene boundary from the BVH.
+
    protected:
     /**
      * Serializes the scene to an XML document.
@@ -307,6 +308,12 @@ namespace ToolKit
      */
     void CopyTo(Resource* other) override;
 
+    /**
+     * Updates all entity caches based on the entity type and components.
+     * Adds or removes the entity / component to the caches.
+     */
+    void UpdateEntityCaches(const EntityPtr& ntt, bool add);
+
    private:
     /**
      * Removes all children of the given entity.
@@ -315,25 +322,16 @@ namespace ToolKit
     void RemoveChildren(EntityPtr removed);
 
    public:
-    /**
-     * A world space volume that covers all the entities in the scene.
-     * Its calculated during rendering and Initialization. Its only valid after Init or scene render.
-     */
-    BoundingBox m_boundingBox;
     EngineSettings::PostProcessingSettings m_postProcessSettings; //!< Post process settings that this scene uses
+    BVHPtr m_bvh = nullptr;
 
    protected:
     EntityPtrArray m_entities; //!< The entities in the scene.
     bool m_isPrefab;           //!< Whether or not the scene is a prefab.
 
-    /**
-     * Each frame cached objects are updated and stay valid until the end of the frame.
-     * cache provides type based fast access.
-     */
-    mutable CameraPtrArray m_cameraCache;
-    mutable LightPtrArray m_lightCache;
-    mutable EnvironmentComponentPtrArray m_environmentVolumeCache;
-    mutable SkyBasePtr m_skyCache;
+    mutable LightPtrArray m_lightCache;                            //!< Cached light entities which is added to scene.
+    mutable EnvironmentComponentPtrArray m_environmentVolumeCache; //!< Environment volumes in the scene.
+    mutable SkyBasePtr m_skyCache;                                 //!< Last added sky.
   };
 
   /**

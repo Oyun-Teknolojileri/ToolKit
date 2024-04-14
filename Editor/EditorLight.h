@@ -9,9 +9,9 @@
 
 #include "Gizmo.h"
 
+#include <AABBOverrideComponent.h>
 #include <Light.h>
 #include <Primative.h>
-#include <ResourceComponent.h>
 #include <ToolKit.h>
 #include <Types.h>
 

@@ -88,73 +88,34 @@ namespace ToolKit
 
     renderer->SetShadowAtlas(nullptr);
 
-    PostRender();
+    PostRender(renderer);
   }
 
   void MobileSceneRenderPath::PreRender(Renderer* renderer)
   {
+    renderer->StartTimerQuery();
+
     SetPassParams();
 
     m_forwardPreProcessPass->InitBuffers(m_params.MainFramebuffer->GetSettings().width,
                                          m_params.MainFramebuffer->GetSettings().height);
   }
 
-  void MobileSceneRenderPath::PostRender() { m_updatedLights.clear(); }
+  void MobileSceneRenderPath::PostRender(Renderer* renderer) { renderer->EndTimerQuery(); }
 
   void MobileSceneRenderPath::SetPassParams()
   {
-    // Update all lights before using them.
-    m_updatedLights = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
-
-    // Cull lights out side of view. Not even their shadows are needed.
-    RenderJobProcessor::CullLights(m_updatedLights, m_params.Cam);
-
-    const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
-
-    RenderJobProcessor::CreateRenderJobs(allDrawList,
-                                         m_renderData.jobs,
-                                         m_updatedLights,
+    RenderJobProcessor::CreateRenderJobs(m_renderData.jobs,
+                                         m_params.Scene->m_bvh,
+                                         m_params.Lights,
                                          m_params.Cam,
                                          m_params.Scene->GetEnvironmentVolumes());
 
-    m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
-    m_shadowPass->m_params.renderData   = &m_renderData;
-    m_shadowPass->m_params.Lights       = m_updatedLights;
-    m_shadowPass->m_params.ViewCamera   = m_params.Cam;
+    m_shadowPass->m_params.scene      = m_params.Scene;
+    m_shadowPass->m_params.viewCamera = m_params.Cam;
 
-    // RenderJobProcessor::CullRenderJobs(m_renderData.jobs, m_params.Cam);
     RenderJobProcessor::SeperateRenderData(m_renderData, true);
     RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
-
-    // TK_LOG("Culled");
-    // int i = 0;
-    // for (RenderJobItr beg = m_renderData.jobs.begin(); beg != m_renderData.GetForwardOpaqueBegin();
-    //      beg++)
-    //{
-    //   i++;
-    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    // }
-
-    // TK_LOG("Forward Opaque");
-    // for (RenderJobItr beg = m_renderData.GetForwardOpaqueBegin(); beg != m_renderData.GetForwardTranslucentBegin();
-    //      beg++)
-    //{
-    //   i++;
-    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    // }
-
-    // TK_LOG("Forward Translucent");
-    // for (RenderJobItr beg = m_renderData.GetForwardTranslucentBegin(); beg != m_renderData.jobs.end(); beg++)
-    //{
-    //   i++;
-    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    // }
-
-    // RenderJobProcessor::AssignEnvironment(m_renderData.GetForwardOpaqueBegin(),
-    //                                       m_renderData.jobs.end(),
-    //                                       m_params.Scene->GetEnvironmentVolumes());
-
-    // RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_updatedLights);
 
     // Set CubeMapPass for sky.
     m_drawSky         = false;
@@ -182,7 +143,7 @@ namespace ToolKit
     }
 
     m_forwardRenderPass->m_params.renderData  = &m_renderData;
-    m_forwardRenderPass->m_params.Lights      = m_updatedLights;
+    m_forwardRenderPass->m_params.Lights      = m_params.Lights;
     m_forwardRenderPass->m_params.Cam         = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.SSAOEnabled = m_params.Gfx.SSAOEnabled;

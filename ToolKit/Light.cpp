@@ -7,6 +7,8 @@
 
 #include "Light.h"
 
+#include "AABBOverrideComponent.h"
+#include "BVH.h"
 #include "Camera.h"
 #include "Component.h"
 #include "DirectionComponent.h"
@@ -16,6 +18,7 @@
 #include "Mesh.h"
 #include "Pass.h"
 #include "Renderer.h"
+#include "Scene.h"
 #include "Shader.h"
 #include "TKProfiler.h"
 #include "ToolKit.h"
@@ -82,10 +85,7 @@ namespace ToolKit
 
   void Light::UpdateShadowCamera()
   {
-    const Mat4& proj                      = m_shadowCamera->GetProjectionMatrix();
-    Mat4 view                             = m_shadowCamera->GetViewMatrix();
-
-    m_shadowMapCameraProjectionViewMatrix = proj * view;
+    m_shadowMapCameraProjectionViewMatrix = m_shadowCamera->GetProjectViewMatrix();
     m_shadowMapCameraFar                  = m_shadowCamera->Far();
   }
 
@@ -106,22 +106,6 @@ namespace ToolKit
     m_shadowMapMaterial->m_fragmentShader                = frag;
     m_shadowMapMaterial->GetRenderState()->blendFunction = BlendFunction::NONE;
     m_shadowMapMaterial->Init();
-  }
-
-  BoundingBox Light::GetBoundingBox(bool inWorld) const
-  {
-    if (m_volumeMesh != nullptr)
-    {
-      BoundingBox lightVolume = m_volumeMesh->m_boundingBox;
-      if (inWorld)
-      {
-        TransformAABB(lightVolume, m_node->GetTransform());
-      }
-
-      return lightVolume;
-    }
-
-    return Super::GetBoundingBox();
   }
 
   void Light::UpdateShadowCameraTransform()
@@ -148,6 +132,18 @@ namespace ToolKit
     return nttNode->first_node(StaticClass()->Name.c_str());
   }
 
+  void Light::UpdateLocalBoundingBox()
+  {
+    if (m_volumeMesh != nullptr)
+    {
+      m_localBoundingBoxCache = m_volumeMesh->m_boundingBox;
+    }
+    else
+    {
+      m_localBoundingBoxCache = infinitesimalBox;
+    }
+  }
+
   // DirectionalLight
   //////////////////////////////////////////
 
@@ -163,13 +159,9 @@ namespace ToolKit
     AddComponent<DirectionComponent>();
   }
 
-  void DirectionalLight::UpdateShadowFrustum(RenderJobArray& jobs,
-                                             const CameraPtr cameraView,
-                                             const BoundingBox& shadowVolume)
+  void DirectionalLight::UpdateShadowFrustum(const CameraPtr cameraView, const BoundingBox& shadowVolume)
   {
-    // FitEntitiesBBoxIntoShadowFrustum(m_shadowCamera, jobs);
     FitViewFrustumIntoLightFrustum(m_shadowCamera, cameraView, shadowVolume);
-
     UpdateShadowCamera();
   }
 
@@ -290,19 +282,6 @@ namespace ToolKit
 
   PointLight::~PointLight() {}
 
-  BoundingBox PointLight::GetBoundingBox(bool inWorld) const
-  {
-    BoundingBox bb = m_boundingSphereCache.GetBoundingBox();
-    if (!inWorld)
-    {
-      // If not requested in world, cache is stored in world, so subtract the position.
-      bb.min -= m_boundingSphereCache.pos;
-      bb.max -= m_boundingSphereCache.pos;
-    }
-
-    return bb;
-  }
-
   void PointLight::UpdateShadowCamera()
   {
     m_shadowCamera->SetLens(glm::half_pi<float>(), 1.0f, 0.01f, AffectDistance());
@@ -344,8 +323,24 @@ namespace ToolKit
   void PointLight::ParameterConstructor()
   {
     Super::ParameterConstructor();
-    Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.3f});
     ParamPCFRadius().m_hint.increment = 0.02f;
+    Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.3f});
+    ParamRadius().m_onValueChangedFn.clear();
+    ParamRadius().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void
+        {
+          if (BVHPtr bvh = m_bvh.lock())
+          {
+            EntityPtr self = Self<PointLight>();
+            bvh->UpdateEntity(self);
+          }
+        });
+  }
+
+  void PointLight::UpdateLocalBoundingBox()
+  {
+    float radius            = GetRadiusVal();
+    m_localBoundingBoxCache = BoundingBox(Vec3(radius), Vec3(radius));
   }
 
   // SpotLight
@@ -434,6 +429,11 @@ namespace ToolKit
         {
           const float radius = std::get<float>(newVal);
           MeshGenerator::GenerateConeMesh(m_volumeMesh, radius, 32, GetOuterAngleVal());
+          if (BVHPtr bvh = m_bvh.lock())
+          {
+            EntityPtr self = Self<PointLight>();
+            bvh->UpdateEntity(self);
+          }
         });
 
     ParamOuterAngle().m_onValueChangedFn.clear();
@@ -442,6 +442,11 @@ namespace ToolKit
         {
           const float outerAngle = std::get<float>(newVal);
           MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, outerAngle);
+          if (BVHPtr bvh = m_bvh.lock())
+          {
+            EntityPtr self = Self<PointLight>();
+            bvh->UpdateEntity(self);
+          }
         });
   }
 } // namespace ToolKit

@@ -7,6 +7,8 @@
 
 #include "Scene.h"
 
+#include "AABBOverrideComponent.h"
+#include "BVH.h"
 #include "Component.h"
 #include "EngineSettings.h"
 #include "EnvironmentComponent.h"
@@ -15,7 +17,6 @@
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "Prefab.h"
-#include "ResourceComponent.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -25,11 +26,19 @@ namespace ToolKit
 {
   TKDefineClass(Scene, Resource);
 
-  Scene::Scene() { m_name = "New Scene"; }
+  Scene::Scene()
+  {
+    m_name = "New Scene";
+    m_bvh  = MakeNewPtr<BVH>(this);
+  }
 
   Scene::Scene(const String& file) : Scene() { SetFile(file); }
 
-  Scene::~Scene() { Destroy(false); }
+  Scene::~Scene()
+  {
+    Destroy(false);
+    m_bvh = nullptr;
+  }
 
   void Scene::Load()
   {
@@ -78,7 +87,6 @@ namespace ToolKit
       return;
     }
 
-    m_boundingBox                = BoundingBox();
     const EntityPtrArray& ntties = GetEntities();
     for (EntityPtr ntt : ntties)
     {
@@ -116,11 +124,9 @@ namespace ToolKit
           envCom->Init(true);
         }
       }
-
-      BoundingBox worldBox = ntt->GetBoundingBox(true);
-      m_boundingBox.UpdateBoundary(worldBox);
     }
 
+    m_bvh->ReBuild();
     m_initiated = true;
   }
 
@@ -128,47 +134,15 @@ namespace ToolKit
 
   void Scene::Update(float deltaTime)
   {
-    // Update caches.
-    m_lightCache.clear();
-    m_cameraCache.clear();
-    m_environmentVolumeCache.clear();
-    m_skyCache    = nullptr;
-    m_boundingBox = BoundingBox();
-
-    for (int i = 0; i < m_entities.size(); i++)
+    for (LightPtr& light : m_lightCache)
     {
-      EntityPtr& ntt        = m_entities[i];
-
-      // update bounding box.
-      const BoundingBox& bb = ntt->GetBoundingBox(true);
-      if (bb.IsValid())
-      {
-        m_boundingBox.UpdateBoundary(bb);
-      }
-
-      if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
-      {
-        if (envComp->GetHdriVal() != nullptr && envComp->GetIlluminateVal())
-        {
-          envComp->Init(true);
-          m_environmentVolumeCache.push_back(envComp);
-        }
-      }
-
-      if (const LightPtr& light = SafeCast<Light>(ntt))
+      if (light->GetCastShadowVal())
       {
         light->UpdateShadowCamera();
-        m_lightCache.push_back(light);
-      }
-      else if (const CameraPtr& cam = SafeCast<Camera>(ntt))
-      {
-        m_cameraCache.push_back(cam);
-      }
-      else if (const SkyBasePtr& sky = SafeCast<SkyBase>(ntt))
-      {
-        m_skyCache = sky;
       }
     }
+
+    m_bvh->Update();
   }
 
   void Scene::Merge(ScenePtr other)
@@ -205,45 +179,25 @@ namespace ToolKit
           continue;
         }
 
-        Ray rayInObjectSpace       = ray;
-        Mat4 ts                    = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
-        Mat4 its                   = glm::inverse(ts);
-        rayInObjectSpace.position  = its * Vec4(ray.position, 1.0f);
-        rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);
-
-        float dist                 = 0;
-        if (RayBoxIntersection(rayInObjectSpace, ntt->GetBoundingBox(), dist))
+        float dist = TK_FLT_MAX;
+        if (RayEntityIntersection(ray, ntt, dist))
         {
-          bool hit         = false;
-
-          float t          = TK_FLT_MAX;
-          uint submeshIndx = FindMeshIntersection(ntt, ray, t);
-
-          // There was no tracing possible object, so hit should be true
-          if (t == 0.0f && submeshIndx == TK_UINT_MAX)
+          if (dist < closestPickedDistance && dist > 0.0f)
           {
-            hit = true;
-          }
-          else if (t != TK_FLT_MAX && submeshIndx != TK_UINT_MAX)
-          {
-            hit = true;
-          }
-
-          if (hit)
-          {
-            if (dist < closestPickedDistance && dist > 0.0f)
-            {
-              pd.entity             = ntt;
-              pd.pickPos            = ray.position + ray.direction * dist;
-              closestPickedDistance = dist;
-            }
+            pd.entity             = ntt;
+            pd.pickPos            = ray.position + ray.direction * dist;
+            closestPickedDistance = dist;
           }
         }
       }
     };
 
-    pickFn(m_entities);
     pickFn(extraList);
+
+    if (pd.entity == nullptr)
+    {
+      m_bvh->PickObject(ray, pd, ignoreList, closestPickedDistance);
+    }
 
     return pd;
   }
@@ -288,8 +242,9 @@ namespace ToolKit
       }
     };
 
-    pickFn(m_entities);
     pickFn(extraList);
+
+    m_bvh->PickObject(frustum, pickedObjects, ignoreList, extraList, pickPartiallyInside);
   }
 
   EntityPtr Scene::GetEntity(ULongID id) const
@@ -313,7 +268,10 @@ namespace ToolKit
       assert(isUnique);
       if (isUnique)
       {
+        UpdateEntityCaches(entity, true);
         m_entities.push_back(entity);
+        entity->m_bvh = m_bvh;
+        m_bvh->AddEntity(entity);
       }
     }
   }
@@ -345,7 +303,10 @@ namespace ToolKit
       if (m_entities[i]->GetIdVal() == id)
       {
         removed = m_entities[i];
+        UpdateEntityCaches(removed, false);
         m_entities.erase(m_entities.begin() + i);
+        m_bvh->RemoveEntity(removed);
+        removed->m_bvh.reset();
 
         // Keep hierarchy if its prefab.
         if (removed->GetPrefabRoot() == nullptr)
@@ -361,6 +322,7 @@ namespace ToolKit
         {
           removed->m_node->OrphanAllChildren(true);
         }
+
         break;
       }
     }
@@ -378,8 +340,6 @@ namespace ToolKit
   const EntityPtrArray& Scene::GetEntities() const { return m_entities; }
 
   LightPtrArray& Scene::GetLights() const { return m_lightCache; }
-
-  CameraPtrArray& Scene::GetCameras() const { return m_cameraCache; }
 
   SkyBasePtr& Scene::GetSky() { return m_skyCache; }
 
@@ -477,6 +437,8 @@ namespace ToolKit
     for (int i = maxCnt; i >= 0; i--)
     {
       EntityPtr ntt = m_entities[i];
+      ntt->m_bvh.reset();
+
       if (removeResources)
       {
         ntt->RemoveResources();
@@ -514,6 +476,10 @@ namespace ToolKit
 
   void Scene::ClearEntities() { m_entities.clear(); }
 
+  void Scene::RebuildBVH() { m_bvh->ReBuild(); }
+
+  const BoundingBox& Scene::GetSceneBoundary() { return m_bvh->m_boundingBox; }
+
   void Scene::CopyTo(Resource* other)
   {
     Resource::CopyTo(other);
@@ -527,6 +493,54 @@ namespace ToolKit
     for (EntityPtr ntt : roots)
     {
       DeepCopy(ntt, cpy->m_entities);
+    }
+
+    for (EntityPtr ntt : cpy->m_entities)
+    {
+      ntt->m_bvh = m_bvh;
+    }
+  }
+
+  void Scene::UpdateEntityCaches(const EntityPtr& ntt, bool add)
+  {
+    if (SkyBasePtr sky = SafeCast<SkyBase>(ntt))
+    {
+      if (add)
+      {
+        sky->Init();
+        m_skyCache = sky;
+      }
+      else
+      {
+        m_skyCache = nullptr;
+      }
+    }
+    else if (const LightPtr& light = SafeCast<Light>(ntt))
+    {
+      if (add)
+      {
+        m_lightCache.push_back(light);
+      }
+      else
+      {
+        remove(m_lightCache, light);
+      }
+    }
+
+    if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
+    {
+      if (envComp->GetHdriVal() != nullptr && envComp->GetIlluminateVal())
+      {
+        if (add)
+        {
+          envComp->Init(true);
+          m_environmentVolumeCache.push_back(envComp);
+        }
+        else
+        {
+          remove(m_environmentVolumeCache, envComp);
+        }
+      }
     }
   }
 
@@ -699,12 +713,7 @@ namespace ToolKit
       AddEntity(ntt);
     }
 
-    // Do not serialize post processing settings if this is prefab.
-    if (!m_isPrefab)
-    {
-
-      m_postProcessSettings.DeSerialize(info.Document, parent);
-    }
+    m_postProcessSettings.DeSerialize(info.Document, parent);
 
     for (EntityPtr ntt : prefabList)
     {
@@ -753,6 +762,7 @@ namespace ToolKit
 
     // apply scene post processing effects
     GetEngineSettings().PostProcessing = m_currentScene->m_postProcessSettings;
+    m_currentScene->m_bvh->SetParameters(m_currentScene->m_postProcessSettings); // Build BVH with new parameters
   }
 
 } // namespace ToolKit

@@ -9,6 +9,7 @@
 
 #include "App.h"
 
+#include <BVH.h>
 #include <EngineSettings.h>
 
 #include <DebugNew.h>
@@ -170,6 +171,25 @@ namespace ToolKit
         }
 
         ImGui::DragFloat("Shadow Distance", &engineSettings.PostProcessing.ShadowDistance, 1.0f, 0.01f, 100000.0f);
+
+        ImGui::SeparatorText("BVH");
+        ImGui::DragInt("Node Max Entity", &engineSettings.PostProcessing.maxEntityPerBVHNode, 1, 1, 1000000);
+        ImGui::DragFloat("Node Min Size", &engineSettings.PostProcessing.minBVHNodeSize, 1.0f, 0.01f, 100000.0f);
+        if (ImGui::Button("ReBuild BVH"))
+        {
+          if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
+          {
+            if (BVHPtr bvh = GetSceneManager()->GetCurrentScene()->m_bvh)
+            {
+              bvh->ReBuild();
+
+              int total = 0, dist = 0;
+              float rat = 0.0f;
+              bvh->DistributionQuality(total, dist, rat);
+              TK_LOG("Total number of entities: %d, Entities in bvh: %d, Distribution: %f", total, dist, rat);
+            }
+          }
+        }
 
       } // Imgui::Begin
       ImGui::End();

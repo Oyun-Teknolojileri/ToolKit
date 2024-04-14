@@ -7,12 +7,12 @@
 
 #include "MathUtil.h"
 
+#include "AABBOverrideComponent.h"
 #include "Animation.h"
 #include "Camera.h"
 #include "Mesh.h"
 #include "Node.h"
 #include "Pass.h"
-#include "ResourceComponent.h"
 #include "Skeleton.h"
 #include "TKProfiler.h"
 #include "Threads.h"
@@ -278,6 +278,12 @@ namespace ToolKit
     return dist < (sphereRadius + sphereRadius2);
   }
 
+  bool BoxInsideBox(const BoundingBox& inside, const BoundingBox& outside)
+  {
+    return inside.min.x >= outside.min.x && inside.min.y >= outside.min.y && inside.min.z >= outside.min.z &&
+           inside.max.x <= outside.max.x && inside.max.y <= outside.max.y && inside.max.z <= outside.max.z;
+  }
+
   bool BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2)
   {
     return (box1.min.x <= box2.max.x && box1.max.x >= box2.min.x) &&
@@ -319,6 +325,36 @@ namespace ToolKit
     }
     t = tmin;
     return true;
+  }
+
+  bool RayEntityIntersection(const Ray& ray, const EntityPtr entity, float& dist)
+  {
+    bool hit                   = false;
+    Ray rayInObjectSpace       = ray;
+    Mat4 ts                    = entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
+    Mat4 its                   = glm::inverse(ts);
+    rayInObjectSpace.position  = its * Vec4(ray.position, 1.0f);
+    rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);
+
+    float bbDist               = 0.0f;
+
+    if (RayBoxIntersection(rayInObjectSpace, entity->GetBoundingBox(), bbDist))
+    {
+      dist             = TK_FLT_MAX;
+      uint submeshIndx = FindMeshIntersection(entity, ray, dist);
+
+      // There was no tracing possible object, so hit should be true
+      if (dist == 0.0f && submeshIndx == TK_UINT_MAX)
+      {
+        hit = true;
+      }
+      else if (dist != TK_FLT_MAX && submeshIndx != TK_UINT_MAX)
+      {
+        hit = true;
+      }
+    }
+
+    return hit;
   }
 
   bool RectPointIntersection(Vec2 rectMin, Vec2 rectMax, Vec2 point)

@@ -169,7 +169,7 @@
     <ClCompile Include="Resource.cpp">
       <Filter>Resources</Filter>
     </ClCompile>
-    <ClCompile Include="ResourceComponent.cpp">
+    <ClCompile Include="AABBOverrideComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
     <ClCompile Include="ResourceManager.cpp">
@@ -245,6 +245,9 @@
       <Filter>Render\PostProcessPass</Filter>
     </ClCompile>
     <ClCompile Include="Plugin.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="BVH.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -429,7 +432,7 @@
     <ClInclude Include="Resource.h">
       <Filter>Resources</Filter>
     </ClInclude>
-    <ClInclude Include="ResourceComponent.h">
+    <ClInclude Include="AABBOverrideComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="ResourceManager.h">
@@ -518,6 +521,9 @@
     </ClInclude>
     <ClInclude Include="GammaTonemapFxaaPass.h">
       <Filter>Render\PostProcessPass</Filter>
+    </ClInclude>
+    <ClInclude Include="BVH.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

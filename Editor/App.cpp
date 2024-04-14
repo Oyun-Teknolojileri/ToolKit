@@ -8,6 +8,7 @@
 #include "App.h"
 
 #include "AndroidBuildWindow.h"
+#include "BVH.h"
 #include "EditorCamera.h"
 #include "EditorViewport2d.h"
 #include "OverlayUI.h"

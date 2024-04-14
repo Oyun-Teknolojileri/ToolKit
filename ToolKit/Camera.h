@@ -35,6 +35,8 @@ namespace ToolKit
 
     inline const Mat4& GetProjectionMatrix() const { return m_projection; }
 
+    inline Mat4 GetProjectViewMatrix() { return m_projection * GetViewMatrix(); }
+
     bool IsOrtographic() const;
 
     // Tight fit camera frustum to a bounding box with a margin

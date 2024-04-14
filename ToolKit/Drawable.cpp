@@ -7,11 +7,11 @@
 
 #include "Drawable.h"
 
+#include "AABBOverrideComponent.h"
 #include "Component.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
-#include "ResourceComponent.h"
 #include "Skeleton.h"
 #include "ToolKit.h"
 #include "Util.h"
@@ -29,10 +29,7 @@ namespace ToolKit
 
   Drawable::~Drawable() {}
 
-  void Drawable::SetPose(const AnimationPtr& anim, float time)
-  {
-    Entity::SetPose(anim, time);
-  }
+  void Drawable::SetPose(const AnimationPtr& anim, float time) { Entity::SetPose(anim, time); }
 
   Entity* Drawable::CopyTo(Entity* copyTo) const { return Entity::CopyTo(copyTo); }
 

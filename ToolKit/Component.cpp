@@ -7,6 +7,7 @@
 
 #include "Component.h"
 
+#include "AABBOverrideComponent.h"
 #include "AnimationControllerComponent.h"
 #include "Component.h"
 #include "DirectionComponent.h"
@@ -14,7 +15,6 @@
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
 #include "Object.h"
-#include "ResourceComponent.h"
 #include "SkeletonComponent.h"
 #include "ToolKit.h"
 

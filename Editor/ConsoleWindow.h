@@ -87,6 +87,12 @@ namespace ToolKit
     const String g_checkSceneHealth("CheckSceneHealth");
     void CheckSceneHealth(TagArgArray tagArgs);
 
+    const String g_showSceneBoundary("ShowSceneBoundary");
+    void ShowSceneBoundary(TagArgArray tagArgs);
+
+    const String g_showBVHNodes("ShowBVHNodes");
+    void ShowBVHNodes(TagArgArray tagArgs);
+
     // Command errors
     const String g_noValidEntity("No valid entity");
 

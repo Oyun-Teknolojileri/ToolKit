@@ -594,6 +594,10 @@ namespace ToolKit
       }
     }
 
+    void ShowSceneBoundary(TagArgArray tagArgs) { BoolCheck(tagArgs, &g_app->m_showSceneBoundary); }
+
+    void ShowBVHNodes(TagArgArray tagArgs) { BoolCheck(tagArgs, &g_app->m_showBVHNodes); }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2)
     {
@@ -654,6 +658,8 @@ namespace ToolKit
       CreateCommand(g_showShadowFrustum, ShowShadowFrustum);
       CreateCommand(g_selectEffectingLights, SelectAllEffectingLights);
       CreateCommand(g_checkSceneHealth, CheckSceneHealth);
+      CreateCommand(g_showSceneBoundary, ShowSceneBoundary);
+      CreateCommand(g_showBVHNodes, ShowBVHNodes);
     }
 
     ConsoleWindow::~ConsoleWindow() {}

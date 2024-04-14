@@ -58,8 +58,7 @@ namespace ToolKit
     Mat4 WorldTransform;     //!< World transform of the entity.
     AnimData animData;       //!< Animation data of render job.
 
-    short activeLightCount = 0; //!< Number of lights that is active in the list.
-    std::array<int, Renderer::RHIConstants::MaxLightsPerObject> lights {}; //!< Light indexes that affects the job.
+    std::vector<Light*> lights;
   };
 
   typedef RenderJobArray::iterator RenderJobItr;
@@ -120,7 +119,13 @@ namespace ToolKit
                                  LightPtrArray& lights,
                                  const CameraPtr& camera,
                                  const EnvironmentComponentPtrArray& environments,
-                                 bool ignoreVisibility = false);
+                                 bool ignoreVisibility);
+
+    static void CreateRenderJobs(RenderJobArray& jobArray,
+                                 BVHPtr bvh,
+                                 LightPtrArray& lights,
+                                 CameraPtr camera,
+                                 const EnvironmentComponentPtrArray& environments);
 
     /**
      * This will drop the lights whose bounding volume does not intersect with camera.

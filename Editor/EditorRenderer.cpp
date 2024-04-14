@@ -13,6 +13,7 @@
 #include "EditorViewport2d.h"
 #include "Gizmo.h"
 
+#include <BVH.h>
 #include <Camera.h>
 #include <DirectionComponent.h>
 #include <EnvironmentComponent.h>
@@ -156,8 +157,17 @@ namespace ToolKit
 
       EditorScenePtr scene = app->GetCurrentScene();
 
-      LightPtrArray lights =
-          m_params.LitMode == EditorLitMode::EditorLit ? m_lightSystem->m_lights : scene->GetLights();
+      LightPtrArray lights;
+      bool useSceneLights = true;
+      if (m_params.LitMode == EditorLitMode::EditorLit)
+      {
+        lights         = m_lightSystem->m_lights;
+        useSceneLights = false;
+      }
+      else
+      {
+        lights = scene->GetLights();
+      }
 
       EditorViewport* viewport = static_cast<EditorViewport*>(m_params.Viewport);
 
@@ -180,6 +190,16 @@ namespace ToolKit
         m_sceneRenderPath->m_params.Lights          = lights;
         m_sceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
         m_sceneRenderPath->m_params.Scene           = scene;
+      }
+
+      if (app->m_showSceneBoundary)
+      {
+        app->m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(scene->GetSceneBoundary()));
+      }
+
+      if (app->m_showBVHNodes)
+      {
+        scene->m_bvh->GetDebugBVHBoxes(app->m_perFrameDebugObjects);
       }
 
       // Generate Selection boundary and Environment component boundary.

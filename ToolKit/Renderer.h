@@ -34,6 +34,12 @@ namespace ToolKit
                         const Vec4& clearColor         = Vec4(0.0f),
                         GraphicFramebufferTypes fbType = GraphicFramebufferTypes::Framebuffer);
 
+    void StartTimerQuery();
+    void EndTimerQuery();
+
+    /** Returns elapsed time between start - end time query in milliseconds.*/
+    void GetElapsedTime(float& cpu, float& gpu);
+
     FramebufferPtr GetFrameBuffer();
     void ClearColorBuffer(const Vec4& color);
     void ClearBuffer(GraphicBitFields fields, const Vec4& value = Vec4(0.0f));
@@ -175,13 +181,6 @@ namespace ToolKit
 
     UVec2 m_viewportSize; //!< Current viewport size.
 
-    /**
-     * Light array that will be used by the renderer.
-     * Usually, render paths sets the light array after culling visible lights.
-     * Jobs maintains indexes to the light list.
-     */
-    LightPtrArray m_lights;
-
     /*
      * This framebuffer can ONLY have 1 color attachment and no other attachments.
      * This way, we can use without needing to resize or reInit.
@@ -201,6 +200,9 @@ namespace ToolKit
     CubePtr m_dummyDrawCube                        = nullptr;
 
     GpuProgramManager* m_gpuProgramManager         = nullptr;
+
+    uint m_gpuTimerQuery                           = 0;
+    float m_cpuTime                                = 0.0f;
   };
 
 } // namespace ToolKit

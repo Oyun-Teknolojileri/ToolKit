@@ -7,12 +7,12 @@
 
 #include "GizmoPass.h"
 
-#include "Material.h"
-#include "Mesh.h"
-#include "ResourceComponent.h"
-#include "TKProfiler.h"
+#include <AABBOverrideComponent.h>
+#include <Material.h>
+#include <Mesh.h>
+#include <TKProfiler.h>
 
-#include "DebugNew.h"
+#include <DebugNew.h>
 
 namespace ToolKit
 {

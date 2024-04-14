@@ -7,7 +7,9 @@
 
 #include "Node.h"
 
+#include "BVH.h"
 #include "MathUtil.h"
+#include "Scene.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -53,7 +55,7 @@ namespace ToolKit
   void Node::Scale(const Vec3& val)
   {
     Mat4 ts = glm::scale(val);
-    TransformImp(ts, TransformationSpace::TS_LOCAL, nullptr, &m_orientation, nullptr);
+    TransformImp(ts, TransformationSpace::TS_LOCAL, nullptr, nullptr, &m_scale);
   }
 
   void Node::Transform(const Mat4& val, TransformationSpace space)
@@ -427,6 +429,8 @@ namespace ToolKit
     SetChildrenDirty();
     m_worldCache = GetParentTransform() * m_localCache;
     DecomposeMatrix(m_worldCache, &m_worldTranslationCache, &m_worldOrientationCache, nullptr);
+
+    InvalitadeSpatialCaches();
   }
 
   Mat4 Node::GetParentTransform()
@@ -463,6 +467,19 @@ namespace ToolKit
     {
       c->m_dirty = true;
       c->SetChildrenDirty();
+    }
+  }
+
+  void Node::InvalitadeSpatialCaches()
+  {
+    if (EntityPtr ntt = m_entity.lock())
+    {
+      ntt->InvalidateSpatialCaches();
+
+      for (Node* node : m_children)
+      {
+        node->InvalitadeSpatialCaches();
+      }
     }
   }
 

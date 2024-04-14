@@ -20,33 +20,9 @@ namespace ToolKit
 {
   namespace Editor
   {
-    TKDefineClass(EditorBillboardBase, Billboard);
 
-    EditorBillboardBase::EditorBillboardBase() {}
-
-    EditorBillboardBase::EditorBillboardBase(const Settings& settings) : Billboard(settings) {}
-
-    void EditorBillboardBase::NativeConstruct()
-    {
-      Super::NativeConstruct();
-      Generate();
-    }
-
-    void EditorBillboardBase::Generate()
-    {
-      MeshComponentPtr mCom = GetComponent<MeshComponent>();
-
-      // Billboard
-      QuadPtr quad          = MakeNewPtr<Quad>();
-      MeshPtr meshPtr       = quad->GetMeshComponent()->GetMeshVal();
-      MaterialPtr matPtr    = GetMaterialManager()->GetCopyOfUnlitMaterial();
-      matPtr->UnInit();
-      matPtr->m_diffuseTexture                    = m_iconImage;
-      matPtr->GetRenderState()->blendFunction     = BlendFunction::ALPHA_MASK;
-      matPtr->GetRenderState()->alphaMaskTreshold = 0.1f;
-      meshPtr->m_material                         = matPtr;
-      mCom->SetMeshVal(meshPtr);
-    }
+    // Cursor
+    //////////////////////////////////////////////////////////////////////////
 
     TKDefineClass(Cursor, EditorBillboardBase);
 
@@ -103,6 +79,9 @@ namespace ToolKit
 
       parentMesh->CalculateAABB();
     }
+
+    // Axis3d
+    //////////////////////////////////////////////////////////////////////////
 
     TKDefineClass(Axis3d, EditorBillboardBase);
 
@@ -251,6 +230,9 @@ namespace ToolKit
 
       return transform;
     }
+
+    // PolarHandle
+    //////////////////////////////////////////////////////////////////////////
 
     void PolarHandle::Generate(const Params& params)
     {
@@ -414,43 +396,6 @@ namespace ToolKit
         }
       }
       m_mesh->Init();
-
-      // Guide line.
-      // Gizmo updates later, transform modes uses previous frame's locatin.
-      // Fix Node Set - Get - Apply transfroms before.
-      /*if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
-      {
-        Mat4 its = glm::inverse(GetTransform());
-        Vec3 glcl = its * Vec4(params.initialPnt, 1.0f);
-
-        LineBatch* guides[3];
-        for (int i = 0; i < 3; i++)
-        {
-          guides[i] = new LineBatch // Use MakeNewPtr if this comment is opened
-          (
-            {
-              glcl + AXIS[i] * 999.0f,
-              glcl + AXIS[i] * -999.0f
-            },
-            g_gizmoColor[i],
-            DrawType::Line,
-            1.0f
-          );
-        }
-
-        int next = (((int)(params.axis) % 3) + 1) % 3;
-        m_mesh->m_subMeshes.push_back(guides[next]->m_mesh);
-        guides[next]->m_mesh = nullptr;
-
-        next = (next + 1) % 3;
-        m_mesh->m_subMeshes.push_back(guides[next]->m_mesh);
-        guides[next]->m_mesh = nullptr;
-
-        for (int i = 0; i < 3; i++)
-        {
-          SafeDel(guides[i]);
-        }
-      }*/
     }
 
     bool QuadHandle::HitTest(const Ray& ray, float& t) const
@@ -693,6 +638,9 @@ namespace ToolKit
       return p;
     }
 
+    // MoveGizmo
+    //////////////////////////////////////////////////////////////////////////
+
     TKDefineClass(MoveGizmo, Gizmo);
 
     MoveGizmo::MoveGizmo()
@@ -707,6 +655,9 @@ namespace ToolKit
     MoveGizmo::~MoveGizmo() {}
 
     EditorBillboardBase::BillboardType MoveGizmo::GetBillboardType() const { return BillboardType::Move; }
+
+    // ScaleGizmo
+    //////////////////////////////////////////////////////////////////////////
 
     TKDefineClass(ScaleGizmo, Gizmo);
 
@@ -746,6 +697,9 @@ namespace ToolKit
 
       return p;
     }
+
+    // PolarGizmo
+    //////////////////////////////////////////////////////////////////////////
 
     TKDefineClass(PolarGizmo, Gizmo);
 
@@ -815,34 +769,6 @@ namespace ToolKit
       }
 
       Consume();
-    }
-
-    TKDefineClass(SkyBillboard, EditorBillboardBase);
-
-    SkyBillboard::SkyBillboard() : EditorBillboardBase({true, 3.5f, 10.0f}) {}
-
-    SkyBillboard::~SkyBillboard() {}
-
-    EditorBillboardBase::BillboardType SkyBillboard::GetBillboardType() const { return BillboardType::Sky; }
-
-    void SkyBillboard::Generate()
-    {
-      m_iconImage = UI::m_skyIcon;
-      EditorBillboardBase::Generate();
-    }
-
-    TKDefineClass(LightBillboard, EditorBillboardBase);
-
-    LightBillboard::LightBillboard() : EditorBillboardBase({true, 3.5f, 10.0f}) {}
-
-    LightBillboard::~LightBillboard() {}
-
-    EditorBillboardBase::BillboardType LightBillboard::GetBillboardType() const { return BillboardType::Light; }
-
-    void LightBillboard::Generate()
-    {
-      m_iconImage = UI::m_lightIcon;
-      EditorBillboardBase::Generate();
     }
 
   } // namespace Editor

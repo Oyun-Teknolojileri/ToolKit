@@ -243,6 +243,19 @@ namespace ToolKit
     return it == arr.cend() ? -1 : int(it - arr.cbegin());
   }
 
+  template <typename T>
+  bool remove(std::vector<T>& arr, const T& val)
+  {
+    int i = FindIndex(arr, val);
+    if (i != -1)
+    {
+      arr.erase(arr.begin() + i);
+      return false;
+    }
+
+    return true;
+  }
+
   template <typename T, uint64 N>
   inline constexpr uint64 ArraySize(const T (&)[N])
   {
@@ -266,6 +279,13 @@ namespace ToolKit
     }
 
     return true; // All keys in map1 are found in map2
+  }
+
+  template <typename T>
+  void RemoveDuplicates(std::vector<T>& vec)
+  {
+    std::sort(vec.begin(), vec.end());
+    vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
   }
 
   //  Time.

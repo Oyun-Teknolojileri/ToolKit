@@ -40,7 +40,11 @@ namespace ToolKit
 
    protected:
     void ParameterConstructor() override;
+    void ParameterEventConstructor() override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+
+    private:
+    void InvalidateSpatialCaches();
 
    private:
     TKDeclareParam(Vec3, PositionOffset);

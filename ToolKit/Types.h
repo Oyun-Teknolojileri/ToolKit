@@ -32,6 +32,7 @@
 
 // STL
 #include <array>
+#include <deque>
 #include <filesystem>
 #include <functional>
 #include <limits>
@@ -189,6 +190,8 @@ namespace ToolKit
   typedef std::shared_ptr<class Surface> SurfacePtr;
   typedef std::shared_ptr<class Dpad> DpadPtr;
   typedef std::shared_ptr<class GammaTonemapFxaaPass> GammaTonemapFxaaPassPtr;
+  typedef std::shared_ptr<class BVH> BVHPtr;
+  typedef std::weak_ptr<class BVH> BVHWeakPtr;
 
   // Xml types.
   typedef rapidxml::xml_node<char> XmlNode;

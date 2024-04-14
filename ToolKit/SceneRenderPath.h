@@ -43,7 +43,7 @@ namespace ToolKit
 
     virtual void Render(Renderer* renderer) override;
     virtual void PreRender(Renderer* renderer);
-    virtual void PostRender();
+    virtual void PostRender(Renderer* renderer);
 
    private:
     virtual void SetPassParams();
@@ -61,7 +61,6 @@ namespace ToolKit
     SSAOPassPtr m_ssaoPass                           = nullptr;
     BloomPassPtr m_bloomPass                         = nullptr;
     DoFPassPtr m_dofPass                             = nullptr;
-    LightPtrArray m_updatedLights;
 
    protected:
     bool m_drawSky   = false;

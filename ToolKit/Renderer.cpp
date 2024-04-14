@@ -7,6 +7,7 @@
 
 #include "Renderer.h"
 
+#include "AABBOverrideComponent.h"
 #include "Camera.h"
 #include "DirectionComponent.h"
 #include "Drawable.h"
@@ -20,7 +21,6 @@
 #include "Node.h"
 #include "Pass.h"
 #include "RHI.h"
-#include "ResourceComponent.h"
 #include "Scene.h"
 #include "Shader.h"
 #include "Skeleton.h"
@@ -47,6 +47,8 @@ namespace ToolKit
     m_dummyDrawCube                 = MakeNewPtr<Cube>();
 
     m_gpuProgramManager             = GetGpuProgramManager();
+
+    glGenQueries(1, &m_gpuTimerQuery);
   }
 
   Renderer::~Renderer()
@@ -61,8 +63,6 @@ namespace ToolKit
     m_framebuffer                   = nullptr;
     m_shadowAtlas                   = nullptr;
   }
-
-  void Renderer::SetLights(const LightPtrArray& lights) { m_lights = lights; }
 
   int Renderer::GetMaxArrayTextureLayers()
   {
@@ -393,6 +393,25 @@ namespace ToolKit
     }
 
     m_framebuffer = fb;
+  }
+
+  void Renderer::StartTimerQuery()
+  {
+    m_cpuTime = GetElapsedMilliSeconds();
+    glBeginQuery(GL_TIME_ELAPSED_EXT, m_gpuTimerQuery);
+  }
+
+  void Renderer::EndTimerQuery() { glEndQuery(GL_TIME_ELAPSED_EXT); }
+
+  void Renderer::GetElapsedTime(float& cpu, float& gpu)
+  {
+    float cpuTime = GetElapsedMilliSeconds();
+    cpu           = cpuTime - m_cpuTime;
+
+    GLuint elapsedTime;
+    glGetQueryObjectuiv(m_gpuTimerQuery, GL_QUERY_RESULT, &elapsedTime);
+
+    gpu = glm::max(1.0f, (float) (elapsedTime) / 1000000.0f);
   }
 
   FramebufferPtr Renderer::GetFrameBuffer() { return m_framebuffer; }
@@ -1122,14 +1141,14 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    for (int i = 0; i < (int) job.activeLightCount; i++)
+    for (int i = 0; i < (int) job.lights.size(); i++)
     {
-      LightPtr currLight = m_lights[job.lights[i]];
+      Light* currLight = job.lights[i];
 
       // Point light uniforms
       if (currLight->GetLightType() == Light::Point)
       {
-        PointLight* pLight = static_cast<PointLight*>(currLight.get());
+        PointLight* pLight = static_cast<PointLight*>(currLight);
 
         Vec3 color         = pLight->GetColorVal();
         float intensity    = pLight->GetIntensityVal();
@@ -1150,7 +1169,7 @@ namespace ToolKit
       // Directional light uniforms
       else if (currLight->GetLightType() == Light::Directional)
       {
-        DirectionalLight* dLight = static_cast<DirectionalLight*>(currLight.get());
+        DirectionalLight* dLight = static_cast<DirectionalLight*>(currLight);
         Vec3 color               = dLight->GetColorVal();
         float intensity          = dLight->GetIntensityVal();
         Vec3 dir                 = dLight->GetComponentFast<DirectionComponent>()->GetDirection();
@@ -1167,7 +1186,7 @@ namespace ToolKit
       // Spot light uniforms
       else if (currLight->GetLightType() == Light::Spot)
       {
-        SpotLight* sLight = static_cast<SpotLight*>(currLight.get());
+        SpotLight* sLight = static_cast<SpotLight*>(currLight);
         Vec3 color        = sLight->GetColorVal();
         float intensity   = sLight->GetIntensityVal();
         Vec3 pos          = sLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
@@ -1234,7 +1253,7 @@ namespace ToolKit
     }
 
     GLint loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_ACTIVECOUNT);
-    glUniform1i(loc, (int) job.activeLightCount);
+    glUniform1i(loc, (int) job.lights.size());
 
     // Bind shadow map if activated
     if (m_shadowAtlas != nullptr)

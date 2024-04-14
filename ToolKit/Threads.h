@@ -16,6 +16,23 @@
 
 namespace ToolKit
 {
+  /** A lock that busy waits.
+   * if contention is low, busy waiting locks much more performant than context switching locks
+   * such as mutexes.
+   */
+  struct AtomicLock
+  {
+    std::atomic<bool> lock;
+
+    /** Locks via busy waiting. */
+    void Lock()
+    {
+      while (lock.exchange(true, std::memory_order_relaxed)) {};
+    }
+
+    /** Free the lock to be acquired again. */
+    void Release() { lock.store(false, std::memory_order_relaxed); }
+  };
 
   typedef task_thread_pool::task_thread_pool ThreadPool;
 

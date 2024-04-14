@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "EditorBillboard.h"
+
 #include <Primative.h>
 
 namespace ToolKit
@@ -14,40 +16,8 @@ namespace ToolKit
   namespace Editor
   {
 
-    class EditorBillboardBase : public Billboard
-    {
-     public:
-      enum class BillboardType
-      {
-        Cursor,
-        Axis3d,
-        Gizmo,
-        Move,
-        Rotate,
-        Scale,
-        Sky,
-        Light,
-        Anchor
-      };
-
-     public:
-      TKDeclareClass(EditorBillboardBase, Billboard);
-
-      EditorBillboardBase();
-      explicit EditorBillboardBase(const Settings& settings);
-      virtual BillboardType GetBillboardType() const = 0;
-      void NativeConstruct() override;
-
-     protected:
-      virtual void Generate();
-
-     protected:
-      TexturePtr m_iconImage = nullptr;
-    };
-
-    typedef std::shared_ptr<EditorBillboardBase> EditorBillboardPtr;
-    typedef std::vector<EditorBillboardPtr> BillboardPtrArray;
-    typedef std::vector<EditorBillboardBase*> BillboardRawPtrArray;
+    // Cursor
+    //////////////////////////////////////////////////////////////////////////
 
     class Cursor : public EditorBillboardBase
     {
@@ -64,6 +34,9 @@ namespace ToolKit
 
     typedef std::shared_ptr<Cursor> CursorPtr;
 
+    // Axis3d
+    //////////////////////////////////////////////////////////////////////////
+
     class Axis3d : public EditorBillboardBase
     {
      public:
@@ -78,6 +51,9 @@ namespace ToolKit
     };
 
     typedef std::shared_ptr<Axis3d> Axis3dPtr;
+
+    // GizmoHandle
+    //////////////////////////////////////////////////////////////////////////
 
     class GizmoHandle
     {
@@ -121,6 +97,9 @@ namespace ToolKit
       MeshPtr m_mesh = nullptr;
     };
 
+    // PolarHandle
+    //////////////////////////////////////////////////////////////////////////
+
     class PolarHandle : public GizmoHandle
     {
      public:
@@ -128,12 +107,18 @@ namespace ToolKit
       bool HitTest(const Ray& ray, float& t) const override;
     };
 
+    // QuadHandle
+    //////////////////////////////////////////////////////////////////////////
+
     class QuadHandle : public GizmoHandle
     {
      public:
       void Generate(const Params& params) override;
       bool HitTest(const Ray& ray, float& t) const override;
     };
+
+    // Gizmo
+    //////////////////////////////////////////////////////////////////////////
 
     class Gizmo : public EditorBillboardBase
     {
@@ -179,6 +164,9 @@ namespace ToolKit
 
     typedef std::shared_ptr<Gizmo> GizmoPtr;
 
+    // LinearGizmo
+    //////////////////////////////////////////////////////////////////////////
+
     class LinearGizmo : public Gizmo
     {
      public:
@@ -193,6 +181,9 @@ namespace ToolKit
       GizmoHandle::Params GetParam() const override;
     };
 
+    // MoveGizmo
+    //////////////////////////////////////////////////////////////////////////
+
     class MoveGizmo : public LinearGizmo
     {
      public:
@@ -202,6 +193,9 @@ namespace ToolKit
       virtual ~MoveGizmo();
       BillboardType GetBillboardType() const override;
     };
+
+    // ScaleGizmo
+    //////////////////////////////////////////////////////////////////////////
 
     class ScaleGizmo : public LinearGizmo
     {
@@ -216,6 +210,9 @@ namespace ToolKit
       GizmoHandle::Params GetParam() const override;
     };
 
+    // PolarGizmo
+    //////////////////////////////////////////////////////////////////////////
+
     class PolarGizmo : public Gizmo
     {
      public:
@@ -227,35 +224,6 @@ namespace ToolKit
 
       void Update(float deltaTime) override;
     };
-
-    class SkyBillboard : public EditorBillboardBase
-    {
-     public:
-      TKDeclareClass(SkyBillboard, EditorBillboardBase);
-
-      SkyBillboard();
-      virtual ~SkyBillboard();
-      BillboardType GetBillboardType() const override;
-
-     private:
-      void Generate() override;
-    };
-
-    typedef std::shared_ptr<SkyBillboard> SkyBillboardPtr;
-
-    class LightBillboard : public EditorBillboardBase
-    {
-     public:
-      TKDeclareClass(LightBillboard, EditorBillboardBase);
-
-      LightBillboard();
-      virtual ~LightBillboard();
-      BillboardType GetBillboardType() const override;
-
-      void Generate() override;
-    };
-
-    typedef std::shared_ptr<LightBillboard> LightBillboardPtr;
 
   } // namespace Editor
 } // namespace ToolKit

@@ -233,6 +233,7 @@ namespace ToolKit
     void UpdateTransformCaches();
     Mat4 GetParentTransform();
     void SetChildrenDirty();
+    void InvalitadeSpatialCaches();
 
    public:
     ULongID m_id;
@@ -241,16 +242,16 @@ namespace ToolKit
     bool m_inheritScale;
 
    private:
-    EntityWeakPtr m_entity;   //!< Entity that owns this node.
-    Vec3 m_translation;       //!< Local translation value.
-    Quaternion m_orientation; //!< Local orientation value.
-    Vec3 m_scale;             //!< Local scale value.
-    Mat4 m_parentCache;       //!< Cached transformation of the parent hierarchy.
-    Mat4 m_localCache;
-    Mat4 m_worldCache;
-    Vec3 m_worldTranslationCache;
-    Quaternion m_worldOrientationCache;
-    bool m_dirty; //!< Hint for child to update its parent cache.
+    EntityWeakPtr m_entity;             //!< Entity that owns this node.
+    Vec3 m_translation;                 //!< Local translation value.
+    Quaternion m_orientation;           //!< Local orientation value.
+    Vec3 m_scale;                       //!< Local scale value.
+    Mat4 m_parentCache;                 //!< Cached transformation of the parent hierarchy.
+    Mat4 m_localCache;                  //!< Local transform matrix cache.
+    Mat4 m_worldCache;                  //!< World transform matrix cache.
+    Vec3 m_worldTranslationCache;       //!< World translation cache.
+    Quaternion m_worldOrientationCache; //!< World orientation cache.
+    bool m_dirty;                       //!< Hint for child to update its parent cache.
   };
 
 } // namespace ToolKit

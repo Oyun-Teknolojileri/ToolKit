@@ -108,12 +108,14 @@ namespace ToolKit
     POP_CPU_MARKER();
 
     PUSH_CPU_MARKER("SceneRenderer::PostRender");
-    PostRender();
+    PostRender(renderer);
     POP_CPU_MARKER();
   }
 
   void SceneRenderPath::PreRender(Renderer* renderer)
   {
+    renderer->StartTimerQuery();
+
     SetPassParams();
 
     m_gBufferPass->InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
@@ -123,14 +125,11 @@ namespace ToolKit
                                          m_params.MainFramebuffer->GetSettings().height);
   }
 
-  void SceneRenderPath::PostRender() { m_updatedLights.clear(); }
+  void SceneRenderPath::PostRender(Renderer* renderer) { renderer->EndTimerQuery(); }
 
   void SceneRenderPath::SetPassParams()
   {
     CPU_FUNC_RANGE();
-
-    // Update all lights before using them.
-    m_updatedLights                   = m_params.Lights.empty() ? m_params.Scene->GetLights() : m_params.Lights;
 
     const EntityPtrArray& allDrawList = m_params.Scene->GetEntities();
 
@@ -144,53 +143,20 @@ namespace ToolKit
                                          m_params.Scene->GetEnvironmentVolumes(),
                                          false);
 
-    m_shadowPass->m_params.shadowVolume = m_params.Scene->m_boundingBox;
-
-    m_shadowPass->m_params.renderData   = &m_renderData;
-    m_shadowPass->m_params.Lights       = m_updatedLights;
-    m_shadowPass->m_params.ViewCamera   = m_params.Cam;
+    m_shadowPass->m_params.scene      = m_params.Scene;
+    m_shadowPass->m_params.viewCamera = m_params.Cam;
 
     RenderJobProcessor::SeperateRenderData(m_renderData, false);
     RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
 
     // Assign lights for forward pass
-    RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_updatedLights);
-
-    // TK_LOG("Culled");
-    // int i = 0;
-    // for (RenderJobItr beg = m_renderData.jobs.begin(); beg != m_renderData.GetDefferedBegin(); beg++)
-    //{
-    //   i++;
-    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    // }
-
-    // TK_LOG("Deferred Opaque");
-    // for (RenderJobItr beg = m_renderData.GetDefferedBegin(); beg != m_renderData.GetForwardOpaqueBegin(); beg++)
-    //{
-    //   i++;
-    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    // }
-
-    // TK_LOG("Forward Opaque");
-    // for (RenderJobItr beg = m_renderData.GetForwardOpaqueBegin(); beg != m_renderData.GetForwardTranslucentBegin();
-    //      beg++)
-    //{
-    //   i++;
-    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    // }
-
-    // TK_LOG("Forward Translucent");
-    // for (RenderJobItr beg = m_renderData.GetForwardTranslucentBegin(); beg != m_renderData.jobs.end(); beg++)
-    //{
-    //   i++;
-    //   TK_LOG("%d, %s", i, beg->Entity->GetNameVal().c_str());
-    // }
+    RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_params.Lights);
 
     m_gBufferPass->m_params.renderData          = &m_renderData;
     m_gBufferPass->m_params.Camera              = m_params.Cam;
 
     m_forwardRenderPass->m_params.renderData    = &m_renderData;
-    m_forwardRenderPass->m_params.Lights        = m_updatedLights;
+    m_forwardRenderPass->m_params.Lights        = m_params.Lights;
     m_forwardRenderPass->m_params.Cam           = m_params.Cam;
     m_forwardRenderPass->m_params.gNormalRt     = m_gBufferPass->m_gNormalRt;
     m_forwardRenderPass->m_params.gLinearRt     = m_gBufferPass->m_gLinearDepthRt;
@@ -204,7 +170,7 @@ namespace ToolKit
 
     m_lightingPass->m_params.ClearFramebuffer   = false;
     m_lightingPass->m_params.GBufferFramebuffer = m_gBufferPass->m_framebuffer;
-    m_lightingPass->m_params.lights             = m_updatedLights;
+    m_lightingPass->m_params.lights             = m_params.Lights;
     m_lightingPass->m_params.MainFramebuffer    = m_params.MainFramebuffer;
     m_lightingPass->m_params.Cam                = m_params.Cam;
     m_lightingPass->m_params.AOTexture          = m_params.Gfx.SSAOEnabled ? m_ssaoPass->m_ssaoTexture : nullptr;

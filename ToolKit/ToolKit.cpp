@@ -236,7 +236,11 @@ namespace ToolKit
     return m_timing.CurrentTime > m_timing.LastTime + m_timing.TargetDeltaTime;
   }
 
-  void Main::FrameBegin() {}
+  void Main::FrameBegin()
+  {
+    ResetDrawCallCounter();
+    ResetHWRenderPassCounter();
+  }
 
   void Main::FrameUpdate()
   {
@@ -269,12 +273,11 @@ namespace ToolKit
     }
 
     m_timing.LastTime = m_timing.CurrentTime;
+    GetRenderSystem()->EndFrame();
   }
 
   void Main::Frame(float deltaTime)
   {
-    ResetDrawCallCounter();
-    ResetHWRenderPassCounter();
 
     PUSH_CPU_MARKER("Exec Render Tasks");
     GetRenderSystem()->DecrementSkipFrame();
@@ -294,8 +297,6 @@ namespace ToolKit
       scene->Update(deltaTime);
     }
     POP_CPU_MARKER();
-
-    GetRenderSystem()->EndFrame();
   }
 
   void Main::RegisterPreUpdateFunction(TKUpdateFn preUpdateFn) { m_preUpdateFunctions.push_back(preUpdateFn); }

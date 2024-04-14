@@ -19,6 +19,7 @@
     <ClCompile Include="BillboardPass.cpp" />
     <ClCompile Include="BinPack2D.cpp" />
     <ClCompile Include="BloomPass.cpp" />
+    <ClCompile Include="BVH.cpp" />
     <ClCompile Include="Canvas.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -69,7 +70,7 @@
     <ClCompile Include="RenderState.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="Resource.cpp" />
-    <ClCompile Include="ResourceComponent.cpp" />
+    <ClCompile Include="AABBOverrideComponent.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="RHI.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -110,6 +111,7 @@
     <ClInclude Include="BillboardPass.h" />
     <ClInclude Include="BinPack2D.h" />
     <ClInclude Include="BloomPass.h" />
+    <ClInclude Include="BVH.h" />
     <ClInclude Include="Canvas.h" />
     <ClInclude Include="Class.h" />
     <ClInclude Include="Component.h" />
@@ -162,7 +164,7 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderState.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="ResourceComponent.h" />
+    <ClInclude Include="AABBOverrideComponent.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Serialize.h" />
