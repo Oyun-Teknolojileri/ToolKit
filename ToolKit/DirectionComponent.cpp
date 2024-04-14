@@ -9,8 +9,6 @@
 
 #include "Entity.h"
 
-
-
 namespace ToolKit
 {
 
@@ -27,11 +25,7 @@ namespace ToolKit
     return dc;
   }
 
-  Vec3 DirectionComponent::GetDirection()
-  {
-    Mat4 transform = OwnerEntity()->m_node->GetTransform(TransformationSpace::TS_WORLD);
-    return -glm::column(transform, 2);
-  }
+  Vec3 DirectionComponent::GetDirection() const { return -glm::column(GetOwnerWorldTransform(), 2); }
 
   void DirectionComponent::Pitch(float angle)
   {
@@ -56,11 +50,7 @@ namespace ToolKit
     OwnerEntity()->m_node->Rotate(glm::angleAxis(angle, Vec3(0.0f, 1.0f, 0.0f)), TransformationSpace::TS_WORLD);
   }
 
-  Vec3 DirectionComponent::GetUp() const
-  {
-    Mat4 transform = OwnerEntity()->m_node->GetTransform(TransformationSpace::TS_WORLD);
-    return glm::column(transform, 1);
-  }
+  Vec3 DirectionComponent::GetUp() const { return glm::column(GetOwnerWorldTransform(), 1); }
 
   Vec3 DirectionComponent::GetRight() const
   {
@@ -70,7 +60,7 @@ namespace ToolKit
 
   void DirectionComponent::LookAt(Vec3 target)
   {
-    Vec3 eye  = OwnerEntity()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+    Vec3 eye  = glm::column(GetOwnerWorldTransform(), 3);
     Vec3 tdir = target - eye;
     tdir.y    = 0.0f; // project on xz
     tdir      = glm::normalize(tdir);
@@ -115,6 +105,17 @@ namespace ToolKit
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
     return node;
+  }
+
+  Mat4& DirectionComponent::GetOwnerWorldTransform() const
+  {
+    if (m_spatialCachesInvalidated)
+    {
+      m_ownerWorldTransformCache = OwnerEntity()->m_node->GetTransform(TransformationSpace::TS_WORLD);
+      m_spatialCachesInvalidated = false;
+    }
+
+    return m_ownerWorldTransformCache;
   }
 
 } //  namespace ToolKit

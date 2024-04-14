@@ -12,6 +12,7 @@
 #include "BVH.h"
 #include "Camera.h"
 #include "Canvas.h"
+#include "DirectionComponent.h"
 #include "Drawable.h"
 #include "GradientSky.h"
 #include "Light.h"
@@ -25,8 +26,6 @@
 #include "Surface.h"
 #include "ToolKit.h"
 #include "Util.h"
-
-
 
 namespace ToolKit
 {
@@ -127,7 +126,12 @@ namespace ToolKit
 
     if (EnvironmentComponent* envComp = GetComponentFast<EnvironmentComponent>())
     {
-      envComp->m_boundingBoxCacheInvalidated = true;
+      envComp->m_spatialCachesInvalidated = true;
+    }
+
+    if (DirectionComponent* dirComp = GetComponentFast<DirectionComponent>())
+    {
+      dirComp->m_spatialCachesInvalidated = true;
     }
 
     if (BVHPtr bvh = m_bvh.lock())

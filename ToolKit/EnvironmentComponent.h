@@ -26,7 +26,7 @@ namespace ToolKit
     virtual ~EnvironmentComponent();
 
     ComponentPtr Copy(EntityPtr ntt) override;
-    BoundingBox GetBoundingBox();
+    const BoundingBox& GetBoundingBox();
 
     void Init(bool flushClientSideArray);
     void UnInit();
@@ -50,7 +50,7 @@ namespace ToolKit
     TKDeclareParam(float, Exposure);
     TKDeclareParam(MultiChoiceVariant, IBLTextureSize);
 
-    bool m_boundingBoxCacheInvalidated = true; //!< If true, bounding box caches are updated upon access.
+    bool m_spatialCachesInvalidated = true; //!< If true, bounding box caches are updated upon access.
 
    private:
     BoundingBox m_boundingBoxCache;

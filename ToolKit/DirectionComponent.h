@@ -27,7 +27,7 @@ namespace ToolKit
     ComponentPtr Copy(EntityPtr ntt) override;
 
     // Directional functions
-    Vec3 GetDirection();
+    Vec3 GetDirection() const;
     void Pitch(float angle);
     void Yaw(float angle);
     void Roll(float angle);
@@ -38,6 +38,15 @@ namespace ToolKit
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+
+   private:
+    Mat4& GetOwnerWorldTransform() const;
+
+   public:
+    mutable bool m_spatialCachesInvalidated = true;
+
+   private:
+    mutable Mat4 m_ownerWorldTransformCache;
   };
 
 } //  namespace ToolKit

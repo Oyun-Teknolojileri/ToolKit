@@ -169,7 +169,7 @@ namespace ToolKit
 
     static void CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, RenderJobArray& unCulledJobs);
 
-    static void StableSortByMeshThanMaterail(RenderData& renderData);
+    static void SortByMaterial(RenderData& renderData);
 
     static void AssignEnvironment(RenderJobItr begin,
                                   RenderJobItr end,

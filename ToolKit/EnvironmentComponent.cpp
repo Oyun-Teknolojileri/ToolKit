@@ -11,8 +11,6 @@
 #include "MathUtil.h"
 #include "Texture.h"
 
-
-
 namespace ToolKit
 {
 
@@ -130,10 +128,10 @@ namespace ToolKit
                                                  { ReInitHdri(GetHdriVal(), std::get<float>(newVal)); });
 
     ParamPositionOffset().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                                       { m_boundingBoxCacheInvalidated = true; });
+                                                       { m_spatialCachesInvalidated = true; });
 
     ParamSize().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                             { m_boundingBoxCacheInvalidated = true; });
+                                             { m_spatialCachesInvalidated = true; });
   }
 
   ComponentPtr EnvironmentComponent::Copy(EntityPtr ntt)
@@ -166,9 +164,9 @@ namespace ToolKit
     return node;
   }
 
-  BoundingBox EnvironmentComponent::GetBoundingBox()
+  const BoundingBox& EnvironmentComponent::GetBoundingBox()
   {
-    if (m_boundingBoxCacheInvalidated)
+    if (m_spatialCachesInvalidated)
     {
       UpdateBoundingBoxCache();
     }
@@ -192,9 +190,9 @@ namespace ToolKit
       pos += owner->m_node->GetTranslation(TransformationSpace::TS_WORLD);
     }
 
-    m_boundingBoxCache.min        = GetPositionOffsetVal() + pos - GetSizeVal() * 0.5f;
-    m_boundingBoxCache.max        = GetPositionOffsetVal() + pos + GetSizeVal() * 0.5f;
-    m_boundingBoxCacheInvalidated = false;
+    m_boundingBoxCache.min     = GetPositionOffsetVal() + pos - GetSizeVal() * 0.5f;
+    m_boundingBoxCache.max     = GetPositionOffsetVal() + pos + GetSizeVal() * 0.5f;
+    m_spatialCachesInvalidated = false;
   };
 
 } // namespace ToolKit

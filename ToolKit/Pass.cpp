@@ -21,8 +21,6 @@
 #include "Toolkit.h"
 #include "Viewport.h"
 
-
-
 namespace ToolKit
 {
   RenderPass::RenderPass() {}
@@ -558,19 +556,14 @@ namespace ToolKit
     FrustumCull(jobArray, camera, unCulledJobs);
   }
 
-  void RenderJobProcessor::StableSortByMeshThanMaterail(RenderData& renderData)
+  void RenderJobProcessor::SortByMaterial(RenderData& renderData)
   {
     auto sortRangeFn = [](RenderJobItr begin, RenderJobItr end) -> void
     {
-      std::stable_sort(begin,
-                       end,
-                       [](const RenderJob& a, const RenderJob& b) -> bool
-                       { return a.Mesh->GetIdVal() < b.Mesh->GetIdVal(); });
-
-      std::stable_sort(begin,
-                       end,
-                       [](const RenderJob& a, const RenderJob& b) -> bool
-                       { return a.Material->GetIdVal() < b.Material->GetIdVal(); });
+      std::sort(begin,
+                end,
+                [](const RenderJob& a, const RenderJob& b) -> bool
+                { return a.Material->GetIdVal() < b.Material->GetIdVal(); });
     };
 
     RenderJobItr begin, end;

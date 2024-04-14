@@ -13,8 +13,6 @@
 #include "TKProfiler.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
   SceneRenderPath::SceneRenderPath()
@@ -147,7 +145,7 @@ namespace ToolKit
     m_shadowPass->m_params.viewCamera = m_params.Cam;
 
     RenderJobProcessor::SeperateRenderData(m_renderData, false);
-    RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
+    RenderJobProcessor::SortByMaterial(m_renderData);
 
     // Assign lights for forward pass
     RenderJobProcessor::AssignLight(m_renderData.GetForwardOpaqueBegin(), m_renderData.jobs.end(), m_params.Lights);
