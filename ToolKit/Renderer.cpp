@@ -408,10 +408,17 @@ namespace ToolKit
     float cpuTime = GetElapsedMilliSeconds();
     cpu           = cpuTime - m_cpuTime;
 
-    GLuint elapsedTime;
-    glGetQueryObjectuiv(m_gpuTimerQuery, GL_QUERY_RESULT, &elapsedTime);
+    if (GetEngineSettings().Graphics.enableGpuTimer)
+    {
+      GLuint elapsedTime;
+      glGetQueryObjectuiv(m_gpuTimerQuery, GL_QUERY_RESULT, &elapsedTime);
 
-    gpu = glm::max(1.0f, (float) (elapsedTime) / 1000000.0f);
+      gpu = glm::max(1.0f, (float) (elapsedTime) / 1000000.0f);
+    }
+    else
+    {
+      gpu = 1.0f;
+    }
   }
 
   FramebufferPtr Renderer::GetFrameBuffer() { return m_framebuffer; }

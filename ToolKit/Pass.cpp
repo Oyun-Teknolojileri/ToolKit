@@ -313,7 +313,6 @@ namespace ToolKit
                         // Light assignment.
                         if (!job.frustumCulled)
                         {
-                          AssignLight(job, lights, directionalEndIndx);
                           AssignEnvironment(job, environments);
                         }
                       }

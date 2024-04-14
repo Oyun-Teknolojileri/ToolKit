@@ -36,6 +36,11 @@ namespace ToolKit
         float cpuTime, gpuTime;
         GetRenderTime(cpuTime, gpuTime);
 
+        bool* gpuTimer = &GetEngineSettings().Graphics.enableGpuTimer;
+
+        ImGui::Checkbox("##GpuProfileOn", gpuTimer);
+        UI::AddTooltipToLastItem("Have a negative impact on cpu performance.\nEnable it to see the gpu times.");
+        ImGui::SameLine();
         ImGui::Text("Render Time (gpu-ms): %.2f, FPS: %.2f", gpuTime, 1000.0f / gpuTime);
         ImGui::Text("Render Time (cpu-ms): %.2f, FPS: %.2f", cpuTime, 1000.0f / cpuTime);
         ImGui::Text("Editor FPS: %d", g_app->m_fps);

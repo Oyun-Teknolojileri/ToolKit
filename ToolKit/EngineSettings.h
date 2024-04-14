@@ -15,8 +15,9 @@ namespace ToolKit
 {
   enum class RenderingSpec
   {
-    // Make sure there is no gap between integer values
+    /** Deferred opaque + forward translucent path. High performance - High Bandwidth. */
     Default = 0,
+    /** Forward renderer for all types. Low pass count and low bandwidth. */
     Mobile  = 1
   };
 
@@ -25,9 +26,13 @@ namespace ToolKit
    public:
     struct WindowSettings
     {
+      /** Application window name. */
       String Name     = "ToolKit";
+      /** Application window width for windowed mode. */
       uint Width      = 1024;
+      /** Application window height for windowed mode. */
       uint Height     = 768;
+      /** States if the application is full screen or windowed. */
       bool FullScreen = false;
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const;
@@ -36,11 +41,26 @@ namespace ToolKit
 
     struct GraphicSettings
     {
-      int MSAA                    = 2;
+      /** Multi-sample count. 0 for non msaa render targets. */
+      int MSAA                    = 0;
+
+      /** Target fps for application. */
       int FPS                     = 60;
+
+      /** Sets render targets as floating point, allows values larger than 1.0 for HDR rendering. */
       bool HDRPipeline            = true;
+
+      /** Render path used for drawing. */
       RenderingSpec RenderSpec    = RenderingSpec::Default;
+
+      /**
+       * Viewport render target multiplier that adjusts the resolution.
+       * High DPI devices such as mobile phones benefits from this.
+       */
       float renderResolutionScale = 1.0f;
+
+      /** Provides high precision gpu timers. Bad on cpu performance. Enable it only for profiling. */
+      bool enableGpuTimer         = false;
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const;
       void DeSerialize(XmlDocument* doc, XmlNode* parent);

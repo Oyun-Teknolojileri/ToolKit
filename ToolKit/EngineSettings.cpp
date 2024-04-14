@@ -113,6 +113,7 @@ namespace ToolKit
     WriteAttr(settings, doc, "HDRPipeline", std::to_string(HDRPipeline));
     WriteAttr(settings, doc, "RenderSpec", std::to_string((int) RenderSpec));
     WriteAttr(settings, doc, "RenderResolutionScale", std::to_string(renderResolutionScale));
+    WriteAttr(settings, doc, "EnableGpuTimer", std::to_string(enableGpuTimer));
   }
 
   void EngineSettings::GraphicSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -129,6 +130,7 @@ namespace ToolKit
       ReadAttr(node, "HDRPipeline", HDRPipeline);
       ReadAttr(node, "RenderResolutionScale", renderResolutionScale);
       ReadAttr(node, "RenderSpec", *(int*) &RenderSpec);
+      ReadAttr(node, "EnableGpuTimer", enableGpuTimer);
     }
   }
 
