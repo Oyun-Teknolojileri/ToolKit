@@ -395,15 +395,23 @@ namespace ToolKit
     m_framebuffer = fb;
   }
 
-  void Renderer::StartTimerQuery() { glBeginQuery(GL_TIME_ELAPSED_EXT, m_gpuTimerQuery); }
+  void Renderer::StartTimerQuery()
+  {
+    m_cpuTime = GetElapsedMilliSeconds();
+    glBeginQuery(GL_TIME_ELAPSED_EXT, m_gpuTimerQuery);
+  }
 
   void Renderer::EndTimerQuery() { glEndQuery(GL_TIME_ELAPSED_EXT); }
 
-  double Renderer::GetElapsedTime()
+  void Renderer::GetElapsedTime(float& cpu, float& gpu)
   {
+    float cpuTime = GetElapsedMilliSeconds();
+    cpu           = cpuTime - m_cpuTime;
+
     GLuint elapsedTime;
     glGetQueryObjectuiv(m_gpuTimerQuery, GL_QUERY_RESULT, &elapsedTime);
-    return glm::max(1.0, (double) (elapsedTime) / 1000000.0);
+
+    gpu = glm::max(1.0f, (float) (elapsedTime) / 1000000.0f);
   }
 
   FramebufferPtr Renderer::GetFrameBuffer() { return m_framebuffer; }

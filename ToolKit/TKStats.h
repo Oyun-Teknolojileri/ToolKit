@@ -64,7 +64,8 @@ namespace ToolKit
     inline uint64 GetHWRenderPassCount() { return m_renderPassCount; }
 
    public:
-    double m_elapsedRenderTime = 0.0;
+    float m_elapsedGpuRenderTime = 0.0f;
+    float m_elapsedCpuRenderTime = 0.0f;
 
    private:
     uint64 m_totalVRAMUsageInBytes = 0;
@@ -196,15 +197,17 @@ namespace ToolKit
     }
   }
 
-  TK_API inline double GetRenderTime()
+  TK_API inline void GetRenderTime(float& cpu, float& gpu)
   {
     if (TKStats* tkStats = GetTKStats())
     {
-      return tkStats->m_elapsedRenderTime;
+      cpu = tkStats->m_elapsedCpuRenderTime;
+      gpu = tkStats->m_elapsedGpuRenderTime;
     }
     else
     {
-      return 1.0;
+      cpu = 1.0f;
+      gpu = 1.0f;
     }
   }
 } // namespace ToolKit

@@ -33,8 +33,11 @@ namespace ToolKit
       ImGui::SetNextWindowSize(ImVec2(270, 110), ImGuiCond_Once);
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        double renderTime = GetRenderTime();
-        ImGui::Text("Render Time (ms): %.2f, FPS: %.2f", renderTime, 1000.0 / renderTime);
+        float cpuTime, gpuTime;
+        GetRenderTime(cpuTime, gpuTime);
+
+        ImGui::Text("Render Time (gpu-ms): %.2f, FPS: %.2f", gpuTime, 1000.0f / gpuTime);
+        ImGui::Text("Render Time (cpu-ms): %.2f, FPS: %.2f", cpuTime, 1000.0f / cpuTime);
         ImGui::Text("Editor FPS: %d", g_app->m_fps);
         ImGui::Spacing();
         ImGui::Text("Total Draw Call: %llu", g_app->GetLastFrameDrawCallCount());

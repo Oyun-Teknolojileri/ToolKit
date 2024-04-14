@@ -36,7 +36,9 @@ namespace ToolKit
 
     void StartTimerQuery();
     void EndTimerQuery();
-    double GetElapsedTime(); //!< Returns elapsed time between start - end time query in milliseconds.
+
+    /** Returns elapsed time between start - end time query in milliseconds.*/
+    void GetElapsedTime(float& cpu, float& gpu);
 
     FramebufferPtr GetFrameBuffer();
     void ClearColorBuffer(const Vec4& color);
@@ -200,6 +202,7 @@ namespace ToolKit
     GpuProgramManager* m_gpuProgramManager         = nullptr;
 
     uint m_gpuTimerQuery                           = 0;
+    float m_cpuTime                                = 0.0f;
   };
 
 } // namespace ToolKit
