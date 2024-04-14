@@ -15,7 +15,7 @@
 #include "Texture.h"
 #include "ToolKit.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

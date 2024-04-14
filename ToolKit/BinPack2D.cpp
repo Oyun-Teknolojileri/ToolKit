@@ -7,7 +7,7 @@
 
 #include "BinPack2D.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

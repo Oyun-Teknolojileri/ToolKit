@@ -10,7 +10,7 @@
 #include "App.h"
 #include "CustomDataView.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit::Editor
 {

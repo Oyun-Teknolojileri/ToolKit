@@ -55,3 +55,5 @@
   #include "App.h"
   #include "EditorRenderer.h"
 #endif
+
+#include "DebugNew.h"

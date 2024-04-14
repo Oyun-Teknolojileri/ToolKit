@@ -18,7 +18,7 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-#include "DebugNew.h"
+
 
 static constexpr bool SERIALIZE_ANIMATION_AS_BINARY = false;
 

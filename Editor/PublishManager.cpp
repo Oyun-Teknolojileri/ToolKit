@@ -17,7 +17,7 @@
 #include <functional>
 #include <thread>
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

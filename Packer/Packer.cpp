@@ -25,7 +25,7 @@
 #include <mutex>
 #include <thread>
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

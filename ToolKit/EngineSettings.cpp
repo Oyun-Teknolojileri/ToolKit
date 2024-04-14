@@ -11,7 +11,7 @@
 #include "PluginManager.h"
 #include "ToolKit.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

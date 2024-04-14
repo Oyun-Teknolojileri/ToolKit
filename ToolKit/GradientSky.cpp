@@ -15,7 +15,7 @@
 #include "Shader.h"
 #include "TKStats.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

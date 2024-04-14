@@ -9,7 +9,7 @@
 
 #include "TKPlatform.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

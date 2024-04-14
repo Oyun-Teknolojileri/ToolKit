@@ -34,7 +34,7 @@
 #include "UIManager.h"
 #include "Viewport.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

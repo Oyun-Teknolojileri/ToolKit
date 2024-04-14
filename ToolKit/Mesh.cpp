@@ -22,7 +22,7 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-#include "DebugNew.h"
+
 
 static constexpr bool SERIALIZE_MESH_AS_BINARY = true;
 

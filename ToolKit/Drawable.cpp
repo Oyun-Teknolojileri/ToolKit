@@ -18,7 +18,7 @@
 
 #include <memory>
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

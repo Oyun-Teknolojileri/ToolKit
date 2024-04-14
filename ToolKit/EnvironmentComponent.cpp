@@ -11,7 +11,7 @@
 #include "MathUtil.h"
 #include "Texture.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

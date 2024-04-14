@@ -10,7 +10,7 @@
 #include "App.h"
 #include "EditorViewport.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

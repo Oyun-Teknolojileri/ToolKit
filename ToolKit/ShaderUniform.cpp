@@ -9,7 +9,7 @@
 
 #include "TKAssert.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {
