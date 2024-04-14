@@ -3,6 +3,7 @@
 #include "GeometryTypes.h"
 #include "MathUtil.h"
 #include "Scene.h"
+#include "Threads.h"
 
 namespace ToolKit
 {
@@ -116,8 +117,14 @@ namespace ToolKit
    private:
     BVH()          = delete;
     Scene* m_scene = nullptr;
+
+    AtomicLock m_addLock;
     EntityPtrArray m_entitiesToAdd;
+
+    AtomicLock m_removeLock;
     EntityPtrArray m_entitiesToRemove;
+
+    AtomicLock m_updateLock;
     EntityPtrArray m_entitiesToUpdate;
   };
 

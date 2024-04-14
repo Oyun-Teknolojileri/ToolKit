@@ -63,27 +63,48 @@ namespace ToolKit
 
   void BVH::AddEntity(const EntityPtr& entity)
   {
-    if (!entity->_addingToBVH && IsBVHEntity(entity))
+    if (!IsBVHEntity(entity))
     {
-      entity->_addingToBVH = true;
+      return;
+    }
+
+    m_addLock.Lock();
+    if (!entity->m_isInBVHProcess)
+    {
+      entity->m_isInBVHProcess = true;
       m_entitiesToAdd.push_back(entity);
     }
+    m_addLock.Release();
   }
 
   void BVH::RemoveEntity(const EntityPtr& entity)
   {
-    if (IsBVHEntity(entity))
+    if (!IsBVHEntity(entity))
+    {
+      return;
+    }
+
+    m_removeLock.Lock();
+    if (!entity->m_isInBVHProcess)
     {
       m_entitiesToRemove.push_back(entity);
     }
+    m_removeLock.Release();
   }
 
   void BVH::UpdateEntity(const EntityPtr& entity)
   {
-    if (IsBVHEntity(entity))
+    if (!IsBVHEntity(entity))
+    {
+      return;
+    }
+
+    m_updateLock.Lock();
+    if (!entity->m_isInBVHProcess)
     {
       m_entitiesToUpdate.push_back(entity);
     }
+    m_updateLock.Release();
   }
 
   void BVH::Update()
@@ -310,14 +331,14 @@ namespace ToolKit
           {
             for (EntityPtr ntt : currentNode->m_entites)
             {
-              if (ntt->_addingToBVH)
+              if (ntt->m_isInBVHProcess)
               {
                 continue;
               }
 
               if (FrustumBoxIntersection(frustum, ntt->GetBoundingBox(true)) != IntersectResult::Outside)
               {
-                ntt->_addingToBVH = true;
+                ntt->m_isInBVHProcess = true;
                 nttPool.push_back(ntt.get());
               }
             }
@@ -326,12 +347,12 @@ namespace ToolKit
           {
             for (EntityPtr ntt : currentNode->m_entites)
             {
-              if (ntt->_addingToBVH)
+              if (ntt->m_isInBVHProcess)
               {
                 continue;
               }
 
-              ntt->_addingToBVH = true;
+              ntt->m_isInBVHProcess = true;
               nttPool.push_back(ntt.get());
             }
           }
@@ -345,7 +366,7 @@ namespace ToolKit
     entities.reserve(nttPool.size());
     for (Entity* ntt : nttPool)
     {
-      ntt->_addingToBVH = false;
+      ntt->m_isInBVHProcess = false;
       entities.push_back(ntt);
     }
   }
@@ -448,7 +469,7 @@ namespace ToolKit
 
   bool BVHTree::Add(EntityPtr& entity)
   {
-    entity->_addingToBVH = false;
+    entity->m_isInBVHProcess = false;
 
     BoundingBox entityAABB;
     BoundingSphere lightSphere;

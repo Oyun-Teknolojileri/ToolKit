@@ -99,28 +99,13 @@ namespace ToolKit
 
   BoundingBox Entity::GetBoundingBox(bool inWorld)
   {
-    if (!m_boundingBoxCachaInvalidated)
+    if (!m_boundingBoxCacheInvalidated)
     {
       return inWorld ? m_worldBoundingBoxCache : m_localBoundingBoxCache;
     }
 
-    UpdateLocalBoundingBox();
+    UpdateBoundingBoxCaches();
 
-    if (AABBOverrideComponent* overrideComp = GetComponentFast<AABBOverrideComponent>())
-    {
-      m_localBoundingBoxCache = overrideComp->GetBoundingBox();
-    }
-
-    if (!m_localBoundingBoxCache.IsValid())
-    {
-      // In case of an uninitialized bounding box, provide a very small box.
-      m_localBoundingBoxCache = infinitesimalBox;
-    }
-
-    m_worldBoundingBoxCache = m_localBoundingBoxCache;
-    TransformAABB(m_worldBoundingBoxCache, m_node->GetTransform());
-
-    m_boundingBoxCachaInvalidated = false;
     return inWorld ? m_worldBoundingBoxCache : m_localBoundingBoxCache;
   }
 
@@ -138,7 +123,7 @@ namespace ToolKit
 
   void Entity::InvalidateSpatialCaches()
   {
-    m_boundingBoxCachaInvalidated = true;
+    m_boundingBoxCacheInvalidated = true;
     if (BVHPtr bvh = m_bvh.lock())
     {
       bvh->UpdateEntity(Self<Entity>());
@@ -357,6 +342,27 @@ namespace ToolKit
     {
       m_localBoundingBoxCache = infinitesimalBox;
     }
+  }
+
+  void Entity::UpdateBoundingBoxCaches()
+  {
+    UpdateLocalBoundingBox();
+
+    if (AABBOverrideComponent* overrideComp = GetComponentFast<AABBOverrideComponent>())
+    {
+      m_localBoundingBoxCache = overrideComp->GetBoundingBox();
+    }
+
+    if (!m_localBoundingBoxCache.IsValid())
+    {
+      // In case of an uninitialized bounding box, provide a very small box.
+      m_localBoundingBoxCache = infinitesimalBox;
+    }
+
+    m_worldBoundingBoxCache = m_localBoundingBoxCache;
+    TransformAABB(m_worldBoundingBoxCache, m_node->GetTransform());
+
+    m_boundingBoxCacheInvalidated = false;
   }
 
   void Entity::RemoveResources() { assert(false && "Not implemented"); }

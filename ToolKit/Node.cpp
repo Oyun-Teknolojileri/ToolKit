@@ -430,7 +430,7 @@ namespace ToolKit
     m_worldCache = GetParentTransform() * m_localCache;
     DecomposeMatrix(m_worldCache, &m_worldTranslationCache, &m_worldOrientationCache, nullptr);
 
-    SetEntityDirty();
+    InvalitadeSpatialCaches();
   }
 
   Mat4 Node::GetParentTransform()
@@ -470,7 +470,7 @@ namespace ToolKit
     }
   }
 
-  void Node::SetEntityDirty()
+  void Node::InvalitadeSpatialCaches()
   {
     if (EntityPtr ntt = m_entity.lock())
     {
@@ -478,7 +478,7 @@ namespace ToolKit
 
       for (Node* node : m_children)
       {
-        node->SetEntityDirty();
+        node->InvalitadeSpatialCaches();
       }
     }
   }

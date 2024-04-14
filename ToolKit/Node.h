@@ -233,7 +233,7 @@ namespace ToolKit
     void UpdateTransformCaches();
     Mat4 GetParentTransform();
     void SetChildrenDirty();
-    void SetEntityDirty();
+    void InvalitadeSpatialCaches();
 
    public:
     ULongID m_id;

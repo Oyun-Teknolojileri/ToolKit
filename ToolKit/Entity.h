@@ -184,6 +184,7 @@ namespace ToolKit
     XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
     virtual void UpdateLocalBoundingBox();
+    void UpdateBoundingBoxCaches();
 
    public:
     TKDeclareParam(String, Name);
@@ -211,12 +212,14 @@ namespace ToolKit
 
     BVHWeakPtr m_bvh;                 //!< BVH the entity belongs to.
     std::vector<BVHNode*> m_bvhNodes; //!< BVHNodes that the entity is assigned.
-    bool _addingToBVH = false;        //!< Internal value used by BVH
+
+    /** Internally used to mark the entity as being processed by bvh traverse algorithms. */
+    bool m_isInBVHProcess = false;
 
    protected:
     BoundingBox m_localBoundingBoxCache;
     BoundingBox m_worldBoundingBoxCache;
-    bool m_boundingBoxCachaInvalidated = true; //!< If true, bbox caches are updated upon access.
+    bool m_boundingBoxCacheInvalidated = true; //!< If true, bbox caches are updated upon access.
 
    private:
     /**
