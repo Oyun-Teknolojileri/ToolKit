@@ -762,8 +762,6 @@ namespace ToolKit
 
   int ToolKitMain(int argc, char* argv[])
   {
-    std::filesystem::current_path("D:\\Dev\\ToolKit\\ToolKit\\Bin");
-
     // Initialize ToolKit to serialize resources
     Main* g_proxy = new Main();
     Main::SetProxy(g_proxy);
