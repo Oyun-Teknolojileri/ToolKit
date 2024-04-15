@@ -34,8 +34,6 @@
 #include "UIManager.h"
 #include "Viewport.h"
 
-
-
 namespace ToolKit
 {
   Renderer::Renderer() {}
@@ -398,16 +396,25 @@ namespace ToolKit
   void Renderer::StartTimerQuery()
   {
     m_cpuTime = GetElapsedMilliSeconds();
-    glBeginQuery(GL_TIME_ELAPSED_EXT, m_gpuTimerQuery);
+    if (GetEngineSettings().Graphics.enableGpuTimer)
+    {
+      glBeginQuery(GL_TIME_ELAPSED_EXT, m_gpuTimerQuery);
+    }
   }
 
-  void Renderer::EndTimerQuery() { glEndQuery(GL_TIME_ELAPSED_EXT); }
+  void Renderer::EndTimerQuery()
+  {
+    float cpuTime = GetElapsedMilliSeconds();
+    m_cpuTime     = cpuTime - m_cpuTime;
+    if (GetEngineSettings().Graphics.enableGpuTimer)
+    {
+      glEndQuery(GL_TIME_ELAPSED_EXT);
+    }
+  }
 
   void Renderer::GetElapsedTime(float& cpu, float& gpu)
   {
-    float cpuTime = GetElapsedMilliSeconds();
-    cpu           = cpuTime - m_cpuTime;
-
+    cpu = m_cpuTime;
     if (GetEngineSettings().Graphics.enableGpuTimer)
     {
       GLuint elapsedTime;
