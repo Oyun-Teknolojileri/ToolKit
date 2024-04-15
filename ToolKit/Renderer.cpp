@@ -398,7 +398,9 @@ namespace ToolKit
     m_cpuTime = GetElapsedMilliSeconds();
     if (GetEngineSettings().Graphics.enableGpuTimer)
     {
+#ifndef TK_ANDROID
       glBeginQuery(GL_TIME_ELAPSED_EXT, m_gpuTimerQuery);
+#endif
     }
   }
 
@@ -408,7 +410,9 @@ namespace ToolKit
     m_cpuTime     = cpuTime - m_cpuTime;
     if (GetEngineSettings().Graphics.enableGpuTimer)
     {
+#ifndef TK_ANDROID
       glEndQuery(GL_TIME_ELAPSED_EXT);
+#endif
     }
   }
 

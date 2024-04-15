@@ -8,6 +8,7 @@
 #pragma once
 
 #include "Component.h"
+#include "GeometryTypes.h"
 
 namespace ToolKit
 {
