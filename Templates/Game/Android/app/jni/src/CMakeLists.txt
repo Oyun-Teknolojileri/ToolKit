@@ -17,6 +17,7 @@ add_definitions(-DTK_DLL_EXPORT)
 
 include_directories(${TOOLKIT_DIR}/ToolKit
         ${TOOLKIT_DIR}/Dependency
+        ${TOOLKIT_DIR}/Dependency/glm
         ${CMAKE_SOURCE_DIR}/SDL2/include
         ${CMAKE_SOURCE_DIR}/../../../Codes # user headers for game
         ${CMAKE_SOURCE_DIR}/src)

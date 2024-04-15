@@ -25,8 +25,6 @@
 #include <mutex>
 #include <thread>
 
-
-
 namespace ToolKit
 {
   // Same enum that is inside Editor::PublisManager
@@ -82,6 +80,7 @@ namespace ToolKit
     PublishConfig m_publishConfig;
     PublishPlatform m_platform = PublishPlatform::Android;
     String m_toolkitPath;
+    String m_templateGameFolderPath;
     Oriantation m_oriantation;
   };
 
@@ -406,7 +405,7 @@ namespace ToolKit
 
     // get manifest file from template
     String androidManifest = GetFileManager()->ReadAllText(
-        std::filesystem::absolute(ConcatPaths({m_toolkitPath, "Template", mainPath, "AndroidManifest.xml"})).string());
+        std::filesystem::absolute(ConcatPaths({m_templateGameFolderPath, mainPath, "AndroidManifest.xml"})).string());
 
     // replace template values with our settings
     ReplaceFirstStringInPlace(androidManifest, "@string/app_name", applicationName);
@@ -432,7 +431,7 @@ namespace ToolKit
 
     // get file from template
     String gradleFileText  = GetFileManager()->ReadAllText(
-        std::filesystem::absolute(ConcatPaths({m_toolkitPath, "Template", mainPath, "build.gradle"})).string());
+        std::filesystem::absolute(ConcatPaths({m_templateGameFolderPath, mainPath, "build.gradle"})).string());
 
     // replace template values with our settings
     ReplaceFirstStringInPlace(gradleFileText, "minSdkVersion 19", "minSdkVersion " + std::to_string(m_minSdk));
@@ -453,7 +452,7 @@ namespace ToolKit
 
     // get file from template
     String stringsFileText = GetFileManager()->ReadAllText(
-        std::filesystem::absolute(ConcatPaths({m_toolkitPath, "Template", mainPath})).string());
+        std::filesystem::absolute(ConcatPaths({m_templateGameFolderPath, mainPath})).string());
 
     // replace template values with our settings
     ReplaceFirstStringInPlace(stringsFileText, "__GAME_NAME__", m_appName);
@@ -763,6 +762,8 @@ namespace ToolKit
 
   int ToolKitMain(int argc, char* argv[])
   {
+    std::filesystem::current_path("D:\\Dev\\ToolKit\\ToolKit\\Bin");
+
     // Initialize ToolKit to serialize resources
     Main* g_proxy = new Main();
     Main::SetProxy(g_proxy);
@@ -790,12 +791,13 @@ namespace ToolKit
     packer.m_publishConfig    = (PublishConfig) std::atoi(arguments[9].c_str());
 
     // Set resource root to project's Resources folder
-    g_proxy->m_resourceRoot = ConcatPaths({workspacePath, activeProjectName, "Resources"});
+    g_proxy->m_resourceRoot   = ConcatPaths({workspacePath, activeProjectName, "Resources"});
 
-    String toolkitAppdata   = ConcatPaths({getenv("APPDATA"), "ToolKit", "Config", "Path.txt"});
-    String toolkitPath      = GetFileManager()->ReadAllText(toolkitAppdata);
+    String toolkitAppdata     = ConcatPaths({getenv("APPDATA"), "ToolKit", "Config", "Path.txt"});
+    String toolkitPath        = GetFileManager()->ReadAllText(toolkitAppdata);
     NormalizePathInplace(toolkitPath);
-    packer.m_toolkitPath = toolkitPath;
+    packer.m_toolkitPath            = toolkitPath;
+    packer.m_templateGameFolderPath = ConcatPaths({toolkitPath, "Templates", "Game"});
     g_proxy->SetConfigPath(ConcatPaths({toolkitPath, "Config"}));
 
     GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { printf("%s", ms.c_str()); });
