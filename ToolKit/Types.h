@@ -19,7 +19,6 @@
   #define GLM_ENABLE_EXPERIMENTAL
   #define GLM_FORCE_ALIGNED_GENTYPES
   #define GLM_FORCE_INTRINSICS
-  #define GLM_FORCE_SSE42
 #endif
 
 #include <glm/ext.hpp>
