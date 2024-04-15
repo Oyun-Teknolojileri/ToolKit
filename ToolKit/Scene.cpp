@@ -20,8 +20,6 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-
-
 namespace ToolKit
 {
   TKDefineClass(Scene, Resource);
@@ -478,7 +476,7 @@ namespace ToolKit
 
   void Scene::RebuildBVH() { m_bvh->ReBuild(); }
 
-  const BoundingBox& Scene::GetSceneBoundary() { return m_bvh->m_boundingBox; }
+  const BoundingBox& Scene::GetSceneBoundary() { return m_bvh->GetBVHBoundary(); }
 
   void Scene::CopyTo(Resource* other)
   {

@@ -114,12 +114,10 @@ namespace ToolKit
      */
     void DistributionQuality(int& totalNtties, int& assignedNtties, float& assignmentPerNtt);
 
-   private:
-    void UpdateBoundary(); // Update the bounding box via traversing each leaf.
+    const BoundingBox& GetBVHBoundary();
 
    public:
     BVHTree* m_bvhTree = nullptr;
-    BoundingBox m_boundingBox; // Boundingbox that covers bvh nodes.
 
    private:
     BVH()          = delete;
