@@ -102,6 +102,12 @@ namespace ToolKit
      * @return The height of the bounding box.
      */
     float GetHeight() const { return max.y - min.y; }
+
+    /**
+     * Get the depth of the bounding box.
+     * @return The depth of the bounding box.
+     */
+    float GetDepth() const { return max.z - min.z; }
   };
 
   static const BoundingBox infinitesimalBox(Vec3(-TK_FLT_MIN), Vec3(TK_FLT_MIN));

@@ -34,12 +34,6 @@ namespace ToolKit
     // Get new parameters
     SetParameters(GetEngineSettings().PostProcessing);
 
-    // Clean scene entities
-    for (EntityPtr ntt : m_scene->GetEntities())
-    {
-      ntt->m_bvhNodes.clear();
-    }
-
     // Clean bvh tree
     Clean();
 
@@ -333,12 +327,35 @@ namespace ToolKit
                 nttPool.push_back(ntt.get());
               }
             }
+            for (EntityPtr ntt : currentNode->m_lights)
+            {
+              if (ntt->m_isInBVHProcess && ntt->GetMeshComponent() == nullptr)
+              {
+                continue;
+              }
+
+              if (FrustumBoxIntersection(frustum, ntt->GetBoundingBox(true)) != IntersectResult::Outside)
+              {
+                ntt->m_isInBVHProcess = true;
+                nttPool.push_back(ntt.get());
+              }
+            }
           }
           else if (res == IntersectResult::Inside)
           {
             for (EntityPtr ntt : currentNode->m_entites)
             {
               if (ntt->m_isInBVHProcess)
+              {
+                continue;
+              }
+
+              ntt->m_isInBVHProcess = true;
+              nttPool.push_back(ntt.get());
+            }
+            for (EntityPtr ntt : currentNode->m_lights)
+            {
+              if (ntt->m_isInBVHProcess && ntt->GetMeshComponent() == nullptr)
               {
                 continue;
               }
@@ -740,6 +757,7 @@ namespace ToolKit
     }
 
     const size_t entityCount = node->m_entites.size();
+
     if (entityCount > m_maxEntityCountPerBVHNode)
     {
       // split this node if entity number is big
@@ -753,7 +771,8 @@ namespace ToolKit
       SplitBoundingBox(node->m_aabb, maxAxis, left->m_aabb, right->m_aabb);
 
       if (left->m_aabb.GetWidth() < m_minBBSize || left->m_aabb.GetHeight() < m_minBBSize ||
-          right->m_aabb.GetWidth() < m_minBBSize || right->m_aabb.GetHeight() < m_minBBSize)
+          right->m_aabb.GetWidth() < m_minBBSize || right->m_aabb.GetHeight() < m_minBBSize ||
+          right->m_aabb.GetDepth() < m_minBBSize || right->m_aabb.GetDepth() < m_minBBSize)
       {
         SafeDel(left);
         SafeDel(right);

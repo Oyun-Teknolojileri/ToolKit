@@ -124,7 +124,6 @@ namespace ToolKit
       }
     }
 
-    m_bvh->ReBuild();
     m_initiated = true;
   }
 
