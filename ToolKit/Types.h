@@ -293,9 +293,9 @@ namespace ToolKit
   enum class AxisLabel
   {
     None = -1, // Order matters. Don't change.
-    X,
-    Y,
-    Z,
+    X    = 0,
+    Y    = 1,
+    Z    = 2,
     // Mod3 gives plane normal .
     YZ, // YZ(3) % 3 = X(0)
     ZX, // ZX(4) % 3 = Y(1)

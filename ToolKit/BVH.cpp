@@ -29,7 +29,7 @@ namespace ToolKit
     m_bvhTree->m_minBBSize                = settings.minBVHNodeSize;
   }
 
-  bool BVH::ReBuild()
+  void BVH::ReBuild()
   {
     // Get new parameters
     SetParameters(GetEngineSettings().PostProcessing);
@@ -37,19 +37,44 @@ namespace ToolKit
     // Clean bvh tree
     Clean();
 
-    // Rebuild
-    for (EntityPtr ntt : m_scene->GetEntities())
+    // Clean waiting queue
+    for (int i = 0; i < m_entitiesToAdd.size(); ++i)
     {
+      m_entitiesToAdd[i]->m_isInBVHProcess = false;
+    }
+    m_entitiesToAdd.clear();
+    for (int i = 0; i < m_entitiesToUpdate.size(); ++i)
+    {
+      m_entitiesToUpdate[i]->m_isInBVHProcess = false;
+    }
+    m_entitiesToUpdate.clear();
+    for (int i = 0; i < m_entitiesToRemove.size(); ++i)
+    {
+      m_entitiesToRemove[i]->m_isInBVHProcess = false;
+    }
+    m_entitiesToRemove.clear();
+
+    // Rebuild
+    const EntityPtrArray& entities = m_scene->GetEntities();
+    m_bvhTree->m_root->m_entites.reserve(entities.size());
+    m_bvhTree->m_root->m_aabb = BoundingBox();
+    for (int i = 0; i < entities.size(); ++i)
+    {
+      EntityPtr ntt = entities[i];
       if (IsBVHEntity(ntt))
       {
-        if (m_bvhTree->Add(ntt))
+        m_bvhTree->m_root->m_aabb.UpdateBoundary(ntt->GetBoundingBox(true));
+        if (ntt->IsA<Light>())
         {
-          return true;
+          m_bvhTree->m_root->m_lights.push_back(ntt);
+        }
+        else
+        {
+          m_bvhTree->m_root->m_entites.push_back(ntt);
         }
       }
     }
-
-    return false;
+    m_bvhTree->UpdateLeaf(m_bvhTree->m_root);
   }
 
   void BVH::Clean()
@@ -143,7 +168,7 @@ namespace ToolKit
     {
       if (m_bvhTree->Add(entity))
       {
-        while (ReBuild()) {}
+        ReBuild();
         break;
       }
     }
@@ -658,7 +683,7 @@ namespace ToolKit
     }
   }
 
-  void SplitBoundingBox(BoundingBox bb, AxisLabel axis, BoundingBox& outLeft, BoundingBox& outRight)
+  void SplitBoundingBoxIntoHalf(const BoundingBox& bb, AxisLabel axis, BoundingBox& outLeft, BoundingBox& outRight)
   {
     switch (axis)
     {
@@ -724,6 +749,67 @@ namespace ToolKit
     }
   }
 
+  void SplitBoundingBox(const BoundingBox& bb, AxisLabel axis, float pos, BoundingBox& outLeft, BoundingBox& outRight)
+  {
+    switch (axis)
+    {
+    case AxisLabel::X:
+    {
+      BoundingBox left;
+      left.min   = bb.min;
+      left.max.x = pos;
+      left.max.y = bb.max.y;
+      left.max.z = bb.max.z;
+      outLeft    = left;
+
+      BoundingBox right;
+      right.min.x = pos;
+      right.min.y = bb.min.y;
+      right.min.z = bb.min.z;
+      right.max   = bb.max;
+      outRight    = right;
+      break;
+    }
+    case AxisLabel::Y:
+    {
+      BoundingBox left;
+      left.min   = bb.min;
+      left.max.x = bb.max.x;
+      left.max.y = pos;
+      left.max.z = bb.max.z;
+      outLeft    = left;
+
+      BoundingBox right;
+      right.min.x = bb.min.x;
+      right.min.y = pos;
+      right.min.z = bb.min.z;
+      right.max   = bb.max;
+      outRight    = right;
+      break;
+    }
+    case AxisLabel::Z:
+    {
+      BoundingBox left;
+      left.min   = bb.min;
+      left.max.x = bb.max.x;
+      left.max.y = bb.max.y;
+      left.max.z = pos;
+      outLeft    = left;
+
+      BoundingBox right;
+      right.min.x = bb.min.x;
+      right.min.y = bb.min.y;
+      right.min.z = pos;
+      right.max   = bb.max;
+      outRight    = right;
+      break;
+    }
+    default:
+      assert(false && "Invalid Axis Label");
+      break;
+    }
+  }
+
   AxisLabel GetLongestAxis(const BoundingBox& bb)
   {
     float x = bb.max.x - bb.min.x;
@@ -748,6 +834,84 @@ namespace ToolKit
     }
   }
 
+  float EvaluateSAH(BVHNode* node, int axis, float candidatePos)
+  {
+    BoundingBox left, right;
+    uint leftCount = 0, rightCount = 0;
+    for (uint i = 0; i < node->m_entites.size(); ++i)
+    {
+      const BoundingBox& bb = node->m_entites[i]->GetBoundingBox(true);
+      if (bb.GetCenter()[axis] < candidatePos)
+      {
+        // left
+        leftCount++;
+
+        left.UpdateBoundary(bb);
+      }
+      else
+      {
+        // right
+        rightCount++;
+        right.UpdateBoundary(bb);
+      }
+    }
+
+    return leftCount * left.HalfArea() + rightCount * right.HalfArea();
+  }
+
+  void SplitBoundingBoxSAH(BVHNode* node, BoundingBox& outLeft, BoundingBox& outRight)
+  {
+    constexpr int intervals = 10;
+
+    float bestCost          = FLT_MAX;
+    float splitPos          = 0.0f;
+    int axis                = 0;
+
+    for (int a = 0; a < 3; ++a)
+    {
+      float boundsMin = node->m_aabb.min[a];
+      float boundsMax = node->m_aabb.max[a];
+      float scale     = (boundsMax - boundsMin) / intervals;
+      for (int i = 1; i < intervals; ++i)
+      {
+        float candidatePos = boundsMin + i * scale;
+        float cost         = EvaluateSAH(node, a, candidatePos);
+        if (bestCost > cost)
+        {
+          splitPos = candidatePos;
+          axis     = a;
+          bestCost = cost;
+        }
+      }
+    }
+
+    SplitBoundingBox(node->m_aabb, (AxisLabel) axis, splitPos, outLeft, outRight);
+  }
+
+  /*
+   * splitType:
+   * 0 = split center of longest axis
+   * 1 = split longest axis based on average of center of the boxes
+   * 2 = SAH
+   */
+  void SplitBoundingBox(BVHNode* node, BoundingBox& outLeft, BoundingBox& outRight, int splitType)
+  {
+    if (splitType == 1)
+    {
+      const AxisLabel maxAxis = GetLongestAxis(node->m_aabb);
+      SplitBoundingBoxIntoHalf(node->m_aabb, maxAxis, outLeft, outRight);
+    }
+    else if (splitType == 2)
+    {
+      SplitBoundingBoxSAH(node, outLeft, outRight);
+    }
+    else
+    {
+      const AxisLabel maxAxis = GetLongestAxis(node->m_aabb);
+      SplitBoundingBoxIntoHalf(node->m_aabb, maxAxis, outLeft, outRight);
+    }
+  }
+
   void BVHTree::UpdateLeaf(BVHNode* node)
   {
     if (!node->Leaf())
@@ -762,13 +926,12 @@ namespace ToolKit
     {
       // split this node if entity number is big
 
-      BVHNode* left           = new BVHNode();
-      BVHNode* right          = new BVHNode();
-      left->depth             = node->depth + 1;
-      right->depth            = node->depth + 1;
+      BVHNode* left  = new BVHNode();
+      BVHNode* right = new BVHNode();
+      left->depth    = node->depth + 1;
+      right->depth   = node->depth + 1;
 
-      const AxisLabel maxAxis = GetLongestAxis(node->m_aabb);
-      SplitBoundingBox(node->m_aabb, maxAxis, left->m_aabb, right->m_aabb);
+      SplitBoundingBox(node, left->m_aabb, right->m_aabb, 0);
 
       if (left->m_aabb.GetWidth() < m_minBBSize || left->m_aabb.GetHeight() < m_minBBSize ||
           right->m_aabb.GetWidth() < m_minBBSize || right->m_aabb.GetHeight() < m_minBBSize ||
@@ -926,7 +1089,7 @@ namespace ToolKit
     }
   }
 
-  BVHNode::BVHNode() { m_aabb = BoundingBox(Vec3(-100.0f), Vec3(100.0f)); }
+  BVHNode::BVHNode() {}
 
   BVHNode::~BVHNode()
   { // Remove this node from all entities

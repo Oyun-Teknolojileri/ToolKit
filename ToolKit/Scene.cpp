@@ -759,7 +759,7 @@ namespace ToolKit
 
     // apply scene post processing effects
     GetEngineSettings().PostProcessing = m_currentScene->m_postProcessSettings;
-    m_currentScene->m_bvh->SetParameters(m_currentScene->m_postProcessSettings); // Build BVH with new parameters
+    m_currentScene->m_bvh->ReBuild(); // Build BVH with new parameters
   }
 
 } // namespace ToolKit

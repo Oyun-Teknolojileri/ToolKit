@@ -51,11 +51,10 @@ namespace ToolKit
     bool Add(EntityPtr& entity);
     void Remove(EntityPtr& entity);
     void Clean();
+    void UpdateLeaf(BVHNode* node);
 
    private:
     BVHTree() = delete;
-
-    void UpdateLeaf(BVHNode* node);
 
    public:
     BVHNode* m_root = nullptr;
@@ -81,7 +80,7 @@ namespace ToolKit
     // inconsistencies will occur in BVH nodes.
     void SetParameters(const EngineSettings::PostProcessingSettings& settings);
 
-    bool ReBuild();
+    void ReBuild();
     void Clean();
 
     void AddEntity(const EntityPtr& entity);
