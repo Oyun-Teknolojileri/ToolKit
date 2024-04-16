@@ -65,6 +65,7 @@ namespace ToolKit
 
     int m_maxEntityCountPerBVHNode = 10;
     float m_minBBSize              = 2.0f;
+    int m_maxDepth                 = 100;
 
    private:
     class BVH* m_bvh = nullptr;

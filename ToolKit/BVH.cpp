@@ -834,6 +834,42 @@ namespace ToolKit
     }
   }
 
+  void SplitBoundingBoxMidpointOfCentroids(const BVHNode* node, BoundingBox& outLeft, BoundingBox& outRight)
+  {
+    float maxDistance = -TK_FLT_MAX;
+    float middlePos   = 0.0f;
+    int axis          = 0;
+
+    for (int a = 0; a < 3; ++a)
+    {
+      float minPos = TK_FLT_MAX;
+      float maxPos = -TK_FLT_MAX;
+      for (int i = 0; i < node->m_entites.size(); ++i)
+      {
+        const float pos = node->m_entites[i]->GetBoundingBox(true).GetCenter()[a];
+
+        if (minPos > pos)
+        {
+          minPos = pos;
+        }
+        if (maxPos < pos)
+        {
+          maxPos = pos;
+        }
+      }
+
+      const float maxDist = maxPos - minPos;
+      if (maxDist > maxDistance)
+      {
+        middlePos   = (maxPos + minPos) / 2.0f;
+        maxDistance = maxDist;
+        axis        = a;
+      }
+    }
+
+    SplitBoundingBox(node->m_aabb, (AxisLabel) axis, middlePos, outLeft, outRight);
+  }
+
   float EvaluateSAH(BVHNode* node, int axis, float candidatePos)
   {
     BoundingBox left, right;
@@ -863,7 +899,7 @@ namespace ToolKit
   {
     constexpr int intervals = 10;
 
-    float bestCost          = FLT_MAX;
+    float bestCost          = TK_FLT_MAX;
     float splitPos          = 0.0f;
     int axis                = 0;
 
@@ -898,8 +934,7 @@ namespace ToolKit
   {
     if (splitType == 1)
     {
-      const AxisLabel maxAxis = GetLongestAxis(node->m_aabb);
-      SplitBoundingBoxIntoHalf(node->m_aabb, maxAxis, outLeft, outRight);
+      SplitBoundingBoxMidpointOfCentroids(node, outLeft, outRight);
     }
     else if (splitType == 2)
     {
@@ -921,8 +956,7 @@ namespace ToolKit
     }
 
     const size_t entityCount = node->m_entites.size();
-
-    if (entityCount > m_maxEntityCountPerBVHNode)
+    if (entityCount > m_maxEntityCountPerBVHNode && node->depth < m_maxDepth)
     {
       // split this node if entity number is big
 
@@ -931,7 +965,7 @@ namespace ToolKit
       left->depth    = node->depth + 1;
       right->depth   = node->depth + 1;
 
-      SplitBoundingBox(node, left->m_aabb, right->m_aabb, 0);
+      SplitBoundingBox(node, left->m_aabb, right->m_aabb, 1);
 
       if (left->m_aabb.GetWidth() < m_minBBSize || left->m_aabb.GetHeight() < m_minBBSize ||
           right->m_aabb.GetWidth() < m_minBBSize || right->m_aabb.GetHeight() < m_minBBSize ||
