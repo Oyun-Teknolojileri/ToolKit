@@ -12,6 +12,7 @@
 #include "EditorViewport.h"
 #include "EditorViewport2d.h"
 #include "Gizmo.h"
+#include "LightMeshGenerator.h"
 
 #include <BVH.h>
 #include <Camera.h>
@@ -253,6 +254,31 @@ namespace ToolKit
 
       grid->UpdateShaderParams();
       editorEntities.push_back(grid);
+
+      for (LightPtr& light : scene->GetLights())
+      {
+        if (light->GetLightType() == Light::LightType::Directional)
+        {
+          if (Cast<EditorDirectionalLight>(light)->GizmoActive())
+          {
+            editorEntities.push_back(light);
+          }
+        }
+        else if (light->GetLightType() == Light::LightType::Spot)
+        {
+          if (Cast<EditorSpotLight>(light)->GizmoActive())
+          {
+            editorEntities.push_back(light);
+          }
+        }
+        else // if (light->GetLightType() == Light::LightType::Point)
+        {
+          if (Cast<EditorPointLight>(light)->GizmoActive())
+          {
+            editorEntities.push_back(light);
+          }
+        }
+      }
 
       // Editor pass.
       m_renderData.jobs.clear();

@@ -13,7 +13,7 @@
 
 namespace ToolKit
 {
-  inline bool IsBVHEntity(const EntityPtr& ntt) { return !ntt->IsA<SkyBase>(); }
+  inline bool IsBVHEntity(const EntityPtr& ntt) { return !ntt->IsA<SkyBase>() && ntt->IsDrawable(); }
 
   BVH::BVH(Scene* scene)
   {
@@ -63,6 +63,7 @@ namespace ToolKit
       EntityPtr ntt = entities[i];
       if (IsBVHEntity(ntt))
       {
+        m_bvhTree->m_root->m_aabb.UpdateBoundary(ntt->GetBoundingBox(true));
         if (ntt->IsA<Light>())
         {
           m_bvhTree->m_root->m_lights.push_back(ntt);
@@ -70,7 +71,6 @@ namespace ToolKit
         }
         else
         {
-          m_bvhTree->m_root->m_aabb.UpdateBoundary(ntt->GetBoundingBox(true));
           m_bvhTree->m_root->m_entites.push_back(ntt);
           ntt->m_bvhNodes.push_back(m_bvhTree->m_root);
         }
@@ -514,10 +514,7 @@ namespace ToolKit
         continue;
       }
 
-      if (entityType == 0) // entity (non-light)
-      {
-        node->m_aabb.UpdateBoundary(entity->GetBoundingBox(true));
-      }
+      node->m_aabb.UpdateBoundary(entity->GetBoundingBox(true));
 
       if (!node->Leaf())
       {
@@ -594,7 +591,7 @@ namespace ToolKit
         {
           nextNodes.push(node->m_right);
         }
-        else if (entityType == 0) // entity
+        else
         {
           // If entity can not go inside any child, put the entity to the nearest node
           const float distLeft  = glm::distance2(entity->m_node->GetTranslation(), node->m_left->m_aabb.GetCenter());
