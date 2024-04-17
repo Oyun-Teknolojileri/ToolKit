@@ -97,6 +97,12 @@ namespace ToolKit
       return e.x * e.y + e.x * e.z + e.y * e.z;
     }
 
+    float Area() const
+    {
+      const Vec3 e = max - min;
+      return 2.0f * (e.x * e.y + e.x * e.z + e.y * e.z);
+    }
+
     /**
      * Get the width of the bounding box.
      * @return The width of the bounding box.

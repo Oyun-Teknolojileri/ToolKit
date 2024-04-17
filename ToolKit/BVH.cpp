@@ -67,10 +67,12 @@ namespace ToolKit
         if (ntt->IsA<Light>())
         {
           m_bvhTree->m_root->m_lights.push_back(ntt);
+          ntt->m_bvhNodes.push_back(m_bvhTree->m_root);
         }
         else
         {
           m_bvhTree->m_root->m_entites.push_back(ntt);
+          ntt->m_bvhNodes.push_back(m_bvhTree->m_root);
         }
       }
     }
@@ -420,7 +422,10 @@ namespace ToolKit
       }
       else
       {
-        boxes.push_back(Cast<Entity>(CreateBoundingBoxDebugObject(bvhNode->m_aabb, Vec3(1.0f, 0.4f, 0.1f), 0.75f)));
+        boxes.push_back(
+            Cast<Entity>(CreateBoundingBoxDebugObject(bvhNode->m_aabb,
+                                                      Vec3(1.0f, 0.0f, 0.0f) * (bvhNode->m_lights.size() / 16),
+                                                      0.75f)));
       }
     }
   }
@@ -881,7 +886,6 @@ namespace ToolKit
       {
         // left
         leftCount++;
-
         left.UpdateBoundary(bb);
       }
       else
@@ -892,16 +896,19 @@ namespace ToolKit
       }
     }
 
-    return leftCount * left.HalfArea() + rightCount * right.HalfArea();
+    int intersectionCount = (leftCount + rightCount - node->m_entites.size());
+    float cost =
+        leftCount * left.Area() + rightCount * right.Area() + (intersectionCount * (left.Area() + right.Area()) / 2.0f);
+    return cost;
   }
 
   void SplitBoundingBoxSAH(BVHNode* node, BoundingBox& outLeft, BoundingBox& outRight)
   {
-    constexpr int intervals = 10;
+    int intervals  = 12;
 
-    float bestCost          = TK_FLT_MAX;
-    float splitPos          = 0.0f;
-    int axis                = 0;
+    float bestCost = TK_FLT_MAX;
+    float splitPos = 0.0f;
+    int axis       = 0;
 
     for (int a = 0; a < 3; ++a)
     {
@@ -924,11 +931,39 @@ namespace ToolKit
     SplitBoundingBox(node->m_aabb, (AxisLabel) axis, splitPos, outLeft, outRight);
   }
 
+  void SplitBoundingBoxGodot(BVHNode* node, BoundingBox& outLeft, BoundingBox& outRight)
+  {
+    const AxisLabel maxAxis = GetLongestAxis(node->m_aabb);
+
+    const int maxAxisInt    = (int) maxAxis;
+    auto sortBasedOnPosFn   = [maxAxisInt](const EntityPtr& e1, const EntityPtr& e2)
+    { return e1->m_node->GetTranslation()[maxAxisInt] < e2->m_node->GetTranslation()[maxAxisInt]; };
+#if 0
+    // why not sort?!
+    std::sort(node->m_entites.begin(), node->m_entites.end(), sortBasedOnPosFn);
+#else
+    std::nth_element(node->m_entites.begin(),
+                     node->m_entites.begin() + (node->m_entites.size() / 2),
+                     node->m_entites.end(),
+                     sortBasedOnPosFn);
+#endif
+
+    for (auto it = node->m_entites.begin(); it != node->m_entites.begin() + (node->m_entites.size() / 2); ++it)
+    {
+      outLeft.UpdateBoundary((*it)->GetBoundingBox(true));
+    }
+    for (auto it = node->m_entites.begin() + (node->m_entites.size() / 2); it != node->m_entites.end(); ++it)
+    {
+      outRight.UpdateBoundary((*it)->GetBoundingBox(true));
+    }
+  }
+
   /*
    * splitType:
    * 0 = split center of longest axis
    * 1 = split longest axis based on average of center of the boxes
    * 2 = SAH
+   * 3 = GODOT
    */
   void SplitBoundingBox(BVHNode* node, BoundingBox& outLeft, BoundingBox& outRight, int splitType)
   {
@@ -939,6 +974,10 @@ namespace ToolKit
     else if (splitType == 2)
     {
       SplitBoundingBoxSAH(node, outLeft, outRight);
+    }
+    else if (splitType == 3)
+    {
+      SplitBoundingBoxGodot(node, outLeft, outRight);
     }
     else
     {
@@ -960,37 +999,49 @@ namespace ToolKit
     {
       // split this node if entity number is big
 
-      BVHNode* left  = new BVHNode();
-      BVHNode* right = new BVHNode();
-      left->depth    = node->depth + 1;
-      right->depth   = node->depth + 1;
+      BVHNode* left           = new BVHNode();
+      BVHNode* right          = new BVHNode();
+      left->depth             = node->depth + 1;
+      right->depth            = node->depth + 1;
 
-      SplitBoundingBox(node, left->m_aabb, right->m_aabb, 1);
+      const AxisLabel maxAxis = GetLongestAxis(node->m_aabb);
 
-      if (left->m_aabb.GetWidth() < m_minBBSize || left->m_aabb.GetHeight() < m_minBBSize ||
-          right->m_aabb.GetWidth() < m_minBBSize || right->m_aabb.GetHeight() < m_minBBSize ||
-          right->m_aabb.GetDepth() < m_minBBSize || right->m_aabb.GetDepth() < m_minBBSize)
+      const int maxAxisInt    = (int) maxAxis;
+      auto sortBasedOnPosFn   = [maxAxisInt](const EntityPtr& e1, const EntityPtr& e2)
+      { return e1->m_node->GetTranslation()[maxAxisInt] < e2->m_node->GetTranslation()[maxAxisInt]; };
+#if 0
+    // why not sort?!
+    std::sort(node->m_entites.begin(), node->m_entites.end(), sortBasedOnPosFn);
+#else
+      std::nth_element(node->m_entites.begin(),
+                       node->m_entites.begin() + (node->m_entites.size() / 2),
+                       node->m_entites.end(),
+                       sortBasedOnPosFn);
+#endif
+
+      for (auto it = node->m_entites.begin(); it != node->m_entites.begin() + (node->m_entites.size() / 2); ++it)
+      {
+        left->m_aabb.UpdateBoundary((*it)->GetBoundingBox(true));
+        (*it)->m_bvhNodes.push_back(left);
+        left->m_entites.push_back(*it);
+      }
+      for (auto it = node->m_entites.begin() + (node->m_entites.size() / 2); it != node->m_entites.end(); ++it)
+      {
+        right->m_aabb.UpdateBoundary((*it)->GetBoundingBox(true));
+        (*it)->m_bvhNodes.push_back(right);
+        right->m_entites.push_back(*it);
+      }
+
+      float minEdge = m_minBBSize;
+      if (left->m_aabb.GetWidth() < minEdge || left->m_aabb.GetHeight() < minEdge ||
+          left->m_aabb.GetDepth() < minEdge || right->m_aabb.GetWidth() < minEdge ||
+          right->m_aabb.GetHeight() < minEdge || right->m_aabb.GetDepth() < minEdge)
       {
         SafeDel(left);
         SafeDel(right);
       }
       else
       {
-        // divide entities into leaf nodes
-        for (EntityPtr& entity : node->m_entites)
-        {
-          const BoundingBox& entityAABB = entity->GetBoundingBox(true);
-          if (BoxBoxIntersection(left->m_aabb, entityAABB))
-          {
-            entity->m_bvhNodes.push_back(left);
-            left->m_entites.push_back(entity);
-          }
-          if (BoxBoxIntersection(right->m_aabb, entityAABB))
-          {
-            entity->m_bvhNodes.push_back(right);
-            right->m_entites.push_back(entity);
-          }
-        }
         for (EntityPtr lightEntity : node->m_lights)
         {
           if (SpotLight* spot = lightEntity->As<SpotLight>())
