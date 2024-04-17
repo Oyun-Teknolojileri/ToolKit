@@ -121,9 +121,8 @@ namespace ToolKit
     BVHTree* m_bvhTree = nullptr;
 
    private:
-    BVH()                               = delete;
-    Scene* m_scene                      = nullptr;
-
+    BVH()          = delete;
+    Scene* m_scene = nullptr;
 
     AtomicLock m_addLock;
     EntityPtrArray m_entitiesToAdd;

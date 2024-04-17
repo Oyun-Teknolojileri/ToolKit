@@ -13,7 +13,7 @@
 
 namespace ToolKit
 {
-  inline bool IsBVHEntity(const EntityPtr& ntt) { return !ntt->IsA<Sky>(); }
+  inline bool IsBVHEntity(const EntityPtr& ntt) { return !ntt->IsA<SkyBase>(); }
 
   BVH::BVH(Scene* scene)
   {
@@ -63,7 +63,6 @@ namespace ToolKit
       EntityPtr ntt = entities[i];
       if (IsBVHEntity(ntt))
       {
-        m_bvhTree->m_root->m_aabb.UpdateBoundary(ntt->GetBoundingBox(true));
         if (ntt->IsA<Light>())
         {
           m_bvhTree->m_root->m_lights.push_back(ntt);
@@ -71,6 +70,7 @@ namespace ToolKit
         }
         else
         {
+          m_bvhTree->m_root->m_aabb.UpdateBoundary(ntt->GetBoundingBox(true));
           m_bvhTree->m_root->m_entites.push_back(ntt);
           ntt->m_bvhNodes.push_back(m_bvhTree->m_root);
         }
@@ -461,8 +461,6 @@ namespace ToolKit
 
   bool BVHTree::Add(EntityPtr& entity)
   {
-    return true; // TODO
-
     entity->m_isInBVHProcess = false;
 
     BoundingBox entityAABB;
@@ -488,11 +486,6 @@ namespace ToolKit
 
         spot->UpdateShadowCamera();
         lightBBox = spot->m_boundingBoxCache;
-
-        if (!BoxBoxIntersection(lightBBox, m_root->m_aabb))
-        {
-          return true;
-        }
       }
       else if (PointLight* point = entity->As<PointLight>())
       {
@@ -500,20 +493,11 @@ namespace ToolKit
 
         point->UpdateShadowCamera();
         lightSphere = point->m_boundingSphereCache;
-
-        if (!SphereBoxIntersection(lightSphere, m_root->m_aabb))
-        {
-          return true;
-        }
       }
     }
     else
     {
       entityAABB = entity->GetBoundingBox(true);
-      if (!BoxInsideBox(entityAABB, m_root->m_aabb))
-      {
-        return true;
-      }
     }
 
     // Add entity to the bvh tree
@@ -530,56 +514,113 @@ namespace ToolKit
         continue;
       }
 
+      if (entityType == 0) // entity (non-light)
+      {
+        node->m_aabb.UpdateBoundary(entity->GetBoundingBox(true));
+      }
+
       if (!node->Leaf())
       {
         // intermediate node
+
+        bool leftTest = false, rightTest = false;
+        float distToLeftSquared = FLT_MAX, distToRightSquared = FLT_MAX;
 
         if (entityType == 1) // spot light
         {
           if (BoxBoxIntersection(lightBBox, node->m_left->m_aabb))
           {
-            nextNodes.push(node->m_left);
+            leftTest          = true;
+            distToLeftSquared = glm::distance2(entity->m_node->GetTranslation(), node->m_left->m_aabb.GetCenter());
           }
           if (BoxBoxIntersection(lightBBox, node->m_right->m_aabb))
           {
-            nextNodes.push(node->m_right);
+            rightTest          = true;
+            distToRightSquared = glm::distance2(entity->m_node->GetTranslation(), node->m_right->m_aabb.GetCenter());
           }
         }
         else if (entityType == 2) // point light
         {
           if (SphereBoxIntersection(lightSphere, node->m_left->m_aabb))
           {
-            nextNodes.push(node->m_left);
+            leftTest          = true;
+            distToLeftSquared = glm::distance2(entity->m_node->GetTranslation(), node->m_left->m_aabb.GetCenter());
           }
           if (SphereBoxIntersection(lightSphere, node->m_right->m_aabb))
           {
-            nextNodes.push(node->m_right);
+            rightTest          = true;
+            distToRightSquared = glm::distance2(entity->m_node->GetTranslation(), node->m_right->m_aabb.GetCenter());
           }
         }
         else // entity
         {
           if (BoxBoxIntersection(entityAABB, node->m_left->m_aabb))
           {
-            nextNodes.push(node->m_left);
+            leftTest          = true;
+            distToLeftSquared = glm::distance2(entity->m_node->GetTranslation(), node->m_left->m_aabb.GetCenter());
           }
           if (BoxBoxIntersection(entityAABB, node->m_right->m_aabb))
           {
+            rightTest          = true;
+            distToRightSquared = glm::distance2(entity->m_node->GetTranslation(), node->m_right->m_aabb.GetCenter());
+          }
+        }
+
+        if (leftTest && rightTest)
+        {
+          // Lights can be inside multiple BVH nodes, but entities can not
+          if (entityType == 0)
+          {
+            if (distToLeftSquared > distToRightSquared)
+            {
+              nextNodes.push(node->m_right);
+            }
+            else
+            {
+              nextNodes.push(node->m_left);
+            }
+          }
+          else
+          {
             nextNodes.push(node->m_right);
+            nextNodes.push(node->m_left);
+          }
+        }
+        else if (leftTest)
+        {
+          nextNodes.push(node->m_left);
+        }
+        else if (rightTest)
+        {
+          nextNodes.push(node->m_right);
+        }
+        else if (entityType == 0) // entity
+        {
+          // If entity can not go inside any child, put the entity to the nearest node
+          const float distLeft  = glm::distance2(entity->m_node->GetTranslation(), node->m_left->m_aabb.GetCenter());
+          const float distRight = glm::distance2(entity->m_node->GetTranslation(), node->m_right->m_aabb.GetCenter());
+
+          if (distLeft > distRight)
+          {
+            node->m_right->m_aabb.UpdateBoundary(entity->GetBoundingBox(true));
+            nextNodes.push(node->m_right);
+          }
+          else
+          {
+            node->m_left->m_aabb.UpdateBoundary(entity->GetBoundingBox(true));
+            nextNodes.push(node->m_left);
           }
         }
       }
       else
       {
-        // leaf node
-
-        if (entityType == 1 || entityType == 2) // light
-        {
-          node->m_lights.push_back(entity);
-        }
-        else // entity
+        if (entityType == 0) // entity
         {
           node->m_entites.push_back(entity);
-          node->m_aabb.UpdateBoundary(entity->GetBoundingBox(true));
+        }
+        else // light
+        {
+          node->m_lights.push_back(entity);
         }
         entity->m_bvhNodes.push_back(node);
 
