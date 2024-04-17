@@ -14,7 +14,6 @@
 
 namespace ToolKit
 {
-
   class TK_API BVHNode
   {
    public:
@@ -39,6 +38,8 @@ namespace ToolKit
      * It is guaranteed that if left node is there, there will be right node too
      */
     inline bool Leaf() const { return m_left == nullptr; }
+
+    bool m_insideFrustum = false;
   };
 
   class TK_API BVHTree
@@ -120,8 +121,9 @@ namespace ToolKit
     BVHTree* m_bvhTree = nullptr;
 
    private:
-    BVH()          = delete;
-    Scene* m_scene = nullptr;
+    BVH()                               = delete;
+    Scene* m_scene                      = nullptr;
+
 
     AtomicLock m_addLock;
     EntityPtrArray m_entitiesToAdd;
