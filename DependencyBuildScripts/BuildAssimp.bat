@@ -6,9 +6,9 @@ cmake --build . --config Release
 
 cd "bin/Release"
 
-copy "assimp-vc143-mt.dll" "../../../../../Import/assimp-vc143-mt.dll"
-copy "assimp-vc143-mt.pdb" "../../../../../Import/assimp-vc143-mt.pdb"
+copy "assimp-vc143-mt.dll" "../../../../../Utils/Import/assimp-vc143-mt.dll"
+copy "assimp-vc143-mt.pdb" "../../../../../Utils/Import/assimp-vc143-mt.pdb"
 
 cd "../../lib/Release"
 
-copy "assimp-vc143-mt.lib" "../../../../../Utils/Import/assimp-vc143-mt.lib"
+copy "assimp-vc143-mt.lib" "../../../../../Import/assimp-vc143-mt.lib"
