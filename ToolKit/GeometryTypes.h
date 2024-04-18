@@ -91,17 +91,13 @@ namespace ToolKit
      */
     float Volume() const { return glm::abs((max.x - min.x) * (max.y - min.y) * (max.z - min.z)); }
 
-    float HalfArea() const
+    float HalfSurfaceArea() const
     {
       const Vec3 e = max - min;
       return e.x * e.y + e.x * e.z + e.y * e.z;
     }
 
-    float Area() const
-    {
-      const Vec3 e = max - min;
-      return 2.0f * (e.x * e.y + e.x * e.z + e.y * e.z);
-    }
+    float SurafaceArea() const { return 2.0f * HalfSurfaceArea(); }
 
     /**
      * Get the width of the bounding box.
