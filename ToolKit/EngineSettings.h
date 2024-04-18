@@ -88,7 +88,7 @@ namespace ToolKit
       bool FXAAEnabled             = false;
       float ShadowDistance         = 100.0f;
       int maxEntityPerBVHNode      = 5;
-      float minBVHNodeSize         = 10.0f;
+      float minBVHNodeSize         = 0.0f;
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const;
       void DeSerialize(XmlDocument* doc, XmlNode* parent);

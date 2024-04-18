@@ -76,7 +76,7 @@ namespace ToolKit
         }
       }
     }
-    m_bvhTree->UpdateLeaf(m_bvhTree->m_root);
+    m_bvhTree->UpdateLeaf(m_bvhTree->m_root, false);
   }
 
   void BVH::Clean()
@@ -621,7 +621,7 @@ namespace ToolKit
         }
         entity->m_bvhNodes.push_back(node);
 
-        UpdateLeaf(node);
+        UpdateLeaf(node, false);
       }
     }
 
@@ -660,7 +660,7 @@ namespace ToolKit
       {
         continue;
       }
-      UpdateLeaf(bvhNode);
+      UpdateLeaf(bvhNode, true);
     }
 
     entity->m_bvhNodes.clear();
@@ -724,13 +724,50 @@ namespace ToolKit
     }
   }
 
-  void BVHTree::UpdateLeaf(BVHNode* node)
+  void BVHTree::UpdateLeaf(BVHNode* node, bool removedFromThisNode)
   {
     if (!node->Leaf())
     {
       assert(false && "Calling UpdateLeaf() on a non-leaf bvh node. Needs to be fixed!");
       return;
     }
+
+    if (removedFromThisNode)
+    {
+      // Update bounding box
+      node->m_aabb = BoundingBox();
+      for (EntityPtr& ntt : node->m_entites)
+      {
+        node->m_aabb.UpdateBoundary(ntt->GetBoundingBox(true));
+      }
+      // Remove the lights that are not intersecting anymore
+      EntityPtrArray lights = node->m_lights; // copy
+      node->m_lights.clear();
+      for (EntityPtr& lightEntity : lights)
+      {
+        LightPtr light = Cast<Light>(lightEntity);
+        light->UpdateShadowCamera();
+
+        if (light->GetLightType() == Light::LightType::Spot)
+        {
+          SpotLightPtr spot = Cast<SpotLight>(light);
+          if (FrustumBoxIntersection(spot->m_frustumCache, node->m_aabb) != IntersectResult::Outside)
+          {
+            node->m_lights.push_back(lightEntity);
+          }
+        }
+        else // if (light->GetLightType() == Light::LightType::Point)
+        {
+          PointLightLightPtr point = Cast<PointLight>(light);
+          if (SphereBoxIntersection(point->m_boundingSphereCache, node->m_aabb))
+          {
+            node->m_lights.push_back(lightEntity);
+          }
+        }
+      }
+    }
+
+    // Split or conjunct the BVH node
 
     const size_t entityCount = node->m_entites.size();
     if (entityCount > m_maxEntityCountPerBVHNode && node->depth < m_maxDepth)
@@ -839,10 +876,10 @@ namespace ToolKit
         node->m_entites.clear();
         node->m_lights.clear();
 
-        UpdateLeaf(left);
+        UpdateLeaf(left, false);
         if (!right->m_waitingForDeletion)
         {
-          UpdateLeaf(right);
+          UpdateLeaf(right, false);
         }
       }
     }
@@ -901,7 +938,7 @@ namespace ToolKit
           ntt->m_bvhNodes.push_back(parentNode);
         }
 
-        UpdateLeaf(parentNode);
+        UpdateLeaf(parentNode, false);
       }
     }
   }

@@ -52,7 +52,7 @@ namespace ToolKit
     bool Add(EntityPtr& entity);
     void Remove(EntityPtr& entity);
     void Clean();
-    void UpdateLeaf(BVHNode* node);
+    void UpdateLeaf(BVHNode* node, bool removedFromThisNode);
 
    private:
     BVHTree() = delete;
@@ -65,7 +65,7 @@ namespace ToolKit
     std::deque<BVHNode*> m_nextNodes;
 
     int m_maxEntityCountPerBVHNode = 10;
-    float m_minBBSize              = 2.0f;
+    float m_minBBSize              = 0.0f;
     int m_maxDepth                 = 100;
 
    private:
