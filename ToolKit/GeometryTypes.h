@@ -97,7 +97,7 @@ namespace ToolKit
       return e.x * e.y + e.x * e.z + e.y * e.z;
     }
 
-    float SurafaceArea() const { return 2.0f * HalfSurfaceArea(); }
+    float SurfaceArea() const { return 2.0f * HalfSurfaceArea(); }
 
     /**
      * Get the width of the bounding box.
