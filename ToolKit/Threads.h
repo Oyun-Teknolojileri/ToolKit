@@ -22,7 +22,7 @@ namespace ToolKit
    */
   struct AtomicLock
   {
-    std::atomic<bool> lock;
+    std::atomic<bool> lock = false;
 
     /** Locks via busy waiting. */
     void Lock()

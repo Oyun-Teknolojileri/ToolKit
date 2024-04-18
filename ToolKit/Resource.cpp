@@ -15,7 +15,7 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

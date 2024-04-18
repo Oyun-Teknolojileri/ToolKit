@@ -27,7 +27,7 @@
 #include "Threads.h"
 #include "UIManager.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

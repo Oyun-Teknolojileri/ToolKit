@@ -8,6 +8,7 @@
 #pragma once
 
 #include "Component.h"
+#include "GeometryTypes.h"
 
 namespace ToolKit
 {
@@ -26,7 +27,7 @@ namespace ToolKit
     virtual ~EnvironmentComponent();
 
     ComponentPtr Copy(EntityPtr ntt) override;
-    BoundingBox GetBBox();
+    const BoundingBox& GetBoundingBox();
 
     void Init(bool flushClientSideArray);
     void UnInit();
@@ -39,6 +40,7 @@ namespace ToolKit
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
     void ReInitHdri(HdriPtr hdri, float exposure);
+    void UpdateBoundingBoxCache();
 
    public:
     TKDeclareParam(HdriPtr, Hdri);
@@ -49,7 +51,10 @@ namespace ToolKit
     TKDeclareParam(float, Exposure);
     TKDeclareParam(MultiChoiceVariant, IBLTextureSize);
 
+    bool m_spatialCachesInvalidated = true; //!< If true, bounding box caches are updated upon access.
+
    private:
+    BoundingBox m_boundingBoxCache;
     bool m_initialized = false;
   };
 

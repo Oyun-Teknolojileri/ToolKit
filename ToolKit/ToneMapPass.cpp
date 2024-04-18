@@ -11,7 +11,7 @@
 #include "TKProfiler.h"
 #include "ToolKit.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

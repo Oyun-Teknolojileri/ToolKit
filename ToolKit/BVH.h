@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
+ */
+
 #pragma once
 
 #include "GeometryTypes.h"
@@ -7,7 +14,6 @@
 
 namespace ToolKit
 {
-
   class TK_API BVHNode
   {
    public:
@@ -32,6 +38,8 @@ namespace ToolKit
      * It is guaranteed that if left node is there, there will be right node too
      */
     inline bool Leaf() const { return m_left == nullptr; }
+
+    bool m_insideFrustum = false;
   };
 
   class TK_API BVHTree
@@ -44,11 +52,10 @@ namespace ToolKit
     bool Add(EntityPtr& entity);
     void Remove(EntityPtr& entity);
     void Clean();
+    void UpdateLeaf(BVHNode* node, bool removedFromThisNode);
 
    private:
     BVHTree() = delete;
-
-    void UpdateLeaf(BVHNode* node);
 
    public:
     BVHNode* m_root = nullptr;
@@ -58,7 +65,8 @@ namespace ToolKit
     std::deque<BVHNode*> m_nextNodes;
 
     int m_maxEntityCountPerBVHNode = 10;
-    float m_minBBSize              = 2.0f;
+    float m_minBBSize              = 0.0f;
+    int m_maxDepth                 = 100;
 
    private:
     class BVH* m_bvh = nullptr;
@@ -74,7 +82,7 @@ namespace ToolKit
     // inconsistencies will occur in BVH nodes.
     void SetParameters(const EngineSettings::PostProcessingSettings& settings);
 
-    bool ReBuild();
+    void ReBuild();
     void Clean();
 
     void AddEntity(const EntityPtr& entity);
@@ -107,12 +115,10 @@ namespace ToolKit
      */
     void DistributionQuality(int& totalNtties, int& assignedNtties, float& assignmentPerNtt);
 
-   private:
-    void UpdateBoundary(); // Update the bounding box via traversing each leaf.
+    const BoundingBox& GetBVHBoundary();
 
    public:
     BVHTree* m_bvhTree = nullptr;
-    BoundingBox m_boundingBox; // Boundingbox that covers bvh nodes.
 
    private:
     BVH()          = delete;

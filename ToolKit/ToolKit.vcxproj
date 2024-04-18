@@ -97,7 +97,6 @@
     <ClCompile Include="TKOpenGL.cpp">
       <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">150</OrderInUnityFile>
     </ClCompile>
-    <ClCompile Include="TKStats.cpp" />
     <ClCompile Include="ToneMapPass.cpp" />
     <ClCompile Include="ToolKit.cpp" />
     <ClCompile Include="UIManager.cpp" />
@@ -279,6 +278,8 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/FI "stdafx.h" %(AdditionalOptions)</AdditionalOptions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

@@ -103,6 +103,8 @@ namespace ToolKit
 
     LightGizmoController::~LightGizmoController() { SafeDel(m_gizmoGenerator); }
 
+    bool LightGizmoController::GizmoActive() const { return m_gizmoActive; }
+
     void LightGizmoController::EnableGizmo(bool enable) const
     {
       if (m_gizmoGenerator == nullptr)

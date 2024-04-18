@@ -223,9 +223,6 @@
     <ClCompile Include="StateMachine.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="TKStats.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="RHI.cpp">
       <Filter>Render</Filter>
     </ClCompile>

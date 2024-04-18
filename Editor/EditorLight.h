@@ -42,6 +42,7 @@ namespace ToolKit
       explicit LightGizmoController(Light* light);
       virtual ~LightGizmoController();
 
+      bool GizmoActive() const;
       void EnableGizmo(bool enable) const;
       virtual void InitController();
 

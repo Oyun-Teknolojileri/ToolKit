@@ -6,6 +6,8 @@
  */
 
 #include "Plugin.h"
+#include "Util.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {

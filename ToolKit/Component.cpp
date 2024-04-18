@@ -18,7 +18,7 @@
 #include "SkeletonComponent.h"
 #include "ToolKit.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

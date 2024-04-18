@@ -9,7 +9,7 @@
 #include "ToolKit.h"
 #include "Entity.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

@@ -14,7 +14,7 @@
 #include "TKStats.h"
 #include "ToolKit.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {
@@ -179,8 +179,10 @@ namespace ToolKit
     m_frameCount++;
     m_renderer->m_frameCount = m_frameCount;
 
-    TKStats* stats           = GetTKStats();
-    m_renderer->GetElapsedTime(stats->m_elapsedCpuRenderTime, stats->m_elapsedGpuRenderTime);
+    if (TKStats* stats = GetTKStats())
+    {
+      m_renderer->GetElapsedTime(stats->m_elapsedCpuRenderTime, stats->m_elapsedGpuRenderTime);
+    }
   }
 
   void RenderSystem::TestSRGBBackBuffer()

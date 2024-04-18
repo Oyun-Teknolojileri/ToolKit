@@ -13,7 +13,7 @@
 #include "MeshComponent.h"
 #include "ToolKit.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

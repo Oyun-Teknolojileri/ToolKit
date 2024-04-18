@@ -11,7 +11,7 @@
 #include "Mesh.h"
 #include "SkeletonComponent.h"
 
-#include "DebugNew.h"
+
 
 namespace ToolKit
 {

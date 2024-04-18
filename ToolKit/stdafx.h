@@ -28,7 +28,6 @@
 #ifndef TK_GLM
   #define TK_GLM
   #define GLM_FORCE_QUAT_DATA_XYZW
-  #define GLM_FORCE_XYZW_ONLY
   #define GLM_FORCE_CTOR_INIT
   #define GLM_ENABLE_EXPERIMENTAL
   #define GLM_FORCE_ALIGNED_GENTYPES
@@ -55,3 +54,5 @@
   #include "App.h"
   #include "EditorRenderer.h"
 #endif
+
+#include "DebugNew.h"

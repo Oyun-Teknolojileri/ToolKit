@@ -115,7 +115,7 @@ namespace ToolKit
     m_shadowPass->m_params.viewCamera = m_params.Cam;
 
     RenderJobProcessor::SeperateRenderData(m_renderData, true);
-    RenderJobProcessor::StableSortByMeshThanMaterail(m_renderData);
+    RenderJobProcessor::SortByMaterial(m_renderData);
 
     // Set CubeMapPass for sky.
     m_drawSky         = false;

@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
+ */
+
 #include "BVH.h"
 
 #include "MathUtil.h"
@@ -6,7 +13,7 @@
 
 namespace ToolKit
 {
-  inline bool IsBVHEntity(const EntityPtr& ntt) { return !ntt->IsA<Sky>(); }
+  inline bool IsBVHEntity(const EntityPtr& ntt) { return !ntt->IsA<SkyBase>() && ntt->IsDrawable(); }
 
   BVH::BVH(Scene* scene)
   {
@@ -22,33 +29,54 @@ namespace ToolKit
     m_bvhTree->m_minBBSize                = settings.minBVHNodeSize;
   }
 
-  bool BVH::ReBuild()
+  void BVH::ReBuild()
   {
     // Get new parameters
     SetParameters(GetEngineSettings().PostProcessing);
 
-    // Clean scene entities
-    for (EntityPtr ntt : m_scene->GetEntities())
-    {
-      ntt->m_bvhNodes.clear();
-    }
-
     // Clean bvh tree
     Clean();
 
-    // Rebuild
-    for (EntityPtr ntt : m_scene->GetEntities())
+    // Clean waiting queue
+    for (int i = 0; i < m_entitiesToAdd.size(); ++i)
     {
+      m_entitiesToAdd[i]->m_isInBVHProcess = false;
+    }
+    m_entitiesToAdd.clear();
+    for (int i = 0; i < m_entitiesToUpdate.size(); ++i)
+    {
+      m_entitiesToUpdate[i]->m_isInBVHProcess = false;
+    }
+    m_entitiesToUpdate.clear();
+    for (int i = 0; i < m_entitiesToRemove.size(); ++i)
+    {
+      m_entitiesToRemove[i]->m_isInBVHProcess = false;
+    }
+    m_entitiesToRemove.clear();
+
+    // Rebuild
+    const EntityPtrArray& entities = m_scene->GetEntities();
+    m_bvhTree->m_root->m_entites.reserve(entities.size());
+    m_bvhTree->m_root->m_aabb = BoundingBox();
+    for (int i = 0; i < entities.size(); ++i)
+    {
+      EntityPtr ntt = entities[i];
       if (IsBVHEntity(ntt))
       {
-        if (m_bvhTree->Add(ntt))
+        m_bvhTree->m_root->m_aabb.UpdateBoundary(ntt->GetBoundingBox(true));
+        if (ntt->IsA<Light>())
         {
-          return true;
+          m_bvhTree->m_root->m_lights.push_back(ntt);
+          ntt->m_bvhNodes.push_back(m_bvhTree->m_root);
+        }
+        else
+        {
+          m_bvhTree->m_root->m_entites.push_back(ntt);
+          ntt->m_bvhNodes.push_back(m_bvhTree->m_root);
         }
       }
     }
-
-    return false;
+    m_bvhTree->UpdateLeaf(m_bvhTree->m_root, false);
   }
 
   void BVH::Clean()
@@ -109,13 +137,10 @@ namespace ToolKit
 
   void BVH::Update()
   {
-    bool updateBoundary = false;
-
     // Removed entities
     for (EntityPtr& entity : m_entitiesToRemove)
     {
       m_bvhTree->Remove(entity);
-      updateBoundary = true;
     }
     m_entitiesToRemove.clear();
 
@@ -124,8 +149,6 @@ namespace ToolKit
     {
       BVHNode* node = m_bvhTree->m_nodesToDelete[i];
       SafeDel(node);
-
-      updateBoundary = true;
     }
     m_bvhTree->m_nodesToDelete.clear();
 
@@ -133,8 +156,6 @@ namespace ToolKit
     {
       m_bvhTree->Remove(entity);
       AddEntity(entity);
-
-      updateBoundary = true;
     }
     m_entitiesToUpdate.clear();
 
@@ -142,8 +163,6 @@ namespace ToolKit
     {
       BVHNode* node = m_bvhTree->m_nodesToDelete[i];
       SafeDel(node);
-
-      updateBoundary = true;
     }
     m_bvhTree->m_nodesToDelete.clear();
 
@@ -151,18 +170,11 @@ namespace ToolKit
     {
       if (m_bvhTree->Add(entity))
       {
-        while (ReBuild()) {}
+        ReBuild();
         break;
       }
-
-      updateBoundary = true;
     }
     m_entitiesToAdd.clear();
-
-    if (updateBoundary)
-    {
-      UpdateBoundary();
-    }
   }
 
   void BVH::PickObject(const Ray& ray, Scene::PickData& pickData, const IDArray& ignoreList, float& closestDistance)
@@ -309,65 +321,62 @@ namespace ToolKit
   {
     m_bvhTree->m_nextNodes.clear();
     m_bvhTree->m_nextNodes.push_front(m_bvhTree->m_root);
-
-    EntityRawPtrArray nttPool;
     while (!m_bvhTree->m_nextNodes.empty())
     {
       BVHNode* currentNode = m_bvhTree->m_nextNodes.front();
       m_bvhTree->m_nextNodes.pop_front();
-      if (currentNode != nullptr)
+
+      bool insideFrustum = currentNode->m_insideFrustum;
+      IntersectResult res;
+      if (!insideFrustum)
       {
-        IntersectResult res              = FrustumBoxIntersection(frustum, currentNode->m_aabb);
-        currentNode->m_frustumTestResult = res;
+        res           = FrustumBoxIntersection(frustum, currentNode->m_aabb);
+        insideFrustum = res == IntersectResult::Inside;
+      }
 
-        if (res == IntersectResult::Outside)
-        {
-          continue;
-        }
-
+      // If the nodes parent already is inside of the frustum, no need to check intersection
+      if (insideFrustum)
+      {
         if (currentNode->Leaf())
         {
-          if (res == IntersectResult::Intersect)
+          for (EntityPtr& ntt : currentNode->m_entites)
           {
-            for (EntityPtr ntt : currentNode->m_entites)
-            {
-              if (ntt->m_isInBVHProcess)
-              {
-                continue;
-              }
-
-              if (FrustumBoxIntersection(frustum, ntt->GetBoundingBox(true)) != IntersectResult::Outside)
-              {
-                ntt->m_isInBVHProcess = true;
-                nttPool.push_back(ntt.get());
-              }
-            }
+            entities.push_back(ntt.get());
           }
-          else if (res == IntersectResult::Inside)
+        }
+        else
+        {
+          currentNode->m_left->m_insideFrustum  = true;
+          currentNode->m_right->m_insideFrustum = true;
+          m_bvhTree->m_nextNodes.push_back(currentNode->m_left);
+          m_bvhTree->m_nextNodes.push_back(currentNode->m_right);
+        }
+      }
+      else if (res == IntersectResult::Intersect)
+      {
+        if (currentNode->Leaf())
+        {
+          for (EntityPtr& ntt : currentNode->m_entites)
           {
-            for (EntityPtr ntt : currentNode->m_entites)
-            {
-              if (ntt->m_isInBVHProcess)
-              {
-                continue;
-              }
+            const BoundingBox& box = ntt->GetBoundingBox(true);
+            IntersectResult res    = FrustumBoxIntersection(frustum, box);
 
-              ntt->m_isInBVHProcess = true;
-              nttPool.push_back(ntt.get());
+            if (res != IntersectResult::Outside)
+            {
+              entities.push_back(ntt.get());
             }
           }
         }
-
-        m_bvhTree->m_nextNodes.push_front(currentNode->m_left);
-        m_bvhTree->m_nextNodes.push_front(currentNode->m_right);
+        else
+        {
+          currentNode->m_left->m_insideFrustum  = false;
+          currentNode->m_right->m_insideFrustum = false;
+          m_bvhTree->m_nextNodes.push_front(currentNode->m_left);
+          m_bvhTree->m_nextNodes.push_front(currentNode->m_right);
+        }
       }
-    }
 
-    entities.reserve(nttPool.size());
-    for (Entity* ntt : nttPool)
-    {
-      ntt->m_isInBVHProcess = false;
-      entities.push_back(ntt);
+      currentNode->m_insideFrustum = false;
     }
   }
 
@@ -387,30 +396,10 @@ namespace ToolKit
       }
       else
       {
-        boxes.push_back(Cast<Entity>(CreateBoundingBoxDebugObject(bvhNode->m_aabb, Vec3(1.0f, 0.4f, 0.1f), 0.75f)));
-      }
-    }
-  }
-
-  void BVH::UpdateBoundary()
-  {
-    m_bvhTree->m_nextNodes.clear();
-    m_bvhTree->m_nextNodes.push_front(m_bvhTree->m_root);
-
-    m_boundingBox = BoundingBox();
-    while (!m_bvhTree->m_nextNodes.empty())
-    {
-      BVHNode* currentNode = m_bvhTree->m_nextNodes.front();
-      m_bvhTree->m_nextNodes.pop_front();
-      if (currentNode != nullptr)
-      {
-        if (currentNode->Leaf())
-        {
-          m_boundingBox.UpdateBoundary(currentNode->m_aabb);
-        }
-
-        m_bvhTree->m_nextNodes.push_front(currentNode->m_left);
-        m_bvhTree->m_nextNodes.push_front(currentNode->m_right);
+        boxes.push_back(
+            Cast<Entity>(CreateBoundingBoxDebugObject(bvhNode->m_aabb,
+                                                      Vec3(1.0f, 0.0f, 0.0f) * (bvhNode->m_lights.size() / 16),
+                                                      0.75f)));
       }
     }
   }
@@ -419,6 +408,7 @@ namespace ToolKit
   {
     for (EntityPtr ntt : m_scene->GetEntities())
     {
+      assert(ntt->m_bvhNodes.size() <= 1 || ntt->IsA<Light>());
       for (BVHNode* node : ntt->m_bvhNodes)
       {
         assert(node->Leaf() && "Entities should not hold non-leaf bvh nodes");
@@ -451,6 +441,8 @@ namespace ToolKit
     totalNtties      = glm::max(1, (int) m_scene->AccessEntityArray().size());
     assignmentPerNtt = (float) assignedNtties / (float) totalNtties;
   }
+
+  const BoundingBox& BVH::GetBVHBoundary() { return m_bvhTree->m_root->m_aabb; }
 
   BVHTree::BVHTree(BVH* owner)
   {
@@ -494,12 +486,6 @@ namespace ToolKit
 
         spot->UpdateShadowCamera();
         lightBBox = spot->m_boundingBoxCache;
-
-        if (!BoxBoxIntersection(lightBBox, m_root->m_aabb))
-        {
-          m_root->m_aabb.UpdateBoundary(entity->m_node->GetTranslation());
-          return true;
-        }
       }
       else if (PointLight* point = entity->As<PointLight>())
       {
@@ -507,23 +493,11 @@ namespace ToolKit
 
         point->UpdateShadowCamera();
         lightSphere = point->m_boundingSphereCache;
-
-        if (!SphereBoxIntersection(lightSphere, m_root->m_aabb))
-        {
-          m_root->m_aabb.UpdateBoundary(entity->m_node->GetTranslation());
-          return true;
-        }
       }
     }
     else
     {
       entityAABB = entity->GetBoundingBox(true);
-      if (!BoxInsideBox(entityAABB, m_root->m_aabb))
-      {
-        m_root->m_aabb.UpdateBoundary(entityAABB);
-
-        return true;
-      }
     }
 
     // Add entity to the bvh tree
@@ -540,59 +514,114 @@ namespace ToolKit
         continue;
       }
 
+      node->m_aabb.UpdateBoundary(entity->GetBoundingBox(true));
+
       if (!node->Leaf())
       {
         // intermediate node
+
+        bool leftTest = false, rightTest = false;
+        float distToLeftSquared = FLT_MAX, distToRightSquared = FLT_MAX;
 
         if (entityType == 1) // spot light
         {
           if (BoxBoxIntersection(lightBBox, node->m_left->m_aabb))
           {
-            nextNodes.push(node->m_left);
+            leftTest          = true;
+            distToLeftSquared = glm::distance2(entity->m_node->GetTranslation(), node->m_left->m_aabb.GetCenter());
           }
           if (BoxBoxIntersection(lightBBox, node->m_right->m_aabb))
           {
-            nextNodes.push(node->m_right);
+            rightTest          = true;
+            distToRightSquared = glm::distance2(entity->m_node->GetTranslation(), node->m_right->m_aabb.GetCenter());
           }
         }
         else if (entityType == 2) // point light
         {
           if (SphereBoxIntersection(lightSphere, node->m_left->m_aabb))
           {
-            nextNodes.push(node->m_left);
+            leftTest          = true;
+            distToLeftSquared = glm::distance2(entity->m_node->GetTranslation(), node->m_left->m_aabb.GetCenter());
           }
           if (SphereBoxIntersection(lightSphere, node->m_right->m_aabb))
           {
-            nextNodes.push(node->m_right);
+            rightTest          = true;
+            distToRightSquared = glm::distance2(entity->m_node->GetTranslation(), node->m_right->m_aabb.GetCenter());
           }
         }
         else // entity
         {
           if (BoxBoxIntersection(entityAABB, node->m_left->m_aabb))
           {
-            nextNodes.push(node->m_left);
+            leftTest          = true;
+            distToLeftSquared = glm::distance2(entity->m_node->GetTranslation(), node->m_left->m_aabb.GetCenter());
           }
           if (BoxBoxIntersection(entityAABB, node->m_right->m_aabb))
           {
+            rightTest          = true;
+            distToRightSquared = glm::distance2(entity->m_node->GetTranslation(), node->m_right->m_aabb.GetCenter());
+          }
+        }
+
+        if (leftTest && rightTest)
+        {
+          // Lights can be inside multiple BVH nodes, but entities can not
+          if (entityType == 0)
+          {
+            if (distToLeftSquared > distToRightSquared)
+            {
+              nextNodes.push(node->m_right);
+            }
+            else
+            {
+              nextNodes.push(node->m_left);
+            }
+          }
+          else
+          {
             nextNodes.push(node->m_right);
+            nextNodes.push(node->m_left);
+          }
+        }
+        else if (leftTest)
+        {
+          nextNodes.push(node->m_left);
+        }
+        else if (rightTest)
+        {
+          nextNodes.push(node->m_right);
+        }
+        else
+        {
+          // If entity can not go inside any child, put the entity to the nearest node
+          const float distLeft  = glm::distance2(entity->m_node->GetTranslation(), node->m_left->m_aabb.GetCenter());
+          const float distRight = glm::distance2(entity->m_node->GetTranslation(), node->m_right->m_aabb.GetCenter());
+
+          if (distLeft > distRight)
+          {
+            node->m_right->m_aabb.UpdateBoundary(entity->GetBoundingBox(true));
+            nextNodes.push(node->m_right);
+          }
+          else
+          {
+            node->m_left->m_aabb.UpdateBoundary(entity->GetBoundingBox(true));
+            nextNodes.push(node->m_left);
           }
         }
       }
       else
       {
-        // leaf node
-
-        if (entityType == 1 || entityType == 2) // light
-        {
-          node->m_lights.push_back(entity);
-        }
-        else // entity
+        if (entityType == 0) // entity
         {
           node->m_entites.push_back(entity);
         }
+        else // light
+        {
+          node->m_lights.push_back(entity);
+        }
         entity->m_bvhNodes.push_back(node);
 
-        UpdateLeaf(node);
+        UpdateLeaf(node, false);
       }
     }
 
@@ -631,7 +660,7 @@ namespace ToolKit
       {
         continue;
       }
-      UpdateLeaf(bvhNode);
+      UpdateLeaf(bvhNode, true);
     }
 
     entity->m_bvhNodes.clear();
@@ -671,72 +700,6 @@ namespace ToolKit
     }
   }
 
-  void SplitBoundingBox(BoundingBox bb, AxisLabel axis, BoundingBox& outLeft, BoundingBox& outRight)
-  {
-    switch (axis)
-    {
-    case AxisLabel::X:
-    {
-      float midX = (bb.min.x + bb.max.x) / 2.0f;
-      BoundingBox left;
-      left.min   = bb.min;
-      left.max.x = midX;
-      left.max.y = bb.max.y;
-      left.max.z = bb.max.z;
-      outLeft    = left;
-
-      BoundingBox right;
-      right.min.x = midX;
-      right.min.y = bb.min.y;
-      right.min.z = bb.min.z;
-      right.max   = bb.max;
-      outRight    = right;
-      break;
-    }
-    case AxisLabel::Y:
-    {
-      float midY = (bb.min.y + bb.max.y) / 2.0f;
-
-      BoundingBox left;
-      left.min   = bb.min;
-      left.max.x = bb.max.x;
-      left.max.y = midY;
-      left.max.z = bb.max.z;
-      outLeft    = left;
-
-      BoundingBox right;
-      right.min.x = bb.min.x;
-      right.min.y = midY;
-      right.min.z = bb.min.z;
-      right.max   = bb.max;
-      outRight    = right;
-      break;
-    }
-    case AxisLabel::Z:
-    {
-      float midZ = (bb.min.z + bb.max.z) / 2.0f;
-
-      BoundingBox left;
-      left.min   = bb.min;
-      left.max.x = bb.max.x;
-      left.max.y = bb.max.y;
-      left.max.z = midZ;
-      outLeft    = left;
-
-      BoundingBox right;
-      right.min.x = bb.min.x;
-      right.min.y = bb.min.y;
-      right.min.z = midZ;
-      right.max   = bb.max;
-      outRight    = right;
-      break;
-    }
-    default:
-      assert(false && "Invalid Axis Label");
-      break;
-    }
-  }
-
   AxisLabel GetLongestAxis(const BoundingBox& bb)
   {
     float x = bb.max.x - bb.min.x;
@@ -761,7 +724,7 @@ namespace ToolKit
     }
   }
 
-  void BVHTree::UpdateLeaf(BVHNode* node)
+  void BVHTree::UpdateLeaf(BVHNode* node, bool removedFromThisNode)
   {
     if (!node->Leaf())
     {
@@ -769,8 +732,45 @@ namespace ToolKit
       return;
     }
 
+    if (removedFromThisNode)
+    {
+      // Update bounding box
+      node->m_aabb = BoundingBox();
+      for (EntityPtr& ntt : node->m_entites)
+      {
+        node->m_aabb.UpdateBoundary(ntt->GetBoundingBox(true));
+      }
+      // Remove the lights that are not intersecting anymore
+      EntityPtrArray lights = node->m_lights; // copy
+      node->m_lights.clear();
+      for (EntityPtr& lightEntity : lights)
+      {
+        LightPtr light = Cast<Light>(lightEntity);
+        light->UpdateShadowCamera();
+
+        if (light->GetLightType() == Light::LightType::Spot)
+        {
+          SpotLightPtr spot = Cast<SpotLight>(light);
+          if (FrustumBoxIntersection(spot->m_frustumCache, node->m_aabb) != IntersectResult::Outside)
+          {
+            node->m_lights.push_back(lightEntity);
+          }
+        }
+        else // if (light->GetLightType() == Light::LightType::Point)
+        {
+          PointLightLightPtr point = Cast<PointLight>(light);
+          if (SphereBoxIntersection(point->m_boundingSphereCache, node->m_aabb))
+          {
+            node->m_lights.push_back(lightEntity);
+          }
+        }
+      }
+    }
+
+    // Split or conjunct the BVH node
+
     const size_t entityCount = node->m_entites.size();
-    if (entityCount > m_maxEntityCountPerBVHNode)
+    if (entityCount > m_maxEntityCountPerBVHNode && node->depth < m_maxDepth)
     {
       // split this node if entity number is big
 
@@ -780,32 +780,38 @@ namespace ToolKit
       right->depth            = node->depth + 1;
 
       const AxisLabel maxAxis = GetLongestAxis(node->m_aabb);
-      SplitBoundingBox(node->m_aabb, maxAxis, left->m_aabb, right->m_aabb);
+
+      const int maxAxisInt    = (int) maxAxis;
+      auto sortBasedOnPosFn   = [maxAxisInt](const EntityPtr& e1, const EntityPtr& e2)
+      { return e1->m_node->GetTranslation()[maxAxisInt] < e2->m_node->GetTranslation()[maxAxisInt]; };
+      std::nth_element(node->m_entites.begin(),
+                       node->m_entites.begin() + (node->m_entites.size() / 2),
+                       node->m_entites.end(),
+                       sortBasedOnPosFn);
+
+      for (auto it = node->m_entites.begin(); it != node->m_entites.begin() + (node->m_entites.size() / 2); ++it)
+      {
+        left->m_aabb.UpdateBoundary((*it)->GetBoundingBox(true));
+        (*it)->m_bvhNodes.push_back(left);
+        left->m_entites.push_back(*it);
+      }
+      for (auto it = node->m_entites.begin() + (node->m_entites.size() / 2); it != node->m_entites.end(); ++it)
+      {
+        right->m_aabb.UpdateBoundary((*it)->GetBoundingBox(true));
+        (*it)->m_bvhNodes.push_back(right);
+        right->m_entites.push_back(*it);
+      }
 
       if (left->m_aabb.GetWidth() < m_minBBSize || left->m_aabb.GetHeight() < m_minBBSize ||
-          right->m_aabb.GetWidth() < m_minBBSize || right->m_aabb.GetHeight() < m_minBBSize)
+          left->m_aabb.GetDepth() < m_minBBSize || right->m_aabb.GetWidth() < m_minBBSize ||
+          right->m_aabb.GetHeight() < m_minBBSize || right->m_aabb.GetDepth() < m_minBBSize)
       {
         SafeDel(left);
         SafeDel(right);
       }
       else
       {
-        // divide entities into leaf nodes
-        for (EntityPtr& entity : node->m_entites)
-        {
-          const BoundingBox& entityAABB = entity->GetBoundingBox(true);
-          if (BoxBoxIntersection(left->m_aabb, entityAABB))
-          {
-            entity->m_bvhNodes.push_back(left);
-            left->m_entites.push_back(entity);
-          }
-          if (BoxBoxIntersection(right->m_aabb, entityAABB))
-          {
-            entity->m_bvhNodes.push_back(right);
-            right->m_entites.push_back(entity);
-          }
-        }
-        for (EntityPtr lightEntity : node->m_lights)
+        for (EntityPtr& lightEntity : node->m_lights)
         {
           if (SpotLight* spot = lightEntity->As<SpotLight>())
           {
@@ -841,7 +847,7 @@ namespace ToolKit
         node->m_right   = right;
 
         // Remove this node from the entity
-        for (EntityPtr ntt : node->m_entites)
+        for (EntityPtr& ntt : node->m_entites)
         {
           uint i = 0;
           for (BVHNode* nttNode : ntt->m_bvhNodes)
@@ -854,7 +860,7 @@ namespace ToolKit
             ++i;
           }
         }
-        for (EntityPtr ntt : node->m_lights)
+        for (EntityPtr& ntt : node->m_lights)
         {
           uint i = 0;
           for (BVHNode* nttNode : ntt->m_bvhNodes)
@@ -870,10 +876,10 @@ namespace ToolKit
         node->m_entites.clear();
         node->m_lights.clear();
 
-        UpdateLeaf(left);
+        UpdateLeaf(left, false);
         if (!right->m_waitingForDeletion)
         {
-          UpdateLeaf(right);
+          UpdateLeaf(right, false);
         }
       }
     }
@@ -932,12 +938,12 @@ namespace ToolKit
           ntt->m_bvhNodes.push_back(parentNode);
         }
 
-        UpdateLeaf(parentNode);
+        UpdateLeaf(parentNode, false);
       }
     }
   }
 
-  BVHNode::BVHNode() { m_aabb = BoundingBox(Vec3(-100.0f), Vec3(100.0f)); }
+  BVHNode::BVHNode() {}
 
   BVHNode::~BVHNode()
   { // Remove this node from all entities

@@ -34,8 +34,6 @@
 #include "UIManager.h"
 #include "Viewport.h"
 
-#include "DebugNew.h"
-
 namespace ToolKit
 {
   Renderer::Renderer() {}
@@ -398,20 +396,40 @@ namespace ToolKit
   void Renderer::StartTimerQuery()
   {
     m_cpuTime = GetElapsedMilliSeconds();
-    glBeginQuery(GL_TIME_ELAPSED_EXT, m_gpuTimerQuery);
+    if (GetEngineSettings().Graphics.enableGpuTimer)
+    {
+#ifndef TK_ANDROID
+      glBeginQuery(GL_TIME_ELAPSED_EXT, m_gpuTimerQuery);
+#endif
+    }
   }
 
-  void Renderer::EndTimerQuery() { glEndQuery(GL_TIME_ELAPSED_EXT); }
+  void Renderer::EndTimerQuery()
+  {
+    float cpuTime = GetElapsedMilliSeconds();
+    m_cpuTime     = cpuTime - m_cpuTime;
+    if (GetEngineSettings().Graphics.enableGpuTimer)
+    {
+#ifndef TK_ANDROID
+      glEndQuery(GL_TIME_ELAPSED_EXT);
+#endif
+    }
+  }
 
   void Renderer::GetElapsedTime(float& cpu, float& gpu)
   {
-    float cpuTime = GetElapsedMilliSeconds();
-    cpu           = cpuTime - m_cpuTime;
+    cpu = m_cpuTime;
+    if (GetEngineSettings().Graphics.enableGpuTimer)
+    {
+      GLuint elapsedTime;
+      glGetQueryObjectuiv(m_gpuTimerQuery, GL_QUERY_RESULT, &elapsedTime);
 
-    GLuint elapsedTime;
-    glGetQueryObjectuiv(m_gpuTimerQuery, GL_QUERY_RESULT, &elapsedTime);
-
-    gpu = glm::max(1.0f, (float) (elapsedTime) / 1000000.0f);
+      gpu = glm::max(1.0f, (float) (elapsedTime) / 1000000.0f);
+    }
+    else
+    {
+      gpu = 1.0f;
+    }
   }
 
   FramebufferPtr Renderer::GetFrameBuffer() { return m_framebuffer; }

@@ -91,6 +91,14 @@ namespace ToolKit
      */
     float Volume() const { return glm::abs((max.x - min.x) * (max.y - min.y) * (max.z - min.z)); }
 
+    float HalfSurfaceArea() const
+    {
+      const Vec3 e = max - min;
+      return e.x * e.y + e.x * e.z + e.y * e.z;
+    }
+
+    float SurfaceArea() const { return 2.0f * HalfSurfaceArea(); }
+
     /**
      * Get the width of the bounding box.
      * @return The width of the bounding box.
@@ -102,6 +110,12 @@ namespace ToolKit
      * @return The height of the bounding box.
      */
     float GetHeight() const { return max.y - min.y; }
+
+    /**
+     * Get the depth of the bounding box.
+     * @return The depth of the bounding box.
+     */
+    float GetDepth() const { return max.z - min.z; }
   };
 
   static const BoundingBox infinitesimalBox(Vec3(-TK_FLT_MIN), Vec3(TK_FLT_MIN));

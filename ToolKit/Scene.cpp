@@ -20,8 +20,6 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-#include "DebugNew.h"
-
 namespace ToolKit
 {
   TKDefineClass(Scene, Resource);
@@ -126,7 +124,6 @@ namespace ToolKit
       }
     }
 
-    m_bvh->ReBuild();
     m_initiated = true;
   }
 
@@ -478,7 +475,7 @@ namespace ToolKit
 
   void Scene::RebuildBVH() { m_bvh->ReBuild(); }
 
-  const BoundingBox& Scene::GetSceneBoundary() { return m_bvh->m_boundingBox; }
+  const BoundingBox& Scene::GetSceneBoundary() { return m_bvh->GetBVHBoundary(); }
 
   void Scene::CopyTo(Resource* other)
   {
@@ -762,7 +759,7 @@ namespace ToolKit
 
     // apply scene post processing effects
     GetEngineSettings().PostProcessing = m_currentScene->m_postProcessSettings;
-    m_currentScene->m_bvh->SetParameters(m_currentScene->m_postProcessSettings); // Build BVH with new parameters
+    m_currentScene->m_bvh->ReBuild(); // Build BVH with new parameters
   }
 
 } // namespace ToolKit

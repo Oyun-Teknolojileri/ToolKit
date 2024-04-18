@@ -15,7 +15,6 @@
 // GLM
 #ifndef TK_GLM
   #define GLM_FORCE_QUAT_DATA_XYZW
-  #define GLM_FORCE_XYZW_ONLY
   #define GLM_FORCE_CTOR_INIT
   #define GLM_ENABLE_EXPERIMENTAL
   #define GLM_FORCE_ALIGNED_GENTYPES
@@ -294,15 +293,15 @@ namespace ToolKit
   enum class AxisLabel
   {
     None = -1, // Order matters. Don't change.
-    X,
-    Y,
-    Z,
+    X    = 0,
+    Y    = 1,
+    Z    = 2,
     // Mod3 gives plane normal .
-    YZ, // YZ(3) % 3 = X(0)
-    ZX, // ZX(4) % 3 = Y(1)
-    XY, // XY(5) % 3 = Z(2)
+    YZ   = 3, // YZ(3) % 3 = X(0)
+    ZX   = 4, // ZX(4) % 3 = Y(1)
+    XY   = 5, // XY(5) % 3 = Z(2)
     // Don't apply mod3
-    XYZ
+    XYZ  = 6
   };
 
   enum class DirectionLabel

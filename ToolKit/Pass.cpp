@@ -21,8 +21,6 @@
 #include "Toolkit.h"
 #include "Viewport.h"
 
-#include "DebugNew.h"
-
 namespace ToolKit
 {
   RenderPass::RenderPass() {}
@@ -313,7 +311,6 @@ namespace ToolKit
                         // Light assignment.
                         if (!job.frustumCulled)
                         {
-                          AssignLight(job, lights, directionalEndIndx);
                           AssignEnvironment(job, environments);
                         }
                       }
@@ -559,19 +556,14 @@ namespace ToolKit
     FrustumCull(jobArray, camera, unCulledJobs);
   }
 
-  void RenderJobProcessor::StableSortByMeshThanMaterail(RenderData& renderData)
+  void RenderJobProcessor::SortByMaterial(RenderData& renderData)
   {
     auto sortRangeFn = [](RenderJobItr begin, RenderJobItr end) -> void
     {
-      std::stable_sort(begin,
-                       end,
-                       [](const RenderJob& a, const RenderJob& b) -> bool
-                       { return a.Mesh->GetIdVal() < b.Mesh->GetIdVal(); });
-
-      std::stable_sort(begin,
-                       end,
-                       [](const RenderJob& a, const RenderJob& b) -> bool
-                       { return a.Material->GetIdVal() < b.Material->GetIdVal(); });
+      std::sort(begin,
+                end,
+                [](const RenderJob& a, const RenderJob& b) -> bool
+                { return a.Material->GetIdVal() < b.Material->GetIdVal(); });
     };
 
     RenderJobItr begin, end;
@@ -629,7 +621,7 @@ namespace ToolKit
       }
 
       // Pick the smallest volume intersecting with job.
-      BoundingBox vbb = std::move(volume->GetBBox());
+      BoundingBox vbb = std::move(volume->GetBoundingBox());
       if (BoxBoxIntersection(vbb, job.BoundingBox))
       {
         if (bestBox.Volume() > vbb.Volume() || job.EnvironmentVolume == nullptr)
