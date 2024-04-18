@@ -77,3 +77,4 @@ Import/build
 /ToolKit/ninjaBuild/build
 /Dependency/tkimgui/build
 /Dependency/tkimgui/lib
+/Import/assimp-vc143-mt.lib
