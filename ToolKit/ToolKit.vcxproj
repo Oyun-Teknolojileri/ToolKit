@@ -46,7 +46,6 @@
     <ClCompile Include="GpuProgram.cpp" />
     <ClCompile Include="GradientSky.cpp" />
     <ClCompile Include="Light.cpp" />
-    <ClCompile Include="LightCache.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MaterialComponent.cpp" />

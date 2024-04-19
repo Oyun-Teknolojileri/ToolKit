@@ -247,9 +247,6 @@
     <ClCompile Include="BVH.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="LightCache.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
