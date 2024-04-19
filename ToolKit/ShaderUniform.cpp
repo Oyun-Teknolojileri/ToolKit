@@ -9,8 +9,6 @@
 
 #include "TKAssert.h"
 
-
-
 namespace ToolKit
 {
 
@@ -162,6 +160,8 @@ namespace ToolKit
       return "modelNoTr";
     case Uniform::AO_ENABLED:
       return "aoEnabled";
+    case Uniform::ACTIVE_LIGHT_INDICES:
+      return "activeLightIndices";
     case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";

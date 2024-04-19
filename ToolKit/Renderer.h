@@ -106,9 +106,8 @@ namespace ToolKit
 
     /**
      * Sets the lights that will be used during rendering.
-     * Invalidates gpu program's related caches.
      */
-    void SetLights(const LightPtrArray& lights);
+    void SetLightCache(const LightRawPtrArray& lights);
 
     int GetMaxArrayTextureLayers();
 
@@ -135,6 +134,7 @@ namespace ToolKit
 
     // The set contains gpuPrograms that has up to date per frame uniforms.
     std::unordered_set<uint> m_gpuProgramHasFrameUpdates;
+    std::unordered_set<uint> m_gpuProgramHasLightCache;
 
     bool m_renderOnlyLighting                 = false;
 
@@ -156,6 +156,8 @@ namespace ToolKit
     };
 
    private:
+    LightRawPtrArray m_lightCache;
+
     GpuProgramPtr m_currentProgram = nullptr;
 
     // Camera data.

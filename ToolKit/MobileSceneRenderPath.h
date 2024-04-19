@@ -36,6 +36,8 @@ namespace ToolKit
 
    protected:
     void SetPassParams() override;
+
+    LightRawPtrArray m_lightCache;
   };
 
   typedef std::shared_ptr<MobileSceneRenderPath> MobileSceneRenderPathPtr;

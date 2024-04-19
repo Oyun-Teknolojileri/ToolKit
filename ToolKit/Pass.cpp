@@ -69,7 +69,8 @@ namespace ToolKit
                                             BVHPtr bvh,
                                             LightPtrArray& lights,
                                             CameraPtr camera,
-                                            const EnvironmentComponentPtrArray& environments)
+                                            const EnvironmentComponentPtrArray& environments,
+                                            LightRawPtrArray& lightCache)
   {
     Mat4 project    = camera->GetProjectionMatrix();
     Mat4 view       = camera->GetViewMatrix();
@@ -80,6 +81,8 @@ namespace ToolKit
 
     // Sort lights for disc.
     int directionalEndIndx = PreSortLights(lights);
+
+    UpdateLightCache(lightCache, lights);
 
     // Each entity can contain several meshes. This submeshIndexLookup array will be used
     // to find the index of the submehs for a given entity index.
@@ -318,6 +321,18 @@ namespace ToolKit
                   });
   }
 
+  void RenderJobProcessor::UpdateLightCache(LightRawPtrArray& lightCache, LightPtrArray& lights)
+  {
+    lightCache.clear();
+    lightCache.reserve(lights.size());
+    int i = 0;
+    for (LightPtr& light : lights)
+    {
+      lightCache.push_back(light.get());
+      light->m_lightCacheIndex = i++;
+    }
+  }
+
   void RenderJobProcessor::CullLights(LightPtrArray& lights, const CameraPtr& camera, float maxDistance)
   {
     Mat4 project          = camera->GetProjectionMatrix();
@@ -414,18 +429,18 @@ namespace ToolKit
 
   void RenderJobProcessor::AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex)
   {
-    job.lights.clear();
+    job.lightIndices.clear();
 
     for (int i = 0; i < startIndex; i++)
     {
-      job.lights.push_back(lights[i].get());
+      job.lightIndices.push_back(lights[i]->m_lightCacheIndex);
       if (i >= Renderer::RHIConstants::MaxLightsPerObject)
       {
         break;
       }
     }
 
-    if (lights.size() == job.lights.size())
+    if (lights.size() == job.lightIndices.size())
     {
       // No more lights to assign. Possibly editor lighting.
       return;
@@ -436,7 +451,7 @@ namespace ToolKit
     {
       for (const EntityPtr& lightEntity : bvhNode->m_lights)
       {
-        if (job.lights.size() >= Renderer::RHIConstants::MaxLightsPerObject)
+        if (job.lightIndices.size() >= Renderer::RHIConstants::MaxLightsPerObject)
         {
           return;
         }
@@ -447,7 +462,7 @@ namespace ToolKit
           SpotLight* spot = static_cast<SpotLight*>(light);
           if (FrustumBoxIntersection(spot->m_frustumCache, job.BoundingBox) != IntersectResult::Outside)
           {
-            job.lights.push_back(spot);
+            job.lightIndices.push_back(spot->m_lightCacheIndex);
           }
         }
         else
@@ -456,7 +471,7 @@ namespace ToolKit
           PointLight* point = static_cast<PointLight*>(light);
           if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))
           {
-            job.lights.push_back(point);
+            job.lightIndices.push_back(point->m_lightCacheIndex);
           }
         }
       }

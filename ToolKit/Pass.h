@@ -57,7 +57,7 @@ namespace ToolKit
     Mat4 WorldTransform;     //!< World transform of the entity.
     AnimData animData;       //!< Animation data of render job.
 
-    std::vector<Light*> lights;
+    std::vector<int> lightIndices;
   };
 
   typedef RenderJobArray::iterator RenderJobItr;
@@ -124,7 +124,10 @@ namespace ToolKit
                                  BVHPtr bvh,
                                  LightPtrArray& lights,
                                  CameraPtr camera,
-                                 const EnvironmentComponentPtrArray& environments);
+                                 const EnvironmentComponentPtrArray& environments,
+                                 LightRawPtrArray& lightCache);
+
+    static void UpdateLightCache(LightRawPtrArray& lightCache, LightPtrArray& lights);
 
     /**
      * This will drop the lights whose bounding volume does not intersect with camera.

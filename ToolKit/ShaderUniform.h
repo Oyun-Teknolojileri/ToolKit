@@ -90,6 +90,7 @@ namespace ToolKit
     BLEND_KEY_FRAME_COUNT,
     MODEL_NO_TR,
     AO_ENABLED,
+    ACTIVE_LIGHT_INDICES,
     UNIFORM_MAX_INVALID
   };
 

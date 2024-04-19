@@ -71,6 +71,8 @@ namespace ToolKit
     bool m_shadowResolutionUpdated = false;
     MeshPtr m_volumeMesh           = nullptr;
 
+    int m_lightCacheIndex          = -1;
+
    protected:
     MaterialPtr m_shadowMapMaterial = nullptr;
   };

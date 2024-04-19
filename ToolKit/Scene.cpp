@@ -133,7 +133,7 @@ namespace ToolKit
   {
     for (LightPtr& light : m_lightCache)
     {
-      if (light->GetCastShadowVal())
+      //if (light->GetCastShadowVal())
       {
         light->UpdateShadowCamera();
       }

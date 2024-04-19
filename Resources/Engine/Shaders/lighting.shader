@@ -24,6 +24,7 @@
 	<uniform name = "LightData.shadowAtlasCoord" size = "16"/>
 	<uniform name = "LightData.shadowBias" size = "16"/>
 	<uniform name = "LightData.activeCount"/>
+	<uniform name = "activeLightIndices" size = "16"/>
 	<uniform name = "shadowDistance" />
 
 	<source>
@@ -62,6 +63,7 @@ struct _LightData
 };
 uniform _LightData LightData;
 uniform float shadowDistance;
+uniform int activeLightIndices[16];
 
 uniform sampler2DArray s_texture8; // Shadow atlas
 
@@ -275,8 +277,10 @@ vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamPos, vec
 {
 	vec3 irradiance = vec3(0.0);
 
-	for (int i = 0; i < LightData.activeCount; i++)
+	for (int ii = 0; ii < LightData.activeCount; ii++)
 	{
+		int i = activeLightIndices[ii];
+		
 		if (LightData.type[i] == 2) // Point light
 		{
 			// radius check and attenuation
@@ -586,8 +590,10 @@ vec3 BlinnPhongLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamP
 	float shadow = 1.0;
 	vec3 irradiance = vec3(0.0);
 
-	for (int i = 0; i < LightData.activeCount; i++)
+	for (int ii = 0; ii < LightData.activeCount; ii++)
 	{
+		int i = activeLightIndices[ii];
+
 		shadow = 1.0;
 		vec3 diffuse = vec3(0.0);
 		vec3 specular = vec3(0.0);
