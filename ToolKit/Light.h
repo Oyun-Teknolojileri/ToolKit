@@ -45,6 +45,9 @@ namespace ToolKit
     virtual LightType GetLightType() = 0;
 
    protected:
+
+     void InvalidateSpatialCaches() override;
+
     void UpdateShadowCameraTransform();
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;

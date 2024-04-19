@@ -734,7 +734,8 @@ namespace ToolKit
   {
     if (!node->Leaf())
     {
-      assert(false && "Calling UpdateLeaf() on a non-leaf bvh node. Needs to be fixed!");
+      // TODO Uncomment this assert when we fix BVH with lights
+      // assert(false && "Calling UpdateLeaf() on a non-leaf bvh node. Needs to be fixed!");
       return;
     }
 

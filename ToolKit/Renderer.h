@@ -148,7 +148,7 @@ namespace ToolKit
       static constexpr uint SpecularIBLLods        = 7;
       static constexpr uint BrdfLutTextureSize     = 512;
       static constexpr float ShadowBiasMultiplier  = 0.0001f;
-      static constexpr uint LightCacheSize         = 16;
+      static constexpr uint LightCacheSize         = 256;
     };
 
    private:

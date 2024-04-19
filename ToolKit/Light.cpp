@@ -137,6 +137,12 @@ namespace ToolKit
     m_shadowMapMaterial->Init();
   }
 
+  void Light::InvalidateSpatialCaches()
+  {
+    Super::InvalidateSpatialCaches();
+    m_invalidatedForLightCache = true;
+  }
+
   void Light::UpdateShadowCameraTransform()
   {
     Mat4 lightTs = m_node->GetTransform();
