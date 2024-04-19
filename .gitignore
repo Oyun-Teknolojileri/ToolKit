@@ -78,3 +78,6 @@ Import/build
 /Dependency/tkimgui/build
 /Dependency/tkimgui/lib
 /Import/assimp-vc143-mt.lib
+/Import/assimp-vc143-mtd.lib
+/Import/Assimplog.txt
+/Import/Log.txt
