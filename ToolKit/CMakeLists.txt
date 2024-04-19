@@ -49,21 +49,15 @@ if (NOT WEB_BUILD)
 	set(TK_LINK_LIB zlibstatic minizip OpenGL32)
 endif()
 
-if (DEFINED WIN_BUILD OR WEB_BUILD)
-	set(TKLibName TKLib)
-else ()
-	set(TKLibName ToolKit)
-endif()
+add_library(ToolKitStatic STATIC ${SOURCES})
+target_link_libraries(ToolKitStatic PRIVATE ${TK_LINK_LIB})
 
-add_library(${TKLibName} STATIC ${SOURCES})
-target_link_libraries(${TKLibName} PRIVATE ${TK_LINK_LIB})
-
-set_target_properties(${TKLibName} PROPERTIES
+set_target_properties(ToolKitStatic PROPERTIES
 		ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
 		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
 )
 
 if (MSVC_COMPILER)
-    target_precompile_headers(${TKLibName} PRIVATE ${PCH_HEADER})
+    target_precompile_headers(ToolKitStatic PRIVATE ${PCH_HEADER})
 endif()
