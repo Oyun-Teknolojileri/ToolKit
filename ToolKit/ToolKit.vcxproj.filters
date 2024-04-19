@@ -247,6 +247,9 @@
     <ClCompile Include="BVH.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="LightCache.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -521,6 +524,9 @@
     </ClInclude>
     <ClInclude Include="BVH.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="LightCache.h">
+      <Filter>Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

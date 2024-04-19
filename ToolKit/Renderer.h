@@ -9,6 +9,7 @@
 
 #include "Camera.h"
 #include "GpuProgram.h"
+#include "LightCache.h"
 #include "Primative.h"
 #include "RenderState.h"
 #include "Sky.h"
@@ -104,11 +105,6 @@ namespace ToolKit
      */
     void SetCamera(CameraPtr camera, bool setLens);
 
-    /**
-     * Sets the lights that will be used during rendering.
-     */
-    void SetLightCache(const LightRawPtrArray& lights);
-
     int GetMaxArrayTextureLayers();
 
     void BindProgramOfMaterial(Material* material);
@@ -134,7 +130,6 @@ namespace ToolKit
 
     // The set contains gpuPrograms that has up to date per frame uniforms.
     std::unordered_set<uint> m_gpuProgramHasFrameUpdates;
-    std::unordered_set<uint> m_gpuProgramHasLightCache;
 
     bool m_renderOnlyLighting                 = false;
 
@@ -153,10 +148,11 @@ namespace ToolKit
       static constexpr uint SpecularIBLLods        = 7;
       static constexpr uint BrdfLutTextureSize     = 512;
       static constexpr float ShadowBiasMultiplier  = 0.0001f;
+      static constexpr uint LightCacheSize         = 16;
     };
 
    private:
-    LightRawPtrArray m_lightCache;
+    LightCache<RHIConstants::LightCacheSize> m_lightCache;
 
     GpuProgramPtr m_currentProgram = nullptr;
 

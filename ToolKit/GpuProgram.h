@@ -46,6 +46,7 @@ namespace ToolKit
     ShaderPtrArray m_shaders;
     ULongID m_activeMaterialID      = 0;
     ULongID m_activeMaterialVersion = 0;
+    uint16_t m_lightCacheVersion    = 0;
 
    private:
     std::unordered_map<Uniform, int> m_defaultUniformLocation;

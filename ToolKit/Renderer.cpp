@@ -62,8 +62,6 @@ namespace ToolKit
     m_shadowAtlas                   = nullptr;
   }
 
-  void Renderer::SetLightCache(const LightRawPtrArray& lights) { m_lightCache = lights; }
-
   int Renderer::GetMaxArrayTextureLayers()
   {
     if (m_maxArrayTextureLayers == -1)
@@ -1161,19 +1159,44 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    if (m_gpuProgramHasLightCache.find(program->m_handle) == m_gpuProgramHasLightCache.end())
+    // Check if the cache has the lights that is going to rendered
+    for (uint i = 0; i < job.lights.size(); ++i)
     {
-      m_gpuProgramHasLightCache.insert(program->m_handle);
-
-      int lightCount = (int) m_lightCache.size();
-      if (m_lightCache.size() > RHIConstants::MaxLightsPerObject)
+      bool foundInCache = false;
+      Light* light      = job.lights[i];
+      int indexInCache  = m_lightCache.Contains(light);
+      if (indexInCache != -1)
       {
-        lightCount = RHIConstants::MaxLightsPerObject;
+        if (light->m_invalidatedForLightCache)
+        {
+          m_lightCache.UpdateVersion();
+          light->m_invalidatedForLightCache = false;
+        }
+        else
+        {
+          light->m_lightCacheIndex = indexInCache;
+        }
       }
+      else
+      {
+        m_lightCache.Add(light);
+      }
+    }
 
+    // When cache is invalidated, update the cache for this program
+    if (program->m_lightCacheVersion != m_lightCache.GetVersion())
+    {
+      program->m_lightCacheVersion = m_lightCache.GetVersion();
+
+      int lightCount               = RHIConstants::LightCacheSize;
+      Light** lightsInCache        = m_lightCache.GetLights();
       for (int i = 0; i < lightCount; i++)
       {
-        Light* currLight = m_lightCache[i];
+        Light* currLight = lightsInCache[i];
+        if (currLight == nullptr)
+        {
+          continue;
+        }
 
         // Point light uniforms
         if (currLight->GetLightType() == Light::Point)
@@ -1284,12 +1307,12 @@ namespace ToolKit
     }
 
     GLint loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_ACTIVECOUNT);
-    glUniform1i(loc, (int) job.lightIndices.size());
+    glUniform1i(loc, (int) job.lights.size());
 
-    for (int i = 0; i < job.lightIndices.size(); ++i)
+    for (int i = 0; i < job.lights.size(); ++i)
     {
       loc = program->GetDefaultUniformLocation(Uniform::ACTIVE_LIGHT_INDICES, i);
-      glUniform1i(loc, job.lightIndices[i]);
+      glUniform1i(loc, job.lights[i]->m_lightCacheIndex);
     }
 
     // Bind shadow map if activated

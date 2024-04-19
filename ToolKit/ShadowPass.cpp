@@ -63,8 +63,9 @@ namespace ToolKit
     for (LightPtr& light : m_lights)
     {
       light->InitShadowMapDepthMaterial();
-      if (DirectionalLight* dLight = light->As<DirectionalLight>())
+      if (light->GetLightType() == Light::LightType::Directional)
       {
+        DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
         dLight->UpdateShadowFrustum(m_params.viewCamera, m_params.scene->GetSceneBoundary());
       }
 

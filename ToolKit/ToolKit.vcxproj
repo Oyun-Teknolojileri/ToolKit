@@ -46,6 +46,7 @@
     <ClCompile Include="GpuProgram.cpp" />
     <ClCompile Include="GradientSky.cpp" />
     <ClCompile Include="Light.cpp" />
+    <ClCompile Include="LightCache.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MaterialComponent.cpp" />
@@ -139,6 +140,7 @@
     <ClInclude Include="GlErrorReporter.h" />
     <ClInclude Include="GpuProgram.h" />
     <ClInclude Include="GradientSky.h" />
+    <ClInclude Include="LightCache.h" />
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="MobileSceneRenderPath.h" />

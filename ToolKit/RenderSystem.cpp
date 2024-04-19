@@ -66,7 +66,6 @@ namespace ToolKit
     if (m_renderer)
     {
       m_renderer->m_gpuProgramHasFrameUpdates.clear();
-      m_renderer->m_gpuProgramHasLightCache.clear();
     }
 
     // Immediate execution.

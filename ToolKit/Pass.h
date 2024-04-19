@@ -57,7 +57,7 @@ namespace ToolKit
     Mat4 WorldTransform;     //!< World transform of the entity.
     AnimData animData;       //!< Animation data of render job.
 
-    std::vector<int> lightIndices;
+    LightRawPtrArray lights;
   };
 
   typedef RenderJobArray::iterator RenderJobItr;
@@ -124,8 +124,7 @@ namespace ToolKit
                                  BVHPtr bvh,
                                  LightPtrArray& lights,
                                  CameraPtr camera,
-                                 const EnvironmentComponentPtrArray& environments,
-                                 LightRawPtrArray& lightCache);
+                                 const EnvironmentComponentPtrArray& environments);
 
     static void UpdateLightCache(LightRawPtrArray& lightCache, LightPtrArray& lights);
 

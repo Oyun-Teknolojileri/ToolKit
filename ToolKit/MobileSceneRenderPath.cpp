@@ -47,8 +47,6 @@ namespace ToolKit
 
     renderer->SetShadowAtlas(Cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
-    renderer->SetLightCache(m_lightCache);
-
     // Shadow pass
     m_passArray.push_back(m_shadowPass);
 
@@ -111,8 +109,7 @@ namespace ToolKit
                                          m_params.Scene->m_bvh,
                                          m_params.Lights,
                                          m_params.Cam,
-                                         m_params.Scene->GetEnvironmentVolumes(),
-                                         m_lightCache);
+                                         m_params.Scene->GetEnvironmentVolumes());
 
     m_shadowPass->m_params.scene      = m_params.Scene;
     m_shadowPass->m_params.viewCamera = m_params.Cam;

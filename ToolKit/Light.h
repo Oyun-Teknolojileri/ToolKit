@@ -64,14 +64,15 @@ namespace ToolKit
     TKDeclareParam(float, BleedingReduction);
 
     Mat4 m_shadowMapCameraProjectionViewMatrix;
-    float m_shadowMapCameraFar     = 1.0f;
-    CameraPtr m_shadowCamera       = nullptr;
-    int m_shadowAtlasLayer         = -1;
-    Vec2 m_shadowAtlasCoord        = Vec2(-1.0f);
-    bool m_shadowResolutionUpdated = false;
-    MeshPtr m_volumeMesh           = nullptr;
+    float m_shadowMapCameraFar      = 1.0f;
+    CameraPtr m_shadowCamera        = nullptr;
+    int m_shadowAtlasLayer          = -1;
+    Vec2 m_shadowAtlasCoord         = Vec2(-1.0f);
+    bool m_shadowResolutionUpdated  = false;
+    MeshPtr m_volumeMesh            = nullptr;
 
-    int m_lightCacheIndex          = -1;
+    bool m_invalidatedForLightCache = false;
+    int m_lightCacheIndex           = -1;
 
    protected:
     MaterialPtr m_shadowMapMaterial = nullptr;

@@ -23,8 +23,6 @@
 #include "TKProfiler.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
 
@@ -61,6 +59,20 @@ namespace ToolKit
   {
     Super::ParameterEventConstructor();
 
+    m_invalidatedForLightCache;
+
+    ParamColor().m_onValueChangedFn.clear();
+    ParamColor().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
+                                              { m_invalidatedForLightCache = true; });
+
+    ParamIntensity().m_onValueChangedFn.clear();
+    ParamIntensity().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
+                                                  { m_invalidatedForLightCache = true; });
+
+    ParamCastShadow().m_onValueChangedFn.clear();
+    ParamCastShadow().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
+                                                   { m_invalidatedForLightCache = true; });
+
     ParamShadowRes().m_onValueChangedFn.clear();
     ParamShadowRes().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
@@ -71,7 +83,8 @@ namespace ToolKit
           {
             if (GetCastShadowVal())
             {
-              m_shadowResolutionUpdated = true;
+              m_shadowResolutionUpdated  = true;
+              m_invalidatedForLightCache = true;
             }
           }
           else
@@ -79,6 +92,22 @@ namespace ToolKit
             newVal = oldVal;
           }
         });
+
+    ParamPCFSamples().m_onValueChangedFn.clear();
+    ParamPCFSamples().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
+                                                   { m_invalidatedForLightCache = true; });
+
+    ParamPCFRadius().m_onValueChangedFn.clear();
+    ParamPCFRadius().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
+                                                  { m_invalidatedForLightCache = true; });
+
+    ParamShadowBias().m_onValueChangedFn.clear();
+    ParamShadowBias().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
+                                                   { m_invalidatedForLightCache = true; });
+
+    ParamBleedingReduction().m_onValueChangedFn.clear();
+    ParamBleedingReduction().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
+                                                          { m_invalidatedForLightCache = true; });
   }
 
   MaterialPtr Light::GetShadowMaterial() { return m_shadowMapMaterial; }
@@ -163,6 +192,8 @@ namespace ToolKit
   {
     FitViewFrustumIntoLightFrustum(m_shadowCamera, cameraView, shadowVolume);
     UpdateShadowCamera();
+
+    m_invalidatedForLightCache = true;
   }
 
   XmlNode* DirectionalLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -334,6 +365,7 @@ namespace ToolKit
             EntityPtr self = Self<PointLight>();
             bvh->UpdateEntity(self);
           }
+          m_invalidatedForLightCache = true;
         });
   }
 
@@ -434,7 +466,12 @@ namespace ToolKit
             EntityPtr self = Self<PointLight>();
             bvh->UpdateEntity(self);
           }
+          m_invalidatedForLightCache = true;
         });
+
+    ParamInnerAngle().m_onValueChangedFn.clear();
+    ParamInnerAngle().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
+                                                   { m_invalidatedForLightCache = true; });
 
     ParamOuterAngle().m_onValueChangedFn.clear();
     ParamOuterAngle().m_onValueChangedFn.push_back(
@@ -447,6 +484,7 @@ namespace ToolKit
             EntityPtr self = Self<PointLight>();
             bvh->UpdateEntity(self);
           }
+          m_invalidatedForLightCache = true;
         });
   }
 } // namespace ToolKit

@@ -157,7 +157,6 @@ namespace ToolKit
           light->UpdateShadowCamera();
         }
 
-        /* TODO
         RenderJobArray jobs;
         RenderJobProcessor::CreateRenderJobs({ntt}, jobs, false);
         if (!jobs.empty())
@@ -174,7 +173,6 @@ namespace ToolKit
             }
           }
         }
-        */
       }
 
       m_selectedEntities.push_back(id);
