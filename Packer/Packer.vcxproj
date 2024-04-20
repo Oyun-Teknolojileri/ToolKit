@@ -80,6 +80,9 @@
     </Link>
     <PostBuildEvent />
     <PreBuildEvent />
+    <PreBuildEvent>
+      <Command>$(SolutionDir)BuildScripts\WinBuildDebug.bat</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -102,6 +105,9 @@
     </Link>
     <PostBuildEvent />
     <PreBuildEvent />
+    <PreBuildEvent>
+      <Command>$(SolutionDir)BuildScripts\WinBuildRelWithDebugInfo.bat</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
