@@ -13,8 +13,8 @@ if (${EDITOR_BUILD})
 	set(TKLibName ToolKit)
 	set(TKDebugLibName ToolKit_d)
 else ()
-	set(TKLibName TKLib)
-	set(TKDebugLibName TKLib_d)
+	set(TKLibName ToolKitStatic)
+	set(TKDebugLibName ToolKitStatic_d)
 endif ()
 
 #if not a path is provided, try fetching it from the path file.
@@ -123,8 +123,8 @@ if (WEB_BUILD)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Bin")
 
 	add_executable(${PROJECT_NAME} ${SOURCE} ${HEADERS})
-	target_link_libraries(${PROJECT_NAME} debug "${TOOLKIT_DIR}/Bin/TKLib_d.a")
-	target_link_libraries(${PROJECT_NAME} optimized "${TOOLKIT_DIR}/Bin/TKLib.a")
+	target_link_libraries(${PROJECT_NAME} debug "${TOOLKIT_DIR}/Bin/ToolKitStatic_d.a")
+	target_link_libraries(${PROJECT_NAME} optimized "${TOOLKIT_DIR}/Bin/ToolKitStatic.a")
 	target_link_libraries(${PROJECT_NAME} "${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/libminizip.a")
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TK_CXX_FLAGS} -s USE_SDL=2")
@@ -170,7 +170,9 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>)
 
 #For hot reload rename the previous output
-set(DLL $<SHELL_PATH:$<TARGET_FILE:${PROJECT_NAME}>>)
-set(PDB $<SHELL_PATH:$<TARGET_PDB_FILE:${PROJECT_NAME}>>)
+if (${EDITOR_BUILD})
+	set(DLL $<SHELL_PATH:$<TARGET_FILE:${PROJECT_NAME}>>)
+	set(PDB $<SHELL_PATH:$<TARGET_PDB_FILE:${PROJECT_NAME}>>)
 
-add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -Ddll=${DLL} -Dpdb=${PDB} -Dtmp="${OUTDIR}/tmp" -P "${CMAKE_SOURCE_DIR}/CMakeHotReload.cmake")
+	add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -Ddll=${DLL} -Dpdb=${PDB} -Dtmp="${OUTDIR}/tmp" -P "${CMAKE_SOURCE_DIR}/CMakeHotReload.cmake")
+endif()

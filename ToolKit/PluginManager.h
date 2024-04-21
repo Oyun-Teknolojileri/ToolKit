@@ -16,7 +16,7 @@ namespace ToolKit
   // Platform dependent function callback decelerations.
   // Each platform suppose to fill these callbacks inside the plugin manager for functioning properly.
   typedef void* ModuleHandle;
-  typedef GamePlugin*(__cdecl* FunctionAdress)();
+  typedef GamePlugin*(TK_STDCAL* FunctionAdress)();
   typedef std::function<ModuleHandle(StringView)> LoadModuleFn;
   typedef std::function<void(ModuleHandle)> FreeModuleFn;
   typedef std::function<void*(ModuleHandle, StringView)> GetFunctionFn;
