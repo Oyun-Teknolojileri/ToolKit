@@ -5,8 +5,6 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#pragma once
-
 #include "SceneRenderPath.h"
 
 #include "Scene.h"

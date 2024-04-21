@@ -3,10 +3,7 @@ cmake_minimum_required(VERSION 3.21.0)
 if (CLANG_COMPILER)
 	add_definitions(-include stdafx.h)
 
-	# Huge amount of warning messages appears in the output when compiling
-	# If there is an error, it is too difficult to notice.
-	# Remove -w flag if you want to see the warnings
-	SET(TK_CXX_FLAGS " -std=c++17 -w")
+	SET(TK_CXX_FLAGS " -std=c++17")
 	if (NOT TK_CXX_EXTRA STREQUAL "")
 		SET(TK_CXX_FLAGS "${TK_CXX_FLAGS} ${TK_CXX_EXTRA}")
 	endif()

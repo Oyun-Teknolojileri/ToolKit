@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.6)
 
-project("toolkit")
+project("ToolKit")
 
 # Use file(GLOB ...) to collect all .cpp files in the ToolKit directory.
 file(GLOB TOOLKIT_SOURCES ${TOOLKIT_DIR}/ToolKit/*.cpp)
@@ -26,6 +26,7 @@ find_library(SDL2 SDL2)
 find_library(SDL2main SDL2main)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-parentheses -Wno-switch")
 
 # Creates your game shared library. The name must be the same as the
 # one used for loading in your Kotlin/Java or AndroidManifest.txt files.
@@ -33,7 +34,6 @@ add_library(main SHARED
         ${GAME_SOURCES}
         ${UNZIP_SOURCES}
         ${TOOLKIT_SOURCES}) # Include the list of Toolkit sources here
-
 
 # if(ANDROID_ABI STREQUAL armeabi-v7a)
 #   set_target_properties(${TARGET} PROPERTIES COMPILE_FLAGS -mfpu=neon)
