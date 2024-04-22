@@ -1175,7 +1175,7 @@ namespace ToolKit
       }
       else
       {
-        light->m_lightCacheIndex = m_lightCache.Add(light);
+        light->m_lightCacheIndex = m_lightCache.Add(light, true);
         m_lightCache.UpdateVersion();
       }
     }

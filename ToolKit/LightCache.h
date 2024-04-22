@@ -16,9 +16,15 @@ namespace ToolKit
     ~LightCache() { Reset(); }
 
     // Returns the index of light in cache
-    inline int Add(LightPtr light)
+    inline int Add(LightPtr light, bool rendererCache = false)
     {
-      int index                 = m_leastFreqUsedLightIndex;
+      int index = m_leastFreqUsedLightIndex;
+
+      if (rendererCache && m_lightCache[index] != nullptr)
+      {
+        m_lightCache[index]->m_lightCacheIndex = -1;
+      }
+
       m_lightCache[index]       = light;
       m_lightVersion[index]     = light->m_lightCacheVersion;
       m_leastFreqUsedLightIndex = (index + 1) % T;
@@ -28,12 +34,18 @@ namespace ToolKit
       return index;
     }
 
-    inline void AddToIndex(LightPtr light, int index)
+    inline void AddToIndex(LightPtr light, int index, bool rendererCache = false)
     {
       if (m_leastFreqUsedLightIndex == index)
       {
         m_leastFreqUsedLightIndex++;
       }
+
+      if (rendererCache && m_lightCache[index] != nullptr)
+      {
+        m_lightCache[index]->m_lightCacheIndex = -1;
+      }
+
       m_lightCache[index]   = light;
       m_lightVersion[index] = light->m_lightCacheVersion;
 
