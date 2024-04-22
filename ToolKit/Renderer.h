@@ -10,7 +10,9 @@
 #include "Camera.h"
 #include "GpuProgram.h"
 #include "LightCache.h"
+#include "LightDataBuffer.h"
 #include "Primative.h"
+#include "RHIConstants.h"
 #include "RenderState.h"
 #include "Sky.h"
 #include "Types.h"
@@ -139,20 +141,9 @@ namespace ToolKit
      */
     bool m_ignoreRenderingCulledObjectWarning = false;
 
-    struct RHIConstants
-    {
-      static constexpr ubyte TextureSlotCount      = 32;
-      static constexpr ubyte MaxLightsPerObject    = 16;
-      static constexpr uint ShadowAtlasSlot        = 8;
-      static constexpr uint ShadowAtlasTextureSize = 2048;
-      static constexpr uint SpecularIBLLods        = 7;
-      static constexpr uint BrdfLutTextureSize     = 512;
-      static constexpr float ShadowBiasMultiplier  = 0.0001f;
-      static constexpr uint LightCacheSize         = 256;
-    };
-
    private:
     LightCache<RHIConstants::LightCacheSize> m_lightCache;
+    LightDataBuffer m_lightDataBuffer;
 
     GpuProgramPtr m_currentProgram = nullptr;
 
@@ -202,5 +193,4 @@ namespace ToolKit
     uint m_gpuTimerQuery                           = 0;
     float m_cpuTime                                = 0.0f;
   };
-
 } // namespace ToolKit

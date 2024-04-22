@@ -79,7 +79,7 @@ namespace ToolKit
         {
           const float val = std::get<float>(newVal);
 
-          if (val > 0.0f && val < Renderer::RHIConstants::ShadowAtlasTextureSize + 0.1f)
+          if (val > 0.0f && val < RHIConstants::ShadowAtlasTextureSize + 0.1f)
           {
             if (GetCastShadowVal())
             {

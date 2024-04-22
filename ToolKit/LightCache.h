@@ -14,25 +14,23 @@ namespace ToolKit
    public:
     LightCache() { Reset(); }
 
-    ~LightCache() { m_leastFreqUsedLightIndices.clear(); }
+    ~LightCache() { Reset(); }
 
     inline void Add(LightPtr light)
     {
-      uint lfuIndex = m_leastFreqUsedLightIndices.front();
-      m_leastFreqUsedLightIndices.pop_front();
+      int index                 = m_leastFreqUsedLightIndex;
 
-      m_lightCache[lfuIndex] = light;
-      m_leastFreqUsedLightIndices.push_back(lfuIndex);
+      m_lightCache[index]       = light;
+      m_leastFreqUsedLightIndex = (index + 1) % T;
 
       UpdateVersion();
     }
 
     void Reset()
     {
-      m_leastFreqUsedLightIndices.clear();
+      m_leastFreqUsedLightIndex = 0;
       for (uint i = 0; i < T; ++i)
       {
-        m_leastFreqUsedLightIndices.push_back(i);
         m_lightCache[i] = nullptr;
       }
       m_lightCacheVersion++;
@@ -60,8 +58,8 @@ namespace ToolKit
 
    private:
     LightPtr m_lightCache[T];
-    std::deque<int> m_leastFreqUsedLightIndices;
-    uint16_t m_lightCacheVersion = 1;
+    int m_leastFreqUsedLightIndex = 0;
+    uint16_t m_lightCacheVersion  = 1;
   };
 
 } // namespace ToolKit

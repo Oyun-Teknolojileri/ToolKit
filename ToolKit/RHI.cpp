@@ -14,6 +14,7 @@ namespace ToolKit
   GLuint RHI::m_currentDrawFramebufferID = -1; // max unsigned integer
   GLuint RHI::m_currentFramebufferID     = -1; // max unsigned integer
   GLuint RHI::m_currentVAO               = -1; // max unsigned integer
+  GLuint RHI::m_currentUniformBufferId   = -1; // max unsigned integer
   bool RHI::m_initialized                = false;
 
   std::unordered_map<uint, uint> RHI::m_slotTextureIDmap;
@@ -134,6 +135,15 @@ namespace ToolKit
       glBindVertexArray(VAO);
 
       m_currentVAO = VAO;
+    }
+  }
+
+  void RHI::BindUniformBuffer(GLuint bufferId)
+  {
+    if (m_currentUniformBufferId != bufferId)
+    {
+      m_currentUniformBufferId = bufferId;
+      glBindBuffer(GL_UNIFORM_BUFFER, bufferId);
     }
   }
 

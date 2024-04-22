@@ -417,7 +417,7 @@ namespace ToolKit
     for (int i = 0; i < startIndex; i++)
     {
       job.lights.push_back(lights[i]);
-      if (i >= Renderer::RHIConstants::MaxLightsPerObject)
+      if (i >= RHIConstants::MaxLightsPerObject)
       {
         break;
       }
@@ -434,7 +434,7 @@ namespace ToolKit
     {
       for (const EntityPtr& lightEntity : bvhNode->m_lights)
       {
-        if (job.lights.size() >= Renderer::RHIConstants::MaxLightsPerObject)
+        if (job.lights.size() >= RHIConstants::MaxLightsPerObject)
         {
           return;
         }
@@ -459,6 +459,29 @@ namespace ToolKit
         }
       }
     }
+
+    /*
+    for (int i = startIndex; i < lights.size(); ++i)
+    {
+      LightPtr& light = lights[i];
+      if (light->GetLightType() == Light::LightType::Spot)
+      {
+        SpotLightPtr spot = Cast<SpotLight>(light);
+        if (FrustumBoxIntersection(spot->m_frustumCache, job.BoundingBox) != IntersectResult::Outside)
+        {
+          job.lights.push_back(spot);
+        }
+      }
+      else
+      {
+        PointLightLightPtr point = Cast<PointLight>(light);
+        if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))
+        {
+          job.lights.push_back(point);
+        }
+      }
+    }
+    */
   }
 
   void RenderJobProcessor::AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights)

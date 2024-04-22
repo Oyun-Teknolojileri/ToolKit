@@ -13,14 +13,13 @@
 #include "Logger.h"
 #include "Material.h"
 #include "RHI.h"
+#include "RHIConstants.h"
 #include "RenderSystem.h"
 #include "Shader.h"
 #include "TKImage.h"
 #include "TKOpenGL.h"
 #include "TKStats.h"
 #include "ToolKit.h"
-
-
 
 namespace ToolKit
 {
@@ -327,16 +326,16 @@ namespace ToolKit
 
     assert(targetTextureSettings.Target == GraphicTypes::TargetCubeMap);
 
-    m_textureId                    = cubeMapTarget->m_textureId;
-    m_width                        = cubeMapTarget->m_width;
-    m_height                       = cubeMapTarget->m_height;
+    m_textureId                = cubeMapTarget->m_textureId;
+    m_width                    = cubeMapTarget->m_width;
+    m_height                   = cubeMapTarget->m_height;
 
-    m_settings                     = targetTextureSettings;
-    m_initiated                    = true;
+    m_settings                 = targetTextureSettings;
+    m_initiated                = true;
 
-    cubeMapTarget->m_initiated     = false;
-    cubeMapTarget->m_textureId     = 0;
-    cubeMapTarget                  = nullptr;
+    cubeMapTarget->m_initiated = false;
+    cubeMapTarget->m_textureId = 0;
+    cubeMapTarget              = nullptr;
   }
 
   void CubeMap::Load()
@@ -534,7 +533,7 @@ namespace ToolKit
                          // Pre-filtered and mip mapped environment map
                          m_specularEnvMap = renderer->GenerateSpecularEnvMap(m_cubemap,
                                                                              m_specularIBLTextureSize,
-                                                                             Renderer::RHIConstants::SpecularIBLLods);
+                                                                             RHIConstants::SpecularIBLLods);
 
                          // Generate diffuse irradience cubemap images
                          size             = m_width / 32;

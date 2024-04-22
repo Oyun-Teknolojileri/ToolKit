@@ -11,11 +11,10 @@
 #include "EnvironmentComponent.h"
 #include "Material.h"
 #include "MathUtil.h"
+#include "RHIConstants.h"
 #include "RenderSystem.h"
 #include "Shader.h"
 #include "TKStats.h"
-
-
 
 namespace ToolKit
 {
@@ -163,14 +162,13 @@ namespace ToolKit
 
   void GradientSky::GenerateIrradianceCubemap(Renderer* renderer)
   {
-    HdriPtr hdr          = GetHdri();
-    uint size            = (uint) GetIBLTextureSizeVal().GetValue<int>();
+    HdriPtr hdr           = GetHdri();
+    uint size             = (uint) GetIBLTextureSizeVal().GetValue<int>();
 
     // hdr->m_diffuseEnvMap = hdr->m_cubemap;
-    hdr->m_diffuseEnvMap = renderer->GenerateDiffuseEnvMap(hdr->m_cubemap, size);
+    hdr->m_diffuseEnvMap  = renderer->GenerateDiffuseEnvMap(hdr->m_cubemap, size);
 
-    hdr->m_specularEnvMap =
-        renderer->GenerateSpecularEnvMap(hdr->m_cubemap, size, Renderer::RHIConstants::SpecularIBLLods);
+    hdr->m_specularEnvMap = renderer->GenerateSpecularEnvMap(hdr->m_cubemap, size, RHIConstants::SpecularIBLLods);
   }
 
   XmlNode* GradientSky::SerializeImp(XmlDocument* doc, XmlNode* parent) const
