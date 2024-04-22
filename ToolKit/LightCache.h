@@ -30,6 +30,10 @@ namespace ToolKit
 
     inline void AddToIndex(LightPtr light, int index)
     {
+      if (m_leastFreqUsedLightIndex == index)
+      {
+        m_leastFreqUsedLightIndex++;
+      }
       m_lightCache[index]   = light;
       m_lightVersion[index] = light->m_lightCacheVersion;
 
