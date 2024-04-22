@@ -59,19 +59,16 @@ namespace ToolKit
   {
     Super::ParameterEventConstructor();
 
-    m_invalidatedForLightCache;
-
     ParamColor().m_onValueChangedFn.clear();
-    ParamColor().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                              { m_invalidatedForLightCache = true; });
+    ParamColor().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void {});
 
     ParamIntensity().m_onValueChangedFn.clear();
     ParamIntensity().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                                  { m_invalidatedForLightCache = true; });
+                                                  { InvalidateLightCache(); });
 
     ParamCastShadow().m_onValueChangedFn.clear();
     ParamCastShadow().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                                   { m_invalidatedForLightCache = true; });
+                                                   { InvalidateLightCache(); });
 
     ParamShadowRes().m_onValueChangedFn.clear();
     ParamShadowRes().m_onValueChangedFn.push_back(
@@ -79,12 +76,12 @@ namespace ToolKit
         {
           const float val = std::get<float>(newVal);
 
-          if (val > 0.0f && val < Renderer::RHIConstants::ShadowAtlasTextureSize + 0.1f)
+          if (val > 0.0f && val < RHIConstants::ShadowAtlasTextureSize + 0.1f)
           {
             if (GetCastShadowVal())
             {
-              m_shadowResolutionUpdated  = true;
-              m_invalidatedForLightCache = true;
+              m_shadowResolutionUpdated = true;
+              InvalidateLightCache();
             }
           }
           else
@@ -95,19 +92,19 @@ namespace ToolKit
 
     ParamPCFSamples().m_onValueChangedFn.clear();
     ParamPCFSamples().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                                   { m_invalidatedForLightCache = true; });
+                                                   { InvalidateLightCache(); });
 
     ParamPCFRadius().m_onValueChangedFn.clear();
     ParamPCFRadius().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                                  { m_invalidatedForLightCache = true; });
+                                                  { InvalidateLightCache(); });
 
     ParamShadowBias().m_onValueChangedFn.clear();
     ParamShadowBias().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                                   { m_invalidatedForLightCache = true; });
+                                                   { InvalidateLightCache(); });
 
     ParamBleedingReduction().m_onValueChangedFn.clear();
     ParamBleedingReduction().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                                          { m_invalidatedForLightCache = true; });
+                                                          { InvalidateLightCache(); });
   }
 
   MaterialPtr Light::GetShadowMaterial() { return m_shadowMapMaterial; }
@@ -140,7 +137,7 @@ namespace ToolKit
   void Light::InvalidateSpatialCaches()
   {
     Super::InvalidateSpatialCaches();
-    m_invalidatedForLightCache = true;
+    InvalidateLightCache();
   }
 
   void Light::UpdateShadowCameraTransform()
@@ -179,6 +176,12 @@ namespace ToolKit
     }
   }
 
+  void Light::InvalidateLightCache()
+  {
+    m_invalidatedForLightCache = true;
+    m_lightCacheVersion++;
+  }
+
   // DirectionalLight
   //////////////////////////////////////////
 
@@ -199,7 +202,7 @@ namespace ToolKit
     FitViewFrustumIntoLightFrustum(m_shadowCamera, cameraView, shadowVolume);
     UpdateShadowCamera();
 
-    m_invalidatedForLightCache = true;
+    InvalidateLightCache();
   }
 
   XmlNode* DirectionalLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -371,7 +374,7 @@ namespace ToolKit
             EntityPtr self = Self<PointLight>();
             bvh->UpdateEntity(self);
           }
-          m_invalidatedForLightCache = true;
+          InvalidateLightCache();
         });
   }
 
@@ -472,12 +475,12 @@ namespace ToolKit
             EntityPtr self = Self<PointLight>();
             bvh->UpdateEntity(self);
           }
-          m_invalidatedForLightCache = true;
+          InvalidateLightCache();
         });
 
     ParamInnerAngle().m_onValueChangedFn.clear();
     ParamInnerAngle().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                                   { m_invalidatedForLightCache = true; });
+                                                   { InvalidateLightCache(); });
 
     ParamOuterAngle().m_onValueChangedFn.clear();
     ParamOuterAngle().m_onValueChangedFn.push_back(
@@ -490,7 +493,7 @@ namespace ToolKit
             EntityPtr self = Self<PointLight>();
             bvh->UpdateEntity(self);
           }
-          m_invalidatedForLightCache = true;
+          InvalidateLightCache();
         });
   }
 } // namespace ToolKit

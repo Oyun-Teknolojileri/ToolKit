@@ -7,6 +7,7 @@
 
 #include "GpuProgram.h"
 
+#include "RHIConstants.h"
 #include "Renderer.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
@@ -151,7 +152,7 @@ namespace ToolKit
 
       LinkProgram(program->m_handle, vertexShader->m_shaderHandle, fragmentShader->m_shaderHandle);
       glUseProgram(program->m_handle);
-      for (ubyte slotIndx = 0; slotIndx < Renderer::RHIConstants::TextureSlotCount; slotIndx++)
+      for (ubyte slotIndx = 0; slotIndx < RHIConstants::TextureSlotCount; slotIndx++)
       {
         GLint loc = glGetUniformLocation(program->m_handle, ("s_texture" + std::to_string(slotIndx)).c_str());
         if (loc != -1)
@@ -165,7 +166,7 @@ namespace ToolKit
       {
         for (const Uniform& uniform : shader->m_uniforms)
         {
-          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(uniform));
+          GLint loc                                  = glGetUniformLocation(program->m_handle, GetUniformName(uniform));
           program->m_defaultUniformLocation[uniform] = loc;
         }
 

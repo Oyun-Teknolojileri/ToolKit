@@ -11,6 +11,7 @@
 #include "GpuProgram.h"
 #include "LightCache.h"
 #include "Primative.h"
+#include "RHIConstants.h"
 #include "RenderState.h"
 #include "Sky.h"
 #include "Types.h"
@@ -115,7 +116,7 @@ namespace ToolKit
 
    private:
     void FeedUniforms(const GpuProgramPtr& program, const RenderJob& job);
-    void FeedLightUniforms(const GpuProgramPtr& program, const RenderJob& job);
+    void FeedLightUniforms(GpuProgramPtr& program, const RenderJob& job);
 
    public:
     uint m_frameCount = 0;
@@ -138,18 +139,6 @@ namespace ToolKit
      * To prevent debug message, set this to true.
      */
     bool m_ignoreRenderingCulledObjectWarning = false;
-
-    struct RHIConstants
-    {
-      static constexpr ubyte TextureSlotCount      = 32;
-      static constexpr ubyte MaxLightsPerObject    = 16;
-      static constexpr uint ShadowAtlasSlot        = 8;
-      static constexpr uint ShadowAtlasTextureSize = 2048;
-      static constexpr uint SpecularIBLLods        = 7;
-      static constexpr uint BrdfLutTextureSize     = 512;
-      static constexpr float ShadowBiasMultiplier  = 0.0001f;
-      static constexpr uint LightCacheSize         = 256;
-    };
 
    private:
     LightCache<RHIConstants::LightCacheSize> m_lightCache;

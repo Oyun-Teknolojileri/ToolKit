@@ -1,45 +1,54 @@
 #pragma once
 
+#include "Light.h"
 #include "Types.h"
-
-#include <deque>
 
 namespace ToolKit
 {
-  class Light;
-
   template <int T>
   class TK_API LightCache
   {
+    friend class Renderer;
+
    public:
     LightCache() { Reset(); }
 
-    ~LightCache() { m_leastFreqUsedLightIndices.clear(); }
+    ~LightCache() { Reset(); }
 
-    inline void Add(LightPtr light)
+    // Returns the index of light in cache
+    inline int Add(LightPtr light)
     {
-      uint lfuIndex = m_leastFreqUsedLightIndices.front();
-      m_leastFreqUsedLightIndices.pop_front();
+      int index                 = m_leastFreqUsedLightIndex;
+      m_lightCache[index]       = light;
+      m_lightVersion[index]     = light->m_lightCacheVersion;
+      m_leastFreqUsedLightIndex = (index + 1) % T;
 
-      m_lightCache[lfuIndex] = light;
-      m_leastFreqUsedLightIndices.push_back(lfuIndex);
+      UpdateVersion();
+
+      return index;
+    }
+
+    inline void AddToIndex(LightPtr light, int index)
+    {
+      m_lightCache[index]   = light;
+      m_lightVersion[index] = light->m_lightCacheVersion;
 
       UpdateVersion();
     }
 
-    void Reset()
+    inline void Reset()
     {
-      m_leastFreqUsedLightIndices.clear();
-      for (uint i = 0; i < T; ++i)
+      m_leastFreqUsedLightIndex = 0;
+      for (int i = 0; i < T; ++i)
       {
-        m_leastFreqUsedLightIndices.push_back(i);
-        m_lightCache[i] = nullptr;
+        m_lightCache[i]   = nullptr;
+        m_lightVersion[i] = 0;
       }
-      m_lightCacheVersion++;
+      m_cacheVersion++;
     }
 
     // returns the index when found, returns -1 when not found
-    int Contains(const LightPtr& light)
+    inline int Contains(const LightPtr& light)
     {
       for (int i = 0; i < T; ++i)
       {
@@ -52,16 +61,36 @@ namespace ToolKit
       return -1;
     }
 
-    uint16_t GetVersion() const { return m_lightCacheVersion; }
+    inline uint16_t GetVersion() const { return m_cacheVersion; }
 
-    void UpdateVersion() { m_lightCacheVersion++; }
+    inline void UpdateVersion() { m_cacheVersion++; }
 
-    LightPtr* GetLights() { return m_lightCache; }
+    inline LightPtr* GetLights() { return m_lightCache; }
+
+    inline void UpdateLightSlotVersion(int index)
+    {
+      if (m_lightCache[index] != nullptr)
+      {
+        m_lightVersion[index] = m_lightCache[index]->m_lightCacheVersion;
+      }
+    }
+
+    inline uint16 GetLightSlotVersion(int index)
+    {
+      if (m_lightCache[index] != nullptr)
+      {
+        return m_lightVersion[index];
+      }
+      return 0;
+    }
 
    private:
     LightPtr m_lightCache[T];
-    std::deque<int> m_leastFreqUsedLightIndices;
-    uint16_t m_lightCacheVersion = 1;
+    uint16 m_lightVersion[T];
+    uint16 m_cacheVersion         = 1;
+    // std::deque<int> m_leastFreqUsedLightIndices; // We do not have Remove() function because we don't need it yet. So
+    // this array is needless. Instead we can simply use an index.
+    int m_leastFreqUsedLightIndex = 0;
   };
 
 } // namespace ToolKit

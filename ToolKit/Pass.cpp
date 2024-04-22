@@ -417,7 +417,7 @@ namespace ToolKit
     for (int i = 0; i < startIndex; i++)
     {
       job.lights.push_back(lights[i]);
-      if (i >= Renderer::RHIConstants::MaxLightsPerObject)
+      if (i >= RHIConstants::MaxLightsPerObject)
       {
         break;
       }
@@ -434,7 +434,7 @@ namespace ToolKit
     {
       for (const EntityPtr& lightEntity : bvhNode->m_lights)
       {
-        if (job.lights.size() >= Renderer::RHIConstants::MaxLightsPerObject)
+        if (job.lights.size() >= RHIConstants::MaxLightsPerObject)
         {
           return;
         }

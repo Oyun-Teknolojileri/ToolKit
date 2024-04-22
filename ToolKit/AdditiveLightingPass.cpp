@@ -13,6 +13,7 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "TKProfiler.h"
+#include "RHIConstants.h"
 
 namespace ToolKit
 {
@@ -139,8 +140,8 @@ namespace ToolKit
       return;
     }
 
-    float atlasTextureSize = (float) Renderer::RHIConstants::ShadowAtlasTextureSize;
-    float bias             = light->GetShadowBiasVal() * Renderer::RHIConstants::ShadowBiasMultiplier;
+    float atlasTextureSize = (float) RHIConstants::ShadowAtlasTextureSize;
+    float bias             = light->GetShadowBiasVal() * RHIConstants::ShadowBiasMultiplier;
     const Mat4& projView   = light->m_shadowMapCameraProjectionViewMatrix;
     float atlasResRatio    = light->GetShadowResVal() / atlasTextureSize;
 

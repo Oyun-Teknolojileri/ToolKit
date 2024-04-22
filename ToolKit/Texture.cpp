@@ -534,7 +534,7 @@ namespace ToolKit
                          // Pre-filtered and mip mapped environment map
                          m_specularEnvMap = renderer->GenerateSpecularEnvMap(m_cubemap,
                                                                              m_specularIBLTextureSize,
-                                                                             Renderer::RHIConstants::SpecularIBLLods);
+                                                                             RHIConstants::SpecularIBLLods);
 
                          // Generate diffuse irradience cubemap images
                          size             = m_width / 32;

@@ -149,6 +149,7 @@
     <ClInclude Include="PostProcessPass.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="RHI.h" />
+    <ClInclude Include="RHIConstants.h" />
     <ClInclude Include="SceneRenderPath.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Logger.h" />

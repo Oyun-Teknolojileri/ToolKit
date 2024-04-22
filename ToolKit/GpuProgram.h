@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "LightCache.h"
+#include "RHIConstants.h"
 #include "Shader.h"
 #include "ShaderUniform.h"
 #include "Types.h"
@@ -46,13 +48,14 @@ namespace ToolKit
     ShaderPtrArray m_shaders;
     ULongID m_activeMaterialID      = 0;
     ULongID m_activeMaterialVersion = 0;
-    uint16_t m_lightCacheVersion    = 0;
 
    private:
     std::unordered_map<Uniform, int> m_defaultUniformLocation;
     std::unordered_map<Uniform, IntArray> m_defaultArrayUniformLocations;
 
     std::unordered_map<String, ShaderUniform> m_customUniforms;
+
+    LightCache<RHIConstants::LightCacheSize> m_lightCache;
   };
 
   constexpr int TKGpuPipelineStages = 2; //!< Number of programmable pipeline stages.

@@ -45,8 +45,7 @@ namespace ToolKit
     virtual LightType GetLightType() = 0;
 
    protected:
-
-     void InvalidateSpatialCaches() override;
+    void InvalidateSpatialCaches() override;
 
     void UpdateShadowCameraTransform();
     void ParameterConstructor() override;
@@ -55,6 +54,8 @@ namespace ToolKit
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
     void UpdateLocalBoundingBox() override; //!< Sets volume meshes boundary as local bounding box.
+
+    void InvalidateLightCache();
 
    public:
     TKDeclareParam(Vec3, Color);
@@ -74,8 +75,10 @@ namespace ToolKit
     bool m_shadowResolutionUpdated  = false;
     MeshPtr m_volumeMesh            = nullptr;
 
-    bool m_invalidatedForLightCache = false;
-    int m_lightCacheIndex           = -1;
+    bool m_invalidatedForLightCache = false; //<! Used by renderer to update the invaidated light data
+    int m_lightCacheIndex           = -1;    //<! Index of light in the light cache in renderer
+    bool m_updateGPUData            = false; //<! Internal value used by renderer
+    uint16 m_lightCacheVersion      = 1;
 
    protected:
     MaterialPtr m_shadowMapMaterial = nullptr;

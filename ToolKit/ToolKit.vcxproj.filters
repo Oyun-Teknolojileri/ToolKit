@@ -525,6 +525,9 @@
     <ClInclude Include="LightCache.h">
       <Filter>Render</Filter>
     </ClInclude>
+    <ClInclude Include="RHIConstants.h">
+      <Filter>Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Entities">

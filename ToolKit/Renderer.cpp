@@ -1155,11 +1155,11 @@ namespace ToolKit
     }
   }
 
-  void Renderer::FeedLightUniforms(const GpuProgramPtr& program, const RenderJob& job)
+  void Renderer::FeedLightUniforms(GpuProgramPtr& program, const RenderJob& job)
   {
     CPU_FUNC_RANGE();
 
-    // Check if the cache has the lights that is going to rendered
+    // Update renderer light cache
     for (uint i = 0; i < job.lights.size(); ++i)
     {
       bool foundInCache = false;
@@ -1169,34 +1169,54 @@ namespace ToolKit
       {
         if (light->m_invalidatedForLightCache)
         {
-          m_lightCache.UpdateVersion();
           light->m_invalidatedForLightCache = false;
-        }
-        else
-        {
-          light->m_lightCacheIndex = indexInCache;
+          m_lightCache.UpdateVersion();
         }
       }
       else
       {
-        m_lightCache.Add(light);
+        light->m_lightCacheIndex = m_lightCache.Add(light);
+        m_lightCache.UpdateVersion();
       }
     }
 
-    // When cache is invalidated, update the cache for this program
-    if (program->m_lightCacheVersion != m_lightCache.GetVersion())
+    // Update the program light cache
+    if (program->m_lightCache.GetVersion() != m_lightCache.GetVersion())
     {
-      program->m_lightCacheVersion = m_lightCache.GetVersion();
+      program->m_lightCache.m_cacheVersion = m_lightCache.GetVersion();
 
-      int lightCount               = RHIConstants::LightCacheSize;
-      LightPtr* lightsInCache      = m_lightCache.GetLights();
-      for (int i = 0; i < lightCount; i++)
+      // Update program light cache
+      LightPtr* programLights              = program->m_lightCache.GetLights();
+      for (uint i = 0; i < job.lights.size(); ++i)
       {
-        LightPtr& currLight = lightsInCache[i];
-        if (currLight == nullptr)
+        LightPtr light     = job.lights[i];
+        LightPtr lightSlot = programLights[light->m_lightCacheIndex];
+        if (lightSlot == nullptr)
+        {
+          program->m_lightCache.AddToIndex(light, light->m_lightCacheIndex);
+          light->m_updateGPUData = true;
+        }
+        else
+        {
+          if (lightSlot != light ||
+              light->m_lightCacheVersion != program->m_lightCache.GetLightSlotVersion(light->m_lightCacheIndex))
+          {
+            program->m_lightCache.AddToIndex(light, light->m_lightCacheIndex);
+            light->m_updateGPUData = true;
+          }
+        }
+      }
+
+      // Update program gpu uniform data
+      for (LightPtr currLight : job.lights)
+      {
+        if (!currLight->m_updateGPUData)
         {
           continue;
         }
+
+        currLight->m_updateGPUData = false;
+        int i                      = currLight->m_lightCacheIndex;
 
         // Point light uniforms
         if (currLight->GetLightType() == Light::Point)
@@ -1290,15 +1310,15 @@ namespace ToolKit
           loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_SHADOWATLASLAYER, i);
           glUniform1f(loc, (GLfloat) currLight->m_shadowAtlasLayer);
 
-          const Vec2 coord = currLight->m_shadowAtlasCoord / (float) Renderer::RHIConstants::ShadowAtlasTextureSize;
+          const Vec2 coord = currLight->m_shadowAtlasCoord / (float) RHIConstants::ShadowAtlasTextureSize;
           loc              = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_SHADOWATLASCOORD, i);
           glUniform2fv(loc, 1, &coord.x);
 
           loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_SHADOWATLASRESRATIO, i);
-          glUniform1f(loc, currLight->GetShadowResVal() / Renderer::RHIConstants::ShadowAtlasTextureSize);
+          glUniform1f(loc, currLight->GetShadowResVal() / RHIConstants::ShadowAtlasTextureSize);
 
           loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_SHADOWBIAS, i);
-          glUniform1f(loc, currLight->GetShadowBiasVal() * Renderer::RHIConstants::ShadowBiasMultiplier);
+          glUniform1f(loc, currLight->GetShadowBiasVal() * RHIConstants::ShadowBiasMultiplier);
         }
 
         GLuint loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_CASTSHADOW, i);
