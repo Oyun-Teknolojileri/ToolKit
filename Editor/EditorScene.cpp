@@ -166,7 +166,7 @@ namespace ToolKit
 
           for (int i = 0; i < job.lights.size(); i++)
           {
-            Light* light = job.lights[i];
+            LightPtr& light = job.lights[i];
             if (!IsSelected(light->GetIdVal()))
             {
               AddToSelection(light->GetIdVal(), true);

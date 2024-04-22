@@ -16,7 +16,7 @@ namespace ToolKit
 
     ~LightCache() { m_leastFreqUsedLightIndices.clear(); }
 
-    inline void Add(Light* light)
+    inline void Add(LightPtr light)
     {
       uint lfuIndex = m_leastFreqUsedLightIndices.front();
       m_leastFreqUsedLightIndices.pop_front();
@@ -39,7 +39,7 @@ namespace ToolKit
     }
 
     // returns the index when found, returns -1 when not found
-    int Contains(const Light* light)
+    int Contains(const LightPtr& light)
     {
       for (int i = 0; i < T; ++i)
       {
@@ -56,10 +56,10 @@ namespace ToolKit
 
     void UpdateVersion() { m_lightCacheVersion++; }
 
-    Light** GetLights() { return m_lightCache; }
+    LightPtr* GetLights() { return m_lightCache; }
 
    private:
-    Light* m_lightCache[T];
+    LightPtr m_lightCache[T];
     std::deque<int> m_leastFreqUsedLightIndices;
     uint16_t m_lightCacheVersion = 1;
   };

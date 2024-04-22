@@ -1163,7 +1163,7 @@ namespace ToolKit
     for (uint i = 0; i < job.lights.size(); ++i)
     {
       bool foundInCache = false;
-      Light* light      = job.lights[i];
+      LightPtr light    = job.lights[i];
       int indexInCache  = m_lightCache.Contains(light);
       if (indexInCache != -1)
       {
@@ -1189,10 +1189,10 @@ namespace ToolKit
       program->m_lightCacheVersion = m_lightCache.GetVersion();
 
       int lightCount               = RHIConstants::LightCacheSize;
-      Light** lightsInCache        = m_lightCache.GetLights();
+      LightPtr* lightsInCache      = m_lightCache.GetLights();
       for (int i = 0; i < lightCount; i++)
       {
-        Light* currLight = lightsInCache[i];
+        LightPtr& currLight = lightsInCache[i];
         if (currLight == nullptr)
         {
           continue;
@@ -1201,14 +1201,14 @@ namespace ToolKit
         // Point light uniforms
         if (currLight->GetLightType() == Light::Point)
         {
-          PointLight* pLight = static_cast<PointLight*>(currLight);
+          PointLightLightPtr pLight = Cast<PointLight>(currLight);
 
-          Vec3 color         = pLight->GetColorVal();
-          float intensity    = pLight->GetIntensityVal();
-          Vec3 pos           = pLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-          float radius       = pLight->GetRadiusVal();
+          const Vec3& color         = pLight->GetColorVal();
+          float intensity           = pLight->GetIntensityVal();
+          const Vec3& pos           = pLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+          float radius              = pLight->GetRadiusVal();
 
-          GLint loc          = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
+          GLint loc                 = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
           glUniform1i(loc, (int) 2);
           loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
           glUniform3fv(loc, 1, &color.x);
@@ -1222,12 +1222,12 @@ namespace ToolKit
         // Directional light uniforms
         else if (currLight->GetLightType() == Light::Directional)
         {
-          DirectionalLight* dLight = static_cast<DirectionalLight*>(currLight);
-          Vec3 color               = dLight->GetColorVal();
-          float intensity          = dLight->GetIntensityVal();
-          Vec3 dir                 = dLight->GetComponentFast<DirectionComponent>()->GetDirection();
+          DirectionalLightPtr dLight = Cast<DirectionalLight>(currLight);
+          const Vec3& color          = dLight->GetColorVal();
+          float intensity            = dLight->GetIntensityVal();
+          const Vec3& dir            = dLight->GetComponentFast<DirectionComponent>()->GetDirection();
 
-          GLint loc                = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
+          GLint loc                  = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
           glUniform1i(loc, (GLint) 1);
           loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
           glUniform3fv(loc, 1, &color.x);
@@ -1239,16 +1239,16 @@ namespace ToolKit
         // Spot light uniforms
         else if (currLight->GetLightType() == Light::Spot)
         {
-          SpotLight* sLight = static_cast<SpotLight*>(currLight);
-          Vec3 color        = sLight->GetColorVal();
-          float intensity   = sLight->GetIntensityVal();
-          Vec3 pos          = sLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-          Vec3 dir          = sLight->GetComponentFast<DirectionComponent>()->GetDirection();
-          float radius      = sLight->GetRadiusVal();
-          float outAngle    = glm::cos(glm::radians(sLight->GetOuterAngleVal() / 2.0f));
-          float innAngle    = glm::cos(glm::radians(sLight->GetInnerAngleVal() / 2.0f));
+          SpotLightPtr sLight = Cast<SpotLight>(currLight);
+          const Vec3& color   = sLight->GetColorVal();
+          float intensity     = sLight->GetIntensityVal();
+          const Vec3& pos     = sLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+          const Vec3& dir     = sLight->GetComponentFast<DirectionComponent>()->GetDirection();
+          float radius        = sLight->GetRadiusVal();
+          float outAngle      = glm::cos(glm::radians(sLight->GetOuterAngleVal() / 2.0f));
+          float innAngle      = glm::cos(glm::radians(sLight->GetInnerAngleVal() / 2.0f));
 
-          GLint loc         = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
+          GLint loc           = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
           glUniform1i(loc, (GLint) 3);
           loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
           glUniform3fv(loc, 1, &color.x);
