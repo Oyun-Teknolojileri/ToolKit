@@ -1,5 +1,6 @@
 #pragma once
 
+#include "TKStats.h"
 #include "Types.h"
 
 #include <deque>
@@ -79,7 +80,14 @@ namespace ToolKit
 
     uint16_t GetVersion() const { return m_lightCacheVersion; }
 
-    void UpdateVersion() { m_lightCacheVersion++; }
+    void UpdateVersion()
+    {
+      if (TKStats* stats = GetTKStats())
+      {
+        stats->m_lightCacheInvalidationPerFrame++;
+      }
+      m_lightCacheVersion++;
+    }
 
     LightPtr* GetLights() { return m_lightCache; }
 

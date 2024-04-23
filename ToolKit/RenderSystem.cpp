@@ -14,8 +14,6 @@
 #include "TKStats.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
   RenderPath::RenderPath() {}
