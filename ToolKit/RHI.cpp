@@ -9,12 +9,12 @@
 
 namespace ToolKit
 {
-  GLuint RHI::m_currentReadFramebufferID      = TK_UINT_MAX;
-  GLuint RHI::m_currentDrawFramebufferID      = TK_UINT_MAX;
-  GLuint RHI::m_currentFramebufferID          = TK_UINT_MAX;
-  GLuint RHI::m_currentVAO                    = TK_UINT_MAX;
-  GLuint RHI::m_currentUniformBufferId        = TK_UINT_MAX;
-  GLuint RHI::m_currentUniformBufferBaseId[4] = {TK_UINT_MAX, TK_UINT_MAX, TK_UINT_MAX, TK_UINT_MAX};
+  GLuint RHI::m_currentReadFramebufferID      = UINT_MAX;
+  GLuint RHI::m_currentDrawFramebufferID      = UINT_MAX;
+  GLuint RHI::m_currentFramebufferID          = UINT_MAX;
+  GLuint RHI::m_currentVAO                    = UINT_MAX;
+  GLuint RHI::m_currentUniformBufferId        = UINT_MAX;
+  GLuint RHI::m_currentUniformBufferBaseId[4] = {UINT_MAX, UINT_MAX, UINT_MAX, UINT_MAX};
   bool RHI::m_initialized                     = false;
 
   std::unordered_map<uint, uint> RHI::m_slotTextureIDmap;
