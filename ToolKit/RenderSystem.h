@@ -110,8 +110,6 @@ namespace ToolKit
 
     void TestSRGBBackBuffer();
 
-    void RemoveLightFromRendererCache(const Light* light) const;
-
    private:
     void ExecuteTaskImp(RenderTask& task);
 

@@ -33,13 +33,13 @@ namespace ToolKit
 
         if (m_lightCache[index] == nullptr)
         {
-          m_lightCache[index] = light;
+          m_lightCache[index] = light->Self<Light>();
           m_nextIndex         = (index + 1) % CACHE_SIZE;
           break;
         }
         else if (m_lightCache[index]->m_drawCallVersion != m_drawCallVersion)
         {
-          m_lightCache[index] = light;
+          m_lightCache[index] = light->Self<Light>();
           m_nextIndex         = (index + 1) % CACHE_SIZE;
           break;
         }
@@ -66,7 +66,7 @@ namespace ToolKit
     {
       for (int i = 0; i < CACHE_SIZE; ++i)
       {
-        if (m_lightCache[i] == light)
+        if (m_lightCache[i].get() == light)
         {
           return i;
         }
@@ -86,13 +86,13 @@ namespace ToolKit
       m_lightCacheVersion++;
     }
 
-    Light** GetLights() { return m_lightCache; }
+    LightPtr* GetLights() { return m_lightCache; }
 
     void RemoveFromCache(const Light* light)
     {
       for (int i = 0; i < CACHE_SIZE; ++i)
       {
-        if (m_lightCache[i] == light)
+        if (m_lightCache[i].get() == light)
         {
           m_lightCache[i] = nullptr;
           return;
@@ -101,7 +101,7 @@ namespace ToolKit
     }
 
    private:
-    Light* m_lightCache[CACHE_SIZE];
+    LightPtr m_lightCache[CACHE_SIZE];
     int m_nextIndex            = 0;
     uint16 m_lightCacheVersion = 1;
 

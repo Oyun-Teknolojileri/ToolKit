@@ -38,13 +38,7 @@ namespace ToolKit
     m_shadowCamera->SetOrthographicScaleVal(1.0f);
   }
 
-  Light::~Light()
-  {
-    if (RenderSystem* rs = GetRenderSystem())
-    {
-      rs->RemoveLightFromRendererCache(this);
-    }
-  }
+  Light::~Light() {}
 
   void Light::NativeConstruct() { Super::NativeConstruct(); }
 

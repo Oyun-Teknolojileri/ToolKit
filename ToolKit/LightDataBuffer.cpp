@@ -33,13 +33,13 @@ namespace ToolKit
     }
   }
 
-  void LightDataBuffer::Update(Light** cachedLights, int size, const LightRawPtrArray& lightsToRender)
+  void LightDataBuffer::Update(LightPtr* cachedLights, int size, const LightRawPtrArray& lightsToRender)
   {
     UpdateLightData(cachedLights, size);
     UpdateLightIndices(lightsToRender);
   }
 
-  void LightDataBuffer::UpdateLightData(Light** cachedLights, int size)
+  void LightDataBuffer::UpdateLightData(LightPtr* cachedLights, int size)
   {
     for (int i = 0; i < size; ++i)
     {
@@ -48,7 +48,7 @@ namespace ToolKit
         continue;
       }
 
-      const Light* currLight = cachedLights[i];
+      const Light* currLight = cachedLights[i].get();
 
       // Point light uniforms
       if (currLight->GetLightType() == Light::Point)

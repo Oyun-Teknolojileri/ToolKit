@@ -209,9 +209,4 @@ namespace ToolKit
     }
   }
 
-  void RenderSystem::RemoveLightFromRendererCache(const Light* light) const
-  {
-    m_renderer->m_lightCache.RemoveFromCache(light);
-  }
-
 } // namespace ToolKit
