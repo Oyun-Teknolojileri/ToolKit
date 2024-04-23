@@ -13,6 +13,7 @@
 #include "Material.h"
 #include "MathUtil.h"
 #include "Mesh.h"
+#include "RHIConstants.h"
 #include "Scene.h"
 #include "TKProfiler.h"
 #include "TKStats.h"
@@ -63,8 +64,9 @@ namespace ToolKit
     for (LightPtr& light : m_lights)
     {
       light->InitShadowMapDepthMaterial();
-      if (DirectionalLight* dLight = light->As<DirectionalLight>())
+      if (light->GetLightType() == Light::LightType::Directional)
       {
+        DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
         dLight->UpdateShadowFrustum(m_params.viewCamera, m_params.scene->GetSceneBoundary());
       }
 
@@ -248,8 +250,7 @@ namespace ToolKit
       resolutions.push_back((int) light->GetShadowResVal());
     }
 
-    std::vector<BinPack2D::PackedRect> rects =
-        m_packer.Pack(resolutions, Renderer::RHIConstants::ShadowAtlasTextureSize);
+    std::vector<BinPack2D::PackedRect> rects = m_packer.Pack(resolutions, RHIConstants::ShadowAtlasTextureSize);
 
     for (int i = 0; i < rects.size(); ++i)
     {
@@ -268,7 +269,7 @@ namespace ToolKit
       resolutions.push_back((int) light->GetShadowResVal());
     }
 
-    rects = m_packer.Pack(resolutions, Renderer::RHIConstants::ShadowAtlasTextureSize);
+    rects = m_packer.Pack(resolutions, RHIConstants::ShadowAtlasTextureSize);
 
     for (int i = 0; i < rects.size(); ++i)
     {
@@ -357,16 +358,12 @@ namespace ToolKit
                                    false};
 
       m_shadowFramebuffer->DetachColorAttachment(Framebuffer::Attachment::ColorAttachment0);
-      m_shadowAtlas->Reconstruct(Renderer::RHIConstants::ShadowAtlasTextureSize,
-                                 Renderer::RHIConstants::ShadowAtlasTextureSize,
-                                 set);
+      m_shadowAtlas->Reconstruct(RHIConstants::ShadowAtlasTextureSize, RHIConstants::ShadowAtlasTextureSize, set);
 
       if (!m_shadowFramebuffer->Initialized())
       {
-        m_shadowFramebuffer->Init({Renderer::RHIConstants::ShadowAtlasTextureSize,
-                                   Renderer::RHIConstants::ShadowAtlasTextureSize,
-                                   false,
-                                   true});
+        m_shadowFramebuffer->Init(
+            {RHIConstants::ShadowAtlasTextureSize, RHIConstants::ShadowAtlasTextureSize, false, true});
       }
 
       m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, 0);

@@ -11,8 +11,6 @@
 #include "App.h"
 #include "Prefab.h"
 
-
-
 namespace ToolKit
 {
   namespace Editor

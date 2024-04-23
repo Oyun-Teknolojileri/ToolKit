@@ -151,7 +151,7 @@ namespace ToolKit
 
       LinkProgram(program->m_handle, vertexShader->m_shaderHandle, fragmentShader->m_shaderHandle);
       glUseProgram(program->m_handle);
-      for (ubyte slotIndx = 0; slotIndx < Renderer::RHIConstants::TextureSlotCount; slotIndx++)
+      for (ubyte slotIndx = 0; slotIndx < RHIConstants::TextureSlotCount; slotIndx++)
       {
         GLint loc = glGetUniformLocation(program->m_handle, ("s_texture" + std::to_string(slotIndx)).c_str());
         if (loc != -1)
@@ -160,12 +160,23 @@ namespace ToolKit
         }
       }
 
+      GLuint loc = glGetUniformBlockIndex(program->m_handle, "LightDataBuffer");
+      if (loc != GL_INVALID_INDEX)
+      {
+        glUniformBlockBinding(program->m_handle, loc, 0);
+      }
+      loc = glGetUniformBlockIndex(program->m_handle, "ActiveLightIndicesBuffer");
+      if (loc != GL_INVALID_INDEX)
+      {
+        glUniformBlockBinding(program->m_handle, loc, 1);
+      }
+
       // Register default uniform locations
       for (ShaderPtr shader : program->m_shaders)
       {
         for (const Uniform& uniform : shader->m_uniforms)
         {
-          GLint loc = glGetUniformLocation(program->m_handle, GetUniformName(uniform));
+          GLint loc                                  = glGetUniformLocation(program->m_handle, GetUniformName(uniform));
           program->m_defaultUniformLocation[uniform] = loc;
         }
 

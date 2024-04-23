@@ -172,7 +172,7 @@ namespace ToolKit
      */
     Entity* GetPrefabRoot() const;
 
-    void InvalidateSpatialCaches(); //!< BVH & Bounding boxes are invalidated.
+    virtual void InvalidateSpatialCaches(); //!< BVH & Bounding boxes are invalidated.
 
    protected:
     virtual Entity* CopyTo(Entity* other) const;

@@ -27,8 +27,6 @@
 #include "Threads.h"
 #include "UIManager.h"
 
-
-
 namespace ToolKit
 {
   HandleManager::HandleManager()
@@ -240,6 +238,7 @@ namespace ToolKit
   {
     ResetDrawCallCounter();
     ResetHWRenderPassCounter();
+    ResetLightCacheInvalidationPerFrame();
   }
 
   void Main::FrameUpdate()

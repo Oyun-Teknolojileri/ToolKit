@@ -39,12 +39,12 @@ namespace ToolKit
         bool* gpuTimer             = &GetEngineSettings().Graphics.enableGpuTimer;
         EditorViewportPtr viewport = g_app->GetViewport(g_3dViewport);
 
-        ImGui::Checkbox("##GpuProfileOn", gpuTimer);
-        UI::AddTooltipToLastItem("Have a negative impact on cpu performance.\nEnable it to see the gpu times.");
-        ImGui::SameLine();
         ImGui::Text("Viewport Resolution: %dx%d",
                     (int) viewport->m_wndContentAreaSize.x,
                     (int) viewport->m_wndContentAreaSize.y);
+        ImGui::Checkbox("##GpuProfileOn", gpuTimer);
+        UI::AddTooltipToLastItem("Have a negative impact on cpu performance.\nEnable it to see the gpu times.");
+        ImGui::SameLine();
         ImGui::Text("Render Time (gpu-ms): %.2f, FPS: %.2f", gpuTime, 1000.0f / gpuTime);
         ImGui::Text("Render Time (cpu-ms): %.2f, FPS: %.2f", cpuTime, 1000.0f / cpuTime);
         ImGui::Text("Editor FPS: %d", g_app->m_fps);
@@ -52,6 +52,7 @@ namespace ToolKit
         ImGui::Text("Total Draw Call: %llu", g_app->GetLastFrameDrawCallCount());
         ImGui::Text("Total Hardware Render Pass: %llu", g_app->GetLastFrameHWRenderPassCount());
         ImGui::Text("Approximate Total VRAM Usage: %llu MB", GetTotalVRAMUsageInMB());
+        ImGui::Text("Light Cache Invalidation Per Frame: %u", GetLightCacheInvalidationPerFrame());
       }
       ImGui::End();
     }

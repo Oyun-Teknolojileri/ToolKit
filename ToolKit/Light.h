@@ -42,9 +42,11 @@ namespace ToolKit
       Spot
     };
 
-    virtual LightType GetLightType() = 0;
+    virtual LightType GetLightType() const = 0;
 
    protected:
+    void InvalidateSpatialCaches() override;
+
     void UpdateShadowCameraTransform();
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
@@ -64,12 +66,16 @@ namespace ToolKit
     TKDeclareParam(float, BleedingReduction);
 
     Mat4 m_shadowMapCameraProjectionViewMatrix;
-    float m_shadowMapCameraFar     = 1.0f;
-    CameraPtr m_shadowCamera       = nullptr;
-    int m_shadowAtlasLayer         = -1;
-    Vec2 m_shadowAtlasCoord        = Vec2(-1.0f);
-    bool m_shadowResolutionUpdated = false;
-    MeshPtr m_volumeMesh           = nullptr;
+    float m_shadowMapCameraFar      = 1.0f;
+    CameraPtr m_shadowCamera        = nullptr;
+    int m_shadowAtlasLayer          = -1;
+    Vec2 m_shadowAtlasCoord         = Vec2(-1.0f);
+    bool m_shadowResolutionUpdated  = false;
+    MeshPtr m_volumeMesh            = nullptr;
+
+    bool m_invalidatedForLightCache = false; //<! Set this true if light data on GPU should be updated
+    int m_lightCacheIndex    = -1; //<! Used by renderer only! The index of this light in the renderers light cache.
+    uint16 m_drawCallVersion = 0;  //<! Used by renderer internally (Explained in LightCache.h)
 
    protected:
     MaterialPtr m_shadowMapMaterial = nullptr;
@@ -89,7 +95,7 @@ namespace ToolKit
     void NativeConstruct() override;
     void UpdateShadowFrustum(const CameraPtr cameraView, const BoundingBox& shadowVolume);
 
-    LightType GetLightType() override { return LightType::Directional; }
+    LightType GetLightType() const override { return LightType::Directional; }
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
@@ -117,7 +123,7 @@ namespace ToolKit
     PointLight();
     virtual ~PointLight();
 
-    LightType GetLightType() override { return LightType::Point; }
+    LightType GetLightType() const override { return LightType::Point; }
 
     void UpdateShadowCamera() override;
     float AffectDistance() override;
@@ -149,7 +155,7 @@ namespace ToolKit
 
     void NativeConstruct() override;
 
-    LightType GetLightType() override { return LightType::Spot; }
+    LightType GetLightType() const override { return LightType::Spot; }
 
     void UpdateShadowCamera() override;
     float AffectDistance() override;

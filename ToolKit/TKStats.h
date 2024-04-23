@@ -64,14 +64,27 @@ namespace ToolKit
     inline uint64 GetHWRenderPassCount() { return m_renderPassCount; }
 
    public:
-    float m_elapsedGpuRenderTime = 0.0f;
-    float m_elapsedCpuRenderTime = 0.0f;
+    float m_elapsedGpuRenderTime          = 0.0f;
+    float m_elapsedCpuRenderTime          = 0.0f;
+    uint m_lightCacheInvalidationPerFrame = 0;
 
    private:
     uint64 m_totalVRAMUsageInBytes = 0;
     uint64 m_drawCallCount         = 0;
     uint64 m_renderPassCount       = 0;
   };
+
+  TK_API inline uint64 GetLightCacheInvalidationPerFrame()
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      return tkStats->m_lightCacheInvalidationPerFrame;
+    }
+    else
+    {
+      return 0;
+    }
+  }
 
   TK_API inline uint64 GetTotalVRAMUsageInBytes()
   {
@@ -174,6 +187,14 @@ namespace ToolKit
     if (TKStats* tkStats = GetTKStats())
     {
       tkStats->RemoveHWRenderPass();
+    }
+  }
+
+  TK_API inline void ResetLightCacheInvalidationPerFrame()
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      tkStats->m_lightCacheInvalidationPerFrame = 0;
     }
   }
 

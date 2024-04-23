@@ -9,8 +9,6 @@
 
 #include "TKAssert.h"
 
-
-
 namespace ToolKit
 {
 
@@ -131,7 +129,7 @@ namespace ToolKit
     case Uniform::LIGHT_DATA_SHADOWBIAS:
       return "LightData.shadowBias";
     case Uniform::LIGHT_DATA_ACTIVECOUNT:
-      return "LightData.activeCount";
+      return "activeCount";
     case Uniform::IS_SKINNED:
       return "isSkinned";
     case Uniform::NUM_BONES:
@@ -162,6 +160,8 @@ namespace ToolKit
       return "modelNoTr";
     case Uniform::AO_ENABLED:
       return "aoEnabled";
+    case Uniform::ACTIVE_LIGHT_INDICES:
+      return "activeLightIndices";
     case Uniform::UNIFORM_MAX_INVALID:
     default:
       return "";

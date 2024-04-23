@@ -46,6 +46,8 @@ namespace ToolKit
 
     m_gpuProgramManager             = GetGpuProgramManager();
 
+    m_lightDataBuffer.Init();
+
     glGenQueries(1, &m_gpuTimerQuery);
   }
 
@@ -60,6 +62,8 @@ namespace ToolKit
     m_mat                           = nullptr;
     m_framebuffer                   = nullptr;
     m_shadowAtlas                   = nullptr;
+
+    m_lightDataBuffer.Destroy();
   }
 
   int Renderer::GetMaxArrayTextureLayers()
@@ -1159,119 +1163,59 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    for (int i = 0; i < (int) job.lights.size(); i++)
+    GLint loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_ACTIVECOUNT);
+    if (loc != -1)
     {
-      Light* currLight = job.lights[i];
-
-      // Point light uniforms
-      if (currLight->GetLightType() == Light::Point)
-      {
-        PointLight* pLight = static_cast<PointLight*>(currLight);
-
-        Vec3 color         = pLight->GetColorVal();
-        float intensity    = pLight->GetIntensityVal();
-        Vec3 pos           = pLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        float radius       = pLight->GetRadiusVal();
-
-        GLint loc          = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
-        glUniform1i(loc, (int) 2);
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
-        glUniform3fv(loc, 1, &color.x);
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_INTENSITY, i);
-        glUniform1f(loc, intensity);
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_POS, i);
-        glUniform3fv(loc, 1, &pos.x);
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_RADIUS, i);
-        glUniform1f(loc, radius);
-      }
-      // Directional light uniforms
-      else if (currLight->GetLightType() == Light::Directional)
-      {
-        DirectionalLight* dLight = static_cast<DirectionalLight*>(currLight);
-        Vec3 color               = dLight->GetColorVal();
-        float intensity          = dLight->GetIntensityVal();
-        Vec3 dir                 = dLight->GetComponentFast<DirectionComponent>()->GetDirection();
-
-        GLint loc                = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
-        glUniform1i(loc, (GLint) 1);
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
-        glUniform3fv(loc, 1, &color.x);
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_INTENSITY, i);
-        glUniform1f(loc, intensity);
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_DIR, i);
-        glUniform3fv(loc, 1, &dir.x);
-      }
-      // Spot light uniforms
-      else if (currLight->GetLightType() == Light::Spot)
-      {
-        SpotLight* sLight = static_cast<SpotLight*>(currLight);
-        Vec3 color        = sLight->GetColorVal();
-        float intensity   = sLight->GetIntensityVal();
-        Vec3 pos          = sLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        Vec3 dir          = sLight->GetComponentFast<DirectionComponent>()->GetDirection();
-        float radius      = sLight->GetRadiusVal();
-        float outAngle    = glm::cos(glm::radians(sLight->GetOuterAngleVal() / 2.0f));
-        float innAngle    = glm::cos(glm::radians(sLight->GetInnerAngleVal() / 2.0f));
-
-        GLint loc         = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_TYPE, i);
-        glUniform1i(loc, (GLint) 3);
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_COLOR, i);
-        glUniform3fv(loc, 1, &color.x);
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_INTENSITY, i);
-        glUniform1f(loc, intensity);
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_POS, i);
-        glUniform3fv(loc, 1, &pos.x);
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_DIR, i);
-        glUniform3fv(loc, 1, &dir.x);
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_RADIUS, i);
-        glUniform1f(loc, radius);
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_OUTANGLE, i);
-        glUniform1f(loc, outAngle);
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_INNANGLE, i);
-        glUniform1f(loc, innAngle);
-      }
-
-      bool castShadow = currLight->GetCastShadowVal();
-      if (castShadow)
-      {
-        GLint loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_PROJVIEWMATRIX, i);
-        glUniformMatrix4fv(loc, 1, GL_FALSE, &(currLight->m_shadowMapCameraProjectionViewMatrix)[0][0]);
-
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_SHADOWMAPCAMFAR, i);
-        glUniform1f(loc, currLight->m_shadowMapCameraFar);
-
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_BLEEDREDUCTION, i);
-        glUniform1f(loc, currLight->GetBleedingReductionVal());
-
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_PCFSAMPLES, i);
-        glUniform1i(loc, currLight->GetPCFSamplesVal());
-
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_PCFRADIUS, i);
-        glUniform1f(loc, currLight->GetPCFRadiusVal());
-
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_SOFTSHADOWS, i);
-        glUniform1i(loc, (int) (currLight->GetPCFSamplesVal() > 1));
-
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_SHADOWATLASLAYER, i);
-        glUniform1f(loc, (GLfloat) currLight->m_shadowAtlasLayer);
-
-        const Vec2 coord = currLight->m_shadowAtlasCoord / (float) Renderer::RHIConstants::ShadowAtlasTextureSize;
-        loc              = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_SHADOWATLASCOORD, i);
-        glUniform2fv(loc, 1, &coord.x);
-
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_SHADOWATLASRESRATIO, i);
-        glUniform1f(loc, currLight->GetShadowResVal() / Renderer::RHIConstants::ShadowAtlasTextureSize);
-
-        loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_SHADOWBIAS, i);
-        glUniform1f(loc, currLight->GetShadowBiasVal() * Renderer::RHIConstants::ShadowBiasMultiplier);
-      }
-
-      GLuint loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_CASTSHADOW, i);
-      glUniform1i(loc, (int) castShadow);
+      glUniform1i(loc, (int) job.lights.size());
     }
 
-    GLint loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_ACTIVECOUNT);
-    glUniform1i(loc, (int) job.lights.size());
+    if (job.lights.empty())
+    {
+      return;
+    }
+
+    m_lightCache.SetDrawCallVersion(m_drawCallVersion);
+
+    // Make sure the cache has the lights that is going to rendered
+    for (uint i = 0; i < job.lights.size(); ++i)
+    {
+      bool foundInCache        = false;
+      Light* light             = job.lights[i];
+      light->m_drawCallVersion = m_drawCallVersion;
+      int indexInCache         = m_lightCache.Contains(light);
+      if (indexInCache != -1)
+      {
+        if (light->m_invalidatedForLightCache)
+        {
+          m_lightCache.UpdateVersion();
+          light->m_invalidatedForLightCache = false;
+        }
+        light->m_lightCacheIndex = indexInCache;
+      }
+      else
+      {
+        light->m_lightCacheIndex = m_lightCache.Add(light);
+      }
+    }
+    m_drawCallVersion++;
+
+    // When cache is invalidated, update the cache for this program
+    if (program->m_lightCacheVersion != m_lightCache.GetVersion())
+    {
+      program->m_lightCacheVersion = m_lightCache.GetVersion();
+      m_lightDataBuffer.Update(m_lightCache.GetLights(), RHIConstants::LightCacheSize, job.lights);
+
+      RHI::BindUniformBuffer(m_lightDataBuffer.m_lightDataBufferId);
+      RHI::BindUniformBufferBase(m_lightDataBuffer.m_lightDataBufferId, 0);
+      glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LightData), &m_lightDataBuffer.m_lightData);
+    }
+
+    // Update light index array
+    m_lightDataBuffer.UpdateLightIndices(job.lights);
+
+    RHI::BindUniformBuffer(m_lightDataBuffer.m_lightIndicesBufferId);
+    RHI::BindUniformBufferBase(m_lightDataBuffer.m_lightIndicesBufferId, 1);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ActiveLightIndices), &m_lightDataBuffer.m_activeLightIndices);
 
     // Bind shadow map if activated
     if (m_shadowAtlas != nullptr)
