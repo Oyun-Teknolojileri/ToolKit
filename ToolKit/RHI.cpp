@@ -9,13 +9,13 @@
 
 namespace ToolKit
 {
-
-  GLuint RHI::m_currentReadFramebufferID = -1; // max unsigned integer
-  GLuint RHI::m_currentDrawFramebufferID = -1; // max unsigned integer
-  GLuint RHI::m_currentFramebufferID     = -1; // max unsigned integer
-  GLuint RHI::m_currentVAO               = -1; // max unsigned integer
-  GLuint RHI::m_currentUniformBufferId   = -1; // max unsigned integer
-  bool RHI::m_initialized                = false;
+  GLuint RHI::m_currentReadFramebufferID      = TK_UINT_MAX;
+  GLuint RHI::m_currentDrawFramebufferID      = TK_UINT_MAX;
+  GLuint RHI::m_currentFramebufferID          = TK_UINT_MAX;
+  GLuint RHI::m_currentVAO                    = TK_UINT_MAX;
+  GLuint RHI::m_currentUniformBufferId        = TK_UINT_MAX;
+  GLuint RHI::m_currentUniformBufferBaseId[4] = {TK_UINT_MAX, TK_UINT_MAX, TK_UINT_MAX, TK_UINT_MAX};
+  bool RHI::m_initialized                     = false;
 
   std::unordered_map<uint, uint> RHI::m_slotTextureIDmap;
 
@@ -144,6 +144,15 @@ namespace ToolKit
     {
       m_currentUniformBufferId = bufferId;
       glBindBuffer(GL_UNIFORM_BUFFER, bufferId);
+    }
+  }
+
+  void RHI::BindUniformBufferBase(GLuint bufferId, GLuint slot)
+  {
+    if (m_currentUniformBufferBaseId[slot] != bufferId)
+    {
+      m_currentUniformBufferBaseId[slot] = bufferId;
+      glBindBufferBase(GL_UNIFORM_BUFFER, slot, bufferId);
     }
   }
 

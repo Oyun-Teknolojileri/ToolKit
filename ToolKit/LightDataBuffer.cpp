@@ -13,10 +13,16 @@ namespace ToolKit
   {
     assert(!m_initialized && "LightDataBuffer is already initialized!");
 
-    glGenBuffers(1, &m_bufferId);
-    RHI::BindUniformBuffer(m_bufferId);
+    glGenBuffers(1, &m_lightDataBufferId);
+    RHI::BindUniformBuffer(m_lightDataBufferId);
     glBufferData(GL_UNIFORM_BUFFER,
                  sizeof(LightData),
+                 NULL,
+                 GL_DYNAMIC_COPY); // TODO check if dynamic_copy flag is correct
+    glGenBuffers(1, &m_lightIndicesBufferId);
+    RHI::BindUniformBuffer(m_lightIndicesBufferId);
+    glBufferData(GL_UNIFORM_BUFFER,
+                 sizeof(ActiveLightIndices),
                  NULL,
                  GL_DYNAMIC_COPY); // TODO check if dynamic_copy flag is correct
     RHI::BindUniformBuffer(0);
@@ -28,20 +34,27 @@ namespace ToolKit
   {
     if (m_initialized)
     {
-      glDeleteBuffers(1, &m_bufferId);
+      glDeleteBuffers(1, &m_lightDataBufferId);
+      glDeleteBuffers(2, &m_lightIndicesBufferId);
     }
   }
 
-  void LightDataBuffer::Update(LightPtr* lights, int size)
+  void LightDataBuffer::Update(LightPtr* cachedLights, int size, const LightPtrArray& lightsToRender)
+  {
+    UpdateLightData(cachedLights, size);
+    UpdateLightIndices(lightsToRender);
+  }
+
+  void LightDataBuffer::UpdateLightData(LightPtr* cachedLights, int size)
   {
     for (int i = 0; i < size; ++i)
     {
-      if (lights[i] == nullptr)
+      if (cachedLights[i] == nullptr)
       {
         continue;
       }
 
-      const LightPtr& currLight = lights[i];
+      const LightPtr& currLight = cachedLights[i];
 
       // Point light uniforms
       if (currLight->GetLightType() == Light::Point)
@@ -94,6 +107,14 @@ namespace ToolKit
         m_lightData.perLightData[i].shadowBias = currLight->GetShadowBiasVal() * RHIConstants::ShadowBiasMultiplier;
       }
       m_lightData.perLightData[i].castShadow = (int) castShadow;
+    }
+  }
+
+  void LightDataBuffer::UpdateLightIndices(const LightPtrArray& lightsToRender)
+  {
+    for (int i = 0; i < lightsToRender.size(); ++i)
+    {
+      m_activeLightIndices.activeLightIndices[i] = lightsToRender[i]->m_lightCacheIndex;
     }
   }
 } // namespace ToolKit

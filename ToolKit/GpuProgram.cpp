@@ -161,7 +161,15 @@ namespace ToolKit
       }
 
       GLuint loc = glGetUniformBlockIndex(program->m_handle, "LightDataBuffer");
-      glUniformBlockBinding(program->m_handle, loc, 0);
+      if (loc != GL_INVALID_INDEX)
+      {
+        glUniformBlockBinding(program->m_handle, loc, 0);
+      }
+      loc = glGetUniformBlockIndex(program->m_handle, "ActiveLightIndicesBuffer");
+      if (loc != GL_INVALID_INDEX)
+      {
+        glUniformBlockBinding(program->m_handle, loc, 1);
+      }
 
       // Register default uniform locations
       for (ShaderPtr shader : program->m_shaders)

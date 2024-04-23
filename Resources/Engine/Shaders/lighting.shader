@@ -6,7 +6,6 @@
 	<include name = "pbr.shader" />
 	<uniform name = "shadowDistance" />
 	<uniform name = "activeCount"/>
-	<uniform name = "activeLightIndices" size = "128"/>
 
 	<source>
 	<!--
@@ -41,13 +40,16 @@ struct _LightData
 	vec2 shadowAtlasCoord; // Between 0 and 1
 	float shadowBias;
 };
-layout (std140) uniform LightDataBuffer
+layout (std140) uniform LightDataBuffer // slot 0
 {
 	_LightData LightData[128];
 };
+layout (std140) uniform ActiveLightIndicesBuffer // slot 1
+{
+	ivec4 activeLightIndices[32]; // 32 = 128 / 4. Each component of a vector is a light index.
+};
 uniform float shadowDistance;
 uniform int activeCount;
-uniform int activeLightIndices[128];
 
 uniform sampler2DArray s_texture8; // Shadow atlas
 
@@ -263,7 +265,9 @@ vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamPos, vec
 
 	for (int ii = 0; ii < activeCount; ii++)
 	{
-		int i = activeLightIndices[ii];
+		int div = ii / 4;
+		int rem = ii % 4;
+		int i = activeLightIndices[div][rem];
 
 		if (LightData[i].type == 2) // Point light
 		{
@@ -576,7 +580,9 @@ vec3 BlinnPhongLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamP
 
 	for (int ii = 0; ii < activeCount; ii++)
 	{
-		int i = activeLightIndices[ii];
+		int div = ii / 4;
+		int rem = ii % 4;
+		int i = activeLightIndices[div][rem];
 
 		shadow = 1.0;
 		vec3 diffuse = vec3(0.0);

@@ -36,7 +36,12 @@ namespace ToolKit
 
   struct LightData
   {
-    PerLightData perLightData[RHIConstants::MaxLightsPerObject];
+    PerLightData perLightData[RHIConstants::LightCacheSize];
+  };
+
+  struct ActiveLightIndices
+  {
+    int activeLightIndices[RHIConstants::LightCacheSize];
   };
 
   class TK_API LightDataBuffer
@@ -47,11 +52,15 @@ namespace ToolKit
     void Init();
     void Destroy();
 
-    void Update(LightPtr* lights, int size);
+    void Update(LightPtr* cachedLights, int size, const LightPtrArray& lightsToRender);
+    void UpdateLightData(LightPtr* cachedLights, int size);
+    void UpdateLightIndices(const LightPtrArray& lightsToRender);
 
    public:
-    uint m_bufferId = 0;
+    uint m_lightDataBufferId    = 0;
+    uint m_lightIndicesBufferId = 0;
     LightData m_lightData;
+    ActiveLightIndices m_activeLightIndices;
 
    private:
     bool m_initialized = false;
