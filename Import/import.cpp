@@ -5,7 +5,6 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-
 #include <Animation.h>
 #include <DirectionComponent.h>
 #include <Material.h>
@@ -80,6 +79,42 @@ void TrunckToFileName(string& fullPath)
 
 namespace ToolKit
 {
+  Vec3 toVec3(aiVector3f vec)
+  {
+    Vec3 gv;
+    gv.x = vec.x;
+    gv.y = vec.y;
+    gv.z = vec.z;
+    return gv;
+  }
+
+  // Right handed row major to Right handed column major.
+  Mat4 toMat4(aiMatrix4x4 mat)
+  {
+    Mat4 gm;
+    gm[0][0] = mat.a1;
+    gm[0][1] = mat.a2;
+    gm[0][2] = mat.a3;
+    gm[0][3] = mat.a4;
+
+    gm[1][0] = mat.b1;
+    gm[1][1] = mat.b2;
+    gm[1][2] = mat.b3;
+    gm[1][3] = mat.b4;
+
+    gm[2][0] = mat.c1;
+    gm[2][1] = mat.c2;
+    gm[2][2] = mat.c3;
+    gm[2][3] = mat.c4;
+
+    gm[3][0] = mat.d1;
+    gm[3][1] = mat.d2;
+    gm[3][2] = mat.d3;
+    gm[3][3] = mat.d4;
+
+    return gm;
+  }
+
   class BoneNode
   {
    public:
@@ -787,7 +822,7 @@ namespace ToolKit
 
   std::vector<LightPtr> sceneLights;
 
-  void ImportLights(string& filePath)
+  void ImportLights()
   {
     for (uint i = 0; i < g_scene->mNumLights; i++)
     {
@@ -856,9 +891,38 @@ namespace ToolKit
     }
   }
 
+  std::vector<CameraPtr> sceneCameras;
+
+  void ImportCameras()
+  {
+    for (uint i = 0; i < g_scene->mNumCameras; i++)
+    {
+      aiCamera* cam = g_scene->mCameras[i];
+      if (cam->mOrthographicWidth > 0.0f)
+      {
+        continue; // Skip orthographic cameras.
+      }
+
+      CameraPtr tkCam = MakeNewPtr<Camera>();
+      tkCam->SetNameVal(cam->mName.C_Str());
+
+      // Horizontal to vertical fov.
+      float aspect               = cam->mAspect > 0.0f ? cam->mAspect : 1.0f;
+      float tanHalfHorizontalFov = std::tan(cam->mHorizontalFOV * 0.5f);
+      float fov                  = 2.0f * std::atan(tanHalfHorizontalFov / aspect);
+
+      aiMatrix4x4 transform;
+      cam->GetCameraMatrix(transform);
+      tkCam->m_node->SetTransform(toMat4(transform));
+      tkCam->SetLens(fov, aspect, cam->mClipPlaneNear, cam->mClipPlaneFar);
+
+      sceneCameras.push_back(tkCam);
+    }
+  }
+
   EntityPtrArray deletedEntities;
 
-  bool DeleteEmptyEntitiesRecursively(Scene* tScene, EntityPtr ntt)
+  bool DeleteEmptyEntitiesRecursively(ScenePtr tScene, EntityPtr ntt)
   {
     bool shouldDelete = true;
     if (ntt->GetComponentPtrArray().size())
@@ -887,14 +951,28 @@ namespace ToolKit
     return shouldDelete;
   }
 
-  void TraverseScene(Scene* tScene, const aiNode* node, EntityPtr parent)
+  void TraverseScene(ScenePtr tScene, const aiNode* node, EntityPtr parent)
   {
     EntityPtr ntt = nullptr;
+
+    // Camera transform data is local, it gets its full transforms when merged with node.
+    // So camera must be matched with a node in the graph.
     for (LightPtr light : sceneLights)
     {
       if (light->GetNameVal() == node->mName.C_Str())
       {
         ntt = light;
+        break;
+      }
+    }
+
+    // Same as light.
+    for (CameraPtr cam : sceneCameras)
+    {
+      if (cam->GetNameVal() == node->mName.C_Str())
+      {
+        ntt = cam;
+        ntt->m_node->Rotate(glm::angleAxis(glm::pi<float>(), Y_AXIS)); // Align dir.
         break;
       }
     }
@@ -981,7 +1059,7 @@ namespace ToolKit
 
     string fullPath = path + name + SCENE;
     AddToUsedFiles(fullPath);
-    Scene* tScene = new Scene;
+    ScenePtr tScene = MakeNewPtr<Scene>();
 
     TraverseScene(tScene, g_scene->mRootNode, nullptr);
     // First entity is the root entity
@@ -999,7 +1077,7 @@ namespace ToolKit
     deletedEntities.clear();
     Assimp::DefaultLogger::get()->info("scene path: ", fullPath);
 
-    CreateFileAndSerializeObject(tScene, fullPath);
+    CreateFileAndSerializeObject(tScene.get(), fullPath);
   }
 
   void ImportSkeleton(string& filePath)
@@ -1310,8 +1388,11 @@ namespace ToolKit
         // Add Meshes.
         ImportMeshes(destFile);
 
-        // Add lights
-        ImportLights(destFile);
+        // Add lights.
+        ImportLights();
+
+        // Add cameras.
+        ImportCameras();
 
         // Create Meshes & Scene
         ImportScene(destFile);

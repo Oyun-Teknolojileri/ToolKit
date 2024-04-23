@@ -18,15 +18,41 @@ namespace ToolKit
    public:
     TKDeclareClass(Camera, Entity);
 
-    Camera();
-    virtual ~Camera();
+    Camera();          //!< Default constructor. Sets a default projection matrix.
+    virtual ~Camera(); //!< Empty destructor.
 
-    void NativeConstruct() override;
+    void NativeConstruct() override; //!< Adds a direction component other then constructing Object.
 
+    /**
+     * Sets the perspective projection matrix for the camera.
+     * Near and far clip plane values are set as 0.5 and 1000.
+     * @param fov Vertical field of view expressed in radians.
+     * @param aspect is the ratio of width to height (width / height)
+     */
     void SetLens(float fov, float aspect);
+
+    /**
+     * Sets the perspective projection matrix for the camera.
+     * Near and far clip plane values are set as 0.5 and 1000.
+     * @param fov Vertical field of view expressed in radians.
+     * @param aspect is the ratio of width to height (width / height)
+     * @param near is the distance to near clip plane.
+     * @param far is the distance to far clip plane.
+     */
     void SetLens(float fov, float aspect, float near, float far);
+
+    /**
+     * Sets the orthographic projection matrix for the camera.
+     * @param left is the size in world units to left side.
+     * @param right is the size in world units to right side.
+     * @param bottom is the size in world units to bottom side.
+     * @param top is the size in world units to top side.
+     * @param near is the distance to near clip plane.
+     * @param far is the distance to far clip plane.
+     */
     void SetLens(float left, float right, float bottom, float top, float near, float far);
 
+    /** Returns view matrix from camera position. Its inverse world transform matrix. */
     inline Mat4 GetViewMatrix() const
     {
       Mat4 view = m_node->GetTransform();
@@ -39,7 +65,7 @@ namespace ToolKit
 
     bool IsOrtographic() const;
 
-    // Tight fit camera frustum to a bounding box with a margin
+    /** Tight fit camera frustum to a bounding box with a margin */
     void FocusToBoundingBox(const BoundingBox& bb, float margin);
 
     /**
