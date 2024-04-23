@@ -74,8 +74,8 @@ namespace ToolKit
     MeshPtr m_volumeMesh            = nullptr;
 
     bool m_invalidatedForLightCache = false; //<! Set this true if light data on GPU should be updated
-    int m_lightCacheIndex           = -1;    //<! Used by renderer light cache
-    uint16 m_drawCallVersion        = 0;     //<! Used by renderer internally
+    int m_lightCacheIndex    = -1; //<! Used by renderer only! The index of this light in the renderers light cache.
+    uint16 m_drawCallVersion = 0;  //<! Used by renderer internally (Explained in LightCache.h)
 
    protected:
     MaterialPtr m_shadowMapMaterial = nullptr;

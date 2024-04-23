@@ -59,8 +59,6 @@ namespace ToolKit
   {
     Super::ParameterEventConstructor();
 
-    m_invalidatedForLightCache;
-
     ParamColor().m_onValueChangedFn.clear();
     ParamColor().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
                                               { m_invalidatedForLightCache = true; });

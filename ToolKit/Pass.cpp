@@ -442,19 +442,19 @@ namespace ToolKit
         LightPtr light = Cast<Light>(lightEntity);
         if (light->GetLightType() == Light::LightType::Spot)
         {
-          SpotLightPtr spot = Cast<SpotLight>(light);
+          SpotLight* spot = static_cast<SpotLight*>(light.get());
           if (FrustumBoxIntersection(spot->m_frustumCache, job.BoundingBox) != IntersectResult::Outside)
           {
-            job.lights.push_back(spot);
+            job.lights.push_back(light);
           }
         }
         else
         {
           assert(light->IsA<PointLight>());
-          PointLightLightPtr point = Cast<PointLight>(light);
+          PointLight* point = static_cast<PointLight*>(light.get());
           if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))
           {
-            job.lights.push_back(point);
+            job.lights.push_back(light);
           }
         }
       }

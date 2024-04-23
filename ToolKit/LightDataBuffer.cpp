@@ -35,7 +35,7 @@ namespace ToolKit
     if (m_initialized)
     {
       glDeleteBuffers(1, &m_lightDataBufferId);
-      glDeleteBuffers(2, &m_lightIndicesBufferId);
+      glDeleteBuffers(1, &m_lightIndicesBufferId);
     }
   }
 

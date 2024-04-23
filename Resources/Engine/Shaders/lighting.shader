@@ -10,7 +10,7 @@
 	<source>
 	<!--
 
-// Fixed Declaretions
+// TODO Minimize and pack this data as much as possible
 struct _LightData
 {
   /*
@@ -269,6 +269,7 @@ vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamPos, vec
 		int rem = ii % 4;
 		int i = activeLightIndices[div][rem];
 
+		// TODO we can create uniform buffer for each light type and iterate those lights in order to avoid this if-else block.
 		if (LightData[i].type == 2) // Point light
 		{
 			// radius check and attenuation

@@ -3,8 +3,6 @@
 #include "TKStats.h"
 #include "Types.h"
 
-#include <deque>
-
 namespace ToolKit
 {
   class Light;
@@ -23,8 +21,8 @@ namespace ToolKit
     {
       int index = m_nextIndex;
 
-      // While adding new light, if the light that is going to be discarded is going to be
-      // rendered on the current draw call (has the same draw call version with this value), skip that light.
+      // If the light intended for removal is scheduled to be rendered in the current
+      // draw call (possesses the same draw call version as this value), it should be omitted.
       int i     = 0;
       while (true)
       {
