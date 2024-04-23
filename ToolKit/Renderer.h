@@ -144,6 +144,7 @@ namespace ToolKit
    private:
     LightCache<RHIConstants::LightCacheSize> m_lightCache;
     LightDataBuffer m_lightDataBuffer;
+    uint16 m_drawCallVersion       = 1;
 
     GpuProgramPtr m_currentProgram = nullptr;
 

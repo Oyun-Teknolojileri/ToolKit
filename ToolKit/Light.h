@@ -45,8 +45,7 @@ namespace ToolKit
     virtual LightType GetLightType() = 0;
 
    protected:
-
-     void InvalidateSpatialCaches() override;
+    void InvalidateSpatialCaches() override;
 
     void UpdateShadowCameraTransform();
     void ParameterConstructor() override;
@@ -74,8 +73,9 @@ namespace ToolKit
     bool m_shadowResolutionUpdated  = false;
     MeshPtr m_volumeMesh            = nullptr;
 
-    bool m_invalidatedForLightCache = false;
-    int m_lightCacheIndex           = -1;
+    bool m_invalidatedForLightCache = false; //<! Set this true if light data on GPU should be updated
+    int m_lightCacheIndex           = -1;    //<! Used by renderer light cache
+    uint16 m_drawCallVersion        = 0;     //<! Used by renderer internally
 
    protected:
     MaterialPtr m_shadowMapMaterial = nullptr;

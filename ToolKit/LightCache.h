@@ -16,19 +16,46 @@ namespace ToolKit
 
     ~LightCache() { Reset(); }
 
-    inline void Add(LightPtr light)
-    {
-      int index                 = m_leastFreqUsedLightIndex;
+    inline void SetDrawCallVersion(uint16 version) { m_drawCallVersion = version; }
 
-      m_lightCache[index]       = light;
-      m_leastFreqUsedLightIndex = (index + 1) % T;
+    inline int Add(LightPtr light)
+    {
+      int index = m_nextIndex;
+
+      // While adding new light, if the light that is going to be discarded is going to be
+      // rendered on the current draw call (has the same draw call version with this value), skip that light.
+      int i     = 0;
+      while (true)
+      {
+        i++;
+        if (i == T)
+        {
+          return -1;
+        }
+
+        if (m_lightCache[index] == nullptr)
+        {
+          m_lightCache[index] = light;
+          m_nextIndex         = (index + 1) % T;
+          break;
+        }
+        else if (m_lightCache[index]->m_drawCallVersion != m_drawCallVersion)
+        {
+          m_lightCache[index] = light;
+          m_nextIndex         = (index + 1) % T;
+          break;
+        }
+        index = (index + 1) % T;
+      }
 
       UpdateVersion();
+
+      return index;
     }
 
     void Reset()
     {
-      m_leastFreqUsedLightIndex = 0;
+      m_nextIndex = 0;
       for (uint i = 0; i < T; ++i)
       {
         m_lightCache[i] = nullptr;
@@ -58,8 +85,10 @@ namespace ToolKit
 
    private:
     LightPtr m_lightCache[T];
-    int m_leastFreqUsedLightIndex = 0;
-    uint16_t m_lightCacheVersion  = 1;
+    int m_nextIndex            = 0;
+    uint16 m_lightCacheVersion = 1;
+
+    uint16 m_drawCallVersion   = 0; //<! Renderer sets this value before each draw call
   };
 
 } // namespace ToolKit

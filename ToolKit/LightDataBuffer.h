@@ -47,7 +47,7 @@ namespace ToolKit
     void Init();
     void Destroy();
 
-    void Update(const LightPtrArray& lights);
+    void Update(LightPtr* lights, int size);
 
    public:
     uint m_bufferId = 0;

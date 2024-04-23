@@ -32,11 +32,15 @@ namespace ToolKit
     }
   }
 
-  void LightDataBuffer::Update(const LightPtrArray& lights)
+  void LightDataBuffer::Update(LightPtr* lights, int size)
   {
-    RHI::BindUniformBuffer(m_bufferId);
-    for (uint i = 0; i < lights.size(); ++i)
+    for (int i = 0; i < size; ++i)
     {
+      if (lights[i] == nullptr)
+      {
+        continue;
+      }
+
       const LightPtr& currLight = lights[i];
 
       // Point light uniforms

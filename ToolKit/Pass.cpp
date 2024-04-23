@@ -429,6 +429,7 @@ namespace ToolKit
       return;
     }
 
+    /*
     // Iterate lights that are inside of bvh nodes same with the job entity
     for (BVHNode* bvhNode : job.Entity->m_bvhNodes)
     {
@@ -459,10 +460,15 @@ namespace ToolKit
         }
       }
     }
+    */
 
-    /*
     for (int i = startIndex; i < lights.size(); ++i)
     {
+      if (job.lights.size() >= RHIConstants::MaxLightsPerObject)
+      {
+        return;
+      }
+
       LightPtr& light = lights[i];
       if (light->GetLightType() == Light::LightType::Spot)
       {
@@ -470,6 +476,10 @@ namespace ToolKit
         if (FrustumBoxIntersection(spot->m_frustumCache, job.BoundingBox) != IntersectResult::Outside)
         {
           job.lights.push_back(spot);
+        }
+        else if (job.Mesh->m_clientSideVertices.size() == 36)
+        {
+          volatile int y = 5;
         }
       }
       else
@@ -481,7 +491,6 @@ namespace ToolKit
         }
       }
     }
-    */
   }
 
   void RenderJobProcessor::AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights)

@@ -51,7 +51,7 @@
 
 		void main()
 		{
-			vec3 color = GetHeatMap(float(LightData.activeCount), float(8));
+			vec3 color = GetHeatMap(float(activeCount), float(8));
 			fragColor = vec4(color, 1.0);
 		}
 	-->
