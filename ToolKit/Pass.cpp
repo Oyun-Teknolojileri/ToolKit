@@ -416,7 +416,7 @@ namespace ToolKit
   {
     for (int i = 0; i < startIndex; i++)
     {
-      job.lights.push_back(lights[i]);
+      job.lights.push_back(lights[i].get());
       if (i >= RHIConstants::MaxLightsPerObject)
       {
         break;
@@ -439,10 +439,10 @@ namespace ToolKit
           return;
         }
 
-        LightPtr light = Cast<Light>(lightEntity);
+        Light* light = static_cast<Light*>(lightEntity.get());
         if (light->GetLightType() == Light::LightType::Spot)
         {
-          SpotLight* spot = static_cast<SpotLight*>(light.get());
+          SpotLight* spot = static_cast<SpotLight*>(light);
           if (FrustumBoxIntersection(spot->m_frustumCache, job.BoundingBox) != IntersectResult::Outside)
           {
             job.lights.push_back(light);
@@ -451,7 +451,7 @@ namespace ToolKit
         else
         {
           assert(light->IsA<PointLight>());
-          PointLight* point = static_cast<PointLight*>(light.get());
+          PointLight* point = static_cast<PointLight*>(light);
           if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))
           {
             job.lights.push_back(light);

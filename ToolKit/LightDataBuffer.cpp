@@ -15,16 +15,10 @@ namespace ToolKit
 
     glGenBuffers(1, &m_lightDataBufferId);
     RHI::BindUniformBuffer(m_lightDataBufferId);
-    glBufferData(GL_UNIFORM_BUFFER,
-                 sizeof(LightData),
-                 NULL,
-                 GL_DYNAMIC_COPY); // TODO check if dynamic_copy flag is correct
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(LightData), NULL, GL_DYNAMIC_COPY);
     glGenBuffers(1, &m_lightIndicesBufferId);
     RHI::BindUniformBuffer(m_lightIndicesBufferId);
-    glBufferData(GL_UNIFORM_BUFFER,
-                 sizeof(ActiveLightIndices),
-                 NULL,
-                 GL_DYNAMIC_COPY); // TODO check if dynamic_copy flag is correct
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(ActiveLightIndices), NULL, GL_DYNAMIC_COPY);
     RHI::BindUniformBuffer(0);
 
     m_initialized = true;
@@ -39,13 +33,13 @@ namespace ToolKit
     }
   }
 
-  void LightDataBuffer::Update(LightPtr* cachedLights, int size, const LightPtrArray& lightsToRender)
+  void LightDataBuffer::Update(Light** cachedLights, int size, const LightRawPtrArray& lightsToRender)
   {
     UpdateLightData(cachedLights, size);
     UpdateLightIndices(lightsToRender);
   }
 
-  void LightDataBuffer::UpdateLightData(LightPtr* cachedLights, int size)
+  void LightDataBuffer::UpdateLightData(Light** cachedLights, int size)
   {
     for (int i = 0; i < size; ++i)
     {
@@ -54,12 +48,12 @@ namespace ToolKit
         continue;
       }
 
-      const LightPtr& currLight = cachedLights[i];
+      const Light* currLight = cachedLights[i];
 
       // Point light uniforms
       if (currLight->GetLightType() == Light::Point)
       {
-        const PointLightLightPtr pLight       = Cast<PointLight>(currLight);
+        const PointLight* pLight              = static_cast<const PointLight*>(currLight);
         m_lightData.perLightData[i].type      = 2;
         m_lightData.perLightData[i].pos       = pLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         m_lightData.perLightData[i].color     = pLight->GetColorVal();
@@ -69,7 +63,7 @@ namespace ToolKit
       // Directional light uniforms
       else if (currLight->GetLightType() == Light::Directional)
       {
-        const DirectionalLightPtr dLight      = Cast<DirectionalLight>(currLight);
+        const DirectionalLight* dLight        = static_cast<const DirectionalLight*>(currLight);
         m_lightData.perLightData[i].type      = 1;
         m_lightData.perLightData[i].color     = dLight->GetColorVal();
         m_lightData.perLightData[i].intensity = dLight->GetIntensityVal();
@@ -78,7 +72,7 @@ namespace ToolKit
       // Spot light uniforms
       else if (currLight->GetLightType() == Light::Spot)
       {
-        const SpotLightPtr sLight             = Cast<SpotLight>(currLight);
+        const SpotLight* sLight               = static_cast<const SpotLight*>(currLight);
         m_lightData.perLightData[i].type      = 3;
         m_lightData.perLightData[i].color     = sLight->GetColorVal();
         m_lightData.perLightData[i].intensity = sLight->GetIntensityVal();
@@ -110,7 +104,7 @@ namespace ToolKit
     }
   }
 
-  void LightDataBuffer::UpdateLightIndices(const LightPtrArray& lightsToRender)
+  void LightDataBuffer::UpdateLightIndices(const LightRawPtrArray& lightsToRender)
   {
     for (int i = 0; i < lightsToRender.size(); ++i)
     {

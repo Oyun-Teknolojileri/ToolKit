@@ -42,7 +42,7 @@ namespace ToolKit
       Spot
     };
 
-    virtual LightType GetLightType() = 0;
+    virtual LightType GetLightType() const = 0;
 
    protected:
     void InvalidateSpatialCaches() override;
@@ -95,7 +95,7 @@ namespace ToolKit
     void NativeConstruct() override;
     void UpdateShadowFrustum(const CameraPtr cameraView, const BoundingBox& shadowVolume);
 
-    LightType GetLightType() override { return LightType::Directional; }
+    LightType GetLightType() const override { return LightType::Directional; }
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
@@ -123,7 +123,7 @@ namespace ToolKit
     PointLight();
     virtual ~PointLight();
 
-    LightType GetLightType() override { return LightType::Point; }
+    LightType GetLightType() const override { return LightType::Point; }
 
     void UpdateShadowCamera() override;
     float AffectDistance() override;
@@ -155,7 +155,7 @@ namespace ToolKit
 
     void NativeConstruct() override;
 
-    LightType GetLightType() override { return LightType::Spot; }
+    LightType GetLightType() const override { return LightType::Spot; }
 
     void UpdateShadowCamera() override;
     float AffectDistance() override;

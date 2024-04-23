@@ -8,6 +8,7 @@
 #include "RenderSystem.h"
 
 #include "GlErrorReporter.h"
+#include "LightCache.h"
 #include "Logger.h"
 #include "RHI.h"
 #include "TKOpenGL.h"
@@ -206,6 +207,11 @@ namespace ToolKit
       TK_ERR("Backbuffer color space can't be deceted. Assuming linear.");
       m_backbufferFormatIsSRGB = false;
     }
+  }
+
+  void RenderSystem::RemoveLightFromRendererCache(const Light* light) const
+  {
+    m_renderer->m_lightCache.RemoveFromCache(light);
   }
 
 } // namespace ToolKit

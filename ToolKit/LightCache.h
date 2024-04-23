@@ -1,12 +1,11 @@
 #pragma once
 
+#include "Light.h"
 #include "TKStats.h"
 #include "Types.h"
 
 namespace ToolKit
 {
-  class Light;
-
   template <int CACHE_SIZE>
   class TK_API LightCache
   {
@@ -17,7 +16,7 @@ namespace ToolKit
 
     inline void SetDrawCallVersion(uint16 version) { m_drawCallVersion = version; }
 
-    inline int Add(LightPtr light)
+    inline int Add(Light* light)
     {
       int index = m_nextIndex;
 
@@ -63,7 +62,7 @@ namespace ToolKit
     }
 
     // returns the index when found, returns -1 when not found
-    int Contains(const LightPtr& light)
+    int Contains(const Light* light)
     {
       for (int i = 0; i < CACHE_SIZE; ++i)
       {
@@ -87,10 +86,22 @@ namespace ToolKit
       m_lightCacheVersion++;
     }
 
-    LightPtr* GetLights() { return m_lightCache; }
+    Light** GetLights() { return m_lightCache; }
+
+    void RemoveFromCache(const Light* light)
+    {
+      for (int i = 0; i < CACHE_SIZE; ++i)
+      {
+        if (m_lightCache[i] == light)
+        {
+          m_lightCache[i] = nullptr;
+          return;
+        }
+      }
+    }
 
    private:
-    LightPtr m_lightCache[CACHE_SIZE];
+    Light* m_lightCache[CACHE_SIZE];
     int m_nextIndex            = 0;
     uint16 m_lightCacheVersion = 1;
 

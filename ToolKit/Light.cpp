@@ -17,6 +17,7 @@
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "Pass.h"
+#include "RenderSystem.h"
 #include "Renderer.h"
 #include "Scene.h"
 #include "Shader.h"
@@ -37,7 +38,13 @@ namespace ToolKit
     m_shadowCamera->SetOrthographicScaleVal(1.0f);
   }
 
-  Light::~Light() {}
+  Light::~Light()
+  {
+    if (RenderSystem* rs = GetRenderSystem())
+    {
+      rs->RemoveLightFromRendererCache(this);
+    }
+  }
 
   void Light::NativeConstruct() { Super::NativeConstruct(); }
 

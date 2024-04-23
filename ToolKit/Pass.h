@@ -57,7 +57,7 @@ namespace ToolKit
     Mat4 WorldTransform;     //!< World transform of the entity.
     AnimData animData;       //!< Animation data of render job.
 
-    LightPtrArray lights;
+    LightRawPtrArray lights;
   };
 
   typedef RenderJobArray::iterator RenderJobItr;

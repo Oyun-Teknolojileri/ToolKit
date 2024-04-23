@@ -1180,7 +1180,7 @@ namespace ToolKit
     for (uint i = 0; i < job.lights.size(); ++i)
     {
       bool foundInCache        = false;
-      LightPtr light           = job.lights[i];
+      Light* light             = job.lights[i];
       light->m_drawCallVersion = m_drawCallVersion;
       int indexInCache         = m_lightCache.Contains(light);
       if (indexInCache != -1)

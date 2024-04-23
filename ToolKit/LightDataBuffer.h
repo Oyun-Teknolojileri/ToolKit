@@ -52,9 +52,9 @@ namespace ToolKit
     void Init();
     void Destroy();
 
-    void Update(LightPtr* cachedLights, int size, const LightPtrArray& lightsToRender);
-    void UpdateLightData(LightPtr* cachedLights, int size);
-    void UpdateLightIndices(const LightPtrArray& lightsToRender);
+    void Update(Light** cachedLights, int size, const LightRawPtrArray& lightsToRender);
+    void UpdateLightData(Light** cachedLights, int size);
+    void UpdateLightIndices(const LightRawPtrArray& lightsToRender);
 
    public:
     uint m_lightDataBufferId    = 0;

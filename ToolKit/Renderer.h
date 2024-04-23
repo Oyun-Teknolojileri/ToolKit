@@ -141,8 +141,9 @@ namespace ToolKit
      */
     bool m_ignoreRenderingCulledObjectWarning = false;
 
-   private:
     LightCache<RHIConstants::LightCacheSize> m_lightCache;
+
+   private:
     LightDataBuffer m_lightDataBuffer;
     uint16 m_drawCallVersion       = 1;
 
