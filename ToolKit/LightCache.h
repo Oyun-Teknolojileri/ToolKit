@@ -9,7 +9,7 @@ namespace ToolKit
 {
   class Light;
 
-  template <int T>
+  template <int CACHE_SIZE>
   class TK_API LightCache
   {
    public:
@@ -29,7 +29,7 @@ namespace ToolKit
       while (true)
       {
         i++;
-        if (i == T)
+        if (i == CACHE_SIZE)
         {
           return -1;
         }
@@ -37,16 +37,16 @@ namespace ToolKit
         if (m_lightCache[index] == nullptr)
         {
           m_lightCache[index] = light;
-          m_nextIndex         = (index + 1) % T;
+          m_nextIndex         = (index + 1) % CACHE_SIZE;
           break;
         }
         else if (m_lightCache[index]->m_drawCallVersion != m_drawCallVersion)
         {
           m_lightCache[index] = light;
-          m_nextIndex         = (index + 1) % T;
+          m_nextIndex         = (index + 1) % CACHE_SIZE;
           break;
         }
-        index = (index + 1) % T;
+        index = (index + 1) % CACHE_SIZE;
       }
 
       UpdateVersion();
@@ -57,7 +57,7 @@ namespace ToolKit
     void Reset()
     {
       m_nextIndex = 0;
-      for (uint i = 0; i < T; ++i)
+      for (uint i = 0; i < CACHE_SIZE; ++i)
       {
         m_lightCache[i] = nullptr;
       }
@@ -67,7 +67,7 @@ namespace ToolKit
     // returns the index when found, returns -1 when not found
     int Contains(const LightPtr& light)
     {
-      for (int i = 0; i < T; ++i)
+      for (int i = 0; i < CACHE_SIZE; ++i)
       {
         if (m_lightCache[i] == light)
         {
@@ -92,7 +92,7 @@ namespace ToolKit
     LightPtr* GetLights() { return m_lightCache; }
 
    private:
-    LightPtr m_lightCache[T];
+    LightPtr m_lightCache[CACHE_SIZE];
     int m_nextIndex            = 0;
     uint16 m_lightCacheVersion = 1;
 
