@@ -18,7 +18,7 @@
 #include "Renderer.h"
 #include "TKProfiler.h"
 #include "Threads.h"
-#include "Toolkit.h"
+#include "ToolKit.h"
 #include "Viewport.h"
 
 namespace ToolKit

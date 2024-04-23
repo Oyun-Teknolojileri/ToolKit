@@ -3,10 +3,7 @@ cmake_minimum_required(VERSION 3.21.0)
 if (CLANG_COMPILER)
 	add_definitions(-include stdafx.h)
 
-	# Huge amount of warning messages appears in the output when compiling
-	# If there is an error, it is too difficult to notice.
-	# Remove -w flag if you want to see the warnings
-	SET(TK_CXX_FLAGS " -std=c++17 -w")
+	SET(TK_CXX_FLAGS " -std=c++17")
 	if (NOT TK_CXX_EXTRA STREQUAL "")
 		SET(TK_CXX_FLAGS "${TK_CXX_FLAGS} ${TK_CXX_EXTRA}")
 	endif()
@@ -49,21 +46,15 @@ if (NOT WEB_BUILD)
 	set(TK_LINK_LIB zlibstatic minizip OpenGL32)
 endif()
 
-if (DEFINED WIN_BUILD OR WEB_BUILD)
-	set(TKLibName TKLib)
-else ()
-	set(TKLibName ToolKit)
-endif()
+add_library(ToolKitStatic STATIC ${SOURCES})
+target_link_libraries(ToolKitStatic PRIVATE ${TK_LINK_LIB})
 
-add_library(${TKLibName} STATIC ${SOURCES})
-target_link_libraries(${TKLibName} PRIVATE ${TK_LINK_LIB})
-
-set_target_properties(${TKLibName} PROPERTIES
+set_target_properties(ToolKitStatic PROPERTIES
 		ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
 		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
 )
 
 if (MSVC_COMPILER)
-    target_precompile_headers(${TKLibName} PRIVATE ${PCH_HEADER})
+    target_precompile_headers(ToolKitStatic PRIVATE ${PCH_HEADER})
 endif()

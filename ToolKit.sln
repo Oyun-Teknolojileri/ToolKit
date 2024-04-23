@@ -22,6 +22,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Import", "Import\Import.vcx
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Packer", "Packer\Packer.vcxproj", "{ABACDDA8-3584-43BC-99EC-30896EFD1C63}"
+	ProjectSection(ProjectDependencies) = postProject
+		{99A34D14-680F-4931-9365-20CFD35B621D} = {99A34D14-680F-4931-9365-20CFD35B621D}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utils", "Utils", "{4D82EADD-5011-491D-89E5-AE98D2937639}"
 EndProject

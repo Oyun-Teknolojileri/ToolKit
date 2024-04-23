@@ -9,3 +9,6 @@
 	path = Dependency/tkimgui/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
+[submodule "Dependency/assimp"]
+	path = Dependency/assimp
+	url = https://github.com/assimp/assimp.git

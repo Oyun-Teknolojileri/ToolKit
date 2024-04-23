@@ -11,3 +11,6 @@ call BuildImGui.bat
 
 cd "%currentPath%"
 call BuildZLib.bat
+
+cd "%currentPath%"
+call BuildAssimp.bat
