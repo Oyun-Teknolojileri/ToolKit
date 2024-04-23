@@ -6,7 +6,7 @@
 	<include name = "pbr.shader" />
 	<uniform name = "shadowDistance" />
 	<uniform name = "activeCount"/>
-	<uniform name = "activeLightIndices" size = "16"/>
+	<uniform name = "activeLightIndices" size = "128"/>
 
 	<source>
 	<!--
@@ -43,11 +43,11 @@ struct _LightData
 };
 layout (std140) uniform LightDataBuffer
 {
-	_LightData LightData[16];
+	_LightData LightData[128];
 };
 uniform float shadowDistance;
 uniform int activeCount;
-uniform int activeLightIndices[16];
+uniform int activeLightIndices[128];
 
 uniform sampler2DArray s_texture8; // Shadow atlas
 
