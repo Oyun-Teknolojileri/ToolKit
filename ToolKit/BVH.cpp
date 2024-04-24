@@ -68,7 +68,9 @@ namespace ToolKit
       {
         if (ntt->IsA<Light>())
         {
-          m_bvhTree->m_root->m_lights.push_back(ntt);
+          LightPtr light = Cast<Light>(ntt);
+          light->UpdateShadowCamera();
+          m_bvhTree->m_root->m_lights.push_back(light);
           ntt->m_bvhNodes.push_back(m_bvhTree->m_root);
         }
         else
@@ -462,6 +464,44 @@ namespace ToolKit
     SafeDel(m_root);
   }
 
+  void BVHTree::ReAssignLightsFromParent(BVHNode* node)
+  {
+    node->m_lights.clear();
+    LightPtrArray* lights;
+
+    if (node->m_parent == nullptr)
+    {
+      // root node
+      lights = &m_bvh->m_scene->GetLights();
+    }
+    else
+    {
+      // non-root node, has parent
+      lights = &node->m_parent->m_lights;
+    }
+
+    for (uint i = 0; i < lights->size(); ++i)
+    {
+      Light* light = (*lights)[i].get();
+      if (light->GetLightType() == Light::LightType::Spot)
+      {
+        SpotLight* spot = static_cast<SpotLight*>(light);
+        if (BoxBoxIntersection(spot->m_boundingBoxCache, node->m_aabb))
+        {
+          node->m_lights.push_back((*lights)[i]);
+        }
+      }
+      else // if (light->GetLightType() == Light::LightType::Point)
+      {
+        PointLight* point = static_cast<PointLight*>(light);
+        if (SphereBoxIntersection(point->m_boundingSphereCache, node->m_aabb))
+        {
+          node->m_lights.push_back((*lights)[i]);
+        }
+      }
+    }
+  }
+
   bool BVHTree::Add(EntityPtr& entity)
   {
     entity->m_isInBVHProcess = false;
@@ -519,7 +559,11 @@ namespace ToolKit
 
       if (entityType == 0)
       {
-        node->m_aabb.UpdateBoundary(entity->GetBoundingBox(true));
+        if (!BoxInsideBox(entity->GetBoundingBox(true), node->m_aabb))
+        {
+          node->m_aabb.UpdateBoundary(entity->GetBoundingBox(true));
+          ReAssignLightsFromParent(node);
+        }
       }
 
       if (!node->Leaf())
@@ -623,7 +667,7 @@ namespace ToolKit
         }
         else // light
         {
-          node->m_lights.push_back(entity);
+          node->m_lights.push_back(Cast<Light>(entity));
         }
         entity->m_bvhNodes.push_back(node);
 
@@ -734,8 +778,7 @@ namespace ToolKit
   {
     if (!node->Leaf())
     {
-      // TODO Uncomment this assert when we fix BVH with lights
-      // assert(false && "Calling UpdateLeaf() on a non-leaf bvh node. Needs to be fixed!");
+      // Light removals can come here, no need to update the bvh nodes.
       return;
     }
 
@@ -748,19 +791,18 @@ namespace ToolKit
         node->m_aabb.UpdateBoundary(ntt->GetBoundingBox(true));
       }
       // Remove the lights that are not intersecting anymore
-      EntityPtrArray lights = node->m_lights; // copy
+      LightPtrArray lights = node->m_lights; // copy
       node->m_lights.clear();
-      for (EntityPtr& lightEntity : lights)
+      for (LightPtr& light : lights)
       {
-        LightPtr light = Cast<Light>(lightEntity);
         light->UpdateShadowCamera();
 
         if (light->GetLightType() == Light::LightType::Spot)
         {
           SpotLightPtr spot = Cast<SpotLight>(light);
-          if (FrustumBoxIntersection(spot->m_frustumCache, node->m_aabb) != IntersectResult::Outside)
+          if (BoxBoxIntersection(spot->m_boundingBoxCache, node->m_aabb))
           {
-            node->m_lights.push_back(lightEntity);
+            node->m_lights.push_back(light);
           }
         }
         else // if (light->GetLightType() == Light::LightType::Point)
@@ -768,7 +810,7 @@ namespace ToolKit
           PointLightLightPtr point = Cast<PointLight>(light);
           if (SphereBoxIntersection(point->m_boundingSphereCache, node->m_aabb))
           {
-            node->m_lights.push_back(lightEntity);
+            node->m_lights.push_back(light);
           }
         }
       }
@@ -818,16 +860,16 @@ namespace ToolKit
       }
       else
       {
-        for (EntityPtr& lightEntity : node->m_lights)
+        for (LightPtr& lightEntity : node->m_lights)
         {
           if (SpotLight* spot = lightEntity->As<SpotLight>())
           {
-            if (IntersectResult::Outside != FrustumBoxIntersection(spot->m_frustumCache, left->m_aabb))
+            if (BoxBoxIntersection(spot->m_boundingBoxCache, left->m_aabb))
             {
               lightEntity->m_bvhNodes.push_back(left);
               left->m_lights.push_back(lightEntity);
             }
-            if (IntersectResult::Outside != FrustumBoxIntersection(spot->m_frustumCache, right->m_aabb))
+            if (BoxBoxIntersection(spot->m_boundingBoxCache, right->m_aabb))
             {
               lightEntity->m_bvhNodes.push_back(right);
               right->m_lights.push_back(lightEntity);
@@ -867,21 +909,7 @@ namespace ToolKit
             ++i;
           }
         }
-        for (EntityPtr& ntt : node->m_lights)
-        {
-          uint i = 0;
-          for (BVHNode* nttNode : ntt->m_bvhNodes)
-          {
-            if (nttNode == node)
-            {
-              ntt->m_bvhNodes.erase(ntt->m_bvhNodes.begin() + i);
-              break;
-            }
-            ++i;
-          }
-        }
         node->m_entites.clear();
-        node->m_lights.clear();
 
         UpdateLeaf(left, false);
         if (!right->m_waitingForDeletion)
@@ -923,12 +951,9 @@ namespace ToolKit
         parentNode->m_entites.insert(parentNode->m_entites.end(),
                                      rightNode->m_entites.begin(),
                                      rightNode->m_entites.end());
-        parentNode->m_lights.insert(parentNode->m_lights.end(), leftNode->m_lights.begin(), leftNode->m_lights.end());
-        parentNode->m_lights.insert(parentNode->m_lights.end(), rightNode->m_lights.begin(), rightNode->m_lights.end());
 
         // remove duplicate entities
         RemoveDuplicates(parentNode->m_entites);
-        RemoveDuplicates(parentNode->m_lights);
 
         rightNode->m_waitingForDeletion = true;
         leftNode->m_waitingForDeletion  = true;
@@ -937,10 +962,6 @@ namespace ToolKit
 
         // Tell entities about the new conjuncted node
         for (EntityPtr ntt : parentNode->m_entites)
-        {
-          ntt->m_bvhNodes.push_back(parentNode);
-        }
-        for (EntityPtr ntt : parentNode->m_lights)
         {
           ntt->m_bvhNodes.push_back(parentNode);
         }
