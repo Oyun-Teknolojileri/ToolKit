@@ -29,7 +29,7 @@ namespace ToolKit
     BoundingBox m_aabb;
 
     EntityPtrArray m_entites;
-    EntityPtrArray m_lights;
+    LightPtrArray m_lights;
 
     bool m_waitingForDeletion = false; //<! Internal variable. True if this node is going to be deleted by conjunction.
     IntersectResult m_frustumTestResult = IntersectResult::Outside;

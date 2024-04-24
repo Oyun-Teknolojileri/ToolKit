@@ -68,9 +68,9 @@ namespace ToolKit
       {
         if (ntt->IsA<Light>())
         {
-          Light* light = static_cast<Light*>(ntt.get());
+          LightPtr light = Cast<Light>(ntt);
           light->UpdateShadowCamera();
-          m_bvhTree->m_root->m_lights.push_back(ntt);
+          m_bvhTree->m_root->m_lights.push_back(light);
           ntt->m_bvhNodes.push_back(m_bvhTree->m_root);
         }
         else
@@ -467,56 +467,36 @@ namespace ToolKit
   void BVHTree::ReAssignLightsFromParent(BVHNode* node)
   {
     node->m_lights.clear();
+    LightPtrArray* lights;
 
     if (node->m_parent == nullptr)
     {
       // root node
-      LightPtrArray& lights = m_bvh->m_scene->GetLights();
-
-      for (uint i = 0; i < lights.size(); ++i)
-      {
-        Light* light = lights[i].get();
-        if (light->GetLightType() == Light::LightType::Spot)
-        {
-          SpotLight* spot = static_cast<SpotLight*>(light);
-          if (BoxBoxIntersection(spot->m_boundingBoxCache, node->m_aabb))
-          {
-            node->m_lights.push_back(lights[i]);
-          }
-        }
-        else // if (light->GetLightType() == Light::LightType::Point)
-        {
-          PointLight* point = static_cast<PointLight*>(light);
-          if (SphereBoxIntersection(point->m_boundingSphereCache, node->m_aabb))
-          {
-            node->m_lights.push_back(lights[i]);
-          }
-        }
-      }
+      lights = &m_bvh->m_scene->GetLights();
     }
     else
     {
       // non-root node, has parent
-      EntityPtrArray& lights = node->m_parent->m_lights;
+      lights = &node->m_parent->m_lights;
+    }
 
-      for (uint i = 0; i < lights.size(); ++i)
+    for (uint i = 0; i < lights->size(); ++i)
+    {
+      Light* light = (*lights)[i].get();
+      if (light->GetLightType() == Light::LightType::Spot)
       {
-        Light* light = static_cast<Light*>(lights[i].get());
-        if (light->GetLightType() == Light::LightType::Spot)
+        SpotLight* spot = static_cast<SpotLight*>(light);
+        if (BoxBoxIntersection(spot->m_boundingBoxCache, node->m_aabb))
         {
-          SpotLight* spot = static_cast<SpotLight*>(light);
-          if (BoxBoxIntersection(spot->m_boundingBoxCache, node->m_aabb))
-          {
-            node->m_lights.push_back(lights[i]);
-          }
+          node->m_lights.push_back((*lights)[i]);
         }
-        else // if (light->GetLightType() == Light::LightType::Point)
+      }
+      else // if (light->GetLightType() == Light::LightType::Point)
+      {
+        PointLight* point = static_cast<PointLight*>(light);
+        if (SphereBoxIntersection(point->m_boundingSphereCache, node->m_aabb))
         {
-          PointLight* point = static_cast<PointLight*>(light);
-          if (SphereBoxIntersection(point->m_boundingSphereCache, node->m_aabb))
-          {
-            node->m_lights.push_back(lights[i]);
-          }
+          node->m_lights.push_back((*lights)[i]);
         }
       }
     }
@@ -687,7 +667,7 @@ namespace ToolKit
         }
         else // light
         {
-          node->m_lights.push_back(entity);
+          node->m_lights.push_back(Cast<Light>(entity));
         }
         entity->m_bvhNodes.push_back(node);
 
@@ -798,7 +778,6 @@ namespace ToolKit
   {
     if (!node->Leaf())
     {
-      // TODO Uncomment this assert when we fix BVH with lights
       assert(false && "Calling UpdateLeaf() on a non-leaf bvh node. Needs to be fixed!");
       return;
     }
@@ -812,11 +791,10 @@ namespace ToolKit
         node->m_aabb.UpdateBoundary(ntt->GetBoundingBox(true));
       }
       // Remove the lights that are not intersecting anymore
-      EntityPtrArray lights = node->m_lights; // copy
+      LightPtrArray lights = node->m_lights; // copy
       node->m_lights.clear();
-      for (EntityPtr& lightEntity : lights)
+      for (LightPtr& light : lights)
       {
-        LightPtr light = Cast<Light>(lightEntity);
         light->UpdateShadowCamera();
 
         if (light->GetLightType() == Light::LightType::Spot)
@@ -824,7 +802,7 @@ namespace ToolKit
           SpotLightPtr spot = Cast<SpotLight>(light);
           if (BoxBoxIntersection(spot->m_boundingBoxCache, node->m_aabb))
           {
-            node->m_lights.push_back(lightEntity);
+            node->m_lights.push_back(light);
           }
         }
         else // if (light->GetLightType() == Light::LightType::Point)
@@ -832,7 +810,7 @@ namespace ToolKit
           PointLightLightPtr point = Cast<PointLight>(light);
           if (SphereBoxIntersection(point->m_boundingSphereCache, node->m_aabb))
           {
-            node->m_lights.push_back(lightEntity);
+            node->m_lights.push_back(light);
           }
         }
       }
@@ -882,7 +860,7 @@ namespace ToolKit
       }
       else
       {
-        for (EntityPtr& lightEntity : node->m_lights)
+        for (LightPtr& lightEntity : node->m_lights)
         {
           if (SpotLight* spot = lightEntity->As<SpotLight>())
           {
