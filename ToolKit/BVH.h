@@ -57,6 +57,8 @@ namespace ToolKit
    private:
     BVHTree() = delete;
 
+    void ReAssignLightsFromParent(BVHNode* node);
+
    public:
     BVHNode* m_root = nullptr;
     std::vector<BVHNode*> m_nodesToDelete;
@@ -74,6 +76,8 @@ namespace ToolKit
 
   class TK_API BVH
   {
+    friend BVHTree;
+
    public:
     BVH(Scene* scene);
     ~BVH();
