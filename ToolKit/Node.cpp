@@ -13,8 +13,6 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-
-
 namespace ToolKit
 {
 
@@ -338,6 +336,9 @@ namespace ToolKit
       break;
     };
 
+    // Extracted translation, orientation and scale is in local space,
+    // no matter which transform space the new transform applied. It will always yield the local values
+    // until results get multiplied with parent.
     DecomposeMatrix(ts, translation, orientation, scale);
     UpdateTransformCaches();
   }
