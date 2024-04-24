@@ -778,7 +778,7 @@ namespace ToolKit
   {
     if (!node->Leaf())
     {
-      assert(false && "Calling UpdateLeaf() on a non-leaf bvh node. Needs to be fixed!");
+      // Light removals can come here, no need to update the bvh nodes.
       return;
     }
 
