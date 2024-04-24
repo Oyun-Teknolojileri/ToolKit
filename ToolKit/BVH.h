@@ -29,7 +29,7 @@ namespace ToolKit
     BoundingBox m_aabb;
 
     EntityPtrArray m_entites;
-    EntityPtrArray m_lights;
+    LightPtrArray m_lights;
 
     bool m_waitingForDeletion = false; //<! Internal variable. True if this node is going to be deleted by conjunction.
     IntersectResult m_frustumTestResult = IntersectResult::Outside;
@@ -57,6 +57,8 @@ namespace ToolKit
    private:
     BVHTree() = delete;
 
+    void ReAssignLightsFromParent(BVHNode* node);
+
    public:
     BVHNode* m_root = nullptr;
     std::vector<BVHNode*> m_nodesToDelete;
@@ -74,6 +76,8 @@ namespace ToolKit
 
   class TK_API BVH
   {
+    friend BVHTree;
+
    public:
     BVH(Scene* scene);
     ~BVH();
