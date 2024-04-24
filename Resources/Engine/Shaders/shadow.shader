@@ -167,6 +167,23 @@
 			return sum / float(samples);
     }
 
+    float PCFFilterOmni(sampler2DArray shadowAtlas, vec2 startCoord, float shadowAtlasResRatio, float shadowAtlasLayer,
+    vec3 dir, int samples, float radius, float currDepth, float shadowBias)
+    {
+			float sum = 0.0;
+			for (int i = 0; i < samples; ++i)
+			{
+				vec3 offset = poissonDisk[i] * radius;
+        vec3 sampleDir = dir + offset;
+        vec3 coord = UVWToUVLayer(sampleDir);
+        coord.xy = startCoord + shadowAtlasResRatio * coord.xy;
+	      coord.z = shadowAtlasLayer + coord.z;
+        float smDepth = texture(shadowAtlas, coord).x;
+        sum += smDepth + shadowBias < currDepth ? 0.0 : 1.0;
+			}
+			return sum / float(samples);
+    }
+
     float ShadowBiasCalc(float bias, vec3 lightDir, vec3 normal)
     {
       float newBias = max(bias * (1.0 - dot(normal, lightDir)), 0.005);
