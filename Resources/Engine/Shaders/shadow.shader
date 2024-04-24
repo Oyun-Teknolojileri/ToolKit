@@ -137,6 +137,7 @@
     // NOTE: "ClampTextureCoordinates" function is from "textureUtil.shader" and this shader includes from "lighting.shader" which already includes that.
     // If you need to use that function from your shader, include "textureUtil.shader".
 
+    // Uses variance shadow map
 		float PCFFilterShadow2D(sampler2DArray shadowAtlas, vec3 uvLayer, vec2 coordStart, vec2 coordEnd, int samples, float radius, float currDepth, float LBR, float shadowBias)
 		{
 			float sum = 0.0;
@@ -150,6 +151,21 @@
 			}
 			return sum / float(samples);
 		}
+
+    // Uses depth sample shadow map
+    float PCFFilter(sampler2DArray shadowAtlas, vec3 uvLayer, vec2 coordStart, vec2 coordEnd, int samples, float radius, float currDepth, float shadowBias)
+    {
+			float sum = 0.0;
+			for (int i = 0; i < samples; ++i)
+			{
+				vec2 offset = poissonDisk[i].xy * radius;
+        vec3 texCoord = uvLayer;
+        texCoord.xy = ClampTextureCoordinates(uvLayer.xy + offset, coordStart, coordEnd);
+        float smDepth = texture(shadowAtlas, texCoord).x;
+        sum += smDepth + shadowBias < currDepth ? 0.0 : 1.0;
+			}
+			return sum / float(samples);
+    }
 	-->
 	</source>
 </shader>

@@ -34,8 +34,7 @@
 				discard;
 			}
 
-	    vec2 lightDistance = ComputeMoments(length(v_pos.xyz));
-	    fragColor = vec4(lightDistance, 0.0, 0.0);
+	    fragColor.x = length(v_pos.xyz);
 		}
 	-->
 	</source>

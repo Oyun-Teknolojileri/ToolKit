@@ -33,7 +33,7 @@
 				discard;
 			}
 
-			fragColor = vec4(ComputeMoments(gl_FragCoord.z), 0.0, 0.0);
+			fragColor.x = gl_FragCoord.z;
 		}
 	-->
 	</source>

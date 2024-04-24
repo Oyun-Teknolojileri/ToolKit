@@ -351,8 +351,8 @@ namespace ToolKit
                                    GraphicTypes::UVClampToEdge,
                                    GraphicTypes::SampleNearest,
                                    GraphicTypes::SampleNearest,
-                                   GraphicTypes::FormatRG32F,
-                                   GraphicTypes::FormatRG,
+                                   GraphicTypes::FormatR32F,
+                                   GraphicTypes::FormatRed,
                                    GraphicTypes::TypeFloat,
                                    m_layerCount,
                                    false};
