@@ -166,6 +166,12 @@
 			}
 			return sum / float(samples);
     }
+
+    float ShadowBiasCalc(float bias, vec3 lightDir, vec3 normal)
+    {
+      float newBias = max(bias * (1.0 - dot(normal, lightDir)), 0.005);
+      return newBias;
+    }
 	-->
 	</source>
 </shader>

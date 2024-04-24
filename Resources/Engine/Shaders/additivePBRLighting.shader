@@ -44,7 +44,7 @@
     {
       case 3: // directional with shadows
       {
-        shadow = CalculateDirectionalShadow(fragPos, viewCamPos, lightProjectionViewMatrix, lightShadowAtlasCoord, lightShadowAtlasResRatio,
+        shadow = CalculateDirectionalShadow(fragPos, lightDir, normal, viewCamPos, lightProjectionViewMatrix, lightShadowAtlasCoord, lightShadowAtlasResRatio,
                                             lightShadowAtlasLayer, lightPCFSamples, lightPCFRadius, 
                                             lightBleedReduction, lightShadowBias);
       } // fallthrough
@@ -57,7 +57,7 @@
       break;
       case 4: // point with shadows
       {
-        shadow = CalculatePointShadow(fragPos, lightPos, lightShadowMapCameraFar, lightShadowAtlasCoord, lightShadowAtlasResRatio,
+        shadow = CalculatePointShadow(fragPos, normal, lightPos, lightShadowMapCameraFar, lightShadowAtlasCoord, lightShadowAtlasResRatio,
                                       lightShadowAtlasLayer, lightPCFSamples, lightPCFRadius, 
                                       lightBleedReduction, lightShadowBias);
       } // fallthrough
@@ -75,7 +75,7 @@
       break;
       case 5: // spot with shadows
       {
-        shadow = CalculateSpotShadow(fragPos, lightPos, lightProjectionViewMatrix, lightShadowMapCameraFar, lightShadowAtlasCoord,
+        shadow = CalculateSpotShadow(fragPos, normal, lightPos, lightProjectionViewMatrix, lightShadowMapCameraFar, lightShadowAtlasCoord,
                                     lightShadowAtlasResRatio, lightShadowAtlasLayer, lightPCFSamples, 
                                     lightPCFRadius, lightBleedReduction, lightShadowBias);
       } // fallthrough

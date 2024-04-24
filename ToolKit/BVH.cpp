@@ -491,7 +491,7 @@ namespace ToolKit
           node->m_lights.push_back((*lights)[i]);
         }
       }
-      else // if (light->GetLightType() == Light::LightType::Point)
+      else if (light->GetLightType() == Light::LightType::Point)
       {
         PointLight* point = static_cast<PointLight*>(light);
         if (SphereBoxIntersection(point->m_boundingSphereCache, node->m_aabb))
