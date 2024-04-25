@@ -274,6 +274,8 @@ namespace ToolKit
 
     const BoundingBox& GetSceneBoundary(); //!< Returns scene boundary from the BVH.
 
+    BoundingBox GetFrustumBoundary(const CameraPtr& camera) const;
+
    protected:
     /**
      * Serializes the scene to an XML document.

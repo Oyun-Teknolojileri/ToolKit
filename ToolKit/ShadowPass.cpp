@@ -67,7 +67,7 @@ namespace ToolKit
       if (light->GetLightType() == Light::LightType::Directional)
       {
         DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
-        dLight->UpdateShadowFrustum(m_params.viewCamera, m_params.scene->GetSceneBoundary());
+        dLight->UpdateShadowFrustum(m_params.viewCamera, m_params.scene->GetFrustumBoundary(m_params.viewCamera));
       }
 
       // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass

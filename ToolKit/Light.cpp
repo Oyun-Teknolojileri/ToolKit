@@ -299,7 +299,7 @@ namespace ToolKit
     float maxDistance = glm::fastSqrt(width * width + height * height + depth * depth);
 
     float tightFar    = tightShadowVolume.max.z - tightShadowVolume.min.z;
-    float far         = glm::max(tightFar, maxDistance);
+    float far         = glm::min(tightFar, maxDistance);
 
     lightCamera->SetLens(tightShadowVolume.min.x,
                          tightShadowVolume.max.x,

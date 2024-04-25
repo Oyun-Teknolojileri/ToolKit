@@ -102,6 +102,8 @@ namespace ToolKit
                     const EntityPtrArray& extraList,
                     bool pickPartiallyInside);
 
+    BoundingBox GetFrustumBoundary(const Frustum& frustum) const;
+
     /**
      * Test bvh with a frustum and assign test results to BVHNodes.
      * Results are valid as long as another test or call to any query functions has not been done. In short, results
