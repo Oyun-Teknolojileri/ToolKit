@@ -272,10 +272,17 @@ namespace ToolKit
     Vec3Array frustum = viewCamera->ExtractFrustumCorner();
     viewCamera->SetFarClipVal(lastCameraFar);
 
+    const float worldUnitPerTexel = shadowDistance * 25.0f / RHIConstants::ShadowAtlasTextureSize;
+    const Vec3 vWorldUnitPerTexel = Vec3(worldUnitPerTexel, worldUnitPerTexel, worldUnitPerTexel);
+
     Vec3 center = ZERO;
     for (int i = 0; i < 8; ++i)
     {
-      center += frustum[i];
+      frustum[i] /= vWorldUnitPerTexel;
+      frustum[i]  = glm::floor(frustum[i]);
+      frustum[i] *= vWorldUnitPerTexel;
+
+      center     += frustum[i];
     }
     center /= 8.0f;
 
@@ -296,7 +303,7 @@ namespace ToolKit
     float width       = shadowVolume.max.x - shadowVolume.min.x;
     float height      = shadowVolume.max.y - shadowVolume.min.y;
     float depth       = shadowVolume.max.z - shadowVolume.min.z;
-    float maxDistance = glm::fastSqrt(width * width + height * height + depth * depth);
+    float maxDistance = glm::sqrt(width * width + height * height + depth * depth);
 
     float tightFar    = tightShadowVolume.max.z - tightShadowVolume.min.z;
     float far         = glm::min(tightFar, maxDistance);
