@@ -183,9 +183,25 @@ namespace ToolKit
 
   TKDefineClass(DirectionalLight, Light);
 
-  DirectionalLight::DirectionalLight() { m_shadowCamera->SetOrthographicVal(true); }
+  DirectionalLight::DirectionalLight()
+  {
+    m_shadowCamera->SetOrthographicVal(true);
+    for (int i = 0; i < RHIConstants::CascadeCount; ++i)
+    {
+      CameraPtr cam = MakeNewPtr<Camera>();
+      cam->SetOrthographicVal(true);
+      cam->SetOrthographicScaleVal(1.0f);
+      cam->InvalidateSpatialCaches();
+      m_cascadeShadowCameras.push_back(cam);
+    }
+    m_shadowMapCascadeCameraProjectionViewMatrices.resize(RHIConstants::CascadeCount);
+  }
 
-  DirectionalLight::~DirectionalLight() {}
+  DirectionalLight::~DirectionalLight()
+  {
+    m_cascadeShadowCameras.clear();
+    m_shadowMapCascadeCameraProjectionViewMatrices.clear();
+  }
 
   void DirectionalLight::NativeConstruct()
   {
@@ -193,12 +209,39 @@ namespace ToolKit
     AddComponent<DirectionComponent>();
   }
 
-  void DirectionalLight::UpdateShadowFrustum(const CameraPtr cameraView, const BoundingBox& shadowVolume)
+  void DirectionalLight::UpdateShadowFrustum(const CameraPtr cameraView, ScenePtr scene)
   {
-    FitViewFrustumIntoLightFrustum(m_shadowCamera, cameraView, shadowVolume);
+    for (int i = 0; i < RHIConstants::CascadeCount; ++i)
+    {
+      float near = RHIConstants::CascadeDistances[i];
+      float far;
+      if (i == RHIConstants::CascadeCount - 1)
+      {
+        far = GetEngineSettings().PostProcessing.ShadowDistance;
+      }
+      else
+      {
+        far = RHIConstants::CascadeDistances[i + 1];
+      }
+
+      FitViewFrustumIntoLightFrustum(m_cascadeShadowCameras[i],
+                                     cameraView,
+                                     scene->GetFrustumBoundary(cameraView),
+                                     near,
+                                     far);
+    }
+
     UpdateShadowCamera();
 
     m_invalidatedForLightCache = true;
+  }
+
+  void DirectionalLight::UpdateShadowCamera()
+  {
+    for (int i = 0; i < RHIConstants::CascadeCount; ++i)
+    {
+      m_shadowMapCascadeCameraProjectionViewMatrices[i] = m_cascadeShadowCameras[i]->GetProjectViewMatrix();
+    }
   }
 
   XmlNode* DirectionalLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -260,22 +303,71 @@ namespace ToolKit
 
   void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
                                                         CameraPtr viewCamera,
-                                                        const BoundingBox& shadowVolume)
+                                                        const BoundingBox& shadowVolume,
+                                                        float near,
+                                                        float far)
   {
-    // NOTE: For cases when camera is bigger than scene bounding box, we should use scene bounding box
+    const float lastCameraNear = viewCamera->GetNearClipVal();
+    const float lastCameraFar  = viewCamera->GetFarClipVal();
+    viewCamera->SetNearClipVal(near);
+    viewCamera->SetFarClipVal(far);
 
-    // Set far for view frustum
-    float lastCameraFar  = viewCamera->GetFarClipVal();
-    float shadowDistance = GetEngineSettings().PostProcessing.ShadowDistance;
-    viewCamera->SetFarClipVal(shadowDistance);
+    const Vec3Array frustum = viewCamera->ExtractFrustumCorner();
 
-    Vec3Array frustum = viewCamera->ExtractFrustumCorner();
+    viewCamera->SetNearClipVal(lastCameraNear);
     viewCamera->SetFarClipVal(lastCameraFar);
 
-    const float worldUnitPerTexel = shadowDistance * 25.0f / RHIConstants::ShadowAtlasTextureSize;
+    Vec3 center = ZERO;
+    for (int i = 0; i < 8; ++i)
+    {
+      center += frustum[i];
+    }
+    center /= 8.0f;
+
+    lightCamera->m_node->SetOrientation(m_node->GetOrientation());
+    lightCamera->m_node->SetTranslation(center);
+
+    const Mat4 lightView = lightCamera->GetViewMatrix();
+
+    // Calculate tight shadow volume.
+    BoundingBox tightShadowVolume;
+    for (int i = 0; i < 8; i++)
+    {
+      const Vec4 vertex = lightView * Vec4(frustum[i], 1.0f);
+      tightShadowVolume.UpdateBoundary(vertex);
+    }
+
+    const float tightFar = tightShadowVolume.max.z - tightShadowVolume.min.z;
+
+    lightCamera->SetLens(tightShadowVolume.min.x,
+                         tightShadowVolume.max.x,
+                         tightShadowVolume.min.y,
+                         tightShadowVolume.max.y,
+                         -tightFar * 0.5f,
+                         tightFar * 0.5f);
+  }
+
+  /*
+  void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
+                                                        CameraPtr viewCamera,
+                                                        const BoundingBox& shadowVolume,
+                                                        float near,
+                                                        float far)
+  {
+    // Set far for view frustum
+    float lastCameraNear = viewCamera->GetNearClipVal();
+    float lastCameraFar  = viewCamera->GetFarClipVal();
+    viewCamera->SetNearClipVal(near);
+    viewCamera->SetFarClipVal(far);
+
+    Vec3Array frustum = viewCamera->ExtractFrustumCorner();
+    viewCamera->SetNearClipVal(lastCameraNear);
+    viewCamera->SetFarClipVal(lastCameraFar);
+
+    const float worldUnitPerTexel = far * 25.0f / RHIConstants::ShadowAtlasTextureSize;
     const Vec3 vWorldUnitPerTexel = Vec3(worldUnitPerTexel, worldUnitPerTexel, worldUnitPerTexel);
 
-    Vec3 center = ZERO;
+    Vec3 center                   = ZERO;
     for (int i = 0; i < 8; ++i)
     {
       frustum[i] /= vWorldUnitPerTexel;
@@ -306,16 +398,16 @@ namespace ToolKit
     float maxDistance = glm::sqrt(width * width + height * height + depth * depth);
 
     float tightFar    = tightShadowVolume.max.z - tightShadowVolume.min.z;
-    float far         = glm::min(tightFar, maxDistance);
+    tightFar          = glm::min(tightFar, maxDistance);
 
     lightCamera->SetLens(tightShadowVolume.min.x,
                          tightShadowVolume.max.x,
                          tightShadowVolume.min.y,
                          tightShadowVolume.max.y,
-                         -far * 0.5f,
-                         far * 0.5f);
+                         -tightFar * 0.5f,
+                         tightFar * 0.5f);
   }
-
+  */
   // PointLight
   //////////////////////////////////////////
 

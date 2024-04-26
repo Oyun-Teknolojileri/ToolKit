@@ -20,8 +20,9 @@ namespace ToolKit
     float innAngle;
     float pad5;
 
-    Mat4 projectionViewMatrix;
+    Mat4 projectionViewMatrices[RHIConstants::CascadeCount];
     float shadowMapCameraFar;
+    int numOfCascades;
     int castShadow;
     int PCFSamples;
     float PCFRadius;
@@ -29,9 +30,10 @@ namespace ToolKit
     int softShadows;
     float shadowAtlasLayer;
     float shadowAtlasResRatio;
+    float pad7;
     Vec2 shadowAtlasCoord;
     float shadowBias;
-    float pad6;
+    Vec3 pad8;
   };
 
   struct LightData

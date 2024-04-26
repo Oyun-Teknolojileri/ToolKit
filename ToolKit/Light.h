@@ -93,7 +93,9 @@ namespace ToolKit
     virtual ~DirectionalLight();
 
     void NativeConstruct() override;
-    void UpdateShadowFrustum(const CameraPtr cameraView, const BoundingBox& shadowVolume);
+    void UpdateShadowFrustum(const CameraPtr cameraView, ScenePtr scene);
+
+    void UpdateShadowCamera() override;
 
     LightType GetLightType() const override { return LightType::Directional; }
 
@@ -107,7 +109,15 @@ namespace ToolKit
 
     // Fits view frustum of the camera into shadow map camera frustum. As the
     // view frustum gets bigger, the resolution gets lower.
-    void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera, const BoundingBox& shadowVolume);
+    void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
+                                        CameraPtr viewCamera,
+                                        const BoundingBox& shadowVolume,
+                                        float near,
+                                        float far);
+
+   public:
+    std::vector<CameraPtr> m_cascadeShadowCameras;
+    std::vector<Mat4> m_shadowMapCascadeCameraProjectionViewMatrices;
   };
 
   typedef std::shared_ptr<DirectionalLight> DirectionalLightPtr;
