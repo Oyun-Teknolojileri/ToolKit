@@ -191,37 +191,57 @@ namespace ToolKit
 
     LineBatchPtr EditorDirectionalLight::GetDebugShadowFrustum()
     {
-      Vec3Array corners = m_cascadeShadowCameras[0]->ExtractFrustumCorner();
       Vec3Array vertices;
-
       vertices.resize(24);
-      vertices[0]     = corners[3];
-      vertices[1]     = corners[2];
-      vertices[2]     = corners[2];
-      vertices[3]     = corners[1];
-      vertices[4]     = corners[1];
-      vertices[5]     = corners[0];
-      vertices[6]     = corners[0];
-      vertices[7]     = corners[3];
-      vertices[8]     = corners[6];
-      vertices[9]     = corners[5];
-      vertices[10]    = corners[5];
-      vertices[11]    = corners[4];
-      vertices[12]    = corners[4];
-      vertices[13]    = corners[7];
-      vertices[14]    = corners[7];
-      vertices[15]    = corners[6];
-      vertices[16]    = corners[6];
-      vertices[17]    = corners[2];
-      vertices[18]    = corners[5];
-      vertices[19]    = corners[1];
-      vertices[20]    = corners[4];
-      vertices[21]    = corners[0];
-      vertices[22]    = corners[7];
-      vertices[23]    = corners[3];
 
       LineBatchPtr lb = MakeNewPtr<LineBatch>();
-      lb->Generate(vertices, Vec3(1.0f, 0.0f, 0.0f), DrawType::Line, 0.5f);
+
+      for (int i = 0; i < RHIConstants::CascadeCount; i++)
+      {
+        Vec3Array corners   = m_cascadeShadowCameras[i]->ExtractFrustumCorner();
+        vertices[0]         = corners[3];
+        vertices[1]         = corners[2];
+        vertices[2]         = corners[2];
+        vertices[3]         = corners[1];
+        vertices[4]         = corners[1];
+        vertices[5]         = corners[0];
+        vertices[6]         = corners[0];
+        vertices[7]         = corners[3];
+        vertices[8]         = corners[6];
+        vertices[9]         = corners[5];
+        vertices[10]        = corners[5];
+        vertices[11]        = corners[4];
+        vertices[12]        = corners[4];
+        vertices[13]        = corners[7];
+        vertices[14]        = corners[7];
+        vertices[15]        = corners[6];
+        vertices[16]        = corners[6];
+        vertices[17]        = corners[2];
+        vertices[18]        = corners[5];
+        vertices[19]        = corners[1];
+        vertices[20]        = corners[4];
+        vertices[21]        = corners[0];
+        vertices[22]        = corners[7];
+        vertices[23]        = corners[3];
+
+        LineBatchPtr batch  = MakeNewPtr<LineBatch>();
+        Vec3 clr            = ZERO;
+        clr[glm::min(i, 2)] = 1.0f;
+
+        batch->Generate(vertices, clr, DrawType::Line, 0.5f);
+        MeshPtr mesh = batch->GetMeshComponent()->GetMeshVal();
+
+        if (i == 0)
+        {
+          lb->GetMeshComponent()->SetMeshVal(mesh);
+        }
+        else
+        {
+          lb->GetMeshComponent()->GetMeshVal()->m_subMeshes.push_back(mesh);
+        }
+      }
+
+      lb->GetMeshComponent()->GetMeshVal()->Init();
 
       return lb;
     }
