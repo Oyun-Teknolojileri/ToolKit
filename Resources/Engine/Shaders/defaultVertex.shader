@@ -67,7 +67,7 @@
          }
 
          v_pos = (Model * gl_Position).xyz;
-         v_viewPosDepth = abs((View * gl_Position).z);
+         v_viewPosDepth = length(View * gl_Position);
          gl_Position = ProjectViewModel * gl_Position;
          v_texture = vTexture;
       }
