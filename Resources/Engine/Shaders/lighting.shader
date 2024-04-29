@@ -230,15 +230,16 @@ vec3 PBRLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 fragToEye, 
 			vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, LightData[i].color * LightData[i].intensity);
 
 			// shadow
+			float depth = abs(viewPosDepth);
 			float shadow = 1.0;
 			if (LightData[i].castShadow == 1)
 			{
 				int cascadeOfThisPixel = 0;
-				if (viewPosDepth > CASCADE_FARS[2])
+				if (depth > CASCADE_FARS[2])
 				{
 					cascadeOfThisPixel = 2;
 				}
-				else if (viewPosDepth > CASCADE_FARS[1])
+				else if (depth > CASCADE_FARS[1])
 				{
 					cascadeOfThisPixel = 1;
 				}
@@ -516,7 +517,7 @@ void SpotLightBlinnPhong(vec3 fragToLight, vec3 fragToEye, vec3 normal, vec3 col
 			specular *= intensity * radiusCheck * attenuation;
 }
 
-vec3 BlinnPhongLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamPos)
+vec3 BlinnPhongLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 fragToEye, vec3 viewCamPos)
 {
 	float shadow = 1.0;
 	vec3 irradiance = vec3(0.0);
@@ -548,16 +549,15 @@ vec3 BlinnPhongLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamP
 			DirectionalLightBlinnPhong(-LightData[i].dir, fragToEye, normal, LightData[i].color, diffuse, specular);
 
 			// Shadow
+			float depth = abs(viewPosDepth);
 			if (LightData[i].castShadow == 1)
 			{
 				int cascadeOfThisPixel = 0;
-				vec3 camToFrag = fragPos - viewCamPos;
-				float distSqFromCamera = dot(camToFrag, camToFrag);
-				if (distSqFromCamera > CASCADE_FARS[1] * CASCADE_FARS[1])
+				if (depth > CASCADE_FARS[2])
 				{
 					cascadeOfThisPixel = 2;
 				}
-				else if (distSqFromCamera > CASCADE_FARS[0] * CASCADE_FARS[0])
+				else if (depth > CASCADE_FARS[1])
 				{
 					cascadeOfThisPixel = 1;
 				}

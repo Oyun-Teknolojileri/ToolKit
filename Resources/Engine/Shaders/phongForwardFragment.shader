@@ -38,6 +38,7 @@
 		in vec3 v_pos;
 		in vec3 v_normal;
 		in vec2 v_texture;
+		in float v_viewPosDepth;
 		in mat3 TBN;
 
 		layout (location = 0) out vec4 fragColor;
@@ -88,7 +89,7 @@
 			vec3 e = normalize(CamData.pos - v_pos);
 
       // phong lighting
-			vec3 irradiance = BlinnPhongLighting(v_pos, n, e, CamData.pos);
+			vec3 irradiance = BlinnPhongLighting(v_pos, v_viewPosDepth, n, e, CamData.pos);
       irradiance *= color.xyz;
 
       // ibl diffuse
