@@ -191,7 +191,7 @@ float Attenuation(float distance, float radius, float constant, float linear, fl
 	return attenuation;
 }
 
-vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamPos, vec3 albedo, float metallic, float roughness)
+vec3 PBRLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 fragToEye, vec3 viewCamPos, vec3 albedo, float metallic, float roughness)
 {
 	vec3 irradiance = vec3(0.0);
 
@@ -234,13 +234,11 @@ vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamPos, vec
 			if (LightData[i].castShadow == 1)
 			{
 				int cascadeOfThisPixel = 0;
-				vec3 camToFrag = fragPos - viewCamPos;
-				float distSqFromCamera = dot(camToFrag, camToFrag);
-				if (distSqFromCamera > CASCADE_FARS[2] * CASCADE_FARS[2])
+				if (viewPosDepth > CASCADE_FARS[2])
 				{
 					cascadeOfThisPixel = 2;
 				}
-				else if (distSqFromCamera > CASCADE_FARS[1] * CASCADE_FARS[1])
+				else if (viewPosDepth > CASCADE_FARS[1])
 				{
 					cascadeOfThisPixel = 1;
 				}

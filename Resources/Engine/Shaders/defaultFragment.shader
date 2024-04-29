@@ -45,6 +45,7 @@
 		in vec3 v_pos;
 		in vec3 v_normal;
 		in vec2 v_texture;
+		in float v_viewPosDepth;
 		in mat3 TBN;
 
 		layout (location = 0) out vec4 fragColor;
@@ -106,7 +107,7 @@
 				metallicRoughness = vec2(metallic, roughness);
 			}
 
-			vec3 irradiance = PBRLighting(v_pos, n, e, CamData.pos, color.xyz, metallicRoughness.x, metallicRoughness.y);
+			vec3 irradiance = PBRLighting(v_pos, v_viewPosDepth, n, e, CamData.pos, color.xyz, metallicRoughness.x, metallicRoughness.y);
 
 			irradiance += IBLPBR(n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
 
