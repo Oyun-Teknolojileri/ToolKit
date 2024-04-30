@@ -1,8 +1,10 @@
 #include "LightDataBuffer.h"
 
 #include "DirectionComponent.h"
+#include "EngineSettings.h"
 #include "Light.h"
 #include "RHI.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {
@@ -75,11 +77,13 @@ namespace ToolKit
 
         if (castShadow)
         {
-          for (int ii = 0; ii < RHIConstants::CascadeCount; ++ii)
+          const int cascades = GetEngineSettings().Graphics.cascadeCount;
+          for (int ii = 0; ii < cascades; ++ii)
           {
             m_lightData.perLightData[i].projectionViewMatrices[ii] =
                 dLight->m_shadowMapCascadeCameraProjectionViewMatrices[ii];
           }
+          m_lightData.perLightData[i].numOfCascades = cascades;
         }
       }
       // Spot light uniforms

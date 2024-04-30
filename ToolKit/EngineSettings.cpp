@@ -11,8 +11,6 @@
 #include "PluginManager.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
 
@@ -114,6 +112,12 @@ namespace ToolKit
     WriteAttr(settings, doc, "RenderSpec", std::to_string((int) RenderSpec));
     WriteAttr(settings, doc, "RenderResolutionScale", std::to_string(renderResolutionScale));
     WriteAttr(settings, doc, "EnableGpuTimer", std::to_string(enableGpuTimer));
+
+    WriteAttr(settings, doc, "CascadeCount", std::to_string(cascadeCount));
+    WriteAttr(settings, doc, "CascacdeDist0", std::to_string(cascadeDistances[0]));
+    WriteAttr(settings, doc, "CascacdeDist1", std::to_string(cascadeDistances[1]));
+    WriteAttr(settings, doc, "CascacdeDist2", std::to_string(cascadeDistances[2]));
+    WriteAttr(settings, doc, "CascacdeDist3", std::to_string(cascadeDistances[3]));
   }
 
   void EngineSettings::GraphicSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -131,6 +135,12 @@ namespace ToolKit
       ReadAttr(node, "RenderResolutionScale", renderResolutionScale);
       ReadAttr(node, "RenderSpec", *(int*) &RenderSpec);
       ReadAttr(node, "EnableGpuTimer", enableGpuTimer);
+
+      ReadAttr(node, "CascadeCount", cascadeCount);
+      ReadAttr(node, "CascacdeDist0", cascadeDistances[0]);
+      ReadAttr(node, "CascacdeDist1", cascadeDistances[1]);
+      ReadAttr(node, "CascacdeDist2", cascadeDistances[2]);
+      ReadAttr(node, "CascacdeDist3", cascadeDistances[3]);
     }
   }
 

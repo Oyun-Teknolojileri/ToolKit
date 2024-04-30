@@ -15,7 +15,6 @@ namespace ToolKit
     static constexpr float ShadowBiasMultiplier  = 0.0001f;
     static constexpr uint LightCacheSize         = 128;
 
-    static constexpr uint CascadeCount           = 3;
-    static constexpr float CascadeDistances[3]   = {0.5f, 20.0f, 100.0f};
+    static constexpr int MaxCascadeCount         = 4;
   };
 } // namespace ToolKit

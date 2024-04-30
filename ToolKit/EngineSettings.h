@@ -62,6 +62,9 @@ namespace ToolKit
       /** Provides high precision gpu timers. Bad on cpu performance. Enable it only for profiling. */
       bool enableGpuTimer         = false;
 
+      int cascadeCount            = 4;
+      float cascadeDistances[4]   = {0.5f, 20.0f, 50.0f, 100.0f};
+
       void Serialize(XmlDocument* doc, XmlNode* parent) const;
       void DeSerialize(XmlDocument* doc, XmlNode* parent);
     } Graphics;

@@ -149,7 +149,7 @@ namespace ToolKit
         const Vec3 pos              = shadowCamera->m_node->GetTranslation();
         const BoundingBox& sceneBox = m_params.scene->GetSceneBoundary();
 
-        Vec3 nearPos                = pos + (-dir * (value - 1.0f));
+        Vec3 nearPos                = pos + (-dir * value);
         while (PointInsideBBox(nearPos, sceneBox.max, sceneBox.min))
         {
           nearPos  = pos + (-dir * value);
@@ -244,7 +244,7 @@ namespace ToolKit
     else // if (light->IsA<DirectionalLight>())
     {
       DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
-      for (int i = 0; i < RHIConstants::CascadeCount; ++i)
+      for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; ++i)
       {
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
                                                 m_shadowAtlas,
@@ -310,15 +310,17 @@ namespace ToolKit
       resolutions.push_back((int) light->GetShadowResVal());
     }
 
+    int cascades                             = GetEngineSettings().Graphics.cascadeCount;
+
     std::vector<BinPack2D::PackedRect> rects = m_packer.Pack(resolutions, RHIConstants::ShadowAtlasTextureSize);
 
     int dirLightIndex                        = 0;
     for (int i = 0; i < rects.size(); ++i)
     {
       dirLights[i]->m_shadowAtlasCoord = rects[i].Coord;
-      dirLights[i]->m_shadowAtlasLayer = (dirLightIndex * RHIConstants::CascadeCount) + rects[i].ArrayIndex;
+      dirLights[i]->m_shadowAtlasLayer = (dirLightIndex * cascades) + rects[i].ArrayIndex;
 
-      lastLayerInUse                   = dirLights[i]->m_shadowAtlasLayer + RHIConstants::CascadeCount - 1;
+      lastLayerInUse                   = dirLights[i]->m_shadowAtlasLayer + cascades - 1;
       layerCount                       = std::max(lastLayerInUse, layerCount);
 
       dirLightIndex++;
@@ -345,7 +347,7 @@ namespace ToolKit
       layerCount                        = std::max(lastLayerInUse, layerCount);
     }
 
-    ////////////////////////////////
+    /////////////////////
 
     // Get point light into another pack
     resolutions.clear();

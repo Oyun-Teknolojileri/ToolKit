@@ -186,7 +186,7 @@ namespace ToolKit
   DirectionalLight::DirectionalLight()
   {
     m_shadowCamera->SetOrthographicVal(true);
-    for (int i = 0; i < RHIConstants::CascadeCount; ++i)
+    for (int i = 0; i < RHIConstants::MaxCascadeCount; ++i)
     {
       CameraPtr cam = MakeNewPtr<Camera>();
       cam->SetOrthographicVal(true);
@@ -194,7 +194,7 @@ namespace ToolKit
       cam->InvalidateSpatialCaches();
       m_cascadeShadowCameras.push_back(cam);
     }
-    m_shadowMapCascadeCameraProjectionViewMatrices.resize(RHIConstants::CascadeCount);
+    m_shadowMapCascadeCameraProjectionViewMatrices.resize(RHIConstants::MaxCascadeCount);
   }
 
   DirectionalLight::~DirectionalLight()
@@ -211,20 +211,23 @@ namespace ToolKit
 
   void DirectionalLight::UpdateShadowFrustum(CameraPtr cameraView, ScenePtr scene)
   {
+    int cascades               = GetEngineSettings().Graphics.cascadeCount;
+    float* cascadeDists        = GetEngineSettings().Graphics.cascadeDistances;
+
     const float lastCameraNear = cameraView->Near();
     const float lastCameraFar  = cameraView->Far();
 
-    for (int i = 0; i < RHIConstants::CascadeCount; ++i)
+    for (int i = 0; i < cascades; ++i)
     {
-      float near = RHIConstants::CascadeDistances[i];
+      float near = cascadeDists[i];
       float far;
-      if (i == RHIConstants::CascadeCount - 1)
+      if (i == cascades - 1)
       {
         far = GetEngineSettings().PostProcessing.ShadowDistance;
       }
       else
       {
-        far = RHIConstants::CascadeDistances[i + 1];
+        far = cascadeDists[i + 1];
       }
 
       cameraView->SetNearClipVal(near);
@@ -247,7 +250,7 @@ namespace ToolKit
 
   void DirectionalLight::UpdateShadowCamera()
   {
-    for (int i = 0; i < RHIConstants::CascadeCount; ++i)
+    for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; ++i)
     {
       m_shadowMapCascadeCameraProjectionViewMatrices[i] = m_cascadeShadowCameras[i]->GetProjectViewMatrix();
     }

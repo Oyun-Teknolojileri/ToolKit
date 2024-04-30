@@ -196,7 +196,7 @@ namespace ToolKit
 
       LineBatchPtr lb = MakeNewPtr<LineBatch>();
 
-      for (int i = 0; i < RHIConstants::CascadeCount; i++)
+      for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; i++)
       {
         Vec3Array corners   = m_cascadeShadowCameras[i]->ExtractFrustumCorner();
         vertices[0]         = corners[3];

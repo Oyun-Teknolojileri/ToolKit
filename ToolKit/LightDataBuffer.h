@@ -20,7 +20,7 @@ namespace ToolKit
     float innAngle;
     float pad5;
 
-    Mat4 projectionViewMatrices[RHIConstants::CascadeCount];
+    Mat4 projectionViewMatrices[RHIConstants::MaxCascadeCount];
     float shadowMapCameraFar;
     int numOfCascades;
     int castShadow;
