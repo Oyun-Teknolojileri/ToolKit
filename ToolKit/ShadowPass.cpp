@@ -9,6 +9,7 @@
 
 #include "BVH.h"
 #include "Camera.h"
+#include "DirectionComponent.h"
 #include "Logger.h"
 #include "Material.h"
 #include "MathUtil.h"
@@ -135,7 +136,26 @@ namespace ToolKit
       renderer->BindProgram(m_program);
 
       renderer->SetCamera(shadowCamera, false);
-      Frustum frustum = ExtractFrustum(shadowCamera->GetProjectViewMatrix(), false);
+
+      Frustum frustum;
+      if (light->GetLightType() == Light::LightType::Directional)
+      {
+        // Set near-far of the directional light frustum huge since we do not want near-far planes to clip objects that
+        // should contribute to the directional light shadow.
+        constexpr float value = 10000.0f;
+        const float f         = shadowCamera->GetFarClipVal();
+        const Vec3 p          = shadowCamera->m_node->GetTranslation();
+        shadowCamera->SetFarClipVal(value * 2.0f);
+        shadowCamera->m_node->Translate(shadowCamera->GetComponentFast<DirectionComponent>()->GetDirection() *
+                                        (-value + 1.0f));
+        frustum = ExtractFrustum(shadowCamera->GetProjectViewMatrix(), false);
+        shadowCamera->SetFarClipVal(f);
+        shadowCamera->m_node->SetTranslation(p);
+      }
+      else
+      {
+        frustum = ExtractFrustum(shadowCamera->GetProjectViewMatrix(), false);
+      }
 
       EntityRawPtrArray ntties;
       m_params.scene->m_bvh->FrustumTest(frustum, ntties);
