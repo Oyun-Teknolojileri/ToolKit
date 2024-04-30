@@ -170,7 +170,29 @@ namespace ToolKit
           ImGui::EndCombo();
         }
 
-        ImGui::DragFloat("Shadow Distance", &engineSettings.PostProcessing.ShadowDistance, 1.0f, 0.01f, 100000.0f);
+        ImGui::SeparatorText("Shadows");
+
+        ImGui::DragFloat("Max Shadow Distance", &engineSettings.PostProcessing.ShadowDistance, 1.0f, 0.01f, 100000.0f);
+
+        const char* itemNames[] = {"1", "2", "3", "4"};
+        const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
+        int currentItem         = engineSettings.Graphics.cascadeCount - 1;
+        if (ImGui::BeginCombo("Cascade Count", itemNames[currentItem]))
+        {
+          for (int itemIndx = 0; itemIndx < itemCount; itemIndx++)
+          {
+            bool isSelected      = false;
+            const char* itemName = itemNames[itemIndx];
+            ImGui::Selectable(itemName, &isSelected);
+            if (isSelected)
+            {
+              engineSettings.Graphics.cascadeCount = itemIndx + 1;
+              GetRenderSystem()->InvalidateShadowAtlas();
+            }
+          }
+
+          ImGui::EndCombo();
+        }
 
         ImGui::SeparatorText("BVH");
         ImGui::DragInt("Node Max Entity", &engineSettings.PostProcessing.maxEntityPerBVHNode, 1, 1, 1000000);

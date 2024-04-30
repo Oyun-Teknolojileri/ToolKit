@@ -15,6 +15,7 @@
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "RHIConstants.h"
+#include "RenderSystem.h"
 #include "Scene.h"
 #include "TKProfiler.h"
 #include "TKStats.h"
@@ -387,6 +388,8 @@ namespace ToolKit
 
     // Check if the shadow atlas needs to be updated
     bool needChange = false;
+
+    needChange      = GetRenderSystem()->ConsumeShadowAtlasInvalidation();
 
     // After this loop m_previousShadowCasters is set with lights with shadows
     int nextId      = 0;

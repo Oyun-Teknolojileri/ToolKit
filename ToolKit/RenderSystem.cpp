@@ -209,4 +209,12 @@ namespace ToolKit
     }
   }
 
+  bool RenderSystem::ConsumeShadowAtlasInvalidation()
+  {
+    bool temp                = m_shadowAtlasInvalidated;
+    m_shadowAtlasInvalidated = false;
+    return temp;
+  }
+
+  void RenderSystem::InvalidateShadowAtlas() { m_shadowAtlasInvalidated = true; }
 } // namespace ToolKit
