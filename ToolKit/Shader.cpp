@@ -17,8 +17,6 @@
 
 #include <unordered_set>
 
-
-
 namespace ToolKit
 {
 
@@ -173,7 +171,6 @@ namespace ToolKit
           case Uniform::UNUSEDSLOT_2:
           case Uniform::UNUSEDSLOT_3:
           case Uniform::UNUSEDSLOT_4:
-          case Uniform::UNUSEDSLOT_5:
           case Uniform::UNUSEDSLOT_6:
           case Uniform::UNUSEDSLOT_7:
             isUniformFound = true;

@@ -986,6 +986,13 @@ namespace ToolKit
     // Built-in variables.
 
     {
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::MODEL_VIEW_MATRIX);
+      if (uniformLoc != -1)
+      {
+        const Mat4 modelView = m_view * m_model;
+        glUniformMatrix4fv(uniformLoc, 1, false, &modelView[0][0]);
+      }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::PROJECT_VIEW_MODEL);
       if (uniformLoc != -1)
       {
