@@ -46,14 +46,22 @@ namespace ToolKit
 
   void Node::Rotate(const Quaternion& val, TransformationSpace space)
   {
-    Mat4 ts = glm::toMat4(val);
-    TransformImp(ts, space, nullptr, &m_orientation, nullptr);
+    if (space == TransformationSpace::TS_LOCAL)
+    {
+      m_orientation = m_orientation * val;
+    }
+    else
+    {
+      m_orientation = val * m_orientation;
+    }
+
+    UpdateTransformCaches();
   }
 
   void Node::Scale(const Vec3& val)
   {
-    Mat4 ts = glm::scale(val);
-    TransformImp(ts, TransformationSpace::TS_LOCAL, nullptr, nullptr, &m_scale);
+    m_scale *= val;
+    UpdateTransformCaches();
   }
 
   void Node::Transform(const Mat4& val, TransformationSpace space)
@@ -88,8 +96,24 @@ namespace ToolKit
 
   void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
   {
-    Mat4 ts = glm::toMat4(val);
-    SetTransformImp(ts, space, nullptr, &m_orientation, nullptr);
+    if (space == TransformationSpace::TS_LOCAL)
+    {
+      m_orientation = val;
+    }
+    else
+    {
+      if (m_parent)
+      {
+        Quaternion parentWorldOrientation = m_parent->GetWorldOrientationCache();
+        m_orientation                     = glm::inverse(parentWorldOrientation) * val;
+      }
+      else
+      {
+        m_orientation = val;
+      }
+    }
+
+    UpdateTransformCaches();
   }
 
   Quaternion Node::GetOrientation(TransformationSpace space)
@@ -101,8 +125,8 @@ namespace ToolKit
 
   void Node::SetScale(const Vec3& val)
   {
-    Mat4 ts = glm::scale(val);
-    SetTransformImp(ts, TransformationSpace::TS_LOCAL, nullptr, nullptr, &m_scale);
+    m_scale = val;
+    UpdateTransformCaches();
   }
 
   Vec3 Node::GetScale() { return m_scale; }
@@ -375,6 +399,7 @@ namespace ToolKit
   {
     if (m_dirty)
     {
+      // This will recursively climb up in the hierarchy until it finds a clear node or clears all the tree.
       UpdateTransformCaches();
     }
 
@@ -422,15 +447,23 @@ namespace ToolKit
 
   void Node::UpdateTransformCaches()
   {
+    // Update local transform cache.
     Mat4 ts, rt, scl;
     scl          = glm::scale(scl, m_scale);
     rt           = glm::toMat4(m_orientation);
     ts           = glm::translate(ts, m_translation);
     m_localCache = ts * rt * scl;
+
+    // Let all children know they need to update their parent caches.
     SetChildrenDirty();
+
+    // Update world cache. Iteratively goes up until the root or a clean parent.
     m_worldCache = GetParentTransform() * m_localCache;
+
+    // Update individual transform caches.
     DecomposeMatrix(m_worldCache, &m_worldTranslationCache, &m_worldOrientationCache, nullptr);
 
+    // Invalidate entity's spatial caches.
     InvalitadeSpatialCaches();
   }
 
@@ -444,6 +477,7 @@ namespace ToolKit
         return m_parentCache;
       }
 
+      // This will climb up the hierarchy until a clean cache is found and start updating the tree downwards.
       ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 
       if (!m_inheritScale)
@@ -482,6 +516,16 @@ namespace ToolKit
         node->InvalitadeSpatialCaches();
       }
     }
+  }
+
+  Quaternion Node::GetWorldOrientationCache()
+  {
+    if (m_dirty)
+    {
+      UpdateTransformCaches();
+    }
+
+    return m_worldOrientationCache;
   }
 
 } // namespace ToolKit
