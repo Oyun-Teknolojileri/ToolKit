@@ -211,6 +211,9 @@ namespace ToolKit
 
   void DirectionalLight::UpdateShadowFrustum(CameraPtr cameraView, ScenePtr scene)
   {
+    const float lastCameraNear = cameraView->Near();
+    const float lastCameraFar  = cameraView->Far();
+
     for (int i = 0; i < RHIConstants::CascadeCount; ++i)
     {
       float near = RHIConstants::CascadeDistances[i];
@@ -224,8 +227,6 @@ namespace ToolKit
         far = RHIConstants::CascadeDistances[i + 1];
       }
 
-      const float lastCameraNear = cameraView->GetNearClipVal();
-      const float lastCameraFar  = cameraView->GetFarClipVal();
       cameraView->SetNearClipVal(near);
       cameraView->SetFarClipVal(far);
 
@@ -234,10 +235,10 @@ namespace ToolKit
                                      scene->GetFrustumBoundary(cameraView),
                                      near,
                                      far);
-
-      cameraView->SetNearClipVal(lastCameraNear);
-      cameraView->SetFarClipVal(lastCameraFar);
     }
+
+    cameraView->SetNearClipVal(lastCameraNear);
+    cameraView->SetFarClipVal(lastCameraFar);
 
     UpdateShadowCamera();
 
