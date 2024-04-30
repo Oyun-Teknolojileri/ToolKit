@@ -235,7 +235,6 @@ namespace ToolKit
 
       FitViewFrustumIntoLightFrustum(m_cascadeShadowCameras[i],
                                      cameraView,
-                                     scene->GetFrustumBoundary(cameraView),
                                      near,
                                      far);
     }
@@ -315,7 +314,6 @@ namespace ToolKit
 
   void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
                                                         CameraPtr viewCamera,
-                                                        const BoundingBox& shadowVolume,
                                                         float near,
                                                         float far)
   {

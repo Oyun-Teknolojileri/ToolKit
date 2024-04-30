@@ -274,7 +274,10 @@ namespace ToolKit
 
     const BoundingBox& GetSceneBoundary(); //!< Returns scene boundary from the BVH.
 
-    BoundingBox GetFrustumBoundary(const CameraPtr& camera) const;
+    /**
+     * Returns the bounding box that containing the BVH nodes that the camera frustum intersects.
+     */
+    BoundingBox GetFrustumBVHBoundary(const CameraPtr& camera) const;
 
    protected:
     /**

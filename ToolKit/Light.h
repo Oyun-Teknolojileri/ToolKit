@@ -111,7 +111,6 @@ namespace ToolKit
     // view frustum gets bigger, the resolution gets lower.
     void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
                                         CameraPtr viewCamera,
-                                        const BoundingBox& shadowVolume,
                                         float near,
                                         float far);
 

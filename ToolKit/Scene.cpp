@@ -477,7 +477,7 @@ namespace ToolKit
 
   const BoundingBox& Scene::GetSceneBoundary() { return m_bvh->GetBVHBoundary(); }
 
-  BoundingBox Scene::GetFrustumBoundary(const CameraPtr& camera) const
+  BoundingBox Scene::GetFrustumBVHBoundary(const CameraPtr& camera) const
   {
     const Frustum frustum = ExtractFrustum(camera->GetProjectViewMatrix(), false);
     return m_bvh->GetFrustumBoundary(frustum);
