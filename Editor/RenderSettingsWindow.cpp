@@ -172,8 +172,6 @@ namespace ToolKit
 
         ImGui::SeparatorText("Shadows");
 
-        ImGui::DragFloat("Max Shadow Distance", &engineSettings.PostProcessing.ShadowDistance, 1.0f, 0.01f, 100000.0f);
-
         const char* itemNames[] = {"1", "2", "3", "4"};
         const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
         int currentItem         = engineSettings.Graphics.cascadeCount - 1;
@@ -195,9 +193,17 @@ namespace ToolKit
           ImGui::EndCombo();
         }
 
-        if (ImGui::DragFloat4("CascadeDistances", &engineSettings.Graphics.cascadeDistances[0]))
+        Vec4 data = {engineSettings.Graphics.cascadeDistances[1],
+                     engineSettings.Graphics.cascadeDistances[2],
+                     engineSettings.Graphics.cascadeDistances[3],
+                     engineSettings.PostProcessing.ShadowDistance};
+        if (ImGui::DragFloat4("CascadeDistances", &data[0]))
         {
           GetRenderSystem()->InvalidateGPULightCache();
+          engineSettings.Graphics.cascadeDistances[1]  = data.x;
+          engineSettings.Graphics.cascadeDistances[2]  = data.y;
+          engineSettings.Graphics.cascadeDistances[3]  = data.z;
+          engineSettings.PostProcessing.ShadowDistance = data.w;
         }
 
         ImGui::SeparatorText("BVH");
