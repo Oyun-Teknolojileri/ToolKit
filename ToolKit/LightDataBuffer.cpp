@@ -43,6 +43,12 @@ namespace ToolKit
 
   void LightDataBuffer::UpdateLightData(LightPtr* cachedLights, int size)
   {
+    const EngineSettings::GraphicSettings& graphicSettings = GetEngineSettings().Graphics;
+    m_lightData.cascadeDistances.x                         = graphicSettings.cascadeDistances[0];
+    m_lightData.cascadeDistances.y                         = graphicSettings.cascadeDistances[1];
+    m_lightData.cascadeDistances.z                         = graphicSettings.cascadeDistances[2];
+    m_lightData.cascadeDistances.w                         = graphicSettings.cascadeDistances[3];
+
     for (int i = 0; i < size; ++i)
     {
       if (cachedLights[i] == nullptr)
@@ -77,7 +83,7 @@ namespace ToolKit
 
         if (castShadow)
         {
-          const int cascades = GetEngineSettings().Graphics.cascadeCount;
+          const int cascades = graphicSettings.cascadeCount;
           for (int ii = 0; ii < cascades; ++ii)
           {
             m_lightData.perLightData[i].projectionViewMatrices[ii] =

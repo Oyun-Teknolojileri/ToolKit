@@ -38,6 +38,7 @@ namespace ToolKit
 
   struct LightData
   {
+    Vec4 cascadeDistances;
     PerLightData perLightData[RHIConstants::LightCacheSize];
   };
 

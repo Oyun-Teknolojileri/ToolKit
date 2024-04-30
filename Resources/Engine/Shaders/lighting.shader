@@ -11,7 +11,6 @@
 	<!--
 
 const int MAX_CASCADE_COUNT = 4;
-const float CASCADE_FARS[MAX_CASCADE_COUNT] = float[MAX_CASCADE_COUNT](0.5, 20.0, 50.0, 100.0);
 // TODO Minimize and pack this data as much as possible
 struct _LightData
 {
@@ -45,6 +44,7 @@ struct _LightData
 };
 layout (std140) uniform LightDataBuffer // slot 0
 {
+	vec4 cascadeDistances; // Max cascade is 4, so this fits.
 	_LightData LightData[128];
 };
 layout (std140) uniform ActiveLightIndicesBuffer // slot 1
@@ -237,15 +237,15 @@ vec3 PBRLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 fragToEye, 
 			if (LightData[i].castShadow == 1)
 			{
 				int cascadeOfThisPixel = 0;
-				if (LightData[i].numOfCascades > 3 && depth > CASCADE_FARS[3])
+				if (LightData[i].numOfCascades > 3 && depth > cascadeDistances[3])
 				{
 					cascadeOfThisPixel = 3;
 				}
-				else if (LightData[i].numOfCascades > 2 && depth > CASCADE_FARS[2])
+				else if (LightData[i].numOfCascades > 2 && depth > cascadeDistances[2])
 				{
 					cascadeOfThisPixel = 2;
 				}
-				else if (LightData[i].numOfCascades > 1 && depth > CASCADE_FARS[1])
+				else if (LightData[i].numOfCascades > 1 && depth > cascadeDistances[1])
 				{
 					cascadeOfThisPixel = 1;
 				}
@@ -570,15 +570,15 @@ vec3 BlinnPhongLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 frag
 			if (LightData[i].castShadow == 1)
 			{
 				int cascadeOfThisPixel = 0;
-				if (LightData[i].numOfCascades > 3 && depth > CASCADE_FARS[3])
+				if (LightData[i].numOfCascades > 3 && depth > cascadeDistances[3])
 				{
 					cascadeOfThisPixel = 3;
 				}
-				else if (LightData[i].numOfCascades > 2 && depth > CASCADE_FARS[2])
+				else if (LightData[i].numOfCascades > 2 && depth > cascadeDistances[2])
 				{
 					cascadeOfThisPixel = 2;
 				}
-				else if (LightData[i].numOfCascades > 1 && depth > CASCADE_FARS[1])
+				else if (LightData[i].numOfCascades > 1 && depth > cascadeDistances[1])
 				{
 					cascadeOfThisPixel = 1;
 				}

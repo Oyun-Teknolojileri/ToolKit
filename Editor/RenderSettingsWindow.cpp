@@ -188,10 +188,16 @@ namespace ToolKit
             {
               engineSettings.Graphics.cascadeCount = itemIndx + 1;
               GetRenderSystem()->InvalidateShadowAtlas();
+              GetRenderSystem()->InvalidateGPULightCache();
             }
           }
 
           ImGui::EndCombo();
+        }
+
+        if (ImGui::DragFloat4("CascadeDistances", &engineSettings.Graphics.cascadeDistances[0]))
+        {
+          GetRenderSystem()->InvalidateGPULightCache();
         }
 
         ImGui::SeparatorText("BVH");
