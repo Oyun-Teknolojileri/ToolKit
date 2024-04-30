@@ -10,6 +10,7 @@
 	<source>
 	<!--
 
+const int MAX_CASCADE_COUNT = 4;
 // TODO Minimize and pack this data as much as possible
 struct _LightData
 {
@@ -28,8 +29,9 @@ struct _LightData
 	float outAngle;
 	float innAngle;
 
-	mat4 projectionViewMatrix;
+	mat4 projectionViewMatrices[MAX_CASCADE_COUNT];
 	float shadowMapCameraFar;
+	int numOfCascades;
 	int castShadow;
 	int PCFSamples;
 	float PCFRadius;
@@ -42,6 +44,7 @@ struct _LightData
 };
 layout (std140) uniform LightDataBuffer // slot 0
 {
+	vec4 cascadeDistances; // Max cascade is 4, so this fits.
 	_LightData LightData[128];
 };
 layout (std140) uniform ActiveLightIndicesBuffer // slot 1
@@ -72,81 +75,13 @@ uniform float spotNonShadowLightDataSize;
 
 const float shadowFadeOutDistanceNorm = 0.9;
 
-// Returns uv coordinates and layers such as: vec3(u,v,layer)
-// https://kosmonautblog.wordpress.com/2017/03/25/shadow-filtering-for-pointlights/
-
-// Can be improved:
-// https://stackoverflow.com/questions/53115467/how-to-implement-texturecube-using-6-sampler2d
-vec3 UVWToUVLayer(vec3 vec)
-{
-	/*
-		layer:
-		  0       1       2       3       4       5
-		pos X   neg X   pos Y   neg Y   pos Z   neg Z
-	*/
-	float layer;
-	vec2 coord;
-
-	if (abs(vec.x) >= abs(vec.y) && abs(vec.x) >= abs(vec.z))
-	{
-		if (vec.x > 0.0)
-		{
-			layer = 0.0;
-			vec /= vec.x;
-			coord = -vec.zy;
-		}
-		else
-		{
-			layer = 1.0;
-			vec.y = -vec.y;
-			vec /= vec.x;
-			coord = -vec.zy;
-		}
-	}
-	else if (abs(vec.y) >= abs(vec.x) && abs(vec.y) >= abs(vec.z))
-	{
-		if (vec.y > 0.0)
-		{
-			layer = 2.0;
-			vec /= vec.y;
-			coord = vec.xz;
-		}
-		else
-		{
-			layer = 3.0;
-			vec.x = -vec.x;
-			vec /= vec.y;
-			coord = vec.xz;
-		}
-	}
-	else
-	{
-		if (vec.z > 0.0)
-		{
-			layer = 4.0;
-			vec.y = -vec.y;
-			vec /= -vec.z;
-			coord = -vec.xy;
-		}
-		else
-		{
-			layer = 5.0;
-			vec /= -vec.z;
-			coord = -vec.xy;
-		}
-	}
-
-	coord = (coord + vec2(1.0)) * 0.5;
-	return vec3(coord, layer);
-}
-
 bool EpsilonEqual(float a, float b, float eps)
 {
 	return abs(a - b) < eps;
 }
 
 float CalculateDirectionalShadow(vec3 pos, vec3 viewCamPos, mat4 lightProjView, vec2 shadowAtlasCoord,
-	float shadowAtlasResRatio, float shadowAtlasLayer, int PCFSamples, float PCFRadius, float lightBleedReduction, float shadowBias)
+	float shadowAtlasResRatio, float shadowAtlasLayer, int PCFSamples, float PCFRadius, float lightBleedReduction, float shadowBias, out int fallbackNextCascade)
 {
 	vec4 fragPosForLight = lightProjView * vec4(pos, 1.0);
 	vec3 projCoord = fragPosForLight.xyz;
@@ -155,8 +90,10 @@ float CalculateDirectionalShadow(vec3 pos, vec3 viewCamPos, mat4 lightProjView, 
 			projCoord.y < 0.0 || projCoord.y > 1.0 	||
 			projCoord.z < 0.0 || projCoord.z > 1.0)
 	{
+		fallbackNextCascade = 1;
 		return 1.0;
 	}
+	fallbackNextCascade = 0;
 
 	// Get depth of the current fragment according to lights view
 	float currFragDepth = projCoord.z;
@@ -221,21 +158,18 @@ float CalculatePointShadow(vec3 pos, vec3 lightPos, float shadowCameraFar, vec2 
 	vec3 lightToFrag = pos - lightPos;
 	float currFragDepth = length(lightToFrag) / shadowCameraFar;
 
-	vec2 startCoord = shadowAtlasCoord;
-	float resRatio = shadowAtlasResRatio;
-
-	vec3 coord = UVWToUVLayer(lightToFrag);
-	coord.xy = startCoord + resRatio * coord.xy;
-	coord.z = shadowAtlasLayer + coord.z;
-
 	if (PCFSamples > 1)
 	{
-		return PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + resRatio,
-		PCFSamples, PCFRadius * resRatio, currFragDepth, lightBleedReduction, shadowBias);
+		return PCFFilterOmni(s_texture8, shadowAtlasCoord, shadowAtlasResRatio, shadowAtlasLayer, lightToFrag, PCFSamples, PCFRadius * shadowAtlasResRatio,
+		currFragDepth, lightBleedReduction, shadowBias);
 	}
 	else
 	{
-		coord.xy = ClampTextureCoordinates(coord.xy, startCoord, startCoord + resRatio);
+		vec3 coord = UVWToUVLayer(lightToFrag);
+		coord.xy = shadowAtlasCoord + shadowAtlasResRatio * coord.xy;
+		coord.z = shadowAtlasLayer + coord.z;
+
+		coord.xy = ClampTextureCoordinates(coord.xy, shadowAtlasCoord, shadowAtlasCoord + shadowAtlasResRatio);
 		vec2 moments = texture(s_texture8, coord).xy;
 		return ChebyshevUpperBound(moments, currFragDepth, lightBleedReduction, shadowBias);
 	}
@@ -259,7 +193,7 @@ float Attenuation(float distance, float radius, float constant, float linear, fl
 	return attenuation;
 }
 
-vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamPos, vec3 albedo, float metallic, float roughness)
+vec3 PBRLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 fragToEye, vec3 viewCamPos, vec3 albedo, float metallic, float roughness)
 {
 	vec3 irradiance = vec3(0.0);
 
@@ -298,12 +232,36 @@ vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamPos, vec
 			vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, LightData[i].color * LightData[i].intensity);
 
 			// shadow
+			float depth = abs(viewPosDepth);
 			float shadow = 1.0;
 			if (LightData[i].castShadow == 1)
 			{
-				shadow = CalculateDirectionalShadow(fragPos, viewCamPos, LightData[i].projectionViewMatrix, LightData[i].shadowAtlasCoord, LightData[i].shadowAtlasResRatio,
-					LightData[i].shadowAtlasLayer, LightData[i].PCFSamples, LightData[i].PCFRadius, LightData[i].BleedingReduction,
-					LightData[i].shadowBias);
+				int cascadeOfThisPixel = 0;
+				if (LightData[i].numOfCascades > 3 && depth > cascadeDistances[3])
+				{
+					cascadeOfThisPixel = 3;
+				}
+				else if (LightData[i].numOfCascades > 2 && depth > cascadeDistances[2])
+				{
+					cascadeOfThisPixel = 2;
+				}
+				else if (LightData[i].numOfCascades > 1 && depth > cascadeDistances[1])
+				{
+					cascadeOfThisPixel = 1;
+				}
+
+				int fallbackToNextCascade;
+				shadow = CalculateDirectionalShadow(fragPos, viewCamPos, LightData[i].projectionViewMatrices[cascadeOfThisPixel], LightData[i].shadowAtlasCoord,
+				LightData[i].shadowAtlasResRatio,	LightData[i].shadowAtlasLayer + float(cascadeOfThisPixel), LightData[i].PCFSamples, LightData[i].PCFRadius,
+				LightData[i].BleedingReduction,	LightData[i].shadowBias, fallbackToNextCascade);
+
+				if (fallbackToNextCascade == 1 && cascadeOfThisPixel + 1 < LightData[i].numOfCascades)
+				{
+					cascadeOfThisPixel += 1;
+					shadow = CalculateDirectionalShadow(fragPos, viewCamPos, LightData[i].projectionViewMatrices[cascadeOfThisPixel], LightData[i].shadowAtlasCoord,
+					LightData[i].shadowAtlasResRatio,	LightData[i].shadowAtlasLayer + float(cascadeOfThisPixel), LightData[i].PCFSamples, LightData[i].PCFRadius,
+					LightData[i].BleedingReduction,	LightData[i].shadowBias, fallbackToNextCascade);
+				}
 			}
 
 			irradiance += Lo * shadow;
@@ -329,7 +287,7 @@ vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamPos, vec
 			float shadow = 1.0;
 			if (LightData[i].castShadow == 1)
 			{
-				shadow = CalculateSpotShadow(fragPos, LightData[i].pos, LightData[i].projectionViewMatrix, LightData[i].shadowMapCameraFar, LightData[i].shadowAtlasCoord,
+				shadow = CalculateSpotShadow(fragPos, LightData[i].pos, LightData[i].projectionViewMatrices[0], LightData[i].shadowMapCameraFar, LightData[i].shadowAtlasCoord,
 					LightData[i].shadowAtlasResRatio, LightData[i].shadowAtlasLayer, LightData[i].PCFSamples, LightData[i].PCFRadius, LightData[i].BleedingReduction,
 					LightData[i].shadowBias);
 			}
@@ -366,8 +324,9 @@ vec3 PBRLightingDeferred(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCam
 		float lbr = DirLightBleedReduction(s_texture13, lightDataIndex, lightDataTextureWidth);
 		float shadowBias = DirLightShadowBias(s_texture13, lightDataIndex, lightDataTextureWidth);
 		// shadow
+		int fallbackToNextCascade;
 		float shadow = CalculateDirectionalShadow(fragPos, viewCamPos, pv, shadowAtlasCoord, shadowAtlasResRatio,
-		                                          shadowAtlasLayer, PCFSamples, PCFRadius, lbr, shadowBias);
+		                                          shadowAtlasLayer, PCFSamples, PCFRadius, lbr, shadowBias, fallbackToNextCascade);
 
 		irradiance += Lo * shadow;
 	}
@@ -574,7 +533,7 @@ void SpotLightBlinnPhong(vec3 fragToLight, vec3 fragToEye, vec3 normal, vec3 col
 			specular *= intensity * radiusCheck * attenuation;
 }
 
-vec3 BlinnPhongLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamPos)
+vec3 BlinnPhongLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 fragToEye, vec3 viewCamPos)
 {
 	float shadow = 1.0;
 	vec3 irradiance = vec3(0.0);
@@ -606,10 +565,35 @@ vec3 BlinnPhongLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamP
 			DirectionalLightBlinnPhong(-LightData[i].dir, fragToEye, normal, LightData[i].color, diffuse, specular);
 
 			// Shadow
+			float depth = abs(viewPosDepth);
 			if (LightData[i].castShadow == 1)
 			{
-				shadow = CalculateDirectionalShadow(fragPos, viewCamPos, LightData[i].projectionViewMatrix, LightData[i].shadowAtlasCoord, LightData[i].shadowAtlasResRatio,
-					LightData[i].shadowAtlasLayer, LightData[i].PCFSamples, LightData[i].PCFRadius, LightData[i].BleedingReduction, LightData[i].shadowBias);
+				int cascadeOfThisPixel = 0;
+				if (LightData[i].numOfCascades > 3 && depth > cascadeDistances[3])
+				{
+					cascadeOfThisPixel = 3;
+				}
+				else if (LightData[i].numOfCascades > 2 && depth > cascadeDistances[2])
+				{
+					cascadeOfThisPixel = 2;
+				}
+				else if (LightData[i].numOfCascades > 1 && depth > cascadeDistances[1])
+				{
+					cascadeOfThisPixel = 1;
+				}
+
+				int fallbackToNextCascade;
+				shadow = CalculateDirectionalShadow(fragPos, viewCamPos, LightData[i].projectionViewMatrices[cascadeOfThisPixel], LightData[i].shadowAtlasCoord,
+				LightData[i].shadowAtlasResRatio,	LightData[i].shadowAtlasLayer + float(cascadeOfThisPixel), LightData[i].PCFSamples, LightData[i].PCFRadius,
+				LightData[i].BleedingReduction, LightData[i].shadowBias, fallbackToNextCascade);
+
+				if (fallbackToNextCascade == 1 && cascadeOfThisPixel + 1 < LightData[i].numOfCascades)
+				{
+					cascadeOfThisPixel += 1;
+					shadow = CalculateDirectionalShadow(fragPos, viewCamPos, LightData[i].projectionViewMatrices[cascadeOfThisPixel], LightData[i].shadowAtlasCoord,
+					LightData[i].shadowAtlasResRatio,	LightData[i].shadowAtlasLayer + float(cascadeOfThisPixel), LightData[i].PCFSamples, LightData[i].PCFRadius,
+					LightData[i].BleedingReduction,	LightData[i].shadowBias, fallbackToNextCascade);
+				}
 			}		
 		}
 		else if (LightData[i].type == 3) // Spot light
@@ -621,7 +605,7 @@ vec3 BlinnPhongLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCamP
 			// Shadow
 			if (LightData[i].castShadow == 1)
 			{
-				shadow = CalculateSpotShadow(fragPos, LightData[i].pos, LightData[i].projectionViewMatrix, LightData[i].shadowMapCameraFar, LightData[i].shadowAtlasCoord,
+				shadow = CalculateSpotShadow(fragPos, LightData[i].pos, LightData[i].projectionViewMatrices[0], LightData[i].shadowMapCameraFar, LightData[i].shadowAtlasCoord,
 					LightData[i].shadowAtlasResRatio, LightData[i].shadowAtlasLayer, LightData[i].PCFSamples, LightData[i].PCFRadius, LightData[i].BleedingReduction,
 					LightData[i].shadowBias);
 			}

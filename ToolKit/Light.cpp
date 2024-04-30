@@ -183,9 +183,25 @@ namespace ToolKit
 
   TKDefineClass(DirectionalLight, Light);
 
-  DirectionalLight::DirectionalLight() { m_shadowCamera->SetOrthographicVal(true); }
+  DirectionalLight::DirectionalLight()
+  {
+    m_shadowCamera->SetOrthographicVal(true);
+    for (int i = 0; i < RHIConstants::MaxCascadeCount; ++i)
+    {
+      CameraPtr cam = MakeNewPtr<Camera>();
+      cam->SetOrthographicVal(true);
+      cam->SetOrthographicScaleVal(1.0f);
+      cam->InvalidateSpatialCaches();
+      m_cascadeShadowCameras.push_back(cam);
+    }
+    m_shadowMapCascadeCameraProjectionViewMatrices.resize(RHIConstants::MaxCascadeCount);
+  }
 
-  DirectionalLight::~DirectionalLight() {}
+  DirectionalLight::~DirectionalLight()
+  {
+    m_cascadeShadowCameras.clear();
+    m_shadowMapCascadeCameraProjectionViewMatrices.clear();
+  }
 
   void DirectionalLight::NativeConstruct()
   {
@@ -193,12 +209,50 @@ namespace ToolKit
     AddComponent<DirectionComponent>();
   }
 
-  void DirectionalLight::UpdateShadowFrustum(const CameraPtr cameraView, const BoundingBox& shadowVolume)
+  void DirectionalLight::UpdateShadowFrustum(CameraPtr cameraView, ScenePtr scene)
   {
-    FitViewFrustumIntoLightFrustum(m_shadowCamera, cameraView, shadowVolume);
+    int cascades               = GetEngineSettings().Graphics.cascadeCount;
+    float* cascadeDists        = GetEngineSettings().Graphics.cascadeDistances;
+
+    const float lastCameraNear = cameraView->Near();
+    const float lastCameraFar  = cameraView->Far();
+
+    for (int i = 0; i < cascades; ++i)
+    {
+      float near = cascadeDists[i];
+      float far;
+      if (i == cascades - 1)
+      {
+        far = GetEngineSettings().PostProcessing.ShadowDistance;
+      }
+      else
+      {
+        far = cascadeDists[i + 1];
+      }
+
+      cameraView->SetNearClipVal(near);
+      cameraView->SetFarClipVal(far);
+
+      FitViewFrustumIntoLightFrustum(m_cascadeShadowCameras[i],
+                                     cameraView,
+                                     near,
+                                     far);
+    }
+
+    cameraView->SetNearClipVal(lastCameraNear);
+    cameraView->SetFarClipVal(lastCameraFar);
+
     UpdateShadowCamera();
 
     m_invalidatedForLightCache = true;
+  }
+
+  void DirectionalLight::UpdateShadowCamera()
+  {
+    for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; ++i)
+    {
+      m_shadowMapCascadeCameraProjectionViewMatrices[i] = m_cascadeShadowCameras[i]->GetProjectViewMatrix();
+    }
   }
 
   XmlNode* DirectionalLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -260,22 +314,80 @@ namespace ToolKit
 
   void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
                                                         CameraPtr viewCamera,
-                                                        const BoundingBox& shadowVolume)
+                                                        float near,
+                                                        float far)
   {
-    // NOTE: For cases when camera is bigger than scene bounding box, we should use scene bounding box
+    const Vec3Array frustum = viewCamera->ExtractFrustumCorner();
 
-    // Set far for view frustum
-    float lastCameraFar  = viewCamera->GetFarClipVal();
-    float shadowDistance = GetEngineSettings().PostProcessing.ShadowDistance;
-    viewCamera->SetFarClipVal(shadowDistance);
-
-    Vec3Array frustum = viewCamera->ExtractFrustumCorner();
-    viewCamera->SetFarClipVal(lastCameraFar);
-
-    Vec3 center = ZERO;
+    Vec3 center             = ZERO;
     for (int i = 0; i < 8; ++i)
     {
       center += frustum[i];
+    }
+    center /= 8.0f;
+
+    lightCamera->m_node->SetOrientation(m_node->GetOrientation());
+    lightCamera->m_node->SetTranslation(center);
+
+    const Mat4 lightView = lightCamera->GetViewMatrix();
+
+    // Calculate tight shadow volume.
+    BoundingBox tightShadowVolume;
+    for (int i = 0; i < 8; i++)
+    {
+      const Vec4 vertex = lightView * Vec4(frustum[i], 1.0f);
+      tightShadowVolume.UpdateBoundary(vertex);
+    }
+
+    const float tightFar = tightShadowVolume.max.z - tightShadowVolume.min.z;
+
+    lightCamera->SetLens(tightShadowVolume.min.x,
+                         tightShadowVolume.max.x,
+                         tightShadowVolume.min.y,
+                         tightShadowVolume.max.y,
+                         -0.5f * tightFar,
+                         0.5f * tightFar);
+
+    /*
+    const float tightWidth  = tightShadowVolume.max.x - tightShadowVolume.min.x;
+    const float tightHeight = tightShadowVolume.max.y - tightShadowVolume.min.y;
+    lightCamera->SetLens(-tightWidth * 0.5f,
+                         tightWidth * 0.5f,
+                         -tightHeight * 0.5f,
+                         tightHeight * 0.5f,
+                         -tightFar * 0.5f,
+                         tightFar * 0.5f);
+    */
+  }
+
+  /*
+  void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
+                                                        CameraPtr viewCamera,
+                                                        const BoundingBox& shadowVolume,
+                                                        float near,
+                                                        float far)
+  {
+    // Set far for view frustum
+    float lastCameraNear = viewCamera->GetNearClipVal();
+    float lastCameraFar  = viewCamera->GetFarClipVal();
+    viewCamera->SetNearClipVal(near);
+    viewCamera->SetFarClipVal(far);
+
+    Vec3Array frustum = viewCamera->ExtractFrustumCorner();
+    viewCamera->SetNearClipVal(lastCameraNear);
+    viewCamera->SetFarClipVal(lastCameraFar);
+
+    const float worldUnitPerTexel = far * 25.0f / RHIConstants::ShadowAtlasTextureSize;
+    const Vec3 vWorldUnitPerTexel = Vec3(worldUnitPerTexel, worldUnitPerTexel, worldUnitPerTexel);
+
+    Vec3 center                   = ZERO;
+    for (int i = 0; i < 8; ++i)
+    {
+      frustum[i] /= vWorldUnitPerTexel;
+      frustum[i]  = glm::floor(frustum[i]);
+      frustum[i] *= vWorldUnitPerTexel;
+
+      center     += frustum[i];
     }
     center /= 8.0f;
 
@@ -296,19 +408,19 @@ namespace ToolKit
     float width       = shadowVolume.max.x - shadowVolume.min.x;
     float height      = shadowVolume.max.y - shadowVolume.min.y;
     float depth       = shadowVolume.max.z - shadowVolume.min.z;
-    float maxDistance = glm::fastSqrt(width * width + height * height + depth * depth);
+    float maxDistance = glm::sqrt(width * width + height * height + depth * depth);
 
     float tightFar    = tightShadowVolume.max.z - tightShadowVolume.min.z;
-    float far         = glm::max(tightFar, maxDistance);
+    tightFar          = glm::min(tightFar, maxDistance);
 
     lightCamera->SetLens(tightShadowVolume.min.x,
                          tightShadowVolume.max.x,
                          tightShadowVolume.min.y,
                          tightShadowVolume.max.y,
-                         -far * 0.5f,
-                         far * 0.5f);
+                         -tightFar * 0.5f,
+                         tightFar * 0.5f);
   }
-
+  */
   // PointLight
   //////////////////////////////////////////
 

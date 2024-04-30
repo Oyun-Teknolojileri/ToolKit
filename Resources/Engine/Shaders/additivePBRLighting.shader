@@ -44,9 +44,10 @@
     {
       case 3: // directional with shadows
       {
+        int fallbackNextCascade;
         shadow = CalculateDirectionalShadow(fragPos, viewCamPos, lightProjectionViewMatrix, lightShadowAtlasCoord, lightShadowAtlasResRatio,
                                             lightShadowAtlasLayer, lightPCFSamples, lightPCFRadius, 
-                                            lightBleedReduction, lightShadowBias);
+                                            lightBleedReduction, lightShadowBias, fallbackNextCascade);
       } // fallthrough
       case 0: // directional light
       {

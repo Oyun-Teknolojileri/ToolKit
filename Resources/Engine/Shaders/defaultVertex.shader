@@ -5,6 +5,7 @@
     <uniform name = "InverseTransModel" />
     <uniform name = "Model" />
     <uniform name = "normalMapInUse" />
+    <uniform name = "modelViewMatrix" />
 	<source>
 	<!--
       #version 300 es
@@ -19,12 +20,14 @@
       uniform mat4 ProjectViewModel;
       uniform mat4 InverseTransModel;
       uniform mat4 Model;
+      uniform mat4 modelViewMatrix;
 
       uniform int normalMapInUse;
 
       out vec3 v_pos;
       out vec3 v_normal;
       out vec2 v_texture;
+      out float v_viewPosDepth;
       out mat3 TBN;
 
       void main()
@@ -64,6 +67,7 @@
          }
 
          v_pos = (Model * gl_Position).xyz;
+         v_viewPosDepth = (modelViewMatrix * gl_Position).z;
          gl_Position = ProjectViewModel * gl_Position;
          v_texture = vTexture;
       }

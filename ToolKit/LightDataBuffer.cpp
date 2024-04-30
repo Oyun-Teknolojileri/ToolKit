@@ -1,8 +1,10 @@
 #include "LightDataBuffer.h"
 
 #include "DirectionComponent.h"
+#include "EngineSettings.h"
 #include "Light.h"
 #include "RHI.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {
@@ -41,6 +43,12 @@ namespace ToolKit
 
   void LightDataBuffer::UpdateLightData(LightPtr* cachedLights, int size)
   {
+    const EngineSettings::GraphicSettings& graphicSettings = GetEngineSettings().Graphics;
+    m_lightData.cascadeDistances.x                         = graphicSettings.cascadeDistances[0];
+    m_lightData.cascadeDistances.y                         = graphicSettings.cascadeDistances[1];
+    m_lightData.cascadeDistances.z                         = graphicSettings.cascadeDistances[2];
+    m_lightData.cascadeDistances.w                         = graphicSettings.cascadeDistances[3];
+
     for (int i = 0; i < size; ++i)
     {
       if (cachedLights[i] == nullptr)
@@ -48,7 +56,9 @@ namespace ToolKit
         continue;
       }
 
-      const Light* currLight = cachedLights[i].get();
+      const Light* currLight  = cachedLights[i].get();
+      const bool castShadow   = currLight->GetCastShadowVal();
+      bool isDirectionalLight = false;
 
       // Point light uniforms
       if (currLight->GetLightType() == Light::Point)
@@ -63,11 +73,24 @@ namespace ToolKit
       // Directional light uniforms
       else if (currLight->GetLightType() == Light::Directional)
       {
+        isDirectionalLight                    = true;
+
         const DirectionalLight* dLight        = static_cast<const DirectionalLight*>(currLight);
         m_lightData.perLightData[i].type      = 1;
         m_lightData.perLightData[i].color     = dLight->GetColorVal();
         m_lightData.perLightData[i].intensity = dLight->GetIntensityVal();
         m_lightData.perLightData[i].dir       = dLight->GetComponentFast<DirectionComponent>()->GetDirection();
+
+        if (castShadow)
+        {
+          const int cascades = graphicSettings.cascadeCount;
+          for (int ii = 0; ii < cascades; ++ii)
+          {
+            m_lightData.perLightData[i].projectionViewMatrices[ii] =
+                dLight->m_shadowMapCascadeCameraProjectionViewMatrices[ii];
+          }
+          m_lightData.perLightData[i].numOfCascades = cascades;
+        }
       }
       // Spot light uniforms
       else if (currLight->GetLightType() == Light::Spot)
@@ -83,17 +106,19 @@ namespace ToolKit
         m_lightData.perLightData[i].innAngle  = glm::cos(glm::radians(sLight->GetInnerAngleVal() / 2.0f));
       }
 
-      const bool castShadow = currLight->GetCastShadowVal();
       if (castShadow)
       {
-        const int PCFSamples                             = currLight->GetPCFSamplesVal();
-        m_lightData.perLightData[i].projectionViewMatrix = currLight->m_shadowMapCameraProjectionViewMatrix;
-        m_lightData.perLightData[i].shadowMapCameraFar   = currLight->m_shadowMapCameraFar;
-        m_lightData.perLightData[i].BleedingReduction    = currLight->GetBleedingReductionVal();
-        m_lightData.perLightData[i].PCFSamples           = PCFSamples;
-        m_lightData.perLightData[i].PCFRadius            = currLight->GetPCFRadiusVal();
-        m_lightData.perLightData[i].softShadows          = PCFSamples > 1;
-        m_lightData.perLightData[i].shadowAtlasLayer     = (float) currLight->m_shadowAtlasLayer;
+        const int PCFSamples = currLight->GetPCFSamplesVal();
+        if (!isDirectionalLight)
+        {
+          m_lightData.perLightData[i].projectionViewMatrices[0] = currLight->m_shadowMapCameraProjectionViewMatrix;
+        }
+        m_lightData.perLightData[i].shadowMapCameraFar = currLight->m_shadowMapCameraFar;
+        m_lightData.perLightData[i].BleedingReduction  = currLight->GetBleedingReductionVal();
+        m_lightData.perLightData[i].PCFSamples         = PCFSamples;
+        m_lightData.perLightData[i].PCFRadius          = currLight->GetPCFRadiusVal();
+        m_lightData.perLightData[i].softShadows        = PCFSamples > 1;
+        m_lightData.perLightData[i].shadowAtlasLayer   = (float) currLight->m_shadowAtlasLayer;
         m_lightData.perLightData[i].shadowAtlasCoord =
             currLight->m_shadowAtlasCoord / (float) RHIConstants::ShadowAtlasTextureSize;
         m_lightData.perLightData[i].shadowAtlasResRatio =

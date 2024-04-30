@@ -29,6 +29,7 @@
 				skin(skinnedVPos, skinnedVPos);
 			}
 		  gl_Position = ProjectViewModel * skinnedVPos;
+			gl_Position.z = max(gl_Position.z, -1.0);
 		}
 	-->
 	</source>

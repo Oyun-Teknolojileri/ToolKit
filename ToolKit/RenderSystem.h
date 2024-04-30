@@ -110,6 +110,12 @@ namespace ToolKit
 
     void TestSRGBBackBuffer();
 
+    bool ConsumeShadowAtlasInvalidation();
+    void InvalidateShadowAtlas();
+
+    bool ConsumeGPULightCacheInvalidation();
+    void InvalidateGPULightCache();
+
    private:
     void ExecuteTaskImp(RenderTask& task);
 
@@ -120,6 +126,10 @@ namespace ToolKit
     int m_skipFrames              = 0;
     bool m_backbufferFormatIsSRGB = true;
     uint m_frameCount             = 0;
+    bool m_shadowAtlasInvalidated =
+        false; //<! Consumed by ShadowPass to understands if the shadow atlas should be recreated.
+    bool m_gpuLightCacheInvalidated =
+        false; //<! Consumed by Renderer to understands if the light cache should be updated.
   };
 
 } // namespace ToolKit

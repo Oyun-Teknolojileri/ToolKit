@@ -133,7 +133,7 @@ namespace ToolKit
   {
     for (LightPtr& light : m_lightCache)
     {
-      //if (light->GetCastShadowVal())
+      // if (light->GetCastShadowVal())
       {
         light->UpdateShadowCamera();
       }
@@ -476,6 +476,12 @@ namespace ToolKit
   void Scene::RebuildBVH() { m_bvh->ReBuild(); }
 
   const BoundingBox& Scene::GetSceneBoundary() { return m_bvh->GetBVHBoundary(); }
+
+  BoundingBox Scene::GetFrustumBVHBoundary(const CameraPtr& camera) const
+  {
+    const Frustum frustum = ExtractFrustum(camera->GetProjectViewMatrix(), false);
+    return m_bvh->GetFrustumBoundary(frustum);
+  }
 
   void Scene::CopyTo(Resource* other)
   {

@@ -170,7 +170,41 @@ namespace ToolKit
           ImGui::EndCombo();
         }
 
-        ImGui::DragFloat("Shadow Distance", &engineSettings.PostProcessing.ShadowDistance, 1.0f, 0.01f, 100000.0f);
+        ImGui::SeparatorText("Shadows");
+
+        const char* itemNames[] = {"1", "2", "3", "4"};
+        const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
+        int currentItem         = engineSettings.Graphics.cascadeCount - 1;
+        if (ImGui::BeginCombo("Cascade Count", itemNames[currentItem]))
+        {
+          for (int itemIndx = 0; itemIndx < itemCount; itemIndx++)
+          {
+            bool isSelected      = false;
+            const char* itemName = itemNames[itemIndx];
+            ImGui::Selectable(itemName, &isSelected);
+            if (isSelected)
+            {
+              engineSettings.Graphics.cascadeCount = itemIndx + 1;
+              GetRenderSystem()->InvalidateShadowAtlas();
+              GetRenderSystem()->InvalidateGPULightCache();
+            }
+          }
+
+          ImGui::EndCombo();
+        }
+
+        Vec4 data = {engineSettings.Graphics.cascadeDistances[1],
+                     engineSettings.Graphics.cascadeDistances[2],
+                     engineSettings.Graphics.cascadeDistances[3],
+                     engineSettings.PostProcessing.ShadowDistance};
+        if (ImGui::DragFloat4("CascadeDistances", &data[0]))
+        {
+          GetRenderSystem()->InvalidateGPULightCache();
+          engineSettings.Graphics.cascadeDistances[1]  = data.x;
+          engineSettings.Graphics.cascadeDistances[2]  = data.y;
+          engineSettings.Graphics.cascadeDistances[3]  = data.z;
+          engineSettings.PostProcessing.ShadowDistance = data.w;
+        }
 
         ImGui::SeparatorText("BVH");
         ImGui::DragInt("Node Max Entity", &engineSettings.PostProcessing.maxEntityPerBVHNode, 1, 1, 1000000);

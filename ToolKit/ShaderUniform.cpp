@@ -62,9 +62,8 @@ namespace ToolKit
       return "useAlphaMask";
     case Uniform::ALPHA_MASK_TRESHOLD:
       return "alphaMaskTreshold";
-    case Uniform::UNUSEDSLOT_5:
-      TK_ASSERT_ONCE(false && "Old asset in use.");
-      return "UNUSEDSLOT_5";
+    case Uniform::MODEL_VIEW_MATRIX:
+      return "modelViewMatrix";
     case Uniform::EMISSIVE_TEXTURE_IN_USE:
       return "emissiveTextureInUse";
     case Uniform::EMISSIVE_COLOR:

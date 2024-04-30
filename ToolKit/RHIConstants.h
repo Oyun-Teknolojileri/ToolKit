@@ -14,5 +14,7 @@ namespace ToolKit
     static constexpr uint BrdfLutTextureSize     = 512;
     static constexpr float ShadowBiasMultiplier  = 0.0001f;
     static constexpr uint LightCacheSize         = 128;
+
+    static constexpr int MaxCascadeCount         = 4;
   };
 } // namespace ToolKit

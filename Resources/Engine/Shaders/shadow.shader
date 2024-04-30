@@ -150,6 +150,23 @@
 			}
 			return sum / float(samples);
 		}
+
+    float PCFFilterOmni(sampler2DArray shadowAtlas, vec2 startCoord, float shadowAtlasResRatio, float shadowAtlasLayer,
+    vec3 dir, int samples, float radius, float currDepth, float LBR, float shadowBias)
+    {
+			float sum = 0.0;
+			for (int i = 0; i < samples; ++i)
+			{
+				vec3 offset = poissonDisk[i] * radius;
+        vec3 sampleDir = dir + offset;
+        vec3 coord = UVWToUVLayer(sampleDir);
+        coord.xy = startCoord + shadowAtlasResRatio * coord.xy;
+	      coord.z = shadowAtlasLayer + coord.z;
+				vec2 moments = texture(shadowAtlas, coord).xy;
+				sum += ChebyshevUpperBound(moments, currDepth, LBR, shadowBias);
+			}
+			return sum / float(samples);
+    }
 	-->
 	</source>
 </shader>

@@ -15,7 +15,7 @@ namespace ToolKit
 {
   inline bool IsBVHEntity(const EntityPtr& ntt)
   {
-    return !ntt->IsA<SkyBase>() && (ntt->IsDrawable() || ntt->IsA<SpotLight>() || ntt->IsA<PointLight>());
+    return !ntt->IsA<SkyBase>() && !ntt->IsA<DirectionalLight>() && (ntt->IsDrawable() || ntt->IsA<Light>());
   }
 
   BVH::BVH(Scene* scene)
@@ -320,6 +320,67 @@ namespace ToolKit
         }
       }
     }
+  }
+
+  BoundingBox BVH::GetFrustumBoundary(const Frustum& frustum) const
+  {
+    BoundingBox resultBB;
+
+    m_bvhTree->m_nextNodes.clear();
+    m_bvhTree->m_nextNodes.push_front(m_bvhTree->m_root);
+    while (!m_bvhTree->m_nextNodes.empty())
+    {
+      BVHNode* currentNode = m_bvhTree->m_nextNodes.front();
+      m_bvhTree->m_nextNodes.pop_front();
+
+      bool insideFrustum = currentNode->m_insideFrustum;
+      IntersectResult res;
+      if (!insideFrustum)
+      {
+        res           = FrustumBoxIntersection(frustum, currentNode->m_aabb);
+        insideFrustum = res == IntersectResult::Inside;
+      }
+
+      // If the nodes parent already is inside of the frustum, no need to check intersection
+      if (insideFrustum)
+      {
+        if (currentNode->Leaf())
+        {
+          if (!currentNode->m_entites.empty())
+          {
+            resultBB.UpdateBoundary(currentNode->m_aabb);
+          }
+        }
+        else
+        {
+          currentNode->m_left->m_insideFrustum  = true;
+          currentNode->m_right->m_insideFrustum = true;
+          m_bvhTree->m_nextNodes.push_back(currentNode->m_left);
+          m_bvhTree->m_nextNodes.push_back(currentNode->m_right);
+        }
+      }
+      else if (res == IntersectResult::Intersect)
+      {
+        if (currentNode->Leaf())
+        {
+          if (!currentNode->m_entites.empty())
+          {
+            resultBB.UpdateBoundary(currentNode->m_aabb);
+          }
+        }
+        else
+        {
+          currentNode->m_left->m_insideFrustum  = false;
+          currentNode->m_right->m_insideFrustum = false;
+          m_bvhTree->m_nextNodes.push_front(currentNode->m_left);
+          m_bvhTree->m_nextNodes.push_front(currentNode->m_right);
+        }
+      }
+
+      currentNode->m_insideFrustum = false;
+    }
+
+    return resultBB;
   }
 
   void BVH::FrustumTest(const Frustum& frustum, EntityRawPtrArray& entities)

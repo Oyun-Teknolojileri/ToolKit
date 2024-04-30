@@ -21,6 +21,7 @@
 #include "Node.h"
 #include "Pass.h"
 #include "RHI.h"
+#include "RenderSystem.h"
 #include "Scene.h"
 #include "Shader.h"
 #include "Skeleton.h"
@@ -985,6 +986,13 @@ namespace ToolKit
     // Built-in variables.
 
     {
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::MODEL_VIEW_MATRIX);
+      if (uniformLoc != -1)
+      {
+        const Mat4 modelView = m_view * m_model;
+        glUniformMatrix4fv(uniformLoc, 1, false, &modelView[0][0]);
+      }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::PROJECT_VIEW_MODEL);
       if (uniformLoc != -1)
       {
@@ -1176,6 +1184,11 @@ namespace ToolKit
 
     m_lightCache.SetDrawCallVersion(m_drawCallVersion);
 
+    if (GetRenderSystem()->ConsumeGPULightCacheInvalidation())
+    {
+      m_lightCache.UpdateVersion();
+    }
+
     // Make sure the cache has the lights that is going to rendered
     for (uint i = 0; i < job.lights.size(); ++i)
     {
@@ -1197,6 +1210,7 @@ namespace ToolKit
         light->m_lightCacheIndex = m_lightCache.Add(light);
       }
     }
+
     m_drawCallVersion++;
 
     // When cache is invalidated, update the cache for this program
