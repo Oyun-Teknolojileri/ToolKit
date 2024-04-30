@@ -93,7 +93,7 @@ namespace ToolKit
     virtual ~DirectionalLight();
 
     void NativeConstruct() override;
-    void UpdateShadowFrustum(const CameraPtr cameraView, ScenePtr scene);
+    void UpdateShadowFrustum(CameraPtr cameraView, ScenePtr scene);
 
     void UpdateShadowCamera() override;
 

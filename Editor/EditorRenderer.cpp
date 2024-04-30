@@ -13,6 +13,7 @@
 #include "EditorViewport2d.h"
 #include "Gizmo.h"
 #include "LightMeshGenerator.h"
+#include "Util.h"
 
 #include <BVH.h>
 #include <Camera.h>
@@ -232,6 +233,7 @@ namespace ToolKit
             if (light->GetCastShadowVal())
             {
               app->m_perFrameDebugObjects.push_back(light->GetDebugShadowFrustum());
+              app->m_perFrameDebugObjects.push_back(GetDebugFrustum(app->GetViewport(g_3dViewport)->GetCamera()));
             }
           }
         }

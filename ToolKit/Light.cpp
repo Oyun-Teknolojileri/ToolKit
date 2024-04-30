@@ -209,7 +209,7 @@ namespace ToolKit
     AddComponent<DirectionComponent>();
   }
 
-  void DirectionalLight::UpdateShadowFrustum(const CameraPtr cameraView, ScenePtr scene)
+  void DirectionalLight::UpdateShadowFrustum(CameraPtr cameraView, ScenePtr scene)
   {
     for (int i = 0; i < RHIConstants::CascadeCount; ++i)
     {
@@ -224,11 +224,19 @@ namespace ToolKit
         far = RHIConstants::CascadeDistances[i + 1];
       }
 
+      const float lastCameraNear = cameraView->GetNearClipVal();
+      const float lastCameraFar  = cameraView->GetFarClipVal();
+      cameraView->SetNearClipVal(near);
+      cameraView->SetFarClipVal(far);
+
       FitViewFrustumIntoLightFrustum(m_cascadeShadowCameras[i],
                                      cameraView,
                                      scene->GetFrustumBoundary(cameraView),
                                      near,
                                      far);
+
+      cameraView->SetNearClipVal(lastCameraNear);
+      cameraView->SetFarClipVal(lastCameraFar);
     }
 
     UpdateShadowCamera();
@@ -307,17 +315,9 @@ namespace ToolKit
                                                         float near,
                                                         float far)
   {
-    const float lastCameraNear = viewCamera->GetNearClipVal();
-    const float lastCameraFar  = viewCamera->GetFarClipVal();
-    viewCamera->SetNearClipVal(near);
-    viewCamera->SetFarClipVal(far);
-
     const Vec3Array frustum = viewCamera->ExtractFrustumCorner();
 
-    viewCamera->SetNearClipVal(lastCameraNear);
-    viewCamera->SetFarClipVal(lastCameraFar);
-
-    Vec3 center = ZERO;
+    Vec3 center             = ZERO;
     for (int i = 0; i < 8; ++i)
     {
       center += frustum[i];
@@ -343,8 +343,19 @@ namespace ToolKit
                          tightShadowVolume.max.x,
                          tightShadowVolume.min.y,
                          tightShadowVolume.max.y,
+                         -0.5f * tightFar,
+                         0.5f * tightFar);
+
+    /*
+    const float tightWidth  = tightShadowVolume.max.x - tightShadowVolume.min.x;
+    const float tightHeight = tightShadowVolume.max.y - tightShadowVolume.min.y;
+    lightCamera->SetLens(-tightWidth * 0.5f,
+                         tightWidth * 0.5f,
+                         -tightHeight * 0.5f,
+                         tightHeight * 0.5f,
                          -tightFar * 0.5f,
                          tightFar * 0.5f);
+    */
   }
 
   /*

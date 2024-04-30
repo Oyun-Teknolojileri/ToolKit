@@ -128,8 +128,9 @@ namespace ToolKit
     {
       PUSH_CPU_MARKER("Render Call");
 
-      MaterialPtr shadowMaterial           = light->GetShadowMaterial();
-      GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+      MaterialPtr shadowMaterial                 = light->GetShadowMaterial();
+      shadowMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
+      GpuProgramManager* gpuProgramManager       = GetGpuProgramManager();
       m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
       renderer->BindProgram(m_program);
 

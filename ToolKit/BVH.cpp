@@ -15,7 +15,7 @@ namespace ToolKit
 {
   inline bool IsBVHEntity(const EntityPtr& ntt)
   {
-    return !ntt->IsA<SkyBase>() && (ntt->IsDrawable() || ntt->IsA<SpotLight>() || ntt->IsA<PointLight>());
+    return !ntt->IsA<SkyBase>() && !ntt->IsA<DirectionalLight>() && (ntt->IsDrawable() || ntt->IsA<Light>());
   }
 
   BVH::BVH(Scene* scene)

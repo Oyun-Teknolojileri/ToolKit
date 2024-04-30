@@ -158,6 +158,8 @@ namespace ToolKit
                                                    float size            = 2.0f,
                                                    const Mat4* transform = nullptr);
 
+  TK_API LineBatchPtr GetDebugFrustum(const CameraPtr camera);
+
   // Entity operations.
   TK_API void ToEntityIdArray(IDArray& idArray, const EntityPtrArray& ptrArray);
 

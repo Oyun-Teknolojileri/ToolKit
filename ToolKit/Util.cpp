@@ -22,8 +22,6 @@
 #include <filesystem>
 #include <unordered_set>
 
-
-
 namespace ToolKit
 {
 
@@ -786,6 +784,43 @@ namespace ToolKit
     lineForm->Generate(vertices, color, DrawType::LineStrip, size);
 
     return lineForm;
+  }
+
+  TK_API LineBatchPtr GetDebugFrustum(const CameraPtr camera)
+  {
+    Vec3Array corners = camera->ExtractFrustumCorner();
+    Vec3Array vertices;
+
+    vertices.resize(24);
+    vertices[0]     = corners[3];
+    vertices[1]     = corners[2];
+    vertices[2]     = corners[2];
+    vertices[3]     = corners[1];
+    vertices[4]     = corners[1];
+    vertices[5]     = corners[0];
+    vertices[6]     = corners[0];
+    vertices[7]     = corners[3];
+    vertices[8]     = corners[6];
+    vertices[9]     = corners[5];
+    vertices[10]    = corners[5];
+    vertices[11]    = corners[4];
+    vertices[12]    = corners[4];
+    vertices[13]    = corners[7];
+    vertices[14]    = corners[7];
+    vertices[15]    = corners[6];
+    vertices[16]    = corners[6];
+    vertices[17]    = corners[2];
+    vertices[18]    = corners[5];
+    vertices[19]    = corners[1];
+    vertices[20]    = corners[4];
+    vertices[21]    = corners[0];
+    vertices[22]    = corners[7];
+    vertices[23]    = corners[3];
+
+    LineBatchPtr lb = MakeNewPtr<LineBatch>();
+    lb->Generate(vertices, Vec3(0.6f, 0.2f, 0.8f), DrawType::Line, 0.5f);
+
+    return lb;
   }
 
   void ToEntityIdArray(IDArray& idArray, const EntityPtrArray& ptrArray)
