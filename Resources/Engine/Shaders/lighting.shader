@@ -250,18 +250,17 @@ vec3 PBRLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 fragToEye, 
 					cascadeOfThisPixel = 1;
 				}
 
-				int fallbackToNextCascade = 1;
-				while (fallbackToNextCascade == 1)
+				int fallbackToNextCascade;
+				shadow = CalculateDirectionalShadow(fragPos, viewCamPos, LightData[i].projectionViewMatrices[cascadeOfThisPixel], LightData[i].shadowAtlasCoord,
+				LightData[i].shadowAtlasResRatio,	LightData[i].shadowAtlasLayer + float(cascadeOfThisPixel), LightData[i].PCFSamples, LightData[i].PCFRadius,
+				LightData[i].BleedingReduction,	LightData[i].shadowBias, fallbackToNextCascade);
+
+				if (fallbackToNextCascade == 1 && cascadeOfThisPixel + 1 < LightData[i].numOfCascades)
 				{
+					cascadeOfThisPixel += 1;
 					shadow = CalculateDirectionalShadow(fragPos, viewCamPos, LightData[i].projectionViewMatrices[cascadeOfThisPixel], LightData[i].shadowAtlasCoord,
 					LightData[i].shadowAtlasResRatio,	LightData[i].shadowAtlasLayer + float(cascadeOfThisPixel), LightData[i].PCFSamples, LightData[i].PCFRadius,
 					LightData[i].BleedingReduction,	LightData[i].shadowBias, fallbackToNextCascade);
-
-					cascadeOfThisPixel += 1;
-					if (cascadeOfThisPixel == LightData[i].numOfCascades)
-					{
-						fallbackToNextCascade = 0;
-					}
 				}
 			}
 
@@ -583,18 +582,17 @@ vec3 BlinnPhongLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 frag
 					cascadeOfThisPixel = 1;
 				}
 
-				int fallbackToNextCascade = 1;
-				while (fallbackToNextCascade == 1)
+				int fallbackToNextCascade;
+				shadow = CalculateDirectionalShadow(fragPos, viewCamPos, LightData[i].projectionViewMatrices[cascadeOfThisPixel], LightData[i].shadowAtlasCoord,
+				LightData[i].shadowAtlasResRatio,	LightData[i].shadowAtlasLayer + float(cascadeOfThisPixel), LightData[i].PCFSamples, LightData[i].PCFRadius,
+				LightData[i].BleedingReduction, LightData[i].shadowBias, fallbackToNextCascade);
+
+				if (fallbackToNextCascade == 1 && cascadeOfThisPixel + 1 < LightData[i].numOfCascades)
 				{
+					cascadeOfThisPixel += 1;
 					shadow = CalculateDirectionalShadow(fragPos, viewCamPos, LightData[i].projectionViewMatrices[cascadeOfThisPixel], LightData[i].shadowAtlasCoord,
 					LightData[i].shadowAtlasResRatio,	LightData[i].shadowAtlasLayer + float(cascadeOfThisPixel), LightData[i].PCFSamples, LightData[i].PCFRadius,
-					LightData[i].BleedingReduction, LightData[i].shadowBias, fallbackToNextCascade);
-
-					cascadeOfThisPixel += 1;
-					if (cascadeOfThisPixel == LightData[i].numOfCascades)
-					{
-						fallbackToNextCascade = 0;
-					}
+					LightData[i].BleedingReduction,	LightData[i].shadowBias, fallbackToNextCascade);
 				}
 			}		
 		}
