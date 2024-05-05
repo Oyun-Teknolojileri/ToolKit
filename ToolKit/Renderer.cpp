@@ -191,8 +191,8 @@ namespace ToolKit
     m_mat = job.Material;
     m_mat->Init();
 
-    RenderState* rs = m_mat->GetRenderState();
-    SetRenderState(rs);
+    RenderState* renderState = m_mat->GetRenderState();
+    SetRenderState(renderState, job.requireCullFlip);
 
     auto activateSkinning = [&](const Mesh* mesh)
     {
@@ -225,11 +225,11 @@ namespace ToolKit
 
     if (mesh->m_indexCount != 0)
     {
-      glDrawElements((GLenum) rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
+      glDrawElements((GLenum) renderState->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
     }
     else
     {
-      glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
+      glDrawArrays((GLenum) renderState->drawType, 0, mesh->m_vertexCount);
     }
 
     AddDrawCall();
@@ -260,36 +260,52 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetRenderState(const RenderState* const state)
+  void Renderer::SetRenderState(const RenderState* const state, bool cullFlip)
   {
     CPU_FUNC_RANGE();
 
-    if (m_renderState.cullMode != state->cullMode)
+    CullingType targetMode = state->cullMode;
+    if (cullFlip)
     {
-      if (state->cullMode == CullingType::TwoSided)
+      switch (state->cullMode)
+      {
+      case CullingType::Front:
+        targetMode = CullingType::Back;
+        break;
+      case CullingType::Back:
+        targetMode = CullingType::Front;
+        break;
+      }
+    }
+
+    if (m_renderState.cullMode != targetMode)
+    {
+      if (targetMode == CullingType::TwoSided)
       {
         glDisable(GL_CULL_FACE);
       }
 
-      if (state->cullMode == CullingType::Front)
+      if (targetMode == CullingType::Front)
       {
         if (m_renderState.cullMode == CullingType::TwoSided)
         {
           glEnable(GL_CULL_FACE);
         }
+
         glCullFace(GL_FRONT);
       }
 
-      if (state->cullMode == CullingType::Back)
+      if (targetMode == CullingType::Back)
       {
         if (m_renderState.cullMode == CullingType::TwoSided)
         {
           glEnable(GL_CULL_FACE);
         }
+
         glCullFace(GL_BACK);
       }
 
-      m_renderState.cullMode = state->cullMode;
+      m_renderState.cullMode = targetMode;
     }
 
     if (m_renderState.blendFunction != state->blendFunction)

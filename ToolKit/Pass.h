@@ -52,6 +52,7 @@ namespace ToolKit
     EnvironmentComponent* EnvironmentVolume = nullptr; //!< EnvironmentVolume effecting this entity, if any.
     bool ShadowCaster                       = true;    //!< Account in shadow map construction.
     bool frustumCulled                      = false;   //!< States that the job is culled by a camera.
+    bool requireCullFlip                    = false;   //!< Negative determinant in transform requires cull side flip.
 
     BoundingBox BoundingBox; //!< World space bounding box.
     Mat4 WorldTransform;     //!< World transform of the entity.
