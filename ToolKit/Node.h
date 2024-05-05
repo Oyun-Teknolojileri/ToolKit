@@ -208,6 +208,9 @@ namespace ToolKit
      */
     void SetLocalTransforms(Vec3 translation, Quaternion rotation, Vec3 scale);
 
+    /** Odd number of negative values in scale requires back / front culling to be flipped for proper winding order. */
+    bool RequresCullFlip();
+
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent);
 
@@ -235,6 +238,7 @@ namespace ToolKit
     void SetChildrenDirty();
     void InvalitadeSpatialCaches();
     Quaternion GetWorldOrientationCache();
+    Mat4 GetWorldCache();
 
    public:
     ULongID m_id;

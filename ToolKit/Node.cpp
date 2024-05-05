@@ -287,6 +287,13 @@ namespace ToolKit
     UpdateTransformCaches();
   }
 
+  bool Node::RequresCullFlip()
+  {
+    Mat3 basis = GetWorldCache();
+    float det  = glm::determinant(basis);
+    return det < 0.0f; // Negative determinant indicates handedness change which requires cull flip.
+  }
+
   XmlNode* Node::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = CreateXmlNode(doc, XmlNodeElement, parent);
@@ -526,6 +533,16 @@ namespace ToolKit
     }
 
     return m_worldOrientationCache;
+  }
+
+  Mat4 Node::GetWorldCache()
+  {
+    if (m_dirty)
+    {
+      UpdateTransformCaches();
+    }
+
+    return m_worldCache;
   }
 
 } // namespace ToolKit

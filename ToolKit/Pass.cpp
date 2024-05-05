@@ -129,6 +129,8 @@ namespace ToolKit
                     MeshRawPtrArray allMeshes;
                     parentMesh->GetAllMeshes(allMeshes);
 
+                    bool cullFlip  = ntt->m_node->RequresCullFlip();
+                    Mat4 transform = ntt->m_node->GetTransform();
                     for (int subMeshIndx = 0; subMeshIndx < (int) allMeshes.size(); subMeshIndx++)
                     {
                       Mesh* mesh           = allMeshes[subMeshIndx];
@@ -168,6 +170,7 @@ namespace ToolKit
                       job.Entity         = ntt;
                       job.Mesh           = mesh;
                       job.Material       = material.get();
+                      job.requireCullFlip = cullFlip;
                       job.ShadowCaster   = meshComp->GetCastShadowVal();
                       job.WorldTransform = ntt->m_node->GetTransform();
                       job.BoundingBox    = ntt->GetBoundingBox(true);
@@ -254,6 +257,8 @@ namespace ToolKit
                     MeshRawPtrArray allMeshes;
                     parentMesh->GetAllMeshes(allMeshes);
 
+                    bool cullFlip  = ntt->m_node->RequresCullFlip();
+                    Mat4 transform = ntt->m_node->GetTransform();
                     for (int subMeshIndx = 0; subMeshIndx < (int) allMeshes.size(); subMeshIndx++)
                     {
                       Mesh* mesh           = allMeshes[subMeshIndx];
@@ -287,15 +292,16 @@ namespace ToolKit
                       }
 
                       // Translate nttIndex to corresponding job index.
-                      int jobIndex       = submeshIndexLookup[nttIndex] + subMeshIndx;
+                      int jobIndex        = submeshIndexLookup[nttIndex] + subMeshIndx;
 
-                      RenderJob& job     = jobArray[jobIndex];
-                      job.Entity         = ntt;
-                      job.Mesh           = mesh;
-                      job.Material       = material.get();
-                      job.ShadowCaster   = meshComp->GetCastShadowVal();
-                      job.WorldTransform = ntt->m_node->GetTransform();
-                      job.BoundingBox    = ntt->GetBoundingBox(true);
+                      RenderJob& job      = jobArray[jobIndex];
+                      job.Entity          = ntt;
+                      job.Mesh            = mesh;
+                      job.Material        = material.get();
+                      job.requireCullFlip = cullFlip;
+                      job.ShadowCaster    = meshComp->GetCastShadowVal();
+                      job.WorldTransform  = transform;
+                      job.BoundingBox     = ntt->GetBoundingBox(true);
 
                       // Assign skeletal animations.
                       if (SkeletonComponent* skComp = ntt->GetComponentFast<SkeletonComponent>())

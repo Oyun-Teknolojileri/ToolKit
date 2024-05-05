@@ -28,7 +28,7 @@ namespace ToolKit
     ~Renderer();
 
     void Init();
-    void SetRenderState(const RenderState* const state);
+    void SetRenderState(const RenderState* const state, bool cullFlip = false);
 
     void SetStencilOperation(StencilOperation op);
 
