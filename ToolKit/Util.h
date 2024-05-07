@@ -290,6 +290,14 @@ namespace ToolKit
     vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
   }
 
+  template <typename T>
+  void Swap(T& data1, T& data2)
+  {
+    T data = data1;
+    data1   = data2;
+    data2   = data;
+  }
+
   //  Time.
   ///////////////////////////////////////////////////////
   TK_API float MillisecToSec(float ms);
