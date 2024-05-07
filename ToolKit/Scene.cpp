@@ -299,7 +299,9 @@ namespace ToolKit
     {
       if (m_entities[i]->GetIdVal() == id)
       {
-        removed = m_entities[i];
+        removed                    = m_entities[i];
+        removed->m_markedForDelete = true;
+
         UpdateEntityCaches(removed, false);
         m_entities.erase(m_entities.begin() + i);
         m_bvh->RemoveEntity(removed);

@@ -143,8 +143,6 @@ namespace ToolKit
                             const EntityPtrArray& extraList = {},
                             bool pickPartiallyInside        = true);
 
-    // Entity operations.
-
     /**
      * Gets the entity with the given ID from the scene.
      * @param id The ID of the entity to get.

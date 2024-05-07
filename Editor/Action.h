@@ -15,6 +15,9 @@ namespace ToolKit
   namespace Editor
   {
 
+    // Action
+    //////////////////////////////////////////////////////////////////////////
+
     typedef std::vector<class Action*> ActionRawPtrArray;
 
     class Action
@@ -29,6 +32,9 @@ namespace ToolKit
      public:
       ActionRawPtrArray m_group;
     };
+
+    // DeleteAction
+    //////////////////////////////////////////////////////////////////////////
 
     class DeleteAction : public Action
     {
@@ -45,6 +51,9 @@ namespace ToolKit
       IDArray m_children;
       bool m_actionComitted;
     };
+
+    // CreateAction
+    //////////////////////////////////////////////////////////////////////////
 
     class CreateAction : public Action
     {
@@ -63,6 +72,9 @@ namespace ToolKit
       bool m_actionComitted;
       IDArray m_selecteds;
     };
+
+    // DeleteComponentAction
+    //////////////////////////////////////////////////////////////////////////
 
     class DeleteComponentAction : public Action
     {

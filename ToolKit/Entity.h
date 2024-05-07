@@ -139,9 +139,7 @@ namespace ToolKit
       return nullptr;
     }
 
-    /**
-     * Faster version of the get component, if raw pointer is applicable.
-     */
+    /** Faster version of the get component, if raw pointer is applicable. */
     template <typename T>
     T* GetComponentFast() const
     {
@@ -162,7 +160,8 @@ namespace ToolKit
      */
     ComponentPtr GetComponent(ClassMeta* Class) const;
 
-    void ClearComponents(); //!< Removes all components from the entity.
+    /** Removes all components from the entity. */
+    void ClearComponents();
 
     /**
      * Used to identify if this Entity is a prefab, and if so, returns the
@@ -172,7 +171,8 @@ namespace ToolKit
      */
     Entity* GetPrefabRoot() const;
 
-    virtual void InvalidateSpatialCaches(); //!< BVH & Bounding boxes are invalidated.
+    /** BVH & Bounding boxes are invalidated. */
+    virtual void InvalidateSpatialCaches();
 
    protected:
     virtual Entity* CopyTo(Entity* other) const;
@@ -192,9 +192,7 @@ namespace ToolKit
     TKDeclareParam(bool, Visible);
     TKDeclareParam(bool, TransformLock);
 
-    /**
-     * Node that holds the transform and parenting data for the Entity.
-     */
+    /** Node that holds the transform and parenting data for the Entity. */
     Node* m_node;
 
     /**
@@ -214,12 +212,17 @@ namespace ToolKit
     std::vector<BVHNode*> m_bvhNodes; //!< BVHNodes that the entity is assigned.
 
     /** Internally used to mark the entity as being processed by bvh traverse algorithms. */
-    bool m_isInBVHProcess = false;
+    bool m_isInBVHProcess  = false;
+
+    /** Used in bvh stating that the entity is removed from scene and should not be considered in queries. */
+    bool m_markedForDelete = false;
 
    protected:
     BoundingBox m_localBoundingBoxCache;
     BoundingBox m_worldBoundingBoxCache;
-    bool m_boundingBoxCacheInvalidated = true; //!< If true, bounding box caches are updated upon access.
+
+    /** If true, bounding box caches are updated upon access. */
+    bool m_boundingBoxCacheInvalidated = true;
 
    private:
     /**

@@ -122,6 +122,7 @@ namespace ToolKit
     {
       m_entitiesToRemove.push_back(entity);
     }
+
     m_removeLock.Release();
   }
 
@@ -147,6 +148,13 @@ namespace ToolKit
     {
       m_bvhTree->Remove(entity);
     }
+
+    if (!m_entitiesToRemove.empty())
+    {
+      // Hierarchical deletes may cause bvh updates, prevent deleted objects to be re added.
+      erase_if(m_entitiesToUpdate, [this](EntityPtr ntt) -> bool { return FindIndex(m_entitiesToRemove, ntt) != -1; });
+    }
+
     m_entitiesToRemove.clear();
 
     // Delete nodes that should be deleted
@@ -407,7 +415,10 @@ namespace ToolKit
         {
           for (EntityPtr& ntt : currentNode->m_entites)
           {
-            entities.push_back(ntt.get());
+            if (!ntt->m_markedForDelete)
+            {
+              entities.push_back(ntt.get());
+            }
           }
         }
         else
@@ -429,7 +440,10 @@ namespace ToolKit
 
             if (res != IntersectResult::Outside)
             {
-              entities.push_back(ntt.get());
+              if (!ntt->m_markedForDelete)
+              {
+                entities.push_back(ntt.get());
+              }
             }
           }
         }
@@ -751,7 +765,7 @@ namespace ToolKit
           bvhNode->m_entites.erase(bvhNode->m_entites.begin() + i);
           break;
         }
-        ++i;
+        i++;
       }
       i = 0;
       for (EntityPtr ntt : bvhNode->m_lights)
@@ -761,7 +775,7 @@ namespace ToolKit
           bvhNode->m_lights.erase(bvhNode->m_lights.begin() + i);
           break;
         }
-        ++i;
+        i++;
       }
     }
 

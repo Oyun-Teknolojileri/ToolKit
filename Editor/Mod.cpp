@@ -503,10 +503,8 @@ namespace ToolKit
     {
       WindowPtr activeWnd = g_app->GetActiveWindow();
 
-      // Delete in the text edit, deletes the entities.
-      // Make sure delete is pressed only the given windows.
-      // TODO: Add Window a function that returns true if editing text. Window::IsEditingText()
-      if (!activeWnd->IsA<EditorViewport>() && !activeWnd->IsA<OutlinerWindow>())
+      // Prevent delete key during the text edit from deleting entities.
+      if (UI::IsKeyboardCaptured())
       {
         return NullSignal;
       }
