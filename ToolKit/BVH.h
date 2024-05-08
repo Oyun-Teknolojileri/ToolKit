@@ -22,24 +22,37 @@ namespace ToolKit
 
     int depth         = 0;
 
+    /** Parent bvh node. */
     BVHNode* m_parent = nullptr;
+    /** Left bvh node. */
     BVHNode* m_left   = nullptr;
+    /** Right bvh node. */
     BVHNode* m_right  = nullptr;
-
+    /** Boundary of the node. */
     BoundingBox m_aabb;
-
+    /** All entities inside this node. */
     EntityPtrArray m_entites;
+    /** All lights intersecting with this node. */
     LightPtrArray m_lights;
-
-    bool m_waitingForDeletion = false; //<! Internal variable. True if this node is going to be deleted by conjunction.
+    /** Internal variable. True if this node is going to be deleted by conjunction. */
+    bool m_markedForDelete              = false;
+    /** Holds the last query results. Preserve its state until the next query. */
     IntersectResult m_frustumTestResult = IntersectResult::Outside;
 
-    /**
-     * It is guaranteed that if left node is there, there will be right node too
-     */
-    inline bool Leaf() const { return m_left == nullptr; }
+    /** Evaluates last frustum query results and returns true if IntersectionResult is Inside. */
+    bool IsInsideFrustum() const { return m_frustumTestResult == IntersectResult::Inside; }
 
-    bool m_insideFrustum = false;
+    /** Evaluates last frustum query results and returns true if IntersectionResult is Inside. */
+    bool IsIntersectFrustum() const { return m_frustumTestResult == IntersectResult::Intersect; }
+
+    /** Evaluates last frustum query results and returns true if IntersectionResult is Outside. */
+    bool IsOutsideFrustum() const { return m_frustumTestResult == IntersectResult::Outside; }
+
+    /** Checks if the node is a leaf node. It is guaranteed that if left node is there, there will be right node too. */
+    bool IsLeaf() const { return m_left == nullptr; }
+
+    /** Checks wheter the node is root or not. Its considered a root node if it has no parent. */
+    bool IsRoot() const { return m_parent == nullptr; }
   };
 
   class TK_API BVHTree
@@ -99,10 +112,7 @@ namespace ToolKit
     void PickObject(const Frustum& frustum,
                     Scene::PickDataArray& pickedObjects,
                     const IDArray& ignoreList,
-                    const EntityPtrArray& extraList,
                     bool pickPartiallyInside);
-
-    BoundingBox GetFrustumBoundary(const Frustum& frustum) const;
 
     /**
      * Test bvh with a frustum and assign test results to BVHNodes.
