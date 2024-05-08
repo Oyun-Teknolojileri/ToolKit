@@ -176,7 +176,7 @@ namespace ToolKit
         Vec3 camOrg         = vp->GetCamera()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         Vec3 anchorOrg      = m_anchor->m_worldLocation;
         Vec3 dir            = glm::normalize(camOrg - anchorOrg);
-        m_intersectionPlane = PlaneFrom(anchorOrg, Vec3 {0, 0, 1});
+        m_intersectionPlane = PlaneFrom(anchorOrg, Z_AXIS);
       }
     }
 

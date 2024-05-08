@@ -907,13 +907,13 @@ namespace ToolKit
 
   PlaneEquation PlaneFrom(const Vec3 pnts[3])
   {
-    // Expecting 3 non coplanar points in CCW order.
+    // Expecting 3 non collinear points in CCW order.
     Vec3 v1 = pnts[1] - pnts[0];
     Vec3 v2 = pnts[2] - pnts[0];
 
     PlaneEquation eq;
     eq.normal = glm::normalize(glm::cross(v1, v2));
-    eq.d      = -glm::dot(eq.normal, pnts[0]);
+    eq.d      = glm::dot(eq.normal, pnts[0]);
 
     return eq;
   }

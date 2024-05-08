@@ -16,6 +16,7 @@
 #include <DirectionComponent.h>
 #include <Entity.h>
 #include <MathUtil.h>
+#include <Mesh.h>
 #include <Prefab.h>
 #include <Surface.h>
 
@@ -311,9 +312,6 @@ namespace ToolKit
 
             if (g_app->m_dbgArrow != nullptr)
             {
-              m_ignoreList.push_back(g_app->m_dbgArrow->GetIdVal());
-              currScene->AddEntity(g_app->m_dbgArrow);
-
               g_app->m_dbgArrow->m_node->SetTranslation(pd.pickPos + (ray.position - pd.pickPos) * 0.1f);
               g_app->m_dbgArrow->m_node->SetOrientation(RotationTo(X_AXIS, ray.direction));
             }
@@ -347,6 +345,7 @@ namespace ToolKit
         {
           CameraPtr cam = vp->GetCamera();
 
+          // Constructs mouse rectangle from lower left CCW.
           Vec2 rect[4];
           GetMouseRect(rect[0], rect[2]);
 
@@ -356,13 +355,14 @@ namespace ToolKit
           rect[3].y = rect[2].y;
 
           std::vector<Ray> rays;
-          std::vector<Vec3> rect3d;
+          Vec3Array rect3d;
 
-          // Front rectangle.
+          // Front rectangle in world space. From Upper left corner CW
+          // Conversion from lower left ccw to upper left cw happens during screen to viewport conversion.
           Vec3 lensLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
           for (int i = 0; i < 4; i++)
           {
-            Vec2 p  = vp->TransformScreenToViewportSpace(rect[i]);
+            Vec2 p  = vp->TransformScreenToViewportSpace(rect[i]); // ccw to cw.
             Vec3 p0 = vp->TransformViewportToWorldSpace(p);
             rect3d.push_back(p0);
             if (cam->IsOrtographic())
@@ -375,7 +375,7 @@ namespace ToolKit
             }
           }
 
-          // Back rectangle.
+          // Back rectangle in world space.
           float depth = 1000.0f;
           for (int i = 0; i < 4; i++)
           {
@@ -385,23 +385,32 @@ namespace ToolKit
 
           // Frustum from 8 points.
           Frustum frustum;
-          std::vector<Vec3> planePnts;
-          planePnts         = {rect3d[0], rect3d[7], rect3d[4]}; // Left plane.
+          Vec3Array planePnts;
+          Vec3Array centers;
+
+          // Create plane equations such that normals point in to frustum.
+          planePnts = {rect3d[3], rect3d[7], rect3d[4]};                 // Left plane.
+          centers.push_back((rect3d[3] + rect3d[7] + rect3d[4]) / 3.0f); // Used to draw debug planes.
           frustum.planes[0] = PlaneFrom(planePnts.data());
 
-          planePnts         = {rect3d[5], rect3d[6], rect3d[1]}; // Right plane.
+          planePnts         = {rect3d[2], rect3d[5], rect3d[6]};         // Right plane.
+          centers.push_back((rect3d[2] + rect3d[5] + rect3d[6]) / 3.0f); // Used to draw debug planes.
           frustum.planes[1] = PlaneFrom(planePnts.data());
 
-          planePnts         = {rect3d[4], rect3d[5], rect3d[0]}; // Top plane.
+          planePnts         = {rect3d[1], rect3d[4], rect3d[5]};         // Top plane.
+          centers.push_back((rect3d[1] + rect3d[4] + rect3d[5]) / 3.0f); // Used to draw debug planes.
           frustum.planes[2] = PlaneFrom(planePnts.data());
 
-          planePnts         = {rect3d[3], rect3d[6], rect3d[7]}; // Bottom plane.
+          planePnts         = {rect3d[2], rect3d[6], rect3d[7]};         // Bottom plane.
+          centers.push_back((rect3d[2] + rect3d[6] + rect3d[7]) / 3.0f); // Used to draw debug planes.
           frustum.planes[3] = PlaneFrom(planePnts.data());
 
-          planePnts         = {rect3d[0], rect3d[1], rect3d[3]}; // Near plane.
+          planePnts         = {rect3d[3], rect3d[1], rect3d[2]};         // Near plane.
+          centers.push_back((rect3d[3] + rect3d[1] + rect3d[2]) / 3.0f); // Used to draw debug planes.
           frustum.planes[4] = PlaneFrom(planePnts.data());
 
-          planePnts         = {rect3d[7], rect3d[5], rect3d[4]}; // Far plane.
+          planePnts         = {rect3d[7], rect3d[6], rect3d[5]};         // Far plane.
+          centers.push_back((rect3d[7] + rect3d[6] + rect3d[5]) / 3.0f); // Used to draw debug planes.
           frustum.planes[5] = PlaneFrom(planePnts.data());
 
           // Perform picking.
@@ -413,41 +422,56 @@ namespace ToolKit
           // Debug draw the picking frustum.
           if (g_app->m_showPickingDebug)
           {
-            std::vector<Vec3> corners = {rect3d[0],
-                                         rect3d[1],
-                                         rect3d[1],
-                                         rect3d[2],
-                                         rect3d[2],
-                                         rect3d[3],
-                                         rect3d[3],
-                                         rect3d[0],
-                                         rect3d[0],
-                                         rect3d[0] + rays[0].direction * depth,
-                                         rect3d[1],
-                                         rect3d[1] + rays[1].direction * depth,
-                                         rect3d[2],
-                                         rect3d[2] + rays[2].direction * depth,
-                                         rect3d[3],
-                                         rect3d[3] + rays[3].direction * depth,
-                                         rect3d[0] + rays[0].direction * depth,
-                                         rect3d[1] + rays[1].direction * depth,
-                                         rect3d[1] + rays[1].direction * depth,
-                                         rect3d[2] + rays[2].direction * depth,
-                                         rect3d[2] + rays[2].direction * depth,
-                                         rect3d[3] + rays[3].direction * depth,
-                                         rect3d[3] + rays[3].direction * depth,
-                                         rect3d[0] + rays[0].direction * depth};
+            Vec3Array corners = {rect3d[0],
+                                 rect3d[1],
+                                 rect3d[1],
+                                 rect3d[2],
+                                 rect3d[2],
+                                 rect3d[3],
+                                 rect3d[3],
+                                 rect3d[0],
+                                 rect3d[0],
+                                 rect3d[0] + rays[0].direction * depth,
+                                 rect3d[1],
+                                 rect3d[1] + rays[1].direction * depth,
+                                 rect3d[2],
+                                 rect3d[2] + rays[2].direction * depth,
+                                 rect3d[3],
+                                 rect3d[3] + rays[3].direction * depth,
+                                 rect3d[0] + rays[0].direction * depth,
+                                 rect3d[1] + rays[1].direction * depth,
+                                 rect3d[1] + rays[1].direction * depth,
+                                 rect3d[2] + rays[2].direction * depth,
+                                 rect3d[2] + rays[2].direction * depth,
+                                 rect3d[3] + rays[3].direction * depth,
+                                 rect3d[3] + rays[3].direction * depth,
+                                 rect3d[0] + rays[0].direction * depth};
 
+            // Generate debug frustum.
             if (g_app->m_dbgFrustum == nullptr)
             {
               g_app->m_dbgFrustum = MakeNewPtr<LineBatch>();
               g_app->m_dbgFrustum->Generate(corners, X_AXIS, DrawType::Line);
-              m_ignoreList.push_back(g_app->m_dbgFrustum->GetIdVal());
-              currScene->AddEntity(g_app->m_dbgFrustum);
             }
             else
             {
               g_app->m_dbgFrustum->Generate(corners, X_AXIS, DrawType::Line);
+            }
+
+            // Generate frustum planes.
+            LineBatchPtr debFrust = g_app->m_dbgFrustum;
+            MeshPtr debFrustMesh  = debFrust->GetMeshComponent()->GetMeshVal();
+            for (int i = 0; i < 6; i++)
+            {
+              Vec3 pc               = frustum.planes[i].normal * frustum.planes[i].d;
+              Vec3 delta            = centers[i] - pc;
+              Mat4 move             = glm::translate(delta);
+
+              LineBatchPtr debPlane = CreatePlaneDebugObject(frustum.planes[i], 2.0f);
+              MeshPtr depPlaneMesh  = debPlane->GetMeshComponent()->GetMeshVal();
+              depPlaneMesh->ApplyTransform(move);
+
+              debFrustMesh->m_subMeshes.push_back(depPlaneMesh);
             }
           }
         }

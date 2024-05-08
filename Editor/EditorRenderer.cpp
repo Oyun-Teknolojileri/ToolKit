@@ -204,6 +204,19 @@ namespace ToolKit
         scene->m_bvh->GetDebugBVHBoxes(app->m_perFrameDebugObjects);
       }
 
+      if (app->m_showPickingDebug)
+      {
+        if (app->m_dbgArrow)
+        {
+          app->m_perFrameDebugObjects.push_back(app->m_dbgArrow);
+        }
+
+        if (app->m_dbgFrustum)
+        {
+          app->m_perFrameDebugObjects.push_back(app->m_dbgFrustum);
+        }
+      }
+
       // Generate Selection boundary and Environment component boundary.
       m_selecteds.clear();
       scene->GetSelectedEntities(m_selecteds);
