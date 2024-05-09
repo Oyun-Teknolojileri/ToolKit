@@ -386,31 +386,24 @@ namespace ToolKit
           // Frustum from 8 points.
           Frustum frustum;
           Vec3Array planePnts;
-          Vec3Array centers;
 
           // Create plane equations such that normals point in to frustum.
-          planePnts = {rect3d[3], rect3d[7], rect3d[4]};                 // Left plane.
-          centers.push_back((rect3d[3] + rect3d[7] + rect3d[4]) / 3.0f); // Used to draw debug planes.
+          planePnts         = {rect3d[3], rect3d[7], rect3d[4]}; // Left plane.
           frustum.planes[0] = PlaneFrom(planePnts.data());
 
-          planePnts         = {rect3d[2], rect3d[5], rect3d[6]};         // Right plane.
-          centers.push_back((rect3d[2] + rect3d[5] + rect3d[6]) / 3.0f); // Used to draw debug planes.
+          planePnts         = {rect3d[2], rect3d[5], rect3d[6]}; // Right plane.
           frustum.planes[1] = PlaneFrom(planePnts.data());
 
-          planePnts         = {rect3d[1], rect3d[4], rect3d[5]};         // Top plane.
-          centers.push_back((rect3d[1] + rect3d[4] + rect3d[5]) / 3.0f); // Used to draw debug planes.
+          planePnts         = {rect3d[1], rect3d[4], rect3d[5]}; // Top plane.
           frustum.planes[2] = PlaneFrom(planePnts.data());
 
-          planePnts         = {rect3d[2], rect3d[6], rect3d[7]};         // Bottom plane.
-          centers.push_back((rect3d[2] + rect3d[6] + rect3d[7]) / 3.0f); // Used to draw debug planes.
+          planePnts         = {rect3d[2], rect3d[6], rect3d[7]}; // Bottom plane.
           frustum.planes[3] = PlaneFrom(planePnts.data());
 
-          planePnts         = {rect3d[3], rect3d[1], rect3d[2]};         // Near plane.
-          centers.push_back((rect3d[3] + rect3d[1] + rect3d[2]) / 3.0f); // Used to draw debug planes.
+          planePnts         = {rect3d[3], rect3d[1], rect3d[2]}; // Near plane.
           frustum.planes[4] = PlaneFrom(planePnts.data());
 
-          planePnts         = {rect3d[7], rect3d[6], rect3d[5]};         // Far plane.
-          centers.push_back((rect3d[7] + rect3d[6] + rect3d[5]) / 3.0f); // Used to draw debug planes.
+          planePnts         = {rect3d[7], rect3d[6], rect3d[5]}; // Far plane.
           frustum.planes[5] = PlaneFrom(planePnts.data());
 
           // Perform picking.
@@ -456,22 +449,6 @@ namespace ToolKit
             else
             {
               g_app->m_dbgFrustum->Generate(corners, X_AXIS, DrawType::Line);
-            }
-
-            // Generate frustum planes.
-            LineBatchPtr debFrust = g_app->m_dbgFrustum;
-            MeshPtr debFrustMesh  = debFrust->GetMeshComponent()->GetMeshVal();
-            for (int i = 0; i < 6; i++)
-            {
-              Vec3 pc               = frustum.planes[i].normal * frustum.planes[i].d;
-              Vec3 delta            = centers[i] - pc;
-              Mat4 move             = glm::translate(delta);
-
-              LineBatchPtr debPlane = CreatePlaneDebugObject(frustum.planes[i], 2.0f);
-              MeshPtr depPlaneMesh  = debPlane->GetMeshComponent()->GetMeshVal();
-              depPlaneMesh->ApplyTransform(move);
-
-              debFrustMesh->m_subMeshes.push_back(depPlaneMesh);
             }
           }
         }
