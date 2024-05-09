@@ -695,13 +695,12 @@ namespace ToolKit
 
   bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
   {
-    float denom = glm::dot(ray.direction, plane.normal);
-    // Ray and plane facing(-). Not parallel (0) or ray facing plane's back (+).
-    if (glm::lessThan(denom, 0.0f))
+    float project = glm::dot(ray.direction, plane.normal);
+    if (glm::notEqual(project, 0.0f)) // Ray & Plane is not parallel.
     {
-      t = -(glm::dot(plane.normal, ray.position) - plane.d) / denom;
-      // On (0) or in front of (+) the plane.
-      return glm::greaterThanEqual(t, 0.0f);
+      // https://www.cs.princeton.edu/courses/archive/fall00/cs426/lectures/raycast/sld017.htm
+      t = -(glm::dot(plane.normal, ray.position) + plane.d) / project;
+      return true;
     }
 
     return false;
@@ -726,18 +725,6 @@ namespace ToolKit
 
     t = (-b - glm::sqrt((b * b) - 4.0f * a * c)) / (2.0f * a);
     return true;
-  }
-
-  bool LinePlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
-  {
-    float denom = glm::dot(ray.direction, plane.normal);
-    if (glm::notEqual(denom, 0.0f)) // Not parallel (0).
-    {
-      t = -(glm::dot(plane.normal, ray.position) - plane.d) / denom;
-      return true;
-    }
-
-    return false;
   }
 
   Vec3 PointOnRay(const Ray& ray, float t) { return ray.position + ray.direction * t; }

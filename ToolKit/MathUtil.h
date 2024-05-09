@@ -101,10 +101,6 @@ namespace ToolKit
 
   TK_API bool RaySphereIntersection(const Ray& ray, const BoundingSphere& sphere, float& t);
 
-  // Line is same as ray but it is infinite on both sides.
-  // Unless ray is parallel to plane, it will always yield a result.
-  TK_API bool LinePlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t);
-
   TK_API Vec3 PointOnRay(const Ray& ray, float t);
 
   // Geometric Operations
