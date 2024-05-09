@@ -142,6 +142,7 @@ namespace ToolKit
 
   /**
    * A struct representing a frustum in 3D space.
+   * Expecting all plane normals to point inwards the frustum.
    */
   struct Frustum
   {

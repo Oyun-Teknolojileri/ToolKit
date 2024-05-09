@@ -13,7 +13,7 @@ namespace ToolKit
 {
 
   // Matrix Operations
-  //////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
 
   TK_API void DecomposeMatrix(const Mat4& transform, Vec3* translation, Quaternion* orientation, Vec3* scale);
 
@@ -21,14 +21,30 @@ namespace ToolKit
 
   TK_API void QDUDecomposition(const Mat3& transform, Mat3& kQ, Vec3& kD, Vec3& kU);
 
+  /** Extracts the basis vectors from the transform matrix. */
   TK_API void ExtractAxes(const Mat4& transform, Vec3& x, Vec3& y, Vec3& z, bool normalize = true);
 
+  /*
+   * Extracts a frustum from given matrix whose plane normals are pointing inwards.
+   *
+   * If the given matrix is projection matrix, then the algorithm gives the
+   * clipping planes in view space If the matrix is projection * view,then the
+   * algorithm gives the clipping planes in world space If the matrix is
+   * projection * view * model, then the algorithm gives the clipping planes in
+   * model space
+   *
+   * @param projectViewModel is the matrix to extract frustum from.
+   * @param normalize if set true normalizes the frustum matrices.
+   *
+   * @return Frustum that is extracted from given matrix.
+   */
   TK_API Frustum ExtractFrustum(const Mat4& projectViewModel, bool normalize);
 
+  /** Normalizes frustum's planes. */
   TK_API void NormalizeFrustum(Frustum& frustum);
 
   // Intersections
-  //////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
 
   enum class IntersectResult
   {
@@ -77,8 +93,7 @@ namespace ToolKit
   // Tracing possible object: Vertex positions should be in memory
   TK_API uint FindMeshIntersection(const EntityPtr ntt, const Ray& ray, float& t);
 
-  TK_API IntersectResult FrustumBoxIntersection(const Frustum& frustum,
-                                                const BoundingBox& box); // 0 outside, 1 inside, 2 intersect
+  TK_API IntersectResult FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box);
 
   TK_API bool ConePointIntersection(Vec3 conePos, Vec3 coneDir, float coneHeight, float coneAngle, Vec3 point);
 
@@ -88,20 +103,22 @@ namespace ToolKit
                                    float coneHeight,
                                    float coneAngle);
 
-  TK_API Quaternion QuaternionLookAt(Vec3 direction);
-
-  /**
-   * Tests normalized frustum with a sphere.
-   */
+  /** Tests normalized frustum with a sphere. */
   TK_API bool FrustumSphereIntersection(const Frustum& frustum, const Vec3& pos, float radius);
 
+  /** Tests normalized frustum with a sphere. */
   TK_API bool FrustumSphereIntersection(const Frustum& frustum, const BoundingSphere& sphere);
 
+  /** Tests a ray with a plane if there is an intersection sets the t as distance from ray to plane. */
   TK_API bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t);
 
   TK_API bool RaySphereIntersection(const Ray& ray, const BoundingSphere& sphere, float& t);
 
+  /** Finds a point at t distance away from the ray. */
   TK_API Vec3 PointOnRay(const Ray& ray, float t);
+
+  /** Tests whether the given point is inside the given boundary. */
+  TK_API bool PointInsideBBox(const Vec3& point, const Vec3& max, const Vec3& min);
 
   // Geometric Operations
   //////////////////////////////////////////
@@ -137,6 +154,7 @@ namespace ToolKit
   // Conversions and Interpolation
   //////////////////////////////////////////
 
+  /** Linearly interpolate vec1 with vec2 based on the ratio. Formula: (v2-v1)*ratio+v1 */
   TK_API Vec3 Interpolate(const Vec3& vec1, const Vec3& vec2, float ratio);
 
   /** From the given point, calculates radius (r), angle from y axis (zenith), angle in xz plane (azimuth) */
@@ -152,18 +170,17 @@ namespace ToolKit
   TK_API Vec3 Orthogonal(const Vec3& v);
 
   // Comparison
-  //////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
 
+  /** Tests if all components of given vectors are equal or not. */
   template <typename T>
   bool VecAllEqual(const T& a, const T& b)
   {
     return glm::all(glm::equal<T>(a, b));
   }
 
-  TK_API bool PointInsideBBox(const Vec3& point, const Vec3& max, const Vec3& min);
-
   // Random Generators
-  //////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
 
   /**
    * Generate random points on a hemisphere with proximity to normal.

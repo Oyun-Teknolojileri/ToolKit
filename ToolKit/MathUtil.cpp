@@ -626,15 +626,6 @@ namespace ToolKit
     return ret;
   }
 
-  Quaternion QuaternionLookAt(Vec3 direction)
-  {
-    Mat3 Result {};
-    Result[2] = -glm::normalize(direction);
-    Result[0] = glm::normalize(glm::cross(Y_AXIS, Result[2]));
-    Result[1] = glm::cross(Result[2], Result[0]);
-    return glm::quat_cast(Result);
-  }
-
   // frustum should be normalized
   bool FrustumSphereIntersection(const Frustum& frustum, const Vec3& pos, float radius)
   {
