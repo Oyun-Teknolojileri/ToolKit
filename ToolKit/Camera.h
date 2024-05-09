@@ -96,6 +96,8 @@ namespace ToolKit
 
     Vec3 Direction() const;
 
+    float FocalLength() const;
+
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
     void ParameterConstructor() override;
