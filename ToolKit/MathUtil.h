@@ -110,19 +110,24 @@ namespace ToolKit
   // Geometric Operations
   //////////////////////////////////////////
 
-  TK_API void NormalizePlaneEquation(PlaneEquation& plane);
+  /** Transforms the 8 corners of the bounding box and recalculates new boundary from transformed points. */
   TK_API void TransformAABB(BoundingBox& box, const Mat4& transform);
-  TK_API void GetCorners(const BoundingBox& box, Vec3Array& corners);
-  TK_API PlaneEquation PlaneFrom(const Vec3 pnts[3]);
-  TK_API PlaneEquation PlaneFrom(Vec3 point, Vec3 normal);
-  TK_API float SignedDistance(const PlaneEquation& plane, const Vec3& pnt);
-  TK_API Vec3 ProjectPointOntoPlane(const PlaneEquation& plane, const Vec3& pt);
-  TK_API Vec3 ProjectPointOntoLine(const Ray& ray, const Vec3& pnt);
 
-  /**
-   * Returns True if box is outside of the frustum
-   */
+  /** Calculates 8 corners of the given bounding box. */
+  TK_API void GetCorners(const BoundingBox& box, Vec3Array& corners);
+
+  /** Normalize the plane equation by normalizing its normal and dividing normal's magnitude by the distance d. */
+  TK_API void NormalizePlaneEquation(PlaneEquation& plane);
+
+  /** Construct a plane equation in the form of ax+by+cz+(-d)=0 */
+  TK_API PlaneEquation PlaneFrom(const Vec3 pnts[3]);
+
+  /** Construct a plane equation in the form of ax+by+cz+(-d)=0 */
+  TK_API PlaneEquation PlaneFrom(Vec3 point, Vec3 normal);
+
+  /** Tests the box against the frustum and returns true if its intersects or inside. */
   TK_API bool FrustumTest(const Frustum& frustum, const BoundingBox& box);
+
   /**
    * Removes the entities that are outside of the camera.
    * @param entities All entities.
@@ -137,11 +142,17 @@ namespace ToolKit
   //////////////////////////////////////////
 
   TK_API Vec3 Interpolate(const Vec3& vec1, const Vec3& vec2, float ratio);
+
+  /** From the given point, calculates radius (r), angle from y axis (zenith), angle in xz plane (azimuth) */
   TK_API void ToSpherical(Vec3 p, float& r, float& zenith, float& azimuth);
+
+  /** From given spherical coordinates calculates a point in Cartesian space. */
   TK_API Vec3 ToCartesian(float r, float zenith, float azimuth);
-  // Returns quaternion wich rotates a on to b.
+
+  /** Returns quaternion wich rotates a on to b. */
   TK_API Quaternion RotationTo(Vec3 a, Vec3 b);
-  // Returns an orthogonal vector to v.
+
+  /** Returns an orthogonal vector to v. */
   TK_API Vec3 Orthogonal(const Vec3& v);
 
   // Comparison
