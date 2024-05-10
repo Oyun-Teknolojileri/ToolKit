@@ -84,10 +84,22 @@ namespace ToolKit
 
      protected:
       // Internal window handling.
+
+      /**
+       *Handle internal states of the window.
+       * Should be called in between the Show::ImGui::Begin / End function.
+       */
       void HandleStates();
+
+      /** Set the window as active window. */
       void SetActive();
-      void TryActivateWindow(); //!< Internally used by HandleStates to try activating window with any mouse click.
+
+      /** Internally used by HandleStates to try activating window with any mouse click. */
+      void TryActivateWindow();
+
+      /** Global shortcuts handled in this function. Can be overridden for extending it with new short cuts. */
       void ModShortCutSignals(const IntArray& mask = {}) const;
+
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 

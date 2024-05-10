@@ -275,7 +275,7 @@ namespace ToolKit
             objFactory->Register<StatsWindow>();
             objFactory->Register<StringInputWindow>();
             objFactory->Register<YesNoWindow>();
-            objFactory->Register<TempMaterialWindow>();
+            objFactory->Register<MaterialWindow>();
             objFactory->Register<AndroidBuildWindow>();
             objFactory->Register<PluginWindow>();
             objFactory->Register<PluginSettingsWindow>();

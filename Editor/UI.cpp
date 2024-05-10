@@ -477,6 +477,7 @@ namespace ToolKit
       }
 
       // Show volatile windows.
+      WindowPtrArray closedWindows;
       for (WindowPtr wnd : m_volatileWindows)
       {
         wnd->ResetState();
@@ -485,7 +486,17 @@ namespace ToolKit
         {
           wnd->Show();
         }
+        else
+        {
+          closedWindows.push_back(wnd);
+        }
       }
+
+      for (WindowPtr wnd : closedWindows)
+      {
+        wnd->RemoveFromUI();
+      }
+      closedWindows.clear();
 
       if (g_app->m_simulationViewport->IsVisible())
       {
