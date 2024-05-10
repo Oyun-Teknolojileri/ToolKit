@@ -353,10 +353,7 @@ namespace ToolKit
       style.GrabRounding = style.FrameRounding = 2.3f;
     }
 
-    static __forceinline ImVec4 Inverse(const ImVec4& input)
-    {
-      return ImVec4(1.0f - input.x, 1.0f - input.y, 1.0f - input.z, 1.0f);
-    }
+    ImVec4 Inverse(const ImVec4& input) { return ImVec4(1.0f - input.x, 1.0f - input.y, 1.0f - input.z, 1.0f); }
 
     void LightTheme()
     {
@@ -471,6 +468,8 @@ namespace ToolKit
       // Show persistent windows.
       for (WindowPtr wnd : g_app->m_windows)
       {
+        wnd->ResetState();
+
         if (wnd->IsVisible())
         {
           wnd->Show();
@@ -480,6 +479,8 @@ namespace ToolKit
       // Show volatile windows.
       for (WindowPtr wnd : m_volatileWindows)
       {
+        wnd->ResetState();
+
         if (wnd->IsVisible())
         {
           wnd->Show();

@@ -23,12 +23,14 @@ namespace ToolKit
     Window::Window()
     {
       m_size = UVec2(640, 480);
-      m_id   = ++m_baseId;
+      m_id   = m_baseId++;
     }
 
     Window::~Window() {}
 
     void Window::SetVisibility(bool visible) { m_visible = visible; }
+
+    bool Window::IsShown() { return m_isShown; }
 
     bool Window::IsActive() const { return m_active; }
 
@@ -60,6 +62,8 @@ namespace ToolKit
         erase_if(UI::m_volatileWindows, [self](WindowPtr wnd) -> bool { return wnd->IsSame(self); });
       }
     }
+
+    void Window::ResetState() { m_isShown = false; }
 
     XmlNode* Window::SerializeImp(XmlDocument* doc, XmlNode* parent) const
     {
@@ -117,6 +121,7 @@ namespace ToolKit
     {
       ImGui::GetIO().WantCaptureMouse = true;
 
+      // Update moving status.
       Vec2 loc                        = ImGui::GetWindowPos();
       IVec2 iLoc(loc);
 
@@ -139,37 +144,16 @@ namespace ToolKit
         }
       }
 
-      m_location = iLoc;
+      m_location     = iLoc;
 
-      m_mouseHover =
-          ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByPopup);
+      int hoverFlags = ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByPopup;
+      m_mouseHover   = ImGui::IsWindowHovered(hoverFlags);
 
-      bool rightClick  = ImGui::IsMouseDown(ImGuiMouseButton_Right);
-      bool leftClick   = ImGui::IsMouseDown(ImGuiMouseButton_Left);
-      bool middleClick = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
+      TryActivateWindow();
 
-      // Activate with any click.
-      if ((rightClick || leftClick || middleClick) && m_mouseHover)
-      {
-        if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) || ImGui::IsMouseDragging(ImGuiMouseButton_Right) ||
-            ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
-        {
-          return;
-        }
-
-        if (!m_active)
-        {
-          SetActive();
-        }
-      }
-
-      if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
-      {
-        if (m_active)
-        {
-          m_active = false;
-        }
-      }
+      // If its visible and we are inside ImGui::Begin / End, than window is being shown.
+      // (not in a hidden dock or collapsed. )
+      m_isShown = true;
     }
 
     void Window::SetActive()
@@ -186,6 +170,40 @@ namespace ToolKit
           {
             g_app->m_lastActiveViewport = Cast<EditorViewport>(wnd);
           }
+        }
+      }
+    }
+
+    void Window::TryActivateWindow()
+    {
+      bool rightClick  = ImGui::IsMouseDown(ImGuiMouseButton_Right);
+      bool leftClick   = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+      bool middleClick = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
+
+      // Activate with any click.
+      if ((rightClick || leftClick || middleClick) && m_mouseHover)
+      {
+        bool mouseDrag  = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
+        mouseDrag      |= ImGui::IsMouseDragging(ImGuiMouseButton_Right);
+        mouseDrag      |= ImGui::IsMouseDragging(ImGuiMouseButton_Middle);
+
+        if (mouseDrag)
+        {
+          // Prevent activation if mouse is dragging.
+          return;
+        }
+
+        if (!m_active)
+        {
+          SetActive();
+        }
+      }
+
+      if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
+      {
+        if (m_active)
+        {
+          m_active = false;
         }
       }
     }

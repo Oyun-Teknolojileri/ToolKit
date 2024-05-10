@@ -26,16 +26,45 @@ namespace ToolKit
       Window();
       virtual ~Window();
       virtual void Show() = 0;
-      void SetVisibility(bool visible);
 
       // Window queries.
-      bool IsActive() const;
-      bool IsVisible() const;
-      bool IsMoving() const;
-      bool MouseHovers() const;
-      bool CanDispatchSignals() const; // If active & visible & mouse hovers.
 
-      // System calls.
+      /**
+       * States if the window is visible and showing its content. That is, the window is not minimized or in an
+       * inactive tab.
+       */
+      bool IsShown();
+
+      /** States if the window is active window. A window is considered active if it has input focus. */
+      bool IsActive() const;
+
+      /**
+       * States if the window is visible, it can be tabbed or minimized.
+       * If you want to check if its rendering content, use IsShown().
+       */
+      bool IsVisible() const;
+
+      /** States if the window is moving or not. */
+      bool IsMoving() const;
+
+      /** States if the mouse is over the window or not. */
+      bool MouseHovers() const;
+
+      // Window functions.
+
+      /**
+       * Set window as visible, if its not visible it won't be shown. However, it may not be shown due to being an
+       * inactive tab or minimized window. Use IsShown to detect if the window is being shown or not.
+       */
+      void SetVisibility(bool visible);
+
+      /**
+       * States if a window can dispatch signals or not.
+       * If window is active & visible & mouse hovers on it, it can dispatch signals.
+       */
+      bool CanDispatchSignals() const;
+
+      /** Dispatch signals such as short cuts or system events. Mode manager captures and process signals. */
       virtual void DispatchSignals() const;
 
       /**
@@ -50,35 +79,48 @@ namespace ToolKit
        */
       void RemoveFromUI();
 
+      /** Internally used to reset per frame state such as m_isShown. */
+      void ResetState();
+
      protected:
       // Internal window handling.
       void HandleStates();
       void SetActive();
+      void TryActivateWindow(); //!< Internally used by HandleStates to try activating window with any mouse click.
       void ModShortCutSignals(const IntArray& mask = {}) const;
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
      protected:
       // States.
+
+      /** States if the window is visible, doesn't mean that its being shown. May be in a tab and hidden. */
       bool m_visible    = true;
+
+      /** States if the visible window is shown, not in a hidden tab or minimized. */
+      bool m_isShown    = false;
+
+      /** States if the input focus is on this window. */
       bool m_active     = false;
+
+      /** States if the mouse is over this window. */
       bool m_mouseHover = false;
-      bool m_moving     = false; //!< States if window is moving.
+
+      /** States if the user is dragging the window. */
+      bool m_moving     = false;
 
      public:
-      String m_name;
-      uint m_id;
-      UVec2 m_size;
-      IVec2 m_location;
+      String m_name;    //!< Name of the window.
+      uint m_id;        //!< Unique window id for the current runtime.
+      UVec2 m_size;     //!< Total window size.
+      IVec2 m_location; //!< Screen space window location.
 
      private:
-      // Internal unique id generator.
-      static uint m_baseId;
+      static uint m_baseId; //!< Internal counter for unique ids in current runtime.
     };
 
     typedef std::shared_ptr<Window> WindowPtr;
     typedef std::vector<WindowPtr> WindowPtrArray;
-    typedef std::vector<Window*> WindowRawPtrArray;
 
   } // namespace Editor
 } // namespace ToolKit
