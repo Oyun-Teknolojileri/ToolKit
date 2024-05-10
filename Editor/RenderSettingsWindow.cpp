@@ -186,7 +186,6 @@ namespace ToolKit
             if (isSelected)
             {
               engineSettings.Graphics.cascadeCount = itemIndx + 1;
-              GetRenderSystem()->InvalidateShadowAtlas();
               GetRenderSystem()->InvalidateGPULightCache();
             }
           }
