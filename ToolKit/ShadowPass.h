@@ -19,14 +19,12 @@ namespace ToolKit
     CameraPtr viewCamera = nullptr;
   };
 
-  /**
-   * Create shadow map buffers for all given lights.
-   */
+  /** Create shadow map buffers for all given lights. */
   class TK_API ShadowPass : public Pass
   {
    public:
     ShadowPass();
-    explicit ShadowPass(const ShadowPassParams& params);
+    ShadowPass(const ShadowPassParams& params);
     ~ShadowPass();
 
     void Render() override;
@@ -45,9 +43,7 @@ namespace ToolKit
      */
     int PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights);
 
-    /**
-     * Creates a shadow atlas for m_params.Lights
-     */
+    /** Creates a shadow atlas for m_params.Lights */
     void InitShadowAtlas();
 
    public:
@@ -62,6 +58,7 @@ namespace ToolKit
     FramebufferPtr m_shadowFramebuffer = nullptr;
     RenderTargetPtr m_shadowAtlas      = nullptr;
     int m_layerCount                   = 0; // Number of textures in array texture (shadow atlas)
+    int m_activeCascadeCount           = 0;
     IDArray m_previousShadowCasters;
 
     Quaternion m_cubeMapRotations[6];

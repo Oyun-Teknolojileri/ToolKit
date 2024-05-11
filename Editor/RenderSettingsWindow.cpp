@@ -175,6 +175,7 @@ namespace ToolKit
         const char* itemNames[] = {"1", "2", "3", "4"};
         const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
         int currentItem         = engineSettings.Graphics.cascadeCount - 1;
+
         if (ImGui::BeginCombo("Cascade Count", itemNames[currentItem]))
         {
           for (int itemIndx = 0; itemIndx < itemCount; itemIndx++)
@@ -185,7 +186,6 @@ namespace ToolKit
             if (isSelected)
             {
               engineSettings.Graphics.cascadeCount = itemIndx + 1;
-              GetRenderSystem()->InvalidateShadowAtlas();
               GetRenderSystem()->InvalidateGPULightCache();
             }
           }
@@ -193,12 +193,55 @@ namespace ToolKit
           ImGui::EndCombo();
         }
 
-        Vec4 data = {engineSettings.Graphics.cascadeDistances[1],
-                     engineSettings.Graphics.cascadeDistances[2],
-                     engineSettings.Graphics.cascadeDistances[3],
-                     engineSettings.PostProcessing.ShadowDistance};
-        if (ImGui::DragFloat4("CascadeDistances", &data[0]))
+        Vec4 data            = {engineSettings.Graphics.cascadeDistances[1],
+                                engineSettings.Graphics.cascadeDistances[2],
+                                engineSettings.Graphics.cascadeDistances[3],
+                                engineSettings.PostProcessing.ShadowDistance};
+
+        int lastCascadeIndex = engineSettings.Graphics.cascadeCount - 1;
+        Swap(data[lastCascadeIndex], data[3]);
+
+        Vec2 contentSize        = ImGui::GetContentRegionAvail();
+        float width             = contentSize.x * 0.95f / 4.0f;
+        width                   = glm::clamp(width, 10.0f, 100.0f);
+
+        bool cascadeInvalidated = false;
+        for (int i = 0; i < 4; i++)
         {
+          float val = data[i];
+          if (i > lastCascadeIndex)
+          {
+            ImGui::BeginDisabled();
+            val = 0.0f;
+          }
+
+          ImGui::PushID(i);
+          ImGui::PushItemWidth(width);
+
+          if (ImGui::DragFloat("##cascade", &val))
+          {
+            cascadeInvalidated = true;
+            data[i]            = val;
+          }
+
+          ImGui::PopItemWidth();
+          ImGui::PopID();
+
+          if (i > lastCascadeIndex)
+          {
+            ImGui::EndDisabled();
+          }
+
+          if (i < 3)
+          {
+            ImGui::SameLine();
+          }
+        }
+
+        if (cascadeInvalidated)
+        {
+          Swap(data[lastCascadeIndex], data[3]);
+
           GetRenderSystem()->InvalidateGPULightCache();
           engineSettings.Graphics.cascadeDistances[1]  = data.x;
           engineSettings.Graphics.cascadeDistances[2]  = data.y;
@@ -224,9 +267,9 @@ namespace ToolKit
             }
           }
         }
-
-      } // Imgui::Begin
+      }
       ImGui::End();
     }
+
   } // namespace Editor
 } // namespace ToolKit

@@ -132,15 +132,17 @@ namespace ToolKit
 
   /**
    * A struct representing a plane equation in 3D space.
+   * Plane equation: ax+by+cz+(-d)=0
    */
   struct PlaneEquation
   {
     Vec3 normal; //!< The normal vector of the plane.
-    float d;     //!< The distance from the origin to the plane along the normal.
+    float d;     //!< Negated distance to the plane from origin.
   };
 
   /**
    * A struct representing a frustum in 3D space.
+   * Expecting all plane normals to point inwards the frustum.
    */
   struct Frustum
   {

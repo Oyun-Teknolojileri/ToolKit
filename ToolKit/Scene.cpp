@@ -241,7 +241,7 @@ namespace ToolKit
 
     pickFn(extraList);
 
-    m_bvh->PickObject(frustum, pickedObjects, ignoreList, extraList, pickPartiallyInside);
+    m_bvh->PickObject(frustum, pickedObjects, ignoreList, pickPartiallyInside);
   }
 
   EntityPtr Scene::GetEntity(ULongID id) const
@@ -299,7 +299,9 @@ namespace ToolKit
     {
       if (m_entities[i]->GetIdVal() == id)
       {
-        removed = m_entities[i];
+        removed                    = m_entities[i];
+        removed->m_markedForDelete = true;
+
         UpdateEntityCaches(removed, false);
         m_entities.erase(m_entities.begin() + i);
         m_bvh->RemoveEntity(removed);
@@ -476,12 +478,6 @@ namespace ToolKit
   void Scene::RebuildBVH() { m_bvh->ReBuild(); }
 
   const BoundingBox& Scene::GetSceneBoundary() { return m_bvh->GetBVHBoundary(); }
-
-  BoundingBox Scene::GetFrustumBVHBoundary(const CameraPtr& camera) const
-  {
-    const Frustum frustum = ExtractFrustum(camera->GetProjectViewMatrix(), false);
-    return m_bvh->GetFrustumBoundary(frustum);
-  }
 
   void Scene::CopyTo(Resource* other)
   {

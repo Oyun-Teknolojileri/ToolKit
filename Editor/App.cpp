@@ -211,10 +211,10 @@ namespace ToolKit
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
       {
-        if (viewport->IsVisible())
-        {
-          viewport->Update(deltaTime);
+        viewport->Update(deltaTime);
 
+        if (viewport->IsShown())
+        {
           GetRenderSystem()->AddRenderTask({[this, viewport, deltaTime](Renderer* renderer) -> void
                                             {
                                               viewport->m_editorRenderer->m_params.UseMobileRenderPath =

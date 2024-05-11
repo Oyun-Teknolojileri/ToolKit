@@ -11,8 +11,6 @@
 #include "Node.h"
 #include "Util.h"
 
-
-
 namespace ToolKit
 {
 
@@ -191,6 +189,8 @@ namespace ToolKit
   }
 
   Vec3 Camera::Direction() const { return GetComponentFast<DirectionComponent>()->GetDirection(); }
+
+  float Camera::FocalLength() const { return 1.0f / glm::tan(m_fov * 0.5f); }
 
   Entity* Camera::CopyTo(Entity* copyTo) const
   {

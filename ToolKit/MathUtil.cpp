@@ -19,8 +19,6 @@
 
 #include <random>
 
-
-
 namespace ToolKit
 {
 
@@ -175,7 +173,7 @@ namespace ToolKit
    * projection * view * model, then the algorithm gives the clipping planes in
    * model space
    */
-  // http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
+  // https://www8.cs.umu.se/kurser/5DV051/HT12/lab/plane_extraction.pdf
   Frustum ExtractFrustum(const Mat4& projectViewModelMat, bool normalize)
   {
     Mat4 projectViewModel = glm::transpose(projectViewModelMat);
@@ -577,88 +575,55 @@ namespace ToolKit
     return closestIndx;
   }
 
-  /*
-   * When the plane equation is not normalized, the distance of a point to the
-   * plane: If distance < 0 , then the point p lies in the negative halfspace.
-   * If distance = 0 , then the point p lies in the plane.
-   * If distance > 0 , then the point p lies in the positive halfspace.
-   */
+  // Inequalities are reverted to work with frustum normals pointing inwards.
+  // Large objects picked falsely.
+  // https://gist.github.com/Kinwailo/d9a07f98d8511206182e50acda4fbc9b
   IntersectResult FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box)
   {
+    IntersectResult ret = IntersectResult::Inside;
     Vec3 vmin, vmax;
-    IntersectResult res = IntersectResult::Inside;
 
     for (int i = 0; i < 6; ++i)
     {
-      // X axis.
-      if (frustum.planes[i].normal.x > 0)
-      {
-        vmin.x = box.max.x;
-        vmax.x = box.min.x;
-      }
-      else
+      // X axis
+      if (frustum.planes[i].normal.x < 0)
       {
         vmin.x = box.min.x;
         vmax.x = box.max.x;
       }
-
-      // Y axis.
-      if (frustum.planes[i].normal.y > 0)
-      {
-        vmin.y = box.max.y;
-        vmax.y = box.min.y;
-      }
       else
+      {
+        vmin.x = box.max.x;
+        vmax.x = box.min.x;
+      }
+      // Y axis
+      if (frustum.planes[i].normal.y < 0)
       {
         vmin.y = box.min.y;
         vmax.y = box.max.y;
       }
-
-      // Z axis.
-      if (frustum.planes[i].normal.z > 0)
-      {
-        vmin.z = box.max.z;
-        vmax.z = box.min.z;
-      }
       else
+      {
+        vmin.y = box.max.y;
+        vmax.y = box.min.y;
+      }
+      // Z axis
+      if (frustum.planes[i].normal.z < 0)
       {
         vmin.z = box.min.z;
         vmax.z = box.max.z;
       }
-
-      float distmin = glm::dot(frustum.planes[i].normal, vmin) + frustum.planes[i].d;
-      if (distmin > 0)
-      {
-        float distmax = glm::dot(frustum.planes[i].normal, vmax) + frustum.planes[i].d;
-        if (distmax <= 0)
-        {
-          res = IntersectResult::Intersect;
-        }
-        else
-        {
-          // Inside
-        }
-      }
-      else if (distmin < 0)
-      {
-        return IntersectResult::Outside;
-      }
       else
       {
-        res = IntersectResult::Intersect;
+        vmin.z = box.max.z;
+        vmax.z = box.min.z;
       }
+      if (glm::dot(frustum.planes[i].normal, vmin) + frustum.planes[i].d < 0)
+        return IntersectResult::Outside;
+      if (glm::dot(frustum.planes[i].normal, vmax) + frustum.planes[i].d <= 0)
+        ret = IntersectResult::Intersect;
     }
-
-    return res;
-  }
-
-  Quaternion QuaternionLookAt(Vec3 direction)
-  {
-    Mat3 Result {};
-    Result[2] = -glm::normalize(direction);
-    Result[0] = glm::normalize(glm::cross(Y_AXIS, Result[2]));
-    Result[1] = glm::cross(Result[2], Result[0]);
-    return glm::quat_cast(Result);
+    return ret;
   }
 
   // frustum should be normalized
@@ -721,13 +686,12 @@ namespace ToolKit
 
   bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
   {
-    float denom = glm::dot(ray.direction, plane.normal);
-    // Ray and plane facing(-). Not parallel (0) or ray facing plane's back (+).
-    if (glm::lessThan(denom, 0.0f))
+    float project = glm::dot(ray.direction, plane.normal);
+    if (glm::notEqual(project, 0.0f)) // Ray & Plane is not parallel.
     {
-      t = -(glm::dot(plane.normal, ray.position) - plane.d) / denom;
-      // On (0) or in front of (+) the plane.
-      return glm::greaterThanEqual(t, 0.0f);
+      // https://www.cs.princeton.edu/courses/archive/fall00/cs426/lectures/raycast/sld017.htm
+      t = -(glm::dot(plane.normal, ray.position) + plane.d) / project;
+      return true;
     }
 
     return false;
@@ -754,35 +718,18 @@ namespace ToolKit
     return true;
   }
 
-  bool LinePlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
-  {
-    float denom = glm::dot(ray.direction, plane.normal);
-    if (glm::notEqual(denom, 0.0f)) // Not parallel (0).
-    {
-      t = -(glm::dot(plane.normal, ray.position) - plane.d) / denom;
-      return true;
-    }
-
-    return false;
-  }
-
   Vec3 PointOnRay(const Ray& ray, float t) { return ray.position + ray.direction * t; }
 
-  // https://forum.unity.com/threads/how-do-i-find-the-closest-point-on-a-line.340058/
-  TK_API Vec3 ProjectPointOntoLine(const Ray& baseLine, const Vec3& point)
-  {
-    Vec3 v  = point - baseLine.position;
-    float d = dot(v, baseLine.direction);
-    return baseLine.position + (baseLine.direction * d);
-  }
-
-  // http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
+  // https://www8.cs.umu.se/kurser/5DV051/HT12/lab/plane_extraction.pdf
   void NormalizePlaneEquation(PlaneEquation& plane)
   {
     float mag      = glm::length(plane.normal);
     plane.normal.x = plane.normal.x / mag;
     plane.normal.y = plane.normal.y / mag;
     plane.normal.z = plane.normal.z / mag;
+
+    // This is needed because for any given point p equation must hold.
+    // That is ax+by+cz+(-d)=0 will hold after the d is also normalized.
     plane.d        = plane.d / mag;
   }
 
@@ -907,7 +854,7 @@ namespace ToolKit
 
   PlaneEquation PlaneFrom(const Vec3 pnts[3])
   {
-    // Expecting 3 non coplanar points in CCW order.
+    // Expecting 3 non collinear points in CCW order.
     Vec3 v1 = pnts[1] - pnts[0];
     Vec3 v2 = pnts[2] - pnts[0];
 
@@ -922,27 +869,8 @@ namespace ToolKit
   {
     assert(glm::isNormalized(normal, 0.0001f) && "Normalized vector expected.");
 
-    PlaneEquation plane = {normal, 0.0f};
-    plane.d             = glm::dot(point, normal) / glm::dot(normal, normal);
-
+    PlaneEquation plane = {normal, -glm::dot(point, normal)};
     return plane;
-  }
-
-  float SignedDistance(const PlaneEquation& plane, const Vec3& pnt)
-  {
-    assert(glm::isNormalized(plane.normal, 0.0001f) && "Normalized vector expected.");
-
-    Vec3 planeOrig = plane.normal * plane.d;
-    Vec3 checkPnt  = pnt - planeOrig;
-
-    return glm::dot(checkPnt, plane.normal);
-  }
-
-  Vec3 ProjectPointOntoPlane(const PlaneEquation& plane, const Vec3& pnt)
-  {
-    assert(glm::isNormalized(plane.normal, 0.0001f) && "Normalized vector expected.");
-
-    return pnt - glm::dot(plane.normal, pnt) * plane.normal;
   }
 
   Vec3 Interpolate(const Vec3& vec1, const Vec3& vec2, float ratio) { return (vec2 - vec1) * ratio + vec1; }
@@ -963,26 +891,27 @@ namespace ToolKit
 
   Quaternion RotationTo(Vec3 a, Vec3 b)
   {
-    a = glm::normalize(a);
-    b = glm::normalize(b);
+    a              = normalize(a);
+    b              = normalize(b);
 
-    Vec3 axis;
-    float d = glm::dot(a, b);
-    if (glm::equal<float>(d, 1.0f))
+    Vec3 axis      = normalize(cross(a, b));
+    float cosAngle = dot(a, b);
+
+    // Handle colinear vectors (including opposite directions)
+    if (abs(cosAngle) >= 1.0f - glm::epsilon<float>())
     {
-      return Quaternion(); // Vectors are colinear.
-    }
-    else if (glm::equal<float>(d, -1.0f)) // Vectors are oposite, align them.
-    {
-      axis = Orthogonal(a);
-    }
-    else
-    {
-      axis = glm::normalize(glm::cross(a, b));
+      // If very close to 1 or -1, choose an arbitrary perpendicular axis
+      axis = Orthogonal(a); // You can define orthogonal here if not available
     }
 
-    float rad = glm::acos(d);
-    return glm::angleAxis(rad, axis);
+    // Calculate shortest rotation angle considering opposite directions
+    float angle = acos(cosAngle);
+    if (dot(cross(a, b), b) < 0.0f)
+    {
+      angle = glm::pi<float>() - angle;
+    }
+
+    return angleAxis(angle, axis);
   }
 
   // Converted from OgreVector3.h perpendicular()

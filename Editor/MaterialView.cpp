@@ -399,26 +399,26 @@ namespace ToolKit
       }
     }
 
-    // TempMaterialWindow
+    // MaterialWindow
     //////////////////////////////////////////////////////////////////////////
 
-    TKDefineClass(TempMaterialWindow, Window);
+    TKDefineClass(MaterialWindow, Window);
 
-    TempMaterialWindow::TempMaterialWindow()
+    MaterialWindow::MaterialWindow()
     {
       m_view               = MakeNewPtr<MaterialView>();
       m_view->m_isTempView = true;
     }
 
-    TempMaterialWindow::~TempMaterialWindow()
+    MaterialWindow::~MaterialWindow()
     {
       RemoveFromUI();
       m_view = nullptr;
     }
 
-    void TempMaterialWindow::SetMaterial(MaterialPtr mat) { m_view->SetMaterials({mat}); }
+    void MaterialWindow::SetMaterial(MaterialPtr mat) { m_view->SetMaterials({mat}); }
 
-    void TempMaterialWindow::Show()
+    void MaterialWindow::Show()
     {
       ImGuiIO io = ImGui::GetIO();
       ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_Once);
@@ -426,11 +426,12 @@ namespace ToolKit
                               ImGuiCond_Once,
                               ImVec2(0.5f, 0.5f));
 
-      ImGui::Begin("Material View", &m_visible);
-
-      m_view->Show();
-
-      ImGui::End();
+      if (ImGui::Begin("Material View", &m_visible))
+      {
+        HandleStates();
+        m_view->Show();
+        ImGui::End();
+      }
     }
 
   } // namespace Editor

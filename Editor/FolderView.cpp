@@ -408,7 +408,7 @@ namespace ToolKit
               if (rm->m_baseType == Material::StaticClass())
               {
                 MaterialPtr mat                   = rm->Create<Material>(dirEnt.GetFullPath());
-                TempMaterialWindowPtr materialWnd = MakeNewPtr<TempMaterialWindow>();
+                MaterialWindowPtr materialWnd = MakeNewPtr<MaterialWindow>();
                 materialWnd->SetMaterial(mat);
                 materialWnd->AddToUI();
               }

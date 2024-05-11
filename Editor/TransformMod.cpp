@@ -259,7 +259,7 @@ namespace ToolKit
             float t;
             PlaneEquation axisPlane = PlaneFrom(p, axis);
             Ray ray                 = vp->RayFromMousePosition();
-            if (LinePlaneIntersection(ray, axisPlane, t))
+            if (RayPlaneIntersection(ray, axisPlane, t))
             {
               Vec3 intersectPnt   = PointOnRay(ray, t);
               intersectPnt        = glm::normalize(intersectPnt - p);
@@ -329,7 +329,7 @@ namespace ToolKit
       {
         float t;
         Ray ray = vp->RayFromMousePosition();
-        if (LinePlaneIntersection(ray, m_intersectionPlane, t))
+        if (RayPlaneIntersection(ray, m_intersectionPlane, t))
         {
           m_gizmo->m_grabPoint = PointOnRay(ray, t);
         }
@@ -462,14 +462,14 @@ namespace ToolKit
       if (EditorViewportPtr vp = g_app->GetActiveViewport())
       {
         Ray ray = vp->RayFromScreenSpacePoint(m_mouseData[1]);
-        if (LinePlaneIntersection(ray, m_intersectionPlane, t))
+        if (RayPlaneIntersection(ray, m_intersectionPlane, t))
         {
           // This point.
           Vec3 p = PointOnRay(ray, t);
 
           // Previous. point.
           ray    = vp->RayFromScreenSpacePoint(m_mouseData[0]);
-          LinePlaneIntersection(ray, m_intersectionPlane, t);
+          RayPlaneIntersection(ray, m_intersectionPlane, t);
           Vec3 p0 = PointOnRay(ray, t);
           m_delta = p - p0;
         }

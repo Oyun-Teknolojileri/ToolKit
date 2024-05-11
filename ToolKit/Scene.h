@@ -22,36 +22,27 @@ namespace ToolKit
   /**
    * The Scene class represents a collection of entities in a 3D environment. It
    * provides functionality for loading and saving scenes, updating and querying
-   * entities, and serializing/deserializing to/from XML.
+   * entities, and serializing / deserializing to / from XML.
    */
   class TK_API Scene : public Resource
   {
    public:
     TKDeclareClass(Scene, Resource);
 
-    /**
-     * A helper struct that holds the result of a ray-picking operation in the
-     * scene.
-     */
+    /** A helper struct that holds the result of a ray-picking operation in the scene. */
     struct PickData
     {
-      /**
-       * The position in world space where the ray intersects with the object.
-       */
+      /** The position in world space where the ray intersects with the object. */
       Vec3 pickPos;
 
-      /**
-       * A pointer to the Entity object that was picked.
-       */
+      /** A pointer to the Entity object that was picked. */
       EntityPtr entity = nullptr;
     };
 
     typedef std::vector<PickData> PickDataArray;
 
    public:
-    /**
-     * The constructor for the Scene class.
-     */
+    /** The constructor for the Scene class. */
     Scene();
 
     /**
@@ -61,14 +52,10 @@ namespace ToolKit
      */
     explicit Scene(const String& file);
 
-    /**
-     * The destructor for the Scene class.
-     */
+    /** The destructor for the Scene class. */
     virtual ~Scene();
 
-    /**
-     * Loads the scene from its file.
-     */
+    /** Loads the scene from its file. */
     void Load() override;
 
     /**
@@ -87,22 +74,17 @@ namespace ToolKit
      */
     void Init(bool flushClientSideArray = false) override;
 
-    /**
-     * Uninitializes the scene.
-     */
+    /** Uninitializes the scene. */
     void UnInit() override;
 
     /**
      * Updates the scene by the specified amount of time.
-     *
      * @param deltaTime The time elapsed since the last update.
      */
     virtual void Update(float deltaTime);
 
     /**
-     * Merges the entities from another scene into this scene and clears the
-     * other scene.
-     *
+     * Merges the entities from another scene into this scene and clears the other scene.
      * @param other A pointer to the other scene to merge.
      */
     virtual void Merge(ScenePtr other);
@@ -142,8 +124,6 @@ namespace ToolKit
                             const IDArray& ignoreList       = {},
                             const EntityPtrArray& extraList = {},
                             bool pickPartiallyInside        = true);
-
-    // Entity operations.
 
     /**
      * Gets the entity with the given ID from the scene.
@@ -185,8 +165,7 @@ namespace ToolKit
     SkyBasePtr& GetSky();
 
     /**
-     * Returns an array of pointers to all environment volume components in the
-     * scene.
+     * Returns an array of pointers to all environment volume components in the scene.
      * @returns The array of pointers to environment volume components.
      */
     EnvironmentComponentPtrArray& GetEnvironmentVolumes() const;
@@ -245,9 +224,7 @@ namespace ToolKit
      */
     virtual void RemoveEntity(const EntityPtrArray& entities);
 
-    /**
-     * Removes all entities from the scene.
-     */
+    /** Removes all entities from the scene. */
     virtual void RemoveAllEntities();
 
     /**
@@ -262,22 +239,14 @@ namespace ToolKit
      */
     virtual void SavePrefab(EntityPtr entity);
 
-    /**
-     * Removes all entities from the scene.
-     */
+    /** Removes all entities from the scene. */
     virtual void ClearEntities();
 
-    /**
-     * Rebuilds the BVH
-     */
+    /** Rebuilds the BVH. */
     void RebuildBVH();
 
-    const BoundingBox& GetSceneBoundary(); //!< Returns scene boundary from the BVH.
-
-    /**
-     * Returns the bounding box that containing the BVH nodes that the camera frustum intersects.
-     */
-    BoundingBox GetFrustumBVHBoundary(const CameraPtr& camera) const;
+    /** Returns scene boundary from the BVH. */
+    const BoundingBox& GetSceneBoundary();
 
    protected:
     /**
@@ -294,9 +263,7 @@ namespace ToolKit
      */
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
-    /**
-     * Deserialize files with version v0.4.5
-     */
+    /** Deserialize files with version v0.4.5 */
     void DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
     /**

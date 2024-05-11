@@ -719,6 +719,7 @@ namespace ToolKit
     Vec3 z = plane.normal;
     Vec3 x = z + Vec3(1.0f);
     Vec3 y = glm::cross(z, x);
+
     x      = glm::normalize(glm::cross(y, z));
     y      = glm::normalize(glm::cross(z, x));
 
@@ -728,11 +729,17 @@ namespace ToolKit
     float hSize = size * 0.5f;
     Vec3Array corners {o + x * hSize + y * hSize,
                        o - x * hSize + y * hSize,
+                       o - x * hSize + y * hSize,
                        o - x * hSize - y * hSize,
-                       o + x * hSize - y * hSize};
+                       o - x * hSize - y * hSize,
+                       o + x * hSize - y * hSize,
+                       o + x * hSize - y * hSize,
+                       o + x * hSize + y * hSize,
+                       o,
+                       o + z};
 
     LineBatchPtr obj = MakeNewPtr<LineBatch>();
-    obj->Generate(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+    obj->Generate(corners, X_AXIS, DrawType::Line, 5.0f);
 
     return obj;
   }

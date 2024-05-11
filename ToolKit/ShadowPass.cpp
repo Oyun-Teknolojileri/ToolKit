@@ -387,12 +387,16 @@ namespace ToolKit
     CPU_FUNC_RANGE();
 
     // Check if the shadow atlas needs to be updated
-    bool needChange = false;
-
-    needChange      = GetRenderSystem()->ConsumeShadowAtlasInvalidation();
+    bool needChange                      = false;
+    EngineSettings::GraphicSettings& gfx = GetEngineSettings().Graphics;
+    if (m_activeCascadeCount != gfx.cascadeCount)
+    {
+      m_activeCascadeCount = gfx.cascadeCount;
+      needChange           = true;
+    }
 
     // After this loop m_previousShadowCasters is set with lights with shadows
-    int nextId      = 0;
+    int nextId = 0;
     for (int i = 0; i < m_lights.size(); ++i)
     {
       Light* light = m_lights[i].get();
@@ -419,7 +423,7 @@ namespace ToolKit
       nextId++;
     }
 
-    if (needChange)
+    if (needChange && !m_lights.empty())
     {
       m_previousShadowCasters.resize(nextId);
 

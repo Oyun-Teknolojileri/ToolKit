@@ -122,6 +122,7 @@ namespace ToolKit
     {
       m_entitiesToRemove.push_back(entity);
     }
+
     m_removeLock.Release();
   }
 
@@ -147,6 +148,13 @@ namespace ToolKit
     {
       m_bvhTree->Remove(entity);
     }
+
+    if (!m_entitiesToRemove.empty())
+    {
+      // Hierarchical deletes may cause bvh updates, prevent deleted objects to be re added.
+      erase_if(m_entitiesToUpdate, [this](EntityPtr ntt) -> bool { return FindIndex(m_entitiesToRemove, ntt) != -1; });
+    }
+
     m_entitiesToRemove.clear();
 
     // Delete nodes that should be deleted
@@ -194,7 +202,7 @@ namespace ToolKit
       float dist;
       if (RayBoxIntersection(ray, currentNode->m_aabb, dist))
       {
-        if (currentNode->Leaf())
+        if (currentNode->IsLeaf())
         {
           for (EntityPtr ntt : currentNode->m_entites)
           {
@@ -227,7 +235,6 @@ namespace ToolKit
   void BVH::PickObject(const Frustum& frustum,
                        Scene::PickDataArray& pickedObjects,
                        const IDArray& ignoreList,
-                       const EntityPtrArray& extraList,
                        bool pickPartiallyInside)
   {
     m_bvhTree->m_nextNodes.clear();
@@ -247,180 +254,55 @@ namespace ToolKit
       pickedObjects.push_back(pd);
     };
 
-    while (!m_bvhTree->m_nextNodes.empty())
+    EntityRawPtrArray pickedEntities;
+    FrustumTest(frustum, pickedEntities);
+
+    for (Entity* ntt : pickedEntities)
     {
-      BVHNode* currentNode = m_bvhTree->m_nextNodes.front();
-      m_bvhTree->m_nextNodes.pop_front();
-
-      // If the nodes parent already is inside of the frustum, no need to check intersection
-      if (currentNode->m_frustumTestResult == IntersectResult::Inside)
-      {
-        if (currentNode->Leaf())
-        {
-          for (EntityPtr ntt : currentNode->m_entites)
-          {
-            entityTestFn(ntt);
-          }
-        }
-        else
-        {
-          currentNode->m_left->m_frustumTestResult  = IntersectResult::Inside;
-          currentNode->m_right->m_frustumTestResult = IntersectResult::Inside;
-
-          m_bvhTree->m_nextNodes.push_back(currentNode->m_left);
-          m_bvhTree->m_nextNodes.push_back(currentNode->m_right);
-        }
-
-        currentNode->m_frustumTestResult = IntersectResult::Outside; // Reset for reuse later ?
-        continue;
-      }
-
-      IntersectResult res = FrustumBoxIntersection(frustum, currentNode->m_aabb);
-      if (res == IntersectResult::Inside)
-      {
-        // This node and all children nodes of this node do not need to check intersection again
-        currentNode->m_frustumTestResult = IntersectResult::Inside;
-        m_bvhTree->m_nextNodes.push_back(currentNode);
-      }
-      else if (res == IntersectResult::Intersect)
-      {
-        if (currentNode->Leaf())
-        {
-          for (EntityPtr ntt : currentNode->m_entites)
-          {
-            if (contains(ignoreList, ntt->GetIdVal()))
-            {
-              continue;
-            }
-
-            const BoundingBox box = ntt->GetBoundingBox(true);
-            IntersectResult res   = FrustumBoxIntersection(frustum, box);
-
-            if (res != IntersectResult::Outside)
-            {
-              Scene::PickData pd;
-              pd.pickPos = (box.max + box.min) * 0.5f;
-              pd.entity  = ntt;
-
-              if (res == IntersectResult::Inside)
-              {
-                pickedObjects.push_back(pd);
-              }
-              else if (pickPartiallyInside)
-              {
-                pickedObjects.push_back(pd);
-              }
-            }
-          }
-        }
-        else
-        {
-          m_bvhTree->m_nextNodes.push_front(currentNode->m_left);
-          m_bvhTree->m_nextNodes.push_front(currentNode->m_right);
-        }
-      }
+      entityTestFn(ntt->Self<Entity>());
     }
-  }
-
-  BoundingBox BVH::GetFrustumBoundary(const Frustum& frustum) const
-  {
-    BoundingBox resultBB;
-
-    m_bvhTree->m_nextNodes.clear();
-    m_bvhTree->m_nextNodes.push_front(m_bvhTree->m_root);
-    while (!m_bvhTree->m_nextNodes.empty())
-    {
-      BVHNode* currentNode = m_bvhTree->m_nextNodes.front();
-      m_bvhTree->m_nextNodes.pop_front();
-
-      bool insideFrustum = currentNode->m_insideFrustum;
-      IntersectResult res;
-      if (!insideFrustum)
-      {
-        res           = FrustumBoxIntersection(frustum, currentNode->m_aabb);
-        insideFrustum = res == IntersectResult::Inside;
-      }
-
-      // If the nodes parent already is inside of the frustum, no need to check intersection
-      if (insideFrustum)
-      {
-        if (currentNode->Leaf())
-        {
-          if (!currentNode->m_entites.empty())
-          {
-            resultBB.UpdateBoundary(currentNode->m_aabb);
-          }
-        }
-        else
-        {
-          currentNode->m_left->m_insideFrustum  = true;
-          currentNode->m_right->m_insideFrustum = true;
-          m_bvhTree->m_nextNodes.push_back(currentNode->m_left);
-          m_bvhTree->m_nextNodes.push_back(currentNode->m_right);
-        }
-      }
-      else if (res == IntersectResult::Intersect)
-      {
-        if (currentNode->Leaf())
-        {
-          if (!currentNode->m_entites.empty())
-          {
-            resultBB.UpdateBoundary(currentNode->m_aabb);
-          }
-        }
-        else
-        {
-          currentNode->m_left->m_insideFrustum  = false;
-          currentNode->m_right->m_insideFrustum = false;
-          m_bvhTree->m_nextNodes.push_front(currentNode->m_left);
-          m_bvhTree->m_nextNodes.push_front(currentNode->m_right);
-        }
-      }
-
-      currentNode->m_insideFrustum = false;
-    }
-
-    return resultBB;
   }
 
   void BVH::FrustumTest(const Frustum& frustum, EntityRawPtrArray& entities)
   {
     m_bvhTree->m_nextNodes.clear();
     m_bvhTree->m_nextNodes.push_front(m_bvhTree->m_root);
+
     while (!m_bvhTree->m_nextNodes.empty())
     {
       BVHNode* currentNode = m_bvhTree->m_nextNodes.front();
       m_bvhTree->m_nextNodes.pop_front();
 
-      bool insideFrustum = currentNode->m_insideFrustum;
-      IntersectResult res;
-      if (!insideFrustum)
+      if (currentNode->IsRoot() || currentNode->IsOutsideFrustum())
       {
-        res           = FrustumBoxIntersection(frustum, currentNode->m_aabb);
-        insideFrustum = res == IntersectResult::Inside;
+        // Outside is an inherited value coming from an intersecting parent.
+        // To get the exact result for the current node it needs to be tested.
+        currentNode->m_frustumTestResult = FrustumBoxIntersection(frustum, currentNode->m_aabb);
       }
 
       // If the nodes parent already is inside of the frustum, no need to check intersection
-      if (insideFrustum)
+      if (currentNode->IsInsideFrustum())
       {
-        if (currentNode->Leaf())
+        if (currentNode->IsLeaf())
         {
           for (EntityPtr& ntt : currentNode->m_entites)
           {
-            entities.push_back(ntt.get());
+            if (!ntt->m_markedForDelete)
+            {
+              entities.push_back(ntt.get());
+            }
           }
         }
         else
         {
-          currentNode->m_left->m_insideFrustum  = true;
-          currentNode->m_right->m_insideFrustum = true;
+          currentNode->m_left->m_frustumTestResult = IntersectResult::Inside;
           m_bvhTree->m_nextNodes.push_back(currentNode->m_left);
           m_bvhTree->m_nextNodes.push_back(currentNode->m_right);
         }
       }
-      else if (res == IntersectResult::Intersect)
+      else if (currentNode->IsIntersectFrustum())
       {
-        if (currentNode->Leaf())
+        if (currentNode->IsLeaf())
         {
           for (EntityPtr& ntt : currentNode->m_entites)
           {
@@ -429,20 +311,21 @@ namespace ToolKit
 
             if (res != IntersectResult::Outside)
             {
-              entities.push_back(ntt.get());
+              if (!ntt->m_markedForDelete)
+              {
+                entities.push_back(ntt.get());
+              }
             }
           }
         }
         else
         {
-          currentNode->m_left->m_insideFrustum  = false;
-          currentNode->m_right->m_insideFrustum = false;
+          currentNode->m_left->m_frustumTestResult  = IntersectResult::Outside;
+          currentNode->m_right->m_frustumTestResult = IntersectResult::Outside;
           m_bvhTree->m_nextNodes.push_front(currentNode->m_left);
           m_bvhTree->m_nextNodes.push_front(currentNode->m_right);
         }
       }
-
-      currentNode->m_insideFrustum = false;
     }
   }
 
@@ -455,7 +338,7 @@ namespace ToolKit
       BVHNode* bvhNode = nextNodes.front();
       nextNodes.pop();
 
-      if (!bvhNode->Leaf())
+      if (!bvhNode->IsLeaf())
       {
         nextNodes.push(bvhNode->m_left);
         nextNodes.push(bvhNode->m_right);
@@ -477,7 +360,7 @@ namespace ToolKit
       assert(ntt->m_bvhNodes.size() <= 1 || ntt->IsA<Light>());
       for (BVHNode* node : ntt->m_bvhNodes)
       {
-        assert(node->Leaf() && "Entities should not hold non-leaf bvh nodes");
+        assert(node->IsLeaf() && "Entities should not hold non-leaf bvh nodes");
       }
     }
   }
@@ -494,7 +377,7 @@ namespace ToolKit
       m_bvhTree->m_nextNodes.pop_front();
       if (currentNode != nullptr)
       {
-        if (currentNode->Leaf())
+        if (currentNode->IsLeaf())
         {
           assignedNtties += (int) currentNode->m_entites.size();
         }
@@ -613,7 +496,7 @@ namespace ToolKit
       BVHNode* node = nextNodes.front();
       nextNodes.pop();
 
-      if (node->m_waitingForDeletion)
+      if (node->m_markedForDelete)
       {
         continue;
       }
@@ -627,7 +510,7 @@ namespace ToolKit
         }
       }
 
-      if (!node->Leaf())
+      if (!node->IsLeaf())
       {
         // intermediate node
 
@@ -751,7 +634,7 @@ namespace ToolKit
           bvhNode->m_entites.erase(bvhNode->m_entites.begin() + i);
           break;
         }
-        ++i;
+        i++;
       }
       i = 0;
       for (EntityPtr ntt : bvhNode->m_lights)
@@ -761,13 +644,13 @@ namespace ToolKit
           bvhNode->m_lights.erase(bvhNode->m_lights.begin() + i);
           break;
         }
-        ++i;
+        i++;
       }
     }
 
     for (BVHNode* bvhNode : entity->m_bvhNodes)
     {
-      if (bvhNode->m_waitingForDeletion)
+      if (bvhNode->m_markedForDelete)
       {
         continue;
       }
@@ -837,7 +720,7 @@ namespace ToolKit
 
   void BVHTree::UpdateLeaf(BVHNode* node, bool removedFromThisNode)
   {
-    if (!node->Leaf())
+    if (!node->IsLeaf())
     {
       // Light removals can come here, no need to update the bvh nodes.
       return;
@@ -973,7 +856,7 @@ namespace ToolKit
         node->m_entites.clear();
 
         UpdateLeaf(left, false);
-        if (!right->m_waitingForDeletion)
+        if (!right->m_markedForDelete)
         {
           UpdateLeaf(right, false);
         }
@@ -988,14 +871,14 @@ namespace ToolKit
       bool conjunct       = false;
       if (leftNode == node)
       {
-        if (rightNode->Leaf() && rightNode->m_entites.size() + entityCount <= m_maxEntityCountPerBVHNode)
+        if (rightNode->IsLeaf() && rightNode->m_entites.size() + entityCount <= m_maxEntityCountPerBVHNode)
         {
           conjunct = true;
         }
       }
       else // if (rightNode == node)
       {
-        if (leftNode->Leaf() && leftNode->m_entites.size() + entityCount <= m_maxEntityCountPerBVHNode)
+        if (leftNode->IsLeaf() && leftNode->m_entites.size() + entityCount <= m_maxEntityCountPerBVHNode)
         {
           conjunct = true;
         }
@@ -1016,8 +899,8 @@ namespace ToolKit
         // remove duplicate entities
         RemoveDuplicates(parentNode->m_entites);
 
-        rightNode->m_waitingForDeletion = true;
-        leftNode->m_waitingForDeletion  = true;
+        rightNode->m_markedForDelete = true;
+        leftNode->m_markedForDelete  = true;
         m_nodesToDelete.push_back(rightNode);
         m_nodesToDelete.push_back(leftNode);
 
