@@ -7,12 +7,12 @@
 
 #pragma once
 
+#include "DeferredSceneRenderPath.h"
+#include "ForwardSceneRenderPath.h"
 #include "FxaaPass.h"
 #include "GammaPass.h"
 #include "GammaTonemapFxaaPass.h"
-#include "MobileSceneRenderPath.h"
 #include "Scene.h"
-#include "SceneRenderPath.h"
 #include "UIManager.h"
 #include "Viewport.h"
 

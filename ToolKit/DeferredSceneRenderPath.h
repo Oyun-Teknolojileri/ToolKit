@@ -34,12 +34,12 @@ namespace ToolKit
   /**
    * Main scene renderer.
    */
-  class TK_API SceneRenderPath : public RenderPath
+  class TK_API DeferredSceneRenderPath : public RenderPath
   {
    public:
-    SceneRenderPath();
-    explicit SceneRenderPath(const SceneRenderPathParams& params);
-    virtual ~SceneRenderPath();
+    DeferredSceneRenderPath();
+    explicit DeferredSceneRenderPath(const SceneRenderPathParams& params);
+    virtual ~DeferredSceneRenderPath();
 
     virtual void Render(Renderer* renderer) override;
     virtual void PreRender(Renderer* renderer);
@@ -70,5 +70,5 @@ namespace ToolKit
     RenderData m_renderData;
   };
 
-  typedef std::shared_ptr<SceneRenderPath> SceneRenderPathPtr;
+  typedef std::shared_ptr<DeferredSceneRenderPath> SceneRenderPathPtr;
 } // namespace ToolKit

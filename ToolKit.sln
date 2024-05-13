@@ -32,6 +32,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Plugin", "Templates\Plugin\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Game", "Templates\Game\Game.vcxproj", "{87D133DA-C105-4AE2-95B6-8B6AE2A9AE42}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{81729BC3-4649-4748-82E5-499E09EFF00A}"
+	ProjectSection(SolutionItems) = preProject
+		Dependency\glm\util\glm.natvis = Dependency\glm\util\glm.natvis
+		Dependency\tkimgui\imgui\misc\debuggers\imgui.natvis = Dependency\tkimgui\imgui\misc\debuggers\imgui.natvis
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64

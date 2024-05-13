@@ -394,8 +394,8 @@ namespace ToolKit
       m_blackMaterial->Init();
 
       m_billboardPass         = MakeNewPtr<BillboardPass>();
-      m_sceneRenderPath       = MakeNewPtr<SceneRenderPath>();
-      m_mobileSceneRenderPath = MakeNewPtr<MobileSceneRenderPath>();
+      m_sceneRenderPath       = MakeNewPtr<DeferredSceneRenderPath>();
+      m_mobileSceneRenderPath = MakeNewPtr<ForwardSceneRenderPath>();
       m_uiPass                = MakeNewPtr<ForwardRenderPass>();
       m_editorPass            = MakeNewPtr<ForwardRenderPass>();
       m_gizmoPass             = MakeNewPtr<GizmoPass>();

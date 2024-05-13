@@ -13,8 +13,8 @@ namespace ToolKit
 {
   GameRenderer::GameRenderer()
   {
-    m_mobileSceneRenderPath = MakeNewPtr<MobileSceneRenderPath>();
-    m_sceneRenderPath       = MakeNewPtr<SceneRenderPath>();
+    m_mobileSceneRenderPath = MakeNewPtr<ForwardSceneRenderPath>();
+    m_sceneRenderPath       = MakeNewPtr<DeferredSceneRenderPath>();
     m_uiPass                = MakeNewPtr<ForwardRenderPass>();
     m_gammaTonemapFxaaPass  = MakeNewPtr<GammaTonemapFxaaPass>();
     m_fullQuadPass          = MakeNewPtr<FullQuadPass>();

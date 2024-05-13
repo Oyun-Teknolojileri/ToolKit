@@ -14,21 +14,21 @@
 #include "ForwardPreProcessPass.h"
 #include "Pass.h"
 #include "RenderSystem.h"
-#include "SceneRenderPath.h"
+#include "DeferredSceneRenderPath.h"
 #include "ShadowPass.h"
 #include "SsaoPass.h"
 
 namespace ToolKit
 {
   /**
-   * Mobile scene render path.
+   * Forward scene render path. All objects are drawn in forward manner. Bandwidth optimized.
    */
-  class TK_API MobileSceneRenderPath : public SceneRenderPath
+  class TK_API ForwardSceneRenderPath : public DeferredSceneRenderPath
   {
    public:
-    MobileSceneRenderPath();
-    explicit MobileSceneRenderPath(const SceneRenderPathParams& params);
-    virtual ~MobileSceneRenderPath();
+    ForwardSceneRenderPath();
+    explicit ForwardSceneRenderPath(const SceneRenderPathParams& params);
+    virtual ~ForwardSceneRenderPath();
 
     void Render(Renderer* renderer) override;
     void PreRender(Renderer* renderer) override;
@@ -38,5 +38,5 @@ namespace ToolKit
     void SetPassParams() override;
   };
 
-  typedef std::shared_ptr<MobileSceneRenderPath> MobileSceneRenderPathPtr;
+  typedef std::shared_ptr<ForwardSceneRenderPath> MobileSceneRenderPathPtr;
 } // namespace ToolKit

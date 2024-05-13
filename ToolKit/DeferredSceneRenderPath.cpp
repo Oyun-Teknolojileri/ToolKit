@@ -5,7 +5,7 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#include "SceneRenderPath.h"
+#include "DeferredSceneRenderPath.h"
 
 #include "Scene.h"
 #include "TKProfiler.h"
@@ -13,7 +13,7 @@
 
 namespace ToolKit
 {
-  SceneRenderPath::SceneRenderPath()
+  DeferredSceneRenderPath::DeferredSceneRenderPath()
   {
     m_shadowPass            = MakeNewPtr<ShadowPass>();
     m_forwardRenderPass     = MakeNewPtr<ForwardRenderPass>();
@@ -26,9 +26,12 @@ namespace ToolKit
     m_dofPass               = MakeNewPtr<DoFPass>();
   }
 
-  SceneRenderPath::SceneRenderPath(const SceneRenderPathParams& params) : SceneRenderPath() { m_params = params; }
+  DeferredSceneRenderPath::DeferredSceneRenderPath(const SceneRenderPathParams& params) : DeferredSceneRenderPath()
+  {
+    m_params = params;
+  }
 
-  SceneRenderPath::~SceneRenderPath()
+  DeferredSceneRenderPath::~DeferredSceneRenderPath()
   {
     m_shadowPass        = nullptr;
     m_forwardRenderPass = nullptr;
@@ -40,7 +43,7 @@ namespace ToolKit
     m_dofPass           = nullptr;
   }
 
-  void SceneRenderPath::Render(Renderer* renderer)
+  void DeferredSceneRenderPath::Render(Renderer* renderer)
   {
     PUSH_CPU_MARKER("SceneRenderPath::PreRender");
     PreRender(renderer);
@@ -108,7 +111,7 @@ namespace ToolKit
     POP_CPU_MARKER();
   }
 
-  void SceneRenderPath::PreRender(Renderer* renderer)
+  void DeferredSceneRenderPath::PreRender(Renderer* renderer)
   {
     renderer->StartTimerQuery();
 
@@ -121,9 +124,9 @@ namespace ToolKit
                                          m_params.MainFramebuffer->GetSettings().height);
   }
 
-  void SceneRenderPath::PostRender(Renderer* renderer) { renderer->EndTimerQuery(); }
+  void DeferredSceneRenderPath::PostRender(Renderer* renderer) { renderer->EndTimerQuery(); }
 
-  void SceneRenderPath::SetPassParams()
+  void DeferredSceneRenderPath::SetPassParams()
   {
     CPU_FUNC_RANGE();
 

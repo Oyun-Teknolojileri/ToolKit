@@ -136,7 +136,7 @@
     <ClCompile Include="MaterialComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="MobileSceneRenderPath.cpp">
+    <ClCompile Include="ForwardSceneRenderPath.cpp">
       <Filter>Render</Filter>
     </ClCompile>
     <ClCompile Include="OutlinePass.cpp">
@@ -187,7 +187,7 @@
     <ClCompile Include="Scene.cpp">
       <Filter>Resources</Filter>
     </ClCompile>
-    <ClCompile Include="SceneRenderPath.cpp">
+    <ClCompile Include="DeferredSceneRenderPath.cpp">
       <Filter>Render</Filter>
     </ClCompile>
     <ClCompile Include="TKImage.cpp">
@@ -247,7 +247,9 @@
     <ClCompile Include="BVH.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="LightDataBuffer.cpp" />
+    <ClCompile Include="LightDataBuffer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -394,7 +396,7 @@
     <ClInclude Include="MaterialComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="MobileSceneRenderPath.h">
+    <ClInclude Include="ForwardSceneRenderPath.h">
       <Filter>Render</Filter>
     </ClInclude>
     <ClInclude Include="OutlinePass.h">
@@ -448,7 +450,7 @@
     <ClInclude Include="Scene.h">
       <Filter>Resources</Filter>
     </ClInclude>
-    <ClInclude Include="SceneRenderPath.h">
+    <ClInclude Include="DeferredSceneRenderPath.h">
       <Filter>Render</Filter>
     </ClInclude>
     <ClInclude Include="TKImage.h">

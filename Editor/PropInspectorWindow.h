@@ -8,7 +8,6 @@
 #pragma once
 
 #include "EditorViewport.h"
-#include "SceneRenderPath.h"
 #include "UI.h"
 #include "View.h"
 

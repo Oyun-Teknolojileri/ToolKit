@@ -9,18 +9,18 @@
 
 #include "BillboardPass.h"
 #include "BloomPass.h"
+#include "DeferredSceneRenderPath.h"
 #include "EditorLight.h"
 #include "EditorTypes.h"
+#include "ForwardSceneRenderPath.h"
 #include "GammaTonemapFxaaPass.h"
 #include "Gizmo.h"
 #include "GizmoPass.h"
-#include "MobileSceneRenderPath.h"
 #include "OutlinePass.h"
 #include "Pass.h"
 #include "PostProcessPass.h"
 #include "Primative.h"
 #include "RenderSystem.h"
-#include "SceneRenderPath.h"
 #include "SingleMaterialPass.h"
 
 namespace ToolKit

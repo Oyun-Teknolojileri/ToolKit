@@ -53,7 +53,7 @@
     <ClCompile Include="MathUtil.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
-    <ClCompile Include="MobileSceneRenderPath.cpp" />
+    <ClCompile Include="ForwardSceneRenderPath.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="ObjectFactory.cpp" />
     <ClCompile Include="OutlinePass.cpp" />
@@ -75,7 +75,7 @@
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="RHI.cpp" />
     <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="SceneRenderPath.cpp" />
+    <ClCompile Include="DeferredSceneRenderPath.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderUniform.cpp" />
     <ClCompile Include="ShadowPass.cpp" />
@@ -144,7 +144,7 @@
     <ClInclude Include="LightDataBuffer.h" />
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
-    <ClInclude Include="MobileSceneRenderPath.h" />
+    <ClInclude Include="ForwardSceneRenderPath.h" />
     <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="OutlinePass.h" />
     <ClInclude Include="Pass.h" />
@@ -152,7 +152,7 @@
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="RHI.h" />
     <ClInclude Include="RHIConstants.h" />
-    <ClInclude Include="SceneRenderPath.h" />
+    <ClInclude Include="DeferredSceneRenderPath.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Material.h" />

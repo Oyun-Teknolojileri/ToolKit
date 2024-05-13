@@ -5,7 +5,7 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#include "MobileSceneRenderPath.h"
+#include "ForwardSceneRenderPath.h"
 
 #include "Material.h"
 #include "Scene.h"
@@ -13,7 +13,7 @@
 
 namespace ToolKit
 {
-  MobileSceneRenderPath::MobileSceneRenderPath()
+  ForwardSceneRenderPath::ForwardSceneRenderPath()
   {
     m_shadowPass            = MakeNewPtr<ShadowPass>();
     m_forwardRenderPass     = MakeNewPtr<ForwardRenderPass>();
@@ -24,9 +24,9 @@ namespace ToolKit
     m_dofPass               = MakeNewPtr<DoFPass>();
   }
 
-  MobileSceneRenderPath::MobileSceneRenderPath(const SceneRenderPathParams& params) { m_params = params; }
+  ForwardSceneRenderPath::ForwardSceneRenderPath(const SceneRenderPathParams& params) { m_params = params; }
 
-  MobileSceneRenderPath::~MobileSceneRenderPath()
+  ForwardSceneRenderPath::~ForwardSceneRenderPath()
   {
     m_shadowPass            = nullptr;
     m_forwardRenderPass     = nullptr;
@@ -37,7 +37,7 @@ namespace ToolKit
     m_dofPass               = nullptr;
   }
 
-  void MobileSceneRenderPath::Render(Renderer* renderer)
+  void ForwardSceneRenderPath::Render(Renderer* renderer)
   {
     PreRender(renderer);
 
@@ -91,7 +91,7 @@ namespace ToolKit
     PostRender(renderer);
   }
 
-  void MobileSceneRenderPath::PreRender(Renderer* renderer)
+  void ForwardSceneRenderPath::PreRender(Renderer* renderer)
   {
     renderer->StartTimerQuery();
 
@@ -101,9 +101,9 @@ namespace ToolKit
                                          m_params.MainFramebuffer->GetSettings().height);
   }
 
-  void MobileSceneRenderPath::PostRender(Renderer* renderer) { renderer->EndTimerQuery(); }
+  void ForwardSceneRenderPath::PostRender(Renderer* renderer) { renderer->EndTimerQuery(); }
 
-  void MobileSceneRenderPath::SetPassParams()
+  void ForwardSceneRenderPath::SetPassParams()
   {
     RenderJobProcessor::CreateRenderJobs(m_renderData.jobs,
                                          m_params.Scene->m_bvh,
