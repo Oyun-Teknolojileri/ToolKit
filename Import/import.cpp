@@ -1288,14 +1288,14 @@ namespace ToolKit
     {
       if (argc < 2)
       {
-        cout << "usage: Import 'fileToImport.format' <op> -t 'importTo' <op> "
-                "-s 1.0";
+        cout << "usage: Import 'fileToImport.format' <op> -t 'importTo' <op> -s 1.0 <op> -o 0";
         throw(-1);
       }
 
       Assimp::Importer importer;
       importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_LINE | aiPrimitiveType_POINT);
 
+      int optimizationLevel = 0; // 0 or 1
       string dest, file = argv[1];
       Assimp::DefaultLogger::create("Assimplog.txt", Assimp::Logger::VERBOSE);
       for (int i = 0; i < argc; i++)
@@ -1310,8 +1310,13 @@ namespace ToolKit
 
         if (arg == "-s")
         {
-          float scale = static_cast<float>(std::atof(argv[i + 1]));
+          float scale = (float) (std::atof(argv[i + 1]));
           importer.SetPropertyFloat(AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, scale);
+        }
+
+        if (arg == "-o")
+        {
+          optimizationLevel = std::atoi(argv[i + 1]);
         }
       }
 
@@ -1351,19 +1356,19 @@ namespace ToolKit
       // Create a dummy default material.
       g_proxy->m_materialManager->m_storage[MaterialPath("default.material", true)] = MakeNewPtr<Material>();
 
-      for (int i = 0; i < static_cast<int>(files.size()); i++)
+      for (int i = 0; i < (int) (files.size()); i++)
       {
         file = files[i];
         // Clear global materials for each scene to prevent wrong referencing
         tMaterials.clear();
 
-        const aiScene* scene = importer.ReadFile(
-            file,
-            aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_FindDegenerates | aiProcess_CalcTangentSpace |
-                aiProcess_FlipUVs | aiProcess_LimitBoneWeights | aiProcess_GenSmoothNormals | aiProcess_GlobalScale |
-                aiProcess_FindInvalidData | aiProcess_GenBoundingBoxes | aiProcessPreset_TargetRealtime_MaxQuality |
-                aiProcess_PopulateArmatureData);
+        int optFlags = aiProcess_FlipUVs | aiProcess_GlobalScale;
+        if (optimizationLevel == 1)
+        {
+          optFlags |= aiProcessPreset_TargetRealtime_MaxQuality;
+        }
 
+        const aiScene* scene = importer.ReadFile(file, optFlags);
         if (scene == nullptr)
         {
           assert(0 && "Assimp failed to import the file. Probably file is corrupted!");
@@ -1378,10 +1383,13 @@ namespace ToolKit
         // DON'T BREAK THE CALLING ORDER!
 
         ImportAnimation(dest);
+
         // Create Textures to reference in Materials
         ImportTextures(dest);
+
         // Create Materials to reference in Meshes
         ImportMaterial(dest, file);
+
         // Create a Skeleton to reference in Meshes
         ImportSkeleton(destFile);
 

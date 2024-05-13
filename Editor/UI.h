@@ -81,6 +81,7 @@ namespace ToolKit
        */
       static bool IsKeyboardCaptured();
 
+      /** Adds a tooltip if mouse hover on item more than 0.4 seconds. Similar to UI::HelpMarker().  */
       static void AddTooltipToLastItem(const char* tip);
 
      public:
@@ -107,6 +108,7 @@ namespace ToolKit
       {
         bool ShowImportWindow = false;
         bool Overwrite        = false;
+        bool optimize         = false;
         StringArray Files;
         String SubDir;
         float Scale                  = 1.0f;

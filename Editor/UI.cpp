@@ -913,7 +913,7 @@ namespace ToolKit
         static StringArray fails;
         if (!ImportData.Files.empty() && fails.empty())
         {
-          for (int i = static_cast<int>(ImportData.Files.size()) - 1; i >= 0; i--)
+          for (int i = (int) (ImportData.Files.size()) - 1; i >= 0; i--)
           {
             bool canImp = g_app->CanImport(ImportData.Files[i]);
             if (!canImp)
@@ -984,6 +984,9 @@ namespace ToolKit
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
         ImGui::Checkbox("Override", &ImportData.Overwrite);
+        ImGui::Checkbox("Optimize", &ImportData.optimize);
+        AddTooltipToLastItem("Optimize the object to be imported.\nSometimes import may fail due to this operation. "
+                             "In that case try without optimizations enabled.");
         ImGui::PushItemWidth(100);
         ImGui::InputFloat("Scale", &ImportData.Scale);
         ImGui::PopItemWidth();

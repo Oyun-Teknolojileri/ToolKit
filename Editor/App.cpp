@@ -906,6 +906,7 @@ namespace ToolKit
           }
 
           cmd    += "\" -s " + std::to_string(UI::ImportData.Scale);
+          cmd    += " -o " + std::to_string(UI::ImportData.optimize);
 
           // Execute command
           result  = ExecSysCommand(cmd.c_str(), false, false);
