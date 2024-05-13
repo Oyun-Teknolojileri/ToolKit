@@ -26,13 +26,17 @@ ToolKit can publish for:
 
 All the publishing can be achieved from within the editor via click of a button. However for publishing to given platforms there are required configurations steps and installments such as emscripten and android sdk.
 
+![Multiverse Go game made with ToolKit](Images/tk_ed_21.gif)
+
 ## Projects Using ToolKit
 
-![Multiverse Go game made with ToolKit](Images/tk_ed_21.gif)
+![Multiverse Go game made with ToolKit](Images/tk_ed_22.gif)
 
 [**Multiverse Go**](https://store.steampowered.com/app/2346880/Multiverse_GO/)
 
 Multiverse GO is a turn-based puzzle adventure set in a group of multiple universes. You can explore the multiverse and face challenges. The game focuses on forward thinking to progress through levels. Check out the link for more visuals from the project.
+
+**Don't Forget to Wishlist the Game in Steam !**
 
 ## Compiling
 
@@ -64,7 +68,7 @@ After this point ToolKit/ToolKit.sln file can be open and build.
 
 #### Visual Studio Project Overview
 
-Visual Studio 2022 with C++ tools is required to compile the engine and the editor. The solution is in the main directory of the ToolKit repository called ToolKit.sln. The Solution contains two main filters, Engine and Projects. Within the Engine filter, game engine, editor and related tools are residing. Before running the Editor, make sure that you have set it as the startup project. All required dependencies are residing in the Dependencies folder in a precompiled form.
+Visual Studio 2022 with C++ tools is required to compile the engine and the editor. The solution is in the main directory of the ToolKit repository called ToolKit.sln. The Solution contains two main filters, Engine and Projects. Within the Engine filter, game engine, editor and related tools are residing. Before running the Editor, make sure that you have set it as the startup project. All required dependencies are residing in the Dependencies folder. Don't forget to init and update git submodules. Finally run BuildAllDependencies.bat to compile all dependencies.
 
 There are cmake files all around the repository and .bat files in the BuildScripts folder. They are used to compile the engine and the projects for target environments Web, Android and PC. You don't need to directly call these cmake files. All outputs can be compiled and packed within the editor. However cmake files are well documented for more advanced usages and configurations.
 
