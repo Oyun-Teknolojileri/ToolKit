@@ -18,10 +18,14 @@ namespace ToolKit
    public:
     TKDeclareClass(Camera, Entity);
 
-    Camera();          //!< Default constructor. Sets a default projection matrix.
-    virtual ~Camera(); //!< Empty destructor.
+    /** Default constructor. Sets a default projection matrix. */
+    Camera();
 
-    void NativeConstruct() override; //!< Adds a direction component other then constructing Object.
+    /** Empty destructor. */
+    virtual ~Camera();
+
+    /** In addition to the Object creation, adds a direction component. */
+    void NativeConstruct() override;
 
     /**
      * Sets the perspective projection matrix for the camera.
@@ -52,17 +56,20 @@ namespace ToolKit
      */
     void SetLens(float left, float right, float bottom, float top, float near, float far);
 
-    /** Returns view matrix from camera position. Its inverse world transform matrix. */
+    /** Returns view matrix for the camera. It is the inverse of world transform matrix. */
     inline Mat4 GetViewMatrix() const
     {
       Mat4 view = m_node->GetTransform();
       return glm::inverse(view);
     }
 
+    /** Returns projection matrix. */
     inline const Mat4& GetProjectionMatrix() const { return m_projection; }
 
+    /** Returns project * view * model matrix. */
     inline Mat4 GetProjectViewMatrix() { return m_projection * GetViewMatrix(); }
 
+    /** Returns if the camera is orthographic or not. */
     bool IsOrtographic() const;
 
     /** Tight fit camera frustum to a bounding box with a margin */
@@ -76,26 +83,37 @@ namespace ToolKit
      */
     Vec3Array ExtractFrustumCorner();
 
+    /** Returns vertical field of view. */
     inline float Fov() const { return m_fov; }
 
+    /** Returns the aspect ratio for the camera. */
     inline float Aspect() const { return m_aspect; }
 
+    /** Returns distance to near clip plane. This is not the focal length. Its the start distance to clip objects. */
     inline float Near() const { return m_near; }
 
+    /** Returns distance to far clip plane. */
     inline float Far() const { return m_far; }
 
+    /** Distance to left clip plane, only meaning full in orthographic projection. */
     inline float Left() const { return m_left; }
 
+    /** Distance to right clip plane, only meaning full in orthographic projection. */
     inline float Right() const { return m_right; }
 
+    /** Distance to top clip plane, only meaning full in orthographic projection. */
     inline float Top() const { return m_top; }
 
+    /** Distance to bottom clip plane, only meaning full in orthographic projection. */
     inline float Bottom() const { return m_bottom; }
 
+    /** Returns camera position in world space. */
     inline Vec3 Position() const { return m_node->GetTranslation(); }
 
+    /** Returns camera direction in world space. */
     Vec3 Direction() const;
 
+    /** Returns distance to near plane from camera position. */
     float FocalLength() const;
 
    protected:

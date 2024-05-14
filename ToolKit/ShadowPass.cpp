@@ -146,8 +146,8 @@ namespace ToolKit
         const float f               = shadowCamera->Far();
         const Vec3 p                = shadowCamera->m_node->GetTranslation();
         float value                 = 10000.0f;
-        const Vec3 dir              = shadowCamera->GetComponentFast<DirectionComponent>()->GetDirection();
-        const Vec3 pos              = shadowCamera->m_node->GetTranslation();
+        const Vec3 dir              = shadowCamera->Direction();
+        const Vec3 pos              = shadowCamera->Position();
         const BoundingBox& sceneBox = m_params.scene->GetSceneBoundary();
 
         Vec3 nearPos                = pos + (-dir * value);
@@ -441,8 +441,8 @@ namespace ToolKit
                                    GraphicTypes::UVClampToEdge,
                                    GraphicTypes::UVClampToEdge,
                                    GraphicTypes::UVClampToEdge,
-                                   GraphicTypes::SampleNearest,
-                                   GraphicTypes::SampleNearest,
+                                   GraphicTypes::SampleLinear,
+                                   GraphicTypes::SampleLinear,
                                    GraphicTypes::FormatRG32F,
                                    GraphicTypes::FormatRG,
                                    GraphicTypes::TypeFloat,
