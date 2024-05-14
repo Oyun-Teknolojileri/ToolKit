@@ -144,7 +144,6 @@ namespace ToolKit
         // Set near-far of the directional light frustum huge since we do not want near-far planes to clip objects that
         // should contribute to the directional light shadow.
         const float f               = shadowCamera->Far();
-        const Vec3 p                = shadowCamera->m_node->GetTranslation();
         float value                 = 10000.0f;
         const Vec3 dir              = shadowCamera->Direction();
         const Vec3 pos              = shadowCamera->Position();
@@ -163,7 +162,7 @@ namespace ToolKit
         frustum = ExtractFrustum(shadowCamera->GetProjectViewMatrix(), false);
 
         shadowCamera->SetFarClipVal(f);
-        shadowCamera->m_node->SetTranslation(p);
+        shadowCamera->m_node->SetTranslation(pos);
       }
       else
       {
