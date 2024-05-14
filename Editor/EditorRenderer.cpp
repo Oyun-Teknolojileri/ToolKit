@@ -246,7 +246,8 @@ namespace ToolKit
             if (light->GetCastShadowVal())
             {
               app->m_perFrameDebugObjects.push_back(light->GetDebugShadowFrustum());
-              app->m_perFrameDebugObjects.push_back(GetDebugFrustum(app->GetViewport(g_3dViewport)->GetCamera()));
+              app->m_perFrameDebugObjects.push_back(
+                  CreateDebugFrustum(app->GetViewport(g_3dViewport)->GetCamera(), Vec3(0.6f, 0.2f, 0.8f), 1.5f));
             }
           }
         }

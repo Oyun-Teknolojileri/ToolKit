@@ -220,23 +220,16 @@ namespace ToolKit
     for (int i = 0; i < cascades; ++i)
     {
       float near = cascadeDists[i];
-      float far;
+      float far = far = cascadeDists[i + 1];
       if (i == cascades - 1)
       {
         far = GetEngineSettings().PostProcessing.ShadowDistance;
-      }
-      else
-      {
-        far = cascadeDists[i + 1];
       }
 
       cameraView->SetNearClipVal(near);
       cameraView->SetFarClipVal(far);
 
-      FitViewFrustumIntoLightFrustum(m_cascadeShadowCameras[i],
-                                     cameraView,
-                                     near,
-                                     far);
+      FitViewFrustumIntoLightFrustum(m_cascadeShadowCameras[i], cameraView, near, far);
     }
 
     cameraView->SetNearClipVal(lastCameraNear);

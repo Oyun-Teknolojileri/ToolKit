@@ -150,11 +150,10 @@ namespace ToolKit
         const BoundingBox& sceneBox = m_params.scene->GetSceneBoundary();
 
         Vec3 nearPos                = pos + (-dir * value);
-        while (PointInsideBBox(nearPos, sceneBox.max, sceneBox.min))
-        {
-          nearPos  = pos + (-dir * value);
-          value   *= 10.0f;
-        }
+        Ray r                       = {nearPos, dir};
+
+        RayBoxIntersection({nearPos, dir}, sceneBox, value);
+        nearPos = PointOnRay(r, value);
 
         shadowCamera->SetFarClipVal(value + f);
         shadowCamera->m_node->SetTranslation(nearPos);
@@ -244,7 +243,7 @@ namespace ToolKit
     else // if (light->IsA<DirectionalLight>())
     {
       DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
-      for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; ++i)
+      for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; i++)
       {
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
                                                 m_shadowAtlas,
