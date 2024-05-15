@@ -3,7 +3,8 @@
 	<include name = "VSM.shader" />
 	<source>
 	<!--
-		const vec3 poissonDisk[128] = vec3[](
+		const vec3 poissonDisk[128] = vec3[]
+    (
         vec3(-0.308466, -0.140553, -0.393857),
         vec3(-0.422605, 0.380276, -0.49527),
         vec3(0.446471, 0.0725272, -0.292199),
@@ -137,7 +138,18 @@
     // NOTE: "ClampTextureCoordinates" function is from "textureUtil.shader" and this shader includes from "lighting.shader" which already includes that.
     // If you need to use that function from your shader, include "textureUtil.shader".
 
-		float PCFFilterShadow2D(sampler2DArray shadowAtlas, vec3 uvLayer, vec2 coordStart, vec2 coordEnd, int samples, float radius, float currDepth, float LBR, float shadowBias)
+		float PCFFilterShadow2D
+    (
+      sampler2DArray shadowAtlas,
+      vec3 uvLayer,
+      vec2 coordStart,
+      vec2 coordEnd,
+      int samples,
+      float radius,
+      float currDepth,
+      float LBR,
+      float shadowBias
+    )
 		{
 			float sum = 0.0;
 			for (int i = 0; i < samples; ++i)
@@ -151,8 +163,19 @@
 			return sum / float(samples);
 		}
 
-    float PCFFilterOmni(sampler2DArray shadowAtlas, vec2 startCoord, float shadowAtlasResRatio, float shadowAtlasLayer,
-    vec3 dir, int samples, float radius, float currDepth, float LBR, float shadowBias)
+    float PCFFilterOmni
+    (
+      sampler2DArray shadowAtlas,
+      vec2 startCoord,
+      float shadowAtlasResRatio,
+      float shadowAtlasLayer,
+      vec3 dir,
+      int samples,
+      float radius,
+      float currDepth,
+      float LBR,
+      float shadowBias
+    )
     {
 			float sum = 0.0;
 			for (int i = 0; i < samples; ++i)

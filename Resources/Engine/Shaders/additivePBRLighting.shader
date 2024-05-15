@@ -44,10 +44,19 @@
     {
       case 3: // directional with shadows
       {
-        int fallbackNextCascade;
-        shadow = CalculateDirectionalShadow(fragPos, viewCamPos, lightProjectionViewMatrix, lightShadowAtlasCoord, lightShadowAtlasResRatio,
-                                            lightShadowAtlasLayer, lightPCFSamples, lightPCFRadius, 
-                                            lightBleedReduction, lightShadowBias, fallbackNextCascade);
+        shadow = CalculateDirectionalShadow
+        (
+          fragPos, 
+          viewCamPos, 
+          lightProjectionViewMatrix, 
+          lightShadowAtlasCoord, 
+          lightShadowAtlasResRatio,
+          lightShadowAtlasLayer, 
+          lightPCFSamples, 
+          lightPCFRadius, 
+          lightBleedReduction, 
+          lightShadowBias
+        );
       } // fallthrough
       case 0: // directional light
       {
@@ -58,9 +67,19 @@
       break;
       case 4: // point with shadows
       {
-        shadow = CalculatePointShadow(fragPos, lightPos, lightShadowMapCameraFar, lightShadowAtlasCoord, lightShadowAtlasResRatio,
-                                      lightShadowAtlasLayer, lightPCFSamples, lightPCFRadius, 
-                                      lightBleedReduction, lightShadowBias);
+        shadow = CalculatePointShadow
+        (
+          fragPos, 
+          lightPos, 
+          lightShadowMapCameraFar, 
+          lightShadowAtlasCoord, 
+          lightShadowAtlasResRatio,
+          lightShadowAtlasLayer, 
+          lightPCFSamples, 
+          lightPCFRadius, 
+          lightBleedReduction, 
+          lightShadowBias
+        );
       } // fallthrough
       case 1: // point light
       {
@@ -76,9 +95,20 @@
       break;
       case 5: // spot with shadows
       {
-        shadow = CalculateSpotShadow(fragPos, lightPos, lightProjectionViewMatrix, lightShadowMapCameraFar, lightShadowAtlasCoord,
-                                    lightShadowAtlasResRatio, lightShadowAtlasLayer, lightPCFSamples, 
-                                    lightPCFRadius, lightBleedReduction, lightShadowBias);
+        shadow = CalculateSpotShadow
+        (
+          fragPos, 
+          lightPos, 
+          lightProjectionViewMatrix, 
+          lightShadowMapCameraFar, 
+          lightShadowAtlasCoord,
+          lightShadowAtlasResRatio, 
+          lightShadowAtlasLayer, 
+          lightPCFSamples, 
+          lightPCFRadius, 
+          lightBleedReduction, 
+          lightShadowBias
+        );
       } // fallthrough
       case 2: // spot light
       {
