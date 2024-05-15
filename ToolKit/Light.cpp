@@ -310,82 +310,21 @@ namespace ToolKit
                                                         float near,
                                                         float far)
   {
-    const Vec3Array frustum = viewCamera->ExtractFrustumCorner();
+    // view camera has near far distances coming from i'th cascade boundaries,
+    // so if we fit the light's shadow camera is aligned with light direction,
+    // and position to the view camera frustum's center, we can calculate a bounding box
+    // that tightly fits to the i'th cascade.
+    Vec3Array frustum = viewCamera->ExtractFrustumCorner();
 
-    Vec3 center             = ZERO;
-    for (int i = 0; i < 8; ++i)
+    Vec3 center       = ZERO;
+    for (int i = 0; i < 8; i++)
     {
       center += frustum[i];
     }
-    center /= 8.0f;
+    center /= 8.0f; // Shadow camera will be pointing at the view frustum center.
 
-    lightCamera->m_node->SetOrientation(m_node->GetOrientation());
-    lightCamera->m_node->SetTranslation(center);
-
-    const Mat4 lightView = lightCamera->GetViewMatrix();
-
-    // Calculate tight shadow volume.
-    BoundingBox tightShadowVolume;
-    for (int i = 0; i < 8; i++)
-    {
-      const Vec4 vertex = lightView * Vec4(frustum[i], 1.0f);
-      tightShadowVolume.UpdateBoundary(vertex);
-    }
-
-    const float tightFar = tightShadowVolume.max.z - tightShadowVolume.min.z;
-
-    lightCamera->SetLens(tightShadowVolume.min.x,
-                         tightShadowVolume.max.x,
-                         tightShadowVolume.min.y,
-                         tightShadowVolume.max.y,
-                         -0.5f * tightFar,
-                         0.5f * tightFar);
-
-    /*
-    const float tightWidth  = tightShadowVolume.max.x - tightShadowVolume.min.x;
-    const float tightHeight = tightShadowVolume.max.y - tightShadowVolume.min.y;
-    lightCamera->SetLens(-tightWidth * 0.5f,
-                         tightWidth * 0.5f,
-                         -tightHeight * 0.5f,
-                         tightHeight * 0.5f,
-                         -tightFar * 0.5f,
-                         tightFar * 0.5f);
-    */
-  }
-
-  /*
-  void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
-                                                        CameraPtr viewCamera,
-                                                        const BoundingBox& shadowVolume,
-                                                        float near,
-                                                        float far)
-  {
-    // Set far for view frustum
-    float lastCameraNear = viewCamera->GetNearClipVal();
-    float lastCameraFar  = viewCamera->GetFarClipVal();
-    viewCamera->SetNearClipVal(near);
-    viewCamera->SetFarClipVal(far);
-
-    Vec3Array frustum = viewCamera->ExtractFrustumCorner();
-    viewCamera->SetNearClipVal(lastCameraNear);
-    viewCamera->SetFarClipVal(lastCameraFar);
-
-    const float worldUnitPerTexel = far * 25.0f / RHIConstants::ShadowAtlasTextureSize;
-    const Vec3 vWorldUnitPerTexel = Vec3(worldUnitPerTexel, worldUnitPerTexel, worldUnitPerTexel);
-
-    Vec3 center                   = ZERO;
-    for (int i = 0; i < 8; ++i)
-    {
-      frustum[i] /= vWorldUnitPerTexel;
-      frustum[i]  = glm::floor(frustum[i]);
-      frustum[i] *= vWorldUnitPerTexel;
-
-      center     += frustum[i];
-    }
-    center /= 8.0f;
-
-    lightCamera->m_node->SetOrientation(m_node->GetOrientation());
-    lightCamera->m_node->SetTranslation(center);
+    lightCamera->m_node->SetOrientation(m_node->GetOrientation()); // shadow camera direction aligned with light.
+    lightCamera->m_node->SetTranslation(center);                   // shadow camera is looking at the shadow's center.
 
     Mat4 lightView = lightCamera->GetViewMatrix();
 
@@ -393,27 +332,18 @@ namespace ToolKit
     BoundingBox tightShadowVolume;
     for (int i = 0; i < 8; i++)
     {
-      Vec4 vertex = lightView * Vec4(frustum[i], 1.0f);
-      tightShadowVolume.UpdateBoundary(vertex);
+      Vec4 vertex = lightView * Vec4(frustum[i], 1.0f); // Move the view camera frustum to light's view.
+      tightShadowVolume.UpdateBoundary(vertex);         // Calculate its boundary.
     }
 
-    // Fit the frustum into the scene only for far
-    float width       = shadowVolume.max.x - shadowVolume.min.x;
-    float height      = shadowVolume.max.y - shadowVolume.min.y;
-    float depth       = shadowVolume.max.z - shadowVolume.min.z;
-    float maxDistance = glm::sqrt(width * width + height * height + depth * depth);
+    float tightFar    = tightShadowVolume.max.z - tightShadowVolume.min.z * 0.5f;
+    float tightWidth  = tightShadowVolume.max.x - tightShadowVolume.min.x * 0.5f;
+    float tightHeight = tightShadowVolume.max.y - tightShadowVolume.min.y * 0.5f;
 
-    float tightFar    = tightShadowVolume.max.z - tightShadowVolume.min.z;
-    tightFar          = glm::min(tightFar, maxDistance);
-
-    lightCamera->SetLens(tightShadowVolume.min.x,
-                         tightShadowVolume.max.x,
-                         tightShadowVolume.min.y,
-                         tightShadowVolume.max.y,
-                         -tightFar * 0.5f,
-                         tightFar * 0.5f);
+    // Set an orthographic projection that covers the tight shadow volume frustum.
+    lightCamera->SetLens(-tightWidth, tightWidth, -tightHeight, tightHeight, -tightFar, tightFar);
   }
-  */
+
   // PointLight
   //////////////////////////////////////////
 
