@@ -310,10 +310,9 @@ namespace ToolKit
                                                         float near,
                                                         float far)
   {
-    // view camera has near far distances coming from i'th cascade boundaries,
-    // so if we fit the light's shadow camera is aligned with light direction,
-    // and position to the view camera frustum's center, we can calculate a bounding box
-    // that tightly fits to the i'th cascade.
+    // View camera has near far distances coming from i'th cascade boundaries.
+    // Shadow camera is aligned with light direction, and positioned to the view camera frustum's center.
+    // Now we can calculate a bounding box that tightly fits to the i'th cascade.
     Vec3Array frustum = viewCamera->ExtractFrustumCorner();
 
     Vec3 center       = ZERO;
