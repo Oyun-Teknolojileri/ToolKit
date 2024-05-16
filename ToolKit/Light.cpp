@@ -313,21 +313,21 @@ namespace ToolKit
     // View camera has near far distances coming from i'th cascade boundaries.
     // Shadow camera is aligned with light direction, and positioned to the view camera frustum's center.
     // Now we can calculate a bounding box that tightly fits to the i'th cascade.
-    Vec3Array frustum = viewCamera->ExtractFrustumCorner();
+    Vec3Array frustum = viewCamera->ExtractFrustumCorner(); // World space frustum.
 
     Vec3 center       = ZERO;
     for (int i = 0; i < 8; i++)
     {
       center += frustum[i];
     }
-    center /= 8.0f; // Shadow camera will be pointing at the view frustum center.
+    center /= 8.0f;
 
     lightCamera->m_node->SetOrientation(m_node->GetOrientation()); // shadow camera direction aligned with light.
-    lightCamera->m_node->SetTranslation(center);                   // shadow camera is looking at the shadow's center.
+    lightCamera->m_node->SetTranslation(center);                   // shadow camera is at the frustum center.
 
     Mat4 lightView = lightCamera->GetViewMatrix();
 
-    // Calculate tight shadow volume.
+    // Calculate tight shadow volume, in light's view.
     BoundingBox tightShadowVolume;
     for (int i = 0; i < 8; i++)
     {
@@ -335,12 +335,22 @@ namespace ToolKit
       tightShadowVolume.UpdateBoundary(vertex);         // Calculate its boundary.
     }
 
-    float tightFar    = tightShadowVolume.max.z - tightShadowVolume.min.z * 0.5f;
-    float tightWidth  = tightShadowVolume.max.x - tightShadowVolume.min.x * 0.5f;
-    float tightHeight = tightShadowVolume.max.y - tightShadowVolume.min.y * 0.5f;
+    // Now frustum is sitting at the origin in light's view. Since the light was placed at the frustum center,
+    // half of the volume is behind the camera.
 
-    // Set an orthographic projection that covers the tight shadow volume frustum.
-    lightCamera->SetLens(-tightWidth, tightWidth, -tightHeight, tightHeight, -tightFar, tightFar);
+    // Push the tighShadowVolume just in front of the camera by pulling the camera backwards from the center
+    // exactly max z units. If we not perform this, frustum center will be placed to origin, from 0 to max.z will stay
+    // behind the camera.
+    lightCamera->m_node->SetTranslation(center - lightCamera->Direction() * tightShadowVolume.max.z);
+
+    // Set the lens such that it only captures everything inside the frustum.
+    float tightFar = tightShadowVolume.max.z - tightShadowVolume.min.z;
+    lightCamera->SetLens(tightShadowVolume.min.x,
+                         tightShadowVolume.max.x,
+                         tightShadowVolume.min.y,
+                         tightShadowVolume.max.y,
+                         0.0f,
+                         tightFar);
   }
 
   // PointLight
