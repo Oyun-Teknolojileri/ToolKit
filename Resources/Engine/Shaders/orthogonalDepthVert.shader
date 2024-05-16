@@ -25,11 +25,13 @@
 			v_texture = vTexture;
 			vec4 skinnedVPos = vec4(vPosition, 1.0);
 			
-			if(isSkinned > 0u){
+			if(isSkinned > 0u)
+			{
 				skin(skinnedVPos, skinnedVPos);
 			}
+
 		  gl_Position = ProjectViewModel * skinnedVPos;
-			gl_Position.z = max(gl_Position.z, -1.0);
+			gl_Position.z = max(gl_Position.z, -1.0); // Pancake the objects fall behind the view frustum.
 		}
 	-->
 	</source>
