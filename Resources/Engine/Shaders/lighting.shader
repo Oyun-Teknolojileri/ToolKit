@@ -100,13 +100,6 @@ float CalculateDirectionalShadow
 	vec3 projCoord = fragPosForLight.xyz;
 	projCoord = projCoord * 0.5 + 0.5;
 
-	if (projCoord.x < 0.0 || projCoord.x > 1.0	||
-			projCoord.y < 0.0 || projCoord.y > 1.0 	||
-			projCoord.z < 0.0 || projCoord.z > 1.0)
-	{
-		return 1.0;
-	}
-
 	// Get depth of the current fragment according to lights view
 	float currFragDepth = projCoord.z;
 
