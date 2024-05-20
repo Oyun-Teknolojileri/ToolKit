@@ -49,63 +49,14 @@ namespace ToolKit
       return;
     }
 
-    GLenum type = 0;
-    if (m_shaderType == ShaderType::VertexShader)
+    if (!m_defineArray.empty())
     {
-      type = (GLenum) GraphicTypes::VertexShader;
-    }
-    else if (m_shaderType == ShaderType::FragmentShader)
-    {
-      type = (GLenum) GraphicTypes::FragmentShader;
+      m_currentDefineValues.clear();
+      ComplieShaderCombinations(m_defineArray, 0, m_currentDefineValues);
     }
     else
     {
-      assert(false && "This type should not be compiled.");
-    }
-
-    m_shaderHandle = glCreateShader(type);
-    if (m_shaderHandle == 0)
-    {
-      return;
-    }
-
-    // Start with #version
-    const char* str = nullptr;
-    size_t loc      = m_source.find("#version");
-    if (loc != String::npos)
-    {
-      m_source = m_source.substr(loc);
-      str      = m_source.c_str();
-    }
-    else
-    {
-      str = m_source.c_str();
-    }
-
-    glShaderSource(m_shaderHandle, 1, &str, nullptr);
-    glCompileShader(m_shaderHandle);
-
-    GLint compiled;
-    glGetShaderiv(m_shaderHandle, GL_COMPILE_STATUS, &compiled);
-    if (!compiled)
-    {
-      GLint infoLen = 0;
-      glGetShaderiv(m_shaderHandle, GL_INFO_LOG_LENGTH, &infoLen);
-      if (infoLen > 1)
-      {
-        char* log = new char[infoLen];
-        glGetShaderInfoLog(m_shaderHandle, infoLen, nullptr, log);
-        GetLogger()->WritePlatformConsole(LogType::Error, log);
-        GetLogger()->Log(log);
-        GetLogger()->Log(GetFile());
-        GetLogger()->Log(str);
-
-        assert(compiled);
-        SafeDelArray(log);
-      }
-
-      glDeleteShader(m_shaderHandle);
-      return;
+      Compile(m_source);
     }
 
     if (flushClientSideArray)
@@ -120,6 +71,52 @@ namespace ToolKit
   {
     glDeleteShader(m_shaderHandle);
     m_initiated = false;
+  }
+
+  void Shader::SetDefine(const String& name, const String& val)
+  {
+    // Sanity checks.
+    if (m_shaderType == ShaderType::IncludeShader)
+    {
+      TK_ERR("Include shaders can't have define declarations. Use the master shader file for define declarations.");
+      return;
+    }
+
+    if (!m_initiated)
+    {
+      TK_ERR("Initialize the shader before setting a value for a define.");
+      return;
+    }
+
+    // Construct the key.
+    String key;
+    for (int i = 0; i < (int) m_currentDefineValues.size(); i++)
+    {
+      int defineIndx  = m_currentDefineValues[i].define;
+      int variantIndx = m_currentDefineValues[i].variant;
+
+      if (m_defineArray[defineIndx].define == name)
+      {
+        m_defineArray[defineIndx].variants[variantIndx] = val;
+      }
+
+      String defName  = m_defineArray[defineIndx].define;
+      String defVal   = m_defineArray[defineIndx].variants[variantIndx];
+      key            += defName + ":" + defVal + "|";
+    }
+
+    key.pop_back();
+
+    // Set the variant.
+    auto handle = m_shaderVariantMap.find(key);
+    if (handle != m_shaderVariantMap.end())
+    {
+      m_shaderHandle = m_shaderVariantMap[key];
+    }
+    else
+    {
+      TK_ERR("Unknown shader combination %s", key);
+    }
   }
 
   XmlNode* Shader::SerializeImp(XmlDocument* doc, XmlNode* parent) const { return nullptr; }
@@ -199,6 +196,17 @@ namespace ToolKit
         assert(isUniformFound);
       }
 
+      if (strcmp("define", node->name()) == 0)
+      {
+        ShaderDefine def;
+        def.define = node->first_attribute("name")->value();
+
+        String val = node->first_attribute("val")->value();
+        Split(val, ",", def.variants);
+
+        m_defineArray.push_back(def);
+      }
+
       if (strcmp("source", node->name()) == 0)
       {
         m_source = node->first_node()->value();
@@ -217,7 +225,6 @@ namespace ToolKit
   void Shader::HandleShaderIncludes(const String& file)
   {
     // Handle source of shader
-
     ShaderPtr includeShader = GetShaderManager()->Create<Shader>(ShaderPath(file, true));
     String includeSource    = includeShader->m_source; // Copy
 
@@ -316,6 +323,118 @@ namespace ToolKit
     std::sort(m_arrayUniforms.begin(), m_arrayUniforms.end(), arrayUniformCompareFn);
     auto uniqueEnd = std::unique(m_arrayUniforms.begin(), m_arrayUniforms.end());
     m_arrayUniforms.erase(uniqueEnd, m_arrayUniforms.end());
+  }
+
+  uint Shader::Compile(String source)
+  {
+    GLenum type = 0;
+    if (m_shaderType == ShaderType::VertexShader)
+    {
+      type = (GLenum) GraphicTypes::VertexShader;
+    }
+    else if (m_shaderType == ShaderType::FragmentShader)
+    {
+      type = (GLenum) GraphicTypes::FragmentShader;
+    }
+    else
+    {
+      TK_ERR("Include shader can't be compiled: %s", GetFile().c_str());
+      return 0;
+    }
+
+    m_shaderHandle = glCreateShader(type);
+    if (m_shaderHandle == 0)
+    {
+      return 0;
+    }
+
+    // Start with #version
+    const char* str = nullptr;
+    size_t loc      = source.find("#version");
+    if (loc != String::npos)
+    {
+      source = source.substr(loc);
+      str    = source.c_str();
+    }
+    else
+    {
+      str = source.c_str();
+    }
+
+    glShaderSource(m_shaderHandle, 1, &str, nullptr);
+    glCompileShader(m_shaderHandle);
+
+    GLint compiled;
+    glGetShaderiv(m_shaderHandle, GL_COMPILE_STATUS, &compiled);
+    if (!compiled)
+    {
+      GLint infoLen = 0;
+      glGetShaderiv(m_shaderHandle, GL_INFO_LOG_LENGTH, &infoLen);
+      if (infoLen > 1)
+      {
+        char* log = new char[infoLen];
+        glGetShaderInfoLog(m_shaderHandle, infoLen, nullptr, log);
+
+        TK_ERR(log);
+        TK_ERR(str);
+
+        assert(compiled);
+        SafeDelArray(log);
+      }
+
+      glDeleteShader(m_shaderHandle);
+      return 0;
+    }
+
+    return m_shaderHandle;
+  }
+
+  void Shader::CompileWithDefines(String source, const ShaderDefineCombinaton& defineCombo)
+  {
+    String key;
+    for (const ShaderDefineIndex& def : defineCombo)
+    {
+
+      String defName  = m_defineArray[def.define].define;
+      String defVal   = m_defineArray[def.define].variants[def.variant];
+
+      String search   = "#define " + defName;
+      String replace  = search + " " + defVal;
+
+      key            += defName + ":" + defVal + "|";
+
+      ReplaceStringInPlace(source, search, replace);
+    }
+
+    key.pop_back(); // remove last "|"
+
+    if (Compile(source) != 0)
+    {
+      m_currentDefineValues = defineCombo;
+      m_shaderVariantMap[key]  = m_shaderHandle;
+    }
+  }
+
+  void Shader::ComplieShaderCombinations(const ShaderDefineArray& defineArray,
+                                         int index,
+                                         ShaderDefineCombinaton& currentCombinaiton)
+  {
+    if (index == defineArray.size())
+    {
+      // Compile the final combo.
+      CompileWithDefines(m_source, currentCombinaiton);
+      return;
+    }
+
+    const ShaderDefine& currentDefine = defineArray[index];
+    for (int vi = (int) currentDefine.variants.size() - 1; vi >= 0; vi--)
+    {
+      currentCombinaiton.push_back({index, vi});
+
+      // Recursively generate combinations
+      ComplieShaderCombinations(defineArray, index + 1, currentCombinaiton);
+      currentCombinaiton.pop_back();
+    }
   }
 
   // ShaderManager

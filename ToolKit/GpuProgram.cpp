@@ -143,7 +143,7 @@ namespace ToolKit
     vertexShader->Init();
     fragmentShader->Init();
 
-    const auto& progIter = m_programs.find({vertexShader->GetIdVal(), fragmentShader->GetIdVal()});
+    const auto& progIter = m_programs.find({vertexShader->m_shaderHandle, fragmentShader->m_shaderHandle});
     if (progIter == m_programs.end())
     {
       GpuProgramPtr program = MakeNewPtr<GpuProgram>(vertexShader, fragmentShader);
@@ -194,9 +194,9 @@ namespace ToolKit
         }
       }
 
-      m_programs[{vertexShader->GetIdVal(), fragmentShader->GetIdVal()}] = program;
+      m_programs[{vertexShader->m_shaderHandle, fragmentShader->m_shaderHandle}] = program;
 
-      return m_programs[{vertexShader->GetIdVal(), fragmentShader->GetIdVal()}];
+      return m_programs[{vertexShader->m_shaderHandle, fragmentShader->m_shaderHandle}];
     }
 
     return progIter->second;
