@@ -135,6 +135,12 @@
         vec3(-0.209922, -0.437284, -0.235557)
     );
 
+    float Random(vec4 seed)
+		{
+		  float dot_product = dot(seed, vec4(12.9898,78.233,45.164,94.673));
+		  return fract(sin(dot_product) * 43758.5453);
+		}
+
     // NOTE: "ClampTextureCoordinates" function is from "textureUtil.shader" and this shader includes from "lighting.shader" which already includes that.
     // If you need to use that function from your shader, include "textureUtil.shader".
 
@@ -154,7 +160,9 @@
 			float sum = 0.0;
 			for (int i = 0; i < samples; ++i)
 			{
-				vec2 offset = poissonDisk[i].xy * radius;
+        int di = int(127.0 * Random( vec4( gl_FragCoord.xyy, float(i) ) )) % 127;
+				vec2 offset = poissonDisk[di].xy * radius;
+
         vec3 texCoord = uvLayer;
         texCoord.xy = ClampTextureCoordinates(uvLayer.xy + offset, coordStart, coordEnd);
 				vec2 moments = texture(shadowAtlas, texCoord).xy;
