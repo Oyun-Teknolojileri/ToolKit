@@ -38,7 +38,7 @@ struct _LightData
 	float BleedingReduction;
 	int softShadows;
 	float shadowAtlasLayer;
-	float shadowAtlasResRatio;
+	float shadowAtlasResRatio; // ShadowMapResolution / ShadowMapResolution
 	vec2 shadowAtlasCoord; // Between 0 and 1
 	float shadowBias;
 };
@@ -88,7 +88,7 @@ float CalculateDirectionalShadow
 	vec3 viewCamPos, 
 	mat4 lightProjView, 
 	vec2 shadowAtlasCoord,
-	float shadowAtlasResRatio, 
+	float shadowAtlasResRatio, // shadowAtlasResRatio = shadow map resolution / shadow atlas resolution.
 	float shadowAtlasLayer, 
 	int PCFSamples, 
 	float PCFRadius, 
@@ -103,18 +103,30 @@ float CalculateDirectionalShadow
 	// Get depth of the current fragment according to lights view
 	float currFragDepth = projCoord.z;
 
-	vec2 startCoord = shadowAtlasCoord;
-	float resRatio = shadowAtlasResRatio;
-	vec3 coord = vec3(startCoord + resRatio * projCoord.xy, shadowAtlasLayer);
+	vec2 startCoord = shadowAtlasCoord; // Start coordinate of he shadow map in the atlas.
+	vec2 endCoord = shadowAtlasCoord + shadowAtlasResRatio; // End coordinate of the shadow map in the atlas.
+
+	// Find the sample's location in the shadow atlas.
+	
+	// To do so, we scale the coordinates by the proportion of the shadow map in the atlas. "shadowAtlasResRatio * projCoord.xy"
+	// and then offset the scaled coordinate to the beginning of the shadow map via "startCoord + shadowAtlasResRatio * projCoord.xy"
+	// which gives us the final uv coordinates in xy and the index of the layer in z
+	vec2 uvInAtlas = startCoord + shadowAtlasResRatio * projCoord.xy;
+	vec3 sampleCoord = vec3(uvInAtlas, shadowAtlasLayer);
 
 	float shadow = 1.0;
+
+	// Make sure there is always 1 sample.
+	// This will offset the shadow randomly in subpixel boundary which will trigger bilinear sampling.
+	// Which will yield smooth results even with 1 fetch.
 	PCFSamples = max(1, PCFSamples);
+
 	shadow = PCFFilterShadow2D
 	(
 		s_texture8,
-		coord,
+		sampleCoord,
 		startCoord,
-		startCoord + resRatio,
+		endCoord,
 		PCFSamples,
 		PCFRadius * shadowAtlasResRatio,
 		projCoord.z,
