@@ -465,34 +465,6 @@ namespace ToolKit
         }
       }
     }
-
-    /*
-    for (int i = startIndex; i < lights.size(); ++i)
-    {
-      if (job.lights.size() >= RHIConstants::MaxLightsPerObject)
-      {
-        return;
-      }
-
-      LightPtr& light = lights[i];
-      if (light->GetLightType() == Light::LightType::Spot)
-      {
-        SpotLightPtr spot = Cast<SpotLight>(light);
-        if (FrustumBoxIntersection(spot->m_frustumCache, job.BoundingBox) != IntersectResult::Outside)
-        {
-          job.lights.push_back(spot);
-        }
-      }
-      else
-      {
-        PointLightLightPtr point = Cast<PointLight>(light);
-        if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))
-        {
-          job.lights.push_back(point);
-        }
-      }
-    }
-    */
   }
 
   void RenderJobProcessor::AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights)

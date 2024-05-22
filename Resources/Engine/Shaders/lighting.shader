@@ -108,18 +108,19 @@ float CalculateDirectionalShadow
 	vec3 coord = vec3(startCoord + resRatio * projCoord.xy, shadowAtlasLayer);
 
 	float shadow = 1.0;
-	if (PCFSamples > 1)
-	{
-		shadow = PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + resRatio,
-		PCFSamples, PCFRadius * shadowAtlasResRatio,
-		projCoord.z, lightBleedReduction, shadowBias);
-	}
-	else
-	{
-		coord.xy = ClampTextureCoordinates(coord.xy, startCoord, startCoord + resRatio);
-		vec2 moments = texture(s_texture8, coord).xy;
-		shadow = ChebyshevUpperBound(moments, projCoord.z, lightBleedReduction, shadowBias);
-	}
+	PCFSamples = max(1, PCFSamples);
+	shadow = PCFFilterShadow2D
+	(
+		s_texture8,
+		coord,
+		startCoord,
+		startCoord + resRatio,
+		PCFSamples,
+		PCFRadius * shadowAtlasResRatio,
+		projCoord.z,
+		lightBleedReduction,
+		shadowBias
+	);
 
 	// Fade shadow out after min shadow fade out distance
 	vec3 camToPos = pos - viewCamPos;
@@ -154,19 +155,19 @@ float CalculateSpotShadow
 	vec2 startCoord = shadowAtlasCoord;
 	vec3 coord = vec3(startCoord + shadowAtlasResRatio * projCoord.xy, shadowAtlasLayer);
 
-	if (PCFSamples > 1)
-	{
-		return PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + shadowAtlasResRatio,
-		PCFSamples, PCFRadius * shadowAtlasResRatio, currFragDepth, lightBleedReduction, shadowBias);
-	}
-	else
-	{
-		coord.xy = ClampTextureCoordinates(coord.xy, startCoord, startCoord + shadowAtlasResRatio);
-		vec2 moments = texture(s_texture8, coord).xy;
-		return ChebyshevUpperBound(moments, currFragDepth, lightBleedReduction, shadowBias);
-	}
-
-	return 1.0;
+	PCFSamples = max(1, PCFSamples);
+	return PCFFilterShadow2D
+	(
+		s_texture8,
+		coord,
+		startCoord,
+		startCoord + shadowAtlasResRatio,
+		PCFSamples,
+		PCFRadius * shadowAtlasResRatio,
+		currFragDepth,
+		lightBleedReduction,
+		shadowBias
+	);
 }
 
 float CalculatePointShadow
@@ -186,23 +187,20 @@ float CalculatePointShadow
 	vec3 lightToFrag = pos - lightPos;
 	float currFragDepth = length(lightToFrag) / shadowCameraFar;
 
-	if (PCFSamples > 1)
-	{
-		return PCFFilterOmni(s_texture8, shadowAtlasCoord, shadowAtlasResRatio, shadowAtlasLayer, lightToFrag, PCFSamples, PCFRadius * shadowAtlasResRatio,
-		currFragDepth, lightBleedReduction, shadowBias);
-	}
-	else
-	{
-		vec3 coord = UVWToUVLayer(lightToFrag);
-		coord.xy = shadowAtlasCoord + shadowAtlasResRatio * coord.xy;
-		coord.z = shadowAtlasLayer + coord.z;
-
-		coord.xy = ClampTextureCoordinates(coord.xy, shadowAtlasCoord, shadowAtlasCoord + shadowAtlasResRatio);
-		vec2 moments = texture(s_texture8, coord).xy;
-		return ChebyshevUpperBound(moments, currFragDepth, lightBleedReduction, shadowBias);
-	}
-	
-	return 1.0;
+	PCFSamples = max(1, PCFSamples);
+	return PCFFilterOmni
+	(
+		s_texture8,
+		shadowAtlasCoord,
+		shadowAtlasResRatio,
+		shadowAtlasLayer,
+		lightToFrag,
+		PCFSamples,
+		PCFRadius * shadowAtlasResRatio,
+		currFragDepth,
+		lightBleedReduction,
+		shadowBias
+	);
 }
 
 // Returns 0 or 1
