@@ -283,20 +283,17 @@ vec3 PBRLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 fragToEye, 
 			// shadow
 			float depth = abs(viewPosDepth);
 			float shadow = 1.0;
+
 			if (LightData[i].castShadow == 1)
 			{
 				int cascadeOfThisPixel = 0;
-				if (LightData[i].numOfCascades > 3 && depth > cascadeDistances[3])
+				for (int ci = LightData[i].numOfCascades - 1; ci >= 0; ci--)
 				{
-					cascadeOfThisPixel = 3;
-				}
-				else if (LightData[i].numOfCascades > 2 && depth > cascadeDistances[2])
-				{
-					cascadeOfThisPixel = 2;
-				}
-				else if (LightData[i].numOfCascades > 1 && depth > cascadeDistances[1])
-				{
-					cascadeOfThisPixel = 1;
+					if (depth > cascadeDistances[ci])
+					{
+						cascadeOfThisPixel = ci;
+						break;
+					}
 				}
 
 				shadow = CalculateDirectionalShadow
