@@ -51,8 +51,8 @@ namespace ToolKit
 
     if (!m_defineArray.empty())
     {
-      m_currentDefineValues.clear();
-      ComplieShaderCombinations(m_defineArray, 0, m_currentDefineValues);
+      ShaderDefineCombinaton defineCombo;
+      ComplieShaderCombinations(m_defineArray, 0, defineCombo);
     }
     else
     {
@@ -76,12 +76,6 @@ namespace ToolKit
   void Shader::SetDefine(const String& name, const String& val)
   {
     // Sanity checks.
-    if (m_shaderType == ShaderType::IncludeShader)
-    {
-      TK_ERR("Include shaders can't have define declarations. Use the master shader file for define declarations.");
-      return;
-    }
-
     if (!m_initiated)
     {
       TK_ERR("Initialize the shader before setting a value for a define.");
@@ -224,51 +218,38 @@ namespace ToolKit
 
   void Shader::HandleShaderIncludes(const String& file)
   {
-    // Handle source of shader
+    uint mergeLoc           = FindShaderMergeLocation(m_source);
     ShaderPtr includeShader = GetShaderManager()->Create<Shader>(ShaderPath(file, true));
-    String includeSource    = includeShader->m_source; // Copy
+    m_source.replace(mergeLoc, 0, includeShader->m_source);
 
-    // Crop the version and precision defines
-    size_t versionLoc       = includeSource.find("#version");
-    if (versionLoc != String::npos)
+    for (ShaderDefine& def : includeShader->m_defineArray)
     {
-      for (size_t fileLoc = versionLoc; fileLoc < includeSource.length(); ++fileLoc)
-      {
-        if (includeSource[fileLoc] == '\n')
-        {
-          includeSource = includeSource.replace(versionLoc, fileLoc - versionLoc + 1, "");
-          break;
-        }
-      }
+      m_defineArray.push_back(def);
     }
 
-    size_t precisionLoc = 0;
-    while (true)
+    m_defineArray.erase(m_defineArray.end(), std::unique(m_defineArray.begin(), m_defineArray.end()));
+
+    for (Uniform uniform : includeShader->m_uniforms)
     {
-      precisionLoc = includeSource.find("precision");
-
-      if (precisionLoc == String::npos)
-      {
-        break;
-      }
-
-      if (precisionLoc != String::npos)
-      {
-        for (size_t fileLoc = precisionLoc; fileLoc < includeSource.length(); ++fileLoc)
-        {
-          if (includeSource[fileLoc] == ';')
-          {
-            includeSource = includeSource.replace(precisionLoc, fileLoc - precisionLoc + 1, "");
-            break;
-          }
-        }
-      }
+      m_uniforms.push_back(uniform);
     }
 
+    m_uniforms.erase(m_uniforms.end(), std::unique(m_uniforms.begin(), m_uniforms.end()));
+
+    for (ArrayUniform uni : includeShader->m_arrayUniforms)
+    {
+      m_arrayUniforms.push_back(uni);
+    }
+
+    m_arrayUniforms.erase(m_arrayUniforms.end(), std::unique(m_arrayUniforms.begin(), m_arrayUniforms.end()));
+  }
+
+  uint Shader::FindShaderMergeLocation(const String& file)
+  {
     // Put included file after precision and version defines
     size_t includeLoc = 0;
-    versionLoc        = m_source.find("#version");
-    for (size_t fileLoc = versionLoc; fileLoc < m_source.length(); ++fileLoc)
+    size_t versionLoc = m_source.find("#version");
+    for (size_t fileLoc = versionLoc; fileLoc < m_source.length(); fileLoc++)
     {
       if (m_source[fileLoc] == '\n')
       {
@@ -277,10 +258,10 @@ namespace ToolKit
       }
     }
 
-    precisionLoc = 0;
+    size_t precisionLoc = 0;
     while ((precisionLoc = m_source.find("precision", precisionLoc)) != String::npos)
     {
-      for (size_t fileLoc = precisionLoc; fileLoc < m_source.length(); ++fileLoc)
+      for (size_t fileLoc = precisionLoc; fileLoc < m_source.length(); fileLoc++)
       {
         if (m_source[fileLoc] == ';')
         {
@@ -292,37 +273,7 @@ namespace ToolKit
       precisionLoc += 9;
     }
 
-    m_source.replace(includeLoc, 0, includeSource);
-
-    // Handle uniforms
-    std::unordered_set<Uniform> unis;
-
-    for (Uniform& uni : m_uniforms)
-    {
-      unis.insert(uni);
-    }
-    for (Uniform& uni : includeShader->m_uniforms)
-    {
-      unis.insert(uni);
-    }
-
-    m_uniforms.clear();
-    for (auto i = unis.begin(); i != unis.end(); ++i)
-    {
-      m_uniforms.push_back(*i);
-    }
-
-    for (ArrayUniform uni : includeShader->m_arrayUniforms)
-    {
-      m_arrayUniforms.push_back(uni);
-    }
-
-    auto arrayUniformCompareFn = [](ArrayUniform& uni1, ArrayUniform& uni2) { return uni1.uniform < uni2.uniform; };
-
-    // Remove duplicates
-    std::sort(m_arrayUniforms.begin(), m_arrayUniforms.end(), arrayUniformCompareFn);
-    auto uniqueEnd = std::unique(m_arrayUniforms.begin(), m_arrayUniforms.end());
-    m_arrayUniforms.erase(uniqueEnd, m_arrayUniforms.end());
+    return (uint) includeLoc;
   }
 
   uint Shader::Compile(String source)
@@ -391,27 +342,27 @@ namespace ToolKit
 
   void Shader::CompileWithDefines(String source, const ShaderDefineCombinaton& defineCombo)
   {
-    String key;
+    String key; // Hash key for the shader variant.
+    String defineText;
     for (const ShaderDefineIndex& def : defineCombo)
     {
-
       String defName  = m_defineArray[def.define].define;
       String defVal   = m_defineArray[def.define].variants[def.variant];
-
-      String search   = "#define " + defName;
-      String replace  = search + " " + defVal;
-
       key            += defName + ":" + defVal + "|";
 
-      ReplaceStringInPlace(source, search, replace);
+      defineText     += "#define " + defName + " " + defVal + "\n";
     }
+
+    // Insert defines.
+    uint mergeLoc = FindShaderMergeLocation(source);
+    source.insert(mergeLoc, defineText);
 
     key.pop_back(); // remove last "|"
 
     if (Compile(source) != 0)
     {
-      m_currentDefineValues = defineCombo;
-      m_shaderVariantMap[key]  = m_shaderHandle;
+      m_currentDefineValues   = defineCombo;
+      m_shaderVariantMap[key] = m_shaderHandle;
     }
   }
 

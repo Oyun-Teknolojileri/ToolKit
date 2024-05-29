@@ -6,7 +6,7 @@
 	<include name = "pbr.shader" />
 	<uniform name = "shadowDistance" />
 	<uniform name = "activeCount"/>
-
+	<define name = "SelectCascadeByProjection" val="0,1" />
 	<source>
 	<!--
 const int MAX_CASCADE_COUNT = 4;
@@ -231,7 +231,17 @@ float Attenuation(float distance, float radius, float constant, float linear, fl
 	return attenuation;
 }
 
-vec3 PBRLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 fragToEye, vec3 viewCamPos, vec3 albedo, float metallic, float roughness)
+vec3 PBRLighting
+(
+	vec3 fragPos,				// World space fragment position.
+	float viewPosDepth, // View space depth. ( Fragment's distance to camera )
+	vec3 normal,				// Fragment's normal in world space. ( can be the geometry normal, or normal map normal )
+	vec3 fragToEye,			// Normalized vector from fragment position to camera position in world space normalize( campos - fragPos )
+	vec3 viewCamPos,		// Camera position in world space.
+	vec3 albedo,
+	float metallic,
+	float roughness
+)
 {
 	vec3 irradiance = vec3(0.0);
 
@@ -287,14 +297,38 @@ vec3 PBRLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 fragToEye, 
 			if (LightData[i].castShadow == 1)
 			{
 				int cascadeOfThisPixel = 0;
-				for (int ci = LightData[i].numOfCascades - 1; ci >= 0; ci--)
+
+				#if SelectCascadeByProjection == 1 
 				{
-					if (depth > cascadeDistances[ci])
+					// Cascade selection by projection. Detects if the projected fragment is in i'th frustum.
+					// TODO: The projection already calculated in the CalculateDirectionalShadow function, duplicate calculation can be avoided.
+					for (int ci = LightData[i].numOfCascades - 1; ci >= 0; ci--)
 					{
-						cascadeOfThisPixel = ci;
-						break;
+						vec4 fragInLightSpace = LightData[i].projectionViewMatrices[ci] * vec4(fragPos, 1.0);
+						vec3 lightSpaceProjectedCoord = fragInLightSpace.xyz;
+						lightSpaceProjectedCoord = lightSpaceProjectedCoord * 0.5 + 0.5;
+
+						vec3 cascadePos = abs(lightSpaceProjectedCoord - 0.5);
+						if (all(lessThanEqual(cascadePos, vec3(0.5))))
+						{
+							cascadeOfThisPixel = ci;
+							break;
+						}
 					}
 				}
+				#else
+				{
+					// Cascade selection by depth range.
+					for (int ci = LightData[i].numOfCascades - 1; ci >= 0; ci--)
+					{
+						if (depth > cascadeDistances[ci])
+						{
+							cascadeOfThisPixel = ci;
+							break;
+						}
+					}
+				}
+				#endif
 
 				shadow = CalculateDirectionalShadow
 				(

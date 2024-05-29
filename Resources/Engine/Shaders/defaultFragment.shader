@@ -14,6 +14,7 @@
 	<uniform name = "metallic" />
 	<uniform name = "roughness" />
   <uniform name = "normalMapInUse" />
+	<define name = "EnableDiscardPixel" val="0,1" />
 	<source>
 	<!--
 		#version 300 es
@@ -69,14 +70,14 @@
 				emissive = emissiveColor;
 			}
 
-#ifdef ENABLE_DISCARD_PIXEL
-			if (useAlphaMask == 1)
-			{
-				if(color.a < alphaMaskTreshold){
-					discard;
+			#if EnableDiscardPixel == 1
+				if (useAlphaMask == 1)
+				{
+					if(color.a < alphaMaskTreshold){
+						discard;
+					}
 				}
-			}
-#endif
+			#endif
 
 			if (LightingOnly == 1)
 			{

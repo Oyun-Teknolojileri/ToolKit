@@ -108,7 +108,6 @@ namespace ToolKit
     bool CanStore(ClassMeta* Class) override;
     String GetDefaultResource(ClassMeta* Class) override;
     MaterialPtr GetDefaultMaterial();
-    MaterialPtr GetDefaultAlphaMaskedMaterial();
     MaterialPtr GetCopyOfUnlitMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfUIMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfUnlitColorMaterial(bool storeInMaterialManager = true);

@@ -14,9 +14,6 @@
 		in vec3 v_texture;
 		out vec4 fragColor;
 		
-		#define TextureArray
-		#define KernelSize
-
 		void main()
 		{
 			vec4 color = vec4(0.0);

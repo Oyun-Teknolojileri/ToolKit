@@ -28,6 +28,8 @@ namespace ToolKit
   {
     String define;        //!< Name of the define exactly it appears in shader.
     StringArray variants; //!< Value combinations for the given define.
+
+    bool operator==(const ShaderDefine& other) { return define == other.define; }
   };
 
   typedef std::vector<ShaderDefine> ShaderDefineArray;
@@ -67,8 +69,14 @@ namespace ToolKit
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
    private:
-    /** Internaly used to concatenate include shader source with master shader file. */
+    /** Internally used to concatenate include shader source with master shader file. */
     void HandleShaderIncludes(const String& file);
+
+    /**
+     * Internally used to find a location that includes and defines can be placed.
+     * Usually returns the first line after #version and precisions defines.
+     */
+    uint FindShaderMergeLocation(const String& file);
 
     /**
      * Compiles the given source string.
@@ -76,10 +84,11 @@ namespace ToolKit
      */
     uint Compile(String source);
 
+    /** Internally used structure to point to a define variant. */
     struct ShaderDefineIndex
     {
-      int define  = 0;
-      int variant = 0;
+      int define  = 0; //!< Index to define in define array.
+      int variant = 0; //!< Index to variant of the define.
     };
 
     typedef std::vector<ShaderDefineIndex> ShaderDefineCombinaton;

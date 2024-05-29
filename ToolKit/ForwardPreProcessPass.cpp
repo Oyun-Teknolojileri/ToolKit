@@ -27,13 +27,6 @@ namespace ToolKit
     m_linearMaterial->m_fragmentShader = fragmentShader;
     m_linearMaterial->Init();
 
-    m_linearAlphaMaskMaterial = MakeNewPtr<Material>();
-    vertexShader              = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcessVert.shader", true));
-    fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcess_alphamask.shader", true));
-    m_linearAlphaMaskMaterial->m_vertexShader   = vertexShader;
-    m_linearAlphaMaskMaterial->m_fragmentShader = fragmentShader;
-    m_linearAlphaMaskMaterial->Init();
-
     TextureSettings oneChannelSet = {};
     oneChannelSet.WarpS           = GraphicTypes::UVClampToEdge;
     oneChannelSet.WarpT           = GraphicTypes::UVClampToEdge;
@@ -107,16 +100,20 @@ namespace ToolKit
 
     RenderJobItr begin                   = m_params.renderData->GetForwardOpaqueBegin();
     RenderJobItr end                     = m_params.renderData->GetForwardAlphaMaskedBegin();
+
+    m_linearMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
     m_program = gpuProgramManager->CreateProgram(m_linearMaterial->m_vertexShader, m_linearMaterial->m_fragmentShader);
     renderer->BindProgram(m_program);
     renderLinearDepthAndNormalFn(begin, end);
 
-    begin     = m_params.renderData->GetForwardAlphaMaskedBegin();
-    end       = m_params.renderData->GetForwardTranslucentBegin();
-    m_program = gpuProgramManager->CreateProgram(m_linearAlphaMaskMaterial->m_vertexShader,
-                                                 m_linearAlphaMaskMaterial->m_fragmentShader);
+    begin = m_params.renderData->GetForwardAlphaMaskedBegin();
+    end   = m_params.renderData->GetForwardTranslucentBegin();
+    m_linearMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "1");
+    m_program = gpuProgramManager->CreateProgram(m_linearMaterial->m_vertexShader, m_linearMaterial->m_fragmentShader);
     renderer->BindProgram(m_program);
     renderLinearDepthAndNormalFn(begin, end);
+
+    m_linearMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
