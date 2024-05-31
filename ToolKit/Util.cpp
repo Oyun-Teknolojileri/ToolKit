@@ -793,7 +793,7 @@ namespace ToolKit
     return lineForm;
   }
 
-  TK_API LineBatchPtr GetDebugFrustum(const CameraPtr camera)
+  LineBatchPtr CreateDebugFrustum(const CameraPtr camera, const Vec3& color, float size)
   {
     Vec3Array corners = camera->ExtractFrustumCorner();
     Vec3Array vertices;
@@ -825,7 +825,7 @@ namespace ToolKit
     vertices[23]    = corners[3];
 
     LineBatchPtr lb = MakeNewPtr<LineBatch>();
-    lb->Generate(vertices, Vec3(0.6f, 0.2f, 0.8f), DrawType::Line, 0.5f);
+    lb->Generate(vertices, color, DrawType::Line, size);
 
     return lb;
   }

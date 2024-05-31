@@ -855,7 +855,7 @@ namespace ToolKit
       if (uniformLoc != -1)
       {
         EngineSettings& set = GetEngineSettings();
-        glUniform1f(uniformLoc, set.PostProcessing.ShadowDistance);
+        glUniform1f(uniformLoc, set.Graphics.GetShadowMaxDistance());
       }
 
       m_gpuProgramHasCameraUpdates.insert(program->m_handle);
@@ -881,6 +881,12 @@ namespace ToolKit
       if (uniformLoc != -1)
       {
         glUniform1i(uniformLoc, engineSettings.PostProcessing.SSAOEnabled);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::SHADOW_ATLAS_SIZE);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, (float) RHIConstants::ShadowAtlasTextureSize);
       }
 
       m_gpuProgramHasFrameUpdates.insert(program->m_handle);
@@ -1039,6 +1045,7 @@ namespace ToolKit
         Mat4 invTrModel = glm::transpose(glm::inverse(m_model));
         glUniformMatrix4fv(uniformLoc, 1, false, &invTrModel[0][0]);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE);
       if (uniformLoc != -1)
       {

@@ -77,7 +77,8 @@ namespace ToolKit
   {
     PUSH_CPU_MARKER("ForwardRenderPass::RenderOpaque");
 
-    const MaterialPtr mat    = GetMaterialManager()->GetDefaultMaterial();
+    const MaterialPtr mat = GetMaterialManager()->GetDefaultMaterial();
+    mat->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
     GpuProgramPtr gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
 
     RenderJobItr begin       = renderData->GetForwardOpaqueBegin();
@@ -88,13 +89,14 @@ namespace ToolKit
 
     PUSH_CPU_MARKER("ForwardRenderPass::RenderAlphaMasked");
 
-    const MaterialPtr matAlphaMasked = GetMaterialManager()->GetDefaultAlphaMaskedMaterial();
-    GpuProgramPtr gpuProgramAlphaMasked =
-        GetGpuProgramManager()->CreateProgram(matAlphaMasked->m_vertexShader, matAlphaMasked->m_fragmentShader);
+    mat->m_fragmentShader->SetDefine("EnableDiscardPixel", "1");
+    gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
 
-    begin = renderData->GetForwardAlphaMaskedBegin();
-    end   = renderData->GetForwardTranslucentBegin();
-    RenderOpaqueHelper(renderData, begin, end, gpuProgramAlphaMasked);
+    begin                    = renderData->GetForwardAlphaMaskedBegin();
+    end                      = renderData->GetForwardTranslucentBegin();
+    RenderOpaqueHelper(renderData, begin, end, gpuProgram);
+
+    mat->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
 
     POP_CPU_MARKER();
   }

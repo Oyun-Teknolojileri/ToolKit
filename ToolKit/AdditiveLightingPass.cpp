@@ -145,7 +145,7 @@ namespace ToolKit
     const Mat4& projView   = light->m_shadowMapCameraProjectionViewMatrix;
     float atlasResRatio    = light->GetShadowResVal() / atlasTextureSize;
 
-    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowMapCameraFar", light->m_shadowMapCameraFar));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowMapCameraFar", light->m_shadowCamera->Far()));
     m_fullQuadPass->UpdateUniform(ShaderUniform("lightProjectionViewMatrix", projView));
     m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowAtlasCoord", light->m_shadowAtlasCoord / atlasTextureSize));
     m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowAtlasResRatio", atlasResRatio));

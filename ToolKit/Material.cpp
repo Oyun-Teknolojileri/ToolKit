@@ -14,8 +14,6 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-
-
 namespace ToolKit
 {
 
@@ -461,15 +459,6 @@ namespace ToolKit
     material->Init();
     material->m_isShaderMaterial                    = true;
     m_storage[MaterialPath("unlit.material", true)] = material;
-
-    // Alpha masked PBR default material
-    material                                        = MakeNewPtr<Material>();
-    material->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-    material->m_fragmentShader =
-        GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment_alphamask.shader", true));
-    material->Init();
-    m_defaultAlphaMaskedMaterial                                = material;
-    m_storage[MaterialPath("default_alphamask.material", true)] = material;
   }
 
   bool MaterialManager::CanStore(ClassMeta* Class) { return Class == Material::StaticClass(); }
@@ -477,8 +466,6 @@ namespace ToolKit
   String MaterialManager::GetDefaultResource(ClassMeta* Class) { return MaterialPath("missing.material", true); }
 
   MaterialPtr MaterialManager::GetDefaultMaterial() { return m_defaultMaterial; }
-
-  MaterialPtr MaterialManager::GetDefaultAlphaMaskedMaterial() { return m_defaultAlphaMaskedMaterial; }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial(bool storeInMaterialManager)
   {

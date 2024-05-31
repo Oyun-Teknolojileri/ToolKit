@@ -65,9 +65,6 @@ namespace ToolKit
     writeAttrFn("FocusScale", to_string(FocusScale));
     writeAttrFn("DofQuality", to_string((int) DofQuality));
     writeAttrFn("FXAAEnabled", to_string(FXAAEnabled));
-    writeAttrFn("ShadowDistance", to_string(ShadowDistance));
-    writeAttrFn("MaxEntityPerBVHNode", to_string(maxEntityPerBVHNode));
-    writeAttrFn("MinBVHNodeSize", to_string(minBVHNodeSize));
   }
 
   void EngineSettings::PostProcessingSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -97,9 +94,6 @@ namespace ToolKit
       ReadAttr(node, "FXAAEnabled", FXAAEnabled);
       ReadAttr(node, "TonemapperMode", *(int*) &TonemapperMode);
       ReadAttr(node, "DofQuality", *(int*) &DofQuality);
-      ReadAttr(node, "ShadowDistance", ShadowDistance);
-      ReadAttr(node, "MaxEntityPerBVHNode", maxEntityPerBVHNode);
-      ReadAttr(node, "MinBVHNodeSize", minBVHNodeSize);
     }
   }
 
@@ -118,6 +112,12 @@ namespace ToolKit
     WriteAttr(settings, doc, "CascacdeDist1", std::to_string(cascadeDistances[1]));
     WriteAttr(settings, doc, "CascacdeDist2", std::to_string(cascadeDistances[2]));
     WriteAttr(settings, doc, "CascacdeDist3", std::to_string(cascadeDistances[3]));
+
+    WriteAttr(settings, doc, "UsePSSM", std::to_string(useParallelSplitPartitioning));
+    WriteAttr(settings, doc, "PSSMLambda", std::to_string(parallelSplitLambda));
+
+    WriteAttr(settings, doc, "MaxEntityPerBVHNode", std::to_string(maxEntityPerBVHNode));
+    WriteAttr(settings, doc, "MinBVHNodeSize", std::to_string(minBVHNodeSize));
   }
 
   void EngineSettings::GraphicSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -141,6 +141,12 @@ namespace ToolKit
       ReadAttr(node, "CascacdeDist1", cascadeDistances[1]);
       ReadAttr(node, "CascacdeDist2", cascadeDistances[2]);
       ReadAttr(node, "CascacdeDist3", cascadeDistances[3]);
+
+      ReadAttr(node, "UsePSSM", useParallelSplitPartitioning);
+      ReadAttr(node, "PSSMLambda", parallelSplitLambda);
+
+      ReadAttr(node, "MaxEntityPerBVHNode", maxEntityPerBVHNode);
+      ReadAttr(node, "MinBVHNodeSize", minBVHNodeSize);
     }
   }
 

@@ -31,10 +31,7 @@ namespace ToolKit
     {
       uint64 old = m_totalVRAMUsageInBytes;
 
-      if (m_totalVRAMUsageInBytes < bytes)
-      {
-        TK_ASSERT_ONCE(false);
-      }
+      TK_ASSERT_ONCE(m_totalVRAMUsageInBytes >= bytes);
 
       m_totalVRAMUsageInBytes -= bytes;
     }

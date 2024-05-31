@@ -31,11 +31,14 @@
 
 			if (alpha < 0.1)
 			{
+				// try using depth as 1.0
 				discard;
 			}
 
-	    vec2 lightDistance = ComputeMoments(length(v_pos.xyz));
-	    fragColor = vec4(lightDistance, 0.0, 0.0);
+			vec2 exponents = EvsmExponents;
+			vec2 vsmDepth = WarpDepth(length(v_pos.xyz), exponents);
+
+			fragColor = vec4(vsmDepth.xy, vsmDepth.xy * vsmDepth.xy).xzxz;
 		}
 	-->
 	</source>

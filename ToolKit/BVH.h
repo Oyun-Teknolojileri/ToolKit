@@ -97,7 +97,7 @@ namespace ToolKit
 
     // IMPORTANT: This should be called before building the BVH (or call ReBuild after this function) otherwise
     // inconsistencies will occur in BVH nodes.
-    void SetParameters(const EngineSettings::PostProcessingSettings& settings);
+    void SetParameters(const EngineSettings::GraphicSettings& settings);
 
     void ReBuild();
     void Clean();

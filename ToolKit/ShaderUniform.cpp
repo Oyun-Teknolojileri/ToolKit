@@ -24,9 +24,8 @@ namespace ToolKit
       return "Model";
     case Uniform::INV_TR_MODEL:
       return "InverseTransModel";
-    case Uniform::UNUSEDSLOT_6:
-      TK_ASSERT_ONCE(false && "Old asset in use.");
-      return "UNUSEDSLOT_6";
+    case Uniform::SHADOW_ATLAS_SIZE:
+      return "shadowAtlasSize";
     case Uniform::UNUSEDSLOT_7:
       TK_ASSERT_ONCE(false && "Old asset in use.");
       return "UNUSEDSLOT_7";

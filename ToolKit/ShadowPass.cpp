@@ -95,6 +95,34 @@ namespace ToolKit
 
     Pass::PreRender();
 
+    EngineSettings& settings = GetEngineSettings();
+    if (settings.Graphics.useParallelSplitPartitioning)
+    {
+      float minDistance = settings.Graphics.shadowMinDistance;
+      float maxDistance = settings.Graphics.GetShadowMaxDistance();
+      float lambda      = settings.Graphics.parallelSplitLambda;
+
+      float nearClip    = m_params.viewCamera->Near();
+      float farClip     = m_params.viewCamera->Far();
+      float clipRange   = farClip - nearClip;
+
+      float minZ        = nearClip + minDistance * clipRange;
+      float maxZ        = nearClip + maxDistance * clipRange;
+
+      float range       = maxZ - minZ;
+      float ratio       = maxZ / minZ;
+
+      int cascadeCount  = settings.Graphics.cascadeCount;
+      for (int i = 0; i < cascadeCount; i++)
+      {
+        float p                               = (i + 1) / (float) (cascadeCount);
+        float log                             = minZ * std::pow(ratio, p);
+        float uniform                         = minZ + range * p;
+        float d                               = lambda * (log - uniform) + uniform;
+        settings.Graphics.cascadeDistances[i] = (d - nearClip) / clipRange;
+      }
+    }
+
     Renderer* renderer = GetRenderer();
 
     // Dropout non shadow casting lights.
@@ -131,7 +159,7 @@ namespace ToolKit
       PUSH_CPU_MARKER("Render Call");
 
       MaterialPtr shadowMaterial                 = light->GetShadowMaterial();
-      shadowMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
+      shadowMaterial->GetRenderState()->cullMode = CullingType::Back;
       GpuProgramManager* gpuProgramManager       = GetGpuProgramManager();
       m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
       renderer->BindProgram(m_program);
@@ -141,35 +169,48 @@ namespace ToolKit
       Frustum frustum;
       if (light->GetLightType() == Light::LightType::Directional)
       {
-        // Set near-far of the directional light frustum huge since we do not want near-far planes to clip objects that
-        // should contribute to the directional light shadow.
-        const float f               = shadowCamera->Far();
-        const Vec3 p                = shadowCamera->m_node->GetTranslation();
-        float value                 = 10000.0f;
-        const Vec3 dir              = shadowCamera->GetComponentFast<DirectionComponent>()->GetDirection();
-        const Vec3 pos              = shadowCamera->m_node->GetTranslation();
+        // Here we will try to find a distance that covers all shadow casters.
+        // Shadow camera placed at the outer bounds of the scene to find all shadow casters.
+        // The frustum is only used to find potential shadow casters.
+        // The tight bounds of the shadow camera which is used to create the shadow map is preserved.
+        // The casters that will fall behind the camera will still cast shadows, this is why all the fuss for.
+        // In the shader, the objects that fall behind the camera is "pancaked" to shadow camera's front plane.
+
+        float n                     = shadowCamera->Near(); // Backup near.
+        float f                     = shadowCamera->Far();  // Backup the far.
+
+        Vec3 dir                    = shadowCamera->Direction();
+        Vec3 pos                    = shadowCamera->Position();
         const BoundingBox& sceneBox = m_params.scene->GetSceneBoundary();
 
-        Vec3 nearPos                = pos + (-dir * value);
-        while (PointInsideBBox(nearPos, sceneBox.max, sceneBox.min))
-        {
-          nearPos  = pos + (-dir * value);
-          value   *= 10.0f;
-        }
+        // Find the intersection where the ray hits to scene.
+        // This position will be used to not miss any caster.
+        Ray r                       = {pos, dir};
+        float t                     = 0.0f;
+        RayBoxIntersection(r, sceneBox, t);
+        Vec3 outerPoint = PointOnRay(r, t);
 
-        shadowCamera->SetFarClipVal(value + f);
-        shadowCamera->m_node->SetTranslation(nearPos);
+        shadowCamera->m_node->SetTranslation(outerPoint); // Set the camera position.
 
+        shadowCamera->SetNearClipVal(0.5f);
+
+        // New far clip is calculated. Its the distance newly calculated outer poi
+        shadowCamera->SetFarClipVal(glm::distance(outerPoint, pos) + f);
+
+        // Frustum for culling is calculated from the current camera settings.
         frustum = ExtractFrustum(shadowCamera->GetProjectViewMatrix(), false);
 
+        // Camera is set back to its original values for rendering the shadow.
+        shadowCamera->SetNearClipVal(n);
         shadowCamera->SetFarClipVal(f);
-        shadowCamera->m_node->SetTranslation(p);
+        shadowCamera->m_node->SetTranslation(pos);
       }
       else
       {
         frustum = ExtractFrustum(shadowCamera->GetProjectViewMatrix(), false);
       }
 
+      // Find shadow casters from the light's view.
       EntityRawPtrArray ntties;
       m_params.scene->m_bvh->FrustumTest(frustum, ntties);
 
@@ -245,7 +286,7 @@ namespace ToolKit
     else // if (light->IsA<DirectionalLight>())
     {
       DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
-      for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; ++i)
+      for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; i++)
       {
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
                                                 m_shadowAtlas,
@@ -441,8 +482,8 @@ namespace ToolKit
                                    GraphicTypes::UVClampToEdge,
                                    GraphicTypes::UVClampToEdge,
                                    GraphicTypes::UVClampToEdge,
-                                   GraphicTypes::SampleNearest,
-                                   GraphicTypes::SampleNearest,
+                                   GraphicTypes::SampleLinear,
+                                   GraphicTypes::SampleLinear,
                                    GraphicTypes::FormatRG32F,
                                    GraphicTypes::FormatRG,
                                    GraphicTypes::TypeFloat,

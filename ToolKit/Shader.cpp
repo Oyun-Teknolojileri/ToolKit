@@ -49,63 +49,14 @@ namespace ToolKit
       return;
     }
 
-    GLenum type = 0;
-    if (m_shaderType == ShaderType::VertexShader)
+    if (!m_defineArray.empty())
     {
-      type = (GLenum) GraphicTypes::VertexShader;
-    }
-    else if (m_shaderType == ShaderType::FragmentShader)
-    {
-      type = (GLenum) GraphicTypes::FragmentShader;
+      ShaderDefineCombinaton defineCombo;
+      ComplieShaderCombinations(m_defineArray, 0, defineCombo);
     }
     else
     {
-      assert(false && "This type should not be compiled.");
-    }
-
-    m_shaderHandle = glCreateShader(type);
-    if (m_shaderHandle == 0)
-    {
-      return;
-    }
-
-    // Start with #version
-    const char* str = nullptr;
-    size_t loc      = m_source.find("#version");
-    if (loc != String::npos)
-    {
-      m_source = m_source.substr(loc);
-      str      = m_source.c_str();
-    }
-    else
-    {
-      str = m_source.c_str();
-    }
-
-    glShaderSource(m_shaderHandle, 1, &str, nullptr);
-    glCompileShader(m_shaderHandle);
-
-    GLint compiled;
-    glGetShaderiv(m_shaderHandle, GL_COMPILE_STATUS, &compiled);
-    if (!compiled)
-    {
-      GLint infoLen = 0;
-      glGetShaderiv(m_shaderHandle, GL_INFO_LOG_LENGTH, &infoLen);
-      if (infoLen > 1)
-      {
-        char* log = new char[infoLen];
-        glGetShaderInfoLog(m_shaderHandle, infoLen, nullptr, log);
-        GetLogger()->WritePlatformConsole(LogType::Error, log);
-        GetLogger()->Log(log);
-        GetLogger()->Log(GetFile());
-        GetLogger()->Log(str);
-
-        assert(compiled);
-        SafeDelArray(log);
-      }
-
-      glDeleteShader(m_shaderHandle);
-      return;
+      Compile(m_source);
     }
 
     if (flushClientSideArray)
@@ -120,6 +71,46 @@ namespace ToolKit
   {
     glDeleteShader(m_shaderHandle);
     m_initiated = false;
+  }
+
+  void Shader::SetDefine(const String& name, const String& val)
+  {
+    // Sanity checks.
+    if (!m_initiated)
+    {
+      TK_ERR("Initialize the shader before setting a value for a define.");
+      return;
+    }
+
+    // Construct the key.
+    String key;
+    for (int i = 0; i < (int) m_currentDefineValues.size(); i++)
+    {
+      int defineIndx  = m_currentDefineValues[i].define;
+      int variantIndx = m_currentDefineValues[i].variant;
+
+      if (m_defineArray[defineIndx].define == name)
+      {
+        m_defineArray[defineIndx].variants[variantIndx] = val;
+      }
+
+      String defName  = m_defineArray[defineIndx].define;
+      String defVal   = m_defineArray[defineIndx].variants[variantIndx];
+      key            += defName + ":" + defVal + "|";
+    }
+
+    key.pop_back();
+
+    // Set the variant.
+    auto handle = m_shaderVariantMap.find(key);
+    if (handle != m_shaderVariantMap.end())
+    {
+      m_shaderHandle = m_shaderVariantMap[key];
+    }
+    else
+    {
+      TK_ERR("Unknown shader combination %s", key);
+    }
   }
 
   XmlNode* Shader::SerializeImp(XmlDocument* doc, XmlNode* parent) const { return nullptr; }
@@ -171,7 +162,6 @@ namespace ToolKit
           case Uniform::UNUSEDSLOT_2:
           case Uniform::UNUSEDSLOT_3:
           case Uniform::UNUSEDSLOT_4:
-          case Uniform::UNUSEDSLOT_6:
           case Uniform::UNUSEDSLOT_7:
             isUniformFound = true;
             continue;
@@ -199,6 +189,17 @@ namespace ToolKit
         assert(isUniformFound);
       }
 
+      if (strcmp("define", node->name()) == 0)
+      {
+        ShaderDefine def;
+        def.define = node->first_attribute("name")->value();
+
+        String val = node->first_attribute("val")->value();
+        Split(val, ",", def.variants);
+
+        m_defineArray.push_back(def);
+      }
+
       if (strcmp("source", node->name()) == 0)
       {
         m_source = node->first_node()->value();
@@ -216,52 +217,38 @@ namespace ToolKit
 
   void Shader::HandleShaderIncludes(const String& file)
   {
-    // Handle source of shader
-
+    uint mergeLoc           = FindShaderMergeLocation(m_source);
     ShaderPtr includeShader = GetShaderManager()->Create<Shader>(ShaderPath(file, true));
-    String includeSource    = includeShader->m_source; // Copy
+    m_source.replace(mergeLoc, 0, includeShader->m_source);
 
-    // Crop the version and precision defines
-    size_t versionLoc       = includeSource.find("#version");
-    if (versionLoc != String::npos)
+    for (ShaderDefine& def : includeShader->m_defineArray)
     {
-      for (size_t fileLoc = versionLoc; fileLoc < includeSource.length(); ++fileLoc)
-      {
-        if (includeSource[fileLoc] == '\n')
-        {
-          includeSource = includeSource.replace(versionLoc, fileLoc - versionLoc + 1, "");
-          break;
-        }
-      }
+      m_defineArray.push_back(def);
     }
 
-    size_t precisionLoc = 0;
-    while (true)
+    m_defineArray.erase(m_defineArray.end(), std::unique(m_defineArray.begin(), m_defineArray.end()));
+
+    for (Uniform uniform : includeShader->m_uniforms)
     {
-      precisionLoc = includeSource.find("precision");
-
-      if (precisionLoc == String::npos)
-      {
-        break;
-      }
-
-      if (precisionLoc != String::npos)
-      {
-        for (size_t fileLoc = precisionLoc; fileLoc < includeSource.length(); ++fileLoc)
-        {
-          if (includeSource[fileLoc] == ';')
-          {
-            includeSource = includeSource.replace(precisionLoc, fileLoc - precisionLoc + 1, "");
-            break;
-          }
-        }
-      }
+      m_uniforms.push_back(uniform);
     }
 
+    m_uniforms.erase(m_uniforms.end(), std::unique(m_uniforms.begin(), m_uniforms.end()));
+
+    for (ArrayUniform uni : includeShader->m_arrayUniforms)
+    {
+      m_arrayUniforms.push_back(uni);
+    }
+
+    m_arrayUniforms.erase(m_arrayUniforms.end(), std::unique(m_arrayUniforms.begin(), m_arrayUniforms.end()));
+  }
+
+  uint Shader::FindShaderMergeLocation(const String& file)
+  {
     // Put included file after precision and version defines
     size_t includeLoc = 0;
-    versionLoc        = m_source.find("#version");
-    for (size_t fileLoc = versionLoc; fileLoc < m_source.length(); ++fileLoc)
+    size_t versionLoc = m_source.find("#version");
+    for (size_t fileLoc = versionLoc; fileLoc < m_source.length(); fileLoc++)
     {
       if (m_source[fileLoc] == '\n')
       {
@@ -270,10 +257,10 @@ namespace ToolKit
       }
     }
 
-    precisionLoc = 0;
+    size_t precisionLoc = 0;
     while ((precisionLoc = m_source.find("precision", precisionLoc)) != String::npos)
     {
-      for (size_t fileLoc = precisionLoc; fileLoc < m_source.length(); ++fileLoc)
+      for (size_t fileLoc = precisionLoc; fileLoc < m_source.length(); fileLoc++)
       {
         if (m_source[fileLoc] == ';')
         {
@@ -285,37 +272,119 @@ namespace ToolKit
       precisionLoc += 9;
     }
 
-    m_source.replace(includeLoc, 0, includeSource);
+    return (uint) includeLoc;
+  }
 
-    // Handle uniforms
-    std::unordered_set<Uniform> unis;
-
-    for (Uniform& uni : m_uniforms)
+  uint Shader::Compile(String source)
+  {
+    GLenum type = 0;
+    if (m_shaderType == ShaderType::VertexShader)
     {
-      unis.insert(uni);
+      type = (GLenum) GraphicTypes::VertexShader;
     }
-    for (Uniform& uni : includeShader->m_uniforms)
+    else if (m_shaderType == ShaderType::FragmentShader)
     {
-      unis.insert(uni);
+      type = (GLenum) GraphicTypes::FragmentShader;
     }
-
-    m_uniforms.clear();
-    for (auto i = unis.begin(); i != unis.end(); ++i)
+    else
     {
-      m_uniforms.push_back(*i);
-    }
-
-    for (ArrayUniform uni : includeShader->m_arrayUniforms)
-    {
-      m_arrayUniforms.push_back(uni);
+      TK_ERR("Include shader can't be compiled: %s", GetFile().c_str());
+      return 0;
     }
 
-    auto arrayUniformCompareFn = [](ArrayUniform& uni1, ArrayUniform& uni2) { return uni1.uniform < uni2.uniform; };
+    m_shaderHandle = glCreateShader(type);
+    if (m_shaderHandle == 0)
+    {
+      return 0;
+    }
 
-    // Remove duplicates
-    std::sort(m_arrayUniforms.begin(), m_arrayUniforms.end(), arrayUniformCompareFn);
-    auto uniqueEnd = std::unique(m_arrayUniforms.begin(), m_arrayUniforms.end());
-    m_arrayUniforms.erase(uniqueEnd, m_arrayUniforms.end());
+    // Start with #version
+    const char* str = nullptr;
+    size_t loc      = source.find("#version");
+    if (loc != String::npos)
+    {
+      source = source.substr(loc);
+      str    = source.c_str();
+    }
+    else
+    {
+      str = source.c_str();
+    }
+
+    glShaderSource(m_shaderHandle, 1, &str, nullptr);
+    glCompileShader(m_shaderHandle);
+
+    GLint compiled;
+    glGetShaderiv(m_shaderHandle, GL_COMPILE_STATUS, &compiled);
+    if (!compiled)
+    {
+      GLint infoLen = 0;
+      glGetShaderiv(m_shaderHandle, GL_INFO_LOG_LENGTH, &infoLen);
+      if (infoLen > 1)
+      {
+        char* log = new char[infoLen];
+        glGetShaderInfoLog(m_shaderHandle, infoLen, nullptr, log);
+
+        TK_ERR(log);
+        TK_ERR(str);
+
+        assert(compiled);
+        SafeDelArray(log);
+      }
+
+      glDeleteShader(m_shaderHandle);
+      return 0;
+    }
+
+    return m_shaderHandle;
+  }
+
+  void Shader::CompileWithDefines(String source, const ShaderDefineCombinaton& defineCombo)
+  {
+    String key; // Hash key for the shader variant.
+    String defineText;
+    for (const ShaderDefineIndex& def : defineCombo)
+    {
+      String defName  = m_defineArray[def.define].define;
+      String defVal   = m_defineArray[def.define].variants[def.variant];
+      key            += defName + ":" + defVal + "|";
+
+      defineText     += "#define " + defName + " " + defVal + "\n";
+    }
+
+    // Insert defines.
+    uint mergeLoc = FindShaderMergeLocation(source);
+    source.insert(mergeLoc, defineText);
+
+    key.pop_back(); // remove last "|"
+
+    if (Compile(source) != 0)
+    {
+      m_currentDefineValues   = defineCombo;
+      m_shaderVariantMap[key] = m_shaderHandle;
+    }
+  }
+
+  void Shader::ComplieShaderCombinations(const ShaderDefineArray& defineArray,
+                                         int index,
+                                         ShaderDefineCombinaton& currentCombinaiton)
+  {
+    if (index == defineArray.size())
+    {
+      // Compile the final combo.
+      CompileWithDefines(m_source, currentCombinaiton);
+      return;
+    }
+
+    const ShaderDefine& currentDefine = defineArray[index];
+    for (int vi = (int) currentDefine.variants.size() - 1; vi >= 0; vi--)
+    {
+      currentCombinaiton.push_back({index, vi});
+
+      // Recursively generate combinations
+      ComplieShaderCombinations(defineArray, index + 1, currentCombinaiton);
+      currentCombinaiton.pop_back();
+    }
   }
 
   // ShaderManager

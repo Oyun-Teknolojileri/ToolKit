@@ -9,12 +9,10 @@
 
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
-  const uint64 buffLen = 4096;
-  static char buff[buffLen];
+  const uint64 MessageBufferLength = 4096;
+  static char MessageBuffer[MessageBufferLength];
 
   void OutputUtil(ConsoleOutputFn logFn, LogType logType, const char* msg, va_list args)
   {
@@ -23,9 +21,9 @@ namespace ToolKit
       return;
     }
 
-    vsprintf(buff, msg, args);
+    vsprintf(MessageBuffer, msg, args);
 
-    logFn(logType, String(buff));
+    logFn(logType, String(MessageBuffer));
   }
 
   Logger::Logger() { m_logFile.open("Log.txt", std::ios::out); }
@@ -48,18 +46,18 @@ namespace ToolKit
 
     static const char* logTypes[] = {"[Memo]", "[Error]", "[Warning]", "[Command]"};
 
-    vsprintf(buff, msg, args);
+    vsprintf(MessageBuffer, msg, args);
 
-    m_logFile << logTypes[(int) logType] << buff << std::endl;
+    m_logFile << logTypes[(int) logType] << MessageBuffer << std::endl;
 
     if (m_writeConsoleFn != nullptr)
     {
-      m_writeConsoleFn(logType, buff);
+      m_writeConsoleFn(logType, MessageBuffer);
     }
 
     if (m_platfromConsoleFn != nullptr)
     {
-      m_platfromConsoleFn(logType, buff);
+      m_platfromConsoleFn(logType, MessageBuffer);
     }
 
     va_end(args);
@@ -75,10 +73,13 @@ namespace ToolKit
 
   void Logger::WriteTKConsole(LogType logType, const char* msg, ...)
   {
-    if (strlen(msg) >= buffLen)
+    if (strlen(msg) >= MessageBufferLength)
     {
-      m_writeConsoleFn(LogType::Warning, "maximum size for WriteConsole exceeded, cannot format.");
-      m_writeConsoleFn(logType, msg);
+      if (m_platfromConsoleFn)
+      {
+        m_platfromConsoleFn(LogType::Warning, "Maximum size for WriteConsole exceeded, cannot format.");
+        m_platfromConsoleFn(logType, msg);
+      }
       return;
     }
     va_list args;
@@ -97,10 +98,13 @@ namespace ToolKit
 
   void Logger::WritePlatformConsole(LogType logType, const char* msg, ...)
   {
-    if (strlen(msg) >= buffLen)
+    if (strlen(msg) >= MessageBufferLength)
     {
-      m_platfromConsoleFn(logType, "maximum size for WriteConsole exceeded, cannot format.");
-      m_platfromConsoleFn(logType, msg);
+      if (m_platfromConsoleFn)
+      {
+        m_platfromConsoleFn(logType, "Maximum size for WriteConsole exceeded, cannot format.");
+        m_platfromConsoleFn(logType, msg);
+      }
       return;
     }
     va_list args;

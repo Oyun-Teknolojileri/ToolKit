@@ -5,6 +5,7 @@
 	<uniform name = "DiffuseTextureInUse" />
 	<uniform name = "Color" />
 	<uniform name = "normalMapInUse" />
+	<define name = "EnableDiscardPixel" val="0,1" />
 	<source>
 	<!--
 		#version 300 es
@@ -40,15 +41,15 @@
 				color = Color;
 			}
 
-#ifdef ENABLE_DISCARD_PIXEL
-			if (useAlphaMask == 1)
-			{
-				if (color.a < alphaMaskTreshold)
+			#if EnableDiscardPixel == 1
+				if (useAlphaMask == 1)
 				{
-					discard;
+					if (color.a < alphaMaskTreshold)
+					{
+						discard;
+					}
 				}
-			}
-#endif
+			#endif
 
 			fragViewDepth = v_viewDepth;
 

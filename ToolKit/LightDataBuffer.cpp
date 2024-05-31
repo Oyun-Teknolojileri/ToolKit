@@ -56,7 +56,7 @@ namespace ToolKit
     m_lightData.cascadeDistances.z                         = graphicSettings.cascadeDistances[2];
     m_lightData.cascadeDistances.w                         = graphicSettings.cascadeDistances[3];
 
-    for (int i = 0; i < size; ++i)
+    for (int i = 0; i < size; i++)
     {
       if (cachedLights[i] == nullptr)
       {
@@ -91,7 +91,7 @@ namespace ToolKit
         if (castShadow)
         {
           const int cascades = graphicSettings.cascadeCount;
-          for (int ii = 0; ii < cascades; ++ii)
+          for (int ii = 0; ii < cascades; ii++)
           {
             m_lightData.perLightData[i].projectionViewMatrices[ii] =
                 dLight->m_shadowMapCascadeCameraProjectionViewMatrices[ii];
@@ -120,16 +120,19 @@ namespace ToolKit
         {
           m_lightData.perLightData[i].projectionViewMatrices[0] = currLight->m_shadowMapCameraProjectionViewMatrix;
         }
-        m_lightData.perLightData[i].shadowMapCameraFar = currLight->m_shadowMapCameraFar;
+        m_lightData.perLightData[i].shadowMapCameraFar = currLight->m_shadowCamera->Far();
         m_lightData.perLightData[i].BleedingReduction  = currLight->GetBleedingReductionVal();
         m_lightData.perLightData[i].PCFSamples         = PCFSamples;
         m_lightData.perLightData[i].PCFRadius          = currLight->GetPCFRadiusVal();
         m_lightData.perLightData[i].softShadows        = PCFSamples > 1;
         m_lightData.perLightData[i].shadowAtlasLayer   = (float) currLight->m_shadowAtlasLayer;
+
         m_lightData.perLightData[i].shadowAtlasCoord =
             currLight->m_shadowAtlasCoord / (float) RHIConstants::ShadowAtlasTextureSize;
+
         m_lightData.perLightData[i].shadowAtlasResRatio =
             currLight->GetShadowResVal() / RHIConstants::ShadowAtlasTextureSize;
+
         m_lightData.perLightData[i].shadowBias = currLight->GetShadowBiasVal() * RHIConstants::ShadowBiasMultiplier;
       }
       m_lightData.perLightData[i].castShadow = (int) castShadow;

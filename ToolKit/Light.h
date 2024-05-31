@@ -66,15 +66,14 @@ namespace ToolKit
     TKDeclareParam(float, BleedingReduction);
 
     Mat4 m_shadowMapCameraProjectionViewMatrix;
-    float m_shadowMapCameraFar      = 1.0f;
     CameraPtr m_shadowCamera        = nullptr;
     int m_shadowAtlasLayer          = -1;
     Vec2 m_shadowAtlasCoord         = Vec2(-1.0f);
     bool m_shadowResolutionUpdated  = false;
     MeshPtr m_volumeMesh            = nullptr;
 
-    bool m_invalidatedForLightCache = false; //<! Set this true if light data on GPU should be updated
-    int m_lightCacheIndex    = -1; //<! Used by renderer only! The index of this light in the renderers light cache.
+    bool m_invalidatedForLightCache = false; //<! Set this true if light data on GPU should be updated.
+    int m_lightCacheIndex    = -1; //<! Used by renderer only! The index of this light in the renderer's light cache.
     uint16 m_drawCallVersion = 0;  //<! Used by renderer internally (Explained in LightCache.h)
 
    protected:
@@ -109,10 +108,7 @@ namespace ToolKit
 
     // Fits view frustum of the camera into shadow map camera frustum. As the
     // view frustum gets bigger, the resolution gets lower.
-    void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
-                                        CameraPtr viewCamera,
-                                        float near,
-                                        float far);
+    void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera, float near, float far);
 
    public:
     std::vector<CameraPtr> m_cascadeShadowCameras;

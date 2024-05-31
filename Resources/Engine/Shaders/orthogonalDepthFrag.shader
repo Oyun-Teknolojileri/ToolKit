@@ -30,10 +30,14 @@
 
 			if (alpha < 0.1)
 			{
+				// try using depth as 1.0
 				discard;
 			}
 
-			fragColor = vec4(ComputeMoments(gl_FragCoord.z), 0.0, 0.0);
+			vec2 exponents = EvsmExponents;
+			vec2 vsmDepth = WarpDepth(gl_FragCoord.z, exponents);
+
+			fragColor = vec4(vsmDepth.xy, vsmDepth.xy * vsmDepth.xy).xzxz;
 		}
 	-->
 	</source>

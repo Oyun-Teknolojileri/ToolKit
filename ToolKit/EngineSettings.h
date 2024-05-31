@@ -41,11 +41,14 @@ namespace ToolKit
 
     struct GraphicSettings
     {
-      /** Multi-sample count. 0 for non msaa render targets. */
-      int MSAA                    = 0;
-
       /** Target fps for application. */
       int FPS                     = 60;
+
+      /** Provides high precision gpu timers. Bad on cpu performance. Enable it only for profiling. */
+      bool enableGpuTimer         = false;
+
+      /** Multi-sample count. 0 for non msaa render targets. */
+      int MSAA                    = 0;
 
       /** Sets render targets as floating point, allows values larger than 1.0 for HDR rendering. */
       bool HDRPipeline            = true;
@@ -59,11 +62,32 @@ namespace ToolKit
        */
       float renderResolutionScale = 1.0f;
 
-      /** Provides high precision gpu timers. Bad on cpu performance. Enable it only for profiling. */
-      bool enableGpuTimer         = false;
-
+      /** Shadow cascade count. */
       int cascadeCount            = 4;
-      float cascadeDistances[4]   = {0.5f, 20.0f, 50.0f, 100.0f};
+
+      /** Manual shadow cascade distances. */
+      float cascadeDistances[4]   = {10.0f, 20.0f, 50.0f, 100.0f};
+
+      float GetShadowMaxDistance() { return cascadeDistances[cascadeCount - 1]; }
+
+      void SetShadowMaxDistance(float distance) { cascadeDistances[cascadeCount - 1] = distance; }
+
+      float shadowMinDistance           = 0.01f;
+
+      /**
+       * Cascade splitting will either use manual cascadeDistances or calculated ones. If this is true cascadeDistances
+       * are calculated as a mix between logarithmic and linear split.
+       */
+      bool useParallelSplitPartitioning = false;
+
+      /** Linear mixture weight for parallel and linear splitting for cascades. */
+      float parallelSplitLambda         = 1.0f;
+
+      /** Maximum number of entity count per bvh node. */
+      int maxEntityPerBVHNode           = 5;
+
+      /** Minimum size that a bvh node can be. */
+      float minBVHNodeSize              = 0.0f;
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const;
       void DeSerialize(XmlDocument* doc, XmlNode* parent);
@@ -71,27 +95,41 @@ namespace ToolKit
 
     struct PostProcessingSettings
     {
+      // Tone mapping
+      /////////////////////
       bool TonemappingEnabled      = true;
       TonemapMethod TonemapperMode = TonemapMethod::Aces;
+
+      // Bloom
+      /////////////////////
       bool BloomEnabled            = true;
       float BloomIntensity         = 1.0f;
       float BloomThreshold         = 1.0f;
       int BloomIterationCount      = 5;
+
+      // Gamma
+      /////////////////////
       bool GammaCorrectionEnabled  = true;
       float Gamma                  = 2.2f;
+
+      // SSAO
+      /////////////////////
       bool SSAOEnabled             = true;
       float SSAORadius             = 0.5f;
       float SSAOBias               = 0.025f;
       float SSAOSpread             = 1.0f;
       int SSAOKernelSize           = 16;
+
+      // DOF
+      /////////////////////
       bool DepthOfFieldEnabled     = false;
       float FocusPoint             = 10.0f;
       float FocusScale             = 5.0f;
       DoFQuality DofQuality        = DoFQuality::Normal;
+
+      // Anti-aliasing
+      /////////////////////
       bool FXAAEnabled             = false;
-      float ShadowDistance         = 100.0f;
-      int maxEntityPerBVHNode      = 5;
-      float minBVHNodeSize         = 0.0f;
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const;
       void DeSerialize(XmlDocument* doc, XmlNode* parent);

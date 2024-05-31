@@ -226,9 +226,16 @@ namespace ToolKit
 
         LineBatchPtr batch  = MakeNewPtr<LineBatch>();
         Vec3 clr            = ZERO;
-        clr[glm::min(i, 3)] = 1.0f;
+        clr[glm::min(i, 2)] = 1.0f;
+        
+        if (i == 3)
+        {
+          clr.x = 0.0f;
+          clr.y = 0.0f;
+          clr.z = 0.0f;
+        }
 
-        batch->Generate(vertices, clr, DrawType::Line, 0.5f);
+        batch->Generate(vertices, clr, DrawType::Line, 1.5f);
         MeshPtr mesh = batch->GetMeshComponent()->GetMeshVal();
 
         if (i == 0)

@@ -149,10 +149,12 @@ namespace ToolKit
       g_proxy->PreInit();
 
       // Platform dependent function assignments.
-      g_proxy->m_pluginManager->FreeModule      = &PlatformHelpers::TKFreeModule;
-      g_proxy->m_pluginManager->LoadModule      = &PlatformHelpers::TKLoadModule;
-      g_proxy->m_pluginManager->GetFunction     = &PlatformHelpers::TKGetFunction;
-      g_proxy->m_pluginManager->GetCreationTime = &PlatformHelpers::GetCreationTime;
+      GetPluginManager()->FreeModule      = &PlatformHelpers::TKFreeModule;
+      GetPluginManager()->LoadModule      = &PlatformHelpers::TKLoadModule;
+      GetPluginManager()->GetFunction     = &PlatformHelpers::TKGetFunction;
+      GetPluginManager()->GetCreationTime = &PlatformHelpers::GetCreationTime;
+      GetLogger()->SetPlatformConsoleFn([](LogType type, const String& msg) -> void
+                                        { ToolKit::PlatformHelpers::OutputLog((int) type, msg.c_str()); });
     }
 
     void Init()
@@ -294,9 +296,6 @@ namespace ToolKit
             g_app                   = new App(settings.Window.Width, settings.Window.Height);
             g_app->m_sysComExecFn   = &ToolKit::PlatformHelpers::SysComExec;
             g_app->m_shellOpenDirFn = &ToolKit::PlatformHelpers::OpenExplorer;
-
-            GetLogger()->SetPlatformConsoleFn([](LogType type, const String& msg) -> void
-                                              { ToolKit::PlatformHelpers::OutputLog((int) type, msg.c_str()); });
 
             UI::Init();
             g_app->Init();
