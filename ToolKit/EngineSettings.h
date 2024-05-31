@@ -70,6 +70,8 @@ namespace ToolKit
 
       float GetShadowMaxDistance() { return cascadeDistances[cascadeCount - 1]; }
 
+      void SetShadowMaxDistance(float distance) { cascadeDistances[cascadeCount - 1] = distance; }
+
       float shadowMinDistance           = 0.01f;
 
       /**

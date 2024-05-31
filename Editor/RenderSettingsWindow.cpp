@@ -199,11 +199,11 @@ namespace ToolKit
                                 engineSettings.Graphics.cascadeDistances[3]};
 
         int lastCascadeIndex = engineSettings.Graphics.cascadeCount - 1;
-        Vec2 contentSize = ImGui::GetContentRegionAvail();
-        float width      = contentSize.x * 0.95f / 4.0f;
-        width            = glm::clamp(width, 10.0f, 100.0f);
+        Vec2 contentSize     = ImGui::GetContentRegionAvail();
+        float width          = contentSize.x * 0.95f / 4.0f;
+        width                = glm::clamp(width, 10.0f, 100.0f);
 
-        bool manualSplit = !engineSettings.Graphics.useParallelSplitPartitioning;
+        bool manualSplit     = !engineSettings.Graphics.useParallelSplitPartitioning;
         ImGui::Checkbox("Manual Split Cascades", &manualSplit);
         engineSettings.Graphics.useParallelSplitPartitioning = !manualSplit;
 
@@ -255,10 +255,10 @@ namespace ToolKit
         if (cascadeInvalidated)
         {
           GetRenderSystem()->InvalidateGPULightCache();
-          engineSettings.Graphics.cascadeDistances[0]  = data.x;
-          engineSettings.Graphics.cascadeDistances[1]  = data.y;
-          engineSettings.Graphics.cascadeDistances[2]  = data.z;
-          engineSettings.Graphics.cascadeDistances[3]  = data.w;
+          engineSettings.Graphics.cascadeDistances[0] = data.x;
+          engineSettings.Graphics.cascadeDistances[1] = data.y;
+          engineSettings.Graphics.cascadeDistances[2] = data.z;
+          engineSettings.Graphics.cascadeDistances[3] = data.w;
         }
 
         ImGui::Checkbox("Parallel Split Cascades", &engineSettings.Graphics.useParallelSplitPartitioning);
@@ -270,6 +270,11 @@ namespace ToolKit
 
         ImGui::DragFloat("Lambda", &engineSettings.Graphics.parallelSplitLambda, 0.01f, 0.0f, 1.0f, "%.2f");
         UI::AddTooltipToLastItem("Linear blending ratio between linear split and parallel split distances.");
+
+        float shadowDistance = engineSettings.Graphics.GetShadowMaxDistance();
+        ImGui::DragFloat("Shadow Distance", &shadowDistance, 10.0f, 0.0f, 10000.0f, "%.2f");
+
+        engineSettings.Graphics.SetShadowMaxDistance(shadowDistance);
 
         if (!engineSettings.Graphics.useParallelSplitPartitioning)
         {
