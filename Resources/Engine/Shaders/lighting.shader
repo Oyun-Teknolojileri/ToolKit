@@ -319,9 +319,9 @@ vec3 PBRLighting
 				#else
 				{
 					// Cascade selection by depth range.
-					for (int ci = LightData[i].numOfCascades - 1; ci >= 0; ci--)
+					for (int ci = 0; ci < LightData[i].numOfCascades; ci++)
 					{
-						if (depth > cascadeDistances[ci])
+						if (depth < cascadeDistances[ci])
 						{
 							cascadeOfThisPixel = ci;
 							break;
