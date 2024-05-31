@@ -95,6 +95,34 @@ namespace ToolKit
 
     Pass::PreRender();
 
+    EngineSettings& settings = GetEngineSettings();
+    if (settings.Graphics.useParallelSplitPartitioning)
+    {
+      float minDistance = settings.Graphics.shadowMinDistance;
+      float maxDistance = settings.Graphics.GetShadowMaxDistance();
+      float lambda      = settings.Graphics.parallelSplitLambda;
+
+      float nearClip    = m_params.viewCamera->Near();
+      float farClip     = m_params.viewCamera->Far();
+      float clipRange   = farClip - nearClip;
+
+      float minZ        = nearClip + minDistance * clipRange;
+      float maxZ        = nearClip + maxDistance * clipRange;
+
+      float range       = maxZ - minZ;
+      float ratio       = maxZ / minZ;
+
+      int cascadeCount  = settings.Graphics.cascadeCount;
+      for (int i = 0; i < cascadeCount; i++)
+      {
+        float p                               = (i + 1) / (float) (cascadeCount);
+        float log                             = minZ * std::pow(ratio, p);
+        float uniform                         = minZ + range * p;
+        float d                               = lambda * (log - uniform) + uniform;
+        settings.Graphics.cascadeDistances[i] = (d - nearClip) / clipRange;
+      }
+    }
+
     Renderer* renderer = GetRenderer();
 
     // Dropout non shadow casting lights.

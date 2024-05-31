@@ -26,7 +26,7 @@ namespace ToolKit
 
   BVH::~BVH() { SafeDel(m_bvhTree); }
 
-  void BVH::SetParameters(const EngineSettings::PostProcessingSettings& settings)
+  void BVH::SetParameters(const EngineSettings::GraphicSettings& settings)
   {
     m_bvhTree->m_maxEntityCountPerBVHNode = settings.maxEntityPerBVHNode;
     m_bvhTree->m_minBBSize                = settings.minBVHNodeSize;
@@ -35,7 +35,7 @@ namespace ToolKit
   void BVH::ReBuild()
   {
     // Get new parameters
-    SetParameters(GetEngineSettings().PostProcessing);
+    SetParameters(GetEngineSettings().Graphics);
 
     // Clean bvh tree
     Clean();

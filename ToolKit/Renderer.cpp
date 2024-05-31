@@ -855,7 +855,7 @@ namespace ToolKit
       if (uniformLoc != -1)
       {
         EngineSettings& set = GetEngineSettings();
-        glUniform1f(uniformLoc, set.PostProcessing.ShadowDistance);
+        glUniform1f(uniformLoc, set.Graphics.GetShadowMaxDistance());
       }
 
       m_gpuProgramHasCameraUpdates.insert(program->m_handle);

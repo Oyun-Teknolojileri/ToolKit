@@ -193,17 +193,24 @@ namespace ToolKit
           ImGui::EndCombo();
         }
 
-        Vec4 data            = {engineSettings.Graphics.cascadeDistances[1],
+        Vec4 data            = {engineSettings.Graphics.cascadeDistances[0],
+                                engineSettings.Graphics.cascadeDistances[1],
                                 engineSettings.Graphics.cascadeDistances[2],
-                                engineSettings.Graphics.cascadeDistances[3],
-                                engineSettings.PostProcessing.ShadowDistance};
+                                engineSettings.Graphics.cascadeDistances[3]};
 
         int lastCascadeIndex = engineSettings.Graphics.cascadeCount - 1;
-        Swap(data[lastCascadeIndex], data[3]);
+        Vec2 contentSize = ImGui::GetContentRegionAvail();
+        float width      = contentSize.x * 0.95f / 4.0f;
+        width            = glm::clamp(width, 10.0f, 100.0f);
 
-        Vec2 contentSize        = ImGui::GetContentRegionAvail();
-        float width             = contentSize.x * 0.95f / 4.0f;
-        width                   = glm::clamp(width, 10.0f, 100.0f);
+        bool manualSplit = !engineSettings.Graphics.useParallelSplitPartitioning;
+        ImGui::Checkbox("Manual Split Cascades", &manualSplit);
+        engineSettings.Graphics.useParallelSplitPartitioning = !manualSplit;
+
+        if (!manualSplit)
+        {
+          ImGui::BeginDisabled();
+        }
 
         bool cascadeInvalidated = false;
         for (int i = 0; i < 4; i++)
@@ -223,6 +230,8 @@ namespace ToolKit
             cascadeInvalidated = true;
             data[i]            = val;
           }
+          String msg = std::to_string(i + 1) + "'. cascade distance.";
+          UI::AddTooltipToLastItem(msg.c_str());
 
           ImGui::PopItemWidth();
           ImGui::PopID();
@@ -238,20 +247,39 @@ namespace ToolKit
           }
         }
 
+        if (!manualSplit)
+        {
+          ImGui::EndDisabled();
+        }
+
         if (cascadeInvalidated)
         {
-          Swap(data[lastCascadeIndex], data[3]);
-
           GetRenderSystem()->InvalidateGPULightCache();
-          engineSettings.Graphics.cascadeDistances[1]  = data.x;
-          engineSettings.Graphics.cascadeDistances[2]  = data.y;
-          engineSettings.Graphics.cascadeDistances[3]  = data.z;
-          engineSettings.PostProcessing.ShadowDistance = data.w;
+          engineSettings.Graphics.cascadeDistances[0]  = data.x;
+          engineSettings.Graphics.cascadeDistances[1]  = data.y;
+          engineSettings.Graphics.cascadeDistances[2]  = data.z;
+          engineSettings.Graphics.cascadeDistances[3]  = data.w;
+        }
+
+        ImGui::Checkbox("Parallel Split Cascades", &engineSettings.Graphics.useParallelSplitPartitioning);
+
+        if (!engineSettings.Graphics.useParallelSplitPartitioning)
+        {
+          ImGui::BeginDisabled();
+        }
+
+        ImGui::DragFloat("Lambda", &engineSettings.Graphics.parallelSplitLambda, 0.01f, 0.0f, 1.0f, "%.2f");
+        UI::AddTooltipToLastItem("Linear blending ratio between linear split and parallel split distances.");
+
+        if (!engineSettings.Graphics.useParallelSplitPartitioning)
+        {
+          ImGui::EndDisabled();
         }
 
         ImGui::SeparatorText("BVH");
-        ImGui::DragInt("Node Max Entity", &engineSettings.PostProcessing.maxEntityPerBVHNode, 1, 1, 1000000);
-        ImGui::DragFloat("Node Min Size", &engineSettings.PostProcessing.minBVHNodeSize, 1.0f, 0.01f, 100000.0f);
+        ImGui::DragInt("Node Max Entity", &engineSettings.Graphics.maxEntityPerBVHNode, 1, 1, 1000000);
+        ImGui::DragFloat("Node Min Size", &engineSettings.Graphics.minBVHNodeSize, 1.0f, 0.01f, 100000.0f);
+
         if (ImGui::Button("ReBuild BVH"))
         {
           if (ScenePtr scene = GetSceneManager()->GetCurrentScene())

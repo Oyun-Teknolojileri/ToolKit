@@ -85,7 +85,7 @@ namespace ToolKit
         ComitResize();
         UpdateWindow();
         HandleStates();
-        HandleDrop();
+        // HandleDrop();
         DrawOverlays();
         DrawCommands();
         UpdateSnaps();

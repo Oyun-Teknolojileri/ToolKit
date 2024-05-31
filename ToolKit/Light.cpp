@@ -34,7 +34,11 @@ namespace ToolKit
 
   Light::Light()
   {
-    m_shadowCamera = MakeNewPtr<Camera>();
+    m_shadowCamera      = MakeNewPtr<Camera>();
+
+    float minShadowClip = GetEngineSettings().Graphics.shadowMinDistance;
+
+    m_shadowCamera->SetNearClipVal(minShadowClip);
     m_shadowCamera->SetOrthographicScaleVal(1.0f);
   }
 
@@ -111,11 +115,7 @@ namespace ToolKit
 
   MaterialPtr Light::GetShadowMaterial() { return m_shadowMapMaterial; }
 
-  void Light::UpdateShadowCamera()
-  {
-    m_shadowMapCameraProjectionViewMatrix = m_shadowCamera->GetProjectViewMatrix();
-    m_shadowMapCameraFar                  = m_shadowCamera->Far();
-  }
+  void Light::UpdateShadowCamera() { m_shadowMapCameraProjectionViewMatrix = m_shadowCamera->GetProjectViewMatrix(); }
 
   float Light::AffectDistance() { return 1000.0f; }
 
@@ -186,7 +186,7 @@ namespace ToolKit
   DirectionalLight::DirectionalLight()
   {
     m_shadowCamera->SetOrthographicVal(true);
-    for (int i = 0; i < RHIConstants::MaxCascadeCount; ++i)
+    for (int i = 0; i < RHIConstants::MaxCascadeCount; i++)
     {
       CameraPtr cam = MakeNewPtr<Camera>();
       cam->SetOrthographicVal(true);
@@ -211,27 +211,29 @@ namespace ToolKit
 
   void DirectionalLight::UpdateShadowFrustum(CameraPtr cameraView, ScenePtr scene)
   {
-    int cascades               = GetEngineSettings().Graphics.cascadeCount;
-    float* cascadeDists        = GetEngineSettings().Graphics.cascadeDistances;
+    EngineSettings& settings   = GetEngineSettings();
+    int cascades               = settings.Graphics.cascadeCount;
+    float* cascadeDists        = settings.Graphics.cascadeDistances;
 
     const float lastCameraNear = cameraView->Near();
     const float lastCameraFar  = cameraView->Far();
 
-    for (int i = 0; i < cascades; ++i)
+    float nearClip             = settings.Graphics.shadowMinDistance;
+    float farClip              = cascadeDists[0];
+
+    for (int i = 0; i < cascades; i++)
     {
-      float near = cascadeDists[i];
-      float far = far = cascadeDists[i + 1];
-      if (i == cascades - 1)
-      {
-        far = GetEngineSettings().PostProcessing.ShadowDistance;
-      }
+      // Setting near far to cascade z boundaries for calculating tight cascade frustum.
+      cameraView->SetNearClipVal(nearClip);
+      cameraView->SetFarClipVal(farClip);
 
-      cameraView->SetNearClipVal(near);
-      cameraView->SetFarClipVal(far);
+      FitViewFrustumIntoLightFrustum(m_cascadeShadowCameras[i], cameraView, nearClip, farClip);
 
-      FitViewFrustumIntoLightFrustum(m_cascadeShadowCameras[i], cameraView, near, far);
+      nearClip = cascadeDists[i];
+      farClip  = cascadeDists[i + 1];
     }
 
+    // Setting back the original view distances.
     cameraView->SetNearClipVal(lastCameraNear);
     cameraView->SetFarClipVal(lastCameraFar);
 
@@ -242,7 +244,7 @@ namespace ToolKit
 
   void DirectionalLight::UpdateShadowCamera()
   {
-    for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; ++i)
+    for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; i++)
     {
       m_shadowMapCascadeCameraProjectionViewMatrices[i] = m_cascadeShadowCameras[i]->GetProjectViewMatrix();
     }
