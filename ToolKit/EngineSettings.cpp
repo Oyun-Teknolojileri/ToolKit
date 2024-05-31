@@ -113,6 +113,9 @@ namespace ToolKit
     WriteAttr(settings, doc, "CascacdeDist2", std::to_string(cascadeDistances[2]));
     WriteAttr(settings, doc, "CascacdeDist3", std::to_string(cascadeDistances[3]));
 
+    WriteAttr(settings, doc, "UsePSSM", std::to_string(useParallelSplitPartitioning));
+    WriteAttr(settings, doc, "PSSMLambda", std::to_string(parallelSplitLambda));
+
     WriteAttr(settings, doc, "MaxEntityPerBVHNode", std::to_string(maxEntityPerBVHNode));
     WriteAttr(settings, doc, "MinBVHNodeSize", std::to_string(minBVHNodeSize));
   }
@@ -138,6 +141,9 @@ namespace ToolKit
       ReadAttr(node, "CascacdeDist1", cascadeDistances[1]);
       ReadAttr(node, "CascacdeDist2", cascadeDistances[2]);
       ReadAttr(node, "CascacdeDist3", cascadeDistances[3]);
+
+      ReadAttr(node, "UsePSSM", useParallelSplitPartitioning);
+      ReadAttr(node, "PSSMLambda", parallelSplitLambda);
 
       ReadAttr(node, "MaxEntityPerBVHNode", maxEntityPerBVHNode);
       ReadAttr(node, "MinBVHNodeSize", minBVHNodeSize);

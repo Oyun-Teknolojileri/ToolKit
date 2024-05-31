@@ -230,7 +230,7 @@ namespace ToolKit
             cascadeInvalidated = true;
             data[i]            = val;
           }
-          String msg = std::to_string(i + 1) + "'. cascade distance.";
+          String msg = std::to_string(i + 1) + ". cascade distance";
           UI::AddTooltipToLastItem(msg.c_str());
 
           ImGui::PopItemWidth();
