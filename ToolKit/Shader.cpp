@@ -162,7 +162,6 @@ namespace ToolKit
           case Uniform::UNUSEDSLOT_2:
           case Uniform::UNUSEDSLOT_3:
           case Uniform::UNUSEDSLOT_4:
-          case Uniform::UNUSEDSLOT_6:
           case Uniform::UNUSEDSLOT_7:
             isUniformFound = true;
             continue;

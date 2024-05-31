@@ -5,7 +5,8 @@
 	<include name = "lightDataTextureUtils.shader" />
 	<include name = "pbr.shader" />
 	<uniform name = "shadowDistance" />
-	<uniform name = "activeCount"/>
+	<uniform name = "activeCount" />
+	<uniform name = "shadowAtlasSize" />
 	<source>
 	<!--
 
@@ -41,7 +42,7 @@ struct _LightData
 	float BleedingReduction;
 	int softShadows;
 	float shadowAtlasLayer;
-	float shadowAtlasResRatio; // ShadowMapResolution / ShadowMapResolution
+	float shadowAtlasResRatio; // shadow map resolution / shadow atlas resolution.
 	vec2 shadowAtlasCoord; // Between 0 and 1
 	float shadowBias;
 };
@@ -77,6 +78,7 @@ uniform float spotShadowLightDataSize;
 uniform float dirNonShadowLightDataSize;
 uniform float pointNonShadowLightDataSize;
 uniform float spotNonShadowLightDataSize;
+uniform float shadowAtlasSize;
 
 const float shadowFadeOutDistanceNorm = 0.9;
 
@@ -131,7 +133,7 @@ float CalculateDirectionalShadow
 		startCoord,
 		endCoord,
 		PCFSamples,
-		PCFRadius * shadowAtlasResRatio,
+		PCFRadius / shadowAtlasSize, // Convert radius in pixel units to uv.
 		projCoord.z,
 		lightBleedReduction,
 		shadowBias
@@ -178,7 +180,7 @@ float CalculateSpotShadow
 		startCoord,
 		startCoord + shadowAtlasResRatio,
 		PCFSamples,
-		PCFRadius * shadowAtlasResRatio,
+		PCFRadius / shadowAtlasSize, // Convert radius in pixel units to uv.
 		currFragDepth,
 		lightBleedReduction,
 		shadowBias
@@ -211,7 +213,7 @@ float CalculatePointShadow
 		shadowAtlasLayer,
 		lightToFrag,
 		PCFSamples,
-		PCFRadius * shadowAtlasResRatio,
+		PCFRadius / shadowAtlasSize, // Convert radius in pixel units to uv.
 		currFragDepth,
 		lightBleedReduction,
 		shadowBias

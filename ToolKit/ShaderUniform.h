@@ -25,7 +25,7 @@ namespace ToolKit
     VIEW,
     MODEL,
     INV_TR_MODEL,
-    UNUSEDSLOT_6, // LIGHT_DATA
+    SHADOW_ATLAS_SIZE,
     UNUSEDSLOT_7, // CAM_DATA
     COLOR,
     FRAME_COUNT,

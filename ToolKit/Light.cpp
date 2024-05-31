@@ -54,8 +54,8 @@ namespace ToolKit
     Intensity_Define(1.0f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
     CastShadow_Define(false, "Light", 90, true, true);
     ShadowRes_Define(512.0f, "Light", 90, true, true, {false, true, 32.0f, 4096.0f, 2.0f});
-    PCFSamples_Define(32, "Light", 90, true, true, {false, true, 0, 128, 1});
-    PCFRadius_Define(0.01f, "Light", 90, true, true, {false, true, 0.0f, 5.0f, 0.0001f});
+    PCFSamples_Define(12, "Light", 90, true, true, {false, true, 1, 128, 1});
+    PCFRadius_Define(1.0f, "Light", 90, true, true, {false, true, 0.0f, 10.0f, 0.1f});
     ShadowBias_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 20000.0f, 0.01f});
     BleedingReduction_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 1.0f, 0.001f});
   }
