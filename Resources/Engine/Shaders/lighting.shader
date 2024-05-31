@@ -6,7 +6,6 @@
 	<include name = "pbr.shader" />
 	<uniform name = "shadowDistance" />
 	<uniform name = "activeCount"/>
-	<define name = "SelectCascadeByProjection" val="0,1" />
 	<source>
 	<!--
 const int MAX_CASCADE_COUNT = 4;
@@ -298,37 +297,15 @@ vec3 PBRLighting
 			{
 				int cascadeOfThisPixel = 0;
 
-				#if SelectCascadeByProjection == 1 
+				// Cascade selection by depth range.
+				for (int ci = 0; ci < LightData[i].numOfCascades; ci++)
 				{
-					// Cascade selection by projection. Detects if the projected fragment is in i'th frustum.
-					// TODO: The projection already calculated in the CalculateDirectionalShadow function, duplicate calculation can be avoided.
-					for (int ci = LightData[i].numOfCascades - 1; ci >= 0; ci--)
+					if (depth < cascadeDistances[ci])
 					{
-						vec4 fragInLightSpace = LightData[i].projectionViewMatrices[ci] * vec4(fragPos, 1.0);
-						vec3 lightSpaceProjectedCoord = fragInLightSpace.xyz;
-						lightSpaceProjectedCoord = lightSpaceProjectedCoord * 0.5 + 0.5;
-
-						vec3 cascadePos = abs(lightSpaceProjectedCoord - 0.5);
-						if (all(lessThanEqual(cascadePos, vec3(0.5))))
-						{
-							cascadeOfThisPixel = ci;
-							break;
-						}
+						cascadeOfThisPixel = ci;
+						break;
 					}
 				}
-				#else
-				{
-					// Cascade selection by depth range.
-					for (int ci = 0; ci < LightData[i].numOfCascades; ci++)
-					{
-						if (depth < cascadeDistances[ci])
-						{
-							cascadeOfThisPixel = ci;
-							break;
-						}
-					}
-				}
-				#endif
 
 				shadow = CalculateDirectionalShadow
 				(
