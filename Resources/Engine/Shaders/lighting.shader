@@ -8,6 +8,10 @@
 	<uniform name = "activeCount"/>
 	<source>
 	<!--
+
+#ifndef LIGHTING_SHADER
+#define LIGHTINH_SHADER
+
 const int MAX_CASCADE_COUNT = 4;
 
 // TODO Minimize and pack this data as much as possible
@@ -765,6 +769,9 @@ vec3 BlinnPhongLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 frag
 
 	return irradiance;
 }
+
+#endif
+
 	-->
 	</source>
 </shader>

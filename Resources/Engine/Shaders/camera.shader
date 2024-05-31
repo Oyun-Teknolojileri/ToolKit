@@ -5,14 +5,21 @@
 	<uniform name = "CamData.far" />
 	<source>
 	<!--
-		struct _CamData
-		{
-			vec3 pos;
-			vec3 dir;
-			float far;
-		};
 
-		uniform _CamData CamData;
+#ifndef CAMERA_SHADER
+#define CAMERA_SHADER
+
+struct _CamData
+{
+	vec3 pos;
+	vec3 dir;
+	float far;
+};
+
+uniform _CamData CamData;
+
+#endif
+
 	-->
 	</source>
 </shader>
