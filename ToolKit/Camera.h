@@ -137,17 +137,18 @@ namespace ToolKit
     TKDeclareParam(bool, Orthographic);
     TKDeclareParam(float, OrthographicScale);
 
+    Mat4 m_projection;
+
    private:
     float m_fov        = 1.0f;
     float m_aspect     = 1.0f;
     float m_near       = 0.01f;
     float m_far        = 1000.0f;
-    float m_left       = 10.0f;
+    float m_left       = -10.0f;
     float m_right      = 10.0f;
-    float m_bottom     = 10.0f;
+    float m_bottom     = -10.0f;
     float m_top        = 10.0f;
     bool m_ortographic = false;
-    Mat4 m_projection;
   };
 
 } // namespace ToolKit
