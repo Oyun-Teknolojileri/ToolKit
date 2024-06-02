@@ -57,17 +57,17 @@ namespace ToolKit
     void SetLens(float left, float right, float bottom, float top, float near, float far);
 
     /** Returns view matrix for the camera. It is the inverse of world transform matrix. */
-    inline Mat4 GetViewMatrix() const
+    Mat4 GetViewMatrix() const
     {
       Mat4 view = m_node->GetTransform();
       return glm::inverse(view);
     }
 
     /** Returns projection matrix. */
-    inline const Mat4& GetProjectionMatrix() const { return m_projection; }
+    Mat4& GetProjectionMatrix() { return m_projection; }
 
     /** Returns project * view * model matrix. */
-    inline Mat4 GetProjectViewMatrix() { return m_projection * GetViewMatrix(); }
+    Mat4 GetProjectViewMatrix() { return m_projection * GetViewMatrix(); }
 
     /** Returns if the camera is orthographic or not. */
     bool IsOrtographic() const;
@@ -84,31 +84,31 @@ namespace ToolKit
     Vec3Array ExtractFrustumCorner();
 
     /** Returns vertical field of view. */
-    inline float Fov() const { return m_fov; }
+    float Fov() const { return m_fov; }
 
     /** Returns the aspect ratio for the camera. */
-    inline float Aspect() const { return m_aspect; }
+    float Aspect() const { return m_aspect; }
 
     /** Returns distance to near clip plane. This is not the focal length. Its the start distance to clip objects. */
-    inline float Near() const { return m_near; }
+    float Near() const { return m_near; }
 
     /** Returns distance to far clip plane. */
-    inline float Far() const { return m_far; }
+    float Far() const { return m_far; }
 
     /** Distance to left clip plane, only meaning full in orthographic projection. */
-    inline float Left() const { return m_left; }
+    float Left() const { return m_left; }
 
     /** Distance to right clip plane, only meaning full in orthographic projection. */
-    inline float Right() const { return m_right; }
+    float Right() const { return m_right; }
 
     /** Distance to top clip plane, only meaning full in orthographic projection. */
-    inline float Top() const { return m_top; }
+    float Top() const { return m_top; }
 
     /** Distance to bottom clip plane, only meaning full in orthographic projection. */
-    inline float Bottom() const { return m_bottom; }
+    float Bottom() const { return m_bottom; }
 
     /** Returns camera position in world space. */
-    inline Vec3 Position() const { return m_node->GetTranslation(); }
+    Vec3 Position() const { return m_node->GetTranslation(); }
 
     /** Returns camera direction in world space. */
     Vec3 Direction() const;
@@ -137,8 +137,6 @@ namespace ToolKit
     TKDeclareParam(bool, Orthographic);
     TKDeclareParam(float, OrthographicScale);
 
-    Mat4 m_projection;
-
    private:
     float m_fov        = 1.0f;
     float m_aspect     = 1.0f;
@@ -149,6 +147,8 @@ namespace ToolKit
     float m_bottom     = -10.0f;
     float m_top        = 10.0f;
     bool m_ortographic = false;
+
+    Mat4 m_projection;
   };
 
 } // namespace ToolKit

@@ -353,6 +353,23 @@ namespace ToolKit
                          tightShadowVolume.max.y,
                          0.0f,
                          tightFar);
+
+    // Allow camera to only make texel size movements.
+    // To do this, find the camera origin in projection space and calculate the offset that
+    // puts the camera origin on to a texel, prevent sub pixel movements and shimmering in shadow map.
+    float shadowMapRes                     = GetShadowResVal();
+    Mat4 shadowMatrix                      = lightCamera->GetProjectViewMatrix();
+    Vec4 shadowOrigin                      = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    shadowOrigin                           = shadowMatrix * shadowOrigin;
+    shadowOrigin                           = shadowOrigin * shadowMapRes / 2.0f;
+
+    Vec4 roundedOrigin                     = glm::round(shadowOrigin);
+    Vec4 roundOffset                       = roundedOrigin - shadowOrigin;
+    roundOffset                            = roundOffset * 2.0f / shadowMapRes;
+    roundOffset.z                          = 0.0f;
+    roundOffset.w                          = 0.0f;
+
+    lightCamera->GetProjectionMatrix()[3] += roundOffset;
   }
 
   // PointLight
