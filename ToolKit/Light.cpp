@@ -350,7 +350,7 @@ namespace ToolKit
     // Push the tighShadowVolume just in front of the camera by pulling the camera backwards from the center
     // exactly max z units. If we not perform this, frustum center will be placed to origin, from 0 to max.z will stay
     // behind the camera.
-    lightCamera->m_node->SetTranslation(viewCamera->Position() - lightCamera->Direction() * radius);
+    lightCamera->m_node->SetTranslation(center - lightCamera->Direction() * radius);
 
     // Set the lens such that it only captures everything inside the frustum.
     float tightFar = tightShadowVolume.max.z - tightShadowVolume.min.z;
