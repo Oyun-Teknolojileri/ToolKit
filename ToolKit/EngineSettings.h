@@ -83,6 +83,9 @@ namespace ToolKit
       /** Linear mixture weight for parallel and linear splitting for cascades. */
       float parallelSplitLambda         = 1.0f;
 
+      /** Prevents shimmering effects by preventing sub-pixel movement with the cost of wasted shadow map resolution. */
+      bool stableShadowMap              = false;
+
       /** Maximum number of entity count per bvh node. */
       int maxEntityPerBVHNode           = 5;
 
