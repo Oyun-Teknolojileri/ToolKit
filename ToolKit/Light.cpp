@@ -327,22 +327,36 @@ namespace ToolKit
     lightCamera->m_node->SetOrientation(m_node->GetOrientation()); // shadow camera direction aligned with light.
     lightCamera->m_node->SetTranslation(center);                   // shadow camera is at the frustum center.
 
-    Mat4 lightView = lightCamera->GetViewMatrix();
+    EngineSettings& settings = GetEngineSettings();
 
     // Calculate tight shadow volume, in light's view.
     BoundingBox tightShadowVolume;
-    float radius = far - near;
-    for (int i = 0; i < 8; i++)
+    if (settings.Graphics.stableShadowMap)
     {
-      radius      = glm::distance(center, frustum[i]);
+      // Fit a sphere around the view frustum to prevent swimming when rotating the view camera.
+      // Sphere fit will prevent size / center changes of the frustum, which will yield the same shadow map
+      // after the camera is rotated.
+      // Additional shadow map resolution will be wasted due to bounding box / bounding sphere difference.
+      float radius = 0.0f;
+      for (int i = 0; i < 8; i++)
+      {
+        radius = glm::max(radius, glm::distance(center, frustum[i]));
+      }
 
-      Vec4 vertex = lightView * Vec4(frustum[i], 1.0f); // Move the view camera frustum to light's view.
-      tightShadowVolume.UpdateBoundary(vertex);         // Calculate its boundary.
+      radius                = glm::ceil(radius * 16.0f) / 16.0f;
+      tightShadowVolume.min = Vec3(-radius);
+      tightShadowVolume.max = Vec3(radius);
     }
-
-    radius                = glm::ceil(radius * 16.0f) / 16.0f;
-    tightShadowVolume.min = Vec3(-radius);
-    tightShadowVolume.max = Vec3(radius);
+    else
+    {
+      // Tight fit a bounding box to the view frustum in light space.
+      Mat4 lightView = lightCamera->GetViewMatrix();
+      for (int i = 0; i < 8; i++)
+      {
+        Vec4 vertex = lightView * Vec4(frustum[i], 1.0f); // Move the view camera frustum to light's view.
+        tightShadowVolume.UpdateBoundary(vertex);         // Calculate its boundary.
+      }
+    }
 
     // Now frustum is sitting at the origin in light's view. Since the light was placed at the frustum center,
     // half of the volume is behind the camera.
@@ -350,7 +364,7 @@ namespace ToolKit
     // Push the tighShadowVolume just in front of the camera by pulling the camera backwards from the center
     // exactly max z units. If we not perform this, frustum center will be placed to origin, from 0 to max.z will stay
     // behind the camera.
-    lightCamera->m_node->SetTranslation(center - lightCamera->Direction() * radius);
+    lightCamera->m_node->SetTranslation(center - lightCamera->Direction() * tightShadowVolume.max.z);
 
     // Set the lens such that it only captures everything inside the frustum.
     float tightFar = tightShadowVolume.max.z - tightShadowVolume.min.z;
