@@ -331,11 +331,18 @@ namespace ToolKit
 
     // Calculate tight shadow volume, in light's view.
     BoundingBox tightShadowVolume;
+    float radius = far - near;
     for (int i = 0; i < 8; i++)
     {
+      radius      = glm::distance(center, frustum[i]);
+
       Vec4 vertex = lightView * Vec4(frustum[i], 1.0f); // Move the view camera frustum to light's view.
       tightShadowVolume.UpdateBoundary(vertex);         // Calculate its boundary.
     }
+
+    radius                = glm::ceil(radius * 16.0f) / 16.0f;
+    tightShadowVolume.min = Vec3(-radius);
+    tightShadowVolume.max = Vec3(radius);
 
     // Now frustum is sitting at the origin in light's view. Since the light was placed at the frustum center,
     // half of the volume is behind the camera.
@@ -343,7 +350,7 @@ namespace ToolKit
     // Push the tighShadowVolume just in front of the camera by pulling the camera backwards from the center
     // exactly max z units. If we not perform this, frustum center will be placed to origin, from 0 to max.z will stay
     // behind the camera.
-    lightCamera->m_node->SetTranslation(center - lightCamera->Direction() * tightShadowVolume.max.z);
+    lightCamera->m_node->SetTranslation(viewCamera->Position() - lightCamera->Direction() * radius);
 
     // Set the lens such that it only captures everything inside the frustum.
     float tightFar = tightShadowVolume.max.z - tightShadowVolume.min.z;
