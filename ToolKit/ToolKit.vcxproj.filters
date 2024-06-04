@@ -560,5 +560,205 @@
     <Filter Include="Render\PostProcessPass">
       <UniqueIdentifier>{b7ee736e-cc29-484b-90ee-93de84685c95}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Render\Shaders">
+      <UniqueIdentifier>{2252f47f-c3ed-4d44-8828-b7e639f283f0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Resources\Engine\Shaders\additiveLighting.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\additivePBRLighting.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\additiveVertex.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\AO.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\avgBlurFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\avgBlurVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\bloomDownsample.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\bloomUpsample.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\BRDFLutFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\camera.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\copyTextureFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\copyTextureVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\defaultFragment.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\defaultVertex.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\deferredRenderFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\depthOfFieldFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\dilateFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\equirectToCubeFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\equirectToCubeVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\forwardPreProcess.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\forwardPreProcessVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\fullQuadVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\fxaaFilterFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\fxaaFunctions.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gammaFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gammaFunctions.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gammaTonemapFxaa.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gausBlur7x1Frag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gausBlur7x1Vert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gBufferFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gBufferFrag_alphamask.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gradientSkyboxFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gridFragment.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gridVertex.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\ibl.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\irradianceGenerateFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\irradianceGenerateVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\lightComplexity.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\lightDataTextureUtils.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\lighting.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\lightMerge.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\normalFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\orthogonalDepthFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\orthogonalDepthVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\orthogonalDepthViewFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\orthogonalDepthViewVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\pbr.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\perspectiveDepthFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\perspectiveDepthVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\perspectiveDepthViewFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\phongForwardFragment.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\positionVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\preFilterEnvMapFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\shadow.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\skinning.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\skyboxFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\skyboxVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\solidColorFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\ssaoCalcFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\texCoordFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\textureUtil.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\tonemapFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\tonemapFunctions.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\unlitFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\VSM.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
