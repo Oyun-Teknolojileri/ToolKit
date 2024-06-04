@@ -85,7 +85,7 @@ namespace ToolKit
         ComitResize();
         UpdateWindow();
         HandleStates();
-        // HandleDrop();
+        HandleDrop();
         DrawOverlays();
         DrawCommands();
         UpdateSnaps();
@@ -559,14 +559,16 @@ namespace ToolKit
       static bool meshAddedToScene    = false;
       static EntityPtr dwMesh         = nullptr;
 
+      // Check if asset drop is activated.
+      const ImGuiPayload* dragPayload = ImGui::GetDragDropPayload();
+      if (dragPayload && dragPayload->DataSize != sizeof(FileDragData))
+      {
+        return;
+      }
+
       // AssetBrowser drop handling.
       if (ImGui::BeginDragDropTarget())
       {
-        const ImGuiPayload* dragPayload = ImGui::GetDragDropPayload();
-        if (dragPayload->DataSize != sizeof(FileDragData))
-        {
-          return;
-        }
         const FileDragData& dragData = FolderView::GetFileDragData();
         DirectoryEntry& entry        = *dragData.Entries[0]; // get first entry
 
