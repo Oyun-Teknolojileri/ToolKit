@@ -111,8 +111,11 @@ namespace ToolKit
     void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera, float near, float far);
 
    public:
-    std::vector<CameraPtr> m_cascadeShadowCameras;
-    std::vector<Mat4> m_shadowMapCascadeCameraProjectionViewMatrices;
+    CameraPtrArray m_cascadeShadowCameras;
+    Mat4Array m_shadowMapCascadeCameraProjectionViewMatrices;
+
+    IntArray m_shadowCascadeAtlasLayers;  //!< Layer index in the shadow atlas for each cascade.
+    Vec2Array m_shadowCascadeAtlasCoords; //!< Coordinates for each cascade in the corresponding layer.
   };
 
   typedef std::shared_ptr<DirectionalLight> DirectionalLightPtr;

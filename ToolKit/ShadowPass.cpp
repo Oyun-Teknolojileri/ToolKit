@@ -311,12 +311,55 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    int layerCount          = -1;
-    int lastLayerInUse      = -1;
+    // Collect all the maps to create coordinate / layer pairs. ( Packing )
+    LightPtrArray lightArray = lights;
+    auto dirLightEndItr      = std::partition(lightArray.begin(),
+                                         lightArray.end(),
+                                         [](const LightPtr& light) -> bool
+                                         { return light->GetLightType() == Light::LightType::Directional; });
 
-    LightPtrArray dirLights = lights;
+    // Shadow map accumulator.
+    IntArray resolutions;
+
+    // Directional lights requires cascade x number of shadow maps. So we are handling them differently.
+    for (auto lightItr = lightArray.begin(); lightItr != dirLightEndItr; lightItr++)
+    {
+      // Allocate shadow map space for each cascade.
+      int shadowRes = (int) glm::round((*lightItr)->GetShadowResVal());
+      for (int i = 0; i < RHIConstants::MaxCascadeCount; i++)
+      {
+        resolutions.push_back(shadowRes);
+      }
+    }
+
+    // Accumulate spot lights.
+    auto spotLightEndItr =
+        std::partition(dirLightEndItr,
+                       lightArray.end(),
+                       [](const LightPtr& light) -> bool { return light->GetLightType() == Light::LightType::Spot; });
+
+    for (auto lightItr = dirLightEndItr; lightItr != spotLightEndItr; lightItr++)
+    {
+      int shadowRes = (int) glm::round((*lightItr)->GetShadowResVal());
+      resolutions.push_back(shadowRes);
+    }
+
+    // Accumulate point lights. Each point lights requires 6 shadow maps.
+    // TODO: 6 shadow maps for point lights. Point lights won't work at the moment.
+    for (auto lightItr = dirLightEndItr; lightItr != spotLightEndItr; lightItr++)
+    {
+      int shadowRes = (int) glm::round((*lightItr)->GetShadowResVal());
+      resolutions.push_back(shadowRes);
+    }
+
+    BinPack2D::PackedRectArray rects = m_packer.Pack(resolutions, RHIConstants::ShadowAtlasTextureSize);
+
+    int layerCount                   = -1;
+    int lastLayerInUse               = -1;
+
     LightPtrArray spotLights;
     LightPtrArray pointLights;
+    LightPtrArray dirLights    = lights;
     LightPtrArray::iterator it = dirLights.begin();
     while (it != dirLights.end())
     {
@@ -345,27 +388,27 @@ namespace ToolKit
     std::sort(pointLights.begin(), pointLights.end(), sortByResFn);
 
     // Get dir and spot lights into the pack
-    IntArray resolutions;
+    int cascades = GetEngineSettings().Graphics.cascadeCount;
+
+    // IntArray resolutions;
     resolutions.reserve(dirLights.size());
     for (LightPtr light : dirLights)
     {
-      resolutions.push_back((int) light->GetShadowResVal());
+      for (int i = 0; i < cascades; i++)
+      {
+        resolutions.push_back((int) light->GetShadowResVal());
+      }
     }
 
-    int cascades                             = GetEngineSettings().Graphics.cascadeCount;
-
-    std::vector<BinPack2D::PackedRect> rects = m_packer.Pack(resolutions, RHIConstants::ShadowAtlasTextureSize);
-
-    int dirLightIndex                        = 0;
     for (int i = 0; i < rects.size(); ++i)
     {
-      dirLights[i]->m_shadowAtlasCoord = rects[i].Coord;
-      dirLights[i]->m_shadowAtlasLayer = (dirLightIndex * cascades) + rects[i].ArrayIndex;
+      DirectionalLightPtr dirLight            = Cast<DirectionalLight>(dirLights[i]);
+      dirLight->m_shadowCascadeAtlasCoords[i] = rects[i].Coord;
 
-      lastLayerInUse                   = dirLights[i]->m_shadowAtlasLayer + cascades - 1;
-      layerCount                       = std::max(lastLayerInUse, layerCount);
+      int layerIndex                          = rects[i].ArrayIndex;
+      dirLight->m_shadowCascadeAtlasLayers[i] = layerIndex;
 
-      dirLightIndex++;
+      layerCount                              = glm::max(layerIndex, layerCount);
     }
 
     /////////////////////
@@ -380,7 +423,7 @@ namespace ToolKit
     rects                           = m_packer.Pack(resolutions, RHIConstants::ShadowAtlasTextureSize);
 
     int spotLightStartingLayerIndex = lastLayerInUse + 1;
-    for (int i = 0; i < rects.size(); ++i)
+    for (int i = 0; i < rects.size(); i++)
     {
       spotLights[i]->m_shadowAtlasCoord = rects[i].Coord;
       spotLights[i]->m_shadowAtlasLayer = spotLightStartingLayerIndex + rects[i].ArrayIndex;
