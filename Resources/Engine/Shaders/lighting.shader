@@ -13,18 +13,14 @@
 #ifndef LIGHTING_SHADER
 #define LIGHTINH_SHADER
 
-const int MAX_CASCADE_COUNT = 4;
+#define MAX_CASCADE_COUNT 4
+#define MAX_LIGHT_COUNT 64
 
 // TODO Minimize and pack this data as much as possible
 struct _LightData
 {
-  /*
-  Type
-  1 : Directional light
-  2 : Point light
-  3 : Spot light
-  */
-	int type;
+	// Light properties.
+	int type; // Type 0 : Directional light 1 : Point light 2 : Spot light
 	vec3 pos;
 	vec3 dir;
 	vec3 color;
@@ -33,29 +29,36 @@ struct _LightData
 	float outAngle;
 	float innAngle;
 
+	// Cascade
 	mat4 projectionViewMatrices[MAX_CASCADE_COUNT];
-	float shadowMapCameraFar;
 	int numOfCascades;
+
+	// Shadow
+	float shadowMapCameraFar;
 	int castShadow;
-	int PCFSamples;
-	float PCFRadius;
 	float BleedingReduction;
 	int softShadows;
-	float shadowAtlasLayer;
-	float shadowAtlasResRatio; // shadow map resolution / shadow atlas resolution.
-	vec2 shadowAtlasCoord; // Between 0 and 1
 	float shadowBias;
+
+	// Shadow filter
+	int PCFSamples;
+	float PCFRadius;
+	
+	// Atlas settings
+	float shadowAtlasResRatio; // shadow map resolution / shadow atlas resolution.
+	float shadowAtlasLayer[MAX_CASCADE_COUNT];
+	vec2 shadowAtlasCoord[MAX_CASCADE_COUNT]; // Between 0 and 1
 };
 
 layout (std140) uniform LightDataBuffer // slot 0
 {
 	vec4 cascadeDistances; // Max cascade is 4, so this fits.
-	_LightData LightData[128];
+	_LightData LightData[MAX_LIGHT_COUNT];
 };
 
 layout (std140) uniform ActiveLightIndicesBuffer // slot 1
 {
-	ivec4 activeLightIndices[32]; // 32 = 128 / 4. Each component of a vector is a light index.
+	ivec4 activeLightIndices[MAX_LIGHT_COUNT / 4]; // Each component of a vector is a light index.
 };
 
 uniform float shadowDistance;
@@ -277,9 +280,9 @@ vec3 PBRLighting
 					fragPos, 
 					LightData[i].pos, 
 					LightData[i].shadowMapCameraFar, 
-					LightData[i].shadowAtlasCoord, 
+					LightData[i].shadowAtlasCoord[0], 
 					LightData[i].shadowAtlasResRatio,
-					LightData[i].shadowAtlasLayer, 
+					LightData[i].shadowAtlasLayer[0], 
 					LightData[i].PCFSamples, 
 					LightData[i].PCFRadius, 
 					LightData[i].BleedingReduction, 
@@ -318,9 +321,9 @@ vec3 PBRLighting
 					fragPos, 
 					viewCamPos, 
 					LightData[i].projectionViewMatrices[cascadeOfThisPixel], 
-					LightData[i].shadowAtlasCoord,
+					LightData[i].shadowAtlasCoord[cascadeOfThisPixel],
 					LightData[i].shadowAtlasResRatio,	
-					LightData[i].shadowAtlasLayer + float(cascadeOfThisPixel), 
+					LightData[i].shadowAtlasLayer[cascadeOfThisPixel], 
 					LightData[i].PCFSamples, 
 					LightData[i].PCFRadius,
 					LightData[i].BleedingReduction,	
@@ -357,9 +360,9 @@ vec3 PBRLighting
 					LightData[i].pos, 
 					LightData[i].projectionViewMatrices[0], 
 					LightData[i].shadowMapCameraFar, 
-					LightData[i].shadowAtlasCoord,
+					LightData[i].shadowAtlasCoord[0],
 					LightData[i].shadowAtlasResRatio, 
-					LightData[i].shadowAtlasLayer, 
+					LightData[i].shadowAtlasLayer[0], 
 					LightData[i].PCFSamples, 
 					LightData[i].PCFRadius, 
 					LightData[i].BleedingReduction,
@@ -682,9 +685,9 @@ vec3 BlinnPhongLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 frag
 					fragPos, 
 					LightData[i].pos, 
 					LightData[i].shadowMapCameraFar, 
-					LightData[i].shadowAtlasCoord, 
+					LightData[i].shadowAtlasCoord[0], 
 					LightData[i].shadowAtlasResRatio,
-					LightData[i].shadowAtlasLayer, 
+					LightData[i].shadowAtlasLayer[0], 
 					LightData[i].PCFSamples, 
 					LightData[i].PCFRadius, 
 					LightData[i].BleedingReduction, 
@@ -720,9 +723,9 @@ vec3 BlinnPhongLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 frag
 					fragPos, 
 					viewCamPos, 
 					LightData[i].projectionViewMatrices[cascadeOfThisPixel], 
-					LightData[i].shadowAtlasCoord,
+					LightData[i].shadowAtlasCoord[cascadeOfThisPixel],
 					LightData[i].shadowAtlasResRatio,	
-					LightData[i].shadowAtlasLayer + float(cascadeOfThisPixel), 
+					LightData[i].shadowAtlasLayer[cascadeOfThisPixel], 
 					LightData[i].PCFSamples, 
 					LightData[i].PCFRadius,
 					LightData[i].BleedingReduction, 
@@ -755,9 +758,9 @@ vec3 BlinnPhongLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 frag
 					LightData[i].pos, 
 					LightData[i].projectionViewMatrices[0], 
 					LightData[i].shadowMapCameraFar, 
-					LightData[i].shadowAtlasCoord,
+					LightData[i].shadowAtlasCoord[0],
 					LightData[i].shadowAtlasResRatio, 
-					LightData[i].shadowAtlasLayer, 
+					LightData[i].shadowAtlasLayer[0], 
 					LightData[i].PCFSamples, 
 					LightData[i].PCFRadius, 
 					LightData[i].BleedingReduction,

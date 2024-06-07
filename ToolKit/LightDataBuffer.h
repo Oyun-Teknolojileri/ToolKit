@@ -12,35 +12,56 @@
 
 namespace ToolKit
 {
+
+  /**
+   * A gpu memory aligned buffer representing a single light.
+   *
+   * Reference: https://learnopengl.com/Advanced-OpenGL/Advanced-GLSL
+   * Layout std140 padding rules:
+   * Each scalar component is 4 bytes
+   * Each Vec2 is 8 bytes, Vec3 and Vec4 is 16 bytes. (Vec3 == Vec4 in size)
+   * Each scaler and vector in an array is a Vec4
+   * Struct size is calculated according to above, and whole size must be multiple of Vec4
+   */
   struct PerLightData
   {
-    int type;
-    Vec3 pad1;
+    /* Light properties */
+    int type; //!< Light type which can be { 0: Directional, 1: Point, 2: Spot }
     Vec3 pos;
-    float pad2;
+    float pad1; //!< Padding to complete Vec3 to Vec4
     Vec3 dir;
-    float pad3;
+    float pad2; //!< Padding to complete Vec3 to Vec4
     Vec3 color;
+    float pad3; //!< Padding to complete Vec3 to Vec4
     float intensity;
     float radius;
     float outAngle;
     float innAngle;
-    float pad5;
 
+    /* Cascade */
     Mat4 projectionViewMatrices[RHIConstants::MaxCascadeCount];
-    float shadowMapCameraFar;
     int numOfCascades;
+
+    /* Shadow */
+    float shadowMapCameraFar;
     int castShadow;
-    int PCFSamples;
-    float PCFRadius;
     float BleedingReduction;
     int softShadows;
-    float shadowAtlasLayer;
-    float shadowAtlasResRatio;
-    float pad7;
-    Vec2 shadowAtlasCoord;
     float shadowBias;
-    Vec3 pad8;
+
+    /* Shadow filter */
+    int PCFSamples;
+    float PCFRadius;
+
+    /* Atlas settings */
+    float shadowAtlasResRatio; //!< Shadow map resolution / Shadow atlas resolution. Used to find UV coordinates.
+    Vec3 pad4;
+
+    /** i'th cascade's layer in atlas. Only x component of Vec4 is used, rest is padding. */
+    Vec4 shadowAtlasLayer[RHIConstants::MaxCascadeCount];
+
+    /** i 'th cascade' s start coordinates in atlas. Only x,y components of Vec4 are used, rest is padding. */
+    Vec4 shadowAtlasCoord[RHIConstants::MaxCascadeCount];
   };
 
   struct LightData

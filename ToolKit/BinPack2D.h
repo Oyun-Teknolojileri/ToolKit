@@ -63,7 +63,7 @@ namespace ToolKit
       void CreateShelf(int size, int atlasSize);
     };
 
-    PackedRectArray Pack(const IntArray& squares, int atlasSize);
+    PackedRectArray Pack(const IntArray& squares, int atlasSize, int* layerCount = nullptr);
   };
 
 } // namespace ToolKit

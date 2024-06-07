@@ -10,7 +10,7 @@
 namespace ToolKit
 {
 
-  BinPack2D::PackedRectArray BinPack2D::Pack(const IntArray& squares, int atlasSize)
+  BinPack2D::PackedRectArray BinPack2D::Pack(const IntArray& squares, int atlasSize, int* layerCount)
   {
     PackedRectArray packed;
     packed.resize(squares.size());
@@ -71,6 +71,11 @@ namespace ToolKit
           packed[i]  = {coord, (int) layers.size() - 1};
         }
       }
+    }
+
+    if (layerCount != nullptr)
+    {
+      *layerCount = (int) layers.size();
     }
 
     return packed;
