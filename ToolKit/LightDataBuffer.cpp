@@ -114,7 +114,7 @@ namespace ToolKit
             const Mat4& cascadeMatrix = dLight->m_shadowMapCascadeCameraProjectionViewMatrices[ii];
             m_lightData.perLightData[i].projectionViewMatrices[ii] = cascadeMatrix;
             m_lightData.perLightData[i].shadowAtlasLayer[ii] = Vec4((float) dLight->m_shadowCascadeAtlasLayers[ii]);
-            m_lightData.perLightData[i].shadowAtlasCoord[ii] = Vec4(dLight->m_shadowCascadeAtlasCoords[ii], Vec2(0.0f));
+            m_lightData.perLightData[i].shadowAtlasCoord[ii] = Vec4(dLight->m_shadowCascadeAtlasCoords[ii], 0.0f, 0.0f);
           }
 
           m_lightData.perLightData[i].numOfCascades = cascades;
@@ -125,7 +125,7 @@ namespace ToolKit
           m_lightData.perLightData[i].shadowAtlasLayer[0]       = Vec4((float) currLight->m_shadowAtlasLayer);
 
           Vec2 normalizedCoord = currLight->m_shadowAtlasCoord / (float) RHIConstants::ShadowAtlasTextureSize;
-          m_lightData.perLightData[i].shadowAtlasCoord[0] = Vec4(normalizedCoord, Vec2(0.0f));
+          m_lightData.perLightData[i].shadowAtlasCoord[0] = Vec4(normalizedCoord, 0.0f, 0.0f);
         }
 
         m_lightData.perLightData[i].shadowMapCameraFar = currLight->m_shadowCamera->Far();

@@ -26,42 +26,36 @@ namespace ToolKit
   struct PerLightData
   {
     /* Light properties */
-    int type; //!< Light type which can be { 0: Directional, 1: Point, 2: Spot }
     Vec3 pos;
-    float pad1; //!< Padding to complete Vec3 to Vec4
+    int type; // 16 byte aligned with vec3.
+
     Vec3 dir;
-    float pad2; //!< Padding to complete Vec3 to Vec4
+    float intensity; // 16 byte aligned with vec3.
+
     Vec3 color;
-    float pad3; //!< Padding to complete Vec3 to Vec4
-    float intensity;
-    float radius;
+    float radius; // 16 byte aligned with vec3.
+
     float outAngle;
     float innAngle;
+    float shadowMapCameraFar;
+    int numOfCascades; // 16 byte aligned with 4 x 4 bytes.
 
     /* Cascade */
-    Mat4 projectionViewMatrices[RHIConstants::MaxCascadeCount];
-    int numOfCascades;
+    Mat4 projectionViewMatrices[RHIConstants::MaxCascadeCount]; // Vec4 per row. 16 byte aligned.
 
-    /* Shadow */
-    float shadowMapCameraFar;
-    int castShadow;
     float BleedingReduction;
-    int softShadows;
     float shadowBias;
+    int castShadow;
+    int softShadows; // 16 byte aligned with 4 x 4 bytes.
 
-    /* Shadow filter */
     int PCFSamples;
     float PCFRadius;
-
-    /* Atlas settings */
     float shadowAtlasResRatio; //!< Shadow map resolution / Shadow atlas resolution. Used to find UV coordinates.
-    Vec3 pad4;
+    float pad0;                // 16 byte aligned with 4 x 4 bytes. Padding is needed to 16 byte alignment.
 
-    /** i'th cascade's layer in atlas. Only x component of Vec4 is used, rest is padding. */
-    Vec4 shadowAtlasLayer[RHIConstants::MaxCascadeCount];
+    Vec4 shadowAtlasLayer[RHIConstants::MaxCascadeCount]; // 4 byte + 12 byte padding.
 
-    /** i 'th cascade' s start coordinates in atlas. Only x,y components of Vec4 are used, rest is padding. */
-    Vec4 shadowAtlasCoord[RHIConstants::MaxCascadeCount];
+    Vec4 shadowAtlasCoord[RHIConstants::MaxCascadeCount]; // 8 byte + 8 byte padding.
   };
 
   struct LightData

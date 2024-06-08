@@ -14,38 +14,37 @@
 #define LIGHTINH_SHADER
 
 #define MAX_CASCADE_COUNT 4
-#define MAX_LIGHT_COUNT 64
+#define MAX_LIGHT_COUNT 128
 
 // TODO Minimize and pack this data as much as possible
 struct _LightData
 {
-	// Light properties.
-	int type; // Type 0 : Directional light 1 : Point light 2 : Spot light
 	vec3 pos;
+	int type; // Type 0 : Directional light 1 : Point light 2 : Spot light
+
 	vec3 dir;
-	vec3 color;
 	float intensity;
+
+	vec3 color;
 	float radius;
+
 	float outAngle;
 	float innAngle;
-
-	// Cascade
-	mat4 projectionViewMatrices[MAX_CASCADE_COUNT];
+	float shadowMapCameraFar;
 	int numOfCascades;
 
-	// Shadow
-	float shadowMapCameraFar;
-	int castShadow;
+	mat4 projectionViewMatrices[MAX_CASCADE_COUNT];
+	
 	float BleedingReduction;
-	int softShadows;
 	float shadowBias;
+	int castShadow;
+	int softShadows;
 
 	// Shadow filter
 	int PCFSamples;
 	float PCFRadius;
-	
-	// Atlas settings
 	float shadowAtlasResRatio; // shadow map resolution / shadow atlas resolution.
+
 	float shadowAtlasLayer[MAX_CASCADE_COUNT];
 	vec2 shadowAtlasCoord[MAX_CASCADE_COUNT]; // Between 0 and 1
 };
@@ -321,9 +320,9 @@ vec3 PBRLighting
 					fragPos, 
 					viewCamPos, 
 					LightData[i].projectionViewMatrices[cascadeOfThisPixel], 
-					LightData[i].shadowAtlasCoord[cascadeOfThisPixel],
+					LightData[i].shadowAtlasCoord[cascadeOfThisPixel].xy,
 					LightData[i].shadowAtlasResRatio,	
-					LightData[i].shadowAtlasLayer[cascadeOfThisPixel], 
+					LightData[i].shadowAtlasLayer[cascadeOfThisPixel].x, 
 					LightData[i].PCFSamples, 
 					LightData[i].PCFRadius,
 					LightData[i].BleedingReduction,	
