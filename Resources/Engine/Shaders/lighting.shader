@@ -20,7 +20,7 @@
 struct _LightData
 {
 	vec3 pos;
-	int type; // Type 0 : Directional light 1 : Point light 2 : Spot light
+	int type; // Type 1 : Directional light 2 : Point light 3 : Spot light
 
 	vec3 dir;
 	float intensity;
