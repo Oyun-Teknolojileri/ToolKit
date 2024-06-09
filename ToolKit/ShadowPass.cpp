@@ -352,23 +352,25 @@ namespace ToolKit
     int layerCount                   = 0;
     BinPack2D::PackedRectArray rects = m_packer.Pack(resolutions, RHIConstants::ShadowAtlasTextureSize, &layerCount);
 
-    for (int i = 0; i < rects.size(); i++)
+    int rectIndex                    = 0;
+    for (int i = 0; i < lightArray.size(); i++)
     {
       LightPtr light = lightArray[i];
       if (light->GetLightType() == Light::LightType::Directional)
       {
-        DirectionalLightPtr dirLight = Cast<DirectionalLight>(lightArray[i]);
+        DirectionalLightPtr dirLight = Cast<DirectionalLight>(light);
         for (int ii = 0; ii < RHIConstants::MaxCascadeCount; ii++)
         {
-          dirLight->m_shadowCascadeAtlasCoords[ii] = rects[i].Coord;
-          dirLight->m_shadowCascadeAtlasLayers[ii] = rects[i].ArrayIndex;
-          i++; // Intentionally increasing i to account for cascades.
+          dirLight->m_shadowCascadeAtlasCoords[ii] = rects[rectIndex].Coord;
+          dirLight->m_shadowCascadeAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
+          rectIndex++;
         }
       }
       else
       {
-        light->m_shadowAtlasCoord = rects[i].Coord;
-        light->m_shadowAtlasLayer = rects[i].ArrayIndex;
+        light->m_shadowAtlasCoord = rects[rectIndex].Coord;
+        light->m_shadowAtlasLayer = rects[rectIndex].ArrayIndex;
+        rectIndex++;
       }
     }
 
