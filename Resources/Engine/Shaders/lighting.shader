@@ -11,7 +11,7 @@
 	<!--
 
 #ifndef LIGHTING_SHADER
-#define LIGHTINH_SHADER
+#define LIGHTING_SHADER
 
 #define MAX_CASCADE_COUNT 4
 #define MAX_LIGHT_COUNT 128
