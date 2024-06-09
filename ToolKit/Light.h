@@ -76,6 +76,9 @@ namespace ToolKit
     int m_lightCacheIndex    = -1; //<! Used by renderer only! The index of this light in the renderer's light cache.
     uint16 m_drawCallVersion = 0;  //<! Used by renderer internally (Explained in LightCache.h)
 
+    IntArray m_shadowCascadeAtlasLayers;  //!< Layer index in the shadow atlas for each cascade.
+    Vec2Array m_shadowCascadeAtlasCoords; //!< Coordinates for each cascade in the corresponding layer.
+
    protected:
     MaterialPtr m_shadowMapMaterial = nullptr;
   };
@@ -113,9 +116,6 @@ namespace ToolKit
    public:
     CameraPtrArray m_cascadeShadowCameras;
     Mat4Array m_shadowMapCascadeCameraProjectionViewMatrices;
-
-    IntArray m_shadowCascadeAtlasLayers;  //!< Layer index in the shadow atlas for each cascade.
-    Vec2Array m_shadowCascadeAtlasCoords; //!< Coordinates for each cascade in the corresponding layer.
   };
 
   typedef std::shared_ptr<DirectionalLight> DirectionalLightPtr;

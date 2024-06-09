@@ -246,14 +246,29 @@ namespace ToolKit
       POP_CPU_MARKER();
     };
 
-    if (light->IsA<PointLight>())
+    if (light->GetLightType() == Light::LightType::Directional)
     {
-      for (int i = 0; i < 6; ++i)
+      int cascadeCount           = GetEngineSettings().Graphics.cascadeCount;
+      DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
+      for (int i = 0; i < cascadeCount; i++)
       {
-        m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                                m_shadowAtlas,
-                                                0,
-                                                light->m_shadowAtlasLayer + i);
+        int layer = dLight->m_shadowCascadeAtlasLayers[i];
+        m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
+        AddHWRenderPass();
+
+        Vec2 coord       = dLight->m_shadowCascadeAtlasCoords[i];
+        float resolution = light->GetShadowResVal();
+        renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
+
+        renderForShadowMapFn(light, dLight->m_cascadeShadowCameras[i]);
+      }
+    }
+    else if (light->GetLightType() == Light::LightType::Point)
+    {
+      for (int i = 0; i < 6; i++)
+      {
+        int layer = light->m_shadowCascadeAtlasLayers[i];
+        m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
 
         AddHWRenderPass();
 
@@ -266,16 +281,17 @@ namespace ToolKit
         renderer->ClearBuffer(GraphicBitFields::DepthBits);
         AddHWRenderPass();
 
-        renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
-                                  (uint) light->m_shadowAtlasCoord.y,
-                                  (uint) light->GetShadowResVal(),
-                                  (uint) light->GetShadowResVal());
+        Vec2 coord       = light->m_shadowCascadeAtlasCoords[i];
+        float resolution = light->GetShadowResVal();
+        renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
 
         renderForShadowMapFn(light, light->m_shadowCamera);
       }
     }
-    else if (light->IsA<SpotLight>())
+    else
     {
+      assert(light->IsA<SpotLight>());
+
       m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
                                               m_shadowAtlas,
                                               0,
@@ -291,24 +307,6 @@ namespace ToolKit
                                 (uint) light->GetShadowResVal());
 
       renderForShadowMapFn(light, light->m_shadowCamera);
-    }
-    else
-    {
-      assert(light->IsA<DirectionalLight>());
-
-      DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
-      for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; i++)
-      {
-        int layer = dLight->m_shadowCascadeAtlasLayers[i];
-        m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
-        AddHWRenderPass();
-
-        Vec2 coord       = dLight->m_shadowCascadeAtlasCoords[i];
-        float resolution = light->GetShadowResVal();
-        renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
-
-        renderForShadowMapFn(light, dLight->m_cascadeShadowCameras[i]);
-      }
     }
   }
 
@@ -353,11 +351,13 @@ namespace ToolKit
     }
 
     // Accumulate point lights. Each point lights requires 6 shadow maps.
-    // TODO: 6 shadow maps for point lights. Point lights won't work at the moment.
-    for (auto lightItr = dirLightEndItr; lightItr != spotLightEndItr; lightItr++)
+    for (auto lightItr = spotLightEndItr; lightItr != lightArray.end(); lightItr++)
     {
       int shadowRes = (int) glm::round((*lightItr)->GetShadowResVal());
-      resolutions.push_back(shadowRes);
+      for (int i = 0; i < 6; i++)
+      {
+        resolutions.push_back(shadowRes);
+      }
     }
 
     int layerCount                   = 0;
@@ -369,16 +369,26 @@ namespace ToolKit
       LightPtr light = lightArray[i];
       if (light->GetLightType() == Light::LightType::Directional)
       {
-        DirectionalLightPtr dirLight = Cast<DirectionalLight>(light);
         for (int ii = 0; ii < cascadeCount; ii++)
         {
-          dirLight->m_shadowCascadeAtlasCoords[ii] = rects[rectIndex].Coord;
-          dirLight->m_shadowCascadeAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
+          light->m_shadowCascadeAtlasCoords[ii] = rects[rectIndex].Coord;
+          light->m_shadowCascadeAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
+          rectIndex++;
+        }
+      }
+      else if (light->GetLightType() == Light::LightType::Point)
+      {
+        for (int ii = 0; ii < 6; ii++)
+        {
+          light->m_shadowCascadeAtlasCoords[ii] = rects[rectIndex].Coord;
+          light->m_shadowCascadeAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
           rectIndex++;
         }
       }
       else
       {
+        assert(light->IsA<DirectionalLight>());
+
         light->m_shadowAtlasCoord = rects[rectIndex].Coord;
         light->m_shadowAtlasLayer = rects[rectIndex].ArrayIndex;
         rectIndex++;

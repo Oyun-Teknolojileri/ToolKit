@@ -402,7 +402,14 @@ namespace ToolKit
 
   TKDefineClass(PointLight, Light);
 
-  PointLight::PointLight() {}
+  PointLight::PointLight()
+  {
+    for (int i = 0; i < 6; i++)
+    {
+      m_shadowCascadeAtlasLayers.push_back(-1);
+      m_shadowCascadeAtlasCoords.push_back(Vec2(-1.0f));
+    }
+  }
 
   PointLight::~PointLight() {}
 
