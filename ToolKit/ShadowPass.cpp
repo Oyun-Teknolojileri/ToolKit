@@ -318,12 +318,15 @@ namespace ToolKit
     // Shadow map accumulator.
     IntArray resolutions;
 
+    EngineSettings& settings = GetEngineSettings();
+    const int cascadeCount   = settings.Graphics.cascadeCount;
+
     // Directional lights requires cascade x number of shadow maps. So we are handling them differently.
     for (auto lightItr = lightArray.begin(); lightItr != dirLightEndItr; lightItr++)
     {
       // Allocate shadow map space for each cascade.
       int shadowRes = (int) glm::round((*lightItr)->GetShadowResVal());
-      for (int i = 0; i < RHIConstants::MaxCascadeCount; i++)
+      for (int i = 0; i < cascadeCount; i++)
       {
         resolutions.push_back(shadowRes);
       }
@@ -359,7 +362,7 @@ namespace ToolKit
       if (light->GetLightType() == Light::LightType::Directional)
       {
         DirectionalLightPtr dirLight = Cast<DirectionalLight>(light);
-        for (int ii = 0; ii < RHIConstants::MaxCascadeCount; ii++)
+        for (int ii = 0; ii < cascadeCount; ii++)
         {
           dirLight->m_shadowCascadeAtlasCoords[ii] = rects[rectIndex].Coord;
           dirLight->m_shadowCascadeAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
