@@ -78,6 +78,9 @@ namespace ToolKit
         dLight->UpdateShadowFrustum(m_params.viewCamera, m_params.scene);
       }
 
+      // Make sure depth is cleared for each light.
+      renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
+
       // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
       RenderShadowMaps(light);
     }
