@@ -16,12 +16,8 @@ namespace ToolKit
   /**
    * A gpu memory aligned buffer representing a single light.
    *
-   * Reference: https://learnopengl.com/Advanced-OpenGL/Advanced-GLSL
-   * Layout std140 padding rules:
-   * Each scalar component is 4 bytes
-   * Each Vec2 is 8 bytes, Vec3 and Vec4 is 16 bytes. (Vec3 == Vec4 in size)
-   * Each scaler and vector in an array is a Vec4
-   * Struct size is calculated according to above, and whole size must be multiple of Vec4
+   * The buffer in the gpu is using layout std140.
+   * To see the correct paddings, use render doc and select show paddings for the corresponding buffer.
    */
   struct PerLightData
   {
