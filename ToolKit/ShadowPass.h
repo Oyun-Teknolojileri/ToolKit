@@ -17,6 +17,7 @@ namespace ToolKit
   {
     ScenePtr scene       = nullptr;
     CameraPtr viewCamera = nullptr;
+    LightPtrArray lights;
   };
 
   /** Create shadow map buffers for all given lights. */

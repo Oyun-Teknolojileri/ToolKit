@@ -49,6 +49,11 @@ namespace ToolKit
 
   void ShadowPass::Render()
   {
+    if (m_lights.empty())
+    {
+      return;
+    }
+
     PUSH_GPU_MARKER("ShadowPass::Render");
     PUSH_CPU_MARKER("ShadowPass::Render");
 
@@ -127,7 +132,7 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
 
     // Dropout non shadow casting lights.
-    m_lights           = m_params.scene->GetLights();
+    m_lights           = m_params.lights;
     erase_if(m_lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
 
     InitShadowAtlas();
