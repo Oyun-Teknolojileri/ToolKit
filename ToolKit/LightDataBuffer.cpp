@@ -119,8 +119,25 @@ namespace ToolKit
 
           m_lightData.perLightData[i].numOfCascades = cascades;
         }
+        else if (currLight->GetLightType() == Light::LightType::Point)
+        {
+          for (int ii = 0; ii < 6; ii++)
+          {
+            // ProjectView matrix is provided for 6 face in shadow map rendering in ShadowPass.cpp
+
+            // Provide layer.
+            m_lightData.perLightData[i].shadowAtlasLayer[ii] = Vec4((float) currLight->m_shadowCascadeAtlasLayers[ii]);
+
+            // Provide coordinate.
+            Vec2 normalizedCoord =
+                currLight->m_shadowCascadeAtlasCoords[ii] / (float) RHIConstants::ShadowAtlasTextureSize;
+            m_lightData.perLightData[i].shadowAtlasCoord[ii] = Vec4(normalizedCoord, 0.0f, 0.0f);
+          }
+        }
         else
         {
+          assert(currLight->GetLightType() == Light::LightType::Spot);
+
           m_lightData.perLightData[i].projectionViewMatrices[0] = currLight->m_shadowMapCameraProjectionViewMatrix;
           m_lightData.perLightData[i].shadowAtlasLayer[0]       = Vec4((float) currLight->m_shadowAtlasLayer);
 

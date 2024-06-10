@@ -27,6 +27,7 @@ namespace ToolKit
 
   ShadowPass::ShadowPass()
   {
+    // Order must match with TextureUtil.shader::UVWToUVLayer
     Mat4 views[6] = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
                      glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
                      glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
@@ -34,9 +35,9 @@ namespace ToolKit
                      glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
                      glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
 
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < 6; i++)
     {
-      DecomposeMatrix(views[i], nullptr, &m_cubeMapRotations[i], &m_cubeMapScales[i]);
+      DecomposeMatrix(views[i], nullptr, &m_cubeMapRotations[i], nullptr);
     }
 
     m_shadowAtlas       = MakeNewPtr<RenderTarget>();
@@ -275,9 +276,6 @@ namespace ToolKit
         light->m_shadowCamera->m_node->SetTranslation(light->m_node->GetTranslation());
         light->m_shadowCamera->m_node->SetOrientation(m_cubeMapRotations[i]);
 
-        // TODO: Scales are not needed. Remove.
-        light->m_shadowCamera->m_node->SetScale(m_cubeMapScales[i]);
-
         renderer->ClearBuffer(GraphicBitFields::DepthBits);
         AddHWRenderPass();
 
@@ -290,7 +288,7 @@ namespace ToolKit
     }
     else
     {
-      assert(light->IsA<SpotLight>());
+      assert(light->GetLightType() == Light::LightType::Spot);
 
       m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
                                               m_shadowAtlas,
@@ -301,11 +299,10 @@ namespace ToolKit
       renderer->ClearBuffer(GraphicBitFields::DepthBits);
       AddHWRenderPass();
 
-      renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
-                                (uint) light->m_shadowAtlasCoord.y,
-                                (uint) light->GetShadowResVal(),
-                                (uint) light->GetShadowResVal());
+      Vec2 coord       = light->m_shadowAtlasCoord;
+      float resolution = light->GetShadowResVal();
 
+      renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
       renderForShadowMapFn(light, light->m_shadowCamera);
     }
   }
@@ -387,7 +384,7 @@ namespace ToolKit
       }
       else
       {
-        assert(light->IsA<DirectionalLight>());
+        assert(light->GetLightType() == Light::LightType::Spot);
 
         light->m_shadowAtlasCoord = rects[rectIndex].Coord;
         light->m_shadowAtlasLayer = rects[rectIndex].ArrayIndex;

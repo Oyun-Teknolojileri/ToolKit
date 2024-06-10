@@ -49,9 +49,9 @@ namespace ToolKit
     float shadowAtlasResRatio; //!< Shadow map resolution / Shadow atlas resolution. Used to find UV coordinates.
     float pad0;                // 16 byte aligned with 4 x 4 bytes. Padding is needed to 16 byte alignment.
 
-    Vec4 shadowAtlasLayer[RHIConstants::MaxCascadeCount]; // 4 byte + 12 byte padding.
+    Vec4 shadowAtlasLayer[6]; // 4 byte + 12 byte padding * 6.
 
-    Vec4 shadowAtlasCoord[RHIConstants::MaxCascadeCount]; // 8 byte + 8 byte padding.
+    Vec4 shadowAtlasCoord[6]; // 8 byte + 8 byte padding * 6.
   };
 
   struct LightData

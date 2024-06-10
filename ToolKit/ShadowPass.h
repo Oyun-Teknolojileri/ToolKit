@@ -63,7 +63,6 @@ namespace ToolKit
     IDArray m_previousShadowCasters;
 
     Quaternion m_cubeMapRotations[6];
-    Vec3 m_cubeMapScales[6];
     BinPack2D m_packer;
 
     LightPtrArray m_lights; // Shadow casters in scene.

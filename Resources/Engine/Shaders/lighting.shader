@@ -14,7 +14,7 @@
 #define LIGHTING_SHADER
 
 #define MAX_CASCADE_COUNT 4
-#define MAX_LIGHT_COUNT 128
+#define MAX_LIGHT_COUNT 64
 
 // TODO Minimize and pack this data as much as possible
 struct _LightData
@@ -45,8 +45,8 @@ struct _LightData
 	float PCFRadius;
 	float shadowAtlasResRatio; // shadow map resolution / shadow atlas resolution.
 
-	float shadowAtlasLayer[MAX_CASCADE_COUNT];
-	vec2 shadowAtlasCoord[MAX_CASCADE_COUNT]; // Between 0 and 1
+	float shadowAtlasLayer[6];
+	vec2 shadowAtlasCoord[6]; // Between 0 and 1
 };
 
 layout (std140) uniform LightDataBuffer // slot 0
@@ -194,9 +194,9 @@ float CalculatePointShadow
 	vec3 pos, 
 	vec3 lightPos, 
 	float shadowCameraFar, 
-	vec2 shadowAtlasCoord, 
+	vec2 shadowAtlasCoord[6], 
 	float shadowAtlasResRatio,
-	float shadowAtlasLayer, 
+	float shadowAtlasLayer[6], 
 	int PCFSamples, 
 	float PCFRadius, 
 	float lightBleedReduction, 
@@ -279,9 +279,9 @@ vec3 PBRLighting
 					fragPos, 
 					LightData[i].pos, 
 					LightData[i].shadowMapCameraFar, 
-					LightData[i].shadowAtlasCoord[0], 
+					LightData[i].shadowAtlasCoord, 
 					LightData[i].shadowAtlasResRatio,
-					LightData[i].shadowAtlasLayer[0], 
+					LightData[i].shadowAtlasLayer, 
 					LightData[i].PCFSamples, 
 					LightData[i].PCFRadius, 
 					LightData[i].BleedingReduction, 
@@ -461,19 +461,7 @@ vec3 PBRLightingDeferred(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCam
 		vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, color * intensity);
 
 		// shadow
-		float shadow = CalculatePointShadow
-		(
-			fragPos, 
-			lightPos, 
-			shadowCameraFar, 
-			shadowAtlasCoord, 
-			shadowAtlasResRatio,
-			shadowAtlasLayer, 
-			PCFSamples, 
-			PCFRadius, 
-			lightBleedReduction, 
-			shadowBias
-		);
+		float shadow = 1.0;
 
 		irradiance += Lo * shadow * attenuation * radiusCheck;
 	}
@@ -684,9 +672,9 @@ vec3 BlinnPhongLighting(vec3 fragPos, float viewPosDepth, vec3 normal, vec3 frag
 					fragPos, 
 					LightData[i].pos, 
 					LightData[i].shadowMapCameraFar, 
-					LightData[i].shadowAtlasCoord[0], 
+					LightData[i].shadowAtlasCoord, 
 					LightData[i].shadowAtlasResRatio,
-					LightData[i].shadowAtlasLayer[0], 
+					LightData[i].shadowAtlasLayer, 
 					LightData[i].PCFSamples, 
 					LightData[i].PCFRadius, 
 					LightData[i].BleedingReduction, 

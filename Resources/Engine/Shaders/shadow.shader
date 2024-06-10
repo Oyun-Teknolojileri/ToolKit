@@ -50,9 +50,9 @@ float PCFFilterShadow2D
 float PCFFilterOmni
 (
   sampler2DArray shadowAtlas,
-  vec2 startCoord,
+  vec2 startCoord[6],
   float shadowAtlasResRatio,
-  float shadowAtlasLayer,
+  float shadowAtlasLayer[6],
   vec3 dir,
   int samples,
   float radius,
@@ -71,10 +71,12 @@ float PCFFilterOmni
 		vec3 offset = PoissonDisk[i] * radius;
 
     // Cubemap sample
-    vec3 sampleDir = dir + offset;
-    vec3 texCoord = UVWToUVLayer(sampleDir);
-    texCoord.xy = startCoord + shadowAtlasResRatio * texCoord.xy;
-    texCoord.z = shadowAtlasLayer + texCoord.z;
+    vec3 texCoord = UVWToUVLayer(dir);
+
+    int face = int(texCoord.z);
+
+    texCoord.xy = startCoord[face] + (shadowAtlasResRatio * texCoord.xy) + offset.xy;
+    texCoord.z = shadowAtlasLayer[face] + texCoord.z;
 		sum += texture(shadowAtlas, texCoord).xy;
 	}
 

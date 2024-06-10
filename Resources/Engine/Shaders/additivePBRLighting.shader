@@ -70,19 +70,7 @@ vec3 AdditivePBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 viewCam
     break;
     case 4: // point with shadows
     {
-      shadow = CalculatePointShadow
-      (
-        fragPos, 
-        lightPos, 
-        lightShadowMapCameraFar, 
-        lightShadowAtlasCoord, 
-        lightShadowAtlasResRatio,
-        lightShadowAtlasLayer, 
-        lightPCFSamples, 
-        lightPCFRadius, 
-        lightBleedReduction, 
-        lightShadowBias
-      );
+      shadow = 1.0;
     } // fallthrough
     case 1: // point light
     {
