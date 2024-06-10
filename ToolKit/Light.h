@@ -67,8 +67,6 @@ namespace ToolKit
 
     Mat4 m_shadowMapCameraProjectionViewMatrix;
     CameraPtr m_shadowCamera        = nullptr;
-    int m_shadowAtlasLayer          = -1;
-    Vec2 m_shadowAtlasCoord         = Vec2(-1.0f);
     bool m_shadowResolutionUpdated  = false;
     MeshPtr m_volumeMesh            = nullptr;
 
@@ -76,8 +74,8 @@ namespace ToolKit
     int m_lightCacheIndex    = -1; //<! Used by renderer only! The index of this light in the renderer's light cache.
     uint16 m_drawCallVersion = 0;  //<! Used by renderer internally (Explained in LightCache.h)
 
-    IntArray m_shadowCascadeAtlasLayers;  //!< Layer index in the shadow atlas for each cascade.
-    Vec2Array m_shadowCascadeAtlasCoords; //!< Coordinates for each cascade in the corresponding layer.
+    IntArray m_shadowAtlasLayers;  //!< Layer index in the shadow atlas for each cascade.
+    Vec2Array m_shadowAtlasCoords; //!< Coordinates for each cascade in the corresponding layer.
 
    protected:
     MaterialPtr m_shadowMapMaterial = nullptr;

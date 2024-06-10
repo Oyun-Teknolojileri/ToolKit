@@ -113,8 +113,8 @@ namespace ToolKit
           {
             const Mat4& cascadeMatrix = dLight->m_shadowMapCascadeCameraProjectionViewMatrices[ii];
             m_lightData.perLightData[i].projectionViewMatrices[ii] = cascadeMatrix;
-            m_lightData.perLightData[i].shadowAtlasLayer[ii] = Vec4((float) dLight->m_shadowCascadeAtlasLayers[ii]);
-            m_lightData.perLightData[i].shadowAtlasCoord[ii] = Vec4(dLight->m_shadowCascadeAtlasCoords[ii], 0.0f, 0.0f);
+            m_lightData.perLightData[i].shadowAtlasLayer[ii] = Vec4((float) dLight->m_shadowAtlasLayers[ii]);
+            m_lightData.perLightData[i].shadowAtlasCoord[ii] = Vec4(dLight->m_shadowAtlasCoords[ii], 0.0f, 0.0f);
           }
 
           m_lightData.perLightData[i].numOfCascades = cascades;
@@ -126,11 +126,11 @@ namespace ToolKit
             // ProjectView matrix is provided for 6 face in shadow map rendering in ShadowPass.cpp
 
             // Provide layer.
-            m_lightData.perLightData[i].shadowAtlasLayer[ii] = Vec4((float) currLight->m_shadowCascadeAtlasLayers[ii]);
+            m_lightData.perLightData[i].shadowAtlasLayer[ii] = Vec4((float) currLight->m_shadowAtlasLayers[ii]);
 
             // Provide coordinate.
             Vec2 normalizedCoord =
-                currLight->m_shadowCascadeAtlasCoords[ii] / (float) RHIConstants::ShadowAtlasTextureSize;
+                currLight->m_shadowAtlasCoords[ii] / (float) RHIConstants::ShadowAtlasTextureSize;
             m_lightData.perLightData[i].shadowAtlasCoord[ii] = Vec4(normalizedCoord, 0.0f, 0.0f);
           }
         }
@@ -139,9 +139,10 @@ namespace ToolKit
           assert(currLight->GetLightType() == Light::LightType::Spot);
 
           m_lightData.perLightData[i].projectionViewMatrices[0] = currLight->m_shadowMapCameraProjectionViewMatrix;
-          m_lightData.perLightData[i].shadowAtlasLayer[0]       = Vec4((float) currLight->m_shadowAtlasLayer);
+          m_lightData.perLightData[i].shadowAtlasLayer[0] = Vec4((float) currLight->m_shadowAtlasLayers[0]);
 
-          Vec2 normalizedCoord = currLight->m_shadowAtlasCoord / (float) RHIConstants::ShadowAtlasTextureSize;
+          Vec2 normalizedCoord =
+              currLight->m_shadowAtlasCoords[0] / (float) RHIConstants::ShadowAtlasTextureSize;
           m_lightData.perLightData[i].shadowAtlasCoord[0] = Vec4(normalizedCoord, 0.0f, 0.0f);
         }
 

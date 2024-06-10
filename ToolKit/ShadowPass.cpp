@@ -253,11 +253,11 @@ namespace ToolKit
       DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
       for (int i = 0; i < cascadeCount; i++)
       {
-        int layer = dLight->m_shadowCascadeAtlasLayers[i];
+        int layer = dLight->m_shadowAtlasLayers[i];
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
         AddHWRenderPass();
 
-        Vec2 coord       = dLight->m_shadowCascadeAtlasCoords[i];
+        Vec2 coord       = dLight->m_shadowAtlasCoords[i];
         float resolution = light->GetShadowResVal();
         renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
 
@@ -268,7 +268,7 @@ namespace ToolKit
     {
       for (int i = 0; i < 6; i++)
       {
-        int layer = light->m_shadowCascadeAtlasLayers[i];
+        int layer = light->m_shadowAtlasLayers[i];
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
 
         AddHWRenderPass();
@@ -279,7 +279,7 @@ namespace ToolKit
         renderer->ClearBuffer(GraphicBitFields::DepthBits);
         AddHWRenderPass();
 
-        Vec2 coord       = light->m_shadowCascadeAtlasCoords[i];
+        Vec2 coord       = light->m_shadowAtlasCoords[i];
         float resolution = light->GetShadowResVal();
         renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
 
@@ -293,13 +293,13 @@ namespace ToolKit
       m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
                                               m_shadowAtlas,
                                               0,
-                                              light->m_shadowAtlasLayer);
+                                              light->m_shadowAtlasLayers[0]);
       AddHWRenderPass();
 
       renderer->ClearBuffer(GraphicBitFields::DepthBits);
       AddHWRenderPass();
 
-      Vec2 coord       = light->m_shadowAtlasCoord;
+      Vec2 coord       = light->m_shadowAtlasCoords[0];
       float resolution = light->GetShadowResVal();
 
       renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
@@ -368,8 +368,8 @@ namespace ToolKit
       {
         for (int ii = 0; ii < cascadeCount; ii++)
         {
-          light->m_shadowCascadeAtlasCoords[ii] = rects[rectIndex].Coord;
-          light->m_shadowCascadeAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
+          light->m_shadowAtlasCoords[ii] = rects[rectIndex].Coord;
+          light->m_shadowAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
           rectIndex++;
         }
       }
@@ -377,8 +377,8 @@ namespace ToolKit
       {
         for (int ii = 0; ii < 6; ii++)
         {
-          light->m_shadowCascadeAtlasCoords[ii] = rects[rectIndex].Coord;
-          light->m_shadowCascadeAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
+          light->m_shadowAtlasCoords[ii] = rects[rectIndex].Coord;
+          light->m_shadowAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
           rectIndex++;
         }
       }
@@ -386,8 +386,8 @@ namespace ToolKit
       {
         assert(light->GetLightType() == Light::LightType::Spot);
 
-        light->m_shadowAtlasCoord = rects[rectIndex].Coord;
-        light->m_shadowAtlasLayer = rects[rectIndex].ArrayIndex;
+        light->m_shadowAtlasCoords[0] = rects[rectIndex].Coord;
+        light->m_shadowAtlasLayers[0] = rects[rectIndex].ArrayIndex;
         rectIndex++;
       }
     }
