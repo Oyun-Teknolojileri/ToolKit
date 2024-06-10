@@ -112,11 +112,9 @@ namespace ToolKit
     MaterialPtr GetCopyOfUIMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfUnlitColorMaterial(bool storeInMaterialManager = true);
     MaterialPtr GetCopyOfDefaultMaterial(bool storeInMaterialManager = true);
-    MaterialPtr GetCopyOfPhongMaterial(bool storeInMaterialManager = true);
 
    private:
     MaterialPtr m_defaultMaterial = nullptr;
-    MaterialPtr m_defaultAlphaMaskedMaterial = nullptr;
   };
 
 } // namespace ToolKit

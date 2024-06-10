@@ -197,9 +197,6 @@
     <ClInclude Include="Viewport.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Resources\Engine\Shaders\additiveLighting.shader" />
-    <None Include="..\Resources\Engine\Shaders\additivePBRLighting.shader" />
-    <None Include="..\Resources\Engine\Shaders\additiveVertex.shader" />
     <None Include="..\Resources\Engine\Shaders\AO.shader" />
     <None Include="..\Resources\Engine\Shaders\avgBlurFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\avgBlurVert.shader" />
@@ -211,7 +208,6 @@
     <None Include="..\Resources\Engine\Shaders\copyTextureVert.shader" />
     <None Include="..\Resources\Engine\Shaders\defaultFragment.shader" />
     <None Include="..\Resources\Engine\Shaders\defaultVertex.shader" />
-    <None Include="..\Resources\Engine\Shaders\deferredRenderFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\depthOfFieldFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\dilateFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\equirectToCubeFrag.shader" />
@@ -219,15 +215,11 @@
     <None Include="..\Resources\Engine\Shaders\forwardPreProcess.shader" />
     <None Include="..\Resources\Engine\Shaders\forwardPreProcessVert.shader" />
     <None Include="..\Resources\Engine\Shaders\fullQuadVert.shader" />
-    <None Include="..\Resources\Engine\Shaders\fxaaFilterFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\fxaaFunctions.shader" />
-    <None Include="..\Resources\Engine\Shaders\gammaFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\gammaFunctions.shader" />
     <None Include="..\Resources\Engine\Shaders\gammaTonemapFxaa.shader" />
     <None Include="..\Resources\Engine\Shaders\gausBlur7x1Frag.shader" />
     <None Include="..\Resources\Engine\Shaders\gausBlur7x1Vert.shader" />
-    <None Include="..\Resources\Engine\Shaders\gBufferFrag.shader" />
-    <None Include="..\Resources\Engine\Shaders\gBufferFrag_alphamask.shader" />
     <None Include="..\Resources\Engine\Shaders\gradientSkyboxFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\gridFragment.shader" />
     <None Include="..\Resources\Engine\Shaders\gridVertex.shader" />
@@ -235,9 +227,7 @@
     <None Include="..\Resources\Engine\Shaders\irradianceGenerateFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\irradianceGenerateVert.shader" />
     <None Include="..\Resources\Engine\Shaders\lightComplexity.shader" />
-    <None Include="..\Resources\Engine\Shaders\lightDataTextureUtils.shader" />
     <None Include="..\Resources\Engine\Shaders\lighting.shader" />
-    <None Include="..\Resources\Engine\Shaders\lightMerge.shader" />
     <None Include="..\Resources\Engine\Shaders\normalFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\orthogonalDepthFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\orthogonalDepthVert.shader" />
@@ -258,7 +248,6 @@
     <None Include="..\Resources\Engine\Shaders\ssaoCalcFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\texCoordFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\textureUtil.shader" />
-    <None Include="..\Resources\Engine\Shaders\tonemapFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\tonemapFunctions.shader" />
     <None Include="..\Resources\Engine\Shaders\unlitFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\VSM.shader" />

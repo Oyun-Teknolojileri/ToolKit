@@ -20,10 +20,9 @@
 namespace ToolKit
 {
 
-#define TK_DEFAULT_DEFERRED_FRAG         "deferredRenderFrag.shader"
-#define TK_DEFAULT_FORWARD_FRAG          "defaultFragment.shader"
-#define TK_DEFAULT_VERTEX_SHADER         "defaultVertex.shader"
-#define TK_PHONG_FORWARD_FRAGMENT_SHADER "phongForwardFragment.shader"
+#define TK_DEFAULT_DEFERRED_FRAG "deferredRenderFrag.shader"
+#define TK_DEFAULT_FORWARD_FRAG  "defaultFragment.shader"
+#define TK_DEFAULT_VERTEX_SHADER "defaultVertex.shader"
 
   TKDefineClass(Shader, Resource);
 
@@ -398,28 +397,18 @@ namespace ToolKit
   {
     ResourceManager::Init();
 
-    m_pbrDefferedShaderFile   = ShaderPath(TK_DEFAULT_DEFERRED_FRAG, true);
     m_pbrForwardShaderFile    = ShaderPath(TK_DEFAULT_FORWARD_FRAG, true);
     m_defaultVertexShaderFile = ShaderPath(TK_DEFAULT_VERTEX_SHADER, true);
-    m_phongForwardShaderFile  = ShaderPath(TK_PHONG_FORWARD_FRAGMENT_SHADER, true);
 
-    Create<Shader>(m_pbrDefferedShaderFile);
     Create<Shader>(m_pbrForwardShaderFile);
     Create<Shader>(m_defaultVertexShaderFile);
-    Create<Shader>(m_phongForwardShaderFile);
   }
 
   bool ShaderManager::CanStore(ClassMeta* Class) { return Class == Shader::StaticClass(); }
 
   ShaderPtr ShaderManager::GetDefaultVertexShader() { return Cast<Shader>(m_storage[m_defaultVertexShaderFile]); }
 
-  ShaderPtr ShaderManager::GetPbrDefferedShader() { return Cast<Shader>(m_storage[m_pbrDefferedShaderFile]); }
-
   ShaderPtr ShaderManager::GetPbrForwardShader() { return Cast<Shader>(m_storage[m_pbrForwardShaderFile]); }
-
-  ShaderPtr ShaderManager::GetPhongForwardShader() { return Cast<Shader>(m_storage[m_phongForwardShaderFile]); }
-
-  const String& ShaderManager::PbrDefferedShaderFile() { return m_pbrDefferedShaderFile; }
 
   const String& ShaderManager::PbrForwardShaderFile() { return m_pbrForwardShaderFile; }
 

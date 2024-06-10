@@ -553,15 +553,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Resources\Engine\Shaders\additiveLighting.shader">
-      <Filter>Render\Shaders</Filter>
-    </None>
-    <None Include="..\Resources\Engine\Shaders\additivePBRLighting.shader">
-      <Filter>Render\Shaders</Filter>
-    </None>
-    <None Include="..\Resources\Engine\Shaders\additiveVertex.shader">
-      <Filter>Render\Shaders</Filter>
-    </None>
     <None Include="..\Resources\Engine\Shaders\AO.shader">
       <Filter>Render\Shaders</Filter>
     </None>
@@ -595,9 +586,6 @@
     <None Include="..\Resources\Engine\Shaders\defaultVertex.shader">
       <Filter>Render\Shaders</Filter>
     </None>
-    <None Include="..\Resources\Engine\Shaders\deferredRenderFrag.shader">
-      <Filter>Render\Shaders</Filter>
-    </None>
     <None Include="..\Resources\Engine\Shaders\depthOfFieldFrag.shader">
       <Filter>Render\Shaders</Filter>
     </None>
@@ -619,13 +607,7 @@
     <None Include="..\Resources\Engine\Shaders\fullQuadVert.shader">
       <Filter>Render\Shaders</Filter>
     </None>
-    <None Include="..\Resources\Engine\Shaders\fxaaFilterFrag.shader">
-      <Filter>Render\Shaders</Filter>
-    </None>
     <None Include="..\Resources\Engine\Shaders\fxaaFunctions.shader">
-      <Filter>Render\Shaders</Filter>
-    </None>
-    <None Include="..\Resources\Engine\Shaders\gammaFrag.shader">
       <Filter>Render\Shaders</Filter>
     </None>
     <None Include="..\Resources\Engine\Shaders\gammaFunctions.shader">
@@ -638,12 +620,6 @@
       <Filter>Render\Shaders</Filter>
     </None>
     <None Include="..\Resources\Engine\Shaders\gausBlur7x1Vert.shader">
-      <Filter>Render\Shaders</Filter>
-    </None>
-    <None Include="..\Resources\Engine\Shaders\gBufferFrag.shader">
-      <Filter>Render\Shaders</Filter>
-    </None>
-    <None Include="..\Resources\Engine\Shaders\gBufferFrag_alphamask.shader">
       <Filter>Render\Shaders</Filter>
     </None>
     <None Include="..\Resources\Engine\Shaders\gradientSkyboxFrag.shader">
@@ -667,13 +643,7 @@
     <None Include="..\Resources\Engine\Shaders\lightComplexity.shader">
       <Filter>Render\Shaders</Filter>
     </None>
-    <None Include="..\Resources\Engine\Shaders\lightDataTextureUtils.shader">
-      <Filter>Render\Shaders</Filter>
-    </None>
     <None Include="..\Resources\Engine\Shaders\lighting.shader">
-      <Filter>Render\Shaders</Filter>
-    </None>
-    <None Include="..\Resources\Engine\Shaders\lightMerge.shader">
       <Filter>Render\Shaders</Filter>
     </None>
     <None Include="..\Resources\Engine\Shaders\normalFrag.shader">
@@ -734,9 +704,6 @@
       <Filter>Render\Shaders</Filter>
     </None>
     <None Include="..\Resources\Engine\Shaders\textureUtil.shader">
-      <Filter>Render\Shaders</Filter>
-    </None>
-    <None Include="..\Resources\Engine\Shaders\tonemapFrag.shader">
       <Filter>Render\Shaders</Filter>
     </None>
     <None Include="..\Resources\Engine\Shaders\tonemapFunctions.shader">
