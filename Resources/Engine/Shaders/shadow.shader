@@ -87,7 +87,7 @@ float PCFFilterOmni
     vec2 endCoord = beginCoord + shadowAtlasResRatio;
 
     texCoord.xy = beginCoord + (shadowAtlasResRatio * texCoord.xy);
-    texCoord.z = 0.0;
+    texCoord.z = shadowAtlasLayer[face];
 
     // Keep the pixel always in the corresponding face, prevent bleeding.
     texCoord.xy = clamp(texCoord.xy, beginCoord + halfPixel, endCoord - halfPixel);
