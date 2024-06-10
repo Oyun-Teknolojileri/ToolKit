@@ -1,11 +1,14 @@
 <shader>
 	<type name = "includeShader" />
 	<include name = "VSM.shader" />
+  <uniform name = "shadowAtlasSize" />
 	<source>
 	<!--
 
   #ifndef SHADOW_SHADER
   #define SHADOW_SHADER
+
+  uniform float shadowAtlasSize;
 
 float PCFFilterShadow2D
 (
@@ -61,6 +64,8 @@ float PCFFilterOmni
   float shadowBias
 )
 {
+  vec2 halfPixel = vec2((1.0 / shadowAtlasSize) * 0.5);
+
   // Single pass average filter the shadow map.
 	vec2 sum = vec2(0.0);
 	for (int i = 0; i < samples; ++i)
@@ -70,13 +75,23 @@ float PCFFilterOmni
     // int di = int(127.0 * Random( vec4( gl_FragCoord.xyy, float(i) ) )) % 127;
 		vec3 offset = PoissonDisk[i] * radius;
 
+    // Adhoc coefficient 50.0
+    // If offset applied to texCoord, wrong face may be sampled due to bleeding.
+
     // Cubemap sample
-    vec3 texCoord = UVWToUVLayer(dir);
+    vec3 texCoord = UVWToUVLayer(dir + offset * 50.0);
 
     int face = int(texCoord.z);
 
-    texCoord.xy = startCoord[face] + (shadowAtlasResRatio * texCoord.xy) + offset.xy;
-    texCoord.z = shadowAtlasLayer[face] + texCoord.z;
+    vec2 beginCoord = startCoord[face];
+    vec2 endCoord = beginCoord + shadowAtlasResRatio;
+
+    texCoord.xy = beginCoord + (shadowAtlasResRatio * texCoord.xy);
+    texCoord.z = 0.0;
+
+    // Keep the pixel always in the corresponding face, prevent bleeding.
+    texCoord.xy = clamp(texCoord.xy, beginCoord + halfPixel, endCoord - halfPixel);
+
 		sum += texture(shadowAtlas, texCoord).xy;
 	}
 

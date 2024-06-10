@@ -6,7 +6,6 @@
 	<include name = "pbr.shader" />
 	<uniform name = "shadowDistance" />
 	<uniform name = "activeCount" />
-	<uniform name = "shadowAtlasSize" />
 	<source>
 	<!--
 
@@ -80,7 +79,6 @@ uniform float spotShadowLightDataSize;
 uniform float dirNonShadowLightDataSize;
 uniform float pointNonShadowLightDataSize;
 uniform float spotNonShadowLightDataSize;
-uniform float shadowAtlasSize;
 
 const float shadowFadeOutDistanceNorm = 0.9;
 
