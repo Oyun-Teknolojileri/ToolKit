@@ -27,8 +27,9 @@ vec3 UVWToUVLayer(vec3 vec)
 	*/
 	float layer;
 	vec2 coord;
+	vec3 absVec = abs(vec);
 
-	if (abs(vec.x) >= abs(vec.y) && abs(vec.x) >= abs(vec.z))
+	if (absVec.x >= absVec.y && absVec.x >= absVec.z)
 	{
 		if (vec.x > 0.0)
 		{
@@ -44,7 +45,7 @@ vec3 UVWToUVLayer(vec3 vec)
 			coord = -vec.zy;
 		}
 	}
-	else if (abs(vec.y) >= abs(vec.x) && abs(vec.y) >= abs(vec.z))
+	else if (absVec.y >= absVec.x && absVec.y >= absVec.z)
 	{
 		if (vec.y > 0.0)
 		{
