@@ -103,7 +103,6 @@ namespace ToolKit
     WriteAttr(settings, doc, "MSAA", std::to_string(MSAA));
     WriteAttr(settings, doc, "FPS", std::to_string(FPS));
     WriteAttr(settings, doc, "HDRPipeline", std::to_string(HDRPipeline));
-    WriteAttr(settings, doc, "RenderSpec", std::to_string((int) RenderSpec));
     WriteAttr(settings, doc, "RenderResolutionScale", std::to_string(renderResolutionScale));
     WriteAttr(settings, doc, "EnableGpuTimer", std::to_string(enableGpuTimer));
 
@@ -134,7 +133,6 @@ namespace ToolKit
       ReadAttr(node, "FPS", FPS);
       ReadAttr(node, "HDRPipeline", HDRPipeline);
       ReadAttr(node, "RenderResolutionScale", renderResolutionScale);
-      ReadAttr(node, "RenderSpec", *(int*) &RenderSpec);
       ReadAttr(node, "EnableGpuTimer", enableGpuTimer);
 
       ReadAttr(node, "CascadeCount", cascadeCount);

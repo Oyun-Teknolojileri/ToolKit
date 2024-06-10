@@ -124,9 +124,6 @@
     <ClCompile Include="GammaPass.cpp">
       <Filter>Render\PostProcessPass</Filter>
     </ClCompile>
-    <ClCompile Include="GBufferPass.cpp">
-      <Filter>Render\RenderPass</Filter>
-    </ClCompile>
     <ClCompile Include="GlErrorReporter.cpp">
       <Filter>Render</Filter>
     </ClCompile>
@@ -186,9 +183,6 @@
     </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="DeferredSceneRenderPath.cpp">
-      <Filter>Render</Filter>
     </ClCompile>
     <ClCompile Include="TKImage.cpp">
       <Filter>Render</Filter>
@@ -384,9 +378,6 @@
     <ClInclude Include="GammaPass.h">
       <Filter>Render\PostProcessPass</Filter>
     </ClInclude>
-    <ClInclude Include="GBufferPass.h">
-      <Filter>Render\RenderPass</Filter>
-    </ClInclude>
     <ClInclude Include="GlErrorReporter.h">
       <Filter>Render</Filter>
     </ClInclude>
@@ -449,9 +440,6 @@
     </ClInclude>
     <ClInclude Include="Scene.h">
       <Filter>Resources</Filter>
-    </ClInclude>
-    <ClInclude Include="DeferredSceneRenderPath.h">
-      <Filter>Render</Filter>
     </ClInclude>
     <ClInclude Include="TKImage.h">
       <Filter>Render</Filter>

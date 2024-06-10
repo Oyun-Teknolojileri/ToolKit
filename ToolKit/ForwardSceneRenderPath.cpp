@@ -93,7 +93,7 @@ namespace ToolKit
 
   void ForwardSceneRenderPath::PreRender(Renderer* renderer)
   {
-    renderer->StartTimerQuery();
+    RenderPath::PreRender(renderer);
 
     SetPassParams();
 
@@ -101,7 +101,7 @@ namespace ToolKit
                                          m_params.MainFramebuffer->GetSettings().height);
   }
 
-  void ForwardSceneRenderPath::PostRender(Renderer* renderer) { renderer->EndTimerQuery(); }
+  void ForwardSceneRenderPath::PostRender(Renderer* renderer) { RenderPath::PostRender(renderer); }
 
   void ForwardSceneRenderPath::SetPassParams()
   {

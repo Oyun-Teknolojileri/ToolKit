@@ -22,6 +22,8 @@ namespace ToolKit
     RenderPath();
     virtual ~RenderPath();
     virtual void Render(Renderer* renderer);
+    virtual void PreRender(Renderer* renderer);
+    virtual void PostRender(Renderer* renderer);
 
    public:
     PassPtrArray m_passArray;

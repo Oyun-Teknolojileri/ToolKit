@@ -7,52 +7,30 @@
 
 #include "GameRenderer.h"
 
-
-
 namespace ToolKit
 {
   GameRenderer::GameRenderer()
   {
-    m_mobileSceneRenderPath = MakeNewPtr<ForwardSceneRenderPath>();
-    m_sceneRenderPath       = MakeNewPtr<DeferredSceneRenderPath>();
-    m_uiPass                = MakeNewPtr<ForwardRenderPass>();
-    m_gammaTonemapFxaaPass  = MakeNewPtr<GammaTonemapFxaaPass>();
-    m_fullQuadPass          = MakeNewPtr<FullQuadPass>();
+    m_sceneRenderPath      = MakeNewPtr<ForwardSceneRenderPath>();
+    m_uiPass               = MakeNewPtr<ForwardRenderPass>();
+    m_gammaTonemapFxaaPass = MakeNewPtr<GammaTonemapFxaaPass>();
+    m_fullQuadPass         = MakeNewPtr<FullQuadPass>();
   }
 
   void GameRenderer::PreRender(Renderer* renderer)
   {
-    if (m_params.useMobileRenderPath)
-    {
-      // Mobile pass params
+    // Scene pass params
 
-      m_mobileSceneRenderPath->m_params.Cam                        = m_params.viewport->GetCamera();
-      m_mobileSceneRenderPath->m_params.Lights                     = m_params.scene->GetLights();
-      m_mobileSceneRenderPath->m_params.MainFramebuffer            = m_params.viewport->m_framebuffer;
-      m_mobileSceneRenderPath->m_params.Scene                      = m_params.scene;
-      m_mobileSceneRenderPath->m_params.Gfx                        = m_params.gfx;
+    m_sceneRenderPath->m_params.Cam                        = m_params.viewport->GetCamera();
+    m_sceneRenderPath->m_params.Lights                     = m_params.scene->GetLights();
+    m_sceneRenderPath->m_params.MainFramebuffer            = m_params.viewport->m_framebuffer;
+    m_sceneRenderPath->m_params.Scene                      = m_params.scene;
+    m_sceneRenderPath->m_params.Gfx                        = m_params.gfx;
 
-      // These post processings will be done after ui pass
-      m_mobileSceneRenderPath->m_params.Gfx.GammaCorrectionEnabled = false;
-      m_mobileSceneRenderPath->m_params.Gfx.TonemappingEnabled     = false;
-      m_mobileSceneRenderPath->m_params.Gfx.FXAAEnabled            = false;
-    }
-    else
-    {
-      // Scene render params
-
-      m_sceneRenderPath->m_params.Cam                        = m_params.viewport->GetCamera();
-      m_sceneRenderPath->m_params.ClearFramebuffer           = true;
-      m_sceneRenderPath->m_params.Lights                     = m_params.scene->GetLights();
-      m_sceneRenderPath->m_params.MainFramebuffer            = m_params.viewport->m_framebuffer;
-      m_sceneRenderPath->m_params.Scene                      = m_params.scene;
-      m_sceneRenderPath->m_params.Gfx                        = m_params.gfx;
-
-      // These post processings will be done after ui pass
-      m_sceneRenderPath->m_params.Gfx.GammaCorrectionEnabled = false;
-      m_sceneRenderPath->m_params.Gfx.TonemappingEnabled     = false;
-      m_sceneRenderPath->m_params.Gfx.FXAAEnabled            = false;
-    }
+    // These post processings will be done after ui pass
+    m_sceneRenderPath->m_params.Gfx.GammaCorrectionEnabled = false;
+    m_sceneRenderPath->m_params.Gfx.TonemappingEnabled     = false;
+    m_sceneRenderPath->m_params.Gfx.FXAAEnabled            = false;
 
     // UI params
 
@@ -113,15 +91,7 @@ namespace ToolKit
     m_passArray.clear();
 
     // Scene renderer
-    SceneRenderPathPtr sceneRenderer = nullptr;
-    if (m_params.useMobileRenderPath)
-    {
-      sceneRenderer = m_mobileSceneRenderPath;
-    }
-    else
-    {
-      sceneRenderer = m_sceneRenderPath;
-    }
+    SceneRenderPathPtr sceneRenderer = m_sceneRenderPath;
     sceneRenderer->Render(renderer);
 
     // UI render pass

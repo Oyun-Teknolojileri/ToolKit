@@ -53,9 +53,6 @@ namespace ToolKit
       /** Sets render targets as floating point, allows values larger than 1.0 for HDR rendering. */
       bool HDRPipeline            = true;
 
-      /** Render path used for drawing. */
-      RenderingSpec RenderSpec    = RenderingSpec::Default;
-
       /**
        * Viewport render target multiplier that adjusts the resolution.
        * High DPI devices such as mobile phones benefits from this.

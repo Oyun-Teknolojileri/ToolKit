@@ -38,16 +38,15 @@ namespace ToolKit
 
     EditorRenderer::~EditorRenderer()
     {
-      m_billboardPass         = nullptr;
-      m_lightSystem           = nullptr;
-      m_sceneRenderPath       = nullptr;
-      m_mobileSceneRenderPath = nullptr;
-      m_uiPass                = nullptr;
-      m_editorPass            = nullptr;
-      m_gizmoPass             = nullptr;
-      m_outlinePass           = nullptr;
-      m_singleMatRenderer     = nullptr;
-      m_gammaTonemapFxaaPass  = nullptr;
+      m_billboardPass        = nullptr;
+      m_lightSystem          = nullptr;
+      m_sceneRenderPath      = nullptr;
+      m_uiPass               = nullptr;
+      m_editorPass           = nullptr;
+      m_gizmoPass            = nullptr;
+      m_outlinePass          = nullptr;
+      m_singleMatRenderer    = nullptr;
+      m_gammaTonemapFxaaPass = nullptr;
     }
 
     void EditorRenderer::Render(Renderer* renderer)
@@ -63,16 +62,7 @@ namespace ToolKit
 
       m_passArray.clear();
 
-      SceneRenderPathPtr sceneRenderer = nullptr;
-      if (m_params.UseMobileRenderPath)
-      {
-        sceneRenderer = m_mobileSceneRenderPath;
-      }
-      else
-      {
-        sceneRenderer = m_sceneRenderPath;
-      }
-
+      SceneRenderPathPtr sceneRenderer = m_sceneRenderPath;
       if (GetRenderSystem()->IsSkipFrame())
       {
         sceneRenderer->Render(renderer);
@@ -171,28 +161,17 @@ namespace ToolKit
         lights = scene->GetLights();
       }
 
-      EditorViewport* viewport = static_cast<EditorViewport*>(m_params.Viewport);
+      EditorViewport* viewport                    = static_cast<EditorViewport*>(m_params.Viewport);
 
       // Scene renderer will render the given scene independent of editor.
       // Editor objects will be drawn on top of scene.
-      if (m_params.UseMobileRenderPath)
-      {
-        // Mobile scene pass
-        m_mobileSceneRenderPath->m_params.Gfx             = gfx;
-        m_mobileSceneRenderPath->m_params.Cam             = m_camera;
-        m_mobileSceneRenderPath->m_params.Lights          = lights;
-        m_mobileSceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
-        m_mobileSceneRenderPath->m_params.Scene           = scene;
-      }
-      else
-      {
-        // Scene pass.
-        m_sceneRenderPath->m_params.Gfx             = gfx;
-        m_sceneRenderPath->m_params.Cam             = m_camera;
-        m_sceneRenderPath->m_params.Lights          = lights;
-        m_sceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
-        m_sceneRenderPath->m_params.Scene           = scene;
-      }
+
+      // Scene pass.
+      m_sceneRenderPath->m_params.Gfx             = gfx;
+      m_sceneRenderPath->m_params.Cam             = m_camera;
+      m_sceneRenderPath->m_params.Lights          = lights;
+      m_sceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
+      m_sceneRenderPath->m_params.Scene           = scene;
 
       if (app->m_showSceneBoundary)
       {
@@ -394,16 +373,15 @@ namespace ToolKit
       m_unlitOverride->Init();
       m_blackMaterial->Init();
 
-      m_billboardPass         = MakeNewPtr<BillboardPass>();
-      m_sceneRenderPath       = MakeNewPtr<DeferredSceneRenderPath>();
-      m_mobileSceneRenderPath = MakeNewPtr<ForwardSceneRenderPath>();
-      m_uiPass                = MakeNewPtr<ForwardRenderPass>();
-      m_editorPass            = MakeNewPtr<ForwardRenderPass>();
-      m_gizmoPass             = MakeNewPtr<GizmoPass>();
-      m_outlinePass           = MakeNewPtr<OutlinePass>();
-      m_singleMatRenderer     = MakeNewPtr<SingleMatForwardRenderPass>();
-      m_skipFramePass         = MakeNewPtr<FullQuadPass>();
-      m_gammaTonemapFxaaPass  = MakeNewPtr<GammaTonemapFxaaPass>();
+      m_billboardPass        = MakeNewPtr<BillboardPass>();
+      m_sceneRenderPath      = MakeNewPtr<ForwardSceneRenderPath>();
+      m_uiPass               = MakeNewPtr<ForwardRenderPass>();
+      m_editorPass           = MakeNewPtr<ForwardRenderPass>();
+      m_gizmoPass            = MakeNewPtr<GizmoPass>();
+      m_outlinePass          = MakeNewPtr<OutlinePass>();
+      m_singleMatRenderer    = MakeNewPtr<SingleMatForwardRenderPass>();
+      m_skipFramePass        = MakeNewPtr<FullQuadPass>();
+      m_gammaTonemapFxaaPass = MakeNewPtr<GammaTonemapFxaaPass>();
     }
 
     void EditorRenderer::OutlineSelecteds(Renderer* renderer)

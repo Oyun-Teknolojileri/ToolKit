@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "DeferredSceneRenderPath.h"
 #include "EditorLight.h"
 #include "FolderWindow.h"
 
@@ -16,7 +15,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    class ThumbnailRenderer : private DeferredSceneRenderPath
+    class ThumbnailRenderer : private ForwardSceneRenderPath
     {
      public:
       ThumbnailRenderer();
