@@ -193,7 +193,11 @@ namespace ToolKit
       cam->SetOrthographicScaleVal(1.0f);
       cam->InvalidateSpatialCaches();
       m_cascadeShadowCameras.push_back(cam);
+
+      m_shadowAtlasLayers.push_back(-1);
+      m_shadowAtlasCoords.push_back(Vec2(-1.0f));
     }
+
     m_shadowMapCascadeCameraProjectionViewMatrices.resize(RHIConstants::MaxCascadeCount);
   }
 
@@ -398,7 +402,14 @@ namespace ToolKit
 
   TKDefineClass(PointLight, Light);
 
-  PointLight::PointLight() {}
+  PointLight::PointLight()
+  {
+    for (int i = 0; i < 6; i++)
+    {
+      m_shadowAtlasLayers.push_back(-1);
+      m_shadowAtlasCoords.push_back(Vec2(-1.0f));
+    }
+  }
 
   PointLight::~PointLight() {}
 
@@ -469,7 +480,11 @@ namespace ToolKit
 
   TKDefineClass(SpotLight, Light);
 
-  SpotLight::SpotLight() {}
+  SpotLight::SpotLight()
+  {
+    m_shadowAtlasLayers.push_back(-1);
+    m_shadowAtlasCoords.push_back(Vec2(-1.0f));
+  }
 
   SpotLight::~SpotLight() {}
 

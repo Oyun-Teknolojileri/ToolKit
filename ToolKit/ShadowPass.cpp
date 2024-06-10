@@ -10,6 +10,7 @@
 #include "BVH.h"
 #include "Camera.h"
 #include "DirectionComponent.h"
+#include "Light.h"
 #include "Logger.h"
 #include "Material.h"
 #include "MathUtil.h"
@@ -26,6 +27,7 @@ namespace ToolKit
 
   ShadowPass::ShadowPass()
   {
+    // Order must match with TextureUtil.shader::UVWToUVLayer
     Mat4 views[6] = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
                      glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
                      glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
@@ -33,9 +35,9 @@ namespace ToolKit
                      glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
                      glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
 
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < 6; i++)
     {
-      DecomposeMatrix(views[i], nullptr, &m_cubeMapRotations[i], &m_cubeMapScales[i]);
+      DecomposeMatrix(views[i], nullptr, &m_cubeMapRotations[i], nullptr);
     }
 
     m_shadowAtlas       = MakeNewPtr<RenderTarget>();
@@ -48,6 +50,11 @@ namespace ToolKit
 
   void ShadowPass::Render()
   {
+    if (m_lights.empty())
+    {
+      return;
+    }
+
     PUSH_GPU_MARKER("ShadowPass::Render");
     PUSH_CPU_MARKER("ShadowPass::Render");
 
@@ -55,8 +62,8 @@ namespace ToolKit
     const Vec4 lastClearColor = renderer->m_clearColor;
 
     // Clear shadow atlas before any draw call
-    renderer->SetFramebuffer(m_shadowFramebuffer, GraphicBitFields::None);
-    for (int i = 0; i < m_layerCount; ++i)
+    renderer->SetFramebuffer(m_shadowFramebuffer, GraphicBitFields::AllBits);
+    for (int i = 0; i < m_layerCount; i++)
     {
       m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, i);
       renderer->ClearBuffer(GraphicBitFields::ColorBits, m_shadowClearColor);
@@ -71,6 +78,9 @@ namespace ToolKit
         DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
         dLight->UpdateShadowFrustum(m_params.viewCamera, m_params.scene);
       }
+
+      // Make sure depth is cleared for each light.
+      renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
 
       // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
       RenderShadowMaps(light);
@@ -126,7 +136,7 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
 
     // Dropout non shadow casting lights.
-    m_lights           = m_params.scene->GetLights();
+    m_lights           = m_params.lights;
     erase_if(m_lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
 
     InitShadowAtlas();
@@ -237,73 +247,63 @@ namespace ToolKit
       POP_CPU_MARKER();
     };
 
-    if (light->IsA<PointLight>())
+    if (light->GetLightType() == Light::LightType::Directional)
     {
-      for (int i = 0; i < 6; ++i)
+      int cascadeCount           = GetEngineSettings().Graphics.cascadeCount;
+      DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
+      for (int i = 0; i < cascadeCount; i++)
       {
-        m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                                m_shadowAtlas,
-                                                0,
-                                                light->m_shadowAtlasLayer + i);
+        int layer = dLight->m_shadowAtlasLayers[i];
+        m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
+        AddHWRenderPass();
+
+        Vec2 coord       = dLight->m_shadowAtlasCoords[i];
+        float resolution = light->GetShadowResVal();
+        renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
+
+        renderForShadowMapFn(light, dLight->m_cascadeShadowCameras[i]);
+      }
+    }
+    else if (light->GetLightType() == Light::LightType::Point)
+    {
+      for (int i = 0; i < 6; i++)
+      {
+        int layer = light->m_shadowAtlasLayers[i];
+        m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
 
         AddHWRenderPass();
 
         light->m_shadowCamera->m_node->SetTranslation(light->m_node->GetTranslation());
         light->m_shadowCamera->m_node->SetOrientation(m_cubeMapRotations[i]);
 
-        // TODO: Scales are not needed. Remove.
-        light->m_shadowCamera->m_node->SetScale(m_cubeMapScales[i]);
-
         renderer->ClearBuffer(GraphicBitFields::DepthBits);
         AddHWRenderPass();
 
-        renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
-                                  (uint) light->m_shadowAtlasCoord.y,
-                                  (uint) light->GetShadowResVal(),
-                                  (uint) light->GetShadowResVal());
+        Vec2 coord       = light->m_shadowAtlasCoords[i];
+        float resolution = light->GetShadowResVal();
+        renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
 
         renderForShadowMapFn(light, light->m_shadowCamera);
       }
     }
-    else if (light->IsA<SpotLight>())
+    else
     {
+      assert(light->GetLightType() == Light::LightType::Spot);
+
       m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
                                               m_shadowAtlas,
                                               0,
-                                              light->m_shadowAtlasLayer);
+                                              light->m_shadowAtlasLayers[0]);
       AddHWRenderPass();
 
       renderer->ClearBuffer(GraphicBitFields::DepthBits);
       AddHWRenderPass();
 
-      renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
-                                (uint) light->m_shadowAtlasCoord.y,
-                                (uint) light->GetShadowResVal(),
-                                (uint) light->GetShadowResVal());
+      Vec2 coord       = light->m_shadowAtlasCoords[0];
+      float resolution = light->GetShadowResVal();
 
+      renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
       renderForShadowMapFn(light, light->m_shadowCamera);
-    }
-    else // if (light->IsA<DirectionalLight>())
-    {
-      DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
-      for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; i++)
-      {
-        m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                                m_shadowAtlas,
-                                                0,
-                                                light->m_shadowAtlasLayer + i);
-        AddHWRenderPass();
-
-        renderer->ClearBuffer(GraphicBitFields::DepthBits);
-        AddHWRenderPass();
-
-        renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
-                                  (uint) light->m_shadowAtlasCoord.y,
-                                  (uint) light->GetShadowResVal(),
-                                  (uint) light->GetShadowResVal());
-
-        renderForShadowMapFn(light, dLight->m_cascadeShadowCameras[i]);
-      }
     }
   }
 
@@ -311,114 +311,86 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    int layerCount          = -1;
-    int lastLayerInUse      = -1;
+    // Collect all the maps to create coordinate / layer pairs. ( Packing )
+    LightPtrArray lightArray = lights;
+    auto dirLightEndItr      = std::partition(lightArray.begin(),
+                                         lightArray.end(),
+                                         [](const LightPtr& light) -> bool
+                                         { return light->GetLightType() == Light::LightType::Directional; });
 
-    LightPtrArray dirLights = lights;
-    LightPtrArray spotLights;
-    LightPtrArray pointLights;
-    LightPtrArray::iterator it = dirLights.begin();
-    while (it != dirLights.end())
+    // Shadow map accumulator.
+    IntArray resolutions;
+
+    EngineSettings& settings = GetEngineSettings();
+    const int cascadeCount   = settings.Graphics.cascadeCount;
+
+    // Directional lights requires cascade x number of shadow maps. So we are handling them differently.
+    for (auto lightItr = lightArray.begin(); lightItr != dirLightEndItr; lightItr++)
     {
-      if ((*it)->GetLightType() == Light::LightType::Point)
+      // Allocate shadow map space for each cascade.
+      int shadowRes = (int) glm::round((*lightItr)->GetShadowResVal());
+      for (int i = 0; i < cascadeCount; i++)
       {
-        pointLights.push_back(*it);
-        it = dirLights.erase(it);
+        resolutions.push_back(shadowRes);
       }
-      else if ((*it)->GetLightType() == Light::LightType::Spot)
+    }
+
+    // Accumulate spot lights.
+    auto spotLightEndItr =
+        std::partition(dirLightEndItr,
+                       lightArray.end(),
+                       [](const LightPtr& light) -> bool { return light->GetLightType() == Light::LightType::Spot; });
+
+    for (auto lightItr = dirLightEndItr; lightItr != spotLightEndItr; lightItr++)
+    {
+      int shadowRes = (int) glm::round((*lightItr)->GetShadowResVal());
+      resolutions.push_back(shadowRes);
+    }
+
+    // Accumulate point lights. Each point lights requires 6 shadow maps.
+    for (auto lightItr = spotLightEndItr; lightItr != lightArray.end(); lightItr++)
+    {
+      int shadowRes = (int) glm::round((*lightItr)->GetShadowResVal());
+      for (int i = 0; i < 6; i++)
       {
-        spotLights.push_back(*it);
-        it = dirLights.erase(it);
+        resolutions.push_back(shadowRes);
+      }
+    }
+
+    int layerCount                   = 0;
+    BinPack2D::PackedRectArray rects = m_packer.Pack(resolutions, RHIConstants::ShadowAtlasTextureSize, &layerCount);
+
+    int rectIndex                    = 0;
+    for (int i = 0; i < lightArray.size(); i++)
+    {
+      LightPtr light = lightArray[i];
+      if (light->GetLightType() == Light::LightType::Directional)
+      {
+        for (int ii = 0; ii < cascadeCount; ii++)
+        {
+          light->m_shadowAtlasCoords[ii] = rects[rectIndex].Coord;
+          light->m_shadowAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
+          rectIndex++;
+        }
+      }
+      else if (light->GetLightType() == Light::LightType::Point)
+      {
+        for (int ii = 0; ii < 6; ii++)
+        {
+          light->m_shadowAtlasCoords[ii] = rects[rectIndex].Coord;
+          light->m_shadowAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
+          rectIndex++;
+        }
       }
       else
       {
-        ++it;
+        assert(light->GetLightType() == Light::LightType::Spot);
+
+        light->m_shadowAtlasCoords[0] = rects[rectIndex].Coord;
+        light->m_shadowAtlasLayers[0] = rects[rectIndex].ArrayIndex;
+        rectIndex++;
       }
     }
-
-    // Sort lights based on resolutions (greater to smaller)
-    auto sortByResFn = [](const LightPtr l1, const LightPtr l2) -> bool
-    { return l1->GetShadowResVal() > l2->GetShadowResVal(); };
-
-    std::sort(dirLights.begin(), dirLights.end(), sortByResFn);
-    std::sort(spotLights.begin(), spotLights.end(), sortByResFn);
-    std::sort(pointLights.begin(), pointLights.end(), sortByResFn);
-
-    // Get dir and spot lights into the pack
-    IntArray resolutions;
-    resolutions.reserve(dirLights.size());
-    for (LightPtr light : dirLights)
-    {
-      resolutions.push_back((int) light->GetShadowResVal());
-    }
-
-    int cascades                             = GetEngineSettings().Graphics.cascadeCount;
-
-    std::vector<BinPack2D::PackedRect> rects = m_packer.Pack(resolutions, RHIConstants::ShadowAtlasTextureSize);
-
-    int dirLightIndex                        = 0;
-    for (int i = 0; i < rects.size(); ++i)
-    {
-      dirLights[i]->m_shadowAtlasCoord = rects[i].Coord;
-      dirLights[i]->m_shadowAtlasLayer = (dirLightIndex * cascades) + rects[i].ArrayIndex;
-
-      lastLayerInUse                   = dirLights[i]->m_shadowAtlasLayer + cascades - 1;
-      layerCount                       = std::max(lastLayerInUse, layerCount);
-
-      dirLightIndex++;
-    }
-
-    /////////////////////
-
-    resolutions.clear();
-    resolutions.reserve(spotLights.size());
-    for (LightPtr light : spotLights)
-    {
-      resolutions.push_back((int) light->GetShadowResVal());
-    }
-
-    rects                           = m_packer.Pack(resolutions, RHIConstants::ShadowAtlasTextureSize);
-
-    int spotLightStartingLayerIndex = lastLayerInUse + 1;
-    for (int i = 0; i < rects.size(); ++i)
-    {
-      spotLights[i]->m_shadowAtlasCoord = rects[i].Coord;
-      spotLights[i]->m_shadowAtlasLayer = spotLightStartingLayerIndex + rects[i].ArrayIndex;
-
-      lastLayerInUse                    = spotLights[i]->m_shadowAtlasLayer;
-      layerCount                        = std::max(lastLayerInUse, layerCount);
-    }
-
-    /////////////////////
-
-    // Get point light into another pack
-    resolutions.clear();
-    resolutions.reserve(pointLights.size());
-    for (LightPtr light : pointLights)
-    {
-      resolutions.push_back((int) light->GetShadowResVal());
-    }
-
-    rects = m_packer.Pack(resolutions, RHIConstants::ShadowAtlasTextureSize);
-
-    for (int i = 0; i < rects.size(); ++i)
-    {
-      pointLights[i]->m_shadowAtlasCoord = rects[i].Coord;
-      pointLights[i]->m_shadowAtlasLayer = rects[i].ArrayIndex;
-    }
-
-    int pointLightShadowLayerStartIndex = lastLayerInUse + 1;
-
-    // Adjust point light parameters
-    int pointLightIndex                 = 0;
-    for (LightPtr light : pointLights)
-    {
-      light->m_shadowAtlasLayer = pointLightShadowLayerStartIndex + pointLightIndex * 6;
-      layerCount                = std::max(light->m_shadowAtlasLayer + 5, layerCount);
-      pointLightIndex++;
-    }
-
-    layerCount++;
 
     return layerCount;
   }

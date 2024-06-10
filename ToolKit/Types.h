@@ -119,6 +119,7 @@ namespace ToolKit
   typedef glm::uvec4 UVec4;
   typedef glm::uvec2 UVec2;
   typedef glm::mat4 Mat4;
+  typedef std::vector<Mat4> Mat4Array;
   typedef glm::mat3 Mat3;
   typedef glm::quat Quaternion;
   typedef std::vector<int> IntArray;

@@ -25,6 +25,7 @@ namespace ToolKit
     glGenBuffers(1, &m_lightDataBufferId);
     RHI::BindUniformBuffer(m_lightDataBufferId);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(LightData), NULL, GL_DYNAMIC_COPY);
+
     glGenBuffers(1, &m_lightIndicesBufferId);
     RHI::BindUniformBuffer(m_lightIndicesBufferId);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(ActiveLightIndices), NULL, GL_DYNAMIC_COPY);
@@ -63,9 +64,7 @@ namespace ToolKit
         continue;
       }
 
-      const Light* currLight  = cachedLights[i].get();
-      const bool castShadow   = currLight->GetCastShadowVal();
-      bool isDirectionalLight = false;
+      const Light* currLight = cachedLights[i].get();
 
       // Point light uniforms
       if (currLight->GetLightType() == Light::Point)
@@ -80,24 +79,11 @@ namespace ToolKit
       // Directional light uniforms
       else if (currLight->GetLightType() == Light::Directional)
       {
-        isDirectionalLight                    = true;
-
         const DirectionalLight* dLight        = static_cast<const DirectionalLight*>(currLight);
         m_lightData.perLightData[i].type      = 1;
         m_lightData.perLightData[i].color     = dLight->GetColorVal();
         m_lightData.perLightData[i].intensity = dLight->GetIntensityVal();
         m_lightData.perLightData[i].dir       = dLight->GetComponentFast<DirectionComponent>()->GetDirection();
-
-        if (castShadow)
-        {
-          const int cascades = graphicSettings.cascadeCount;
-          for (int ii = 0; ii < cascades; ii++)
-          {
-            m_lightData.perLightData[i].projectionViewMatrices[ii] =
-                dLight->m_shadowMapCascadeCameraProjectionViewMatrices[ii];
-          }
-          m_lightData.perLightData[i].numOfCascades = cascades;
-        }
       }
       // Spot light uniforms
       else if (currLight->GetLightType() == Light::Spot)
@@ -113,29 +99,65 @@ namespace ToolKit
         m_lightData.perLightData[i].innAngle  = glm::cos(glm::radians(sLight->GetInnerAngleVal() / 2.0f));
       }
 
-      if (castShadow)
+      bool isShadowCaster = currLight->GetCastShadowVal();
+
+      if (isShadowCaster)
       {
         const int PCFSamples = currLight->GetPCFSamplesVal();
-        if (!isDirectionalLight)
+        if (currLight->GetLightType() == Light::LightType::Directional)
         {
-          m_lightData.perLightData[i].projectionViewMatrices[0] = currLight->m_shadowMapCameraProjectionViewMatrix;
+          const DirectionalLight* dLight = static_cast<const DirectionalLight*>(currLight);
+          const int cascades             = graphicSettings.cascadeCount;
+
+          for (int ii = 0; ii < cascades; ii++)
+          {
+            const Mat4& cascadeMatrix = dLight->m_shadowMapCascadeCameraProjectionViewMatrices[ii];
+            m_lightData.perLightData[i].projectionViewMatrices[ii] = cascadeMatrix;
+            m_lightData.perLightData[i].shadowAtlasLayer[ii] = Vec4((float) dLight->m_shadowAtlasLayers[ii]);
+            m_lightData.perLightData[i].shadowAtlasCoord[ii] = Vec4(dLight->m_shadowAtlasCoords[ii], 0.0f, 0.0f);
+          }
+
+          m_lightData.perLightData[i].numOfCascades = cascades;
         }
+        else if (currLight->GetLightType() == Light::LightType::Point)
+        {
+          for (int ii = 0; ii < 6; ii++)
+          {
+            // ProjectView matrix is provided for 6 face in shadow map rendering in ShadowPass.cpp
+
+            // Provide layer.
+            m_lightData.perLightData[i].shadowAtlasLayer[ii] = Vec4((float) currLight->m_shadowAtlasLayers[ii]);
+
+            // Provide coordinate.
+            Vec2 normalizedCoord =
+                currLight->m_shadowAtlasCoords[ii] / (float) RHIConstants::ShadowAtlasTextureSize;
+            m_lightData.perLightData[i].shadowAtlasCoord[ii] = Vec4(normalizedCoord, 0.0f, 0.0f);
+          }
+        }
+        else
+        {
+          assert(currLight->GetLightType() == Light::LightType::Spot);
+
+          m_lightData.perLightData[i].projectionViewMatrices[0] = currLight->m_shadowMapCameraProjectionViewMatrix;
+          m_lightData.perLightData[i].shadowAtlasLayer[0] = Vec4((float) currLight->m_shadowAtlasLayers[0]);
+
+          Vec2 normalizedCoord =
+              currLight->m_shadowAtlasCoords[0] / (float) RHIConstants::ShadowAtlasTextureSize;
+          m_lightData.perLightData[i].shadowAtlasCoord[0] = Vec4(normalizedCoord, 0.0f, 0.0f);
+        }
+
         m_lightData.perLightData[i].shadowMapCameraFar = currLight->m_shadowCamera->Far();
         m_lightData.perLightData[i].BleedingReduction  = currLight->GetBleedingReductionVal();
         m_lightData.perLightData[i].PCFSamples         = PCFSamples;
         m_lightData.perLightData[i].PCFRadius          = currLight->GetPCFRadiusVal();
         m_lightData.perLightData[i].softShadows        = PCFSamples > 1;
-        m_lightData.perLightData[i].shadowAtlasLayer   = (float) currLight->m_shadowAtlasLayer;
 
-        m_lightData.perLightData[i].shadowAtlasCoord =
-            currLight->m_shadowAtlasCoord / (float) RHIConstants::ShadowAtlasTextureSize;
-
-        m_lightData.perLightData[i].shadowAtlasResRatio =
-            currLight->GetShadowResVal() / RHIConstants::ShadowAtlasTextureSize;
-
+        float ratio = currLight->GetShadowResVal() / RHIConstants::ShadowAtlasTextureSize;
+        m_lightData.perLightData[i].shadowAtlasResRatio = ratio;
         m_lightData.perLightData[i].shadowBias = currLight->GetShadowBiasVal() * RHIConstants::ShadowBiasMultiplier;
       }
-      m_lightData.perLightData[i].castShadow = (int) castShadow;
+
+      m_lightData.perLightData[i].castShadow = (int) isShadowCaster;
     }
   }
 

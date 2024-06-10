@@ -7,13 +7,12 @@
 
 #include "BinPack2D.h"
 
-
-
 namespace ToolKit
 {
-  std::vector<BinPack2D::PackedRect> BinPack2D::Pack(const IntArray& squares, int atlasSize)
+
+  BinPack2D::PackedRectArray BinPack2D::Pack(const IntArray& squares, int atlasSize, int* layerCount)
   {
-    std::vector<PackedRect> packed;
+    PackedRectArray packed;
     packed.resize(squares.size());
 
     std::vector<Layer> layers;
@@ -74,6 +73,11 @@ namespace ToolKit
       }
     }
 
+    if (layerCount != nullptr)
+    {
+      *layerCount = (int) layers.size();
+    }
+
     return packed;
   }
 
@@ -95,4 +99,5 @@ namespace ToolKit
     Shelves.push_back({Vec2(0.0f, CurrentHeight), size, atlasSize});
     CurrentHeight += size;
   }
+
 } // namespace ToolKit

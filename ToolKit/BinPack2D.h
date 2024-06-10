@@ -16,14 +16,13 @@ namespace ToolKit
    * Pack() function returns a PackedRect array. Each PackedRect holds
    * the layer index and the coordinates of the square in the layer.
    *
-   *
    * Shelves are holding squares
    * Layer are holding shelves
    *
    * The packing algorithm works as follows:
    * Iterate trough squares that are going to be packed:
-   *    If sqaure can fit in any active shelf
-   *       Place the sqaure inside that shelf
+   *    If square can fit in any active shelf
+   *       Place the square inside that shelf
    *    Else
    *       If there is an available layer to create a shelf
    *         Create a shelf in that layer and place the square
@@ -32,9 +31,7 @@ namespace ToolKit
    *
    */
 
-  /**
-   * Packs 2D sqaures into an atlas (array of squares)
-   */
+  /** Packs 2D squares into an atlas (array of squares) */
   class BinPack2D
   {
    public:
@@ -43,6 +40,8 @@ namespace ToolKit
       Vec2 Coord     = Vec2(-1.0f);
       int ArrayIndex = -1;
     };
+
+    typedef std::vector<PackedRect> PackedRectArray;
 
     struct Shelf
     {
@@ -64,6 +63,7 @@ namespace ToolKit
       void CreateShelf(int size, int atlasSize);
     };
 
-    std::vector<PackedRect> Pack(const IntArray& squares, int atlasSize);
+    PackedRectArray Pack(const IntArray& squares, int atlasSize, int* layerCount = nullptr);
   };
+
 } // namespace ToolKit

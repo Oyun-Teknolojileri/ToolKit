@@ -67,14 +67,15 @@ namespace ToolKit
 
     Mat4 m_shadowMapCameraProjectionViewMatrix;
     CameraPtr m_shadowCamera        = nullptr;
-    int m_shadowAtlasLayer          = -1;
-    Vec2 m_shadowAtlasCoord         = Vec2(-1.0f);
     bool m_shadowResolutionUpdated  = false;
     MeshPtr m_volumeMesh            = nullptr;
 
     bool m_invalidatedForLightCache = false; //<! Set this true if light data on GPU should be updated.
     int m_lightCacheIndex    = -1; //<! Used by renderer only! The index of this light in the renderer's light cache.
     uint16 m_drawCallVersion = 0;  //<! Used by renderer internally (Explained in LightCache.h)
+
+    IntArray m_shadowAtlasLayers;  //!< Layer index in the shadow atlas for each cascade.
+    Vec2Array m_shadowAtlasCoords; //!< Coordinates for each cascade in the corresponding layer.
 
    protected:
     MaterialPtr m_shadowMapMaterial = nullptr;
@@ -111,8 +112,8 @@ namespace ToolKit
     void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera, float near, float far);
 
    public:
-    std::vector<CameraPtr> m_cascadeShadowCameras;
-    std::vector<Mat4> m_shadowMapCascadeCameraProjectionViewMatrices;
+    CameraPtrArray m_cascadeShadowCameras;
+    Mat4Array m_shadowMapCascadeCameraProjectionViewMatrices;
   };
 
   typedef std::shared_ptr<DirectionalLight> DirectionalLightPtr;

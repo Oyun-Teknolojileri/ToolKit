@@ -147,9 +147,9 @@ namespace ToolKit
 
     m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowMapCameraFar", light->m_shadowCamera->Far()));
     m_fullQuadPass->UpdateUniform(ShaderUniform("lightProjectionViewMatrix", projView));
-    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowAtlasCoord", light->m_shadowAtlasCoord / atlasTextureSize));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowAtlasCoord", light->m_shadowAtlasCoords[0] / atlasTextureSize));
     m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowAtlasResRatio", atlasResRatio));
-    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowAtlasLayer", (float) light->m_shadowAtlasLayer));
+    m_fullQuadPass->UpdateUniform(ShaderUniform("lightShadowAtlasLayer", (float) light->m_shadowAtlasLayers[0]));
     m_fullQuadPass->UpdateUniform(ShaderUniform("lightPCFSamples", light->GetPCFSamplesVal()));
     m_fullQuadPass->UpdateUniform(ShaderUniform("lightPCFRadius", light->GetPCFRadiusVal()));
     m_fullQuadPass->UpdateUniform(ShaderUniform("lightBleedReduction", light->GetBleedingReductionVal()));
