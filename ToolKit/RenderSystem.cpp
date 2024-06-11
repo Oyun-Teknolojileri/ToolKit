@@ -32,6 +32,10 @@ namespace ToolKit
     }
   }
 
+  void RenderPath::PreRender(Renderer* renderer) { renderer->StartTimerQuery(); }
+
+  void RenderPath::PostRender(Renderer* renderer) { renderer->EndTimerQuery(); }
+
   RenderSystem::RenderSystem() { m_renderer = new Renderer(); }
 
   RenderSystem::~RenderSystem() { SafeDel(m_renderer); }

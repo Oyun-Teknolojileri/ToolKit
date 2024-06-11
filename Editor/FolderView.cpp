@@ -407,7 +407,7 @@ namespace ToolKit
             {
               if (rm->m_baseType == Material::StaticClass())
               {
-                MaterialPtr mat                   = rm->Create<Material>(dirEnt.GetFullPath());
+                MaterialPtr mat               = rm->Create<Material>(dirEnt.GetFullPath());
                 MaterialWindowPtr materialWnd = MakeNewPtr<MaterialWindow>();
                 materialWnd->SetMaterial(mat);
                 materialWnd->AddToUI();
@@ -974,7 +974,7 @@ namespace ToolKit
 
         if (ImGui::BeginMenu("Create"))
         {
-          auto inputWindowFn = [&views, &thisView](bool isPbr)
+          auto inputWindowFn = [&views, &thisView]()
           {
             StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("Material Name##NwMat", true);
             inputWnd->m_inputVal          = "New Material";
@@ -982,7 +982,7 @@ namespace ToolKit
             inputWnd->m_hint              = "New material name";
             inputWnd->AddToUI();
 
-            inputWnd->m_taskFn = [views, isPbr](const String& val)
+            inputWnd->m_taskFn = [views](const String& val)
             {
               String file = ConcatPaths({views[0]->m_path, val + MATERIAL});
               if (CheckFile(file))
@@ -992,7 +992,7 @@ namespace ToolKit
               else
               {
                 MaterialManager* man = GetMaterialManager();
-                MaterialPtr mat      = isPbr ? man->GetCopyOfDefaultMaterial() : man->GetCopyOfPhongMaterial();
+                MaterialPtr mat      = man->GetCopyOfDefaultMaterial();
                 mat->m_name          = val;
                 mat->SetFile(file);
                 for (FolderView* view : views)
@@ -1007,13 +1007,9 @@ namespace ToolKit
             ImGui::CloseCurrentPopup();
           };
 
-          if (ImGui::MenuItem("PBR"))
+          if (ImGui::MenuItem("PBR Material"))
           {
-            inputWindowFn(true);
-          }
-          if (ImGui::MenuItem("Phong"))
-          {
-            inputWindowFn(false);
+            inputWindowFn();
           }
           ImGui::EndMenu();
         }

@@ -9,7 +9,6 @@
 
 #include "BillboardPass.h"
 #include "BloomPass.h"
-#include "DeferredSceneRenderPath.h"
 #include "EditorLight.h"
 #include "EditorTypes.h"
 #include "ForwardSceneRenderPath.h"
@@ -65,7 +64,6 @@ namespace ToolKit
       class App* App                 = nullptr;
       class EditorViewport* Viewport = nullptr;
       EditorLitMode LitMode          = EditorLitMode::EditorLit;
-      bool UseMobileRenderPath       = false;
     };
 
     class EditorRenderer : public RenderPath
@@ -105,7 +103,6 @@ namespace ToolKit
 
       BillboardPassPtr m_billboardPass                  = nullptr;
       SceneRenderPathPtr m_sceneRenderPath              = nullptr;
-      MobileSceneRenderPathPtr m_mobileSceneRenderPath  = nullptr;
       ForwardRenderPassPtr m_uiPass                     = nullptr;
       ForwardRenderPassPtr m_editorPass                 = nullptr;
       GizmoPassPtr m_gizmoPass                          = nullptr;

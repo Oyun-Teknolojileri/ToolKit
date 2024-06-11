@@ -152,24 +152,6 @@ namespace ToolKit
           g_app->ReInitViewports();
         }
 
-        const char* renderSpecNames[] = {"High", "Low"};
-        const int currentRenderSpec   = (int) engineSettings.Graphics.RenderSpec;
-        const int specCount           = 2;
-        if (ImGui::BeginCombo("Rendering Spec", renderSpecNames[currentRenderSpec]))
-        {
-          for (uint specIndex = 0; specIndex < specCount; specIndex++)
-          {
-            bool isSelected      = false;
-            const char* itemName = renderSpecNames[specIndex];
-            ImGui::Selectable(itemName, &isSelected);
-            if (isSelected)
-            {
-              engineSettings.Graphics.RenderSpec = (RenderingSpec) specIndex;
-            }
-          }
-          ImGui::EndCombo();
-        }
-
         ImGui::SeparatorText("Shadows");
 
         const char* itemNames[] = {"1", "2", "3", "4"};

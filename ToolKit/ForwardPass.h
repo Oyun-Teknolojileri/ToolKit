@@ -54,4 +54,5 @@ namespace ToolKit
   };
 
   typedef std::shared_ptr<ForwardRenderPass> ForwardRenderPassPtr;
+
 } // namespace ToolKit

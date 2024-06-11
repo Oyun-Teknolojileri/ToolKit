@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "DeferredSceneRenderPath.h"
 #include "ForwardSceneRenderPath.h"
 #include "FxaaPass.h"
 #include "GammaPass.h"
@@ -20,9 +19,8 @@ namespace ToolKit
 {
   struct GameRendererParams
   {
-    ViewportPtr viewport     = nullptr;
-    ScenePtr scene           = nullptr;
-    bool useMobileRenderPath = false;
+    ViewportPtr viewport = nullptr;
+    ScenePtr scene       = nullptr;
     EngineSettings::PostProcessingSettings gfx;
   };
 
@@ -36,13 +34,11 @@ namespace ToolKit
 
     virtual ~GameRenderer()
     {
-      m_sceneRenderPath       = nullptr;
-      m_mobileSceneRenderPath = nullptr;
-      m_uiPass                = nullptr;
-      m_gammaTonemapFxaaPass  = nullptr;
-      m_fullQuadPass          = nullptr;
-
-      m_quadUnlitMaterial     = nullptr;
+      m_sceneRenderPath      = nullptr;
+      m_uiPass               = nullptr;
+      m_gammaTonemapFxaaPass = nullptr;
+      m_fullQuadPass         = nullptr;
+      m_quadUnlitMaterial    = nullptr;
     }
 
     void SetParams(const GameRendererParams& gameRendererParams);
@@ -55,11 +51,10 @@ namespace ToolKit
 
     GameRendererParams m_params;
 
-    SceneRenderPathPtr m_sceneRenderPath             = nullptr;
-    MobileSceneRenderPathPtr m_mobileSceneRenderPath = nullptr;
-    ForwardRenderPassPtr m_uiPass                    = nullptr;
-    GammaTonemapFxaaPassPtr m_gammaTonemapFxaaPass   = nullptr;
-    FullQuadPassPtr m_fullQuadPass                   = nullptr;
+    SceneRenderPathPtr m_sceneRenderPath           = nullptr;
+    ForwardRenderPassPtr m_uiPass                  = nullptr;
+    GammaTonemapFxaaPassPtr m_gammaTonemapFxaaPass = nullptr;
+    FullQuadPassPtr m_fullQuadPass                 = nullptr;
 
     RenderJobArray m_uiRenderJobs;
     RenderData m_uiRenderData;

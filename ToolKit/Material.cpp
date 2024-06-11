@@ -168,15 +168,7 @@ namespace ToolKit
     // All PBR opaque materials should be rendered at deferred renderer
     if (IsPBR())
     {
-      if (IsTranslucent())
-      {
-        m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
-      }
-      else
-      {
-        m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
-      }
-
+      m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
       m_fragmentShader->Init();
     }
   }
@@ -214,7 +206,7 @@ namespace ToolKit
   bool Material::IsPBR()
   {
     const String& file = m_fragmentShader->GetFile();
-    return file == GetShaderManager()->PbrDefferedShaderFile() || file == GetShaderManager()->PbrForwardShaderFile();
+    return file == GetShaderManager()->PbrForwardShaderFile();
   }
 
   void Material::UpdateRuntimeVersion()
@@ -402,10 +394,6 @@ namespace ToolKit
     {
       m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
     }
-    else if (m_fragmentShader->GetFile() == GetShaderManager()->PbrDefferedShaderFile())
-    {
-      m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
-    }
 
     if (m_fragmentShader == nullptr)
     {
@@ -442,17 +430,8 @@ namespace ToolKit
     m_defaultMaterial                                 = material;
     m_storage[MaterialPath("default.material", true)] = material;
 
-    // Phong material
-    material                                          = MakeNewPtr<Material>();
-    material->m_isShaderMaterial                      = true;
-    material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-    material->m_fragmentShader = GetShaderManager()->GetPhongForwardShader();
-    material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
-    material->Init();
-    m_storage[MaterialPath("phongForward.material", true)] = material;
-
     // Unlit material
-    material                                               = MakeNewPtr<Material>();
+    material                                          = MakeNewPtr<Material>();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
@@ -491,12 +470,6 @@ namespace ToolKit
   MaterialPtr MaterialManager::GetCopyOfDefaultMaterial(bool storeInMaterialManager)
   {
     ResourcePtr source = m_storage[MaterialPath("default.material", true)];
-    return Copy<Material>(source, storeInMaterialManager);
-  }
-
-  MaterialPtr MaterialManager::GetCopyOfPhongMaterial(bool storeInMaterialManager)
-  {
-    ResourcePtr source = m_storage[MaterialPath("phongForward.material", true)];
     return Copy<Material>(source, storeInMaterialManager);
   }
 

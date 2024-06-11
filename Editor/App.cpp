@@ -217,8 +217,6 @@ namespace ToolKit
         {
           GetRenderSystem()->AddRenderTask({[this, viewport, deltaTime](Renderer* renderer) -> void
                                             {
-                                              viewport->m_editorRenderer->m_params.UseMobileRenderPath =
-                                                  GetEngineSettings().Graphics.RenderSpec == RenderingSpec::Mobile;
                                               viewport->m_editorRenderer->m_params.App      = g_app;
                                               viewport->m_editorRenderer->m_params.LitMode  = m_sceneLightingMode;
                                               viewport->m_editorRenderer->m_params.Viewport = viewport;

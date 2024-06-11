@@ -153,18 +153,12 @@ namespace ToolKit
     bool CanStore(ClassMeta* Class) override;
 
     ShaderPtr GetDefaultVertexShader();
-    ShaderPtr GetPbrDefferedShader();
     ShaderPtr GetPbrForwardShader();
-    ShaderPtr GetPhongForwardShader();
-
-    const String& PbrDefferedShaderFile();
     const String& PbrForwardShaderFile();
 
    private:
-    String m_pbrDefferedShaderFile;
     String m_pbrForwardShaderFile;
     String m_defaultVertexShaderFile;
-    String m_phongForwardShaderFile;
   };
 
 } // namespace ToolKit

@@ -14,16 +14,26 @@
 #include "ForwardPreProcessPass.h"
 #include "Pass.h"
 #include "RenderSystem.h"
-#include "DeferredSceneRenderPath.h"
 #include "ShadowPass.h"
 #include "SsaoPass.h"
 
 namespace ToolKit
 {
+
+  struct SceneRenderPathParams
+  {
+    LightPtrArray Lights;
+    ScenePtr Scene                 = nullptr;
+    CameraPtr Cam                  = nullptr;
+    FramebufferPtr MainFramebuffer = nullptr;
+    bool ClearFramebuffer          = true;
+    EngineSettings::PostProcessingSettings Gfx;
+  };
+
   /**
    * Forward scene render path. All objects are drawn in forward manner. Bandwidth optimized.
    */
-  class TK_API ForwardSceneRenderPath : public DeferredSceneRenderPath
+  class TK_API ForwardSceneRenderPath : public RenderPath
   {
    public:
     ForwardSceneRenderPath();
@@ -35,8 +45,28 @@ namespace ToolKit
     void PostRender(Renderer* renderer) override;
 
    protected:
-    void SetPassParams() override;
+    void SetPassParams();
+
+   public:
+    SceneRenderPathParams m_params;
+
+   public:
+    ShadowPassPtr m_shadowPass                       = nullptr;
+    ForwardRenderPassPtr m_forwardRenderPass         = nullptr;
+    ForwardPreProcessPassPtr m_forwardPreProcessPass = nullptr;
+    CubeMapPassPtr m_skyPass                         = nullptr;
+    SSAOPassPtr m_ssaoPass                           = nullptr;
+    BloomPassPtr m_bloomPass                         = nullptr;
+    DoFPassPtr m_dofPass                             = nullptr;
+
+   protected:
+    bool m_drawSky   = false;
+    SkyBasePtr m_sky = nullptr;
+
+    // Cached variables
+    RenderData m_renderData;
   };
 
-  typedef std::shared_ptr<ForwardSceneRenderPath> MobileSceneRenderPathPtr;
+  typedef std::shared_ptr<ForwardSceneRenderPath> SceneRenderPathPtr;
+
 } // namespace ToolKit
