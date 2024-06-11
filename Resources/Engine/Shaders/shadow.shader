@@ -1,14 +1,14 @@
 <shader>
 	<type name = "includeShader" />
 	<include name = "VSM.shader" />
-  <uniform name = "shadowAtlasSize" />
 	<source>
 	<!--
 
   #ifndef SHADOW_SHADER
   #define SHADOW_SHADER
 
-  uniform float shadowAtlasSize;
+  #define MAX_CASCADE_COUNT 4
+  #define SHADOW_ATLAS_SIZE 2048.0
 
 float PCFFilterShadow2D
 (
@@ -64,7 +64,7 @@ float PCFFilterOmni
   float shadowBias
 )
 {
-  vec2 halfPixel = vec2((1.0 / shadowAtlasSize) * 0.5);
+  vec2 halfPixel = vec2((1.0 / SHADOW_ATLAS_SIZE) * 0.5);
 
   // Single pass average filter the shadow map.
 	vec2 sum = vec2(0.0);

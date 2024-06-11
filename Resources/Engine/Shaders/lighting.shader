@@ -12,7 +12,7 @@
 #ifndef LIGHTING_SHADER
 #define LIGHTING_SHADER
 
-#define MAX_CASCADE_COUNT 4
+
 #define MAX_LIGHT_COUNT 64
 
 // TODO Minimize and pack this data as much as possible
@@ -133,7 +133,7 @@ float CalculateDirectionalShadow
 		startCoord,
 		endCoord,
 		PCFSamples,
-		PCFRadius / shadowAtlasSize, // Convert radius in pixel units to uv.
+		PCFRadius / SHADOW_ATLAS_SIZE, // Convert radius in pixel units to uv.
 		projCoord.z,
 		lightBleedReduction,
 		shadowBias
@@ -180,7 +180,7 @@ float CalculateSpotShadow
 		startCoord,
 		startCoord + shadowAtlasResRatio,
 		PCFSamples,
-		PCFRadius / shadowAtlasSize, // Convert radius in pixel units to uv.
+		PCFRadius / SHADOW_ATLAS_SIZE, // Convert radius in pixel units to uv.
 		currFragDepth,
 		lightBleedReduction,
 		shadowBias
@@ -213,7 +213,7 @@ float CalculatePointShadow
 		shadowAtlasLayer,
 		lightToFrag,
 		PCFSamples,
-		PCFRadius / shadowAtlasSize, // Convert radius in pixel units to uv.
+		PCFRadius / SHADOW_ATLAS_SIZE, // Convert radius in pixel units to uv.
 		currFragDepth,
 		lightBleedReduction,
 		shadowBias
@@ -318,7 +318,7 @@ vec3 PBRLighting
 					fragPos, 
 					viewCamPos, 
 					LightData[i].projectionViewMatrices[cascadeOfThisPixel], 
-					LightData[i].shadowAtlasCoord[cascadeOfThisPixel].xy / shadowAtlasSize,
+					LightData[i].shadowAtlasCoord[cascadeOfThisPixel].xy / SHADOW_ATLAS_SIZE,
 					LightData[i].shadowAtlasResRatio,	
 					LightData[i].shadowAtlasLayer[cascadeOfThisPixel].x, 
 					LightData[i].PCFSamples, 
