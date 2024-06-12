@@ -37,15 +37,14 @@ struct _LightData
 	float BleedingReduction;
 	float shadowBias;
 	int castShadow;
-	int softShadows;
+	int shadowAtlasLayer;
 
 	// Shadow filter
 	int PCFSamples;
 	float PCFRadius;
 	float shadowAtlasResRatio; // shadow map resolution / shadow atlas resolution.
 
-	float shadowAtlasLayer[6];
-	vec2 shadowAtlasCoord[6]; // Between 0 and 1
+	vec2 shadowAtlasCoord; // Between 0 and 1
 };
 
 layout (std140) uniform LightDataBuffer // slot 0
@@ -94,7 +93,7 @@ float CalculateDirectionalShadow
 	mat4 lightProjView, 
 	vec2 shadowAtlasCoord, // Shadow map start location in the layer in uv space.
 	float shadowAtlasResRatio, // shadowAtlasResRatio = shadow map resolution / shadow atlas resolution.
-	float shadowAtlasLayer, 
+	int shadowAtlasLayer, 
 	int PCFSamples, 
 	float PCFRadius, 
 	float lightBleedReduction, 
@@ -117,7 +116,7 @@ float CalculateDirectionalShadow
 	// and then offset the scaled coordinate to the beginning of the shadow map via "startCoord + shadowAtlasResRatio * projCoord.xy"
 	// which gives us the final uv coordinates in xy and the index of the layer in z
 	vec2 uvInAtlas = startCoord + shadowAtlasResRatio * projCoord.xy;
-	vec3 sampleCoord = vec3(uvInAtlas, shadowAtlasLayer);
+	vec3 sampleCoord = vec3(uvInAtlas, float(shadowAtlasLayer));
 
 	float shadow = 1.0;
 
@@ -155,7 +154,7 @@ float CalculateSpotShadow
 	float shadowCameraFar, 
 	vec2 shadowAtlasCoord,
 	float shadowAtlasResRatio, 
-	float shadowAtlasLayer, 
+	int shadowAtlasLayer, 
 	int PCFSamples, 
 	float PCFRadius, 
 	float lightBleedReduction, 
@@ -192,9 +191,9 @@ float CalculatePointShadow
 	vec3 pos, 
 	vec3 lightPos, 
 	float shadowCameraFar, 
-	vec2 shadowAtlasCoord[6], 
+	vec2 shadowAtlasCoord, 
 	float shadowAtlasResRatio,
-	float shadowAtlasLayer[6], 
+	int shadowAtlasLayer, 
 	int PCFSamples, 
 	float PCFRadius, 
 	float lightBleedReduction, 
@@ -317,18 +316,18 @@ vec3 PBRLighting
 				int layer = 0;
 				vec2 coord = vec2(0.0);
 				float shadowMapSize = LightData[i].shadowAtlasResRatio * SHADOW_ATLAS_SIZE;
-				ShadowAtlasLut(shadowMapSize, LightData[i].shadowAtlasCoord[0], cascadeOfThisPixel, layer, coord);
+				ShadowAtlasLut(shadowMapSize, LightData[i].shadowAtlasCoord, cascadeOfThisPixel, layer, coord);
 
-				layer = int(LightData[i].shadowAtlasLayer[0]) + layer;
+				layer += LightData[i].shadowAtlasLayer;
 
 				shadow = CalculateDirectionalShadow
 				(
 					fragPos, 
 					viewCamPos, 
 					LightData[i].projectionViewMatrices[cascadeOfThisPixel], 
-					coord / SHADOW_ATLAS_SIZE,
+					coord / SHADOW_ATLAS_SIZE, // Convert the resolution to uv
 					LightData[i].shadowAtlasResRatio,	
-					float(layer), 
+					layer, 
 					LightData[i].PCFSamples, 
 					LightData[i].PCFRadius,
 					LightData[i].BleedingReduction,	
@@ -365,9 +364,9 @@ vec3 PBRLighting
 					LightData[i].pos, 
 					LightData[i].projectionViewMatrices[0], 
 					LightData[i].shadowMapCameraFar, 
-					LightData[i].shadowAtlasCoord[0],
+					LightData[i].shadowAtlasCoord / SHADOW_ATLAS_SIZE, // Convert the resolution to uv
 					LightData[i].shadowAtlasResRatio, 
-					LightData[i].shadowAtlasLayer[0], 
+					LightData[i].shadowAtlasLayer, 
 					LightData[i].PCFSamples, 
 					LightData[i].PCFRadius, 
 					LightData[i].BleedingReduction,

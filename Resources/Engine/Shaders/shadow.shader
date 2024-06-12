@@ -82,9 +82,9 @@ float PCFFilterShadow2D
 float PCFFilterOmni
 (
   sampler2DArray shadowAtlas,
-  vec2 startCoord[6],
+  vec2 startCoord,
   float shadowAtlasResRatio,
-  float shadowAtlasLayer[6],
+  int shadowAtlasLayer,
   vec3 dir,
   int samples,
   float radius,
@@ -112,11 +112,19 @@ float PCFFilterOmni
 
     int face = int(texCoord.z);
 
-    vec2 beginCoord = startCoord[face];
+    int layer = 0;
+		vec2 coord = vec2(0.0);
+		float shadowMapSize = shadowAtlasResRatio * SHADOW_ATLAS_SIZE;
+		ShadowAtlasLut(shadowMapSize, startCoord, face, layer, coord);
+    coord /= SHADOW_ATLAS_SIZE;
+
+		layer += shadowAtlasLayer;
+
+    vec2 beginCoord = coord;
     vec2 endCoord = beginCoord + shadowAtlasResRatio;
 
     texCoord.xy = beginCoord + (shadowAtlasResRatio * texCoord.xy);
-    texCoord.z = shadowAtlasLayer[face];
+    texCoord.z = float(layer);
 
     // Keep the pixel always in the corresponding face, prevent bleeding.
     texCoord.xy = clamp(texCoord.xy, beginCoord + halfPixel, endCoord - halfPixel);

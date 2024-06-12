@@ -42,16 +42,15 @@ namespace ToolKit
     float BleedingReduction;
     float shadowBias;
     int castShadow;
-    int softShadows; // 16 byte aligned with 4 x 4 bytes.
+    int shadowAtlasLayer;
 
     int PCFSamples;
     float PCFRadius;
     float shadowAtlasResRatio; //!< Shadow map resolution / Shadow atlas resolution. Used to find UV coordinates.
     float pad0;                // 16 byte aligned with 4 x 4 bytes. Padding is needed to 16 byte alignment.
 
-    Vec4 shadowAtlasLayer[6]; // 4 byte + 12 byte padding * 6.
-
-    Vec4 shadowAtlasCoord[6]; // 8 byte + 8 byte padding * 6.
+    Vec2 shadowAtlasCoord;
+    Vec2 pad1;
   };
 
   struct LightData
