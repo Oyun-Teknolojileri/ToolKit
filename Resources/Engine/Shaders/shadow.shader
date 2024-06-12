@@ -10,6 +10,35 @@
   #define MAX_CASCADE_COUNT 4
   #define SHADOW_ATLAS_SIZE 2048.0
 
+  /*
+  * Given a shadow map size and start coordinates, finds the queried shadow map's layer and start coordinates.
+  * Shadow maps for cascades and cube maps are placed sequentially to the atlas. So if you pass the directional
+  * light's start location and start layer and query the layer and start coordinate of 4'th cascade, this function
+  * will calculate it.
+  */
+  void ShadowAtlasLut(in float size, in vec2 startCoord, in int queriedMap, out int layer, out vec2 targetCoord)
+  {
+    vec2 area = vec2(SHADOW_ATLAS_SIZE);
+    targetCoord = startCoord;
+	
+    for (int i = 1; i <= queriedMap; i++)
+    {
+	    targetCoord.x += size;
+
+      if (targetCoord.x >= area.x)
+      {
+        targetCoord.x = 0.0;
+        targetCoord.y += size;
+        if (targetCoord.y >= area.y)
+        {
+          layer += 1;
+          targetCoord.x = 0.0;
+          targetCoord.y = 0.0;
+        }
+      }
+    }
+  }
+
 float PCFFilterShadow2D
 (
   sampler2DArray shadowAtlas,

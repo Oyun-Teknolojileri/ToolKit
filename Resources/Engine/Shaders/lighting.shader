@@ -231,7 +231,8 @@ float RadiusCheck(float radius, float distance)
 float Attenuation(float distance, float radius, float constant, float linear, float quadratic)
 {
 	float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
-	// Decrase attenuation heavily near radius
+
+	// Decrease attenuation heavily near radius
 	attenuation *= 1.0 - smoothstep(0.0, radius, distance);
 	return attenuation;
 }
@@ -313,14 +314,21 @@ vec3 PBRLighting
 					}
 				}
 
+				int layer = 0;
+				vec2 coord = vec2(0.0);
+				float shadowMapSize = LightData[i].shadowAtlasResRatio * SHADOW_ATLAS_SIZE;
+				ShadowAtlasLut(shadowMapSize, LightData[i].shadowAtlasCoord[0], cascadeOfThisPixel, layer, coord);
+
+				layer = int(LightData[i].shadowAtlasLayer[0]) + layer;
+
 				shadow = CalculateDirectionalShadow
 				(
 					fragPos, 
 					viewCamPos, 
 					LightData[i].projectionViewMatrices[cascadeOfThisPixel], 
-					LightData[i].shadowAtlasCoord[cascadeOfThisPixel].xy / SHADOW_ATLAS_SIZE,
+					coord / SHADOW_ATLAS_SIZE,
 					LightData[i].shadowAtlasResRatio,	
-					LightData[i].shadowAtlasLayer[cascadeOfThisPixel].x, 
+					float(layer), 
 					LightData[i].PCFSamples, 
 					LightData[i].PCFRadius,
 					LightData[i].BleedingReduction,	
