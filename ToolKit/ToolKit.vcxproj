@@ -58,7 +58,6 @@
     <ClCompile Include="OutlinePass.cpp" />
     <ClCompile Include="ParameterBlock.cpp" />
     <ClCompile Include="Pass.cpp" />
-    <ClCompile Include="AdditiveLightingPass.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="PluginManager.cpp">
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
@@ -188,7 +187,6 @@
     <ClInclude Include="TKProfiler.h" />
     <ClInclude Include="TKStats.h" />
     <ClInclude Include="ToneMapPass.h" />
-    <ClInclude Include="AdditiveLightingPass.h" />
     <ClInclude Include="ToolKit.h" />
     <ClInclude Include="TKOpenGL.h" />
     <ClInclude Include="Types.h" />

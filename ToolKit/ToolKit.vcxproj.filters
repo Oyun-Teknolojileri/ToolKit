@@ -88,9 +88,6 @@
     <ClCompile Include="UIManager.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="AdditiveLightingPass.cpp">
-      <Filter>Render\RenderPass</Filter>
-    </ClCompile>
     <ClCompile Include="BillboardPass.cpp">
       <Filter>Render\RenderPass</Filter>
     </ClCompile>
@@ -341,9 +338,6 @@
     </ClInclude>
     <ClInclude Include="UIManager.h">
       <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="AdditiveLightingPass.h">
-      <Filter>Render\RenderPass</Filter>
     </ClInclude>
     <ClInclude Include="BillboardPass.h">
       <Filter>Render\RenderPass</Filter>
