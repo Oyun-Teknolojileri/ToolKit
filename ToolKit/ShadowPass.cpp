@@ -316,7 +316,7 @@ namespace ToolKit
     // Sort all lights based on resolution.
     std::sort(lightArray.begin(),
               lightArray.end(),
-              [](LightPtr l1, LightPtr l2) -> bool { return l1->GetShadowResVal() > l2->GetShadowResVal(); });
+              [](LightPtr l1, LightPtr l2) -> bool { return l1->GetShadowResVal() < l2->GetShadowResVal(); });
 
     EngineSettings& settings = GetEngineSettings();
     const int cascadeCount   = settings.Graphics.cascadeCount;
