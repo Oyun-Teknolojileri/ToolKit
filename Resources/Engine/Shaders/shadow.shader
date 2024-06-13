@@ -1,14 +1,43 @@
 <shader>
 	<type name = "includeShader" />
 	<include name = "VSM.shader" />
-  <uniform name = "shadowAtlasSize" />
 	<source>
 	<!--
 
   #ifndef SHADOW_SHADER
   #define SHADOW_SHADER
 
-  uniform float shadowAtlasSize;
+  #define MAX_CASCADE_COUNT 4
+  #define SHADOW_ATLAS_SIZE 2048.0
+
+  /*
+  * Given a shadow map size and start coordinates, finds the queried shadow map's layer and start coordinates.
+  * Shadow maps for cascades and cube maps are placed sequentially to the atlas. So if you pass the directional
+  * light's start location and start layer and query the layer and start coordinate of 4'th cascade, this function
+  * will calculate it.
+  */
+  void ShadowAtlasLut(in float size, in vec2 startCoord, in int queriedMap, out int layer, out vec2 targetCoord)
+  {
+    targetCoord = startCoord;
+    layer = 0;
+	
+    for (int i = 1; i <= queriedMap; i++)
+    {
+	    targetCoord.x += size;
+
+      if (targetCoord.x >= SHADOW_ATLAS_SIZE)
+      {
+        targetCoord.x = 0.0;
+        targetCoord.y += size;
+        if (targetCoord.y >= SHADOW_ATLAS_SIZE)
+        {
+          layer += 1;
+          targetCoord.x = 0.0;
+          targetCoord.y = 0.0;
+        }
+      }
+    }
+  }
 
 float PCFFilterShadow2D
 (
@@ -53,9 +82,9 @@ float PCFFilterShadow2D
 float PCFFilterOmni
 (
   sampler2DArray shadowAtlas,
-  vec2 startCoord[6],
+  vec2 startCoord,
   float shadowAtlasResRatio,
-  float shadowAtlasLayer[6],
+  int shadowAtlasLayer,
   vec3 dir,
   int samples,
   float radius,
@@ -64,7 +93,7 @@ float PCFFilterOmni
   float shadowBias
 )
 {
-  vec2 halfPixel = vec2((1.0 / shadowAtlasSize) * 0.5);
+  vec2 halfPixel = vec2((1.0 / SHADOW_ATLAS_SIZE) * 0.5);
 
   // Single pass average filter the shadow map.
 	vec2 sum = vec2(0.0);
@@ -83,11 +112,19 @@ float PCFFilterOmni
 
     int face = int(texCoord.z);
 
-    vec2 beginCoord = startCoord[face];
+    int layer = 0;
+		vec2 coord = vec2(0.0);
+		float shadowMapSize = shadowAtlasResRatio * SHADOW_ATLAS_SIZE;
+		ShadowAtlasLut(shadowMapSize, startCoord, face, layer, coord);
+    coord /= SHADOW_ATLAS_SIZE;
+
+		layer += shadowAtlasLayer;
+
+    vec2 beginCoord = coord;
     vec2 endCoord = beginCoord + shadowAtlasResRatio;
 
     texCoord.xy = beginCoord + (shadowAtlasResRatio * texCoord.xy);
-    texCoord.z = shadowAtlasLayer[face];
+    texCoord.z = float(layer);
 
     // Keep the pixel always in the corresponding face, prevent bleeding.
     texCoord.xy = clamp(texCoord.xy, beginCoord + halfPixel, endCoord - halfPixel);

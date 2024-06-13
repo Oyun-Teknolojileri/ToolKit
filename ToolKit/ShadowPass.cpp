@@ -311,49 +311,40 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    // Collect all the maps to create coordinate / layer pairs. ( Packing )
     LightPtrArray lightArray = lights;
-    auto dirLightEndItr      = std::partition(lightArray.begin(),
-                                         lightArray.end(),
-                                         [](const LightPtr& light) -> bool
-                                         { return light->GetLightType() == Light::LightType::Directional; });
 
-    // Shadow map accumulator.
-    IntArray resolutions;
+    // Sort all lights based on resolution.
+    std::sort(lightArray.begin(),
+              lightArray.end(),
+              [](LightPtr l1, LightPtr l2) -> bool { return l1->GetShadowResVal() > l2->GetShadowResVal(); });
 
     EngineSettings& settings = GetEngineSettings();
     const int cascadeCount   = settings.Graphics.cascadeCount;
 
-    // Directional lights requires cascade x number of shadow maps. So we are handling them differently.
-    for (auto lightItr = lightArray.begin(); lightItr != dirLightEndItr; lightItr++)
+    IntArray resolutions;
+    for (size_t i = 0; i < lightArray.size(); i++)
     {
-      // Allocate shadow map space for each cascade.
-      int shadowRes = (int) glm::round((*lightItr)->GetShadowResVal());
-      for (int i = 0; i < cascadeCount; i++)
+      LightPtr light = lightArray[i];
+      int resolution = (int) light->GetShadowResVal();
+
+      if (light->GetLightType() == Light::Directional)
       {
-        resolutions.push_back(shadowRes);
+        for (int ii = 0; ii < cascadeCount; ii++)
+        {
+          resolutions.push_back(resolution);
+        }
       }
-    }
-
-    // Accumulate spot lights.
-    auto spotLightEndItr =
-        std::partition(dirLightEndItr,
-                       lightArray.end(),
-                       [](const LightPtr& light) -> bool { return light->GetLightType() == Light::LightType::Spot; });
-
-    for (auto lightItr = dirLightEndItr; lightItr != spotLightEndItr; lightItr++)
-    {
-      int shadowRes = (int) glm::round((*lightItr)->GetShadowResVal());
-      resolutions.push_back(shadowRes);
-    }
-
-    // Accumulate point lights. Each point lights requires 6 shadow maps.
-    for (auto lightItr = spotLightEndItr; lightItr != lightArray.end(); lightItr++)
-    {
-      int shadowRes = (int) glm::round((*lightItr)->GetShadowResVal());
-      for (int i = 0; i < 6; i++)
+      else if (light->GetLightType() == Light::Point)
       {
-        resolutions.push_back(shadowRes);
+        for (int ii = 0; ii < 6; ii++)
+        {
+          resolutions.push_back(resolution);
+        }
+      }
+      else
+      {
+        assert(light->GetLightType() == Light::LightType::Spot);
+        resolutions.push_back(resolution);
       }
     }
 
