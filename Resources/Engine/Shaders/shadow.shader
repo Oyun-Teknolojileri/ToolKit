@@ -10,12 +10,6 @@
   #define MAX_CASCADE_COUNT 4
   #define SHADOW_ATLAS_SIZE 2048.0
 
-  bool geq(float a, float b)
-  {
-    // Large epsilon check, >= should be fine. Replace it with geq
-	  return a - b >= -1.0;
-  }
-
   /*
   * Given a shadow map size and start coordinates, finds the queried shadow map's layer and start coordinates.
   * Shadow maps for cascades and cube maps are placed sequentially to the atlas. So if you pass the directional
@@ -24,7 +18,6 @@
   */
   void ShadowAtlasLut(in float size, in vec2 startCoord, in int queriedMap, out int layer, out vec2 targetCoord)
   {
-    vec2 area = vec2(SHADOW_ATLAS_SIZE);
     targetCoord = startCoord;
     layer = 0;
 	
@@ -32,11 +25,11 @@
     {
 	    targetCoord.x += size;
 
-      if (geq(targetCoord.x, area.x))
+      if (targetCoord.x >= SHADOW_ATLAS_SIZE)
       {
         targetCoord.x = 0.0;
         targetCoord.y += size;
-        if (geq(targetCoord.y, area.y))
+        if (targetCoord.y >= SHADOW_ATLAS_SIZE)
         {
           layer += 1;
           targetCoord.x = 0.0;
