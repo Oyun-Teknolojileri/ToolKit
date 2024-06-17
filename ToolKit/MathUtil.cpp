@@ -575,55 +575,50 @@ namespace ToolKit
     return closestIndx;
   }
 
-  // Inequalities are reverted to work with frustum normals pointing inwards.
-  // Large objects picked falsely.
-  // https://gist.github.com/Kinwailo/d9a07f98d8511206182e50acda4fbc9b
   IntersectResult FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box)
   {
-    IntersectResult ret = IntersectResult::Inside;
-    Vec3 vmin, vmax;
+    Vec3Array corners               = {Vec3(box.min.x, box.min.y, box.min.z),
+                                       Vec3(box.max.x, box.min.y, box.min.z),
+                                       Vec3(box.max.x, box.max.y, box.min.z),
+                                       Vec3(box.min.x, box.max.y, box.min.z),
+                                       Vec3(box.min.x, box.min.y, box.max.z),
+                                       Vec3(box.max.x, box.min.y, box.max.z),
+                                       Vec3(box.max.x, box.max.y, box.max.z),
+                                       Vec3(box.min.x, box.max.y, box.max.z)};
 
-    for (int i = 0; i < 6; ++i)
+    bool allCornersInFrontAllPlanes = true;
+    for (int i = 0; i < 6; i++)
     {
-      // X axis
-      if (frustum.planes[i].normal.x < 0)
+      const PlaneEquation& eq = frustum.planes[i];
+
+      int infront             = 0;
+      for (int ii = 0; ii < 8; ii++)
       {
-        vmin.x = box.min.x;
-        vmax.x = box.max.x;
+        infront += (glm::dot(eq.normal, corners[ii]) + eq.d >= 0.0) ? 1 : 0;
       }
-      else
+
+      // If all points are behind a plane, the box is outside the frustum.
+      if (infront == 0)
       {
-        vmin.x = box.max.x;
-        vmax.x = box.min.x;
-      }
-      // Y axis
-      if (frustum.planes[i].normal.y < 0)
-      {
-        vmin.y = box.min.y;
-        vmax.y = box.max.y;
-      }
-      else
-      {
-        vmin.y = box.max.y;
-        vmax.y = box.min.y;
-      }
-      // Z axis
-      if (frustum.planes[i].normal.z < 0)
-      {
-        vmin.z = box.min.z;
-        vmax.z = box.max.z;
-      }
-      else
-      {
-        vmin.z = box.max.z;
-        vmax.z = box.min.z;
-      }
-      if (glm::dot(frustum.planes[i].normal, vmin) + frustum.planes[i].d < 0)
         return IntersectResult::Outside;
-      if (glm::dot(frustum.planes[i].normal, vmax) + frustum.planes[i].d <= 0)
-        ret = IntersectResult::Intersect;
+      }
+
+      // If at least one corner is behind a plane, it's not fully in front
+      if (infront != 8)
+      {
+        allCornersInFrontAllPlanes = false;
+      }
     }
-    return ret;
+
+    // If all points are in front of all planes, the box is inside the frustum.
+    if (allCornersInFrontAllPlanes)
+    {
+      return IntersectResult::Inside;
+    }
+
+    // In this case, if box is large it may cause false positive, potentially intersecting
+    // or outside. Acceptable because does not produce false negative.
+    return IntersectResult::Intersect;
   }
 
   // frustum should be normalized

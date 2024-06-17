@@ -301,10 +301,11 @@ vec3 PBRLighting
 
 			if (LightData[i].castShadow == 1)
 			{
-				int cascadeOfThisPixel = 0;
+				int numCascade = LightData[i].numOfCascades;
+				int cascadeOfThisPixel = numCascade - 1;
 
 				// Cascade selection by depth range.
-				for (int ci = 0; ci < LightData[i].numOfCascades; ci++)
+				for (int ci = 0; ci < numCascade; ci++)
 				{
 					if (depth < cascadeDistances[ci])
 					{
