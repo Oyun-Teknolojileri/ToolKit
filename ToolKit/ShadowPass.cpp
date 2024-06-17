@@ -79,9 +79,6 @@ namespace ToolKit
         dLight->UpdateShadowFrustum(m_params.viewCamera, m_params.scene);
       }
 
-      // Make sure depth is cleared for each light.
-      renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
-
       // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
       RenderShadowMaps(light);
     }
@@ -248,6 +245,7 @@ namespace ToolKit
       {
         int layer = dLight->m_shadowAtlasLayers[i];
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
+        renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
         AddHWRenderPass();
 
         Vec2 coord       = dLight->m_shadowAtlasCoords[i];
@@ -269,7 +267,7 @@ namespace ToolKit
         light->m_shadowCamera->m_node->SetTranslation(light->m_node->GetTranslation());
         light->m_shadowCamera->m_node->SetOrientation(m_cubeMapRotations[i]);
 
-        renderer->ClearBuffer(GraphicBitFields::DepthBits);
+        renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
         AddHWRenderPass();
 
         Vec2 coord       = light->m_shadowAtlasCoords[i];
@@ -289,7 +287,7 @@ namespace ToolKit
                                               light->m_shadowAtlasLayers[0]);
       AddHWRenderPass();
 
-      renderer->ClearBuffer(GraphicBitFields::DepthBits);
+      renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
       AddHWRenderPass();
 
       Vec2 coord       = light->m_shadowAtlasCoords[0];
