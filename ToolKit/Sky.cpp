@@ -14,8 +14,6 @@
 #include "Shader.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
 
@@ -135,19 +133,10 @@ namespace ToolKit
          createParameterVariantFn("1024", 1024),
          createParameterVariantFn("2048", 2048),
          createParameterVariantFn("4096", 4096)},
-        1,
-        [&](Value& oldVal, Value& newVal)
-        {
-          EnvironmentComponentPtr ec = GetComponent<EnvironmentComponent>();
-          if (ec != nullptr)
-          {
-            ec->m_localData[ec->IBLTextureSizeIndex()].GetVarPtr<MultiChoiceVariant>()->CurrentVal = {
-                std::get<unsigned int>(newVal)};
-          }
-         }
+        1
     };
 
-    IBLTextureSize_Define(mcv, "Sky", 90, true, true, {false, false});
+    IBLTextureSize_Define(mcv, "Sky", 90, true, true);
 
     SetNameVal("SkyBase");
   }

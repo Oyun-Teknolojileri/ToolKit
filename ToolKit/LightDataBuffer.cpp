@@ -141,7 +141,7 @@ namespace ToolKit
         m_lightData.perLightData[i].PCFSamples         = PCFSamples;
         m_lightData.perLightData[i].PCFRadius          = currLight->GetPCFRadiusVal();
 
-        float ratio = currLight->GetShadowResVal() / RHIConstants::ShadowAtlasTextureSize;
+        float ratio = currLight->GetShadowResVal().GetValue<float>() / RHIConstants::ShadowAtlasTextureSize;
         m_lightData.perLightData[i].shadowAtlasResRatio = ratio;
         m_lightData.perLightData[i].shadowBias = currLight->GetShadowBiasVal() * RHIConstants::ShadowBiasMultiplier;
       }

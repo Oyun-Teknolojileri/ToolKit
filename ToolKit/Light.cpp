@@ -50,10 +50,33 @@ namespace ToolKit
   {
     Super::ParameterConstructor();
 
+    auto createParameterVariant = [](const String& name, float val)
+    {
+      ParameterVariant param {val};
+      param.m_name = name;
+      return param;
+    };
+
+    MultiChoiceVariant mcv = {
+        {createParameterVariant("512", 512.0f),
+         createParameterVariant("1024", 1024.0f),
+         createParameterVariant("2048", 2048.0f)},
+        1,
+        [&](Value& oldVal, Value& newVal)
+        {
+          if (GetCastShadowVal())
+          {
+            m_shadowResolutionUpdated  = true;
+            m_invalidatedForLightCache = true;
+          }
+         }
+    };
+
+    ShadowRes_Define(mcv, "Light", 90, true, true);
+
     Color_Define(Vec3(1.0f), "Light", 0, true, true, {true});
     Intensity_Define(1.0f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
     CastShadow_Define(false, "Light", 90, true, true);
-    ShadowRes_Define(512.0f, "Light", 90, true, true, {false, true, 32.0f, 4096.0f, 2.0f});
     PCFSamples_Define(12, "Light", 90, true, true, {false, true, 1, 128, 1});
     PCFRadius_Define(1.0f, "Light", 90, true, true, {false, true, 0.0f, 10.0f, 0.1f});
     ShadowBias_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 20000.0f, 0.01f});
@@ -75,26 +98,6 @@ namespace ToolKit
     ParamCastShadow().m_onValueChangedFn.clear();
     ParamCastShadow().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
                                                    { m_invalidatedForLightCache = true; });
-
-    ParamShadowRes().m_onValueChangedFn.clear();
-    ParamShadowRes().m_onValueChangedFn.push_back(
-        [this](Value& oldVal, Value& newVal) -> void
-        {
-          const float val = std::get<float>(newVal);
-
-          if (val > 0.0f && val < RHIConstants::ShadowAtlasTextureSize + 0.1f)
-          {
-            if (GetCastShadowVal())
-            {
-              m_shadowResolutionUpdated  = true;
-              m_invalidatedForLightCache = true;
-            }
-          }
-          else
-          {
-            newVal = oldVal;
-          }
-        });
 
     ParamPCFSamples().m_onValueChangedFn.clear();
     ParamPCFSamples().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
@@ -382,7 +385,7 @@ namespace ToolKit
     // Allow camera to only make texel size movements.
     // To do this, find the camera origin in projection space and calculate the offset that
     // puts the camera origin on to a texel, prevent sub pixel movements and shimmering in shadow map.
-    float shadowMapRes                     = GetShadowResVal();
+    float shadowMapRes                     = GetShadowResVal().GetValue<float>();
     Mat4 shadowMatrix                      = lightCamera->GetProjectViewMatrix();
     Vec4 shadowOrigin                      = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
     shadowOrigin                           = shadowMatrix * shadowOrigin;

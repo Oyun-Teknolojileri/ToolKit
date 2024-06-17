@@ -249,7 +249,7 @@ namespace ToolKit
         AddHWRenderPass();
 
         Vec2 coord       = dLight->m_shadowAtlasCoords[i];
-        float resolution = light->GetShadowResVal();
+        float resolution = light->GetShadowResVal().GetValue<float>();
         renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
 
         renderForShadowMapFn(light, dLight->m_cascadeShadowCameras[i]);
@@ -271,7 +271,7 @@ namespace ToolKit
         AddHWRenderPass();
 
         Vec2 coord       = light->m_shadowAtlasCoords[i];
-        float resolution = light->GetShadowResVal();
+        float resolution = light->GetShadowResVal().GetValue<float>();
         renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
 
         renderForShadowMapFn(light, light->m_shadowCamera);
@@ -291,7 +291,7 @@ namespace ToolKit
       AddHWRenderPass();
 
       Vec2 coord       = light->m_shadowAtlasCoords[0];
-      float resolution = light->GetShadowResVal();
+      float resolution = light->GetShadowResVal().GetValue<float>();
 
       renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
       renderForShadowMapFn(light, light->m_shadowCamera);
@@ -307,7 +307,8 @@ namespace ToolKit
     // Sort all lights based on resolution.
     std::sort(lightArray.begin(),
               lightArray.end(),
-              [](LightPtr l1, LightPtr l2) -> bool { return l1->GetShadowResVal() < l2->GetShadowResVal(); });
+              [](LightPtr l1, LightPtr l2) -> bool
+              { return l1->GetShadowResVal().GetValue<float>() < l2->GetShadowResVal().GetValue<float>(); });
 
     EngineSettings& settings = GetEngineSettings();
     const int cascadeCount   = settings.Graphics.cascadeCount;
@@ -316,7 +317,7 @@ namespace ToolKit
     for (size_t i = 0; i < lightArray.size(); i++)
     {
       LightPtr light = lightArray[i];
-      int resolution = (int) light->GetShadowResVal();
+      int resolution = (int) light->GetShadowResVal().GetValue<float>();
 
       if (light->GetLightType() == Light::Directional)
       {
