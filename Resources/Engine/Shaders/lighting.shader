@@ -358,7 +358,7 @@ vec3 PBRLighting
 				);
 			}
 
-			irradiance += Lo * max(shadow, 0.1) * cascadeMultiplier;
+			irradiance += Lo * shadow * cascadeMultiplier;
 		}
 		else // if (LightData[i].type == 3) Spot light
 		{
