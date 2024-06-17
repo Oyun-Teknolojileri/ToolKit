@@ -145,6 +145,16 @@ namespace ToolKit
   {
     Super::ParameterEventConstructor();
 
+    ParamIBLTextureSize().GetVar<MultiChoiceVariant>().CurrentVal.Callback = [&](Value& oldVal, Value& newVal)
+    {
+      // Pass parameter to environment component.
+      if (EnvironmentComponentPtr ec = GetComponent<EnvironmentComponent>())
+      {
+        MultiChoiceVariant& self = ec->ParamIBLTextureSize().GetVar<MultiChoiceVariant>();
+        self.CurrentVal          = std::get<uint>(newVal);
+      }
+    };
+
     ParamIlluminate().m_onValueChangedFn.clear();
     ParamIlluminate().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void

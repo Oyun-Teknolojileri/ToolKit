@@ -13,8 +13,6 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-
-
 namespace ToolKit
 {
 
@@ -674,7 +672,7 @@ namespace ToolKit
         uint currentValIndex = 0;
         XmlNode* currValNode = listNode->first_node("CurrVal");
         ReadAttr(currValNode, XmlParamterValAttr.c_str(), currentValIndex);
-        pVar->GetVar<MultiChoiceVariant>().CurrentVal = {currentValIndex};
+        pVar->GetVar<MultiChoiceVariant>().CurrentVal = currentValIndex;
 
         for (uint i = 0; i < listSize; ++i)
         {
