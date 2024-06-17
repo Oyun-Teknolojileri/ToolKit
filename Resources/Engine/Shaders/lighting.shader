@@ -2,7 +2,6 @@
 	<type name = "includeShader" />
 	<include name = "textureUtil.shader" />
 	<include name = "shadow.shader" />
-	<include name = "lightDataTextureUtils.shader" />
 	<include name = "pbr.shader" />
 	<uniform name = "shadowDistance" />
 	<uniform name = "activeCount" />
