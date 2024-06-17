@@ -33,7 +33,7 @@ namespace ToolKit
   {
    public:
     ForwardRenderPass();
-    explicit ForwardRenderPass(const ForwardRenderPassParams& params);
+    ForwardRenderPass(const ForwardRenderPassParams& params);
     ~ForwardRenderPass();
 
     void Render() override;

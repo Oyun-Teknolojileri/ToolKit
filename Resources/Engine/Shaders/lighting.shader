@@ -6,6 +6,7 @@
 	<include name = "pbr.shader" />
 	<uniform name = "shadowDistance" />
 	<uniform name = "activeCount" />
+	<define name = "highlightCascades" val = "0,1" />
 	<source>
 	<!--
 
@@ -299,6 +300,8 @@ vec3 PBRLighting
 			float depth = abs(viewPosDepth);
 			float shadow = 1.0;
 
+			vec3 cascadeMultiplier = vec3(1.0);
+
 			if (LightData[i].castShadow == 1)
 			{
 				int numCascade = LightData[i].numOfCascades;
@@ -313,6 +316,25 @@ vec3 PBRLighting
 						break;
 					}
 				}
+
+#if highlightCascades
+				if (cascadeOfThisPixel == 0)
+				{
+					cascadeMultiplier = vec3(4.0f, 1.0f, 1.0f);
+				}
+				else if (cascadeOfThisPixel == 1)
+				{
+					cascadeMultiplier = vec3(1.0f, 4.0f, 1.0f);
+				}
+				else if (cascadeOfThisPixel == 2)
+				{
+					cascadeMultiplier = vec3(1.0f, 1.0f, 4.0f);
+				}
+				else if (cascadeOfThisPixel == 3)
+				{
+					cascadeMultiplier = vec3(4.0f, 4.0f, 1.0f);
+				}
+#endif
 
 				int layer = 0;
 				vec2 coord = vec2(0.0);
@@ -336,7 +358,7 @@ vec3 PBRLighting
 				);
 			}
 
-			irradiance += Lo * shadow;
+			irradiance += Lo * max(shadow, 0.1) * cascadeMultiplier;
 		}
 		else // if (LightData[i].type == 3) Spot light
 		{

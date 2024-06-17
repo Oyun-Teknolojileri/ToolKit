@@ -185,7 +185,6 @@ namespace ToolKit
         // The tight bounds of the shadow camera which is used to create the shadow map is preserved.
         // The casters that will fall behind the camera will still cast shadows, this is why all the fuss for.
         // In the shader, the objects that fall behind the camera is "pancaked" to shadow camera's front plane.
-
         float n                     = shadowCamera->Near(); // Backup near.
         float f                     = shadowCamera->Far();  // Backup the far.
 
@@ -193,16 +192,10 @@ namespace ToolKit
         Vec3 pos                    = shadowCamera->Position();
         const BoundingBox& sceneBox = m_params.scene->GetSceneBoundary();
 
-        // Find the intersection where the ray hits to scene.
-        // This position will be used to not miss any caster.
-        Ray r                       = {pos, dir};
-        float t                     = 0.0f;
-        RayBoxIntersection(r, sceneBox, t);
-        Vec3 outerPoint = PointOnRay(r, t);
+        Vec3 outerPoint             = pos - glm::normalize(dir) * glm::distance(sceneBox.min, sceneBox.max) * 0.5f;
 
         shadowCamera->m_node->SetTranslation(outerPoint); // Set the camera position.
-
-        shadowCamera->SetNearClipVal(0.5f);
+        shadowCamera->SetNearClipVal(0.0f);
 
         // New far clip is calculated. Its the distance newly calculated outer poi
         shadowCamera->SetFarClipVal(glm::distance(outerPoint, pos) + f);

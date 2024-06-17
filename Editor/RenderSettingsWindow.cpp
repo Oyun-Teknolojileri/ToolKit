@@ -267,6 +267,14 @@ namespace ToolKit
         UI::AddTooltipToLastItem("Prevents shimmering / swimming effects by wasting some shadow map resolution to "
                                  "prevent sub-pixel movements.");
 
+        static bool highLightCascades = false;
+        if (ImGui::Checkbox("Highlight Cascades", &highLightCascades))
+        {
+          ShaderPtr shader = GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment.shader", true));
+          shader->SetDefine("highlightCascades", highLightCascades ? "1" : "0");
+        }
+        UI::AddTooltipToLastItem("Highlights shadow cascades for debugging purpose.");
+
         ImGui::SeparatorText("BVH");
         ImGui::DragInt("Node Max Entity", &engineSettings.Graphics.maxEntityPerBVHNode, 1, 1, 1000000);
         ImGui::DragFloat("Node Min Size", &engineSettings.Graphics.minBVHNodeSize, 1.0f, 0.01f, 100000.0f);
