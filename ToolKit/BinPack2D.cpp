@@ -13,91 +13,74 @@ namespace ToolKit
   BinPack2D::PackedRectArray BinPack2D::Pack(const IntArray& squares, int atlasSize, int* layerCount)
   {
     PackedRectArray packed;
-    packed.resize(squares.size());
+    packed.reserve(squares.size());
 
-    std::vector<Layer> layers;
-    layers.push_back({{}, 0, atlasSize});
-
-    for (int i = 0; i < squares.size(); ++i)
+    if (squares.empty())
     {
-      int size        = squares[i];
+      return packed;
+    }
 
-      bool foundShelf = false;
-      int layerIndex  = 0;
+    PackedRect lastRect;
+    lastRect.coordinate = Vec2(0.0);
+    lastRect.layer      = 0;
 
-      // Check active shelves
-      for (Layer& layer : layers)
+    // Place the first at the beginning.
+    int mapSize         = squares[0];
+
+    auto sizeFailureFn  = [&packed, atlasSize](int mapSize) -> PackedRectArray
+    {
+      TK_LOG("Map can't fit into atlas. Atlas size %d < Map size %d", atlasSize, mapSize);
+      return packed;
+    };
+
+    if (mapSize <= atlasSize)
+    {
+      packed.push_back(lastRect);
+    }
+    else
+    {
+      return sizeFailureFn(mapSize);
+    }
+
+    for (size_t i = 1; i < squares.size(); i++)
+    {
+      mapSize = squares[i];
+      if (mapSize <= atlasSize)
       {
-        for (Shelf& shelf : layer.Shelves)
+        int x = (int) lastRect.coordinate.x + mapSize;
+        if (x < atlasSize)
         {
-          if (shelf.Fits(size))
+          lastRect.coordinate.x = (float) x;
+          packed.push_back(lastRect);
+        }
+        else
+        {
+          int y = (int) lastRect.coordinate.y + mapSize;
+          if (y < atlasSize)
           {
-            Vec2 coord = shelf.Place(size);
-            packed[i]  = {coord, layerIndex};
-
-            foundShelf = true;
+            lastRect.coordinate = Vec2(0.0f, y);
+            packed.push_back(lastRect);
+          }
+          else
+          {
+            lastRect.coordinate  = Vec2(0.0);
+            lastRect.layer      += 1;
+            packed.push_back(lastRect);
           }
         }
-
-        layerIndex++;
       }
-
-      // No shelves found for placing
-      if (!foundShelf)
+      else
       {
-        // Create new shelf in an available layer and place the rectangle there
-        bool foundLayer = false;
-        int layerIndex  = 0;
-        for (Layer& layer : layers)
-        {
-          if (layer.Fits(size))
-          {
-            layer.CreateShelf(size, atlasSize);
-            Vec2 coord = layer.Shelves.back().Place(size);
-            packed[i]  = {coord, layerIndex};
-
-            foundLayer = true;
-          }
-          layerIndex++;
-        }
-
-        // No layer is available for creating this sized shelf, create new layer
-        // and new shelf inside of it. Place the rectangle
-        if (!foundLayer)
-        {
-          layers.push_back({{}, 0, atlasSize});
-          layers.back().CreateShelf(size, atlasSize);
-          Vec2 coord = layers.back().Shelves.back().Place(size);
-          packed[i]  = {coord, (int) layers.size() - 1};
-        }
+        return sizeFailureFn(mapSize);
       }
     }
 
     if (layerCount != nullptr)
     {
-      *layerCount = (int) layers.size();
+      *layerCount = lastRect.layer + 1;
     }
 
     return packed;
-  }
-
-  bool BinPack2D::Shelf::Fits(int size) { return size <= AvailableWidth; }
-
-  Vec2 BinPack2D::Shelf::Place(int size)
-  {
-    Vec2 rectCoord  = Coord;
-    Coord.x        += size;
-    AvailableWidth -= size;
-
-    return rectCoord;
-  }
-
-  bool BinPack2D::Layer::Fits(int size) { return size <= MaxHeight - CurrentHeight; }
-
-  void BinPack2D::Layer::CreateShelf(int size, int atlasSize)
-  {
-    Shelves.push_back({Vec2(0.0f, CurrentHeight), size, atlasSize});
-    CurrentHeight += size;
   }
 
 } // namespace ToolKit

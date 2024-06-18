@@ -351,8 +351,8 @@ namespace ToolKit
       {
         for (int ii = 0; ii < cascadeCount; ii++)
         {
-          light->m_shadowAtlasCoords[ii] = rects[rectIndex].Coord;
-          light->m_shadowAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
+          light->m_shadowAtlasCoords[ii] = rects[rectIndex].coordinate;
+          light->m_shadowAtlasLayers[ii] = rects[rectIndex].layer;
           rectIndex++;
         }
       }
@@ -360,8 +360,8 @@ namespace ToolKit
       {
         for (int ii = 0; ii < 6; ii++)
         {
-          light->m_shadowAtlasCoords[ii] = rects[rectIndex].Coord;
-          light->m_shadowAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
+          light->m_shadowAtlasCoords[ii] = rects[rectIndex].coordinate;
+          light->m_shadowAtlasLayers[ii] = rects[rectIndex].layer;
           rectIndex++;
         }
       }
@@ -369,8 +369,8 @@ namespace ToolKit
       {
         assert(light->GetLightType() == Light::LightType::Spot);
 
-        light->m_shadowAtlasCoords[0] = rects[rectIndex].Coord;
-        light->m_shadowAtlasLayers[0] = rects[rectIndex].ArrayIndex;
+        light->m_shadowAtlasCoords[0] = rects[rectIndex].coordinate;
+        light->m_shadowAtlasLayers[0] = rects[rectIndex].layer;
         rectIndex++;
       }
     }
