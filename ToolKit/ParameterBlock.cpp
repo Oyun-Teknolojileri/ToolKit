@@ -734,6 +734,13 @@ namespace ToolKit
           {
             if (var.m_name == memberVar.m_name)
             {
+              if (var.GetType() != memberVar.GetType())
+              {
+                // Skip due to type mismatch and let the constructed one stay.
+                isFound = true;
+                break;
+              }
+
               memberVar.m_var = var.m_var;
               isFound         = true;
               break;

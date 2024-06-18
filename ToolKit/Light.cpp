@@ -61,15 +61,7 @@ namespace ToolKit
         {createParameterVariant("512", 512.0f),
          createParameterVariant("1024", 1024.0f),
          createParameterVariant("2048", 2048.0f)},
-        1,
-        [&](Value& oldVal, Value& newVal)
-        {
-          if (GetCastShadowVal())
-          {
-            m_shadowResolutionUpdated  = true;
-            m_invalidatedForLightCache = true;
-          }
-         }
+        1
     };
 
     ShadowRes_Define(mcv, "Light", 90, true, true);
@@ -86,6 +78,15 @@ namespace ToolKit
   void Light::ParameterEventConstructor()
   {
     Super::ParameterEventConstructor();
+
+    ParamShadowRes().GetVar<MultiChoiceVariant>().CurrentVal.Callback = [&](Value& oldVal, Value& newVal)
+    {
+      if (GetCastShadowVal())
+      {
+        m_shadowResolutionUpdated  = true;
+        m_invalidatedForLightCache = true;
+      }
+    };
 
     ParamColor().m_onValueChangedFn.clear();
     ParamColor().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
