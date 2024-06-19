@@ -667,9 +667,6 @@
     <None Include="..\Resources\Engine\Shaders\perspectiveDepthViewFrag.shader">
       <Filter>Render\Shaders</Filter>
     </None>
-    <None Include="..\Resources\Engine\Shaders\phongForwardFragment.shader">
-      <Filter>Render\Shaders</Filter>
-    </None>
     <None Include="..\Resources\Engine\Shaders\positionVert.shader">
       <Filter>Render\Shaders</Filter>
     </None>

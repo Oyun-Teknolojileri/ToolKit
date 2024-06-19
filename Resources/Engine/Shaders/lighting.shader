@@ -65,20 +65,6 @@ uniform sampler2DArray s_texture8; // Shadow atlas
 /// Deferred rendering uniforms
 uniform sampler2D s_texture13; // Light data
 
-uniform float lightDataTextureWidth;
-uniform vec2 shadowDirLightsInterval;
-uniform vec2 shadowPointLightsInterval;
-uniform vec2 shadowSpotLightsInterval;
-uniform vec2 nonShadowDirLightsInterval;
-uniform vec2 nonShadowPointLightsInterval;
-uniform vec2 nonShadowSpotLightsInterval;
-uniform float dirShadowLightDataSize;
-uniform float pointShadowLightDataSize;
-uniform float spotShadowLightDataSize;
-uniform float dirNonShadowLightDataSize;
-uniform float pointNonShadowLightDataSize;
-uniform float spotNonShadowLightDataSize;
-
 const float shadowFadeOutDistanceNorm = 0.9;
 
 bool EpsilonEqual(float a, float b, float eps)

@@ -235,7 +235,6 @@
     <None Include="..\Resources\Engine\Shaders\perspectiveDepthFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\perspectiveDepthVert.shader" />
     <None Include="..\Resources\Engine\Shaders\perspectiveDepthViewFrag.shader" />
-    <None Include="..\Resources\Engine\Shaders\phongForwardFragment.shader" />
     <None Include="..\Resources\Engine\Shaders\positionVert.shader" />
     <None Include="..\Resources\Engine\Shaders\preFilterEnvMapFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\shadow.shader" />
