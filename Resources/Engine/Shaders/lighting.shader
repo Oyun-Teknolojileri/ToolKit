@@ -222,6 +222,11 @@ float Attenuation(float distance, float radius, float constant, float linear, fl
 	return attenuation;
 }
 
+// Adhoc filter shrink. Each cascade further away from the camera should
+// reduce the filter size because each pixel coverage enlarges in distant cascades.
+// MJP has a more matematically found way in his shadow sample.
+float filterShrinkCoeff[4] = float[]( 1.0, 0.5, 0.25, 0.125 );
+
 vec3 PBRLighting
 (
 	vec3 fragPos,				// World space fragment position.
@@ -328,6 +333,9 @@ vec3 PBRLighting
 
 				layer += LightData[i].shadowAtlasLayer;
 
+				float rad = LightData[i].PCFRadius;
+				rad = rad * filterShrinkCoeff[cascadeOfThisPixel];
+
 				shadow = CalculateDirectionalShadow
 				(
 					fragPos, 
@@ -337,7 +345,7 @@ vec3 PBRLighting
 					LightData[i].shadowAtlasResRatio,	
 					layer, 
 					LightData[i].PCFSamples, 
-					LightData[i].PCFRadius,
+					rad,
 					LightData[i].BleedingReduction,	
 					LightData[i].shadowBias
 				);
