@@ -159,12 +159,12 @@ namespace ToolKit
                                                    const Mat4* transform = nullptr);
 
   TK_API LineBatchPtr CreateDebugFrustum(const CameraPtr camera,
-                                      const Vec3& color = Vec3(1.0f, 0.0f, 0.0f),
-                                      float size        = 2.0f);
+                                         const Vec3& color = Vec3(1.0f, 0.0f, 0.0f),
+                                         float size        = 2.0f);
 
   // Entity operations.
   TK_API void ToEntityIdArray(IDArray& idArray, const EntityPtrArray& ptrArray);
-
+  TK_API void ToEntityRawPtrArray(EntityRawPtrArray& rawPtrArray, const EntityPtrArray& ptrArray);
   TK_API bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   TK_API void GetRootEntities(const EntityPtrArray& entities, EntityPtrArray& roots);
 

@@ -40,7 +40,7 @@ namespace ToolKit
     }
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({m_cube}, jobs);
+    RenderJobProcessor::CreateRenderJobs(jobs, {m_cube.get()});
     renderer->RenderWithProgramFromMaterial(jobs);
 
     POP_CPU_MARKER();

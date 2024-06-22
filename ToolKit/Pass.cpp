@@ -56,28 +56,23 @@ namespace ToolKit
 
   void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
 
-  void RenderJobProcessor::CreateRenderJobs(const EntityPtrArray& entities,
-                                            RenderJobArray& jobArray,
+  void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
+                                            const EntityRawPtrArray& entities,
                                             bool ignoreVisibility)
   {
     LightPtrArray nullLights;
     EnvironmentComponentPtrArray nullEnvironments;
-    CreateRenderJobs(entities, jobArray, nullLights, nullptr, nullEnvironments, ignoreVisibility);
+
+    CreateRenderJobs(jobArray, entities, nullLights, nullptr, nullEnvironments, ignoreVisibility);
   }
 
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
-                                            BVHPtr bvh,
+                                            const EntityRawPtrArray& entities,
                                             LightPtrArray& lights,
                                             CameraPtr camera,
-                                            const EnvironmentComponentPtrArray& environments)
+                                            const EnvironmentComponentPtrArray& environments,
+                                            bool ignoreVisibility)
   {
-    Mat4 project    = camera->GetProjectionMatrix();
-    Mat4 view       = camera->GetViewMatrix();
-    Frustum frustum = ExtractFrustum(project * view, false);
-
-    EntityRawPtrArray nttiesInFrustum;
-    bvh->FrustumTest(frustum, nttiesInFrustum);
-
     // Sort lights for disc.
     int directionalEndIndx = PreSortLights(lights);
 
@@ -90,11 +85,11 @@ namespace ToolKit
     int size = 0;
 
     EntityRawPtrArray rawNtties;
-    rawNtties.reserve(nttiesInFrustum.size());
+    rawNtties.reserve(entities.size());
 
-    for (Entity* ntt : nttiesInFrustum)
+    for (Entity* ntt : entities)
     {
-      if (ntt->IsVisible())
+      if (ntt->IsVisible() || ignoreVisibility)
       {
         if (MeshComponent* meshComp = ntt->GetComponentFast<MeshComponent>())
         {
@@ -102,134 +97,6 @@ namespace ToolKit
           meshComp->Init(false);
           submeshIndexLookup.push_back(size);
           size += meshComp->GetMeshVal()->GetMeshCount();
-        }
-      }
-    }
-
-    jobArray.clear();
-    jobArray.resize(size); // at least.
-
-    // Construct jobs.
-    using poolstl::iota_iter;
-    std::for_each(TKExecByConditional(rawNtties.size() > 100, WorkerManager::FramePool),
-                  iota_iter<size_t>(0),
-                  iota_iter<size_t>(rawNtties.size()),
-                  [&](size_t nttIndex)
-                  {
-                    Entity* ntt                    = rawNtties[nttIndex];
-                    MaterialPtrArray* materialList = nullptr;
-                    if (MaterialComponent* matComp = ntt->GetComponentFast<MaterialComponent>())
-                    {
-                      materialList = &matComp->GetMaterialList();
-                    }
-
-                    MeshComponent* meshComp   = ntt->GetComponentFast<MeshComponent>();
-                    const MeshPtr& parentMesh = meshComp->GetMeshVal();
-
-                    MeshRawPtrArray allMeshes;
-                    parentMesh->GetAllMeshes(allMeshes);
-
-                    bool cullFlip  = ntt->m_node->RequresCullFlip();
-                    Mat4 transform = ntt->m_node->GetTransform();
-                    for (int subMeshIndx = 0; subMeshIndx < (int) allMeshes.size(); subMeshIndx++)
-                    {
-                      Mesh* mesh           = allMeshes[subMeshIndx];
-                      MaterialPtr material = nullptr;
-
-                      // Pick the material for submesh.
-                      if (materialList != nullptr)
-                      {
-                        if (subMeshIndx < materialList->size())
-                        {
-                          material = (*materialList)[subMeshIndx];
-                        }
-                      }
-
-                      // if material is still null, pick from mesh.
-                      if (material == nullptr)
-                      {
-                        if (mesh->m_material)
-                        {
-                          material = mesh->m_material;
-                        }
-                      }
-
-                      // Worst case, no material found pick a copy of default.
-                      if (material == nullptr)
-                      {
-                        material = GetMaterialManager()->GetDefaultMaterial();
-                        TK_WRN("Material component for entity: \"%s\" has less material than mesh count. Default "
-                               "material used for meshes with missing material.",
-                               ntt->GetNameVal().c_str());
-                      }
-
-                      // Translate nttIndex to corresponding job index.
-                      int jobIndex       = submeshIndexLookup[nttIndex] + subMeshIndx;
-
-                      RenderJob& job     = jobArray[jobIndex];
-                      job.Entity         = ntt;
-                      job.Mesh           = mesh;
-                      job.Material       = material.get();
-                      job.requireCullFlip = cullFlip;
-                      job.ShadowCaster   = meshComp->GetCastShadowVal();
-                      job.WorldTransform = ntt->m_node->GetTransform();
-                      job.BoundingBox    = ntt->GetBoundingBox(true);
-
-                      // Assign skeletal animations.
-                      if (SkeletonComponent* skComp = ntt->GetComponentFast<SkeletonComponent>())
-                      {
-                        job.animData = skComp->GetAnimData(); // copy
-                      }
-
-                      AssignLight(job, lights, directionalEndIndx);
-                      AssignEnvironment(job, environments);
-                    }
-                  });
-  }
-
-  void RenderJobProcessor::CreateRenderJobs(const EntityPtrArray& entities,
-                                            RenderJobArray& jobArray,
-                                            LightPtrArray& lights,
-                                            const CameraPtr& camera,
-                                            const EnvironmentComponentPtrArray& environments,
-                                            bool ignoreVisibility)
-  {
-    CPU_FUNC_RANGE();
-
-    // Create frustum for culling.
-    Frustum frustum;
-    if (camera != nullptr)
-    {
-      Mat4 pr = camera->GetProjectionMatrix();
-      Mat4 v  = camera->GetViewMatrix();
-      frustum = ExtractFrustum(pr * v, false);
-    }
-
-    // Sort lights for disc.
-    int directionalEndIndx = PreSortLights(lights);
-
-    // Each entity can contain several meshes. This submeshIndexLookup array will be used
-    // to find the index of the submehs for a given entity index.
-    // Ex: Entity index is 4 and it has 3 submesh,
-    // its submesh indexes would be = {4, 5, 6}
-    // to look them up: {nttIndex + 0, nttIndex + 1, nttIndex + 3} formula is used.
-    IntArray submeshIndexLookup;
-    submeshIndexLookup.reserve(entities.size());
-    int size = 0;
-
-    EntityRawPtrArray rawNtties;
-    rawNtties.reserve(entities.size());
-
-    for (const EntityPtr& ntt : entities)
-    {
-      if (ntt->IsVisible() || ignoreVisibility)
-      {
-        if (MeshComponent* meshComp = ntt->GetComponentFast<MeshComponent>())
-        {
-          meshComp->Init(false);
-          submeshIndexLookup.push_back(size);
-          size += meshComp->GetMeshVal()->GetMeshCount();
-          rawNtties.push_back(ntt.get());
         }
       }
     }
@@ -300,7 +167,7 @@ namespace ToolKit
                       job.Material        = material.get();
                       job.requireCullFlip = cullFlip;
                       job.ShadowCaster    = meshComp->GetCastShadowVal();
-                      job.WorldTransform  = transform;
+                      job.WorldTransform  = ntt->m_node->GetTransform();
                       job.BoundingBox     = ntt->GetBoundingBox(true);
 
                       // Assign skeletal animations.
@@ -309,19 +176,27 @@ namespace ToolKit
                         job.animData = skComp->GetAnimData(); // copy
                       }
 
-                      if (camera)
-                      {
-                        // Cull.
-                        job.frustumCulled = FrustumTest(frustum, job.BoundingBox);
-
-                        // Light assignment.
-                        if (!job.frustumCulled)
-                        {
-                          AssignEnvironment(job, environments);
-                        }
-                      }
+                      AssignLight(job, lights, directionalEndIndx);
+                      AssignEnvironment(job, environments);
                     }
                   });
+  }
+
+  void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
+                                            BVHPtr bvh,
+                                            LightPtrArray& lights,
+                                            CameraPtr camera,
+                                            const EnvironmentComponentPtrArray& environments,
+                                            bool ignoreVisibility)
+  {
+    Mat4 project    = camera->GetProjectionMatrix();
+    Mat4 view       = camera->GetViewMatrix();
+    Frustum frustum = ExtractFrustum(project * view, false);
+
+    EntityRawPtrArray nttiesInFrustum;
+    bvh->FrustumTest(frustum, nttiesInFrustum);
+
+    CreateRenderJobs(jobArray, nttiesInFrustum, lights, camera, environments, ignoreVisibility);
   }
 
   void RenderJobProcessor::CullLights(LightPtrArray& lights, const CameraPtr& camera, float maxDistance)

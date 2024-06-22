@@ -49,19 +49,19 @@ namespace ToolKit
           renderer->ColorMask(false, false, false, false);
 
           RenderJobArray jobs;
-          RenderJobProcessor::CreateRenderJobs({m_depthMaskSphere}, jobs);
+          RenderJobProcessor::CreateRenderJobs(jobs, {m_depthMaskSphere.get()});
           renderer->RenderWithProgramFromMaterial(jobs);
 
           renderer->ColorMask(true, true, true, true);
 
           jobs.clear();
-          RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
+          RenderJobProcessor::CreateRenderJobs(jobs, {billboard.get()});
           renderer->RenderWithProgramFromMaterial(jobs);
         }
         else
         {
           RenderJobArray jobs;
-          RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
+          RenderJobProcessor::CreateRenderJobs(jobs, {billboard.get()});
           renderer->RenderWithProgramFromMaterial(jobs);
         }
       }
