@@ -189,9 +189,8 @@ namespace ToolKit
                                             const EnvironmentComponentPtrArray& environments,
                                             bool ignoreVisibility)
   {
-    Mat4 project    = camera->GetProjectionMatrix();
-    Mat4 view       = camera->GetViewMatrix();
-    Frustum frustum = ExtractFrustum(project * view, false);
+    Mat4 projectView = camera->GetProjectViewMatrix();
+    Frustum frustum  = ExtractFrustum(projectView, false);
 
     EntityRawPtrArray nttiesInFrustum;
     bvh->FrustumTest(frustum, nttiesInFrustum);

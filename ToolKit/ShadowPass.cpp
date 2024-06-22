@@ -197,13 +197,11 @@ namespace ToolKit
         shadowCamera->SetFarClipVal(glm::distance(outerPoint, pos) + f);
       }
 
-      RenderJobArray jobs;
-      EntityRawPtrArray rawNtties;
-      ToEntityRawPtrArray(rawNtties, m_params.scene->GetEntities());
-
       LightPtrArray nullLights;
       EnvironmentComponentPtrArray nullEnv;
-      RenderJobProcessor::CreateRenderJobs(jobs, rawNtties, nullLights, shadowCamera, nullEnv);
+
+      RenderJobArray jobs;
+      RenderJobProcessor::CreateRenderJobs(jobs, m_params.scene->m_bvh, nullLights, shadowCamera, nullEnv);
 
       if (light->GetLightType() == Light::LightType::Directional)
       {
