@@ -95,20 +95,7 @@ namespace ToolKit
          createParameterVariant("1024", 1024),
          createParameterVariant("2048", 2048),
          createParameterVariant("4096", 4096)},
-        1,
-        [&](Value& oldVal, Value& newVal)
-        {
-          HdriPtr hdri       = GetHdriVal();
-          int iblTexSize     = std::get<uint>(newVal);
-          int prevIblTexSize = std::get<uint>(oldVal);
-
-          if (hdri != nullptr && iblTexSize != prevIblTexSize)
-          {
-            MultiChoiceVariant& self       = ParamIBLTextureSize().GetVar<MultiChoiceVariant>();
-            hdri->m_specularIBLTextureSize = self.GetValue<int>();
-            ReInitHdri(hdri, GetExposureVal());
-          }
-         }
+        1
     };
 
     IBLTextureSize_Define(mcv,
@@ -122,6 +109,20 @@ namespace ToolKit
   void EnvironmentComponent::ParameterEventConstructor()
   {
     Super::ParameterEventConstructor();
+
+    ParamIBLTextureSize().GetVar<MultiChoiceVariant>().CurrentVal.Callback = [&](Value& oldVal, Value& newVal)
+    {
+      HdriPtr hdri       = GetHdriVal();
+      int iblTexSize     = std::get<uint>(newVal);
+      int prevIblTexSize = std::get<uint>(oldVal);
+
+      if (hdri != nullptr && iblTexSize != prevIblTexSize)
+      {
+        MultiChoiceVariant& self       = ParamIBLTextureSize().GetVar<MultiChoiceVariant>();
+        hdri->m_specularIBLTextureSize = self.GetValue<int>();
+        ReInitHdri(hdri, GetExposureVal());
+      }
+    };
 
     ParamExposure().m_onValueChangedFn.clear();
     ParamExposure().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void

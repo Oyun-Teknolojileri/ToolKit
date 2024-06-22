@@ -746,7 +746,7 @@ namespace ToolKit
             bool isSelected = i == mcv->CurrentVal.Index;
             if (ImGui::Selectable(mcv->Choices[i].m_name.c_str(), isSelected))
             {
-              mcv->CurrentVal = {i};
+              mcv->CurrentVal = i;
             }
           }
           ImGui::EndCombo();

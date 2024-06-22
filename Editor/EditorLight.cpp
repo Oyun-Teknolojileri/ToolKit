@@ -230,9 +230,9 @@ namespace ToolKit
         
         if (i == 3)
         {
-          clr.x = 0.0f;
-          clr.y = 0.0f;
-          clr.z = 0.0f;
+          clr.x = 1.0f;
+          clr.y = 1.0f;
+          clr.z = 1.0f;
         }
 
         batch->Generate(vertices, clr, DrawType::Line, 1.5f);

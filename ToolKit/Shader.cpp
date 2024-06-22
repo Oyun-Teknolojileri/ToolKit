@@ -20,7 +20,6 @@
 namespace ToolKit
 {
 
-#define TK_DEFAULT_DEFERRED_FRAG "deferredRenderFrag.shader"
 #define TK_DEFAULT_FORWARD_FRAG  "defaultFragment.shader"
 #define TK_DEFAULT_VERTEX_SHADER "defaultVertex.shader"
 

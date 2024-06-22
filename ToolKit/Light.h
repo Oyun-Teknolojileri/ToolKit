@@ -59,7 +59,7 @@ namespace ToolKit
     TKDeclareParam(Vec3, Color);
     TKDeclareParam(float, Intensity);
     TKDeclareParam(bool, CastShadow);
-    TKDeclareParam(float, ShadowRes);
+    TKDeclareParam(MultiChoiceVariant, ShadowRes);
     TKDeclareParam(int, PCFSamples);
     TKDeclareParam(float, PCFRadius);
     TKDeclareParam(float, ShadowBias);

@@ -79,9 +79,6 @@ namespace ToolKit
         dLight->UpdateShadowFrustum(m_params.viewCamera, m_params.scene);
       }
 
-      // Make sure depth is cleared for each light.
-      renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
-
       // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
       RenderShadowMaps(light);
     }
@@ -185,7 +182,6 @@ namespace ToolKit
         // The tight bounds of the shadow camera which is used to create the shadow map is preserved.
         // The casters that will fall behind the camera will still cast shadows, this is why all the fuss for.
         // In the shader, the objects that fall behind the camera is "pancaked" to shadow camera's front plane.
-
         float n                     = shadowCamera->Near(); // Backup near.
         float f                     = shadowCamera->Far();  // Backup the far.
 
@@ -193,16 +189,10 @@ namespace ToolKit
         Vec3 pos                    = shadowCamera->Position();
         const BoundingBox& sceneBox = m_params.scene->GetSceneBoundary();
 
-        // Find the intersection where the ray hits to scene.
-        // This position will be used to not miss any caster.
-        Ray r                       = {pos, dir};
-        float t                     = 0.0f;
-        RayBoxIntersection(r, sceneBox, t);
-        Vec3 outerPoint = PointOnRay(r, t);
+        Vec3 outerPoint             = pos - glm::normalize(dir) * glm::distance(sceneBox.min, sceneBox.max) * 0.5f;
 
         shadowCamera->m_node->SetTranslation(outerPoint); // Set the camera position.
-
-        shadowCamera->SetNearClipVal(0.5f);
+        shadowCamera->SetNearClipVal(0.0f);
 
         // New far clip is calculated. Its the distance newly calculated outer poi
         shadowCamera->SetFarClipVal(glm::distance(outerPoint, pos) + f);
@@ -255,10 +245,11 @@ namespace ToolKit
       {
         int layer = dLight->m_shadowAtlasLayers[i];
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
+        renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
         AddHWRenderPass();
 
         Vec2 coord       = dLight->m_shadowAtlasCoords[i];
-        float resolution = light->GetShadowResVal();
+        float resolution = light->GetShadowResVal().GetValue<float>();
         renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
 
         renderForShadowMapFn(light, dLight->m_cascadeShadowCameras[i]);
@@ -276,11 +267,11 @@ namespace ToolKit
         light->m_shadowCamera->m_node->SetTranslation(light->m_node->GetTranslation());
         light->m_shadowCamera->m_node->SetOrientation(m_cubeMapRotations[i]);
 
-        renderer->ClearBuffer(GraphicBitFields::DepthBits);
+        renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
         AddHWRenderPass();
 
         Vec2 coord       = light->m_shadowAtlasCoords[i];
-        float resolution = light->GetShadowResVal();
+        float resolution = light->GetShadowResVal().GetValue<float>();
         renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
 
         renderForShadowMapFn(light, light->m_shadowCamera);
@@ -296,11 +287,11 @@ namespace ToolKit
                                               light->m_shadowAtlasLayers[0]);
       AddHWRenderPass();
 
-      renderer->ClearBuffer(GraphicBitFields::DepthBits);
+      renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
       AddHWRenderPass();
 
       Vec2 coord       = light->m_shadowAtlasCoords[0];
-      float resolution = light->GetShadowResVal();
+      float resolution = light->GetShadowResVal().GetValue<float>();
 
       renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
       renderForShadowMapFn(light, light->m_shadowCamera);
@@ -316,7 +307,8 @@ namespace ToolKit
     // Sort all lights based on resolution.
     std::sort(lightArray.begin(),
               lightArray.end(),
-              [](LightPtr l1, LightPtr l2) -> bool { return l1->GetShadowResVal() < l2->GetShadowResVal(); });
+              [](LightPtr l1, LightPtr l2) -> bool
+              { return l1->GetShadowResVal().GetValue<float>() < l2->GetShadowResVal().GetValue<float>(); });
 
     EngineSettings& settings = GetEngineSettings();
     const int cascadeCount   = settings.Graphics.cascadeCount;
@@ -325,7 +317,7 @@ namespace ToolKit
     for (size_t i = 0; i < lightArray.size(); i++)
     {
       LightPtr light = lightArray[i];
-      int resolution = (int) light->GetShadowResVal();
+      int resolution = (int) light->GetShadowResVal().GetValue<float>();
 
       if (light->GetLightType() == Light::Directional)
       {
@@ -359,8 +351,8 @@ namespace ToolKit
       {
         for (int ii = 0; ii < cascadeCount; ii++)
         {
-          light->m_shadowAtlasCoords[ii] = rects[rectIndex].Coord;
-          light->m_shadowAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
+          light->m_shadowAtlasCoords[ii] = rects[rectIndex].coordinate;
+          light->m_shadowAtlasLayers[ii] = rects[rectIndex].layer;
           rectIndex++;
         }
       }
@@ -368,8 +360,8 @@ namespace ToolKit
       {
         for (int ii = 0; ii < 6; ii++)
         {
-          light->m_shadowAtlasCoords[ii] = rects[rectIndex].Coord;
-          light->m_shadowAtlasLayers[ii] = rects[rectIndex].ArrayIndex;
+          light->m_shadowAtlasCoords[ii] = rects[rectIndex].coordinate;
+          light->m_shadowAtlasLayers[ii] = rects[rectIndex].layer;
           rectIndex++;
         }
       }
@@ -377,8 +369,8 @@ namespace ToolKit
       {
         assert(light->GetLightType() == Light::LightType::Spot);
 
-        light->m_shadowAtlasCoords[0] = rects[rectIndex].Coord;
-        light->m_shadowAtlasLayers[0] = rects[rectIndex].ArrayIndex;
+        light->m_shadowAtlasCoords[0] = rects[rectIndex].coordinate;
+        light->m_shadowAtlasLayers[0] = rects[rectIndex].layer;
         rectIndex++;
       }
     }

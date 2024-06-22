@@ -77,12 +77,6 @@ vec3 IBLPBR(vec3 normal, vec3 fragToEye, vec3 albedo, float metallic, float roug
 	vec3 specular = IBLSpecularPBR(normal, fragToEye, roughness, fresnel);
 	return (diffuse + specular) * IblIntensity;
 }
-		
-// No specular, only diffuse
-vec3 IBLPhong(vec3 normal)
-{
-	return IblDiffuse(normal) * IblIntensity;
-}
 
 #endif
 

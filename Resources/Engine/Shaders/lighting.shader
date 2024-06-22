@@ -2,10 +2,10 @@
 	<type name = "includeShader" />
 	<include name = "textureUtil.shader" />
 	<include name = "shadow.shader" />
-	<include name = "lightDataTextureUtils.shader" />
 	<include name = "pbr.shader" />
 	<uniform name = "shadowDistance" />
 	<uniform name = "activeCount" />
+	<define name = "highlightCascades" val = "0,1" />
 	<source>
 	<!--
 
@@ -64,20 +64,6 @@ uniform sampler2DArray s_texture8; // Shadow atlas
 
 /// Deferred rendering uniforms
 uniform sampler2D s_texture13; // Light data
-
-uniform float lightDataTextureWidth;
-uniform vec2 shadowDirLightsInterval;
-uniform vec2 shadowPointLightsInterval;
-uniform vec2 shadowSpotLightsInterval;
-uniform vec2 nonShadowDirLightsInterval;
-uniform vec2 nonShadowPointLightsInterval;
-uniform vec2 nonShadowSpotLightsInterval;
-uniform float dirShadowLightDataSize;
-uniform float pointShadowLightDataSize;
-uniform float spotShadowLightDataSize;
-uniform float dirNonShadowLightDataSize;
-uniform float pointNonShadowLightDataSize;
-uniform float spotNonShadowLightDataSize;
 
 const float shadowFadeOutDistanceNorm = 0.9;
 
@@ -236,6 +222,11 @@ float Attenuation(float distance, float radius, float constant, float linear, fl
 	return attenuation;
 }
 
+// Adhoc filter shrink. Each cascade further away from the camera should
+// reduce the filter size because each pixel coverage enlarges in distant cascades.
+// MJP has a more matematically found way in his shadow sample.
+float filterShrinkCoeff[4] = float[]( 1.0, 0.5, 0.25, 0.125 );
+
 vec3 PBRLighting
 (
 	vec3 fragPos,				// World space fragment position.
@@ -299,12 +290,15 @@ vec3 PBRLighting
 			float depth = abs(viewPosDepth);
 			float shadow = 1.0;
 
+			vec3 cascadeMultiplier = vec3(1.0);
+
 			if (LightData[i].castShadow == 1)
 			{
-				int cascadeOfThisPixel = 0;
+				int numCascade = LightData[i].numOfCascades;
+				int cascadeOfThisPixel = numCascade - 1;
 
 				// Cascade selection by depth range.
-				for (int ci = 0; ci < LightData[i].numOfCascades; ci++)
+				for (int ci = 0; ci < numCascade; ci++)
 				{
 					if (depth < cascadeDistances[ci])
 					{
@@ -313,12 +307,34 @@ vec3 PBRLighting
 					}
 				}
 
+#if highlightCascades
+				if (cascadeOfThisPixel == 0)
+				{
+					cascadeMultiplier = vec3(4.0f, 1.0f, 1.0f);
+				}
+				else if (cascadeOfThisPixel == 1)
+				{
+					cascadeMultiplier = vec3(1.0f, 4.0f, 1.0f);
+				}
+				else if (cascadeOfThisPixel == 2)
+				{
+					cascadeMultiplier = vec3(1.0f, 1.0f, 4.0f);
+				}
+				else if (cascadeOfThisPixel == 3)
+				{
+					cascadeMultiplier = vec3(4.0f, 4.0f, 1.0f);
+				}
+#endif
+
 				int layer = 0;
 				vec2 coord = vec2(0.0);
 				float shadowMapSize = LightData[i].shadowAtlasResRatio * SHADOW_ATLAS_SIZE;
 				ShadowAtlasLut(shadowMapSize, LightData[i].shadowAtlasCoord, cascadeOfThisPixel, layer, coord);
 
 				layer += LightData[i].shadowAtlasLayer;
+
+				float rad = LightData[i].PCFRadius;
+				rad = rad * filterShrinkCoeff[cascadeOfThisPixel];
 
 				shadow = CalculateDirectionalShadow
 				(
@@ -329,13 +345,13 @@ vec3 PBRLighting
 					LightData[i].shadowAtlasResRatio,	
 					layer, 
 					LightData[i].PCFSamples, 
-					LightData[i].PCFRadius,
+					rad,
 					LightData[i].BleedingReduction,	
 					LightData[i].shadowBias
 				);
 			}
 
-			irradiance += Lo * shadow;
+			irradiance += Lo * shadow * cascadeMultiplier;
 		}
 		else // if (LightData[i].type == 3) Spot light
 		{

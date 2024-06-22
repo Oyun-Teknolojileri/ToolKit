@@ -13,8 +13,6 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-
-
 namespace ToolKit
 {
 
@@ -674,7 +672,7 @@ namespace ToolKit
         uint currentValIndex = 0;
         XmlNode* currValNode = listNode->first_node("CurrVal");
         ReadAttr(currValNode, XmlParamterValAttr.c_str(), currentValIndex);
-        pVar->GetVar<MultiChoiceVariant>().CurrentVal = {currentValIndex};
+        pVar->GetVar<MultiChoiceVariant>().CurrentVal = currentValIndex;
 
         for (uint i = 0; i < listSize; ++i)
         {
@@ -736,6 +734,13 @@ namespace ToolKit
           {
             if (var.m_name == memberVar.m_name)
             {
+              if (var.GetType() != memberVar.GetType())
+              {
+                // Skip due to type mismatch and let the constructed one stay.
+                isFound = true;
+                break;
+              }
+
               memberVar.m_var = var.m_var;
               isFound         = true;
               break;
