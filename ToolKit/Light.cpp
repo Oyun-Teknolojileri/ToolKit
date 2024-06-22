@@ -376,6 +376,8 @@ namespace ToolKit
 
     // Set the lens such that it only captures everything inside the frustum.
     float tightFar = tightShadowVolume.max.z - tightShadowVolume.min.z;
+    // Can't figure out why but without this offset some parts of the objects fall behind the far plane.
+    tightFar       = tightFar + 2.5f;
     lightCamera->SetLens(tightShadowVolume.min.x,
                          tightShadowVolume.max.x,
                          tightShadowVolume.min.y,
