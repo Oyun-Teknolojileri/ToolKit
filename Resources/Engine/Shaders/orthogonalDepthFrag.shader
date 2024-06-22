@@ -3,6 +3,8 @@
 	<include name = "VSM.shader" />
 	<uniform name = "DiffuseTextureInUse" />
 	<uniform name = "ColorAlpha" />
+	<uniform name = "alphaMaskTreshold" />
+	<uniform name = "useAlphaMask" />
 	<source>
 	<!--
 #version 300 es
@@ -13,6 +15,8 @@ in vec2 v_texture;
 uniform int DiffuseTextureInUse;
 uniform sampler2D s_texture0;
 uniform float ColorAlpha;
+uniform int useAlphaMask;
+uniform float alphaMaskTreshold;
 
 out vec4 fragColor;
 
@@ -28,7 +32,14 @@ void main()
 		alpha = ColorAlpha;
 	}
 
-	if (alpha < 0.1)
+	if (useAlphaMask == 1)
+	{
+		if (alpha < alphaMaskTreshold)
+		{
+			discard;
+		}
+	}
+	else if (alpha < 0.1)
 	{
 		discard;
 	}

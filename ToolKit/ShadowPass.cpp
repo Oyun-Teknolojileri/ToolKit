@@ -227,8 +227,11 @@ namespace ToolKit
           shadowMaterial->SetAlpha(jobMaterial->GetAlpha());
           shadowRenderState->alphaMaskTreshold = jobRenderState->alphaMaskTreshold;
           shadowRenderState->blendFunction     = jobRenderState->blendFunction;
+          shadowMaterial->m_diffuseTexture     = jobMaterial->m_diffuseTexture;
 
           job.Material                         = shadowMaterial.get();
+          job.Material->UpdateRuntimeVersion();
+
           renderer->Render(job);
         }
       }
