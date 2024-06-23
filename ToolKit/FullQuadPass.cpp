@@ -54,7 +54,7 @@ namespace ToolKit
     renderer->SetCamera(m_camera, true);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({m_quad}, jobs);
+    RenderJobProcessor::CreateRenderJobs(jobs, {m_quad.get()});
     renderer->Render(jobs);
 
     POP_CPU_MARKER();

@@ -158,7 +158,8 @@ namespace ToolKit
         }
 
         RenderJobArray jobs;
-        RenderJobProcessor::CreateRenderJobs({ntt}, jobs, false);
+        RenderJobProcessor::CreateRenderJobs(jobs, {ntt.get()});
+
         if (!jobs.empty())
         {
           RenderJobProcessor::AssignLight(jobs.begin(), jobs.end(), lights);

@@ -165,15 +165,17 @@ namespace ToolKit
     {
       PUSH_CPU_MARKER("Render Call");
 
-      MaterialPtr shadowMaterial                 = light->GetShadowMaterial();
-      shadowMaterial->GetRenderState()->cullMode = CullingType::Back;
-      GpuProgramManager* gpuProgramManager       = GetGpuProgramManager();
+      MaterialPtr shadowMaterial           = light->GetShadowMaterial();
+      GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
       m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
       renderer->BindProgram(m_program);
 
       renderer->SetCamera(shadowCamera, false);
 
-      Frustum frustum;
+      float n  = shadowCamera->Near();     // Backup near.
+      float f  = shadowCamera->Far();      // Backup the far.
+      Vec3 pos = shadowCamera->Position(); // Backup pos.
+
       if (light->GetLightType() == Light::LightType::Directional)
       {
         // Here we will try to find a distance that covers all shadow casters.
@@ -182,11 +184,8 @@ namespace ToolKit
         // The tight bounds of the shadow camera which is used to create the shadow map is preserved.
         // The casters that will fall behind the camera will still cast shadows, this is why all the fuss for.
         // In the shader, the objects that fall behind the camera is "pancaked" to shadow camera's front plane.
-        float n                     = shadowCamera->Near(); // Backup near.
-        float f                     = shadowCamera->Far();  // Backup the far.
 
         Vec3 dir                    = shadowCamera->Direction();
-        Vec3 pos                    = shadowCamera->Position();
         const BoundingBox& sceneBox = m_params.scene->GetSceneBoundary();
 
         Vec3 outerPoint             = pos - glm::normalize(dir) * glm::distance(sceneBox.min, sceneBox.max) * 0.5f;
@@ -196,43 +195,69 @@ namespace ToolKit
 
         // New far clip is calculated. Its the distance newly calculated outer poi
         shadowCamera->SetFarClipVal(glm::distance(outerPoint, pos) + f);
+      }
 
-        // Frustum for culling is calculated from the current camera settings.
-        frustum = ExtractFrustum(shadowCamera->GetProjectViewMatrix(), false);
+      LightPtrArray nullLights;
+      EnvironmentComponentPtrArray nullEnv;
 
+      RenderJobArray jobs;
+      RenderData renderData;
+      RenderJobProcessor::CreateRenderJobs(renderData.jobs, m_params.scene->m_bvh, nullLights, shadowCamera, nullEnv);
+      RenderJobProcessor::SeperateRenderData(renderData, true);
+
+      if (light->GetLightType() == Light::LightType::Directional)
+      {
         // Camera is set back to its original values for rendering the shadow.
         shadowCamera->SetNearClipVal(n);
         shadowCamera->SetFarClipVal(f);
         shadowCamera->m_node->SetTranslation(pos);
       }
-      else
+
+      auto renderJobFn = [&shadowMaterial, renderer](RenderJob& job) -> void
       {
-        frustum = ExtractFrustum(shadowCamera->GetProjectViewMatrix(), false);
-      }
-
-      // Find shadow casters from the light's view.
-      EntityRawPtrArray ntties;
-      m_params.scene->m_bvh->FrustumTest(frustum, ntties);
-
-      RenderJob job;
-      job.Material = shadowMaterial.get();
-
-      for (Entity* ntt : ntties)
-      {
-        job.WorldTransform = ntt->m_node->GetTransform();
-        if (MeshComponentPtr meshCmp = ntt->GetMeshComponent())
+        if (job.ShadowCaster)
         {
-          if (meshCmp->GetCastShadowVal())
-          {
-            const MeshRawPtrArray& meshes = meshCmp->GetMeshVal()->GetAllMeshes();
-            for (Mesh* mesh : meshes)
-            {
-              job.Mesh = mesh;
-              renderer->Render(job);
-            }
-          }
+          job.Material->m_vertexShader.swap(shadowMaterial->m_vertexShader);
+          job.Material->m_fragmentShader.swap(shadowMaterial->m_fragmentShader);
+
+          renderer->Render(job);
+
+          job.Material->m_vertexShader.swap(shadowMaterial->m_vertexShader);
+          job.Material->m_fragmentShader.swap(shadowMaterial->m_fragmentShader);
         }
+      };
+
+      // Draw opaque.
+      RenderJobItr forwardBegin       = renderData.GetForwardOpaqueBegin();
+      RenderJobItr forwardMaskedBegin = renderData.GetForwardAlphaMaskedBegin();
+
+      renderer->OverrideBlendState(true, BlendFunction::NONE);
+
+      shadowMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
+      for (RenderJobItr jobItr = forwardBegin; jobItr < forwardMaskedBegin; jobItr++)
+      {
+        renderJobFn(*jobItr);
       }
+
+      // Draw alpha masked.
+      shadowMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "1");
+      shadowMaterial->m_fragmentShader->SetDefine("UseAlphaMask", "1");
+      RenderJobItr translucentBegin = renderData.GetForwardTranslucentBegin();
+
+      for (RenderJobItr jobItr = forwardMaskedBegin; jobItr < translucentBegin; jobItr++)
+      {
+        renderJobFn(*jobItr);
+      }
+
+      // Draw translucent.
+      RenderJobItr jobItrEnd = renderData.jobs.end();
+      shadowMaterial->m_fragmentShader->SetDefine("UseAlphaMask", "0");
+      for (RenderJobItr jobItr = translucentBegin; jobItr < jobItrEnd; jobItr++)
+      {
+        renderJobFn(*jobItr);
+      }
+
+      renderer->OverrideBlendState(false, BlendFunction::NONE);
 
       POP_CPU_MARKER();
     };

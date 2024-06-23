@@ -41,7 +41,11 @@ namespace ToolKit
     for (const UILayerPtr& layer : layers)
     {
       const EntityPtrArray& uiNtties = layer->m_scene->GetEntities();
-      RenderJobProcessor::CreateRenderJobs(uiNtties, m_uiRenderData.jobs);
+
+      EntityRawPtrArray rawUINtties;
+      ToEntityRawPtrArray(rawUINtties, uiNtties);
+
+      RenderJobProcessor::CreateRenderJobs(m_uiRenderData.jobs, rawUINtties);
     }
 
     RenderJobProcessor::SeperateRenderData(m_uiRenderData, true);

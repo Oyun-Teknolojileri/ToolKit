@@ -839,6 +839,15 @@ namespace ToolKit
     }
   }
 
+  void ToEntityRawPtrArray(EntityRawPtrArray& rawPtrArray, const EntityPtrArray& ptrArray)
+  {
+    rawPtrArray.resize(ptrArray.size());
+    for (size_t i = 0; i < ptrArray.size(); i++)
+    {
+      rawPtrArray[i] = ptrArray[i].get();
+    }
+  }
+
   bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt)
   {
     for (Entity* e : nttArray)

@@ -11,8 +11,6 @@
 #include "Material.h"
 #include "TKProfiler.h"
 
-
-
 namespace ToolKit
 {
   BillboardPass::BillboardPass() {}
@@ -38,7 +36,11 @@ namespace ToolKit
     auto renderBillboardsFn              = [this, cam, renderer, gpuProgramManager](EntityPtrArray& billboards) -> void
     {
       m_renderData.jobs.clear();
-      RenderJobProcessor::CreateRenderJobs(billboards, m_renderData.jobs);
+
+      EntityRawPtrArray rawBillboards;
+      ToEntityRawPtrArray(rawBillboards, billboards);
+      RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, rawBillboards);
+
       RenderJobProcessor::SeperateRenderData(m_renderData, true);
 
       renderer->RenderWithProgramFromMaterial(m_renderData.jobs);

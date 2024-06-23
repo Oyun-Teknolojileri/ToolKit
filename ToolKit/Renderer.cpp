@@ -118,8 +118,6 @@ namespace ToolKit
 
   void Renderer::Render(const RenderJob& job)
   {
-    assert(m_ignoreRenderingCulledObjectWarning || !job.frustumCulled && "Rendering culled object.");
-
     // Make ibl assignments.
     m_renderState.IBLInUse = false;
     if (job.EnvironmentVolume)
@@ -310,29 +308,33 @@ namespace ToolKit
 
     if (m_renderState.blendFunction != state->blendFunction)
     {
-      switch (state->blendFunction)
+      // Only update blend state, if blend state is not overridden.
+      if (!m_blendStateOverrideEnable)
       {
-      case BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA:
-      {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      }
-      break;
-      case BlendFunction::ONE_TO_ONE:
-      {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE);
-        glBlendEquation(GL_FUNC_ADD);
-      }
-      break;
-      default:
-      {
-        glDisable(GL_BLEND);
-      }
-      break;
-      }
+        switch (state->blendFunction)
+        {
+        case BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA:
+        {
+          glEnable(GL_BLEND);
+          glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        }
+        break;
+        case BlendFunction::ONE_TO_ONE:
+        {
+          glEnable(GL_BLEND);
+          glBlendFunc(GL_ONE, GL_ONE);
+          glBlendEquation(GL_FUNC_ADD);
+        }
+        break;
+        default:
+        {
+          glDisable(GL_BLEND);
+        }
+        break;
+        }
 
-      m_renderState.blendFunction = state->blendFunction;
+        m_renderState.blendFunction = state->blendFunction;
+      }
     }
 
     m_renderState.alphaMaskTreshold = state->alphaMaskTreshold;
@@ -567,7 +569,7 @@ namespace ToolKit
     SetCamera(m_tempQuadCam, true);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({m_tempQuad}, jobs);
+    RenderJobProcessor::CreateRenderJobs(jobs, {m_tempQuad.get()});
 
     CompareFunctions lastDepthFunc = m_renderState.depthFunction;
     SetDepthTestFunc(CompareFunctions::FuncAlways);
@@ -584,8 +586,7 @@ namespace ToolKit
     SetCamera(cam, true);
 
     RenderJobArray jobs;
-    EntityPtrArray oneDummyDrawCube = {m_dummyDrawCube};
-    RenderJobProcessor::CreateRenderJobs(oneDummyDrawCube, jobs);
+    RenderJobProcessor::CreateRenderJobs(jobs, {m_dummyDrawCube.get()});
 
     CompareFunctions lastCompareFunc = m_renderState.depthFunction;
     SetDepthTestFunc(CompareFunctions::FuncAlways);
@@ -633,6 +634,18 @@ namespace ToolKit
 
     DrawFullQuad(m_copyMaterial);
     SetFramebuffer(lastFb, GraphicBitFields::None);
+  }
+
+  void Renderer::OverrideBlendState(bool enableOverride, BlendFunction func)
+  {
+    RenderState stateCpy       = m_renderState;
+    stateCpy.blendFunction     = func;
+
+    m_blendStateOverrideEnable = false;
+
+    SetRenderState(&stateCpy);
+
+    m_blendStateOverrideEnable = enableOverride;
   }
 
   void Renderer::EnableBlending(bool enable)
@@ -779,7 +792,7 @@ namespace ToolKit
       SetCamera(camera, true);
 
       RenderJobArray jobs;
-      RenderJobProcessor::CreateRenderJobs({quad}, jobs);
+      RenderJobProcessor::CreateRenderJobs(jobs, {quad.get()});
       RenderWithProgramFromMaterial(jobs);
 
       brdfLut->SetFile(TKBrdfLutTexture);

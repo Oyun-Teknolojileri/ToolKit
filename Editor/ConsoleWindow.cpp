@@ -553,7 +553,9 @@ namespace ToolKit
 
         // Checks for invalid bb & outlier.
         RenderJobArray jobs;
-        RenderJobProcessor::CreateRenderJobs(scene->GetEntities(), jobs);
+        EntityRawPtrArray rawNtties;
+        ToEntityRawPtrArray(rawNtties, scene->GetEntities());
+        RenderJobProcessor::CreateRenderJobs(jobs, rawNtties);
 
         float stdev;
         Vec3 mean;

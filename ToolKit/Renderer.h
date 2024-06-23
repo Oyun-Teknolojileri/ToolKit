@@ -71,10 +71,12 @@ namespace ToolKit
     void CopyTexture(TexturePtr source, TexturePtr dest);
 
     /**
-     * Sets the underlying graphics api state directly which causes by passing
-     * material system. Don't use it unless its necessary for special cases.
-     * @param enable sets the blending on / off for the graphics api.
+     * Sets the blend state directly which causes by passing material system.
+     * @param enableOverride when set true, disables the material system setting blend state per material.
+     * @param func is the BlendFunction to use.
      */
+    void OverrideBlendState(bool enableOverride, BlendFunction func);
+
     void EnableBlending(bool enable);
 
     void EnableDepthWrite(bool enable);
@@ -133,14 +135,7 @@ namespace ToolKit
     // The set contains gpuPrograms that has up to date per frame uniforms.
     std::unordered_set<uint> m_gpuProgramHasFrameUpdates;
 
-    bool m_renderOnlyLighting                 = false;
-
-    /**
-     * Some passes may draw culled objects from view frustum.
-     * To prevent debug message, set this to true.
-     */
-    bool m_ignoreRenderingCulledObjectWarning = false;
-
+    bool m_renderOnlyLighting = false;
     LightCache<RHIConstants::LightCacheSize> m_lightCache;
 
    private:
@@ -194,5 +189,6 @@ namespace ToolKit
 
     uint m_gpuTimerQuery                           = 0;
     float m_cpuTime                                = 0.0f;
+    bool m_blendStateOverrideEnable                = false;
   };
 } // namespace ToolKit
