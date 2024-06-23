@@ -98,7 +98,7 @@ float PCFFilterOmni
   vec2 halfPixel = vec2((1.0 / SHADOW_ATLAS_SIZE) * 0.5);
 
   // Single pass average filter the shadow map.
-	vec2 sum = vec2(0.0);
+	vec4 occuluderAverage = vec4(0.0);
 	for (int i = 0; i < samples; ++i)
 	{
     // Below is randomized sample which causes noise rather than banding.
@@ -131,11 +131,11 @@ float PCFFilterOmni
     // Keep the pixel always in the corresponding face, prevent bleeding.
     texCoord.xy = clamp(texCoord.xy, beginCoord + halfPixel, endCoord - halfPixel);
 
-		sum += texture(shadowAtlas, texCoord).xy;
+		occuluderAverage += texture(shadowAtlas, texCoord);
 	}
 
   // Filtered depth & depth^2
-  sum = sum / float(samples);
+	occuluderAverage = occuluderAverage / float(samples);
 
   vec2 exponents = EvsmExponents;
   vec2 warpedDepth = WarpDepth(currDepth, exponents);
@@ -144,7 +144,9 @@ float PCFFilterOmni
   vec2 depthScale = 100.0 * shadowBias * exponents * warpedDepth;
   vec2 minVariance = depthScale * depthScale;
 
-  return ChebyshevUpperBound(sum, warpedDepth.x, minVariance.x, LBR);
+	float posContrib = ChebyshevUpperBound(occuluderAverage.xz, warpedDepth.x, minVariance.x, LBR);
+	float negContrib = ChebyshevUpperBound(occuluderAverage.yw, warpedDepth.y, minVariance.y, LBR);
+	return min(posContrib, negContrib);
 }
 
 #endif
