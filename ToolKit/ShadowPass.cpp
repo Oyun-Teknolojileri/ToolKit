@@ -40,8 +40,26 @@ namespace ToolKit
       DecomposeMatrix(views[i], nullptr, &m_cubeMapRotations[i], nullptr);
     }
 
-    m_shadowAtlas       = MakeNewPtr<RenderTarget>();
-    m_shadowFramebuffer = MakeNewPtr<Framebuffer>();
+    m_shadowAtlas               = MakeNewPtr<RenderTarget>();
+    m_shadowFramebuffer         = MakeNewPtr<Framebuffer>();
+
+    // Create shadow material
+    auto createShadowMaterialFn = [](StringView vertexShader, StringView fragmentShader) -> MaterialPtr
+    {
+      ShaderPtr vert             = GetShaderManager()->Create<Shader>(ShaderPath(vertexShader.data(), true));
+      ShaderPtr frag             = GetShaderManager()->Create<Shader>(ShaderPath(fragmentShader.data(), true));
+
+      MaterialPtr material       = MakeNewPtr<Material>();
+      material->m_vertexShader   = vert;
+      material->m_fragmentShader = frag;
+      material->GetRenderState()->blendFunction = BlendFunction::NONE;
+      material->Init();
+
+      return material;
+    };
+
+    m_shadowMatOrtho = createShadowMaterialFn("orthogonalDepthVert.shader", "orthogonalDepthFrag.shader");
+    m_shadowMatPersp = createShadowMaterialFn("perspectiveDepthVert.shader", "perspectiveDepthFrag.shader");
   }
 
   ShadowPass::ShadowPass(const ShadowPassParams& params) : ShadowPass() { m_params = params; }
@@ -72,7 +90,6 @@ namespace ToolKit
     // Update shadow maps.
     for (LightPtr& light : m_lights)
     {
-      light->InitShadowMapDepthMaterial();
       if (light->GetLightType() == Light::LightType::Directional)
       {
         DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
@@ -159,13 +176,18 @@ namespace ToolKit
   {
     CPU_FUNC_RANGE();
 
-    Renderer* renderer        = GetRenderer();
+    Renderer* renderer                                = GetRenderer();
+    EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
 
-    auto renderForShadowMapFn = [this, &renderer](LightPtr light, CameraPtr shadowCamera) -> void
+    auto renderForShadowMapFn = [this, &renderer, &graphicsSettings](LightPtr light, CameraPtr shadowCamera) -> void
     {
       PUSH_CPU_MARKER("Render Call");
 
-      MaterialPtr shadowMaterial           = light->GetShadowMaterial();
+      Light::LightType lightType = light->GetLightType();
+      MaterialPtr shadowMaterial = lightType == Light::LightType::Directional ? m_shadowMatOrtho : m_shadowMatPersp;
+
+      shadowMaterial->m_fragmentShader->SetDefine("EVSM4", graphicsSettings.useEVSM4 ? "1" : "0");
+
       GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
       m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
       renderer->BindProgram(m_program);
@@ -264,7 +286,7 @@ namespace ToolKit
 
     if (light->GetLightType() == Light::LightType::Directional)
     {
-      int cascadeCount           = GetEngineSettings().Graphics.cascadeCount;
+      int cascadeCount           = graphicsSettings.cascadeCount;
       DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
       for (int i = 0; i < cascadeCount; i++)
       {

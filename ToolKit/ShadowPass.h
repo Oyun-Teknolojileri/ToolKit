@@ -51,11 +51,10 @@ namespace ToolKit
     ShadowPassParams m_params;
 
    private:
-    MaterialPtr m_prevOverrideMaterial = nullptr;
-    FramebufferPtr m_prevFrameBuffer   = nullptr;
-    MaterialPtr m_lastOverrideMat      = nullptr;
-    const Vec4 m_shadowClearColor      = Vec4(1.0f);
+    MaterialPtr m_shadowMatOrtho       = nullptr;
+    MaterialPtr m_shadowMatPersp       = nullptr;
 
+    const Vec4 m_shadowClearColor      = Vec4(1.0f);
     FramebufferPtr m_shadowFramebuffer = nullptr;
     RenderTargetPtr m_shadowAtlas      = nullptr;
     int m_layerCount                   = 0; // Number of textures in array texture (shadow atlas)

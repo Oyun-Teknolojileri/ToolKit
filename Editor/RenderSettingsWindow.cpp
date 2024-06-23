@@ -167,8 +167,8 @@ namespace ToolKit
         {
           *evsm4 = true;
         }
-        UI::AddTooltipToLastItem("Exponential variance shadow mapping with positive and negative component. Requires "
-                                 "more shadow map memory, but yields softer shadows.");
+        UI::AddTooltipToLastItem("Exponential variance shadow mapping with positive and negative component."
+                                 "\nRequires more shadow map memory, but yields softer shadows.");
 
         const char* itemNames[] = {"1", "2", "3", "4"};
         const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
