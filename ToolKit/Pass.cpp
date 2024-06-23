@@ -246,11 +246,8 @@ namespace ToolKit
   void RenderJobProcessor::SeperateRenderData(RenderData& renderData, bool forwardOnly)
   {
     // Group culled.
-    RenderJobItr culledItr  = std::partition(renderData.jobs.begin(),
-                                            renderData.jobs.end(),
-                                            [](const RenderJob& job) { return job.frustumCulled; });
-
-    RenderJobItr forwardItr = culledItr;
+    RenderJobItr beginItr   = renderData.jobs.begin();
+    RenderJobItr forwardItr = beginItr;
     RenderJobItr translucentItr;
     RenderJobItr deferredAlphaMaskedItr;
     RenderJobItr forwardAlphaMaskedItr;
@@ -258,13 +255,13 @@ namespace ToolKit
     if (!forwardOnly)
     {
       // Group opaque deferred - forward.
-      forwardItr = std::partition(culledItr,
+      forwardItr = std::partition(beginItr,
                                   renderData.jobs.end(),
                                   [](const RenderJob& job)
                                   { return !job.Material->m_isShaderMaterial && !job.Material->IsTranslucent(); });
 
       deferredAlphaMaskedItr =
-          std::partition(culledItr, forwardItr, [](const RenderJob& job) { return !job.Material->IsAlphaMasked(); });
+          std::partition(beginItr, forwardItr, [](const RenderJob& job) { return !job.Material->IsAlphaMasked(); });
     }
 
     // Group translucent.
@@ -282,7 +279,7 @@ namespace ToolKit
     }
     else
     {
-      renderData.deferredJobsStartIndex = (int) std::distance(renderData.jobs.begin(), culledItr);
+      renderData.deferredJobsStartIndex = (int) std::distance(renderData.jobs.begin(), beginItr);
       renderData.deferredAlphaMaskedJobsStartIndex =
           (int) std::distance(renderData.jobs.begin(), deferredAlphaMaskedItr);
     }

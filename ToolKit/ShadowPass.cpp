@@ -201,7 +201,9 @@ namespace ToolKit
       EnvironmentComponentPtrArray nullEnv;
 
       RenderJobArray jobs;
-      RenderJobProcessor::CreateRenderJobs(jobs, m_params.scene->m_bvh, nullLights, shadowCamera, nullEnv);
+      RenderData renderData;
+      RenderJobProcessor::CreateRenderJobs(renderData.jobs, m_params.scene->m_bvh, nullLights, shadowCamera, nullEnv);
+      RenderJobProcessor::SeperateRenderData(renderData, true);
 
       if (light->GetLightType() == Light::LightType::Directional)
       {
@@ -211,27 +213,46 @@ namespace ToolKit
         shadowCamera->m_node->SetTranslation(pos);
       }
 
-      for (RenderJob& job : jobs)
+      auto renderJobFn = [&shadowMaterial, renderer](RenderJob& job) -> void
       {
         if (job.ShadowCaster)
         {
-          Material* jobMaterial          = job.Material;
-          RenderState* jobRenderState    = jobMaterial->GetRenderState();
-          RenderState* shadowRenderState = shadowMaterial->GetRenderState();
-
-          CullingType cullType           = jobMaterial->GetRenderState()->cullMode;
-          shadowRenderState->cullMode    = cullType;
-
-          shadowMaterial->SetAlpha(jobMaterial->GetAlpha());
-          shadowRenderState->alphaMaskTreshold = jobRenderState->alphaMaskTreshold;
-          shadowRenderState->blendFunction     = jobRenderState->blendFunction;
-          shadowMaterial->m_diffuseTexture     = jobMaterial->m_diffuseTexture;
-
-          job.Material                         = shadowMaterial.get();
-          job.Material->UpdateRuntimeVersion();
+          job.Material->m_vertexShader.swap(shadowMaterial->m_vertexShader);
+          job.Material->m_fragmentShader.swap(shadowMaterial->m_fragmentShader);
 
           renderer->Render(job);
+
+          job.Material->m_vertexShader.swap(shadowMaterial->m_vertexShader);
+          job.Material->m_fragmentShader.swap(shadowMaterial->m_fragmentShader);
         }
+      };
+
+      // Draw opaque.
+      RenderJobItr forwardBegin       = renderData.GetForwardOpaqueBegin();
+      RenderJobItr forwardMaskedBegin = renderData.GetForwardAlphaMaskedBegin();
+
+      shadowMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
+      for (RenderJobItr jobItr = forwardBegin; jobItr < forwardMaskedBegin; jobItr++)
+      {
+        renderJobFn(*jobItr);
+      }
+
+      // Draw alpha masked.
+      shadowMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "1");
+      shadowMaterial->m_fragmentShader->SetDefine("UseAlphaMask", "1");
+      RenderJobItr translucentBegin = renderData.GetForwardTranslucentBegin();
+
+      for (RenderJobItr jobItr = forwardMaskedBegin; jobItr < translucentBegin; jobItr++)
+      {
+        renderJobFn(*jobItr);
+      }
+
+      // Draw translucent.
+      RenderJobItr jobItrEnd = renderData.jobs.end();
+      shadowMaterial->m_fragmentShader->SetDefine("UseAlphaMask", "0");
+      for (RenderJobItr jobItr = translucentBegin; jobItr < jobItrEnd; jobItr++)
+      {
+        renderJobFn(*jobItr);
       }
 
       POP_CPU_MARKER();
