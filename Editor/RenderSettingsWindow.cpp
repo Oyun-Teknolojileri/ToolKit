@@ -154,6 +154,22 @@ namespace ToolKit
 
         ImGui::SeparatorText("Shadows");
 
+        bool* evsm4 = &engineSettings.Graphics.useEVSM4;
+        if (ImGui::RadioButton("Use EVSM2", !*evsm4))
+        {
+          *evsm4 = false;
+        }
+        UI::AddTooltipToLastItem("Exponential variance shadow mapping with positive component.");
+
+        ImGui::SameLine();
+
+        if (ImGui::RadioButton("Use EVSM4", *evsm4))
+        {
+          *evsm4 = true;
+        }
+        UI::AddTooltipToLastItem("Exponential variance shadow mapping with positive and negative component. Requires "
+                                 "more shadow map memory, but yields softer shadows.");
+
         const char* itemNames[] = {"1", "2", "3", "4"};
         const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
         int currentItem         = engineSettings.Graphics.cascadeCount - 1;

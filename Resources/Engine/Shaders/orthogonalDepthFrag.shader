@@ -49,7 +49,7 @@ void main()
 	vec2 exponents = EvsmExponents;
 	vec2 vsmDepth = WarpDepth(gl_FragCoord.z, exponents);
 
-	fragColor = vec4(vsmDepth.xy, vsmDepth.xy * vsmDepth.xy).xzxz;
+	fragColor = vec4(vsmDepth.xy, vsmDepth.xy * vsmDepth.xy);
 }
 	-->
 	</source>

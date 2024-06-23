@@ -408,12 +408,18 @@ namespace ToolKit
     CPU_FUNC_RANGE();
 
     // Check if the shadow atlas needs to be updated
-    bool needChange                      = false;
-    EngineSettings::GraphicSettings& gfx = GetEngineSettings().Graphics;
-    if (m_activeCascadeCount != gfx.cascadeCount)
+    bool needChange                                  = false;
+    EngineSettings::GraphicSettings& graphicSettings = GetEngineSettings().Graphics;
+    if (m_activeCascadeCount != graphicSettings.cascadeCount)
     {
-      m_activeCascadeCount = gfx.cascadeCount;
+      m_activeCascadeCount = graphicSettings.cascadeCount;
       needChange           = true;
+    }
+
+    if (m_useEVSM4 != graphicSettings.useEVSM4)
+    {
+      m_useEVSM4 = graphicSettings.useEVSM4;
+      needChange = true;
     }
 
     // After this loop m_previousShadowCasters is set with lights with shadows
@@ -464,8 +470,8 @@ namespace ToolKit
                                    GraphicTypes::UVClampToEdge,
                                    GraphicTypes::SampleLinear,
                                    GraphicTypes::SampleLinear,
-                                   GraphicTypes::FormatRG32F,
-                                   GraphicTypes::FormatRG,
+                                   graphicSettings.useEVSM4 ? GraphicTypes::FormatRGBA32F : GraphicTypes::FormatRG32F,
+                                   graphicSettings.useEVSM4 ? GraphicTypes::FormatRGBA : GraphicTypes::FormatRG,
                                    GraphicTypes::TypeFloat,
                                    m_layerCount,
                                    false};
