@@ -77,6 +77,8 @@ namespace ToolKit
      */
     void OverrideBlendState(bool enableOverride, BlendFunction func);
 
+    void EnableBlending(bool enable);
+
     void EnableDepthWrite(bool enable);
 
     void EnableDepthTest(bool enable);

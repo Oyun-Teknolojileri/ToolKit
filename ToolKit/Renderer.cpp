@@ -648,6 +648,18 @@ namespace ToolKit
     m_blendStateOverrideEnable = enableOverride;
   }
 
+  void Renderer::EnableBlending(bool enable)
+  {
+    if (enable)
+    {
+      glEnable(GL_BLEND);
+    }
+    else
+    {
+      glDisable(GL_BLEND);
+    }
+  }
+
   void Renderer::EnableDepthWrite(bool enable) { glDepthMask(enable); }
 
   void Renderer::EnableDepthTest(bool enable)
