@@ -231,6 +231,8 @@ namespace ToolKit
       RenderJobItr forwardBegin       = renderData.GetForwardOpaqueBegin();
       RenderJobItr forwardMaskedBegin = renderData.GetForwardAlphaMaskedBegin();
 
+      renderer->OverrideBlendState(true, BlendFunction::NONE);
+
       shadowMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
       for (RenderJobItr jobItr = forwardBegin; jobItr < forwardMaskedBegin; jobItr++)
       {
@@ -254,6 +256,8 @@ namespace ToolKit
       {
         renderJobFn(*jobItr);
       }
+
+      renderer->OverrideBlendState(false, BlendFunction::NONE);
 
       POP_CPU_MARKER();
     };

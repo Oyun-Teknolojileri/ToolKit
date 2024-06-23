@@ -77,9 +77,6 @@ namespace ToolKit
     /** Sets default clear color for render targets. */
     void SetClearColor(const Vec4& clearColor);
 
-    /** Internally used. Enables blending. This should not be used directly. */
-    void EnableBlending(bool enable);
-
     /** Returns elapsed frame count. */
     uint GetFrameCount();
 

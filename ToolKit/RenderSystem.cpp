@@ -132,8 +132,6 @@ namespace ToolKit
 
   void RenderSystem::SetClearColor(const Vec4& clearColor) { m_renderer->m_clearColor = clearColor; }
 
-  void RenderSystem::EnableBlending(bool enable) { m_renderer->EnableBlending(enable); }
-
   void RenderSystem::DecrementSkipFrame()
   {
     if (m_skipFrames == 0)

@@ -118,8 +118,6 @@ namespace ToolKit
 
   void Renderer::Render(const RenderJob& job)
   {
-    assert(m_ignoreRenderingCulledObjectWarning || !job.frustumCulled && "Rendering culled object.");
-
     // Make ibl assignments.
     m_renderState.IBLInUse = false;
     if (job.EnvironmentVolume)
@@ -310,29 +308,33 @@ namespace ToolKit
 
     if (m_renderState.blendFunction != state->blendFunction)
     {
-      switch (state->blendFunction)
+      // Only update blend state, if blend state is not overridden.
+      if (!m_blendStateOverrideEnable)
       {
-      case BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA:
-      {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      }
-      break;
-      case BlendFunction::ONE_TO_ONE:
-      {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE);
-        glBlendEquation(GL_FUNC_ADD);
-      }
-      break;
-      default:
-      {
-        glDisable(GL_BLEND);
-      }
-      break;
-      }
+        switch (state->blendFunction)
+        {
+        case BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA:
+        {
+          glEnable(GL_BLEND);
+          glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        }
+        break;
+        case BlendFunction::ONE_TO_ONE:
+        {
+          glEnable(GL_BLEND);
+          glBlendFunc(GL_ONE, GL_ONE);
+          glBlendEquation(GL_FUNC_ADD);
+        }
+        break;
+        default:
+        {
+          glDisable(GL_BLEND);
+        }
+        break;
+        }
 
-      m_renderState.blendFunction = state->blendFunction;
+        m_renderState.blendFunction = state->blendFunction;
+      }
     }
 
     m_renderState.alphaMaskTreshold = state->alphaMaskTreshold;
@@ -634,16 +636,16 @@ namespace ToolKit
     SetFramebuffer(lastFb, GraphicBitFields::None);
   }
 
-  void Renderer::EnableBlending(bool enable)
+  void Renderer::OverrideBlendState(bool enableOverride, BlendFunction func)
   {
-    if (enable)
-    {
-      glEnable(GL_BLEND);
-    }
-    else
-    {
-      glDisable(GL_BLEND);
-    }
+    RenderState stateCpy       = m_renderState;
+    stateCpy.blendFunction     = func;
+
+    m_blendStateOverrideEnable = false;
+
+    SetRenderState(&stateCpy);
+
+    m_blendStateOverrideEnable = enableOverride;
   }
 
   void Renderer::EnableDepthWrite(bool enable) { glDepthMask(enable); }
