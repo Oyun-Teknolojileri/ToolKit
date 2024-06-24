@@ -7,6 +7,7 @@
 
 #include "ForwardPass.h"
 
+#include "EngineSettings.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Pass.h"
@@ -79,6 +80,10 @@ namespace ToolKit
 
     const MaterialPtr mat = GetMaterialManager()->GetDefaultMaterial();
     mat->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
+
+    EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
+    mat->m_fragmentShader->SetDefine("EVSM4", graphicsSettings.useEVSM4 ? "1" : "0");
+
     GpuProgramPtr gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
 
     RenderJobItr begin       = renderData->GetForwardOpaqueBegin();
@@ -92,8 +97,8 @@ namespace ToolKit
     mat->m_fragmentShader->SetDefine("EnableDiscardPixel", "1");
     gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
 
-    begin                    = renderData->GetForwardAlphaMaskedBegin();
-    end                      = renderData->GetForwardTranslucentBegin();
+    begin      = renderData->GetForwardAlphaMaskedBegin();
+    end        = renderData->GetForwardTranslucentBegin();
     RenderOpaqueHelper(renderData, begin, end, gpuProgram);
 
     mat->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
@@ -130,9 +135,12 @@ namespace ToolKit
       }
     };
 
-    const MaterialPtr defualtMat = GetMaterialManager()->GetDefaultMaterial();
-    GpuProgramPtr defaultProgram =
-        GetGpuProgramManager()->CreateProgram(defualtMat->m_vertexShader, defualtMat->m_fragmentShader);
+    const MaterialPtr mat                             = GetMaterialManager()->GetDefaultMaterial();
+
+    EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
+    mat->m_fragmentShader->SetDefine("EVSM4", graphicsSettings.useEVSM4 ? "1" : "0");
+
+    GpuProgramPtr program = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
 
     renderer->EnableDepthWrite(false);
     for (RenderJobArray::iterator job = begin; job != end; job++)
@@ -143,7 +151,7 @@ namespace ToolKit
       }
       else
       {
-        renderer->BindProgram(defaultProgram);
+        renderer->BindProgram(program);
       }
       renderFnc(*job);
     }

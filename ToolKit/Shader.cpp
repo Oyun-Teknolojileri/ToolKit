@@ -87,9 +87,26 @@ namespace ToolKit
       int defineIndx  = m_currentDefineValues[i].define;
       int variantIndx = m_currentDefineValues[i].variant;
 
+      // If define found
       if (m_defineArray[defineIndx].define == name)
       {
-        m_defineArray[defineIndx].variants[variantIndx] = val;
+        // find the variant.
+        variantIndx = -1;
+        for (int ii = 0; ii < (int) m_defineArray[defineIndx].variants.size(); ii++)
+        {
+          if (m_defineArray[defineIndx].variants[ii] == val)
+          {
+            variantIndx                      = ii;
+            m_currentDefineValues[i].variant = ii; // update current define variant.
+            break;
+          }
+        }
+
+        if (variantIndx == -1)
+        {
+          TK_WRN("Shader define can't be set. There is no variant: %s for define: %s", name.c_str(), val.c_str());
+          return;
+        }
       }
 
       String defName  = m_defineArray[defineIndx].define;
@@ -99,7 +116,7 @@ namespace ToolKit
 
     key.pop_back();
 
-    // Set the variant.
+    // Set the shader variant.
     auto handle = m_shaderVariantMap.find(key);
     if (handle != m_shaderVariantMap.end())
     {

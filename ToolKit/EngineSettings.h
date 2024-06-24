@@ -83,6 +83,9 @@ namespace ToolKit
       /** Prevents shimmering effects by preventing sub-pixel movement with the cost of wasted shadow map resolution. */
       bool stableShadowMap              = false;
 
+      /** By default EVSM uses 2 component for shadow map generation. If this is true, it uses 4 component. */
+      bool useEVSM4                     = false;
+
       /** Maximum number of entity count per bvh node. */
       int maxEntityPerBVHNode           = 5;
 

@@ -1,14 +1,15 @@
 <shader>
 	<type name = "includeShader" />
 	<include name = "VSM.shader" />
+  <define name = "EVSM4" val="0,1" />
 	<source>
 	<!--
 
-  #ifndef SHADOW_SHADER
-  #define SHADOW_SHADER
+#ifndef SHADOW_SHADER
+#define SHADOW_SHADER
 
-  #define MAX_CASCADE_COUNT 4
-  #define SHADOW_ATLAS_SIZE 2048.0
+#define MAX_CASCADE_COUNT 4
+#define SHADOW_ATLAS_SIZE 2048.0
 
   /*
   * Given a shadow map size and start coordinates, finds the queried shadow map's layer and start coordinates.
@@ -16,28 +17,28 @@
   * light's start location and start layer and query the layer and start coordinate of 4'th cascade, this function
   * will calculate it.
   */
-  void ShadowAtlasLut(in float size, in vec2 startCoord, in int queriedMap, out int layer, out vec2 targetCoord)
-  {
-    targetCoord = startCoord;
-    layer = 0;
+void ShadowAtlasLut(in float size, in vec2 startCoord, in int queriedMap, out int layer, out vec2 targetCoord)
+{
+	targetCoord = startCoord;
+	layer = 0;
 	
-    for (int i = 1; i <= queriedMap; i++)
-    {
-	    targetCoord.x += size;
+	for (int i = 1; i <= queriedMap; i++)
+	{
+		targetCoord.x += size;
 
-      if (targetCoord.x >= SHADOW_ATLAS_SIZE)
-      {
-        targetCoord.x = 0.0;
-        targetCoord.y += size;
-        if (targetCoord.y >= SHADOW_ATLAS_SIZE)
-        {
-          layer += 1;
-          targetCoord.x = 0.0;
-          targetCoord.y = 0.0;
-        }
-      }
-    }
-  }
+		if (targetCoord.x >= SHADOW_ATLAS_SIZE)
+		{
+			targetCoord.x = 0.0;
+			targetCoord.y += size;
+			if (targetCoord.y >= SHADOW_ATLAS_SIZE)
+			{
+				layer += 1;
+				targetCoord.x = 0.0;
+				targetCoord.y = 0.0;
+			}
+		}
+	}
+}
 
 float PCFFilterShadow2D
 (
@@ -53,7 +54,12 @@ float PCFFilterShadow2D
 )
 {
   // Single pass average filter the shadow map.
-	vec2 sum = vec2(0.0);
+	#if EVSM4
+		vec4 occuluderAverage = vec4(0.0);
+	#else
+		vec2 occuluderAverage = vec2(0.0);
+	#endif
+  
 	for (int i = 0; i < samples; ++i)
 	{
     // Below is randomized sample which causes noise rather than banding.
@@ -61,22 +67,33 @@ float PCFFilterShadow2D
     // int di = int(127.0 * Random( vec4( gl_FragCoord.xyy, float(i) ) )) % 127;
 		vec2 offset = PoissonDisk[i].xy * radius;
 
-    vec3 texCoord = uvLayer;
-    texCoord.xy = ClampTextureCoordinates(uvLayer.xy + offset, coordStart, coordEnd);
-		sum += texture(shadowAtlas, texCoord).xy;
+		vec3 texCoord = uvLayer;
+		texCoord.xy = ClampTextureCoordinates(uvLayer.xy + offset, coordStart, coordEnd);
+    
+		#if EVSM4
+			occuluderAverage += texture(shadowAtlas, texCoord);
+		#else
+			occuluderAverage += texture(shadowAtlas, texCoord).xy;
+		#endif
 	}
 
   // Filtered depth & depth^2
-  sum = sum / float(samples);
+	occuluderAverage = occuluderAverage / float(samples);
 
-  vec2 exponents = EvsmExponents;
-  vec2 warpedDepth = WarpDepth(currDepth, exponents);
+	vec2 exponents = EvsmExponents;
+	vec2 warpedDepth = WarpDepth(currDepth, exponents);
 
   // Derivative of warping at depth
-  vec2 depthScale = 100.0 * shadowBias * exponents * warpedDepth;
-  vec2 minVariance = depthScale * depthScale;
+	vec2 depthScale = 100.0 * shadowBias * exponents * warpedDepth;
+	vec2 minVariance = depthScale * depthScale;
 
-  return ChebyshevUpperBound(sum, warpedDepth.x, minVariance.x, LBR);
+	#if EVSM4
+		float posContrib = ChebyshevUpperBound(occuluderAverage.xz, warpedDepth.x, minVariance.x, LBR);
+		float negContrib = ChebyshevUpperBound(occuluderAverage.yw, warpedDepth.y, minVariance.y, LBR);
+		return min(posContrib, negContrib);
+	#else	
+		return ChebyshevUpperBound(occuluderAverage, warpedDepth.x, minVariance.x, LBR);
+	#endif
 }
 
 float PCFFilterOmni
@@ -93,10 +110,15 @@ float PCFFilterOmni
   float shadowBias
 )
 {
-  vec2 halfPixel = vec2((1.0 / SHADOW_ATLAS_SIZE) * 0.5);
+	vec2 halfPixel = vec2((1.0 / SHADOW_ATLAS_SIZE) * 0.5);
 
   // Single pass average filter the shadow map.
-	vec2 sum = vec2(0.0);
+	#if EVSM4
+			vec4 occuluderAverage = vec4(0.0);
+	#else
+		vec2 occuluderAverage = vec2(0.0);
+	#endif
+	
 	for (int i = 0; i < samples; ++i)
 	{
     // Below is randomized sample which causes noise rather than banding.
@@ -108,41 +130,51 @@ float PCFFilterOmni
     // If offset applied to texCoord, wrong face may be sampled due to bleeding.
 
     // Cubemap sample
-    vec3 texCoord = UVWToUVLayer(dir + offset * 50.0);
+		vec3 texCoord = UVWToUVLayer(dir + offset * 50.0);
 
-    int face = int(texCoord.z);
+		int face = int(texCoord.z);
 
-    int layer = 0;
+		int layer = 0;
 		vec2 coord = vec2(0.0);
 		float shadowMapSize = shadowAtlasResRatio * SHADOW_ATLAS_SIZE;
 		ShadowAtlasLut(shadowMapSize, startCoord, face, layer, coord);
-    coord /= SHADOW_ATLAS_SIZE;
+		coord /= SHADOW_ATLAS_SIZE;
 
 		layer += shadowAtlasLayer;
 
-    vec2 beginCoord = coord;
-    vec2 endCoord = beginCoord + shadowAtlasResRatio;
+		vec2 beginCoord = coord;
+		vec2 endCoord = beginCoord + shadowAtlasResRatio;
 
-    texCoord.xy = beginCoord + (shadowAtlasResRatio * texCoord.xy);
-    texCoord.z = float(layer);
+		texCoord.xy = beginCoord + (shadowAtlasResRatio * texCoord.xy);
+		texCoord.z = float(layer);
 
     // Keep the pixel always in the corresponding face, prevent bleeding.
-    texCoord.xy = clamp(texCoord.xy, beginCoord + halfPixel, endCoord - halfPixel);
+		texCoord.xy = clamp(texCoord.xy, beginCoord + halfPixel, endCoord - halfPixel);
 
-		sum += texture(shadowAtlas, texCoord).xy;
+		#if EVSM4
+			occuluderAverage += texture(shadowAtlas, texCoord);
+		#else
+			occuluderAverage += texture(shadowAtlas, texCoord).xy;
+		#endif
 	}
 
   // Filtered depth & depth^2
-  sum = sum / float(samples);
+	occuluderAverage = occuluderAverage / float(samples);
 
-  vec2 exponents = EvsmExponents;
-  vec2 warpedDepth = WarpDepth(currDepth, exponents);
+	vec2 exponents = EvsmExponents;
+	vec2 warpedDepth = WarpDepth(currDepth, exponents);
 
   // Derivative of warping at depth
-  vec2 depthScale = 100.0 * shadowBias * exponents * warpedDepth;
-  vec2 minVariance = depthScale * depthScale;
+	vec2 depthScale = 100.0 * shadowBias * exponents * warpedDepth;
+	vec2 minVariance = depthScale * depthScale;
 
-  return ChebyshevUpperBound(sum, warpedDepth.x, minVariance.x, LBR);
+	#if EVSM4
+		float posContrib = ChebyshevUpperBound(occuluderAverage.xz, warpedDepth.x, minVariance.x, LBR);
+		float negContrib = ChebyshevUpperBound(occuluderAverage.yw, warpedDepth.y, minVariance.y, LBR);
+		return min(posContrib, negContrib);
+	#else
+		return ChebyshevUpperBound(occuluderAverage, warpedDepth.x, minVariance.x, LBR);
+	#endif
 }
 
 #endif

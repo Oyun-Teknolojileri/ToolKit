@@ -117,28 +117,9 @@ namespace ToolKit
                                                           { m_invalidatedForLightCache = true; });
   }
 
-  MaterialPtr Light::GetShadowMaterial() { return m_shadowMapMaterial; }
-
   void Light::UpdateShadowCamera() { m_shadowMapCameraProjectionViewMatrix = m_shadowCamera->GetProjectViewMatrix(); }
 
   float Light::AffectDistance() { return 1000.0f; }
-
-  void Light::InitShadowMapDepthMaterial()
-  {
-    // Create shadow material
-    ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthFrag.shader", true));
-
-    if (m_shadowMapMaterial == nullptr)
-    {
-      m_shadowMapMaterial = MakeNewPtr<Material>();
-    }
-    m_shadowMapMaterial->UnInit();
-    m_shadowMapMaterial->m_vertexShader                  = vert;
-    m_shadowMapMaterial->m_fragmentShader                = frag;
-    m_shadowMapMaterial->GetRenderState()->blendFunction = BlendFunction::NONE;
-    m_shadowMapMaterial->Init();
-  }
 
   void Light::InvalidateSpatialCaches()
   {
@@ -432,23 +413,6 @@ namespace ToolKit
 
   float PointLight::AffectDistance() { return GetRadiusVal(); }
 
-  void PointLight::InitShadowMapDepthMaterial()
-  {
-    // Create shadow material
-    ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
-
-    if (m_shadowMapMaterial == nullptr)
-    {
-      m_shadowMapMaterial = MakeNewPtr<Material>();
-    }
-    m_shadowMapMaterial->UnInit();
-    m_shadowMapMaterial->m_vertexShader                  = vert;
-    m_shadowMapMaterial->m_fragmentShader                = frag;
-    m_shadowMapMaterial->GetRenderState()->blendFunction = BlendFunction::NONE;
-    m_shadowMapMaterial->Init();
-  }
-
   XmlNode* PointLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* root = Super::SerializeImp(doc, parent);
@@ -515,23 +479,6 @@ namespace ToolKit
   }
 
   float SpotLight::AffectDistance() { return GetRadiusVal(); }
-
-  void SpotLight::InitShadowMapDepthMaterial()
-  {
-    // Create shadow material
-    ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
-
-    if (m_shadowMapMaterial == nullptr)
-    {
-      m_shadowMapMaterial = MakeNewPtr<Material>();
-    }
-    m_shadowMapMaterial->UnInit();
-    m_shadowMapMaterial->m_vertexShader                  = vert;
-    m_shadowMapMaterial->m_fragmentShader                = frag;
-    m_shadowMapMaterial->GetRenderState()->blendFunction = BlendFunction::NONE;
-    m_shadowMapMaterial->Init();
-  }
 
   XmlNode* SpotLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {

@@ -6,6 +6,7 @@
 	<uniform name = "alphaMaskTreshold" />
 	<define name = "UseAlphaMask" val="0,1" />
 	<define name = "EnableDiscardPixel" val="0,1" />
+	<define name = "EVSM4" val="0,1" />
 	<source>
 	<!--
 #version 300 es
@@ -49,7 +50,11 @@ void main()
 	vec2 exponents = EvsmExponents;
 	vec2 vsmDepth = WarpDepth(gl_FragCoord.z, exponents);
 
-	fragColor = vec4(vsmDepth.xy, vsmDepth.xy * vsmDepth.xy).xzxz;
+	#if EVSM4
+		fragColor = vec4(vsmDepth.xy, vsmDepth.xy * vsmDepth.xy);
+	#else
+		fragColor = vec4(vsmDepth.xy, vsmDepth.xy * vsmDepth.xy).xzxz;
+	#endif
 }
 	-->
 	</source>

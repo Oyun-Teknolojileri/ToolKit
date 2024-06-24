@@ -25,11 +25,8 @@ namespace ToolKit
 
     void NativeConstruct() override;
 
-    // Shadow
-    MaterialPtr GetShadowMaterial();
     virtual void UpdateShadowCamera();
     virtual float AffectDistance();
-    virtual void InitShadowMapDepthMaterial();
 
     /**
      * Returns  0 to 3 number that helps to sort lights by type. DirectionalLight: 0, PointLight: 1, SpotLight: 3.
@@ -76,9 +73,6 @@ namespace ToolKit
 
     IntArray m_shadowAtlasLayers;  //!< Layer index in the shadow atlas for each cascade.
     Vec2Array m_shadowAtlasCoords; //!< Coordinates for each cascade in the corresponding layer.
-
-   protected:
-    MaterialPtr m_shadowMapMaterial = nullptr;
   };
 
   // DirectionalLight
@@ -133,7 +127,6 @@ namespace ToolKit
 
     void UpdateShadowCamera() override;
     float AffectDistance() override;
-    void InitShadowMapDepthMaterial() override;
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
@@ -165,7 +158,6 @@ namespace ToolKit
 
     void UpdateShadowCamera() override;
     float AffectDistance() override;
-    void InitShadowMapDepthMaterial() override;
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
