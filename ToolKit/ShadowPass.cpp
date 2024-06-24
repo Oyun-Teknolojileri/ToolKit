@@ -183,22 +183,15 @@ namespace ToolKit
     {
       PUSH_CPU_MARKER("Render Call");
 
-      Light::LightType lightType = light->GetLightType();
-      MaterialPtr shadowMaterial = lightType == Light::LightType::Directional ? m_shadowMatOrtho : m_shadowMatPersp;
-
-      shadowMaterial->m_fragmentShader->SetDefine("EVSM4", graphicsSettings.useEVSM4 ? "1" : "0");
-
-      GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
-      m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
-      renderer->BindProgram(m_program);
-
+      // Adjust light's camera.
       renderer->SetCamera(shadowCamera, false);
 
-      float n  = shadowCamera->Near();     // Backup near.
-      float f  = shadowCamera->Far();      // Backup the far.
-      Vec3 pos = shadowCamera->Position(); // Backup pos.
+      float n                    = shadowCamera->Near();     // Backup near.
+      float f                    = shadowCamera->Far();      // Backup the far.
+      Vec3 pos                   = shadowCamera->Position(); // Backup pos.
 
-      if (light->GetLightType() == Light::LightType::Directional)
+      Light::LightType lightType = light->GetLightType();
+      if (lightType == Light::LightType::Directional)
       {
         // Here we will try to find a distance that covers all shadow casters.
         // Shadow camera placed at the outer bounds of the scene to find all shadow casters.
@@ -219,6 +212,7 @@ namespace ToolKit
         shadowCamera->SetFarClipVal(glm::distance(outerPoint, pos) + f);
       }
 
+      // Create render jobs for shadow map generation.
       LightPtrArray nullLights;
       EnvironmentComponentPtrArray nullEnv;
 
@@ -227,7 +221,7 @@ namespace ToolKit
       RenderJobProcessor::CreateRenderJobs(renderData.jobs, m_params.scene->m_bvh, nullLights, shadowCamera, nullEnv);
       RenderJobProcessor::SeperateRenderData(renderData, true);
 
-      if (light->GetLightType() == Light::LightType::Directional)
+      if (lightType == Light::LightType::Directional)
       {
         // Camera is set back to its original values for rendering the shadow.
         shadowCamera->SetNearClipVal(n);
@@ -235,48 +229,48 @@ namespace ToolKit
         shadowCamera->m_node->SetTranslation(pos);
       }
 
-      auto renderJobFn = [&shadowMaterial, renderer](RenderJob& job) -> void
-      {
-        if (job.ShadowCaster)
-        {
-          job.Material->m_vertexShader.swap(shadowMaterial->m_vertexShader);
-          job.Material->m_fragmentShader.swap(shadowMaterial->m_fragmentShader);
+      renderer->OverrideBlendState(true, BlendFunction::NONE); // Blending must be disabled for shadow map generation.
 
-          renderer->Render(job);
+      // Set material and program.
+      MaterialPtr shadowMaterial = lightType == Light::LightType::Directional ? m_shadowMatOrtho : m_shadowMatPersp;
+      shadowMaterial->m_fragmentShader->SetDefine("EVSM4", m_useEVSM4 ? "1" : "0");
+      shadowMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
 
-          job.Material->m_vertexShader.swap(shadowMaterial->m_vertexShader);
-          job.Material->m_fragmentShader.swap(shadowMaterial->m_fragmentShader);
-        }
-      };
+      GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
+      m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
+      renderer->BindProgram(m_program);
 
       // Draw opaque.
       RenderJobItr forwardBegin       = renderData.GetForwardOpaqueBegin();
       RenderJobItr forwardMaskedBegin = renderData.GetForwardAlphaMaskedBegin();
-
-      renderer->OverrideBlendState(true, BlendFunction::NONE);
-
-      shadowMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
       for (RenderJobItr jobItr = forwardBegin; jobItr < forwardMaskedBegin; jobItr++)
       {
-        renderJobFn(*jobItr);
+        renderer->Render(*jobItr);
       }
 
       // Draw alpha masked.
       shadowMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "1");
       shadowMaterial->m_fragmentShader->SetDefine("UseAlphaMask", "1");
-      RenderJobItr translucentBegin = renderData.GetForwardTranslucentBegin();
 
+      m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
+      renderer->BindProgram(m_program);
+
+      RenderJobItr translucentBegin = renderData.GetForwardTranslucentBegin();
       for (RenderJobItr jobItr = forwardMaskedBegin; jobItr < translucentBegin; jobItr++)
       {
-        renderJobFn(*jobItr);
+        renderer->Render(*jobItr);
       }
 
       // Draw translucent.
-      RenderJobItr jobItrEnd = renderData.jobs.end();
       shadowMaterial->m_fragmentShader->SetDefine("UseAlphaMask", "0");
+
+      m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
+      renderer->BindProgram(m_program);
+
+      RenderJobItr jobItrEnd = renderData.jobs.end();
       for (RenderJobItr jobItr = translucentBegin; jobItr < jobItrEnd; jobItr++)
       {
-        renderJobFn(*jobItr);
+        renderer->Render(*jobItr);
       }
 
       renderer->OverrideBlendState(false, BlendFunction::NONE);
@@ -492,8 +486,8 @@ namespace ToolKit
                                    GraphicTypes::UVClampToEdge,
                                    GraphicTypes::SampleLinear,
                                    GraphicTypes::SampleLinear,
-                                   graphicSettings.useEVSM4 ? GraphicTypes::FormatRGBA32F : GraphicTypes::FormatRG32F,
-                                   graphicSettings.useEVSM4 ? GraphicTypes::FormatRGBA : GraphicTypes::FormatRG,
+                                   m_useEVSM4 ? GraphicTypes::FormatRGBA32F : GraphicTypes::FormatRG32F,
+                                   m_useEVSM4 ? GraphicTypes::FormatRGBA : GraphicTypes::FormatRG,
                                    GraphicTypes::TypeFloat,
                                    m_layerCount,
                                    false};
