@@ -100,7 +100,7 @@ namespace ToolKit
   void EngineSettings::GraphicSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* settings = CreateXmlNode(doc, "Graphics", parent);
-    WriteAttr(settings, doc, "MSAA", std::to_string(MSAA));
+    WriteAttr(settings, doc, "MSAA", std::to_string(msaa));
     WriteAttr(settings, doc, "FPS", std::to_string(FPS));
     WriteAttr(settings, doc, "HDRPipeline", std::to_string(HDRPipeline));
     WriteAttr(settings, doc, "RenderResolutionScale", std::to_string(renderResolutionScale));
@@ -129,7 +129,7 @@ namespace ToolKit
 
     if (XmlNode* node = parent->first_node("Graphics"))
     {
-      ReadAttr(node, "MSAA", MSAA);
+      ReadAttr(node, "MSAA", msaa);
       ReadAttr(node, "FPS", FPS);
       ReadAttr(node, "HDRPipeline", HDRPipeline);
       ReadAttr(node, "RenderResolutionScale", renderResolutionScale);

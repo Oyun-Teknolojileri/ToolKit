@@ -48,7 +48,7 @@ namespace ToolKit
       bool enableGpuTimer         = false;
 
       /** Multi-sample count. 0 for non msaa render targets. */
-      int MSAA                    = 0;
+      int msaa                    = 0;
 
       /** Sets render targets as floating point, allows values larger than 1.0 for HDR rendering. */
       bool HDRPipeline            = true;
