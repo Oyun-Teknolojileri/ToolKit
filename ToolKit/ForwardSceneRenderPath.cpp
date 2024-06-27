@@ -57,7 +57,6 @@ namespace ToolKit
     }
 
     // Forward Pre Process Pass
-
     if (m_params.Gfx.SSAOEnabled || m_params.Gfx.DepthOfFieldEnabled)
     {
       m_passArray.push_back(m_forwardPreProcessPass);
@@ -97,8 +96,8 @@ namespace ToolKit
 
     SetPassParams();
 
-    m_forwardPreProcessPass->InitBuffers(m_params.MainFramebuffer->GetSettings().width,
-                                         m_params.MainFramebuffer->GetSettings().height);
+    FramebufferSettings settings = m_params.MainFramebuffer->GetSettings();
+    m_forwardPreProcessPass->InitBuffers(settings.width, settings.height);
   }
 
   void ForwardSceneRenderPath::PostRender(Renderer* renderer) { RenderPath::PostRender(renderer); }

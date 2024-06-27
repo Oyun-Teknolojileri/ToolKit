@@ -150,9 +150,8 @@ namespace ToolKit
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint) m_settings.WarpS);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint) m_settings.WarpT);
 
-// android does not have support for this
-#ifndef __ANDROID__
-    if constexpr (GL_EXT_texture_filter_anisotropic)
+#if GL_EXT_texture_filter_anisotropic
+    if (GLAD_GL_EXT_texture_filter_anisotropic == 1)
     {
       float aniso = 0.0f;
       glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
@@ -234,7 +233,7 @@ namespace ToolKit
     // Create a default depth, depth-stencil buffer
     glGenRenderbuffers(1, &m_textureId);
     glBindRenderbuffer(GL_RENDERBUFFER, m_textureId);
-    GLenum component = stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT24;
+    GLenum component = (GLenum) GetDepthFormat();
     glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
 
     uint64 internalFormatSize = stencil ? 4 : 3;
@@ -255,6 +254,11 @@ namespace ToolKit
 
     m_textureId = 0;
     m_initiated = false;
+  }
+
+  GraphicTypes DepthTexture::GetDepthFormat()
+  {
+    return m_stencil ? GraphicTypes::FormatDepth24Stencil8 : GraphicTypes::FormatDepth24;
   }
 
   // DataTexture

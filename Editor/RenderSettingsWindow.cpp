@@ -115,6 +115,23 @@ namespace ToolKit
         if (ImGui::CollapsingHeader("Anti Aliasing"))
         {
           ImGui::Checkbox("FXAA##1", &gfx.FXAAEnabled);
+
+          ImGui::SeparatorText("MSAA");
+
+          if (ImGui::RadioButton("MSAA Disabled##0", engineSettings.Graphics.msaa == 0))
+          {
+            engineSettings.Graphics.msaa = 0;
+          }
+
+          if (ImGui::RadioButton("MSAA2x##2", engineSettings.Graphics.msaa == 2))
+          {
+            engineSettings.Graphics.msaa = 2;
+          }
+
+          if (ImGui::RadioButton("MSAA4x##3", engineSettings.Graphics.msaa == 4))
+          {
+            engineSettings.Graphics.msaa = 4;
+          }
         }
 
         ImGui::SeparatorText("General");

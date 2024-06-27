@@ -17,8 +17,6 @@
 #include "Util.h"
 #include "Viewport.h"
 
-
-
 namespace ToolKit
 {
 
@@ -117,13 +115,15 @@ namespace ToolKit
 
   void Viewport::ResetViewportImage(const TextureSettings& settings)
   {
+    EngineSettings& engineSettings = GetEngineSettings();
     if (m_framebuffer == nullptr)
     {
       m_framebuffer = MakeNewPtr<Framebuffer>();
     }
 
     m_framebuffer->UnInit();
-    m_framebuffer->Init({(int) m_wndContentAreaSize.x, (int) m_wndContentAreaSize.y, false, true});
+    m_framebuffer->Init(
+        {(int) m_wndContentAreaSize.x, (int) m_wndContentAreaSize.y, false, true, engineSettings.Graphics.msaa});
 
     m_renderTarget = MakeNewPtr<RenderTarget>((int) m_wndContentAreaSize.x, (int) m_wndContentAreaSize.y, settings);
     m_renderTarget->Init();

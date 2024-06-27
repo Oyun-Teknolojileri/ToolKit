@@ -27,7 +27,6 @@ namespace ToolKit
     GraphicTypes Type           = GraphicTypes::TypeFloat;
     int Layers                  = 0;     //!< Number of layers that this texture have if this is a texture array.
     bool GenerateMipMap         = false; //!< Generates mipmaps for the texture automatically.
-    int sampleCountPerPixel     = 1; //!< Sample count of this texture. If its one its a regular single sample texture.
 
     bool operator==(const TextureSettings& other) const { return memcmp(this, &other, sizeof(TextureSettings)) == 0; }
 
@@ -81,6 +80,8 @@ namespace ToolKit
     void Load() override;
     void Init(int width, int height, bool stencil);
     void UnInit() override;
+
+    GraphicTypes GetDepthFormat();
 
    protected:
     void Clear() override;

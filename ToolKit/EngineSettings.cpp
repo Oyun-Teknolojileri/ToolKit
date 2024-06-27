@@ -112,6 +112,7 @@ namespace ToolKit
     WriteAttr(settings, doc, "CascacdeDist2", std::to_string(cascadeDistances[2]));
     WriteAttr(settings, doc, "CascacdeDist3", std::to_string(cascadeDistances[3]));
 
+    WriteAttr(settings, doc, "UseEvsm4", std::to_string(useEVSM4));
     WriteAttr(settings, doc, "UsePSSM", std::to_string(useParallelSplitPartitioning));
     WriteAttr(settings, doc, "PSSMLambda", std::to_string(parallelSplitLambda));
     WriteAttr(settings, doc, "StableShadow", std::to_string(stableShadowMap));
@@ -141,6 +142,7 @@ namespace ToolKit
       ReadAttr(node, "CascacdeDist2", cascadeDistances[2]);
       ReadAttr(node, "CascacdeDist3", cascadeDistances[3]);
 
+      ReadAttr(node, "UseEvsm4", useEVSM4);
       ReadAttr(node, "UsePSSM", useParallelSplitPartitioning);
       ReadAttr(node, "PSSMLambda", parallelSplitLambda);
       ReadAttr(node, "StableShadow", stableShadowMap);

@@ -23,7 +23,7 @@ namespace ToolKit
   {
     ThumbnailRenderer::ThumbnailRenderer()
     {
-      m_maxThumbSize    = 300u;
+      m_maxThumbSize    = 300;
 
       m_thumbnailBuffer = MakeNewPtr<Framebuffer>();
       m_thumbnailBuffer->Init({m_maxThumbSize, m_maxThumbSize, false, true});
