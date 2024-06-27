@@ -115,26 +115,6 @@ namespace ToolKit
         if (ImGui::CollapsingHeader("Anti Aliasing"))
         {
           ImGui::Checkbox("FXAA##1", &gfx.FXAAEnabled);
-
-          ImGui::SeparatorText("MSAA");
-
-          if (ImGui::RadioButton("MSAA Disabled##0", engineSettings.Graphics.msaa == 0))
-          {
-            engineSettings.Graphics.msaa = 0;
-            g_app->ReInitViewports();
-          }
-
-          if (ImGui::RadioButton("MSAA2x##2", engineSettings.Graphics.msaa == 2))
-          {
-            engineSettings.Graphics.msaa = 2;
-            g_app->ReInitViewports();
-          }
-
-          if (ImGui::RadioButton("MSAA4x##3", engineSettings.Graphics.msaa == 4))
-          {
-            engineSettings.Graphics.msaa = 4;
-            g_app->ReInitViewports();
-          }
         }
 
         ImGui::SeparatorText("General");
@@ -171,6 +151,38 @@ namespace ToolKit
           engineSettings.Graphics.HDRPipeline = hdrPipeline;
           g_app->ReInitViewports();
         }
+
+        ImGui::SeparatorText("Multi Sample Anti Aliasing");
+
+        auto showMsaaComboFn = [&engineSettings](std::function<void(int)>&& itemChangedFn) -> void
+        {
+          const char* itemNames[] = {"0", "2", "4"};
+          const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
+          int currentItem         = engineSettings.Graphics.msaa / 2;
+
+          if (ImGui::BeginCombo("Sample Count", itemNames[currentItem]))
+          {
+            for (int itemIndx = 0; itemIndx < itemCount; itemIndx++)
+            {
+              bool isSelected      = false;
+              const char* itemName = itemNames[itemIndx];
+              ImGui::Selectable(itemName, &isSelected);
+              if (isSelected)
+              {
+                itemChangedFn(itemIndx);
+              }
+            }
+
+            ImGui::EndCombo();
+          }
+        };
+
+        showMsaaComboFn(
+            [&engineSettings](int newItem) -> void
+            {
+              engineSettings.Graphics.msaa = newItem * 2;
+              g_app->ReInitViewports();
+            });
 
         ImGui::SeparatorText("Shadows");
 
