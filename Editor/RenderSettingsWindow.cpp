@@ -121,16 +121,19 @@ namespace ToolKit
           if (ImGui::RadioButton("MSAA Disabled##0", engineSettings.Graphics.msaa == 0))
           {
             engineSettings.Graphics.msaa = 0;
+            g_app->ReInitViewports();
           }
 
           if (ImGui::RadioButton("MSAA2x##2", engineSettings.Graphics.msaa == 2))
           {
             engineSettings.Graphics.msaa = 2;
+            g_app->ReInitViewports();
           }
 
           if (ImGui::RadioButton("MSAA4x##3", engineSettings.Graphics.msaa == 4))
           {
             engineSettings.Graphics.msaa = 4;
+            g_app->ReInitViewports();
           }
         }
 
