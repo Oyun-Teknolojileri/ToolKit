@@ -103,8 +103,7 @@ namespace ToolKit
 
     if (m_settings.multiSampleFrameBuffer > 0)
     {
-#if GL_EXT_multisampled_render_to_texture
-      if (GLAD_GL_EXT_multisampled_render_to_texture == 1)
+      if (glRenderbufferStorageMultisampleEXT != nullptr)
       {
         glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER,
                                             m_settings.multiSampleFrameBuffer,
@@ -112,7 +111,6 @@ namespace ToolKit
                                             dt->m_width,
                                             dt->m_height);
       }
-#endif
     }
 
     // Attach depth buffer to FBO
@@ -167,8 +165,7 @@ namespace ToolKit
       {
         if (m_settings.multiSampleFrameBuffer > 0)
         {
-#if GL_EXT_multisampled_render_to_texture
-          if (GLAD_GL_EXT_multisampled_render_to_texture == 1)
+          if (glFramebufferTexture2DMultisampleEXT != nullptr)
           {
             glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER,
                                                  attachment,
@@ -183,7 +180,6 @@ namespace ToolKit
             glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, rt->m_textureId, mip);
             m_settings.multiSampleFrameBuffer = 0;
           }
-#endif
         }
         else
         {

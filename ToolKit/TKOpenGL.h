@@ -13,7 +13,38 @@
   #include <glad/gles2.h>
 #endif
 
+#include "Types.h"
+
 namespace ToolKit
 {
+
+  // GL Extensions used by ToolKit.
+
+  // glFramebufferTexture2DMultisampleEXT
+  //////////////////////////////////////////////////////////////////////////
+
+  typedef void(TK_STDCAL* TKGL_FramebufferTexture2DMultisample)(GLenum target,
+                                                                GLenum attachment,
+                                                                GLenum textarget,
+                                                                GLuint texture,
+                                                                GLint level,
+                                                                GLsizei samples);
+
+  extern TKGL_FramebufferTexture2DMultisample tk_glFramebufferTexture2DMultisampleEXT;
+
+#undef glFramebufferTexture2DMultisampleEXT
+#define glFramebufferTexture2DMultisampleEXT tk_glFramebufferTexture2DMultisampleEXT
+
+  typedef void(TK_STDCAL* TKGL_RenderbufferStorageMultisample)(GLenum target,
+                                                               GLsizei samples,
+                                                               GLenum internalformat,
+                                                               GLsizei width,
+                                                               GLsizei height);
+
+  extern TKGL_RenderbufferStorageMultisample tk_glRenderbufferStorageMultisampleEXT;
+
+#undef glRenderbufferStorageMultisampleEXT
+#define glRenderbufferStorageMultisampleEXT tk_glRenderbufferStorageMultisampleEXT
+
   void LoadGlFunctions(void* glGetProcAddres);
-}
+} // namespace ToolKit
