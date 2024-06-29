@@ -100,7 +100,7 @@ namespace ToolKit
   void EngineSettings::GraphicSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* settings = CreateXmlNode(doc, "Graphics", parent);
-    WriteAttr(settings, doc, "MSAA", std::to_string(MSAA));
+    WriteAttr(settings, doc, "MSAA", std::to_string(msaa));
     WriteAttr(settings, doc, "FPS", std::to_string(FPS));
     WriteAttr(settings, doc, "HDRPipeline", std::to_string(HDRPipeline));
     WriteAttr(settings, doc, "RenderResolutionScale", std::to_string(renderResolutionScale));
@@ -112,9 +112,12 @@ namespace ToolKit
     WriteAttr(settings, doc, "CascacdeDist2", std::to_string(cascadeDistances[2]));
     WriteAttr(settings, doc, "CascacdeDist3", std::to_string(cascadeDistances[3]));
 
+    WriteAttr(settings, doc, "UseEvsm4", std::to_string(useEVSM4));
     WriteAttr(settings, doc, "UsePSSM", std::to_string(useParallelSplitPartitioning));
     WriteAttr(settings, doc, "PSSMLambda", std::to_string(parallelSplitLambda));
     WriteAttr(settings, doc, "StableShadow", std::to_string(stableShadowMap));
+
+    WriteAttr(settings, doc, "AnisotropicTextureFiltering", std::to_string(anisotropicTextureFiltering));
 
     WriteAttr(settings, doc, "MaxEntityPerBVHNode", std::to_string(maxEntityPerBVHNode));
     WriteAttr(settings, doc, "MinBVHNodeSize", std::to_string(minBVHNodeSize));
@@ -129,7 +132,7 @@ namespace ToolKit
 
     if (XmlNode* node = parent->first_node("Graphics"))
     {
-      ReadAttr(node, "MSAA", MSAA);
+      ReadAttr(node, "MSAA", msaa);
       ReadAttr(node, "FPS", FPS);
       ReadAttr(node, "HDRPipeline", HDRPipeline);
       ReadAttr(node, "RenderResolutionScale", renderResolutionScale);
@@ -141,9 +144,12 @@ namespace ToolKit
       ReadAttr(node, "CascacdeDist2", cascadeDistances[2]);
       ReadAttr(node, "CascacdeDist3", cascadeDistances[3]);
 
+      ReadAttr(node, "UseEvsm4", useEVSM4);
       ReadAttr(node, "UsePSSM", useParallelSplitPartitioning);
       ReadAttr(node, "PSSMLambda", parallelSplitLambda);
       ReadAttr(node, "StableShadow", stableShadowMap);
+
+      ReadAttr(node, "AnisotropicTextureFiltering", anisotropicTextureFiltering);
 
       ReadAttr(node, "MaxEntityPerBVHNode", maxEntityPerBVHNode);
       ReadAttr(node, "MinBVHNodeSize", minBVHNodeSize);

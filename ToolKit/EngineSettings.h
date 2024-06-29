@@ -48,7 +48,7 @@ namespace ToolKit
       bool enableGpuTimer         = false;
 
       /** Multi-sample count. 0 for non msaa render targets. */
-      int MSAA                    = 0;
+      int msaa                    = 0;
 
       /** Sets render targets as floating point, allows values larger than 1.0 for HDR rendering. */
       bool HDRPipeline            = true;
@@ -85,6 +85,9 @@ namespace ToolKit
 
       /** By default EVSM uses 2 component for shadow map generation. If this is true, it uses 4 component. */
       bool useEVSM4                     = false;
+
+      /** Anisotropic texture filtering value. It can be 0, 2 ,4, 8, 16. Clamped with gpu max anisotropy. */
+      int anisotropicTextureFiltering   = 8;
 
       /** Maximum number of entity count per bvh node. */
       int maxEntityPerBVHNode           = 5;

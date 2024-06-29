@@ -25,15 +25,10 @@ namespace ToolKit
     GraphicTypes InternalFormat = GraphicTypes::FormatRGBA16F;
     GraphicTypes Format         = GraphicTypes::FormatRGBA;
     GraphicTypes Type           = GraphicTypes::TypeFloat;
-    int Layers                  = -1;
-    bool GenerateMipMap         = false;
+    int Layers                  = 0;     //!< Number of layers that this texture have if this is a texture array.
+    bool GenerateMipMap         = false; //!< Generates mipmaps for the texture automatically.
 
-    bool operator==(const TextureSettings& other) const
-    {
-      return Target == other.Target && WarpS == other.WarpS && WarpT == other.WarpT && WarpR == other.WarpR &&
-             MinFilter == other.MinFilter && MagFilter == other.MagFilter && InternalFormat == other.InternalFormat &&
-             Format == other.Format && Type == other.Type && Layers == other.Layers;
-    }
+    bool operator==(const TextureSettings& other) const { return memcmp(this, &other, sizeof(TextureSettings)) == 0; }
 
     bool operator!=(const TextureSettings& other) const { return !(*this == other); }
   };
@@ -85,6 +80,8 @@ namespace ToolKit
     void Load() override;
     void Init(int width, int height, bool stencil);
     void UnInit() override;
+
+    GraphicTypes GetDepthFormat();
 
    protected:
     void Clear() override;

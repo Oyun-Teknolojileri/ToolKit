@@ -605,8 +605,6 @@ namespace ToolKit
 
     assert(source->m_initiated && dest->m_initiated && "Texture is not initialized.");
 
-    assert(source);
-
     if (m_copyFb == nullptr)
     {
       m_copyFb = MakeNewPtr<Framebuffer>();

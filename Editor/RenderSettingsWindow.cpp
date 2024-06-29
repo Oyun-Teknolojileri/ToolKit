@@ -152,6 +152,38 @@ namespace ToolKit
           g_app->ReInitViewports();
         }
 
+        ImGui::SeparatorText("Multi Sample Anti Aliasing");
+
+        auto showMsaaComboFn = [&engineSettings](std::function<void(int)>&& itemChangedFn) -> void
+        {
+          const char* itemNames[] = {"0", "2", "4"};
+          const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
+          int currentItem         = engineSettings.Graphics.msaa / 2;
+
+          if (ImGui::BeginCombo("Sample Count", itemNames[currentItem]))
+          {
+            for (int itemIndx = 0; itemIndx < itemCount; itemIndx++)
+            {
+              bool isSelected      = false;
+              const char* itemName = itemNames[itemIndx];
+              ImGui::Selectable(itemName, &isSelected);
+              if (isSelected)
+              {
+                itemChangedFn(itemIndx);
+              }
+            }
+
+            ImGui::EndCombo();
+          }
+        };
+
+        showMsaaComboFn(
+            [&engineSettings](int newItem) -> void
+            {
+              engineSettings.Graphics.msaa = newItem * 2;
+              g_app->ReInitViewports();
+            });
+
         ImGui::SeparatorText("Shadows");
 
         bool* evsm4 = &engineSettings.Graphics.useEVSM4;
@@ -170,25 +202,28 @@ namespace ToolKit
         UI::AddTooltipToLastItem("Exponential variance shadow mapping with positive and negative component."
                                  "\nRequires more shadow map memory, but yields softer shadows.");
 
-        const char* itemNames[] = {"1", "2", "3", "4"};
-        const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
-        int currentItem         = engineSettings.Graphics.cascadeCount - 1;
-
-        if (ImGui::BeginCombo("Cascade Count", itemNames[currentItem]))
+        // Cascade count combo.
         {
-          for (int itemIndx = 0; itemIndx < itemCount; itemIndx++)
-          {
-            bool isSelected      = false;
-            const char* itemName = itemNames[itemIndx];
-            ImGui::Selectable(itemName, &isSelected);
-            if (isSelected)
-            {
-              engineSettings.Graphics.cascadeCount = itemIndx + 1;
-              GetRenderSystem()->InvalidateGPULightCache();
-            }
-          }
+          const char* itemNames[] = {"1", "2", "3", "4"};
+          const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
+          int currentItem         = engineSettings.Graphics.cascadeCount - 1;
 
-          ImGui::EndCombo();
+          if (ImGui::BeginCombo("Cascade Count", itemNames[currentItem]))
+          {
+            for (int itemIndx = 0; itemIndx < itemCount; itemIndx++)
+            {
+              bool isSelected      = false;
+              const char* itemName = itemNames[itemIndx];
+              ImGui::Selectable(itemName, &isSelected);
+              if (isSelected)
+              {
+                engineSettings.Graphics.cascadeCount = itemIndx + 1;
+                GetRenderSystem()->InvalidateGPULightCache();
+              }
+            }
+
+            ImGui::EndCombo();
+          }
         }
 
         Vec4 data            = {engineSettings.Graphics.cascadeDistances[0],
@@ -291,7 +326,34 @@ namespace ToolKit
         }
         UI::AddTooltipToLastItem("Highlights shadow cascades for debugging purpose.");
 
-        ImGui::SeparatorText("BVH");
+        ImGui::SeparatorText("Global Texture Settings");
+
+        // Anisotropy combo.
+        {
+          const char* itemNames[] = {"0", "2", "4", "8", "16"};
+          const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
+          int currentItem         = engineSettings.Graphics.anisotropicTextureFiltering / 2;
+
+          if (ImGui::BeginCombo("Anisotropy", itemNames[currentItem]))
+          {
+            for (int itemIndx = 0; itemIndx < itemCount; itemIndx++)
+            {
+              bool isSelected      = false;
+              const char* itemName = itemNames[itemIndx];
+              ImGui::Selectable(itemName, &isSelected);
+              if (isSelected)
+              {
+                engineSettings.Graphics.anisotropicTextureFiltering = itemIndx * 2;
+              }
+            }
+
+            ImGui::EndCombo();
+          }
+        }
+        UI::AddTooltipToLastItem("Apply anisotropic filtering if the value is greater than 0. \nOnly effects all "
+                                 "textures after editor restarted.");
+
+        ImGui::SeparatorText("Global BVH Settings");
         ImGui::DragInt("Node Max Entity", &engineSettings.Graphics.maxEntityPerBVHNode, 1, 1, 1000000);
         ImGui::DragFloat("Node Min Size", &engineSettings.Graphics.minBVHNodeSize, 1.0f, 0.01f, 100000.0f);
 

@@ -190,10 +190,10 @@ namespace ToolKit
 
         SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 
-        if (settings.Graphics.MSAA > 0)
+        if (settings.Graphics.msaa > 0)
         {
           SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-          SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, settings.Graphics.MSAA);
+          SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, settings.Graphics.msaa);
         }
 
 #ifdef TK_DEBUG

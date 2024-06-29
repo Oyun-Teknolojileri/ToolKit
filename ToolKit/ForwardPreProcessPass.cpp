@@ -60,17 +60,10 @@ namespace ToolKit
     m_framebuffer->SetColorAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
     m_framebuffer->SetColorAttachment(FAttachment::ColorAttachment1, m_normalRt);
 
-    if (m_params.gFrameBuffer)
+    assert(m_params.FrameBuffer->GetDepthTexture() != nullptr);
+    if (DepthTexturePtr depth = m_params.FrameBuffer->GetDepthTexture())
     {
-      m_framebuffer->AttachDepthTexture(m_params.gFrameBuffer->GetDepthTexture());
-    }
-    else
-    {
-      assert(m_params.FrameBuffer->GetDepthTexture() != nullptr);
-      if (DepthTexturePtr depth = m_params.FrameBuffer->GetDepthTexture())
-      {
-        m_framebuffer->AttachDepthTexture(depth);
-      }
+      m_framebuffer->AttachDepthTexture(depth);
     }
 
     POP_CPU_MARKER();
@@ -127,19 +120,7 @@ namespace ToolKit
     RenderPass::PreRender();
 
     Renderer* renderer = GetRenderer();
-    if (m_params.gFrameBuffer)
-    {
-      renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::None);
-
-      // copy normal and linear depth from gbuffer to this
-      renderer->CopyTexture(m_params.gNormalRt, m_normalRt);
-      renderer->CopyTexture(m_params.gLinearRt, m_linearDepthRt);
-    }
-    else
-    {
-      // If no gbuffer, clear the current buffers to render onto
-      GetRenderer()->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
-    }
+    renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
 
     renderer->SetCamera(m_params.Cam, true);
 

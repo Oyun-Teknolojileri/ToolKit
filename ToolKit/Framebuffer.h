@@ -14,12 +14,23 @@ namespace ToolKit
 
   struct FramebufferSettings
   {
-    int width            = 128;
-    int height           = 128;
-    bool depthStencil    = false;
-    bool useDefaultDepth = true;
+    /**Height of the frame buffer. */
+    int width                  = 128;
+    /** Width of the frame buffer. */
+    int height                 = 128;
+    /** States wheter the default depth has stencil or not. */
+    bool depthStencil          = false;
+    /** Creates a default depth attachment. */
+    bool useDefaultDepth       = true;
+    /** Creates multi sample frame buffers. Suggested values are 0, 2, 4, 6. */
+    int multiSampleFrameBuffer = 0;
 
-    bool Compare(const FramebufferSettings& settings);
+    bool operator==(const FramebufferSettings& other) const
+    {
+      return memcmp(this, &other, sizeof(FramebufferSettings)) == 0;
+    }
+
+    bool operator!=(const FramebufferSettings& other) const { return !(*this == other); }
   };
 
   class TK_API Framebuffer

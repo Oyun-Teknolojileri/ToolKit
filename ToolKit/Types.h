@@ -355,6 +355,8 @@ namespace ToolKit
     FormatRGBA32F              = 0x8814,
     FormatR16SNorm             = 0x8F98,
     FormatSRGB8_A8             = 0x8C43,
+    FormatDepth24              = 0x81A6,
+    FormatDepth24Stencil8      = 0x88F0,
     ColorAttachment0           = 0x8CE0,
     DepthAttachment            = 0x8D00,
     TypeFloat                  = 0x1406,

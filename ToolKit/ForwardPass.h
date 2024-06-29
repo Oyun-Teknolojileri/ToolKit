@@ -17,7 +17,6 @@ namespace ToolKit
     RenderData* renderData       = nullptr;
     CameraPtr Cam                = nullptr;
     FramebufferPtr FrameBuffer   = nullptr;
-    FramebufferPtr gFrameBuffer  = nullptr;
     RenderTargetPtr gNormalRt    = nullptr;
     RenderTargetPtr gLinearRt    = nullptr;
     RenderTargetPtr SsaoTexture  = nullptr;

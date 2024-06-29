@@ -14,16 +14,8 @@
 #include "TKStats.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
-
-  bool FramebufferSettings::Compare(const FramebufferSettings& settings)
-  {
-    return settings.width == width && settings.height == height && settings.depthStencil == depthStencil &&
-           settings.useDefaultDepth == useDefaultDepth;
-  }
 
   Framebuffer::Framebuffer()
   {
@@ -109,6 +101,18 @@ namespace ToolKit
 
     GLenum attachment = dt->m_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
 
+    if (m_settings.multiSampleFrameBuffer > 0)
+    {
+      if (glRenderbufferStorageMultisampleEXT != nullptr)
+      {
+        glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER,
+                                            m_settings.multiSampleFrameBuffer,
+                                            (GLenum) dt->GetDepthFormat(),
+                                            dt->m_width,
+                                            dt->m_height);
+      }
+    }
+
     // Attach depth buffer to FBO
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, dt->m_textureId);
 
@@ -159,16 +163,38 @@ namespace ToolKit
       }
       else
       {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, rt->m_textureId, mip);
+        if (m_settings.multiSampleFrameBuffer > 0)
+        {
+          if (glFramebufferTexture2DMultisampleEXT != nullptr)
+          {
+            glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER,
+                                                 attachment,
+                                                 GL_TEXTURE_2D,
+                                                 rt->m_textureId,
+                                                 mip,
+                                                 m_settings.multiSampleFrameBuffer);
+          }
+          else
+          {
+            // Fall back to single sample frame buffer.
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, rt->m_textureId, mip);
+            m_settings.multiSampleFrameBuffer = 0;
+          }
+        }
+        else
+        {
+          glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, rt->m_textureId, mip);
+        }
       }
     }
 
     m_colorAtchs[(int) atc] = rt;
+
+    m_settings.width        = rt->m_width;
+    m_settings.height       = rt->m_height;
+
     SetDrawBuffers();
     CheckFramebufferComplete();
-
-    m_settings.width  = rt->m_width;
-    m_settings.height = rt->m_height;
 
     return oldRt;
   }
@@ -260,12 +286,18 @@ namespace ToolKit
 
     GLenum colorAttachments[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     int count                  = 0;
-    for (int i = 0; i < m_maxColorAttachmentCount; ++i)
+
+    for (int i = 0; i < m_maxColorAttachmentCount; i++)
     {
-      if (m_colorAtchs[i] != nullptr && m_colorAtchs[i]->m_textureId != 0)
+      RenderTargetPtr attachment = m_colorAtchs[i];
+      if (attachment != nullptr && attachment->m_textureId != 0)
       {
+        // All attachments must be the same size.
+        assert(attachment->m_width == m_settings.width);
+        assert(attachment->m_height == m_settings.height);
+
         colorAttachments[i] = GL_COLOR_ATTACHMENT0 + i;
-        ++count;
+        count++;
       }
     }
 

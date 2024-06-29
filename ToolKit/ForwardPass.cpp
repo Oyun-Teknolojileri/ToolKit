@@ -26,7 +26,7 @@ namespace ToolKit
     if (m_params.FrameBuffer == nullptr)
     {
       m_params.FrameBuffer = MakeNewPtr<Framebuffer>();
-      m_params.FrameBuffer->Init({1024u, 768u, false, true});
+      m_params.FrameBuffer->Init({1024, 768, false, true, GetEngineSettings().Graphics.msaa});
     }
   }
 
