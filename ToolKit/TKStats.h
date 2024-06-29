@@ -61,8 +61,15 @@ namespace ToolKit
     inline uint64 GetHWRenderPassCount() { return m_renderPassCount; }
 
    public:
+    /** Gpu Frame time for current frame. */
     float m_elapsedGpuRenderTime          = 0.0f;
+    /** Gpu Frame time for average over 100 frames. */
+    float m_elapsedGpuRenderTimeAvg       = 0.0f;
+    /** Cpu Frame time for current frame. */
     float m_elapsedCpuRenderTime          = 0.0f;
+    /** Cpu Frame time for average over 100 frames. */
+    float m_elapsedCpuRenderTimeAvg       = 0.0f;
+    /** Number of times the light cache invalidated for a frame */
     uint m_lightCacheInvalidationPerFrame = 0;
 
    private:
@@ -228,4 +235,19 @@ namespace ToolKit
       gpu = 1.0f;
     }
   }
+
+  TK_API inline void GetRenderTimeAvg(float& cpu, float& gpu)
+  {
+    if (TKStats* tkStats = GetTKStats())
+    {
+      cpu = tkStats->m_elapsedCpuRenderTimeAvg;
+      gpu = tkStats->m_elapsedGpuRenderTimeAvg;
+    }
+    else
+    {
+      cpu = 1.0f;
+      gpu = 1.0f;
+    }
+  }
+
 } // namespace ToolKit

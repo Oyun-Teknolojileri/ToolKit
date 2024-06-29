@@ -180,11 +180,31 @@ namespace ToolKit
   void RenderSystem::EndFrame()
   {
     m_frameCount++;
-    m_renderer->m_frameCount = m_frameCount;
+    m_renderer->m_frameCount  = m_frameCount;
 
+    static uint avgFrameStart = m_frameCount;
+    static float avgCpuTime   = 0.0f;
+    static float avgGpuTime   = 0.0f;
     if (TKStats* stats = GetTKStats())
     {
       m_renderer->GetElapsedTime(stats->m_elapsedCpuRenderTime, stats->m_elapsedGpuRenderTime);
+
+      avgCpuTime += stats->m_elapsedCpuRenderTime;
+      avgGpuTime += stats->m_elapsedGpuRenderTime;
+    }
+
+    // Average over 100 frames.
+    if (m_frameCount - avgFrameStart >= 100)
+    {
+      if (TKStats* stats = GetTKStats())
+      {
+        stats->m_elapsedCpuRenderTimeAvg = avgCpuTime / 100.0f;
+        stats->m_elapsedGpuRenderTimeAvg = avgGpuTime / 100.0f;
+      }
+
+      avgFrameStart = m_frameCount;
+      avgCpuTime    = 0.0f;
+      avgGpuTime    = 0.0f;
     }
   }
 
