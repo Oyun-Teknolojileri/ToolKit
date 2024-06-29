@@ -35,7 +35,11 @@ namespace ToolKit
     RenderTargetPtr GetShadowAtlas();
 
    private:
+    /** Perform all renderings to generate all shadow maps for the given light. */
     void RenderShadowMaps(LightPtr light);
+
+    /** Performs a single render that generates a single shadow map of a cascade, or a face of a cube etc...*/
+    void RenderShadowMap(LightPtr light, CameraPtr shadowCamera);
 
     /**
      * Sets layer and coordinates of the shadow maps in shadow atlas.
