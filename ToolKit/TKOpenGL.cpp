@@ -15,6 +15,8 @@ namespace ToolKit
 
   TKGL_RenderbufferStorageMultisample tk_glRenderbufferStorageMultisampleEXT   = nullptr;
 
+  int TK_GL_EXT_texture_filter_anisotropic                                     = 0;
+
   void LoadGlFunctions(void* glGetProcAddres)
   {
 #ifdef TK_WIN
@@ -27,6 +29,11 @@ namespace ToolKit
       tk_glRenderbufferStorageMultisampleEXT  = glad_glRenderbufferStorageMultisampleEXT;
     }
   #endif
+
+  #ifdef GL_EXT_texture_filter_anisotropic
+    TK_GL_EXT_texture_filter_anisotropic = GLAD_GL_EXT_texture_filter_anisotropic;
+  #endif
+
 #endif
   }
 

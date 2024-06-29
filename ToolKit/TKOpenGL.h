@@ -46,5 +46,16 @@ namespace ToolKit
 #undef glRenderbufferStorageMultisampleEXT
 #define glRenderbufferStorageMultisampleEXT tk_glRenderbufferStorageMultisampleEXT
 
+  // GL_EXT_texture_filter_anisotropic
+  //////////////////////////////////////////////////////////////////////////
+
+  extern int TK_GL_EXT_texture_filter_anisotropic;
+
+#undef GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT
+#define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
+
+#undef GL_TEXTURE_MAX_ANISOTROPY_EXT
+#define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
+
   void LoadGlFunctions(void* glGetProcAddres);
 } // namespace ToolKit

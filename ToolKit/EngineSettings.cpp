@@ -117,6 +117,8 @@ namespace ToolKit
     WriteAttr(settings, doc, "PSSMLambda", std::to_string(parallelSplitLambda));
     WriteAttr(settings, doc, "StableShadow", std::to_string(stableShadowMap));
 
+    WriteAttr(settings, doc, "AnisotropicTextureFiltering", std::to_string(anisotropicTextureFiltering));
+
     WriteAttr(settings, doc, "MaxEntityPerBVHNode", std::to_string(maxEntityPerBVHNode));
     WriteAttr(settings, doc, "MinBVHNodeSize", std::to_string(minBVHNodeSize));
   }
@@ -146,6 +148,8 @@ namespace ToolKit
       ReadAttr(node, "UsePSSM", useParallelSplitPartitioning);
       ReadAttr(node, "PSSMLambda", parallelSplitLambda);
       ReadAttr(node, "StableShadow", stableShadowMap);
+
+      ReadAttr(node, "AnisotropicTextureFiltering", anisotropicTextureFiltering);
 
       ReadAttr(node, "MaxEntityPerBVHNode", maxEntityPerBVHNode);
       ReadAttr(node, "MinBVHNodeSize", minBVHNodeSize);

@@ -8,6 +8,7 @@
 #include "Texture.h"
 
 #include "DirectionComponent.h"
+#include "EngineSettings.h"
 #include "FileManager.h"
 #include "FullQuadPass.h"
 #include "Logger.h"
@@ -150,14 +151,17 @@ namespace ToolKit
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint) m_settings.WarpS);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint) m_settings.WarpT);
 
-#if GL_EXT_texture_filter_anisotropic
-    if (GLAD_GL_EXT_texture_filter_anisotropic == 1)
+    if (TK_GL_EXT_texture_filter_anisotropic == 1)
     {
-      float aniso = 0.0f;
-      glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
+      float maxAniso = 1.0f;
+      glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
+
+      EngineSettings& settings = GetEngineSettings();
+      float aniso              = glm::max(1.0f, float(settings.Graphics.anisotropicTextureFiltering));
+      aniso                    = glm::min(maxAniso, aniso);
+
       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
     }
-#endif
 
     if (flushClientSideArray)
     {
