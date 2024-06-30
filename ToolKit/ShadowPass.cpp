@@ -99,7 +99,6 @@ namespace ToolKit
         dLight->UpdateShadowFrustum(m_params.viewCamera, m_params.scene);
       }
 
-      // Do not update spot or point light shadow cameras since they should be updated on RenderPath that runs this pass
       RenderShadowMaps(light);
     }
 
@@ -260,10 +259,6 @@ namespace ToolKit
     // Adjust light's camera.
     renderer->SetCamera(shadowCamera, false);
 
-    float n                    = cullCamera->Near();     // Backup near.
-    float f                    = cullCamera->Far();      // Backup the far.
-    Vec3 pos                   = cullCamera->Position(); // Backup pos.
-
     Light::LightType lightType = light->GetLightType();
     if (lightType == Light::LightType::Directional)
     {
@@ -273,16 +268,16 @@ namespace ToolKit
       // The tight bounds of the shadow camera which is used to create the shadow map is preserved.
       // The casters that will fall behind the camera will still cast shadows, this is why all the fuss for.
       // In the shader, the objects that fall behind the camera is "pancaked" to shadow camera's front plane.
-      Vec3 dir                    = cullCamera->Direction();
       const BoundingBox& sceneBox = m_params.scene->GetSceneBoundary();
-
+      Vec3 dir                    = cullCamera->Direction();
+      Vec3 pos                    = cullCamera->Position(); // Backup pos.
       Vec3 outerPoint             = pos - glm::normalize(dir) * glm::distance(sceneBox.min, sceneBox.max) * 0.5f;
 
       cullCamera->m_node->SetTranslation(outerPoint); // Set the camera position.
       cullCamera->SetNearClipVal(0.0f);
 
       // New far clip is calculated. Its the distance newly calculated outer poi
-      cullCamera->SetFarClipVal(glm::distance(outerPoint, pos) + f);
+      cullCamera->SetFarClipVal(glm::distance(outerPoint, pos) + cullCamera->Far());
     }
 
     // Create render jobs for shadow map generation.
@@ -293,14 +288,6 @@ namespace ToolKit
     RenderData renderData;
     RenderJobProcessor::CreateRenderJobs(renderData.jobs, m_params.scene->m_bvh, nullLights, cullCamera, nullEnv);
     RenderJobProcessor::SeperateRenderData(renderData, true);
-
-    if (lightType == Light::LightType::Directional)
-    {
-      // Camera is set back to its original values for rendering the shadow.
-      cullCamera->SetNearClipVal(n);
-      cullCamera->SetFarClipVal(f);
-      cullCamera->m_node->SetTranslation(pos);
-    }
 
     renderer->OverrideBlendState(true, BlendFunction::NONE); // Blending must be disabled for shadow map generation.
 
