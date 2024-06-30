@@ -91,6 +91,8 @@ namespace ToolKit
     // Update shadow maps.
     for (LightPtr& light : m_lights)
     {
+      light->UpdateShadowCamera();
+
       if (light->GetLightType() == Light::LightType::Directional)
       {
         DirectionalLightPtr dLight = Cast<DirectionalLight>(light);

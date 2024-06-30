@@ -422,9 +422,9 @@ namespace ToolKit
   {
     m_shadowCamera->SetLens(glm::radians(GetOuterAngleVal()), 1.0f, 0.01f, AffectDistance());
 
-    Light::UpdateShadowCamera();
-
     UpdateShadowCameraTransform();
+
+    Light::UpdateShadowCamera();
 
     // Calculate frustum.
     m_frustumCache           = ExtractFrustum(m_shadowMapCameraProjectionViewMatrix, false);
